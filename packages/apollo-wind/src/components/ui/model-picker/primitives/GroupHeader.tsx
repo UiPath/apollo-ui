@@ -45,6 +45,12 @@ export interface GroupHeaderProps {
   collapsed?: boolean;
   /** Click handler; required when `collapsible`. */
   onToggle?: () => void;
+  /**
+   * The keyboard highlight is resting on this (collapsed) section. Rows
+   * inside are not rendered, so the header stands in for them visually;
+   * `→` on the search field reopens it.
+   */
+  active?: boolean;
   /** Optional test id forwarded to the header. */
   'data-testid'?: string;
 }
@@ -72,6 +78,7 @@ export const GroupHeader: React.FC<GroupHeaderProps> = ({
   collapsible,
   collapsed,
   onToggle,
+  active,
   'data-testid': dataTestId,
 }) => {
   const resolvedCountLabel =
@@ -79,6 +86,7 @@ export const GroupHeader: React.FC<GroupHeaderProps> = ({
 
   const base = cn(
     'flex w-full items-center gap-2 bg-surface-raised text-left',
+    active && 'ring-2 ring-ring ring-inset',
     dense ? 'px-3 pb-1' : 'px-3.5 pb-1.5',
     isFirst
       ? dense
@@ -134,6 +142,7 @@ export const GroupHeader: React.FC<GroupHeaderProps> = ({
           base,
           'cursor-pointer hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none'
         )}
+        data-active={active || undefined}
         data-slot="model-picker-group-header"
         data-testid={dataTestId}
         onClick={onToggle}

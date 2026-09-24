@@ -254,8 +254,8 @@ export interface ModelPickerProps {
   /**
    * Folders for the toolbar scope switcher, which renders when this is
    * non-empty — typically the user's Orchestrator folders, fetched by the
-   * host. Include `numericId` when your own add/edit navigation deep-links
-   * into a folder's LLM-configurations pages.
+   * host. Ids are opaque to the picker: it reports the chosen one through
+   * `onFolderChange` and the host refetches.
    */
   folders?: readonly FolderSwitcherFolder[];
   /**
@@ -415,6 +415,10 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
     // the request itself belongs to the host, which owns the credentials.
     const [pendingDelete, setPendingDelete] = React.useState<DiscoveryModel | null>(null);
     const [deleteError, setDeleteError] = React.useState<Error | null>(null);
+    // Mirrors `pendingDelete` for the popover's close handler, which fires
+    // synchronously when focus moves into the portaled confirm dialog.
+    const pendingDeleteRef = React.useRef<DiscoveryModel | null>(null);
+    pendingDeleteRef.current = pendingDelete;
     // One deletion at a time. The row stays on screen until the host hands
     // back a new `models`, so without this a slow request could be
     // re-submitted from the row action or the Delete shortcut while the
@@ -445,7 +449,10 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
         deleteInFlight.current = false;
       }
     }, [pendingDelete, onDeleteModel]);
-    const effectiveError = error ?? deleteError;
+    // Only the host's catalog error takes over the popup and paints the
+    // field invalid. A failed delete is reported inside the still-open
+    // popup (below) and leaves the list, which is intact, alone.
+    const effectiveError = error ?? null;
 
     const effectiveModels = React.useMemo(() => {
       // The one opinion the component keeps: a policy-blocked model is a
@@ -520,8 +527,15 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
     }, [setOpen]);
     const handleOpenChange = React.useCallback(
       (next: boolean) => {
-        if (next) setOpen(true);
-        else closePopup();
+        if (next) {
+          setOpen(true);
+          return;
+        }
+        // The confirm dialog is portaled, so Radix reads focus moving into it
+        // as leaving the popover. Keep the list open behind the dialog, the
+        // way the Material picker did; the dialog hands focus back on close.
+        if (pendingDeleteRef.current) return;
+        closePopup();
       },
       [setOpen, closePopup]
     );
@@ -540,8 +554,16 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
     // reaches the same actions from the search field: Shift+Enter edits the
     // active BYO row, Delete asks to delete it. Everything
     // else falls through to the listbox navigation.
+    const listReady = !effectiveLoading && !effectiveError;
     const handleSearchKeyDown = React.useCallback(
       (e: React.KeyboardEvent) => {
+        if (!listReady) {
+          // The list is not rendered (refetch, error): nothing to select,
+          // collapse or act on. Escape still closes; typing still filters.
+          if (e.key === 'Escape') onSearchKeyDown(e);
+          else if (e.key === 'Enter' || e.key.startsWith('Arrow')) e.preventDefault();
+          return;
+        }
         const active = filtered[activeIndex];
         // `activeVisible`: the index can rest on a row inside a collapsed
         // section (so ArrowRight can reopen it); nothing may act on it there.
@@ -567,6 +589,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
         onSearchKeyDown(e);
       },
       [
+        listReady,
         filtered,
         activeIndex,
         activeVisible,
@@ -705,12 +728,11 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
                     // error the list is not in the DOM, and a stale
                     // `filtered` must not leave the combobox pointing at an
                     // element that does not exist.
-                    !effectiveLoading && !effectiveError && activeVisible && filtered[activeIndex]
+                    listReady && activeVisible && filtered[activeIndex]
                       ? optionDomId(listboxId, filtered[activeIndex].modelId)
                       : undefined
                   }
                   inputRef={searchRef}
-                  required={required}
                   leading={
                     slots?.searchLeading?.() ??
                     (effectiveFolders && effectiveFolders.length > 0 ? (
@@ -765,6 +787,11 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
             {effectiveError && !effectiveLoading && (
               <div className="px-4 py-4 text-center text-sm text-error" role="alert">
                 {effectiveError.message}
+              </div>
+            )}
+            {deleteError && !effectiveError && (
+              <div className="border-b border-border px-4 py-2 text-sm text-error" role="alert">
+                {deleteError.message}
               </div>
             )}
             {!effectiveLoading && !effectiveError && filtered.length === 0 && (
@@ -825,7 +852,14 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
           onOpenChange={(next) => !next && setPendingDelete(null)}
           open={pendingDelete !== null}
         >
-          <AlertDialogContent container={popupContainer}>
+          <AlertDialogContent
+            container={popupContainer}
+            // Back to the search field, not to whatever the row click focused.
+            onCloseAutoFocus={(e) => {
+              e.preventDefault();
+              searchRef.current?.focus();
+            }}
+          >
             <AlertDialogHeader>
               <AlertDialogTitle>{labels.deleteConfirmTitle}</AlertDialogTitle>
               <AlertDialogDescription>

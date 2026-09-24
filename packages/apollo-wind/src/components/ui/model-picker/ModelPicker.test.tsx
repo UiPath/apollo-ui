@@ -18,6 +18,9 @@ function renderPicker(ui: React.ReactElement) {
   return render(ui);
 }
 
+/** The search field. The trigger is a combobox too, so name it. */
+const searchBox = () => screen.getByRole('combobox', { name: 'Search models' }) as HTMLInputElement;
+
 const MODELS: DiscoveryModel[] = [
   {
     modelId: 'anthropic.claude-sonnet-4-6',
@@ -72,7 +75,7 @@ describe('<ModelPicker>', () => {
 
     // Without valueConnectionId, `value="gpt-4o"` matches the first row (Acme).
     renderPicker(<ModelPicker models={models} value="gpt-4o" onChange={() => {}} />);
-    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(screen.getByRole('combobox', { expanded: false }));
     const acmeRow = await screen.findByRole('option', { name: /Acme Azure/i });
     expect(acmeRow).toHaveAttribute('aria-selected', 'true');
 
@@ -87,7 +90,7 @@ describe('<ModelPicker>', () => {
         onChange={() => {}}
       />
     );
-    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(screen.getByRole('combobox', { expanded: false }));
     const cignaRow = await screen.findByRole('option', { name: /Cigna Sandbox/i });
     expect(cignaRow).toHaveAttribute('aria-selected', 'true');
   });
@@ -106,7 +109,7 @@ describe('<ModelPicker>', () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     renderPicker(<ModelPicker models={MODELS} value={null} onChange={onChange} />);
-    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(screen.getByRole('combobox', { expanded: false }));
     // Listbox should now exist with an accessible name.
     const listbox = await screen.findByRole('listbox', { name: /models/i });
     expect(listbox).toBeInTheDocument();
@@ -136,7 +139,10 @@ describe('<ModelPicker>', () => {
     renderPicker(<ModelPicker models={MODELS} value="some-retired-model" onChange={() => {}} />);
     expect(screen.getByText('some-retired-model')).toBeInTheDocument();
     // Trigger should be aria-invalid.
-    expect(screen.getByRole('button', { expanded: false })).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByRole('combobox', { expanded: false })).toHaveAttribute(
+      'aria-invalid',
+      'true'
+    );
   });
 
   it('renders the BYO edit action only when canManageByo is true', async () => {
@@ -151,7 +157,7 @@ describe('<ModelPicker>', () => {
         value={null}
       />
     );
-    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(screen.getByRole('combobox', { expanded: false }));
     // BYO is the first group (top of Category view) and expanded by
     // default, so rows are visible without an extra click.
     await screen.findByRole('listbox');
@@ -190,7 +196,7 @@ describe('<ModelPicker>', () => {
         onUseCustomModel={onUseCustomModel}
       />
     );
-    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(screen.getByRole('combobox', { expanded: false }));
     const cta = await screen.findByText(/use custom model/i);
     await user.click(cta);
     expect(onUseCustomModel).toHaveBeenCalledTimes(1);
@@ -202,8 +208,8 @@ describe('<ModelPicker>', () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     renderPicker(<ModelPicker models={MODELS} value={null} onChange={onChange} />);
-    await user.click(screen.getByRole('button', { expanded: false }));
-    const search = await screen.findByRole('combobox');
+    await user.click(screen.getByRole('combobox', { expanded: false }));
+    const search = await screen.findByRole('combobox', { name: 'Search models' });
     // Initial active descendant is set on open.
     expect(search).toHaveAttribute('aria-activedescendant');
     const firstActive = search.getAttribute('aria-activedescendant');
@@ -227,7 +233,7 @@ describe('<ModelPicker>', () => {
         onDeleteModel={onDeleteModel}
       />
     );
-    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(screen.getByRole('combobox', { expanded: false }));
     const deleteButton = await screen.findByRole('button', { name: /delete configuration/i });
 
     // Cancel: nothing happens.
@@ -235,9 +241,8 @@ describe('<ModelPicker>', () => {
     await user.click(await screen.findByRole('button', { name: /cancel/i }));
     expect(onDeleteModel).not.toHaveBeenCalled();
 
-    // Confirm: the host handler runs with the BYO row. Opening the dialog
-    // closes the popup, so reopen it once the dialog's aria-hidden lifts.
-    await user.click(await screen.findByRole('button', { expanded: false }));
+    // Confirm: the host handler runs with the BYO row. The popup stays open
+    // behind the dialog, so the row action is still there after Cancel.
     await user.click(await screen.findByRole('button', { name: /delete configuration/i }));
     await user.click(await screen.findByRole('button', { name: /^delete$/i }));
     expect(onDeleteModel).toHaveBeenCalledTimes(1);
@@ -266,25 +271,38 @@ describe('<ModelPicker>', () => {
         value={null}
       />
     );
-    await user.click(await screen.findByRole('button', { expanded: false }));
+    await user.click(screen.getByRole('combobox', { expanded: false }));
     await user.click(await screen.findByRole('button', { name: /delete configuration/i }));
     await user.click(await screen.findByRole('button', { name: /^delete$/i }));
 
     // The host's own message reaches the user rather than being swallowed by
-    // the click handler's floating promise.
+    // the click handler's floating promise — inside the popup, which stays
+    // open with its list intact (the catalog did not fail, one delete did).
     expect(await screen.findByText(/configuration is in use/i)).toBeInTheDocument();
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { expanded: true, name: 'Model' })).not.toHaveAttribute(
+      'aria-invalid'
+    );
   });
 
   it('never renders policy-blocked models', async () => {
     const user = userEvent.setup();
     renderPicker(
       <ModelPicker
-        models={[...MODELS, { ...MODELS[0]!, modelId: 'blocked-model', isBlockedByPolicy: true }]}
+        models={[
+          ...MODELS,
+          {
+            ...MODELS[0]!,
+            modelId: 'blocked-model',
+            modelName: 'blocked-model',
+            isBlockedByPolicy: true,
+          },
+        ]}
         value={null}
         onChange={() => {}}
       />
     );
-    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(screen.getByRole('combobox', { expanded: false }));
     await screen.findByRole('listbox');
     expect(screen.queryByText('blocked-model')).toBeNull();
   });
@@ -314,7 +332,7 @@ describe('<ModelPicker> catalog scoping', () => {
   it('renders embeddings and realtime models when the host does not filter them', async () => {
     const user = userEvent.setup();
     renderPicker(<ModelPicker models={NON_CHAT_MODELS} value={null} onChange={() => {}} />);
-    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(screen.getByRole('combobox', { expanded: false }));
     const listbox = await screen.findByRole('listbox');
     expect(within(listbox).getByText('text-embedding-3-large')).toBeInTheDocument();
     expect(within(listbox).getByText('gpt-realtime')).toBeInTheDocument();
@@ -330,7 +348,7 @@ describe('<ModelPicker> catalog scoping', () => {
         filter={isTextGenerationModel}
       />
     );
-    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(screen.getByRole('combobox', { expanded: false }));
     const listbox = await screen.findByRole('listbox');
     expect(within(listbox).queryByText('text-embedding-3-large')).toBeNull();
     expect(within(listbox).queryByText('gpt-realtime')).toBeNull();
@@ -348,7 +366,7 @@ describe('<ModelPicker> catalog scoping', () => {
     ];
     renderPicker(<ModelPicker models={models} value="my-custom-gpt" onChange={() => {}} />);
     expect(screen.getByText('my-custom-gpt')).toBeInTheDocument();
-    expect(screen.getByRole('button', { expanded: false })).not.toHaveAttribute(
+    expect(screen.getByRole('combobox', { expanded: false })).not.toHaveAttribute(
       'aria-invalid',
       'true'
     );
@@ -375,7 +393,7 @@ describe('<ModelPicker> catalog scoping', () => {
     renderPicker(
       <ModelPicker models={models} value={null} onChange={() => {}} homeRegion="Japan" />
     );
-    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(screen.getByRole('combobox', { expanded: false }));
     const listbox = await screen.findByRole('listbox');
     // homeRegion "Japan" resolves to JA: the US-routed model is out of
     // region, the JA-routed one is home.
@@ -396,7 +414,7 @@ describe('<ModelPicker> pending selection', () => {
   it('renders a stored value as plain text while the catalog is loading', () => {
     renderPicker(<ModelPicker loading models={[]} value="gpt-4o" />);
 
-    const trigger = screen.getByRole('button', { expanded: false });
+    const trigger = screen.getByRole('combobox', { expanded: false });
     expect(trigger).toHaveTextContent('gpt-4o');
     // Not an error state: the catalog simply has not arrived yet.
     expect(trigger).not.toHaveAttribute('aria-invalid');
@@ -405,7 +423,7 @@ describe('<ModelPicker> pending selection', () => {
   it('treats the same value as unknown once the catalog has loaded without it', () => {
     renderPicker(<ModelPicker models={MODELS} value="gpt-4o-not-in-catalog" />);
 
-    const trigger = screen.getByRole('button', { expanded: false });
+    const trigger = screen.getByRole('combobox', { expanded: false });
     expect(trigger).toHaveTextContent('gpt-4o-not-in-catalog');
     expect(trigger).toHaveAttribute('aria-invalid', 'true');
   });
@@ -443,7 +461,7 @@ describe('<ModelPicker> chips are not suppressed by grouping', () => {
   it('keeps the Recommended chip inside the Recommended section, not just on a BYO row', async () => {
     const user = userEvent.setup();
     renderPicker(<ModelPicker groupBy="subscription" models={byoRecommended} />);
-    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(screen.getByRole('combobox', { expanded: false }));
 
     const byoRow = screen.getByRole('option', { name: /byo-recommended/ });
     const hostedRow = screen.getByRole('option', { name: /hosted-recommended/ });
@@ -455,7 +473,7 @@ describe('<ModelPicker> chips are not suppressed by grouping', () => {
   it('shows the same chips whichever grouping is active', async () => {
     const user = userEvent.setup();
     renderPicker(<ModelPicker groupBy="vendor" models={byoRecommended} />);
-    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(screen.getByRole('combobox', { expanded: false }));
 
     const hostedRow = screen.getByRole('option', { name: /hosted-recommended/ });
     expect(within(hostedRow).getByText('Recommended')).toBeInTheDocument();
@@ -473,13 +491,13 @@ describe('<ModelPicker> label suppression', () => {
     renderPicker(<ModelPicker ariaLabel="Judge model" label={null} models={MODELS} />);
 
     expect(screen.queryByText('Model')).toBeNull();
-    expect(screen.getByRole('button', { name: 'Judge model' })).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: 'Judge model' })).toBeInTheDocument();
   });
 
   it('falls back to the default accessible name when none is given', () => {
     renderPicker(<ModelPicker label={null} models={MODELS} />);
 
-    expect(screen.getByRole('button', { name: 'Model' })).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: 'Model' })).toBeInTheDocument();
   });
 });
 
@@ -506,7 +524,7 @@ describe('<ModelPicker> chip alignment', () => {
   it('wraps a row chip in a flex container, not a block span', async () => {
     const user = userEvent.setup();
     renderPicker(<ModelPicker groupBy="vendor" models={tagged} />);
-    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(screen.getByRole('combobox', { expanded: false }));
 
     const chip = within(screen.getByRole('option', { name: /gpt-4o/ })).getByText('Preview');
     const wrapper = chip.closest('[data-slot="model-picker-tag"]')?.parentElement;
@@ -516,7 +534,7 @@ describe('<ModelPicker> chip alignment', () => {
   it('wraps a trigger chip in a flex container, not a block span', () => {
     renderPicker(<ModelPicker models={tagged} value="gpt-4o" />);
 
-    const trigger = screen.getByRole('button', { expanded: false });
+    const trigger = screen.getByRole('combobox', { expanded: false });
     const chip = within(trigger).getByText('Preview');
     const wrapper = chip.closest('[data-slot="model-picker-tag"]')?.parentElement;
     expect(wrapper).toHaveClass('flex', 'items-center');
@@ -535,7 +553,7 @@ describe('<ModelPicker> trigger chrome', () => {
   it('wears the same chrome as the other dropdowns', () => {
     renderPicker(<ModelPicker models={MODELS} />);
 
-    const trigger = screen.getByRole('button', { expanded: false });
+    const trigger = screen.getByRole('combobox', { expanded: false });
     expect(trigger).toHaveClass(
       'border-input',
       'bg-transparent',
@@ -556,7 +574,7 @@ describe('<ModelPicker> trigger chrome', () => {
 
     // `focus-visible` alone never fires for a mouse click, so the field
     // showed no ring when clicked. SelectTrigger carries both; so must this.
-    const trigger = screen.getByRole('button', { expanded: false });
+    const trigger = screen.getByRole('combobox', { expanded: false });
     expect(trigger).toHaveClass('focus:ring-2', 'focus:ring-ring');
     expect(trigger).toHaveClass('focus-visible:ring-2', 'focus-visible:ring-ring');
   });
@@ -567,7 +585,7 @@ describe('<ModelPicker> trigger chrome', () => {
     // interactive control has to opt in — same as the shared `Button`.
     renderPicker(<ModelPicker models={MODELS} />);
 
-    const trigger = screen.getByRole('button', { expanded: false });
+    const trigger = screen.getByRole('combobox', { expanded: false });
     expect(trigger).toHaveClass('cursor-pointer');
 
     await user.click(trigger);
@@ -578,7 +596,7 @@ describe('<ModelPicker> trigger chrome', () => {
   it('leaves the invalid state to aria-invalid, as Input does', () => {
     renderPicker(<ModelPicker invalid models={MODELS} />);
 
-    const trigger = screen.getByRole('button', { expanded: false });
+    const trigger = screen.getByRole('combobox', { expanded: false });
     expect(trigger).toHaveAttribute('aria-invalid', 'true');
     expect(trigger).toHaveClass('aria-invalid:border-error');
     // No conditionally-applied error class — the attribute drives it.
@@ -608,7 +626,7 @@ describe('<ModelPicker> chip legibility', () => {
   it('tints the neutral chip from the foreground, never from a surface token', () => {
     renderPicker(<ModelPicker models={costed} value="gpt-4o" />);
 
-    const chip = within(screen.getByRole('button', { expanded: false })).getByText('Basic');
+    const chip = within(screen.getByRole('combobox', { expanded: false })).getByText('Basic');
     const pill = chip.closest('[data-slot="model-picker-tag"]');
     expect(pill).toHaveClass('bg-foreground/10');
     // Not a surface fill, which is what collided with the field ground.
@@ -620,7 +638,7 @@ describe('<ModelPicker> chip legibility', () => {
   it('leaves the semantic chips on their own fills', async () => {
     const user = userEvent.setup();
     renderPicker(<ModelPicker groupBy="vendor" models={[{ ...costed[0], isPreview: true }]} />);
-    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(screen.getByRole('combobox', { expanded: false }));
 
     const preview = within(screen.getByRole('listbox')).getByText('Preview');
     const pill = preview.closest('[data-slot="model-picker-tag"]');
@@ -642,7 +660,7 @@ describe('<ModelPicker> chips are inert', () => {
   it('does not react to the pointer', () => {
     renderPicker(<ModelPicker models={MODELS} value="anthropic.claude-sonnet-4-6" />);
 
-    const pill = within(screen.getByRole('button', { expanded: false }))
+    const pill = within(screen.getByRole('combobox', { expanded: false }))
       .getByText('Recommended')
       .closest('[data-slot="model-picker-tag"]');
     expect(pill).toHaveClass('pointer-events-none');
@@ -657,7 +675,7 @@ describe('<ModelPicker> chip tooltips', () => {
   it('still opens a chip tooltip even though the chip ignores the pointer', async () => {
     const user = userEvent.setup();
     renderPicker(<ModelPicker groupBy="vendor" models={MODELS} />);
-    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(screen.getByRole('combobox', { expanded: false }));
 
     // Recommended carries a tooltip; the chip itself is pointer-events-none.
     const chip = within(screen.getByRole('listbox')).getAllByText('Recommended')[0];
@@ -693,7 +711,7 @@ describe('<ModelPicker> review follow-ups', () => {
     renderPicker(
       <ModelPicker labels={{ contextWindow: (n) => `ctx:${n}` }} models={withContext} />
     );
-    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(screen.getByRole('combobox', { expanded: false }));
 
     expect(screen.getByText('ctx:128000')).toBeInTheDocument();
     expect(screen.queryByText('128K context')).toBeNull();
@@ -702,35 +720,32 @@ describe('<ModelPicker> review follow-ups', () => {
   it('still formats the context window in English when no label is supplied', async () => {
     const user = userEvent.setup();
     renderPicker(<ModelPicker models={withContext} />);
-    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(screen.getByRole('combobox', { expanded: false }));
 
     expect(screen.getByText('128K context')).toBeInTheDocument();
   });
 
-  it('announces requiredness on the search combobox, not the trigger', async () => {
-    const user = userEvent.setup();
-    renderPicker(<ModelPicker models={MODELS} required />);
+  it('announces requiredness and the selected model on the trigger', () => {
+    renderPicker(<ModelPicker models={MODELS} required value="gpt-4o" />);
 
-    // `aria-required` is not valid on a button role, so the trigger must not
-    // carry it however the field is documented.
-    expect(screen.getByRole('button', { expanded: false })).not.toHaveAttribute('aria-required');
-
-    await user.click(screen.getByRole('button', { expanded: false }));
-    expect(screen.getByRole('combobox')).toHaveAttribute('aria-required', 'true');
+    // `role="combobox"`, like wind's Select and Combobox triggers: valid
+    // for `aria-required`, and the selected model is the field's value
+    // rather than being dropped in favour of the label.
+    const trigger = screen.getByRole('combobox', { expanded: false });
+    expect(trigger).toHaveAttribute('aria-required', 'true');
+    expect(trigger).toHaveAttribute('aria-haspopup', 'listbox');
+    expect(trigger).toHaveTextContent('gpt-4o');
   });
 
-  it('leaves aria-required off the combobox when the field is optional', async () => {
-    const user = userEvent.setup();
+  it('leaves aria-required off the trigger when the field is optional', () => {
     renderPicker(<ModelPicker models={MODELS} />);
-    await user.click(screen.getByRole('button', { expanded: false }));
-
-    expect(screen.getByRole('combobox')).not.toHaveAttribute('aria-required');
+    expect(screen.getByRole('combobox', { expanded: false })).not.toHaveAttribute('aria-required');
   });
 
   it('keeps group headers out of the tab order', async () => {
     const user = userEvent.setup();
     renderPicker(<ModelPicker groupBy="subscription" models={MODELS} />);
-    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(screen.getByRole('combobox', { expanded: false }));
 
     // A <button> inside role="listbox" is already an invalid child; a tabbable
     // one also hijacks Tab away from the activedescendant model.
@@ -741,29 +756,45 @@ describe('<ModelPicker> review follow-ups', () => {
     }
   });
 
-  it('collapses and expands the Custom Models section with the arrow keys', async () => {
+  it('collapses and reopens the Custom Models section with the arrow keys', async () => {
     const user = userEvent.setup();
     // Category view lists BYO first, so the initial highlight sits on a BYO row.
     renderPicker(<ModelPicker groupBy="subscription" models={MODELS} />);
-    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(screen.getByRole('combobox', { expanded: false }));
 
     const before = screen.getAllByRole('option').length;
-    expect(before).toBeGreaterThan(0);
-
     await user.keyboard('{ArrowLeft}');
     expect(screen.getAllByRole('option').length).toBeLessThan(before);
+    // The highlight stays on the collapsed section, shown on its header.
+    expect(
+      screen.getByText('Custom Models (BYO)').closest('[data-slot="model-picker-group-header"]')
+    ).toHaveAttribute('data-active');
 
-    // Re-expanding needs the highlight back on the section, which the
-    // collapse moved off; header click is the pointer path, ArrowRight the
-    // keyboard one once a BYO row is active again.
-    await user.click(screen.getByText('Custom Models (BYO)'));
+    await user.keyboard('{ArrowRight}');
+    expect(screen.getAllByRole('option')).toHaveLength(before);
+  });
+
+  it('keeps a collapsed section reachable by arrow keys in a mixed catalog', async () => {
+    const user = userEvent.setup();
+    renderPicker(<ModelPicker groupBy="subscription" models={MODELS} />);
+    await user.click(screen.getByRole('combobox', { expanded: false }));
+    const before = screen.getAllByRole('option').length;
+
+    // Collapse, walk down into the hosted rows, come back up: the section is
+    // one stop, not skipped, so `→` can reopen it without a mouse.
+    await user.keyboard('{ArrowLeft}');
+    await user.keyboard('{ArrowDown}');
+    expect(searchBox()).toHaveAttribute('aria-activedescendant');
+    await user.keyboard('{ArrowUp}');
+    expect(searchBox()).not.toHaveAttribute('aria-activedescendant');
+    await user.keyboard('{ArrowRight}');
     expect(screen.getAllByRole('option')).toHaveLength(before);
   });
 
   it('does not collapse sections the renderers cannot collapse', async () => {
     const user = userEvent.setup();
     renderPicker(<ModelPicker groupBy="vendor" models={MODELS} />);
-    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(screen.getByRole('combobox', { expanded: false }));
 
     const before = screen.getAllByRole('option').length;
     // Provider view still lists BYO first; step onto a hosted row.
@@ -774,21 +805,23 @@ describe('<ModelPicker> review follow-ups', () => {
     expect(screen.getAllByRole('option')).toHaveLength(before);
   });
 
-  it('moves the highlight off a row hidden by a collapse', async () => {
+  it('never publishes a hidden row as the active descendant', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     renderPicker(<ModelPicker groupBy="subscription" models={MODELS} onChange={onChange} />);
-    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(screen.getByRole('combobox', { expanded: false }));
 
     await user.keyboard('{ArrowLeft}');
-
-    // activedescendant must name a rendered option, not the hidden BYO row…
-    const activeId = screen.getByRole('combobox').getAttribute('aria-activedescendant');
-    expect(activeId).toBeTruthy();
-    expect(document.getElementById(activeId!)).toHaveAttribute('role', 'option');
-    // …and Enter must select something the user can see.
+    // On the collapsed stop: nothing rendered to point at, Enter is inert.
+    expect(searchBox()).not.toHaveAttribute('aria-activedescendant');
     await user.keyboard('{Enter}');
-    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).not.toHaveBeenCalled();
+
+    // One step down is a real, rendered hosted row.
+    await user.keyboard('{ArrowDown}');
+    const activeId = searchBox().getAttribute('aria-activedescendant');
+    expect(document.getElementById(activeId!)).toHaveAttribute('role', 'option');
+    await user.keyboard('{Enter}');
     expect(onChange.mock.calls[0][0].modelSubscriptionType).toBe('UiPathOwned');
   });
 
@@ -797,7 +830,7 @@ describe('<ModelPicker> review follow-ups', () => {
     renderPicker(
       <ModelPicker canManageByo models={MODELS} onDeleteModel={vi.fn()} onEditModel={vi.fn()} />
     );
-    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(screen.getByRole('combobox', { expanded: false }));
 
     const edit = screen.getAllByRole('button', { name: 'Edit configuration' })[0];
     const del = screen.getAllByRole('button', { name: 'Delete configuration' })[0];
@@ -819,7 +852,7 @@ describe('<ModelPicker> review follow-ups', () => {
         onEditModel={onEditModel}
       />
     );
-    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(screen.getByRole('combobox', { expanded: false }));
 
     // Initial highlight is the BYO row (Category view lists BYO first).
     await user.keyboard('{Shift>}{Enter}{/Shift}');
@@ -835,8 +868,8 @@ describe('<ModelPicker> review follow-ups', () => {
     renderPicker(
       <ModelPicker canManageByo groupBy="subscription" models={MODELS} onDeleteModel={vi.fn()} />
     );
-    fireEvent.click(screen.getByRole('button', { expanded: false }));
-    const search = screen.getByRole('combobox') as HTMLInputElement;
+    fireEvent.click(screen.getByRole('combobox', { expanded: false }));
+    const search = searchBox();
 
     // Caret before typed text: Delete is a forward-delete, the picker stays out.
     fireEvent.change(search, { target: { value: 'gp' } });
@@ -874,43 +907,59 @@ describe('<ModelPicker> review follow-ups', () => {
       </Popover>
     );
 
-    await user.click(screen.getByRole('button'));
+    await user.click(screen.getByRole('combobox'));
 
     expect(spy).toHaveBeenCalledTimes(1);
     expect(screen.getByText('popup body')).toBeInTheDocument();
   });
 
-  it('keeps chip tooltip triggers out of the tab order', async () => {
+  it('renders chip tooltips without an interactive element', async () => {
     const user = userEvent.setup();
     renderPicker(<ModelPicker groupBy="vendor" models={MODELS} />);
-    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(screen.getByRole('combobox', { expanded: false }));
 
-    // Recommended carries a tooltip, so its chip is wrapped in a trigger button.
+    // Recommended carries a tooltip. Its trigger must not be a <button>: a
+    // button inside `role="option"` is an invalid child, a tab stop, and —
+    // inside a host form — a submit control.
     const chip = within(screen.getByRole('listbox')).getAllByText('Recommended')[0];
-    const trigger = chip.closest('button');
-    expect(trigger).not.toBeNull();
-    expect(trigger).toHaveAttribute('tabindex', '-1');
+    const option = chip.closest('[role="option"]');
+    expect(option).not.toBeNull();
+    expect(option!.querySelector('button')).toBeNull();
+  });
+
+  it('does not submit an enclosing form when a chip is clicked', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn((e: React.FormEvent) => e.preventDefault());
+    render(
+      <form onSubmit={onSubmit}>
+        <ModelPicker groupBy="vendor" models={MODELS} />
+      </form>
+    );
+    await user.click(screen.getByRole('combobox', { expanded: false }));
+    const chip = within(screen.getByRole('listbox')).getAllByText('Recommended')[0];
+    await user.click(chip.parentElement!);
+    expect(onSubmit).not.toHaveBeenCalled();
   });
 
   it('publishes no activedescendant while the list is not rendered', async () => {
     const user = userEvent.setup();
     const { rerender } = renderPicker(<ModelPicker models={MODELS} />);
-    await user.click(screen.getByRole('button', { expanded: false }));
-    expect(screen.getByRole('combobox')).toHaveAttribute('aria-activedescendant');
+    await user.click(screen.getByRole('combobox', { expanded: false }));
+    expect(searchBox()).toHaveAttribute('aria-activedescendant');
 
     // A refetch that keeps the old catalog: list unmounts, pointer must go too.
     rerender(<ModelPicker loading models={MODELS} />);
     expect(screen.queryByRole('listbox')).toBeNull();
-    expect(screen.getByRole('combobox')).not.toHaveAttribute('aria-activedescendant');
+    expect(searchBox()).not.toHaveAttribute('aria-activedescendant');
 
     rerender(<ModelPicker error={new Error('boom')} models={MODELS} />);
-    expect(screen.getByRole('combobox')).not.toHaveAttribute('aria-activedescendant');
+    expect(searchBox()).not.toHaveAttribute('aria-activedescendant');
   });
 
   it('resets the grouping when the groupBy prop changes after mount', async () => {
     const user = userEvent.setup();
     const { rerender } = renderPicker(<ModelPicker groupBy="subscription" models={MODELS} />);
-    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(screen.getByRole('combobox', { expanded: false }));
     expect(screen.getByText('Custom Models (BYO)')).toBeInTheDocument();
 
     rerender(<ModelPicker groupBy="vendor" models={MODELS} />);
@@ -927,7 +976,7 @@ describe('<ModelPicker> review follow-ups', () => {
   it('never collapses a section when the group headers are hidden', async () => {
     const user = userEvent.setup();
     renderPicker(<ModelPicker groupBy="subscription" models={MODELS} showGroupHeaders={false} />);
-    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(screen.getByRole('combobox', { expanded: false }));
 
     const before = screen.getAllByRole('option').length;
     // The BYO row is active; without a header there is no expand control,
@@ -940,18 +989,18 @@ describe('<ModelPicker> review follow-ups', () => {
     const user = userEvent.setup();
     const byoOnly = MODELS.filter((m) => m.modelSubscriptionType === 'BYOMAdded');
     renderPicker(<ModelPicker groupBy="subscription" models={byoOnly} />);
-    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(screen.getByRole('combobox', { expanded: false }));
     expect(screen.getAllByRole('option').length).toBeGreaterThan(0);
 
     await user.keyboard('{ArrowLeft}');
     // All rows hidden: nothing rendered to point at.
     expect(screen.queryAllByRole('option')).toHaveLength(0);
-    expect(screen.getByRole('combobox')).not.toHaveAttribute('aria-activedescendant');
+    expect(searchBox()).not.toHaveAttribute('aria-activedescendant');
 
     // The keyboard path back must survive: the index still names the section.
     await user.keyboard('{ArrowRight}');
     expect(screen.getAllByRole('option').length).toBeGreaterThan(0);
-    expect(screen.getByRole('combobox')).toHaveAttribute('aria-activedescendant');
+    expect(searchBox()).toHaveAttribute('aria-activedescendant');
   });
 
   it('refuses a second delete while the first is still in flight', async () => {
@@ -973,7 +1022,7 @@ describe('<ModelPicker> review follow-ups', () => {
     );
     const openPopup = async () => {
       if (!screen.queryByRole('listbox'))
-        await user.click(screen.getByRole('button', { expanded: false }));
+        await user.click(screen.getByRole('combobox', { expanded: false }));
     };
 
     // First delete: confirm, request hangs. Confirming closes the popup.
@@ -995,7 +1044,7 @@ describe('<ModelPicker> review follow-ups', () => {
     await new Promise((r) => setTimeout(r, 0));
     await openPopup();
     // The row-button click above left focus on it; the shortcut lives on the search field.
-    await user.click(screen.getByRole('combobox'));
+    await user.click(searchBox());
     await user.keyboard('{Delete}');
     expect(await screen.findByRole('alertdialog')).toBeInTheDocument();
   });
@@ -1014,7 +1063,7 @@ describe('<ModelPicker> review follow-ups', () => {
         onEditModel={onEditModel}
       />
     );
-    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(screen.getByRole('combobox', { expanded: false }));
 
     // Collapse the only section: the index stays on the hidden row so
     // ArrowRight can reopen it, but no action may reach that row.
@@ -1030,10 +1079,86 @@ describe('<ModelPicker> review follow-ups', () => {
     expect(onEditModel).toHaveBeenCalledTimes(1);
   });
 
+  it('resolves a bare value to the hosted model when a BYO twin shares the name', () => {
+    // Flow stores "no connection id" to mean the hosted model; BYO sorts first.
+    renderPicker(<ModelPicker groupBy="subscription" models={MODELS} value="gpt-4o" />);
+    const trigger = screen.getByRole('combobox', { expanded: false });
+    expect(trigger).toHaveTextContent('gpt-4o');
+    expect(within(trigger).queryByText('Custom')).toBeNull();
+  });
+
+  it('resolves to the BYO twin when the connection id says so', () => {
+    renderPicker(
+      <ModelPicker
+        groupBy="subscription"
+        models={MODELS}
+        value="gpt-4o"
+        valueConnectionId="conn-1"
+      />
+    );
+    // MODELS' BYO gpt-4o has no connection id, so nothing matches: unknown.
+    expect(screen.getByRole('combobox', { expanded: false })).toHaveAttribute(
+      'aria-invalid',
+      'true'
+    );
+  });
+
+  it('ignores Enter and the row shortcuts while the list is not rendered', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const onEditModel = vi.fn();
+    const { rerender } = renderPicker(
+      <ModelPicker
+        canManageByo
+        groupBy="subscription"
+        models={MODELS}
+        onChange={onChange}
+        onEditModel={onEditModel}
+      />
+    );
+    await user.click(screen.getByRole('combobox', { expanded: false }));
+
+    // A refetch that keeps the old catalog unmounts the list; the stale
+    // highlight must not be selectable or actionable meanwhile.
+    rerender(
+      <ModelPicker
+        canManageByo
+        groupBy="subscription"
+        loading
+        models={MODELS}
+        onChange={onChange}
+        onEditModel={onEditModel}
+      />
+    );
+    await user.keyboard('{Enter}');
+    await user.keyboard('{Shift>}{Enter}{/Shift}');
+    expect(onChange).not.toHaveBeenCalled();
+    expect(onEditModel).not.toHaveBeenCalled();
+  });
+
+  it('keeps the popup open behind the delete confirm and returns focus to the search', async () => {
+    const user = userEvent.setup();
+    renderPicker(
+      <ModelPicker canManageByo groupBy="subscription" models={MODELS} onDeleteModel={vi.fn()} />
+    );
+    await user.click(screen.getByRole('combobox', { expanded: false }));
+
+    await user.keyboard('{Delete}');
+    expect(await screen.findByRole('alertdialog')).toBeInTheDocument();
+    // The Material picker kept the list open behind its dialog; so does this.
+    // (`hidden`: the modal dialog aria-hides everything behind it.)
+    expect(screen.getByRole('listbox', { hidden: true })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    expect(document.activeElement).toBe(searchBox());
+  });
+
   it('builds selector-safe dom ids', async () => {
     const user = userEvent.setup();
     renderPicker(<ModelPicker models={withContext} />);
-    await user.click(screen.getByRole('button', { expanded: false }));
+    await user.click(screen.getByRole('combobox', { expanded: false }));
 
     const listbox = screen.getByRole('listbox');
     // The whole id, not just the option half, has to survive querySelector.

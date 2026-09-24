@@ -3,7 +3,7 @@ import type { ModelPickerLabels } from './labels';
 
 import { type AnnotatedModel, isCollapsibleGroup } from './primitives/OptionList';
 import type { DiscoveryModel } from './types';
-import { filterModels, type GroupStrategy, groupModels } from './utils';
+import { filterModels, type GroupStrategy, groupModels, isByoModel } from './utils';
 
 export interface UseModelPickerStateOptions {
   models: DiscoveryModel[];
@@ -236,9 +236,22 @@ export function useModelPickerState(opts: UseModelPickerStateOptions): UseModelP
     },
     [value, valueConnectionId]
   );
+  // Without a connection id the value names a model, not a configuration.
+  // Hosts (Flow among them) persist "no connection id" to mean the hosted
+  // model, and BYO sorts first — so prefer the hosted match, else a stored
+  // hosted gpt-4o would come back as the customer's BYO gpt-4o.
+  const pickMatch = useCallback(
+    (list: readonly DiscoveryModel[]) => {
+      const hits = list.filter(matchesValue);
+      if (hits.length === 0) return null;
+      if (valueConnectionId) return hits[0] ?? null;
+      return hits.find((m) => !isByoModel(m)) ?? hits[0] ?? null;
+    },
+    [matchesValue, valueConnectionId]
+  );
   const selected = useMemo<DiscoveryModel | null>(
-    () => annotated.find(matchesValue) ?? models.find(matchesValue) ?? null,
-    [annotated, models, matchesValue]
+    () => pickMatch(annotated) ?? pickMatch(models),
+    [annotated, models, pickMatch]
   );
 
   const unknownValue = useMemo<string | null>(() => {
@@ -290,12 +303,22 @@ export function useModelPickerState(opts: UseModelPickerStateOptions): UseModelP
     },
     [filtered, collapsedGroups]
   );
-  const nearestVisible = useCallback(
+  // A collapsed section is one keyboard stop: its first row. The highlight
+  // can rest there (unrendered, so not published as the active descendant)
+  // so `→` has somewhere to act from and `↑`/`↓` do not skip the section.
+  const isCollapsedStop = useCallback(
+    (i: number) =>
+      isHiddenAt(i) && (i === 0 || filtered[i - 1]?.groupKey !== filtered[i]?.groupKey),
+    [filtered, isHiddenAt]
+  );
+  const nearestStop = useCallback(
     (from: number, dir: 1 | -1) => {
-      for (let i = from; i >= 0 && i < filtered.length; i += dir) if (!isHiddenAt(i)) return i;
+      for (let i = from; i >= 0 && i < filtered.length; i += dir) {
+        if (!isHiddenAt(i) || isCollapsedStop(i)) return i;
+      }
       return -1;
     },
-    [filtered.length, isHiddenAt]
+    [filtered.length, isHiddenAt, isCollapsedStop]
   );
 
   useEffect(() => {
@@ -303,17 +326,13 @@ export function useModelPickerState(opts: UseModelPickerStateOptions): UseModelP
       setActiveIndex(0);
       return;
     }
-    if (!isHiddenAt(activeIndex)) return;
-    // Collapsed under the highlight (keyboard or header click): move to the
-    // next visible row, else the previous. If every row is hidden (the
-    // catalog was all BYO), stay put: the index keeps naming the collapsed
-    // section so ArrowRight can reopen it, and `activeVisible` tells the
-    // combobox not to publish it as the active descendant.
-    const next = nearestVisible(activeIndex, 1);
-    const prev = next === -1 ? nearestVisible(activeIndex, -1) : -1;
-    if (next !== -1) setActiveIndex(next);
-    else if (prev !== -1) setActiveIndex(prev);
-  }, [filtered.length, activeIndex, isHiddenAt, nearestVisible]);
+    if (!isHiddenAt(activeIndex) || isCollapsedStop(activeIndex)) return;
+    // Collapsed under the highlight while it sat mid-section: back up to the
+    // section's stop so the user is still "on" what they just collapsed.
+    let i = activeIndex;
+    while (i > 0 && filtered[i - 1]?.groupKey === filtered[i]?.groupKey) i -= 1;
+    setActiveIndex(i);
+  }, [filtered, activeIndex, isHiddenAt, isCollapsedStop]);
   const activeVisible = filtered.length > 0 && !isHiddenAt(activeIndex);
 
   const choose = useCallback(
@@ -331,13 +350,13 @@ export function useModelPickerState(opts: UseModelPickerStateOptions): UseModelP
         e.preventDefault();
         // Step over rows hidden in a collapsed section; stay put at the end.
         setActiveIndex((i) => {
-          const next = nearestVisible(i + 1, 1);
+          const next = nearestStop(i + 1, 1);
           return next === -1 ? i : next;
         });
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
         setActiveIndex((i) => {
-          const prev = nearestVisible(i - 1, -1);
+          const prev = nearestStop(i - 1, -1);
           return prev === -1 ? i : prev;
         });
       } else if (e.key === 'Enter') {
@@ -372,7 +391,7 @@ export function useModelPickerState(opts: UseModelPickerStateOptions): UseModelP
       collapsedGroups,
       canCollapse,
       toggleGroup,
-      nearestVisible,
+      nearestStop,
       isHiddenAt,
     ]
   );

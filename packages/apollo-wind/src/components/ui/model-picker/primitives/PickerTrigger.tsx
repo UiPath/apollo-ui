@@ -63,10 +63,9 @@ export interface PickerTriggerProps
    */
   describedById?: string;
   /**
-   * Whether the field is required. Not forwarded as `aria-required` —
-   * that attribute is invalid on `role="button"`, and the requirement is
-   * already announced by the label's `RequiredIndicator`. Accepted so a
-   * standalone consumer can style the trigger accordingly.
+   * Whether the field is required. Forwarded as `aria-required`, which is
+   * valid on the trigger's `combobox` role; the label's asterisk is
+   * `aria-hidden`, so this is the only place it is announced.
    */
   required?: boolean;
   className?: string;
@@ -123,6 +122,10 @@ export const PickerTrigger = React.forwardRef<HTMLButtonElement, PickerTriggerPr
     const ownClick = onClick ? { onClick } : {};
 
     return (
+      // `role="combobox"`, like wind's Select and Combobox triggers: the
+      // accessible *value* of a non-input combobox is its content, so the
+      // selected model is announced with the field, and `aria-required` is
+      // valid here where it is not on a button.
       <button
         {...rest}
         {...ownClick}
@@ -131,6 +134,8 @@ export const PickerTrigger = React.forwardRef<HTMLButtonElement, PickerTriggerPr
         aria-expanded={open}
         aria-haspopup="listbox"
         aria-invalid={invalid ? true : undefined}
+        aria-required={required || undefined}
+        role="combobox"
         className={cn(
           // Lifted from `SelectTrigger` so the picker matches the other
           // dropdowns rather than approximating them. `min-h-9` rather than

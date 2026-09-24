@@ -167,6 +167,14 @@ export const GroupedOptionList: React.FC<OptionListProps> = ({
   const labels = tagContext?.labels ?? DEFAULT_MODEL_PICKER_LABELS;
   let lastGroupKey: string | undefined;
   let headerCount = 0;
+  // Keep the highlighted row in view as the user arrows through a list
+  // taller than the popup. The virtualized renderer has `scrollToIndex`;
+  // this one has the DOM. `scrollIntoView` is optional for jsdom.
+  useEffect(() => {
+    const model = options[activeIndex];
+    if (!model) return;
+    document.getElementById(optionDomId(id, model.modelId))?.scrollIntoView?.({ block: 'nearest' });
+  }, [activeIndex, id, options]);
   // Compute counts up front when the parent didn't supply them — useful
   // for standalone primitive composition.
   const derivedCounts = useMemo(() => {
@@ -197,10 +205,13 @@ export const GroupedOptionList: React.FC<OptionListProps> = ({
         // it here to skip rendering rows + flip the header chevron.
         const isCollapsible = isCollapsibleGroup(opt.groupKey);
         const isCollapsed = isCollapsible && (collapsedGroups?.has(opt.groupKey) ?? false);
+        // The highlight sits on a collapsed section: its header stands in.
+        const headerActive = isCollapsed && options[activeIndex]?.groupKey === opt.groupKey;
         return (
           <React.Fragment key={opt.modelId}>
             {showHeader && (
               <GroupHeader
+                active={headerActive}
                 label={opt.groupLabel}
                 hint={groupHint(opt.groupKey, labels)}
                 count={derivedCounts[opt.groupKey]}
@@ -353,9 +364,11 @@ export const VirtualOptionList: React.FC<OptionListProps> = ({
           if (row.kind === 'header') {
             const isCollapsible = isCollapsibleGroup(row.groupKey);
             const isCollapsed = isCollapsible && (collapsedGroups?.has(row.groupKey) ?? false);
+            const headerActive = isCollapsed && options[activeIndex]?.groupKey === row.groupKey;
             return (
               <div data-index={vi.index} key={row.key} ref={measure} style={baseStyle}>
                 <GroupHeader
+                  active={headerActive}
                   label={row.label}
                   hint={groupHint(row.groupKey, labels)}
                   count={row.count}
