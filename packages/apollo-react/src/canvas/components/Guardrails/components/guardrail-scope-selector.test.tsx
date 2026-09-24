@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { describe, expect, it, vi } from 'vitest';
+import { ApI18nProvider } from '../../../../i18n';
 import type { GuardrailSelector } from '../builder-types';
 import { GUARDRAIL_BUILDER_EN_LABELS } from '../i18n';
 import { GuardrailScopeSelector } from './guardrail-scope-selector';
@@ -267,5 +268,81 @@ describe('GuardrailScopeSelector', () => {
     );
     const results = await axe(container);
     expect(results).toHaveNoViolations();
+  });
+
+  describe('standalone defaults', () => {
+    it('renders with no labels prop at all', () => {
+      render(
+        <GuardrailScopeSelector
+          selector={{ scopes: ['Tool'], matchNames: ['ToolA'] }}
+          onChange={vi.fn()}
+          availableToolNames={['ToolA']}
+        />
+      );
+
+      expect(screen.getByRole('group', { name: /scopes/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Agent' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'LLM calls' })).toBeInTheDocument();
+      expect(screen.getByRole('group', { name: /^tools/i })).toBeInTheDocument();
+    });
+
+    it('takes a partial labels override and resolves the rest', () => {
+      render(
+        <GuardrailScopeSelector
+          selector={{ scopes: [] }}
+          onChange={vi.fn()}
+          labels={{ scopesLabel: 'Applies to', scopeLlmLabel: 'Model calls' }}
+        />
+      );
+
+      expect(screen.getByRole('group', { name: /applies to/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Model calls' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Agent' })).toBeInTheDocument();
+    });
+
+    it('resolves its labels from the canvas catalog', async () => {
+      render(
+        <ApI18nProvider component="canvas" locale="ja">
+          <GuardrailScopeSelector selector={{ scopes: [] }} onChange={vi.fn()} />
+        </ApI18nProvider>
+      );
+
+      expect(await screen.findByText('スコープ')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'エージェント' })).toBeInTheDocument();
+    });
+
+    it('merges className onto its root', () => {
+      const { container } = render(
+        <GuardrailScopeSelector
+          selector={{ scopes: [] }}
+          onChange={vi.fn()}
+          className="border-t pt-3"
+        />
+      );
+
+      const root = container.querySelector('[data-slot="guardrail-scope-selector"]');
+      expect(root).toHaveClass('space-y-3', 'border-t', 'pt-3');
+    });
+
+    it('has no accessibility violations with both errors showing', async () => {
+      const { container } = render(
+        <GuardrailScopeSelector
+          selector={{ scopes: ['Tool'], matchNames: [] }}
+          onChange={vi.fn()}
+          availableToolNames={['ToolA', 'ToolB']}
+          errors={{
+            scopes: 'At least one scope is required',
+            toolNames: 'At least one tool is required',
+          }}
+        />
+      );
+
+      expect(screen.getByRole('group', { name: /^tools/i })).toHaveAttribute(
+        'aria-invalid',
+        'true'
+      );
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
   });
 });

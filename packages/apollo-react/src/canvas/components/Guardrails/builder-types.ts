@@ -14,6 +14,9 @@ export interface GuardrailSelector {
   matchNames?: string[];
 }
 
+/** The scope selector's slice of `GuardrailBuilderErrors`; every message is host-owned. */
+export type GuardrailScopeSelectorErrors = Pick<GuardrailBuilderErrors, 'scopes' | 'toolNames'>;
+
 export type GuardrailSeverityLevel = 'Info' | 'Warning' | 'Error';
 
 /** Recipient type discriminators (numeric on the wire). */
