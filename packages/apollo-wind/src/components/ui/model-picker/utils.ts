@@ -7,16 +7,15 @@ import type { CostTier, DiscoveryModel, ModelGroup, ModelTag } from './types';
 const RECOMMENDED_SUBSCRIPTION = 'UiPathOwned';
 
 /**
- * Context passed to `deriveModelTags`. Carries the i18n instance,
+ * Context passed to `deriveModelTags`. Carries the `labels` object,
  * region info, test-only Recommended/Preview overrides, and the
- * product's custom badge hook.
+ * product's badge hooks.
  */
 export interface DeriveModelTagsContext {
   /**
-   * Translator instance. When provided, the built-in tag labels +
-   * tooltips render in the active locale. When omitted, labels fall
-   * back to the message descriptors' English source strings — useful
-   * for tests and standalone primitive composition.
+   * Strings for the built-in tag labels and tooltips. When omitted they
+   * fall back to `DEFAULT_MODEL_PICKER_LABELS` (English) — useful for
+   * tests and standalone primitive composition.
    */
   labels?: ModelPickerLabels;
   /** User's home region — used to flag out-of-region models. */

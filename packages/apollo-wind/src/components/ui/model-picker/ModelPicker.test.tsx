@@ -954,6 +954,52 @@ describe('<ModelPicker> review follow-ups', () => {
     expect(screen.getByRole('combobox')).toHaveAttribute('aria-activedescendant');
   });
 
+  it('refuses a second delete while the first is still in flight', async () => {
+    const user = userEvent.setup();
+    let release!: () => void;
+    const onDeleteModel = vi.fn(
+      () =>
+        new Promise<void>((r) => {
+          release = r;
+        })
+    );
+    renderPicker(
+      <ModelPicker
+        canManageByo
+        groupBy="subscription"
+        models={MODELS}
+        onDeleteModel={onDeleteModel}
+      />
+    );
+    const openPopup = async () => {
+      if (!screen.queryByRole('listbox'))
+        await user.click(screen.getByRole('button', { expanded: false }));
+    };
+
+    // First delete: confirm, request hangs. Confirming closes the popup.
+    await openPopup();
+    await user.keyboard('{Delete}');
+    await user.click(await screen.findByRole('button', { name: 'Delete' }));
+    expect(onDeleteModel).toHaveBeenCalledTimes(1);
+
+    // The row is still listed; neither path may start a second request.
+    await openPopup();
+    await user.keyboard('{Delete}');
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+    await user.click(screen.getAllByRole('button', { name: 'Delete configuration' })[0]);
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(onDeleteModel).toHaveBeenCalledTimes(1);
+
+    // Once it settles, deleting is possible again.
+    release();
+    await new Promise((r) => setTimeout(r, 0));
+    await openPopup();
+    // The row-button click above left focus on it; the shortcut lives on the search field.
+    await user.click(screen.getByRole('combobox'));
+    await user.keyboard('{Delete}');
+    expect(await screen.findByRole('alertdialog')).toBeInTheDocument();
+  });
+
   it('builds selector-safe dom ids', async () => {
     const user = userEvent.setup();
     renderPicker(<ModelPicker models={withContext} />);
