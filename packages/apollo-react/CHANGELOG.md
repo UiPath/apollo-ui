@@ -1,3 +1,14 @@
+## [@uipath/apollo-react-v6.58.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.57.0...@uipath/apollo-react@6.58.0) (2026-09-24)
+
+### Features
+
+* **apollo-react:** export the guardrail action and escalation section [AL-579] ([528605d](https://github.com/UiPath/apollo-ui/commit/528605d4e77163d0dabe94f86dce7c00b240d5e8))
+
+### Bug Fixes
+
+* **apollo-react:** give the escalate branch the same section root classes ([f6a3f1c](https://github.com/UiPath/apollo-ui/commit/f6a3f1cc62bc88167ec9d2b7791677d7f3de1932))
+* **apollo-react:** top-align the guardrail action section's fields ([0f452c3](https://github.com/UiPath/apollo-ui/commit/0f452c39fd177cc6a484c78e5592094f66b1466e))
+
 ## [@uipath/apollo-react-v6.57.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.56.1...@uipath/apollo-react@6.57.0) (2026-09-24)
 
 ### Features
