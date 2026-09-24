@@ -149,6 +149,12 @@ export {
   CommandSeparator,
   CommandShortcut,
 } from './components/ui/command';
+export type {
+  Connection,
+  ConnectionPickerProps,
+  ConnectionStatus,
+} from './components/ui/connection-picker';
+export { ConnectionPicker } from './components/ui/connection-picker';
 export {
   ContextMenu,
   ContextMenuCheckboxItem,
