@@ -227,6 +227,7 @@ export function FolderPicker({
 }: FolderPickerProps) {
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const open = controlledOpen ?? uncontrolledOpen;
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const setOpen = (nextOpen: boolean) => {
     if (controlledOpen === undefined) setUncontrolledOpen(nextOpen);
@@ -273,9 +274,17 @@ export function FolderPicker({
           align={align}
           sideOffset={4}
           className={cn(
-            'w-[--radix-popover-trigger-width] min-w-72 overflow-hidden p-0',
+            'w-(--radix-popover-trigger-width) min-w-72 overflow-hidden p-0',
             contentClassName
           )}
+          ref={contentRef}
+          // Opening lands in the search, so typing filters straight away.
+          // Radix would otherwise take the first focusable element, which is
+          // the breadcrumb above it.
+          onOpenAutoFocus={(event) => {
+            event.preventDefault();
+            contentRef.current?.querySelector<HTMLInputElement>('input')?.focus();
+          }}
         >
           <FolderPickerContent
             key={contentKey}

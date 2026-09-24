@@ -67,6 +67,8 @@ Levels are fetched one at a time through \`onLoadChildren\`, which receives the 
 
 ## Accessibility
 
+Opening the picker puts focus in the search, so typing filters the level at once. Closing returns focus to the field.
+
 The list is a \`tree\` of \`treeitem\` rows rather than a listbox, because a listbox option is atomic to assistive technology and would swallow the per-row open control. Rows carry \`aria-selected\`, and a row that can be opened reports \`aria-expanded="false"\` since its children have not been fetched yet. Enter or Space highlights a row, ArrowRight opens it, and neither acts on a row declared \`hasChildren: false\`.
         `,
       },

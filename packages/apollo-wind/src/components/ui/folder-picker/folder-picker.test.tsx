@@ -377,6 +377,15 @@ describe('FolderPicker', () => {
     });
   });
 
+  it('puts focus in the search when it opens', async () => {
+    const user = userEvent.setup();
+    render(<FolderPicker onLoadChildren={loadChildren} onSelect={vi.fn()} />);
+
+    await user.click(screen.getByRole('button', { name: /Select a folder/ }));
+
+    expect(await screen.findByPlaceholderText('Search...')).toHaveFocus();
+  });
+
   it('clears the value through the field control', async () => {
     const user = userEvent.setup();
     const onSelect = vi.fn();
