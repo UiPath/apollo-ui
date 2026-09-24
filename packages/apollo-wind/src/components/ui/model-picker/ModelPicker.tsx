@@ -415,9 +415,16 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
     // the request itself belongs to the host, which owns the credentials.
     const [pendingDelete, setPendingDelete] = React.useState<DiscoveryModel | null>(null);
     const [deleteError, setDeleteError] = React.useState<Error | null>(null);
+    // One deletion at a time. The row stays on screen until the host hands
+    // back a new `models`, so without this a slow request could be
+    // re-submitted from the row action or the Delete shortcut while the
+    // first is still in flight. A ref, not state: the guard must hold in
+    // the same tick the click lands, before any re-render.
+    const deleteInFlight = React.useRef(false);
     const handleDeleteModel = React.useMemo(() => {
       if (!onDeleteModel) return undefined;
       return (m: DiscoveryModel) => {
+        if (deleteInFlight.current) return;
         setDeleteError(null);
         setPendingDelete(m);
       };
@@ -425,7 +432,8 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
     const confirmPendingDelete = React.useCallback(async () => {
       const model = pendingDelete;
       setPendingDelete(null);
-      if (!model || !onDeleteModel) return;
+      if (!model || !onDeleteModel || deleteInFlight.current) return;
+      deleteInFlight.current = true;
       try {
         await onDeleteModel(model);
       } catch (err) {
@@ -433,6 +441,8 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
         // host callback would otherwise be an unhandled rejection with no
         // trace of why nothing happened.
         setDeleteError(err instanceof Error ? err : new Error(String(err)));
+      } finally {
+        deleteInFlight.current = false;
       }
     }, [pendingDelete, onDeleteModel]);
     const effectiveError = error ?? deleteError;
