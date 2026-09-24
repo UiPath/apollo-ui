@@ -9,21 +9,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib';
 import { FormFieldError } from './form-field';
-
-/**
- * Opening the popover moves focus to the day the calendar offers first (the selected day, else
- * today), rather than to its first control. Radix's own open focus lands on the previous-month
- * chevron and overrides DayPicker's, which left keyboard users a tab stop per caption control
- * away from the grid.
- */
-function focusCalendarDay(event: Event) {
-  const day = (event.currentTarget as HTMLElement | null)?.querySelector<HTMLElement>(
-    '[role="grid"] button[tabindex="0"]'
-  );
-  if (!day) return;
-  event.preventDefault();
-  day.focus();
-}
+import { focusCalendarDay } from './picker-focus';
 
 /** Positioning and styling for the calendar popover. */
 export type DatePickerPopoverProps = Pick<
@@ -124,6 +110,7 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(f
         </PopoverTrigger>
         <PopoverContent
           align="start"
+          aria-label="Choose date"
           onOpenAutoFocus={focusCalendarDay}
           {...popoverProps}
           className={cn('w-auto p-0', popoverProps?.className)}
@@ -256,6 +243,7 @@ export const DateRangePicker = React.forwardRef<HTMLButtonElement, DateRangePick
           </PopoverTrigger>
           <PopoverContent
             align="start"
+            aria-label="Choose date range"
             onOpenAutoFocus={focusCalendarDay}
             {...popoverProps}
             className={cn('w-auto p-0', popoverProps?.className)}

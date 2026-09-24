@@ -1,13 +1,22 @@
+'use client';
+
 import { format } from 'date-fns';
-import { CalendarIcon, Clock } from 'lucide-react';
+import { CalendarIcon } from 'lucide-react';
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import type { DatePickerPopoverProps } from '@/components/ui/date-picker';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { cn } from '@/lib';
 import { FormFieldError } from './form-field';
+import { focusCalendarDay } from './picker-focus';
 
 export interface DateTimePickerProps {
   /** Applied to the trigger button, so a `<label htmlFor>` pointing at it associates correctly. */
@@ -18,6 +27,19 @@ export interface DateTimePickerProps {
   placeholder?: string;
   className?: string;
   use12Hour?: boolean;
+  /** Minutes offered by the minute select. Defaults to 5; use 1 for to-the-minute times. */
+  minuteStep?: number;
+  /**
+   * date-fns format for the selected value. Defaults to `PPP 'at' HH:mm`, or
+   * `PPP 'at' hh:mm a` with `use12Hour`.
+   */
+  displayFormat?: string;
+  calendarProps?: Omit<
+    React.ComponentProps<typeof Calendar>,
+    'mode' | 'selected' | 'onSelect' | 'initialFocus'
+  >;
+  /** Props for the popover. Aligned to the trigger's start by default. */
+  popoverProps?: DatePickerPopoverProps;
   /**
    * Field-specific feedback rendered immediately below the trigger.
    * Keep the message focused on what went wrong and how to resolve it.
@@ -32,6 +54,12 @@ export interface DateTimePickerProps {
   'aria-errormessage'?: string;
 }
 
+const pad = (n: number) => String(n).padStart(2, '0');
+
+// Picking a day keeps the time already chosen, so choosing a date never resets it to midnight.
+const withTime = (day: Date, hours: number, minutes: number) =>
+  new Date(day.getFullYear(), day.getMonth(), day.getDate(), hours, minutes);
+
 export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePickerProps>(
   function DateTimePicker(
     {
@@ -41,6 +69,10 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
       placeholder = 'Pick a date and time',
       className,
       use12Hour = false,
+      minuteStep = 5,
+      displayFormat,
+      calendarProps,
+      popoverProps,
       id,
       error,
       errorId,
@@ -53,52 +85,45 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
   ) {
     const [open, setOpen] = React.useState(false);
     const generatedId = React.useId();
-    const validationId =
-      errorId ?? `${id ?? `datetime-picker-${generatedId.replace(/:/g, '')}`}-error`;
+    const baseId = id ?? `datetime-picker-${generatedId.replace(/:/g, '')}`;
+    const validationId = errorId ?? `${baseId}-error`;
     const describedBy = [ariaDescribedBy, error ? validationId : undefined]
       .filter(Boolean)
       .join(' ');
+
     const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(value);
-    const [timeValue, setTimeValue] = React.useState<string>(
-      value ? format(value, use12Hour ? 'hh:mm a' : 'HH:mm') : ''
+    // Held apart from the date so a time can be chosen first and applied once a day is picked.
+    const [time, setTime] = React.useState<{ hours: number; minutes: number } | undefined>(
+      value ? { hours: value.getHours(), minutes: value.getMinutes() } : undefined
     );
 
-    const handleDateSelect = (date: Date | undefined) => {
-      if (!date) return;
+    // Follow the value when the parent changes it, including clearing it.
+    const valueTime = value?.getTime();
+    React.useEffect(() => {
+      const next = valueTime === undefined ? undefined : new Date(valueTime);
+      setSelectedDate(next);
+      if (next) setTime({ hours: next.getHours(), minutes: next.getMinutes() });
+    }, [valueTime]);
 
-      // Preserve the time when changing date
-      if (selectedDate) {
-        date.setHours(selectedDate.getHours());
-        date.setMinutes(selectedDate.getMinutes());
-        date.setSeconds(selectedDate.getSeconds());
-      }
-
-      setSelectedDate(date);
-      onValueChange?.(date);
+    const commit = (next: Date | undefined) => {
+      setSelectedDate(next);
+      onValueChange?.(next);
     };
 
-    const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const time = e.target.value;
-      setTimeValue(time);
-
-      if (!selectedDate) return;
-
-      const [hours, minutes] = time.split(':').map(Number);
-      const newDate = new Date(selectedDate);
-      newDate.setHours(hours);
-      newDate.setMinutes(minutes);
-
-      setSelectedDate(newDate);
-      onValueChange?.(newDate);
+    // Commits as you go: the popover stays open on a day click because the time below is part
+    // of the same value, and dismissing it keeps what was picked.
+    const handleDateSelect = (day: Date | undefined) => {
+      if (!day) return;
+      commit(withTime(day, time?.hours ?? 0, time?.minutes ?? 0));
     };
 
-    const formatDisplayValue = () => {
-      // Placeholder is rendered by the caller; this only narrows for format().
-      if (!selectedDate) return null;
-      const datePart = format(selectedDate, 'PPP');
-      const timePart = format(selectedDate, use12Hour ? 'hh:mm a' : 'HH:mm');
-      return `${datePart} at ${timePart}`;
+    const handleTimeChange = (hours: number, minutes: number) => {
+      setTime({ hours, minutes });
+      if (selectedDate) commit(withTime(selectedDate, hours, minutes));
     };
+
+    const defaultFormat = use12Hour ? "PPP 'at' hh:mm a" : "PPP 'at' HH:mm";
+    const formatted = selectedDate ? format(selectedDate, displayFormat ?? defaultFormat) : null;
 
     return (
       <>
@@ -119,48 +144,58 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
               )}
               disabled={disabled}
             >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {selectedDate ? (
-                formatDisplayValue()
-              ) : (
-                <span className="text-foreground-muted">{placeholder}</span>
-              )}
+              <CalendarIcon />
+              {formatted ?? <span className="text-foreground-muted">{placeholder}</span>}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <div className="p-3 space-y-3">
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={handleDateSelect}
-                initialFocus
-              />
-              <div className="border-t pt-3 space-y-2">
-                <Label className="text-sm font-medium flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
-                  Time
-                </Label>
-                <Input
-                  type="time"
-                  value={timeValue}
+          <PopoverContent
+            align="start"
+            aria-label="Choose date and time"
+            onOpenAutoFocus={focusCalendarDay}
+            {...popoverProps}
+            className={cn('w-auto p-0', popoverProps?.className)}
+          >
+            {/* The popover unmounts when closed, so it reopens on the selected month. */}
+            <Calendar
+              captionLayout="drilldown"
+              defaultMonth={selectedDate}
+              initialFocus
+              {...calendarProps}
+              mode="single"
+              selected={selectedDate}
+              onSelect={handleDateSelect}
+            />
+            <div className="border-t border-border-subtle px-4 pt-3 pb-4">
+              <fieldset className="m-0 min-w-0 border-0 p-0">
+                <legend className="mb-2 p-0 text-sm font-medium">Time</legend>
+                <TimeSelect
+                  hours={time?.hours}
+                  minutes={time?.minutes}
+                  use12Hour={use12Hour}
+                  minuteStep={minuteStep}
                   onChange={handleTimeChange}
-                  className="w-full"
                 />
-              </div>
-              <div className="flex gap-2">
+              </fieldset>
+              <div className="flex justify-end gap-1 pt-3">
                 <Button
-                  variant="outline"
-                  className="w-full"
+                  variant="ghost"
+                  size="xs"
+                  className="h-7"
+                  disabled={!selectedDate}
                   onClick={() => {
-                    setSelectedDate(undefined);
-                    setTimeValue('');
-                    onValueChange?.(undefined);
+                    setTime(undefined);
+                    commit(undefined);
                     setOpen(false);
                   }}
                 >
                   Clear
                 </Button>
-                <Button className="w-full" onClick={() => setOpen(false)} disabled={!selectedDate}>
+                <Button
+                  size="xs"
+                  className="h-7"
+                  onClick={() => setOpen(false)}
+                  disabled={!selectedDate}
+                >
                   Done
                 </Button>
               </div>
@@ -172,3 +207,92 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
     );
   }
 );
+
+interface TimeSelectProps {
+  hours?: number;
+  minutes?: number;
+  use12Hour: boolean;
+  minuteStep: number;
+  onChange: (hours: number, minutes: number) => void;
+}
+
+/**
+ * Hour and minute as Apollo Selects rather than a native `<input type="time">`, whose popup is
+ * the platform's own unstyled columns and cannot be themed. Picking one part seeds the others at
+ * zero, so a time is never half set.
+ */
+function TimeSelect({ hours, minutes, use12Hour, minuteStep, onChange }: TimeSelectProps) {
+  const step = Math.min(Math.max(Math.round(minuteStep), 1), 60);
+  const minuteOptions = Array.from({ length: Math.ceil(60 / step) }, (_, i) => i * step);
+  // A value off the step (14:37 with a 5-minute step) stays selectable rather than showing blank.
+  if (minutes !== undefined && !minuteOptions.includes(minutes)) {
+    minuteOptions.push(minutes);
+    minuteOptions.sort((a, b) => a - b);
+  }
+
+  const isPm = hours !== undefined && hours >= 12;
+  const hourOptions = use12Hour
+    ? Array.from({ length: 12 }, (_, i) => i + 1)
+    : Array.from({ length: 24 }, (_, i) => i);
+  const displayHour = hours === undefined ? undefined : use12Hour ? ((hours + 11) % 12) + 1 : hours;
+
+  const to24 = (hour12: number, pm: boolean) => (hour12 % 12) + (pm ? 12 : 0);
+
+  const contentClass = 'max-h-56';
+  const triggerClass = 'flex-1 tabular-nums';
+
+  return (
+    <div className="flex items-center gap-2">
+      <Select
+        value={displayHour === undefined ? undefined : String(displayHour)}
+        onValueChange={(next) => {
+          const hour = Number(next);
+          onChange(use12Hour ? to24(hour, isPm) : hour, minutes ?? 0);
+        }}
+      >
+        <SelectTrigger aria-label="Hour" className={triggerClass}>
+          <SelectValue placeholder="--" />
+        </SelectTrigger>
+        <SelectContent className={contentClass}>
+          {hourOptions.map((hour) => (
+            <SelectItem key={hour} value={String(hour)} className="tabular-nums">
+              {pad(hour)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <span aria-hidden="true" className="shrink-0 text-sm text-foreground-muted">
+        :
+      </span>
+      <Select
+        value={minutes === undefined ? undefined : String(minutes)}
+        onValueChange={(next) => onChange(hours ?? 0, Number(next))}
+      >
+        <SelectTrigger aria-label="Minute" className={triggerClass}>
+          <SelectValue placeholder="--" />
+        </SelectTrigger>
+        <SelectContent className={contentClass}>
+          {minuteOptions.map((minute) => (
+            <SelectItem key={minute} value={String(minute)} className="tabular-nums">
+              {pad(minute)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {use12Hour && (
+        <Select
+          value={hours === undefined ? undefined : isPm ? 'PM' : 'AM'}
+          onValueChange={(next) => onChange(to24(displayHour ?? 12, next === 'PM'), minutes ?? 0)}
+        >
+          <SelectTrigger aria-label="AM or PM" className={triggerClass}>
+            <SelectValue placeholder="--" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="AM">AM</SelectItem>
+            <SelectItem value="PM">PM</SelectItem>
+          </SelectContent>
+        </Select>
+      )}
+    </div>
+  );
+}

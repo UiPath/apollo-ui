@@ -59,6 +59,46 @@ export const With12HourFormat = {
   },
 };
 
+export const MinuteStep = {
+  args: {},
+  render: () => {
+    const [date, setDate] = useState<Date | undefined>();
+    return (
+      <div className="w-[400px]">
+        <DateTimePicker value={date} onValueChange={setDate} minuteStep={15} />
+      </div>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The time is set with hour and minute selects. `minuteStep` sets the minutes offered and defaults to 5. A value off the step stays selectable. Picking a day keeps the time already chosen, and the popover stays open until the time is set.',
+      },
+    },
+  },
+};
+
+export const Compact = {
+  args: {},
+  render: () => {
+    const [date, setDate] = useState<Date | undefined>(new Date());
+    return (
+      <div className="w-[320px]">
+        <DateTimePicker value={date} onValueChange={setDate} calendarProps={{ size: 'sm' }} />
+      </div>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          '`calendarProps={{ size: "sm" }}` uses 36px day cells instead of 44px. With the time row below the calendar, this keeps the popover closer to the field width and height.',
+      },
+    },
+  },
+};
+
 export const Disabled = {
   args: {},
   render: () => {
