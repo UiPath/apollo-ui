@@ -29,6 +29,7 @@ export function ResourcePickerContent({
   emptyText = 'No matches.',
   listLabel = 'Resources',
   showCounts = true,
+  renderItemActions,
   footerLeading,
   footerTrailing,
   className,
@@ -113,6 +114,7 @@ export function ResourcePickerContent({
                     chosen={item.id === value}
                     depth={1}
                     onSelect={() => !item.disabled && onSelect(item)}
+                    actions={renderItemActions?.(item)}
                   />
                 ))}
             </div>
@@ -124,6 +126,21 @@ export function ResourcePickerContent({
     </Command>
   );
 }
+
+/**
+ * The field's own look, shared with pickers that build on this one so their
+ * fields and this one read as a pair. Mirrors SelectTrigger, including its
+ * `future:` overrides and its invalid state. `data-status="warning"` is the
+ * advisory counterpart to `aria-invalid`.
+ */
+export const resourcePickerTriggerClassName = cn(
+  'flex h-9 w-full min-w-0 cursor-pointer items-center gap-2 rounded-md border border-input bg-transparent pl-3 text-left text-base transition-colors md:text-sm',
+  'focus:outline-none focus:ring-2 focus:ring-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+  'disabled:cursor-not-allowed disabled:opacity-50',
+  'future:h-10 future:rounded-xl future:border-0 future:bg-surface-overlay future:pl-4 future:font-normal future:hover:bg-surface-hover',
+  'aria-invalid:border-error aria-invalid:focus-visible:ring-error future:aria-invalid:ring-1 future:aria-invalid:ring-error/40',
+  'data-[status=warning]:border-warning future:data-[status=warning]:ring-1 future:data-[status=warning]:ring-warning/40'
+);
 
 /**
  * Field-and-popover picker over grouped resources.
@@ -147,6 +164,8 @@ export function ResourcePicker({
   open: controlledOpen,
   onOpenChange,
   trailingAdornment,
+  status,
+  'aria-describedby': ariaDescribedBy,
   contentClassName,
   className,
   ...contentProps
@@ -181,13 +200,14 @@ export function ResourcePicker({
               disabled={disabled}
               aria-haspopup="dialog"
               aria-expanded={open}
-              // Mirrors SelectTrigger, including its `future:` overrides, so a
-              // resource field and a select field in one panel read as a pair.
+              aria-invalid={status === 'error' || undefined}
+              aria-describedby={ariaDescribedBy}
+              data-status={status}
               className={cn(
-                'flex h-9 w-full min-w-0 cursor-pointer items-center gap-2 rounded-md border border-input bg-transparent pl-3 pr-9 text-left text-base transition-colors md:text-sm',
-                'focus:outline-none focus:ring-2 focus:ring-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                'disabled:cursor-not-allowed disabled:opacity-50',
-                'future:h-10 future:rounded-xl future:border-0 future:bg-surface-overlay future:px-4 future:font-normal future:hover:bg-surface-hover'
+                resourcePickerTriggerClassName,
+                // Room for the overlaid controls: the clear alone, or the
+                // clear beside an adornment.
+                trailingAdornment ? 'pr-14 future:pr-14' : 'pr-9 future:pr-9'
               )}
             >
               {icon && (

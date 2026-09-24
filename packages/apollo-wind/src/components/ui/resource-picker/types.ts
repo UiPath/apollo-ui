@@ -12,6 +12,10 @@ export interface ResourceItem {
   icon?: ReactNode;
   /** Secondary text after the label, such as an email or a count. */
   description?: string;
+  /** A second line under the label, such as a status. Not searched. */
+  subtitle?: ReactNode;
+  /** Extra terms the search matches, for detail the row does not print. */
+  keywords?: string[];
   disabled?: boolean;
   metadata?: unknown;
 }
@@ -44,6 +48,13 @@ export interface ResourcePickerContentProps {
   listLabel?: string;
   /** Hides the per-group count at the header's trailing edge. */
   showCounts?: boolean;
+  /**
+   * Trailing controls for a row, such as Edit. Revealed on the row under the
+   * cursor. A click on them does not commit the row. They are pointer
+   * shortcuts, not the only route to their action: a listbox option is atomic
+   * to assistive technology, so anything here must also be reachable elsewhere.
+   */
+  renderItemActions?: (item: ResourceItem) => ReactNode;
   /** Footer's leading slot, such as an "Add new" link. */
   footerLeading?: ReactNode;
   /** Footer's trailing slot, such as a link out to the managing surface. */
@@ -68,6 +79,13 @@ export interface ResourcePickerProps extends Omit<ResourcePickerContentProps, 'c
   onOpenChange?: (open: boolean) => void;
   /** Rendered inside the field at its trailing edge, such as a field-mode menu. */
   trailingAdornment?: ReactNode;
+  /**
+   * Validation state of the field. `error` also marks it invalid for
+   * assistive technology. The message itself belongs to the consumer, linked
+   * through `aria-describedby`.
+   */
+  status?: 'error' | 'warning';
+  'aria-describedby'?: string;
   contentClassName?: string;
   className?: string;
 }
@@ -91,7 +109,10 @@ export const filterGroups = (groups: ResourceGroup[], query: string): ResourceGr
             items: group.items.filter(
               (item) =>
                 item.label.toLowerCase().includes(normalizedQuery) ||
-                item.description?.toLowerCase().includes(normalizedQuery) === true
+                item.description?.toLowerCase().includes(normalizedQuery) === true ||
+                item.keywords?.some((keyword) =>
+                  keyword.toLowerCase().includes(normalizedQuery)
+                ) === true
             ),
           }
     )

@@ -231,6 +231,48 @@ describe('ResourcePickerContent', () => {
     await user.type(screen.getByRole('combobox'), 'A');
     expect(onQueryChange).toHaveBeenCalledWith('A');
   });
+
+  it('matches keywords the row does not print', async () => {
+    const user = userEvent.setup();
+    const groups: ResourceGroup[] = [
+      { id: 'g', label: 'G', items: [{ id: 'a', label: 'Aavi', keywords: ['Outlook Work'] }] },
+    ];
+    render(<ResourcePickerContent groups={groups} onSelect={vi.fn()} />);
+
+    await user.type(screen.getByRole('combobox'), 'outlook');
+    expect(screen.getByRole('option', { name: 'Aavi' })).toBeInTheDocument();
+  });
+
+  it('renders a subtitle under the label', () => {
+    const groups: ResourceGroup[] = [
+      { id: 'g', label: 'G', items: [{ id: 'a', label: 'Aavi', subtitle: 'Connected' }] },
+    ];
+    render(<ResourcePickerContent groups={groups} onSelect={vi.fn()} />);
+
+    expect(screen.getByRole('option', { name: 'Aavi' })).toHaveTextContent('Connected');
+  });
+
+  it('runs a row action without committing the row', async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+    const onEdit = vi.fn();
+    render(
+      <ResourcePickerContent
+        groups={GROUPS}
+        onSelect={onSelect}
+        renderItemActions={(item) => (
+          <button type="button" onClick={() => onEdit(item.id)}>
+            Edit {item.label}
+          </button>
+        )}
+      />
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit Aavi' }));
+
+    expect(onEdit).toHaveBeenCalledWith('Shared/Aavi');
+    expect(onSelect).not.toHaveBeenCalled();
+  });
 });
 
 describe('ResourcePicker', () => {
@@ -325,5 +367,31 @@ describe('ResourcePicker', () => {
 
     await user.click(screen.getByRole('button', { name: /Select entity/ }));
     expect(onOpenChange).toHaveBeenCalledWith(true);
+  });
+
+  it('marks the field invalid in its error state only', () => {
+    const { rerender } = render(
+      <ResourcePicker
+        groups={GROUPS}
+        onSelect={vi.fn()}
+        placeholder="Select entity..."
+        status="error"
+        aria-describedby="msg"
+      />
+    );
+    const field = screen.getByRole('button', { name: /Select entity/ });
+    expect(field).toHaveAttribute('aria-invalid', 'true');
+    expect(field).toHaveAttribute('aria-describedby', 'msg');
+
+    rerender(
+      <ResourcePicker
+        groups={GROUPS}
+        onSelect={vi.fn()}
+        placeholder="Select entity..."
+        status="warning"
+      />
+    );
+    expect(field).not.toHaveAttribute('aria-invalid');
+    expect(field).toHaveAttribute('data-status', 'warning');
   });
 });
