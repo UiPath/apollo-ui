@@ -37,6 +37,13 @@ export interface UseModelPickerStateOptions {
   recommendedModelIds?: readonly string[];
   previewModelIds?: readonly string[];
   /**
+   * Whether sections may collapse at all. A host that hides the group
+   * headers has removed the only visible expand control, so collapsing
+   * must be off too or rows can vanish with no way back. Default true;
+   * flat grouping disables it regardless.
+   */
+  collapsibleGroups?: boolean;
+  /**
    * Optional per-product filter applied to the catalog *before* grouping
    * and search. Runs once per `models` array via `useMemo`; pass a
    * stable function reference if `models` is large.
@@ -99,6 +106,12 @@ export interface UseModelPickerStateResult {
   unknownValue: string | null;
   activeIndex: number;
   setActiveIndex: (i: number) => void;
+  /**
+   * False when the highlighted row is inside a collapsed section (or the
+   * list is empty). The combobox must not publish an active descendant
+   * that is not in the DOM.
+   */
+  activeVisible: boolean;
   /** Bind to the search input's onKeyDown. */
   onSearchKeyDown: (e: React.KeyboardEvent) => void;
   /** Programmatically pick a model. Closes the popup. */
@@ -131,6 +144,7 @@ export function useModelPickerState(opts: UseModelPickerStateOptions): UseModelP
     valueConnectionId,
     onChange,
     groupBy: initialGroupBy = 'subscription',
+    collapsibleGroups = true,
     recommendedModelIds,
     previewModelIds,
     filter,
@@ -238,9 +252,12 @@ export function useModelPickerState(opts: UseModelPickerStateOptions): UseModelP
 
   // Force every group open while searching so matches always show.
   // Once the query clears, the previously-stored collapse state returns.
+  // Collapsing is only real when a header exists to undo it: off when the
+  // host hides headers, in flat grouping, and while a query force-expands.
+  const canCollapse = collapsibleGroups && groupBy !== 'flat' && !query.trim();
   const collapsedGroups = useMemo<ReadonlySet<string>>(
-    () => (query.trim() ? new Set<string>() : collapsedSet),
-    [query, collapsedSet]
+    () => (canCollapse ? collapsedSet : new Set<string>()),
+    [canCollapse, collapsedSet]
   );
 
   const toggleGroup = useCallback((groupKey: string) => {
@@ -288,11 +305,16 @@ export function useModelPickerState(opts: UseModelPickerStateOptions): UseModelP
     }
     if (!isHiddenAt(activeIndex)) return;
     // Collapsed under the highlight (keyboard or header click): move to the
-    // next visible row, else the previous, else the top.
+    // next visible row, else the previous. If every row is hidden (the
+    // catalog was all BYO), stay put: the index keeps naming the collapsed
+    // section so ArrowRight can reopen it, and `activeVisible` tells the
+    // combobox not to publish it as the active descendant.
     const next = nearestVisible(activeIndex, 1);
     const prev = next === -1 ? nearestVisible(activeIndex, -1) : -1;
-    setActiveIndex(next !== -1 ? next : prev !== -1 ? prev : 0);
+    if (next !== -1) setActiveIndex(next);
+    else if (prev !== -1) setActiveIndex(prev);
   }, [filtered.length, activeIndex, isHiddenAt, nearestVisible]);
+  const activeVisible = filtered.length > 0 && !isHiddenAt(activeIndex);
 
   const choose = useCallback(
     (m: DiscoveryModel) => {
@@ -331,7 +353,7 @@ export function useModelPickerState(opts: UseModelPickerStateOptions): UseModelP
         // nothing on screen reflects — the same reason it is a no-op while a
         // query force-expands every section.
         const groupKey = filtered[activeIndex]?.groupKey;
-        if (!groupKey || !isCollapsibleGroup(groupKey) || query.trim()) return;
+        if (!groupKey || !isCollapsibleGroup(groupKey) || !canCollapse) return;
         const collapsed = collapsedGroups.has(groupKey);
         if (e.key === 'ArrowLeft' ? !collapsed : collapsed) {
           e.preventDefault();
@@ -343,7 +365,16 @@ export function useModelPickerState(opts: UseModelPickerStateOptions): UseModelP
         triggerRef.current?.focus();
       }
     },
-    [filtered, activeIndex, choose, collapsedGroups, query, toggleGroup, nearestVisible, isHiddenAt]
+    [
+      filtered,
+      activeIndex,
+      choose,
+      collapsedGroups,
+      canCollapse,
+      toggleGroup,
+      nearestVisible,
+      isHiddenAt,
+    ]
   );
 
   return {
@@ -368,5 +399,6 @@ export function useModelPickerState(opts: UseModelPickerStateOptions): UseModelP
     id,
     triggerRef,
     searchRef,
+    activeVisible,
   };
 }
