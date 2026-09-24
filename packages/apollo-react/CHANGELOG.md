@@ -1,3 +1,10 @@
+## [@uipath/apollo-react-v6.58.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.58.2...@uipath/apollo-react@6.58.3) (2026-09-24)
+
+### Bug Fixes
+
+* **apollo-react:** add aria-label to suggestion navigator chevrons ([8628a75](https://github.com/UiPath/apollo-ui/commit/8628a759bee3f188eb2482ed62a43190e146a833))
+* **apollo-react:** localize suggestion navigator aria-labels ([f8aaa8a](https://github.com/UiPath/apollo-ui/commit/f8aaa8a93adbbfebcbb9854fdd296cf51a089005))
+
 ## [@uipath/apollo-react-v6.58.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.58.1...@uipath/apollo-react@6.58.2) (2026-09-24)
 
 ### Bug Fixes
