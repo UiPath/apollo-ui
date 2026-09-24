@@ -17,6 +17,15 @@ import {
 import { cn } from '@/lib';
 import { FormFieldError } from './form-field';
 import { focusCalendarDay } from './picker-focus';
+import { TimeZoneSelect } from './timezone-select';
+import {
+  dateToZonedWallClock,
+  formatOffset,
+  localZone,
+  type WallClock,
+  zonedWallClockToDate,
+  zoneOffsetMinutes,
+} from './timezones';
 
 export interface DateTimePickerProps {
   /** Applied to the trigger button, so a `<label htmlFor>` pointing at it associates correctly. */
@@ -41,6 +50,17 @@ export interface DateTimePickerProps {
   /** Props for the popover. Aligned to the trigger's start by default. */
   popoverProps?: DatePickerPopoverProps;
   /**
+   * Show a timezone select under the time. The date and time are then read in the chosen zone,
+   * so 14:00 in Europe/Bucharest commits the instant 11:00Z in summer, and the trigger names the
+   * offset. Changing the zone keeps the date and time on screen and moves the instant.
+   */
+  showTimeZone?: boolean;
+  /** IANA zone the date and time are read in, when the parent tracks it. */
+  timeZone?: string;
+  /** Initial zone when `timeZone` is not controlled. Defaults to the browser's zone. */
+  defaultTimeZone?: string;
+  onTimeZoneChange?: (timeZone: string) => void;
+  /**
    * Field-specific feedback rendered immediately below the trigger.
    * Keep the message focused on what went wrong and how to resolve it.
    */
@@ -56,9 +76,10 @@ export interface DateTimePickerProps {
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
-// Picking a day keeps the time already chosen, so choosing a date never resets it to midnight.
-const withTime = (day: Date, hours: number, minutes: number) =>
-  new Date(day.getFullYear(), day.getMonth(), day.getDate(), hours, minutes);
+// A wall clock as a local Date, for the calendar and date-fns. Only its parts are read back, so
+// the machine's own offset never enters the arithmetic.
+const localDateOf = ({ year, month, day, hours, minutes }: WallClock) =>
+  new Date(year, month, day, hours, minutes);
 
 export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePickerProps>(
   function DateTimePicker(
@@ -73,6 +94,10 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
       displayFormat,
       calendarProps,
       popoverProps,
+      showTimeZone = false,
+      timeZone,
+      defaultTimeZone,
+      onTimeZoneChange,
       id,
       error,
       errorId,
@@ -91,39 +116,89 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
       .filter(Boolean)
       .join(' ');
 
-    const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(value);
-    // Held apart from the date so a time can be chosen first and applied once a day is picked.
-    const [time, setTime] = React.useState<{ hours: number; minutes: number } | undefined>(
-      value ? { hours: value.getHours(), minutes: value.getMinutes() } : undefined
-    );
+    // Without a zone in play this is the browser's, where the conversions below match plain
+    // local Date arithmetic.
+    const [ownZone, setOwnZone] = React.useState(() => defaultTimeZone ?? localZone());
+    const zone = timeZone ?? ownZone;
+    const zoneShown = showTimeZone || timeZone !== undefined;
+    const timeZoneLabelId = `${baseId}-timezone-label`;
+    const timeZoneTriggerId = `${baseId}-timezone`;
 
-    // Follow the value when the parent changes it, including clearing it.
+    const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(value);
+    // The time is held apart from the date so it can be chosen first and applied once a day is
+    // picked, and it is the wall-clock time in the zone, not the instant's local reading.
+    // A time picked before any day, held until a day is picked. Once there is a date, the time
+    // shown is read from it in the zone, so it cannot fall out of step with the value.
+    const [pendingTime, setPendingTime] = React.useState<
+      { hours: number; minutes: number } | undefined
+    >(undefined);
+
+    // Follow the value only when the parent changes it, including clearing it. Keyed on the value
+    // alone: a zone change must not reset an uncontrolled picker's own selection.
     const valueTime = value?.getTime();
     React.useEffect(() => {
-      const next = valueTime === undefined ? undefined : new Date(valueTime);
-      setSelectedDate(next);
-      if (next) setTime({ hours: next.getHours(), minutes: next.getMinutes() });
+      setSelectedDate(valueTime === undefined ? undefined : new Date(valueTime));
+      if (valueTime === undefined) setPendingTime(undefined);
     }, [valueTime]);
 
-    const commit = (next: Date | undefined) => {
+    const wallClock = selectedDate ? dateToZonedWallClock(selectedDate, zone) : undefined;
+    const time = wallClock ? { hours: wallClock.hours, minutes: wallClock.minutes } : pendingTime;
+    const calendarDate = wallClock
+      ? new Date(wallClock.year, wallClock.month, wallClock.day)
+      : undefined;
+
+    // Every change is committed through here, so no path stores a time without the zone applied.
+    const commitWallClock = (
+      day: { year: number; month: number; day: number },
+      hours: number,
+      minutes: number,
+      inZone: string
+    ) => {
+      const next = zonedWallClockToDate({ ...day, hours, minutes }, inZone);
       setSelectedDate(next);
       onValueChange?.(next);
     };
 
     // Commits as you go: the popover stays open on a day click because the time below is part
-    // of the same value, and dismissing it keeps what was picked.
+    // of the same value, and dismissing it keeps what was picked. Picking a day keeps the time
+    // already chosen, so choosing a date never resets it to midnight.
     const handleDateSelect = (day: Date | undefined) => {
       if (!day) return;
-      commit(withTime(day, time?.hours ?? 0, time?.minutes ?? 0));
+      commitWallClock(
+        { year: day.getFullYear(), month: day.getMonth(), day: day.getDate() },
+        time?.hours ?? 0,
+        time?.minutes ?? 0,
+        zone
+      );
     };
 
     const handleTimeChange = (hours: number, minutes: number) => {
-      setTime({ hours, minutes });
-      if (selectedDate) commit(withTime(selectedDate, hours, minutes));
+      if (wallClock) commitWallClock(wallClock, hours, minutes, zone);
+      else setPendingTime({ hours, minutes });
+    };
+
+    // The reader said "2pm" and then said which 2pm they meant, so the numbers stay and the
+    // instant moves. Re-reading the instant in the new zone would change the time under them.
+    const handleTimeZoneChange = (next: string) => {
+      if (timeZone === undefined) setOwnZone(next);
+      onTimeZoneChange?.(next);
+      if (wallClock) commitWallClock(wallClock, wallClock.hours, wallClock.minutes, next);
+    };
+
+    const clear = () => {
+      setPendingTime(undefined);
+      setSelectedDate(undefined);
+      onValueChange?.(undefined);
+      setOpen(false);
     };
 
     const defaultFormat = use12Hour ? "PPP 'at' hh:mm a" : "PPP 'at' HH:mm";
-    const formatted = selectedDate ? format(selectedDate, displayFormat ?? defaultFormat) : null;
+    // Without the offset there is no telling which 14:00 is meant.
+    const offsetSuffix =
+      zoneShown && selectedDate ? ` ${formatOffset(zoneOffsetMinutes(zone, selectedDate))}` : '';
+    const formatted = wallClock
+      ? `${format(localDateOf(wallClock), displayFormat ?? defaultFormat)}${offsetSuffix}`
+      : null;
 
     return (
       <>
@@ -158,11 +233,11 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
             {/* The popover unmounts when closed, so it reopens on the selected month. */}
             <Calendar
               captionLayout="drilldown"
-              defaultMonth={selectedDate}
+              defaultMonth={calendarDate}
               initialFocus
               {...calendarProps}
               mode="single"
-              selected={selectedDate}
+              selected={calendarDate}
               onSelect={handleDateSelect}
             />
             <div className="border-t border-border-subtle px-4 pt-3 pb-4">
@@ -176,17 +251,27 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
                   onChange={handleTimeChange}
                 />
               </fieldset>
+              {showTimeZone && (
+                <div className="mt-3">
+                  <span id={timeZoneLabelId} className="mb-2 block text-sm font-medium">
+                    Timezone
+                  </span>
+                  <TimeZoneSelect
+                    id={timeZoneTriggerId}
+                    aria-labelledby={`${timeZoneLabelId} ${timeZoneTriggerId}`}
+                    value={zone}
+                    onChange={handleTimeZoneChange}
+                    at={selectedDate}
+                  />
+                </div>
+              )}
               <div className="flex justify-end gap-1 pt-3">
                 <Button
                   variant="ghost"
                   size="xs"
                   className="h-7"
                   disabled={!selectedDate}
-                  onClick={() => {
-                    setTime(undefined);
-                    commit(undefined);
-                    setOpen(false);
-                  }}
+                  onClick={clear}
                 >
                   Clear
                 </Button>
