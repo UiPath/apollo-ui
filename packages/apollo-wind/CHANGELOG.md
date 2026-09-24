@@ -1,3 +1,30 @@
+## [@uipath/apollo-wind-v2.56.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.55.0...@uipath/apollo-wind@2.56.0) (2026-09-24)
+
+### Features
+
+* **apollo-wind:** add ModelPicker for LLM Gateway model selection ([c7c81ef](https://github.com/UiPath/apollo-ui/commit/c7c81ef8847a37313c142d4a60ce128d4fe7684c))
+
+### Bug Fixes
+
+* **apollo-wind:** align ModelPicker chips with the model name ([8072140](https://github.com/UiPath/apollo-ui/commit/8072140344827fdc8d42ce61f86c5f4c6d997f09))
+* **apollo-wind:** align ModelPicker typography and chip contrast ([2c7ffe3](https://github.com/UiPath/apollo-ui/commit/2c7ffe3fe8330e5349a4b97b3063636534b8cef9))
+* **apollo-wind:** allow one ModelPicker deletion in flight at a time ([05515b2](https://github.com/UiPath/apollo-ui/commit/05515b207baeb752db679420cefef1dd9f8bab8f))
+* **apollo-wind:** claim Delete in ModelPicker only when the field has nothing to delete ([6511e4d](https://github.com/UiPath/apollo-ui/commit/6511e4d3ac1b32989d1bcddaf6ec31dff37b5e76))
+* **apollo-wind:** close the review gaps in ModelPicker a11y and localization ([74410e8](https://github.com/UiPath/apollo-ui/commit/74410e8ad519d6df1abb7d8b9d2c78c18e8c3026))
+* **apollo-wind:** export the ModelPicker composition kit the README documents ([9fa7081](https://github.com/UiPath/apollo-ui/commit/9fa70813f153596320a091cf5ca7bdd92889ea60))
+* **apollo-wind:** finish removing tab stops from the ModelPicker listbox ([24402fc](https://github.com/UiPath/apollo-ui/commit/24402fcbe3d19bbb0d8255f73a34364d507df56f))
+* **apollo-wind:** keep ModelPicker chips legible on any surface ([aba1fb7](https://github.com/UiPath/apollo-ui/commit/aba1fb78c73402406bdb540c1f28f502e00faf81))
+* **apollo-wind:** keep ModelPicker collapse state reachable ([e987f34](https://github.com/UiPath/apollo-ui/commit/e987f3426ff06cef211ede47a2c4eeebe4ba7ac3))
+* **apollo-wind:** keep ModelPicker keyboard focus inside the listbox model ([b294074](https://github.com/UiPath/apollo-ui/commit/b294074b6c40eb3af65e902181599a741c1a285d))
+* **apollo-wind:** keep ModelPicker shortcuts off rows in a collapsed section ([1f07cb0](https://github.com/UiPath/apollo-ui/commit/1f07cb056c7e70606d6e24797d8776dc3091d848))
+* **apollo-wind:** make ModelPicker option dom ids injective ([17b0049](https://github.com/UiPath/apollo-ui/commit/17b004924958e1dac2b52c302d32eafebb80c1c6))
+* **apollo-wind:** make the ModelPicker trigger a combobox and keep the list behind the confirm ([fda8dc1](https://github.com/UiPath/apollo-ui/commit/fda8dc1663313d4b9a922745b38f410b9d493354))
+* **apollo-wind:** match SelectTrigger's focus ring on the ModelPicker trigger ([8fdb470](https://github.com/UiPath/apollo-ui/commit/8fdb470a67218518331df8d97cbc04ecefc29059))
+* **apollo-wind:** measure ModelPicker virtual rows and honour a changed groupBy ([28d7d10](https://github.com/UiPath/apollo-ui/commit/28d7d105afe66ae6e2c72c1930ced0a9d9b6f611))
+* **apollo-wind:** size the ModelPicker trigger text like the fields beside it ([080875a](https://github.com/UiPath/apollo-ui/commit/080875af185d6b6ec2649e54f5b308ba232cdb7c))
+* **apollo-wind:** stop camelizing user-authored BYO field mapping keys ([6552dc9](https://github.com/UiPath/apollo-ui/commit/6552dc90bf2902605b758784b158d8bc3390794a))
+* **apollo-wind:** stop hiding ModelPicker chips inside their own section ([8e40f3f](https://github.com/UiPath/apollo-ui/commit/8e40f3f1a2c5ac636e8a5811409918d9f4a17c38))
+
 ## [@uipath/apollo-wind-v2.55.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.54.1...@uipath/apollo-wind@2.55.0) (2026-09-24)
 
 ### Features
