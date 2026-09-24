@@ -454,6 +454,8 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
       previewModelIds,
       filter,
       initiallyCollapsedGroups,
+      // Hidden headers mean no expand control, so no collapsing either.
+      collapsibleGroups: showGroupHeaders,
       labels,
     });
     const {
@@ -476,6 +478,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
       id,
       triggerRef,
       searchRef,
+      activeVisible,
     } = state;
 
     const listboxId = `${id}-listbox`;
@@ -689,7 +692,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
                     // error the list is not in the DOM, and a stale
                     // `filtered` must not leave the combobox pointing at an
                     // element that does not exist.
-                    !effectiveLoading && !effectiveError && filtered[activeIndex]
+                    !effectiveLoading && !effectiveError && activeVisible && filtered[activeIndex]
                       ? optionDomId(listboxId, filtered[activeIndex].modelId)
                       : undefined
                   }

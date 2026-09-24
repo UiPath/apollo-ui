@@ -924,6 +924,36 @@ describe('<ModelPicker> review follow-ups', () => {
     expect(headers().some((t) => /OpenAI|Anthropic/.test(t))).toBe(true);
   });
 
+  it('never collapses a section when the group headers are hidden', async () => {
+    const user = userEvent.setup();
+    renderPicker(<ModelPicker groupBy="subscription" models={MODELS} showGroupHeaders={false} />);
+    await user.click(screen.getByRole('button', { expanded: false }));
+
+    const before = screen.getAllByRole('option').length;
+    // The BYO row is active; without a header there is no expand control,
+    // so the collapse shortcut must be inert rather than hide rows for good.
+    await user.keyboard('{ArrowLeft}');
+    expect(screen.getAllByRole('option')).toHaveLength(before);
+  });
+
+  it('publishes no activedescendant when every row is collapsed, and can reopen', async () => {
+    const user = userEvent.setup();
+    const byoOnly = MODELS.filter((m) => m.modelSubscriptionType === 'BYOMAdded');
+    renderPicker(<ModelPicker groupBy="subscription" models={byoOnly} />);
+    await user.click(screen.getByRole('button', { expanded: false }));
+    expect(screen.getAllByRole('option').length).toBeGreaterThan(0);
+
+    await user.keyboard('{ArrowLeft}');
+    // All rows hidden: nothing rendered to point at.
+    expect(screen.queryAllByRole('option')).toHaveLength(0);
+    expect(screen.getByRole('combobox')).not.toHaveAttribute('aria-activedescendant');
+
+    // The keyboard path back must survive: the index still names the section.
+    await user.keyboard('{ArrowRight}');
+    expect(screen.getAllByRole('option').length).toBeGreaterThan(0);
+    expect(screen.getByRole('combobox')).toHaveAttribute('aria-activedescendant');
+  });
+
   it('builds selector-safe dom ids', async () => {
     const user = userEvent.setup();
     renderPicker(<ModelPicker models={withContext} />);

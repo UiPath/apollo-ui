@@ -1,7 +1,7 @@
-// Apollo's shared LLM model picker, built on the UiPath LLM Gateway
-// Discovery API. The headless layer (types, utils, badges, state and
-// platform hooks) is a faithful port of apollo-react's `ap-model-picker`;
-// only the presentation layer is rewritten on wind primitives.
+// Apollo's shared LLM model picker. Renders LLM Gateway Discovery rows the
+// host supplies; it makes no platform calls of its own. The headless layer
+// (types, utils, badges, state) is ported from apollo-react's
+// `ap-model-picker`; the presentation layer is rewritten on wind primitives.
 
 export type { ModelBadgeDefinition, ModelBadgeKind } from './badges';
 // Badge pool
