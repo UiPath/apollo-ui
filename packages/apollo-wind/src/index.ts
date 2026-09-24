@@ -246,6 +246,13 @@ export { EmptyState } from './components/ui/empty-state';
 export type { FileUploadProps } from './components/ui/file-upload';
 export { FileUpload } from './components/ui/file-upload';
 export type {
+  FolderPickerContentProps,
+  FolderPickerEntry,
+  FolderPickerLoadChildren,
+  FolderPickerProps,
+} from './components/ui/folder-picker';
+export { FolderPicker, FolderPickerContent } from './components/ui/folder-picker';
+export type {
   FormFieldDescriptionProps,
   FormFieldErrorProps,
   FormFieldLabelProps,
