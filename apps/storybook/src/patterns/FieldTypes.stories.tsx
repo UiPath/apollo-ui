@@ -22,10 +22,10 @@ import { Label } from '@/components/ui/label';
 import {
   FIELD_TYPE_META,
   FIELD_TYPE_ORDER,
-  type LockableFieldType,
-  LockableValueField,
-  type LockableValueFieldMode,
-} from '@/components/ui/lockable-value-field';
+  type QuickFieldType,
+  QuickFormField,
+  type QuickFormFieldMode,
+} from '@/components/ui/quick-form-field';
 import { Switch } from '@/components/ui/switch';
 import {
   Table,
@@ -53,7 +53,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 type Status = 'supported' | 'needs-type' | 'needs-component';
-type VisualExample = LockableFieldType | 'mode-fixed' | 'mode-expression' | 'insert-variable';
+type VisualExample = QuickFieldType | 'mode-fixed' | 'mode-expression' | 'insert-variable';
 
 interface TypeRow {
   type: string;
@@ -441,15 +441,15 @@ const CATEGORIES: Category[] = [
 
 const BINDING_STATE_ROWS: TypeRow[] = [
   {
-    type: 'fixed  (LockableValueFieldMode)  ↔  Widget  (integration-service ValueType)',
-    source: 'lockable-value-field/types.ts, integration-service ValueType',
+    type: 'fixed  (QuickFormFieldMode)  ↔  Widget  (integration-service ValueType)',
+    source: 'quick-form-field/types.ts, integration-service ValueType',
     support: 'mode="fixed"',
     status: 'supported',
     visual: 'mode-fixed',
   },
   {
-    type: 'expression  (LockableValueFieldMode)  ↔  Expression  (integration-service ValueType)',
-    source: 'lockable-value-field/types.ts, integration-service ValueType',
+    type: 'expression  (QuickFormFieldMode)  ↔  Expression  (integration-service ValueType)',
+    source: 'quick-form-field/types.ts, integration-service ValueType',
     support: 'mode="expression"',
     status: 'supported',
     visual: 'mode-expression',
@@ -468,7 +468,7 @@ const BINDING_STATE_ROWS: TypeRow[] = [
     support: 'Not modeled.',
     status: 'needs-type',
     action:
-      'Add a read-only bound state to LockableValueFieldMode, rendered like the locked display but indicating an upstream binding rather than a static value.',
+      'Add a read-only bound state to QuickFormFieldMode, rendered like the locked display but indicating an upstream binding rather than a static value.',
   },
   {
     type: 'Insert variable (click to append)',
@@ -503,7 +503,7 @@ const ALL_SECTIONS: Category[] = [
   {
     title: 'Binding state',
     description:
-      'Separate from field type: how a value relates to fixed input versus an upstream binding. LockableValueField only distinguishes fixed and expression. The integration-service widget catalog has a richer set.',
+      'Separate from field type: how a value relates to fixed input versus an upstream binding. QuickFormField only distinguishes fixed and expression. The integration-service widget catalog has a richer set.',
     rows: BINDING_STATE_ROWS,
     rowLabel: 'State',
   },
@@ -523,7 +523,7 @@ const HEADER_CELL_CLASS =
 // short line or a badge, not a paragraph.
 const BODY_CELL_CLASS = 'align-top px-4 py-3';
 
-// One level below the page's own h1: Overview, Types, LockableValueField
+// One level below the page's own h1: Overview, Types, QuickFormField
 // status. SectionTitle (h3) nests underneath each of these.
 function PartTitle({
   children,
@@ -540,7 +540,7 @@ function PartTitle({
   );
 }
 
-// A whole Part, collapsed by default: LockableValueField status is the deep-dive
+// A whole Part, collapsed by default: QuickFormField status is the deep-dive
 // half of the page (the audit table), so it stays out of the way until someone
 // opens it, unlike Overview and Types which are always visible.
 function CollapsiblePart({
@@ -585,20 +585,20 @@ function StatusBadge({ status }: { status: Status }) {
 // out of sync with the component it documents. Seeded into fixed or expression mode
 // so both variants are visible without anyone having to click the mode switch.
 // showLock={false}: the lock toggle isn't wired here (no onLockedChange), and the
-// lock affordance itself is a separate axis covered by the LockableValueField state
+// lock affordance itself is a separate axis covered by the QuickFormField state
 // tables below, not this per-type grid.
 function FieldTypeExample({
   fieldType,
   initialMode = 'fixed',
 }: {
-  fieldType: LockableFieldType;
-  initialMode?: LockableValueFieldMode;
+  fieldType: QuickFieldType;
+  initialMode?: QuickFormFieldMode;
 }) {
   const [value, setValue] = useState(initialMode === 'expression' ? '$vars.example' : '');
-  const [mode, setMode] = useState<LockableValueFieldMode>(initialMode);
+  const [mode, setMode] = useState<QuickFormFieldMode>(initialMode);
   return (
     <div className="w-56">
-      <LockableValueField
+      <QuickFormField
         fieldType={fieldType}
         value={value}
         onValueChange={setValue}
@@ -621,11 +621,11 @@ function ExampleLabel({ children }: { children: React.ReactNode }) {
 }
 
 // showLock={false}: this cell demonstrates the mode axis, not the lock affordance.
-function ModeExample({ mode }: { mode: LockableValueFieldMode }) {
+function ModeExample({ mode }: { mode: QuickFormFieldMode }) {
   const [value, setValue] = useState(mode === 'expression' ? '$vars.example' : 'Example value');
   return (
     <div className="w-56">
-      <LockableValueField
+      <QuickFormField
         fieldType="string"
         value={value}
         onValueChange={setValue}
@@ -645,7 +645,7 @@ function InsertVariableExample() {
   const [value, setValue] = useState('');
   return (
     <div className="w-56">
-      <LockableValueField
+      <QuickFormField
         fieldType="string"
         value={value}
         onValueChange={setValue}
@@ -801,12 +801,12 @@ interface StateRow {
 // with-icon column's lock button genuinely toggles instead of rendering
 // disabled -- LockToggleButton disables itself whenever that callback is
 // missing.
-function LvfDefaultExample({ showLock }: { showLock: boolean }) {
+function QuickFormFieldDefaultExample({ showLock }: { showLock: boolean }) {
   const [value, setValue] = useState('Editable value');
   const [locked, setLocked] = useState(false);
   return (
     <div className="w-full">
-      <LockableValueField
+      <QuickFormField
         fieldType="string"
         value={value}
         onValueChange={setValue}
@@ -819,12 +819,12 @@ function LvfDefaultExample({ showLock }: { showLock: boolean }) {
   );
 }
 
-function LvfLockedExample({ showLock }: { showLock: boolean }) {
+function QuickFormFieldLockedExample({ showLock }: { showLock: boolean }) {
   const [value, setValue] = useState('Invoice processor');
   const [locked, setLocked] = useState(true);
   return (
     <div className="w-full">
-      <LockableValueField
+      <QuickFormField
         fieldType="string"
         value={value}
         onValueChange={setValue}
@@ -837,12 +837,12 @@ function LvfLockedExample({ showLock }: { showLock: boolean }) {
   );
 }
 
-function LvfInvalidExample({ showLock }: { showLock: boolean }) {
+function QuickFormFieldInvalidExample({ showLock }: { showLock: boolean }) {
   const [value, setValue] = useState('Invalid value');
   const [locked, setLocked] = useState(false);
   return (
     <div className="w-full">
-      <LockableValueField
+      <QuickFormField
         fieldType="string"
         value={value}
         onValueChange={setValue}
@@ -856,12 +856,12 @@ function LvfInvalidExample({ showLock }: { showLock: boolean }) {
   );
 }
 
-function LvfExpressionExample({ showLock }: { showLock: boolean }) {
+function QuickFormFieldExpressionExample({ showLock }: { showLock: boolean }) {
   const [value, setValue] = useState('$vars.example');
   const [locked, setLocked] = useState(false);
   return (
     <div className="w-full">
-      <LockableValueField
+      <QuickFormField
         fieldType="string"
         value={value}
         onValueChange={setValue}
@@ -875,80 +875,80 @@ function LvfExpressionExample({ showLock }: { showLock: boolean }) {
   );
 }
 
-function LvfNoIconDefaultExample() {
-  return <LvfDefaultExample showLock={false} />;
+function QuickFormFieldNoIconDefaultExample() {
+  return <QuickFormFieldDefaultExample showLock={false} />;
 }
-function LvfNoIconLockedExample() {
-  return <LvfLockedExample showLock={false} />;
+function QuickFormFieldNoIconLockedExample() {
+  return <QuickFormFieldLockedExample showLock={false} />;
 }
-function LvfNoIconInvalidExample() {
-  return <LvfInvalidExample showLock={false} />;
+function QuickFormFieldNoIconInvalidExample() {
+  return <QuickFormFieldInvalidExample showLock={false} />;
 }
-function LvfNoIconExpressionExample() {
-  return <LvfExpressionExample showLock={false} />;
-}
-
-function LvfWithIconDefaultExample() {
-  return <LvfDefaultExample showLock={true} />;
-}
-function LvfWithIconLockedExample() {
-  return <LvfLockedExample showLock={true} />;
-}
-function LvfWithIconInvalidExample() {
-  return <LvfInvalidExample showLock={true} />;
-}
-function LvfWithIconExpressionExample() {
-  return <LvfExpressionExample showLock={true} />;
+function QuickFormFieldNoIconExpressionExample() {
+  return <QuickFormFieldExpressionExample showLock={false} />;
 }
 
-const LVF_NO_ICON_STATES: StateRow[] = [
+function QuickFormFieldWithIconDefaultExample() {
+  return <QuickFormFieldDefaultExample showLock={true} />;
+}
+function QuickFormFieldWithIconLockedExample() {
+  return <QuickFormFieldLockedExample showLock={true} />;
+}
+function QuickFormFieldWithIconInvalidExample() {
+  return <QuickFormFieldInvalidExample showLock={true} />;
+}
+function QuickFormFieldWithIconExpressionExample() {
+  return <QuickFormFieldExpressionExample showLock={true} />;
+}
+
+const QUICK_FORM_FIELD_NO_ICON_STATES: StateRow[] = [
   {
     label: 'Default',
     description: 'showLock={false}, locked={false}. No lock affordance at all.',
-    Example: LvfNoIconDefaultExample,
+    Example: QuickFormFieldNoIconDefaultExample,
   },
   {
     label: 'Locked',
     description: 'showLock={false}, locked={true}. Read-only display, but nothing signals why.',
-    Example: LvfNoIconLockedExample,
+    Example: QuickFormFieldNoIconLockedExample,
   },
   {
     label: 'Invalid',
     description: 'error, same as Input and Input Group.',
-    Example: LvfNoIconInvalidExample,
+    Example: QuickFormFieldNoIconInvalidExample,
   },
   {
     label: 'Expression',
     description: 'mode="expression". Still no lock icon, for consumers supplying their own.',
-    Example: LvfNoIconExpressionExample,
+    Example: QuickFormFieldNoIconExpressionExample,
   },
 ];
 
-const LVF_WITH_ICON_STATES: StateRow[] = [
+const QUICK_FORM_FIELD_WITH_ICON_STATES: StateRow[] = [
   {
     label: 'Default',
     description: 'showLock defaults to true. The lock toggle is the built-in affordance.',
-    Example: LvfWithIconDefaultExample,
+    Example: QuickFormFieldWithIconDefaultExample,
   },
   {
     label: 'Locked',
     description: 'Read-only display, not a disabled control. The default state.',
-    Example: LvfWithIconLockedExample,
+    Example: QuickFormFieldWithIconLockedExample,
   },
   {
     label: 'Invalid',
     description: 'error, same as Input and Input Group.',
-    Example: LvfWithIconInvalidExample,
+    Example: QuickFormFieldWithIconInvalidExample,
   },
   {
     label: 'Expression',
     description: 'mode="expression". The lock toggle stays available alongside it.',
-    Example: LvfWithIconExpressionExample,
+    Example: QuickFormFieldWithIconExpressionExample,
   },
 ];
 
 // Mirrors the "Assignment & Binding" reference example in
-// lockable-value-field.stories.tsx: leadingAddon replaces the lock icon with
+// quick-form-field.stories.tsx: leadingAddon replaces the lock icon with
 // a semantic "=" prefix, and mode is always expression, the pattern used for
 // node-property assignment fields in flow-workbench.
 function EqualsAddon() {
@@ -980,7 +980,7 @@ function BindingObjectExample() {
   const [value, setValue] = useState('$vars.flowArray');
   return (
     <div className="w-full">
-      <LockableValueField
+      <QuickFormField
         fieldType="object"
         value={value}
         onValueChange={setValue}
@@ -997,7 +997,7 @@ function BindingFileExample() {
   const [value, setValue] = useState('$vars.flowTest');
   return (
     <div className="w-full">
-      <LockableValueField
+      <QuickFormField
         fieldType="file"
         value={value}
         onValueChange={setValue}
@@ -1014,7 +1014,7 @@ function BindingWithHelperTextExample() {
   const [value, setValue] = useState('$vars.flowTest');
   return (
     <div className="w-full">
-      <LockableValueField
+      <QuickFormField
         fieldType="file"
         value={value}
         onValueChange={setValue}
@@ -1032,7 +1032,7 @@ function BindingFunctionAddonExample() {
   const [value, setValue] = useState('$vars.flowTest');
   return (
     <div className="w-full">
-      <LockableValueField
+      <QuickFormField
         fieldType="string"
         value={value}
         onValueChange={setValue}
@@ -1046,7 +1046,7 @@ function BindingFunctionAddonExample() {
   );
 }
 
-const LVF_BINDING_STATES: StateRow[] = [
+const QUICK_FORM_FIELD_BINDING_STATES: StateRow[] = [
   {
     label: 'Object',
     description:
@@ -1083,7 +1083,7 @@ function InsertVariableDefaultExample() {
   const [value, setValue] = useState('');
   return (
     <div className="w-full">
-      <LockableValueField
+      <QuickFormField
         fieldType="string"
         value={value}
         onValueChange={setValue}
@@ -1098,7 +1098,7 @@ function InsertVariableDefaultExample() {
 function InsertVariableLockedExample() {
   return (
     <div className="w-full">
-      <LockableValueField
+      <QuickFormField
         fieldType="string"
         value="Invoice processor"
         locked
@@ -1113,7 +1113,7 @@ function InsertVariableEmptyExample() {
   const [value, setValue] = useState('');
   return (
     <div className="w-full">
-      <LockableValueField
+      <QuickFormField
         fieldType="string"
         value={value}
         onValueChange={setValue}
@@ -1129,7 +1129,7 @@ function InsertVariableOnlyExample() {
   const [value, setValue] = useState('');
   return (
     <div className="w-full">
-      <LockableValueField
+      <QuickFormField
         fieldType="string"
         value={value}
         onValueChange={setValue}
@@ -1142,7 +1142,7 @@ function InsertVariableOnlyExample() {
   );
 }
 
-const LVF_INSERT_VARIABLE_STATES: StateRow[] = [
+const QUICK_FORM_FIELD_INSERT_VARIABLE_STATES: StateRow[] = [
   {
     label: 'Default',
     description:
@@ -1210,7 +1210,7 @@ const INPUT_STATES: StateRow[] = [
   {
     label: 'Disabled',
     description:
-      'disabled. Not the same as locked: a locked field uses LockableValueField’s read-only display instead, not a disabled Input.',
+      'disabled. Not the same as locked: a locked field uses QuickFormField’s read-only display instead, not a disabled Input.',
     Example: InputDisabledExample,
   },
   {
@@ -1262,7 +1262,7 @@ function InputGroupInvalidExample() {
 }
 
 // disabled: this recipe's lock icon is a static "this field is locked"
-// indicator, not a toggle (that's LockableValueField's job) -- disabled keeps
+// indicator, not a toggle (that's QuickFormField's job) -- disabled keeps
 // it from looking like a clickable affordance that does nothing.
 function InputGroupLockedExample() {
   return (
@@ -1296,7 +1296,7 @@ const INPUT_GROUP_STATES: StateRow[] = [
   {
     label: 'Locked (read-only)',
     description:
-      'The lighter-weight recipe referenced in LockableValueField’s own docs: a lock icon addon plus a readOnly InputGroupInput, without pulling in the full component.',
+      'The lighter-weight recipe referenced in QuickFormField’s own docs: a lock icon addon plus a readOnly InputGroupInput, without pulling in the full component.',
     Example: InputGroupLockedExample,
   },
 ];
@@ -1318,32 +1318,32 @@ const TYPES_SECTIONS: TypesSection[] = [
   {
     title: 'Input Group',
     description:
-      'Input plus addon slots (icons, buttons, prefixes) sharing one bordered container and one validation message. Reach for it when a field needs a leading or trailing affordance but not the full lock/mode/fieldType model LockableValueField adds on top.',
+      'Input plus addon slots (icons, buttons, prefixes) sharing one bordered container and one validation message. Reach for it when a field needs a leading or trailing affordance but not the full lock/mode/fieldType model QuickFormField adds on top.',
     rows: INPUT_GROUP_STATES,
   },
   {
-    title: 'LockableValueField, no left icon',
+    title: 'QuickFormField, no left icon',
     description:
       'The showLock prop set to false: no built-in lock affordance. For consumers supplying their own, or embedding the field somewhere the lock toggle doesn’t make sense.',
-    rows: LVF_NO_ICON_STATES,
+    rows: QUICK_FORM_FIELD_NO_ICON_STATES,
   },
   {
-    title: 'LockableValueField, with left icon',
+    title: 'QuickFormField, with left icon',
     description:
       'showLock defaults to true: the built-in lock toggle. Same four states as above, so the two tables are directly comparable, the icon is the only thing that differs.',
-    rows: LVF_WITH_ICON_STATES,
+    rows: QUICK_FORM_FIELD_WITH_ICON_STATES,
   },
   {
-    title: 'LockableValueField, assignment & binding',
+    title: 'QuickFormField, assignment & binding',
     description:
-      'Mirrors the “Assignment & Binding” reference example in lockable-value-field.stories.tsx: the pattern node-property assignment fields use, leadingAddon replaces the lock icon with a semantic “=”, and mode is always expression.',
-    rows: LVF_BINDING_STATES,
+      'Mirrors the “Assignment & Binding” reference example in quick-form-field.stories.tsx: the pattern node-property assignment fields use, leadingAddon replaces the lock icon with a semantic “=”, and mode is always expression.',
+    rows: QUICK_FORM_FIELD_BINDING_STATES,
   },
   {
-    title: 'LockableValueField, insert variable',
+    title: 'QuickFormField, insert variable',
     description:
       'The variables prop and its built-in Insert variable popover, gated separately from the AI-assist button by showAiAssist and showFieldActions. Every other table on this page sets showFieldActions={false} to keep it out of the way; this is the one place it is shown.',
-    rows: LVF_INSERT_VARIABLE_STATES,
+    rows: QUICK_FORM_FIELD_INSERT_VARIABLE_STATES,
     reference: {
       label: 'Code Editors: Editor Variables',
       storyId: 'apollo-wind-patterns-code-editors--editor-variables',
@@ -1420,7 +1420,7 @@ function FieldTypesPage({ globalTheme }: { globalTheme: string }) {
     <GuidancePage
       globalTheme={globalTheme}
       title="Field Type Guidance"
-      intro="A single reference for every field, property, and parameter type flow-workbench needs to support, cross-referenced against what LockableValueField and the rest of Apollo Wind implement today. Use this before adding a new type case: check whether it already has a home, and if not, follow the recommended action instead of improvising a one-off control."
+      intro="A single reference for every field, property, and parameter type flow-workbench needs to support, cross-referenced against what QuickFormField and the rest of Apollo Wind implement today. Use this before adding a new type case: check whether it already has a home, and if not, follow the recommended action instead of improvising a one-off control."
       maxWidth="max-w-5xl"
     >
       <Divider />
@@ -1433,8 +1433,8 @@ function FieldTypesPage({ globalTheme }: { globalTheme: string }) {
           flow-workbench does not have one canonical type enum. At least six separate, partially
           overlapping type systems define field types across workflow variables, JSON Schema
           manifests, entity fields, HITL forms, and the integration-service widget catalog. Apollo
-          Wind&rsquo;s LockableFieldType was designed against a narrower slice of that list, which
-          is why some flow-workbench types have nowhere to go yet.
+          Wind&rsquo;s QuickFieldType was designed against a narrower slice of that list, which is
+          why some flow-workbench types have nowhere to go yet.
         </SectionDescription>
         <InfoCallout>
           This table is a point-in-time audit, not a live sync. It was last checked against
@@ -1507,11 +1507,11 @@ function FieldTypesPage({ globalTheme }: { globalTheme: string }) {
 
       <Divider />
 
-      <CollapsiblePart title="LockableValueField status">
+      <CollapsiblePart title="QuickFormField status">
         <section>
           <SectionTitle>Supported today</SectionTitle>
           <SectionDescription>
-            The fieldType values LockableValueField already implements, read live from{' '}
+            The fieldType values QuickFormField already implements, read live from{' '}
             <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-medium text-foreground">
               FIELD_TYPE_META
             </code>
@@ -1536,7 +1536,7 @@ function FieldTypesPage({ globalTheme }: { globalTheme: string }) {
                 <StatusBadge status="needs-type" />
               </div>
               <p className="text-sm leading-6 text-muted-foreground">
-                Fits LockableValueField&rsquo;s existing lock, mode, and value model. Needs a new{' '}
+                Fits QuickFormField&rsquo;s existing lock, mode, and value model. Needs a new{' '}
                 <code className="rounded bg-muted px-1 py-0.5 text-xs font-medium text-foreground">
                   fieldType
                 </code>{' '}
@@ -1638,7 +1638,7 @@ function GuidanceOutOfScope() {
       <li>
         <span className="font-medium text-foreground">textBlock, button, addActivityWidget:</span>{' '}
         display-only or action-triggering widgets from the integration-service catalog. They do not
-        bind to a value, so they are not a LockableValueField concern.
+        bind to a value, so they are not a QuickFormField concern.
       </li>
       <li>
         <span className="font-medium text-foreground">Evals FieldType:</span> a separate, narrower

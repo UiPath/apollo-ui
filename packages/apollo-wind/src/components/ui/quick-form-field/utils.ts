@@ -1,6 +1,6 @@
-import type { LockableFieldType, LockableValueFieldOption } from './types';
+import type { QuickFieldType, QuickFormFieldOption } from './types';
 
-export const DEFAULT_SELECT_OPTIONS: LockableValueFieldOption[] = [
+export const DEFAULT_SELECT_OPTIONS: QuickFormFieldOption[] = [
   { label: 'Option 1', value: 'option-1' },
   { label: 'Option 2', value: 'option-2' },
   { label: 'Option 3', value: 'option-3' },
@@ -67,9 +67,9 @@ export function formatDateValue(value: string): string {
  * external input) falls back to the raw value.
  */
 export function getLockedDisplayValue(
-  fieldType: LockableFieldType,
+  fieldType: QuickFieldType,
   value: string,
-  options: LockableValueFieldOption[]
+  options: QuickFormFieldOption[]
 ): string {
   switch (fieldType) {
     case 'boolean':

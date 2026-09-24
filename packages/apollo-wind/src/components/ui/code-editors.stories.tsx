@@ -29,13 +29,13 @@ import { Button } from './button';
 import { Modal, ModalContent } from './dialog';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from './input-group';
 import { Label } from './label';
-import { LockableValueField } from './lockable-value-field';
 import {
   PromptEditor,
   type PromptEditorAutoCompleteOption,
   type PromptEditorRef,
   type PromptEditorToken,
 } from './prompt-editor';
+import { QuickFormField } from './quick-form-field';
 import { VariablePicker, type VariablePickerItem } from './variable-picker';
 
 // ============================================================================
@@ -1236,10 +1236,10 @@ function CompactEditorUsagePage() {
 }
 
 type ExpressionEditorProps = Parameters<
-  NonNullable<ComponentProps<typeof LockableValueField>['renderExpressionEditor']>
+  NonNullable<ComponentProps<typeof QuickFormField>['renderExpressionEditor']>
 >[0];
 
-// Single-line Monaco for LockableValueField's expression slot. Borderless and centered in
+// Single-line Monaco for QuickFormField's expression slot. Borderless and centered in
 // the field's own row, like the built-in expression input, so the field keeps one outline
 // in every theme. The field's id, aria-*, and data-slot go on Monaco's actual focus
 // element (EditContext div or textarea) so validation and InputGroup focus styling reach
@@ -1338,9 +1338,9 @@ function InlineExpressionEditor({
 
 function InputEditorUsagePage() {
   const themeConfig = useEditorThemeConfig();
-  const [lockableValue, setLockableValue] = useState('invoice.total');
-  const [lockableMode, setLockableMode] = useState<'fixed' | 'expression'>('expression');
-  const [lockableLocked, setLockableLocked] = useState(false);
+  const [quickFieldValue, setQuickFieldValue] = useState('invoice.total');
+  const [quickFieldMode, setQuickFieldMode] = useState<'fixed' | 'expression'>('expression');
+  const [quickFieldLocked, setQuickFieldLocked] = useState(false);
   return (
     <UsagePage
       eyebrow="Usage / Input Editor"
@@ -1364,29 +1364,31 @@ function InputEditorUsagePage() {
       </div>
       <div className="mt-8 rounded-xl border border-border-subtle bg-surface-raised p-5">
         <div className="mb-4">
-          <p className="text-sm font-semibold text-foreground">Input editor in a lockable field</p>
+          <p className="text-sm font-semibold text-foreground">
+            Input editor in a quick form field
+          </p>
           <p className="mt-1 text-sm leading-6 text-muted-foreground">
             Use this pattern when a value can be fixed, locked for review, or supplied as an
             expression. The field owns the mode and lock affordances while the editor provides the
             code-specific editing experience.
           </p>
         </div>
-        <LockableValueField
-          id="input-editor-lockable-example"
+        <QuickFormField
+          id="input-editor-quick-form-field-example"
           label={
             <Label
-              htmlFor="input-editor-lockable-example"
+              htmlFor="input-editor-quick-form-field-example"
               className="text-xs font-medium text-foreground"
             >
               Invoice total
             </Label>
           }
-          value={lockableValue}
-          onValueChange={setLockableValue}
-          locked={lockableLocked}
-          onLockedChange={setLockableLocked}
-          mode={lockableMode}
-          onModeChange={setLockableMode}
+          value={quickFieldValue}
+          onValueChange={setQuickFieldValue}
+          locked={quickFieldLocked}
+          onLockedChange={setQuickFieldLocked}
+          mode={quickFieldMode}
+          onModeChange={setQuickFieldMode}
           fieldType="string"
           showFieldActions={false}
           renderExpressionEditor={(editorProps) => (

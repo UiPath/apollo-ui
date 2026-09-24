@@ -2,19 +2,22 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Trash2 } from 'lucide-react';
 import { useId, useState } from 'react';
 import { Label, RequiredIndicator } from '../label';
-import { LockableValueField } from './lockable-value-field';
-import { FIELD_TYPE_META, type LockableFieldType, type LockableValueFieldMode } from './types';
+import { QuickFormField } from './quick-form-field';
+import { FIELD_TYPE_META, type QuickFieldType, type QuickFormFieldMode } from './types';
 
 const meta = {
-  title: 'Components/UiPath/Lockable Value Field',
-  component: LockableValueField,
+  title: 'Components/UiPath/Quick Form Field',
+  component: QuickFormField,
   parameters: {
     layout: 'centered',
     docs: {
       description: {
         component: `
-A field that can be locked to read-only, typed as one of several data types,
-and (for scalar types) switched between a literal value and a JS expression.
+A Quick Form is assembled by end users, like a form builder. QuickFormField is the control for an individual field within a Quick Form. Each QuickFormField carries its own configuration controls detailed below.
+
+This is not the default component to use for a form field. For standard forms,
+compose the form-field anatomy (\`FormField\`, \`FormFieldLabel\`,
+\`InputGroup\`) or describe them to \`MetadataForm\`.
 
 - Left lock icon toggles Editable / Read-only. Read-only fields show plain
   text, not a disabled control.
@@ -45,7 +48,7 @@ and (for scalar types) switched between a literal value and a JS expression.
     },
   },
   tags: ['autodocs'],
-} satisfies Meta<typeof LockableValueField>;
+} satisfies Meta<typeof QuickFormField>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -69,12 +72,12 @@ function DefaultDemo() {
   const fieldId = useId();
   const [value, setValue] = useState('');
   const [locked, setLocked] = useState(true);
-  const [mode, setMode] = useState<LockableValueFieldMode>('fixed');
-  const [fieldType, setFieldType] = useState<LockableFieldType>('string');
+  const [mode, setMode] = useState<QuickFormFieldMode>('fixed');
+  const [fieldType, setFieldType] = useState<QuickFieldType>('string');
   const [required, setRequired] = useState(true);
   const [deleted, setDeleted] = useState(false);
 
-  const handleFieldTypeChange = (type: LockableFieldType) => {
+  const handleFieldTypeChange = (type: QuickFieldType) => {
     setFieldType(type);
     setValue('');
     if (!FIELD_TYPE_META[type].supportsExpression) {
@@ -86,7 +89,7 @@ function DefaultDemo() {
 
   return (
     <div className="w-80">
-      <LockableValueField
+      <QuickFormField
         id={fieldId}
         label={
           <Label htmlFor={fieldId} className="text-xs font-medium text-foreground-muted">
@@ -116,13 +119,13 @@ export const Default: Story = {
 };
 
 function MoreActionsDemo() {
-  const fieldId = 'lockable-value-field-more-actions';
+  const fieldId = 'quick-form-field-more-actions';
   const [value, setValue] = useState('Invoice value');
-  const [mode, setMode] = useState<LockableValueFieldMode>('fixed');
+  const [mode, setMode] = useState<QuickFormFieldMode>('fixed');
 
   return (
     <div className="w-80">
-      <LockableValueField
+      <QuickFormField
         id={fieldId}
         label={<Label htmlFor={fieldId}>Value</Label>}
         value={value}
@@ -159,7 +162,7 @@ function ExpressionValueFieldDemo() {
 
   return (
     <div className="w-80">
-      <LockableValueField
+      <QuickFormField
         id={fieldId}
         label={<Label htmlFor={fieldId}>Expression</Label>}
         value={value}
@@ -226,7 +229,7 @@ function ReferenceExamplesDemo() {
 
   return (
     <div className="flex w-[620px] flex-col gap-8">
-      <LockableValueField
+      <QuickFormField
         id={`${idPrefix}-collection`}
         label={
           <RequiredExpressionLabel htmlFor={`${idPrefix}-collection`}>
@@ -241,7 +244,7 @@ function ReferenceExamplesDemo() {
         mode="expression"
         variables={[{ label: 'Flow array', value: '$vars.flowArray' }]}
       />
-      <LockableValueField
+      <QuickFormField
         id={`${idPrefix}-attachment`}
         label={
           <RequiredExpressionLabel htmlFor={`${idPrefix}-attachment`}>
@@ -255,7 +258,7 @@ function ReferenceExamplesDemo() {
         leadingAddon={<EqualsAddon />}
         mode="expression"
       />
-      <LockableValueField
+      <QuickFormField
         id={`${idPrefix}-conversation-context`}
         label={
           <RequiredExpressionLabel htmlFor={`${idPrefix}-conversation-context`} required={false}>
@@ -287,7 +290,7 @@ function ReferenceExamplesDemo() {
           </label>
         }
       />
-      <LockableValueField
+      <QuickFormField
         id={`${idPrefix}-file`}
         label={<RequiredExpressionLabel htmlFor={`${idPrefix}-file`}>File</RequiredExpressionLabel>}
         fieldType="file"
@@ -298,7 +301,7 @@ function ReferenceExamplesDemo() {
         mode="expression"
         belowValue={<p className="text-xs text-foreground-muted">File to extract data from</p>}
       />
-      <LockableValueField
+      <QuickFormField
         id={`${idPrefix}-conversation-id`}
         label={
           <RequiredExpressionLabel htmlFor={`${idPrefix}-conversation-id`}>
@@ -312,7 +315,7 @@ function ReferenceExamplesDemo() {
         mode="expression"
         trailingAddon={<FunctionAddon />}
       />
-      <LockableValueField
+      <QuickFormField
         id={`${idPrefix}-exchange-id`}
         label={
           <RequiredExpressionLabel htmlFor={`${idPrefix}-exchange-id`}>
@@ -358,9 +361,9 @@ function FunctionAddon() {
 export const InlineValidation: Story = {
   render: () => (
     <div className="w-80">
-      <LockableValueField
-        id="lockable-node-name"
-        label={<Label htmlFor="lockable-node-name">Node name</Label>}
+      <QuickFormField
+        id="quick-form-field-node-name"
+        label={<Label htmlFor="quick-form-field-node-name">Node name</Label>}
         value="Invoice processor"
         error="This node name is already in use. Enter a unique name before saving."
         locked
@@ -372,7 +375,7 @@ export const InlineValidation: Story = {
     docs: {
       description: {
         story:
-          'Use the field-level `error` prop for validation that belongs to the active value. The message stays below the lockable control and the built-in input is marked invalid for assistive technology.',
+          'Use the field-level `error` prop for validation that belongs to the active value. The message stays below the field control and the built-in input is marked invalid for assistive technology.',
       },
     },
   },
@@ -384,11 +387,11 @@ function ResponsiveDemo() {
   const compactId = useId();
   const [value, setValue] = useState('');
   const [locked, setLocked] = useState(true);
-  const [mode, setMode] = useState<LockableValueFieldMode>('fixed');
-  const [fieldType, setFieldType] = useState<LockableFieldType>('string');
+  const [mode, setMode] = useState<QuickFormFieldMode>('fixed');
+  const [fieldType, setFieldType] = useState<QuickFieldType>('string');
   const [required, setRequired] = useState(true);
 
-  const handleFieldTypeChange = (type: LockableFieldType) => {
+  const handleFieldTypeChange = (type: QuickFieldType) => {
     setFieldType(type);
     setValue('');
     if (!FIELD_TYPE_META[type].supportsExpression) {
@@ -410,7 +413,7 @@ function ResponsiveDemo() {
           Full width
         </span>
         <div className="w-80">
-          <LockableValueField
+          <QuickFormField
             id={fullWidthId}
             label={label(fullWidthId)}
             headerActions={<DeleteFieldButton />}
@@ -432,7 +435,7 @@ function ResponsiveDemo() {
           Narrow container (controls collapse to icon-only)
         </span>
         <div className="w-[200px]">
-          <LockableValueField
+          <QuickFormField
             id={narrowId}
             label={label(narrowId)}
             headerActions={<DeleteFieldButton />}
@@ -454,7 +457,7 @@ function ResponsiveDemo() {
           Forced compact (via the compact prop, regardless of width)
         </span>
         <div className="w-80">
-          <LockableValueField
+          <QuickFormField
             compact
             id={compactId}
             label={label(compactId)}

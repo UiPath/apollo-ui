@@ -1321,7 +1321,7 @@ export function DapLayoutsPage() {
                 <div className="text-sm leading-5">
                   <p className="font-medium">Guidance: use Input Group</p>
                   <p className="mt-0.5 text-muted-foreground">
-                    The reference does not show locking semantics, so Lockable Value Field would add
+                    The reference does not show locking semantics, so Quick Form Field would add
                     behavior that is not evidenced here. Input Group is the closer match, with the
                     sliders action opening the value-source menu shown in the related options
                     pattern.

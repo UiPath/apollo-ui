@@ -307,11 +307,7 @@ export type {
   LockableValueFieldOption,
   LockableValueFieldProps,
 } from './components/ui/lockable-value-field';
-export {
-  FIELD_TYPE_META,
-  FIELD_TYPE_ORDER,
-  LockableValueField,
-} from './components/ui/lockable-value-field';
+export { LockableValueField } from './components/ui/lockable-value-field';
 export type { MultiSelectProps } from './components/ui/multi-select';
 export { MultiSelect } from './components/ui/multi-select';
 export {
@@ -385,6 +381,18 @@ export {
   VARIABLE_PATH_REGEX,
   WORD_JOINER,
 } from './components/ui/prompt-editor';
+export type {
+  QuickFieldType,
+  QuickFormFieldMode,
+  QuickFormFieldMoreActions,
+  QuickFormFieldOption,
+  QuickFormFieldProps,
+} from './components/ui/quick-form-field';
+export {
+  FIELD_TYPE_META,
+  FIELD_TYPE_ORDER,
+  QuickFormField,
+} from './components/ui/quick-form-field';
 export { RadioGroup, RadioGroupItem } from './components/ui/radio-group';
 export {
   ResizableHandle,

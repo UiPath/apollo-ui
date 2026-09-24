@@ -15,7 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { VariablePicker } from '@/components/ui/variable-picker';
 import { cn } from '@/lib';
-import type { LockableFieldType, LockableValueFieldOption } from '../types';
+import type { QuickFieldType, QuickFormFieldOption } from '../types';
 import { FIELD_TYPE_META, FIELD_TYPE_ORDER } from '../types';
 
 export function FieldHeader({
@@ -39,15 +39,15 @@ export function FieldHeader({
   fieldId: string;
   fieldLabel: string;
   required?: boolean;
-  fieldType: LockableFieldType;
-  onFieldTypeChange?: (fieldType: LockableFieldType) => void;
+  fieldType: QuickFieldType;
+  onFieldTypeChange?: (fieldType: QuickFieldType) => void;
   onRequiredChange?: (required: boolean) => void;
   compact?: boolean;
   showFieldActions: boolean;
   showAiAssist: boolean;
   value: string;
   onValueChange?: (value: string) => void;
-  variables: LockableValueFieldOption[];
+  variables: QuickFormFieldOption[];
   onGenerateWithAi?: (prompt: string) => void;
   headerActions?: ReactNode;
 }) {

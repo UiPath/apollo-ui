@@ -22,8 +22,8 @@ import type { EditorProps } from '@monaco-editor/react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type {
   FormSchema,
-  LockableFieldType,
-  LockableValueFieldMode,
+  QuickFieldType,
+  QuickFormFieldMode,
   VariablePickerItem,
 } from '@uipath/apollo-wind';
 import {
@@ -39,8 +39,8 @@ import {
   Card,
   CardContent,
   Checkbox,
-  cn,
   Combobox,
+  cn,
   DatePicker,
   DateTimePicker,
   DropdownMenu,
@@ -57,12 +57,12 @@ import {
   HoverCardTrigger,
   Input,
   Label,
-  LockableValueField,
   MetadataForm,
   MultiSelect,
   Popover,
   PopoverContent,
   PopoverTrigger,
+  QuickFormField,
   RadioGroup,
   RadioGroupItem,
   RequiredIndicator,
@@ -923,7 +923,7 @@ const INSERT_SNIPPETS = [
   { label: 'Null', code: 'null' },
 ];
 
-const LOCKABLE_VARIABLES = INSERT_SNIPPETS.map((snippet) => ({
+const QUICK_FORM_FIELD_VARIABLES = INSERT_SNIPPETS.map((snippet) => ({
   label: snippet.label,
   value: snippet.code,
 }));
@@ -1379,10 +1379,10 @@ function InlineCaseRow({
   const titleRef = useRef<HTMLInputElement>(null);
   const [value, setValue] = useState(defaultValue);
   const [locked, setLocked] = useState(false);
-  const [mode, setMode] = useState<LockableValueFieldMode>('fixed');
+  const [mode, setMode] = useState<QuickFormFieldMode>('fixed');
 
   return (
-    <LockableValueField
+    <QuickFormField
       id={fieldId}
       label={
         <div className="flex min-w-0 flex-1 items-center">
@@ -1419,7 +1419,7 @@ function InlineCaseRow({
       mode={mode}
       onModeChange={setMode}
       fieldType="string"
-      variables={LOCKABLE_VARIABLES}
+      variables={QUICK_FORM_FIELD_VARIABLES}
       controlsVisibility="visible"
     />
   );
@@ -2496,22 +2496,22 @@ function InputOutputStory() {
 }
 
 // ============================================================================
-// Prototype: LockableValueField
+// Prototype: QuickFormField
 // ============================================================================
 
-interface LockableCase {
+interface QuickFormFieldCase {
   id: number;
   title: string;
   required: boolean;
   value: string;
   locked: boolean;
-  mode: LockableValueFieldMode;
-  fieldType: LockableFieldType;
+  mode: QuickFormFieldMode;
+  fieldType: QuickFieldType;
 }
 
 /** Guards against malformed JSON (e.g. from hand-editing the schema view) reaching setCases -- a
  *  missing/wrong-typed id would break Sortable, and an unknown fieldType would break rendering. */
-function isValidLockableCase(item: unknown): item is LockableCase {
+function isValidQuickFormFieldCase(item: unknown): item is QuickFormFieldCase {
   if (typeof item !== 'object' || item === null) return false;
   const c = item as Record<string, unknown>;
   return (
@@ -2528,7 +2528,7 @@ function isValidLockableCase(item: unknown): item is LockableCase {
   );
 }
 
-const DEFAULT_LOCKABLE_CASES: LockableCase[] = [
+const DEFAULT_QUICK_FORM_FIELD_CASES: QuickFormFieldCase[] = [
   {
     id: 1,
     title: 'Invoice Number',
@@ -2558,7 +2558,7 @@ const DEFAULT_LOCKABLE_CASES: LockableCase[] = [
   },
 ];
 
-function LockableCaseRow({
+function QuickFormFieldCaseRow({
   id,
   caseTitle,
   onTitleChange,
@@ -2589,10 +2589,10 @@ function LockableCaseRow({
   onValueChange: (value: string) => void;
   locked: boolean;
   onLockedChange: (locked: boolean) => void;
-  mode: LockableValueFieldMode;
-  onModeChange: (mode: LockableValueFieldMode) => void;
-  fieldType: LockableFieldType;
-  onFieldTypeChange: (fieldType: LockableFieldType) => void;
+  mode: QuickFormFieldMode;
+  onModeChange: (mode: QuickFormFieldMode) => void;
+  fieldType: QuickFieldType;
+  onFieldTypeChange: (fieldType: QuickFieldType) => void;
   compact?: boolean;
   controlsVisibility?: 'visible' | 'hover';
   monacoTheme: string;
@@ -2625,7 +2625,7 @@ function LockableCaseRow({
       <div
         className={cn(isDragging && 'rounded-lg border-2 border-dashed border-brand/50 opacity-50')}
       >
-        <LockableValueField
+        <QuickFormField
           id={`return-value-${id}`}
           label={
             <div className="flex min-w-0 flex-1 items-center gap-1">
@@ -2716,7 +2716,7 @@ function LockableCaseRow({
           onFieldTypeChange={onFieldTypeChange}
           required={required}
           onRequiredChange={onRequiredChange}
-          variables={LOCKABLE_VARIABLES}
+          variables={QUICK_FORM_FIELD_VARIABLES}
           compact={compact}
           controlsVisibility={controlsVisibility}
         />
@@ -2853,7 +2853,7 @@ function FormButtonChip({
   );
 }
 
-function FieldDragOverlay({ caseItem }: { caseItem: LockableCase }) {
+function FieldDragOverlay({ caseItem }: { caseItem: QuickFormFieldCase }) {
   const meta = FIELD_TYPE_META[caseItem.fieldType];
   return (
     <div
@@ -2873,7 +2873,7 @@ function FieldDragOverlay({ caseItem }: { caseItem: LockableCase }) {
   );
 }
 
-function LockableValueFieldShowcase({
+function QuickFormFieldShowcase({
   controlsVisibility,
   onControlsVisibilityChange,
 }: {
@@ -2884,11 +2884,11 @@ function LockableValueFieldShowcase({
   const compactViewId = useId();
   const [showcaseValue, setShowcaseValue] = useState('');
   const [showcaseLocked, setShowcaseLocked] = useState(true);
-  const [showcaseMode, setShowcaseMode] = useState<LockableValueFieldMode>('fixed');
-  const [showcaseFieldType, setShowcaseFieldType] = useState<LockableFieldType>('string');
+  const [showcaseMode, setShowcaseMode] = useState<QuickFormFieldMode>('fixed');
+  const [showcaseFieldType, setShowcaseFieldType] = useState<QuickFieldType>('string');
   const [showcaseRequired, setShowcaseRequired] = useState(true);
 
-  const handleShowcaseFieldTypeChange = (type: LockableFieldType) => {
+  const handleShowcaseFieldTypeChange = (type: QuickFieldType) => {
     setShowcaseFieldType(type);
     setShowcaseValue('');
     if (!FIELD_TYPE_META[type].supportsExpression) {
@@ -2904,11 +2904,11 @@ function LockableValueFieldShowcase({
           Toggle Show/Hide to preview how field controls behave in the panel on the left. Uses
           component →{' '}
           <a
-            href="/?path=/docs/apollo-wind-components-uipath-lockable-value-field--docs"
+            href="/?path=/docs/apollo-wind-components-uipath-quick-form-field--docs"
             target="_top"
             className="font-medium text-brand transition hover:text-brand-hover"
           >
-            Lockable Value Field
+            Quick Form Field
           </a>
         </p>
       </div>
@@ -2934,7 +2934,7 @@ function LockableValueFieldShowcase({
         <span className="text-[11px] font-medium uppercase tracking-wide text-foreground-subtle">
           Full view
         </span>
-        <LockableValueField
+        <QuickFormField
           id={fullViewId}
           label={
             <FormFieldLabel htmlFor={fullViewId} required={showcaseRequired} className="leading-4">
@@ -2964,7 +2964,7 @@ function LockableValueFieldShowcase({
           onFieldTypeChange={handleShowcaseFieldTypeChange}
           required={showcaseRequired}
           onRequiredChange={setShowcaseRequired}
-          variables={LOCKABLE_VARIABLES}
+          variables={QUICK_FORM_FIELD_VARIABLES}
           controlsVisibility={controlsVisibility}
         />
       </div>
@@ -2973,7 +2973,7 @@ function LockableValueFieldShowcase({
           Compact view (narrow container)
         </span>
         <div className="w-[200px]">
-          <LockableValueField
+          <QuickFormField
             id={compactViewId}
             label={
               <FormFieldLabel
@@ -3007,7 +3007,7 @@ function LockableValueFieldShowcase({
             onFieldTypeChange={handleShowcaseFieldTypeChange}
             required={showcaseRequired}
             onRequiredChange={setShowcaseRequired}
-            variables={LOCKABLE_VARIABLES}
+            variables={QUICK_FORM_FIELD_VARIABLES}
             controlsVisibility={controlsVisibility}
           />
         </div>
@@ -3026,7 +3026,7 @@ export function QuickFormPanel({
   className?: string;
 } = {}) {
   const monacoTheme = useMonacoTheme();
-  const [cases, setCases] = useState<LockableCase[]>(DEFAULT_LOCKABLE_CASES);
+  const [cases, setCases] = useState<QuickFormFieldCase[]>(DEFAULT_QUICK_FORM_FIELD_CASES);
   const nextIdRef = useRef(4);
   const [formView, setFormView] = useState<'edit' | 'json'>('edit');
   const [formTitle, setFormTitle] = useState('Quick Approve');
@@ -3035,7 +3035,9 @@ export function QuickFormPanel({
   const [editingFormDescription, setEditingFormDescription] = useState(false);
   const formTitleRef = useRef<HTMLInputElement>(null);
   const formDescriptionRef = useRef<HTMLInputElement>(null);
-  const [jsonDraft, setJsonDraft] = useState(() => JSON.stringify(DEFAULT_LOCKABLE_CASES, null, 2));
+  const [jsonDraft, setJsonDraft] = useState(() =>
+    JSON.stringify(DEFAULT_QUICK_FORM_FIELD_CASES, null, 2)
+  );
   const [jsonError, setJsonError] = useState<string | null>(null);
   const [jsonCopied, setJsonCopied] = useState(false);
   const [showcaseControlsVisibility, setShowcaseControlsVisibility] = useState<'visible' | 'hover'>(
@@ -3060,7 +3062,7 @@ export function QuickFormPanel({
         setJsonError('Expected a JSON array of fields.');
         return;
       }
-      if (!parsed.every(isValidLockableCase)) {
+      if (!parsed.every(isValidQuickFormFieldCase)) {
         setJsonError('Each field needs id, title, required, value, locked, mode, and fieldType.');
         return;
       }
@@ -3087,7 +3089,7 @@ export function QuickFormPanel({
       ?.catch(() => {});
   };
 
-  const addCaseWithType = (fieldType: LockableFieldType) => {
+  const addCaseWithType = (fieldType: QuickFieldType) => {
     const id = nextIdRef.current++;
     setCases((prev) => [
       ...prev,
@@ -3103,7 +3105,7 @@ export function QuickFormPanel({
     ]);
   };
   const deleteCase = (id: number) => setCases((prev) => prev.filter((c) => c.id !== id));
-  const updateCase = (id: number, patch: Partial<LockableCase>) =>
+  const updateCase = (id: number, patch: Partial<QuickFormFieldCase>) =>
     setCases((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
   const addButton = () => {
     const id = nextButtonIdRef.current++;
@@ -3112,7 +3114,7 @@ export function QuickFormPanel({
   const deleteButton = (id: number) => setButtons((prev) => prev.filter((b) => b.id !== id));
   const updateButton = (id: number, patch: Partial<FormButtonItem>) =>
     setButtons((prev) => prev.map((b) => (b.id === id ? { ...b, ...patch } : b)));
-  const updateCaseFieldType = (id: number, fieldType: LockableFieldType) =>
+  const updateCaseFieldType = (id: number, fieldType: QuickFieldType) =>
     setCases((prev) =>
       prev.map((c) =>
         c.id === id
@@ -3341,7 +3343,7 @@ export function QuickFormPanel({
                             const isOver =
                               activeDragId != null && overDragId === c.id && c.id !== activeDragId;
                             return (
-                              <LockableCaseRow
+                              <QuickFormFieldCaseRow
                                 key={c.id}
                                 id={c.id}
                                 caseTitle={c.title}
@@ -3467,7 +3469,7 @@ export function QuickFormPanel({
     <div className="flex items-start gap-8">
       <PanelFrame>{panel}</PanelFrame>
 
-      <LockableValueFieldShowcase
+      <QuickFormFieldShowcase
         controlsVisibility={showcaseControlsVisibility}
         onControlsVisibilityChange={setShowcaseControlsVisibility}
       />
@@ -3846,8 +3848,8 @@ function PanelUIInventoryStory() {
   const compositionFieldId = useId();
   const [compositionValue, setCompositionValue] = useState('invoice.total');
   const [compositionLocked, setCompositionLocked] = useState(true);
-  const [compositionMode, setCompositionMode] = useState<LockableValueFieldMode>('fixed');
-  const [compositionFieldType, setCompositionFieldType] = useState<LockableFieldType>('string');
+  const [compositionMode, setCompositionMode] = useState<QuickFormFieldMode>('fixed');
+  const [compositionFieldType, setCompositionFieldType] = useState<QuickFieldType>('string');
   const [compositionRequired, setCompositionRequired] = useState(true);
   const [compositionEditor, setCompositionEditor] = useState('ui');
   const [compositionFields, setCompositionFields] = useState([
@@ -3927,7 +3929,7 @@ function PanelUIInventoryStory() {
     setExpandedSubContainerSections(allSubContainerSections);
   };
 
-  const updateCompositionFieldType = (fieldType: LockableFieldType) => {
+  const updateCompositionFieldType = (fieldType: QuickFieldType) => {
     setCompositionFieldType(fieldType);
     setCompositionValue('');
     if (!FIELD_TYPE_META[fieldType].supportsExpression) setCompositionMode('fixed');
@@ -4039,20 +4041,20 @@ function PanelUIInventoryStory() {
                 </div>
 
                 <div
-                  id="ui-inventory-components-lockable-value-field"
+                  id="ui-inventory-components-quick-form-field"
                   className="grid gap-4 border-t border-border-subtle px-3.5 py-5"
                 >
                   <PatternNote
                     eyebrow="Component"
-                    title="Lockable Value Field"
-                    linkTarget="components/lockable-value-field"
+                    title="Quick Form Field"
+                    linkTarget="components/quick-form-field"
                   >
                     Supports fixed and expression modes, lock state, required state, variables,
                     validation, and String, Integer, Date, Boolean, select, File, and Object field
                     types.
                   </PatternNote>
-                  <LockableValueField
-                    id="ui-inventory-lockable-fixed"
+                  <QuickFormField
+                    id="ui-inventory-quick-form-field-fixed"
                     label={<Label className="text-xs font-medium">Fixed value</Label>}
                     value={componentsFixedValue}
                     onValueChange={setComponentsFixedValue}
@@ -4061,8 +4063,8 @@ function PanelUIInventoryStory() {
                     required
                     showFieldActions={false}
                   />
-                  <LockableValueField
-                    id="ui-inventory-lockable-expression"
+                  <QuickFormField
+                    id="ui-inventory-quick-form-field-expression"
                     label={<Label className="text-xs font-medium">Expression</Label>}
                     value={componentsExpressionValue}
                     onValueChange={setComponentsExpressionValue}
@@ -5000,18 +5002,18 @@ function PanelUIInventoryStory() {
                   </section>
 
                   <section
-                    id="ui-inventory-composition-lockable-value-field"
+                    id="ui-inventory-composition-quick-form-field"
                     className="grid gap-3 border-t border-border-subtle pt-5"
                   >
                     <PatternNote
-                      title="Lockable value field"
+                      title="Quick form field"
                       eyebrow="Composition pattern"
-                      linkTarget="composition/lockable-value-field"
+                      linkTarget="composition/quick-form-field"
                     >
                       Combines field type, required state, AI assistance, variable insertion, and
                       fixed or expression values in one reusable Flow control.
                     </PatternNote>
-                    <LockableValueField
+                    <QuickFormField
                       id={compositionFieldId}
                       label={
                         <FormFieldLabel
@@ -5039,7 +5041,7 @@ function PanelUIInventoryStory() {
                       onFieldTypeChange={updateCompositionFieldType}
                       required={compositionRequired}
                       onRequiredChange={setCompositionRequired}
-                      variables={LOCKABLE_VARIABLES}
+                      variables={QUICK_FORM_FIELD_VARIABLES}
                       controlsVisibility="visible"
                     />
                   </section>

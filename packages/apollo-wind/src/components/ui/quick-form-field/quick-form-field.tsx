@@ -28,8 +28,8 @@ import { cn } from '@/lib';
 import { FieldHeader } from './components/field-header';
 import { LockToggleButton } from './components/lock-toggle-button';
 import { ModeMenuItem } from './components/mode-menu-item';
-import type { LockableValueFieldProps } from './types';
-import { FIELD_TYPE_META, type LockableValueFieldMoreActions } from './types';
+import type { QuickFormFieldProps } from './types';
+import { FIELD_TYPE_META, type QuickFormFieldMoreActions } from './types';
 import {
   DEFAULT_SELECT_OPTIONS,
   formatDateValue,
@@ -39,13 +39,7 @@ import {
   toDateOnlyString,
 } from './utils';
 
-function MoreActionsMenu({
-  more,
-  locked,
-}: {
-  more: LockableValueFieldMoreActions;
-  locked: boolean;
-}) {
+function MoreActionsMenu({ more, locked }: { more: QuickFormFieldMoreActions; locked: boolean }) {
   const onClear = locked ? undefined : more.onClear;
   const onRefresh = more.onRefresh;
 
@@ -77,9 +71,15 @@ function MoreActionsMenu({
 }
 
 /**
- * LockableValueField — a field that can be locked to read-only, typed as one
- * of several data types, and (for scalar types) switched between a literal
- * value and a JS expression.
+ * A Quick Form is assembled by end users, like a form builder.
+ * QuickFormField is the control for an individual field within a Quick Form.
+ * Each QuickFormField carries its own configuration controls: a
+ * lock that makes it read-only, a data-type switch that swaps the control, a
+ * Required toggle, and (for scalar types) a Fixed value / Expression switch.
+ *
+ * You should only use this component within a quick form builder.
+ * For standard forms, compose the form-field anatomy (`FormField`,
+ * `FormFieldLabel`, `InputGroup`, …) or describe them to `MetadataForm`.
  *
  * The expression mode is styled as code (monospace) but does not carry real
  * syntax highlighting or evaluation. Select/multiselect options default to a
@@ -88,7 +88,7 @@ function MoreActionsMenu({
  * Insert-variable menu is empty (and disabled) unless `variables` is
  * provided; file uploads aren't persisted anywhere.
  */
-export function LockableValueField({
+export function QuickFormField({
   value = '',
   onValueChange,
   onValueBlur,
@@ -119,7 +119,7 @@ export function LockableValueField({
   variables = [],
   id,
   className,
-}: LockableValueFieldProps) {
+}: QuickFormFieldProps) {
   const generatedId = useId().replace(/:/g, '');
   const [datePopoverOpen, setDatePopoverOpen] = useState(false);
   const [selectOpen, setSelectOpen] = useState(false);
