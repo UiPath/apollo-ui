@@ -1,3 +1,11 @@
+## [@uipath/apollo-react-v6.58.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.58.1...@uipath/apollo-react@6.58.2) (2026-09-24)
+
+### Bug Fixes
+
+* **apollo-react:** address review feedback on handle add-button aria-label ([95a80b7](https://github.com/UiPath/apollo-ui/commit/95a80b7bb119b2779d8413187c12aabff74d5e0d))
+* **apollo-react:** name the handle add-button after its label ([d59300a](https://github.com/UiPath/apollo-ui/commit/d59300aa2eb35fa8eb0a77292a08340c04de1cdc))
+* **apollo-react:** wire the handle label into inward add-buttons too ([39d6bcf](https://github.com/UiPath/apollo-ui/commit/39d6bcf613dac5bca856b3524eb15cafb23f2b35))
+
 ## [@uipath/apollo-react-v6.58.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.58.0...@uipath/apollo-react@6.58.1) (2026-09-24)
 
 ### Bug Fixes
