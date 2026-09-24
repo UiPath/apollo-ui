@@ -140,8 +140,8 @@ export interface ModelPickerProps {
   ariaLabel?: string;
   /**
    * Marks the field required: a visual asterisk on the label, plus
-   * `aria-required` on the search combobox inside the popup. Not on the
-   * trigger, where the attribute is invalid on its `button` role.
+   * `aria-required` on the trigger, which is a `combobox` and so announces
+   * it. The search field inside the popup carries no `aria-required`.
    */
   required?: boolean;
   /**
