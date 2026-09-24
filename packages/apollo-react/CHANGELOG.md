@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.58.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.58.0...@uipath/apollo-react@6.58.1) (2026-09-24)
+
+### Bug Fixes
+
+* **apollo-react:** give both cancel statuses a neutral treatment ([a211b42](https://github.com/UiPath/apollo-ui/commit/a211b4296c40b4fc5cd03be1e7238db4e6848fb7))
+
 ## [@uipath/apollo-react-v6.58.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.57.0...@uipath/apollo-react@6.58.0) (2026-09-24)
 
 ### Features
