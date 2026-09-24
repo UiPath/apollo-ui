@@ -1,3 +1,13 @@
+## [@uipath/apollo-react-v6.57.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.56.1...@uipath/apollo-react@6.57.0) (2026-09-24)
+
+### Features
+
+* **storybook:** build out the Code Editors pattern pages ([ed19b6c](https://github.com/UiPath/apollo-ui/commit/ed19b6c0332a4c7f95e7713d7a9cfe40464d008a))
+
+### Bug Fixes
+
+* **apollo-react:** disambiguate Node Property Panel editor story names ([f6f5134](https://github.com/UiPath/apollo-ui/commit/f6f5134afb2bb3798e6051b8f4575a6bdbfd573b))
+
 ## [@uipath/apollo-react-v6.56.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.56.0...@uipath/apollo-react@6.56.1) (2026-09-23)
 
 ### Bug Fixes

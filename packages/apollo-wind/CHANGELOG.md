@@ -1,3 +1,13 @@
+## [@uipath/apollo-wind-v2.55.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.54.1...@uipath/apollo-wind@2.55.0) (2026-09-24)
+
+### Features
+
+* **storybook:** build out the Code Editors pattern pages ([ed19b6c](https://github.com/UiPath/apollo-ui/commit/ed19b6c0332a4c7f95e7713d7a9cfe40464d008a))
+
+### Bug Fixes
+
+* **apollo-wind:** align editor themes with apollo-core tokens ([acf724a](https://github.com/UiPath/apollo-ui/commit/acf724a49af5d24eb7f29ddf686e92060a4900f7)), closes [#a1a1aa](https://github.com/UiPath/apollo-ui/issues/a1a1aa) [#9f9fa9](https://github.com/UiPath/apollo-ui/issues/9f9fa9) [#22d3ee](https://github.com/UiPath/apollo-ui/issues/22d3ee) [#00d3f2](https://github.com/UiPath/apollo-ui/issues/00d3f2)
+
 ## [@uipath/apollo-wind-v2.54.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.54.0...@uipath/apollo-wind@2.54.1) (2026-09-23)
 
 ### Bug Fixes
