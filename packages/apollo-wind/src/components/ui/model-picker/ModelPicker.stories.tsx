@@ -777,14 +777,13 @@ export const RoutingSubstitution: Story = {
 };
 
 // ---------------------------------------------------------------------------
-// Recommended from the Discovery DTO + cost badges as a custom-tag
-// example (the agents product pattern).
+// Recommended from the Discovery DTO + the built-in cost badges.
 //
 // In production the Recommended signal is authored in
 // the product's Model Hub configuration and merged into the Discovery
 // response server-side: the picker reads it off `model.isRecommended`.
-// Cost tiers are NOT a built-in signal: products that want them stamp
-// the pool's cost badges via `badgesFor`.
+// Cost badges are stamped by default from `modelDetails.costDetails`;
+// `badgesFor` replaces that default (different bins, or `[]` for none).
 // ---------------------------------------------------------------------------
 
 // What the Discovery response looks like once the backend merges

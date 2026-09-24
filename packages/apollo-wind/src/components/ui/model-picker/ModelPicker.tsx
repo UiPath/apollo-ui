@@ -543,7 +543,9 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
     const handleSearchKeyDown = React.useCallback(
       (e: React.KeyboardEvent) => {
         const active = filtered[activeIndex];
-        if (active && effectiveCanManageByo && isByoModel(active)) {
+        // `activeVisible`: the index can rest on a row inside a collapsed
+        // section (so ArrowRight can reopen it); nothing may act on it there.
+        if (active && activeVisible && effectiveCanManageByo && isByoModel(active)) {
           if (e.key === 'Enter' && e.shiftKey && onEditModel) {
             e.preventDefault();
             onEditModel(active);
@@ -567,6 +569,7 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
       [
         filtered,
         activeIndex,
+        activeVisible,
         effectiveCanManageByo,
         onEditModel,
         handleDeleteModel,
