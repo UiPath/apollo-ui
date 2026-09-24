@@ -388,6 +388,116 @@ describe('DateTimePicker popover', () => {
   });
 });
 
+describe('DateTimePicker timezone', () => {
+  // 11:00Z is 14:00 in Bucharest (GMT+3) and 20:00 in Tokyo (GMT+9) in June.
+  const instant = new Date(Date.UTC(2024, 5, 15, 11, 0));
+
+  it('shows no timezone select unless showTimeZone is set', async () => {
+    const user = userEvent.setup();
+    render(<DateTimePicker value={instant} />);
+
+    await openPicker(user);
+    expect(screen.queryByText('Timezone')).not.toBeInTheDocument();
+  });
+
+  it('reads the value in the zone and names the offset', async () => {
+    const user = userEvent.setup();
+    render(<DateTimePicker value={instant} showTimeZone timeZone="Europe/Bucharest" />);
+
+    expect(screen.getByRole('button')).toHaveTextContent('June 15th, 2024 at 14:00 GMT+3');
+    await openPicker(user);
+    expect(screen.getByRole('combobox', { name: 'Hour' })).toHaveTextContent('14');
+    expect(screen.getByRole('button', { name: /Timezone.*Bucharest/ })).toHaveTextContent('GMT+3');
+  });
+
+  it('commits the chosen wall clock in the zone', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+    render(
+      <DateTimePicker
+        value={instant}
+        showTimeZone
+        timeZone="Europe/Bucharest"
+        onValueChange={handleChange}
+      />
+    );
+
+    await openPicker(user);
+    await choose(user, 'Hour', '09');
+    expect(handleChange).toHaveBeenLastCalledWith(new Date(Date.UTC(2024, 5, 15, 6, 0)));
+  });
+
+  it('keeps the time on screen and moves the instant when the zone changes', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+    const handleZone = vi.fn();
+    render(
+      <DateTimePicker
+        value={instant}
+        showTimeZone
+        defaultTimeZone="Europe/Bucharest"
+        onValueChange={handleChange}
+        onTimeZoneChange={handleZone}
+      />
+    );
+
+    await openPicker(user);
+    await user.click(screen.getByRole('button', { name: /Timezone.*Bucharest/ }));
+    await user.type(screen.getByPlaceholderText('Search city, region or offset'), 'tokyo');
+    await user.click(await screen.findByRole('option', { name: /Tokyo/ }));
+
+    expect(handleZone).toHaveBeenCalledWith('Asia/Tokyo');
+    // 14:00 in Tokyo is 05:00Z.
+    expect(handleChange).toHaveBeenLastCalledWith(new Date(Date.UTC(2024, 5, 15, 5, 0)));
+    expect(screen.getByRole('button', { name: /Timezone.*Tokyo/ })).toHaveTextContent('GMT+9');
+  });
+
+  it('offers the viewer’s own zone first', async () => {
+    const user = userEvent.setup();
+    render(<DateTimePicker showTimeZone defaultTimeZone="UTC" />);
+
+    await openPicker(user);
+    await user.click(screen.getByRole('button', { name: /Timezone/ }));
+    expect(await screen.findByText('Your timezone')).toBeInTheDocument();
+  });
+});
+
+describe('DateTimePicker uncontrolled timezone', () => {
+  it('keeps the picked date when the zone changes without a value prop', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+    render(
+      <DateTimePicker
+        showTimeZone
+        defaultTimeZone="Europe/Bucharest"
+        onValueChange={handleChange}
+        calendarProps={{ defaultMonth: new Date(2024, 5, 1) }}
+      />
+    );
+
+    await openPicker(user);
+    await user.click(screen.getByText('15'));
+    await choose(user, 'Hour', '14');
+    await user.click(screen.getByRole('button', { name: /Timezone.*Bucharest/ }));
+    await user.type(screen.getByPlaceholderText('Search city, region or offset'), 'tokyo');
+    await user.click(await screen.findByRole('option', { name: /Tokyo/ }));
+
+    // 14:00 in Tokyo is 05:00Z, and the field still shows the picked date and time.
+    expect(handleChange).toHaveBeenLastCalledWith(new Date(Date.UTC(2024, 5, 15, 5, 0)));
+    expect(screen.getAllByRole('button')[0]).toHaveTextContent('June 15th, 2024 at 14:00 GMT+9');
+  });
+
+  it('clears the time when a controlled value is cleared', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<DateTimePicker value={new Date(2024, 5, 15, 14, 30)} />);
+    rerender(<DateTimePicker value={undefined} />);
+
+    await openPicker(user);
+    expect(screen.getByRole('combobox', { name: 'Hour' })).toHaveTextContent('--');
+    expect(screen.getByRole('combobox', { name: 'Minute' })).toHaveTextContent('--');
+  });
+});
+
 describe('DateTimePicker in an input group', () => {
   it("is the enclosing group's control, with no box of its own", () => {
     render(
@@ -411,5 +521,78 @@ describe('DateTimePicker in an input group', () => {
 
     await user.click(screen.getByText('Pick a time'));
     await waitFor(() => expect(measure).toHaveBeenCalled());
+  });
+});
+
+describe('DateTimePicker display across daylight saving', () => {
+  it('shows the zone’s time even when the browser’s zone skips that hour', () => {
+    const original = process.env.TZ;
+    // 03:30 on 31 March 2024 does not exist in Bucharest (clocks jump 03:00 to 04:00), but it
+    // does in Tokyo: 03:30 Tokyo is 18:30Z the day before.
+    process.env.TZ = 'Europe/Bucharest';
+    try {
+      render(
+        <DateTimePicker value={new Date(Date.UTC(2024, 2, 30, 18, 30))} timeZone="Asia/Tokyo" />
+      );
+      expect(screen.getByRole('button')).toHaveTextContent('March 31st, 2024 at 03:30 GMT+9');
+    } finally {
+      process.env.TZ = original;
+    }
+  });
+});
+
+describe('DateTimePicker review fixes', () => {
+  it('keeps the seconds when only the day changes, and resets them with a new time', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+    render(
+      <DateTimePicker
+        value={new Date(Date.UTC(2024, 5, 15, 14, 30, 45, 250))}
+        timeZone="UTC"
+        onValueChange={handleChange}
+      />
+    );
+
+    await openPicker(user);
+    await user.click(screen.getByText('20'));
+    expect(handleChange).toHaveBeenLastCalledWith(new Date(Date.UTC(2024, 5, 20, 14, 30, 45, 250)));
+
+    await choose(user, 'Minute', '45');
+    expect(handleChange).toHaveBeenLastCalledWith(new Date(Date.UTC(2024, 5, 20, 14, 45, 0, 0)));
+  });
+
+  it('falls back to the browser zone and warns for an unknown timeZone', () => {
+    const original = process.env.TZ;
+    process.env.TZ = 'Asia/Tokyo';
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      render(
+        <DateTimePicker
+          value={new Date(Date.UTC(2024, 5, 15, 5, 0))}
+          timeZone="Europe/Bucharestt"
+        />
+      );
+      // 05:00Z read in Tokyo, not as UTC.
+      expect(screen.getByRole('button')).toHaveTextContent('June 15th, 2024 at 14:00 GMT+9');
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('Europe/Bucharestt'));
+    } finally {
+      warn.mockRestore();
+      process.env.TZ = original;
+    }
+  });
+
+  it('lets Clear remove a time picked before any day', async () => {
+    const user = userEvent.setup();
+    render(<DateTimePicker />);
+
+    await openPicker(user);
+    expect(screen.getByRole('button', { name: 'Clear' })).toBeDisabled();
+    await choose(user, 'Hour', '09');
+    const clear = screen.getByRole('button', { name: 'Clear' });
+    expect(clear).toBeEnabled();
+
+    await user.click(clear);
+    await openPicker(user);
+    expect(screen.getByRole('combobox', { name: 'Hour' })).toHaveTextContent('--');
   });
 });
