@@ -17,12 +17,6 @@ export interface PickerSearchInputProps {
    * highlighted row even though DOM focus stays on the input.
    */
   activeDescendantId?: string;
-  /**
-   * Marks the field required. Set here rather than on the trigger: this input
-   * is the combobox, and `aria-required` is not a valid attribute on the
-   * trigger's `button` role.
-   */
-  required?: boolean;
   inputRef?: React.Ref<HTMLInputElement>;
   listboxId?: string;
   dense?: boolean;
@@ -59,7 +53,6 @@ export const PickerSearchInput: React.FC<PickerSearchInputProps> = ({
   placeholder = 'Search models',
   'aria-label': ariaLabel,
   activeDescendantId,
-  required,
   inputRef,
   listboxId,
   dense,
@@ -93,7 +86,6 @@ export const PickerSearchInput: React.FC<PickerSearchInputProps> = ({
         aria-controls={listboxId}
         aria-expanded
         aria-label={ariaLabel ?? placeholder}
-        aria-required={required || undefined}
         className={cn(
           'min-w-0 flex-1 bg-transparent text-foreground outline-none placeholder:text-foreground-subtle',
           dense ? 'text-xs' : 'text-sm'

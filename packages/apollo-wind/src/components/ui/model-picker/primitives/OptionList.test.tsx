@@ -164,6 +164,25 @@ describe('<VirtualOptionList> row measurement', () => {
   });
 });
 
+describe('<GroupedOptionList> scrolling', () => {
+  it('scrolls the highlighted row into view when the highlight moves', () => {
+    const scrollIntoView = vi.fn();
+    const original = Element.prototype.scrollIntoView;
+    Element.prototype.scrollIntoView = scrollIntoView;
+    try {
+      const { rerender } = render(
+        <GroupedOptionList activeIndex={0} id="lb" onSelect={() => {}} options={OPTIONS} />
+      );
+      scrollIntoView.mockClear();
+      rerender(<GroupedOptionList activeIndex={2} id="lb" onSelect={() => {}} options={OPTIONS} />);
+      // Past a handful of models the highlight would otherwise walk off-screen.
+      expect(scrollIntoView).toHaveBeenCalledWith({ block: 'nearest' });
+    } finally {
+      Element.prototype.scrollIntoView = original;
+    }
+  });
+});
+
 describe('collapsible sections', () => {
   it('ignores collapsedGroups keys for sections that cannot collapse, in the virtualized renderer', () => {
     render(

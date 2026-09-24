@@ -375,16 +375,15 @@ export type GroupStrategy = 'subscription' | 'vendor' | 'flat';
 /**
  * Optional context for `groupModels` — lets the host override the
  * Recommended/Preview heuristic with Model_hub-sourced lists so that
- * grouping and chip rendering agree, and inject the active
- * `i18n` instance so group labels render in the host's locale.
+ * grouping and chip rendering agree, and supply the `labels` object so
+ * group labels render in the host's locale.
  */
 export interface GroupModelsContext {
   recommendedModelIds?: readonly string[];
   previewModelIds?: readonly string[];
   /**
-   * Translator instance. When provided, group labels + hints render
-   * in the active locale; otherwise they fall back to English source
-   * strings.
+   * Strings for group labels and hints. When omitted they fall back to
+   * `DEFAULT_MODEL_PICKER_LABELS` (English).
    */
   labels?: ModelPickerLabels;
 }

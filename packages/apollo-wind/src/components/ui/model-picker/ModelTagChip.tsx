@@ -154,13 +154,12 @@ export const ModelTagChip: React.FC<ModelTagChipProps> = ({
       // harmlessly when the host already mounts one.
       <TooltipProvider>
         <Tooltip>
-          {/* The trigger renders its own <button> so the pointer can open the
-              tooltip through the inert chip. Not a tab stop: chips sit inside
-              `role="option"`, where a tabbable child breaks the search
-              field's activedescendant model. The chip's text already carries
-              the information; the tooltip is a pointer refinement. */}
-          <TooltipTrigger className="inline-flex max-w-full" tabIndex={-1}>
-            {chip}
+          {/* `asChild` onto a span: no <button> inside `role="option"`, so
+              nothing interactive, nothing that submits an enclosing form,
+              nothing tabbable. The chip text carries the information; the
+              tooltip is a pointer refinement. */}
+          <TooltipTrigger asChild>
+            <span className="inline-flex max-w-full">{chip}</span>
           </TooltipTrigger>
           <TooltipContent side="top">{tag.tooltip}</TooltipContent>
         </Tooltip>
