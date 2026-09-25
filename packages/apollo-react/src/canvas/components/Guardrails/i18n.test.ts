@@ -7,6 +7,8 @@ import {
   GUARDRAIL_ACTION_EN_LABELS,
   GUARDRAIL_ACTION_LABEL_KEYS,
   GUARDRAIL_BUILDER_EN_LABELS,
+  GUARDRAIL_FILTER_FIELD_SELECTOR_EN_LABELS,
+  GUARDRAIL_FILTER_FIELD_SELECTOR_LABEL_KEYS,
   GUARDRAIL_FORM_EN_LABELS,
   GUARDRAIL_LIST_EN_LABELS,
   GUARDRAIL_LIST_EN_MESSAGES,
@@ -14,15 +16,19 @@ import {
   GUARDRAIL_PALETTE_EN_MESSAGES,
   GUARDRAIL_REMOVE_DIALOG_EN_LABELS,
   GUARDRAIL_REMOVE_DIALOG_EN_MESSAGES,
+  GUARDRAIL_RULES_EN_LABELS,
+  GUARDRAIL_RULES_EN_MESSAGES,
   GUARDRAIL_SCOPE_SELECTOR_EN_LABELS,
   GUARDRAIL_SCOPE_SELECTOR_LABEL_KEYS,
   resolveCentralizedGuardrailsLabels,
   resolveGuardrailActionLabels,
   resolveGuardrailBuilderLabels,
+  resolveGuardrailFilterFieldSelectorLabels,
   resolveGuardrailFormLabels,
   resolveGuardrailListLabels,
   resolveGuardrailPaletteLabels,
   resolveGuardrailRemoveDialogLabels,
+  resolveGuardrailRulesLabels,
   resolveGuardrailScopeSelectorLabels,
 } from './i18n';
 
@@ -119,6 +125,67 @@ describe('GUARDRAIL_LIST_EN_LABELS', () => {
     expect(
       formatGuardrailFormMessage(GUARDRAIL_LIST_EN_LABELS.removeRow, { name: 'PII detection 1' })
     ).toBe('Remove PII detection 1');
+  });
+});
+
+describe('resolveGuardrailRulesLabels', () => {
+  it('returns the English defaults when there is nothing to merge', () => {
+    expect(resolveGuardrailRulesLabels()).toEqual(GUARDRAIL_RULES_EN_LABELS);
+  });
+
+  it('layers the catalog over the defaults and the overrides over both', () => {
+    const labels = resolveGuardrailRulesLabels(
+      { addRule: 'Regel hinzufügen', operatorLabel: 'Operator (de)' },
+      { operatorLabel: 'Vergleich' }
+    );
+
+    expect(labels.addRule).toBe('Regel hinzufügen');
+    expect(labels.operatorLabel).toBe('Vergleich');
+    expect(labels.valueLabel).toBe(GUARDRAIL_RULES_EN_LABELS.valueLabel);
+  });
+
+  it('never lets an absent string blank a default', () => {
+    const labels = resolveGuardrailRulesLabels({ addRule: undefined }, { allFields: undefined });
+
+    expect(labels.addRule).toBe('Add rule');
+    expect(labels.allFields).toBe('All fields');
+  });
+
+  it('keeps the English templates in the `{{token}}` convention the components format', () => {
+    expect(formatGuardrailFormMessage(GUARDRAIL_RULES_EN_LABELS.ruleTitle, { position: 2 })).toBe(
+      'Rule 2'
+    );
+    expect(formatGuardrailFormMessage(GUARDRAIL_RULES_EN_LABELS.fieldsSelected, { count: 3 })).toBe(
+      '3 fields selected'
+    );
+    expect(
+      formatGuardrailFormMessage(GUARDRAIL_RULES_EN_LABELS.removeField, { name: 'Summary' })
+    ).toBe('Remove field Summary');
+    // The catalogs store the ICU source instead, which is what translators receive.
+    expect(GUARDRAIL_RULES_EN_MESSAGES['guardrails.rules.delete-rule']).toBe(
+      'Delete rule {position}'
+    );
+  });
+});
+
+describe('GUARDRAIL_FILTER_FIELD_SELECTOR_EN_LABELS', () => {
+  it('takes its English from the rules block, id for id', () => {
+    for (const key of GUARDRAIL_FILTER_FIELD_SELECTOR_LABEL_KEYS) {
+      expect(GUARDRAIL_FILTER_FIELD_SELECTOR_EN_LABELS[key]).toBe(GUARDRAIL_RULES_EN_LABELS[key]);
+    }
+    expect(Object.keys(GUARDRAIL_FILTER_FIELD_SELECTOR_EN_LABELS)).toHaveLength(
+      GUARDRAIL_FILTER_FIELD_SELECTOR_LABEL_KEYS.length
+    );
+  });
+
+  it('layers like every other set', () => {
+    const labels = resolveGuardrailFilterFieldSelectorLabels(
+      { filterFieldsLabel: 'Zu filternde Felder' },
+      { selectFields: undefined }
+    );
+
+    expect(labels.filterFieldsLabel).toBe('Zu filternde Felder');
+    expect(labels.selectFields).toBe('Select fields');
   });
 });
 
@@ -327,6 +394,20 @@ describe('the shared canvas catalog', () => {
     expect(
       findCatalogOrphans(CENTRALIZED_GUARDRAILS_EN_MESSAGES, 'guardrails.centralized.')
     ).toEqual([]);
+  });
+
+  it('carries every rules message with the same English', () => {
+    expect(findCatalogDrift(GUARDRAIL_RULES_EN_MESSAGES)).toEqual({ missing: [], drifted: [] });
+  });
+
+  it('carries no rules message the source no longer declares', () => {
+    expect(findCatalogOrphans(GUARDRAIL_RULES_EN_MESSAGES, 'guardrails.rules.')).toEqual([]);
+  });
+
+  it('resolves the rules block’s one reused id from the validator form, with its English', () => {
+    expect(GUARDRAIL_RULES_EN_MESSAGES['guardrails.form.more-information']).toBe(
+      GUARDRAIL_FORM_EN_LABELS.moreInformation
+    );
   });
 
   it('resolves the reused ids from the blocks that own them, with identical English', () => {
