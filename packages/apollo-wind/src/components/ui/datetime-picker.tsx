@@ -4,10 +4,12 @@ import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
+import { InputGroupPopoverTrigger } from '@/components/ui/input-group';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib';
 import { FormFieldError } from './form-field';
+import { useControlValidation, useInputGroup } from './input-group-context';
 
 export interface DateTimePickerProps {
   /** Applied to the trigger button, so a `<label htmlFor>` pointing at it associates correctly. */
@@ -55,9 +57,6 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
     const generatedId = React.useId();
     const validationId =
       errorId ?? `${id ?? `datetime-picker-${generatedId.replace(/:/g, '')}`}-error`;
-    const describedBy = [ariaDescribedBy, error ? validationId : undefined]
-      .filter(Boolean)
-      .join(' ');
     const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(value);
     const [timeValue, setTimeValue] = React.useState<string>(
       value ? format(value, use12Hour ? 'hh:mm a' : 'HH:mm') : ''
@@ -100,33 +99,57 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
       return `${datePart} at ${timePart}`;
     };
 
+    // Inside an InputGroup the trigger is the group's control: the group draws the box, and the
+    // panel anchors to it.
+    const group = useInputGroup();
+    const grouped = group.inGroup;
+    const validation = useControlValidation(group, {
+      error,
+      errorId: validationId,
+      'aria-invalid': ariaInvalid,
+      'aria-describedby': ariaDescribedBy,
+      'aria-errormessage': ariaErrorMessage,
+    });
+    const triggerProps = {
+      id,
+      'aria-labelledby': ariaLabelledBy,
+      ...validation.aria,
+      disabled: disabled || group.disabled,
+    } as const;
+
     return (
       <>
         <Popover data-slot="datetime-picker" open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <Button
+          {grouped ? (
+            <InputGroupPopoverTrigger
               ref={ref}
-              id={id}
-              aria-labelledby={ariaLabelledBy}
-              aria-describedby={describedBy || undefined}
-              aria-errormessage={error ? validationId : ariaErrorMessage}
-              aria-invalid={error ? true : ariaInvalid}
-              variant="outline"
-              className={cn(
-                'w-full justify-start text-left font-normal [&>svg]:text-foreground-muted hover:[&>svg]:text-accent-foreground',
-                'future:h-10 future:rounded-xl future:border-0 future:bg-surface-overlay future:px-4 future:gap-4 future:text-foreground future:hover:bg-surface-hover future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background',
-                className
-              )}
-              disabled={disabled}
+              {...triggerProps}
+              className={className}
+              placeholder={placeholder}
             >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {selectedDate ? (
-                formatDisplayValue()
-              ) : (
-                <span className="text-foreground-muted">{placeholder}</span>
-              )}
-            </Button>
-          </PopoverTrigger>
+              {selectedDate && <span className="truncate">{formatDisplayValue()}</span>}
+            </InputGroupPopoverTrigger>
+          ) : (
+            <PopoverTrigger asChild>
+              <Button
+                {...triggerProps}
+                ref={ref}
+                variant="outline"
+                className={cn(
+                  'w-full justify-start text-left font-normal [&>svg]:text-foreground-muted hover:[&>svg]:text-accent-foreground',
+                  'future:h-10 future:rounded-xl future:border-0 future:bg-surface-overlay future:px-4 future:gap-4 future:text-foreground future:hover:bg-surface-hover future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background',
+                  className
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {selectedDate ? (
+                  formatDisplayValue()
+                ) : (
+                  <span className="text-foreground-muted">{placeholder}</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+          )}
           <PopoverContent className="w-auto p-0" align="start">
             <div className="p-3 space-y-3">
               <Calendar
@@ -167,7 +190,8 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
             </div>
           </PopoverContent>
         </Popover>
-        <FormFieldError id={validationId}>{error}</FormFieldError>
+        {/* Inside a group, the group renders the message below its box. */}
+        {validation.ownMessage && <FormFieldError id={validationId}>{error}</FormFieldError>}
       </>
     );
   }

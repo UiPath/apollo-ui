@@ -11,9 +11,11 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
+import { InputGroupPopoverTrigger } from '@/components/ui/input-group';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib';
 import { FormFieldError } from './form-field';
+import { useControlValidation, useInputGroup } from './input-group-context';
 
 export interface ComboboxItem {
   value: string;
@@ -63,46 +65,71 @@ export const Combobox = React.forwardRef<HTMLButtonElement, ComboboxProps>(funct
   ref
 ) {
   const [open, setOpen] = React.useState(false);
+  // Inside an InputGroup the trigger is the group's control: the group draws the box, and the
+  // panel anchors to it.
+  const group = useInputGroup();
+  const grouped = group.inGroup;
   const generatedId = React.useId();
   const validationId = errorId ?? `${id ?? `combobox-${generatedId.replace(/:/g, '')}`}-error`;
-  const describedBy = [ariaDescribedBy, error ? validationId : undefined].filter(Boolean).join(' ');
 
   const selectedItem = items.find((item) => item.value === value);
+  const validation = useControlValidation(group, {
+    error,
+    errorId: validationId,
+    'aria-invalid': ariaInvalid,
+    'aria-describedby': ariaDescribedBy,
+    'aria-errormessage': ariaErrorMessage,
+  });
+  const triggerProps = {
+    id,
+    role: 'combobox',
+    'aria-expanded': open,
+    // aria-label always wins over a `<label htmlFor>` association in the
+    // accessible-name computation, so only set it when there's no id for a
+    // consumer's label to target (same pattern as MultiSelect).
+    'aria-label': id ? undefined : selectedItem ? selectedItem.label : placeholder,
+    ...validation.aria,
+    disabled: disabled || group.disabled,
+  } as const;
 
   return (
     // A Fragment: keeps the trigger's element type stable across renders so toggling `error`
     // never remounts it and drops focus mid-interaction (a conditional wrapper would).
     <>
       <Popover data-slot="combobox" open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
+        {grouped ? (
+          <InputGroupPopoverTrigger
             ref={ref}
-            id={id}
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            // aria-label always wins over a `<label htmlFor>` association in the
-            // accessible-name computation, so only set it when there's no id for a
-            // consumer's label to target (same pattern as MultiSelect).
-            aria-label={id ? undefined : selectedItem ? selectedItem.label : placeholder}
-            aria-describedby={describedBy || undefined}
-            aria-errormessage={error ? validationId : ariaErrorMessage}
-            aria-invalid={error ? true : ariaInvalid}
-            className={cn(
-              'w-[280px] justify-between future:h-10 future:rounded-xl future:border-0 future:bg-surface-overlay future:px-4 future:gap-4 future:hover:bg-surface-hover future:font-normal future:text-foreground future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background',
-              className
-            )}
-            disabled={disabled}
+            {...triggerProps}
+            className={className}
+            placeholder={placeholder}
           >
-            {selectedItem ? (
-              selectedItem.label
-            ) : (
-              <span className="text-foreground-muted">{placeholder}</span>
-            )}
-            <ChevronDown className="opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[280px] p-0">
+            {selectedItem && <span className="truncate">{selectedItem.label}</span>}
+          </InputGroupPopoverTrigger>
+        ) : (
+          <PopoverTrigger asChild>
+            <Button
+              ref={ref}
+              variant="outline"
+              {...triggerProps}
+              className={cn(
+                'w-[280px] justify-between future:h-10 future:rounded-xl future:border-0 future:bg-surface-overlay future:px-4 future:gap-4 future:hover:bg-surface-hover future:font-normal future:text-foreground future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background',
+                className
+              )}
+            >
+              {selectedItem ? (
+                selectedItem.label
+              ) : (
+                <span className="text-foreground-muted">{placeholder}</span>
+              )}
+              <ChevronDown className="opacity-50" />
+            </Button>
+          </PopoverTrigger>
+        )}
+        <PopoverContent
+          className={cn('p-0', grouped ? 'w-(--radix-popover-trigger-width)' : 'w-[280px]')}
+          align={grouped ? 'start' : undefined}
+        >
           <Command>
             <CommandInput placeholder={searchPlaceholder} />
             <CommandList>
@@ -128,7 +155,8 @@ export const Combobox = React.forwardRef<HTMLButtonElement, ComboboxProps>(funct
           </Command>
         </PopoverContent>
       </Popover>
-      <FormFieldError id={validationId}>{error}</FormFieldError>
+      {/* Inside a group, the group renders the message below its box. */}
+      {validation.ownMessage && <FormFieldError id={validationId}>{error}</FormFieldError>}
     </>
   );
 });

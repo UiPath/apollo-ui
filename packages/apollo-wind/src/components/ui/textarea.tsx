@@ -2,6 +2,14 @@ import * as React from 'react';
 
 import { cn } from '@/lib/index';
 import { FormFieldError } from './form-field';
+import { useControlValidation, useInputGroup } from './input-group-context';
+
+// Inside an InputGroup the group draws the box. Pads only the difference between the group's own
+// padding and a standalone Textarea's inset (8px), so the first line sits where a standalone
+// Textarea's does. The full `py-2` stacked on the group's pushed it 4px lower, and the future
+// theme's group pads 8px itself.
+const IN_GROUP_CLASS =
+  'min-h-0 flex-1 resize-none rounded-none !border-0 !ring-0 bg-transparent p-0 py-1 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 future:rounded-none future:border-0 future:bg-transparent future:py-0 future:focus-visible:ring-offset-0';
 
 export type TextareaProps = React.ComponentProps<'textarea'> & {
   /**
@@ -73,11 +81,16 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
     },
     ref
   ) => {
+    const group = useInputGroup();
     const generatedId = React.useId();
     const validationId = errorId ?? `${id ?? `textarea-${generatedId.replace(/:/g, '')}`}-error`;
-    const describedBy = [ariaDescribedBy, error ? validationId : undefined]
-      .filter(Boolean)
-      .join(' ');
+    const validation = useControlValidation(group, {
+      error,
+      errorId: validationId,
+      'aria-invalid': ariaInvalid,
+      'aria-describedby': ariaDescribedBy,
+      'aria-errormessage': ariaErrorMessage,
+    });
     // Normalize + guard inverted bounds: a floor taller than the ceiling would trip the
     // manual-resize detector and permanently disable auto-sizing (min never exceeds max).
     const { effMinRows, effMaxRows } = React.useMemo(() => {
@@ -197,19 +210,16 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
 
     return (
       // A Fragment, not a wrapper element: `InputGroup`'s `has-[>textarea]` layout selector
-      // needs the `<textarea>` to stay a direct child wherever this renders (InputGroupTextarea
-      // never passes `error`, so it always takes this same shape). A Fragment also keeps the
+      // needs the `<textarea>` to stay a direct child wherever this renders. A Fragment also keeps the
       // element at this position stable across renders -- switching between a bare control and
       // a wrapped one when `error` toggles would remount the textarea and drop focus/caret
       // position mid-keystroke under validate-on-change. FormFieldError already renders nothing
       // when `error` is falsy, so the bare-vs-message look is unaffected either way.
       <>
         <textarea
-          data-slot="textarea"
+          data-slot={group.inGroup ? 'input-group-control' : 'textarea'}
           id={id}
-          aria-describedby={describedBy || undefined}
-          aria-errormessage={error ? validationId : ariaErrorMessage}
-          aria-invalid={error ? true : ariaInvalid}
+          {...validation.aria}
           className={cn(
             // Base styles (all themes)
             'flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-base transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-error future:aria-invalid:ring-1 future:aria-invalid:ring-error/40 aria-invalid:focus-visible:ring-error md:text-sm',
@@ -219,6 +229,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
             !managed && 'min-h-[80px]',
             // Vertical resize handle (uncapped above; bounded below by the `minRows` floor).
             managed && 'resize-y',
+            group.inGroup && IN_GROUP_CLASS,
             className
           )}
           ref={setRef}
@@ -228,8 +239,10 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
             resize();
           }}
           {...props}
+          disabled={props.disabled || group.disabled}
         />
-        <FormFieldError id={validationId}>{error}</FormFieldError>
+        {/* Inside a group, the group renders the message below its box. */}
+        {validation.ownMessage && <FormFieldError id={validationId}>{error}</FormFieldError>}
       </>
     );
   }

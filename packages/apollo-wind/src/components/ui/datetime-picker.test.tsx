@@ -4,6 +4,7 @@ import { axe } from 'jest-axe';
 import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { DateTimePicker } from './datetime-picker';
+import { InputGroup } from './input-group';
 
 function getTimeInput(): HTMLInputElement {
   const input = document.querySelector<HTMLInputElement>('input[type="time"]');
@@ -236,5 +237,31 @@ describe('DateTimePicker remount safety', () => {
 
     expect(after).toBe(before);
     expect(after).toHaveFocus();
+  });
+});
+
+describe('DateTimePicker in an input group', () => {
+  it("is the enclosing group's control, with no box of its own", () => {
+    render(
+      <InputGroup>
+        <DateTimePicker id="when" placeholder="Pick a time" />
+      </InputGroup>
+    );
+    const trigger = screen.getByText('Pick a time').closest('button');
+    expect(trigger).toHaveAttribute('data-slot', 'input-group-control');
+    expect(trigger).not.toHaveClass('future:bg-surface-overlay');
+  });
+
+  it('opens its panel against the group box', async () => {
+    const user = userEvent.setup();
+    render(
+      <InputGroup data-testid="box">
+        <DateTimePicker id="when" placeholder="Pick a time" />
+      </InputGroup>
+    );
+    const measure = vi.spyOn(screen.getByTestId('box'), 'getBoundingClientRect');
+
+    await user.click(screen.getByText('Pick a time'));
+    await waitFor(() => expect(measure).toHaveBeenCalled());
   });
 });

@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import * as React from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { InputGroup } from './input-group';
 import { PortalContainerProvider } from './portal-container';
 import {
   Select,
@@ -404,5 +405,125 @@ describe('SelectTrigger remount safety', () => {
 
     expect(after).toBe(before);
     expect(after).toHaveFocus();
+  });
+
+  describe('trigger in an input group', () => {
+    const renderTrigger = (grouped?: boolean) => {
+      const select = (
+        <Select>
+          <SelectTrigger aria-label="Select">
+            <SelectValue placeholder="Pick one" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="item">Item</SelectItem>
+          </SelectContent>
+        </Select>
+      );
+      return render(grouped ? <InputGroup>{select}</InputGroup> : select);
+    };
+
+    it('drops its own box, including the future-theme one', () => {
+      renderTrigger(true);
+      const trigger = screen.getByRole('combobox');
+      for (const cls of [
+        'h-9',
+        'border',
+        'rounded-md',
+        'px-3',
+        'future:h-10',
+        'future:bg-surface-overlay',
+        'future:rounded-xl',
+        'future:px-4',
+      ]) {
+        expect(trigger).not.toHaveClass(cls);
+      }
+      expect(trigger).toHaveClass('w-full', 'bg-transparent', 'p-0');
+      // The group's focus, hover and disabled rules find its control by this slot.
+      expect(trigger).toHaveAttribute('data-slot', 'input-group-control');
+      // The group's flex item, so it takes the row's free width and can shrink to truncate.
+      expect(trigger).toHaveClass('min-w-0', 'flex-1');
+    });
+
+    it('draws no focus ring of its own, leaving that to the group', () => {
+      renderTrigger(true);
+      const trigger = screen.getByRole('combobox');
+      expect(trigger.className).not.toMatch(/(^|\s)focus(-visible)?:ring-2/);
+      expect(trigger).toHaveClass('focus-visible:outline-none');
+    });
+
+    it('keeps its placeholder colour and layout', () => {
+      renderTrigger(true);
+      expect(screen.getByRole('combobox')).toHaveClass(
+        'data-[placeholder]:text-muted-foreground',
+        'justify-between'
+      );
+    });
+
+    it('keeps its own box outside a group', () => {
+      renderTrigger();
+      expect(screen.getByRole('combobox')).toHaveClass('h-9', 'border', 'future:h-10');
+      expect(screen.getByRole('combobox')).toHaveAttribute('data-slot', 'select-trigger');
+    });
+  });
+
+  describe('inside an input group', () => {
+    const rect = (left: number, top: number, width: number, height: number) =>
+      ({
+        left,
+        top,
+        width,
+        height,
+        right: left + width,
+        bottom: top + height,
+        x: left,
+        y: top,
+        toJSON: () => ({}),
+      }) as DOMRect;
+
+    it('sizes and offsets the panel to the group box, not the trigger', async () => {
+      const user = userEvent.setup();
+      render(
+        <InputGroup data-testid="box">
+          <Select>
+            <SelectTrigger aria-label="Priority">
+              <SelectValue placeholder="Pick one" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="high">High</SelectItem>
+            </SelectContent>
+          </Select>
+        </InputGroup>
+      );
+
+      // The box is 12px wider on the left and 5px taller below than the inset trigger.
+      vi.spyOn(screen.getByTestId('box'), 'getBoundingClientRect').mockReturnValue(
+        rect(0, 0, 300, 36)
+      );
+      vi.spyOn(screen.getByRole('combobox'), 'getBoundingClientRect').mockReturnValue(
+        rect(12, 5, 250, 26)
+      );
+
+      await user.click(screen.getByRole('combobox'));
+      const listbox = await screen.findByRole('listbox');
+      expect(listbox).toHaveStyle({ width: '300px' });
+    });
+
+    it('leaves the panel on the trigger outside a group', async () => {
+      const user = userEvent.setup();
+      render(
+        <Select>
+          <SelectTrigger aria-label="Priority">
+            <SelectValue placeholder="Pick one" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="high">High</SelectItem>
+          </SelectContent>
+        </Select>
+      );
+
+      await user.click(screen.getByRole('combobox'));
+      const listbox = await screen.findByRole('listbox');
+      expect(listbox.style.width).toBe('');
+    });
   });
 });
