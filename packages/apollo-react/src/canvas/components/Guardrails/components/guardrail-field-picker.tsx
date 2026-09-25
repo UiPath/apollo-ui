@@ -158,8 +158,9 @@ export function GuardrailFieldPicker({
             <ChevronDown className="h-4 w-4 shrink-0 opacity-50" aria-hidden="true" />
           </button>
         </PopoverTrigger>
-        <PopoverContent className="min-w-[220px] p-0" align="start">
-          <Command filter={filterFields}>
+        <PopoverContent aria-labelledby={labelId} className="min-w-[220px] p-0" align="start">
+          {/* cmdk names its search input from `label` alone; a placeholder is not a name. */}
+          <Command filter={filterFields} label={labels.searchFields}>
             <CommandInput placeholder={labels.searchFields} />
             <CommandList>
               <CommandEmpty>{labels.noFieldsFound}</CommandEmpty>
