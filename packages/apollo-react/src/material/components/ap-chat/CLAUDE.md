@@ -472,6 +472,7 @@ Features can be disabled via `chatService.setDisabledFeatures()`:
 - `close` - Close button
 - `feedback` - Feedback actions (thumbs up/down)
 - `copy` - Copy message action
+- `stopResponse` - Stop button while a response is in flight (stays a disabled send button)
 
 ## Best Practices
 
