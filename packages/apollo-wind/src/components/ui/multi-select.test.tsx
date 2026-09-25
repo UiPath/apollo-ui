@@ -1,7 +1,8 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { describe, expect, it, vi } from 'vitest';
+import { InputGroup } from './input-group';
 import { MultiSelect } from './multi-select';
 
 const mockOptions = [
@@ -291,5 +292,88 @@ describe('MultiSelect inline validation', () => {
     render(<MultiSelect options={options} selected={[]} onChange={() => {}} aria-invalid />);
     expect(screen.getByRole('combobox')).toHaveAttribute('aria-invalid', 'true');
     expect(screen.getByRole('combobox')).not.toHaveAttribute('aria-describedby');
+  });
+
+  describe('trigger in an input group', () => {
+    it("becomes the group's control and paints nothing of its own", () => {
+      render(
+        <InputGroup>
+          <MultiSelect options={mockOptions} selected={[]} onChange={vi.fn()} />
+        </InputGroup>
+      );
+      const trigger = screen.getByRole('combobox');
+      expect(trigger).toHaveAttribute('data-slot', 'input-group-control');
+      expect(trigger).toHaveClass('border-0', 'bg-transparent', 'p-0');
+      expect(trigger).not.toHaveClass('h-10');
+      expect(trigger).not.toHaveClass('future:bg-surface-overlay');
+    });
+
+    it('grows with its chips', () => {
+      render(
+        <InputGroup>
+          <MultiSelect options={mockOptions} selected={['react', 'vue']} onChange={vi.fn()} />
+        </InputGroup>
+      );
+      expect(screen.getByRole('combobox')).toHaveClass('h-auto');
+    });
+
+    it('keeps its caret on the first chip row as the chips wrap', () => {
+      render(
+        <InputGroup>
+          <MultiSelect
+            options={mockOptions}
+            selected={['react', 'vue', 'angular']}
+            onChange={vi.fn()}
+          />
+        </InputGroup>
+      );
+      const trigger = screen.getByRole('combobox');
+      expect(trigger).toHaveClass('items-start');
+      const caret = trigger.querySelector('svg.lucide-chevrons-up-down')?.parentElement;
+      expect(caret).toHaveClass('self-start', 'h-6.5', 'future:h-6');
+    });
+
+    it("takes the group row's free width", () => {
+      const { container } = render(
+        <InputGroup>
+          <MultiSelect options={mockOptions} selected={[]} onChange={vi.fn()} />
+        </InputGroup>
+      );
+      expect(container.querySelector('[data-slot="multi-select"]')).toHaveClass(
+        'min-w-0',
+        'flex-1'
+      );
+    });
+
+    it('keeps the outline trigger outside a group', () => {
+      render(<MultiSelect options={mockOptions} selected={[]} onChange={vi.fn()} />);
+      const trigger = screen.getByRole('combobox');
+      expect(trigger).not.toHaveAttribute('data-slot', 'input-group-control');
+      expect(trigger).toHaveClass('h-10', 'border');
+    });
+  });
+
+  describe('popover anchor', () => {
+    it('positions the panel against the group box when there is one', async () => {
+      const user = userEvent.setup();
+      render(
+        <InputGroup data-testid="box">
+          <MultiSelect options={mockOptions} selected={[]} onChange={vi.fn()} />
+        </InputGroup>
+      );
+      const measure = vi.spyOn(screen.getByTestId('box'), 'getBoundingClientRect');
+
+      await user.click(screen.getByRole('combobox'));
+      await waitFor(() => expect(measure).toHaveBeenCalled());
+    });
+
+    it('sizes the panel to the anchor with a real CSS variable reference', async () => {
+      const user = userEvent.setup();
+      render(<MultiSelect options={mockOptions} selected={[]} onChange={vi.fn()} />);
+      await user.click(screen.getByRole('combobox'));
+      const panel = await screen.findByRole('dialog');
+      // `w-[--x]` compiles to `width: --x` under Tailwind v4, which is no width at all.
+      expect(panel).toHaveClass('w-(--radix-popover-trigger-width)');
+    });
   });
 });

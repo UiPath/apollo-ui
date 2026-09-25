@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import { InfoTooltip } from '@/components/ui/info-tooltip';
 import { Label, RequiredIndicator } from '@/components/ui/label';
+import { Row } from '@/components/ui/layout';
 import { cn } from '@/lib/index';
 
 export type FormFieldProps = React.ComponentPropsWithoutRef<'div'>;
@@ -70,7 +71,9 @@ const FormFieldLabel = React.forwardRef<HTMLLabelElement, FormFieldLabelProps>(
       </Label>
     );
 
-    if (tooltip === undefined || tooltip === null || tooltip === false) return label;
+    // A blank string is no tooltip: an info trigger that opens onto nothing is worse than none.
+    const blank = typeof tooltip === 'string' && !tooltip.trim();
+    if (tooltip === undefined || tooltip === null || tooltip === false || blank) return label;
 
     // The trigger is a real <button>, and <label>'s content model forbids descendant
     // labelable elements — nesting it would also make a click on the icon ambiguous with
@@ -134,4 +137,83 @@ const FormFieldError = React.forwardRef<HTMLParagraphElement, FormFieldErrorProp
 );
 FormFieldError.displayName = 'FormFieldError';
 
-export { FormField, FormFieldDescription, FormFieldError, FormFieldLabel };
+export interface FormFieldHeaderProps
+  extends Pick<FormFieldLabelProps, 'htmlFor' | 'required' | 'tooltip' | 'tooltipAriaLabel'>,
+    Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {
+  label?: React.ReactNode;
+  /** Ahead of the label, such as a type glyph. Never opens the row on its own. */
+  leading?: React.ReactNode;
+  /** After the label, such as a spelled-out type chip. Never opens the row on its own. */
+  badge?: React.ReactNode;
+  /** Behind the label: Insert variable, AI assist, overflow actions. */
+  actions?: React.ReactNode;
+  /** `muted` is the secondary scale for sub-labels and composite cells. */
+  variant?: 'default' | 'muted';
+}
+
+/**
+ * The label and action row above a field's control, for a field whose header carries more than a
+ * label. Kept out of the control's box on purpose: drawn inside the border, a toolbar row stretched
+ * the box's trailing affordance down two rows.
+ *
+ * Renders nothing when there is neither a label nor actions: `leading` and `badge` ride a row
+ * something else opened.
+ */
+const FormFieldHeader = React.forwardRef<HTMLDivElement, FormFieldHeaderProps>(
+  (
+    {
+      label,
+      htmlFor,
+      required,
+      tooltip,
+      tooltipAriaLabel,
+      leading,
+      badge,
+      actions,
+      variant = 'default',
+      className,
+      ...props
+    },
+    ref
+  ) => {
+    if (!label && !actions) return null;
+
+    return (
+      // `min-h-6` is the height of the `3xs` action buttons, so the row does not jump when a field
+      // gains or loses its actions. `@container` so the actions collapse to their icons by this row's
+      // width, not some unrelated container's.
+      <div
+        ref={ref}
+        data-slot="form-field-header"
+        className={cn('@container flex min-h-6 items-center justify-between gap-2', className)}
+        {...props}
+      >
+        <div className="flex min-w-0 items-center gap-2">
+          {leading}
+          {/* Not recoloured when the field is invalid: the label names the field, it does not
+            report on it. */}
+          {label && (
+            <FormFieldLabel
+              htmlFor={htmlFor}
+              required={required}
+              tooltip={tooltip}
+              tooltipAriaLabel={tooltipAriaLabel}
+              variant={variant}
+            >
+              {label}
+            </FormFieldLabel>
+          )}
+          {badge}
+        </div>
+        {actions && (
+          <Row align="center" gap={1}>
+            {actions}
+          </Row>
+        )}
+      </div>
+    );
+  }
+);
+FormFieldHeader.displayName = 'FormFieldHeader';
+
+export { FormField, FormFieldDescription, FormFieldError, FormFieldHeader, FormFieldLabel };

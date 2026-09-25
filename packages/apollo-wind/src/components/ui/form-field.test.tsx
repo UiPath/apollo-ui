@@ -1,6 +1,14 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import * as React from 'react';
 import { describe, expect, it } from 'vitest';
-import { FormField, FormFieldDescription, FormFieldError, FormFieldLabel } from './form-field';
+import {
+  FormField,
+  FormFieldDescription,
+  FormFieldError,
+  FormFieldHeader,
+  FormFieldLabel,
+} from './form-field';
 import { TooltipProvider } from './tooltip';
 
 describe('FormField', () => {
@@ -92,6 +100,11 @@ describe('FormFieldLabel', () => {
     );
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
+
+  it('treats a blank tooltip string as no tooltip', () => {
+    render(<FormFieldLabel tooltip="  ">Endpoint</FormFieldLabel>);
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
 });
 
 describe('FormFieldDescription', () => {
@@ -128,5 +141,112 @@ describe('FormFieldError', () => {
     const error = screen.getByText('Required.');
     expect(error).toHaveClass('mt-1.5');
     expect(error).toHaveAttribute('data-slot', 'form-field-error');
+  });
+});
+
+describe('FormFieldHeader', () => {
+  it('renders nothing when it has no label, leading or actions', () => {
+    const { container } = render(<FormFieldHeader />);
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it('is the container its actions collapse by, with a forwarded ref and extra props', () => {
+    const ref = React.createRef<HTMLDivElement>();
+    render(<FormFieldHeader ref={ref} label="Summary" data-testid="header" />);
+    const header = screen.getByTestId('header');
+    expect(ref.current).toBe(header);
+    expect(header).toHaveClass('@container');
+  });
+
+  it('marks a required field with an asterisk in the label’s own colour', () => {
+    render(<FormFieldHeader label="Summary" required />);
+
+    expect(screen.getByText('Summary')).toBeInTheDocument();
+    const marker = screen.getByText('*');
+    // The marker reads as part of the label, not as a warning about it.
+    expect(marker.className).not.toMatch(/error|destructive/);
+  });
+
+  it('never recolours the label, whatever state the field is in', () => {
+    render(<FormFieldHeader label="Summary" />);
+    const label = screen.getByText('Summary').closest('label') as HTMLElement;
+    expect(label.className).not.toMatch(/error|destructive/);
+  });
+
+  it('keeps the type annotation AFTER the label and the glyph before it', () => {
+    render(
+      <FormFieldHeader label="Body" leading={<span>glyph</span>} badge={<span>string</span>} />
+    );
+
+    const label = screen.getByText('Body');
+    expect(label.compareDocumentPosition(screen.getByText('glyph'))).toBe(
+      Node.DOCUMENT_POSITION_PRECEDING
+    );
+    expect(label.compareDocumentPosition(screen.getByText('string'))).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING
+    );
+  });
+
+  it('renders nothing for a badge or glyph alone', () => {
+    const { container } = render(
+      <FormFieldHeader badge={<span>number</span>} leading={<span>glyph</span>} />
+    );
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it('carries the passengers once the label opens the row', () => {
+    render(<FormFieldHeader label="Body" badge={<span>number</span>} />);
+    expect(screen.getByText('number')).toBeInTheDocument();
+  });
+
+  it('renders leading and action slots', () => {
+    render(
+      <FormFieldHeader
+        label="Body"
+        leading={<span>badge</span>}
+        actions={<button type="button">Insert</button>}
+      />
+    );
+
+    expect(screen.getByText('badge')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Insert' })).toBeInTheDocument();
+  });
+
+  it('opens the description from the info trigger beside the label', async () => {
+    const user = userEvent.setup();
+    render(
+      <TooltipProvider>
+        <FormFieldHeader label="Timeout" tooltip="How long to wait" />
+      </TooltipProvider>
+    );
+
+    // A real button, so the description reaches keyboard and touch as well as hover.
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'More information' })).toHaveFocus();
+    expect(await screen.findAllByText('How long to wait')).not.toHaveLength(0);
+  });
+
+  it('draws no info trigger for blank description text', () => {
+    render(<FormFieldHeader label="Timeout" tooltip="   " />);
+    expect(screen.queryByRole('button', { name: 'More information' })).toBeNull();
+  });
+
+  it('names the field with FormFieldLabel, so it stacks inside FormField like any label', () => {
+    render(
+      <FormField>
+        <FormFieldHeader
+          label="Timeout"
+          htmlFor="timeout"
+          actions={<button type="button">Insert</button>}
+        />
+        <input id="timeout" />
+      </FormField>
+    );
+
+    expect(screen.getByText('Timeout').closest('label')).toHaveAttribute(
+      'data-slot',
+      'form-field-label'
+    );
+    expect(screen.getByLabelText('Timeout')).toBeInTheDocument();
   });
 });

@@ -8,6 +8,7 @@ import {
   useResolvedPortalContainer,
 } from '@/components/ui/portal-container';
 import { cn } from '@/lib';
+import { InputGroupContext, NO_GROUP } from './input-group-context';
 
 const DropdownMenu = (props: React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Root>) => (
   <DropdownMenuPrimitive.Root data-slot="dropdown-menu" {...props} />
@@ -132,18 +133,21 @@ const DropdownMenuContent = React.forwardRef<
 >(({ className, sideOffset = 4, container, ...props }, ref) => {
   const resolvedContainer = useResolvedPortalContainer(container);
   return (
-    <DropdownMenuPrimitive.Portal container={resolvedContainer}>
-      <DropdownMenuPrimitive.Content
-        ref={ref}
-        data-slot="dropdown-menu-content"
-        sideOffset={sideOffset}
-        className={cn(
-          'z-50 max-h-[var(--radix-dropdown-menu-content-available-height)] min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md future:rounded-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-[--radix-dropdown-menu-content-transform-origin]',
-          className
-        )}
-        {...props}
-      />
-    </DropdownMenuPrimitive.Portal>
+    // A popup keeps the React context of its trigger, but its fields are not the group's control.
+    <InputGroupContext.Provider value={NO_GROUP}>
+      <DropdownMenuPrimitive.Portal container={resolvedContainer}>
+        <DropdownMenuPrimitive.Content
+          ref={ref}
+          data-slot="dropdown-menu-content"
+          sideOffset={sideOffset}
+          className={cn(
+            'z-50 max-h-[var(--radix-dropdown-menu-content-available-height)] min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md future:rounded-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-[--radix-dropdown-menu-content-transform-origin]',
+            className
+          )}
+          {...props}
+        />
+      </DropdownMenuPrimitive.Portal>
+    </InputGroupContext.Provider>
   );
 });
 DropdownMenuContent.displayName = DropdownMenuPrimitive.Content.displayName;

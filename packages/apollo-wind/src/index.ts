@@ -248,6 +248,7 @@ export { FileUpload } from './components/ui/file-upload';
 export type {
   FormFieldDescriptionProps,
   FormFieldErrorProps,
+  FormFieldHeaderProps,
   FormFieldLabelProps,
   FormFieldProps,
 } from './components/ui/form-field';
@@ -255,8 +256,37 @@ export {
   FormField,
   FormFieldDescription,
   FormFieldError,
+  FormFieldHeader,
   FormFieldLabel,
 } from './components/ui/form-field';
+export type {
+  AiAssistActionProps,
+  AiAssistActionStrings,
+  InsertVariableActionProps,
+  InsertVariableActionStrings,
+} from './components/ui/field-actions';
+export {
+  AiAssistAction,
+  DEFAULT_AI_ASSIST_ACTION_STRINGS,
+  DEFAULT_INSERT_VARIABLE_ACTION_STRINGS,
+  InsertVariableAction,
+} from './components/ui/field-actions';
+export type {
+  ValueMode,
+  ValueModeIndicatorProps,
+  ValueModeMenuAction,
+  ValueModeMenuProps,
+  ValueModeOption,
+  ValueModeStrings,
+  ValueModeStringsProviderProps,
+} from './components/ui/field-addons';
+export {
+  DEFAULT_VALUE_MODE_STRINGS,
+  useValueModeStrings,
+  ValueModeIndicator,
+  ValueModeMenu,
+  ValueModeStringsProvider,
+} from './components/ui/field-addons';
 export {
   HoverCard,
   HoverCardContent,
@@ -271,19 +301,31 @@ export type { InputProps } from './components/ui/input';
 export { Input } from './components/ui/input';
 export type {
   InputGroupAddonProps,
+  InputGroupBodyProps,
   InputGroupButtonProps,
   InputGroupInputProps,
+  InputGroupLayout,
+  InputGroupPopoverTriggerProps,
   InputGroupProps,
+  InputGroupRowProps,
+  InputGroupState,
   InputGroupTextareaProps,
   InputGroupTextProps,
+  InputGroupTriggerProps,
 } from './components/ui/input-group';
 export {
   InputGroup,
   InputGroupAddon,
+  InputGroupBody,
   InputGroupButton,
   InputGroupInput,
+  InputGroupPopoverTrigger,
+  InputGroupRow,
   InputGroupText,
   InputGroupTextarea,
+  InputGroupTrigger,
+  inputGroupVariants,
+  useInputGroup,
 } from './components/ui/input-group';
 export type {
   LabelProps,

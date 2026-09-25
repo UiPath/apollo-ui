@@ -25,9 +25,9 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib';
+import { ValueModeMenuItem } from '../field-addons/value-mode-menu';
 import { FieldHeader } from './components/field-header';
 import { LockToggleButton } from './components/lock-toggle-button';
-import { ModeMenuItem } from './components/mode-menu-item';
 import type { LockableValueFieldProps } from './types';
 import { FIELD_TYPE_META, type LockableValueFieldMoreActions } from './types';
 import {
@@ -306,14 +306,14 @@ export function LockableValueField({
                       </InputGroupButton>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56">
-                      <ModeMenuItem
+                      <ValueModeMenuItem
                         icon={Type}
                         label={typeMeta.fixedLabel}
                         description={typeMeta.fixedDescription}
                         active={effectiveMode === 'fixed'}
                         onClick={() => onModeChange?.('fixed')}
                       />
-                      <ModeMenuItem
+                      <ValueModeMenuItem
                         icon={Code2}
                         label="Expression"
                         description="Use a JS expression"
@@ -358,13 +358,7 @@ export function LockableValueField({
               onValueChange={onValueChange}
               disabled={!onValueChange}
             >
-              <SelectTrigger
-                id={fieldId}
-                className="min-w-0 flex-1 rounded-none border-0 bg-transparent px-0 shadow-none future:rounded-none future:border-0 future:bg-transparent future:px-0"
-                aria-invalid={error ? true : undefined}
-                aria-describedby={error ? validationId : undefined}
-                aria-errormessage={error ? validationId : undefined}
-              >
+              <SelectTrigger id={fieldId}>
                 <SelectValue placeholder="Select an option" />
               </SelectTrigger>
               <SelectContent>
@@ -378,16 +372,12 @@ export function LockableValueField({
           ) : fieldType === 'multi-select' ? (
             <MultiSelect
               id={fieldId}
-              className="min-w-0 flex-1"
               options={options}
               selected={parseListValue(value)}
               onChange={(selected) => onValueChange?.(JSON.stringify(selected))}
               placeholder="Select options..."
               disabled={!onValueChange}
               onBlur={onValueBlur}
-              aria-invalid={error ? true : undefined}
-              aria-describedby={error ? validationId : undefined}
-              aria-errormessage={error ? validationId : undefined}
             />
           ) : null}
           {hasMoreActions && more && (

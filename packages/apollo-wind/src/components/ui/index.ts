@@ -23,6 +23,8 @@ export * from './drawer';
 export * from './dropdown-menu';
 export * from './editable-cell';
 export * from './empty-state';
+export * from './field-actions';
+export * from './field-addons';
 export * from './file-upload';
 export * from './form-field';
 export * from './hover-card';

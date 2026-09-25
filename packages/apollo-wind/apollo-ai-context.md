@@ -280,6 +280,36 @@ const columns = [
 </Select>
 ```
 
+#### InputGroup (a field's box, with addons)
+
+Put the control inside `InputGroup`. Apollo's controls detect the group and become its control. The group then draws the box, focus ring, hover, invalid and disabled states, anchors their popovers to the box, and renders the message from its own `error`. There is nothing to set on the control.
+
+| Control | What to write inside the group |
+|---|---|
+| Input, Textarea | `<Input />`, `<Textarea />` (`InputGroupInput` / `InputGroupTextarea` are the same, kept for shadcn parity) |
+| Select | `<Select><SelectTrigger>…</SelectTrigger>…</Select>` |
+| MultiSelect, Combobox, DatePicker, DateRangePicker, DateTimePicker | The control, as is |
+| Your own popover picker | `InputGroupPopoverTrigger` inside a `Popover` |
+| Your own button control (collapsible header, menu trigger) | `InputGroupTrigger` |
+| Your own input or editor | `data-slot="input-group-control"` on its focusable element, `min-w-0 flex-1` on its root |
+| Switch, Checkbox | The control, as is, in a `variant="none"` group. They draw their own focus ring, so they do not take the slot |
+
+```tsx
+<FormField>
+  <FormFieldHeader label="Due date" htmlFor="due" actions={<InsertVariableAction … />} />
+  <InputGroup error={error}>
+    <InputGroupAddon><CalendarDays /></InputGroupAddon>
+    <DatePicker id="due" value={due} onValueChange={setDue} />
+    <InputGroupAddon align="inline-end"><ValueModeMenu mode={mode} onSelect={setMode} /></InputGroupAddon>
+  </InputGroup>
+</FormField>
+```
+
+- Box props (`variant`, `size`, `layout`, `error`, `invalid`, `disabled`) go on `InputGroup`. A control's own `variant` and `size` do not apply inside a group; its own `error` marks it invalid without a second message.
+- `layout`: `row` (one line), `grow` (textarea, multi-select), `fill` (code editor), `block` (`InputGroupRow` above `InputGroupBody`, for a collapsible section of nested fields).
+- Controls inside `InputGroupAddon` or `InputGroupBody` are standard fields with their own box. Give a nested field addons by wrapping it in its own `InputGroup`.
+- A custom control that also renders standalone can read `useInputGroup()` (`inGroup`, `layout`, `anchor`).
+
 #### Tabs
 
 ```tsx

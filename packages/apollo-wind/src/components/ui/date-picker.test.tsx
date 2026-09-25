@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { describe, expect, it, vi } from 'vitest';
 import { DatePicker, DateRangePicker } from './date-picker';
+import { InputGroup } from './input-group';
 
 describe('DatePicker', () => {
   describe('rendering', () => {
@@ -315,5 +316,48 @@ describe('DateRangePicker remount safety', () => {
 
     expect(after).toBe(before);
     expect(after).toHaveFocus();
+  });
+});
+
+describe.each([
+  ['DatePicker', DatePicker],
+  ['DateRangePicker', DateRangePicker],
+] as const)('%s in an input group', (_, Picker) => {
+  it("is the enclosing group's control, with no box of its own", () => {
+    render(
+      <InputGroup>
+        <Picker placeholder="Pick a date" />
+      </InputGroup>
+    );
+    const trigger = screen.getByRole('button', { name: 'Pick a date' });
+    expect(trigger).toHaveAttribute('data-slot', 'input-group-control');
+    expect(trigger).not.toHaveClass('future:bg-surface-overlay');
+  });
+
+  it('opens its panel against the group box', async () => {
+    const user = userEvent.setup();
+    render(
+      <InputGroup data-testid="box">
+        <Picker placeholder="Pick a date" />
+      </InputGroup>
+    );
+    const measure = vi.spyOn(screen.getByTestId('box'), 'getBoundingClientRect');
+
+    await user.click(screen.getByRole('button', { name: 'Pick a date' }));
+    await waitFor(() => expect(measure).toHaveBeenCalled());
+  });
+});
+
+describe('DateRangePicker in an input group', () => {
+  it('shows the range itself, not its accessible label', () => {
+    render(
+      <InputGroup>
+        <DateRangePicker
+          id="range"
+          value={{ from: new Date(2026, 0, 5), to: new Date(2026, 0, 9) }}
+        />
+      </InputGroup>
+    );
+    expect(screen.getByText('Jan 05, 2026 - Jan 09, 2026')).toBeInTheDocument();
   });
 });

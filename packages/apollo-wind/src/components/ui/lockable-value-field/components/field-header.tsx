@@ -1,7 +1,5 @@
-import { Asterisk, Braces, ChevronDown, Sparkles } from 'lucide-react';
+import { Asterisk, ChevronDown } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { useId, useState } from 'react';
-import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,10 +9,15 @@ import {
 import { Label, RequiredIndicator } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
-import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { VariablePicker } from '@/components/ui/variable-picker';
 import { cn } from '@/lib';
+import { AiAssistAction } from '../../field-actions/ai-assist-action';
+import {
+  COLLAPSED_HIDDEN,
+  COLLAPSED_ICON_PADDING,
+  COLLAPSED_ONLY,
+} from '../../field-actions/collapse';
+import { InsertVariableAction } from '../../field-actions/insert-variable-action';
 import type { LockableFieldType, LockableValueFieldOption } from '../types';
 import { FIELD_TYPE_META, FIELD_TYPE_ORDER } from '../types';
 
@@ -51,14 +54,10 @@ export function FieldHeader({
   onGenerateWithAi?: (prompt: string) => void;
   headerActions?: ReactNode;
 }) {
-  const promptId = useId();
-  const [aiPrompt, setAiPrompt] = useState('');
   const typeMeta = FIELD_TYPE_META[fieldType];
-  // 259px is the container width below which these controls no longer fit
-  // alongside their text labels, so they collapse to icon-only.
-  const collapsedTextClass = cn('@max-[259px]:hidden', compact && '!hidden');
-  const collapsedPaddingClass = cn('@max-[259px]:px-1.5', compact && '!px-1.5');
-  const compactOnlyClass = cn('hidden @max-[259px]:block', compact && '!block');
+  const collapsedTextClass = cn(COLLAPSED_HIDDEN, compact && '!hidden');
+  const collapsedPaddingClass = cn(COLLAPSED_ICON_PADDING, compact && '!px-1.5');
+  const compactOnlyClass = cn(COLLAPSED_ONLY, compact && '!block');
 
   return (
     <div className="flex items-center gap-1">
@@ -164,88 +163,19 @@ export function FieldHeader({
             {showFieldActions && (
               <>
                 {showAiAssist && (
-                  <Popover>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <PopoverTrigger asChild>
-                          <button
-                            type="button"
-                            aria-label="AI assist"
-                            className="grid size-7 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
-                          >
-                            <Sparkles size={12} />
-                          </button>
-                        </PopoverTrigger>
-                      </TooltipTrigger>
-                      <TooltipContent>Generate with AI</TooltipContent>
-                    </Tooltip>
-                    <PopoverContent align="end" className="space-y-3">
-                      <div className="space-y-1.5">
-                        <Label
-                          htmlFor={promptId}
-                          className="text-xs font-medium text-foreground-muted"
-                        >
-                          Describe what you want
-                        </Label>
-                        <Textarea
-                          id={promptId}
-                          rows={3}
-                          value={aiPrompt}
-                          onChange={(e) => setAiPrompt(e.target.value)}
-                          placeholder="Display a value from the previous step"
-                          className="resize-none text-sm"
-                        />
-                      </div>
-                      <span className="block text-[11px] text-foreground-subtle">
-                        Output: {typeMeta.label}
-                        {typeMeta.supportsExpression ? ' expression' : ' value'}
-                      </span>
-                      <Button
-                        size="sm"
-                        className="w-full"
-                        disabled={!onGenerateWithAi}
-                        onClick={() => onGenerateWithAi?.(aiPrompt)}
-                      >
-                        Generate
-                      </Button>
-                    </PopoverContent>
-                  </Popover>
+                  <AiAssistAction
+                    onGenerate={onGenerateWithAi}
+                    hint={`Output: ${typeMeta.label}${typeMeta.supportsExpression ? ' expression' : ' value'}`}
+                  />
                 )}
-                <VariablePicker
-                  disabled={variables.length === 0 || !onValueChange}
-                  items={[
-                    {
-                      id: 'vars',
-                      label: '$vars',
-                      type: 'object',
-                      children: variables.map((variable) => ({
-                        id: variable.value,
-                        label: variable.label,
-                        value: variable.value,
-                        type: 'string',
-                      })),
-                    },
-                  ]}
-                  onSelect={(variable) => {
-                    if (!variable.value) return;
-                    onValueChange?.(value ? `${value} ${variable.value}` : variable.value);
-                  }}
-                >
-                  <button
-                    type="button"
-                    aria-label="Insert variable"
-                    title="Insert variable"
-                    disabled={variables.length === 0 || !onValueChange}
-                    className={cn(
-                      'flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground disabled:pointer-events-none disabled:opacity-50',
-                      collapsedPaddingClass
-                    )}
-                  >
-                    <Braces size={12} />
-                    <span className={collapsedTextClass}>Insert</span>
-                    <ChevronDown size={9} className={collapsedTextClass} />
-                  </button>
-                </VariablePicker>
+                <InsertVariableAction
+                  variables={variables}
+                  compact={compact}
+                  onInsert={
+                    onValueChange &&
+                    ((variable) => onValueChange(value ? `${value} ${variable}` : variable))
+                  }
+                />
               </>
             )}
           </div>
