@@ -348,6 +348,19 @@ describe('GuardrailRulesSection', () => {
       expect(within(listbox).queryByRole('option', { name: 'Amount' })).not.toBeInTheDocument();
     });
 
+    it('names its popover and search input, and passes axe while open', async () => {
+      render(<Host initial={[word({ value: 'a' })]} fields={FIELDS} />);
+
+      fireEvent.click(screen.getByRole('combobox', { name: /Apply to fields/ }));
+
+      const popover = await screen.findByRole('dialog', { name: /Apply to fields/ });
+      expect(
+        within(popover).getByRole('combobox', { name: 'Search fields...' })
+      ).toBeInTheDocument();
+      // The popover portals out of the render container the other axe runs scan.
+      expect(await axe(popover)).toHaveNoViolations();
+    });
+
     it('selects specific fields, and returns to all fields when the last one goes', async () => {
       const onRulesChange = vi.fn();
       render(
