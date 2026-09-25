@@ -382,7 +382,6 @@
   "guardrails.rules.no-fields-found": "No fields found",
   "guardrails.rules.input-group": "Input",
   "guardrails.rules.output-group": "Output",
-  "guardrails.rules.remove-field": "Remove field {name}",
   "guardrails.rules.filter-fields-label": "Fields to filter",
   "guardrails.rules.filter-fields-tooltip": "Selected fields will be excluded from the input/output of the tool",
   "guardrails.rules.filter-no-schema": "No schema available to show fields",

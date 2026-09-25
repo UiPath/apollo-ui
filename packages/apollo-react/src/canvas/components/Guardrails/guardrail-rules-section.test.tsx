@@ -386,12 +386,16 @@ describe('GuardrailRulesSection', () => {
         '2 fields selected'
       );
 
-      fireEvent.click(screen.getByRole('button', { name: 'Remove field Customer email' }));
-      fireEvent.click(screen.getByRole('button', { name: 'Remove field Summary' }));
+      // No chips: the list is where a picked field is unpicked.
+      fireEvent.click(screen.getByRole('option', { name: 'Customer email' }));
+      fireEvent.click(screen.getByRole('option', { name: 'Summary' }));
       expect(onRulesChange).toHaveBeenLastCalledWith([word({ value: 'a' })]);
+      expect(screen.getByRole('combobox', { name: /Apply to fields/ })).toHaveTextContent(
+        'All fields'
+      );
     });
 
-    it('names a stored field the schema no longer lists by its own title or path', () => {
+    it('names a stored field the schema no longer lists, and still lists it', async () => {
       render(
         <GuardrailRulesSection
           rules={[
@@ -408,10 +412,15 @@ describe('GuardrailRulesSection', () => {
         />
       );
 
-      expect(screen.getByRole('combobox', { name: /Apply to fields/ })).toHaveTextContent(
-        'legacy.field'
+      const trigger = screen.getByRole('combobox', { name: /Apply to fields/ });
+      expect(trigger).toHaveTextContent('legacy.field');
+
+      fireEvent.click(trigger);
+      const output = within(await screen.findByRole('group', { name: 'Output' }));
+      expect(output.getByRole('option', { name: 'legacy.field' })).toHaveAttribute(
+        'aria-checked',
+        'true'
       );
-      expect(screen.getByRole('button', { name: 'Remove field legacy.field' })).toBeInTheDocument();
     });
   });
 

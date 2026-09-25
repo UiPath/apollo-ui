@@ -83,7 +83,6 @@ const HOST_COPY: Partial<Record<Label, HostCopy>> = {
   noFieldsFound: { agents: 'No options', flow: 'No fields found' },
   inputGroup: { agents: 'Input', flow: 'Input' },
   outputGroup: { agents: 'Output', flow: 'Output' },
-  removeField: { flow: 'Remove field {{path}}' },
   filterFieldsLabel: { agents: 'Select fields', flow: 'Fields to filter' },
   filterFieldsTooltip: {
     agents: 'Selected fields will be excluded from the input/output of the tool',
@@ -171,15 +170,6 @@ const SINGLE_SOURCE: Label[] = [
   'filterNoSchema',
 ];
 
-/** Single-source labels this package words differently, with the reason. */
-const ADAPTED: Array<{ label: Label; reason: string }> = [
-  {
-    label: 'removeField',
-    reason:
-      'Flow names the button after the field’s path; this names it the way its chip reads (the title when there is one), so the two announce the same field',
-  },
-];
-
 describe('rules section copy', () => {
   const divergenceFor = (label: Label) =>
     EXPECTED_DIVERGENCES.find((entry) => entry.label === label);
@@ -240,15 +230,12 @@ describe('rules section copy', () => {
     }
   });
 
-  it('really does reword the labels it declares adapted, and only those', () => {
-    const singleSourced = (Object.entries(HOST_COPY) as Array<[Label, HostCopy]>).filter(
-      ([, hosts]) => (hosts.agents === undefined) !== (hosts.flow === undefined)
-    );
-    for (const [label, hosts] of singleSourced) {
-      const only = hosts.agents ?? hosts.flow;
-      const adapted = ADAPTED.some((entry) => entry.label === label);
-      expect(adapted || SINGLE_SOURCE.includes(label)).toBe(true);
-      if (adapted) expect(GUARDRAIL_RULES_EN_LABELS[label]).not.toBe(only);
-    }
+  it('declares every label only one product has as single-source', () => {
+    const undeclared = (Object.entries(HOST_COPY) as Array<[Label, HostCopy]>)
+      .filter(([, hosts]) => (hosts.agents === undefined) !== (hosts.flow === undefined))
+      .map(([label]) => label)
+      .filter((label) => !SINGLE_SOURCE.includes(label));
+
+    expect(undeclared).toEqual([]);
   });
 });

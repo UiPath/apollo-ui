@@ -89,7 +89,7 @@ describe('GuardrailFilterFieldSelector', () => {
     expect(onChange).toHaveBeenCalledWith([{ path: 'id', source: 'output' }]);
   });
 
-  it('removes a field from its chip', () => {
+  it('unpicks a field from the list, which shows it checked', async () => {
     const onChange = vi.fn();
     const value: GuardrailFieldReference[] = [
       { path: 'customer.email', source: 'input', title: 'Customer email' },
@@ -97,9 +97,29 @@ describe('GuardrailFilterFieldSelector', () => {
     ];
     render(<GuardrailFilterFieldSelector fields={FIELDS} value={value} onChange={onChange} />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Remove field Customer email' }));
+    fireEvent.click(screen.getByRole('combobox', { name: /Fields to filter/ }));
+    const option = await screen.findByRole('option', { name: 'Customer email' });
+    expect(option).toHaveAttribute('aria-checked', 'true');
+    fireEvent.click(option);
 
     expect(onChange).toHaveBeenCalledWith([{ path: 'id', source: 'input' }]);
+  });
+
+  it('keeps a picked field the schema no longer lists, so it can be unpicked', async () => {
+    const onChange = vi.fn();
+    render(
+      <GuardrailFilterFieldSelector
+        fields={FIELDS}
+        value={[{ path: 'legacy.field', source: 'output' }]}
+        onChange={onChange}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('combobox', { name: /Fields to filter/ }));
+    const output = within(await screen.findByRole('group', { name: 'Output' }));
+    fireEvent.click(output.getByRole('option', { name: 'legacy.field' }));
+
+    expect(onChange).toHaveBeenCalledWith([]);
   });
 
   it('ties its error to the trigger', () => {
@@ -160,7 +180,6 @@ describe('GuardrailFilterFieldSelector', () => {
     expect(screen.getByRole('combobox', { name: /Fields to filter/ })).toHaveTextContent(
       'Customer email'
     );
-    expect(screen.getByRole('button', { name: 'Remove field Customer email' })).toBeInTheDocument();
   });
 
   it('has no accessibility violations', async () => {
