@@ -122,7 +122,7 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
                     : placeholder
               }
               className={cn(
-                'w-full justify-between future:rounded-xl future:border-0 future:bg-surface-overlay future:px-4 future:gap-4 future:hover:bg-surface-hover future:font-normal future:text-foreground future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background',
+                'w-full justify-between future:rounded-xl future:border-0 future:bg-surface-overlay future:px-4 future:gap-4 future:hover:bg-surface-hover future:font-normal future:text-foreground future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background future:focus-visible:ring-cyan-600 future:aria-invalid:focus-visible:ring-error',
                 selected.length > 0 ? 'h-auto min-h-10' : 'h-10'
               )}
               disabled={disabled}

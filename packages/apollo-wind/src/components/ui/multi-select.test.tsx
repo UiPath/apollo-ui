@@ -259,6 +259,16 @@ describe('MultiSelect', () => {
       expect(trigger).not.toHaveClass('future:text-muted-foreground');
     });
   });
+
+  describe('Future focus ring', () => {
+    it('uses the cyan ring, with the error ring on top', () => {
+      render(<MultiSelect options={mockOptions} selected={[]} onChange={vi.fn()} />);
+      expect(screen.getByRole('combobox')).toHaveClass(
+        'future:focus-visible:ring-cyan-600',
+        'future:aria-invalid:focus-visible:ring-error'
+      );
+    });
+  });
 });
 
 describe('MultiSelect inline validation', () => {
