@@ -761,7 +761,8 @@ const [rules, setRules] = useState<GuardrailRule[]>([
   rule. Switching on leaves exactly one (an existing one keeps its stage); switching off keeps
   the field rules, or starts one fresh rule of the first type the fields serve. A stored list
   that mixes an `always` rule with field rules renders both, so it can be fixed, and
-  `getGuardrailRulesErrorFields` reports it as `alwaysCombined`.
+  `getGuardrailRulesErrorFields` reports it as `alwaysCombined`, as it does a second `always`
+  rule (the stage select edits the first; switching off and on again leaves one).
 - **The confirmation is an intent.** When switching on would drop a rule the user edited (one
   that differs from `createGuardrailRule` of its type), the section calls
   `onRequestAlwaysEnforce(next)` instead of `onRulesChange`: confirm in the host's own dialog,
