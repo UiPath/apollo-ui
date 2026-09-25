@@ -33,6 +33,19 @@ describe('GuardrailFilterFieldSelector', () => {
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
   });
 
+  it('still shows its error when the tool has no schema', () => {
+    render(
+      <GuardrailFilterFieldSelector
+        value={[]}
+        onChange={vi.fn()}
+        error="Fields selection is required"
+      />
+    );
+
+    expect(screen.getByText('No schema available to show fields')).toBeInTheDocument();
+    expect(screen.getByText('Fields selection is required')).toBeInTheDocument();
+  });
+
   it('summarizes the selection on its trigger', () => {
     const { rerender } = render(
       <GuardrailFilterFieldSelector fields={FIELDS} value={[]} onChange={vi.fn()} />

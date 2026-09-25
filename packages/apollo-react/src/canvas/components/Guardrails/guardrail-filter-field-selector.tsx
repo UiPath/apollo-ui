@@ -1,4 +1,4 @@
-import { FormField, FormFieldLabel } from '@uipath/apollo-wind';
+import { FormField, FormFieldError, FormFieldLabel } from '@uipath/apollo-wind';
 import { useId } from 'react';
 import { GuardrailFieldPicker } from './components/guardrail-field-picker';
 import {
@@ -60,6 +60,8 @@ export function GuardrailFilterFieldSelector({
             {labels.filterFieldsLabel}
           </FormFieldLabel>
           <p className="text-sm italic text-muted-foreground">{labels.filterNoSchema}</p>
+          {/* Still shown without a schema: an empty filter fails validation either way. */}
+          <FormFieldError>{error}</FormFieldError>
         </FormField>
       )}
     </div>
