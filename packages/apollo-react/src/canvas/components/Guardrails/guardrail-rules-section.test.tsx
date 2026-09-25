@@ -557,6 +557,19 @@ describe('GuardrailRulesSection', () => {
       expect(new Set(ids).size).toBe(ids.length);
     });
 
+    it('lays a rule out by the section width: stacked, two by two, then one row', () => {
+      // happy-dom evaluates no container queries, so this pins the classes that do.
+      const { container } = render(
+        <GuardrailRulesSection rules={[word()]} onRulesChange={vi.fn()} />
+      );
+
+      const grid = container.querySelector('[data-slot="guardrail-rule"] .grid');
+      expect(grid).toHaveClass('grid-cols-1', '@sm:grid-cols-2', '@3xl:grid-cols-4');
+      expect(container.querySelector('[data-slot="guardrail-rules-section"]')).toHaveClass(
+        '@container'
+      );
+    });
+
     it('merges className onto its root', () => {
       const { container } = render(
         <GuardrailRulesSection rules={[ALWAYS]} onRulesChange={vi.fn()} className="mt-4" />
