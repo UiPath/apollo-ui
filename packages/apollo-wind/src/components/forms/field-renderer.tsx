@@ -267,10 +267,26 @@ export function FormFieldRenderer({
   const gridSpan = field.grid?.span || 1;
   const gridStyle: React.CSSProperties = { gridColumn: `span ${gridSpan}` };
 
+  // A changed field (e.g. an agent edit in a diff view) gets a warning accent, matching the
+  // canvas `update` status, plus a screen-reader label. `data-field-name` lets a host find it.
+  const isChanged = context.changedFields?.has(field.name) ?? false;
+  const wrapperProps = {
+    style: gridStyle,
+    className: isChanged
+      ? '-ml-2 rounded-md border-l-2 border-warning bg-warning-background/30 pl-1.5'
+      : undefined,
+    'data-field-name': field.name,
+    'data-changed': isChanged || undefined,
+  };
+  const changedNote = isChanged ? (
+    <span className="sr-only">{context.changedFieldLabel ?? 'Changed'}</span>
+  ) : null;
+
   // Value modes or field actions: the field anatomy, custom fields included.
   if (field.valueModes || field.headerActions || field.menuActions || field.badge) {
     return (
-      <div style={gridStyle}>
+      <div {...wrapperProps}>
+        {changedNote}
         <ModeAwareField
           field={field}
           context={context}
@@ -290,7 +306,8 @@ export function FormFieldRenderer({
       ? customEntry.component
       : customEntry;
     return (
-      <div style={gridStyle}>
+      <div {...wrapperProps}>
+        {changedNote}
         <Controller
           name={field.name}
           control={control}
@@ -314,7 +331,8 @@ export function FormFieldRenderer({
   }
 
   return (
-    <div style={gridStyle}>
+    <div {...wrapperProps}>
+      {changedNote}
       <Controller
         name={field.name}
         control={control}

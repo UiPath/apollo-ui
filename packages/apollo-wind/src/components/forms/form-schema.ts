@@ -585,6 +585,10 @@ export interface FormContext<T extends FieldValues = FieldValues> {
   isSubmitting: boolean;
   isDirty: boolean;
   currentStep?: number;
+  /** Names of fields to flag as changed (see `MetadataFormProps.changedFields`). */
+  changedFields?: ReadonlySet<string>;
+  /** Screen-reader text announced on a changed field. */
+  changedFieldLabel?: string;
 
   // Methods
   evaluateConditions: (conditions: FieldCondition[]) => boolean;
