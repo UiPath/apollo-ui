@@ -156,6 +156,22 @@ function App() {
 }
 ```
 
+### External directory groups
+
+External directory groups (e.g. Entra ID) aren't returned by the local Group
+API, so they have no id. Pass their names in `externalGroupNames` instead.
+Access is granted if the user is in **any** listed local or external group.
+Names that don't resolve are denied. Requires `@uipath/vs-core` 4.4.0 or later.
+
+```tsx
+<GroupMembershipGuard
+  groupIds={['admins-group-id']}
+  externalGroupNames={['Contoso-Admins']}
+>
+  {children}
+</GroupMembershipGuard>
+```
+
 ## Resolving group ids by role
 
 `GroupMembershipGuard` and `useIsGroupMember` need group ids, but applications
