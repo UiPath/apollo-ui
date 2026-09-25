@@ -303,6 +303,7 @@ const TEMPLATE_TOKENS = {
   max: '{{max}}',
   toolName: '{{toolName}}',
   policyName: '{{policyName}}',
+  count: '{{count}}',
 };
 
 /** Localized chrome strings of the validator form; per-string `overrides` always win. */
@@ -909,6 +910,311 @@ export function useGuardrailRemoveDialogLabels(
   return useMemo(
     () => resolveGuardrailRemoveDialogLabels(buildGuardrailRemoveDialogLabels(_), overrides),
     [_, overrides]
+  );
+}
+
+/**
+ * Chrome strings of the custom-guardrail rules section, its field picker, and the filter
+ * action's field selector. Field names are data: they arrive as titles on the host's fields.
+ *
+ * Values may contain `{{placeholder}}` tokens; interpolate with `formatGuardrailFormMessage`.
+ */
+export interface GuardrailRulesLabels {
+  alwaysEnforceLabel: string;
+  /** First paragraph of the always-enforce tooltip. */
+  alwaysEnforceEnabledHint: string;
+  /** Second paragraph of the always-enforce tooltip. */
+  alwaysEnforceDisabledHint: string;
+  /** Aria-label of an info-tooltip trigger. */
+  moreInformation: string;
+  applyToLabel: string;
+  applyToInput: string;
+  applyToOutput: string;
+  applyToInputAndOutput: string;
+  /** Title of a rule card: `{{position}}`, counted from 1. */
+  ruleTitle: string;
+  /** Aria-label of a rule card's delete button: `{{position}}`. */
+  deleteRule: string;
+  addRule: string;
+  ruleTypeLabel: string;
+  ruleTypeWord: string;
+  ruleTypeNumber: string;
+  ruleTypeBoolean: string;
+  fieldsLabel: string;
+  operatorLabel: string;
+  operatorContains: string;
+  operatorDoesNotContain: string;
+  operatorEquals: string;
+  operatorDoesNotEqual: string;
+  operatorStartsWith: string;
+  operatorDoesNotStartWith: string;
+  operatorEndsWith: string;
+  operatorDoesNotEndWith: string;
+  operatorIsEmpty: string;
+  operatorIsNotEmpty: string;
+  operatorMatchesRegex: string;
+  operatorGreaterThan: string;
+  operatorGreaterThanOrEqual: string;
+  operatorLessThan: string;
+  operatorLessThanOrEqual: string;
+  valueLabel: string;
+  valuePlaceholder: string;
+  valueTrue: string;
+  valueFalse: string;
+  // Field picker
+  allFields: string;
+  /** Picker trigger with nothing selected. */
+  selectFields: string;
+  /** Picker trigger with two or more fields selected: `{{count}}`. */
+  fieldsSelected: string;
+  searchFields: string;
+  noFieldsFound: string;
+  inputGroup: string;
+  outputGroup: string;
+  /** Aria-label of a selection chip's remove button: `{{name}}`. */
+  removeField: string;
+  // Filter action
+  filterFieldsLabel: string;
+  filterFieldsTooltip: string;
+  /** Shown instead of the picker when the tool has no schema. */
+  filterNoSchema: string;
+}
+
+/** The subset of `useSafeLingui`'s translator the rules labels need. */
+type RulesTranslate = (descriptor: {
+  id: string;
+  message: string;
+  values?: Record<string, string>;
+}) => string;
+
+// One builder holds every `_({ id, message })` call, so the English defaults, the flat record
+// the catalog test diffs and the runtime lingui path cannot drift. Same shape as
+// `definitions-copy.ts`.
+function buildGuardrailRulesLabels(_: RulesTranslate): GuardrailRulesLabels {
+  return {
+    alwaysEnforceLabel: _({
+      id: 'guardrails.rules.always-enforce-label',
+      message: 'Always enforce the guardrail',
+    }),
+    alwaysEnforceEnabledHint: _({
+      id: 'guardrails.rules.always-enforce-enabled-hint',
+      message: 'When enabled, the action will be applied during the selected tool execution stage.',
+    }),
+    alwaysEnforceDisabledHint: _({
+      id: 'guardrails.rules.always-enforce-disabled-hint',
+      message: 'Otherwise, action will be applied only when all of the defined rules are met.',
+    }),
+    moreInformation: _({ id: 'guardrails.form.more-information', message: 'More information' }),
+    applyToLabel: _({
+      id: 'guardrails.rules.apply-to-label',
+      message: 'Enforce guardrail action during',
+    }),
+    applyToInput: _({ id: 'guardrails.rules.apply-to-input', message: 'Pre-execution (input)' }),
+    applyToOutput: _({
+      id: 'guardrails.rules.apply-to-output',
+      message: 'Post-execution (output)',
+    }),
+    applyToInputAndOutput: _({
+      id: 'guardrails.rules.apply-to-input-and-output',
+      message: 'Pre-execution and post-execution',
+    }),
+    ruleTitle: _({
+      id: 'guardrails.rules.rule-title',
+      message: 'Rule {position}',
+      values: TEMPLATE_TOKENS,
+    }),
+    deleteRule: _({
+      id: 'guardrails.rules.delete-rule',
+      message: 'Delete rule {position}',
+      values: TEMPLATE_TOKENS,
+    }),
+    addRule: _({ id: 'guardrails.rules.add-rule', message: 'Add rule' }),
+    ruleTypeLabel: _({ id: 'guardrails.rules.rule-type-label', message: 'Rule type' }),
+    ruleTypeWord: _({ id: 'guardrails.rules.rule-type-word', message: 'String' }),
+    ruleTypeNumber: _({ id: 'guardrails.rules.rule-type-number', message: 'Number' }),
+    ruleTypeBoolean: _({ id: 'guardrails.rules.rule-type-boolean', message: 'Boolean' }),
+    fieldsLabel: _({ id: 'guardrails.rules.fields-label', message: 'Apply to fields' }),
+    operatorLabel: _({ id: 'guardrails.rules.operator-label', message: 'Operator' }),
+    operatorContains: _({ id: 'guardrails.rules.operator-contains', message: 'Contains' }),
+    operatorDoesNotContain: _({
+      id: 'guardrails.rules.operator-does-not-contain',
+      message: 'Does not contain',
+    }),
+    operatorEquals: _({ id: 'guardrails.rules.operator-equals', message: 'Equals' }),
+    operatorDoesNotEqual: _({
+      id: 'guardrails.rules.operator-does-not-equal',
+      message: 'Does not equal',
+    }),
+    operatorStartsWith: _({ id: 'guardrails.rules.operator-starts-with', message: 'Starts with' }),
+    operatorDoesNotStartWith: _({
+      id: 'guardrails.rules.operator-does-not-start-with',
+      message: 'Does not start with',
+    }),
+    operatorEndsWith: _({ id: 'guardrails.rules.operator-ends-with', message: 'Ends with' }),
+    operatorDoesNotEndWith: _({
+      id: 'guardrails.rules.operator-does-not-end-with',
+      message: 'Does not end with',
+    }),
+    operatorIsEmpty: _({ id: 'guardrails.rules.operator-is-empty', message: 'Is empty' }),
+    operatorIsNotEmpty: _({
+      id: 'guardrails.rules.operator-is-not-empty',
+      message: 'Is not empty',
+    }),
+    operatorMatchesRegex: _({
+      id: 'guardrails.rules.operator-matches-regex',
+      message: 'Matches regex',
+    }),
+    operatorGreaterThan: _({
+      id: 'guardrails.rules.operator-greater-than',
+      message: 'Greater than',
+    }),
+    operatorGreaterThanOrEqual: _({
+      id: 'guardrails.rules.operator-greater-than-or-equal',
+      message: 'Greater than or equal',
+    }),
+    operatorLessThan: _({ id: 'guardrails.rules.operator-less-than', message: 'Less than' }),
+    operatorLessThanOrEqual: _({
+      id: 'guardrails.rules.operator-less-than-or-equal',
+      message: 'Less than or equal',
+    }),
+    valueLabel: _({ id: 'guardrails.rules.value-label', message: 'Value' }),
+    valuePlaceholder: _({ id: 'guardrails.rules.value-placeholder', message: 'Enter value' }),
+    valueTrue: _({ id: 'guardrails.rules.value-true', message: 'True' }),
+    valueFalse: _({ id: 'guardrails.rules.value-false', message: 'False' }),
+    allFields: _({ id: 'guardrails.rules.all-fields', message: 'All fields' }),
+    selectFields: _({ id: 'guardrails.rules.select-fields', message: 'Select fields' }),
+    fieldsSelected: _({
+      id: 'guardrails.rules.fields-selected',
+      message: '{count} fields selected',
+      values: TEMPLATE_TOKENS,
+    }),
+    searchFields: _({ id: 'guardrails.rules.search-fields', message: 'Search fields...' }),
+    noFieldsFound: _({ id: 'guardrails.rules.no-fields-found', message: 'No fields found' }),
+    inputGroup: _({ id: 'guardrails.rules.input-group', message: 'Input' }),
+    outputGroup: _({ id: 'guardrails.rules.output-group', message: 'Output' }),
+    removeField: _({
+      id: 'guardrails.rules.remove-field',
+      message: 'Remove field {name}',
+      values: TEMPLATE_TOKENS,
+    }),
+    filterFieldsLabel: _({
+      id: 'guardrails.rules.filter-fields-label',
+      message: 'Fields to filter',
+    }),
+    filterFieldsTooltip: _({
+      id: 'guardrails.rules.filter-fields-tooltip',
+      message: 'Selected fields will be excluded from the input/output of the tool',
+    }),
+    filterNoSchema: _({
+      id: 'guardrails.rules.filter-no-schema',
+      message: 'No schema available to show fields',
+    }),
+  };
+}
+
+// Resolves a descriptor the way lingui does with `values: TEMPLATE_TOKENS`, so the English
+// defaults carry the same `{{token}}` convention as a translated catalog entry.
+const englishRulesTranslate: RulesTranslate = ({ message, values }) =>
+  values
+    ? message.replace(/\{(\w+)\}/g, (match, token: string) => values[token] ?? match)
+    : message;
+
+/** The English chrome strings, resolved without a lingui provider. */
+export const GUARDRAIL_RULES_EN_LABELS: GuardrailRulesLabels =
+  buildGuardrailRulesLabels(englishRulesTranslate);
+
+/**
+ * The same strings flattened to message id to ICU source message, the form the catalogs store:
+ * the i18n test compares these against `locales/en.json` verbatim.
+ */
+export const GUARDRAIL_RULES_EN_MESSAGES: Readonly<Record<string, string>> = Object.freeze(
+  (() => {
+    const messages: Record<string, string> = {};
+    buildGuardrailRulesLabels((descriptor) => {
+      messages[descriptor.id] = descriptor.message;
+      return descriptor.message;
+    });
+    return messages;
+  })()
+);
+
+/** Merge English defaults, a loaded catalog, and per-string overrides (undefined skipped). */
+export function resolveGuardrailRulesLabels(
+  catalog?: Partial<GuardrailRulesLabels>,
+  overrides?: Partial<GuardrailRulesLabels>
+): GuardrailRulesLabels {
+  return mergeLabels(GUARDRAIL_RULES_EN_LABELS, catalog, overrides);
+}
+
+/** Localized chrome strings of the rules section; per-string `overrides` always win. */
+export function useGuardrailRulesLabels(
+  overrides?: Partial<GuardrailRulesLabels>
+): GuardrailRulesLabels {
+  const { _ } = useSafeLingui();
+  return useMemo(
+    () => resolveGuardrailRulesLabels(buildGuardrailRulesLabels(_), overrides),
+    [_, overrides]
+  );
+}
+
+/**
+ * The strings `GuardrailFilterFieldSelector` reads: a `Pick` of the rules block, so the filter
+ * and rule pickers cannot word the same string differently, and a full `GuardrailRulesLabels`
+ * is accepted wherever these are.
+ */
+export const GUARDRAIL_FILTER_FIELD_SELECTOR_LABEL_KEYS = [
+  'filterFieldsLabel',
+  'filterFieldsTooltip',
+  'filterNoSchema',
+  'moreInformation',
+  'selectFields',
+  'fieldsSelected',
+  'searchFields',
+  'noFieldsFound',
+  'inputGroup',
+  'outputGroup',
+  'removeField',
+] as const satisfies ReadonlyArray<keyof GuardrailRulesLabels>;
+
+export type GuardrailFilterFieldSelectorLabelKey =
+  (typeof GUARDRAIL_FILTER_FIELD_SELECTOR_LABEL_KEYS)[number];
+
+export type GuardrailFilterFieldSelectorLabels = Pick<
+  GuardrailRulesLabels,
+  GuardrailFilterFieldSelectorLabelKey
+>;
+
+function pickGuardrailFilterFieldSelectorLabels(
+  source: GuardrailRulesLabels
+): GuardrailFilterFieldSelectorLabels {
+  const picked = {} as GuardrailFilterFieldSelectorLabels;
+  for (const key of GUARDRAIL_FILTER_FIELD_SELECTOR_LABEL_KEYS) picked[key] = source[key];
+  return picked;
+}
+
+export const GUARDRAIL_FILTER_FIELD_SELECTOR_EN_LABELS: GuardrailFilterFieldSelectorLabels =
+  pickGuardrailFilterFieldSelectorLabels(GUARDRAIL_RULES_EN_LABELS);
+
+/** Merge English defaults, a loaded catalog, and per-string overrides (undefined skipped). */
+export function resolveGuardrailFilterFieldSelectorLabels(
+  catalog?: Partial<GuardrailFilterFieldSelectorLabels>,
+  overrides?: Partial<GuardrailFilterFieldSelectorLabels>
+): GuardrailFilterFieldSelectorLabels {
+  return mergeLabels(GUARDRAIL_FILTER_FIELD_SELECTOR_EN_LABELS, catalog, overrides);
+}
+
+/** Localized chrome strings of the filter field selector; per-string `overrides` always win. */
+export function useGuardrailFilterFieldSelectorLabels(
+  overrides?: Partial<GuardrailFilterFieldSelectorLabels>
+): GuardrailFilterFieldSelectorLabels {
+  const catalog = useGuardrailRulesLabels();
+  return useMemo(
+    () =>
+      resolveGuardrailFilterFieldSelectorLabels(
+        pickGuardrailFilterFieldSelectorLabels(catalog),
+        overrides
+      ),
+    [catalog, overrides]
   );
 }
 

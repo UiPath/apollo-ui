@@ -10,7 +10,9 @@ copy and `useGuardrailDefinitions`), `GuardrailList` (the applied-guardrails sec
 confirmation), `GuardrailBuilder` (the whole Add/Edit screen), `GuardrailFormLayout` (the
 screen shell), `GuardrailValidatorForm` (the validator parameter section, also rendered
 inside the builder), `GuardrailActionSection` + `EscalateActionFields` (the builder's action
-and escalation half), and `CentralizedGuardrailsSection` + `CentralizedGuardrailDetails` (the
+and escalation half), `GuardrailRulesSection` + `GuardrailFilterFieldSelector` (a custom
+guardrail's rules and its filter action's fields), and `CentralizedGuardrailsSection` +
+`CentralizedGuardrailDetails` (the
 read-only governance guardrails a policy enforces), plus the leaves the sections compose:
 `GuardrailStatusChip`, `GuardrailStatusBanner` and `MixedScopesBanner`.
 `GuardrailScopeSelector`, the builder's scope and tool targeting field, is exported on its own
@@ -724,6 +726,134 @@ differently:
 
 `className` merges onto whichever root it renders, and has no effect under `asGridItems`, which
 renders no element of its own.
+
+## GuardrailRulesSection
+
+The rules of a custom guardrail. Either the guardrail is always enforced at a chosen stage
+(before the tool, after it, or both), or its action runs only when every rule matches. A rule
+has a type (`word` for strings, `number`, `boolean`), the tool fields it checks, an operator
+filtered by the type, and a value, which `isEmpty` / `isNotEmpty` do without.
+
+The custom-guardrail form around it (name, description, scope, action, Save) stays host-side.
+The section needs two props, and the fields the tool offers:
+
+```tsx
+import { GuardrailRulesSection, type GuardrailRule } from '@uipath/apollo-react/canvas/guardrails';
+
+const [rules, setRules] = useState<GuardrailRule[]>([
+  { $ruleType: 'always', applyTo: 'inputAndOutput' },
+]);
+
+<GuardrailRulesSection
+  rules={rules}
+  onRulesChange={setRules}
+  fields={{ word: stringFields, number: numberFields, boolean: booleanFields }}
+  onRequestAlwaysEnforce={openConfirmDialog} // optional
+/>;
+```
+
+### Contract
+
+- **Controlled, in the wire's own shape.** `rules` is the `rules` array both products persist,
+  and `onRulesChange` carries the whole next list. Rules carry no ids, so rows are positional.
+  The only local state is a number input's raw text while it has focus.
+- **Always enforce is a rule, not a flag.** The switch is on while the list holds an `always`
+  rule. Switching on leaves exactly one (an existing one keeps its stage); switching off keeps
+  the field rules, or starts one fresh rule of the first type the fields serve. A stored list
+  that mixes an `always` rule with field rules renders both, so it can be fixed, and
+  `getGuardrailRulesErrorFields` reports it as `alwaysCombined`, as it does a second `always`
+  rule (the stage select edits the first; switching off and on again leaves one).
+- **The confirmation is an intent.** When switching on would drop a rule the user edited (one
+  that differs from `createGuardrailRule` of its type), the section calls
+  `onRequestAlwaysEnforce(next)` instead of `onRulesChange`: confirm in the host's own dialog,
+  then apply `next`. Without the callback the switch applies at once, and with nothing to lose
+  it applies at once either way.
+- **Fields are data.** `fields` maps each rule type to the `{ input, output }` fields it may
+  target. A type with no fields is not offered, and with none at all the guardrail can only be
+  always enforced: the switch is locked on a lone `always` rule (any other stored list stays
+  switchable, so it can be reduced to one). Omit `fields` when the tool has no schema: every type
+  is then offered, targeting all fields. Pass `{ word, number, boolean }` explicitly rather than
+  a `Record<string, …>` of groups, which TypeScript accepts without checking its values.
+- **The built-in picker** offers All fields and the fields grouped by source, and its trigger
+  summarizes the selection (All fields, the one field's name, or "N fields selected"); fields are
+  picked and unpicked in the list. Picking one makes the selection specific, and unpicking the
+  last returns it to all fields rather than leaving a selection that matches nothing. A picked
+  field the schema no longer lists stays in the list, so it can still be unpicked. It stores
+  `{ path, source, title? }` and nothing else from an option, and names a field by the offered
+  title, then the stored one, then its path (shown on hover when it differs).
+- **`selectionChips`** (off by default, on both components) also lists the picked fields under
+  the trigger as removable chips, the way Flow shows them today.
+- **`renderFieldSelector(ctx)` replaces the picker** of each rule; return `undefined` to fall
+  through. The section still renders the label: name the host control with
+  `aria-labelledby={ctx.labelId}`. `ctx.onChange` replaces the selector wholesale, and a slot
+  that receives `ctx.error` owns rendering it.
+- **A type change starts the rule over** (`changeGuardrailRuleType`): the field selection
+  belonged to the old type's fields.
+- **Errors are host-owned.** `GuardrailRulesErrors` is `{ rules?, perRule? }`: one section
+  message and one `{ fields?, value? }` per rule, aligned with `rules` by index. Each renders as
+  soon as it is present, so withhold the prop until a save attempt if that is when the host
+  validates.
+- **A rule's four fields follow the section's width**: stacked, two by two from 24rem, one row
+  from 48rem. The section is its own container, so what counts is the width the host gives it.
+- Requires an ancestor `TooltipProvider`.
+
+### Save-time companions
+
+The messages are the host's; which fields fail is not:
+
+```ts
+import {
+  getGuardrailRuleErrorFields,
+  getGuardrailRulesErrorFields,
+} from '@uipath/apollo-react/canvas/guardrails';
+
+const perRule = rules.map((rule) => {
+  const failing = getGuardrailRuleErrorFields(rule); // 'fields' | 'value'
+  return {
+    fields: failing.includes('fields') ? fieldsRequiredMessage : undefined,
+    value: failing.includes('value') ? valueRequiredMessage : undefined,
+  };
+});
+const [section] = getGuardrailRulesErrorFields(rules); // 'required' | 'alwaysCombined' | 'invalidRules'
+```
+
+A word value that is only whitespace counts as empty. `createGuardrailRule(type)`,
+`guardrailOperatorTakesValue(operator)` and `GUARDRAIL_RULE_OPERATORS` are exported for hosts
+that build rules themselves.
+
+### GuardrailFilterFieldSelector
+
+The same picker for a filter action: which fields the guardrail removes. It is made for
+`GuardrailActionSection`'s `filterContent`:
+
+```tsx
+<GuardrailActionSection
+  action={action}
+  onActionChange={setAction}
+  showFilter
+  errors={{ ...actionErrors, filterFields: undefined }}
+  filterContent={
+    <GuardrailFilterFieldSelector
+      fields={allFields}           // { input, output }, any type; omit without a schema
+      value={action.$actionType === 'filter' ? (action.fields as GuardrailFieldReference[]) : []}
+      onChange={(fields) => setAction({ $actionType: 'filter', fields })}
+      error={actionErrors.filterFields}
+    />
+  }
+/>;
+```
+
+`GuardrailAction` keeps `filter.fields` as `unknown[]`, so the host narrows it. Pass the
+`filterFields` message to the selector, which ties it to the trigger, and leave it off the
+section's `errors`, or it renders twice. Without `fields` the selector says the tool has no
+schema.
+
+### Localization
+
+Chrome strings resolve from `guardrails.rules.*` in the canvas catalog, plus the validator
+form's `guardrails.form.more-information` for the info tooltip. `labels` is optional and partial
+on both components; `GuardrailFilterFieldSelectorLabels` is a `Pick` of `GuardrailRulesLabels`,
+so one object can serve both. Field names are data and arrive as titles on `fields`.
 
 ## GuardrailValidatorForm
 
