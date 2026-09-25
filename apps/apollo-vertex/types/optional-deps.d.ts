@@ -129,6 +129,10 @@ declare module "@uipath/vs-core" {
           userId: string,
           groupIds: string[],
         ) => Promise<Record<string, boolean>>;
+        checkExternalGroupMembership: (
+          userId: string,
+          groupNames: string[],
+        ) => Promise<Record<string, boolean>>;
       };
     };
   } | null;

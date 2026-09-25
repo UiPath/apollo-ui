@@ -4,6 +4,7 @@ import { useAuth } from "./shell-auth-provider";
 
 export interface UseIsGroupMemberOptions {
   groupIds: string[];
+  externalGroupNames?: string[];
 }
 
 export interface UseIsGroupMemberResult {
@@ -13,22 +14,38 @@ export interface UseIsGroupMemberResult {
 
 export const useIsGroupMember = ({
   groupIds,
+  externalGroupNames = [],
 }: UseIsGroupMemberOptions): UseIsGroupMemberResult => {
   const { user } = useAuth();
   const solution = useSolution();
-  const checkGroupMembership = solution?.api.identity.checkGroupMembership;
+  const identity = solution?.api.identity;
   const userId = user?.sub;
 
-  const { data, isLoading } = useQuery({
+  const { data: localData, isLoading: localLoading } = useQuery({
     queryKey: ["identity-group-membership", userId, groupIds.toSorted()],
     queryFn: (): Promise<Record<string, boolean>> =>
-      checkGroupMembership != null && userId != null
-        ? checkGroupMembership(userId, groupIds)
+      identity != null && userId != null
+        ? identity.checkGroupMembership(userId, groupIds)
         : Promise.resolve({}),
     enabled: userId != null && groupIds.length > 0,
   });
 
-  const isMember = data ? groupIds.some((id) => data[id]) : false;
+  const { data: externalData, isLoading: externalLoading } = useQuery({
+    queryKey: [
+      "identity-external-group-membership",
+      userId,
+      externalGroupNames.toSorted(),
+    ],
+    queryFn: (): Promise<Record<string, boolean>> =>
+      identity != null && userId != null
+        ? identity.checkExternalGroupMembership(userId, externalGroupNames)
+        : Promise.resolve({}),
+    enabled: userId != null && externalGroupNames.length > 0,
+  });
 
-  return { isMember, isLoading };
+  const isMember =
+    groupIds.some((id) => localData?.[id]) ||
+    externalGroupNames.some((name) => externalData?.[name]);
+
+  return { isMember, isLoading: localLoading || externalLoading };
 };
