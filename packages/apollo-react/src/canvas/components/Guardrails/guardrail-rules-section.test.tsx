@@ -160,6 +160,23 @@ describe('GuardrailRulesSection', () => {
       expect(toggle).toBeDisabled();
     });
 
+    it('keeps the switch usable over a malformed list, so it can be reduced to one rule', () => {
+      const onRulesChange = vi.fn();
+      render(
+        <GuardrailRulesSection
+          rules={[ALWAYS, { $ruleType: 'always', applyTo: 'output' }]}
+          onRulesChange={onRulesChange}
+          fields={{}}
+        />
+      );
+
+      const toggle = screen.getByRole('switch');
+      expect(toggle).toBeChecked();
+      expect(toggle).toBeEnabled();
+      fireEvent.click(toggle);
+      expect(onRulesChange).toHaveBeenCalledWith([createGuardrailRule('word')]);
+    });
+
     it('keeps an always rule stored next to field rules visible, so it can be fixed', () => {
       render(
         <GuardrailRulesSection

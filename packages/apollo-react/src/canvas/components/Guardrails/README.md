@@ -770,7 +770,8 @@ const [rules, setRules] = useState<GuardrailRule[]>([
   it applies at once either way.
 - **Fields are data.** `fields` maps each rule type to the `{ input, output }` fields it may
   target. A type with no fields is not offered, and with none at all the guardrail can only be
-  always enforced: the switch is locked on. Omit `fields` when the tool has no schema: every type
+  always enforced: the switch is locked on a lone `always` rule (any other stored list stays
+  switchable, so it can be reduced to one). Omit `fields` when the tool has no schema: every type
   is then offered, targeting all fields. Pass `{ word, number, boolean }` explicitly rather than
   a `Record<string, …>` of groups, which TypeScript accepts without checking its values.
 - **The built-in picker** offers All fields and the fields grouped by source, and its trigger
