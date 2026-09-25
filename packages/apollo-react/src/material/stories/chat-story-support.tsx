@@ -270,6 +270,7 @@ export function ChatShowcaseDemo({
     compactMode: false,
     customScrollTheme: false,
     copy: true, // Copy enabled by default
+    stopResponse: true, // Stop button while a response is in flight - enabled by default
     attachmentsAsync: false,
     readOnly: false,
   });
@@ -562,6 +563,7 @@ export function ChatShowcaseDemo({
           feedback: !features.feedback,
           copy: !features.copy,
           renameChat: !features.renameChat,
+          stopResponse: !features.stopResponse,
         },
         settingsRenderer: createSettingsRenderer(),
       },
@@ -953,6 +955,7 @@ export function ChatShowcaseDemo({
     features.renameChat,
     features.resize,
     features.settings,
+    features.stopResponse,
     features.readOnly,
   ]);
 
@@ -986,6 +989,7 @@ export function ChatShowcaseDemo({
           feedback: !features.feedback,
           copy: !features.copy,
           renameChat: !features.renameChat,
+          stopResponse: !features.stopResponse,
         },
         settingsRenderer: createSettingsRenderer(),
         ...(chatMode === AutopilotChatMode.Embedded &&
@@ -2351,6 +2355,16 @@ console.log(processUserData(exampleUser, { source: 'web', ipAddress: '192.168.1.
               />
             }
             label="Copy"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={features.stopResponse}
+                onChange={() => toggleFeature('stopResponse')}
+              />
+            }
+            label="Stop Response"
           />
           <FormControlLabel
             control={

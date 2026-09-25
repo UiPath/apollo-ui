@@ -55,6 +55,12 @@ interface AutopilotChatInputActionsProps {
    */
   isInputEmpty?: boolean;
   waitingResponse: boolean;
+  /**
+   * Whether the submit button currently acts as a stop button. False keeps it a disabled
+   * send button while a response is in flight. Optional so existing callers keep the old
+   * behavior (stop whenever `waitingResponse`).
+   */
+  canStopResponse?: boolean;
   onResourceTriggerClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
   onVoiceInteractionChange?: (isActive: boolean) => void;
   isVoiceInteractionActive?: boolean;
@@ -65,6 +71,7 @@ function AutopilotChatInputActionsComponent({
   disableSubmit,
   isInputEmpty,
   waitingResponse,
+  canStopResponse = waitingResponse,
   onResourceTriggerClick,
   onVoiceInteractionChange,
   isVoiceInteractionActive,
@@ -327,16 +334,16 @@ function AutopilotChatInputActionsComponent({
         {!showVoice && (
           <SubmitButtonContainer>
             <AutopilotChatActionButton
-              iconName={waitingResponse ? 'stop' : 'arrow_upward'}
+              iconName={canStopResponse ? 'stop' : 'arrow_upward'}
               tooltip={
-                waitingResponse
+                canStopResponse
                   ? _(msg({ id: 'autopilot-chat.input.actions.stop', message: `Stop` }))
                   : _(msg({ id: 'autopilot-chat.input.actions.send', message: `Send` }))
               }
               overrideColor={
                 disableSubmit ? 'var(--color-foreground-disable)' : 'var(--color-background)'
               }
-              variant={waitingResponse ? 'normal' : 'outlined'}
+              variant={canStopResponse ? 'normal' : 'outlined'}
               preventHover={true}
               disabled={disableSubmit}
               // STT auto-stop-on-submit lives inside `handleSubmit` (see chat-input.tsx)
@@ -344,7 +351,7 @@ function AutopilotChatInputActionsComponent({
               onClick={handleSubmit}
               data-testid="autopilot-chat-submit-button"
               ariaLabel={
-                waitingResponse
+                canStopResponse
                   ? _(msg({ id: 'autopilot-chat.input.actions.stop', message: `Stop` }))
                   : _(msg({ id: 'autopilot-chat.input.actions.send', message: `Send` }))
               }

@@ -2616,6 +2616,13 @@ chatService.setDisabledFeatures({
 chatService.setDisabledFeatures({
   newChat: true,
 });
+
+// Disable the stop button: while a response is in flight the submit button stays a disabled
+// send button instead of turning into a stop button. Useful when the consumer cannot interrupt
+// the response (e.g. the exchange is driven by a process the client must not end).
+chatService.setDisabledFeatures({
+  stopResponse: true,
+});
 ```
 
 ### Setting Multiple Disabled Features at Once
@@ -3091,6 +3098,7 @@ enum AutopilotChatMode {
  * @property audioStreaming - Whether to disable the always-on voice interaction button
  *                            (the feature requires the consumer to handle InputStream/OutputStream audio events)
  * @property renameChat - Whether to disable the rename affordance on chat history items.
+ * @property stopResponse - Whether to disable the stop button. When true, the submit button stays a disabled send button while a response is in flight instead of turning into a stop button.
  */
 export interface AutopilotChatDisabledFeatures {
   resize?: boolean;
@@ -3110,6 +3118,7 @@ export interface AutopilotChatDisabledFeatures {
   copy?: boolean;
   audioStreaming?: boolean;
   renameChat?: boolean;
+  stopResponse?: boolean;
 }
 ```
 
