@@ -144,9 +144,18 @@ function AutopilotChatInputComponent() {
     [chatService]
   );
 
+  const isResponseInFlight = waitingResponse || streaming;
+
+  // Stop is the submit button flipped, not a separate control. When the stopResponse
+  // feature is disabled the button stays a disabled send button instead of offering stop.
+  const canStopResponse = isResponseInFlight && !disabledFeatures?.stopResponse;
+
   const handleSubmit = React.useCallback(() => {
-    if (waitingResponse || streaming) {
-      chatService.stopResponse();
+    if (isResponseInFlight) {
+      if (canStopResponse) {
+        chatService.stopResponse();
+      }
+
       return;
     }
 
@@ -171,7 +180,7 @@ function AutopilotChatInputComponent() {
     editorRef.current?.clear();
     setMessage('');
     clearAttachments();
-  }, [message, attachments, clearAttachments, chatService, waitingResponse, streaming]);
+  }, [message, attachments, clearAttachments, chatService, isResponseInFlight, canStopResponse]);
 
   const handleKeyDown = React.useCallback(
     (event: KeyboardEvent): boolean => {
@@ -179,7 +188,7 @@ function AutopilotChatInputComponent() {
         return false;
       }
 
-      if (waitingResponse || streaming) {
+      if (isResponseInFlight) {
         event.preventDefault();
         return true;
       }
@@ -191,7 +200,7 @@ function AutopilotChatInputComponent() {
       }
       return false;
     },
-    [message, handleSubmit, waitingResponse, streaming, skeletonLoader, attachments]
+    [message, handleSubmit, isResponseInFlight, skeletonLoader, attachments]
   );
 
   const handlePaste = React.useCallback(
@@ -311,12 +320,14 @@ function AutopilotChatInputComponent() {
 
         <AutopilotChatInputActions
           disableSubmit={
-            (isInputEmpty && !waitingResponse && !streaming) ||
-            (skeletonLoader && !waitingResponse && !streaming) ||
-            hasLoadingAttachments
+            (isInputEmpty && !isResponseInFlight) ||
+            (skeletonLoader && !isResponseInFlight) ||
+            hasLoadingAttachments ||
+            (isResponseInFlight && !canStopResponse)
           }
           isInputEmpty={isInputEmpty}
-          waitingResponse={waitingResponse || streaming}
+          waitingResponse={isResponseInFlight}
+          canStopResponse={canStopResponse}
           handleSubmit={handleSubmit}
           onResourceTriggerClick={hasResources ? handleResourceTriggerClick : undefined}
           onVoiceInteractionChange={setIsVoiceInteractionActive}

@@ -425,6 +425,8 @@ export interface PdfCitation extends Citation {
  * @property audioStreaming - Whether to disable the always-on voice interaction button
  *                            (the feature requires the consumer to handle InputStream/OutputStream audio events)
  * @property renameChat - Whether to disable the rename affordance on chat history items.
+ * @property stopResponse - Whether to disable the stop button. When true, the submit button stays a
+ *                          disabled send button while a response is in flight instead of turning into a stop button.
  */
 export interface AutopilotChatDisabledFeatures {
   resize?: boolean;
@@ -445,6 +447,7 @@ export interface AutopilotChatDisabledFeatures {
   htmlPreview?: boolean;
   audioStreaming?: boolean;
   renameChat?: boolean;
+  stopResponse?: boolean;
 }
 
 /**
