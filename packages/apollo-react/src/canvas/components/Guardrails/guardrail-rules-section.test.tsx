@@ -395,6 +395,44 @@ describe('GuardrailRulesSection', () => {
       );
     });
 
+    it('lists picked fields as removable chips only with selectionChips', () => {
+      const rule = word({
+        value: 'a',
+        fieldSelector: {
+          $selectorType: 'specific',
+          fields: [
+            { path: 'customer.email', source: 'input', title: 'Customer email' },
+            { path: 'summary', source: 'output', title: 'Summary' },
+          ],
+        },
+      });
+      const onRulesChange = vi.fn();
+      const { rerender } = render(
+        <GuardrailRulesSection rules={[rule]} onRulesChange={onRulesChange} fields={FIELDS} />
+      );
+      expect(screen.queryByRole('button', { name: /Remove field/ })).not.toBeInTheDocument();
+
+      rerender(
+        <GuardrailRulesSection
+          rules={[rule]}
+          onRulesChange={onRulesChange}
+          fields={FIELDS}
+          selectionChips
+        />
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Remove field Customer email' }));
+
+      expect(onRulesChange).toHaveBeenCalledWith([
+        {
+          ...rule,
+          fieldSelector: {
+            $selectorType: 'specific',
+            fields: [{ path: 'summary', source: 'output', title: 'Summary' }],
+          },
+        },
+      ]);
+    });
+
     it('names a stored field the schema no longer lists, and still lists it', async () => {
       render(
         <GuardrailRulesSection
@@ -604,6 +642,7 @@ describe('GuardrailRulesSection', () => {
             createGuardrailRule('boolean'),
           ]}
           onRulesChange={vi.fn()}
+          selectionChips
           errors={{
             rules: 'One or more rules are invalid',
             perRule: [{ value: 'Value is required' }],

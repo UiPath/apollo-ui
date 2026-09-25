@@ -105,6 +105,30 @@ describe('GuardrailFilterFieldSelector', () => {
     expect(onChange).toHaveBeenCalledWith([{ path: 'id', source: 'input' }]);
   });
 
+  it('lists picked fields as removable chips only with selectionChips', () => {
+    const onChange = vi.fn();
+    const value: GuardrailFieldReference[] = [
+      { path: 'customer.email', source: 'input', title: 'Customer email' },
+      { path: 'id', source: 'input' },
+    ];
+    const { rerender } = render(
+      <GuardrailFilterFieldSelector fields={FIELDS} value={value} onChange={onChange} />
+    );
+    expect(screen.queryByRole('button', { name: /Remove field/ })).not.toBeInTheDocument();
+
+    rerender(
+      <GuardrailFilterFieldSelector
+        fields={FIELDS}
+        value={value}
+        onChange={onChange}
+        selectionChips
+      />
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Remove field Customer email' }));
+
+    expect(onChange).toHaveBeenCalledWith([{ path: 'id', source: 'input' }]);
+  });
+
   it('keeps a picked field the schema no longer lists, so it can be unpicked', async () => {
     const onChange = vi.fn();
     render(
@@ -189,6 +213,7 @@ describe('GuardrailFilterFieldSelector', () => {
         value={[{ path: 'customer.email', source: 'input' }]}
         onChange={vi.fn()}
         error="Fields selection is required"
+        selectionChips
       />
     );
 

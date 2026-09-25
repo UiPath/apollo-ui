@@ -158,6 +158,9 @@ describe('resolveGuardrailRulesLabels', () => {
     expect(formatGuardrailFormMessage(GUARDRAIL_RULES_EN_LABELS.fieldsSelected, { count: 3 })).toBe(
       '3 fields selected'
     );
+    expect(
+      formatGuardrailFormMessage(GUARDRAIL_RULES_EN_LABELS.removeField, { name: 'Summary' })
+    ).toBe('Remove field Summary');
     // The catalogs store the ICU source instead, which is what translators receive.
     expect(GUARDRAIL_RULES_EN_MESSAGES['guardrails.rules.delete-rule']).toBe(
       'Delete rule {position}'

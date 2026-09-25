@@ -971,6 +971,8 @@ export interface GuardrailRulesLabels {
   noFieldsFound: string;
   inputGroup: string;
   outputGroup: string;
+  /** Aria-label of a selection chip's remove button: `{{name}}`. */
+  removeField: string;
   // Filter action
   filterFieldsLabel: string;
   filterFieldsTooltip: string;
@@ -1090,6 +1092,11 @@ function buildGuardrailRulesLabels(_: RulesTranslate): GuardrailRulesLabels {
     noFieldsFound: _({ id: 'guardrails.rules.no-fields-found', message: 'No fields found' }),
     inputGroup: _({ id: 'guardrails.rules.input-group', message: 'Input' }),
     outputGroup: _({ id: 'guardrails.rules.output-group', message: 'Output' }),
+    removeField: _({
+      id: 'guardrails.rules.remove-field',
+      message: 'Remove field {name}',
+      values: TEMPLATE_TOKENS,
+    }),
     filterFieldsLabel: _({
       id: 'guardrails.rules.filter-fields-label',
       message: 'Fields to filter',
@@ -1166,6 +1173,7 @@ export const GUARDRAIL_FILTER_FIELD_SELECTOR_LABEL_KEYS = [
   'noFieldsFound',
   'inputGroup',
   'outputGroup',
+  'removeField',
 ] as const satisfies ReadonlyArray<keyof GuardrailRulesLabels>;
 
 export type GuardrailFilterFieldSelectorLabelKey =
