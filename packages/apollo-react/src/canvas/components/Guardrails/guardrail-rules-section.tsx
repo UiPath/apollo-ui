@@ -125,9 +125,10 @@ export function GuardrailRulesSection({
         <Switch
           id={`${uid}-always`}
           checked={enforced}
-          // With no rule type to offer the guardrail can only be always enforced; a stored
-          // value that is not stays switchable, so it can still be fixed.
-          disabled={enforced && ruleTypes.length === 0}
+          // With no rule type to offer the guardrail can only be always enforced, so a lone
+          // always rule is locked. Any other stored list stays switchable, since switching off
+          // and on again is what reduces it to that one rule.
+          disabled={ruleTypes.length === 0 && enforced && rules.length === 1}
           onCheckedChange={handleAlwaysEnforceChange}
         />
       </div>
