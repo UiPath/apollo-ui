@@ -168,7 +168,9 @@ export function GuardrailRuleCard({
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 @sm:grid-cols-2 gap-3 items-start">
+      {/* Sized by the section's container: 2x2 from 24rem (Flow's panel and 800px modal), one
+          row from 48rem (Agents' 900px dialog). */}
+      <div className="grid grid-cols-1 @sm:grid-cols-2 @3xl:grid-cols-4 gap-3 items-start">
         <FormField>
           <FormFieldLabel htmlFor={`${uid}-type`} required>
             {labels.ruleTypeLabel}

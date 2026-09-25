@@ -787,6 +787,8 @@ const [rules, setRules] = useState<GuardrailRule[]>([
   message and one `{ fields?, value? }` per rule, aligned with `rules` by index. Each renders as
   soon as it is present, so withhold the prop until a save attempt if that is when the host
   validates.
+- **A rule's four fields follow the section's width**: stacked, two by two from 24rem, one row
+  from 48rem. The section is its own container, so what counts is the width the host gives it.
 - Requires an ancestor `TooltipProvider`.
 
 ### Save-time companions
