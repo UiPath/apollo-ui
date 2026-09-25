@@ -77,7 +77,10 @@ export function getGuardrailRuleErrorFields(rule: GuardrailRule): GuardrailRuleE
   }
   switch (rule.$ruleType) {
     case 'word':
-      if (guardrailOperatorTakesValue(rule.operator) && !(rule.value ?? '').trim()) {
+      if (
+        guardrailOperatorTakesValue(rule.operator) &&
+        (typeof rule.value !== 'string' || !rule.value.trim())
+      ) {
         fields.push('value');
       }
       break;
