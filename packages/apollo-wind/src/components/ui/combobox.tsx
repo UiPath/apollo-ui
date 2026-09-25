@@ -89,7 +89,7 @@ export const Combobox = React.forwardRef<HTMLButtonElement, ComboboxProps>(funct
             aria-errormessage={error ? validationId : ariaErrorMessage}
             aria-invalid={error ? true : ariaInvalid}
             className={cn(
-              'w-[280px] justify-between future:h-10 future:rounded-xl future:border-0 future:bg-surface-overlay future:px-4 future:gap-4 future:hover:bg-surface-hover future:font-normal future:text-foreground future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background',
+              'w-[280px] justify-between future:h-10 future:rounded-xl future:border-0 future:bg-surface-overlay future:px-4 future:gap-4 future:hover:bg-surface-hover future:font-normal future:text-foreground future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background future:focus-visible:ring-cyan-600 future:aria-invalid:focus-visible:ring-error',
               className
             )}
             disabled={disabled}

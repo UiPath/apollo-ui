@@ -247,20 +247,6 @@ body.future-light, .future-light {
   --font-brand-m-family: var(--font-sans);
 }
 
-/* Future fields share one cyan focus ring in both themes; every other control keeps
-   the neutral --ring. Matches the fields' own DOM hooks, so no component opts in:
-   Input, Textarea, InputGroup (Search), and the role="combobox" triggers of Select,
-   MultiSelect and Combobox. Error rings use ring-error and are unaffected. */
-:where(.future-dark, .future-light)
-  :where(
-    [data-slot="input"],
-    [data-slot="textarea"],
-    [role="group"]:has([data-slot="input-group-control"]),
-    [role="combobox"]
-  ) {
-  --ring: var(--color-cyan-600);
-}
-
 /* Preflight pins --default-font-family at :root, so the theme class must set
    font-family itself. Class doubled to outrank apollo's legacy Angular bundle,
    which injects `.apollo-design { font-family: noto-sans }` (0,1,0) at runtime. */

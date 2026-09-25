@@ -151,6 +151,23 @@ describe('Combobox', () => {
       expect(trigger).not.toHaveClass('future:text-muted-foreground');
     });
   });
+
+  describe('Future focus ring', () => {
+    it('uses the cyan ring, with the error ring on top', () => {
+      render(<Combobox items={mockItems} />);
+      expect(screen.getByRole('combobox')).toHaveClass(
+        'future:focus-visible:ring-cyan-600',
+        'future:aria-invalid:focus-visible:ring-error'
+      );
+    });
+
+    it('lets consumers override the focus color', () => {
+      render(<Combobox items={mockItems} className="future:focus-visible:ring-primary" />);
+      const trigger = screen.getByRole('combobox');
+      expect(trigger).toHaveClass('future:focus-visible:ring-primary');
+      expect(trigger).not.toHaveClass('future:focus-visible:ring-cyan-600');
+    });
+  });
 });
 
 describe('Combobox inline validation', () => {

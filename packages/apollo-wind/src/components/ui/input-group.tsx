@@ -44,7 +44,7 @@ const InputGroup = React.forwardRef<HTMLDivElement, InputGroupProps>(
               'border border-input bg-transparent future:border-0 future:bg-surface-overlay',
             variant === 'ghost' && 'border-0 bg-surface-overlay',
             // Focus state, forwarded from the inner control
-            'has-[[data-slot=input-group-control]:focus-visible]:ring-2 has-[[data-slot=input-group-control]:focus-visible]:ring-ring future:has-[[data-slot=input-group-control]:focus-visible]:ring-offset-2 future:has-[[data-slot=input-group-control]:focus-visible]:ring-offset-background',
+            'has-[[data-slot=input-group-control]:focus-visible]:ring-2 has-[[data-slot=input-group-control]:focus-visible]:ring-ring future:has-[[data-slot=input-group-control]:focus-visible]:ring-offset-2 future:has-[[data-slot=input-group-control]:focus-visible]:ring-offset-background future:has-[[data-slot=input-group-control]:focus-visible]:ring-cyan-600 future:has-[[data-slot][aria-invalid=true]:focus-visible]:ring-error/40',
             // Error state
             'has-[[data-slot][aria-invalid=true]]:border-error has-[[data-slot][aria-invalid=true]]:ring-error/20 future:has-[[data-slot][aria-invalid=true]]:ring-1 future:has-[[data-slot][aria-invalid=true]]:ring-error/40',
             error && 'border-error ring-error/20 future:ring-1 future:ring-error/40',
