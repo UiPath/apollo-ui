@@ -4,6 +4,7 @@ import { axe } from 'jest-axe';
 import { describe, expect, it, vi } from 'vitest';
 
 import { Combobox, ComboboxItem } from './combobox';
+import { InputGroup } from './input-group';
 
 const mockItems: ComboboxItem[] = [
   { value: 'apple', label: 'Apple' },
@@ -227,5 +228,34 @@ describe('Combobox remount safety', () => {
 
     expect(after).toBe(before);
     expect(after).toHaveFocus();
+  });
+});
+
+describe('Combobox in an input group', () => {
+  it("is the enclosing group's control, with no box of its own", () => {
+    render(
+      <InputGroup>
+        <Combobox items={mockItems} placeholder="Pick a framework" />
+      </InputGroup>
+    );
+    const trigger = screen.getByRole('combobox');
+    expect(trigger).toHaveAttribute('data-slot', 'input-group-control');
+    expect(trigger).not.toHaveClass('w-[280px]');
+    expect(trigger).not.toHaveClass('future:bg-surface-overlay');
+    expect(screen.getByText('Pick a framework')).toBeInTheDocument();
+  });
+
+  it('opens its panel against the group box, at the box width', async () => {
+    const user = userEvent.setup();
+    render(
+      <InputGroup data-testid="box">
+        <Combobox items={mockItems} />
+      </InputGroup>
+    );
+    const measure = vi.spyOn(screen.getByTestId('box'), 'getBoundingClientRect');
+
+    await user.click(screen.getByRole('combobox'));
+    await waitFor(() => expect(measure).toHaveBeenCalled());
+    expect(screen.getByRole('dialog')).toHaveClass('w-(--radix-popover-trigger-width)');
   });
 });
