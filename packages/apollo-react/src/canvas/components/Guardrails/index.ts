@@ -107,6 +107,8 @@ export type {
 } from './definitions-wire';
 export type { GuardrailBuilderProps } from './guardrail-builder';
 export { GuardrailBuilder } from './guardrail-builder';
+export type { GuardrailFilterFieldSelectorProps } from './guardrail-filter-field-selector';
+export { GuardrailFilterFieldSelector } from './guardrail-filter-field-selector';
 export type { GuardrailFormLayoutProps } from './guardrail-form-layout';
 export { GuardrailFormLayout } from './guardrail-form-layout';
 export type { GuardrailListProps } from './guardrail-list';
@@ -125,15 +127,20 @@ export {
 } from './guardrail-palette-utils';
 export type { GuardrailRemoveDialogProps } from './guardrail-remove-dialog';
 export { GuardrailRemoveDialog } from './guardrail-remove-dialog';
+export type { GuardrailRulesSectionProps } from './guardrail-rules-section';
+export { GuardrailRulesSection } from './guardrail-rules-section';
 export { GuardrailValidatorForm } from './guardrail-validator-form';
 export type {
   CentralizedGuardrailsLabels,
   GuardrailActionLabelKey,
   GuardrailActionLabels,
   GuardrailBuilderLabels,
+  GuardrailFilterFieldSelectorLabelKey,
+  GuardrailFilterFieldSelectorLabels,
   GuardrailListLabels,
   GuardrailPaletteLabels,
   GuardrailRemoveDialogLabels,
+  GuardrailRulesLabels,
   GuardrailScopeSelectorLabelKey,
   GuardrailScopeSelectorLabels,
   GuardrailValidatorFormLabels,
@@ -145,6 +152,8 @@ export {
   GUARDRAIL_ACTION_EN_LABELS,
   GUARDRAIL_ACTION_LABEL_KEYS,
   GUARDRAIL_BUILDER_EN_LABELS,
+  GUARDRAIL_FILTER_FIELD_SELECTOR_EN_LABELS,
+  GUARDRAIL_FILTER_FIELD_SELECTOR_LABEL_KEYS,
   GUARDRAIL_FORM_EN_LABELS,
   GUARDRAIL_LIST_EN_LABELS,
   GUARDRAIL_LIST_EN_MESSAGES,
@@ -152,23 +161,29 @@ export {
   GUARDRAIL_PALETTE_EN_MESSAGES,
   GUARDRAIL_REMOVE_DIALOG_EN_LABELS,
   GUARDRAIL_REMOVE_DIALOG_EN_MESSAGES,
+  GUARDRAIL_RULES_EN_LABELS,
+  GUARDRAIL_RULES_EN_MESSAGES,
   GUARDRAIL_SCOPE_SELECTOR_EN_LABELS,
   GUARDRAIL_SCOPE_SELECTOR_LABEL_KEYS,
   resolveCentralizedGuardrailsLabels,
   resolveGuardrailActionLabels,
   resolveGuardrailBuilderLabels,
+  resolveGuardrailFilterFieldSelectorLabels,
   resolveGuardrailFormLabels,
   resolveGuardrailListLabels,
   resolveGuardrailPaletteLabels,
   resolveGuardrailRemoveDialogLabels,
+  resolveGuardrailRulesLabels,
   resolveGuardrailScopeSelectorLabels,
   useCentralizedGuardrailsLabels,
   useGuardrailActionLabels,
   useGuardrailBuilderLabels,
+  useGuardrailFilterFieldSelectorLabels,
   useGuardrailFormLabels,
   useGuardrailListLabels,
   useGuardrailPaletteLabels,
   useGuardrailRemoveDialogLabels,
+  useGuardrailRulesLabels,
   useGuardrailScopeSelectorLabels,
 } from './i18n';
 export type {
@@ -183,6 +198,39 @@ export type {
   GuardrailRowTooltipRenderer,
 } from './list-types';
 export type { GuardrailPaletteDefinition, GuardrailPaletteGroup } from './palette-types';
+export type {
+  GuardrailAlwaysRule,
+  GuardrailBooleanOperator,
+  GuardrailBooleanRule,
+  GuardrailFieldGroup,
+  GuardrailFieldReference,
+  GuardrailFieldRule,
+  GuardrailFieldRuleType,
+  GuardrailFieldSelector,
+  GuardrailFieldSource,
+  GuardrailNumberOperator,
+  GuardrailNumberRule,
+  GuardrailRule,
+  GuardrailRuleApplyTo,
+  GuardrailRuleErrors,
+  GuardrailRuleFieldSelectorContext,
+  GuardrailRuleFieldSelectorRenderer,
+  GuardrailRuleFields,
+  GuardrailRuleOperator,
+  GuardrailRulesErrors,
+  GuardrailRuleType,
+  GuardrailWordOperator,
+  GuardrailWordRule,
+} from './rules-types';
+export { GUARDRAIL_RULE_OPERATORS } from './rules-types';
+export type { GuardrailRuleErrorField, GuardrailRulesErrorField } from './rules-utils';
+export {
+  changeGuardrailRuleType,
+  createGuardrailRule,
+  getGuardrailRuleErrorFields,
+  getGuardrailRulesErrorFields,
+  guardrailOperatorTakesValue,
+} from './rules-utils';
 export type {
   GuardrailParameterDefinition,
   GuardrailParameterRenderContext,
