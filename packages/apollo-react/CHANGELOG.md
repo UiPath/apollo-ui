@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.59.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.58.3...@uipath/apollo-react@6.59.0) (2026-09-25)
+
+### Features
+
+* **apollo-react:** export the guardrail scope selector [AL-580] ([014c6dc](https://github.com/UiPath/apollo-ui/commit/014c6dcbcc33d9f76987e0b5aa6889f639f30297))
+
 ## [@uipath/apollo-react-v6.58.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.58.2...@uipath/apollo-react@6.58.3) (2026-09-24)
 
 ### Bug Fixes
