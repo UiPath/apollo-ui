@@ -104,6 +104,13 @@ export interface MetadataFormProps {
    * Suppressing the action row is the schema's job, not this prop's: pass `actions: []`.
    */
   container?: 'form' | 'div';
+  /**
+   * Names of fields (matching `field.name`) to flag as changed, e.g. after an agent edit.
+   * Each gets an accent and a screen-reader label. Omit to flag none.
+   */
+  changedFields?: readonly string[];
+  /** Screen-reader text for a changed field. Defaults to "Changed"; pass a translated string. */
+  changedFieldLabel?: string;
 }
 
 // Stable default to prevent re-renders
@@ -121,6 +128,8 @@ export function MetadataForm({
   activeStepId,
   onActiveStepChange,
   container = 'form',
+  changedFields,
+  changedFieldLabel,
 }: MetadataFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [customComponents, setCustomComponents] = useState<
@@ -203,6 +212,13 @@ export function MetadataForm({
   const onSubmitRef = useRef(onSubmit);
   onSubmitRef.current = onSubmit;
 
+  // Keyed on the names, not the array, so an inline array does not rebuild the context.
+  const changedFieldsKey = changedFields?.join('\0') ?? '';
+  const changedFieldSet = useMemo(
+    () => (changedFieldsKey ? new Set(changedFieldsKey.split('\0')) : undefined),
+    [changedFieldsKey]
+  );
+
   // Build form context - STABLE reference (values accessed via ref/getters). It changes with the
   // registries, so a swapped plugin reaches every field.
   const context: FormContext = useMemo(() => {
@@ -212,6 +228,8 @@ export function MetadataForm({
     return {
       schema: stableSchema,
       form,
+      changedFields: changedFieldSet,
+      changedFieldLabel,
       // Use getter to always return latest values without recreating context
       get values() {
         return valuesRef.current;
@@ -251,6 +269,8 @@ export function MetadataForm({
     stableSchema,
     form,
     currentStep,
+    changedFieldSet,
+    changedFieldLabel,
     valueModeRegistry,
     fieldActionRegistry,
     formStrings,
