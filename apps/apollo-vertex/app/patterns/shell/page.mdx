@@ -178,8 +178,10 @@ Names that don't resolve are denied. Requires `@uipath/vs-core` 4.4.0 or later.
 typically reason in terms of roles whose backing group names are known ahead of
 time. `useGroupId` looks up a group id by name from the `groups` collection
 exposed by `SolutionProvider` and re-renders reactively as the collection
-updates. It returns `{ groupId, isLoading }`; `groupId` is `null` while the
-collection is loading or when no group with the configured name exists.
+updates. It returns `{ groupId, externalGroupName, isLoading }`. `groupId` is
+`null` while the collection is loading or when no local group has the
+configured name. In that case `externalGroupName` holds the name, to check as an
+[external directory group](#external-directory-groups).
 
 A default `Role` enum ships alongside the hook with two members — `ADMIN` and
 `BUSINESS_USER`. Replace it with your own `string` enum if you need different
@@ -197,17 +199,22 @@ const ROLE_GROUP_MAP: Record<Role, string> = {
 };
 
 function AdminArea({ children }: { children: React.ReactNode }) {
-  const { groupId, isLoading } = useGroupId({
+  const { groupId, externalGroupName, isLoading } = useGroupId({
     role: Role.ADMIN,
     roleGroupMap: ROLE_GROUP_MAP,
   });
 
-  if (isLoading || !groupId) {
+  if (isLoading) {
     return <div>Loading…</div>;
   }
 
   return (
-    <GroupMembershipGuard groupIds={[groupId]}>{children}</GroupMembershipGuard>
+    <GroupMembershipGuard
+      groupIds={groupId ? [groupId] : []}
+      externalGroupNames={externalGroupName ? [externalGroupName] : []}
+    >
+      {children}
+    </GroupMembershipGuard>
   );
 }
 ```
