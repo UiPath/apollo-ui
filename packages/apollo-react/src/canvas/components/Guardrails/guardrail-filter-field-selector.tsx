@@ -20,6 +20,11 @@ export interface GuardrailFilterFieldSelectorProps {
    * section's `errors` when passing it, or it renders twice.
    */
   error?: string;
+  /**
+   * Also lists the picked fields under the trigger as removable chips. Off by default: the
+   * trigger already summarizes the selection and the list shows each pick checked.
+   */
+  selectionChips?: boolean;
   /** Per-string overrides; anything omitted resolves from the canvas lingui catalog. */
   labels?: Partial<GuardrailFilterFieldSelectorLabels>;
   className?: string;
@@ -34,6 +39,7 @@ export function GuardrailFilterFieldSelector({
   value,
   onChange,
   error,
+  selectionChips = false,
   labels: labelOverrides,
   className,
 }: GuardrailFilterFieldSelectorProps) {
@@ -51,6 +57,7 @@ export function GuardrailFilterFieldSelector({
           fields={fields}
           selected={value}
           onToggle={(field) => onChange(toggleGuardrailFieldReference(value, field))}
+          chips={selectionChips}
           error={error}
           labels={labels}
         />

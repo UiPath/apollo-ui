@@ -780,6 +780,8 @@ const [rules, setRules] = useState<GuardrailRule[]>([
   field the schema no longer lists stays in the list, so it can still be unpicked. It stores
   `{ path, source, title? }` and nothing else from an option, and names a field by the offered
   title, then the stored one, then its path (shown on hover when it differs).
+- **`selectionChips`** (off by default, on both components) also lists the picked fields under
+  the trigger as removable chips, the way Flow shows them today.
 - **`renderFieldSelector(ctx)` replaces the picker** of each rule; return `undefined` to fall
   through. The section still renders the label: name the host control with
   `aria-labelledby={ctx.labelId}`. `ctx.onChange` replaces the selector wholesale, and a slot

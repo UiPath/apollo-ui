@@ -70,6 +70,8 @@ export interface GuardrailRuleCardProps {
   onDelete: () => void;
   errors?: GuardrailRuleErrors;
   renderFieldSelector?: GuardrailRuleFieldSelectorRenderer;
+  /** Also lists the picked fields under the built-in picker as removable chips. */
+  selectionChips?: boolean;
   labels: GuardrailRulesLabels;
 }
 
@@ -118,6 +120,7 @@ export function GuardrailRuleCard({
   onDelete,
   errors,
   renderFieldSelector,
+  selectionChips,
   labels,
 }: GuardrailRuleCardProps) {
   // Namespaced per card: every rule renders the same four fields.
@@ -211,6 +214,7 @@ export function GuardrailRuleCard({
               selected: rule.fieldSelector.$selectorType === 'all',
               onSelect: () => fieldSelectorContext.onChange({ $selectorType: 'all' }),
             }}
+            chips={selectionChips}
             error={errors?.fields}
             labels={labels}
           />

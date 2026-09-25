@@ -182,6 +182,33 @@ export const BooleanRule: Story = {
   ),
 };
 
+/**
+ * With selectionChips the picked fields are also listed under the picker as removable chips. Off
+ * by default, where the trigger summarizes the selection.
+ */
+export const SelectionChips: Story = {
+  args: { rules: [], onRulesChange: noop },
+  render: () => (
+    <RulesHost
+      initial={[
+        {
+          ...createGuardrailRule('word'),
+          value: 'password',
+          fieldSelector: {
+            $selectorType: 'specific',
+            fields: [
+              { path: 'query', source: 'input', title: 'Search query' },
+              { path: 'results[*].snippet', source: 'output', title: 'Result snippet' },
+            ],
+          },
+        },
+      ]}
+      fields={FIELDS}
+      selectionChips
+    />
+  ),
+};
+
 /** Several rules, which must all match for the action to run. */
 export const EveryRuleType: Story = {
   args: { rules: [], onRulesChange: noop },

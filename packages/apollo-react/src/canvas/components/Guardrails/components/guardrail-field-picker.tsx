@@ -1,4 +1,5 @@
 import {
+  Badge,
   Command,
   CommandEmpty,
   CommandGroup,
@@ -16,7 +17,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@uipath/apollo-wind';
-import { Check, ChevronDown } from 'lucide-react';
+import { Check, ChevronDown, X } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
 import { formatGuardrailFormMessage, type GuardrailRulesLabels } from '../i18n';
 import type {
@@ -35,6 +36,7 @@ export type GuardrailFieldPickerLabels = Pick<
   | 'noFieldsFound'
   | 'inputGroup'
   | 'outputGroup'
+  | 'removeField'
 >;
 
 export interface GuardrailFieldPickerProps {
@@ -51,6 +53,8 @@ export interface GuardrailFieldPickerProps {
   onToggle: (field: GuardrailFieldReference) => void;
   /** Adds a leading "All fields" entry; its label also becomes the trigger text while selected. */
   allFields?: { label: string; selected: boolean; onSelect: () => void };
+  /** Also lists the picked fields under the trigger as removable chips. */
+  chips?: boolean;
   error?: string;
   labels: GuardrailFieldPickerLabels;
 }
@@ -75,7 +79,8 @@ function triggerText(
 
 /**
  * A multi-select over a tool's input and output fields: a popover with a search, one group per
- * source and, optionally, a leading "All fields" entry. The trigger summarizes the selection.
+ * source and, optionally, a leading "All fields" entry. The trigger summarizes the selection;
+ * with `chips`, the picked fields are also listed under it as removable chips.
  */
 export function GuardrailFieldPicker({
   id,
@@ -86,6 +91,7 @@ export function GuardrailFieldPicker({
   selected,
   onToggle,
   allFields,
+  chips = false,
   error,
   labels,
 }: GuardrailFieldPickerProps) {
@@ -186,6 +192,32 @@ export function GuardrailFieldPicker({
           </Command>
         </PopoverContent>
       </Popover>
+      {chips && selected.length > 0 && (
+        <ul className="flex flex-wrap gap-1">
+          {selected.map((field) => {
+            const name = getGuardrailFieldName(field, fields);
+            return (
+              <li key={`${field.source}:${field.path}`}>
+                <Badge
+                  variant="secondary"
+                  className="gap-1 pr-1"
+                  title={name === field.path ? undefined : field.path}
+                >
+                  {name}
+                  <button
+                    type="button"
+                    aria-label={formatGuardrailFormMessage(labels.removeField, { name })}
+                    className="rounded-full hover:bg-muted-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    onClick={() => onToggle(field)}
+                  >
+                    <X className="size-3" aria-hidden="true" />
+                  </button>
+                </Badge>
+              </li>
+            );
+          })}
+        </ul>
+      )}
       <FormFieldError id={errorId}>{error}</FormFieldError>
     </FormField>
   );

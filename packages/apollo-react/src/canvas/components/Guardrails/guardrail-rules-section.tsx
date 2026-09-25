@@ -50,6 +50,11 @@ export interface GuardrailRulesSectionProps {
   onRequestAlwaysEnforce?: (rules: GuardrailRule[]) => void;
   /** Replace the field picker of a rule. Return `undefined` to fall through to the built-in one. */
   renderFieldSelector?: GuardrailRuleFieldSelectorRenderer;
+  /**
+   * Also lists each rule's picked fields under its picker as removable chips. Off by default:
+   * the trigger already summarizes the selection and the list shows each pick checked.
+   */
+  selectionChips?: boolean;
   /** Validation messages; each renders as soon as it is present. */
   errors?: GuardrailRulesErrors;
   /** Per-string overrides; anything omitted resolves from the canvas lingui catalog. */
@@ -74,6 +79,7 @@ export function GuardrailRulesSection({
   fields,
   onRequestAlwaysEnforce,
   renderFieldSelector,
+  selectionChips = false,
   errors,
   labels: labelOverrides,
   className,
@@ -173,6 +179,7 @@ export function GuardrailRulesSection({
           onDelete={() => onRulesChange(rules.filter((_, j) => j !== index))}
           errors={errors?.perRule?.[index]}
           renderFieldSelector={renderFieldSelector}
+          selectionChips={selectionChips}
           labels={labels}
         />
       ))}
