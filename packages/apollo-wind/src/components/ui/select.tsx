@@ -53,9 +53,12 @@ const selectTriggerVariants = cva(
       // fill, radius, padding, focus ring) and keeps its layout, typography and placeholder. The box
       // lives only in `false`: laid over it, the grouped classes could not out-rank its `future:`
       // ones. Grouped, it rings on nothing, since the group rings on `focus-within`.
+      // The trigger rings on `:focus` as well as `:focus-visible`, so the Future cyan ring and the
+      // error ring that out-ranks it are both set for each state: pointer focus on an invalid
+      // trigger then shows the same full error ring as keyboard focus.
       grouped: {
         false:
-          'h-9 rounded-md border border-input px-3 py-1 focus:outline-none focus:ring-2 focus:ring-ring focus-visible:ring-2 focus-visible:ring-ring future:h-10 future:rounded-xl future:border-0 future:bg-surface-overlay future:hover:bg-surface-hover future:px-4 future:gap-4 aria-invalid:border-error aria-invalid:focus-visible:ring-error future:aria-invalid:ring-1 future:aria-invalid:ring-error/40',
+          'h-9 rounded-md border border-input px-3 py-1 focus:outline-none focus:ring-2 focus:ring-ring focus-visible:ring-2 focus-visible:ring-ring future:h-10 future:rounded-xl future:border-0 future:bg-surface-overlay future:hover:bg-surface-hover future:px-4 future:gap-4 aria-invalid:border-error aria-invalid:focus-visible:ring-error future:aria-invalid:ring-1 future:aria-invalid:ring-error/40 future:focus:ring-cyan-600 future:focus-visible:ring-cyan-600 future:aria-invalid:focus:ring-error future:aria-invalid:focus-visible:ring-error',
         true: 'h-full min-h-5 min-w-0 flex-1 gap-2 p-0',
       },
     },

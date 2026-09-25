@@ -25,6 +25,13 @@ export interface MultiSelectProps {
   onChange: (selected: string[]) => void;
   placeholder?: string;
   emptyMessage?: string;
+  /**
+   * Applied to the outer wrapper `div`, not the trigger button, so trigger classes such as the
+   * Future focus ring cannot be overridden with a plain variant like `future:focus-visible:ring-*`.
+   * Reach the trigger through a descendant variant instead, e.g.
+   * `future:[&_[role=combobox]]:focus-visible:ring-primary`: the extra wrapper class out-ranks the
+   * trigger's own cyan ring. Inside an InputGroup the group draws the ring, so set it there.
+   */
   className?: string;
   maxSelected?: number;
   disabled?: boolean;
@@ -205,7 +212,7 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
                 variant="outline"
                 {...triggerProps}
                 className={cn(
-                  'w-full justify-between future:rounded-xl future:border-0 future:bg-surface-overlay future:px-4 future:gap-4 future:hover:bg-surface-hover future:font-normal future:text-foreground future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background',
+                  'w-full justify-between future:rounded-xl future:border-0 future:bg-surface-overlay future:px-4 future:gap-4 future:hover:bg-surface-hover future:font-normal future:text-foreground future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background future:focus-visible:ring-cyan-600 future:aria-invalid:focus-visible:ring-error',
                   selected.length > 0 ? 'h-auto min-h-10' : 'h-10'
                 )}
               >

@@ -260,6 +260,30 @@ describe('MultiSelect', () => {
       expect(trigger).not.toHaveClass('future:text-muted-foreground');
     });
   });
+
+  describe('Future focus ring', () => {
+    it('uses the cyan ring, with the error ring on top', () => {
+      render(<MultiSelect options={mockOptions} selected={[]} onChange={vi.fn()} />);
+      expect(screen.getByRole('combobox')).toHaveClass(
+        'future:focus-visible:ring-cyan-600',
+        'future:aria-invalid:focus-visible:ring-error'
+      );
+    });
+
+    it('puts className on the wrapper, so a trigger ring override needs a descendant variant', () => {
+      const override = 'future:[&_[role=combobox]]:focus-visible:ring-primary';
+      const { container } = render(
+        <MultiSelect options={mockOptions} selected={[]} onChange={vi.fn()} className={override} />
+      );
+      const wrapper = container.querySelector('[data-slot="multi-select"]');
+      expect(wrapper).toHaveClass(override);
+      // The trigger keeps its own cyan ring; the wrapper's descendant variant out-ranks it in CSS.
+      const trigger = screen.getByRole('combobox');
+      expect(trigger).not.toHaveClass(override);
+      expect(trigger).toHaveClass('future:focus-visible:ring-cyan-600');
+      expect(wrapper).toContainElement(trigger);
+    });
+  });
 });
 
 describe('MultiSelect inline validation', () => {
