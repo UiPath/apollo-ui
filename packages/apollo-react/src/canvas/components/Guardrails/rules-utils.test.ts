@@ -111,8 +111,10 @@ describe('getGuardrailRuleErrorFields', () => {
   it('flags values that are not what the type stores', () => {
     const number = { ...createGuardrailRule('number'), value: Number.NaN };
     const boolean = { ...createGuardrailRule('boolean'), value: 'true' as unknown as boolean };
+    const word = { ...createGuardrailRule('word'), value: 123 as unknown as string };
     expect(getGuardrailRuleErrorFields(number)).toEqual(['value']);
     expect(getGuardrailRuleErrorFields(boolean)).toEqual(['value']);
+    expect(getGuardrailRuleErrorFields(word)).toEqual(['value']);
   });
 });
 
