@@ -39,6 +39,7 @@ export * from './popover';
 export * from './portal-container';
 export * from './progress';
 export * from './prompt-editor';
+export * from './quick-form-field';
 export * from './radio-group';
 export * from './resizable';
 export * from './scroll-area';

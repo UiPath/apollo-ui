@@ -11,9 +11,9 @@ import {
 } from 'lucide-react';
 import type { AriaAttributes, ReactNode } from 'react';
 
-export type LockableValueFieldMode = 'fixed' | 'expression';
+export type QuickFormFieldMode = 'fixed' | 'expression';
 
-export type LockableFieldType =
+export type QuickFieldType =
   | 'string'
   | 'integer'
   | 'date'
@@ -31,7 +31,7 @@ interface FieldTypeMeta {
   fixedDescription: string;
 }
 
-export const FIELD_TYPE_META: Record<LockableFieldType, FieldTypeMeta> = {
+export const FIELD_TYPE_META: Record<QuickFieldType, FieldTypeMeta> = {
   string: {
     label: 'String',
     icon: ALargeSmall,
@@ -90,7 +90,7 @@ export const FIELD_TYPE_META: Record<LockableFieldType, FieldTypeMeta> = {
   },
 };
 
-export const FIELD_TYPE_ORDER: LockableFieldType[] = [
+export const FIELD_TYPE_ORDER: QuickFieldType[] = [
   'string',
   'integer',
   'date',
@@ -101,17 +101,17 @@ export const FIELD_TYPE_ORDER: LockableFieldType[] = [
   'object',
 ];
 
-export interface LockableValueFieldOption {
+export interface QuickFormFieldOption {
   label: string;
   value: string;
 }
 
-export interface LockableValueFieldMoreActions {
+export interface QuickFormFieldMoreActions {
   onClear?: () => void;
   onRefresh?: () => void;
 }
 
-export interface LockableValueFieldProps {
+export interface QuickFormFieldProps {
   /** Current field value. Encoding depends on fieldType (e.g. multi-select is a JSON array string). */
   value?: string;
   /** Called when the user edits the value (only fires while unlocked). */
@@ -136,11 +136,11 @@ export interface LockableValueFieldProps {
    */
   trailingAddon?: ReactNode;
   /** Adds a field-level overflow menu beside the value control. */
-  more?: LockableValueFieldMoreActions;
+  more?: QuickFormFieldMoreActions;
   /** Fixed value vs. JS expression. Defaults to 'fixed'. Ignored for types that don't support expressions. */
-  mode?: LockableValueFieldMode;
+  mode?: QuickFormFieldMode;
   /** Called when the user switches modes. */
-  onModeChange?: (mode: LockableValueFieldMode) => void;
+  onModeChange?: (mode: QuickFormFieldMode) => void;
   /**
    * Optional expression editor used in place of the built-in monospace input.
    * Consumers can use this to supply a syntax-aware editor such as Monaco.
@@ -152,16 +152,16 @@ export interface LockableValueFieldProps {
     onBlur?: () => void;
     readOnly: boolean;
     placeholder: string;
-    fieldType: LockableFieldType;
+    fieldType: QuickFieldType;
     'aria-invalid'?: AriaAttributes['aria-invalid'];
     'aria-describedby'?: string;
     'aria-errormessage'?: string;
     'data-slot'?: string;
   }) => ReactNode;
   /** The field's data type. Defaults to 'string'. Determines which control renders the value. */
-  fieldType?: LockableFieldType;
+  fieldType?: QuickFieldType;
   /** Called when the user switches the field type. */
-  onFieldTypeChange?: (fieldType: LockableFieldType) => void;
+  onFieldTypeChange?: (fieldType: QuickFieldType) => void;
   /** Shows a required-field asterisk next to the default label. Ignored when `label` is provided. */
   required?: boolean;
   /** Called when the user toggles required/optional. Renders the Required switch when provided. */
@@ -187,14 +187,14 @@ export interface LockableValueFieldProps {
   /** Whether the Generate with AI action renders. Defaults to true. */
   showAiAssist?: boolean;
   /** Options for 'single-select' / 'multi-select' field types. Defaults to a small set of demo options. */
-  options?: LockableValueFieldOption[];
+  options?: QuickFormFieldOption[];
   /** Called with the entered prompt when the user clicks Generate in the AI-assist popover. */
   onGenerateWithAi?: (prompt: string) => void;
   /**
    * Variables offered by the "Insert variable" popover; clicking one appends its value to the
    * current value. The button is disabled when this is empty (the default).
    */
-  variables?: LockableValueFieldOption[];
+  variables?: QuickFormFieldOption[];
   id?: string;
   className?: string;
 }

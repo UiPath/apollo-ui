@@ -26,11 +26,11 @@ import {
   InputGroupButton,
   InputGroupInput,
   Label,
-  LockableValueField,
-  type LockableValueFieldMode,
   Modal,
   ModalContent,
   type PanelImperativeHandle,
+  QuickFormField,
+  type QuickFormFieldMode,
   RadioGroup,
   RadioGroupItem,
   RequiredIndicator,
@@ -3753,12 +3753,12 @@ function DapValueField({
   onChange: (value: string) => void;
 }) {
   const [locked, setLocked] = useState(false);
-  const [mode, setMode] = useState<LockableValueFieldMode>(
+  const [mode, setMode] = useState<QuickFormFieldMode>(
     value.startsWith('$vars.') ? 'expression' : 'fixed'
   );
 
   return (
-    <LockableValueField
+    <QuickFormField
       id={id}
       label={
         <Label htmlFor={id} className="text-xs font-medium text-foreground">
@@ -3863,7 +3863,7 @@ function DapPanel({ onClose }: { onClose: () => void }) {
             </p>
 
             <section className="space-y-1.5">
-              <LockableValueField
+              <QuickFormField
                 id="dap-connection"
                 label={
                   <Label htmlFor="dap-connection" className="text-xs font-semibold text-foreground">
