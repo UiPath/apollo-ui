@@ -773,10 +773,13 @@ const [rules, setRules] = useState<GuardrailRule[]>([
   always enforced: the switch is locked on. Omit `fields` when the tool has no schema: every type
   is then offered, targeting all fields. Pass `{ word, number, boolean }` explicitly rather than
   a `Record<string, …>` of groups, which TypeScript accepts without checking its values.
-- **The built-in picker** offers All fields and the fields grouped by source. Picking one makes
-  the selection specific, and removing the last returns it to all fields rather than leaving a
-  selection that matches nothing. It stores `{ path, source, title? }` and nothing else from an
-  option, and names a field by the offered title, then the stored one, then its path.
+- **The built-in picker** offers All fields and the fields grouped by source, and its trigger
+  summarizes the selection (All fields, the one field's name, or "N fields selected"); fields are
+  picked and unpicked in the list. Picking one makes the selection specific, and unpicking the
+  last returns it to all fields rather than leaving a selection that matches nothing. A picked
+  field the schema no longer lists stays in the list, so it can still be unpicked. It stores
+  `{ path, source, title? }` and nothing else from an option, and names a field by the offered
+  title, then the stored one, then its path (shown on hover when it differs).
 - **`renderFieldSelector(ctx)` replaces the picker** of each rule; return `undefined` to fall
   through. The section still renders the label: name the host control with
   `aria-labelledby={ctx.labelId}`. `ctx.onChange` replaces the selector wholesale, and a slot
