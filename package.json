@@ -18,7 +18,7 @@
     "commit": "git-cz",
     "dev": "turbo run dev",
     "dev:chat": "turbo run dev --filter=@uipath/ap-chat",
-    "dev:apollo-vertex": "turbo run dev --filter=apollo-vertex",
+    "dev:apollo-vertex": "turbo run dev --filter=apollo-vertex...",
     "dev:apollo-docs": "turbo run dev --filter=apollo-docs",
     "fix:dependencies": "check-dependency-version-consistency . --fix",
     "lint": "turbo run lint",

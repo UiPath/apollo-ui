@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "apps/apollo-vertex/registry/**"
+      - "packages/apollo-vertex/src/**"
 
 permissions:
   contents: read

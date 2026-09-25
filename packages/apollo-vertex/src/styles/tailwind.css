@@ -1,0 +1,9 @@
+/* Apollo Vertex Tailwind entry. Consumers @import this file, then add @source
+   directives for their app files and for this package's dist JS so class names
+   in the unbundled build are scanned. */
+
+@import "tailwindcss";
+@import "./theme.css";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));

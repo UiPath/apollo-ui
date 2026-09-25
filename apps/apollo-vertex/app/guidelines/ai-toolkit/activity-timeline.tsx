@@ -1,8 +1,8 @@
 "use client";
 
 import { Link2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback } from "@/registry/avatar/avatar";
+import { cn } from "@uipath/apollo-vertex";
+import { Avatar, AvatarFallback } from "@uipath/apollo-vertex";
 import { AiIcon } from "./ai-icon";
 
 // Strong gradient for the completed-step marker (decorative, no text on it).

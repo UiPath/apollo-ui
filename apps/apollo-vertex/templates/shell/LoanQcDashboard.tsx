@@ -9,9 +9,14 @@ import {
   TrendingUp,
   XCircle,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { Badge } from "@uipath/apollo-vertex";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@uipath/apollo-vertex";
+import { Progress } from "@uipath/apollo-vertex";
 import {
   Table,
   TableBody,
@@ -19,7 +24,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@uipath/apollo-vertex";
 
 const kpis = [
   { label: "Loans Reviewed", value: "3,842", icon: FileSearch, change: "+18%" },

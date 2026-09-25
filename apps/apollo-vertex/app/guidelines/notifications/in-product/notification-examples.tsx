@@ -9,10 +9,10 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
-import { Alert, AlertDescription, AlertTitle } from "@/registry/alert/alert";
-import { Badge } from "@/registry/badge/badge";
-import { Button } from "@/registry/button/button";
-import { Toaster } from "@/registry/sonner/sonner";
+import { Alert, AlertDescription, AlertTitle } from "@uipath/apollo-vertex";
+import { Badge } from "@uipath/apollo-vertex";
+import { Button } from "@uipath/apollo-vertex";
+import { Toaster } from "@uipath/apollo-vertex";
 
 export function SonnerExamples() {
   return (

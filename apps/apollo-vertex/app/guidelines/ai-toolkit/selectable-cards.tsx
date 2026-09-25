@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { cn } from "@/lib/utils";
-import { AiCaveat } from "@/registry/ai-caveat/ai-caveat";
-import { Badge } from "@/registry/badge/badge";
+import { cn } from "@uipath/apollo-vertex";
+import { AiCaveat } from "@uipath/apollo-vertex";
+import { Badge } from "@uipath/apollo-vertex";
 import {
   CardDescription,
   CardTitle,
   GLASS_CLASSES,
-} from "@/registry/card/card";
+} from "@uipath/apollo-vertex";
 import { AiIcon } from "./ai-icon";
 
 const CARDS = [

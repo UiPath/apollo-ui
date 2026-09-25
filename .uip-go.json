@@ -61,6 +61,7 @@
         "sourceDir": "apps/apollo-vertex",
         "stageDir": ".uipath-build/apollo-vertex",
         "exclude": ["app/api"],
+        "preCommands": ["pnpm turbo build --filter=apollo-vertex^..."],
         "commands": [
           "pnpm generate:theme",
           "pnpm registry:build",

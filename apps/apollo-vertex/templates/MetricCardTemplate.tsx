@@ -1,6 +1,6 @@
 "use client";
 
-import { MetricCard, MetricCardSkeleton } from "@/components/ui/metric-card";
+import { MetricCard, MetricCardSkeleton } from "@uipath/apollo-vertex";
 
 export function MetricCardTemplate() {
   return (

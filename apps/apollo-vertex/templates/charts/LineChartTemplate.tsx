@@ -1,7 +1,7 @@
 "use client";
 
-import { LineChart } from "@/components/ui/line-chart";
-import { Card, CardContent } from "@/components/ui/card";
+import { LineChart } from "@uipath/apollo-vertex/charts";
+import { Card, CardContent } from "@uipath/apollo-vertex";
 
 const data = [
   { x: "Jan", y: 120 },

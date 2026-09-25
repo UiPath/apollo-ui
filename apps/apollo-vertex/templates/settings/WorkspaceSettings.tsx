@@ -2,21 +2,21 @@
 
 import type { ReactNode } from "react";
 import { z } from "zod";
-import { Button } from "@/components/ui/button";
+import { Button } from "@uipath/apollo-vertex";
 import {
   Field,
   FieldContent,
   FieldDescription,
   FieldGroup,
   FieldLabel,
-} from "@/components/ui/field";
-import { useAppForm } from "@/components/ui/form";
+} from "@uipath/apollo-vertex";
+import { useAppForm } from "@uipath/apollo-vertex";
 import {
   PageHeader,
   PageHeaderNav,
   PageHeaderTitle,
-} from "@/components/ui/page-header";
-import { Switch } from "@/components/ui/switch";
+} from "@uipath/apollo-vertex";
+import { Switch } from "@uipath/apollo-vertex";
 
 const EMAIL_FREQUENCIES = [
   { value: "realtime", label: "Realtime — every event" },

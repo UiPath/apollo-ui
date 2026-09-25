@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { z } from "zod";
-import { FieldGroup } from "@/components/ui/field";
-import { useAppForm } from "@/components/ui/form";
-import { LocaleProvider } from "@/registry/shell/shell-locale-provider";
+import { FieldGroup } from "@uipath/apollo-vertex";
+import { useAppForm } from "@uipath/apollo-vertex";
+import { LocaleProvider } from "@uipath/apollo-vertex/shell";
 
 const signUpSchema = z.object({
   fullName: z.string().min(2, "form_demo_error_name_min"),

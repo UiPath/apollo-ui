@@ -1,9 +1,14 @@
 "use client";
 
 import { useNavigate } from "@tanstack/react-router";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@uipath/apollo-vertex";
+import { Button } from "@uipath/apollo-vertex";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@uipath/apollo-vertex";
 import {
   PageHeader,
   PageHeaderActions,
@@ -12,7 +17,7 @@ import {
   PageHeaderNav,
   PageHeaderTitle,
   PageHeaderTitleGroup,
-} from "@/components/ui/page-header";
+} from "@uipath/apollo-vertex";
 
 export function InvoiceDetail() {
   const navigate = useNavigate();

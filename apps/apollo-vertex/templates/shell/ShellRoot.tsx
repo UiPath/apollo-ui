@@ -1,7 +1,7 @@
 import { BarChart3, FolderOpen, Home, Settings, Users } from "lucide-react";
 import type { ReactNode } from "react";
-import type { ShellNavItem } from "@/registry/shell/shell";
-import { ApolloShell } from "@/registry/shell/shell";
+import type { ShellNavItem } from "@uipath/apollo-vertex/shell";
+import { ApolloShell } from "@uipath/apollo-vertex/shell";
 
 const navItems: ShellNavItem[] = [
   { path: "/preview/shell/dashboard", label: "dashboard", icon: Home },

@@ -13,7 +13,7 @@ import {
   ComboboxItem,
   ComboboxList,
   ComboboxTrigger,
-} from "@/components/ui/combobox";
+} from "@uipath/apollo-vertex";
 
 const frameworks = [
   { value: "next", label: "Next.js" },

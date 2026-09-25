@@ -21,7 +21,7 @@ Installs both the prop-driven `TableChart` view and the `TableChartWithAdapter` 
 `TableChart` renders rows with column-level formatting and optional client-controlled sorting.
 
 ```tsx
-import { TableChart } from "@/components/ui/table-chart";
+import { TableChart } from "@uipath/apollo-vertex/charts";
 
 const rows = [
   { department: "Marketing", headcount: 12, avgSalary: 58000, active: true },
@@ -83,9 +83,9 @@ npx shadcn@latest add @uipath/insights-adapter
 
 ```tsx
 import { useState } from "react";
-import { TableChartWithAdapter } from "@/components/ui/table-chart";
-import type { TableChartState } from "@/lib/charts-core";
-import { dataFabricAdapter } from "@/lib/data-fabric-adapter";
+import { TableChartWithAdapter } from "@uipath/apollo-vertex/charts";
+import type { TableChartState } from "@uipath/apollo-vertex/charts";
+import { dataFabricAdapter } from "@uipath/apollo-vertex/charts";
 
 const adapter = dataFabricAdapter({
   baseUrl: "/api/datafabric/.../api",

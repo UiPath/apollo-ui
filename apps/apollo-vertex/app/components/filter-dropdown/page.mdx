@@ -31,7 +31,7 @@ The default mode. When no items are selected, the trigger shows "All".
 
 ```tsx
 import { useState } from "react";
-import { FilterDropdown } from "@/components/ui/filter-dropdown";
+import { FilterDropdown } from "@uipath/apollo-vertex";
 
 const statusOptions = [
   { label: "Active", value: "active" },
@@ -59,7 +59,7 @@ Set `multiSelect={false}` for single-value selection. The popover closes automat
 
 ```tsx
 import { useState } from "react";
-import { FilterDropdown } from "@/components/ui/filter-dropdown";
+import { FilterDropdown } from "@uipath/apollo-vertex";
 
 const regionOptions = [
   { label: "North America", value: "na" },
@@ -118,8 +118,8 @@ Search is enabled automatically when there are 8 or more options. Override with 
 When used inside a data table toolbar, pass the `column` prop instead of `value`/`onChange`. The filter state is managed by TanStack Table.
 
 ```tsx
-import { FilterDropdown } from "@/components/ui/filter-dropdown";
-import { DataTable, dataTableFacetedFilterFn } from "@/components/ui/data-table";
+import { FilterDropdown } from "@uipath/apollo-vertex";
+import { DataTable, dataTableFacetedFilterFn } from "@uipath/apollo-vertex";
 
 // In your column definitions, set the filterFn:
 const columns = [

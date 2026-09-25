@@ -8,7 +8,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/registry/select/select";
+} from "@uipath/apollo-vertex";
 
 export interface AgentPickerProps {
   agents: RawAgentGetResponse[];

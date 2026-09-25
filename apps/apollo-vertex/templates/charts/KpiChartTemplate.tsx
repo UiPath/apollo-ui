@@ -1,7 +1,7 @@
 "use client";
 
-import { KpiChart } from "@/components/ui/kpi-chart";
-import { Card, CardContent } from "@/components/ui/card";
+import { KpiChart } from "@uipath/apollo-vertex/charts";
+import { Card, CardContent } from "@uipath/apollo-vertex";
 
 export function KpiChartTemplate() {
   return (

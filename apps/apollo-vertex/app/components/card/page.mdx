@@ -1,7 +1,7 @@
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/registry/card/card'
-import { Button } from '@/registry/button/button'
-import { Input } from '@/registry/input/input'
-import { Label } from '@/registry/label/label'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@uipath/apollo-vertex'
+import { Button } from '@uipath/apollo-vertex'
+import { Input } from '@uipath/apollo-vertex'
+import { Label } from '@uipath/apollo-vertex'
 import { SelectableCardDemo } from './selectable-card-demo'
 import { AiGlowCardDemo, AiGlowGroupDemo } from './ai-glow-demo'
 
@@ -156,7 +156,7 @@ import {
   CardHeader,
   CardTitle,
   GLASS_CLASSES,
-} from "@/components/ui/card"
+} from "@uipath/apollo-vertex"
 ```
 
 ```tsx
@@ -179,7 +179,7 @@ import {
 The `GLASS_CLASSES` constant is exported for reuse in other components that need the same frosted glass styling:
 
 ```tsx
-import { GLASS_CLASSES } from "@/components/ui/card"
+import { GLASS_CLASSES } from "@uipath/apollo-vertex"
 
 <div className={cn(GLASS_CLASSES, "p-4")}>
   Glass morphism container

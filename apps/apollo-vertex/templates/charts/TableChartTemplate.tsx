@@ -1,7 +1,7 @@
 "use client";
 
-import { TableChart } from "@/components/ui/table-chart";
-import { Card, CardContent } from "@/components/ui/card";
+import { TableChart } from "@uipath/apollo-vertex/charts";
+import { Card, CardContent } from "@uipath/apollo-vertex";
 
 const rows = [
   { department: "Marketing", headcount: 12, avgSalary: 58000, active: true },

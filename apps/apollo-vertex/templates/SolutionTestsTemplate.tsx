@@ -4,30 +4,29 @@ import type { ColumnDef } from "@tanstack/react-table";
 import dynamic from "next/dynamic";
 import { useState } from "react";
 
-import { DataTableColumnHeader } from "@/components/ui/data-table";
-// Import the dumb pieces directly (not the package barrel) so the demo's module
-// graph never pulls in the collection hooks (and their `@tanstack/react-db` /
-// vs-core deps) — same approach as the GroupMembershipGuard demo.
-import { SolutionTestsProvider } from "@/registry/solution-tests/context";
+import { DataTableColumnHeader } from "@uipath/apollo-vertex";
+// Presentational barrel only. Collection hooks live at
+// `@uipath/apollo-vertex/solution-tests/data` and need vs-core.
+import { SolutionTestsProvider } from "@uipath/apollo-vertex/solution-tests";
 import {
   SolutionTestsView,
   type RunConfirmTarget,
-} from "@/registry/solution-tests/solution-tests-view";
+} from "@uipath/apollo-vertex/solution-tests";
 import type {
   SolutionTest,
   SolutionTestBatchRun,
   SolutionTestJob,
   SolutionTestRun,
-} from "@/registry/solution-tests/types";
-import type { SolutionTestsConfig } from "@/registry/solution-tests/config";
-import { ExpandedAgentsView } from "@/registry/solution-tests/expanded-agents-view";
-import { ExpandedRunTestsView } from "@/registry/solution-tests/expanded-run-tests-view";
+} from "@uipath/apollo-vertex/solution-tests";
+import type { SolutionTestsConfig } from "@uipath/apollo-vertex/solution-tests";
+import { ExpandedAgentsView } from "@uipath/apollo-vertex/solution-tests";
+import { ExpandedRunTestsView } from "@uipath/apollo-vertex/solution-tests";
 import {
   RunDetailsView,
   type BaselineJobMap,
-} from "@/registry/solution-tests/run-details-view";
-import { LocaleProvider } from "@/registry/shell/shell-locale-provider";
-import { IXP_OUTPUT_RENDERER } from "@/registry/solution-tests/outputs/ixp-extraction/ixp-output-result";
+} from "@uipath/apollo-vertex/solution-tests";
+import { LocaleProvider } from "@uipath/apollo-vertex/shell";
+import { IXP_OUTPUT_RENDERER } from "@uipath/apollo-vertex/solution-tests";
 import { createMockDb, IXP_DEMO_AGENT_NAME } from "./solution-tests/mock-db";
 
 // oxlint-disable-next-line no-empty-function

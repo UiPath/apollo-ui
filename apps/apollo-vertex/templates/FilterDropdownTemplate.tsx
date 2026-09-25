@@ -5,7 +5,7 @@ import { useState } from "react";
 import {
   FilterDropdown,
   type FilterDropdownOption,
-} from "@/components/ui/filter-dropdown";
+} from "@uipath/apollo-vertex";
 
 // ---------------------------------------------------------------------------
 // Multi-select example options

@@ -14,6 +14,10 @@
   - changed-files:
       - any-glob-to-any-file: "packages/apollo-wind/**"
 
+"pkg:apollo-vertex":
+  - changed-files:
+      - any-glob-to-any-file: "packages/apollo-vertex/**"
+
 "pkg:ap-chat":
   - changed-files:
       - any-glob-to-any-file: "web-packages/ap-chat/**"

@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { FeedbackVoteWidget } from "@/components/ui/feedback-vote-widget";
-import { LocaleProvider } from "@/registry/shell/shell-locale-provider";
+import { FeedbackVoteWidget } from "@uipath/apollo-vertex";
+import { LocaleProvider } from "@uipath/apollo-vertex/shell";
 
 export function FeedbackVoteWidgetTemplate() {
   return (

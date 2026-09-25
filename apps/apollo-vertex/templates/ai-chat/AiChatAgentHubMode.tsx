@@ -5,41 +5,41 @@ import { useChat } from "@tanstack/ai-react";
 import { Entities } from "@uipath/uipath-typescript/entities";
 import { Suspense, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { createAgentHubConnection } from "@/registry/ai-chat/adapters/agenthub/adapter";
-import { AiChat } from "@/registry/ai-chat/components/ai-chat";
-import { AiChatEmptyState } from "@/registry/ai-chat/components/ai-chat-empty-state";
-import { AutopilotGradientIcon } from "@/registry/ai-chat/components/icons/autopilot-gradient";
+import { createAgentHubConnection } from "@uipath/apollo-vertex/ai-chat";
+import { AiChat } from "@uipath/apollo-vertex/ai-chat";
+import { AiChatEmptyState } from "@uipath/apollo-vertex/ai-chat";
+import { AutopilotGradientIcon } from "@uipath/apollo-vertex/ai-chat";
 import {
   CHOICES_TOOL_PROMPT,
   presentChoicesClient,
   renderChoices,
-} from "@/registry/ai-chat/tools/choices";
-import type { Entity } from "@/registry/ai-chat/tools/data-fabric/util/entities";
+} from "@uipath/apollo-vertex/ai-chat";
+import type { Entity } from "@uipath/apollo-vertex/ai-chat";
 import {
   createDataFabricBarTool,
   dataFabricBarClient,
-} from "@/registry/ai-chat/tools/data-fabric-bar";
+} from "@uipath/apollo-vertex/ai-chat";
 import {
   createDataFabricDistributionTool,
   dataFabricDistributionClient,
-} from "@/registry/ai-chat/tools/data-fabric-distribution";
+} from "@uipath/apollo-vertex/ai-chat";
 import {
   createDataFabricKpiTool,
   dataFabricKpiClient,
-} from "@/registry/ai-chat/tools/data-fabric-kpi";
+} from "@uipath/apollo-vertex/ai-chat";
 import {
   createDataFabricLineTool,
   dataFabricLineClient,
-} from "@/registry/ai-chat/tools/data-fabric-line";
+} from "@uipath/apollo-vertex/ai-chat";
 import {
   createDataFabricMultiLineTool,
   dataFabricMultiLineClient,
-} from "@/registry/ai-chat/tools/data-fabric-multi-line";
+} from "@uipath/apollo-vertex/ai-chat";
 import {
   createDataFabricTableTool,
   dataFabricTableClient,
-} from "@/registry/ai-chat/tools/data-fabric-table";
-import type { MessageFeedbackType } from "@/registry/ai-chat/types";
+} from "@uipath/apollo-vertex/ai-chat";
+import type { MessageFeedbackType } from "@uipath/apollo-vertex/ai-chat";
 import { DataFabricGate } from "./AiChatDataFabricGate";
 import type { OrgTenantInfo } from "./AiChatLoginGate";
 import {

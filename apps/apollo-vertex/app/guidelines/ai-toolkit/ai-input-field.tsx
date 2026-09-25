@@ -1,10 +1,6 @@
-import { Field, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Field, FieldLabel } from "@uipath/apollo-vertex";
+import { Input } from "@uipath/apollo-vertex";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@uipath/apollo-vertex";
 import { AiIcon } from "./ai-icon";
 
 /**

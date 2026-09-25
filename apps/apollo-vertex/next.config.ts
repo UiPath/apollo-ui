@@ -1,4 +1,77 @@
+import { existsSync } from "node:fs";
+import { dirname, join, relative } from "node:path";
+import { fileURLToPath } from "node:url";
 import nextra from "nextra";
+
+function findRepoRoot(start: string): string {
+  let dir = start;
+  for (;;) {
+    if (existsSync(join(dir, "pnpm-workspace.yaml"))) {
+      return dir;
+    }
+    const parent = dirname(dir);
+    if (parent === dir) {
+      return start;
+    }
+    dir = parent;
+  }
+}
+
+// uip-go copies this app to `.uipath-build/apollo-vertex`. Walk to the
+// monorepo root so the compiled workspace package still resolves there.
+const repoRoot = findRepoRoot(dirname(fileURLToPath(import.meta.url)));
+
+// dist/ is gitignored. Prefer it when turbo `^build`, the app `dev`/`build`
+// scripts, or Coded App preCommands produced it. Fall back to source so the
+// package name still resolves if dist is missing. Package `@/` imports are
+// rewritten only in dist, so `ensure:vertex` builds it before local `pnpm dev`.
+const appDir = dirname(fileURLToPath(import.meta.url));
+
+// Turbopack treats absolute POSIX paths as server-relative URLs and prefixes
+// them with `./`, so aliases must be relative to this app directory.
+function toTurbopackAlias(target: string): string {
+  const rel = relative(appDir, target).split("\\").join("/");
+  return rel.startsWith(".") ? rel : `./${rel}`;
+}
+
+function vertexPackageAliases(): Record<string, string> {
+  const distDir = join(repoRoot, "packages/apollo-vertex/dist");
+  const srcDir = join(repoRoot, "packages/apollo-vertex/src");
+  const useDist = existsSync(join(distDir, "index.js"));
+  const root = useDist ? distDir : srcDir;
+  const ext = useDist ? ".js" : ".ts";
+  if (!existsSync(join(root, `index${ext}`))) {
+    return {};
+  }
+  const entries: Array<[string, string[]]> = [
+    ["@uipath/apollo-vertex", ["index"]],
+    ["@uipath/apollo-vertex/shell", ["shell", "index"]],
+    ["@uipath/apollo-vertex/shell/entities", ["shell", "entities"]],
+    ["@uipath/apollo-vertex/solution-tests", ["solution-tests", "index"]],
+    ["@uipath/apollo-vertex/solution-tests/data", ["solution-tests", "data"]],
+    ["@uipath/apollo-vertex/feature-flags", ["feature-flags", "index"]],
+    [
+      "@uipath/apollo-vertex/feature-flags/proteus",
+      ["feature-flags", "proteus"],
+    ],
+    ["@uipath/apollo-vertex/ai-chat", ["ai-chat", "index"]],
+    ["@uipath/apollo-vertex/charts", ["charts", "index"]],
+  ];
+  const aliases: Record<string, string> = {};
+  for (const [name, parts] of entries) {
+    const last = parts.at(-1);
+    if (!last) {
+      continue;
+    }
+    const file = join(root, ...parts.slice(0, -1), `${last}${ext}`);
+    if (existsSync(file)) {
+      aliases[name] = toTurbopackAlias(file);
+    }
+  }
+  return aliases;
+}
+
+const vertexAliases = vertexPackageAliases();
 
 const withNextra = nextra({
   defaultShowCopyCode: true,
@@ -100,10 +173,25 @@ export default withNextra({
           ];
         },
       }),
+  transpilePackages: ["@uipath/apollo-vertex"],
   reactCompiler: true,
   turbopack: {
     resolveAlias: {
       "next-mdx-import-source-file": "./mdx-components.tsx",
+      ...vertexAliases,
     },
+  },
+  webpack(config: {
+    resolve?: { alias?: Record<string, string | false | string[]> };
+  }) {
+    if (Object.keys(vertexAliases).length === 0) {
+      return config;
+    }
+    config.resolve ??= {};
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      ...vertexAliases,
+    };
+    return config;
   },
 });

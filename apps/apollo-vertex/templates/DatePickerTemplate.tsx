@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
-import { DatePicker } from "@/registry/date-picker/date-picker";
-import { LocaleProvider } from "@/registry/shell/shell-locale-provider";
+import { DatePicker } from "@uipath/apollo-vertex";
+import { LocaleProvider } from "@uipath/apollo-vertex/shell";
 
 export function DatePickerTemplate() {
   const [date, setDate] = useState<Date>();

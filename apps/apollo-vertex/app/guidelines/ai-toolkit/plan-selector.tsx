@@ -2,10 +2,10 @@
 
 import { ArrowRight, Check } from "lucide-react";
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { AiCaveat } from "@/registry/ai-caveat/ai-caveat";
-import { Card } from "@/registry/card/card";
+import { Badge } from "@uipath/apollo-vertex";
+import { Button } from "@uipath/apollo-vertex";
+import { AiCaveat } from "@uipath/apollo-vertex";
+import { Card } from "@uipath/apollo-vertex";
 import { AiIcon } from "./ai-icon";
 
 // Text-safe gradient fill (white text, AA) for the "Agent pick" badge.

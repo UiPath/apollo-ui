@@ -120,6 +120,12 @@
       "rules": {
         "eslint/max-lines": ["error", { "max": 500 }]
       }
+    },
+    {
+      "files": ["app/foundation/themes/customize/theme-customizer.tsx"],
+      "rules": {
+        "eslint/max-lines": ["error", { "max": 500 }]
+      }
     }
   ]
 }

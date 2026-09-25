@@ -3,26 +3,26 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { RefreshCw } from "lucide-react";
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@uipath/apollo-vertex";
+import { Button } from "@uipath/apollo-vertex";
 import {
   DataTable,
   DataTableColumnHeader,
   dataTableFacetedFilterFn,
   dataTableGlobalFilterFn,
-} from "@/components/ui/data-table";
+} from "@uipath/apollo-vertex";
 import {
   FilterDropdown,
   type FilterDropdownOption,
-} from "@/components/ui/filter-dropdown";
-import { MetricCard } from "@/components/ui/metric-card";
+} from "@uipath/apollo-vertex";
+import { MetricCard } from "@uipath/apollo-vertex";
 import {
   PageHeader,
   PageHeaderActions,
   PageHeaderNav,
   PageHeaderTitle,
-} from "@/components/ui/page-header";
-import { useDataTable } from "@/registry/use-data-table/useDataTable";
+} from "@uipath/apollo-vertex";
+import { useDataTable } from "@uipath/apollo-vertex";
 
 type ReviewStatus = "ready" | "in_progress" | "approved" | "rejected";
 

@@ -7,8 +7,8 @@ import { ConversationalAgent } from "@uipath/uipath-typescript/conversational-ag
 import type { UiPath } from "@uipath/uipath-typescript/core";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { createConversationalAgentConnection } from "@/registry/ai-chat/adapters/conversational-agent/adapter";
-import { AiChat } from "@/registry/ai-chat/components/ai-chat";
+import { createConversationalAgentConnection } from "@uipath/apollo-vertex/ai-chat";
+import { AiChat } from "@uipath/apollo-vertex/ai-chat";
 import { AgentPicker } from "./AiChatAgentPicker";
 import type { OrgTenantInfo } from "./AiChatLoginGate";
 import { AICHAT_STORAGE_KEYS, createUiPathSdk } from "./ai-chat-example-utils";

@@ -13,7 +13,7 @@ import {
   type SolutionTestJob,
   type SolutionTestRun,
   type SolutionTestRunResult,
-} from "@/registry/solution-tests/types";
+} from "@uipath/apollo-vertex/solution-tests";
 import { IXP_EVALUATOR_FIXTURE, IXP_OUTPUT_FIXTURE } from "./ixp-fixtures";
 
 export interface MockDb {

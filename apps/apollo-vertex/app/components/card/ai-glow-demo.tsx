@@ -1,10 +1,10 @@
-import { AiGlow } from "@/registry/ai-glow/ai-glow";
+import { AiGlow } from "@uipath/apollo-vertex";
 import {
   Card,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/registry/card/card";
+} from "@uipath/apollo-vertex";
 
 /** A single card lifted off the surface by the `card` glow. */
 export function AiGlowCardDemo() {

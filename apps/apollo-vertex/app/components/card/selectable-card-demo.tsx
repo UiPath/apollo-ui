@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { Card, CardDescription, CardTitle } from "@/registry/card/card";
+import { Card, CardDescription, CardTitle } from "@uipath/apollo-vertex";
 
 export function SelectableCardDemo() {
   const [standardSelected, setStandardSelected] = useState(false);

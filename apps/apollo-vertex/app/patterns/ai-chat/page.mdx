@@ -50,8 +50,8 @@ npx shadcn@latest add @uipath/ai-chat
 
 ```tsx
 import { useChat } from '@tanstack/ai-react';
-import { AiChat } from '@/components/ui/ai-chat/components/ai-chat';
-import { createAgentHubConnection } from '@/components/ui/ai-chat/adapters/agenthub/adapter';
+import { AiChat } from '@uipath/apollo-vertex/ai-chat';
+import { createAgentHubConnection } from '@uipath/apollo-vertex/ai-chat';
 
 function BasicChat() {
   const connection = createAgentHubConnection({
@@ -88,7 +88,7 @@ import { z } from 'zod';
 import { toolDefinition } from '@tanstack/ai';
 import { clientTools } from '@tanstack/ai-client';
 import { useChat } from '@tanstack/ai-react';
-import { AiChat } from '@/components/ui/ai-chat/components/ai-chat';
+import { AiChat } from '@uipath/apollo-vertex/ai-chat';
 
 // 1. Define tools — output passes input through for rendering
 const showResultsInput = z.object({
@@ -214,7 +214,7 @@ The pill is scoped to the message scroll container — selections in the header,
 The built-in adapter for the **UiPath AgentHub** normalized LLM endpoint. It converts TanStack AI `UIMessage` arrays to the AgentHub wire format, calls the endpoint, and parses the SSE response back into AG-UI `StreamChunk` events.
 
 ```tsx
-import { createAgentHubConnection, type AgentHubAdapterConfig } from '@/components/ui/ai-chat/adapters/agenthub/adapter';
+import { createAgentHubConnection, type AgentHubAdapterConfig } from '@uipath/apollo-vertex/ai-chat';
 
 const connection = createAgentHubConnection({
   baseUrl: 'https://cloud.uipath.com/{org}/{tenant}/agenthub_/llm/api',
@@ -245,7 +245,7 @@ import { UiPath } from '@uipath/uipath-typescript/core';
 import {
   createConversationalAgentConnection,
   type ConversationalAgentAdapterConfig,
-} from '@/components/ui/ai-chat/adapters/conversational-agent/adapter';
+} from '@uipath/apollo-vertex/ai-chat';
 
 const sdk = new UiPath({ /* baseUrl, accessToken, ... */ });
 
@@ -278,7 +278,7 @@ The `data_fabric_table` tool renders entity data as interactive tables powered b
 import {
   createDataFabricTableTool,
   dataFabricTableClient,
-} from '@/components/ui/ai-chat/tools/data-fabric-table';
+} from '@uipath/apollo-vertex/ai-chat';
 
 const tableTool = createDataFabricTableTool({
   entities,           // Record<string, Entity> — entity metadata with field names and types
@@ -331,7 +331,7 @@ The `data_fabric_distribution` tool renders a histogram from a Data Fabric entit
 import {
   createDataFabricDistributionTool,
   dataFabricDistributionClient,
-} from '@/components/ui/ai-chat/tools/data-fabric-distribution';
+} from '@uipath/apollo-vertex/ai-chat';
 
 const distributionTool = createDataFabricDistributionTool({
   entities,           // Record<string, Entity> — entity metadata with field names and types
@@ -379,7 +379,7 @@ The `data_fabric_bar` tool renders a bar chart from a Data Fabric entity, breaki
 import {
   createDataFabricBarTool,
   dataFabricBarClient,
-} from '@/components/ui/ai-chat/tools/data-fabric-bar';
+} from '@uipath/apollo-vertex/ai-chat';
 
 const barTool = createDataFabricBarTool({
   entities,           // Record<string, Entity> — entity metadata with field names and types
@@ -435,7 +435,7 @@ The `data_fabric_line` tool renders a line chart from a Data Fabric entity, plot
 import {
   createDataFabricLineTool,
   dataFabricLineClient,
-} from '@/components/ui/ai-chat/tools/data-fabric-line';
+} from '@uipath/apollo-vertex/ai-chat';
 
 const lineTool = createDataFabricLineTool({
   entities,           // Record<string, Entity> — entity metadata with field names and types
@@ -468,7 +468,7 @@ The `data_fabric_multi_line` tool renders two lines on a shared datetime X axis.
 import {
   createDataFabricMultiLineTool,
   dataFabricMultiLineClient,
-} from '@/components/ui/ai-chat/tools/data-fabric-multi-line';
+} from '@uipath/apollo-vertex/ai-chat';
 
 const multiLineTool = createDataFabricMultiLineTool({
   entities,           // Record<string, Entity> — entity metadata with field names and types
@@ -515,7 +515,7 @@ The `data_fabric_kpi` tool renders a single scalar value — one aggregated metr
 import {
   createDataFabricKpiTool,
   dataFabricKpiClient,
-} from '@/components/ui/ai-chat/tools/data-fabric-kpi';
+} from '@uipath/apollo-vertex/ai-chat';
 
 const kpiTool = createDataFabricKpiTool({
   entities,           // Record<string, Entity> — entity metadata with field names and types
@@ -562,7 +562,7 @@ import {
   presentChoicesClient,
   renderChoices,
   CHOICES_TOOL_PROMPT,
-} from '@/components/ui/ai-chat/tools/choices';
+} from '@uipath/apollo-vertex/ai-chat';
 
 // Add presentChoicesClient to your tools array and CHOICES_TOOL_PROMPT to your system prompt.
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { resolveReturnPath, STORAGE_KEYS } from "@/lib/auth";
+import { resolveReturnPath, STORAGE_KEYS } from "@uipath/apollo-vertex/shell";
 
 export default function AuthCallback() {
   useEffect(() => {

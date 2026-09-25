@@ -1,7 +1,7 @@
 "use client";
 
-import { MultiLineChart } from "@/components/ui/multi-line-chart";
-import { Card, CardContent } from "@/components/ui/card";
+import { MultiLineChart } from "@uipath/apollo-vertex/charts";
+import { Card, CardContent } from "@uipath/apollo-vertex";
 
 const data = [
   { x: "Jan", revenue: 120, cost: 80 },

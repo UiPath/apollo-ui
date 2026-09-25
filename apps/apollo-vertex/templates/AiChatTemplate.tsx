@@ -2,10 +2,10 @@
 
 import { useLocalStorage } from "@mantine/hooks";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Label } from "@/registry/label/label";
-import { RadioGroup, RadioGroupItem } from "@/registry/radio-group/radio-group";
-import { ShellAuthProvider } from "@/registry/shell/shell-auth-provider";
-import { LocaleProvider } from "@/registry/shell/shell-locale-provider";
+import { Label } from "@uipath/apollo-vertex";
+import { RadioGroup, RadioGroupItem } from "@uipath/apollo-vertex";
+import { ShellAuthProvider } from "@uipath/apollo-vertex/shell";
+import { LocaleProvider } from "@uipath/apollo-vertex/shell";
 import { AgentHubChat } from "./ai-chat/AiChatAgentHubMode";
 import { ConversationalAgentChat } from "./ai-chat/AiChatConversationalAgentMode";
 import { AiChatLoginGate, type OrgTenantInfo } from "./ai-chat/AiChatLoginGate";

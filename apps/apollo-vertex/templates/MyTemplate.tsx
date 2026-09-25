@@ -1,5 +1,10 @@
-import { Button } from "@/registry/button/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/registry/card/card";
+import { Button } from "@uipath/apollo-vertex";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@uipath/apollo-vertex";
 
 export function MyTemplate() {
   return (
