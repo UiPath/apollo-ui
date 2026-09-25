@@ -133,6 +133,14 @@ describe('getGuardrailRulesErrorFields', () => {
     expect(getGuardrailRulesErrorFields(rules)).toEqual(['alwaysCombined']);
   });
 
+  it('flags a second always rule too', () => {
+    const rules: GuardrailRule[] = [
+      createGuardrailRule('always'),
+      { $ruleType: 'always', applyTo: 'output' },
+    ];
+    expect(getGuardrailRulesErrorFields(rules)).toEqual(['alwaysCombined']);
+  });
+
   it('flags invalid rules alongside a combination', () => {
     const rules: GuardrailRule[] = [createGuardrailRule('always'), word()];
     expect(getGuardrailRulesErrorFields(rules)).toEqual(['alwaysCombined', 'invalidRules']);

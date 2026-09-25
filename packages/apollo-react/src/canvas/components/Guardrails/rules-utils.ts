@@ -92,8 +92,9 @@ export function getGuardrailRuleErrorFields(rule: GuardrailRule): GuardrailRuleE
 }
 
 /**
- * `required`: no rules at all. `alwaysCombined`: an always rule next to field rules, which
- * neither product's runtime reads as intended. `invalidRules`: at least one rule has error fields.
+ * `required`: no rules at all. `alwaysCombined`: an always rule next to any other rule, a second
+ * always rule included, which neither product's runtime reads as intended. `invalidRules`: at
+ * least one rule has error fields.
  */
 export type GuardrailRulesErrorField = 'required' | 'alwaysCombined' | 'invalidRules';
 
@@ -103,8 +104,8 @@ export function getGuardrailRulesErrorFields(
 ): GuardrailRulesErrorField[] {
   if (rules.length === 0) return ['required'];
   const fields: GuardrailRulesErrorField[] = [];
-  const hasAlways = rules.some((rule) => rule.$ruleType === 'always');
-  if (hasAlways && rules.some((rule) => rule.$ruleType !== 'always')) {
+  // The always rule stands alone, so any second rule beside it is wrong, another always rule too.
+  if (rules.length > 1 && rules.some((rule) => rule.$ruleType === 'always')) {
     fields.push('alwaysCombined');
   }
   if (rules.some((rule) => getGuardrailRuleErrorFields(rule).length > 0)) {
