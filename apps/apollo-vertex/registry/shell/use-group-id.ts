@@ -8,6 +8,7 @@ export interface UseGroupIdOptions<Role extends string> {
 
 export interface UseGroupIdResult {
   groupId: string | null;
+  externalGroupName: string | null;
   isLoading: boolean;
 }
 
@@ -23,5 +24,6 @@ export const useGroupId = <Role extends string>({
   );
 
   const group = data?.find((g) => g.name === groupName);
-  return { groupId: group?.id ?? null, isLoading };
+  const externalGroupName = !isLoading && group == null ? groupName : null;
+  return { groupId: group?.id ?? null, externalGroupName, isLoading };
 };
