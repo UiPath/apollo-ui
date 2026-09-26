@@ -195,7 +195,7 @@
   "guardrails.builder.block-reason-placeholder": "輸入封鎖原因",
   "guardrails.builder.assign-to-label": "分配給",
   "guardrails.builder.recipient-user-label": "使用者",
-  "guardrails.builder.recipient-group-label": "組",
+  "guardrails.builder.recipient-group-label": "群組",
   "guardrails.builder.recipient-email-label": "電子郵寄地址",
   "guardrails.builder.recipient-group-name-label": "組名稱",
   "guardrails.builder.recipient-fallback-label": "收件者",
@@ -216,8 +216,8 @@
   "guardrails.builder.filter-fields-required-error": "必須選取欄位",
   "guardrails.builder.recipient-required-error": "收件者為必填欄位",
   "guardrails.builder.action-app-required-error": "動作應用程式為必填欄位",
-  "guardrails.form.required-error": "值為必填項",
+  "guardrails.form.required-error": "值為必填欄位",
   "guardrails.form.min-error": "必須至少為 {min}",
-  "guardrails.form.max-error": "最多為 {max}",
+  "guardrails.form.max-error": "最多只能為 {max}",
   "guardrails.builder.parameter-out-of-range-error": "值超出範圍"
 }

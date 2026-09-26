@@ -170,7 +170,7 @@
   "guardrails.builder.description-placeholder": "ガードレールの説明を入力",
   "guardrails.builder.evals-label": "評価用にガードレールを有効化",
   "guardrails.builder.evals-info-aria-label": "詳細情報",
-  "guardrails.builder.evals-tooltip": "有効化すると、このガードレールは評価の実行中に適用されます。",
+  "guardrails.builder.evals-tooltip": "有効化すると、このガードレールは評価実行中に適用されます。",
   "guardrails.builder.save-as-new": "新規として保存",
   "guardrails.builder.cancel": "キャンセル",
   "guardrails.builder.save": "保存",
@@ -199,7 +199,7 @@
   "guardrails.builder.recipient-email-label": "メール アドレス",
   "guardrails.builder.recipient-group-name-label": "グループ名",
   "guardrails.builder.recipient-fallback-label": "受信者",
-  "guardrails.builder.user-search-placeholder": "ユーザーを検索...",
+  "guardrails.builder.user-search-placeholder": "ユーザーを検索..",
   "guardrails.builder.group-search-placeholder": "グループを検索...",
   "guardrails.builder.email-placeholder": "メール アドレスを入力",
   "guardrails.builder.group-name-placeholder": "グループ名を入力",
@@ -216,8 +216,8 @@
   "guardrails.builder.filter-fields-required-error": "フィールドの選択は必須です。",
   "guardrails.builder.recipient-required-error": "受信者は必須です。",
   "guardrails.builder.action-app-required-error": "アクション アプリは必須です。",
-  "guardrails.form.required-error": "値は必須です",
-  "guardrails.form.min-error": "{min} 以上である必要があります",
-  "guardrails.form.max-error": "{max} 以下である必要があります",
-  "guardrails.builder.parameter-out-of-range-error": "値が範囲外です"
+  "guardrails.form.required-error": "値は必須です。",
+  "guardrails.form.min-error": "{min} 以上である必要があります。",
+  "guardrails.form.max-error": "最大 {max} である必要があります。",
+  "guardrails.builder.parameter-out-of-range-error": "値が範囲外です。"
 }
