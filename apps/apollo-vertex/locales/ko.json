@@ -217,6 +217,7 @@
   "projects": "프로젝트",
   "recent_activity": "최근 액티비티",
   "recent_invoices": "최근 송장",
+  "remove": "제거",
   "remove_file": "{{name}} 제거",
   "remove_from_expected_result": "기준에서 제거",
   "remove_quoted_text": "인용 텍스트 제거",

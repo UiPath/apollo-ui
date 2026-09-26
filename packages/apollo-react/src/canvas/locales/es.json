@@ -183,7 +183,7 @@
   "guardrails.builder.scope-llm-label": "Llamadas de LLM",
   "guardrails.builder.scope-tool-label": "Herramientas",
   "guardrails.builder.action-type-label": "Tipo de acción",
-  "guardrails.builder.action-log-label": "Acceso",
+  "guardrails.builder.action-log-label": "Registro",
   "guardrails.builder.action-block-label": "Bloquear",
   "guardrails.builder.action-filter-label": "Filtro",
   "guardrails.builder.action-escalate-label": "Escalar",
@@ -216,8 +216,8 @@
   "guardrails.builder.filter-fields-required-error": "La selección de campos es obligatoria",
   "guardrails.builder.recipient-required-error": "El destinatario es obligatorio",
   "guardrails.builder.action-app-required-error": "La aplicación de acción es obligatoria",
-  "guardrails.form.required-error": "El valor es obligatorio",
-  "guardrails.form.min-error": "Debe ser como mínimo {min}",
+  "guardrails.form.required-error": "Valor obligatorio",
+  "guardrails.form.min-error": "Debe tener al menos {min}",
   "guardrails.form.max-error": "Debe ser como máximo {max}",
-  "guardrails.builder.parameter-out-of-range-error": "El valor está fuera de intervalo"
+  "guardrails.builder.parameter-out-of-range-error": "El valor está fuera de rango"
 }

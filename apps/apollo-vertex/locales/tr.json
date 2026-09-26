@@ -217,6 +217,7 @@
   "projects": "Projeler",
   "recent_activity": "Son Etkinlik",
   "recent_invoices": "Son Faturalar",
+  "remove": "Kaldır",
   "remove_file": "Kaldır: {{name}}",
   "remove_from_expected_result": "Tabandan kaldır",
   "remove_quoted_text": "Tırnak işareti içine alınmış metni kaldır",

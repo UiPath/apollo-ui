@@ -190,7 +190,7 @@
   "guardrails.builder.severity-label": "Niveau de gravité",
   "guardrails.builder.severity-info-label": "Info",
   "guardrails.builder.severity-warning-label": "Warning",
-  "guardrails.builder.severity-error-label": "Erreur",
+  "guardrails.builder.severity-error-label": "Error",
   "guardrails.builder.block-reason-label": "Motif du blocage",
   "guardrails.builder.block-reason-placeholder": "Saisissez le motif du blocage",
   "guardrails.builder.assign-to-label": "Affecter à",
@@ -216,8 +216,8 @@
   "guardrails.builder.filter-fields-required-error": "La sélection des champs est requise",
   "guardrails.builder.recipient-required-error": "Le destinataire est requis",
   "guardrails.builder.action-app-required-error": "Une application Action est requise",
-  "guardrails.form.required-error": "La valeur est obligatoire",
-  "guardrails.form.min-error": "Doit être au minimum {min}",
-  "guardrails.form.max-error": "Doit être au maximum {max}",
-  "guardrails.builder.parameter-out-of-range-error": "La valeur est hors plage"
+  "guardrails.form.required-error": "Valeur requise",
+  "guardrails.form.min-error": "Doit être d’au moins {min}",
+  "guardrails.form.max-error": "Ne doit pas dépasser {max}",
+  "guardrails.builder.parameter-out-of-range-error": "Valeur hors plage"
 }
