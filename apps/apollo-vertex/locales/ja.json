@@ -217,6 +217,7 @@
   "projects": "プロジェクト",
   "recent_activity": "最近のアクティビティ",
   "recent_invoices": "最近の請求書",
+  "remove": "削除",
   "remove_file": "{{name}} を削除",
   "remove_from_expected_result": "ベースラインから削除",
   "remove_quoted_text": "引用符で囲まれたテキストを削除",

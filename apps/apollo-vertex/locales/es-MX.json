@@ -217,6 +217,7 @@
   "projects": "Proyectos",
   "recent_activity": "Actividad reciente",
   "recent_invoices": "Facturas recientes",
+  "remove": "Eliminar",
   "remove_file": "Eliminar {{name}}",
   "remove_from_expected_result": "Eliminar de la base de referencia",
   "remove_quoted_text": "Eliminar texto citado",
