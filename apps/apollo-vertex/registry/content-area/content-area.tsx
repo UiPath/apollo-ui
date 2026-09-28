@@ -9,7 +9,7 @@ const contentAreaVariants = cva(
   {
     variants: {
       padding: {
-        padded: "p-6",
+        padded: "p-(--surface-inset)",
         flush: "p-0",
       },
     },

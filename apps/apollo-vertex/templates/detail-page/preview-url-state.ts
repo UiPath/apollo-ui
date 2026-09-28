@@ -11,7 +11,7 @@ import type {
 import {
   detailPageTemplate,
   END_PANEL_DEFAULT_PX,
-  SIDE_PANEL_OUTER_PX,
+  END_PANEL_MIN_PX,
 } from "./detail-page.template";
 
 export type ShellVariant = "sidebar" | "minimal";
@@ -81,7 +81,7 @@ const paddingKey = (slot: DetailPageSlotName) => `${slot}-padding`;
 function parseWidth(value: string | null): PanelWidth {
   if (value === "max") return "max";
   const width = Number(value);
-  return Number.isInteger(width) && width >= SIDE_PANEL_OUTER_PX
+  return Number.isInteger(width) && width >= END_PANEL_MIN_PX
     ? width
     : END_PANEL_DEFAULT_PX;
 }

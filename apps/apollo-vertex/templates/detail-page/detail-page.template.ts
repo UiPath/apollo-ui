@@ -1,7 +1,28 @@
-import type { TemplateSpec } from "@/lib/composition";
-import { PADDED_INSET_PX } from "@/lib/composition";
+import type { SlotWidth, TemplateSpec } from "@/lib/composition";
+import { LAYOUT_TOKENS } from "@/lib/composition";
 import { contentAreaSurface } from "@/registry/content-area/content-area.surface";
 import { sidePanelSurface } from "@/registry/side-panel/side-panel.surface";
+
+/*
+ * Detail page widths, in px. They live here, in the template spec, and the
+ * template sets them as CSS variables on its root so CSS and TypeScript
+ * read one source. Moves to the theme when the template becomes a
+ * registry item. Surface minimums come from theme tokens.
+ */
+
+/** Start panel: fixed, never resized by the user. */
+export const START_PANEL_WIDTH = {
+  min: sidePanelSurface.width.min,
+  default: sidePanelSurface.width.min,
+  max: sidePanelSurface.width.min,
+} as const satisfies SlotWidth;
+
+/** End panel: resizable between its minimum and main's width. */
+export const END_PANEL_WIDTH = {
+  min: sidePanelSurface.width.min,
+  default: 360,
+  max: "main",
+} as const satisfies SlotWidth;
 
 export const detailPageTemplate = {
   name: "detail-page",
@@ -10,6 +31,7 @@ export const detailPageTemplate = {
     {
       name: "start-panel",
       required: false,
+      width: START_PANEL_WIDTH,
       resizable: false,
       surfaces: ["side-panel"],
     },
@@ -17,6 +39,7 @@ export const detailPageTemplate = {
     {
       name: "end-panel",
       required: false,
+      width: END_PANEL_WIDTH,
       resizable: true,
       surfaces: ["side-panel"],
     },
@@ -36,6 +59,15 @@ export type DetailPagePanels = "none" | "start" | "end" | "both";
  * - "beside-header": the panel runs the full height of the template and the
  *   header shifts over. Inside the minimal shell the template already sits
  *   under the Shell's top bar, so the panel stops there.
+ *
+ * Choosing placement: placement shows what the panel's content belongs
+ * to. Below header: content about this record, which changes when the user
+ * opens a different record (source document, activity history, rules
+ * applied, line items). Beside header: content that works across records,
+ * which stays in place when the user opens a different record (work queue,
+ * secondary navigation, the AI assistant). Quick test: if the user opens
+ * the next record, does the panel's content change? Yes → below header.
+ * No → beside header. Don't choose placement for visual emphasis.
  */
 export type PanelPlacement = "below-header" | "beside-header";
 
@@ -58,24 +90,32 @@ export interface ResizablePanelConfig extends DetailPagePanelConfig {
 /** Everything a Detail page lets you configure. Nothing else is. */
 export interface DetailPageConfig {
   panels: DetailPagePanels;
-  /** Fixed at the side panel's minimum width. */
+  /** Fixed at START_PANEL_WIDTH.default. */
   start: DetailPagePanelConfig;
   /** Resizable. See the end panel width rules below. */
   end: ResizablePanelConfig;
 }
 
-/** Width of the divider the frame draws between slots, in px. */
-export const DIVIDER_PX = 1;
+/** The divider the frame draws between slots: the --slot-divider-width token. */
+export const DIVIDER_PX = LAYOUT_TOKENS.slotDividerWidth;
 
-/** A side panel's minimum outer width. The start panel is always this. */
-export const SIDE_PANEL_OUTER_PX = sidePanelSurface.width.min;
+/** The start panel's rendered outer width. */
+export const START_PANEL_PX = START_PANEL_WIDTH.default;
+
+/** The end panel's minimum outer width. */
+export const END_PANEL_MIN_PX = END_PANEL_WIDTH.min;
 
 /** The end panel's width before the user resizes it. */
-export const END_PANEL_DEFAULT_PX = sidePanelSurface.width.default;
+export const END_PANEL_DEFAULT_PX = END_PANEL_WIDTH.default;
 
-/** Main's outer minimum: content-area's inner minimum plus the inset. */
-export const MAIN_MIN_OUTER_PX =
-  contentAreaSurface.provides.width.min + 2 * PADDED_INSET_PX;
+/** Main's outer minimum: the content-area surface's own minimum. */
+export const MAIN_MIN_OUTER_PX = contentAreaSurface.width.min;
+
+/** Each panel's outer width for the main-width rule, divider included. */
+const PANEL_RULE_PX: Record<PanelSide, number> = {
+  start: START_PANEL_PX + DIVIDER_PX,
+  end: END_PANEL_MIN_PX + DIVIDER_PX,
+};
 
 /** Why a panel is closed: the user closed it, or the main-width rule did. */
 export type PanelClosedBy = "user" | "rule";
@@ -122,7 +162,8 @@ export function resolvePanels(
 
   const openSides = intent.openOrder.filter((side) => open[side]);
   const required = () =>
-    MAIN_MIN_OUTER_PX + openSides.length * (SIDE_PANEL_OUTER_PX + DIVIDER_PX);
+    MAIN_MIN_OUTER_PX +
+    openSides.reduce((total, side) => total + PANEL_RULE_PX[side], 0);
 
   while (required() > templateWidth) {
     const index = openSides.findIndex((side) => side !== intent.lastOpened);
@@ -148,7 +189,7 @@ export function enabledPanels(
 /**
  * End panel width rules. The end panel is the only resizable slot.
  *
- * - It is never narrower than SIDE_PANEL_OUTER_PX (280px).
+ * - It is never narrower than END_PANEL_MIN_PX.
  * - It is never wider than main. With no start panel open that is a 50/50
  *   split of the template; with one, a 50/50 split of what remains.
  * - Main keeps its MAIN_MIN_OUTER_PX (480px) minimum, so on narrow windows
@@ -166,12 +207,12 @@ export function endPanelMaxWidth(
   templateWidth: number,
   startOpen: boolean,
 ): number {
-  const startPx = startOpen ? SIDE_PANEL_OUTER_PX + DIVIDER_PX : 0;
+  const startPx = startOpen ? PANEL_RULE_PX.start : 0;
   // The space main and the end panel share, less the end panel's divider.
   const shared = templateWidth - startPx - DIVIDER_PX;
   const halfOfShared = Math.floor(shared / 2);
   const mainMinimum = shared - MAIN_MIN_OUTER_PX;
-  return Math.max(SIDE_PANEL_OUTER_PX, Math.min(halfOfShared, mainMinimum));
+  return Math.max(END_PANEL_MIN_PX, Math.min(halfOfShared, mainMinimum));
 }
 
 export function resolveEndWidth(
@@ -184,9 +225,9 @@ export function resolveEndWidth(
   if (templateWidth <= 0) {
     return width === "max"
       ? END_PANEL_DEFAULT_PX
-      : Math.max(SIDE_PANEL_OUTER_PX, width);
+      : Math.max(END_PANEL_MIN_PX, width);
   }
   const max = endPanelMaxWidth(templateWidth, startOpen);
   if (width === "max") return max;
-  return Math.min(Math.max(width, SIDE_PANEL_OUTER_PX), max);
+  return Math.min(Math.max(width, END_PANEL_MIN_PX), max);
 }

@@ -13,7 +13,7 @@
     "postbuild": "pagefind --site .next/server/app --output-path public/_pagefind",
     "format": "biome format --write",
     "format:check": "biome format",
-    "lint": "oxlint --type-aware",
+    "lint": "pnpm generate:theme --check && oxlint --type-aware",
     "lint:fix": "oxlint --fix --type-aware",
     "lint:deps": "depcruise registry --config .dependency-cruiser.js",
     "typecheck": "tsc --noEmit"

@@ -12,13 +12,13 @@ import { cn } from "@/lib/utils";
 // every other panel stays transparent.
 const sidePanelVariants = cva(
   [
-    "flex h-full w-(--side-panel-width) min-h-0 shrink-0 flex-col overflow-y-auto [--side-panel-width:280px]",
+    "flex h-full w-(--side-panel-width) min-h-0 shrink-0 flex-col overflow-y-auto [--side-panel-width:var(--side-panel-width-min)]",
     "bg-transparent! bg-none! data-[placement=beside-header]:bg-side-panel-tint!",
   ].join(" "),
   {
     variants: {
       padding: {
-        padded: "p-6",
+        padded: "p-(--surface-inset)",
         flush: "p-0",
       },
     },

@@ -1,7 +1,13 @@
 import type { SurfaceSpec } from "@/lib/composition";
+import { LAYOUT_TOKENS, PADDED_INSET_PX } from "@/lib/composition";
 
 export const contentAreaSurface = {
   name: "content-area",
-  // 480px outer minimum, less the padded inset on both sides.
-  provides: { width: { min: 432 }, scroll: "surface" },
+  // The --content-area-width-min token.
+  width: { min: LAYOUT_TOKENS.contentAreaWidthMin },
+  // Inner width at the minimum, less the padded inset on both sides.
+  provides: {
+    width: { min: LAYOUT_TOKENS.contentAreaWidthMin - 2 * PADDED_INSET_PX },
+    scroll: "surface",
+  },
 } as const satisfies SurfaceSpec;

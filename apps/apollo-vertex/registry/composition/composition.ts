@@ -9,7 +9,14 @@
  * Templates draw the lines between slots. Surfaces own everything inside.
  * Each layer renders a matching data attribute: data-template, data-slot
  * (as "<template>-<slot>"), data-surface, data-occupant.
+ *
+ * Surface dimensions come from theme tokens in registry.json, generated
+ * into layout-tokens.ts so CSS and these specs read the same values.
  */
+
+import { LAYOUT_TOKENS } from "./layout-tokens";
+
+export { LAYOUT_TOKENS, SIDE_PANEL_TINT_STRENGTH } from "./layout-tokens";
 
 /** Which layer owns overflow scrolling inside a surface. */
 export type ScrollOwner = "surface" | "occupant";
@@ -21,10 +28,10 @@ export type ScrollOwner = "surface" | "occupant";
 export type SurfacePadding = "padded" | "flush";
 
 /**
- * The padded inset in px. Mirrors Tailwind's p-6 (6 x the --spacing token),
- * which is what surfaces render. Used only for width arithmetic in fits().
+ * The padded inset in px: the --surface-inset token, which surfaces render
+ * as their padding.
  */
-export const PADDED_INSET_PX = 24;
+export const PADDED_INSET_PX = LAYOUT_TOKENS.surfaceInset;
 
 /** The space a surface gives whatever sits inside it. */
 export interface SurfaceEnvelope {
@@ -38,11 +45,20 @@ export interface SurfaceEnvelope {
 }
 
 /**
- * A surface's own outer width range in px, including its padding. Compare
- * `provides.width`, which is the inner width an occupant gets. `max: "main"`
- * means the surface is never wider than the template's main slot.
+ * A surface's own outer minimum width in px, including its padding: the
+ * narrowest it supports anywhere. Compare `provides.width`, the inner width
+ * an occupant gets. How wide it is in a given slot is the slot's choice.
  */
 export interface SurfaceWidth {
+  min: number;
+}
+
+/**
+ * A slot's outer width range in px. `default` is what the slot renders at
+ * (always, when not resizable); `max: "main"` means never wider than the
+ * template's main slot. Must stay within the surface's own minimum.
+ */
+export interface SlotWidth {
   min: number;
   default: number;
   max: number | "main";
@@ -51,7 +67,7 @@ export interface SurfaceWidth {
 export interface SurfaceSpec<TName extends string = string> {
   /** Rendered as data-surface. Lowercase, hyphenated. */
   name: TName;
-  /** Outer width range, for surfaces a template can size. */
+  /** The surface's own minimum outer width. */
   width?: SurfaceWidth;
   provides: SurfaceEnvelope;
 }
@@ -76,9 +92,11 @@ export interface SlotSpec<TName extends string = string> {
   /** Rendered as data-slot="<template>-<name>". Lowercase, hyphenated. */
   name: TName;
   required: boolean;
+  /** The slot's width range, for slots whose surface the template sizes. */
+  width?: SlotWidth;
   /**
    * Whether the user can resize the surface in this slot. The template owns
-   * the handle, within the surface's `width` range.
+   * the handle, within the slot's `width` range.
    */
   resizable?: boolean;
   /** Names of the surfaces this slot accepts. */
