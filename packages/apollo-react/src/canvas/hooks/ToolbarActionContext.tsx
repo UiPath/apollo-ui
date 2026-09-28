@@ -1,20 +1,14 @@
 /**
- * Toolbar Action Store
- *
- * Module-level store for toolbar action handler, mode, and breakpoints.
- *
- * We use a module-level store instead of React context because:
- * 1. UIX's ExecutionStatusContext doesn't pass through custom properties
- * 2. The `getToolbar` function in node-factory is not a React component
- *    and cannot use hooks
- *
- * The store is set by FlowEditor via useEffect and accessed by toolbar-resolver.
+ * Toolbar action store: the canvas mode, action handler and breakpoints that
+ * `resolveToolbar` reads. `ToolbarActionStoreProvider` holds one per BaseCanvas and nodes
+ * read it first; the module-level store is the fallback for code outside any canvas
+ * (e.g. `getToolbar` in node-factory, which cannot use hooks).
  */
 
-import { useEffect } from 'react';
+import { createContext, type ReactNode, useContext, useEffect, useMemo } from 'react';
 import type { ToolbarActionHandler } from '../schema/toolbar';
 
-interface ToolbarActionStore {
+export interface ToolbarActionStore {
   mode: string;
   onToolbarAction?: ToolbarActionHandler;
   breakpoints?: Set<string>;
@@ -65,4 +59,29 @@ export function useToolbarActionStore(
       });
     };
   }, [mode, onToolbarAction, breakpoints]);
+}
+
+// One per BaseCanvas, so side-by-side canvases never share mode, handler or breakpoints.
+const ToolbarActionStoreContext = createContext<ToolbarActionStore | undefined>(undefined);
+
+export function ToolbarActionStoreProvider({
+  mode,
+  onToolbarAction,
+  breakpoints,
+  children,
+}: ToolbarActionStore & { children: ReactNode }) {
+  const value = useMemo(
+    () => ({ mode, onToolbarAction, breakpoints }),
+    [mode, onToolbarAction, breakpoints]
+  );
+  return (
+    <ToolbarActionStoreContext.Provider value={value}>
+      {children}
+    </ToolbarActionStoreContext.Provider>
+  );
+}
+
+/** The nearest BaseCanvas's toolbar store, or `undefined` outside any canvas. */
+export function useToolbarActionStoreContext(): ToolbarActionStore | undefined {
+  return useContext(ToolbarActionStoreContext);
 }

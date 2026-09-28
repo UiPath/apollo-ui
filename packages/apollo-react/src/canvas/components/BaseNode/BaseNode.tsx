@@ -24,7 +24,11 @@ import {
   NODE_INNER_SHAPE_RATIO,
 } from '../../constants';
 import { useNodeTypeRegistry } from '../../core';
-import { useElementValidationStatus, useNodeExecutionState } from '../../hooks';
+import {
+  useElementValidationStatus,
+  useNodeExecutionState,
+  useToolbarActionStoreContext,
+} from '../../hooks';
 import { isWideNodeShape, type NodeShape } from '../../schema';
 import type { HandleGroupManifest } from '../../schema/node-definition';
 import { resolveAdornments } from '../../utils/adornment-resolver';
@@ -237,6 +241,9 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     }));
   }, [handleConfigurationsProp, manifest, data, id]);
 
+  // This node's own canvas store, so side-by-side canvases keep separate toolbars.
+  const toolbarActionStore = useToolbarActionStoreContext();
+
   // Toolbar config resolution with priority: props > manifest
   const toolbarConfig = useMemo(() => {
     // Priority 1: Prop override (runtime callbacks)
@@ -248,8 +255,10 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     }
 
     // Priority 2: Manifest default
-    return manifest ? resolveToolbar(manifest, statusContext) : undefined;
-  }, [toolbarConfigProp, manifest, statusContext]);
+    return manifest
+      ? resolveToolbar(manifest, statusContext, { store: toolbarActionStore })
+      : undefined;
+  }, [toolbarConfigProp, manifest, statusContext, toolbarActionStore]);
 
   // A locked node keeps its toolbar and disables it rather than hiding it. See
   // `lockToolbarConfig` for why.
