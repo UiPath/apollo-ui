@@ -177,8 +177,8 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
   // The hook only pans the viewport without changing the zoom level
   useMaintainNodesInView(maintainNodesInView, fitViewOptions);
 
-  // Sync toolbar action store with current mode, handler, and breakpoints
-  // This is a module-level store accessed by toolbar-resolver
+  // Nodes read this canvas's own store from context (see CanvasProviders); the
+  // module-level store is still written for readers outside the canvas.
   useToolbarActionStore(mode, onToolbarAction, breakpoints);
 
   const handleInit = useCallback(
@@ -217,6 +217,8 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
       locale={locale}
       stickyNoteOptions={stickyNoteOptions}
       readOnlyNodeIds={stableReadOnlyNodeIds}
+      onToolbarAction={onToolbarAction}
+      breakpoints={breakpoints}
     >
       <ReactFlow
         {...reactFlowProps}
@@ -287,7 +289,7 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
 
 const BaseCanvasInner = memo(BaseCanvasInnerComponent) as typeof BaseCanvasInnerComponent;
 
-// Create the final component with proper typing
+/** Each instance owns its toolbar store, so several canvases can be mounted side by side. */
 export const BaseCanvas = forwardRef(function BaseCanvas<
   NodeType extends Node = Node,
   EdgeType extends Edge = Edge,

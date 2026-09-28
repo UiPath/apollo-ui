@@ -11,7 +11,7 @@ import type {
   NodeStatusContext,
   NodeToolbarConfig,
 } from '@uipath/apollo-react/canvas';
-import { getToolbarActionStore } from '../hooks/ToolbarActionContext';
+import { getToolbarActionStore, type ToolbarActionStore } from '../hooks/ToolbarActionContext';
 import type { ModeToolbarConfig, ToolbarActionSchema } from '../schema/toolbar';
 import { getIcon } from './icon-registry';
 
@@ -124,7 +124,8 @@ function evaluateCondition(
 function convertToNodeAction(
   action: ToolbarActionSchema,
   mode: string,
-  nodeData?: Record<string, unknown>
+  nodeData?: Record<string, unknown>,
+  store?: ToolbarActionStore
 ) {
   const IconComponent = getIcon(action.icon);
 
@@ -133,10 +134,9 @@ function convertToNodeAction(
     icon: <IconComponent w={14} h={14} />,
     label: action.label,
     onAction: (nodeId: string) => {
-      // Read handler from store at click time, not render time
-      // This ensures we always get the latest handler even if store was empty during render
-      // Note: mode is captured at render time to stay consistent with which actions were rendered
-      const { onToolbarAction } = getToolbarActionStore();
+      // Read the handler at click time so one set after render still fires; mode stays
+      // the render-time value so it matches the actions shown.
+      const { onToolbarAction } = store ?? getToolbarActionStore();
       onToolbarAction?.({
         actionId: action.id,
         nodeId,
@@ -180,6 +180,13 @@ function mergeToolbarConfigs(
   };
 }
 
+export interface ResolveToolbarOptions {
+  /** Node data passed through to the action handler. */
+  nodeData?: Record<string, unknown>;
+  /** The owning canvas's toolbar store; the module-level store when omitted. */
+  store?: ToolbarActionStore;
+}
+
 /**
  * Resolve final toolbar configuration
  * Combines: Mode defaults → Node type extensions → Conditional filtering
@@ -187,7 +194,7 @@ function mergeToolbarConfigs(
 export function resolveToolbar(
   manifest: NodeManifest,
   context: ExtendedNodeContext,
-  nodeData?: Record<string, unknown>
+  { nodeData, store }: ResolveToolbarOptions = {}
 ): NodeToolbarConfig | undefined {
   const {
     nodeType,
@@ -195,9 +202,7 @@ export function resolveToolbar(
     suppressDefaultToolbarActions,
   } = manifest;
 
-  // Get mode from module-level store for filtering/defaults
-  // (UIX doesn't pass custom properties through its context)
-  const { mode } = getToolbarActionStore();
+  const { mode } = store ?? getToolbarActionStore();
 
   // Step 1: Get mode defaults (applies to all nodes), minus any IDs the manifest suppresses
   const rawDefaults = toolbarRegistry.getModeDefaults(mode);
@@ -219,7 +224,7 @@ export function resolveToolbar(
   const resolveActions = (actions: ToolbarActionSchema[]) =>
     dedupeById(
       actions.filter((action) => evaluateCondition(manifest, action, nodeType, context))
-    ).map((action) => convertToNodeAction(action, mode, nodeData));
+    ).map((action) => convertToNodeAction(action, mode, nodeData, store));
 
   const filteredActions = resolveActions(merged.actions);
   const filteredOverflow = resolveActions(merged.overflowActions ?? []);

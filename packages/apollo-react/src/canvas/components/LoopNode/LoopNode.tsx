@@ -11,7 +11,11 @@ import { shallow } from 'zustand/shallow';
 import { useSafeLingui } from '../../../i18n';
 import { NODE_BADGE_INSET_SQUARE, NODE_BADGE_SIZE } from '../../constants';
 import { useOptionalNodeTypeRegistry } from '../../core';
-import { useElementValidationStatus, useNodeExecutionState } from '../../hooks';
+import {
+  useElementValidationStatus,
+  useNodeExecutionState,
+  useToolbarActionStoreContext,
+} from '../../hooks';
 import type { HandleGroupManifest } from '../../schema/node-definition';
 import type { SuggestionType } from '../../types';
 import { resolveAdornments } from '../../utils/adornment-resolver';
@@ -277,13 +281,18 @@ function LoopNodeComponent(props: LoopNodeProps) {
     minHeight: DEFAULT_CONTAINER_MIN_HEIGHT,
   };
 
+  // This node's own canvas store, so side-by-side canvases keep separate toolbars.
+  const toolbarActionStore = useToolbarActionStoreContext();
+
   const toolbarConfig = useMemo(() => {
     if (toolbarConfigProp !== undefined) {
       return toolbarConfigProp === null ? undefined : toolbarConfigProp;
     }
 
-    return manifest ? resolveToolbar(manifest, statusContext, data) : undefined;
-  }, [data, manifest, statusContext, toolbarConfigProp]);
+    return manifest
+      ? resolveToolbar(manifest, statusContext, { nodeData: data, store: toolbarActionStore })
+      : undefined;
+  }, [data, manifest, statusContext, toolbarConfigProp, toolbarActionStore]);
 
   // Matches BaseNode: a locked loop keeps its toolbar with every action
   // disabled rather than hiding it. See `lockToolbarConfig` for why.

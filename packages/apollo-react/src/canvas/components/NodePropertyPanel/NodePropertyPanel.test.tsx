@@ -1,5 +1,5 @@
 import type { FormSchema } from '@uipath/apollo-wind';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, userEvent } from '../../utils/testing';
 import { NodePropertyPanel } from './NodePropertyPanel';
 
@@ -260,5 +260,61 @@ describe('NodePropertyPanel', () => {
   it('renders the form without an autocomplete attribute when autoComplete is omitted', () => {
     const { container } = render(<NodePropertyPanel schema={MULTI_STEP} />);
     expect(container.querySelector('form')).not.toHaveAttribute('autocomplete');
+  });
+
+  describe('changed-field highlighting', () => {
+    const SINGLE_PAGE: FormSchema = {
+      id: 'http',
+      title: 'HTTP',
+      sections: [
+        {
+          id: 'p',
+          fields: [
+            { name: 'url', type: 'text', label: 'URL' },
+            { name: 'method', type: 'text', label: 'Method' },
+          ],
+        },
+      ],
+    };
+
+    it('flags and announces only the fields named in changedFields', () => {
+      const { container } = render(
+        <NodePropertyPanel schema={SINGLE_PAGE} changedFields={['url']} />
+      );
+      const urlField = container.querySelector('[data-field-name="url"]');
+      const methodField = container.querySelector('[data-field-name="method"]');
+
+      expect(urlField).toHaveAttribute('data-changed', 'true');
+      expect(urlField).toHaveTextContent('Changed');
+      expect(methodField).not.toHaveAttribute('data-changed');
+    });
+
+    it('flags nothing when changedFields is omitted', () => {
+      const { container } = render(<NodePropertyPanel schema={SINGLE_PAGE} />);
+
+      expect(container.querySelector('[data-changed]')).toBeNull();
+    });
+
+    describe('scrolling', () => {
+      const originalScrollIntoView = Element.prototype.scrollIntoView;
+      afterEach(() => {
+        Element.prototype.scrollIntoView = originalScrollIntoView;
+      });
+
+      it('scrolls the first changed field into view exactly once, only as far as needed', () => {
+        const scrollIntoView = vi.fn();
+        Element.prototype.scrollIntoView = scrollIntoView;
+
+        const { container, rerender } = render(
+          <NodePropertyPanel schema={SINGLE_PAGE} changedFields={['method', 'url']} />
+        );
+        rerender(<NodePropertyPanel schema={SINGLE_PAGE} changedFields={['method', 'url']} />);
+
+        const methodField = container.querySelector('[data-field-name="method"]');
+        expect(scrollIntoView).toHaveBeenCalledOnce();
+        expect(scrollIntoView.mock.instances[0]).toBe(methodField);
+        expect(scrollIntoView).toHaveBeenCalledWith(expect.objectContaining({ block: 'nearest' }));
+      });
+    });
   });
 });

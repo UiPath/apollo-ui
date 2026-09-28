@@ -1,6 +1,6 @@
 import { cn, MetadataForm } from '@uipath/apollo-wind';
 import { GripVertical, X } from 'lucide-react';
-import { type CSSProperties, useMemo } from 'react';
+import { type CSSProperties, useEffect, useMemo, useRef } from 'react';
 import { useSafeLingui } from '../../../i18n';
 import { EditableText } from './EditableText';
 import type { NodePropertyPanelProps } from './NodePropertyPanel.types';
@@ -9,6 +9,16 @@ import type { NodePropertyPanelProps } from './NodePropertyPanel.types';
 // surface-overlay to read lighter than the panel. Current themes keep the
 // classic bg-surface panel and stock input surfaces (no remap).
 const SURFACE_REMAP = 'future:[--surface-raised:var(--surface-overlay)]';
+
+// `field.name` may contain characters (`.`, `[`, `]`, quotes) that are invalid in an
+// unescaped CSS attribute-value selector. `CSS.escape` isn't implemented by every DOM
+// (older Safari, some test environments), hence the fallback.
+function escapeFieldName(name: string): string {
+  if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') {
+    return CSS.escape(name);
+  }
+  return name.replace(/["\\]/g, '\\$&');
+}
 
 /**
  * NodePropertyPanel — a presentational, docked properties panel for canvas nodes.
@@ -42,6 +52,7 @@ const SURFACE_REMAP = 'future:[--surface-raised:var(--surface-overlay)]';
  *   schema={assembledSchema}              // caller-built FormSchema (steps = tabs)
  *   plugins={formPlugins}                 // real-time onChange, custom fields
  *   resetKey={selectedNodeId}             // remount on node change
+ *   changedFields={['url', 'headers']}    // flagged; the first is scrolled into view
  *   onClose={() => deselect()}
  * />
  * ```
@@ -76,8 +87,71 @@ export function NodePropertyPanel({
   sectionVariant,
   activeStepId,
   onActiveStepChange,
+  changedFields,
 }: NodePropertyPanelProps) {
   const { _ } = useSafeLingui();
+  const rootRef = useRef<HTMLDivElement>(null);
+  const scrolledKeyRef = useRef<string | null>(null);
+  const changedFieldLabel = _({
+    id: 'canvas.node_property_panel.changed_field',
+    message: 'Changed',
+  });
+
+  // Scrolls the first rendered field in `changedFields` order into view, once per distinct
+  // `changedFields`/`resetKey` pair. A field on an unopened tab mounts later, so a
+  // MutationObserver waits for it and disconnects once found.
+  useEffect(() => {
+    if (children || !changedFields || changedFields.length === 0) {
+      return;
+    }
+
+    const scrollKey = `${resetKey ?? ''}::${changedFields.join('|')}`;
+    if (scrolledKeyRef.current === scrollKey) {
+      return;
+    }
+
+    const root = rootRef.current;
+    if (!root) {
+      return;
+    }
+
+    const findTarget = (): HTMLElement | null => {
+      for (const name of changedFields) {
+        const el = root.querySelector<HTMLElement>(`[data-field-name="${escapeFieldName(name)}"]`);
+        if (el) return el;
+      }
+      return null;
+    };
+
+    const scrollToTarget = (target: HTMLElement) => {
+      scrolledKeyRef.current = scrollKey;
+      const prefersReducedMotion =
+        typeof window !== 'undefined' &&
+        window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+      // 'nearest' scrolls only as far as needed, so a host page around the panel stays put.
+      target.scrollIntoView({
+        block: 'nearest',
+        behavior: prefersReducedMotion ? 'auto' : 'smooth',
+      });
+    };
+
+    const immediateTarget = findTarget();
+    if (immediateTarget) {
+      scrollToTarget(immediateTarget);
+      return;
+    }
+
+    const observer = new MutationObserver(() => {
+      const target = findTarget();
+      if (target) {
+        scrollToTarget(target);
+        observer.disconnect();
+      }
+    });
+    observer.observe(root, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, [children, changedFields, resetKey]);
+
   const isLabelEditable = !!onNodeLabelChange && !!onNodeLabelSubmit;
   const isDescriptionEditable = !!onNodeDescriptionChange && !!onNodeDescriptionSubmit;
   const showsDescription = !!nodeDescription || isDescriptionEditable || !!nodeDescriptionError;
@@ -94,6 +168,7 @@ export function NodePropertyPanel({
 
   return (
     <div
+      ref={rootRef}
       className={cn('flex min-h-0 flex-col bg-surface future:bg-surface-raised', className)}
       style={{ '--mf-content-inset': contentInset } as CSSProperties}
     >
@@ -221,6 +296,8 @@ export function NodePropertyPanel({
               onSubmit={onSubmit}
               disabled={disabled}
               autoComplete={autoComplete}
+              changedFields={changedFields}
+              changedFieldLabel={changedFieldLabel}
               className="flex min-h-0 flex-1 flex-col"
             />
           </div>
@@ -238,6 +315,8 @@ export function NodePropertyPanel({
               onSubmit={onSubmit}
               disabled={disabled}
               autoComplete={autoComplete}
+              changedFields={changedFields}
+              changedFieldLabel={changedFieldLabel}
               className="flex flex-col gap-4 pb-6 pt-3 [padding-inline:var(--mf-content-inset)]"
             />
           </div>
