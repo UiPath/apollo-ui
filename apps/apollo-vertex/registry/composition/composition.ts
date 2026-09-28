@@ -40,6 +40,8 @@ export interface SurfaceEnvelope {
 export interface SurfaceSpec<TName extends string = string> {
   /** Rendered as data-surface. Lowercase, hyphenated. */
   name: TName;
+  /** Under evaluation. May change or be removed without notice. */
+  experimental?: boolean;
   provides: SurfaceEnvelope;
 }
 
@@ -63,6 +65,8 @@ export interface SlotSpec<TName extends string = string> {
   /** Rendered as data-slot="<template>-<name>". Lowercase, hyphenated. */
   name: TName;
   required: boolean;
+  /** Under evaluation. May change or be removed without notice. */
+  experimental?: boolean;
   /** Names of the surfaces this slot accepts. */
   surfaces: readonly string[];
 }
