@@ -1,5 +1,10 @@
 import type { SurfaceSpec } from "@/lib/composition";
 
+/**
+ * Appearance: beside-header panels use --side-panel-tint over the ambient
+ * background. Below-header panels are transparent. The background follows
+ * placement only; teams cannot set it.
+ */
 export const sidePanelSurface = {
   name: "side-panel",
   // Outer width. A fixed panel uses `min`; a resizable one starts at

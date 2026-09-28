@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { SurfacePadding } from "@/lib/composition";
 import type {
@@ -125,6 +126,9 @@ interface PreviewControlBarProps {
   /** The width the user chose, which the rules may be clamping. */
   endWidthChosen: PanelWidth;
   onResetEndWidth: () => void;
+  /** Preview-only override of --side-panel-tint, as a percentage. */
+  tintStrength: number;
+  onTintStrengthChange: (strength: number) => void;
 }
 
 /**
@@ -140,9 +144,14 @@ export function PreviewControlBar({
   endWidth,
   endWidthChosen,
   onResetEndWidth,
+  tintStrength,
+  onTintStrengthChange,
 }: PreviewControlBarProps) {
   const { config, paddings } = settings;
   const enabled = enabledPanels(config.panels);
+  const anyBeside =
+    (enabled.start && config.start.placement === "beside-header") ||
+    (enabled.end && config.end.placement === "beside-header");
 
   const setPadding = (slot: DetailPageSlotName, padding: SurfacePadding) =>
     onChange((prev) => ({
@@ -238,6 +247,40 @@ export function PreviewControlBar({
           }
         />
       </Section>
+      {anyBeside && (
+        <Section title="Panel tint">
+          <div className="flex flex-col gap-2">
+            <div className="flex items-baseline justify-between gap-2">
+              <span
+                id="tint-strength-label"
+                className="text-xs text-muted-foreground"
+              >
+                Tint strength
+              </span>
+              <span
+                data-testid="tint-strength-value"
+                className="text-sm font-medium tabular-nums"
+              >
+                {`${tintStrength}%`}
+              </span>
+            </div>
+            <Slider
+              aria-labelledby="tint-strength-label"
+              min={0}
+              max={100}
+              step={1}
+              value={[tintStrength]}
+              onValueChange={([next]) => {
+                if (typeof next === "number") onTintStrengthChange(next);
+              }}
+            />
+            <span className="text-xs text-muted-foreground">
+              Beside-header panels only. Preview override of --side-panel-tint;
+              not saved in the URL.
+            </span>
+          </div>
+        </Section>
+      )}
       <Section title="Header">
         <Field
           label="Padding"

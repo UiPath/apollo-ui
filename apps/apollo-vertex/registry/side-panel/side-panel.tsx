@@ -6,8 +6,15 @@ import * as React from "react";
 import type { SurfacePadding } from "@/lib/composition";
 import { cn } from "@/lib/utils";
 
+// The background follows placement only, so the rules are !important:
+// neither a className nor an inline style can set it. Beside-header panels
+// get the translucent --side-panel-tint over the Shell's ambient layer;
+// every other panel stays transparent.
 const sidePanelVariants = cva(
-  "flex h-full w-(--side-panel-width) min-h-0 shrink-0 flex-col overflow-y-auto [--side-panel-width:280px]",
+  [
+    "flex h-full w-(--side-panel-width) min-h-0 shrink-0 flex-col overflow-y-auto [--side-panel-width:280px]",
+    "bg-transparent! bg-none! data-[placement=beside-header]:bg-side-panel-tint!",
+  ].join(" "),
   {
     variants: {
       padding: {
@@ -21,11 +28,20 @@ const sidePanelVariants = cva(
   },
 );
 
+type SidePanelPlacement = "below-header" | "beside-header";
+
+interface SidePanelSlotState {
+  open: boolean;
+  placement: SidePanelPlacement;
+}
+
 /**
- * Lets a template tell the panel in its slot whether it is open, so the
- * panel's data-state always matches the template's layout.
+ * Lets a template tell the panel in its slot whether it is open and where
+ * it sits, so data-state and data-placement always match the layout.
  */
-const SidePanelOpenContext = React.createContext<boolean | null>(null);
+const SidePanelSlotContext = React.createContext<SidePanelSlotState | null>(
+  null,
+);
 
 interface SidePanelProps extends React.ComponentProps<"aside"> {
   /** Which edge of the template the panel sits on. Logical, so it flips in RTL. */
@@ -45,19 +61,21 @@ function SidePanel({
   className,
   ...props
 }: SidePanelProps) {
-  const templateOpen = React.useContext(SidePanelOpenContext);
-  const open = openProp ?? templateOpen ?? true;
+  const slot = React.useContext(SidePanelSlotContext);
+  const open = openProp ?? slot?.open ?? true;
+  const placement = slot?.placement ?? "below-header";
   return (
     <aside
       data-surface="side-panel"
       data-side={side}
       data-padding={padding}
       data-state={open ? "open" : "closed"}
+      data-placement={placement}
       className={cn(sidePanelVariants({ padding }), className)}
       {...props}
     />
   );
 }
 
-export { SidePanel, SidePanelOpenContext, sidePanelVariants };
-export type { SidePanelProps };
+export { SidePanel, SidePanelSlotContext, sidePanelVariants };
+export type { SidePanelPlacement, SidePanelProps, SidePanelSlotState };
