@@ -6,6 +6,7 @@
  * - Occupants are the content placed inside surfaces.
  *
  * Every slot accepts a surface. Templates never hold occupants directly.
+ * Templates draw the lines between slots. Surfaces own everything inside.
  * Each layer renders a matching data attribute: data-template, data-slot
  * (as "<template>-<slot>"), data-surface, data-occupant.
  */
@@ -13,9 +14,25 @@
 /** Which layer owns overflow scrolling inside a surface. */
 export type ScrollOwner = "surface" | "occupant";
 
+/**
+ * How a surface insets its occupant. Surfaces own padding; occupants never
+ * add outer padding. "padded" is PADDED_INSET_PX on every side, "flush" is 0.
+ */
+export type SurfacePadding = "padded" | "flush";
+
+/**
+ * The padded inset in px. Mirrors Tailwind's p-6 (6 x the --spacing token),
+ * which is what surfaces render. Used only for width arithmetic in fits().
+ */
+export const PADDED_INSET_PX = 24;
+
 /** The space a surface gives whatever sits inside it. */
 export interface SurfaceEnvelope {
-  /** Inline size in px. Omit `max` when the surface is unbounded. */
+  /**
+   * Inline size in px given to a padded occupant, after the inset. A flush
+   * occupant gets PADDED_INSET_PX more on each side. Omit `max` when the
+   * surface is unbounded.
+   */
   width: { min: number; max?: number };
   scroll: ScrollOwner;
 }
@@ -30,6 +47,8 @@ export interface SurfaceSpec<TName extends string = string> {
 export interface OccupantRequirements {
   minWidth: number;
   scroll: ScrollOwner | "either";
+  /** Defaults to "padded". */
+  padding?: SurfacePadding;
 }
 
 export interface OccupantSpec<TName extends string = string> {
@@ -64,14 +83,24 @@ export function slotAccepts(slot: SlotSpec, surface: SurfaceSpec): boolean {
   return slot.surfaces.includes(surface.name);
 }
 
+/** The padding a surface should apply for an occupant. */
+export function occupantPadding(occupant: OccupantSpec): SurfacePadding {
+  return occupant.requires.padding ?? "padded";
+}
+
 /**
  * Whether a surface guarantees what an occupant needs. Width is checked
- * against the surface's minimum, since that is all it promises.
+ * against the surface's minimum inner width, since that is all it promises.
+ * A flush occupant also gets the inset back, except when the minimum is 0:
+ * that means no guarantee, so there is nothing to add to.
  */
 export function fits(surface: SurfaceSpec, occupant: OccupantSpec): boolean {
   const { width, scroll } = surface.provides;
   const { minWidth, scroll: needsScroll } = occupant.requires;
-  const widthFits = width.min >= minWidth;
+  const isFlush = occupantPadding(occupant) === "flush";
+  const available =
+    isFlush && width.min > 0 ? width.min + 2 * PADDED_INSET_PX : width.min;
+  const widthFits = available >= minWidth;
   const scrollFits = needsScroll === "either" || needsScroll === scroll;
   return widthFits && scrollFits;
 }

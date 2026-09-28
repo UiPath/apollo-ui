@@ -18,6 +18,10 @@ export interface DetailPageProps
  * start panel, main, and end panel share the row below. Empty panel slots
  * are not rendered, so their `auto` columns collapse to zero.
  *
+ * The frame draws the dividers between slots as real borders on the slot
+ * wrappers, so they survive forced-colors mode. Surfaces draw no outer
+ * borders, which keeps their inner widths exact.
+ *
  * Slots are placed by explicit row and column so later placement settings
  * (e.g. a start panel running beside the header) only need to change the
  * spans, not the markup.
@@ -41,14 +45,14 @@ export function DetailPage({
     >
       <div
         data-slot="detail-page-header"
-        className="col-span-3 col-start-1 row-start-1 min-w-0"
+        className="col-span-3 col-start-1 row-start-1 min-w-0 border-b border-border"
       >
         {header}
       </div>
       {startPanel && (
         <div
           data-slot="detail-page-start-panel"
-          className="col-start-1 row-start-2 min-h-0"
+          className="col-start-1 row-start-2 min-h-0 border-e border-border"
         >
           {startPanel}
         </div>
@@ -62,7 +66,7 @@ export function DetailPage({
       {endPanel && (
         <div
           data-slot="detail-page-end-panel"
-          className="col-start-3 row-start-2 min-h-0"
+          className="col-start-3 row-start-2 min-h-0 border-s border-border"
         >
           {endPanel}
         </div>

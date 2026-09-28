@@ -1,34 +1,60 @@
 import { ContentArea } from "@/components/ui/content-area";
 import { PageHeader } from "@/components/ui/page-header";
 import { SidePanel } from "@/components/ui/side-panel";
+import type { SurfacePadding } from "@/lib/composition";
+import { occupantPadding } from "@/lib/composition";
+import type { DetailPageSlotName } from "./detail-page.template";
 import { DetailPage } from "./DetailPage";
+import { placeholderOccupant } from "./placeholder-occupants";
 import { SlotPlaceholder } from "./SlotPlaceholder";
 
-export function DetailPageExample() {
+export type SlotPaddings = Record<DetailPageSlotName, SurfacePadding>;
+
+interface DetailPageExampleProps {
+  paddings: SlotPaddings;
+}
+
+export function DetailPageExample({ paddings }: DetailPageExampleProps) {
+  const header = placeholderOccupant("Header", paddings.header);
+  const startPanel = placeholderOccupant(
+    "Start panel",
+    paddings["start-panel"],
+  );
+  const main = placeholderOccupant("Main", paddings.main);
+  const endPanel = placeholderOccupant("End panel", paddings["end-panel"]);
+
   return (
     <DetailPage
       header={
-        <PageHeader bordered>
+        <PageHeader padding={occupantPadding(header)}>
           <SlotPlaceholder
-            label="Header"
+            occupant={header}
             surface="page-header"
-            className="h-14 flex-row gap-3"
+            className="col-span-full min-h-11 flex-row gap-3 self-stretch"
           />
         </PageHeader>
       }
       startPanel={
-        <SidePanel side="start" aria-label="Start panel" className="p-4">
-          <SlotPlaceholder label="Start panel" surface="side-panel" />
+        <SidePanel
+          side="start"
+          aria-label="Start panel"
+          padding={occupantPadding(startPanel)}
+        >
+          <SlotPlaceholder occupant={startPanel} surface="side-panel" />
         </SidePanel>
       }
       main={
-        <ContentArea className="pt-4">
-          <SlotPlaceholder label="Main" surface="content-area" />
+        <ContentArea padding={occupantPadding(main)}>
+          <SlotPlaceholder occupant={main} surface="content-area" />
         </ContentArea>
       }
       endPanel={
-        <SidePanel side="end" aria-label="End panel" className="p-4">
-          <SlotPlaceholder label="End panel" surface="side-panel" />
+        <SidePanel
+          side="end"
+          aria-label="End panel"
+          padding={occupantPadding(endPanel)}
+        >
+          <SlotPlaceholder occupant={endPanel} surface="side-panel" />
         </SidePanel>
       }
     />

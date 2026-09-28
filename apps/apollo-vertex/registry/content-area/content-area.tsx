@@ -1,21 +1,43 @@
+import { cva } from "class-variance-authority";
 import type * as React from "react";
 
+import type { SurfacePadding } from "@/lib/composition";
 import { cn } from "@/lib/utils";
 
-type ContentAreaProps = React.ComponentProps<"div">;
+const contentAreaVariants = cva(
+  "flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-y-auto",
+  {
+    variants: {
+      padding: {
+        padded: "p-6",
+        flush: "p-0",
+      },
+    },
+    defaultVariants: {
+      padding: "padded",
+    },
+  },
+);
 
-function ContentArea({ className, ...props }: ContentAreaProps) {
+interface ContentAreaProps extends React.ComponentProps<"div"> {
+  /** Set from the occupant's spec. Defaults to "padded". */
+  padding?: SurfacePadding;
+}
+
+function ContentArea({
+  padding = "padded",
+  className,
+  ...props
+}: ContentAreaProps) {
   return (
     <div
       data-surface="content-area"
-      className={cn(
-        "flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-y-auto px-4 pb-8 sm:px-6 lg:px-8",
-        className,
-      )}
+      data-padding={padding}
+      className={cn(contentAreaVariants({ padding }), className)}
       {...props}
     />
   );
 }
 
-export { ContentArea };
+export { ContentArea, contentAreaVariants };
 export type { ContentAreaProps };
