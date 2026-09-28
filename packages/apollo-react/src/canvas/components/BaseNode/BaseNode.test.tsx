@@ -199,6 +199,20 @@ describe('BaseNode', () => {
     mockIsConnecting.current = false;
   });
 
+  describe('Suggestion state', () => {
+    it('renders the suggestion border from node data', () => {
+      const { container } = render(<BaseNode {...defaultProps} data={{ suggestionType: 'add' }} />);
+      expect(container.querySelector('.border-success')).not.toBeNull();
+    });
+
+    it('override config takes precedence over node data', () => {
+      mockOverrideConfig.current = { suggestionType: 'delete' };
+      const { container } = render(<BaseNode {...defaultProps} data={{ suggestionType: 'add' }} />);
+      expect(container.querySelector('.border-error')).not.toBeNull();
+      expect(container.querySelector('.border-success')).toBeNull();
+    });
+  });
+
   // The handle count sets `--node-h` (the node height), which is also written to
   // React Flow's node.height so measured height, edges, and handle spacing agree.
   // It is a pure function of handles/footer (never reads the measured height), so the

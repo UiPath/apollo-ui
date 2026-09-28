@@ -1,10 +1,18 @@
 import type { NodeShape } from '../../schema';
+import type { SuggestionType } from '../../types';
 import type { ExecutionState } from '../../types/execution';
 import type { ValidationState } from '../../types/validation';
 
 export type FooterVariant = 'none' | 'button' | 'single' | 'double';
 
 export interface BaseNodeData extends Record<string, unknown> {
+  /**
+   * Marks this node as part of a pending suggestion or diff: `add` renders a
+   * success border, `update` a warning glow, `delete` an error glow (see
+   * `getStatusBorder`). Serializable counterpart of
+   * `BaseNodeOverrideConfig.suggestionType`, which takes precedence when both are set.
+   */
+  suggestionType?: SuggestionType;
   display?: {
     label?: string;
     /**
