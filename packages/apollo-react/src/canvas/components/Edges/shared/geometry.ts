@@ -197,30 +197,29 @@ function connectorElbow(from: Point, to: Point, incoming: SegmentOrientation | n
 }
 
 /**
- * Push the waypoint riser nearest a node face (`anchor` = inset source/target
- * endpoint) out to `EDGE_CONSTANTS.STUB_OFFSET` so the edge keeps a perpendicular
- * offset. Any riser closer than that is shifted forward, including bends behind
- * the face (gap < 0) — common on multi-handle nodes where the router's port sits
- * behind the rendered handle. Shifting the stored waypoint's own vertex (its
- * `waypointIndex` is preserved) survives consolidation, whereas a derived elbow
- * (`waypointIndex === -1`) would be collapsed.
+ * Push the riser at the `end` of the route adjacent to a node face (`anchor` =
+ * inset source/target endpoint) out to `EDGE_CONSTANTS.STUB_OFFSET`, including
+ * one behind the face (gap < 0), e.g. a router port behind the rendered handle.
+ * Shifting the stored waypoint (not a derived elbow) survives consolidation.
+ *
+ * Only the end riser: a loop-back's far corners also sit behind the face and
+ * must stay put.
  */
-function clearNodeFace(waypoints: Waypoint[], anchor: Point, position: Position): Waypoint[] {
+function clearNodeFace(
+  waypoints: Waypoint[],
+  anchor: Point,
+  position: Position,
+  end: 'first' | 'last'
+): Waypoint[] {
   const dir = getDirection(position);
   const axis = dir.dx !== 0 ? 'x' : 'y';
   const sign = dir.dx !== 0 ? dir.dx : dir.dy;
-  const nearest = waypoints.reduce(
-    (acc, w) => (sign > 0 ? Math.min(acc, w[axis]) : Math.max(acc, w[axis])),
-    sign > 0 ? Infinity : -Infinity
-  );
-  // Lands the riser exactly STUB_OFFSET in front of the face for any gap < that,
-  // including bends behind the face (gap < 0) — common on multi-handle nodes
-  // where the router's port sits behind the rendered handle.
-  const gap = (nearest - anchor[axis]) * sign;
+  const riser = (end === 'first' ? waypoints[0] : waypoints.at(-1))![axis];
+  const gap = (riser - anchor[axis]) * sign;
   if (gap >= EDGE_CONSTANTS.STUB_OFFSET) return waypoints;
   const shift = (EDGE_CONSTANTS.STUB_OFFSET - gap) * sign;
   return waypoints.map((w) =>
-    Math.abs(w[axis] - nearest) < TOL ? { ...w, [axis]: w[axis] + shift } : w
+    Math.abs(w[axis] - riser) < TOL ? { ...w, [axis]: w[axis] + shift } : w
   );
 }
 
@@ -276,7 +275,12 @@ export function buildPathVertices(
 
   // Clear both faces for auto-routed bends; leave manual waypoints as placed.
   const routed = autoRouted
-    ? clearNodeFace(clearNodeFace(waypoints, start, sourcePosition), end, targetPosition)
+    ? clearNodeFace(
+        clearNodeFace(waypoints, start, sourcePosition, 'first'),
+        end,
+        targetPosition,
+        'last'
+      )
     : waypoints;
 
   // `path` carries the start anchor only as orientation context for the

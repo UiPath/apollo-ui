@@ -279,6 +279,20 @@ describe('buildPathVertices', () => {
     expect(isOrthogonal(result)).toBe(true);
   });
 
+  it('leaves the far corners of an auto-routed loop-back behind the faces', () => {
+    const route = [wp('a', 736, 64), wp('b', 736, 208), wp('c', 160, 208), wp('d', 160, 64)];
+    const result = buildPathVertices(688, 64, Position.Right, 208, 64, Position.Left, route, true);
+    expect(result.map(({ x, y }) => [x, y])).toEqual([
+      [680, 64],
+      [736, 64],
+      [736, 208],
+      [160, 208],
+      [160, 64],
+      [216, 64],
+    ]);
+    expect(isOrthogonal(result)).toBe(true);
+  });
+
   it('pulls a bend behind the source face forward to a clean STUB_OFFSET exit', () => {
     // Behind the face (gap < 0), e.g. router port behind the handle: the riser is
     // pulled forward to exactly STUB_OFFSET in front, never left hugging the node.

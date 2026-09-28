@@ -646,6 +646,105 @@ export const PluggableRouter: Story = {
   },
 };
 
+/** Routes every edge through a lane below both of its nodes. */
+const underpassRouter: EdgeRouter = {
+  route(req: RouteRequest): RoutedEdge[] {
+    const EXIT = 48;
+    const LANE_GAP = 48;
+    const bottomOf = (id: string) => {
+      const node = req.nodes.find((n) => n.id === id);
+      return node ? node.y + node.height : 0;
+    };
+    return req.edges.map((edge) => {
+      const laneY = Math.max(bottomOf(edge.source.nodeId), bottomOf(edge.target.nodeId)) + LANE_GAP;
+      return {
+        edgeId: edge.edgeId,
+        waypoints: [
+          { id: generateWaypointId(), x: edge.source.x + EXIT, y: edge.source.y },
+          { id: generateWaypointId(), x: edge.source.x + EXIT, y: laneY },
+          { id: generateWaypointId(), x: edge.target.x - EXIT, y: laneY },
+          { id: generateWaypointId(), x: edge.target.x - EXIT, y: edge.target.y },
+        ],
+      };
+    });
+  },
+};
+
+function LoopBackRoutingStory() {
+  const initialNodes = useMemo(
+    () => [
+      createNode({ id: 'wait', label: 'Wait', x: 150, y: 100, targetPositions: [Position.Left] }),
+      createNode({
+        id: 'agent',
+        label: 'Agent',
+        x: 550,
+        y: 100,
+        sourcePositions: [Position.Right],
+      }),
+
+      createNode({ id: 'retry', label: 'Retry', x: 150, y: 300, targetPositions: [Position.Left] }),
+      createNode({
+        id: 'check',
+        label: 'Check',
+        x: 550,
+        y: 400,
+        sourcePositions: [Position.Right],
+      }),
+    ],
+    []
+  );
+
+  const initialEdges: Edge<CanvasEdgeData>[] = useMemo(
+    () => [
+      {
+        id: 'loop-same-row',
+        source: 'agent',
+        target: 'wait',
+        sourceHandle: `out-${Position.Right}`,
+        targetHandle: `in-${Position.Left}`,
+        type: 'canvas-edge',
+        data: { routing: 'waypoint', enableEditing: true },
+      },
+      {
+        id: 'loop-offset-rows',
+        source: 'check',
+        target: 'retry',
+        sourceHandle: `out-${Position.Right}`,
+        targetHandle: `in-${Position.Left}`,
+        type: 'canvas-edge',
+        data: { routing: 'waypoint', enableEditing: true },
+      },
+    ],
+    []
+  );
+
+  const { canvasProps } = useCanvasStory({ initialNodes, initialEdges });
+  useGraphRouter(underpassRouter);
+
+  return (
+    <>
+      <BaseCanvas {...canvasProps} edgeTypes={edgeTypes} mode="design" />
+      <StoryInfoPanel
+        title="Loop-back routing"
+        description="Each edge leaves the right face, runs under both nodes and enters the left face. It should never close into a box across the flow."
+      />
+    </>
+  );
+}
+
+export const LoopBackRouting: Story = {
+  name: 'Loop-back Routing',
+  render: () => <LoopBackRoutingStory />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Router-fed loop-back edges whose target sits left of the source. Each edge should leave the right face, run under both nodes and enter the left face. Drag a segment to take the edge manual.',
+      },
+    },
+  },
+};
+
 /** One row per execution status worth distinguishing visually. `None` and
  * `Terminated` reuse colors already shown, so they're omitted. `Cancelled` stands
  * in for both cancel variants: they share one muted stroke, and the node icon is the
