@@ -11,39 +11,35 @@ import {
 } from "@tanstack/react-router";
 import { BarChart3, FolderOpen, Home } from "lucide-react";
 import { createContext, useContext, useState } from "react";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { SurfacePadding } from "@/lib/composition";
 import { ApolloShell, type ShellNavItem } from "@/registry/shell/shell";
 import { DetailPageExample, type SlotPaddings } from "./DetailPageExample";
-import {
-  type DetailPageSlotName,
-  detailPageTemplate,
+import type {
+  DetailPageConfig,
+  DetailPageSlotName,
 } from "./detail-page.template";
+import { PreviewControlBar, type ShellVariant } from "./PreviewControlBar";
+import { type DetailPageState, useDetailPage } from "./use-detail-page";
 
-type ShellVariant = "sidebar" | "minimal";
-
-interface PreviewSettings {
+interface PreviewContextValue {
   shellVariant: ShellVariant;
   paddings: SlotPaddings;
+  detailPage: DetailPageState | null;
 }
 
 const PREVIEW_PATH = "/preview/detail-page";
 
-const DEFAULT_SETTINGS: PreviewSettings = {
-  shellVariant: "sidebar",
-  paddings: {
-    header: "padded",
-    "start-panel": "padded",
-    main: "padded",
-    "end-panel": "padded",
-  },
+const DEFAULT_CONFIG: DetailPageConfig = {
+  panels: "both",
+  start: { placement: "below-header", defaultOpen: true },
+  end: { placement: "below-header", defaultOpen: true },
 };
 
-const SLOT_LABELS: Record<DetailPageSlotName, string> = {
-  header: "Header",
-  "start-panel": "Start",
-  main: "Main",
-  "end-panel": "End",
+const DEFAULT_PADDINGS: SlotPaddings = {
+  header: "padded",
+  "start-panel": "padded",
+  main: "padded",
+  "end-panel": "padded",
 };
 
 const navItems: ShellNavItem[] = [
@@ -52,10 +48,16 @@ const navItems: ShellNavItem[] = [
   { path: `${PREVIEW_PATH}/analytics`, label: "analytics", icon: BarChart3 },
 ];
 
-const PreviewSettingsContext = createContext<PreviewSettings>(DEFAULT_SETTINGS);
+// The router renders outside the preview's own tree, so settings reach the
+// route through context.
+const PreviewContext = createContext<PreviewContextValue>({
+  shellVariant: "sidebar",
+  paddings: DEFAULT_PADDINGS,
+  detailPage: null,
+});
 
 function PreviewShell() {
-  const { shellVariant } = useContext(PreviewSettingsContext);
+  const { shellVariant } = useContext(PreviewContext);
   return (
     <ApolloShell
       companyName="UiPath"
@@ -74,8 +76,9 @@ function PreviewShell() {
 }
 
 function PreviewPage() {
-  const { paddings } = useContext(PreviewSettingsContext);
-  return <DetailPageExample paddings={paddings} />;
+  const { paddings, detailPage } = useContext(PreviewContext);
+  if (!detailPage) return null;
+  return <DetailPageExample state={detailPage} paddings={paddings} />;
 }
 
 // Every path renders the same page, so nav clicks stay on the preview.
@@ -96,62 +99,32 @@ function createPreviewRouter() {
   });
 }
 
-function isSurfacePadding(value: string): value is SurfacePadding {
-  return value === "padded" || value === "flush";
-}
-
 export function DetailPagePreview() {
-  const [settings, setSettings] = useState<PreviewSettings>(DEFAULT_SETTINGS);
   const [router] = useState(createPreviewRouter);
+  const [shellVariant, setShellVariant] = useState<ShellVariant>("sidebar");
+  const [config, setConfig] = useState<DetailPageConfig>(DEFAULT_CONFIG);
+  const [paddings, setPaddings] = useState<SlotPaddings>(DEFAULT_PADDINGS);
+  const detailPage = useDetailPage(config);
 
   const setPadding = (slot: DetailPageSlotName, padding: SurfacePadding) =>
-    setSettings((prev) => ({
-      ...prev,
-      paddings: { ...prev.paddings, [slot]: padding },
-    }));
+    setPaddings((prev) => ({ ...prev, [slot]: padding }));
 
   return (
     <QueryClientProvider client={queryClient}>
-      <PreviewSettingsContext.Provider value={settings}>
+      <PreviewContext.Provider value={{ shellVariant, paddings, detailPage }}>
         <RouterProvider router={router} />
-      </PreviewSettingsContext.Provider>
-      <div className="fixed bottom-4 left-1/2 z-[60] flex w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-x-4 gap-y-2 rounded-lg border border-border bg-background p-2 shadow-md">
-        <ToggleGroup
-          type="single"
-          variant="outline"
-          size="sm"
-          value={settings.shellVariant}
-          onValueChange={(value) => {
-            if (value === "sidebar" || value === "minimal") {
-              setSettings((prev) => ({ ...prev, shellVariant: value }));
-            }
-          }}
-          aria-label="Shell variant"
-        >
-          <ToggleGroupItem value="sidebar">Sidebar shell</ToggleGroupItem>
-          <ToggleGroupItem value="minimal">Minimal shell</ToggleGroupItem>
-        </ToggleGroup>
-        {detailPageTemplate.slots.map(({ name }) => (
-          <div key={name} className="flex items-center gap-2">
-            <span className="text-xs font-medium text-muted-foreground">
-              {SLOT_LABELS[name]}
-            </span>
-            <ToggleGroup
-              type="single"
-              variant="outline"
-              size="sm"
-              value={settings.paddings[name]}
-              onValueChange={(value) => {
-                if (isSurfacePadding(value)) setPadding(name, value);
-              }}
-              aria-label={`${SLOT_LABELS[name]} padding`}
-            >
-              <ToggleGroupItem value="padded">Padded</ToggleGroupItem>
-              <ToggleGroupItem value="flush">Flush</ToggleGroupItem>
-            </ToggleGroup>
-          </div>
-        ))}
-      </div>
+      </PreviewContext.Provider>
+      <PreviewControlBar
+        shellVariant={shellVariant}
+        onShellVariantChange={setShellVariant}
+        config={config}
+        onConfigChange={setConfig}
+        open={detailPage.open}
+        closedBy={detailPage.closedBy}
+        onOpenChange={detailPage.setPanelOpen}
+        paddings={paddings}
+        onPaddingChange={setPadding}
+      />
     </QueryClientProvider>
   );
 }
