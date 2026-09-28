@@ -1,5 +1,7 @@
+"use client";
+
 import { cva } from "class-variance-authority";
-import type * as React from "react";
+import * as React from "react";
 
 import type { SurfacePadding } from "@/lib/composition";
 import { cn } from "@/lib/utils";
@@ -19,11 +21,19 @@ const sidePanelVariants = cva(
   },
 );
 
+/**
+ * Lets a template tell the panel in its slot whether it is open, so the
+ * panel's data-state always matches the template's layout.
+ */
+const SidePanelOpenContext = React.createContext<boolean | null>(null);
+
 interface SidePanelProps extends React.ComponentProps<"aside"> {
   /** Which edge of the template the panel sits on. Logical, so it flips in RTL. */
   side: "start" | "end";
   /** Set from the occupant's spec. Defaults to "padded". */
   padding?: SurfacePadding;
+  /** Overrides the open state a template provides. Defaults to open. */
+  open?: boolean;
   /** Names the landmark for assistive tech. */
   "aria-label": string;
 }
@@ -31,19 +41,23 @@ interface SidePanelProps extends React.ComponentProps<"aside"> {
 function SidePanel({
   side,
   padding = "padded",
+  open: openProp,
   className,
   ...props
 }: SidePanelProps) {
+  const templateOpen = React.useContext(SidePanelOpenContext);
+  const open = openProp ?? templateOpen ?? true;
   return (
     <aside
       data-surface="side-panel"
       data-side={side}
       data-padding={padding}
+      data-state={open ? "open" : "closed"}
       className={cn(sidePanelVariants({ padding }), className)}
       {...props}
     />
   );
 }
 
-export { SidePanel, sidePanelVariants };
+export { SidePanel, SidePanelOpenContext, sidePanelVariants };
 export type { SidePanelProps };

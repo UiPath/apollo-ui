@@ -5,16 +5,18 @@ import type { SurfacePadding } from "@/lib/composition";
 import { occupantPadding } from "@/lib/composition";
 import type { DetailPageSlotName } from "./detail-page.template";
 import { DetailPage } from "./DetailPage";
+import type { DetailPageState } from "./use-detail-page";
 import { placeholderOccupant } from "./placeholder-occupants";
 import { SlotPlaceholder } from "./SlotPlaceholder";
 
 export type SlotPaddings = Record<DetailPageSlotName, SurfacePadding>;
 
 interface DetailPageExampleProps {
+  state: DetailPageState;
   paddings: SlotPaddings;
 }
 
-export function DetailPageExample({ paddings }: DetailPageExampleProps) {
+export function DetailPageExample({ state, paddings }: DetailPageExampleProps) {
   const header = placeholderOccupant("Header", paddings.header);
   const startPanel = placeholderOccupant(
     "Start panel",
@@ -25,6 +27,7 @@ export function DetailPageExample({ paddings }: DetailPageExampleProps) {
 
   return (
     <DetailPage
+      state={state}
       header={
         <PageHeader padding={occupantPadding(header)}>
           <SlotPlaceholder
