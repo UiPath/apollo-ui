@@ -12,6 +12,14 @@ export {
   DataTransformers,
   FetchAdapter,
 } from './data-fetcher';
+export {
+  FIELD_CONTROL_GEOMETRY,
+  FieldControl,
+  type FieldControlFormField,
+  type FieldControlGeometry,
+  type FieldControlLabelTarget,
+  type FieldControlProps,
+} from './field-control';
 export { FormFieldRenderer } from './field-renderer';
 export { FormDesigner } from './form-designer';
 // Plugins
