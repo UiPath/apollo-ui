@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.61.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.60.0...@uipath/apollo-react@6.61.0) (2026-09-28)
+
+### Features
+
+* **apollo-react:** add disabledFeatures.stopResponse to hide the chat stop button [JAR-10086] ([a8f5e47](https://github.com/UiPath/apollo-ui/commit/a8f5e4713422b3132ea9fd6a573994d2a6fcda25)), closes [apollo-design-system#5516](https://github.com/UiPath/apollo-design-system/issues/5516)
+
 ## [@uipath/apollo-react-v6.60.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.59.0...@uipath/apollo-react@6.60.0) (2026-09-28)
 
 ### Features
