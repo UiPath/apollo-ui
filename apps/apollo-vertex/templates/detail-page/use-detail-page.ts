@@ -11,7 +11,7 @@ import {
   type PanelWidth,
   resolveEndWidth,
   resolvePanels,
-  SIDE_PANEL_OUTER_PX,
+  END_PANEL_MIN_PX,
 } from "./detail-page.template";
 
 const SIDES: readonly PanelSide[] = ["start", "end"];
@@ -165,10 +165,10 @@ export function useDetailPage(config: DetailPageConfig): DetailPageState {
   const measured = width > 0;
   const endWidth = resolveEndWidth(endWidthChosen, width, resolved.open.start);
   const endWidthRange = {
-    min: SIDE_PANEL_OUTER_PX,
+    min: END_PANEL_MIN_PX,
     max: measured
       ? endPanelMaxWidth(width, resolved.open.start)
-      : SIDE_PANEL_OUTER_PX,
+      : END_PANEL_MIN_PX,
   };
 
   // A drag or key press stores what the user can see, so the stored width

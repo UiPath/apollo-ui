@@ -7,8 +7,11 @@ import {
   DIVIDER_PX,
   detailPageTemplate,
   enabledPanels,
+  END_PANEL_MIN_PX,
+  END_PANEL_WIDTH,
   MAIN_MIN_OUTER_PX,
-  SIDE_PANEL_OUTER_PX,
+  START_PANEL_PX,
+  START_PANEL_WIDTH,
 } from "./detail-page.template";
 import { PanelResizeHandle } from "./PanelResizeHandle";
 import type { DetailPageState } from "./use-detail-page";
@@ -46,7 +49,8 @@ export interface DetailPageProps
  * panels stay mounted but are hidden, so they and their dividers take no
  * space and their `auto` columns collapse to zero.
  *
- * The end panel is resizable. The frame sets its width through the
+ * The start panel renders at START_PANEL_WIDTH.default through the
+ * --detail-page-start-panel-width variable. The end panel is resizable. The frame sets its width through the
  * --detail-page-end-width custom property, which overrides the side
  * panel's own width variable, and turns its divider into a resize handle.
  * The side panel surface itself doesn't change.
@@ -72,15 +76,25 @@ export function DetailPage({
   const startBeside = hasStart && config.start.placement === "beside-header";
   const endBeside = hasEnd && config.end.placement === "beside-header";
 
-  const endSlotMinPx = SIDE_PANEL_OUTER_PX + DIVIDER_PX;
+  const endSlotMinPx = END_PANEL_MIN_PX + DIVIDER_PX;
   const endAtMax = hasEnd && open.end && state.endWidthChosen === "max";
-  const startOpenPx = hasStart && open.start ? endSlotMinPx : 0;
+  const startOpenPx = hasStart && open.start ? START_PANEL_PX + DIVIDER_PX : 0;
   const mainTrack = endAtMax
     ? `minmax(min(${MAIN_MIN_OUTER_PX}px, calc(100% - ${startOpenPx + endSlotMinPx}px)), 1fr)`
     : "minmax(0, 1fr)";
   const endTrack = endAtMax ? `minmax(${endSlotMinPx}px, 1fr)` : "auto";
-  const templateStyle: CSSProperties & Record<"--detail-page-columns", string> =
-    { "--detail-page-columns": `auto ${mainTrack} ${endTrack}` };
+  // The Detail page's own widths, from its spec, as CSS variables on the
+  // template root: one source for CSS and TypeScript.
+  const templateStyle: CSSProperties &
+    Record<`--detail-page-${string}`, string> = {
+    "--detail-page-start-panel-width": `${START_PANEL_WIDTH.default}px`,
+    "--detail-page-start-panel-width-min": `${START_PANEL_WIDTH.min}px`,
+    "--detail-page-start-panel-width-max": `${START_PANEL_WIDTH.max}px`,
+    "--detail-page-end-panel-width": `${END_PANEL_WIDTH.default}px`,
+    "--detail-page-end-panel-width-min": `${END_PANEL_WIDTH.min}px`,
+    "--detail-page-main-width-min": `${MAIN_MIN_OUTER_PX}px`,
+    "--detail-page-columns": `auto ${mainTrack} ${endTrack}`,
+  };
   const endWidthStyle: CSSProperties &
     Record<"--detail-page-end-width", string> = {
     "--detail-page-end-width": endAtMax ? "100%" : `${endWidth}px`,
@@ -100,7 +114,7 @@ export function DetailPage({
       <div
         data-slot="detail-page-header"
         className={cn(
-          "row-start-1 min-w-0 border-b border-border",
+          "row-start-1 min-w-0 border-b-(length:--slot-divider-width) border-border",
           startBeside ? "col-start-2" : "col-start-1",
           endBeside ? "col-end-3" : "col-end-4",
         )}
@@ -112,7 +126,8 @@ export function DetailPage({
           data-slot="detail-page-start-panel"
           data-state={open.start ? "open" : "closed"}
           className={cn(
-            "col-start-1 min-h-0 border-e border-border data-[state=closed]:hidden",
+            "col-start-1 min-h-0 border-e-(length:--slot-divider-width) border-border data-[state=closed]:hidden",
+            "[&>[data-surface=side-panel]]:[--side-panel-width:var(--detail-page-start-panel-width)]",
             startBeside ? "row-span-2 row-start-1" : "row-start-2",
           )}
         >
@@ -134,7 +149,7 @@ export function DetailPage({
           data-slot="detail-page-end-panel"
           data-state={open.end ? "open" : "closed"}
           className={cn(
-            "relative col-start-3 min-h-0 border-s border-border data-[state=closed]:hidden",
+            "relative col-start-3 min-h-0 border-s-(length:--slot-divider-width) border-border data-[state=closed]:hidden",
             "[&>[data-surface=side-panel]]:[--side-panel-width:var(--detail-page-end-width)]",
             endBeside ? "row-span-2 row-start-1" : "row-start-2",
           )}

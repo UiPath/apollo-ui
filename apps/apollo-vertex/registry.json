@@ -140,6 +140,10 @@
           "chart-5": "oklch(0.6800 0.1500 245.5000)",
           "sidebar": "oklch(0.9723 0.0074 260.7300)",
           "side-panel-tint": "color-mix(in oklab, var(--sidebar) 60%, transparent)",
+          "surface-inset": "24px",
+          "side-panel-width-min": "280px",
+          "content-area-width-min": "480px",
+          "slot-divider-width": "1px",
           "sidebar-foreground": "oklch(0.2394 0.0455 252.4450)",
           "sidebar-primary": "oklch(0.64 0.115 208)",
           "sidebar-primary-foreground": "oklch(0.1660 0.0283 203.3380)",
@@ -2255,6 +2259,11 @@
           "path": "registry/composition/composition.ts",
           "type": "registry:lib",
           "target": "lib/composition.ts"
+        },
+        {
+          "path": "registry/composition/layout-tokens.ts",
+          "type": "registry:lib",
+          "target": "lib/layout-tokens.ts"
         }
       ]
     },
@@ -2269,7 +2278,8 @@
           "color-side-panel-tint": "var(--side-panel-tint)"
         },
         "light": {
-          "side-panel-tint": "color-mix(in oklab, var(--sidebar) 60%, transparent)"
+          "side-panel-tint": "color-mix(in oklab, var(--sidebar) 60%, transparent)",
+          "side-panel-width-min": "280px"
         },
         "dark": {
           "side-panel-tint": "color-mix(in oklab, var(--sidebar) 60%, transparent)"

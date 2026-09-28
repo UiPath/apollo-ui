@@ -29,7 +29,7 @@ const pageHeaderVariants = cva("", {
     // surface paddings a template sets from its occupant's spec.
     padding: {
       responsive: "",
-      padded: "p-6",
+      padded: "p-(--surface-inset)",
       flush: "p-0",
     },
   },
