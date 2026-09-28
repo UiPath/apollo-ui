@@ -1,4 +1,5 @@
 import type { Edge, EdgeProps, XYPosition } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { SuggestionType } from '../../../types';
 
 export type Point = XYPosition;
 
@@ -71,8 +72,17 @@ export type CanvasEdgeData = {
 
   // Visual state flags
   isInvalid?: boolean;
+  /** @deprecated Use `suggestionType: 'add'` instead. */
   isDiffAdded?: boolean;
+  /** @deprecated Use `suggestionType: 'delete'` instead. */
   isDiffRemoved?: boolean;
+  /**
+   * Suggestion affordance matching the node border colors from
+   * `getStatusBorder` (`add` → success, `update` → warning, `delete` →
+   * error + dashed). Takes precedence over the legacy `isDiffAdded` /
+   * `isDiffRemoved` flags when set.
+   */
+  suggestionType?: SuggestionType;
 
   // Routing strategy. Defaults to 'waypoint'.
   routing?: EdgeRouting;
