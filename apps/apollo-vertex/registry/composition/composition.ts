@@ -18,8 +18,19 @@ import { LAYOUT_TOKENS } from "./layout-tokens";
 
 export { LAYOUT_TOKENS, SIDE_PANEL_TINT_STRENGTH } from "./layout-tokens";
 
-/** Which layer owns overflow scrolling inside a surface. */
+/**
+ * Which layer owns overflow scrolling inside a surface. The owner is the
+ * scroll container and draws the scroll fades; the other layer does
+ * neither. Each surface scrolls on its own.
+ */
 export type ScrollOwner = "surface" | "occupant";
+
+/**
+ * Who a surface lets own scrolling. "either" means it can be the scroll
+ * container or hand scrolling to its occupant; "occupant" means it never
+ * scrolls (e.g. the page header).
+ */
+export type ScrollSupport = ScrollOwner | "either";
 
 /**
  * How a surface insets its occupant. Surfaces own padding; occupants never
@@ -41,7 +52,7 @@ export interface SurfaceEnvelope {
    * surface is unbounded.
    */
   width: { min: number; max?: number };
-  scroll: ScrollOwner;
+  scroll: ScrollSupport;
 }
 
 /**
@@ -125,6 +136,26 @@ export function occupantPadding(occupant: OccupantSpec): SurfacePadding {
 }
 
 /**
+ * Who owns scrolling for an occupant in a surface. The occupant's
+ * requirement decides; "either" goes to the surface when it can scroll.
+ */
+export function scrollOwner(
+  surface: SurfaceSpec,
+  occupant: OccupantSpec,
+): ScrollOwner {
+  const needs = occupant.requires.scroll;
+  if (needs !== "either") return needs;
+  return surface.provides.scroll === "occupant" ? "occupant" : "surface";
+}
+
+function scrollCompatible(
+  support: ScrollSupport,
+  needs: ScrollOwner | "either",
+) {
+  return support === "either" || needs === "either" || support === needs;
+}
+
+/**
  * The inner width, in px, an occupant with the given padding gets in a
  * slot. A slot with its own width uses its default (what it renders at,
  * and always for a slot that isn't resizable). Otherwise the surface's
@@ -154,7 +185,6 @@ export function fits(
 ): boolean {
   const { minWidth, scroll: needsScroll } = occupant.requires;
   const available = slotInnerWidth(slot, surface, occupantPadding(occupant));
-  const scrollFits =
-    needsScroll === "either" || needsScroll === surface.provides.scroll;
+  const scrollFits = scrollCompatible(surface.provides.scroll, needsScroll);
   return slotAccepts(slot, surface) && available >= minWidth && scrollFits;
 }

@@ -8,6 +8,6 @@ export const contentAreaSurface = {
   // Inner width at the minimum, less the padded inset on both sides.
   provides: {
     width: { min: LAYOUT_TOKENS.contentAreaWidthMin - 2 * PADDED_INSET_PX },
-    scroll: "surface",
+    scroll: "either",
   },
 } as const satisfies SurfaceSpec;

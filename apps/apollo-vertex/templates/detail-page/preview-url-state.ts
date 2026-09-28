@@ -1,5 +1,11 @@
 import type { SurfacePadding } from "@/lib/composition";
-import type { SlotPaddings } from "./DetailPageExample";
+import type { ScrollOwner } from "@/lib/composition";
+import type {
+  ScrollableSlotName,
+  SlotContents,
+  SlotPaddings,
+  SlotScrolls,
+} from "./DetailPageExample";
 import type {
   DetailPageConfig,
   DetailPagePanels,
@@ -27,6 +33,8 @@ export type ShellVariant = "sidebar" | "minimal";
  *   end-state
  *   end-width     the end panel width the user chose: px (min 280) or max
  *   <slot>-padding  padded | flush, e.g. main-padding=flush
+ *   <slot>-content  short | long   (start-panel, main, end-panel)
+ *   <slot>-scroll   surface | occupant   (who owns scrolling there)
  *
  * Only values that differ from the defaults are written. Unknown or invalid
  * values fall back to the defaults. Whether the configuration card is open
@@ -40,7 +48,16 @@ export interface PreviewSettings {
    */
   config: DetailPageConfig;
   paddings: SlotPaddings;
+  contents: SlotContents;
+  scrolls: SlotScrolls;
 }
+
+/** Slots whose surface can scroll, in page order. */
+export const SCROLLABLE_SLOTS: readonly ScrollableSlotName[] = [
+  "start-panel",
+  "main",
+  "end-panel",
+];
 
 export const DEFAULT_PREVIEW_SETTINGS: PreviewSettings = {
   shellVariant: "sidebar",
@@ -59,12 +76,20 @@ export const DEFAULT_PREVIEW_SETTINGS: PreviewSettings = {
     main: "padded",
     "end-panel": "padded",
   },
+  contents: { "start-panel": "short", main: "short", "end-panel": "short" },
+  scrolls: {
+    "start-panel": "surface",
+    main: "surface",
+    "end-panel": "surface",
+  },
 };
 
 const SHELLS: readonly ShellVariant[] = ["sidebar", "minimal"];
 const PANELS: readonly DetailPagePanels[] = ["none", "start", "end", "both"];
 const PLACEMENTS: readonly PanelPlacement[] = ["below-header", "beside-header"];
 const PADDINGS: readonly SurfacePadding[] = ["padded", "flush"];
+const CONTENTS: readonly ("short" | "long")[] = ["short", "long"];
+const SCROLLS: readonly ScrollOwner[] = ["surface", "occupant"];
 const SIDES: readonly PanelSide[] = ["start", "end"];
 
 function oneOf<T extends string>(
@@ -114,6 +139,21 @@ export function parsePreviewSettings(search: string): PreviewSettings {
     );
   }
 
+  const contents = { ...defaults.contents };
+  const scrolls = { ...defaults.scrolls };
+  for (const slot of SCROLLABLE_SLOTS) {
+    contents[slot] = oneOf(
+      params.get(`${slot}-content`),
+      CONTENTS,
+      defaults.contents[slot],
+    );
+    scrolls[slot] = oneOf(
+      params.get(`${slot}-scroll`),
+      SCROLLS,
+      defaults.scrolls[slot],
+    );
+  }
+
   return {
     shellVariant: oneOf(params.get("shell"), SHELLS, defaults.shellVariant),
     config: {
@@ -125,6 +165,8 @@ export function parsePreviewSettings(search: string): PreviewSettings {
       },
     },
     paddings,
+    contents,
+    scrolls,
   };
 }
 
@@ -157,6 +199,19 @@ export function serializePreviewSettings(settings: PreviewSettings): string {
       paddingKey(name),
       settings.paddings[name],
       defaults.paddings[name],
+    );
+  }
+
+  for (const slot of SCROLLABLE_SLOTS) {
+    setIfChanged(
+      `${slot}-content`,
+      settings.contents[slot],
+      defaults.contents[slot],
+    );
+    setIfChanged(
+      `${slot}-scroll`,
+      settings.scrolls[slot],
+      defaults.scrolls[slot],
     );
   }
 

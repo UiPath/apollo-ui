@@ -81,6 +81,8 @@ function PreviewPage() {
     <DetailPageExample
       state={preview.detailPage}
       paddings={preview.settings.paddings}
+      contents={preview.settings.contents}
+      scrolls={preview.settings.scrolls}
     />
   );
 }

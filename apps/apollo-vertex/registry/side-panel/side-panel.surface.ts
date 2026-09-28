@@ -16,6 +16,6 @@ export const sidePanelSurface = {
   // fits() uses a slot's own width when it has one, and this otherwise.
   provides: {
     width: { min: LAYOUT_TOKENS.sidePanelWidthMin - 2 * PADDED_INSET_PX },
-    scroll: "surface",
+    scroll: "either",
   },
 } as const satisfies SurfaceSpec;

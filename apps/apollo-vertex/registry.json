@@ -145,6 +145,7 @@
           "side-panel-width-min": "280px",
           "content-area-width-min": "480px",
           "slot-divider-width": "1px",
+          "scroll-fade-size": "24px",
           "sidebar-foreground": "oklch(0.2394 0.0455 252.4450)",
           "sidebar-primary": "oklch(0.64 0.115 208)",
           "sidebar-primary-foreground": "oklch(0.1660 0.0283 203.3380)",
@@ -2274,7 +2275,10 @@
       "type": "registry:ui",
       "title": "Side Panel",
       "description": "A docked panel surface for the start or end edge of a template.",
-      "registryDependencies": ["@uipath/composition"],
+      "registryDependencies": [
+        "@uipath/composition",
+        "@uipath/use-scroll-fade"
+      ],
       "cssVars": {
         "theme": {
           "color-side-panel-tint": "var(--side-panel-tint)"
@@ -2305,7 +2309,10 @@
       "type": "registry:ui",
       "title": "Content Area",
       "description": "A scrolling surface for a template's main slot, padded to align with the page header.",
-      "registryDependencies": ["@uipath/composition"],
+      "registryDependencies": [
+        "@uipath/composition",
+        "@uipath/use-scroll-fade"
+      ],
       "meta": { "layer": "surface" },
       "categories": ["surface"],
       "files": [
@@ -2559,6 +2566,18 @@
         {
           "path": "registry/shell/shell-roles.ts",
           "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "use-scroll-fade",
+      "type": "registry:hook",
+      "title": "useScrollFade",
+      "description": "Scroll fades for a scroll container: a mask that fades an edge only while there is more content in that direction, sized by --scroll-fade-size.",
+      "files": [
+        {
+          "path": "registry/use-scroll-fade/use-scroll-fade.ts",
+          "type": "registry:hook"
         }
       ]
     },
