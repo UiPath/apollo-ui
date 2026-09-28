@@ -10,11 +10,15 @@ import { sidePanelSurface } from "@/registry/side-panel/side-panel.surface";
  * registry item. Surface minimums come from theme tokens.
  */
 
-/** Start panel: fixed, never resized by the user. */
+/**
+ * Start panel: not resizable, so it always renders at `default` (272px
+ * inner when padded). `min` and `max` are recorded for when it becomes
+ * resizable; `min` is the side panel surface's own minimum.
+ */
 export const START_PANEL_WIDTH = {
   min: sidePanelSurface.width.min,
-  default: sidePanelSurface.width.min,
-  max: sidePanelSurface.width.min,
+  default: 320,
+  max: 400,
 } as const satisfies SlotWidth;
 
 /** End panel: resizable between its minimum and main's width. */
