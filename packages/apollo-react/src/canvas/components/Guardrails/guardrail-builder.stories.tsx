@@ -34,11 +34,16 @@ injected through render props.
   },
   tags: ['autodocs'],
   decorators: [
-    (Story) => (
+    // Inline stories get a panel-sized frame; the dialog story brings its own shell.
+    (Story, { parameters }) => (
       <TooltipProvider>
-        <div className="w-[560px] h-[640px] border rounded-md overflow-hidden">
+        {parameters.dialog ? (
           <Story />
-        </div>
+        ) : (
+          <div className="w-[560px] h-[640px] border rounded-md overflow-hidden">
+            <Story />
+          </div>
+        )}
       </TooltipProvider>
     ),
   ],
@@ -128,19 +133,36 @@ export const EditInline: Story = {
 /**
  * Edit mode in the modal dialog shell.
  *
- * Opens on the story canvas but stays closed in docs: `open` is a controlled prop on a portalled
- * Radix dialog, so hardcoding `true` rendered a real modal with a body-level backdrop over the
- * autodocs overview page and blocked it. Same `viewMode` approach as apollo-wind's dialog stories.
+ * Opens on the story canvas. In docs it waits for the button instead: `open` is a controlled prop
+ * on a portalled Radix dialog, so hardcoding `true` rendered a real modal with a body-level
+ * backdrop over the autodocs overview page and blocked it.
  */
 export const EditModal: Story = {
-  decorators: [
-    (Story) => (
-      <TooltipProvider>
-        <Story />
-      </TooltipProvider>
-    ),
-  ],
-  render: (args, { viewMode }) => <GuardrailBuilder {...args} open={viewMode === 'story'} />,
+  parameters: { dialog: true },
+  render: (args, { viewMode }) => {
+    function DialogExample() {
+      const [open, setOpen] = useState(viewMode === 'story');
+      // Remounts per opening, since the builder seeds its form state at mount.
+      const [session, setSession] = useState(0);
+      const close = () => setOpen(false);
+      return (
+        <>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              setSession((current) => current + 1);
+              setOpen(true);
+            }}
+          >
+            Edit guardrail
+          </Button>
+          <GuardrailBuilder {...args} key={session} open={open} onSave={close} onCancel={close} />
+        </>
+      );
+    }
+    return <DialogExample />;
+  },
   args: {
     open: true,
     definition: piiDefinition,
