@@ -1,0 +1,183 @@
+name: Apollo Vertex Registry Check
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: test-registry-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  detect-changes:
+    name: Detect changes
+    runs-on: uipath-ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      has_vertex_changes: ${{ steps.check.outputs.has_vertex_changes }}
+    steps:
+      - name: Check for vertex changes
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          VERTEX_FILES=$(gh pr diff "$PR_URL" --name-only | grep -E '^(apps/apollo-vertex/|\.github/scripts/test-registry/|\.github/workflows/apollo-vertex-registry-check\.yml)' || true)
+          if [ -n "$VERTEX_FILES" ]; then
+            echo "has_vertex_changes=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_vertex_changes=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  prepare:
+    name: Prepare
+    needs: detect-changes
+    if: needs.detect-changes.outputs.has_vertex_changes == 'true' && github.event.pull_request.head.repo.fork == false
+    runs-on: uipath-ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      matrix: ${{ steps.matrix.outputs.result }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          persist-credentials: false
+
+      - name: Install Node dependencies
+        uses: ./.github/actions/install-node-deps
+
+      - name: Build registry
+        run: pnpm --filter apollo-vertex registry:build
+
+      - name: Check registry CSS variables
+        run: node --experimental-strip-types .github/scripts/test-registry/check-css-vars.ts
+
+      - name: Generate matrix batches
+        id: matrix
+        run: |
+          MATRIX=$(node .github/scripts/test-registry/generate-matrix-batches.mjs)
+          echo "result=${MATRIX}" >> "${GITHUB_OUTPUT}"
+
+      - name: Create base shadcn app
+        run: |
+          cp .github/scripts/test-registry/pnpm-workspace-registry-test.yaml "$RUNNER_TEMP/pnpm-workspace.yaml"
+          cd "$RUNNER_TEMP" && pnpm dlx shadcn@4.4.0 init --preset a0 --template next --name minimal-app
+
+      - name: Configure @uipath registry
+        working-directory: ${{ runner.temp }}/minimal-app
+        env:
+          REGISTRY_URL: http://localhost:3000
+        run: |
+          # shellcheck disable=SC2086
+          $GITHUB_WORKSPACE/node_modules/.bin/tsx $GITHUB_WORKSPACE/.github/scripts/test-registry/configure-registry.ts
+
+      - name: Copy locales into base app
+        run: cp -r apps/apollo-vertex/locales ${{ runner.temp }}/minimal-app/locales
+
+      - name: Remove node_modules from base app
+        run: rm -rf ${{ runner.temp }}/minimal-app/node_modules
+
+      - name: Upload base app
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        with:
+          name: base-app
+          path: ${{ runner.temp }}/minimal-app
+          retention-days: 1
+
+      - name: Upload registry files
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        with:
+          name: registry-files
+          path: apps/apollo-vertex/public/r/
+          retention-days: 1
+
+  test-components:
+    name: Test batch ${{ matrix.batch_index }}
+    needs: [detect-changes, prepare]
+    if: needs.detect-changes.outputs.has_vertex_changes == 'true' && github.event.pull_request.head.repo.fork == false
+    runs-on: uipath-ubuntu-latest
+    # Simulates a downstream consumer installing apollo-vertex shadcn components
+    # into a fresh project. Some components pull in @uipath/proteus-client, which
+    # is GHP-only — so this job needs GHP read auth on its setup-node + test step.
+    permissions:
+      contents: read
+      packages: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.prepare.outputs.matrix) }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            .github/scripts/test-registry
+            apps/apollo-vertex/types/optional-deps.d.ts
+            package.json
+            pnpm-lock.yaml
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320  # v5.0.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
+        with:
+          node-version: "22"
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@uipath"
+
+      - name: Download base app
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
+        with:
+          name: base-app
+          path: ${{ runner.temp }}/base-app
+
+      - name: Download registry files
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
+        with:
+          name: registry-files
+          path: ${{ runner.temp }}/serve-dir/r
+
+      - name: Start registry server
+        run: pnpm dlx serve@14.2.6 ${{ runner.temp }}/serve-dir -p 3000 &
+
+      - name: Stage optional-deps shim
+        run: cp apps/apollo-vertex/types/optional-deps.d.ts .github/scripts/test-registry/optional-deps.d.ts
+
+      - name: Test registry components
+        env:
+          NODE_AUTH_TOKEN: ${{ github.token }}
+          COMPONENTS: ${{ matrix.components }}
+          BASE_APP_PATH: ${{ runner.temp }}/base-app
+        run: pnpm dlx tsx@4.20.6 ${{ github.workspace }}/.github/scripts/test-registry/test-registry.ts
+
+  registry-check:
+    name: Apollo Vertex Registry Check
+    needs: [detect-changes, test-components]
+    if: always()
+    runs-on: uipath-ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Check results
+        run: |
+          if [ "${{ needs.detect-changes.outputs.has_vertex_changes }}" != "true" ]; then
+            echo "No relevant changes detected — skipping registry check"
+            exit 0
+          fi
+          if [ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]; then
+            echo "Fork PR — registry check skipped (secrets not available)"
+            exit 0
+          fi
+          if [ "${{ needs.test-components.result }}" != "success" ]; then
+            echo "Some registry component tests failed"
+            exit 1
+          fi
+          echo "All registry component tests passed"

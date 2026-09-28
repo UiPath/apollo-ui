@@ -1,0 +1,16 @@
+/**
+ * Canvas-specific Tailwind CSS
+ *
+ * Pre-compiles only the Tailwind utility classes used by canvas components
+ * and their apollo-wind dependencies.
+ *
+ * Consumers will need to follow {@link ../README.md} to include the compiled CSS in their build process so that tailwind styling is available at runtime.
+ */
+
+@import "@uipath/apollo-wind/tailwind.css";
+
+/* Scan canvas component source files for inline Tailwind class usage */
+@source "../../canvas/**/*.{ts,tsx}";
+
+/* Scan apollo-wind compiled components for CVA class strings */
+@source "../../../node_modules/@uipath/apollo-wind/dist/**/*.js";

@@ -1,0 +1,30 @@
+/* ApSkeleton global animations */
+
+/* A shared custom css property to control the horizontal position of the skeleton shimmer background */
+@property --ap-skeleton_background-position-x {
+  syntax: "<percentage>";
+  inherits: true;
+  initial-value: 200%;
+}
+
+/* Animate the shimmer background when skeletons are present */
+body.has-skeletons {
+  animation: 2s anim-skeleton-shimmer linear infinite;
+}
+
+/* For accessibility, disable animations if the user has requested reduced motion */
+@media (prefers-reduced-motion) {
+  body.has-skeletons {
+    animation: none;
+  }
+}
+
+/* Animate the shimmer background from left to right (from outside of the viewport) */
+@keyframes anim-skeleton-shimmer {
+  0% {
+    --ap-skeleton_background-position-x: 200%;
+  }
+  100% {
+    --ap-skeleton_background-position-x: -200%;
+  }
+}

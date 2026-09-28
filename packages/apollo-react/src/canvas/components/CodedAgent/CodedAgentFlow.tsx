@@ -1,0 +1,521 @@
+import styled from '@emotion/styled';
+import { Spacing } from '@uipath/apollo-core';
+import * as Icons from '@uipath/apollo-react/canvas/icons';
+import { Row } from '@uipath/apollo-react/canvas/layouts';
+import type { Edge, EdgeProps, Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
+import {
+  BaseEdge,
+  getSimpleBezierPath,
+  Panel,
+  Position,
+  ReactFlowProvider,
+  useEdgesState,
+  useNodesState,
+  useReactFlow,
+} from '@uipath/apollo-react/canvas/xyflow/react';
+import { Spinner } from '@uipath/apollo-wind';
+import React, {
+  memo,
+  type ReactElement,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+
+import { NodeRegistryProvider } from '../../core/NodeRegistryProvider';
+import type { HandleGroupManifest } from '../../schema/node-definition';
+import type { CanvasTranslations, CodedAgentNodeTranslations } from '../../types';
+import { DefaultCanvasTranslations, DefaultCodedAgentNodeTranslations } from '../../types';
+import { d3HierarchyLayout, type LayoutDirection } from '../../utils/coded-agents/d3-layout';
+import { mermaidToReactFlow } from '../../utils/coded-agents/mermaid-parser';
+import { CanvasIcon } from '../../utils/icon-registry';
+import type { BaseCanvasRef } from '../BaseCanvas';
+import { BaseCanvas } from '../BaseCanvas';
+import { BaseNode } from '../BaseNode/BaseNode';
+import type { BaseNodeData } from '../BaseNode/BaseNode.types';
+import {
+  type BaseNodeOverrideConfig,
+  BaseNodeOverrideConfigProvider,
+} from '../BaseNode/BaseNodeConfigContext';
+import { CanvasPositionControls } from '../CanvasPositionControls';
+import { codedAgentManifest } from './coded-agent.manifest';
+
+const LAYOUT_SPACING = [110, 80] as [number, number]; // Horizontal and vertical spacing for layout
+
+const CodedAgentEdge = memo(
+  ({
+    id,
+    sourceX,
+    sourceY,
+    targetX,
+    targetY,
+    sourcePosition,
+    targetPosition,
+    style,
+    markerEnd,
+    animated,
+  }: EdgeProps) => {
+    const [edgePath] = getSimpleBezierPath({
+      sourceX,
+      sourceY,
+      sourcePosition,
+      targetX,
+      targetY,
+      targetPosition,
+    });
+
+    const strokeColor = animated ? 'var(--canvas-primary)' : 'var(--canvas-foreground-de-emp)';
+
+    return (
+      <BaseEdge
+        id={id}
+        path={edgePath}
+        markerEnd={markerEnd}
+        style={{
+          ...style,
+          stroke: strokeColor,
+          strokeWidth: 1,
+          transition: 'stroke 0.2s ease-in-out',
+        }}
+      />
+    );
+  }
+);
+
+const CenteredDiv = styled.div`
+  background-color: var(--canvas-background-secondary);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const TextContainer = styled.div`
+  position: absolute;
+  bottom: 0;
+  transform: translateY(100%);
+  text-align: center;
+  white-space: nowrap;
+`;
+
+interface CodedNodeData extends BaseNodeData {
+  label: string;
+  hasError?: boolean;
+  hasSuccess?: boolean;
+  hasRunning?: boolean;
+  type?: string;
+}
+
+const leftTargetHandle = [
+  {
+    id: 'left',
+    type: 'target' as const,
+    handleType: 'artifact' as const,
+    showButton: false,
+  },
+];
+
+const rightSourceHandle = [
+  {
+    id: 'right',
+    type: 'source' as const,
+    handleType: 'artifact' as const,
+    showButton: false,
+  },
+];
+
+const rightOutputHandle = [
+  {
+    id: 'right',
+    type: 'source' as const,
+    handleType: 'output' as const,
+    showButton: false,
+  },
+];
+
+const leftInputHandle = [
+  {
+    id: 'left',
+    type: 'target' as const,
+    handleType: 'input' as const,
+    showButton: false,
+  },
+];
+
+const createCodedAgentNodeWrapper = (
+  translations: CodedAgentNodeTranslations = DefaultCodedAgentNodeTranslations
+) => {
+  return memo(({ data, selected, id, ...nodeProps }: NodeProps) => {
+    const nodeData = data as unknown as CodedNodeData;
+
+    const executionStatus = useMemo(() => {
+      if (nodeData.hasError) return 'Failed';
+      if (nodeData.hasSuccess) return 'Completed';
+      if (nodeData.hasRunning) return 'InProgress';
+      return undefined;
+    }, [nodeData.hasError, nodeData.hasSuccess, nodeData.hasRunning]);
+
+    const statusAdornment = useMemo((): React.ReactNode => {
+      if (nodeData.hasError)
+        return <CanvasIcon icon="circle-alert" size={16} color="var(--canvas-error-icon)" />;
+      if (nodeData.hasSuccess && !nodeData.hasError)
+        return <CanvasIcon icon="circle-check" size={16} color="var(--canvas-success-icon)" />;
+      if (nodeData.hasRunning && !nodeData.hasError && !nodeData.hasSuccess)
+        return <Spinner size="sm" />;
+      return undefined;
+    }, [nodeData.hasError, nodeData.hasSuccess, nodeData.hasRunning]);
+
+    const handleConfigurations = useMemo(
+      (): HandleGroupManifest[] => [
+        { position: Position.Left, handles: leftTargetHandle, visible: true },
+        { position: Position.Right, handles: rightSourceHandle, visible: true },
+      ],
+      []
+    );
+
+    const baseNodeConfig = useMemo<BaseNodeOverrideConfig>(
+      () => ({
+        executionStatusOverride: executionStatus,
+        handleConfigurations,
+        adornments: { topRight: statusAdornment },
+        iconComponent: <Icons.CodedAgentIcon w={40} h={40} />,
+      }),
+      [executionStatus, handleConfigurations, statusAdornment]
+    );
+
+    return (
+      <BaseNodeOverrideConfigProvider value={baseNodeConfig}>
+        <BaseNode
+          {...nodeProps}
+          type="uipath.coded.agent"
+          id={id}
+          selected={selected}
+          data={{
+            ...nodeData,
+            display: {
+              label: nodeData.label,
+              subLabel: translations.codedAgentStep,
+              shape: 'rectangle',
+            },
+          }}
+        />
+      </BaseNodeOverrideConfigProvider>
+    );
+  });
+};
+
+const CodedResourceNodeElement = memo(({ data, selected, id, ...nodeProps }: NodeProps) => {
+  const nodeData = data as unknown as CodedNodeData & { type?: string };
+  const label = nodeData.label.toLowerCase();
+
+  const executionStatus = useMemo(() => {
+    if (nodeData.hasError) return 'Failed';
+    if (nodeData.hasSuccess) return 'Completed';
+    if (nodeData.hasRunning) return 'InProgress';
+    return undefined;
+  }, [nodeData.hasError, nodeData.hasSuccess, nodeData.hasRunning]);
+
+  // Determine icon based on label content or type
+  const resourceIcon = useMemo(() => {
+    const resourceType = nodeData.type || '';
+
+    if (resourceType === 'tool' || label.includes('tool') || label.includes('function')) {
+      return <CanvasIcon icon="wrench" size={40} />;
+    }
+    if (resourceType === 'context' || label.includes('context') || label.includes('knowledge')) {
+      return <CanvasIcon icon="network" size={40} />;
+    }
+    if (resourceType === 'escalation' || label.includes('escalation') || label.includes('human')) {
+      return <CanvasIcon icon="user" size={40} />;
+    }
+    return <CanvasIcon icon="message-circle" size={40} />;
+  }, [label, nodeData.type]);
+
+  const statusAdornment = useMemo((): React.ReactNode => {
+    if (nodeData.hasError)
+      return <CanvasIcon icon="circle-alert" size={16} color="var(--canvas-error-icon)" />;
+    if (nodeData.hasSuccess && !nodeData.hasError)
+      return <CanvasIcon icon="circle-check" size={16} color="var(--canvas-success-icon)" />;
+    if (nodeData.hasRunning && !nodeData.hasError && !nodeData.hasSuccess)
+      return <Spinner size="sm" />;
+    return undefined;
+  }, [nodeData.hasError, nodeData.hasSuccess, nodeData.hasRunning]);
+
+  const handleConfigurations = useMemo(
+    (): HandleGroupManifest[] => [
+      { position: Position.Left, handles: leftTargetHandle, visible: true },
+      { position: Position.Right, handles: rightSourceHandle, visible: true },
+    ],
+    []
+  );
+
+  const baseNodeConfig = useMemo<BaseNodeOverrideConfig>(
+    () => ({
+      executionStatusOverride: executionStatus,
+      handleConfigurations,
+      adornments: { topRight: statusAdornment },
+      iconComponent: resourceIcon,
+    }),
+    [executionStatus, handleConfigurations, statusAdornment, resourceIcon]
+  );
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <BaseNodeOverrideConfigProvider value={baseNodeConfig}>
+        <BaseNode
+          {...nodeProps}
+          type="uipath.coded.resource"
+          id={id}
+          selected={selected}
+          data={{
+            ...nodeData,
+            display: {
+              label: undefined, // Label is rendered via TextContainer below
+              shape: 'circle',
+            },
+          }}
+        />
+      </BaseNodeOverrideConfigProvider>
+      <TextContainer>
+        <span className="text-foreground-muted">{nodeData.label}</span>
+      </TextContainer>
+    </div>
+  );
+});
+
+const CodedFlowNodeElement = memo(({ data, selected, id, ...nodeProps }: NodeProps) => {
+  const nodeData = data as unknown as CodedNodeData;
+  const isStart = nodeData.label.toLowerCase().includes('start');
+  const isEnd = nodeData.label.toLowerCase().includes('end');
+
+  if (isStart || isEnd) {
+    const handleConfigs: HandleGroupManifest[] = isStart
+      ? [{ position: Position.Right, handles: rightOutputHandle, visible: true }]
+      : [{ position: Position.Left, handles: leftInputHandle, visible: true }];
+
+    const nodeType = isStart ? 'uipath.coded.flow.start' : 'uipath.coded.flow.end';
+
+    const config: BaseNodeOverrideConfig = { handleConfigurations: handleConfigs };
+
+    return (
+      <div style={{ position: 'relative' }}>
+        <BaseNodeOverrideConfigProvider value={config}>
+          <BaseNode
+            {...nodeProps}
+            type={nodeType}
+            id={id}
+            selected={selected}
+            data={{
+              ...nodeData,
+              display: {
+                label: undefined, // Label is rendered via TextContainer below
+                shape: 'square',
+              },
+            }}
+          />
+        </BaseNodeOverrideConfigProvider>
+        <TextContainer>
+          <span className="text-xs text-foreground-muted">{nodeData.label}</span>
+        </TextContainer>
+      </div>
+    );
+  }
+
+  const handleConfigs: HandleGroupManifest[] = [
+    { position: Position.Left, handles: leftTargetHandle, visible: true },
+    { position: Position.Right, handles: rightSourceHandle, visible: true },
+  ];
+
+  const config: BaseNodeOverrideConfig = {
+    handleConfigurations: handleConfigs,
+    iconComponent: null,
+  };
+
+  return (
+    <BaseNodeOverrideConfigProvider value={config}>
+      <BaseNode
+        {...nodeProps}
+        type="uipath.coded.flow.node"
+        id={id}
+        selected={selected}
+        data={{
+          ...nodeData,
+          display: {
+            label: nodeData.label,
+            shape: 'rectangle',
+          },
+        }}
+      />
+    </BaseNodeOverrideConfigProvider>
+  );
+});
+
+export interface CodedAgentFlowProps {
+  mermaidText: string;
+  layoutDirection?: LayoutDirection;
+  agentNodeTranslations?: CodedAgentNodeTranslations;
+  canvasTranslations?: CanvasTranslations;
+  canvasRef?: React.Ref<BaseCanvasRef>;
+  mode?: 'view' | 'readonly';
+}
+
+const edgeTypes = {
+  default: CodedAgentEdge,
+};
+
+const CodedAgentFlowInner = (props: CodedAgentFlowProps): ReactElement => {
+  const reactFlowInstance = useReactFlow();
+  const [nodes, setNodes, onNodesChange] = useNodesState([] as Node[]);
+  const [edges, setEdges] = useEdgesState([] as Edge[]);
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [parseError, setParseError] = useState<string | null>(null);
+  const hasInitialized = useRef(false);
+  const edgesRef = useRef<Edge[]>([]);
+
+  const agentNodeTranslations = useMemo(
+    () => props.agentNodeTranslations ?? DefaultCodedAgentNodeTranslations,
+    [props.agentNodeTranslations]
+  );
+
+  const nodeTypes = useMemo(
+    () => ({
+      agent: createCodedAgentNodeWrapper(agentNodeTranslations),
+      resource: CodedResourceNodeElement,
+      flow: CodedFlowNodeElement,
+    }),
+    [agentNodeTranslations]
+  );
+
+  const layoutDirection = useMemo(() => props.layoutDirection || 'LR', [props.layoutDirection]);
+
+  // Handle mermaid text parsing
+  useEffect(() => {
+    const processData = async () => {
+      // Reset initialization state when mermaid text changes
+      hasInitialized.current = false;
+
+      // If mermaid text is provided, parse it
+      if (props.mermaidText && props.mermaidText.length > 0) {
+        setIsLoading(true);
+        setParseError(null);
+
+        try {
+          const parsedResult = await mermaidToReactFlow(props.mermaidText);
+
+          // Check if parsing resulted in no nodes - this indicates a parse error
+          if (parsedResult.nodes.length === 0) {
+            throw new Error('Invalid mermaid syntax');
+          }
+
+          // Store the edges and direction, but don't apply layout yet
+          edgesRef.current = parsedResult.edges;
+
+          // Set nodes with initial positions and dimensions for React Flow
+          setNodes(parsedResult.nodes);
+          setEdges(parsedResult.edges);
+        } catch (error) {
+          setParseError((error as Error).message);
+          setNodes([]);
+          setEdges([]);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+      // No data provided
+      else {
+        setNodes([]);
+        setEdges([]);
+      }
+    };
+
+    processData();
+  }, [props.mermaidText, setEdges, setNodes]);
+
+  // Auto-arrange handler that applies d3 layout
+  const autoLayout = useCallback(async () => {
+    // Don't run if already initialized
+    if (hasInitialized.current) {
+      return;
+    }
+
+    // Get fresh nodes from ReactFlow instance
+    const currentNodes = reactFlowInstance.getNodes();
+
+    if (currentNodes.length === 0) {
+      return;
+    }
+
+    try {
+      const { nodes: layoutNodes } = await d3HierarchyLayout(currentNodes, edgesRef.current, {
+        direction: layoutDirection,
+        spacing: LAYOUT_SPACING,
+      });
+
+      // Update nodes with their final layout positions
+      setNodes(layoutNodes);
+
+      // Mark as initialized only after successful layout
+      hasInitialized.current = true;
+    } catch {
+      // Don't mark as initialized on failure so it can retry
+    }
+  }, [layoutDirection, setNodes, reactFlowInstance]);
+
+  if (parseError) {
+    return (
+      <CenteredDiv>
+        <span className="text-error">Error: {parseError}</span>
+      </CenteredDiv>
+    );
+  }
+
+  if (isLoading) {
+    return <CenteredDiv>Loading...</CenteredDiv>;
+  }
+
+  if (nodes.length === 0) {
+    return <CenteredDiv>{agentNodeTranslations.noDataToDisplay}</CenteredDiv>;
+  }
+
+  return (
+    <div style={{ width: '100%', height: '100%', touchAction: 'none' }}>
+      <BaseCanvas
+        ref={props.canvasRef}
+        nodes={nodes}
+        edges={edges}
+        nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        mode={props.mode || 'view'}
+        initialAutoLayout={autoLayout}
+        onNodesChange={onNodesChange}
+        deleteKeyCode={[]} // Disable delete key for Coded agents
+      >
+        <Panel position="top-left">
+          <Row align="center" gap={Spacing.SpacingXs}>
+            <Icons.AgentIcon w={20} h={20} />
+            <span className="text-xs font-bold">Coded Agent</span>
+          </Row>
+        </Panel>
+        <Panel position="bottom-right">
+          <CanvasPositionControls
+            translations={props.canvasTranslations ?? DefaultCanvasTranslations}
+          />
+        </Panel>
+      </BaseCanvas>
+    </div>
+  );
+};
+
+export const CodedAgentFlow = (props: CodedAgentFlowProps): ReactElement => {
+  return (
+    <NodeRegistryProvider manifest={codedAgentManifest}>
+      <ReactFlowProvider>
+        <CodedAgentFlowInner {...props} />
+      </ReactFlowProvider>
+    </NodeRegistryProvider>
+  );
+};

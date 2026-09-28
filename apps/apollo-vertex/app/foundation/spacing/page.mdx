@@ -1,0 +1,41 @@
+import { SpacingRow } from '@/app/_components/foundation/spacing-row';
+import { spacingScale } from '@/lib/foundation-tokens';
+
+# Spacing
+
+Apollo Vertex uses the standard **Tailwind 4px base unit** (`--spacing: 0.25rem`). Every spacing value is a multiple of this base, giving you a consistent and predictable scale across margin, padding, gap, width, height, and more.
+
+**Base unit:** `1 = 4px = 0.25rem`
+
+## Usage
+
+```tsx
+<div className="p-4 gap-6 mt-2" />
+```
+
+```css
+/* CSS variable */
+margin: calc(var(--spacing) * 4); /* 16px */
+```
+
+---
+
+<div className="not-prose my-6 overflow-x-auto">
+  <table className="w-full text-left">
+    <thead>
+      <tr className="border-b border-border">
+        <th className="pb-2 pr-4 font-mono text-xs font-semibold text-foreground uppercase tracking-wide w-16">Token</th>
+        <th className="pb-2 pr-4 font-mono text-xs font-semibold text-muted-foreground uppercase tracking-wide w-16">px</th>
+        <th className="pb-2 pr-4 font-mono text-xs font-semibold text-muted-foreground uppercase tracking-wide w-20">rem</th>
+        <th className="pb-2 font-mono text-xs font-semibold text-muted-foreground uppercase tracking-wide">Visual</th>
+      </tr>
+    </thead>
+    <tbody>
+      {spacingScale.map((step) => (
+        <SpacingRow key={step.step} {...step} />
+      ))}
+    </tbody>
+  </table>
+</div>
+
+> Bars are capped at 320px for readability. Steps beyond `80` (320px) render as full-width bars.

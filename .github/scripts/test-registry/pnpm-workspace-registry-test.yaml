@@ -1,0 +1,38 @@
+# pnpm workspace settings for isolated registry component test directories.
+# Copied verbatim into each temp dir by test-registry.ts and the prepare job in
+# apollo-vertex-registry-check.yml. Keep in sync with the relevant sections of
+# the root pnpm-workspace.yaml (overrides, packageExtensions, allowBuilds).
+#
+# Intentionally excludes: packages:, minimumReleaseAge*, auditConfig
+# — those are irrelevant or break isolated installs.
+autoInstallPeers: true
+minimumReleaseAgeIgnoreMissingTime: true
+blockExoticSubdeps: true
+
+# @tanstack/* packages have missing `time` metadata in the npm registry
+# (pnpm/pnpm#11238 + pnpm/pnpm#11622 — minimumReleaseAgeIgnoreMissingTime
+# is not always honored). Exempt them to ensure peer deps like
+# @tanstack/query-db-collection install reliably.
+minimumReleaseAgeExclude:
+  - '@tanstack/*'
+  - '@uipath/*'
+
+overrides:
+  shadcn: "4.4.0"       # pin to match pnpm dlx shadcn@4.4.0 — shadcn init calls pnpm add shadcn@latest internally
+
+# @tanstack/ai does not declare @standard-schema/spec in its own package.json but
+# its types reference it — add it as an explicit dep so pnpm links it correctly.
+packageExtensions:
+  "@tanstack/ai":
+    dependencies:
+      "@standard-schema/spec": "^1.1.0"
+
+allowBuilds:
+  '@biomejs/biome': true
+  '@parcel/watcher': true
+  core-js: true
+  es5-ext: true
+  esbuild: true
+  msw: true
+  sharp: true
+  unrs-resolver: true   # native Rust resolver, required by Next.js 16

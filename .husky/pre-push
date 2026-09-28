@@ -1,0 +1,10 @@
+# Reject fixup/squash commits before push — they must be rebased first.
+REMOTE_REF=$(git rev-parse @{upstream} 2>/dev/null) || exit 0
+FIXUPS=$(git log --oneline "$REMOTE_REF"..HEAD --grep='^fixup! \|^squash! ' --format='%s' 2>/dev/null)
+if [ -n "$FIXUPS" ]; then
+  echo "Error: found fixup/squash commits that must be rebased before pushing:"
+  echo "$FIXUPS" | while read -r line; do echo "  - $line"; done
+  echo ""
+  echo "Run: git rebase -i --autosquash $REMOTE_REF"
+  exit 1
+fi

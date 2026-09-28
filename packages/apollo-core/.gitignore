@@ -1,0 +1,7 @@
+# Generated token files
+src/tokens/*.ts
+!src/tokens/index.ts
+src/tokens/jss/
+src/tokens/scss/
+src/tokens/less/
+src/tokens/css/

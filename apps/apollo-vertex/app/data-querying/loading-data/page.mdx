@@ -1,0 +1,189 @@
+# Loading Data
+
+Access your UiPath Data Service entities through reactive collections using the `useSolution` hook.
+
+## Overview
+
+The `useSolution` hook provides access to your data collections through the `api.collections` object. Each entity you've configured in your solution is available as a collection that supports live queries via TanStack DB.
+
+```tsx
+import { useSolution } from '@uipath/vs-core';
+
+function MyComponent() {
+  const { api } = useSolution();
+
+  // Access collections for any configured entity
+  const invoices = api.collections.Invoices;
+  const customers = api.collections.Customers;
+}
+```
+
+## Using useLiveQuery
+
+Collections integrate with TanStack DB's `useLiveQuery` hook for reactive data fetching. Changes to your data automatically update your UI.
+
+```tsx
+import { useSolution } from '@uipath/vs-core';
+import { useLiveQuery } from '@tanstack/react-db';
+
+function InvoicesList() {
+  const { api } = useSolution();
+
+  const { data: invoices, isLoading } = useLiveQuery(q =>
+    q.from({ invoices: api.collections.Invoices })
+  );
+
+  if (isLoading) return <div>Loading...</div>;
+
+  return (
+    <ul>
+      {invoices?.map(invoice => (
+        <li key={invoice.Id}>{invoice.InvoiceNumber}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
+## Filtering Data
+
+Use the `where` clause with comparison operators to filter your queries:
+
+```tsx
+import { useLiveQuery, eq, gt, and } from '@tanstack/react-db';
+
+function PendingInvoices() {
+  const { api } = useSolution();
+
+  const { data: pendingInvoices } = useLiveQuery(q =>
+    q.from({ invoices: api.collections.Invoices })
+     .where(({ invoices }) => eq(invoices.Status, 'Pending'))
+  );
+
+  // Multiple conditions with and()
+  const { data: highValuePending } = useLiveQuery(q =>
+    q.from({ invoices: api.collections.Invoices })
+     .where(({ invoices }) =>
+       and(
+         eq(invoices.Status, 'Pending'),
+         gt(invoices.Amount, 1000)
+       )
+     )
+  );
+
+  return <div>{/* Render filtered data */}</div>;
+}
+```
+
+## Joining Collections
+
+Join entity collections with process data to combine related information:
+
+```tsx
+import { useLiveQuery, eq } from '@tanstack/react-db';
+
+function InvoicesWithProcessStatus() {
+  const { api } = useSolution();
+
+  const { data: result } = useLiveQuery(q => {
+    return q.from({ entities: api.collections.Invoices })
+      .join(
+        { processes: api.collections.processes.all },
+        ({ entities, processes }) =>
+          eq(entities.InternalInstanceId, processes?.instanceId),
+        "inner"
+      )
+      .select(({ entities, processes }) => ({
+        ...entities,
+        processStatus: processes?.Status,
+        processState: processes?.State,
+      }));
+  });
+
+  return <div>{/* Render joined data */}</div>;
+}
+```
+
+## Selecting Specific Fields
+
+Use `select` to transform or limit the fields returned:
+
+```tsx
+const { data: invoiceSummaries } = useLiveQuery(q =>
+  q.from({ invoices: api.collections.Invoices })
+   .select(({ invoices }) => ({
+     id: invoices.Id,
+     number: invoices.InvoiceNumber,
+     total: invoices.Amount,
+   }))
+);
+```
+
+## Querying Single Records
+
+Filter by ID to retrieve a specific record:
+
+```tsx
+function InvoiceDetail({ invoiceId }: { invoiceId: string }) {
+  const { api } = useSolution();
+
+  const { data: [invoice] = [] } = useLiveQuery(q =>
+    q.from({ invoices: api.collections.Invoices })
+     .where(({ invoices }) => eq(invoices.Id, invoiceId))
+  );
+
+  if (!invoice) return <div>Not found</div>;
+
+  return <div>{invoice.InvoiceNumber}</div>;
+}
+```
+
+## Process Collections
+
+Access process instance data through dedicated process collections:
+
+```tsx
+function ProcessesList() {
+  const { api } = useSolution();
+
+  // All process instances
+  const { data: allProcesses } = useLiveQuery(q =>
+    q.from({ processes: api.collections.processes.all })
+  );
+
+  // Named process collection (if configured)
+  const { data: invoiceProcesses } = useLiveQuery(q =>
+    q.from({ processes: api.collections.processes.InvoiceProcessing })
+  );
+
+  return <div>{/* Render process data */}</div>;
+}
+```
+
+## Direct Collection Access
+
+For non-reactive access, use the collection methods directly:
+
+```tsx
+async function loadData() {
+  const { api } = useSolution();
+
+  // Get all items as array
+  const items = await api.collections.Invoices.toArrayWhenReady();
+
+  // Get a specific item by key
+  const item = api.collections.Invoices.get('invoice-123');
+
+  // Check if item exists
+  const exists = api.collections.Invoices.has('invoice-123');
+
+  // Get collection size
+  const count = api.collections.Invoices.size;
+}
+```
+
+## Learn More
+
+For advanced query patterns and the full TanStack DB API, see the official documentation:
+
+- [TanStack DB Live Queries](https://tanstack.com/db/latest/docs/guides/live-queries)

@@ -1,0 +1,108 @@
+/**
+ * React Flow ships cosmetic defaults on its built-in node-type wrapper classes
+ * `react-flow__node-default` — border, padding, background, hover/selected box-shadow, fixed width, etc.
+ * When a node references a `type` that isn't in `nodeTypes`, RF falls back to its
+ * `default` mapping AND tags the wrapper with `react-flow__node-default`,
+ * so its default styling renders behind our custom node visuals.
+ *
+ * Since BaseNode (and any other canvas node) owns its own visuals, we strip
+ * RF's defaults entirely — including the state variants (.selectable:hover,
+ * .selectable.selected, .selectable:focus, .selectable:focus-visible) so no
+ * box-shadow or border bleeds through.
+ *
+ * `!important` is used here because RF's own stylesheet can load AFTER this
+ * file in consuming apps (bundler order / CSS-in-JS injection), and its
+ * selectors share our specificity — source-order ties go to the later rule.
+ * Marking these as important makes the reset deterministic regardless of load
+ * order. This is idiomatic for third-party library resets.
+ */
+.react-flow__node-default,
+.react-flow__node-default.selectable:hover,
+.react-flow__node-default.selectable.selected,
+.react-flow__node-default.selectable:focus,
+.react-flow__node-default.selectable:focus-visible {
+  background: none !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  width: auto !important;
+  color: inherit !important;
+  text-align: inherit !important;
+  font-size: inherit !important;
+  box-shadow: none !important;
+}
+
+/**
+ * Elevate hovered leaf nodes so toolbars and handle buttons aren't clipped by
+ * neighboring node wrappers or connected edge SVGs. This intentionally clears
+ * React Flow's selected-node z-index bump (+1000) and connection-line z-index (1001).
+ * React Flow sets z-index inline, so `!important` is required to override it.
+ *
+ * Exclusions:
+ *   - loop containers need to stay below sticky notes even when selected
+ *   - sticky notes own annotation/active annotation layers in StickyNoteNode.styles
+ */
+.react-flow__node:not(.parent):not(:has([data-sticky-note])):not(
+    :has([data-loop-container])
+  ):hover {
+  z-index: 1002 !important;
+}
+
+/* Keep the temporary drag-to-connect edge visible as it crosses stage nodes. */
+svg.react-flow__connectionline {
+  z-index: 1003 !important;
+}
+
+/**
+ * Keep the edge currently under the pointer visually continuous at crossings.
+ * React Flow elevates selected edges to 1000; hover takes temporary precedence
+ * at 1001 while remaining below hovered node controls at 1002.
+ */
+.react-flow__edges > svg:has([data-edge-hovered="true"]) {
+  z-index: 1001 !important;
+}
+
+/**
+ * Edge labels portal into this sibling layer. Lift it above xyflow's selected
+ * edge band (1000) and our hovered-edge band (1001), so no edge stroke can
+ * paint through a label. Hovered node controls also use 1002 and win by DOM
+ * order because the node layer follows the label renderer.
+ */
+.react-flow__edgelabel-renderer {
+  z-index: 1002 !important;
+}
+
+/* Keep loop shells behind sticky-note annotations; empty loop body still hit-tests to the loop. */
+.react-flow__node:has([data-loop-container]) {
+  z-index: -20 !important;
+}
+
+/**
+ * Canvas pane gradient for future themes.
+ *
+ * <Background /> passes bgColor as `background-color`, which only accepts
+ * solid colors. We layer `background-image` on top of the same SVG to
+ * render a gradient — the dot pattern (SVG content) still paints above.
+ * The `.apollo-canvas-background` class is applied via <Background />'s
+ * documented `className` prop in CanvasBackground.tsx.
+ *
+ * FIXME: Inline gradients should become gradient tokens in apollo-wind's
+ * tailwind.consumer.css once a 135° / 0–100% variant is added — then
+ * these rules collapse to `background-image: var(--gradient-N)`.
+ */
+.future-dark .apollo-canvas-background {
+  background-image: linear-gradient(
+    135deg,
+    var(--canvas-background-overlay, var(--surface-overlay)) 0%,
+    var(--canvas-background, var(--surface)) 100%
+  );
+}
+
+.future-light .apollo-canvas-background {
+  background-image: linear-gradient(
+    135deg,
+    var(--canvas-background, var(--surface)) 0%,
+    var(--canvas-background-overlay, var(--surface-overlay)) 100%
+  );
+}

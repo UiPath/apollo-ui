@@ -1,0 +1,296 @@
+import type { CSSProperties } from "react";
+
+export interface GlowConfig {
+  start: string;
+  end: string;
+  containerOpacity: number;
+  fillOpacity: number;
+  startStopOpacity: number;
+  endStopOpacity: number;
+  endOffset: number;
+}
+
+export interface CardGradient {
+  enabled: boolean;
+  start: string;
+  end: string;
+  angle: number;
+  opacity: number;
+}
+
+export interface CardConfig {
+  overviewBg: string;
+  overviewOpacity: number;
+  overviewGradient: CardGradient;
+  insightBg: string;
+  insightOpacity: number;
+  insightGradient: CardGradient;
+  promptBg: string;
+  promptOpacity: number;
+  promptGradient: CardGradient;
+  borderVisible: boolean;
+  backdropBlur: boolean;
+}
+
+export const defaultLightGlow: GlowConfig = {
+  start: "var(--insight-500)",
+  end: "var(--primary-400)",
+  containerOpacity: 70,
+  fillOpacity: 0.3,
+  startStopOpacity: 1,
+  endStopOpacity: 1,
+  endOffset: 0.35,
+};
+
+export const defaultDarkGlow: GlowConfig = {
+  start: "var(--insight-700)",
+  end: "var(--primary-600)",
+  containerOpacity: 45,
+  fillOpacity: 1,
+  startStopOpacity: 1,
+  endStopOpacity: 0.4,
+  endOffset: 0.5,
+};
+
+export type CardSize = "sm" | "md" | "lg";
+
+export type InsightCardType = "kpi" | "chart";
+export type ChartType =
+  | "donut"
+  | "horizontal-bars"
+  | "sparkline"
+  | "area"
+  | "stacked-bar";
+
+export interface InsightCardContent {
+  type: InsightCardType;
+  chartType: ChartType;
+  title: string;
+}
+
+export type CardInteraction = "static" | "expand" | "navigate";
+
+export interface InsightCardConfig {
+  size: CardSize;
+  visible: boolean;
+  content: InsightCardContent;
+  interaction: CardInteraction;
+  navigateTo?: string;
+}
+
+export interface LayoutConfig {
+  gap: number;
+  overviewRatio: number;
+  promptRatio: number;
+  insightCards: [
+    InsightCardConfig,
+    InsightCardConfig,
+    InsightCardConfig,
+    InsightCardConfig,
+  ];
+  padding: number;
+  containerBg: string;
+}
+
+export const defaultLayout: LayoutConfig = {
+  gap: 4,
+  overviewRatio: 4,
+  promptRatio: 1,
+  insightCards: [
+    {
+      size: "sm",
+      visible: true,
+      interaction: "static",
+      content: {
+        type: "kpi",
+        chartType: "donut",
+        title: "Upfront decision efficiency",
+      },
+    },
+    {
+      size: "md",
+      visible: true,
+      interaction: "expand",
+      content: {
+        type: "chart",
+        chartType: "horizontal-bars",
+        title: "Top issues",
+      },
+    },
+    {
+      size: "md",
+      visible: true,
+      interaction: "expand",
+      content: {
+        type: "chart",
+        chartType: "stacked-bar",
+        title: "Pipeline",
+      },
+    },
+    {
+      size: "sm",
+      visible: true,
+      interaction: "static",
+      content: {
+        type: "kpi",
+        chartType: "donut",
+        title: "SLA compliance",
+      },
+    },
+  ],
+  padding: 24,
+  containerBg: "none",
+};
+
+const defaultGradient: CardGradient = {
+  enabled: false,
+  start: "var(--insight-500)",
+  end: "var(--primary-400)",
+  angle: 135,
+  opacity: 100,
+};
+
+export const insightOptions = [
+  { label: "300", value: "var(--insight-300)" },
+  { label: "400", value: "var(--insight-400)" },
+  { label: "500", value: "var(--insight-500)" },
+  { label: "600", value: "var(--insight-600)" },
+  { label: "700", value: "var(--insight-700)" },
+  { label: "800", value: "var(--insight-800)" },
+  { label: "900", value: "var(--insight-900)" },
+];
+
+export const primaryOptions = [
+  { label: "300", value: "var(--primary-300)" },
+  { label: "400", value: "var(--primary-400)" },
+  { label: "500", value: "var(--primary-500)" },
+  { label: "600", value: "var(--primary-600)" },
+  { label: "700", value: "var(--primary-700)" },
+  { label: "800", value: "var(--primary-800)" },
+  { label: "900", value: "var(--primary-900)" },
+];
+
+export const cardTypeOptions = [
+  { label: "KPI", value: "kpi" },
+  { label: "Chart", value: "chart" },
+];
+
+export const interactionOptions = [
+  { label: "Static", value: "static" },
+  { label: "Expand", value: "expand" },
+  { label: "Navigate", value: "navigate" },
+];
+
+export const chartTypeOptions = [
+  { label: "Donut", value: "donut" },
+  { label: "Horizontal Bars", value: "horizontal-bars" },
+  { label: "Sparkline", value: "sparkline" },
+  { label: "Area", value: "area" },
+  { label: "Stacked Bar", value: "stacked-bar" },
+];
+
+export const sizeOptions = [
+  { label: "Small (1 col)", value: "sm" },
+  { label: "Medium (1 col)", value: "md" },
+  { label: "Large (full)", value: "lg" },
+];
+
+export const containerBgOptions = [
+  { label: "None", value: "none" },
+  { label: "white", value: "white" },
+  { label: "sidebar", value: "sidebar" },
+  { label: "card", value: "card" },
+  { label: "background", value: "background" },
+  { label: "muted", value: "muted" },
+];
+
+export const bgColorOptions = [
+  { label: "white", value: "white" },
+  { label: "sidebar", value: "sidebar" },
+  { label: "card", value: "card" },
+  { label: "background", value: "background" },
+  { label: "muted", value: "muted" },
+];
+
+export function cardBgStyle(
+  bg: string,
+  opacity: number,
+  gradient: CardGradient,
+): CSSProperties {
+  if (gradient.enabled) {
+    const alpha = gradient.opacity / 100;
+    const style = {
+      "--card-bg-override": `linear-gradient(${gradient.angle}deg, color-mix(in srgb, ${gradient.start} ${alpha * 100}%, transparent), color-mix(in srgb, ${gradient.end} ${alpha * 100}%, transparent))`,
+      borderColor: "transparent",
+    };
+    // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- CSS custom properties require assertion
+    return style as unknown as CSSProperties;
+  }
+  const value =
+    bg === "white"
+      ? `rgba(255,255,255,${opacity / 100})`
+      : `color-mix(in srgb, var(--${bg}) ${opacity}%, transparent)`;
+  // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- CSS custom properties require assertion
+  return { "--card-bg-override": value } as unknown as CSSProperties;
+}
+
+export function getInsightCardClasses(
+  content: InsightCardContent,
+  viewMode: "desktop" | "compact" | "stacked" = "desktop",
+): {
+  cardClassName: string;
+  contentClassName: string;
+} {
+  if (content.type === "kpi") {
+    const isCompact = viewMode === "compact";
+    return {
+      cardClassName: isCompact ? "!gap-0" : "!gap-4",
+      contentClassName: isCompact
+        ? "flex-1 flex flex-col overflow-hidden"
+        : "flex-1 flex flex-col",
+    };
+  }
+  const isBarChart = content.chartType === "horizontal-bars";
+  return {
+    cardClassName: content.chartType === "donut" ? "!gap-0" : "",
+    contentClassName: isBarChart ? "flex-1" : "flex-1 flex flex-col",
+  };
+}
+
+export const defaultDarkCards: CardConfig = {
+  overviewBg: "sidebar",
+  overviewOpacity: 69,
+  overviewGradient: { ...defaultGradient, opacity: 30 },
+  insightBg: "sidebar",
+  insightOpacity: 60,
+  insightGradient: { ...defaultGradient },
+  promptBg: "sidebar",
+  promptOpacity: 80,
+  promptGradient: { ...defaultGradient },
+  borderVisible: false,
+  backdropBlur: true,
+};
+
+const CARD_SIZES = new Set<string>(["sm", "md", "lg"]);
+const INSIGHT_CARD_TYPES = new Set<string>(["kpi", "chart"]);
+const CHART_TYPES = new Set<string>([
+  "donut",
+  "horizontal-bars",
+  "sparkline",
+  "area",
+  "stacked-bar",
+]);
+const CARD_INTERACTIONS = new Set<string>(["static", "expand", "navigate"]);
+
+export function isCardSize(v: string): v is CardSize {
+  return CARD_SIZES.has(v);
+}
+export function isInsightCardType(v: string): v is InsightCardType {
+  return INSIGHT_CARD_TYPES.has(v);
+}
+export function isChartType(v: string): v is ChartType {
+  return CHART_TYPES.has(v);
+}
+export function isCardInteraction(v: string): v is CardInteraction {
+  return CARD_INTERACTIONS.has(v);
+}

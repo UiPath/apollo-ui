@@ -1,0 +1,182 @@
+import { useReducer } from 'react';
+import type { CursorCoordinates } from '../components/input/tiptap';
+import {
+  type AutopilotChatResourceItem,
+  type AutopilotChatResourceItemSelector,
+  CHAT_RESOURCE_PICKER_MIN_SKELETON_COUNT,
+} from '../service';
+
+export interface DrillDownState {
+  category: AutopilotChatResourceItemSelector;
+  resources: AutopilotChatResourceItem[];
+  done: boolean;
+}
+
+export interface PickerState {
+  anchorPosition: CursorCoordinates | null;
+  query: string;
+  drillDown: DrillDownState | null;
+  loading: boolean;
+  loadingMore: boolean;
+  searchInProgress: boolean;
+  error: string | null;
+  searchResults: AutopilotChatResourceItem[];
+  searchDone: boolean;
+  previousDisplayCount: number;
+}
+
+export type PickerAction =
+  | { type: 'OPEN'; coords: CursorCoordinates }
+  | { type: 'CLOSE' }
+  | { type: 'SET_QUERY'; query: string }
+  | { type: 'LOAD_START' }
+  | { type: 'SEARCH_START' }
+  | { type: 'LOAD_MORE_START' }
+  | {
+      type: 'DRILL_DOWN_SUCCESS';
+      category: AutopilotChatResourceItemSelector;
+      resources: AutopilotChatResourceItem[];
+      done: boolean;
+    }
+  | { type: 'SEARCH_SUCCESS'; results: AutopilotChatResourceItem[]; done: boolean }
+  | {
+      type: 'LOAD_MORE_SUCCESS';
+      target: 'drillDown' | 'search';
+      items: AutopilotChatResourceItem[];
+      done: boolean;
+    }
+  | { type: 'LOAD_ERROR'; error: string }
+  | { type: 'GO_BACK' }
+  | { type: 'CLEAR_SEARCH' };
+
+export const initialPickerState: PickerState = {
+  anchorPosition: null,
+  query: '',
+  drillDown: null,
+  loading: false,
+  loadingMore: false,
+  searchInProgress: false,
+  error: null,
+  searchResults: [],
+  searchDone: true,
+  previousDisplayCount: 5,
+};
+
+export function pickerReducer(state: PickerState, action: PickerAction): PickerState {
+  switch (action.type) {
+    case 'OPEN':
+      return {
+        ...initialPickerState,
+        anchorPosition: action.coords,
+      };
+
+    case 'CLOSE':
+      return { ...state, anchorPosition: null };
+
+    case 'SET_QUERY': {
+      const newTrimmed = action.query.trim();
+      if (action.query === state.query || newTrimmed === state.query.trim()) return state;
+      return {
+        ...state,
+        query: action.query,
+        searchInProgress: !!newTrimmed,
+      };
+    }
+
+    case 'LOAD_START':
+      return {
+        ...state,
+        loading: true,
+        error: null,
+      };
+
+    case 'LOAD_MORE_START':
+      return {
+        ...state,
+        loadingMore: true,
+      };
+
+    case 'SEARCH_START':
+      return {
+        ...state,
+        searchInProgress: true,
+        error: null,
+      };
+
+    case 'DRILL_DOWN_SUCCESS':
+      return {
+        ...state,
+        loading: false,
+        drillDown: {
+          category: action.category,
+          resources: action.resources,
+          done: action.done,
+        },
+      };
+
+    case 'SEARCH_SUCCESS':
+      return {
+        ...state,
+        loading: false,
+        searchInProgress: false,
+        searchResults: action.results,
+        searchDone: action.done,
+        previousDisplayCount:
+          action.results.length > 0
+            ? action.results.length
+            : CHAT_RESOURCE_PICKER_MIN_SKELETON_COUNT,
+      };
+
+    case 'LOAD_MORE_SUCCESS':
+      if (action.target === 'drillDown') {
+        return state.drillDown
+          ? {
+              ...state,
+              loadingMore: false,
+              drillDown: {
+                ...state.drillDown,
+                resources: [...state.drillDown.resources, ...action.items],
+                done: action.done,
+              },
+            }
+          : { ...state, loadingMore: false };
+      }
+      return {
+        ...state,
+        loadingMore: false,
+        searchResults: [...state.searchResults, ...action.items],
+        searchDone: action.done,
+      };
+
+    case 'LOAD_ERROR':
+      return {
+        ...state,
+        loading: false,
+        loadingMore: false,
+        searchInProgress: false,
+        error: action.error,
+      };
+
+    case 'GO_BACK':
+      return {
+        ...state,
+        query: '',
+        drillDown: null,
+      };
+
+    case 'CLEAR_SEARCH':
+      return {
+        ...state,
+        searchResults: [],
+        searchDone: true,
+        searchInProgress: false,
+      };
+
+    default:
+      return state;
+  }
+}
+
+export function useResourcePickerState() {
+  return useReducer(pickerReducer, initialPickerState);
+}

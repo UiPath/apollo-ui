@@ -1,0 +1,842 @@
+import { Global } from '@emotion/react';
+import { CanvasIcon } from '@uipath/apollo-react/canvas';
+import type { NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
+import { NodeResizeControl, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { ResizeDragEvent, ResizeParams } from '@uipath/apollo-react/canvas/xyflow/system';
+import { AnimatePresence } from 'motion/react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
+import ReactMarkdown, { type Components } from 'react-markdown';
+import remarkBreaks from 'remark-breaks';
+import remarkGfm from 'remark-gfm';
+import { useSafeLingui } from '../../../i18n';
+import { GRID_SPACING } from '../../constants';
+import { useLatestRef } from '../../hooks/useLatestRef';
+import { areNodePropsEqualIgnoringPosition } from '../../utils/nodePropsEqual';
+import { useIsNodeReadOnly } from '../BaseCanvas/ReadOnlyNodesContext';
+import { useSelectionState } from '../BaseCanvas/SelectionStateContext';
+import { NodeViewportOverlay } from '../NodeViewportOverlay';
+import type { ToolbarAction } from '../Toolbar';
+import { NodeToolbar } from '../Toolbar';
+import { lockToolbarConfig } from '../Toolbar/NodeToolbar/NodeToolbar.utils';
+import { FormattingToolbar } from './FormattingToolbar';
+import {
+  type ActiveFormats,
+  activeFormatsEqual,
+  continueListOnEnter,
+  detectActiveFormats,
+} from './markdown-formatting';
+import { useStickyNoteCanvasOptions } from './StickyNoteCanvasOptionsContext';
+import {
+  findStickyNoteMediaAtSelection,
+  insertStickyNoteMedia,
+  parseStickyNoteMediaTokens,
+  replaceStickyNoteMedia,
+  type StickyNoteMedia,
+  type StickyNoteMediaToken,
+  serializeStickyNoteMedia,
+} from './StickyNoteMedia';
+import { StickyNoteMediaDialog } from './StickyNoteMediaDialog';
+import {
+  createStickyNoteMediaMarkdownComponents,
+  StickyNoteMediaMarkdownProvider,
+  type StickyNoteMediaSourceRange,
+} from './StickyNoteMediaMarkdown';
+import {
+  BottomCornerIndicators,
+  ColorOption,
+  ColorPickerPanel,
+  RESIZE_CONTROL_Z_INDEX,
+  ResizeHandle,
+  StickyNoteContainer,
+  StickyNoteMarkdown,
+  StickyNoteTextArea,
+  StickyNoteWrapper,
+  stickyNoteGlobalStyles,
+  TopCornerIndicators,
+} from './StickyNoteNode.styles';
+import type {
+  StickyNoteColor,
+  StickyNoteData,
+  StickyNoteEditorActionContext,
+  StickyNoteFormattingAction,
+  TextSelection,
+} from './StickyNoteNode.types';
+import { STICKY_NOTE_COLORS, withAlpha } from './StickyNoteNode.types';
+import { preserveNewlines, readTextSelection } from './StickyNoteNode.utils';
+import { useMarkdownShortcuts } from './useMarkdownShortcuts';
+import { useScrollCapture } from './useScrollCapture';
+
+export interface StickyNoteNodeProps extends NodeProps {
+  data: StickyNoteData;
+  placeholder?: string;
+  renderPlaceholderOnSelect?: boolean;
+  readOnly?: boolean;
+  onContentChange?: (content: string) => void;
+  onColorChange?: (color: StickyNoteColor) => void;
+  onResize?: (width: number, height: number) => void;
+  onResizeStart?: () => void;
+  onResizeEnd?: () => void;
+  /** Enables Apollo's built-in image, YouTube, and public-video embedding experience. */
+  enableMediaEmbedding?: boolean;
+  formattingActions?: readonly StickyNoteFormattingAction[];
+  markdownComponents?: Omit<Components, 'a'>;
+}
+
+type MediaDialogState =
+  | {
+      source: 'editor';
+      context: StickyNoteEditorActionContext;
+      token: StickyNoteMediaToken | null;
+    }
+  | { source: 'rendered'; token: StickyNoteMediaToken };
+
+const minWidth = GRID_SPACING * 8;
+const minHeight = GRID_SPACING * 8;
+
+const StickyNoteNodeComponent = ({
+  id,
+  data,
+  selected,
+  dragging,
+  placeholder = 'Add text',
+  renderPlaceholderOnSelect = false,
+  readOnly: readOnlyProp,
+  onContentChange,
+  onColorChange,
+  onResize,
+  onResizeStart,
+  onResizeEnd,
+  enableMediaEmbedding: enableMediaEmbeddingProp,
+  formattingActions,
+  markdownComponents: customMarkdownComponents,
+}: StickyNoteNodeProps) => {
+  const { _ } = useSafeLingui();
+  const canvasOptions = useStickyNoteCanvasOptions();
+  const isNodeReadOnly = useIsNodeReadOnly(id);
+  // Sticky-note-level only; node-level read-only is combined below.
+  const stickyNoteReadOnly = readOnlyProp ?? canvasOptions.readOnly;
+  const readOnly = isNodeReadOnly || stickyNoteReadOnly;
+  const enableMediaEmbedding = enableMediaEmbeddingProp ?? canvasOptions.enableMediaEmbedding;
+  const { updateNodeData, deleteElements } = useReactFlow();
+  const { multipleNodesSelected } = useSelectionState();
+  const [isEditing, setIsEditing] = useState(!readOnly && (data.autoFocus ?? false));
+  const [isResizing, setIsResizing] = useState(false);
+  const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
+  const [mediaDialog, setMediaDialog] = useState<MediaDialogState | null>(null);
+  const [localContent, setLocalContent] = useState(data.content || '');
+  const latestContentRef = useRef(localContent);
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
+  const formattingToolbarRef = useRef<HTMLDivElement>(null);
+  const skipBlurRef = useRef<string | null>(null);
+  const resizeActiveRef = useRef(false);
+  const readOnlyRef = useLatestRef(readOnly);
+  const resizeLifecycle = {
+    content: data.content,
+    id,
+    isEditing,
+    localContent,
+    onContentChange,
+    onResize,
+    onResizeEnd,
+    onResizeStart,
+    readOnly,
+    updateNodeData,
+  };
+  const resizeLifecycleRef = useLatestRef(resizeLifecycle);
+  const { ref: markdownRef, scrollCaptureProps } = useScrollCapture();
+  const colorButtonRef = useRef<HTMLDivElement>(null);
+  const [activeFormats, setActiveFormats] = useState<ActiveFormats>({
+    bold: false,
+    italic: false,
+    strikethrough: false,
+    bulletList: false,
+    numberedList: false,
+  });
+
+  const colorKey = (data.color || 'yellow') as StickyNoteColor;
+  const color = STICKY_NOTE_COLORS[colorKey] ?? STICKY_NOTE_COLORS.yellow;
+  const colorWithAlpha = withAlpha(color);
+
+  const endResizeLifecycle = useCallback(() => {
+    if (!resizeActiveRef.current) return;
+    resizeActiveRef.current = false;
+    setIsResizing(false);
+    const latestOnResizeEnd = resizeLifecycleRef.current.onResizeEnd;
+    if (latestOnResizeEnd) {
+      queueMicrotask(latestOnResizeEnd);
+    }
+  }, [resizeLifecycleRef]);
+
+  const updateLocalContent = useCallback((content: string) => {
+    latestContentRef.current = content;
+    setLocalContent(content);
+  }, []);
+
+  useEffect(() => {
+    updateLocalContent(data.content || '');
+  }, [data.content, updateLocalContent]);
+
+  // Handle autoFocus - focus textarea when entering edit mode
+  useEffect(() => {
+    if (isEditing && textAreaRef.current) {
+      textAreaRef.current.focus();
+      textAreaRef.current.select();
+    }
+    // Clear autoFocus from data after initial focus to prevent re-focusing on re-renders
+    if (!readOnly && data.autoFocus) {
+      updateNodeData(id, { autoFocus: false });
+    }
+  }, [isEditing, data.autoFocus, id, updateNodeData, readOnly]);
+
+  useEffect(() => {
+    if (!selected || dragging || isResizing || multipleNodesSelected) {
+      setIsColorPickerOpen(false);
+    }
+  }, [selected, dragging, isResizing, multipleNodesSelected]);
+
+  useEffect(() => {
+    if (readOnly) {
+      setIsEditing(false);
+      setIsColorPickerOpen(false);
+      updateLocalContent(data.content || '');
+    }
+  }, [readOnly, data.content, updateLocalContent]);
+
+  const handleDoubleClick = useCallback(() => {
+    if (readOnly || isEditing) return;
+    setIsEditing(true);
+    setTimeout(() => {
+      if (textAreaRef.current) {
+        textAreaRef.current.focus();
+        textAreaRef.current.select();
+      }
+    }, 0);
+  }, [isEditing, readOnly]);
+
+  const handleBlur = useCallback(
+    (event: React.FocusEvent<HTMLElement>) => {
+      const nextTarget = event.relatedTarget;
+      if (
+        nextTarget instanceof Node &&
+        (textAreaRef.current?.contains(nextTarget) ||
+          formattingToolbarRef.current?.contains(nextTarget))
+      ) {
+        return;
+      }
+
+      setIsEditing(false);
+      if (readOnly) return;
+
+      const content = textAreaRef.current?.value ?? localContent;
+      if (skipBlurRef.current === content) {
+        skipBlurRef.current = null;
+        return;
+      }
+
+      if (content !== data.content) {
+        onContentChange?.(content);
+        updateNodeData(id, { content });
+      }
+    },
+    [id, localContent, data.content, updateNodeData, onContentChange, readOnly]
+  );
+
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      skipBlurRef.current = null;
+      updateLocalContent(e.target.value);
+    },
+    [updateLocalContent]
+  );
+
+  const handleFormat = useCallback(
+    (result: TextSelection) => {
+      updateLocalContent(result.value);
+      setActiveFormats(detectActiveFormats(result));
+      requestAnimationFrame(() => {
+        if (textAreaRef.current) {
+          textAreaRef.current.selectionStart = result.selectionStart;
+          textAreaRef.current.selectionEnd = result.selectionEnd;
+        }
+      });
+    },
+    [updateLocalContent]
+  );
+
+  const handleFormattingAction = useCallback(
+    (action: StickyNoteFormattingAction, anchorRect: DOMRectReadOnly) => {
+      const textarea = textAreaRef.current;
+      if (!textarea) return;
+
+      const selection = readTextSelection(textarea);
+      skipBlurRef.current = selection.value;
+      let completed = false;
+
+      const restoreSelection = (next: TextSelection) => {
+        if (readOnlyRef.current) return;
+        setIsEditing(true);
+        requestAnimationFrame(() => {
+          const currentTextarea = textAreaRef.current;
+          if (!currentTextarea) return;
+
+          const length = next.value.length;
+          currentTextarea.focus();
+          currentTextarea.selectionStart = Math.max(0, Math.min(length, next.selectionStart));
+          currentTextarea.selectionEnd = Math.max(0, Math.min(length, next.selectionEnd));
+        });
+      };
+
+      const complete = (next: TextSelection, shouldPersist: boolean) => {
+        if (completed) return;
+        completed = true;
+        if (readOnlyRef.current) {
+          skipBlurRef.current = null;
+          return;
+        }
+        skipBlurRef.current = shouldPersist ? next.value : null;
+        setActiveFormats(detectActiveFormats(next));
+        if (shouldPersist) {
+          updateLocalContent(next.value);
+          onContentChange?.(next.value);
+          updateNodeData(id, { content: next.value });
+        }
+        restoreSelection(next);
+      };
+
+      try {
+        action.onAction({
+          selection,
+          anchorRect,
+          currentValue: () => textAreaRef.current?.value ?? latestContentRef.current,
+          commit: (next) => complete(next, true),
+          resume: () => {
+            const currentValue = textAreaRef.current?.value ?? latestContentRef.current;
+            complete({ ...selection, value: currentValue }, false);
+          },
+        });
+      } catch (error) {
+        if (!completed) {
+          completed = true;
+          skipBlurRef.current = null;
+          restoreSelection(selection);
+        }
+        throw error;
+      }
+    },
+    [id, onContentChange, readOnlyRef, updateLocalContent, updateNodeData]
+  );
+
+  const openMediaDialog = useCallback((context: StickyNoteEditorActionContext) => {
+    const { selection } = context;
+    setMediaDialog({
+      source: 'editor',
+      context,
+      token: findStickyNoteMediaAtSelection(
+        selection.value,
+        selection.selectionStart,
+        selection.selectionEnd
+      ),
+    });
+  }, []);
+
+  const mediaFormattingAction = useMemo<StickyNoteFormattingAction>(
+    () => ({
+      id: 'sticky-note-embed-media',
+      icon: <CanvasIcon icon="image-plus" size={14} />,
+      label: _({
+        id: 'sticky-note.media.embed-action',
+        message: 'Embed image or video',
+      }),
+      onAction: openMediaDialog,
+    }),
+    [_, openMediaDialog]
+  );
+
+  const effectiveFormattingActions = useMemo<readonly StickyNoteFormattingAction[]>(
+    () =>
+      enableMediaEmbedding
+        ? [mediaFormattingAction, ...(formattingActions ?? [])]
+        : (formattingActions ?? []),
+    [enableMediaEmbedding, formattingActions, mediaFormattingAction]
+  );
+
+  const handleEditRenderedMedia = useCallback(
+    (media: StickyNoteMedia, range: StickyNoteMediaSourceRange) => {
+      const sourceContent = latestContentRef.current;
+      const renderedTokens = parseStickyNoteMediaTokens(preserveNewlines(sourceContent));
+      const renderedIndex = renderedTokens.findIndex(
+        (token) => token.start === range.start && token.end === range.end
+      );
+      const sourceToken =
+        renderedIndex >= 0 ? parseStickyNoteMediaTokens(sourceContent)[renderedIndex] : undefined;
+      setMediaDialog({ source: 'rendered', token: sourceToken ?? { media, ...range } });
+    },
+    []
+  );
+
+  const cancelMediaDialog = useCallback(() => {
+    const current = mediaDialog;
+    setMediaDialog(null);
+    if (current?.source === 'editor') current.context.resume();
+  }, [mediaDialog]);
+
+  useEffect(() => {
+    if (!mediaDialog || (enableMediaEmbedding && !readOnly)) return;
+
+    setMediaDialog(null);
+    skipBlurRef.current = null;
+    if (!readOnly && mediaDialog.source === 'editor') mediaDialog.context.resume();
+  }, [enableMediaEmbedding, mediaDialog, readOnly]);
+
+  const submitMediaDialog = useCallback(
+    (media: StickyNoteMedia) => {
+      if (!mediaDialog) return;
+
+      const block = serializeStickyNoteMedia(media);
+      if (mediaDialog.source === 'editor') {
+        const currentValue = mediaDialog.context.currentValue();
+        const next = mediaDialog.token
+          ? (replaceStickyNoteMedia(currentValue, mediaDialog.token, block) ??
+            insertStickyNoteMedia(currentValue, block, null))
+          : insertStickyNoteMedia(currentValue, block, mediaDialog.context.selection);
+        setMediaDialog(null);
+        mediaDialog.context.commit(next);
+        return;
+      }
+
+      const currentValue = latestContentRef.current;
+      const next =
+        replaceStickyNoteMedia(currentValue, mediaDialog.token, block) ??
+        insertStickyNoteMedia(currentValue, block, null);
+      setMediaDialog(null);
+      updateLocalContent(next.value);
+      onContentChange?.(next.value);
+      updateNodeData(id, { content: next.value });
+    },
+    [id, mediaDialog, onContentChange, updateLocalContent, updateNodeData]
+  );
+
+  const updateActiveFormats = useCallback(() => {
+    if (!textAreaRef.current) return;
+    const next = detectActiveFormats({
+      value: textAreaRef.current.value,
+      selectionStart: textAreaRef.current.selectionStart,
+      selectionEnd: textAreaRef.current.selectionEnd,
+    });
+    setActiveFormats((prev) => (activeFormatsEqual(prev, next) ? prev : next));
+  }, []);
+
+  const shortcutKeyDown = useMarkdownShortcuts(textAreaRef, handleFormat);
+
+  // Handle key down for saving on Enter (optional, depends on UX preference)
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key === 'Escape') {
+        skipBlurRef.current = textAreaRef.current?.value ?? localContent;
+        setIsEditing(false);
+        updateLocalContent(data.content || '');
+        textAreaRef.current?.blur();
+        return;
+      }
+      if (e.key === 'Enter' && !e.shiftKey && !e.metaKey && !e.ctrlKey) {
+        const textarea = textAreaRef.current;
+        if (textarea) {
+          const result = continueListOnEnter({
+            value: textarea.value,
+            selectionStart: textarea.selectionStart,
+            selectionEnd: textarea.selectionEnd,
+          });
+          if (result) {
+            e.preventDefault();
+            handleFormat(result);
+          }
+        }
+        return;
+      }
+      shortcutKeyDown(e);
+    },
+    [data.content, localContent, shortcutKeyDown, handleFormat, updateLocalContent]
+  );
+
+  // Resize handlers
+  const handleResizeStart = useCallback(() => {
+    if (resizeActiveRef.current) return;
+    resizeActiveRef.current = true;
+    const lifecycle = resizeLifecycleRef.current;
+    if (lifecycle.isEditing) {
+      const content = textAreaRef.current?.value ?? lifecycle.localContent;
+
+      if (!lifecycle.readOnly && content !== lifecycle.content) {
+        skipBlurRef.current = content;
+        flushSync(() => {
+          lifecycle.onContentChange?.(content);
+          lifecycle.updateNodeData(lifecycle.id, { content });
+        });
+      }
+
+      textAreaRef.current?.blur();
+    }
+    setIsResizing(true);
+    lifecycle.onResizeStart?.();
+  }, [resizeLifecycleRef]);
+
+  const handleResizeEnd = useCallback(
+    (_event: ResizeDragEvent, params: ResizeParams) => {
+      if (!resizeActiveRef.current) return;
+      try {
+        resizeLifecycleRef.current.onResize?.(params.width, params.height);
+      } finally {
+        endResizeLifecycle();
+      }
+    },
+    [endResizeLifecycle, resizeLifecycleRef]
+  );
+
+  // Color change handler
+  const handleColorChange = useCallback(
+    (newColor: StickyNoteColor) => {
+      if (readOnly) return;
+      onColorChange?.(newColor);
+      updateNodeData(id, { color: newColor });
+      setIsColorPickerOpen(false);
+    },
+    [id, updateNodeData, onColorChange, readOnly]
+  );
+
+  // Toggle color picker
+  const handleToggleColorPicker = useCallback(() => {
+    if (readOnly) return;
+    setIsColorPickerOpen((prev) => !prev);
+  }, [readOnly]);
+
+  // Handle edit button click
+  const handleEditClick = useCallback(() => {
+    if (readOnly) return;
+    setIsEditing(true);
+    setTimeout(() => {
+      if (textAreaRef.current) {
+        textAreaRef.current.focus();
+        textAreaRef.current.select();
+      }
+    }, 0);
+  }, [readOnly]);
+
+  const handleDelete = useCallback(() => {
+    if (readOnly) return;
+    deleteElements({ nodes: [{ id }] });
+  }, [id, deleteElements, readOnly]);
+
+  // Custom markdown components to handle link clicks properly in React Flow nodes
+  const builtInMarkdownComponents = useMemo<Components>(
+    () => ({
+      a: ({ node: _node, href, children, ...props }) => (
+        <a
+          {...props}
+          className={['nodrag', 'nopan', props.className].filter(Boolean).join(' ')}
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          onPointerDown={(event) => event.stopPropagation()}
+          onMouseDown={(event) => event.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+          onDoubleClick={(e) => {
+            e.stopPropagation();
+          }}
+        >
+          {children}
+        </a>
+      ),
+    }),
+    []
+  );
+
+  const mediaMarkdownComponents = useMemo(
+    () => createStickyNoteMediaMarkdownComponents(customMarkdownComponents?.img),
+    [customMarkdownComponents?.img]
+  );
+
+  const markdownComponents = useMemo<Components>(
+    () => ({
+      ...customMarkdownComponents,
+      ...(enableMediaEmbedding ? mediaMarkdownComponents : {}),
+      ...builtInMarkdownComponents,
+    }),
+    [
+      builtInMarkdownComponents,
+      customMarkdownComponents,
+      enableMediaEmbedding,
+      mediaMarkdownComponents,
+    ]
+  );
+
+  const mediaMarkdownOptions = useMemo(
+    () => ({
+      editable: enableMediaEmbedding && selected && !readOnly,
+      onEditMedia: handleEditRenderedMedia,
+    }),
+    [enableMediaEmbedding, handleEditRenderedMedia, readOnly, selected]
+  );
+
+  // Build toolbar config with only Edit and Color buttons
+  const toolbarConfig = useMemo(() => {
+    const actions: ToolbarAction[] = [
+      {
+        id: 'delete',
+        icon: <CanvasIcon icon="trash" size={14} />,
+        label: _({ id: 'sticky-note.toolbar.delete', message: 'Delete' }),
+        onAction: handleDelete,
+      },
+      {
+        id: 'edit',
+        icon: <CanvasIcon icon="pencil" size={14} />,
+        label: _({ id: 'sticky-note.toolbar.edit', message: 'Edit' }),
+        onAction: handleEditClick,
+      },
+      { id: 'separator' },
+      {
+        id: 'color',
+        icon: (
+          <div
+            ref={colorButtonRef}
+            style={{
+              width: '16px',
+              height: '16px',
+              borderRadius: '50%',
+              backgroundColor: color,
+              border: '1px solid transparent',
+            }}
+          />
+        ),
+        label: _({ id: 'sticky-note.toolbar.color', message: 'Color' }),
+        onAction: handleToggleColorPicker,
+      },
+    ];
+    return {
+      actions,
+      overflowActions: [],
+      overflowLabel: '',
+      position: 'top' as const,
+      align: 'center' as const,
+    };
+  }, [_, handleEditClick, handleToggleColorPicker, color, handleDelete]);
+
+  const effectiveToolbarConfig = useMemo(
+    () => (isNodeReadOnly ? lockToolbarConfig(toolbarConfig) : toolbarConfig),
+    [isNodeReadOnly, toolbarConfig]
+  );
+
+  // A per-node lock keeps the toolbar with every action disabled, matching
+  // BaseNode. The sticky-note-level `readOnly` prop/option predates that
+  // contract and still hides the toolbar outright.
+  const shouldRenderToolbarOverlay =
+    !stickyNoteReadOnly && selected && !dragging && !isResizing && !multipleNodesSelected;
+  // XYFlow's active D3 gesture owns external listeners, so keep its controls mounted until resize end.
+  const shouldRenderResizeControls = !readOnly || isResizing;
+
+  return (
+    <>
+      <Global styles={stickyNoteGlobalStyles} />
+      <StickyNoteWrapper data-sticky-note>
+        {shouldRenderResizeControls && (
+          <>
+            {/* Top-left resize control */}
+            <NodeResizeControl
+              style={{
+                background: 'transparent',
+                border: 'none',
+                pointerEvents: readOnly ? 'none' : undefined,
+                zIndex: RESIZE_CONTROL_Z_INDEX,
+              }}
+              position="top-left"
+              minWidth={minWidth}
+              minHeight={minHeight}
+              onResizeStart={handleResizeStart}
+              onResizeEnd={handleResizeEnd}
+            >
+              <ResizeHandle selected={selected && !readOnly} cursor="nwse-resize" />
+            </NodeResizeControl>
+
+            {/* Top-right resize control */}
+            <NodeResizeControl
+              style={{
+                background: 'transparent',
+                border: 'none',
+                pointerEvents: readOnly ? 'none' : undefined,
+                zIndex: RESIZE_CONTROL_Z_INDEX,
+              }}
+              position="top-right"
+              minWidth={minWidth}
+              minHeight={minHeight}
+              onResizeStart={handleResizeStart}
+              onResizeEnd={handleResizeEnd}
+            >
+              <ResizeHandle selected={selected && !readOnly} cursor="nesw-resize" />
+            </NodeResizeControl>
+
+            {/* Bottom-left resize control */}
+            <NodeResizeControl
+              style={{
+                background: 'transparent',
+                border: 'none',
+                pointerEvents: readOnly ? 'none' : undefined,
+                zIndex: RESIZE_CONTROL_Z_INDEX,
+              }}
+              position="bottom-left"
+              minWidth={minWidth}
+              minHeight={minHeight}
+              onResizeStart={handleResizeStart}
+              onResizeEnd={handleResizeEnd}
+            >
+              <ResizeHandle selected={selected && !readOnly} cursor="nesw-resize" />
+            </NodeResizeControl>
+
+            {/* Bottom-right resize control */}
+            <NodeResizeControl
+              style={{
+                background: 'transparent',
+                border: 'none',
+                pointerEvents: readOnly ? 'none' : undefined,
+                zIndex: RESIZE_CONTROL_Z_INDEX,
+              }}
+              position="bottom-right"
+              minWidth={minWidth}
+              minHeight={minHeight}
+              onResizeStart={handleResizeStart}
+              onResizeEnd={handleResizeEnd}
+            >
+              <ResizeHandle selected={selected && !readOnly} cursor="nwse-resize" />
+            </NodeResizeControl>
+          </>
+        )}
+
+        <StickyNoteContainer
+          backgroundColor={colorWithAlpha}
+          borderColor={color}
+          isEditing={isEditing}
+          selected={selected}
+          isReadOnly={readOnly}
+          onDoubleClick={handleDoubleClick}
+        >
+          <TopCornerIndicators visible={selected && !readOnly} />
+          <BottomCornerIndicators visible={selected && !readOnly} />
+          {isEditing ? (
+            <>
+              <StickyNoteTextArea
+                ref={textAreaRef}
+                value={localContent}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                onKeyDown={handleKeyDown}
+                onSelect={updateActiveFormats}
+                onKeyUp={updateActiveFormats}
+                placeholder={placeholder}
+                isEditing={isEditing}
+                className="nodrag nowheel"
+              />
+              <FormattingToolbar
+                containerRef={formattingToolbarRef}
+                textAreaRef={textAreaRef}
+                borderColor={color}
+                activeFormats={activeFormats}
+                onFormat={handleFormat}
+                onBlur={handleBlur}
+                actions={effectiveFormattingActions}
+                onAction={handleFormattingAction}
+              />
+            </>
+          ) : (
+            <StickyNoteMarkdown ref={markdownRef} {...scrollCaptureProps}>
+              <StickyNoteMediaMarkdownProvider value={mediaMarkdownOptions}>
+                {localContent ? (
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm, remarkBreaks]}
+                    components={markdownComponents}
+                  >
+                    {preserveNewlines(localContent)}
+                  </ReactMarkdown>
+                ) : (
+                  // Render placeholder if renderPlaceholderOnSelect is enabled, node is selected, and the content is empty
+                  renderPlaceholderOnSelect &&
+                  selected && (
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm, remarkBreaks]}
+                      components={markdownComponents}
+                    >
+                      {placeholder}
+                    </ReactMarkdown>
+                  )
+                )}
+              </StickyNoteMediaMarkdownProvider>
+            </StickyNoteMarkdown>
+          )}
+        </StickyNoteContainer>
+
+        {shouldRenderToolbarOverlay && (
+          <NodeToolbar
+            nodeId={id}
+            config={effectiveToolbarConfig}
+            expanded={true}
+            portalToNodeOverlay
+          />
+        )}
+        {shouldRenderToolbarOverlay && (
+          <NodeViewportOverlay nodeId={id} layer="nodeToolbar">
+            <AnimatePresence>
+              {isColorPickerOpen && (
+                <div
+                  className="nodrag nopan nowheel"
+                  style={{
+                    position: 'absolute',
+                    top: -40,
+                    left: '50%',
+                    transform: 'translateX(40px)',
+                    zIndex: 1000,
+                    pointerEvents: 'auto',
+                  }}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <ColorPickerPanel
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ duration: 0.15, ease: 'easeOut' }}
+                  >
+                    {Object.keys(STICKY_NOTE_COLORS).map((stickyColorKey) => {
+                      const colorName = stickyColorKey as StickyNoteColor;
+                      return (
+                        <ColorOption
+                          type="button"
+                          key={stickyColorKey}
+                          color={STICKY_NOTE_COLORS[colorName]}
+                          isSelected={colorKey === colorName}
+                          onClick={() => handleColorChange(colorName)}
+                          title={colorName.charAt(0).toUpperCase() + colorName.slice(1)}
+                        />
+                      );
+                    })}
+                  </ColorPickerPanel>
+                </div>
+              )}
+            </AnimatePresence>
+          </NodeViewportOverlay>
+        )}
+      </StickyNoteWrapper>
+      {enableMediaEmbedding && mediaDialog && (
+        <StickyNoteMediaDialog
+          initialMedia={mediaDialog.token?.media}
+          onCancel={cancelMediaDialog}
+          onSubmit={submitMediaDialog}
+        />
+      )}
+    </>
+  );
+};
+
+export const StickyNoteNode = memo(StickyNoteNodeComponent, areNodePropsEqualIgnoringPosition);

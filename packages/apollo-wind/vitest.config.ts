@@ -1,0 +1,61 @@
+import { resolve } from 'path';
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  plugins: [],
+  define: {
+    'globalThis.IS_REACT_ACT_ENVIRONMENT': 'true',
+    'global.IS_REACT_ACT_ENVIRONMENT': 'true',
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    // Interaction-heavy Radix/userEvent suites (rule builder, selects) run
+    // close to vitest's 5s default on slow CI runners; give them headroom.
+    testTimeout: 20000,
+    hookTimeout: 20000,
+    setupFiles: ['./tests/setup.ts'],
+    environmentOptions: {
+      jsdom: {
+        resources: 'usable',
+      },
+    },
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'json-summary', 'html', 'lcov'],
+      exclude: [
+        'node_modules/',
+        'tests/',
+        '**/*.test.ts',
+        '**/*.test.tsx',
+        '**/*.spec.ts',
+        '**/*.spec.tsx',
+        '**/*.stories.tsx',
+        '**/index.ts',
+        'dist/',
+        '.storybook/',
+        'storybook-static/',
+        '*.config.ts',
+        '*.config.js',
+        // Storybook-only demo apps, excluded from the published build (see rslib.config.ts)
+        'src/templates/**',
+      ],
+      include: ['src/**/*.{ts,tsx}'],
+      all: true,
+      // Ratcheting floor: raise toward 80 as coverage grows, never lower it.
+      // Vitest only enforces thresholds nested under `coverage.thresholds`;
+      // top-level lines/functions/... are silently ignored.
+      thresholds: {
+        lines: 60,
+        functions: 63,
+        branches: 54,
+        statements: 58,
+      },
+    },
+  },
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, './src'),
+    },
+  },
+});

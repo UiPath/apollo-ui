@@ -1,0 +1,71 @@
+version: 2
+updates:
+  # npm / pnpm workspace dependencies (root + all workspaces auto-discovered)
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Los_Angeles
+    open-pull-requests-limit: 10
+    versioning-strategy: increase-if-necessary
+    labels:
+      - dependencies
+    commit-message:
+      prefix: chore(deps)
+      prefix-development: chore(deps-dev)
+      include: scope
+    # Major version bumps handled manually — Dependabot only opens minor/patch PRs.
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-major
+    groups:
+      production-minor-patch:
+        dependency-type: production
+        update-types:
+          - minor
+          - patch
+      development-minor-patch:
+        dependency-type: development
+        update-types:
+          - minor
+          - patch
+
+      # Bundle security PRs (otherwise each alert opens an individual PR).
+      security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  # GitHub Actions — pinned by SHA, so updates come through as SHA bumps with tag-comment hints.
+  # Major version bumps are ignored here — handle manually one major at a time to avoid
+  # skipping intermediate releases and missing breaking changes or security fixes.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Los_Angeles
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - github-actions
+    commit-message:
+      prefix: chore(ci)
+      include: scope
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-major
+    groups:
+      actions-minor-patch:
+        update-types:
+          - minor
+          - patch
+      security:
+        applies-to: security-updates
+        patterns:
+          - "*"

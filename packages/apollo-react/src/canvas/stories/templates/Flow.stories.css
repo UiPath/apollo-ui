@@ -1,0 +1,62 @@
+.canvas-template-dockview,
+.canvas-template-dockview
+  :where(
+    .dv-tabs-and-actions-container,
+    .dv-groupview,
+    .dv-tab,
+    .dv-tabs-container,
+    .dv-void-container
+  ) {
+  --dv-background-color: var(--surface);
+  --dv-paneview-active-outline-color: transparent;
+  --dv-group-view-background-color: var(--surface-raised);
+  --dv-tabs-and-actions-container-background-color: var(--surface-raised);
+  --dv-activegroup-visiblepanel-tab-background-color: var(--surface-raised);
+  --dv-activegroup-hiddenpanel-tab-background-color: var(--surface-raised);
+  --dv-inactivegroup-visiblepanel-tab-background-color: var(--surface-raised);
+  --dv-inactivegroup-hiddenpanel-tab-background-color: var(--surface-raised);
+  --dv-tab-background-color: transparent;
+  --dv-activegroup-visiblepanel-tab-color: var(--foreground);
+  --dv-activegroup-hiddenpanel-tab-color: var(--foreground-muted);
+  --dv-inactivegroup-visiblepanel-tab-color: var(--foreground);
+  --dv-inactivegroup-hiddenpanel-tab-color: var(--foreground-muted);
+  --dv-separator-border: var(--border-subtle);
+  --dv-tab-divider-color: transparent;
+  --dv-drag-over-border: 2px solid var(--primary);
+  --dv-drag-over-background-color: color-mix(in srgb, var(--primary) 16%, transparent);
+  --dv-active-sash-color: var(--primary);
+  --dv-icon-hover-background-color: var(--surface-hover);
+  --dv-border-radius: 0;
+  --dv-tabs-and-actions-container-height: 36px;
+}
+
+.canvas-template-dockview .dv-groupview {
+  background: var(--surface-raised);
+  border: 1px solid var(--border-subtle);
+  overflow: hidden;
+}
+
+.canvas-template-dockview .dv-tabs-and-actions-container {
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 0 2px;
+}
+
+.canvas-template-dockview .dv-tab {
+  height: 32px;
+  margin: 2px;
+  padding: 0 10px;
+  border-radius: 8px;
+  color: var(--foreground-muted);
+  cursor: grab;
+}
+
+.canvas-template-dockview .dv-tab:hover,
+.canvas-template-dockview .dv-tab.dv-active-tab {
+  background: var(--surface-overlay);
+  color: var(--foreground);
+}
+
+.canvas-template-dockview .dv-sash:hover,
+.canvas-template-dockview .dv-sash:active {
+  background: var(--primary);
+}

@@ -1,0 +1,101 @@
+import { Callout } from 'nextra/components'
+import { SonnerExamples } from '@/app/guidelines/notifications/in-product/notification-examples';
+
+# Sonner
+
+An opinionated toast component for React.
+
+<Callout type="info">
+  For guidance on when to use Sonner vs. Alert, placement rules, and content guidelines, see the [In-product notification](/patterns/notifications/in-product) pattern.
+</Callout>
+
+<div className="p-4 border rounded-lg mt-4">
+  <SonnerExamples />
+</div>
+
+## Installation
+
+```bash
+npx shadcn@latest add @uipath/sonner
+```
+
+Add the `<Toaster />` component once to your app root. Status colors, icons, close button, and positioning are included by default:
+
+```tsx
+import { Toaster } from "@/components/ui/sonner"
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en">
+      <body>
+        {children}
+        <Toaster />
+      </body>
+    </html>
+  )
+}
+```
+
+## Usage
+
+```tsx
+import { toast } from "sonner"
+```
+
+```tsx
+toast.info("Background sync complete", {
+  description: "All data is up to date.",
+})
+
+toast.success("Changes saved", {
+  description: "Your updates have been applied.",
+})
+
+toast.warning("Storage almost full", {
+  description: "Consider removing unused files.",
+})
+
+toast.error("Upload failed", {
+  description: "Please check your connection and retry.",
+})
+```
+
+## Toaster props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `position` | `ToasterProps["position"]` | `"top-center"` | Position of the toast stack on screen |
+| `duration` | `number` | `5000` | Auto-dismiss delay in milliseconds |
+| `closeButton` | `boolean` | `true` | Show a close button on each toast |
+| `theme` | `"light" \| "dark" \| "system"` | `"system"` | Color theme — defaults to the current app theme via `next-themes` |
+| `toastOptions` | `ToasterProps["toastOptions"]` | — | Global options applied to all toasts (classNames, style, etc.) |
+
+## Toast function options
+
+```tsx
+toast.info("Title", {
+  description: "Supporting message.",
+  action: {
+    label: "Undo",
+    onClick: () => {},
+  },
+})
+```
+
+| Option | Type | Description |
+|---|---|---|
+| `description` | `string` | Secondary text below the title |
+| `action` | `{ label: string; onClick: () => void }` | Action button rendered inside the toast |
+| `onDismiss` | `(toast) => void` | Callback when the toast is dismissed |
+| `onAutoClose` | `(toast) => void` | Callback when the toast auto-closes |
+
+## Custom toast styles
+
+If you need to apply the Apollo status styles to your own `Toaster` instance, import `apolloToastClassNames`:
+
+```tsx
+import { Toaster } from "sonner"
+import { apolloToastClassNames } from "@/components/ui/sonner"
+
+<Toaster toastOptions={{ classNames: apolloToastClassNames }} />
+```

@@ -1,0 +1,29 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Build outputs
+dist
+build
+.next
+out
+storybook-static
+
+# Testing
+coverage
+test-results
+playwright-report
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+
+# Cache
+.cache
+.turbo
+
+# Generated files
+packages/apollo-react/src/icons

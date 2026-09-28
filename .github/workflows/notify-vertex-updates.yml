@@ -1,0 +1,31 @@
+name: Notify Vertex Component Updates
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/apollo-vertex/registry/**"
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    name: Notify changed registry components
+    runs-on: uipath-ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install Node dependencies
+        uses: ./.github/actions/install-node-deps
+
+      - name: Notify changed components
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+          AFTER_SHA: ${{ github.event.after }}
+          API_KEY: ${{ secrets.VERTEX_TRACKER_API_KEY }}
+        run: pnpm notifyUpdates

@@ -1,0 +1,214 @@
+import type { Meta } from '@storybook/react-vite';
+import * as React from 'react';
+import { Search, SearchWithSuggestions } from './search';
+
+const meta = {
+  title: 'Components/Navigation/Search',
+  component: Search,
+  parameters: {
+    layout: 'centered',
+  },
+  tags: ['autodocs'],
+} satisfies Meta<typeof Search>;
+
+export default meta;
+
+export const Default = {
+  args: {},
+  render: () => {
+    const [value, setValue] = React.useState('');
+    return (
+      <div className="w-[400px]">
+        <Search placeholder="Search..." value={value} onChange={setValue} />
+      </div>
+    );
+  },
+};
+
+export const WithValue = {
+  args: {},
+  render: () => {
+    const [value, setValue] = React.useState('React components');
+    return (
+      <div className="w-[400px]">
+        <Search placeholder="Search..." value={value} onChange={setValue} />
+      </div>
+    );
+  },
+};
+
+export const NoClearButton = {
+  args: {},
+  render: () => {
+    const [value, setValue] = React.useState('');
+    return (
+      <div className="w-[400px]">
+        <Search placeholder="Search..." value={value} onChange={setValue} showClearButton={false} />
+      </div>
+    );
+  },
+};
+
+export const WithSuggestions = {
+  args: {},
+  render: () => {
+    const [value, setValue] = React.useState('');
+    const suggestions = [
+      'React',
+      'React Native',
+      'React Router',
+      'Redux',
+      'TypeScript',
+      'JavaScript',
+      'Next.js',
+      'Node.js',
+      'Tailwind CSS',
+      'Vue.js',
+      'Angular',
+      'Svelte',
+    ];
+
+    return (
+      <div className="w-[400px]">
+        <SearchWithSuggestions
+          placeholder="Search frameworks..."
+          value={value}
+          onChange={setValue}
+          suggestions={suggestions}
+          onSelect={(selected) => console.log('Selected:', selected)}
+        />
+      </div>
+    );
+  },
+};
+
+export const WithCustomEmptyMessage = {
+  args: {},
+  render: () => {
+    const [value, setValue] = React.useState('');
+    const suggestions = ['Apple', 'Banana', 'Cherry'];
+
+    return (
+      <div className="w-[400px]">
+        <SearchWithSuggestions
+          placeholder="Search fruits..."
+          value={value}
+          onChange={setValue}
+          suggestions={suggestions}
+          emptyMessage="No fruits match your search."
+        />
+      </div>
+    );
+  },
+};
+
+export const SearchUsers = {
+  args: {},
+  render: () => {
+    const [value, setValue] = React.useState('');
+    const users = [
+      'John Doe',
+      'Jane Smith',
+      'Bob Johnson',
+      'Alice Williams',
+      'Charlie Brown',
+      'Diana Prince',
+      'Eve Anderson',
+      'Frank Miller',
+    ];
+
+    return (
+      <div className="w-[400px]">
+        <SearchWithSuggestions
+          placeholder="Search users..."
+          value={value}
+          onChange={setValue}
+          suggestions={users}
+          emptyMessage="No users found."
+        />
+        {value && <p className="mt-2 text-sm text-muted-foreground">Searching for: {value}</p>}
+      </div>
+    );
+  },
+};
+
+export const Interactive = {
+  args: {},
+  render: () => {
+    const [value, setValue] = React.useState('');
+    const [results, setResults] = React.useState<string[]>([]);
+
+    const allItems = [
+      'Dashboard',
+      'Analytics',
+      'Reports',
+      'Settings',
+      'Profile',
+      'Team Members',
+      'Projects',
+      'Tasks',
+      'Calendar',
+      'Messages',
+      'Notifications',
+      'Documents',
+    ];
+
+    React.useEffect(() => {
+      if (value) {
+        const filtered = allItems.filter((item) =>
+          item.toLowerCase().includes(value.toLowerCase())
+        );
+        setResults(filtered);
+      } else {
+        setResults([]);
+      }
+    }, [value]);
+
+    return (
+      <div className="w-[400px] space-y-4">
+        <SearchWithSuggestions
+          placeholder="Search pages..."
+          value={value}
+          onChange={setValue}
+          suggestions={allItems}
+          onSelect={(selected) => {
+            alert(`Navigating to ${selected}`);
+          }}
+        />
+        {value && results.length > 0 && (
+          <div className="rounded-lg border p-4">
+            <p className="mb-2 text-sm font-medium">
+              Found {results.length} result{results.length === 1 ? '' : 's'}
+            </p>
+            <ul className="space-y-1 text-sm text-muted-foreground">
+              {results.slice(0, 3).map((result) => (
+                <li key={result}>• {result}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    );
+  },
+};
+
+export const WithInlineValidation = {
+  render: () => (
+    <div className="w-[320px]">
+      <Search
+        aria-label="Search stages"
+        value="ab"
+        onChange={() => {}}
+        error="Enter at least 3 characters to search."
+      />
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Inline validation stays beside the control so the issue and resolution are clear in context. The search field exposes `aria-invalid` and associates the visible message with `aria-describedby` and `aria-errormessage` automatically.',
+      },
+    },
+  },
+};

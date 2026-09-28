@@ -1,0 +1,151 @@
+"use client";
+
+import { type ReactNode, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+
+type Phase = "logo" | "skeleton" | "done";
+
+interface DashboardLoadingProps {
+  children: ReactNode;
+  triggerReplay?: number;
+}
+
+function LogoPhase({ exiting }: { exiting: boolean }) {
+  const { t } = useTranslation();
+
+  return (
+    <div
+      className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-500 ${
+        exiting ? "opacity-0 scale-95" : "opacity-100 scale-100"
+      }`}
+    >
+      {/* Morphing glow */}
+      <div className="absolute">
+        <div className="size-40 rounded-full bg-gradient-to-br from-insight-500/30 to-primary-400/30 blur-3xl animate-pulse" />
+      </div>
+      <div className="absolute">
+        <div
+          className="size-32 rounded-full bg-gradient-to-tr from-primary-400/20 to-insight-500/20 blur-2xl"
+          style={{ animation: "morph 4s ease-in-out infinite" }}
+        />
+      </div>
+
+      {/* App icon */}
+      <div className="relative size-16 rounded-2xl bg-gradient-to-br from-insight-500 to-primary-400 border-2 border-white/10 flex items-center justify-center shadow-lg">
+        <img
+          src="/UiPath.svg"
+          alt="UiPath"
+          className="size-8 brightness-0 invert"
+        />
+      </div>
+
+      {/* Loading text */}
+      <p className="mt-6 text-sm text-muted-foreground animate-pulse">
+        {t("creating_your_overview")}
+      </p>
+
+      <style>{`
+        @keyframes morph {
+          0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; transform: rotate(0deg) scale(1); }
+          25% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; transform: rotate(45deg) scale(1.1); }
+          50% { border-radius: 50% 60% 30% 60% / 30% 40% 70% 60%; transform: rotate(90deg) scale(0.95); }
+          75% { border-radius: 60% 30% 50% 40% / 70% 50% 40% 60%; transform: rotate(135deg) scale(1.05); }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+function SkeletonPhase({ exiting }: { exiting: boolean }) {
+  return (
+    <div
+      className={`absolute inset-0 p-6 transition-all duration-500 ${
+        exiting ? "opacity-0 scale-[0.99]" : "opacity-100 scale-100"
+      }`}
+    >
+      <div className="space-y-2 mb-6">
+        <div className="h-3 w-32 rounded-full bg-muted animate-pulse" />
+        <div className="h-7 w-64 rounded-full bg-muted animate-pulse" />
+      </div>
+      <div className="grid grid-cols-2 gap-1 h-[calc(100%-80px)]">
+        <div className="flex flex-col gap-1">
+          <div className="flex-1 rounded-2xl bg-muted/50 animate-pulse" />
+          <div className="h-14 rounded-2xl bg-muted/50 animate-pulse" />
+        </div>
+        <div className="grid grid-cols-2 grid-rows-2 gap-1">
+          <div className="rounded-2xl bg-muted/50 animate-pulse" />
+          <div className="rounded-2xl bg-muted/50 animate-pulse" />
+          <div className="rounded-2xl bg-muted/50 animate-pulse" />
+          <div className="rounded-2xl bg-muted/50 animate-pulse" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Plays the logo → skeleton → content intro once, then renders children.
+// It owns its phase state from mount; to replay, the parent gives it a new
+// `key` so it remounts — no resetting state in response to a prop change.
+function LoadingSequence({ children }: { children: ReactNode }) {
+  const [phase, setPhase] = useState<Phase>("logo");
+  const [exiting, setExiting] = useState(false);
+
+  useEffect(() => {
+    if (phase === "done") return;
+
+    let exitTimer: ReturnType<typeof setTimeout>;
+
+    if (phase === "logo") {
+      const enterTimer = setTimeout(() => {
+        setExiting(true);
+        exitTimer = setTimeout(() => {
+          setExiting(false);
+          setPhase("skeleton");
+        }, 500);
+      }, 2000);
+      return () => {
+        clearTimeout(enterTimer);
+        clearTimeout(exitTimer);
+      };
+    }
+
+    const enterTimer = setTimeout(() => {
+      setExiting(true);
+      exitTimer = setTimeout(() => {
+        setPhase("done");
+      }, 500);
+    }, 1000);
+    return () => {
+      clearTimeout(enterTimer);
+      clearTimeout(exitTimer);
+    };
+  }, [phase]);
+
+  if (phase === "done") {
+    return (
+      <div className="animate-in fade-in duration-500 h-full">{children}</div>
+    );
+  }
+
+  return (
+    <div className="relative h-full">
+      {phase === "logo" && <LogoPhase exiting={exiting} />}
+      {phase === "skeleton" && <SkeletonPhase exiting={exiting} />}
+    </div>
+  );
+}
+
+export function DashboardLoading({
+  children,
+  triggerReplay,
+}: DashboardLoadingProps) {
+  // No replay requested — render content directly with the same fade-in the
+  // sequence ends on. Each new `triggerReplay` value remounts the sequence.
+  if (!triggerReplay) {
+    return (
+      <div className="animate-in fade-in duration-500 h-full">{children}</div>
+    );
+  }
+
+  return <LoadingSequence key={triggerReplay}>{children}</LoadingSequence>;
+}

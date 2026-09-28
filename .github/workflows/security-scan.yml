@@ -1,0 +1,65 @@
+name: Security Scan - Workflows
+
+on:
+  pull_request:
+    branches:
+      - main
+      - 'support/**'
+  push:
+    branches:
+      - main
+      - 'support/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Deny-all default; jobs grant the minimum they need.
+permissions: {}
+
+jobs:
+  zizmor:
+    name: Zizmor Security Scan
+    runs-on: uipath-ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          persist-credentials: false
+
+      - name: Run Zizmor Security Scan
+        uses: zizmorcore/zizmor-action@cc914d7f3750a2d13d75c7f184a1060aa0e9d482 # v0.6.4
+        with:
+          advanced-security: true
+          min-confidence: medium
+          min-severity: medium
+          persona: regular
+        env:
+          ZIZMOR_CONFIG: zizmor.yml
+
+  actionlint:
+    name: Actionlint Workflow Syntax Check
+    runs-on: uipath-ubuntu-latest
+    # github-pr-check reporter only surfaces results in PR context; skip on push.
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      checks: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          persist-credentials: false
+
+      - name: Run actionlint
+        # Catches a different class of issues than zizmor (syntax, expression typos, shellcheck on run: blocks).
+        uses: reviewdog/action-actionlint@320fcdd9c860767cf17fab3b20e22e739d5d02b8 # v1.76.0
+        with:
+          reporter: github-pr-check
+          fail_on_error: true

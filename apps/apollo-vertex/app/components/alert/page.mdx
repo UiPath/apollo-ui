@@ -1,0 +1,93 @@
+import { Callout } from 'nextra/components'
+import { AlertOutlineExamples, AlertExamples, CollapsibleAlertExample, ActionAlertExample } from '@/app/guidelines/notifications/in-product/notification-examples'
+
+# Alert
+
+Displays a callout for user attention.
+
+<Callout type="info">
+  For guidance on when to use Alert vs. Sonner, visual style selection, and content guidelines, see the [In-product notification](/patterns/notifications/in-product) pattern.
+</Callout>
+
+### Default (tinted)
+
+Low-opacity status background with neutral title text. Use for persistent messages, from routine updates to blocking errors.
+
+<div className="p-4 border rounded-lg mt-4">
+  <AlertExamples />
+</div>
+
+### Accent (outline)
+
+Status-colored border and icon with default text. Dismissible. Use for contextual warnings and acknowledged states.
+
+<div className="p-4 border rounded-lg mt-4">
+  <AlertOutlineExamples />
+</div>
+
+## Installation
+
+```bash
+npx shadcn@latest add @uipath/alert
+```
+
+## Usage
+
+```tsx
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+```
+
+### Tinted (default)
+
+```tsx
+<Alert status="error" visual="tinted">
+  <OctagonXIcon className="h-4 w-4" />
+  <AlertTitle>Connection failed</AlertTitle>
+  <AlertDescription>
+    Unable to reach the server. Check your network connection and try again.
+  </AlertDescription>
+</Alert>
+```
+
+### Outline
+
+```tsx
+<Alert status="warning" visual="outline">
+  <TriangleAlertIcon className="h-4 w-4" />
+  <AlertTitle>API rate limit approaching</AlertTitle>
+  <AlertDescription>
+    You have used 90% of your monthly API quota. Consider upgrading your plan.
+  </AlertDescription>
+</Alert>
+```
+
+### Dismissible
+
+```tsx
+<Alert status="warning" visual="outline" dismissible onDismiss={() => console.log("dismissed")}>
+  <TriangleAlertIcon className="h-4 w-4" />
+  <AlertTitle>API rate limit approaching</AlertTitle>
+  <AlertDescription>
+    You have used 90% of your monthly API quota. Consider upgrading your plan.
+  </AlertDescription>
+</Alert>
+```
+
+### Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `status` | `"default" \| "warning" \| "error"` | — | Sets the semantic status color |
+| `visual` | `"outline" \| "tinted"` | — | Sets the visual treatment |
+| `variant` | `"default" \| "destructive"` | `"default"` | Legacy shadcn variant (use `status` + `visual` instead) |
+| `dismissible` | `boolean` | `false` | Renders a close button and manages internal visibility |
+| `onDismiss` | `() => void` | — | Callback fired when the alert is dismissed |
+
+## Complex alert patterns (edge cases)
+
+For guidance on when and how to use these patterns, see [In-product notification](/patterns/notifications/in-product#complex-alert-patterns-edge-cases).
+
+<div className="p-4 border rounded-lg mt-4 space-y-3">
+  <CollapsibleAlertExample />
+  <ActionAlertExample />
+</div>

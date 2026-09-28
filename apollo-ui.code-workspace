@@ -1,0 +1,58 @@
+{
+  "folders": [
+    {
+      "name": "🏠 Root",
+      "path": "."
+    },
+    {
+      "name": "├─ apollo-core",
+      "path": "packages/apollo-core"
+    },
+    {
+      "name": "├─ apollo-react",
+      "path": "packages/apollo-react"
+    },
+    {
+      "name": "└─ apollo-wind",
+      "path": "packages/apollo-wind"
+    },
+    {
+      "name": "├─ ap-chat",
+      "path": "web-packages/ap-chat"
+    },
+    {
+      "name": "├─ storybook",
+      "path": "apps/storybook"
+    },
+    {
+      "name": "├─ react-playground",
+      "path": "apps/react-playground"
+    },
+    {
+      "name": "└─ apollo-vertex",
+      "path": "apps/apollo-vertex"
+    }
+  ],
+  "settings": {
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "typescript.enablePromptUseWorkspaceTsdk": true,
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports.biome": "explicit"
+    },
+    "search.exclude": {
+      "**/.next": true,
+      "**/node_modules": true,
+      "**/dist": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "biomejs.biome",
+      "dbaeumer.vscode-eslint",
+      "stylelint.vscode-stylelint",
+      "bradlc.vscode-tailwindcss"
+    ]
+  }
+}

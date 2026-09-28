@@ -1,0 +1,84 @@
+import { pluginReact } from '@rsbuild/plugin-react';
+import type { RslibConfig } from '@rslib/core';
+import { defineConfig } from '@rslib/core';
+
+// Shared externals list to avoid duplication
+const externals = ['react', 'react-dom', 'react/jsx-runtime'];
+
+export default defineConfig({
+  lib: [
+    {
+      format: 'esm',
+      output: {
+        distPath: {
+          root: './dist',
+        },
+        filename: {
+          js: '[name].js',
+        },
+        externals,
+      },
+      dts: {
+        build: true,
+        distPath: './dist',
+      },
+      bundle: false,
+    },
+    {
+      format: 'cjs',
+      output: {
+        distPath: {
+          root: './dist',
+        },
+        filename: {
+          js: '[name].cjs',
+        },
+        externals,
+      },
+      dts: false,
+      bundle: false,
+    },
+  ],
+  source: {
+    entry: {
+      index: [
+        './src/**',
+        '!./src/**/*.test.ts',
+        '!./src/**/*.test.tsx',
+        '!./src/**/*.spec.ts',
+        '!./src/**/*.spec.tsx',
+        '!./src/**/*.stories.ts',
+        '!./src/**/*.stories.tsx',
+        '!./src/**/*.md',
+        '!./src/templates/**',
+        '!./src/styles/**',
+      ],
+      'postcss.config.export': './postcss.config.export.js',
+    },
+  },
+  plugins: [pluginReact()],
+  output: {
+    target: 'web',
+    cleanDistPath: true,
+    copy: [
+      // Copy tailwind.consumer.css to dist/tailwind.css
+      { from: './src/styles/tailwind.consumer.css', to: './tailwind.css' },
+      // tailwind.consumer.css imports this via relative path
+      { from: './src/styles/tailwind.utilities.css', to: './tailwind.utilities.css' },
+      // Re-export apollo-core's fonts at @uipath/apollo-wind/fonts/* without copying the
+      // font binaries: a thin CSS shim that `@import "@uipath/apollo-core/fonts/font.css"`.
+      // apollo-core is a hard dependency, so consumers always have the actual font files.
+      { from: './font-reexport', to: './fonts' },
+    ],
+  },
+  tools: {
+    rspack: {
+      resolve: {
+        extensions: ['.tsx', '.ts', '.jsx', '.js', '.json'],
+        alias: {
+          '@': './src',
+        },
+      },
+    },
+  },
+} satisfies RslibConfig);

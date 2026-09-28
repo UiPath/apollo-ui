@@ -1,0 +1,94 @@
+import { GridColumnViz } from '@/app/_components/foundation/grid-column-viz';
+import { GridPatternDemo } from '@/app/_components/foundation/grid-pattern-demo';
+
+# Grid
+
+Apollo Vertex uses a **12-column layout grid** built on Tailwind CSS 4's grid utilities and the 4px spacing base unit. The grid adapts across three breakpoints, scaling columns, gutters, and margins to the available viewport.
+
+---
+
+## Layout Grid
+
+The layout grid defines the fundamental structure of every page and surface. Columns provide horizontal rhythm, gutters separate content regions, and margins create breathing room from the viewport edges.
+
+### Breakpoint Specs
+
+<div className="not-prose my-6 overflow-x-auto">
+  <table className="w-full text-left">
+    <thead>
+      <tr className="border-b border-border">
+        <th className="pb-2 pr-6 text-xs font-semibold text-foreground uppercase tracking-wide">Breakpoint</th>
+        <th className="pb-2 pr-6 font-mono text-xs font-semibold text-muted-foreground uppercase tracking-wide">Prefix</th>
+        <th className="pb-2 pr-6 font-mono text-xs font-semibold text-muted-foreground uppercase tracking-wide">Min width</th>
+        <th className="pb-2 pr-6 font-mono text-xs font-semibold text-muted-foreground uppercase tracking-wide">Columns</th>
+        <th className="pb-2 pr-6 font-mono text-xs font-semibold text-muted-foreground uppercase tracking-wide">Gutter</th>
+        <th className="pb-2 font-mono text-xs font-semibold text-muted-foreground uppercase tracking-wide">Margin</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="border-b border-border">
+        <td className="py-3 pr-6 text-sm font-medium text-foreground">Mobile</td>
+        <td className="py-3 pr-6 font-mono text-sm text-muted-foreground">—</td>
+        <td className="py-3 pr-6 font-mono text-sm text-muted-foreground">0px</td>
+        <td className="py-3 pr-6 font-mono text-sm font-semibold text-foreground">4</td>
+        <td className="py-3 pr-6 font-mono text-sm text-muted-foreground">16px / gap-4</td>
+        <td className="py-3 font-mono text-sm text-muted-foreground">16px / px-4</td>
+      </tr>
+      <tr className="border-b border-border">
+        <td className="py-3 pr-6 text-sm font-medium text-foreground">Tablet</td>
+        <td className="py-3 pr-6 font-mono text-sm text-muted-foreground">sm:</td>
+        <td className="py-3 pr-6 font-mono text-sm text-muted-foreground">640px</td>
+        <td className="py-3 pr-6 font-mono text-sm font-semibold text-foreground">8</td>
+        <td className="py-3 pr-6 font-mono text-sm text-muted-foreground">16px / gap-4</td>
+        <td className="py-3 font-mono text-sm text-muted-foreground">24px / px-6</td>
+      </tr>
+      <tr className="border-b-0">
+        <td className="py-3 pr-6 text-sm font-medium text-foreground">Desktop</td>
+        <td className="py-3 pr-6 font-mono text-sm text-muted-foreground">lg:</td>
+        <td className="py-3 pr-6 font-mono text-sm text-muted-foreground">1024px</td>
+        <td className="py-3 pr-6 font-mono text-sm font-semibold text-foreground">12</td>
+        <td className="py-3 pr-6 font-mono text-sm text-muted-foreground">16px / gap-4</td>
+        <td className="py-3 font-mono text-sm text-muted-foreground">32px / px-8</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Column Structure
+
+<div className="not-prose my-6 flex flex-col gap-4">
+  <div>
+    <p className="mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Mobile — 4 columns</p>
+    <GridColumnViz cols={4} gutter="16px" margin="16px" />
+  </div>
+  <div>
+    <p className="mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Tablet — 8 columns</p>
+    <GridColumnViz cols={8} gutter="16px" margin="24px" />
+  </div>
+  <div>
+    <p className="mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Desktop — 12 columns</p>
+    <GridColumnViz cols={12} gutter="16px" margin="32px" />
+  </div>
+</div>
+
+---
+
+## Usage
+
+All grid layouts follow the same composition: a container for margins, a grid wrapper for columns and gutters, and child elements spanning one or more columns.
+
+```tsx
+// Standard page layout
+<main className="px-4 sm:px-6 lg:px-8">
+  <div className="grid grid-cols-4 sm:grid-cols-8 lg:grid-cols-12 gap-4">
+    <section className="col-span-4 sm:col-span-5 lg:col-span-8">
+      {/* Main content */}
+    </section>
+    <aside className="col-span-4 sm:col-span-3 lg:col-span-4">
+      {/* Sidebar */}
+    </aside>
+  </div>
+</main>
+```
+
+> Grid gaps use the same 4px base unit as all other spacing. `gap-4` = 16px across all breakpoints.

@@ -1,0 +1,13 @@
+/**
+ * Apollo Wind - Internal Tailwind CSS Entry Point
+ *
+ * This file is used for building the library's pre-compiled styles.
+ * It imports the base theme and adds @source to scan library components.
+ *
+ * For consumers, use @uipath/apollo-wind/tailwind.css which exports the
+ * consumer version without the internal @source directive.
+ */
+
+@import "./tailwind.consumer.css";
+
+@source "../**/*.{js,jsx,ts,tsx}";

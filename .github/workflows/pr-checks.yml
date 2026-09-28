@@ -1,0 +1,273 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+      - 'support/**'
+
+env:
+  BASE_REF: ${{ github.event.pull_request.base.ref }}
+  # Turbo's own GitHub Actions event auto-detection for `--affected` doesn't
+  # reliably resolve the base ref in this repo (falls back to treating every
+  # package as affected, silently running Format/Lint/etc. against the whole
+  # monorepo instead of just what the PR touched). Giving it a concrete SHA
+  # sidesteps the ambiguity entirely -- verified locally that `--affected`
+  # correctly narrows to just the changed packages (+ their dependents) once
+  # this is set, versus all 9 packages without it.
+  TURBO_SCM_BASE: ${{ github.event.pull_request.base.sha }}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Deny-all at the workflow level; each job grants only what it needs. Prevents
+# permission creep if a future job is added without an explicit permissions block.
+permissions: {}
+
+jobs:
+  checks:
+    name: ${{ matrix.check }}
+    runs-on: uipath-ubuntu-latest
+    if: github.event.pull_request.head.repo.fork == false
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        check:
+          - Format
+          - Lint
+          - Lint CSS
+          - Lint Deps
+          - Check Dependency Consistency
+          - Typecheck
+          - Test Coverage
+          - Build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install Node dependencies
+        uses: ./.github/actions/install-node-deps
+
+      - name: Cache Turborepo
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830  # v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-${{ github.ref_name }}-
+
+      - name: Run Format Check
+        if: matrix.check == 'Format'
+        run: pnpm format:check --affected
+
+      - name: Run Lint
+        if: matrix.check == 'Lint'
+        run: pnpm lint --affected
+
+      - name: Run Lint CSS
+        if: matrix.check == 'Lint CSS'
+        run: pnpm lint:css --affected
+
+      - name: Run Lint Deps
+        if: matrix.check == 'Lint Deps'
+        run: pnpm lint:deps --affected
+
+      - name: Run Check Dependency Consistency
+        if: matrix.check == 'Check Dependency Consistency'
+        run: |
+          if [[ "$BASE_REF" == support/* ]]; then
+            echo "Support branch detected - ignoring locked workspace deps"
+            pnpm exec check-dependency-version-consistency . --ignore-dep-pattern "^@uipath/"
+          else
+            pnpm check:dependencies
+          fi
+
+      - name: Run Typecheck
+        if: matrix.check == 'Typecheck'
+        run: pnpm typecheck --affected
+
+      - name: Run Test Coverage
+        if: matrix.check == 'Test Coverage'
+        run: pnpm test:coverage --affected
+
+      - name: Upload Coverage
+        if: matrix.check == 'Test Coverage'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        with:
+          name: coverage
+          path: |
+            packages/*/coverage/
+            web-packages/*/coverage/
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Run Build
+        if: matrix.check == 'Build'
+        run: |
+          if git diff --name-only "origin/${BASE_REF}...HEAD" | grep -qE '^(pnpm-lock\.yaml|package\.json)$'; then
+            echo "📦 Root dependency files changed - building all packages"
+            pnpm build
+          else
+            echo "🎯 Building affected packages only"
+            pnpm build --affected
+          fi
+
+      - name: Collect package sizes
+        if: matrix.check == 'Build'
+        run: node scripts/pr-package-report.cjs --collect-sizes=pkg-sizes.json
+
+      - name: Upload package sizes
+        if: matrix.check == 'Build'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        with:
+          name: package-sizes
+          path: pkg-sizes.json
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Upload Failure Artifacts
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        with:
+          name: failure-${{ matrix.check }}-${{ github.sha }}
+          path: |
+            packages/*/coverage/
+            web-packages/*/coverage/
+          retention-days: 3
+          if-no-files-found: ignore
+
+  # ── Sticky PR comment: per-package coverage + published size ──────────────
+  coverage-comment:
+    name: Coverage Comment
+    needs: checks
+    if: always() && github.event.pull_request.head.repo.fork == false
+    runs-on: uipath-ubuntu-latest
+    continue-on-error: true
+    permissions:
+      contents: read
+      pull-requests: write # post/update the sticky PR comment
+      actions: read # read the last main build's run + download its package-sizes artifact
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Download coverage
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
+        continue-on-error: true
+        with:
+          name: coverage
+
+      - name: Download package sizes
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
+        continue-on-error: true
+        with:
+          name: package-sizes
+
+      # "vs main" baseline: the latest successful main build that actually uploaded a
+      # package-sizes artifact (skip-ci version-bump commits skip release.yml, so the most
+      # recent run may have none — walk back until one does).
+      - name: Find latest main size baseline
+        id: baseline
+        # Best-effort: the job's continue-on-error only keeps the workflow green; a failed step
+        # still skips the rest of the job. Without this, a transient Actions API error here would
+        # suppress the whole coverage+size comment. Failure → empty run_id → "vs main" shows "—".
+        continue-on-error: true
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd  # v8
+        with:
+          script: |
+            const { findSizeBaseline } = await import(`${process.env.GITHUB_WORKSPACE}/.github/scripts/find-size-baseline.mjs`);
+            await findSizeBaseline({ github, context, core });
+
+      - name: Download main size baseline
+        if: steps.baseline.outputs.run_id
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
+        continue-on-error: true
+        with:
+          name: package-sizes
+          path: base-sizes
+          run-id: ${{ steps.baseline.outputs.run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Post coverage + size comment
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd  # v8
+        env:
+          PKG_SIZES_BASE_FILE: base-sizes/pkg-sizes.json
+        with:
+          script: |
+            const { postPackageReportComment } = require('./scripts/pr-package-report.cjs');
+            await postPackageReportComment({ github, context, core });
+
+  detect-lockfile-changes:
+    name: Detect Lockfile Changes
+    runs-on: uipath-ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      changed: ${{ steps.lockfile_check.outputs.changed }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check for lockfile changes
+        id: lockfile_check
+        run: |
+          if git diff --name-only "origin/${BASE_REF}...HEAD" | grep -q '^pnpm-lock\.yaml$'; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  audit:
+    name: ${{ matrix.check }}
+    needs: detect-lockfile-changes
+    if: needs.detect-lockfile-changes.outputs.changed == 'true' && github.event.pull_request.head.repo.fork == false
+    runs-on: uipath-ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        check:
+          - Audit All Dependencies
+          - Audit Production Dependencies
+          - Audit Package Signatures
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install Node dependencies
+        uses: ./.github/actions/install-node-deps
+
+      - name: Run Audit All Dependencies
+        if: matrix.check == 'Audit All Dependencies'
+        run: pnpm audit
+
+      - name: Run Audit Production Dependencies
+        if: matrix.check == 'Audit Production Dependencies'
+        run: pnpm audit --prod
+
+      - name: Audit Package Signatures
+        if: matrix.check == 'Audit Package Signatures'
+        # Use pnpm's native signatures audit (pnpm >=11.1), not `npm audit signatures`.
+        # Both verify the same ECDSA registry signatures, but npm's arborist can't read pnpm's
+        # symlinked store: it mis-pairs `source-map-js` with @lingui/cli's `source-map` version
+        # and aborts with ETARGET before verifying anything. pnpm reads its own store correctly
+        # and verifies every package.
+        run: pnpm audit signatures

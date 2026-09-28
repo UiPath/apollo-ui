@@ -1,0 +1,19 @@
+{
+  "rich-text-editor.bold": "Îngroșat",
+  "rich-text-editor.code": "Cod",
+  "rich-text-editor.format-bold": "Format îngroșat",
+  "rich-text-editor.format-code": "Formatează cod",
+  "rich-text-editor.format-italic": "Format Italic",
+  "rich-text-editor.format-ordered-list": "Formatare listă numerotată",
+  "rich-text-editor.format-strikethrough": "Formatare text barat",
+  "rich-text-editor.format-underline": "Formatare subliniat",
+  "rich-text-editor.format-unordered-list": "Format listă neordonată",
+  "rich-text-editor.insert-link": "Inserare link",
+  "rich-text-editor.italic": "Italic",
+  "rich-text-editor.link": "Link",
+  "rich-text-editor.loading": "Încărcare",
+  "rich-text-editor.ordered-list": "Listă ordonată",
+  "rich-text-editor.strikethrough": "Tăiere text cu linie",
+  "rich-text-editor.underline": "Subliniere",
+  "rich-text-editor.unordered-list": "Listă neordonată"
+}

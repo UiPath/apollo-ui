@@ -1,0 +1,82 @@
+import { memo, useCallback, useRef } from 'react';
+import type { NodeMenuItem } from '../../NodeContextMenu';
+import { StageItemPill } from '../StageNode.styles';
+import type { StageTaskExecution, StageTaskItem } from '../StageNode.types';
+import { TaskBreakpointDot } from './TaskBreakpointDot';
+import { TaskContent } from './TaskContent';
+import { TaskMenu, type TaskMenuHandle } from './TaskMenu';
+import { TaskMockedChip } from './TaskMockedChip';
+
+interface AdhocTaskItemProps {
+  task: StageTaskItem;
+  taskExecution?: StageTaskExecution;
+  isSelected: boolean;
+  /** Receives the task so parents can pass one stable function to every item
+   * instead of a per-task closure (which would defeat the memo below). */
+  getContextMenuItems?: (task: StageTaskItem) => NodeMenuItem[];
+  onTaskClick: (e: React.MouseEvent, taskId: string) => void;
+  onTaskPlay?: (taskId: string) => Promise<void>;
+  isTaskLoading?: boolean;
+  /** Read-only (Debug) view: the task's "⋮" button is dropped, right-click still opens the menu. */
+  isReadOnly?: boolean;
+  /** Makes the breakpoint gutter interactive. Passed only in the Debug view. */
+  onToggleBreakpoint?: (taskId: string) => void;
+}
+
+const AdhocTaskItemComponent = ({
+  task,
+  taskExecution,
+  isSelected,
+  getContextMenuItems,
+  onTaskClick,
+  onTaskPlay,
+  isTaskLoading,
+  isReadOnly,
+  onToggleBreakpoint,
+}: AdhocTaskItemProps) => {
+  const taskRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<TaskMenuHandle>(null);
+
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      onTaskClick(e, task.id);
+    },
+    [onTaskClick, task.id]
+  );
+
+  const handleContextMenu = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    menuRef.current?.handleContextMenu(e);
+  }, []);
+
+  return (
+    <StageItemPill
+      ref={taskRef}
+      data-testid={`stage-task-card-${task.id}`}
+      selected={isSelected}
+      status={taskExecution?.status}
+      isPlaceholder={task.isPlaceholder}
+      onClick={handleClick}
+      {...(getContextMenuItems && !isTaskLoading && { onContextMenu: handleContextMenu })}
+    >
+      <TaskBreakpointDot
+        taskId={task.id}
+        active={!!taskExecution?.breakpoint}
+        paused={taskExecution?.status === 'Paused'}
+        onToggle={onToggleBreakpoint}
+      />
+      <TaskMockedChip taskId={task.id} mocked={!!task.isMocked} />
+      <TaskContent task={task} taskExecution={taskExecution} onTaskPlay={onTaskPlay} />
+      {getContextMenuItems && (
+        <TaskMenu
+          ref={menuRef}
+          task={task}
+          getContextMenuItems={getContextMenuItems}
+          disabled={isTaskLoading}
+          hideTrigger={isReadOnly}
+        />
+      )}
+    </StageItemPill>
+  );
+};
+
+export const AdhocTaskItem = memo(AdhocTaskItemComponent);

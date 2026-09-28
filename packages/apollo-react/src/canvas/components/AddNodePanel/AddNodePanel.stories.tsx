@@ -1,0 +1,1637 @@
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Node } from '@uipath/apollo-react/canvas/xyflow/react';
+import { Panel, Position, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { NodeRegistryProvider } from '../../core';
+import { useAddNodeOnConnectEnd, useCanvasEvent } from '../../hooks';
+import type { CategoryManifest, NodeManifest } from '../../schema';
+import {
+  allCategoryManifests,
+  allNodeManifests,
+  createNode,
+  NodePositions,
+  StoryInfoPanel,
+  useCanvasStory,
+  withCanvasProviders,
+} from '../../storybook-utils';
+import { DefaultCanvasTranslations } from '../../types';
+import { type CanvasHandleActionEvent, CanvasIcon } from '../../utils';
+import { BaseCanvas } from '../BaseCanvas';
+import type { BaseNodeData } from '../BaseNode';
+import { CanvasPositionControls } from '../CanvasPositionControls';
+import { CanvasPanelSurface } from '../FloatingCanvasPanel';
+import type { ListItem } from '../Toolbox';
+import { AddNodePanel, AddNodePanelEmptyMessage } from '.';
+import { AddNodeManager } from './AddNodeManager';
+import type { AddNodePanelProps, NodeItemData } from './AddNodePanel.types';
+import { createAddNodePreview } from './createAddNodePreview';
+
+// ============================================================================
+// Meta Configuration
+// ============================================================================
+
+const meta: Meta<typeof AddNodePanel> = {
+  title: 'Components/Controls/AddNodePanel',
+  component: AddNodePanel,
+  parameters: {
+    layout: 'fullscreen',
+  },
+  decorators: [withCanvasProviders()],
+  argTypes: {
+    items: { control: 'object' },
+  },
+};
+
+export default meta;
+type Story = StoryObj<typeof AddNodePanel>;
+
+// ============================================================================
+// Shared
+// ============================================================================
+
+const NODE_OPTIONS: ListItem<NodeItemData>[] = [
+  {
+    id: '1',
+    name: 'Manual trigger',
+    icon: { name: 'touch_app' },
+    data: { type: 'manual-trigger', category: 'Triggers' },
+  },
+  {
+    id: '2',
+    name: 'Schedule trigger',
+    icon: { name: 'schedule' },
+    data: { type: 'schedule-trigger', category: 'Triggers' },
+  },
+  {
+    id: '3',
+    name: 'Webhook trigger',
+    icon: { name: 'webhook' },
+    data: { type: 'webhook-trigger', category: 'Triggers' },
+  },
+  {
+    id: '4',
+    name: 'AI Agent long long long long long long name',
+    icon: { name: 'smart_toy' },
+    data: { type: 'ai-agent', category: 'AI' },
+    description: 'Autonomous AI assistant that processes complex multi-step workflows end to end',
+  },
+  {
+    id: '5',
+    name: 'OpenAI',
+    icon: { name: 'psychology' },
+    data: { type: 'openai', category: 'AI' },
+    description: 'GPT models integration for natural language processing and text generation tasks',
+  },
+  {
+    id: '6',
+    name: 'Data extractor',
+    icon: { name: 'file_copy' },
+    data: { type: 'data-extractor', category: 'Data' },
+    description:
+      'Extract structured data from documents, PDFs, images, and scanned files automatically',
+  },
+  {
+    id: '7',
+    name: 'Sentiment Analyzer',
+    icon: { name: 'sentiment_satisfied' },
+    data: { type: 'sentiment-analyzer', category: 'AI' },
+    description: 'Analyze text sentiment',
+  },
+  {
+    id: '8',
+    name: 'Action',
+    icon: { name: 'settings' },
+    data: { type: 'action', category: 'Actions' },
+    description: 'Generic action node',
+  },
+];
+
+const CATEGORY_ITEMS: ListItem<NodeItemData>[] = Object.entries(
+  NODE_OPTIONS.reduce<Record<string, ListItem<NodeItemData>[]>>((acc, node) => {
+    const category = node.data.category;
+    if (category) {
+      acc[category] = acc[category] || [];
+      acc[category].push(node);
+    }
+    return acc;
+  }, {})
+).map(([category, nodes], index) => ({
+  id: `category-${index}`,
+  name: category,
+  icon: nodes[0]?.icon,
+  data: { type: 'category', category },
+  children: nodes,
+}));
+
+// Tall categories that overflow the panel height so scroll position is
+// actually meaningful. Used by the scroll-preservation story.
+const makeLeafChildren = (
+  prefix: string,
+  count: number,
+  iconName: string
+): ListItem<NodeItemData>[] =>
+  Array.from({ length: count }, (_, i) => ({
+    id: `${prefix}-${i}`,
+    name: `${prefix} item ${String(i).padStart(2, '0')}`,
+    icon: { name: iconName },
+    data: { type: prefix, category: prefix },
+  }));
+
+// Insert a drillable subcategory partway down so exercising scroll-restore
+// requires the user to scroll first.
+const makeCategoryWithNestedSubcategory = (
+  prefix: string,
+  leafCount: number,
+  subcategoryAtIndex: number,
+  iconName: string,
+  subIconName: string
+): ListItem<NodeItemData>[] => {
+  const leaves = makeLeafChildren(prefix, leafCount, iconName);
+  const subcategory: ListItem<NodeItemData> = {
+    id: `${prefix}-sub`,
+    name: `${prefix} ▸ Subcategory (drill in, then Back)`,
+    icon: { name: 'folder_open' },
+    data: { type: 'subcategory', category: `${prefix}/Sub` },
+    children: makeLeafChildren(`${prefix}-sub`, 30, subIconName),
+  };
+  return [...leaves.slice(0, subcategoryAtIndex), subcategory, ...leaves.slice(subcategoryAtIndex)];
+};
+
+const SCROLLABLE_CATEGORY_ITEMS: ListItem<NodeItemData>[] = [
+  {
+    id: 'scroll-category-a',
+    name: 'Category A — scroll down to find the subcategory',
+    icon: { name: 'folder' },
+    data: { type: 'category', category: 'A' },
+    children: makeCategoryWithNestedSubcategory('A', 40, 15, 'bolt', 'database'),
+  },
+  {
+    id: 'scroll-category-b',
+    name: 'Category B — subcategory near the bottom',
+    icon: { name: 'folder' },
+    data: { type: 'category', category: 'B' },
+    children: makeCategoryWithNestedSubcategory('B', 40, 30, 'code', 'bug_report'),
+  },
+  {
+    id: 'scroll-category-c',
+    name: 'Category C — never visited, opens at top',
+    icon: { name: 'folder' },
+    data: { type: 'category', category: 'C' },
+    children: makeCategoryWithNestedSubcategory('C', 40, 5, 'cpu', 'shield'),
+  },
+];
+
+function createInitialNodes(): Node<BaseNodeData>[] {
+  return [
+    createNode({
+      id: 'trigger',
+      type: 'uipath.manual-trigger',
+      position: NodePositions.row2col1,
+      display: { label: 'Manual trigger' },
+    }),
+    createNode({
+      id: 'action-1',
+      type: 'uipath.blank-node',
+      position: NodePositions.row2col2,
+      display: { label: 'Action', subLabel: 'Process data' },
+    }),
+  ];
+}
+
+/**
+ * Frames panel content the way `FloatingCanvasPanel` would, for the stories
+ * that exercise the panel's *contents* (empty states, loading, search) without
+ * a canvas to anchor to. The chrome and the floating size envelope both come
+ * from the real component, so these stories track any change a consumer sees.
+ *
+ * `paddingTop` overrides the default top offset. Useful in stories that also
+ * render a top-anchored `StoryInfoPanel` and need to clear it.
+ */
+function StandalonePanelWrapper({
+  children,
+  paddingTop = '200px',
+}: {
+  children: React.ReactNode;
+  paddingTop?: string;
+}) {
+  return (
+    <div
+      style={{
+        height: '100vh',
+        width: '100vw',
+        backgroundColor: 'var(--color-background-secondary)',
+        paddingTop,
+      }}
+    >
+      {/* `w-fit` replaces the surface's `w-auto`, which shrink-to-fits only
+          because the real panel is absolutely positioned; in normal flow it
+          would fill the viewport. `scrollableContent` mirrors AddNodeManager:
+          the Toolbox owns its own virtualized scroll. */}
+      <CanvasPanelSurface className="mx-auto w-fit" scrollableContent={false}>
+        {children}
+      </CanvasPanelSurface>
+    </div>
+  );
+}
+
+// ============================================================================
+// Story Components
+// ============================================================================
+
+/**
+ * Main preview selection story demonstrating node addition workflow.
+ */
+function PreviewSelectionStory() {
+  const initialNodes = useMemo(() => createInitialNodes(), []);
+  const { canvasProps, nodeTypeRegistry } = useCanvasStory({
+    initialNodes,
+    initialEdges: [
+      {
+        id: 'e-trigger-action-1',
+        source: 'trigger',
+        target: 'action-1',
+        sourceHandle: 'output',
+        targetHandle: 'input',
+      },
+    ],
+  });
+
+  const reactFlowInstance = useReactFlow();
+  useCanvasEvent('handle:action', (event: CanvasHandleActionEvent) => {
+    if (!reactFlowInstance) return;
+
+    const { handleId, nodeId, position, handleType } = event;
+    if (handleId && nodeId) {
+      const sourceHandleType = handleType === 'input' ? 'target' : 'source';
+      createAddNodePreview(
+        nodeId,
+        handleId,
+        reactFlowInstance,
+        position as Position,
+        sourceHandleType,
+        [],
+        {
+          getManifestForNode: (node) =>
+            node.type ? nodeTypeRegistry.getManifest(node.type) : undefined,
+        }
+      );
+    }
+  });
+
+  const handleAddNodeOnConnectEnd = useAddNodeOnConnectEnd();
+
+  return (
+    <BaseCanvas
+      {...canvasProps}
+      onConnectEnd={handleAddNodeOnConnectEnd}
+      deleteKeyCode={['Backspace', 'Delete']}
+      mode="design"
+      defaultViewport={{ x: 0, y: 0, zoom: 1 }}
+    >
+      <AddNodeManager />
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+      <StoryInfoPanel
+        title="Add node with preview selection"
+        description="Click + button → Creates preview → Select preview → Choose node type"
+      />
+    </BaseCanvas>
+  );
+}
+
+/**
+ * Story demonstrating source handles on all four sides.
+ */
+function AllSidesStory() {
+  const initialNodes = useMemo(
+    () => [
+      createNode({
+        id: 'center',
+        type: 'uipath.blank-node',
+        position: NodePositions.row2col2,
+        display: { label: 'Hub Node', subLabel: 'Handles on all sides' },
+        handleConfigurations: [
+          {
+            position: Position.Right,
+            handles: [{ id: 'output-right', type: 'source', handleType: 'output' }],
+          },
+          {
+            position: Position.Left,
+            handles: [{ id: 'output-left', type: 'source', handleType: 'output' }],
+          },
+          {
+            position: Position.Top,
+            handles: [{ id: 'output-top', type: 'source', handleType: 'output' }],
+          },
+          {
+            position: Position.Bottom,
+            handles: [{ id: 'output-bottom', type: 'source', handleType: 'output' }],
+          },
+        ],
+      }),
+    ],
+    []
+  );
+  const { canvasProps, nodeTypeRegistry } = useCanvasStory({ initialNodes });
+
+  const reactFlowInstance = useReactFlow();
+  useCanvasEvent('handle:action', (event: CanvasHandleActionEvent) => {
+    if (!reactFlowInstance) return;
+
+    const { handleId, nodeId, position, handleType } = event;
+    if (handleId && nodeId) {
+      const sourceHandleType = handleType === 'input' ? 'target' : 'source';
+      createAddNodePreview(
+        nodeId,
+        handleId,
+        reactFlowInstance,
+        position as Position,
+        sourceHandleType,
+        [],
+        {
+          getManifestForNode: (node) =>
+            node.type ? nodeTypeRegistry.getManifest(node.type) : undefined,
+        }
+      );
+    }
+  });
+
+  return (
+    <BaseCanvas {...canvasProps} mode="design" defaultViewport={{ x: 0, y: 0, zoom: 1 }}>
+      <AddNodeManager />
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+      <StoryInfoPanel
+        title="Source handles on all sides"
+        description="Single node with output handles on Top, Bottom, Left, and Right."
+      />
+    </BaseCanvas>
+  );
+}
+
+/**
+ * Curated items mapping each shape (container, rectangle, square, circle) to a
+ * concrete registry node type so picking one materializes a real node with the
+ * matching geometry.
+ */
+const SHAPE_TEST_ITEMS: ListItem<NodeItemData>[] = [
+  {
+    id: 'shape-container',
+    name: 'Container — For Each',
+    icon: { name: 'repeat' },
+    data: { type: 'uipath.control-flow.foreach', category: 'Shapes' },
+    description: 'Container shape — wraps child nodes (uipath.control-flow.foreach)',
+  },
+  {
+    id: 'shape-rectangle',
+    name: 'Rectangle — Agent',
+    icon: { name: 'agent' },
+    data: { type: 'uipath.agent', category: 'Shapes' },
+    description: 'Rectangle shape — wider node body (uipath.agent)',
+  },
+  {
+    id: 'shape-square',
+    name: 'Square — API Workflow',
+    icon: { name: 'api' },
+    data: { type: 'uipath.api-workflow', category: 'Shapes' },
+    description: 'Square shape — compact node body (uipath.api-workflow)',
+  },
+  {
+    id: 'shape-circle',
+    name: 'Circle — Terminate',
+    icon: { name: 'octagon' },
+    data: { type: 'uipath.control-flow.terminate', category: 'Shapes' },
+    description: 'Circle shape — small round node (uipath.control-flow.terminate)',
+  },
+];
+
+/**
+ * Filters the static shape items by query so search inside this story only
+ * resolves to the four shape options (instead of falling back to the registry).
+ */
+async function searchShapeItems(query: string): Promise<ListItem<NodeItemData>[]> {
+  const normalized = query.trim().toLowerCase();
+  if (!normalized) return SHAPE_TEST_ITEMS;
+  return SHAPE_TEST_ITEMS.filter((item) => {
+    const haystack = [item.name, item.description ?? '', item.data.type, item.data.category ?? '']
+      .join(' ')
+      .toLowerCase();
+    return haystack.includes(normalized);
+  });
+}
+
+/**
+ * Custom panel that always presents the four shape options, regardless of
+ * connection-constraint filtering. Used to exercise shape geometry/rendering.
+ */
+function ShapeTestPanel(props: AddNodePanelProps) {
+  return (
+    <AddNodePanel
+      {...props}
+      title="Add node by shape"
+      items={SHAPE_TEST_ITEMS}
+      onSearch={searchShapeItems}
+    />
+  );
+}
+
+type DocumentExtractionMessageState = {
+  id: string;
+  label: string;
+  message: string;
+  icon: string;
+  actionLabel?: string;
+  actionHref?: string;
+};
+
+const DOCUMENT_EXTRACTION_MESSAGE_STATES: DocumentExtractionMessageState[] = [
+  {
+    id: 'availability-check-failed',
+    label: 'Availability check failed',
+    icon: 'wifi-off',
+    message:
+      "We couldn't check document extraction availability. Check your connection and try again. If this keeps happening, contact your administrator.",
+    actionLabel: 'Try again',
+  },
+  {
+    id: 'availability-check-pending',
+    label: 'Availability not confirmed',
+    icon: 'hourglass',
+    message:
+      'Document extraction availability has not been confirmed yet. You can continue browsing other nodes while the service status updates.',
+  },
+  {
+    id: 'service-disabled',
+    label: 'Service not enabled',
+    icon: 'circle-alert',
+    message:
+      "Document extraction needs Document Understanding, which isn't enabled for this tenant. A tenant administrator can enable it in Admin > Tenants > Services.",
+    actionLabel: 'Open tenant services',
+    actionHref: '#admin-tenants-services',
+  },
+  {
+    id: 'missing-license',
+    label: 'Missing license',
+    icon: 'badge-alert',
+    message:
+      "You don't have a Communications Mining license, so you can't use document extraction. Ask a tenant administrator to assign the required license, then reopen this panel.",
+    actionLabel: 'Contact administrator',
+  },
+];
+
+function DocumentExtractionMessagePanel({ state }: { state: DocumentExtractionMessageState }) {
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const button = panelRef.current?.querySelector<HTMLButtonElement>(
+      `#toolbox-item-document-extraction-${state.id}`
+    );
+    button?.click();
+  }, [state.id]);
+
+  const items: ListItem<NodeItemData>[] = useMemo(
+    () => [
+      {
+        id: `document-extraction-${state.id}`,
+        name: 'Document extraction',
+        icon: { name: 'file-search' },
+        data: { type: 'document-extraction', category: 'Documents' },
+        children: [],
+      },
+    ],
+    [state.id]
+  );
+
+  return (
+    <div ref={panelRef}>
+      <AddNodePanel
+        title="Add node"
+        items={items}
+        onNodeSelect={(node) => console.log('Selected node:', node)}
+        onClose={() => console.log('Closed selector')}
+        renderEmptyState={() => <DocumentExtractionMessage state={state} />}
+      />
+    </div>
+  );
+}
+
+function DocumentExtractionMessage({ state }: { state: DocumentExtractionMessageState }) {
+  if (!state.actionLabel) {
+    return <AddNodePanelEmptyMessage icon={state.icon} message={state.message} />;
+  }
+
+  if (!state.actionHref) {
+    return (
+      <AddNodePanelEmptyMessage
+        icon={state.icon}
+        message={state.message}
+        actionLabel={state.actionLabel}
+        onAction={() => console.log(`${state.label}: ${state.actionLabel}`)}
+      />
+    );
+  }
+
+  return (
+    <AddNodePanelEmptyMessage
+      icon={state.icon}
+      message={state.message}
+      actionLabel={state.actionLabel}
+      actionHref={state.actionHref}
+      onAction={(event) => {
+        event.preventDefault();
+        console.log(`${state.label}: ${state.actionLabel}`);
+      }}
+    />
+  );
+}
+
+function DocumentExtractionMessagesStory() {
+  return (
+    <div
+      className="min-h-screen w-screen overflow-auto px-8 py-10"
+      style={{ backgroundColor: 'var(--color-background-secondary)' }}
+    >
+      <div className="flex flex-wrap gap-[50px]">
+        {DOCUMENT_EXTRACTION_MESSAGE_STATES.map((state) => (
+          <section key={state.id} className="flex flex-col gap-2">
+            <span className="text-xs font-semibold text-foreground-muted">{state.label}</span>
+            {/* Fixed width rather than the surface's content-sized default:
+                these sit side by side and the message has no intrinsic width. */}
+            <CanvasPanelSurface className="w-[320px]">
+              <DocumentExtractionMessagePanel state={state} />
+            </CanvasPanelSurface>
+          </section>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Story for testing all available node shapes (container, rectangle, square, circle).
+ *
+ * Click + on the Action node's right handle, then pick any of the four shape
+ * options to verify the materialized node renders with the correct geometry.
+ */
+function AllShapesStory() {
+  const initialNodes = useMemo(() => createInitialNodes(), []);
+  const { canvasProps, nodeTypeRegistry } = useCanvasStory({
+    initialNodes,
+    initialEdges: [
+      {
+        id: 'e-trigger-action-1',
+        source: 'trigger',
+        target: 'action-1',
+        sourceHandle: 'output',
+        targetHandle: 'input',
+      },
+    ],
+  });
+
+  const reactFlowInstance = useReactFlow();
+  useCanvasEvent('handle:action', (event: CanvasHandleActionEvent) => {
+    if (!reactFlowInstance) return;
+
+    const { handleId, nodeId, position, handleType } = event;
+    if (handleId && nodeId) {
+      const sourceHandleType = handleType === 'input' ? 'target' : 'source';
+      createAddNodePreview(
+        nodeId,
+        handleId,
+        reactFlowInstance,
+        position as Position,
+        sourceHandleType,
+        [],
+        {
+          getManifestForNode: (node) =>
+            node.type ? nodeTypeRegistry.getManifest(node.type) : undefined,
+        }
+      );
+    }
+  });
+
+  const handleAddNodeOnConnectEnd = useAddNodeOnConnectEnd();
+
+  return (
+    <BaseCanvas
+      {...canvasProps}
+      onConnectEnd={handleAddNodeOnConnectEnd}
+      deleteKeyCode={['Backspace', 'Delete']}
+      mode="design"
+      defaultViewport={{ x: 0, y: 0, zoom: 1 }}
+    >
+      <AddNodeManager customPanel={ShapeTestPanel} />
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+      <StoryInfoPanel
+        title="Add node — all shapes"
+        description="Click + on the Action node, then pick container, rectangle, square, or circle to verify shape rendering."
+      />
+    </BaseCanvas>
+  );
+}
+
+// ============================================================================
+// Exported Stories
+// ============================================================================
+
+export const PreviewSelection: Story = {
+  name: 'Add node with preview selection',
+  render: () => <PreviewSelectionStory />,
+};
+
+export const HandlesOnAllSides: Story = {
+  name: 'Add node on all sides',
+  render: () => <AllSidesStory />,
+};
+
+export const AllShapes: Story = {
+  name: 'Add node — all shapes',
+  parameters: {
+    docs: {
+      description: {
+        story: [
+          'Exercises every shape supported by the canvas: **container**,',
+          '**rectangle**, **square**, and **circle**.',
+          '',
+          'Click the **+** button on the Action node, and the panel will show',
+          'one item per shape, each wired to a real registry node type:',
+          '',
+          '- Container → `uipath.control-flow.foreach`',
+          '- Rectangle → `uipath.agent`',
+          '- Square → `uipath.api-workflow`',
+          '- Circle → `uipath.control-flow.terminate`',
+          '',
+          'Selecting an item materializes a node with the corresponding shape',
+          'so you can visually verify geometry, sizing, and connection layout.',
+        ].join('\n'),
+      },
+    },
+  },
+  render: () => <AllShapesStory />,
+};
+
+// Mirrors the target add-node menu structure: dense single-line rows whose
+// blurb lives in `detail` (hover only), group dividers, type badges, and
+// listing rows whose owning project shows inline via `description`.
+const MENU_STRUCTURE_ITEMS: ListItem<NodeItemData>[] = [
+  {
+    id: 'agent',
+    name: 'Agent',
+    detail: 'AI agents that plan and act',
+    icon: { name: 'bot' },
+    data: { type: 'category', category: 'Agent' },
+    children: [
+      {
+        id: 'agent-autonomous',
+        name: 'Autonomous agent',
+        detail: 'Goal-driven agent that plans its own steps',
+        icon: { name: 'bot' },
+        data: { type: 'agent-autonomous', category: 'Agent' },
+      },
+      {
+        id: 'agent-conversational',
+        name: 'Conversational agent',
+        detail: 'Chat-based agent with turn-by-turn dialog',
+        icon: { name: 'messages-square' },
+        data: { type: 'agent-conversational', category: 'Agent' },
+      },
+      {
+        id: 'agent-create-new',
+        name: 'Create new agent',
+        contentColor: 'var(--canvas-primary)',
+        trailingIcon: { name: 'arrow-up-right', color: 'var(--canvas-primary)' },
+        icon: { name: 'plus' },
+        data: { type: 'agent-create-new', category: 'Agent' },
+        section: 'In this solution',
+      },
+      {
+        id: 'agent-in-solution-1',
+        name: 'Triage agent',
+        description: 'this solution · v1',
+        detail: 'Routes each incoming request to the right specialist agent.',
+        icon: { name: 'bot' },
+        data: { type: 'agent-listing', category: 'Agent' },
+        section: 'In this solution',
+      },
+      {
+        id: 'agent-published-1',
+        name: 'Research agent',
+        description: 'R&D · v3',
+        icon: { name: 'bot' },
+        data: { type: 'agent-listing', category: 'Agent' },
+        section: 'Published',
+      },
+      {
+        id: 'agent-published-2',
+        name: 'Support copilot',
+        description: 'CX · v6',
+        icon: { name: 'bot' },
+        data: { type: 'agent-listing', category: 'Agent' },
+        section: 'Published',
+      },
+    ],
+  },
+  {
+    id: 'connector',
+    name: 'Connector',
+    detail: 'Connect to apps and APIs',
+    icon: { name: 'unplug' },
+    data: { type: 'category', category: 'Connector' },
+    children: [
+      {
+        id: 'connector-suggested-item',
+        name: 'Salesforce action',
+        detail: 'Does something in Salesforce',
+        icon: { name: 'database' },
+        data: { type: 'connector-action', category: 'Connector' },
+        section: 'Suggested',
+      },
+      {
+        id: 'connector-create-record',
+        name: 'Create record',
+        detail: 'Creates a new record in a Salesforce object',
+        icon: { name: 'database' },
+        data: { type: 'connector-action', category: 'Connector' },
+      },
+      {
+        id: 'connector-new-record',
+        name: 'New record',
+        detail: 'Triggers when a new record is created in an object',
+        icon: { name: 'database' },
+        data: { type: 'connector-event', category: 'Connector' },
+      },
+    ],
+  },
+  {
+    id: 'data',
+    name: 'Data',
+    detail: 'Shape, filter, and transform data',
+    icon: { name: 'database' },
+    data: { type: 'category', category: 'Data' },
+    children: [
+      {
+        id: 'data-filter',
+        name: 'Filter',
+        detail: 'Keep rows matching conditions',
+        icon: { name: 'filter' },
+        data: { type: 'data-filter', category: 'Data' },
+      },
+      {
+        id: 'data-transform',
+        name: 'Transform',
+        detail: 'Reshape and convert data',
+        icon: { name: 'shuffle' },
+        data: { type: 'data-transform', category: 'Data' },
+      },
+    ],
+  },
+  {
+    id: 'control',
+    name: 'Control',
+    detail: 'Branch, loop, and control flow',
+    icon: { name: 'trending-up-down' },
+    dividerBefore: true,
+    data: { type: 'category', category: 'Control' },
+    children: [
+      {
+        id: 'control-mock',
+        name: 'Mock',
+        detail: 'Stub a node during testing',
+        icon: { name: 'flask-conical' },
+        data: { type: 'control-mock', category: 'Control' },
+      },
+      {
+        id: 'control-decision',
+        name: 'Decision',
+        detail: 'Branch on a condition',
+        icon: { name: 'split' },
+        dividerBefore: true,
+        data: { type: 'control-decision', category: 'Control' },
+      },
+      {
+        id: 'control-loop',
+        name: 'Loop',
+        detail: 'Repeat over a collection',
+        icon: { name: 'repeat' },
+        data: { type: 'control-loop', category: 'Control' },
+      },
+      {
+        id: 'control-end',
+        name: 'End',
+        detail: 'End this branch',
+        icon: { name: 'circle-stop' },
+        dividerBefore: true,
+        data: { type: 'control-end', category: 'Control' },
+      },
+    ],
+  },
+  {
+    id: 'tool',
+    name: 'Tool',
+    detail: 'Scripts and built-in tool activities',
+    icon: { name: 'wrench' },
+    data: { type: 'category', category: 'Tool' },
+    children: [
+      {
+        id: 'tool-script',
+        name: 'Script',
+        detail: 'Run custom JavaScript',
+        icon: { name: 'code' },
+        data: { type: 'tool-script', category: 'Tool' },
+      },
+    ],
+  },
+  {
+    id: 'trigger',
+    name: 'Trigger',
+    detail: 'Start the flow from an event',
+    icon: { name: 'zap' },
+    dividerBefore: true,
+    data: { type: 'category', category: 'Trigger' },
+    children: [
+      {
+        id: 'trigger-manual',
+        name: 'Manual trigger',
+        detail: 'Start the flow on demand',
+        badge: 'TRIGGER',
+        icon: { name: 'play' },
+        data: { type: 'trigger-manual', category: 'Trigger' },
+      },
+      {
+        id: 'trigger-scheduled',
+        name: 'Scheduled trigger',
+        detail: 'Start on a recurring schedule',
+        badge: 'TRIGGER',
+        icon: { name: 'calendar-clock' },
+        data: { type: 'trigger-scheduled', category: 'Trigger' },
+      },
+    ],
+  },
+  {
+    id: 'wait-for-event',
+    name: 'Wait for event',
+    detail: 'Pause the flow until an event',
+    icon: { name: 'clock' },
+    data: { type: 'category', category: 'Wait for event' },
+    children: [
+      {
+        id: 'wait-delay',
+        name: 'Delay',
+        detail: 'Pause for a fixed duration',
+        badge: 'WAIT',
+        icon: { name: 'timer' },
+        data: { type: 'wait-delay', category: 'Wait for event' },
+      },
+      {
+        id: 'wait-new-record',
+        name: 'Pause for new record',
+        detail: 'Pause until new record',
+        badge: 'WAIT',
+        icon: { name: 'database' },
+        data: { type: 'wait-connector-event', category: 'Wait for event' },
+      },
+    ],
+  },
+  {
+    id: 'maestro-flow',
+    name: 'Maestro flow',
+    detail: 'Reference a Maestro flow',
+    icon: { name: 'workflow' },
+    dividerBefore: true,
+    data: { type: 'category', category: 'Maestro flow' },
+    children: [
+      {
+        id: 'flow-subflow',
+        name: 'Subflow',
+        detail: 'Group steps into a reusable block',
+        icon: { name: 'group' },
+        data: { type: 'flow-subflow', category: 'Maestro flow' },
+      },
+      {
+        id: 'flow-in-solution',
+        name: 'In this solution',
+        icon: { name: 'folder' },
+        data: { type: 'category', category: 'Maestro flow' },
+        children: [
+          {
+            id: 'flow-create-new',
+            name: 'Create new Maestro flow',
+            contentColor: 'var(--canvas-primary)',
+            trailingIcon: { name: 'arrow-up-right', color: 'var(--canvas-primary)' },
+            icon: { name: 'plus' },
+            data: { type: 'flow-create-new', category: 'Maestro flow' },
+          },
+          {
+            id: 'flow-in-solution-1',
+            name: 'Invoice routing',
+            description: 'this solution · v3',
+            icon: { name: 'workflow' },
+            data: { type: 'flow-listing', category: 'Maestro flow' },
+          },
+        ],
+      },
+      {
+        id: 'flow-published',
+        name: 'Published',
+        icon: { name: 'package' },
+        data: { type: 'category', category: 'Maestro flow' },
+        children: [
+          {
+            id: 'flow-published-1',
+            name: 'Claims intake',
+            description: 'Finance Ops · v7',
+            icon: { name: 'workflow' },
+            data: { type: 'flow-listing', category: 'Maestro flow' },
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'rpa-workflow',
+    name: 'RPA workflow',
+    detail: 'Reference an RPA workflow',
+    icon: { name: 'bot' },
+    data: { type: 'category', category: 'RPA workflow' },
+    children: [
+      {
+        id: 'rpa-published',
+        name: 'Published',
+        icon: { name: 'package' },
+        data: { type: 'category', category: 'RPA workflow' },
+        children: [
+          {
+            id: 'rpa-published-1',
+            name: 'Mainframe extract',
+            description: 'IT Ops · v9',
+            icon: { name: 'bot' },
+            data: { type: 'rpa-listing', category: 'RPA workflow' },
+          },
+        ],
+      },
+    ],
+  },
+  // Drill in and hover each row to exercise every popover path: detail-only,
+  // name/description truncation (isolated and combined), the no-popover case,
+  // and detail alongside a description that fits.
+  {
+    id: 'tooltip-scenarios',
+    name: 'Tooltip scenarios',
+    detail: 'Hover each row to see when and what the popover shows',
+    icon: { name: 'info' },
+    dividerBefore: true,
+    data: { type: 'category', category: 'Tooltip scenarios' },
+    children: [
+      {
+        id: 'tt-detail-only',
+        name: 'Detail only',
+        detail:
+          'No inline description and the name fits, so the row is single-line. Hover shows the detail-only popover.',
+        icon: { name: 'file-text' },
+        data: { type: 'tt', category: 'Tooltip scenarios' },
+      },
+      {
+        id: 'tt-name-trunc',
+        name: 'Name truncation with a deliberately very long label that will not fit the row',
+        icon: { name: 'file-text' },
+        data: { type: 'tt', category: 'Tooltip scenarios' },
+      },
+      {
+        id: 'tt-desc-trunc',
+        name: 'Description truncation',
+        description: 'Very/long/folder/path/that/will/not/fit/in/the/row · v12.4.7-rc.3',
+        icon: { name: 'file-text' },
+        data: { type: 'tt', category: 'Tooltip scenarios' },
+      },
+      {
+        id: 'tt-both-trunc',
+        name: 'Both name and description truncate on this particular long row',
+        description: 'Another/very/long/folder/path/that/overflows/the/available/width · v3.0.0',
+        icon: { name: 'file-text' },
+        data: { type: 'tt', category: 'Tooltip scenarios' },
+      },
+      {
+        id: 'tt-detail-plus-trunc',
+        name: 'Detail with a long name and a long description that both overflow their row',
+        description: 'Solutions/Finance/Shared/Long/Path · v9.9.9',
+        detail: 'Full card: name heading, the clipped description, and this detail all appear.',
+        icon: { name: 'file-text' },
+        data: { type: 'tt', category: 'Tooltip scenarios' },
+      },
+      {
+        id: 'tt-detail-short-desc',
+        name: 'Detail, short description',
+        description: 'Ops · v2',
+        detail: 'The description fits, so the popover omits it and shows only this detail.',
+        icon: { name: 'file-text' },
+        data: { type: 'tt', category: 'Tooltip scenarios' },
+      },
+      {
+        id: 'tt-plain',
+        name: 'Plain row',
+        icon: { name: 'file-text' },
+        data: { type: 'tt', category: 'Tooltip scenarios' },
+      },
+    ],
+  },
+];
+
+export const NodePanelMenuStructure: Story = {
+  name: 'Add node panel with menu structure',
+  parameters: {
+    docs: {
+      description: {
+        story: [
+          'Demonstrates the restructured add-node menu.',
+          '',
+          '- Dense single-line rows with 20x20 icons. Categories carry their blurb as `detail` (hover only).',
+          '- Thin dividers group related top-level categories.',
+          '- TRIGGER and WAIT badges differentiate same-named variants.',
+          '- "In this solution" and "Published" are drill-in submenus per resource. Listings show the owning project as an inline `description`.',
+          '- "Create new ..." rows use the primary color with a trailing up-right arrow and sit first inside "In this solution".',
+          '- The default panel height cuts the last visible row in half to hint at scrolling.',
+        ].join('\n'),
+      },
+    },
+  },
+  args: {
+    items: MENU_STRUCTURE_ITEMS,
+    onNodeSelect: (node) => console.log('Selected node:', node),
+    onClose: () => console.log('Closed selector'),
+  },
+  render: (args) => (
+    <StandalonePanelWrapper>
+      <AddNodePanel {...args} />
+    </StandalonePanelWrapper>
+  ),
+};
+
+export const NodePanelMessaging: Story = {
+  name: 'Add node panel message types',
+  parameters: {
+    docs: {
+      description: {
+        story: [
+          'Previews Document extraction blocker and recovery messages inside the AddNodePanel shell.',
+          '',
+          'These states use the same title, search bar, panel width, and empty body region so the copy and visual treatment can be reviewed together.',
+        ].join('\n'),
+      },
+    },
+  },
+  render: () => <DocumentExtractionMessagesStory />,
+};
+
+export const NodePanelStaticItems: Story = {
+  name: 'Add node panel with static items',
+  args: {
+    items: CATEGORY_ITEMS,
+    onNodeSelect: (node) => console.log('Selected node:', node),
+    onClose: () => console.log('Closed selector'),
+  },
+  render: (args) => (
+    <StandalonePanelWrapper>
+      <AddNodePanel {...args} />
+    </StandalonePanelWrapper>
+  ),
+};
+
+export const NodePanelWithCustomSearch: Story = {
+  name: 'Add node panel with custom search',
+  args: {
+    items: CATEGORY_ITEMS,
+    onNodeSelect: (node) => {
+      console.log('Selected node:', node);
+      alert(`Selected: ${node.data.type}`);
+    },
+    onClose: () => console.log('Closed selector'),
+    onSearch: async (query: string) => {
+      await new Promise((resolve) => setTimeout(resolve, Math.random() * 500 + 200));
+      return NODE_OPTIONS.filter((node) => node.name.toLowerCase().includes(query.toLowerCase()));
+    },
+  },
+  render: (args) => (
+    <StandalonePanelWrapper>
+      <AddNodePanel {...args} />
+    </StandalonePanelWrapper>
+  ),
+};
+
+export const NodePanelRegistryItems: Story = {
+  name: 'Add node panel using registry',
+  args: {
+    onNodeSelect: (node) => {
+      console.log('Selected node from registry:', node);
+      alert(`Selected: ${node.data.type} (${node.data.category})`);
+    },
+    onClose: () => console.log('Closed selector'),
+    onSearch: undefined,
+  },
+  render: (args) => (
+    <StandalonePanelWrapper>
+      <AddNodePanel {...args} />
+    </StandalonePanelWrapper>
+  ),
+};
+
+// ============================================================================
+// renderEmptyState demos
+// ============================================================================
+
+/**
+ * Render-prop that branches on `currentCategory` so the same story can
+ * demonstrate both "no nodes registered" (root-level empty) and
+ * "category is empty" (after drilling into an empty category) UX paths.
+ * Search-empty cases are handled by Toolbox's built-in fallback — this
+ * renderer is *not* invoked during search.
+ */
+const renderCustomEmptyState = ({
+  currentCategory,
+}: {
+  currentCategory?: ListItem<NodeItemData>;
+}) => {
+  if (currentCategory) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 8,
+          padding: 24,
+          minHeight: 250,
+          textAlign: 'center',
+        }}
+      >
+        <CanvasIcon icon="folder-open" size={28} color="var(--canvas-foreground-de-emp)" />
+        <div style={{ fontWeight: 600, fontSize: 13 }}>{currentCategory.name} is empty</div>
+        <div style={{ fontSize: 12, color: 'var(--canvas-foreground-de-emp)' }}>
+          Add a node to this category to get started.
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 12,
+        padding: 24,
+        minHeight: 250,
+        textAlign: 'center',
+      }}
+    >
+      <CanvasIcon icon="package-open" size={28} color="var(--canvas-foreground-de-emp)" />
+      <div style={{ fontWeight: 600, fontSize: 13 }}>No nodes registered</div>
+      <div style={{ fontSize: 12, color: 'var(--canvas-foreground-de-emp)' }}>
+        Connect a node provider to start adding nodes.
+      </div>
+      <button
+        type="button"
+        style={{
+          padding: '6px 12px',
+          borderRadius: 6,
+          backgroundColor: 'var(--canvas-accent)',
+          color: 'var(--canvas-accent-foreground)',
+          border: 'none',
+          fontSize: 12,
+          cursor: 'pointer',
+        }}
+      >
+        Connect provider
+      </button>
+    </div>
+  );
+};
+
+export const NodePanelEmptyStateNoNodes: Story = {
+  name: 'renderEmptyState — no nodes registered',
+  parameters: {
+    docs: {
+      description: {
+        story: [
+          'Demonstrates the root-level branch of `renderEmptyState`. The panel is',
+          'given an empty `items` array, so the render prop is invoked with',
+          '`currentCategory: undefined`. The host app renders an onboarding CTA',
+          'in place of the built-in "No nodes found" message.',
+        ].join(' '),
+      },
+    },
+  },
+  args: {
+    items: [],
+    onNodeSelect: (node) => console.log('Selected node:', node),
+    onClose: () => console.log('Closed selector'),
+    renderEmptyState: renderCustomEmptyState,
+  },
+  render: (args) => (
+    <>
+      <StoryInfoPanel
+        title="renderEmptyState — no nodes"
+        description={
+          'AddNodePanel was given an empty `items` array, so `renderEmptyState` is ' +
+          'called with `currentCategory: undefined`. The custom render replaces the ' +
+          'built-in "No nodes found" message — useful for onboarding CTAs in apps that ' +
+          'have no nodes registered yet.'
+        }
+      />
+      <StandalonePanelWrapper>
+        <AddNodePanel {...args} />
+      </StandalonePanelWrapper>
+    </>
+  ),
+};
+
+const EMPTY_CATEGORY_ITEMS: ListItem<NodeItemData>[] = [
+  {
+    id: 'empty-category',
+    name: 'Empty category',
+    icon: { name: 'folder' },
+    data: { type: 'empty-category' },
+    children: [],
+  },
+];
+
+export const NodePanelEmptyStateInCategory: Story = {
+  name: 'renderEmptyState — drilled into empty category',
+  parameters: {
+    docs: {
+      description: {
+        story: [
+          'Demonstrates the per-category branch of `renderEmptyState`. The panel',
+          'has a single category with no children. Click the category to drill in —',
+          'the render prop is invoked with `currentCategory` set to the drilled-in',
+          'item, letting the host show category-specific empty UI.',
+        ].join(' '),
+      },
+    },
+  },
+  args: {
+    items: EMPTY_CATEGORY_ITEMS,
+    onNodeSelect: (node) => console.log('Selected node:', node),
+    onClose: () => console.log('Closed selector'),
+    renderEmptyState: renderCustomEmptyState,
+  },
+  render: (args) => (
+    <>
+      <StoryInfoPanel
+        title="renderEmptyState — drilled-in category"
+        description={
+          'Click "Empty category" to drill in. `renderEmptyState` is invoked with ' +
+          '`currentCategory` set to that item, so the renderer can show category-' +
+          'specific empty UI (e.g. a CTA tied to the category). Search-empty cases ' +
+          'still use the built-in "No nodes found" fallback — this renderer never ' +
+          'fires during search.'
+        }
+      />
+      <StandalonePanelWrapper>
+        <AddNodePanel {...args} />
+      </StandalonePanelWrapper>
+    </>
+  ),
+};
+
+// ============================================================================
+// Search by canvasLabel
+// ============================================================================
+
+/**
+ * Story-local manifest registering a node whose only "outlook"-related token
+ * lives on `display.canvasLabel`. Used to verify that CategoryTree.filterBySearch
+ * indexes canvasLabel — typing "outlook" in the panel search must surface the
+ * node even though `display.label` doesn't contain that token.
+ */
+const canvasLabelSearchManifest: { nodes: NodeManifest[]; categories: CategoryManifest[] } = {
+  categories: [
+    ...allCategoryManifests,
+    {
+      id: 'communications',
+      name: 'Communications',
+      sortOrder: 99,
+      color: '#3b82f6',
+      colorDark: '#60a5fa',
+      icon: 'agent',
+      tags: [],
+    },
+  ],
+  nodes: [
+    ...allNodeManifests,
+    {
+      nodeType: 'uipath.send-corporate-mail',
+      version: '1.0.0',
+      category: 'communications',
+      tags: [],
+      sortOrder: 1,
+      description: 'Dispatch an email through the corporate mail provider.',
+      display: {
+        label: 'Send Email',
+        canvasLabel: 'Outlook',
+        icon: 'agent',
+        shape: 'rectangle',
+      },
+      handleConfiguration: [
+        { position: 'left', handles: [{ id: 'input', type: 'target', handleType: 'input' }] },
+        { position: 'right', handles: [{ id: 'output', type: 'source', handleType: 'output' }] },
+      ],
+    },
+  ],
+};
+
+function CanvasLabelSearchStory() {
+  const initialNodes = useMemo(
+    () => [
+      createNode({
+        id: 'trigger',
+        type: 'uipath.manual-trigger',
+        position: NodePositions.row2col1,
+        display: { label: 'Manual trigger' },
+      }),
+    ],
+    []
+  );
+  const { canvasProps } = useCanvasStory({ initialNodes });
+
+  const reactFlowInstance = useReactFlow();
+
+  useCanvasEvent('handle:action', (event: CanvasHandleActionEvent) => {
+    if (!reactFlowInstance) return;
+
+    const { handleId, nodeId, position, handleType } = event;
+    if (handleId && nodeId) {
+      const sourceHandleType = handleType === 'input' ? 'target' : 'source';
+      createAddNodePreview(
+        nodeId,
+        handleId,
+        reactFlowInstance,
+        position as Position,
+        sourceHandleType
+      );
+    }
+  });
+
+  return (
+    <BaseCanvas {...canvasProps} mode="design" defaultViewport={{ x: 0, y: 0, zoom: 1 }}>
+      <AddNodeManager />
+      <Panel position="bottom-right">
+        <CanvasPositionControls translations={DefaultCanvasTranslations} />
+      </Panel>
+      <StoryInfoPanel
+        title="Search by 'canvasLabel'"
+        description={
+          'Click the + handle on the trigger node to open the Add node panel. ' +
+          'The story-local manifest registers a "Send Email" node whose only ' +
+          '"outlook" token lives on display.canvasLabel — its label, description, ' +
+          'tags and nodeType deliberately exclude that word. Type "outlook" into ' +
+          'the search and the node still surfaces because CategoryTree.filterBySearch ' +
+          'now indexes canvasLabel.'
+        }
+      />
+    </BaseCanvas>
+  );
+}
+
+export const NodePanelSearchByCanvasLabel: Story = {
+  name: 'Search by canvasLabel',
+  decorators: [
+    (Story) => (
+      <NodeRegistryProvider manifest={canvasLabelSearchManifest}>
+        <Story />
+      </NodeRegistryProvider>
+    ),
+  ],
+  render: () => <CanvasLabelSearchStory />,
+};
+
+// ============================================================================
+// childrenLoading demos
+// ============================================================================
+
+const RPA_TOOL_PUBLISHED_ITEMS: ListItem<NodeItemData>[] = [
+  {
+    id: 'rpa-1',
+    name: 'invoice-extractor',
+    icon: { name: 'rpa' },
+    data: { type: 'rpa', category: 'RPA' },
+    description: '(Shared) extracts invoice data from PDFs',
+    section: 'Published',
+  },
+  {
+    id: 'rpa-2',
+    name: 'employee-onboarding',
+    icon: { name: 'rpa' },
+    data: { type: 'rpa', category: 'RPA' },
+    description: '(Shared) onboarding workflow',
+    section: 'Published',
+  },
+  {
+    id: 'rpa-3',
+    name: 'finance-reporter',
+    icon: { name: 'rpa' },
+    data: { type: 'rpa', category: 'RPA' },
+    description: '(Shared) monthly finance report',
+    section: 'Published',
+  },
+];
+
+const RPA_TOOL_IN_SOLUTION_ITEM: ListItem<NodeItemData> = {
+  id: 'rpa-local',
+  name: 'RPA Workflow',
+  icon: { name: 'rpa' },
+  data: { type: 'rpa', category: 'RPA' },
+  section: 'In this solution',
+};
+
+const RPA_TOOL_CREATE_NEW_ITEM: ListItem<NodeItemData> = {
+  id: 'create-new-rpa',
+  name: 'Create new RPA workflow',
+  icon: { name: 'plus' },
+  data: { type: 'create-new-rpa', category: 'RPA' },
+};
+
+const CHILDREN_LOADING_DEFAULT_ITEMS: ListItem<NodeItemData>[] = [
+  {
+    id: 'rpa-tool-default',
+    name: 'RPA workflow',
+    icon: { name: 'rpa' },
+    data: { type: 'rpa-category', category: 'RPA' },
+    children: [RPA_TOOL_CREATE_NEW_ITEM],
+    childrenLoading: true,
+  },
+];
+
+const CHILDREN_LOADING_SECTIONS_ITEMS: ListItem<NodeItemData>[] = [
+  {
+    id: 'rpa-tool-sections',
+    name: 'RPA workflow',
+    icon: { name: 'rpa' },
+    data: { type: 'rpa-category', category: 'RPA' },
+    // The user already has one solution-local item; orchestrator-backed
+    // "Published" content is still streaming, so we render its header
+    // pre-emptively + 3 skeletons. Once items arrive they slot under the
+    // same header without layout shift.
+    children: [RPA_TOOL_CREATE_NEW_ITEM, RPA_TOOL_IN_SOLUTION_ITEM],
+    childrenLoading: { sections: [{ name: 'Published', count: 3 }] },
+  },
+];
+
+/**
+ * Wrapper that flips `childrenLoading` to false and adds real items after
+ * `delayMs` to simulate a streaming source resolving.
+ */
+function StreamingChildrenLoadingStory({ delayMs }: { delayMs: number }) {
+  const [resolved, setResolved] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setResolved(true), delayMs);
+    return () => clearTimeout(timer);
+  }, [delayMs]);
+
+  const items: ListItem<NodeItemData>[] = useMemo(
+    () => [
+      {
+        id: 'rpa-tool-streaming',
+        name: 'RPA workflow',
+        icon: { name: 'rpa' },
+        data: { type: 'rpa-category', category: 'RPA' },
+        children: resolved
+          ? [RPA_TOOL_CREATE_NEW_ITEM, RPA_TOOL_IN_SOLUTION_ITEM, ...RPA_TOOL_PUBLISHED_ITEMS]
+          : [RPA_TOOL_CREATE_NEW_ITEM, RPA_TOOL_IN_SOLUTION_ITEM],
+        childrenLoading: resolved ? undefined : { sections: [{ name: 'Published', count: 3 }] },
+      },
+    ],
+    [resolved]
+  );
+
+  return (
+    <StandalonePanelWrapper>
+      <AddNodePanel
+        items={items}
+        onNodeSelect={(node) => console.log('Selected:', node)}
+        onClose={() => console.log('Closed')}
+      />
+    </StandalonePanelWrapper>
+  );
+}
+
+export const NodePanelChildrenLoadingDefault: Story = {
+  name: 'childrenLoading: default skeletons',
+  parameters: {
+    docs: {
+      description: {
+        story: [
+          'Drill into "RPA workflow" to see the default 3 skeleton rows.',
+          '',
+          "The category sets `childrenLoading: true` to opt into Apollo's built-in",
+          "skeleton placeholder. The skeleton mirrors a real row's geometry —",
+          '32×32 icon + name + description — so the layout stays stable when real',
+          'items take over. Top-level rows are not dimmed.',
+        ].join('\n'),
+      },
+    },
+  },
+  args: {
+    items: CHILDREN_LOADING_DEFAULT_ITEMS,
+    onNodeSelect: (node) => console.log('Selected node:', node),
+    onClose: () => console.log('Closed selector'),
+  },
+  render: (args) => (
+    <StandalonePanelWrapper>
+      <AddNodePanel {...args} />
+    </StandalonePanelWrapper>
+  ),
+};
+
+export const NodePanelChildrenLoadingSections: Story = {
+  name: 'childrenLoading: preemptive section headers',
+  parameters: {
+    docs: {
+      description: {
+        story: [
+          'Drill into "RPA workflow" to see the "Published" section header pre-rendered',
+          'with skeleton rows beneath it, while a separate "In this solution" item is',
+          'already loaded above.',
+          '',
+          'Use `childrenLoading: { sections: [...] }` when you already know the final',
+          'section structure. Real items with a matching `section` slot under the same',
+          'header so the layout does not shift when content arrives.',
+        ].join('\n'),
+      },
+    },
+  },
+  args: {
+    items: CHILDREN_LOADING_SECTIONS_ITEMS,
+    onNodeSelect: (node) => console.log('Selected node:', node),
+    onClose: () => console.log('Closed selector'),
+  },
+  render: (args) => (
+    <StandalonePanelWrapper>
+      <AddNodePanel {...args} />
+    </StandalonePanelWrapper>
+  ),
+};
+
+export const NodePanelChildrenLoadingStreaming: Story = {
+  name: 'childrenLoading: streaming → real content',
+  parameters: {
+    docs: {
+      description: {
+        story: [
+          'Demonstrates the layout-stability promise. Drill into "RPA workflow"',
+          'while the source is still loading — you see the "Published" section',
+          'header + 3 skeletons. After ~3 seconds, real items replace the',
+          'skeletons under the same header. The "Create new" row, "In this',
+          'solution" item, and "Published" header all stay put.',
+        ].join('\n'),
+      },
+    },
+  },
+  render: () => <StreamingChildrenLoadingStory delayMs={3000} />,
+};
+
+export const NodePanelScrollPreservation: Story = {
+  name: 'Scroll position preservation per navigation branch',
+  parameters: {
+    docs: {
+      description: {
+        story: [
+          'Each category contains a drillable subcategory placed partway through',
+          'the list, so exercising scroll-restore requires the user to scroll',
+          'first. Plain items without a chevron are leaves — clicking them just',
+          'selects and does not navigate.',
+          '',
+          'To verify the three behaviors:',
+          '',
+          '1. Restore on back: open Category A, scroll down until the',
+          '   "Subcategory" row is visible, click it, then click Back. The list',
+          '   should return to the exact scroll position you left (not snap back',
+          '   to the top or to the subcategory row).',
+          '2. First entry resets to top: directly after clicking a subcategory,',
+          '   the inner list is at the top regardless of where the parent was',
+          '   scrolled.',
+          '3. Independent per branch: scroll Category A, go back to root, enter',
+          '   Category B and scroll it, then back to root and re-enter A — each',
+          '   branch owns its own scroll memory for as long as it is on the nav',
+          '   stack.',
+        ].join('\n'),
+      },
+    },
+  },
+  args: {
+    items: SCROLLABLE_CATEGORY_ITEMS,
+    onNodeSelect: (node) => console.log('Selected node:', node),
+    onClose: () => console.log('Closed selector'),
+  },
+  render: (args) => (
+    <StandalonePanelWrapper>
+      <AddNodePanel {...args} />
+    </StandalonePanelWrapper>
+  ),
+};

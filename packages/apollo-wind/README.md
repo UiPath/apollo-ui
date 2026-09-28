@@ -1,0 +1,202 @@
+# UiPath Wind Design System
+
+A modern, accessible React component library with bundled Tailwind CSS.
+Zero-config for quick starts, full Tailwind JIT for advanced needs.
+
+```mermaid
+graph LR
+    A[Apollo Wind] --> B[Pre-compiled Styles<br/>Zero Config]
+    A --> C[Tailwind JIT<br/>Full Power]
+    B --> D[Fast Setup<br/>17KB CSS]
+    C --> E[All Features<br/>Custom Classes]
+```
+
+## Quick Start
+
+```bash
+npm install @uipath/apollo-wind
+```
+
+**Note:** This package is published to both npm and GitHub Package Registry. External users will automatically pull from npm. Internal UiPath users with `.npmrc` configured will automatically pull from GitHub Package Registry.
+
+**Fonts:** the Future themes (`.future-light` / `.future-dark`) point
+`--font-sans` at Inter and the bundled Noto families, but `tailwind.css` ships
+no `@font-face`. Import the font stylesheet once at your app entry, or those
+tokens fall back to the OS font:
+
+```tsx
+import "@uipath/apollo-wind/fonts/font.css";
+```
+
+Classic themes keep Tailwind's default `--font-sans` and need no font import.
+Apps that already import `@uipath/apollo-react/core/fonts/font.css` are covered.
+
+**Option 1: Zero Config** (Recommended for quick starts)
+
+```tsx
+import "@uipath/apollo-wind/tailwind.css";
+import { Button } from "@uipath/apollo-wind";
+
+<Button>Click me</Button>;
+```
+
+**Option 2: Full Tailwind JIT** (For advanced customization)
+
+```bash
+npm install @uipath/apollo-wind postcss
+```
+
+```js
+// postcss.config.js
+export { default } from "@uipath/apollo-wind/postcss";
+```
+
+```css
+/* src/app.css */
+@import "@uipath/apollo-wind/tailwind.css";
+
+/* Scan your source files for Tailwind classes */
+@source "./src/**/*.{js,jsx,ts,tsx}";
+
+/* Scan wind components to include their styles */
+@source "./node_modules/@uipath/apollo-wind/dist/**/*.js";
+```
+
+```tsx
+import "./app.css";
+import { Button } from "@uipath/apollo-wind";
+
+// ✅ All Tailwind utilities work!
+<Button className="bg-purple-500 hover:scale-105 w-[200px]">
+  Custom Tailwind
+</Button>;
+```
+
+## Comparison
+
+| Feature          | Pre-compiled            | Tailwind JIT                    |
+| ---------------- | ----------------------- | ------------------------------- |
+| Setup Time       | Instant                 | 5 minutes                       |
+| Bundle Size      | ~17KB CSS               | ~varies (JIT)                   |
+| Custom Classes   | ❌                      | ✅                              |
+| Arbitrary Values | ❌                      | ✅ (`w-[200px]`)                |
+| Tailwind Plugins | ❌                      | ✅                              |
+| Best For         | Prototypes, Simple Apps | Production, Heavy Customization |
+
+## Architecture
+
+```mermaid
+flowchart TD
+    A[Component Library] --> B[CVA Variants]
+    A --> C[TypeScript Types]
+    B --> D[Tailwind Utilities]
+    C --> E[React Components]
+
+    F[Consumer App] --> G{Choose Approach}
+    G -->|Option 1| H[Import styles.css]
+    G -->|Option 2| I[Import tailwind.css<br/>+ @source directive]
+
+    H --> J[Pre-compiled CSS<br/>34KB]
+    I --> K[JIT Compiled<br/>Only used utilities]
+
+    J --> L[Components Rendered]
+    K --> L
+```
+
+## Example
+
+```tsx
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+} from "@uipath/apollo-wind";
+
+function LoginForm() {
+  return (
+    <Card className="w-full max-w-md">
+      <CardHeader>
+        <CardTitle>Welcome Back</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div>
+          <Label htmlFor="email">Email</Label>
+          <Input id="email" type="email" placeholder="you@example.com" />
+        </div>
+        <Button className="w-full">Sign In</Button>
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+## Utilities
+
+### cn() - Class Merger
+
+```tsx
+import { cn } from "@uipath/apollo-wind";
+
+<Button className={cn("base-class", isActive && "active-class")}>
+  Button
+</Button>;
+```
+
+## Development
+
+This package is part of a pnpm workspace. All commands should be run using `pnpm`.
+
+**From the root of the monorepo:**
+```bash
+pnpm install                                    # Install all dependencies
+pnpm build                                      # Build apollo packages
+pnpm storybook:design                           # Run Storybook on http://localhost:6006
+pnpm test --filter=@uipath/apollo-wind          # Run tests
+pnpm lint --filter=@uipath/apollo-wind          # Run lint
+pnpm format --filter=@uipath/apollo-wind        # Run biome format
+```
+
+**From the `packages/apollo-wind` directory:**
+```bash
+pnpm install        # Install dependencies (from root)
+pnpm build          # Build apollo packages
+pnpm storybook      # Run Storybook on http://localhost:6006
+pnpm test           # Run tests
+pnpm lint           # Run lint
+pnpm format         # Run biome format
+```
+
+## Documentation
+
+- 📖 [Complete Usage Guide](./docs/USAGE.md) - Detailed consumption guide
+- ♿ [Accessibility Testing Guide](./docs/ACCESSIBILITY_TESTING_GUIDE.md) - WCAG
+  2.1 Level AA compliance and testing
+- 🌍 [Localization Guide](./docs/LOCALIZATION_GUIDE.md) - Internationalization
+  (i18n) implementation
+
+## Tech Stack
+
+- React 19 + TypeScript 5
+- Tailwind CSS 4 (bundled)
+- CVA (Class Variance Authority)
+- Vitest + Testing Library
+- Storybook 10
+- Vite 7
+
+## Browser Support
+
+Modern browsers: Chrome, Firefox, Safari, Edge (latest versions)
+
+## License
+
+MIT - see [LICENSE](./LICENSE)
+
+---
+
+**Peer Dependencies:** React ≥18.0.0
+
+Built with ❤️ by UiPath | Inspired by [shadcn/ui](https://ui.shadcn.com)

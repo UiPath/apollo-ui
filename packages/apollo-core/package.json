@@ -1,0 +1,89 @@
+{
+  "name": "@uipath/apollo-core",
+  "version": "5.15.1",
+  "description": "Apollo Design System - Core design tokens, icons, and fonts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/UiPath/apollo-ui.git",
+    "directory": "packages/apollo-core"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    },
+    "./tokens": {
+      "import": "./dist/tokens/index.js",
+      "require": "./dist/tokens/index.cjs",
+      "types": "./dist/tokens/index.d.ts"
+    },
+    "./icons": {
+      "import": "./dist/icons/index.js",
+      "require": "./dist/icons/index.cjs",
+      "types": "./dist/icons/index.d.ts"
+    },
+    "./icons/svg/*": "./dist/static/svg/*",
+    "./fonts/*": "./dist/fonts/*",
+    "./tokens/jss/palette": {
+      "import": "./dist/tokens/jss/palette.js",
+      "require": "./dist/tokens/jss/palette.cjs",
+      "types": "./dist/tokens/jss/palette.d.ts"
+    },
+    "./tokens/scss/variables": "./dist/tokens/scss/_variables.scss",
+    "./tokens/scss/theme": "./dist/tokens/scss/theme.scss",
+    "./tokens/scss/theme-variables": "./dist/tokens/scss/theme-variables.scss",
+    "./tokens/scss/helpers": "./dist/tokens/scss/helpers.scss",
+    "./tokens/scss/mixins": "./dist/tokens/scss/mixins.scss",
+    "./tokens/scss/base-host": "./dist/tokens/scss/base-host.scss",
+    "./tokens/scss/css-variables": "./dist/tokens/scss/_css-variables.scss",
+    "./tokens/scss/scoped-theme-variables": "./dist/tokens/scss/_scoped-theme-variables.scss",
+    "./tokens/*": "./dist/tokens/*"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "pnpm run build:tokens && pnpm run build:fonts && rslib build",
+    "build:tokens": "tsx scripts/extract-tailwind-colors.ts && node build-tokens.js",
+    "check:tailwind-tokens": "tsx scripts/extract-tailwind-colors.ts --check",
+    "build:fonts": "postcss 'src/fonts/**/*.base-css' --base src/fonts --dir src/fonts --ext .css --verbose",
+    "dev": "rslib build --watch",
+    "lint": "biome lint src",
+    "lint:fix": "biome lint --write src",
+    "format": "biome format --write src",
+    "format:check": "biome format src",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "design-system",
+    "design-tokens",
+    "apollo",
+    "uipath"
+  ],
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@rslib/core": "^0.19.6",
+    "@vitest/coverage-v8": "^4.1.5",
+    "cssnano": "^7.1.2",
+    "lodash": "^4.18.1",
+    "postcss": "^8.5.6",
+    "postcss-cli": "^10.1.0",
+    "style-dictionary": "2.8.3",
+    "tailwindcss": "^4.1.17",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.11"
+  },
+  "dependencies": {
+    "@uipath/apollo-ui-icons": "workspace:*"
+  }
+}

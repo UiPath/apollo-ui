@@ -1,0 +1,1508 @@
+## [@uipath/apollo-wind-v2.57.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.56.0...@uipath/apollo-wind@2.57.0) (2026-09-28)
+
+### Features
+
+* **apollo-wind:** let InputGroup host any field control, with a header and addons ([3bfe3ed](https://github.com/UiPath/apollo-ui/commit/3bfe3ed98cb51effd65af03b13533b64095a9415))
+
+## [@uipath/apollo-wind-v2.56.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.55.0...@uipath/apollo-wind@2.56.0) (2026-09-24)
+
+### Features
+
+* **apollo-wind:** add ModelPicker for LLM Gateway model selection ([c7c81ef](https://github.com/UiPath/apollo-ui/commit/c7c81ef8847a37313c142d4a60ce128d4fe7684c))
+
+### Bug Fixes
+
+* **apollo-wind:** align ModelPicker chips with the model name ([8072140](https://github.com/UiPath/apollo-ui/commit/8072140344827fdc8d42ce61f86c5f4c6d997f09))
+* **apollo-wind:** align ModelPicker typography and chip contrast ([2c7ffe3](https://github.com/UiPath/apollo-ui/commit/2c7ffe3fe8330e5349a4b97b3063636534b8cef9))
+* **apollo-wind:** allow one ModelPicker deletion in flight at a time ([05515b2](https://github.com/UiPath/apollo-ui/commit/05515b207baeb752db679420cefef1dd9f8bab8f))
+* **apollo-wind:** claim Delete in ModelPicker only when the field has nothing to delete ([6511e4d](https://github.com/UiPath/apollo-ui/commit/6511e4d3ac1b32989d1bcddaf6ec31dff37b5e76))
+* **apollo-wind:** close the review gaps in ModelPicker a11y and localization ([74410e8](https://github.com/UiPath/apollo-ui/commit/74410e8ad519d6df1abb7d8b9d2c78c18e8c3026))
+* **apollo-wind:** export the ModelPicker composition kit the README documents ([9fa7081](https://github.com/UiPath/apollo-ui/commit/9fa70813f153596320a091cf5ca7bdd92889ea60))
+* **apollo-wind:** finish removing tab stops from the ModelPicker listbox ([24402fc](https://github.com/UiPath/apollo-ui/commit/24402fcbe3d19bbb0d8255f73a34364d507df56f))
+* **apollo-wind:** keep ModelPicker chips legible on any surface ([aba1fb7](https://github.com/UiPath/apollo-ui/commit/aba1fb78c73402406bdb540c1f28f502e00faf81))
+* **apollo-wind:** keep ModelPicker collapse state reachable ([e987f34](https://github.com/UiPath/apollo-ui/commit/e987f3426ff06cef211ede47a2c4eeebe4ba7ac3))
+* **apollo-wind:** keep ModelPicker keyboard focus inside the listbox model ([b294074](https://github.com/UiPath/apollo-ui/commit/b294074b6c40eb3af65e902181599a741c1a285d))
+* **apollo-wind:** keep ModelPicker shortcuts off rows in a collapsed section ([1f07cb0](https://github.com/UiPath/apollo-ui/commit/1f07cb056c7e70606d6e24797d8776dc3091d848))
+* **apollo-wind:** make ModelPicker option dom ids injective ([17b0049](https://github.com/UiPath/apollo-ui/commit/17b004924958e1dac2b52c302d32eafebb80c1c6))
+* **apollo-wind:** make the ModelPicker trigger a combobox and keep the list behind the confirm ([fda8dc1](https://github.com/UiPath/apollo-ui/commit/fda8dc1663313d4b9a922745b38f410b9d493354))
+* **apollo-wind:** match SelectTrigger's focus ring on the ModelPicker trigger ([8fdb470](https://github.com/UiPath/apollo-ui/commit/8fdb470a67218518331df8d97cbc04ecefc29059))
+* **apollo-wind:** measure ModelPicker virtual rows and honour a changed groupBy ([28d7d10](https://github.com/UiPath/apollo-ui/commit/28d7d105afe66ae6e2c72c1930ced0a9d9b6f611))
+* **apollo-wind:** size the ModelPicker trigger text like the fields beside it ([080875a](https://github.com/UiPath/apollo-ui/commit/080875af185d6b6ec2649e54f5b308ba232cdb7c))
+* **apollo-wind:** stop camelizing user-authored BYO field mapping keys ([6552dc9](https://github.com/UiPath/apollo-ui/commit/6552dc90bf2902605b758784b158d8bc3390794a))
+* **apollo-wind:** stop hiding ModelPicker chips inside their own section ([8e40f3f](https://github.com/UiPath/apollo-ui/commit/8e40f3f1a2c5ac636e8a5811409918d9f4a17c38))
+
+## [@uipath/apollo-wind-v2.55.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.54.1...@uipath/apollo-wind@2.55.0) (2026-09-24)
+
+### Features
+
+* **storybook:** build out the Code Editors pattern pages ([ed19b6c](https://github.com/UiPath/apollo-ui/commit/ed19b6c0332a4c7f95e7713d7a9cfe40464d008a))
+
+### Bug Fixes
+
+* **apollo-wind:** align editor themes with apollo-core tokens ([acf724a](https://github.com/UiPath/apollo-ui/commit/acf724a49af5d24eb7f29ddf686e92060a4900f7)), closes [#a1a1aa](https://github.com/UiPath/apollo-ui/issues/a1a1aa) [#9f9fa9](https://github.com/UiPath/apollo-ui/issues/9f9fa9) [#22d3ee](https://github.com/UiPath/apollo-ui/issues/22d3ee) [#00d3f2](https://github.com/UiPath/apollo-ui/issues/00d3f2)
+
+## [@uipath/apollo-wind-v2.54.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.54.0...@uipath/apollo-wind@2.54.1) (2026-09-23)
+
+### Bug Fixes
+
+* **apollo-react:** finish dap-validation field checks left out of [#1204](https://github.com/UiPath/apollo-ui/issues/1204) ([7feb77d](https://github.com/UiPath/apollo-ui/commit/7feb77d37c576ba5053dd3a5ffea9e3ddbf953fc))
+
+## [@uipath/apollo-wind-v2.54.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.53.2...@uipath/apollo-wind@2.54.0) (2026-09-23)
+
+### Features
+
+* **apollo-core:** promote proposed Future Light teal into real theme tokens ([5e7af04](https://github.com/UiPath/apollo-ui/commit/5e7af042bfe0f79db3f9f346bee381c132864140))
+
+### Bug Fixes
+
+* **apollo-react:** address Copilot review feedback on dap-validation notifications ([3fccd22](https://github.com/UiPath/apollo-ui/commit/3fccd2200628f11228d38e4279d381fa3de2710b))
+
+## [@uipath/apollo-wind-v2.53.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.53.1...@uipath/apollo-wind@2.53.2) (2026-09-20)
+
+### Bug Fixes
+
+* **apollo-wind:** resolve the portal container in Tooltip, ContextMenu and Drawer ([3ff195c](https://github.com/UiPath/apollo-ui/commit/3ff195ca9da67314bf6dbcd112dbf8b67a8b7ed6)), closes [#1038](https://github.com/UiPath/apollo-ui/issues/1038)
+
+## [@uipath/apollo-wind-v2.53.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.53.0...@uipath/apollo-wind@2.53.1) (2026-09-17)
+
+### Bug Fixes
+
+* **apollo-wind:** disable tooltip enter animation in always-open Themes examples ([45286b8](https://github.com/UiPath/apollo-ui/commit/45286b8148517c712e26af4455ca7f0f92f8b9ea))
+* **apollo-wind:** ship Emphasized tooltip tokens and reduce text size ([046bc02](https://github.com/UiPath/apollo-ui/commit/046bc02e432f827bdfae056d4a14a180b72e374d))
+
+## [@uipath/apollo-wind-v2.53.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.52.3...@uipath/apollo-wind@2.53.0) (2026-09-17)
+
+### Features
+
+* **apollo-wind:** extend inline validation to every field control ([8aebf94](https://github.com/UiPath/apollo-ui/commit/8aebf9458369dbb5c20420665bbb72376bc1bf2a))
+
+## [@uipath/apollo-wind-v2.52.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.52.2...@uipath/apollo-wind@2.52.3) (2026-09-16)
+
+### Bug Fixes
+
+* **apollo-wind:** stop prompt editor formatting shortcuts from reaching the host [MST-15305] ([7c8f241](https://github.com/UiPath/apollo-ui/commit/7c8f2416cf9ba3dcf8aee760656328336593643d))
+
+## [@uipath/apollo-wind-v2.52.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.52.1...@uipath/apollo-wind@2.52.2) (2026-09-15)
+
+### Bug Fixes
+
+* **apollo-wind:** give pill tabs contrast in classic themes and flatten future ([51de415](https://github.com/UiPath/apollo-ui/commit/51de415b534b901928c95a146fa1ef993eeb3ee1))
+
+## [@uipath/apollo-wind-v2.52.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.52.0...@uipath/apollo-wind@2.52.1) (2026-09-15)
+
+### Bug Fixes
+
+* **apollo-wind:** fix resizable grip handle contrast across themes ([5b9785a](https://github.com/UiPath/apollo-ui/commit/5b9785aea584cad473d48c89039dbeb4592f0255))
+
+## [@uipath/apollo-wind-v2.52.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.51.0...@uipath/apollo-wind@2.52.0) (2026-09-15)
+
+### Features
+
+* **apollo-wind:** add Underline and Code to the PromptEditor toolbar ([7b3e5ff](https://github.com/UiPath/apollo-ui/commit/7b3e5ff8d208b3f9bf73eec61ec0a5c070db82ed))
+
+### Bug Fixes
+
+* **apollo-wind:** draw the trailing separator only when it divides something ([adb61f5](https://github.com/UiPath/apollo-ui/commit/adb61f571d9b94a6c0de120e0e40f3dea45b25df))
+* **apollo-wind:** give the inline-code chip a background that is not the surface ([50174fb](https://github.com/UiPath/apollo-ui/commit/50174fbfa55d32f17b7cb84a531c8552f158e99a))
+* **apollo-wind:** keep the code markers when rescuing a pill from a code span ([3b4dfcf](https://github.com/UiPath/apollo-ui/commit/3b4dfcfae0858bfb79122634176c7ceeb40226c9))
+* **apollo-wind:** preserve outer formats and pills around the new marks ([488bed2](https://github.com/UiPath/apollo-ui/commit/488bed2eac86c140b3fa7d875e8f92a3f56cbad2))
+
+## [@uipath/apollo-wind-v2.51.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.50.0...@uipath/apollo-wind@2.51.0) (2026-09-14)
+
+### Features
+
+* **apollo-wind:** string-list field, tooltip metadata, and forms repairs ([7786df8](https://github.com/UiPath/apollo-ui/commit/7786df88acb0358066cf9e3e77a4f90169f4208c)), closes [#1138](https://github.com/UiPath/apollo-ui/issues/1138)
+
+### Bug Fixes
+
+* **apollo-wind:** use an error-contrast token for the metadata-form tab badge ([c4399d8](https://github.com/UiPath/apollo-ui/commit/c4399d83ccafcdadde742e8b2cf1b242863e5701)), closes [#ffffff](https://github.com/UiPath/apollo-ui/issues/ffffff) [#09090b](https://github.com/UiPath/apollo-ui/issues/09090b)
+
+## [@uipath/apollo-wind-v2.50.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.49.0...@uipath/apollo-wind@2.50.0) (2026-09-14)
+
+### Features
+
+* **apollo-wind:** restyle the PromptEditor toolbar ([86a44bf](https://github.com/UiPath/apollo-ui/commit/86a44bfec441768647a1fb090139352facb0fc7d))
+
+## [@uipath/apollo-wind-v2.49.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.48.1...@uipath/apollo-wind@2.49.0) (2026-09-11)
+
+### Features
+
+* **apollo-wind:** add directional slide-in animation utilities ([3322b9e](https://github.com/UiPath/apollo-ui/commit/3322b9e926aaebdc33ea1f9be0d424aba7d6ab6f))
+
+### Bug Fixes
+
+* **apollo-wind:** use foreground text for populated field triggers ([1475101](https://github.com/UiPath/apollo-ui/commit/1475101ab5252f142ab574e702f7e82b187c687a))
+
+## [@uipath/apollo-wind-v2.48.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.48.0...@uipath/apollo-wind@2.48.1) (2026-09-10)
+
+### Bug Fixes
+
+* **apollo-wind:** correct Drawer card description in gallery ([663bfe3](https://github.com/UiPath/apollo-ui/commit/663bfe3b3128ad56432e9c48e5dc3de72c269035))
+* **apollo-wind:** correct Drawer link and add missing components to gallery ([5694476](https://github.com/UiPath/apollo-ui/commit/5694476f66a16c5b7cde7f9231bc5c5a46cdd21a))
+
+## [@uipath/apollo-wind-v2.48.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.47.2...@uipath/apollo-wind@2.48.0) (2026-09-09)
+
+### Features
+
+* **apollo-wind:** align modal takeover and run actions ([55b555d](https://github.com/UiPath/apollo-ui/commit/55b555d5a7c390d1a34cb638c9ca78aa223c9f29))
+
+## [@uipath/apollo-wind-v2.47.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.47.1...@uipath/apollo-wind@2.47.2) (2026-09-07)
+
+### Bug Fixes
+
+* **apollo-wind:** idiomatic slot assertion in the placeholder test ([9c712de](https://github.com/UiPath/apollo-ui/commit/9c712dec45a1b3ea289ab4acd12da83141fe5432))
+* **apollo-wind:** tag the PromptEditor placeholder with a data-slot ([55cf1bb](https://github.com/UiPath/apollo-ui/commit/55cf1bb54e0d4feda3ee2292da7d5b13116ce3ec))
+
+## [@uipath/apollo-wind-v2.47.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.47.0...@uipath/apollo-wind@2.47.1) (2026-09-04)
+
+### Performance Improvements
+
+* **apollo-wind:** re-render only the edited field in MetadataForm ([e46a6f5](https://github.com/UiPath/apollo-ui/commit/e46a6f553e3e895e73bacc4eaba49d9b56e450bf))
+
+## [@uipath/apollo-wind-v2.47.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.46.0...@uipath/apollo-wind@2.47.0) (2026-09-04)
+
+### Features
+
+* **apollo-wind:** add PromptEditor extension points for host integration ([4267f49](https://github.com/UiPath/apollo-ui/commit/4267f49578c5efb25ef5db47e25ad2c55f3f37a7))
+* **apollo-wind:** WYSIWYG rich mode for PromptEditor ([005cab0](https://github.com/UiPath/apollo-ui/commit/005cab0f96e2d7f062f8b648ee26e4b4f670006a))
+
+### Bug Fixes
+
+* **apollo-wind:** frame-level focus ring and persistent pill selection ([040b733](https://github.com/UiPath/apollo-ui/commit/040b733aa54146de2ab4becd31e35565aafa424c))
+* **apollo-wind:** hoist a stray mid-file import and drop story em dashes ([823cd89](https://github.com/UiPath/apollo-ui/commit/823cd89ea0f8d88e07776c6e9cf1808a51455a87))
+* **apollo-wind:** input-matching focus ring + host-controlled preview pills ([11626f8](https://github.com/UiPath/apollo-ui/commit/11626f863d06612dd3d30e934373d4c3dd06537d))
+* **apollo-wind:** keep the validation message outside the focus frame ([abf5514](https://github.com/UiPath/apollo-ui/commit/abf551448a725477182e34fb4086e1dcf87ded8a))
+* **apollo-wind:** localize remaining PromptEditor strings, review nits ([c357f10](https://github.com/UiPath/apollo-ui/commit/c357f10f015eba67fa1dd93a4f0631d6cf28456e))
+* **apollo-wind:** localize the invalid-chip tooltip copy ([0dcfe19](https://github.com/UiPath/apollo-ui/commit/0dcfe19a4a1f9e89398a85c0beb5c5e82d927d4b))
+* **apollo-wind:** pointer cursor on prompt-editor toolbar buttons ([523ebbf](https://github.com/UiPath/apollo-ui/commit/523ebbfbe3fd0a34d404f76bc7fc4524db4b8bad))
+* **apollo-wind:** tighten free-form path syntax, respect preview without a toolbar ([ef68b43](https://github.com/UiPath/apollo-ui/commit/ef68b43b64e04fe935cfaf885d75b9dfa3ed6322))
+
+## [@uipath/apollo-wind-v2.46.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.45.1...@uipath/apollo-wind@2.46.0) (2026-09-03)
+
+### Features
+
+* **apollo-wind:** add text button variant ([35e243d](https://github.com/UiPath/apollo-ui/commit/35e243d43124ddb3d58a322f7b059a8fd8e7d9d9))
+
+## [@uipath/apollo-wind-v2.45.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.45.0...@uipath/apollo-wind@2.45.1) (2026-09-03)
+
+### Bug Fixes
+
+* **apollo-wind:** pin FormField's grid column so truncating controls ellipsize ([4aaaf53](https://github.com/UiPath/apollo-ui/commit/4aaaf53861e0c7e62a945176eb4381f6e0a2ee0f))
+* **apollo-wind:** render Label as inline-block so vertical margins apply ([7e84f4e](https://github.com/UiPath/apollo-ui/commit/7e84f4e57cd7465fd57a8f335d9e613b9716e4a2))
+
+## [@uipath/apollo-wind-v2.45.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.44.0...@uipath/apollo-wind@2.45.0) (2026-09-03)
+
+### Features
+
+* **apollo-wind:** declare Inter font tokens for future themes ([709fdde](https://github.com/UiPath/apollo-ui/commit/709fdde60a7b82f9639b16c2c2bd860fd692e732))
+
+## [@uipath/apollo-wind-v2.44.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.43.1...@uipath/apollo-wind@2.44.0) (2026-09-02)
+
+### Features
+
+* **apollo-wind:** polish field and inventory patterns ([6e31fb1](https://github.com/UiPath/apollo-ui/commit/6e31fb134f38d6916fdd7d4d84d8cd1713585e26))
+
+## [@uipath/apollo-wind-v2.43.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.43.0...@uipath/apollo-wind@2.43.1) (2026-09-01)
+
+### Bug Fixes
+
+* **apollo-wind:** removes sr-only default text for required indicator ([75a2745](https://github.com/UiPath/apollo-ui/commit/75a2745818542cb8aa178f782ee08bdcde6d1332))
+
+## [@uipath/apollo-wind-v2.43.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.42.0...@uipath/apollo-wind@2.43.0) (2026-09-01)
+
+### Features
+
+* **apollo-wind:** align panel controls and field states ([e48d6d9](https://github.com/UiPath/apollo-ui/commit/e48d6d9bbc73546da0cf4d388e958dd1335e2530))
+
+### Bug Fixes
+
+* **apollo-wind:** align combobox story backgrounds ([df82d43](https://github.com/UiPath/apollo-ui/commit/df82d437e6342e10ce7a6f13b1fcf2c17e03fea4))
+* **apollo-wind:** align combobox story focus states ([dbfd940](https://github.com/UiPath/apollo-ui/commit/dbfd940f2705ad463ea71395b1f4515c5f6fb244))
+* **apollo-wind:** align combobox story surfaces ([03a5db9](https://github.com/UiPath/apollo-ui/commit/03a5db9d44e1b426e91adf59727498c3ef391b4f))
+* **apollo-wind:** extend prompt errors across toolbar ([f8799df](https://github.com/UiPath/apollo-ui/commit/f8799df7e395f6e23110ee7cf313133c3978d06c))
+* **apollo-wind:** preserve dropdown validation semantics ([d29216a](https://github.com/UiPath/apollo-ui/commit/d29216a25e4a6d287874a2f44caff992d3041fd6))
+* **apollo-wind:** preserve intrinsic icon button sizing ([ea9a534](https://github.com/UiPath/apollo-ui/commit/ea9a534bcb9e04cc74bc6bcccb2813cc670e3115))
+* **apollo-wind:** preserve prompt editor error focus state ([c0cd386](https://github.com/UiPath/apollo-ui/commit/c0cd386a676cacbb77a99208769f6bafa09182ae))
+* **apollo-wind:** preserve prompt validation in preview ([52785f4](https://github.com/UiPath/apollo-ui/commit/52785f4ef7fe7bb9da22979567a9add127254a58))
+* **apollo-wind:** use native prompt editor aria prop ([1d369f4](https://github.com/UiPath/apollo-ui/commit/1d369f4ef6cee267e291ba3d23d53d902cc2fd57))
+
+## [@uipath/apollo-wind-v2.42.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.41.0...@uipath/apollo-wind@2.42.0) (2026-08-31)
+
+### Features
+
+* **storybook:** add DAP layout reference ([6f0f7be](https://github.com/UiPath/apollo-ui/commit/6f0f7bed9cb9c7ef819d6a3f84e9cab24ca42801))
+
+### Bug Fixes
+
+* **storybook:** add metadata to DAP helper story ([d2498a2](https://github.com/UiPath/apollo-ui/commit/d2498a2d7ddc37a93389f32648ba43d91d99eb3d))
+* **storybook:** keep DAP layout page in Storybook ([bf72991](https://github.com/UiPath/apollo-ui/commit/bf72991befdd7091533225e8784ea575e9351640))
+* **storybook:** resolve DAP review comments ([a6f09a4](https://github.com/UiPath/apollo-ui/commit/a6f09a4bc61d306e6cf6b3ad998a45b1b03612c8))
+* **storybook:** restore DAP alignment pattern ([adeb030](https://github.com/UiPath/apollo-ui/commit/adeb030257a05f5d21f0a3e9cba8ab0f8bf5d0b1))
+* **storybook:** restore PR build imports ([7c7dc15](https://github.com/UiPath/apollo-ui/commit/7c7dc157908c147cea81950d33a0ad6278797ad5))
+* **storybook:** separate DAP page helper from stories ([7d5b6c8](https://github.com/UiPath/apollo-ui/commit/7d5b6c8f49a57ab743b7bd9a4b105f2abbd8aecb))
+* **storybook:** standardize required indicators ([53dbe86](https://github.com/UiPath/apollo-ui/commit/53dbe864247925dbeb886c79290e6c926f2dff9b))
+
+## [@uipath/apollo-wind-v2.41.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.40.0...@uipath/apollo-wind@2.41.0) (2026-08-31)
+
+### Features
+
+* **apollo-wind:** unify field label, description, and error styling ([8535e9d](https://github.com/UiPath/apollo-ui/commit/8535e9d1166a1a4178004fa93b8a19dbb64c16ea))
+
+## [@uipath/apollo-wind-v2.40.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.39.0...@uipath/apollo-wind@2.40.0) (2026-08-31)
+
+### Features
+
+* **apollo-wind:** unify field label styling ([ba2a0be](https://github.com/UiPath/apollo-ui/commit/ba2a0be74454c8f4301262ca78c14dd07f7cb5f3))
+
+### Bug Fixes
+
+* **apollo-wind:** address accessibility review feedback ([42f25a2](https://github.com/UiPath/apollo-ui/commit/42f25a213bafd314c30e8d3fa094321b3aff3d1d))
+* **apollo-wind:** format label updates ([ac6c221](https://github.com/UiPath/apollo-ui/commit/ac6c22115505f4380edfac3b43e9e8e8f42d659a))
+* **apollo-wind:** resolve label review feedback ([0b91b09](https://github.com/UiPath/apollo-ui/commit/0b91b09e585c1d535e771efbd3b7b6d9eef42b28))
+* **apollo-wind:** standardize required indicators ([a273390](https://github.com/UiPath/apollo-ui/commit/a273390364a806bac36688d93ff7f7327a2f9622))
+
+## [@uipath/apollo-wind-v2.39.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.38.0...@uipath/apollo-wind@2.39.0) (2026-08-28)
+
+### Features
+
+* **apollo-wind:** update value field docs and controls ([40618ca](https://github.com/UiPath/apollo-ui/commit/40618ca997e20e43f7913cecaa139d8b0242db47))
+
+### Bug Fixes
+
+* **apollo-wind:** address Value Field review feedback ([8cba8bb](https://github.com/UiPath/apollo-ui/commit/8cba8bb853a9ae66ec73b7776ea48964e25514c2))
+* **apollo-wind:** clarify disabled delete affordances ([f49a54e](https://github.com/UiPath/apollo-ui/commit/f49a54e0bc9089583441311a296111a0d5a46cb6))
+* **apollo-wind:** restore lockable value field title ([f1445ce](https://github.com/UiPath/apollo-ui/commit/f1445ce90fe247eab10a1e0da8f290984a17a4a5))
+
+## [@uipath/apollo-wind-v2.38.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.37.1...@uipath/apollo-wind@2.38.0) (2026-08-28)
+
+### Features
+
+* **apollo-wind:** extend lockable value field bindings ([b8c5f32](https://github.com/UiPath/apollo-ui/commit/b8c5f32e24b64bb8a6a16539c9026477f8a02b4d))
+
+## [@uipath/apollo-wind-v2.37.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.37.0...@uipath/apollo-wind@2.37.1) (2026-08-28)
+
+### Bug Fixes
+
+* **apollo-wind,apollo-react:** update field indicators and chip colors ([cf025f4](https://github.com/UiPath/apollo-ui/commit/cf025f4137fa19c87306e2f8c28766a1d7320e1e))
+
+## [@uipath/apollo-wind-v2.37.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.36.2...@uipath/apollo-wind@2.37.0) (2026-08-26)
+
+### Features
+
+* **apollo-wind:** add inline validation to fields ([7847ed7](https://github.com/UiPath/apollo-ui/commit/7847ed72508929a2eebefdc71867755cb1398ea3))
+
+### Bug Fixes
+
+* **apollo-wind:** align remaining review details ([258dbfd](https://github.com/UiPath/apollo-ui/commit/258dbfd1cfa8e1237334d589be4676ef931d1297))
+* **apollo-wind:** complete inline validation aria wiring ([22e2d86](https://github.com/UiPath/apollo-ui/commit/22e2d868b57f4d1b5976d722b4f81c4e799de6cb))
+* **apollo-wind:** normalize lockable validation ids ([aa01619](https://github.com/UiPath/apollo-ui/commit/aa01619dd00261a7d56bce4f8cb0b98b05c11767))
+* **apollo-wind:** preserve generated error association ([dbbf8b3](https://github.com/UiPath/apollo-ui/commit/dbbf8b3f9fc8bf434f1af359e4efee15d8ff3f6c))
+* **apollo-wind:** satisfy validation lint checks ([9ae4370](https://github.com/UiPath/apollo-ui/commit/9ae4370e9c836e7c359b1e988073c1d12c6de33f))
+* **apollo-wind:** support custom validation controls ([05b514d](https://github.com/UiPath/apollo-ui/commit/05b514dd1054fa35dceb93f64d15b8d47d104983))
+* **apollo-wind:** use polite validation announcements ([bcfa8a3](https://github.com/UiPath/apollo-ui/commit/bcfa8a349b0a3e782bcf61b0090bf2f652485df7))
+* **apollo-wind:** wire validation to all field controls ([1048fd1](https://github.com/UiPath/apollo-ui/commit/1048fd165111fc35c10a0d53123cbf52a942de2d))
+
+## [@uipath/apollo-wind-v2.36.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.36.1...@uipath/apollo-wind@2.36.2) (2026-08-25)
+
+### Bug Fixes
+
+* **apollo-wind:** quality pass across the component library ([f4f880f](https://github.com/UiPath/apollo-ui/commit/f4f880f29a514be8520cc40e311322f03326140c))
+
+## [@uipath/apollo-wind-v2.36.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.36.0...@uipath/apollo-wind@2.36.1) (2026-08-25)
+
+### Bug Fixes
+
+* **apollo-wind:** keep plain section chevron on the trailing edge [MST-14024] ([0b4e06e](https://github.com/UiPath/apollo-ui/commit/0b4e06e58c897417d18901649cc24fdee4d2f161))
+
+## [@uipath/apollo-wind-v2.36.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.35.0...@uipath/apollo-wind@2.36.0) (2026-08-22)
+
+### Features
+
+* **apollo-wind:** add DAP component patterns page ([edf131e](https://github.com/UiPath/apollo-ui/commit/edf131e59e6136cfa5632049d0162230ceb6f73c))
+* **apollo-wind:** add Flow dense DAP preview ([d3cc919](https://github.com/UiPath/apollo-ui/commit/d3cc91949086a8a499bc02d44b253679401bcabc))
+
+### Bug Fixes
+
+* **apollo-wind:** inherit shared story theme ([1c5fb4e](https://github.com/UiPath/apollo-ui/commit/1c5fb4e74d526b5d818fd84a267f61b80621127c))
+* **apollo-wind:** strengthen Flow dense layout ([fd0a01f](https://github.com/UiPath/apollo-ui/commit/fd0a01f14742393141ee66a875a56ded82e2a367))
+
+### Reverts
+
+* **apollo-wind:** remove Flow dense DAP preview ([dfe3125](https://github.com/UiPath/apollo-ui/commit/dfe31251c981c528f007f32be5be4088f5cffa8c))
+
+## [@uipath/apollo-wind-v2.35.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.34.0...@uipath/apollo-wind@2.35.0) (2026-08-20)
+
+### Features
+
+* **apollo-wind:** update alert states and validation patterns ([c830e46](https://github.com/UiPath/apollo-ui/commit/c830e469bded26cd8c8b8376565cb9a4b3ea261b))
+
+### Bug Fixes
+
+* **repo:** refactor canvas panel templates ([82e8b26](https://github.com/UiPath/apollo-ui/commit/82e8b263b8f04abf77716972e2523e04498c18c5))
+
+## [@uipath/apollo-wind-v2.34.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.33.3...@uipath/apollo-wind@2.34.0) (2026-08-20)
+
+### Features
+
+* **apollo-ui-icons:** ship the Apollo icon set as its own package [PLT-109649] ([0681263](https://github.com/UiPath/apollo-ui/commit/06812635dfa5c98f6154d1019ef0c4b1e7892dc0))
+
+## [@uipath/apollo-wind-v2.33.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.33.2...@uipath/apollo-wind@2.33.3) (2026-08-18)
+
+### Bug Fixes
+
+* **repo:** upgrade Motion dependencies to v13 ([5390fc4](https://github.com/UiPath/apollo-ui/commit/5390fc4926dbc46f2b19aa70d6ee6ac3f958e0ef))
+
+## [@uipath/apollo-wind-v2.33.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.33.1...@uipath/apollo-wind@2.33.2) (2026-08-14)
+
+### Bug Fixes
+
+* **apollo-wind:** forward the badge ref so it can anchor Radix popups ([04dedf4](https://github.com/UiPath/apollo-ui/commit/04dedf48df783c3eabb6b102f8bc0a259b30baf4))
+
+## [@uipath/apollo-wind-v2.33.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.33.0...@uipath/apollo-wind@2.33.1) (2026-08-12)
+
+### Bug Fixes
+
+* **apollo-wind:** gate the dark: variant on classes, not OS media ([d7230fb](https://github.com/UiPath/apollo-ui/commit/d7230fb49648c28cafedaeea5e00795febd502ea))
+
+## [@uipath/apollo-wind-v2.33.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.32.4...@uipath/apollo-wind@2.33.0) (2026-08-12)
+
+### Features
+
+* **apollo-wind:** add reusable variable picker ([c970c66](https://github.com/UiPath/apollo-ui/commit/c970c668c8dad6f78040ff2b2beefcb99fb29b3e))
+
+### Bug Fixes
+
+* **apollo-wind:** address variable picker review ([a89cb2a](https://github.com/UiPath/apollo-ui/commit/a89cb2a02b40e46f81fd47ea78082daf137f81e4))
+* **apollo-wind:** compact variable picker width ([8ac76f0](https://github.com/UiPath/apollo-ui/commit/8ac76f069bd3e0eacf7fcb8b3211a255f8121e5b))
+
+## [@uipath/apollo-wind-v2.32.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.32.3...@uipath/apollo-wind@2.32.4) (2026-08-12)
+
+### Bug Fixes
+
+* **apollo-wind:** mark alert-dialog as a client component ([98ef85b](https://github.com/UiPath/apollo-ui/commit/98ef85b66f2017a3ec37bf2afd4d19929f0f3ff2))
+* **apollo-wind:** resolve the portal container in Dialog, Sheet and AlertDialog ([5af53b6](https://github.com/UiPath/apollo-ui/commit/5af53b60f87616bff16d49f3eb68df082a6e0f5a)), closes [UiPath/flow-workbench#2956](https://github.com/UiPath/flow-workbench/issues/2956) [UiPath/StudioWeb#20491](https://github.com/UiPath/StudioWeb/issues/20491)
+
+## [@uipath/apollo-wind-v2.32.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.32.2...@uipath/apollo-wind@2.32.3) (2026-08-11)
+
+### Bug Fixes
+
+* **repo:** patch nanoid and DOMPurify vulnerabilities ([e610fa4](https://github.com/UiPath/apollo-ui/commit/e610fa427feb6b86e888e6de9c1501e92f5446e5))
+
+## [@uipath/apollo-wind-v2.32.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.32.0...@uipath/apollo-wind@2.32.1) (2026-08-03)
+
+### Bug Fixes
+
+* **apollo-wind:** include Sonner styles in CSS bundles ([db645d4](https://github.com/UiPath/apollo-ui/commit/db645d47bac03955a63647c9dd59c28f48df6e56))
+
+## [@uipath/apollo-wind-v2.32.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.31.1...@uipath/apollo-wind@2.32.0) (2026-07-28)
+
+### Features
+
+* **apollo-wind:** add lockable value field ([f6fba73](https://github.com/UiPath/apollo-ui/commit/f6fba738d9e5c84c4b400fd0899106fbfc83cd6c))
+
+## [@uipath/apollo-wind-v2.31.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.31.0...@uipath/apollo-wind@2.31.1) (2026-07-25)
+
+### Bug Fixes
+
+* **apollo-wind:** suppress native search clear button to avoid duplicate in Search ([f4739e4](https://github.com/UiPath/apollo-ui/commit/f4739e463ba883b210caf6cb981ca5ac9cec390f))
+
+## [@uipath/apollo-wind-v2.31.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.30.0...@uipath/apollo-wind@2.31.0) (2026-07-24)
+
+### Features
+
+* **apollo-wind:** always-shown tabs with empty-state + controlled active tab ([a7bfe14](https://github.com/UiPath/apollo-ui/commit/a7bfe14737af315657d31e82ebe1b82167e16f2b))
+* **apollo-wind:** pin tab bar under header, scroll only active tab content ([e70cba2](https://github.com/UiPath/apollo-ui/commit/e70cba29bfe8d7f985047f4e28b7f1d8ba2cf01a))
+* **apollo-wind:** scrollable tabs, per-tab error badges, plain sections in MetadataForm ([d7a36ac](https://github.com/UiPath/apollo-ui/commit/d7a36ac8e24c595128a602cf115037ed144d5268))
+
+## [@uipath/apollo-wind-v2.30.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.29.0...@uipath/apollo-wind@2.30.0) (2026-07-23)
+
+### Features
+
+* **apollo-wind:** add support for passing containers for portal ([1ad44aa](https://github.com/UiPath/apollo-ui/commit/1ad44aaa7025476459dcafbf2e3f0c26a838a566))
+* **apollo-wind:** copilot suggested changes ([ffa68a7](https://github.com/UiPath/apollo-ui/commit/ffa68a78ed2f80a5607832c184cc1e98ad9caf46))
+* **apollo-wind:** suggested changes ([0a92ead](https://github.com/UiPath/apollo-ui/commit/0a92ead1ac0cceb699eea5368164991d2bf98cdb))
+* **apollo-wind:** use tailwind and remove export ([e513fad](https://github.com/UiPath/apollo-ui/commit/e513fad9229a34db19585b95aa9dc92eb23e4244))
+
+## [@uipath/apollo-wind-v2.29.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.28.0...@uipath/apollo-wind@2.29.0) (2026-07-20)
+
+### Features
+
+* **apollo-wind:** add autoGrow in textArea [MST-12041] ([1df2659](https://github.com/UiPath/apollo-ui/commit/1df2659fbd0bf94fd16fe58b685c9072378b6537))
+
+## [@uipath/apollo-wind-v2.28.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.27.1...@uipath/apollo-wind@2.28.0) (2026-07-14)
+
+### Features
+
+* **apollo-wind:** add variant prop to Spinner component ([bde0510](https://github.com/UiPath/apollo-ui/commit/bde051007762d0166af9a9724a3d9b867d08399e))
+
+## [@uipath/apollo-wind-v2.27.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.27.0...@uipath/apollo-wind@2.27.1) (2026-07-10)
+
+### Bug Fixes
+
+* **apollo-wind:** invert Tooltip surface colors for WCAG contrast (MST-11921) ([15c0a8c](https://github.com/UiPath/apollo-ui/commit/15c0a8c704168fa2bb2bd4b665f192a63951d833))
+
+## [@uipath/apollo-wind-v2.27.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.26.0...@uipath/apollo-wind@2.27.0) (2026-07-07)
+
+### Features
+
+* **apollo-wind:** add InputGroup component ([a105498](https://github.com/UiPath/apollo-ui/commit/a105498a18c9532b1b16927ca7d9d22f610642d1))
+
+### Bug Fixes
+
+* **apollo-wind:** address Copilot review feedback on InputGroup ([1275c0a](https://github.com/UiPath/apollo-ui/commit/1275c0a0c2a889084d4b84abe99be78bfe19f468))
+
+## [@uipath/apollo-wind-v2.26.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.25.0...@uipath/apollo-wind@2.26.0) (2026-07-02)
+
+### Features
+
+* **apollo-wind:** add Button 4xs size and Input ghost/xs variants ([b871b1d](https://github.com/UiPath/apollo-ui/commit/b871b1da8379c453756a948d7c3c3d5b4f25bf3c))
+
+## [@uipath/apollo-wind-v2.25.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.24.0...@uipath/apollo-wind@2.25.0) (2026-06-25)
+
+### Features
+
+* **apollo-wind:** add tab overflow navigation ([d95db79](https://github.com/UiPath/apollo-ui/commit/d95db799e7749584e308df7a50202ef5287551c7))
+
+## [@uipath/apollo-wind-v2.24.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.23.0...@uipath/apollo-wind@2.24.0) (2026-06-24)
+
+### Features
+
+* **apollo-wind:** add PromptEditor component ([424c8c3](https://github.com/UiPath/apollo-ui/commit/424c8c33c9d5b78646a5d35a9b591da588c6479b))
+* **apollo-wind:** add variable drag-drop to PromptEditor ([6fe9d91](https://github.com/UiPath/apollo-ui/commit/6fe9d91452faf0ade969701f284941aa7c1ecc87))
+
+### Bug Fixes
+
+* **apollo-wind:** address PromptEditor PR review feedback ([92abd0b](https://github.com/UiPath/apollo-ui/commit/92abd0b53f96f1e6b3be4bdf3dd3237b13dd1a0e))
+* **apollo-wind:** address PromptEditor review feedback ([a654c31](https://github.com/UiPath/apollo-ui/commit/a654c3177adaa1b15be71edbef8446fb250cca7b))
+* **apollo-wind:** address PromptEditor review feedback (autocomplete focus, preview styles, exports) ([a8fea68](https://github.com/UiPath/apollo-ui/commit/a8fea6831aff88b2bfc44a7f955af889c7b71745))
+* **apollo-wind:** de-duplicate setTokens onChange + lighten autocomplete text-diff ([ac3e9d0](https://github.com/UiPath/apollo-ui/commit/ac3e9d03a1658a92d49dbb89e235a8eae677fe83))
+* **apollo-wind:** drop redundant .sb-story preview-head override ([cabbad8](https://github.com/UiPath/apollo-ui/commit/cabbad80be441d54e03f4c560d8862d45c4c07cd))
+
+## [@uipath/apollo-wind-v2.23.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.22.0...@uipath/apollo-wind@2.23.0) (2026-06-23)
+
+### Features
+
+* **apollo-react:** add NodePropertyPanel editor stories with inline editing ([e63dba9](https://github.com/UiPath/apollo-ui/commit/e63dba90b99dcb5b2663a155ec127767e7b13d98))
+
+## [@uipath/apollo-wind-v2.22.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.21.0...@uipath/apollo-wind@2.22.0) (2026-06-18)
+
+### Features
+
+* **apollo-wind:** add MetadataForm stepVariant="tabs" ([7663582](https://github.com/UiPath/apollo-ui/commit/76635820fb0c2744b5e4b1fea8c3eb41ca531b83))
+
+## [@uipath/apollo-wind-v2.21.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.20.1...@uipath/apollo-wind@2.21.0) (2026-06-17)
+
+### Features
+
+* **apollo-wind:** add Core/HC editor themes and expand Code Editors patterns page ([109560b](https://github.com/UiPath/apollo-ui/commit/109560bc9aac0320bcbc39d8d6d2c5d53992b299))
+* **apollo-wind:** migrate Code Editors stories and remove CodeBlock component ([531b319](https://github.com/UiPath/apollo-ui/commit/531b31908f637e35513d4885c2e81f5c936488f2))
+* **storybook:** add Monaco/CodeMirror live demos and restructure Code Block IA ([d95eab1](https://github.com/UiPath/apollo-ui/commit/d95eab1fb873a4c623d3a3ceec6278bf9973ad5b))
+
+### Bug Fixes
+
+* **apollo-wind:** connect future-dark and future-light CodeBlock themes to Apollo CSS tokens ([1b56fc0](https://github.com/UiPath/apollo-ui/commit/1b56fc019ba7a9a1e55fc1dbaf3725ca13e1599c))
+
+## [@uipath/apollo-wind-v2.20.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.20.0...@uipath/apollo-wind@2.20.1) (2026-06-17)
+
+### Performance Improvements
+
+* **apollo-wind:** mark side-effect-free for tree-shaking [MST-11264] ([d1dbec0](https://github.com/UiPath/apollo-ui/commit/d1dbec0d28a829aa1a339ebd74a34d7a4290d647))
+
+## [@uipath/apollo-wind-v2.20.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.19.1...@uipath/apollo-wind@2.20.0) (2026-06-16)
+
+### Features
+
+* **storybook:** add system-wide introduction landing page and unify getting started docs ([a337586](https://github.com/UiPath/apollo-ui/commit/a337586ff2a77cc616da8b7d084e11298736c5fd))
+
+### Bug Fixes
+
+* **storybook:** address Copilot review comments on PR [#825](https://github.com/UiPath/apollo-ui/issues/825) ([28931f9](https://github.com/UiPath/apollo-ui/commit/28931f9419440e92cb2850686a6041e694998336))
+* **storybook:** apply biome formatting to introduction and getting started stories ([c77c391](https://github.com/UiPath/apollo-ui/commit/c77c3916a7ce3f1814fe2fb27a55e6b3ddd823d7))
+* **storybook:** handle clipboard write rejection in CodeBlock copy button ([7a7adf3](https://github.com/UiPath/apollo-ui/commit/7a7adf37a48ab6c1ea7907ced66cb0f99c330709))
+
+## [@uipath/apollo-wind-v2.19.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.19.0...@uipath/apollo-wind@2.19.1) (2026-06-12)
+
+### Bug Fixes
+
+* **apollo-wind:** use surface-overlay for future field backgrounds ([63f770d](https://github.com/UiPath/apollo-ui/commit/63f770dc31237d57841dd5289a528867a70babe7))
+
+## [@uipath/apollo-wind-v2.19.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.18.0...@uipath/apollo-wind@2.19.0) (2026-06-10)
+
+### Features
+
+* **apollo-react:** add future-theming support ([9030f70](https://github.com/UiPath/apollo-ui/commit/9030f705ebfc0ce7be9c9ff0dc33ef5700599918))
+
+## [@uipath/apollo-wind-v2.18.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.17.0...@uipath/apollo-wind@2.18.0) (2026-05-27)
+
+### Features
+
+* **apollo-wind:** add Delete story to Dialog, improve dialog stories UX ([813c036](https://github.com/UiPath/apollo-ui/commit/813c036546380fcd662eb5a0183d9cf645d94f4b))
+
+## [@uipath/apollo-wind-v2.17.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.16.1...@uipath/apollo-wind@2.17.0) (2026-05-19)
+
+### Features
+
+* **apollo-wind:** add maxRef to slider for dynamic max from another field ([999736a](https://github.com/UiPath/apollo-ui/commit/999736aba08c27a2a52c3b1f3bec34b9c58757ef))
+
+### Bug Fixes
+
+* **apollo-vertex:** remove deprecated table classNames key from calendar ([12dea7d](https://github.com/UiPath/apollo-ui/commit/12dea7dc8d0a27859103c5778c00a643c157ded6))
+
+## [@uipath/apollo-wind-v2.16.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.16.0...@uipath/apollo-wind@2.16.1) (2026-05-10)
+
+### Bug Fixes
+
+* **repo:** security vulnerabilities ([100aaa5](https://github.com/uipath/apollo-ui/commit/100aaa5ade673e3003e5b9800f3e72ef962e4bc1))
+
+## [@uipath/apollo-wind-v2.16.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.15.1...@uipath/apollo-wind@2.16.0) (2026-05-08)
+
+### Features
+
+* **apollo-wind:** overhaul component gallery page ([c014a24](https://github.com/uipath/apollo-ui/commit/c014a2405e24833cb295f9e7974359944298b105))
+
+### Bug Fixes
+
+* **apollo-wind:** apply biome formatting to component gallery ([e4d5861](https://github.com/uipath/apollo-ui/commit/e4d586122e6ee18e8929807ef9587f29c6ca0b42))
+* **storybook:** update templates and global header for consistency ([0f52cd2](https://github.com/uipath/apollo-ui/commit/0f52cd2157d3e351df34a8a7e05d3f8ecf0545db))
+
+## [@uipath/apollo-wind-v2.15.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.15.0...@uipath/apollo-wind@2.15.1) (2026-05-07)
+
+### Bug Fixes
+
+* **storybook:** apply sentence case to story UI copy in Wind components ([12dd0f4](https://github.com/uipath/apollo-ui/commit/12dd0f44ab66c253954a7ef9046fa4f920c650fb))
+* **storybook:** fix missed sentence case in alert-dialog story ([a466207](https://github.com/uipath/apollo-ui/commit/a466207c7d492b8086208e2ac00ea23c2b07bb3a))
+
+## [@uipath/apollo-wind-v2.15.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.14.0...@uipath/apollo-wind@2.15.0) (2026-05-07)
+
+### Features
+
+* **apollo-wind:** apply future theme overrides to FileUpload ([cc2de28](https://github.com/uipath/apollo-ui/commit/cc2de28c2bc368a71a94d7f2e001883b9da9cafb))
+* **apollo-wind:** apply future theme overrides to Pagination ([60bc105](https://github.com/uipath/apollo-ui/commit/60bc10551395ea640ad83d76471f00d7a69e9e19))
+* **apollo-wind:** apply future theme overrides to Textarea ([12d2a9f](https://github.com/uipath/apollo-ui/commit/12d2a9f1a59c20500622c146af6ce3e7603ecea5))
+
+## [@uipath/apollo-wind-v2.14.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.13.0...@uipath/apollo-wind@2.14.0) (2026-05-05)
+
+### Features
+
+* **apollo-wind:** expand apollo-writing skill with full guidelines and content patterns ([24aeb41](https://github.com/uipath/apollo-ui/commit/24aeb419a61ddf636d86bf15c616e156357a58d6))
+* **apollo-wind:** update apollo-writing skill description in Storybook ([363ec34](https://github.com/uipath/apollo-ui/commit/363ec343e4c09bf2d255e11747bb2efbc9d976b5))
+
+## [@uipath/apollo-wind-v2.13.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.12.0...@uipath/apollo-wind@2.13.0) (2026-05-04)
+
+### Features
+
+* **apollo-wind:** update ButtonGroup and ToggleGroup for Future themes ([b15a3bb](https://github.com/uipath/apollo-ui/commit/b15a3bba3c7dedb9e3e36e27a19444dbae5b5934))
+
+## [@uipath/apollo-wind-v2.12.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.11.0...@uipath/apollo-wind@2.12.0) (2026-05-04)
+
+### Features
+
+* **apollo-wind:** add proposed token additions inline to Future Colors story ([5791917](https://github.com/uipath/apollo-ui/commit/5791917bf574620575e236cbf3d08adfb14281e8))
+
+## [@uipath/apollo-wind-v2.11.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.10.0...@uipath/apollo-wind@2.11.0) (2026-05-02)
+
+### Features
+
+* **apollo-wind:** apply Future theme styling to Combobox and MultiSelect ([d9911eb](https://github.com/uipath/apollo-ui/commit/d9911ebfec17292027f7f8b217ebefd6e8210b4c))
+
+## [@uipath/apollo-wind-v2.10.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.9.0...@uipath/apollo-wind@2.10.0) (2026-05-01)
+
+### Features
+
+* **apollo-wind:** apply Future theme styling to Checkbox and CodeBlock ([c576920](https://github.com/uipath/apollo-ui/commit/c576920301f856b9711c23672b44e19267ee407a))
+
+## [@uipath/apollo-wind-v2.9.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.8.0...@uipath/apollo-wind@2.9.0) (2026-04-29)
+
+### Features
+
+* **apollo-wind:** proportional switch for dense form rows (size="sm") ([44250b7](https://github.com/uipath/apollo-ui/commit/44250b791962597c801b872cb37eff4f17d811be))
+
+## [@uipath/apollo-wind-v2.8.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.7.1...@uipath/apollo-wind@2.8.0) (2026-04-28)
+
+### Features
+
+* **apollo-wind:** controllable DataTable state + multi-field search ([e71efea](https://github.com/uipath/apollo-ui/commit/e71efea72f686c0c13c884ac9895a82dcd6ae385))
+
+## [@uipath/apollo-wind-v2.7.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.7.0...@uipath/apollo-wind@2.7.1) (2026-04-27)
+
+### Bug Fixes
+
+* **apollo-wind:** add title tooltips to truncated cells and column headers ([42127de](https://github.com/uipath/apollo-ui/commit/42127de025029f643aadc32f66f1482816f1e42f))
+* **apollo-wind:** apply biome format fixes ([745643d](https://github.com/uipath/apollo-ui/commit/745643dc83810dc059687de4890ace1e6a780781))
+* **apollo-wind:** DataTable headers stay put, resize feels grabbable, body scrolls independently ([bebb9a1](https://github.com/uipath/apollo-ui/commit/bebb9a1af29fb18a750711a7cd8227cdc8e9d9bb))
+* **apollo-wind:** show title tooltip only when text is actually truncated ([2fef533](https://github.com/uipath/apollo-ui/commit/2fef5331403fedca194db89e6b2c357b4cd91bbf))
+
+## [@uipath/apollo-wind-v2.7.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.6.0...@uipath/apollo-wind@2.7.0) (2026-04-21)
+
+### Features
+
+* **apollo-wind:** add xs size variant to toggle ([fa3117a](https://github.com/uipath/apollo-ui/commit/fa3117a2c9208317443e774dc7edf2660874298c))
+
+## [@uipath/apollo-wind-v2.6.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.5.0...@uipath/apollo-wind@2.6.0) (2026-04-21)
+
+### Features
+
+* **apollo-wind:** add fade-in animation utility ([0903e60](https://github.com/uipath/apollo-ui/commit/0903e60ef9687f2e376fe2cffd78552f453e7760))
+
+## [@uipath/apollo-wind-v2.5.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.4.0...@uipath/apollo-wind@2.5.0) (2026-04-20)
+
+### Features
+
+* **apollo-wind:** rename Ideas to Layout Generator, remove Brand Motion ([8d95fec](https://github.com/uipath/apollo-ui/commit/8d95fec1c894b9c5f11bd99cec979b2dcbf0083c))
+
+### Bug Fixes
+
+* **apollo-wind:** restore correct border color in Future Dark and Light themes ([d09492d](https://github.com/uipath/apollo-ui/commit/d09492da60621d50abdfc5b1e2b2c7888ae5972d))
+
+## [@uipath/apollo-wind-v2.4.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.3.0...@uipath/apollo-wind@2.4.0) (2026-04-18)
+
+### Features
+
+* **apollo-wind:** split tailwind utilities file with glow animation ([4cd6016](https://github.com/uipath/apollo-ui/commit/4cd60160fd4ae9a817362c6dbab2816de116894d))
+
+## [@uipath/apollo-wind-v2.3.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.2.1...@uipath/apollo-wind@2.3.0) (2026-04-16)
+
+### Features
+
+* **apollo-wind:** add status and chart tokens to Future dark/light themes ([434447b](https://github.com/uipath/apollo-ui/commit/434447b4cb6f9195601417a40869dc8b553c2bdc))
+
+### Bug Fixes
+
+* **apollo-wind:** normalize status-warning bg to amber-950 in Future dark theme ([87bc964](https://github.com/uipath/apollo-ui/commit/87bc96431d3cfa9bc6f05278f1741b82a1eeffb3))
+
+## [@uipath/apollo-wind-v2.2.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.2.0...@uipath/apollo-wind@2.2.1) (2026-04-16)
+
+### Bug Fixes
+
+* **apollo-wind:** update storybook commands in Getting Started docs ([cb6e125](https://github.com/uipath/apollo-ui/commit/cb6e125d21f566eb9e05d53e2e2365784d60a89c))
+
+## [@uipath/apollo-wind-v2.2.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.1.1...@uipath/apollo-wind@2.2.0) (2026-04-15)
+
+### Features
+
+* **apollo-wind:** add FlowInput, FlowRadioGroup, and FlowCheckbox components ([4950552](https://github.com/uipath/apollo-ui/commit/4950552ee53f6ed25ce71e495b0dc154bc252826))
+* **apollo-wind:** apply Future theme styles to Input, Checkbox, and RadioGroup ([07764d1](https://github.com/uipath/apollo-ui/commit/07764d184abad0bc85456f4e8a8f8ff11690cbdd))
+
+## [@uipath/apollo-wind-v2.1.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.1.0...@uipath/apollo-wind@2.1.1) (2026-04-14)
+
+### Bug Fixes
+
+* **apollo-react:** rename uix to canvas-uix + other small improvements ([102f077](https://github.com/uipath/apollo-ui/commit/102f07734e835ef4f47be611c4df5809e1ca77a4))
+
+## [@uipath/apollo-wind-v2.1.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.0.1...@uipath/apollo-wind@2.1.0) (2026-04-14)
+
+### Features
+
+* **storybook:** remove wind, change name ([e2bedfe](https://github.com/uipath/apollo-ui/commit/e2bedfe23087122cd84a9fd0fb0d92e583a59c12))
+* **storybook:** unify canvas and wind stories ([07aee51](https://github.com/uipath/apollo-ui/commit/07aee51674b17925d4bc0738a85cc6a2ff9f34f0))
+
+## [@uipath/apollo-wind-v2.0.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@2.0.0...@uipath/apollo-wind@2.0.1) (2026-04-10)
+
+### Bug Fixes
+
+* **apollo-wind:** address theming gaps for apollo-react/canvas ([b5903c4](https://github.com/uipath/apollo-ui/commit/b5903c42dc10be3cbf8110077610e6975738c88b))
+
+## [@uipath/apollo-wind-v2.0.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@1.5.0...@uipath/apollo-wind@2.0.0) (2026-04-01)
+
+### ⚠ BREAKING CHANGES
+
+* **apollo-wind:** `size="icon"` removed — use `icon` prop instead.
+
+- Replace separate icon-* size variants with unified size scale + boolean `icon` prop
+- Add new text sizes: xs (32px), 2xs (28px), 3xs (24px)
+- `icon` is a CVA boolean variant adding `aspect-square p-0`
+- Migrate all size="icon" usages across codebase to new API
+- Fix calendar: use var(--cell-size) for Tailwind v4 compat
+- Fix calendar: rounded-full circles for today and selected dates
+- Update docs and AI context with new button API
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+
+### Features
+
+* **apollo-wind:** consolidate button size scale and add icon prop ([2448db4](https://github.com/uipath/apollo-ui/commit/2448db447c52445a273a92e62493423d919eccaf))
+
+## [@uipath/apollo-wind-v1.5.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@1.4.0...@uipath/apollo-wind@1.5.0) (2026-03-26)
+
+### Features
+
+* **apollo-wind:** add brand center link to Logos page description ([b3ff085](https://github.com/uipath/apollo-ui/commit/b3ff085758e0d2813be16af1ef023624910a6926))
+
+## [@uipath/apollo-wind-v1.4.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@1.3.0...@uipath/apollo-wind@1.4.0) (2026-03-23)
+
+### Features
+
+* **apollo-wind:** add Logos page with brand and product logo library ([2cda272](https://github.com/uipath/apollo-ui/commit/2cda272c807356e6e13f0c0f20b3183485561b30))
+
+## [@uipath/apollo-wind-v1.3.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@1.2.1...@uipath/apollo-wind@1.3.0) (2026-03-23)
+
+### Features
+
+* **apollo-wind:** add apollo-writing skill with UiPath UX writing guidelines ([5cdb224](https://github.com/uipath/apollo-ui/commit/5cdb224dd713b57fd58eb816769927334652a940))
+
+## [@uipath/apollo-wind-v1.2.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@1.2.0...@uipath/apollo-wind@1.2.1) (2026-03-19)
+
+### Bug Fixes
+
+* **apollo-wind:** format ([bb4787e](https://github.com/uipath/apollo-ui/commit/bb4787e68129f4576945c437970455de8027c471))
+
+## [@uipath/apollo-wind-v1.2.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@1.1.0...@uipath/apollo-wind@1.2.0) (2026-03-18)
+
+### Features
+
+* **apollo-wind:** linkable tabs and internal/external skills toggle ([1e6d7de](https://github.com/uipath/apollo-ui/commit/1e6d7de0646b1c0849537951388abceff9c28b86)), closes [#apollo](https://github.com/uipath/apollo-ui/issues/apollo)
+* **apollo-wind:** skills UX polish and CLI scope callout ([acf03bb](https://github.com/uipath/apollo-ui/commit/acf03bba29f9f9336fa6dba73322b793ed6df5ce))
+
+## [@uipath/apollo-wind-v1.1.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@1.0.2...@uipath/apollo-wind@1.1.0) (2026-03-18)
+
+### Features
+
+* **apollo-wind:** elevate Skills to top-level tab with marketplace UI ([ba12395](https://github.com/uipath/apollo-ui/commit/ba1239512c54a77cb40caa5f9fdb7950c11af033)), closes [#apollo](https://github.com/uipath/apollo-ui/issues/apollo)
+
+## [@uipath/apollo-wind-v1.0.2](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@1.0.1...@uipath/apollo-wind@1.0.2) (2026-03-18)
+
+### Bug Fixes
+
+* **apollo-wind:** have buttons be of type='button' by default ([36cebc6](https://github.com/uipath/apollo-ui/commit/36cebc6a68e14207e10e2179b3687355e6481ed8))
+
+## [@uipath/apollo-wind-v1.0.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@1.0.0...@uipath/apollo-wind@1.0.1) (2026-03-18)
+
+### Bug Fixes
+
+* **repo:** run format ([2e7fea6](https://github.com/uipath/apollo-ui/commit/2e7fea677d51458592a9db1044cb5febdfae08bb))
+* **repo:** security vulnerabilities ([1fa7647](https://github.com/uipath/apollo-ui/commit/1fa7647ebfda6556d46d885e4a6ab9405f17ef1b))
+
+## [@uipath/apollo-wind-v1.0.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.15.3...@uipath/apollo-wind@1.0.0) (2026-03-18)
+
+### ⚠ BREAKING CHANGES
+
+* **apollo-wind:** consumers must update direction→orientation, numeric sizes→string percentages
+
+### Bug Fixes
+
+* **apollo-wind:** upgrade react-resizable-panels to v4 ([32f18ad](https://github.com/uipath/apollo-ui/commit/32f18adda0faf89d07b68dc5e00152538b83beff))
+
+## [@uipath/apollo-wind-v0.15.3](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.15.2...@uipath/apollo-wind@0.15.3) (2026-03-17)
+
+### Bug Fixes
+
+* **apollo-wind:** more generic selectors ([dc921e5](https://github.com/uipath/apollo-ui/commit/dc921e572395d46989f942c3138616e8ef14ef58))
+
+## [@uipath/apollo-wind-v0.15.2](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.15.1...@uipath/apollo-wind@0.15.2) (2026-03-17)
+
+### Bug Fixes
+
+* **ci:** code scanning alerts ([f731813](https://github.com/uipath/apollo-ui/commit/f731813037e0c7d9d7dc876be83f1edbe047273d))
+* **ci:** vulnerabilities on packages ([9dc7752](https://github.com/uipath/apollo-ui/commit/9dc7752ca1d9e253ec58e3c2c37c5d124ed73769))
+
+## [@uipath/apollo-wind-v0.15.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.15.0...@uipath/apollo-wind@0.15.1) (2026-03-17)
+
+### Bug Fixes
+
+* **apollo-wind:** attempt to fix prism import issue ([bd5ba84](https://github.com/uipath/apollo-ui/commit/bd5ba8460c2c35e6312af58309f7e2552bcdd255))
+
+## [@uipath/apollo-wind-v0.15.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.14.0...@uipath/apollo-wind@0.15.0) (2026-03-16)
+
+### Features
+
+* **apollo-wind:** add Flow Node Expandable and Hover Menu components ([1f73dc3](https://github.com/uipath/apollo-ui/commit/1f73dc30f75cfa166c1c610d8ef261d73dc64159))
+
+### Bug Fixes
+
+* **apollo-wind:** apply code review fixes across canvas node components ([8ac1bef](https://github.com/uipath/apollo-ui/commit/8ac1befc5a799998858ff8aa337d64588c0254bb))
+
+## [@uipath/apollo-wind-v0.14.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.13.0...@uipath/apollo-wind@0.14.0) (2026-03-12)
+
+### Features
+
+* **apollo-wind:** add Apollo prototype skill file ([52f4b1d](https://github.com/uipath/apollo-ui/commit/52f4b1d036cb8643282e94ba4d54f130f67e9f4c))
+* **apollo-wind:** add Apollo prototype skill reference to Best Practices ([94cf191](https://github.com/uipath/apollo-ui/commit/94cf19107b36e57f30fbe8e4c4b52ea712b89325))
+* **apollo-wind:** add CLI tab to Getting Started, remove from Prototyping ([e4b6f34](https://github.com/uipath/apollo-ui/commit/e4b6f34235a6b05ee2d1772258c55ff5bf316c28))
+* **apollo-wind:** add Skills sub-tab to Resources, promote from Best Practices accordion ([3375317](https://github.com/uipath/apollo-ui/commit/3375317bf25f4cc1c880b79be180887493f10840))
+* **apollo-wind:** migrate Future themes to Tailwind v4 vars and add code syntax tokens ([ff0c626](https://github.com/uipath/apollo-ui/commit/ff0c62658e13261dbec66108fa58d2ea550f308a))
+* **apollo-wind:** refactor Best Practices into accordions, add Skills section ([0a8c148](https://github.com/uipath/apollo-ui/commit/0a8c148dd66c1996a045c09cfe9f04768d6a86d4))
+* **apollo-wind:** update FlowPanel and ChatComposer with Figma design system ([cef1fae](https://github.com/uipath/apollo-ui/commit/cef1fae5bd7dfa7a3ba11c6ee3b49f8dfb7dfc3b))
+
+### Bug Fixes
+
+* **apollo-wind:** left-align dark/light swatches, move Future last in sidebar ([b7442e6](https://github.com/uipath/apollo-ui/commit/b7442e63da31f78ec697ce63a96f9e29258a0ae9))
+* **apollo-wind:** Theme page — reorder sidebar, add consumer-apps note ([f36b637](https://github.com/uipath/apollo-ui/commit/f36b637b747328f789842800a684a97144c8e459))
+
+## [@uipath/apollo-wind-v0.13.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.12.2...@uipath/apollo-wind@0.13.0) (2026-03-12)
+
+### Features
+
+* **apollo-wind:** add horizontal scroll support to ScrollArea ([28f9d0f](https://github.com/uipath/apollo-ui/commit/28f9d0f443c44bf6d60c1e76924437a548fcb32f))
+
+### Bug Fixes
+
+* **apollo-wind:** add overscroll-x to ScrollArea component ([75cfe7e](https://github.com/uipath/apollo-ui/commit/75cfe7eda4af2ba1d41662856fae4cbf985e8edd))
+
+## [@uipath/apollo-wind-v0.12.2](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.12.1...@uipath/apollo-wind@0.12.2) (2026-03-10)
+
+### Bug Fixes
+
+* **apollo-wind:** vercel build issues ([f66914e](https://github.com/uipath/apollo-ui/commit/f66914e1e9bd57418f10303aabccd5c8b6c0de89))
+
+## [@uipath/apollo-wind-v0.12.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.12.0...@uipath/apollo-wind@0.12.1) (2026-03-05)
+
+### Bug Fixes
+
+* **repo:** security vulnerabilities + add skill ([258a535](https://github.com/uipath/apollo-ui/commit/258a53557628fd1df7845eacbbe0db2e2aedb347))
+
+## [@uipath/apollo-wind-v0.12.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.11.0...@uipath/apollo-wind@0.12.0) (2026-03-04)
+
+### Features
+
+* **apollo-wind:** allow explicit imports ([00372e4](https://github.com/uipath/apollo-ui/commit/00372e4ffe9d6ba42dc9410e47d888773227926a))
+
+## [@uipath/apollo-wind-v0.11.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.10.0...@uipath/apollo-wind@0.11.0) (2026-03-03)
+
+### Features
+
+* **apollo-wind:** add CodeBlock component and expand AI context docs ([b78e250](https://github.com/uipath/apollo-ui/commit/b78e25078a2ed740608b82f557ce2b0138eb2c9c))
+* **apollo-wind:** add Getting Started section with templates, theming, and AI prototyping ([7006b1a](https://github.com/uipath/apollo-ui/commit/7006b1af6f5ae54ffb5b0f109a65c40df2207488))
+* **apollo-wind:** add Studio template, PageHeader, and StudioPanel components ([cb91640](https://github.com/uipath/apollo-ui/commit/cb91640a4b443a0091596e21b7792ba6198f3a0d))
+* **apollo-wind:** adopt shadcn theme convention and consolidate theme files ([cc0827f](https://github.com/uipath/apollo-ui/commit/cc0827fd66244af276b293efe256cd2622731327))
+* **apollo-wind:** comprehensive component stories update and cleanup ([b54c229](https://github.com/uipath/apollo-ui/commit/b54c229d670fc953bf570ca73ec57b772f2cb8cf))
+* **apollo-wind:** wip ([0fd58ac](https://github.com/uipath/apollo-ui/commit/0fd58ac4e27421890c434a7c1da2c739c0788e49))
+
+### Bug Fixes
+
+* **apollo-wind:** a11y lint issues, test, comments ([602acbb](https://github.com/uipath/apollo-ui/commit/602acbb339e272f7b5873d4ed745df3219c1d988))
+* **apollo-wind:** address PR [#219](https://github.com/uipath/apollo-ui/issues/219) review feedback ([46b9381](https://github.com/uipath/apollo-ui/commit/46b9381fa10f3040424f0b787d1c1e7419eafaf0))
+* **apollo-wind:** build issues ([4db4f18](https://github.com/uipath/apollo-ui/commit/4db4f18862bcb0fbb55627722cd0dfd6701e3bbe))
+* **apollo-wind:** build issues ([5102f5b](https://github.com/uipath/apollo-ui/commit/5102f5b332aaffb0cb4ab0e79ea873d11e6c92b6))
+* **apollo-wind:** build issues, duplicate buttons ([ac6d5f4](https://github.com/uipath/apollo-ui/commit/ac6d5f4b822980fdd13d9bf9d6468e98455a44a0))
+* **apollo-wind:** dependencies consistency ([9a8231a](https://github.com/uipath/apollo-ui/commit/9a8231aa97f191ef8a45a552ac0a4bec1855c668))
+* **apollo-wind:** failing tests ([7a6a99d](https://github.com/uipath/apollo-ui/commit/7a6a99de6b18160c04b6b93a2032e95996e99b5e))
+
+## [@uipath/apollo-wind-v0.10.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.9.1...@uipath/apollo-wind@0.10.0) (2026-02-18)
+
+### Features
+
+* **apollo-wind:** add per-file error display and external errors support to FileUpload ([652de09](https://github.com/uipath/apollo-ui/commit/652de09d4ed0afd055dfe1443f83e8d015057a07))
+
+## [@uipath/apollo-wind-v0.9.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.9.0...@uipath/apollo-wind@0.9.1) (2026-02-12)
+
+### Bug Fixes
+
+* **apollo-react:** use css vars instead of theme ([bf4524e](https://github.com/uipath/apollo-ui/commit/bf4524e03346ef0b71a214f5945f3530968a9868))
+
+## [@uipath/apollo-wind-v0.9.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.8.1...@uipath/apollo-wind@0.9.0) (2026-02-12)
+
+### Features
+
+* **storybook:** improve Storybook documentation and formatting ([0b677c2](https://github.com/uipath/apollo-ui/commit/0b677c25632e4bb3fbccb62d4bdfe56092166fc4))
+
+## [@uipath/apollo-wind-v0.8.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.8.0...@uipath/apollo-wind@0.8.1) (2026-02-11)
+
+### Bug Fixes
+
+* **apollo-wind:** remove shadows for input fields [MST-6516] ([903a39b](https://github.com/uipath/apollo-ui/commit/903a39b2b3702f9550ce5c3baa027ce0b1640083))
+
+## [@uipath/apollo-wind-v0.8.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.7.3...@uipath/apollo-wind@0.8.0) (2026-02-10)
+
+### Features
+
+* **repo:** add dual registry publishing support ([50d8edb](https://github.com/uipath/apollo-ui/commit/50d8edb89071d6915e7f2aec125e172b6d3ba575))
+
+## [@uipath/apollo-wind-v0.7.3](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.7.2...@uipath/apollo-wind@0.7.3) (2026-02-10)
+
+### Bug Fixes
+
+* **repo:** publish to npm registry ([326b3a3](https://github.com/uipath/apollo-ui/commit/326b3a35fefafef514b2248c5fd621c9c9befefa))
+
+## [@uipath/apollo-wind-v0.7.2](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.7.1...@uipath/apollo-wind@0.7.2) (2026-01-31)
+
+### Bug Fixes
+
+* **apollo-wind:** add react-scan to storybook ([bd8ad6c](https://github.com/uipath/apollo-ui/commit/bd8ad6cfeec70b6340d9dffabc93a2407f0c686a))
+
+## [@uipath/apollo-wind-v0.7.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.7.0...@uipath/apollo-wind@0.7.1) (2026-01-30)
+
+### Bug Fixes
+
+* **apollo-wind:** switch dialog from transform to flex positioning ([d1e3417](https://github.com/uipath/apollo-ui/commit/d1e34176ef0c868fec8b3034c3390dc6cfba0d07))
+
+## [@uipath/apollo-wind-v0.7.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.6.6...@uipath/apollo-wind@0.7.0) (2026-01-30)
+
+### Features
+
+* **apollo-wind:** re-export toast function from sonner ([0321973](https://github.com/uipath/apollo-ui/commit/0321973f04103b76c3bdc4eb76b961812cf0ee0f))
+
+## [@uipath/apollo-wind-v0.6.6](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.6.5...@uipath/apollo-wind@0.6.6) (2026-01-24)
+
+### Bug Fixes
+
+* **repo:** vercel deployments ([0512f2c](https://github.com/uipath/apollo-ui/commit/0512f2c0f12ba59118d046d173694baa19dadad2))
+
+## [@uipath/apollo-wind-v0.6.5](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.6.4...@uipath/apollo-wind@0.6.5) (2026-01-23)
+
+### Bug Fixes
+
+* **apollo-wind:** Fixed folloing bugs: ([1fd1a0f](https://github.com/uipath/apollo-ui/commit/1fd1a0f1fabb18ea5709fb5a0f917af27667e140))
+
+## [0.6.4](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.6.3...@uipath/apollo-wind@0.6.4) (2026-01-09)
+
+
+### Bug Fixes
+
+* **apollo-react:** adapt StageNode props in NodePropertiesPanel stories with StageNodeWrapper ([9a4444c](https://github.com/uipath/apollo-ui/commit/9a4444c32cce3cbe18e1bac7142de22c608fdf2c))
+* **apollo-react:** add additional StageHandle for bottom target position ([94712e9](https://github.com/uipath/apollo-ui/commit/94712e96c727ad02832dd61211d5e85ff313276d))
+* **apollo-react:** add CanvasBackground component for improved background rendering in BaseCanvas ([a5fcccd](https://github.com/uipath/apollo-ui/commit/a5fcccd003277a658aceeeb2b531879c5026db43))
+* **apollo-react:** add connectable props to StageHandle and adjust source handle positioning ([0c12b26](https://github.com/uipath/apollo-ui/commit/0c12b262b10fe0399f97f4492715ba3eb4fe2642))
+* **apollo-react:** add default args for ExecutionStatusIcon story ([e97719e](https://github.com/uipath/apollo-ui/commit/e97719e7fd06a179dee4fd434a9f25feff0dde94))
+* **apollo-react:** add delay to tooltips [MST-4992] ([#93](https://github.com/uipath/apollo-ui/issues/93)) ([6deadba](https://github.com/uipath/apollo-ui/commit/6deadba04e391d49c131d50cf3fd303b23e00cd0))
+* **apollo-react:** add delay to tooltips [MST-4992] ([#93](https://github.com/uipath/apollo-ui/issues/93)) ([ad07886](https://github.com/uipath/apollo-ui/commit/ad07886f409d2841bfe1444bdd144761b7602f77))
+* **apollo-react:** add memo for task dragging style props; bug fix for task movement between adjacent parallel groups ([#154](https://github.com/uipath/apollo-ui/issues/154)) ([a30b92e](https://github.com/uipath/apollo-ui/commit/a30b92ea503fae57ae637c5a4d9484b675d28124))
+* **apollo-react:** add memory handle to agent node and enhance button handle styling with hover effects ([212d6e0](https://github.com/uipath/apollo-ui/commit/212d6e0506dad66de2f6c970990d8a2891d4a3a0))
+* **apollo-react:** add memory to initialSelectedResource (#AG-501) ([#85](https://github.com/uipath/apollo-ui/issues/85)) ([5a98543](https://github.com/uipath/apollo-ui/commit/5a9854322e7ddbd0db8f93be6a44857799604859)), closes [#AG-501](https://github.com/uipath/apollo-ui/issues/AG-501) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123)
+* **apollo-react:** add missing translations in stageNode storybook ([#153](https://github.com/uipath/apollo-ui/issues/153)) ([47a0cab](https://github.com/uipath/apollo-ui/commit/47a0cab30f75dbe1cd14118cd707eaaafab46ea4))
+* **apollo-react:** add more padding on bottom in suggestion mode ([#107](https://github.com/uipath/apollo-ui/issues/107)) ([b048da8](https://github.com/uipath/apollo-ui/commit/b048da8dd7f407e6e1e1e2176721b3d94932c165))
+* **apollo-react:** add smart tooltip prop [PLT-92221] ([#123](https://github.com/uipath/apollo-ui/issues/123)) ([8cd3e10](https://github.com/uipath/apollo-ui/commit/8cd3e10707ba25069bc5f9971674b63aa68c9bd7))
+* **apollo-react:** add smart tooltip prop [PLT-92221] ([#123](https://github.com/uipath/apollo-ui/issues/123)) ([35c46a2](https://github.com/uipath/apollo-ui/commit/35c46a279c24805d3fbcd891b69b37e91a708821))
+* **apollo-react:** add suggestion group panel height padding [AG-576] ([#128](https://github.com/uipath/apollo-ui/issues/128)) ([bd5a9ab](https://github.com/uipath/apollo-ui/commit/bd5a9ab7557f287f8678feacbdf140b9f6f6cd59))
+* **apollo-react:** add task should stop propagation from reaching onstageclick ([#114](https://github.com/uipath/apollo-ui/issues/114)) ([3127441](https://github.com/uipath/apollo-ui/commit/3127441991ced7578eaf3f8c0e8547ced5d6ce9e))
+* **apollo-react:** add version property to NodeOption and update createDefaultData logic ([f1fbc75](https://github.com/uipath/apollo-ui/commit/f1fbc75a05b2e7755d792361f7174254f094ce7b))
+* **apollo-react:** address pr comments [MST-5311] ([e573b37](https://github.com/uipath/apollo-ui/commit/e573b377ec205ad7f7343a9dae956f82c38b09ea))
+* **apollo-react:** adjust default offset for new node positioning to improve layout ([cc3a26e](https://github.com/uipath/apollo-ui/commit/cc3a26e0b34b75ac49728f213f0793b6bf054274))
+* **apollo-react:** adjust grid spacing and update BaseNode radius ([#7](https://github.com/uipath/apollo-ui/issues/7)) ([aef925a](https://github.com/uipath/apollo-ui/commit/aef925a13b9d025ca7765ae6e6e993ed3e67afa7))
+* **apollo-react:** adjust StageHandle positioning and dimensions for better layout ([9437c3f](https://github.com/uipath/apollo-ui/commit/9437c3fadeb7945d963b760ef5be90ce0ca7e410))
+* **apollo-react:** agent default layouts (#AG-608) ([#137](https://github.com/uipath/apollo-ui/issues/137)) ([4cf4a8c](https://github.com/uipath/apollo-ui/commit/4cf4a8cee147f2e0b2d02ae6857cd948fa430c1d)), closes [#AG-608](https://github.com/uipath/apollo-ui/issues/AG-608)
+* **apollo-react:** allow delete toolbar for memory ([#92](https://github.com/uipath/apollo-ui/issues/92)) ([88492bc](https://github.com/uipath/apollo-ui/commit/88492bc98e08b7b7840826e352c15e7880f535ca))
+* **apollo-react:** always show agent node handles ([#80](https://github.com/uipath/apollo-ui/issues/80)) ([1b800fc](https://github.com/uipath/apollo-ui/commit/1b800fc67e0d4722a422722e5e718c050ec45d9a))
+* **apollo-react:** auto layout of context and model edges intertwining [AG-407] ([#46](https://github.com/uipath/apollo-ui/issues/46)) ([7074b30](https://github.com/uipath/apollo-ui/commit/7074b3046bb1f5310aa3ee0bd4b79e8a78a7fe5e))
+* **apollo-react:** button handle logic for agent node ([#48](https://github.com/uipath/apollo-ui/issues/48)) ([19d85b1](https://github.com/uipath/apollo-ui/commit/19d85b15ff7ba78b793bf748ae27bb8b3727a3b9))
+* **apollo-react:** button handle styles and positioning on view mode [AG-401] ([#32](https://github.com/uipath/apollo-ui/issues/32)) ([a94b718](https://github.com/uipath/apollo-ui/commit/a94b71895d7b8a2b2e8b74fae43eb1af76ff3439))
+* **apollo-react:** center (#AG-411) ([#47](https://github.com/uipath/apollo-ui/issues/47)) ([e2cfbed](https://github.com/uipath/apollo-ui/commit/e2cfbedb30296116ef32b62121b2d2a834c5fa08)), closes [#AG-411](https://github.com/uipath/apollo-ui/issues/AG-411)
+* **apollo-react:** change execution status to message [MST-4426] ([#40](https://github.com/uipath/apollo-ui/issues/40)) ([3c98040](https://github.com/uipath/apollo-ui/commit/3c980403b41436bd553a79f2af7cea609745ab82))
+* **apollo-react:** clean up stories and remove code duplication, add storybook-utils ([#142](https://github.com/uipath/apollo-ui/issues/142)) ([62ae761](https://github.com/uipath/apollo-ui/commit/62ae761e06a3ff0beb58ee7f3932abe270058ccc))
+* **apollo-react:** cleanup node types registry ([2b877c2](https://github.com/uipath/apollo-ui/commit/2b877c22430b0e965ffc2c4295031247a17b2b83))
+* **apollo-react:** color for reworked duration ([#38](https://github.com/uipath/apollo-ui/issues/38)) ([937b628](https://github.com/uipath/apollo-ui/commit/937b628aef11f2b2b9e34ef5d9a662fda08b25fc))
+* **apollo-react:** comment ([#56](https://github.com/uipath/apollo-ui/issues/56)) ([ce914e3](https://github.com/uipath/apollo-ui/commit/ce914e3d5da7e3c9bae1251b5dbbe8e6a735c48e))
+* **apollo-react:** create default data by subtype ([690cf9c](https://github.com/uipath/apollo-ui/commit/690cf9c7d216790135ad3ae9fa799a4c2b0405b2))
+* **apollo-react:** creating virtual nodes by default instead of checking everytime (#AG-123) ([#129](https://github.com/uipath/apollo-ui/issues/129)) ([3f2329e](https://github.com/uipath/apollo-ui/commit/3f2329ea73d567765a759d8d5c66445263157ee3)), closes [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123)
+* **apollo-react:** deduplicate utilities functions in UIX (#AG-444) ([#60](https://github.com/uipath/apollo-ui/issues/60)) ([955a026](https://github.com/uipath/apollo-ui/commit/955a026421f414f20e10156bdcac251d83f8be8b)), closes [#AG-444](https://github.com/uipath/apollo-ui/issues/AG-444)
+* **apollo-react:** delete old agent/resource nodes in uix-platform (#AG-385) ([#50](https://github.com/uipath/apollo-ui/issues/50)) ([fff372f](https://github.com/uipath/apollo-ui/commit/fff372fac7ae94b8adc4b313f150fdbf0c47c26b)), closes [#AG-385](https://github.com/uipath/apollo-ui/issues/AG-385)
+* **apollo-react:** delete old agent/resource nodes in uix-platform (#AG-385) ([#50](https://github.com/uipath/apollo-ui/issues/50)) ([9334505](https://github.com/uipath/apollo-ui/commit/93345059ebd0915b71ce337f176ca39f525c42f5)), closes [#AG-385](https://github.com/uipath/apollo-ui/issues/AG-385)
+* **apollo-react:** disable context menu in read only scenarios [MST-4592] ([#51](https://github.com/uipath/apollo-ui/issues/51)) ([49810fb](https://github.com/uipath/apollo-ui/commit/49810fb37c83825b7927050061de4612bc62fe9e))
+* **apollo-react:** don't props drill suggestion group handler ([#95](https://github.com/uipath/apollo-ui/issues/95)) ([48cc6e3](https://github.com/uipath/apollo-ui/commit/48cc6e355690cdcfee7c1e2511a7d94b69aeabe6))
+* **apollo-react:** enhance BaseCanvas with background toggle, conditional notches, connection events, and hierarchical canvas ([37ce6ac](https://github.com/uipath/apollo-ui/commit/37ce6ac843820b8e53a63c949fa8c1c0e75ddf48))
+* **apollo-react:** enhance BaseCanvas with background toggle, conditional notches, connection events, and hierarchical canvas ([742dc15](https://github.com/uipath/apollo-ui/commit/742dc15b6ec965870152dcd14ab189998ba10354))
+* **apollo-react:** enhance NodeContextMenu interaction and update StageNode stories with menu items ([48cc2dd](https://github.com/uipath/apollo-ui/commit/48cc2dde4543c5b102ca788c41b6f3a7fc8e8fe9))
+* **apollo-react:** error message on hover for stage task [MST-4765] ([#79](https://github.com/uipath/apollo-ui/issues/79)) ([c2f8768](https://github.com/uipath/apollo-ui/commit/c2f876823d3e9f2cd8051636283f2c9631b67d9b))
+* **apollo-react:** export Edges component in index.ts ([#148](https://github.com/uipath/apollo-ui/issues/148)) ([0c830d8](https://github.com/uipath/apollo-ui/commit/0c830d828e89d5d6bee525f8418e5c43905cb107))
+* **apollo-react:** export TriggerNode component from index ([dd42f13](https://github.com/uipath/apollo-ui/commit/dd42f134f272e17b00db318233cf4b919a07db6c))
+* **apollo-react:** extend AgentFlowNode and AgentFlowResourceNode types to include extent property ([10af9ce](https://github.com/uipath/apollo-ui/commit/10af9ce492604686fe52f0747d8133637234a123))
+* **apollo-react:** filter memory before adding virtual spacing nodes [AG-531] ([#98](https://github.com/uipath/apollo-ui/issues/98)) ([f187909](https://github.com/uipath/apollo-ui/commit/f18790987177b4203f0a2422fb75a01c9869383c))
+* **apollo-react:** fit view is too large when no escalation (AG-421) ([#54](https://github.com/uipath/apollo-ui/issues/54)) ([8706f4d](https://github.com/uipath/apollo-ui/commit/8706f4d8d14c5ad6d1cea1f09f729280dedbc725))
+* **apollo-react:** fitview and autolayout should consider timeline player ([#89](https://github.com/uipath/apollo-ui/issues/89)) ([ad79769](https://github.com/uipath/apollo-ui/commit/ad79769d14bb3b3e10375fdfed038642df8706ca)), closes [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123)
+* **apollo-react:** fix panning and fit view behavior (#AG-468) ([#65](https://github.com/uipath/apollo-ui/issues/65)) ([cac7f91](https://github.com/uipath/apollo-ui/commit/cac7f91e8b40fef5d4a6f37debf6aceb2332df4e)), closes [#AG-468](https://github.com/uipath/apollo-ui/issues/AG-468)
+* **apollo-react:** format ([51ce206](https://github.com/uipath/apollo-ui/commit/51ce206fb0d255705750dba0af1890ba6361cf6e))
+* **apollo-react:** format issue ([30003c8](https://github.com/uipath/apollo-ui/commit/30003c881cb9d4cd076d12e746228be0c97e208f))
+* **apollo-react:** format label display in StageNode component for improved readability ([573170b](https://github.com/uipath/apollo-ui/commit/573170b778b00073fc9073521b3f26e7f7a5551d))
+* **apollo-react:** hide guardrail icon if no guardrails applied [AG-463] ([#62](https://github.com/uipath/apollo-ui/issues/62)) ([ab35832](https://github.com/uipath/apollo-ui/commit/ab35832a23223ad1d184976f05748fb868c63b8b))
+* **apollo-react:** hide memory nodes, edges, and button handles based of FF props [AG-531] ([#97](https://github.com/uipath/apollo-ui/issues/97)) ([c43336b](https://github.com/uipath/apollo-ui/commit/c43336b77e289feebe4cf437dc2ba9ace46a5106))
+* **apollo-react:** hide task label scrollbars ([#15](https://github.com/uipath/apollo-ui/issues/15)) ([837bba9](https://github.com/uipath/apollo-ui/commit/837bba944537e0c3e273209dc13c1545b4d01e08))
+* **apollo-react:** import (#AG-123) ([#43](https://github.com/uipath/apollo-ui/issues/43)) ([10b4c63](https://github.com/uipath/apollo-ui/commit/10b4c63bfba2d6a8060370c0caa1c04fb92c0ad0)), closes [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123)
+* **apollo-react:** import linting [MST-5311] ([422a80e](https://github.com/uipath/apollo-ui/commit/422a80e5a9723e24bf24f144f2d096db8a112aee))
+* **apollo-react:** import route(#AG-123) ([#35](https://github.com/uipath/apollo-ui/issues/35)) ([d709efa](https://github.com/uipath/apollo-ui/commit/d709efa29651a0af4e3fee2d871170946b501802)), closes [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123)
+* **apollo-react:** improve basenode performance, re-renders ([#157](https://github.com/uipath/apollo-ui/issues/157)) ([d97fa5b](https://github.com/uipath/apollo-ui/commit/d97fa5bd6e1f7f7f1baae4f56db73e551c1dabd7))
+* **apollo-react:** improve StageTitleInput width calculation for multi-language text [MST-5126] ([#111](https://github.com/uipath/apollo-ui/issues/111)) ([8337532](https://github.com/uipath/apollo-ui/commit/8337532f81974369c4048c7bf141683c4e1e3ae4))
+* **apollo-react:** make CanvasBackgroundProps properties optional ([94226d8](https://github.com/uipath/apollo-ui/commit/94226d899df2fca0e53941159f78ed9fa6e452b6))
+* **apollo-react:** make stage task menu options context sensitive [MST-4536] ([#49](https://github.com/uipath/apollo-ui/issues/49)) ([5a04fd9](https://github.com/uipath/apollo-ui/commit/5a04fd97afd668dcd11b76eb848e0b7a0f1fa825))
+* **apollo-react:** make useNodeTypeRegistry optional ([b6b2aa3](https://github.com/uipath/apollo-ui/commit/b6b2aa33b536f643d8b347c1afa7e2523513a2f3))
+* **apollo-react:** memo handle configurations in StageNode component ([#144](https://github.com/uipath/apollo-ui/issues/144)) ([685a672](https://github.com/uipath/apollo-ui/commit/685a67245166a47aa1142d5ecbaa620e841d08d8))
+* **apollo-react:** minimize data object and not have display info in the data (#AG-394) ([#23](https://github.com/uipath/apollo-ui/issues/23)) ([27a7db8](https://github.com/uipath/apollo-ui/commit/27a7db802dd3bb8ffe21dde6446873133fd3198b)), closes [#AG-394](https://github.com/uipath/apollo-ui/issues/AG-394) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372)
+* **apollo-react:** move Escalations node from above to below center agent node ([#87](https://github.com/uipath/apollo-ui/issues/87)) ([8347220](https://github.com/uipath/apollo-ui/commit/8347220769625a5300a4ec69017fc6ad1861487f)), closes [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123)
+* **apollo-react:** node types for getUiPathData in definition ([7637123](https://github.com/uipath/apollo-ui/commit/7637123ece0c84d4008dfb0698a531375061d561))
+* **apollo-react:** on click health score (#AG-123) ([#108](https://github.com/uipath/apollo-ui/issues/108)) ([2ff579b](https://github.com/uipath/apollo-ui/commit/2ff579b69aeb01b2209709eb7c303d4abfbb357c)), closes [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123)
+* **apollo-react:** pass all nodes in view ([#67](https://github.com/uipath/apollo-ui/issues/67)) ([49f7194](https://github.com/uipath/apollo-ui/commit/49f7194dda4bfaa0fd5166b392425803eb876a22))
+* **apollo-react:** pass missing draggable props (#AG-597) ([#134](https://github.com/uipath/apollo-ui/issues/134)) ([7e07ea4](https://github.com/uipath/apollo-ui/commit/7e07ea44c49f31b57a1a64c43b15e86ad2c3878e)), closes [#AG-597](https://github.com/uipath/apollo-ui/issues/AG-597) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123)
+* **apollo-react:** performance for onNodesChange handler ([#99](https://github.com/uipath/apollo-ui/issues/99)) ([d1530a1](https://github.com/uipath/apollo-ui/commit/d1530a16fc63448f1bdceee05d61e5b04392ae40))
+* **apollo-react:** placement of preview node on connect end [MST-5310] ([#136](https://github.com/uipath/apollo-ui/issues/136)) ([fbb678d](https://github.com/uipath/apollo-ui/commit/fbb678ddc095ed327ef9ecb715a9de5d0845193e))
+* **apollo-react:** preserve nav state when initialItems change [MST-5363] ([#133](https://github.com/uipath/apollo-ui/issues/133)) ([c303c18](https://github.com/uipath/apollo-ui/commit/c303c187ac7fcb508f92607426b40a454e40f3ea))
+* **apollo-react:** prevent duplicate aria labels in tooltip with multiple children ([c9fe882](https://github.com/uipath/apollo-ui/commit/c9fe882ef5476e374e307fc2d075e6507888f9b8))
+* **apollo-react:** refactorings in stage node [MST-4450] ([#37](https://github.com/uipath/apollo-ui/issues/37)) ([4ea0b8b](https://github.com/uipath/apollo-ui/commit/4ea0b8bbd9d0dc322712241673c042906b487885))
+* **apollo-react:** remove extra leading + in add task button label ([#117](https://github.com/uipath/apollo-ui/issues/117)) ([c8d4a3e](https://github.com/uipath/apollo-ui/commit/c8d4a3e39acc4ef449dba3bb41ea4d7dbc937e36))
+* **apollo-react:** remove jittery UI while selecting task [MST-5205] ([#122](https://github.com/uipath/apollo-ui/issues/122)) ([251fd59](https://github.com/uipath/apollo-ui/commit/251fd596d570d1d0ccf1e99471b93bc0c5252e35))
+* **apollo-react:** remove model node and add health score (#AG-480) ([#78](https://github.com/uipath/apollo-ui/issues/78)) ([96ec7ef](https://github.com/uipath/apollo-ui/commit/96ec7effc366a8b1764ad6af21424a73bb16d379)), closes [#AG-480](https://github.com/uipath/apollo-ui/issues/AG-480)
+* **apollo-react:** remove model node and add health score (#AG-480) ([#78](https://github.com/uipath/apollo-ui/issues/78)) ([23d62db](https://github.com/uipath/apollo-ui/commit/23d62db354f80e290bfdd9177ca22ed3179f7465)), closes [#AG-480](https://github.com/uipath/apollo-ui/issues/AG-480)
+* **apollo-react:** remove the redundant handle when moving up and down (#AG-123) ([#143](https://github.com/uipath/apollo-ui/issues/143)) ([bab7765](https://github.com/uipath/apollo-ui/commit/bab77657951b5f0834f7d174f78c84f230b7b3b2)), closes [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123)
+* **apollo-react:** remove unused argTypes from StageNode stories ([1472d69](https://github.com/uipath/apollo-ui/commit/1472d69f2768c792e73d7fc731cb254fdb37300d))
+* **apollo-react:** rename stage from property panel [MST-4615] ([#57](https://github.com/uipath/apollo-ui/issues/57)) ([29426fc](https://github.com/uipath/apollo-ui/commit/29426fcbe17b063d40c4902e6b33983da42b057f))
+* **apollo-react:** replace hardcoded grid size with constant for consistency in BaseCanvas ([3b6ede1](https://github.com/uipath/apollo-ui/commit/3b6ede11fd90ba9f980ea14f11d0b957c77a91c4))
+* **apollo-react:** reset item state when prop changes ([#110](https://github.com/uipath/apollo-ui/issues/110)) ([b7303f1](https://github.com/uipath/apollo-ui/commit/b7303f1da811863ad81c560aaf387ce3acf7d418))
+* **apollo-react:** resolve mock test module paths [MST-5311] ([64ca7d7](https://github.com/uipath/apollo-ui/commit/64ca7d72604c99154185075e9962d130eb21448f))
+* **apollo-react:** revert stage status to icon instead of text [MST-4769] ([#73](https://github.com/uipath/apollo-ui/issues/73)) ([573f623](https://github.com/uipath/apollo-ui/commit/573f62329c6d08dc7d8125a74f62e005dae26f9f))
+* **apollo-react:** right click ([#58](https://github.com/uipath/apollo-ui/issues/58)) ([494ae3d](https://github.com/uipath/apollo-ui/commit/494ae3ddb1eb221a866c92e5dd6cb5342d8bcda6))
+* **apollo-react:** selection on debug mode ([8c77862](https://github.com/uipath/apollo-ui/commit/8c7786230265f2e23fa9527f6ee9dcb11eaf9959))
+* **apollo-react:** set first init animate duration instantly (#AG-123) ([#139](https://github.com/uipath/apollo-ui/issues/139)) ([97cc78d](https://github.com/uipath/apollo-ui/commit/97cc78decb5bfd6f92fe9b62dc95e9900f584adf)), closes [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123)
+* **apollo-react:** small canvas fixes ([1079cf8](https://github.com/uipath/apollo-ui/commit/1079cf87dcbc90953e44b7514970e2ac8f9267b9))
+* **apollo-react:** some fix for timeline player ([#42](https://github.com/uipath/apollo-ui/issues/42)) ([faef9df](https://github.com/uipath/apollo-ui/commit/faef9df918f693fee66422108ea6eff5138b68ca)), closes [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123)
+* **apollo-react:** stage name shouldn't be editable in execution [MST-4452] ([#39](https://github.com/uipath/apollo-ui/issues/39)) ([349c665](https://github.com/uipath/apollo-ui/commit/349c665872587ff7dcc15da8903078705758eebb))
+* **apollo-react:** stage node handles not correct ids ([#76](https://github.com/uipath/apollo-ui/issues/76)) ([a10028d](https://github.com/uipath/apollo-ui/commit/a10028d0c07f5c0f417910670d1a44794a821239))
+* **apollo-react:** stage node retry count ([#13](https://github.com/uipath/apollo-ui/issues/13)) ([4714979](https://github.com/uipath/apollo-ui/commit/47149793dc953b290de3401c89098a11df86f937))
+* **apollo-react:** stage node styling fixes and new stage clicked func ([#109](https://github.com/uipath/apollo-ui/issues/109)) ([5eab16c](https://github.com/uipath/apollo-ui/commit/5eab16c4511c844fffcac9a71c8277d2c82fb75c))
+* **apollo-react:** stage task toolbox typing and backwards compatibility [MST-000] ([#116](https://github.com/uipath/apollo-ui/issues/116)) ([4dc68c8](https://github.com/uipath/apollo-ui/commit/4dc68c85137b2583786100d44fb73d0b194a3cef))
+* **apollo-react:** stage title dynamic width [MST-4755] ([#69](https://github.com/uipath/apollo-ui/issues/69)) ([ff70a4c](https://github.com/uipath/apollo-ui/commit/ff70a4c534be1c1f2158204cc49920bea20921a9))
+* **apollo-react:** timeline player overlap and fit to view should not adjust zooming level ([#115](https://github.com/uipath/apollo-ui/issues/115)) ([28a1b08](https://github.com/uipath/apollo-ui/commit/28a1b08f64e34b9744acb00a780ea7517f46c116)), closes [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123)
+* **apollo-react:** timelineplayer styles and storybook ([#44](https://github.com/uipath/apollo-ui/issues/44)) ([5be5c79](https://github.com/uipath/apollo-ui/commit/5be5c792c85471648100de13028f92d3cccae60b))
+* **apollo-react:** top (#AG-123) ([#141](https://github.com/uipath/apollo-ui/issues/141)) ([e1fcc17](https://github.com/uipath/apollo-ui/commit/e1fcc17f072399f293dd1cae697b0bbe86c9c0ad)), closes [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123)
+* **apollo-react:** trigger node now uses correct handle element ([#102](https://github.com/uipath/apollo-ui/issues/102)) ([8cc4fa5](https://github.com/uipath/apollo-ui/commit/8cc4fa52d0fd5c979849c1817988475936aa6ba2))
+* **apollo-react:** trigger node uix updates ([91ea3c3](https://github.com/uipath/apollo-ui/commit/91ea3c34c9437bf2a6d2654939e5810b3e4a226f))
+* **apollo-react:** update BaseCanvas background styles and add offset to background component ([7a58832](https://github.com/uipath/apollo-ui/commit/7a5883265ac103db360b4493b629a80915b5a2d7))
+* **apollo-react:** update border-radius calculation and allow custom icon in AddNodePreview ([eae0113](https://github.com/uipath/apollo-ui/commit/eae0113fc53c0c9f61d8031576c6790e51e7d889))
+* **apollo-react:** update ButtonHandle tests to include nodeId prop and improve Handle mock ([58f54d6](https://github.com/uipath/apollo-ui/commit/58f54d6601a572d82182fc0fb540f90544335de3))
+* **apollo-react:** update colors to use --uix-canvas colors ([#151](https://github.com/uipath/apollo-ui/issues/151)) ([8d5796d](https://github.com/uipath/apollo-ui/commit/8d5796deb572a5791002188efabf36576a0d09d8))
+* **apollo-react:** update custom callback to handle multiple new edges [MST-5311] ([792933a](https://github.com/uipath/apollo-ui/commit/792933a5117bccc43a25299fe18446d89aa7e6ea))
+* **apollo-react:** update default offset for new node positioning to provide more space ([cd99d95](https://github.com/uipath/apollo-ui/commit/cd99d952e83e6e6f992fdb48fc740f0898f07bd5))
+* **apollo-react:** update icon to match fusion ([117897f](https://github.com/uipath/apollo-ui/commit/117897f27d383b7a762c54ae4bb789ad847f5e45))
+* **apollo-react:** update IconContainer styles for improved appearance ([21f6b63](https://github.com/uipath/apollo-ui/commit/21f6b630ffd355572eabcd66bf4f66fc5f0ca11a))
+* **apollo-react:** update import path for Edge and Node types from @xyflow/react, redo package-lock ([b46faf4](https://github.com/uipath/apollo-ui/commit/b46faf4e37587be554ab66b043c49b1c750b68ad))
+* **apollo-react:** update import paths for @uipath/uix packages ([fb67fa0](https://github.com/uipath/apollo-ui/commit/fb67fa0ff060e5616778a692a5a5f3f1b68e657c))
+* **apollo-react:** update import paths for @uipath/uix packages ([618f19c](https://github.com/uipath/apollo-ui/commit/618f19cfa0323100ad34f7920845502dfaacf6cb))
+* **apollo-react:** update imports from @xyflow/react to @uipath/uix/xyflow/react ([85a8425](https://github.com/uipath/apollo-ui/commit/85a84259e049be1c25c4d0f4d88ab6a741f5e5bc))
+* **apollo-react:** update logic to prevent moving label on nodes with bottom button handles ([#150](https://github.com/uipath/apollo-ui/issues/150)) ([52f909b](https://github.com/uipath/apollo-ui/commit/52f909b1d0ba705b0c7f09679051777a55838987))
+* **apollo-react:** update padding in stage node [MST-4399] ([#26](https://github.com/uipath/apollo-ui/issues/26)) ([f7a3130](https://github.com/uipath/apollo-ui/commit/f7a31309ea7ae7ec01edf04d8683f05f45e1fbd1))
+* **apollo-react:** update preview node and edge identifiers for consistency across components ([18d14b4](https://github.com/uipath/apollo-ui/commit/18d14b4765e0fbfe54b8cec009ca8937a885f8a0))
+* **apollo-react:** update stage node test id ([#120](https://github.com/uipath/apollo-ui/issues/120)) ([265f2d9](https://github.com/uipath/apollo-ui/commit/265f2d9137f96381d7eec72c9fbbd8c7ec617715))
+* **apollo-react:** update styled component props for consistency in StageHandle and ButtonHandle ([c8ae140](https://github.com/uipath/apollo-ui/commit/c8ae140d627de311bf6366c55849ba6a49c72790))
+* **apollo-react:** update StyledHandle to correctly forward props for better styling control ([58ec000](https://github.com/uipath/apollo-ui/commit/58ec0007a4469705c64666256e4a5a90eec44819))
+* **apollo-react:** update TriggerNode component and stories for responsive sizing ([57fcfed](https://github.com/uipath/apollo-ui/commit/57fcfedb83ee13ba3f71c3bf71c8a2cde4b0a8a4))
+* **apollo-react:** update zoom in/out icons per figma design ([32e360f](https://github.com/uipath/apollo-ui/commit/32e360f7162e8e1e2ec8b87bde9fb3f176298147))
+* **apollo-react:** updates categories to have icon and description ([#125](https://github.com/uipath/apollo-ui/issues/125)) ([0dd3b0a](https://github.com/uipath/apollo-ui/commit/0dd3b0a5d29f7093d9a84e6248680b4e60817636))
+* **apollo-react:** use click event for pane context menu [AG-591] ([7d60c98](https://github.com/uipath/apollo-ui/commit/7d60c984adb722254d28651925a09d51a6a5bace))
+* **apollo-react:** use correct import for core module in new components ([#105](https://github.com/uipath/apollo-ui/issues/105)) ([811855f](https://github.com/uipath/apollo-ui/commit/811855ff37b00e3d79ef77592c768757953d09c1))
+* **apollo-react:** use index in mapped JSX key ([#77](https://github.com/uipath/apollo-ui/issues/77)) ([21a5230](https://github.com/uipath/apollo-ui/commit/21a523022ff14556aea8276004a7dd2a50252bb0))
+* **apollo-react:** use newBaseNode ([#52](https://github.com/uipath/apollo-ui/issues/52)) ([66eaebd](https://github.com/uipath/apollo-ui/commit/66eaebdb4fb2b886a8c8086986e61f64533de55f))
+* **apollo-vertex:** add theme provider to registry json ([8fb3432](https://github.com/uipath/apollo-ui/commit/8fb3432538d6bd697fa54652786c4c09c2a07e24))
+* **apollo-wind:** honor grid.span on fields and custom components ([5630f35](https://github.com/uipath/apollo-ui/commit/5630f350b375b5780be5ece39a9a7a9a7403cc79))
+
+
+### Features
+
+* **apollo-react:** Add AgentNode and StageNode components with associated types and styles ([479765c](https://github.com/uipath/apollo-ui/commit/479765c416cf52a8a8cd9a2cebd6a6169e2cc00a))
+* **apollo-react:** add ArtifactNode component with circular shape and handle configurations ([5d37f9d](https://github.com/uipath/apollo-ui/commit/5d37f9de1be1997149109bdd6ec584c6a7396523))
+* **apollo-react:** add autopilot support via suggestions on canvas [AG-332][AG-333][AG-352] ([#88](https://github.com/uipath/apollo-ui/issues/88)) ([9849b5a](https://github.com/uipath/apollo-ui/commit/9849b5a8efc0ae227e83bea7bb44b8dbd0df49cb))
+* **apollo-react:** add button handle for agent memory [AG-488] ([#72](https://github.com/uipath/apollo-ui/issues/72)) ([00d294f](https://github.com/uipath/apollo-ui/commit/00d294f7399f0d109a48a32982a9278dcb5a6fa8))
+* **apollo-react:** add canvas components to project ([e38ba75](https://github.com/uipath/apollo-ui/commit/e38ba7531a6740ff1f416a430006d43455154bb4))
+* **apollo-react:** add coded agent flow (#AG-388) ([#21](https://github.com/uipath/apollo-ui/issues/21)) ([4f26ff8](https://github.com/uipath/apollo-ui/commit/4f26ff8c3891d77ea7d1250eb543ec8d2ce2a7c8)), closes [#AG-388](https://github.com/uipath/apollo-ui/issues/AG-388) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-393](https://github.com/uipath/apollo-ui/issues/AG-393) [#AG-393](https://github.com/uipath/apollo-ui/issues/AG-393) [#AG-393](https://github.com/uipath/apollo-ui/issues/AG-393)
+* **apollo-react:** add data transform icon ([ecd9f98](https://github.com/uipath/apollo-ui/commit/ecd9f988872cf636bf52ae51ba9f87adca3adb70))
+* **apollo-react:** add default edge configuration and enhance edge selection UI in BaseCanvas stories ([925bc0b](https://github.com/uipath/apollo-ui/commit/925bc0b85c7428402105f4f0717434117a0b352f))
+* **apollo-react:** add Grid and Stack layout components with responsive properties ([49bfbec](https://github.com/uipath/apollo-ui/commit/49bfbec3562fd737de6255f7f3c0b58c99a5bcd5))
+* **apollo-react:** add Grid and Stack layout components with responsive properties ([ac37b4d](https://github.com/uipath/apollo-ui/commit/ac37b4dd35001ea5482b023cf0fd34f93cc7fb17))
+* **apollo-react:** add load-attachments tool [PC-3261] ([#126](https://github.com/uipath/apollo-ui/issues/126)) ([8df5c78](https://github.com/uipath/apollo-ui/commit/8df5c78c23a2090f57c5cb1002980ff654793170))
+* **apollo-react:** add memory node and edge [AG-466] ([#61](https://github.com/uipath/apollo-ui/issues/61)) ([0ea5324](https://github.com/uipath/apollo-ui/commit/0ea53242c73cc4a588b63b80651d77b3d58a54c6))
+* **apollo-react:** add memory node and edge [AG-466] ([#61](https://github.com/uipath/apollo-ui/issues/61)) ([512a02b](https://github.com/uipath/apollo-ui/commit/512a02bf7e530fb46235e43df9598f6aeb4f5e2e))
+* **apollo-react:** add more icons ([eaf9b16](https://github.com/uipath/apollo-ui/commit/eaf9b169f34150570b3c4ca2e4a9b7c8c247c7a9))
+* **apollo-react:** add new icons (AgentProject, ControlFlowIcon, DecisionIcon, SwitchIcon) and update index export ([fce1b02](https://github.com/uipath/apollo-ui/commit/fce1b02c2f957b3f4c7e39becb24970eca043912))
+* **apollo-react:** add new icons (AgentProject, ControlFlowIcon, DecisionIcon, SwitchIcon) and update index export ([c9719ab](https://github.com/uipath/apollo-ui/commit/c9719ab9425d68d5288a124d2f9214cb669a0932))
+* **apollo-react:** add new node element type for user cancelled. [MST-4869] ([#82](https://github.com/uipath/apollo-ui/issues/82)) ([f7202f8](https://github.com/uipath/apollo-ui/commit/f7202f816d7a6ceda3b5830d35b96e8b641fda1c))
+* **apollo-react:** add new project icons and update index exports ([56be067](https://github.com/uipath/apollo-ui/commit/56be0674eff70f74c8e9da512dd306dcf9bdd276))
+* **apollo-react:** Add NodePropertiesPanel component for node configuration ([40f78f6](https://github.com/uipath/apollo-ui/commit/40f78f6bb75a4022a9dbbbe9dcef4013aa01e034))
+* **apollo-react:** Add NodePropertiesPanel component for node configuration ([cbd4200](https://github.com/uipath/apollo-ui/commit/cbd42005b618bc35e50ade6ca7b17adc94aef42b))
+* **apollo-react:** add onselectionchange and getuipathdata ([f717939](https://github.com/uipath/apollo-ui/commit/f7179391b83a4d98ac5863d077a10b6b8aeebd34))
+* **apollo-react:** add onTaskClick handler for stage tasks ([#14](https://github.com/uipath/apollo-ui/issues/14)) ([2103025](https://github.com/uipath/apollo-ui/commit/2103025ecc1c58da61fd37fe0fe8bc87953a931d))
+* **apollo-react:** add organize functionality for agent flow [AG-591] ([068d461](https://github.com/uipath/apollo-ui/commit/068d461f531824825446424c506fce7828f43171))
+* **apollo-react:** add placeholder node to canvas [AG-471] ([#96](https://github.com/uipath/apollo-ui/issues/96)) ([800d373](https://github.com/uipath/apollo-ui/commit/800d3737ac347707ee4acba67a486a52a6f91230))
+* **apollo-react:** add pre hook for setting new node and edge overrides ([#158](https://github.com/uipath/apollo-ui/issues/158)) ([1e94923](https://github.com/uipath/apollo-ui/commit/1e949236ebaaf8cc94a4648d13093dc170b30dd3))
+* **apollo-react:** add script task icon ([4233842](https://github.com/uipath/apollo-ui/commit/42338429989f632ed21251a0a922e7d47da0122f))
+* **apollo-react:** add smart handles for opt-in and poc for collapsible node ([#146](https://github.com/uipath/apollo-ui/issues/146)) ([c0e4361](https://github.com/uipath/apollo-ui/commit/c0e4361198b8d2229370fffa8d57a1a82b589589))
+* **apollo-react:** add StageNode, StageEdge, and StageConnectionEdge components with connection handles and customizable edges ([a1d7427](https://github.com/uipath/apollo-ui/commit/a1d7427c7e03314af52e2a59d933de598f222dc7))
+* **apollo-react:** add Sticky Note Node component with markdown support ([#68](https://github.com/uipath/apollo-ui/issues/68)) ([5ee94f2](https://github.com/uipath/apollo-ui/commit/5ee94f24e12b22fbad580a07d20c2dc9d80dc2f0))
+* **apollo-react:** add sticky note support to agent flow [AG-482] ([f3032e6](https://github.com/uipath/apollo-ui/commit/f3032e6051be22d323afa20474d381589d91ddef))
+* **apollo-react:** add timeline player (#AG-393) ([#29](https://github.com/uipath/apollo-ui/issues/29)) ([dee2f0c](https://github.com/uipath/apollo-ui/commit/dee2f0c24bc7251652ecc593983cb0c875a48adf)), closes [#AG-393](https://github.com/uipath/apollo-ui/issues/AG-393) [#AG-393](https://github.com/uipath/apollo-ui/issues/AG-393) [#AG-393](https://github.com/uipath/apollo-ui/issues/AG-393) [#AG-393](https://github.com/uipath/apollo-ui/issues/AG-393) [#AG-393](https://github.com/uipath/apollo-ui/issues/AG-393) [#AG-393](https://github.com/uipath/apollo-ui/issues/AG-393) [#AG-393](https://github.com/uipath/apollo-ui/issues/AG-393) [#AG-393](https://github.com/uipath/apollo-ui/issues/AG-393) [#AG-393](https://github.com/uipath/apollo-ui/issues/AG-393) [#AG-393](https://github.com/uipath/apollo-ui/issues/AG-393) [#AG-393](https://github.com/uipath/apollo-ui/issues/AG-393) [#AG-393](https://github.com/uipath/apollo-ui/issues/AG-393) [#AG-393](https://github.com/uipath/apollo-ui/issues/AG-393) [#AG-393](https://github.com/uipath/apollo-ui/issues/AG-393) [#AG-393](https://github.com/uipath/apollo-ui/issues/AG-393)
+* **apollo-react:** add timeline player (#AG-393) ([#29](https://github.com/uipath/apollo-ui/issues/29)) ([6411e74](https://github.com/uipath/apollo-ui/commit/6411e741956cfec9978e4b76d74c449a9d23f6a8)), closes [#AG-393](https://github.com/uipath/apollo-ui/issues/AG-393) [#AG-393](https://github.com/uipath/apollo-ui/issues/AG-393) [#AG-393](https://github.com/uipath/apollo-ui/issues/AG-393) [#AG-393](https://github.com/uipath/apollo-ui/issues/AG-393) [#AG-393](https://github.com/uipath/apollo-ui/issues/AG-393) [#AG-393](https://github.com/uipath/apollo-ui/issues/AG-393) [#AG-393](https://github.com/uipath/apollo-ui/issues/AG-393) [#AG-393](https://github.com/uipath/apollo-ui/issues/AG-393) [#AG-393](https://github.com/uipath/apollo-ui/issues/AG-393) [#AG-393](https://github.com/uipath/apollo-ui/issues/AG-393) [#AG-393](https://github.com/uipath/apollo-ui/issues/AG-393) [#AG-393](https://github.com/uipath/apollo-ui/issues/AG-393) [#AG-393](https://github.com/uipath/apollo-ui/issues/AG-393) [#AG-393](https://github.com/uipath/apollo-ui/issues/AG-393) [#AG-393](https://github.com/uipath/apollo-ui/issues/AG-393)
+* **apollo-react:** add tooltip support for resource node name and adornments [AG-483] ([#70](https://github.com/uipath/apollo-ui/issues/70)) ([f98a1d6](https://github.com/uipath/apollo-ui/commit/f98a1d6a12117df4613fdc76c6e0e554aa3d6330))
+* **apollo-react:** add transform icons ([5e27569](https://github.com/uipath/apollo-ui/commit/5e27569619314ef693373e703ea9c8f633d7181c))
+* **apollo-react:** add TriggerNode component with styles and stories ([1ab15fb](https://github.com/uipath/apollo-ui/commit/1ab15fb0f31882bddddcfdabfce5d93711ee45bf))
+* **apollo-react:** add WithBaseNodes story and enhance StickyNoteNode styles ([#104](https://github.com/uipath/apollo-ui/issues/104)) ([6a7a254](https://github.com/uipath/apollo-ui/commit/6a7a254ab529569d6cad8e208eb8608ff0b8b6c9))
+* **apollo-react:** added NodeToolbar component with toolbar actions and dropdown functionality ([#36](https://github.com/uipath/apollo-ui/issues/36)) ([98d8c8e](https://github.com/uipath/apollo-ui/commit/98d8c8e7de7df57261df7893addc2d52157fe4f1))
+* **apollo-react:** adds hook for exporting canvas nodes ([#159](https://github.com/uipath/apollo-ui/issues/159)) ([14a6233](https://github.com/uipath/apollo-ui/commit/14a6233c824c4cd9ca9b601a0a3ca0dd4aae7dbc))
+* **apollo-react:** allow direct importing of xyflow styles in canvas components [AG-395] ([#22](https://github.com/uipath/apollo-ui/issues/22)) ([07a6cde](https://github.com/uipath/apollo-ui/commit/07a6cde56883befe800bdecccab7bdcfe4a94791))
+* **apollo-react:** allow disabling of nodes [AG-371] ([#55](https://github.com/uipath/apollo-ui/issues/55)) ([793b5d0](https://github.com/uipath/apollo-ui/commit/793b5d0169ae2654c4d1cdb3d436fdaf5bf2ff67))
+* **apollo-react:** bundles xyflow in the lib ([#27](https://github.com/uipath/apollo-ui/issues/27)) ([237df1a](https://github.com/uipath/apollo-ui/commit/237df1a76b887656858d59f148052afd9e47ee2f))
+* **apollo-react:** bundles xyflow in the lib ([#27](https://github.com/uipath/apollo-ui/issues/27)) ([1af7a8e](https://github.com/uipath/apollo-ui/commit/1af7a8e1c5849eb91dfc43d174f967d11e50305a))
+* **apollo-react:** bundles xyflow in the lib ([#27](https://github.com/uipath/apollo-ui/issues/27)) ([a3f0c93](https://github.com/uipath/apollo-ui/commit/a3f0c9397f4f4d7a57ff3a0eaf8b7c53936a60f6))
+* **apollo-react:** change trigger node border to 1px ([#10](https://github.com/uipath/apollo-ui/issues/10)) ([209d2e5](https://github.com/uipath/apollo-ui/commit/209d2e56e635906d8be378a242e210ff4530e343))
+* **apollo-react:** copy edge toolbar changes from uix [MST-5311] ([121a59b](https://github.com/uipath/apollo-ui/commit/121a59b7af8e6c1acc53f1f5a85e27c5a41a8f69))
+* **apollo-react:** dragging behavior for agent node and resources nodes (#AG-351) ([#127](https://github.com/uipath/apollo-ui/issues/127)) ([26116a1](https://github.com/uipath/apollo-ui/commit/26116a13cf890bc022bf45d4d5f3e80fcc1e9966)), closes [#AG-351](https://github.com/uipath/apollo-ui/issues/AG-351) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123) [#AG-123](https://github.com/uipath/apollo-ui/issues/AG-123)
+* **apollo-react:** enable children for agent flow canvas ([5113a36](https://github.com/uipath/apollo-ui/commit/5113a36be9556086d2b41d15abccfdf8dd13d768))
+* **apollo-react:** enhance AddNodeManager with custom panel support and improve icon handling ([38e3e54](https://github.com/uipath/apollo-ui/commit/38e3e54ca1784a1b7c758d0cb3850ac46a05a138))
+* **apollo-react:** enhance BaseNode and ExecutionStatusIcon components with dynamic height and improved icon rendering ([#24](https://github.com/uipath/apollo-ui/issues/24)) ([0945a0f](https://github.com/uipath/apollo-ui/commit/0945a0f3098dc8e7ab5cd405eac83c9a029d76fd))
+* **apollo-react:** enhance BaseNode component with customizable dimensions and styles ([758534f](https://github.com/uipath/apollo-ui/commit/758534f9f0147a36646673b3105c90025af4e2b3))
+* **apollo-react:** enhance BaseNode component with dynamic handle visibility and interaction support ([0fb1343](https://github.com/uipath/apollo-ui/commit/0fb13430b8eda85d329be6ec1b56c43e85aa74bb))
+* **apollo-react:** enhance HierarchicalCanvas with animated transitions and mini canvas navigator ([#66](https://github.com/uipath/apollo-ui/issues/66)) ([f92b606](https://github.com/uipath/apollo-ui/commit/f92b606182552dd49a83b8d1cef7546eef235a1a))
+* **apollo-react:** enhance node and edge management with improved inspector and positioning logic ([202972c](https://github.com/uipath/apollo-ui/commit/202972c3f997ee1175e0691b10f526e6f49f8ce9))
+* **apollo-react:** enhance StageNode component with task icons and exception handling ([7ec61dd](https://github.com/uipath/apollo-ui/commit/7ec61ddf8a22da4f5deda4df8e74228778ef8f2d))
+* **apollo-react:** export (#AG-393) ([#34](https://github.com/uipath/apollo-ui/issues/34)) ([e49385b](https://github.com/uipath/apollo-ui/commit/e49385bc62f667cbfd6103ffbe515f0c4a6be022)), closes [#AG-393](https://github.com/uipath/apollo-ui/issues/AG-393)
+* **apollo-react:** export agent canvas ([#18](https://github.com/uipath/apollo-ui/issues/18)) ([bfcc65f](https://github.com/uipath/apollo-ui/commit/bfcc65f5eace7d12f6f4999a96c4dff4863f3301))
+* **apollo-react:** Implement AddNodePanel component with styles, types, and preview functionality ([8d997cc](https://github.com/uipath/apollo-ui/commit/8d997cca04c77344c5279e00e0011637ef787aee))
+* **apollo-react:** Implement AddNodePanel component with styles, types, and preview functionality ([21b02fe](https://github.com/uipath/apollo-ui/commit/21b02feed0579e59e785dc0d1245d1edf2dec318))
+* **apollo-react:** Implement AddNodePanel component with styles, types, and preview functionality ([f1f76c1](https://github.com/uipath/apollo-ui/commit/f1f76c111b2dc13c56b1ae7895e0d9ae868b2a09))
+* **apollo-react:** implement ButtonHandles component with customizable handles and interactions ([d5687df](https://github.com/uipath/apollo-ui/commit/d5687df18b85c5a30bc9f0c3c459f1bef5304f77))
+* **apollo-react:** implement CanvasEventBus for type-safe global event handling and add related hooks ([1584b19](https://github.com/uipath/apollo-ui/commit/1584b19d0f06d9a9eb0193bbd9693f90e4196738))
+* **apollo-react:** implement Node Registry and Node Types ([09654ea](https://github.com/uipath/apollo-ui/commit/09654ea0fcd899c781d0c18a62a082c67850f73b))
+* **apollo-react:** implement Node Registry and Node Types ([3d96fbe](https://github.com/uipath/apollo-ui/commit/3d96fbe05e51f3525bc28810d9d975b49f334a7d))
+* **apollo-react:** implement NodeContextMenu for enhanced node interactions and context actions ([fe197de](https://github.com/uipath/apollo-ui/commit/fe197de338ee61da35545bf75c43b230070c8d23))
+* **apollo-react:** localize agent button handles [AG-402] ([#41](https://github.com/uipath/apollo-ui/issues/41)) ([f6de350](https://github.com/uipath/apollo-ui/commit/f6de350f5f92a4693a4f31a93d8bbf11e4bd0051))
+* **apollo-react:** loop node [MST-4838] ([#118](https://github.com/uipath/apollo-ui/issues/118)) ([205864c](https://github.com/uipath/apollo-ui/commit/205864c3bd039b7f7ab749b655bd71d169a06517))
+* **apollo-react:** loop node [MST-4838] ([#118](https://github.com/uipath/apollo-ui/issues/118)) ([968b1d2](https://github.com/uipath/apollo-ui/commit/968b1d2de7413a7b5963676e68b4ea856de92654))
+* **apollo-react:** merge remaining overrides from apollo ([9633023](https://github.com/uipath/apollo-ui/commit/9633023b59b81074c21bc733bdada204ef0bcc96))
+* **apollo-react:** migrate Toolbox component from PO [MST-4947] ([#94](https://github.com/uipath/apollo-ui/issues/94)) ([28086b3](https://github.com/uipath/apollo-ui/commit/28086b34e81d04455fd786617c78248f63ab8e53))
+* **apollo-react:** migrate Toolbox component from PO [MST-4947] ([#94](https://github.com/uipath/apollo-ui/issues/94)) ([caa0178](https://github.com/uipath/apollo-ui/commit/caa017829c638132d44e880ab8e16ae07f529a8e))
+* **apollo-react:** migrate Toolbox component from PO [MST-4947] ([#94](https://github.com/uipath/apollo-ui/issues/94)) ([7208604](https://github.com/uipath/apollo-ui/commit/7208604ac25833885550de830a18f6350800156e))
+* **apollo-react:** modified StickyNoteNode to improve color handling and styling, including alpha transparency for backgrounds ([#145](https://github.com/uipath/apollo-ui/issues/145)) ([58f4afa](https://github.com/uipath/apollo-ui/commit/58f4afadefcc73dc85f3c13c3c2ec127b62131a4))
+* **apollo-react:** new built-in tool icons ([#162](https://github.com/uipath/apollo-ui/issues/162)) ([9f42107](https://github.com/uipath/apollo-ui/commit/9f4210776238e317db5ae5ae7cd658f93fda3449))
+* **apollo-react:** new selected state for a task in a stage ([#101](https://github.com/uipath/apollo-ui/issues/101)) ([bbf0fdb](https://github.com/uipath/apollo-ui/commit/bbf0fdb92c7c639472b5f1a04543e32e999a0fae))
+* **apollo-react:** node label editing ([f86503a](https://github.com/uipath/apollo-ui/commit/f86503acd0882a76d90a94f4cb7f84d8c74d0f93))
+* **apollo-react:** pass mode into toolbar [MST-000] ([#121](https://github.com/uipath/apollo-ui/issues/121)) ([7694310](https://github.com/uipath/apollo-ui/commit/76943109af30f19932dfe3a1f247e080ccccd43a))
+* **apollo-react:** placeholder node enhancements [AG-548] ([#124](https://github.com/uipath/apollo-ui/issues/124)) ([79bcb05](https://github.com/uipath/apollo-ui/commit/79bcb05c9257a47b16f12a3fabbb3ee1c60455aa))
+* **apollo-react:** port over agents canvas [AG-330] ([#4](https://github.com/uipath/apollo-ui/issues/4)) ([8ed0304](https://github.com/uipath/apollo-ui/commit/8ed030432736be1e9fc4eacc7595c2fa5f8418c7))
+* **apollo-react:** port over agents canvas [AG-330] ([#4](https://github.com/uipath/apollo-ui/issues/4)) ([717eef6](https://github.com/uipath/apollo-ui/commit/717eef65f9f3af8dcd20c63755afdd790fea2d98))
+* **apollo-react:** Refactor AddNodePanel and BaseNode components ([7e7b065](https://github.com/uipath/apollo-ui/commit/7e7b06555d23ff731cc3128e226af798ef4379dd))
+* **apollo-react:** rename memory to memorySpace [AG-534] ([#100](https://github.com/uipath/apollo-ui/issues/100)) ([466589c](https://github.com/uipath/apollo-ui/commit/466589c41f90d8899a51821de100af6c4fe6976c))
+* **apollo-react:** reposition Panel to bottom-left in DefaultStory for improved layout ([8606180](https://github.com/uipath/apollo-ui/commit/86061802c9082ac4e3c6c6abca183140abb90733))
+* **apollo-react:** reusable hook for adding node on connect end [MST-5310] ([#135](https://github.com/uipath/apollo-ui/issues/135)) ([4bbf402](https://github.com/uipath/apollo-ui/commit/4bbf402a8d753d8f318fe3daa62eb4fb171dc25d))
+* **apollo-react:** show guardrails icon on model node [AG-470] ([#64](https://github.com/uipath/apollo-ui/issues/64)) ([2113aba](https://github.com/uipath/apollo-ui/commit/2113aba021d762527cad8eff374f3b33c324e51a))
+* **apollo-react:** show mcp icon and execution status highlighting on agent flow nodes ([#30](https://github.com/uipath/apollo-ui/issues/30)) ([f936853](https://github.com/uipath/apollo-ui/commit/f93685388e99125998712599ff348966f077a6b0))
+* **apollo-react:** show mcp icon and execution status highlighting on agent flow nodes ([#30](https://github.com/uipath/apollo-ui/issues/30)) ([dbcc829](https://github.com/uipath/apollo-ui/commit/dbcc829a4b8458762e9c05d9d988b5aaac22dbe7))
+* **apollo-react:** show spinner on nodes when processing suggestions ([#103](https://github.com/uipath/apollo-ui/issues/103)) ([e4f585c](https://github.com/uipath/apollo-ui/commit/e4f585c09ec26a98b85db251270135e2fa6ff25d))
+* **apollo-react:** simplify add node panel and enhance search functionality ([#3](https://github.com/uipath/apollo-ui/issues/3)) ([53d22ec](https://github.com/uipath/apollo-ui/commit/53d22ec0a4df3be2cbb3c57bb855c91e8a01264c))
+* **apollo-react:** smartly position handles on the nearest grid gap space ([#140](https://github.com/uipath/apollo-ui/issues/140)) ([9ec72e4](https://github.com/uipath/apollo-ui/commit/9ec72e43809036fccfeb8876e4a19492d215c2d8))
+* **apollo-react:** smartly position handles on the nearest grid gap space ([#140](https://github.com/uipath/apollo-ui/issues/140)) ([f92a0b7](https://github.com/uipath/apollo-ui/commit/f92a0b782b0cd76effa961f1fe52225a10d564d2))
+* **apollo-react:** stage handles positioned properly now, add offsets for stage handles [MST-4392] ([#28](https://github.com/uipath/apollo-ui/issues/28)) ([af46be5](https://github.com/uipath/apollo-ui/commit/af46be5c797d38e119f9f703da0784d8dcdf8067))
+* **apollo-react:** stage node sla/escalation icons can now be colored if hit ([#75](https://github.com/uipath/apollo-ui/issues/75)) ([e15d189](https://github.com/uipath/apollo-ui/commit/e15d1894c96495efe63dfea924afa24ff66ba4cb))
+* **apollo-react:** support detailed node execution state ([b7ceedb](https://github.com/uipath/apollo-ui/commit/b7ceedbd58d75243691df8eea9bec21152130e87))
+* **apollo-react:** support rearranging tasks within a stage from canvas [MST-4273] ([#149](https://github.com/uipath/apollo-ui/issues/149)) ([ae871e8](https://github.com/uipath/apollo-ui/commit/ae871e8a4db760265717aa8517297925f421255b))
+* **apollo-react:** support rearranging tasks within a stage from canvas [MST-4273] ([#149](https://github.com/uipath/apollo-ui/issues/149)) ([76a780a](https://github.com/uipath/apollo-ui/commit/76a780a4698ca46af59adfb50e79761a78369047))
+* **apollo-react:** swap context and escalation positions [AG-404] ([#33](https://github.com/uipath/apollo-ui/issues/33)) ([403ddaf](https://github.com/uipath/apollo-ui/commit/403ddaf0756e77b7baebcbacd6778942e059d0df))
+* **apollo-react:** temp icon fix ([b37157c](https://github.com/uipath/apollo-ui/commit/b37157cbf03c903b3bb2b0e72bb245d25fb55f6a))
+* **apollo-react:** timelineplayer cursor ([#45](https://github.com/uipath/apollo-ui/issues/45)) ([aeb1dd1](https://github.com/uipath/apollo-ui/commit/aeb1dd16871320e085f449977208e2e672e5eda7))
+* **apollo-react:** toolbar action pinning, toggling, colors ([#152](https://github.com/uipath/apollo-ui/issues/152)) ([a74ebec](https://github.com/uipath/apollo-ui/commit/a74ebec548064f2247a196754a44d06897e89a13))
+* **apollo-react:** toolbar action pinning, toggling, colors ([#152](https://github.com/uipath/apollo-ui/issues/152)) ([fab5130](https://github.com/uipath/apollo-ui/commit/fab51308a5040fbb20f3a136b80e615cfe2cd8fc))
+* **apollo-react:** update Agent node [AG-372][AG-373][AG-377] ([#8](https://github.com/uipath/apollo-ui/issues/8)) ([ab17d3a](https://github.com/uipath/apollo-ui/commit/ab17d3a4548e9d91c4b6e626834347d7c2dd44db)), closes [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#9](https://github.com/uipath/apollo-ui/issues/9) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372) [#AG-372](https://github.com/uipath/apollo-ui/issues/AG-372)
+* **apollo-react:** update and localize canvas position control icons [AG-657] ([#147](https://github.com/uipath/apollo-ui/issues/147)) ([14e75f4](https://github.com/uipath/apollo-ui/commit/14e75f420cca03be742c5877b257a39f84a49ba8))
+* **apollo-react:** update and localize canvas position control icons [AG-657] ([#147](https://github.com/uipath/apollo-ui/issues/147)) ([8f008d7](https://github.com/uipath/apollo-ui/commit/8f008d7a732a4523036715ac5a540a4a8d374320))
+* **apollo-react:** update color variables to use new uix-canvas theme and updated preview node creation ([#138](https://github.com/uipath/apollo-ui/issues/138)) ([68094d7](https://github.com/uipath/apollo-ui/commit/68094d738dbdffaf1b8270758e951cc5f520988f))
+* **apollo-react:** update ESLint configuration and scripts for improved linting and type checking ([44381dc](https://github.com/uipath/apollo-ui/commit/44381dcbdf86a1b6a52ac8bf4d05b6dd2caed08f))
+* **apollo-react:** update ESLint configuration and scripts for improved linting and type checking ([f66ecbb](https://github.com/uipath/apollo-ui/commit/f66ecbb6437f0d05ca3d8c2b3aa801728aac48a5))
+* **apollo-react:** update menu options on canvas [MST-4271] ([#17](https://github.com/uipath/apollo-ui/issues/17)) ([50fd8f9](https://github.com/uipath/apollo-ui/commit/50fd8f942089107d723b28eaa489fdce9aae7927))
+* **apollo-react:** update satage ui in flow design time ([e7204a4](https://github.com/uipath/apollo-ui/commit/e7204a4abb9a4142bc67babb65b88c065023db37))
+* **apollo-react:** update stage add task [MST-5138] ([#106](https://github.com/uipath/apollo-ui/issues/106)) ([6da8103](https://github.com/uipath/apollo-ui/commit/6da8103276b75d33d8424e044a08edd449da5a32))
+* **apollo-react:** update stage rendering and props ([3521a84](https://github.com/uipath/apollo-ui/commit/3521a84fbe27abce4f378d3d41062231b54d7da1))
+* **apollo-react:** update stage rendering and props ([12a43b6](https://github.com/uipath/apollo-ui/commit/12a43b6ab8ae81c8bf59cb0aa5e8a9153a22d3ae))
+* **apollo-react:** updated sla breached colors and properties ([#81](https://github.com/uipath/apollo-ui/issues/81)) ([0c094f8](https://github.com/uipath/apollo-ui/commit/0c094f8e3810fd423ba5007702fdd941a3ec40ae))
+* **apollo-react:** updates to case management nodes ui ([#16](https://github.com/uipath/apollo-ui/issues/16)) ([c35d134](https://github.com/uipath/apollo-ui/commit/c35d134fae93afaec1545805a5496e5192434ed0))
+* **apollo-react:** updates to stage node ui to match latest designs ([#12](https://github.com/uipath/apollo-ui/issues/12)) ([80a3c9b](https://github.com/uipath/apollo-ui/commit/80a3c9baa9f1ccf4086939073e07457152c59df8))
+* **apollo-react:** use NodeToolBar instead of NodeContextMenu [AG-419] ([#53](https://github.com/uipath/apollo-ui/issues/53)) ([0e170f0](https://github.com/uipath/apollo-ui/commit/0e170f0295b6429b41b089cf2b2756d95b49be4e))
+* **apollo-react:** use same icon mapping from agent builder for tools only [AG-469] ([#74](https://github.com/uipath/apollo-ui/issues/74)) ([13c1d73](https://github.com/uipath/apollo-ui/commit/13c1d73ad009f52bc0d5b400d85e4405639c34da))
+* **apollo-react:** use xyflow style css instead of base css ([#25](https://github.com/uipath/apollo-ui/issues/25)) ([8f079d9](https://github.com/uipath/apollo-ui/commit/8f079d905715ff862928e27a420d0f28fdb4743d))
+
+## [0.6.3](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.6.2...@uipath/apollo-wind@0.6.3) (2026-01-05)
+
+
+### Bug Fixes
+
+* **apollo-wind:** radix wrapper components now properly forward refs ([c32b7ea](https://github.com/uipath/apollo-ui/commit/c32b7ea246ac7871c5dcd19e67e644c209cd6b91))
+
+## [0.6.2](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.6.1...@uipath/apollo-wind@0.6.2) (2025-12-31)
+
+### Bug Fixes
+
+- **apollo-wind:** remove devtools, and clean up some renames + lint ([fd0ec9b](https://github.com/uipath/apollo-ui/commit/fd0ec9b1defe5f0bf3374490dd4a46e37108fee0))
+
+### Features
+
+- **apollo-react:** add ApButton and also new width variant ([085f513](https://github.com/uipath/apollo-ui/commit/085f5136bd8fbb4e447788dffe1af9548be2ea22))
+
+## [0.6.1](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.6.0...@uipath/apollo-wind@0.6.1) (2025-12-30)
+
+# [0.6.0](https://github.com/uipath/apollo-ui/compare/@uipath/apollo-wind@0.5.0...@uipath/apollo-wind@0.6.0) (2025-12-24)
+
+### Bug Fixes
+
+- **apollo-wind:** add .npmrc file and update component styles for Accordion, DatePicker, and Slider ([ee27a62](https://github.com/uipath/apollo-ui/commit/ee27a62de627d6fa44913db04d362646f4f912d7))
+- **apollo-wind:** add cursor pointer to interactive UI components for better accessibility ([f9f6cbb](https://github.com/uipath/apollo-ui/commit/f9f6cbb8cc565ddb58a8a4e64f358cdb78eefd2f))
+- **apollo-wind:** add custom field components and corresponding stories for MetadataForm ([142c4be](https://github.com/uipath/apollo-ui/commit/142c4bef497fb686c8d4a7824f1e6ad6424d7d39))
+- **apollo-wind:** add more template examples ([59dd639](https://github.com/uipath/apollo-ui/commit/59dd6396b488a8ce3338abcab03f66367e7f8d3f))
+- **apollo-wind:** add release pipeline ([c2c3e17](https://github.com/uipath/apollo-ui/commit/c2c3e17c648fe07e3a388dba5537a94d0a7e56de))
+- **apollo-wind:** add source directive for JavaScript and TypeScript files in globals.css ([6f5a3a8](https://github.com/uipath/apollo-ui/commit/6f5a3a815a8f3adb9d45f37691848b3805945382))
+- **apollo-wind:** clean up theme styles and remove unused CSS files ([e47eab9](https://github.com/uipath/apollo-ui/commit/e47eab922027434189beb7c5c78be0e8e8c8626c))
+- **apollo-wind:** correct destructive color mappings and apply background styles to body ([c53a2d9](https://github.com/uipath/apollo-ui/commit/c53a2d9397ddbb0e4dac6fde0b7f902098c62f7a))
+- **apollo-wind:** fix format ([12f850b](https://github.com/uipath/apollo-ui/commit/12f850be5cb629a8cd8697883ade560bc41c188d))
+- **apollo-wind:** improved organization and layout of foundation ([58d1b95](https://github.com/uipath/apollo-ui/commit/58d1b95c6d196838f4f50c3a1c2ba8148bd52931))
+- **apollo-wind:** lint clean up ([0ebcc13](https://github.com/uipath/apollo-ui/commit/0ebcc13cb497434b45853b16c90ec3cc81561d94))
+- **apollo-wind:** release conditions ([ce72652](https://github.com/uipath/apollo-ui/commit/ce72652cbd20ca32945189e7054a7ad4496399e1))
+- **apollo-wind:** release tokens ([23d7541](https://github.com/uipath/apollo-ui/commit/23d7541a2f6597cee75bdcc8739eb448d8906b41))
+- **apollo-wind:** remove unused imports in flow-editor-layout example ([aeb3cd2](https://github.com/uipath/apollo-ui/commit/aeb3cd2c9a7d82f093396df7ba79e9b0dde9efdf))
+- **apollo-wind:** rename templates to be examples ([2ee47ba](https://github.com/uipath/apollo-ui/commit/2ee47ba4f5974e216046758f3335ce6ffa7bcf42))
+- **apollo-wind:** set defaults for theme and variant in storybook ([4ac5c0c](https://github.com/uipath/apollo-ui/commit/4ac5c0cf51fafffa865ba366b483a3480f74267a))
+- **apollo-wind:** stepper bad layout ([c908cad](https://github.com/uipath/apollo-ui/commit/c908cad685e81ea7deca5199e45887b47977b4d8))
+- **apollo-wind:** storybook ([b446729](https://github.com/uipath/apollo-ui/commit/b4467297baead13752c63c623df763e96952087f))
+- **apollo-wind:** trigger release ([#2](https://github.com/uipath/apollo-ui/issues/2)) ([f6e3a03](https://github.com/uipath/apollo-ui/commit/f6e3a03ac369ae8f8409de8a0ca92d7e5f26c630))
+- **apollo-wind:** update component categories from 'Forms' to 'Core' in story files ([ceb86d9](https://github.com/uipath/apollo-ui/commit/ceb86d9866f192564049fb074905ba92e9cf3dd1))
+- **apollo-wind:** update component gallery ([d8ecd30](https://github.com/uipath/apollo-ui/commit/d8ecd30a484910a0342964808faa7409f3bd9443))
+- **apollo-wind:** update data table sort button ([3c340b8](https://github.com/uipath/apollo-ui/commit/3c340b8401f42708602a43304c34c147d17feb57))
+- **apollo-wind:** update lock file ([2f0b039](https://github.com/uipath/apollo-ui/commit/2f0b0396f1ee31565108f4b5103647feadcce213))
+- **apollo-wind:** update registry ([3d21d98](https://github.com/uipath/apollo-ui/commit/3d21d9873cc3ba55c878feb82b15611907cce18a))
+- **apollo-wind:** update Select and Textarea components for improved styling and responsiveness; enhance Vite config to conditionally copy Tailwind CSS ([a89c104](https://github.com/uipath/apollo-ui/commit/a89c10478395053da11dd97afcc10e1ee1133d7b))
+- **apollo-wind:** update stories to use Row and Column layout controls ([8625d95](https://github.com/uipath/apollo-ui/commit/8625d951b4278cad86f2e028557555931245d5de))
+- **apollo-wind:** update Tailwind CSS integration and add consumer styles copying ([4da5566](https://github.com/uipath/apollo-ui/commit/4da5566fa214b4adc766292a837514f02982ae00))
+- **apollo-wind:** update version to 1.12.2 and correct tailwind.css path ([97ad8ef](https://github.com/uipath/apollo-ui/commit/97ad8ef2df2e11bc2538c0a4f2bb5cdd524c3bdc))
+- **apollo-wind:** update version to 1.12.3 and remove unused semantic and shadcn color styles ([cb55d9c](https://github.com/uipath/apollo-ui/commit/cb55d9c4faeff2632ffc24ac7fde2bb53261fe97))
+
+### Features
+
+- **apollo-wind:** add AI Consumer Guide documentation for @uipath/wind design system ([9338639](https://github.com/uipath/apollo-ui/commit/9338639f4c98e82c40e4249f9bc3aa7268817a0d))
+- **apollo-wind:** add AI Consumer Guide documentation for @uipath/wind design system ([e6ff3dd](https://github.com/uipath/apollo-ui/commit/e6ff3dd2fda9081aa06f4cb90b9da9b2456831ae))
+- **apollo-wind:** add ButtonGroup component with various configurations and stories ([2985ad1](https://github.com/uipath/apollo-ui/commit/2985ad1e6f1119069e0eb117ceb21b297f945e9b))
+- **apollo-wind:** add CanvasModeToolbar and CanvasPublishToolbar stories with new components ([90c45e2](https://github.com/uipath/apollo-ui/commit/90c45e2395e2c11d7aa3981ec1f43c77bc948b70))
+- **apollo-wind:** add component gallery stories and enhance grid layout styles ([02bd1a4](https://github.com/uipath/apollo-ui/commit/02bd1a4a249c77804683b3a7708656fb3d3ad894))
+- **apollo-wind:** add component gallery stories and enhance grid layout styles ([0f7a056](https://github.com/uipath/apollo-ui/commit/0f7a0568394df564298af4aad553ea6dec2a63c4))
+- **apollo-wind:** add drawer, spinner controls ([21ca134](https://github.com/uipath/apollo-ui/commit/21ca13494ae09efc35b720e81f7219a1b6475421))
+- **apollo-wind:** add explicit secret ([#1](https://github.com/uipath/apollo-ui/issues/1)) ([244dbfe](https://github.com/uipath/apollo-ui/commit/244dbfe3b6608d977847b0376f9575a003536309))
+- **apollo-wind:** add field visibility determination and schema serialization tests ([5391f4e](https://github.com/uipath/apollo-ui/commit/5391f4ed73b06c8987e54329be54121402e3ac23))
+- **apollo-wind:** add FlowStartExample component with process options and recent projects display ([42955cc](https://github.com/uipath/apollo-ui/commit/42955cca5125ae2f126792d87c22d0e5c3153004))
+- **apollo-wind:** add Grid, Column, and Row components with responsive layout capabilities ([65efe2e](https://github.com/uipath/apollo-ui/commit/65efe2e27592c29e9bb9726e39618753bc3122bd))
+- **apollo-wind:** Add Localization Guide and enhance accessibility in UI components ([4aba3e9](https://github.com/uipath/apollo-ui/commit/4aba3e9ba75d16a4f3e750b8c437601d4010c3c3))
+- **apollo-wind:** Add Localization Guide and enhance accessibility in UI components ([4f8d63c](https://github.com/uipath/apollo-ui/commit/4f8d63c22712bd66a36cb8a414723dc24c73023a))
+- **apollo-wind:** add some more template ideas ([5b114cc](https://github.com/uipath/apollo-ui/commit/5b114cc9203ece128dde311dd40ba93b18a233cf))
+- **apollo-wind:** enhance ResizableHandle styles and add new background utilities in tailwind.css ([61990f9](https://github.com/uipath/apollo-ui/commit/61990f9b5aaca3f5d5426a6db78aff59ddcbf23e))
+- **apollo-wind:** enhance Slider component to support multiple thumbs based on value or defaultValue ([2aa4034](https://github.com/uipath/apollo-ui/commit/2aa403403b3a0e3ea5355b5d74e4f982e8eaf4bc))
+- **apollo-wind:** implement DateTimePicker component and add stories for usage examples ([7cbddff](https://github.com/uipath/apollo-ui/commit/7cbddff8e7578225d861bfc0cecf45474e2cf6ab))
+- **apollo-wind:** implement forms engine ([884cc16](https://github.com/uipath/apollo-ui/commit/884cc16bec477f7cdf3b0ff49a59378b7121ebd0))
+- **apollo-wind:** implement forms engine ([ad8ba87](https://github.com/uipath/apollo-ui/commit/ad8ba87e08fe8ff10bce4014395881fd0ed5ab50))
+- **apollo-wind:** Initial commit ([e4fb085](https://github.com/uipath/apollo-ui/commit/e4fb085e0888a7f070d45b98fcc7b4c6cb9b0feb))
+- **apollo-wind:** Initial commit ([627f26b](https://github.com/uipath/apollo-ui/commit/627f26b6161f5507b6f1cbef536f527690fede1f))
+- **apollo-wind:** Initial commit ([067f34c](https://github.com/uipath/apollo-ui/commit/067f34c59f42da737a14e4b7c99b9b1c29c88f7c))
+- **apollo-wind:** make uipath theme be default, consolidate styles ([216f9a4](https://github.com/uipath/apollo-ui/commit/216f9a47474b3e759192741dc80fb08466d4f248))
+- **apollo-wind:** reorganize files, and update package exports ([0cc3ce2](https://github.com/uipath/apollo-ui/commit/0cc3ce2c92144959e1581b2e7b9151418414c7a0))
+- **apollo-wind:** update data table features ([d405c34](https://github.com/uipath/apollo-ui/commit/d405c347659818ac96745390f960928a1b675673))
+- **apollo-wind:** update linter, infra ([2124775](https://github.com/uipath/apollo-ui/commit/21247756185afad19066b8b6f9c2e532b72b4bb3))
+- **apollo-wind:** update readme ([f26e4cf](https://github.com/uipath/apollo-ui/commit/f26e4cf41af36f4a77d23742477fde1eb581f5a3))
+- **apollo-wind:** update Switch component styles and add FlowEditorLayout example stories ([63fa621](https://github.com/uipath/apollo-ui/commit/63fa6215e9c805844661105d6d0137ed9dce69e7))
+- **apollo-wind:** update to consume apollo-core colors ([de470b7](https://github.com/uipath/apollo-ui/commit/de470b76a1bfe31739fc965a7aa8387237f1b52a))
+- **apollo-wind:** update to consume apollo-core colors ([c969868](https://github.com/uipath/apollo-ui/commit/c96986808bf900f1d5a9ffd2002d126eb9a92842))
+
+## [1.14.1](https://github.com/uipath/wind/compare/v1.14.0...v1.14.1) (2025-12-23)
+
+### Bug Fixes
+
+- add custom field components and corresponding stories for MetadataForm ([646e6c5](https://github.com/uipath/wind/commit/646e6c5776d7ef4ee23cf39cf9373accd92fcdf9))
+
+# [1.14.0](https://github.com/uipath/wind/compare/v1.13.4...v1.14.0) (2025-12-23)
+
+### Features
+
+- add field visibility determination and schema serialization tests ([ef0314c](https://github.com/uipath/wind/commit/ef0314ce22c4aaec422cd7b8a192aecb5f2bea51))
+
+## [1.13.4](https://github.com/uipath/wind/compare/v1.13.3...v1.13.4) (2025-12-23)
+
+### Bug Fixes
+
+- update Select and Textarea components for improved styling and responsiveness; enhance Vite config to conditionally copy Tailwind CSS ([7176258](https://github.com/uipath/wind/commit/71762589fd4a5e5ec14c14d2ded57c363ac8942b))
+
+## [1.13.3](https://github.com/uipath/wind/compare/v1.13.2...v1.13.3) (2025-12-23)
+
+### Bug Fixes
+
+- correct destructive color mappings and apply background styles to body ([7903919](https://github.com/uipath/wind/commit/79039199d3f9964967641333f5dd17de5f01c66d))
+
+## [1.13.2](https://github.com/uipath/wind/compare/v1.13.1...v1.13.2) (2025-12-20)
+
+### Bug Fixes
+
+- update Tailwind CSS integration and add consumer styles copying ([4b1a252](https://github.com/uipath/wind/commit/4b1a2528b6f49b25800dd9aa311ba93b80c98b9a))
+
+## [1.13.1](https://github.com/uipath/wind/compare/v1.13.0...v1.13.1) (2025-12-20)
+
+### Bug Fixes
+
+- clean up theme styles and remove unused CSS files ([9ab82f2](https://github.com/uipath/wind/commit/9ab82f20471bc564afbd75a52ac550b3a0baa0f0))
+
+# [1.13.0](https://github.com/uipath/wind/compare/v1.12.4...v1.13.0) (2025-12-20)
+
+### Features
+
+- enhance ResizableHandle styles and add new background utilities in tailwind.css ([6e2e95e](https://github.com/uipath/wind/commit/6e2e95ec6947e8ffc506866529ae24d133e36b9d))
+
+## [1.12.4](https://github.com/uipath/wind/compare/v1.12.3...v1.12.4) (2025-12-20)
+
+### Bug Fixes
+
+- update version to 1.12.3 and remove unused semantic and shadcn color styles ([36f1551](https://github.com/uipath/wind/commit/36f1551fc3d7657c6be02c0c1f2dc525467d04dd))
+
+## [1.12.3](https://github.com/uipath/wind/compare/v1.12.2...v1.12.3) (2025-12-20)
+
+### Bug Fixes
+
+- update version to 1.12.2 and correct tailwind.css path ([6b8c805](https://github.com/uipath/wind/commit/6b8c805ae92b858a0fc437ab2e3d500bef538c30))
+
+## [1.12.2](https://github.com/uipath/wind/compare/v1.12.1...v1.12.2) (2025-12-19)
+
+### Bug Fixes
+
+- release tokens ([#3](https://github.com/uipath/wind/issues/3)) ([964a379](https://github.com/uipath/wind/commit/964a3797e9c9967d6ff27ab73ebd41a3e01cbfaa))
+
+## [1.12.1](https://github.com/uipath/wind/compare/v1.12.0...v1.12.1) (2025-12-19)
+
+### Bug Fixes
+
+- trigger release ([#2](https://github.com/uipath/wind/issues/2)) ([6163780](https://github.com/uipath/wind/commit/616378055b03a5eedb2e777300b5421411d90c7c))
+
+# [1.12.0](https://github.com/uipath/wind/compare/v1.11.0...v1.12.0) (2025-12-19)
+
+### Features
+
+- update to consume apollo-core colors ([acee70f](https://github.com/uipath/wind/commit/acee70f12547c47d78020f0d938ead3065a7d7a6))
+
+# [1.11.0](https://github.com/uipath/wind/compare/v1.10.0...v1.11.0) (2025-12-09)
+
+### Bug Fixes
+
+- remove unused imports in flow-editor-layout example ([ff93866](https://github.com/uipath/wind/commit/ff93866a13483f2e844960630504a49f579a0bbf))
+
+### Features
+
+- update Switch component styles and add FlowEditorLayout example stories ([4f25b66](https://github.com/uipath/wind/commit/4f25b66a77b1469db18dd5a77b22c84f77cbf082))
+
+# [1.10.0](https://github.com/uipath/wind/compare/v1.9.0...v1.10.0) (2025-12-05)
+
+### Features
+
+- add AI Consumer Guide documentation for @uipath/wind design system ([6277092](https://github.com/uipath/wind/commit/627709226cafbe3c967d0e31f9a9ededfdd26a15))
+
+# [1.9.0](https://github.com/uipath/wind/compare/v1.8.0...v1.9.0) (2025-12-05)
+
+### Features
+
+- add FlowStartExample component with process options and recent projects display ([2e3643b](https://github.com/uipath/wind/commit/2e3643bf897bcbddd0c8b8741c36fa9d2627153a))
+
+# [1.8.0](https://github.com/uipath/wind/compare/v1.7.0...v1.8.0) (2025-12-05)
+
+### Features
+
+- add CanvasModeToolbar and CanvasPublishToolbar stories with new components ([a78e450](https://github.com/uipath/wind/commit/a78e45046be5a19ea40afc1abb696cf362794d58))
+
+# [1.7.0](https://github.com/uipath/wind/compare/v1.6.2...v1.7.0) (2025-12-02)
+
+### Features
+
+- add ButtonGroup component with various configurations and stories ([c477610](https://github.com/uipath/wind/commit/c477610c92b66db5ecbf864dd680f445604d4ecb))
+
+## [1.6.2](https://github.com/uipath/wind/compare/v1.6.1...v1.6.2) (2025-12-02)
+
+### Bug Fixes
+
+- add cursor pointer to interactive UI components for better accessibility ([16adf4f](https://github.com/uipath/wind/commit/16adf4f317d928138093d799d3820a82629d2e45))
+
+## [1.6.1](https://github.com/uipath/wind/compare/v1.6.0...v1.6.1) (2025-11-27)
+
+### Bug Fixes
+
+- improved organization and layout of foundation ([7b1bd5e](https://github.com/uipath/wind/commit/7b1bd5ed05ccf2638306c707b586c71fed396c30))
+
+# [1.6.0](https://github.com/uipath/wind/compare/v1.5.1...v1.6.0) (2025-11-27)
+
+### Features
+
+- implement forms engine ([cc7447d](https://github.com/uipath/wind/commit/cc7447d3e4009e098a704d331cdf92c5ab501e34))
+
+## [1.5.1](https://github.com/uipath/wind/compare/v1.5.0...v1.5.1) (2025-11-27)
+
+### Bug Fixes
+
+- update component gallery ([895ab37](https://github.com/uipath/wind/commit/895ab37e7bde0bfd8b348f0ca9a9cd2b827690b7))
+
+# [1.5.0](https://github.com/uipath/wind/compare/v1.4.2...v1.5.0) (2025-11-27)
+
+### Features
+
+- enhance Slider component to support multiple thumbs based on value or defaultValue ([353e490](https://github.com/uipath/wind/commit/353e490be81314daa01bdfdb35ccda96f3178c99))
+
+## [1.4.2](https://github.com/uipath/wind/compare/v1.4.1...v1.4.2) (2025-11-26)
+
+### Bug Fixes
+
+- update component categories from 'Forms' to 'Core' in story files ([d2fbccc](https://github.com/uipath/wind/commit/d2fbccc972f118704ac2d1d9641b0d395622b9b1))
+
+## [1.4.1](https://github.com/uipath/wind/compare/v1.4.0...v1.4.1) (2025-11-26)
+
+### Bug Fixes
+
+- add .npmrc file and update component styles for Accordion, DatePicker, and Slider ([3a27f20](https://github.com/uipath/wind/commit/3a27f206337860294d6e80e818a8cd4776d58d97))
+- update permissions comments and use GITHUB_TOKEN for deployments ([af44784](https://github.com/uipath/wind/commit/af44784c57840602d4329ee50a1f4f4559e6d397))
+- update release workflow permissions and add NPM_TOKEN for semantic-release ([b0addeb](https://github.com/uipath/wind/commit/b0addeb8ae35d054063f116ca85d0740a40ab1de))
+- update release workflow to use RELEASE_TOKEN for GitHub actions ([74f087c](https://github.com/uipath/wind/commit/74f087c7cb93008f9187264c6176ae03a9213bc7))
+
+# [1.4.0](https://github.com/uipath/wind/compare/v1.3.0...v1.4.0) (2025-11-24)
+
+### Features
+
+- add component gallery stories and enhance grid layout styles ([1e8189a](https://github.com/uipath/wind/commit/1e8189a8d0255c29885afeb48f43eb459955d11a))
+
+# [1.3.0](https://github.com/uipath/wind/compare/v1.2.1...v1.3.0) (2025-11-24)
+
+### Features
+
+- implement DateTimePicker component and add stories for usage examples ([c738059](https://github.com/uipath/wind/commit/c73805996658d6a4d9bf7371c47ccf8a2fddc445))
+
+## [1.2.1](https://github.com/uipath/wind/compare/v1.2.0...v1.2.1) (2025-11-24)
+
+### Bug Fixes
+
+- update stories to use Row and Column layout controls ([95615a4](https://github.com/uipath/wind/commit/95615a4512ae7dc22dd1912fea7b9ae247350315))
+
+# [1.2.0](https://github.com/uipath/wind/compare/v1.1.3...v1.2.0) (2025-11-22)
+
+### Features
+
+- add Grid, Column, and Row components with responsive layout capabilities ([5cc6fad](https://github.com/uipath/wind/commit/5cc6fadc7d565354e71a1abc132fa91f5880c33c))
+
+## [1.1.3](https://github.com/uipath/wind/compare/v1.1.2...v1.1.3) (2025-11-22)
+
+### Bug Fixes
+
+- rename templates to be examples ([04cfa79](https://github.com/uipath/wind/commit/04cfa79389d99fbfd85984743559589f18d7af7a))
+
+## [1.1.2](https://github.com/uipath/wind/compare/v1.1.1...v1.1.2) (2025-11-21)
+
+### Bug Fixes
+
+- add more template examples ([4c10d80](https://github.com/uipath/wind/commit/4c10d8016a80cfe102d622687854c5c37552e156))
+
+## [1.1.1](https://github.com/uipath/wind/compare/v1.1.0...v1.1.1) (2025-11-21)
+
+### Bug Fixes
+
+- add source directive for JavaScript and TypeScript files in globals.css ([acb2bd5](https://github.com/uipath/wind/commit/acb2bd5b453c8f36357360c9007da7f09533c5b9))
+
+# [1.1.0](https://github.com/uipath/wind/compare/v1.0.0...v1.1.0) (2025-11-21)
+
+### Features
+
+- Add Localization Guide and enhance accessibility in UI components ([60bad78](https://github.com/uipath/wind/commit/60bad788e71fdaaebedc537cbf2cbb3853e3da40))
+
+# 1.0.0 (2025-11-21)
+
+### Bug Fixes
+
+- add release pipeline ([b3da0e8](https://github.com/uipath/wind/commit/b3da0e83ad3cc4b0e40d858073621c6ee0832f69))
+- fix format ([7609be3](https://github.com/uipath/wind/commit/7609be31453b0701182885031d3c96a0b802fe6f))
+- lint clean up ([8e3c507](https://github.com/uipath/wind/commit/8e3c507aa15d314d549ad83e59d8621ae5b4b50c))
+- set defaults for theme and variant in storybook ([5030ecc](https://github.com/uipath/wind/commit/5030ecc8b56871921818e685ac5a152748c94d84))
+- stepper bad layout ([e32dfb1](https://github.com/uipath/wind/commit/e32dfb126771403671e4342d2908866b89e43426))
+- update data table sort button ([2bc5535](https://github.com/uipath/wind/commit/2bc55358a5766c4f05fa640f34627a751c20ec07))
+- update lock file ([66efe06](https://github.com/uipath/wind/commit/66efe06d3d825a54fa0a512ac3a0e34305628873))
+- update registry ([322bf1a](https://github.com/uipath/wind/commit/322bf1ad97d3971396969dcbc4be333751dcfea1))
+- update release token to GH_NPM_REGISTRY_TOKEN ([a2e2c9a](https://github.com/uipath/wind/commit/a2e2c9a983fafa50909e4de007a2811909feefe0))
+- update releaserc to include develop ([b1d9f0c](https://github.com/uipath/wind/commit/b1d9f0cb9ee4de033d91820cc1716b0bf3759eed))
+
+### Features
+
+- add drawer, spinner controls ([3f9d6cb](https://github.com/uipath/wind/commit/3f9d6cb3e991a919330c590618c7df3ea0d6e054))
+- add some more template ideas ([974eaab](https://github.com/uipath/wind/commit/974eaabe539703061df94dd5ea56b61b9417c297))
+- update data table features ([bcf04ec](https://github.com/uipath/wind/commit/bcf04ec177fe1a113af63b7cb1a49f70a16278b0))

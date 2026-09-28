@@ -1,0 +1,74 @@
+# Introduction
+
+**Apollo Vertex** is the design system for UiPath Vertical Solutions - customizable, industry-specific automation solutions built on the UiPath platform.
+
+## Overview
+
+The `@uipath/vs-core` package provides everything you need to build data-driven UiPath solutions:
+
+- **UiPath SDK Integration**: Simplified APIs for working with UiPath Data Service entities and process executions
+- **React Context Provider**: `SolutionProvider` for easy SDK initialization and data access
+- **TanStack Query Collections**: Ready-to-use data collections with built-in caching and reactivity
+- **TypeScript Types**: Full type safety for entities, processes, and configurations
+
+## Getting Started
+
+To create a new vertical solution, you have two options:
+
+**Option 1: Use the UiPath CLI (Recommended)**
+
+Install the `uipcli` tool and its vertical solutions plugin:
+
+```bash
+npm install @uipath/cli @uipath/vss
+```
+
+After installing, you can run commands via `uip`.
+
+### `uip vss` commands
+
+Vertical Solutions plugin for managing UiPath Vertical Solutions.
+
+Also supports flags, for more info `uip vss --help` or `uip vss [command] --help`.
+
+Plugin docs: https://github.com/UiPath/cli/tree/main/packages/vertical-solutions-tool
+
+- **Initialize a new vertical solution**
+
+```bash
+uip vss init
+```
+
+- **Scaffold a new vertical solution**
+
+```bash
+uip vss scaffold
+```
+
+- **Add an entity, process, or connection**
+
+```bash
+uip vss add <type> [path]
+```
+
+- **Sync a vertical solution**
+
+```bash
+uip vss sync
+```
+
+- **Generate types for your vertical solution**
+
+```bash
+uip vss generate
+```
+
+**Option 2: Fork the Template**
+
+Start with the [Vertical Solution Template](https://github.com/UiPath/vertical-solutions-template) for a pre-configured project structure.
+
+Both options give you a ready-to-use project with `@uipath/vs-core` already installed and configured.
+
+## Next Steps
+
+After using the template or CLI, your project is pre-configured with everything you need. See the [Data Querying](/data-querying/loading-data) section to learn how to load and mutate data using the `useSolution` hook.

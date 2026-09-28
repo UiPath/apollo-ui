@@ -1,0 +1,80 @@
+# For most projects, this workflow file will not need changing; you simply need
+# to commit it to your repository.
+#
+# ******** NOTE ********
+# This workflow includes alert suppression support via lgtm/codeql comments.
+# See: https://docs.github.com/en/code-security/code-scanning
+#
+name: CodeQL Analysis
+
+on:
+  push:
+    branches:
+      - main
+      - 'support/**'
+  pull_request:
+    branches:
+      - main
+      - 'support/**'
+  schedule:
+    - cron: '17 4 * * 5' # Weekly on Friday at 4:17 AM UTC
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+  packages: read # Required to fetch internal or private CodeQL packs
+
+concurrency:
+  group: codeql-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: uipath-ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: actions
+            build-mode: none
+          - language: javascript-typescript
+            build-mode: none
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          persist-credentials: false
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4.38.1
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+          config-file: .github/codeql/codeql-config.yml
+
+      - name: Perform CodeQL Analysis
+        id: analyze
+        uses: github/codeql-action/analyze@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4.38.1
+        with:
+          category: /language:${{ matrix.language }}
+          output: sarif-results
+
+      # GOVERNANCE: This step auto-dismisses any CodeQL alert that has a
+      # corresponding inline suppression comment (// codeql[query-id]) in source.
+      # That means a merged PR adding such a comment will silently dismiss the alert
+      # without a separate security review. Before merging any PR that adds a
+      # // codeql[...] suppression, a member of @UiPath/Apollo must confirm the
+      # suppression is justified. CODEOWNERS enforces this for .github/ changes;
+      # for source-file suppressions, reviewers must manually check.
+      - name: Dismiss suppressed alerts
+        if: github.ref == 'refs/heads/main' && matrix.language == 'javascript-typescript'
+        uses: advanced-security/dismiss-alerts@a18f986bdb40edba0dd7a74382c15d4a3d50a1c8  # v2.0.3
+        with:
+          sarif-id: ${{ steps.analyze.outputs['sarif-id'] }}
+          sarif-file: sarif-results/javascript.sarif
+        env:
+          GITHUB_TOKEN: ${{ github.token }}

@@ -1,0 +1,125 @@
+import { FeatureFlagDemo } from './feature-flag-demo'
+
+# Feature Flags
+
+A generic feature flag system with a provider pattern, reactive hook, and guard components. Designed for Proteus SDK integration but supports any backend via adapters.
+
+<div className="not-prose py-8">
+  <FeatureFlagDemo />
+</div>
+
+## Installation
+
+```bash
+npx shadcn@latest add @uipath/feature-flag-provider
+npx shadcn@latest add @uipath/use-feature-flag
+npx shadcn@latest add @uipath/feature-flag-guard
+npx shadcn@latest add @uipath/protected-feature-route
+```
+
+## Setup
+
+### 1. Define your flags
+
+```ts
+import { FeatureFlagKind } from "@uipath/proteus-client";
+import type { FlagMapping } from "@/lib/feature-flag-provider/types";
+
+export enum Flag {
+  NewOnboarding = "NewOnboarding",
+  BetaApi = "BetaApi",
+}
+
+export const flagConfig = {
+  NewOnboarding: {
+    kind: FeatureFlagKind.Boolean,
+    alias: "NewOnboarding.Enabled",
+  },
+  BetaApi: {
+    kind: FeatureFlagKind.Boolean,
+    alias: "BetaApi.Enabled",
+  },
+} satisfies FlagMapping<Flag>;
+```
+
+### 2. Wrap your app with the provider
+
+```tsx
+import { FeatureFlagProvider } from "@/lib/feature-flag-provider";
+import { createProteusProvider } from "@/lib/feature-flag-provider/proteus-adapter";
+import { flagConfig } from "@/lib/flags";
+
+const provider = createProteusProvider({
+  appName: "my-app",
+  featureFlags: flagConfig,
+  authTokenFactory: () => getAccessToken(),
+});
+
+// After user login:
+await provider.initialize({
+  userId: user.id,
+  email: user.email,
+  organizationName: org.name,
+  organizationId: org.id,
+  tenantName: tenant.name,
+  tenantId: tenant.id,
+});
+
+function App() {
+  return (
+    <FeatureFlagProvider provider={provider}>
+      <YourApp />
+    </FeatureFlagProvider>
+  );
+}
+```
+
+## Components
+
+### useFeatureFlag
+
+React hook that reads a boolean flag value and re-renders when it changes.
+
+```tsx
+import { useFeatureFlag } from "@/hooks/use-feature-flag";
+
+function MyComponent() {
+  const isEnabled = useFeatureFlag("NewOnboarding");
+  return isEnabled ? <NewOnboarding /> : <OldOnboarding />;
+}
+```
+
+### FeatureFlagGuard
+
+Conditionally renders children based on a boolean feature flag.
+
+```tsx
+import { FeatureFlagGuard } from "@/components/ui/feature-flag-guard";
+
+<FeatureFlagGuard featureFlag="NewOnboarding" fallback={<OldOnboarding />}>
+  <NewOnboarding />
+</FeatureFlagGuard>
+```
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `featureFlag` | `string` | The flag key to check |
+| `fallback` | `ReactNode` | Optional content rendered when the flag is disabled |
+
+### ProtectedFeatureRoute
+
+Route-level guard that throws when a feature is disabled, intended to be caught by an error boundary.
+
+```tsx
+import { ProtectedFeatureRoute } from "@/components/ui/protected-feature-route";
+
+<Route element={
+  <ProtectedFeatureRoute feature="BetaPage">
+    <BetaPage />
+  </ProtectedFeatureRoute>
+} />
+```
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `feature` | `string` | The flag key to check |

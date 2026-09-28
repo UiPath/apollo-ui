@@ -1,0 +1,300 @@
+import type {
+  ColorMode,
+  Edge,
+  Node,
+  ReactFlowInstance,
+} from '@uipath/apollo-react/canvas/xyflow/react';
+import { ConnectionMode, ReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
+import {
+  type CSSProperties,
+  forwardRef,
+  memo,
+  type ReactElement,
+  useCallback,
+  useImperativeHandle,
+  useMemo,
+  useState,
+} from 'react';
+import { useToolbarActionStore } from '../../hooks/ToolbarActionContext';
+import { BASE_CANVAS_DEFAULTS, PAN_ON_DRAG } from './BaseCanvas.constants';
+import {
+  useAutoLayout,
+  useEnsureNodesInView,
+  useMaintainNodesInView,
+  useReadOnlyBeforeDelete,
+  useReadOnlyEdgeIds,
+} from './BaseCanvas.hooks';
+import type { BaseCanvasProps, BaseCanvasRef } from './BaseCanvas.types';
+import { CanvasBackground } from './CanvasBackground';
+import { CanvasProviders } from './CanvasProviders';
+import { PanShortcutTeachingUI } from './PanShortcutTeachingUI';
+import { useStableNodeIdSet } from './ReadOnlyNodesContext';
+import { useReadOnlyConnectionCallbacks } from './useReadOnlyConnectionCallbacks';
+
+const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends Edge = Edge>(
+  props: BaseCanvasProps<NodeType, EdgeType> & {
+    innerRef?: React.Ref<BaseCanvasRef<NodeType, EdgeType>>;
+  }
+) => {
+  const { innerRef, fitViewOptions: fitViewOptionsProps, ...canvasProps } = props;
+
+  const fitViewOptions = fitViewOptionsProps ?? BASE_CANVAS_DEFAULTS.fitViewOptions;
+
+  const {
+    // Core props
+    nodes = [],
+    edges = [],
+    nodeTypes,
+    edgeTypes,
+    children,
+
+    // Behavior
+    mode = 'view',
+    readOnlyNodeIds,
+
+    // Styling
+    showBackground = true,
+    backgroundColor = BASE_CANVAS_DEFAULTS.background.color,
+    backgroundSecondaryColor = BASE_CANVAS_DEFAULTS.background.bgColor,
+    backgroundVariant = BASE_CANVAS_DEFAULTS.background.variant,
+    backgroundGap = BASE_CANVAS_DEFAULTS.background.gap,
+    backgroundSize = BASE_CANVAS_DEFAULTS.background.size,
+    isDarkMode,
+
+    // i18n
+    locale,
+
+    // Configuration
+    minZoom = BASE_CANVAS_DEFAULTS.zoom.min,
+    maxZoom = BASE_CANVAS_DEFAULTS.zoom.max,
+    defaultViewport = BASE_CANVAS_DEFAULTS.defaultViewport,
+    defaultEdgeOptions = BASE_CANVAS_DEFAULTS.edge,
+    stickyNoteOptions,
+
+    // Event handlers
+    onNodesChange,
+    onEdgesChange,
+    onConnect,
+    onReconnect,
+    onReconnectStart,
+    onReconnectEnd,
+    onConnectStart,
+    onConnectEnd,
+    isValidConnection,
+    onNodeClick,
+    onNodeDragStart,
+    onNodeDrag,
+    onNodeDragStop,
+    onPaneClick,
+    onInit,
+    onSelectionChange,
+    onBeforeDelete,
+
+    // Additional ReactFlow props
+    proOptions = BASE_CANVAS_DEFAULTS.pro,
+    connectionMode = ConnectionMode.Loose,
+    connectionLineComponent,
+    connectionLineStyle,
+    deleteKeyCode = null,
+    selectNodesOnDrag = true,
+    nodesDraggable = true,
+    nodesConnectable = true,
+    elementsSelectable = true,
+    onlyRenderVisibleElements = true,
+    zoomOnDoubleClick = true,
+    snapToGrid = BASE_CANVAS_DEFAULTS.snapToGrid,
+    snapGrid = BASE_CANVAS_DEFAULTS.snapGrid,
+
+    // Layout
+    initialAutoLayout,
+    maintainNodesInView,
+
+    // Toolbar
+    onToolbarAction,
+    breakpoints,
+
+    // Pan Shortcut Teaching UI
+    panShortcutTeachingUIMessage = 'Hold Space and drag to pan around the canvas!',
+
+    // Remaining ReactFlow props
+    ...reactFlowProps
+  } = canvasProps;
+
+  // Derive interactivity from mode
+  const isInteractive = mode !== 'readonly';
+  const isDesignMode = mode === 'design';
+
+  // Per-node read-only: stabilize the set by content, then apply React Flow's
+  // flags. Only edges with both endpoints locked are frozen.
+  const stableReadOnlyNodeIds = useStableNodeIdSet(readOnlyNodeIds);
+  const readOnlyEdgeIds = useReadOnlyEdgeIds(edges, stableReadOnlyNodeIds);
+  const guardedBeforeDelete = useReadOnlyBeforeDelete(stableReadOnlyNodeIds, onBeforeDelete);
+
+  // `onBeforeDelete` already covers every React Flow deletion path. This is the
+  // safety net for a consumer calling the change handler directly. `replace`
+  // and layout changes pass through on purpose: React Flow emits `replace` for
+  // layout writes such as BaseNode's height sync, and position and size are
+  // layout rather than content.
+  const handleNodesChange = useMemo(() => {
+    if (!onNodesChange || stableReadOnlyNodeIds.size === 0) return onNodesChange;
+    const guarded: typeof onNodesChange = (changes) => {
+      const allowed = changes.filter(
+        (change) => !(change.type === 'remove' && stableReadOnlyNodeIds.has(change.id))
+      );
+      if (allowed.length > 0) onNodesChange(allowed);
+    };
+    return guarded;
+  }, [onNodesChange, stableReadOnlyNodeIds]);
+
+  const handleEdgesChange = useMemo(() => {
+    if (!onEdgesChange || readOnlyEdgeIds.size === 0) return onEdgesChange;
+    const guarded: typeof onEdgesChange = (changes) => {
+      const allowed = changes.filter((change) =>
+        change.type === 'remove' ? !readOnlyEdgeIds.has(change.id) : true
+      );
+      if (allowed.length > 0) onEdgesChange(allowed);
+    };
+    return guarded;
+  }, [onEdgesChange, readOnlyEdgeIds]);
+
+  const { guardedIsValidConnection, guardedOnConnect, guardedOnReconnect, guardedOnReconnectEnd } =
+    useReadOnlyConnectionCallbacks<EdgeType>({
+      readOnlyNodeIds: stableReadOnlyNodeIds,
+      isValidConnection,
+      onConnect,
+      onReconnect,
+      onReconnectEnd,
+    });
+
+  const [reactFlowInstance, setReactFlowInstance] =
+    useState<ReactFlowInstance<NodeType, EdgeType>>();
+
+  const { isReady } = useAutoLayout(nodes, initialAutoLayout, fitViewOptions);
+  const { ensureNodesInView, ensureAllNodesInView, centerNode } = useEnsureNodesInView();
+
+  // Maintain specified nodes in view when canvas resizes
+  // This ensures important nodes remain visible in responsive layouts
+  // The hook only pans the viewport without changing the zoom level
+  useMaintainNodesInView(maintainNodesInView, fitViewOptions);
+
+  // Sync toolbar action store with current mode, handler, and breakpoints
+  // This is a module-level store accessed by toolbar-resolver
+  useToolbarActionStore(mode, onToolbarAction, breakpoints);
+
+  const handleInit = useCallback(
+    (instance: ReactFlowInstance<NodeType, EdgeType>) => {
+      setReactFlowInstance(instance);
+      onInit?.(instance);
+    },
+    [onInit]
+  );
+
+  useImperativeHandle(
+    innerRef as React.Ref<BaseCanvasRef<NodeType, EdgeType>>,
+    () => ({
+      ensureNodesInView,
+      ensureAllNodesInView,
+      centerNode,
+      reactFlow: reactFlowInstance,
+    }),
+    [ensureNodesInView, ensureAllNodesInView, centerNode, reactFlowInstance]
+  );
+
+  const reactFlowStyle = useMemo<CSSProperties>(
+    () => ({
+      opacity: isReady ? 1 : 0,
+      transition: BASE_CANVAS_DEFAULTS.transitions.opacity,
+    }),
+    [isReady]
+  );
+
+  return (
+    <CanvasProviders
+      nodes={nodes}
+      edges={edges}
+      mode={mode}
+      isDarkMode={isDarkMode}
+      locale={locale}
+      stickyNoteOptions={stickyNoteOptions}
+      readOnlyNodeIds={stableReadOnlyNodeIds}
+    >
+      <ReactFlow
+        {...reactFlowProps}
+        // Purposely removing the reactFlow colorMode to prevent conflicts with custom theming implementation.
+        colorMode={'' as unknown as ColorMode}
+        nodes={nodes}
+        edges={edges}
+        isValidConnection={guardedIsValidConnection}
+        nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        fitViewOptions={fitViewOptions}
+        defaultEdgeOptions={defaultEdgeOptions}
+        defaultViewport={defaultViewport}
+        proOptions={proOptions}
+        connectionMode={connectionMode}
+        connectionLineComponent={connectionLineComponent}
+        connectionLineStyle={connectionLineStyle}
+        deleteKeyCode={isDesignMode ? deleteKeyCode : null}
+        selectNodesOnDrag={isInteractive && selectNodesOnDrag}
+        nodesDraggable={isDesignMode && nodesDraggable}
+        nodesConnectable={isDesignMode && nodesConnectable}
+        elementsSelectable={isInteractive && elementsSelectable}
+        onlyRenderVisibleElements={onlyRenderVisibleElements}
+        snapToGrid={snapToGrid}
+        snapGrid={snapGrid}
+        minZoom={minZoom}
+        maxZoom={maxZoom}
+        panOnScroll={isInteractive}
+        zoomOnScroll={isInteractive}
+        zoomOnDoubleClick={isInteractive && zoomOnDoubleClick}
+        panOnDrag={isInteractive ? PAN_ON_DRAG : false}
+        onInit={handleInit}
+        onNodesChange={isInteractive ? handleNodesChange : undefined}
+        onEdgesChange={isInteractive ? handleEdgesChange : undefined}
+        onBeforeDelete={guardedBeforeDelete}
+        onConnect={isDesignMode ? guardedOnConnect : undefined}
+        onReconnect={isDesignMode ? guardedOnReconnect : undefined}
+        onReconnectStart={isDesignMode ? onReconnectStart : undefined}
+        onReconnectEnd={isDesignMode ? guardedOnReconnectEnd : undefined}
+        onConnectStart={isDesignMode ? onConnectStart : undefined}
+        onConnectEnd={isDesignMode ? onConnectEnd : undefined}
+        onNodeClick={isInteractive ? onNodeClick : undefined}
+        onNodeDragStart={isDesignMode ? onNodeDragStart : undefined}
+        onNodeDrag={isDesignMode ? onNodeDrag : undefined}
+        onNodeDragStop={isDesignMode ? onNodeDragStop : undefined}
+        onPaneClick={isInteractive ? onPaneClick : undefined}
+        onSelectionChange={onSelectionChange}
+        style={reactFlowStyle}
+        elevateEdgesOnSelect={isDesignMode}
+      >
+        {showBackground && (
+          <CanvasBackground
+            color={backgroundColor}
+            bgColor={backgroundSecondaryColor}
+            variant={backgroundVariant}
+            gap={backgroundGap}
+            size={backgroundSize}
+          />
+        )}
+        {mode === 'design' && panShortcutTeachingUIMessage && (
+          <PanShortcutTeachingUI message={panShortcutTeachingUIMessage} />
+        )}
+        {children}
+      </ReactFlow>
+    </CanvasProviders>
+  );
+};
+
+const BaseCanvasInner = memo(BaseCanvasInnerComponent) as typeof BaseCanvasInnerComponent;
+
+// Create the final component with proper typing
+export const BaseCanvas = forwardRef(function BaseCanvas<
+  NodeType extends Node = Node,
+  EdgeType extends Edge = Edge,
+>(props: BaseCanvasProps<NodeType, EdgeType>, ref: React.Ref<BaseCanvasRef<NodeType, EdgeType>>) {
+  return <BaseCanvasInner {...props} innerRef={ref} />;
+}) as <NodeType extends Node = Node, EdgeType extends Edge = Edge>(
+  props: BaseCanvasProps<NodeType, EdgeType> & {
+    ref?: React.Ref<BaseCanvasRef<NodeType, EdgeType>>;
+  }
+) => ReactElement;

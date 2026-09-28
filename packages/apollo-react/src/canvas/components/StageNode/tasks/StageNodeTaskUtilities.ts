@@ -1,0 +1,240 @@
+import type { ReactNode } from 'react';
+import { GroupModificationType } from '../../../utils/GroupModificationUtils';
+import type { NodeMenuAction, NodeMenuItem } from '../../NodeContextMenu';
+
+export interface StageContextMenuLabels {
+  moveUp: string;
+  moveDown: string;
+  ungroupParallelTasks: string;
+  removeFromParallelGroup: string;
+  removeGroupFromStage: string;
+  deleteTask: string;
+  createParallelGroupWithTaskAbove: string;
+  createParallelGroupWithTaskBelow: string;
+  addTaskToParallelGroupAbove: string;
+  addTaskToParallelGroupBelow: string;
+}
+
+export const getContextMenuItems = ({
+  isParallelGroup,
+  groupIndex,
+  tasksLength,
+  groupIndexInAllTasks,
+  taskIndexInAllTasks,
+  isAboveParallel,
+  isBelowParallel,
+  reGroupTaskFunction,
+  hideParallelOptions = false,
+  labels,
+}: {
+  isParallelGroup: boolean;
+  groupIndex: number;
+  tasksLength: number;
+  groupIndexInAllTasks: number;
+  taskIndexInAllTasks: number;
+  isAboveParallel: boolean;
+  isBelowParallel: boolean;
+  reGroupTaskFunction: (
+    groupModificationType: GroupModificationType,
+    groupIndex: number,
+    taskIndex: number
+  ) => void;
+  hideParallelOptions?: boolean;
+  labels: StageContextMenuLabels;
+}): NodeMenuItem[] => {
+  const CONTEXT_MENU_ITEMS = {
+    MOVE_UP: getMenuItem(
+      'move-up',
+      labels.moveUp,
+      () =>
+        reGroupTaskFunction(
+          GroupModificationType.TASK_GROUP_UP,
+          groupIndexInAllTasks,
+          taskIndexInAllTasks
+        ),
+      groupIndex === 0
+    ),
+    MOVE_DOWN: getMenuItem(
+      'move-down',
+      labels.moveDown,
+      () =>
+        reGroupTaskFunction(
+          GroupModificationType.TASK_GROUP_DOWN,
+          groupIndexInAllTasks,
+          taskIndexInAllTasks
+        ),
+      groupIndex === tasksLength - 1
+    ),
+    UNGROUP_ALL: getMenuItem('ungroup', labels.ungroupParallelTasks, () =>
+      reGroupTaskFunction(
+        GroupModificationType.UNGROUP_ALL_TASKS,
+        groupIndexInAllTasks,
+        taskIndexInAllTasks
+      )
+    ),
+    SPLIT_TASK: getMenuItem('split', labels.removeFromParallelGroup, () =>
+      reGroupTaskFunction(
+        GroupModificationType.SPLIT_GROUP,
+        groupIndexInAllTasks,
+        taskIndexInAllTasks
+      )
+    ),
+    REMOVE_GROUP: getMenuItem('remove-group', labels.removeGroupFromStage, () =>
+      reGroupTaskFunction(
+        GroupModificationType.REMOVE_GROUP,
+        groupIndexInAllTasks,
+        taskIndexInAllTasks
+      )
+    ),
+    REMOVE_TASK: getMenuItem('remove-task', labels.deleteTask, () =>
+      reGroupTaskFunction(
+        GroupModificationType.REMOVE_TASK,
+        groupIndexInAllTasks,
+        taskIndexInAllTasks
+      )
+    ),
+    CREATE_PARALLEL_GROUP_ABOVE: getMenuItem(
+      'group-with-up',
+      labels.createParallelGroupWithTaskAbove,
+      () =>
+        reGroupTaskFunction(
+          GroupModificationType.MERGE_GROUP_UP,
+          groupIndexInAllTasks,
+          taskIndexInAllTasks
+        )
+    ),
+    CREATE_PARALLEL_GROUP_BELOW: getMenuItem(
+      'group-with-down',
+      labels.createParallelGroupWithTaskBelow,
+      () =>
+        reGroupTaskFunction(
+          GroupModificationType.MERGE_GROUP_DOWN,
+          groupIndexInAllTasks,
+          taskIndexInAllTasks
+        )
+    ),
+    ADD_TO_PARALLEL_GROUP_ABOVE: getMenuItem(
+      'add-to-group-with-up',
+      labels.addTaskToParallelGroupAbove,
+      () =>
+        reGroupTaskFunction(
+          GroupModificationType.MERGE_GROUP_UP,
+          groupIndexInAllTasks,
+          taskIndexInAllTasks
+        )
+    ),
+    ADD_TO_PARALLEL_GROUP_BELOW: getMenuItem(
+      'add-to-group-with-down',
+      labels.addTaskToParallelGroupBelow,
+      () =>
+        reGroupTaskFunction(
+          GroupModificationType.MERGE_GROUP_DOWN,
+          groupIndexInAllTasks,
+          taskIndexInAllTasks
+        )
+    ),
+    DIVIDER: getDivider(),
+  };
+
+  const items: NodeMenuItem[] = [];
+
+  // Both moves are always listed, disabled at the ends of the list rather than dropped: a task
+  // that silently loses its reorder entries reads as "reordering is gone" (MST-13609).
+  items.push(CONTEXT_MENU_ITEMS.MOVE_UP, CONTEXT_MENU_ITEMS.MOVE_DOWN, CONTEXT_MENU_ITEMS.DIVIDER);
+
+  if (isParallelGroup && !hideParallelOptions) {
+    items.push(
+      CONTEXT_MENU_ITEMS.UNGROUP_ALL,
+      CONTEXT_MENU_ITEMS.SPLIT_TASK,
+      CONTEXT_MENU_ITEMS.DIVIDER,
+      CONTEXT_MENU_ITEMS.REMOVE_GROUP,
+      CONTEXT_MENU_ITEMS.REMOVE_TASK
+    );
+  } else if (!isParallelGroup && !hideParallelOptions) {
+    const parallelOptionsStart = items.length;
+
+    if (groupIndex > 0) {
+      items.push(
+        isAboveParallel
+          ? CONTEXT_MENU_ITEMS.ADD_TO_PARALLEL_GROUP_ABOVE
+          : CONTEXT_MENU_ITEMS.CREATE_PARALLEL_GROUP_ABOVE
+      );
+    }
+
+    if (groupIndex < tasksLength - 1) {
+      items.push(
+        isBelowParallel
+          ? CONTEXT_MENU_ITEMS.ADD_TO_PARALLEL_GROUP_BELOW
+          : CONTEXT_MENU_ITEMS.CREATE_PARALLEL_GROUP_BELOW
+      );
+    }
+
+    // Only when a parallel option was actually added — the move entries above already end in a
+    // divider, so an unconditional one would double up on a single-task stage.
+    if (items.length > parallelOptionsStart) items.push(CONTEXT_MENU_ITEMS.DIVIDER);
+
+    items.push(CONTEXT_MENU_ITEMS.REMOVE_TASK);
+  } else {
+    items.push(CONTEXT_MENU_ITEMS.REMOVE_TASK);
+  }
+
+  return items;
+};
+
+export function getMenuItem(
+  id: string = 'id',
+  label: string = 'label',
+  onClick: () => void,
+  isDisabled = false
+): NodeMenuItem {
+  return { id, label, onClick, disabled: isDisabled };
+}
+
+export const getDivider = (): NodeMenuItem => {
+  return {
+    type: 'divider' as const,
+  };
+};
+
+export interface TransformedMenuItem {
+  key: string;
+  title?: string;
+  startIcon?: ReactNode;
+  disabled?: boolean;
+  onClick?: () => void;
+  variant: 'item' | 'separator';
+  divider?: boolean;
+}
+
+/**
+ * Transforms NodeMenuItem array into the format expected by ApMenu
+ * This ensures consistent menu item structure across all menu instances
+ */
+export const transformMenuItems = (
+  menuItems: NodeMenuItem[] | undefined,
+  onItemClick: (item: NodeMenuAction) => void
+): TransformedMenuItem[] => {
+  if (!menuItems) {
+    return [];
+  }
+
+  return menuItems.map((item, index) => {
+    if ('type' in item && item.type === 'divider') {
+      return {
+        divider: true,
+        key: `divider-${index}`,
+        variant: 'separator' as const,
+      };
+    }
+
+    const actionItem = item as NodeMenuAction;
+    return {
+      key: actionItem.id,
+      title: actionItem.label,
+      startIcon: actionItem.icon,
+      disabled: actionItem.disabled,
+      onClick: () => onItemClick(actionItem),
+      variant: 'item' as const,
+    };
+  });
+};

@@ -1,0 +1,19 @@
+{
+  "rich-text-editor.bold": "Kalın",
+  "rich-text-editor.code": "Kod",
+  "rich-text-editor.format-bold": "Kalın biçimlendir",
+  "rich-text-editor.format-code": "Kod biçimlendir",
+  "rich-text-editor.format-italic": "İtalik biçimlendir",
+  "rich-text-editor.format-ordered-list": "Sıralanmış listeyi biçimlendir",
+  "rich-text-editor.format-strikethrough": "Üstü çizili biçimlendir",
+  "rich-text-editor.format-underline": "Altı çizili biçimlendir",
+  "rich-text-editor.format-unordered-list": "Sıralanmamış listeyi biçimlendir",
+  "rich-text-editor.insert-link": "Bağlantı ekle",
+  "rich-text-editor.italic": "İtalik",
+  "rich-text-editor.link": "Bağlantı",
+  "rich-text-editor.loading": "Yükleniyor",
+  "rich-text-editor.ordered-list": "Sıralı liste",
+  "rich-text-editor.strikethrough": "Üstü çizili",
+  "rich-text-editor.underline": "Altı çizili",
+  "rich-text-editor.unordered-list": "Sıralanmamış liste"
+}

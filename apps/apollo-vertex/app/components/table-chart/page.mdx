@@ -1,0 +1,139 @@
+import { TableChartTemplate } from '@/templates/charts/TableChartTemplate';
+
+# Table Chart
+
+A sortable table of entity rows. Use for record-level views — no aggregation, just listing.
+
+<div className="not-prose my-8">
+  <TableChartTemplate />
+</div>
+
+## Installation
+
+```bash
+npx shadcn@latest add @uipath/table-chart
+```
+
+Installs both the prop-driven `TableChart` view and the `TableChartWithAdapter` variant.
+
+## View
+
+`TableChart` renders rows with column-level formatting and optional client-controlled sorting.
+
+```tsx
+import { TableChart } from "@/components/ui/table-chart";
+
+const rows = [
+  { department: "Marketing", headcount: 12, avgSalary: 58000, active: true },
+  { department: "Engineering", headcount: 28, avgSalary: 66000, active: false },
+  // ...
+];
+
+const numberFormat = new Intl.NumberFormat("en-US");
+
+<TableChart
+  columns={[
+    {
+      id: "department",
+      label: "Department",
+      align: "left",
+      format: String,
+    },
+    {
+      id: "headcount",
+      label: "Headcount",
+      align: "right",
+      format: (v) => numberFormat.format(Number(v)),
+    },
+    {
+      id: "avgSalary",
+      label: "Avg salary",
+      align: "right",
+      format: (v) => `$${numberFormat.format(Number(v))}`,
+    },
+    {
+      id: "active",
+      label: "Active",
+      align: "left",
+      format: (v) => (v ? "Yes" : "No"),
+    },
+  ]}
+  rows={rows}
+/>
+```
+
+### Props
+
+- `columns: TableChartColumn[]` — id, label, alignment, and a per-column `format(value): string` function.
+- `rows: Array<Record<string, PrimitiveValue>>` — each row keyed by column id.
+- `sort?: TableChartSort | null` — controlled sort state. Omit for uncontrolled sorting.
+- `onSortChange?: (sort: TableChartSort | null) => void` — fires when the user clicks a header.
+
+## With adapter
+
+`TableChartWithAdapter` fetches rows via the adapter, derives column formatters from the data model's field types (currency, percentage, boolean format, etc.), and threads sort state into the query.
+
+The chart package does not bundle an adapter. Install one of the ready-made adapters (or implement the `DataAdapter` interface yourself):
+
+```bash
+npx shadcn@latest add @uipath/data-fabric-adapter
+# or
+npx shadcn@latest add @uipath/insights-adapter
+```
+
+```tsx
+import { useState } from "react";
+import { TableChartWithAdapter } from "@/components/ui/table-chart";
+import type { TableChartState } from "@/lib/charts-core";
+import { dataFabricAdapter } from "@/lib/data-fabric-adapter";
+
+const adapter = dataFabricAdapter({
+  baseUrl: "/api/datafabric/.../api",
+  accessToken,
+  entityName: "Orders",
+});
+
+const dataModel = {
+  id: "orders-table",
+  fields: [
+    { id: "CustomerName", display: "Customer", type: "string" as const },
+    {
+      id: "Amount",
+      display: "Amount",
+      type: "currency" as const,
+      format: { currency: "USD" },
+    },
+    { id: "Status", display: "Status", type: "string" as const },
+    { id: "OrderDate", display: "Order date", type: "datetime" as const },
+  ],
+};
+
+const configuration = {
+  id: "orders-table",
+  name: "Orders",
+  type: "table" as const,
+  dimensions: ["CustomerName", "Amount", "Status", "OrderDate"],
+};
+
+function OrdersTable() {
+  const [state, setState] = useState<TableChartState>({ sortBy: null });
+
+  return (
+    <TableChartWithAdapter
+      configuration={configuration}
+      dataModel={dataModel}
+      dataAdapter={adapter}
+      state={state}
+      onStateChange={setState}
+    />
+  );
+}
+```
+
+### Props
+
+- `configuration: TableChartConfiguration` — `dimensions` IDs to include as columns.
+- `dataModel: TableDataModel` — flat list of `DataModelField`s. Field `type` drives formatting (currency uses `format.currency`, boolean uses `format.trueDisplay`/`falseDisplay`, etc.).
+- `dataAdapter: DataAdapter` — implementation that runs the query.
+- `state?: TableChartState` — controlled `{ sortBy }`. Sort changes refetch.
+- `onStateChange?: (next: TableChartState) => void` — fires when the user changes sort.

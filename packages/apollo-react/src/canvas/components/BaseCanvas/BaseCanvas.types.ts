@@ -1,0 +1,356 @@
+import type {
+  BackgroundVariant,
+  Edge,
+  Node,
+  ReactFlowInstance,
+  ReactFlowProps,
+} from '@uipath/apollo-react/canvas/xyflow/react';
+import type { ReactNode } from 'react';
+import type { SupportedLocale } from '../../../i18n';
+import type { ToolbarActionHandler } from '../../schema/toolbar';
+import type { StickyNoteCanvasOptions } from '../StickyNoteNode/StickyNoteNode.types';
+
+/**
+ * Configuration options for viewport fit operations in BaseCanvas.
+ * Subset of ReactFlow's FitViewOptions focusing on common viewport adjustments.
+ */
+export interface BaseCanvasFitViewOptions {
+  /**
+   * Padding around nodes when fitting view.
+   * Can be a single number (applies to all sides) or an object with individual side values.
+   * Value between 0-1 represents a ratio of the viewport size.
+   * @default 0.1
+   */
+  padding?:
+    | number
+    | {
+        top: number;
+        right: number;
+        bottom: number;
+        left: number;
+      };
+
+  /**
+   * Duration of the viewport animation in milliseconds.
+   * Set to 0 for instant transitions.
+   * @default 300
+   */
+  duration?: number;
+
+  /**
+   * Minimum allowed zoom level.
+   * @default 0.2
+   */
+  minZoom?: number;
+
+  /**
+   * Maximum allowed zoom level.
+   * @default 3
+   */
+  maxZoom?: number;
+}
+
+/**
+ * Props for the BaseCanvas component that provides a foundation for flow-based visualizations.
+ * Extends ReactFlow's props to provide additional canvas control and styling options.
+ *
+ * @template NodeType - The type of nodes used in the canvas, extends the base Node type
+ * @template EdgeType - The type of edges used in the canvas, extends the base Edge type
+ */
+export interface BaseCanvasProps<NodeType extends Node = Node, EdgeType extends Edge = Edge>
+  extends ReactFlowProps<NodeType, EdgeType> {
+  /**
+   * Determines the interaction mode of the canvas.
+   * - "design": Full editing capabilities - add, remove, and modify nodes/edges
+   * - "view": Navigation only - pan, zoom, and select but no modifications
+   * - "readonly": No interactions - static display only
+   *
+   * @default "view"
+   *
+   * @remarks
+   * The mode determines all interaction capabilities:
+   * - "design": Can drag nodes, connect edges, delete elements, and navigate
+   * - "view": Can only pan, zoom, and select nodes (no modifications)
+   * - "readonly": Complete static view with no user interactions
+   */
+  mode?: 'design' | 'readonly' | 'view';
+
+  /**
+   * Node ids to lock while the rest of the canvas stays interactive. A node is
+   * editable only when `mode === 'design' && !readOnlyNodeIds?.has(id)`.
+   *
+   * Locked nodes cannot be deleted or label-edited, and hide their inline
+   * content-editing controls such as handle add buttons. Toolbars are the
+   * exception: they stay visible with every action disabled, so the lock is
+   * discoverable. Locked nodes stay selectable and draggable, and resizable
+   * nodes generally stay resizable, except `StickyNoteNode`, which disables its
+   * resize controls. To freeze all layout interaction, use `mode="readonly"`.
+   *
+   * Connections to and from a locked node are still allowed. Only connections
+   * with *both* endpoints locked are frozen: they cannot be created, deleted,
+   * reconnected, or split by the edge toolbar.
+   *
+   * Honored by nodes built on `BaseNode` (including `AgentNode` and `LoopNode`),
+   * by `StageNode`, and by `StickyNoteNode`. Custom node types opt in via
+   * `useIsNodeReadOnly`.
+   *
+   * A `Set` or an array; both are normalized to a set internally. Deliberately
+   * not `Iterable<string>`: a bare `string` satisfies that type and would be
+   * spread per character, and a single-use iterator would read as empty on
+   * every render after the first.
+   *
+   * Compared by content, so a fresh set with the same ids changes nothing. Do
+   * not mutate a set after passing it; pass a new one. Any iterable is accepted
+   * (an array is fine) and is normalized to a set internally.
+   *
+   * @example new Set(['agent-1', 'tool-1', 'tool-2'])
+   * @default undefined (no nodes are individually read-only)
+   */
+  readOnlyNodeIds?: ReadonlySet<string> | readonly string[];
+
+  /**
+   * Canvas-wide sticky-note behavior. Individual StickyNoteNode props take precedence.
+   * @example `{ enableMediaEmbedding: true, readOnly: false }`
+   */
+  stickyNoteOptions?: StickyNoteCanvasOptions;
+
+  /**
+   * React children to render inside the canvas.
+   * Typically used for overlays, panels, or additional UI elements.
+   * Children are rendered on top of the flow content.
+   */
+  children?: ReactNode;
+
+  /**
+   * Whether to display a background pattern on the canvas.
+   * Can be used to enhance visual structure and orientation.
+   * @default true
+   */
+  showBackground?: boolean;
+
+  /**
+   * Primary background color of the canvas.
+   */
+  backgroundColor?: string;
+
+  /**
+   * Secondary background color used for pattern elements (dots, lines, cross).
+   */
+  backgroundSecondaryColor?: string;
+
+  /**
+   * Type of background pattern to display.
+   * Options: "dots", "lines", "cross"
+   * Set to undefined for no pattern.
+   */
+  backgroundVariant?: BackgroundVariant;
+
+  /**
+   * Gap between background pattern elements in pixels.
+   * Larger values create more spacing between dots/lines.
+   * @default 20
+   */
+  backgroundGap?: number;
+
+  /**
+   * Size of individual background pattern elements in pixels.
+   * For dots: diameter, for lines: thickness.
+   * @default 1
+   */
+  backgroundSize?: number;
+
+  /**
+   * Optional function to perform automatic layout on initial render.
+   * Called after nodes are mounted but before first user interaction.
+   * Can be async for complex layout calculations.
+   * @example
+   * ```ts
+   * initialAutoLayout: async () => {
+   *   await calculateOptimalPositions();
+   *   updateNodePositions();
+   * }
+   * ```
+   */
+  initialAutoLayout?: () => Promise<void> | void;
+
+  /**
+   * Array of node IDs to keep in view when the canvas resizes.
+   * The canvas will automatically pan (without changing zoom) to keep these nodes visible.
+   * If multiple nodes are specified, the canvas will try to keep all of them in view.
+   *
+   * Use cases:
+   * - Responsive dashboards where key metrics should stay visible
+   * - Split view layouts where important nodes need to remain in focus
+   * - Mobile responsive designs that need to maintain visibility on orientation changes
+   *
+   * @example ['node1', 'node2'] - Maintain specific nodes
+   * @example [] - Maintain all nodes in view
+   * @example undefined - Disable automatic node maintenance
+   *
+   * @see useMaintainNodesInView hook for direct usage
+   */
+  maintainNodesInView?: string[];
+
+  /**
+   * Custom message to display in the pan shortcut teaching UI.
+   * @default "Hold Space and drag to pan around the canvas!"
+   */
+  panShortcutTeachingUIMessage?: string;
+
+  /**
+   * Custom fit view options for initial auto layout.
+   * Overrides default padding and duration for the initial fit view animation.
+   * @example
+   * ```ts
+   * fitViewOptions: { padding: 0.2, duration: 300, minZoom: 0.5, maxZoom: 2 }
+   * ```
+   */
+  fitViewOptions?: BaseCanvasFitViewOptions;
+
+  /**
+   * Callback when a toolbar action is triggered on a node
+   */
+  onToolbarAction?: ToolbarActionHandler;
+
+  /**
+   * Set of node IDs that have breakpoints enabled
+   * Used for visual indication in debug mode
+   */
+  breakpoints?: Set<string>;
+
+  /**
+   * Whether the canvas should render in dark mode.
+   * Controls dark-mode-specific styling for node icons and toolbox items.
+   *
+   * - When `true`, components used in canvas will choose dark mode assets (e.g. icons) if available.
+   * - When `false` or `undefined`, components will use light mode / default assets.
+   *
+   * @default undefined
+   */
+  isDarkMode?: boolean;
+
+  /**
+   * Locale forwarded to the canvas's i18n provider so localized canvas
+   * components (StageNode, Toolbox, etc.) render in the host application's
+   * active language. Falls back to English when omitted.
+   */
+  locale?: SupportedLocale;
+}
+
+/**
+ * Configuration options for viewport manipulation methods.
+ * Used to control how the canvas adjusts its view to show specific nodes.
+ */
+export interface EnsureNodesInViewOptions {
+  /**
+   * Padding around the target nodes in pixels.
+   * Ensures nodes aren't positioned at the very edge of the viewport.
+   */
+  padding?: number;
+
+  /**
+   * Duration of the viewport transition animation in milliseconds.
+   * Set to 0 for instant transitions.
+   */
+  duration?: number;
+
+  /**
+   * Minimum allowed zoom level when fitting nodes.
+   * Prevents excessive zoom out.
+   */
+  minZoom?: number;
+
+  /**
+   * Maximum allowed zoom level when fitting nodes.
+   * Prevents excessive zoom in.
+   */
+  maxZoom?: number;
+
+  /**
+   * Whether to maintain the current zoom level.
+   * When true, only pans to show nodes without changing zoom.
+   * When false, adjusts zoom to fit all specified nodes.
+   */
+  maintainZoom?: boolean;
+}
+
+/**
+ * Ref interface for BaseCanvas providing imperative viewport control methods.
+ * Use these methods to programmatically adjust the canvas view.
+ *
+ * @template NodeType - The type of nodes used in the canvas, extends the base Node type
+ * @template EdgeType - The type of edges used in the canvas, extends the base Edge type
+ */
+export interface BaseCanvasRef<NodeType extends Node = Node, EdgeType extends Edge = Edge> {
+  /**
+   * Adjusts the viewport to ensure specified nodes are visible.
+   * Pans and optionally zooms to fit all specified nodes in view.
+   *
+   * @param nodeIds - Array of node IDs to show in the viewport
+   * @param options - Configuration for the viewport adjustment
+   *
+   * @example
+   * ```ts
+   * canvasRef.current?.ensureNodesInView(['node1', 'node2'], {
+   *   padding: 100,
+   *   duration: 500
+   * });
+   * ```
+   */
+  ensureNodesInView(nodeIds: string[], options?: EnsureNodesInViewOptions): void;
+
+  /**
+   * Adjusts the viewport to show all nodes in the canvas.
+   * Useful for providing an overview or resetting the view.
+   *
+   * @param options - Configuration for the viewport adjustment
+   *
+   * @example
+   * ```ts
+   * canvasRef.current?.ensureAllNodesInView({ padding: 80 });
+   * ```
+   */
+  ensureAllNodesInView(options?: EnsureNodesInViewOptions): void;
+
+  /**
+   * Centers the viewport on a specific node.
+   * Maintains current zoom level by default.
+   *
+   * @param nodeId - ID of the node to center on
+   * @param options - Configuration for the viewport adjustment
+   *
+   * @example
+   * ```ts
+   * canvasRef.current?.centerNode('targetNode', {
+   *   duration: 1000,
+   *   maintainZoom: true
+   * });
+   * ```
+   */
+  centerNode(nodeId: string, options?: EnsureNodesInViewOptions): void;
+
+  /**
+   * Direct access to the ReactFlow instance.
+   * Provides full access to ReactFlow's API including methods like:
+   * - getNodes(), getEdges()
+   * - setNodes(), setEdges()
+   * - getViewport(), setViewport()
+   * - fitView(), zoomIn(), zoomOut()
+   * - And many more...
+   *
+   * Note: This is undefined until the ReactFlow component is initialized.
+   *
+   * @example
+   * ```ts
+   * // Get all nodes
+   * const nodes = canvasRef.current?.reactFlow?.getNodes();
+   *
+   * // Zoom to specific level
+   * canvasRef.current?.reactFlow?.zoomTo(1.5);
+   *
+   * // Get current viewport
+   * const viewport = canvasRef.current?.reactFlow?.getViewport();
+   * ```
+   */
+  reactFlow: ReactFlowInstance<NodeType, EdgeType> | undefined;
+}

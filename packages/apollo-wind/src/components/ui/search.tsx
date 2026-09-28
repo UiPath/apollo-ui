@@ -1,0 +1,175 @@
+import { Search as SearchIcon, X } from 'lucide-react';
+import * as React from 'react';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+  type InputGroupInputProps,
+  type InputGroupProps,
+} from '@/components/ui/input-group';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/index';
+
+export interface SearchProps extends Omit<InputGroupInputProps, 'onChange'> {
+  value?: string;
+  onChange?: (value: string) => void;
+  onClear?: () => void;
+  showClearButton?: boolean;
+  variant?: InputGroupProps['variant'];
+  size?: InputGroupProps['size'];
+  /** Field-specific feedback rendered immediately below the search field. */
+  error?: React.ReactNode;
+  /** Optional id for the inline validation message. */
+  errorId?: string;
+}
+
+const Search = React.forwardRef<HTMLInputElement, SearchProps>(
+  (
+    {
+      className,
+      value,
+      onChange,
+      onClear,
+      showClearButton = true,
+      variant,
+      size,
+      error,
+      errorId,
+      ...props
+    },
+    ref
+  ) => {
+    const handleClear = () => {
+      onChange?.('');
+      onClear?.();
+    };
+
+    return (
+      <InputGroup data-slot="search" variant={variant} size={size} error={error} errorId={errorId}>
+        <InputGroupAddon align="inline-start">
+          <SearchIcon className="text-muted-foreground" />
+        </InputGroupAddon>
+        <InputGroupInput
+          ref={ref}
+          type="search"
+          className={cn(
+            '[&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none',
+            className
+          )}
+          value={value}
+          onChange={(e) => onChange?.(e.target.value)}
+          {...props}
+        />
+        {showClearButton && value && (
+          <InputGroupAddon align="inline-end">
+            <InputGroupButton icon size="3xs" aria-label="Clear" onClick={handleClear}>
+              <X />
+            </InputGroupButton>
+          </InputGroupAddon>
+        )}
+      </InputGroup>
+    );
+  }
+);
+Search.displayName = 'Search';
+
+export interface SearchWithSuggestionsProps {
+  value?: string;
+  onChange?: (value: string) => void;
+  placeholder?: string;
+  suggestions?: string[];
+  onSelect?: (value: string) => void;
+  emptyMessage?: string;
+  className?: string;
+}
+
+const SearchWithSuggestions = React.forwardRef<HTMLDivElement, SearchWithSuggestionsProps>(
+  (
+    {
+      value,
+      onChange,
+      placeholder = 'Search...',
+      suggestions = [],
+      onSelect,
+      emptyMessage = 'No results found.',
+      className,
+    },
+    ref
+  ) => {
+    const [open, setOpen] = React.useState(false);
+    const [searchValue, setSearchValue] = React.useState(value || '');
+
+    React.useEffect(() => {
+      if (value !== undefined) {
+        setSearchValue(value);
+      }
+    }, [value]);
+
+    const filteredSuggestions = suggestions.filter((suggestion) =>
+      suggestion.toLowerCase().includes(searchValue.toLowerCase())
+    );
+
+    const handleSelect = (selectedValue: string) => {
+      setSearchValue(selectedValue);
+      onChange?.(selectedValue);
+      onSelect?.(selectedValue);
+      setOpen(false);
+    };
+
+    const handleInputChange = (newValue: string) => {
+      setSearchValue(newValue);
+      onChange?.(newValue);
+      setOpen(newValue.length > 0);
+    };
+
+    return (
+      <div ref={ref} data-slot="search-with-suggestions" className={cn('relative', className)}>
+        <Popover open={open && filteredSuggestions.length > 0} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <div>
+              <Search
+                value={searchValue}
+                onChange={handleInputChange}
+                onClear={() => {
+                  setSearchValue('');
+                  onChange?.('');
+                  setOpen(false);
+                }}
+                placeholder={placeholder}
+              />
+            </div>
+          </PopoverTrigger>
+          <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+            <Command>
+              <CommandList>
+                {filteredSuggestions.length === 0 ? (
+                  <CommandEmpty>{emptyMessage}</CommandEmpty>
+                ) : (
+                  <CommandGroup>
+                    {filteredSuggestions.map((suggestion) => (
+                      <CommandItem key={suggestion} onSelect={() => handleSelect(suggestion)}>
+                        <SearchIcon className="mr-2 h-4 w-4" />
+                        {suggestion}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                )}
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
+      </div>
+    );
+  }
+);
+SearchWithSuggestions.displayName = 'SearchWithSuggestions';
+
+export { Search, SearchWithSuggestions };

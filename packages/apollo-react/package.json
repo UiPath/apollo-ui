@@ -1,0 +1,304 @@
+{
+  "name": "@uipath/apollo-react",
+  "version": "6.61.0",
+  "description": "Apollo Design System - React component library with Material UI theming",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/UiPath/apollo-ui.git",
+    "directory": "packages/apollo-react"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./material": {
+      "types": "./dist/material/index.d.ts",
+      "import": "./dist/material/index.js",
+      "require": "./dist/material/index.cjs"
+    },
+    "./material/theme": {
+      "types": "./dist/material/theme/index.d.ts",
+      "import": "./dist/material/theme/index.js",
+      "require": "./dist/material/theme/index.cjs"
+    },
+    "./material/components": {
+      "types": "./dist/material/components/index.d.ts",
+      "import": "./dist/material/components/index.js",
+      "require": "./dist/material/components/index.cjs"
+    },
+    "./ap-chat": {
+      "types": "./dist/material/components/ap-chat/index.d.ts",
+      "import": "./dist/material/components/ap-chat/index.js",
+      "require": "./dist/material/components/ap-chat/index.cjs"
+    },
+    "./ap-chat/service": {
+      "types": "./dist/material/components/ap-chat/service/index.d.ts",
+      "import": "./dist/material/components/ap-chat/service/index.js",
+      "require": "./dist/material/components/ap-chat/service/index.cjs"
+    },
+    "./material/components/*": {
+      "types": "./dist/material/components/*.d.ts",
+      "import": "./dist/material/components/*.js",
+      "require": "./dist/material/components/*.cjs"
+    },
+    "./core": {
+      "types": "./dist/core/index.d.ts",
+      "import": "./dist/core/index.js",
+      "require": "./dist/core/index.cjs"
+    },
+    "./core/tokens/*": "./dist/core/tokens/*",
+    "./core/fonts/*": "./dist/core/fonts/*",
+    "./icons": {
+      "types": "./dist/icons/index.d.ts",
+      "import": "./dist/icons/index.js",
+      "require": "./dist/icons/index.cjs"
+    },
+    "./icons/*": {
+      "types": "./dist/icons/*.d.ts",
+      "import": "./dist/icons/*.js",
+      "require": "./dist/icons/*.cjs"
+    },
+    "./canvas": {
+      "types": "./dist/canvas/index.d.ts",
+      "import": "./dist/canvas/index.js",
+      "require": "./dist/canvas/index.cjs"
+    },
+    "./i18n": {
+      "types": "./dist/i18n/index.d.ts",
+      "import": "./dist/i18n/index.js",
+      "require": "./dist/i18n/index.cjs"
+    },
+    "./canvas/xyflow/react": {
+      "types": "./dist/canvas/xyflow/react.d.ts",
+      "import": "./dist/canvas/xyflow/react.js",
+      "require": "./dist/canvas/xyflow/react.cjs"
+    },
+    "./canvas/xyflow/system": {
+      "types": "./dist/canvas/xyflow/system.d.ts",
+      "import": "./dist/canvas/xyflow/system.js",
+      "require": "./dist/canvas/xyflow/system.cjs"
+    },
+    "./canvas/layouts": {
+      "types": "./dist/canvas/layouts/index.d.ts",
+      "import": "./dist/canvas/layouts/index.js",
+      "require": "./dist/canvas/layouts/index.cjs"
+    },
+    "./canvas/hooks": {
+      "types": "./dist/canvas/hooks/index.d.ts",
+      "import": "./dist/canvas/hooks/index.js",
+      "require": "./dist/canvas/hooks/index.cjs"
+    },
+    "./canvas/utils": {
+      "types": "./dist/canvas/utils/index.d.ts",
+      "import": "./dist/canvas/utils/index.js",
+      "require": "./dist/canvas/utils/index.cjs"
+    },
+    "./canvas/controls": {
+      "types": "./dist/canvas/controls/index.d.ts",
+      "import": "./dist/canvas/controls/index.js",
+      "require": "./dist/canvas/controls/index.cjs"
+    },
+    "./canvas/components": {
+      "types": "./dist/canvas/components/index.d.ts",
+      "import": "./dist/canvas/components/index.js",
+      "require": "./dist/canvas/components/index.cjs"
+    },
+    "./canvas/icons": {
+      "types": "./dist/canvas/icons/index.d.ts",
+      "import": "./dist/canvas/icons/index.js",
+      "require": "./dist/canvas/icons/index.cjs"
+    },
+    "./canvas/types": {
+      "types": "./dist/canvas/types.d.ts",
+      "import": "./dist/canvas/types.js",
+      "require": "./dist/canvas/types.cjs"
+    },
+    "./canvas/constants": {
+      "types": "./dist/canvas/constants.d.ts",
+      "import": "./dist/canvas/constants.js",
+      "require": "./dist/canvas/constants.cjs"
+    },
+    "./canvas/guardrails": {
+      "types": "./dist/canvas/components/Guardrails/index.d.ts",
+      "import": "./dist/canvas/components/Guardrails/index.js",
+      "require": "./dist/canvas/components/Guardrails/index.cjs"
+    },
+    "./canvas/xyflow/*.css": "./dist/canvas/xyflow/*.css",
+    "./canvas/styles/*.css": "./dist/canvas/styles/*.css"
+  },
+  "sideEffects": [
+    "**/*.css",
+    "dist/**/*.css",
+    "dist/canvas/index.js",
+    "dist/canvas/index.cjs"
+  ],
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "pnpm run build:icons && pnpm run i18n:compile && rslib build && pnpm run build:css:canvas",
+    "build:css:canvas": "tailwindcss -i ./src/canvas/styles/tailwind.canvas.css -o ./dist/canvas/styles/tailwind.canvas.css --minify",
+    "build:analyze": "ANALYZE=true pnpm run build",
+    "build:icons": "tsx scripts/icons-build.ts",
+    "dev": "rslib build --watch",
+    "lint": "biome lint src",
+    "lint:fix": "biome lint --write src",
+    "format": "biome format --write src",
+    "format:check": "biome format src",
+    "test": "pnpm run i18n:compile && vitest --run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "pnpm run i18n:compile && vitest --run --coverage",
+    "clean": "rm -rf dist",
+    "i18n:extract": "lingui extract",
+    "i18n:extract:watch": "lingui extract --watch",
+    "i18n:compile": "lingui compile"
+  },
+  "keywords": [
+    "design-system",
+    "react",
+    "material-ui",
+    "apollo",
+    "uipath"
+  ],
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "react": ">=18.3.0",
+    "react-dom": ">=18.3.0"
+  },
+  "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/modifiers": "^9.0.0",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@emotion/cache": "^11.14.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@floating-ui/react": "^0.27.15",
+    "@lexical/code": "0.42.0",
+    "@lexical/html": "0.42.0",
+    "@lexical/link": "0.42.0",
+    "@lexical/list": "0.42.0",
+    "@lexical/markdown": "0.42.0",
+    "@lexical/react": "0.42.0",
+    "@lexical/rich-text": "0.42.0",
+    "@lexical/selection": "0.42.0",
+    "@lexical/table": "0.42.0",
+    "@lexical/utils": "0.42.0",
+    "@lingui/core": "^5.6.1",
+    "@lingui/message-utils": "^5.6.1",
+    "@lingui/react": "^5.6.1",
+    "@mui/icons-material": "^5.18.0",
+    "@mui/material": "^5.18.0",
+    "@mui/system": "^5.18.0",
+    "@mui/x-date-pickers": "^6.20.2",
+    "@mui/x-tree-view": "^8.21.0",
+    "@tanstack/react-virtual": "^3.14.3",
+    "@tiptap/core": "^3.19.0",
+    "@tiptap/extension-document": "^3.19.0",
+    "@tiptap/extension-hard-break": "^3.19.0",
+    "@tiptap/extension-mention": "^3.19.0",
+    "@tiptap/extension-paragraph": "^3.19.0",
+    "@tiptap/extension-text": "^3.19.0",
+    "@tiptap/extensions": "^3.19.0",
+    "@tiptap/pm": "^3.19.0",
+    "@tiptap/react": "^3.19.0",
+    "@tiptap/suggestion": "^3.19.0",
+    "@uipath/apollo-core": "workspace:*",
+    "@uipath/apollo-ui-icons": "workspace:*",
+    "@uipath/apollo-wind": "workspace:*",
+    "@xyflow/react": "12.8.2",
+    "@xyflow/system": "0.0.66",
+    "class-variance-authority": "^0.7.1",
+    "d3-hierarchy": "^3.1.2",
+    "d3-sankey": "^0.12.3",
+    "d3-scale": "^4.0.2",
+    "d3-scale-chromatic": "^3.1.0",
+    "d3-selection": "^3.0.0",
+    "d3-zoom": "^3.0.0",
+    "date-fns": "^4.1.0",
+    "debounce": "^3.0.0",
+    "html-to-image": "^1.11.11",
+    "katex": "^0.16.27",
+    "lexical": "0.42.0",
+    "lodash": "^4.18.1",
+    "lucide-react": "^0.577.0",
+    "luxon": "^3.7.1",
+    "mermaid": "^11.16.1",
+    "motion": "^13.1.0",
+    "react-dropzone": "^14.3.8",
+    "react-focus-lock": "^2.13.7",
+    "react-markdown": "^10.1.0",
+    "react-syntax-highlighter": "^16.1.1",
+    "react-window": "^2.2.1",
+    "rehype-katex": "^7.0.1",
+    "remark-breaks": "^4.0.0",
+    "remark-gfm": "^4.0.1",
+    "remark-math": "^6.0.0",
+    "reselect": "^5.1.1",
+    "sanitize-html": "^2.17.6",
+    "unist-util-visit": "^5.0.0",
+    "use-sync-external-store": "^1.2.0",
+    "zod": "^4.3.5",
+    "zustand": "^5.0.9"
+  },
+  "devDependencies": {
+    "@lingui/cli": "^5.6.1",
+    "@lingui/conf": "^5.6.1",
+    "@lingui/format-json": "^5.6.1",
+    "@lingui/macro": "^5.6.1",
+    "@lingui/swc-plugin": "^5.9.0",
+    "@monaco-editor/react": "^4.7.0",
+    "@mui/private-theming": "^5.15.3",
+    "@rsbuild/plugin-babel": "^1.0.6",
+    "@rsbuild/plugin-react": "^1.4.1",
+    "@rslib/core": "^0.19.6",
+    "@storybook/react": "^10.4.1",
+    "@storybook/react-vite": "^10.4.1",
+    "@svgr/webpack": "^8.1.0",
+    "@tailwindcss/cli": "^4.1.17",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/d3-hierarchy": "^3.1.7",
+    "@types/d3-sankey": "^0.12.4",
+    "@types/d3-scale": "^4.0.8",
+    "@types/d3-scale-chromatic": "^3.0.3",
+    "@types/d3-selection": "^3.0.11",
+    "@types/d3-zoom": "^3.0.8",
+    "@types/jest-axe": "^3.5.9",
+    "@types/lodash": "^4.17.21",
+    "@types/luxon": "^3.7.1",
+    "@types/mdast": "^4.0.4",
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.6",
+    "@types/react-dom": "^19.2.2",
+    "@types/react-syntax-highlighter": "^15.5.13",
+    "@types/sanitize-html": "^2.16.0",
+    "@types/webpack-bundle-analyzer": "^4.7.0",
+    "@vitejs/plugin-react": "^5.2.0",
+    "@vitest/coverage-v8": "^4.1.5",
+    "@vitest/ui": "^4.1.5",
+    "dayjs": "^1.11.20",
+    "dockview-react": "5.2.0",
+    "esbuild": "^0.28.1",
+    "glob": "^13.0.0",
+    "happy-dom": "^20.0.0",
+    "jest-axe": "^10.0.0",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "typescript": "^5.9.3",
+    "use-sync-external-store": "^1.2.0",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^4.1.11",
+    "webpack-bundle-analyzer": "^5.3.0"
+  }
+}

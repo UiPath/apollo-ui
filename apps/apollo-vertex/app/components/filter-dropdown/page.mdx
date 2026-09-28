@@ -1,0 +1,172 @@
+import { FilterDropdownTemplate } from '@/templates/FilterDropdownTemplate'
+
+# Filter Dropdown
+
+A versatile filter dropdown supporting multi-select, single-select, built-in search, and optional TanStack Table column integration. Use it in data table toolbars or as a standalone page-level filter.
+
+<div className="not-prose my-8 rounded-lg border overflow-hidden">
+  <FilterDropdownTemplate />
+</div>
+
+## Features
+
+- **Multi-select** with checkboxes and an "All" toggle (default mode)
+- **Single-select** with check indicator
+- **Built-in search** that auto-appears when options exceed a configurable threshold
+- **Standalone or table-integrated** — works with `value`/`onChange` props or a TanStack Table `column`
+- **Icons per option** for visual context
+- **Configurable popover** alignment and width
+
+## Installation
+
+```bash
+npx shadcn@latest add @uipath/filter-dropdown
+```
+
+## Usage
+
+### Standalone multi-select
+
+The default mode. When no items are selected, the trigger shows "All".
+
+```tsx
+import { useState } from "react";
+import { FilterDropdown } from "@/components/ui/filter-dropdown";
+
+const statusOptions = [
+  { label: "Active", value: "active" },
+  { label: "Inactive", value: "inactive" },
+  { label: "Pending", value: "pending" },
+];
+
+function StatusFilter() {
+  const [status, setStatus] = useState<string[]>([]);
+
+  return (
+    <FilterDropdown
+      title="Status"
+      options={statusOptions}
+      value={status}
+      onChange={setStatus}
+    />
+  );
+}
+```
+
+### Single-select
+
+Set `multiSelect={false}` for single-value selection. The popover closes automatically on selection.
+
+```tsx
+import { useState } from "react";
+import { FilterDropdown } from "@/components/ui/filter-dropdown";
+
+const regionOptions = [
+  { label: "North America", value: "na" },
+  { label: "Europe", value: "eu" },
+  { label: "Asia Pacific", value: "apac" },
+];
+
+function RegionFilter() {
+  const [region, setRegion] = useState("na");
+
+  return (
+    <FilterDropdown
+      title="Region"
+      options={regionOptions}
+      multiSelect={false}
+      value={region}
+      onChange={setRegion}
+    />
+  );
+}
+```
+
+### With icons
+
+Pass an `icon` component on each option for visual context.
+
+```tsx
+import { CheckCircleIcon, ClockIcon, XCircleIcon } from "lucide-react";
+
+const options = [
+  { label: "Success", value: "success", icon: CheckCircleIcon },
+  { label: "Pending", value: "pending", icon: ClockIcon },
+  { label: "Failed", value: "failed", icon: XCircleIcon },
+];
+
+<FilterDropdown title="Status" options={options} value={status} onChange={setStatus} />
+```
+
+### With search
+
+Search is enabled automatically when there are 8 or more options. Override with `enableSearch`:
+
+```tsx
+<FilterDropdown
+  title="Country"
+  options={countryOptions}
+  value={countries}
+  onChange={setCountries}
+  enableSearch        // always show search
+  searchPlaceholder="Find a country..."
+/>
+```
+
+### With TanStack Table column
+
+When used inside a data table toolbar, pass the `column` prop instead of `value`/`onChange`. The filter state is managed by TanStack Table.
+
+```tsx
+import { FilterDropdown } from "@/components/ui/filter-dropdown";
+import { DataTable, dataTableFacetedFilterFn } from "@/components/ui/data-table";
+
+// In your column definitions, set the filterFn:
+const columns = [
+  {
+    accessorKey: "status",
+    filterFn: dataTableFacetedFilterFn,
+    // ...
+  },
+];
+
+// In the toolbar:
+<DataTable
+  toolbarContent={(table) => (
+    <FilterDropdown
+      column={table.getColumn("status")}
+      title="Status"
+      options={statusOptions}
+    />
+  )}
+/>
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `title` | `string` | | Label shown on the trigger button |
+| `options` | `FilterDropdownOption[]` | | Array of `{ label, value, icon? }` |
+| `multiSelect` | `boolean` | `true` | Multi-select with checkboxes or single-select |
+| `column` | `Column<TData, TValue>` | | TanStack Table column for integrated filtering |
+| `value` | `string[] \| string` | | Controlled value for standalone usage |
+| `onChange` | `(value: string[] \| string) => void` | | Change handler for standalone usage |
+| `enableSearch` | `boolean \| "auto"` | `"auto"` | Show search input. `"auto"` shows it when options >= `searchThreshold` |
+| `searchThreshold` | `number` | `8` | Number of options that triggers auto-search |
+| `searchPlaceholder` | `string` | `"Search..."` | Placeholder text for search input |
+| `noOptionsMessage` | `ReactNode` | | Shown when `options` is empty |
+| `noResultsMessage` | `ReactNode` | `"No results found"` | Shown when search yields no matches |
+| `align` | `"start" \| "center" \| "end"` | `"start"` | Popover alignment relative to trigger |
+| `popoverWidth` | `string` | `"w-[220px]"` | Tailwind width class for the popover |
+| `className` | `string` | | Additional class for the root wrapper |
+
+### FilterDropdownOption
+
+```tsx
+interface FilterDropdownOption {
+  label: string;
+  value: string;
+  icon?: React.ComponentType<{ className?: string }>;
+}
+```

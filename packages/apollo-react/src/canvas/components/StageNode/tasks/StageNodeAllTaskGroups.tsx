@@ -1,0 +1,237 @@
+import { Button } from '@uipath/apollo-wind';
+import { type CSSProperties, memo, type RefObject, useCallback, useMemo } from 'react';
+import { GroupModificationType } from '../../../utils';
+import { useStageTasksByGroups } from '../hooks/useStageTasksByGroups';
+import type { StageNodeProps, StageTaskItem, TaskStateReference } from '../StageNode.types';
+import { CollapsibleStageHeader } from '../shared/CollapsibleStageHeader';
+import { useStageNodeLabels } from '../useStageNodeLabels';
+import { StageNodeAdhocTaskGroups } from './StageNodeAdhocTaskGroups';
+import { StageNodeEventDrivenTaskGroups } from './StageNodeEventDrivenTaskGroups';
+import { StageNodeSequentialTaskGroups } from './StageNodeSequentialTaskGroups';
+import { getMenuItem } from './StageNodeTaskUtilities';
+
+const StageNodeAllTaskGroupsInner = ({
+  props,
+  isReadOnly,
+  taskWidthStyle,
+  taskStateReference,
+  setSelectedNodeId,
+  handleTaskAddClick,
+  setIsReplacingTask,
+}: {
+  props: StageNodeProps;
+  isReadOnly: boolean;
+  taskWidthStyle?: CSSProperties;
+  taskStateReference: RefObject<TaskStateReference>;
+  setSelectedNodeId: (nodeId: string) => void;
+  handleTaskAddClick: (event: React.MouseEvent) => void;
+  setIsReplacingTask: (isReplacingTask: boolean) => void;
+}) => {
+  const {
+    id,
+    stageDetails,
+    onTaskAdd,
+    onAddTaskFromToolbox,
+    onTaskClick,
+    onTaskGroupModification,
+    onTaskReorder,
+    onReplaceTaskFromToolbox,
+  } = props;
+
+  const labels = useStageNodeLabels();
+  const allTasks = useMemo(() => stageDetails?.tasks || [], [stageDetails?.tasks]);
+
+  // Split tasks into separate sections
+  const { sequentialTaskGroups, adhocTaskGroups, eventDrivenTaskGroups } =
+    useStageTasksByGroups(allTasks);
+
+  const selectedTaskId = stageDetails?.selectedTaskId;
+  const defaultContent =
+    stageDetails?.defaultContent || (isReadOnly ? labels.noTasks : labels.addFirstTask);
+
+  const handleReorderSequentialTasks = useCallback(
+    (newTasks: StageTaskItem[][]) => {
+      if (!onTaskReorder) {
+        return;
+      }
+      onTaskReorder([...newTasks, ...eventDrivenTaskGroups, ...adhocTaskGroups]);
+    },
+    [onTaskReorder, eventDrivenTaskGroups, adhocTaskGroups]
+  );
+
+  // Visual order only; passing the other sections through keeps tasks in their section.
+  const handleReorderEventDrivenTasks = useCallback(
+    (newTasks: StageTaskItem[][]) => {
+      onTaskReorder?.([...sequentialTaskGroups, ...newTasks, ...adhocTaskGroups]);
+    },
+    [onTaskReorder, sequentialTaskGroups, adhocTaskGroups]
+  );
+
+  const handleReorderAdhocTasks = useCallback(
+    (newTasks: StageTaskItem[][]) => {
+      onTaskReorder?.([...sequentialTaskGroups, ...eventDrivenTaskGroups, ...newTasks]);
+    },
+    [onTaskReorder, sequentialTaskGroups, eventDrivenTaskGroups]
+  );
+
+  const handleTaskClick = useCallback(
+    (e: React.MouseEvent, taskElementId: string) => {
+      e.stopPropagation();
+      onTaskClick?.(taskElementId);
+      setSelectedNodeId(id);
+    },
+    [onTaskClick, setSelectedNodeId, id]
+  );
+
+  const generateReplaceTaskMenuItemForTask = useCallback(
+    (taskId: string, isParallel: boolean) => {
+      if (!onReplaceTaskFromToolbox) {
+        return undefined;
+      }
+
+      let groupIndex: number | undefined;
+      let taskIndex: number | undefined;
+      for (const [allTasksGroupIndex, group] of allTasks.entries()) {
+        for (const [allTasksTaskIndex, task] of group.entries()) {
+          if (task.id === taskId) {
+            groupIndex = allTasksGroupIndex;
+            taskIndex = allTasksTaskIndex;
+            break;
+          }
+        }
+      }
+      if (groupIndex === undefined || taskIndex === undefined) {
+        return undefined;
+      }
+
+      return getMenuItem('replace-task', labels.replaceTask, () => {
+        taskStateReference.current = {
+          isParallel,
+          groupIndex,
+          taskIndex,
+        };
+        onTaskClick?.(taskId);
+        setIsReplacingTask(true);
+      });
+    },
+    [
+      onReplaceTaskFromToolbox,
+      allTasks,
+      onTaskClick,
+      setIsReplacingTask,
+      taskStateReference,
+      labels.replaceTask,
+    ]
+  );
+
+  const generateDeleteTaskMenuItemForTask = useCallback(
+    (taskId: string) => {
+      if (!onTaskGroupModification) {
+        return undefined;
+      }
+
+      let groupIndex: number | undefined;
+      let taskIndex: number | undefined;
+      for (const [allTasksGroupIndex, group] of allTasks.entries()) {
+        for (const [allTasksTaskIndex, task] of group.entries()) {
+          if (task.id === taskId) {
+            groupIndex = allTasksGroupIndex;
+            taskIndex = allTasksTaskIndex;
+            break;
+          }
+        }
+      }
+      if (groupIndex === undefined || taskIndex === undefined) {
+        return undefined;
+      }
+
+      return getMenuItem('remove-task', labels.deleteTask, () =>
+        onTaskGroupModification(GroupModificationType.REMOVE_TASK, groupIndex, taskIndex)
+      );
+    },
+    [allTasks, onTaskGroupModification, labels.deleteTask]
+  );
+
+  const tasksContent = (
+    <>
+      {sequentialTaskGroups.length === 0 &&
+      adhocTaskGroups.length === 0 &&
+      eventDrivenTaskGroups.length === 0 ? (
+        <>
+          {(onTaskAdd || onAddTaskFromToolbox) && !isReadOnly ? (
+            <Button
+              variant="link"
+              size="sm"
+              onClick={handleTaskAddClick}
+              style={{ maxWidth: 'fit-content', padding: 0 }}
+              data-testid={`add-task-body-button-${id}`}
+            >
+              {defaultContent}
+            </Button>
+          ) : (
+            <span
+              data-testid={`no-tasks-body-${id}`}
+              className="inline-flex items-center h-9 text-sm font-medium text-foreground-muted"
+            >
+              {defaultContent}
+            </span>
+          )}
+        </>
+      ) : (
+        <>
+          <StageNodeSequentialTaskGroups
+            props={props}
+            sequentialTaskGroups={sequentialTaskGroups}
+            isReadOnly={isReadOnly}
+            selectedTaskId={selectedTaskId}
+            taskWidthStyle={taskWidthStyle}
+            handleTaskClick={handleTaskClick}
+            handleReorderSequentialTasks={handleReorderSequentialTasks}
+            allTasks={allTasks}
+            generateReplaceTaskMenuItemForTask={generateReplaceTaskMenuItemForTask}
+          />
+          <StageNodeEventDrivenTaskGroups
+            props={props}
+            eventDrivenTaskGroups={eventDrivenTaskGroups}
+            isReadOnly={isReadOnly}
+            selectedTaskId={selectedTaskId}
+            taskWidthStyle={taskWidthStyle}
+            handleTaskClick={handleTaskClick}
+            handleReorderEventDrivenTasks={handleReorderEventDrivenTasks}
+            generateReplaceTaskMenuItemForTask={generateReplaceTaskMenuItemForTask}
+            generateDeleteTaskMenuItemForTask={generateDeleteTaskMenuItemForTask}
+          />
+          <StageNodeAdhocTaskGroups
+            props={props}
+            adhocTaskGroups={adhocTaskGroups}
+            isReadOnly={isReadOnly}
+            selectedTaskId={selectedTaskId}
+            taskWidthStyle={taskWidthStyle}
+            handleTaskClick={handleTaskClick}
+            handleReorderAdhocTasks={handleReorderAdhocTasks}
+            generateReplaceTaskMenuItemForTask={generateReplaceTaskMenuItemForTask}
+            generateDeleteTaskMenuItemForTask={generateDeleteTaskMenuItemForTask}
+          />
+        </>
+      )}
+    </>
+  );
+
+  if (!stageDetails?.sectionStates?.tasks) {
+    // no need to include collapsible header
+    return tasksContent;
+  }
+
+  return (
+    <CollapsibleStageHeader
+      isOpen={!stageDetails?.sectionStates?.tasks.isCollapsed}
+      label="Tasks"
+      testId={`tasks-header-${id}`}
+      onToggle={stageDetails?.sectionStates?.tasks.onCollapsedToggle}
+    >
+      {tasksContent}
+    </CollapsibleStageHeader>
+  );
+};
+
+export const StageNodeAllTaskGroups = memo(StageNodeAllTaskGroupsInner);

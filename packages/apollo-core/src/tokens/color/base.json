@@ -1,0 +1,929 @@
+{
+  "color": {
+    "orange": {
+      "100": {
+        "value": "FEE3DC"
+      },
+      "200": {
+        "value": "FDA891"
+      },
+      "300": {
+        "value": "FF8F70"
+      },
+      "400": {
+        "value": "FC7753"
+      },
+      "500": {
+        "value": "FA4616",
+        "comment": "Primary Brand Orange"
+      },
+      "600": {
+        "value": "DA3B11"
+      },
+      "700": {
+        "value": "C2320C"
+      },
+      "800": {
+        "value": "832107"
+      },
+      "850": {
+        "value": "3C383C"
+      },
+      "100-contrast": {
+        "value": "182027"
+      },
+      "200-contrast": {
+        "value": "182027"
+      },
+      "300-contrast": {
+        "value": "182027"
+      },
+      "400-contrast": {
+        "value": "182027"
+      },
+      "500-contrast": {
+        "value": "182027"
+      },
+      "600-contrast": {
+        "value": "F4F9FA"
+      },
+      "700-contrast": {
+        "value": "F4F9FA"
+      },
+      "800-contrast": {
+        "value": "F4F9FA"
+      }
+    },
+    "blue": {
+      "050": {
+        "value": "F5F9FE"
+      },
+      "100": {
+        "value": "DAE8FA"
+      },
+      "200": {
+        "value": "BADAFF"
+      },
+      "300": {
+        "value": "87BFFF"
+      },
+      "400": {
+        "value": "66ADFF"
+      },
+      "500": {
+        "value": "0067DF"
+      },
+      "600": {
+        "value": "0056BA"
+      },
+      "700": {
+        "value": "00489D"
+      },
+      "800": {
+        "value": "00336F"
+      },
+      "050-contrast": {
+        "value": "#1b2630"
+      },
+      "100-contrast": {
+        "value": "182027"
+      },
+      "200-contrast": {
+        "value": "182027"
+      },
+      "300-contrast": {
+        "value": "182027"
+      },
+      "400-contrast": {
+        "value": "182027"
+      },
+      "500-contrast": {
+        "value": "F4F9FA"
+      },
+      "600-contrast": {
+        "value": "F4F9FA"
+      },
+      "700-contrast": {
+        "value": "F4F9FA"
+      },
+      "800-contrast": {
+        "value": "F4F9FA"
+      }
+    },
+    "blue_secondary": {
+      "100": {
+        "value": "E9F1FA"
+      },
+      "200": {
+        "value": "B2D2F3"
+      },
+      "300": {
+        "value": "8CC2F8"
+      },
+      "400": {
+        "value": "42A1FF"
+      },
+      "500": {
+        "value": "1976D2",
+        "comment": "Brand Accessory Blue Secondary"
+      },
+      "600": {
+        "value": "1665B3"
+      },
+      "700": {
+        "value": "11508D"
+      },
+      "800": {
+        "value": "0C3761"
+      },
+      "100-contrast": {
+        "value": "182027"
+      },
+      "200-contrast": {
+        "value": "182027"
+      },
+      "300-contrast": {
+        "value": "182027"
+      },
+      "400-contrast": {
+        "value": "182027"
+      },
+      "500-contrast": {
+        "value": "F4F9FA"
+      },
+      "600-contrast": {
+        "value": "F4F9FA"
+      },
+      "700-contrast": {
+        "value": "F4F9FA"
+      },
+      "800-contrast": {
+        "value": "F4F9FA"
+      }
+    },
+    "green": {
+      "100": {
+        "value": "EEFFE5"
+      },
+      "200": {
+        "value": "E4F2DD"
+      },
+      "250": {
+        "value": "E4F2DD"
+      },
+      "300": {
+        "value": "B4E89B"
+      },
+      "400": {
+        "value": "74C94B"
+      },
+      "500": {
+        "value": "6EB84A"
+      },
+      "600": {
+        "value": "539D2F"
+      },
+      "750": {
+        "value": "038A08"
+      },
+      "700": {
+        "value": "038108"
+      },
+      "800": {
+        "value": "005603"
+      },
+      "250-contrast": {
+        "value": "182027"
+      },
+      "500-contrast": {
+        "value": "182027"
+      },
+      "750-contrast": {
+        "value": "F4F9FA"
+      },
+      "050-contrast": {
+        "value": "182027"
+      },
+      "050": {
+        "value": "EEFFE6"
+      },
+      "emerald": {
+        "value": "176245"
+      }
+    },
+    "yellow": {
+      "100": {
+        "value": "FFF3DB"
+      },
+      "200": {
+        "value": "FFE19E"
+      },
+      "300": {
+        "value": "FFCA55"
+      },
+      "400": {
+        "value": "FFBB27"
+      },
+      "500": {
+        "value": "FFB40E",
+        "comment": "Brand Accessory Yellow"
+      },
+      "600": {
+        "value": "F3AB0D"
+      },
+      "700": {
+        "value": "9E6100"
+      },
+      "750": {
+        "value": "B27D09"
+      },
+      "800": {
+        "value": "805A07"
+      },
+      "100-contrast": {
+        "value": "182027"
+      },
+      "200-contrast": {
+        "value": "182027"
+      },
+      "300-contrast": {
+        "value": "182027"
+      },
+      "400-contrast": {
+        "value": "182027"
+      },
+      "500-contrast": {
+        "value": "182027"
+      },
+      "600-contrast": {
+        "value": "182027"
+      },
+      "700-contrast": {
+        "value": "182027"
+      },
+      "800-contrast": {
+        "value": "F4F9FA"
+      }
+    },
+    "red": {
+      "100": {
+        "value": "FFF0F1"
+      },
+      "200": {
+        "value": "FFD1D1"
+      },
+      "300": {
+        "value": "FFADAD"
+      },
+      "400": {
+        "value": "FF8484"
+      },
+      "500": {
+        "value": "CC3D45",
+        "comment": "Brand Accessory Red"
+      },
+      "600": {
+        "value": "B6242B"
+      },
+      "700": {
+        "value": "A6040A"
+      },
+      "800": {
+        "value": "6C0004"
+      },
+      "100-contrast": {
+        "value": "182027"
+      },
+      "200-contrast": {
+        "value": "182027"
+      },
+      "300-contrast": {
+        "value": "182027"
+      },
+      "400-contrast": {
+        "value": "182027"
+      },
+      "500-contrast": {
+        "value": "F4F9FA"
+      },
+      "600-contrast": {
+        "value": "F4F9FA"
+      },
+      "700-contrast": {
+        "value": "F4F9FA"
+      },
+      "800-contrast": {
+        "value": "F4F9FA"
+      }
+    },
+    "purple": {
+      "100": {
+        "value": "EEE1EE"
+      },
+      "200": {
+        "value": "EDB8ED"
+      },
+      "300": {
+        "value": "DC80DB"
+      },
+      "400": {
+        "value": "B748B6"
+      },
+      "500": {
+        "value": "933692"
+      },
+      "600": {
+        "value": "8C338B"
+      },
+      "700": {
+        "value": "662565"
+      },
+      "800": {
+        "value": "491B49"
+      },
+      "100-contrast": {
+        "value": "182027"
+      },
+      "200-contrast": {
+        "value": "182027"
+      },
+      "300-contrast": {
+        "value": "182027"
+      },
+      "400-contrast": {
+        "value": "F4F9FA"
+      },
+      "500-contrast": {
+        "value": "F4F9FA"
+      },
+      "600-contrast": {
+        "value": "F4F9FA"
+      },
+      "700-contrast": {
+        "value": "F4F9FA"
+      },
+      "800-contrast": {
+        "value": "F4F9FA"
+      }
+    },
+    "light_blue": {
+      "100": {
+        "value": "E1F6FD"
+      },
+      "200": {
+        "value": "AFE8FA"
+      },
+      "300": {
+        "value": "73D6F7"
+      },
+      "400": {
+        "value": "44CFFC"
+      },
+      "500": {
+        "value": "38C6F4"
+      },
+      "600": {
+        "value": "35BBE7"
+      },
+      "700": {
+        "value": "278AAB"
+      },
+      "800": {
+        "value": "1C637A"
+      },
+      "100-contrast": {
+        "value": "182027"
+      },
+      "200-contrast": {
+        "value": "182027"
+      },
+      "300-contrast": {
+        "value": "182027"
+      },
+      "400-contrast": {
+        "value": "182027"
+      },
+      "500-contrast": {
+        "value": "182027"
+      },
+      "600-contrast": {
+        "value": "182027"
+      },
+      "700-contrast": {
+        "value": "182027"
+      },
+      "800-contrast": {
+        "value": "F4F9FA"
+      }
+    },
+    "white": {
+      "value": "FFFFFF"
+    },
+    "black": {
+      "value": "000000"
+    },
+    "error": {
+      "100": {
+        "value": "FFF0F1"
+      },
+      "200": {
+        "value": "FFD1D1"
+      },
+      "250": {
+        "value": "FFA2A8"
+      },
+      "300": {
+        "value": "FFADAD"
+      },
+      "400": {
+        "value": "FF8484"
+      },
+      "500": {
+        "value": "CC3D45"
+      },
+      "600": {
+        "value": "B6242B"
+      },
+      "700": {
+        "value": "A6040A"
+      },
+      "750": {
+        "value": "A6040A"
+      },
+      "800": {
+        "value": "6C0004"
+      },
+      "250-contrast": {
+        "value": "182027"
+      },
+      "500-contrast": {
+        "value": "182027"
+      },
+      "750-contrast": {
+        "value": "F4F9FA"
+      },
+      "050-contrast": {
+        "value": "182027"
+      },
+      "050": {
+        "value": "FFE6E7"
+      }
+    },
+    "warning": {
+      "100": {
+        "value": "FFF3DB"
+      },
+      "200": {
+        "value": "FFE19E"
+      },
+      "300": {
+        "value": "FFCA55"
+      },
+      "400": {
+        "value": "FFBB27"
+      },
+      "500": {
+        "value": "FFB40E",
+        "comment": "Brand Accessory Yellow"
+      },
+      "600": {
+        "value": "F3AB0D"
+      },
+      "700": {
+        "value": "B27D09"
+      },
+      "750": {
+        "value": "B27D09"
+      },
+      "800": {
+        "value": "805A07"
+      },
+      "100-contrast": {
+        "value": "182027"
+      },
+      "200-contrast": {
+        "value": "182027"
+      },
+      "300-contrast": {
+        "value": "182027"
+      },
+      "400-contrast": {
+        "value": "182027"
+      },
+      "500-contrast": {
+        "value": "182027"
+      },
+      "600-contrast": {
+        "value": "182027"
+      },
+      "700-contrast": {
+        "value": "182027"
+      },
+      "800-contrast": {
+        "value": "F4F9FA"
+      }
+    },
+    "info": {
+      "100": {
+        "value": "E9F1FA"
+      },
+      "200": {
+        "value": "B2D2F3"
+      },
+      "300": {
+        "value": "8CC2F8"
+      },
+      "400": {
+        "value": "42A1FF"
+      },
+      "500": {
+        "value": "1976D2",
+        "comment": "Brand Accessory Blue Secondary"
+      },
+      "600": {
+        "value": "1665B3"
+      },
+      "700": {
+        "value": "11508D"
+      },
+      "800": {
+        "value": "0C3761"
+      },
+      "100-contrast": {
+        "value": "182027"
+      },
+      "200-contrast": {
+        "value": "182027"
+      },
+      "300-contrast": {
+        "value": "182027"
+      },
+      "400-contrast": {
+        "value": "182027"
+      },
+      "500-contrast": {
+        "value": "182027"
+      },
+      "600-contrast": {
+        "value": "F4F9FA"
+      },
+      "700-contrast": {
+        "value": "F4F9FA"
+      },
+      "800-contrast": {
+        "value": "F4F9FA"
+      }
+    },
+    "success": {
+      "100": {
+        "value": "EEFFE5"
+      },
+      "200": {
+        "value": "E4F2DD"
+      },
+      "250": {
+        "value": "E4F2DD"
+      },
+      "300": {
+        "value": "B4E89B"
+      },
+      "400": {
+        "value": "74C94B"
+      },
+      "500": {
+        "value": "6EB84A"
+      },
+      "600": {
+        "value": "539D2F"
+      },
+      "750": {
+        "value": "038A08"
+      },
+      "700": {
+        "value": "038108"
+      },
+      "800": {
+        "value": "005603"
+      },
+      "250-contrast": {
+        "value": "182027"
+      },
+      "500-contrast": {
+        "value": "182027"
+      },
+      "750-contrast": {
+        "value": "F4F9FA"
+      },
+      "050-contrast": {
+        "value": "182027"
+      },
+      "050": {
+        "value": "EEFFE6"
+      }
+    },
+    "gray": {
+      "100": {
+        "value": "f7f7f7"
+      },
+      "150": {
+        "value": "f4f4f5"
+      },
+      "200": {
+        "value": "ecedee"
+      },
+      "250": {
+        "value": "e1e2e4"
+      },
+      "300": {
+        "value": "d3d4d6"
+      },
+      "350": {
+        "value": "c0c2c5"
+      },
+      "400": {
+        "value": "aaacaf"
+      },
+      "450": {
+        "value": "919295"
+      },
+      "500": {
+        "value": "757679"
+      },
+      "550": {
+        "value": "595a5c"
+      },
+      "600": {
+        "value": "414244"
+      },
+      "650": {
+        "value": "2d2e2f"
+      },
+      "700": {
+        "value": "1d1d1e"
+      },
+      "750": {
+        "value": "111212"
+      },
+      "800": {
+        "value": "0a0a0a"
+      },
+      "850": {
+        "value": "060606"
+      },
+      "100-contrast": {
+        "value": "182027"
+      },
+      "150-contrast": {
+        "value": "182027"
+      },
+      "200-contrast": {
+        "value": "182027"
+      },
+      "250-contrast": {
+        "value": "182027"
+      },
+      "300-contrast": {
+        "value": "182027"
+      },
+      "350-contrast": {
+        "value": "182027"
+      },
+      "400-contrast": {
+        "value": "182027"
+      },
+      "450-contrast": {
+        "value": "182027"
+      },
+      "500-contrast": {
+        "value": "F4F9FA"
+      },
+      "550-contrast": {
+        "value": "F4F9FA"
+      },
+      "600-contrast": {
+        "value": "F4F9FA"
+      },
+      "650-contrast": {
+        "value": "F4F9FA"
+      },
+      "700-contrast": {
+        "value": "F4F9FA"
+      },
+      "750-contrast": {
+        "value": "F4F9FA"
+      },
+      "800-contrast": {
+        "value": "F4F9FA"
+      },
+      "850-contrast": {
+        "value": "F4F9FA"
+      },
+      "050-contrast": {
+        "value": "182027"
+      },
+      "050": {
+        "value": "fafafa"
+      }
+    },
+    "ink": {
+      "100": {
+        "value": "F8F9FA"
+      },
+      "150": {
+        "value": "F4F5F7"
+      },
+      "200": {
+        "value": "e9f0f3"
+      },
+      "250": {
+        "value": "dee6ea"
+      },
+      "300": {
+        "value": "CFD8DD"
+      },
+      "350": {
+        "value": "bbc7cd"
+      },
+      "400": {
+        "value": "A4B1B8"
+      },
+      "450": {
+        "value": "8A97A0"
+      },
+      "500": {
+        "value": "6B7882"
+      },
+      "550": {
+        "value": "526069"
+      },
+      "600": {
+        "value": "374652"
+      },
+      "625": {
+        "value": "{color.ink.600.value}",
+        "comment": "DEPRECATED - Please use ColorInk600 instead."
+      },
+      "650": {
+        "value": "273139"
+      },
+      "700": {
+        "value": "182027"
+      },
+      "750": {
+        "value": "0e1419"
+      },
+      "800": {
+        "value": "080c10"
+      },
+      "850": {
+        "value": "04070a"
+      },
+      "100-contrast": {
+        "value": "182027"
+      },
+      "150-contrast": {
+        "value": "182027"
+      },
+      "200-contrast": {
+        "value": "182027"
+      },
+      "250-contrast": {
+        "value": "182027"
+      },
+      "300-contrast": {
+        "value": "182027"
+      },
+      "350-contrast": {
+        "value": "182027"
+      },
+      "400-contrast": {
+        "value": "182027"
+      },
+      "450-contrast": {
+        "value": "182027"
+      },
+      "500-contrast": {
+        "value": "F4F9FA"
+      },
+      "550-contrast": {
+        "value": "F4F9FA"
+      },
+      "600-contrast": {
+        "value": "F4F9FA"
+      },
+      "650-contrast": {
+        "value": "F4F9FA"
+      },
+      "700-contrast": {
+        "value": "F4F9FA"
+      },
+      "750-contrast": {
+        "value": "F4F9FA"
+      },
+      "800-contrast": {
+        "value": "F4F9FA"
+      },
+      "850-contrast": {
+        "value": "F4F9FA"
+      },
+      "050-contrast": {
+        "value": "182027"
+      },
+      "050": {
+        "value": "182027"
+      }
+    },
+    "pink": {
+      "100": {
+        "value": "FCDBE6"
+      },
+      "200": {
+        "value": "F7A1BD"
+      },
+      "300": {
+        "value": "FD7DA7"
+      },
+      "400": {
+        "value": "F25A8C"
+      },
+      "500": {
+        "value": "ED145B"
+      },
+      "600": {
+        "value": "D91153"
+      },
+      "700": {
+        "value": "A60E3F"
+      },
+      "800": {
+        "value": "76092D"
+      }
+    },
+    "gradient": {
+      "1L": {
+        "value": "FAFAFB",
+        "comment": "Gradient 1 Light - Start"
+      },
+      "1L-end": {
+        "value": "ECEDEF",
+        "comment": "Gradient 1 Light - End"
+      },
+      "1D": {
+        "value": "526069",
+        "comment": "Gradient 1 Dark - Start"
+      },
+      "1D-end": {
+        "value": "323C42",
+        "comment": "Gradient 1 Dark - End"
+      },
+      "2L": {
+        "value": "FFE0FF",
+        "comment": "Gradient 2 Light - Start"
+      },
+      "2L-end": {
+        "value": "CFD9FF",
+        "comment": "Gradient 2 Light - End"
+      },
+      "2D": {
+        "value": "A280BC",
+        "comment": "Gradient 2 Dark - Start"
+      },
+      "2D-end": {
+        "value": "577BAE",
+        "comment": "Gradient 2 Dark - End"
+      },
+      "3L": {
+        "value": "DDFBF1",
+        "comment": "Gradient 3 Light - Start"
+      },
+      "3L-end": {
+        "value": "DAF3FF",
+        "comment": "Gradient 3 Light - End"
+      },
+      "3D": {
+        "value": "51868E",
+        "comment": "Gradient 3 Dark - Start"
+      },
+      "3D-end": {
+        "value": "35667D",
+        "comment": "Gradient 3 Dark - End"
+      },
+      "4L": {
+        "value": "F6FAFF",
+        "comment": "Gradient 4 Light - Start"
+      },
+      "4L-end": {
+        "value": "D8EEFF",
+        "comment": "Gradient 4 Light - End"
+      },
+      "4D": {
+        "value": "6885AB",
+        "comment": "Gradient 4 Dark - Start"
+      },
+      "4D-end": {
+        "value": "2B5372",
+        "comment": "Gradient 4 Dark - End"
+      }
+    }
+  }
+}

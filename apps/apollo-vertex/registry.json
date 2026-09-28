@@ -1,0 +1,3443 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "apollo-vertex",
+  "homepage": "https://engdogfood.staging.uipath.host/apollo-vertex",
+  "items": [
+    {
+      "name": "apollo-vertex-theme",
+      "type": "registry:theme",
+      "title": "Apollo Vertex Theme",
+      "description": "Apollo Vertex design system tokens — colors, typography, spacing, shadows, and easing functions with light and dark mode support.",
+      "dependencies": ["tw-animate-css"],
+      "css": { "@import \"tw-animate-css\"": {} },
+      "registryDependencies": ["@uipath/font-inter"],
+      "cssVars": {
+        "theme": {
+          "radius-sm": "calc(var(--radius) - 4px)",
+          "radius-md": "calc(var(--radius) - 2px)",
+          "radius-lg": "var(--radius)",
+          "radius-xl": "calc(var(--radius) + 4px)",
+          "color-background": "var(--background)",
+          "color-foreground": "var(--foreground)",
+          "color-card": "var(--card)",
+          "color-card-foreground": "var(--card-foreground)",
+          "color-popover": "var(--popover)",
+          "color-popover-foreground": "var(--popover-foreground)",
+          "color-primary": "var(--primary)",
+          "color-primary-foreground": "var(--primary-foreground)",
+          "color-primary-50": "var(--primary-50)",
+          "color-primary-100": "var(--primary-100)",
+          "color-primary-200": "var(--primary-200)",
+          "color-primary-300": "var(--primary-300)",
+          "color-primary-400": "var(--primary-400)",
+          "color-primary-500": "var(--primary-500)",
+          "color-primary-600": "var(--primary-600)",
+          "color-primary-700": "var(--primary-700)",
+          "color-primary-800": "var(--primary-800)",
+          "color-primary-900": "var(--primary-900)",
+          "color-secondary": "var(--secondary)",
+          "color-secondary-foreground": "var(--secondary-foreground)",
+          "color-muted": "var(--muted)",
+          "color-muted-foreground": "var(--muted-foreground)",
+          "color-accent": "var(--accent)",
+          "color-accent-foreground": "var(--accent-foreground)",
+          "color-destructive": "var(--destructive)",
+          "color-destructive-foreground": "var(--destructive-foreground)",
+          "color-success": "var(--success)",
+          "color-success-foreground": "var(--success-foreground)",
+          "color-info": "var(--info)",
+          "color-info-foreground": "var(--info-foreground)",
+          "color-warning": "var(--warning)",
+          "color-warning-foreground": "var(--warning-foreground)",
+          "color-badge": "var(--badge)",
+          "color-badge-foreground": "var(--badge-foreground)",
+          "color-border": "var(--border)",
+          "color-input": "var(--input)",
+          "color-ring": "var(--ring)",
+          "color-chart-1": "var(--chart-1)",
+          "color-chart-2": "var(--chart-2)",
+          "color-chart-3": "var(--chart-3)",
+          "color-chart-4": "var(--chart-4)",
+          "color-chart-5": "var(--chart-5)",
+          "color-sidebar": "var(--sidebar)",
+          "color-sidebar-foreground": "var(--sidebar-foreground)",
+          "color-sidebar-primary": "var(--sidebar-primary)",
+          "color-sidebar-primary-foreground": "var(--sidebar-primary-foreground)",
+          "color-sidebar-accent": "var(--sidebar-accent)",
+          "color-sidebar-accent-foreground": "var(--sidebar-accent-foreground)",
+          "color-sidebar-border": "var(--sidebar-border)",
+          "color-sidebar-ring": "var(--sidebar-ring)",
+          "font-sans": "var(--font-sans)",
+          "color-ai-chat": "var(--ai-chat)",
+          "color-ai-chat-foreground": "var(--ai-chat-foreground)",
+          "color-ai-chat-accent": "var(--ai-chat-accent)",
+          "color-ai-chat-accent-foreground": "var(--ai-chat-accent-foreground)",
+          "color-ai-chat-bubble-user": "var(--ai-chat-bubble-user)",
+          "color-ai-chat-bubble-user-foreground": "var(--ai-chat-bubble-user-foreground)",
+          "color-ai-chat-bubble-assistant": "var(--ai-chat-bubble-assistant)",
+          "color-ai-chat-bubble-assistant-foreground": "var(--ai-chat-bubble-assistant-foreground)",
+          "color-ai-chat-border": "var(--ai-chat-border)",
+          "color-ai-chat-input": "var(--ai-chat-input)",
+          "color-ai-chat-input-foreground": "var(--ai-chat-input-foreground)",
+          "color-ai-chat-ring": "var(--ai-chat-ring)",
+          "color-ai-chat-muted": "var(--ai-chat-muted)",
+          "color-ai-chat-muted-foreground": "var(--ai-chat-muted-foreground)",
+          "color-insight-50": "var(--insight-50)",
+          "color-insight-100": "var(--insight-100)",
+          "color-insight-200": "var(--insight-200)",
+          "color-insight-300": "var(--insight-300)",
+          "color-insight-400": "var(--insight-400)",
+          "color-insight-500": "var(--insight-500)",
+          "color-insight-600": "var(--insight-600)",
+          "color-insight-700": "var(--insight-700)",
+          "color-insight-800": "var(--insight-800)",
+          "color-insight-900": "var(--insight-900)"
+        },
+        "light": {
+          "background": "oklch(1 0 89.8800)",
+          "foreground": "oklch(0.2394 0.0455 252.4500)",
+          "card": "oklch(1 0 89.8800)",
+          "card-foreground": "oklch(0.2394 0.0455 252.4500)",
+          "popover": "oklch(1 0 89.8800)",
+          "popover-foreground": "oklch(0.2394 0.0455 252.4500)",
+          "primary": "oklch(0.52 0.120 210)",
+          "primary-foreground": "oklch(1 0 89.8800)",
+          "primary-50": "oklch(0.95 0.035 218)",
+          "primary-100": "oklch(0.92 0.045 216)",
+          "primary-200": "oklch(0.86 0.060 214)",
+          "primary-300": "oklch(0.80 0.080 212)",
+          "primary-400": "oklch(0.75 0.100 210)",
+          "primary-500": "oklch(0.69 0.112 207)",
+          "primary-600": "oklch(0.64 0.115 208)",
+          "primary-700": "oklch(0.52 0.120 210)",
+          "primary-800": "oklch(0.46 0.095 220)",
+          "primary-900": "oklch(0.2394 0.0455 252.445)",
+          "secondary": "oklch(0.9593 0.0069 247.9000)",
+          "secondary-foreground": "oklch(0.2394 0.0455 252.4500)",
+          "muted": "oklch(0.9630 0.0062 255.4800)",
+          "muted-foreground": "oklch(0.4594 0.0280 264.2500)",
+          "accent": "oklch(0.9593 0.0069 247.9000 / 0.75)",
+          "accent-foreground": "oklch(0.2394 0.0455 252.4500)",
+          "destructive": "oklch(0.50 0.15 18)",
+          "destructive-foreground": "oklch(1 0 89.8800)",
+          "brand-orange": "#fa4616",
+          "success": "oklch(0.57 0.105 152)",
+          "success-foreground": "oklch(1 0 89.8800)",
+          "info": "oklch(0.52 0.120 210)",
+          "info-foreground": "oklch(1 0 89.8800)",
+          "warning": "oklch(0.80 0.1401 80.82)",
+          "warning-foreground": "oklch(0.1660 0.0283 203.3400)",
+          "badge": "oklch(0.5995 0.0199 253.42)",
+          "badge-foreground": "oklch(1 0 89.8800)",
+          "border": "oklch(0.9229 0.0065 252.1300)",
+          "input": "oklch(0.9229 0.0065 252.1300)",
+          "ring": "oklch(0.64 0.115 208)",
+          "chart-1": "oklch(0.64 0.115 208)",
+          "chart-2": "oklch(0.6100 0.1450 285.3000)",
+          "chart-3": "oklch(0.8300 0.1550 75.2000)",
+          "chart-4": "oklch(0.7200 0.1800 320.8000)",
+          "chart-5": "oklch(0.6800 0.1500 245.5000)",
+          "sidebar": "oklch(0.9723 0.0074 260.7300)",
+          "sidebar-foreground": "oklch(0.2394 0.0455 252.4450)",
+          "sidebar-primary": "oklch(0.64 0.115 208)",
+          "sidebar-primary-foreground": "oklch(0.1660 0.0283 203.3380)",
+          "sidebar-accent": "oklch(0.9593 0.0069 247.9000)",
+          "sidebar-accent-foreground": "oklch(0.1660 0.0283 203.3380)",
+          "sidebar-border": "oklch(0.9237 0.0133 262.3780)",
+          "sidebar-ring": "oklch(0.64 0.115 208)",
+          "insight-50": "oklch(0.96 0.03 277)",
+          "insight-100": "oklch(0.92 0.05 277)",
+          "insight-200": "oklch(0.86 0.09 277)",
+          "insight-300": "oklch(0.78 0.14 277)",
+          "insight-400": "oklch(0.70 0.19 277)",
+          "insight-500": "oklch(0.62 0.22 277)",
+          "insight-600": "oklch(0.56 0.20 277)",
+          "insight-700": "oklch(0.48 0.17 277)",
+          "insight-800": "oklch(0.38 0.13 278)",
+          "insight-900": "oklch(0.30 0.10 278)",
+          "font-sans": "'Inter Variable', Inter, ui-sans-serif, sans-serif, system-ui",
+          "font-serif": "IBM Plex Serif, ui-serif, serif",
+          "font-mono": "IBM Plex Mono, ui-monospace, monospace",
+          "radius": "0.625rem",
+          "shadow-x": "0",
+          "shadow-y": "0px",
+          "shadow-blur": "12px",
+          "shadow-spread": "0px",
+          "shadow-opacity": "0.1",
+          "shadow-color": "oklch(0.4594 0.0280 264.25)",
+          "shadow-2xs": "0 0px 12px 0px hsl(220.0009 13.0382% 36.0747% / 0.05)",
+          "shadow-xs": "0 0px 12px 0px hsl(220.0009 13.0382% 36.0747% / 0.05)",
+          "shadow-sm": "0 0px 12px 0px hsl(220.0009 13.0382% 36.0747% / 0.10), 0 1px 2px -1px hsl(220.0009 13.0382% 36.0747% / 0.10)",
+          "shadow": "0 0px 12px 0px hsl(220.0009 13.0382% 36.0747% / 0.10), 0 1px 2px -1px hsl(220.0009 13.0382% 36.0747% / 0.10)",
+          "shadow-md": "0 0px 12px 0px hsl(220.0009 13.0382% 36.0747% / 0.10), 0 2px 4px -1px hsl(220.0009 13.0382% 36.0747% / 0.10)",
+          "shadow-lg": "0 0px 12px 0px hsl(220.0009 13.0382% 36.0747% / 0.10), 0 4px 6px -1px hsl(220.0009 13.0382% 36.0747% / 0.10)",
+          "shadow-xl": "0 0px 12px 0px hsl(220.0009 13.0382% 36.0747% / 0.10), 0 8px 10px -1px hsl(220.0009 13.0382% 36.0747% / 0.10)",
+          "shadow-2xl": "0 0px 12px 0px hsl(220.0009 13.0382% 36.0747% / 0.25)",
+          "tracking-normal": "0em",
+          "spacing": "0.25rem",
+          "ease-out-quad": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+          "ease-out-cubic": "cubic-bezier(0.215, 0.61, 0.355, 1)",
+          "ease-out-quart": "cubic-bezier(0.165, 0.84, 0.44, 1)",
+          "ease-out-quint": "cubic-bezier(0.23, 1, 0.32, 1)",
+          "ease-out-expo": "cubic-bezier(0.19, 1, 0.22, 1)",
+          "ease-out-circ": "cubic-bezier(0.075, 0.82, 0.165, 1)",
+          "ease-in-out-quad": "cubic-bezier(0.455, 0.03, 0.515, 0.955)",
+          "ease-in-out-cubic": "cubic-bezier(0.645, 0.045, 0.355, 1)",
+          "ease-in-out-quart": "cubic-bezier(0.77, 0, 0.175, 1)",
+          "ease-in-out-quint": "cubic-bezier(0.86, 0, 0.07, 1)",
+          "ease-in-out-expo": "cubic-bezier(1, 0, 0, 1)",
+          "ease-in-out-circ": "cubic-bezier(0.785, 0.135, 0.15, 0.86)",
+          "info-fg": "oklch(0.49 0.12 210)",
+          "success-fg": "oklch(0.46 0.10 152)",
+          "destructive-fg": "oklch(0.50 0.14 18)",
+          "ai-chat": "oklch(0.985 0.002 260)",
+          "ai-chat-foreground": "oklch(0.2394 0.0455 252.45)",
+          "ai-chat-accent": "oklch(0.64 0.115 208)",
+          "ai-chat-accent-foreground": "oklch(1 0 0)",
+          "ai-chat-bubble-user": "oklch(0.955 0.008 252)",
+          "ai-chat-bubble-user-foreground": "oklch(0.2394 0.0455 252.45)",
+          "ai-chat-bubble-assistant": "oklch(0.96 0.020 275)",
+          "ai-chat-bubble-assistant-foreground": "oklch(0.2394 0.0455 252.45)",
+          "ai-chat-border": "oklch(0.92 0.008 260)",
+          "ai-chat-input": "oklch(0.975 0.004 260)",
+          "ai-chat-input-foreground": "oklch(0.2394 0.0455 252.45)",
+          "ai-chat-ring": "oklch(0.64 0.115 208)",
+          "ai-chat-muted": "oklch(0.955 0.006 260)",
+          "ai-chat-muted-foreground": "oklch(0.50 0.020 260)",
+          "ai-chat-brand-gradient": "linear-gradient(97.73deg, #5D4ED0 8.79%, #1076A0 91.48%)",
+          "ai-gradient": "linear-gradient(100.64deg, var(--insight-100) 8.29%, var(--primary-50) 88.73%)",
+          "ai-glow-start": "var(--insight-100)",
+          "ai-glow-end": "var(--primary-50)",
+          "ai-glass": "color-mix(in srgb, var(--card) 80%, transparent)",
+          "ai-gradient-fill": "linear-gradient(97.73deg, var(--insight-600) 8.79%, var(--primary-700) 91.48%)",
+          "ai-gradient-text": "linear-gradient(97.73deg, var(--insight-600) 8.79%, var(--primary-700) 91.48%)",
+          "ai-gradient-strong": "linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%)",
+          "ai-gradient-start": "#6C5AEF",
+          "ai-gradient-end": "#69C7DD"
+        },
+        "dark": {
+          "background": "oklch(0.2100 0.0300 258.5000)",
+          "foreground": "oklch(0.9850 0 0)",
+          "card": "oklch(0.2330 0.0360 254.7000)",
+          "card-foreground": "oklch(0.9525 0.0110 225.9800)",
+          "popover": "oklch(0.2100 0.0300 258.5000)",
+          "popover-foreground": "oklch(0.9850 0 0)",
+          "primary": "oklch(0.69 0.112 207)",
+          "primary-foreground": "oklch(0.1660 0.0283 203.3400)",
+          "primary-50": "oklch(0.95 0.035 218)",
+          "primary-100": "oklch(0.92 0.045 216)",
+          "primary-200": "oklch(0.86 0.060 214)",
+          "primary-300": "oklch(0.80 0.080 212)",
+          "primary-400": "oklch(0.75 0.100 210)",
+          "primary-500": "oklch(0.69 0.112 207)",
+          "primary-600": "oklch(0.64 0.115 208)",
+          "primary-700": "oklch(0.52 0.120 210)",
+          "primary-800": "oklch(0.46 0.095 220)",
+          "primary-900": "oklch(0.2394 0.0455 252.445)",
+          "secondary": "oklch(0.3927 0.0289 240.8600)",
+          "secondary-foreground": "oklch(0.9416 0.0145 244.7200)",
+          "muted": "oklch(0.2648 0.0329 254.3800)",
+          "muted-foreground": "oklch(0.7200 0.0300 254.3800)",
+          "accent": "oklch(0.3927 0.0289 240.8600 / 0.75)",
+          "accent-foreground": "oklch(0.9416 0.0145 244.7200)",
+          "destructive": "oklch(0.68 0.155 18)",
+          "destructive-foreground": "oklch(0.1660 0.0283 203.3400)",
+          "brand-orange": "#fa4616",
+          "success": "oklch(0.70 0.120 152)",
+          "success-foreground": "oklch(0.1660 0.0283 203.3400)",
+          "info": "oklch(0.69 0.112 207)",
+          "info-foreground": "oklch(0.1660 0.0283 203.3400)",
+          "warning": "oklch(0.6889 0.1401 80.82)",
+          "warning-foreground": "oklch(0.1660 0.0283 203.3400)",
+          "badge": "oklch(0.7196 0.0135 255.53)",
+          "badge-foreground": "oklch(0.1660 0.0283 203.3400)",
+          "border": "oklch(0.3068 0.0426 258.2900)",
+          "input": "oklch(0.3068 0.0426 258.2900)",
+          "ring": "oklch(0.69 0.112 207)",
+          "chart-1": "oklch(0.69 0.112 207)",
+          "chart-2": "oklch(0.6100 0.1450 285.3000)",
+          "chart-3": "oklch(0.8300 0.1550 75.2000)",
+          "chart-4": "oklch(0.7200 0.1800 320.8000)",
+          "chart-5": "oklch(0.6800 0.1500 245.5000)",
+          "sidebar": "oklch(0.1620 0.0310 257.7000)",
+          "sidebar-foreground": "oklch(0.9525 0.0110 225.9830)",
+          "sidebar-primary": "oklch(0.69 0.112 207)",
+          "sidebar-primary-foreground": "oklch(0.1660 0.0283 203.3380)",
+          "sidebar-accent": "oklch(0.3927 0.0289 240.8600)",
+          "sidebar-accent-foreground": "oklch(0.9525 0.0110 225.9830)",
+          "sidebar-border": "oklch(0.9525 0.0110 225.9830)",
+          "sidebar-ring": "oklch(0.69 0.112 207)",
+          "insight-50": "oklch(0.96 0.03 277)",
+          "insight-100": "oklch(0.92 0.05 277)",
+          "insight-200": "oklch(0.86 0.09 277)",
+          "insight-300": "oklch(0.78 0.14 277)",
+          "insight-400": "oklch(0.70 0.19 277)",
+          "insight-500": "oklch(0.62 0.22 277)",
+          "insight-600": "oklch(0.56 0.20 277)",
+          "insight-700": "oklch(0.48 0.17 277)",
+          "insight-800": "oklch(0.38 0.13 278)",
+          "insight-900": "oklch(0.30 0.10 278)",
+          "font-sans": "'Inter Variable', Inter, ui-sans-serif, sans-serif, system-ui",
+          "font-serif": "IBM Plex Serif, ui-serif, serif",
+          "font-mono": "IBM Plex Mono, ui-monospace, monospace",
+          "radius": "0.625rem",
+          "shadow-x": "0",
+          "shadow-y": "0px",
+          "shadow-blur": "12px",
+          "shadow-spread": "0px",
+          "shadow-opacity": "0.1",
+          "shadow-color": "oklch(0 0 0)",
+          "shadow-2xs": "0 0px 12px 0px hsl(0 0% 0% / 0.05)",
+          "shadow-xs": "0 0px 12px 0px hsl(0 0% 0% / 0.05)",
+          "shadow-sm": "0 0px 12px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10)",
+          "shadow": "0 0px 12px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10)",
+          "shadow-md": "0 0px 12px 0px hsl(0 0% 0% / 0.10), 0 2px 4px -1px hsl(0 0% 0% / 0.10)",
+          "shadow-lg": "0 0px 12px 0px hsl(0 0% 0% / 0.10), 0 4px 6px -1px hsl(0 0% 0% / 0.10)",
+          "shadow-xl": "0 0px 12px 0px hsl(0 0% 0% / 0.10), 0 8px 10px -1px hsl(0 0% 0% / 0.10)",
+          "shadow-2xl": "0 0px 12px 0px hsl(0 0% 0% / 0.25)",
+          "tracking-normal": "0em",
+          "spacing": "0.25rem",
+          "ai-chat": "oklch(0.19 0.025 260)",
+          "ai-chat-foreground": "oklch(0.95 0.010 225)",
+          "ai-chat-accent": "oklch(0.69 0.112 207)",
+          "ai-chat-accent-foreground": "oklch(0.1660 0.0283 203.34)",
+          "ai-chat-bubble-user": "oklch(0.28 0.035 255)",
+          "ai-chat-bubble-user-foreground": "oklch(0.95 0.010 225)",
+          "ai-chat-bubble-assistant": "oklch(0.25 0.030 270)",
+          "ai-chat-bubble-assistant-foreground": "oklch(0.95 0.010 225)",
+          "ai-chat-border": "oklch(0.30 0.040 258)",
+          "ai-chat-input": "oklch(0.22 0.030 258)",
+          "ai-chat-input-foreground": "oklch(0.95 0.010 225)",
+          "ai-chat-ring": "oklch(0.69 0.112 207)",
+          "ai-chat-muted": "oklch(0.26 0.030 258)",
+          "ai-chat-muted-foreground": "oklch(0.65 0.020 258)",
+          "ai-chat-brand-gradient": "linear-gradient(97.73deg, #9485F5 8.79%, #69C7DD 91.48%)",
+          "ai-gradient": "linear-gradient(100.64deg, var(--insight-800) 8.29%, var(--primary-800) 88.73%)",
+          "ai-glow-start": "var(--insight-800)",
+          "ai-glow-end": "var(--primary-800)",
+          "ai-glass": "color-mix(in srgb, var(--card) 90%, transparent)",
+          "ai-gradient-fill": "linear-gradient(97.73deg, var(--insight-600) 8.79%, var(--primary-700) 91.48%)",
+          "ai-gradient-text": "linear-gradient(97.73deg, var(--insight-400) 8.79%, var(--primary-400) 91.48%)",
+          "ai-gradient-strong": "linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%)",
+          "ai-gradient-start": "#6C5AEF",
+          "ai-gradient-end": "#69C7DD"
+        }
+      }
+    },
+    {
+      "name": "font-inter",
+      "type": "registry:font",
+      "title": "Inter Font",
+      "description": "Inter font configuration for Apollo Vertex. Sets --font-sans CSS variable.",
+      "font": {
+        "family": "'Inter Variable', Inter, ui-sans-serif, sans-serif, system-ui",
+        "provider": "google",
+        "import": "Inter",
+        "variable": "--font-sans",
+        "subsets": ["latin"],
+        "dependency": "@fontsource-variable/inter"
+      }
+    },
+    {
+      "name": "accordion",
+      "type": "registry:ui",
+      "title": "Accordion",
+      "description": "A vertically stacked set of interactive headings that reveal content.",
+      "dependencies": ["@radix-ui/react-accordion"],
+      "files": [
+        {
+          "path": "registry/accordion/accordion.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "charts-core",
+      "type": "registry:lib",
+      "title": "Charts Core",
+      "description": "Shared chart infrastructure: DataAdapter interface, chart-data types, configurations, format helpers, and the ChartLoadingBoundary primitive consumed by every chart.",
+      "dependencies": [
+        "@tanstack/react-query@^5.90.0",
+        "@types/luxon",
+        "luxon",
+        "react-error-boundary@^6.0.0",
+        "react-i18next",
+        "zod"
+      ],
+      "registryDependencies": ["@uipath/spinner"],
+      "files": [
+        {
+          "path": "lib/asserts/assert.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "lib/asserts/assert-boolean.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "lib/asserts/assert-date-time-or-string.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "lib/asserts/assert-defined.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "lib/asserts/assert-number.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "lib/asserts/assert-number-or-null.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "types/luxon.d.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "registry/charts-core/chart-data-mapper.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/chart-data-mapper.ts"
+        },
+        {
+          "path": "registry/charts-core/chart-loading-boundary.tsx",
+          "type": "registry:lib",
+          "target": "lib/charts-core/chart-loading-boundary.tsx"
+        },
+        {
+          "path": "registry/charts-core/chart-models.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/chart-models.ts"
+        },
+        {
+          "path": "registry/charts-core/charts-core.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/charts-core.ts"
+        },
+        {
+          "path": "registry/charts-core/data-adapter.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/data-adapter.ts"
+        },
+        {
+          "path": "registry/charts-core/data-query-response-schema.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/data-query-response-schema.ts"
+        },
+        {
+          "path": "registry/charts-core/error-boundary.tsx",
+          "type": "registry:lib",
+          "target": "lib/charts-core/error-boundary.tsx"
+        },
+        {
+          "path": "registry/charts-core/map-filter-config.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/map-filter-config.ts"
+        },
+        {
+          "path": "registry/charts-core/models/configurations/bar-chart-configuration.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/models/configurations/bar-chart-configuration.ts"
+        },
+        {
+          "path": "registry/charts-core/models/configurations/base-chart-configuration.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/models/configurations/base-chart-configuration.ts"
+        },
+        {
+          "path": "registry/charts-core/models/configurations/chart-properties.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/models/configurations/chart-properties.ts"
+        },
+        {
+          "path": "registry/charts-core/models/configurations/chart-type-schema.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/models/configurations/chart-type-schema.ts"
+        },
+        {
+          "path": "registry/charts-core/models/configurations/distribution-chart-configuration.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/models/configurations/distribution-chart-configuration.ts"
+        },
+        {
+          "path": "registry/charts-core/models/configurations/filter-values-schema.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/models/configurations/filter-values-schema.ts"
+        },
+        {
+          "path": "registry/charts-core/models/configurations/kpi-chart-configuration.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/models/configurations/kpi-chart-configuration.ts"
+        },
+        {
+          "path": "registry/charts-core/models/configurations/line-chart-configuration.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/models/configurations/line-chart-configuration.ts"
+        },
+        {
+          "path": "registry/charts-core/models/configurations/multi-line-chart-configuration.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/models/configurations/multi-line-chart-configuration.ts"
+        },
+        {
+          "path": "registry/charts-core/models/configurations/table-chart-configuration.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/models/configurations/table-chart-configuration.ts"
+        },
+        {
+          "path": "registry/charts-core/models/expression.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/models/expression.ts"
+        },
+        {
+          "path": "registry/charts-core/models/field.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/models/field.ts"
+        },
+        {
+          "path": "registry/charts-core/models/filter-values.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/models/filter-values.ts"
+        },
+        {
+          "path": "registry/charts-core/models/filter.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/models/filter.ts"
+        },
+        {
+          "path": "registry/charts-core/models/join-schema.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/models/join-schema.ts"
+        },
+        {
+          "path": "registry/charts-core/models/primitive-value.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/models/primitive-value.ts"
+        },
+        {
+          "path": "registry/charts-core/spinner-with-children.tsx",
+          "type": "registry:lib",
+          "target": "lib/charts-core/spinner-with-children.tsx"
+        },
+        {
+          "path": "registry/charts-core/table-data-model.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/table-data-model.ts"
+        },
+        {
+          "path": "registry/charts-core/util/binning/adaptive-bin-formatting.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/binning/adaptive-bin-formatting.ts"
+        },
+        {
+          "path": "registry/charts-core/util/binning/constants.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/binning/constants.ts"
+        },
+        {
+          "path": "registry/charts-core/util/binning/nice-duration-numbers.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/binning/nice-duration-numbers.ts"
+        },
+        {
+          "path": "registry/charts-core/util/binning/nice-numbers.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/binning/nice-numbers.ts"
+        },
+        {
+          "path": "registry/charts-core/util/data-type-alignment.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/data-type-alignment.ts"
+        },
+        {
+          "path": "registry/charts-core/util/empty-array.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/empty-array.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/base-format-options.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/base-format-options.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/bin-label-format-setting.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/bin-label-format-setting.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/bin-label.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/bin-label.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/compute-duration-units.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/compute-duration-units.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/constants.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/constants.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/duration-unit.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/duration-unit.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/format-boolean.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/format-boolean.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/format-currency.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/format-currency.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/format-date.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/format-date.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/format-duration.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/format-duration.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/format-metric-value.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/format-metric-value.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/format-number.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/format-number.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/format-percentage.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/format-percentage.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/format.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/format.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/get-chart-range.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/get-chart-range.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/highest-duration-unit.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/highest-duration-unit.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/is-date-only.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/is-date-only.ts"
+        },
+        {
+          "path": "registry/charts-core/util/format/percentage-format-options.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/format/percentage-format-options.ts"
+        },
+        {
+          "path": "registry/charts-core/util/build-field.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/build-field.ts"
+        },
+        {
+          "path": "registry/charts-core/util/get-metric-field-type.ts",
+          "type": "registry:lib",
+          "target": "lib/charts-core/util/get-metric-field-type.ts"
+        }
+      ]
+    },
+    {
+      "name": "data-fabric-adapter",
+      "type": "registry:lib",
+      "title": "Data Fabric Adapter",
+      "description": "DataAdapter implementation that talks to UiPath Data Fabric. Pair with any chart from charts-core.",
+      "dependencies": [
+        "@tanstack/react-query@^5.90.0",
+        "@ts-rest/core@^3.53.0-rc.1",
+        "@types/luxon",
+        "luxon",
+        "zod"
+      ],
+      "registryDependencies": ["@uipath/charts-core"],
+      "files": [
+        {
+          "path": "registry/data-fabric-adapter/adapter.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/adapter.ts"
+        },
+        {
+          "path": "registry/data-fabric-adapter/chart-adapters/bar.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/chart-adapters/bar.ts"
+        },
+        {
+          "path": "registry/data-fabric-adapter/chart-adapters/distribution.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/chart-adapters/distribution.ts"
+        },
+        {
+          "path": "registry/data-fabric-adapter/chart-adapters/kpi.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/chart-adapters/kpi.ts"
+        },
+        {
+          "path": "registry/data-fabric-adapter/chart-adapters/line.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/chart-adapters/line.ts"
+        },
+        {
+          "path": "registry/data-fabric-adapter/chart-adapters/multi-line.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/chart-adapters/multi-line.ts"
+        },
+        {
+          "path": "registry/data-fabric-adapter/chart-adapters/table.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/chart-adapters/table.ts"
+        },
+        {
+          "path": "registry/data-fabric-adapter/contract.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/contract.ts"
+        },
+        {
+          "path": "registry/data-fabric-adapter/data-fabric-adapter.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/data-fabric-adapter.ts"
+        },
+        {
+          "path": "registry/data-fabric-adapter/schemas/query-schema.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/schemas/query-schema.ts"
+        },
+        {
+          "path": "registry/data-fabric-adapter/utils/binning-utils.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/utils/binning-utils.ts"
+        },
+        {
+          "path": "registry/data-fabric-adapter/utils/fetch-date-binned-data.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/utils/fetch-date-binned-data.ts"
+        },
+        {
+          "path": "registry/data-fabric-adapter/utils/filter-group.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/utils/filter-group.ts"
+        },
+        {
+          "path": "registry/data-fabric-adapter/utils/metric-aggregate.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/utils/metric-aggregate.ts"
+        },
+        {
+          "path": "registry/data-fabric-adapter/utils/query-options.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/utils/query-options.ts"
+        },
+        {
+          "path": "registry/data-fabric-adapter/utils/query.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/utils/query.ts"
+        },
+        {
+          "path": "registry/data-fabric-adapter/utils/response-data-mapper.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/utils/response-data-mapper.ts"
+        },
+        {
+          "path": "registry/data-fabric-adapter/utils/throw-error.ts",
+          "type": "registry:lib",
+          "target": "lib/data-fabric-adapter/utils/throw-error.ts"
+        }
+      ]
+    },
+    {
+      "name": "insights-adapter",
+      "type": "registry:lib",
+      "title": "Insights Adapter",
+      "description": "DataAdapter implementation that talks to the UiPath Insights standalone-query API. Pair with any chart from charts-core.",
+      "dependencies": [
+        "@tanstack/react-query@^5.90.0",
+        "@ts-rest/core@^3.53.0-rc.1",
+        "@types/luxon",
+        "luxon",
+        "zod"
+      ],
+      "registryDependencies": ["@uipath/charts-core"],
+      "files": [
+        {
+          "path": "registry/insights-adapter/adapter.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/adapter.ts"
+        },
+        {
+          "path": "registry/insights-adapter/chart-adapters/bar.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/chart-adapters/bar.ts"
+        },
+        {
+          "path": "registry/insights-adapter/chart-adapters/distribution.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/chart-adapters/distribution.ts"
+        },
+        {
+          "path": "registry/insights-adapter/chart-adapters/kpi.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/chart-adapters/kpi.ts"
+        },
+        {
+          "path": "registry/insights-adapter/chart-adapters/line.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/chart-adapters/line.ts"
+        },
+        {
+          "path": "registry/insights-adapter/chart-adapters/multi-line.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/chart-adapters/multi-line.ts"
+        },
+        {
+          "path": "registry/insights-adapter/chart-adapters/table.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/chart-adapters/table.ts"
+        },
+        {
+          "path": "registry/insights-adapter/contract.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/contract.ts"
+        },
+        {
+          "path": "registry/insights-adapter/insights-adapter.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/insights-adapter.ts"
+        },
+        {
+          "path": "registry/insights-adapter/schemas/aggregate-fragment-schema.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/schemas/aggregate-fragment-schema.ts"
+        },
+        {
+          "path": "registry/insights-adapter/schemas/filter-fragment-schema.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/schemas/filter-fragment-schema.ts"
+        },
+        {
+          "path": "registry/insights-adapter/schemas/filter-request-schema.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/schemas/filter-request-schema.ts"
+        },
+        {
+          "path": "registry/insights-adapter/schemas/query-schema.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/schemas/query-schema.ts"
+        },
+        {
+          "path": "registry/insights-adapter/utils/assert-configuration-supported.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/utils/assert-configuration-supported.ts"
+        },
+        {
+          "path": "registry/insights-adapter/utils/binning.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/utils/binning.ts"
+        },
+        {
+          "path": "registry/insights-adapter/utils/filter-request.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/utils/filter-request.ts"
+        },
+        {
+          "path": "registry/insights-adapter/utils/metric-aggregate.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/utils/metric-aggregate.ts"
+        },
+        {
+          "path": "registry/insights-adapter/utils/query-options.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/utils/query-options.ts"
+        },
+        {
+          "path": "registry/insights-adapter/utils/query.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/utils/query.ts"
+        },
+        {
+          "path": "registry/insights-adapter/utils/throw-error.ts",
+          "type": "registry:lib",
+          "target": "lib/insights-adapter/utils/throw-error.ts"
+        }
+      ]
+    },
+    {
+      "name": "line-chart",
+      "type": "registry:ui",
+      "title": "Line Chart",
+      "description": "A time-series line chart over a datetime dimension.",
+      "dependencies": ["@tanstack/react-query@^5.90.0", "recharts@2.15.4"],
+      "registryDependencies": [
+        "@uipath/card",
+        "@uipath/charts-core",
+        "@uipath/chart"
+      ],
+      "files": [
+        {
+          "path": "registry/line-chart/line-chart-view.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/line-chart/line-chart-view.tsx"
+        },
+        {
+          "path": "registry/line-chart/line-chart-with-adapter.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/line-chart/line-chart-with-adapter.tsx"
+        },
+        {
+          "path": "registry/line-chart/line-chart.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/line-chart/line-chart.tsx"
+        }
+      ]
+    },
+    {
+      "name": "multi-line-chart",
+      "type": "registry:ui",
+      "title": "Multi-Line Chart",
+      "description": "Two metrics on a shared datetime axis with independent Y axes.",
+      "dependencies": ["@tanstack/react-query@^5.90.0", "recharts@2.15.4"],
+      "registryDependencies": [
+        "@uipath/card",
+        "@uipath/chart",
+        "@uipath/charts-core"
+      ],
+      "files": [
+        {
+          "path": "registry/multi-line-chart/multi-line-chart-view.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/multi-line-chart/multi-line-chart-view.tsx"
+        },
+        {
+          "path": "registry/multi-line-chart/multi-line-chart-with-adapter.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/multi-line-chart/multi-line-chart-with-adapter.tsx"
+        },
+        {
+          "path": "registry/multi-line-chart/multi-line-chart.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/multi-line-chart/multi-line-chart.tsx"
+        }
+      ]
+    },
+    {
+      "name": "bar-chart",
+      "type": "registry:ui",
+      "title": "Bar Chart",
+      "description": "A metric broken down by a categorical dimension.",
+      "dependencies": ["@tanstack/react-query@^5.90.0", "recharts@2.15.4"],
+      "registryDependencies": [
+        "@uipath/card",
+        "@uipath/charts-core",
+        "@uipath/chart"
+      ],
+      "files": [
+        {
+          "path": "registry/bar-chart/bar-chart-view.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/bar-chart/bar-chart-view.tsx"
+        },
+        {
+          "path": "registry/bar-chart/bar-chart-with-adapter.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/bar-chart/bar-chart-with-adapter.tsx"
+        },
+        {
+          "path": "registry/bar-chart/bar-chart.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/bar-chart/bar-chart.tsx"
+        },
+        {
+          "path": "registry/bar-chart/bar-label.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/bar-chart/bar-label.tsx"
+        },
+        {
+          "path": "registry/bar-chart/metric-column.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/bar-chart/metric-column.tsx"
+        },
+        {
+          "path": "registry/bar-chart/util/colors.ts",
+          "type": "registry:ui",
+          "target": "components/ui/bar-chart/util/colors.ts"
+        },
+        {
+          "path": "registry/bar-chart/util/get-bar-color.ts",
+          "type": "registry:ui",
+          "target": "components/ui/bar-chart/util/get-bar-color.ts"
+        },
+        {
+          "path": "registry/bar-chart/util/recharts-bar-data.ts",
+          "type": "registry:ui",
+          "target": "components/ui/bar-chart/util/recharts-bar-data.ts"
+        }
+      ]
+    },
+    {
+      "name": "distribution-chart",
+      "type": "registry:ui",
+      "title": "Distribution Chart",
+      "description": "A histogram over a numeric or datetime dimension.",
+      "dependencies": ["@tanstack/react-query@^5.90.0", "recharts@2.15.4"],
+      "registryDependencies": [
+        "@uipath/card",
+        "@uipath/charts-core",
+        "@uipath/chart"
+      ],
+      "files": [
+        {
+          "path": "registry/distribution-chart/distribution-chart-view.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/distribution-chart/distribution-chart-view.tsx"
+        },
+        {
+          "path": "registry/distribution-chart/distribution-chart-with-adapter.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/distribution-chart/distribution-chart-with-adapter.tsx"
+        },
+        {
+          "path": "registry/distribution-chart/distribution-chart.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/distribution-chart/distribution-chart.tsx"
+        }
+      ]
+    },
+    {
+      "name": "kpi-chart",
+      "type": "registry:ui",
+      "title": "KPI Chart",
+      "description": "A single scalar metric (count, sum, average, min, max).",
+      "dependencies": ["@tanstack/react-query@^5.90.0"],
+      "registryDependencies": ["@uipath/card", "@uipath/charts-core"],
+      "files": [
+        {
+          "path": "registry/kpi-chart/kpi-chart-view.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/kpi-chart/kpi-chart-view.tsx"
+        },
+        {
+          "path": "registry/kpi-chart/kpi-chart-with-adapter.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/kpi-chart/kpi-chart-with-adapter.tsx"
+        },
+        {
+          "path": "registry/kpi-chart/kpi-chart.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/kpi-chart/kpi-chart.tsx"
+        }
+      ]
+    },
+    {
+      "name": "table-chart",
+      "type": "registry:ui",
+      "title": "Table Chart",
+      "description": "A sortable table of entity rows.",
+      "dependencies": [
+        "@tanstack/react-query@^5.90.0",
+        "@tanstack/react-table@^8.21.0"
+      ],
+      "registryDependencies": [
+        "@uipath/card",
+        "@uipath/charts-core",
+        "@uipath/table"
+      ],
+      "files": [
+        {
+          "path": "registry/table-chart/table-chart-view.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/table-chart/table-chart-view.tsx"
+        },
+        {
+          "path": "registry/table-chart/table-chart-with-adapter.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/table-chart/table-chart-with-adapter.tsx"
+        },
+        {
+          "path": "registry/table-chart/table-chart.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/table-chart/table-chart.tsx"
+        }
+      ]
+    },
+    {
+      "name": "ai-chat",
+      "type": "registry:ui",
+      "title": "AI Chat",
+      "description": "A composable AI chat UI component for TanStack AI with AgentHub adapter, markdown rendering, suggestion buttons, and error display",
+      "dependencies": [
+        "@mantine/hooks@^9.0.0",
+        "@radix-ui/react-tooltip@^1.2.8",
+        "@tanstack/ai@0.14.0",
+        "@tanstack/ai-client@0.8.0",
+        "@tanstack/ai-react@0.8.0",
+        "@tanstack/react-query@^5.90.0",
+        "@types/luxon",
+        "@uipath/uipath-typescript@^1.3.1",
+        "eventsource-parser@^3.0.6",
+        "zod",
+        "lucide-react",
+        "luxon",
+        "react-i18next",
+        "highlight.js",
+        "react-markdown",
+        "remark-breaks",
+        "remark-gfm",
+        "framer-motion"
+      ],
+      "registryDependencies": [
+        "@uipath/alert-dialog",
+        "@uipath/bar-chart",
+        "@uipath/button",
+        "@uipath/card",
+        "@uipath/charts-core",
+        "@uipath/data-fabric-adapter",
+        "@uipath/dialog",
+        "@uipath/distribution-chart",
+        "@uipath/dropdown-menu",
+        "@uipath/kpi-chart",
+        "@uipath/line-chart",
+        "@uipath/multi-line-chart",
+        "@uipath/table-chart",
+        "@uipath/textarea",
+        "@uipath/tooltip"
+      ],
+      "cssVars": {
+        "theme": {
+          "color-ai-chat-foreground": "var(--ai-chat-foreground)",
+          "color-ai-chat-muted": "var(--ai-chat-muted)",
+          "color-primary-700": "var(--primary-700)",
+          "color-ai-chat-border": "var(--ai-chat-border)",
+          "color-ai-chat-accent": "var(--ai-chat-accent)",
+          "color-ai-chat-muted-foreground": "var(--ai-chat-muted-foreground)",
+          "color-ai-chat-bubble-user": "var(--ai-chat-bubble-user)",
+          "color-ai-chat-bubble-user-foreground": "var(--ai-chat-bubble-user-foreground)",
+          "color-ai-chat": "var(--ai-chat)"
+        },
+        "light": {
+          "ai-chat-foreground": "oklch(0.2394 0.0455 252.45)",
+          "ai-chat-muted": "oklch(0.955 0.006 260)",
+          "ai-chat-border": "oklch(0.92 0.008 260)",
+          "ai-chat-accent": "oklch(0.64 0.115 208)",
+          "ai-chat-muted-foreground": "oklch(0.50 0.020 260)",
+          "ai-chat-bubble-user": "oklch(0.955 0.008 252)",
+          "ai-chat-bubble-user-foreground": "oklch(0.2394 0.0455 252.45)",
+          "ai-gradient-start": "#6C5AEF",
+          "ai-gradient-end": "#69C7DD",
+          "ai-chat-brand-gradient": "linear-gradient(97.73deg, #5D4ED0 8.79%, #1076A0 91.48%)",
+          "ai-chat": "oklch(0.985 0.002 260)"
+        },
+        "dark": {
+          "ai-chat-foreground": "oklch(0.95 0.010 225)",
+          "ai-chat-muted": "oklch(0.26 0.030 258)",
+          "ai-chat-border": "oklch(0.30 0.040 258)",
+          "ai-chat-accent": "oklch(0.69 0.112 207)",
+          "ai-chat-muted-foreground": "oklch(0.65 0.020 258)",
+          "ai-chat-bubble-user": "oklch(0.28 0.035 255)",
+          "ai-chat-bubble-user-foreground": "oklch(0.95 0.010 225)",
+          "ai-gradient-start": "#6C5AEF",
+          "ai-gradient-end": "#69C7DD",
+          "ai-chat-brand-gradient": "linear-gradient(97.73deg, #9485F5 8.79%, #69C7DD 91.48%)",
+          "ai-chat": "oklch(0.19 0.025 260)"
+        }
+      },
+      "files": [
+        { "path": "lib/asserts/assert.ts", "type": "registry:lib" },
+        {
+          "path": "registry/ai-chat/adapters/agenthub/types.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/adapters/agenthub/types.ts"
+        },
+        {
+          "path": "registry/ai-chat/adapters/agenthub/adapter.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/adapters/agenthub/adapter.ts"
+        },
+        {
+          "path": "registry/ai-chat/adapters/agenthub/messages.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/adapters/agenthub/messages.ts"
+        },
+        {
+          "path": "registry/ai-chat/adapters/agenthub/stream.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/adapters/agenthub/stream.ts"
+        },
+        {
+          "path": "registry/ai-chat/adapters/agenthub/tools.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/adapters/agenthub/tools.ts"
+        },
+        {
+          "path": "registry/ai-chat/adapters/conversational-agent/types.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/adapters/conversational-agent/types.ts"
+        },
+        {
+          "path": "registry/ai-chat/adapters/conversational-agent/adapter.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/adapters/conversational-agent/adapter.ts"
+        },
+        {
+          "path": "registry/ai-chat/adapters/conversational-agent/messages.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/adapters/conversational-agent/messages.ts"
+        },
+        {
+          "path": "registry/ai-chat/adapters/conversational-agent/stream.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/adapters/conversational-agent/stream.ts"
+        },
+        {
+          "path": "registry/ai-chat/adapters/conversational-agent/session.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/adapters/conversational-agent/session.ts"
+        },
+        {
+          "path": "registry/ai-chat/hooks/use-sticky-scroll.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/hooks/use-sticky-scroll.ts"
+        },
+        {
+          "path": "registry/ai-chat/hooks/use-pending-files.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/hooks/use-pending-files.ts"
+        },
+        {
+          "path": "registry/ai-chat/animations.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/animations.ts"
+        },
+        {
+          "path": "registry/ai-chat/content-parts.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/content-parts.ts"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-markdown.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-markdown.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-code-block.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-code-block.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-message.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-message.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-loading.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-loading.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-input.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-input.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-input-glow.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-input-glow.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-pending-files.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-pending-files.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-image-preview.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-image-preview.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-suggestions.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-suggestions.tsx"
+        },
+        {
+          "path": "registry/ai-chat/types.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/types.ts"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-header.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-header.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-message-actions.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-message-actions.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-selection-menu.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-selection-menu.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-empty-suggestions.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-empty-suggestions.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-scroll-to-bottom-button.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-scroll-to-bottom-button.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-error-banner.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-error-banner.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-thinking.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-thinking.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/ai-chat-empty-state.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/ai-chat-empty-state.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/icons/autopilot.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/icons/autopilot.tsx"
+        },
+        {
+          "path": "registry/ai-chat/components/icons/autopilot-gradient.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/components/icons/autopilot-gradient.tsx"
+        },
+        {
+          "path": "registry/ai-chat/charts/table-chart-card.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/charts/table-chart-card.tsx"
+        },
+        {
+          "path": "registry/ai-chat/charts/no-data-message.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/charts/no-data-message.tsx"
+        },
+        {
+          "path": "registry/ai-chat/charts/tool-resolution-error.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/charts/tool-resolution-error.tsx"
+        },
+        {
+          "path": "registry/ai-chat/charts/distribution-chart-card.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/charts/distribution-chart-card.tsx"
+        },
+        {
+          "path": "registry/ai-chat/charts/bar-chart-card.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/charts/bar-chart-card.tsx"
+        },
+        {
+          "path": "registry/ai-chat/charts/line-chart-card.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/charts/line-chart-card.tsx"
+        },
+        {
+          "path": "registry/ai-chat/charts/multi-line-chart-card.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/charts/multi-line-chart-card.tsx"
+        },
+        {
+          "path": "registry/ai-chat/charts/kpi-chart-card.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/charts/kpi-chart-card.tsx"
+        },
+        {
+          "path": "registry/ai-chat/tools/choices/choices-tool.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/tools/choices/choices-tool.tsx"
+        },
+        {
+          "path": "registry/ai-chat/tools/choices/index.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/choices/index.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric/util/entities.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/data-fabric/util/entities.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric/util/filters.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/data-fabric/util/filters.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric/util/joins.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/data-fabric/util/joins.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric/util/chart-helpers.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/data-fabric/util/chart-helpers.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric/util/resolver-result.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/data-fabric/util/resolver-result.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric/index.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/data-fabric/index.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric-table/data-fabric-table-tool.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/tools/data-fabric-table/data-fabric-table-tool.tsx"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric-table/table-data-model.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/data-fabric-table/table-data-model.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric-table/index.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/data-fabric-table/index.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric-distribution/data-fabric-distribution-tool.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/tools/data-fabric-distribution/data-fabric-distribution-tool.tsx"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric-distribution/index.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/data-fabric-distribution/index.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric-bar/data-fabric-bar-tool.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/tools/data-fabric-bar/data-fabric-bar-tool.tsx"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric-bar/index.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/data-fabric-bar/index.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric-line/data-fabric-line-tool.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/tools/data-fabric-line/data-fabric-line-tool.tsx"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric-line/index.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/data-fabric-line/index.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric-multi-line/data-fabric-multi-line-tool.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/tools/data-fabric-multi-line/data-fabric-multi-line-tool.tsx"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric-multi-line/index.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/data-fabric-multi-line/index.ts"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric-kpi/data-fabric-kpi-tool.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/ai-chat/tools/data-fabric-kpi/data-fabric-kpi-tool.tsx"
+        },
+        {
+          "path": "registry/ai-chat/tools/data-fabric-kpi/index.ts",
+          "type": "registry:lib",
+          "target": "components/ui/ai-chat/tools/data-fabric-kpi/index.ts"
+        }
+      ]
+    },
+    {
+      "name": "alert",
+      "type": "registry:ui",
+      "title": "Alert",
+      "description": "Displays a callout for user attention.",
+      "cssVars": {
+        "theme": {
+          "color-badge": "var(--badge)",
+          "color-warning": "var(--warning)",
+          "color-warning-foreground": "var(--warning-foreground)"
+        },
+        "light": {
+          "badge": "oklch(0.5995 0.0199 253.42)",
+          "warning": "oklch(0.80 0.1401 80.82)",
+          "warning-foreground": "oklch(0.1660 0.0283 203.3400)"
+        },
+        "dark": {
+          "badge": "oklch(0.7196 0.0135 255.53)",
+          "warning": "oklch(0.6889 0.1401 80.82)",
+          "warning-foreground": "oklch(0.1660 0.0283 203.3400)"
+        }
+      },
+      "files": [{ "path": "registry/alert/alert.tsx", "type": "registry:ui" }]
+    },
+    {
+      "name": "alert-dialog",
+      "type": "registry:ui",
+      "title": "Alert Dialog",
+      "description": "A modal dialog that interrupts the user with important content.",
+      "dependencies": ["@radix-ui/react-alert-dialog"],
+      "files": [
+        {
+          "path": "registry/alert-dialog/alert-dialog.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "aspect-ratio",
+      "type": "registry:ui",
+      "title": "Aspect Ratio",
+      "description": "Displays content within a desired ratio.",
+      "dependencies": ["@radix-ui/react-aspect-ratio"],
+      "files": [
+        {
+          "path": "registry/aspect-ratio/aspect-ratio.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "avatar",
+      "type": "registry:ui",
+      "title": "Avatar",
+      "description": "An image element with a fallback for representing the user.",
+      "dependencies": ["@radix-ui/react-avatar"],
+      "files": [{ "path": "registry/avatar/avatar.tsx", "type": "registry:ui" }]
+    },
+    {
+      "name": "badge",
+      "type": "registry:ui",
+      "title": "Badge",
+      "description": "Displays a badge or a component that looks like a badge.",
+      "dependencies": ["@radix-ui/react-slot"],
+      "cssVars": {
+        "theme": {
+          "color-badge": "var(--badge)",
+          "color-badge-foreground": "var(--badge-foreground)",
+          "color-info": "var(--info)",
+          "color-info-foreground": "var(--info-foreground)",
+          "color-warning": "var(--warning)",
+          "color-warning-foreground": "var(--warning-foreground)",
+          "color-success": "var(--success)",
+          "color-success-foreground": "var(--success-foreground)",
+          "color-insight-600": "var(--insight-600)",
+          "color-insight-400": "var(--insight-400)"
+        },
+        "light": {
+          "ai-gradient-fill": "linear-gradient(97.73deg, var(--insight-600) 8.79%, var(--primary-700) 91.48%)",
+          "ai-gradient": "linear-gradient(100.64deg, var(--insight-100) 8.29%, var(--primary-50) 88.73%)",
+          "ai-gradient-strong": "linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%)",
+          "badge": "oklch(0.5995 0.0199 253.42)",
+          "badge-foreground": "oklch(1 0 89.8800)",
+          "info": "oklch(0.52 0.120 210)",
+          "info-foreground": "oklch(1 0 89.8800)",
+          "warning": "oklch(0.80 0.1401 80.82)",
+          "warning-foreground": "oklch(0.1660 0.0283 203.3400)",
+          "success": "oklch(0.57 0.105 152)",
+          "success-foreground": "oklch(1 0 89.8800)",
+          "insight-600": "oklch(0.56 0.20 277)",
+          "insight-400": "oklch(0.70 0.19 277)",
+          "primary-50": "oklch(0.95 0.035 218)",
+          "primary-700": "oklch(0.52 0.120 210)",
+          "insight-100": "oklch(0.92 0.05 277)"
+        },
+        "dark": {
+          "ai-gradient-fill": "linear-gradient(97.73deg, var(--insight-600) 8.79%, var(--primary-700) 91.48%)",
+          "ai-gradient": "linear-gradient(100.64deg, var(--insight-800) 8.29%, var(--primary-800) 88.73%)",
+          "ai-gradient-strong": "linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%)",
+          "badge": "oklch(0.7196 0.0135 255.53)",
+          "badge-foreground": "oklch(0.1660 0.0283 203.3400)",
+          "info": "oklch(0.69 0.112 207)",
+          "info-foreground": "oklch(0.1660 0.0283 203.3400)",
+          "warning": "oklch(0.6889 0.1401 80.82)",
+          "warning-foreground": "oklch(0.1660 0.0283 203.3400)",
+          "success": "oklch(0.70 0.120 152)",
+          "success-foreground": "oklch(0.1660 0.0283 203.3400)",
+          "insight-600": "oklch(0.56 0.20 277)",
+          "insight-400": "oklch(0.70 0.19 277)",
+          "primary-700": "oklch(0.52 0.120 210)",
+          "primary-800": "oklch(0.46 0.095 220)",
+          "insight-800": "oklch(0.38 0.13 278)"
+        }
+      },
+      "files": [{ "path": "registry/badge/badge.tsx", "type": "registry:ui" }]
+    },
+    {
+      "name": "breadcrumb",
+      "type": "registry:ui",
+      "title": "Breadcrumb",
+      "description": "Displays the path to the current resource using a hierarchy of links.",
+      "dependencies": ["@radix-ui/react-slot", "react-i18next"],
+      "files": [
+        {
+          "path": "registry/breadcrumb/breadcrumb.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "button",
+      "type": "registry:ui",
+      "title": "Button",
+      "description": "Displays a button or a component that looks like a button.",
+      "dependencies": ["@radix-ui/react-slot"],
+      "cssVars": {
+        "theme": {
+          "color-success": "var(--success)",
+          "color-info": "var(--info)",
+          "color-warning": "var(--warning)",
+          "color-insight-400": "var(--insight-400)",
+          "color-insight-600": "var(--insight-600)"
+        },
+        "light": {
+          "success": "oklch(0.57 0.105 152)",
+          "info": "oklch(0.52 0.120 210)",
+          "warning": "oklch(0.80 0.1401 80.82)",
+          "primary-50": "oklch(0.95 0.035 218)",
+          "primary-700": "oklch(0.52 0.120 210)",
+          "insight-100": "oklch(0.92 0.05 277)",
+          "insight-400": "oklch(0.70 0.19 277)",
+          "insight-600": "oklch(0.56 0.20 277)",
+          "ai-gradient": "linear-gradient(100.64deg, var(--insight-100) 8.29%, var(--primary-50) 88.73%)",
+          "ai-gradient-fill": "linear-gradient(97.73deg, var(--insight-600) 8.79%, var(--primary-700) 91.48%)",
+          "ai-gradient-strong": "linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%)"
+        },
+        "dark": {
+          "success": "oklch(0.70 0.120 152)",
+          "info": "oklch(0.69 0.112 207)",
+          "warning": "oklch(0.6889 0.1401 80.82)",
+          "primary-700": "oklch(0.52 0.120 210)",
+          "primary-800": "oklch(0.46 0.095 220)",
+          "insight-400": "oklch(0.70 0.19 277)",
+          "insight-600": "oklch(0.56 0.20 277)",
+          "insight-800": "oklch(0.38 0.13 278)",
+          "ai-gradient": "linear-gradient(100.64deg, var(--insight-800) 8.29%, var(--primary-800) 88.73%)",
+          "ai-gradient-fill": "linear-gradient(97.73deg, var(--insight-600) 8.79%, var(--primary-700) 91.48%)",
+          "ai-gradient-strong": "linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%)"
+        }
+      },
+      "files": [{ "path": "registry/button/button.tsx", "type": "registry:ui" }]
+    },
+    {
+      "name": "button-group",
+      "type": "registry:ui",
+      "title": "Button Group",
+      "description": "Groups multiple buttons together.",
+      "dependencies": ["@radix-ui/react-slot"],
+      "registryDependencies": ["@uipath/separator"],
+      "files": [
+        {
+          "path": "registry/button-group/button-group.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "card",
+      "type": "registry:ui",
+      "title": "Card",
+      "description": "Displays a card with header, content, and footer. Supports solid, glass, and selectable variants.",
+      "cssVars": {
+        "theme": {
+          "color-primary-400": "var(--primary-400)"
+        },
+        "light": {
+          "primary-50": "oklch(0.95 0.035 218)",
+          "primary-400": "oklch(0.75 0.100 210)",
+          "insight-100": "oklch(0.92 0.05 277)",
+          "sidebar": "oklch(0.9723 0.0074 260.7300)",
+          "ai-gradient": "linear-gradient(100.64deg, var(--insight-100) 8.29%, var(--primary-50) 88.73%)",
+          "ai-glass": "color-mix(in srgb, var(--card) 80%, transparent)"
+        },
+        "dark": {
+          "primary-400": "oklch(0.75 0.100 210)",
+          "primary-800": "oklch(0.46 0.095 220)",
+          "insight-800": "oklch(0.38 0.13 278)",
+          "sidebar": "oklch(0.1620 0.0310 257.7000)",
+          "ai-gradient": "linear-gradient(100.64deg, var(--insight-800) 8.29%, var(--primary-800) 88.73%)",
+          "ai-glass": "color-mix(in srgb, var(--card) 90%, transparent)"
+        }
+      },
+      "files": [{ "path": "registry/card/card.tsx", "type": "registry:ui" }]
+    },
+    {
+      "name": "carousel",
+      "type": "registry:ui",
+      "title": "Carousel",
+      "description": "A carousel with motion and swipe built using Embla.",
+      "dependencies": ["embla-carousel-react", "react-i18next"],
+      "files": [
+        {
+          "path": "registry/carousel/carousel.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "chart",
+      "type": "registry:ui",
+      "title": "Chart",
+      "description": "Beautiful charts using Recharts with consistent theming.",
+      "dependencies": ["recharts@2.15.4", "lucide-react"],
+      "files": [{ "path": "registry/chart/chart.tsx", "type": "registry:ui" }]
+    },
+    {
+      "name": "checkbox",
+      "type": "registry:ui",
+      "title": "Checkbox",
+      "description": "A control that allows the user to toggle between checked and not checked.",
+      "dependencies": ["@radix-ui/react-checkbox"],
+      "files": [
+        {
+          "path": "registry/checkbox/checkbox.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "collapsible",
+      "type": "registry:ui",
+      "title": "Collapsible",
+      "description": "An interactive component which expands/collapses a panel.",
+      "dependencies": ["@radix-ui/react-collapsible"],
+      "files": [
+        {
+          "path": "registry/collapsible/collapsible.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "combobox",
+      "type": "registry:ui",
+      "title": "Combobox",
+      "description": "An autocomplete input with a filterable list, supporting single and multi-select with badges.",
+      "registryDependencies": [
+        "@uipath/badge",
+        "@uipath/button",
+        "@uipath/command",
+        "@uipath/popover"
+      ],
+      "dependencies": ["react-i18next"],
+      "files": [
+        {
+          "path": "registry/combobox/combobox.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "command",
+      "type": "registry:ui",
+      "title": "Command",
+      "description": "A command menu for searching and executing commands.",
+      "dependencies": ["cmdk"],
+      "registryDependencies": ["@uipath/dialog"],
+      "files": [
+        {
+          "path": "registry/command/command.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "confidence-signal",
+      "type": "registry:ui",
+      "title": "Confidence Signal",
+      "description": "A signal-bar chip that communicates AI confidence (high/medium/low/unknown) without a raw score, with an optional popover for factor breakdowns and required next steps.",
+      "dependencies": ["framer-motion", "lucide-react", "react-i18next"],
+      "registryDependencies": [
+        "@uipath/button",
+        "@uipath/popover",
+        "@uipath/tooltip"
+      ],
+      "cssVars": {
+        "theme": {
+          "color-success": "var(--success)",
+          "color-warning": "var(--warning)",
+          "color-warning-foreground": "var(--warning-foreground)",
+          "color-destructive": "var(--destructive)",
+          "color-muted-foreground": "var(--muted-foreground)"
+        },
+        "light": {
+          "warning-foreground": "oklch(0.1660 0.0283 203.3400)"
+        },
+        "dark": {
+          "warning-foreground": "oklch(0.1660 0.0283 203.3400)"
+        }
+      },
+      "files": [
+        {
+          "path": "registry/confidence-signal/confidence-signal.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/confidence-signal/confidence-signal.tsx"
+        },
+        {
+          "path": "registry/confidence-signal/confidence-signal-levels.ts",
+          "type": "registry:ui",
+          "target": "components/ui/confidence-signal/confidence-signal-levels.ts"
+        },
+        {
+          "path": "registry/confidence-signal/confidence-signal-bars.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/confidence-signal/confidence-signal-bars.tsx"
+        },
+        {
+          "path": "registry/confidence-signal/confidence-signal-chip.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/confidence-signal/confidence-signal-chip.tsx"
+        },
+        {
+          "path": "registry/confidence-signal/confidence-signal-factors.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/confidence-signal/confidence-signal-factors.tsx"
+        },
+        {
+          "path": "registry/confidence-signal/confidence-signal-cta.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/confidence-signal/confidence-signal-cta.tsx"
+        }
+      ]
+    },
+    {
+      "name": "context-menu",
+      "type": "registry:ui",
+      "title": "Context Menu",
+      "description": "Displays a menu located at the pointer, triggered by a right-click.",
+      "dependencies": ["@radix-ui/react-context-menu"],
+      "files": [
+        {
+          "path": "registry/context-menu/context-menu.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "data-table",
+      "type": "registry:ui",
+      "title": "Data Table",
+      "description": "A data table component built on TanStack Table with sorting, filtering, pagination, row selection, and column reordering.",
+      "dependencies": [
+        "@tanstack/react-table@^8.21.0",
+        "@dnd-kit/core",
+        "@dnd-kit/sortable",
+        "@dnd-kit/utilities",
+        "framer-motion",
+        "lucide-react",
+        "react-i18next"
+      ],
+      "registryDependencies": [
+        "@uipath/table",
+        "@uipath/button",
+        "@uipath/checkbox",
+        "@uipath/dropdown-menu",
+        "@uipath/select",
+        "@uipath/input",
+        "@uipath/skeleton",
+        "@uipath/tooltip",
+        "@uipath/filter-dropdown"
+      ],
+      "files": [
+        {
+          "path": "registry/data-table/index.ts",
+          "type": "registry:ui",
+          "target": "components/ui/data-table/index.ts"
+        },
+        {
+          "path": "registry/data-table/data-table.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/data-table/data-table.tsx"
+        },
+        {
+          "path": "registry/data-table/data-table-expand-toggle.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/data-table/data-table-expand-toggle.tsx"
+        },
+        {
+          "path": "registry/data-table/data-table-filters.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/data-table/data-table-filters.tsx"
+        },
+        {
+          "path": "registry/data-table/data-table-row.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/data-table/data-table-row.tsx"
+        },
+        {
+          "path": "registry/data-table/data-table-scroll-shadow.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/data-table/data-table-scroll-shadow.tsx"
+        },
+        {
+          "path": "registry/data-table/data-table-column-header.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/data-table/data-table-column-header.tsx"
+        },
+        {
+          "path": "registry/data-table/data-table-pagination.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/data-table/data-table-pagination.tsx"
+        },
+        {
+          "path": "registry/data-table/data-table-search.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/data-table/data-table-search.tsx"
+        },
+        {
+          "path": "registry/data-table/data-table-skeleton.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/data-table/data-table-skeleton.tsx"
+        },
+        {
+          "path": "registry/data-table/data-table-toolbar.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/data-table/data-table-toolbar.tsx"
+        },
+        {
+          "path": "registry/data-table/data-table-view-options.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/data-table/data-table-view-options.tsx"
+        },
+        {
+          "path": "registry/data-table/sortable-column-item.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/data-table/sortable-column-item.tsx"
+        },
+        {
+          "path": "registry/data-table/sortable-column-list.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/data-table/sortable-column-list.tsx"
+        },
+        {
+          "path": "registry/use-data-table/useReactTableCompat.ts",
+          "type": "registry:hook"
+        }
+      ]
+    },
+    {
+      "name": "dialog",
+      "type": "registry:ui",
+      "title": "Dialog",
+      "description": "A modal dialog that appears in front of app content.",
+      "dependencies": ["@radix-ui/react-dialog", "react-i18next"],
+      "files": [{ "path": "registry/dialog/dialog.tsx", "type": "registry:ui" }]
+    },
+    {
+      "name": "drawer",
+      "type": "registry:ui",
+      "title": "Drawer",
+      "description": "A drawer component that slides in from the edge of the screen.",
+      "dependencies": ["vaul", "@radix-ui/react-dialog"],
+      "files": [{ "path": "registry/drawer/drawer.tsx", "type": "registry:ui" }]
+    },
+    {
+      "name": "dropdown-menu",
+      "type": "registry:ui",
+      "title": "Dropdown Menu",
+      "description": "Displays a menu to the user triggered by a button.",
+      "dependencies": ["@radix-ui/react-dropdown-menu"],
+      "files": [
+        {
+          "path": "registry/dropdown-menu/dropdown-menu.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "empty",
+      "type": "registry:ui",
+      "title": "Empty",
+      "description": "An empty state component for when there's no data to display.",
+      "files": [{ "path": "registry/empty/empty.tsx", "type": "registry:ui" }]
+    },
+    {
+      "name": "feedback-vote-widget",
+      "type": "registry:ui",
+      "title": "Feedback Vote Widget",
+      "description": "A thumbs up/down feedback control with an optional comment textarea, designed for the UiPath Platform Feedback API.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["@uipath/button", "@uipath/textarea"],
+      "files": [
+        {
+          "path": "registry/feedback-vote-widget/feedback-vote-widget.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "field",
+      "type": "registry:ui",
+      "title": "Field",
+      "description": "A form field component with label, input, and description.",
+      "registryDependencies": ["@uipath/label", "@uipath/separator"],
+      "files": [{ "path": "registry/field/field.tsx", "type": "registry:ui" }]
+    },
+    {
+      "name": "filter-dropdown",
+      "type": "registry:ui",
+      "title": "Filter Dropdown",
+      "description": "A versatile filter dropdown with multi-select, single-select, search, and optional TanStack Table column integration.",
+      "dependencies": ["@tanstack/react-table@^8.21.0", "lucide-react"],
+      "registryDependencies": [
+        "@uipath/button",
+        "@uipath/checkbox",
+        "@uipath/input",
+        "@uipath/popover",
+        "@uipath/separator"
+      ],
+      "files": [
+        {
+          "path": "registry/filter-dropdown/index.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/filter-dropdown/filter-dropdown.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "hover-card",
+      "type": "registry:ui",
+      "title": "Hover Card",
+      "description": "For sighted users to preview content available behind a link.",
+      "dependencies": ["@radix-ui/react-hover-card"],
+      "files": [
+        {
+          "path": "registry/hover-card/hover-card.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "input",
+      "type": "registry:ui",
+      "title": "Input",
+      "description": "Displays a form input field.",
+      "files": [{ "path": "registry/input/input.tsx", "type": "registry:ui" }]
+    },
+    {
+      "name": "input-group",
+      "type": "registry:ui",
+      "title": "Input Group",
+      "description": "Groups input elements with addons and buttons.",
+      "registryDependencies": [
+        "@uipath/button",
+        "@uipath/input",
+        "@uipath/textarea"
+      ],
+      "files": [
+        {
+          "path": "registry/input-group/input-group.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "input-otp",
+      "type": "registry:ui",
+      "title": "Input OTP",
+      "description": "A one-time password input component.",
+      "dependencies": ["input-otp"],
+      "files": [
+        {
+          "path": "registry/input-otp/input-otp.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "item",
+      "type": "registry:ui",
+      "title": "Item",
+      "description": "A list item component for displaying content in lists.",
+      "dependencies": ["@radix-ui/react-slot"],
+      "registryDependencies": ["@uipath/separator"],
+      "files": [{ "path": "registry/item/item.tsx", "type": "registry:ui" }]
+    },
+    {
+      "name": "kbd",
+      "type": "registry:ui",
+      "title": "Kbd",
+      "description": "Displays keyboard shortcuts.",
+      "files": [{ "path": "registry/kbd/kbd.tsx", "type": "registry:ui" }]
+    },
+    {
+      "name": "label",
+      "type": "registry:ui",
+      "title": "Label",
+      "description": "Renders an accessible label associated with controls.",
+      "dependencies": ["@radix-ui/react-label"],
+      "files": [{ "path": "registry/label/label.tsx", "type": "registry:ui" }]
+    },
+    {
+      "name": "menubar",
+      "type": "registry:ui",
+      "title": "Menubar",
+      "description": "A horizontally stacked menu bar with dropdown submenus.",
+      "dependencies": ["@radix-ui/react-menubar"],
+      "files": [
+        {
+          "path": "registry/menubar/menubar.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "metric-card",
+      "type": "registry:ui",
+      "title": "Metric Card",
+      "description": "Displays a labeled metric with value, optional trend indicator, and percentage change badge.",
+      "registryDependencies": [
+        "@uipath/card",
+        "@uipath/badge",
+        "@uipath/skeleton"
+      ],
+      "files": [
+        {
+          "path": "registry/metric-card/metric-card.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "onboarding-tour-joyride",
+      "type": "registry:ui",
+      "title": "Onboarding Tour (Joyride)",
+      "description": "Guided onboarding tour built on React Joyride with an Apollo Vertex–styled custom tooltip, welcome modal, and conditional step gating.",
+      "dependencies": [
+        "react-joyride",
+        "lucide-react",
+        "@radix-ui/react-dialog"
+      ],
+      "registryDependencies": ["@uipath/button"],
+      "files": [
+        {
+          "path": "registry/onboarding-tour-joyride/index.ts",
+          "type": "registry:ui",
+          "target": "components/ui/onboarding-tour-joyride/index.ts"
+        },
+        {
+          "path": "registry/onboarding-tour-joyride/onboarding-tour-joyride-types.ts",
+          "type": "registry:ui",
+          "target": "components/ui/onboarding-tour-joyride/onboarding-tour-joyride-types.ts"
+        },
+        {
+          "path": "registry/onboarding-tour-joyride/tour-persistence.ts",
+          "type": "registry:ui",
+          "target": "components/ui/onboarding-tour-joyride/tour-persistence.ts"
+        },
+        {
+          "path": "registry/onboarding-tour-joyride/onboarding-tour-joyride-popover.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/onboarding-tour-joyride/onboarding-tour-joyride-popover.tsx"
+        }
+      ]
+    },
+    {
+      "name": "navigation-menu",
+      "type": "registry:ui",
+      "title": "Navigation Menu",
+      "description": "A navigation menu with dropdown support.",
+      "dependencies": ["@radix-ui/react-navigation-menu"],
+      "files": [
+        {
+          "path": "registry/navigation-menu/navigation-menu.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "pagination",
+      "type": "registry:ui",
+      "title": "Pagination",
+      "description": "Pagination with page navigation, next and previous links.",
+      "dependencies": ["react-i18next"],
+      "files": [
+        {
+          "path": "registry/pagination/pagination.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "page-header",
+      "type": "registry:ui",
+      "title": "Page Header",
+      "description": "A compound page header with back button, title, metadata fields, and collapsible action buttons that overflow into a dropdown.",
+      "dependencies": ["class-variance-authority", "lucide-react"],
+      "registryDependencies": ["@uipath/button", "@uipath/dropdown-menu"],
+      "files": [
+        {
+          "path": "registry/page-header/page-header.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "popover",
+      "type": "registry:ui",
+      "title": "Popover",
+      "description": "Displays rich content in a portal, triggered by a button.",
+      "dependencies": ["@radix-ui/react-popover"],
+      "files": [
+        {
+          "path": "registry/popover/popover.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "progress",
+      "type": "registry:ui",
+      "title": "Progress",
+      "description": "Displays an indicator showing the completion progress of a task.",
+      "dependencies": ["@radix-ui/react-progress"],
+      "files": [
+        {
+          "path": "registry/progress/progress.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "radio-group",
+      "type": "registry:ui",
+      "title": "Radio Group",
+      "description": "A set of checkable buttons where no more than one can be checked.",
+      "dependencies": ["@radix-ui/react-radio-group"],
+      "files": [
+        {
+          "path": "registry/radio-group/radio-group.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "resizable",
+      "type": "registry:ui",
+      "title": "Resizable",
+      "description": "Accessible resizable panel groups and layouts.",
+      "dependencies": ["react-resizable-panels@^4.7.3"],
+      "files": [
+        {
+          "path": "registry/resizable/resizable.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "scroll-area",
+      "type": "registry:ui",
+      "title": "Scroll Area",
+      "description": "Augments native scroll functionality for custom, cross-browser styling.",
+      "dependencies": ["@radix-ui/react-scroll-area"],
+      "files": [
+        {
+          "path": "registry/scroll-area/scroll-area.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "select",
+      "type": "registry:ui",
+      "title": "Select",
+      "description": "Displays a list of options for the user to pick from.",
+      "dependencies": ["@radix-ui/react-select"],
+      "files": [{ "path": "registry/select/select.tsx", "type": "registry:ui" }]
+    },
+    {
+      "name": "separator",
+      "type": "registry:ui",
+      "title": "Separator",
+      "description": "Visually or semantically separates content.",
+      "dependencies": ["@radix-ui/react-separator"],
+      "files": [
+        {
+          "path": "registry/separator/separator.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "sheet",
+      "type": "registry:ui",
+      "title": "Sheet",
+      "description": "Extends the Dialog component to display content that slides in.",
+      "dependencies": ["@radix-ui/react-dialog", "react-i18next"],
+      "files": [{ "path": "registry/sheet/sheet.tsx", "type": "registry:ui" }]
+    },
+    {
+      "name": "shell",
+      "type": "registry:ui",
+      "title": "Shell",
+      "description": "Provides UiPath authentication and renders children only when authenticated.",
+      "dependencies": [
+        "lucide-react",
+        "framer-motion",
+        "react-i18next",
+        "i18next",
+        "jwt-decode",
+        "zod",
+        "@tanstack/react-query",
+        "@tanstack/react-router",
+        "pkce-challenge",
+        "sonner",
+        "@mantine/hooks@^9.0.0",
+        "@tanstack/react-db",
+        "@uipath/vs-core@^4.2.0"
+      ],
+      "registryDependencies": [
+        "@uipath/button",
+        "@uipath/tooltip",
+        "@uipath/avatar",
+        "@uipath/dropdown-menu",
+        "@uipath/skeleton",
+        "@uipath/sidebar",
+        "@uipath/spinner",
+        "@uipath/collapsible"
+      ],
+      "cssVars": {
+        "theme": {
+          "color-primary-700": "var(--primary-700)",
+          "color-primary-400": "var(--primary-400)",
+          "color-primary-100": "var(--primary-100)",
+          "color-primary-900": "var(--primary-900)"
+        },
+        "light": {
+          "primary-100": "oklch(0.92 0.045 216)",
+          "primary-400": "oklch(0.75 0.100 210)",
+          "primary-700": "oklch(0.52 0.120 210)",
+          "primary-900": "oklch(0.2394 0.0455 252.445)"
+        },
+        "dark": {
+          "primary-100": "oklch(0.92 0.045 216)",
+          "primary-400": "oklch(0.75 0.100 210)",
+          "primary-700": "oklch(0.52 0.120 210)",
+          "primary-900": "oklch(0.2394 0.0455 252.445)"
+        }
+      },
+      "files": [
+        { "path": "registry/shell/shell.tsx", "type": "registry:ui" },
+        {
+          "path": "registry/shell/shell-layout.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/shell-sidebar.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/shell-company.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/shell-user-profile.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/shell-locale-provider.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/shell-translation-key.ts",
+          "type": "registry:ui"
+        },
+        { "path": "lib/i18n.ts", "type": "registry:lib" },
+        { "path": "lib/auth.ts", "type": "registry:lib" },
+        { "path": "lib/react-i18next.d.ts", "type": "registry:lib" },
+        {
+          "path": "registry/shell/shell-animations.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/shell-minimal-company.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/shell-minimal-nav-item.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/shell-text.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/shell-theme-provider.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/shell-user-provider.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/shell-login.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/shell-auth-provider.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/shell-company-logo.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/shell-constants.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/shell-user-profile-menu-items.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/group-membership-guard.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/group-membership-screens.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/use-group-members.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/use-is-group-member.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/use-group-id.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/shell-roles.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "use-mobile",
+      "type": "registry:hook",
+      "title": "useMobile",
+      "description": "A React hook for checking if the screen is mobile.",
+      "files": [
+        {
+          "path": "registry/use-mobile/use-mobile.ts",
+          "type": "registry:hook"
+        }
+      ]
+    },
+    {
+      "name": "use-data-table",
+      "type": "registry:hook",
+      "title": "useDataTable",
+      "description": "A generic data table hook that manages sorting, filtering, pagination, column visibility, and column order with localStorage persistence.",
+      "dependencies": [
+        "@tanstack/react-table@^8.21.0",
+        "@mantine/hooks@^9.0.0"
+      ],
+      "files": [
+        {
+          "path": "registry/use-data-table/types.ts",
+          "type": "registry:hook"
+        },
+        { "path": "lib/constants.ts", "type": "registry:lib" },
+        {
+          "path": "registry/use-data-table/useDataTable.tsx",
+          "type": "registry:hook"
+        },
+        {
+          "path": "registry/use-data-table/useColumnVisibility.ts",
+          "type": "registry:hook"
+        },
+        {
+          "path": "registry/use-data-table/usePersistedColumns.ts",
+          "type": "registry:hook"
+        },
+        {
+          "path": "registry/use-data-table/usePersistedColumnOrder.ts",
+          "type": "registry:hook"
+        },
+        {
+          "path": "registry/use-data-table/usePersistedSorting.ts",
+          "type": "registry:hook"
+        },
+        {
+          "path": "registry/use-data-table/usePersistedPageSize.ts",
+          "type": "registry:hook"
+        }
+      ]
+    },
+    {
+      "name": "use-entity-data-table",
+      "type": "registry:hook",
+      "title": "useEntityDataTable",
+      "description": "A data table hook for VSS entities that fetches live data from collections and builds column definitions from entity metadata.",
+      "dependencies": [
+        "@tanstack/react-table@^8.21.0",
+        "@tanstack/react-db",
+        "@uipath/vs-core@^4.2.0"
+      ],
+      "registryDependencies": ["@uipath/use-data-table", "@uipath/data-table"],
+      "files": [
+        {
+          "path": "registry/use-data-table/useEntityDataTable.tsx",
+          "type": "registry:hook"
+        },
+        {
+          "path": "registry/use-data-table/useEntityColumns.tsx",
+          "type": "registry:hook"
+        },
+        { "path": "lib/renderValueOrEmptyState.ts", "type": "registry:lib" },
+        { "path": "lib/asserts/assert.ts", "type": "registry:lib" },
+        {
+          "path": "lib/asserts/assert-date-or-string.ts",
+          "type": "registry:lib"
+        },
+        { "path": "lib/asserts/assert-number.ts", "type": "registry:lib" },
+        { "path": "lib/asserts/assert-string.ts", "type": "registry:lib" }
+      ]
+    },
+    {
+      "name": "sidebar",
+      "type": "registry:ui",
+      "title": "Sidebar",
+      "description": "A composable, themeable and customizable sidebar component.",
+      "dependencies": [
+        "@radix-ui/react-slot",
+        "class-variance-authority",
+        "framer-motion",
+        "lucide-react",
+        "react-i18next"
+      ],
+      "registryDependencies": [
+        "@uipath/button",
+        "@uipath/input",
+        "@uipath/separator",
+        "@uipath/sheet",
+        "@uipath/skeleton",
+        "@uipath/tooltip",
+        "@uipath/use-mobile"
+      ],
+      "files": [
+        {
+          "path": "registry/sidebar/sidebar-provider.tsx",
+          "type": "registry:ui"
+        },
+        { "path": "registry/sidebar/sidebar.tsx", "type": "registry:ui" },
+        {
+          "path": "registry/sidebar/sidebar-trigger.tsx",
+          "type": "registry:ui"
+        },
+        { "path": "registry/sidebar/sidebar-rail.tsx", "type": "registry:ui" },
+        { "path": "registry/sidebar/sidebar-inset.tsx", "type": "registry:ui" },
+        { "path": "registry/sidebar/sidebar-input.tsx", "type": "registry:ui" },
+        {
+          "path": "registry/sidebar/sidebar-header.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/sidebar/sidebar-footer.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/sidebar/sidebar-separator.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/sidebar/sidebar-content.tsx",
+          "type": "registry:ui"
+        },
+        { "path": "registry/sidebar/sidebar-group.tsx", "type": "registry:ui" },
+        {
+          "path": "registry/sidebar/sidebar-group-label.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/sidebar/sidebar-group-action.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/sidebar/sidebar-group-content.tsx",
+          "type": "registry:ui"
+        },
+        { "path": "registry/sidebar/sidebar-menu.tsx", "type": "registry:ui" },
+        {
+          "path": "registry/sidebar/sidebar-menu-item.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/sidebar/sidebar-menu-button.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/sidebar/sidebar-menu-action.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/sidebar/sidebar-menu-badge.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/sidebar/sidebar-menu-skeleton.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/sidebar/sidebar-menu-sub.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/sidebar/sidebar-menu-sub-item.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/sidebar/sidebar-menu-sub-button.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "skeleton",
+      "type": "registry:ui",
+      "title": "Skeleton",
+      "description": "Use to show a placeholder while content is loading.",
+      "files": [
+        {
+          "path": "registry/skeleton/skeleton.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "slider",
+      "type": "registry:ui",
+      "title": "Slider",
+      "description": "An input where the user selects a value from within a given range.",
+      "dependencies": ["@radix-ui/react-slider"],
+      "files": [{ "path": "registry/slider/slider.tsx", "type": "registry:ui" }]
+    },
+    {
+      "name": "sonner",
+      "type": "registry:ui",
+      "title": "Sonner",
+      "description": "An opinionated toast component for React.",
+      "dependencies": ["sonner", "next-themes"],
+      "cssVars": {
+        "theme": {
+          "color-info": "var(--info)",
+          "color-success": "var(--success)",
+          "color-warning": "var(--warning)"
+        },
+        "light": {
+          "success": "oklch(0.57 0.105 152)",
+          "warning": "oklch(0.80 0.1401 80.82)",
+          "info": "oklch(0.52 0.120 210)"
+        },
+        "dark": {
+          "success": "oklch(0.70 0.120 152)",
+          "warning": "oklch(0.6889 0.1401 80.82)",
+          "info": "oklch(0.69 0.112 207)"
+        }
+      },
+      "files": [{ "path": "registry/sonner/sonner.tsx", "type": "registry:ui" }]
+    },
+    {
+      "name": "spinner",
+      "type": "registry:ui",
+      "title": "Spinner",
+      "description": "A loading spinner component.",
+      "dependencies": ["class-variance-authority"],
+      "files": [
+        {
+          "path": "registry/spinner/spinner.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "switch",
+      "type": "registry:ui",
+      "title": "Switch",
+      "description": "A control that allows the user to toggle between on and off.",
+      "dependencies": ["@radix-ui/react-switch"],
+      "files": [{ "path": "registry/switch/switch.tsx", "type": "registry:ui" }]
+    },
+    {
+      "name": "table",
+      "type": "registry:ui",
+      "title": "Table",
+      "description": "A responsive table component.",
+      "files": [{ "path": "registry/table/table.tsx", "type": "registry:ui" }]
+    },
+    {
+      "name": "tabs",
+      "type": "registry:ui",
+      "title": "Tabs",
+      "description": "A set of layered sections of content shown one at a time.",
+      "dependencies": ["@radix-ui/react-tabs"],
+      "files": [{ "path": "registry/tabs/tabs.tsx", "type": "registry:ui" }]
+    },
+    {
+      "name": "form",
+      "type": "registry:ui",
+      "title": "Form",
+      "description": "A composition-first form built on TanStack Form and Zod with Apollo-bound field components and translatable validation errors.",
+      "dependencies": ["@tanstack/react-form", "zod", "react-i18next"],
+      "registryDependencies": [
+        "@uipath/button",
+        "@uipath/checkbox",
+        "@uipath/field",
+        "@uipath/input",
+        "@uipath/radio-group",
+        "@uipath/select",
+        "@uipath/switch",
+        "@uipath/textarea"
+      ],
+      "files": [
+        {
+          "path": "registry/form/index.ts",
+          "type": "registry:ui",
+          "target": "components/ui/form/index.ts"
+        },
+        {
+          "path": "registry/form/form.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/form/form.tsx"
+        },
+        {
+          "path": "registry/form/form-context.ts",
+          "type": "registry:ui",
+          "target": "components/ui/form/form-context.ts"
+        },
+        {
+          "path": "registry/form/field-utils.ts",
+          "type": "registry:ui",
+          "target": "components/ui/form/field-utils.ts"
+        },
+        {
+          "path": "registry/form/use-translated-errors.ts",
+          "type": "registry:ui",
+          "target": "components/ui/form/use-translated-errors.ts"
+        },
+        {
+          "path": "registry/form/field-error.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/form/field-error.tsx"
+        },
+        {
+          "path": "registry/form/text-field.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/form/text-field.tsx"
+        },
+        {
+          "path": "registry/form/textarea-field.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/form/textarea-field.tsx"
+        },
+        {
+          "path": "registry/form/select-field.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/form/select-field.tsx"
+        },
+        {
+          "path": "registry/form/radio-group-field.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/form/radio-group-field.tsx"
+        },
+        {
+          "path": "registry/form/checkbox-field.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/form/checkbox-field.tsx"
+        },
+        {
+          "path": "registry/form/switch-field.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/form/switch-field.tsx"
+        },
+        {
+          "path": "registry/form/submit-button.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/form/submit-button.tsx"
+        }
+      ]
+    },
+    {
+      "name": "stepper",
+      "type": "registry:ui",
+      "title": "Stepper",
+      "description": "A composable step indicator for multi-step flows with horizontal and vertical orientations and active, completed, and inactive states.",
+      "dependencies": ["class-variance-authority", "lucide-react"],
+      "files": [
+        {
+          "path": "registry/stepper/index.ts",
+          "type": "registry:ui",
+          "target": "components/ui/stepper/index.ts"
+        },
+        {
+          "path": "registry/stepper/stepper.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/stepper/stepper.tsx"
+        },
+        {
+          "path": "registry/stepper/stepper-context.ts",
+          "type": "registry:ui",
+          "target": "components/ui/stepper/stepper-context.ts"
+        },
+        {
+          "path": "registry/stepper/stepper-item.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/stepper/stepper-item.tsx"
+        },
+        {
+          "path": "registry/stepper/stepper-trigger.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/stepper/stepper-trigger.tsx"
+        },
+        {
+          "path": "registry/stepper/stepper-indicator.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/stepper/stepper-indicator.tsx"
+        },
+        {
+          "path": "registry/stepper/stepper-content.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/stepper/stepper-content.tsx"
+        },
+        {
+          "path": "registry/stepper/stepper-separator.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/stepper/stepper-separator.tsx"
+        }
+      ]
+    },
+    {
+      "name": "form-wizard",
+      "type": "registry:ui",
+      "title": "Form Wizard",
+      "description": "A multi-step wizard built on TanStack Form and Zod. Each step is composed with withForm and validates its own slice through a FormGroup, with conditional steps and optional persistence.",
+      "dependencies": [
+        "@tanstack/react-form",
+        "@tanstack/react-store",
+        "@mantine/hooks",
+        "zod",
+        "react-i18next"
+      ],
+      "registryDependencies": [
+        "@uipath/form",
+        "@uipath/button",
+        "@uipath/field",
+        "@uipath/stepper"
+      ],
+      "files": [
+        {
+          "path": "registry/form-wizard/index.ts",
+          "type": "registry:ui",
+          "target": "components/ui/form-wizard/index.ts"
+        },
+        {
+          "path": "registry/form-wizard/form-wizard.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/form-wizard/form-wizard.tsx"
+        },
+        {
+          "path": "registry/form-wizard/form-wizard-nav.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/form-wizard/form-wizard-nav.tsx"
+        },
+        {
+          "path": "registry/form-wizard/use-form-wizard.ts",
+          "type": "registry:ui",
+          "target": "components/ui/form-wizard/use-form-wizard.ts"
+        },
+        {
+          "path": "registry/form-wizard/wizard-schema.ts",
+          "type": "registry:ui",
+          "target": "components/ui/form-wizard/wizard-schema.ts"
+        }
+      ]
+    },
+    {
+      "name": "textarea",
+      "type": "registry:ui",
+      "title": "Textarea",
+      "description": "Displays a form textarea.",
+      "files": [
+        {
+          "path": "registry/textarea/textarea.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "toggle",
+      "type": "registry:ui",
+      "title": "Toggle",
+      "description": "A two-state button that can be either on or off.",
+      "dependencies": ["@radix-ui/react-toggle"],
+      "files": [{ "path": "registry/toggle/toggle.tsx", "type": "registry:ui" }]
+    },
+    {
+      "name": "toggle-group",
+      "type": "registry:ui",
+      "title": "Toggle Group",
+      "description": "A set of two-state buttons that can be toggled on or off.",
+      "dependencies": ["@radix-ui/react-toggle-group"],
+      "registryDependencies": ["@uipath/toggle"],
+      "files": [
+        {
+          "path": "registry/toggle-group/toggle-group.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "tooltip",
+      "type": "registry:ui",
+      "title": "Tooltip",
+      "description": "A popup that displays information related to an element.",
+      "dependencies": ["@radix-ui/react-tooltip"],
+      "files": [
+        {
+          "path": "registry/tooltip/tooltip.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "date-picker",
+      "type": "registry:ui",
+      "title": "Date Picker",
+      "description": "A date picker component.",
+      "dependencies": [
+        "luxon",
+        "@types/luxon",
+        "lucide-react",
+        "react-i18next"
+      ],
+      "registryDependencies": [
+        "@uipath/button",
+        "@uipath/popover",
+        "@uipath/calendar"
+      ],
+      "files": [
+        {
+          "path": "registry/date-picker/date-picker.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "calendar",
+      "type": "registry:ui",
+      "title": "Calendar",
+      "description": "A calendar component.",
+      "dependencies": ["react-day-picker"],
+      "files": [
+        { "path": "registry/calendar/calendar.tsx", "type": "registry:ui" }
+      ]
+    },
+    {
+      "name": "feature-flag-provider",
+      "type": "registry:lib",
+      "title": "Feature Flag Provider",
+      "description": "Generic feature flag provider with Proteus SDK integration, reactive listeners, and environment-based switching.",
+      "dependencies": ["@uipath/proteus-client"],
+      "files": [
+        {
+          "path": "registry/feature-flag-provider/types.ts",
+          "type": "registry:lib",
+          "target": "lib/feature-flag-provider/types.ts"
+        },
+        {
+          "path": "registry/feature-flag-provider/proteus-adapter.ts",
+          "type": "registry:lib",
+          "target": "lib/feature-flag-provider/proteus-adapter.ts"
+        },
+        {
+          "path": "registry/feature-flag-provider/feature-flag-provider.tsx",
+          "type": "registry:lib",
+          "target": "lib/feature-flag-provider/feature-flag-provider.tsx"
+        }
+      ]
+    },
+    {
+      "name": "use-feature-flag",
+      "type": "registry:hook",
+      "title": "useFeatureFlag",
+      "description": "React hook that reads a feature flag value and reactively updates when the flag changes.",
+      "registryDependencies": ["@uipath/feature-flag-provider"],
+      "files": [
+        {
+          "path": "registry/use-feature-flag/use-feature-flag.ts",
+          "type": "registry:hook"
+        }
+      ]
+    },
+    {
+      "name": "feature-flag-guard",
+      "type": "registry:ui",
+      "title": "FeatureFlagGuard",
+      "description": "Wrapper component that conditionally renders children based on a feature flag value.",
+      "registryDependencies": ["@uipath/use-feature-flag"],
+      "files": [
+        {
+          "path": "registry/feature-flag-guard/feature-flag-guard.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "protected-feature-route",
+      "type": "registry:ui",
+      "title": "ProtectedFeatureRoute",
+      "description": "Route-level guard that throws an error when a feature flag is disabled.",
+      "registryDependencies": ["@uipath/use-feature-flag"],
+      "files": [
+        {
+          "path": "registry/protected-feature-route/protected-feature-route.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "solution-tests",
+      "type": "registry:ui",
+      "title": "Solution Tests",
+      "description": "Page-level view for managing UiPath Solution Tests — test cases, batch runs, KPI trend, run-result baselines, and adopt/update/remove actions. Domain-neutral: the smart container reads the generic UiPathST* entity collections from your vs-core solution via collection-backed hooks, and the subject entity is parameterized via SolutionTestsConfig.",
+      "dependencies": [
+        "@tanstack/react-db@^0.1.86",
+        "@tanstack/react-query@^5.90.0",
+        "@tanstack/react-table@^8.21.0",
+        "@tanstack/react-router",
+        "@uipath/vs-core@^4.2.0",
+        "@uipath/uipath-typescript@^1.7.1",
+        "react-i18next",
+        "recharts@2.15.4",
+        "sonner",
+        "lucide-react",
+        "zod"
+      ],
+      "registryDependencies": [
+        "@uipath/alert",
+        "@uipath/badge",
+        "@uipath/button",
+        "@uipath/card",
+        "@uipath/chart",
+        "@uipath/collapsible",
+        "@uipath/data-table",
+        "@uipath/dialog",
+        "@uipath/empty",
+        "@uipath/page-header",
+        "@uipath/skeleton",
+        "@uipath/sonner",
+        "@uipath/spinner",
+        "@uipath/switch",
+        "@uipath/table",
+        "@uipath/tabs",
+        "@uipath/tooltip"
+      ],
+      "files": [
+        {
+          "path": "registry/solution-tests/index.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/index.ts"
+        },
+        {
+          "path": "registry/solution-tests/save-as-test-button.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/save-as-test-button.tsx"
+        },
+        {
+          "path": "registry/solution-tests/solution-tests-view.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/solution-tests-view.tsx"
+        },
+        {
+          "path": "registry/solution-tests/solution-tests.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/solution-tests.tsx"
+        },
+        {
+          "path": "registry/solution-tests/context.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/context.tsx"
+        },
+        {
+          "path": "registry/solution-tests/hooks.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/hooks.ts"
+        },
+        {
+          "path": "registry/solution-tests/constants.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/constants.ts"
+        },
+        {
+          "path": "registry/solution-tests/mutations.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/mutations.ts"
+        },
+        {
+          "path": "registry/solution-tests/attachments.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/attachments.ts"
+        },
+        {
+          "path": "registry/solution-tests/actions.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/actions.ts"
+        },
+        {
+          "path": "registry/solution-tests/create-actions.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/create-actions.ts"
+        },
+        {
+          "path": "registry/solution-tests/errors.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/errors.ts"
+        },
+        {
+          "path": "registry/solution-tests/use-solution-tests.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/use-solution-tests.ts"
+        },
+        {
+          "path": "registry/solution-tests/use-solution-test-collection.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/use-solution-test-collection.ts"
+        },
+        {
+          "path": "registry/solution-tests/use-solution-test-batch-runs.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/use-solution-test-batch-runs.ts"
+        },
+        {
+          "path": "registry/solution-tests/use-solution-test-runs.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/use-solution-test-runs.ts"
+        },
+        {
+          "path": "registry/solution-tests/use-baseline-jobs.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/use-baseline-jobs.ts"
+        },
+        {
+          "path": "registry/solution-tests/use-run-results.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/use-run-results.ts"
+        },
+        {
+          "path": "registry/solution-tests/use-force-stop.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/use-force-stop.ts"
+        },
+        {
+          "path": "registry/solution-tests/config.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/config.ts"
+        },
+        {
+          "path": "registry/solution-tests/types.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/types.ts"
+        },
+        {
+          "path": "registry/solution-tests/tabs.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/tabs.ts"
+        },
+        {
+          "path": "registry/solution-tests/status-maps.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/status-maps.ts"
+        },
+        {
+          "path": "registry/solution-tests/utils.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/utils.ts"
+        },
+        { "path": "lib/renderValueOrEmptyState.ts", "type": "registry:lib" },
+        { "path": "lib/constants.ts", "type": "registry:lib" },
+        {
+          "path": "registry/solution-tests/user-messages.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/user-messages.ts"
+        },
+        {
+          "path": "registry/solution-tests/user-messages-view.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/user-messages-view.tsx"
+        },
+        {
+          "path": "registry/solution-tests/process-results-viewer-dialog.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/process-results-viewer-dialog.tsx"
+        },
+        {
+          "path": "registry/solution-tests/delete-confirm-dialog.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/delete-confirm-dialog.tsx"
+        },
+        {
+          "path": "registry/solution-tests/evaluator-results-view.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/evaluator-results-view.tsx"
+        },
+        {
+          "path": "registry/solution-tests/kpi-bar.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/kpi-bar.tsx"
+        },
+        {
+          "path": "registry/solution-tests/expanded-agents.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/expanded-agents.tsx"
+        },
+        {
+          "path": "registry/solution-tests/expanded-agents-view.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/expanded-agents-view.tsx"
+        },
+        {
+          "path": "registry/solution-tests/result-expanded-content.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/result-expanded-content.tsx"
+        },
+        {
+          "path": "registry/solution-tests/run-confirm-dialog.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/run-confirm-dialog.tsx"
+        },
+        {
+          "path": "registry/solution-tests/run-details.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/run-details.tsx"
+        },
+        {
+          "path": "registry/solution-tests/run-details-view.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/run-details-view.tsx"
+        },
+        {
+          "path": "registry/solution-tests/version-delta-glyph.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/version-delta-glyph.tsx"
+        },
+        {
+          "path": "registry/solution-tests/run-details-agent-list.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/run-details-agent-list.tsx"
+        },
+        {
+          "path": "registry/solution-tests/expanded-run-tests.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/expanded-run-tests.tsx"
+        },
+        {
+          "path": "registry/solution-tests/expanded-run-tests-view.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/expanded-run-tests-view.tsx"
+        },
+        {
+          "path": "registry/solution-tests/evaluators/registry.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/evaluators/registry.tsx"
+        },
+        {
+          "path": "registry/solution-tests/outputs/registry.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/outputs/registry.tsx"
+        },
+        {
+          "path": "registry/solution-tests/outputs/process-output-view.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/outputs/process-output-view.tsx"
+        },
+        {
+          "path": "registry/solution-tests/outputs/ixp-extraction/schema.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/outputs/ixp-extraction/schema.ts"
+        },
+        {
+          "path": "registry/solution-tests/outputs/ixp-extraction/ixp-output-result.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/outputs/ixp-extraction/ixp-output-result.tsx"
+        },
+        {
+          "path": "registry/solution-tests/ixp/shared/format-values.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/ixp/shared/format-values.ts"
+        },
+        {
+          "path": "registry/solution-tests/ixp/shared/field-table.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/ixp/shared/field-table.tsx"
+        },
+        {
+          "path": "registry/solution-tests/ixp/shared/document-section.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/ixp/shared/document-section.tsx"
+        },
+        {
+          "path": "registry/solution-tests/evaluators/output-panels.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/evaluators/output-panels.tsx"
+        },
+        {
+          "path": "registry/solution-tests/evaluators/generic-evaluator-result.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/evaluators/generic-evaluator-result.tsx"
+        },
+        {
+          "path": "registry/solution-tests/evaluators/ixp-extraction/schema.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/evaluators/ixp-extraction/schema.ts"
+        },
+        {
+          "path": "registry/solution-tests/evaluators/ixp-extraction/ixp-extraction-result.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/evaluators/ixp-extraction/ixp-extraction-result.tsx"
+        },
+        {
+          "path": "registry/solution-tests/evaluators/ixp-extraction/internal/provenance-bar.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/evaluators/ixp-extraction/internal/provenance-bar.tsx"
+        },
+        {
+          "path": "registry/solution-tests/evaluators/ixp-extraction/internal/summary-bar.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/evaluators/ixp-extraction/internal/summary-bar.tsx"
+        },
+        {
+          "path": "registry/solution-tests/evaluators/ixp-extraction/internal/document-row.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/evaluators/ixp-extraction/internal/document-row.tsx"
+        },
+        {
+          "path": "registry/solution-tests/evaluators/ixp-extraction/internal/field-group.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/evaluators/ixp-extraction/internal/field-group.tsx"
+        },
+        {
+          "path": "registry/solution-tests/evaluators/ixp-extraction/internal/verdict-badge.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/evaluators/ixp-extraction/internal/verdict-badge.tsx"
+        }
+      ]
+    },
+    {
+      "name": "ai-mark",
+      "type": "registry:ui",
+      "title": "AI Mark",
+      "description": "The AI mark: a filled four-pointed astroid star that paints with the AI gradient, or with currentColor when variant is solid.",
+      "cssVars": {
+        "light": {
+          "ai-gradient-start": "#6C5AEF",
+          "ai-gradient-end": "#69C7DD"
+        },
+        "dark": {
+          "ai-gradient-start": "#6C5AEF",
+          "ai-gradient-end": "#69C7DD"
+        }
+      },
+      "files": [
+        {
+          "path": "registry/ai-mark/ai-mark.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "timeline",
+      "type": "registry:ui",
+      "title": "Timeline",
+      "description": "Activity timeline primitives: a variant-driven status marker and the connecting row layout for building AI and human activity trails.",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["@uipath/ai-mark"],
+      "cssVars": {
+        "theme": {
+          "color-success": "var(--success)",
+          "color-insight-400": "var(--insight-400)",
+          "color-insight-700": "var(--insight-700)"
+        },
+        "light": {
+          "success": "oklch(0.57 0.105 152)",
+          "insight-100": "oklch(0.92 0.05 277)",
+          "insight-400": "oklch(0.70 0.19 277)",
+          "insight-700": "oklch(0.48 0.17 277)",
+          "primary-50": "oklch(0.95 0.035 218)",
+          "ai-gradient": "linear-gradient(100.64deg, var(--insight-100) 8.29%, var(--primary-50) 88.73%)",
+          "ai-gradient-strong": "linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%)",
+          "ai-gradient-start": "#6C5AEF",
+          "ai-gradient-end": "#69C7DD"
+        },
+        "dark": {
+          "success": "oklch(0.70 0.120 152)",
+          "insight-400": "oklch(0.70 0.19 277)",
+          "insight-700": "oklch(0.48 0.17 277)",
+          "insight-800": "oklch(0.38 0.13 278)",
+          "primary-800": "oklch(0.46 0.095 220)",
+          "ai-gradient": "linear-gradient(100.64deg, var(--insight-800) 8.29%, var(--primary-800) 88.73%)",
+          "ai-gradient-strong": "linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%)",
+          "ai-gradient-start": "#6C5AEF",
+          "ai-gradient-end": "#69C7DD"
+        }
+      },
+      "files": [
+        {
+          "path": "registry/timeline/index.ts",
+          "type": "registry:ui",
+          "target": "components/ui/timeline/index.ts"
+        },
+        {
+          "path": "registry/timeline/timeline-marker.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/timeline/timeline-marker.tsx"
+        },
+        {
+          "path": "registry/timeline/timeline-row-layout.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/timeline/timeline-row-layout.tsx"
+        }
+      ]
+    }
+  ]
+}

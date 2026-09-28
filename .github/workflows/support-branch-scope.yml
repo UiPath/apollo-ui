@@ -1,0 +1,134 @@
+name: Support Branch Scope Check
+
+on:
+  pull_request:
+    branches:
+      - 'support/**'
+
+concurrency:
+  group: support-scope-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+# Deny-all default; the check-scope job grants only what it needs.
+permissions: {}
+
+jobs:
+  check-scope:
+    name: Check package scope
+    runs-on: uipath-ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: write
+    steps:
+      - name: Extract package from branch name
+        id: parse
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          # support/apollo-react@3.x → apollo-react
+          PACKAGE=$(echo "$BASE_REF" | sed -E 's|^support/(.+)@[0-9]+\.x$|\1|')
+          if [ "$PACKAGE" = "$BASE_REF" ]; then
+            echo "::error::Could not parse package name from branch '$BASE_REF'"
+            exit 1
+          fi
+          echo "package=$PACKAGE" >> "$GITHUB_OUTPUT"
+
+      - name: Sparse checkout base branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+          sparse-checkout: |
+            packages
+            web-packages
+            .github
+          sparse-checkout-cone-mode: true
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Resolve package directory
+        id: resolve
+        env:
+          PACKAGE: ${{ steps.parse.outputs.package }}
+        run: |
+          if [ -d "packages/${PACKAGE}" ]; then
+            echo "pkg_dir=packages/${PACKAGE}" >> "$GITHUB_OUTPUT"
+          elif [ -d "web-packages/${PACKAGE}" ]; then
+            echo "pkg_dir=web-packages/${PACKAGE}" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::Package '${PACKAGE}' not found in packages/ or web-packages/"
+            exit 1
+          fi
+
+      - name: Get changed files
+        id: changes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          CHANGED=$(gh pr diff "$PR_URL" --name-only)
+          DELIM="$(openssl rand -hex 8)"
+          {
+            echo "files<<${DELIM}"
+            echo "$CHANGED"
+            echo "${DELIM}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Check scope
+        id: scope
+        env:
+          PKG_DIR: ${{ steps.resolve.outputs.pkg_dir }}
+          CHANGED_FILES: ${{ steps.changes.outputs.files }}
+        run: |
+          OUT_OF_SCOPE=""
+
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+
+            case "$file" in
+              pnpm-lock.yaml) continue ;;  # legitimate when bumping deps inside PKG_DIR
+              ${PKG_DIR}/*) continue ;;
+            esac
+
+            OUT_OF_SCOPE="${OUT_OF_SCOPE}${file}\n"
+          done <<< "$CHANGED_FILES"
+
+          if [ -n "$OUT_OF_SCOPE" ]; then
+            DELIM="$(openssl rand -hex 8)"
+            {
+              echo "status=fail"
+              echo "files<<${DELIM}"
+              echo -e "$OUT_OF_SCOPE"
+              echo "${DELIM}"
+            } >> "$GITHUB_OUTPUT"
+          else
+            echo "status=pass" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Post or update PR comment
+        if: steps.scope.outputs.status == 'fail'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd  # v8
+        env:
+          PACKAGE: ${{ steps.parse.outputs.package }}
+          PKG_DIR: ${{ steps.resolve.outputs.pkg_dir }}
+          SCOPE_STATUS: ${{ steps.scope.outputs.status }}
+          OUT_OF_SCOPE_FILES: ${{ steps.scope.outputs.files }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+        with:
+          script: |
+            const { postScopeComment } = await import(`${process.env.GITHUB_WORKSPACE}/.github/scripts/support-branch-scope-comment.mjs`);
+            await postScopeComment({ github, context });
+
+      - name: Remove comment if scope is clean
+        if: steps.scope.outputs.status != 'fail'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd  # v8
+        with:
+          script: |
+            const { removeScopeComment } = await import(`${process.env.GITHUB_WORKSPACE}/.github/scripts/support-branch-scope-comment.mjs`);
+            await removeScopeComment({ github, context });
+
+      - name: Fail if out of scope
+        if: steps.scope.outputs.status == 'fail'
+        run: |
+          echo "::error::PR contains changes outside the allowed package scope. See the PR comment for details."
+          exit 1

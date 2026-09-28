@@ -1,0 +1,207 @@
+/**
+ * UIX Canvas CSS Variables
+ *
+ * These variables provide a theming layer for the canvas package.
+ * They default to the Apollo design system variables but can be overridden
+ * by consumers to customize the appearance.
+ *
+ * Usage:
+ *   import "@uipath/apollo-react/canvas/styles/variables.css";
+ *
+ * To override, define the variables in your own CSS:
+ *   body.light {
+ *     --canvas-foreground: #333;
+ *     --canvas-background: #fff;
+ *   }
+ *
+ * Note: We define these on each theme class (body.light, body.dark, etc.) to
+ * ensure the var() references resolve correctly. CSS variables can only reference
+ * other variables in the same scope or parent scopes. Since the base --color-*
+ * variables are defined on body.light, body.dark, etc., we must define canvas
+ * variables in the same context to ensure proper resolution.
+ */
+
+body.light,
+body.dark,
+body.light-hc,
+body.dark-hc {
+  /* ==========================================================================
+     Core Colors
+     ========================================================================== */
+
+  /* Foreground (text) colors */
+  --canvas-foreground: var(--color-foreground);
+  --canvas-foreground-emp: var(--color-foreground-emp);
+  --canvas-foreground-de-emp: var(--color-foreground-de-emp);
+  --canvas-foreground-inverse: var(--color-foreground-inverse);
+
+  /* Background colors */
+  --canvas-background: var(--color-background);
+  --canvas-background-secondary: var(--color-background-secondary);
+  --canvas-background-raised: var(--color-background-raised);
+  --canvas-background-overlay: var(--color-background-selected);
+  --canvas-background-hover: var(--color-background-hover);
+  --canvas-background-inverse: var(--color-background-inverse);
+
+  /* Border colors */
+  --canvas-border: var(--color-border);
+  --canvas-border-de-emp: var(--color-border-de-emp);
+  --canvas-border-hover: var(--color-border-hover);
+  --canvas-border-subtle: var(--color-border-subtle);
+  --canvas-border-grid: var(--color-border-grid);
+
+  /* ==========================================================================
+     Interactive Colors
+     ========================================================================== */
+
+  /* Primary */
+  --canvas-primary: var(--color-primary);
+  --canvas-primary-hover: var(--color-primary-hover);
+  --canvas-primary-alpha-20: var(--color-primary-alpha-20);
+
+  /* Secondary */
+  --canvas-secondary-pressed: var(--color-secondary-pressed);
+  --canvas-secondary-focused: var(--color-secondary-focused);
+
+  /* Selection */
+  --canvas-selection-indicator: var(--color-selection-indicator);
+
+  /* ==========================================================================
+     Status Colors
+     ========================================================================== */
+
+  /* Error */
+  --canvas-error: var(--color-error);
+  --canvas-error-icon: var(--color-error-icon);
+  --canvas-error-text: var(--color-error-text);
+  --canvas-error-background: var(--color-error-background);
+
+  /* Warning */
+  --canvas-warning-icon: var(--color-warning-icon);
+  --canvas-warning-text: var(--color-warning-text);
+  --canvas-warning-background: var(--color-warning-background);
+
+  /* Success */
+  --canvas-success-icon: var(--color-success-icon);
+  --canvas-success-background: var(--color-success-background);
+
+  /* Info */
+  --canvas-info-icon: var(--color-info-icon);
+  --canvas-info-text: var(--color-info-text);
+
+  /* ==========================================================================
+     Misc
+     ========================================================================== */
+
+  --canvas-icon-default: var(--color-icon-default);
+
+  /* ==========================================================================
+     Node interaction shadows
+     ========================================================================== */
+
+  --canvas-node-shadow-rest: 0 2px 8px rgba(0, 0, 0, 0.18);
+  --canvas-node-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.36);
+  --canvas-node-shadow-lifted: 0 16px 48px rgba(0, 0, 0, 0.72), 0 4px 16px rgba(0, 0, 0, 0.4);
+
+  /* The same elevation as a filter, for a node whose outline is drawn rather than bordered:
+     `box-shadow` would be cast by the element's rectangle, not by the shape inside it. */
+  --canvas-node-filter-rest: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.18));
+  --canvas-node-filter-hover: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.36));
+  --canvas-node-filter-lifted: drop-shadow(0 16px 48px rgba(0, 0, 0, 0.72))
+    drop-shadow(0 4px 16px rgba(0, 0, 0, 0.4));
+}
+
+/* Softer lifted shadow for light core themes. */
+body.light,
+body.light-hc {
+  --canvas-node-shadow-lifted: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+  --canvas-node-filter-lifted: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.12))
+    drop-shadow(0 2px 8px rgba(0, 0, 0, 0.06));
+}
+
+/**
+ * Element themes (future-light, future-dark, wireframe, vertex, canvas)
+ * use Wind semantic tokens instead of apollo-core --color-* tokens.
+ * These are defined on <html> and cascade down to all descendants.
+ */
+
+.future-light,
+.future-dark,
+.wireframe,
+.vertex,
+.canvas {
+  /* Foreground (text) colors */
+  --canvas-foreground: var(--foreground);
+  --canvas-foreground-emp: var(--foreground-secondary);
+  --canvas-foreground-de-emp: var(--foreground-muted);
+  --canvas-foreground-inverse: var(--foreground-inverse);
+
+  /* Background colors */
+  --canvas-background: var(--surface);
+  --canvas-background-secondary: var(--background);
+  --canvas-background-raised: var(--surface-raised);
+  --canvas-background-overlay: var(--surface-overlay);
+  --canvas-background-hover: var(--surface-hover);
+  --canvas-background-inverse: var(--surface-inverse);
+
+  /* Border colors */
+  --canvas-border: var(--ap-wind-border);
+  --canvas-border-de-emp: var(--border-subtle);
+  --canvas-border-hover: var(--border-hover);
+  --canvas-border-subtle: var(--border-subtle);
+  --canvas-border-grid: var(--border-muted);
+
+  /* Primary */
+  --canvas-primary: var(--primary);
+  --canvas-primary-hover: var(--foreground-accent-muted);
+  --canvas-primary-alpha-20: var(--brand-subtle);
+
+  /* Secondary */
+  --canvas-secondary-pressed: var(--surface-overlay);
+  --canvas-secondary-focused: var(--accent);
+
+  /* Selection */
+  --canvas-selection-indicator: var(--primary);
+
+  /* Error */
+  --canvas-error: var(--destructive);
+  --canvas-error-icon: var(--destructive);
+  --canvas-error-text: var(--destructive);
+  --canvas-error-background: var(--error-background, var(--surface-raised));
+
+  /* Warning */
+  --canvas-warning-icon: var(--warning, var(--color-amber-500));
+  --canvas-warning-text: var(--warning, var(--color-amber-500));
+  --canvas-warning-background: var(--warning-background, var(--surface-raised));
+
+  /* Success */
+  --canvas-success-icon: var(--success, var(--color-emerald-500));
+  --canvas-success-background: var(--success-background, var(--surface-raised));
+
+  /* Info */
+  --canvas-info-icon: var(--info, var(--color-sky-500));
+  --canvas-info-text: var(--info, var(--color-sky-500));
+
+  /* Misc */
+  --canvas-icon-default: var(--foreground-muted);
+
+  /* Node interaction shadows */
+  --canvas-node-shadow-rest: 0 2px 8px rgba(0, 0, 0, 0.18);
+  --canvas-node-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.36);
+  --canvas-node-shadow-lifted: 0 16px 48px rgba(0, 0, 0, 0.72), 0 4px 16px rgba(0, 0, 0, 0.4);
+
+  /* The same elevation as a filter, for a node whose outline is drawn rather than bordered:
+     `box-shadow` would be cast by the element's rectangle, not by the shape inside it. */
+  --canvas-node-filter-rest: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.18));
+  --canvas-node-filter-hover: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.36));
+  --canvas-node-filter-lifted: drop-shadow(0 16px 48px rgba(0, 0, 0, 0.72))
+    drop-shadow(0 4px 16px rgba(0, 0, 0, 0.4));
+}
+
+/* Softer lifted shadow for light element themes. */
+.future-light,
+.wireframe {
+  --canvas-node-shadow-lifted: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+  --canvas-node-filter-lifted: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.12))
+    drop-shadow(0 2px 8px rgba(0, 0, 0, 0.06));
+}

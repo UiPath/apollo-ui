@@ -1,0 +1,927 @@
+/**
+ * Apollo Wind - Complete Tailwind CSS with Design System Theme
+ *
+ * This file imports Tailwind CSS and applies the Apollo Wind design system theme
+ * using colors from @uipath/apollo-core.
+ *
+ * Usage:
+ *   import '@uipath/apollo-wind/tailwind.css'
+ *
+ * Note: Add your own @source directive to scan your project files:
+ */
+
+@import "tailwindcss";
+@import "@uipath/apollo-core/tokens/css/theme-variables.css";
+@import "sonner/dist/styles.css";
+
+@import "./tailwind.utilities.css";
+
+:root {
+  --radius: 0.75rem;
+  /* 12px — base border-radius for buttons and UI elements */
+
+  /* Active pill-tab edge. Themes override this below; the default is a no-op
+     shadow so the box-shadow stack (focus ring included) stays valid when no
+     theme class is present. */
+  --tabs-active-shadow: 0 0 #0000;
+}
+
+/* Variant active when the component is inside a Future Dark or Light theme */
+@custom-variant future (:is(.future-dark, .future-light) &);
+
+/* Apollo theming is class-driven (see apollo-core theme-variables.css), so
+   override Tailwind's default OS-media `dark` variant to match. Covers the
+   three apollo-core themes that are dark: .dark, .dark-hc, .future-dark.
+   The prototype-only .vertex / .canvas themes are deliberately left out;
+   they name a palette, not a mode, and are snapshots of the dark half of a
+   two-mode source, so they can't be assumed dark long-term.
+
+   The :not(.react-flow) exclusion mirrors the token selectors below, so a
+   ReactFlow wrapper's colorMode class can't flip `dark:` utilities while the
+   tokens around them stay on the host theme. Only .dark needs it, since
+   colorMode emits `light`/`dark` and never `dark-hc`/`future-dark`. */
+@custom-variant dark (&:is(.dark:not(.react-flow), .dark-hc, .future-dark, .dark:not(.react-flow) *, .dark-hc *, .future-dark *));
+
+/**
+ * Theme definitions
+ *
+ * All six core themes (light, light-hc, dark, dark-hc, future-dark,
+ * future-light) share a single mapping: every Wind token resolves to an
+ * apollo-core semantic CSS variable (defined per theme in
+ * @uipath/apollo-core/tokens/css/theme-variables.css). Small per-family
+ * blocks below override the few mappings the families genuinely disagree on.
+ *
+ * Exclude .react-flow from bare .light / .dark selectors.
+ * ReactFlow adds a .light or .dark class to its wrapper (via the colorMode
+ * prop, which defaults to "light"). Without :not(.react-flow), the wrapper
+ * matches these selectors and redefines every semantic token, overriding
+ * the body-level theme for all canvas descendants.
+ */
+
+body.light, .light:not(.react-flow),
+body.light-hc, .light-hc,
+body.dark, .dark:not(.react-flow),
+body.dark-hc, .dark-hc,
+body.future-dark, .future-dark,
+body.future-light, .future-light {
+  /* ── Surfaces ─────────────────────────────────────────────────────────── */
+  --surface: var(--color-background);
+  --surface-raised: var(--color-background-raised);
+  --surface-overlay: var(--color-background-overlay);
+  --surface-hover: var(--color-background-selected);
+  --surface-muted: var(--color-background-gray-emp);
+  --surface-inverse: var(--color-background-inverse);
+  --surface-disabled: var(--color-background-disabled);
+  --surface-selected: var(--color-background-selected);
+
+  /* ── Brand / Primary ─────────────────────────────────────────────────── */
+  --brand: var(--color-primary);
+  --brand-subtle: var(--color-primary-subtle);
+  --brand-hover: var(--color-primary-hover);
+  --brand-lighter: var(--color-primary-lighter);
+  --brand-darker: var(--color-foreground-link-pressed);
+  --logo: var(--color-logo);
+
+  /* ── Foreground (text / icons) ────────────────────────────────────────── */
+  --foreground: var(--color-foreground);
+  --foreground-emp: var(--color-foreground-emp);
+  --foreground-secondary: var(--color-foreground-secondary);
+  --foreground-hover: var(--color-foreground-hover);
+  --foreground-muted: var(--color-foreground-de-emp);
+  --foreground-subtle: var(--color-foreground-disable);
+  --foreground-inverse: var(--color-foreground-inverse);
+  --foreground-link: var(--color-foreground-link);
+  --foreground-on-accent: var(--color-foreground-on-accent);
+  --foreground-accent: var(--color-primary);
+  --foreground-accent-muted: var(--color-primary-hover);
+
+  /* ── Borders ──────────────────────────────────────────────────────────── */
+  --ap-wind-border: var(--color-border);
+  --border-subtle: var(--color-border-de-emp);
+  --border-muted: var(--color-border-muted);
+  --border-deep: var(--color-border-deep);
+  --border-inverse: var(--color-border-inverse);
+  --border-hover: var(--color-border-hover);
+  --border-disabled: var(--color-border-disabled);
+  --border-grid: var(--color-border-grid);
+
+  /* ── Ring / Focus ────────────────────────────────────────────────────── */
+  --ring: var(--color-primary);
+
+  /* ── Status ──────────────────────────────────────────────────────────── */
+  --error: var(--color-error-text);
+  --error-background: var(--color-error-background);
+  --success: var(--color-success-icon);
+  --success-background: var(--color-success-background);
+  --warning: var(--color-warning-icon);
+  --warning-background: var(--color-warning-background);
+  --info: var(--color-info-foreground);
+  --info-background: var(--color-info-background);
+  --status-destructive: var(--color-chip-error-background);
+  --status-destructive-fg: var(--color-error-text);
+  --status-success: var(--color-chip-success-background);
+  --status-success-fg: var(--color-success-text);
+  --status-warning: var(--color-chip-warning-background);
+  --status-warning-fg: var(--color-warning-text);
+  --status-info: var(--color-chip-info-background);
+  --status-info-fg: var(--color-info-text);
+
+  /* ── Code window / syntax ────────────────────────────────────────────── */
+  --code-rest: var(--color-icon-default);
+  --code-punctuation: var(--color-foreground-disable);
+  --code-key: var(--color-code-operator);
+  --code-string: var(--color-code-text);
+  --code-number: var(--color-code-numeric);
+  --code-literal: var(--color-code-function);
+
+  /* ── Chart ───────────────────────────────────────────────────────────── */
+  --chart-1: var(--color-chart-blue-secondary);
+  --chart-2: var(--color-chart-purple);
+  --chart-3: var(--color-chart-green);
+  --chart-4: var(--color-chart-yellow);
+  --chart-5: var(--color-chart-pink);
+
+  /* ── shadcn aliases — maps to standard names for shadcn component compat ── */
+  --background: var(--surface);
+  --card: var(--surface-raised);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface-raised);
+  --popover-foreground: var(--foreground);
+  --primary: var(--brand);
+  --primary-foreground: var(--foreground-on-accent);
+  --secondary: var(--surface-overlay);
+  --secondary-foreground: var(--foreground-muted);
+  --muted: var(--surface-raised);
+  --muted-foreground: var(--foreground-muted);
+  --accent: var(--surface-selected);
+  --accent-foreground: var(--foreground-emp);
+  --destructive: var(--error);
+  --destructive-foreground: var(--foreground-on-accent);
+  --border-de-emp: var(--border-subtle);
+  --input: var(--border-subtle);
+
+  /* Classic themes mark the active pill tab with a 1px hairline in the same
+     color as input and panel borders, drawn in the shadow slot so consumer
+     shadow overrides keep working. The Future family clears it below. */
+  --tabs-active-shadow: 0 0 0 1px var(--input);
+}
+
+/* ── Classic light family — mapping divergences + element-scoped color-scheme ── */
+body.light, .light:not(.react-flow),
+body.light-hc, .light-hc {
+  --surface-muted: var(--color-background-gray);
+  --warning: var(--color-warning-text);
+  /* Classic light's raised surface is the same white as the page, so the
+     shared --muted mapping renders with no contrast (e.g. Tabs track).
+     Use the overlay surface instead, matching the Future family mapping. */
+  --muted: var(--surface-overlay);
+  color-scheme: light;
+}
+
+/* ── Classic dark family ─────────────────────────────────────────────────── */
+body.dark, .dark:not(.react-flow),
+body.dark-hc, .dark-hc {
+  --surface-hover: var(--color-background-gray);
+  color-scheme: dark;
+}
+
+/* ResizableHandle's divider needs a resting background that matches its own
+   border-subtle-toned box in classic themes (see resizable.tsx). Exposed as a
+   variable, with an unset default falling back to --ap-wind-border, so a
+   consumer's own bg-* override (e.g. bg-transparent) still wins: cn()/
+   tailwind-merge can't dedupe a plain bg-* class against one scoped to an
+   arbitrary theme variant, so the variant class must stay a single, unvaried
+   bg-[var(...)] utility for consumer overrides to keep working. */
+body.light, .light:not(.react-flow),
+body.light-hc, .light-hc,
+body.dark, .dark:not(.react-flow),
+body.dark-hc, .dark-hc {
+  --resizable-handle-divider-bg: var(--border-subtle);
+}
+
+/* ── Future family — mapping divergences (color-scheme comes from core) ──── */
+body.future-dark, .future-dark,
+body.future-light, .future-light {
+  --brand-darker: var(--color-primary-darker);
+  --ring: var(--color-focus-indicator);
+  --warning: var(--color-warning-text);
+
+  /* shadcn structural differences */
+  --secondary-foreground: var(--foreground);
+  --muted: var(--surface-overlay);
+  --accent-foreground: var(--foreground);
+  --destructive: var(--color-red-500);
+  --destructive-foreground: var(--color-zinc-50);
+  --input: var(--ap-wind-border);
+  /* Future is flat: the active pill is distinguished by surface alone, no edge or shadow */
+  --tabs-active-shadow: 0 0 #0000;
+
+  /* Typography: Inter, shipped by apollo-core. Neither Inter nor noto-sans
+     covers CJK, so the four bundled Noto CJK families are chained explicitly
+     to keep ja/ko/zh resolving. Mono tokens untouched. */
+  --font-sans: Inter, noto-sans, "Noto Sans JP", "Noto Sans KR", "Noto Sans SC",
+    "Noto Sans TC", system-ui, sans-serif;
+  --font-normal: var(--font-sans);
+  --font-title: var(--font-sans);
+  --font-hero-bold-family: var(--font-sans);
+  --font-hero-family: var(--font-sans);
+  --font-header-1-bold-family: var(--font-sans);
+  --font-header-1-family: var(--font-sans);
+  --font-header-2-bold-family: var(--font-sans);
+  --font-header-2-family: var(--font-sans);
+  --font-header-3-bold-family: var(--font-sans);
+  --font-header-3-family: var(--font-sans);
+  --font-header-4-bold-family: var(--font-sans);
+  --font-header-4-family: var(--font-sans);
+  --font-l-bold-family: var(--font-sans);
+  --font-l-family: var(--font-sans);
+  --font-m-bold-family: var(--font-sans);
+  --font-m-family: var(--font-sans);
+  --font-link-family: var(--font-sans);
+  --font-s-bold-family: var(--font-sans);
+  --font-s-family: var(--font-sans);
+  --font-xs-bold-family: var(--font-sans);
+  --font-xs-family: var(--font-sans);
+  --font-brand-h-4-family: var(--font-sans);
+  --font-brand-l-family: var(--font-sans);
+  --font-brand-m-family: var(--font-sans);
+}
+
+/* Preflight pins --default-font-family at :root, so the theme class must set
+   font-family itself. Class doubled to outrank apollo's legacy Angular bundle,
+   which injects `.apollo-design { font-family: noto-sans }` (0,1,0) at runtime. */
+body.future-dark.future-dark, .future-dark.future-dark,
+body.future-light.future-light, .future-light.future-light {
+  font-family: var(--font-sans);
+}
+
+/* ── Future gradients (theme-specific stops, no core counterpart yet) ────── */
+body.future-dark, .future-dark {
+  --gradient-1: linear-gradient(127deg, #3f3f47 25.94%, #27272a 74.06%);
+  /* zinc-700 → zinc-800 */
+  --gradient-2: linear-gradient(128deg, #09090b 1.26%, #18181b 52.69%);
+  /* zinc-950 → zinc-900 */
+  --gradient-3: linear-gradient(128deg, #3f3f47 1.26%, #18181b 52.69%);
+  /* zinc-700 → zinc-900 */
+  --gradient-4: linear-gradient(180deg, #18181b 0%, #27272a 100%);
+  /* zinc-900 → zinc-800 */
+  --gradient-5: linear-gradient(180deg, #09090b 0%, #18181b 100%);
+  /* zinc-950 → zinc-900 */
+  --gradient-6: linear-gradient(106deg, #0092b8 28.08%, #053345 71.92%);
+  /* cyan-600 → cyan-950 */
+}
+
+body.future-light, .future-light {
+  --gradient-1: linear-gradient(127deg, #e4e4e7 25.94%, #f4f4f5 74.06%);
+  /* zinc-200 → zinc-100 */
+  --gradient-2: linear-gradient(128deg, #fafafa 1.26%, #fafafa 52.69%);
+  /* zinc-50 → zinc-50 */
+  --gradient-3: linear-gradient(128deg, #e4e4e7 1.26%, #fafafa 52.69%);
+  /* zinc-200 → zinc-50 */
+  --gradient-4: linear-gradient(180deg, #fafafa 0%, #f4f4f5 100%);
+  /* zinc-50 → zinc-100 */
+  --gradient-5: linear-gradient(180deg, #fafafa 0%, #fafafa 100%);
+  /* zinc-50 → zinc-50 */
+  --gradient-6: linear-gradient(106deg, #22d3ee 28.08%, #cffafe 71.92%);
+  /* cyan-400 → cyan-100 */
+}
+
+/* ============================================================================
+ * DEMO — Wireframe theme (low-fidelity prototyping)
+ *
+ * Intentionally flat, no accent color, dashed borders. Designed to look like
+ * a quick sketch or blueprint so stakeholders focus on layout, not polish.
+ * ============================================================================ */
+
+body.wireframe, .wireframe {
+  /* ── Surfaces ─────────────────────────────────────────────────────────── */
+  --surface: #ffffff;
+  --surface-raised: #f9fafb;
+  --surface-overlay: #f3f4f6;
+  --surface-hover: #e5e7eb;
+  --surface-muted: #d1d5db;
+  --surface-inverse: #374151;
+
+  /* ── Brand (deliberately muted — no brand color) ─────────────────────── */
+  --brand: #6b7280;
+  --brand-subtle: #f3f4f6;
+
+  /* ── Foreground ─────────────────────────────────────────────────────── */
+  --foreground: #1f2937;
+  --foreground-secondary: #374151;
+  --foreground-hover: #4b5563;
+  --foreground-muted: #6b7280;
+  --foreground-subtle: #9ca3af;
+  --foreground-inverse: #ffffff;
+  --foreground-on-accent: #ffffff;
+  --foreground-accent: #4b5563;
+  --foreground-accent-muted: #6b7280;
+
+  /* ── Borders (dashed via utility, but color defined here) ───────────── */
+  --ap-wind-border: #d1d5db;
+  --border-subtle: #e5e7eb;
+  --border-muted: #f3f4f6;
+  --border-deep: #f9fafb;
+  --border-inverse: #4b5563;
+  --border-hover: #9ca3af;
+
+  /* ── Ring ────────────────────────────────────────────────────────────── */
+  --ring: #9ca3af;
+
+  /* ── Gradients (flat — no gradients in wireframe mode) ──────────────── */
+  --gradient-1: none;
+  --gradient-2: none;
+  --gradient-3: none;
+  --gradient-4: none;
+  --gradient-5: none;
+  --gradient-6: none;
+
+  /* ── Status ──────────────────────────────────────────────────────────── */
+  --error: var(--foreground);
+  --error-background: var(--surface-overlay);
+  --success: var(--foreground);
+  --success-background:  var(--surface-overlay);
+  --warning: var(--foreground);
+  --warning-background:  var(--surface-overlay);
+  --info: var(--foreground);
+  --info-background:  var(--surface-overlay);
+
+  /* ── shadcn aliases ──────────────────────────────────────────────────── */
+  --background: var(--surface);
+  --card: var(--surface-raised);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface-raised);
+  --popover-foreground: var(--foreground);
+  --primary: var(--brand);
+  --primary-foreground: var(--foreground-on-accent);
+  --secondary: var(--surface-overlay);
+  --secondary-foreground: var(--foreground);
+  --muted: var(--surface-overlay);
+  --muted-foreground: var(--foreground-muted);
+  --accent: var(--surface-hover);
+  --accent-foreground: var(--foreground);
+  --destructive: #9ca3af;
+  --destructive-foreground: #ffffff;
+  --border-de-emp: var(--border-subtle);
+  --input: var(--ap-wind-border);
+
+  /* FIXME: apollo-core should add new themes support for all semantic tokens */
+  --color-gradient-general-start: var(--color-gradient-general-start-light);
+  --color-gradient-general-end: var(--color-gradient-general-end-light);
+  --color-gradient-agent-start: var(--color-gradient-agent-start-light);
+  --color-gradient-agent-end: var(--color-gradient-agent-end-light);
+  --color-gradient-invoked-start: var(--color-gradient-invoked-start-light);
+  --color-gradient-invoked-end: var(--color-gradient-invoked-end-light);
+  --color-gradient-human-start: var(--color-gradient-human-start-light);
+  --color-gradient-human-end: var(--color-gradient-human-end-light);
+}
+
+/* Wireframe overrides: dashed borders everywhere, reduced rounding */
+body.wireframe *,
+body.wireframe *::before,
+body.wireframe *::after,
+.wireframe *,
+.wireframe *::before,
+.wireframe *::after {
+  border-style: dashed !important;
+  box-shadow: none !important;
+}
+
+/* ============================================================================
+ * DEMO — Vertex theme (Apollo Vertex dark palette)
+ *
+ * Translates the Vertex design language (oklch-based, teal/blue accent)
+ * into token slots so templates render with the Vertex look & feel.
+ * Source: apps/apollo-vertex/app/themes.ts  (default.config.dark)
+ * ============================================================================ */
+
+body.vertex, .vertex {
+  /* ── Surfaces ─────────────────────────────────────────────────────────── */
+  --surface: oklch(0.21 0.03 258.5);
+  /* deep blue-grey — page / canvas */
+  --surface-raised: oklch(0.233 0.036 254.7);
+  /* slightly lighter — cards, panels */
+  --surface-overlay: oklch(0.2648 0.0329 254.38);
+  /* muted — inputs, tabs */
+  --surface-hover: oklch(0.3927 0.0289 240.86);
+  /* secondary — hover, selected nav */
+  --surface-muted: oklch(0.72 0.03 254.38);
+  /* muted-foreground — badges, indicators */
+  --surface-inverse: oklch(0.985 0 0);
+  /* foreground — buttons on dark bg */
+
+  /* ── Brand ──────────────────────────────────────────────────────────── */
+  --brand: oklch(0.692 0.1119 207.06);
+  /* primary — teal */
+  --brand-subtle: oklch(0.166 0.0283 203.34);
+  /* primary-foreground — deep teal bg */
+
+  /* ── Foreground (text / icons) ────────────────────────────────────────── */
+  --foreground: oklch(0.985 0 0);
+  /* foreground — primary text */
+  --foreground-secondary: oklch(0.9525 0.011 225.98);
+  /* card-foreground — body text */
+  --foreground-hover: oklch(0.9416 0.0145 244.72);
+  /* secondary-foreground — hover states */
+  --foreground-muted: oklch(0.72 0.03 254.38);
+  /* muted-foreground — nav, secondary UI */
+  --foreground-subtle: oklch(0.4594 0.028 264.25);
+  /* muted-foreground (light ref) — labels */
+  --foreground-inverse: oklch(0.21 0.03 258.5);
+  /* background — icons on light bg */
+  --foreground-on-accent: oklch(0.166 0.0283 203.34);
+  /* primary-foreground — text on accent */
+  --foreground-accent: oklch(0.692 0.1119 207.06);
+  /* primary — accent text */
+  --foreground-accent-muted: oklch(0.573 0.114 211.4);
+  /* accent — muted accent text */
+
+  /* ── Borders ──────────────────────────────────────────────────────────── */
+  --ap-wind-border: oklch(0.3068 0.0426 258.29);
+  /* border */
+  --border-subtle: oklch(0.2648 0.0329 254.38);
+  /* muted — subtle dividers */
+  --border-muted: oklch(0.233 0.036 254.7);
+  /* card — content borders */
+  --border-deep: oklch(0.21 0.03 258.5);
+  /* background — nested containers */
+  --border-inverse: oklch(0.9229 0.0065 252.13);
+  /* light border ref */
+  --border-hover: oklch(0.3927 0.0289 240.86);
+  /* secondary — border hover */
+
+  /* ── Ring ────────────────────────────────────────────────────────────── */
+  --ring: oklch(0.692 0.1119 207.06);
+  /* ring — teal focus ring */
+
+  /* ── Gradients (subtle depth) ──────────────────────────────────────── */
+  --gradient-1: linear-gradient(127deg, oklch(0.3927 0.0289 240.86) 25.94%, oklch(0.2648 0.0329 254.38) 74.06%);
+  --gradient-2: linear-gradient(128deg, oklch(0.21 0.03 258.5) 1.26%, oklch(0.233 0.036 254.7) 52.69%);
+  --gradient-3: linear-gradient(128deg, oklch(0.3927 0.0289 240.86) 1.26%, oklch(0.233 0.036 254.7) 52.69%);
+  --gradient-4: linear-gradient(180deg, oklch(0.233 0.036 254.7) 0%, oklch(0.2648 0.0329 254.38) 100%);
+  --gradient-5: linear-gradient(180deg, oklch(0.21 0.03 258.5) 0%, oklch(0.233 0.036 254.7) 100%);
+  --gradient-6: linear-gradient(106deg, oklch(0.692 0.1119 207.06) 28.08%, oklch(0.166 0.0283 203.34) 71.92%);
+
+  /* ── Status ──────────────────────────────────────────────────────────── */
+  --error: #ff8484;
+  --error-background:  #000000;
+  --success: #74c94b;
+  --success-background: #000000;
+  --warning: #ffbb27;
+  --warning-background: #000000;
+  --info: #42a1ff;
+  --info-background: #000000;
+
+  /* ── shadcn aliases ──────────────────────────────────────────────────── */
+  --background: var(--surface);
+  --card: var(--surface-raised);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface-raised);
+  --popover-foreground: var(--foreground);
+  --primary: var(--brand);
+  --primary-foreground: var(--foreground-on-accent);
+  --secondary: var(--surface-overlay);
+  --secondary-foreground: var(--foreground);
+  --muted: var(--surface-overlay);
+  --muted-foreground: var(--foreground-muted);
+  --accent: var(--surface-hover);
+  --accent-foreground: var(--foreground);
+  --destructive: oklch(0.6542 0.2321 28.66);
+  --destructive-foreground: oklch(1 0 89.88);
+  --border-de-emp: var(--border-subtle);
+  --input: var(--ap-wind-border);
+
+  /* FIXME: apollo-core should add new themes support for all semantic tokens */
+  --color-gradient-general-start: var(--color-gradient-general-start-dark);
+  --color-gradient-general-end: var(--color-gradient-general-end-dark);
+  --color-gradient-agent-start: var(--color-gradient-agent-start-dark);
+  --color-gradient-agent-end: var(--color-gradient-agent-end-dark);
+  --color-gradient-invoked-start: var(--color-gradient-invoked-start-dark);
+  --color-gradient-invoked-end: var(--color-gradient-invoked-end-dark);
+  --color-gradient-human-start: var(--color-gradient-human-start-dark);
+  --color-gradient-human-end: var(--color-gradient-human-end-dark);
+}
+
+/* ============================================================================
+ * DEMO — Canvas theme (Apollo React / MUI dark palette)
+ *
+ * Maps the classic apollo-react dark theme (apollo-core darkPalette) into
+ * token slots. Dark blue-grey base with UiPath orange accent.
+ * Source: packages/apollo-core/src/tokens/jss/palette.ts  (darkPalette)
+ * ============================================================================ */
+
+body.canvas, .canvas {
+  /* ── Surfaces ─────────────────────────────────────────────────────────── */
+  --surface: #182027;
+  /* ColorBackgroundDark — page / canvas */
+  --surface-raised: #273139;
+  /* ColorBackgroundSecondaryDark — cards, panels */
+  --surface-overlay: #334049;
+  /* mid-tone — inputs, tabs */
+  --surface-hover: #3e4e58;
+  /* hover, selected nav */
+  --surface-muted: #8a97a0;
+  /* ColorBorderDark — badges, indicators */
+  --surface-inverse: #f8f9fa;
+  /* ColorBackgroundInverseDark — buttons on dark bg */
+
+  /* ── Brand (UiPath orange) ───────────────────────────────────────────── */
+  --brand: #fa4616;
+  /* ColorOrange500 — primary brand */
+  --brand-subtle: #3c2a1e;
+  /* dark warm tone — active nav bg */
+
+  /* ── Foreground (text / icons) ────────────────────────────────────────── */
+  --foreground: #f8f9fa;
+  /* ColorForegroundEmpDark — primary text */
+  --foreground-secondary: #f4f5f7;
+  /* ColorForegroundDark — body text */
+  --foreground-hover: #cfd8dd;
+  /* ColorForegroundDeEmpDark — hover states */
+  --foreground-muted: #a4b1b8;
+  /* ColorForegroundDisableDark — nav, secondary UI */
+  --foreground-subtle: #8a97a0;
+  /* ColorBorderDark — labels, muted */
+  --foreground-inverse: #182027;
+  /* ColorForegroundInverseDark — icons on light bg */
+  --foreground-on-accent: #ffffff;
+  /* white — text on accent bg */
+  --foreground-accent: #fa4616;
+  /* ColorOrange500 — accent text */
+  --foreground-accent-muted: #ff8f70;
+  /* ColorSelectionDark — muted accent text */
+
+  /* ── Borders ──────────────────────────────────────────────────────────── */
+  --ap-wind-border: #526069;
+  /* ColorBorderDeEmpDark */
+  --border-subtle: #3e4e58;
+  /* mid border */
+  --border-muted: #273139;
+  /* ColorBackgroundSecondaryDark — content borders */
+  --border-deep: #182027;
+  /* ColorBackgroundDark — nested containers */
+  --border-inverse: #cfd8dd;
+  /* ColorForegroundDeEmpDark — borders on inverse bg */
+  --border-hover: #8a97a0;
+  /* ColorBorderDark — border hover */
+
+  /* ── Ring ────────────────────────────────────────────────────────────── */
+  --ring: #fa4616;
+  /* orange focus ring */
+
+  /* ── Gradients ────────────────────────────────────────────────────────── */
+  --gradient-1: linear-gradient(127deg, #3e4e58 25.94%, #334049 74.06%);
+  --gradient-2: linear-gradient(128deg, #182027 1.26%, #273139 52.69%);
+  --gradient-3: linear-gradient(128deg, #3e4e58 1.26%, #273139 52.69%);
+  --gradient-4: linear-gradient(180deg, #273139 0%, #334049 100%);
+  --gradient-5: linear-gradient(180deg, #182027 0%, #273139 100%);
+  --gradient-6: linear-gradient(106deg, #fa4616 28.08%, #3c2a1e 71.92%);
+
+  /* ── Status ──────────────────────────────────────────────────────────── */
+  --error: #ff8484;
+  --error-background:  #000000;
+  --success: #74c94b;
+  --success-background: #000000;
+  --warning: #ffbb27;
+  --warning-background: #000000;
+  --info: #42a1ff;
+  --info-background: #000000;
+
+  /* ── shadcn aliases ──────────────────────────────────────────────────── */
+  --background: var(--surface);
+  --card: var(--surface-raised);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface-raised);
+  --popover-foreground: var(--foreground);
+  --primary: var(--brand);
+  --primary-foreground: var(--foreground-on-accent);
+  --secondary: var(--surface-overlay);
+  --secondary-foreground: var(--foreground);
+  --muted: var(--surface-overlay);
+  --muted-foreground: var(--foreground-muted);
+  --accent: var(--surface-hover);
+  --accent-foreground: var(--foreground);
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border-de-emp: var(--border-subtle);
+  --input: var(--ap-wind-border);
+
+  /* FIXME: apollo-core should add new themes support for all semantic tokens */
+  --color-gradient-general-start: var(--color-gradient-general-start-dark);
+  --color-gradient-general-end: var(--color-gradient-general-end-dark);
+  --color-gradient-agent-start: var(--color-gradient-agent-start-dark);
+  --color-gradient-agent-end: var(--color-gradient-agent-end-dark);
+  --color-gradient-invoked-start: var(--color-gradient-invoked-start-dark);
+  --color-gradient-invoked-end: var(--color-gradient-invoked-end-dark);
+  --color-gradient-human-start: var(--color-gradient-human-start-dark);
+  --color-gradient-human-end: var(--color-gradient-human-end-dark);
+}
+
+/**
+ * Demo themes (wireframe / vertex / canvas) have no apollo-core theme blocks,
+ * so the semantic --color-* tokens from theme-variables.css don't apply.
+ * Bridge the gap by mapping them to Wind semantic tokens here.
+ * (future-light / future-dark no longer need this — apollo-core defines all
+ * --color-* tokens for them, including bare element-scoped class selectors.)
+ */
+
+.wireframe,
+.vertex,
+.canvas {
+  --color-foreground: var(--foreground);
+  --color-foreground-emp: var(--foreground-secondary);
+  --color-foreground-de-emp: var(--foreground-muted);
+  --color-background: var(--background);
+  --color-background-secondary: var(--surface-raised);
+  --color-background-hover: var(--surface-hover);
+  --color-border: var(--ap-wind-border);
+  --color-border-de-emp: var(--border-de-emp);
+  --color-primary: var(--primary);
+  --color-icon-default: var(--foreground-muted);
+  --color-error-icon: var(--destructive);
+  --color-success-icon: var(--success, var(--color-emerald-500));
+  --color-warning-icon: var(--warning, var(--color-amber-500));
+  --color-info-icon: var(--info, var(--color-sky-500));
+}
+
+/**
+  * @theme inline - Tailwind utility generation
+  *
+  * Only tokens defined here will generate Tailwind utilities.
+  */
+
+@theme inline {
+  /* ── Design system tokens ──────────────────────────────────────────── */
+
+  /* Surfaces */
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-overlay: var(--surface-overlay);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-muted: var(--surface-muted);
+  --color-surface-inverse: var(--surface-inverse);
+
+  /* Brand */
+  --color-brand: var(--brand);
+  --color-brand-subtle: var(--brand-subtle);
+
+  /* Foreground */
+  --color-foreground-secondary: var(--foreground-secondary);
+  --color-foreground-hover: var(--foreground-hover);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-foreground-subtle: var(--foreground-subtle);
+  --color-foreground-inverse: var(--foreground-inverse);
+  --color-foreground-on-accent: var(--foreground-on-accent);
+  --color-foreground-accent: var(--foreground-accent);
+  --color-foreground-accent-muted: var(--foreground-accent-muted);
+
+  /* Borders */
+  --color-border-subtle: var(--border-subtle);
+  --color-border-muted: var(--border-muted);
+  --color-border-deep: var(--border-deep);
+  --color-border-inverse: var(--border-inverse);
+  --color-border-hover: var(--border-hover);
+
+  /* ── shadcn standard tokens ────────────────────────────────────────── */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--ap-wind-border);
+  --color-border-de-emp: var(--border-de-emp);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* ── Core-specific tokens ─────────────────────────────────────────── */
+  --color-surface-disabled: var(--surface-disabled);
+  --color-surface-selected: var(--surface-selected);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-lighter: var(--brand-lighter);
+  --color-brand-darker: var(--brand-darker);
+  --color-foreground-emp: var(--foreground-emp);
+  --color-foreground-link: var(--foreground-link);
+  --color-border-disabled: var(--border-disabled);
+  --color-border-grid: var(--border-grid);
+  --color-error: var(--error);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --color-logo: var(--logo);
+
+  /* Apollo inline tokens to generate utilities */
+  --color-background-secondary: var(--color-background-secondary);
+  --color-background-inverse: var(--color-background-inverse);
+  --color-background-gray: var(--color-background-gray);
+  --color-background-disabled: var(--color-background-disabled);
+  --color-background-highlight: var(--color-background-highlight);
+  --color-background-raised: var(--color-background-raised);
+  --color-background-edit: var(--color-background-edit);
+  --color-background-gray-emp: var(--color-background-gray-emp);
+  --color-background-hover: var(--color-background-hover);
+  --color-background-pressed: var(--color-background-pressed);
+  --color-background-selected: var(--color-background-selected);
+  --color-selection-indicator: var(--color-selection-indicator);
+  --color-notification-badge: var(--color-notification-badge);
+  --color-notification-indicator: var(--color-notification-indicator);
+  --color-hover: var(--color-hover);
+  --color-curtain: var(--color-curtain);
+  --color-selection: var(--color-selection);
+  --color-foreground-light: var(--color-foreground-light);
+  --color-foreground-de-emp: var(--color-foreground-de-emp);
+  --color-foreground-disable: var(--color-foreground-disable);
+  --color-foreground-highlight: var(--color-foreground-highlight);
+  --color-foreground-highlight-selected: var(--color-foreground-highlight-selected);
+  --color-foreground-highlight-selected-hover: var(--color-foreground-highlight-selected-hover);
+  --color-foreground-link-pressed: var(--color-foreground-link-pressed);
+  --color-foreground-inv-de-emp: var(--color-foreground-inv-de-emp);
+  --color-primary-lighter: var(--color-primary-lighter);
+  --color-primary-darker: var(--color-primary-darker);
+  --color-primary-hover: var(--color-primary-hover);
+  --color-primary-focused: var(--color-primary-focused);
+  --color-primary-pressed: var(--color-primary-pressed);
+  --color-secondary-focused: var(--color-secondary-focused);
+  --color-secondary-pressed: var(--color-secondary-pressed);
+  --color-chip-default-background: var(--color-chip-default-background);
+  --color-chip-error-background: var(--color-chip-error-background);
+  --color-chip-warning-background: var(--color-chip-warning-background);
+  --color-chip-info-background: var(--color-chip-info-background);
+  --color-chip-success-background: var(--color-chip-success-background);
+  --color-error-icon: var(--color-error-icon);
+  --color-error-icon-inverse: var(--color-error-icon-inverse);
+  --color-error-text: var(--error);
+  --color-error-background: var(--error-background);
+  --color-error-foreground-inverse: var(--color-error-foreground-inverse);
+  --color-info-foreground: var(--color-info-foreground);
+  --color-info-icon: var(--color-info-icon);
+  --color-info-icon-inverse: var(--color-info-icon-inverse);
+  --color-info-text: var(--info);
+  --color-info-foreground-inverse: var(--color-info-foreground-inverse);
+  --color-info-background: var(--info-background);
+  --color-success-icon: var(--color-success-icon);
+  --color-success-icon-inverse: var(--color-success-icon-inverse);
+  --color-success-text: var(--success);
+  --color-success-background: var(--success-background);
+  --color-success-foreground-inverse: var(--color-success-foreground-inverse);
+  --color-warning-icon: var(--color-warning-icon);
+  --color-warning-icon-inverse: var(--color-warning-icon-inverse);
+  --color-warning-text: var(--warning);
+  --color-warning-background: var(--warning-background);
+  --color-warning-foreground-inverse: var(--color-warning-foreground-inverse);
+  --color-icon-default: var(--color-icon-default);
+  --color-icon-inverted-default: var(--color-icon-inverted-default);
+  --color-toggle-off-hover: var(--color-toggle-off-hover);
+  --color-toggle-off-focus: var(--color-toggle-off-focus);
+  --color-toggle-off-pressed: var(--color-toggle-off-pressed);
+  --color-toggle-on-hover: var(--color-toggle-on-hover);
+  --color-toggle-on-focus: var(--color-toggle-on-focus);
+  --color-toggle-on-pressed: var(--color-toggle-on-pressed);
+  --color-callout-background: var(--color-callout-background);
+  --color-warn: var(--color-warn);
+  --color-warn-darker: var(--color-warn-darker);
+  --color-warn-hover: var(--color-warn-hover);
+  --color-warn-focus: var(--color-warn-focus);
+  --color-warn-pressed: var(--color-warn-pressed);
+  --color-carousel-background: var(--color-carousel-background);
+  --color-icon-button-hover: var(--color-icon-button-hover);
+  --color-icon-button-focus: var(--color-icon-button-focus);
+  --color-icon-button-pressed: var(--color-icon-button-pressed);
+  --color-code-function: var(--color-code-function);
+  --color-code-operator: var(--color-code-operator);
+  --color-code-numeric: var(--color-code-numeric);
+  --color-code-text: var(--color-code-text);
+  --color-toggle-thumb-off: var(--color-toggle-thumb-off);
+  --color-toggle-track-off: var(--color-toggle-track-off);
+  --color-toggle-thumb-on: var(--color-toggle-thumb-on);
+  --color-toggle-track-on: var(--color-toggle-track-on);
+  --color-toggle-thumb-off-disabled: var(--color-toggle-thumb-off-disabled);
+  --color-toggle-track-off-disabled: var(--color-toggle-track-off-disabled);
+  --color-toggle-thumb-on-disabled: var(--color-toggle-thumb-on-disabled);
+  --color-toggle-track-on-disabled: var(--color-toggle-track-on-disabled);
+  --color-skeleton: var(--color-skeleton);
+  --color-skeleton-glow: var(--color-skeleton-glow);
+  --color-data-grid-hover: var(--color-data-grid-hover);
+  --color-data-grid-pressed: var(--color-data-grid-pressed);
+  --color-focus-indicator: var(--color-focus-indicator);
+  --color-focus-indicator-inverse: var(--color-focus-indicator-inverse);
+  --color-chart-purple: var(--color-chart-purple);
+  --color-chart-pink: var(--color-chart-pink);
+  --color-chart-blue-secondary: var(--color-chart-blue-secondary);
+  --color-chart-light-blue: var(--color-chart-light-blue);
+  --color-chart-green: var(--color-chart-green);
+  --color-chart-yellow: var(--color-chart-yellow);
+  --color-gradient-general-start: var(--color-gradient-general-start);
+  --color-gradient-general-end: var(--color-gradient-general-end);
+  --color-gradient-agent-start: var(--color-gradient-agent-start);
+  --color-gradient-agent-end: var(--color-gradient-agent-end);
+  --color-gradient-invoked-start: var(--color-gradient-invoked-start);
+  --color-gradient-invoked-end: var(--color-gradient-invoked-end);
+  --color-gradient-human-start: var(--color-gradient-human-start);
+  --color-gradient-human-end: var(--color-gradient-human-end);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border-de-emp);
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* ============================================================================
+ * Gradient utilities
+ *
+ * Gradients can't be registered via @theme (they aren't single color values),
+ * so we define them as @utility rules. Usage: bg-gradient-1, etc.
+ * ============================================================================ */
+
+@utility bg-gradient-1 {
+  background-image: var(--gradient-1);
+}
+
+@utility bg-gradient-2 {
+  background-image: var(--gradient-2);
+}
+
+@utility bg-gradient-3 {
+  background-image: var(--gradient-3);
+}
+
+@utility bg-gradient-4 {
+  background-image: var(--gradient-4);
+}
+
+@utility bg-gradient-5 {
+  background-image: var(--gradient-5);
+}
+
+@utility bg-gradient-6 {
+  background-image: var(--gradient-6);
+}
+
+/* ============================================================================
+ * Collapsible animations (Radix UI CollapsibleContent)
+ * ============================================================================ */
+
+@keyframes collapsible-down {
+  from { height: 0; opacity: 0; }
+  to { height: var(--radix-collapsible-content-height); opacity: 1; }
+}
+
+@keyframes collapsible-up {
+  from { height: var(--radix-collapsible-content-height); opacity: 1; }
+  to { height: 0; opacity: 0; }
+}
+
+@theme inline {
+  --animate-collapsible-down: collapsible-down 200ms ease-out;
+  --animate-collapsible-up: collapsible-up 200ms ease-out;
+}
+
+/* ============================================================================
+ * Theme-aware scrollbars
+ *
+ * Dark themes: future-dark + dark-hc are applied to <html>;
+ * dark + dark-hc are applied to <body>. Both cases are covered by the
+ * class selectors below since * matches all descendants.
+ * ============================================================================ */
+
+.future-dark,
+.dark,
+.dark-hc {
+  /* Firefox — inherits down the tree */
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+
+  /* WebKit — pseudo-elements don't inherit, must target descendants */
+  & *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  & *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  & *::-webkit-scrollbar-thumb {
+    background-color: var(--color-border);
+    border-radius: 9999px;
+  }
+
+  & *::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-border-hover);
+  }
+}

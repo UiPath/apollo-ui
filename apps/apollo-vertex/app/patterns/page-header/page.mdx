@@ -1,0 +1,188 @@
+import { PageHeaderListDemo, PageHeaderDetailDemo, PageHeaderFullDemo } from '@/templates/PageHeaderTemplate';
+
+# Page Header
+
+A compound page header with back navigation, title, metadata fields, and collapsible action buttons that automatically overflow into a dropdown when space is tight.
+
+<div className="not-prose my-8 rounded-lg border overflow-hidden">
+  <PageHeaderListDemo />
+</div>
+
+<div className="not-prose my-8 rounded-lg border overflow-hidden">
+  <PageHeaderDetailDemo />
+</div>
+
+With metadata fields:
+
+<div className="not-prose my-8 rounded-lg border overflow-hidden">
+  <PageHeaderFullDemo />
+</div>
+
+## Features
+
+- **Back Navigation**: Built-in back button with customizable icon
+- **Title & Description**: Page title with optional description text
+- **Metadata Fields**: Label/value pairs displayed inline with responsive wrapping
+- **Collapsible Actions**: Buttons that automatically overflow into a dropdown based on available space
+- **Responsive**: Wraps gracefully on smaller screens
+
+## Installation
+
+```bash
+npx shadcn@latest add @uipath/page-header
+```
+
+## Usage
+
+### Basic Header
+
+```tsx
+import {
+  PageHeader,
+  PageHeaderNav,
+  PageHeaderBackButton,
+  PageHeaderTitle,
+  PageHeaderActions,
+} from '@/components/ui/page-header';
+import { Button } from '@/components/ui/button';
+
+function MyPage() {
+  return (
+    <PageHeader bordered>
+      <PageHeaderNav>
+        <PageHeaderBackButton onClick={() => history.back()} />
+        <PageHeaderTitle>Page Title</PageHeaderTitle>
+      </PageHeaderNav>
+      <PageHeaderActions>
+        <Button>Save</Button>
+      </PageHeaderActions>
+    </PageHeader>
+  );
+}
+```
+
+### With Metadata Fields
+
+```tsx
+import {
+  PageHeader,
+  PageHeaderNav,
+  PageHeaderBackButton,
+  PageHeaderTitle,
+  PageHeaderContent,
+  PageHeaderField,
+  PageHeaderFieldLabel,
+  PageHeaderFieldValue,
+  PageHeaderActions,
+} from '@/components/ui/page-header';
+import { Button } from '@/components/ui/button';
+
+function DetailPage() {
+  return (
+    <PageHeader bordered>
+      <PageHeaderNav>
+        <PageHeaderBackButton />
+        <PageHeaderTitle>Record Summary</PageHeaderTitle>
+      </PageHeaderNav>
+
+      <PageHeaderContent>
+        <PageHeaderField>
+          <PageHeaderFieldLabel>Status</PageHeaderFieldLabel>
+          <PageHeaderFieldValue>In Progress</PageHeaderFieldValue>
+        </PageHeaderField>
+        <PageHeaderField>
+          <PageHeaderFieldLabel>Template</PageHeaderFieldLabel>
+          <PageHeaderFieldValue>Clinical Review v2</PageHeaderFieldValue>
+        </PageHeaderField>
+      </PageHeaderContent>
+
+      <PageHeaderActions>
+        <Button>Save</Button>
+      </PageHeaderActions>
+    </PageHeader>
+  );
+}
+```
+
+### With Collapsible Actions
+
+Actions that automatically collapse into an overflow dropdown when space is limited:
+
+```tsx
+import {
+  PageHeader,
+  PageHeaderNav,
+  PageHeaderTitle,
+  PageHeaderActions,
+  PageHeaderCollapsibleActions,
+  type CollapsibleAction,
+} from '@/components/ui/page-header';
+import { Button } from '@/components/ui/button';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { Download, Share2 } from 'lucide-react';
+
+const actions: CollapsibleAction[] = [
+  {
+    key: 'share',
+    button: (
+      <Button variant="outline" size="sm">
+        <Share2 className="size-4 mr-1.5" />
+        Share
+      </Button>
+    ),
+    menuItem: (
+      <DropdownMenuItem>
+        <Share2 className="size-4" />
+        Share
+      </DropdownMenuItem>
+    ),
+  },
+  {
+    key: 'download',
+    button: (
+      <Button variant="outline" size="sm">
+        <Download className="size-4 mr-1.5" />
+        Download
+      </Button>
+    ),
+    menuItem: (
+      <DropdownMenuItem>
+        <Download className="size-4" />
+        Download
+      </DropdownMenuItem>
+    ),
+  },
+];
+
+function MyPage() {
+  return (
+    <PageHeader bordered>
+      <PageHeaderNav>
+        <PageHeaderTitle>Document</PageHeaderTitle>
+      </PageHeaderNav>
+      <PageHeaderActions>
+        <PageHeaderCollapsibleActions items={actions} />
+        <Button size="sm">Save</Button>
+      </PageHeaderActions>
+    </PageHeader>
+  );
+}
+```
+
+## Sub-components
+
+| Component | Description |
+|-----------|-------------|
+| `PageHeader` | Root container with size variants and optional border |
+| `PageHeaderNav` | Left section containing back button and title |
+| `PageHeaderBackButton` | Back arrow button (customizable icon) |
+| `PageHeaderTitleGroup` | Wrapper for title + description |
+| `PageHeaderTitle` | Page title with size variants (`default`, `lg`) |
+| `PageHeaderDescription` | Subtitle text below the title (single-line truncation with native title tooltip) |
+| `PageHeaderContent` | Metadata fields section with responsive layout |
+| `PageHeaderField` | Individual field wrapper |
+| `PageHeaderFieldLabel` | Field label text |
+| `PageHeaderFieldValue` | Field value text |
+| `PageHeaderActions` | Right section for action buttons |
+| `PageHeaderActionsOverflow` | Static kebab-style dropdown for actions that are always hidden |
+| `PageHeaderCollapsibleActions` | Smart overflow that measures available space and auto-collapses buttons |

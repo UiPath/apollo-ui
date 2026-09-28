@@ -1,0 +1,87 @@
+{
+  "deployments": {
+    "apollo-docs": {
+      "type": "codedapp",
+      "build": {
+        "type": "staged-next-export",
+        "sourceDir": "apps/apollo-docs",
+        "stageDir": ".uipath-build/apollo-docs",
+        "preCommands": ["pnpm turbo build --filter=apollo-docs^..."],
+        "commands": ["pnpm exec next build"],
+        "copyOutput": "out",
+        "pagefind": true
+      },
+      "outputDir": "apps/apollo-docs/out",
+      "pathNameEnv": "APOLLO_CODED_APP_PATH",
+      "folderKeyEnv": "UIPATH_FOLDER_KEY",
+      "postprocess": ["static-next-export"],
+      "tags": "apollo,apollo-docs",
+      "env": {
+        "CI": "true",
+        "APOLLO_CODED_APP": "1"
+      }
+    },
+    "apollo-landing": {
+      "type": "codedapp",
+      "build": "pnpm turbo build --filter=apollo-landing",
+      "outputDir": "apps/landing/dist",
+      "pathNameEnv": "APOLLO_CODED_APP_PATH",
+      "folderKeyEnv": "UIPATH_FOLDER_KEY",
+      "postprocess": ["relative-root-assets"],
+      "tags": "apollo,apollo-landing",
+      "env": {
+        "CI": "true",
+        "APOLLO_CODED_APP": "1"
+      }
+    },
+    "apollo-design": {
+      "type": "codedapp",
+      "build": "pnpm turbo run storybook:build --filter=storybook-app",
+      "outputDir": "apps/storybook/storybook-static",
+      "pathNameEnv": "APOLLO_CODED_APP_PATH",
+      "folderKeyEnv": "UIPATH_FOLDER_KEY",
+      "postprocess": ["relative-root-assets"],
+      "tags": "apollo,apollo-design",
+      "env": {
+        "CI": "true",
+        "APOLLO_CODED_APP": "1"
+      }
+    },
+    "apollo-design-diff": {
+      "type": "codedapp",
+      "outputDir": ".uipath-build/apollo-design-diff",
+      "pathNameEnv": "APOLLO_CODED_APP_PATH",
+      "folderKeyEnv": "UIPATH_FOLDER_KEY",
+      "tags": "apollo,apollo-design-diff"
+    },
+    "apollo-vertex": {
+      "type": "codedapp",
+      "build": {
+        "type": "staged-next-export",
+        "sourceDir": "apps/apollo-vertex",
+        "stageDir": ".uipath-build/apollo-vertex",
+        "exclude": ["app/api"],
+        "commands": [
+          "pnpm generate:theme",
+          "pnpm registry:build",
+          "pnpm exec next build"
+        ],
+        "copyOutput": "out",
+        "pagefind": true
+      },
+      "outputDir": "apps/apollo-vertex/out",
+      "pathNameEnv": "APOLLO_CODED_APP_PATH",
+      "folderKeyEnv": "UIPATH_FOLDER_KEY",
+      "postprocess": ["static-next-export"],
+      "authClientId": "1119a927-10ab-4543-bd1a-ad6bfbbc27f4",
+      "platformAuth": {
+        "redirectPath": "auth_callback/index.html"
+      },
+      "tags": "apollo,apollo-vertex",
+      "env": {
+        "CI": "true",
+        "APOLLO_CODED_APP": "1"
+      }
+    }
+  }
+}

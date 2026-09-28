@@ -1,0 +1,89 @@
+export const metadata = { title: 'AI Toolkit: Visual Expression' };
+
+import { ColorShowcase } from './color-showcase'
+import { AiIcon } from './ai-icon'
+import { AiMark } from './ai-mark'
+import { MarkUsage } from './mark-usage'
+import { Surfaces } from './surfaces'
+import { Examples } from './examples'
+import { TimelineMarkers } from './timeline-markers'
+import { Badge } from '@/registry/badge/badge'
+
+# Visual Expression <Badge status="ai" className="align-middle ml-2"><AiIcon className="size-3" />v1.1</Badge>
+
+A working style guide for the AI expression across the design system: the mark
+(full size and small), the mark paired with the wordmark, and the mark inside
+components like badges and cards.
+
+## Principles
+
+- **Match the expression to the moment.** A quiet tag marks provenance, a glow highlights a recommendation, the full mark signals a judgment call.
+- **Disclose in proportion.** The more the AI decides, the more you tell the user. A tag is enough to show where something came from, a recommendation should point out what to check, and an action should ask before it runs.
+- **Mark the group once, not every control.** Set the AI context at the boundary so the mark keeps its meaning.
+- **Pair a glow with a label.** The glow draws the eye and the label says why. Limit it to one best match per view.
+- **Use it sparingly.** The expression only reads as special when most of the UI stays neutral.
+
+## Color
+
+Two ramps anchor the AI expression: **Primary**, the brand cyan, and **Insight**,
+the violet that signals intelligence. The AI gradients blend the two: the strong
+gradient runs Insight 600 to Primary 300, and the subtle gradient is a soft tint
+pair for surface fills. The full token reference lives in [Foundation → Colors](/foundation/colors#ai-gradients).
+
+**Which gradient to use**
+
+- `--ai-gradient-strong`: the hero gradient. Use for AI marks, icon fills, and glows. Never place text on it.
+- `--ai-gradient-fill`: the same gradient, darkened to carry white text at AA. Use for badges and buttons.
+- `--ai-gradient-text`: use when AI text itself needs the gradient, clipped onto the letters.
+- `--ai-gradient`: the quiet tint. Use for AI surface fills and backgrounds.
+
+<ColorShowcase />
+
+## Mark and wordmark
+
+The mark, the `Astroid` icon, paired with the wordmark, set bold with tight letter spacing.
+Two fills: the AI gradient for expressive moments, and a solid fill for dense or
+small contexts.
+
+The mark is not only brand. It is also the label that tells someone a feature is AI, the baseline transparency the EU AI Act calls for, so keep it visible wherever AI is at work rather than tucked behind a hover.
+
+<AiMark />
+
+## In components
+
+The small mark in context: section headers, badges, and buttons. Each example
+below is labeled with when to use it. Gradient fill uses the text-safe `--ai-gradient-fill`
+(white text, AA); soft tint uses `--ai-gradient` with foreground text. To implement
+these, use the AI variants on the [Badge](/components/badge#ai) and [Button](/components/button#ai) components.
+
+<MarkUsage />
+
+## Surfaces
+
+AI surfaces. The chat input takes an AI gradient border on focus. Cards come
+solid or glass, and a glow, an AI gradient shadow, can sit behind either. See the
+[Card](/components/card#selectable) component page for implementation. The AI input
+variant is experimental, shown here for exploration.
+
+<Surfaces />
+
+## Timeline markers
+
+The status dot for an activity timeline. Each marker takes a plain `variant`,
+so a solution maps its own domain states onto the shared set. The full nine
+variants cover human and agent steps: people, completed steps, queued and
+suspended work, a spinning in-progress ring, and failed, cancelled, and done
+outcomes. Every variant comes in a full and a compact size.
+
+<TimelineMarkers />
+
+## Examples
+
+Compositions that combine the mark, color, and components into real patterns.
+Each example shows the AI expression working alongside standard UI.
+
+<Examples />
+
+---
+
+[See how this toolkit meets AI transparency and disclosure requirements →](/guidelines/ai-toolkit/legal)

@@ -1,0 +1,558 @@
+import { describe, expect, it, vi } from 'vitest';
+import type { HandleGroupManifest } from '../schema/node-definition/handle';
+import {
+  type ResolutionContext,
+  replaceTemplateVars,
+  resolveDisplay,
+  resolveHandles,
+  resolveVisibility,
+} from './manifest-resolver';
+
+// ============================================================================
+// resolveDisplay
+// ============================================================================
+
+describe('resolveDisplay', () => {
+  it('returns fallback shape and label when no manifest display is provided', () => {
+    // `icon: ''` is the sentinel — falsy so `if (display.icon)` truthy checks fall through to the InitialsBadge fallback.
+    const result = resolveDisplay(undefined);
+    expect(result.icon).toBe('');
+    expect(result.shape).toBe('square');
+    expect(result.label).toBe('Unknown Node');
+  });
+
+  it('coalesces missing manifest icon to the empty-string sentinel', () => {
+    const result = resolveDisplay({ label: 'Foo', shape: 'square' });
+    expect(result.icon).toBe('');
+  });
+
+  it('uses context display label when no manifest display', () => {
+    const result = resolveDisplay(undefined, {
+      display: { label: 'Custom Label' },
+    });
+    expect(result.label).toBe('Custom Label');
+  });
+
+  it('merges context display overrides onto manifest defaults', () => {
+    const result = resolveDisplay(
+      { label: 'Decision', icon: 'git-branch', shape: 'square' },
+      { display: { label: 'Check if admin' } }
+    );
+    expect(result.label).toBe('Check if admin');
+    expect(result.icon).toBe('git-branch');
+    expect(result.shape).toBe('square');
+  });
+
+  it('keeps a rectangle shape when collapsed (collapse never squares the node)', () => {
+    const result = resolveDisplay(
+      { label: 'Agent', icon: 'bot', shape: 'rectangle' },
+      { isCollapsed: true }
+    );
+    expect(result.shape).toBe('rectangle');
+  });
+
+  it('keeps non-rectangle shapes when collapsed', () => {
+    const result = resolveDisplay(
+      { label: 'Node', icon: 'box', shape: 'circle' },
+      { isCollapsed: true }
+    );
+    expect(result.shape).toBe('circle');
+  });
+
+  it('honors an instance display.shape override', () => {
+    const result = resolveDisplay(
+      { label: 'Node', icon: 'box', shape: 'square' },
+      { display: { shape: 'circle' } }
+    );
+    expect(result.shape).toBe('circle');
+  });
+
+  it('uses manifest canvasLabel for canvas label when no instance override', () => {
+    const result = resolveDisplay({
+      label: 'Send Outlook Email',
+      canvasLabel: 'Send Email',
+      icon: 'mail',
+    });
+    expect(result.label).toBe('Send Email');
+    expect(result.canvasLabel).toBe('Send Email');
+  });
+
+  it('falls back to manifest label when canvasLabel is not defined', () => {
+    const result = resolveDisplay({ label: 'Decision', icon: 'git-branch' });
+    expect(result.label).toBe('Decision');
+  });
+
+  it('lets instance.label override manifest.canvasLabel — user renames win', () => {
+    // The properties-panel rename surface writes to instance.display.label. It
+    // must beat manifest.canvasLabel so the rename actually shows on the chip.
+    // Consumers that auto-bake instance.label at creation must skip that bake
+    // when the manifest declares canvasLabel — otherwise the bake would always
+    // pose as a "user rename" and shadow canvasLabel.
+    const result = resolveDisplay(
+      { label: 'Send Outlook Email', canvasLabel: 'Send Email', icon: 'mail' },
+      { display: { label: 'Notify ops team' } }
+    );
+    expect(result.label).toBe('Notify ops team');
+    expect(result.canvasLabel).toBe('Send Email');
+  });
+
+  it('falls back to instance.label when no canvasLabel exists at either level', () => {
+    const result = resolveDisplay(
+      { label: 'Decision', icon: 'git-branch' },
+      { display: { label: 'Check if admin' } }
+    );
+    expect(result.label).toBe('Check if admin');
+  });
+
+  it('lets instance.canvasLabel override manifest.canvasLabel', () => {
+    // Explicit canvas-side override on the instance — used when the user
+    // renames the canvas chip and we want that rename to persist.
+    const result = resolveDisplay(
+      { label: 'Send Outlook Email', canvasLabel: 'Send Email', icon: 'mail' },
+      { display: { canvasLabel: 'Notify Ops' } }
+    );
+    expect(result.canvasLabel).toBe('Notify Ops');
+    expect(result.label).toBe('Notify Ops');
+  });
+
+  it('prefers instance.canvasLabel over instance.label and manifest values', () => {
+    const result = resolveDisplay(
+      { label: 'Send Outlook Email', canvasLabel: 'Send Email', icon: 'mail' },
+      { display: { canvasLabel: 'Notify Ops', label: 'Some panel label' } }
+    );
+    expect(result.label).toBe('Notify Ops');
+  });
+});
+
+// ============================================================================
+// resolveVisibility
+// ============================================================================
+
+describe('resolveVisibility', () => {
+  const context: ResolutionContext = {
+    inputs: { hasDefault: true, isEnabled: false, nested: { flag: true } },
+  };
+
+  it('defaults to true when undefined', () => {
+    expect(resolveVisibility(undefined, context)).toBe(true);
+  });
+
+  it('returns boolean literal as-is', () => {
+    expect(resolveVisibility(true, context)).toBe(true);
+    expect(resolveVisibility(false, context)).toBe(false);
+  });
+
+  it('resolves string property path from context', () => {
+    expect(resolveVisibility('inputs.hasDefault', context)).toBe(true);
+    expect(resolveVisibility('inputs.isEnabled', context)).toBe(false);
+  });
+
+  it('resolves nested property path', () => {
+    expect(resolveVisibility('inputs.nested.flag', context)).toBe(true);
+  });
+
+  it('returns false for non-existent path', () => {
+    expect(resolveVisibility('inputs.nonExistent', context)).toBe(false);
+  });
+});
+
+// ============================================================================
+// replaceTemplateVars
+// ============================================================================
+
+describe('replaceTemplateVars', () => {
+  it('replaces simple variable', () => {
+    expect(replaceTemplateVars('case-{index}', { index: 0 })).toBe('case-0');
+  });
+
+  it('replaces multiple variables including nested access', () => {
+    const result = replaceTemplateVars('Case {index}: {item.label}', {
+      index: 1,
+      item: { label: 'Success' },
+    });
+    expect(result).toBe('Case 1: Success');
+  });
+
+  it('preserves unresolved template vars', () => {
+    expect(replaceTemplateVars('{known}-{unknown}', { known: 'a' })).toBe('a-{unknown}');
+  });
+
+  it('returns plain strings unchanged', () => {
+    expect(replaceTemplateVars('static-label', {})).toBe('static-label');
+  });
+
+  it('converts non-string values to string', () => {
+    expect(replaceTemplateVars('{val}', { val: 42 })).toBe('42');
+    expect(replaceTemplateVars('{val}', { val: true })).toBe('true');
+  });
+
+  it('preserves template when value is null or undefined', () => {
+    expect(replaceTemplateVars('{val}', { val: null })).toBe('{val}');
+    expect(replaceTemplateVars('{val}', { val: undefined })).toBe('{val}');
+  });
+});
+
+// ============================================================================
+// resolveHandles
+// ============================================================================
+
+/** Helper to get first group from result, with assertion */
+function firstGroup(groups: HandleGroupManifest[], context: ResolutionContext) {
+  const result = resolveHandles(groups, context);
+  expect(result.length).toBeGreaterThan(0);
+  return result[0]!;
+}
+
+describe('resolveHandles', () => {
+  describe('static handles', () => {
+    it('resolves with default visibility and template replacement', () => {
+      const group = firstGroup(
+        [
+          {
+            position: 'right',
+            handles: [
+              { id: 'true', type: 'source', handleType: 'output', label: '{inputs.trueLabel}' },
+            ],
+          },
+        ],
+        { inputs: { trueLabel: 'Approved' } }
+      );
+
+      expect(group.handles).toHaveLength(1);
+      expect(group.handles[0]!.id).toBe('true');
+      expect(group.handles[0]!.label).toBe('Approved');
+      expect(group.handles[0]!.visible).toBe(true);
+    });
+
+    it('preserves unresolved template vars and sets undefined label when absent', () => {
+      const group = firstGroup(
+        [
+          {
+            position: 'right',
+            handles: [
+              { id: 'a', type: 'source', handleType: 'output', label: '{inputs.missing}' },
+              { id: 'b', type: 'target', handleType: 'input' },
+            ],
+          },
+        ],
+        {}
+      );
+
+      expect(group.handles).toHaveLength(2);
+      expect(group.handles[0]!.label).toBe('{inputs.missing}');
+      expect(group.handles[1]!.label).toBeUndefined();
+    });
+  });
+
+  describe('visibility in handles', () => {
+    it('resolves string visibility path from context', () => {
+      const groups: HandleGroupManifest[] = [
+        {
+          position: 'right',
+          handles: [
+            { id: 'default', type: 'source', handleType: 'output', visible: 'inputs.hasDefault' },
+          ],
+        },
+      ];
+
+      const trueGroup = firstGroup(groups, { inputs: { hasDefault: true } });
+      expect(trueGroup.handles[0]!.visible).toBe(true);
+
+      const falseGroup = firstGroup(groups, { inputs: { hasDefault: false } });
+      expect(falseGroup.handles[0]!.visible).toBe(false);
+    });
+
+    it('hides artifact handles when collapsed, keeps non-artifact visible', () => {
+      const result = resolveHandles(
+        [
+          {
+            position: 'bottom',
+            handles: [{ id: 'artifact', type: 'source', handleType: 'artifact' }],
+          },
+          {
+            position: 'left',
+            handles: [{ id: 'in', type: 'target', handleType: 'input' }],
+          },
+        ],
+        { isCollapsed: true }
+      );
+
+      expect(result).toHaveLength(2);
+      expect(result[0]!.handles[0]!.visible).toBe(false);
+      expect(result[1]!.handles[0]!.visible).toBe(true);
+    });
+
+    it('hides inner-boundary handles when collapsed, keeps outer handles visible', () => {
+      const result = resolveHandles(
+        [
+          {
+            position: 'left',
+            boundary: 'inner',
+            handles: [{ id: 'start', type: 'source', handleType: 'output' }],
+          },
+          {
+            position: 'left',
+            boundary: 'outer',
+            handles: [{ id: 'in', type: 'target', handleType: 'input' }],
+          },
+          {
+            position: 'right',
+            handles: [{ id: 'out', type: 'source', handleType: 'output' }],
+          },
+        ],
+        { isCollapsed: true }
+      );
+
+      expect(result[0]!.handles[0]!.visible).toBe(false);
+      expect(result[1]!.handles[0]!.visible).toBe(true);
+      expect(result[2]!.handles[0]!.visible).toBe(true);
+    });
+
+    it('keeps inner-boundary handles visible when expanded', () => {
+      const group = firstGroup(
+        [
+          {
+            position: 'left',
+            boundary: 'inner',
+            handles: [{ id: 'start', type: 'source', handleType: 'output' }],
+          },
+        ],
+        {}
+      );
+
+      expect(group.handles[0]!.visible).toBe(true);
+    });
+
+    it('hides repeat-generated inner-boundary handles when collapsed', () => {
+      const group = firstGroup(
+        [
+          {
+            position: 'right',
+            boundary: 'inner',
+            handles: [
+              {
+                id: 'case-{index}',
+                type: 'source',
+                handleType: 'output',
+                repeat: 'inputs.cases',
+                indexVar: 'index',
+              },
+            ],
+          },
+        ],
+        { isCollapsed: true, inputs: { cases: [{}, {}] } }
+      );
+
+      expect(group.handles).toHaveLength(2);
+      expect(group.handles.every((handle) => handle.visible === false)).toBe(true);
+    });
+  });
+
+  describe('group visibility when collapsed', () => {
+    it('hides an inner-boundary group when collapsed', () => {
+      const group = firstGroup(
+        [
+          {
+            position: 'left',
+            visible: true,
+            boundary: 'inner',
+            handles: [{ id: 'start', type: 'source', handleType: 'output' }],
+          },
+        ],
+        { isCollapsed: true }
+      );
+      expect(group.visible).toBe(false);
+    });
+
+    it('hides group when collapsed and all handles are hidden', () => {
+      const group = firstGroup(
+        [
+          {
+            position: 'bottom',
+            visible: true,
+            handles: [{ id: 'artifact', type: 'source', handleType: 'artifact' }],
+          },
+        ],
+        { isCollapsed: true }
+      );
+      expect(group.visible).toBe(false);
+    });
+
+    it('preserves group visibility when collapsed but has visible handles', () => {
+      const group = firstGroup(
+        [
+          {
+            position: 'left',
+            visible: true,
+            handles: [{ id: 'in', type: 'target', handleType: 'input' }],
+          },
+        ],
+        { isCollapsed: true }
+      );
+      expect(group.visible).toBe(true);
+    });
+  });
+
+  describe('repeat handles', () => {
+    it('expands repeat expression into multiple handles', () => {
+      const group = firstGroup(
+        [
+          {
+            position: 'right',
+            handles: [
+              {
+                id: 'case-{index}',
+                type: 'source',
+                handleType: 'output',
+                label: '{item.label}',
+                repeat: 'inputs.cases',
+              },
+            ],
+          },
+        ],
+        { inputs: { cases: [{ label: 'Case A' }, { label: 'Case B' }, { label: 'Case C' }] } }
+      );
+
+      expect(group.handles).toHaveLength(3);
+      expect(group.handles[0]).toMatchObject({ id: 'case-0', label: 'Case A' });
+      expect(group.handles[1]).toMatchObject({ id: 'case-1', label: 'Case B' });
+      expect(group.handles[2]).toMatchObject({ id: 'case-2', label: 'Case C' });
+    });
+
+    it('uses custom itemVar and indexVar names', () => {
+      const group = firstGroup(
+        [
+          {
+            position: 'right',
+            handles: [
+              {
+                id: 'out-{idx}',
+                type: 'source',
+                handleType: 'output',
+                label: '{entry.name}',
+                repeat: 'inputs.outputs',
+                itemVar: 'entry',
+                indexVar: 'idx',
+              },
+            ],
+          },
+        ],
+        { inputs: { outputs: [{ name: 'Success' }, { name: 'Failure' }] } }
+      );
+
+      expect(group.handles).toHaveLength(2);
+      expect(group.handles[0]).toMatchObject({ id: 'out-0', label: 'Success' });
+      expect(group.handles[1]).toMatchObject({ id: 'out-1', label: 'Failure' });
+    });
+
+    it('warns and returns empty when repeat does not resolve to array', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      const group = firstGroup(
+        [
+          {
+            position: 'right',
+            handles: [
+              { id: 'h-{index}', type: 'source', handleType: 'output', repeat: 'inputs.missing' },
+            ],
+          },
+        ],
+        {}
+      );
+
+      expect(group.handles).toHaveLength(0);
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('inputs.missing'));
+
+      warnSpy.mockRestore();
+    });
+
+    it('returns empty handles for empty array', () => {
+      const group = firstGroup(
+        [
+          {
+            position: 'right',
+            handles: [
+              { id: 'h-{index}', type: 'source', handleType: 'output', repeat: 'inputs.cases' },
+            ],
+          },
+        ],
+        { inputs: { cases: [] } }
+      );
+
+      expect(group.handles).toHaveLength(0);
+    });
+
+    it('hides artifact repeat handles when collapsed', () => {
+      const group = firstGroup(
+        [
+          {
+            position: 'bottom',
+            handles: [
+              {
+                id: 'artifact-{index}',
+                type: 'source',
+                handleType: 'artifact',
+                repeat: 'inputs.artifacts',
+              },
+            ],
+          },
+        ],
+        { isCollapsed: true, inputs: { artifacts: [{ type: 'log' }, { type: 'file' }] } }
+      );
+
+      expect(group.handles).toHaveLength(2);
+      expect(group.handles.every((h) => !h.visible)).toBe(true);
+    });
+  });
+
+  describe('mixed static and repeat handles', () => {
+    it('resolves both and applies visibility independently', () => {
+      const group = firstGroup(
+        [
+          {
+            position: 'right',
+            handles: [
+              {
+                id: 'case-{index}',
+                type: 'source',
+                handleType: 'output',
+                label: '{item.label}',
+                repeat: 'inputs.cases',
+              },
+              {
+                id: 'default',
+                type: 'source',
+                handleType: 'output',
+                label: 'Default',
+                visible: 'inputs.hasDefault',
+              },
+            ],
+          },
+        ],
+        { inputs: { cases: [{ label: 'Case 1' }], hasDefault: false } }
+      );
+
+      expect(group.handles).toHaveLength(2);
+      expect(group.handles[0]).toMatchObject({ id: 'case-0', visible: true });
+      expect(group.handles[1]).toMatchObject({ id: 'default', visible: false });
+    });
+  });
+
+  describe('deeply nested context paths', () => {
+    it('resolves repeat from arbitrary nested paths', () => {
+      const group = firstGroup(
+        [
+          {
+            position: 'right',
+            handles: [
+              { id: 'h-{index}', type: 'source', handleType: 'output', repeat: 'config.outputs' },
+            ],
+          },
+        ],
+        { config: { outputs: [{ name: 'A' }] } }
+      );
+
+      expect(group.handles).toHaveLength(1);
+    });
+  });
+});

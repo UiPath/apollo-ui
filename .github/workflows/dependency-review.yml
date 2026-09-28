@@ -1,0 +1,63 @@
+name: Dependency Review
+
+on: [pull_request]
+
+permissions: {}
+
+jobs:
+  vulnerability-review:
+    name: Vulnerability & advisory review
+    runs-on: uipath-ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    # The dependency-review-action requires a pull_request event with the base ref available.
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          persist-credentials: false
+
+      - name: Dependency Review
+        # Scans added/changed deps against GitHub Advisory Database. Fails on high+ severity by default.
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294  # v5.0.0
+        with:
+          fail-on-severity: high
+          comment-summary-in-pr: on-failure
+
+  dependency-review:
+    name: Dependencies license check
+    runs-on: uipath-ubuntu-latest
+    if: github.event.pull_request.head.repo.fork == false
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          persist-credentials: false
+
+      - name: Install Node dependencies
+        uses: ./.github/actions/install-node-deps
+
+      - name: Check licenses
+        id: check
+        run: pnpm exec tsx scripts/check-licenses.ts
+        continue-on-error: true
+
+      - name: Post or update PR comment
+        if: github.event.pull_request.head.repo.fork == false
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd  # v8
+        env:
+          REPORT_PATH: ${{ runner.temp }}/license-report.md
+        with:
+          script: |
+            const { licenseReviewComment } = await import(`${process.env.GITHUB_WORKSPACE}/.github/scripts/dependency-review-comment.mjs`);
+            await licenseReviewComment({ github, context });
+
+      - name: Fail if license violations found
+        if: steps.check.outcome == 'failure'
+        run: exit 1

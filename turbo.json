@@ -1,0 +1,71 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": ["**/.env.*local", "tsconfig.json", "pnpm-lock.yaml"],
+  "concurrency": "15",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "env": ["APOLLO_CODED_APP", "APOLLO_CODED_APP_PATH", "UIP_GO_PLATFORM_AUTH_*", "UIP_GO_AICHAT_*"],
+      "inputs": ["$TURBO_DEFAULT$", "!src/**/*.test.*", "!src/**/*.spec.*"],
+      "outputs": ["dist/**", ".next/**", "build/**", "storybook-static/**"]
+    },
+    "dev": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "persistent": true
+    },
+    "lint": {
+      "outputs": [],
+      "cache": false
+    },
+    "lint:fix": {
+      "outputs": [],
+      "cache": false
+    },
+    "lint:css": {
+      "outputs": []
+    },
+    "lint:css:fix": {
+      "outputs": []
+    },
+    "lint:deps": {
+      "outputs": []
+    },
+    "format": {
+      "cache": false
+    },
+    "format:check": {
+      "cache": false
+    },
+    "typecheck": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "cache": false
+    },
+    "test:coverage": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"],
+      "cache": false
+    },
+    "test:visual": {
+      "outputs": ["test-results/**", "playwright-report/**"],
+      "cache": false
+    },
+    "storybook": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "persistent": true
+    },
+    "storybook:build": {
+      "dependsOn": ["^build"],
+      "env": ["APOLLO_CODED_APP", "APOLLO_CODED_APP_PATH"],
+      "outputs": ["storybook-static/**"]
+    },
+    "clean": {
+      "cache": false
+    }
+  }
+}

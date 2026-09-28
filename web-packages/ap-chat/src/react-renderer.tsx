@@ -1,0 +1,90 @@
+import createCache from '@emotion/cache';
+import { CacheProvider } from '@emotion/react';
+import { ApChat as ReactApChat } from '@uipath/apollo-react/ap-chat';
+
+import type { ApChatProperties } from './types';
+
+// Singleton observer to watch document.head for styles that need to be mirrored
+let globalObserver: MutationObserver | null = null;
+const containerCallbacks = new Map<ShadowRoot, (node: Node) => void>();
+
+function getOrCreateGlobalObserver() {
+  if (!globalObserver) {
+    globalObserver = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (node.nodeName === 'STYLE') {
+            // Mirror any style elements added to document.head into all registered shadow roots
+            containerCallbacks.forEach((callback) => {
+              callback(node);
+            });
+          }
+        });
+      });
+    });
+
+    globalObserver.observe(document.head, {
+      childList: true,
+    });
+  }
+  return globalObserver;
+}
+
+/**
+ * Creates a React renderer function with Shadow DOM support.
+ * Emotion cache is configured to inject styles directly into the Shadow DOM.
+ * MutationObserver mirrors any additional styles from document.head (e.g., MUI base styles).
+ */
+export function createReactRenderer(shadowRoot: ShadowRoot, portalContainer: HTMLElement) {
+  // Create Emotion cache that injects styles directly into the Shadow DOM
+  const emotionCache = createCache({
+    key: 'ap-chat',
+    container: shadowRoot,
+    prepend: true,
+  });
+
+  // Mirror styles from document.head to shadowRoot for styles injected by other libraries
+  const handleStyleNode = (node: Node) => {
+    const clone = node.cloneNode(true) as HTMLStyleElement;
+    shadowRoot.appendChild(clone);
+  };
+
+  containerCallbacks.set(shadowRoot, handleStyleNode);
+
+  // Initialize the shared observer
+  getOrCreateGlobalObserver();
+
+  return function ReactRenderer(props: ApChatProperties) {
+    const { chatServiceInstance, locale = 'en', theme = 'light' } = props;
+
+    // Enable internal MUI ThemeProvider for web component usage
+    // Pass dedicated portalContainer so tooltips/popovers can extend beyond content bounds
+    // The portalContainer is positioned at Shadow DOM root with fixed positioning
+    // This prevents clipping in embedded mode while being a real HTMLElement for MUI
+    return (
+      <CacheProvider value={emotionCache}>
+        <ReactApChat
+          chatServiceInstance={chatServiceInstance}
+          locale={locale}
+          theme={theme}
+          portalContainer={portalContainer}
+          enableInternalThemeProvider={true}
+          disableEmbeddedPortal={true}
+        />
+      </CacheProvider>
+    );
+  };
+}
+
+/**
+ * Cleanup function to unregister a shadow root from style mirroring
+ */
+export function cleanupReactRenderer(shadowRoot: ShadowRoot) {
+  containerCallbacks.delete(shadowRoot);
+
+  // If no more containers, disconnect the global observer
+  if (containerCallbacks.size === 0 && globalObserver) {
+    globalObserver.disconnect();
+    globalObserver = null;
+  }
+}

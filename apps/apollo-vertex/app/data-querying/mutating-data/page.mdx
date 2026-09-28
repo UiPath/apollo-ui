@@ -1,0 +1,246 @@
+# Mutating Data
+
+Create, update, and delete records in your UiPath Data Service entities using collection mutations.
+
+## Overview
+
+All data mutations are performed through the `api.collections.<entityName>` methods. The mutation interface follows TanStack DB patterns with `insert`, `update`, and `delete` operations that return transaction objects.
+
+```tsx
+import { useSolution } from '@uipath/vs-core';
+
+function MyComponent() {
+  const { api } = useSolution();
+
+  // Access mutation methods on any collection
+  const collection = api.collections.Invoices;
+
+  // collection.insert()
+  // collection.update()
+  // collection.delete()
+}
+```
+
+## Inserting Records
+
+Use `insert` to create new records in your collection:
+
+```tsx
+function CreateInvoice() {
+  const { api } = useSolution();
+
+  async function handleCreate() {
+    const tx = api.collections.Invoices.insert({
+      InvoiceNumber: 'INV-001',
+      Amount: 1500.00,
+      Status: 'Pending',
+      CustomerName: 'Acme Corp',
+    });
+
+    // Wait for the record to be persisted
+    await tx.isPersisted.promise;
+    console.log('Invoice created!');
+  }
+
+  return <button onClick={handleCreate}>Create Invoice</button>;
+}
+```
+
+### Inserting Multiple Records
+
+Pass an array to insert multiple records in a single transaction:
+
+```tsx
+async function bulkCreate() {
+  const { api } = useSolution();
+
+  const tx = api.collections.Invoices.insert([
+    { InvoiceNumber: 'INV-001', Amount: 1500.00, Status: 'Pending' },
+    { InvoiceNumber: 'INV-002', Amount: 2300.00, Status: 'Pending' },
+    { InvoiceNumber: 'INV-003', Amount: 800.00, Status: 'Pending' },
+  ]);
+
+  await tx.isPersisted.promise;
+}
+```
+
+## Updating Records
+
+Use `update` with a callback function to modify existing records. The callback receives a draft object that you can mutate directly:
+
+```tsx
+function UpdateInvoice({ invoiceId }: { invoiceId: string }) {
+  const { api } = useSolution();
+
+  async function handleStatusChange(newStatus: string) {
+    const tx = api.collections.Invoices.update(invoiceId, (draft) => {
+      draft.Status = newStatus;
+    });
+
+    await tx.isPersisted.promise;
+    console.log('Invoice updated!');
+  }
+
+  return (
+    <button onClick={() => handleStatusChange('Approved')}>
+      Approve Invoice
+    </button>
+  );
+}
+```
+
+### Updating Multiple Fields
+
+Modify any number of fields within the update callback:
+
+```tsx
+async function processInvoice(invoiceId: string) {
+  const { api } = useSolution();
+
+  const tx = api.collections.Invoices.update(invoiceId, (draft) => {
+    draft.Status = 'Processed';
+    draft.ProcessedAt = new Date().toISOString();
+    draft.ProcessedBy = 'current-user-id';
+  });
+
+  await tx.isPersisted.promise;
+}
+```
+
+### Updating Multiple Records
+
+Pass an array of keys to update multiple records:
+
+```tsx
+async function bulkApprove(invoiceIds: string[]) {
+  const { api } = useSolution();
+
+  const tx = api.collections.Invoices.update(invoiceIds, (drafts) => {
+    drafts.forEach(draft => {
+      draft.Status = 'Approved';
+      draft.ApprovedAt = new Date().toISOString();
+    });
+  });
+
+  await tx.isPersisted.promise;
+}
+```
+
+## Deleting Records
+
+Use `delete` to remove records from your collection:
+
+```tsx
+function DeleteInvoice({ invoiceId }: { invoiceId: string }) {
+  const { api } = useSolution();
+
+  async function handleDelete() {
+    const tx = api.collections.Invoices.delete(invoiceId);
+
+    await tx.isPersisted.promise;
+    console.log('Invoice deleted!');
+  }
+
+  return <button onClick={handleDelete}>Delete Invoice</button>;
+}
+```
+
+### Deleting Multiple Records
+
+Pass an array of keys to delete multiple records:
+
+```tsx
+async function bulkDelete(invoiceIds: string[]) {
+  const { api } = useSolution();
+
+  const tx = api.collections.Invoices.delete(invoiceIds);
+
+  await tx.isPersisted.promise;
+}
+```
+
+## Transaction Objects
+
+All mutation methods return a transaction object with useful properties:
+
+```tsx
+const tx = api.collections.Invoices.insert({ /* data */ });
+
+// Access the mutations in this transaction
+console.log(tx.mutations);
+
+// Wait for persistence to complete
+await tx.isPersisted.promise;
+```
+
+## Optimistic Updates
+
+Mutations are applied optimistically to the local state immediately. This means your UI updates instantly while the change is being persisted to the server in the background.
+
+```tsx
+function OptimisticExample() {
+  const { api } = useSolution();
+  const { data: invoices } = useLiveQuery(q =>
+    q.from({ invoices: api.collections.Invoices })
+  );
+
+  function handleUpdate(id: string) {
+    // UI updates immediately
+    api.collections.Invoices.update(id, (draft) => {
+      draft.Status = 'Updated';
+    });
+    // No need to await - the change is already reflected in `invoices`
+  }
+
+  return <div>{/* UI shows updated state immediately */}</div>;
+}
+```
+
+## Error Handling
+
+Handle persistence errors by catching the `isPersisted` promise:
+
+```tsx
+async function safeUpdate(invoiceId: string) {
+  const { api } = useSolution();
+
+  try {
+    const tx = api.collections.Invoices.update(invoiceId, (draft) => {
+      draft.Status = 'Approved';
+    });
+
+    await tx.isPersisted.promise;
+    console.log('Successfully persisted');
+  } catch (error) {
+    console.error('Failed to persist:', error);
+    // Handle error - the optimistic update may need to be reverted
+  }
+}
+```
+
+## Direct Entity SDK Methods
+
+For advanced use cases, you can also use the direct entity SDK methods:
+
+```tsx
+const { api } = useSolution();
+
+// Insert via entity SDK
+await api.entities.insertById('Invoices', [
+  { InvoiceNumber: 'INV-001', Amount: 1500.00 }
+]);
+
+// Update via entity SDK
+await api.entities.updateById('Invoices', [
+  { Id: 'invoice-123', InvoiceNumber: 'INV-001-UPDATED' }
+]);
+
+// Delete via entity SDK
+await api.entities.deleteById('Invoices', ['invoice-123', 'invoice-456']);
+```
+
+## Learn More
+
+For advanced mutation patterns and the full TanStack DB API, see the official documentation:
+
+- [TanStack DB Collections](https://tanstack.com/db/latest/docs/guides/collections)

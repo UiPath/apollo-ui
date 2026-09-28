@@ -1,0 +1,632 @@
+import { AiChatTemplateLazy } from '@/templates/AiChatTemplateLazy';
+
+# AI Chat
+
+A composable AI chat UI component for Apollo Vertex. Built with React, TypeScript, and Tailwind CSS. Designed to work with [TanStack AI](https://tanstack.com/ai)
+
+<div className="not-prose my-8 h-[70vh] min-h-[500px] max-h-[900px] flex w-full flex-col">
+  <AiChatTemplateLazy />
+</div>
+
+## Features
+
+- **TanStack AI Integration** — Works with `useChat` from `@tanstack/ai-react` and `UIMessage` types
+- **One-prop wiring** — Pass `messages` and `status` from `useChat`; the component owns the message loop, scroll, and per-message action wiring
+- **Type-Safe Tool Rendering** — Pass a `renderToolPart` callback; TypeScript narrows `part.output` automatically when you check `part.name`
+- **AgentHub Adapter** — Built-in adapter for the UiPath AgentHub normalized LLM endpoint (OpenAI + Anthropic models)
+- **Conversational Agent Adapter** — Built-in adapter for a deployed UiPath Conversational Agent, with session management
+- **Markdown Rendering** — Renders assistant responses with GitHub Flavored Markdown
+- **Data Fabric Table Tool** — Display entity data as filterable tables with list, search, and range filters, and multi-entity joins
+- **Data Fabric Distribution Tool** — Render histogram charts for numeric or datetime fields with optional aggregations, filters, and joins
+- **Data Fabric Bar Chart Tool** — Render bar charts that break one or more metrics down by a categorical (string) dimension, with optional aggregations, filters, joins, and grouped bars when multiple metrics are passed
+- **Data Fabric Line Chart Tool** — Render time-series line charts over a datetime field with optional aggregations, filters, and joins
+- **Data Fabric Multi-Line Chart Tool** — Compare two metrics on a shared datetime axis, each with its own Y axis, totals label, and join support
+- **Data Fabric KPI Tool** — Render a single scalar metric (count, sum, average, min, max) with optional filters and joins
+- **Suggestion Buttons** — Interactive choice buttons rendered from tool results
+- **File Attachments** — Opt-in via `acceptedFileTypes`; users pick files, paste from the clipboard, drag-and-drop onto the chat, preview images in a fullscreen dialog (both in the input chips and in sent message bubbles), and the resulting `ContentPart[]` arrives in the `onSendMessage` callback
+- **Text Selection → Ask AI** — Opt-in via `enableTextSelection`; selecting any text in the conversation pops up a floating "Ask AI" pill that quotes the selection into the input as a markdown blockquote so the LLM sees the user's question alongside its source context
+
+## Installation
+
+Apollo Vertex components are published to a custom shadcn registry under the `@uipath` namespace. Before running the `add` command, register the namespace once in your project's `components.json` so shadcn knows where to fetch from (otherwise the CLI will prompt you for a registry URL):
+
+```json
+{
+  "registries": {
+    "@uipath": "https://engdogfood.staging.uipath.host/apollo-vertex/r/{name}.json"
+  }
+}
+```
+
+Then install the component:
+
+```bash
+npx shadcn@latest add @uipath/ai-chat
+```
+
+> This `registries` setup is a one-time configuration per project — every `@uipath/*` component on this site uses the same alias.
+
+## Quick Start
+
+```tsx
+import { useChat } from '@tanstack/ai-react';
+import { AiChat } from '@/components/ui/ai-chat/components/ai-chat';
+import { createAgentHubConnection } from '@/components/ui/ai-chat/adapters/agenthub/adapter';
+
+function BasicChat() {
+  const connection = createAgentHubConnection({
+    baseUrl: 'https://cloud.uipath.com/{org}/{tenant}/agenthub_/llm/api',
+    model: { vendor: 'openai' as const, name: 'gpt-4o' },
+    accessToken: () => getAccessToken(),
+    systemPrompt: 'You are a helpful assistant.',
+  });
+
+  const { messages, sendMessage, status, stop, clear, error } = useChat({
+    connection,
+  });
+
+  return (
+    <AiChat
+      messages={messages}
+      status={status}
+      onSendMessage={(text) => sendMessage(text)}
+      onStop={stop}
+      onClearChat={clear}
+      error={error}
+      title="AI Assistant"
+    />
+  );
+}
+```
+
+## Tool Rendering
+
+Define tools with `toolDefinition`, pass the input through as output in your client tool, then provide a `renderToolPart` callback to `<AiChat>`. The part is already narrowed to tool-call parts; check `part.name` and TypeScript narrows `part.output` to the right tool's output type automatically.
+
+```tsx
+import { z } from 'zod';
+import { toolDefinition } from '@tanstack/ai';
+import { clientTools } from '@tanstack/ai-client';
+import { useChat } from '@tanstack/ai-react';
+import { AiChat } from '@/components/ui/ai-chat/components/ai-chat';
+
+// 1. Define tools — output passes input through for rendering
+const showResultsInput = z.object({
+  entityName: z.string(),
+  columns: z.array(z.string()),
+});
+
+const showResultsDef = toolDefinition({
+  name: 'show_results',
+  description: 'Display a results table',
+  inputSchema: showResultsInput,
+  outputSchema: showResultsInput,
+});
+
+const showResults = showResultsDef.client((input) => input);
+const toolDefs = clientTools(showResults);
+
+// 2. Wire it up — return tool output from renderToolPart
+function ChatWithTools() {
+  const { messages, sendMessage, status, stop } = useChat({
+    connection,
+    tools: toolDefs,
+  });
+
+  return (
+    <AiChat
+      messages={messages}
+      status={status}
+      onSendMessage={(text) => sendMessage(text)}
+      onStop={stop}
+      renderToolPart={(part) => {
+        // TypeScript narrows part.output when you check part.name
+        if (part.name === 'show_results' && part.output) {
+          return <ResultsTable entity={part.output.entityName} columns={part.output.columns} />;
+        }
+        return null;
+      }}
+    />
+  );
+}
+```
+
+`<AiChat>` keys each rendered part by `part.id`, so you don't need to add `key` yourself.
+
+## Message Actions
+
+Each message can show inline actions — copy, thumbs-up/down feedback, regenerate, and edit. Pass the optional callbacks directly to `<AiChat>`; it wires them to the right messages (assistant for feedback/regenerate, user for edit) and the action row appears automatically.
+
+```tsx
+const { messages, sendMessage, reload, status, stop } = useChat({ connection });
+
+<AiChat
+  messages={messages}
+  status={status}
+  onSendMessage={(text) => sendMessage(text)}
+  onStop={stop}
+  onFeedback={(messageId, type) => {
+    // type: 'positive' | 'negative' — send to your analytics / feedback endpoint
+    void recordFeedback({ messageId, type });
+  }}
+  getFeedback={(messageId) => feedbackById[messageId] ?? null}
+  onRegenerate={() => void reload()}
+  onEditMessage={(_messageId, content) => {
+    // Re-runs the conversation with the edited user message
+    void sendMessage(content);
+  }}
+/>
+```
+
+Copy is always available and needs no wiring. Feedback and edit only render when their callbacks are supplied.
+
+## File Attachments
+
+Set `acceptedFileTypes` to enable the attachments UI. The paperclip menu, clipboard-paste handling, drag-and-drop onto the chat, the chip list, the in-bubble thumbnails, and the image preview dialog all turn on together; omit the prop and the feature stays off.
+
+Attached files arrive in `onSendMessage` as wire-ready TanStack AI `ContentPart`s — splice them straight into `sendMessage({ content: [...] })` for a multimodal request:
+
+```tsx
+<AiChat
+  messages={messages}
+  status={status}
+  onSendMessage={(text, parts) => {
+    if (!parts?.length) {
+      void sendMessage(text);
+      return;
+    }
+    void sendMessage({
+      content: [
+        ...(text ? [{ type: 'text' as const, content: text }] : []),
+        ...parts,
+      ],
+    });
+  }}
+  onStop={stop}
+  acceptedFileTypes="image/*"
+/>
+```
+
+`acceptedFileTypes` is passed straight to the underlying `<input accept>` — any HTML accept-string works. Files outside the supported set are silently dropped at conversion time (today only `image/*` produces a `ContentPart`):
+
+- `"image/*"` — images only
+
+Attached images render with a clickable thumbnail chip that opens a fullscreen preview (Esc or backdrop click to close), and the same thumbnails appear in the user's message bubble after sending. Clipboard paste — including OS screenshots — attaches files automatically, and dragging files anywhere over the chat container highlights it with a dashed border before accepting the drop.
+
+## Text Selection → Ask AI
+
+Set `enableTextSelection` to enable selection-driven follow-ups. Selecting any text inside the message scroll area pops up a floating "Ask AI" pill above the selection; clicking it pre-fills the input with the selection as a markdown blockquote, focuses the textarea, and lets the user append their question. The quote rides along to the LLM as message content so the model has the source context, and renders as a styled blockquote in the user's bubble.
+
+```tsx
+<AiChat
+  messages={messages}
+  status={status}
+  onSendMessage={(text) => sendMessage(text)}
+  onStop={stop}
+  enableTextSelection
+/>
+```
+
+The pill is scoped to the message scroll container — selections in the header, input, or outside the chat are ignored. It uses absolute positioning inside the scroll area, so it tracks the text as the user scrolls without any extra wiring. Clicking it preserves the selection through the click so the captured text is read reliably, then collapses the selection after.
+
+## AgentHub Adapter
+
+The built-in adapter for the **UiPath AgentHub** normalized LLM endpoint. It converts TanStack AI `UIMessage` arrays to the AgentHub wire format, calls the endpoint, and parses the SSE response back into AG-UI `StreamChunk` events.
+
+```tsx
+import { createAgentHubConnection, type AgentHubAdapterConfig } from '@/components/ui/ai-chat/adapters/agenthub/adapter';
+
+const connection = createAgentHubConnection({
+  baseUrl: 'https://cloud.uipath.com/{org}/{tenant}/agenthub_/llm/api',
+  model: { vendor: 'openai', name: 'gpt-4o' },
+  accessToken: () => getAccessToken(),
+  systemPrompt: 'You are a helpful assistant.',
+  maxTokens: 2048,
+  temperature: 0.7,
+  tools: toolDefs,
+});
+```
+
+The `model.vendor` field controls wire-format differences:
+- **`"openai"`** — flat tool definitions (`{ name, description, parameters }`)
+- **`"anthropic"`** — Anthropic tool format (`{ type: "custom", input_schema }`), non-empty assistant content on tool-call messages
+- The `X-UiPath-LlmGateway-NormalizedApi-ModelName` header is always sent for routing
+- Responses are always OpenAI-compatible SSE regardless of the underlying model
+
+---
+
+## Conversational Agent Adapter
+
+The built-in adapter for a deployed **UiPath Conversational Agent**. It opens a session against the agent, forwards the latest user message, and bridges the agent's streaming response back into TanStack AI `StreamChunk` events.
+
+```tsx
+import { useChat } from '@tanstack/ai-react';
+import { UiPath } from '@uipath/uipath-typescript/core';
+import {
+  createConversationalAgentConnection,
+  type ConversationalAgentAdapterConfig,
+} from '@/components/ui/ai-chat/adapters/conversational-agent/adapter';
+
+const sdk = new UiPath({ /* baseUrl, accessToken, ... */ });
+
+const connection = createConversationalAgentConnection({
+  sdk,
+  agentId,   // number — the deployed agent id
+  folderId,  // number — the folder the agent lives in
+});
+
+const { messages, sendMessage, status, stop, clear, error } = useChat({
+  connection,
+});
+
+// Dispose the session when the connection is no longer needed
+useEffect(() => () => connection.dispose(), [connection]);
+```
+
+Notes:
+- The adapter manages a single session per connection — call `connection.dispose()` when unmounting, or key the component by agent id so a new connection is created on switch.
+- Tools are driven by the agent itself, not by the client — the `tools` option is not used with this adapter.
+- Only the latest user message is sent per turn; prior history is tracked on the agent server-side.
+
+---
+
+## Data Fabric Table Tool
+
+The `data_fabric_table` tool renders entity data as interactive tables powered by the `data-fabric-adapter` registry item paired with the `table-chart` component. It supports server-side **filtering** — list filters, text search, and numeric ranges — so users can ask for filtered views directly in the chat.
+
+```tsx
+import {
+  createDataFabricTableTool,
+  dataFabricTableClient,
+} from '@/components/ui/ai-chat/tools/data-fabric-table';
+
+const tableTool = createDataFabricTableTool({
+  entities,           // Record<string, Entity> — entity metadata with field names and types
+  accessToken,        // Bearer token for Data Fabric API
+  dataFabricBaseUrl,  // Base URL for Data Fabric proxy
+});
+
+// Use dataFabricTableClient in your tools array, tableTool.toolPrompt in your system prompt,
+// and tableTool.renderTable(part.output, part.id) in your renderToolPart callback.
+```
+
+### Filter types
+
+The LLM can pass filters based on the user's request:
+
+- **List filter** — match or exclude specific values: `"show invoices where Status is Pending"`
+- **Search filter** — text pattern matching (contains, startsWith, endsWith): `"find customers starting with A"`
+- **Range filter (numeric)** — numeric min/max: `"show orders over $200"`
+- **Range filter (datetime)** — ISO 8601 min/max: `"show orders from the last 30 days"`. The tool prompt is given today's date so the LLM can resolve relative phrases into absolute ISO dates before calling the tool.
+
+Filters are passed through the table configuration to the `data-fabric-adapter`, which translates them to Data Fabric query filters server-side.
+
+### Multi-entity joins
+
+The tool can combine data from related entities via the `joins` argument. The `entityName` field is the primary entity, and each join supplies the entity to attach and an `on` clause with `EntityName.FieldName` references:
+
+```json
+{
+  "entityName": "Invoice",
+  "dimensions": ["Invoice.Number", "Invoice.Total", "Customer.Name"],
+  "joins": [
+    {
+      "type": "LEFT",
+      "entity": "Customer",
+      "on": { "left": "Invoice.CustomerId", "right": "Customer.Id" }
+    }
+  ]
+}
+```
+
+When joins are present, dimensions and filter fields must use qualified `EntityName.FieldName` names (using the exact entity names from the Entity Reference — never aliases). The join condition goes in `joins[].on`; don't also add it as a filter.
+
+---
+
+## Data Fabric Distribution Tool
+
+The `data_fabric_distribution` tool renders a histogram from a Data Fabric entity by binning a single numeric or datetime field. It shares the filter and join system with the table tool, and adds an optional aggregation metric.
+
+```tsx
+import {
+  createDataFabricDistributionTool,
+  dataFabricDistributionClient,
+} from '@/components/ui/ai-chat/tools/data-fabric-distribution';
+
+const distributionTool = createDataFabricDistributionTool({
+  entities,           // Record<string, Entity> — entity metadata with field names and types
+  accessToken,        // Bearer token for Data Fabric API
+  dataFabricBaseUrl,  // Base URL for Data Fabric proxy
+});
+
+// Use dataFabricDistributionClient in your tools array, distributionTool.toolPrompt in your
+// system prompt, and distributionTool.renderDistribution(part.output, part.id) in your renderToolPart callback.
+```
+
+### Dimension
+
+The `dimension` is the field used for binning and must be **numeric** or **datetime**:
+
+- Datetime dimensions bin by time (e.g. orders per month).
+- Numeric dimensions bin by value range.
+
+### Metric
+
+Omit `metric` entirely for the default `COUNT` of records per bin. To plot an aggregated numeric field, pass `{ aggregation, field }`:
+
+- `COUNT` — records per bin (default; `field` optional, picks the primary key).
+- `SUM`, `AVG`, `MIN`, `MAX` — applied to a numeric `field`.
+
+```json
+{
+  "entityName": "Order",
+  "dimension": "OrderDate",
+  "metric": { "aggregation": "SUM", "field": "Total" }
+}
+```
+
+### Filters and joins
+
+Filters and joins use the same schemas as the table tool (including the new datetime range filter). When joins are present, the `dimension` and `metric.field` must use qualified `EntityName.FieldName` names.
+
+---
+
+## Data Fabric Bar Chart Tool
+
+The `data_fabric_bar` tool renders a bar chart from a Data Fabric entity, breaking one or more metrics down by a categorical (string) dimension. With a single metric, each category gets one bar. With multiple metrics, each category gets a grouped cluster — one bar per metric. It shares the metric, filter, and join system with the other Data Fabric chart tools.
+
+```tsx
+import {
+  createDataFabricBarTool,
+  dataFabricBarClient,
+} from '@/components/ui/ai-chat/tools/data-fabric-bar';
+
+const barTool = createDataFabricBarTool({
+  entities,           // Record<string, Entity> — entity metadata with field names and types
+  accessToken,        // Bearer token for Data Fabric API
+  dataFabricBaseUrl,  // Base URL for Data Fabric proxy
+});
+
+// Use dataFabricBarClient in your tools array, barTool.toolPrompt in your
+// system prompt, and barTool.renderBar(part.output, part.id) in your renderToolPart callback.
+```
+
+### When to use bar vs distribution vs line
+
+- **Bar** — categorical breakdown by a string field: *"orders by status"*, *"revenue by category"*, *"count by region"*. One bar per discrete value, or grouped bars when comparing multiple metrics across categories.
+- **Distribution** — histogram-style requests over numeric/datetime values: *"distribution of order amount"*, *"histogram of X"*.
+- **Line** — single-metric trends over a datetime axis: *"orders over time"*, *"revenue by month"*.
+
+### Dimension
+
+The `dimension` must be a **string** field. Numeric or datetime fields belong on a distribution or line chart.
+
+### Metrics
+
+Pass `metrics` as an array of metric specs. Omit it entirely for the default single `COUNT` of records per category.
+
+- `COUNT` — records per category (default; `field` optional, picks the primary key).
+- `SUM`, `AVG`, `MIN`, `MAX` — applied to a numeric `field`.
+
+With multiple metrics, the chart renders grouped bars — one cluster per dimension value, one bar per metric. Schema validation rejects duplicate `(aggregation, field)` pairs before the chart is rendered.
+
+```json
+{
+  "entityName": "Order",
+  "dimension": "Status",
+  "metrics": [
+    { "aggregation": "COUNT" },
+    { "aggregation": "SUM", "field": "Total" }
+  ]
+}
+```
+
+### Filters and joins
+
+Filter and join semantics are identical to the other Data Fabric tools. When joins are present, `dimension` and every metric `field` must use qualified `EntityName.FieldName` names.
+
+---
+
+## Data Fabric Line Chart Tool
+
+The `data_fabric_line` tool renders a line chart from a Data Fabric entity, plotting a metric over a **datetime** dimension. It shares the metric, filter, and join system with the distribution tool — the only constraint is that the dimension must be a datetime field.
+
+```tsx
+import {
+  createDataFabricLineTool,
+  dataFabricLineClient,
+} from '@/components/ui/ai-chat/tools/data-fabric-line';
+
+const lineTool = createDataFabricLineTool({
+  entities,           // Record<string, Entity> — entity metadata with field names and types
+  accessToken,        // Bearer token for Data Fabric API
+  dataFabricBaseUrl,  // Base URL for Data Fabric proxy
+});
+
+// Use dataFabricLineClient in your tools array, lineTool.toolPrompt in your
+// system prompt, and lineTool.renderLine(part.output, part.id) in your renderToolPart callback.
+```
+
+### When to use line vs distribution
+
+- **Line** — trend / time-series questions: *"orders over time"*, *"revenue trend by month"*, *"growth across quarters"*. Always datetime on the X axis.
+- **Distribution** — histogram-style requests: *"distribution of order amount"*, *"histogram of X"*, numeric value-range binning. Either numeric or datetime dimension.
+
+For comparing **two or more metrics** on the same time axis, use [`data_fabric_multi_line`](#data-fabric-multi-line-chart-tool) instead.
+
+### Metric, filters, and joins
+
+Metric, filter, and join semantics are identical to the distribution tool. Omit `metric` for `COUNT`, or pass `{ aggregation, field }` for `SUM` / `AVG` / `MIN` / `MAX` of a numeric field. When joins are present, `dimension` and `metric.field` must use qualified `EntityName.FieldName` names.
+
+---
+
+## Data Fabric Multi-Line Chart Tool
+
+The `data_fabric_multi_line` tool renders two lines on a shared datetime X axis. The first metric uses the left Y axis (and gets its own color and totals label at the top); the second uses the right Y axis. Exactly two metrics — pass three and the tool call is rejected.
+
+```tsx
+import {
+  createDataFabricMultiLineTool,
+  dataFabricMultiLineClient,
+} from '@/components/ui/ai-chat/tools/data-fabric-multi-line';
+
+const multiLineTool = createDataFabricMultiLineTool({
+  entities,           // Record<string, Entity> — entity metadata with field names and types
+  accessToken,        // Bearer token for Data Fabric API
+  dataFabricBaseUrl,  // Base URL for Data Fabric proxy
+});
+
+// Use dataFabricMultiLineClient in your tools array, multiLineTool.toolPrompt in your
+// system prompt, and multiLineTool.renderMultiLine(part.output, part.id) in your renderToolPart callback.
+```
+
+### Metrics
+
+Pass an array of exactly two metrics with distinct `(aggregation, field)` pairs. Each entry uses the same shape as the line tool — `{ aggregation: "COUNT" }` for record counts (optional `field`), or `{ aggregation, field }` for `SUM` / `AVG` / `MIN` / `MAX` of a numeric field. Schema validation rejects duplicate `(aggregation, field)` pairs before the chart is rendered. If duplicates only emerge after field resolution (e.g., a `COUNT` with an explicit `field` that resolves to the same primary key as a default `COUNT`), the chart shows its no-data state instead. Order matters: the first metric gets the left axis and primary color; put the metric you want to emphasize first.
+
+```json
+{
+  "entityName": "Order",
+  "dimension": "OrderDate",
+  "metrics": [
+    { "aggregation": "COUNT" },
+    { "aggregation": "SUM", "field": "Total" }
+  ]
+}
+```
+
+### When to use multi-line vs line
+
+- **Multi-line** — comparing two metrics on the same time axis: *"orders count and revenue over time"*, *"min vs max price by month"*.
+- **Line** — a single metric over time. Don't use multi-line for a single metric.
+- For 3+ metrics, render multiple charts (one per metric, or pair them) — the underlying chart only has two Y axes.
+
+### Filters and joins
+
+Identical to the line tool. Filter and join schemas are shared, and qualified `EntityName.FieldName` names are required for the dimension and every metric `field` when joins are present.
+
+---
+
+## Data Fabric KPI Tool
+
+The `data_fabric_kpi` tool renders a single scalar value — one aggregated metric across an entity, with no dimension or breakdown. It shares the metric, filter, and join system with the other Data Fabric chart tools.
+
+```tsx
+import {
+  createDataFabricKpiTool,
+  dataFabricKpiClient,
+} from '@/components/ui/ai-chat/tools/data-fabric-kpi';
+
+const kpiTool = createDataFabricKpiTool({
+  entities,           // Record<string, Entity> — entity metadata with field names and types
+  accessToken,        // Bearer token for Data Fabric API
+  dataFabricBaseUrl,  // Base URL for Data Fabric proxy
+});
+
+// Use dataFabricKpiClient in your tools array, kpiTool.toolPrompt in your
+// system prompt, and kpiTool.renderKpi(part.output, part.id) in your renderToolPart callback.
+```
+
+### When to use KPI vs other chart tools
+
+- **KPI** — single-number questions: *"how many orders are open"*, *"total revenue"*, *"average invoice amount"*, *"max order total"*. No dimension or breakdown.
+- **Line / Distribution** — when the user wants the value sliced across a time or value axis (*"over time"*, *"by month"*, *"distribution of"*).
+- **Table** — when the user wants individual records.
+
+### Metric
+
+Omit `metric` entirely for the default `COUNT` of records. To plot an aggregated numeric field, pass `{ aggregation, field }`:
+
+- `COUNT` — total record count (default; `field` optional, picks the primary key).
+- `SUM`, `AVG`, `MIN`, `MAX` — applied to a numeric `field`.
+
+```json
+{
+  "entityName": "Order",
+  "metric": { "aggregation": "SUM", "field": "Total" }
+}
+```
+
+### Filters and joins
+
+Filter and join schemas are shared with the other Data Fabric tools (including the datetime range filter). When joins are present, the `metric.field` and any filter fields must use qualified `EntityName.FieldName` names.
+
+---
+
+## Suggestion Buttons
+
+The `presentChoices` tool renders interactive suggestion buttons. Define the tool with a Zod schema, and render choices from `renderToolPart`:
+
+```tsx
+import {
+  presentChoicesClient,
+  renderChoices,
+  CHOICES_TOOL_PROMPT,
+} from '@/components/ui/ai-chat/tools/choices';
+
+// Add presentChoicesClient to your tools array and CHOICES_TOOL_PROMPT to your system prompt.
+
+<AiChat
+  messages={messages}
+  status={status}
+  onSendMessage={(text) => sendMessage(text)}
+  onStop={stop}
+  renderToolPart={(part) => {
+    if (part.name === 'presentChoices' && part.output) {
+      return renderChoices(part.output, {
+        onAction: (text) => sendMessage(text),
+      });
+    }
+    return null;
+  }}
+/>
+```
+
+> **Try it out** — type *"give me some choices"* in the demo above to see suggestion buttons in action.
+
+
+---
+
+## API Reference
+
+### `<AiChat>`
+
+Chat shell component. Owns the message loop, scroll, input, loading indicator, suggestions, errors, and per-message action wiring. Generic over the connection's tools (`AiChat<TTools>`) — pass `UIMessage<TTools>[]` straight from `useChat` and `renderToolPart` gets typed narrowing on `part.name`/`part.output`.
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `messages` | `UIMessage<TTools>[]` | required | Messages from `useChat` |
+| `status` | `'ready' \| 'submitted' \| 'streaming' \| 'error'` | required | Chat lifecycle state from `useChat` |
+| `onSendMessage` | `(content: string, parts?: ContentPart[]) => void` | required | Send handler. `parts` is populated when `acceptedFileTypes` is set and the user attached anything. Attachments arrive as TanStack AI `ContentPart`s (currently `ImagePart` only — files outside the supported set are silently dropped) ready to splice into `sendMessage({ content: [...] })` |
+| `onStop` | `() => void` | required | Stop/abort handler |
+| `renderToolPart` | `(part: ToolCallPart<TTools>) => ReactNode` | — | Render tool output for an assistant message. Check `part.name` to narrow `part.output` |
+| `onClearChat` | `() => void` | — | Shows a "New conversation" item in the header dropdown when provided |
+| `onRetry` | `() => void` | — | Retry handler shown next to the inline error banner |
+| `onFeedback` | `(messageId: string, type: 'positive' \| 'negative') => void` | — | Thumbs-up/down callback. Feedback buttons only render when provided |
+| `getFeedback` | `(messageId: string) => 'positive' \| 'negative' \| null \| undefined` | — | Resolves the saved feedback for a message — drives the pressed state |
+| `onRegenerate` | `() => void` | — | Regenerate the last assistant response |
+| `onEditMessage` | `(messageId: string, content: string) => void` | — | Save an edited user message. Edit affordance only renders when provided |
+| `assistantName` | `string` | `"AI Assistant"` | Label used for the assistant in copied conversation text |
+| `title` | `string` | — | Chat title in the header |
+| `header` | `ReactNode` | — | Custom header — replaces the default `<AiChatHeader>` |
+| `emptyState` | `ReactNode` | — | Custom empty state |
+| `suggestions` | `string[]` | — | Quick-start prompts shown below the input in the empty state |
+| `onSuggestionClick` | `(suggestion: string) => void` | — | Called when a suggestion is clicked (defaults to sending it as a message) |
+| `placeholder` | `string` | — | Input placeholder |
+| `acceptedFileTypes` | `string` | — | HTML accept-string for attachments (e.g. `"image/*"`). Setting this enables the paperclip menu, paste handler, drag-and-drop, chip list, in-bubble image thumbnails, and image preview; omit to disable attachments entirely |
+| `enableTextSelection` | `boolean` | `false` | Show a floating "Ask AI" pill when the user selects text in the message area. Clicking it quotes the selection into the input as a markdown blockquote so the LLM sees the source context alongside the user's question |
+| `error` | `Error \| null` | — | Inline error banner |
+
+### `AgentHubAdapterConfig`
+
+Configuration for the AgentHub adapter.
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `baseUrl` | `string` | required | AgentHub base URL (`/chat/completions` is appended) |
+| `model` | `{ vendor: 'openai' \| 'anthropic'; name: string }` | required | Model config |
+| `accessToken` | `string \| () => string \| null` | required | Bearer token (refreshed per request if function) |
+| `systemPrompt` | `string \| () => string` | — | System prompt prepended to messages (function form is called per request) |
+| `maxTokens` | `number` | `2048` | Max response tokens |
+| `temperature` | `number` | `0.7` | Sampling temperature |
+| `tools` | `ReadonlyArray<AnyClientTool>` | — | Client tools — wire-format definitions are derived automatically |

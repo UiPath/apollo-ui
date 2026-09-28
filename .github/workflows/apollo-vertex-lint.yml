@@ -1,0 +1,35 @@
+name: Apollo Vertex Lint
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/apollo-vertex/**"
+      - ".github/workflows/apollo-vertex-lint.yml"
+
+concurrency:
+  group: vertex-lint-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint & Format
+    runs-on: uipath-ubuntu-latest
+    if: github.event.pull_request.head.repo.fork == false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          persist-credentials: false
+
+      - name: Install Node dependencies
+        uses: ./.github/actions/install-node-deps
+
+      - name: Lint
+        run: pnpm --filter apollo-vertex lint
+
+      - name: Format check
+        run: pnpm --filter apollo-vertex format:check

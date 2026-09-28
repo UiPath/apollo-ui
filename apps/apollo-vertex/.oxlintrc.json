@@ -1,0 +1,125 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["unicorn", "typescript", "oxc", "react", "import"],
+  "jsPlugins": [
+    { "name": "shaggy-eslint-plugin-react", "specifier": "eslint-plugin-react" }
+  ],
+  "categories": {
+    "correctness": "error",
+    "perf": "error",
+    "suspicious": "error",
+    "pedantic": "error",
+    "style": "off"
+  },
+  "rules": {
+    "react/react-in-jsx-scope": "off",
+    "eslint/max-lines-per-function": "off",
+    "eslint-plugin-react/jsx-no-constructed-context-values": "off",
+    "import/max-dependencies": "off",
+    "typescript/explicit-function-return-type": "off",
+    "typescript/explicit-module-boundary-types": "off",
+    "react/jsx-filename-extension": ["error", { "extensions": [".tsx"] }],
+    "import/no-unassigned-import": ["error", { "allow": ["**/*.css"] }],
+    "eslint/no-warning-comments": "off",
+    "eslint/no-alert": "error",
+    "eslint/no-console": "error",
+    "eslint/no-empty": "error",
+    "eslint/eqeqeq": ["error", "smart"],
+    "eslint/no-empty-function": "error",
+    "eslint/no-iterator": "error",
+    "eslint/no-param-reassign": "error",
+    "eslint/no-proto": "error",
+    "eslint/max-lines": ["error", { "max": 400 }],
+    "eslint/no-regex-spaces": "error",
+    "eslint/no-sequences": "error",
+    "eslint/no-undefined": "error",
+    "eslint/no-var": "error",
+    "eslint/no-void": ["error", { "allowAsStatement": true }],
+    "import/no-amd": "error",
+    "import/no-commonjs": "error",
+    "import/no-cycle": "error",
+    "import/no-webpack-loader-syntax": "error",
+    "import/unambiguous": "error",
+    "oxc/bad-bitwise-operator": "error",
+    "oxc/no-barrel-file": "error",
+    "oxc/no-map-spread": "off",
+    "oxc/no-const-enum": "error",
+    "promise/spec-only": "error",
+    "react/button-has-type": "error",
+    "react/no-danger": "error",
+    "react/no-unknown-property": "error",
+    "react/only-export-components": "error",
+    "typescript/use-unknown-in-catch-callback-variable": "error",
+    "typescript/no-confusing-void-expression": "off",
+    "typescript/strict-boolean-expressions": "off",
+    "typescript/promise-function-async": "off",
+    "typescript/prefer-literal-enum-member": "error",
+    "typescript/no-var-requires": "error",
+    "typescript/no-require-imports": "error",
+    "typescript/no-non-null-assertion": "error",
+    "typescript/no-non-null-asserted-nullish-coalescing": "error",
+    "typescript/no-namespace": "error",
+    "typescript/no-import-type-side-effects": "error",
+    "typescript/no-explicit-any": "error",
+    "typescript/no-empty-object-type": "error",
+    "typescript/no-dynamic-delete": "error",
+    "unicorn/no-abusive-eslint-disable": "error",
+    "unicorn/no-document-cookie": "error",
+    "unicorn/no-length-as-slice-end": "error",
+    "unicorn/no-magic-array-flat-depth": "error",
+    "unicorn/no-useless-error-capture-stack-trace": "error",
+    "unicorn/prefer-modern-math-apis": "error",
+    "unicorn/prefer-node-protocol": "error",
+    "unicorn/prefer-number-properties": "error",
+    "eslint/no-restricted-imports": [
+      "error",
+      {
+        "patterns": [
+          {
+            "group": ["react"],
+            "importNamePattern": "^(useMemo|useCallback|memo)$",
+            "message": "Manual memoization is unnecessary — the React Compiler handles this automatically."
+          }
+        ]
+      }
+    ]
+  },
+  "settings": {},
+  "env": {
+    "builtin": true
+  },
+  "globals": {},
+  "ignorePatterns": [
+    ".dependency-cruiser.js",
+    "scripts/**",
+    "next-env.d.ts",
+    "types/**/*.d.ts"
+  ],
+  "overrides": [
+    {
+      "files": ["registry/**/*.tsx"],
+      "rules": {
+        "react/only-export-components": "off",
+        "shaggy-eslint-plugin-react/jsx-no-literals": ["error"]
+      }
+    },
+    {
+      "files": ["registry/**/*.{ts,tsx}"],
+      "rules": {
+        "eslint/no-restricted-imports": "off"
+      }
+    },
+    {
+      "files": ["app/**/layout.tsx", "app/**/page.tsx"],
+      "rules": {
+        "react/only-export-components": "off"
+      }
+    },
+    {
+      "files": ["templates/**/*.tsx"],
+      "rules": {
+        "eslint/max-lines": ["error", { "max": 500 }]
+      }
+    }
+  ]
+}

@@ -1,0 +1,93 @@
+import { ColorSwatch } from '@/app/_components/foundation/color-swatch';
+import { colorGroups, shadowTokens } from '@/lib/foundation-tokens';
+
+# Colors
+
+All color tokens are defined in `registry.json` as CSS custom properties in [OKLCH color space](https://oklch.com/), which provides perceptually uniform transitions between light and dark mode. Tokens are consumed as CSS variables and mapped to Tailwind utility classes via `theme.generated.css`.
+
+> **Source of truth:** `apps/apollo-vertex/registry.json` → auto-generates `app/theme.generated.css`. Do not edit `theme.generated.css` directly.
+
+## Usage
+
+```css
+/* CSS */
+background: var(--primary);
+color: var(--primary-foreground);
+```
+
+```tsx
+/* Tailwind */
+<div className="bg-primary text-primary-foreground" />
+```
+
+---
+
+{colorGroups.map((group) => (
+  <div key={group.heading}>
+    <h2>{group.heading}</h2>
+    <div className="not-prose grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 my-6">
+      {group.tokens.map((t) => (
+        <ColorSwatch key={t.token} {...t} />
+      ))}
+    </div>
+  </div>
+))}
+
+## Shadows
+
+Shadow tokens use a consistent structure: a diffuse ambient layer plus an offset layer. Shadow color adapts between modes automatically via `--shadow-color`.
+
+<div className="not-prose flex flex-col gap-4 my-6">
+  {shadowTokens.map((s) => (
+    <div key={s.token} className="flex items-center gap-6 rounded-lg border border-border bg-card p-4">
+      <div
+        className="shrink-0 h-14 w-14 rounded-lg bg-background"
+        style={{ boxShadow: `var(--${s.token})` }}
+        aria-label={s.label}
+      />
+      <div className="flex flex-col gap-0.5 min-w-0">
+        <span className="text-sm font-medium text-foreground">{s.label}</span>
+        <code className="text-xs font-mono text-muted-foreground">{`--${s.token}`}</code>
+      </div>
+    </div>
+  ))}
+</div>
+
+## AI Gradients
+
+Gradient tokens for the AI expression. Each swatch resolves the live token, so it reflects the current theme. The fill and strong gradients are the same in light and dark; the text and subtle gradients shift ramp steps per theme. See the [AI Toolkit](/guidelines/ai-toolkit) for usage and contrast guidance.
+
+<div className="not-prose my-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+  <div className="rounded-lg border border-border overflow-hidden">
+    <div className="h-20" style={{ background: 'var(--ai-gradient-fill)' }} />
+    <div className="p-3">
+      <span className="text-sm font-medium text-foreground">Fill</span>
+      <code className="block text-xs font-mono text-muted-foreground mt-1">--ai-gradient-fill</code>
+      <span className="block text-xs text-muted-foreground mt-1">Solid fill behind white text (passes AA).</span>
+    </div>
+  </div>
+  <div className="rounded-lg border border-border overflow-hidden">
+    <div className="h-20" style={{ background: 'var(--ai-gradient-text)' }} />
+    <div className="p-3">
+      <span className="text-sm font-medium text-foreground">Text</span>
+      <code className="block text-xs font-mono text-muted-foreground mt-1">--ai-gradient-text</code>
+      <span className="block text-xs text-muted-foreground mt-1">Gradient-clipped text; lifts to lighter steps in dark.</span>
+    </div>
+  </div>
+  <div className="rounded-lg border border-border overflow-hidden">
+    <div className="h-20" style={{ background: 'var(--ai-gradient-strong)' }} />
+    <div className="p-3">
+      <span className="text-sm font-medium text-foreground">Strong</span>
+      <code className="block text-xs font-mono text-muted-foreground mt-1">--ai-gradient-strong</code>
+      <span className="block text-xs text-muted-foreground mt-1">Decorative marks, icon fills, and glows.</span>
+    </div>
+  </div>
+  <div className="rounded-lg border border-border overflow-hidden">
+    <div className="h-20" style={{ background: 'var(--ai-gradient)' }} />
+    <div className="p-3">
+      <span className="text-sm font-medium text-foreground">Subtle</span>
+      <code className="block text-xs font-mono text-muted-foreground mt-1">--ai-gradient</code>
+      <span className="block text-xs text-muted-foreground mt-1">Soft surface tint and inset glow; deeper steps in dark.</span>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,197 @@
+/**
+ * Storybook decorators for canvas stories.
+ *
+ * Provides reusable decorators to reduce boilerplate in story files.
+ */
+
+import type { Decorator } from '@storybook/react';
+import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
+import { TooltipProvider } from '@uipath/apollo-wind';
+import type React from 'react';
+import { useMemo } from 'react';
+import { CanvasThemeProvider } from '../components/BaseCanvas';
+import { CanvasTooltipProviderMarker } from '../components/CanvasTooltip';
+import { NodeRegistryProvider } from '../core';
+import {
+  type ExecutionStateContextValue,
+  ExecutionStatusContext,
+  type ValidationStateContextValue,
+  ValidationStatusContext,
+} from '../hooks';
+import { type ElementStatus, ElementStatusValues } from '../types/execution';
+import type { ValidationErrorSeverity } from '../types/validation';
+import { defaultWorkflowManifest } from './manifests';
+
+/**
+ * Storybook theme globals that represent dark canvases. Kept in sync with the
+ * theme toolbar in `apps/storybook/.storybook/preview.tsx`.
+ */
+const DARK_THEMES = new Set(['dark', 'dark-hc', 'future-dark', 'vertex', 'canvas']);
+const EXECUTION_STATUSES = new Set<ElementStatus>(Object.values(ElementStatusValues));
+
+/**
+ * Props for execution state configuration.
+ * Re-export the context value type for convenience.
+ */
+export type ExecutionStateConfig = ExecutionStateContextValue;
+
+/**
+ * Props for the canvas providers decorator.
+ */
+export interface CanvasProvidersOptions {
+  /**
+   * Execution state configuration.
+   */
+  executionState?: ExecutionStateConfig;
+
+  /**
+   * Validation state configuration.
+   */
+  validationState?: ValidationStateContextValue;
+
+  /**
+   * Whether to wrap content in a fullscreen container.
+   * @default true
+   */
+  fullscreen?: boolean;
+
+  /**
+   * Custom container styles (only applies when fullscreen is true).
+   */
+  containerStyle?: React.CSSProperties;
+}
+
+/**
+ * Default execution state that extracts status from node ID.
+ * Node/Edge IDs like "node-InProgress" will return "InProgress" as the status.
+ */
+const defaultExecutionState: ExecutionStateConfig = {
+  getNodeExecutionState: (nodeId: string): ElementStatus | undefined =>
+    resolveStoryExecutionStatus(nodeId.split('-')[1]),
+  getEdgeExecutionState: (edgeId: string, _targetNodeId: string): ElementStatus | undefined =>
+    resolveStoryExecutionStatus(edgeId.split('-')[1]),
+};
+
+function resolveStoryExecutionStatus(value: string | undefined): ElementStatus | undefined {
+  return value && EXECUTION_STATUSES.has(value as ElementStatus)
+    ? (value as ElementStatus)
+    : undefined;
+}
+
+/**
+ * Default validation state that extracts status from node ID.
+ * Node/Edge IDs like "node-InProgress-ERROR" will return "ERROR" as the status.
+ */
+const defaultValidationStateContext: ValidationStateContextValue = {
+  getElementValidationState: (nodeId: string) => ({
+    validationStatus: nodeId.split('-')[2] as ValidationErrorSeverity,
+    validationError: undefined,
+  }),
+};
+
+/**
+ * Fullscreen container component.
+ */
+const FullscreenContainer = ({
+  children,
+  style,
+}: {
+  children: React.ReactNode;
+  style?: React.CSSProperties;
+}) => (
+  <div
+    style={{
+      height: '100vh',
+      width: '100vw',
+      ...style,
+    }}
+  >
+    {children}
+  </div>
+);
+
+/**
+ * Creates a decorator that wraps stories with canvas providers.
+ *
+ * This decorator sets up:
+ * - NodeRegistryProvider with specified registrations
+ * - ExecutionStatusContext for node execution states
+ * - ReactFlowProvider for React Flow functionality
+ * - Optional fullscreen container
+ *
+ * @example
+ * ```tsx
+ * // Use all registrations with defaults
+ * decorators: [withCanvasProviders()]
+ *
+ * // Use a specific preset
+ * decorators: [withCanvasProviders({ registrations: 'agent' })]
+ *
+ * // Use custom registrations
+ * decorators: [withCanvasProviders({ registrations: [myCustomRegistration] })]
+ *
+ * // Disable fullscreen container
+ * decorators: [withCanvasProviders({ fullscreen: false })]
+ * ```
+ */
+export function withCanvasProviders(options: CanvasProvidersOptions = {}): Decorator {
+  const {
+    executionState = defaultExecutionState,
+    validationState = defaultValidationStateContext,
+    fullscreen = true,
+    containerStyle,
+  } = options;
+
+  return function CanvasProvidersDecorator(Story, context) {
+    const manifest = useMemo(() => defaultWorkflowManifest, []);
+    const executions = useMemo(() => executionState, []);
+    const validations = useMemo(() => validationState, []);
+    const theme = context.globals.theme as string | undefined;
+    const isDarkMode = theme ? DARK_THEMES.has(theme) : false;
+
+    const content = (
+      <CanvasThemeProvider isDarkMode={isDarkMode}>
+        <NodeRegistryProvider manifest={manifest}>
+          <ExecutionStatusContext.Provider value={executions}>
+            <ValidationStatusContext.Provider value={validations}>
+              <ReactFlowProvider>
+                <TooltipProvider>
+                  <CanvasTooltipProviderMarker>
+                    <Story />
+                  </CanvasTooltipProviderMarker>
+                </TooltipProvider>
+              </ReactFlowProvider>
+            </ValidationStatusContext.Provider>
+          </ExecutionStatusContext.Provider>
+        </NodeRegistryProvider>
+      </CanvasThemeProvider>
+    );
+
+    if (fullscreen) {
+      return <FullscreenContainer style={containerStyle}>{content}</FullscreenContainer>;
+    }
+
+    return content;
+  };
+}
+
+/**
+ * Creates a decorator that wraps stories in a fullscreen container.
+ *
+ * @example
+ * ```tsx
+ * decorators: [withFullscreen()]
+ *
+ * // With custom styles
+ * decorators: [withFullscreen({ backgroundColor: '#f5f5f5' })]
+ * ```
+ */
+export function withFullscreen(style?: React.CSSProperties): Decorator {
+  return function FullscreenDecorator(Story) {
+    return (
+      <FullscreenContainer style={style}>
+        <Story />
+      </FullscreenContainer>
+    );
+  };
+}

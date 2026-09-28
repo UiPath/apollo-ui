@@ -1,0 +1,19 @@
+{
+  "rich-text-editor.bold": "Negrita",
+  "rich-text-editor.code": "Código",
+  "rich-text-editor.format-bold": "Formato negrita",
+  "rich-text-editor.format-code": "Código de formato",
+  "rich-text-editor.format-italic": "Formato Cursiva",
+  "rich-text-editor.format-ordered-list": "Formato de lista ordenada",
+  "rich-text-editor.format-strikethrough": "Formato Tachado",
+  "rich-text-editor.format-underline": "Formato subrayado",
+  "rich-text-editor.format-unordered-list": "Formato de lista desordenada",
+  "rich-text-editor.insert-link": "Insertar enlace",
+  "rich-text-editor.italic": "Itálica",
+  "rich-text-editor.link": "Vincular",
+  "rich-text-editor.loading": "Cargando",
+  "rich-text-editor.ordered-list": "Lista ordenada",
+  "rich-text-editor.strikethrough": "Tachado",
+  "rich-text-editor.underline": "Subrayar",
+  "rich-text-editor.unordered-list": "Lista desordenada"
+}

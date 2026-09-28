@@ -1,0 +1,377 @@
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { describe, expect, it, vi } from 'vitest';
+import type { NodeMenuItem } from '../../NodeContextMenu';
+import type { StageTaskItem } from '../StageNode.types';
+import { AdhocTaskItem } from './AdhocTask';
+
+const createTask = (id: string, label?: string): StageTaskItem => ({
+  id,
+  label: label ?? `Task ${id}`,
+  isAdhoc: true,
+});
+
+const createMenuItems = (onRemoveClick: () => void): NodeMenuItem[] => [
+  {
+    id: 'replace-task',
+    label: 'Replace task',
+    onClick: vi.fn(),
+  },
+  {
+    type: 'divider' as const,
+  },
+  {
+    id: 'remove-task',
+    label: 'Delete task',
+    onClick: onRemoveClick,
+  },
+];
+
+describe('AdhocTaskItem', () => {
+  const defaultProps = {
+    task: createTask('adhoc-1', 'Ad hoc Task'),
+    taskExecution: undefined,
+    isSelected: false,
+    onTaskClick: vi.fn(),
+  };
+
+  describe('Rendering', () => {
+    it('renders task with correct testid', () => {
+      render(<AdhocTaskItem {...defaultProps} />);
+
+      expect(screen.getByTestId('stage-task-card-adhoc-1')).toBeInTheDocument();
+    });
+
+    it('exposes exactly one element under the stage-task-card- prefix with every part rendered', () => {
+      const { container } = render(
+        <AdhocTaskItem
+          {...defaultProps}
+          taskExecution={{
+            status: 'Completed',
+            retryCount: 2,
+            retryDuration: '5s',
+            durationMs: 1234,
+          }}
+          getContextMenuItems={() => createMenuItems(vi.fn())}
+          onTaskPlay={vi.fn().mockResolvedValue(undefined)}
+          onToggleBreakpoint={vi.fn()}
+        />
+      );
+
+      const matches = container.querySelectorAll('[data-testid^="stage-task-card-"]');
+
+      expect(Array.from(matches, (match) => match.getAttribute('data-testid'))).toEqual([
+        'stage-task-card-adhoc-1',
+      ]);
+    });
+
+    it('renders task label', () => {
+      render(<AdhocTaskItem {...defaultProps} />);
+
+      expect(screen.getByText('Ad hoc Task')).toBeInTheDocument();
+    });
+
+    it('renders with selected state', () => {
+      render(<AdhocTaskItem {...defaultProps} isSelected={true} />);
+
+      expect(screen.getByTestId('stage-task-card-adhoc-1')).toBeInTheDocument();
+    });
+  });
+
+  describe('Task Click Behavior', () => {
+    it('calls onTaskClick when task is clicked', async () => {
+      const user = userEvent.setup();
+      const onTaskClick = vi.fn();
+
+      render(<AdhocTaskItem {...defaultProps} onTaskClick={onTaskClick} />);
+
+      const task = screen.getByTestId('stage-task-card-adhoc-1');
+      await user.click(task);
+
+      expect(onTaskClick).toHaveBeenCalledTimes(1);
+      expect(onTaskClick).toHaveBeenCalledWith(expect.any(Object), 'adhoc-1');
+    });
+
+    it('allows task click after menu is closed', async () => {
+      const user = userEvent.setup();
+      const onTaskClick = vi.fn();
+      const onRemove = vi.fn();
+      const menuItems = createMenuItems(onRemove);
+
+      render(
+        <AdhocTaskItem
+          {...defaultProps}
+          onTaskClick={onTaskClick}
+          getContextMenuItems={() => menuItems}
+        />
+      );
+
+      // Open menu
+      const menuButton = screen.getByTestId('stage-task-menu-adhoc-1');
+      await user.click(menuButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('Replace task')).toBeInTheDocument();
+      });
+
+      // Click a menu item to close it
+      const replaceItem = screen.getByText('Replace task');
+      await user.click(replaceItem);
+
+      await waitFor(() => {
+        expect(screen.queryByText('Replace task')).not.toBeInTheDocument();
+      });
+
+      // Now task click should work
+      const task = screen.getByTestId('stage-task-card-adhoc-1');
+      await user.click(task);
+
+      expect(onTaskClick).toHaveBeenCalledWith(expect.any(Object), 'adhoc-1');
+    });
+  });
+
+  describe('Play Button', () => {
+    it('does not render play button when onTaskPlay is not provided', () => {
+      render(<AdhocTaskItem {...defaultProps} />);
+
+      expect(screen.queryByTestId('stage-task-play-adhoc-1')).not.toBeInTheDocument();
+    });
+
+    it('renders play button when onTaskPlay is provided', () => {
+      const onTaskPlay = vi.fn().mockResolvedValue(undefined);
+
+      render(<AdhocTaskItem {...defaultProps} onTaskPlay={onTaskPlay} />);
+
+      expect(screen.getByTestId('stage-task-play-adhoc-1')).toBeInTheDocument();
+    });
+
+    it('calls onTaskPlay when play button is clicked', async () => {
+      const user = userEvent.setup();
+      const onTaskPlay = vi.fn().mockResolvedValue(undefined);
+
+      render(<AdhocTaskItem {...defaultProps} onTaskPlay={onTaskPlay} />);
+
+      const playButton = screen.getByTestId('stage-task-play-adhoc-1');
+      await user.click(playButton);
+
+      expect(onTaskPlay).toHaveBeenCalledWith('adhoc-1');
+    });
+
+    it('keeps pointer-down off the row, so pressing play cannot start a drag', () => {
+      const onTaskPlay = vi.fn().mockResolvedValue(undefined);
+      const onRowPointerDown = vi.fn();
+
+      render(
+        <div onPointerDown={onRowPointerDown}>
+          <AdhocTaskItem {...defaultProps} onTaskPlay={onTaskPlay} />
+        </div>
+      );
+
+      fireEvent.pointerDown(screen.getByTestId('stage-task-play-adhoc-1'));
+
+      expect(onRowPointerDown).not.toHaveBeenCalled();
+    });
+
+    it('does not trigger task click when play button is clicked', async () => {
+      const user = userEvent.setup();
+      const onTaskClick = vi.fn();
+      const onTaskPlay = vi.fn().mockResolvedValue(undefined);
+
+      render(<AdhocTaskItem {...defaultProps} onTaskClick={onTaskClick} onTaskPlay={onTaskPlay} />);
+
+      const playButton = screen.getByTestId('stage-task-play-adhoc-1');
+      await user.click(playButton);
+
+      expect(onTaskClick).not.toHaveBeenCalled();
+    });
+
+    it('shows loading indicator while task play is in progress', async () => {
+      const user = userEvent.setup();
+      let resolvePlay: () => void;
+      const onTaskPlay = vi.fn(
+        () =>
+          new Promise<void>((resolve) => {
+            resolvePlay = resolve;
+          })
+      );
+
+      render(<AdhocTaskItem {...defaultProps} onTaskPlay={onTaskPlay} />);
+
+      const playButton = screen.getByTestId('stage-task-play-adhoc-1');
+      await user.click(playButton);
+
+      // Should show spinner while loading
+      await waitFor(() => {
+        expect(screen.getByRole('status')).toBeInTheDocument();
+      });
+
+      // Resolve the play promise
+      resolvePlay!();
+
+      // Loading indicator should disappear
+      await waitFor(() => {
+        expect(screen.queryByRole('status')).not.toBeInTheDocument();
+      });
+    });
+
+    it('recovers from play error and hides loading indicator', async () => {
+      const user = userEvent.setup();
+      const onTaskPlay = vi.fn().mockRejectedValue(new Error('play failed'));
+
+      render(<AdhocTaskItem {...defaultProps} onTaskPlay={onTaskPlay} />);
+
+      const playButton = screen.getByTestId('stage-task-play-adhoc-1');
+      await user.click(playButton);
+
+      // Loading should eventually clear after error
+      await waitFor(() => {
+        expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Context Menu', () => {
+    it('renders menu button when contextMenuItems are provided', () => {
+      const onRemove = vi.fn();
+      const menuItems = createMenuItems(onRemove);
+
+      render(<AdhocTaskItem {...defaultProps} getContextMenuItems={() => menuItems} />);
+
+      expect(screen.getByTestId('stage-task-menu-adhoc-1')).toBeInTheDocument();
+    });
+
+    it('does not render menu button when getContextMenuItems is not provided', () => {
+      render(<AdhocTaskItem {...defaultProps} />);
+
+      expect(screen.queryByTestId('stage-task-menu-adhoc-1')).not.toBeInTheDocument();
+    });
+
+    it('opens menu when button is clicked', async () => {
+      const user = userEvent.setup();
+      const onRemove = vi.fn();
+      const menuItems = createMenuItems(onRemove);
+
+      render(<AdhocTaskItem {...defaultProps} getContextMenuItems={() => menuItems} />);
+
+      const menuButton = screen.getByTestId('stage-task-menu-adhoc-1');
+      await user.click(menuButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('Replace task')).toBeInTheDocument();
+        expect(screen.getByText('Delete task')).toBeInTheDocument();
+      });
+    });
+
+    it('triggers menu item onClick when clicked', async () => {
+      const user = userEvent.setup();
+      const onRemove = vi.fn();
+      const menuItems = createMenuItems(onRemove);
+
+      render(<AdhocTaskItem {...defaultProps} getContextMenuItems={() => menuItems} />);
+
+      const menuButton = screen.getByTestId('stage-task-menu-adhoc-1');
+      await user.click(menuButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('Delete task')).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByText('Delete task'));
+
+      expect(onRemove).toHaveBeenCalledTimes(1);
+    });
+
+    it('closes menu after menu item is clicked', async () => {
+      const user = userEvent.setup();
+      const onRemove = vi.fn();
+      const menuItems = createMenuItems(onRemove);
+
+      render(<AdhocTaskItem {...defaultProps} getContextMenuItems={() => menuItems} />);
+
+      const menuButton = screen.getByTestId('stage-task-menu-adhoc-1');
+      await user.click(menuButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('Delete task')).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByText('Delete task'));
+
+      await waitFor(() => {
+        expect(screen.queryByText('Delete task')).not.toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Task Loading State', () => {
+    it('disables menu button when isTaskLoading is true', () => {
+      const onRemove = vi.fn();
+      const menuItems = createMenuItems(onRemove);
+
+      render(
+        <AdhocTaskItem
+          {...defaultProps}
+          getContextMenuItems={() => menuItems}
+          isTaskLoading={true}
+        />
+      );
+
+      const menuButton = screen.getByTestId('stage-task-menu-adhoc-1');
+      expect(menuButton).toBeDisabled();
+    });
+
+    it('does not disable menu button when isTaskLoading is false', () => {
+      const onRemove = vi.fn();
+      const menuItems = createMenuItems(onRemove);
+
+      render(
+        <AdhocTaskItem
+          {...defaultProps}
+          getContextMenuItems={() => menuItems}
+          isTaskLoading={false}
+        />
+      );
+
+      const menuButton = screen.getByTestId('stage-task-menu-adhoc-1');
+      expect(menuButton).not.toBeDisabled();
+    });
+
+    it('does not open menu when clicking a disabled menu button', () => {
+      const onRemove = vi.fn();
+      const menuItems = createMenuItems(onRemove);
+
+      render(
+        <AdhocTaskItem
+          {...defaultProps}
+          getContextMenuItems={() => menuItems}
+          isTaskLoading={true}
+        />
+      );
+
+      const menuButton = screen.getByTestId('stage-task-menu-adhoc-1');
+      expect(menuButton).toBeDisabled();
+
+      fireEvent.click(menuButton);
+      expect(screen.queryByText('Replace task')).not.toBeInTheDocument();
+    });
+
+    it('does not open menu on right-click when isTaskLoading is true', async () => {
+      const user = userEvent.setup();
+      const onRemove = vi.fn();
+      const menuItems = createMenuItems(onRemove);
+
+      render(
+        <AdhocTaskItem
+          {...defaultProps}
+          getContextMenuItems={() => menuItems}
+          isTaskLoading={true}
+        />
+      );
+
+      const task = screen.getByTestId('stage-task-card-adhoc-1');
+      await user.pointer({ keys: '[MouseRight]', target: task });
+
+      expect(screen.queryByText('Replace task')).not.toBeInTheDocument();
+    });
+  });
+});

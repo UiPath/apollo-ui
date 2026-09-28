@@ -1,0 +1,599 @@
+// =============================================================================
+// @uipath/apollo-wind - Public API Exports
+// =============================================================================
+
+export type {
+  AdapterRequest,
+  AdapterResponse,
+  DataAdapter,
+} from './components/forms/data-fetcher';
+export {
+  DataFetcher,
+  DataSourceBuilder,
+  DataTransformers,
+  FetchAdapter,
+} from './components/forms/data-fetcher';
+export { FormFieldRenderer } from './components/forms/field-renderer';
+export { FormDesigner } from './components/forms/form-designer';
+export {
+  analyticsPlugin,
+  auditPlugin,
+  autoSavePlugin,
+  formattingPlugin,
+  validationPlugin,
+  workflowPlugin,
+} from './components/forms/form-plugins';
+export type {
+  CustomFieldComponentProps,
+  CustomValueType,
+  DataSource,
+  FieldCondition,
+  FieldMetadata,
+  FieldOption,
+  FieldRule,
+  FieldType,
+  FormAction,
+  FormContext,
+  FormPlugin,
+  FormSchema,
+  FormSection,
+  FormStep,
+  StringListFieldMetadata,
+} from './components/forms/form-schema';
+export {
+  hasMinMaxStep,
+  hasOptions,
+  isCustomField,
+  isFileField,
+} from './components/forms/form-schema';
+export { FormStateViewer } from './components/forms/form-state-viewer';
+// -----------------------------------------------------------------------------
+// Metadata Forms System
+// -----------------------------------------------------------------------------
+export type { MetadataFormProps } from './components/forms/metadata-form';
+export { MetadataForm, useWatch } from './components/forms/metadata-form';
+export {
+  ExpressionBuilder,
+  RuleBuilder,
+  RulesEngine,
+} from './components/forms/rules-engine';
+export type { StringListFieldProps } from './components/forms/string-list-field';
+export { formatTemplate, StringListField } from './components/forms/string-list-field';
+// -----------------------------------------------------------------------------
+// Utility Components
+// -----------------------------------------------------------------------------
+export {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from './components/ui/accordion';
+export { Alert, AlertDescription, AlertTitle } from './components/ui/alert';
+export {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogOverlay,
+  AlertDialogPortal,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from './components/ui/alert-dialog';
+export { AspectRatio } from './components/ui/aspect-ratio';
+export { Avatar, AvatarFallback, AvatarImage } from './components/ui/avatar';
+export type { BadgeProps } from './components/ui/badge';
+export { Badge, badgeVariants } from './components/ui/badge';
+export {
+  Breadcrumb,
+  BreadcrumbEllipsis,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from './components/ui/breadcrumb';
+export type { ButtonProps } from './components/ui/button';
+// -----------------------------------------------------------------------------
+// Button Components
+// -----------------------------------------------------------------------------
+export { Button, buttonVariants } from './components/ui/button';
+export {
+  ButtonGroup,
+  ButtonGroupSeparator,
+  ButtonGroupText,
+} from './components/ui/button-group';
+export { Calendar } from './components/ui/calendar';
+// -----------------------------------------------------------------------------
+// Data Display Components
+// -----------------------------------------------------------------------------
+// NOTE: CodeBlock was removed. Use Monaco or CodeMirror with Apollo editor
+// themes instead. See @uipath/apollo-wind/editor-themes for the theme API and
+// Patterns → Code Editors in Storybook for integration guidance.
+export {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from './components/ui/card';
+export type { ChartConfig } from './components/ui/chart';
+export {
+  ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
+  ChartStyle,
+  ChartTooltip,
+  ChartTooltipContent,
+} from './components/ui/chart';
+export type { CheckboxProps } from './components/ui/checkbox';
+export { Checkbox } from './components/ui/checkbox';
+export {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from './components/ui/collapsible';
+export type { ComboboxItem, ComboboxProps } from './components/ui/combobox';
+export { Combobox } from './components/ui/combobox';
+export {
+  Command,
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+  CommandShortcut,
+} from './components/ui/command';
+export {
+  ContextMenu,
+  ContextMenuCheckboxItem,
+  ContextMenuContent,
+  ContextMenuGroup,
+  ContextMenuItem,
+  ContextMenuLabel,
+  ContextMenuPortal,
+  ContextMenuRadioGroup,
+  ContextMenuRadioItem,
+  ContextMenuSeparator,
+  ContextMenuShortcut,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
+  ContextMenuTrigger,
+} from './components/ui/context-menu';
+export type { DataTableProps } from './components/ui/data-table';
+export {
+  DataTable,
+  DataTableColumnHeader,
+  DataTableSelectColumn,
+} from './components/ui/data-table';
+export type { DatePickerProps, DateRangePickerProps } from './components/ui/date-picker';
+export { DatePicker, DateRangePicker } from './components/ui/date-picker';
+export type { DateTimePickerProps } from './components/ui/datetime-picker';
+export { DateTimePicker } from './components/ui/datetime-picker';
+// -----------------------------------------------------------------------------
+// Feedback & Overlay Components
+// -----------------------------------------------------------------------------
+export {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogOverlay,
+  DialogPortal,
+  DialogTitle,
+  DialogTrigger,
+  Modal,
+  ModalClose,
+  ModalContent,
+  ModalDescription,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  ModalPortal,
+  ModalTitle,
+  ModalTrigger,
+} from './components/ui/dialog';
+export {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerOverlay,
+  DrawerPortal,
+  DrawerTitle,
+  DrawerTrigger,
+} from './components/ui/drawer';
+// -----------------------------------------------------------------------------
+// Menu Components
+// -----------------------------------------------------------------------------
+export {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from './components/ui/dropdown-menu';
+export type {
+  EditableCellMeta,
+  EditableCellType,
+} from './components/ui/editable-cell';
+export {
+  createEditableColumn,
+  EditableCell,
+} from './components/ui/editable-cell';
+export type { EmptyStateProps } from './components/ui/empty-state';
+export { EmptyState } from './components/ui/empty-state';
+export type { FileUploadProps } from './components/ui/file-upload';
+export { FileUpload } from './components/ui/file-upload';
+export type {
+  FormFieldDescriptionProps,
+  FormFieldErrorProps,
+  FormFieldHeaderProps,
+  FormFieldLabelProps,
+  FormFieldProps,
+} from './components/ui/form-field';
+export {
+  FormField,
+  FormFieldDescription,
+  FormFieldError,
+  FormFieldHeader,
+  FormFieldLabel,
+} from './components/ui/form-field';
+export type {
+  AiAssistActionProps,
+  AiAssistActionStrings,
+  InsertVariableActionProps,
+  InsertVariableActionStrings,
+} from './components/ui/field-actions';
+export {
+  AiAssistAction,
+  DEFAULT_AI_ASSIST_ACTION_STRINGS,
+  DEFAULT_INSERT_VARIABLE_ACTION_STRINGS,
+  InsertVariableAction,
+} from './components/ui/field-actions';
+export type {
+  ValueMode,
+  ValueModeIndicatorProps,
+  ValueModeMenuAction,
+  ValueModeMenuProps,
+  ValueModeOption,
+  ValueModeStrings,
+  ValueModeStringsProviderProps,
+} from './components/ui/field-addons';
+export {
+  DEFAULT_VALUE_MODE_STRINGS,
+  useValueModeStrings,
+  ValueModeIndicator,
+  ValueModeMenu,
+  ValueModeStringsProvider,
+} from './components/ui/field-addons';
+export {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from './components/ui/hover-card';
+export type { InfoTooltipProps } from './components/ui/info-tooltip';
+export { InfoTooltip } from './components/ui/info-tooltip';
+export type { InputProps } from './components/ui/input';
+// -----------------------------------------------------------------------------
+// Form Input Components
+// -----------------------------------------------------------------------------
+export { Input } from './components/ui/input';
+export type {
+  InputGroupAddonProps,
+  InputGroupBodyProps,
+  InputGroupButtonProps,
+  InputGroupInputProps,
+  InputGroupLayout,
+  InputGroupPopoverTriggerProps,
+  InputGroupProps,
+  InputGroupRowProps,
+  InputGroupState,
+  InputGroupTextareaProps,
+  InputGroupTextProps,
+  InputGroupTriggerProps,
+} from './components/ui/input-group';
+export {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupBody,
+  InputGroupButton,
+  InputGroupInput,
+  InputGroupPopoverTrigger,
+  InputGroupRow,
+  InputGroupText,
+  InputGroupTextarea,
+  InputGroupTrigger,
+  inputGroupVariants,
+  useInputGroup,
+} from './components/ui/input-group';
+export type {
+  LabelProps,
+  LabelVariants,
+  RequiredIndicatorProps,
+} from './components/ui/label';
+export { Label, RequiredIndicator } from './components/ui/label';
+export type { ColumnProps } from './components/ui/layout/column';
+export { Column } from './components/ui/layout/column';
+export type { GridProps } from './components/ui/layout/grid';
+export { Grid } from './components/ui/layout/grid';
+export type { RowProps } from './components/ui/layout/row';
+// -----------------------------------------------------------------------------
+// Layout Components
+// -----------------------------------------------------------------------------
+export { Row } from './components/ui/layout/row';
+export type {
+  LockableFieldType,
+  LockableValueFieldMode,
+  LockableValueFieldMoreActions,
+  LockableValueFieldOption,
+  LockableValueFieldProps,
+} from './components/ui/lockable-value-field';
+export {
+  FIELD_TYPE_META,
+  FIELD_TYPE_ORDER,
+  LockableValueField,
+} from './components/ui/lockable-value-field';
+export type { MultiSelectProps } from './components/ui/multi-select';
+export { MultiSelect } from './components/ui/multi-select';
+export {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from './components/ui/pagination';
+export {
+  Popover,
+  PopoverAnchor,
+  PopoverContent,
+  PopoverTrigger,
+} from './components/ui/popover';
+export type {
+  PortalContainerOverride,
+  PortalContainerProviderProps,
+} from './components/ui/portal-container';
+export { PortalContainerProvider } from './components/ui/portal-container';
+export { Progress } from './components/ui/progress';
+export type {
+  MarkdownPreviewTokenOverride,
+  PromptEditorAutoCompleteOption,
+  PromptEditorAutocompleteMenuProps,
+  PromptEditorDiffType,
+  PromptEditorMode,
+  PromptEditorProps,
+  PromptEditorRef,
+  PromptEditorRenderTokenPill,
+  PromptEditorStrings,
+  PromptEditorToken,
+  PromptEditorTokenPillSlotProps,
+  PromptEditorTokenType,
+  PromptEditorToolbarActiveFormats,
+  PromptTokenNode,
+  TokenPillProps,
+  TokenPillWithTooltipProps,
+} from './components/ui/prompt-editor';
+// -----------------------------------------------------------------------------
+// Prompt Editor
+// -----------------------------------------------------------------------------
+export {
+  $insertTokenAtCursor,
+  createInputTokenNode,
+  createOutputTokenNode,
+  createResourceTokenNode,
+  createStateTokenNode,
+  createTokenNodeForOption,
+  DEFAULT_PROMPT_EDITOR_STRINGS,
+  getAllPromptTokenNodes,
+  getEditorTokens,
+  getPromptEditorTokenColors,
+  getPromptEditorTokenTypeLabel,
+  InputTokenNode,
+  inferTokenTypeFromPath,
+  isPromptTokenNode,
+  normalizeRichTextTokens,
+  normalizeVariablePath,
+  OutputTokenNode,
+  PROMPT_EDITOR_RICH_TRANSFORMERS,
+  PromptEditor,
+  ResourceTokenNode,
+  StateTokenNode,
+  setEditorTokens,
+  TokenPill,
+  TokenPillWithTooltip,
+  VARIABLE_DRAG_MIME,
+  VARIABLE_PATH_REGEX,
+  WORD_JOINER,
+} from './components/ui/prompt-editor';
+export { RadioGroup, RadioGroupItem } from './components/ui/radio-group';
+export {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from './components/ui/resizable';
+export { ScrollArea, ScrollBar } from './components/ui/scroll-area';
+export type {
+  SearchProps,
+  SearchWithSuggestionsProps,
+} from './components/ui/search';
+export { Search, SearchWithSuggestions } from './components/ui/search';
+export type { SelectTriggerProps } from './components/ui/select';
+export {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectScrollDownButton,
+  SelectScrollUpButton,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from './components/ui/select';
+export { Separator } from './components/ui/separator';
+export {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetOverlay,
+  SheetPortal,
+  SheetTitle,
+  SheetTrigger,
+} from './components/ui/sheet';
+export { Skeleton } from './components/ui/skeleton';
+export { Slider } from './components/ui/slider';
+export { Toaster, toast } from './components/ui/sonner';
+export type { SpinnerProps } from './components/ui/spinner';
+export { Spinner, spinnerVariants } from './components/ui/spinner';
+export type { StatsCardProps } from './components/ui/stats-card';
+export { StatsCard } from './components/ui/stats-card';
+export type { Step, StepperProps } from './components/ui/stepper';
+export { Stepper } from './components/ui/stepper';
+export { Switch } from './components/ui/switch';
+export {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from './components/ui/table';
+export type { ScrollableTabsListProps } from './components/ui/tabs';
+// -----------------------------------------------------------------------------
+// Navigation Components
+// -----------------------------------------------------------------------------
+export {
+  ScrollableTabsList,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from './components/ui/tabs';
+export type { TextareaProps } from './components/ui/textarea';
+export { Textarea } from './components/ui/textarea';
+export { Toggle, toggleVariants } from './components/ui/toggle';
+export { ToggleGroup, ToggleGroupItem } from './components/ui/toggle-group';
+export {
+  Tooltip,
+  TooltipContent,
+  TooltipPortal,
+  TooltipProvider,
+  TooltipTrigger,
+} from './components/ui/tooltip';
+export type {
+  TreeViewIconMap,
+  TreeViewItem,
+  TreeViewItemAction,
+  TreeViewMenuItem,
+  TreeViewProps,
+  TreeViewSelectionMode,
+} from './components/ui/tree-view';
+export { default as TreeView } from './components/ui/tree-view';
+export type {
+  AnnotatedModel,
+  ByomDetails,
+  CostTier,
+  DeprecationDetails,
+  DeriveModelTagsContext,
+  DiscoveryModel,
+  FolderSwitcherFolder,
+  FolderSwitcherProps,
+  GroupHeaderProps,
+  GroupModelsContext,
+  GroupStrategy,
+  ModelBadgeDefinition,
+  ModelBadgeKind,
+  ModelCostDetails,
+  ModelFlatCosts,
+  ModelTieredCost,
+  ModelType,
+  ModelDetails,
+  ModelGeography,
+  ModelGroup,
+  ModelOptionRowProps,
+  ModelPickerChangeHandler,
+  ModelPickerProps,
+  ModelPickerSlotContext,
+  ModelPickerSlots,
+  ModelPickerVariant,
+  ModelSubscriptionType,
+  ModelTag,
+  ModelTagChipProps,
+  ModelTagKind,
+  ModelVendor,
+  OptionListProps,
+  ModelPickerLabels,
+  PickerPopupProps,
+  PickerSearchInputProps,
+  StaticLabelKey,
+  PickerTriggerProps,
+  RoutingDetails,
+  UseModelPickerStateOptions,
+  UseModelPickerStateResult,
+} from './components/ui/model-picker';
+export {
+  defaultCostTier,
+  defaultRowActions,
+  DEFAULT_MODEL_PICKER_LABELS,
+  deriveModelTags,
+  formatContextWindow,
+  filterModels,
+  FolderSwitcher,
+  GroupedOptionList,
+  GroupHeader,
+  groupModels,
+  getSubstitutionTarget,
+  isTextGenerationModel,
+  MODEL_BADGES,
+  ModelOptionRow,
+  ModelPicker,
+  ModelTagChip,
+  optionDomId,
+  PickerPopup,
+  PickerSearchInput,
+  PickerTrigger,
+  resolveHomeGeography,
+  resolveLabels,
+  useModelPickerState,
+  VirtualOptionList,
+} from './components/ui/model-picker';
+export type {
+  VariablePickerContentProps,
+  VariablePickerItem,
+  VariablePickerProps,
+} from './components/ui/variable-picker';
+export {
+  VariablePicker,
+  VariablePickerContent,
+} from './components/ui/variable-picker';
+// -----------------------------------------------------------------------------
+// Utilities
+// -----------------------------------------------------------------------------
+export { cn } from './lib/utils';

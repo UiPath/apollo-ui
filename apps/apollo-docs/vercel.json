@@ -1,0 +1,5 @@
+{
+  "installCommand": "true",
+  "buildCommand": "true",
+  "framework": "nextjs"
+}

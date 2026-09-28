@@ -1,0 +1,160 @@
+import { Plus, Trash2 } from 'lucide-react';
+import type * as React from 'react';
+import { useCallback, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+  FormField,
+  FormFieldDescription,
+  FormFieldError,
+  FormFieldLabel,
+} from '@/components/ui/form-field';
+import { Textarea } from '@/components/ui/textarea';
+import type { StringListFieldMetadata } from './form-schema';
+
+/** Interpolate `{{token}}` placeholders; unknown tokens are left untouched. */
+export function formatTemplate(template: string, values: Record<string, string | number>): string {
+  return template.replace(/\{\{(\w+)\}\}/g, (match, token: string) =>
+    token in values ? String(values[token]) : match
+  );
+}
+
+export interface StringListFieldProps {
+  field: StringListFieldMetadata;
+  value: string[] | undefined;
+  onChange: (value: string[]) => void;
+  /** Forwarded to every row so blur-mode validation and touched state work. */
+  onBlur?: () => void;
+  error?: string;
+  disabled?: boolean;
+  required?: boolean;
+  /**
+   * The Controller ref, attached to the first row. react-hook-form's `shouldFocusError`
+   * focuses the ref of the first invalid field on a failed submit; without this the list is
+   * the one built-in control it cannot reach, so the user is left with an error and no
+   * indication of where it is.
+   */
+  inputRef?: React.Ref<HTMLTextAreaElement>;
+}
+
+/**
+ * Repeated multiline rows with Add / Remove — the `string-list` field type.
+ *
+ * Rendering it standalone with `field.tooltip` set requires an ancestor `TooltipProvider`:
+ * the info trigger is a Radix tooltip, which throws without one. Inside `MetadataForm` this
+ * is handled for you — it mounts a provider for schemas that use tooltip metadata.
+ */
+export function StringListField({
+  field,
+  value,
+  onChange,
+  onBlur,
+  error,
+  disabled = false,
+  required = false,
+  inputRef,
+}: StringListFieldProps) {
+  const items = value ?? [];
+  const maxItems = field.maxItems ?? Number.POSITIVE_INFINITY;
+  const canAdd = !disabled && items.length < maxItems;
+  const addItemLabel = field.addItemLabel ?? 'Add';
+  const removeItemAriaLabel = field.removeItemAriaLabel ?? 'Remove {{label}} {{position}}';
+
+  // Stable per-row ids: without them, removing index N would reuse the DOM node of a
+  // surviving sibling and swap a focused textarea's content with someone else's. Resync
+  // during render (React's official pattern) when the `items` array length changes
+  // out-of-band; the local add/remove handlers below already mutate ids in lockstep.
+  const [rowIds, setRowIds] = useState<string[]>(() => items.map(() => crypto.randomUUID()));
+  const [prevLength, setPrevLength] = useState(items.length);
+  if (prevLength !== items.length) {
+    setPrevLength(items.length);
+    setRowIds((prev) =>
+      prev.length < items.length
+        ? [
+            ...prev,
+            ...Array.from({ length: items.length - prev.length }, () => crypto.randomUUID()),
+          ]
+        : prev.slice(0, items.length)
+    );
+  }
+
+  const addItem = useCallback(() => {
+    setRowIds((prev) => [...prev, crypto.randomUUID()]);
+    onChange([...items, '']);
+  }, [items, onChange]);
+
+  const removeItem = useCallback(
+    (index: number) => {
+      setRowIds((prev) => prev.filter((_, i) => i !== index));
+      onChange(items.filter((_, i) => i !== index));
+    },
+    [items, onChange]
+  );
+
+  const updateItem = useCallback(
+    (index: number, next: string) => {
+      onChange(items.map((item, i) => (i === index ? next : item)));
+    },
+    [items, onChange]
+  );
+
+  return (
+    <FormField data-slot="string-list-field">
+      <FormFieldLabel
+        required={required}
+        tooltip={field.tooltip}
+        tooltipAriaLabel={field.tooltipAriaLabel}
+      >
+        {field.label}
+      </FormFieldLabel>
+      <div className="grid gap-1.5">
+        {items.map((item, index) => (
+          <div key={rowIds[index] ?? index} className="flex items-start gap-2">
+            <Textarea
+              ref={index === 0 ? inputRef : undefined}
+              value={item}
+              onChange={(e) => updateItem(index, e.target.value)}
+              onBlur={onBlur}
+              minRows={field.minRows ?? 2}
+              maxLength={field.maxLength}
+              disabled={disabled}
+              aria-label={`${field.label} ${index + 1}`}
+              // The error belongs to the list as a whole, so every row carries the invalid
+              // state and points at the same message id: it drives Textarea's aria-invalid
+              // styling and lets assistive tech announce the FormFieldError text below,
+              // regardless of which row is focused.
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? `${field.name}-error` : undefined}
+              aria-errormessage={error ? `${field.name}-error` : undefined}
+              className="flex-1"
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              icon
+              disabled={disabled}
+              onClick={() => removeItem(index)}
+              aria-label={formatTemplate(removeItemAriaLabel, {
+                label: field.label,
+                position: index + 1,
+              })}
+              className="shrink-0 text-muted-foreground"
+            >
+              <Trash2 />
+            </Button>
+          </div>
+        ))}
+      </div>
+      {canAdd && (
+        <div>
+          <Button type="button" variant="text" size="2xs" onClick={addItem}>
+            <Plus />
+            {addItemLabel}
+          </Button>
+        </div>
+      )}
+      <FormFieldDescription>{field.description}</FormFieldDescription>
+      <FormFieldError id={`${field.name}-error`}>{error}</FormFieldError>
+    </FormField>
+  );
+}
