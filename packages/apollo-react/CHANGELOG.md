@@ -1,3 +1,20 @@
+## [@uipath/apollo-react-v6.60.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.59.0...@uipath/apollo-react@6.60.0) (2026-09-28)
+
+### Features
+
+* **apollo-react:** add the guardrail rules section and filter field selector [AL-581] ([f9e69fc](https://github.com/UiPath/apollo-ui/commit/f9e69fcebe6201cb949d192b9ac12ccdcd6aeed5))
+* **apollo-react:** let hosts opt into selection chips on the field pickers [AL-581] ([a0b1492](https://github.com/UiPath/apollo-ui/commit/a0b1492cd47db245425690f4ebfd3f1d818bf3c1))
+
+### Bug Fixes
+
+* **apollo-react:** lay out a rule's fields in one row in wide sections [AL-581] ([0bfa3bd](https://github.com/UiPath/apollo-ui/commit/0bfa3bd6fd4251420c6646282f76b89c5ce12811))
+* **apollo-react:** lock the always-enforce switch only on a lone always rule [AL-581] ([b8e0d0a](https://github.com/UiPath/apollo-ui/commit/b8e0d0a296667a5e4557a92d97a695d6aae7e537))
+* **apollo-react:** name the field picker's popover and search input [AL-581] ([59dde3f](https://github.com/UiPath/apollo-ui/commit/59dde3f883c29f401f1bd7b3b09b1be743a6c2bb))
+* **apollo-react:** report a non-string word value instead of throwing [AL-581] ([0efd308](https://github.com/UiPath/apollo-ui/commit/0efd30881074e30d2e5b2b2476987bf760020112))
+* **apollo-react:** report a second always rule as combined [AL-581] ([ddf68a6](https://github.com/UiPath/apollo-ui/commit/ddf68a6406030ad2e6115ab5bc4617b9251dcdfb))
+* **apollo-react:** show the filter field error without a schema [AL-581] ([de8a0cc](https://github.com/UiPath/apollo-ui/commit/de8a0cccf86dd6b535e43313d0454a2b964f852e))
+* **apollo-react:** summarize picked fields on the trigger instead of chips [AL-581] ([b8edc80](https://github.com/UiPath/apollo-ui/commit/b8edc80385d3aaf0540e85e354e526aec625244d))
+
 ## [@uipath/apollo-react-v6.59.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.58.3...@uipath/apollo-react@6.59.0) (2026-09-25)
 
 ### Features
