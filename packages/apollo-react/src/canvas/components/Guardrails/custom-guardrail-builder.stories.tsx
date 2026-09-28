@@ -44,11 +44,16 @@ via the labels prop or any field via the errors prop.
   },
   tags: ['autodocs'],
   decorators: [
-    (Story) => (
+    // Inline stories get a panel-sized frame; the dialog story brings its own shell.
+    (Story, { parameters }) => (
       <TooltipProvider>
-        <div className="w-[640px] h-[720px] border rounded-md overflow-hidden">
+        {parameters.dialog ? (
           <Story />
-        </div>
+        ) : (
+          <div className="w-[640px] h-[720px] border rounded-md overflow-hidden">
+            <Story />
+          </div>
+        )}
       </TooltipProvider>
     ),
   ],
@@ -118,27 +123,52 @@ const baseArgs = {
 } satisfies Partial<ComponentProps<typeof CustomGuardrailBuilder>>;
 
 /**
- * A new custom guardrail in the modal dialog shell: always enforced before and after the tool,
- * a log action, evaluations on. 800px wide by default.
- *
- * Opens on the story canvas but stays closed in docs, where a portalled modal would cover the
- * page (the same viewMode approach as the Guardrail Builder's modal story).
+ * A new custom guardrail as an inline panel with the back-button header: always enforced before
+ * and after the tool, a log action, evaluations on.
  */
 export const New: Story = {
-  decorators: [
-    (Story) => (
-      <TooltipProvider>
-        <Story />
-      </TooltipProvider>
-    ),
-  ],
-  render: (args, { viewMode }) => <CustomGuardrailBuilder {...args} open={viewMode === 'story'} />,
-  args: { ...baseArgs, defaultName: 'Guardrail 1' },
+  args: { ...baseArgs, inline: true, defaultName: 'Guardrail 1' },
 };
 
-/** Edit mode as an inline panel with the back-button header. */
+/**
+ * Edit mode in the modal dialog shell, 800px wide by default.
+ *
+ * Opens on the story canvas. In docs it waits for the button instead, since a portalled modal
+ * opened on load would cover the page.
+ */
 export const Edit: Story = {
-  args: { ...baseArgs, inline: true, guardrail: existingGuardrail },
+  parameters: { dialog: true },
+  args: { ...baseArgs, guardrail: existingGuardrail },
+  render: (args, { viewMode }) => {
+    function DialogExample() {
+      const [open, setOpen] = useState(viewMode === 'story');
+      // Remounts per opening, since the builder seeds its form state at mount.
+      const [session, setSession] = useState(0);
+      const close = () => setOpen(false);
+      return (
+        <>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              setSession((current) => current + 1);
+              setOpen(true);
+            }}
+          >
+            Edit custom guardrail
+          </Button>
+          <CustomGuardrailBuilder
+            {...args}
+            key={session}
+            open={open}
+            onSave={close}
+            onCancel={close}
+          />
+        </>
+      );
+    }
+    return <DialogExample />;
+  },
 };
 
 /** Inline under a header the host owns, the way a properties panel embeds it. */
