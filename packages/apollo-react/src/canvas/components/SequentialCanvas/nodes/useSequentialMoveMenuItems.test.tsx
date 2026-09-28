@@ -99,7 +99,7 @@ describe('useSequentialMoveMenuItems', () => {
 
     const upItem = (result.current as NodeMenuAction[]).find((item) => item.label === 'Move up')!;
     upItem.onClick();
-    expect(commitMove).toHaveBeenCalledWith('node-a', slot);
+    expect(commitMove).toHaveBeenCalledWith('node-a', slot, 'up');
   });
 
   it('clicking a disabled item does not call commitMove', () => {

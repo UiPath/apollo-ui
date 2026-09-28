@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 import type { InsertionSlot } from '../../utils/sequential/sequential.types';
-import type { SequentialMoveOptions } from './sequentialMoveActions';
+import type { SequentialMoveDirection, SequentialMoveOptions } from './sequentialMoveActions';
 
 export interface SequentialMoveActionsContextValue {
   /** The four move candidates for `nodeId` (disabled direction => `undefined`). */
@@ -12,7 +12,7 @@ export interface SequentialMoveActionsContextValue {
    * degenerate/self-targeting slot, matching `moveSubtree`'s own guard
    * (an empty `GraphChangeSet`).
    */
-  commitMove: (nodeId: string, slot: InsertionSlot) => void;
+  commitMove: (nodeId: string, slot: InsertionSlot, direction: SequentialMoveDirection) => void;
   // Deliberately NOT part of v1: a `centerOnNode` viewport-centering action for
   // goto reference chips (D9). The chip UI was cut from this PR, so the plumbing
   // was removed rather than left as an unreachable branch. Re-add it here, and in

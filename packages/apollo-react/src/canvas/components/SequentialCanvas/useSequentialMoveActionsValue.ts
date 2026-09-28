@@ -2,6 +2,7 @@ import type { Edge, EdgeChange, Node, NodeChange } from '@uipath/apollo-react/ca
 import { useCallback, useMemo, useRef } from 'react';
 import { moveSubtree } from '../../utils/sequential/mutations';
 import type { InsertionSlot, SequenceProjection } from '../../utils/sequential/sequential.types';
+import type { SequentialOperation } from './SequentialCanvas.types';
 import type { SequentialMoveActionsContextValue } from './SequentialMoveActionsContext';
 import {
   graphChangeSetToEdgeChanges,
@@ -11,6 +12,7 @@ import {
   closesLoopToOwner,
   computeSequentialMoveOptions,
   resolveSlotForCommit,
+  type SequentialMoveDirection,
   type SequentialMoveOptions,
 } from './sequentialMoveActions';
 
@@ -34,6 +36,8 @@ export interface UseSequentialMoveActionsValueArgs<N extends Node, E extends Edg
   getDefaultSourceHandleId: (nodeType: string) => string | undefined;
   onNodesChange?: (changes: NodeChange<N>[]) => void;
   onEdgesChange?: (changes: EdgeChange<E>[]) => void;
+  /** Informational semantic-operation callback, fired before the change batch. */
+  onSequentialOperation?: (op: SequentialOperation<N>) => void;
 }
 
 /**
@@ -83,28 +87,38 @@ export function useSequentialMoveActionsValue<N extends Node, E extends Edge>(
     [projection]
   );
 
-  const commitMove = useCallback((nodeId: string, slot: InsertionSlot) => {
-    const {
-      projection: proj,
-      canonicalById,
-      getDefaultSourceHandleId,
-      nodes,
-      edges,
-    } = latest.current;
-    if (!proj) return;
-    const resolvedSlot = resolveSlotForCommit(slot, canonicalById, getDefaultSourceHandleId);
-    const changeSet = moveSubtree(proj, nodeId, resolvedSlot, { nodes, edges });
-    if (
-      changeSet.addNodes.length === 0 &&
-      changeSet.addEdges.length === 0 &&
-      changeSet.removeNodeIds.length === 0 &&
-      changeSet.removeEdgeIds.length === 0
-    ) {
-      return;
-    }
-    latest.current.onNodesChange?.(graphChangeSetToNodeChanges<N>(changeSet));
-    latest.current.onEdgesChange?.(graphChangeSetToEdgeChanges<E>(changeSet));
-  }, []);
+  const commitMove = useCallback(
+    (nodeId: string, slot: InsertionSlot, direction: SequentialMoveDirection) => {
+      const {
+        projection: proj,
+        canonicalById,
+        getDefaultSourceHandleId,
+        nodes,
+        edges,
+      } = latest.current;
+      if (!proj) return;
+      const resolvedSlot = resolveSlotForCommit(slot, canonicalById, getDefaultSourceHandleId);
+      const changeSet = moveSubtree(proj, nodeId, resolvedSlot, { nodes, edges });
+      if (
+        changeSet.addNodes.length === 0 &&
+        changeSet.addEdges.length === 0 &&
+        changeSet.removeNodeIds.length === 0 &&
+        changeSet.removeEdgeIds.length === 0
+      ) {
+        return;
+      }
+      latest.current.onSequentialOperation?.({
+        kind: 'move',
+        nodeId,
+        to: resolvedSlot,
+        direction,
+        changeSet,
+      });
+      latest.current.onNodesChange?.(graphChangeSetToNodeChanges<N>(changeSet));
+      latest.current.onEdgesChange?.(graphChangeSetToEdgeChanges<E>(changeSet));
+    },
+    []
+  );
 
   return useMemo(() => ({ getMoveOptions, commitMove }), [getMoveOptions, commitMove]);
 }

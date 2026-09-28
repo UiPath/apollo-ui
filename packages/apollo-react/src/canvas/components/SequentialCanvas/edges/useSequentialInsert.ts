@@ -1,6 +1,7 @@
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useCallback, useRef } from 'react';
+import type { InsertionSlot } from '../../../utils/sequential/sequential.types';
 import { showPreviewGraph } from '../../../utils/createPreviewGraph';
 import { useSetSequentialInsertGapSlot } from '../SequentialInsertGapContext';
 import { useOptionalSequentialInsertState } from '../SequentialInsertStateContext';
@@ -23,8 +24,14 @@ export interface UseSequentialInsertResult {
    * apply the slot's canonical handle ids / containment (D5) — `onBeforeNodeAdded`
    * itself only receives the new node and edges, not the slot that started the
    * insert, so this hook is the side channel between the two.
+   *
+   * `slot` is the slot of that `startInsert` call (absent when none was pending);
+   * `AddNodeManager` ignores it.
    */
-  onBeforeNodeAdded: (newNode: Node, newEdges: Edge[]) => { newNode: Node; newEdges: Edge[] };
+  onBeforeNodeAdded: (
+    newNode: Node,
+    newEdges: Edge[]
+  ) => { newNode: Node; newEdges: Edge[]; slot?: InsertionSlot };
 }
 
 /**
@@ -45,7 +52,7 @@ export function useSequentialInsert(): UseSequentialInsertResult {
 
   const startInsert = useCallback(
     (args: SequentialInsertArgs) => {
-      pending.current = resolvePendingSequentialInsert(args.slot);
+      pending.current = { ...resolvePendingSequentialInsert(args.slot), slot: args.slot };
       // Surfaces the active slot for the insert-preview-gap post-pass:
       // SequentialCanvas.tsx owns the state and clears it again
       // on cancel/commit (usePreviewNode transitioning closed).
@@ -57,9 +64,10 @@ export function useSequentialInsert(): UseSequentialInsertResult {
 
   const onBeforeNodeAdded = useCallback(
     (newNode: Node, newEdges: Edge[]) => {
+      const slot = pending.current?.slot;
       const result = sequentialOnBeforeNodeAdded(newNode, newEdges, pending.current);
       pending.current = undefined;
-      return result;
+      return { ...result, slot };
     },
     [pending]
   );

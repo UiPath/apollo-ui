@@ -182,6 +182,8 @@ export interface PendingSequentialInsert {
   containerId?: string;
   /** Whether the split source edge already represented an explicit continuation. */
   splitEdgeWasContinuation?: boolean;
+  /** The slot `startInsert` opened, reported back by `onSequentialOperation`. */
+  slot?: InsertionSlot;
 }
 
 /**

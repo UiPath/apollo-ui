@@ -7,9 +7,35 @@ import type {
   OnNodesChange,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import type { Ref } from 'react';
-import type { CanvasView, LayoutSequenceOptions } from '../../utils/sequential/sequential.types';
+import type {
+  CanvasView,
+  GraphChangeSet,
+  InsertionSlot,
+  LayoutSequenceOptions,
+} from '../../utils/sequential/sequential.types';
 import type { AddNodeManagerProps } from '../AddNodePanel/AddNodeManager';
 import type { BaseCanvasProps, BaseCanvasRef } from '../BaseCanvas/BaseCanvas.types';
+import type { SequentialMoveDirection } from './sequentialMoveActions';
+
+/**
+ * A user-initiated structural edit in `view="sequential"`, reported by
+ * `onSequentialOperation` ahead of the equivalent change batch.
+ *
+ * - `insert`: `node` is already re-id'd and parented (containment applied), and
+ *   `edges` are the healed edges that will be added with it.
+ * - `remove`: `changeSet.removeNodeIds` includes cascaded descendants.
+ * - `move`: `to` is the slot after commit-time handle resolution.
+ */
+export type SequentialOperation<N extends Node = Node> =
+  | { kind: 'insert'; slot: InsertionSlot; node: N; edges: Edge[] }
+  | { kind: 'remove'; nodeId: string; changeSet: GraphChangeSet }
+  | {
+      kind: 'move';
+      nodeId: string;
+      to: InsertionSlot;
+      direction: SequentialMoveDirection;
+      changeSet: GraphChangeSet;
+    };
 
 /**
  * Public props for the sequential view. It renders through the existing
@@ -28,6 +54,7 @@ export interface SequentialCanvasProps<N extends Node = Node, E extends Edge = E
     | 'onToolbarAction'
     | 'breakpoints'
     | 'children'
+    | 'onNodeDoubleClick'
   > {
   /** Canonical graph; flow-view positions are untouched (D4). */
   nodes: N[];
@@ -49,6 +76,14 @@ export interface SequentialCanvasProps<N extends Node = Node, E extends Edge = E
   /** Synthetic rows are filtered out before forwarding. */
   onNodesChange?: OnNodesChange<N>;
   onEdgesChange?: OnEdgesChange<E>;
+  /**
+   * Fired once per user-initiated structural operation in `view="sequential"`, BEFORE the
+   * equivalent `onNodesChange` / `onEdgesChange` batch for the same operation. Purely
+   * informational: the change stream is still emitted and remains the only way state changes.
+   * Hosts whose source of truth is external (e.g. a designer process) translate this
+   * into their own edit commands and treat the change batch as an optimistic preview.
+   */
+  onSequentialOperation?: (op: SequentialOperation<N>) => void;
   /** Controlled, view-local collapse state (D6). */
   collapsedStepIds?: string[];
   onCollapsedStepIdsChange?: (ids: string[]) => void;

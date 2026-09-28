@@ -55,8 +55,10 @@ function firstMovable(
 ) {
   for (const id of nodeIds) {
     const opts = getMoveOptions(id);
-    const slot = opts.down ?? opts.up ?? opts.indent ?? opts.outdent;
-    if (slot) return { id, slot };
+    for (const direction of ['down', 'up', 'indent', 'outdent'] as const) {
+      const slot = opts[direction];
+      if (slot) return { id, slot, direction };
+    }
   }
   return undefined;
 }
@@ -107,7 +109,7 @@ describe('useSequentialMoveActionsValue', () => {
     );
     expect(movable).toBeDefined();
 
-    result.current.commitMove(movable!.id, movable!.slot);
+    result.current.commitMove(movable!.id, movable!.slot, movable!.direction);
     expect(onNodesChange).toHaveBeenCalled();
     expect(onEdgesChange).toHaveBeenCalled();
   });

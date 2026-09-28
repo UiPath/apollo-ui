@@ -198,6 +198,7 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
   flowEdgeTypes,
   onNodesChange,
   onEdgesChange,
+  onSequentialOperation,
   collapsedStepIds,
   onCollapsedStepIdsChange,
   onPrimaryAction,
@@ -210,6 +211,7 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
   fitViewOptions,
   onToolbarAction,
   breakpoints,
+  onNodeDoubleClick,
   children,
   activeInsertSlot,
   setActiveInsertSlot,
@@ -649,11 +651,21 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
       if (!isDesignMode || view !== 'sequential' || !projection) return false;
       if (!onNodesChange && !onEdgesChange) return false;
       const changeSet = removeStep(projection, nodeId, { nodes, edges });
+      onSequentialOperation?.({ kind: 'remove', nodeId, changeSet });
       onNodesChange?.(graphChangeSetToNodeChanges<N>(changeSet));
       onEdgesChange?.(graphChangeSetToEdgeChanges<E>(changeSet));
       return true;
     },
-    [isDesignMode, view, projection, nodes, edges, onNodesChange, onEdgesChange]
+    [
+      isDesignMode,
+      view,
+      projection,
+      nodes,
+      edges,
+      onNodesChange,
+      onEdgesChange,
+      onSequentialOperation,
+    ]
   );
 
   const handleToolbarAction = useCallback<
@@ -681,6 +693,7 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
     getDefaultSourceHandleId,
     onNodesChange,
     onEdgesChange,
+    onSequentialOperation,
   });
 
   // Alt+Arrow keyboard move: same guards as the kebab (design mode
@@ -690,7 +703,7 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
     (nodeId: string, direction: SequentialMoveDirection) => {
       if (!isDesignMode) return;
       const slot = getSequentialMoveSlot(moveActionsValue.getMoveOptions(nodeId), direction);
-      if (slot) moveActionsValue.commitMove(nodeId, slot);
+      if (slot) moveActionsValue.commitMove(nodeId, slot, direction);
     },
     [isDesignMode, moveActionsValue]
   );
@@ -762,9 +775,18 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
         newNode,
         newEdges,
       };
-      return onBeforeNodeAdded(hostResult.newNode, hostResult.newEdges);
+      const { slot, ...result } = onBeforeNodeAdded(hostResult.newNode, hostResult.newEdges);
+      if (slot) {
+        onSequentialOperation?.({
+          kind: 'insert',
+          slot,
+          node: result.newNode as N,
+          edges: result.newEdges,
+        });
+      }
+      return result;
     },
-    [addNodeManagerProps?.onBeforeNodeAdded, onBeforeNodeAdded]
+    [addNodeManagerProps?.onBeforeNodeAdded, onBeforeNodeAdded, onSequentialOperation]
   );
   const ignoredNodeTypes = useMemo(
     () => [
@@ -824,6 +846,7 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
             fitViewOptions={fitViewOptions}
             onToolbarAction={handleToolbarAction}
             breakpoints={breakpoints}
+            onNodeDoubleClick={onNodeDoubleClick}
             // Accessibility: keep every row in the DOM so reading order == row
             // order (D8), except past SEQ_FULL_RENDER_MAX_NODES where
             // virtualization is re-enabled for stability at scale.

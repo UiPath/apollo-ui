@@ -3,6 +3,7 @@ import { useSafeLingui } from '../../../../i18n';
 import { CanvasIcon } from '../../../utils/icon-registry';
 import { useBaseCanvasMode } from '../../BaseCanvas/BaseCanvasModeProvider';
 import type { NodeMenuAction, NodeMenuItem } from '../../NodeContextMenu';
+import type { SequentialMoveDirection } from '../sequentialMoveActions';
 import { useOptionalSequentialMoveActions } from '../SequentialMoveActionsContext';
 
 /**
@@ -34,41 +35,39 @@ export function useSequentialMoveMenuItems(nodeId: string): NodeMenuItem[] {
       id: string,
       label: string,
       icon: string,
-      slot: (typeof options)['up']
-    ): NodeMenuAction => ({
-      id,
-      label,
-      icon: <CanvasIcon icon={icon} size={16} />,
-      disabled: !slot,
-      onClick: () => {
-        if (slot) moveActions.commitMove(nodeId, slot);
-      },
-    });
+      direction: SequentialMoveDirection
+    ): NodeMenuAction => {
+      const slot = options[direction];
+      return {
+        id,
+        label,
+        icon: <CanvasIcon icon={icon} size={16} />,
+        disabled: !slot,
+        onClick: () => {
+          if (slot) moveActions.commitMove(nodeId, slot, direction);
+        },
+      };
+    };
 
     return [
-      item(
-        'move-up',
-        _({ id: 'sequential-canvas.move.up', message: 'Move up' }),
-        'arrow-up',
-        options.up
-      ),
+      item('move-up', _({ id: 'sequential-canvas.move.up', message: 'Move up' }), 'arrow-up', 'up'),
       item(
         'move-down',
         _({ id: 'sequential-canvas.move.down', message: 'Move down' }),
         'arrow-down',
-        options.down
+        'down'
       ),
       item(
         'move-indent',
         _({ id: 'sequential-canvas.move.indent', message: 'Move into previous step' }),
         'indent',
-        options.indent
+        'indent'
       ),
       item(
         'move-outdent',
         _({ id: 'sequential-canvas.move.outdent', message: 'Move out' }),
         'outdent',
-        options.outdent
+        'outdent'
       ),
     ];
   }, [isDesignMode, moveActions, nodeId, _]);
