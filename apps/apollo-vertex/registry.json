@@ -2201,10 +2201,71 @@
       "title": "Page Header",
       "description": "A compound page header with back button, title, metadata fields, and collapsible action buttons that overflow into a dropdown.",
       "dependencies": ["class-variance-authority", "lucide-react"],
-      "registryDependencies": ["@uipath/button", "@uipath/dropdown-menu"],
+      "registryDependencies": [
+        "@uipath/button",
+        "@uipath/composition",
+        "@uipath/dropdown-menu"
+      ],
+      "meta": { "layer": "surface" },
+      "categories": ["surface"],
       "files": [
         {
           "path": "registry/page-header/page-header.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/page-header/page-header.surface.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "composition",
+      "type": "registry:lib",
+      "title": "Composition",
+      "description": "Specs for the template, slot, surface, and occupant layout layers, plus helpers to check that a surface fits a slot and an occupant fits a surface.",
+      "files": [
+        {
+          "path": "registry/composition/composition.ts",
+          "type": "registry:lib",
+          "target": "lib/composition.ts"
+        }
+      ]
+    },
+    {
+      "name": "side-panel",
+      "type": "registry:ui",
+      "title": "Side Panel",
+      "description": "A docked panel surface for the start or end edge of a template.",
+      "registryDependencies": ["@uipath/composition"],
+      "meta": { "layer": "surface" },
+      "categories": ["surface"],
+      "files": [
+        {
+          "path": "registry/side-panel/side-panel.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/side-panel/side-panel.surface.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "content-area",
+      "type": "registry:ui",
+      "title": "Content Area",
+      "description": "A scrolling surface for a template's main slot, padded to align with the page header.",
+      "registryDependencies": ["@uipath/composition"],
+      "meta": { "layer": "surface" },
+      "categories": ["surface"],
+      "files": [
+        {
+          "path": "registry/content-area/content-area.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/content-area/content-area.surface.ts",
           "type": "registry:ui"
         }
       ]
