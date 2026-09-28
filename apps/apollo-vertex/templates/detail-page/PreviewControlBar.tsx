@@ -1,21 +1,15 @@
 import type { ReactNode } from "react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { SurfacePadding } from "@/lib/composition";
-import type { PaddedSlotName } from "./preview-options";
 import type {
   DetailPagePanels,
+  DetailPageSlotName,
   PanelClosedBy,
   PanelPlacement,
   PanelSide,
-  StartPanelControls,
 } from "./detail-page.template";
 import { enabledPanels } from "./detail-page.template";
-import type {
-  OccupantCount,
-  PreviewSettings,
-  ShellVariant,
-  SidebarState,
-} from "./preview-url-state";
+import type { PreviewSettings, ShellVariant } from "./preview-url-state";
 
 interface Option<T extends string> {
   value: T;
@@ -96,26 +90,11 @@ const SHELL_OPTIONS: Option<ShellVariant>[] = [
   { value: "minimal", label: "Minimal" },
 ];
 
-const SIDEBAR_OPTIONS: Option<SidebarState>[] = [
-  { value: "expanded", label: "Expanded" },
-  { value: "collapsed", label: "Collapsed" },
-];
-
 const PANELS_OPTIONS: Option<DetailPagePanels>[] = [
   { value: "none", label: "None" },
   { value: "start", label: "Start" },
   { value: "end", label: "End" },
   { value: "both", label: "Both" },
-];
-
-const CONTROLS_OPTIONS: Option<StartPanelControls>[] = [
-  { value: "in-panel", label: "In panel" },
-  { value: "rail", label: "Rail" },
-];
-
-const OCCUPANTS_OPTIONS: Option<OccupantCount>[] = [
-  { value: "one", label: "One" },
-  { value: "two", label: "Two" },
 ];
 
 const PLACEMENT_OPTIONS: Option<PanelPlacement>[] = [
@@ -155,7 +134,7 @@ export function PreviewControlBar({
   const { config, paddings } = settings;
   const enabled = enabledPanels(config.panels);
 
-  const setPadding = (slot: PaddedSlotName, padding: SurfacePadding) =>
+  const setPadding = (slot: DetailPageSlotName, padding: SurfacePadding) =>
     onChange((prev) => ({
       ...prev,
       paddings: { ...prev.paddings, [slot]: padding },
@@ -209,14 +188,6 @@ export function PreviewControlBar({
             onChange((prev) => ({ ...prev, shellVariant }))
           }
         />
-        {settings.shellVariant === "sidebar" && (
-          <Field
-            label="Sidebar"
-            value={settings.sidebar}
-            options={SIDEBAR_OPTIONS}
-            onChange={(sidebar) => onChange((prev) => ({ ...prev, sidebar }))}
-          />
-        )}
         <Field
           label="Panels"
           value={config.panels}
@@ -229,29 +200,6 @@ export function PreviewControlBar({
           }
         />
       </Section>
-      {enabled.start && (
-        <Section title="Start panel controls">
-          <Field
-            label="Controls"
-            value={config.startControls ?? "in-panel"}
-            options={CONTROLS_OPTIONS}
-            onChange={(startControls) =>
-              onChange((prev) => ({
-                ...prev,
-                config: { ...prev.config, startControls },
-              }))
-            }
-          />
-          <Field
-            label="Occupants"
-            value={settings.occupants}
-            options={OCCUPANTS_OPTIONS}
-            onChange={(occupants) =>
-              onChange((prev) => ({ ...prev, occupants }))
-            }
-          />
-        </Section>
-      )}
       <Section title="Header">
         <Field
           label="Padding"

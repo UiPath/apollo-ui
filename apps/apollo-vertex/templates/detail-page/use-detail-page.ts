@@ -3,13 +3,10 @@ import { type RefCallback, useState } from "react";
 import {
   type DetailPageConfig,
   type DetailPagePanels,
-  DIVIDER_PX,
   enabledPanels,
-  hasStartRail,
   type PanelClosedBy,
   type PanelIntent,
   type PanelSide,
-  RAIL_OUTER_PX,
   resolvePanels,
 } from "./detail-page.template";
 
@@ -86,8 +83,7 @@ export function useDetailPage(config: DetailPageConfig): DetailPageState {
   }
 
   const enabled = enabledPanels(config.panels);
-  const reservedPx = hasStartRail(config) ? RAIL_OUTER_PX + DIVIDER_PX : 0;
-  const resolved = resolvePanels(intent, width, reservedPx);
+  const resolved = resolvePanels(intent, width);
   const closedBy = {
     start: enabled.start ? resolved.closedBy.start : null,
     end: enabled.end ? resolved.closedBy.end : null,
