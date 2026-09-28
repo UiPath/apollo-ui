@@ -135,7 +135,7 @@ function Group({ title, children }: GroupProps) {
   );
 }
 
-/** Preview-only. Lives outside the template's markup. */
+/** Preview-only. Lives outside the template's markup; the preview places it. */
 export function PreviewControlBar({
   shellVariant,
   onShellVariantChange,
@@ -151,7 +151,7 @@ export function PreviewControlBar({
   const sides: PanelSide[] = ["start", "end"];
 
   return (
-    <div className="fixed bottom-4 left-1/2 z-[60] flex w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 flex-col gap-2 rounded-lg border border-border bg-background p-3 shadow-md">
+    <div className="flex w-max max-w-[calc(100vw-2rem)] flex-col gap-2 rounded-lg border border-border bg-background p-3 shadow-md">
       <Group title="Layout">
         <Control
           label="Shell"
