@@ -21,6 +21,7 @@ const LAYOUT_TOKENS: Record<string, string> = {
   "surface-inset": "surfaceInset",
   "side-panel-width-min": "sidePanelWidthMin",
   "content-area-width-min": "contentAreaWidthMin",
+  "scroll-fade-size": "scrollFadeSize",
 };
 
 interface ThemeItem {

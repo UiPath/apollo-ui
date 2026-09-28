@@ -120,6 +120,7 @@
       "@/components/ui/toggle-group": ["./registry/toggle-group/toggle-group"],
       "@/components/ui/tooltip": ["./registry/tooltip/tooltip"],
       "@/hooks/use-mobile": ["./registry/use-mobile/use-mobile"],
+      "@/hooks/use-scroll-fade": ["./registry/use-scroll-fade/use-scroll-fade"],
       "@/hooks/useReactTableCompat": [
         "./registry/use-data-table/useReactTableCompat"
       ],

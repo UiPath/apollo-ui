@@ -7,6 +7,7 @@ export const LAYOUT_TOKENS = {
   surfaceInset: 24,
   sidePanelWidthMin: 280,
   contentAreaWidthMin: 480,
+  scrollFadeSize: 24,
 } as const;
 
 /** The --sidebar strength in --side-panel-tint, as a percentage. */

@@ -3,7 +3,8 @@
 import { cva } from "class-variance-authority";
 import * as React from "react";
 
-import type { SurfacePadding } from "@/lib/composition";
+import { SCROLL_FADE_MASK, useScrollFade } from "@/hooks/use-scroll-fade";
+import type { ScrollOwner, SurfacePadding } from "@/lib/composition";
 import { cn } from "@/lib/utils";
 
 // The background follows placement only, so the rules are !important:
@@ -12,21 +13,30 @@ import { cn } from "@/lib/utils";
 // every other panel stays transparent.
 const sidePanelVariants = cva(
   [
-    "flex h-full w-(--side-panel-width) min-h-0 shrink-0 flex-col overflow-y-auto [--side-panel-width:var(--side-panel-width-min)]",
+    "flex h-full w-(--side-panel-width) min-h-0 shrink-0 flex-col [--side-panel-width:var(--side-panel-width-min)]",
     "bg-transparent! bg-none! data-[placement=beside-header]:bg-side-panel-tint!",
   ].join(" "),
-  {
-    variants: {
-      padding: {
-        padded: "p-(--surface-inset)",
-        flush: "p-0",
-      },
+);
+
+// The body holds the padding and, when the surface owns scrolling, is the
+// scroll container with the fade mask. It is separate from the panel so the
+// mask fades the content, never the panel's tint.
+const sidePanelBodyVariants = cva("flex min-h-0 flex-1 flex-col", {
+  variants: {
+    padding: {
+      padded: "p-(--surface-inset)",
+      flush: "p-0",
     },
-    defaultVariants: {
-      padding: "padded",
+    scroll: {
+      surface: ["overflow-y-auto", SCROLL_FADE_MASK].join(" "),
+      occupant: "overflow-hidden",
     },
   },
-);
+  defaultVariants: {
+    padding: "padded",
+    scroll: "surface",
+  },
+});
 
 type SidePanelPlacement = "below-header" | "beside-header";
 
@@ -48,6 +58,12 @@ interface SidePanelProps extends React.ComponentProps<"aside"> {
   side: "start" | "end";
   /** Set from the occupant's spec. Defaults to "padded". */
   padding?: SurfacePadding;
+  /**
+   * Who scrolls, from the occupant's spec. "surface" (default): the panel
+   * body scrolls and fades. "occupant": the panel neither scrolls nor
+   * fades, and gives the occupant its full height to scroll itself.
+   */
+  scroll?: ScrollOwner;
   /** Overrides the open state a template provides. Defaults to open. */
   open?: boolean;
   /** Names the landmark for assistive tech. */
@@ -57,10 +73,13 @@ interface SidePanelProps extends React.ComponentProps<"aside"> {
 function SidePanel({
   side,
   padding = "padded",
+  scroll = "surface",
   open: openProp,
   className,
+  children,
   ...props
 }: SidePanelProps) {
+  const fadeRef = useScrollFade<HTMLDivElement>(scroll === "surface");
   const slot = React.useContext(SidePanelSlotContext);
   const open = openProp ?? slot?.open ?? true;
   const placement = slot?.placement ?? "below-header";
@@ -71,11 +90,25 @@ function SidePanel({
       data-padding={padding}
       data-state={open ? "open" : "closed"}
       data-placement={placement}
-      className={cn(sidePanelVariants({ padding }), className)}
+      data-scroll={scroll}
+      className={cn(sidePanelVariants(), className)}
       {...props}
-    />
+    >
+      <div
+        ref={fadeRef}
+        data-slot="side-panel-body"
+        className={sidePanelBodyVariants({ padding, scroll })}
+      >
+        {children}
+      </div>
+    </aside>
   );
 }
 
-export { SidePanel, SidePanelSlotContext, sidePanelVariants };
+export {
+  SidePanel,
+  SidePanelSlotContext,
+  sidePanelBodyVariants,
+  sidePanelVariants,
+};
 export type { SidePanelPlacement, SidePanelProps, SidePanelSlotState };

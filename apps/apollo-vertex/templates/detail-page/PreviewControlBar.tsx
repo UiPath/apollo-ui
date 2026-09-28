@@ -2,7 +2,8 @@ import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import type { SurfacePadding } from "@/lib/composition";
+import type { ScrollOwner, SurfacePadding } from "@/lib/composition";
+import type { ScrollableSlotName } from "./DetailPageExample";
 import type {
   DetailPagePanels,
   DetailPageSlotName,
@@ -110,6 +111,16 @@ const OPEN_OPTIONS: Option<"open" | "closed">[] = [
   { value: "closed", label: "Closed" },
 ];
 
+const CONTENT_OPTIONS: Option<"short" | "long">[] = [
+  { value: "short", label: "Off" },
+  { value: "long", label: "On" },
+];
+
+const SCROLL_OPTIONS: Option<ScrollOwner>[] = [
+  { value: "surface", label: "Surface" },
+  { value: "occupant", label: "Occupant" },
+];
+
 const PADDING_OPTIONS: Option<SurfacePadding>[] = [
   { value: "padded", label: "Padded" },
   { value: "flush", label: "Flush" },
@@ -159,6 +170,35 @@ export function PreviewControlBar({
       paddings: { ...prev.paddings, [slot]: padding },
     }));
 
+  const scrollFields = (slot: ScrollableSlotName, title: string) => (
+    <>
+      <Field
+        label="Long content"
+        ariaLabel={`${title} content`}
+        value={settings.contents[slot]}
+        options={CONTENT_OPTIONS}
+        onChange={(content) =>
+          onChange((prev) => ({
+            ...prev,
+            contents: { ...prev.contents, [slot]: content },
+          }))
+        }
+      />
+      <Field
+        label="Scrolls"
+        ariaLabel={`${title} scroll owner`}
+        value={settings.scrolls[slot]}
+        options={SCROLL_OPTIONS}
+        onChange={(scroll) =>
+          onChange((prev) => ({
+            ...prev,
+            scrolls: { ...prev.scrolls, [slot]: scroll },
+          }))
+        }
+      />
+    </>
+  );
+
   const panelFields = (side: PanelSide, title: string) => (
     <Section title={title}>
       <Field
@@ -193,6 +233,7 @@ export function PreviewControlBar({
           setPadding(side === "start" ? "start-panel" : "end-panel", padding)
         }
       />
+      {scrollFields(side === "start" ? "start-panel" : "end-panel", title)}
       {side === "end" && (
         <div className="flex items-center justify-between gap-2">
           <div className="flex flex-col">
@@ -299,6 +340,7 @@ export function PreviewControlBar({
           options={PADDING_OPTIONS}
           onChange={(padding) => setPadding("main", padding)}
         />
+        {scrollFields("main", "Main")}
       </Section>
       {enabled.end && panelFields("end", "End panel")}
     </div>
