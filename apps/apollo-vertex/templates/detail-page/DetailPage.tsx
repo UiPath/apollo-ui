@@ -4,7 +4,6 @@ import type { ComponentProps, CSSProperties, ReactNode } from "react";
 import { SidePanelSlotContext } from "@/components/ui/side-panel";
 import { cn } from "@/lib/utils";
 import {
-  DIVIDER_PX,
   detailPageTemplate,
   enabledPanels,
   END_PANEL_MIN_PX,
@@ -15,6 +14,23 @@ import {
 } from "./detail-page.template";
 import { PanelResizeHandle } from "./PanelResizeHandle";
 import type { DetailPageState } from "./use-detail-page";
+
+/*
+ * Slot dividers match the Shell sidebar's edge: an inset box-shadow in
+ * --divider on a pointer-events-none overlay (::after), so they take no
+ * layout space. --slot-divider-width is the line's thickness. Box-shadows
+ * are dropped in forced-colors mode, so there the overlay draws a real 1px
+ * border in CanvasText instead, still without taking layout space.
+ */
+const DIVIDER_OVERLAY =
+  "after:pointer-events-none after:absolute after:inset-0 after:z-10 after:content-[''] forced-colors:after:shadow-none forced-colors:after:border-[CanvasText]";
+const DIVIDER_BOTTOM =
+  "after:shadow-[inset_0_calc(-1*var(--slot-divider-width))_0_0_var(--divider)] forced-colors:after:border-b";
+// box-shadow offsets are physical, so the inline-edge dividers flip in RTL.
+const DIVIDER_INLINE_END =
+  "after:shadow-[inset_calc(-1*var(--slot-divider-width))_0_0_0_var(--divider)] rtl:after:shadow-[inset_var(--slot-divider-width)_0_0_0_var(--divider)] forced-colors:after:border-e";
+const DIVIDER_INLINE_START =
+  "after:shadow-[inset_var(--slot-divider-width)_0_0_0_var(--divider)] rtl:after:shadow-[inset_calc(-1*var(--slot-divider-width))_0_0_0_var(--divider)] forced-colors:after:border-s";
 
 const endPanelResizable =
   detailPageTemplate.slots.find((slot) => slot.name === "end-panel")
@@ -41,9 +57,9 @@ export interface DetailPageProps
  * instead and the header starts or ends one column in. Only the spans
  * change, never the markup.
  *
- * The frame draws the dividers between slots as real borders on the slot
- * wrappers, so they survive forced-colors mode and follow the layout.
- * Surfaces draw no outer borders, which keeps their inner widths exact.
+ * The frame draws the dividers between slots as overlays on the slot
+ * wrappers (see DIVIDER_OVERLAY), so they follow the layout and take no
+ * space: panels are exactly their width. Surfaces draw no outer borders.
  *
  * Panels that are disabled or have no content are not rendered. Closed
  * panels stay mounted but are hidden, so they and their dividers take no
@@ -76,9 +92,9 @@ export function DetailPage({
   const startBeside = hasStart && config.start.placement === "beside-header";
   const endBeside = hasEnd && config.end.placement === "beside-header";
 
-  const endSlotMinPx = END_PANEL_MIN_PX + DIVIDER_PX;
+  const endSlotMinPx = END_PANEL_MIN_PX;
   const endAtMax = hasEnd && open.end && state.endWidthChosen === "max";
-  const startOpenPx = hasStart && open.start ? START_PANEL_PX + DIVIDER_PX : 0;
+  const startOpenPx = hasStart && open.start ? START_PANEL_PX : 0;
   const mainTrack = endAtMax
     ? `minmax(min(${MAIN_MIN_OUTER_PX}px, calc(100% - ${startOpenPx + endSlotMinPx}px)), 1fr)`
     : "minmax(0, 1fr)";
@@ -114,7 +130,9 @@ export function DetailPage({
       <div
         data-slot="detail-page-header"
         className={cn(
-          "row-start-1 min-w-0 border-b-(length:--slot-divider-width) border-border",
+          "relative row-start-1 min-w-0",
+          DIVIDER_OVERLAY,
+          DIVIDER_BOTTOM,
           startBeside ? "col-start-2" : "col-start-1",
           endBeside ? "col-end-3" : "col-end-4",
         )}
@@ -126,7 +144,9 @@ export function DetailPage({
           data-slot="detail-page-start-panel"
           data-state={open.start ? "open" : "closed"}
           className={cn(
-            "col-start-1 min-h-0 border-e-(length:--slot-divider-width) border-border data-[state=closed]:hidden",
+            "relative col-start-1 min-h-0 data-[state=closed]:hidden",
+            DIVIDER_OVERLAY,
+            DIVIDER_INLINE_END,
             "[&>[data-surface=side-panel]]:[--side-panel-width:var(--detail-page-start-panel-width)]",
             startBeside ? "row-span-2 row-start-1" : "row-start-2",
           )}
@@ -149,7 +169,9 @@ export function DetailPage({
           data-slot="detail-page-end-panel"
           data-state={open.end ? "open" : "closed"}
           className={cn(
-            "relative col-start-3 min-h-0 border-s-(length:--slot-divider-width) border-border data-[state=closed]:hidden",
+            "relative col-start-3 min-h-0 data-[state=closed]:hidden",
+            DIVIDER_OVERLAY,
+            DIVIDER_INLINE_START,
             "[&>[data-surface=side-panel]]:[--side-panel-width:var(--detail-page-end-width)]",
             endBeside ? "row-span-2 row-start-1" : "row-start-2",
           )}

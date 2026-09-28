@@ -125,18 +125,36 @@ export function occupantPadding(occupant: OccupantSpec): SurfacePadding {
 }
 
 /**
- * Whether a surface guarantees what an occupant needs. Width is checked
- * against the surface's minimum inner width, since that is all it promises.
- * A flush occupant also gets the inset back, except when the minimum is 0:
- * that means no guarantee, so there is nothing to add to.
+ * The inner width, in px, an occupant with the given padding gets in a
+ * slot. A slot with its own width uses its default (what it renders at,
+ * and always for a slot that isn't resizable). Otherwise the surface's
+ * inner minimum is all that is promised. A flush occupant gets the inset
+ * back, except when that minimum is 0: no guarantee, nothing to add to.
  */
-export function fits(surface: SurfaceSpec, occupant: OccupantSpec): boolean {
-  const { width, scroll } = surface.provides;
+export function slotInnerWidth(
+  slot: SlotSpec,
+  surface: SurfaceSpec,
+  padding: SurfacePadding,
+): number {
+  const inset = padding === "flush" ? 0 : 2 * PADDED_INSET_PX;
+  if (slot.width) return slot.width.default - inset;
+  const min = surface.provides.width.min;
+  return padding === "flush" && min > 0 ? min + 2 * PADDED_INSET_PX : min;
+}
+
+/**
+ * Whether an occupant fits a surface in a given slot: the slot accepts the
+ * surface, the slot's actual inner width covers the occupant's minimum,
+ * and the scroll owners agree.
+ */
+export function fits(
+  slot: SlotSpec,
+  surface: SurfaceSpec,
+  occupant: OccupantSpec,
+): boolean {
   const { minWidth, scroll: needsScroll } = occupant.requires;
-  const isFlush = occupantPadding(occupant) === "flush";
-  const available =
-    isFlush && width.min > 0 ? width.min + 2 * PADDED_INSET_PX : width.min;
-  const widthFits = available >= minWidth;
-  const scrollFits = needsScroll === "either" || needsScroll === scroll;
-  return widthFits && scrollFits;
+  const available = slotInnerWidth(slot, surface, occupantPadding(occupant));
+  const scrollFits =
+    needsScroll === "either" || needsScroll === surface.provides.scroll;
+  return slotAccepts(slot, surface) && available >= minWidth && scrollFits;
 }

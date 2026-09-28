@@ -141,7 +141,7 @@ export function DetailPagePreview() {
     window.history.replaceState(null, "", url);
   }, [settings, endWidthChosen]);
 
-  // Record the user's choice as the panel's defaultOpen so it lands in the
+  // Save the user's choice as the panel's defaultOpen so it lands in the
   // URL. Closes made by the main-width rule never reach here.
   const setPanelOpen = (side: PanelSide, open: boolean) => {
     detailPage.setPanelOpen(side, open);

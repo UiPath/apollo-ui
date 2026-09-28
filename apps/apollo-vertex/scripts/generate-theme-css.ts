@@ -21,7 +21,6 @@ const LAYOUT_TOKENS: Record<string, string> = {
   "surface-inset": "surfaceInset",
   "side-panel-width-min": "sidePanelWidthMin",
   "content-area-width-min": "contentAreaWidthMin",
-  "slot-divider-width": "slotDividerWidth",
 };
 
 interface ThemeItem {

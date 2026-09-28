@@ -13,7 +13,7 @@ export const sidePanelSurface = {
   name: "side-panel",
   width: { min: LAYOUT_TOKENS.sidePanelWidthMin },
   // Inner width at the minimum, less the padded inset on both sides.
-  // fits() checks this.
+  // fits() uses a slot's own width when it has one, and this otherwise.
   provides: {
     width: { min: LAYOUT_TOKENS.sidePanelWidthMin - 2 * PADDED_INSET_PX },
     scroll: "surface",

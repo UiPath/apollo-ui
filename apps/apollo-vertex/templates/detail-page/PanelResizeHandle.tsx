@@ -22,8 +22,9 @@ function isRtl(element: Element) {
 
 /**
  * The draggable divider on an end panel's start edge. The template owns it;
- * the panel surface doesn't change. It sits over the 1px divider with an
- * 8px grab area that takes no layout space.
+ * the panel surface doesn't change. Its 8px grab area is centered on the
+ * divider line (half of --slot-divider-width in from the slot's start edge)
+ * and takes no layout space. It stacks above the divider overlay.
  *
  * Moving toward the start edge widens the panel. Keys follow logical
  * direction, so they flip in RTL: the arrow toward start widens by 16px
@@ -90,7 +91,7 @@ export function PanelResizeHandle({
       aria-valuemax={max}
       tabIndex={0}
       data-slot="detail-page-resize-handle"
-      className="group absolute inset-y-0 -start-1 z-10 flex w-2 cursor-col-resize touch-none select-none justify-center outline-none"
+      className="group absolute inset-y-0 start-[calc(var(--slot-divider-width)/2-4px)] z-20 flex w-2 cursor-col-resize touch-none select-none justify-center outline-none"
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={endDrag}
