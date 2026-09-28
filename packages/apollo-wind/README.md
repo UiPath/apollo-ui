@@ -31,6 +31,19 @@ import "@uipath/apollo-wind/fonts/font.css";
 Classic themes keep Tailwind's default `--font-sans` and need no font import.
 Apps that already import `@uipath/apollo-react/core/fonts/font.css` are covered.
 
+**Angular Material hosts:** pages that carry `.mat-typography` inject unlayered
+typography rules, so overlays ship with a Material-scoped shield. Inside such
+hosts the shield outranks plain utilities, so these overrides need the `!`
+modifier (`text-xl!`, `font-bold!`, `mb-4!`):
+
+- on `DialogTitle`, `SheetTitle`, `AlertDialogTitle`, `DrawerTitle` and
+  `AlertTitle`: font family, size, line-height, weight, letter-spacing and margin;
+- on any other `h1` to `h6` inside an overlay: the same set, plus font style;
+- on any `p` inside an overlay: margin.
+
+Spacing between a title and its description should come from the header's
+`gap`, not from margins on the title.
+
 **Option 1: Zero Config** (Recommended for quick starts)
 
 ```tsx

@@ -68,6 +68,29 @@ describe('Dialog', () => {
     });
   });
 
+  it('sets its own text color instead of inheriting the host body color', async () => {
+    const user = userEvent.setup();
+    render(<DialogExample />);
+
+    await user.click(screen.getByRole('button', { name: 'Open Dialog' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('dialog')).toHaveClass('text-foreground');
+    });
+  });
+
+  it('exposes title and description slots for host CSS shields', async () => {
+    const user = userEvent.setup();
+    render(<DialogExample />);
+
+    await user.click(screen.getByRole('button', { name: 'Open Dialog' }));
+
+    await waitFor(() => {
+      expect(document.querySelector('[data-slot="dialog-title"]')).toBeInTheDocument();
+      expect(document.querySelector('[data-slot="dialog-description"]')).toBeInTheDocument();
+    });
+  });
+
   it('displays dialog title', async () => {
     const user = userEvent.setup();
     render(<DialogExample />);
@@ -246,6 +269,10 @@ describe('Dialog', () => {
 
     const dialog = screen.getByRole('dialog');
     expect(dialog).toHaveTextContent('Takeover title');
+    expect(screen.getByText('Takeover title')).toHaveAttribute(
+      'data-slot',
+      'dialog-takeover-title'
+    );
     expect(dialog).toHaveTextContent('Sidebar content');
     expect(dialog).toHaveAttribute('title', 'Native tooltip');
     expect(dialog).toHaveAttribute('data-expanded', 'false');
