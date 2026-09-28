@@ -4,6 +4,7 @@ import { FormField, FormFieldHeader } from '../form-field';
 import { Input } from '../input';
 import { InputGroup } from '../input-group';
 import { TooltipProvider } from '../tooltip';
+import type { VariablePickerItem } from '../variable-picker';
 import { AiAssistAction } from './ai-assist-action';
 import { InsertVariableAction } from './insert-variable-action';
 
@@ -38,9 +39,21 @@ Actions for a field's header row, passed to \`FormFieldHeader\`'s \`actions\`.
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const VARIABLES = [
-  { label: 'Order id', value: '$vars.orderId' },
-  { label: 'Customer email', value: '$vars.customerEmail' },
+// Rendered as supplied: the `$vars` root is this story's, not the action's.
+const VARIABLES: VariablePickerItem[] = [
+  {
+    id: 'vars',
+    label: '$vars',
+    children: [
+      { id: 'orderId', label: 'Order id', value: '$vars.orderId', type: 'string' },
+      {
+        id: 'customerEmail',
+        label: 'Customer email',
+        value: '$vars.customerEmail',
+        type: 'string',
+      },
+    ],
+  },
 ];
 
 function Example({ label, children }: { label: string; children: ReactNode }) {
@@ -84,7 +97,10 @@ export const InsertVariable: Story = {
   },
 };
 
-/** With a hint under the prompt, and with translated strings. */
+/**
+ * With a hint under the prompt, generating asynchronously (busy until the promise settles, then
+ * closed), and with translated strings.
+ */
 export const AiAssist: Story = {
   render: () => {
     const [prompt, setPrompt] = useState<string | null>(null);
@@ -92,6 +108,18 @@ export const AiAssist: Story = {
       <div className="grid w-80 gap-5">
         <Example label={prompt ? `Generated from "${prompt}"` : 'With a hint'}>
           <AiAssistAction hint="Output: string value" onGenerate={setPrompt} />
+        </Example>
+        <Example label="Asynchronous">
+          <AiAssistAction
+            onGenerate={(next) =>
+              new Promise<void>((resolve) =>
+                setTimeout(() => {
+                  setPrompt(next);
+                  resolve();
+                }, 1500)
+              )
+            }
+          />
         </Example>
         <Example label="Translated">
           <AiAssistAction
@@ -102,6 +130,7 @@ export const AiAssist: Story = {
               prompt: 'Décrivez ce que vous voulez',
               promptPlaceholder: 'Afficher une valeur de l’étape précédente',
               generate: 'Générer',
+              generating: 'Génération',
             }}
           />
         </Example>

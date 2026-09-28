@@ -88,7 +88,7 @@ There is nothing to set on the control.
   </InputGroupAddon>
   <DatePicker id="due" value={due} onValueChange={setDue} />
   <InputGroupAddon align="inline-end">
-    <ValueModeMenu mode={mode} onSelect={setMode} />
+    <FieldMenu mode={mode} onSelect={setMode} />
   </InputGroupAddon>
 </InputGroup>
 \`\`\`

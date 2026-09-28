@@ -1,5 +1,5 @@
 import { Asterisk, ChevronDown } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { type ReactNode, useMemo } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,8 +18,27 @@ import {
   COLLAPSED_ONLY,
 } from '../../field-actions/collapse';
 import { InsertVariableAction } from '../../field-actions/insert-variable-action';
+import type { VariablePickerItem } from '../../variable-picker';
 import type { LockableFieldType, LockableValueFieldOption } from '../types';
 import { FIELD_TYPE_META, FIELD_TYPE_ORDER } from '../types';
+
+// InsertVariableAction renders entries as supplied; this keeps the `$vars` root the field has always
+// shown until QuickFormField takes over its variable tree.
+function toVariableTree(variables: LockableValueFieldOption[]): VariablePickerItem[] {
+  return [
+    {
+      id: 'vars',
+      label: '$vars',
+      type: 'object',
+      children: variables.map((variable) => ({
+        id: variable.value,
+        label: variable.label,
+        value: variable.value,
+        type: 'string',
+      })),
+    },
+  ];
+}
 
 export function FieldHeader({
   label,
@@ -55,6 +74,7 @@ export function FieldHeader({
   headerActions?: ReactNode;
 }) {
   const typeMeta = FIELD_TYPE_META[fieldType];
+  const variableTree = useMemo(() => toVariableTree(variables), [variables]);
   const collapsedTextClass = cn(COLLAPSED_HIDDEN, compact && '!hidden');
   const collapsedPaddingClass = cn(COLLAPSED_ICON_PADDING, compact && '!px-1.5');
   const compactOnlyClass = cn(COLLAPSED_ONLY, compact && '!block');
@@ -169,7 +189,7 @@ export function FieldHeader({
                   />
                 )}
                 <InsertVariableAction
-                  variables={variables}
+                  variables={variableTree}
                   compact={compact}
                   onInsert={
                     onValueChange &&

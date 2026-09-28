@@ -1,5 +1,6 @@
 import { Braces, ChevronDown } from 'lucide-react';
-import { VariablePicker } from '@/components/ui/variable-picker';
+import { useState } from 'react';
+import { VariablePicker, type VariablePickerItem } from '@/components/ui/variable-picker';
 import { cn } from '@/lib';
 import { COLLAPSED_HIDDEN, COLLAPSED_ICON_PADDING } from './collapse';
 
@@ -8,15 +9,33 @@ export interface InsertVariableActionStrings {
   label: string;
   /** Accessible name and hover title. */
   ariaLabel: string;
+  /** The picker's search box. */
+  searchPlaceholder: string;
+  /** The picker with nothing to show. */
+  empty: string;
+  /** Confirms replacing a value that cannot take the reference at a caret. */
+  replaceTitle: string;
+  replaceDescription: string;
+  replaceConfirm: string;
 }
 
 export const DEFAULT_INSERT_VARIABLE_ACTION_STRINGS: InsertVariableActionStrings = {
   label: 'Insert',
   ariaLabel: 'Insert variable',
+  searchPlaceholder: 'Search variables...',
+  empty: 'No variables found.',
+  replaceTitle: 'Replace the value?',
+  replaceDescription: 'The variable will replace the current value. This cannot be undone.',
+  replaceConfirm: 'Replace',
 };
 
 export interface InsertVariableActionProps {
-  variables: { label: string; value: string }[];
+  /**
+   * The variables to offer, rendered as supplied: the picker adds no root and no types. A function
+   * is called each time the picker opens, never during render, so a host can hand over a live
+   * source without re-rendering the field whenever it changes.
+   */
+  variables: VariablePickerItem[] | (() => VariablePickerItem[]);
   /** Called with the picked variable's value. Omitted, the action is disabled. */
   onInsert?: (value: string) => void;
   disabled?: boolean;
@@ -35,25 +54,21 @@ export function InsertVariableAction({
   strings,
 }: InsertVariableActionProps) {
   const text = { ...DEFAULT_INSERT_VARIABLE_ACTION_STRINGS, ...strings };
-  const inert = disabled || variables.length === 0 || !onInsert;
+  const lazy = typeof variables === 'function';
+  // A function's result is unknown until the picker opens, so only a supplied empty list disables.
+  const inert = disabled || !onInsert || (!lazy && variables.length === 0);
+  const [openedItems, setOpenedItems] = useState<VariablePickerItem[]>([]);
   const collapsedTextClass = cn(COLLAPSED_HIDDEN, compact && '!hidden');
 
   return (
     <VariablePicker
       disabled={inert}
-      items={[
-        {
-          id: 'vars',
-          label: '$vars',
-          type: 'object',
-          children: variables.map((variable) => ({
-            id: variable.value,
-            label: variable.label,
-            value: variable.value,
-            type: 'string',
-          })),
-        },
-      ]}
+      items={lazy ? openedItems : variables}
+      placeholder={text.searchPlaceholder}
+      emptyText={text.empty}
+      onOpenChange={(open) => {
+        if (open && lazy) setOpenedItems(variables());
+      }}
       onSelect={(variable) => {
         if (variable.value) onInsert?.(variable.value);
       }}
