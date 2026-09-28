@@ -3,13 +3,9 @@ import {
   AlertDescription,
   cn,
   FormField,
-  FormFieldLabel,
-  InfoTooltip,
   Input,
   Label,
   Separator,
-  Switch,
-  Textarea,
 } from '@uipath/apollo-wind';
 import { Info } from 'lucide-react';
 import { type ReactNode, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
@@ -31,6 +27,8 @@ import {
   initGuardrailBuilderFormData,
 } from './builder-utils';
 import { GuardrailActionSection } from './components/guardrail-action-section';
+import { GuardrailEvalsToggle } from './components/guardrail-evals-toggle';
+import { GuardrailNameFields } from './components/guardrail-name-fields';
 import { GuardrailScopeSelector } from './components/guardrail-scope-selector';
 import { GuardrailStatusBanner } from './components/guardrail-status-banner';
 import { MixedScopesBanner } from './components/mixed-scopes-banner';
@@ -42,6 +40,8 @@ import {
   useGuardrailBuilderLabels,
 } from './i18n';
 import type { GuardrailValidatorFormProps } from './types';
+import { type GuardrailErrorMerges, useGuardrailFormErrors } from './use-guardrail-form-errors';
+import { useSwallowEnter } from './use-swallow-enter';
 import {
   dropEmptyOptionalParameters,
   getOutOfRangeParameterIds,
@@ -50,6 +50,11 @@ import {
 } from './utils';
 
 const EMPTY_PARAM_IDS: ReadonlySet<string> = new Set();
+
+// Host parameter errors merge over the internal ones per parameter id.
+const BUILDER_ERROR_MERGES: GuardrailErrorMerges<GuardrailBuilderErrors> = {
+  parameters: { merge: (internal, host) => ({ ...internal, ...host }) },
+};
 
 export interface GuardrailBuilderProps {
   /**
@@ -178,7 +183,6 @@ export function GuardrailBuilder({
     if (!guardrail && defaultName) data.name = defaultName;
     return data;
   });
-  const [showErrors, setShowErrors] = useState(false);
 
   // Parameter ids the user has edited since the host last published `errors`. A host error is
   // a verdict on a value; once that value changes the verdict is stale, and without this it
@@ -191,29 +195,8 @@ export function GuardrailBuilder({
     setEditedParamIds(EMPTY_PARAM_IDS);
   }, [hostErrors]);
 
-  // The nested MetadataForm guards the fields it owns, but the builder renders single-line
-  // inputs of its own (name, and the escalation recipient/app fallbacks) outside that div.
-  // Mounted `inline` inside a host's <form>, Enter in one of those triggers the host's
-  // implicit submission and skips `handleSave` entirely — no validation, no callback. Same
-  // treatment as apollo-wind's `container='div'`: swallow Enter for single-line inputs only,
-  // so textareas keep newlines and buttons keep activation. Bound natively because the root
-  // is a passive container with no ARIA role to declare.
   const rootRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const node = rootRef.current;
-    if (!node) return;
-
-    const swallowEnter = (event: KeyboardEvent) => {
-      if (event.key !== 'Enter' || event.defaultPrevented) return;
-      const target = event.target as HTMLElement;
-      if (target instanceof HTMLInputElement && target.type !== 'button') {
-        event.preventDefault();
-      }
-    };
-
-    node.addEventListener('keydown', swallowEnter);
-    return () => node.removeEventListener('keydown', swallowEnter);
-  }, []);
+  useSwallowEnter(rootRef);
 
   const showScopeSelector = scope === 'Agent';
 
@@ -329,42 +312,33 @@ export function GuardrailBuilder({
     return Object.fromEntries(Object.entries(fromHost).filter(([id]) => !editedParamIds.has(id)));
   }, [hostErrors, editedParamIds]);
 
+  // `parameters` is the one host error the user can invalidate by typing; every other key stays
+  // until the host withdraws it.
+  const liveHostErrors = useMemo(
+    () =>
+      hostErrors?.parameters === undefined
+        ? hostErrors
+        : { ...hostErrors, parameters: liveHostParameterErrors },
+    [hostErrors, liveHostParameterErrors]
+  );
+
   // Host errors display immediately and win per field; internal errors display after a
   // failed save attempt. Both gate Save.
-  const displayErrors = useMemo<GuardrailBuilderErrors>(() => {
-    const base: GuardrailBuilderErrors = showErrors ? { ...internalErrors } : {};
-    if (hostErrors) {
-      for (const [key, value] of Object.entries(hostErrors)) {
-        if (value !== undefined) {
-          (base as Record<string, unknown>)[key] =
-            key === 'parameters' ? { ...base.parameters, ...liveHostParameterErrors } : value;
-        }
-      }
-    }
-    return base;
-  }, [showErrors, internalErrors, hostErrors, liveHostParameterErrors]);
-
-  const hasHostErrors = Boolean(
-    hostErrors &&
-      Object.entries(hostErrors).some(([key, v]) => {
-        if (v === undefined) return false;
-        // `parameters` is the one host error the user can invalidate by typing; every other
-        // key stays until the host withdraws it.
-        if (key === 'parameters') return Object.keys(liveHostParameterErrors).length > 0;
-        return typeof v !== 'object' || Object.keys(v).length > 0;
-      })
+  const { displayErrors, isValid, showErrors, revealErrors } = useGuardrailFormErrors(
+    internalErrors,
+    liveHostErrors,
+    BUILDER_ERROR_MERGES
   );
-  const isValid = Object.keys(internalErrors).length === 0 && !hasHostErrors;
   const isDefinitionAvailable = definition.status === 'Available';
 
   const handleSave = useCallback(() => {
     if (!isDefinitionAvailable) return;
     if (!isValid) {
-      setShowErrors(true);
+      revealErrors();
       return;
     }
     onSave(guardrailResult);
-  }, [guardrailResult, onSave, isValid, isDefinitionAvailable]);
+  }, [guardrailResult, onSave, isValid, isDefinitionAvailable, revealErrors]);
 
   // Hands the host `guardrailResult` unchanged — selector included. See `onSaveAsNew` for why
   // the copy is not re-scoped here even when the scope selector is hidden.
@@ -372,11 +346,11 @@ export function GuardrailBuilder({
     if (!onSaveAsNew) return;
     if (!isDefinitionAvailable) return;
     if (!isValid) {
-      setShowErrors(true);
+      revealErrors();
       return;
     }
     onSaveAsNew(guardrailResult);
-  }, [guardrailResult, onSaveAsNew, isValid, isDefinitionAvailable]);
+  }, [guardrailResult, onSaveAsNew, isValid, isDefinitionAvailable, revealErrors]);
 
   const isByoConfigurationDisabled =
     definition.byoValidatorName !== undefined && definition.status === 'Disabled';
@@ -401,17 +375,12 @@ export function GuardrailBuilder({
   ) : null;
 
   const evalsToggle = (
-    <div className="flex items-center gap-2">
-      <Switch
-        id={`${uid}-ootb-enable-evals`}
-        checked={formData.enabledForEvals}
-        onCheckedChange={(checked) => updateField('enabledForEvals', checked)}
-      />
-      <Label variant="muted" htmlFor={`${uid}-ootb-enable-evals`} className="cursor-pointer">
-        {labels.evalsLabel}
-      </Label>
-      <InfoTooltip content={labels.evalsTooltip} aria-label={labels.evalsInfoAriaLabel} />
-    </div>
+    <GuardrailEvalsToggle
+      idPrefix={`${uid}-ootb`}
+      checked={formData.enabledForEvals}
+      onCheckedChange={(checked) => updateField('enabledForEvals', checked)}
+      labels={labels}
+    />
   );
 
   const validatorFormErrors = displayErrors.parameters;
@@ -429,31 +398,15 @@ export function GuardrailBuilder({
         </FormField>
       )}
 
-      {/* Name */}
-      <FormField>
-        <FormFieldLabel htmlFor={`${uid}-ootb-name`} required>
-          {labels.nameLabel}
-        </FormFieldLabel>
-        <Input
-          id={`${uid}-ootb-name`}
-          value={formData.name}
-          onChange={(e) => updateField('name', e.target.value)}
-          placeholder={labels.namePlaceholder}
-          error={displayErrors.name}
-        />
-      </FormField>
-
-      {/* Description */}
-      <FormField>
-        <Label htmlFor={`${uid}-ootb-description`}>{labels.descriptionLabel}</Label>
-        <Textarea
-          id={`${uid}-ootb-description`}
-          minRows={1}
-          value={formData.description}
-          onChange={(e) => updateField('description', e.target.value)}
-          placeholder={labels.descriptionPlaceholder}
-        />
-      </FormField>
+      <GuardrailNameFields
+        idPrefix={`${uid}-ootb`}
+        name={formData.name}
+        description={formData.description}
+        onNameChange={(name) => updateField('name', name)}
+        onDescriptionChange={(description) => updateField('description', description)}
+        nameError={displayErrors.name}
+        labels={labels}
+      />
 
       {/* Validator parameters */}
       {definition.parameters.length > 0 && (

@@ -213,6 +213,16 @@ export function resolveGuardrailBuilderLabels(
   return mergeLabels(GUARDRAIL_BUILDER_EN_LABELS, catalog, overrides);
 }
 
+/** Narrow a builder label set to the keys one of the builder's parts reads. */
+function pickGuardrailBuilderLabels<K extends keyof GuardrailBuilderLabels>(
+  source: GuardrailBuilderLabels,
+  keys: ReadonlyArray<K>
+): Pick<GuardrailBuilderLabels, K> {
+  const picked = {} as Pick<GuardrailBuilderLabels, K>;
+  for (const key of keys) picked[key] = source[key];
+  return picked;
+}
+
 /**
  * The chrome strings `GuardrailActionSection` and `EscalateActionFields` read, for hosts that
  * mount either on its own rather than through `GuardrailBuilder`.
@@ -253,14 +263,9 @@ export type GuardrailActionLabelKey = (typeof GUARDRAIL_ACTION_LABEL_KEYS)[numbe
 
 export type GuardrailActionLabels = Pick<GuardrailBuilderLabels, GuardrailActionLabelKey>;
 
-function pickGuardrailActionLabels(source: GuardrailBuilderLabels): GuardrailActionLabels {
-  const picked = {} as GuardrailActionLabels;
-  for (const key of GUARDRAIL_ACTION_LABEL_KEYS) picked[key] = source[key];
-  return picked;
-}
-
-export const GUARDRAIL_ACTION_EN_LABELS: GuardrailActionLabels = pickGuardrailActionLabels(
-  GUARDRAIL_BUILDER_EN_LABELS
+export const GUARDRAIL_ACTION_EN_LABELS: GuardrailActionLabels = pickGuardrailBuilderLabels(
+  GUARDRAIL_BUILDER_EN_LABELS,
+  GUARDRAIL_ACTION_LABEL_KEYS
 );
 
 /** Merge English defaults, a loaded catalog, and per-string overrides (undefined skipped). */
@@ -548,7 +553,11 @@ export function useGuardrailActionLabels(
 ): GuardrailActionLabels {
   const catalog = useGuardrailBuilderLabels();
   return useMemo(
-    () => resolveGuardrailActionLabels(pickGuardrailActionLabels(catalog), overrides),
+    () =>
+      resolveGuardrailActionLabels(
+        pickGuardrailBuilderLabels(catalog, GUARDRAIL_ACTION_LABEL_KEYS),
+        overrides
+      ),
     [catalog, overrides]
   );
 }
@@ -1413,16 +1422,6 @@ export function useCentralizedGuardrailsLabels(
     () => resolveCentralizedGuardrailsLabels(buildCentralizedGuardrailsLabels(_), overrides),
     [_, overrides]
   );
-}
-
-/** Narrow a builder label set to the keys one of the builder's parts reads. */
-function pickGuardrailBuilderLabels<K extends keyof GuardrailBuilderLabels>(
-  source: GuardrailBuilderLabels,
-  keys: ReadonlyArray<K>
-): Pick<GuardrailBuilderLabels, K> {
-  const picked = {} as Pick<GuardrailBuilderLabels, K>;
-  for (const key of keys) picked[key] = source[key];
-  return picked;
 }
 
 /**
