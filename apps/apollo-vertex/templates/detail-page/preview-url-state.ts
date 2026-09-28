@@ -6,8 +6,13 @@ import type {
   DetailPageSlotName,
   PanelPlacement,
   PanelSide,
+  PanelWidth,
 } from "./detail-page.template";
-import { detailPageTemplate } from "./detail-page.template";
+import {
+  detailPageTemplate,
+  END_PANEL_DEFAULT_PX,
+  SIDE_PANEL_OUTER_PX,
+} from "./detail-page.template";
 
 export type ShellVariant = "sidebar" | "minimal";
 
@@ -20,6 +25,7 @@ export type ShellVariant = "sidebar" | "minimal";
  *   start, end    below-header | beside-header
  *   start-state,  open | closed   (the user's choice, not the rule's result)
  *   end-state
+ *   end-width     the end panel width the user chose: px (min 280) or max
  *   <slot>-padding  padded | flush, e.g. main-padding=flush
  *
  * Only values that differ from the defaults are written. Unknown or invalid
@@ -28,7 +34,10 @@ export type ShellVariant = "sidebar" | "minimal";
  */
 export interface PreviewSettings {
   shellVariant: ShellVariant;
-  /** `defaultOpen` carries the user's open or closed choice per panel. */
+  /**
+   * `defaultOpen` carries the user's open or closed choice per panel, and
+   * `end.defaultWidth` the end panel width they chose.
+   */
   config: DetailPageConfig;
   paddings: SlotPaddings;
 }
@@ -38,7 +47,11 @@ export const DEFAULT_PREVIEW_SETTINGS: PreviewSettings = {
   config: {
     panels: "both",
     start: { placement: "below-header", defaultOpen: true },
-    end: { placement: "below-header", defaultOpen: true },
+    end: {
+      placement: "below-header",
+      defaultOpen: true,
+      defaultWidth: END_PANEL_DEFAULT_PX,
+    },
   },
   paddings: {
     header: "padded",
@@ -63,6 +76,15 @@ function oneOf<T extends string>(
 }
 
 const paddingKey = (slot: DetailPageSlotName) => `${slot}-padding`;
+
+/** "max", a whole number of px at or above the minimum, or the default. */
+function parseWidth(value: string | null): PanelWidth {
+  if (value === "max") return "max";
+  const width = Number(value);
+  return Number.isInteger(width) && width >= SIDE_PANEL_OUTER_PX
+    ? width
+    : END_PANEL_DEFAULT_PX;
+}
 const stateKey = (side: PanelSide) => `${side}-state`;
 
 export function parsePreviewSettings(search: string): PreviewSettings {
@@ -97,7 +119,10 @@ export function parsePreviewSettings(search: string): PreviewSettings {
     config: {
       panels: oneOf(params.get("panels"), PANELS, defaults.config.panels),
       start: panel("start"),
-      end: panel("end"),
+      end: {
+        ...panel("end"),
+        defaultWidth: parseWidth(params.get("end-width")),
+      },
     },
     paddings,
   };
@@ -122,6 +147,11 @@ export function serializePreviewSettings(settings: PreviewSettings): string {
       fallback.defaultOpen ? "open" : "closed",
     );
   }
+  setIfChanged(
+    "end-width",
+    String(settings.config.end.defaultWidth ?? END_PANEL_DEFAULT_PX),
+    String(END_PANEL_DEFAULT_PX),
+  );
   for (const { name } of detailPageTemplate.slots) {
     setIfChanged(
       paddingKey(name),

@@ -1,10 +1,21 @@
 "use client";
 
-import type { ComponentProps, ReactNode } from "react";
+import type { ComponentProps, CSSProperties, ReactNode } from "react";
 import { SidePanelOpenContext } from "@/components/ui/side-panel";
 import { cn } from "@/lib/utils";
-import { enabledPanels } from "./detail-page.template";
+import {
+  DIVIDER_PX,
+  detailPageTemplate,
+  enabledPanels,
+  MAIN_MIN_OUTER_PX,
+  SIDE_PANEL_OUTER_PX,
+} from "./detail-page.template";
+import { PanelResizeHandle } from "./PanelResizeHandle";
 import type { DetailPageState } from "./use-detail-page";
+
+const endPanelResizable =
+  detailPageTemplate.slots.find((slot) => slot.name === "end-panel")
+    ?.resizable === true;
 
 export interface DetailPageProps
   extends Omit<ComponentProps<"div">, "children" | "ref"> {
@@ -34,6 +45,16 @@ export interface DetailPageProps
  * Panels that are disabled or have no content are not rendered. Closed
  * panels stay mounted but are hidden, so they and their dividers take no
  * space and their `auto` columns collapse to zero.
+ *
+ * The end panel is resizable. The frame sets its width through the
+ * --detail-page-end-width custom property, which overrides the side
+ * panel's own width variable, and turns its divider into a resize handle.
+ * The side panel surface itself doesn't change.
+ *
+ * A "max" end width is laid out by the grid, not in px: main and the end
+ * panel become equal 1fr tracks, with main's track minimum at 480px
+ * (capped so the end panel keeps its own minimum). That is the 50/50 split
+ * with main's floor, correct before the template is ever measured.
  */
 export function DetailPage({
   state,
@@ -44,19 +65,34 @@ export function DetailPage({
   className,
   ...props
 }: DetailPageProps) {
-  const { config, open, ref } = state;
+  const { config, open, ref, endWidth, endWidthRange } = state;
   const enabled = enabledPanels(config.panels);
   const hasStart = enabled.start && Boolean(startPanel);
   const hasEnd = enabled.end && Boolean(endPanel);
   const startBeside = hasStart && config.start.placement === "beside-header";
   const endBeside = hasEnd && config.end.placement === "beside-header";
 
+  const endSlotMinPx = SIDE_PANEL_OUTER_PX + DIVIDER_PX;
+  const endAtMax = hasEnd && open.end && state.endWidthChosen === "max";
+  const startOpenPx = hasStart && open.start ? endSlotMinPx : 0;
+  const mainTrack = endAtMax
+    ? `minmax(min(${MAIN_MIN_OUTER_PX}px, calc(100% - ${startOpenPx + endSlotMinPx}px)), 1fr)`
+    : "minmax(0, 1fr)";
+  const endTrack = endAtMax ? `minmax(${endSlotMinPx}px, 1fr)` : "auto";
+  const templateStyle: CSSProperties & Record<"--detail-page-columns", string> =
+    { "--detail-page-columns": `auto ${mainTrack} ${endTrack}` };
+  const endWidthStyle: CSSProperties &
+    Record<"--detail-page-end-width", string> = {
+    "--detail-page-end-width": endAtMax ? "100%" : `${endWidth}px`,
+  };
+
   return (
     <div
       ref={ref}
       data-template="detail-page"
+      style={templateStyle}
       className={cn(
-        "relative z-10 grid h-full min-h-0 flex-1 grid-cols-[auto_minmax(0,1fr)_auto] grid-rows-[auto_minmax(0,1fr)]",
+        "relative z-10 grid h-full min-h-0 flex-1 grid-cols-(--detail-page-columns) grid-rows-[auto_minmax(0,1fr)]",
         className,
       )}
       {...props}
@@ -96,10 +132,23 @@ export function DetailPage({
           data-slot="detail-page-end-panel"
           data-state={open.end ? "open" : "closed"}
           className={cn(
-            "col-start-3 min-h-0 border-s border-border data-[state=closed]:hidden",
+            "relative col-start-3 min-h-0 border-s border-border data-[state=closed]:hidden",
+            "[&>[data-surface=side-panel]]:[--side-panel-width:var(--detail-page-end-width)]",
             endBeside ? "row-span-2 row-start-1" : "row-start-2",
           )}
+          style={endWidthStyle}
         >
+          {/* Only once measured, so the handle never reports a guessed range. */}
+          {endPanelResizable && open.end && state.measured && (
+            <PanelResizeHandle
+              label="Resize end panel"
+              value={endWidth}
+              min={endWidthRange.min}
+              max={endWidthRange.max}
+              onResize={state.setEndWidth}
+              onReset={state.resetEndWidth}
+            />
+          )}
           <SidePanelOpenContext.Provider value={open.end}>
             {endPanel}
           </SidePanelOpenContext.Provider>
