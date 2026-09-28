@@ -1,5 +1,4 @@
 import type { SlotWidth, TemplateSpec } from "@/lib/composition";
-import { LAYOUT_TOKENS } from "@/lib/composition";
 import { contentAreaSurface } from "@/registry/content-area/content-area.surface";
 import { sidePanelSurface } from "@/registry/side-panel/side-panel.surface";
 
@@ -12,7 +11,7 @@ import { sidePanelSurface } from "@/registry/side-panel/side-panel.surface";
 
 /**
  * Start panel: not resizable, so it always renders at `default` (272px
- * inner when padded). `min` and `max` are recorded for when it becomes
+ * inner when padded). `min` and `max` are kept for when it becomes
  * resizable; `min` is the side panel surface's own minimum.
  */
 export const START_PANEL_WIDTH = {
@@ -65,12 +64,12 @@ export type DetailPagePanels = "none" | "start" | "end" | "both";
  *   under the Shell's top bar, so the panel stops there.
  *
  * Choosing placement: placement shows what the panel's content belongs
- * to. Below header: content about this record, which changes when the user
- * opens a different record (source document, activity history, rules
- * applied, line items). Beside header: content that works across records,
- * which stays in place when the user opens a different record (work queue,
+ * to. Below header: content about this item, which changes when the user
+ * opens a different item (source document, activity history, rules
+ * applied, line items). Beside header: content that works across items,
+ * which stays in place when the user opens a different item (work queue,
  * secondary navigation, the AI assistant). Quick test: if the user opens
- * the next record, does the panel's content change? Yes → below header.
+ * the next item, does the panel's content change? Yes → below header.
  * No → beside header. Don't choose placement for visual emphasis.
  */
 export type PanelPlacement = "below-header" | "beside-header";
@@ -100,9 +99,6 @@ export interface DetailPageConfig {
   end: ResizablePanelConfig;
 }
 
-/** The divider the frame draws between slots: the --slot-divider-width token. */
-export const DIVIDER_PX = LAYOUT_TOKENS.slotDividerWidth;
-
 /** The start panel's rendered outer width. */
 export const START_PANEL_PX = START_PANEL_WIDTH.default;
 
@@ -115,10 +111,13 @@ export const END_PANEL_DEFAULT_PX = END_PANEL_WIDTH.default;
 /** Main's outer minimum: the content-area surface's own minimum. */
 export const MAIN_MIN_OUTER_PX = contentAreaSurface.width.min;
 
-/** Each panel's outer width for the main-width rule, divider included. */
+/**
+ * Each panel's outer width for the main-width rule. Dividers are overlays
+ * that take no layout space, so panels are exactly their width.
+ */
 const PANEL_RULE_PX: Record<PanelSide, number> = {
-  start: START_PANEL_PX + DIVIDER_PX,
-  end: END_PANEL_MIN_PX + DIVIDER_PX,
+  start: START_PANEL_PX,
+  end: END_PANEL_MIN_PX,
 };
 
 /** Why a panel is closed: the user closed it, or the main-width rule did. */
@@ -212,8 +211,8 @@ export function endPanelMaxWidth(
   startOpen: boolean,
 ): number {
   const startPx = startOpen ? PANEL_RULE_PX.start : 0;
-  // The space main and the end panel share, less the end panel's divider.
-  const shared = templateWidth - startPx - DIVIDER_PX;
+  // The space main and the end panel share.
+  const shared = templateWidth - startPx;
   const halfOfShared = Math.floor(shared / 2);
   const mainMinimum = shared - MAIN_MIN_OUTER_PX;
   return Math.max(END_PANEL_MIN_PX, Math.min(halfOfShared, mainMinimum));
