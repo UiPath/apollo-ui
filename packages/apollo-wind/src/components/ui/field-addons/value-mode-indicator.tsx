@@ -1,10 +1,16 @@
 import * as React from 'react';
 import { cn } from '@/lib';
-import { useValueModeStrings, type ValueMode } from './value-mode-strings';
+import {
+  DEFAULT_VALUE_MODE_STRINGS,
+  type ValueMode,
+  type ValueModeStrings,
+} from './value-mode-strings';
 
 export interface ValueModeIndicatorProps extends React.HTMLAttributes<HTMLDivElement> {
   mode: ValueMode;
   disabled?: boolean;
+  /** Overrides for any subset of the English strings; only `expressionIndicator` is read. */
+  strings?: Partial<ValueModeStrings>;
 }
 
 /**
@@ -13,8 +19,8 @@ export interface ValueModeIndicatorProps extends React.HTMLAttributes<HTMLDivEle
  * onto the first line of a growable editor.
  */
 const ValueModeIndicator = React.forwardRef<HTMLDivElement, ValueModeIndicatorProps>(
-  ({ mode, disabled, className, ...props }, ref) => {
-    const strings = useValueModeStrings();
+  ({ mode, disabled, strings, className, ...props }, ref) => {
+    const label = strings?.expressionIndicator ?? DEFAULT_VALUE_MODE_STRINGS.expressionIndicator;
     if (mode !== 'expression') return null;
 
     return (
@@ -24,8 +30,8 @@ const ValueModeIndicator = React.forwardRef<HTMLDivElement, ValueModeIndicatorPr
         // A named image, since screen readers would read the glyph as "equals" and `title` is not
         // announced reliably.
         role="img"
-        aria-label={strings.expressionIndicator}
-        title={strings.expressionIndicator}
+        aria-label={label}
+        title={label}
         className={cn(
           'flex items-center justify-center px-2 font-mono text-sm font-medium text-muted-foreground',
           disabled && 'opacity-50',

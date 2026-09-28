@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib';
-import { ValueModeMenuItem } from '../field-addons/value-mode-menu';
+import { ValueModeMenuItem } from '../field-addons/field-menu';
 import { FieldHeader } from './components/field-header';
 import { LockToggleButton } from './components/lock-toggle-button';
 import type { LockableValueFieldProps } from './types';

@@ -300,7 +300,7 @@ Put the control inside `InputGroup`. Apollo's controls detect the group and beco
   <InputGroup error={error}>
     <InputGroupAddon><CalendarDays /></InputGroupAddon>
     <DatePicker id="due" value={due} onValueChange={setDue} />
-    <InputGroupAddon align="inline-end"><ValueModeMenu mode={mode} onSelect={setMode} /></InputGroupAddon>
+    <InputGroupAddon align="inline-end"><FieldMenu mode={mode} onSelect={setMode} /></InputGroupAddon>
   </InputGroup>
 </FormField>
 ```
@@ -309,6 +309,9 @@ Put the control inside `InputGroup`. Apollo's controls detect the group and beco
 - `layout`: `row` (one line), `grow` (textarea, multi-select), `fill` (code editor), `block` (`InputGroupRow` above `InputGroupBody`, for a collapsible section of nested fields).
 - Controls inside `InputGroupAddon` or `InputGroupBody` are standard fields with their own box. Give a nested field addons by wrapping it in its own `InputGroup`.
 - A custom control that also renders standalone can read `useInputGroup()` (`inGroup`, `layout`, `anchor`).
+- `FieldMenu` is the trailing menu: the field's modes, then its actions (`actions`), or an overflow menu alone (`modesDisabled`). Built-in modes are listed by id (`modes={['literal', 'expression', 'variable', 'prompt']}`; default `['literal', 'expression']`); `builtInValueModes(strings)` returns their options. `ValueModeIndicator` shows `=` in expression mode only.
+- `InsertVariableAction` renders `variables` (`VariablePickerItem[]`) as supplied, with no root of its own; pass a function to resolve them when the picker opens. Its strings include the picker's search placeholder and empty state. `AiAssistAction`'s `onGenerate(prompt)` may return a promise (any thenable): the prompt stays busy until it settles and shows `strings.error` on rejection. `disabled` disables the trigger.
+- Localization: every addon and action takes a `strings` prop merged over its `DEFAULT_*_STRINGS`. There is no provider.
 
 #### Tabs
 

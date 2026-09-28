@@ -1,4 +1,4 @@
-import { type LucideIcon, MoreHorizontal, SquareFunction, Type } from 'lucide-react';
+import { type LucideIcon, MoreHorizontal, Type } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -8,19 +8,19 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib';
-import { useValueModeStrings, type ValueMode, type ValueModeStrings } from './value-mode-strings';
-
-/** One selectable mode. `id` is the consumer's own vocabulary. */
-export interface ValueModeOption<Id extends string = string> {
-  id: Id;
-  title: string;
-  description?: string;
-  icon: LucideIcon;
-  disabled?: boolean;
-}
+import {
+  builtInValueModes,
+  isBuiltInValueMode,
+  type ValueModeOption,
+} from './built-in-value-modes';
+import {
+  DEFAULT_VALUE_MODE_STRINGS,
+  type ValueMode,
+  type ValueModeStrings,
+} from './value-mode-strings';
 
 /** A field-supplied action listed under the modes, such as Clear value. */
-export interface ValueModeMenuAction {
+export interface FieldMenuItem {
   id: string;
   label: string;
   icon?: LucideIcon;
@@ -30,13 +30,16 @@ export interface ValueModeMenuAction {
   onSelect: () => void;
 }
 
-interface ValueModeMenuBaseProps<Id extends string> {
+/** A mode to list: a full option, or the id of a built-in mode that `Id` shares. */
+export type FieldMenuMode<Id extends string> = ValueModeOption<Id> | Extract<Id, ValueMode>;
+
+interface FieldMenuBaseProps<Id extends string> {
   mode: Id;
   onSelect: (mode: Id) => void;
   /** Listed before `modes` (or the built-in pair). */
   extraModes?: ValueModeOption<Id>[];
   /** Listed below the modes, behind a separator. */
-  actions?: ValueModeMenuAction[];
+  actions?: FieldMenuItem[];
   /** The item to mark active when it differs from `mode`; `'none'` marks neither. */
   checked?: Id | 'none';
   /** Hides the modes and shows only `actions`, under an overflow trigger rather than a mode glyph. */
@@ -46,14 +49,17 @@ interface ValueModeMenuBaseProps<Id extends string> {
   expectedType?: string;
   /** Overrides the built-in Fixed value description. */
   literalDescription?: string;
+  /** Overrides for any subset of the English strings. */
+  strings?: Partial<ValueModeStrings>;
 }
 
 /**
  * `modes` may be omitted when `Id` is the built-in modes, or one of them as `mode="literal"` infers,
- * or includes both. The menu then falls back to them and calls `onSelect` with either. Other ids,
- * such as `'fixed' | 'expr'`, must bring their own `modes`.
+ * or includes them all. The menu then falls back to Fixed value and Expression and calls `onSelect`
+ * with either. Other ids, such as `'fixed' | 'expr'`, must bring their own `modes`; ids a vocabulary
+ * shares with the built-ins may be listed by id alone.
  */
-export type ValueModeMenuProps<Id extends string = ValueMode> = ValueModeMenuBaseProps<Id> &
+export type FieldMenuProps<Id extends string = ValueMode> = FieldMenuBaseProps<Id> &
   ([Id] extends [ValueMode]
     ? BuiltInModes<Id>
     : [ValueMode] extends [Id]
@@ -62,18 +68,14 @@ export type ValueModeMenuProps<Id extends string = ValueMode> = ValueModeMenuBas
 
 type BuiltInModes<Id extends string> = {
   /** The mode list. Omitted, it is the built-in Fixed value / Expression pair. */
-  modes?: ValueModeOption<Id>[];
+  modes?: FieldMenuMode<Id>[];
 };
 type OwnModes<Id extends string> = {
   /** The mode list. */
-  modes: ValueModeOption<Id>[];
+  modes: FieldMenuMode<Id>[];
 };
 
-function literalDescriptionFor(expectedType: string | undefined, strings: ValueModeStrings) {
-  if (expectedType === 'number') return strings.literalNumberDescription;
-  if (expectedType === 'boolean') return strings.literalBooleanDescription;
-  return strings.literalDescription;
-}
+const DEFAULT_MODES: ValueMode[] = ['literal', 'expression'];
 
 /**
  * One selectable mode in a value-mode dropdown: icon and label, with an optional description.
@@ -119,10 +121,11 @@ export function ValueModeMenuItem({
 }
 
 /**
- * Switches a field between value modes. The trigger shows the current mode's icon and is named by
- * its title; the menu lists each mode with its description, then any field actions.
+ * A field's trailing menu: switches it between value modes, then lists its actions. The trigger
+ * shows the current mode's icon and is named by its title; with the modes hidden it is the field's
+ * overflow menu.
  */
-export function ValueModeMenu<Id extends string = ValueMode>({
+export function FieldMenu<Id extends string = ValueMode>({
   mode,
   onSelect,
   modes,
@@ -133,33 +136,29 @@ export function ValueModeMenu<Id extends string = ValueMode>({
   disabled,
   expectedType,
   literalDescription,
-}: ValueModeMenuProps<Id>) {
-  const strings = useValueModeStrings();
+  strings,
+}: FieldMenuProps<Id>) {
+  const text = { ...DEFAULT_VALUE_MODE_STRINGS, ...strings };
   const checkedMode = checked ?? mode;
 
-  const baseModes: ValueModeOption<Id>[] = modes ?? [
-    {
-      id: 'literal' as Id,
-      title: strings.literalTitle,
-      description: literalDescription ?? literalDescriptionFor(expectedType, strings),
-      icon: Type,
-    },
-    {
-      id: 'expression' as Id,
-      title: strings.expressionTitle,
-      description: strings.expressionDescription,
-      icon: SquareFunction,
-    },
-  ];
+  const builtIns = builtInValueModes(text, {
+    expectedType,
+    literalDescription,
+  });
+  // Without `modes`, `Id` is the built-in vocabulary (the props type enforces it).
+  const entries = modes ?? (DEFAULT_MODES as FieldMenuMode<Id>[]);
+  const baseModes = entries.map((entry) =>
+    typeof entry === 'string' && isBuiltInValueMode(entry)
+      ? (builtIns[entry] as ValueModeOption<string> as ValueModeOption<Id>)
+      : (entry as ValueModeOption<Id>)
+  );
   const resolvedModes = extraModes ? [...extraModes, ...baseModes] : baseModes;
   const activeMode = resolvedModes.find((item) => item.id === mode);
 
   // With the modes hidden this is the field's overflow menu, and a mode glyph on it would advertise
   // a switch it does not offer.
   const TriggerIcon = modesDisabled ? MoreHorizontal : (activeMode?.icon ?? Type);
-  const triggerLabel = modesDisabled
-    ? strings.fieldActions
-    : (activeMode?.title ?? strings.literalTitle);
+  const triggerLabel = modesDisabled ? text.fieldActions : (activeMode?.title ?? text.literalTitle);
 
   return (
     <DropdownMenu>

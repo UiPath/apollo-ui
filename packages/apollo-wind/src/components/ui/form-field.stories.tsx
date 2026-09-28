@@ -3,7 +3,7 @@ import { Eraser, Type, X } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
 import { Button } from './button';
 import { AiAssistAction, InsertVariableAction } from './field-actions';
-import { type ValueMode, ValueModeIndicator, ValueModeMenu } from './field-addons';
+import { FieldMenu, type ValueMode, ValueModeIndicator } from './field-addons';
 import {
   FormField,
   FormFieldDescription,
@@ -71,8 +71,8 @@ export const FullField: Story = {
               <AiAssistAction hint="Output: string value" onGenerate={() => {}} />
               <InsertVariableAction
                 variables={[
-                  { label: 'Order id', value: '$vars.orderId' },
-                  { label: 'Customer id', value: '$vars.customerId' },
+                  { id: 'orderId', label: 'Order id', value: '$vars.orderId' },
+                  { id: 'customerId', label: 'Customer id', value: '$vars.customerId' },
                 ]}
                 onInsert={(variable) => {
                   setMode('expression');
@@ -95,7 +95,7 @@ export const FullField: Story = {
             placeholder={expression ? '$vars.orderId' : 'Enter an order id'}
           />
           <InputGroupAddon align="inline-end">
-            <ValueModeMenu
+            <FieldMenu
               mode={mode}
               onSelect={setMode}
               actions={[

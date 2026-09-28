@@ -5,13 +5,13 @@ import { FormField, FormFieldLabel } from '../form-field';
 import { Input } from '../input';
 import { InputGroup, InputGroupAddon, type InputGroupLayout } from '../input-group';
 import { Textarea } from '../textarea';
+import { FieldMenu } from './field-menu';
 import { ValueModeIndicator } from './value-mode-indicator';
-import { ValueModeMenu } from './value-mode-menu';
-import { type ValueMode, ValueModeStringsProvider } from './value-mode-strings';
+import type { ValueMode, ValueModeStrings } from './value-mode-strings';
 
 const meta = {
   title: 'Components/Core/Field Addons',
-  component: ValueModeMenu,
+  component: FieldMenu,
   parameters: {
     layout: 'padded',
     docs: {
@@ -20,19 +20,21 @@ const meta = {
 Addons for a field whose value can switch between modes, such as a fixed value and an expression.
 Each goes in an \`InputGroupAddon\`.
 
-- **ValueModeMenu** sits in a trailing addon. Its trigger shows the current mode's icon, and its
-  menu lists each mode with a description, then any field actions.
+- **FieldMenu** sits in a trailing addon. Its trigger shows the current mode's icon, and
+  its menu lists each mode with a description, then any field actions. With the modes hidden it is
+  the field's overflow menu. The four built-in modes (Fixed value, Expression, Variable, Prompt)
+  can be listed by id; a field offers only the ones it lists, Fixed value and Expression by default.
 - **ValueModeIndicator** sits in a leading addon and shows \`=\` ahead of an expression. It renders
   nothing in literal mode, and the addon collapses with it.
-- Strings come from \`ValueModeStringsProvider\`, which a localized host fills with its own
-  translations.
+- Every addon takes a \`strings\` prop, merged over the English defaults, which a localized host
+  fills with its own translations.
 `,
       },
     },
   },
   tags: ['autodocs'],
   args: { mode: 'literal', onSelect: () => {} },
-} satisfies Meta<typeof ValueModeMenu>;
+} satisfies Meta<typeof FieldMenu>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -50,25 +52,37 @@ function MenuField({ id, label, menu }: { id: string; label: string; menu: React
 }
 
 /**
- * The built-in pair, custom and extra modes, field actions under the modes, and actions alone. With
- * the modes disabled, the trigger becomes an overflow menu.
+ * The built-in pair, all four built-in modes, custom and extra modes, field actions under the modes,
+ * and actions alone. With the modes disabled, the trigger becomes an overflow menu.
  */
 export const ModeMenu: Story = {
   render: () => {
     const [twoMode, setTwoMode] = useState<ValueMode>('literal');
+    const [fourMode, setFourMode] = useState<ValueMode>('variable');
     const [custom, setCustom] = useState<'prompt' | 'variable' | 'text'>('prompt');
     return (
       <div className="grid w-96 gap-6">
         <MenuField
           id="menu-two"
           label="Built-in modes"
-          menu={<ValueModeMenu mode={twoMode} onSelect={setTwoMode} expectedType="number" />}
+          menu={<FieldMenu mode={twoMode} onSelect={setTwoMode} expectedType="number" />}
+        />
+        <MenuField
+          id="menu-four"
+          label="All four built-in modes"
+          menu={
+            <FieldMenu
+              mode={fourMode}
+              onSelect={setFourMode}
+              modes={['literal', 'expression', 'variable', 'prompt']}
+            />
+          }
         />
         <MenuField
           id="menu-extra"
           label="Custom and extra modes"
           menu={
-            <ValueModeMenu<'prompt' | 'variable' | 'text'>
+            <FieldMenu<'prompt' | 'variable' | 'text'>
               mode={custom}
               onSelect={setCustom}
               modes={[
@@ -100,7 +114,7 @@ export const ModeMenu: Story = {
           id="menu-actions"
           label="With actions"
           menu={
-            <ValueModeMenu
+            <FieldMenu
               mode={twoMode}
               onSelect={setTwoMode}
               actions={[
@@ -114,7 +128,7 @@ export const ModeMenu: Story = {
           id="menu-actions-only"
           label="Actions only"
           menu={
-            <ValueModeMenu
+            <FieldMenu
               mode="literal"
               modesDisabled
               onSelect={() => {}}
@@ -171,10 +185,12 @@ function ModeAwareField({
   id,
   label,
   layout = 'row',
+  strings,
 }: {
   id: string;
   label: string;
   layout?: InputGroupLayout;
+  strings?: Partial<ValueModeStrings>;
 }) {
   const [mode, setMode] = useState<ValueMode>('expression');
   const expression = mode === 'expression';
@@ -183,7 +199,7 @@ function ModeAwareField({
       <FormFieldLabel htmlFor={id}>{label}</FormFieldLabel>
       <InputGroup layout={layout}>
         <InputGroupAddon>
-          <ValueModeIndicator mode={mode} className="px-0" />
+          <ValueModeIndicator mode={mode} strings={strings} className="px-0" />
         </InputGroupAddon>
         {layout === 'grow' ? (
           <Textarea
@@ -200,7 +216,7 @@ function ModeAwareField({
           />
         )}
         <InputGroupAddon align="inline-end">
-          <ValueModeMenu mode={mode} onSelect={setMode} />
+          <FieldMenu mode={mode} onSelect={setMode} strings={strings} />
         </InputGroupAddon>
       </InputGroup>
     </FormField>
@@ -220,24 +236,22 @@ export const ModeSwitching: Story = {
   ),
 };
 
-/** Every string comes from the provider, merged over the English defaults. */
+const FRENCH_STRINGS: Partial<ValueModeStrings> = {
+  literalTitle: 'Valeur fixe',
+  literalDescription: 'Saisir une valeur directement',
+  literalNumberDescription: 'Saisir une valeur numérique',
+  literalBooleanDescription: 'Choisir vrai ou faux',
+  expressionTitle: 'Expression',
+  expressionDescription: 'Expression JavaScript',
+  fieldActions: 'Actions du champ',
+  expressionIndicator: 'Expression JavaScript',
+};
+
+/** Every string comes from the `strings` prop, merged over the English defaults. */
 export const Localized: Story = {
   render: () => (
-    <ValueModeStringsProvider
-      strings={{
-        literalTitle: 'Valeur fixe',
-        literalDescription: 'Saisir une valeur directement',
-        literalNumberDescription: 'Saisir une valeur numérique',
-        literalBooleanDescription: 'Choisir vrai ou faux',
-        expressionTitle: 'Expression',
-        expressionDescription: 'Expression JavaScript avec IntelliSense',
-        fieldActions: 'Actions du champ',
-        expressionIndicator: 'Expression JavaScript',
-      }}
-    >
-      <div className="w-96">
-        <ModeAwareField id="localized" label="Numéro de commande" />
-      </div>
-    </ValueModeStringsProvider>
+    <div className="w-96">
+      <ModeAwareField id="localized" label="Numéro de commande" strings={FRENCH_STRINGS} />
+    </div>
   ),
 };
