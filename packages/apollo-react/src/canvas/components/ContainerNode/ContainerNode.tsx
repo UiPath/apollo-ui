@@ -3,7 +3,11 @@ import { cn } from '@uipath/apollo-wind';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { useSafeLingui } from '../../../i18n';
 import { useOptionalNodeTypeRegistry } from '../../core';
-import { useElementValidationStatus, useNodeExecutionState } from '../../hooks';
+import {
+  useElementValidationStatus,
+  useNodeExecutionState,
+  useToolbarActionStoreContext,
+} from '../../hooks';
 import type { SuggestionType } from '../../types';
 import { resolveAdornments } from '../../utils/adornment-resolver';
 import {
@@ -199,13 +203,18 @@ function ContainerNodeComponent(props: ContainerNodeProps) {
     minHeight: DEFAULT_CONTAINER_MIN_HEIGHT,
   };
 
+  // This node's own canvas store, so side-by-side canvases keep separate toolbars.
+  const toolbarActionStore = useToolbarActionStoreContext();
+
   const toolbarConfig = useMemo(() => {
     if (toolbarConfigProp !== undefined) {
       return toolbarConfigProp === null ? undefined : toolbarConfigProp;
     }
 
-    return manifest ? resolveToolbar(manifest, statusContext, data) : undefined;
-  }, [data, manifest, statusContext, toolbarConfigProp]);
+    return manifest
+      ? resolveToolbar(manifest, statusContext, { nodeData: data, store: toolbarActionStore })
+      : undefined;
+  }, [data, manifest, statusContext, toolbarConfigProp, toolbarActionStore]);
 
   // Matches BaseNode: a locked container keeps its toolbar with every action
   // disabled rather than hiding it. See `lockToolbarConfig` for why.

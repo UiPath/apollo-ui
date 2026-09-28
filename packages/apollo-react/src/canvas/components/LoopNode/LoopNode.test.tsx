@@ -94,6 +94,7 @@ vi.mock('../../core', () => ({
 vi.mock('../../hooks', () => ({
   useNodeExecutionState: () => mockExecutionState.current,
   useElementValidationStatus: () => mockValidationState.current,
+  useToolbarActionStoreContext: () => undefined,
 }));
 
 vi.mock('../../utils/icon-registry', () => ({

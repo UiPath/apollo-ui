@@ -106,4 +106,11 @@ export interface NodePropertyPanelProps {
    * The children fill the scrollable content area.
    */
   children?: ReactNode;
+  /**
+   * Names of fields (matching the schema's `field.name`) to flag as changed, e.g. after an
+   * agent edit. Each is highlighted and announced; the first one found, in this order, is
+   * scrolled into view once per `changedFields`/`resetKey`. Omit to flag none. Ignored with
+   * `children`.
+   */
+  changedFields?: readonly string[];
 }

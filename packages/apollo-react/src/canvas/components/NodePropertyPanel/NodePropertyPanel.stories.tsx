@@ -39,8 +39,8 @@ import {
   Card,
   CardContent,
   Checkbox,
-  cn,
   Combobox,
+  cn,
   DatePicker,
   DateTimePicker,
   DropdownMenu,
@@ -517,6 +517,34 @@ export const Default: Story = {
       />
     </PanelFrame>
   ),
+};
+
+export const ChangedFields: Story = {
+  name: 'Form Changed Fields',
+  render: () => (
+    <PanelFrame>
+      <NodePropertyPanel
+        panelTitle="Properties"
+        nodeIcon={<Globe />}
+        nodeLabel="Fetch invoice details"
+        nodeCategory="HTTP Request"
+        action={<RunButton />}
+        schema={httpRequestForm}
+        changedFields={['endpoint', 'method']}
+        contentInset="0.875rem"
+        onClose={() => {}}
+        className="h-[640px]"
+      />
+    </PanelFrame>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Pass `changedFields` (e.g. after an agent edit or in a diff view) to give every listed field a warning-toned accent, matching the canvas node `update` status, and a screen-reader "Changed" label. The first listed field (`endpoint`) is scrolled into view once. Omit the prop to flag none.',
+      },
+    },
+  },
 };
 
 export const QuickForm: Story = {

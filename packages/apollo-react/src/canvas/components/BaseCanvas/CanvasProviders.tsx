@@ -2,6 +2,8 @@ import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { TooltipProvider } from '@uipath/apollo-wind/components/ui/tooltip';
 import type { ReactNode } from 'react';
 import { ApI18nProvider } from '../../../i18n';
+import { ToolbarActionStoreProvider } from '../../hooks/ToolbarActionContext';
+import type { ToolbarActionHandler } from '../../schema/toolbar';
 import { CanvasTooltipProviderMarker } from '../CanvasTooltip';
 import { EdgeCrossingsProvider } from '../Edges/shared/crossings';
 import { StickyNoteCanvasOptionsProvider } from '../StickyNoteNode/StickyNoteCanvasOptionsContext';
@@ -22,6 +24,8 @@ interface CanvasProvidersProps {
   locale?: BaseCanvasProps['locale'];
   stickyNoteOptions?: StickyNoteCanvasOptions;
   readOnlyNodeIds?: ReadonlySet<string>;
+  onToolbarAction?: ToolbarActionHandler;
+  breakpoints?: Set<string>;
 }
 
 /**
@@ -38,6 +42,8 @@ export function CanvasProviders({
   locale,
   stickyNoteOptions,
   readOnlyNodeIds,
+  onToolbarAction,
+  breakpoints,
   children,
 }: CanvasProvidersProps) {
   return (
@@ -50,7 +56,13 @@ export function CanvasProviders({
                 <BaseCanvasModeProvider mode={mode}>
                   <ReadOnlyNodesProvider readOnlyNodeIds={readOnlyNodeIds}>
                     <StickyNoteCanvasOptionsProvider options={stickyNoteOptions}>
-                      <SelectionStateProvider nodes={nodes}>{children}</SelectionStateProvider>
+                      <ToolbarActionStoreProvider
+                        mode={mode ?? 'design'}
+                        onToolbarAction={onToolbarAction}
+                        breakpoints={breakpoints}
+                      >
+                        <SelectionStateProvider nodes={nodes}>{children}</SelectionStateProvider>
+                      </ToolbarActionStoreProvider>
                     </StickyNoteCanvasOptionsProvider>
                   </ReadOnlyNodesProvider>
                 </BaseCanvasModeProvider>
