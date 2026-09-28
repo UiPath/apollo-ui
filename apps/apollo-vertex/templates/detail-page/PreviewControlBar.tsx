@@ -140,6 +140,8 @@ interface PreviewControlBarProps {
   /** Preview-only override of --side-panel-tint, as a percentage. */
   tintStrength: number;
   onTintStrengthChange: (strength: number) => void;
+  /** Resets every setting to its default and clears the URL. */
+  onReset: () => void;
 }
 
 /**
@@ -157,6 +159,7 @@ export function PreviewControlBar({
   onResetEndWidth,
   tintStrength,
   onTintStrengthChange,
+  onReset,
 }: PreviewControlBarProps) {
   const { config, paddings } = settings;
   const enabled = enabledPanels(config.panels);
@@ -343,6 +346,14 @@ export function PreviewControlBar({
         {scrollFields("main", "Main")}
       </Section>
       {enabled.end && panelFields("end", "End panel")}
+      <Button
+        variant="secondary"
+        size="sm"
+        className="w-full"
+        onClick={onReset}
+      >
+        Reset to defaults
+      </Button>
     </div>
   );
 }

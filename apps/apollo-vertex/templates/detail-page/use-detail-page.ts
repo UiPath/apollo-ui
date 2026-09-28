@@ -43,6 +43,13 @@ export interface DetailPageState {
   setEndWidth: (width: number) => void;
   /** Back to the side panel's default width. */
   resetEndWidth: () => void;
+  /**
+   * Replace the user's panel intent (open or closed, open order, latest
+   * opened) and chosen end width with what `config` starts with, as on a
+   * fresh load. Rule-closed state follows, since it is derived. Pass the
+   * config the template will render with next.
+   */
+  restore: (config: DetailPageConfig) => void;
   /** Attach to the template root so the main-width rule can measure it. */
   ref: RefCallback<HTMLDivElement | null>;
 }
@@ -182,6 +189,10 @@ export function useDetailPage(config: DetailPageConfig): DetailPageState {
     setEndWidthChosen(clamped >= endWidthRange.max ? "max" : clamped);
   };
   const resetEndWidth = () => setEndWidthChosen(END_PANEL_DEFAULT_PX);
+  const restore = (next: DetailPageConfig) => {
+    setState(initialState(next));
+    setEndWidthChosen(next.end.defaultWidth ?? END_PANEL_DEFAULT_PX);
+  };
 
   return {
     config,
@@ -194,6 +205,7 @@ export function useDetailPage(config: DetailPageConfig): DetailPageState {
     measured,
     setEndWidth,
     resetEndWidth,
+    restore,
     ref,
   };
 }
