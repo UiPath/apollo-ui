@@ -309,6 +309,7 @@ const TEMPLATE_TOKENS = {
   toolName: '{{toolName}}',
   policyName: '{{policyName}}',
   count: '{{count}}',
+  docsLink: '{{docsLink}}',
 };
 
 /** Localized chrome strings of the validator form; per-string `overrides` always win. */
@@ -1470,5 +1471,176 @@ export function useGuardrailScopeSelectorLabels(
         overrides
       ),
     [catalog, overrides]
+  );
+}
+
+/**
+ * The builder chrome `CustomGuardrailBuilder` shares with `GuardrailBuilder`, resolved from the
+ * same `guardrails.builder.*` ids so the two screens cannot word the same string differently.
+ */
+export const CUSTOM_GUARDRAIL_BUILDER_REUSED_LABEL_KEYS = [
+  'nameLabel',
+  'namePlaceholder',
+  'descriptionLabel',
+  'descriptionPlaceholder',
+  'evalsLabel',
+  'evalsInfoAriaLabel',
+  'evalsTooltip',
+  'saveAsNew',
+  'cancel',
+  'save',
+  'mixedScopesAlsoApplied',
+  'mixedScopesSaveAsNewHint',
+  'nameRequiredError',
+  'nameDuplicateError',
+  'blockReasonRequiredError',
+  'filterFieldsRequiredError',
+  'recipientRequiredError',
+  'actionAppRequiredError',
+] as const satisfies ReadonlyArray<keyof GuardrailBuilderLabels>;
+
+export type CustomGuardrailBuilderReusedLabelKey =
+  (typeof CUSTOM_GUARDRAIL_BUILDER_REUSED_LABEL_KEYS)[number];
+
+/**
+ * Chrome strings of the custom guardrail builder: its own titles, help line and rules messages,
+ * plus the builder chrome it shares with `GuardrailBuilder`. The sections it composes resolve
+ * their own strings.
+ *
+ * Values may contain `{{placeholder}}` tokens; interpolate with `formatGuardrailFormMessage`.
+ */
+export interface CustomGuardrailBuilderLabels
+  extends Pick<GuardrailBuilderLabels, CustomGuardrailBuilderReusedLabelKey> {
+  addTitle: string;
+  editTitle: string;
+  /** First sentence of the help line. */
+  helpText: string;
+  /** Second sentence of the help line, rendered only with `docsHref`: `{{docsLink}}`. */
+  helpDocs: string;
+  /** Text of the documentation link. */
+  docsLink: string;
+  rulesRequiredError: string;
+  rulesInvalidError: string;
+  /** An always rule next to other rules. */
+  rulesAlwaysCombinedError: string;
+  /** A rule whose specific field selection holds no fields. */
+  ruleFieldsRequiredError: string;
+  ruleValueRequiredError: string;
+}
+
+type CustomGuardrailBuilderOwnLabels = Omit<
+  CustomGuardrailBuilderLabels,
+  CustomGuardrailBuilderReusedLabelKey
+>;
+
+/** The subset of `useSafeLingui`'s translator the custom builder labels need. */
+type CustomGuardrailBuilderTranslate = (descriptor: {
+  id: string;
+  message: string;
+  values?: Record<string, string>;
+}) => string;
+
+// One builder holds every `_({ id, message })` call, so the English defaults, the flat record
+// the catalog test diffs and the runtime lingui path cannot drift. Same shape as
+// `definitions-copy.ts`.
+function buildCustomGuardrailBuilderLabels(
+  _: CustomGuardrailBuilderTranslate
+): CustomGuardrailBuilderOwnLabels {
+  return {
+    addTitle: _({ id: 'guardrails.custom-builder.add-title', message: 'Add custom guardrail' }),
+    editTitle: _({ id: 'guardrails.custom-builder.edit-title', message: 'Edit custom guardrail' }),
+    helpText: _({
+      id: 'guardrails.custom-builder.help-text',
+      message:
+        'Guardrail is a collection of rules and action that should happen when all of the rules are met.',
+    }),
+    helpDocs: _({
+      id: 'guardrails.custom-builder.help-docs',
+      message: 'Learn more about Guardrail rules and actions {docsLink}',
+      values: TEMPLATE_TOKENS,
+    }),
+    docsLink: _({ id: 'guardrails.custom-builder.docs-link', message: 'here' }),
+    rulesRequiredError: _({
+      id: 'guardrails.custom-builder.rules-required-error',
+      message: 'At least one rule is required',
+    }),
+    rulesInvalidError: _({
+      id: 'guardrails.custom-builder.rules-invalid-error',
+      message: 'One or more rules are invalid',
+    }),
+    rulesAlwaysCombinedError: _({
+      id: 'guardrails.custom-builder.rules-always-combined-error',
+      message: "You cannot combine an 'Always enforce guardrail' with any other rule type",
+    }),
+    ruleFieldsRequiredError: _({
+      id: 'guardrails.custom-builder.rule-fields-required-error',
+      message: 'Fields selection is required',
+    }),
+    ruleValueRequiredError: _({
+      id: 'guardrails.custom-builder.rule-value-required-error',
+      message: 'Value is required',
+    }),
+  };
+}
+
+// Resolves a descriptor the way lingui does with `values: TEMPLATE_TOKENS`, so the English
+// defaults carry the same `{{token}}` convention as a translated catalog entry.
+const englishCustomGuardrailBuilderTranslate: CustomGuardrailBuilderTranslate = ({
+  message,
+  values,
+}) =>
+  values
+    ? message.replace(/\{(\w+)\}/g, (match, token: string) => values[token] ?? match)
+    : message;
+
+/** The English chrome strings, resolved without a lingui provider. */
+export const CUSTOM_GUARDRAIL_BUILDER_EN_LABELS: CustomGuardrailBuilderLabels = {
+  ...pickGuardrailBuilderLabels(
+    GUARDRAIL_BUILDER_EN_LABELS,
+    CUSTOM_GUARDRAIL_BUILDER_REUSED_LABEL_KEYS
+  ),
+  ...buildCustomGuardrailBuilderLabels(englishCustomGuardrailBuilderTranslate),
+};
+
+/**
+ * The builder's own strings flattened to message id to ICU source message, the form the
+ * catalogs store: the i18n test compares these against `locales/en.json` verbatim. The shared
+ * builder chrome is the builder block's, and is not repeated here.
+ */
+export const CUSTOM_GUARDRAIL_BUILDER_EN_MESSAGES: Readonly<Record<string, string>> = Object.freeze(
+  (() => {
+    const messages: Record<string, string> = {};
+    buildCustomGuardrailBuilderLabels((descriptor) => {
+      messages[descriptor.id] = descriptor.message;
+      return descriptor.message;
+    });
+    return messages;
+  })()
+);
+
+/** Merge English defaults, a loaded catalog, and per-string overrides (undefined skipped). */
+export function resolveCustomGuardrailBuilderLabels(
+  catalog?: Partial<CustomGuardrailBuilderLabels>,
+  overrides?: Partial<CustomGuardrailBuilderLabels>
+): CustomGuardrailBuilderLabels {
+  return mergeLabels(CUSTOM_GUARDRAIL_BUILDER_EN_LABELS, catalog, overrides);
+}
+
+/** Localized chrome strings of the custom guardrail builder; per-string `overrides` always win. */
+export function useCustomGuardrailBuilderLabels(
+  overrides?: Partial<CustomGuardrailBuilderLabels>
+): CustomGuardrailBuilderLabels {
+  const { _ } = useSafeLingui();
+  const builder = useGuardrailBuilderLabels();
+  return useMemo(
+    () =>
+      resolveCustomGuardrailBuilderLabels(
+        {
+          ...pickGuardrailBuilderLabels(builder, CUSTOM_GUARDRAIL_BUILDER_REUSED_LABEL_KEYS),
+          ...buildCustomGuardrailBuilderLabels(_),
+        },
+        overrides
+      ),
+    [_, builder, overrides]
   );
 }
