@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.57.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.56.0...@uipath/apollo-wind@2.57.0) (2026-09-28)
+
+### Features
+
+* **apollo-wind:** let InputGroup host any field control, with a header and addons ([3bfe3ed](https://github.com/UiPath/apollo-ui/commit/3bfe3ed98cb51effd65af03b13533b64095a9415))
+
 ## [@uipath/apollo-wind-v2.56.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.55.0...@uipath/apollo-wind@2.56.0) (2026-09-24)
 
 ### Features
