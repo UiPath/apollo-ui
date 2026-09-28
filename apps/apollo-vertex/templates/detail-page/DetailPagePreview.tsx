@@ -21,6 +21,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import { Button } from "@/components/ui/button";
@@ -127,6 +128,54 @@ export function DetailPagePreview() {
         };
   const detailPage = useDetailPage(settings.config);
 
+  // Resets and Back both replace everything with a given set of settings:
+  // the preview's own, the hook's panel intent and chosen width, and the
+  // tint override.
+  const applySettings = (next: PreviewSettings) => {
+    setSettings(next);
+    detailPage.restore(next.config);
+    setTintStrength(null);
+  };
+
+  // Reset to defaults. pushState (not replaceState, as everywhere else) so
+  // Back undoes it. Focus returns to the card's first control afterwards.
+  const focusAfterReset = useRef(false);
+  const resetToDefaults = () => {
+    window.history.pushState(
+      null,
+      "",
+      `${window.location.pathname}${window.location.hash}`,
+    );
+    applySettings(DEFAULT_PREVIEW_SETTINGS);
+    focusAfterReset.current = true;
+  };
+  useEffect(() => {
+    if (!focusAfterReset.current) return;
+    focusAfterReset.current = false;
+    // The card's first control is its first toggle group. Focus its
+    // checked item, the one Tab would land on after a fresh render. Radix
+    // otherwise keeps whichever item was last focused as the Tab stop.
+    const firstGroup = document.querySelector<HTMLElement>(
+      `#${CONFIG_CARD_ID} [role="group"]`,
+    );
+    const target =
+      firstGroup?.querySelector<HTMLElement>('[aria-checked="true"]') ??
+      firstGroup?.querySelector<HTMLElement>('[role="radio"]');
+    target?.focus();
+  });
+
+  // Back and Forward: read the settings back out of the URL.
+  const applyRef = useRef(applySettings);
+  useEffect(() => {
+    applyRef.current = applySettings;
+  });
+  useEffect(() => {
+    const onPopState = () =>
+      applyRef.current(parsePreviewSettings(window.location.search));
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
   // Keep the URL in step with the settings. replaceState, so tweaking the
   // preview does not fill the back button history.
   // The end width comes from the hook, which holds the user's chosen width.
@@ -177,6 +226,7 @@ export function DetailPagePreview() {
             onResetEndWidth={detailPage.resetEndWidth}
             tintStrength={tintStrength ?? SIDE_PANEL_TINT_STRENGTH}
             onTintStrengthChange={setTintStrength}
+            onReset={resetToDefaults}
           />
         </div>
         <Button
