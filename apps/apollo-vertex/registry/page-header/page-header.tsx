@@ -43,7 +43,7 @@ function PageHeader({
   ...props
 }: PageHeaderProps) {
   return (
-    <div className="@container shrink-0">
+    <div data-surface="page-header" className="@container shrink-0">
       <div
         data-slot="page-header"
         data-size={size}

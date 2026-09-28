@@ -35,6 +35,7 @@
       "@/components/ui/carousel": ["./registry/carousel/carousel"],
       "@/components/ui/chart": ["./registry/chart/chart"],
       "@/lib/charts-core": ["./registry/charts-core/charts-core"],
+      "@/lib/composition": ["./registry/composition/composition"],
       "@/lib/data-fabric-adapter": [
         "./registry/data-fabric-adapter/data-fabric-adapter"
       ],
@@ -55,6 +56,7 @@
       "@/components/ui/collapsible": ["./registry/collapsible/collapsible"],
       "@/components/ui/combobox": ["./registry/combobox/combobox"],
       "@/components/ui/command": ["./registry/command/command"],
+      "@/components/ui/content-area": ["./registry/content-area/content-area"],
       "@/components/ui/context-menu": ["./registry/context-menu/context-menu"],
       "@/components/ui/data-table": ["./registry/data-table/index"],
       "@/components/ui/dialog": ["./registry/dialog/dialog"],
@@ -99,6 +101,7 @@
       "@/components/ui/separator": ["./registry/separator/separator"],
       "@/components/ui/sheet": ["./registry/sheet/sheet"],
       "@/components/ui/shell": ["./registry/shell/shell"],
+      "@/components/ui/side-panel": ["./registry/side-panel/side-panel"],
       "@/components/ui/sidebar": ["./registry/sidebar/sidebar"],
       "@/components/ui/skeleton": ["./registry/skeleton/skeleton"],
       "@/components/ui/slider": ["./registry/slider/slider"],
