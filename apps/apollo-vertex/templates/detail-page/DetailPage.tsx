@@ -1,6 +1,14 @@
 "use client";
 
-import type { ComponentProps, CSSProperties, ReactNode } from "react";
+import {
+  type ComponentProps,
+  type CSSProperties,
+  type ReactNode,
+  type TransitionEvent,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+} from "react";
 import { SidePanelSlotContext } from "@/components/ui/side-panel";
 import { cn } from "@/lib/utils";
 import {
@@ -32,6 +40,38 @@ const DIVIDER_INLINE_END =
 const DIVIDER_INLINE_START =
   "after:shadow-[inset_var(--slot-divider-width)_0_0_0_var(--divider)] rtl:after:shadow-[inset_calc(-1*var(--slot-divider-width))_0_0_0_var(--divider)] forced-colors:after:border-s";
 
+/*
+ * Open and close motion matches the Shell sidebar: the panel's clip box
+ * animates its width, main reflows beside it, and the panel's content stays
+ * at full width, revealed or clipped from its outer edge. Duration and
+ * easing are the --panel-transition-duration and --panel-transition-easing
+ * tokens (the Shell spring, sampled). Only while the hook marks the panel
+ * transitioning, which it does for user-driven opens and closes only.
+ * Reduced motion turns it off.
+ */
+const PANEL_CLIP_MOTION = [
+  "data-[transitioning=true]:[transition-property:width]",
+  "data-[transitioning=true]:[transition-duration:var(--panel-transition-duration)]",
+  "data-[transitioning=true]:[transition-timing-function:var(--panel-transition-easing)]",
+  "motion-reduce:transition-none!",
+].join(" ");
+// A closed panel's slot hides once its close has finished animating.
+const PANEL_SLOT_MOTION = [
+  "data-[state=closed]:invisible",
+  "data-[transitioning=true]:[transition-property:visibility]",
+  "data-[transitioning=true]:data-[state=closed]:[transition-delay:var(--panel-transition-duration)]",
+  "motion-reduce:transition-none!",
+].join(" ");
+
+/** Fallback for a transition that never reports its end, in ms. */
+function transitionFallbackMs(element: Element | null): number {
+  const value = element
+    ? getComputedStyle(element).getPropertyValue("--panel-transition-duration")
+    : "";
+  const ms = Number.parseFloat(value);
+  return (Number.isFinite(ms) ? ms : 350) + 150;
+}
+
 const endPanelResizable =
   detailPageTemplate.slots.find((slot) => slot.name === "end-panel")
     ?.resizable === true;
@@ -62,8 +102,8 @@ export interface DetailPageProps
  * space: panels are exactly their width. Surfaces draw no outer borders.
  *
  * Panels that are disabled or have no content are not rendered. Closed
- * panels stay mounted but are hidden, so they and their dividers take no
- * space and their `auto` columns collapse to zero.
+ * panels stay mounted but take no space: their clip box is 0 wide, so
+ * their `auto` column collapses, and they are inert and invisible.
  *
  * The start panel renders at START_PANEL_WIDTH.default through the
  * --detail-page-start-panel-width variable. The end panel is resizable. The frame sets its width through the
@@ -93,7 +133,10 @@ export function DetailPage({
   const endBeside = hasEnd && config.end.placement === "beside-header";
 
   const endSlotMinPx = END_PANEL_MIN_PX;
-  const endAtMax = hasEnd && open.end && state.endWidthChosen === "max";
+  // Before measurement, a "max" end width is laid out by the grid. Once
+  // measured, its px value is the same, and px can animate.
+  const endAtMax =
+    hasEnd && open.end && state.endWidthChosen === "max" && !state.measured;
   const startOpenPx = hasStart && open.start ? START_PANEL_PX : 0;
   const mainTrack = endAtMax
     ? `minmax(min(${MAIN_MIN_OUTER_PX}px, calc(100% - ${startOpenPx + endSlotMinPx}px)), 1fr)`
@@ -111,14 +154,69 @@ export function DetailPage({
     "--detail-page-main-width-min": `${MAIN_MIN_OUTER_PX}px`,
     "--detail-page-columns": `auto ${mainTrack} ${endTrack}`,
   };
-  const endWidthStyle: CSSProperties &
-    Record<"--detail-page-end-width", string> = {
-    "--detail-page-end-width": endAtMax ? "100%" : `${endWidth}px`,
+  // Each panel's clip box width: its width when open, 0 when closed.
+  const startExtentStyle: CSSProperties &
+    Record<"--detail-page-panel-extent", string> = {
+    "--detail-page-panel-extent": open.start ? `${START_PANEL_PX}px` : "0px",
   };
+  const endExtentStyle: CSSProperties &
+    Record<"--detail-page-panel-extent" | "--detail-page-end-width", string> = {
+    "--detail-page-end-width": endAtMax ? "100%" : `${endWidth}px`,
+    "--detail-page-panel-extent": open.end
+      ? endAtMax
+        ? "100%"
+        : `${endWidth}px`
+      : "0px",
+  };
+
+  const templateRef = useRef<HTMLDivElement | null>(null);
+  const mainRef = useRef<HTMLDivElement | null>(null);
+  const startSlotRef = useRef<HTMLDivElement | null>(null);
+  const endSlotRef = useRef<HTMLDivElement | null>(null);
+
+  // A panel that closes becomes inert at once, even while it animates out.
+  // If focus was inside it, move focus to main first, so it isn't lost.
+  const wasOpen = useRef(open);
+  useLayoutEffect(() => {
+    for (const [side, slot] of [
+      ["start", startSlotRef.current],
+      ["end", endSlotRef.current],
+    ] as const) {
+      const closing = wasOpen.current[side] && !open[side];
+      if (closing && slot?.contains(document.activeElement)) {
+        mainRef.current?.focus({ preventScroll: true });
+      }
+    }
+    wasOpen.current = open;
+  });
+
+  // Settle a transition when it ends, or after a fallback if it never
+  // reports (reduced motion, a hidden tab, an interrupted transition).
+  const { transitioning, settleTransition } = state;
+  useEffect(() => {
+    if (!transitioning) return;
+    const timer = setTimeout(
+      () => settleTransition(transitioning),
+      transitionFallbackMs(templateRef.current),
+    );
+    return () => clearTimeout(timer);
+  }, [transitioning, settleTransition]);
+  const onClipTransitionEnd =
+    (side: "start" | "end") => (event: TransitionEvent<HTMLDivElement>) => {
+      if (
+        event.target === event.currentTarget &&
+        event.propertyName === "width"
+      ) {
+        settleTransition(side);
+      }
+    };
 
   return (
     <div
-      ref={ref}
+      ref={(node) => {
+        templateRef.current = node;
+        return ref(node);
+      }}
       data-template="detail-page"
       style={templateStyle}
       className={cn(
@@ -141,41 +239,63 @@ export function DetailPage({
       </div>
       {hasStart && (
         <div
+          ref={startSlotRef}
           data-slot="detail-page-start-panel"
           data-state={open.start ? "open" : "closed"}
+          data-transitioning={transitioning === "start"}
+          inert={!open.start}
           className={cn(
-            "relative col-start-1 min-h-0 data-[state=closed]:hidden",
+            "relative col-start-1 min-h-0",
+            PANEL_SLOT_MOTION,
             DIVIDER_OVERLAY,
             DIVIDER_INLINE_END,
-            "[&>[data-surface=side-panel]]:[--side-panel-width:var(--detail-page-start-panel-width)]",
+            "[&_[data-surface=side-panel]]:[--side-panel-width:var(--detail-page-start-panel-width)]",
             startBeside ? "row-span-2 row-start-1" : "row-start-2",
           )}
+          style={startExtentStyle}
         >
-          <SidePanelSlotContext.Provider
-            value={{ open: open.start, placement: config.start.placement }}
+          <div
+            data-slot="detail-page-panel-clip"
+            data-transitioning={transitioning === "start"}
+            className={cn(
+              "flex h-full w-(--detail-page-panel-extent) justify-start overflow-x-clip",
+              PANEL_CLIP_MOTION,
+            )}
+            onTransitionEnd={onClipTransitionEnd("start")}
           >
-            {startPanel}
-          </SidePanelSlotContext.Provider>
+            <SidePanelSlotContext.Provider
+              value={{ open: open.start, placement: config.start.placement }}
+            >
+              {startPanel}
+            </SidePanelSlotContext.Provider>
+          </div>
         </div>
       )}
       <div
+        ref={mainRef}
         data-slot="detail-page-main"
-        className="col-start-2 row-start-2 min-h-0 min-w-0"
+        // Focus lands here when a closing panel had it.
+        tabIndex={-1}
+        className="col-start-2 row-start-2 min-h-0 min-w-0 outline-none"
       >
         {main}
       </div>
       {hasEnd && (
         <div
+          ref={endSlotRef}
           data-slot="detail-page-end-panel"
           data-state={open.end ? "open" : "closed"}
+          data-transitioning={transitioning === "end"}
+          inert={!open.end}
           className={cn(
-            "relative col-start-3 min-h-0 data-[state=closed]:hidden",
+            "relative col-start-3 min-h-0",
+            PANEL_SLOT_MOTION,
             DIVIDER_OVERLAY,
             DIVIDER_INLINE_START,
-            "[&>[data-surface=side-panel]]:[--side-panel-width:var(--detail-page-end-width)]",
+            "[&_[data-surface=side-panel]]:[--side-panel-width:var(--detail-page-end-width)]",
             endBeside ? "row-span-2 row-start-1" : "row-start-2",
           )}
-          style={endWidthStyle}
+          style={endExtentStyle}
         >
           {/* Only once measured, so the handle never reports a guessed range. */}
           {endPanelResizable && open.end && state.measured && (
@@ -188,11 +308,22 @@ export function DetailPage({
               onReset={state.resetEndWidth}
             />
           )}
-          <SidePanelSlotContext.Provider
-            value={{ open: open.end, placement: config.end.placement }}
+          <div
+            data-slot="detail-page-panel-clip"
+            data-transitioning={transitioning === "end"}
+            className={cn(
+              // Anchored at the end edge, so the panel reveals from there.
+              "flex h-full w-(--detail-page-panel-extent) justify-end overflow-x-clip",
+              PANEL_CLIP_MOTION,
+            )}
+            onTransitionEnd={onClipTransitionEnd("end")}
           >
-            {endPanel}
-          </SidePanelSlotContext.Provider>
+            <SidePanelSlotContext.Provider
+              value={{ open: open.end, placement: config.end.placement }}
+            >
+              {endPanel}
+            </SidePanelSlotContext.Provider>
+          </div>
         </div>
       )}
     </div>

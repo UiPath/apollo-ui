@@ -50,6 +50,15 @@ export interface DetailPageState {
    * config the template will render with next.
    */
   restore: (config: DetailPageConfig) => void;
+  /**
+   * The panel whose user-driven open or close is animating, if any. Only
+   * setPanelOpen arms it, and only when the panel's state actually changes,
+   * so first loads, window resizes, rule closes, resize drags, and placement
+   * changes never animate.
+   */
+  transitioning: PanelSide | null;
+  /** The template calls this when that panel's transition ends. */
+  settleTransition: (side: PanelSide) => void;
   /** Attach to the template root so the main-width rule can measure it. */
   ref: RefCallback<HTMLDivElement | null>;
 }
@@ -129,6 +138,7 @@ function initialState(config: DetailPageConfig): IntentState {
 export function useDetailPage(config: DetailPageConfig): DetailPageState {
   const [ref, width] = useTemplateWidth();
   const [state, setState] = useState(() => initialState(config));
+  const [transitioning, setTransitioning] = useState<PanelSide | null>(null);
   const [endWidthChosen, setEndWidthChosen] = useState<PanelWidth>(
     () => config.end.defaultWidth ?? END_PANEL_DEFAULT_PX,
   );
@@ -147,7 +157,13 @@ export function useDetailPage(config: DetailPageConfig): DetailPageState {
     end: enabled.end ? resolved.closedBy.end : null,
   };
 
-  const setPanelOpen = (side: PanelSide, open: boolean) =>
+  const setPanelOpen = (side: PanelSide, open: boolean) => {
+    // Animate only a real change the user made; a no-op toggle, or one the
+    // panel is already in, snaps (and has nothing to animate).
+    if (enabled[side] && resolved.open[side] !== open) setTransitioning(side);
+    applyPanelOpen(side, open);
+  };
+  const applyPanelOpen = (side: PanelSide, open: boolean) =>
     setState((prev) => {
       if (!enabledPanels(prev.panels)[side]) return prev;
       const others = prev.openOrder.filter((s) => s !== side);
@@ -189,7 +205,10 @@ export function useDetailPage(config: DetailPageConfig): DetailPageState {
     setEndWidthChosen(clamped >= endWidthRange.max ? "max" : clamped);
   };
   const resetEndWidth = () => setEndWidthChosen(END_PANEL_DEFAULT_PX);
+  const settleTransition = (side: PanelSide) =>
+    setTransitioning((current) => (current === side ? null : current));
   const restore = (next: DetailPageConfig) => {
+    setTransitioning(null);
     setState(initialState(next));
     setEndWidthChosen(next.end.defaultWidth ?? END_PANEL_DEFAULT_PX);
   };
@@ -206,6 +225,8 @@ export function useDetailPage(config: DetailPageConfig): DetailPageState {
     setEndWidth,
     resetEndWidth,
     restore,
+    transitioning,
+    settleTransition,
     ref,
   };
 }
