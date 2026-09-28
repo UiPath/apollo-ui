@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { SurfacePadding } from "@/lib/composition";
 import type {
@@ -7,8 +8,9 @@ import type {
   PanelClosedBy,
   PanelPlacement,
   PanelSide,
+  PanelWidth,
 } from "./detail-page.template";
-import { enabledPanels } from "./detail-page.template";
+import { END_PANEL_DEFAULT_PX, enabledPanels } from "./detail-page.template";
 import type { PreviewSettings, ShellVariant } from "./preview-url-state";
 
 interface Option<T extends string> {
@@ -118,6 +120,11 @@ interface PreviewControlBarProps {
   open: Record<PanelSide, boolean>;
   closedBy: Record<PanelSide, PanelClosedBy | null>;
   onOpenChange: (side: PanelSide, open: boolean) => void;
+  /** The end panel's rendered width, after the width rules. */
+  endWidth: number;
+  /** The width the user chose, which the rules may be clamping. */
+  endWidthChosen: PanelWidth;
+  onResetEndWidth: () => void;
 }
 
 /**
@@ -130,6 +137,9 @@ export function PreviewControlBar({
   open,
   closedBy,
   onOpenChange,
+  endWidth,
+  endWidthChosen,
+  onResetEndWidth,
 }: PreviewControlBarProps) {
   const { config, paddings } = settings;
   const enabled = enabledPanels(config.panels);
@@ -174,6 +184,34 @@ export function PreviewControlBar({
           setPadding(side === "start" ? "start-panel" : "end-panel", padding)
         }
       />
+      {side === "end" && (
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground">Width</span>
+            <span
+              data-testid="end-panel-width"
+              className="text-sm font-medium tabular-nums"
+            >
+              {`${endWidth}px`}
+              {(endWidthChosen === "max" || endWidthChosen !== endWidth) && (
+                <span className="text-xs font-normal text-muted-foreground">
+                  {endWidthChosen === "max"
+                    ? " (max)"
+                    : ` (chosen ${endWidthChosen}px)`}
+                </span>
+              )}
+            </span>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={endWidthChosen === END_PANEL_DEFAULT_PX}
+            onClick={onResetEndWidth}
+          >
+            Reset width
+          </Button>
+        </div>
+      )}
     </Section>
   );
 

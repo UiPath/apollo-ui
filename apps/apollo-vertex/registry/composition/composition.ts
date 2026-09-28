@@ -37,9 +37,22 @@ export interface SurfaceEnvelope {
   scroll: ScrollOwner;
 }
 
+/**
+ * A surface's own outer width range in px, including its padding. Compare
+ * `provides.width`, which is the inner width an occupant gets. `max: "main"`
+ * means the surface is never wider than the template's main slot.
+ */
+export interface SurfaceWidth {
+  min: number;
+  default: number;
+  max: number | "main";
+}
+
 export interface SurfaceSpec<TName extends string = string> {
   /** Rendered as data-surface. Lowercase, hyphenated. */
   name: TName;
+  /** Outer width range, for surfaces a template can size. */
+  width?: SurfaceWidth;
   provides: SurfaceEnvelope;
 }
 
@@ -63,6 +76,11 @@ export interface SlotSpec<TName extends string = string> {
   /** Rendered as data-slot="<template>-<name>". Lowercase, hyphenated. */
   name: TName;
   required: boolean;
+  /**
+   * Whether the user can resize the surface in this slot. The template owns
+   * the handle, within the surface's `width` range.
+   */
+  resizable?: boolean;
   /** Names of the surfaces this slot accepts. */
   surfaces: readonly string[];
 }

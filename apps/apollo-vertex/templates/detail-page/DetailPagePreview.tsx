@@ -110,11 +110,19 @@ export function DetailPagePreview() {
 
   // Keep the URL in step with the settings. replaceState, so tweaking the
   // preview does not fill the back button history.
+  // The end width comes from the hook, which holds the user's chosen width.
+  const endWidthChosen = detailPage.endWidthChosen;
   useEffect(() => {
-    const query = serializePreviewSettings(settings);
+    const query = serializePreviewSettings({
+      ...settings,
+      config: {
+        ...settings.config,
+        end: { ...settings.config.end, defaultWidth: endWidthChosen },
+      },
+    });
     const url = `${window.location.pathname}${query}${window.location.hash}`;
     window.history.replaceState(null, "", url);
-  }, [settings]);
+  }, [settings, endWidthChosen]);
 
   // Record the user's choice as the panel's defaultOpen so it lands in the
   // URL. Closes made by the main-width rule never reach here.
@@ -142,6 +150,9 @@ export function DetailPagePreview() {
             open={detailPage.open}
             closedBy={detailPage.closedBy}
             onOpenChange={setPanelOpen}
+            endWidth={detailPage.endWidth}
+            endWidthChosen={detailPage.endWidthChosen}
+            onResetEndWidth={detailPage.resetEndWidth}
           />
         </div>
         <Button
