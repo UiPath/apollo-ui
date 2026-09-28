@@ -55,58 +55,26 @@ interface PageHeaderProps
    * Leave unset for the standalone responsive padding.
    */
   padding?: SurfacePadding;
-  /**
-   * A reserved region at the header's outer start edge, before the header
-   * content, e.g. a panel toggle and a divider. Leave unset and the header
-   * renders exactly as before.
-   */
-  leading?: React.ReactNode;
 }
-
-const pageHeaderLeadingVariants = cva("flex shrink-0 items-center gap-6", {
-  variants: {
-    padding: {
-      responsive: "ps-4 sm:ps-6 lg:ps-8",
-      padded: "ps-6",
-      flush: "ps-0",
-    },
-  },
-  defaultVariants: {
-    padding: "responsive",
-  },
-});
 
 function PageHeader({
   className,
   size,
   padding,
-  leading,
   bordered = false,
   ...props
 }: PageHeaderProps) {
-  const hasLeading = Boolean(leading);
   return (
     <div
       data-surface="page-header"
       data-padding={padding}
-      className={cn("@container shrink-0", hasLeading && "flex items-stretch")}
+      className="@container shrink-0"
     >
-      {hasLeading && (
-        <div
-          data-slot="page-header-leading"
-          className={pageHeaderLeadingVariants({
-            padding: padding ?? "responsive",
-          })}
-        >
-          {leading}
-        </div>
-      )}
       <div
         data-slot="page-header"
         data-size={size}
         className={cn(
           pageHeaderVariants({ size, padding: padding ?? "responsive" }),
-          hasLeading && "min-w-0 flex-1",
           bordered && "border-b border-border",
           className,
         )}

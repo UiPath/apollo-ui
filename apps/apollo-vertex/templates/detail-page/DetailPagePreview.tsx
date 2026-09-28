@@ -16,9 +16,8 @@ import {
   SlidersHorizontal,
   X,
 } from "lucide-react";
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useSidebar } from "@/components/ui/sidebar";
 import { ApolloShell, type ShellNavItem } from "@/registry/shell/shell";
 import { DetailPageExample } from "./DetailPageExample";
 import type { PanelSide } from "./detail-page.template";
@@ -27,18 +26,12 @@ import {
   DEFAULT_PREVIEW_SETTINGS,
   type PreviewSettings,
   parsePreviewSettings,
-  type SidebarState,
   serializePreviewSettings,
 } from "./preview-url-state";
 import { type DetailPageState, useDetailPage } from "./use-detail-page";
 
-type SettingsUpdate = (
-  update: (prev: PreviewSettings) => PreviewSettings,
-) => void;
-
 interface PreviewContextValue {
   settings: PreviewSettings;
-  update: SettingsUpdate;
   detailPage: DetailPageState;
 }
 
@@ -74,78 +67,14 @@ function PreviewShell() {
   );
 }
 
-interface SidebarSyncProps {
-  desired: SidebarState;
-  onChange: (state: SidebarState) => void;
-}
-
-/**
- * Keeps the Shell's sidebar in step with the preview setting, both ways.
- * Rendered inside the Shell, where useSidebar is available. Only used with
- * the sidebar shell; the minimal shell has no sidebar.
- */
-function SidebarSync({ desired, onChange }: SidebarSyncProps) {
-  const { open, setOpen } = useSidebar();
-  // setOpen is recreated every render; hold the latest in a ref so the
-  // setting alone drives the first effect.
-  const setOpenRef = useRef(setOpen);
-  const lastOpen = useRef(open);
-
-  useEffect(() => {
-    setOpenRef.current = setOpen;
-  });
-
-  // Wait two frames: the Shell's sidebar width is a framer-motion spring,
-  // and a change made while it is still mounting can stall mid-animation.
-  useEffect(() => {
-    let second = 0;
-    const first = requestAnimationFrame(() => {
-      second = requestAnimationFrame(() => {
-        setOpenRef.current(desired === "expanded");
-      });
-    });
-    return () => {
-      cancelAnimationFrame(first);
-      cancelAnimationFrame(second);
-    };
-  }, [desired]);
-
-  // The Shell's own collapse button changes `open`; report it back.
-  useEffect(() => {
-    if (open === lastOpen.current) return;
-    lastOpen.current = open;
-    onChange(open ? "expanded" : "collapsed");
-  }, [open, onChange]);
-
-  return null;
-}
-
 function PreviewPage() {
   const preview = useContext(PreviewContext);
   if (!preview) return null;
-  const { settings, update, detailPage } = preview;
   return (
-    <>
-      {settings.shellVariant === "sidebar" && (
-        <SidebarSync
-          desired={settings.sidebar}
-          onChange={(sidebar) =>
-            update((prev) =>
-              prev.sidebar === sidebar ? prev : { ...prev, sidebar },
-            )
-          }
-        />
-      )}
-      <DetailPageExample
-        state={detailPage}
-        paddings={settings.paddings}
-        occupantCount={settings.occupants === "one" ? 1 : 2}
-        activeOccupant={settings.startOccupant}
-        onActiveOccupantChange={(startOccupant) =>
-          update((prev) => ({ ...prev, startOccupant }))
-        }
-      />
-    </>
+    <DetailPageExample
+      state={preview.detailPage}
+      paddings={preview.settings.paddings}
+    />
   );
 }
 
@@ -187,8 +116,7 @@ export function DetailPagePreview() {
     window.history.replaceState(null, "", url);
   }, [settings]);
 
-  // Every open or close the user makes, from the card or from the page's
-  // own toggles, is recorded as the panel's defaultOpen so it lands in the
+  // Record the user's choice as the panel's defaultOpen so it lands in the
   // URL. Closes made by the main-width rule never reach here.
   const setPanelOpen = (side: PanelSide, open: boolean) => {
     detailPage.setPanelOpen(side, open);
@@ -201,13 +129,9 @@ export function DetailPagePreview() {
     }));
   };
 
-  const pageState: DetailPageState = { ...detailPage, setPanelOpen };
-
   return (
     <QueryClientProvider client={queryClient}>
-      <PreviewContext.Provider
-        value={{ settings, update: setSettings, detailPage: pageState }}
-      >
+      <PreviewContext.Provider value={{ settings, detailPage }}>
         <RouterProvider router={router} />
       </PreviewContext.Provider>
       <div className="fixed right-4 bottom-4 z-[60] flex flex-col items-end gap-2">

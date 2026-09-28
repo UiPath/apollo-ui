@@ -4,10 +4,9 @@ import type { OccupantSpec, SurfacePadding } from "@/lib/composition";
 export function placeholderOccupant(
   label: string,
   padding: SurfacePadding,
-  name = "placeholder",
-): OccupantSpec {
+): OccupantSpec<"placeholder"> {
   return {
-    name,
+    name: "placeholder",
     label,
     requires: { minWidth: 0, scroll: "either", padding },
   };
