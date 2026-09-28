@@ -66,6 +66,7 @@ export const EDGE_COLORS = {
   selected: 'var(--canvas-primary, var(--color-primary))',
   invalid: 'var(--canvas-error-icon, var(--color-error-icon))',
   diffAdded: 'var(--canvas-success-icon, var(--color-success-icon))',
+  diffUpdated: 'var(--canvas-warning-icon, var(--color-warning-icon))',
   diffRemoved: 'var(--canvas-error-icon, var(--color-error-icon))',
 } as const;
 

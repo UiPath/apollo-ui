@@ -151,6 +151,11 @@ export const CanvasEdge = memo(function CanvasEdge({
   });
 
   const isDiffRemoved = data?.isDiffRemoved ?? false;
+  const suggestionType = data?.suggestionType;
+  // suggestionType takes precedence over the legacy isDiffRemoved flag, so a
+  // stale isDiffRemoved: true doesn't force a dash when suggestionType says
+  // otherwise (e.g. 'add' or 'update').
+  const isDashedForSuggestion = suggestionType ? suggestionType === 'delete' : isDiffRemoved;
 
   const color = resolveEdgeColor({
     selected,
@@ -158,6 +163,7 @@ export const CanvasEdge = memo(function CanvasEdge({
     isInvalid: data?.isInvalid ?? false,
     isDiffAdded: data?.isDiffAdded ?? false,
     isDiffRemoved,
+    suggestionType,
     previewEdge,
     statusColor: execution.statusColor,
   });
@@ -185,6 +191,7 @@ export const CanvasEdge = memo(function CanvasEdge({
     <>
       <g
         data-edge-hovered={isHovered || undefined}
+        data-suggestion-type={suggestionType}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
         onMouseMove={toolbarEnabled ? toolbar.handleMouseMoveOnPath : undefined}
@@ -195,7 +202,7 @@ export const CanvasEdge = memo(function CanvasEdge({
           color={color}
           selected={selected}
           animated={animated}
-          strokeStyle={previewEdge || isDiffRemoved ? 'dashed' : strokeStyle}
+          strokeStyle={previewEdge || isDashedForSuggestion ? 'dashed' : strokeStyle}
           isReadOnly={isReadOnly}
           style={style}
           opacity={opacity}
