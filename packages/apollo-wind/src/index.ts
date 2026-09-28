@@ -13,6 +13,13 @@ export {
   DataTransformers,
   FetchAdapter,
 } from './components/forms/data-fetcher';
+export type {
+  FieldControlFormField,
+  FieldControlGeometry,
+  FieldControlLabelTarget,
+  FieldControlProps,
+} from './components/forms/field-control';
+export { FIELD_CONTROL_GEOMETRY, FieldControl } from './components/forms/field-control';
 export { FormFieldRenderer } from './components/forms/field-renderer';
 export { FormDesigner } from './components/forms/form-designer';
 export {

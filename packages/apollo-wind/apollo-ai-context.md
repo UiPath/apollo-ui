@@ -378,7 +378,7 @@ is imported from `@/components/ui/tree-view`.
 
 ### Forms System (`@/components/forms/`)
 
-MetadataForm, FormFieldRenderer, FormDesigner, FormStateViewer, RulesEngine,
+MetadataForm, FormFieldRenderer, FieldControl, FormDesigner, FormStateViewer, RulesEngine,
 RuleBuilder, ExpressionBuilder, DataFetcher, DataSourceBuilder
 
 All imported from `@/components/forms/<component-name>`.

@@ -53,6 +53,45 @@ export function StringListField({
   required = false,
   inputRef,
 }: StringListFieldProps) {
+  return (
+    <FormField data-slot="string-list-field">
+      <FormFieldLabel
+        required={required}
+        tooltip={field.tooltip}
+        tooltipAriaLabel={field.tooltipAriaLabel}
+      >
+        {field.label}
+      </FormFieldLabel>
+      <StringListControl
+        field={field}
+        value={value}
+        onChange={onChange}
+        onBlur={onBlur}
+        invalid={!!error}
+        disabled={disabled}
+        inputRef={inputRef}
+      />
+      <FormFieldDescription>{field.description}</FormFieldDescription>
+      <FormFieldError id={`${field.name}-error`}>{error}</FormFieldError>
+    </FormField>
+  );
+}
+
+export interface StringListControlProps extends Omit<StringListFieldProps, 'error' | 'required'> {
+  /** Marks every row invalid and points it at the `${field.name}-error` message. */
+  invalid?: boolean;
+}
+
+/** The rows and Add button of a string list, without its label, description or error. */
+export function StringListControl({
+  field,
+  value,
+  onChange,
+  onBlur,
+  invalid = false,
+  disabled = false,
+  inputRef,
+}: StringListControlProps) {
   const items = value ?? [];
   const maxItems = field.maxItems ?? Number.POSITIVE_INFINITY;
   const canAdd = !disabled && items.length < maxItems;
@@ -98,14 +137,7 @@ export function StringListField({
   );
 
   return (
-    <FormField data-slot="string-list-field">
-      <FormFieldLabel
-        required={required}
-        tooltip={field.tooltip}
-        tooltipAriaLabel={field.tooltipAriaLabel}
-      >
-        {field.label}
-      </FormFieldLabel>
+    <>
       <div className="grid gap-1.5">
         {items.map((item, index) => (
           <div key={rowIds[index] ?? index} className="flex items-start gap-2">
@@ -122,9 +154,9 @@ export function StringListField({
               // state and points at the same message id: it drives Textarea's aria-invalid
               // styling and lets assistive tech announce the FormFieldError text below,
               // regardless of which row is focused.
-              aria-invalid={error ? true : undefined}
-              aria-describedby={error ? `${field.name}-error` : undefined}
-              aria-errormessage={error ? `${field.name}-error` : undefined}
+              aria-invalid={invalid || undefined}
+              aria-describedby={invalid ? `${field.name}-error` : undefined}
+              aria-errormessage={invalid ? `${field.name}-error` : undefined}
               className="flex-1"
             />
             <Button
@@ -153,8 +185,6 @@ export function StringListField({
           </Button>
         </div>
       )}
-      <FormFieldDescription>{field.description}</FormFieldDescription>
-      <FormFieldError id={`${field.name}-error`}>{error}</FormFieldError>
-    </FormField>
+    </>
   );
 }
