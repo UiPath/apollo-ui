@@ -33,6 +33,14 @@ describe('Accordion', () => {
     expect(results).toHaveNoViolations();
   });
 
+  it('exposes the radix h3 header wrapper as a data-slot', () => {
+    const { container } = render(<AccordionExample />);
+    const headers = container.querySelectorAll('[data-slot="accordion-header"]');
+    expect(headers).toHaveLength(3);
+    expect(headers[0].tagName).toBe('H3');
+    expect(headers[0]).toContainElement(screen.getByText('Section 1'));
+  });
+
   it('renders all accordion items', () => {
     render(<AccordionExample />);
     expect(screen.getByText('Section 1')).toBeInTheDocument();

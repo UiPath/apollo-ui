@@ -41,6 +41,29 @@ describe('Drawer', () => {
     expect(results).toHaveNoViolations();
   });
 
+  it('sets its own text color instead of inheriting the host body color', async () => {
+    const user = userEvent.setup();
+    render(<DrawerExample />);
+
+    await user.click(screen.getByRole('button', { name: 'Open Drawer' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('dialog')).toHaveClass('text-foreground');
+    });
+  });
+
+  it('exposes title and description slots for host CSS shields', async () => {
+    const user = userEvent.setup();
+    render(<DrawerExample />);
+
+    await user.click(screen.getByRole('button', { name: 'Open Drawer' }));
+
+    await waitFor(() => {
+      expect(document.querySelector('[data-slot="drawer-title"]')).toBeInTheDocument();
+      expect(document.querySelector('[data-slot="drawer-description"]')).toBeInTheDocument();
+    });
+  });
+
   it('opens drawer when trigger is clicked', async () => {
     const user = userEvent.setup();
     render(<DrawerExample />);

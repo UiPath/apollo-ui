@@ -180,6 +180,40 @@ describe('Sheet', () => {
     });
   });
 
+  it('sets its own text color instead of inheriting the host body color', async () => {
+    const user = userEvent.setup();
+    render(<SheetExample />);
+
+    await user.click(screen.getByRole('button', { name: 'Open Sheet' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('dialog')).toHaveClass('text-foreground');
+    });
+  });
+
+  it('exposes title and description slots for host CSS shields', async () => {
+    const user = userEvent.setup();
+    render(<SheetExample />);
+
+    await user.click(screen.getByRole('button', { name: 'Open Sheet' }));
+
+    await waitFor(() => {
+      expect(document.querySelector('[data-slot="sheet-title"]')).toBeInTheDocument();
+      expect(document.querySelector('[data-slot="sheet-description"]')).toBeInTheDocument();
+    });
+  });
+
+  it('spaces header children with gap rather than title margins', async () => {
+    const user = userEvent.setup();
+    render(<SheetExample />);
+
+    await user.click(screen.getByRole('button', { name: 'Open Sheet' }));
+
+    await waitFor(() => {
+      expect(document.querySelector('[data-slot="sheet-header"]')).toHaveClass('gap-2');
+    });
+  });
+
   it('applies custom className to content', async () => {
     const user = userEvent.setup();
     render(
