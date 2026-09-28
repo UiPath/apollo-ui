@@ -60,6 +60,7 @@
           "color-chart-4": "var(--chart-4)",
           "color-chart-5": "var(--chart-5)",
           "color-sidebar": "var(--sidebar)",
+          "color-side-panel-tint": "var(--side-panel-tint)",
           "color-sidebar-foreground": "var(--sidebar-foreground)",
           "color-sidebar-primary": "var(--sidebar-primary)",
           "color-sidebar-primary-foreground": "var(--sidebar-primary-foreground)",
@@ -138,6 +139,7 @@
           "chart-4": "oklch(0.7200 0.1800 320.8000)",
           "chart-5": "oklch(0.6800 0.1500 245.5000)",
           "sidebar": "oklch(0.9723 0.0074 260.7300)",
+          "side-panel-tint": "color-mix(in oklab, var(--sidebar) 60%, transparent)",
           "sidebar-foreground": "oklch(0.2394 0.0455 252.4450)",
           "sidebar-primary": "oklch(0.64 0.115 208)",
           "sidebar-primary-foreground": "oklch(0.1660 0.0283 203.3380)",
@@ -260,6 +262,7 @@
           "chart-4": "oklch(0.7200 0.1800 320.8000)",
           "chart-5": "oklch(0.6800 0.1500 245.5000)",
           "sidebar": "oklch(0.1620 0.0310 257.7000)",
+          "side-panel-tint": "color-mix(in oklab, var(--sidebar) 60%, transparent)",
           "sidebar-foreground": "oklch(0.9525 0.0110 225.9830)",
           "sidebar-primary": "oklch(0.69 0.112 207)",
           "sidebar-primary-foreground": "oklch(0.1660 0.0283 203.3380)",
@@ -2238,6 +2241,17 @@
       "title": "Side Panel",
       "description": "A docked panel surface for the start or end edge of a template.",
       "registryDependencies": ["@uipath/composition"],
+      "cssVars": {
+        "theme": {
+          "color-side-panel-tint": "var(--side-panel-tint)"
+        },
+        "light": {
+          "side-panel-tint": "color-mix(in oklab, var(--sidebar) 60%, transparent)"
+        },
+        "dark": {
+          "side-panel-tint": "color-mix(in oklab, var(--sidebar) 60%, transparent)"
+        }
+      },
       "meta": { "layer": "surface" },
       "categories": ["surface"],
       "files": [

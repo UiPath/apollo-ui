@@ -16,7 +16,13 @@ import {
   SlidersHorizontal,
   X,
 } from "lucide-react";
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  type CSSProperties,
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { Button } from "@/components/ui/button";
 import { ApolloShell, type ShellNavItem } from "@/registry/shell/shell";
 import { DetailPageExample } from "./DetailPageExample";
@@ -98,6 +104,9 @@ function createPreviewRouter() {
 
 const CONFIG_CARD_ID = "detail-page-preview-config";
 
+/** The strength --side-panel-tint ships with in registry.json. */
+const TOKEN_TINT_STRENGTH = 60;
+
 export function DetailPagePreview() {
   const [router] = useState(createPreviewRouter);
   // The preview only renders client-side, so the URL is readable up front.
@@ -106,6 +115,16 @@ export function DetailPagePreview() {
   );
   // Not stored in the URL, so shared links open looking like a real page.
   const [isCardOpen, setIsCardOpen] = useState(false);
+  // Preview-only tuning of --side-panel-tint. Starts at the token's 60% and
+  // is not stored in the URL. Null means use the token as shipped.
+  const [tintStrength, setTintStrength] = useState<number | null>(null);
+  const tintStyle: CSSProperties &
+    Partial<Record<"--side-panel-tint", string>> =
+    tintStrength === null
+      ? {}
+      : {
+          "--side-panel-tint": `color-mix(in oklab, var(--sidebar) ${tintStrength}%, transparent)`,
+        };
   const detailPage = useDetailPage(settings.config);
 
   // Keep the URL in step with the settings. replaceState, so tweaking the
@@ -139,9 +158,12 @@ export function DetailPagePreview() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <PreviewContext.Provider value={{ settings, detailPage }}>
-        <RouterProvider router={router} />
-      </PreviewContext.Provider>
+      {/* Scopes the tint override to the preview; `contents` adds no box. */}
+      <div className="contents" style={tintStyle}>
+        <PreviewContext.Provider value={{ settings, detailPage }}>
+          <RouterProvider router={router} />
+        </PreviewContext.Provider>
+      </div>
       <div className="fixed right-4 bottom-4 z-[60] flex flex-col items-end gap-2">
         <div id={CONFIG_CARD_ID} hidden={!isCardOpen}>
           <PreviewControlBar
@@ -153,6 +175,8 @@ export function DetailPagePreview() {
             endWidth={detailPage.endWidth}
             endWidthChosen={detailPage.endWidthChosen}
             onResetEndWidth={detailPage.resetEndWidth}
+            tintStrength={tintStrength ?? TOKEN_TINT_STRENGTH}
+            onTintStrengthChange={setTintStrength}
           />
         </div>
         <Button

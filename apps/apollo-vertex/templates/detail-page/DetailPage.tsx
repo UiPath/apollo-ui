@@ -1,7 +1,7 @@
 "use client";
 
 import type { ComponentProps, CSSProperties, ReactNode } from "react";
-import { SidePanelOpenContext } from "@/components/ui/side-panel";
+import { SidePanelSlotContext } from "@/components/ui/side-panel";
 import { cn } from "@/lib/utils";
 import {
   DIVIDER_PX,
@@ -116,9 +116,11 @@ export function DetailPage({
             startBeside ? "row-span-2 row-start-1" : "row-start-2",
           )}
         >
-          <SidePanelOpenContext.Provider value={open.start}>
+          <SidePanelSlotContext.Provider
+            value={{ open: open.start, placement: config.start.placement }}
+          >
             {startPanel}
-          </SidePanelOpenContext.Provider>
+          </SidePanelSlotContext.Provider>
         </div>
       )}
       <div
@@ -149,9 +151,11 @@ export function DetailPage({
               onReset={state.resetEndWidth}
             />
           )}
-          <SidePanelOpenContext.Provider value={open.end}>
+          <SidePanelSlotContext.Provider
+            value={{ open: open.end, placement: config.end.placement }}
+          >
             {endPanel}
-          </SidePanelOpenContext.Provider>
+          </SidePanelSlotContext.Provider>
         </div>
       )}
     </div>
