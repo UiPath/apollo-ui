@@ -7,7 +7,8 @@ and is exported through the narrow `@uipath/apollo-react/canvas/guardrails` subp
 re-exported from `./canvas`). Members: the definitions layer (wire types, parser, canonical
 copy and `useGuardrailDefinitions`), `GuardrailList` (the applied-guardrails section),
 `GuardrailPalette` (the add-guardrail picker), `GuardrailRemoveDialog` (the removal
-confirmation), `GuardrailBuilder` (the whole Add/Edit screen), `GuardrailFormLayout` (the
+confirmation), `GuardrailBuilder` (the whole Add/Edit screen), `CustomGuardrailBuilder` (its
+sibling for custom guardrails), `GuardrailFormLayout` (the
 screen shell), `GuardrailValidatorForm` (the validator parameter section, also rendered
 inside the builder), `GuardrailActionSection` + `EscalateActionFields` (the builder's action
 and escalation half), `GuardrailRulesSection` + `GuardrailFilterFieldSelector` (a custom
@@ -606,7 +607,7 @@ since a connector may expose a validator id a built-in also uses.
 
 The complete Add/Edit screen for an OOTB guardrail validator: status banners, usage note,
 type display (edit mode), name, description, validator parameters, scope selector, action
-(log / block / escalate; filter reserved for the custom-guardrail phase), evaluations
+(log / block / escalate; filter is `CustomGuardrailBuilder`'s), evaluations
 toggle, mixed-scopes banner, and the Save / Cancel / Save-as-new footer.
 
 ```tsx
@@ -646,6 +647,101 @@ Contract highlights:
 `GuardrailFormLayout` is exported standalone for hosts composing their own screen: three
 modes (inline+hideHeader / inline with back-button header / modal Dialog), `secondaryAction`,
 `saveDisabled`, and a `footerStart` region.
+
+## CustomGuardrailBuilder
+
+The complete Add/Edit screen for a custom guardrail, `GuardrailBuilder`'s sibling for guardrails
+built from rules rather than a validator: help line, name, description, `GuardrailRulesSection`,
+`GuardrailActionSection` with the filter action's `GuardrailFilterFieldSelector`, evaluations
+toggle, mixed-scopes banner, and the Save / Cancel / Save-as-new footer. Both screens are built
+from the same parts, so they look and behave the same.
+
+```tsx
+import { CustomGuardrailBuilder } from '@uipath/apollo-react/canvas/guardrails';
+
+<CustomGuardrailBuilder
+  open
+  inline
+  guardrail={existing}               // edit mode; omit to create
+  defaultName={uniqueName}
+  existingNames={otherNames}
+  toolName={tool.name}               // targeted when creating
+  fields={{ word, number, boolean }} // per rule type; omit without a schema
+  filterFields={allFields}           // { input, output }, any type; omit without a schema
+  docsHref={GUARDRAILS_DOCS}
+  onSave={persist}
+  onCancel={close}
+/>;
+```
+
+### Contract
+
+- **`GuardrailBuilder`'s contract wherever the concept exists**, under the same prop names: form
+  state seeded at mount (remount with a new `key` to reset), internal validation shown after the
+  first failed Save, `errors` displayed at once and winning per field, `saveDisabled`, the four
+  escalation slots, `onSaveAsNew`, `otherAppliedScopes`, and the layout knobs (`inline`,
+  `hideHeader`, `dialogMaxWidth`, `title`, `evalsTogglePlacement`).
+- **No scope selector and no definition.** Custom guardrails target tools in both products, so
+  the selector is carried as it is: a new guardrail targets `Tool` and `[toolName]`, an edited one
+  keeps what it had, other scopes and tools included. `onSaveAsNew` hands it over the same way;
+  narrow it host-side for a copy scoped to one tool.
+- **`dialogMaxWidth` defaults to 800**, not the layout's 700. A rule lays its four fields out two
+  by two below 48rem of width and in one row above it: 800 keeps the modal two by two, and a host
+  at 900 gets one row.
+- **The value is the persisted custom guardrail.** `CustomGuardrailBuilderValue` mirrors both
+  products' shape. Its action is `CustomGuardrailAction`, which is `GuardrailAction` with the
+  filter arm's `fields` typed as `GuardrailFieldReference[]`, since this screen edits them; that
+  is what lets a host's own custom type assign back without a cast. `onSave` receives the rules
+  exactly as the rules section holds them, and the section renders every rule it holds, so nothing
+  hidden is ever saved and nothing hidden can block Save.
+- **Validation** covers the name (required, case-insensitive duplicate), the rules
+  (`getGuardrailRulesErrorFields` for the section, `getGuardrailRuleErrorFields` per rule) and the
+  action (`getGuardrailActionErrorFields`). `getCustomGuardrailErrorFields(value, existingNames)`
+  returns all of it for a host that validates elsewhere. `CustomGuardrailBuilderErrors` is `name`,
+  the four action messages, `rules` and `perRule`; a host's `perRule` entry wins field by field
+  over the builder's own.
+- **The always-enforce confirmation is `confirmAlwaysEnforce`.** The rules live in the builder, so
+  a host cannot apply the section's `onRequestAlwaysEnforce(next)` itself. The builder asks
+  `confirmAlwaysEnforce()` instead, only when switching would drop a rule the user edited, and
+  switches once it returns or resolves `true`. Without it the switch applies at once.
+- **The filter's `filterFields` message renders in the selector**, tied to its trigger, once.
+- **The help line's second sentence needs `docsHref`**; without it only the first renders.
+  `onDocsLinkClick` reports the link being followed, which is where a host records telemetry.
+  Product URLs never ship in this package.
+- `fields`, `filterFields`, `renderFieldSelector` and `selectionChips` pass straight through; see
+  `GuardrailRulesSection`.
+- Requires an ancestor `TooltipProvider`.
+
+### Localization
+
+Chrome strings resolve through `useCustomGuardrailBuilderLabels`: ten
+`guardrails.custom-builder.*` ids (the titles, the help line, the rules messages) plus
+`GuardrailBuilder`'s own ids for the chrome the two screens share
+(`CUSTOM_GUARDRAIL_BUILDER_REUSED_LABEL_KEYS`), so neither can word a shared string differently.
+The sections it composes resolve their own strings. English only, like the rest of the family.
+Where the products' English differed, `custom-builder-parity.test.ts` declares the choice and why.
+
+### Host adoption
+
+Both hosts adopt it behind the flags they already have:
+
+- **Agents** routes custom guardrails, which have no definition and so always open
+  `ToolGuardrailPolicyBuilderLegacy` today, to an Apollo route beside
+  `ApolloToolGuardrailPolicyBuilder`, with the same shadow root and portal container. It passes
+  `toolName` from the selected tool, `fields` from `getToolFieldGroup(tool, type)` per rule type,
+  `filterFields` from `getToolFieldGroup(tool, 'any')`, `confirmAlwaysEnforce` over `useConfirm`,
+  `dialogMaxWidth={900}`, `evalsTogglePlacement="footer"`, its title node, the escalation slots
+  from `useApolloEscalationSlots`, `docsHref`, and `onSaveAsNew` where it shows Save as new today.
+  A guardrail escalating to a recipient of type 7 or above stays on the legacy dialog, as a
+  built-in one does: `GuardrailEscalateRecipient` does not model those types.
+- **Flow** makes `DeterministicGuardrailsBuilder` a flag switch over a `*Legacy` twin, passing the
+  props it already takes (`open`, `inline`, `hideHeader`, `toolName`, `guardrail`, `defaultName`,
+  `existingNames`, `onSave`, `onCancel`, `onSaveAsNew`), `otherAppliedScopes` from
+  `getOtherAppliedScopes` where it passed `hasMixedScopes`, `fields` as `{ word, number, boolean }`
+  from `useToolFields` (omitted with no schema) and `filterFields` as its `any` group, its
+  escalation slots, `docsHref={GUARDRAILS_DOCS}`, and `onDocsLinkClick` for
+  `guardrails.help_clicked`. Its `scope` prop has no counterpart: the Agent-scope branch it served
+  is unreachable.
 
 ## GuardrailActionSection
 
@@ -734,8 +830,8 @@ The rules of a custom guardrail. Either the guardrail is always enforced at a ch
 has a type (`word` for strings, `number`, `boolean`), the tool fields it checks, an operator
 filtered by the type, and a value, which `isEmpty` / `isNotEmpty` do without.
 
-The custom-guardrail form around it (name, description, scope, action, Save) stays host-side.
-The section needs two props, and the fields the tool offers:
+`CustomGuardrailBuilder` renders it inside the whole custom-guardrail screen. On its own the
+section needs two props, and the fields the tool offers:
 
 ```tsx
 import { GuardrailRulesSection, type GuardrailRule } from '@uipath/apollo-react/canvas/guardrails';

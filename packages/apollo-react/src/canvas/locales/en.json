@@ -386,6 +386,16 @@
   "guardrails.rules.filter-fields-label": "Fields to filter",
   "guardrails.rules.filter-fields-tooltip": "Selected fields will be excluded from the input/output of the tool",
   "guardrails.rules.filter-no-schema": "No schema available to show fields",
+  "guardrails.custom-builder.add-title": "Add custom guardrail",
+  "guardrails.custom-builder.edit-title": "Edit custom guardrail",
+  "guardrails.custom-builder.help-text": "Guardrail is a collection of rules and action that should happen when all of the rules are met.",
+  "guardrails.custom-builder.help-docs": "Learn more about Guardrail rules and actions {docsLink}",
+  "guardrails.custom-builder.docs-link": "here",
+  "guardrails.custom-builder.rules-required-error": "At least one rule is required",
+  "guardrails.custom-builder.rules-invalid-error": "One or more rules are invalid",
+  "guardrails.custom-builder.rules-always-combined-error": "You cannot combine an 'Always enforce guardrail' with any other rule type",
+  "guardrails.custom-builder.rule-fields-required-error": "Fields selection is required",
+  "guardrails.custom-builder.rule-value-required-error": "Value is required",
   "canvas.suggestion_group_panel.previous_suggestion": "Previous suggestion",
   "canvas.suggestion_group_panel.next_suggestion": "Next suggestion"
 }

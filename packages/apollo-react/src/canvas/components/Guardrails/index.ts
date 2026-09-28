@@ -77,6 +77,23 @@ export type { GuardrailStatusChipProps } from './components/guardrail-status-chi
 export { GuardrailStatusChip } from './components/guardrail-status-chip';
 export type { MixedScopesBannerProps } from './components/mixed-scopes-banner';
 export { MixedScopesBanner } from './components/mixed-scopes-banner';
+export type {
+  CustomGuardrailAction,
+  CustomGuardrailBuilderErrors,
+  CustomGuardrailBuilderValue,
+} from './custom-builder-types';
+export type {
+  CustomGuardrailBuilderFormData,
+  CustomGuardrailErrorFields,
+  CustomGuardrailNameErrorField,
+} from './custom-builder-utils';
+export {
+  createDefaultCustomGuardrail,
+  getCustomGuardrailErrorFields,
+  initCustomGuardrailBuilderFormData,
+} from './custom-builder-utils';
+export type { CustomGuardrailBuilderProps } from './custom-guardrail-builder';
+export { CustomGuardrailBuilder } from './custom-guardrail-builder';
 export type { GuardrailCopyTable, GuardrailValidatorCopy } from './definitions-copy';
 export {
   CURATED_GUARDRAIL_VALIDATORS,
@@ -132,6 +149,8 @@ export { GuardrailRulesSection } from './guardrail-rules-section';
 export { GuardrailValidatorForm } from './guardrail-validator-form';
 export type {
   CentralizedGuardrailsLabels,
+  CustomGuardrailBuilderLabels,
+  CustomGuardrailBuilderReusedLabelKey,
   GuardrailActionLabelKey,
   GuardrailActionLabels,
   GuardrailBuilderLabels,
@@ -148,6 +167,9 @@ export type {
 export {
   CENTRALIZED_GUARDRAILS_EN_LABELS,
   CENTRALIZED_GUARDRAILS_EN_MESSAGES,
+  CUSTOM_GUARDRAIL_BUILDER_EN_LABELS,
+  CUSTOM_GUARDRAIL_BUILDER_EN_MESSAGES,
+  CUSTOM_GUARDRAIL_BUILDER_REUSED_LABEL_KEYS,
   formatGuardrailFormMessage,
   GUARDRAIL_ACTION_EN_LABELS,
   GUARDRAIL_ACTION_LABEL_KEYS,
@@ -166,6 +188,7 @@ export {
   GUARDRAIL_SCOPE_SELECTOR_EN_LABELS,
   GUARDRAIL_SCOPE_SELECTOR_LABEL_KEYS,
   resolveCentralizedGuardrailsLabels,
+  resolveCustomGuardrailBuilderLabels,
   resolveGuardrailActionLabels,
   resolveGuardrailBuilderLabels,
   resolveGuardrailFilterFieldSelectorLabels,
@@ -176,6 +199,7 @@ export {
   resolveGuardrailRulesLabels,
   resolveGuardrailScopeSelectorLabels,
   useCentralizedGuardrailsLabels,
+  useCustomGuardrailBuilderLabels,
   useGuardrailActionLabels,
   useGuardrailBuilderLabels,
   useGuardrailFilterFieldSelectorLabels,

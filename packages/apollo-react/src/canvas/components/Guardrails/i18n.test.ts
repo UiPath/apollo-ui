@@ -3,6 +3,9 @@ import { findCatalogDrift, findCatalogOrphans } from './__fixtures__/catalog-cov
 import {
   CENTRALIZED_GUARDRAILS_EN_LABELS,
   CENTRALIZED_GUARDRAILS_EN_MESSAGES,
+  CUSTOM_GUARDRAIL_BUILDER_EN_LABELS,
+  CUSTOM_GUARDRAIL_BUILDER_EN_MESSAGES,
+  CUSTOM_GUARDRAIL_BUILDER_REUSED_LABEL_KEYS,
   formatGuardrailFormMessage,
   GUARDRAIL_ACTION_EN_LABELS,
   GUARDRAIL_ACTION_LABEL_KEYS,
@@ -21,6 +24,7 @@ import {
   GUARDRAIL_SCOPE_SELECTOR_EN_LABELS,
   GUARDRAIL_SCOPE_SELECTOR_LABEL_KEYS,
   resolveCentralizedGuardrailsLabels,
+  resolveCustomGuardrailBuilderLabels,
   resolveGuardrailActionLabels,
   resolveGuardrailBuilderLabels,
   resolveGuardrailFilterFieldSelectorLabels,
@@ -333,6 +337,61 @@ describe('GUARDRAIL_SCOPE_SELECTOR_EN_LABELS', () => {
   });
 });
 
+describe('resolveCustomGuardrailBuilderLabels', () => {
+  it('returns the English defaults when there is nothing to merge', () => {
+    expect(resolveCustomGuardrailBuilderLabels()).toEqual(CUSTOM_GUARDRAIL_BUILDER_EN_LABELS);
+  });
+
+  it('layers the catalog over the defaults and the overrides over both', () => {
+    const labels = resolveCustomGuardrailBuilderLabels(
+      { addTitle: 'Benutzerdefinierte Leitplanke hinzufügen', save: 'Speichern' },
+      { save: 'Sichern' }
+    );
+
+    expect(labels.addTitle).toBe('Benutzerdefinierte Leitplanke hinzufügen');
+    expect(labels.save).toBe('Sichern');
+    expect(labels.rulesRequiredError).toBe(CUSTOM_GUARDRAIL_BUILDER_EN_LABELS.rulesRequiredError);
+  });
+
+  it('never lets an absent string blank a default', () => {
+    const labels = resolveCustomGuardrailBuilderLabels(
+      { editTitle: undefined },
+      { nameLabel: undefined }
+    );
+
+    expect(labels.editTitle).toBe('Edit custom guardrail');
+    expect(labels.nameLabel).toBe('Guardrail name');
+  });
+
+  it('keeps the docs-link template in the `{{token}}` convention the help line splits on', () => {
+    expect(CUSTOM_GUARDRAIL_BUILDER_EN_LABELS.helpDocs).toBe(
+      'Learn more about Guardrail rules and actions {{docsLink}}'
+    );
+    // The catalogs store the ICU source instead, which is what translators receive.
+    expect(CUSTOM_GUARDRAIL_BUILDER_EN_MESSAGES['guardrails.custom-builder.help-docs']).toContain(
+      '{docsLink}'
+    );
+  });
+});
+
+describe('CUSTOM_GUARDRAIL_BUILDER_EN_LABELS', () => {
+  it('takes the shared chrome from the builder block, key for key', () => {
+    for (const key of CUSTOM_GUARDRAIL_BUILDER_REUSED_LABEL_KEYS) {
+      expect(CUSTOM_GUARDRAIL_BUILDER_EN_LABELS[key]).toBe(GUARDRAIL_BUILDER_EN_LABELS[key]);
+    }
+  });
+
+  it('declares an id of its own for every other string', () => {
+    expect(Object.keys(CUSTOM_GUARDRAIL_BUILDER_EN_LABELS)).toHaveLength(
+      CUSTOM_GUARDRAIL_BUILDER_REUSED_LABEL_KEYS.length +
+        Object.keys(CUSTOM_GUARDRAIL_BUILDER_EN_MESSAGES).length
+    );
+    for (const id of Object.keys(CUSTOM_GUARDRAIL_BUILDER_EN_MESSAGES)) {
+      expect(id.startsWith('guardrails.custom-builder.')).toBe(true);
+    }
+  });
+});
+
 describe('the other label sets still layer the same way', () => {
   // Every resolver shares one `mergeLabels`, so one case per set is enough to catch a wiring
   // mistake in the shared helper.
@@ -402,6 +461,19 @@ describe('the shared canvas catalog', () => {
 
   it('carries no rules message the source no longer declares', () => {
     expect(findCatalogOrphans(GUARDRAIL_RULES_EN_MESSAGES, 'guardrails.rules.')).toEqual([]);
+  });
+
+  it('carries every custom builder message with the same English', () => {
+    expect(findCatalogDrift(CUSTOM_GUARDRAIL_BUILDER_EN_MESSAGES)).toEqual({
+      missing: [],
+      drifted: [],
+    });
+  });
+
+  it('carries no custom builder message the source no longer declares', () => {
+    expect(
+      findCatalogOrphans(CUSTOM_GUARDRAIL_BUILDER_EN_MESSAGES, 'guardrails.custom-builder.')
+    ).toEqual([]);
   });
 
   it('resolves the rules block’s one reused id from the validator form, with its English', () => {
