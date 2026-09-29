@@ -9,6 +9,7 @@ import {
 import { AddDataColumnIcon } from './AddDataColumnIcon';
 import { AnalyzeIcon } from './AnalyzeIcon';
 import { AttachmentIcon } from './AttachmentIcon';
+import { CreateFileIcon } from './CreateFileIcon';
 import { IxpIcon } from './IXPIcon';
 import { ProcessIcon } from './ProcessIcon';
 
@@ -48,6 +49,8 @@ export const ToolResourceIcon = ({ size = 24, tool }: ToolResourceIconProps) => 
           return <AddDataColumnIcon />;
         case BuiltInToolType.DeepRAG:
           return <AnalyzeIcon />;
+        case BuiltInToolType.GenerateFile:
+          return <CreateFileIcon />;
         case BuiltInToolType.LoadAttachments:
           return <AttachmentIcon />;
         default:
