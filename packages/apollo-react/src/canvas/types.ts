@@ -41,6 +41,7 @@ export enum BuiltInToolType {
   AnalyzeAttachments = 'AnalyzeAttachments',
   BatchTransform = 'BatchTransform',
   DeepRAG = 'DeepRAG',
+  GenerateFile = 'GenerateFile',
   LoadAttachments = 'LoadAttachments',
 }
 
