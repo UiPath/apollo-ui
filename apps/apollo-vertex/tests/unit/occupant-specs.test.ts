@@ -15,9 +15,8 @@ describe.each(OCCUPANT_SPECS.map((o) => [o.spec.name, o] as const))("%s", (_, {
     ).toBe(true);
   });
 
-  it("has example views, including stress", () => {
-    expect(examples).toContain("stress");
-    expect(examples.length).toBeGreaterThan(1);
+  it("has an example for each role: primary, secondary, and stress", () => {
+    expect(examples.toSorted()).toEqual(["primary", "secondary", "stress"]);
   });
 
   it("fits exactly the surfaces whose orientation it claims", () => {

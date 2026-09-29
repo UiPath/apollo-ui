@@ -14,7 +14,7 @@ import { EXAMPLES as stageStripExamples } from "@/registry/stage-strip/examples"
 
 export interface RegisteredOccupantSpec {
   spec: OccupantSpec;
-  /** The names of its example views, "stress" included. */
+  /** Its example roles: primary, secondary, and stress. */
   examples: readonly string[];
 }
 

@@ -1,14 +1,16 @@
 /**
  * EXAMPLES. Not shipped: the view models the occupant checks and docs render
- * key facts with, keyed by example name. "stress" is required.
+ * key facts with, by role. Primary is shipment tracking, secondary customer
+ * support, and stress the data that breaks layouts.
  */
+import type { OccupantExamples } from "@/lib/occupant-entry";
 import type { KeyFactsViewModel } from "../key-facts.view-model";
 import { SHIPMENT } from "./shipment.example-adapter";
 import { STRESS } from "./stress.example-adapter";
 import { SUPPORT_CASE } from "./support-case.example-adapter";
 
-export const EXAMPLES: Record<string, KeyFactsViewModel> = {
-  shipment: SHIPMENT,
-  "support-case": SUPPORT_CASE,
+export const EXAMPLES: OccupantExamples<KeyFactsViewModel> = {
+  primary: SHIPMENT,
+  secondary: SUPPORT_CASE,
   stress: STRESS,
 };

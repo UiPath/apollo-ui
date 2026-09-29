@@ -5,8 +5,8 @@
  * Every item with meta.layer "occupant" must have, in registry/<name>/:
  *   <name>.occupant.ts    exporting its spec, as <camelName>Occupant
  *   <name>.tsx            exporting its component, as <PascalName>
- *   examples/index.ts     exporting EXAMPLES, its example views by name,
- *                         including "stress" (not shipped)
+ *   examples/index.ts     exporting EXAMPLES, its example views by role:
+ *                         primary, secondary, and stress (not shipped)
  *
  * Every item with meta.layer "surface" must have registry/<name>/<name>.surface.ts
  * exporting its spec as <camelName>Surface.
@@ -57,7 +57,10 @@ const surfaces = registry.items
 const problems: string[] = [];
 for (const name of surfaces) {
   const spec = `registry/${name}/${name}.surface.ts`;
-  if (!existsSync(join(root, spec)) || !readFileSync(join(root, spec), "utf8").includes(`${camel(name)}Surface`)) {
+  if (
+    !existsSync(join(root, spec)) ||
+    !readFileSync(join(root, spec), "utf8").includes(`${camel(name)}Surface`)
+  ) {
     problems.push(`${name}: ${spec} must export ${camel(name)}Surface`);
   }
 }
@@ -78,11 +81,13 @@ for (const name of occupants) {
   ) {
     problems.push(`${name}: ${spec} must export ${camel(name)}Occupant`);
   }
-  if (
-    existsSync(join(root, examples)) &&
-    !readFileSync(join(root, examples), "utf8").includes("stress")
-  ) {
-    problems.push(`${name}: ${examples} needs a "stress" example`);
+  if (existsSync(join(root, examples))) {
+    const source = readFileSync(join(root, examples), "utf8");
+    for (const role of ["primary", "secondary", "stress"]) {
+      if (!new RegExp(`\\b${role}:`).test(source)) {
+        problems.push(`${name}: ${examples} needs a "${role}" example`);
+      }
+    }
   }
 }
 if (problems.length) {
@@ -106,7 +111,7 @@ ${occupants
 
 export interface RegisteredOccupantSpec {
   spec: OccupantSpec;
-  /** The names of its example views, "stress" included. */
+  /** Its example roles: primary, secondary, and stress. */
   examples: readonly string[];
 }
 
