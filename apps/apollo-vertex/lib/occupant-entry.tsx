@@ -5,6 +5,25 @@ import type {
 } from "@/components/ui/occupant";
 import type { OccupantSpec } from "@/lib/composition";
 
+/**
+ * The roles an occupant's example views play, the same for every occupant,
+ * so previews and checks can switch samples by role:
+ *
+ * - primary: data from one domain
+ * - secondary: data from a different domain, to show the occupant is neutral
+ * - stress: the data that breaks layouts (long, unbroken, many, missing)
+ */
+export type ExampleRole = "primary" | "secondary" | "stress";
+
+export const EXAMPLE_ROLES: readonly ExampleRole[] = [
+  "primary",
+  "secondary",
+  "stress",
+];
+
+/** An occupant's example views, one per role. */
+export type OccupantExamples<ViewModel> = Record<ExampleRole, ViewModel>;
+
 /** A registered occupant, ready for a preview or a check to render. */
 export interface RegisteredOccupant {
   spec: OccupantSpec;
@@ -24,17 +43,15 @@ export interface RegisteredOccupant {
 export function defineOccupant<ViewModel>(entry: {
   spec: OccupantSpec;
   Component: ComponentType<OccupantViewProps<ViewModel>>;
-  examples: Record<string, ViewModel>;
+  examples: OccupantExamples<ViewModel>;
 }): RegisteredOccupant {
-  const names = Object.keys(entry.examples);
-  const { Component } = entry;
+  const { Component, examples } = entry;
   return {
     spec: entry.spec,
-    examples: names,
+    examples: EXAMPLE_ROLES,
     render: (example, options = {}) => {
-      const view = entry.examples[example] ?? entry.examples[names[0] ?? ""];
-      if (!view) return null;
-      return <Component view={view} {...options} />;
+      const role = EXAMPLE_ROLES.find((r) => r === example) ?? "primary";
+      return <Component view={examples[role]} {...options} />;
     },
   };
 }
