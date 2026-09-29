@@ -16,6 +16,7 @@ The top of a page: the title, back navigation, key fields, and page actions.
 
 | | |
 | --- | --- |
+| Shape | <Code>{pageHeaderSurface.provides.orientation}</Code>: a wide, short band. Content lays out in a row and never scrolls. |
 | Width | The slot's full width. No minimum of its own ({pageHeaderSurface.provides.width.min}px); the slot sets it. The Detail page's header slot guarantees {HEADER_WIDTH.min}px. |
 | Padding | `padded` ({PADDED_INSET_PX}px) or `flush` when a template sets it. Unset, it keeps its standalone responsive padding. |
 | Scroll | Never scrolls. Content has to fit, or scroll itself. |
@@ -25,6 +26,7 @@ The top of a page: the title, back navigation, key fields, and page actions.
 | Field | Value |
 | --- | --- |
 | `name` | <Code>{pageHeaderSurface.name}</Code> |
+| `provides.orientation` | <Code>{pageHeaderSurface.provides.orientation}</Code> |
 | `provides.width.min` | {pageHeaderSurface.provides.width.min}px |
 | `provides.scroll` | <Code>{pageHeaderSurface.provides.scroll}</Code> |
 | `data-surface` | `page-header` |

@@ -1,9 +1,13 @@
+import { Code } from 'nextra/components';
 import {
   LAYOUT_TOKENS,
   PADDED_INSET_PX,
   PANEL_TRANSITION_DURATION_MS,
   SIDE_PANEL_TINT_STRENGTH,
 } from '@/lib/composition';
+import { contentAreaSurface } from '@/registry/content-area/content-area.surface';
+import { pageHeaderSurface } from '@/registry/page-header/page-header.surface';
+import { sidePanelSurface } from '@/registry/side-panel/side-panel.surface';
 import { START_PANEL_WIDTH } from '@/templates/detail-page/detail-page.template';
 
 # Design architecture
@@ -42,8 +46,8 @@ The specs live in `@/lib/composition`.
 | --- | --- | --- |
 | `TemplateSpec` | A template | `name`, `slots` |
 | `SlotSpec` | One slot in a template | `name`, `required`, `width` (`min`, optional `default` and `max`), `resizable`, `surfaces` |
-| `SurfaceSpec` | A surface | `name`, `width` (its own minimum), `provides` (inner width, scroll) |
-| `OccupantSpec` | An occupant | `name`, `label`, `icon` (optional), `surfaces` (optional), `requires` (minimum width, scroll, padding) |
+| `SurfaceSpec` | A surface | `name`, `width` (its own minimum), `provides` (orientation, inner width, scroll) |
+| `OccupantSpec` | An occupant | `name`, `label`, `icon` (optional), `surfaces` (optional), `orientations` (optional), `requires` (minimum width, scroll, padding) |
 
 `fits(slot, surface, occupant)` checks that an occupant can go in a surface
 in a given slot. It checks every requirement:
@@ -52,7 +56,8 @@ in a given slot. It checks every requirement:
 2. The slot's inner width, with the occupant's padding, covers the occupant's
    minimum width.
 3. The scroll owners agree.
-4. If the occupant lists the surfaces it works in, this surface is one of
+4. The occupant works in the surface's orientation.
+5. If the occupant lists the surfaces it works in, this surface is one of
    them.
 
 It returns `{ fits, reasons }`. `reasons` lists every requirement that failed,
@@ -72,7 +77,41 @@ surface's own parts, like an item header made of PageHeader parts, lists that
 surface in `surfaces`, and fits() rejects it anywhere else.
 
 The helpers it uses are exported too: `slotAccepts`, `slotInnerWidth`,
-`occupantPadding`, and `scrollCompatible`.
+`occupantPadding`, `occupantOrientations`, and `scrollCompatible`.
+
+### Orientation
+
+Every surface gives its occupant a space with an orientation:
+
+| Orientation | The space | Surfaces |
+| --- | --- | --- |
+| `horizontal` | A wide, short band that doesn't grow downward | [Page header](/surfaces/page-header) (<Code>{pageHeaderSurface.provides.orientation}</Code>) |
+| `vertical` | A column that grows downward and can scroll | [Side panel](/surfaces/side-panel) (<Code>{sidePanelSurface.provides.orientation}</Code>), [content area](/surfaces/content-area) (<Code>{contentAreaSurface.provides.orientation}</Code>) |
+
+An occupant lists the orientations it works in as `orientations`. Most
+occupants are columns of content, so it defaults to `["vertical"]`. fits()
+rejects an occupant in a surface whose orientation it doesn't list.
+
+> Occupants adapt to the shape of the space a surface provides, never to the
+> surface's name. If a smaller version shows different information, it's a
+> separate occupant that shares the same data mapping.
+
+Inside a surface, an occupant reads the space with `useSurface()`, from
+`@/lib/surface-context`:
+
+```tsx
+const { orientation, width } = useSurface();
+```
+
+- `orientation` is the surface's orientation.
+- `width` is the live inner width in px, after the surface's padding. It is
+  `null` until the surface has been measured.
+
+For adjustments that only change styles, use container queries instead.
+The side panel and content area make their inner area an inline-size
+container, so an occupant can use Tailwind's `@sm:`, `@md:`, and so on. The
+page header's container is its outer edge, which its own parts already
+query.
 
 ### Minimum width
 

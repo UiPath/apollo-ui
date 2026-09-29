@@ -36,6 +36,7 @@
       "@/components/ui/chart": ["./registry/chart/chart"],
       "@/lib/charts-core": ["./registry/charts-core/charts-core"],
       "@/lib/composition": ["./registry/composition/composition"],
+      "@/lib/surface-context": ["./registry/composition/surface-context"],
       "@/lib/data-fabric-adapter": [
         "./registry/data-fabric-adapter/data-fabric-adapter"
       ],
