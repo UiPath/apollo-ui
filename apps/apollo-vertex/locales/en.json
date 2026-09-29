@@ -106,6 +106,7 @@
   "failed_to_delete_test": "Failed to delete test",
   "failed_to_force_stop_batch": "Failed to force stop run batch",
   "failed_to_force_stop_run": "Failed to force stop run",
+  "failed_to_load_options": "Failed to load options",
   "failed_to_load_run_details": "Failed to load run details",
   "failed_to_remove_agent_baseline": "Failed to remove agent from baseline",
   "failed_to_run_test": "Failed to run test",

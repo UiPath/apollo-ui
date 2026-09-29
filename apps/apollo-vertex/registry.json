@@ -2012,22 +2012,45 @@
       "type": "registry:ui",
       "title": "Filter Dropdown",
       "description": "A versatile filter dropdown with multi-select, single-select, search, and optional TanStack Table column integration.",
-      "dependencies": ["@tanstack/react-table@^8.21.0", "lucide-react"],
+      "dependencies": [
+        "@tanstack/react-table@^8.21.0",
+        "lucide-react",
+        "react-i18next"
+      ],
       "registryDependencies": [
         "@uipath/button",
         "@uipath/checkbox",
         "@uipath/input",
         "@uipath/popover",
-        "@uipath/separator"
+        "@uipath/separator",
+        "@uipath/skeleton",
+        "@uipath/spinner"
       ],
       "files": [
         {
           "path": "registry/filter-dropdown/index.ts",
-          "type": "registry:ui"
+          "type": "registry:ui",
+          "target": "components/ui/filter-dropdown/index.ts"
         },
         {
           "path": "registry/filter-dropdown/filter-dropdown.tsx",
-          "type": "registry:ui"
+          "type": "registry:ui",
+          "target": "components/ui/filter-dropdown/filter-dropdown.tsx"
+        },
+        {
+          "path": "registry/filter-dropdown/filter-dropdown-states.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/filter-dropdown/filter-dropdown-states.tsx"
+        },
+        {
+          "path": "registry/filter-dropdown/filter-dropdown-option.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/filter-dropdown/filter-dropdown-option.tsx"
+        },
+        {
+          "path": "registry/filter-dropdown/use-filter-dropdown-search.ts",
+          "type": "registry:ui",
+          "target": "components/ui/filter-dropdown/use-filter-dropdown-search.ts"
         }
       ]
     },
