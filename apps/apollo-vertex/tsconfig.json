@@ -37,6 +37,17 @@
       "@/lib/charts-core": ["./registry/charts-core/charts-core"],
       "@/lib/composition": ["./registry/composition/composition"],
       "@/lib/surface-context": ["./registry/composition/surface-context"],
+      "@/lib/progress-view-model": [
+        "./registry/progress-view-model/progress-view-model"
+      ],
+      "@/lib/progress-markers": [
+        "./registry/progress-view-model/progress-markers"
+      ],
+      "@/components/ui/occupant": ["./registry/occupant/occupant"],
+      "@/components/ui/activity-timeline": [
+        "./registry/activity-timeline/activity-timeline"
+      ],
+      "@/components/ui/stage-strip": ["./registry/stage-strip/stage-strip"],
       "@/lib/data-fabric-adapter": [
         "./registry/data-fabric-adapter/data-fabric-adapter"
       ],
