@@ -147,6 +147,119 @@ describe('Toolbox', () => {
     });
   });
 
+  describe('initialCategoryId', () => {
+    let user: UserEvent;
+
+    beforeEach(() => {
+      user = userEvent.setup();
+    });
+
+    it('opens drilled into the category, with back returning to the root', async () => {
+      render(<Toolbox {...defaultProps} initialCategoryId="item-2" />);
+
+      expect(screen.getByText('Child 1')).toBeInTheDocument();
+      expect(screen.queryByText('Item 1')).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: /back/i }));
+
+      expect(screen.getByText('Item 1')).toBeInTheDocument();
+      expect(screen.getByText('Test Toolbox')).toBeInTheDocument();
+    });
+
+    it('applies once the category arrives in initialItems that load later', () => {
+      const { rerender } = render(
+        <Toolbox {...defaultProps} initialItems={[]} loading initialCategoryId="item-2" />
+      );
+
+      rerender(<Toolbox {...defaultProps} initialCategoryId="item-2" />);
+
+      expect(screen.getByText('Child 1')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /back/i })).toBeInTheDocument();
+    });
+
+    it('does not drill back in after the user returns to the root', async () => {
+      const { rerender } = render(<Toolbox {...defaultProps} initialCategoryId="item-2" />);
+
+      await user.click(screen.getByRole('button', { name: /back/i }));
+      rerender(
+        <Toolbox {...defaultProps} initialItems={[...mockItems]} initialCategoryId="item-2" />
+      );
+
+      expect(screen.getByText('Item 1')).toBeInTheDocument();
+      expect(screen.queryByText('Child 1')).not.toBeInTheDocument();
+    });
+
+    it('cancels the drill-in when the user navigates before the category arrives', async () => {
+      const lateCategory: ListItem = {
+        id: 'late',
+        name: 'Late',
+        data: {},
+        children: [{ id: 'late-child', name: 'Late Child', data: {} }],
+      };
+      const { rerender } = render(<Toolbox {...defaultProps} initialCategoryId="late" />);
+
+      await user.click(screen.getByText('Item 2'));
+      rerender(
+        <Toolbox
+          {...defaultProps}
+          initialItems={[...mockItems, lateCategory]}
+          initialCategoryId="late"
+        />
+      );
+      await user.click(screen.getByRole('button', { name: /back/i }));
+
+      expect(screen.getByText('Item 1')).toBeInTheDocument();
+      expect(screen.getByText('Late')).toBeInTheDocument();
+      expect(screen.queryByText('Late Child')).not.toBeInTheDocument();
+    });
+
+    it('cancels the drill-in when the category arrives while async children are resolving', async () => {
+      let resolveChildren: (items: ListItem[]) => void = () => {};
+      const asyncCategory: ListItem = {
+        id: 'async',
+        name: 'Async',
+        data: {},
+        children: () => new Promise<ListItem[]>((resolve) => (resolveChildren = resolve)),
+      };
+      const lateCategory: ListItem = {
+        id: 'late',
+        name: 'Late',
+        data: {},
+        children: [{ id: 'late-child', name: 'Late Child', data: {} }],
+      };
+      const { rerender } = render(
+        <Toolbox {...defaultProps} initialItems={[asyncCategory]} initialCategoryId="late" />
+      );
+
+      await user.click(screen.getByText('Async'));
+      rerender(
+        <Toolbox
+          {...defaultProps}
+          initialItems={[asyncCategory, lateCategory]}
+          initialCategoryId="late"
+        />
+      );
+      await act(async () =>
+        resolveChildren([{ id: 'async-child', name: 'Async Child', data: {} }])
+      );
+
+      expect(screen.getByText('Async Child')).toBeInTheDocument();
+      expect(screen.queryByText('Late Child')).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: /back/i }));
+
+      expect(screen.getByText('Test Toolbox')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /back/i })).not.toBeInTheDocument();
+    });
+
+    it('stays at the root when the category is not found', () => {
+      render(<Toolbox {...defaultProps} initialCategoryId="missing" />);
+
+      expect(screen.getByText('Item 1')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /back/i })).not.toBeInTheDocument();
+    });
+  });
+
   describe('Search', () => {
     let user: UserEvent;
 
