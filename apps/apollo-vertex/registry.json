@@ -2659,6 +2659,27 @@
       ]
     },
     {
+      "name": "key-facts",
+      "type": "registry:ui",
+      "title": "Key facts",
+      "description": "Occupant: the few facts that matter most about an item, as label and value pairs. Vertical and horizontal surfaces.",
+      "dependencies": ["react-i18next"],
+      "registryDependencies": ["@uipath/occupant"],
+      "meta": { "layer": "occupant" },
+      "categories": ["occupant"],
+      "files": [
+        { "path": "registry/key-facts/key-facts.tsx", "type": "registry:ui" },
+        {
+          "path": "registry/key-facts/key-facts.occupant.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/key-facts/key-facts.view-model.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "use-mobile",
       "type": "registry:hook",
       "title": "useMobile",
