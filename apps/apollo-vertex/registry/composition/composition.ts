@@ -14,6 +14,7 @@
  * into layout-tokens.ts so CSS and these specs read the same values.
  */
 
+import type { LucideIcon } from "lucide-react";
 import { LAYOUT_TOKENS } from "./layout-tokens";
 
 export {
@@ -89,6 +90,11 @@ export interface SurfaceSpec<TName extends string = string> {
 
 /** What an occupant needs from the surface it sits in. */
 export interface OccupantRequirements {
+  /**
+   * The narrowest inner width, in px, where the occupant still works. An
+   * occupant must render without clipping or overflowing at any width from
+   * its minWidth up.
+   */
   minWidth: number;
   scroll: ScrollOwner | "either";
   /** Defaults to "padded". */
@@ -100,6 +106,8 @@ export interface OccupantSpec<TName extends string = string> {
   name: TName;
   /** Human-readable name shown in tooling and docs. */
   label: string;
+  /** Optional icon for pickers and switchers, a lucide icon component. */
+  icon?: LucideIcon;
   requires: OccupantRequirements;
 }
 
@@ -152,10 +160,14 @@ export function scrollOwner(
   return surface.provides.scroll === "occupant" ? "occupant" : "surface";
 }
 
-function scrollCompatible(
+/**
+ * The scroll rule: an occupant's scroll need is met when either side is
+ * "either", or both name the same owner.
+ */
+export function scrollCompatible(
   support: ScrollSupport,
   needs: ScrollOwner | "either",
-) {
+): boolean {
   return support === "either" || needs === "either" || support === needs;
 }
 
@@ -177,18 +189,45 @@ export function slotInnerWidth(
   return padding === "flush" && min > 0 ? min + 2 * PADDED_INSET_PX : min;
 }
 
+/** The result of fits(): whether it fits, and every requirement that failed. */
+export interface FitResult {
+  fits: boolean;
+  /** One plain sentence per failed requirement. Empty when it fits. */
+  reasons: string[];
+}
+
 /**
- * Whether an occupant fits a surface in a given slot: the slot accepts the
- * surface, the slot's actual inner width covers the occupant's minimum,
- * and the scroll owners agree.
+ * Whether an occupant fits a surface in a given slot. It checks every
+ * requirement and lists each one that fails:
+ *
+ * - the slot accepts the surface;
+ * - the slot's inner width, with the occupant's padding, covers its
+ *   minWidth (padding has no check of its own: every surface takes both
+ *   paddings, and padding changes the inner width);
+ * - the scroll owners agree (scrollCompatible).
  */
 export function fits(
   slot: SlotSpec,
   surface: SurfaceSpec,
   occupant: OccupantSpec,
-): boolean {
+): FitResult {
+  const reasons: string[] = [];
   const { minWidth, scroll: needsScroll } = occupant.requires;
-  const available = slotInnerWidth(slot, surface, occupantPadding(occupant));
-  const scrollFits = scrollCompatible(surface.provides.scroll, needsScroll);
-  return slotAccepts(slot, surface) && available >= minWidth && scrollFits;
+  const padding = occupantPadding(occupant);
+
+  if (!slotAccepts(slot, surface)) {
+    reasons.push(`The ${slot.name} slot doesn't accept ${surface.name}.`);
+  }
+  const available = slotInnerWidth(slot, surface, padding);
+  if (available < minWidth) {
+    reasons.push(
+      `Needs ${minWidth}px; the ${slot.name} slot gives ${available}px (${padding}).`,
+    );
+  }
+  if (!scrollCompatible(surface.provides.scroll, needsScroll)) {
+    reasons.push(
+      `Needs ${needsScroll} scrolling; ${surface.name} supports ${surface.provides.scroll} only.`,
+    );
+  }
+  return { fits: reasons.length === 0, reasons };
 }
