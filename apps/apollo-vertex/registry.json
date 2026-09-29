@@ -2637,8 +2637,9 @@
       "type": "registry:ui",
       "title": "Activity timeline",
       "description": "Occupant: every event for an item, oldest first, with who did it and how it stands. Vertical surfaces.",
-      "dependencies": ["react-i18next"],
+      "dependencies": ["lucide-react", "react-i18next"],
       "registryDependencies": [
+        "@uipath/composition",
         "@uipath/occupant",
         "@uipath/progress-view-model",
         "@uipath/skeleton",
@@ -2662,8 +2663,9 @@
       "type": "registry:ui",
       "title": "Stage strip",
       "description": "Occupant: where an item is in its stages, as a one-band summary. Horizontal surfaces.",
-      "dependencies": ["react-i18next"],
+      "dependencies": ["lucide-react", "react-i18next"],
       "registryDependencies": [
+        "@uipath/composition",
         "@uipath/occupant",
         "@uipath/progress-view-model",
         "@uipath/timeline"
@@ -2686,8 +2688,8 @@
       "type": "registry:ui",
       "title": "Key facts",
       "description": "Occupant: the few facts that matter most about an item, as label and value pairs. Vertical and horizontal surfaces.",
-      "dependencies": ["react-i18next"],
-      "registryDependencies": ["@uipath/occupant"],
+      "dependencies": ["lucide-react", "react-i18next"],
+      "registryDependencies": ["@uipath/composition", "@uipath/occupant"],
       "meta": { "layer": "occupant" },
       "categories": ["occupant"],
       "files": [
