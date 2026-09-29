@@ -1745,3 +1745,26 @@ describe('file support indicator', () => {
     expect(screen.getByRole('combobox', { name: /Applies to/ })).toBeInTheDocument();
   });
 });
+
+describe('file support indicator on a parameterless definition', () => {
+  it('still says what the validator reads when it has no parameters left', () => {
+    // A validator whose only parameter was `appliesTo` arrives with none once file support is
+    // withheld, and that is precisely the card that must say "Text prompts only".
+    render(
+      <GuardrailBuilder
+        open
+        inline
+        definition={makeDef({
+          validator: 'user_prompt_attacks',
+          parameters: [],
+          fileSupport: { supported: false, formats: [], unavailableReason: 'NotEnabled' },
+        })}
+        scope="Agent"
+        onSave={() => {}}
+        onCancel={() => {}}
+      />
+    );
+
+    expect(screen.getByText('Text prompts only')).toBeInTheDocument();
+  });
+});

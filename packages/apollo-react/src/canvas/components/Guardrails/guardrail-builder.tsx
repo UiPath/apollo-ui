@@ -454,12 +454,15 @@ export function GuardrailBuilder({
         labels={labels}
       />
 
+      {/* Above the parameters, because `appliesTo` is one of them and this says what "Files"
+          will actually mean for this validator — and outside their gate on purpose: a validator
+          whose only parameter was `appliesTo` has none once file support is withheld, and that
+          is exactly when it must say so. */}
+      <GuardrailFileSupportIndicator fileSupport={definition.fileSupport} />
+
       {/* Validator parameters */}
       {definition.parameters.length > 0 && (
         <div className="space-y-3">
-          {/* Above the parameters, because `appliesTo` is one of them and this says what
-              "Files" will actually mean for this validator. */}
-          <GuardrailFileSupportIndicator fileSupport={definition.fileSupport} />
           <GuardrailValidatorForm
             parameterDefinitions={definition.parameters}
             parameters={formData.validatorParameters}
