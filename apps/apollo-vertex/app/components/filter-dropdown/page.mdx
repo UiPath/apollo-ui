@@ -16,6 +16,7 @@ A versatile filter dropdown supporting multi-select, single-select, built-in sea
 - **Standalone or table-integrated** — works with `value`/`onChange` props or a TanStack Table `column`
 - **Icons per option** for visual context
 - **Configurable popover** alignment and width
+- **Async options** with infinite scroll paging, server-side search, and loading and error states
 
 ## Installation
 
@@ -47,7 +48,9 @@ function StatusFilter() {
       title="Status"
       options={statusOptions}
       value={status}
-      onChange={setStatus}
+      onChange={(v) => {
+        if (Array.isArray(v)) setStatus(v);
+      }}
     />
   );
 }
@@ -76,7 +79,9 @@ function RegionFilter() {
       options={regionOptions}
       multiSelect={false}
       value={region}
-      onChange={setRegion}
+      onChange={(v) => {
+        if (typeof v === "string") setRegion(v);
+      }}
     />
   );
 }
@@ -95,7 +100,14 @@ const options = [
   { label: "Failed", value: "failed", icon: XCircleIcon },
 ];
 
-<FilterDropdown title="Status" options={options} value={status} onChange={setStatus} />
+<FilterDropdown
+  title="Status"
+  options={options}
+  value={status}
+  onChange={(v) => {
+    if (Array.isArray(v)) setStatus(v);
+  }}
+/>
 ```
 
 ### With search
@@ -107,7 +119,9 @@ Search is enabled automatically when there are 8 or more options. Override with 
   title="Country"
   options={countryOptions}
   value={countries}
-  onChange={setCountries}
+  onChange={(v) => {
+    if (Array.isArray(v)) setCountries(v);
+  }}
   enableSearch        // always show search
   searchPlaceholder="Find a country..."
 />
@@ -142,6 +156,73 @@ const columns = [
 />
 ```
 
+### Async options (paging, server-side search)
+
+For large or server-backed option sets, fetch options page by page. Pass `hasMore` and `onLoadMore` to enable infinite scroll: `onLoadMore` is called when the end of the list scrolls into view. It is not called while `isLoading` or `error` is set, so a failed page stays put until the user retries.
+
+Passing `onSearchChange` switches search to server-side, and with `enableSearch="auto"` the search input is always shown. The component stops filtering locally and calls `onSearchChange` with the query, debounced by `searchDebounceMs` (300ms by default). Clearing the search or closing the popover sends an empty query right away. Reset to the first page whenever the query changes.
+
+While `isLoading` is set and there are no options yet, skeleton rows are shown. Otherwise a spinner appears below the loaded options. When `error` is set, the error replaces an empty list or appears below loaded options, with a Retry button if `onRetry` is provided.
+
+```tsx
+import { useEffect, useState } from "react";
+import {
+  FilterDropdown,
+  type FilterDropdownOption,
+} from "@/components/ui/filter-dropdown";
+
+function ReviewerFilter() {
+  const [selected, setSelected] = useState<string[]>([]);
+  const [options, setOptions] = useState<FilterDropdownOption[]>([]);
+  const [query, setQuery] = useState("");
+  const [page, setPage] = useState(0);
+  const [attempt, setAttempt] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setIsLoading(true);
+    setError(false);
+    fetchReviewers({ query, page }) // your API: { items, hasMore }
+      .then((result) => {
+        if (cancelled) return;
+        setOptions((prev) => (page === 0 ? result.items : [...prev, ...result.items]));
+        setHasMore(result.hasMore);
+      })
+      .catch(() => !cancelled && setError(true))
+      .finally(() => !cancelled && setIsLoading(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [query, page, attempt]);
+
+  return (
+    <FilterDropdown
+      title="Reviewer"
+      options={options}
+      value={selected}
+      onChange={(v) => {
+        if (Array.isArray(v)) setSelected(v);
+      }}
+      isLoading={isLoading}
+      hasMore={hasMore}
+      onLoadMore={() => setPage((p) => p + 1)}
+      onSearchChange={(q) => {
+        setQuery(q);
+        setPage(0);
+        setOptions([]);
+      }}
+      error={error}
+      onRetry={() => setAttempt((a) => a + 1)}
+    />
+  );
+}
+```
+
+The trigger label remembers the labels of options picked in the dropdown, so it stays correct after paging or search removes them from `options`. For values set from outside the dropdown (an initial value, URL state, or a table column filter) that may not be loaded, pass `selectedOptions` so the trigger can show their labels instead of the raw values.
+
 ## Props
 
 | Prop | Type | Default | Description |
@@ -160,6 +241,17 @@ const columns = [
 | `align` | `"start" \| "center" \| "end"` | `"start"` | Popover alignment relative to trigger |
 | `popoverWidth` | `string` | `"w-[220px]"` | Tailwind width class for the popover |
 | `className` | `string` | | Additional class for the root wrapper |
+| `isLoading` | `boolean` | `false` | Options are being fetched. Shows skeleton rows when empty, a spinner below loaded options otherwise |
+| `hasMore` | `boolean` | `false` | More options can be fetched. Enables infinite scroll with `onLoadMore` |
+| `onLoadMore` | `() => void` | | Called when the end of the list scrolls into view |
+| `loadingMessage` | `ReactNode` | | Optional text next to the load-more spinner |
+| `onSearchChange` | `(query: string) => void` | | Enables server-side search. Options are no longer filtered locally |
+| `searchDebounceMs` | `number` | `300` | Debounce in milliseconds for `onSearchChange` |
+| `error` | `ReactNode` | | Fetch failed. `true` shows `errorMessage`, any other truthy node is rendered as is |
+| `errorMessage` | `ReactNode` | `"Failed to load options"` | Error copy used when `error` is `true` |
+| `onRetry` | `() => void` | | Shows a Retry button in the error state |
+| `retryLabel` | `ReactNode` | `"Retry"` | Label for the Retry button |
+| `selectedOptions` | `FilterDropdownOption[]` | | Labels for selected values that are not loaded yet, used by the trigger |
 
 ### FilterDropdownOption
 
