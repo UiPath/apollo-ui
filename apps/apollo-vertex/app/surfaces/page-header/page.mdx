@@ -1,6 +1,7 @@
 import { Code } from 'nextra/components';
 import { PADDED_INSET_PX } from '@/lib/composition';
 import { pageHeaderSurface } from '@/registry/page-header/page-header.surface';
+import { HEADER_WIDTH } from '@/templates/detail-page/detail-page.template';
 
 # Page header
 
@@ -15,7 +16,7 @@ The top of a page: the title, back navigation, key fields, and page actions.
 
 | | |
 | --- | --- |
-| Width | The slot's full width. No minimum of its own ({pageHeaderSurface.provides.width.min}px). |
+| Width | The slot's full width. No minimum of its own ({pageHeaderSurface.provides.width.min}px); the slot sets it. The Detail page's header slot guarantees {HEADER_WIDTH.min}px. |
 | Padding | `padded` ({PADDED_INSET_PX}px) or `flush` when a template sets it. Unset, it keeps its standalone responsive padding. |
 | Scroll | Never scrolls. Content has to fit, or scroll itself. |
 

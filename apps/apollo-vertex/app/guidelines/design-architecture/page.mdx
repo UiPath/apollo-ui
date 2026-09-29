@@ -41,9 +41,9 @@ The specs live in `@/lib/composition`.
 | Spec | Describes | Main fields |
 | --- | --- | --- |
 | `TemplateSpec` | A template | `name`, `slots` |
-| `SlotSpec` | One slot in a template | `name`, `required`, `width` (`min`, `default`, `max`), `resizable`, `surfaces` |
+| `SlotSpec` | One slot in a template | `name`, `required`, `width` (`min`, optional `default` and `max`), `resizable`, `surfaces` |
 | `SurfaceSpec` | A surface | `name`, `width` (its own minimum), `provides` (inner width, scroll) |
-| `OccupantSpec` | An occupant | `name`, `label`, `icon` (optional), `requires` (minimum width, scroll, padding) |
+| `OccupantSpec` | An occupant | `name`, `label`, `icon` (optional), `surfaces` (optional), `requires` (minimum width, scroll, padding) |
 
 `fits(slot, surface, occupant)` checks that an occupant can go in a surface
 in a given slot. It checks every requirement:
@@ -52,6 +52,8 @@ in a given slot. It checks every requirement:
 2. The slot's inner width, with the occupant's padding, covers the occupant's
    minimum width.
 3. The scroll owners agree.
+4. If the occupant lists the surfaces it works in, this surface is one of
+   them.
 
 It returns `{ fits, reasons }`. `reasons` lists every requirement that failed,
 one plain sentence each. For an occupant too wide for the Detail page's start
@@ -60,6 +62,14 @@ panel, that reads "Needs Npx; the start-panel slot gives
 empty when the occupant fits. Padding has no check of
 its own: every surface takes both paddings, and padding changes the inner
 width, so it appears in the width reason.
+
+A slot's inner width comes from its `width`: its `default` when it has one,
+or its guaranteed `min` when it doesn't (a header that spans the page has no
+default). A slot with no `width` falls back to the surface's own minimum.
+
+Most occupants work in any surface that gives them the room. One built from a
+surface's own parts, like an item header made of PageHeader parts, lists that
+surface in `surfaces`, and fits() rejects it anywhere else.
 
 The helpers it uses are exported too: `slotAccepts`, `slotInnerWidth`,
 `occupantPadding`, and `scrollCompatible`.

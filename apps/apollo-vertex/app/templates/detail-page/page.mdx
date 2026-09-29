@@ -3,6 +3,7 @@ import { PreviewFullScreen } from '@/app/_components/preview-full-screen';
 import { PADDED_INSET_PX } from '@/lib/composition';
 import {
   END_PANEL_WIDTH,
+  HEADER_WIDTH,
   MAIN_MIN_OUTER_PX,
   START_PANEL_WIDTH,
 } from '@/templates/detail-page/detail-page.template';
@@ -82,10 +83,13 @@ Don't choose placement for visual emphasis.
 
 | Region | Default | Minimum | Maximum | Resizable |
 | --- | --- | --- | --- | --- |
+| Header | Spans the page | {HEADER_WIDTH.min}px (main's floor) | No limit | No |
 | Start panel | {START_PANEL_WIDTH.default}px | {START_PANEL_WIDTH.min}px | {START_PANEL_WIDTH.max}px | No |
 | End panel | {END_PANEL_WIDTH.default}px | {END_PANEL_WIDTH.min}px | Never wider than main | Yes |
 | Main | Fills the rest | {MAIN_MIN_OUTER_PX}px | No limit | No |
 
+- The header is always at least as wide as main, so it guarantees
+  {HEADER_WIDTH.min}px. Header occupants are checked against that.
 - Panels are exactly their width. Dividers take no space.
 - The start panel always renders at its default. Its minimum and maximum are
   in the spec for when it becomes resizable.
