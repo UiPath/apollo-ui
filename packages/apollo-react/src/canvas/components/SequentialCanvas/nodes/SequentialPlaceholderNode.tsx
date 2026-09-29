@@ -13,6 +13,11 @@ import {
   SEQUENTIAL_BAR_HANDLE_IDS,
 } from '../../BaseNode/BaseNodeBar';
 import { CanvasInlineButton } from '../../ButtonHandle/CanvasInlineButton';
+import {
+  SEQ_DROP_OVER_CLASS,
+  useSequentialDropTarget,
+  useSequentialExternalDrop,
+} from '../SequentialExternalDropContext';
 
 /**
  * The faint-until-hover treatment shared by every sequential insert affordance
@@ -48,8 +53,11 @@ export interface SequentialPlaceholderNodeData extends Record<string, unknown> {
  * It carries a top target handle (the tail follows the last step) and a mid-left
  * handle (an empty lane is entered from the side). Injected view-only and
  * filtered out of the change callbacks by the canvas assembly.
+ *
+ * Both shapes are also external drop targets for the slot their click opens.
  */
 function SequentialPlaceholderNodeComponent({
+  id,
   data,
   width,
   height,
@@ -59,6 +67,8 @@ function SequentialPlaceholderNodeComponent({
   const isDesignMode = useBaseCanvasMode().mode === 'design';
   const label = _({ id: 'sequential-canvas.placeholder.add', message: 'Add step' });
   const variant = data?.variant ?? 'row';
+  const dropSlot = useSequentialExternalDrop()?.getPlaceholderSlot(id);
+  const { dropProps, isDragActive, isOver } = useSequentialDropTarget(dropSlot);
 
   const handles = (
     <>
@@ -96,13 +106,18 @@ function SequentialPlaceholderNodeComponent({
         <div
           className="group pointer-events-auto absolute -translate-x-1/2 -translate-y-1/2"
           style={{ left: SEQ_HANDLE_LEFT_OFFSET, top: '50%' }}
+          {...dropProps}
         >
           <CanvasInlineButton
             icon="plus"
             iconSize={16}
             aria-label={label}
             disabled={!isDesignMode || !onAdd}
-            className={SEQ_INSERT_REST_CLASS}
+            className={cn(
+              SEQ_INSERT_REST_CLASS,
+              isDragActive && 'opacity-100',
+              isOver && SEQ_DROP_OVER_CLASS
+            )}
             onClick={(e) => {
               e.stopPropagation();
               if (isDesignMode) onAdd?.();
@@ -119,9 +134,11 @@ function SequentialPlaceholderNodeComponent({
       className={cn(
         SEQ_BAR_SHELL_CLASS,
         'nodrag justify-center border-dashed border-border-de-emp bg-transparent text-foreground-muted shadow-none',
-        'cursor-pointer transition-colors hover:border-border hover:text-foreground disabled:cursor-default'
+        'cursor-pointer transition-colors hover:border-border hover:text-foreground disabled:cursor-default',
+        isOver && cn(SEQ_DROP_OVER_CLASS, 'text-foreground')
       )}
       style={getSeqBarVars(width, height)}
+      {...dropProps}
       data-testid="sequential-placeholder-bar"
       aria-label={label}
       disabled={!isDesignMode || !onAdd}

@@ -202,6 +202,29 @@ export interface CanonicalGraph {
   edges: Edge[];
 }
 
+/**
+ * The slot a lane / append placeholder inserts at: its carried slot with the
+ * source's default handle resolved, as the placeholder's click reports it.
+ */
+export function resolveLaneInsertionSlot<N extends Node>(
+  slot: InsertionSlot,
+  nodesById: ReadonlyMap<string, N>,
+  getDefaultSourceHandleId: (nodeType: string) => string | undefined
+): InsertionSlot | undefined {
+  if (!slot.source) return undefined;
+  const nodeType = nodesById.get(slot.source.nodeId)?.type;
+  return {
+    ...slot,
+    source: {
+      ...slot.source,
+      handleId:
+        slot.source.handleId ??
+        (nodeType ? getDefaultSourceHandleId(nodeType) : undefined) ??
+        DEFAULT_SOURCE_HANDLE_ID,
+    },
+  };
+}
+
 /** Builds the terminal append slot without assuming a literal `output` handle. */
 export function resolveTailInsertionSlot<N extends Node>(
   projection: SequenceProjection | null,

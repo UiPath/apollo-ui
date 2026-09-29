@@ -3,6 +3,7 @@ import { applyEdgeChanges, applyNodeChanges } from '@uipath/apollo-react/canvas/
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { prepareCanvasViewTransition } from '../../components/SequentialCanvas/prepareCanvasViewTransition';
 import { SequentialCanvas } from '../../components/SequentialCanvas/SequentialCanvas';
+import type { SequentialExternalDrop } from '../../components/SequentialCanvas/SequentialCanvas.types';
 import { ViewSwitcher } from '../../components/SequentialCanvas/ViewSwitcher';
 import { NodeRegistryProvider, useOptionalNodeTypeRegistry } from '../../core';
 import type { NodeManifest } from '../../schema';
@@ -31,6 +32,7 @@ export interface SequentialCanvasStoryHarnessProps {
   showViewSwitcher?: boolean;
   /** Wired to the "Workflow start" bar's "Add trigger" button (SequentialStartNode). */
   onAddTrigger?: () => void;
+  externalDrop?: SequentialExternalDrop;
 }
 
 export function SequentialCanvasStoryHarness({
@@ -42,6 +44,7 @@ export function SequentialCanvasStoryHarness({
   initialView = 'sequential',
   showViewSwitcher = false,
   onAddTrigger,
+  externalDrop,
 }: SequentialCanvasStoryHarnessProps) {
   const manifest = useMemo(
     () =>
@@ -64,6 +67,7 @@ export function SequentialCanvasStoryHarness({
         initialView={initialView}
         showViewSwitcher={showViewSwitcher}
         onAddTrigger={onAddTrigger}
+        externalDrop={externalDrop}
       />
     </NodeRegistryProvider>
   );
@@ -77,13 +81,17 @@ function SequentialCanvasStoryHarnessInner({
   initialView,
   showViewSwitcher,
   onAddTrigger,
+  externalDrop,
 }: Required<
   Pick<
     SequentialCanvasStoryHarnessProps,
     'initialNodes' | 'initialEdges' | 'initialView' | 'mode' | 'showViewSwitcher'
   >
 > &
-  Pick<SequentialCanvasStoryHarnessProps, 'onAddTrigger' | 'sequenceLayoutOptions'>) {
+  Pick<
+    SequentialCanvasStoryHarnessProps,
+    'onAddTrigger' | 'sequenceLayoutOptions' | 'externalDrop'
+  >) {
   const [nodes, setNodes] = useState<Node[]>(initialNodes);
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
   const registry = useOptionalNodeTypeRegistry();
@@ -179,6 +187,7 @@ function SequentialCanvasStoryHarnessInner({
         collapsedStepIds={collapsedStepIds}
         onCollapsedStepIdsChange={setCollapsedStepIds}
         onAddTrigger={onAddTrigger}
+        externalDrop={externalDrop}
         mode={effectiveMode}
         sequenceLayoutOptions={sequenceLayoutOptions}
       />

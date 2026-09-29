@@ -6,7 +6,7 @@ import type {
   OnEdgesChange,
   OnNodesChange,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import type { Ref } from 'react';
+import type { DragEvent, Ref } from 'react';
 import type {
   CanvasView,
   GraphChangeSet,
@@ -36,6 +36,19 @@ export type SequentialOperation<N extends Node = Node> =
       direction: SequentialMoveDirection;
       changeSet: GraphChangeSet;
     };
+
+/**
+ * Drops from outside the canvas (e.g. a host toolbox) onto the sequential view's
+ * insert affordances: the connector ⊕, the lane / append / terminal placeholders.
+ * The canvas only reports which slot a drop landed on; the host does the insert.
+ * The canvas never reads `dataTransfer` values.
+ */
+export interface SequentialExternalDrop {
+  /** On dragenter/dragover; only `dataTransfer.types` is readable before the drop. */
+  accepts: (event: DragEvent) => boolean;
+  /** The drop, with the slot it landed on: the same identity an `insert` operation reports as `slot`. */
+  onDrop: (event: DragEvent, slot: InsertionSlot) => void;
+}
 
 /**
  * Public props for the sequential view. It renders through the existing
@@ -105,6 +118,8 @@ export interface SequentialCanvasProps<N extends Node = Node, E extends Edge = E
    * host, which can render its own `AddNodeManager` through `children`.
    */
   addNodeManagerProps?: Partial<AddNodeManagerProps>;
+  /** External HTML5 drops onto the insert affordances. Sequential view, `mode="design"` only. */
+  externalDrop?: SequentialExternalDrop;
   canvasRef?: Ref<BaseCanvasRef<N, E>>;
 }
 

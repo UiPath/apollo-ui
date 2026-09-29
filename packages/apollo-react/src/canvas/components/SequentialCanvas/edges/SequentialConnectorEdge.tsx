@@ -331,6 +331,7 @@ export const SequentialConnectorEdge = memo(function SequentialConnectorEdge({
           point={insertPoint}
           label={resolveInsertStepLabel(_, data?.insertAnchor)}
           onInsert={onInsert}
+          slot={slot}
         />
       )}
     </>

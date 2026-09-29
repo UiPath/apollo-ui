@@ -23,7 +23,16 @@ import type { NodeMenuAction } from '../NodeContextMenu';
 import { useSequentialInsert } from './edges/useSequentialInsert';
 import { useSequentialMoveMenuItems } from './nodes/useSequentialMoveMenuItems';
 import { SequentialCanvas } from './SequentialCanvas';
-import type { SequentialOperation } from './SequentialCanvas.types';
+import type {
+  SequentialCanvasProps,
+  SequentialExternalDrop,
+  SequentialOperation,
+} from './SequentialCanvas.types';
+import {
+  type SequentialExternalDropValue,
+  useSequentialExternalDrop,
+} from './SequentialExternalDropContext';
+import { SEQ_PLACEHOLDER_ROW_ID } from './sequentialGraph.constants';
 
 /**
  * Coverage for `onSequentialOperation`, one case per user entry point. Uses the
@@ -97,14 +106,23 @@ let callOrder: string[];
 let hostNodesChange: ReturnType<typeof vi.fn>;
 let kebabItems: NodeMenuAction[];
 let startInsertProbe: ReturnType<typeof useSequentialInsert>['startInsert'] | undefined;
+let externalDropProbe: SequentialExternalDropValue | undefined;
 
-interface HarnessProps {
+interface HarnessProps
+  extends Partial<Pick<SequentialCanvasProps, 'view' | 'mode' | 'externalDrop'>> {
   initialNodes: Node[];
   initialEdges: Edge[];
   children?: ReactNode;
 }
 
-function Harness({ initialNodes, initialEdges, children }: HarnessProps) {
+function Harness({
+  initialNodes,
+  initialEdges,
+  children,
+  view = 'sequential',
+  mode = 'design',
+  externalDrop,
+}: HarnessProps) {
   const [nodes, setNodes] = useState<Node[]>(initialNodes);
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
   const onNodesChange: OnNodesChange = (changes) => {
@@ -118,8 +136,9 @@ function Harness({ initialNodes, initialEdges, children }: HarnessProps) {
   };
   return (
     <SequentialCanvas
-      view="sequential"
-      mode="design"
+      view={view}
+      mode={mode}
+      externalDrop={externalDrop}
       nodes={nodes}
       edges={edges}
       onNodesChange={onNodesChange}
@@ -149,6 +168,11 @@ function KebabProbe({ nodeId }: { nodeId: string }) {
 
 function InsertProbe() {
   startInsertProbe = useSequentialInsert().startInsert;
+  return null;
+}
+
+function ExternalDropProbe() {
+  externalDropProbe = useSequentialExternalDrop();
   return null;
 }
 
@@ -191,6 +215,7 @@ beforeEach(() => {
   hostNodesChange = vi.fn();
   kebabItems = [];
   startInsertProbe = undefined;
+  externalDropProbe = undefined;
   capturedFlowProps.current = undefined;
   capturedAddNodeManagerProps.current = undefined;
 });
@@ -357,5 +382,107 @@ describe('SequentialCanvas onSequentialOperation: insert', () => {
     commitPanelNode();
 
     expect(operations).toEqual([]);
+  });
+});
+
+describe('SequentialCanvas externalDrop', () => {
+  const externalDrop: SequentialExternalDrop = { accepts: () => true, onDrop: vi.fn() };
+
+  function placeholderBySlotId(slotId: string): Node | undefined {
+    return (capturedFlowProps.current.nodes as Node[]).find(
+      (node) => (node.data as { insertionSlotId?: string } | undefined)?.insertionSlotId === slotId
+    );
+  }
+
+  it('reports the same slot for a placeholder drop as its click puts in the insert op', () => {
+    // Drop `d` and give `b` a type with no error lane, so `b` is a nested leaf: its
+    // append slot's source has no handle until the click path's resolution fills it.
+    const { nodes, edges } = makeDiamondFixture();
+    renderCanvas({
+      initialNodes: nodes
+        .filter((node) => node.id !== 'd')
+        .map((node) => (node.id === 'b' ? { ...node, type: 'uipath.http-request' } : node)),
+      initialEdges: edges.filter((edge) => edge.target !== 'd'),
+      externalDrop,
+      children: <ExternalDropProbe />,
+    });
+
+    const placeholder = placeholderBySlotId('slot:leaf:b');
+    expect(placeholder).toBeDefined();
+    const dropSlot = externalDropProbe?.getPlaceholderSlot(placeholder!.id);
+    expect(dropSlot?.source?.handleId).toBe('output');
+
+    act(() => {
+      (placeholder?.data as { onAdd?: () => void }).onAdd?.();
+    });
+    commitPanelNode();
+
+    const op = operations[0];
+    expect(op?.kind).toBe('insert');
+    expect(op?.kind === 'insert' && op.slot).toEqual(dropSlot);
+  });
+
+  it('reports the same tail slot for a terminal placeholder drop as its click', () => {
+    const { nodes, edges } = makeChainFixture(2);
+    renderCanvas({
+      initialNodes: nodes,
+      initialEdges: edges,
+      externalDrop,
+      children: <ExternalDropProbe />,
+    });
+
+    const dropSlot = externalDropProbe?.getPlaceholderSlot(SEQ_PLACEHOLDER_ROW_ID);
+    expect(dropSlot?.id).toBe('slot:tail:step-1');
+
+    const tail = (capturedFlowProps.current.nodes as Node[]).find(
+      (node) => node.id === SEQ_PLACEHOLDER_ROW_ID
+    );
+    act(() => {
+      (tail?.data as { onAdd?: () => void }).onAdd?.();
+    });
+    commitPanelNode();
+
+    const op = operations[0];
+    expect(op?.kind === 'insert' && op.slot).toEqual(dropSlot);
+  });
+
+  it('shows the drop targets while an accepted drag is over the canvas', () => {
+    const { nodes, edges } = makeChainFixture(2);
+    const accepts = vi.fn(() => true);
+    renderCanvas({
+      initialNodes: nodes,
+      initialEdges: edges,
+      externalDrop: { accepts, onDrop: vi.fn() },
+      children: <ExternalDropProbe />,
+    });
+    expect(externalDropProbe?.isDragActive).toBe(false);
+
+    fireEvent.dragEnter(screen.getByTestId('react-flow'));
+    expect(externalDropProbe?.isDragActive).toBe(true);
+
+    act(() => {
+      window.dispatchEvent(new Event('dragend'));
+    });
+    expect(externalDropProbe?.isDragActive).toBe(false);
+
+    accepts.mockReturnValue(false);
+    fireEvent.dragEnter(screen.getByTestId('react-flow'));
+    expect(externalDropProbe?.isDragActive).toBe(false);
+  });
+
+  it.each([
+    ['flow view', { view: 'flow', externalDrop }],
+    ['a non-design mode', { mode: 'view', externalDrop }],
+    ['no externalDrop', {}],
+  ] as const)('is inactive in %s', (_, props) => {
+    const { nodes, edges } = makeChainFixture(2);
+    renderCanvas({
+      initialNodes: nodes,
+      initialEdges: edges,
+      ...props,
+      children: <ExternalDropProbe />,
+    });
+
+    expect(externalDropProbe).toBeUndefined();
   });
 });

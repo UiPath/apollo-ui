@@ -46,6 +46,10 @@ import { resolveFlowNodeComponent } from './resolveFlowNodeComponent';
 import { SequentialAccessibleList } from './SequentialAccessibleList';
 import type { SequentialCanvasProps } from './SequentialCanvas.types';
 import { SequentialCollapsedRowsProvider } from './SequentialCollapsedRowsContext';
+import {
+  SequentialExternalDropProvider,
+  useSequentialExternalDropController,
+} from './SequentialExternalDropContext';
 import { SequentialGutter } from './SequentialGutter';
 import { SequentialInsertGapProvider } from './SequentialInsertGapContext';
 import { SequentialInsertStateProvider } from './SequentialInsertStateContext';
@@ -64,6 +68,7 @@ import {
 } from './sequentialGraph.constants';
 import {
   getSequentialMoveSlot,
+  resolveLaneInsertionSlot,
   resolveTailInsertionSlot,
   type SequentialMoveDirection,
 } from './sequentialMoveActions';
@@ -204,6 +209,7 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
   onPrimaryAction,
   onAddTrigger,
   addNodeManagerProps,
+  externalDrop,
   canvasRef,
   mode = 'view',
   isDarkMode,
@@ -335,6 +341,11 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
     [resolvedHandlesByNodeId, resolveBranchLabel, registry]
   );
 
+  const getDefaultSourceHandleId = useCallback(
+    (nodeType: string) => registry?.getDefaultHandle(nodeType, 'source')?.id,
+    [registry]
+  );
+
   const collapsedSet = useMemo(() => new Set(collapsedStepIds ?? []), [collapsedStepIds]);
 
   // The slot whose Add Node panel is currently open, if any. Written by every
@@ -372,21 +383,9 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
   // in the lane via the layout swap (projectionWithPreviewRow).
   const onLaneAdd = useCallback(
     (slot: InsertionSlot) => {
-      if (!isDesignMode || view !== 'sequential' || !slot.source) return;
-      const sourceNode = canonicalById.get(slot.source.nodeId);
-      const resolvedSource = {
-        ...slot.source,
-        handleId:
-          slot.source.handleId ??
-          (sourceNode?.type
-            ? registry?.getDefaultHandle(sourceNode.type, 'source')?.id
-            : undefined) ??
-          DEFAULT_SOURCE_HANDLE_ID,
-      };
-      const resolvedSlot: InsertionSlot = {
-        ...slot,
-        source: resolvedSource,
-      };
+      if (!isDesignMode || view !== 'sequential') return;
+      const resolvedSlot = resolveLaneInsertionSlot(slot, canonicalById, getDefaultSourceHandleId);
+      if (!resolvedSlot?.source) return;
       const placeholder = reactFlow
         .getNodes()
         .find(
@@ -395,7 +394,7 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
         );
       startInsert({
         slot: resolvedSlot,
-        source: resolvedSource.nodeId,
+        source: resolvedSlot.source.nodeId,
         sourceHandleId: undefined,
         target: '',
         targetHandleId: undefined,
@@ -403,7 +402,7 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
         position: placeholder?.position ?? { x: 0, y: 0 },
       });
     },
-    [isDesignMode, view, canonicalById, registry, reactFlow, startInsert]
+    [isDesignMode, view, canonicalById, getDefaultSourceHandleId, reactFlow, startInsert]
   );
 
   const {
@@ -444,6 +443,25 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
   // "Add step" placeholder is built during this same render pass, so an effect
   // would leave the slot undefined (dead placeholder) until after first paint.
   tailSlotRef.current = tailSlot;
+
+  // External drops land on the same slots the placeholders' clicks open: the
+  // resolved lane slot (see onLaneAdd) and the tail slot (see onPlaceholderAdd).
+  const activeExternalDrop = isDesignMode && view === 'sequential' ? externalDrop : undefined;
+  const hasExternalDrop = activeExternalDrop !== undefined;
+  const placeholderSlots = useMemo(() => {
+    const slots = new Map<string, InsertionSlot>();
+    if (!hasExternalDrop) return slots;
+    for (const row of projection?.rows ?? []) {
+      const slot =
+        row.lanePlaceholder &&
+        resolveLaneInsertionSlot(row.lanePlaceholder, canonicalById, getDefaultSourceHandleId);
+      if (slot) slots.set(row.nodeId, slot);
+    }
+    if (tailSlot?.source) slots.set(SEQ_PLACEHOLDER_ROW_ID, tailSlot);
+    return slots;
+  }, [hasExternalDrop, projection, canonicalById, getDefaultSourceHandleId, tailSlot]);
+  const { value: externalDropValue, wrapperProps: externalDropWrapperProps } =
+    useSequentialExternalDropController(activeExternalDrop, placeholderSlots);
 
   // The Add Node pipeline (showPreviewGraph) adds its `preview` node + preview
   // edges via `instance.setNodes` / `instance.setEdges`. This canvas is
@@ -628,11 +646,6 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
       return !!node && isProjectedContainerNode(node);
     },
     [canonicalById, childParentIds, isProjectedContainerNode]
-  );
-
-  const getDefaultSourceHandleId = useCallback(
-    (nodeType: string) => registry?.getDefaultHandle(nodeType, 'source')?.id,
-    [registry]
   );
 
   // Returns whether the delete was actually handled here. The guard lives ONLY in
@@ -833,71 +846,77 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
     // collapse toggle ever touching node.data (D12).
     <SequentialCollapsedRowsProvider collapsedStepIds={collapsedSet}>
       <SequentialMoveActionsProvider value={moveActionsValue}>
-        <div className="relative h-full w-full" onKeyDown={onKeyDown}>
-          <BaseCanvas<N, E>
-            ref={canvasRef}
-            nodes={seqNodes}
-            edges={seqEdgesWithPreview}
-            nodeTypes={nodeTypes}
-            edgeTypes={edgeTypes}
-            mode={mode}
-            isDarkMode={isDarkMode}
-            locale={locale}
-            fitViewOptions={fitViewOptions}
-            onToolbarAction={handleToolbarAction}
-            breakpoints={breakpoints}
-            onNodeDoubleClick={onNodeDoubleClick}
-            // Accessibility: keep every row in the DOM so reading order == row
-            // order (D8), except past SEQ_FULL_RENDER_MAX_NODES where
-            // virtualization is re-enabled for stability at scale.
-            onlyRenderVisibleElements={virtualizeForScale}
-            aria-hidden={virtualizeForScale || undefined}
-            // MUST move in lockstep with the `aria-hidden` above. xyflow's
-            // `nodesFocusable`/`edgesFocusable` default to true, which renders
-            // `tabIndex={0}` on every node/edge wrapper; leaving that on inside an
-            // aria-hidden subtree is the `aria-hidden-focus` violation (a keyboard
-            // user tabs through controls no screen reader can see). Above the
-            // ceiling SequentialAccessibleList is the operable surface instead, so
-            // the canvas must drop out of the tab order entirely.
-            nodesFocusable={!virtualizeForScale}
-            edgesFocusable={!virtualizeForScale}
-            // Sequential bars are not user-connectable in v1.
-            nodesConnectable={view === 'flow'}
-            onNodesChange={handleNodesChange}
-            onEdgesChange={handleEdgesChange}
-            onMove={handleMove}
-            defaultViewport={defaultViewport}
+        <SequentialExternalDropProvider value={externalDropValue}>
+          <div
+            className="relative h-full w-full"
+            onKeyDown={onKeyDown}
+            {...externalDropWrapperProps}
           >
-            {children}
-            {view === 'sequential' && (
-              <>
-                {isDesignMode && (
-                  <AddNodeManager
-                    {...remainingAddNodeManagerProps}
-                    onBeforeNodeAdded={composedOnBeforeNodeAdded}
-                    ignoredNodeTypes={ignoredNodeTypes}
-                  />
-                )}
-                <SequentialGutter
-                  rows={visibleNumberedRows}
-                  positions={layout?.positions ?? EMPTY_POSITIONS}
-                  barHeight={sequenceLayoutOptions?.barHeight}
-                  collapsedStepIds={collapsedSet}
-                  onToggleCollapse={handleToggleCollapse}
-                />
-              </>
-            )}
-          </BaseCanvas>
-          {virtualizeForScale && projection && (
-            <SequentialAccessibleList
-              rows={visibleNumberedRows}
+            <BaseCanvas<N, E>
+              ref={canvasRef}
               nodes={seqNodes}
-              selectedNodeId={selectedNodeId}
-              onSelectNode={handleSelectRow}
-              onToggleCollapse={handleToggleCollapse}
-            />
-          )}
-        </div>
+              edges={seqEdgesWithPreview}
+              nodeTypes={nodeTypes}
+              edgeTypes={edgeTypes}
+              mode={mode}
+              isDarkMode={isDarkMode}
+              locale={locale}
+              fitViewOptions={fitViewOptions}
+              onToolbarAction={handleToolbarAction}
+              breakpoints={breakpoints}
+              onNodeDoubleClick={onNodeDoubleClick}
+              // Accessibility: keep every row in the DOM so reading order == row
+              // order (D8), except past SEQ_FULL_RENDER_MAX_NODES where
+              // virtualization is re-enabled for stability at scale.
+              onlyRenderVisibleElements={virtualizeForScale}
+              aria-hidden={virtualizeForScale || undefined}
+              // MUST move in lockstep with the `aria-hidden` above. xyflow's
+              // `nodesFocusable`/`edgesFocusable` default to true, which renders
+              // `tabIndex={0}` on every node/edge wrapper; leaving that on inside an
+              // aria-hidden subtree is the `aria-hidden-focus` violation (a keyboard
+              // user tabs through controls no screen reader can see). Above the
+              // ceiling SequentialAccessibleList is the operable surface instead, so
+              // the canvas must drop out of the tab order entirely.
+              nodesFocusable={!virtualizeForScale}
+              edgesFocusable={!virtualizeForScale}
+              // Sequential bars are not user-connectable in v1.
+              nodesConnectable={view === 'flow'}
+              onNodesChange={handleNodesChange}
+              onEdgesChange={handleEdgesChange}
+              onMove={handleMove}
+              defaultViewport={defaultViewport}
+            >
+              {children}
+              {view === 'sequential' && (
+                <>
+                  {isDesignMode && (
+                    <AddNodeManager
+                      {...remainingAddNodeManagerProps}
+                      onBeforeNodeAdded={composedOnBeforeNodeAdded}
+                      ignoredNodeTypes={ignoredNodeTypes}
+                    />
+                  )}
+                  <SequentialGutter
+                    rows={visibleNumberedRows}
+                    positions={layout?.positions ?? EMPTY_POSITIONS}
+                    barHeight={sequenceLayoutOptions?.barHeight}
+                    collapsedStepIds={collapsedSet}
+                    onToggleCollapse={handleToggleCollapse}
+                  />
+                </>
+              )}
+            </BaseCanvas>
+            {virtualizeForScale && projection && (
+              <SequentialAccessibleList
+                rows={visibleNumberedRows}
+                nodes={seqNodes}
+                selectedNodeId={selectedNodeId}
+                onSelectNode={handleSelectRow}
+                onToggleCollapse={handleToggleCollapse}
+              />
+            )}
+          </div>
+        </SequentialExternalDropProvider>
       </SequentialMoveActionsProvider>
     </SequentialCollapsedRowsProvider>
   );

@@ -1,5 +1,11 @@
+import { createEvent } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import type { InsertionSlot } from '../../../utils/sequential/sequential.types';
 import { fireEvent, render, screen } from '../../../utils/testing';
+import {
+  SequentialExternalDropProvider,
+  type SequentialExternalDropValue,
+} from '../SequentialExternalDropContext';
 import { SequentialInsertButton } from './SequentialInsertButton';
 
 // The button portals through xyflow's EdgeLabelRenderer, which needs a store.
@@ -51,5 +57,90 @@ describe('SequentialInsertButton', () => {
     expect(onInsert).toHaveBeenCalledTimes(1);
     expect(onContainerClick).not.toHaveBeenCalled();
     expect(onContainerMouseDown).not.toHaveBeenCalled();
+  });
+});
+
+describe('SequentialInsertButton external drop', () => {
+  const slot: InsertionSlot = {
+    id: 'slot:edge:e1',
+    source: { nodeId: 'a', handleId: 'output' },
+    target: { nodeId: 'b', handleId: 'input' },
+    graphEdgeId: 'e1',
+  };
+  const dataTransfer = () => ({ types: ['application/x-activity'], dropEffect: 'none' });
+
+  function renderWithDrop(value: Partial<SequentialExternalDropValue>, buttonSlot = slot) {
+    const context: SequentialExternalDropValue = {
+      isDragActive: true,
+      accepts: () => true,
+      drop: vi.fn(),
+      getPlaceholderSlot: () => undefined,
+      ...value,
+    };
+    render(
+      <SequentialExternalDropProvider value={context}>
+        <SequentialInsertButton point={point} label={label} onInsert={vi.fn()} slot={buttonSlot} />
+      </SequentialExternalDropProvider>
+    );
+    const button = screen.getByRole('button', { name: label });
+    // The drag handlers sit on the positioned wrapper around the button.
+    return { context, button, target: button.parentElement! };
+  }
+
+  it('shows at full strength during a drag and highlights while dragged over', () => {
+    const { button, target } = renderWithDrop({});
+    expect(button.className).toContain('opacity-100');
+
+    const dragOver = createEvent.dragOver(target, { dataTransfer: dataTransfer() });
+    fireEvent(target, dragOver);
+
+    expect(dragOver.defaultPrevented).toBe(true);
+    expect((dragOver as DragEvent).dataTransfer?.dropEffect).toBe('copy');
+    expect(target).toHaveAttribute('data-drop-over');
+  });
+
+  it('reports a drop with its slot and stops it reaching the canvas', () => {
+    const onContainerDrop = vi.fn();
+    const drop = vi.fn();
+    const context: SequentialExternalDropValue = {
+      isDragActive: true,
+      accepts: () => true,
+      drop,
+      getPlaceholderSlot: () => undefined,
+    };
+    render(
+      <div onDrop={onContainerDrop}>
+        <SequentialExternalDropProvider value={context}>
+          <SequentialInsertButton point={point} label={label} onInsert={vi.fn()} slot={slot} />
+        </SequentialExternalDropProvider>
+      </div>
+    );
+    const target = screen.getByRole('button', { name: label }).parentElement!;
+
+    fireEvent.dragOver(target, { dataTransfer: dataTransfer() });
+    const notPrevented = fireEvent.drop(target, { dataTransfer: dataTransfer() });
+
+    expect(notPrevented).toBe(false);
+    expect(drop).toHaveBeenCalledWith(expect.objectContaining({ type: 'drop' }), slot);
+    expect(onContainerDrop).not.toHaveBeenCalled();
+    expect(target).not.toHaveAttribute('data-drop-over');
+  });
+
+  it('ignores a drag the host does not accept', () => {
+    const { context, target } = renderWithDrop({ accepts: () => false });
+
+    expect(fireEvent.dragOver(target, { dataTransfer: dataTransfer() })).toBe(true);
+    expect(fireEvent.drop(target, { dataTransfer: dataTransfer() })).toBe(true);
+
+    expect(context.drop).not.toHaveBeenCalled();
+    expect(target).not.toHaveAttribute('data-drop-over');
+  });
+
+  it('is not a drop target without the external drop context', () => {
+    render(<SequentialInsertButton point={point} label={label} onInsert={vi.fn()} slot={slot} />);
+    const button = screen.getByRole('button', { name: label });
+
+    expect(fireEvent.dragOver(button.parentElement!, { dataTransfer: dataTransfer() })).toBe(true);
+    expect(button.className).toContain('opacity-40');
   });
 });

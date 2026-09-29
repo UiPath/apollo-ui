@@ -1,6 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
+import type { InsertionSlot } from '../../../utils/sequential/sequential.types';
 import { fireEvent, render, screen } from '../../../utils/testing';
 import { BaseCanvasModeProvider } from '../../BaseCanvas/BaseCanvasModeProvider';
+import {
+  SequentialExternalDropProvider,
+  type SequentialExternalDropValue,
+} from '../SequentialExternalDropContext';
 import { SequentialPlaceholderNode } from './SequentialPlaceholderNode';
 
 // The node renders xyflow <Handle>s, which need a store provider. This test
@@ -57,5 +62,74 @@ describe('SequentialPlaceholderNode', () => {
     renderNode({ variant: 'plus', onAdd }, 'view');
     fireEvent.click(screen.getByRole('button', { name: 'Add step' }));
     expect(onAdd).not.toHaveBeenCalled();
+  });
+});
+
+describe('SequentialPlaceholderNode external drop', () => {
+  const slot: InsertionSlot = {
+    id: 'slot:lane:if:false',
+    source: { nodeId: 'if', handleId: 'false' },
+  };
+  const dataTransfer = () => ({ types: ['application/x-activity'], dropEffect: 'none' });
+
+  function renderWithDrop(data: object, value: Partial<SequentialExternalDropValue> = {}) {
+    const context: SequentialExternalDropValue = {
+      isDragActive: true,
+      accepts: () => true,
+      drop: vi.fn(),
+      getPlaceholderSlot: (id) => (id === 'ph' ? slot : undefined),
+      ...value,
+    };
+    render(
+      <BaseCanvasModeProvider mode="design">
+        <SequentialExternalDropProvider value={context}>
+          <SequentialPlaceholderNode {...props(data)} />
+        </SequentialExternalDropProvider>
+      </BaseCanvasModeProvider>
+    );
+    return context;
+  }
+
+  it('reports a drop on the dashed row with its slot', () => {
+    const context = renderWithDrop({ variant: 'row', onAdd: () => {} });
+    const row = screen.getByTestId('sequential-placeholder-bar');
+
+    expect(fireEvent.dragOver(row, { dataTransfer: dataTransfer() })).toBe(false);
+    expect(row).toHaveAttribute('data-drop-over');
+    expect(fireEvent.drop(row, { dataTransfer: dataTransfer() })).toBe(false);
+
+    expect(context.drop).toHaveBeenCalledWith(expect.objectContaining({ type: 'drop' }), slot);
+    expect(row).not.toHaveAttribute('data-drop-over');
+  });
+
+  it('reports a drop on the plus with its slot, and shows the plus during a drag', () => {
+    const context = renderWithDrop({ variant: 'plus', onAdd: () => {} });
+    const button = screen.getByRole('button', { name: 'Add step' });
+    expect(button.className).toContain('opacity-100');
+
+    fireEvent.drop(button.parentElement!, { dataTransfer: dataTransfer() });
+
+    expect(context.drop).toHaveBeenCalledWith(expect.objectContaining({ type: 'drop' }), slot);
+  });
+
+  it('ignores a drag the host does not accept', () => {
+    const context = renderWithDrop({ variant: 'row', onAdd: () => {} }, { accepts: () => false });
+    const row = screen.getByTestId('sequential-placeholder-bar');
+
+    expect(fireEvent.dragOver(row, { dataTransfer: dataTransfer() })).toBe(true);
+    expect(fireEvent.drop(row, { dataTransfer: dataTransfer() })).toBe(true);
+    expect(context.drop).not.toHaveBeenCalled();
+  });
+
+  it('is not a drop target when the canvas has no slot for it', () => {
+    const context = renderWithDrop(
+      { variant: 'row', onAdd: () => {} },
+      { getPlaceholderSlot: () => undefined }
+    );
+    const row = screen.getByTestId('sequential-placeholder-bar');
+
+    expect(fireEvent.dragOver(row, { dataTransfer: dataTransfer() })).toBe(true);
+    fireEvent.drop(row, { dataTransfer: dataTransfer() });
+    expect(context.drop).not.toHaveBeenCalled();
   });
 });

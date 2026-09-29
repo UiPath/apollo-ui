@@ -18,7 +18,9 @@ import {
   sequentialWireframeManifests,
 } from '../../storybook-utils/sequential';
 import { makeWireframeFixture } from '../../utils/sequential/fixtures';
+import type { InsertionSlot } from '../../utils/sequential/sequential.types';
 import { SequentialCanvas } from './SequentialCanvas';
+import type { SequentialExternalDrop } from './SequentialCanvas.types';
 
 const meta: Meta = {
   title: 'Components/Canvas/SequentialCanvas',
@@ -512,4 +514,70 @@ export const ExecutionStatus: Story = {
     },
   },
   render: () => <ExecutionStatusStory />,
+};
+
+// ---------------------------------------------------------------------------
+// (d) ExternalDrop: a host toolbox dragging activities onto insert affordances.
+// ---------------------------------------------------------------------------
+
+const STORY_ACTIVITY_MIME = 'application/x-story-activity';
+
+function ExternalDropStory() {
+  const fixture = useMemo(() => makeWireframeFixture(), []);
+  const [lastDrop, setLastDrop] = useState<{ activity: string; slot: InsertionSlot }>();
+  const externalDrop = useMemo<SequentialExternalDrop>(
+    () => ({
+      accepts: (event) => event.dataTransfer.types.includes(STORY_ACTIVITY_MIME),
+      onDrop: (event, slot) =>
+        setLastDrop({ activity: event.dataTransfer.getData(STORY_ACTIVITY_MIME), slot }),
+    }),
+    []
+  );
+
+  return (
+    <div className="relative flex h-full w-full">
+      <div className="flex w-56 shrink-0 flex-col gap-2 border-r p-3 text-sm">
+        <span className="font-semibold">Toolbox</span>
+        {['Log Message', 'Assign', 'Delay'].map((activity) => (
+          <div
+            key={activity}
+            draggable
+            className="cursor-grab rounded-md border bg-background px-3 py-2"
+            onDragStart={(event) => {
+              event.dataTransfer.setData(STORY_ACTIVITY_MIME, activity);
+              event.dataTransfer.effectAllowed = 'copy';
+            }}
+          >
+            {activity}
+          </div>
+        ))}
+        <pre className="mt-4 overflow-auto text-xs">
+          {lastDrop
+            ? JSON.stringify(lastDrop, null, 2)
+            : 'Drop an activity on a ⊕ or an Add step row.'}
+        </pre>
+      </div>
+      <div className="relative min-w-0 flex-1">
+        <SequentialCanvasStoryHarness
+          initialNodes={fixture.nodes}
+          initialEdges={fixture.edges}
+          extraManifests={sequentialWireframeManifests}
+          externalDrop={externalDrop}
+        />
+      </div>
+    </div>
+  );
+}
+
+export const ExternalDrop: Story = {
+  name: 'External Drop',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Drag an activity from the toolbox: every ⊕ shows while the drag is over the canvas, the one under the pointer highlights, and the drop reports its slot. The canvas does not insert anything; the host would.',
+      },
+    },
+  },
+  render: () => <ExternalDropStory />,
 };

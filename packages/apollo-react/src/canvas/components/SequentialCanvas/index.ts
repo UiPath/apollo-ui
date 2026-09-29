@@ -20,6 +20,7 @@ export { prepareCanvasViewTransition } from './prepareCanvasViewTransition';
 export { SequentialCanvas } from './SequentialCanvas';
 export type {
   SequentialCanvasProps,
+  SequentialExternalDrop,
   SequentialOperation,
   ViewSwitcherProps,
 } from './SequentialCanvas.types';
