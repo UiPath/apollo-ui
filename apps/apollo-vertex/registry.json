@@ -2567,6 +2567,98 @@
       ]
     },
     {
+      "name": "occupant",
+      "type": "registry:ui",
+      "title": "Occupant",
+      "description": "The kit every occupant is built with: the <Occupant> root that renders data-occupant, the standard states (loading, empty, error, agent updating), and the view props every occupant takes.",
+      "dependencies": ["lucide-react", "react-i18next"],
+      "registryDependencies": [
+        "@uipath/composition",
+        "@uipath/button",
+        "@uipath/skeleton",
+        "@uipath/timeline"
+      ],
+      "files": [
+        { "path": "registry/occupant/occupant.tsx", "type": "registry:ui" },
+        {
+          "path": "registry/occupant/occupant-state-view.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/occupant/occupant-states.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "progress-view-model",
+      "type": "registry:lib",
+      "title": "Progress view model",
+      "description": "A neutral view model for progress: events with an actor (person or agent), status, title, detail, and time, and the stages they move through. Solutions map their own data into it with an adapter.",
+      "registryDependencies": ["@uipath/timeline"],
+      "files": [
+        {
+          "path": "registry/progress-view-model/progress-view-model.ts",
+          "type": "registry:lib",
+          "target": "lib/progress-view-model.ts"
+        },
+        {
+          "path": "registry/progress-view-model/progress-markers.ts",
+          "type": "registry:lib",
+          "target": "lib/progress-markers.ts"
+        }
+      ]
+    },
+    {
+      "name": "activity-timeline",
+      "type": "registry:ui",
+      "title": "Activity timeline",
+      "description": "Occupant: every event for an item, oldest first, with who did it and how it stands. Vertical surfaces.",
+      "dependencies": ["react-i18next"],
+      "registryDependencies": [
+        "@uipath/occupant",
+        "@uipath/progress-view-model",
+        "@uipath/skeleton",
+        "@uipath/timeline"
+      ],
+      "meta": { "layer": "occupant" },
+      "categories": ["occupant"],
+      "files": [
+        {
+          "path": "registry/activity-timeline/activity-timeline.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/activity-timeline/activity-timeline.occupant.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "stage-strip",
+      "type": "registry:ui",
+      "title": "Stage strip",
+      "description": "Occupant: where an item is in its stages, as a one-band summary. Horizontal surfaces.",
+      "dependencies": ["react-i18next"],
+      "registryDependencies": [
+        "@uipath/occupant",
+        "@uipath/progress-view-model",
+        "@uipath/timeline"
+      ],
+      "meta": { "layer": "occupant" },
+      "categories": ["occupant"],
+      "files": [
+        {
+          "path": "registry/stage-strip/stage-strip.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/stage-strip/stage-strip.occupant.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "use-mobile",
       "type": "registry:hook",
       "title": "useMobile",

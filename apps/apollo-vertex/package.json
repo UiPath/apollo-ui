@@ -5,15 +5,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "pnpm generate:theme && next --turbopack",
-    "build": "pnpm generate:theme && pnpm registry:build && next build",
+    "dev": "pnpm generate:theme && pnpm generate:occupants && next --turbopack",
+    "build": "pnpm generate:theme && pnpm generate:occupants && pnpm registry:build && next build",
     "start": "next start",
     "generate:theme": "node --experimental-strip-types scripts/generate-theme-css.ts",
     "registry:build": "shadcn build && node --experimental-strip-types scripts/generate-registry-index.ts",
     "postbuild": "pagefind --site .next/server/app --output-path public/_pagefind",
     "format": "biome format --write",
     "format:check": "biome format",
-    "lint": "pnpm generate:theme --check && oxlint --type-aware",
+    "lint": "pnpm generate:theme --check && pnpm generate:occupants --check && oxlint --type-aware",
     "lint:fix": "oxlint --fix --type-aware",
     "lint:deps": "depcruise registry --config .dependency-cruiser.js",
     "typecheck": "tsc --noEmit",
@@ -21,7 +21,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test --project=core",
-    "test:e2e:full": "playwright test --project=full"
+    "test:e2e:full": "playwright test --project=full",
+    "generate:occupants": "node --experimental-strip-types scripts/generate-occupant-index.ts"
   },
   "keywords": [],
   "author": "",
