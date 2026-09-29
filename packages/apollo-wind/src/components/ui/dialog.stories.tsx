@@ -1,7 +1,10 @@
 import type { Meta } from '@storybook/react-vite';
-import { ExternalLink, Plus, Trash2 } from 'lucide-react';
+import { ExternalLink, Maximize2, Play, Plus, Trash2, X } from 'lucide-react';
 import * as React from 'react';
+import { cn } from '@/lib/index';
+import { Badge } from './badge';
 import { Button } from './button';
+import { LiveMonacoEditor, monacoFullSample, useEditorThemeConfig } from './code-editors.shared';
 import {
   Dialog,
   DialogClose,
@@ -148,6 +151,325 @@ export const ComplexDialog = {
 };
 
 // ============================================================================
+// Link Dialog
+// ============================================================================
+
+function LinkDialogStory() {
+  const viewMode = React.useContext(ViewModeContext);
+  return (
+    <Dialog defaultOpen={viewMode === 'story'}>
+      <DialogTrigger asChild>
+        <Button variant="outline">Share Link</Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Share Link</DialogTitle>
+          <DialogDescription>Anyone with the link can view this document.</DialogDescription>
+        </DialogHeader>
+        <div className="flex items-center gap-2">
+          <Input
+            readOnly
+            defaultValue="https://app.example.com/share/abc123xyz"
+            className="flex-1"
+          />
+          <Button size="sm">Copy</Button>
+        </div>
+        <div className="flex items-center gap-4 pt-2">
+          <Button variant="outline" size="sm" className="gap-1.5">
+            <ExternalLink className="h-3.5 w-3.5" />
+            Open in Browser
+          </Button>
+          <p className="text-xs text-muted-foreground">Link expires in 7 days</p>
+        </div>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline">Done</Button>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+export const LinkDialog = {
+  name: 'Link',
+  render: () => <LinkDialogStory />,
+};
+
+// ============================================================================
+// Delete Confirmation Dialog
+// ============================================================================
+
+function DeleteConfirmationExample() {
+  const viewMode = React.useContext(ViewModeContext);
+  const [open, setOpen] = React.useState(viewMode === 'story');
+  const [deleted, setDeleted] = React.useState(false);
+
+  const handleDelete = () => {
+    setDeleted(true);
+    setOpen(false);
+  };
+
+  const handleReset = () => {
+    setDeleted(false);
+    setOpen(true);
+  };
+
+  return (
+    <div className="flex flex-col items-start gap-4">
+      {deleted ? (
+        <div className="flex items-center gap-3 rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          <Trash2 className="h-4 w-4 shrink-0" />
+          <span>
+            <strong>John Doe</strong> has been permanently deleted.
+          </span>
+          <Button variant="ghost" size="sm" className="ml-2 h-6 text-xs" onClick={handleReset}>
+            Undo (demo)
+          </Button>
+        </div>
+      ) : (
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button variant="destructive">
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete user
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Delete User</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete <strong>John Doe</strong>? This action cannot be
+                undone and will permanently remove the user and all associated data.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DialogClose>
+              <Button variant="destructive" onClick={handleDelete}>
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+    </div>
+  );
+}
+
+export const DeleteConfirmation = {
+  name: 'Delete',
+  render: () => <DeleteConfirmationExample />,
+};
+
+// ============================================================================
+// Code Modal
+// ============================================================================
+
+// Header actions for the collapsed code modals. The takeover variant renders its own.
+function ExpandCloseActions({ className, onExpand }: { className?: string; onExpand: () => void }) {
+  return (
+    <div className={cn('flex shrink-0 items-center gap-1', className)}>
+      <Button
+        variant="ghost"
+        size="xs"
+        icon
+        aria-label="Expand modal"
+        title="Expand modal"
+        onClick={onExpand}
+      >
+        <Maximize2 size={16} />
+      </Button>
+      <DialogClose asChild>
+        <Button variant="ghost" size="xs" icon aria-label="Close modal">
+          <X size={16} />
+        </Button>
+      </DialogClose>
+    </div>
+  );
+}
+
+function CodeModalStory() {
+  const viewMode = React.useContext(ViewModeContext);
+  const themeConfig = useEditorThemeConfig();
+  const [open, setOpen] = React.useState(viewMode === 'story');
+  const [expanded, setExpanded] = React.useState(false);
+  // Held here so edits survive the editor remounting when the modal expands or collapses.
+  const [code, setCode] = React.useState(monacoFullSample);
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen);
+    if (!nextOpen) setExpanded(false);
+  };
+
+  const runAction = (
+    <Button size="sm" variant="secondary">
+      <Play size={14} /> Run
+    </Button>
+  );
+
+  const editor = (
+    <div className="h-full overflow-hidden rounded-lg border border-border-subtle">
+      <LiveMonacoEditor
+        themeConfig={themeConfig}
+        height="100%"
+        value={code}
+        onChange={(value) => setCode(value ?? '')}
+      />
+    </div>
+  );
+
+  return (
+    <div className="relative h-screen min-h-[560px] overflow-hidden bg-surface">
+      <div className="grid h-full place-items-center bg-[radial-gradient(circle_at_center,var(--color-surface-overlay)_1px,transparent_1px)] bg-[length:20px_20px]">
+        {!open && <Button onClick={() => setOpen(true)}>Open code modal</Button>}
+      </div>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        {expanded ? (
+          // Collapsing from the takeover header returns to the default code modal.
+          <DialogContent
+            variant="takeover"
+            headerTitle="Expression"
+            headerActions={runAction}
+            expanded
+            onExpandedChange={setExpanded}
+          >
+            <DialogDescription className="sr-only">
+              Edit the expression. Collapse the modal to return to the default size.
+            </DialogDescription>
+            <div className="h-full p-4">{editor}</div>
+          </DialogContent>
+        ) : (
+          <DialogContent showCloseButton={false} className="gap-0 overflow-hidden p-0 sm:max-w-3xl">
+            <header className="flex h-12 shrink-0 items-center gap-3 border-b border-border-subtle px-4">
+              <DialogTitle className="min-w-0 flex-1 truncate text-sm font-semibold">
+                Expression
+              </DialogTitle>
+              <DialogDescription className="sr-only">
+                Edit the expression. Expand the modal for a full screen editor.
+              </DialogDescription>
+              {runAction}
+              <ExpandCloseActions className="-mr-1" onExpand={() => setExpanded(true)} />
+            </header>
+            <div className="h-[420px] p-4">{editor}</div>
+          </DialogContent>
+        )}
+      </Dialog>
+    </div>
+  );
+}
+
+export const CodeModal = {
+  name: 'Code',
+  tags: ['!autodocs'],
+  render: () => <CodeModalStory />,
+};
+
+// ============================================================================
+// Code w/ Text Modal
+// ============================================================================
+
+const runStepVariables = JSON.stringify(
+  { manualTrigger1: { output: { num1: '1', num2: '2' } } },
+  null,
+  2
+);
+
+function CodeWithTextModalStory() {
+  const viewMode = React.useContext(ViewModeContext);
+  const themeConfig = useEditorThemeConfig();
+  const [open, setOpen] = React.useState(viewMode === 'story');
+  const [expanded, setExpanded] = React.useState(false);
+  // Held here so edits survive the editor remounting when the modal expands or collapses.
+  const [variables, setVariables] = React.useState(runStepVariables);
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen);
+    if (!nextOpen) setExpanded(false);
+  };
+
+  const title = 'Run Single Step: Web Search';
+  const description =
+    'Provide input variable values for this node. Pre-populated from upstream data.';
+
+  const variablesField = (
+    <div className="flex min-h-0 flex-1 flex-col gap-2">
+      <div className="flex items-center gap-2">
+        <span className="text-sm font-medium">Variables</span>
+        <Badge variant="secondary">any</Badge>
+      </div>
+      <div className="min-h-0 flex-1 overflow-hidden rounded-lg border border-border-subtle">
+        <LiveMonacoEditor
+          themeConfig={themeConfig}
+          height="100%"
+          language="json"
+          value={variables}
+          onChange={(value) => setVariables(value ?? '')}
+          options={{ ariaLabel: 'Variables' }}
+        />
+      </div>
+      <p className="text-xs text-muted-foreground">
+        JSON object with variable values keyed by variable path (e.g. nodeId.outputKey).
+      </p>
+    </div>
+  );
+
+  const footer = (
+    <DialogFooter>
+      <DialogClose asChild>
+        <Button variant="outline">Cancel</Button>
+      </DialogClose>
+      <Button>Run</Button>
+    </DialogFooter>
+  );
+
+  return (
+    <div className="relative h-screen min-h-[560px] overflow-hidden bg-surface">
+      <div className="grid h-full place-items-center bg-[radial-gradient(circle_at_center,var(--color-surface-overlay)_1px,transparent_1px)] bg-[length:20px_20px]">
+        {!open && <Button onClick={() => setOpen(true)}>Open code w/ text modal</Button>}
+      </div>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        {expanded ? (
+          // Collapsing from the takeover header returns to the default modal.
+          <DialogContent
+            variant="takeover"
+            headerTitle={title}
+            expanded
+            onExpandedChange={setExpanded}
+          >
+            <div className="flex h-full flex-col gap-4 p-6">
+              <DialogDescription>{description}</DialogDescription>
+              {variablesField}
+              {footer}
+            </div>
+          </DialogContent>
+        ) : (
+          <DialogContent showCloseButton={false} className="sm:max-w-3xl">
+            <DialogHeader>
+              <div className="flex items-center gap-3">
+                <DialogTitle className="min-w-0 flex-1 truncate">{title}</DialogTitle>
+                <ExpandCloseActions className="-mr-2" onExpand={() => setExpanded(true)} />
+              </div>
+              <DialogDescription>{description}</DialogDescription>
+            </DialogHeader>
+            <div className="flex h-[360px] flex-col">{variablesField}</div>
+            {footer}
+          </DialogContent>
+        )}
+      </Dialog>
+    </div>
+  );
+}
+
+export const CodeWithTextModal = {
+  name: 'Code w/ Text',
+  tags: ['!autodocs'],
+  render: () => <CodeWithTextModalStory />,
+};
+
+// ============================================================================
 // Takeover Modal
 // ============================================================================
 
@@ -212,52 +534,6 @@ export const TakeoverNoSidebar = {
   name: 'Takeover no Sidebar',
   tags: ['!autodocs'],
   render: () => <TakeoverModalStory withSidebar={false} />,
-};
-
-// ============================================================================
-// Link Dialog
-// ============================================================================
-
-function LinkDialogStory() {
-  const viewMode = React.useContext(ViewModeContext);
-  return (
-    <Dialog defaultOpen={viewMode === 'story'}>
-      <DialogTrigger asChild>
-        <Button variant="outline">Share Link</Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Share Link</DialogTitle>
-          <DialogDescription>Anyone with the link can view this document.</DialogDescription>
-        </DialogHeader>
-        <div className="flex items-center gap-2">
-          <Input
-            readOnly
-            defaultValue="https://app.example.com/share/abc123xyz"
-            className="flex-1"
-          />
-          <Button size="sm">Copy</Button>
-        </div>
-        <div className="flex items-center gap-4 pt-2">
-          <Button variant="outline" size="sm" className="gap-1.5">
-            <ExternalLink className="h-3.5 w-3.5" />
-            Open in Browser
-          </Button>
-          <p className="text-xs text-muted-foreground">Link expires in 7 days</p>
-        </div>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Done</Button>
-          </DialogClose>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-export const LinkDialog = {
-  name: 'Link',
-  render: () => <LinkDialogStory />,
 };
 
 // ============================================================================
@@ -477,72 +753,4 @@ function StickyFooterDialogStory() {
 export const StickyFooterDialog = {
   name: 'Sticky Footer',
   render: () => <StickyFooterDialogStory />,
-};
-
-// ============================================================================
-// Delete Confirmation Dialog
-// ============================================================================
-
-function DeleteConfirmationExample() {
-  const viewMode = React.useContext(ViewModeContext);
-  const [open, setOpen] = React.useState(viewMode === 'story');
-  const [deleted, setDeleted] = React.useState(false);
-
-  const handleDelete = () => {
-    setDeleted(true);
-    setOpen(false);
-  };
-
-  const handleReset = () => {
-    setDeleted(false);
-    setOpen(true);
-  };
-
-  return (
-    <div className="flex flex-col items-start gap-4">
-      {deleted ? (
-        <div className="flex items-center gap-3 rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-          <Trash2 className="h-4 w-4 shrink-0" />
-          <span>
-            <strong>John Doe</strong> has been permanently deleted.
-          </span>
-          <Button variant="ghost" size="sm" className="ml-2 h-6 text-xs" onClick={handleReset}>
-            Undo (demo)
-          </Button>
-        </div>
-      ) : (
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button variant="destructive">
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete user
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Delete User</DialogTitle>
-              <DialogDescription>
-                Are you sure you want to delete <strong>John Doe</strong>? This action cannot be
-                undone and will permanently remove the user and all associated data.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button variant="outline">Cancel</Button>
-              </DialogClose>
-              <Button variant="destructive" onClick={handleDelete}>
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
-    </div>
-  );
-}
-
-export const DeleteConfirmation = {
-  name: 'Delete',
-  render: () => <DeleteConfirmationExample />,
 };
