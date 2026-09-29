@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.63.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.62.0...@uipath/apollo-react@6.63.0) (2026-09-29)
+
+### Features
+
+* **apollo-react:** custom guardrail builder [AL-613] ([2a74a65](https://github.com/UiPath/apollo-ui/commit/2a74a651cbc59431fa70249a8bb73b262e118b97))
+
 ## [@uipath/apollo-react-v6.62.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.61.0...@uipath/apollo-react@6.62.0) (2026-09-29)
 
 ### Features
