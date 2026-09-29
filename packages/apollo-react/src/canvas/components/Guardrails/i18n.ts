@@ -320,6 +320,7 @@ const TEMPLATE_TOKENS = {
   policyName: '{{policyName}}',
   count: '{{count}}',
   docsLink: '{{docsLink}}',
+  formats: '{{formats}}',
 };
 
 /** Localized chrome strings of the validator form; per-string `overrides` always win. */
@@ -363,6 +364,126 @@ export function useGuardrailFormLabels(
         },
         overrides
       ),
+    [_, overrides]
+  );
+}
+
+/**
+ * Chrome strings of the file-support indicator.
+ *
+ * Every string here describes a *capability*, never a validator: which validator reads which
+ * file kinds is the host's answer, and baking any of it into copy would go stale with the
+ * next release. `formats` is keyed by the wire value so a newly shipped kind needs one entry
+ * here and nothing else.
+ */
+export interface GuardrailFileSupportLabels {
+  /** Shown when files are read but the host named no kinds. */
+  supported: string;
+  /** Shown when files are read; `{{formats}}` is the joined list of kind names. */
+  supportedFormats: string;
+  /** Joins the kind names. Its own string because not every locale separates with a comma. */
+  formatSeparator: string;
+  /** Shown when this validator reads no files. */
+  notSupported: string;
+  /** Shown when the deployment, not the validator, is why no files are read. */
+  unavailableOnAutomationSuite: string;
+  /** Display names of the file kinds, keyed by the wire value. */
+  formats: {
+    Text: string;
+    Pdf: string;
+    Image: string;
+    Office: string;
+    Html: string;
+  };
+}
+
+/** The subset of `useSafeLingui`'s translator the file-support labels need. */
+type FileSupportTranslate = (descriptor: {
+  id: string;
+  message: string;
+  values?: Record<string, string>;
+}) => string;
+
+// One builder holds every `_({ id, message })` call, so the English defaults, the flat record
+// the catalog test diffs and the runtime lingui path cannot drift.
+function buildGuardrailFileSupportLabels(_: FileSupportTranslate): GuardrailFileSupportLabels {
+  return {
+    supported: _({ id: 'guardrails.file-support.supported', message: 'Reads file contents' }),
+    supportedFormats: _({
+      id: 'guardrails.file-support.supported-formats',
+      message: 'Reads file contents ({formats})',
+      values: TEMPLATE_TOKENS,
+    }),
+    formatSeparator: _({ id: 'guardrails.file-support.format-separator', message: ', ' }),
+    notSupported: _({ id: 'guardrails.file-support.not-supported', message: 'Text prompts only' }),
+    unavailableOnAutomationSuite: _({
+      id: 'guardrails.file-support.unavailable-automation-suite',
+      message: 'Text prompts only (files are not available in this environment)',
+    }),
+    formats: {
+      Text: _({ id: 'guardrails.file-support.format.Text', message: 'text' }),
+      Pdf: _({ id: 'guardrails.file-support.format.Pdf', message: 'PDF' }),
+      Image: _({ id: 'guardrails.file-support.format.Image', message: 'images' }),
+      Office: _({ id: 'guardrails.file-support.format.Office', message: 'Office documents' }),
+      Html: _({ id: 'guardrails.file-support.format.Html', message: 'HTML' }),
+    },
+  };
+}
+
+// Resolves a descriptor the way lingui does with `values: TEMPLATE_TOKENS`, so the English
+// defaults carry the same `{{token}}` convention as a translated catalog entry.
+const englishFileSupportTranslate: FileSupportTranslate = ({ message, values }) =>
+  values
+    ? message.replace(/\{(\w+)\}/g, (match, token: string) => values[token] ?? match)
+    : message;
+
+/** The English chrome strings, resolved without a lingui provider. */
+export const GUARDRAIL_FILE_SUPPORT_EN_LABELS: GuardrailFileSupportLabels =
+  buildGuardrailFileSupportLabels(englishFileSupportTranslate);
+
+/**
+ * The same strings flattened to message id to the **ICU source message**, which is the form
+ * the catalogs store: the parity test compares these against `locales/en.json` verbatim.
+ */
+export const GUARDRAIL_FILE_SUPPORT_EN_MESSAGES: Readonly<Record<string, string>> = Object.freeze(
+  (() => {
+    const messages: Record<string, string> = {};
+    buildGuardrailFileSupportLabels((descriptor) => {
+      messages[descriptor.id] = descriptor.message;
+      return descriptor.message;
+    });
+    return messages;
+  })()
+);
+
+/**
+ * Merge English defaults, a loaded catalog, and per-string overrides.
+ *
+ * Its own resolver rather than `mergeLabels`: `formats` is a nested record, and a shallow
+ * merge would let a host that renames one kind drop the other four.
+ */
+export function resolveGuardrailFileSupportLabels(
+  catalog?: Partial<GuardrailFileSupportLabels>,
+  overrides?: Partial<GuardrailFileSupportLabels>
+): GuardrailFileSupportLabels {
+  const merged = mergeLabels(GUARDRAIL_FILE_SUPPORT_EN_LABELS, catalog, overrides);
+  return {
+    ...merged,
+    formats: {
+      ...GUARDRAIL_FILE_SUPPORT_EN_LABELS.formats,
+      ...catalog?.formats,
+      ...overrides?.formats,
+    },
+  };
+}
+
+/** Localized chrome strings of the file-support indicator; per-string `overrides` always win. */
+export function useGuardrailFileSupportLabels(
+  overrides?: Partial<GuardrailFileSupportLabels>
+): GuardrailFileSupportLabels {
+  const { _ } = useSafeLingui();
+  return useMemo(
+    () => resolveGuardrailFileSupportLabels(buildGuardrailFileSupportLabels(_), overrides),
     [_, overrides]
   );
 }

@@ -11,6 +11,9 @@ export type {
   GuardrailEscalateActionErrors,
   GuardrailEscalateApp,
   GuardrailEscalateRecipient,
+  GuardrailFileFormat,
+  GuardrailFileSupport,
+  GuardrailFileSupportUnavailableReason,
   GuardrailRecipientSearchContext,
   GuardrailRecipientTypeValue,
   GuardrailScope,
@@ -69,6 +72,8 @@ export type { GuardrailActionSectionProps } from './components/guardrail-action-
 export { GuardrailActionSection } from './components/guardrail-action-section';
 export type { GuardrailChipProps } from './components/guardrail-chip';
 export { GuardrailChip, guardrailChipVariants } from './components/guardrail-chip';
+export type { GuardrailFileSupportIndicatorProps } from './components/guardrail-file-support-indicator';
+export { GuardrailFileSupportIndicator } from './components/guardrail-file-support-indicator';
 export type { GuardrailScopeSelectorProps } from './components/guardrail-scope-selector';
 export { GuardrailScopeSelector } from './components/guardrail-scope-selector';
 export type { GuardrailStatusBannerProps } from './components/guardrail-status-banner';
@@ -154,6 +159,7 @@ export type {
   GuardrailActionLabelKey,
   GuardrailActionLabels,
   GuardrailBuilderLabels,
+  GuardrailFileSupportLabels,
   GuardrailFilterFieldSelectorLabelKey,
   GuardrailFilterFieldSelectorLabels,
   GuardrailListLabels,
@@ -174,6 +180,7 @@ export {
   GUARDRAIL_ACTION_EN_LABELS,
   GUARDRAIL_ACTION_LABEL_KEYS,
   GUARDRAIL_BUILDER_EN_LABELS,
+  GUARDRAIL_FILE_SUPPORT_EN_LABELS,
   GUARDRAIL_FILTER_FIELD_SELECTOR_EN_LABELS,
   GUARDRAIL_FILTER_FIELD_SELECTOR_LABEL_KEYS,
   GUARDRAIL_FORM_EN_LABELS,
@@ -191,6 +198,7 @@ export {
   resolveCustomGuardrailBuilderLabels,
   resolveGuardrailActionLabels,
   resolveGuardrailBuilderLabels,
+  resolveGuardrailFileSupportLabels,
   resolveGuardrailFilterFieldSelectorLabels,
   resolveGuardrailFormLabels,
   resolveGuardrailListLabels,
@@ -202,6 +210,7 @@ export {
   useCustomGuardrailBuilderLabels,
   useGuardrailActionLabels,
   useGuardrailBuilderLabels,
+  useGuardrailFileSupportLabels,
   useGuardrailFilterFieldSelectorLabels,
   useGuardrailFormLabels,
   useGuardrailListLabels,

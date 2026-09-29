@@ -1635,3 +1635,113 @@ describe('saveDisabled passthrough', () => {
     });
   });
 });
+
+describe('file support indicator', () => {
+  const judgeParameters: GuardrailDefinition['parameters'] = [
+    {
+      id: 'model',
+      type: 'enum',
+      label: 'Judge model',
+      required: true,
+      defaultValue: '',
+      options: ['gpt-4o'],
+    },
+    {
+      id: 'appliesTo',
+      type: 'enum',
+      label: 'Applies to',
+      required: false,
+      defaultValue: 'Both',
+      options: ['Text', 'Files', 'Both'],
+      optionLabels: { Text: 'Text only', Files: 'Files only', Both: 'Text and files' },
+    },
+  ];
+
+  it('describes what the validator reads, above its parameters', () => {
+    render(
+      <GuardrailBuilder
+        open
+        inline
+        definition={makeDef({
+          parameters: judgeParameters,
+          fileSupport: { supported: true, formats: ['Text', 'Pdf', 'Image'] },
+        })}
+        scope="Agent"
+        onSave={() => {}}
+        onCancel={() => {}}
+      />
+    );
+
+    expect(screen.getByText('Reads file contents (text, PDF, images)')).toBeInTheDocument();
+  });
+
+  it('says nothing when the definition carries no descriptor', () => {
+    // An older backend, or a BYO manifest.
+    render(
+      <GuardrailBuilder
+        open
+        inline
+        definition={makeDef({ parameters: judgeParameters })}
+        scope="Agent"
+        onSave={() => {}}
+        onCancel={() => {}}
+      />
+    );
+
+    expect(screen.queryByText(/Reads file contents/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Text prompts only/)).not.toBeInTheDocument();
+  });
+
+  it('renders the appliesTo dropdown from the definition, with the backend’s labels', () => {
+    // The generic enum renderer is expected to need no change for this parameter; this is
+    // the assertion that keeps that true.
+    render(
+      <GuardrailBuilder
+        open
+        inline
+        definition={makeDef({
+          parameters: judgeParameters,
+          fileSupport: { supported: true, formats: ['Text'] },
+        })}
+        scope="Agent"
+        onSave={() => {}}
+        onCancel={() => {}}
+      />
+    );
+
+    expect(screen.getByRole('combobox', { name: /Applies to/ })).toHaveTextContent(
+      'Text and files'
+    );
+  });
+
+  it('leaves the host model picker untouched when appliesTo sits beside it', () => {
+    // The picker keys off `id === 'model'`; a second enum parameter in the same list must
+    // not reach it, and must not stop the picker from claiming its own.
+    const claimed: string[] = [];
+
+    render(
+      <GuardrailBuilder
+        open
+        inline
+        definition={makeDef({
+          parameters: judgeParameters,
+          fileSupport: { supported: true, formats: ['Text'] },
+        })}
+        scope="Agent"
+        onSave={() => {}}
+        onCancel={() => {}}
+        renderParameter={(ctx) => {
+          if (ctx.definition.id !== 'model') return undefined;
+          claimed.push(ctx.definition.id);
+          return <div data-testid="host-picker" />;
+        }}
+      />
+    );
+
+    expect(screen.getByTestId('host-picker')).toBeInTheDocument();
+    expect(new Set(claimed)).toEqual(new Set(['model']));
+    // The picker replaced the model enum, and only that one.
+    expect(screen.queryByRole('combobox', { name: /Judge model/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: /Applies to/ })).toBeInTheDocument();
+  });
+});
