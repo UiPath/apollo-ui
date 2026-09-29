@@ -152,6 +152,12 @@ const FIELD_TYPE_METADATA: readonly FieldTypeMetadata[] = [
     description: 'Toggle switch',
   },
   {
+    value: 'boolean',
+    label: 'True / False',
+    category: 'Boolean',
+    description: 'True, false or not set',
+  },
+  {
     value: 'slider',
     label: 'Slider',
     category: 'Input',
@@ -1708,7 +1714,10 @@ function RulesEditor({
     // Get the target field to determine its type
     const targetField = allFields.find((f) => f.name === cond.field);
     const isNumericField = targetField?.type === 'number' || targetField?.type === 'slider';
-    const isBooleanField = targetField?.type === 'checkbox' || targetField?.type === 'switch';
+    const isBooleanField =
+      targetField?.type === 'checkbox' ||
+      targetField?.type === 'switch' ||
+      targetField?.type === 'boolean';
 
     // Parse value based on the target field's type
     const parseValue = (val: string): unknown => {

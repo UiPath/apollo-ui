@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import type { CustomValueType, FieldType, ValidationConfig } from './form-schema';
+import type { CustomValueType, FieldType, ValidationConfig, ValueModeId } from './form-schema';
+import { type CodecContext, isDecodedEmpty, type ValueModeCodec } from './value-modes';
 
 export type { CustomValueType };
 
@@ -40,7 +41,7 @@ export function validationConfigToZod(
 
   // If no config, return optional base schema
   if (!config) {
-    return schema.optional();
+    return schema.nullish();
   }
 
   // Apply type-specific constraints
@@ -75,7 +76,51 @@ export function validationConfigToZod(
     return applyCustomExpression(schema, config);
   }
 
-  return applyCustomExpression(schema, config).optional();
+  // `null` too: it is a cleared field's value, as react-hook-form expects one to be.
+  return applyCustomExpression(schema, config).nullish();
+}
+
+export interface ModeAwareSchemaOptions {
+  codec: ValueModeCodec;
+  context: CodecContext;
+  /** Whether the value, in any mode, must be non-empty. */
+  required: boolean;
+  requiredMessage?: string;
+  /** Validation per mode other than `literal`, from `ValueModeDefinition.validate`. */
+  validators?: Partial<Record<ValueModeId, ModeValidator>>;
+}
+
+export type ModeValidator = (value: unknown, ctx: CodecContext) => string | undefined;
+
+/**
+ * Validation for a field with value modes. A `literal` value is decoded and validated by the
+ * field type's own schema; a value in any other mode is checked for `required` and by its mode.
+ */
+export function modeAwareSchema(
+  literalSchema: z.ZodTypeAny,
+  { codec, context, required, requiredMessage, validators }: ModeAwareSchemaOptions
+): z.ZodTypeAny {
+  return z.any().superRefine((stored: unknown, ctx: z.RefinementCtx) => {
+    const decoded = codec.decode(stored, context);
+    const empty = isDecodedEmpty(codec, decoded, context);
+    // One message for a missing value in every mode, rather than the field type's own error.
+    if (empty && required) {
+      ctx.addIssue({ code: 'custom', message: requiredMessage || 'This field is required' });
+      return;
+    }
+    if (empty) return;
+    if (decoded.mode === 'literal') {
+      const result = literalSchema.safeParse(decoded.value);
+      if (!result.success) {
+        for (const issue of result.error.issues) {
+          ctx.addIssue({ code: 'custom', message: issue.message, path: issue.path });
+        }
+      }
+      return;
+    }
+    const message = validators?.[decoded.mode]?.(decoded.value, context);
+    if (message) ctx.addIssue({ code: 'custom', message });
+  });
 }
 
 /**
@@ -124,6 +169,7 @@ function getBaseSchemaForType(
 
     case 'checkbox':
     case 'switch':
+    case 'boolean':
       return z.boolean();
 
     case 'select':

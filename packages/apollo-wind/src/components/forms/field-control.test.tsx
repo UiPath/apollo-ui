@@ -82,12 +82,26 @@ describe('FIELD_CONTROL_GEOMETRY', () => {
     expect(FIELD_CONTROL_GEOMETRY.text?.layout).toBe('row');
   });
 
-  it('draws no box around booleans, which the label reaches by id', () => {
-    for (const fieldType of ['switch', 'checkbox'] as const) {
-      expect(FIELD_CONTROL_GEOMETRY[fieldType]).toMatchObject({
-        variant: 'none',
-        labelTarget: 'labelledby',
-      });
+  it('draws no box around boolean field types', () => {
+    for (const fieldType of ['switch', 'checkbox', 'boolean'] as const) {
+      expect(FIELD_CONTROL_GEOMETRY[fieldType]?.variant).toBe('none');
     }
+    // The radios name themselves from the label; a switch or checkbox is the label's target.
+    expect(FIELD_CONTROL_GEOMETRY.boolean?.labelTarget).toBe('labelledby');
+    expect(FIELD_CONTROL_GEOMETRY.switch?.labelTarget).toBe('control');
+  });
+
+  it('renders a boolean field as tri-state radios named by its label', () => {
+    const formField = binding(true);
+    render(
+      <FieldControl
+        field={{ name: 'flag', type: 'boolean', label: 'Flag' }}
+        formField={formField}
+      />
+    );
+    expect(screen.getByRole('radiogroup')).toHaveAttribute('aria-labelledby', 'flag-label');
+    expect(screen.getByRole('radio', { name: 'True' })).toBeChecked();
+    fireEvent.click(screen.getByRole('radio', { name: 'True' }));
+    expect(formField.onChange).toHaveBeenCalledWith(null);
   });
 });

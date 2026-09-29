@@ -14,6 +14,24 @@ export {
   FetchAdapter,
 } from './components/forms/data-fetcher';
 export type {
+  AiAssistActionOptions,
+  ClearActionOptions,
+  FieldActionContext,
+  FieldActionGenerate,
+  FieldActionRegistry,
+  FieldActionsPluginConfig,
+  FieldActionVariables,
+  FieldHeaderAction,
+  FieldMenuAction,
+  InsertVariableActionOptions,
+  ValueModeVariable,
+} from './components/forms/field-actions';
+export {
+  createAiAssistAction,
+  createClearAction,
+  createInsertVariableAction,
+} from './components/forms/field-actions';
+export type {
   FieldControlFormField,
   FieldControlGeometry,
   FieldControlLabelTarget,
@@ -31,6 +49,7 @@ export {
   workflowPlugin,
 } from './components/forms/form-plugins';
 export type {
+  CustomComponents,
   CustomFieldComponentProps,
   CustomValueType,
   DataSource,
@@ -46,6 +65,9 @@ export type {
   FormSection,
   FormStep,
   StringListFieldMetadata,
+  ValueModeControlRef,
+  ValueModeId,
+  ValueModesConfig,
 } from './components/forms/form-schema';
 export {
   hasMinMaxStep,
@@ -54,11 +76,20 @@ export {
   isFileField,
 } from './components/forms/form-schema';
 export { FormStateViewer } from './components/forms/form-state-viewer';
+export type {
+  ClearActionStrings,
+  FormValidationStrings,
+  MetadataFormStringOverrides,
+  MetadataFormStrings,
+} from './components/forms/form-strings';
+export { DEFAULT_METADATA_FORM_STRINGS } from './components/forms/form-strings';
 // -----------------------------------------------------------------------------
 // Metadata Forms System
 // -----------------------------------------------------------------------------
 export type { MetadataFormProps } from './components/forms/metadata-form';
 export { MetadataForm, useWatch } from './components/forms/metadata-form';
+export type { ModeAwareFieldProps } from './components/forms/mode-aware-field';
+export { ModeAwareField } from './components/forms/mode-aware-field';
 export {
   ExpressionBuilder,
   RuleBuilder,
@@ -66,6 +97,27 @@ export {
 } from './components/forms/rules-engine';
 export type { StringListFieldProps } from './components/forms/string-list-field';
 export { formatTemplate, StringListField } from './components/forms/string-list-field';
+export type {
+  CodecContext,
+  ConvertResult,
+  DecodedValue,
+  FieldControlRegistration,
+  ValueModeCodec,
+  ValueModeControlHandle,
+  ValueModeControlProps,
+  ValueModeControlRegistration,
+  ValueModeDefinition,
+  ValueModeEnvelope,
+  ValueModeRegistry,
+  ValueModesPluginConfig,
+} from './components/forms/value-modes';
+export {
+  envelopeCodec,
+  isEmptyModeValue,
+  isValueModeEnvelope,
+  literalValues,
+  VALUE_MODE_OPAQUE,
+} from './components/forms/value-modes';
 // -----------------------------------------------------------------------------
 // Utility Components
 // -----------------------------------------------------------------------------
@@ -93,6 +145,14 @@ export { AspectRatio } from './components/ui/aspect-ratio';
 export { Avatar, AvatarFallback, AvatarImage } from './components/ui/avatar';
 export type { BadgeProps } from './components/ui/badge';
 export { Badge, badgeVariants } from './components/ui/badge';
+export type {
+  BooleanRadioGroupProps,
+  BooleanRadioGroupStrings,
+} from './components/ui/boolean-radio-group';
+export {
+  BooleanRadioGroup,
+  DEFAULT_BOOLEAN_RADIO_GROUP_STRINGS,
+} from './components/ui/boolean-radio-group';
 export {
   Breadcrumb,
   BreadcrumbEllipsis,
@@ -271,6 +331,7 @@ export type {
   ValueModeIndicatorProps,
   ValueModeOption,
   ValueModeStrings,
+  ValueModeSwitchDialogProps,
 } from './components/ui/field-addons';
 export {
   BUILTIN_VALUE_MODES,
@@ -278,6 +339,7 @@ export {
   DEFAULT_VALUE_MODE_STRINGS,
   FieldMenu,
   ValueModeIndicator,
+  ValueModeSwitchDialog,
 } from './components/ui/field-addons';
 export type { FileUploadProps } from './components/ui/file-upload';
 export { FileUpload } from './components/ui/file-upload';

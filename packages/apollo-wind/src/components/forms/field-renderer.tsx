@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
+import type { BooleanRadioGroupStrings } from '@/components/ui/boolean-radio-group';
 import {
   FormField,
   FormFieldDescription,
@@ -15,15 +16,17 @@ import {
   useSliderMax,
 } from './field-control';
 import type {
-  CustomFieldComponentProps,
+  CustomComponents,
   FieldMetadata,
   FieldOption,
   FormContext,
   SliderFieldMetadata,
 } from './form-schema';
 import { hasOptions, isCustomField } from './form-schema';
+import { ModeAwareField } from './mode-aware-field';
 import { RulesEngine } from './rules-engine';
 import { StringListField } from './string-list-field';
+import { isFieldControlRegistration, literalValues } from './value-modes';
 
 /**
  * Field Renderer - Connects metadata to actual UI components
@@ -33,7 +36,7 @@ import { StringListField } from './string-list-field';
 interface FormFieldRendererProps {
   field: FieldMetadata;
   context: FormContext;
-  customComponents: Record<string, React.ComponentType<CustomFieldComponentProps>>;
+  customComponents: CustomComponents;
   disabled?: boolean;
 }
 
@@ -48,6 +51,13 @@ export function FormFieldRenderer({
   // Ref for context to avoid unnecessary effect re-runs
   const contextRef = useRef(context);
   contextRef.current = context;
+
+  // What rules and data sources read: fields with value modes by their literal value.
+  const readValues = useCallback(
+    () =>
+      literalValues(getValues(), contextRef.current.schema, contextRef.current.valueModes?.codecs),
+    [getValues]
+  );
 
   // Calculate initial visibility based on rules
   const getInitialVisibility = () => {
@@ -65,7 +75,7 @@ export function FormFieldRenderer({
     }
 
     // Apply rules to determine initial visibility
-    const allValues = getValues();
+    const allValues = readValues();
     const ruleResult = RulesEngine.applyRules(field.rules, allValues, context);
 
     if (ruleResult.visible !== undefined) {
@@ -88,7 +98,7 @@ export function FormFieldRenderer({
     }
 
     // Apply rules to determine initial required state (rules can override static)
-    const allValues = getValues();
+    const allValues = readValues();
     const ruleResult = RulesEngine.applyRules(field.rules, allValues, context);
     return ruleResult.required ?? staticRequired;
   };
@@ -150,7 +160,7 @@ export function FormFieldRenderer({
   useEffect(() => {
     if (!field.rules || field.rules.length === 0) return;
 
-    const allValues = getValues();
+    const allValues = readValues();
     const ruleResult = RulesEngine.applyRules(field.rules, allValues, contextRef.current);
 
     // Check what types of rules exist
@@ -198,7 +208,7 @@ export function FormFieldRenderer({
       }
       return nextState;
     });
-  }, [field.rules, field.validation?.required, getValues, watchedRuleDependentValues]);
+  }, [field.rules, field.validation?.required, readValues, watchedRuleDependentValues]);
 
   // Tracked apart from inlineOptions so a field whose options go away clears to [].
   const isOptionsField = hasOptions(field);
@@ -228,7 +238,7 @@ export function FormFieldRenderer({
 
     const fetchOptions = async () => {
       try {
-        const allValues = getValues();
+        const allValues = readValues();
         const data = await DataFetcher.fetch(field.dataSource!, allValues);
         setFieldState((prev) => {
           // Only update if options actually changed
@@ -246,7 +256,7 @@ export function FormFieldRenderer({
     };
 
     fetchOptions();
-  }, [field.dataSource, field.name, getValues, watchedDataSourceValues]);
+  }, [field.dataSource, field.name, readValues, watchedDataSourceValues]);
 
   // Don't render if hidden by rules
   if (!fieldState.visible) {
@@ -257,9 +267,28 @@ export function FormFieldRenderer({
   const gridSpan = field.grid?.span || 1;
   const gridStyle: React.CSSProperties = { gridColumn: `span ${gridSpan}` };
 
+  // Value modes or field actions: the field anatomy, custom fields included.
+  if (field.valueModes || field.headerActions || field.menuActions || field.badge) {
+    return (
+      <div style={gridStyle}>
+        <ModeAwareField
+          field={field}
+          context={context}
+          customComponents={customComponents}
+          disabled={formDisabled || fieldState.disabled}
+          required={fieldState.required}
+          options={fieldState.options}
+        />
+      </div>
+    );
+  }
+
   // Custom component renderer
-  if (isCustomField(field) && customComponents[field.component]) {
-    const CustomComponent = customComponents[field.component];
+  const customEntry = isCustomField(field) ? customComponents[field.component] : undefined;
+  if (isCustomField(field) && customEntry) {
+    const CustomComponent = isFieldControlRegistration(customEntry)
+      ? customEntry.component
+      : customEntry;
     return (
       <div style={gridStyle}>
         <Controller
@@ -298,6 +327,7 @@ export function FormFieldRenderer({
             disabled={formDisabled || fieldState.disabled}
             required={fieldState.required}
             options={fieldState.options}
+            strings={context.strings?.boolean}
           />
         )}
       />
@@ -316,9 +346,18 @@ interface BuiltInFieldProps {
   disabled: boolean;
   required: boolean;
   options: FieldOption[];
+  strings?: Partial<BooleanRadioGroupStrings>;
 }
 
-function BuiltInField({ field, formField, error, disabled, required, options }: BuiltInFieldProps) {
+function BuiltInField({
+  field,
+  formField,
+  error,
+  disabled,
+  required,
+  options,
+  strings,
+}: BuiltInFieldProps) {
   const control = (
     <FieldControl
       field={field}
@@ -326,6 +365,7 @@ function BuiltInField({ field, formField, error, disabled, required, options }: 
       options={options}
       disabled={disabled}
       invalid={!!error}
+      strings={strings}
     />
   );
 
@@ -412,11 +452,11 @@ function BuiltInField({ field, formField, error, disabled, required, options }: 
     default:
       return (
         <FormField>
-          {/* Radio and datetime controls have no single labelable element, so they name
-              themselves from the label's id instead. The option labels name individual radios;
+          {/* Radio, boolean and datetime controls have no single labelable element, so they
+              name themselves from the label's id instead. The option labels name individual radios;
               without this the group itself has no accessible name. */}
           <FormFieldLabel
-            {...(field.type === 'radio' || field.type === 'datetime'
+            {...(field.type === 'radio' || field.type === 'boolean' || field.type === 'datetime'
               ? { id: `${field.name}-label` }
               : { htmlFor: field.name })}
             required={required}

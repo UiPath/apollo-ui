@@ -225,6 +225,10 @@ function serializeField(field: FieldMetadata): JsonObject {
   if (field.ariaDescribedBy) result.ariaDescribedBy = field.ariaDescribedBy;
   if (field.tooltip) result.tooltip = field.tooltip;
   if (field.tooltipAriaLabel) result.tooltipAriaLabel = field.tooltipAriaLabel;
+  if (field.valueModes) result.valueModes = field.valueModes as unknown as JsonObject;
+  if (field.headerActions) result.headerActions = [...field.headerActions];
+  if (field.menuActions) result.menuActions = [...field.menuActions];
+  if (field.badge) result.badge = field.badge;
 
   // Type-specific properties
   if ('options' in field && field.options) {
