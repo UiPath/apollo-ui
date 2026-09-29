@@ -1,0 +1,127 @@
+import { activityTimelineOccupant } from '@/registry/activity-timeline/activity-timeline.occupant';
+import { stageStripOccupant } from '@/registry/stage-strip/stage-strip.occupant';
+
+# Creating occupants
+
+An occupant is the content inside a surface: a pattern that knows the space
+it needs, and works in any surface that gives it that space. This page covers
+how to design one. The [design architecture](/guidelines/design-architecture)
+page covers the specs in detail.
+
+## An occupant is a role
+
+Occupant isn't a kind of component, and there's no separate section for
+them. It's a role a pattern takes on when it has an occupant spec. The
+[activity timeline](/patterns/activity-timeline) is a pattern first. Its spec
+is what lets it go in a side panel or a content area.
+
+- Occupant patterns live under Patterns, with an "Occupant" label and a
+  "Where it fits" table made from the spec.
+- Each surface page lists the occupants that fit it, also made from the
+  specs.
+- Occupants never name a template. A spec describes what the occupant needs
+  from a surface, so it works in every template that has that surface.
+
+## The spec
+
+| Field | What it says |
+| --- | --- |
+| `name` | Rendered as `data-occupant`. Lowercase and hyphenated |
+| `label` | Shown in docs and tooling |
+| `icon` | A lucide icon, for pickers |
+| `orientations` | The surface shapes it works in. Defaults to `["vertical"]` |
+| `surfaces` | Only when it's built from one surface's own parts. Leave it out otherwise |
+| `requires.minWidth` | The narrowest inner width where it still works |
+| `requires.padding` | `padded` or `flush` |
+| `requires.scroll` | `surface`, `occupant`, or `either` |
+
+## View models and adapters
+
+An occupant renders a neutral view model: the shape of its content, with no
+domain in it. The activity timeline shows events with an actor, status,
+title, detail, and time. It doesn't know about invoices, claims, or loans.
+
+- Your solution maps its own data into the view model with an adapter.
+- Adapters belong to the solution, not the occupant. The registry item never
+  ships one.
+- In this repo, example adapters live in an `examples/` folder next to the
+  view model, and nothing outside `examples/` may import them. The dependency
+  rules check this.
+- Every occupant has at least two examples from different domains, and a
+  stress example. The docs and checks render it with each.
+
+## Minimum width is a design decision
+
+`minWidth` is the narrowest inner width where the occupant still works. Set
+it by measuring, not guessing:
+
+1. Find the measured floor: the narrowest width where nothing clips, across
+   every example, stress included.
+2. Decide the minimum. It's at least the floor, and above it when the
+   occupant gets hard to read before it breaks.
+
+The stage strip's {stageStripOccupant.requires.minWidth}px is its measured
+floor: the row of stage markers. The activity timeline declares
+{activityTimelineOccupant.requires.minWidth}px, above its floor, so titles
+don't wrap one word per line.
+
+For the minimum to hold for any data, long values truncate or wrap:
+
+- Truncate single-line labels, and keep the full text in a `title`.
+- Wrap everything else, including long unbroken strings (`wrap-anywhere`).
+- Handle missing and empty optional values.
+
+## Orientations
+
+Surfaces give a space with an orientation. The page header is horizontal: a
+wide, short band. Side panels and the content area are vertical: columns that
+grow downward.
+
+- An occupant lists the orientations it works in.
+- It adapts to the shape of the space with `useSurface()`, never to the
+  surface's name. For style-only changes, use container queries.
+- If it shows the same information in both shapes, it's one occupant with
+  both orientations.
+- If a smaller version shows different information, it's a separate
+  occupant that shares the view model. The
+  [stage strip](/patterns/stage-strip) is the timeline's summary: same data,
+  different information, so a different occupant.
+
+## Standard states
+
+Every occupant renders the same states with `OccupantStateView`:
+
+| State | What it shows |
+| --- | --- |
+| `ready` | The content |
+| `loading` | Placeholders shaped like the content |
+| `empty` | A short message about what will appear here |
+| `error` | What failed, and Retry when the occupant is given `onRetry` |
+| `agent-updating` | The content, still readable, marked busy, with a status line |
+
+The state view adapts to orientation too: messages stack in a vertical
+surface and sit in one row in a horizontal one.
+
+## Recommended actions
+
+When an occupant shows actions, at most one is recommended:
+
+- The recommended action gets primary emphasis and stays visible.
+- Its reason is available as a tooltip and as a description for assistive
+  tech.
+- Without a recommendation, every action gets equal emphasis, and any can
+  fold into an overflow menu when space runs short.
+
+The recommendation comes from the view model, so the solution decides it.
+
+## Checks
+
+Every registered occupant is checked automatically, in every surface it
+claims, with every example:
+
+- No clipping from its minimum width up.
+- Its spec fits exactly the surfaces its orientations claim.
+- Light and dark themes.
+- An accessibility scan with axe, in every standard state.
+
+A set runs on every pull request, and a full sweep runs nightly.

@@ -1,3 +1,4 @@
+import { OccupantsThatFit } from '@/app/_components/occupant-docs';
 import { Code } from 'nextra/components';
 import { LAYOUT_TOKENS, PADDED_INSET_PX } from '@/lib/composition';
 import { contentAreaSurface } from '@/registry/content-area/content-area.surface';
@@ -32,6 +33,13 @@ The page's main content: the item itself, a form, a table, a document.
 | `data-surface` | `content-area` |
 | `data-padding` | `padded` or `flush` |
 | `data-scroll` | `surface` or `occupant` |
+
+## Occupants that fit here
+
+<OccupantsThatFit surface="content-area" />
+
+Generated from every registered occupant's spec. How wide one can be depends
+on the slot that holds this surface; see the template's width rules.
 
 ## Configurations
 
