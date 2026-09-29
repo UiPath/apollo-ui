@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   fits,
+  fitsSurface,
   type OccupantSpec,
   occupantOrientations,
   type ScrollOwner,
@@ -180,5 +181,38 @@ describe("fits: slot, scroll, surfaces, orientation", () => {
       fits: true,
       reasons: [],
     });
+  });
+});
+
+describe("fitsSurface", () => {
+  it("checks scroll, orientation, and listed surfaces, but not width, which is the slot's", () => {
+    expect(fitsSurface(sidePanelSurface, occupant(9999))).toEqual({
+      fits: true,
+      reasons: [],
+    });
+    expect(fitsSurface(pageHeaderSurface, occupant(0)).reasons).toEqual([
+      "Works only in vertical surfaces; page-header is horizontal.",
+    ]);
+    expect(
+      fitsSurface(
+        pageHeaderSurface,
+        horizontal(occupant(0, "padded", "surface")),
+      ).reasons,
+    ).toEqual(["Needs surface scrolling; page-header supports occupant only."]);
+    expect(
+      fitsSurface(contentAreaSurface, {
+        ...occupant(0),
+        surfaces: ["side-panel"],
+      }).fits,
+    ).toBe(false);
+  });
+
+  it("is what fits() adds after the slot and width checks", () => {
+    const spec = {
+      ...occupant(9999, "padded", "surface"),
+      surfaces: ["side-panel"],
+    };
+    const all = fits(main, pageHeaderSurface, spec).reasons;
+    expect(all.slice(2)).toEqual(fitsSurface(pageHeaderSurface, spec).reasons);
   });
 });
