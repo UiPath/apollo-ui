@@ -2206,6 +2206,10 @@
         {
           "path": "registry/page-header/page-header.tsx",
           "type": "registry:ui"
+        },
+        {
+          "path": "registry/page-header/collapsible-actions-space.ts",
+          "type": "registry:ui"
         }
       ]
     },

@@ -13,6 +13,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import {
+  collapsibleActionsSpace,
+  type PageHeaderLayout,
+} from "./collapsible-actions-space";
 
 const pageHeaderVariants = cva("", {
   variants: {
@@ -358,11 +362,23 @@ function PageHeaderCollapsibleActions({
         return n;
       };
 
+      // Matches the grid classes: any page-header-content child switches the
+      // header to its three-column grid.
       const isGrid = getComputedStyle(header).display === "grid";
-      const baseAvailable =
-        isGrid && actionsContainer
-          ? actionsContainer.clientWidth - fixedWidth
-          : headerWidth - headerPadding - navMinWidth - fixedWidth;
+      const hasContent = header.querySelector(
+        '[data-slot="page-header-content"]',
+      );
+      const grid: PageHeaderLayout = hasContent ? "grid-with-content" : "grid";
+      const layout: PageHeaderLayout = isGrid ? grid : "flex";
+      const baseAvailable = collapsibleActionsSpace({
+        layout,
+        headerWidth,
+        headerPadding,
+        navMinWidth,
+        fixedWidth,
+        actionsWidth: actionsContainer?.clientWidth ?? 0,
+        gap,
+      });
 
       let count = fitCount(baseAvailable);
 
