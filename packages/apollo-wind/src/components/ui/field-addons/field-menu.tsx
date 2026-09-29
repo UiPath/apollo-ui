@@ -27,6 +27,8 @@ export interface FieldMenuItem {
   /** Icon as a data URI, used when `icon` is absent. */
   iconDataUri?: string;
   disabled?: boolean;
+  /** Styles the row as one that removes or discards something. */
+  destructive?: boolean;
   onSelect: () => void;
 }
 
@@ -198,7 +200,12 @@ export function FieldMenu<Id extends string = ValueMode>({
         {actions?.map((action) => {
           const ActionIcon = action.icon;
           return (
-            <DropdownMenuItem key={action.id} disabled={action.disabled} onClick={action.onSelect}>
+            <DropdownMenuItem
+              key={action.id}
+              disabled={action.disabled}
+              onClick={action.onSelect}
+              className={cn(action.destructive && 'text-error focus:text-error')}
+            >
               {ActionIcon ? (
                 <ActionIcon />
               ) : (

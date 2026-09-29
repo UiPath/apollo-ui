@@ -141,6 +141,8 @@ export interface FormFieldHeaderProps
   extends Pick<FormFieldLabelProps, 'htmlFor' | 'required' | 'tooltip' | 'tooltipAriaLabel'>,
     Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {
   label?: React.ReactNode;
+  /** The label element's id, for a control that names itself with `aria-labelledby`. */
+  labelId?: string;
   /** Ahead of the label, such as a type glyph. Never opens the row on its own. */
   leading?: React.ReactNode;
   /** After the label, such as a spelled-out type chip. Never opens the row on its own. */
@@ -163,6 +165,7 @@ const FormFieldHeader = React.forwardRef<HTMLDivElement, FormFieldHeaderProps>(
   (
     {
       label,
+      labelId,
       htmlFor,
       required,
       tooltip,
@@ -194,6 +197,7 @@ const FormFieldHeader = React.forwardRef<HTMLDivElement, FormFieldHeaderProps>(
             report on it. */}
           {label && (
             <FormFieldLabel
+              id={labelId}
               htmlFor={htmlFor}
               required={required}
               tooltip={tooltip}

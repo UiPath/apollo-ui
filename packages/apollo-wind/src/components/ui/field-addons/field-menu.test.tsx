@@ -73,6 +73,18 @@ describe('FieldMenu', () => {
     expect(onSelect).not.toHaveBeenCalled();
   });
 
+  it('styles a destructive action', async () => {
+    render(
+      <FieldMenu
+        mode="literal"
+        onSelect={vi.fn()}
+        actions={[{ id: 'remove', label: 'Remove', destructive: true, onSelect: vi.fn() }]}
+      />
+    );
+    await open();
+    expect(await itemOf('Remove')).toHaveClass('text-error');
+  });
+
   it('marks the mode named by `checked` when it differs from the trigger', async () => {
     render(<FieldMenu mode="literal" checked="expression" onSelect={vi.fn()} />);
     await open();
