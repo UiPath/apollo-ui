@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.64.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.63.0...@uipath/apollo-react@6.64.0) (2026-09-29)
+
+### Features
+
+* **apollo-react:** add generate file built-in tool icon to agent canvas ([f60bdac](https://github.com/UiPath/apollo-ui/commit/f60bdac85d06fef1018a8ba6a9cd8f015fe7dcd2))
+
 ## [@uipath/apollo-react-v6.63.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.62.0...@uipath/apollo-react@6.63.0) (2026-09-29)
 
 ### Features
