@@ -143,7 +143,7 @@ overlay, so it works over any background.
 
 - Surfaces that scroll draw their own vertical fades.
 - An occupant that scrolls part of its content, like a wide table, uses
-  `useScrollFade()` from `@uipath/use-scroll-fade` with the axis that part
+  `useScrollFade()` from `@uipath/use-scroll-fade` with the `axis` that part
   scrolls on, and the matching mask:
 
 | Axis | Mask | Edges that fade |
@@ -154,6 +154,16 @@ overlay, so it works over any background.
 
 Left and right are physical edges. In right-to-left content, the fades follow
 where the content remains.
+
+Keyboard users have to be able to scroll too:
+
+- A surface that scrolls takes keyboard focus while its content scrolls, and
+  drops out of the tab order when it fits. Pass `focusable: true` to
+  `useScrollFade()` for the same behaviour in an occupant, unless its content
+  already has focusable elements.
+- A mask hides anything painted outside the element, focus rings included.
+  Draw a focusable scroll container's ring on an unmasked parent, as the side
+  panel and content area do.
 
 ## Data attributes
 

@@ -15,7 +15,7 @@ const SURFACES = {
   start:
     "[data-surface=side-panel][data-side=start] > [data-slot=side-panel-body]",
   end: "[data-surface=side-panel][data-side=end] > [data-slot=side-panel-body]",
-  main: "[data-surface=content-area]",
+  main: "[data-slot=content-area-body]",
 };
 const LONG =
   "start-panel-content=long&main-content=long&end-panel-content=long";
@@ -239,4 +239,27 @@ test("Long content and Scrolls round-trip through the URL and the card", async (
     .getByRole("radio", { name: "On" })
     .click();
   await expect.poll(() => search(page)).toContain("start-panel-content=long");
+});
+
+test("a surface that scrolls takes keyboard focus, with its ring on the unmasked parent; one that fits doesn't", async ({
+  page,
+}) => {
+  await openPreview(page, `?${LONG}`);
+  for (const selector of Object.values(SURFACES)) {
+    const body = page.locator(selector);
+    await expect(body).toHaveAttribute("tabindex", "0");
+    await body.focus();
+    const ring = await body.evaluate((el) => ({
+      focusVisible: el.matches(":focus-visible"),
+      parentShadow: getComputedStyle(el.parentElement!).boxShadow,
+      parentMask: getComputedStyle(el.parentElement!).maskImage,
+    }));
+    expect(ring.focusVisible).toBe(true);
+    expect(ring.parentShadow).not.toBe("none");
+    expect(ring.parentMask).toBe("none");
+  }
+  await openPreview(page);
+  for (const selector of Object.values(SURFACES)) {
+    await expect(page.locator(selector)).not.toHaveAttribute("tabindex", /.*/);
+  }
 });

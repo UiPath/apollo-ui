@@ -9,17 +9,26 @@ import { SurfaceProvider, useSurfaceFrame } from "@/lib/surface-context";
 import { cn } from "@/lib/utils";
 import { contentAreaSurface } from "./content-area.surface";
 
-// The root is also the inner area: an inline-size container, and what
-// useSurface() measures.
+// The root draws the focus ring: the body's mask would hide its own.
 const contentAreaVariants = cva(
-  "@container flex h-full min-h-0 min-w-0 flex-1 flex-col",
+  [
+    "flex h-full min-h-0 min-w-0 flex-1 flex-col",
+    "has-[>[data-slot=content-area-body]:focus-visible]:ring-2 has-[>[data-slot=content-area-body]:focus-visible]:ring-inset has-[>[data-slot=content-area-body]:focus-visible]:ring-ring",
+  ].join(" "),
+);
+
+// The body is the inner area: it holds the padding, is the inline-size
+// container and what useSurface() measures, and, when the surface owns
+// scrolling, is the scroll container with the fade mask. Content-area has no
+// background, so masking the body fades only content.
+const contentAreaBodyVariants = cva(
+  "@container flex min-h-0 min-w-0 flex-1 flex-col outline-none",
   {
     variants: {
       padding: {
         padded: "p-(--surface-inset)",
         flush: "p-0",
       },
-      // Content-area has no background, so the mask sits on it directly.
       scroll: {
         surface: ["overflow-y-auto", SCROLL_FADE_MASK].join(" "),
         occupant: "overflow-hidden",
@@ -53,25 +62,34 @@ function ContentArea({
 }: ContentAreaProps) {
   const frame = useSurfaceFrame<HTMLDivElement>(
     contentAreaSurface.provides.orientation,
-    ref,
   );
-  const rootRef = useScrollFade<HTMLDivElement>(
+  // While it scrolls, the body takes keyboard focus so it can be scrolled.
+  const bodyRef = useScrollFade<HTMLDivElement>(
     scroll === "surface",
     frame.ref,
+    {
+      focusable: true,
+    },
   );
   return (
     <div
-      ref={rootRef}
+      ref={ref}
       data-surface="content-area"
       data-padding={padding}
       data-scroll={scroll}
-      className={cn(contentAreaVariants({ padding, scroll }), className)}
+      className={cn(contentAreaVariants(), className)}
       {...props}
     >
-      <SurfaceProvider value={frame.value}>{children}</SurfaceProvider>
+      <div
+        ref={bodyRef}
+        data-slot="content-area-body"
+        className={contentAreaBodyVariants({ padding, scroll })}
+      >
+        <SurfaceProvider value={frame.value}>{children}</SurfaceProvider>
+      </div>
     </div>
   );
 }
 
-export { ContentArea, contentAreaVariants };
+export { ContentArea, contentAreaBodyVariants, contentAreaVariants };
 export type { ContentAreaProps };
