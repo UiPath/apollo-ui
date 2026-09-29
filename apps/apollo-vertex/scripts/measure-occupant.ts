@@ -7,12 +7,16 @@
  * minWidth at or above the floor: above it when the occupant gets hard to
  * read before it breaks.
  *
+ *   --apply      set minWidth to the measured floor
+ *   --set <px>   set minWidth to a chosen width, at or above the floor, with
+ *   --reason <text>  why it's above the floor (written as the spec's comment)
+ *
  * Uses the running dev server on port 3000, or starts one (Playwright's
  * webServer).
  */
 
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readdirSync, readFileSync } from "node:fs";
+import { mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -72,10 +76,8 @@ if (results.length === 0) {
   console.error("measure:occupant: the measuring run wrote no results.");
   process.exit(1);
 }
-const spec = readFileSync(
-  join(root, `registry/${name}/${name}.occupant.ts`),
-  "utf8",
-);
+const specPath = join(root, `registry/${name}/${name}.occupant.ts`);
+const spec = readFileSync(specPath, "utf8");
 const declared = Number(spec.match(/minWidth:\s*(\d+)/)?.[1] ?? Number.NaN);
 
 const floorText = (r: (typeof results)[number]) =>
@@ -126,6 +128,56 @@ const worst = results.find(
 console.log(
   `\nMeasured floor: ${floor}px (${worst?.surface}, ${worst?.example}). Declared minWidth: ${declared}px.`,
 );
+const setArg = process.argv.indexOf("--set");
+const chosen = process.argv.includes("--apply")
+  ? floor
+  : setArg === -1
+    ? null
+    : Number(process.argv[setArg + 1]);
+if (chosen !== null) {
+  if (!Number.isInteger(chosen) || chosen < floor) {
+    console.error(
+      `measure:occupant: --set needs a whole number of px at or above the floor (${floor}).`,
+    );
+    process.exit(1);
+  }
+  const reasonArg = process.argv.indexOf("--reason");
+  const reason =
+    chosen === floor
+      ? "The measured floor, from pnpm measure:occupant."
+      : reasonArg === -1
+        ? null
+        : process.argv[reasonArg + 1];
+  if (!reason) {
+    console.error(
+      "measure:occupant: --set above the floor needs --reason, saying why it's wider.",
+    );
+    process.exit(1);
+  }
+  // Replace the comment right above `requires` with the reason, wrapped.
+  const lines = spec
+    .replace(/minWidth:\s*\d+/, `minWidth: ${chosen}`)
+    .split("\n");
+  const at = lines.findIndex((line) => /^\s*requires:/.test(line));
+  let top = at;
+  while (top > 0 && /^\s*\/\//.test(lines[top - 1] ?? "")) top--;
+  const indent = lines[at]?.match(/^\s*/)?.[0] ?? "  ";
+  const wrapped: string[] = [];
+  let current = "";
+  for (const word of reason.split(/\s+/)) {
+    if (`${indent}// ${current} ${word}`.length > 80 && current) {
+      wrapped.push(`${indent}// ${current}`);
+      current = word;
+    } else current = current ? `${current} ${word}` : word;
+  }
+  if (current) wrapped.push(`${indent}// ${current}`);
+  lines.splice(top, at - top, ...wrapped);
+  writeFileSync(specPath, lines.join("\n"));
+  console.log(
+    `Set minWidth to ${chosen}px in registry/${name}/${name}.occupant.ts.`,
+  );
+  process.exit(0);
+}
 if (declared < floor) {
   console.log(
     `Too small: it clips between ${declared}px and ${floor}px. Set minWidth to at least ${floor}.`,

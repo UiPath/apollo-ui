@@ -1,109 +1,179 @@
 ---
 name: create-occupant
-description: Use when someone wants to create a new occupant in apollo-vertex (content that goes inside a surface such as a side panel, content area, or page header). Walks them through the occupant spec in plain language, runs pnpm create:occupant, then runs the occupant checks and explains any failures.
+description: Use when someone wants to create a new occupant in apollo-vertex (content that goes inside a surface such as a side panel, content area, or page header). Drafts the neutral view model from what the occupant shows, asks the spec questions in plain language, runs pnpm create:occupant, writes both example adapters and all copy, measures the minimum width, and runs the occupant checks until nothing is left to fill in.
 ---
 
 # Create an occupant
 
 An occupant is a pattern that goes inside a surface. Its spec says what space
 it needs; it never names a template or a domain. The reasoning behind every
-question below is on the docs page **Guidelines > Creating occupants**
+step is on **Guidelines > Creating occupants**
 (`apps/apollo-vertex/app/guidelines/creating-occupants/page.mdx`). Point the
 person there when they want the why.
 
 Work in `apps/apollo-vertex`, on a branch that has `scripts/create-occupant.ts`.
 
-## 1. Ask the spec questions
+**The goal is nothing left for the person to fill in.** You write the view
+model, the copy, the descriptions, and both example adapters from the
+conversation. The generator marks anything unknown with a placeholder token,
+and `pnpm check:placeholders` must pass before you're done.
 
-Ask these one at a time, in plain language. Don't assume a domain: never
-suggest invoices, claims, loans, or any other business example unless the
-person brings one up. Offer the default in brackets.
+Never suggest invoices, claims, loans, or any other business example unless
+the person brings one up. Ask about the content, not where it comes from.
 
-1. **Name.** "What's a short name for it, lowercase with hyphens, like
-   `key-facts`?" It must be new: check that `registry/<name>` doesn't exist.
-2. **Label.** "What should people call it in docs and pickers?"
-3. **What it shows.** "In a sentence, what does it show?" You'll use this for
-   the docs page and to shape the view model. Ask for the shape of the
-   content (a list, pairs of labels and values, a sequence of steps), not
-   where the data comes from.
-4. **Shape of space.** "Does it work in a column that grows downward, like a
-   side panel (vertical), in a wide, short band, like a page header
-   (horizontal), or both?" If they want both, check: "Does the smaller
-   version show the same information, or less?" If less, that's two
-   occupants that share a view model; suggest creating the larger one first.
-5. **Narrowest width.** "What's the narrowest width, in pixels, where this
-   still works?" It's a first guess: the checks measure the real floor.
-6. **Padding.** "Should it sit inside the surface's padding, or run edge to
-   edge?" (padded or flush)
-7. **Scrolling.** "When there's more content than fits, should the surface
-   scroll it, or does it scroll itself, like a table with a sticky header?"
-   (surface, occupant, or either)
-8. **Built from a surface's parts.** "Is it built from one surface's own
-   parts, so it only works there?" Usually no.
-9. **Icon.** "Which lucide icon stands for it?" Check the name exists in
-   `lucide-react`.
+## 1. What it shows, and its view model
 
-Summarize the answers back and confirm before running anything.
+Ask: "In a sentence or two, what does it show?" Then ask about the shape of
+each item: "What does each one have? A name, a short label, a value, a
+note, a time?"
 
-## 2. Run the generator
+Draft the view model as JSON and show it to the person. Field names describe
+the content, never a business ("title", "owner", "dueAt", not "invoiceTotal").
 
-```bash
-pnpm create:occupant <name> --label "<label>" --icon <Icon> \
-  --orientations <vertical|horizontal|both> --min-width <px> \
-  --padding <padded|flush> --scroll <surface|occupant|either> \
-  --surfaces <none|page-header|side-panel|content-area>
+```json
+{
+  "item": "PascalCaseItemName",
+  "collection": "camelCaseListName",
+  "subject": "What the list is about, for accessible names.",
+  "fields": [
+    { "name": "name", "kind": "title", "description": "One sentence." },
+    { "name": "role", "kind": "detail", "optional": true, "description": "One sentence." }
+  ]
+}
 ```
 
-Passing every answer as a flag keeps it non-interactive. Tell the person what
-it wrote and registered (its output lists both).
+Pick each field's kind from how it should behave, and say why in plain terms:
 
-## 3. Shape it
+- `title`: the item's main text; wraps.
+- `label`: a short single line; truncates, with the full text in a title.
+- `value`: the value in a label and value pair; shows "Not set" when empty.
+- `detail`: secondary text; wraps.
+- `meta`: small text, like a time; wraps.
 
-The generator writes stubs. With the person:
+Mark a field optional when some items won't have it. Every field needs a
+one-sentence description: it becomes the view model's doc comment and the
+docs page's field table. Confirm the draft, then save it to a file in the
+scratchpad (or a temp directory), not in the repo.
 
-- Replace the view model stub in `registry/<name>/<name>.view-model.ts` with
-  the real shape of the content. Keep it neutral: field names describe the
-  content, not a business.
-- Update `registry/<name>/<name>.tsx` to render it. Registry components can't
-  have literal text: put copy in `locales/en.json` (English only, keys in
-  alphabetical order) and use `t()`.
-- Update both adapters in `examples/`. Add a second example adapter from a
-  different domain. Keep the stress adapter hard: very long values, long
-  unbroken tokens, many items, and missing or empty optional values.
-- Truncate single-line labels (with the full text in `title`) and wrap
-  everything else, so the minimum width holds for any data.
-- Fill in `app/patterns/<name>/page.mdx`.
+## 2. The spec questions
 
-## 4. Run the checks
+Ask one at a time, with the default in brackets:
+
+1. **Name.** "What's a short name for it, lowercase with hyphens, like
+   `key-facts`?" Check that `registry/<name>` doesn't exist.
+2. **Label.** "What should people call it in docs and pickers?"
+3. **Shape of space.** "Does it work in a column that grows downward, like a
+   side panel (vertical), in a wide, short band, like a page header
+   (horizontal), or both?" If both: "Does the smaller version show the same
+   information, or less?" Less means two occupants sharing a view model;
+   build the larger one first.
+4. **Narrowest width.** "What's the narrowest width, in pixels, where this
+   still works?" A first guess: you'll measure it in step 5.
+5. **Padding.** "Inside the surface's padding, or edge to edge?" (padded or
+   flush)
+6. **Scrolling.** "When there's more than fits, should the surface scroll it,
+   or does it scroll itself, like a table with a sticky header?" (surface,
+   occupant, or either)
+7. **Built from a surface's parts.** "Is it built from one surface's own
+   parts, so it only works there?" Usually no.
+8. **Icon.** Propose a lucide icon that fits, and check it exists in
+   `lucide-react`.
+
+Then draft, from the conversation, and confirm:
+
+- **Description:** one sentence on what it shows. It becomes the doc
+  comment, the registry description, and the docs page's opening.
+- **Subject:** a lowercase noun for its messages ("participants").
+- **Empty message:** one sentence about what will appear here.
+- **Two domains:** ask "Name two quite different places this data could come
+  from." If they don't have two, propose two unrelated ones and confirm.
+
+## 3. Generate
+
+Pass every answer, so nothing is asked twice:
 
 ```bash
+pnpm create:occupant <name> --view-model <file.json> \
+  --label "<label>" --description "<sentence>" --icon <Icon> \
+  --orientations <vertical|horizontal|both> --min-width <px> \
+  --padding <padded|flush> --scroll <surface|occupant|either> \
+  --surfaces <none|page-header|side-panel|content-area> \
+  --subject "<noun>" --empty "<sentence>" \
+  --primary-domain "<domain>" --secondary-domain "<domain>"
+```
+
+It lists anything still to fill in. With every flag given, that's only the
+two example adapters.
+
+## 4. Write both example adapters
+
+Replace `registry/<name>/examples/primary.example-adapter.ts` and
+`secondary.example-adapter.ts`. Each one, for its domain:
+
+- A record type shaped the way that domain would store it: its own field
+  names and types, not the view model's.
+- A function that maps the record to the view model, formatting values
+  (dates, money, units) for display and leaving optional fields out when the
+  record has none.
+- Realistic sample data: three to six items, with at least one optional
+  field missing.
+- A header comment: "EXAMPLE ADAPTER (primary|secondary). Not shipped: it
+  shows how a solution (<domain>) maps its own data into the <label> view
+  model. Adapters belong to solutions."
+- Export the mapped view model as `PRIMARY` or `SECONDARY`.
+
+Leave `stress.example-adapter.ts` and `examples/index.ts` as generated.
+
+## 5. Measure the minimum width
+
+```bash
+pnpm measure:occupant <name>
+```
+
+It reports the floor for each example in each surface. Decide with the
+person: the floor itself, or a wider minimum when the occupant gets hard to
+read before it clips. Then write it:
+
+```bash
+pnpm measure:occupant <name> --apply
+pnpm measure:occupant <name> --set <px> --reason "<why it's wider than the floor>"
+```
+
+Both update the spec and the comment above `requires`.
+
+## 6. Run the checks
+
+```bash
+pnpm check:placeholders
 pnpm generate:occupants --check
-npx vitest run tests/unit/occupant-specs.test.ts
-pnpm exec playwright test --project=core occupants -g "<name>"
+npx vitest run
+pnpm exec playwright test --project=core occupants docs -g "<name>"
 pnpm exec playwright test --project=full occupants -g "<name>"
 pnpm lint && pnpm lint:deps && npx tsc --noEmit -p .
 ```
 
-Explain failures in plain language:
+Explain failures in plain language, fix them, and run again:
 
+- **"Unfilled placeholders":** something wasn't written. Fill it in from the
+  conversation.
 - **"clipped" or "outside" at a width:** something doesn't fit at that width.
-  Either the occupant needs to truncate or wrap that element, or the
-  minimum width is too small. Find the narrowest width where it passes for
-  every example: that's the measured floor. Set `minWidth` at or above it.
+  Wrap or truncate that element, or raise the minimum to the measured floor.
 - **"truncated without a title":** a truncated element needs its full text in
-  a `title` attribute.
-- **An axe violation:** name the rule (for example `color-contrast` or
-  `scrollable-region-focusable`), which element, and the fix.
-- **"claims at least one surface" or the spec unit test:** the orientations
-  and scroll rule out every surface, or the spec is missing a label, a
-  stress example, or a whole-number minimum width.
+  a `title`.
+- **An axe violation:** name the rule (for example `color-contrast`), the
+  element, and the fix.
+- **The registry dependency check:** the item's `registryDependencies` or
+  `dependencies` don't match its imports. Add or remove the listed ones.
+- **The spec unit test:** the orientations and scroll rule out every surface,
+  or an example role is missing.
 - **Stale occupant index:** run `pnpm generate:occupants`.
-- **Dependency rule:** occupant code imported from `examples/`, `templates/`,
-  or `app/`. Occupants never depend on those.
+- **A dependency rule:** occupant code imported from `examples/`,
+  `templates/`, or `app/`.
 
-## 5. See it
+## 7. Done
 
-A new docs page won't show until the dev server rebuilds its page list: stop
-the dev server, run `rm -rf .next/dev`, and start it again. Then open
-`/patterns/<name>`. Don't restart a dev server the person started without
-asking.
+Done means every check passes, including `pnpm check:placeholders`, with
+nothing left for the person to write. Then tell them: a new docs page won't
+show until the dev server rebuilds its page list, so they should stop it, run
+`rm -rf .next/dev`, and start it again, before opening `/patterns/<name>`.
+Don't restart a dev server the person started without asking.

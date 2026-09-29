@@ -10,7 +10,7 @@ export const keyFactsOccupant = {
   label: "Key facts",
   icon: Info,
   orientations: ["vertical", "horizontal"],
-  // Measured floor: 128px in a horizontal surface (8rem columns), less in a
-  // vertical one. Declared above it so a value's words don't wrap one per line.
+  // Above the 128px floor in a horizontal surface so a value's words don't wrap
+  // one per line.
   requires: { minWidth: 160, padding: "padded", scroll: "either" },
 } as const satisfies OccupantSpec;
