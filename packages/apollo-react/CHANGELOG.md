@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.64.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.64.0...@uipath/apollo-react@6.64.1) (2026-09-29)
+
+### Bug Fixes
+
+* **apollo-react:** keep auto-routed loop-back edges from closing into a box ([112b6e5](https://github.com/UiPath/apollo-ui/commit/112b6e5fe61c75c811216627948593fcbffabf1f))
+
 ## [@uipath/apollo-react-v6.64.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.63.0...@uipath/apollo-react@6.64.0) (2026-09-29)
 
 ### Features
