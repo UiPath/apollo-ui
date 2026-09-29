@@ -114,6 +114,36 @@ When an occupant shows actions, at most one is recommended:
 
 The recommendation comes from the view model, so the solution decides it.
 
+## Create one with the generator
+
+```bash
+pnpm create:occupant key-facts
+```
+
+It asks what the spec needs, in plain terms: a label, an icon, the shape of
+space it works in, the narrowest width where it still works, padding, who
+scrolls, and whether it's built from one surface's own parts. Pass any answer
+as a flag instead (`--label`, `--icon`, `--orientations`, `--min-width`,
+`--padding`, `--scroll`, `--surfaces`), or `--yes` for the defaults.
+
+It writes, in `registry/<name>/`:
+
+- `<name>.occupant.ts`: the spec.
+- `<name>.view-model.ts`: a neutral view model to replace with the real shape.
+- `<name>.tsx`: the component, wrapped in `<Occupant>`, with the standard
+  states wired in, and reading `useSurface()` when it claims both
+  orientations.
+- `examples/`: an example adapter and a stress adapter. Neither is shipped.
+
+It also writes a Patterns page with the "Where it fits" table, and registers
+the occupant: a registry item, a path alias, the Patterns nav, its copy in
+`locales/en.json`, and the occupant index. The checks, the docs, and any
+preview with occupant pickers read the index, so there's nothing else to wire
+up.
+
+A new docs page doesn't show until the dev server rebuilds its page list:
+stop the dev server, run `rm -rf .next/dev`, and start it again.
+
 ## Checks
 
 Every registered occupant is checked automatically, in every surface it
