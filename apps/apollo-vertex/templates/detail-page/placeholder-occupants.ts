@@ -13,6 +13,8 @@ export function placeholderOccupant(
   return {
     name: "placeholder",
     label,
+    // A dashed box works in any shape of space.
+    orientations: ["horizontal", "vertical"],
     requires: { minWidth: 0, scroll, padding },
   };
 }

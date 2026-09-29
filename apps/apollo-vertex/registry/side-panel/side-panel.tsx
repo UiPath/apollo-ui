@@ -5,7 +5,9 @@ import * as React from "react";
 
 import { SCROLL_FADE_MASK, useScrollFade } from "@/hooks/use-scroll-fade";
 import type { ScrollOwner, SurfacePadding } from "@/lib/composition";
+import { SurfaceProvider, useSurfaceFrame } from "@/lib/surface-context";
 import { cn } from "@/lib/utils";
+import { sidePanelSurface } from "./side-panel.surface";
 
 // The background follows placement only, so the rules are !important:
 // neither a className nor an inline style can set it. Beside-header panels
@@ -20,8 +22,9 @@ const sidePanelVariants = cva(
 
 // The body holds the padding and, when the surface owns scrolling, is the
 // scroll container with the fade mask. It is separate from the panel so the
-// mask fades the content, never the panel's tint.
-const sidePanelBodyVariants = cva("flex min-h-0 flex-1 flex-col", {
+// mask fades the content, never the panel's tint. It is the inner area: an
+// inline-size container, and what useSurface() measures.
+const sidePanelBodyVariants = cva("@container flex min-h-0 flex-1 flex-col", {
   variants: {
     padding: {
       padded: "p-(--surface-inset)",
@@ -79,7 +82,13 @@ function SidePanel({
   children,
   ...props
 }: SidePanelProps) {
-  const fadeRef = useScrollFade<HTMLDivElement>(scroll === "surface");
+  const frame = useSurfaceFrame<HTMLDivElement>(
+    sidePanelSurface.provides.orientation,
+  );
+  const bodyRef = useScrollFade<HTMLDivElement>(
+    scroll === "surface",
+    frame.ref,
+  );
   const slot = React.useContext(SidePanelSlotContext);
   const open = openProp ?? slot?.open ?? true;
   const placement = slot?.placement ?? "below-header";
@@ -95,11 +104,11 @@ function SidePanel({
       {...props}
     >
       <div
-        ref={fadeRef}
+        ref={bodyRef}
         data-slot="side-panel-body"
         className={sidePanelBodyVariants({ padding, scroll })}
       >
-        {children}
+        <SurfaceProvider value={frame.value}>{children}</SurfaceProvider>
       </div>
     </aside>
   );

@@ -21,6 +21,7 @@ navigation, the AI assistant, activity history, a source document.
 
 | | |
 | --- | --- |
+| Shape | <Code>{sidePanelSurface.provides.orientation}</Code>: a column that grows downward. |
 | Width | Set by the slot. The surface's own minimum is {sidePanelSurface.width.min}px. |
 | Inner width | {sidePanelSurface.provides.width.min}px at the minimum when padded. On the Detail page: start {START_PANEL_WIDTH.default - 2 * PADDED_INSET_PX}px, end {END_PANEL_WIDTH.default - 2 * PADDED_INSET_PX}px at its default. |
 | Padding | `padded` ({PADDED_INSET_PX}px) or `flush` |
@@ -32,6 +33,7 @@ navigation, the AI assistant, activity history, a source document.
 | --- | --- |
 | `name` | <Code>{sidePanelSurface.name}</Code> |
 | `width.min` | {sidePanelSurface.width.min}px (`--side-panel-width-min`) |
+| `provides.orientation` | <Code>{sidePanelSurface.provides.orientation}</Code> |
 | `provides.width.min` | {sidePanelSurface.provides.width.min}px |
 | `provides.scroll` | <Code>{sidePanelSurface.provides.scroll}</Code> |
 | `data-surface` | `side-panel` |

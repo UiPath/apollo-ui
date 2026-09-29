@@ -7,6 +7,7 @@ export const contentAreaSurface = {
   width: { min: LAYOUT_TOKENS.contentAreaWidthMin },
   // Inner width at the minimum, less the padded inset on both sides.
   provides: {
+    orientation: "vertical",
     width: { min: LAYOUT_TOKENS.contentAreaWidthMin - 2 * PADDED_INSET_PX },
     scroll: "either",
   },

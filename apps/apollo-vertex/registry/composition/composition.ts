@@ -49,8 +49,17 @@ export type SurfacePadding = "padded" | "flush";
  */
 export const PADDED_INSET_PX = LAYOUT_TOKENS.surfaceInset;
 
+/**
+ * The shape of the space a surface gives its occupant. "horizontal" is a
+ * wide, short band that doesn't grow downward (the page header).
+ * "vertical" is a column that grows downward and can scroll (side panels,
+ * main). Occupants adapt to this shape, never to the surface's name.
+ */
+export type SurfaceOrientation = "horizontal" | "vertical";
+
 /** The space a surface gives whatever sits inside it. */
 export interface SurfaceEnvelope {
+  orientation: SurfaceOrientation;
   /**
    * Inline size in px given to a padded occupant, after the inset. A flush
    * occupant gets PADDED_INSET_PX more on each side. Omit `max` when the
@@ -121,6 +130,8 @@ export interface OccupantSpec<TName extends string = string> {
    * made of PageHeader parts) lists only that surface.
    */
   surfaces?: readonly string[];
+  /** The surface orientations the occupant works in. Defaults to ["vertical"]. */
+  orientations?: readonly SurfaceOrientation[];
   requires: OccupantRequirements;
 }
 
@@ -158,6 +169,13 @@ export function slotAccepts(slot: SlotSpec, surface: SurfaceSpec): boolean {
 /** The padding a surface should apply for an occupant. */
 export function occupantPadding(occupant: OccupantSpec): SurfacePadding {
   return occupant.requires.padding ?? "padded";
+}
+
+/** The orientations an occupant works in, with the default applied. */
+export function occupantOrientations(
+  occupant: OccupantSpec,
+): readonly SurfaceOrientation[] {
+  return occupant.orientations ?? ["vertical"];
 }
 
 /**
@@ -219,6 +237,7 @@ export interface FitResult {
  *   minWidth (padding has no check of its own: every surface takes both
  *   paddings, and padding changes the inner width);
  * - the scroll owners agree (scrollCompatible);
+ * - the occupant works in the surface's orientation;
  * - the occupant works in this surface, when it lists its surfaces.
  */
 export function fits(
@@ -242,6 +261,13 @@ export function fits(
   if (!scrollCompatible(surface.provides.scroll, needsScroll)) {
     reasons.push(
       `Needs ${needsScroll} scrolling; ${surface.name} supports ${surface.provides.scroll} only.`,
+    );
+  }
+  const orientations = occupantOrientations(occupant);
+  const { orientation } = surface.provides;
+  if (!orientations.includes(orientation)) {
+    reasons.push(
+      `Works only in ${orientations.join(" or ")} surfaces; ${surface.name} is ${orientation}.`,
     );
   }
   if (occupant.surfaces && !occupant.surfaces.includes(surface.name)) {

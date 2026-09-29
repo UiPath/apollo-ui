@@ -13,7 +13,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { SurfacePadding } from "@/lib/composition";
+import { SurfaceProvider, useSurfaceFrame } from "@/lib/surface-context";
 import { cn } from "@/lib/utils";
+import { pageHeaderSurface } from "./page-header.surface";
 
 const pageHeaderVariants = cva("", {
   variants: {
@@ -62,8 +64,17 @@ function PageHeader({
   size,
   padding,
   bordered = false,
+  ref,
+  children,
   ...props
 }: PageHeaderProps) {
+  // useSurface() reports the padded area's width. The container stays on the
+  // root: the header's own parts query it, and a second container on the
+  // padded area would move their breakpoints.
+  const frame = useSurfaceFrame<HTMLDivElement>(
+    pageHeaderSurface.provides.orientation,
+    ref,
+  );
   return (
     <div
       data-surface="page-header"
@@ -71,6 +82,7 @@ function PageHeader({
       className="@container shrink-0"
     >
       <div
+        ref={frame.ref}
         data-slot="page-header"
         data-size={size}
         className={cn(
@@ -79,7 +91,9 @@ function PageHeader({
           className,
         )}
         {...props}
-      />
+      >
+        <SurfaceProvider value={frame.value}>{children}</SurfaceProvider>
+      </div>
     </div>
   );
 }

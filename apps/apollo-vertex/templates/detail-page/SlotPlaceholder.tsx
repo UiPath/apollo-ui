@@ -1,5 +1,6 @@
 import type { OccupantSpec } from "@/lib/composition";
 import { occupantPadding } from "@/lib/composition";
+import { useSurface } from "@/lib/surface-context";
 import { cn } from "@/lib/utils";
 
 const LONG_ROWS = 40;
@@ -29,6 +30,7 @@ export function SlotPlaceholder({
   className,
 }: SlotPlaceholderProps) {
   const ownsScroll = occupant.requires.scroll === "occupant";
+  const space = useSurface();
   const hints = (
     <>
       <span className="text-sm font-medium text-foreground">
@@ -39,6 +41,12 @@ export function SlotPlaceholder({
       </span>
       <span className="font-mono text-xs text-muted-foreground">
         {`data-padding="${occupantPadding(occupant)}"`}
+      </span>
+      <span
+        data-slot="placeholder-space"
+        className="font-mono text-xs text-muted-foreground"
+      >
+        {`${space.orientation}, ${space.width ?? "?"}px`}
       </span>
     </>
   );
