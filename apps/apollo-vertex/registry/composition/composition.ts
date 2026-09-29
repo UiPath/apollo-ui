@@ -70,14 +70,21 @@ export interface SurfaceWidth {
 }
 
 /**
- * A slot's outer width range in px. `default` is what the slot renders at
- * (always, when not resizable); `max: "main"` means never wider than the
- * template's main slot. Must stay within the surface's own minimum.
+ * A slot's outer width range in px.
+ *
+ * - `min` is the width the slot always guarantees.
+ * - `default` is what a sized slot renders at (always, when not
+ *   resizable). Omit it for a slot that takes whatever space the layout
+ *   gives it, like a header that spans the page.
+ * - `max: "main"` means never wider than the template's main slot. Omit it
+ *   when there is no maximum.
+ *
+ * Must stay within the surface's own minimum.
  */
 export interface SlotWidth {
   min: number;
-  default: number;
-  max: number | "main";
+  default?: number;
+  max?: number | "main";
 }
 
 export interface SurfaceSpec<TName extends string = string> {
@@ -108,6 +115,12 @@ export interface OccupantSpec<TName extends string = string> {
   label: string;
   /** Optional icon for pickers and switchers, a lucide icon component. */
   icon?: LucideIcon;
+  /**
+   * The surfaces the occupant works in, by name. Omit it when any surface
+   * will do. An occupant built from one surface's parts (like an item header
+   * made of PageHeader parts) lists only that surface.
+   */
+  surfaces?: readonly string[];
   requires: OccupantRequirements;
 }
 
@@ -174,9 +187,10 @@ export function scrollCompatible(
 /**
  * The inner width, in px, an occupant with the given padding gets in a
  * slot. A slot with its own width uses its default (what it renders at,
- * and always for a slot that isn't resizable). Otherwise the surface's
- * inner minimum is all that is promised. A flush occupant gets the inset
- * back, except when that minimum is 0: no guarantee, nothing to add to.
+ * and always for a slot that isn't resizable), or its guaranteed minimum
+ * when it has no default. Otherwise the surface's inner minimum is all that
+ * is promised. A flush occupant gets the inset back, except when that
+ * minimum is 0: no guarantee, nothing to add to.
  */
 export function slotInnerWidth(
   slot: SlotSpec,
@@ -184,7 +198,7 @@ export function slotInnerWidth(
   padding: SurfacePadding,
 ): number {
   const inset = padding === "flush" ? 0 : 2 * PADDED_INSET_PX;
-  if (slot.width) return slot.width.default - inset;
+  if (slot.width) return (slot.width.default ?? slot.width.min) - inset;
   const min = surface.provides.width.min;
   return padding === "flush" && min > 0 ? min + 2 * PADDED_INSET_PX : min;
 }
@@ -204,7 +218,8 @@ export interface FitResult {
  * - the slot's inner width, with the occupant's padding, covers its
  *   minWidth (padding has no check of its own: every surface takes both
  *   paddings, and padding changes the inner width);
- * - the scroll owners agree (scrollCompatible).
+ * - the scroll owners agree (scrollCompatible);
+ * - the occupant works in this surface, when it lists its surfaces.
  */
 export function fits(
   slot: SlotSpec,
@@ -227,6 +242,11 @@ export function fits(
   if (!scrollCompatible(surface.provides.scroll, needsScroll)) {
     reasons.push(
       `Needs ${needsScroll} scrolling; ${surface.name} supports ${surface.provides.scroll} only.`,
+    );
+  }
+  if (occupant.surfaces && !occupant.surfaces.includes(surface.name)) {
+    reasons.push(
+      `Works only in ${occupant.surfaces.join(", ")}; this slot holds ${surface.name}.`,
     );
   }
   return { fits: reasons.length === 0, reasons };

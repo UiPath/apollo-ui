@@ -27,10 +27,25 @@ export const END_PANEL_WIDTH = {
   max: "main",
 } as const satisfies SlotWidth;
 
+/**
+ * Header: spans the page, so it has no default width of its own. It is
+ * always at least as wide as main, so it guarantees main's floor. (The one
+ * exception is the user's latest panel open squeezing main below its
+ * floor; see the main-width rule.)
+ */
+export const HEADER_WIDTH = {
+  min: contentAreaSurface.width.min,
+} as const satisfies SlotWidth;
+
 export const detailPageTemplate = {
   name: "detail-page",
   slots: [
-    { name: "header", required: true, surfaces: ["page-header"] },
+    {
+      name: "header",
+      required: true,
+      width: HEADER_WIDTH,
+      surfaces: ["page-header"],
+    },
     {
       name: "start-panel",
       required: false,
