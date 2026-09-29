@@ -1328,7 +1328,7 @@ describe('GuardrailValidatorForm', () => {
 
       fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '5' } });
 
-      expect(await screen.findByText('1 以下である必要があります')).toBeInTheDocument();
+      expect(await screen.findByText('最大 1 である必要があります。')).toBeInTheDocument();
       expect(screen.queryByText('Must be at most 1')).not.toBeInTheDocument();
     });
   });
