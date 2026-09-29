@@ -16,7 +16,11 @@
 
 import { LAYOUT_TOKENS } from "./layout-tokens";
 
-export { LAYOUT_TOKENS, SIDE_PANEL_TINT_STRENGTH } from "./layout-tokens";
+export {
+  LAYOUT_TOKENS,
+  PANEL_TRANSITION_DURATION_MS,
+  SIDE_PANEL_TINT_STRENGTH,
+} from "./layout-tokens";
 
 /**
  * Which layer owns overflow scrolling inside a surface. The owner is the
