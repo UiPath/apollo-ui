@@ -21,7 +21,7 @@ const read = (page: import("@playwright/test").Page) =>
         style(
           "[data-surface=side-panel][data-side=start] > [data-slot=side-panel-body]",
         ).paddingLeft,
-        style("[data-surface=content-area]").paddingTop,
+        style("[data-slot=content-area-body]").paddingTop,
         style("[data-slot=page-header]").paddingLeft,
       ],
       dividers: [

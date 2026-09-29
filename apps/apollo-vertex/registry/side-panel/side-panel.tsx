@@ -17,6 +17,8 @@ const sidePanelVariants = cva(
   [
     "flex h-full w-(--side-panel-width) min-h-0 shrink-0 flex-col [--side-panel-width:var(--side-panel-width-min)]",
     "bg-transparent! bg-none! data-[placement=beside-header]:bg-side-panel-tint!",
+    // The body's mask would hide its own focus ring, so the panel draws it.
+    "has-[>[data-slot=side-panel-body]:focus-visible]:ring-2 has-[>[data-slot=side-panel-body]:focus-visible]:ring-inset has-[>[data-slot=side-panel-body]:focus-visible]:ring-ring",
   ].join(" "),
 );
 
@@ -24,22 +26,25 @@ const sidePanelVariants = cva(
 // scroll container with the fade mask. It is separate from the panel so the
 // mask fades the content, never the panel's tint. It is the inner area: an
 // inline-size container, and what useSurface() measures.
-const sidePanelBodyVariants = cva("@container flex min-h-0 flex-1 flex-col", {
-  variants: {
-    padding: {
-      padded: "p-(--surface-inset)",
-      flush: "p-0",
+const sidePanelBodyVariants = cva(
+  "@container flex min-h-0 flex-1 flex-col outline-none",
+  {
+    variants: {
+      padding: {
+        padded: "p-(--surface-inset)",
+        flush: "p-0",
+      },
+      scroll: {
+        surface: ["overflow-y-auto", SCROLL_FADE_MASK].join(" "),
+        occupant: "overflow-hidden",
+      },
     },
-    scroll: {
-      surface: ["overflow-y-auto", SCROLL_FADE_MASK].join(" "),
-      occupant: "overflow-hidden",
+    defaultVariants: {
+      padding: "padded",
+      scroll: "surface",
     },
   },
-  defaultVariants: {
-    padding: "padded",
-    scroll: "surface",
-  },
-});
+);
 
 type SidePanelPlacement = "below-header" | "beside-header";
 
@@ -85,9 +90,13 @@ function SidePanel({
   const frame = useSurfaceFrame<HTMLDivElement>(
     sidePanelSurface.provides.orientation,
   );
+  // While it scrolls, the body takes keyboard focus so it can be scrolled.
   const bodyRef = useScrollFade<HTMLDivElement>(
     scroll === "surface",
     frame.ref,
+    {
+      focusable: true,
+    },
   );
   const slot = React.useContext(SidePanelSlotContext);
   const open = openProp ?? slot?.open ?? true;

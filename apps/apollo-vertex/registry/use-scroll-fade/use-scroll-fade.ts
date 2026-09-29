@@ -29,12 +29,26 @@ function attach<T>(ref: Ref<T> | undefined, node: T): () => void {
 /** Which way a container scrolls, so which edges can fade. */
 export type ScrollFadeAxis = "y" | "x" | "both";
 
+export interface ScrollFadeOptions {
+  /** Defaults to "y". */
+  axis?: ScrollFadeAxis;
+  /**
+   * Make the container keyboard focusable (tabindex="0") while its content
+   * scrolls, so keyboard users can scroll it. Leave off when the content has
+   * its own focusable elements or the container sets its own tabindex.
+   */
+  focusable?: boolean;
+}
+
 /**
  * Scroll fades for a scroll container. Returns a ref for the container;
  * pair it with the mask for its axis on the same element: SCROLL_FADE_MASK
  * ("y", the default), SCROLL_FADE_MASK_X ("x"), or SCROLL_FADE_MASK_BOTH
  * ("both"). Pass the component's own `ref` prop as `forwarded` and it is
  * attached too.
+ *
+ * A mask hides anything painted outside the element, focus rings included,
+ * so draw a focusable container's ring on an unmasked parent.
  *
  * Each edge fades only while there is more content in that direction, and
  * the fade grows with the distance left to scroll, up to --scroll-fade-size.
@@ -53,7 +67,7 @@ export type ScrollFadeAxis = "y" | "x" | "both";
 export function useScrollFade<T extends HTMLElement>(
   enabled = true,
   forwarded?: Ref<T>,
-  axis: ScrollFadeAxis = "y",
+  { axis = "y", focusable = false }: ScrollFadeOptions = {},
 ): RefCallback<T> {
   return (node: T | null) => {
     if (!node) return;
@@ -81,6 +95,13 @@ export function useScrollFade<T extends HTMLElement>(
             : node.scrollLeft;
         node.style.setProperty("--scroll-fade-left", clamp(fromLeft));
         node.style.setProperty("--scroll-fade-right", clamp(range - fromLeft));
+      }
+      if (focusable) {
+        const scrolls =
+          (vertical && node.scrollHeight > node.clientHeight + 1) ||
+          (horizontal && node.scrollWidth > node.clientWidth + 1);
+        if (scrolls) node.tabIndex = 0;
+        else node.removeAttribute("tabindex");
       }
     };
 
@@ -113,6 +134,7 @@ export function useScrollFade<T extends HTMLElement>(
       for (const edge of ["top", "bottom", "left", "right"]) {
         node.style.removeProperty(`--scroll-fade-${edge}`);
       }
+      if (focusable) node.removeAttribute("tabindex");
     };
   };
 }

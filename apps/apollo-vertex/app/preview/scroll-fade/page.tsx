@@ -28,7 +28,7 @@ interface ScrollBoxProps {
 
 /** A scroll container with solid content, so its fades show at each edge. */
 function ScrollBox({ axis }: ScrollBoxProps) {
-  const ref = useScrollFade<HTMLDivElement>(true, null, axis);
+  const ref = useScrollFade<HTMLDivElement>(true, null, { axis });
   return (
     <div
       ref={ref}

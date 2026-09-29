@@ -8,7 +8,7 @@ const read = (page: Page) =>
       header: "[data-slot=detail-page-header] [data-slot=page-header]",
       "start-panel":
         "[data-slot=detail-page-start-panel] [data-slot=side-panel-body]",
-      main: "[data-slot=detail-page-main] [data-surface=content-area]",
+      main: "[data-slot=detail-page-main] [data-slot=content-area-body]",
       "end-panel":
         "[data-slot=detail-page-end-panel] [data-slot=side-panel-body]",
     };
