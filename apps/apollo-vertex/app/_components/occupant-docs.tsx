@@ -7,18 +7,12 @@ import {
   occupantPadding,
 } from "@/lib/composition";
 import { OCCUPANT_SPECS, SURFACE_SPECS } from "@/lib/occupants.generated";
+import { surfaceLabel } from "@/lib/surface-labels";
 
 /*
  * Docs for occupants, generated from the specs. Nothing here is typed by
  * hand: a page shows what the spec says.
  */
-
-const SURFACE_LABELS: Record<string, string> = {
-  "page-header": "Page header",
-  "side-panel": "Side panel",
-  "content-area": "Content area",
-};
-const surfaceLabel = (name: string) => SURFACE_LABELS[name] ?? name;
 
 const specFor = (name: string) => {
   const entry = OCCUPANT_SPECS.find((o) => o.spec.name === name);

@@ -6,7 +6,6 @@ import {
 } from "@/lib/composition";
 import { activityTimelineOccupant } from "@/registry/activity-timeline/activity-timeline.occupant";
 import { contentAreaSurface } from "@/registry/content-area/content-area.surface";
-import { keyFactsOccupant } from "@/registry/key-facts/key-facts.occupant";
 import { pageHeaderSurface } from "@/registry/page-header/page-header.surface";
 import { sidePanelSurface } from "@/registry/side-panel/side-panel.surface";
 import { stageStripOccupant } from "@/registry/stage-strip/stage-strip.occupant";
@@ -15,6 +14,9 @@ import {
   MAIN_MIN_OUTER_PX,
   START_PANEL_WIDTH,
 } from "@/templates/detail-page/detail-page.template";
+import { fitsSurface, occupantOrientations } from "@/lib/composition";
+import { OCCUPANT_SPECS, SURFACE_SPECS } from "@/lib/occupants.generated";
+import { surfaceLabel } from "@/lib/surface-labels";
 import { expect, test } from "./fixtures";
 
 const px = (n: number) => `${n}px`;
@@ -47,7 +49,6 @@ const PAGES: Record<string, string[]> = {
     pageHeaderSurface.provides.orientation,
   ],
   "/surfaces/side-panel": [
-    `Activity timeline | ${px(activityTimelineOccupant.requires.minWidth)}`,
     px(sidePanelSurface.width.min),
     px(sidePanelSurface.provides.width.min),
     px(START_PANEL_WIDTH.default - 2 * PADDED_INSET_PX),
@@ -55,35 +56,38 @@ const PAGES: Record<string, string[]> = {
     `${SIDE_PANEL_TINT_STRENGTH}%`,
     sidePanelSurface.provides.orientation,
   ],
-  "/patterns/activity-timeline": [
-    "Occupant",
-    `Surfaces | Content area, Side panel`,
-    `Minimum width | ${px(activityTimelineOccupant.requires.minWidth)}`,
-    "Orientations | vertical",
-  ],
-  "/patterns/stage-strip": [
-    "Occupant",
-    "Surfaces | Page header",
-    `Minimum width | ${px(stageStripOccupant.requires.minWidth)}`,
-    "Orientations | horizontal",
-  ],
-  "/patterns/key-facts": [
-    "Occupant",
-    "Surfaces | Content area, Page header, Side panel",
-    `Minimum width | ${px(keyFactsOccupant.requires.minWidth)}`,
-    "Orientations | vertical, horizontal",
-  ],
   "/guidelines/creating-occupants": [
     px(stageStripOccupant.requires.minWidth),
     px(activityTimelineOccupant.requires.minWidth),
   ],
   "/surfaces/content-area": [
-    `Activity timeline | ${px(activityTimelineOccupant.requires.minWidth)}`,
     px(contentAreaSurface.width.min),
     px(contentAreaSurface.provides.width.min),
     contentAreaSurface.provides.orientation,
   ],
 };
+
+// Every registered occupant's page, and every surface's list of the occupants
+// that fit it, from the occupant index. A new occupant is checked with no edits.
+for (const { spec } of OCCUPANT_SPECS) {
+  const surfaces = SURFACE_SPECS.filter(
+    (surface) => fitsSurface(surface, spec).fits,
+  );
+  PAGES[`/patterns/${spec.name}`] = [
+    "Occupant",
+    `Surfaces | ${surfaces
+      .map((surface) => surfaceLabel(surface.name))
+      .toSorted()
+      .join(", ")}`,
+    `Minimum width | ${px(spec.requires.minWidth)}`,
+    `Orientations | ${occupantOrientations(spec).join(", ")}`,
+  ];
+  for (const surface of surfaces) {
+    PAGES[`/surfaces/${surface.name}`]?.push(
+      `${spec.label} | ${px(spec.requires.minWidth)}`,
+    );
+  }
+}
 
 for (const [path, values] of Object.entries(PAGES)) {
   test(`${path} renders its values from the specs, in plain language`, async ({
