@@ -14,8 +14,10 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { deepEqual, get } from '@/lib';
 
 import { DataFetcher } from './data-fetcher';
+import { buildFieldActionRegistry } from './field-actions';
 import { FormFieldRenderer } from './field-renderer';
 import type {
+  CustomComponents,
   CustomFieldComponentProps,
   DataSource,
   FieldCondition,
@@ -25,8 +27,20 @@ import type {
   FormSchema,
   FormSection as FormSectionType,
 } from './form-schema';
+import { buildFormStrings } from './form-strings';
+import { LiteralValueContext } from './literal-value-context';
 import { RulesEngine } from './rules-engine';
-import { isEmptyFieldValue, validationConfigToZod } from './validation-converter';
+import { type ModeValidator, modeAwareSchema, validationConfigToZod } from './validation-converter';
+import {
+  buildValueModeRegistry,
+  codecContext,
+  isEmptyModeValue,
+  literalValueOf,
+  literalValues,
+  resolveCodec,
+  type ValueModeCodec,
+  type ValueModeRegistry,
+} from './value-modes';
 
 // Re-exported so packages composing MetadataForm's custom fields (e.g. apollo-react's
 // guardrails) subscribe through the same react-hook-form instance — a second RHF copy
@@ -40,6 +54,11 @@ export { useWatch } from 'react-hook-form';
 
 export interface MetadataFormProps {
   schema: FormSchema;
+  /**
+   * Keep each plugin object stable (a module constant or memoized): a new plugin object rebuilds
+   * the registries, re-renders every field and, when its codecs or validators change, rebuilds the
+   * validation schema. A new array holding the same plugins is fine.
+   */
   plugins?: FormPlugin[];
   onSubmit?: (data: unknown) => void | Promise<void>;
   className?: string;
@@ -128,11 +147,38 @@ export function MetadataForm({
       ...(stableSchema.sections ?? []),
       ...(stableSchema.steps ?? []).flatMap((step) => step.sections),
     ];
-    return sections.some((section) => section.fields.some((field) => field.tooltip !== undefined));
+    // A header action can open a tooltip of its own (AI assist does).
+    return sections.some((section) =>
+      section.fields.some(
+        (field) =>
+          field.tooltip !== undefined || field.valueModes !== undefined || !!field.headerActions
+      )
+    );
   }, [stableSchema]);
 
-  // Build Zod schema from metadata
-  const zodSchema = useMemo(() => buildZodSchema(stableSchema), [stableSchema]);
+  // Registries are rebuilt only when a plugin is swapped, not when the host passes a new array
+  // holding the same plugins.
+  const stablePlugins = useShallowStable(plugins);
+  const valueModeRegistry = useMemo(() => buildValueModeRegistry(stablePlugins), [stablePlugins]);
+  const fieldActionRegistry = useMemo(
+    () => buildFieldActionRegistry(stablePlugins),
+    [stablePlugins]
+  );
+  const formStrings = useMemo(() => buildFormStrings(stablePlugins), [stablePlugins]);
+  const readLiteralValue = useCallback(
+    (name: string, stored: unknown) =>
+      literalValueOf(name, stored, stableSchema, valueModeRegistry.codecs),
+    [stableSchema, valueModeRegistry]
+  );
+
+  // Keyed on what validation reads alone: a plugin change that leaves it as it was keeps the schema.
+  const codecs = useShallowStable(valueModeRegistry.codecs);
+  const validators = useShallowStable(modeValidators(valueModeRegistry));
+  const requiredMessage = formStrings.validation.required;
+  const zodSchema = useMemo(
+    () => buildZodSchema(stableSchema, { codecs, validators, requiredMessage }),
+    [stableSchema, codecs, validators, requiredMessage]
+  );
 
   // Initialize React Hook Form
   const form = useForm<FieldValues>({
@@ -153,9 +199,13 @@ export function MetadataForm({
   const onSubmitRef = useRef(onSubmit);
   onSubmitRef.current = onSubmit;
 
-  // Build form context - STABLE reference (values accessed via ref/getters)
-  const context: FormContext = useMemo(
-    () => ({
+  // Build form context - STABLE reference (values accessed via ref/getters). It changes with the
+  // registries, so a swapped plugin reaches every field.
+  const context: FormContext = useMemo(() => {
+    // What conditions and data sources read: fields with value modes by their literal value.
+    const readValues = (values: Record<string, unknown>) =>
+      literalValues(values, stableSchema, valueModeRegistry.codecs);
+    return {
       schema: stableSchema,
       form,
       // Use getter to always return latest values without recreating context
@@ -174,10 +224,10 @@ export function MetadataForm({
       currentStep: stableSchema.steps ? currentStep : undefined,
 
       evaluateConditions: (conditions: FieldCondition[]) =>
-        RulesEngine.evaluateConditions(conditions, valuesRef.current, 'AND'),
+        RulesEngine.evaluateConditions(conditions, readValues(valuesRef.current), 'AND'),
 
       fetchData: async (source: DataSource) => {
-        const result = await DataFetcher.fetch(source, valuesRef.current);
+        const result = await DataFetcher.fetch(source, readValues(valuesRef.current));
         return result as FieldOption[];
       },
 
@@ -187,9 +237,12 @@ export function MetadataForm({
       ) => {
         setCustomComponents((prev) => ({ ...prev, [name]: component }));
       },
-    }),
-    [stableSchema, form, currentStep]
-  );
+
+      valueModes: valueModeRegistry,
+      fieldActions: fieldActionRegistry,
+      strings: formStrings,
+    };
+  }, [stableSchema, form, currentStep, valueModeRegistry, fieldActionRegistry, formStrings]);
 
   // Ref for context to use in useEffects without causing dependency loops
   const contextRef = useRef(context);
@@ -276,12 +329,12 @@ export function MetadataForm({
   // Custom components registered by plugins. `FormPlugin.components` is honoured from the
   // first render; `registerCustomComponent` entries win on name collisions once registered.
   const allCustomComponents = useMemo(() => {
-    const fromPlugins: Record<string, React.ComponentType<CustomFieldComponentProps>> = {};
-    for (const plugin of plugins) {
+    const fromPlugins: CustomComponents = {};
+    for (const plugin of stablePlugins) {
       Object.assign(fromPlugins, plugin.components);
     }
     return { ...fromPlugins, ...customComponents };
-  }, [plugins, customComponents]);
+  }, [stablePlugins, customComponents]);
 
   // Without an owning <form> the inputs still belong to whatever form the host wrapped us in,
   // so Enter would trigger *its* implicit submission. Swallow it for single-line controls
@@ -385,7 +438,9 @@ export function MetadataForm({
 
   return (
     <FormProvider {...form}>
-      {hasFieldTooltip ? <TooltipProvider>{body}</TooltipProvider> : body}
+      <LiteralValueContext.Provider value={readLiteralValue}>
+        {hasFieldTooltip ? <TooltipProvider>{body}</TooltipProvider> : body}
+      </LiteralValueContext.Provider>
     </FormProvider>
   );
 }
@@ -417,7 +472,7 @@ function useConditionDependencies(context: FormContext, conditionFields: string[
 interface SinglePageFormProps {
   schema: FormSchema;
   context: FormContext;
-  customComponents: Record<string, React.ComponentType<CustomFieldComponentProps>>;
+  customComponents: CustomComponents;
   disabled?: boolean;
   sectionVariant?: 'card' | 'plain';
 }
@@ -768,7 +823,7 @@ function TabbedStepForm({
 interface FormSectionProps {
   section: FormSectionType;
   context: FormContext;
-  customComponents: Record<string, React.ComponentType<CustomFieldComponentProps>>;
+  customComponents: CustomComponents;
   disabled?: boolean;
   sectionVariant?: 'card' | 'plain';
 }
@@ -988,7 +1043,25 @@ const FormActions = React.memo(function FormActions({
  * Falls back to type-based inference for fields without explicit validation.
  * Adds dynamic validation for conditional required fields using superRefine.
  */
-function buildZodSchema(schema: FormSchema): z.ZodObject<Record<string, z.ZodTypeAny>> {
+/** Each mode's `validate`, by mode id. */
+function modeValidators(registry: ValueModeRegistry): Record<string, ModeValidator> {
+  const validators: Record<string, ModeValidator> = {};
+  for (const [mode, definition] of Object.entries(registry.definitions)) {
+    if (definition?.validate) validators[mode] = definition.validate;
+  }
+  return validators;
+}
+
+interface ZodSchemaOptions {
+  codecs: Record<string, ValueModeCodec>;
+  validators: Record<string, ModeValidator>;
+  requiredMessage: string;
+}
+
+function buildZodSchema(
+  schema: FormSchema,
+  { codecs, validators, requiredMessage }: ZodSchemaOptions
+): z.ZodObject<Record<string, z.ZodTypeAny>> {
   const shape: Record<string, z.ZodTypeAny> = {};
 
   const fields = schema.steps
@@ -999,6 +1072,7 @@ function buildZodSchema(schema: FormSchema): z.ZodObject<Record<string, z.ZodTyp
   // 1. Fields with conditional required rules
   // 2. Fields with static required + conditional visibility (shouldn't validate when hidden)
   const dynamicValidationFields: Array<{
+    field: (typeof fields)[0];
     name: string;
     rules: NonNullable<(typeof fields)[0]['rules']>;
     staticRequired: boolean;
@@ -1031,6 +1105,7 @@ function buildZodSchema(schema: FormSchema): z.ZodObject<Record<string, z.ZodTyp
     // OR if field has conditional required rules (required state depends on other fields)
     if (field.rules && (hasConditionalRequired || (hasAnyRequired && hasVisibilityRules))) {
       dynamicValidationFields.push({
+        field,
         name: field.name,
         rules: field.rules,
         staticRequired: hasStaticRequired || hasUnconditionalRequired || false,
@@ -1044,18 +1119,37 @@ function buildZodSchema(schema: FormSchema): z.ZodObject<Record<string, z.ZodTyp
     const shouldIncludeRequiredInBase =
       (hasUnconditionalRequired || hasStaticRequired) && !hasVisibilityRules;
 
-    const validationConfig = field.validation
+    const baseValidation = field.validation
       ? { ...field.validation, required: shouldIncludeRequiredInBase }
       : shouldIncludeRequiredInBase
         ? { required: true }
         : undefined;
+    // The form's required message, under the field's own.
+    const validationConfig = baseValidation?.required
+      ? {
+          ...baseValidation,
+          messages: {
+            ...baseValidation.messages,
+            required: baseValidation.messages?.required || requiredMessage,
+          },
+        }
+      : baseValidation;
 
     // Convert to Zod schema using the converter
-    shape[field.name] = validationConfigToZod(
+    const fieldTypeSchema = validationConfigToZod(
       validationConfig,
       field.type,
       field.type === 'custom' ? field.valueType : undefined
     );
+    shape[field.name] = field.valueModes
+      ? modeAwareSchema(fieldTypeSchema, {
+          codec: resolveCodec(codecs, field.valueModes),
+          context: codecContext(field, field.valueModes),
+          required: shouldIncludeRequiredInBase,
+          requiredMessage: field.validation?.messages?.required ?? requiredMessage,
+          validators,
+        })
+      : fieldTypeSchema;
   });
 
   const baseSchema = z.object(shape);
@@ -1068,9 +1162,16 @@ function buildZodSchema(schema: FormSchema): z.ZodObject<Record<string, z.ZodTyp
   // Add dynamic validation for conditional required fields
   // Cast to maintain type compatibility with zodResolver
   return baseSchema.superRefine((data, ctx) => {
-    const values = data as Record<string, unknown>;
+    const stored = data as Record<string, unknown>;
+    const values = literalValues(stored, schema, codecs);
 
-    for (const { name, rules, staticRequired, customRequiredMessage } of dynamicValidationFields) {
+    for (const {
+      field,
+      name,
+      rules,
+      staticRequired,
+      customRequiredMessage,
+    } of dynamicValidationFields) {
       // Check if field is currently visible
       const isVisible = RulesEngine.isFieldVisible(rules, values);
 
@@ -1089,16 +1190,36 @@ function buildZodSchema(schema: FormSchema): z.ZodObject<Record<string, z.ZodTyp
 
       if (isRequired) {
         // Shared with the resolver's required check so the two paths cannot disagree.
-        if (isEmptyFieldValue(values[name])) {
+        if (isEmptyModeValue(stored[name], field, codecs)) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: customRequiredMessage || 'This field is required',
+            message: customRequiredMessage || requiredMessage,
             path: [name],
           });
         }
       }
     }
   }) as unknown as z.ZodObject<Record<string, z.ZodTypeAny>>;
+}
+
+/** `value` itself while it holds the same entries as last render, so memos keyed on it hold. */
+function useShallowStable<T extends readonly unknown[] | Record<string, unknown>>(value: T): T {
+  const ref = useRef(value);
+  if (!shallowEqual(ref.current, value)) ref.current = value;
+  return ref.current;
+}
+
+function shallowEqual(a: object, b: object): boolean {
+  if (a === b) return true;
+  const aKeys = Object.keys(a);
+  const bKeys = Object.keys(b);
+  return (
+    aKeys.length === bKeys.length &&
+    aKeys.every(
+      (key) =>
+        key in b && (a as Record<string, unknown>)[key] === (b as Record<string, unknown>)[key]
+    )
+  );
 }
 
 async function loadInitialData(
