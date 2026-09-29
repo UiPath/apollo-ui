@@ -4,9 +4,11 @@ import {
   PANEL_TRANSITION_DURATION_MS,
   SIDE_PANEL_TINT_STRENGTH,
 } from "@/lib/composition";
+import { activityTimelineOccupant } from "@/registry/activity-timeline/activity-timeline.occupant";
 import { contentAreaSurface } from "@/registry/content-area/content-area.surface";
 import { pageHeaderSurface } from "@/registry/page-header/page-header.surface";
 import { sidePanelSurface } from "@/registry/side-panel/side-panel.surface";
+import { stageStripOccupant } from "@/registry/stage-strip/stage-strip.occupant";
 import {
   END_PANEL_WIDTH,
   MAIN_MIN_OUTER_PX,
@@ -44,6 +46,7 @@ const PAGES: Record<string, string[]> = {
     pageHeaderSurface.provides.orientation,
   ],
   "/surfaces/side-panel": [
+    `Activity timeline | ${px(activityTimelineOccupant.requires.minWidth)}`,
     px(sidePanelSurface.width.min),
     px(sidePanelSurface.provides.width.min),
     px(START_PANEL_WIDTH.default - 2 * PADDED_INSET_PX),
@@ -51,7 +54,24 @@ const PAGES: Record<string, string[]> = {
     `${SIDE_PANEL_TINT_STRENGTH}%`,
     sidePanelSurface.provides.orientation,
   ],
+  "/patterns/activity-timeline": [
+    "Occupant",
+    `Surfaces | Content area, Side panel`,
+    `Minimum width | ${px(activityTimelineOccupant.requires.minWidth)}`,
+    "Orientations | vertical",
+  ],
+  "/patterns/stage-strip": [
+    "Occupant",
+    "Surfaces | Page header",
+    `Minimum width | ${px(stageStripOccupant.requires.minWidth)}`,
+    "Orientations | horizontal",
+  ],
+  "/guidelines/creating-occupants": [
+    px(stageStripOccupant.requires.minWidth),
+    px(activityTimelineOccupant.requires.minWidth),
+  ],
   "/surfaces/content-area": [
+    `Activity timeline | ${px(activityTimelineOccupant.requires.minWidth)}`,
     px(contentAreaSurface.width.min),
     px(contentAreaSurface.provides.width.min),
     contentAreaSurface.provides.orientation,

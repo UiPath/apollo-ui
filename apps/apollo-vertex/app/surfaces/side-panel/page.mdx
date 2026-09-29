@@ -1,3 +1,4 @@
+import { OccupantsThatFit } from '@/app/_components/occupant-docs';
 import { Code } from 'nextra/components';
 import {
   PADDED_INSET_PX,
@@ -49,6 +50,13 @@ On the Detail page:
 | --- | --- | --- | --- | --- |
 | Start panel | {START_PANEL_WIDTH.default}px | {START_PANEL_WIDTH.min}px | {START_PANEL_WIDTH.max}px | No |
 | End panel | {END_PANEL_WIDTH.default}px | {END_PANEL_WIDTH.min}px | Never wider than main | Yes |
+
+## Occupants that fit here
+
+<OccupantsThatFit surface="side-panel" />
+
+Generated from every registered occupant's spec. How wide one can be depends
+on the slot that holds this surface; see the template's width rules.
 
 ## Configurations
 

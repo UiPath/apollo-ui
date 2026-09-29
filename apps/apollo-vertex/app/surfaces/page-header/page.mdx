@@ -1,3 +1,4 @@
+import { OccupantsThatFit } from '@/app/_components/occupant-docs';
 import { Code } from 'nextra/components';
 import { PADDED_INSET_PX } from '@/lib/composition';
 import { pageHeaderSurface } from '@/registry/page-header/page-header.surface';
@@ -31,6 +32,13 @@ The top of a page: the title, back navigation, key fields, and page actions.
 | `provides.scroll` | <Code>{pageHeaderSurface.provides.scroll}</Code> |
 | `data-surface` | `page-header` |
 | `data-padding` | `padded` or `flush`, when a template sets it |
+
+## Occupants that fit here
+
+<OccupantsThatFit surface="page-header" />
+
+Generated from every registered occupant's spec. How wide one can be depends
+on the slot that holds this surface; see the template's width rules.
 
 ## Configurations
 
