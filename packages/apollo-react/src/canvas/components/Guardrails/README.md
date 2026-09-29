@@ -15,7 +15,8 @@ and escalation half), `GuardrailRulesSection` + `GuardrailFilterFieldSelector` (
 guardrail's rules and its filter action's fields), and `CentralizedGuardrailsSection` +
 `CentralizedGuardrailDetails` (the
 read-only governance guardrails a policy enforces), plus the leaves the sections compose:
-`GuardrailStatusChip`, `GuardrailStatusBanner` and `MixedScopesBanner`.
+`GuardrailStatusChip`, `GuardrailStatusBanner`, `GuardrailFileSupportIndicator` and
+`MixedScopesBanner`.
 `GuardrailScopeSelector`, the builder's scope and tool targeting field, is exported on its own
 too.
 
@@ -755,6 +756,38 @@ Both hosts adopt it behind the flags they already have:
   escalation slots, `docsHref={GUARDRAILS_DOCS}`, and `onDocsLinkClick` for
   `guardrails.help_clicked`. Its `scope` prop has no counterpart: the Agent-scope branch it served
   is unreachable.
+
+## GuardrailFileSupportIndicator
+
+Says whether a validator reads the files attached to a run, and which kinds. `GuardrailBuilder`
+renders it above the validator parameters, because `appliesTo` is one of them and this is what
+says what "Files" will actually mean for this validator.
+
+```tsx
+import { GuardrailFileSupportIndicator } from '@uipath/apollo-react/canvas/guardrails';
+
+<GuardrailFileSupportIndicator fileSupport={definition.fileSupport} />;
+```
+
+**Nothing in it branches on a validator, and nothing may.** The host computes `fileSupport` —
+from the same feature flags that switch file support on in the backend, and from its deployment
+(Automation Suite forwards no attachments) — and stamps it onto `GuardrailDefinition` before
+handing it over. The indicator renders that and nothing else, so the card and the run cannot
+disagree about whether files are read, and a validator that gains coverage is a flag flip rather
+than a change here.
+
+| `fileSupport` | renders |
+| --- | --- |
+| absent | nothing |
+| `{ supported: true, formats }` | the kinds it reads |
+| `{ supported: false, unavailableReason }` | why it reads none |
+
+Absent is *unknown*, not "reads none": a host that has not adopted the field, and every BYO
+definition (a customer's validator declares nothing about files), say nothing, and the card stays
+quiet rather than claiming either way.
+
+`formats` are coarse kinds (`Text`, `Pdf`, `Image`, `Office`, `Html`), not MIME types, and render
+in a fixed display order whatever order the host listed them in.
 
 ## GuardrailActionSection
 

@@ -73,6 +73,28 @@ export type GuardrailDefinitionStatus =
   | 'Unauthorised'
   | 'Disabled';
 
+/** The file kinds a validator reads. Coarse on purpose: a card says "PDF", not "application/pdf". */
+export type GuardrailFileFormat = 'Text' | 'Pdf' | 'Image' | 'Office' | 'Html';
+
+/** Why a validator reads no files. */
+export type GuardrailFileSupportUnavailableReason = 'NotEnabled' | 'AutomationSuite';
+
+/**
+ * What a validator reads out of the files attached to a run, for the indicator on its
+ * configuration card. The host computes it — from its feature flags and its deployment — and
+ * stamps it onto the definition; the indicator is a pure function of this, with no per-validator
+ * branching of its own.
+ *
+ * Absent means *unknown*, not "reads none": a host that has not adopted it, or a BYO definition,
+ * says nothing, and the card then shows nothing rather than claiming either way.
+ */
+export interface GuardrailFileSupport {
+  supported: boolean;
+  /** Empty whenever `supported` is false. */
+  formats: GuardrailFileFormat[];
+  unavailableReason?: GuardrailFileSupportUnavailableReason;
+}
+
 /**
  * The display-ready definition of an OOTB guardrail validator. `displayName` and `usageNote`
  * arrive pre-resolved - either from the host's own table or from
@@ -88,6 +110,8 @@ export interface GuardrailDefinition {
   status: GuardrailDefinitionStatus;
   /** Pre-resolved informational note rendered above the form. */
   usageNote?: React.ReactNode;
+  /** What this validator reads out of attached files. Absent means the host said nothing. */
+  fileSupport?: GuardrailFileSupport;
   /** Present for bring-your-own guardrail definitions; stamped onto saved values. */
   byoValidatorName?: string;
   /** The connector behind a bring-your-own configuration, shown as its provider. */

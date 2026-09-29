@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { findCatalogDrift, findCatalogOrphans } from './__fixtures__/catalog-coverage';
+import type { GuardrailFileSupportLabels } from './i18n';
 import {
   CENTRALIZED_GUARDRAILS_EN_LABELS,
   CENTRALIZED_GUARDRAILS_EN_MESSAGES,
@@ -10,6 +11,8 @@ import {
   GUARDRAIL_ACTION_EN_LABELS,
   GUARDRAIL_ACTION_LABEL_KEYS,
   GUARDRAIL_BUILDER_EN_LABELS,
+  GUARDRAIL_FILE_SUPPORT_EN_LABELS,
+  GUARDRAIL_FILE_SUPPORT_EN_MESSAGES,
   GUARDRAIL_FILTER_FIELD_SELECTOR_EN_LABELS,
   GUARDRAIL_FILTER_FIELD_SELECTOR_LABEL_KEYS,
   GUARDRAIL_FORM_EN_LABELS,
@@ -29,6 +32,7 @@ import {
   resolveCustomGuardrailBuilderLabels,
   resolveGuardrailActionLabels,
   resolveGuardrailBuilderLabels,
+  resolveGuardrailFileSupportLabels,
   resolveGuardrailFilterFieldSelectorLabels,
   resolveGuardrailFormLabels,
   resolveGuardrailListLabels,
@@ -491,6 +495,19 @@ describe('the shared canvas catalog', () => {
     ).toEqual([]);
   });
 
+  it('carries every file-support message with the same English', () => {
+    expect(findCatalogDrift(GUARDRAIL_FILE_SUPPORT_EN_MESSAGES)).toEqual({
+      missing: [],
+      drifted: [],
+    });
+  });
+
+  it('carries no file-support message the source no longer declares', () => {
+    expect(
+      findCatalogOrphans(GUARDRAIL_FILE_SUPPORT_EN_MESSAGES, 'guardrails.file-support.')
+    ).toEqual([]);
+  });
+
   it('resolves the rules block’s one reused id from the validator form, with its English', () => {
     expect(GUARDRAIL_RULES_EN_MESSAGES['guardrails.form.more-information']).toBe(
       GUARDRAIL_FORM_EN_LABELS.moreInformation
@@ -506,5 +523,42 @@ describe('the shared canvas catalog', () => {
     }
 
     expect(findCatalogDrift(reused)).toEqual({ missing: [], drifted: [] });
+  });
+});
+
+describe('resolveGuardrailFileSupportLabels', () => {
+  it('returns the English defaults when given nothing', () => {
+    expect(resolveGuardrailFileSupportLabels()).toEqual(GUARDRAIL_FILE_SUPPORT_EN_LABELS);
+  });
+
+  it('lets an override win over the catalog', () => {
+    const resolved = resolveGuardrailFileSupportLabels(
+      { notSupported: 'from catalog' },
+      { notSupported: 'from host' }
+    );
+
+    expect(resolved.notSupported).toBe('from host');
+  });
+
+  it('keeps the format names nobody overrode', () => {
+    // `formats` is nested, so a shallow merge would drop the four not restated.
+    const resolved = resolveGuardrailFileSupportLabels(undefined, {
+      formats: { Pdf: 'PDF files' } as GuardrailFileSupportLabels['formats'],
+    });
+
+    expect(resolved.formats).toEqual({
+      ...GUARDRAIL_FILE_SUPPORT_EN_LABELS.formats,
+      Pdf: 'PDF files',
+    });
+  });
+
+  it('keeps the English `{{token}}` convention in the interpolated messages', () => {
+    expect(GUARDRAIL_FILE_SUPPORT_EN_LABELS.supportedFormats).toContain('{{formats}}');
+  });
+
+  it('stores the catalog messages with ICU placeholders, not the {{token}} convention', () => {
+    expect(GUARDRAIL_FILE_SUPPORT_EN_MESSAGES['guardrails.file-support.supported-formats']).toBe(
+      'Reads file contents ({formats})'
+    );
   });
 });

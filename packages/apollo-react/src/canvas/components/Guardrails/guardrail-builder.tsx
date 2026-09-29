@@ -30,6 +30,7 @@ import {
 } from './builder-utils';
 import { GuardrailActionSection } from './components/guardrail-action-section';
 import { GuardrailEvalsToggle } from './components/guardrail-evals-toggle';
+import { GuardrailFileSupportIndicator } from './components/guardrail-file-support-indicator';
 import { GuardrailNameFields } from './components/guardrail-name-fields';
 import { GuardrailScopeSelector } from './components/guardrail-scope-selector';
 import { GuardrailStatusBanner } from './components/guardrail-status-banner';
@@ -456,6 +457,9 @@ export function GuardrailBuilder({
       {/* Validator parameters */}
       {definition.parameters.length > 0 && (
         <div className="space-y-3">
+          {/* Above the parameters, because `appliesTo` is one of them and this says what
+              "Files" will actually mean for this validator. */}
+          <GuardrailFileSupportIndicator fileSupport={definition.fileSupport} />
           <GuardrailValidatorForm
             parameterDefinitions={definition.parameters}
             parameters={formData.validatorParameters}
