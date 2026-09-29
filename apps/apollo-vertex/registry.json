@@ -2581,7 +2581,7 @@
       "name": "use-scroll-fade",
       "type": "registry:hook",
       "title": "useScrollFade",
-      "description": "Scroll fades for a scroll container: a mask that fades an edge only while there is more content in that direction, sized by --scroll-fade-size.",
+      "description": "Scroll fades for a scroll container, vertical, horizontal, or both: a mask that fades an edge only while there is more content in that direction, sized by --scroll-fade-size.",
       "files": [
         {
           "path": "registry/use-scroll-fade/use-scroll-fade.ts",

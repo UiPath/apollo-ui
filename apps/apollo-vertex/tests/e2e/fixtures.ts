@@ -100,3 +100,20 @@ export const widths = (page: Page) =>
   });
 
 export const search = (page: Page) => page.evaluate(() => location.search);
+
+/** One screen pixel's colour, read from a 1x1 screenshot. */
+export const pixel = async (page: Page, x: number, y: number) => {
+  const png = await page.screenshot({ clip: { x, y, width: 1, height: 1 } });
+  // A 1x1 PNG decodes to a single pixel: draw it and read it back.
+  return page.evaluate(async (data) => {
+    const img = new Image();
+    img.src = `data:image/png;base64,${data}`;
+    await img.decode();
+    const canvas = document.createElement("canvas");
+    canvas.width = 1;
+    canvas.height = 1;
+    const ctx = canvas.getContext("2d")!;
+    ctx.drawImage(img, 0, 0);
+    return Array.from(ctx.getImageData(0, 0, 1, 1).data.slice(0, 3));
+  }, png.toString("base64"));
+};

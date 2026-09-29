@@ -134,6 +134,27 @@ surface applies it.
 Each surface scrolls on its own. Scrolling main never scrolls a panel. The
 page header never scrolls.
 
+### Scroll fades
+
+A scroll fade is a mask at an edge while there's more content in that
+direction. It grows with the distance left to scroll, up to
+{LAYOUT_TOKENS.scrollFadeSize}px, and doesn't animate. It's a mask, not an
+overlay, so it works over any background.
+
+- Surfaces that scroll draw their own vertical fades.
+- An occupant that scrolls part of its content, like a wide table, uses
+  `useScrollFade()` from `@uipath/use-scroll-fade` with the axis that part
+  scrolls on, and the matching mask:
+
+| Axis | Mask | Edges that fade |
+| --- | --- | --- |
+| `y` (default) | `SCROLL_FADE_MASK` | Top and bottom |
+| `x` | `SCROLL_FADE_MASK_X` | Left and right |
+| `both` | `SCROLL_FADE_MASK_BOTH` | All four. The two masks intersect (`mask-composite: intersect`), so an edge fades wherever either axis has more content. |
+
+Left and right are physical edges. In right-to-left content, the fades follow
+where the content remains.
+
 ## Data attributes
 
 Every layer renders a data attribute, so tools, tests, and styles can find it.

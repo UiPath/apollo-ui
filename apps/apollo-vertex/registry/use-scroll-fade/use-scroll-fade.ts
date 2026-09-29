@@ -26,10 +26,15 @@ function attach<T>(ref: Ref<T> | undefined, node: T): () => void {
   return () => null;
 }
 
+/** Which way a container scrolls, so which edges can fade. */
+export type ScrollFadeAxis = "y" | "x" | "both";
+
 /**
  * Scroll fades for a scroll container. Returns a ref for the container;
- * pair it with SCROLL_FADE_MASK on the same element. Pass the component's
- * own `ref` prop as `forwarded` and it is attached too.
+ * pair it with the mask for its axis on the same element: SCROLL_FADE_MASK
+ * ("y", the default), SCROLL_FADE_MASK_X ("x"), or SCROLL_FADE_MASK_BOTH
+ * ("both"). Pass the component's own `ref` prop as `forwarded` and it is
+ * attached too.
  *
  * Each edge fades only while there is more content in that direction, and
  * the fade grows with the distance left to scroll, up to --scroll-fade-size.
@@ -37,13 +42,18 @@ function attach<T>(ref: Ref<T> | undefined, node: T): () => void {
  * is no motion to reduce.
  *
  * The values are written straight to the element as custom properties
- * (--scroll-fade-top, --scroll-fade-bottom), not React state, so scrolling
+ * (--scroll-fade-top and --scroll-fade-bottom for "y", --scroll-fade-left and
+ * --scroll-fade-right for "x"), not React state, so scrolling
  * never re-renders. Updates come from scroll events and ResizeObserver, with
  * no requestAnimationFrame, so they also run in hidden tabs.
+ *
+ * Left and right are physical edges. In a right-to-left container the
+ * content starts at the right, and the fades follow where content remains.
  */
 export function useScrollFade<T extends HTMLElement>(
   enabled = true,
   forwarded?: Ref<T>,
+  axis: ScrollFadeAxis = "y",
 ): RefCallback<T> {
   return (node: T | null) => {
     if (!node) return;
@@ -51,12 +61,27 @@ export function useScrollFade<T extends HTMLElement>(
     if (!enabled) return detachForwarded;
     let size = fadeSize(node);
 
+    const vertical = axis !== "x";
+    const horizontal = axis !== "y";
+    const clamp = (distance: number) =>
+      `${Math.min(Math.max(distance, 0), size)}px`;
+
     const update = () => {
-      const below = node.scrollHeight - node.clientHeight - node.scrollTop;
-      const top = Math.min(Math.max(node.scrollTop, 0), size);
-      const bottom = Math.min(Math.max(below, 0), size);
-      node.style.setProperty("--scroll-fade-top", `${top}px`);
-      node.style.setProperty("--scroll-fade-bottom", `${bottom}px`);
+      if (vertical) {
+        const below = node.scrollHeight - node.clientHeight - node.scrollTop;
+        node.style.setProperty("--scroll-fade-top", clamp(node.scrollTop));
+        node.style.setProperty("--scroll-fade-bottom", clamp(below));
+      }
+      if (horizontal) {
+        const range = node.scrollWidth - node.clientWidth;
+        // In RTL, scrollLeft runs from 0 (at the right) down to -range.
+        const fromLeft =
+          getComputedStyle(node).direction === "rtl"
+            ? range + node.scrollLeft
+            : node.scrollLeft;
+        node.style.setProperty("--scroll-fade-left", clamp(fromLeft));
+        node.style.setProperty("--scroll-fade-right", clamp(range - fromLeft));
+      }
     };
 
     // Content can grow without the container resizing, so watch the direct
@@ -85,8 +110,9 @@ export function useScrollFade<T extends HTMLElement>(
       node.removeEventListener("scroll", update);
       resize.disconnect();
       mutations.disconnect();
-      node.style.removeProperty("--scroll-fade-top");
-      node.style.removeProperty("--scroll-fade-bottom");
+      for (const edge of ["top", "bottom", "left", "right"]) {
+        node.style.removeProperty(`--scroll-fade-${edge}`);
+      }
     };
   };
 }
@@ -99,3 +125,16 @@ export function useScrollFade<T extends HTMLElement>(
  */
 export const SCROLL_FADE_MASK =
   "[mask-image:linear-gradient(to_bottom,transparent,#000_var(--scroll-fade-top,0px),#000_calc(100%-var(--scroll-fade-bottom,0px)),transparent)]";
+
+/** The mask for useScrollFade with axis "x": a fade at each side with more content. */
+export const SCROLL_FADE_MASK_X =
+  "[mask-image:linear-gradient(to_right,transparent,#000_var(--scroll-fade-left,0px),#000_calc(100%-var(--scroll-fade-right,0px)),transparent)]";
+
+/**
+ * The mask for useScrollFade with axis "both": the vertical and horizontal
+ * gradients intersected, so a corner fades on both edges at once.
+ */
+export const SCROLL_FADE_MASK_BOTH = [
+  "[mask-image:linear-gradient(to_bottom,transparent,#000_var(--scroll-fade-top,0px),#000_calc(100%-var(--scroll-fade-bottom,0px)),transparent),linear-gradient(to_right,transparent,#000_var(--scroll-fade-left,0px),#000_calc(100%-var(--scroll-fade-right,0px)),transparent)]",
+  "[mask-composite:intersect]",
+].join(" ");
