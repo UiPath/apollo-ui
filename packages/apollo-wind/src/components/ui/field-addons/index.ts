@@ -16,3 +16,4 @@ export {
   type ValueMode,
   type ValueModeStrings,
 } from './value-mode-strings';
+export { ValueModeSwitchDialog, type ValueModeSwitchDialogProps } from './value-mode-switch-dialog';
