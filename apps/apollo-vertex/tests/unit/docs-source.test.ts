@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { OCCUPANT_SPECS } from "@/lib/occupants.generated";
 
 const APP = new URL("../../app/", import.meta.url).pathname;
 
@@ -9,9 +10,7 @@ const PAGES = [
   "guidelines/design-architecture/page.mdx",
   "templates/detail-page/page.mdx",
   "guidelines/creating-occupants/page.mdx",
-  "patterns/activity-timeline/page.mdx",
-  "patterns/key-facts/page.mdx",
-  "patterns/stage-strip/page.mdx",
+  ...OCCUPANT_SPECS.map(({ spec }) => `patterns/${spec.name}/page.mdx`),
   ...readdirSync(join(APP, "surfaces"), { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => `surfaces/${entry.name}/page.mdx`),
