@@ -7,6 +7,7 @@ import {
 } from "@/lib/composition";
 import { OCCUPANT_SPECS, SURFACE_SPECS } from "@/lib/occupants.generated";
 import { expect, test, type Theme } from "./fixtures";
+import { INNER, inspect, openFixture } from "./occupant-inspect";
 
 /*
  * Every registered occupant, in every surface it claims (fitsSurface),
@@ -24,110 +25,6 @@ const AXE = createRequire(__filename).resolve("axe-core/axe.min.js");
 const CORE_WIDTHS = [0, 40, 200];
 const SWEEP = Array.from({ length: 31 }, (_, i) => i * 16);
 const STATES = ["loading", "empty", "error", "agent-updating"];
-
-// The element that holds each surface's padding: its inner area.
-const INNER: Record<string, string> = {
-  "page-header": "[data-slot=page-header]",
-  "side-panel": "[data-slot=side-panel-body]",
-  "content-area": "[data-slot=content-area-body]",
-};
-
-async function openFixture(page: Page, query: string) {
-  await page.goto(`/preview/occupant?${query}`);
-  await page
-    .locator("[data-slot=occupant-fixture] [data-occupant]")
-    .first()
-    .waitFor();
-  await page.waitForLoadState("networkidle");
-}
-
-/** Sets the fixture's width and lists every clip or overflow inside the surface. */
-const inspect = (page: Page, inner: string, width: number) =>
-  page.evaluate(
-    ([selector, boxWidth]) => {
-      const fixture = document.querySelector<HTMLElement>(
-        "[data-slot=occupant-fixture]",
-      )!;
-      fixture.style.width = `${boxWidth}px`;
-      return new Promise<{ occupantWidth: number; problems: string[] }>(
-        (resolve) => {
-          setTimeout(() => {
-            const box = fixture.querySelector(selector)!;
-            // Decorative layers (aria-hidden, absolute, no pointer events) may bleed
-            // by design; take them out. Rulers stay: they're invisible.
-            const decorative = [
-              ...box.querySelectorAll<HTMLElement>("[aria-hidden=true]"),
-            ].filter((el) => {
-              const cs = getComputedStyle(el);
-              return (
-                cs.pointerEvents === "none" &&
-                cs.position === "absolute" &&
-                cs.visibility !== "hidden"
-              );
-            });
-            const saved = decorative.map(
-              (el) => [el, el.style.display] as const,
-            );
-            for (const el of decorative) el.style.display = "none";
-            const style = getComputedStyle(box);
-            const r = box.getBoundingClientRect();
-            const bounds = {
-              left: r.left + Number.parseFloat(style.paddingLeft),
-              right: r.right - Number.parseFloat(style.paddingRight),
-            };
-            const describe = (el: Element) => {
-              const slot = el instanceof HTMLElement ? el.dataset.slot : "";
-              return `${el.tagName.toLowerCase()}${slot ? `[${slot}]` : ""} "${(el.textContent ?? "").trim().slice(0, 24)}"`;
-            };
-            const problems: string[] = [];
-            for (const el of box.querySelectorAll("*")) {
-              if (el instanceof SVGElement && !(el instanceof SVGSVGElement))
-                continue;
-              if (el.closest("[aria-hidden=true]")) continue;
-              const cs = getComputedStyle(el);
-              const er = el.getBoundingClientRect();
-              if (
-                cs.display === "none" ||
-                cs.display === "contents" ||
-                cs.visibility === "hidden"
-              )
-                continue;
-              if (er.width === 0 || (er.width <= 1 && er.height <= 1)) continue;
-              const scroller = el.closest("[data-scroll-x]");
-              const inside = scroller !== null && scroller !== el;
-              const isScroller =
-                el instanceof HTMLElement && "scrollX" in el.dataset;
-              if (
-                !inside &&
-                !isScroller &&
-                el.scrollWidth > el.clientWidth + 1 &&
-                el.clientWidth > 0
-              ) {
-                const truncated = cs.textOverflow === "ellipsis";
-                if (!(truncated && el.closest("[title]"))) {
-                  problems.push(
-                    `${truncated ? "truncated without a title" : "clipped"} ${describe(el)} (${el.scrollWidth} > ${el.clientWidth})`,
-                  );
-                }
-              }
-              if (
-                !inside &&
-                (er.right > bounds.right + 1 || er.left < bounds.left - 1)
-              ) {
-                problems.push(`outside ${describe(el)}`);
-              }
-            }
-            for (const [el, display] of saved) el.style.display = display;
-            resolve({
-              occupantWidth: Math.round(bounds.right - bounds.left),
-              problems: [...new Set(problems)],
-            });
-          }, 200);
-        },
-      );
-    },
-    [inner, width] as const,
-  );
 
 async function axeViolations(page: Page) {
   await page.addScriptTag({ path: AXE });

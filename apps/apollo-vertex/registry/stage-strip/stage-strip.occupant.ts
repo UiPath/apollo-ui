@@ -11,6 +11,7 @@ export const stageStripOccupant = {
   icon: Waypoints,
   // A one-band summary: horizontal surfaces only.
   orientations: ["horizontal"],
-  // Measured: the row of stage markers. The text wraps under it.
+  // Declared above its measured floor (pnpm measure:occupant): the markers
+  // and text wrap narrower, but below this the current stage is hard to read.
   requires: { minWidth: 128, padding: "padded", scroll: "either" },
 } as const satisfies OccupantSpec;

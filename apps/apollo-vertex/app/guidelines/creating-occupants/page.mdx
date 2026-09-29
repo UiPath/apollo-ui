@@ -60,10 +60,18 @@ it by measuring, not guessing:
 2. Decide the minimum. It's at least the floor, and above it when the
    occupant gets hard to read before it breaks.
 
-The stage strip's {stageStripOccupant.requires.minWidth}px is its measured
-floor: the row of stage markers. The activity timeline declares
-{activityTimelineOccupant.requires.minWidth}px, above its floor, so titles
-don't wrap one word per line.
+```bash
+pnpm measure:occupant key-facts
+```
+
+It reports the floor for each example in each surface the occupant claims,
+compares it with the declared minWidth, and fails if the declared width is
+below the floor.
+
+The stage strip declares {stageStripOccupant.requires.minWidth}px and the
+activity timeline {activityTimelineOccupant.requires.minWidth}px. Both could
+go narrower without clipping, but below those widths the current stage and
+event titles get hard to read.
 
 For the minimum to hold for any data, long values truncate or wrap:
 
