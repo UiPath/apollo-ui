@@ -229,35 +229,21 @@ export interface FitResult {
 }
 
 /**
- * Whether an occupant fits a surface in a given slot. It checks every
- * requirement and lists each one that fails:
+ * Whether an occupant can go in a surface at all, whatever slot holds it:
  *
- * - the slot accepts the surface;
- * - the slot's inner width, with the occupant's padding, covers its
- *   minWidth (padding has no check of its own: every surface takes both
- *   paddings, and padding changes the inner width);
  * - the scroll owners agree (scrollCompatible);
  * - the occupant works in the surface's orientation;
  * - the occupant works in this surface, when it lists its surfaces.
+ *
+ * Width isn't checked: how wide a surface is depends on the slot that holds
+ * it. Occupant checks use this to find every surface an occupant claims.
  */
-export function fits(
-  slot: SlotSpec,
+export function fitsSurface(
   surface: SurfaceSpec,
   occupant: OccupantSpec,
 ): FitResult {
   const reasons: string[] = [];
-  const { minWidth, scroll: needsScroll } = occupant.requires;
-  const padding = occupantPadding(occupant);
-
-  if (!slotAccepts(slot, surface)) {
-    reasons.push(`The ${slot.name} slot doesn't accept ${surface.name}.`);
-  }
-  const available = slotInnerWidth(slot, surface, padding);
-  if (available < minWidth) {
-    reasons.push(
-      `Needs ${minWidth}px; the ${slot.name} slot gives ${available}px (${padding}).`,
-    );
-  }
+  const { scroll: needsScroll } = occupant.requires;
   if (!scrollCompatible(surface.provides.scroll, needsScroll)) {
     reasons.push(
       `Needs ${needsScroll} scrolling; ${surface.name} supports ${surface.provides.scroll} only.`,
@@ -275,5 +261,38 @@ export function fits(
       `Works only in ${occupant.surfaces.join(", ")}; this slot holds ${surface.name}.`,
     );
   }
+  return { fits: reasons.length === 0, reasons };
+}
+
+/**
+ * Whether an occupant fits a surface in a given slot. It checks every
+ * requirement and lists each one that fails:
+ *
+ * - the slot accepts the surface;
+ * - the slot's inner width, with the occupant's padding, covers its
+ *   minWidth (padding has no check of its own: every surface takes both
+ *   paddings, and padding changes the inner width);
+ * - everything fitsSurface() checks: scroll, orientation, and the
+ *   occupant's own list of surfaces.
+ */
+export function fits(
+  slot: SlotSpec,
+  surface: SurfaceSpec,
+  occupant: OccupantSpec,
+): FitResult {
+  const reasons: string[] = [];
+  const { minWidth } = occupant.requires;
+  const padding = occupantPadding(occupant);
+
+  if (!slotAccepts(slot, surface)) {
+    reasons.push(`The ${slot.name} slot doesn't accept ${surface.name}.`);
+  }
+  const available = slotInnerWidth(slot, surface, padding);
+  if (available < minWidth) {
+    reasons.push(
+      `Needs ${minWidth}px; the ${slot.name} slot gives ${available}px (${padding}).`,
+    );
+  }
+  reasons.push(...fitsSurface(surface, occupant).reasons);
   return { fits: reasons.length === 0, reasons };
 }

@@ -1,20 +1,8 @@
-import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 
-const root = (path: string) => fileURLToPath(new URL(path, import.meta.url));
-
 export default defineConfig({
-  resolve: {
-    // The tsconfig paths the unit-tested specs import. Most specific first.
-    alias: [
-      {
-        find: "@/lib/composition",
-        replacement: root("./registry/composition/composition.ts"),
-      },
-      { find: /^@\/registry\//, replacement: `${root("./registry")}/` },
-      { find: /^@\/templates\//, replacement: `${root("./templates")}/` },
-    ],
-  },
+  // Vite 8 reads the tsconfig paths, so tests import as the app does.
+  resolve: { tsconfigPaths: true },
   test: {
     globals: true,
     environment: "node",

@@ -8,9 +8,13 @@
  *   examples/index.ts     exporting EXAMPLES, its example views by name,
  *                         including "stress" (not shipped)
  *
+ * Every item with meta.layer "surface" must have registry/<name>/<name>.surface.ts
+ * exporting its spec as <camelName>Surface.
+ *
  * It writes two committed files:
- *   lib/occupants.generated.ts          specs and example names (no React),
- *                                       for docs and tests
+ *   lib/occupants.generated.ts          occupant specs and example names, and
+ *                                       surface specs (no React), for docs
+ *                                       and tests
  *   lib/occupant-registry.generated.tsx specs, components, and examples,
  *                                       for previews and the check fixture
  *
@@ -45,7 +49,18 @@ const occupants = registry.items
   .map((item) => item.name)
   .sort();
 
+const surfaces = registry.items
+  .filter((item) => item.meta?.layer === "surface")
+  .map((item) => item.name)
+  .sort();
+
 const problems: string[] = [];
+for (const name of surfaces) {
+  const spec = `registry/${name}/${name}.surface.ts`;
+  if (!existsSync(join(root, spec)) || !readFileSync(join(root, spec), "utf8").includes(`${camel(name)}Surface`)) {
+    problems.push(`${name}: ${spec} must export ${camel(name)}Surface`);
+  }
+}
 for (const name of occupants) {
   const dir = `registry/${name}`;
   const spec = `${dir}/${name}.occupant.ts`;
@@ -80,7 +95,8 @@ const HEADER =
   "// add an occupant item to the registry and rerun it.\n";
 
 const specsTs = `${HEADER}
-import type { OccupantSpec } from "@/lib/composition";
+import type { OccupantSpec, SurfaceSpec } from "@/lib/composition";
+${surfaces.map((name) => `import { ${camel(name)}Surface } from "@/registry/${name}/${name}.surface";`).join("\n")}
 ${occupants
   .map(
     (name) =>
@@ -93,6 +109,11 @@ export interface RegisteredOccupantSpec {
   /** The names of its example views, "stress" included. */
   examples: readonly string[];
 }
+
+/** Every registered surface. */
+export const SURFACE_SPECS: readonly SurfaceSpec[] = [
+${surfaces.map((name) => `  ${camel(name)}Surface,`).join("\n")}
+];
 
 /** Every registered occupant, by name. */
 export const OCCUPANT_SPECS: readonly RegisteredOccupantSpec[] = [

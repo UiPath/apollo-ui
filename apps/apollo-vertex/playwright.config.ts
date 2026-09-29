@@ -41,7 +41,9 @@ export default defineConfig({
     { name: "full", use: { ...devices["Desktop Chrome"], viewport: VIEWPORT } },
   ],
   webServer: {
-    command: CI ? `pnpm exec next start --port ${PORT}` : "pnpm dev",
+    command: CI
+      ? `pnpm exec next start --port ${PORT}`
+      : `pnpm dev --port ${PORT}`,
     url: `http://localhost:${PORT}/preview/detail-page`,
     reuseExistingServer: !CI,
     timeout: 180_000,
