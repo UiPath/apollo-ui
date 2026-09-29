@@ -2236,6 +2236,7 @@
       "type": "registry:lib",
       "title": "Composition",
       "description": "Specs for the template, slot, surface, and occupant layout layers, plus helpers to check that a surface fits a slot and an occupant fits a surface.",
+      "dependencies": ["lucide-react"],
       "files": [
         {
           "path": "registry/composition/composition.ts",

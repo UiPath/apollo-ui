@@ -4,6 +4,7 @@ import {
   PANEL_TRANSITION_DURATION_MS,
   SIDE_PANEL_TINT_STRENGTH,
 } from '@/lib/composition';
+import { START_PANEL_WIDTH } from '@/templates/detail-page/detail-page.template';
 
 # Design architecture
 
@@ -42,14 +43,34 @@ The specs live in `@/lib/composition`.
 | `TemplateSpec` | A template | `name`, `slots` |
 | `SlotSpec` | One slot in a template | `name`, `required`, `width` (`min`, `default`, `max`), `resizable`, `surfaces` |
 | `SurfaceSpec` | A surface | `name`, `width` (its own minimum), `provides` (inner width, scroll) |
-| `OccupantSpec` | An occupant | `name`, `label`, `requires` (minimum width, scroll, padding) |
+| `OccupantSpec` | An occupant | `name`, `label`, `icon` (optional), `requires` (minimum width, scroll, padding) |
 
 `fits(slot, surface, occupant)` checks that an occupant can go in a surface
-in a given slot:
+in a given slot. It checks every requirement:
 
 1. The slot accepts the surface.
-2. The slot's inner width covers the occupant's minimum width.
+2. The slot's inner width, with the occupant's padding, covers the occupant's
+   minimum width.
 3. The scroll owners agree.
+
+It returns `{ fits, reasons }`. `reasons` lists every requirement that failed,
+one plain sentence each. For an occupant too wide for the Detail page's start
+panel, that reads "Needs Npx; the start-panel slot gives
+{START_PANEL_WIDTH.default - 2 * PADDED_INSET_PX}px (padded)." `reasons` is
+empty when the occupant fits. Padding has no check of
+its own: every surface takes both paddings, and padding changes the inner
+width, so it appears in the width reason.
+
+The helpers it uses are exported too: `slotAccepts`, `slotInnerWidth`,
+`occupantPadding`, and `scrollCompatible`.
+
+### Minimum width
+
+An occupant must render without clipping or overflowing at any width from
+its minWidth up. minWidth is the narrowest width where it still works.
+
+So set minWidth by testing the occupant at that width, not by guessing. If it
+clips at its minWidth, the minWidth is too small.
 
 ## What surfaces own
 
