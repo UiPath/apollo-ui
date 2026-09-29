@@ -8,7 +8,11 @@ export const LAYOUT_TOKENS = {
   sidePanelWidthMin: 280,
   contentAreaWidthMin: 480,
   scrollFadeSize: 24,
+  slotDividerWidth: 1,
 } as const;
 
 /** The --sidebar strength in --side-panel-tint, as a percentage. */
 export const SIDE_PANEL_TINT_STRENGTH = 60;
+
+/** --panel-transition-duration, in ms. */
+export const PANEL_TRANSITION_DURATION_MS = 350;

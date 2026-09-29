@@ -108,11 +108,24 @@ function createPreviewRouter() {
 
 const CONFIG_CARD_ID = "detail-page-preview-config";
 
-export function DetailPagePreview() {
+interface DetailPagePreviewProps {
+  /**
+   * For embedding in a docs page: no Configure card, and the page URL is
+   * neither read nor written. It uses the minimal shell, so a docs-width
+   * preview has room for main and a panel.
+   */
+  embedded?: boolean;
+}
+
+export function DetailPagePreview({
+  embedded = false,
+}: DetailPagePreviewProps) {
   const [router] = useState(createPreviewRouter);
   // The preview only renders client-side, so the URL is readable up front.
   const [settings, setSettings] = useState<PreviewSettings>(() =>
-    parsePreviewSettings(window.location.search),
+    embedded
+      ? { ...DEFAULT_PREVIEW_SETTINGS, shellVariant: "minimal" }
+      : parsePreviewSettings(window.location.search),
   );
   // Not stored in the URL, so shared links open looking like a real page.
   const [isCardOpen, setIsCardOpen] = useState(false);
@@ -170,17 +183,19 @@ export function DetailPagePreview() {
     applyRef.current = applySettings;
   });
   useEffect(() => {
+    if (embedded) return;
     const onPopState = () =>
       applyRef.current(parsePreviewSettings(window.location.search));
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
-  }, []);
+  }, [embedded]);
 
   // Keep the URL in step with the settings. replaceState, so tweaking the
   // preview does not fill the back button history.
   // The end width comes from the hook, which holds the user's chosen width.
   const endWidthChosen = detailPage.endWidthChosen;
   useEffect(() => {
+    if (embedded) return;
     const query = serializePreviewSettings({
       ...settings,
       config: {
@@ -190,7 +205,7 @@ export function DetailPagePreview() {
     });
     const url = `${window.location.pathname}${query}${window.location.hash}`;
     window.history.replaceState(null, "", url);
-  }, [settings, endWidthChosen]);
+  }, [settings, endWidthChosen, embedded]);
 
   // Save the user's choice as the panel's defaultOpen so it lands in the
   // URL. Closes made by the main-width rule never reach here.
@@ -213,34 +228,36 @@ export function DetailPagePreview() {
           <RouterProvider router={router} />
         </PreviewContext.Provider>
       </div>
-      <div className="fixed right-4 bottom-4 z-60 flex flex-col items-end gap-2">
-        <div id={CONFIG_CARD_ID} hidden={!isCardOpen}>
-          <PreviewControlBar
-            settings={settings}
-            onChange={setSettings}
-            open={detailPage.open}
-            closedBy={detailPage.closedBy}
-            onOpenChange={setPanelOpen}
-            endWidth={detailPage.endWidth}
-            endWidthChosen={detailPage.endWidthChosen}
-            onResetEndWidth={detailPage.resetEndWidth}
-            tintStrength={tintStrength ?? SIDE_PANEL_TINT_STRENGTH}
-            onTintStrengthChange={setTintStrength}
-            onReset={resetToDefaults}
-          />
+      {!embedded && (
+        <div className="fixed right-4 bottom-4 z-60 flex flex-col items-end gap-2">
+          <div id={CONFIG_CARD_ID} hidden={!isCardOpen}>
+            <PreviewControlBar
+              settings={settings}
+              onChange={setSettings}
+              open={detailPage.open}
+              closedBy={detailPage.closedBy}
+              onOpenChange={setPanelOpen}
+              endWidth={detailPage.endWidth}
+              endWidthChosen={detailPage.endWidthChosen}
+              onResetEndWidth={detailPage.resetEndWidth}
+              tintStrength={tintStrength ?? SIDE_PANEL_TINT_STRENGTH}
+              onTintStrengthChange={setTintStrength}
+              onReset={resetToDefaults}
+            />
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="shadow-md"
+            aria-expanded={isCardOpen}
+            aria-controls={CONFIG_CARD_ID}
+            onClick={() => setIsCardOpen((open) => !open)}
+          >
+            {isCardOpen ? <X /> : <SlidersHorizontal />}
+            Configure
+          </Button>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          className="shadow-md"
-          aria-expanded={isCardOpen}
-          aria-controls={CONFIG_CARD_ID}
-          onClick={() => setIsCardOpen((open) => !open)}
-        >
-          {isCardOpen ? <X /> : <SlidersHorizontal />}
-          Configure
-        </Button>
-      </div>
+      )}
     </QueryClientProvider>
   );
 }

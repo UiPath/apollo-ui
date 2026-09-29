@@ -1,0 +1,133 @@
+import {
+  LAYOUT_TOKENS,
+  PADDED_INSET_PX,
+  PANEL_TRANSITION_DURATION_MS,
+  SIDE_PANEL_TINT_STRENGTH,
+} from '@/lib/composition';
+
+# Design architecture
+
+Pages in Apollo Vertex are built from three layers: templates, surfaces, and
+occupants. Each layer has one job. Each has specs, written in TypeScript, that
+say what it needs and what it provides.
+
+## The three layers
+
+| Layer | What it is | Examples | Where it comes from |
+| --- | --- | --- | --- |
+| Template | A page layout. It declares named slots and draws the lines between them. | [Detail page](/templates/detail-page), [List page](/templates/list-page) | Copied into your app |
+| Surface | A container that fills one slot. It sets width, padding, scroll, and background. | [Page header](/surfaces/page-header), [Side panel](/surfaces/side-panel), [Content area](/surfaces/content-area) | The registry |
+| Occupant | The content inside a surface. A pattern built from existing components. | A work queue, an activity history, the AI assistant, a data table | Your app or the registry |
+
+## How they fit together
+
+- Templates hold surfaces. Surfaces hold occupants.
+- A template never holds an occupant directly.
+- Each slot lists the surfaces it accepts.
+- An occupant can be swapped for any other occupant that meets the surface's
+  specs.
+
+> Templates draw the lines between slots. Surfaces own everything inside.
+
+So a template decides where things go and draws the dividers. A surface
+decides its own padding, scrolling, and background. An occupant only
+decides its content.
+
+## Specs
+
+The specs live in `@/lib/composition`.
+
+| Spec | Describes | Main fields |
+| --- | --- | --- |
+| `TemplateSpec` | A template | `name`, `slots` |
+| `SlotSpec` | One slot in a template | `name`, `required`, `width` (`min`, `default`, `max`), `resizable`, `surfaces` |
+| `SurfaceSpec` | A surface | `name`, `width` (its own minimum), `provides` (inner width, scroll) |
+| `OccupantSpec` | An occupant | `name`, `label`, `requires` (minimum width, scroll, padding) |
+
+`fits(slot, surface, occupant)` checks that an occupant can go in a surface
+in a given slot:
+
+1. The slot accepts the surface.
+2. The slot's inner width covers the occupant's minimum width.
+3. The scroll owners agree.
+
+## What surfaces own
+
+Occupants never add outer padding. They declare what they need, and the
+surface applies it.
+
+| Setting | Values | What the surface does |
+| --- | --- | --- |
+| Padding | `padded`, `flush` | `padded` insets the occupant by {PADDED_INSET_PX}px on every side (`--surface-inset`). `flush` uses 0. |
+| Scroll | `surface`, `occupant`, `either` | With `surface`, the surface scrolls and draws the fades. With `occupant`, the surface neither scrolls nor fades, and the occupant scrolls itself. `either` lets the surface decide. |
+
+Each surface scrolls on its own. Scrolling main never scrolls a panel. The
+page header never scrolls.
+
+## Data attributes
+
+Every layer renders a data attribute, so tools, tests, and styles can find it.
+
+| Attribute | On | Value | Example |
+| --- | --- | --- | --- |
+| `data-template` | The template root | The template's name | `detail-page` |
+| `data-slot` | Each slot | `<template>-<slot>` | `detail-page-main` |
+| `data-surface` | The surface root | The surface's name | `side-panel` |
+| `data-occupant` | The occupant root | The occupant's name | `queue` |
+
+Surfaces also report their state: `data-padding`, `data-scroll`, `data-side`,
+`data-state` (open or closed), and `data-placement`.
+
+Naming rules:
+
+- Lowercase and hyphenated.
+- Named for what the thing is, not how it looks or where it sits. `side-panel`,
+  not `left-drawer`.
+- Sides are logical: `start` and `end`, not left and right. They flip in
+  right-to-left languages.
+- `data-slot` values include the template's name. shadcn components use
+  `data-slot` for their parts, like `page-header-actions`, so the prefix keeps
+  the two apart.
+
+## Fixed and configurable
+
+Most of a template is fixed: where slots go, the dividers, surface padding
+values, backgrounds, motion, and the width rules. Teams configure only a few
+things. On the Detail page that is which panels appear, where each panel sits,
+and whether it starts open. Users can also resize the end panel.
+
+Configurations are kept few on purpose:
+
+- Every configuration is a combination to design, test, and support.
+- Pages that share a template look and behave the same, so users learn one
+  layout.
+- A configuration is added only when a real need can't be met without it.
+
+## Tokens
+
+The layout values are theme tokens in `registry.json`. A script generates
+`layout-tokens.ts` from them, so the CSS and the TypeScript specs read the same
+numbers. `pnpm lint` fails if the two drift.
+
+| Token | Value | Used for |
+| --- | --- | --- |
+| `--surface-inset` | {LAYOUT_TOKENS.surfaceInset}px | Surface padding |
+| `--side-panel-width-min` | {LAYOUT_TOKENS.sidePanelWidthMin}px | The side panel's own minimum width |
+| `--content-area-width-min` | {LAYOUT_TOKENS.contentAreaWidthMin}px | The content area's own minimum width |
+| `--slot-divider-width` | {LAYOUT_TOKENS.slotDividerWidth}px | Divider line thickness. It takes no layout space. |
+| `--scroll-fade-size` | {LAYOUT_TOKENS.scrollFadeSize}px | The longest a scroll fade gets |
+| `--divider` | A lighter `--border` | Divider color. It matches the Shell sidebar's edge. |
+| `--side-panel-tint` | `--sidebar` at {SIDE_PANEL_TINT_STRENGTH}% | Background of beside-header panels |
+| `--panel-transition-duration` | {PANEL_TRANSITION_DURATION_MS}ms | Panel open and close |
+| `--panel-transition-easing` | A `linear()` curve | Sampled from the Shell sidebar's spring |
+
+## Known gaps
+
+- **Small screens.** There is no overlay surface yet. On narrow windows the
+  main-width rule closes panels instead.
+- **Panel triggers.** There are no in-page controls to open or close panels
+  yet. Your app opens and closes them through the template's state.
+- **Start panel resizing.** The start panel has a width range in its spec but
+  isn't resizable yet.
+- **Registry.** Templates are copied into your app. They aren't registry items
+  yet.
