@@ -105,3 +105,57 @@ export const WithInitialsFallback: Story = {
     onItemSelect: () => {},
   },
 };
+
+const CONNECTOR_ITEMS: ListItem[] = [
+  {
+    id: 'gmail',
+    name: 'Gmail',
+    icon: { name: 'mail' },
+    data: {},
+    children: [
+      { id: 'gmail-send', name: 'Send Email', icon: { name: 'send' }, data: {} },
+      { id: 'gmail-received', name: 'Email Received', icon: { name: 'inbox' }, data: {} },
+    ],
+  },
+  {
+    id: 'jira',
+    name: 'Jira',
+    icon: { name: 'ticket' },
+    data: {},
+    children: [
+      { id: 'jira-create', name: 'Create Issue', icon: { name: 'plus' }, data: {} },
+      { id: 'jira-updated', name: 'Issue Updated', icon: { name: 'refresh-cw' }, data: {} },
+    ],
+  },
+  {
+    id: 'slack',
+    name: 'Slack',
+    icon: { name: 'message-square' },
+    data: {},
+    children: [
+      { id: 'slack-send', name: 'Send Message to Channel', icon: { name: 'send' }, data: {} },
+      {
+        id: 'slack-received',
+        name: 'Message Received in Slack',
+        icon: { name: 'message-circle' },
+        data: {},
+      },
+    ],
+  },
+];
+
+/**
+ * Opens already drilled into the category named by `initialCategoryId`, such as
+ * the connector of an activity that is already configured. The root stays on the
+ * navigation stack, so Back returns to the full list. It is applied once, as soon
+ * as the category appears in `initialItems`, so catalogs that load later still work.
+ */
+export const WithInitialCategory: Story = {
+  args: {
+    title: 'Select activity',
+    initialItems: CONNECTOR_ITEMS,
+    initialCategoryId: 'slack',
+    onClose: () => {},
+    onItemSelect: () => {},
+  },
+};

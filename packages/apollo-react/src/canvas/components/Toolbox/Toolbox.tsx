@@ -123,6 +123,13 @@ export interface ToolboxProps<T> {
    * When provided, replaces the built-in icon + message empty state.
    */
   renderEmptyState?: ToolboxEmptyStateRenderer<T>;
+  /**
+   * Id of a category to open already drilled into, such as the one holding the
+   * current selection. The root stays on the navigation stack, so the back
+   * button returns to it. Applied once, as soon as `initialItems` contains the
+   * category with static children; ignored if it never does.
+   */
+  initialCategoryId?: string;
 }
 
 function getNextSelectableIndex(
@@ -185,6 +192,7 @@ export function Toolbox<T>({
   quickActions,
   renderEmptyState,
   searchPlaceholder: searchPlaceholderProp,
+  initialCategoryId,
 }: ToolboxProps<T>) {
   const { _ } = useSafeLingui();
   const searchPlaceholder = searchPlaceholderProp ?? _({ id: 'toolbox.search', message: 'Search' });
@@ -220,6 +228,7 @@ export function Toolbox<T>({
   const searchInputRef = useRef<HTMLInputElement>(null);
   const clearButtonRef = useRef<HTMLButtonElement>(null);
   const lastScrollTopRef = useRef(0);
+  const initialCategoryAppliedRef = useRef(false);
 
   const handleListScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     lastScrollTopRef.current = e.currentTarget.scrollTop;
@@ -363,6 +372,8 @@ export function Toolbox<T>({
         onItemSelect(item);
         return;
       }
+      // A drill-in of the user's own, even one still resolving, cancels a pending initialCategoryId.
+      initialCategoryAppliedRef.current = true;
       setAwaitingChildren(true);
       const nestedItems =
         typeof item.children === 'function'
@@ -487,6 +498,20 @@ export function Toolbox<T>({
       }
     }
   }, [initialItems, navigationStack, currentParentItem]);
+
+  const pushNavigation = navigationStack.push;
+  useEffect(() => {
+    if (!initialCategoryId || initialCategoryAppliedRef.current) return;
+    const category = findItemById(initialItems, initialCategoryId);
+    if (!category?.children || typeof category.children === 'function') return;
+    initialCategoryAppliedRef.current = true;
+    pushNavigation({
+      title,
+      data: { items: initialItems, parentItem: null, activeIndex: SEARCH_BAR_INDEX, scrollTop: 0 },
+    });
+    setItems(category.children);
+    setCurrentParentItem(category);
+  }, [initialCategoryId, initialItems, pushNavigation, title]);
 
   // Re-run active search when items change so results reflect newly loaded data
   // (e.g. dynamic manifests streaming in while a search query is already entered).
