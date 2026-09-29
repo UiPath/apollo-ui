@@ -124,30 +124,65 @@ The recommendation comes from the view model, so the solution decides it.
 
 ## Create one with the generator
 
-```bash
-pnpm create:occupant key-facts
+Start from what the occupant shows. Describe its view model in a small JSON
+file: the item type, the list's name, and each field with a kind.
+
+```json
+{
+  "item": "KeyFact",
+  "collection": "facts",
+  "subject": "What the facts are about, for accessible names.",
+  "fields": [
+    { "name": "label", "kind": "label", "description": "What the fact is." },
+    { "name": "value", "kind": "value", "optional": true, "description": "Its value, formatted." }
+  ]
+}
 ```
 
-It asks what the spec needs, in plain terms: a label, an icon, the shape of
-space it works in, the narrowest width where it still works, padding, who
-scrolls, and whether it's built from one surface's own parts. Pass any answer
-as a flag instead (`--label`, `--icon`, `--orientations`, `--min-width`,
-`--padding`, `--scroll`, `--surfaces`), or `--yes` for the defaults.
+| Kind | How it renders |
+| --- | --- |
+| `title` | The item's main text. It wraps |
+| `label` | A short single line. It truncates, with the full text in a title |
+| `value` | The value in a label and value pair. It shows "Not set" when empty |
+| `detail` | Secondary text. It wraps |
+| `meta` | Small text, like a time. It wraps |
 
-It writes, in `registry/<name>/`:
+```bash
+pnpm create:occupant key-facts --view-model key-facts.json \
+  --label "Key facts" --description "The few facts that matter most about an item." \
+  --icon Info --orientations both --min-width 160 --padding padded --scroll either \
+  --surfaces none --subject "key facts" --empty "Facts show here once there are some." \
+  --primary-domain "shipment tracking" --secondary-domain "customer support"
+```
+
+Anything left out, it asks for in plain terms. From those answers it writes, in
+`registry/<name>/`:
 
 - `<name>.occupant.ts`: the spec.
-- `<name>.view-model.ts`: a neutral view model to replace with the real shape.
-- `<name>.tsx`: the component, wrapped in `<Occupant>`, with the standard
-  states wired in, and reading `useSurface()` when it claims both
-  orientations.
-- `examples/`: an example adapter and a stress adapter. Neither is shipped.
+- `<name>.view-model.ts`: the view model, with each field's description.
+- `<name>.tsx`: the component, rendering each field by its kind, wrapped in
+  `<Occupant>` with the standard states, and reading `useSurface()` when it
+  claims both orientations.
+- `examples/`: a primary and a secondary adapter, one per domain, and a
+  complete stress adapter made from the fields. Examples are always keyed by
+  role, primary, secondary, and stress, so previews and checks can switch
+  samples the same way for every occupant. None are shipped.
 
-It also writes a Patterns page with the "Where it fits" table, and registers
-the occupant: a registry item, a path alias, the Patterns nav, its copy in
+It also writes the Patterns page, and registers the occupant: a registry item
+with the dependencies it imports, a path alias, the Patterns nav, its copy in
 `locales/en.json`, and the occupant index. The checks, the docs, and any
-preview with occupant pickers read the index, so there's nothing else to wire
-up.
+preview with occupant pickers read the index.
+
+What it can't know, like the two domains' sample data, it marks with one
+placeholder token, and `pnpm check:placeholders` fails until every one is
+filled in. It runs in lint.
+
+Then measure, and set the minimum width:
+
+```bash
+pnpm measure:occupant key-facts            # report the floor
+pnpm measure:occupant key-facts --set 160  # or --apply for the floor itself
+```
 
 In Claude Code, the `create-occupant` skill does this with you: it asks the
 questions, runs the generator and the checks, and explains any failures.

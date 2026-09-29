@@ -9,8 +9,9 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
-// Split so this file doesn't flag itself.
-export const PLACEHOLDER = ["@fill", "in"].join("-");
+// The placeholder token. Split so the scripts that define it don't contain it;
+// check-placeholders.ts and create-occupant.ts define it the same way.
+const PLACEHOLDER = ["@fill", "in"].join("-");
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const DIRECTORIES = ["app", "registry", "lib", "templates", "hooks", "tests"];
