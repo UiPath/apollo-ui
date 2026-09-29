@@ -199,6 +199,7 @@ const preview: Preview = {
               'Guidance Field Type',
               'Guidance Field Help',
               'Guidance Field Validation',
+              'Guidance Repeatable Rows',
               '*',
             ],
             'Experiments',
