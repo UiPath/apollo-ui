@@ -24,7 +24,8 @@
     "test:e2e:full": "playwright test --project=full",
     "generate:occupants": "node --experimental-strip-types scripts/generate-occupant-index.ts",
     "create:occupant": "node --experimental-strip-types --no-warnings scripts/create-occupant.ts",
-    "check:placeholders": "node --experimental-strip-types --no-warnings scripts/check-placeholders.ts"
+    "check:placeholders": "node --experimental-strip-types --no-warnings scripts/check-placeholders.ts",
+    "measure:occupant": "node --experimental-strip-types --no-warnings scripts/measure-occupant.ts"
   },
   "keywords": [],
   "author": "",
