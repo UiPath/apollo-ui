@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.62.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.61.0...@uipath/apollo-react@6.62.0) (2026-09-29)
+
+### Features
+
+* **apollo-react:** let Toolbox open drilled into a category via initialCategoryId ([d6a19eb](https://github.com/UiPath/apollo-ui/commit/d6a19eb9f67f28785b2f3448ec37dc6371cfab91))
+
 ## [@uipath/apollo-react-v6.61.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.60.0...@uipath/apollo-react@6.61.0) (2026-09-28)
 
 ### Features
