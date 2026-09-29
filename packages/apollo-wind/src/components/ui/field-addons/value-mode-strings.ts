@@ -27,6 +27,12 @@ export interface ValueModeStrings {
   fieldActions: string;
   /** Hover text on the `=` indicator. */
   expressionIndicator: string;
+  /** Title of the dialog confirming a switch that loses the current value. */
+  lossyTitle: string;
+  lossyDescription: string;
+  /** The dialog's confirm and cancel buttons. */
+  confirm: string;
+  cancel: string;
 }
 
 export const DEFAULT_VALUE_MODE_STRINGS: ValueModeStrings = {
@@ -44,4 +50,8 @@ export const DEFAULT_VALUE_MODE_STRINGS: ValueModeStrings = {
   promptPlaceholder: 'Describe the value',
   fieldActions: 'Field actions',
   expressionIndicator: 'JavaScript expression',
+  lossyTitle: 'Switch value mode?',
+  lossyDescription: 'The current value will be cleared. This cannot be undone.',
+  confirm: 'Switch',
+  cancel: 'Cancel',
 };
