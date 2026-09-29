@@ -44,6 +44,7 @@
         "./registry/progress-view-model/progress-markers"
       ],
       "@/components/ui/occupant": ["./registry/occupant/occupant"],
+      "@/components/ui/key-facts": ["./registry/key-facts/key-facts"],
       "@/components/ui/activity-timeline": [
         "./registry/activity-timeline/activity-timeline"
       ],

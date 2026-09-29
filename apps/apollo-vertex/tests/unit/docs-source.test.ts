@@ -10,6 +10,7 @@ const PAGES = [
   "templates/detail-page/page.mdx",
   "guidelines/creating-occupants/page.mdx",
   "patterns/activity-timeline/page.mdx",
+  "patterns/key-facts/page.mdx",
   "patterns/stage-strip/page.mdx",
   ...readdirSync(join(APP, "surfaces"), { withFileTypes: true })
     .filter((entry) => entry.isDirectory())

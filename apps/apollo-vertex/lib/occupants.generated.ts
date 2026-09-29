@@ -7,6 +7,8 @@ import { pageHeaderSurface } from "@/registry/page-header/page-header.surface";
 import { sidePanelSurface } from "@/registry/side-panel/side-panel.surface";
 import { activityTimelineOccupant } from "@/registry/activity-timeline/activity-timeline.occupant";
 import { EXAMPLES as activityTimelineExamples } from "@/registry/activity-timeline/examples";
+import { keyFactsOccupant } from "@/registry/key-facts/key-facts.occupant";
+import { EXAMPLES as keyFactsExamples } from "@/registry/key-facts/examples";
 import { stageStripOccupant } from "@/registry/stage-strip/stage-strip.occupant";
 import { EXAMPLES as stageStripExamples } from "@/registry/stage-strip/examples";
 
@@ -29,5 +31,6 @@ export const OCCUPANT_SPECS: readonly RegisteredOccupantSpec[] = [
     spec: activityTimelineOccupant,
     examples: Object.keys(activityTimelineExamples),
   },
+  { spec: keyFactsOccupant, examples: Object.keys(keyFactsExamples) },
   { spec: stageStripOccupant, examples: Object.keys(stageStripExamples) },
 ];

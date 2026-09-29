@@ -1,0 +1,54 @@
+import { OccupantLabel, WhereItFits } from '@/app/_components/occupant-docs';
+import { OccupantInSurface } from '@/app/_components/occupant-in-surface';
+
+# Key Facts
+
+<OccupantLabel />
+
+The few facts that matter most about an item, as label and value pairs. It
+takes the [occupant](/guidelines/creating-occupants) role in both shapes of
+space: the facts stack in a column, or sit in a wrapping row in a band.
+
+<div className="not-prose my-6 flex flex-col gap-6">
+  <OccupantInSurface occupant="key-facts" surface="page-header" example="shipment" width="100%" />
+  <div className="flex flex-wrap gap-6">
+    <OccupantInSurface occupant="key-facts" surface="side-panel" example="shipment" width={320} height={320} />
+    <OccupantInSurface occupant="key-facts" surface="side-panel" example="support-case" width={320} height={320} />
+  </div>
+</div>
+
+The same occupant, with data from two solutions: shipment tracking and
+customer support. It shows the same information in either shape, so it's one
+occupant with both orientations.
+
+## Where it fits
+
+<WhereItFits name="key-facts" />
+
+## View model
+
+It renders a `KeyFactsViewModel`. Nothing in it names a domain.
+
+| Field | What it holds |
+| --- | --- |
+| `subject` | What the facts are about, for accessible names, like an item's id |
+| `facts` | Each fact's `id`, `label`, and `value`, already formatted. A missing or empty value shows as "Not set" |
+
+Your solution's adapter decides which few facts matter, and formats them.
+
+## States
+
+It renders the standard occupant states. With no facts, it shows the empty
+state.
+
+## Installation
+
+```bash
+npx shadcn@latest add @uipath/key-facts
+```
+
+## Accessibility
+
+- The facts are a description list, named for the subject ("Key facts for …").
+- Long labels truncate, with the full label in a title. Values wrap, so
+  nothing is cut off at any width from the minimum up.

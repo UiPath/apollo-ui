@@ -6,6 +6,7 @@ import {
 } from "@/lib/composition";
 import { activityTimelineOccupant } from "@/registry/activity-timeline/activity-timeline.occupant";
 import { contentAreaSurface } from "@/registry/content-area/content-area.surface";
+import { keyFactsOccupant } from "@/registry/key-facts/key-facts.occupant";
 import { pageHeaderSurface } from "@/registry/page-header/page-header.surface";
 import { sidePanelSurface } from "@/registry/side-panel/side-panel.surface";
 import { stageStripOccupant } from "@/registry/stage-strip/stage-strip.occupant";
@@ -65,6 +66,12 @@ const PAGES: Record<string, string[]> = {
     "Surfaces | Page header",
     `Minimum width | ${px(stageStripOccupant.requires.minWidth)}`,
     "Orientations | horizontal",
+  ],
+  "/patterns/key-facts": [
+    "Occupant",
+    "Surfaces | Content area, Page header, Side panel",
+    `Minimum width | ${px(keyFactsOccupant.requires.minWidth)}`,
+    "Orientations | vertical, horizontal",
   ],
   "/guidelines/creating-occupants": [
     px(stageStripOccupant.requires.minWidth),

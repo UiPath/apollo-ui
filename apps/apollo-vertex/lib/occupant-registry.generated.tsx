@@ -5,6 +5,9 @@ import { defineOccupant, type RegisteredOccupant } from "@/lib/occupant-entry";
 import { ActivityTimeline } from "@/registry/activity-timeline/activity-timeline";
 import { activityTimelineOccupant } from "@/registry/activity-timeline/activity-timeline.occupant";
 import { EXAMPLES as activityTimelineExamples } from "@/registry/activity-timeline/examples";
+import { KeyFacts } from "@/registry/key-facts/key-facts";
+import { keyFactsOccupant } from "@/registry/key-facts/key-facts.occupant";
+import { EXAMPLES as keyFactsExamples } from "@/registry/key-facts/examples";
 import { StageStrip } from "@/registry/stage-strip/stage-strip";
 import { stageStripOccupant } from "@/registry/stage-strip/stage-strip.occupant";
 import { EXAMPLES as stageStripExamples } from "@/registry/stage-strip/examples";
@@ -15,6 +18,11 @@ export const OCCUPANT_REGISTRY: readonly RegisteredOccupant[] = [
     spec: activityTimelineOccupant,
     Component: ActivityTimeline,
     examples: activityTimelineExamples,
+  }),
+  defineOccupant({
+    spec: keyFactsOccupant,
+    Component: KeyFacts,
+    examples: keyFactsExamples,
   }),
   defineOccupant({
     spec: stageStripOccupant,
