@@ -7,6 +7,15 @@ import {
 } from './validation-converter';
 
 describe('validationConfigToZod', () => {
+  it('accepts null, a cleared value, for a field that is not required', () => {
+    expect(validationConfigToZod(undefined, 'text').safeParse(null).success).toBe(true);
+    expect(validationConfigToZod({ minLength: 3 }, 'text').safeParse(null).success).toBe(true);
+    expect(validationConfigToZod(undefined, 'boolean').safeParse(null).success).toBe(true);
+    expect(validationConfigToZod({ required: true }, 'boolean').safeParse(null).success).toBe(
+      false
+    );
+  });
+
   describe('base schema by field type', () => {
     it('creates string schema for text field', () => {
       const schema = validationConfigToZod(undefined, 'text');

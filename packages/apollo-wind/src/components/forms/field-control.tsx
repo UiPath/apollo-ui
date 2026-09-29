@@ -1,6 +1,10 @@
 import type * as React from 'react';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useRef } from 'react';
 import { useFormContext } from 'react-hook-form';
+import {
+  BooleanRadioGroup,
+  type BooleanRadioGroupStrings,
+} from '@/components/ui/boolean-radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DatePicker } from '@/components/ui/date-picker';
 import { DateTimePicker } from '@/components/ui/datetime-picker';
@@ -21,6 +25,7 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import type { FieldMetadata, FieldOption, FieldType, SliderFieldMetadata } from './form-schema';
+import { LiteralValueContext } from './literal-value-context';
 import { StringListControl } from './string-list-field';
 
 /** The react-hook-form `Controller` binding a control reads and writes. */
@@ -40,6 +45,8 @@ export interface FieldControlProps {
   disabled?: boolean;
   /** Marks the control invalid and points it at the `${field.name}-error` message. */
   invalid?: boolean;
+  /** Labels of a `boolean` field's radios. */
+  strings?: Partial<BooleanRadioGroupStrings>;
 }
 
 /**
@@ -61,8 +68,6 @@ export interface FieldControlGeometry {
 /**
  * Each field type's geometry inside an `InputGroup`. Types not listed have not been fitted to one
  * yet.
- * Booleans are listed as the tri-state radio group they render as there, not as a lone switch or
- * checkbox.
  */
 export const FIELD_CONTROL_GEOMETRY: Readonly<Partial<Record<FieldType, FieldControlGeometry>>> = {
   text: {
@@ -110,10 +115,16 @@ export const FIELD_CONTROL_GEOMETRY: Readonly<Partial<Record<FieldType, FieldCon
   switch: {
     layout: 'row',
     variant: 'none',
-    labelTarget: 'labelledby',
+    labelTarget: 'control',
     insertable: false,
   },
   checkbox: {
+    layout: 'row',
+    variant: 'none',
+    labelTarget: 'control',
+    insertable: false,
+  },
+  boolean: {
     layout: 'row',
     variant: 'none',
     labelTarget: 'labelledby',
@@ -136,6 +147,7 @@ export function FieldControl({
   options = NO_OPTIONS,
   disabled = false,
   invalid = false,
+  strings,
 }: FieldControlProps) {
   const errorId = invalid ? `${field.name}-error` : undefined;
   const { onChange } = formField;
@@ -281,6 +293,21 @@ export function FieldControl({
           aria-describedby={errorId}
           aria-errormessage={errorId}
           id={field.name}
+        />
+      );
+
+    case 'boolean':
+      return (
+        <BooleanRadioGroup
+          aria-labelledby={`${field.name}-label`}
+          value={typeof formField.value === 'boolean' ? formField.value : null}
+          onValueChange={formField.onChange}
+          onBlur={formField.onBlur}
+          disabled={disabled}
+          aria-invalid={invalid || undefined}
+          aria-describedby={errorId}
+          aria-errormessage={errorId}
+          strings={strings}
         />
       );
 
@@ -455,7 +482,11 @@ function SliderControl({ field, formField, disabled, invalid, errorId }: SliderC
 /** The slider's effective max, following `field.maxRef` when it has one. */
 export function useSliderMax(field: SliderFieldMetadata): number {
   const { watch } = useFormContext();
-  const watchedMax = field.maxRef ? watch(field.maxRef.fromField) : undefined;
+  // The referenced field's fixed value, should it have value modes.
+  const readValue = useContext(LiteralValueContext);
+  const watchedMax = field.maxRef
+    ? readValue(field.maxRef.fromField, watch(field.maxRef.fromField))
+    : undefined;
   return resolveSliderMax(field, watchedMax);
 }
 

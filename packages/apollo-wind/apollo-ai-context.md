@@ -383,6 +383,21 @@ RuleBuilder, ExpressionBuilder, DataFetcher, DataSourceBuilder
 
 All imported from `@/components/forms/<component-name>`.
 
+A field with `valueModes`, `headerActions`, `menuActions` or `badge` renders the field anatomy
+(`ModeAwareField`): header actions and badge, a mode glyph, the active mode's control and a trailing
+menu (`FieldMenu`). Hosts register codecs, mode definitions (with `validate`), controls and
+`literalControls` through `FormPlugin.valueModes`; actions through `FormPlugin.fieldActions`
+(`header`, `menu`), built from `createInsertVariableAction`, `createAiAssistAction` and
+`createClearAction` with the configuration each needs; and strings for every built-in through
+`FormPlugin.strings` (`valueModes`, `boolean`, `insertVariable`, `aiAssist`, `clear`, `validation`).
+Keep plugin objects stable. The default codec stores every value as `{ $mode, value }` (no `value`
+once cleared) and reads a raw value as literal, so code that reads form values must expect the
+envelope once a field adopts modes. `convert` returns the value in the new mode and is asked about
+empty values too, so a switch can seed one; `encode` gets the previous stored value. Rules,
+conditions and data sources read a mode field's literal value only (`literalValues`; other modes
+read as `VALUE_MODE_OPAQUE`). A registered control that takes text passes `insertable: true` and
+either wires `controlRef` or renders a text input with the field's name as its id.
+
 ---
 
 ## Page Templates

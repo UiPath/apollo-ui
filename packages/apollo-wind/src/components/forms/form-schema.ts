@@ -1,4 +1,13 @@
 import type { FieldValues, UseFormReturn } from 'react-hook-form';
+import type { ValueMode } from '@/components/ui/field-addons/value-mode-strings';
+import type { FieldActionRegistry, FieldActionsPluginConfig } from './field-actions';
+import type { MetadataFormStringOverrides, MetadataFormStrings } from './form-strings';
+import type {
+  FieldControlRegistration,
+  ValueModeControlHandle,
+  ValueModeRegistry,
+  ValueModesPluginConfig,
+} from './value-modes';
 
 /**
  * Core Schema Types for Apollo-Wind Metadata Forms
@@ -160,6 +169,68 @@ export interface ValidationConfig {
   messages?: ValidationMessages;
 }
 
+// ============================================================================
+// Value modes
+// ============================================================================
+
+/** A value mode's id. apollo-wind ships `literal`, `expression`, `variable` and `prompt`. */
+/** A built-in mode or one a plugin defines. Built-in ids autocomplete; any string is accepted. */
+export type ValueModeId = ValueMode | (string & {});
+
+/**
+ * A control by the name it is registered under in `FormPlugin.valueModes.controlRegistry`, optionally
+ * with props of its own. A name rather than the component keeps the schema JSON-serializable.
+ *
+ * @example 'rich-text'
+ * @example { component: 'rich-text', componentProps: { toolbar: false } }
+ */
+export type ValueModeControlRef =
+  | string
+  | { component: string; componentProps?: Record<string, unknown> };
+
+/**
+ * The modes a field's value can be written in, such as a fixed value or an expression.
+ * JSON-serializable: behaviour and geometry come from `FormPlugin.valueModes`.
+ *
+ * Stored shape, with the default codec:
+ * - every write is an envelope, `{ $mode, value }`, fixed values included;
+ * - a cleared value keeps its envelope without `value`, `{ $mode }`, so its mode survives;
+ * - a raw value is read as a fixed value, on read only: it lets existing data load, and the first
+ *   write wraps it. Whatever reads the form's values (submit handlers, plugins, saved drafts) must
+ *   expect the envelope once a field adopts value modes; that migration is the host's to make.
+ *
+ * Rules, conditions and data sources read a field's fixed value only. In any other mode its value
+ * is `VALUE_MODE_OPAQUE`: set, but equal to nothing, whatever the codec stores.
+ */
+export interface ValueModesConfig {
+  /** Offered modes in menu order. The first is the mode of an empty value without `defaultMode`. */
+  modes: ValueModeId[];
+  /** The mode of an empty value. */
+  defaultMode?: ValueModeId;
+  /** Whether the menu offers the modes. Defaults to more than one mode. */
+  switchable?: boolean;
+  /**
+   * The value's type as the modes describe it, such as `object` or `array`. Picks the built-in
+   * Fixed value description and reaches the codec as `CodecContext.expectedType`. Defaults to
+   * the field type's own (`number`, `boolean`) or a custom field's `valueType`.
+   */
+  expectedType?: string;
+  /** Whether a glyph ahead of the value marks a mode other than `literal`. Defaults to true. */
+  indicator?: boolean;
+  /**
+   * This field's control per mode, `literal` included: keys are mode ids, values name controls
+   * registered in `FormPlugin.valueModes.controlRegistry`. Takes precedence over the plugin's
+   * `literalControls` and the mode definition's `control`.
+   *
+   * @example { literal: 'rich-text', expression: 'code' }
+   */
+  controls?: Partial<Record<ValueModeId, ValueModeControlRef>>;
+  /** A codec registered in `FormPlugin.valueModes.codecs`. Defaults to `'default'`. */
+  codec?: string;
+  /** Per-field overrides of a mode's title and description. */
+  labels?: Partial<Record<ValueModeId, { title?: string; description?: string }>>;
+}
+
 /**
  * Base metadata common to all field types
  */
@@ -179,6 +250,14 @@ interface BaseFieldMetadata {
   tooltip?: string;
   /** Accessible name of the tooltip trigger (default 'More information'). */
   tooltipAriaLabel?: string;
+  /** Renders the field with a mode menu and writes its value through a codec. */
+  valueModes?: ValueModesConfig;
+  /** Actions behind the label, by id from `FormPlugin.fieldActions.header`, in render order. */
+  headerActions?: string[];
+  /** Rows of the trailing menu, by id from `FormPlugin.fieldActions.menu`, in render order. */
+  menuActions?: string[];
+  /** Text after the label, such as the value's type. Renders the field anatomy's header. */
+  badge?: string;
 }
 
 // ============================================================================
@@ -235,6 +314,14 @@ export interface CheckboxFieldMetadata extends BaseFieldMetadata {
 
 export interface SwitchFieldMetadata extends BaseFieldMetadata {
   type: 'switch';
+}
+
+/**
+ * True / False radios with an unset state: a boolean that may have no value, which a switch or
+ * checkbox cannot show.
+ */
+export interface BooleanFieldMetadata extends BaseFieldMetadata {
+  type: 'boolean';
 }
 
 /**
@@ -324,6 +411,7 @@ export type FieldMetadata =
   | RadioFieldMetadata
   | CheckboxFieldMetadata
   | SwitchFieldMetadata
+  | BooleanFieldMetadata
   | SliderFieldMetadata
   | DateFieldMetadata
   | DateTimeFieldMetadata
@@ -459,6 +547,10 @@ export type FormSchema = SinglePageFormSchema | MultiStepFormSchema;
 
 // Props interface for custom field components
 export interface CustomFieldComponentProps {
+  /**
+   * The stored value; in the field anatomy (a field with `valueModes`, field actions or a badge),
+   * the fixed value, decoded.
+   */
   value: unknown;
   onChange: (value: unknown) => void;
   onBlur: () => void;
@@ -467,8 +559,22 @@ export interface CustomFieldComponentProps {
   disabled?: boolean;
   required?: boolean;
   error?: string;
+  /**
+   * In the field anatomy: the handle Insert variable writes through. A component registered as
+   * `insertable` without a text input carrying the field's name as its id attaches one.
+   */
+  controlRef?: React.Ref<ValueModeControlHandle>;
+  /** In the field anatomy: the label's id, for a component registered with `labelTarget: 'labelledby'`. */
+  labelId?: string;
   [key: string]: unknown; // Allow additional props from componentProps
 }
+
+/** Custom components by name, each bare or with its geometry inside the field anatomy. */
+export type CustomComponents = Record<
+  string,
+  | React.ComponentType<CustomFieldComponentProps>
+  | FieldControlRegistration<CustomFieldComponentProps>
+>;
 
 export interface FormContext<T extends FieldValues = FieldValues> {
   schema: FormSchema;
@@ -486,6 +592,13 @@ export interface FormContext<T extends FieldValues = FieldValues> {
     name: string,
     component: React.ComponentType<CustomFieldComponentProps>
   ) => void;
+
+  /** Codecs, mode definitions and controls merged from every plugin. */
+  valueModes?: ValueModeRegistry;
+  /** Field actions merged from every plugin. */
+  fieldActions?: FieldActionRegistry;
+  /** Every plugin's `strings` over the English defaults. */
+  strings?: MetadataFormStrings;
 }
 
 // ============================================================================
@@ -505,8 +618,19 @@ export interface FormPlugin<T extends FieldValues = FieldValues> {
   // Custom validators (JSON-serializable validation configs)
   validators?: Record<string, ValidationConfig>;
 
-  // Custom components
-  components?: Record<string, React.ComponentType<CustomFieldComponentProps>>;
+  // Custom components. A registration also gives the component's geometry inside the field
+  // anatomy, for a custom field with value modes or field actions.
+  components?: CustomComponents;
+
+  /** Codecs, mode definitions and controls for fields with `valueModes`. */
+  valueModes?: ValueModesPluginConfig;
+  /** Actions for fields with `headerActions` or `menuActions`. */
+  fieldActions?: FieldActionsPluginConfig;
+  /**
+   * Strings for every built-in, by group; later plugins win per string. A factory's own
+   * `strings` still override these for its action.
+   */
+  strings?: MetadataFormStringOverrides;
 
   // Rules engine extensions
   customConditions?: Record<string, (value: unknown, condition: unknown) => boolean>;
