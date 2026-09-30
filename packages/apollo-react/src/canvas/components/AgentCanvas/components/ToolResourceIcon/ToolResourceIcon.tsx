@@ -47,10 +47,10 @@ export const ToolResourceIcon = ({ size = 24, tool }: ToolResourceIconProps) => 
           return <AttachmentIcon />;
         case BuiltInToolType.BatchTransform:
           return <AddDataColumnIcon />;
+        case BuiltInToolType.CreateFile:
+          return <CreateFileIcon />;
         case BuiltInToolType.DeepRAG:
           return <AnalyzeIcon />;
-        case BuiltInToolType.GenerateFile:
-          return <CreateFileIcon />;
         case BuiltInToolType.LoadAttachments:
           return <AttachmentIcon />;
         default:
