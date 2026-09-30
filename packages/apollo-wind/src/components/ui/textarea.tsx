@@ -5,11 +5,11 @@ import { FormFieldError } from './form-field';
 import { useControlValidation, useInputGroup } from './input-group-context';
 
 // Inside an InputGroup the group draws the box. Pads only the difference between the group's own
-// padding and a standalone Textarea's inset (8px), so the first line sits where a standalone
-// Textarea's does. The full `py-2` stacked on the group's pushed it 4px lower, and the future
-// theme's group pads 8px itself.
+// padding and the row's midline, so the first line sits where a one-line Input's text does and
+// lines up with the addons: `py-1` on the default group's 4px, `py-0.5` on the future group's 8px
+// (a 40px row centres a 20px line 10px down).
 const IN_GROUP_CLASS =
-  'min-h-0 flex-1 resize-none rounded-none !border-0 !ring-0 bg-transparent p-0 py-1 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 future:rounded-none future:border-0 future:bg-transparent future:py-0 future:focus-visible:ring-offset-0';
+  'min-h-0 flex-1 resize-none rounded-none !border-0 !ring-0 bg-transparent p-0 py-1 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 future:rounded-none future:border-0 future:bg-transparent future:py-0.5 future:focus-visible:ring-offset-0';
 
 export type TextareaProps = React.ComponentProps<'textarea'> & {
   /**

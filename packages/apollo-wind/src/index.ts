@@ -20,7 +20,6 @@ export type {
   FieldActionGenerate,
   FieldActionRegistry,
   FieldActionsPluginConfig,
-  FieldActionVariables,
   FieldHeaderAction,
   FieldMenuAction,
   InsertVariableActionOptions,
@@ -30,6 +29,7 @@ export {
   createAiAssistAction,
   createClearAction,
   createInsertVariableAction,
+  resolveVariables,
 } from './components/forms/field-actions';
 export type {
   FieldControlFormField,
@@ -64,6 +64,7 @@ export type {
   FormSchema,
   FormSection,
   FormStep,
+  FormVariables,
   StringListFieldMetadata,
   ValueModeControlRef,
   ValueModeId,
@@ -562,6 +563,8 @@ export {
   VARIABLE_PATH_REGEX,
   WORD_JOINER,
 } from './components/ui/prompt-editor';
+export type { PromptValueControlProps } from './components/ui/prompt-value-control';
+export { PromptValueControl } from './components/ui/prompt-value-control';
 export type {
   QuickFieldType,
   QuickFormFieldMode,
@@ -681,6 +684,8 @@ export {
   VariablePicker,
   VariablePickerContent,
 } from './components/ui/variable-picker';
+export type { VariableValueControlProps } from './components/ui/variable-value-control';
+export { VariableValueControl } from './components/ui/variable-value-control';
 // -----------------------------------------------------------------------------
 // Utilities
 // -----------------------------------------------------------------------------

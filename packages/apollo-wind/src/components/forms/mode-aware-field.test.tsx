@@ -1234,16 +1234,6 @@ describe('control resolution', () => {
     expect(screen.getByText('Pick').closest('label')).not.toHaveAttribute('for');
   });
 
-  it('gives a built-in mode without a control a plain input with its placeholder', async () => {
-    setup(
-      [{ name: 'a', type: 'text', label: 'A', valueModes: { modes: ['literal', 'prompt'] } }],
-      [],
-      { a: { $mode: 'prompt' } }
-    );
-    await settle();
-    expect(screen.getByLabelText('A')).toHaveAttribute('placeholder', 'Describe the value');
-  });
-
   it("describes the fixed value by the field's expected type", async () => {
     const { user } = setup([
       {
@@ -1471,5 +1461,173 @@ describe('edge cases', () => {
     await user.click(await screen.findByRole('menuitem', { name: /Clear value/ }));
     expect(values().a).toBeNull();
     expect(screen.getByRole('button', { name: 'Expression' })).toBeInTheDocument();
+  });
+});
+
+describe('built-in variable and prompt controls', () => {
+  const variables = [{ id: 'order', label: 'Order id', value: '$vars.orderId' }];
+  const formVariables = (source: FormPlugin['variables']): FormPlugin => ({
+    name: 'variables',
+    variables: source,
+  });
+
+  it("binds a variable picked from the form's variables", async () => {
+    const source = vi.fn(() => variables);
+    const { user, values } = setup(
+      [{ name: 'a', type: 'text', label: 'A', valueModes: { modes: ['literal', 'variable'] } }],
+      [formVariables(source)],
+      { a: { $mode: 'variable' } }
+    );
+    await settle();
+    const trigger = screen.getByRole('button', { name: 'A' });
+    expect(trigger).toHaveTextContent('Select a variable');
+    expect(trigger.closest('[data-slot="input-group"]')).toHaveAttribute(
+      'data-value-mode-control',
+      'built-in'
+    );
+    expect(source).not.toHaveBeenCalled();
+
+    await user.click(trigger);
+    expect(source).toHaveBeenCalledWith({ field: expect.objectContaining({ name: 'a' }) });
+    await user.click(await screen.findByText('Order id'));
+    expect(values().a).toStrictEqual({ $mode: 'variable', value: '$vars.orderId' });
+    expect(screen.getByRole('button', { name: 'A' })).toHaveTextContent('$vars.orderId');
+  });
+
+  it('hides Insert variable while the field is bound to a variable', async () => {
+    const { user } = setup(
+      [
+        {
+          name: 'a',
+          type: 'text',
+          label: 'A',
+          valueModes: { modes: ['literal', 'variable'] },
+          headerActions: ['insert-variable'],
+        },
+      ],
+      [formVariables(variables), insertPlugin({})],
+      { a: { $mode: 'variable', value: '$vars.orderId' } }
+    );
+    await settle();
+    expect(screen.queryByRole('button', { name: 'Insert variable' })).toBeNull();
+    await pickMode(user, 'Variable', 'Fixed value');
+    await user.click(
+      within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Switch' })
+    );
+    expect(screen.getByRole('button', { name: 'Insert variable' })).toBeInTheDocument();
+  });
+
+  it('edits a prompt in a tinted box that grows', async () => {
+    const { user, values } = setup(
+      [{ name: 'a', type: 'text', label: 'A', valueModes: { modes: ['literal', 'prompt'] } }],
+      [],
+      { a: { $mode: 'prompt', value: 'The order id' } }
+    );
+    await settle();
+    const textarea = screen.getByRole('textbox', { name: 'A' });
+    expect(textarea.tagName).toBe('TEXTAREA');
+    const group = textarea.closest('[data-slot="input-group"]');
+    expect(group).toHaveAttribute('data-layout', 'grow');
+    expect(group?.className).toContain('from-gradient-agent-start/25');
+    await user.type(textarea, ' from the email');
+    expect(values().a).toStrictEqual({ $mode: 'prompt', value: 'The order id from the email' });
+  });
+
+  it('inserts a variable at the caret of a prompt', async () => {
+    const { user, values } = setup(
+      [
+        {
+          name: 'a',
+          type: 'text',
+          label: 'A',
+          valueModes: { modes: ['literal', 'prompt'] },
+          headerActions: ['insert-variable'],
+        },
+      ],
+      [formVariables(variables), insertPlugin({})],
+      { a: { $mode: 'prompt', value: 'Summarize  now' } }
+    );
+    await settle();
+    (screen.getByRole('textbox', { name: 'A' }) as HTMLTextAreaElement).setSelectionRange(10, 10);
+    await user.click(screen.getByRole('button', { name: 'Insert variable' }));
+    await user.click(await screen.findByText('Order id'));
+    expect(values().a).toStrictEqual({ $mode: 'prompt', value: 'Summarize $vars.orderId now' });
+  });
+
+  it('focuses an invalid variable on submit', async () => {
+    setup(
+      [
+        {
+          name: 'v',
+          type: 'text',
+          label: 'V',
+          valueModes: { modes: ['literal', 'variable'] },
+          validation: { required: true },
+        },
+        {
+          name: 'p',
+          type: 'text',
+          label: 'P',
+          valueModes: { modes: ['literal', 'prompt'] },
+          validation: { required: true },
+        },
+      ],
+      [formVariables(variables)],
+      { v: { $mode: 'variable' }, p: { $mode: 'prompt', value: 'x' } }
+    );
+    await settle();
+    await submit();
+    expect(screen.getByRole('button', { name: 'V' })).toHaveFocus();
+  });
+
+  it('focuses an invalid prompt on submit', async () => {
+    setup(
+      [
+        {
+          name: 'p',
+          type: 'text',
+          label: 'P',
+          valueModes: { modes: ['literal', 'prompt'] },
+          validation: { required: true },
+        },
+      ],
+      [],
+      { p: { $mode: 'prompt' } }
+    );
+    await settle();
+    await submit();
+    expect(screen.getByRole('textbox', { name: 'P' })).toHaveFocus();
+  });
+
+  it("lets Insert variable fall back to the form's variables, and its own win", async () => {
+    const { user } = setup(
+      [
+        { name: 'a', type: 'text', label: 'A', headerActions: ['insert-variable'] },
+        { name: 'b', type: 'text', label: 'B', headerActions: ['own'] },
+      ],
+      [
+        formVariables(variables),
+        insertPlugin({}),
+        {
+          name: 'own',
+          fieldActions: {
+            header: {
+              own: createInsertVariableAction({
+                id: 'own',
+                variables: [{ id: 'mine', label: 'Mine', value: '$vars.mine' }],
+              }),
+            },
+          },
+        },
+      ]
+    );
+    await settle();
+    const [forA, forB] = screen.getAllByRole('button', { name: 'Insert variable' });
+    await user.click(forA);
+    expect(await screen.findByText('Order id')).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    await user.click(forB);
+    expect(await screen.findByText('Mine')).toBeInTheDocument();
+    expect(screen.queryByText('Order id')).toBeNull();
   });
 });

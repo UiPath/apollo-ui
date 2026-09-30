@@ -170,6 +170,10 @@ export function MetadataForm({
       literalValueOf(name, stored, stableSchema, valueModeRegistry.codecs),
     [stableSchema, valueModeRegistry]
   );
+  const formVariables = useMemo(
+    () => [...stablePlugins].reverse().find((plugin) => plugin.variables)?.variables,
+    [stablePlugins]
+  );
 
   // Keyed on what validation reads alone: a plugin change that leaves it as it was keeps the schema.
   const codecs = useShallowStable(valueModeRegistry.codecs);
@@ -241,8 +245,17 @@ export function MetadataForm({
       valueModes: valueModeRegistry,
       fieldActions: fieldActionRegistry,
       strings: formStrings,
+      variables: formVariables,
     };
-  }, [stableSchema, form, currentStep, valueModeRegistry, fieldActionRegistry, formStrings]);
+  }, [
+    stableSchema,
+    form,
+    currentStep,
+    valueModeRegistry,
+    fieldActionRegistry,
+    formStrings,
+    formVariables,
+  ]);
 
   // Ref for context to use in useEffects without causing dependency loops
   const contextRef = useRef(context);
