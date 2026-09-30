@@ -43,6 +43,7 @@ export {
   JSON_SIMILARITY_EVALUATOR_ID,
   LLM_JUDGE_EVALUATOR_ID,
   IXP_EXTRACTION_EVALUATOR_ID,
+  CASE_EVALUATION_EVALUATOR_ID,
 } from "./evaluators/registry";
 export type {
   EvaluatorRenderer,
@@ -71,6 +72,15 @@ export {
   IXP_OUTPUT_RENDERER,
 } from "./outputs/ixp-extraction/ixp-output-result";
 export { IxpOutputSchema } from "./outputs/ixp-extraction/schema";
+export {
+  CaseEvaluationOutputResult,
+  CASE_EVALUATION_OUTPUT_RENDERER,
+} from "./outputs/case-evaluation/case-evaluation-output";
+export { CaseEvaluationOutputSchema } from "./outputs/case-evaluation/schema";
+export type {
+  CaseEvaluationOutput,
+  EvaluationRecord,
+} from "./outputs/case-evaluation/schema";
 export type {
   IxpOutput,
   IxpDocumentExtraction,

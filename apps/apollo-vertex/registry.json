@@ -3312,6 +3312,16 @@
           "target": "components/ui/solution-tests/outputs/ixp-extraction/ixp-output-result.tsx"
         },
         {
+          "path": "registry/solution-tests/outputs/case-evaluation/schema.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/outputs/case-evaluation/schema.ts"
+        },
+        {
+          "path": "registry/solution-tests/outputs/case-evaluation/case-evaluation-output.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/outputs/case-evaluation/case-evaluation-output.tsx"
+        },
+        {
           "path": "registry/solution-tests/ixp/shared/format-values.ts",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/ixp/shared/format-values.ts"
@@ -3370,6 +3380,16 @@
           "path": "registry/solution-tests/evaluators/ixp-extraction/internal/verdict-badge.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/evaluators/ixp-extraction/internal/verdict-badge.tsx"
+        },
+        {
+          "path": "registry/solution-tests/evaluators/case-evaluation/schema.ts",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/evaluators/case-evaluation/schema.ts"
+        },
+        {
+          "path": "registry/solution-tests/evaluators/case-evaluation/case-evaluation-result.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/evaluators/case-evaluation/case-evaluation-result.tsx"
         }
       ]
     },

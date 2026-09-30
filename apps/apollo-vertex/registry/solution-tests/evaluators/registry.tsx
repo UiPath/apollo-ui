@@ -7,6 +7,8 @@ import {
   GenericEvaluatorDetailsSchema,
   GenericEvaluatorResult,
 } from "./generic-evaluator-result";
+import { CaseEvaluationResult } from "./case-evaluation/case-evaluation-result";
+import { CaseEvaluationDetailsSchema } from "./case-evaluation/schema";
 import { IxpExtractionResult } from "./ixp-extraction/ixp-extraction-result";
 import { IxpDetailsSchema } from "./ixp-extraction/schema";
 
@@ -15,6 +17,7 @@ export const JSON_SIMILARITY_EVALUATOR_ID = "uipath-json-similarity";
 export const LLM_JUDGE_EVALUATOR_ID =
   "uipath-llm-judge-output-semantic-similarity";
 export const IXP_EXTRACTION_EVALUATOR_ID = "uipath-ixp-document-extraction";
+export const CASE_EVALUATION_EVALUATOR_ID = "uipath-pe-case-evaluation";
 
 export interface EvaluatorRenderArgs {
   evaluatorId: string;
@@ -68,6 +71,11 @@ const EVALUATOR_RENDERERS: EvaluatorRenderers = {
   [IXP_EXTRACTION_EVALUATOR_ID]: makeRenderer(
     IxpDetailsSchema,
     IxpExtractionResult,
+    {},
+  ),
+  [CASE_EVALUATION_EVALUATOR_ID]: makeRenderer(
+    CaseEvaluationDetailsSchema,
+    CaseEvaluationResult,
     {},
   ),
 };
