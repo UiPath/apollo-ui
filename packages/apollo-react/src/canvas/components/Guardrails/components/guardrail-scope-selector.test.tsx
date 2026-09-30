@@ -92,6 +92,66 @@ describe('GuardrailScopeSelector', () => {
     expect(onChange).toHaveBeenCalledWith({ scopes: ['Llm'] });
   });
 
+  describe('lockSingleScope', () => {
+    it('locks the lone allowed scope once it is selected', () => {
+      const onChange = vi.fn();
+      render(
+        <GuardrailScopeSelector
+          {...defaultProps}
+          selector={{ scopes: ['Agent'] }}
+          allowedScopes={['Agent']}
+          lockSingleScope
+          onChange={onChange}
+        />
+      );
+
+      const chip = screen.getByRole('button', { name: 'Agent' });
+      expect(chip).toBeDisabled();
+      expect(chip).toHaveAttribute('aria-pressed', 'true');
+      fireEvent.click(chip);
+      expect(onChange).not.toHaveBeenCalled();
+    });
+
+    it('leaves the lone chip toggleable without the prop', () => {
+      const onChange = vi.fn();
+      render(
+        <GuardrailScopeSelector
+          {...defaultProps}
+          selector={{ scopes: ['Agent'] }}
+          allowedScopes={['Agent']}
+          onChange={onChange}
+        />
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: 'Agent' }));
+      expect(onChange).toHaveBeenCalledWith({ scopes: [] });
+    });
+
+    it('locks nothing with several allowed scopes, or an unselected lone one', () => {
+      const { unmount } = render(
+        <GuardrailScopeSelector
+          {...defaultProps}
+          selector={{ scopes: ['Agent'] }}
+          allowedScopes={['Agent', 'Llm']}
+          lockSingleScope
+        />
+      );
+      expect(screen.getByRole('button', { name: 'Agent' })).toBeEnabled();
+      unmount();
+
+      // A stored scope the definition no longer allows must stay fixable.
+      render(
+        <GuardrailScopeSelector
+          {...defaultProps}
+          selector={{ scopes: ['Llm'] }}
+          allowedScopes={['Agent']}
+          lockSingleScope
+        />
+      );
+      expect(screen.getByRole('button', { name: 'Agent' })).toBeEnabled();
+    });
+  });
+
   it('pre-selects all tools when toggling Tool scope on', () => {
     const onChange = vi.fn();
     render(<GuardrailScopeSelector {...defaultProps} onChange={onChange} />);

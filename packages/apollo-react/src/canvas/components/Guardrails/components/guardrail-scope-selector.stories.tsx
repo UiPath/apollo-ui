@@ -111,6 +111,22 @@ export const AllowedScopes: Story = {
 };
 
 /**
+ * lockSingleScope keeps a definition's only scope selected, as Agents does. Without it the lone
+ * chip toggles off and the builder then reports that a scope is required.
+ */
+export const SingleScopeLocked: Story = {
+  args: { selector: agentOnly, onChange: () => {} },
+  render: () => (
+    <ScopeSelectorHost
+      initial={agentOnly}
+      allowedScopes={['Agent']}
+      availableToolNames={TOOLS}
+      lockSingleScope
+    />
+  ),
+};
+
+/**
  * Errors are host-owned and render as soon as they are present. These are recomputed on every
  * change: deselect Tools to swap the tools message for the scopes one.
  */
