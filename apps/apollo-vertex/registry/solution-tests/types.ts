@@ -59,6 +59,8 @@ export interface SolutionTest {
   Id: string;
   TestName?: string;
   VerticalSolutionVersion?: string;
+  /** Vertical configuration version the baseline was captured under. */
+  ConfigVersion?: string;
   Status: number;
   IsActive?: boolean;
   UserMessages?: string;
@@ -84,6 +86,10 @@ export interface SolutionTestRun {
   RunBatchId: string;
   Status: number;
   VerticalSolutionVersion?: string;
+  /** Vertical configuration version this run executed against. */
+  ConfigVersion?: string;
+  /** Vertical configuration version from the test baseline. */
+  BaselineConfigVersion?: string;
   TestRunScore?: number;
   JobsPassed?: number;
   JobsTotal?: number;
