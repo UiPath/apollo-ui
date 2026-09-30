@@ -34,9 +34,8 @@ interface StageStripViewProps {
 }
 
 /**
- * The strip without its occupant root, for a view that embeds it (like an
- * item header's content area). A compact marker per stage, then the current
- * stage and its latest event.
+ * The strip without its occupant root, to embed in a view of your own. A
+ * compact marker per stage, then the current stage and its latest event.
  */
 function StageStripView({ view }: StageStripViewProps) {
   const { t } = useTranslation();
