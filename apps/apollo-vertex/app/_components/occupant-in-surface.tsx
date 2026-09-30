@@ -40,7 +40,7 @@ export function OccupantInSurface({
 }: OccupantInSurfaceProps) {
   const entry = OCCUPANT_REGISTRY.find((o) => o.spec.name === occupant);
   const surface = SURFACE_SPECS.find((s) => s.name === surfaceName);
-  const Host = SURFACE_HOSTS[surfaceName];
+  const Host = SURFACE_HOSTS[surfaceName]?.Host;
   if (!entry || !surface || !Host) return null;
   const { spec } = entry;
   const padding = occupantPadding(spec);
