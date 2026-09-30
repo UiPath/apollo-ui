@@ -40,8 +40,8 @@ export enum ProjectType {
 export enum BuiltInToolType {
   AnalyzeAttachments = 'AnalyzeAttachments',
   BatchTransform = 'BatchTransform',
+  CreateFile = 'CreateFile',
   DeepRAG = 'DeepRAG',
-  GenerateFile = 'GenerateFile',
   LoadAttachments = 'LoadAttachments',
 }
 

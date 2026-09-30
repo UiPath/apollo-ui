@@ -15,7 +15,7 @@ describe('ToolResourceIcon', () => {
   it.each([
     [BuiltInToolType.AnalyzeAttachments, 'attachment-icon'],
     [BuiltInToolType.BatchTransform, 'add-data-column-icon'],
-    [BuiltInToolType.GenerateFile, 'create-file-icon'],
+    [BuiltInToolType.CreateFile, 'create-file-icon'],
   ])('renders the %s built-in tool icon', (toolType, testId) => {
     render(<ToolResourceIcon tool={builtInTool(toolType)} />);
 
