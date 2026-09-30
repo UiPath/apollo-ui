@@ -58,10 +58,7 @@ for (const [width, q, full] of CASES) {
         }
       };
     });
-    await page.setViewportSize({ width, height: 900 });
-    await page.goto(`/preview/detail-page${q}`);
-    await page.locator("[data-template]").waitFor();
-    await page.waitForLoadState("networkidle");
+    await openPreview(page, q, width);
     const g = await page.evaluate(() => {
       const w = (s: string) => {
         const el = document.querySelector<HTMLElement>(s);
@@ -102,4 +99,40 @@ test('measured "max" matches what the grid laid out, so nothing jumps', async ({
       .getAttribute("aria-valuenow"),
   );
   expect(Math.abs(now - end)).toBeLessThanOrEqual(1);
+});
+
+test("the handle's range is measured from the moment it's in the document", async ({
+  page,
+}) => {
+  await page.goto("/preview/detail-page?panels=end", {
+    waitUntil: "domcontentloaded",
+  });
+  const seen = await page.evaluate(
+    () =>
+      new Promise<{ max: number; template: number }>((resolve) => {
+        const check = () => {
+          const handle = document.querySelector(
+            "[data-slot=detail-page-resize-handle]",
+          );
+          const template =
+            document.querySelector<HTMLElement>("[data-template]");
+          if (!handle?.isConnected || !template?.offsetWidth) return false;
+          resolve({
+            max: Number(handle.getAttribute("aria-valuemax")),
+            template: template.getBoundingClientRect().width,
+          });
+          return true;
+        };
+        if (check()) return;
+        const observer = new MutationObserver(
+          () => check() && observer.disconnect(),
+        );
+        observer.observe(document.documentElement, {
+          subtree: true,
+          childList: true,
+          attributes: true,
+        });
+      }),
+  );
+  expect(seen.max).toBe(endPanelMaxWidth(seen.template, false));
 });

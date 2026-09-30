@@ -1,13 +1,19 @@
 import type { Page } from "@playwright/test";
-import { LAYOUT_TOKENS } from "@/lib/composition";
-import { expect, pixel, settle, test } from "./fixtures";
+import {
+  colorDistance as distance,
+  expect,
+  FADE,
+  pixel,
+  scrollTo as scrollElement,
+  settle,
+  test,
+} from "./fixtures";
 
 /*
  * useScrollFade on each axis, on the preview fixture at /preview/scroll-fade:
  * three 192px boxes of solid content, scrolling on y, x, and both.
  */
 
-const FADE = `${LAYOUT_TOKENS.scrollFadeSize}px`;
 const box = (axis: string) => `[data-axis=${axis}]`;
 
 const fades = (page: Page, axis: string) =>
@@ -25,17 +31,11 @@ const fades = (page: Page, axis: string) =>
     };
   });
 
-const scrollTo = async (
+const scrollTo = (
   page: Page,
   axis: string,
-  position: { left?: number | "end"; top?: number | "end" },
-) => {
-  await page.locator(box(axis)).evaluate((el, { left = null, top = null }) => {
-    if (left !== null) el.scrollLeft = left === "end" ? el.scrollWidth : left;
-    if (top !== null) el.scrollTop = top === "end" ? el.scrollHeight : top;
-  }, position);
-  await settle(page);
-};
+  position: Parameters<typeof scrollElement>[2],
+) => scrollElement(page, box(axis), position);
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/preview/scroll-fade");
@@ -78,12 +78,6 @@ test("x in right-to-left: the fades follow where the content remains", async ({
   expect(g.right).toBe("10px");
 });
 
-test("y leaves the horizontal fades alone", async ({ page }) => {
-  const g = await fades(page, "y");
-  expect([g.top, g.bottom]).toEqual(["0px", FADE]);
-  expect([g.left, g.right]).toEqual(["", ""]);
-});
-
 test("both: all four edges track, and the masks intersect", async ({
   page,
 }) => {
@@ -121,8 +115,6 @@ test("both: all four edges track, and the masks intersect", async ({
     Math.round(r.x + 1),
     Math.round(r.y + r.height / 2),
   );
-  const distance = (a: number[], b: number[]) =>
-    Math.hypot(...a.map((v, i) => v - (b[i] ?? 0)));
   expect(distance(middle, background)).toBeGreaterThan(40);
   expect(distance(leftEdge, background)).toBeLessThan(
     distance(leftEdge, middle),

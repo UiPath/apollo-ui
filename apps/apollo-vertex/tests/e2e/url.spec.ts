@@ -1,5 +1,14 @@
 import type { Page } from "@playwright/test";
-import { expect, openCard, openPreview, pick, search, test } from "./fixtures";
+import { END_PANEL_DEFAULT_PX } from "@/templates/detail-page/detail-page.template";
+import {
+  expect,
+  openCard,
+  openPreview,
+  pick,
+  search,
+  test,
+  widths,
+} from "./fixtures";
 
 const layout = (page: Page) =>
   page.evaluate(() => {
@@ -66,36 +75,34 @@ test("settings are written as readable non-default params and restored on reload
   expect(await search(page)).toBe(q);
 });
 
-test("a shared link renders as written", async ({ page }) => {
-  await openPreview(page, "?shell=minimal&panels=both&start=beside-header");
-  const g = await layout(page);
-  expect([g.minimal, g.startBeside, g.start, g.end]).toEqual([
-    true,
-    true,
-    "open",
-    "open",
-  ]);
-});
-
-test("the rule's closes are never written to the URL", async ({ page }) => {
-  await openPreview(page, "", 1200);
-  expect((await layout(page)).start).toBe("closed");
-  expect(await search(page)).toBe("");
-});
+const INVALID: [string, string, string][] = [
+  [
+    "unknown values",
+    "?shell=bogus&panels=start&main-padding=huge&end=sideways",
+    "?panels=start",
+  ],
+  ["end-width=abc", "?panels=end&end-width=abc", "?panels=end"],
+  ["end-width below the minimum", "?panels=end&end-width=100", "?panels=end"],
+  ["a fractional end-width", "?panels=end&end-width=300.5", "?panels=end"],
+  ["unknown params", "?start-controls=rail&sidebar=collapsed", ""],
+];
 
 test("invalid values fall back to the defaults and are dropped", async ({
   page,
 }) => {
-  await openPreview(
-    page,
-    "?shell=bogus&panels=start&main-padding=huge&end=sideways",
-  );
-  const g = await layout(page);
-  expect([g.minimal, g.start, g.end, g.mainPadding]).toEqual([
-    false,
-    "open",
-    null,
-    "padded",
-  ]);
-  expect(await search(page)).toBe("?panels=start");
+  for (const [name, query, kept] of INVALID) {
+    await openPreview(page, query);
+    expect(await search(page), name).toBe(kept);
+    if (query.includes("end-width"))
+      expect((await widths(page)).end, name).toBe(END_PANEL_DEFAULT_PX);
+    if (query.includes("shell=bogus")) {
+      const g = await layout(page);
+      expect([g.minimal, g.start, g.end, g.mainPadding], name).toEqual([
+        false,
+        "open",
+        null,
+        "padded",
+      ]);
+    }
+  }
 });

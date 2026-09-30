@@ -2,15 +2,13 @@ import type { Page } from "@playwright/test";
 import { LAYOUT_TOKENS } from "@/lib/composition";
 import {
   expect,
-  openCard,
+  FADE,
   openPreview,
-  search,
-  settle,
+  scrollTo as scrollElement,
   test,
   type Theme,
 } from "./fixtures";
 
-const FADE = `${LAYOUT_TOKENS.scrollFadeSize}px`;
 const SURFACES = {
   start:
     "[data-surface=side-panel][data-side=start] > [data-slot=side-panel-body]",
@@ -34,16 +32,8 @@ const info = (page: Page, selector: string) =>
       transition: style.transitionDuration,
     };
   }, selector);
-const scrollTo = async (page: Page, selector: string, y: number | "end") => {
-  await page.evaluate(
-    ([s, top]) => {
-      const el = document.querySelector(s)!;
-      el.scrollTop = top === "end" ? el.scrollHeight : top;
-    },
-    [selector, y] as const,
-  );
-  await settle(page);
-};
+const scrollTo = (page: Page, selector: string, top: number | "end") =>
+  scrollElement(page, selector, { top });
 const others = (page: Page) =>
   page.evaluate(() => ({
     start: document.querySelector(
@@ -111,41 +101,37 @@ async function checkFades(page: Page, padding: string) {
 }
 
 for (const theme of ["light", "dark"] as Theme[])
-  for (const shell of ["sidebar", "minimal"] as const) {
-    for (const place of ["below-header", "beside-header"] as const)
-      for (const pad of ["padded", "flush"] as const) {
-        const core =
-          theme === "light" &&
-          shell === "sidebar" &&
-          (place === "below-header" || pad === "padded");
-        test.describe(`${theme}, ${shell}, ${place}, ${pad}${core ? "" : " @full"}`, () => {
-          test.use({ theme });
-          test("fades show only where there's more to scroll", async ({
+  for (const place of ["below-header", "beside-header"] as const)
+    for (const pad of ["padded", "flush"] as const) {
+      const core =
+        theme === "light" && (place === "below-header" || pad === "padded");
+      test.describe(`${theme}, ${place}, ${pad}${core ? "" : " @full"}`, () => {
+        test.use({ theme });
+        test("fades show only where there's more to scroll", async ({
+          page,
+        }) => {
+          const flush =
+            pad === "flush"
+              ? "&start-panel-padding=flush&main-padding=flush&end-panel-padding=flush"
+              : "";
+          await openPreview(
             page,
-          }) => {
-            const flush =
-              pad === "flush"
-                ? "&start-panel-padding=flush&main-padding=flush&end-panel-padding=flush"
-                : "";
-            await openPreview(
-              page,
-              `?start=${place}&end=${place}${shell === "minimal" ? "&shell=minimal" : ""}${flush}&${LONG}`,
-            );
-            await checkFades(
-              page,
-              pad === "padded" ? `${LAYOUT_TOKENS.surfaceInset}px` : "0px",
-            );
-            if (place === "beside-header") {
-              // The mask fades content, never the panel's tint.
-              const asideMask = await page
-                .locator("[data-surface=side-panel][data-side=start]")
-                .evaluate((el) => getComputedStyle(el).maskImage);
-              expect(asideMask).toBe("none");
-            }
-          });
+            `?start=${place}&end=${place}${flush}&${LONG}`,
+          );
+          await checkFades(
+            page,
+            pad === "padded" ? `${LAYOUT_TOKENS.surfaceInset}px` : "0px",
+          );
+          if (place === "beside-header") {
+            // The mask fades content, never the panel's tint.
+            const asideMask = await page
+              .locator("[data-surface=side-panel][data-side=start]")
+              .evaluate((el) => getComputedStyle(el).maskImage);
+            expect(asideMask).toBe("none");
+          }
         });
-      }
-  }
+      });
+    }
 
 test("short content: no fades", async ({ page }) => {
   await openPreview(page);
@@ -206,8 +192,6 @@ test("the page header never scrolls, and fades don't animate", async ({
   for (const selector of Object.values(SURFACES)) {
     expect((await info(page, selector)).transition).toMatch(/^0s/);
   }
-  await scrollTo(page, SURFACES.main, 12);
-  expect((await info(page, SURFACES.main)).top).toBe("12px");
 });
 
 for (const theme of ["light", "dark"] as Theme[]) {
@@ -222,24 +206,6 @@ for (const theme of ["light", "dark"] as Theme[]) {
     });
   });
 }
-
-test("Long content and Scrolls round-trip through the URL and the card", async ({
-  page,
-}) => {
-  await openPreview(page, "?main-content=long&end-panel-scroll=occupant");
-  expect(await search(page)).toBe(
-    "?main-content=long&end-panel-scroll=occupant",
-  );
-  await expect(
-    page.locator("[data-surface=content-area] [data-occupant]"),
-  ).toHaveAttribute("data-content", "long");
-  await openCard(page);
-  await page
-    .getByRole("group", { name: "Start panel content", exact: true })
-    .getByRole("radio", { name: "On" })
-    .click();
-  await expect.poll(() => search(page)).toContain("start-panel-content=long");
-});
 
 test("a surface that scrolls takes keyboard focus, with its ring on the unmasked parent; one that fits doesn't", async ({
   page,

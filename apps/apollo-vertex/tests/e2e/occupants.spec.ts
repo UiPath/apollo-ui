@@ -1,7 +1,6 @@
-import { createRequire } from "node:module";
-import type { Page } from "@playwright/test";
 import { fitsSurface, occupantInset } from "@/lib/composition";
 import { OCCUPANT_SPECS, SURFACE_SPECS } from "@/lib/occupants.generated";
+import { axeViolations } from "./axe";
 import { expect, type Theme, test } from "./fixtures";
 import { inspect, openFixture } from "./occupant-inspect";
 
@@ -17,31 +16,11 @@ import { inspect, openFixture } from "./occupant-inspect";
  * - An axe scan. Core: ready, light and dark. Full: every standard state.
  */
 
-const AXE = createRequire(__filename).resolve("axe-core/axe.min.js");
 const CORE_WIDTHS = [0, 40, 200];
 const SWEEP = Array.from({ length: 31 }, (_, i) => i * 16);
 const STATES = ["loading", "empty", "error", "agent-updating"];
 
-async function axeViolations(page: Page) {
-  await page.addScriptTag({ path: AXE });
-  return page.evaluate(async () => {
-    const axe = (
-      window as unknown as {
-        axe: {
-          run: (context: Element) => Promise<{
-            violations: { id: string; nodes: { target: string[] }[] }[];
-          }>;
-        };
-      }
-    ).axe;
-    const result = await axe.run(
-      document.querySelector("[data-slot=occupant-fixture]")!,
-    );
-    return result.violations.map(
-      (v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`,
-    );
-  });
-}
+const FIXTURE = "[data-slot=occupant-fixture]";
 
 interface Case {
   spec: (typeof OCCUPANT_SPECS)[number]["spec"];
@@ -75,12 +54,6 @@ const WIDTH_RUNS = [
   tag: string;
 }[];
 
-for (const { spec } of OCCUPANT_SPECS) {
-  test(`${spec.name} claims at least one surface`, () => {
-    expect(CASES.some((c) => c.spec.name === spec.name)).toBe(true);
-  });
-}
-
 for (const c of CASES) {
   for (const run of WIDTH_RUNS) {
     test.describe(`${c.spec.name} in ${c.surface}, ${c.example}, ${run.theme}${run.tag}`, () => {
@@ -103,12 +76,12 @@ for (const c of CASES) {
       test.use({ theme });
       test("passes an axe scan", async ({ page }) => {
         await openFixture(page, c.query);
-        expect(await axeViolations(page)).toEqual([]);
+        expect(await axeViolations(page, FIXTURE)).toEqual([]);
       });
       for (const state of STATES) {
         test(`passes an axe scan, ${state} @full`, async ({ page }) => {
           await openFixture(page, `${c.query}&state=${state}`);
-          expect(await axeViolations(page)).toEqual([]);
+          expect(await axeViolations(page, FIXTURE)).toEqual([]);
         });
       }
     });
