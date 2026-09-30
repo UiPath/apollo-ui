@@ -6,6 +6,7 @@ export default {
   "metric-card": "Metric Card",
   "page-header": "Page Header",
   participants: "Participants",
+  queue: "Queue",
   shell: "Shell",
   "stage-strip": "Stage Strip",
 };

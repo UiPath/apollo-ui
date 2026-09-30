@@ -11,6 +11,8 @@ import { keyFactsOccupant } from "@/registry/key-facts/key-facts.occupant";
 import { EXAMPLES as keyFactsExamples } from "@/registry/key-facts/examples";
 import { participantsOccupant } from "@/registry/participants/participants.occupant";
 import { EXAMPLES as participantsExamples } from "@/registry/participants/examples";
+import { queueOccupant } from "@/registry/queue/queue.occupant";
+import { EXAMPLES as queueExamples } from "@/registry/queue/examples";
 import { stageStripOccupant } from "@/registry/stage-strip/stage-strip.occupant";
 import { EXAMPLES as stageStripExamples } from "@/registry/stage-strip/examples";
 
@@ -35,5 +37,6 @@ export const OCCUPANT_SPECS: readonly RegisteredOccupantSpec[] = [
   },
   { spec: keyFactsOccupant, examples: Object.keys(keyFactsExamples) },
   { spec: participantsOccupant, examples: Object.keys(participantsExamples) },
+  { spec: queueOccupant, examples: Object.keys(queueExamples) },
   { spec: stageStripOccupant, examples: Object.keys(stageStripExamples) },
 ];

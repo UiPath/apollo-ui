@@ -2738,6 +2738,28 @@
       ]
     },
     {
+      "name": "queue",
+      "type": "registry:ui",
+      "title": "Queue",
+      "description": "Occupant: a list of items to work through, grouped and filtered, where picking one opens it. Vertical surfaces.",
+      "dependencies": ["lucide-react", "react-i18next"],
+      "registryDependencies": [
+        "@uipath/button",
+        "@uipath/card",
+        "@uipath/composition",
+        "@uipath/occupant",
+        "@uipath/tabs",
+        "@uipath/use-scroll-fade"
+      ],
+      "meta": { "layer": "occupant" },
+      "categories": ["occupant"],
+      "files": [
+        { "path": "registry/queue/queue.tsx", "type": "registry:ui" },
+        { "path": "registry/queue/queue.occupant.ts", "type": "registry:ui" },
+        { "path": "registry/queue/queue.view-model.ts", "type": "registry:ui" }
+      ]
+    },
+    {
       "name": "use-mobile",
       "type": "registry:hook",
       "title": "useMobile",
