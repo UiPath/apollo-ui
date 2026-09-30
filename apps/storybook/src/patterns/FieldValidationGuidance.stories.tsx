@@ -202,10 +202,10 @@ const COVERAGE: Coverage[] = [
     storyId: 'apollo-wind-components-core-file-upload--with-inline-validation',
   },
   {
-    component: 'Lockable Value Field',
+    component: 'Quick Form Field',
     api: 'error prop',
     where: 'Below the composite field',
-    storyId: 'apollo-wind-components-uipath-lockable-value-field--inline-validation',
+    storyId: 'apollo-wind-components-uipath-quick-form-field--inline-validation',
   },
   {
     component: 'Prompt Editor',

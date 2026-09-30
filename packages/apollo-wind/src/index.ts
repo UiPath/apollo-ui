@@ -350,13 +350,8 @@ export type {
   LockableValueFieldOption,
   LockableValueFieldProps,
   LockableValueFieldStrings,
-  VariableInsertContext,
 } from './components/ui/lockable-value-field';
-export {
-  FIELD_TYPE_META,
-  FIELD_TYPE_ORDER,
-  LockableValueField,
-} from './components/ui/lockable-value-field';
+export { LockableValueField } from './components/ui/lockable-value-field';
 export type {
   AnnotatedModel,
   ByomDetails,
@@ -498,6 +493,21 @@ export {
   VARIABLE_PATH_REGEX,
   WORD_JOINER,
 } from './components/ui/prompt-editor';
+export type {
+  QuickFieldType,
+  QuickFormFieldMode,
+  QuickFormFieldMoreActions,
+  QuickFormFieldOption,
+  QuickFormFieldProps,
+  QuickFormFieldStrings,
+  VariableInsertContext,
+} from './components/ui/quick-form-field';
+export {
+  DEFAULT_QUICK_FORM_FIELD_STRINGS,
+  FIELD_TYPE_META,
+  FIELD_TYPE_ORDER,
+  QuickFormField,
+} from './components/ui/quick-form-field';
 export { RadioGroup, RadioGroupItem } from './components/ui/radio-group';
 export {
   ResizableHandle,
