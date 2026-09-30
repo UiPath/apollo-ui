@@ -93,7 +93,11 @@ export const inspect = (
                 el.clientWidth > 0
               ) {
                 const truncated = cs.textOverflow === "ellipsis";
-                if (!(truncated && el.closest("[title]"))) {
+                // The full text must stay available: a title, or a tooltip.
+                const fullText = el.closest(
+                  "[title], [data-slot=tooltip-trigger]",
+                );
+                if (!(truncated && fullText)) {
                   problems.push(
                     `${truncated ? "truncated without a title" : "clipped"} ${describe(el)} (${el.scrollWidth} > ${el.clientWidth})`,
                   );

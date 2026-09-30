@@ -2570,13 +2570,14 @@
       "name": "occupant",
       "type": "registry:ui",
       "title": "Occupant",
-      "description": "The kit every occupant is built with: the <Occupant> root that renders data-occupant, the standard states (loading, empty, error, agent updating), and the view props every occupant takes.",
+      "description": "The kit every occupant is built with: the <Occupant> root that renders data-occupant, the standard states (loading, empty, error, agent updating), the view props every occupant takes, selection props for occupants whose items can be picked, a status with a tone, and truncated text with a tooltip.",
       "dependencies": ["lucide-react", "react-i18next"],
       "registryDependencies": [
         "@uipath/composition",
         "@uipath/button",
         "@uipath/skeleton",
-        "@uipath/timeline"
+        "@uipath/timeline",
+        "@uipath/tooltip"
       ],
       "files": [
         { "path": "registry/occupant/occupant.tsx", "type": "registry:ui" },
@@ -2586,6 +2587,14 @@
         },
         {
           "path": "registry/occupant/occupant-states.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/occupant/occupant-status.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/occupant/occupant-truncated-text.tsx",
           "type": "registry:ui"
         }
       ]
