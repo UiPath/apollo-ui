@@ -21,12 +21,16 @@ import {
   type GuardrailStaticRecipientContext,
 } from './builder-types';
 import {
+  createDefaultGuardrailAction,
   type GuardrailBuilderFormData,
   getGuardrailActionErrorFields,
   getGuardrailSelectorErrorFields,
   initGuardrailBuilderFormData,
 } from './builder-utils';
-import { GuardrailActionSection } from './components/guardrail-action-section';
+import {
+  GuardrailActionSection,
+  type GuardrailActionSectionProps,
+} from './components/guardrail-action-section';
 import { GuardrailEvalsToggle } from './components/guardrail-evals-toggle';
 import { GuardrailNameFields } from './components/guardrail-name-fields';
 import { GuardrailScopeSelector } from './components/guardrail-scope-selector';
@@ -98,6 +102,11 @@ export interface GuardrailBuilderProps {
   title?: ReactNode;
   /** Where the enable-for-evaluations switch renders. Default 'form'. */
   evalsTogglePlacement?: 'form' | 'footer';
+  /**
+   * The action types to offer (e.g. log and block only, for a host with no escalation). A new
+   * guardrail starts on the first of them when log is not among them.
+   */
+  allowedActionTypes?: GuardrailActionSectionProps['allowedActionTypes'];
   renderRecipientSearch?: (ctx: GuardrailRecipientSearchContext) => ReactNode;
   /**
    * Replace the editor for static/asset recipients (types 3/4/5/6). Return `undefined` to
@@ -162,6 +171,7 @@ export function GuardrailBuilder({
   dialogMaxWidth,
   title,
   evalsTogglePlacement = 'form',
+  allowedActionTypes,
   renderRecipientSearch,
   renderStaticRecipient,
   renderAppPicker,
@@ -184,6 +194,10 @@ export function GuardrailBuilder({
   const [formData, setFormData] = useState<GuardrailBuilderFormData>(() => {
     const data = initGuardrailBuilderFormData(definition, scope, guardrail, toolName);
     if (!guardrail && defaultName) data.name = defaultName;
+    const [firstAllowed] = allowedActionTypes ?? [];
+    if (!guardrail && firstAllowed && !allowedActionTypes?.includes(data.action.$actionType)) {
+      data.action = createDefaultGuardrailAction(firstAllowed);
+    }
     return data;
   });
 
@@ -454,6 +468,7 @@ export function GuardrailBuilder({
         <GuardrailActionSection
           action={formData.action}
           onActionChange={(action) => updateField('action', action)}
+          allowedActionTypes={allowedActionTypes}
           errors={{
             blockReason: displayErrors.blockReason,
             filterFields: displayErrors.filterFields,

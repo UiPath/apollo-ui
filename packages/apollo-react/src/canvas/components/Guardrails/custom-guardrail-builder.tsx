@@ -6,11 +6,16 @@ import type {
   GuardrailRecipientSearchContext,
   GuardrailStaticRecipientContext,
 } from './builder-types';
-import { GuardrailActionSection } from './components/guardrail-action-section';
+import { createDefaultGuardrailAction } from './builder-utils';
+import {
+  GuardrailActionSection,
+  type GuardrailActionSectionProps,
+} from './components/guardrail-action-section';
 import { GuardrailEvalsToggle } from './components/guardrail-evals-toggle';
 import { GuardrailNameFields } from './components/guardrail-name-fields';
 import { MixedScopesBanner } from './components/mixed-scopes-banner';
 import type {
+  CustomGuardrailAction,
   CustomGuardrailBuilderErrors,
   CustomGuardrailBuilderValue,
 } from './custom-builder-types';
@@ -34,6 +39,12 @@ import { type GuardrailErrorMerges, useGuardrailFormErrors } from './use-guardra
 import { useSwallowEnter } from './use-swallow-enter';
 
 // Host rule errors merge over the internal ones rule by rule, and field by field within a rule.
+// The section emits a filter action only when the type switches to it, with no fields yet; the
+// filter selector edits them as field references from there.
+function toCustomGuardrailAction(action: GuardrailAction): CustomGuardrailAction {
+  return action.$actionType === 'filter' ? { $actionType: 'filter', fields: [] } : action;
+}
+
 const CUSTOM_BUILDER_ERROR_MERGES: GuardrailErrorMerges<CustomGuardrailBuilderErrors> = {
   perRule: {
     merge: (internal, host) =>
@@ -99,6 +110,11 @@ export interface CustomGuardrailBuilderProps {
   title?: ReactNode;
   /** Where the enable-for-evaluations switch renders. Default 'form'. */
   evalsTogglePlacement?: 'form' | 'footer';
+  /**
+   * The action types to offer (e.g. log and block only, for a host with no escalation). A new
+   * guardrail starts on the first of them when log is not among them.
+   */
+  allowedActionTypes?: GuardrailActionSectionProps['allowedActionTypes'];
   renderRecipientSearch?: (ctx: GuardrailRecipientSearchContext) => ReactNode;
   /**
    * Replace the editor for static/asset recipients (types 3/4/5/6). Return `undefined` to
@@ -164,6 +180,7 @@ export function CustomGuardrailBuilder({
   dialogMaxWidth = 800,
   title,
   evalsTogglePlacement = 'form',
+  allowedActionTypes,
   renderRecipientSearch,
   renderStaticRecipient,
   renderAppPicker,
@@ -186,6 +203,10 @@ export function CustomGuardrailBuilder({
   const [formData, setFormData] = useState<CustomGuardrailBuilderFormData>(() => {
     const data = initCustomGuardrailBuilderFormData(guardrail, toolName);
     if (!guardrail && defaultName) data.name = defaultName;
+    const [firstAllowed] = allowedActionTypes ?? [];
+    if (!guardrail && firstAllowed && !allowedActionTypes?.includes(data.action.$actionType)) {
+      data.action = toCustomGuardrailAction(createDefaultGuardrailAction(firstAllowed));
+    }
     return data;
   });
 
@@ -202,14 +223,8 @@ export function CustomGuardrailBuilder({
     []
   );
 
-  // The section emits a filter action only when the type switches to it, with no fields yet;
-  // the filter selector edits them as field references from there.
   const handleActionChange = useCallback(
-    (action: GuardrailAction) =>
-      updateField(
-        'action',
-        action.$actionType === 'filter' ? { $actionType: 'filter', fields: [] } : action
-      ),
+    (action: GuardrailAction) => updateField('action', toCustomGuardrailAction(action)),
     [updateField]
   );
 
@@ -374,6 +389,7 @@ export function CustomGuardrailBuilder({
           action={formData.action}
           onActionChange={handleActionChange}
           showFilter
+          allowedActionTypes={allowedActionTypes}
           filterContent={
             <GuardrailFilterFieldSelector
               fields={filterFields}

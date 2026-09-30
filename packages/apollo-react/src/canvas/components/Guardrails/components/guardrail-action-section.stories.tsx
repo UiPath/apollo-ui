@@ -177,6 +177,12 @@ export const BlockWithError: Story = {
   ),
 };
 
+/** allowedActionTypes narrows the select, here to log and block for a host with no escalation. */
+export const AllowedActionTypes: Story = {
+  args: { action: logAction, onActionChange: () => {} },
+  render: () => <ActionSectionHost initial={logAction} allowedActionTypes={['log', 'block']} />,
+};
+
 /** Filter appears only with showFilter, and its field picker is host content. */
 export const FilterWithHostFieldPicker: Story = {
   args: { action: { $actionType: 'filter', fields: [] }, onActionChange: () => {} },

@@ -49,6 +49,52 @@ describe('GuardrailActionSection', () => {
     expect(await screen.findByRole('option', { name: 'Filter' })).toBeInTheDocument();
   });
 
+  describe('allowedActionTypes', () => {
+    const optionNames = async () => {
+      fireEvent.click(screen.getByRole('combobox', { name: /action type/i }));
+      await screen.findAllByRole('option');
+      return screen.getAllByRole('option').map((option) => option.textContent);
+    };
+
+    it('offers only the allowed types, in the usual order', async () => {
+      render(
+        <GuardrailActionSection
+          action={logAction}
+          onActionChange={vi.fn()}
+          allowedActionTypes={['block', 'log']}
+        />
+      );
+      expect(await optionNames()).toEqual(['Log', 'Block']);
+    });
+
+    it('keeps the current type listed when it is not allowed', async () => {
+      render(
+        <GuardrailActionSection
+          action={{
+            $actionType: 'escalate',
+            app: { id: '', version: '', name: '' },
+            recipient: { type: GuardrailRecipientType.User, value: '', displayName: '' },
+          }}
+          onActionChange={vi.fn()}
+          allowedActionTypes={['log', 'block']}
+        />
+      );
+      expect(screen.getByRole('combobox', { name: /action type/i })).toHaveTextContent('Escalate');
+      expect(await optionNames()).toEqual(['Log', 'Block', 'Escalate']);
+    });
+
+    it('still offers filter only with showFilter', async () => {
+      render(
+        <GuardrailActionSection
+          action={logAction}
+          onActionChange={vi.fn()}
+          allowedActionTypes={['log', 'filter']}
+        />
+      );
+      expect(await optionNames()).toEqual(['Log']);
+    });
+  });
+
   it('renders the severity select for log actions and reports changes', async () => {
     const onActionChange = vi.fn();
     render(

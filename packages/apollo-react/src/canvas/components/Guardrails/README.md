@@ -786,6 +786,10 @@ const [action, setAction] = useState<GuardrailAction>({
 - **`filter` stays product territory.** The option appears only with `showFilter` (custom
   guardrails) and its field picker is `filterContent`: field references are product-shaped and
   this package never edits them.
+- **`allowedActionTypes` narrows the offered types** (log and block only, for a host with no
+  escalation), `filter` still gated on `showFilter`. The current type stays listed, so a stored
+  action outside the list never blanks the select. Both builders forward it, and start a new
+  guardrail on the first allowed type when log is not among them.
 - **Asset recipients round-trip.** Types 4 and 6 display as their static siblings (3 and 5) in
   the type select, so a value written by a host asset editor never blanks the selection.
 - **`recipientTypeDisabled` locks the recipient type** at its current value, leaving the
