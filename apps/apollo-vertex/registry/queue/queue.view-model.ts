@@ -1,7 +1,8 @@
 /**
- * The neutral view model for the queue: a list of items to work through, grouped and filtered, where picking one opens it.
- * No domain terms. A solution's adapter maps its own data into it; the
- * occupant never sees the domain.
+ * The neutral view model for the queue: a list of items to work through,
+ * grouped and filtered, where picking one opens it. No domain terms. A
+ * solution's adapter maps its own data into it; the occupant never sees the
+ * domain.
  */
 
 import type { OccupantStatusValue } from "@/components/ui/occupant";
