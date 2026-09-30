@@ -271,6 +271,19 @@ export const SolutionTestsView = ({
       enableSorting: true,
     },
     {
+      accessorKey: "ConfigVersion",
+      meta: { displayName: t("config_version") },
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("config_version")} />
+      ),
+      cell: ({ row }) => (
+        <span className="text-sm text-muted-foreground">
+          {row.original.ConfigVersion ?? "-"}
+        </span>
+      ),
+      enableSorting: true,
+    },
+    {
       accessorKey: "Status",
       meta: { displayName: t("status") },
       header: ({ column }) => (

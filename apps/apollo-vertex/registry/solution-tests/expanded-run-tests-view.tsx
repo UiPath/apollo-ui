@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/table";
 import type { SolutionTest, SolutionTestRun } from "./types";
 import { renderValueOrEmptyState } from "@/lib/renderValueOrEmptyState";
+import { ConfigVersionValue } from "./config-version";
 import { defaultRunStatusLabels } from "./constants";
 import { runStatusBadgeMap } from "./status-maps";
 import { isRunDone } from "./utils";
@@ -46,6 +47,7 @@ export const ExpandedRunTestsView = ({
               <TableHead className="px-3 py-2">{t("test_name")}</TableHead>
               <TableHead className="px-3 py-2">{t("score")}</TableHead>
               <TableHead className="px-3 py-2">{t("agents_passed")}</TableHead>
+              <TableHead className="px-3 py-2">{t("config_version")}</TableHead>
               <TableHead className="px-3 py-2">{t("status")}</TableHead>
               <TableHead className="w-6 px-1 py-2" />
               <TableHead className="px-3 py-2">{t("actions")}</TableHead>
@@ -75,6 +77,9 @@ export const ExpandedRunTestsView = ({
                   </TableCell>
                   <TableCell className="px-3 py-2">
                     {`${run.JobsPassed ?? 0}/${run.JobsTotal ?? 0}`}
+                  </TableCell>
+                  <TableCell className="px-3 py-2 text-muted-foreground">
+                    <ConfigVersionValue run={run} />
                   </TableCell>
                   <TableCell className="px-3 py-2">
                     <Badge

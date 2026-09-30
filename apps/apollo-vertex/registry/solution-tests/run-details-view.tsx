@@ -23,6 +23,7 @@ import {
   type ExpandedRowData,
   ResultExpandedContent,
 } from "./result-expanded-content";
+import { ConfigVersionValue } from "./config-version";
 import { RunDetailsAgentList } from "./run-details-agent-list";
 import {
   resultBadgeClassMap,
@@ -105,6 +106,11 @@ export const RunDetailsView = ({
             <HeaderMetric label={t("agents_passed")}>
               <span className="text-lg font-semibold text-foreground">
                 {`${run.JobsPassed ?? 0}/${run.JobsTotal ?? 0}`}
+              </span>
+            </HeaderMetric>
+            <HeaderMetric label={t("config_version")}>
+              <span className="text-lg font-semibold text-foreground">
+                <ConfigVersionValue run={run} />
               </span>
             </HeaderMetric>
             <HeaderMetric label={t("status")}>
