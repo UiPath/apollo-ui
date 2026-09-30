@@ -1,4 +1,5 @@
-import type { ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef, Table as TanstackTable } from "@tanstack/react-table";
+import type { ReactNode } from "react";
 import { DEFAULT_PASS_THRESHOLD } from "./constants";
 import type { EvaluatorRenderers } from "./evaluators/registry";
 import type { ProcessOutputRenderers } from "./outputs/registry";
@@ -61,6 +62,8 @@ export type TrackSolutionTestEvent = UnionToIntersection<
 export interface SolutionTestsConfig {
   /** Columns inserted between the Test Name and Version columns. */
   subjectColumns?: ColumnDef<SolutionTest>[];
+  /** Custom content (e.g. faceted filters) rendered in the test-cases table toolbar. */
+  subjectToolbarContent?: (table: TanstackTable<SolutionTest>) => ReactNode;
   /** When set, the test name links to its subject. */
   getSubjectHref?: (test: SolutionTest) => string | undefined;
   /** Opens a run's details. The host owns the route + navigation; the view
@@ -69,6 +72,8 @@ export interface SolutionTestsConfig {
   subjectNoun?: { singular: string; plural: string };
   /** Score at/above which a result passes (drives pass color + KPI trend line). Defaults to 0.9. */
   passThreshold?: number;
+  /** Show debug-only UI — the Expected/Actual input panels and the full
+   *  attachment fetch — in run-result details. Defaults to false. */
   showDebug?: boolean;
   /** Custom evaluator-id -> renderer map; wins over the built-in registry.
    * The FE counterpart to the BE `custom_evaluator_builders`. */
@@ -82,6 +87,7 @@ export interface SolutionTestsConfig {
 /** Config with defaults applied — what components read from context. */
 export interface ResolvedSolutionTestsConfig {
   subjectColumns: ColumnDef<SolutionTest>[];
+  subjectToolbarContent?: (table: TanstackTable<SolutionTest>) => ReactNode;
   getSubjectHref?: (test: SolutionTest) => string | undefined;
   onOpenRun?: (run: SolutionTestRun) => void;
   subjectNoun?: { singular: string; plural: string };
@@ -98,6 +104,7 @@ export function resolveConfig(
 ): ResolvedSolutionTestsConfig {
   return {
     subjectColumns: config.subjectColumns ?? [],
+    subjectToolbarContent: config.subjectToolbarContent,
     getSubjectHref: config.getSubjectHref,
     onOpenRun: config.onOpenRun,
     subjectNoun: config.subjectNoun,

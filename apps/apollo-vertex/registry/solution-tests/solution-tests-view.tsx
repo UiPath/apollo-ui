@@ -619,6 +619,7 @@ export const SolutionTestsView = ({
                 data={tests}
                 isLoading={loading}
                 getRowId={(row) => row.Id}
+                toolbarContent={config.subjectToolbarContent}
                 renderExpandedRow={(row) => renderExpandedTest(row.original)}
               />
             </TabsContent>
