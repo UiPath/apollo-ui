@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { describe, expect, it, vi } from 'vitest';
-import type { GuardrailEscalateAction } from '../builder-types';
+import type { GuardrailEscalateAction, GuardrailEscalateRecipient } from '../builder-types';
 import { GuardrailRecipientType } from '../builder-types';
 import { GUARDRAIL_BUILDER_EN_LABELS } from '../i18n';
 import { EscalateActionFields } from './escalate-action-fields';
@@ -380,6 +380,19 @@ describe('asset recipient variants', () => {
     ).toBeInTheDocument();
   });
 
+  it('keeps an asset recipient editable after the unmodelled-type handling', () => {
+    render(
+      <EscalateActionFields
+        {...baseProps}
+        action={makeAction({
+          recipient: { type: GuardrailRecipientType.AssetGroupName, assetName: 'Groups' },
+        })}
+        onChange={vi.fn()}
+      />
+    );
+    expect(screen.getByPlaceholderText(labels.groupNamePlaceholder)).toHaveValue('Groups');
+  });
+
   it('edits assetName through the built-in fallback input', () => {
     const onChange = vi.fn();
     const action = makeAction({
@@ -516,5 +529,106 @@ describe('standalone layouts', () => {
     const { container } = render(<EscalateActionFields action={makeAction()} onChange={vi.fn()} />);
     const results = await axe(container);
     expect(results).toHaveNoViolations();
+  });
+});
+
+describe('recipient types the union does not model', () => {
+  // Agents' argument (7, 8) and assignment-criteria (9-11) recipients, passed in with a cast.
+  const unmodelled = (recipient: object) =>
+    makeAction({ recipient: recipient as unknown as GuardrailEscalateRecipient });
+
+  it.each([
+    [7, { type: 7, argumentName: 'reviewerEmail' }, 'Email address'],
+    [8, { type: 8, argumentName: 'reviewerGroup' }, 'Group name'],
+    [9, { type: 9, value: 'g1', displayName: 'Reviewers' }, 'Group'],
+    [10, { type: 10, value: 'g1', displayName: 'Reviewers' }, 'Group'],
+    [11, { type: 11, value: 'custom' }, 'Group'],
+  ])('shows type %i as Agents maps it', (_type, recipient, shownAs) => {
+    render(
+      <EscalateActionFields {...baseProps} action={unmodelled(recipient)} onChange={vi.fn()} />
+    );
+    expect(screen.getByRole('combobox')).toHaveTextContent(shownAs);
+  });
+
+  it('offers an argument recipient as an empty static field and converts it on the first edit', () => {
+    const onChange = vi.fn();
+    const action = unmodelled({ type: 7, argumentName: 'reviewerEmail' });
+    render(<EscalateActionFields {...baseProps} action={action} onChange={onChange} />);
+
+    const input = screen.getByPlaceholderText(labels.emailPlaceholder);
+    expect(input).toHaveValue('');
+    expect(onChange).not.toHaveBeenCalled();
+
+    fireEvent.change(input, { target: { value: 'a@b.c' } });
+    expect(onChange).toHaveBeenCalledWith({
+      ...action,
+      recipient: { type: GuardrailRecipientType.StaticEmail, value: 'a@b.c' },
+    });
+  });
+
+  it('hands the static slot the empty sibling, never the unmodelled recipient', () => {
+    const renderStaticRecipient = vi.fn(() => <div data-testid="static-slot" />);
+    render(
+      <EscalateActionFields
+        {...baseProps}
+        action={unmodelled({ type: 8, argumentName: 'reviewerGroup' })}
+        onChange={vi.fn()}
+        renderStaticRecipient={renderStaticRecipient}
+      />
+    );
+
+    expect(screen.getByTestId('static-slot')).toBeInTheDocument();
+    expect(renderStaticRecipient).toHaveBeenCalledWith(
+      expect.objectContaining({
+        kind: 'groupName',
+        recipient: { type: GuardrailRecipientType.StaticGroupName, value: '' },
+      })
+    );
+  });
+
+  it('renders no recipient field for an assignment-criteria recipient', () => {
+    const renderRecipientSearch = vi.fn(() => <div data-testid="directory-search" />);
+    render(
+      <EscalateActionFields
+        {...baseProps}
+        action={unmodelled({ type: 9, value: 'g1', displayName: 'Reviewers' })}
+        onChange={vi.fn()}
+        renderRecipientSearch={renderRecipientSearch}
+      />
+    );
+
+    expect(renderRecipientSearch).not.toHaveBeenCalled();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(screen.getByText(labels.actionAppLabel)).toBeInTheDocument();
+  });
+
+  it('replaces the recipient when the user picks another type', async () => {
+    const onChange = vi.fn();
+    render(
+      <EscalateActionFields
+        {...baseProps}
+        action={unmodelled({ type: 10, value: 'g1', displayName: 'Reviewers' })}
+        onChange={onChange}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('combobox'));
+    fireEvent.click(await screen.findByRole('option', { name: 'User' }));
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        recipient: { type: GuardrailRecipientType.User, value: '', displayName: '' },
+      })
+    );
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(
+      <EscalateActionFields
+        {...baseProps}
+        action={unmodelled({ type: 7, argumentName: 'reviewerEmail' })}
+        onChange={vi.fn()}
+      />
+    );
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

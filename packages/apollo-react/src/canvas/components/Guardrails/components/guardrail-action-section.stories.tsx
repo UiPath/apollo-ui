@@ -271,6 +271,27 @@ export const EscalateRecipientTypeLocked: Story = {
 };
 
 /**
+ * A recipient type the union does not model (here Agents' ArgumentEmail, 7) shows as Agents maps
+ * it and is kept as stored, in the preview below, until the user edits it. Typing an address
+ * replaces it with a static email recipient.
+ */
+export const EscalateUnmodelledRecipient: Story = {
+  args: { action: escalateAction, onActionChange: () => {} },
+  render: () => (
+    <ActionSectionHost
+      initial={{
+        ...escalateAction,
+        recipient: {
+          type: 7,
+          argumentName: 'reviewerEmail',
+        } as unknown as GuardrailEscalateRecipient,
+      }}
+      renderAppPicker={mockAppPicker}
+    />
+  ),
+};
+
+/**
  * The renderStaticRecipient slot owns the email and group-name editors, where a host can offer
  * an asset instead of a literal value. Returning undefined falls back to the plain input.
  */

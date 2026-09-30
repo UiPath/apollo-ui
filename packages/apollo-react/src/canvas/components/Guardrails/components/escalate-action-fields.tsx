@@ -24,7 +24,20 @@ import {
   GuardrailRecipientType,
   type GuardrailStaticRecipientContext,
 } from '../builder-types';
+import { isModelledGuardrailRecipientType } from '../builder-utils';
 import { type GuardrailActionLabels, useGuardrailActionLabels } from '../i18n';
+
+/**
+ * The type select entry shown for each recipient type the union does not model, as Agents maps
+ * them: argument recipients to their static sibling, assignment criteria to Group.
+ */
+const UNMODELLED_RECIPIENT_DISPLAY_TYPES: Record<number, 2 | 3 | 5> = {
+  7: GuardrailRecipientType.StaticEmail,
+  8: GuardrailRecipientType.StaticGroupName,
+  9: GuardrailRecipientType.Group,
+  10: GuardrailRecipientType.Group,
+  11: GuardrailRecipientType.Group,
+};
 
 export interface EscalateActionFieldsProps {
   action: GuardrailEscalateAction;
@@ -91,15 +104,26 @@ export function EscalateActionFields({
     [GuardrailRecipientType.StaticGroupName]: labels.recipientGroupNameLabel,
   };
 
-  const recipientType = action.recipient.type;
+  const recipientType: number = action.recipient.type;
+  const isUnmodelled = !isModelledGuardrailRecipientType(recipientType);
   // The type select offers the four base entries; asset variants (a host-slot concern)
-  // display as their static siblings so the selection never blanks.
-  const displayedRecipientType =
-    recipientType === GuardrailRecipientType.AssetEmail
+  // display as their static siblings so the selection never blanks, and so do the types the
+  // union does not model.
+  const displayedRecipientType: number = isUnmodelled
+    ? (UNMODELLED_RECIPIENT_DISPLAY_TYPES[recipientType] ?? recipientType)
+    : recipientType === GuardrailRecipientType.AssetEmail
       ? GuardrailRecipientType.StaticEmail
       : recipientType === GuardrailRecipientType.AssetGroupName
         ? GuardrailRecipientType.StaticGroupName
         : recipientType;
+  // An unmodelled recipient is edited as its static sibling, empty, the way Agents shows it, and
+  // replaced by it on the first edit. Until then the stored one passes through.
+  const editedRecipient: GuardrailEscalateRecipient | null = !isUnmodelled
+    ? action.recipient
+    : displayedRecipientType === GuardrailRecipientType.StaticEmail ||
+        displayedRecipientType === GuardrailRecipientType.StaticGroupName
+      ? { type: displayedRecipientType, value: '' }
+      : null;
 
   const handleRecipientTypeChange = useCallback(
     (value: string) => {
@@ -147,7 +171,7 @@ export function EscalateActionFields({
 
   const handleTextValueChange = useCallback(
     (value: string) => {
-      const r = action.recipient;
+      const r = editedRecipient ?? action.recipient;
       if (
         r.type === GuardrailRecipientType.StaticEmail ||
         r.type === GuardrailRecipientType.StaticGroupName
@@ -160,13 +184,17 @@ export function EscalateActionFields({
         onChange({ ...action, recipient: { ...r, assetName: value } });
       }
     },
-    [action, onChange]
+    [action, editedRecipient, onChange]
   );
 
-  const recipientValue =
-    'value' in action.recipient ? action.recipient.value : action.recipient.assetName;
+  const recipientValue = !editedRecipient
+    ? ''
+    : 'value' in editedRecipient
+      ? editedRecipient.value
+      : editedRecipient.assetName;
   const recipientDisplayValue =
-    ('displayName' in action.recipient ? action.recipient.displayName : '') || recipientValue;
+    (editedRecipient && 'displayName' in editedRecipient ? editedRecipient.displayName : '') ||
+    recipientValue;
   const isSearchable =
     recipientType === GuardrailRecipientType.User || recipientType === GuardrailRecipientType.Group;
   const searchKind = recipientType === GuardrailRecipientType.User ? 'user' : 'group';
@@ -179,17 +207,19 @@ export function EscalateActionFields({
   const recipientLabelId = `${recipientFieldId}-label`;
 
   // Static/asset recipients only; the searchable types have their own slot below.
-  const staticNode = isSearchable
-    ? undefined
-    : renderStaticRecipient?.({
-        kind: displayedRecipientType === GuardrailRecipientType.StaticEmail ? 'email' : 'groupName',
-        recipient: action.recipient,
-        label: recipientLabel,
-        labelId: recipientLabelId,
-        invalid: Boolean(errors?.recipient),
-        error: errors?.recipient,
-        onChange: (recipient) => onChange({ ...action, recipient }),
-      });
+  const staticNode =
+    isSearchable || !editedRecipient
+      ? undefined
+      : renderStaticRecipient?.({
+          kind:
+            displayedRecipientType === GuardrailRecipientType.StaticEmail ? 'email' : 'groupName',
+          recipient: editedRecipient,
+          label: recipientLabel,
+          labelId: recipientLabelId,
+          invalid: Boolean(errors?.recipient),
+          error: errors?.recipient,
+          onChange: (recipient) => onChange({ ...action, recipient }),
+        });
   // `htmlFor` only when the field below is ours; a slot names its own control with
   // `aria-labelledby={ctx.labelId}`.
   const ownsRecipientControl = isSearchable ? !renderRecipientSearch : staticNode === undefined;
@@ -227,60 +257,66 @@ export function EscalateActionFields({
         </Select>
       </FormField>
 
-      {/* Recipient value */}
-      <FormField>
-        <Label id={recipientLabelId} htmlFor={ownsRecipientControl ? recipientFieldId : undefined}>
-          {recipientLabel}
-          <RequiredIndicator />
-        </Label>
-        {/* One rule across all three slots, matching `renderAppPicker`: a slot receives `error`
+      {/* Recipient value. None for an unmodelled type shown as Group: Agents has no field for
+          it either, and changing the type is how the user replaces it. */}
+      {editedRecipient && (
+        <FormField>
+          <Label
+            id={recipientLabelId}
+            htmlFor={ownsRecipientControl ? recipientFieldId : undefined}
+          >
+            {recipientLabel}
+            <RequiredIndicator />
+          </Label>
+          {/* One rule across all three slots, matching `renderAppPicker`: a slot receives `error`
             and owns rendering it, so the form renders no message of its own for a claimed field.
             The sibling `FormFieldError` used to sit outside this ternary, so a host doing the
             obvious `<Input error={ctx.error} />` got the message twice. Every fallback goes
             through `Input`'s `error` prop, which renders the message *and* wires
             aria-describedby / aria-errormessage / aria-invalid — the searchable fallback set
             aria-invalid by hand and left the message associated with nothing. */}
-        {isSearchable ? (
-          renderRecipientSearch ? (
-            renderRecipientSearch({
-              kind: searchKind,
-              displayValue: recipientDisplayValue,
-              placeholder: searchPlaceholder,
-              labelId: recipientLabelId,
-              invalid: Boolean(errors?.recipient),
-              error: errors?.recipient,
-              onSelect: handleRecipientSelect,
-              onClear: handleRecipientClear,
-            })
+          {isSearchable ? (
+            renderRecipientSearch ? (
+              renderRecipientSearch({
+                kind: searchKind,
+                displayValue: recipientDisplayValue,
+                placeholder: searchPlaceholder,
+                labelId: recipientLabelId,
+                invalid: Boolean(errors?.recipient),
+                error: errors?.recipient,
+                onSelect: handleRecipientSelect,
+                onClear: handleRecipientClear,
+              })
+            ) : (
+              // Fallback without a host directory search: a plain input writing the value directly.
+              <Input
+                id={recipientFieldId}
+                value={recipientDisplayValue}
+                onChange={(e) =>
+                  handleRecipientSelect({ value: e.target.value, displayName: e.target.value })
+                }
+                placeholder={searchPlaceholder}
+                error={errors?.recipient}
+              />
+            )
+          ) : staticNode !== undefined ? (
+            // `null` from the slot means "render nothing"; only `undefined` falls through.
+            staticNode
           ) : (
-            // Fallback without a host directory search: a plain input writing the value directly.
             <Input
               id={recipientFieldId}
-              value={recipientDisplayValue}
-              onChange={(e) =>
-                handleRecipientSelect({ value: e.target.value, displayName: e.target.value })
+              value={recipientValue}
+              onChange={(e) => handleTextValueChange(e.target.value)}
+              placeholder={
+                displayedRecipientType === GuardrailRecipientType.StaticEmail
+                  ? labels.emailPlaceholder
+                  : labels.groupNamePlaceholder
               }
-              placeholder={searchPlaceholder}
               error={errors?.recipient}
             />
-          )
-        ) : staticNode !== undefined ? (
-          // `null` from the slot means "render nothing"; only `undefined` falls through.
-          staticNode
-        ) : (
-          <Input
-            id={recipientFieldId}
-            value={recipientValue}
-            onChange={(e) => handleTextValueChange(e.target.value)}
-            placeholder={
-              displayedRecipientType === GuardrailRecipientType.StaticEmail
-                ? labels.emailPlaceholder
-                : labels.groupNamePlaceholder
-            }
-            error={errors?.recipient}
-          />
-        )}
-      </FormField>
+          )}
+        </FormField>
+      )}
 
       {/* Action app picker (host capability) */}
       <FormField>

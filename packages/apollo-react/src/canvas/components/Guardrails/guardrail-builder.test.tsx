@@ -3,7 +3,11 @@ import { TooltipProvider } from '@uipath/apollo-wind';
 import { axe } from 'jest-axe';
 import type { ReactElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import type { GuardrailBuilderValue, GuardrailDefinition } from './builder-types';
+import type {
+  GuardrailBuilderValue,
+  GuardrailDefinition,
+  GuardrailEscalateRecipient,
+} from './builder-types';
 import { GuardrailBuilder } from './guardrail-builder';
 
 // The form renders a radix tooltip for the "Enable for evaluations" info icon, which
@@ -1290,6 +1294,36 @@ describe('GuardrailBuilder', () => {
       );
 
       expect(screen.getByRole('combobox', { name: /action type/i })).toHaveTextContent('Log');
+    });
+
+    it('saves a recipient type it does not model unchanged', () => {
+      const onSave = vi.fn();
+      // Agents' ArgumentEmail, passed in with a cast as the host does.
+      const recipient = { type: 7, argumentName: 'reviewerEmail' };
+      const guardrail = makeGuardrail({
+        action: {
+          $actionType: 'escalate',
+          app: { id: 'app1', version: '1', name: 'App' },
+          recipient: recipient as unknown as GuardrailEscalateRecipient,
+        },
+      });
+      render(
+        <GuardrailBuilder
+          open
+          inline
+          hideHeader
+          definition={makeDef()}
+          scope="Tool"
+          guardrail={guardrail}
+          onSave={onSave}
+          onCancel={vi.fn()}
+        />
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+      expect(onSave).toHaveBeenCalledWith(
+        expect.objectContaining({ action: expect.objectContaining({ recipient }) })
+      );
     });
 
     it('renders in modal mode with a dialog', () => {

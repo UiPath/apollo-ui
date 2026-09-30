@@ -792,6 +792,13 @@ const [action, setAction] = useState<GuardrailAction>({
   guardrail on the first allowed type when log is not among them.
 - **Asset recipients round-trip.** Types 4 and 6 display as their static siblings (3 and 5) in
   the type select, so a value written by a host asset editor never blanks the selection.
+- **Recipient types outside 1-6 pass through.** Agents' argument (7, 8) and
+  assignment-criteria (9-11) recipients are not in `GuardrailEscalateRecipient`, so a host
+  passes them in with a cast. The type select shows them as Agents does (7 as Email address,
+  8 as Group name, 9-11 as Group), and the recipient is saved as stored until the user edits
+  it: 7 and 8 offer an empty static field whose first edit replaces the recipient, 9-11 offer
+  no field, and changing the type replaces any of them. None is flagged as empty; validating
+  them stays with the host.
 - **`recipientTypeDisabled` locks the recipient type** at its current value, leaving the
   recipient editable: Agents' rule for a tenant with group assignment off. `GuardrailBuilder`
   and `CustomGuardrailBuilder` forward it.

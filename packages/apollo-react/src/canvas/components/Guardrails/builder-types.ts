@@ -34,6 +34,9 @@ export type GuardrailRecipientTypeValue =
 /**
  * Escalation recipient union. The editor offers User/Group/StaticEmail/StaticGroupName;
  * the asset variants (4/6) exist so values using them round-trip through the form unedited.
+ * A type outside 1-6 (Agents' argument and assignment-criteria recipients, 7-11) is not
+ * modelled here: a host passes it in with a cast, and the form carries it through unchanged
+ * until the user edits the recipient.
  */
 export type GuardrailEscalateRecipient =
   | { type: 1; value: string; displayName: string }

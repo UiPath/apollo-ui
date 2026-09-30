@@ -8,6 +8,20 @@ import {
 } from './builder-types';
 import { normalizeGuardrailParameters, seedGuardrailParameters } from './utils';
 
+const MODELLED_RECIPIENT_TYPES: ReadonlySet<number> = new Set(
+  Object.values(GuardrailRecipientType)
+);
+
+/**
+ * Whether a recipient's type is one `GuardrailEscalateRecipient` models (1-6). Any other type
+ * is a host's own, carried through unchanged.
+ *
+ * @internal
+ */
+export function isModelledGuardrailRecipientType(type: number): boolean {
+  return MODELLED_RECIPIENT_TYPES.has(type);
+}
+
 export function generateGuardrailId(): string {
   return `guardrail-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
 }
@@ -48,10 +62,12 @@ export function getGuardrailActionErrorFields(
       break;
     case 'escalate': {
       const recipient = action.recipient;
+      // A type this package does not model is saved as stored, so it is the host's to validate.
       const filled =
-        'value' in recipient
+        !isModelledGuardrailRecipientType(recipient.type) ||
+        ('value' in recipient
           ? recipient.value.trim().length > 0
-          : recipient.assetName.trim().length > 0;
+          : recipient.assetName.trim().length > 0);
       if (!filled) fields.push('recipient');
       if (!action.app.id) fields.push('actionApp');
       break;
