@@ -349,6 +349,8 @@ export type {
   LockableValueFieldMoreActions,
   LockableValueFieldOption,
   LockableValueFieldProps,
+  LockableValueFieldStrings,
+  VariableInsertContext,
 } from './components/ui/lockable-value-field';
 export {
   FIELD_TYPE_META,

@@ -5,5 +5,7 @@ export type {
   LockableValueFieldMoreActions,
   LockableValueFieldOption,
   LockableValueFieldProps,
+  LockableValueFieldStrings,
+  VariableInsertContext,
 } from './types';
 export { FIELD_TYPE_META, FIELD_TYPE_ORDER } from './types';

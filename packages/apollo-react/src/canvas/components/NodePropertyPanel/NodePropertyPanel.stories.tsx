@@ -1420,7 +1420,6 @@ function InlineCaseRow({
       onModeChange={setMode}
       fieldType="string"
       variables={LOCKABLE_VARIABLES}
-      controlsVisibility="visible"
     />
   );
 }
@@ -2718,7 +2717,6 @@ function LockableCaseRow({
           onRequiredChange={onRequiredChange}
           variables={LOCKABLE_VARIABLES}
           compact={compact}
-          controlsVisibility={controlsVisibility}
         />
       </div>
       {insertAfter && (
@@ -2965,7 +2963,6 @@ function LockableValueFieldShowcase({
           required={showcaseRequired}
           onRequiredChange={setShowcaseRequired}
           variables={LOCKABLE_VARIABLES}
-          controlsVisibility={controlsVisibility}
         />
       </div>
       <div className="flex flex-col gap-2 border-t border-border-subtle pt-4">
@@ -3008,7 +3005,6 @@ function LockableValueFieldShowcase({
             required={showcaseRequired}
             onRequiredChange={setShowcaseRequired}
             variables={LOCKABLE_VARIABLES}
-            controlsVisibility={controlsVisibility}
           />
         </div>
       </div>
@@ -5040,7 +5036,6 @@ function PanelUIInventoryStory() {
                       required={compositionRequired}
                       onRequiredChange={setCompositionRequired}
                       variables={LOCKABLE_VARIABLES}
-                      controlsVisibility="visible"
                     />
                   </section>
 

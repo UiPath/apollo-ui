@@ -130,7 +130,6 @@ function MoreActionsDemo() {
         locked={false}
         mode={mode}
         onModeChange={setMode}
-        showAiAssist={false}
         more={{
           onClear: () => setValue(''),
           onRefresh: () => setValue('Refreshed value'),

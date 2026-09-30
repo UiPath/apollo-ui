@@ -651,7 +651,6 @@ function InsertVariableExample() {
         onValueChange={setValue}
         locked={false}
         showLock={false}
-        showAiAssist={false}
         variables={[{ label: 'Customer name', value: '$vars.customerName' }]}
       />
     </div>
@@ -1135,7 +1134,6 @@ function InsertVariableOnlyExample() {
         onValueChange={setValue}
         locked={false}
         showLock={false}
-        showAiAssist={false}
         variables={DEMO_VARIABLES}
       />
     </div>
@@ -1146,7 +1144,7 @@ const LVF_INSERT_VARIABLE_STATES: StateRow[] = [
   {
     label: 'Default',
     description:
-      'showFieldActions defaults to true. Insert variable opens a popover listing variables; selecting one appends its value.',
+      'showFieldActions defaults to true. Insert variable opens a popover listing variables; selecting one inserts its value at the caret, or appends it when no caret is placed.',
     Example: InsertVariableDefaultExample,
   },
   {
@@ -1164,7 +1162,7 @@ const LVF_INSERT_VARIABLE_STATES: StateRow[] = [
   {
     label: 'Insert variable only',
     description:
-      'showAiAssist={false} hides just the AI-assist button; Insert variable is independent of it.',
+      'Without an onGenerateWithAi handler the AI-assist button does not render; Insert variable is independent of it.',
     Example: InsertVariableOnlyExample,
   },
 ];
@@ -1342,7 +1340,7 @@ const TYPES_SECTIONS: TypesSection[] = [
   {
     title: 'LockableValueField, insert variable',
     description:
-      'The variables prop and its built-in Insert variable popover, gated separately from the AI-assist button by showAiAssist and showFieldActions. Every other table on this page sets showFieldActions={false} to keep it out of the way; this is the one place it is shown.',
+      'The variables prop and its built-in Insert variable popover, shown independently of the AI-assist button, which renders only with an onGenerateWithAi handler. showFieldActions={false} hides both. Every other table on this page sets showFieldActions={false} to keep it out of the way; this is the one place it is shown.',
     rows: LVF_INSERT_VARIABLE_STATES,
     reference: {
       label: 'Code Editors: Editor Variables',
