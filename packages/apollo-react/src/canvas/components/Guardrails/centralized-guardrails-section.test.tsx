@@ -79,8 +79,14 @@ describe('CentralizedGuardrailsSection', () => {
 
     expect(screen.getByText('Acme PII')).toBeInTheDocument();
     expect(screen.getByText('BYO')).toBeInTheDocument();
-    expect(screen.getByText('Provider: Acme Security')).toBeInTheDocument();
-    expect(screen.getByText('Acme runs its own detector.')).toBeInTheDocument();
+    const provider = screen.getByText('Provider: Acme Security');
+    // Italic with a title for the truncated text, as both products' legacy rows.
+    expect(provider).toHaveClass('italic');
+    expect(provider).toHaveAttribute('title', 'Provider: Acme Security');
+    expect(screen.getByText('Acme runs its own detector.')).toHaveAttribute(
+      'title',
+      'Acme runs its own detector.'
+    );
   });
 
   it('localizes the scopes and the execution stage without a formatScope prop', () => {

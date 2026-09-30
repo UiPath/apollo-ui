@@ -252,7 +252,10 @@ const GuardrailListRow = React.forwardRef<HTMLDivElement, GuardrailListRowProps>
           </div>
         )}
         {state.provider !== undefined && (
-          <div className="truncate text-xs text-muted-foreground">
+          <div
+            className="truncate text-xs italic text-muted-foreground"
+            title={`${labels.provider}: ${state.provider}`}
+          >
             {labels.provider}: {state.provider}
           </div>
         )}

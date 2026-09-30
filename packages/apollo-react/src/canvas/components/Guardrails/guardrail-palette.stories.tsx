@@ -120,6 +120,18 @@ export const ByoGroups: Story = {
 };
 
 /**
+ * byoDisplay presents bring-your-own entries as both products' legacy palettes do: named by
+ * their configuration, with a BYO chip and an italic provider caption.
+ */
+export const ByoDisplay: Story = {
+  args: {
+    ootbDefinitions: [...byoDefinitions, ...uipathDefinitions],
+    byoDisplay: true,
+    onSelectOotb: noop,
+  },
+};
+
+/**
  * A validator the tenant is not entitled to stays visible so it can be discovered, chipped
  * and not choosable. It keeps its place in the tab order, so a keyboard user reaches the chip
  * that says why.

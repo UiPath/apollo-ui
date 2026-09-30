@@ -74,6 +74,16 @@ describe('groupGuardrailsForPalette', () => {
     expect(groups.map((group) => group.key)).toEqual(['Acme Guard', 'Shared/Security']);
   });
 
+  it('sorts by the name a caller renders when it passes one', () => {
+    const groups = groupGuardrailsForPalette(
+      [PROMPT_ATTACKS_DEFINITION, PII_DEFINITION],
+      'UiPath guardrails',
+      (definition) => (definition === PII_DEFINITION ? 'Z' : 'A')
+    );
+
+    expect(groups[0]?.definitions).toEqual([PROMPT_ATTACKS_DEFINITION, PII_DEFINITION]);
+  });
+
   it('sorts definitions inside a group by display name', () => {
     const groups = groupGuardrailsForPalette(
       [PROMPT_ATTACKS_DEFINITION, PII_DEFINITION, BYO_FOLDER_DEFINITION],

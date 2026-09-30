@@ -74,12 +74,15 @@ export function CentralizedGuardrailRow({
           </span>
         )}
         {description && (
-          <span className="block truncate text-xs text-muted-foreground">{description}</span>
+          <span className="block truncate text-xs text-muted-foreground" title={description}>
+            {description}
+          </span>
         )}
         {providerName !== undefined && (
           <span
-            className="block truncate text-xs text-muted-foreground"
+            className="block truncate text-xs italic text-muted-foreground"
             data-slot="centralized-guardrail-provider"
+            title={`${labels.provider}: ${providerName}`}
           >
             {labels.provider}: {providerName}
           </span>

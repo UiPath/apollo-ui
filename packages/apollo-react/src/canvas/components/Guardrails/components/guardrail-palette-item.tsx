@@ -11,6 +11,8 @@ export interface GuardrailPaletteItemProps
   /** Secondary line, wrapped rather than truncated: the palette is where it is read. */
   description?: string;
   chips?: React.ReactNode;
+  /** Italic line under the description (a BYO entry's provider). */
+  caption?: React.ReactNode;
   /** Only the create-custom entry has one; definitions carry no icons. */
   icon?: React.ReactNode;
   /**
@@ -26,7 +28,10 @@ export interface GuardrailPaletteItemProps
  * is a `div` with `role="listitem"`, `tabIndex={0}` and its own key handler.
  */
 const GuardrailPaletteItem = React.forwardRef<HTMLButtonElement, GuardrailPaletteItemProps>(
-  ({ name, description, chips, icon, disabled = false, onSelect, className, ...props }, ref) => (
+  (
+    { name, description, chips, caption, icon, disabled = false, onSelect, className, ...props },
+    ref
+  ) => (
     <button
       ref={ref}
       type="button"
@@ -53,6 +58,11 @@ const GuardrailPaletteItem = React.forwardRef<HTMLButtonElement, GuardrailPalett
         {description && (
           <span className="whitespace-normal break-words text-xs text-muted-foreground">
             {description}
+          </span>
+        )}
+        {caption && (
+          <span className="whitespace-normal break-words text-xs italic text-muted-foreground">
+            {caption}
           </span>
         )}
       </span>

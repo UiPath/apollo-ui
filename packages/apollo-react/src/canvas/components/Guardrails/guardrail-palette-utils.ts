@@ -16,12 +16,14 @@ export function getGuardrailPaletteItemId(definition: GuardrailPaletteDefinition
 /**
  * Group definitions the way both products already do: with no bring-your-own definitions, one
  * unheaded group in payload order; otherwise one group per BYO `folderPath ??
- * byoConnectorName`, then a trailing UiPath group, definitions sorted by display name. Both
- * sorts are bare `localeCompare()`, so order follows the runtime locale, as it does today.
+ * byoConnectorName`, then a trailing UiPath group, definitions sorted by the name they render
+ * with (`getName`, default the display name). Both sorts are bare `localeCompare()`, so order
+ * follows the runtime locale, as it does today.
  */
 export function groupGuardrailsForPalette<T extends GuardrailPaletteDefinition>(
   definitions: readonly T[],
-  uipathGroupLabel: string
+  uipathGroupLabel: string,
+  getName: (definition: T) => string = (definition) => definition.displayName
 ): Array<GuardrailPaletteGroup<T>> {
   if (!definitions.some(isByoGuardrailDefinition)) {
     return definitions.length === 0
@@ -43,7 +45,7 @@ export function groupGuardrailsForPalette<T extends GuardrailPaletteDefinition>(
     }
   }
 
-  const byDisplayName = (a: T, b: T) => a.displayName.localeCompare(b.displayName);
+  const byName = (a: T, b: T) => getName(a).localeCompare(getName(b));
 
   const groups: Array<GuardrailPaletteGroup<T>> = [...byoGroups.entries()]
     .sort(([a], [b]) => (a ?? '').localeCompare(b ?? ''))
@@ -52,7 +54,7 @@ export function groupGuardrailsForPalette<T extends GuardrailPaletteDefinition>(
       key: key ?? '__byo__',
       header: key ?? null,
       isByo: true,
-      definitions: [...list].sort(byDisplayName),
+      definitions: [...list].sort(byName),
     }));
 
   if (uipathDefinitions.length > 0) {
@@ -60,7 +62,7 @@ export function groupGuardrailsForPalette<T extends GuardrailPaletteDefinition>(
       key: '__uipath__',
       header: uipathGroupLabel,
       isByo: false,
-      definitions: [...uipathDefinitions].sort(byDisplayName),
+      definitions: [...uipathDefinitions].sort(byName),
     });
   }
 

@@ -616,6 +616,89 @@ describe('GuardrailBuilder', () => {
       expect(saved.byoValidatorName).toBe('my-pii');
     });
 
+    it('names the title by the configuration with byoDisplay', () => {
+      const { unmount } = render(
+        <GuardrailBuilder
+          open
+          definition={makeByoDef()}
+          scope="Agent"
+          onSave={vi.fn()}
+          onCancel={vi.fn()}
+        />
+      );
+      expect(screen.getByRole('heading', { name: 'Add Vendor PII guardrail' })).toBeInTheDocument();
+      unmount();
+
+      render(
+        <GuardrailBuilder
+          open
+          definition={makeByoDef()}
+          scope="Agent"
+          guardrail={makeGuardrail({ byoValidatorName: 'my-pii' })}
+          byoDisplay
+          onSave={vi.fn()}
+          onCancel={vi.fn()}
+        />
+      );
+      expect(screen.getByRole('heading', { name: 'Edit my-pii guardrail' })).toBeInTheDocument();
+      // The type field still names the validator.
+      expect(screen.getByLabelText('Guardrail type')).toHaveValue('Vendor PII');
+    });
+
+    it('renders the connector as a read-only Provider field with providerField', () => {
+      render(
+        <GuardrailBuilder
+          open
+          inline
+          hideHeader
+          definition={makeByoDef({ byoConnectorName: 'Acme Guard' })}
+          scope="Agent"
+          providerField
+          onSave={vi.fn()}
+          onCancel={vi.fn()}
+        />
+      );
+
+      const provider = screen.getByLabelText('Provider');
+      expect(provider).toHaveValue('Acme Guard');
+      expect(provider).toBeDisabled();
+      // Above the name, where Flow's legacy builder puts it.
+      expect(
+        provider.compareDocumentPosition(screen.getByLabelText(/guardrail name/i)) &
+          Node.DOCUMENT_POSITION_FOLLOWING
+      ).toBeTruthy();
+    });
+
+    it('renders no Provider field without providerField or without a connector', () => {
+      const { unmount } = render(
+        <GuardrailBuilder
+          open
+          inline
+          hideHeader
+          definition={makeByoDef({ byoConnectorName: 'Acme Guard' })}
+          scope="Agent"
+          onSave={vi.fn()}
+          onCancel={vi.fn()}
+        />
+      );
+      expect(screen.queryByLabelText('Provider')).not.toBeInTheDocument();
+      unmount();
+
+      render(
+        <GuardrailBuilder
+          open
+          inline
+          hideHeader
+          definition={makeDef()}
+          scope="Agent"
+          providerField
+          onSave={vi.fn()}
+          onCancel={vi.fn()}
+        />
+      );
+      expect(screen.queryByLabelText('Provider')).not.toBeInTheDocument();
+    });
+
     it('does not stamp byo fields for a UiPath-managed definition', () => {
       const onSave = vi.fn();
       render(

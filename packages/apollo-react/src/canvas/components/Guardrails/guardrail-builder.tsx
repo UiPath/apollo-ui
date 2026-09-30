@@ -100,6 +100,16 @@ export interface GuardrailBuilderProps {
   dialogMaxWidth?: number;
   /** Overrides the computed "Add/Edit {{name}} guardrail" title. */
   title?: ReactNode;
+  /**
+   * Name a bring-your-own definition by its configuration (`byoValidatorName`) in the computed
+   * title, as both products' legacy builders do.
+   */
+  byoDisplay?: boolean;
+  /**
+   * Render a read-only Provider field (the definition's `byoConnectorName`) above the name, as
+   * Flow's legacy builder does. Only a definition with a connector has one.
+   */
+  providerField?: boolean;
   /** Where the enable-for-evaluations switch renders. Default 'form'. */
   evalsTogglePlacement?: 'form' | 'footer';
   /**
@@ -170,6 +180,8 @@ export function GuardrailBuilder({
   hideHeader = false,
   dialogMaxWidth,
   title,
+  byoDisplay = false,
+  providerField = false,
   evalsTogglePlacement = 'form',
   allowedActionTypes,
   renderRecipientSearch,
@@ -372,9 +384,10 @@ export function GuardrailBuilder({
   const isByoConfigurationDisabled =
     definition.byoValidatorName !== undefined && definition.status === 'Disabled';
 
-  const computedTitle = guardrail
-    ? formatGuardrailFormMessage(labels.editTitle, { name: definition.displayName })
-    : formatGuardrailFormMessage(labels.addTitle, { name: definition.displayName });
+  const titleName = (byoDisplay && definition.byoValidatorName) || definition.displayName;
+  const computedTitle = formatGuardrailFormMessage(guardrail ? labels.editTitle : labels.addTitle, {
+    name: titleName,
+  });
 
   const statusBanner = isByoConfigurationDisabled ? (
     <GuardrailStatusBanner tone="error" message={labels.byoDisabledMessage} />
@@ -412,6 +425,18 @@ export function GuardrailBuilder({
         <FormField>
           <Label htmlFor={`${uid}-ootb-type`}>{labels.typeLabel}</Label>
           <Input id={`${uid}-ootb-type`} value={definition.displayName} disabled readOnly />
+        </FormField>
+      )}
+
+      {providerField && definition.byoConnectorName !== undefined && (
+        <FormField>
+          <Label htmlFor={`${uid}-ootb-provider`}>{labels.providerLabel}</Label>
+          <Input
+            id={`${uid}-ootb-provider`}
+            value={definition.byoConnectorName}
+            disabled
+            readOnly
+          />
         </FormField>
       )}
 

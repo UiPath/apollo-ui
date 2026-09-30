@@ -93,6 +93,8 @@ export interface GuardrailBuilderLabels {
   severityErrorLabel: string;
   blockReasonLabel: string;
   blockReasonPlaceholder: string;
+  /** Read-only BYO connector field, rendered only with `providerField`. */
+  providerLabel: string;
   // Escalation
   assignToLabel: string;
   recipientUserLabel: string;
@@ -159,6 +161,7 @@ export const GUARDRAIL_BUILDER_EN_LABELS: GuardrailBuilderLabels = {
   severityErrorLabel: 'Error',
   blockReasonLabel: 'Blocking reason',
   blockReasonPlaceholder: 'Enter reason for blocking',
+  providerLabel: 'Provider',
   assignToLabel: 'Assign to',
   recipientUserLabel: 'User',
   recipientGroupLabel: 'Group',
@@ -450,6 +453,7 @@ export function useGuardrailBuilderLabels(
             id: 'guardrails.builder.block-reason-label',
             message: 'Blocking reason',
           }),
+          providerLabel: _({ id: 'guardrails.list.provider', message: 'Provider' }),
           blockReasonPlaceholder: _({
             id: 'guardrails.builder.block-reason-placeholder',
             message: 'Enter reason for blocking',
@@ -746,6 +750,10 @@ export interface GuardrailPaletteLabels {
   preview: string;
   /** Status chip on an entry the tenant is not entitled to. */
   statusUnauthorized: string;
+  /** Provenance chip on BYO entries (rendered only with `byoDisplay`). */
+  byo: string;
+  /** Prefix of a BYO entry's connector caption, rendered as `{provider}: {connector}`. */
+  provider: string;
 }
 
 /** The subset of `useSafeLingui`'s translator the palette labels need. */
@@ -777,6 +785,8 @@ function buildGuardrailPaletteLabels(_: PaletteTranslate): GuardrailPaletteLabel
       id: 'guardrails.palette.status-unauthorized',
       message: 'Unauthorized',
     }),
+    byo: _({ id: 'guardrails.list.byo', message: 'BYO' }),
+    provider: _({ id: 'guardrails.list.provider', message: 'Provider' }),
   };
 }
 
