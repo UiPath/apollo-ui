@@ -89,7 +89,7 @@ describe('GuardrailFileSupportIndicator', () => {
     render(
       <GuardrailFileSupportIndicator
         fileSupport={{ supported: true, formats: ['Text', 'Pdf'] }}
-        labels={{ formats: { Pdf: 'PDF files' } as never }}
+        labels={{ formats: { Pdf: 'PDF files' } }}
       />
     );
 

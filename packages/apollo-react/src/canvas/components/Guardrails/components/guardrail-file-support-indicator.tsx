@@ -3,6 +3,7 @@ import { FileText, Paperclip } from 'lucide-react';
 import type { GuardrailFileFormat, GuardrailFileSupport } from '../builder-types';
 import {
   formatGuardrailFormMessage,
+  type GuardrailFileSupportLabelOverrides,
   type GuardrailFileSupportLabels,
   useGuardrailFileSupportLabels,
 } from '../i18n';
@@ -14,7 +15,8 @@ export interface GuardrailFileSupportIndicatorProps {
    * way would be worse than staying quiet.
    */
   fileSupport?: GuardrailFileSupport;
-  labels?: Partial<GuardrailFileSupportLabels>;
+  /** Per-string overrides; `formats` may name a single file kind without restating the rest. */
+  labels?: GuardrailFileSupportLabelOverrides;
   className?: string;
 }
 
@@ -34,7 +36,7 @@ function formatNames(
 /**
  * Says whether a guardrail validator reads the files attached to a run, and which kinds.
  *
- * Purely a function of the `fileSupport` it is handed — there is no per-validator branching
+ * Purely a function of the `fileSupport` it is handed. There is no per-validator branching
  * anywhere in here, by design. The host derives it from the feature flags that switch file
  * support on, so the card and the run cannot disagree, and a validator that gains coverage is a
  * flag flip rather than a change to this component.

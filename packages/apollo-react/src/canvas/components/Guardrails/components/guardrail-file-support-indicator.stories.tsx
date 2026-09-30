@@ -64,7 +64,7 @@ export const UnavailableOnAutomationSuite: Story = {
 export const Unknown: Story = {
   args: { fileSupport: undefined },
   parameters: {
-    docs: { description: { story: 'Renders nothing — the preview below is intentionally empty.' } },
+    docs: { description: { story: 'Renders nothing. The preview below is intentionally empty.' } },
   },
 };
 
