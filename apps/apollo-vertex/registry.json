@@ -2677,6 +2677,7 @@
         "@uipath/composition",
         "@uipath/occupant",
         "@uipath/progress-view-model",
+        "@uipath/skeleton",
         "@uipath/timeline"
       ],
       "meta": { "layer": "occupant" },
