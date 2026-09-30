@@ -13,13 +13,24 @@ import {
   type BaselineJobMap,
 } from "@/registry/solution-tests/run-details-view";
 import { LocaleProvider } from "@/registry/shell/shell-locale-provider";
-import { createMockDb } from "./solution-tests/mock-db";
+import { CASE_EVALUATION_OUTPUT_RENDERER } from "@/registry/solution-tests/outputs/case-evaluation/case-evaluation-output";
+import { IXP_OUTPUT_RENDERER } from "@/registry/solution-tests/outputs/ixp-extraction/ixp-output-result";
+import {
+  createMockDb,
+  IXP_DEMO_AGENT_NAME,
+  PE_DEMO_AGENT_NAME,
+} from "./solution-tests/mock-db";
 
 // oxlint-disable-next-line no-empty-function
 const noop = () => {};
 
 const config: SolutionTestsConfig = {
   subjectNoun: { singular: "Loan", plural: "Loans" },
+  // Keyed by process name: the mock jobs/results carry no AgentId.
+  outputRenderers: {
+    [IXP_DEMO_AGENT_NAME]: IXP_OUTPUT_RENDERER,
+    [PE_DEMO_AGENT_NAME]: CASE_EVALUATION_OUTPUT_RENDERER,
+  },
 };
 
 /**

@@ -77,6 +77,8 @@ interface SolutionTestsProviderProps {
 interface SolutionTestsConfig {
   /** Columns inserted between Test Name and Version. Usually the only customization. */
   subjectColumns?: ColumnDef<SolutionTest>[];
+  /** Extra content in the test-cases table toolbar, e.g. faceted filters. */
+  subjectToolbarContent?: (table: Table<SolutionTest>) => ReactNode;
   /** Turns the test name into a link to its subject. */
   getSubjectHref?: (test: SolutionTest) => string | undefined;
   /** Opens a run's details page. The host owns the route and navigation: on that
@@ -87,8 +89,14 @@ interface SolutionTestsConfig {
   subjectNoun?: { singular: string; plural: string };
   /** Score at/above which a result passes (drives pass color + KPI trend line). Defaults to 0.9. */
   passThreshold?: number;
-  /** Show the Expected/Actual input panels in run-result details. Defaults to false (outputs only). */
-  showInputs?: boolean;
+  /** Show debug-only UI in run-result details: the Expected/Actual input panels
+   * and the full attachment fetch. Defaults to false (outputs only). */
+  showDebug?: boolean;
+  /** Evaluator id -> renderer. Wins over the built-in renderers (see Result renderers). */
+  evaluatorRenderers?: EvaluatorRenderers;
+  /** Agent id and/or process name -> renderer for that agent's raw output.
+   * Unmatched outputs render as JSON. */
+  outputRenderers?: ProcessOutputRenderers;
   /** Typed telemetry callback. Fires a named event when each action is triggered; a no-op unless supplied. */
   track?: TrackSolutionTestEvent;
 }
@@ -115,6 +123,80 @@ via `config.passThreshold`. Consumers who want to supply their own data plumbing
 render the dumb `SolutionTestsView`, which takes all data and callbacks via
 props. It must still be wrapped in `SolutionTestsProvider` (the view reads
 `config` from context via `useSolutionTestsConfig`), as the preview above does.
+
+## Result renderers
+
+A run result has two views: the evaluator's verdict and the agent's raw output.
+Both are looked up by key, and anything without a renderer falls back to a
+generic card or a JSON panel.
+
+**Evaluator renderers** are keyed by evaluator id. These ship built in:
+
+| Evaluator id                                   | Renders                                                                                         |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `uipath-json-similarity`                       | Score and justification                                                                         |
+| `uipath-llm-judge-output-semantic-similarity`  | Score and justification                                                                         |
+| `uipath-ixp-document-extraction`               | Taxonomy provenance, a verdict summary, and a per-document, per-field comparison                |
+| `uipath-pe-case-evaluation`                    | Per policy: outcome, confidence and decision-model version, then both summaries with the judge's semantic deltas |
+
+A vertical adds its own through `config.evaluatorRenderers`. `makeRenderer`
+binds a zod schema to a component, and details that fail the schema fall back
+to the generic card. `genericRenderer({ label })` reuses the generic card
+under a friendlier name.
+
+**Output renderers** are keyed by stable agent id or process name, since only
+the vertical knows which agent is which. Bind the shipped ones in
+`config.outputRenderers`:
+
+```tsx
+import {
+  CASE_EVALUATION_OUTPUT_RENDERER,
+  IXP_OUTPUT_RENDERER,
+} from "@/components/ui/solution-tests";
+
+const config: SolutionTestsConfig = {
+  subjectColumns,
+  outputRenderers: {
+    [ixpAgentId]: IXP_OUTPUT_RENDERER,
+    [evaluateCaseAgentId]: CASE_EVALUATION_OUTPUT_RENDERER,
+  },
+};
+```
+
+`makeProcessOutputRenderer` builds a custom one the same way `makeRenderer` does.
+
+### Building blocks
+
+Custom renderers can reuse the comparison pieces the built-ins use:
+
+- **`BaselineCompare`** lays out a few scalar fields with the baseline and new
+  run side by side, so an unchanged value reads as unchanged. Each row takes a
+  `label`, `baseline`, `current`, an optional `mono` flag and an optional
+  `marker` shown after the new-run value. The IXP provenance bar and the case
+  evaluation use it.
+- **`VersionDeltaGlyph`** with **`versionDelta(baseline, current)`** shows a ▲
+  or ▼ when a version moved. The comparison is numeric-aware ("2.0" equals 2)
+  and shows nothing for an unchanged or non-numeric version.
+
+```tsx
+const { direction } = versionDelta(baseline.version, current.version);
+
+<BaselineCompare
+  rows={[
+    {
+      label: "Model version",
+      baseline: baseline.version,
+      current: current.version,
+      marker: <VersionDeltaGlyph direction={direction} baseline={baseline.version} />,
+    },
+    { label: "Extractor", baseline: baseline.id, current: current.id, mono: true },
+  ]}
+/>
+```
+
+The same glyph flags the tested agent version and the vertical config version
+(`ConfigVersion` against `BaselineConfigVersion` on a run) when they differ
+from the baseline.
 
 ## Telemetry
 
@@ -282,6 +364,9 @@ you prefer to supply your own data plumbing or render the view against a mock
   the collection-backed hooks in `hooks.ts`; just ensure those collections exist
   on your solution. Reads are reactive (live queries); writes POST to the
   provider's `triggerBaseUrl` (see Installation).
+- **Toolbar content**: `config.subjectToolbarContent` receives the test-cases
+  table and returns extra toolbar content, such as a faceted filter on a
+  subject column.
 - **Subject noun** — `config.subjectNoun` (a `singular` / `plural` pair) drives
   the subject-flavored KPI card (e.g. "Loans passing"), the runs "passed"
   column, and the run-details page title; omit it for generic "Tests"

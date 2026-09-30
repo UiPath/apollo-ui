@@ -15,6 +15,12 @@ import {
   type SolutionTestRunResult,
 } from "@/registry/solution-tests/types";
 import { IXP_EVALUATOR_FIXTURE, IXP_OUTPUT_FIXTURE } from "./ixp-fixtures";
+import {
+  PE_EVALUATOR_CHANGED_FIXTURE,
+  PE_EVALUATOR_SAME_FIXTURE,
+  PE_OUTPUT_CHANGED_FIXTURE,
+  PE_OUTPUT_FIXTURE,
+} from "./pe-fixtures";
 
 export interface MockDb {
   tests: SolutionTest[];
@@ -47,11 +53,13 @@ const errorMessages = JSON.stringify([
 ]);
 
 export const IXP_DEMO_AGENT_NAME = "IXP Document Extraction";
+export const PE_DEMO_AGENT_NAME = "Policy Engine Evaluation";
 
 const AGENTS = [
   "Income Verification Agent",
   "Risk Scoring Agent",
   IXP_DEMO_AGENT_NAME,
+  PE_DEMO_AGENT_NAME,
 ];
 
 export function createMockDb(): MockDb {
@@ -100,10 +108,10 @@ export function createMockDb(): MockDb {
     },
   ];
 
-  // Baseline jobs: test-1 has all three agents, test-2 has two, test-3/4 none.
+  // Baseline jobs: test-1 has all four agents, test-2 has two, test-3/4 none.
   const jobs: SolutionTestJob[] = [];
   const jobCountByTest: Record<string, number> = {
-    "test-1": 3,
+    "test-1": 4,
     "test-2": 2,
     "test-3": 0,
     "test-4": 0,
@@ -121,13 +129,15 @@ export function createMockDb(): MockDb {
         SourceRunResultId: `${testId}-r0-res-${i}`,
       });
       jobOutputs[id] =
-        i === 2
-          ? IXP_OUTPUT_FIXTURE
-          : {
-              decision: i === 0 ? "verified" : "low-risk",
-              confidence: 0.93,
-              fields: { reviewed: true },
-            };
+        i === 3
+          ? PE_OUTPUT_FIXTURE
+          : i === 2
+            ? IXP_OUTPUT_FIXTURE
+            : {
+                decision: i === 0 ? "verified" : "low-risk",
+                confidence: 0.93,
+                fields: { reviewed: true },
+              };
     }
   }
 
@@ -192,8 +202,8 @@ export function createMockDb(): MockDb {
         ConfigVersion: bIdx === 0 ? "4" : "3",
         BaselineConfigVersion: test.ConfigVersion,
         TestRunScore: passed ? 0.95 : 0.61,
-        JobsPassed: passed ? 3 : 1,
-        JobsTotal: 3,
+        JobsPassed: passed ? AGENTS.length : 1,
+        JobsTotal: AGENTS.length,
         StartedAt: batch.StartedAt,
         CompletedAt: batch.CompletedAt,
         CreateTime: batch.CreateTime,
@@ -204,6 +214,7 @@ export function createMockDb(): MockDb {
         RunResultStatus.Passed,
         RunResultStatus.Failed,
         RunResultStatus.NoBaseline,
+        RunResultStatus.Failed,
       ];
       AGENTS.forEach((agent, i) => {
         const resId = `${runId}-res-${i}`;
@@ -225,6 +236,28 @@ export function createMockDb(): MockDb {
           result.UserMessages = warningMessages;
         }
         results.push(result);
+        if (agent === PE_DEMO_AGENT_NAME) {
+          // The case evaluator scores strictly: any changed policy fails the job.
+          const changed = status === RunResultStatus.Failed;
+          result.Score = changed ? 0 : 1;
+          resultAttachments[resId] = {
+            ExpectedOutput: PE_OUTPUT_FIXTURE,
+            ActualOutput: changed
+              ? PE_OUTPUT_CHANGED_FIXTURE
+              : PE_OUTPUT_FIXTURE,
+            ExpectedInput: { applicantId: test.SubjectId },
+            ActualInput: { applicantId: test.SubjectId },
+            EvaluatorResults: {
+              "uipath-pe-case-evaluation": {
+                score: result.Score,
+                details: changed
+                  ? PE_EVALUATOR_CHANGED_FIXTURE
+                  : PE_EVALUATOR_SAME_FIXTURE,
+              },
+            },
+          };
+          return;
+        }
         const isIxp = i === 2;
         resultAttachments[resId] = {
           ExpectedOutput: isIxp
