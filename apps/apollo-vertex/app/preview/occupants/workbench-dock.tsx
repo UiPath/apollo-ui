@@ -1,12 +1,9 @@
 "use client";
 
-import { Ban, CircleCheck } from "lucide-react";
-import { type CSSProperties, useEffect, useRef } from "react";
+import type { CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import { SURFACE_HOSTS } from "@/app/_components/surface-hosts";
 import { Separator } from "@/components/ui/separator";
-import { Slider } from "@/components/ui/slider";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Tooltip,
   TooltipContent,
@@ -15,9 +12,14 @@ import {
 import { fitsSurface, type OccupantSpec } from "@/lib/composition";
 import { surfaceLabel } from "@/lib/surface-labels";
 import { cn } from "@/lib/utils";
+import { Dock, DockSlider, FitToggleGroup } from "./dock-parts";
 import { PageMap } from "./page-map";
-import type { WidthStatus } from "./workbench-model";
-import { HOSTED_SURFACES, WIDTH_RANGE } from "./workbench-url-state";
+import { lowerLabel, type WidthStatus } from "./workbench-model";
+import {
+  HOSTED_SURFACES,
+  WIDTH_RANGE,
+  WIDTH_STEP,
+} from "./workbench-url-state";
 
 const STATUS_DOT: Record<WidthStatus, string> = {
   in: "bg-success",
@@ -25,7 +27,6 @@ const STATUS_DOT: Record<WidthStatus, string> = {
   clips: "bg-destructive",
 };
 
-/** A mark's place along the slider, as a custom property. */
 const markAt = (value: number) =>
   // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- CSS custom properties aren't in React.CSSProperties
   ({
@@ -46,7 +47,7 @@ interface WorkbenchDockProps {
 }
 
 /**
- * The dock, in one piece: the page map, the surface switcher, and the
+ * The surface view's dock: the page map, the surface switcher, and the
  * width slider with its status, or a note where the occupant doesn't fit.
  */
 export function WorkbenchDock({
@@ -62,21 +63,6 @@ export function WorkbenchDock({
   const { t } = useTranslation();
   const statusText = t(`workbench_status_${status}`);
   const statusHint = t(`workbench_status_${status}_hint`);
-
-  // The slider's thumb takes no props, so it's named here.
-  const sliderRef = useRef<HTMLSpanElement>(null);
-  useEffect(() => {
-    const thumb = sliderRef.current?.querySelector("[role=slider]");
-    thumb?.setAttribute("aria-label", t("workbench_width"));
-    thumb?.setAttribute(
-      "aria-valuetext",
-      t("workbench_width_value", {
-        width,
-        status: `${statusText}. ${statusHint}`,
-      }),
-    );
-  });
-
   const ticks = [
     { at: marks.min, tone: "bg-muted-foreground", name: "min" },
     { at: marks.max, tone: "bg-muted-foreground", name: "max" },
@@ -89,60 +75,38 @@ export function WorkbenchDock({
   );
 
   return (
-    <div
-      data-workbench-dock
-      // Above the stage, whatever the occupant or template stacks inside it,
-      // with the stage blurred behind it.
-      className="absolute inset-x-4 bottom-6 z-10 mx-auto flex w-fit max-w-full flex-wrap items-center gap-4 rounded-xl border border-border bg-background/75 px-4 py-3 shadow-lg backdrop-blur-md"
-    >
+    <Dock>
       <PageMap
         regions={SURFACE_HOSTS[surface]?.regions ?? []}
-        name={surfaceLabel(surface).toLowerCase()}
+        name={lowerLabel(surface)}
       />
       <Separator orientation="vertical" className="h-8" />
-      <ToggleGroup
-        type="single"
-        variant="outline"
-        size="sm"
-        aria-label={t("workbench_surface")}
+      <FitToggleGroup
+        label={t("workbench_surface")}
         value={surface}
-        onValueChange={(name) => {
-          if (name) onSurface(name);
-        }}
-      >
-        {HOSTED_SURFACES.map((s) => {
-          const ok = fitsSurface(s, spec).fits;
-          return (
-            <ToggleGroupItem
-              key={s.name}
-              value={s.name}
-              data-fits={ok}
-              aria-label={t(
-                ok ? "workbench_surface_fits" : "workbench_surface_no_fit",
-                { surface: surfaceLabel(s.name) },
-              )}
-            >
-              {ok ? (
-                <CircleCheck aria-hidden className="text-success" />
-              ) : (
-                <Ban aria-hidden className="text-muted-foreground" />
-              )}
-              {surfaceLabel(s.name)}
-            </ToggleGroupItem>
-          );
-        })}
-      </ToggleGroup>
+        onChange={onSurface}
+        options={HOSTED_SURFACES.map((s) => ({
+          value: s.name,
+          label: surfaceLabel(s.name),
+          fits: fitsSurface(s, spec).fits,
+        }))}
+      />
       <Separator orientation="vertical" className="h-8" />
       {fitsHere ? (
         <div className="flex items-center gap-3">
-          <span ref={sliderRef} className="relative block w-56 py-2">
-            <Slider
-              min={WIDTH_RANGE.min}
-              max={WIDTH_RANGE.max}
-              step={4}
-              value={[width]}
-              onValueChange={([next]) => onWidth(next ?? width)}
-            />
+          <DockSlider
+            label={t("workbench_width")}
+            valueText={t("workbench_width_value", {
+              width,
+              status: `${statusText}. ${statusHint}`,
+            })}
+            min={WIDTH_RANGE.min}
+            max={WIDTH_RANGE.max}
+            step={WIDTH_STEP}
+            value={width}
+            onChange={onWidth}
+            measures="width"
+          >
             {ticks.map((tick) => (
               <span
                 key={tick.name}
@@ -156,13 +120,7 @@ export function WorkbenchDock({
                 )}
               />
             ))}
-          </span>
-          <output
-            data-workbench-width
-            className="w-16 text-end text-sm tabular-nums"
-          >
-            {t("workbench_px", { width })}
-          </output>
+          </DockSlider>
           <Tooltip>
             <TooltipTrigger asChild>
               <span
@@ -186,6 +144,6 @@ export function WorkbenchDock({
           {t("workbench_width_unavailable")}
         </p>
       )}
-    </div>
+    </Dock>
   );
 }

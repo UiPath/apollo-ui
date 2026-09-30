@@ -14,10 +14,9 @@
  */
 
 import { existsSync, readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
+import { readRegistry, root } from "./lib.ts";
 
-const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (path: string) => readFileSync(join(root, path), "utf8");
 
 /** Words that keep their capital anywhere in a sentence. */
@@ -43,15 +42,9 @@ function titleCased(text: string): string[] {
   return wrong;
 }
 
-interface RegistryItem {
-  name: string;
-  title?: string;
-  description?: string;
-  meta?: { layer?: string };
-}
-const registry: { items: RegistryItem[] } = JSON.parse(read("registry.json"));
-const occupants = registry.items.filter((i) => i.meta?.layer === "occupant");
-const kit = registry.items.find((i) => i.name === "occupant");
+const items = readRegistry();
+const occupants = items.filter((i) => i.meta?.layer === "occupant");
+const kit = items.find((i) => i.name === "occupant");
 const en: Record<string, string> = JSON.parse(read("locales/en.json"));
 const nav = read("app/patterns/_meta.ts");
 

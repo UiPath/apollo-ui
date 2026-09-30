@@ -6,9 +6,8 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import { OCCUPANT_SPECS } from "@/lib/occupants.generated";
-import { surfaceLabel } from "@/lib/surface-labels";
 import { cn } from "@/lib/utils";
-import { claimedSurfaces } from "./workbench-model";
+import { claimedSurfacesText } from "./workbench-model";
 
 interface OccupantListProps {
   id: string;
@@ -65,7 +64,6 @@ export function OccupantList({
       <ul className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-2">
         {listed.map(({ spec }) => {
           const isSelected = spec.name === selected;
-          const where = claimedSurfaces(spec).map((s) => surfaceLabel(s.name));
           return (
             <li key={spec.name}>
               <button
@@ -79,9 +77,7 @@ export function OccupantList({
               >
                 <span className="block text-sm font-medium">{spec.label}</span>
                 <span className="block text-xs text-muted-foreground">
-                  {where.length > 0
-                    ? where.join(", ")
-                    : t("workbench_fits_none")}
+                  {claimedSurfacesText(spec, t("workbench_fits_none"))}
                 </span>
               </button>
             </li>

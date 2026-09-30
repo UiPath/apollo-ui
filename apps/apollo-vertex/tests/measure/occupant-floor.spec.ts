@@ -1,13 +1,9 @@
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "@playwright/test";
-import {
-  fitsSurface,
-  occupantPadding,
-  PADDED_INSET_PX,
-} from "@/lib/composition";
+import { fitsSurface, occupantInset } from "@/lib/composition";
 import { OCCUPANT_SPECS, SURFACE_SPECS } from "@/lib/occupants.generated";
-import { INNER, inspect, openFixture } from "../e2e/occupant-inspect";
+import { inspect, openFixture } from "../e2e/occupant-inspect";
 
 /*
  * Run by `pnpm measure:occupant <name>`, not by the test projects. For each
@@ -27,7 +23,7 @@ const entry = OCCUPANT_SPECS.find((o) => o.spec.name === NAME);
 
 if (entry) {
   const { spec, examples } = entry;
-  const inset = occupantPadding(spec) === "padded" ? 2 * PADDED_INSET_PX : 0;
+  const inset = occupantInset(spec);
   const from = Math.max(spec.requires.minWidth + 200, 480);
   for (const surface of SURFACE_SPECS.filter(
     (s) => fitsSurface(s, spec).fits,
@@ -41,12 +37,7 @@ if (entry) {
         // The first width, stepping down, that clips; the floor is one step above.
         let floor: number | null = null;
         for (let width = from; width >= LOWEST; width -= STEP) {
-          const r = await inspect(
-            page,
-            INNER[surface.name] ?? "",
-            width + inset,
-            0,
-          );
+          const r = await inspect(page, surface.name, width + inset, 0);
           if (r.problems.length > 0) break;
           floor = width;
         }

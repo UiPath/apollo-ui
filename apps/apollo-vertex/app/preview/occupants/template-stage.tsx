@@ -2,6 +2,7 @@
 
 import type { CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
+import { STAGE_HEIGHT } from "@/app/_components/stage";
 import type { TemplateHost } from "@/app/_components/template-hosts";
 import type { OccupantState } from "@/components/ui/occupant";
 import type { OccupantSpec } from "@/lib/composition";
@@ -10,6 +11,7 @@ import { OCCUPANT_REGISTRY } from "@/lib/occupant-registry.generated";
 import { LocaleProvider } from "@/registry/shell/shell-locale-provider";
 import type { PanelPlacement } from "@/templates/detail-page/detail-page.template";
 import { NoFitCard } from "./no-fit-card";
+import { StageFrame } from "./stage-frame";
 import { slotFit } from "./workbench-url-state";
 
 interface TemplateStageProps {
@@ -50,28 +52,20 @@ export function TemplateStage({
       />
     );
   const { Frame } = host;
-  const width =
+  const size =
     // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- CSS custom properties aren't in React.CSSProperties
-    { "--page-width": `${pageWidth}px` } as CSSProperties;
+    { "--page-width": `${pageWidth}px`, height: STAGE_HEIGHT } as CSSProperties;
   return (
-    <div
-      data-workbench-frame
+    <StageFrame
       data-template-name={host.spec.name}
-      style={width}
-      className="relative flex h-160 w-(--page-width) shrink-0 flex-col bg-background outline-1 outline-border"
+      style={size}
+      className="flex w-(--page-width) shrink-0 flex-col"
+      tag={t("workbench_frame_tag_template", {
+        template: host.label,
+        slot: slotName,
+        width: pageWidth,
+      })}
     >
-      {/* The frame's name, like an artboard's. Decorative: the dock says the same. */}
-      <span
-        aria-hidden="true"
-        data-workbench-frame-tag
-        className="pointer-events-none absolute start-0 bottom-full mb-1.5 whitespace-nowrap text-xs text-muted-foreground select-none"
-      >
-        {t("workbench_frame_tag_template", {
-          template: host.label,
-          slot: slotName,
-          width: pageWidth,
-        })}
-      </span>
       <LocaleProvider>
         <Frame
           // A fresh template per slot and placement: its panels start as configured.
@@ -82,6 +76,6 @@ export function TemplateStage({
           occupant={entry.render(sample, { state })}
         />
       </LocaleProvider>
-    </div>
+    </StageFrame>
   );
 }

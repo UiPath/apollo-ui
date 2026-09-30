@@ -1,4 +1,5 @@
 import type { Ref, RefCallback } from "react";
+import { attachRef } from "@/lib/surface-context";
 
 /** The fade length when --scroll-fade-size can't be read, in px. */
 const FALLBACK_FADE_PX = 24;
@@ -8,22 +9,6 @@ function fadeSize(node: HTMLElement): number {
     getComputedStyle(node).getPropertyValue("--scroll-fade-size"),
   );
   return Number.isFinite(value) ? value : FALLBACK_FADE_PX;
-}
-
-/** Attaches a ref of either kind, returning how to detach it. */
-function attach<T>(ref: Ref<T> | undefined, node: T): () => void {
-  if (typeof ref === "function") {
-    const cleanup = ref(node);
-    return () => (typeof cleanup === "function" ? cleanup() : ref(null));
-  }
-  if (ref) {
-    ref.current = node;
-    return () => {
-      ref.current = null;
-    };
-  }
-  // Nothing to detach.
-  return () => null;
 }
 
 /** Which way a container scrolls, so which edges can fade. */
@@ -71,7 +56,7 @@ export function useScrollFade<T extends HTMLElement>(
 ): RefCallback<T> {
   return (node: T | null) => {
     if (!node) return;
-    const detachForwarded = attach(forwarded, node);
+    const detachForwarded = attachRef(forwarded, node);
     if (!enabled) return detachForwarded;
     let size = fadeSize(node);
 

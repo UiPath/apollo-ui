@@ -2,12 +2,13 @@ import {
   fits,
   fitsSurface,
   type OccupantSpec,
+  occupantInset,
   occupantPadding,
   PADDED_INSET_PX,
   type SurfaceSpec,
 } from "@/lib/composition";
 import { surfaceLabel } from "@/lib/surface-labels";
-import { HOSTED_SURFACES, occupantInset } from "./workbench-url-state";
+import { HOSTED_SURFACES } from "./workbench-url-state";
 
 /*
  * What the workbench works out from the specs and its measurements, apart
@@ -22,6 +23,12 @@ export const lowerLabel = (name: string) => surfaceLabel(name).toLowerCase();
 /** The surfaces an occupant claims, in the hosts' order. */
 export const claimedSurfaces = (spec: OccupantSpec) =>
   HOSTED_SURFACES.filter((surface) => fitsSurface(surface, spec).fits);
+
+/** Those surfaces as one line of labels, or `none` when it claims none. */
+export const claimedSurfacesText = (spec: OccupantSpec, none: string) =>
+  claimedSurfaces(spec)
+    .map((surface) => surfaceLabel(surface.name))
+    .join(", ") || none;
 
 /** fits() for a surface held at an outer width, as if a slot held it there. */
 export const fitsAt = (

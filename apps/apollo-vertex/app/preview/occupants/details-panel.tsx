@@ -1,6 +1,5 @@
 "use client";
 
-import { Ban, CircleCheck } from "lucide-react";
 import Link from "next/link";
 import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -8,13 +7,15 @@ import { Button } from "@/components/ui/button";
 import {
   fitsSurface,
   type OccupantSpec,
+  occupantInset,
   occupantOrientations,
   occupantPadding,
 } from "@/lib/composition";
 import { surfaceLabel } from "@/lib/surface-labels";
+import { FitIcon } from "./dock-parts";
 import type { Floor } from "./floor-probe";
 import {
-  claimedSurfaces,
+  claimedSurfacesText,
   fitsAt,
   followedSurface,
   lowerLabel,
@@ -22,7 +23,6 @@ import {
 import {
   defaultWidth,
   HOSTED_SURFACES,
-  occupantInset,
   WIDTH_RANGE,
 } from "./workbench-url-state";
 
@@ -40,18 +40,7 @@ interface ResultProps {
 function Result({ pass, failTone = "destructive", children }: ResultProps) {
   return (
     <li className="flex gap-2">
-      {pass ? (
-        <CircleCheck aria-hidden className="size-4 shrink-0 text-success" />
-      ) : (
-        <Ban
-          aria-hidden
-          className={
-            failTone === "muted"
-              ? "size-4 shrink-0 text-muted-foreground"
-              : "size-4 shrink-0 text-destructive"
-          }
-        />
-      )}
+      <FitIcon fits={pass} tone={failTone} className="size-4 shrink-0" />
       <span className="min-w-0">{children}</span>
     </li>
   );
@@ -106,9 +95,7 @@ export function DetailsPanel({
   const specRows: [string, string][] = [
     [
       t("workbench_spec_surfaces"),
-      claimedSurfaces(spec)
-        .map((s) => surfaceLabel(s.name))
-        .join(", ") || t("workbench_fits_none"),
+      claimedSurfacesText(spec, t("workbench_fits_none")),
     ],
     [
       t("workbench_spec_orientation"),

@@ -19,14 +19,17 @@ const AGENT_MARKER: Record<ProgressEvent["status"], TimelineMarkerVariant> = {
   cancelled: "ai-cancelled",
 };
 
+/** A person's marker: their initials, when there are any. */
+const personMarker = ({ initials }: { initials?: string }): MarkerView => ({
+  variant: "user",
+  ...(initials && { initials }),
+});
+
 /** An event's marker, from who did it and how it stands. */
 export function eventMarker({ actor, status }: ProgressEvent): MarkerView {
   if (actor.kind === "agent") return { variant: AGENT_MARKER[status] };
   if (status === "done") return { variant: "completed-user" };
-  return {
-    variant: "user",
-    ...(actor.initials && { initials: actor.initials }),
-  };
+  return personMarker(actor);
 }
 
 /**
@@ -41,17 +44,10 @@ export function stageMarker(
   if (last && stage.status !== "upcoming") return eventMarker(last);
   const person = stage.owner?.kind === "person" ? stage.owner : null;
   if (stage.status === "upcoming") {
-    return person
-      ? {
-          variant: "user",
-          ...(person.initials && { initials: person.initials }),
-        }
-      : { variant: "ai-upcoming" };
+    return person ? personMarker(person) : { variant: "ai-upcoming" };
   }
   if (stage.status === "done") {
     return { variant: person ? "completed-user" : "completed-ai" };
   }
-  return person
-    ? { variant: "user", ...(person.initials && { initials: person.initials }) }
-    : { variant: "ai-progress" };
+  return person ? personMarker(person) : { variant: "ai-progress" };
 }

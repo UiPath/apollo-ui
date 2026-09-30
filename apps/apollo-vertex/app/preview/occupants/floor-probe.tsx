@@ -4,11 +4,10 @@ import { useEffect, useEffectEvent, useRef } from "react";
 import { OccupantInSurface } from "@/app/_components/occupant-in-surface";
 import { SURFACE_HOSTS } from "@/app/_components/surface-hosts";
 import type { ExampleRole } from "@/lib/occupant-entry";
-import { afterLayout, overflowProblems, settled } from "./overflow";
-import { specFor, WIDTH_RANGE } from "./workbench-url-state";
-
-/** How close the floor search gets, in px, like measure:occupant's step. */
-const STEP = 4;
+import { specFor } from "@/lib/occupant-lookup";
+import { overflowProblems } from "@/lib/overflow-problems";
+import { afterLayout, settled } from "./overflow";
+import { WIDTH_RANGE, WIDTH_STEP } from "./workbench-url-state";
 
 /**
  * A measured floor: the surface's outer width in px, padding included (the
@@ -51,7 +50,7 @@ export function FloorProbe({
     };
     // Clips at `clips`, fits at `fits`: halve the gap until it's one step.
     const narrow = async (clips: number, fits: number): Promise<number> => {
-      if (fits - clips <= STEP || cancelled) return fits;
+      if (fits - clips <= WIDTH_STEP || cancelled) return fits;
       const middle = Math.round((fits + clips) / 2);
       return (await clipsAt(middle))
         ? narrow(middle, fits)
@@ -83,7 +82,6 @@ export function FloorProbe({
         occupant={occupant}
         surface={surface}
         example={sample}
-        height={560}
       />
     </div>
   );

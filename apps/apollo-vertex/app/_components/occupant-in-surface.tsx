@@ -1,13 +1,10 @@
 "use client";
 
 import type { CSSProperties } from "react";
+import { STAGE_HEIGHT } from "@/app/_components/stage";
 import { SURFACE_HOSTS } from "@/app/_components/surface-hosts";
 import type { OccupantState } from "@/components/ui/occupant";
-import {
-  occupantPadding,
-  PADDED_INSET_PX,
-  scrollOwner,
-} from "@/lib/composition";
+import { occupantInset, occupantPadding, scrollOwner } from "@/lib/composition";
 import { OCCUPANT_REGISTRY } from "@/lib/occupant-registry.generated";
 import { SURFACE_SPECS } from "@/lib/occupants.generated";
 import { LocaleProvider } from "@/registry/shell/shell-locale-provider";
@@ -36,7 +33,7 @@ export function OccupantInSurface({
   example = "",
   state = "ready",
   width,
-  height = 480,
+  height = STAGE_HEIGHT,
 }: OccupantInSurfaceProps) {
   const entry = OCCUPANT_REGISTRY.find((o) => o.spec.name === occupant);
   const surface = SURFACE_SPECS.find((s) => s.name === surfaceName);
@@ -46,9 +43,7 @@ export function OccupantInSurface({
   const padding = occupantPadding(spec);
   const content = entry.render(example, { state });
   const style: CSSProperties = {
-    width:
-      width ??
-      spec.requires.minWidth + (padding === "padded" ? 2 * PADDED_INSET_PX : 0),
+    width: width ?? spec.requires.minWidth + occupantInset(spec),
     // A horizontal surface doesn't grow downward: it takes its content's height.
     height: surface.provides.orientation === "horizontal" ? "auto" : height,
   };

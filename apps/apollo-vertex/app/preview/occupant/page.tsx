@@ -23,7 +23,6 @@ function Fixture() {
       surface={params.get("surface") ?? ""}
       example={params.get("example") ?? ""}
       state={OCCUPANT_STATES.find((s) => s === params.get("state")) ?? "ready"}
-      height={640}
     />
   );
 }

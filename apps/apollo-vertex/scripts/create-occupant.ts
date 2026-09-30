@@ -44,7 +44,7 @@
  *   Kinds decide how a field renders and how the stress adapter tests it:
  *     title   the item's main text; wraps (on a card: one line, truncated,
  *             with the full title in a tooltip)
- *     label   a short single line; truncates, full text in a title
+ *     label   a short single line; truncates, full text in a tooltip
  *     value   the main text of a label and value pair; shows "Not set" when empty
  *     detail  secondary text; wraps
  *     meta    small text, like a time; wraps
@@ -72,13 +72,13 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { stdin, stdout } from "node:process";
 import { createInterface } from "node:readline/promises";
-import { fileURLToPath } from "node:url";
+import {
+  PLACEHOLDER,
+  root,
+  camel as toCamel,
+  pascal as toPascal,
+} from "./lib.ts";
 
-// The placeholder token. Split so the scripts that define it don't contain it;
-// check-placeholders.ts and create-occupant.ts define it the same way.
-const PLACEHOLDER = ["@fill", "in"].join("-");
-
-const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (path: string) => readFileSync(join(root, path), "utf8");
 const write = (path: string, content: string) => {
   mkdirSync(dirname(join(root, path)), { recursive: true });
@@ -111,10 +111,8 @@ const occupantName = name as string;
 if (existsSync(join(root, "registry", occupantName)))
   fail(`registry/${occupantName} already exists.`);
 
-const camel = occupantName.replace(/-([a-z0-9])/g, (_, c: string) =>
-  c.toUpperCase(),
-);
-const pascal = camel.replace(/^[a-z]/, (c) => c.toUpperCase());
+const camel = toCamel(occupantName);
+const pascal = toPascal(occupantName);
 const snake = occupantName.replaceAll("-", "_");
 
 // --- Questions --------------------------------------------------------------
@@ -422,7 +420,7 @@ const fieldMarkup = (f: Field) => {
       );
     case "label":
       return wrap(
-        `<p className="truncate text-xs text-muted-foreground" title={${v}}>{${v}}</p>`,
+        `<OccupantTruncatedText className="text-xs text-muted-foreground">{${v}}</OccupantTruncatedText>`,
       );
     case "value":
       return `<p className={cn("text-sm wrap-anywhere", ${v}?.length ? "font-medium text-foreground" : "text-muted-foreground")}>
@@ -483,7 +481,7 @@ const cardMarkup = () => {
     ...of("label").map((f) =>
       optional(
         f,
-        `<p className="max-w-1/2 shrink-0 truncate text-xs text-muted-foreground" title={entry.${f.name}}>{entry.${f.name}}</p>`,
+        `<OccupantTruncatedText className="max-w-1/2 shrink-0 text-xs text-muted-foreground">{entry.${f.name}}</OccupantTruncatedText>`,
       ),
     ),
   ];
@@ -616,6 +614,11 @@ ${pagerMarkup}
 </div>`
   : itemsMarkup;
 
+// Single lines that truncate keep their full text in a tooltip: labels, and
+// titles on cards.
+const truncates = fields.some(
+  (f) => f.kind === "label" || (selectable && f.kind === "title"),
+);
 const reactNames = [grouped && "useId", filtered && "useState"].filter(Boolean);
 const imports = [
   reactNames.length > 0 && `import { ${reactNames.join(", ")} } from "react";`,
@@ -623,7 +626,7 @@ const imports = [
   'import { useTranslation } from "react-i18next";',
   selectable && 'import { Button } from "@/components/ui/button";',
   selectable && 'import { Card } from "@/components/ui/card";',
-  `import { Occupant, ${hasStatus ? "OccupantStatus, " : ""}OccupantStateView, ${selectable && fields.some((f) => f.kind === "title") ? "OccupantTruncatedText, " : ""} type OccupantViewProps${selectable ? ", type OccupantSelectionProps" : ""} } from "@/components/ui/occupant";`,
+  `import { Occupant, ${hasStatus ? "OccupantStatus, " : ""}OccupantStateView, ${truncates ? "OccupantTruncatedText, " : ""} type OccupantViewProps${selectable ? ", type OccupantSelectionProps" : ""} } from "@/components/ui/occupant";`,
   filtered &&
     'import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";',
   ownScroll &&
@@ -828,7 +831,7 @@ const a11y = [
   hasStatus &&
     '- A status is never color alone: its label says it, and "+2" is read as "2 more".',
   fields.some((f) => f.kind === "label") &&
-    "- Short labels truncate, with the full text in a title.",
+    "- Short labels truncate. When one is cut off, hovering shows it in full, and screen readers always read it in full.",
   selectable &&
     fields.some((f) => f.kind === "title") &&
     "- Card titles stay on one line. When one is cut off, hovering shows the full title, and screen readers always read it in full.",

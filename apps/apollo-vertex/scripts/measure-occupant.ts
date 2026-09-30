@@ -19,16 +19,11 @@
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
+import { namesIn, readRegistry, root } from "./lib.ts";
 
-const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const name = process.argv[2];
-const registry: { items: { name: string; meta?: { layer?: string } }[] } =
-  JSON.parse(readFileSync(join(root, "registry.json"), "utf8"));
-const occupants = registry.items
-  .filter((i) => i.meta?.layer === "occupant")
-  .map((i) => i.name);
+const occupants = namesIn(readRegistry(), "occupant");
 if (!name || !occupants.includes(name)) {
   console.error(
     `measure:occupant: name a registered occupant: ${occupants.join(", ")}`,
