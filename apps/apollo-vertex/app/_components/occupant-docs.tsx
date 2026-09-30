@@ -77,15 +77,6 @@ export function OpenInWorkbench({ name, surface }: OpenInWorkbenchProps) {
   );
 }
 
-/** The label at the top of a pattern page that takes the occupant role. */
-export function OccupantLabel() {
-  return (
-    <p>
-      <Badge variant="secondary">Occupant</Badge>
-    </p>
-  );
-}
-
 interface WhereItFitsProps {
   /** A registered occupant's name. */
   name: string;

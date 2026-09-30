@@ -7,7 +7,7 @@
  *
  *   - the spec's label, and the registry item's title and description
  *   - its copy in locales/en.json (occupant_ and <name>_ keys)
- *   - its Patterns nav title, and its Patterns page's headings
+ *   - its Patterns nav title, and its Patterns page's title and headings
  *
  * Example data (names, companies) isn't copy, so it isn't checked. A proper
  * noun that should stay capitalized goes in PROPER_NOUNS. It runs in lint.
@@ -74,8 +74,16 @@ for (const { name } of occupants) {
   if (title) copy.push([`app/patterns/_meta.ts ${name}`, title]);
   const page = `app/patterns/${name}/page.mdx`;
   if (existsSync(join(root, page)))
-    for (const heading of read(page).match(/^#{1,6} .+$/gm) ?? [])
-      copy.push([page, heading.replace(/^#+ /, "")]);
+    for (const heading of [
+      // The page title, in frontmatter: the page heading is rendered for it.
+      ...(read(page).match(/^title: .+$/m) ?? []).map((t) =>
+        t.replace(/^title: /, ""),
+      ),
+      ...(read(page).match(/^#{1,6} .+$/gm) ?? []).map((h) =>
+        h.replace(/^#+ /, ""),
+      ),
+    ])
+      copy.push([page, heading]);
 }
 
 const problems = copy.flatMap(([where, text]) => {

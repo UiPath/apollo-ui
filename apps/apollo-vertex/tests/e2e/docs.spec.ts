@@ -77,8 +77,8 @@ for (const { spec } of OCCUPANT_SPECS) {
   const surfaces = SURFACE_SPECS.filter(
     (surface) => fitsSurface(surface, spec).fits,
   );
+  // The "Occupant" badge beside the title is checked in occupant-page.spec.ts.
   PAGES[`/patterns/${spec.name}`] = [
-    "Occupant",
     `Surfaces | ${surfaces
       .map((surface) => surfaceLabel(surface.name))
       .toSorted()
