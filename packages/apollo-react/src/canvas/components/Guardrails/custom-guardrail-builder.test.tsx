@@ -3,6 +3,7 @@ import { TooltipProvider } from '@uipath/apollo-wind';
 import { axe } from 'jest-axe';
 import type { ReactElement } from 'react';
 import { describe, expect, it, type Mock, vi } from 'vitest';
+import type { GuardrailEscalateRecipient } from './builder-types';
 import type { CustomGuardrailBuilderValue } from './custom-builder-types';
 import { CustomGuardrailBuilder } from './custom-guardrail-builder';
 import type { GuardrailFieldGroup, GuardrailRuleFields, GuardrailWordRule } from './rules-types';
@@ -514,6 +515,34 @@ describe('CustomGuardrailBuilder', () => {
         'Block',
         'Filter',
       ]);
+    });
+
+    it('saves a recipient type it does not model unchanged', () => {
+      const onSave = vi.fn();
+      // Agents' Workload assignment criteria, passed in with a cast as the host does.
+      const recipient = { type: 9, value: 'g1', displayName: 'Reviewers' };
+      render(
+        <CustomGuardrailBuilder
+          open
+          inline
+          hideHeader
+          guardrail={makeGuardrail({
+            action: {
+              $actionType: 'escalate',
+              app: { id: 'app1', version: '1', name: 'App' },
+              recipient: recipient as unknown as GuardrailEscalateRecipient,
+            },
+          })}
+          onSave={onSave}
+          onCancel={vi.fn()}
+        />
+      );
+
+      expect(screen.getByRole('combobox', { name: /assign to/i })).toHaveTextContent('Group');
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+      expect(onSave).toHaveBeenCalledWith(
+        expect.objectContaining({ action: expect.objectContaining({ recipient }) })
+      );
     });
 
     it('passes the escalate slots through to the action section', () => {

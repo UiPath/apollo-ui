@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   type GuardrailAction,
   type GuardrailDefinition,
+  type GuardrailEscalateRecipient,
   GuardrailRecipientType,
 } from './builder-types';
 import {
@@ -130,6 +131,23 @@ describe('getGuardrailActionErrorFields — asset recipients', () => {
         recipient: { type: GuardrailRecipientType.AssetGroupName, assetName: '  ' },
       })
     ).toEqual(['recipient']);
+  });
+});
+
+describe('getGuardrailActionErrorFields — recipient types it does not model', () => {
+  it.each([
+    [7, { type: 7, argumentName: '' }],
+    [9, { type: 9, value: '', displayName: '' }],
+    [11, { type: 11, value: '' }],
+  ])('leaves type %i to the host instead of flagging or throwing', (_type, recipient) => {
+    expect(
+      getGuardrailActionErrorFields({
+        $actionType: 'escalate',
+        app: { id: 'app1', version: '1', name: 'App' },
+        // Agents' types 7-11 reach the form through a host cast.
+        recipient: recipient as unknown as GuardrailEscalateRecipient,
+      })
+    ).toEqual([]);
   });
 });
 
