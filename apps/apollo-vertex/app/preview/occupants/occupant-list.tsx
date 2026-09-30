@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -14,6 +15,8 @@ interface OccupantListProps {
   open: boolean;
   selected: string;
   onSelect: (name: string) => void;
+  /** Where "Back to docs" goes. */
+  docsHref: string;
 }
 
 /** Every registered occupant, searchable, with the surfaces it fits. */
@@ -22,6 +25,7 @@ export function OccupantList({
   open,
   selected,
   onSelect,
+  docsHref,
 }: OccupantListProps) {
   const { t } = useTranslation();
   const [query, setQuery] = useState("");
@@ -36,6 +40,14 @@ export function OccupantList({
       className="flex w-66 shrink-0 flex-col border-e border-border"
     >
       <div className="flex flex-col gap-3 p-4">
+        <Link
+          href={docsHref}
+          data-workbench-back
+          className="flex w-fit items-center gap-1 text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <ArrowLeft aria-hidden className="size-4" />
+          {t("workbench_back_to_docs")}
+        </Link>
         <div>
           <h1 className="text-base font-semibold">{t("workbench_title")}</h1>
           <p className="text-sm text-muted-foreground">
@@ -83,7 +95,7 @@ export function OccupantList({
       </ul>
       <div className="border-t border-border p-4">
         <Link
-          href="/guidelines/creating-occupants"
+          href="/guidelines/design-architecture/creating-occupants"
           className="text-sm text-primary underline underline-offset-2"
         >
           {t("workbench_creating_occupants")}

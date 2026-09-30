@@ -38,9 +38,11 @@ const DETAILS_ID = "workbench-details";
 
 interface WorkbenchProps {
   initial: WorkbenchView;
+  /** Where "Back to docs" goes. */
+  docsHref: string;
 }
 
-export function Workbench({ initial }: WorkbenchProps) {
+export function Workbench({ initial, docsHref }: WorkbenchProps) {
   const { t } = useTranslation();
   const [view, setView] = useState(initial);
   const update = (patch: Partial<WorkbenchView>) =>
@@ -179,11 +181,13 @@ export function Workbench({ initial }: WorkbenchProps) {
         open={view.listOpen}
         selected={view.occupant}
         onSelect={selectOccupant}
+        docsHref={docsHref}
       />
 
       <main className="flex min-w-0 flex-1 flex-col">
         <WorkbenchHeader
           label={spec.label}
+          docsHref={docsHref}
           listId={LIST_ID}
           listOpen={view.listOpen}
           onToggleList={() => update({ listOpen: !view.listOpen })}
