@@ -837,8 +837,11 @@ const a11y = [
 ]
   .filter(Boolean)
   .join("\n");
-files[docsPage] =
-  `import { OccupantTitle, OpenInWorkbench, WhereItFits } from '@/app/_components/occupant-docs';
+files[docsPage] = `---
+title: ${title}
+---
+
+import { OccupantTitle, OpenInWorkbench, WhereItFits } from '@/app/_components/occupant-docs';
 import { OccupantInSurface } from '@/app/_components/occupant-in-surface';
 
 <OccupantTitle name="${occupantName}" />
