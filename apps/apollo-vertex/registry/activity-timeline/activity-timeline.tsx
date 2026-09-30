@@ -76,10 +76,12 @@ function ActivityTimeline({
   onRetry,
 }: ActivityTimelineProps) {
   const { t } = useTranslation();
+  // No events is the empty state.
+  const shown = state === "ready" && view.events.length === 0 ? "empty" : state;
   return (
     <Occupant spec={activityTimelineOccupant}>
       <OccupantStateView
-        state={state}
+        state={shown}
         subject={t("activity_timeline_subject")}
         emptyDescription={t("activity_timeline_empty")}
         skeleton={<ActivityTimelineSkeleton />}

@@ -1,5 +1,10 @@
 import { useTranslation } from "react-i18next";
-import { Occupant, type OccupantViewProps } from "@/components/ui/occupant";
+import {
+  Occupant,
+  OccupantStateView,
+  type OccupantViewProps,
+} from "@/components/ui/occupant";
+import { Skeleton } from "@/components/ui/skeleton";
 import { TimelineMarker } from "@/components/ui/timeline";
 import { type MarkerView, stageMarker } from "@/lib/progress-markers";
 import type {
@@ -96,11 +101,36 @@ function StageStripView({ view }: StageStripViewProps) {
 
 type StageStripProps = OccupantViewProps<ProgressViewModel>;
 
+/** Loading: a band of stage markers, then the current stage. */
+function StageStripSkeleton() {
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center gap-2">
+        {["a", "b", "c", "d"].map((key) => (
+          <Skeleton key={key} className="size-4 rounded-full" />
+        ))}
+      </div>
+      <Skeleton className="h-4 w-40" />
+    </div>
+  );
+}
+
 /** Occupant: where an item is in its stages, as a one-band summary. */
-function StageStrip({ view }: StageStripProps) {
+function StageStrip({ view, state = "ready", onRetry }: StageStripProps) {
+  const { t } = useTranslation();
+  // No stages is the empty state.
+  const shown = state === "ready" && view.stages.length === 0 ? "empty" : state;
   return (
     <Occupant spec={stageStripOccupant}>
-      <StageStripView view={view} />
+      <OccupantStateView
+        state={shown}
+        subject={t("stage_strip_subject")}
+        emptyDescription={t("stage_strip_empty")}
+        skeleton={<StageStripSkeleton />}
+        onRetry={onRetry}
+      >
+        <StageStripView view={view} />
+      </OccupantStateView>
     </Occupant>
   );
 }
