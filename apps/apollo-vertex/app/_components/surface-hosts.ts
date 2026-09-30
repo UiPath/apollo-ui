@@ -15,7 +15,7 @@ export const MAP_REGIONS = [
 ] as const;
 export type MapRegion = (typeof MAP_REGIONS)[number];
 
-export interface SurfaceHost {
+interface SurfaceHost {
   /** Renders the surface on its own, holding one occupant. */
   Host: ComponentType<SurfaceHostProps>;
   /** The element that holds the surface's padding: where overflow is measured. */

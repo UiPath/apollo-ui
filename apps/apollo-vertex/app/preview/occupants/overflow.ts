@@ -99,7 +99,7 @@ function measure(box: Element): string[] {
 }
 
 /** Resolves after two frames: long enough for a width change to lay out. */
-export const nextLayout = () =>
+const nextLayout = () =>
   new Promise<void>((resolve) => {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {

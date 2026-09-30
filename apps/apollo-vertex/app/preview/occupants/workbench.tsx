@@ -224,7 +224,6 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
               {templateHost && view.mode === "template" ? (
                 <TemplateStage
                   host={templateHost}
-                  template={view.template}
                   spec={spec}
                   slot={view.slot}
                   placement={view.placement}

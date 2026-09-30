@@ -156,11 +156,6 @@ export interface TemplateSpec<TName extends string = string> {
   slots: readonly SlotSpec[];
 }
 
-/** The data-slot value for a template slot, e.g. "detail-page-main". */
-export function slotAttribute(template: TemplateSpec, slot: SlotSpec): string {
-  return `${template.name}-${slot.name}`;
-}
-
 /** Whether a slot accepts the given surface. */
 export function slotAccepts(slot: SlotSpec, surface: SurfaceSpec): boolean {
   return slot.surfaces.includes(surface.name);

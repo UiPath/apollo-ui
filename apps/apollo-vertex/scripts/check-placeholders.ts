@@ -14,7 +14,7 @@ import { fileURLToPath } from "node:url";
 const PLACEHOLDER = ["@fill", "in"].join("-");
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const DIRECTORIES = ["app", "registry", "lib", "templates", "hooks", "tests"];
+const DIRECTORIES = ["app", "registry", "lib", "templates", "tests"];
 const FILES = ["registry.json", "locales/en.json"];
 const EXTENSIONS = /\.(ts|tsx|mdx|md|json|css)$/;
 

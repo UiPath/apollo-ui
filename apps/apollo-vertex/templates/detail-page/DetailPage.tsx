@@ -13,9 +13,8 @@ import { SidePanelSlotContext } from "@/components/ui/side-panel";
 import { cn } from "@/lib/utils";
 import {
   detailPageTemplate,
-  enabledPanels,
   END_PANEL_MIN_PX,
-  END_PANEL_WIDTH,
+  enabledPanels,
   MAIN_MIN_OUTER_PX,
   START_PANEL_PX,
   START_PANEL_WIDTH,
@@ -132,26 +131,20 @@ export function DetailPage({
   const startBeside = hasStart && config.start.placement === "beside-header";
   const endBeside = hasEnd && config.end.placement === "beside-header";
 
-  const endSlotMinPx = END_PANEL_MIN_PX;
   // Before measurement, a "max" end width is laid out by the grid. Once
   // measured, its px value is the same, and px can animate.
   const endAtMax =
     hasEnd && open.end && state.endWidthChosen === "max" && !state.measured;
   const startOpenPx = hasStart && open.start ? START_PANEL_PX : 0;
   const mainTrack = endAtMax
-    ? `minmax(min(${MAIN_MIN_OUTER_PX}px, calc(100% - ${startOpenPx + endSlotMinPx}px)), 1fr)`
+    ? `minmax(min(${MAIN_MIN_OUTER_PX}px, calc(100% - ${startOpenPx + END_PANEL_MIN_PX}px)), 1fr)`
     : "minmax(0, 1fr)";
-  const endTrack = endAtMax ? `minmax(${endSlotMinPx}px, 1fr)` : "auto";
+  const endTrack = endAtMax ? `minmax(${END_PANEL_MIN_PX}px, 1fr)` : "auto";
   // The Detail page's own widths, from its spec, as CSS variables on the
   // template root: one source for CSS and TypeScript.
   const templateStyle: CSSProperties &
     Record<`--detail-page-${string}`, string> = {
     "--detail-page-start-panel-width": `${START_PANEL_WIDTH.default}px`,
-    "--detail-page-start-panel-width-min": `${START_PANEL_WIDTH.min}px`,
-    "--detail-page-start-panel-width-max": `${START_PANEL_WIDTH.max}px`,
-    "--detail-page-end-panel-width": `${END_PANEL_WIDTH.default}px`,
-    "--detail-page-end-panel-width-min": `${END_PANEL_WIDTH.min}px`,
-    "--detail-page-main-width-min": `${MAIN_MIN_OUTER_PX}px`,
     "--detail-page-columns": `auto ${mainTrack} ${endTrack}`,
   };
   // Each panel's clip box width: its width when open, 0 when closed.

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { MAP_REGIONS } from "@/app/_components/surface-hosts";
-import { TEMPLATE_HOSTS } from "@/app/_components/template-hosts";
+import { slotRegions, TEMPLATE_HOSTS } from "@/app/_components/template-hosts";
 
 // Registering a template for previews is its host: the workbench's template
 // view and picker render it from this, with no change to the page.
@@ -15,7 +15,7 @@ describe.each(Object.entries(TEMPLATE_HOSTS))("%s", (name, host) => {
   it("labels every slot and places it on the page map", () => {
     for (const slot of host.spec.slots) {
       expect(host.slotLabels[slot.name]?.trim(), slot.name).toBeTruthy();
-      const regions = host.regions[slot.name] ?? [];
+      const regions = slotRegions(host, slot.name);
       expect(regions.length, slot.name).toBeGreaterThan(0);
       for (const region of regions) expect(MAP_REGIONS).toContain(region);
     }

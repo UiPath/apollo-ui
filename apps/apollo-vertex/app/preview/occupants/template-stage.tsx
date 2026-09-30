@@ -14,7 +14,6 @@ import { slotFit } from "./workbench-url-state";
 
 interface TemplateStageProps {
   host: TemplateHost;
-  template: string;
   spec: OccupantSpec;
   slot: string;
   placement: PanelPlacement;
@@ -29,7 +28,6 @@ interface TemplateStageProps {
  */
 export function TemplateStage({
   host,
-  template,
   spec,
   slot,
   placement,
@@ -58,7 +56,7 @@ export function TemplateStage({
   return (
     <div
       data-workbench-frame
-      data-template-name={template}
+      data-template-name={host.spec.name}
       style={width}
       className="relative flex h-160 w-(--page-width) shrink-0 flex-col bg-background outline-1 outline-border"
     >
