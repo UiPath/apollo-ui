@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import {
   Occupant,
   OccupantStateView,
+  OccupantTruncatedText,
   type OccupantViewProps,
 } from "@/components/ui/occupant";
 import { useSurface } from "@/lib/surface-context";
@@ -43,11 +44,10 @@ function KeyFacts({ view, state = "ready", onRetry }: KeyFactsProps) {
         >
           {view.facts.map(({ id, label, value }) => (
             <div key={id} className="flex min-w-0 flex-col">
-              <dt
-                className="truncate text-xs text-muted-foreground"
-                title={label}
-              >
-                {label}
+              <dt className="min-w-0">
+                <OccupantTruncatedText className="text-xs text-muted-foreground">
+                  {label}
+                </OccupantTruncatedText>
               </dt>
               <dd
                 className={cn(

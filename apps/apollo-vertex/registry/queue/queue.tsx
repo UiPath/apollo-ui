@@ -167,12 +167,9 @@ function Queue({
                               className="flex-1 text-xs"
                             />
                             {entry.reference && (
-                              <p
-                                className="max-w-1/2 shrink-0 truncate text-xs text-muted-foreground"
-                                title={entry.reference}
-                              >
+                              <OccupantTruncatedText className="max-w-1/2 shrink-0 text-xs text-muted-foreground">
                                 {entry.reference}
-                              </p>
+                              </OccupantTruncatedText>
                             )}
                           </div>
                         </Card>
