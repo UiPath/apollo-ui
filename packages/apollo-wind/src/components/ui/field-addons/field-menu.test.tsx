@@ -19,6 +19,25 @@ describe('FieldMenu', () => {
     expect(screen.getByRole('button', { name: 'Expression' })).toBeInTheDocument();
   });
 
+  it('names the trigger with triggerLabel while it offers modes', () => {
+    const { rerender } = render(
+      <FieldMenu mode="expression" onSelect={vi.fn()} triggerLabel="Choose value mode" />
+    );
+    expect(screen.getByRole('button', { name: 'Choose value mode' })).toBeInTheDocument();
+
+    // With only actions it is the overflow menu, named by `fieldActions`.
+    rerender(
+      <FieldMenu
+        mode="expression"
+        onSelect={vi.fn()}
+        triggerLabel="Choose value mode"
+        modesDisabled
+        actions={[{ id: 'clear', label: 'Clear value', onSelect: vi.fn() }]}
+      />
+    );
+    expect(screen.getByRole('button', { name: 'Field actions' })).toBeInTheDocument();
+  });
+
   it('announces which mode is current, as a single choice', async () => {
     render(<FieldMenu mode="expression" onSelect={vi.fn()} />);
     await open('Expression');

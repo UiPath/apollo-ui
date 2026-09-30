@@ -30,7 +30,10 @@ describe('InsertVariableAction', () => {
     await user.click(screen.getByRole('button', { name: 'Insert variable' }));
     expect(screen.queryByText('$vars')).toBeNull();
     await user.click(await screen.findByText('Order id'));
-    expect(onInsert).toHaveBeenCalledWith('$vars.orderId');
+    expect(onInsert).toHaveBeenCalledWith(
+      '$vars.orderId',
+      expect.objectContaining({ label: 'Order id', value: '$vars.orderId' })
+    );
   });
 
   it('calls a variables function when the picker opens, not during render', async () => {

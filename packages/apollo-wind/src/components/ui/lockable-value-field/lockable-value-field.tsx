@@ -1,20 +1,9 @@
-import { Code2, MoreHorizontal, RefreshCw, Trash2, Type } from 'lucide-react';
+import { RefreshCw, Trash2 } from 'lucide-react';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { DateTimePicker } from '@/components/ui/datetime-picker';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { FileUpload } from '@/components/ui/file-upload';
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
-} from '@/components/ui/input-group';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
@@ -26,16 +15,11 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib';
+import { FieldMenu, type FieldMenuItem } from '../field-addons/field-menu';
 import { FieldHeader } from './components/field-header';
 import { LockToggleButton } from './components/lock-toggle-button';
-import { ModeMenuItem } from './components/mode-menu-item';
 import type { LockableValueFieldProps } from './types';
-import {
-  DEFAULT_STRINGS,
-  FIELD_TYPE_META,
-  type LockableValueFieldMoreActions,
-  type LockableValueFieldStrings,
-} from './types';
+import { DEFAULT_STRINGS, FIELD_TYPE_META } from './types';
 import {
   DEFAULT_SELECT_OPTIONS,
   formatDateValue,
@@ -44,45 +28,6 @@ import {
   parseListValue,
   toDateOnlyString,
 } from './utils';
-
-function MoreActionsMenu({
-  more,
-  locked,
-  strings,
-}: {
-  more: LockableValueFieldMoreActions;
-  locked: boolean;
-  strings: LockableValueFieldStrings;
-}) {
-  const onClear = locked ? undefined : more.onClear;
-  const onRefresh = more.onRefresh;
-
-  if (!onClear && !onRefresh) return null;
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <InputGroupButton icon size="3xs" aria-label={strings.moreActionsAriaLabel}>
-          <MoreHorizontal />
-        </InputGroupButton>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-40">
-        {onClear && (
-          <DropdownMenuItem className="text-error focus:text-error" onClick={onClear}>
-            <Trash2 />
-            {strings.clearValue}
-          </DropdownMenuItem>
-        )}
-        {onRefresh && (
-          <DropdownMenuItem onClick={onRefresh}>
-            <RefreshCw />
-            {strings.forceRefresh}
-          </DropdownMenuItem>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
 
 /**
  * LockableValueField: a field that can be locked to read-only, typed as one of
@@ -138,7 +83,7 @@ export function LockableValueField({
   id,
   className,
 }: LockableValueFieldProps) {
-  // Memoized so FieldHeader, LockToggleButton and MoreActionsMenu get a stable object.
+  // Memoized so FieldHeader and LockToggleButton get a stable object.
   const strings = useMemo(() => ({ ...DEFAULT_STRINGS, ...stringOverrides }), [stringOverrides]);
   const generatedId = useId().replace(/:/g, '');
   // The component owns its input, so caret-aware insert and Enter/Escape live
@@ -165,7 +110,36 @@ export function LockableValueField({
   // The consumer's wording wins on the control; the computed name still labels
   // the field for assistive tech.
   const valuePlaceholder = placeholder ?? fieldLabel;
-  const hasMoreActions = Boolean(more?.onRefresh || (!locked && more?.onClear));
+  const menuActions: FieldMenuItem[] = [
+    ...(more?.onClear && !locked
+      ? [{ id: 'clear', label: strings.clearValue, icon: Trash2, onSelect: more.onClear }]
+      : []),
+    ...(more?.onRefresh
+      ? [{ id: 'refresh', label: strings.forceRefresh, icon: RefreshCw, onSelect: more.onRefresh }]
+      : []),
+  ];
+  // Modes and actions share one menu. A type with no expression mode, or a field with no mode
+  // handler, offers only its actions; with neither, an expression-capable type keeps a disabled
+  // mode trigger so the field still shows how its value is expressed.
+  const offersModes = typeMeta.supportsExpression && !!onModeChange;
+  const showsMenu = typeMeta.supportsExpression || menuActions.length > 0;
+  const builtInMenu = showsMenu ? (
+    <FieldMenu
+      mode={effectiveMode}
+      onSelect={(next) => onModeChange?.(next)}
+      modesDisabled={!offersModes && menuActions.length > 0}
+      disabled={!offersModes && menuActions.length === 0}
+      actions={menuActions}
+      triggerLabel={strings.valueModeAriaLabel}
+      literalDescription={strings.literalDescriptions[fieldType] ?? typeMeta.fixedDescription}
+      strings={{
+        literalTitle: strings.literalLabels[fieldType] ?? typeMeta.fixedLabel,
+        expressionTitle: strings.expressionLabel,
+        expressionDescription: strings.expressionDescription,
+        fieldActions: strings.moreActionsAriaLabel,
+      }}
+    />
+  ) : null;
 
   // Resolved before the tree so returning nothing falls back to the built-in
   // control. Offered the raw mode, not `effectiveMode`: the coercion protects
@@ -179,6 +153,10 @@ export function LockableValueField({
       readOnly: !editableOnValueChange,
       placeholder: valuePlaceholder,
       fieldType,
+      'aria-invalid': error ? true : undefined,
+      'aria-describedby': error ? validationId : undefined,
+      'aria-errormessage': error ? validationId : undefined,
+      'data-slot': 'input-group-control',
     }) ?? null;
 
   // Switching mode is a prelude to writing the value, so focus the control.
@@ -266,9 +244,8 @@ export function LockableValueField({
         <InputGroup
           error={error}
           errorId={validationId}
-          className={cn(
-            fieldType === 'file' && !locked && effectiveMode === 'literal' && 'h-auto items-stretch'
-          )}
+          // The dropzone is taller than a row, so the box grows to hold it.
+          layout={fieldType === 'file' && !locked && effectiveMode === 'literal' ? 'grow' : 'row'}
         >
           {(showLock || leadingAddon !== undefined) && leadingAddon !== null && (
             <InputGroupAddon align="inline-start">
@@ -394,14 +371,13 @@ export function LockableValueField({
               // than the date branch's Calendar popover. Stored as an ISO string.
               <DateTimePicker
                 id={fieldId}
-                className="min-w-0 flex-1"
                 value={parseDateValue(value)}
                 onValueChange={(date) => onValueChange?.(date ? date.toISOString() : '')}
+                onOpenChange={(open) => {
+                  if (!open) onValueBlur?.();
+                }}
                 disabled={!onValueChange}
                 placeholder={valuePlaceholder}
-                aria-invalid={error ? true : undefined}
-                aria-describedby={error ? validationId : undefined}
-                aria-errormessage={error ? validationId : undefined}
               />
             ) : fieldType === 'file' ? (
               <FileUpload
@@ -454,52 +430,19 @@ export function LockableValueField({
               />
             ))}
 
-          {trailingAddon !== null && (
+          {trailingAddon !== null && (trailingAddon !== undefined || builtInMenu) && (
             <InputGroupAddon align="inline-end" className="cursor-default">
-              {trailingAddon !== undefined ? (
-                trailingAddon
-              ) : (
-                <>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <InputGroupButton
-                        icon
-                        size="3xs"
-                        disabled={!onModeChange}
-                        aria-label={strings.valueModeAriaLabel}
-                      >
-                        {effectiveMode === 'expression' ? <Code2 /> : <Type />}
-                      </InputGroupButton>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56">
-                      <ModeMenuItem
-                        icon={Type}
-                        label={strings.literalLabels[fieldType] ?? typeMeta.fixedLabel}
-                        description={
-                          strings.literalDescriptions[fieldType] ?? typeMeta.fixedDescription
-                        }
-                        active={effectiveMode === 'literal'}
-                        onClick={() => onModeChange?.('literal')}
-                      />
-                      <ModeMenuItem
-                        icon={Code2}
-                        label={strings.expressionLabel}
-                        description={strings.expressionDescription}
-                        active={effectiveMode === 'expression'}
-                        onClick={() => onModeChange?.('expression')}
-                      />
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  {hasMoreActions && more && (
-                    <MoreActionsMenu more={more} locked={locked} strings={strings} />
-                  )}
-                </>
-              )}
+              {trailingAddon !== undefined ? trailingAddon : builtInMenu}
             </InputGroupAddon>
           )}
         </InputGroup>
       ) : (
-        <InputGroup error={error} errorId={validationId}>
+        <InputGroup
+          error={error}
+          errorId={validationId}
+          // Selected chips wrap past one row, so the box grows to hold them.
+          layout={fieldType === 'multi-select' && !locked ? 'grow' : 'row'}
+        >
           {(showLock || leadingAddon !== undefined) && leadingAddon !== null && (
             <InputGroupAddon align="inline-start">
               {leadingAddon !== undefined
@@ -535,13 +478,7 @@ export function LockableValueField({
                 onValueChange={onValueChange}
                 disabled={!onValueChange}
               >
-                <SelectTrigger
-                  id={fieldId}
-                  className="min-w-0 flex-1 rounded-none border-0 bg-transparent px-0 shadow-none future:rounded-none future:border-0 future:bg-transparent future:px-0"
-                  aria-invalid={error ? true : undefined}
-                  aria-describedby={error ? validationId : undefined}
-                  aria-errormessage={error ? validationId : undefined}
-                >
+                <SelectTrigger id={fieldId}>
                   <SelectValue placeholder={strings.selectOption} />
                 </SelectTrigger>
                 <SelectContent>
@@ -555,27 +492,19 @@ export function LockableValueField({
             ) : fieldType === 'multi-select' ? (
               <MultiSelect
                 id={fieldId}
-                className="min-w-0 flex-1"
                 options={options}
                 selected={parseListValue(value)}
                 onChange={(selected) => onValueChange?.(JSON.stringify(selected))}
                 placeholder={strings.selectOptions}
                 disabled={!onValueChange}
                 onBlur={onValueBlur}
-                aria-invalid={error ? true : undefined}
-                aria-describedby={error ? validationId : undefined}
-                aria-errormessage={error ? validationId : undefined}
               />
             ) : null)}
           {/* A select can still be bound to a variable, so the consumer's
               trailing control renders here too or it loses its mode switch. */}
-          {trailingAddon !== null && (trailingAddon !== undefined || (hasMoreActions && more)) && (
+          {trailingAddon !== null && (trailingAddon !== undefined || builtInMenu) && (
             <InputGroupAddon align="inline-end" className="cursor-default">
-              {trailingAddon !== undefined ? (
-                trailingAddon
-              ) : (
-                <MoreActionsMenu more={more!} locked={locked} strings={strings} />
-              )}
+              {trailingAddon !== undefined ? trailingAddon : builtInMenu}
             </InputGroupAddon>
           )}
         </InputGroup>

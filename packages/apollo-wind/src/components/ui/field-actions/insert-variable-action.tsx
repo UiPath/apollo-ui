@@ -36,8 +36,11 @@ export interface InsertVariableActionProps {
    * source without re-rendering the field whenever it changes.
    */
   variables: VariablePickerItem[] | (() => VariablePickerItem[]);
-  /** Called with the picked variable's value. Omitted, the action is disabled. */
-  onInsert?: (value: string) => void;
+  /**
+   * Called with the picked variable's value, and the picked entry itself so a host can recover
+   * whatever it attached to it. Omitted, the action is disabled.
+   */
+  onInsert?: (value: string, item: VariablePickerItem) => void;
   disabled?: boolean;
   /** Icon only. Below a 260px `@container` the action also collapses to its icon by itself. */
   compact?: boolean;
@@ -70,7 +73,7 @@ export function InsertVariableAction({
         if (open && lazy) setOpenedItems(variables());
       }}
       onSelect={(variable) => {
-        if (variable.value) onInsert?.(variable.value);
+        if (variable.value) onInsert?.(variable.value, variable);
       }}
     >
       <button
