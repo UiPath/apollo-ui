@@ -14,7 +14,7 @@ export function NoFitCard({ title, reasons }: NoFitCardProps) {
   const { t } = useTranslation();
   return (
     <section
-      data-workbench-no-fit
+      data-slot="workbench-no-fit"
       aria-labelledby="workbench-no-fit"
       className="max-w-md rounded-lg border border-border bg-background p-6 shadow-sm"
     >

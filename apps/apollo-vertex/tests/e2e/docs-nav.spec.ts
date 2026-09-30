@@ -72,7 +72,7 @@ test("Creating occupants opens the workbench near the top and at Try it", async 
   page,
 }) => {
   await page.goto(CREATING);
-  const button = page.locator("article [data-workbench-entry]");
+  const button = page.locator("article [data-slot=workbench-entry]");
   await expect(button).toHaveText("Open the workbench");
   await expect(button).toHaveAttribute("href", "/preview/occupants");
   // Near the top: before the first section.
@@ -114,7 +114,7 @@ for (const surface of SURFACE_SPECS) {
     await page
       .getByRole("link", { name: `Open in workbench for ${first.label}` })
       .click();
-    await page.locator("[data-workbench]").waitFor();
+    await page.locator("[data-slot=workbench]").waitFor();
     await expect(
       page.getByRole("heading", { level: 2, name: first.label }),
     ).toBeVisible();
@@ -131,7 +131,7 @@ test("the workbench leads back to the docs page that opened it, with the list op
 }) => {
   await page.goto("/surfaces/side-panel");
   await page.getByRole("link", { name: "Open in workbench for Queue" }).click();
-  await page.locator("[data-workbench]").waitFor();
+  await page.locator("[data-slot=workbench]").waitFor();
   const back = page.getByRole("link", { name: "Back to docs" });
   await expect(back).toHaveAttribute("href", "/surfaces/side-panel");
   await page.getByRole("button", { name: "Hide occupant list" }).click();
@@ -143,7 +143,7 @@ test("the workbench leads back to the docs page that opened it, with the list op
   // Opened some other way, it goes to the Design architecture overview.
   await page.evaluate(() => sessionStorage.clear());
   await page.goto("/preview/occupants");
-  await page.locator("[data-workbench]").waitFor();
+  await page.locator("[data-slot=workbench]").waitFor();
   await expect(
     page.getByRole("link", { name: "Back to docs" }),
   ).toHaveAttribute("href", "/guidelines/design-architecture");

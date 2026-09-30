@@ -31,7 +31,7 @@ import {
   type WorkbenchTheme,
 } from "./workbench-url-state";
 
-interface Choice<T extends string> {
+interface ChoiceProps<T extends string> {
   label: string;
   value: T;
   options: readonly { value: T; label: string }[];
@@ -44,7 +44,7 @@ function ToggleChoice<T extends string>({
   value,
   options,
   onChange,
-}: Choice<T>) {
+}: ChoiceProps<T>) {
   const id = useId();
   return (
     <div className="flex shrink-0 items-center gap-2">
@@ -78,7 +78,7 @@ function SelectChoice<T extends string>({
   value,
   options,
   onChange,
-}: Choice<T>) {
+}: ChoiceProps<T>) {
   const id = useId();
   return (
     <div className="flex shrink-0 items-center gap-2">
@@ -135,25 +135,44 @@ interface WorkbenchHeaderProps {
  * when they fit beside the full occupant label, and compact selects when
  * they don't; the label truncates before anything wraps.
  */
-export function WorkbenchHeader(props: WorkbenchHeaderProps) {
+export function WorkbenchHeader({
+  label,
+  docsHref,
+  listId,
+  listOpen,
+  onToggleList,
+  detailsId,
+  detailsOpen,
+  onToggleDetails,
+  sample,
+  onSample,
+  state,
+  onState,
+  theme,
+  onTheme,
+  mode,
+  onMode,
+  template,
+  onTemplate,
+}: WorkbenchHeaderProps) {
   const { t } = useTranslation();
-  const sample: Choice<ExampleRole> = {
+  const sampleChoice: ChoiceProps<ExampleRole> = {
     label: t("workbench_sample"),
-    value: props.sample,
+    value: sample,
     options: EXAMPLE_ROLES.map((role) => ({
       value: role,
       label: t(`workbench_sample_${role}`),
     })),
-    onChange: props.onSample,
+    onChange: onSample,
   };
-  const state: Choice<OccupantState> = {
+  const stateChoice: ChoiceProps<OccupantState> = {
     label: t("workbench_state"),
-    value: props.state,
+    value: state,
     options: OCCUPANT_STATES.map((s) => ({
       value: s,
       label: t(`workbench_state_${s}`),
     })),
-    onChange: props.onState,
+    onChange: onState,
   };
 
   // Compact when the toggle groups, measured out of sight, don't fit.
@@ -199,11 +218,11 @@ export function WorkbenchHeader(props: WorkbenchHeaderProps) {
     return () => observer.disconnect();
   }, []);
 
-  const dark = props.theme === "dark";
+  const dark = theme === "dark";
   return (
     <div
       ref={headerRef}
-      data-workbench-header
+      data-slot="workbench-header"
       data-compact={compact}
       className="relative flex items-center gap-3 border-b border-border px-3 py-2"
     >
@@ -211,21 +230,19 @@ export function WorkbenchHeader(props: WorkbenchHeaderProps) {
         variant="ghost"
         size="icon"
         className="shrink-0"
-        aria-label={t(
-          props.listOpen ? "workbench_hide_list" : "workbench_show_list",
-        )}
-        aria-expanded={props.listOpen}
-        aria-controls={props.listId}
-        onClick={props.onToggleList}
+        aria-label={t(listOpen ? "workbench_hide_list" : "workbench_show_list")}
+        aria-expanded={listOpen}
+        aria-controls={listId}
+        onClick={onToggleList}
       >
-        {props.listOpen ? <PanelLeftClose /> : <PanelLeftOpen />}
+        {listOpen ? <PanelLeftClose /> : <PanelLeftOpen />}
       </Button>
       {/* The list holds "Back to docs"; while it's collapsed, it's here. */}
-      {!props.listOpen && (
+      {!listOpen && (
         <Button asChild variant="ghost" size="icon" className="shrink-0">
           <Link
-            href={props.docsHref}
-            data-workbench-back
+            href={docsHref}
+            data-slot="workbench-back"
             aria-label={t("workbench_back_to_docs")}
           >
             <ArrowLeft aria-hidden />
@@ -233,8 +250,8 @@ export function WorkbenchHeader(props: WorkbenchHeaderProps) {
         </Button>
       )}
       <div ref={titleRef} className="flex min-w-0 flex-1 items-center gap-2">
-        <h2 className="truncate text-base font-semibold" title={props.label}>
-          {props.label}
+        <h2 className="truncate text-base font-semibold" title={label}>
+          {label}
         </h2>
         <Badge variant="secondary" className="shrink-0">
           {t("workbench_occupant")}
@@ -246,9 +263,9 @@ export function WorkbenchHeader(props: WorkbenchHeaderProps) {
         size="sm"
         className="shrink-0"
         aria-label={t("workbench_view")}
-        value={props.mode}
+        value={mode}
         onValueChange={(next) => {
-          if (next === "surface" || next === "template") props.onMode(next);
+          if (next === "surface" || next === "template") onMode(next);
         }}
       >
         <ToggleGroupItem value="surface">
@@ -259,27 +276,27 @@ export function WorkbenchHeader(props: WorkbenchHeaderProps) {
         </ToggleGroupItem>
       </ToggleGroup>
       {/* Only with a choice to make: one template needs no picker. */}
-      {props.mode === "template" && TEMPLATE_NAMES.length > 1 && (
+      {mode === "template" && TEMPLATE_NAMES.length > 1 && (
         <SelectChoice
           label={t("workbench_template")}
-          value={props.template}
+          value={template}
           options={TEMPLATE_NAMES.map((name) => ({
             value: name,
             label: TEMPLATE_HOSTS[name]?.label ?? name,
           }))}
-          onChange={props.onTemplate}
+          onChange={onTemplate}
         />
       )}
       <div ref={controlsRef} className="flex shrink-0 items-center gap-4">
         {compact ? (
           <>
-            <SelectChoice {...sample} />
-            <SelectChoice {...state} />
+            <SelectChoice {...sampleChoice} />
+            <SelectChoice {...stateChoice} />
           </>
         ) : (
           <>
-            <ToggleChoice {...sample} />
-            <ToggleChoice {...state} />
+            <ToggleChoice {...sampleChoice} />
+            <ToggleChoice {...stateChoice} />
           </>
         )}
       </div>
@@ -289,7 +306,7 @@ export function WorkbenchHeader(props: WorkbenchHeaderProps) {
         className="shrink-0"
         aria-label={t("workbench_dark_theme")}
         aria-pressed={dark}
-        onClick={() => props.onTheme(dark ? "light" : "dark")}
+        onClick={() => onTheme(dark ? "light" : "dark")}
       >
         {dark ? <Moon /> : <Sun />}
       </Button>
@@ -298,15 +315,13 @@ export function WorkbenchHeader(props: WorkbenchHeaderProps) {
         size="icon"
         className="shrink-0"
         aria-label={t(
-          props.detailsOpen
-            ? "workbench_hide_details"
-            : "workbench_show_details",
+          detailsOpen ? "workbench_hide_details" : "workbench_show_details",
         )}
-        aria-expanded={props.detailsOpen}
-        aria-controls={props.detailsId}
-        onClick={props.onToggleDetails}
+        aria-expanded={detailsOpen}
+        aria-controls={detailsId}
+        onClick={onToggleDetails}
       >
-        {props.detailsOpen ? <PanelRightClose /> : <PanelRightOpen />}
+        {detailsOpen ? <PanelRightClose /> : <PanelRightOpen />}
       </Button>
       {/* The toggle groups' width, measured out of sight. */}
       <div
@@ -315,8 +330,8 @@ export function WorkbenchHeader(props: WorkbenchHeaderProps) {
         inert
         className="invisible absolute top-0 start-0 flex items-center gap-4 whitespace-nowrap"
       >
-        <ToggleChoice {...sample} />
-        <ToggleChoice {...state} />
+        <ToggleChoice {...sampleChoice} />
+        <ToggleChoice {...stateChoice} />
       </div>
     </div>
   );

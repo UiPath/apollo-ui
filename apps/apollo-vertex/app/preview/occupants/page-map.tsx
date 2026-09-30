@@ -21,7 +21,7 @@ export function PageMap({ regions, name }: PageMapProps) {
     <div
       role="img"
       aria-label={t("workbench_map", { surface: name })}
-      data-workbench-map
+      data-slot="workbench-map"
       className="grid h-10 w-16 shrink-0 grid-cols-[1fr_2fr_1fr] grid-rows-[1fr_3fr] gap-0.5"
     >
       {MAP_REGIONS.map((region) => (

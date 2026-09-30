@@ -117,7 +117,9 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
   const stageAreaRef = useRef<HTMLDivElement>(null);
   const [dockHeight, setDockHeight] = useState(0);
   useEffect(() => {
-    const dock = stageAreaRef.current?.querySelector("[data-workbench-dock]");
+    const dock = stageAreaRef.current?.querySelector(
+      "[data-slot=workbench-dock]",
+    );
     if (!dock) return;
     const observer = new ResizeObserver(() =>
       setDockHeight(dock.getBoundingClientRect().height),
@@ -172,7 +174,7 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
 
   return (
     <div
-      data-workbench
+      data-slot="workbench"
       data-theme={view.theme}
       className="fixed inset-0 z-50 flex bg-background text-foreground not-prose"
     >
@@ -211,7 +213,7 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
         <div ref={stageAreaRef} className="relative min-h-0 flex-1">
           <div
             ref={stageRef}
-            data-workbench-stage
+            data-slot="workbench-stage"
             // Its own stacking context: a template's z-index stays inside it.
             className="absolute inset-0 isolate overflow-auto bg-[radial-gradient(color-mix(in_oklab,var(--color-border)_70%,transparent)_1px,transparent_1px)] bg-size-[--spacing(4)_--spacing(4)]"
           >
