@@ -58,22 +58,31 @@ export function WhereItFits({ name }: WhereItFitsProps) {
     ["Scroll", spec.requires.scroll],
   ];
   return (
-    <Table>
-      <thead>
-        <Table.Tr>
-          <Table.Th>Spec</Table.Th>
-          <Table.Th>Value</Table.Th>
-        </Table.Tr>
-      </thead>
-      <tbody>
-        {rows.map(([label, value]) => (
-          <Table.Tr key={label}>
-            <Table.Td>{label}</Table.Td>
-            <Table.Td>{value}</Table.Td>
+    <>
+      <Table>
+        <thead>
+          <Table.Tr>
+            <Table.Th>Spec</Table.Th>
+            <Table.Th>Value</Table.Th>
           </Table.Tr>
-        ))}
-      </tbody>
-    </Table>
+        </thead>
+        <tbody>
+          {rows.map(([label, value]) => (
+            <Table.Tr key={label}>
+              <Table.Td>{label}</Table.Td>
+              <Table.Td>{value}</Table.Td>
+            </Table.Tr>
+          ))}
+        </tbody>
+      </Table>
+      <p>
+        Try it in every surface, with each sample, state, and theme, in the{" "}
+        <Link href={`/preview/occupants?occupant=${name}`}>
+          occupant workbench
+        </Link>
+        .
+      </p>
+    </>
   );
 }
 
