@@ -196,7 +196,7 @@ describe('LockableValueField', () => {
     expect(screen.getByRole('button', { name: 'Insert variable' })).toBeInTheDocument();
   });
 
-  it('only shows the Fixed/Expression mode dropdown for types that support expressions', () => {
+  it('only shows the value mode menu for types that support expressions', () => {
     const { rerender } = render(<LockableValueField locked={false} fieldType="single-select" />);
     expect(screen.queryByRole('button', { name: 'Choose value mode' })).not.toBeInTheDocument();
 
@@ -204,7 +204,7 @@ describe('LockableValueField', () => {
     expect(screen.getByRole('button', { name: 'Choose value mode' })).toBeInTheDocument();
   });
 
-  it('renders the More actions menu beside the value type control', async () => {
+  it('lists the More actions under the value mode menu', async () => {
     const user = userEvent.setup();
     render(
       <LockableValueField
@@ -215,10 +215,42 @@ describe('LockableValueField', () => {
       />
     );
 
-    await user.click(screen.getByRole('button', { name: 'More value actions' }));
+    await user.click(screen.getByRole('button', { name: 'Choose value mode' }));
 
+    expect(screen.getByRole('menuitemradio', { name: /Fixed value/ })).toBeInTheDocument();
     expect(screen.getByRole('menuitem', { name: 'Clear value' })).toBeInTheDocument();
     expect(screen.getByRole('menuitem', { name: 'Force refresh' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'More value actions' })).not.toBeInTheDocument();
+  });
+
+  it('offers only the More actions for a type with no expression mode', async () => {
+    const user = userEvent.setup();
+    render(
+      <LockableValueField
+        locked={false}
+        fieldType="single-select"
+        onValueChange={vi.fn()}
+        onModeChange={vi.fn()}
+        more={{ onClear: vi.fn() }}
+      />
+    );
+
+    expect(screen.queryByRole('button', { name: 'Choose value mode' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'More value actions' }));
+    expect(screen.getByRole('menuitem', { name: 'Clear value' })).toBeInTheDocument();
+    expect(screen.queryByRole('menuitemradio')).not.toBeInTheDocument();
+  });
+
+  it('offers only the More actions when there is no mode handler', async () => {
+    const user = userEvent.setup();
+    render(
+      <LockableValueField locked={false} onValueChange={vi.fn()} more={{ onRefresh: vi.fn() }} />
+    );
+
+    expect(screen.queryByRole('button', { name: 'Choose value mode' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'More value actions' }));
+    expect(screen.getByRole('menuitem', { name: 'Force refresh' })).toBeInTheDocument();
+    expect(screen.queryByRole('menuitemradio')).not.toBeInTheDocument();
   });
 
   it('only renders available More actions and hides Clear value when locked', async () => {
@@ -330,14 +362,14 @@ describe('LockableValueField', () => {
   it('renders a file upload control for file fields when unlocked', () => {
     const { container } = render(<LockableValueField locked={false} fieldType="file" />);
     expect(screen.getByText(/drag/i, { exact: false })).toBeInTheDocument();
-    expect(container.querySelector('[role="group"]')).toHaveClass('h-auto', 'items-stretch');
+    expect(container.querySelector('[role="group"]')).toHaveAttribute('data-layout', 'grow');
   });
 
   it('keeps locked file fields in the compact read-only layout', () => {
     const { container } = render(
       <LockableValueField locked fieldType="file" value="invoice.pdf" />
     );
-    expect(container.querySelector('[role="group"]')).not.toHaveClass('h-auto', 'items-stretch');
+    expect(container.querySelector('[role="group"]')).toHaveAttribute('data-layout', 'row');
   });
 
   it('does not force the Future overlay background in classic themes', () => {
@@ -394,6 +426,18 @@ describe('LockableValueField', () => {
       />
     );
     expect(screen.getByLabelText('Tags')).toBeInTheDocument();
+  });
+
+  it('keeps a custom label when the header has no controls beside it', () => {
+    render(
+      <LockableValueField
+        locked
+        showFieldActions={false}
+        id="node-name"
+        label={<label htmlFor="node-name">Node name</label>}
+      />
+    );
+    expect(screen.getByLabelText('Node name')).toBeInTheDocument();
   });
 
   it("uses the field's computed label as the file upload area's accessible name", () => {
@@ -556,12 +600,12 @@ describe('LockableValueField', () => {
     expect(container).not.toHaveTextContent('False');
   });
 
-  it('disables the Fixed/Expression dropdown trigger when onModeChange is not provided', () => {
+  it('disables the value mode trigger when onModeChange is not provided', () => {
     render(<LockableValueField locked={false} fieldType="string" />);
     expect(screen.getByRole('button', { name: 'Choose value mode' })).toBeDisabled();
   });
 
-  it('enables the Fixed/Expression dropdown trigger when onModeChange is provided', () => {
+  it('enables the value mode trigger when onModeChange is provided', () => {
     render(<LockableValueField locked={false} fieldType="string" onModeChange={vi.fn()} />);
     expect(screen.getByRole('button', { name: 'Choose value mode' })).not.toBeDisabled();
   });
@@ -631,6 +675,84 @@ describe('LockableValueField', () => {
     expect(handleValueChange).toHaveBeenCalledWith('hello item.id');
   });
 
+  it('keeps repeated group labels apart in the variable picker', async () => {
+    const user = userEvent.setup();
+    const onInsertVariable = vi.fn();
+    const second = { label: 'Order id B', value: 'b.id', type: 'string' };
+    render(
+      <LockableValueField
+        locked={false}
+        onValueChange={vi.fn()}
+        onInsertVariable={onInsertVariable}
+        variables={[
+          { label: 'Order', value: '', children: [{ label: 'Order id A', value: 'a.id' }] },
+          { label: 'Order', value: '', children: [second] },
+        ]}
+      />
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Insert variable' }));
+    // Only the first group opens by default; a shared id would open both.
+    expect(screen.getByRole('option', { name: /Order id A/ })).toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: /Order id B/ })).toBeNull();
+
+    await user.click(screen.getAllByRole('option', { name: /^Order$/ })[1]);
+    await user.click(screen.getByRole('option', { name: /Order id B/ }));
+    expect(onInsertVariable).toHaveBeenCalledWith(second, expect.anything());
+  });
+
+  it('commits a datetime edit when its picker closes', async () => {
+    const user = userEvent.setup();
+    const onValueBlur = vi.fn();
+    const { container } = render(
+      <LockableValueField
+        locked={false}
+        fieldType="datetime"
+        value="2024-06-15T09:00:00.000Z"
+        onValueChange={vi.fn()}
+        onValueBlur={onValueBlur}
+      />
+    );
+    await user.click(
+      container.querySelector('button[data-slot="input-group-control"]') as HTMLElement
+    );
+    expect(onValueBlur).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'Done' }));
+    expect(onValueBlur).toHaveBeenCalledTimes(1);
+  });
+
+  it('gives a custom mode control the validation wiring', () => {
+    const renderModeControl = vi.fn(() => <input aria-label="Custom" />);
+    render(
+      <LockableValueField
+        id="field"
+        locked={false}
+        mode="variable"
+        error="Pick a variable"
+        renderModeControl={renderModeControl}
+      />
+    );
+    expect(renderModeControl).toHaveBeenCalledWith(
+      'variable',
+      expect.objectContaining({
+        'aria-invalid': true,
+        'aria-describedby': 'field-error',
+        'aria-errormessage': 'field-error',
+        'data-slot': 'input-group-control',
+      })
+    );
+  });
+
+  it('grows the multi-select box to hold wrapped chips, and only while unlocked', () => {
+    const { container, rerender } = render(
+      <LockableValueField locked={false} fieldType="multi-select" onValueChange={vi.fn()} />
+    );
+    expect(container.querySelector('[role="group"]')).toHaveAttribute('data-layout', 'grow');
+
+    rerender(<LockableValueField locked fieldType="multi-select" onValueChange={vi.fn()} />);
+    expect(container.querySelector('[role="group"]')).toHaveAttribute('data-layout', 'row');
+  });
+
   it('has no accessibility violations', async () => {
     const { container } = render(
       <LockableValueField
@@ -684,6 +806,55 @@ describe('LockableValueField', () => {
       await user.click(screen.getByRole('button', { name: 'Choose value mode' }));
       expect(screen.getByText('Fester Wert')).toBeInTheDocument();
       expect(screen.getByText('Use a literal string value')).toBeInTheDocument();
+    });
+
+    it("reads the variable picker's search and empty text from strings", async () => {
+      const user = userEvent.setup();
+      render(
+        <LockableValueField
+          locked={false}
+          onValueChange={vi.fn()}
+          variables={[{ label: 'Item ID', value: 'item.id' }]}
+          strings={{ insertSearchPlaceholder: 'Variablen suchen', insertEmpty: 'Keine Variablen' }}
+        />
+      );
+      await user.click(screen.getByRole('button', { name: 'Insert variable' }));
+      await user.type(screen.getByPlaceholderText('Variablen suchen'), 'zzz');
+      expect(screen.getByText('Keine Variablen')).toBeInTheDocument();
+    });
+
+    it('reads the AI output hint and its pending and error states from strings', async () => {
+      const user = userEvent.setup();
+      let reject: (reason: unknown) => void = () => {};
+      const onGenerateWithAi = vi.fn(
+        () =>
+          new Promise<void>((_, r) => {
+            reject = r;
+          })
+      );
+      render(
+        <LockableValueField
+          locked={false}
+          fieldType="date"
+          onGenerateWithAi={onGenerateWithAi}
+          strings={{
+            typeLabels: { date: 'Datum' },
+            aiOutputLabel: (type, isExpression) => `${type}-${isExpression ? 'Ausdruck' : 'Wert'}`,
+            aiOutputHint: (output) => `Ausgabe: ${output}`,
+            aiGenerating: 'Wird generiert',
+            aiError: 'Fehlgeschlagen',
+          }}
+        />
+      );
+      await user.click(screen.getByRole('button', { name: 'AI assist' }));
+      expect(screen.getByText('Ausgabe: Datum-Ausdruck')).toBeInTheDocument();
+
+      await user.type(screen.getByRole('textbox'), 'next week');
+      await user.click(screen.getByRole('button', { name: 'Generate' }));
+      expect(await screen.findByText('Wird generiert')).toBeInTheDocument();
+
+      reject(new Error('nope'));
+      expect(await screen.findByText('Fehlgeschlagen')).toBeInTheDocument();
     });
 
     it('shows a locked boolean with the strings labels', () => {

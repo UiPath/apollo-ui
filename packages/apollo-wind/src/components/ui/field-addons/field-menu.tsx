@@ -49,6 +49,8 @@ interface FieldMenuBaseProps<Id extends string> {
   expectedType?: string;
   /** Overrides the built-in Fixed value description. */
   literalDescription?: string;
+  /** Names the trigger while it offers modes. Defaults to the active mode's title. */
+  triggerLabel?: string;
   /** Overrides for any subset of the English strings. */
   strings?: Partial<ValueModeStrings>;
 }
@@ -136,6 +138,7 @@ export function FieldMenu<Id extends string = ValueMode>({
   disabled,
   expectedType,
   literalDescription,
+  triggerLabel: triggerLabelOverride,
   strings,
 }: FieldMenuProps<Id>) {
   const text = { ...DEFAULT_VALUE_MODE_STRINGS, ...strings };
@@ -158,7 +161,9 @@ export function FieldMenu<Id extends string = ValueMode>({
   // With the modes hidden this is the field's overflow menu, and a mode glyph on it would advertise
   // a switch it does not offer.
   const TriggerIcon = modesDisabled ? MoreHorizontal : (activeMode?.icon ?? Type);
-  const triggerLabel = modesDisabled ? text.fieldActions : (activeMode?.title ?? text.literalTitle);
+  const triggerLabel = modesDisabled
+    ? text.fieldActions
+    : (triggerLabelOverride ?? activeMode?.title ?? text.literalTitle);
 
   return (
     <DropdownMenu>

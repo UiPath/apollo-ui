@@ -225,6 +225,43 @@ describe('DateTimePicker inline validation', () => {
     expect(screen.getByRole('button')).not.toHaveAttribute('aria-describedby');
   });
 });
+describe('DateTimePicker controlled value', () => {
+  it('follows a value the parent changes after mount', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<DateTimePicker value={new Date(2024, 5, 15, 9, 0)} />);
+    rerender(<DateTimePicker value={new Date(2025, 0, 2, 16, 20)} />);
+    expect(screen.getByText(/January 2nd, 2025 at 16:20/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button'));
+    expect(getTimeInput()).toHaveValue('16:20');
+  });
+
+  it('clears when the parent clears the value', () => {
+    const { rerender } = render(<DateTimePicker value={new Date(2024, 5, 15, 9, 0)} />);
+    rerender(<DateTimePicker value={undefined} />);
+    expect(screen.getByText('Pick a date and time')).toBeInTheDocument();
+  });
+
+  it('gives the time input 24-hour text when use12Hour is set', async () => {
+    const user = userEvent.setup();
+    render(<DateTimePicker value={new Date(2024, 5, 15, 14, 30)} use12Hour />);
+    await user.click(screen.getByRole('button'));
+    expect(getTimeInput()).toHaveValue('14:30');
+  });
+
+  it('reports opening and closing, including through Done', async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    render(<DateTimePicker value={new Date(2024, 5, 15, 9, 0)} onOpenChange={onOpenChange} />);
+
+    await user.click(screen.getByRole('button'));
+    expect(onOpenChange).toHaveBeenLastCalledWith(true);
+
+    await user.click(screen.getByRole('button', { name: 'Done' }));
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+  });
+});
+
 describe('DateTimePicker remount safety', () => {
   it('keeps the same trigger node and focus when an error appears', () => {
     const { rerender } = render(<DateTimePicker id="deadline" />);

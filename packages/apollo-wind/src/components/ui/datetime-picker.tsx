@@ -16,6 +16,8 @@ export interface DateTimePickerProps {
   id?: string;
   value?: Date;
   onValueChange?: (date: Date | undefined) => void;
+  /** Called when the picker opens or closes, e.g. to commit the value on close. */
+  onOpenChange?: (open: boolean) => void;
   disabled?: boolean;
   placeholder?: string;
   className?: string;
@@ -39,6 +41,7 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
     {
       value,
       onValueChange,
+      onOpenChange,
       disabled,
       placeholder = 'Pick a date and time',
       className,
@@ -53,14 +56,32 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
     },
     ref
   ) {
-    const [open, setOpen] = React.useState(false);
+    const [open, setOpenState] = React.useState(false);
+    const setOpen = (next: boolean) => {
+      setOpenState(next);
+      onOpenChange?.(next);
+    };
     const generatedId = React.useId();
     const validationId =
       errorId ?? `${id ?? `datetime-picker-${generatedId.replace(/:/g, '')}`}-error`;
     const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(value);
-    const [timeValue, setTimeValue] = React.useState<string>(
-      value ? format(value, use12Hour ? 'hh:mm a' : 'HH:mm') : ''
-    );
+    // A native time input only accepts 24-hour text; use12Hour affects the display alone.
+    const [timeValue, setTimeValue] = React.useState<string>(value ? format(value, 'HH:mm') : '');
+
+    // Re-seed when the parent changes the value, compared by time so a fresh Date with the
+    // same instant (or our own change echoed back) is not a change.
+    const valueTime = value?.getTime();
+    const [seededTime, setSeededTime] = React.useState(valueTime);
+    if (!Object.is(valueTime, seededTime)) {
+      setSeededTime(valueTime);
+      if (value === undefined) {
+        setSelectedDate(undefined);
+        setTimeValue('');
+      } else if (!Number.isNaN(valueTime)) {
+        setSelectedDate(value);
+        setTimeValue(format(value, 'HH:mm'));
+      }
+    }
 
     const handleDateSelect = (date: Date | undefined) => {
       if (!date) return;

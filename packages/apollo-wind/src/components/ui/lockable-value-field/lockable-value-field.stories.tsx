@@ -169,7 +169,7 @@ export const MoreActions: Story = {
     docs: {
       description: {
         story:
-          'Adds a field-level overflow menu beside the value type control for actions such as clearing the value or forcing a refresh.',
+          'Adds field-level actions, such as clearing the value or forcing a refresh, under the value mode menu. A type with no expression mode, or a field with no mode handler, shows them alone under a More value actions trigger.',
       },
     },
   },

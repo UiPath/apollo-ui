@@ -164,6 +164,10 @@ export interface LockableValueFieldStrings {
   optionalAriaLabel: string;
   insertLabel: string;
   insertAriaLabel: string;
+  /** The variable picker's search box. */
+  insertSearchPlaceholder: string;
+  /** The variable picker with nothing to show. */
+  insertEmpty: string;
   valueModeAriaLabel: string;
   expressionLabel: string;
   expressionDescription: string;
@@ -178,6 +182,12 @@ export interface LockableValueFieldStrings {
   aiPromptLabel: string;
   aiPromptPlaceholder: string;
   aiGenerate: string;
+  /** Replaces `aiGenerate` while a returned promise is pending. */
+  aiGenerating: string;
+  /** Shown when a returned promise rejects. */
+  aiError: string;
+  /** What the AI produces for the field, from the (localized) type label. */
+  aiOutputLabel: (typeLabel: string, isExpression: boolean) => string;
   aiOutputHint: (output: string) => string;
   lockedLabel: string;
   unlockedLabel: string;
@@ -203,6 +213,8 @@ export const DEFAULT_STRINGS: LockableValueFieldStrings = {
   optionalAriaLabel: 'Optional field',
   insertLabel: 'Insert',
   insertAriaLabel: 'Insert variable',
+  insertSearchPlaceholder: 'Search variables...',
+  insertEmpty: 'No variables found.',
   valueModeAriaLabel: 'Choose value mode',
   expressionLabel: 'Expression',
   expressionDescription: 'Use a JS expression',
@@ -217,6 +229,10 @@ export const DEFAULT_STRINGS: LockableValueFieldStrings = {
   aiPromptLabel: 'Describe what you want',
   aiPromptPlaceholder: 'Display a value from the previous step',
   aiGenerate: 'Generate',
+  aiGenerating: 'Generating',
+  aiError: 'Could not generate a value. Try again.',
+  aiOutputLabel: (typeLabel, isExpression) =>
+    `${typeLabel} ${isExpression ? 'expression' : 'value'}`,
   aiOutputHint: (output) => `Output: ${output}`,
   lockedLabel: 'Read-only',
   unlockedLabel: 'Editable',
@@ -322,6 +338,10 @@ export interface LockableValueFieldProps {
       readOnly: boolean;
       placeholder: string;
       fieldType: LockableFieldType;
+      'aria-invalid'?: AriaAttributes['aria-invalid'];
+      'aria-describedby'?: string;
+      'aria-errormessage'?: string;
+      'data-slot'?: string;
     }
   ) => ReactNode;
   /**
