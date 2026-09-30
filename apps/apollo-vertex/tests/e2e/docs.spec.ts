@@ -1,12 +1,17 @@
 import {
+  fitsSurface,
   LAYOUT_TOKENS,
+  occupantOrientations,
   PADDED_INSET_PX,
   PANEL_TRANSITION_DURATION_MS,
   SIDE_PANEL_TINT_STRENGTH,
 } from "@/lib/composition";
+import { OCCUPANT_SPECS, SURFACE_SPECS } from "@/lib/occupants.generated";
+import { surfaceLabel } from "@/lib/surface-labels";
 import { activityTimelineOccupant } from "@/registry/activity-timeline/activity-timeline.occupant";
 import { contentAreaSurface } from "@/registry/content-area/content-area.surface";
 import { pageHeaderSurface } from "@/registry/page-header/page-header.surface";
+import { queueOccupant } from "@/registry/queue/queue.occupant";
 import { sidePanelSurface } from "@/registry/side-panel/side-panel.surface";
 import { stageStripOccupant } from "@/registry/stage-strip/stage-strip.occupant";
 import {
@@ -14,9 +19,6 @@ import {
   MAIN_MIN_OUTER_PX,
   START_PANEL_WIDTH,
 } from "@/templates/detail-page/detail-page.template";
-import { fitsSurface, occupantOrientations } from "@/lib/composition";
-import { OCCUPANT_SPECS, SURFACE_SPECS } from "@/lib/occupants.generated";
-import { surfaceLabel } from "@/lib/surface-labels";
 import { expect, test } from "./fixtures";
 
 const px = (n: number) => `${n}px`;
@@ -59,6 +61,8 @@ const PAGES: Record<string, string[]> = {
   "/guidelines/creating-occupants": [
     px(stageStripOccupant.requires.minWidth),
     px(activityTimelineOccupant.requires.minWidth),
+    px(queueOccupant.requires.minWidth),
+    px(LAYOUT_TOKENS.sidePanelWidthMin),
   ],
   "/surfaces/content-area": [
     px(contentAreaSurface.width.min),

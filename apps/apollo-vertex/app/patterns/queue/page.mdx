@@ -1,0 +1,68 @@
+import { OccupantLabel, WhereItFits } from '@/app/_components/occupant-docs';
+import { OccupantInSurface } from '@/app/_components/occupant-in-surface';
+
+# Queue
+
+<OccupantLabel />
+
+A list of items to work through, grouped and filtered, where picking one opens it. It takes the [occupant](/guidelines/creating-occupants) role.
+
+<div className="not-prose my-6 flex flex-wrap gap-6">
+  <OccupantInSurface occupant="queue" surface="side-panel" example="primary" width={360} height={560} />
+  <OccupantInSurface occupant="queue" surface="side-panel" example="secondary" width={360} height={560} />
+</div>
+
+The same occupant, with data from invoice exceptions and customer support.
+Neither is built into it.
+
+## Where it fits
+
+<WhereItFits name="queue" />
+
+## View model
+
+It renders a `QueueViewModel`. Nothing in it names a domain.
+
+| Field | What it holds |
+| --- | --- |
+| `subject` | What the queue holds, for accessible names, like the name of the work. |
+| `filters` | The tabs that filter the items, each an `id` and `label`. "All" comes first on its own. |
+| `items` | Each item's `id`, and: `title`, `value` (optional), `status`, `reference` (optional), `group`, `filter` |
+| `title` | The item's name, the main text on its card. |
+| `value` | The item's key figure, like an amount or a time left, formatted for display. |
+| `status` | Why the item needs attention, and how urgent it reads. A `label`, a `tone` (neutral, info, success, warning, or error), and `more`, how many more it has. |
+| `reference` | A short id people use to find the item elsewhere. |
+| `group` | The label it's grouped under. Groups show in the order they first appear. |
+| `filter` | The id of the filter it belongs to. |
+
+Your solution maps its own data into this shape with an adapter. The adapter
+belongs to your solution, not to the occupant.
+
+## Selection
+
+Your page owns which item is current: pass `currentId`, and change it in
+`onSelect`, usually to open that item in main. Picking a card, or stepping
+with Previous and Next, calls `onSelect`. Stepping follows the order on
+screen, within the active filter.
+
+## States
+
+It renders the standard occupant states. With no items, it shows the empty
+state.
+
+## Installation
+
+```bash
+npx shadcn@latest add @uipath/queue
+```
+
+## Accessibility
+
+- The items are a group named for the subject ("Queue for …"), and each group within it is named by its label and count.
+- The filters are tabs, named for what they filter. The active tab shows its count, and the list is its tab panel.
+- Each card is a button, pressed while its item is current. Previous and Next are named buttons, and the position ("3 of 10") is announced as it changes.
+- The list scrolls on its own, and takes keyboard focus so it can be scrolled.
+- A status is never color alone: its label says it, and "+2" is read as "2 more".
+- Short labels truncate, with the full text in a title.
+- Card titles stay on one line. When one is cut off, hovering shows the full title, and screen readers always read it in full.
+- Everything else wraps, so nothing is cut off at any width from the minimum up.

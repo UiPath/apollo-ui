@@ -11,6 +11,9 @@ import { EXAMPLES as keyFactsExamples } from "@/registry/key-facts/examples";
 import { Participants } from "@/registry/participants/participants";
 import { participantsOccupant } from "@/registry/participants/participants.occupant";
 import { EXAMPLES as participantsExamples } from "@/registry/participants/examples";
+import { Queue } from "@/registry/queue/queue";
+import { queueOccupant } from "@/registry/queue/queue.occupant";
+import { EXAMPLES as queueExamples } from "@/registry/queue/examples";
 import { StageStrip } from "@/registry/stage-strip/stage-strip";
 import { stageStripOccupant } from "@/registry/stage-strip/stage-strip.occupant";
 import { EXAMPLES as stageStripExamples } from "@/registry/stage-strip/examples";
@@ -31,6 +34,11 @@ export const OCCUPANT_REGISTRY: readonly RegisteredOccupant[] = [
     spec: participantsOccupant,
     Component: Participants,
     examples: participantsExamples,
+  }),
+  defineOccupant({
+    spec: queueOccupant,
+    Component: Queue,
+    examples: queueExamples,
   }),
   defineOccupant({
     spec: stageStripOccupant,

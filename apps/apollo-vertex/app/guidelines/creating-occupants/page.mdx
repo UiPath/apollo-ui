@@ -1,4 +1,6 @@
 import { activityTimelineOccupant } from '@/registry/activity-timeline/activity-timeline.occupant';
+import { LAYOUT_TOKENS } from '@/lib/composition';
+import { queueOccupant } from '@/registry/queue/queue.occupant';
 import { stageStripOccupant } from '@/registry/stage-strip/stage-strip.occupant';
 
 # Creating occupants
@@ -72,6 +74,13 @@ The stage strip declares {stageStripOccupant.requires.minWidth}px and the
 activity timeline {activityTimelineOccupant.requires.minWidth}px. Both could
 go narrower without clipping, but below those widths the current stage and
 event titles get hard to read.
+
+An occupant can also follow its surface: its minWidth reads the narrowest
+surface's width token instead of a number, so it fits every such surface and
+moves with the token. The queue follows the side panel: it declares
+{queueOccupant.requires.minWidth}px, the side panel's minimum of
+{LAYOUT_TOKENS.sidePanelWidthMin}px, because it runs edge to edge. The
+measurement still checks that nothing clips there.
 
 For the minimum to hold for any data, long values truncate or wrap:
 
