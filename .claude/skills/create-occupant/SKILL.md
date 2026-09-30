@@ -7,8 +7,8 @@ description: Use when someone wants to create a new occupant in apollo-vertex (c
 
 An occupant is a pattern that goes inside a surface. Its spec says what space
 it needs; it never names a template or a domain. The reasoning behind every
-step is on **Guidelines > Creating occupants**
-(`apps/apollo-vertex/app/guidelines/creating-occupants/page.mdx`). Point the
+step is on **Guidelines > Design architecture > Creating occupants**
+(`apps/apollo-vertex/app/guidelines/design-architecture/creating-occupants/page.mdx`). Point the
 person there when they want the why.
 
 Work in `apps/apollo-vertex`, on a branch that has `scripts/create-occupant.ts`.

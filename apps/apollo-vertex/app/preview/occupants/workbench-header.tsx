@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ArrowLeft,
   Moon,
   PanelLeftClose,
   PanelLeftOpen,
@@ -8,6 +9,7 @@ import {
   PanelRightOpen,
   Sun,
 } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { TEMPLATE_HOSTS } from "@/app/_components/template-hosts";
@@ -107,6 +109,8 @@ function SelectChoice<T extends string>({
 
 interface WorkbenchHeaderProps {
   label: string;
+  /** Where "Back to docs" goes, shown here while the list is collapsed. */
+  docsHref: string;
   listId: string;
   listOpen: boolean;
   onToggleList: () => void;
@@ -216,6 +220,18 @@ export function WorkbenchHeader(props: WorkbenchHeaderProps) {
       >
         {props.listOpen ? <PanelLeftClose /> : <PanelLeftOpen />}
       </Button>
+      {/* The list holds "Back to docs"; while it's collapsed, it's here. */}
+      {!props.listOpen && (
+        <Button asChild variant="ghost" size="icon" className="shrink-0">
+          <Link
+            href={props.docsHref}
+            data-workbench-back
+            aria-label={t("workbench_back_to_docs")}
+          >
+            <ArrowLeft aria-hidden />
+          </Link>
+        </Button>
+      )}
       <div ref={titleRef} className="flex min-w-0 flex-1 items-center gap-2">
         <h2 className="truncate text-base font-semibold" title={props.label}>
           {props.label}

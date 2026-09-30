@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { Table } from "nextra/components";
+import { LinkArrowIcon } from "nextra/icons";
+import { useMDXComponents as getThemeComponents } from "nextra-theme-docs";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   fitsSurface,
   occupantOrientations,
@@ -8,6 +11,7 @@ import {
 } from "@/lib/composition";
 import { OCCUPANT_SPECS, SURFACE_SPECS } from "@/lib/occupants.generated";
 import { surfaceLabel } from "@/lib/surface-labels";
+import { workbenchHref } from "./workbench-href";
 
 /** Docs links look like the page's other links. */
 const LINK = "text-primary underline underline-offset-2";
@@ -22,6 +26,56 @@ const specFor = (name: string) => {
   if (!entry) throw new Error(`No registered occupant named ${name}`);
   return entry.spec;
 };
+
+/** The docs' own page title, so an occupant's title looks like every other page's. */
+const { h1: PageTitle = "h1" } = getThemeComponents();
+
+interface OccupantTitleProps {
+  /** A registered occupant's name. */
+  name: string;
+}
+
+/**
+ * An occupant Patterns page's title: its name as the page heading, and the
+ * "Occupant" badge on the same line, centered with it. The badge sits
+ * outside the heading, so the title and the outline are just the name. It
+ * wraps under the title only when the title is too long for one line.
+ */
+export function OccupantTitle({ name }: OccupantTitleProps) {
+  const spec = specFor(name);
+  return (
+    <div
+      data-occupant-title
+      className="flex flex-wrap items-center gap-x-3 gap-y-1"
+    >
+      <PageTitle>{spec.label}</PageTitle>
+      <Badge variant="secondary" className="mt-2 shrink-0">
+        Occupant
+      </Badge>
+    </div>
+  );
+}
+
+interface OpenInWorkbenchProps {
+  /** Opens the workbench with this occupant. Leave out for the workbench alone. */
+  name?: string;
+  /** And with this surface. */
+  surface?: string;
+}
+
+/** A button that opens the occupant workbench, which runs outside the docs layout. */
+export function OpenInWorkbench({ name, surface }: OpenInWorkbenchProps) {
+  return (
+    <p className="not-prose my-4">
+      <Button asChild variant="outline" size="sm">
+        <Link href={workbenchHref(name, surface)} data-workbench-entry>
+          {name ? "Open in workbench" : "Open the workbench"}
+          <LinkArrowIcon height="1em" aria-hidden="true" />
+        </Link>
+      </Button>
+    </p>
+  );
+}
 
 /** The label at the top of a pattern page that takes the occupant role. */
 export function OccupantLabel() {
@@ -80,7 +134,7 @@ export function WhereItFits({ name }: WhereItFitsProps) {
       </Table>
       <p className="mt-4">
         Try it in every surface, with each sample, state, and theme, in the{" "}
-        <Link className={LINK} href={`/preview/occupants?occupant=${name}`}>
+        <Link className={LINK} href={workbenchHref(name)}>
           occupant workbench
         </Link>
         .
@@ -109,6 +163,7 @@ export function OccupantsThatFit({ surface: name }: OccupantsThatFitProps) {
           <Table.Th>Occupant</Table.Th>
           <Table.Th>Minimum width</Table.Th>
           <Table.Th>Padding</Table.Th>
+          <Table.Th>Workbench</Table.Th>
         </Table.Tr>
       </thead>
       <tbody>
@@ -121,6 +176,15 @@ export function OccupantsThatFit({ surface: name }: OccupantsThatFitProps) {
             </Table.Td>
             <Table.Td>{`${spec.requires.minWidth}px`}</Table.Td>
             <Table.Td>{occupantPadding(spec)}</Table.Td>
+            <Table.Td>
+              <Link
+                className={LINK}
+                href={workbenchHref(spec.name, surface.name)}
+              >
+                Open in workbench
+                <span className="sr-only"> for {spec.label}</span>
+              </Link>
+            </Table.Td>
           </Table.Tr>
         ))}
       </tbody>

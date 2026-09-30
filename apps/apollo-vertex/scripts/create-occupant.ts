@@ -838,14 +838,14 @@ const a11y = [
   .filter(Boolean)
   .join("\n");
 files[docsPage] =
-  `import { OccupantLabel, WhereItFits } from '@/app/_components/occupant-docs';
+  `import { OccupantTitle, OpenInWorkbench, WhereItFits } from '@/app/_components/occupant-docs';
 import { OccupantInSurface } from '@/app/_components/occupant-in-surface';
 
-# ${title}
+<OccupantTitle name="${occupantName}" />
 
-<OccupantLabel />
+${description} It takes the [occupant](/guidelines/design-architecture/creating-occupants) role.
 
-${description} It takes the [occupant](/guidelines/creating-occupants) role.
+<OpenInWorkbench name="${occupantName}" />
 
 ${demos}
 

@@ -393,6 +393,7 @@
   "wizard_demo_error_terms": "You must accept the terms and conditions.",
   "wizard_next": "Next",
   "wizard_submit": "Submit",
+  "workbench_back_to_docs": "Back to docs",
   "workbench_check_fits": "{{surface}} at {{width}}px",
   "workbench_check_overflow": "Overflows at {{width}}px",
   "workbench_check_overflow_none": "No overflow at {{width}}px",

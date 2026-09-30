@@ -58,7 +58,7 @@ const PAGES: Record<string, string[]> = {
     `${SIDE_PANEL_TINT_STRENGTH}%`,
     sidePanelSurface.provides.orientation,
   ],
-  "/guidelines/creating-occupants": [
+  "/guidelines/design-architecture/creating-occupants": [
     px(stageStripOccupant.requires.minWidth),
     px(activityTimelineOccupant.requires.minWidth),
     px(queueOccupant.requires.minWidth),
