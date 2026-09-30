@@ -183,14 +183,15 @@ describe('LockableValueField', () => {
     expect(screen.queryByRole('button', { name: 'Insert variable' })).not.toBeInTheDocument();
   });
 
-  it('can hide only the AI-assist action', () => {
-    render(<LockableValueField locked={false} showAiAssist={false} />);
+  // The handler's absence is what hides the AI-assist action.
+  it('hides the AI-assist action when there is no handler for it', () => {
+    render(<LockableValueField locked={false} />);
     expect(screen.queryByRole('button', { name: 'AI assist' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Insert variable' })).toBeInTheDocument();
   });
 
-  it('shows AI-assist and Insert-variable actions by default', () => {
-    render(<LockableValueField locked={false} />);
+  it('shows AI-assist and Insert-variable actions when both are wired', () => {
+    render(<LockableValueField locked={false} onGenerateWithAi={vi.fn()} />);
     expect(screen.getByRole('button', { name: 'AI assist' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Insert variable' })).toBeInTheDocument();
   });
@@ -537,13 +538,6 @@ describe('LockableValueField', () => {
     expect(screen.getByPlaceholderText('Single select value')).toHaveValue('stale-option');
   });
 
-  it('disables Generate and does not call onGenerateWithAi when not provided', async () => {
-    const user = userEvent.setup();
-    render(<LockableValueField locked={false} />);
-    await user.click(screen.getByRole('button', { name: 'AI assist' }));
-    expect(screen.getByRole('button', { name: 'Generate' })).toBeDisabled();
-  });
-
   it('calls onGenerateWithAi with the entered prompt when Generate is clicked', async () => {
     const user = userEvent.setup();
     const handleGenerate = vi.fn();
@@ -574,14 +568,16 @@ describe('LockableValueField', () => {
 
   it('reflects the current field type in the AI-assist output hint', async () => {
     const user = userEvent.setup();
-    render(<LockableValueField locked={false} fieldType="date" />);
+    render(<LockableValueField locked={false} fieldType="date" onGenerateWithAi={vi.fn()} />);
     await user.click(screen.getByRole('button', { name: 'AI assist' }));
     expect(screen.getByText('Output: Date expression')).toBeInTheDocument();
   });
 
   it('shows a value (not expression) output hint for types that do not support expressions', async () => {
     const user = userEvent.setup();
-    render(<LockableValueField locked={false} fieldType="single-select" />);
+    render(
+      <LockableValueField locked={false} fieldType="single-select" onGenerateWithAi={vi.fn()} />
+    );
     await user.click(screen.getByRole('button', { name: 'AI assist' }));
     expect(screen.getByText('Output: Single select value')).toBeInTheDocument();
   });

@@ -60,6 +60,21 @@ export function formatDateValue(value: string): string {
     : value;
 }
 
+// Separate from formatDateValue so the date-only output stays unchanged.
+/** Formats a datetime field's value, falling back to the raw value when unparseable. */
+export function formatDateTimeValue(value: string): string {
+  const date = parseDateValue(value);
+  return date
+    ? date.toLocaleString(undefined, {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+      })
+    : value;
+}
+
 /**
  * Computes the plain-text shown in place of the real control once a field is locked.
  * Boolean/single-select/multi-select resolve their stored value to a display label;
@@ -78,6 +93,8 @@ export function getLockedDisplayValue(
       return '';
     case 'date':
       return value ? formatDateValue(value) : '';
+    case 'datetime':
+      return value ? formatDateTimeValue(value) : '';
     case 'single-select':
       return options.find((option) => option.value === value)?.label ?? value;
     case 'multi-select': {

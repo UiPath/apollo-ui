@@ -1,6 +1,7 @@
 import { LockKeyhole, LockKeyholeOpen } from 'lucide-react';
 import { InputGroupButton } from '@/components/ui/input-group';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import type { LockableValueFieldStrings } from '../types';
 
 /**
  * The lock/unlock toggle shared by both the InputGroup and plain-Input
@@ -10,9 +11,12 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 export function LockToggleButton({
   locked,
   onLockedChange,
+  strings,
 }: {
   locked: boolean;
   onLockedChange?: (locked: boolean) => void;
+  /** See LockableValueFieldStrings. */
+  strings: LockableValueFieldStrings;
 }) {
   const interactive = !!onLockedChange;
   return (
@@ -27,17 +31,17 @@ export function LockToggleButton({
             aria-label={
               interactive
                 ? locked
-                  ? 'Read-only. Click to make editable.'
-                  : 'Editable. Click to make read-only.'
+                  ? strings.lockedHint
+                  : strings.unlockedHint
                 : locked
-                  ? 'Read-only'
-                  : 'Editable'
+                  ? strings.lockedLabel
+                  : strings.unlockedLabel
             }
           >
             {locked ? <LockKeyhole size={16} /> : <LockKeyholeOpen size={16} />}
           </InputGroupButton>
         </TooltipTrigger>
-        <TooltipContent>{locked ? 'Read-only' : 'Editable'}</TooltipContent>
+        <TooltipContent>{locked ? strings.lockedLabel : strings.unlockedLabel}</TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );

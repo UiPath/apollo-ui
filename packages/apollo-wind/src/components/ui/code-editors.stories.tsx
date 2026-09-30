@@ -23,7 +23,7 @@ import {
 import { Modal, ModalContent } from './dialog';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from './input-group';
 import { Label } from './label';
-import { LockableValueField } from './lockable-value-field';
+import { LockableValueField, type LockableValueFieldMode } from './lockable-value-field';
 import {
   PromptEditor,
   type PromptEditorAutoCompleteOption,
@@ -1030,7 +1030,7 @@ function InlineExpressionEditor({
 function InputEditorUsagePage() {
   const themeConfig = useEditorThemeConfig();
   const [lockableValue, setLockableValue] = useState('invoice.total');
-  const [lockableMode, setLockableMode] = useState<'fixed' | 'expression'>('expression');
+  const [lockableMode, setLockableMode] = useState<LockableValueFieldMode>('expression');
   const [lockableLocked, setLockableLocked] = useState(false);
   return (
     <UsagePage
