@@ -219,7 +219,8 @@ const preview: Preview = {
               ],
               'Templates',
               [
-                'Template Guide',
+                'Guidance Flow Layouts',
+                ['Template Types', 'Layout Previews'],
                 'Flow Standalone',
                 'Flow VS Code',
                 [
