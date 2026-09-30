@@ -159,6 +159,7 @@ export type {
   GuardrailActionLabelKey,
   GuardrailActionLabels,
   GuardrailBuilderLabels,
+  GuardrailFileSupportLabelOverrides,
   GuardrailFileSupportLabels,
   GuardrailFilterFieldSelectorLabelKey,
   GuardrailFilterFieldSelectorLabels,

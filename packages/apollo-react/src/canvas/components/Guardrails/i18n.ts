@@ -397,6 +397,20 @@ export interface GuardrailFileSupportLabels {
   };
 }
 
+/**
+ * What a host may pass as `labels`.
+ *
+ * Its own type rather than `Partial<GuardrailFileSupportLabels>`, which every other member of
+ * this family uses: `formats` is a nested record, and a flat `Partial` would force a host
+ * renaming one file kind to restate the other four. The resolver already merges it one level
+ * deep; this is the type saying so.
+ */
+export type GuardrailFileSupportLabelOverrides = Partial<
+  Omit<GuardrailFileSupportLabels, 'formats'>
+> & {
+  formats?: Partial<GuardrailFileSupportLabels['formats']>;
+};
+
 /** The subset of `useSafeLingui`'s translator the file-support labels need. */
 type FileSupportTranslate = (descriptor: {
   id: string;
@@ -463,23 +477,27 @@ export const GUARDRAIL_FILE_SUPPORT_EN_MESSAGES: Readonly<Record<string, string>
  * merge would let a host that renames one kind drop the other four.
  */
 export function resolveGuardrailFileSupportLabels(
-  catalog?: Partial<GuardrailFileSupportLabels>,
-  overrides?: Partial<GuardrailFileSupportLabels>
+  catalog?: GuardrailFileSupportLabelOverrides,
+  overrides?: GuardrailFileSupportLabelOverrides
 ): GuardrailFileSupportLabels {
-  const merged = mergeLabels(GUARDRAIL_FILE_SUPPORT_EN_LABELS, catalog, overrides);
+  // `formats` is split out because `mergeLabels` is flat: it would copy a partial record over
+  // the complete default. The nested merge below is what lets a host rename one kind alone.
+  const { formats: catalogFormats, ...catalogRest } = catalog ?? {};
+  const { formats: overrideFormats, ...overrideRest } = overrides ?? {};
+  const merged = mergeLabels(GUARDRAIL_FILE_SUPPORT_EN_LABELS, catalogRest, overrideRest);
   return {
     ...merged,
     formats: {
       ...GUARDRAIL_FILE_SUPPORT_EN_LABELS.formats,
-      ...catalog?.formats,
-      ...overrides?.formats,
+      ...catalogFormats,
+      ...overrideFormats,
     },
   };
 }
 
 /** Localized chrome strings of the file-support indicator; per-string `overrides` always win. */
 export function useGuardrailFileSupportLabels(
-  overrides?: Partial<GuardrailFileSupportLabels>
+  overrides?: GuardrailFileSupportLabelOverrides
 ): GuardrailFileSupportLabels {
   const { _ } = useSafeLingui();
   return useMemo(
