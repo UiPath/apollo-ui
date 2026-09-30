@@ -11,6 +11,7 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 import { SidePanelSlotContext } from "@/components/ui/side-panel";
+import { PANEL_TRANSITION_DURATION_MS } from "@/lib/composition";
 import { cn } from "@/lib/utils";
 import {
   detailPageTemplate,
@@ -43,16 +44,16 @@ const DIVIDER_INLINE_START =
  * turns it off.
  */
 const PANEL_CLIP_MOTION = [
-  "data-[transitioning=true]:[transition-property:width]",
-  "data-[transitioning=true]:[transition-duration:var(--panel-transition-duration)]",
-  "data-[transitioning=true]:[transition-timing-function:var(--panel-transition-easing)]",
+  "data-[transitioning=true]:transition-[width]",
+  "data-[transitioning=true]:duration-(--panel-transition-duration)",
+  "data-[transitioning=true]:ease-(--panel-transition-easing)",
   "motion-reduce:transition-none!",
 ].join(" ");
 // A closed panel's slot hides once its close has finished animating.
 const PANEL_SLOT_MOTION = [
   "data-[state=closed]:invisible",
-  "data-[transitioning=true]:[transition-property:visibility]",
-  "data-[transitioning=true]:data-[state=closed]:[transition-delay:var(--panel-transition-duration)]",
+  "data-[transitioning=true]:transition-[visibility]",
+  "data-[transitioning=true]:data-[state=closed]:delay-(--panel-transition-duration)",
   "motion-reduce:transition-none!",
 ].join(" ");
 
@@ -62,7 +63,7 @@ function transitionFallbackMs(element: Element | null): number {
     ? getComputedStyle(element).getPropertyValue("--panel-transition-duration")
     : "";
   const ms = Number.parseFloat(value);
-  return (Number.isFinite(ms) ? ms : 350) + 150;
+  return (Number.isFinite(ms) ? ms : PANEL_TRANSITION_DURATION_MS) + 150;
 }
 
 const endPanelResizable =

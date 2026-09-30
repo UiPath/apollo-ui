@@ -2614,6 +2614,10 @@
           "type": "registry:ui"
         },
         {
+          "path": "registry/occupant/occupant-layout.ts",
+          "type": "registry:ui"
+        },
+        {
           "path": "registry/occupant/occupant-status.tsx",
           "type": "registry:ui"
         },

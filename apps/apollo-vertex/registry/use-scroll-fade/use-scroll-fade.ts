@@ -1,14 +1,12 @@
 import type { Ref, RefCallback } from "react";
+import { LAYOUT_TOKENS } from "@/lib/composition";
 import { attachRef } from "@/lib/surface-context";
-
-/** The fade length when --scroll-fade-size can't be read, in px. */
-const FALLBACK_FADE_PX = 24;
 
 function fadeSize(node: HTMLElement): number {
   const value = Number.parseFloat(
     getComputedStyle(node).getPropertyValue("--scroll-fade-size"),
   );
-  return Number.isFinite(value) ? value : FALLBACK_FADE_PX;
+  return Number.isFinite(value) ? value : LAYOUT_TOKENS.scrollFadeSize;
 }
 
 /** Which way a container scrolls, so which edges can fade. */
