@@ -93,8 +93,11 @@ export interface GuardrailBuilderLabels {
   severityErrorLabel: string;
   blockReasonLabel: string;
   blockReasonPlaceholder: string;
-  /** Read-only BYO connector field, rendered only with `providerField`. */
-  providerLabel: string;
+  /**
+   * Read-only BYO connector field, rendered only with `providerField`. Optional so a complete
+   * label object written before it existed still compiles; it always resolves.
+   */
+  providerLabel?: string;
   // Escalation
   assignToLabel: string;
   recipientUserLabel: string;
@@ -125,7 +128,7 @@ export interface GuardrailBuilderLabels {
   actionAppRequiredError: string;
 }
 
-export const GUARDRAIL_BUILDER_EN_LABELS: GuardrailBuilderLabels = {
+export const GUARDRAIL_BUILDER_EN_LABELS: Required<GuardrailBuilderLabels> = {
   editTitle: 'Edit {{name}} guardrail',
   addTitle: 'Add {{name}} guardrail',
   typeLabel: 'Guardrail type',
@@ -212,8 +215,12 @@ function mergeLabels<T extends object>(
 export function resolveGuardrailBuilderLabels(
   catalog?: Partial<GuardrailBuilderLabels>,
   overrides?: Partial<GuardrailBuilderLabels>
-): GuardrailBuilderLabels {
-  return mergeLabels(GUARDRAIL_BUILDER_EN_LABELS, catalog, overrides);
+): Required<GuardrailBuilderLabels> {
+  return mergeLabels<Required<GuardrailBuilderLabels>>(
+    GUARDRAIL_BUILDER_EN_LABELS,
+    catalog,
+    overrides
+  );
 }
 
 /** Narrow a builder label set to the keys one of the builder's parts reads. */
@@ -363,7 +370,7 @@ export function useGuardrailFormLabels(
 /** Localized chrome strings of the builder screen; per-string `overrides` always win. */
 export function useGuardrailBuilderLabels(
   overrides?: Partial<GuardrailBuilderLabels>
-): GuardrailBuilderLabels {
+): Required<GuardrailBuilderLabels> {
   const { _ } = useSafeLingui();
   return useMemo(
     () =>
@@ -750,10 +757,13 @@ export interface GuardrailPaletteLabels {
   preview: string;
   /** Status chip on an entry the tenant is not entitled to. */
   statusUnauthorized: string;
-  /** Provenance chip on BYO entries (rendered only with `byoDisplay`). */
-  byo: string;
+  /**
+   * Provenance chip on BYO entries (rendered only with `byoDisplay`). This and `provider` are
+   * optional so a complete label object written before them still compiles; both always resolve.
+   */
+  byo?: string;
   /** Prefix of a BYO entry's connector caption, rendered as `{provider}: {connector}`. */
-  provider: string;
+  provider?: string;
 }
 
 /** The subset of `useSafeLingui`'s translator the palette labels need. */
@@ -762,7 +772,7 @@ type PaletteTranslate = (descriptor: { id: string; message: string }) => string;
 // One builder holds every `_({ id, message })` call, so the English defaults, the flat record
 // the catalog test diffs and the runtime lingui path cannot drift, and `lingui extract` still
 // sees static calls. Same shape as `definitions-copy.ts`.
-function buildGuardrailPaletteLabels(_: PaletteTranslate): GuardrailPaletteLabels {
+function buildGuardrailPaletteLabels(_: PaletteTranslate): Required<GuardrailPaletteLabels> {
   return {
     listAriaLabel: _({
       id: 'guardrails.palette.list-aria-label',
@@ -791,9 +801,8 @@ function buildGuardrailPaletteLabels(_: PaletteTranslate): GuardrailPaletteLabel
 }
 
 /** The English chrome strings, resolved without a lingui provider. */
-export const GUARDRAIL_PALETTE_EN_LABELS: GuardrailPaletteLabels = buildGuardrailPaletteLabels(
-  ({ message }) => message
-);
+export const GUARDRAIL_PALETTE_EN_LABELS: Required<GuardrailPaletteLabels> =
+  buildGuardrailPaletteLabels(({ message }) => message);
 
 /**
  * The same strings flattened to message id to the **ICU source message**, which is the form
@@ -814,14 +823,18 @@ export const GUARDRAIL_PALETTE_EN_MESSAGES: Readonly<Record<string, string>> = O
 export function resolveGuardrailPaletteLabels(
   catalog?: Partial<GuardrailPaletteLabels>,
   overrides?: Partial<GuardrailPaletteLabels>
-): GuardrailPaletteLabels {
-  return mergeLabels(GUARDRAIL_PALETTE_EN_LABELS, catalog, overrides);
+): Required<GuardrailPaletteLabels> {
+  return mergeLabels<Required<GuardrailPaletteLabels>>(
+    GUARDRAIL_PALETTE_EN_LABELS,
+    catalog,
+    overrides
+  );
 }
 
 /** Localized chrome strings of the palette; per-string `overrides` always win. */
 export function useGuardrailPaletteLabels(
   overrides?: Partial<GuardrailPaletteLabels>
-): GuardrailPaletteLabels {
+): Required<GuardrailPaletteLabels> {
   const { _ } = useSafeLingui();
   return useMemo(
     () => resolveGuardrailPaletteLabels(buildGuardrailPaletteLabels(_), overrides),

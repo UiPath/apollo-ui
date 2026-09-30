@@ -42,7 +42,7 @@ export interface GuardrailPaletteProps<
 /** Chips after an entry's name. Both tones are the colours the two products already ship. */
 function definitionChips(
   definition: GuardrailPaletteDefinition,
-  labels: GuardrailPaletteLabels,
+  labels: Required<GuardrailPaletteLabels>,
   previewChip: boolean,
   byoDisplay: boolean
 ) {

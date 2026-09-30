@@ -23,6 +23,8 @@ import {
   GUARDRAIL_RULES_EN_MESSAGES,
   GUARDRAIL_SCOPE_SELECTOR_EN_LABELS,
   GUARDRAIL_SCOPE_SELECTOR_LABEL_KEYS,
+  type GuardrailBuilderLabels,
+  type GuardrailPaletteLabels,
   resolveCentralizedGuardrailsLabels,
   resolveCustomGuardrailBuilderLabels,
   resolveGuardrailActionLabels,
@@ -400,6 +402,19 @@ describe('the other label sets still layer the same way', () => {
 
     expect(labels.save).toBe('Speichern');
     expect(labels.cancel).toBe(GUARDRAIL_BUILDER_EN_LABELS.cancel);
+  });
+
+  // A host holding a complete label object from before the BYO display keys must still compile
+  // and still get them: they are optional in the public shape and always resolve.
+  it('resolves the BYO display keys for a complete label object written before them', () => {
+    const { providerLabel: _provider, ...builderBefore } = GUARDRAIL_BUILDER_EN_LABELS;
+    const builderLabels: GuardrailBuilderLabels = builderBefore;
+    expect(resolveGuardrailBuilderLabels(undefined, builderLabels).providerLabel).toBe('Provider');
+
+    const { byo: _byo, provider: _paletteProvider, ...paletteBefore } = GUARDRAIL_PALETTE_EN_LABELS;
+    const paletteLabels: GuardrailPaletteLabels = paletteBefore;
+    const resolved = resolveGuardrailPaletteLabels(undefined, paletteLabels);
+    expect([resolved.byo, resolved.provider]).toEqual(['BYO', 'Provider']);
   });
 
   it('merges validator form labels', () => {
