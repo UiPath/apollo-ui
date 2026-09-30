@@ -84,12 +84,16 @@ export function formatDateTimeValue(value: string): string {
 export function getLockedDisplayValue(
   fieldType: LockableFieldType,
   value: string,
-  options: LockableValueFieldOption[]
+  options: LockableValueFieldOption[],
+  booleanLabels: { trueLabel: string; falseLabel: string } = {
+    trueLabel: 'True',
+    falseLabel: 'False',
+  }
 ): string {
   switch (fieldType) {
     case 'boolean':
-      if (value === 'true') return 'True';
-      if (value === 'false') return 'False';
+      if (value === 'true') return booleanLabels.trueLabel;
+      if (value === 'false') return booleanLabels.falseLabel;
       return '';
     case 'date':
       return value ? formatDateValue(value) : '';

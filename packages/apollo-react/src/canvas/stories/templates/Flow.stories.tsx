@@ -3754,7 +3754,7 @@ function DapValueField({
 }) {
   const [locked, setLocked] = useState(false);
   const [mode, setMode] = useState<LockableValueFieldMode>(
-    value.startsWith('$vars.') ? 'expression' : 'fixed'
+    value.startsWith('$vars.') ? 'expression' : 'literal'
   );
 
   return (

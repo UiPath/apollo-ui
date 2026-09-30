@@ -198,10 +198,10 @@ describe('LockableValueField', () => {
 
   it('only shows the Fixed/Expression mode dropdown for types that support expressions', () => {
     const { rerender } = render(<LockableValueField locked={false} fieldType="single-select" />);
-    expect(screen.queryByRole('button', { name: 'Choose value type' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Choose value mode' })).not.toBeInTheDocument();
 
     rerender(<LockableValueField locked={false} fieldType="string" />);
-    expect(screen.getByRole('button', { name: 'Choose value type' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Choose value mode' })).toBeInTheDocument();
   });
 
   it('renders the More actions menu beside the value type control', async () => {
@@ -248,7 +248,7 @@ describe('LockableValueField', () => {
     );
 
     expect(screen.queryByRole('button', { name: /Editable/ })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Choose value type' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Choose value mode' })).not.toBeInTheDocument();
     expect(
       container.querySelector('[role="group"].bg-surface-overlay > [role="group"]')
     ).not.toBeInTheDocument();
@@ -558,12 +558,12 @@ describe('LockableValueField', () => {
 
   it('disables the Fixed/Expression dropdown trigger when onModeChange is not provided', () => {
     render(<LockableValueField locked={false} fieldType="string" />);
-    expect(screen.getByRole('button', { name: 'Choose value type' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Choose value mode' })).toBeDisabled();
   });
 
   it('enables the Fixed/Expression dropdown trigger when onModeChange is provided', () => {
     render(<LockableValueField locked={false} fieldType="string" onModeChange={vi.fn()} />);
-    expect(screen.getByRole('button', { name: 'Choose value type' })).not.toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Choose value mode' })).not.toBeDisabled();
   });
 
   it('reflects the current field type in the AI-assist output hint', async () => {
@@ -642,5 +642,60 @@ describe('LockableValueField', () => {
     );
     const results = await axe(container);
     expect(results).toHaveNoViolations();
+  });
+
+  describe('strings', () => {
+    it('reads the header chrome from strings', () => {
+      render(
+        <LockableValueField
+          locked={false}
+          onValueChange={vi.fn()}
+          onFieldTypeChange={vi.fn()}
+          variables={[{ label: 'Item ID', value: 'item.id' }]}
+          strings={{ fieldTypeAriaLabel: 'Feldtyp', insertAriaLabel: 'Variable einfügen' }}
+        />
+      );
+      expect(screen.getByRole('button', { name: 'Feldtyp' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Variable einfügen' })).toBeInTheDocument();
+    });
+
+    it('builds the computed field name from strings in both modes', () => {
+      const strings = {
+        typeLabels: { string: 'Text' },
+        valueFieldLabel: (type: string) => `Wert (${type})`,
+        expressionFieldLabel: (type: string) => `Ausdruck (${type})`,
+      };
+      const { rerender } = render(<LockableValueField locked strings={strings} />);
+      expect(screen.getByPlaceholderText('Wert (Text)')).toBeInTheDocument();
+      rerender(<LockableValueField locked mode="expression" strings={strings} />);
+      expect(screen.getByPlaceholderText('Ausdruck (Text)')).toBeInTheDocument();
+    });
+
+    it('labels the literal mode item from strings, falling back to the type meta', async () => {
+      const user = userEvent.setup();
+      render(
+        <LockableValueField
+          locked={false}
+          onValueChange={vi.fn()}
+          onModeChange={vi.fn()}
+          strings={{ literalLabels: { string: 'Fester Wert' } }}
+        />
+      );
+      await user.click(screen.getByRole('button', { name: 'Choose value mode' }));
+      expect(screen.getByText('Fester Wert')).toBeInTheDocument();
+      expect(screen.getByText('Use a literal string value')).toBeInTheDocument();
+    });
+
+    it('shows a locked boolean with the strings labels', () => {
+      render(
+        <LockableValueField
+          locked
+          fieldType="boolean"
+          value="true"
+          strings={{ trueLabel: 'Wahr', falseLabel: 'Falsch' }}
+        />
+      );
+      expect(screen.getByDisplayValue('Wahr')).toBeInTheDocument();
+    });
   });
 });

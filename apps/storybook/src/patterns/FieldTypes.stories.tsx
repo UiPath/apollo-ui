@@ -53,7 +53,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 type Status = 'supported' | 'needs-type' | 'needs-component';
-type VisualExample = LockableFieldType | 'mode-fixed' | 'mode-expression' | 'insert-variable';
+type VisualExample = LockableFieldType | 'mode-literal' | 'mode-expression' | 'insert-variable';
 
 interface TypeRow {
   type: string;
@@ -441,11 +441,11 @@ const CATEGORIES: Category[] = [
 
 const BINDING_STATE_ROWS: TypeRow[] = [
   {
-    type: 'fixed  (LockableValueFieldMode)  ↔  Widget  (integration-service ValueType)',
+    type: 'literal  (LockableValueFieldMode)  ↔  Widget  (integration-service ValueType)',
     source: 'lockable-value-field/types.ts, integration-service ValueType',
-    support: 'mode="fixed"',
+    support: 'mode="literal"',
     status: 'supported',
-    visual: 'mode-fixed',
+    visual: 'mode-literal',
   },
   {
     type: 'expression  (LockableValueFieldMode)  ↔  Expression  (integration-service ValueType)',
@@ -589,7 +589,7 @@ function StatusBadge({ status }: { status: Status }) {
 // tables below, not this per-type grid.
 function FieldTypeExample({
   fieldType,
-  initialMode = 'fixed',
+  initialMode = 'literal',
 }: {
   fieldType: LockableFieldType;
   initialMode?: LockableValueFieldMode;
@@ -651,7 +651,13 @@ function InsertVariableExample() {
         onValueChange={setValue}
         locked={false}
         showLock={false}
-        variables={[{ label: 'Customer name', value: '$vars.customerName' }]}
+        variables={[
+          {
+            label: '$vars',
+            value: '',
+            children: [{ label: 'Customer name', value: '$vars.customerName' }],
+          },
+        ]}
       />
     </div>
   );
@@ -669,7 +675,7 @@ function GapPlaceholder() {
 
 function VisualExampleCell({ visual }: { visual?: VisualExample }) {
   if (!visual) return <GapPlaceholder />;
-  if (visual === 'mode-fixed') return <ModeExample mode="fixed" />;
+  if (visual === 'mode-literal') return <ModeExample mode="literal" />;
   if (visual === 'mode-expression') return <ModeExample mode="expression" />;
   if (visual === 'insert-variable') return <InsertVariableExample />;
 
@@ -683,7 +689,7 @@ function VisualExampleCell({ visual }: { visual?: VisualExample }) {
   return (
     <div className="flex flex-col gap-2">
       <ExampleLabel>Fixed</ExampleLabel>
-      <FieldTypeExample fieldType={visual} initialMode="fixed" />
+      <FieldTypeExample fieldType={visual} initialMode="literal" />
       <ExampleLabel>Expression</ExampleLabel>
       <FieldTypeExample fieldType={visual} initialMode="expression" />
     </div>
@@ -1070,9 +1076,16 @@ const LVF_BINDING_STATES: StateRow[] = [
   },
 ];
 
+// The Insert tree renders entries as supplied, so the namespace is an explicit group.
 const DEMO_VARIABLES = [
-  { label: 'Customer name', value: '$input.customerName' },
-  { label: 'Invoice number', value: '$input.invoiceNumber' },
+  {
+    label: '$input',
+    value: '',
+    children: [
+      { label: 'Customer name', value: '$input.customerName' },
+      { label: 'Invoice number', value: '$input.invoiceNumber' },
+    ],
+  },
 ];
 
 // showLock={false} throughout this group: locked is used here only as a fixed

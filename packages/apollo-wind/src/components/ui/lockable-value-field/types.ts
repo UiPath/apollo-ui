@@ -13,11 +13,11 @@ import {
   ToggleLeft,
 } from 'lucide-react';
 import type { AriaAttributes, ReactNode } from 'react';
+import type { ValueMode } from '../field-addons/value-mode-strings';
 
-// Besides a literal or a JS expression, a field can bind to a workflow variable
-// or to a natural-language prompt an agent fills in. Neither is expressible as
-// the other two, so each is a mode of its own.
-export type LockableValueFieldMode = 'fixed' | 'expression' | 'variable' | 'prompt';
+// Wind's value-mode vocabulary: a literal, a JS expression, a bound workflow
+// variable, or a prompt an agent fills in.
+export type LockableValueFieldMode = ValueMode;
 
 // `double` and `datetime` keep the fraction and the time of day that `integer`
 // and `date` would drop.
@@ -148,12 +148,23 @@ export interface LockableValueFieldStrings {
   fieldTypeTooltip: string;
   fieldTypeAriaLabel: string;
   typeLabels: Partial<Record<LockableFieldType, string>>;
+  /** The literal mode item's label per type; falls back to FIELD_TYPE_META's `fixedLabel`. */
+  literalLabels: Partial<Record<LockableFieldType, string>>;
+  /** The literal mode item's description per type; falls back to FIELD_TYPE_META's `fixedDescription`. */
+  literalDescriptions: Partial<Record<LockableFieldType, string>>;
+  /** The computed field name in literal mode, from the (localized) type label. */
+  valueFieldLabel: (typeLabel: string) => string;
+  /** The computed field name in expression mode, from the (localized) type label. */
+  expressionFieldLabel: (typeLabel: string) => string;
+  /** A locked boolean's displayed text. */
+  trueLabel: string;
+  falseLabel: string;
   requiredTooltip: string;
   requiredAriaLabel: string;
   optionalAriaLabel: string;
   insertLabel: string;
   insertAriaLabel: string;
-  valueTypeAriaLabel: string;
+  valueModeAriaLabel: string;
   expressionLabel: string;
   expressionDescription: string;
   pickDate: string;
@@ -178,12 +189,21 @@ export const DEFAULT_STRINGS: LockableValueFieldStrings = {
   fieldTypeTooltip: 'Type',
   fieldTypeAriaLabel: 'Field type',
   typeLabels: {},
+  literalLabels: {},
+  literalDescriptions: {},
+  valueFieldLabel: (typeLabel) => `${typeLabel} value`,
+  expressionFieldLabel: (typeLabel) => {
+    const type = typeLabel.toLowerCase();
+    return `Write ${/^[aeiou]/.test(type) ? 'an' : 'a'} ${type} expression`;
+  },
+  trueLabel: 'True',
+  falseLabel: 'False',
   requiredTooltip: 'Required',
   requiredAriaLabel: 'Required field',
   optionalAriaLabel: 'Optional field',
   insertLabel: 'Insert',
   insertAriaLabel: 'Insert variable',
-  valueTypeAriaLabel: 'Choose value type',
+  valueModeAriaLabel: 'Choose value mode',
   expressionLabel: 'Expression',
   expressionDescription: 'Use a JS expression',
   pickDate: 'Pick a date',
@@ -258,7 +278,7 @@ export interface LockableValueFieldProps {
   trailingAddon?: ReactNode;
   /** Adds a field-level overflow menu beside the value control. */
   more?: LockableValueFieldMoreActions;
-  /** Fixed value vs. JS expression. Defaults to 'fixed'. Ignored for types that don't support expressions. */
+  /** How the value is expressed. Defaults to 'literal'; `expression` falls back to `literal` for types that cannot hold one. */
   mode?: LockableValueFieldMode;
   /** Called when the user switches modes. */
   onModeChange?: (mode: LockableValueFieldMode) => void;
@@ -286,7 +306,7 @@ export interface LockableValueFieldProps {
   /**
    * Renders the value control for a given mode, replacing the built-in one.
    * `variable` and `prompt` have no built-in editor, and a surface that authors
-   * its own choices can replace the `fixed` control too.
+   * its own choices can replace the `literal` control too.
    *
    * Returning nothing (or omitting this) falls back to the built-in control
    * for the field's type, so an unhandled mode degrades to the literal editor

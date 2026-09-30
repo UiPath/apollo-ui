@@ -85,16 +85,22 @@ function MoreActionsMenu({
 }
 
 /**
- * LockableValueField — a field that can be locked to read-only, typed as one
- * of several data types, and (for scalar types) switched between a literal
- * value and a JS expression.
+ * LockableValueField: a field that can be locked to read-only, typed as one of
+ * several data types, and expressed in one of four modes (`literal`,
+ * `expression`, `variable`, `prompt`).
  *
- * The expression mode is styled as code (monospace) but does not carry real
- * syntax highlighting or evaluation. Select/multiselect options default to a
- * small demo set unless `options` is provided. The built-in AI-assist
- * "Generate" button is a no-op unless `onGenerateWithAi` is provided; the
- * Insert-variable menu is empty (and disabled) unless `variables` is
- * provided; file uploads aren't persisted anywhere.
+ * - Literal and expression have built-in controls; `renderModeControl`
+ *   supplies the control for any mode, and `variable` / `prompt` need it.
+ * - `fieldTypes` chooses which types the picker offers.
+ * - Insert variable renders `variables` as supplied and splices at the caret;
+ *   `onInsertVariable` takes over what inserting means.
+ * - Enter commits through `onValueBlur`, Escape restores the value as of focus.
+ * - Every user-visible string can be overridden through `strings`.
+ *
+ * The expression mode is styled as code but not highlighted or evaluated.
+ * Select options default to a small demo set unless `options` is provided. The
+ * AI-assist button renders only with `onGenerateWithAi`, and file uploads
+ * aren't persisted anywhere.
  */
 export function LockableValueField({
   value = '',
@@ -106,7 +112,7 @@ export function LockableValueField({
   leadingAddon,
   trailingAddon,
   more,
-  mode = 'fixed',
+  mode = 'literal',
   onModeChange,
   renderExpressionEditor,
   renderModeControl,
@@ -149,15 +155,13 @@ export function LockableValueField({
   const typeMeta = FIELD_TYPE_META[fieldType];
   // Only `expression` is coerced: a select cannot hold JS, but it can still be
   // bound to a variable or filled by a prompt.
-  const effectiveMode = mode === 'expression' && !typeMeta.supportsExpression ? 'fixed' : mode;
+  const effectiveMode = mode === 'expression' && !typeMeta.supportsExpression ? 'literal' : mode;
   const editableOnValueChange = locked ? undefined : onValueChange;
   const typeLabel = strings.typeLabels[fieldType] ?? typeMeta.label;
-  const fieldTypeLabel = typeLabel.toLowerCase();
-  const expressionArticle = /^[aeiou]/.test(fieldTypeLabel) ? 'an' : 'a';
   const fieldLabel =
     effectiveMode === 'expression'
-      ? `Write ${expressionArticle} ${fieldTypeLabel} expression`
-      : `${typeLabel} value`;
+      ? strings.expressionFieldLabel(typeLabel)
+      : strings.valueFieldLabel(typeLabel);
   // The consumer's wording wins on the control; the computed name still labels
   // the field for assistive tech.
   const valuePlaceholder = placeholder ?? fieldLabel;
@@ -226,7 +230,7 @@ export function LockableValueField({
   // Locked fields are read-only, not disabled — the raw control (switch, date
   // picker, select) has nothing left to do once editing is blocked, so it's
   // replaced with plain, selectable text showing the same value.
-  const lockedDisplayValue = getLockedDisplayValue(fieldType, value, options);
+  const lockedDisplayValue = getLockedDisplayValue(fieldType, value, options, strings);
 
   return (
     <div
@@ -263,7 +267,7 @@ export function LockableValueField({
           error={error}
           errorId={validationId}
           className={cn(
-            fieldType === 'file' && !locked && effectiveMode === 'fixed' && 'h-auto items-stretch'
+            fieldType === 'file' && !locked && effectiveMode === 'literal' && 'h-auto items-stretch'
           )}
         >
           {(showLock || leadingAddon !== undefined) && leadingAddon !== null && (
@@ -462,7 +466,7 @@ export function LockableValueField({
                         icon
                         size="3xs"
                         disabled={!onModeChange}
-                        aria-label={strings.valueTypeAriaLabel}
+                        aria-label={strings.valueModeAriaLabel}
                       >
                         {effectiveMode === 'expression' ? <Code2 /> : <Type />}
                       </InputGroupButton>
@@ -470,10 +474,12 @@ export function LockableValueField({
                     <DropdownMenuContent align="end" className="w-56">
                       <ModeMenuItem
                         icon={Type}
-                        label={typeMeta.fixedLabel}
-                        description={typeMeta.fixedDescription}
-                        active={effectiveMode === 'fixed'}
-                        onClick={() => onModeChange?.('fixed')}
+                        label={strings.literalLabels[fieldType] ?? typeMeta.fixedLabel}
+                        description={
+                          strings.literalDescriptions[fieldType] ?? typeMeta.fixedDescription
+                        }
+                        active={effectiveMode === 'literal'}
+                        onClick={() => onModeChange?.('literal')}
                       />
                       <ModeMenuItem
                         icon={Code2}
