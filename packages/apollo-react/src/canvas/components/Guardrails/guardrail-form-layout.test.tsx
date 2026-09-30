@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { describe, expect, it, vi } from 'vitest';
 import { GuardrailFormLayout } from './guardrail-form-layout';
@@ -135,5 +135,68 @@ describe('GuardrailFormLayout', () => {
     );
     const results = await axe(container);
     expect(results).toHaveNoViolations();
+  });
+
+  describe('modal focus on close', () => {
+    const modal = (open: boolean) => (
+      <GuardrailFormLayout {...baseProps} open={open}>
+        <input aria-label="Name" />
+      </GuardrailFormLayout>
+    );
+
+    it('returns focus to the element that had it when the modal opened', async () => {
+      render(<button type="button">Open builder</button>);
+      const trigger = screen.getByRole('button', { name: 'Open builder' });
+      trigger.focus();
+
+      const { rerender } = render(modal(true));
+      await waitFor(() => expect(trigger).not.toHaveFocus());
+
+      rerender(modal(false));
+      await waitFor(() => expect(trigger).toHaveFocus());
+    });
+
+    it('returns focus when the host unmounts the modal instead of closing it', async () => {
+      render(<button type="button">Open builder</button>);
+      const trigger = screen.getByRole('button', { name: 'Open builder' });
+      trigger.focus();
+
+      const { unmount } = render(modal(true));
+      await waitFor(() => expect(trigger).not.toHaveFocus());
+
+      unmount();
+      await waitFor(() => expect(trigger).toHaveFocus());
+    });
+
+    it('returns focus inside a shadow root, where document.activeElement is the host', async () => {
+      const shadowHost = document.createElement('div');
+      document.body.appendChild(shadowHost);
+      const shadowRoot = shadowHost.attachShadow({ mode: 'open' });
+      const trigger = document.createElement('button');
+      trigger.textContent = 'Open builder';
+      shadowRoot.appendChild(trigger);
+      trigger.focus();
+      expect(document.activeElement).toBe(shadowHost);
+
+      const { rerender } = render(modal(true));
+      await waitFor(() => expect(shadowRoot.activeElement).not.toBe(trigger));
+
+      rerender(modal(false));
+      await waitFor(() => expect(shadowRoot.activeElement).toBe(trigger));
+      shadowHost.remove();
+    });
+
+    it('leaves focus alone when that element is gone by the time it closes', async () => {
+      const { unmount: removeTrigger } = render(<button type="button">Open builder</button>);
+      screen.getByRole('button', { name: 'Open builder' }).focus();
+
+      const { rerender } = render(modal(true));
+      await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+      removeTrigger();
+
+      rerender(modal(false));
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+      expect(document.activeElement).toBe(document.body);
+    });
   });
 });

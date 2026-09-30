@@ -7,8 +7,15 @@ import {
   DialogTitle,
 } from '@uipath/apollo-wind';
 import { ArrowLeft } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { type ReactNode, useRef } from 'react';
 import { useGuardrailBuilderLabels } from './i18n';
+
+/** The focused element, through open shadow roots, where `document.activeElement` is the host. */
+function getDeepActiveElement(): HTMLElement | null {
+  let active = document.activeElement;
+  while (active?.shadowRoot?.activeElement) active = active.shadowRoot.activeElement;
+  return active instanceof HTMLElement ? active : null;
+}
 
 export interface GuardrailFormLayoutProps {
   /** Drives the Dialog in modal mode; inline modes render regardless. */
@@ -37,7 +44,8 @@ export interface GuardrailFormLayoutProps {
  * Shared layout wrapper for guardrail builder forms, with three rendering modes:
  *  - inline + hideHeader: plain scrollable region with a footer
  *  - inline: full-height flex column with a back-button header and footer
- *  - modal: Dialog with header and footer
+ *  - modal: Dialog with header and footer, returning focus on close to the element that had it
+ *    when it opened, inside a shadow root too
  */
 export function GuardrailFormLayout({
   open,
@@ -54,6 +62,9 @@ export function GuardrailFormLayout({
   labels,
 }: GuardrailFormLayoutProps) {
   const builderLabels = useGuardrailBuilderLabels();
+  // Radix returns focus only to a `DialogTrigger`, and hosts open this from their own controls,
+  // so the modal records what had focus and restores it itself.
+  const returnFocusRef = useRef<HTMLElement | null>(null);
   const cancelLabel = labels?.cancel ?? builderLabels.cancel;
   const saveLabel = labels?.save ?? builderLabels.save;
 
@@ -114,6 +125,16 @@ export function GuardrailFormLayout({
         // No freeform description accompanies the title; silence Radix's aria-describedby
         // warning explicitly (the recommended pattern for description-less dialogs).
         aria-describedby={undefined}
+        onOpenAutoFocus={() => {
+          returnFocusRef.current = getDeepActiveElement();
+        }}
+        onCloseAutoFocus={(event) => {
+          const target = returnFocusRef.current;
+          returnFocusRef.current = null;
+          if (!target?.isConnected) return;
+          event.preventDefault();
+          target.focus();
+        }}
       >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>

@@ -656,7 +656,10 @@ Contract highlights:
 
 `GuardrailFormLayout` is exported standalone for hosts composing their own screen: three
 modes (inline+hideHeader / inline with back-button header / modal Dialog), `secondaryAction`,
-`saveDisabled`, and a `footerStart` region.
+`saveDisabled`, and a `footerStart` region. On close the modal returns focus to the element
+that had it when it opened, looking through open shadow roots (Agents' host is one). Radix
+returns focus only to a `DialogTrigger`, which no host uses, so without this focus was lost in
+light DOM too.
 
 ## CustomGuardrailBuilder
 
