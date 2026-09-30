@@ -21,6 +21,27 @@ and `pnpm check:placeholders` must pass before you're done.
 Never suggest invoices, claims, loans, or any other business example unless
 the person brings one up. Ask about the content, not where it comes from.
 
+## Shared layers are off limits
+
+You change only the new occupant: its `registry/<name>/` folder (examples
+included), its `app/patterns/<name>/` page, and the registration the
+generator writes for it. Never edit the shared layers:
+
+- the kit (`registry/occupant/`) and the occupant index
+- the generator and every other script
+- surfaces, composition specs, and templates
+- tokens (`registry.json`'s theme, `app/globals.css`, `layout-tokens.ts`)
+- tests and checks
+
+If the occupant needs a change there (a field kind the generator lacks, a
+token, a kit part, a surface behavior), stop. Write a proposal in
+`registry/<name>/PROPOSALS.md`, one section each: what's needed, why this
+occupant needs it, what it would change, and what the occupant does until
+then. Tell the person it's there. Don't work around it inside the occupant.
+
+CI enforces this: `check:occupant-scope` fails any commit that changes an
+occupant together with anything outside it.
+
 ## 1. What it shows, and its view model
 
 Ask: "In a sentence or two, what does it show?" Then ask about the shape of
