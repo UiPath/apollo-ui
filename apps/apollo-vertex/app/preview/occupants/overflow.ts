@@ -25,10 +25,31 @@ export function overflowProblems(box: Element): string[] {
   });
   const saved = decorative.map((el) => [el, el.style.display] as const);
   for (const el of decorative) el.style.display = "none";
+  // The checks run with reduced motion, so a spinner is at rest there. Hold
+  // endless animations at their first frame while measuring, to match: a
+  // rotating ring otherwise overflows its box at some angles and not others.
+  const endless = box
+    .getAnimations({ subtree: true })
+    .filter(
+      (animation) =>
+        animation.effect?.getComputedTiming().endTime ===
+        Number.POSITIVE_INFINITY,
+    )
+    .map((animation) => {
+      const at = animation.currentTime;
+      const playing = animation.playState === "running";
+      animation.pause();
+      animation.currentTime = 0;
+      return { animation, at, playing };
+    });
   try {
     return measure(box);
   } finally {
     for (const [el, display] of saved) el.style.display = display;
+    for (const { animation, at, playing } of endless) {
+      animation.currentTime = at;
+      if (playing) animation.play();
+    }
   }
 }
 
@@ -41,6 +62,10 @@ function measure(box: Element): string[] {
     right: r.right - Number.parseFloat(style.paddingRight),
   };
   const problems: string[] = [];
+  // No room inside the padding: everything collapses to nothing, which
+  // would otherwise read as nothing overflowing.
+  if (bounds.right - bounds.left < 1 && box.childElementCount > 0)
+    return ["no room inside the padding"];
   for (const el of box.querySelectorAll("*")) {
     if (el instanceof SVGElement && !(el instanceof SVGSVGElement)) continue;
     // Hidden from assistive tech: decorative, like a glow or a ruler.
@@ -97,4 +122,25 @@ export async function afterLayout<T>(
   if (found) return found;
   if (frames <= 1) return null;
   return afterLayout(find, frames - 1);
+}
+
+/**
+ * Resolves once a width change has fully laid out: after layout, and after
+ * any transition it started (a side panel animates its width) has finished.
+ * Measuring mid-transition reads a box that's still moving.
+ */
+export async function settled(root: Element): Promise<void> {
+  await nextLayout();
+  // Only finite ones: a spinner or a pulse never finishes.
+  const finite = root
+    .getAnimations({ subtree: true })
+    .filter(
+      (animation) =>
+        animation.effect?.getComputedTiming().endTime !==
+        Number.POSITIVE_INFINITY,
+    );
+  await Promise.all(
+    finite.map((animation) => animation.finished.catch(() => null)),
+  );
+  await nextLayout();
 }

@@ -19,7 +19,12 @@ import {
   followedSurface,
   lowerLabel,
 } from "./workbench-model";
-import { defaultWidth, HOSTED_SURFACES } from "./workbench-url-state";
+import {
+  defaultWidth,
+  HOSTED_SURFACES,
+  occupantInset,
+  WIDTH_RANGE,
+} from "./workbench-url-state";
 
 /** Display labels as one sentence-case list: "Vertical, horizontal". */
 const listOf = (labels: string[]) =>
@@ -90,10 +95,14 @@ export function DetailsPanel({
         ? t("workbench_floor_unavailable")
         : floor === "clips"
           ? t("workbench_floor_none")
-          : t("workbench_floor_value", {
-              width: floor,
-              surface: lowerLabel(surface),
-            });
+          : t(
+              floor <= WIDTH_RANGE.min
+                ? "workbench_floor_lowest"
+                : "workbench_floor_value",
+              { width: floor, surface: lowerLabel(surface) },
+            );
+  // The surface's width, padding included: the box every width here uses.
+  const inset = occupantInset(spec);
   const specRows: [string, string][] = [
     [
       t("workbench_spec_surfaces"),
@@ -112,7 +121,12 @@ export function DetailsPanel({
             surface: lowerLabel(follows.name),
             width: spec.requires.minWidth,
           })
-        : t("workbench_px", { width: spec.requires.minWidth }),
+        : inset > 0
+          ? t("workbench_min_width_padded", {
+              width: spec.requires.minWidth + inset,
+              inner: spec.requires.minWidth,
+            })
+          : t("workbench_px", { width: spec.requires.minWidth }),
     ],
     [t("workbench_spec_floor"), floorText],
     [
@@ -156,6 +170,9 @@ export function DetailsPanel({
             </div>
           ))}
         </dl>
+        <p className="mt-2 text-muted-foreground">
+          {t("workbench_widths_note")}
+        </p>
       </section>
 
       <section>

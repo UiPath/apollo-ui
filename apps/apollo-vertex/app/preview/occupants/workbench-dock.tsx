@@ -3,6 +3,7 @@
 import { Ban, CircleCheck } from "lucide-react";
 import { type CSSProperties, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { SURFACE_HOSTS } from "@/app/_components/surface-hosts";
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -90,9 +91,14 @@ export function WorkbenchDock({
   return (
     <div
       data-workbench-dock
-      className="absolute inset-x-4 bottom-6 mx-auto flex w-fit max-w-full flex-wrap items-center gap-4 rounded-xl border border-border bg-background px-4 py-3 shadow-lg"
+      // Above the stage, whatever the occupant or template stacks inside it,
+      // with the stage blurred behind it.
+      className="absolute inset-x-4 bottom-6 z-10 mx-auto flex w-fit max-w-full flex-wrap items-center gap-4 rounded-xl border border-border bg-background/75 px-4 py-3 shadow-lg backdrop-blur-md"
     >
-      <PageMap surface={surface} />
+      <PageMap
+        regions={SURFACE_HOSTS[surface]?.regions ?? []}
+        name={surfaceLabel(surface).toLowerCase()}
+      />
       <Separator orientation="vertical" className="h-8" />
       <ToggleGroup
         type="single"
@@ -142,6 +148,7 @@ export function WorkbenchDock({
                 key={tick.name}
                 aria-hidden="true"
                 data-mark={tick.name}
+                data-at={tick.at}
                 style={markAt(tick.at)}
                 className={cn(
                   "pointer-events-none absolute start-(--at) bottom-0 h-1.5 w-px",

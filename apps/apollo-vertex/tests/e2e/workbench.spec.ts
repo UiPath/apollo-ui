@@ -1,61 +1,24 @@
-import { createRequire } from "node:module";
-import type { Page } from "@playwright/test";
 import { fitsSurface } from "@/lib/composition";
 import { OCCUPANT_SPECS, SURFACE_SPECS } from "@/lib/occupants.generated";
 import { surfaceLabel } from "@/lib/surface-labels";
 import { expect, test } from "./fixtures";
+import {
+  axeViolations,
+  choose,
+  floorMeasured,
+  open,
+  search,
+  stage,
+  status,
+  themeColors,
+} from "./workbench-helpers";
 
 /*
- * The occupant workbench (/preview/occupants): panels, surface switching,
- * the doesn't-fit card, the width status, the URL, and an axe scan.
+ * The occupant workbench (/preview/occupants), in the surface view: panels,
+ * surface switching, the doesn't-fit card, the width status, the theme, the
+ * header, the dock, the frame tag, the URL, and an axe scan. The template
+ * view and the per-occupant status checks have their own specs.
  */
-
-const AXE = createRequire(__filename).resolve("axe-core/axe.min.js");
-
-const open = async (page: Page, query = "") => {
-  await page.goto(`/preview/occupants${query}`);
-  await page.locator("[data-workbench]").waitFor();
-};
-const floorMeasured = (page: Page) =>
-  page
-    .locator("[data-workbench-spec='Measured floor']")
-    .filter({ hasNotText: "Measuring" })
-    // It's in the details panel, which starts closed.
-    .waitFor({ state: "attached" });
-const stage = (page: Page) => page.locator("[data-workbench-stage]");
-const status = (page: Page) => page.locator("[data-workbench-status]");
-const search = (page: Page) => new URL(page.url()).search;
-
-/** Picks a Sample or State option, as toggles or as a compact select. */
-async function choose(page: Page, label: string, option: string) {
-  const select = page.getByRole("combobox", { name: label });
-  if (await select.isVisible()) {
-    await select.click();
-    await page.getByRole("option", { name: option, exact: true }).click();
-  } else {
-    await page.getByRole("radio", { name: option, exact: true }).click();
-  }
-}
-
-/**
- * The colors that show which theme the workbench is in: its ground, the
- * dock, both panels' text, and the occupant's first card.
- */
-const themeColors = (page: Page) =>
-  page.evaluate(() => {
-    const style = (selector: string, property: "backgroundColor" | "color") => {
-      const el = document.querySelector(selector);
-      return el ? getComputedStyle(el)[property] : "missing";
-    };
-    return [
-      style("[data-workbench]", "backgroundColor"),
-      style("[data-workbench-dock]", "backgroundColor"),
-      style("#workbench-list h1", "color"),
-      style("#workbench-details h2", "color"),
-      style("[data-workbench-stage] [data-occupant] button", "backgroundColor"),
-      style("[data-workbench-stage] [data-occupant] p", "color"),
-    ];
-  });
 
 for (const { spec } of OCCUPANT_SPECS) {
   test(`${spec.name} shows in each surface it fits, and a card elsewhere`, async ({
@@ -133,7 +96,7 @@ test("switching surfaces moves the occupant and the page map", async ({
     page
       .locator("[data-workbench-map] [data-highlighted=true]")
       .evaluateAll((regions) =>
-        regions.map((r) => r.getAttribute("data-region")),
+        regions.map((r) => (r instanceof HTMLElement ? r.dataset.region : "")),
       );
   // The queue starts in the side panel: both side columns.
   expect(await highlighted()).toEqual(["start-panel", "end-panel"]);
@@ -231,7 +194,10 @@ test("a Patterns page opens the workbench with its occupant", async ({
   page,
 }) => {
   await page.goto("/patterns/queue");
-  const link = page.getByRole("link", { name: "occupant workbench" });
+  // The page's own link, not the nav's "Occupant workbench" entry.
+  const link = page
+    .locator("article")
+    .getByRole("link", { name: "occupant workbench", exact: true });
   const href = await link.getAttribute("href");
   expect(href).toBe("/preview/occupants?occupant=queue");
   await open(page, href?.replace("/preview/occupants", "") ?? "");
@@ -299,12 +265,20 @@ for (const site of ["light", "dark"] as const) {
   });
 }
 
-for (const width of [1280, 1512]) {
-  test(`the header is one row at ${width}px, with both panels open`, async ({
+for (const [width, view] of [
+  [1280, "surface"],
+  [1512, "surface"],
+  [1280, "template"],
+  [1512, "template"],
+] as const) {
+  test(`the header is one row at ${width}px in the ${view} view, with both panels open`, async ({
     page,
   }) => {
     await page.setViewportSize({ width, height: 800 });
-    await open(page, "?occupant=activity-timeline&details=open");
+    await open(
+      page,
+      `?occupant=activity-timeline&details=open${view === "template" ? "&view=template" : ""}`,
+    );
     const header = page.locator("[data-workbench-header]");
     const rows = await header.evaluate((el) =>
       [...el.children]
@@ -388,20 +362,6 @@ for (const theme of ["light", "dark"] as const) {
   test(`passes an axe scan, ${theme}`, async ({ page }) => {
     await open(page, `?occupant=queue${theme === "dark" ? "&theme=dark" : ""}`);
     await floorMeasured(page);
-    await page.addScriptTag({ path: AXE });
-    const violations = await page.evaluate(async () => {
-      const { axe } = window as unknown as {
-        axe: {
-          run: (context: Element) => Promise<{
-            violations: { id: string; nodes: { target: string[] }[] }[];
-          }>;
-        };
-      };
-      const result = await axe.run(document.querySelector("[data-workbench]")!);
-      return result.violations.map(
-        (v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`,
-      );
-    });
-    expect(violations).toEqual([]);
+    expect(await axeViolations(page)).toEqual([]);
   });
 }

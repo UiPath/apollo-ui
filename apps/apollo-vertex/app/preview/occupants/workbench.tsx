@@ -10,19 +10,24 @@ import { EXAMPLE_ROLES, type ExampleRole } from "@/lib/occupant-entry";
 import { surfaceLabel } from "@/lib/surface-labels";
 import { DetailsPanel } from "./details-panel";
 import { type Floor, FloorProbe } from "./floor-probe";
+import { NoFitCard } from "./no-fit-card";
 import { OccupantList } from "./occupant-list";
-import { afterLayout, overflowProblems } from "./overflow";
+import { afterLayout, overflowProblems, settled } from "./overflow";
+import { TemplateDock } from "./template-dock";
+import { TemplateStage } from "./template-stage";
 import { usePageTheme } from "./use-page-theme";
 import { WorkbenchDock } from "./workbench-dock";
 import { WorkbenchHeader } from "./workbench-header";
 import { lowerLabel, surfaceRange, widthStatus } from "./workbench-model";
 import {
+  defaultSlot,
   defaultSurface,
   defaultWidth,
   HOSTED_SURFACES,
-  occupantInset,
   serializeWorkbenchView,
+  slotFit,
   specFor,
+  templateFor,
   type WorkbenchView,
 } from "./workbench-url-state";
 
@@ -81,7 +86,10 @@ export function Workbench({ initial }: WorkbenchProps) {
         stageRef.current?.querySelector(
           `[data-slot=occupant-fixture] ${host.inner}`,
         ),
-    ).then((inner) => {
+    ).then(async (inner) => {
+      // Measure once the resize has finished animating, not mid-transition.
+      const fixture = inner?.closest("[data-slot=occupant-fixture]");
+      if (fixture) await settled(fixture);
       if (cancelled) return;
       setOverflow(
         inner ? { width: view.width, problems: overflowProblems(inner) } : null,
@@ -121,22 +129,27 @@ export function Workbench({ initial }: WorkbenchProps) {
 
   if (!spec || !surface || !host) return null;
   const claim = fitsSurface(surface, spec);
-  const inset = occupantInset(spec);
+  const templateHost = templateFor(view.template);
 
   const selectOccupant = (name: string) => {
     const next = specFor(name);
     const keep = next && fitsSurface(surface, next).fits;
     const nextSurface = keep ? view.surface : defaultSurface(next);
+    const nextTemplate = templateFor(view.template);
+    const keepSlot =
+      nextTemplate && next && slotFit(nextTemplate, view.slot, next).fits;
     update({
       occupant: name,
       surface: nextSurface,
       width: defaultWidth(next, nextSurface),
+      slot: keepSlot ? view.slot : defaultSlot(nextTemplate, next),
     });
   };
 
+  // Every width here is the surface's outer width, padding included: the
+  // slider, the frame tag, the floor, and the overflow check.
   const sampleFloor = measured[view.sample];
-  const floorOuter =
-    typeof sampleFloor === "number" ? sampleFloor + inset : null;
+  const floorOuter = typeof sampleFloor === "number" ? sampleFloor : null;
   const sampleFloors = EXAMPLE_ROLES.map((role) => measured[role]);
   const worstFloor: Floor | "measuring" = sampleFloors.some(
     (f) => f === "clips",
@@ -148,10 +161,10 @@ export function Workbench({ initial }: WorkbenchProps) {
   const range = surfaceRange(surface, spec);
   const current =
     claim.fits && overflow?.width === view.width ? overflow : null;
+  // The live overflow check decides Clips; the floor only places the marker.
   const status = widthStatus({
     width: view.width,
     range,
-    floor: floorOuter,
     overflows: (current?.problems.length ?? 0) > 0,
   });
 
@@ -183,6 +196,12 @@ export function Workbench({ initial }: WorkbenchProps) {
           onState={(state) => update({ state })}
           theme={view.theme}
           onTheme={(theme) => update({ theme })}
+          mode={view.mode}
+          onMode={(mode) => update({ mode })}
+          template={view.template}
+          onTemplate={(template) =>
+            update({ template, slot: defaultSlot(templateFor(template), spec) })
+          }
         />
 
         <div ref={stageAreaRef} className="relative min-h-0 flex-1">
@@ -190,14 +209,26 @@ export function Workbench({ initial }: WorkbenchProps) {
           <div
             ref={stageRef}
             data-workbench-stage
-            className="absolute inset-0 overflow-auto bg-[radial-gradient(color-mix(in_oklab,var(--color-border)_70%,transparent)_1px,transparent_1px)] bg-size-[--spacing(4)_--spacing(4)]"
+            // Its own stacking context: a template's z-index stays inside it.
+            className="absolute inset-0 isolate overflow-auto bg-[radial-gradient(color-mix(in_oklab,var(--color-border)_70%,transparent)_1px,transparent_1px)] bg-size-[--spacing(4)_--spacing(4)]"
           >
             {/* Room under the occupant for the dock, so it's never hidden behind it. */}
             <div
               style={dockSpace}
               className="flex min-h-full min-w-fit items-center justify-center p-8 pb-[calc(var(--dock-space)+--spacing(12))]"
             >
-              {claim.fits ? (
+              {templateHost && view.mode === "template" ? (
+                <TemplateStage
+                  host={templateHost}
+                  template={view.template}
+                  spec={spec}
+                  slot={view.slot}
+                  placement={view.placement}
+                  sample={view.sample}
+                  state={view.state}
+                  pageWidth={view.pageWidth}
+                />
+              ) : claim.fits ? (
                 // The page's ground under the surface, as in a template, and its edge.
                 <div
                   data-workbench-frame
@@ -230,40 +261,42 @@ export function Workbench({ initial }: WorkbenchProps) {
                   />
                 </div>
               ) : (
-                <section
-                  data-workbench-no-fit
-                  aria-labelledby="workbench-no-fit"
-                  className="max-w-md rounded-lg border border-border bg-background p-6 shadow-sm"
-                >
-                  <h3 id="workbench-no-fit" className="font-semibold">
-                    {t("workbench_no_fit_title", {
-                      occupant: spec.label,
-                      surface: lowerLabel(surface.name),
-                    })}
-                  </h3>
-                  <ul className="mt-2 list-disc ps-5 text-sm text-muted-foreground">
-                    {claim.reasons.map((reason) => (
-                      <li key={reason}>{reason}</li>
-                    ))}
-                  </ul>
-                  <p className="mt-3 text-sm">{t("workbench_no_fit_hint")}</p>
-                </section>
+                <NoFitCard
+                  title={t("workbench_no_fit_title", {
+                    occupant: spec.label,
+                    surface: lowerLabel(surface.name),
+                  })}
+                  reasons={claim.reasons}
+                />
               )}
             </div>
           </div>
 
-          <WorkbenchDock
-            spec={spec}
-            surface={surface.name}
-            onSurface={(name) =>
-              update({ surface: name, width: defaultWidth(spec, name) })
-            }
-            fitsHere={claim.fits}
-            width={view.width}
-            onWidth={(width) => update({ width })}
-            marks={{ ...range, floor: floorOuter }}
-            status={status}
-          />
+          {templateHost && view.mode === "template" ? (
+            <TemplateDock
+              host={templateHost}
+              spec={spec}
+              slot={view.slot}
+              onSlot={(slot) => update({ slot })}
+              placement={view.placement}
+              onPlacement={(placement) => update({ placement })}
+              pageWidth={view.pageWidth}
+              onPageWidth={(pageWidth) => update({ pageWidth })}
+            />
+          ) : (
+            <WorkbenchDock
+              spec={spec}
+              surface={surface.name}
+              onSurface={(name) =>
+                update({ surface: name, width: defaultWidth(spec, name) })
+              }
+              fitsHere={claim.fits}
+              width={view.width}
+              onWidth={(width) => update({ width })}
+              marks={{ ...range, floor: floorOuter }}
+              status={status}
+            />
+          )}
         </div>
       </main>
 
@@ -279,6 +312,7 @@ export function Workbench({ initial }: WorkbenchProps) {
 
       {/* Floors are measured out of sight, one probe per sample. */}
       {claim.fits &&
+        view.mode === "surface" &&
         createPortal(
           <div
             aria-hidden="true"

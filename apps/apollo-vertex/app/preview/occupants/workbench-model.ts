@@ -63,16 +63,19 @@ export function surfaceRange(surface: SurfaceSpec, spec: OccupantSpec) {
   };
 }
 
+/**
+ * Clips comes only from the live overflow check on the stage, which sees
+ * exactly what's shown: this sample, this state, this width. The measured
+ * floor is a marker, not a verdict.
+ */
 export function widthStatus(options: {
   width: number;
   range: { min: number | null; max: number | null };
-  /** The floor in outer px, or null when it isn't known yet. */
-  floor: number | null;
-  /** Whether the stage overflows at this width, measured. */
+  /** Whether the stage overflows at this width, measured after it settles. */
   overflows: boolean;
 }): WidthStatus {
-  const { width, range, floor, overflows } = options;
-  if (overflows || (floor !== null && width < floor)) return "clips";
+  const { width, range, overflows } = options;
+  if (overflows) return "clips";
   if (
     (range.min !== null && width < range.min) ||
     (range.max !== null && width > range.max)
