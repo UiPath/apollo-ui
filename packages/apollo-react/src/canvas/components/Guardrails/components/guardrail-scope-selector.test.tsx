@@ -127,6 +127,57 @@ describe('GuardrailScopeSelector', () => {
       expect(onChange).toHaveBeenCalledWith({ scopes: [] });
     });
 
+    it('keeps the chip clickable beside a stale scope, and the click replaces the value', () => {
+      const onChange = vi.fn();
+      // Saved as Agent + LLM calls before the definition narrowed to Agent.
+      render(
+        <GuardrailScopeSelector
+          {...defaultProps}
+          selector={{ scopes: ['Agent', 'Llm'] }}
+          allowedScopes={['Agent']}
+          lockSingleScope
+          onChange={onChange}
+        />
+      );
+
+      const chip = screen.getByRole('button', { name: 'Agent' });
+      expect(chip).toBeEnabled();
+      fireEvent.click(chip);
+      expect(onChange).toHaveBeenCalledWith({ scopes: ['Agent'] });
+    });
+
+    it('replaces a value holding only a disallowed scope', () => {
+      const onChange = vi.fn();
+      render(
+        <GuardrailScopeSelector
+          {...defaultProps}
+          selector={{ scopes: ['Llm'] }}
+          allowedScopes={['Agent']}
+          lockSingleScope
+          onChange={onChange}
+        />
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: 'Agent' }));
+      expect(onChange).toHaveBeenCalledWith({ scopes: ['Agent'] });
+    });
+
+    it('keeps the tools when a lone Tool scope replaces a stale value', () => {
+      const onChange = vi.fn();
+      render(
+        <GuardrailScopeSelector
+          {...defaultProps}
+          selector={{ scopes: ['Tool', 'Llm'], matchNames: ['ToolA'] }}
+          allowedScopes={['Tool']}
+          lockSingleScope
+          onChange={onChange}
+        />
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: 'Tools' }));
+      expect(onChange).toHaveBeenCalledWith({ scopes: ['Tool'], matchNames: ['ToolA'] });
+    });
+
     it('locks nothing with several allowed scopes, or an unselected lone one', () => {
       const { unmount } = render(
         <GuardrailScopeSelector

@@ -21,8 +21,9 @@ export interface GuardrailScopeSelectorProps {
   /** When provided, only these scopes are shown as options */
   allowedScopes?: GuardrailScope[];
   /**
-   * Lock the selection when `allowedScopes` holds a single scope and it is selected, as Agents'
-   * legacy builder does. Without it the lone chip toggles off, leaving no scope to save.
+   * Lock the selection once it is exactly the single scope `allowedScopes` holds, as Agents'
+   * legacy builder does. Until then a click on that chip replaces the value, dropping scopes the
+   * definition no longer allows. Without it the lone chip toggles off, leaving no scope to save.
    */
   lockSingleScope?: boolean;
   /** Validation messages; each renders as soon as it is present. */
@@ -64,11 +65,12 @@ export function GuardrailScopeSelector({
   const selectedScopes = useMemo(() => selector.scopes ?? [], [selector.scopes]);
   const hasTools = availableToolNames.length > 0;
   const [onlyAllowedScope, ...otherAllowedScopes] = allowedScopes ?? [];
+  // The lone chip only ever selects: a stale scope alongside it keeps it clickable, and the click
+  // replaces the value, so no disallowed scope survives under the lock.
+  const isSingleScopeLock =
+    lockSingleScope && onlyAllowedScope !== undefined && otherAllowedScopes.length === 0;
   const isScopeLocked =
-    lockSingleScope &&
-    onlyAllowedScope !== undefined &&
-    otherAllowedScopes.length === 0 &&
-    selectedScopes.includes(onlyAllowedScope);
+    isSingleScopeLock && selectedScopes.length === 1 && selectedScopes[0] === onlyAllowedScope;
   const visibleScopes = useMemo(() => {
     const scopes = allowedScopes ?? ALL_SCOPES;
     return hasTools ? scopes : scopes.filter((s) => s !== 'Tool');
@@ -87,9 +89,11 @@ export function GuardrailScopeSelector({
   const handleToggleScope = useCallback(
     (scope: GuardrailScope) => {
       const isSelected = selectedScopes.includes(scope);
-      const newScopes = isSelected
-        ? selectedScopes.filter((s) => s !== scope)
-        : [...selectedScopes, scope];
+      const newScopes = isSingleScopeLock
+        ? [scope]
+        : isSelected
+          ? selectedScopes.filter((s) => s !== scope)
+          : [...selectedScopes, scope];
       const hasToolScope = newScopes.includes('Tool');
       if (!hasToolScope) {
         onChange({ scopes: newScopes });
@@ -100,7 +104,7 @@ export function GuardrailScopeSelector({
         onChange({ scopes: newScopes, matchNames: selector.matchNames ?? [...availableToolNames] });
       }
     },
-    [selectedScopes, selector.matchNames, availableToolNames, onChange]
+    [isSingleScopeLock, selectedScopes, selector.matchNames, availableToolNames, onChange]
   );
 
   const handleToggleTool = useCallback(
