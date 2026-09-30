@@ -4,6 +4,7 @@ import { type FocusEvent, type KeyboardEvent, useId, useMemo, useRef, useState }
 import { GuardrailPaletteItem } from './components/guardrail-palette-item';
 import { GuardrailStatusBanner } from './components/guardrail-status-banner';
 import { GuardrailStatusChip } from './components/guardrail-status-chip';
+import { isByoGuardrailDefinition } from './definitions-enrich';
 import { getGuardrailPaletteItemId, groupGuardrailsForPalette } from './guardrail-palette-utils';
 import { type GuardrailPaletteLabels, useGuardrailPaletteLabels } from './i18n';
 import type { GuardrailPaletteDefinition } from './palette-types';
@@ -28,6 +29,12 @@ export interface GuardrailPaletteProps<
   error?: Error | null;
   /** Product lifecycle, not a package concern. */
   previewChip?: boolean;
+  /**
+   * Present bring-your-own entries as both products' legacy palettes do: named by their
+   * configuration (`byoValidatorName`) and sorted by it, with a "BYO" chip in place of the
+   * connector-name chip and an italic "Provider: {connector}" caption.
+   */
+  byoDisplay?: boolean;
   labels?: Partial<GuardrailPaletteLabels>;
   className?: string;
 }
@@ -36,19 +43,29 @@ export interface GuardrailPaletteProps<
 function definitionChips(
   definition: GuardrailPaletteDefinition,
   labels: GuardrailPaletteLabels,
-  previewChip: boolean
+  previewChip: boolean,
+  byoDisplay: boolean
 ) {
   return (
     <>
-      {definition.byoConnectorName !== undefined && (
-        <GuardrailStatusChip tone="success">{definition.byoConnectorName}</GuardrailStatusChip>
-      )}
+      {byoDisplay
+        ? isByoGuardrailDefinition(definition) && (
+            <GuardrailStatusChip tone="success">{labels.byo}</GuardrailStatusChip>
+          )
+        : definition.byoConnectorName !== undefined && (
+            <GuardrailStatusChip tone="success">{definition.byoConnectorName}</GuardrailStatusChip>
+          )}
       {previewChip && <GuardrailStatusChip tone="info">{labels.preview}</GuardrailStatusChip>}
       {definition.status === 'Unauthorised' && (
         <GuardrailStatusChip tone="warning">{labels.statusUnauthorized}</GuardrailStatusChip>
       )}
     </>
   );
+}
+
+/** A BYO entry's configuration name under `byoDisplay`; any other entry's display name. */
+function paletteEntryName(definition: GuardrailPaletteDefinition): string {
+  return definition.byoValidatorName ?? definition.displayName;
 }
 
 /**
@@ -65,6 +82,7 @@ export function GuardrailPalette<T extends GuardrailPaletteDefinition>({
   isLoading = false,
   error = null,
   previewChip = false,
+  byoDisplay = false,
   labels: labelOverrides,
   className,
 }: GuardrailPaletteProps<T>) {
@@ -74,8 +92,13 @@ export function GuardrailPalette<T extends GuardrailPaletteDefinition>({
   const [activeEntry, setActiveEntry] = useState(0);
 
   const groups = useMemo(
-    () => groupGuardrailsForPalette(ootbDefinitions, labels.uipathGroup),
-    [ootbDefinitions, labels.uipathGroup]
+    () =>
+      groupGuardrailsForPalette(
+        ootbDefinitions,
+        labels.uipathGroup,
+        byoDisplay ? paletteEntryName : undefined
+      ),
+    [ootbDefinitions, labels.uipathGroup, byoDisplay]
   );
 
   // With a create-custom entry there is still something to pick, so "no guardrails available"
@@ -202,9 +225,14 @@ export function GuardrailPalette<T extends GuardrailPaletteDefinition>({
                 {group.definitions.map((definition, definitionIndex) => (
                   <GuardrailPaletteItem
                     key={getGuardrailPaletteItemId(definition)}
-                    name={definition.displayName}
+                    name={byoDisplay ? paletteEntryName(definition) : definition.displayName}
                     description={definition.description}
-                    chips={definitionChips(definition, labels, previewChip)}
+                    chips={definitionChips(definition, labels, previewChip, byoDisplay)}
+                    caption={
+                      byoDisplay && definition.byoConnectorName !== undefined
+                        ? `${labels.provider}: ${definition.byoConnectorName}`
+                        : undefined
+                    }
                     // The only non-`Available` status a correctly filtered palette receives.
                     disabled={definition.status === 'Unauthorised'}
                     tabIndex={rovingEntry === groupOffset + definitionIndex ? 0 : -1}

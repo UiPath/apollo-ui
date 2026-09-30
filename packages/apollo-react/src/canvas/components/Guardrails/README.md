@@ -349,7 +349,8 @@ const { definitions, loading, error } = useGuardrailDefinitions({ baseUrl, tenan
 - **Grouping is the rule both products already ship** (`groupGuardrailsForPalette`, exported
   and pure): with no bring-your-own definitions, one unheaded group in payload order;
   otherwise one group per BYO `folderPath ?? byoConnectorName`, sorted by that key, then a
-  trailing UiPath group, with display-name sorting inside every group. One deliberate
+  trailing UiPath group, with display-name sorting inside every group (a caller renders other
+  names by passing `getName`, as the palette does under `byoDisplay`). One deliberate
   difference: an empty catalog produces **no** groups rather than one empty group, which is
   what makes the empty line reachable. Flow's own empty state is guarded on
   `groups.length === 0` and its implementation can never return that.
@@ -376,6 +377,10 @@ const { definitions, loading, error } = useGuardrailDefinitions({ baseUrl, tenan
 - **`previewChip` defaults to `false`**, the same call as the list: product lifecycle is not a
   package concern. Both hosts hardcode the chip today and both pass the prop, then drop it at
   GA without a release here.
+- **`byoDisplay` presents a BYO entry the way both products' legacy palettes do**: named by
+  its configuration (`byoValidatorName`) and sorted by it, a "BYO" chip in place of the
+  connector-name chip, and an italic "Provider: {connector}" caption. Off by default, which
+  keeps the display name and the connector chip. Group headings are unchanged either way.
 - **`isLoading` renders a polite loading line and `error` a `GuardrailStatusBanner`.** The
   loading line is an `<output>`, for its implicit `role="status"`: a polite live region, and the
   one native element that carries it without bringing styling of its own. Any definitions that
@@ -642,6 +647,11 @@ Contract highlights:
   Without slots the form falls back to a plain input / an "unavailable" note.
 - **Layout knobs for both hosts**: `inline`/`hideHeader`/`dialogMaxWidth`, `title` accepts a
   ReactNode (chips, links), `evalsTogglePlacement: 'form' | 'footer'`.
+- **Bring-your-own display is opt-in**, because the two products' legacy builders differ.
+  `byoDisplay` names a BYO definition by its configuration (`byoValidatorName`) in the computed
+  title, as both do; `providerField` adds a read-only Provider field above the name holding
+  `definition.byoConnectorName`, as Flow's does. A host composing its own `title` (Agents)
+  places its own BYO chip there.
 - Requires an ancestor `TooltipProvider`.
 
 `GuardrailFormLayout` is exported standalone for hosts composing their own screen: three

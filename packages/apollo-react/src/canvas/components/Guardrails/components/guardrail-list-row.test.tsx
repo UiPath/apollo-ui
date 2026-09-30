@@ -71,7 +71,10 @@ describe('GuardrailListRow', () => {
   it('renders the BYO connector as the provider line', () => {
     renderRow(BYO_GUARDRAIL);
 
-    expect(screen.getByText('Provider: Noma Security')).toBeInTheDocument();
+    const provider = screen.getByText('Provider: Noma Security');
+    // Italic with a title for the truncated text, as both products' legacy rows.
+    expect(provider).toHaveClass('italic');
+    expect(provider).toHaveAttribute('title', 'Provider: Noma Security');
   });
 
   it('falls back to the unknown-action label when a row has no action', () => {

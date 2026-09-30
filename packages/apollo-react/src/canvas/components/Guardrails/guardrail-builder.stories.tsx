@@ -206,6 +206,32 @@ export const StatusByoDisabled: Story = {
 };
 
 /**
+ * A bring-your-own definition with byoDisplay, which names the title by the configuration, and
+ * providerField, which shows the connector read-only above the name (Flow's legacy builder).
+ */
+export const ByoProviderField: Story = {
+  // The modal story's render, so docs wait for the button instead of opening a dialog.
+  ...EditModal,
+  args: {
+    ...EditModal.args,
+    definition: {
+      ...piiDefinition,
+      displayName: 'Vendor PII',
+      byoValidatorName: 'Customer data screen',
+      byoConnectorName: 'Acme Guard',
+    },
+    guardrail: {
+      ...existingGuardrail,
+      name: 'Customer data screen',
+      validatorType: 'byo',
+      byoValidatorName: 'Customer data screen',
+    },
+    byoDisplay: true,
+    providerField: true,
+  },
+};
+
+/**
  * The escalation recipient search and app picker are host capabilities. This story injects
  * demo implementations: a static user list and a fake picker button.
  */

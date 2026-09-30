@@ -110,6 +110,47 @@ describe('GuardrailPalette', () => {
     });
   });
 
+  describe('byoDisplay', () => {
+    it('names a BYO entry by its configuration, with a BYO chip and a provider caption', () => {
+      renderPalette({ ootbDefinitions: [BYO_FOLDER_DEFINITION, PII_DEFINITION], byoDisplay: true });
+
+      const entry = screen.getByRole('button', { name: /noma_prompt_injection/ });
+      expect(within(entry).getByText('BYO')).toBeInTheDocument();
+      expect(within(entry).getByText('Provider: Noma Security')).toHaveClass('italic');
+      expect(screen.queryByText('Noma prompt shield')).not.toBeInTheDocument();
+      // The connector no longer doubles as the chip; the folder heading is unchanged.
+      expect(within(entry).queryByText('Noma Security')).not.toBeInTheDocument();
+      expect(screen.getByRole('group', { name: 'Shared/Security' })).toBeInTheDocument();
+    });
+
+    it('sorts BYO entries by the configuration name they show', () => {
+      const first = {
+        ...BYO_CONNECTOR_ONLY_DEFINITION,
+        displayName: 'Zeta check',
+        byoValidatorName: 'Alpha configuration',
+      };
+      const second = {
+        ...BYO_CONNECTOR_ONLY_DEFINITION,
+        displayName: 'Alpha check',
+        byoValidatorName: 'Zeta configuration',
+        byoGuardrailConnectionId: 'connection-4',
+      };
+      renderPalette({ ootbDefinitions: [second, first], byoDisplay: true });
+
+      expect(entries().map((text) => text?.split('BYO')[0])).toEqual([
+        'Alpha configuration',
+        'Zeta configuration',
+      ]);
+    });
+
+    it('leaves UiPath entries as they are', () => {
+      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS, byoDisplay: true });
+
+      expect(screen.getByRole('button', { name: /^PII detection/ })).toBeInTheDocument();
+      expect(screen.getAllByText('BYO')).toHaveLength(2);
+    });
+  });
+
   describe('an unauthorized definition', () => {
     it('is offered, chipped and not choosable', () => {
       const onSelectOotb = vi.fn();

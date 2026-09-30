@@ -90,6 +90,8 @@ export interface GuardrailDefinition {
   usageNote?: React.ReactNode;
   /** Present for bring-your-own guardrail definitions; stamped onto saved values. */
   byoValidatorName?: string;
+  /** The connector behind a bring-your-own configuration, shown as its provider. */
+  byoConnectorName?: string;
 }
 
 /** `validatorType` persisted for bring-your-own guardrail definitions. */
