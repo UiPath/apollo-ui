@@ -41,7 +41,7 @@ export function OccupantList({
       <div className="flex flex-col gap-3 p-4">
         <Link
           href={docsHref}
-          data-workbench-back
+          data-slot="workbench-back"
           className="flex w-fit items-center gap-1 text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
         >
           <ArrowLeft aria-hidden className="size-4" />

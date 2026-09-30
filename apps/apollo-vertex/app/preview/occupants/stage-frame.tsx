@@ -21,7 +21,7 @@ export function StageFrame({
 }: StageFrameProps) {
   return (
     <div
-      data-workbench-frame
+      data-slot="workbench-frame"
       className={cn(
         "relative bg-background outline-1 outline-border",
         className,
@@ -30,7 +30,7 @@ export function StageFrame({
     >
       <span
         aria-hidden="true"
-        data-workbench-frame-tag
+        data-slot="workbench-frame-tag"
         className="pointer-events-none absolute start-0 bottom-full mb-1.5 whitespace-nowrap text-xs text-muted-foreground select-none"
       >
         {tag}

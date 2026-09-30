@@ -39,7 +39,7 @@ for (const { spec } of OCCUPANT_SPECS) {
           ),
         ).toBeVisible();
       } else {
-        const card = stage(page).locator("[data-workbench-no-fit]");
+        const card = stage(page).locator("[data-slot=workbench-no-fit]");
         await expect(card).toContainText(
           `${spec.label} doesn't go in the ${surfaceLabel(surface.name).toLowerCase()}`,
         );
@@ -94,7 +94,7 @@ test("switching surfaces moves the occupant and the page map", async ({
   await open(page, "?occupant=queue");
   const highlighted = () =>
     page
-      .locator("[data-workbench-map] [data-highlighted=true]")
+      .locator("[data-slot=workbench-map] [data-highlighted=true]")
       .evaluateAll((regions) =>
         regions.map((r) => (r instanceof HTMLElement ? r.dataset.region : "")),
       );
@@ -116,30 +116,27 @@ test("the width status: clips below the floor, outside the range, in range", asy
   // The queue follows the side panel's minimum, so its floor is below 280px.
   await open(page, "?occupant=queue");
   await floorMeasured(page);
-  await expect(page.locator("[data-workbench-width]")).toHaveText("280px");
-  await expect(status(page)).toHaveAttribute("data-workbench-status", "in");
+  await expect(page.locator("[data-slot=workbench-width]")).toHaveText("280px");
+  await expect(status(page)).toHaveAttribute("data-status", "in");
   await expect(status(page)).toHaveText("In range");
 
   const slider = page.getByRole("slider", { name: "Width" });
   await slider.focus();
   await page.keyboard.press("Home");
-  await expect(page.locator("[data-workbench-width]")).toHaveText("40px");
-  await expect(status(page)).toHaveAttribute("data-workbench-status", "clips");
+  await expect(page.locator("[data-slot=workbench-width]")).toHaveText("40px");
+  await expect(status(page)).toHaveAttribute("data-status", "clips");
   await expect(status(page)).toHaveText("Clips");
   await expect(slider).toHaveAttribute("aria-valuetext", /Clips/);
 
   // Narrower than the side panel ever is, wider than the floor.
   await open(page, "?occupant=queue&width=248");
   await floorMeasured(page);
-  await expect(status(page)).toHaveAttribute(
-    "data-workbench-status",
-    "outside",
-  );
+  await expect(status(page)).toHaveAttribute("data-status", "outside");
   await expect(status(page)).toHaveText("Outside range");
   await page.getByRole("slider", { name: "Width" }).focus();
   for (let step = 0; step < 8; step++) await page.keyboard.press("ArrowRight");
-  await expect(page.locator("[data-workbench-width]")).toHaveText("280px");
-  await expect(status(page)).toHaveAttribute("data-workbench-status", "in");
+  await expect(page.locator("[data-slot=workbench-width]")).toHaveText("280px");
+  await expect(status(page)).toHaveAttribute("data-status", "in");
 });
 
 test("the whole view round-trips through the URL", async ({ page }) => {
@@ -167,7 +164,7 @@ test("the whole view round-trips through the URL", async ({ page }) => {
   expect(url).not.toContain("list=");
 
   await page.reload();
-  await page.locator("[data-workbench]").waitFor();
+  await page.locator("[data-slot=workbench]").waitFor();
   expect(search(page)).toBe(url);
   await expect(page.locator("html")).toHaveClass(/\bdark\b/);
   await expect(
@@ -279,7 +276,7 @@ for (const [width, view] of [
       page,
       `?occupant=activity-timeline&details=open${view === "template" ? "&view=template" : ""}`,
     );
-    const header = page.locator("[data-workbench-header]");
+    const header = page.locator("[data-slot=workbench-header]");
     const rows = await header.evaluate((el) =>
       [...el.children]
         .filter((child) => !child.hasAttribute("inert"))
@@ -315,7 +312,7 @@ test("the occupant is never behind the dock", async ({ page }) => {
   const occupant = await stage(page)
     .locator("[data-slot=occupant-fixture]")
     .boundingBox();
-  const dock = await page.locator("[data-workbench-dock]").boundingBox();
+  const dock = await page.locator("[data-slot=workbench-dock]").boundingBox();
   expect((occupant?.y ?? 0) + (occupant?.height ?? 0)).toBeLessThanOrEqual(
     dock?.y ?? 0,
   );
@@ -325,8 +322,8 @@ test("the frame tag names the surface and width, just outside the frame", async 
   page,
 }) => {
   await open(page, "?occupant=queue");
-  const tag = page.locator("[data-workbench-frame-tag]");
-  const frame = page.locator("[data-workbench-frame]");
+  const tag = page.locator("[data-slot=workbench-frame-tag]");
+  const frame = page.locator("[data-slot=workbench-frame]");
   await expect(tag).toHaveText("Side panel · 280px");
   await expect(tag).toHaveAttribute("aria-hidden", "true");
   await expect(tag).toHaveCSS("pointer-events", "none");

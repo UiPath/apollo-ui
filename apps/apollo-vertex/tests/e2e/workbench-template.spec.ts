@@ -19,7 +19,7 @@ test("switching views keeps the occupant, sample, and state", async ({
   await page.setViewportSize({ width: 1920, height: 1000 });
   await open(page, "?occupant=queue&sample=stress&state=agent-updating");
   await page.getByRole("radio", { name: "Template", exact: true }).click();
-  await expect(page.locator("[data-workbench-frame-tag]")).toHaveText(
+  await expect(page.locator("[data-slot=workbench-frame-tag]")).toHaveText(
     "Detail page · Start panel · 1440px",
   );
   await expect(
@@ -48,11 +48,11 @@ test("a template slot the occupant doesn't fit shows why", async ({ page }) => {
   await open(page, "?occupant=queue&view=template");
   const header = page.getByRole("radio", { name: "Header, doesn't fit" });
   await header.click();
-  const card = stage(page).locator("[data-workbench-no-fit]");
+  const card = stage(page).locator("[data-slot=workbench-no-fit]");
   await expect(card).toContainText("Queue doesn't go in the header");
   await expect(card).toContainText("Works only in vertical surfaces");
   await expect(
-    page.locator("[data-workbench-map] [data-highlighted=true]"),
+    page.locator("[data-slot=workbench-map] [data-highlighted=true]"),
   ).toHaveAttribute("data-region", "header");
 });
 
@@ -78,7 +78,9 @@ test("the template's page width rules apply live", async ({ page }) => {
   const slider = page.getByRole("slider", { name: "Page width" });
   await slider.focus();
   await page.keyboard.press("Home");
-  await expect(page.locator("[data-workbench-page-width]")).toHaveText("480px");
+  await expect(page.locator("[data-slot=workbench-page-width]")).toHaveText(
+    "480px",
+  );
   await expect
     .poll(() => panelStates(page))
     .toEqual({
@@ -127,9 +129,9 @@ test("the template view round-trips through the URL", async ({ page }) => {
   expect(url).not.toContain("template=");
 
   await page.reload();
-  await page.locator("[data-workbench]").waitFor();
+  await page.locator("[data-slot=workbench]").waitFor();
   expect(search(page)).toBe(url);
-  await expect(page.locator("[data-workbench-frame-tag]")).toHaveText(
+  await expect(page.locator("[data-slot=workbench-frame-tag]")).toHaveText(
     "Detail page · End panel · 1432px",
   );
   await expect(
@@ -154,7 +156,7 @@ test("the dock stays above the template, reachable, with the stage blurred behin
   await page
     .locator("[data-template=detail-page] [data-occupant=queue]")
     .waitFor();
-  const dock = page.locator("[data-workbench-dock]");
+  const dock = page.locator("[data-slot=workbench-dock]");
   // Every control in the dock is what a pointer hits at its center.
   const hidden = await dock.evaluate((el) =>
     [...el.querySelectorAll("button, [role=slider]")]
@@ -173,7 +175,7 @@ test("the dock stays above the template, reachable, with the stage blurred behin
   );
   expect(hidden).toEqual([]);
   await page.getByRole("radio", { name: "Main, fits" }).click();
-  await expect(page.locator("[data-workbench-frame-tag]")).toContainText(
+  await expect(page.locator("[data-slot=workbench-frame-tag]")).toContainText(
     "Main",
   );
   await expect(dock).toHaveCSS("backdrop-filter", /blur/);

@@ -15,7 +15,7 @@ interface DockProps {
 export function Dock({ children }: DockProps) {
   return (
     <div
-      data-workbench-dock
+      data-slot="workbench-dock"
       className="absolute inset-x-4 bottom-6 z-10 mx-auto flex w-fit max-w-full flex-wrap items-center gap-4 rounded-xl border border-border bg-background/75 px-4 py-3 shadow-lg backdrop-blur-md"
     >
       {children}
@@ -141,7 +141,7 @@ export function DockSlider({
         {children}
       </span>
       <output
-        {...{ [`data-workbench-${measures}`]: true }}
+        data-slot={`workbench-${measures}`}
         className="w-16 text-end text-sm tabular-nums"
       >
         {t("workbench_px", { width: value })}

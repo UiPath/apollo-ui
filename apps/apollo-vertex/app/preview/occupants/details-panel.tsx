@@ -152,7 +152,9 @@ export function DetailsPanel({
           {specRows.map(([term, value]) => (
             <div key={term} className="contents">
               <dt className="text-muted-foreground">{term}</dt>
-              <dd data-workbench-spec={term}>{value}</dd>
+              <dd data-slot="workbench-spec-value" data-term={term}>
+                {value}
+              </dd>
             </div>
           ))}
         </dl>
@@ -163,7 +165,7 @@ export function DetailsPanel({
 
       <section>
         <h2 className="mb-2 font-semibold">{t("workbench_checks")}</h2>
-        <ul data-workbench-checks className="flex flex-col gap-1.5">
+        <ul data-slot="workbench-checks" className="flex flex-col gap-1.5">
           {HOSTED_SURFACES.map((s) => {
             // The selected surface at the chosen width; the others where they start.
             const at = s.name === surface ? width : defaultWidth(spec, s.name);
@@ -184,7 +186,7 @@ export function DetailsPanel({
           })}
           {overflow && (
             <Result pass={overflow.problems.length === 0}>
-              <span data-workbench-overflow>
+              <span data-slot="workbench-overflow">
                 {t(
                   overflow.problems.length === 0
                     ? "workbench_check_overflow_none"

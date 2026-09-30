@@ -124,7 +124,8 @@ export function WorkbenchDock({
           <Tooltip>
             <TooltipTrigger asChild>
               <span
-                data-workbench-status={status}
+                data-slot="workbench-status"
+                data-status={status}
                 className="flex shrink-0 items-center gap-1.5 text-sm"
               >
                 <span

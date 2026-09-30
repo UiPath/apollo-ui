@@ -45,7 +45,7 @@ export function OccupantTitle({ name }: OccupantTitleProps) {
   const spec = registeredSpec(name);
   return (
     <div
-      data-occupant-title
+      data-slot="occupant-title"
       className="flex flex-wrap items-center gap-x-3 gap-y-1"
     >
       <PageTitle>{spec.label}</PageTitle>
@@ -66,7 +66,7 @@ export function OpenInWorkbench({ name }: OpenInWorkbenchProps) {
   return (
     <p className="not-prose my-4">
       <Button asChild variant="outline" size="sm">
-        <Link href={workbenchHref(name)} data-workbench-entry>
+        <Link href={workbenchHref(name)} data-slot="workbench-entry">
           {name ? "Open in workbench" : "Open the workbench"}
           <LinkArrowIcon height="1em" aria-hidden="true" />
         </Link>

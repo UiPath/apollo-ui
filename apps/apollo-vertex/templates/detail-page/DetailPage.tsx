@@ -9,6 +9,7 @@ import {
   useLayoutEffect,
   useRef,
 } from "react";
+import { useTranslation } from "react-i18next";
 import { SidePanelSlotContext } from "@/components/ui/side-panel";
 import { cn } from "@/lib/utils";
 import {
@@ -100,6 +101,7 @@ export function DetailPage({
   className,
   ...props
 }: DetailPageProps) {
+  const { t } = useTranslation();
   const { config, open, ref, endWidth, endWidthRange } = state;
   const enabled = enabledPanels(config.panels);
   const hasStart = enabled.start && Boolean(startPanel);
@@ -269,7 +271,7 @@ export function DetailPage({
           {/* Only once measured, so the handle never reports a guessed range. */}
           {endPanelResizable && open.end && state.measured && (
             <PanelResizeHandle
-              label="Resize end panel"
+              label={t("detail_page_resize_end_panel")}
               value={endWidth}
               min={endWidthRange.min}
               max={endWidthRange.max}

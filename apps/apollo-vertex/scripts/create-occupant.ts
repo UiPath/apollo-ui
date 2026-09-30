@@ -364,6 +364,24 @@ const orientationSentence = both
 // --- Files ------------------------------------------------------------------
 
 const files: Record<string, string> = {};
+/** A doc comment, wrapped at 80 columns. */
+const docComment = (text: string, indent = "") => {
+  const lines: string[] = [];
+  let line = "";
+  for (const word of text.split(/\s+/)) {
+    if (`${indent} * ${line} ${word}`.length > 80 && line) {
+      lines.push(line);
+      line = word;
+    } else line = line ? `${line} ${word}` : word;
+  }
+  if (line) lines.push(line);
+  return lines.length === 1 && `${indent}/** ${lines[0]} */`.length <= 80
+    ? `${indent}/** ${lines[0]} */`
+    : `${indent}/**\n${lines.map((l) => `${indent} * ${l}`).join("\n")}\n${indent} */`;
+};
+/** A sentence that follows a colon: lowercase first letter, and its full stop. */
+const sentenceTail = (sentence: string) =>
+  `${sentence.replace(/^[A-Z](?![A-Z])/, (c) => c.toLowerCase()).replace(/\.?$/, ".")}`;
 const comment = (text: string, indent = "") => `${indent}/** ${text} */`;
 
 files[`registry/${occupantName}/${occupantName}.occupant.ts`] =
@@ -391,11 +409,9 @@ ${surfaces ? `  // It belongs in these surfaces only.\n  surfaces: ${JSON.string
 const hasStatus = fields.some((f) => f.kind === "status");
 const fieldType = (f: Field) =>
   f.kind === "status" ? "OccupantStatusValue" : "string";
-files[`registry/${occupantName}/${occupantName}.view-model.ts`] = `/**
- * The neutral view model for the ${label.toLowerCase()}: ${description.replace(/\.$/, "").replace(/^[A-Z]/, (c) => c.toLowerCase())}.
- * No domain terms. A solution's adapter maps its own data into it; the
- * occupant never sees the domain.
- */
+files[`registry/${occupantName}/${occupantName}.view-model.ts`] = `${docComment(
+  `The neutral view model for the ${label.toLowerCase()}: ${sentenceTail(description)} No domain terms. A solution's adapter maps its own data into it; the occupant never sees the domain.`,
+)}
 ${hasStatus ? '\nimport type { OccupantStatusValue } from "@/components/ui/occupant";\n' : ""}
 export interface ${item} {
   id: string;
@@ -496,8 +512,8 @@ const verticalList = "flex min-w-0 flex-col gap-3";
 const horizontalList =
   "grid min-w-0 grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] gap-x-6 gap-y-2";
 const listClass = both
-  ? `cn(orientation === "horizontal" ? "${horizontalList}" : "${verticalList}")`
-  : `"${horizontalOnly ? horizontalList : verticalList}"`;
+  ? `className={cn(orientation === "horizontal" ? "${horizontalList}" : "${verticalList}")}`
+  : `className="${horizontalOnly ? horizontalList : verticalList}"`;
 
 const listItems = (items: string) =>
   selectable
@@ -535,7 +551,7 @@ ${listItems("group.items")}
 ))}`;
 const itemsMarkup = grouped
   ? `<div ${listAria} role="group" className="flex min-w-0 flex-col gap-6">\n${groupsMarkup}\n</div>`
-  : `<ul ${listAria} className={${listClass}}>\n${listItems("visible")}\n</ul>`;
+  : `<ul ${listAria} ${listClass}>\n${listItems("visible")}\n</ul>`;
 const noMatch = filtered
   ? `{visible.length === 0 && (
   <p className="py-6 text-center text-sm text-muted-foreground wrap-anywhere">
@@ -602,13 +618,13 @@ const readyMarkup = ownScroll
   value={filter}
   onValueChange={setFilter}
   // A mask hides focus rings, so the list's ring is drawn here.
-  className="min-h-0 flex-1 gap-0 rounded-lg has-[[data-slot=tabs-content]:focus-visible]:ring-2 has-[[data-slot=tabs-content]:focus-visible]:ring-ring/50 has-[[data-slot=tabs-content]:focus-visible]:ring-inset"
+  className="min-h-0 flex-1 gap-0 rounded-lg has-[[data-slot=tabs-content]:focus-visible]:ring-2 has-[[data-slot=tabs-content]:focus-visible]:ring-ring has-[[data-slot=tabs-content]:focus-visible]:ring-inset"
 >
 ${tabsMarkup}
 ${scrollList("TabsContent value={filter}", listBody)}
 ${selectable ? pagerMarkup : ""}
 </Tabs>`
-    : `<div className="flex min-h-0 flex-1 flex-col rounded-lg has-[[data-scroll-list]:focus-visible]:ring-2 has-[[data-scroll-list]:focus-visible]:ring-ring/50 has-[[data-scroll-list]:focus-visible]:ring-inset">
+    : `<div className="flex min-h-0 flex-1 flex-col rounded-lg has-[[data-scroll-list]:focus-visible]:ring-2 has-[[data-scroll-list]:focus-visible]:ring-ring has-[[data-scroll-list]:focus-visible]:ring-inset">
 ${scrollList("div data-scroll-list", listBody)}
 ${pagerMarkup}
 </div>`
@@ -681,7 +697,7 @@ ${filtered ? 'const ALL = "all";\n\n' : ""}${
     : ""
 }type ${pascal}Props = OccupantViewProps<${pascal}ViewModel>${selectable ? " & OccupantSelectionProps" : ""};
 
-/** Occupant: ${description} */
+${docComment(`Occupant: ${sentenceTail(description)}`)}
 function ${pascal}({ view, state = "ready", onRetry${selectable ? ", currentId, onSelect" : ""} }: ${pascal}Props) {
   const { t } = useTranslation();
 ${componentBody}
