@@ -4,13 +4,9 @@ import type { WorkbenchTheme } from "./workbench-url-state";
 const THEMES: readonly WorkbenchTheme[] = ["light", "dark"];
 
 /**
- * Applies the workbench's theme to the whole page while it's open, and puts
- * the site's theme back when it closes. The site marks its theme on <html>
- * (a light or dark class, and color-scheme), and a class on the workbench
- * can add dark but never undo the site's, so the theme goes on <html> too.
- * Portaled parts (tooltips, menus) follow it that way. The site's stored
- * preference is never touched, and if the site re-applies its own theme
- * while the workbench is open, the workbench's wins again.
+ * Puts the workbench's theme on <html> while it's open, where the site keeps
+ * its own, and restores the site's after. The site's stored preference is
+ * never touched.
  */
 export function usePageTheme(theme: WorkbenchTheme) {
   useEffect(() => {

@@ -18,25 +18,10 @@ import { OCCUPANT_SPECS, SURFACE_SPECS } from "@/lib/occupants.generated";
 import type { PanelPlacement } from "@/templates/detail-page/detail-page.template";
 
 /**
- * Preview-only. The whole workbench view as readable query params, so a
- * link restores it:
- *
- *   occupant   a registered occupant's name
- *   surface    a registered surface's name
- *   sample     primary | secondary | stress
- *   state      ready | loading | empty | error | agent-updating
- *   theme      light | dark
- *   width      the surface's outer width, in px
- *   list       closed   (the occupant list)
- *   details    open     (the details panel, closed by default)
- *   view       template (surface by default)
- *   template   a registered template's name
- *   slot       the template slot the occupant is in
- *   placement  beside-header (a side slot's placement; below-header by default)
- *   page       the template's page width, in px
- *
- * Only values that differ from the defaults are written. Unknown or invalid
- * values fall back to the defaults.
+ * The whole workbench view as query params: occupant, surface, sample,
+ * state, theme, width, list=closed, details=open, view=template, template,
+ * slot, placement, page. Only non-default values are written; invalid ones
+ * fall back to the defaults.
  */
 export type WorkbenchTheme = "light" | "dark";
 export type WorkbenchMode = "surface" | "template";

@@ -31,13 +31,9 @@ export interface TemplateHost {
 }
 
 /**
- * How previews render each template with one occupant in it, by name, in
- * the order pickers list them: the occupant workbench's template view.
- *
- * To add a template (a dashboard, say): add its host here, with its spec,
- * labels, map regions, and a frame. The workbench's template picker shows
- * it with no other change. A unit test fails until every slot has a label
- * and a region.
+ * How the workbench renders each template with one occupant in it, in
+ * picker order. Adding a template: Creating occupants, "Add a surface or
+ * template".
  */
 export const TEMPLATE_HOSTS: Record<string, TemplateHost> = {
   "detail-page": {

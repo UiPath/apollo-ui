@@ -23,11 +23,8 @@ import { PanelResizeHandle } from "./PanelResizeHandle";
 import type { DetailPageState } from "./use-detail-page";
 
 /*
- * Slot dividers match the Shell sidebar's edge: an inset box-shadow in
- * --divider on a pointer-events-none overlay (::after), so they take no
- * layout space. --slot-divider-width is the line's thickness. Box-shadows
- * are dropped in forced-colors mode, so there the overlay draws a real 1px
- * border in CanvasText instead, still without taking layout space.
+ * Slot dividers: an inset box-shadow on an overlay, so they take no layout
+ * space. Forced colors drops shadows, so there the overlay draws a border.
  */
 const DIVIDER_OVERLAY =
   "after:pointer-events-none after:absolute after:inset-0 after:z-10 after:content-[''] forced-colors:after:shadow-none forced-colors:after:border-[CanvasText]";
@@ -40,13 +37,9 @@ const DIVIDER_INLINE_START =
   "after:shadow-[inset_var(--slot-divider-width)_0_0_0_var(--divider)] rtl:after:shadow-[inset_calc(-1*var(--slot-divider-width))_0_0_0_var(--divider)] forced-colors:after:border-s";
 
 /*
- * Open and close motion matches the Shell sidebar: the panel's clip box
- * animates its width, main reflows beside it, and the panel's content stays
- * at full width, revealed or clipped from its outer edge. Duration and
- * easing are the --panel-transition-duration and --panel-transition-easing
- * tokens (the Shell spring, sampled). Only while the hook marks the panel
- * transitioning, which it does for user-driven opens and closes only.
- * Reduced motion turns it off.
+ * Open and close: the panel's clip box animates its width with the panel
+ * transition tokens, for user-driven opens and closes only. Reduced motion
+ * turns it off.
  */
 const PANEL_CLIP_MOTION = [
   "data-[transitioning=true]:[transition-property:width]",
@@ -90,30 +83,13 @@ export interface DetailPageProps
 }
 
 /**
- * Detail page frame. A 3x2 grid: columns are start panel, main, end panel;
- * rows are header, body. By default the header spans all three columns and
- * the panels sit in the body row. A "beside-header" panel spans both rows
- * instead and the header starts or ends one column in. Only the spans
- * change, never the markup.
+ * Detail page frame: a grid of start panel, main, and end panel columns,
+ * under a header row. A beside-header panel spans both rows and the header
+ * moves over; only the spans change, never the markup. Closed panels stay
+ * mounted, 0 wide, inert, and invisible.
  *
- * The frame draws the dividers between slots as overlays on the slot
- * wrappers (see DIVIDER_OVERLAY), so they follow the layout and take no
- * space: panels are exactly their width. Surfaces draw no outer borders.
- *
- * Panels that are disabled or have no content are not rendered. Closed
- * panels stay mounted but take no space: their clip box is 0 wide, so
- * their `auto` column collapses, and they are inert and invisible.
- *
- * The start panel renders at START_PANEL_WIDTH.default through the
- * --detail-page-start-panel-width variable. The end panel is resizable. The frame sets its width through the
- * --detail-page-end-width custom property, which overrides the side
- * panel's own width variable, and turns its divider into a resize handle.
- * The side panel surface itself doesn't change.
- *
- * A "max" end width is laid out by the grid, not in px: main and the end
- * panel become equal 1fr tracks, with main's track minimum at 480px
- * (capped so the end panel keeps its own minimum). That is the 50/50 split
- * with main's floor, correct before the template is ever measured.
+ * A "max" end width is laid out by the grid: main and the end panel become
+ * equal tracks, with main's floor, correct before the template is measured.
  */
 export function DetailPage({
   state,

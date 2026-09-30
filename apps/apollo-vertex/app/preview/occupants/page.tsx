@@ -32,9 +32,7 @@ function docsPageBefore(): string {
  * shows up here with no changes.
  */
 export default function OccupantWorkbenchPage() {
-  // Client only, portaled to the body, with nothing that suspends: under the
-  // docs layout, a full-screen client page otherwise stays hidden
-  // (display: none) after hydration. So the URL is read on mount.
+  // Client only, portaled, and nothing suspends: the docs layout would hide it.
   const [initial, setInitial] = useState<{
     view: WorkbenchView;
     docsHref: string;

@@ -12,8 +12,6 @@ import { LAYOUT_TOKENS, PADDED_INSET_PX } from "@/lib/composition";
 export const sidePanelSurface = {
   name: "side-panel",
   width: { min: LAYOUT_TOKENS.sidePanelWidthMin },
-  // Inner width at the minimum, less the padded inset on both sides.
-  // fits() uses a slot's own width when it has one, and this otherwise.
   provides: {
     orientation: "vertical",
     width: { min: LAYOUT_TOKENS.sidePanelWidthMin - 2 * PADDED_INSET_PX },

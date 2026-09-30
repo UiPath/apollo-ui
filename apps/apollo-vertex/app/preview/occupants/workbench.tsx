@@ -209,7 +209,6 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
         />
 
         <div ref={stageAreaRef} className="relative min-h-0 flex-1">
-          {/* The stage: only the occupant, in the surface's real host. */}
           <div
             ref={stageRef}
             data-workbench-stage
@@ -298,7 +297,6 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
         overflow={current}
       />
 
-      {/* Floors are measured out of sight, one probe per sample. */}
       {claim.fits &&
         view.mode === "surface" &&
         createPortal(
