@@ -40,7 +40,7 @@ export function SidePanelHost({
       aria-label={label}
       padding={padding}
       scroll={scroll}
-      className={fill ? "w-full [--side-panel-width:100%]" : ""}
+      fill={fill}
     >
       {children}
     </SidePanel>

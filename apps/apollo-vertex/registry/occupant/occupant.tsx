@@ -23,6 +23,7 @@ function Occupant({ spec, className, ...props }: OccupantProps) {
 
 export { Occupant };
 export type { OccupantProps };
+export { OCCUPANT_ROW_ITEM_MIN_PX, occupantRowStyle } from "./occupant-layout";
 export type { OccupantStateViewProps } from "./occupant-state-view";
 // Re-exported so one import brings the whole kit (see AGENTS.md on barrels).
 export { OccupantStateView } from "./occupant-state-view";

@@ -1,16 +1,15 @@
 import { ContentArea } from "@/components/ui/content-area";
 import { PageHeader } from "@/components/ui/page-header";
 import { SidePanel } from "@/components/ui/side-panel";
-import type { SurfacePadding } from "@/lib/composition";
-import type { ScrollOwner } from "@/lib/composition";
+import type { ScrollOwner, SurfacePadding } from "@/lib/composition";
 import { occupantPadding, scrollOwner } from "@/lib/composition";
 import { contentAreaSurface } from "@/registry/content-area/content-area.surface";
 import { sidePanelSurface } from "@/registry/side-panel/side-panel.surface";
-import type { DetailPageSlotName } from "./detail-page.template";
 import { DetailPage } from "./DetailPage";
-import type { DetailPageState } from "./use-detail-page";
+import type { DetailPageSlotName } from "./detail-page.template";
 import { placeholderOccupant } from "./placeholder-occupants";
 import { SlotPlaceholder } from "./SlotPlaceholder";
+import type { DetailPageState } from "./use-detail-page";
 
 export type SlotPaddings = Record<DetailPageSlotName, SurfacePadding>;
 
@@ -51,11 +50,7 @@ export function DetailPageExample({
       state={state}
       header={
         <PageHeader padding={occupantPadding(header)}>
-          <SlotPlaceholder
-            occupant={header}
-            surface="page-header"
-            className="col-span-full min-h-11 flex-row gap-3 self-stretch"
-          />
+          <SlotPlaceholder occupant={header} surface="page-header" />
         </PageHeader>
       }
       startPanel={

@@ -76,15 +76,7 @@ export function DetailPageFrame({
         {own ? (
           occupant
         ) : (
-          <SlotPlaceholder
-            occupant={shown}
-            surface={surface.name}
-            className={
-              name === "header"
-                ? "col-span-full min-h-11 flex-row gap-3 self-stretch"
-                : ""
-            }
-          />
+          <SlotPlaceholder occupant={shown} surface={surface.name} />
         )}
       </Host>
     );

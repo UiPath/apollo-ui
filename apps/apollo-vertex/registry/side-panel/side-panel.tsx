@@ -72,6 +72,11 @@ interface SidePanelProps extends React.ComponentProps<"aside"> {
    * fades, and gives the occupant its full height to scroll itself.
    */
   scroll?: ScrollOwner;
+  /**
+   * Take the whole width it's given, instead of its own width. For a panel
+   * outside a template, like a preview; a template sets a panel's width.
+   */
+  fill?: boolean;
   /** Names the landmark for assistive tech. */
   "aria-label": string;
 }
@@ -80,6 +85,7 @@ function SidePanel({
   side,
   padding = "padded",
   scroll = "surface",
+  fill = false,
   className,
   children,
   ...props
@@ -106,7 +112,11 @@ function SidePanel({
       data-state={open ? "open" : "closed"}
       data-placement={placement}
       data-scroll={scroll}
-      className={cn(sidePanelVariants(), className)}
+      className={cn(
+        sidePanelVariants(),
+        fill && "w-full [--side-panel-width:100%]",
+        className,
+      )}
       {...props}
     >
       <div

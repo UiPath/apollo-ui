@@ -509,8 +509,10 @@ const cardMarkup = () => {
 };
 const usesCn = both || fields.some((f) => f.kind === "value");
 const verticalList = "flex min-w-0 flex-col gap-3";
+// Rows of items: each at least the kit's row item minimum wide.
+const horizontal = both || horizontalOnly;
 const horizontalList =
-  "grid min-w-0 grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] gap-x-6 gap-y-2";
+  "grid min-w-0 grid-cols-[repeat(auto-fill,minmax(var(--occupant-row-item-min),1fr))] gap-x-6 gap-y-2";
 const listClass = both
   ? `className={cn(orientation === "horizontal" ? "${horizontalList}" : "${verticalList}")}`
   : `className="${horizontalOnly ? horizontalList : verticalList}"`;
@@ -551,7 +553,7 @@ ${listItems("group.items")}
 ))}`;
 const itemsMarkup = grouped
   ? `<div ${listAria} role="group" className="flex min-w-0 flex-col gap-6">\n${groupsMarkup}\n</div>`
-  : `<ul ${listAria} ${listClass}>\n${listItems("visible")}\n</ul>`;
+  : `<ul ${listAria} ${listClass}${horizontal ? " style={occupantRowStyle}" : ""}>\n${listItems("visible")}\n</ul>`;
 const noMatch = filtered
   ? `{visible.length === 0 && (
   <p className="py-6 text-center text-sm text-muted-foreground wrap-anywhere">
@@ -642,7 +644,7 @@ const imports = [
   'import { useTranslation } from "react-i18next";',
   selectable && 'import { Button } from "@/components/ui/button";',
   selectable && 'import { Card } from "@/components/ui/card";',
-  `import { Occupant, ${hasStatus ? "OccupantStatus, " : ""}OccupantStateView, ${truncates ? "OccupantTruncatedText, " : ""} type OccupantViewProps${selectable ? ", type OccupantSelectionProps" : ""} } from "@/components/ui/occupant";`,
+  `import { Occupant, ${hasStatus ? "OccupantStatus, " : ""}OccupantStateView, ${truncates ? "OccupantTruncatedText, " : ""}${horizontal && !grouped ? "occupantRowStyle, " : ""} type OccupantViewProps${selectable ? ", type OccupantSelectionProps" : ""} } from "@/components/ui/occupant";`,
   filtered &&
     'import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";',
   ownScroll &&

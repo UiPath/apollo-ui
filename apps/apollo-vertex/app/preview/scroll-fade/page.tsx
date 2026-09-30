@@ -17,9 +17,9 @@ const MASKS: Record<ScrollFadeAxis, string> = {
 
 // Content sizes that scroll on the box's axis only.
 const CONTENT: Record<ScrollFadeAxis, string> = {
-  y: "h-[900px] w-full",
-  x: "h-full w-[900px]",
-  both: "h-[900px] w-[900px]",
+  y: "h-225 w-full",
+  x: "h-full w-225",
+  both: "h-225 w-225",
 };
 
 interface ScrollBoxProps {
