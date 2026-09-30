@@ -20,11 +20,7 @@ import {
   COLLAPSED_ONLY,
 } from '../../field-actions/collapse';
 import { InsertVariableAction } from '../../field-actions/insert-variable-action';
-import type {
-  LockableFieldType,
-  LockableValueFieldOption,
-  LockableValueFieldStrings,
-} from '../types';
+import type { QuickFieldType, QuickFormFieldOption, QuickFormFieldStrings } from '../types';
 import { FIELD_TYPE_META, FIELD_TYPE_ORDER } from '../types';
 
 export function FieldHeader({
@@ -49,20 +45,20 @@ export function FieldHeader({
   fieldId: string;
   fieldLabel: string;
   required?: boolean;
-  fieldType: LockableFieldType;
-  /** See LockableValueFieldProps.fieldTypes. */
-  fieldTypes?: readonly LockableFieldType[];
-  onFieldTypeChange?: (fieldType: LockableFieldType) => void;
+  fieldType: QuickFieldType;
+  /** See QuickFormFieldProps.fieldTypes. */
+  fieldTypes?: readonly QuickFieldType[];
+  onFieldTypeChange?: (fieldType: QuickFieldType) => void;
   onRequiredChange?: (required: boolean) => void;
   compact?: boolean;
   showFieldActions: boolean;
   onValueChange?: (value: string) => void;
-  variables: LockableValueFieldOption[];
+  variables: QuickFormFieldOption[];
   onGenerateWithAi?: (prompt: string) => void;
-  /** See LockableValueFieldProps.onInsertVariable. */
-  onInsertVariable?: (variable: LockableValueFieldOption) => void;
-  /** See LockableValueFieldStrings. */
-  strings: LockableValueFieldStrings;
+  /** See QuickFormFieldProps.onInsertVariable. */
+  onInsertVariable?: (variable: QuickFormFieldOption) => void;
+  /** See QuickFormFieldStrings. */
+  strings: QuickFormFieldStrings;
   headerActions?: ReactNode;
 }) {
   // Built together so the entry handed to `onInsertVariable` is the one the
@@ -71,8 +67,8 @@ export function FieldHeader({
   // child — on every render of every row, while the picker was closed.
   const [pickerItems, optionsBySelectionId] = useMemo(() => {
     // Ids come from tree position: neither labels nor values are required to be unique.
-    const byId = new Map<string, LockableValueFieldOption>();
-    const toItem = (v: LockableValueFieldOption, id: string): VariablePickerItem => {
+    const byId = new Map<string, QuickFormFieldOption>();
+    const toItem = (v: QuickFormFieldOption, id: string): VariablePickerItem => {
       byId.set(id, v);
       return {
         id,

@@ -169,7 +169,7 @@ const preview: Preview = {
               'Overlays',
               'UiPath',
               [
-                'Lockable Value Field',
+                'Quick Form Field',
                 'Variable Picker',
                 'Prompt Editor',
                 'Canvas',

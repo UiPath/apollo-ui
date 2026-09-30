@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { LockableValueField } from './lockable-value-field';
+import { QuickFormField } from './quick-form-field';
 import { FIELD_TYPE_META, FIELD_TYPE_ORDER } from './types';
 import { getLockedDisplayValue } from './utils';
 
@@ -10,7 +10,7 @@ import { getLockedDisplayValue } from './utils';
  * and modes, `fieldTypes`, the variable tree, caret-aware insert, Enter/Escape,
  * and `renderModeControl`.
  */
-describe('LockableValueField — divergences from apollo-wind', () => {
+describe('QuickFormField — divergences from apollo-wind', () => {
   describe('added field types', () => {
     it('offers every added type in the picker, in vocabulary order', () => {
       // The three added types.
@@ -32,7 +32,7 @@ describe('LockableValueField — divergences from apollo-wind', () => {
     it('offers only the types the consumer asks for', async () => {
       const onFieldTypeChange = vi.fn();
       render(
-        <LockableValueField
+        <QuickFormField
           locked={false}
           fieldType="string"
           fieldTypes={['string', 'integer', 'array']}
@@ -51,7 +51,7 @@ describe('LockableValueField — divergences from apollo-wind', () => {
 
     it('falls back to every renderable type when the consumer names none', async () => {
       render(
-        <LockableValueField
+        <QuickFormField
           locked={false}
           fieldType="string"
           onFieldTypeChange={vi.fn()}
@@ -72,14 +72,14 @@ describe('LockableValueField — divergences from apollo-wind', () => {
     // step is 1, so a fractional value is invalid and the browser rounds or
     // rejects it. Collapsing decimals onto `integer` loses the fraction.
     it('lets a decimal field accept a fractional value', () => {
-      render(<LockableValueField locked={false} fieldType="double" onValueChange={vi.fn()} />);
+      render(<QuickFormField locked={false} fieldType="double" onValueChange={vi.fn()} />);
       const input = screen.getByPlaceholderText('Decimal number value');
       expect(input).toHaveAttribute('type', 'number');
       expect(input).toHaveAttribute('step', 'any');
     });
 
     it('keeps integer stepless, so it still rejects a fraction', () => {
-      render(<LockableValueField locked={false} fieldType="integer" onValueChange={vi.fn()} />);
+      render(<QuickFormField locked={false} fieldType="integer" onValueChange={vi.fn()} />);
       const input = screen.getByPlaceholderText('Integer value');
       expect(input).toHaveAttribute('type', 'number');
       expect(input).not.toHaveAttribute('step');
@@ -88,7 +88,7 @@ describe('LockableValueField — divergences from apollo-wind', () => {
     it("gives a datetime field its own control, not the date type's", async () => {
       const user = userEvent.setup();
       const { container } = render(
-        <LockableValueField locked={false} fieldType="datetime" onValueChange={vi.fn()} />
+        <QuickFormField locked={false} fieldType="datetime" onValueChange={vi.fn()} />
       );
       // Both date triggers are the input group's control, so tell them apart by
       // what opens: only DateTimePicker offers a time of day.
@@ -101,7 +101,7 @@ describe('LockableValueField — divergences from apollo-wind', () => {
 
     it('still gives a date field the plain trigger, unchanged from upstream', () => {
       const { container } = render(
-        <LockableValueField locked={false} fieldType="date" onValueChange={vi.fn()} />
+        <QuickFormField locked={false} fieldType="date" onValueChange={vi.fn()} />
       );
       expect(
         container.querySelector('button[data-slot="input-group-control"]')
@@ -134,7 +134,7 @@ describe('LockableValueField — divergences from apollo-wind', () => {
     it('accepts variable and prompt as modes', () => {
       for (const mode of ['variable', 'prompt'] as const) {
         const { unmount } = render(
-          <LockableValueField locked={false} mode={mode} onValueChange={vi.fn()} />
+          <QuickFormField locked={false} mode={mode} onValueChange={vi.fn()} />
         );
         unmount();
       }
@@ -143,7 +143,7 @@ describe('LockableValueField — divergences from apollo-wind', () => {
     // Only `expression` is coerced for a type that cannot hold one.
     it('still pins a non-expression type out of expression mode', () => {
       render(
-        <LockableValueField
+        <QuickFormField
           locked
           fieldType="single-select"
           mode="expression"
@@ -158,7 +158,7 @@ describe('LockableValueField — divergences from apollo-wind', () => {
     // would coerce away, since it may have its own editor.
     it('offers a non-expression type its expression mode to the consumer', () => {
       render(
-        <LockableValueField
+        <QuickFormField
           locked={false}
           fieldType="single-select"
           mode="expression"
@@ -172,7 +172,7 @@ describe('LockableValueField — divergences from apollo-wind', () => {
     // ...but a select CAN be bound to a variable, so that mode must survive.
     it('lets a non-expression type use a variable binding', () => {
       render(
-        <LockableValueField
+        <QuickFormField
           locked={false}
           fieldType="single-select"
           mode="variable"
@@ -193,7 +193,7 @@ describe('LockableValueField — divergences from apollo-wind', () => {
       const user = userEvent.setup();
       const onValueBlur = vi.fn();
       render(
-        <LockableValueField
+        <QuickFormField
           locked={false}
           value="hi"
           onValueChange={vi.fn()}
@@ -209,7 +209,7 @@ describe('LockableValueField — divergences from apollo-wind', () => {
     it('reverts to the value as of focus on Escape', async () => {
       const user = userEvent.setup();
       const onValueChange = vi.fn();
-      render(<LockableValueField locked={false} value="committed" onValueChange={onValueChange} />);
+      render(<QuickFormField locked={false} value="committed" onValueChange={onValueChange} />);
       const input = screen.getByPlaceholderText('String value');
       await user.click(input);
       await user.keyboard('{Escape}');
@@ -220,7 +220,7 @@ describe('LockableValueField — divergences from apollo-wind', () => {
       const user = userEvent.setup();
       const onValueChange = vi.fn();
       render(
-        <LockableValueField
+        <QuickFormField
           locked={false}
           value="ab"
           onValueChange={onValueChange}
@@ -243,7 +243,7 @@ describe('LockableValueField — divergences from apollo-wind', () => {
       const user = userEvent.setup();
       const onValueChange = vi.fn();
       render(
-        <LockableValueField
+        <QuickFormField
           locked={false}
           value="hello"
           onValueChange={onValueChange}
@@ -261,7 +261,7 @@ describe('LockableValueField — divergences from apollo-wind', () => {
     it('renders the entries exactly as supplied, inventing no root', async () => {
       const user = userEvent.setup();
       render(
-        <LockableValueField
+        <QuickFormField
           locked={false}
           onValueChange={vi.fn()}
           variables={[{ label: 'Item ID', value: 'item.id', type: 'number' }]}
@@ -277,7 +277,7 @@ describe('LockableValueField — divergences from apollo-wind', () => {
       const user = userEvent.setup();
       const onValueChange = vi.fn();
       render(
-        <LockableValueField
+        <QuickFormField
           locked={false}
           onValueChange={onValueChange}
           variables={[
@@ -302,7 +302,7 @@ describe('LockableValueField — divergences from apollo-wind', () => {
       for (const mode of ['variable', 'prompt'] as const) {
         const render_ = vi.fn((m: string) => <span>{m} editor</span>);
         const { unmount } = render(
-          <LockableValueField
+          <QuickFormField
             locked={false}
             mode={mode}
             onValueChange={vi.fn()}
@@ -319,7 +319,7 @@ describe('LockableValueField — divergences from apollo-wind', () => {
       for (const mode of ['literal', 'expression'] as const) {
         const render_ = vi.fn(() => <span>{mode} taken over</span>);
         const { unmount } = render(
-          <LockableValueField
+          <QuickFormField
             locked={false}
             mode={mode}
             onValueChange={vi.fn()}
@@ -337,7 +337,7 @@ describe('LockableValueField — divergences from apollo-wind', () => {
 
     it('keeps the built-in control when the consumer returns nothing for that mode', () => {
       render(
-        <LockableValueField
+        <QuickFormField
           locked={false}
           mode="literal"
           onValueChange={vi.fn()}
@@ -349,7 +349,7 @@ describe('LockableValueField — divergences from apollo-wind', () => {
 
     // An unhandled mode must degrade to the literal editor, not an empty row.
     it('falls back to the built-in control when the consumer renders nothing', () => {
-      render(<LockableValueField locked={false} mode="variable" onValueChange={vi.fn()} />);
+      render(<QuickFormField locked={false} mode="variable" onValueChange={vi.fn()} />);
       expect(screen.getByPlaceholderText('String value')).toBeInTheDocument();
     });
   });

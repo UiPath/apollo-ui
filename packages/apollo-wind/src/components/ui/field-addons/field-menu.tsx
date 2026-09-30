@@ -81,7 +81,7 @@ const DEFAULT_MODES: ValueMode[] = ['literal', 'expression'];
 
 /**
  * One selectable mode in a value-mode dropdown: icon and label, with an optional description.
- * Shared with LockableValueField's mode dropdown, and not exported from the package.
+ * Shared with QuickFormField's mode dropdown, and not exported from the package.
  */
 export function ValueModeMenuItem({
   icon: Icon,
@@ -101,7 +101,7 @@ export function ValueModeMenuItem({
   return (
     <DropdownMenuItem
       // A single choice among modes, which screen readers announce as checked or not, as a radio
-      // item does. Radix's own radio item needs a radio group, which LockableValueField lacks.
+      // item does. Radix's own radio item needs a radio group, which QuickFormField lacks.
       role="menuitemradio"
       aria-checked={active}
       className="flex-col items-start gap-0.5 py-2"

@@ -18,8 +18,8 @@ import { cn } from '@/lib';
 import { FieldMenu, type FieldMenuItem } from '../field-addons/field-menu';
 import { FieldHeader } from './components/field-header';
 import { LockToggleButton } from './components/lock-toggle-button';
-import type { LockableValueFieldProps } from './types';
-import { DEFAULT_STRINGS, FIELD_TYPE_META } from './types';
+import type { QuickFormFieldProps } from './types';
+import { DEFAULT_QUICK_FORM_FIELD_STRINGS, FIELD_TYPE_META } from './types';
 import {
   DEFAULT_SELECT_OPTIONS,
   formatDateValue,
@@ -30,9 +30,15 @@ import {
 } from './utils';
 
 /**
- * LockableValueField: a field that can be locked to read-only, typed as one of
- * several data types, and expressed in one of four modes (`literal`,
- * `expression`, `variable`, `prompt`).
+ * A Quick Form is assembled by end users, like a form builder. QuickFormField is
+ * the control for an individual field within it, and carries its own
+ * configuration controls: a lock that makes it read-only, a data-type switch
+ * that swaps the control, a Required toggle, and a value-mode switch across
+ * `literal`, `expression`, `variable` and `prompt`.
+ *
+ * Only use it within a quick form builder. For standard forms, compose the
+ * form-field anatomy (`FormField`, `FormFieldLabel`, `InputGroup`, …) or
+ * describe them to `MetadataForm`.
  *
  * - Literal and expression have built-in controls; `renderModeControl`
  *   supplies the control for any mode, and `variable` / `prompt` need it.
@@ -47,7 +53,7 @@ import {
  * AI-assist button renders only with `onGenerateWithAi`, and file uploads
  * aren't persisted anywhere.
  */
-export function LockableValueField({
+export function QuickFormField({
   value = '',
   onValueChange,
   onValueBlur,
@@ -82,9 +88,12 @@ export function LockableValueField({
   variables = [],
   id,
   className,
-}: LockableValueFieldProps) {
+}: QuickFormFieldProps) {
   // Memoized so FieldHeader and LockToggleButton get a stable object.
-  const strings = useMemo(() => ({ ...DEFAULT_STRINGS, ...stringOverrides }), [stringOverrides]);
+  const strings = useMemo(
+    () => ({ ...DEFAULT_QUICK_FORM_FIELD_STRINGS, ...stringOverrides }),
+    [stringOverrides]
+  );
   const generatedId = useId().replace(/:/g, '');
   // The component owns its input, so caret-aware insert and Enter/Escape live
   // here instead of behind an exposed ref.

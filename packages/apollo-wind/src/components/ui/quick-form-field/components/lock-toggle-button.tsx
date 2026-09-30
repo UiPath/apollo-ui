@@ -1,7 +1,7 @@
 import { LockKeyhole, LockKeyholeOpen } from 'lucide-react';
 import { InputGroupButton } from '@/components/ui/input-group';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import type { LockableValueFieldStrings } from '../types';
+import type { QuickFormFieldStrings } from '../types';
 
 /**
  * The lock/unlock toggle shared by both the InputGroup and plain-Input
@@ -15,8 +15,8 @@ export function LockToggleButton({
 }: {
   locked: boolean;
   onLockedChange?: (locked: boolean) => void;
-  /** See LockableValueFieldStrings. */
-  strings: LockableValueFieldStrings;
+  /** See QuickFormFieldStrings. */
+  strings: QuickFormFieldStrings;
 }) {
   const interactive = !!onLockedChange;
   return (

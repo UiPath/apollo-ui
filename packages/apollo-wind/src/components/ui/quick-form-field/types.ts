@@ -17,11 +17,11 @@ import type { ValueMode } from '../field-addons/value-mode-strings';
 
 // Wind's value-mode vocabulary: a literal, a JS expression, a bound workflow
 // variable, or a prompt an agent fills in.
-export type LockableValueFieldMode = ValueMode;
+export type QuickFormFieldMode = ValueMode;
 
 // `double` and `datetime` keep the fraction and the time of day that `integer`
 // and `date` would drop.
-export type LockableFieldType =
+export type QuickFieldType =
   | 'string'
   | 'integer'
   | 'double'
@@ -42,7 +42,7 @@ interface FieldTypeMeta {
   fixedDescription: string;
 }
 
-export const FIELD_TYPE_META: Record<LockableFieldType, FieldTypeMeta> = {
+export const FIELD_TYPE_META: Record<QuickFieldType, FieldTypeMeta> = {
   string: {
     label: 'String',
     icon: ALargeSmall,
@@ -122,7 +122,7 @@ export const FIELD_TYPE_META: Record<LockableFieldType, FieldTypeMeta> = {
   },
 };
 
-export const FIELD_TYPE_ORDER: LockableFieldType[] = [
+export const FIELD_TYPE_ORDER: QuickFieldType[] = [
   'string',
   'integer',
   'double',
@@ -144,14 +144,14 @@ export const FIELD_TYPE_ORDER: LockableFieldType[] = [
  * Type labels live here rather than in FIELD_TYPE_META: the meta table defines
  * the vocabulary, these are display strings.
  */
-export interface LockableValueFieldStrings {
+export interface QuickFormFieldStrings {
   fieldTypeTooltip: string;
   fieldTypeAriaLabel: string;
-  typeLabels: Partial<Record<LockableFieldType, string>>;
+  typeLabels: Partial<Record<QuickFieldType, string>>;
   /** The literal mode item's label per type; falls back to FIELD_TYPE_META's `fixedLabel`. */
-  literalLabels: Partial<Record<LockableFieldType, string>>;
+  literalLabels: Partial<Record<QuickFieldType, string>>;
   /** The literal mode item's description per type; falls back to FIELD_TYPE_META's `fixedDescription`. */
-  literalDescriptions: Partial<Record<LockableFieldType, string>>;
+  literalDescriptions: Partial<Record<QuickFieldType, string>>;
   /** The computed field name in literal mode, from the (localized) type label. */
   valueFieldLabel: (typeLabel: string) => string;
   /** The computed field name in expression mode, from the (localized) type label. */
@@ -195,7 +195,7 @@ export interface LockableValueFieldStrings {
   unlockedHint: string;
 }
 
-export const DEFAULT_STRINGS: LockableValueFieldStrings = {
+export const DEFAULT_QUICK_FORM_FIELD_STRINGS: QuickFormFieldStrings = {
   fieldTypeTooltip: 'Type',
   fieldTypeAriaLabel: 'Field type',
   typeLabels: {},
@@ -240,7 +240,7 @@ export const DEFAULT_STRINGS: LockableValueFieldStrings = {
   unlockedHint: 'Editable. Click to make read-only.',
 };
 
-export interface LockableValueFieldOption {
+export interface QuickFormFieldOption {
   label: string;
   value: string;
   /**
@@ -248,12 +248,12 @@ export interface LockableValueFieldOption {
    * consumer knows whether the path a grouping implies is real, so the tree
    * invents neither a root nor a type.
    */
-  children?: LockableValueFieldOption[];
+  children?: QuickFormFieldOption[];
   /** Type badge shown against the entry. */
   type?: string;
 }
 
-export interface LockableValueFieldMoreActions {
+export interface QuickFormFieldMoreActions {
   onClear?: () => void;
   onRefresh?: () => void;
 }
@@ -268,7 +268,7 @@ export interface VariableInsertContext {
   caret: { start: number; end: number } | null;
 }
 
-export interface LockableValueFieldProps {
+export interface QuickFormFieldProps {
   /** Current field value. Encoding depends on fieldType (e.g. multi-select is a JSON array string). */
   value?: string;
   /** Called when the user edits the value (only fires while unlocked). */
@@ -293,11 +293,11 @@ export interface LockableValueFieldProps {
    */
   trailingAddon?: ReactNode;
   /** Adds a field-level overflow menu beside the value control. */
-  more?: LockableValueFieldMoreActions;
+  more?: QuickFormFieldMoreActions;
   /** How the value is expressed. Defaults to 'literal'; `expression` falls back to `literal` for types that cannot hold one. */
-  mode?: LockableValueFieldMode;
+  mode?: QuickFormFieldMode;
   /** Called when the user switches modes. */
-  onModeChange?: (mode: LockableValueFieldMode) => void;
+  onModeChange?: (mode: QuickFormFieldMode) => void;
   /**
    * Optional expression editor used in place of the built-in monospace input.
    * Consumers can use this to supply a syntax-aware editor such as Monaco.
@@ -313,7 +313,7 @@ export interface LockableValueFieldProps {
     onBlur?: () => void;
     readOnly: boolean;
     placeholder: string;
-    fieldType: LockableFieldType;
+    fieldType: QuickFieldType;
     'aria-invalid'?: AriaAttributes['aria-invalid'];
     'aria-describedby'?: string;
     'aria-errormessage'?: string;
@@ -329,7 +329,7 @@ export interface LockableValueFieldProps {
    * rather than rendering an empty row.
    */
   renderModeControl?: (
-    mode: LockableValueFieldMode,
+    mode: QuickFormFieldMode,
     props: {
       id: string;
       value: string;
@@ -337,7 +337,7 @@ export interface LockableValueFieldProps {
       onBlur?: () => void;
       readOnly: boolean;
       placeholder: string;
-      fieldType: LockableFieldType;
+      fieldType: QuickFieldType;
       'aria-invalid'?: AriaAttributes['aria-invalid'];
       'aria-describedby'?: string;
       'aria-errormessage'?: string;
@@ -354,7 +354,7 @@ export interface LockableValueFieldProps {
    * to splice at the caret, or append when no caret has been placed.
    */
   onInsertVariable?: (
-    variable: LockableValueFieldOption,
+    variable: QuickFormFieldOption,
     /**
      * Where the caret was, so the consumer can splice rather than append.
      * The component tracks this because it owns the input; `caret` is null
@@ -363,15 +363,15 @@ export interface LockableValueFieldProps {
     context: VariableInsertContext
   ) => void;
   /** The field's data type. Defaults to 'string'. Determines which control renders the value. */
-  fieldType?: LockableFieldType;
+  fieldType?: QuickFieldType;
   /**
    * Which types the picker offers, in display order. Defaults to
    * `FIELD_TYPE_ORDER`, every type the component can render; a surface with a
    * narrower vocabulary of its own offers fewer.
    */
-  fieldTypes?: readonly LockableFieldType[];
+  fieldTypes?: readonly QuickFieldType[];
   /** Called when the user switches the field type. */
-  onFieldTypeChange?: (fieldType: LockableFieldType) => void;
+  onFieldTypeChange?: (fieldType: QuickFieldType) => void;
   /** Shows a required-field asterisk next to the default label. Ignored when `label` is provided. */
   required?: boolean;
   /** Called when the user toggles required/optional. Renders the Required switch when provided. */
@@ -383,8 +383,8 @@ export interface LockableValueFieldProps {
    * only the type; the accessible label still falls back to it.
    */
   placeholder?: string;
-  /** Overrides for any subset of the user-visible text; see LockableValueFieldStrings. */
-  strings?: Partial<LockableValueFieldStrings>;
+  /** Overrides for any subset of the user-visible text; see QuickFormFieldStrings. */
+  strings?: Partial<QuickFormFieldStrings>;
   /** Field-specific validation feedback rendered immediately below the active control. */
   error?: ReactNode;
   /** Optional id for the inline validation message. */
@@ -400,7 +400,7 @@ export interface LockableValueFieldProps {
   /** Whether the AI-assist and Insert-variable actions render at all. Set to false for read-only reviewer contexts where field configuration isn't editable. Defaults to true. */
   showFieldActions?: boolean;
   /** Options for 'single-select' / 'multi-select' field types. Defaults to a small set of demo options. */
-  options?: LockableValueFieldOption[];
+  options?: QuickFormFieldOption[];
   /**
    * Called with the entered prompt when the user clicks Generate.
    *
@@ -412,7 +412,7 @@ export interface LockableValueFieldProps {
    * Variables offered by the "Insert variable" popover; clicking one appends its value to the
    * current value. The button is disabled when this is empty (the default).
    */
-  variables?: LockableValueFieldOption[];
+  variables?: QuickFormFieldOption[];
   id?: string;
   className?: string;
 }
