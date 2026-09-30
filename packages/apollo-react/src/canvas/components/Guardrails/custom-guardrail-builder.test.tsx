@@ -519,6 +519,30 @@ describe('CustomGuardrailBuilder', () => {
       expect(screen.getByTestId('host-app-picker')).toBeInTheDocument();
       expect(screen.getByTestId('host-help')).toBeInTheDocument();
     });
+
+    it('locks the recipient type with recipientTypeDisabled', () => {
+      render(
+        <CustomGuardrailBuilder
+          open
+          inline
+          hideHeader
+          guardrail={makeGuardrail({
+            action: {
+              $actionType: 'escalate',
+              app: { id: '', version: '', name: '' },
+              recipient: { type: 2, value: 'g1', displayName: 'Reviewers' },
+            },
+          })}
+          recipientTypeDisabled
+          onSave={vi.fn()}
+          onCancel={vi.fn()}
+        />
+      );
+
+      const recipientType = screen.getByRole('combobox', { name: /assign to/i });
+      expect(recipientType).toBeDisabled();
+      expect(recipientType).toHaveTextContent('Group');
+    });
   });
 
   describe('host errors', () => {

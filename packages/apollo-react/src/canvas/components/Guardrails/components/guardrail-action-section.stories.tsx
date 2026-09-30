@@ -249,6 +249,22 @@ export const EscalateWithErrors: Story = {
 };
 
 /**
+ * recipientTypeDisabled locks the recipient type at its current value, as Agents does for a
+ * tenant with group assignment off. The recipient stays editable.
+ */
+export const EscalateRecipientTypeLocked: Story = {
+  args: { action: escalateAction, onActionChange: () => {} },
+  render: () => (
+    <ActionSectionHost
+      initial={escalateAction}
+      recipientTypeDisabled
+      renderRecipientSearch={mockRecipientSearch}
+      renderAppPicker={mockAppPicker}
+    />
+  ),
+};
+
+/**
  * The renderStaticRecipient slot owns the email and group-name editors, where a host can offer
  * an asset instead of a literal value. Returning undefined falls back to the plain input.
  */

@@ -33,6 +33,8 @@ export interface GuardrailActionSectionProps {
   filterContent?: ReactNode;
   /** Validation messages; each renders as soon as it is present. */
   errors?: GuardrailActionErrors;
+  /** Lock the escalation recipient-type select at its current value. */
+  recipientTypeDisabled?: boolean;
   /** Per-string overrides; anything omitted resolves from the canvas lingui catalog. */
   labels?: Partial<GuardrailActionLabels>;
   renderRecipientSearch?: (ctx: GuardrailRecipientSearchContext) => ReactNode;
@@ -61,6 +63,7 @@ export function GuardrailActionSection({
   showFilter = false,
   filterContent,
   errors,
+  recipientTypeDisabled,
   labels: labelOverrides,
   renderRecipientSearch,
   renderStaticRecipient,
@@ -105,6 +108,7 @@ export function GuardrailActionSection({
           onChange={onActionChange}
           actionTypeSelect={actionTypeSelect}
           errors={errors}
+          recipientTypeDisabled={recipientTypeDisabled}
           labels={labels}
           renderRecipientSearch={renderRecipientSearch}
           renderStaticRecipient={renderStaticRecipient}

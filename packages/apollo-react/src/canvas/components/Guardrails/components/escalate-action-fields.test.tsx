@@ -45,6 +45,36 @@ describe('EscalateActionFields', () => {
         expect.objectContaining({ recipient: expectedRecipient })
       );
     });
+
+    it('locks the type at its current value with recipientTypeDisabled', () => {
+      const onChange = vi.fn();
+      render(
+        <EscalateActionFields
+          {...baseProps}
+          action={makeAction({
+            recipient: { type: GuardrailRecipientType.StaticEmail, value: '' },
+          })}
+          onChange={onChange}
+          recipientTypeDisabled
+        />
+      );
+
+      const select = screen.getByRole('combobox');
+      expect(select).toBeDisabled();
+      expect(select).toHaveTextContent('Email address');
+      fireEvent.click(select);
+      expect(screen.queryByRole('option')).not.toBeInTheDocument();
+
+      // The recipient itself stays editable.
+      fireEvent.change(screen.getByPlaceholderText('Enter email address'), {
+        target: { value: 'a@b.c' },
+      });
+      expect(onChange).toHaveBeenCalledWith(
+        expect.objectContaining({
+          recipient: { type: GuardrailRecipientType.StaticEmail, value: 'a@b.c' },
+        })
+      );
+    });
   });
 
   it('uses the renderRecipientSearch slot for user recipients', () => {

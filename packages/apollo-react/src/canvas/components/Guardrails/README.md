@@ -788,6 +788,9 @@ const [action, setAction] = useState<GuardrailAction>({
   this package never edits them.
 - **Asset recipients round-trip.** Types 4 and 6 display as their static siblings (3 and 5) in
   the type select, so a value written by a host asset editor never blanks the selection.
+- **`recipientTypeDisabled` locks the recipient type** at its current value, leaving the
+  recipient editable: Agents' rule for a tenant with group assignment off. `GuardrailBuilder`
+  and `CustomGuardrailBuilder` forward it.
 
 ### Escalation slots
 
