@@ -1,3 +1,20 @@
+## [@uipath/apollo-react-v6.65.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.64.1...@uipath/apollo-react@6.65.0) (2026-09-30)
+
+### Features
+
+* **apollo-react:** carry unmodelled guardrail recipient types through [AL-616] ([8c79a88](https://github.com/UiPath/apollo-ui/commit/8c79a8864cbc35137a2484f5130ef71a53bb118d))
+* **apollo-react:** lock a guardrail's single allowed scope [AL-616] ([e1fbaba](https://github.com/UiPath/apollo-ui/commit/e1fbaba356a5b0b2aaea5ffad31712c517f1fdbf))
+* **apollo-react:** lock the guardrail escalation recipient type [AL-616] ([25d6c9f](https://github.com/UiPath/apollo-ui/commit/25d6c9fac759e1e1d9b3720ed540e5cfea369aa8))
+* **apollo-react:** narrow the guardrail action types offered [AL-616] ([82e3824](https://github.com/UiPath/apollo-ui/commit/82e3824e5d156d0627e3f9b30ba816600a333ebc))
+* **apollo-react:** show bring-your-own guardrails as the legacy screens do [AL-616] ([cdd9c22](https://github.com/UiPath/apollo-ui/commit/cdd9c2208912305acd5affdc0fb317b20f5fbe02))
+
+### Bug Fixes
+
+* **apollo-react:** keep filter out of the built-in builder's action types [AL-616] ([d798594](https://github.com/UiPath/apollo-ui/commit/d798594bb9288c89104123e1832e94e841f2f51b))
+* **apollo-react:** keep the guardrail label interfaces source-compatible [AL-616] ([bd31bd4](https://github.com/UiPath/apollo-ui/commit/bd31bd4e2a5039125cf876347c49efdd6e965287))
+* **apollo-react:** lock a single scope only when it is the whole value [AL-616] ([823a1f5](https://github.com/UiPath/apollo-ui/commit/823a1f5808155b17cdf99bf2984c2e24545a3f11))
+* **apollo-react:** return focus when a guardrail builder modal closes [AL-616] ([6def048](https://github.com/UiPath/apollo-ui/commit/6def0486a7e5b4b155166f8fad6677758d9738ff))
+
 ## [@uipath/apollo-react-v6.64.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.64.0...@uipath/apollo-react@6.64.1) (2026-09-29)
 
 ### Bug Fixes
