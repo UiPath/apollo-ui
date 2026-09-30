@@ -58,38 +58,35 @@ title, detail, and time. It doesn't know about invoices, claims, or loans.
 
 ## Minimum width is a design decision
 
-`minWidth` is the narrowest inner width where the occupant still works. Set
-it by measuring, not guessing:
+`minWidth` is the narrowest inner width where the occupant still works.
 
-1. Find the measured floor: the narrowest width where nothing clips, across
-   every example, stress included.
-2. Decide the minimum. It's at least the floor, and above it when the
-   occupant gets hard to read before it breaks.
+- **By default, it follows its surface.** A vertical occupant's minimum reads
+  the width token of the narrowest surface it belongs in, so it fits every
+  such surface and moves with the token. The queue follows the side panel:
+  it declares {queueOccupant.requires.minWidth}px, the side panel's minimum
+  of {LAYOUT_TOKENS.sidePanelWidthMin}px, because it runs edge to edge.
+- **A horizontal occupant is measured.** The page header promises no width,
+  so its minimum is the measured floor: the narrowest width where nothing
+  clips, across every example, stress included.
+- **A raised minimum needs a reason, written in the spec.** When an occupant
+  gets hard to read before it clips, its minimum can be wider, with a
+  comment in its spec saying why. The stage strip declares
+  {stageStripOccupant.requires.minWidth}px and the activity timeline
+  {activityTimelineOccupant.requires.minWidth}px: both could go narrower
+  without clipping, but their titles get hard to read.
 
 ```text
 Measure the key-facts occupant's minimum width,
 and tell me the floor in each surface.
 ```
 
-It reports the floor for each example in each surface the occupant claims,
-compares it with the declared minWidth, and fails if the declared width is
-below the floor.
-
-The stage strip declares {stageStripOccupant.requires.minWidth}px and the
-activity timeline {activityTimelineOccupant.requires.minWidth}px. Both could
-go narrower without clipping, but below those widths the current stage and
-event titles get hard to read.
-
-An occupant can also follow its surface: its minWidth reads the narrowest
-surface's width token instead of a number, so it fits every such surface and
-moves with the token. The queue follows the side panel: it declares
-{queueOccupant.requires.minWidth}px, the side panel's minimum of
-{LAYOUT_TOKENS.sidePanelWidthMin}px, because it runs edge to edge. The
-measurement still checks that nothing clips there.
+Measuring reports the floor for each example in each surface the occupant
+claims, and fails if the minimum is below it. When a minimum that follows its
+surface clips there, fix the layout rather than raising it.
 
 For the minimum to hold for any data, long values truncate or wrap:
 
-- Truncate single-line labels, and keep the full text in a `title`.
+- Truncate single-line labels, and keep the full text in a tooltip.
 - Wrap everything else, including long unbroken strings (`wrap-anywhere`).
 - Handle missing and empty optional values.
 
@@ -266,16 +263,24 @@ Unit tests fail until each has everything it needs.
 ## Checks
 
 Every registered occupant is checked automatically, in every surface it
-claims, with every example:
+claims, with every example.
 
-- No clipping from its minimum width up.
-- Its spec fits exactly the surfaces its orientations claim.
-- Light and dark themes.
-- An accessibility scan with axe, in every standard state.
-- Its copy is in sentence case, and nothing is left to fill in.
-- In the workbench, it shows in every surface it claims, and every other
-  surface says why not.
+On every pull request:
 
-A set runs on every pull request, and a full sweep runs nightly. On pull
-requests, a commit that changes an occupant may change nothing outside it
-but its registration.
+- No clipping at its minimum width, and at 40px and 200px wider, in the
+  light theme.
+- An accessibility scan with axe of its ready state, in light and dark.
+- It claims at least one surface. In the workbench, it shows in every
+  surface it claims, and every other surface says why not.
+- Its Patterns page renders its spec's values.
+- Lint: its copy is in sentence case, nothing is left to fill in, and the
+  occupant index is current.
+- Its registry item's dependencies match its imports, and its code follows
+  the dependency rules.
+- A commit that changes it changes nothing outside it but its registration.
+
+Nightly, and on demand:
+
+- No clipping at every 16px from its minimum to 480px wider, in light and
+  dark.
+- An accessibility scan with axe of every standard state, in light and dark.

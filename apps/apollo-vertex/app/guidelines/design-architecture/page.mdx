@@ -72,9 +72,9 @@ A slot's inner width comes from its `width`: its `default` when it has one,
 or its guaranteed `min` when it doesn't (a header that spans the page has no
 default). A slot with no `width` falls back to the surface's own minimum.
 
-Most occupants work in any surface that gives them the room. One built from a
-surface's own parts, like an item header made of PageHeader parts, lists that
-surface in `surfaces`, and fits() rejects it anywhere else.
+Most occupants work in any surface of their orientations that gives them the
+room. An occupant that belongs in only some of those surfaces lists them in
+`surfaces`, and fits() rejects it anywhere else.
 
 The helpers it uses are exported too: `slotAccepts`, `slotInnerWidth`,
 `occupantPadding`, `occupantOrientations`, and `scrollCompatible`.
