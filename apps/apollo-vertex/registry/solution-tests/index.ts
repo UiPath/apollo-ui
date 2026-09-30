@@ -61,6 +61,11 @@ export type {
   ProcessOutputProps,
 } from "./outputs/registry";
 export { ProcessOutputView } from "./outputs/process-output-view";
+export { BaselineCompare } from "./baseline-compare";
+export type { BaselineCompareRow } from "./baseline-compare";
+export { VersionDeltaGlyph } from "./version-delta-glyph";
+export { versionDelta } from "./utils";
+export type { VersionDelta } from "./utils";
 export {
   IxpOutputResult,
   IXP_OUTPUT_RENDERER,
