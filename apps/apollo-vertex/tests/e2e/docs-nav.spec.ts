@@ -69,7 +69,7 @@ test("the old URLs still work", async ({ page }) => {
   );
 });
 
-test("Creating occupants opens the workbench near the top and at Try it", async ({
+test("Creating occupants opens the workbench near the top and where it says what it checks", async ({
   page,
 }) => {
   await page.goto(CREATING);
@@ -81,8 +81,8 @@ test("Creating occupants opens the workbench near the top and at Try it", async 
   expect((await button.boundingBox())?.y ?? 0).toBeLessThan(
     (await first.boundingBox())?.y ?? 0,
   );
-  // And in the step where the author tries their occupant.
-  const tryIt = page.getByRole("heading", { name: "2. Try it" });
+  // And where it says the flow ends with workbench links.
+  const tryIt = page.getByRole("heading", { name: "What it checks" });
   const stepLink = page
     .locator("article")
     .getByRole("link", { name: "occupant workbench", exact: true });
