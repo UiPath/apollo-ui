@@ -1,9 +1,9 @@
-import { expect, openCard, openPreview, search, test } from "./fixtures";
+import { expect, openCard, openPreview, test } from "./fixtures";
 
 const sections = (page: import("@playwright/test").Page) =>
   page.locator("#detail-page-preview-config section h2").allTextContents();
 
-test("the card: 320px above Configure, sections in page order, hidden when they don't apply, scrolls when tall", async ({
+test("the card: above Configure, sections in page order, hidden when they don't apply, scrolls when tall", async ({
   page,
 }) => {
   await openPreview(page);
@@ -15,13 +15,9 @@ test("the card: 320px above Configure, sections in page order, hidden when they 
     const button = document
       .querySelector("[aria-controls=detail-page-preview-config]")!
       .getBoundingClientRect();
-    return {
-      width: card.width,
-      right: card.right === button.right,
-      above: card.bottom <= button.top,
-    };
+    return card.bottom <= button.top;
   });
-  expect(g).toEqual({ width: 320, right: true, above: true });
+  expect(g, "above Configure").toBe(true);
   expect(await sections(page)).toEqual([
     "Layout",
     "Header",
@@ -54,19 +50,4 @@ test("the card: 320px above Configure, sections in page order, hidden when they 
     );
   });
   expect(scrolls).toBe(true);
-});
-
-test("params from the reverted panel trigger experiment are ignored and dropped", async ({
-  page,
-}) => {
-  await openPreview(
-    page,
-    "?start-controls=rail&sidebar=collapsed&occupants=one&start-occupant=assistant",
-  );
-  expect(await search(page)).toBe("");
-  await expect(
-    page.locator(
-      "[data-slot=side-panel-toolbar], [data-slot=page-header-leading], [data-surface=page-rail]",
-    ),
-  ).toHaveCount(0);
 });

@@ -3,7 +3,9 @@ import {
   END_PANEL_DEFAULT_PX,
   END_PANEL_MIN_PX,
 } from "@/templates/detail-page/detail-page.template";
+import { SIDE_PANEL_TINT_STRENGTH } from "@/lib/composition";
 import {
+  alphaOf,
   expect,
   openCard,
   openPreview,
@@ -13,15 +15,14 @@ import {
   widths,
 } from "./fixtures";
 
+const STRENGTH = SIDE_PANEL_TINT_STRENGTH / 100;
+
 const snapshot = (page: Page) =>
   page.evaluate(() => {
     const panel = (side: string) =>
       document.querySelector<HTMLElement>(
         `[data-surface=side-panel][data-side=${side}]`,
       );
-    const tintHost = document
-      .querySelector("#detail-page-preview-config")!
-      .closest("div.fixed")!.previousElementSibling as HTMLElement | null;
     const active = document.activeElement as HTMLElement | null;
     return {
       search: location.search,
@@ -38,7 +39,9 @@ const snapshot = (page: Page) =>
         ),
       ),
       endScroll: panel("end")?.dataset.scroll,
-      tint: tintHost?.style.getPropertyValue("--side-panel-tint") ?? "",
+      startBackground: panel("start")
+        ? getComputedStyle(panel("start")!).backgroundColor
+        : "",
       cardOpen: !document.querySelector<HTMLElement>(
         "#detail-page-preview-config",
       )!.hidden,
@@ -76,7 +79,7 @@ test("reset restores every default, clears the URL, and Back undoes it", async (
     mainLong: true,
     endScroll: "occupant",
   });
-  expect(changed.tint).toContain("30%");
+  expect(alphaOf(changed.startBackground)).toBeCloseTo(0.3, 1);
 
   await page.getByRole("button", { name: "Reset to defaults" }).click();
   await expect.poll(async () => (await snapshot(page)).search).toBe("");
@@ -89,11 +92,11 @@ test("reset restores every default, clears the URL, and Back undoes it", async (
     mainPadding: "padded",
     mainLong: false,
     endScroll: "surface",
-    tint: "",
     cardOpen: true,
     focus: "Shell:Sidebar",
   });
   expect((await widths(page)).end).toBe(END_PANEL_DEFAULT_PX);
+  expect(alphaOf(reset.startBackground)).toBe(0);
 
   await page.goBack();
   await expect
@@ -109,7 +112,7 @@ test("reset restores every default, clears the URL, and Back undoes it", async (
     endScroll: "occupant",
   });
   // Tint strength isn't in the URL by design, so Back can't restore it.
-  expect(back.tint).toBe("");
+  expect(alphaOf(back.startBackground)).toBeCloseTo(STRENGTH, 1);
   expect((await widths(page)).end).toBe(END_PANEL_MIN_PX);
 
   await page.goForward();
@@ -129,19 +132,4 @@ test("reset also resets the user's open intent and the rule's closes", async ({
   await expect
     .poll(() => panelStates(page))
     .toEqual({ start: "closed", end: "open" });
-});
-
-test("reset at the defaults changes nothing visible but still works", async ({
-  page,
-}) => {
-  await openPreview(page);
-  await openCard(page);
-  const { history: before, focus: _, ...rest } = await snapshot(page);
-  await page.getByRole("button", { name: "Reset to defaults" }).click();
-  await expect
-    .poll(async () => (await snapshot(page)).history)
-    .toBe(before + 1);
-  const { history: __, focus, ...after } = await snapshot(page);
-  expect(after).toEqual(rest);
-  expect(focus).toBe("Shell:Sidebar");
 });

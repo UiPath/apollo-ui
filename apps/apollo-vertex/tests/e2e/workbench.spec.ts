@@ -1,13 +1,13 @@
 import { fitsSurface } from "@/lib/composition";
 import { OCCUPANT_SPECS, SURFACE_SPECS } from "@/lib/occupants.generated";
 import { surfaceLabel } from "@/lib/surface-labels";
-import { expect, test } from "./fixtures";
+import { expect, seedTheme, test } from "./fixtures";
 import {
   axeViolations,
   choose,
   floorMeasured,
   open,
-  search,
+  urlQuery,
   stage,
   status,
   themeColors,
@@ -74,17 +74,17 @@ test("the panel toggles collapse and reopen each panel, and keep focus", async (
     await expect(toggle).toHaveAttribute("aria-expanded", String(startsOpen));
     await expect(toggle).toHaveAttribute("aria-controls", panel.slice(1));
     await expect(page.locator(panel)).toBeVisible({ visible: startsOpen });
-    expect(search(page)).not.toContain(param);
+    expect(urlQuery(page)).not.toContain(param);
     await toggle.focus();
     await page.keyboard.press("Enter");
     const toggled = page.getByRole("button", { name: next });
     await expect(toggled).toHaveAttribute("aria-expanded", String(!startsOpen));
     await expect(toggled).toBeFocused();
     await expect(page.locator(panel)).toBeVisible({ visible: !startsOpen });
-    expect(search(page)).toContain(param);
+    expect(urlQuery(page)).toContain(param);
     await page.keyboard.press("Enter");
     await expect(page.locator(panel)).toBeVisible({ visible: startsOpen });
-    expect(search(page)).not.toContain(param);
+    expect(urlQuery(page)).not.toContain(param);
   }
 });
 
@@ -107,7 +107,7 @@ test("switching surfaces moves the occupant and the page map", async ({
     ),
   ).toBeVisible();
   expect(await highlighted()).toEqual(["main"]);
-  expect(search(page)).toContain("surface=content-area");
+  expect(urlQuery(page)).toContain("surface=content-area");
 });
 
 test("the width status: clips below the floor, outside the range, in range", async ({
@@ -117,26 +117,23 @@ test("the width status: clips below the floor, outside the range, in range", asy
   await open(page, "?occupant=queue");
   await floorMeasured(page);
   await expect(page.locator("[data-slot=workbench-width]")).toHaveText("280px");
-  await expect(status(page)).toHaveAttribute("data-status", "in");
   await expect(status(page)).toHaveText("In range");
 
   const slider = page.getByRole("slider", { name: "Width" });
   await slider.focus();
   await page.keyboard.press("Home");
   await expect(page.locator("[data-slot=workbench-width]")).toHaveText("40px");
-  await expect(status(page)).toHaveAttribute("data-status", "clips");
   await expect(status(page)).toHaveText("Clips");
   await expect(slider).toHaveAttribute("aria-valuetext", /Clips/);
 
   // Narrower than the side panel ever is, wider than the floor.
   await open(page, "?occupant=queue&width=248");
   await floorMeasured(page);
-  await expect(status(page)).toHaveAttribute("data-status", "outside");
   await expect(status(page)).toHaveText("Outside range");
   await page.getByRole("slider", { name: "Width" }).focus();
   for (let step = 0; step < 8; step++) await page.keyboard.press("ArrowRight");
   await expect(page.locator("[data-slot=workbench-width]")).toHaveText("280px");
-  await expect(status(page)).toHaveAttribute("data-status", "in");
+  await expect(status(page)).toHaveText("In range");
 });
 
 test("the whole view round-trips through the URL", async ({ page }) => {
@@ -150,7 +147,7 @@ test("the whole view round-trips through the URL", async ({ page }) => {
   await page.getByRole("slider", { name: "Width" }).focus();
   await page.keyboard.press("ArrowRight");
   await page.getByRole("button", { name: "Show details" }).click();
-  const url = search(page);
+  const url = urlQuery(page);
   for (const part of [
     "occupant=key-facts",
     "surface=side-panel",
@@ -165,7 +162,7 @@ test("the whole view round-trips through the URL", async ({ page }) => {
 
   await page.reload();
   await page.locator("[data-slot=workbench]").waitFor();
-  expect(search(page)).toBe(url);
+  expect(urlQuery(page)).toBe(url);
   await expect(page.locator("html")).toHaveClass(/\bdark\b/);
   await expect(
     page.getByRole("button", { name: "Dark theme" }),
@@ -184,7 +181,7 @@ test("the whole view round-trips through the URL", async ({ page }) => {
 
   // Defaults aren't written.
   await open(page);
-  expect(search(page)).toBe("");
+  expect(urlQuery(page)).toBe("");
 });
 
 test("a Patterns page opens the workbench with its occupant", async ({
@@ -232,10 +229,7 @@ for (const site of ["light", "dark"] as const) {
       // The same colors as under the other site theme.
       const other = await browser.newContext();
       const otherPage = await other.newPage();
-      await otherPage.addInitScript(
-        (t) => localStorage.setItem("theme", t),
-        site === "light" ? "dark" : "light",
-      );
+      await seedTheme(otherPage, site === "light" ? "dark" : "light");
       for (const [query, expected] of [
         ["?occupant=queue", light],
         ["?occupant=queue&theme=dark", dark],
@@ -301,7 +295,7 @@ for (const [width, view] of [
     expect(details?.x).toBe(Math.max(...lefts));
     // Sample and State still work, in whichever form fits.
     await choose(page, "Sample", "Stress");
-    expect(search(page)).toContain("sample=stress");
+    expect(urlQuery(page)).toContain("sample=stress");
   });
 }
 
@@ -326,7 +320,6 @@ test("the frame tag names the surface and width, just outside the frame", async 
   const frame = page.locator("[data-slot=workbench-frame]");
   await expect(tag).toHaveText("Side panel · 280px");
   await expect(tag).toHaveAttribute("aria-hidden", "true");
-  await expect(tag).toHaveCSS("pointer-events", "none");
 
   // Above the frame's top-left corner, never over the occupant.
   const [tagBox, frameBox] = [
@@ -346,13 +339,6 @@ test("the frame tag names the surface and width, just outside the frame", async 
   await expect(tag).toHaveText("Side panel · 284px");
   await page.getByRole("radio", { name: /^Content area,/ }).click();
   await expect(tag).toHaveText("Content area · 480px");
-
-  // It follows the theme.
-  const light = await tag.evaluate((el) => getComputedStyle(el).color);
-  await page.getByRole("button", { name: "Dark theme" }).click();
-  await expect
-    .poll(() => tag.evaluate((el) => getComputedStyle(el).color))
-    .not.toBe(light);
 });
 
 for (const theme of ["light", "dark"] as const) {

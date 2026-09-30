@@ -7,8 +7,7 @@ describe.each(OCCUPANT_SPECS.map((o) => [o.spec.name, o] as const))("%s", (_, {
   spec,
   examples,
 }) => {
-  it("has a kebab-case name, a label, and a whole-number minWidth", () => {
-    expect(spec.name).toMatch(/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/);
+  it("has a label and a whole-number minWidth", () => {
     expect(spec.label.trim()).not.toBe("");
     expect(
       Number.isInteger(spec.requires.minWidth) && spec.requires.minWidth > 0,

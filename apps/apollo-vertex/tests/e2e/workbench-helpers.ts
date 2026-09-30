@@ -1,12 +1,12 @@
-import { createRequire } from "node:module";
 import type { Page } from "@playwright/test";
+import { SURFACE_HOSTS } from "@/app/_components/surface-hosts";
+import { overflowProblems } from "@/lib/overflow-problems";
+import { axeViolations as axeIn } from "./axe";
 
 /*
  * Shared by the workbench specs: opening it, reading its state, and
  * scanning it.
  */
-
-const AXE = createRequire(__filename).resolve("axe-core/axe.min.js");
 
 export const open = async (page: Page, query = "") => {
   await page.goto(`/preview/occupants${query}`);
@@ -22,7 +22,7 @@ export const stage = (page: Page) =>
   page.locator("[data-slot=workbench-stage]");
 export const status = (page: Page) =>
   page.locator("[data-slot=workbench-status]");
-export const search = (page: Page) => new URL(page.url()).search;
+export const urlQuery = (page: Page) => new URL(page.url()).search;
 
 /** Picks a Sample or State option, as toggles or as a compact select. */
 export async function choose(page: Page, label: string, option: string) {
@@ -58,19 +58,22 @@ export const themeColors = (page: Page) =>
     ];
   });
 
-/** The status and the overflow check, once the check has measured this width. */
-export async function statusAt(page: Page, query: string) {
+/**
+ * The status the workbench shows, and what the occupant checks' overflow
+ * function finds on the stage, once the workbench has measured this width.
+ */
+export async function statusAt(page: Page, query: string, surface: string) {
   await open(page, `${query}&details=open`);
-  const check = page.locator("[data-slot=workbench-overflow]");
-  await check.waitFor();
-  return {
-    status: await status(page).getAttribute("data-status"),
-    overflows: (await check.innerText()).startsWith("Overflows"),
-  };
+  await page.locator("[data-slot=workbench-overflow]").waitFor();
+  const problems = await stage(page)
+    .locator(`[data-slot=occupant-fixture] ${SURFACE_HOSTS[surface]?.inner}`)
+    .first()
+    .evaluate(overflowProblems);
+  return { status: await status(page).innerText(), problems };
 }
 
 /** Each Detail page panel slot's open or closed state, by its data-slot. */
-export const panelStates = (page: Page) =>
+export const slotStates = (page: Page) =>
   page
     .locator("[data-template=detail-page] > [data-state]")
     .evaluateAll((slots) => {
@@ -81,22 +84,6 @@ export const panelStates = (page: Page) =>
       return states;
     });
 
-/** axe violations inside the workbench, as "rule: targets". */
-export async function axeViolations(page: Page) {
-  await page.addScriptTag({ path: AXE });
-  return page.evaluate(async () => {
-    const { axe } = window as unknown as {
-      axe: {
-        run: (context: Element) => Promise<{
-          violations: { id: string; nodes: { target: string[] }[] }[];
-        }>;
-      };
-    };
-    const result = await axe.run(
-      document.querySelector("[data-slot=workbench]")!,
-    );
-    return result.violations.map(
-      (v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`,
-    );
-  });
-}
+/** axe violations inside the workbench. */
+export const axeViolations = (page: Page) =>
+  axeIn(page, "[data-slot=workbench]");

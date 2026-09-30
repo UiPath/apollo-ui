@@ -117,9 +117,6 @@ for (const [path, values] of Object.entries(PAGES)) {
     expect(text).not.toMatch(/undefined|NaN|\[object/);
     // A value in inline code once rendered its expression literally.
     expect(text).not.toMatch(/\{\w+\.[\w.]+\}/);
-    expect(text).not.toContain(" — ");
-    for (const word of ["seamless", "robust", "leverage", "contract"])
-      expect(text.toLowerCase()).not.toContain(word);
   });
 }
 

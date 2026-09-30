@@ -1,4 +1,5 @@
 import { test as base, expect, type Page } from "@playwright/test";
+import { LAYOUT_TOKENS } from "@/lib/composition";
 
 export { expect };
 
@@ -20,7 +21,7 @@ export const test = base.extend<Options & { pageErrors: string[] }>({
   },
   pageErrors: [
     async ({ page, theme }, use) => {
-      await page.addInitScript((t) => localStorage.setItem("theme", t), theme);
+      await seedTheme(page, theme);
       const errors: string[] = [];
       page.on("pageerror", (error) => errors.push(error.message));
       await use(errors);
@@ -29,6 +30,10 @@ export const test = base.extend<Options & { pageErrors: string[] }>({
     { auto: true },
   ],
 });
+
+/** Sets the site theme before the page's first script runs. */
+export const seedTheme = (page: Page, theme: Theme) =>
+  page.addInitScript((t) => localStorage.setItem("theme", t), theme);
 
 export const PREVIEW = "/preview/detail-page";
 
@@ -99,6 +104,12 @@ export const widths = (page: Page) =>
     };
   });
 
+/** The rounded width a side panel gives its occupant. */
+export const occupantWidth = (page: Page, side: "start" | "end") =>
+  page
+    .locator(`[data-surface=side-panel][data-side=${side}] [data-occupant]`)
+    .evaluate((el) => Math.round(el.getBoundingClientRect().width));
+
 export const search = (page: Page) => page.evaluate(() => location.search);
 
 /** One screen pixel's colour, read from a 1x1 screenshot. */
@@ -117,3 +128,31 @@ export const pixel = async (page: Page, x: number, y: number) => {
     return Array.from(ctx.getImageData(0, 0, 1, 1).data.slice(0, 3));
   }, png.toString("base64"));
 };
+
+/** A computed colour's alpha, 0 to 1. */
+export const alphaOf = (color: string) => {
+  if (color === "rgba(0, 0, 0, 0)" || color === "transparent") return 0;
+  const m =
+    color.match(/\/\s*([\d.]+)\)/) ?? color.match(/rgba\([^)]*,\s*([\d.]+)\)/);
+  return m ? Number(m[1]) : 1;
+};
+
+/** How far apart two RGB colours are. */
+export const colorDistance = (a: number[], b: number[]) =>
+  Math.hypot(...a.map((v, i) => v - (b[i] ?? 0)));
+
+/** A scroll fade at full size. */
+export const FADE = `${LAYOUT_TOKENS.scrollFadeSize}px`;
+
+/** Scrolls an element to a position ("end" for the far end), then settles. */
+export async function scrollTo(
+  page: Page,
+  selector: string,
+  position: { left?: number | "end"; top?: number | "end" },
+) {
+  await page.locator(selector).evaluate((el, { left = null, top = null }) => {
+    if (left !== null) el.scrollLeft = left === "end" ? el.scrollWidth : left;
+    if (top !== null) el.scrollTop = top === "end" ? el.scrollHeight : top;
+  }, position);
+  await settle(page);
+}

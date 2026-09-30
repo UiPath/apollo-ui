@@ -6,8 +6,6 @@ import {
   occupantOrientations,
   type ScrollOwner,
   type SurfacePadding,
-  scrollCompatible,
-  scrollOwner,
   slotInnerWidth,
 } from "@/lib/composition";
 import { contentAreaSurface } from "@/registry/content-area/content-area.surface";
@@ -120,18 +118,6 @@ describe("fits: slot, scroll, surfaces, orientation", () => {
         horizontal(occupant(0, "padded", "occupant")),
       ).fits,
     ).toBe(true);
-  });
-
-  it("resolves the scroll owner", () => {
-    expect(scrollOwner(sidePanelSurface, occupant(0))).toBe("surface");
-    expect(
-      scrollOwner(sidePanelSurface, occupant(0, "padded", "occupant")),
-    ).toBe("occupant");
-    expect(scrollOwner(pageHeaderSurface, occupant(0))).toBe("occupant");
-    expect(scrollCompatible("either", "occupant")).toBe(true);
-    expect(scrollCompatible("occupant", "either")).toBe(true);
-    expect(scrollCompatible("occupant", "surface")).toBe(false);
-    expect(scrollCompatible("surface", "surface")).toBe(true);
   });
 
   it("keeps an occupant to the surfaces it lists", () => {

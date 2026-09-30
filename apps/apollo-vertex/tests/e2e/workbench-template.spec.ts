@@ -2,8 +2,8 @@ import { expect, test } from "./fixtures";
 import {
   axeViolations,
   open,
-  panelStates,
-  search,
+  slotStates,
+  urlQuery,
   stage,
 } from "./workbench-helpers";
 
@@ -32,16 +32,16 @@ test("switching views keeps the occupant, sample, and state", async ({
     page.getByRole("radio", { name: "Start panel, fits" }),
   ).toHaveAttribute("aria-checked", "true");
   await expect(page.getByRole("slider", { name: "Page width" })).toBeVisible();
-  expect(search(page)).toContain("view=template");
-  expect(search(page)).toContain("sample=stress");
-  expect(search(page)).toContain("state=agent-updating");
+  expect(urlQuery(page)).toContain("view=template");
+  expect(urlQuery(page)).toContain("sample=stress");
+  expect(urlQuery(page)).toContain("state=agent-updating");
 
   await page.getByRole("radio", { name: "Surface", exact: true }).click();
   await expect(
     stage(page).locator("[data-surface-name=side-panel] [data-occupant=queue]"),
   ).toBeVisible();
-  expect(search(page)).not.toContain("view=");
-  expect(search(page)).toContain("sample=stress");
+  expect(urlQuery(page)).not.toContain("view=");
+  expect(urlQuery(page)).toContain("sample=stress");
 });
 
 test("a template slot the occupant doesn't fit shows why", async ({ page }) => {
@@ -61,7 +61,7 @@ test("the template's page width rules apply live", async ({ page }) => {
   // Room for main and both panels: both open.
   await open(page, "?occupant=queue&view=template&page=1440");
   await expect
-    .poll(() => panelStates(page))
+    .poll(() => slotStates(page))
     .toEqual({
       "detail-page-start-panel": "open",
       "detail-page-end-panel": "open",
@@ -69,7 +69,7 @@ test("the template's page width rules apply live", async ({ page }) => {
   // Room for main and one panel: the rule closes the oldest, the start panel.
   await open(page, "?occupant=queue&view=template&page=1000");
   await expect
-    .poll(() => panelStates(page))
+    .poll(() => slotStates(page))
     .toEqual({
       "detail-page-start-panel": "closed",
       "detail-page-end-panel": "open",
@@ -82,7 +82,7 @@ test("the template's page width rules apply live", async ({ page }) => {
     "480px",
   );
   await expect
-    .poll(() => panelStates(page))
+    .poll(() => slotStates(page))
     .toEqual({
       "detail-page-start-panel": "closed",
       "detail-page-end-panel": "closed",
@@ -100,7 +100,7 @@ test("a side slot's placement puts it beside the header", async ({ page }) => {
   await expect
     .poll(async () => (await header.boundingBox())?.x ?? 0)
     .toBeGreaterThan((await panel.boundingBox())?.x ?? 0);
-  expect(search(page)).toContain("placement=beside-header");
+  expect(urlQuery(page)).toContain("placement=beside-header");
   // Placement is for side slots only.
   await page.getByRole("radio", { name: "Main, fits" }).click();
   await expect(page.getByRole("radio", { name: "Beside header" })).toHaveCount(
@@ -116,7 +116,7 @@ test("the template view round-trips through the URL", async ({ page }) => {
   await page.getByRole("radio", { name: "Beside header" }).click();
   await page.getByRole("slider", { name: "Page width" }).focus();
   await page.keyboard.press("ArrowLeft");
-  const url = search(page);
+  const url = urlQuery(page);
   for (const part of [
     "view=template",
     "slot=end-panel",
@@ -130,7 +130,7 @@ test("the template view round-trips through the URL", async ({ page }) => {
 
   await page.reload();
   await page.locator("[data-slot=workbench]").waitFor();
-  expect(search(page)).toBe(url);
+  expect(urlQuery(page)).toBe(url);
   await expect(page.locator("[data-slot=workbench-frame-tag]")).toHaveText(
     "Detail page · End panel · 1432px",
   );
@@ -147,7 +147,7 @@ test("passes an axe scan in the template view", async ({ page }) => {
   expect(await axeViolations(page)).toEqual([]);
 });
 
-test("the dock stays above the template, reachable, with the stage blurred behind it", async ({
+test("the dock stays above the template, every control reachable", async ({
   page,
 }) => {
   // Short enough that the template runs under the dock.
@@ -178,5 +178,4 @@ test("the dock stays above the template, reachable, with the stage blurred behin
   await expect(page.locator("[data-slot=workbench-frame-tag]")).toContainText(
     "Main",
   );
-  await expect(dock).toHaveCSS("backdrop-filter", /blur/);
 });

@@ -6,6 +6,7 @@ import {
   panelStates,
   pick,
   resize,
+  search,
   test,
 } from "./fixtures";
 
@@ -76,10 +77,13 @@ test("rule-closed panels reopen, user-closed stay closed, and the latest open wi
   await expectPanels(page, "closed", "open", "Start");
 });
 
-test("fresh loads apply the rule with nothing protected", async ({ page }) => {
+test("fresh loads apply the rule with nothing protected, and never write its closes to the URL", async ({
+  page,
+}) => {
   await openPreview(page, "", 1200);
   await openCard(page);
   await expectPanels(page, "closed", "open", "Start");
+  expect(await search(page)).toBe("");
   await resize(page, 1440);
   await expectPanels(page, "open", "open", "");
   await openPreview(page, "", 700);

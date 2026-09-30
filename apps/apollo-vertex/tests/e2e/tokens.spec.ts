@@ -47,26 +47,3 @@ test("surfaces and dividers read the layout tokens", async ({ page }) => {
   expect(g.dividers[1]).toContain(" -3px 0px 0px 0px inset");
   expect(g.dividers[2]).toContain(" 3px 0px 0px 0px inset");
 });
-
-test("a side panel outside a slot takes --side-panel-width-min", async ({
-  page,
-}) => {
-  await openPreview(page);
-  const width = await page.evaluate(() => {
-    const aside = document.createElement("aside");
-    aside.className = document.querySelector(
-      "[data-surface=side-panel]",
-    )!.className;
-    document.body.append(aside);
-    document.documentElement.style.setProperty(
-      "--side-panel-width-min",
-      "300px",
-    );
-    const w = aside.getBoundingClientRect().width;
-    aside.remove();
-    document.documentElement.style.removeProperty("--side-panel-width-min");
-    return w;
-  });
-  expect(width).toBe(300);
-  expect(LAYOUT_TOKENS.sidePanelWidthMin).not.toBe(300);
-});

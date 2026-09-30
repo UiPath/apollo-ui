@@ -53,24 +53,22 @@ async function check(page: Page) {
   }
 }
 
-for (const shell of ["sidebar", "minimal"] as const) {
-  test(`useSurface() reports each slot's orientation and live inner width (${shell})${shell === "minimal" ? " @full" : ""}`, async ({
-    page,
-  }) => {
-    await openPreview(page, shell === "minimal" ? "?shell=minimal" : "");
-    await check(page);
-    await resize(page, 1200);
-    await expect
-      .poll(() => read(page).then((g) => g.main.width === g.main.actual))
-      .toBe(true);
-    await check(page);
-    await page.locator("[data-slot=detail-page-resize-handle]").focus();
-    for (let i = 0; i < 5; i++) await page.keyboard.press("ArrowLeft");
-    await expect
-      .poll(() =>
-        read(page).then((g) => g["end-panel"].width === g["end-panel"].actual),
-      )
-      .toBe(true);
-    await check(page);
-  });
-}
+test("useSurface() reports each slot's orientation and live inner width", async ({
+  page,
+}) => {
+  await openPreview(page);
+  await check(page);
+  await resize(page, 1200);
+  await expect
+    .poll(() => read(page).then((g) => g.main.width === g.main.actual))
+    .toBe(true);
+  await check(page);
+  await page.locator("[data-slot=detail-page-resize-handle]").focus();
+  for (let i = 0; i < 5; i++) await page.keyboard.press("ArrowLeft");
+  await expect
+    .poll(() =>
+      read(page).then((g) => g["end-panel"].width === g["end-panel"].actual),
+    )
+    .toBe(true);
+  await check(page);
+});

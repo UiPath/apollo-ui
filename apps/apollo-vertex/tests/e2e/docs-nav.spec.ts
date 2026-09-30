@@ -3,6 +3,7 @@ import { fitsSurface } from "@/lib/composition";
 import { OCCUPANT_SPECS, SURFACE_SPECS } from "@/lib/occupants.generated";
 import { surfaceLabel } from "@/lib/surface-labels";
 import { expect, test } from "./fixtures";
+import { open } from "./workbench-helpers";
 
 /*
  * Guidelines > Design architecture, the old URLs that moved into it, and
@@ -126,6 +127,28 @@ for (const surface of SURFACE_SPECS) {
   });
 }
 
+test("after moving between docs pages in the app, the workbench leads back to the last one", async ({
+  page,
+}) => {
+  await page.goto("/guidelines/design-architecture");
+  await page.evaluate(() => {
+    (window as unknown as { loadedOnce: boolean }).loadedOnce = true;
+  });
+  await page.locator('article a[href="/surfaces/side-panel"]').first().click();
+  await page.waitForURL("**/surfaces/side-panel");
+  // A client-side move: the first page's window is still here.
+  expect(
+    await page.evaluate(
+      () => (window as unknown as { loadedOnce?: boolean }).loadedOnce,
+    ),
+  ).toBe(true);
+  await page.getByRole("link", { name: "Open in workbench for Queue" }).click();
+  await page.locator("[data-slot=workbench]").waitFor();
+  await expect(
+    page.getByRole("link", { name: "Back to docs" }),
+  ).toHaveAttribute("href", "/surfaces/side-panel");
+});
+
 test("the workbench leads back to the docs page that opened it, with the list open or collapsed", async ({
   page,
 }) => {
@@ -142,8 +165,7 @@ test("the workbench leads back to the docs page that opened it, with the list op
   ).toHaveAttribute("href", "/surfaces/side-panel");
   // Opened some other way, it goes to the Design architecture overview.
   await page.evaluate(() => sessionStorage.clear());
-  await page.goto("/preview/occupants");
-  await page.locator("[data-slot=workbench]").waitFor();
+  await open(page);
   await expect(
     page.getByRole("link", { name: "Back to docs" }),
   ).toHaveAttribute("href", "/guidelines/design-architecture");

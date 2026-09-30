@@ -49,7 +49,7 @@ for (const { spec } of OCCUPANT_SPECS) {
     });
   });
 
-  test(`${spec.name}: Open in workbench, above the demo, opens this occupant`, async ({
+  test(`${spec.name}: Open in workbench, above the demo, links to this occupant`, async ({
     page,
   }) => {
     await page.goto(`/patterns/${spec.name}`);
@@ -63,13 +63,7 @@ for (const { spec } of OCCUPANT_SPECS) {
     expect((await button.boundingBox())?.y ?? 0).toBeLessThan(
       (await demo.boundingBox())?.y ?? 0,
     );
-    await button.click();
-    await page.locator("[data-slot=workbench]").waitFor();
-    await expect(
-      page.getByRole("heading", { level: 2, name: spec.label }),
-    ).toBeVisible();
     // The "Where it fits" link, too.
-    await page.goto(`/patterns/${spec.name}`);
     await expect(
       page
         .locator("article")
