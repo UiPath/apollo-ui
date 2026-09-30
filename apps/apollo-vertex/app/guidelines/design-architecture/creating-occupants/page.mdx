@@ -247,6 +247,22 @@ with no token becomes a proposal, never a hardcoded number.
 A new docs page doesn't show until the dev server rebuilds its page list:
 stop the dev server, run `rm -rf .next/dev`, and start it again.
 
+### Add a surface or template
+
+The workbench shows every surface and template that's registered for
+previews, with no change to the workbench itself.
+
+- **A surface:** register it in `registry.json` with `"layer": "surface"` and
+  its `<name>.surface.ts` spec, give it a label in `lib/surface-labels.ts`,
+  and add its host to `app/_components/surface-hosts.ts`: how to render it
+  on its own, the element that holds its padding, and where it sits on the
+  page map.
+- **A template:** add its host to `app/_components/template-hosts.ts`: its
+  spec, a label for each slot, which slots take a placement, its narrowest
+  useful width, and a frame that renders it with one occupant in one slot.
+
+Unit tests fail until each has everything it needs.
+
 ## Checks
 
 Every registered occupant is checked automatically, in every surface it

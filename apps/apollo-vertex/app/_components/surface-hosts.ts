@@ -25,15 +25,8 @@ interface SurfaceHost {
 }
 
 /**
- * How previews render each registered surface on its own, by name, in the
- * order pickers list them: the occupant fixture, the docs demos, and the
- * occupant workbench.
- *
- * To add a surface (a dashboard tile, say): register it in registry.json
- * with meta.layer "surface" and its <name>.surface.ts spec, give it a label
- * in lib/surface-labels.ts, and add its host here. The workbench picks it
- * up with no other change. A unit test fails until every registered
- * surface has all of them.
+ * How previews render each registered surface on its own, in picker order.
+ * Adding a surface: Creating occupants, "Add a surface or template".
  */
 export const SURFACE_HOSTS: Record<string, SurfaceHost> = {
   "page-header": {

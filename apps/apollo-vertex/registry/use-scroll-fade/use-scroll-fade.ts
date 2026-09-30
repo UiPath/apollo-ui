@@ -35,19 +35,9 @@ export interface ScrollFadeOptions {
  * A mask hides anything painted outside the element, focus rings included,
  * so draw a focusable container's ring on an unmasked parent.
  *
- * Each edge fades only while there is more content in that direction, and
- * the fade grows with the distance left to scroll, up to --scroll-fade-size.
- * Nothing animates: the fade tracks the scroll position directly, so there
- * is no motion to reduce.
- *
- * The values are written straight to the element as custom properties
- * (--scroll-fade-top and --scroll-fade-bottom for "y", --scroll-fade-left and
- * --scroll-fade-right for "x"), not React state, so scrolling
- * never re-renders. Updates come from scroll events and ResizeObserver, with
- * no requestAnimationFrame, so they also run in hidden tabs.
- *
- * Left and right are physical edges. In a right-to-left container the
- * content starts at the right, and the fades follow where content remains.
+ * Each edge fades only while there's more content that way, growing with
+ * the distance left to scroll, up to --scroll-fade-size. It tracks the
+ * scroll position directly: no animation, and no re-render.
  */
 export function useScrollFade<T extends HTMLElement>(
   enabled = true,

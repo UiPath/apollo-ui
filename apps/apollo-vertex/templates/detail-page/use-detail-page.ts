@@ -3,6 +3,7 @@ import {
   type DetailPageConfig,
   type DetailPagePanels,
   END_PANEL_DEFAULT_PX,
+  END_PANEL_MIN_PX,
   enabledPanels,
   endPanelMaxWidth,
   type PanelClosedBy,
@@ -11,7 +12,6 @@ import {
   type PanelWidth,
   resolveEndWidth,
   resolvePanels,
-  END_PANEL_MIN_PX,
 } from "./detail-page.template";
 
 const SIDES: readonly PanelSide[] = ["start", "end"];
@@ -64,19 +64,15 @@ export interface DetailPageState {
 }
 
 /**
- * The template's border-box width. It measures synchronously when the node
- * attaches (during commit, before paint) and then follows ResizeObserver
- * directly, without requestAnimationFrame. rAF never fires in a hidden tab,
- * and ResizeObserver only delivers during rendering, which hidden tabs
- * skip, so the initial measurement must not wait on either.
+ * The template's border-box width: measured once when the node attaches,
+ * then followed with ResizeObserver. No requestAnimationFrame, which never
+ * fires in a hidden tab.
  */
 function useTemplateWidth(): [RefCallback<HTMLDivElement | null>, number] {
   const [width, setWidth] = useState(0);
   const ref = (node: HTMLDivElement | null) => {
     if (!node) return;
-    // Measure now, but apply after this commit finishes: an update made
-    // while React is still attaching the node does not reach the router's
-    // subtree on first mount. A microtask still runs in hidden tabs.
+    // Applied after this commit: an update while the node attaches is lost.
     const initial = node.getBoundingClientRect().width;
     queueMicrotask(() => setWidth(initial));
     const observer = new ResizeObserver(([entry]) => {

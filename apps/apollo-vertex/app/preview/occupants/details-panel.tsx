@@ -26,7 +26,6 @@ import {
   WIDTH_RANGE,
 } from "./workbench-url-state";
 
-/** Display labels as one sentence-case list: "Vertical, horizontal". */
 const listOf = (labels: string[]) =>
   labels.map((label, i) => (i === 0 ? label : label.toLowerCase())).join(", ");
 

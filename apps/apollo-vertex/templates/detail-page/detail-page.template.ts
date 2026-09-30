@@ -4,17 +4,11 @@ import { contentAreaSurface } from "@/registry/content-area/content-area.surface
 import { sidePanelSurface } from "@/registry/side-panel/side-panel.surface";
 
 /*
- * Detail page widths, in px. They live here, in the template spec, and the
- * template sets them as CSS variables on its root so CSS and TypeScript
- * read one source. Moves to the theme when the template becomes a
- * registry item. Surface minimums come from theme tokens.
+ * Detail page widths, in px: one source for the template's CSS variables and
+ * its TypeScript. Surface minimums come from theme tokens.
  */
 
-/**
- * Start panel: not resizable, so it always renders at `default` (272px
- * inner when padded). `min` and `max` are kept for when it becomes
- * resizable; `min` is the side panel surface's own minimum.
- */
+/** Start panel: not resizable, so it always renders at `default`. */
 export const START_PANEL_WIDTH = {
   min: sidePanelSurface.width.min,
   default: 320,
@@ -73,20 +67,8 @@ export type PanelSide = "start" | "end";
 export type DetailPagePanels = "none" | "start" | "end" | "both";
 
 /**
- * - "below-header": the header spans the full width and the panel sits
- *   under it.
- * - "beside-header": the panel runs the full height of the template and the
- *   header shifts over. Inside the minimal shell the template already sits
- *   under the Shell's top bar, so the panel stops there.
- *
- * Choosing placement: placement shows what the panel's content belongs
- * to. Below header: content about this item, which changes when the user
- * opens a different item (source document, activity history, rules
- * applied, line items). Beside header: content that works across items,
- * which stays in place when the user opens a different item (work queue,
- * secondary navigation, the AI assistant). Quick test: if the user opens
- * the next item, does the panel's content change? Yes → below header.
- * No → beside header. Don't choose placement for visual emphasis.
+ * Below the header (it spans the page), or beside it (the panel runs the
+ * template's full height). Choosing one: the Detail page docs.
  */
 export type PanelPlacement = SidePanelPlacement;
 
@@ -159,9 +141,8 @@ export interface ResolvedPanels {
  * wanted-open panels oldest first until main fits.
  *
  * The user's most recent action always wins. The panel the user opened
- * last is never closed by the rule, even if main ends up below 480px; the
- * minimum only decides which other panel closes. Small screens get an
- * overlay surface in a later step.
+ * last is never closed by the rule, even if main ends up narrower; the
+ * minimum only decides which other panel closes.
  *
  * The rule is recomputed from the user's intent on every width change, so
  * it runs on resize too. Panels it closed reopen when there is room again.

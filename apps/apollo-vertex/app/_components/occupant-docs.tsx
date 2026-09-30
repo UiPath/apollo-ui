@@ -38,10 +38,8 @@ interface OccupantTitleProps {
 }
 
 /**
- * An occupant Patterns page's title: its name as the page heading, and the
- * "Occupant" badge on the same line, centered with it. The badge sits
- * outside the heading, so the title and the outline are just the name. It
- * wraps under the title only when the title is too long for one line.
+ * An occupant page's title: its name as the heading, with the "Occupant"
+ * badge beside it and outside it, wrapping under a title too long for one line.
  */
 export function OccupantTitle({ name }: OccupantTitleProps) {
   const spec = registeredSpec(name);
