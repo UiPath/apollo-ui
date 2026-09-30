@@ -1,5 +1,5 @@
 import { Column } from '@uipath/apollo-react/canvas/layouts';
-import { Panel, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
+import { type OnNodeDrag, Panel, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import type { NodeProps } from '@uipath/apollo-react/canvas/xyflow/system';
 import { Separator } from '@uipath/apollo-wind';
 import { Play, Redo2, Square, StickyNote as StickyNoteIcon, Undo2 } from 'lucide-react';
@@ -480,8 +480,8 @@ const AgentFlowInner = memo(
       [openPaneContextMenu, reactFlowScreenToFlowPosition]
     );
 
-    const handleNodeDragStart = useCallback(
-      (_event: React.MouseEvent, node: AgentFlowCustomNode) => {
+    const handleNodeDragStart = useCallback<OnNodeDrag<AgentFlowCustomNode>>(
+      (_event, node) => {
         setSelectedNodeId(node.id);
         onSelectResource?.(node.id);
 
@@ -491,8 +491,8 @@ const AgentFlowInner = memo(
       [setSelectedNodeId, onSelectResource, setDragging]
     );
 
-    const handleNodeDragStop = useCallback(
-      (_event: React.MouseEvent, node: AgentFlowCustomNode) => {
+    const handleNodeDragStop = useCallback<OnNodeDrag<AgentFlowCustomNode>>(
+      (_event, node) => {
         // Handle sticky note drag
         if (isStickyNoteNode(node)) {
           onUpdateStickyNote?.(node.id, {
