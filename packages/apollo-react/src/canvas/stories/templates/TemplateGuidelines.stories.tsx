@@ -1,8 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { ArrowRight, Blocks, Check, Code2, LayoutPanelTop, PanelsTopLeft } from 'lucide-react';
+import { LayoutPreviewsPage } from './LayoutPreviewsPage';
 
 const meta = {
-  title: 'Templates',
+  title: 'Templates/Guidance Flow Layouts',
   parameters: {
     layout: 'fullscreen',
   },
@@ -184,7 +185,12 @@ function TemplateGuidelinesPage() {
   );
 }
 
-export const TemplateGuide: Story = {
-  name: 'Template Guide',
+export const TemplateTypes: Story = {
+  name: 'Template Types',
   render: () => <TemplateGuidelinesPage />,
+};
+
+export const LayoutPreviews: Story = {
+  name: 'Layout Previews',
+  render: () => <LayoutPreviewsPage />,
 };
