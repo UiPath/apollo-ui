@@ -107,6 +107,8 @@ export interface GuardrailBuilderProps {
   renderAppPicker?: (ctx: GuardrailAppPickerContext) => ReactNode;
   /** Rendered under the escalation grid (e.g. a marketplace help line). */
   escalateHelp?: ReactNode;
+  /** Lock the escalation recipient-type select at its current value. */
+  recipientTypeDisabled?: boolean;
   /**
    * Host-supplied validation errors, merged over internal validation (host wins per field).
    * Host errors display immediately and gate Save like internal ones.
@@ -164,6 +166,7 @@ export function GuardrailBuilder({
   renderStaticRecipient,
   renderAppPicker,
   escalateHelp,
+  recipientTypeDisabled,
   errors: hostErrors,
   renderParameter,
   overrideParameterIds,
@@ -462,6 +465,7 @@ export function GuardrailBuilder({
           renderStaticRecipient={renderStaticRecipient}
           renderAppPicker={renderAppPicker}
           escalateHelp={escalateHelp}
+          recipientTypeDisabled={recipientTypeDisabled}
         />
       </div>
 

@@ -1224,6 +1224,32 @@ describe('GuardrailBuilder', () => {
       expect(screen.getByTestId('host-help')).toBeInTheDocument();
     });
 
+    it('locks the recipient type with recipientTypeDisabled', () => {
+      render(
+        <GuardrailBuilder
+          open
+          inline
+          hideHeader
+          definition={makeDef()}
+          scope="Agent"
+          guardrail={makeGuardrail({
+            action: {
+              $actionType: 'escalate',
+              app: { id: '', version: '', name: '' },
+              recipient: { type: 2, value: 'g1', displayName: 'Reviewers' },
+            },
+          })}
+          recipientTypeDisabled
+          onSave={vi.fn()}
+          onCancel={vi.fn()}
+        />
+      );
+
+      const recipientType = screen.getByRole('combobox', { name: /assign to/i });
+      expect(recipientType).toBeDisabled();
+      expect(recipientType).toHaveTextContent('Group');
+    });
+
     it('renders in modal mode with a dialog', () => {
       render(
         <GuardrailBuilder

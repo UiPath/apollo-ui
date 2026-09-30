@@ -111,6 +111,23 @@ describe('GuardrailActionSection', () => {
     expect(screen.getByText('Action App')).toBeInTheDocument();
   });
 
+  it('forwards recipientTypeDisabled to the escalation fields', () => {
+    render(
+      <GuardrailActionSection
+        action={{
+          $actionType: 'escalate',
+          app: { id: '', version: '', name: '' },
+          recipient: { type: GuardrailRecipientType.User, value: '', displayName: '' },
+        }}
+        onActionChange={vi.fn()}
+        recipientTypeDisabled
+      />
+    );
+
+    expect(screen.getByRole('combobox', { name: /assign to/i })).toBeDisabled();
+    expect(screen.getByRole('combobox', { name: /action type/i })).toBeEnabled();
+  });
+
   it('has no accessibility violations', async () => {
     const { container } = render(
       <GuardrailActionSection action={logAction} onActionChange={vi.fn()} labels={labels} />

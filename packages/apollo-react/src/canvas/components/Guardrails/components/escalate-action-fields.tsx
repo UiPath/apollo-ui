@@ -41,6 +41,11 @@ export interface EscalateActionFieldsProps {
   asGridItems?: boolean;
   /** Validation messages; each renders as soon as it is present. */
   errors?: GuardrailEscalateActionErrors;
+  /**
+   * Lock the recipient-type select at its current value (Agents, for a tenant with group
+   * assignment off). The recipient itself stays editable.
+   */
+  recipientTypeDisabled?: boolean;
   /** Per-string overrides; anything omitted resolves from the canvas lingui catalog. */
   labels?: Partial<GuardrailActionLabels>;
   renderRecipientSearch?: (ctx: GuardrailRecipientSearchContext) => ReactNode;
@@ -67,6 +72,7 @@ export function EscalateActionFields({
   actionTypeSelect,
   asGridItems = false,
   errors,
+  recipientTypeDisabled = false,
   labels: labelOverrides,
   renderRecipientSearch,
   renderStaticRecipient,
@@ -200,7 +206,11 @@ export function EscalateActionFields({
       {/* Recipient type */}
       <FormField>
         <Label htmlFor={`${uid}-escalate-recipient-type`}>{labels.assignToLabel}</Label>
-        <Select value={String(displayedRecipientType)} onValueChange={handleRecipientTypeChange}>
+        <Select
+          value={String(displayedRecipientType)}
+          onValueChange={handleRecipientTypeChange}
+          disabled={recipientTypeDisabled}
+        >
           <SelectTrigger
             id={`${uid}-escalate-recipient-type`}
             aria-label={`${labels.assignToLabel}: ${recipientTypeLabels[displayedRecipientType] ?? labels.recipientFallbackLabel}`}

@@ -108,6 +108,8 @@ export interface CustomGuardrailBuilderProps {
   renderAppPicker?: (ctx: GuardrailAppPickerContext) => ReactNode;
   /** Rendered under the escalation grid (e.g. a marketplace help line). */
   escalateHelp?: ReactNode;
+  /** Lock the escalation recipient-type select at its current value. */
+  recipientTypeDisabled?: boolean;
   /** Replace the field picker of a rule. Return `undefined` to fall through to the built-in one. */
   renderFieldSelector?: GuardrailRuleFieldSelectorRenderer;
   /** Also lists picked fields as removable chips, under each rule's picker and the filter's. */
@@ -166,6 +168,7 @@ export function CustomGuardrailBuilder({
   renderStaticRecipient,
   renderAppPicker,
   escalateHelp,
+  recipientTypeDisabled,
   renderFieldSelector,
   selectionChips = false,
   confirmAlwaysEnforce,
@@ -392,6 +395,7 @@ export function CustomGuardrailBuilder({
           renderStaticRecipient={renderStaticRecipient}
           renderAppPicker={renderAppPicker}
           escalateHelp={escalateHelp}
+          recipientTypeDisabled={recipientTypeDisabled}
         />
       </div>
 
