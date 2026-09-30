@@ -136,19 +136,15 @@ Ask one at a time, with the default in brackets:
 2. **Label.** "What should people call it in docs and pickers?" In sentence
    case.
 3. **Surfaces.** "Which surfaces does it belong in: a side panel, the
-   content area, the page header?" [side panel and content area]. From the
-   answer:
-   - side panel or content area only: `--orientations vertical`
-   - page header only: `--orientations horizontal`
-   - the page header and either of the others: `--orientations both`. Ask:
-     "Does the page header version show the same information, or less?"
-     Less means two occupants sharing a view model; build the larger one
-     first.
-   - `--surfaces`: `none` when it's every surface of those orientations,
-     otherwise the list, like `side-panel,page-header`.
+   content area, the page header?" [side panel and content area]. Pass the
+   answer as `--surfaces`, like `side-panel,content-area`. Its shape follows:
+   the page header is horizontal, side panels and the content area vertical.
+   If it's the page header and another surface, ask: "Does the page header
+   version show the same information, or less?" Less means two occupants
+   sharing a view model; build the larger one first.
    Never ask for a width in pixels. A vertical occupant's minimum follows
-   the narrowest surface it belongs in (`--min-width follow`). A horizontal
-   one starts from a guess of 160 and is measured in step 6.
+   the narrowest surface it belongs in; a horizontal one starts at 160 and
+   is measured in step 6. Leave `--min-width` out.
 4. **Padding.** "Inside the surface's padding, or edge to edge?" (padded or
    flush)
 5. **Scrolling.** "When there's more than fits, should the surface scroll it,
@@ -175,9 +171,8 @@ Pass every answer, so nothing is asked twice:
 ```bash
 pnpm create:occupant <name> --view-model <file.json> \
   --label "<label>" --description "<sentence>" --icon <Icon> \
-  --orientations <vertical|horizontal|both> --min-width <follow|160> \
+  --surfaces <a comma list of page-header, side-panel, content-area> \
   --padding <padded|flush> --scroll <surface|occupant|either> \
-  --surfaces <none|a comma list of page-header, side-panel, content-area> \
   --subject "<noun>" --empty "<sentence>" \
   --primary-domain "<domain>" --secondary-domain "<domain>"
 ```

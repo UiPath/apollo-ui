@@ -9,14 +9,18 @@
  *   --description <sentence>    what it shows: the doc comment, the registry
  *                               description, and the docs page's opening
  *   --icon <LucideName>         its icon in pickers
- *   --orientations <vertical|horizontal|both>
- *   --min-width <px|follow>     a first guess; measure:occupant finds the floor.
- *                               "follow" tracks the narrowest surface it claims
+ *   --surfaces <list>           the surfaces it belongs in, a comma list of
+ *                               page-header, side-panel, content-area. Its
+ *                               shape follows: the page header is horizontal,
+ *                               side panels and the content area vertical
+ *   --min-width <follow|px>     leave out: a vertical occupant follows the
+ *                               narrowest surface it belongs in, a horizontal
+ *                               one starts at 160 until measure:occupant
+ *                               measures it. A px value is a raised minimum,
+ *                               with its reason written in the spec
  *   --padding <padded|flush>
  *   --scroll <surface|occupant|either>
- *   --surfaces <none|list>      the surfaces it belongs in, when not every
- *                               surface of its orientations: a comma list of
- *                               page-header, side-panel, content-area
+ *   --fields <name:kind,...>    the fields, without a --view-model file
  *   --view-model <file.json>    the view model (see VIEW MODEL below)
  *   --subject <noun>            copy: what it shows, lowercase ("participants")
  *   --empty <sentence>          copy: the empty state's message
@@ -162,25 +166,39 @@ const icon = await ask(
       ? null
       : `lucide-react has no ${a} icon.`,
 );
-const orientationsAnswer = await ask(
-  "orientations",
-  "What shape of space does it work in?\n" +
-    "  vertical: a column that grows downward, like a side panel\n" +
-    "  horizontal: a wide, short band, like a page header\n" +
-    "  both: it shows the same information in either shape",
-  "vertical",
-  oneOf(["vertical", "horizontal", "both"]),
-);
-const minWidth = await ask(
-  "min-width",
-  "What's the narrowest width, in px, where it still works? Guess for now:\n" +
-    "  pnpm measure:occupant finds the real floor across every example.",
-  "240",
+// Where it belongs decides its shape: the page header is horizontal, side
+// panels and the content area are vertical.
+const SURFACE_NAMES = ["page-header", "side-panel", "content-area"];
+const VERTICAL = ["side-panel", "content-area"];
+const belongsAnswer = await ask(
+  "surfaces",
+  "Which surfaces does it belong in? A comma list of page-header, side-panel,\n" +
+    "  content-area.",
+  VERTICAL.join(","),
   (a) =>
-    /^[1-9]\d*$/.test(a) || a === "follow"
+    a.split(",").every((name) => SURFACE_NAMES.includes(name.trim()))
       ? null
-      : 'Use a whole number of px, or "follow" to track the surface.',
+      : `List some of: ${SURFACE_NAMES.join(", ")}.`,
 );
+const belongs = SURFACE_NAMES.filter((name) =>
+  belongsAnswer.split(",").some((answer) => answer.trim() === name),
+);
+const inVertical = belongs.some((name) => VERTICAL.includes(name));
+const inHeader = belongs.includes("page-header");
+const orientationsAnswer =
+  inVertical && inHeader ? "both" : inHeader ? "horizontal" : "vertical";
+// The spec lists its surfaces only when they're some, not all, of its shapes'.
+const ofItsShapes = SURFACE_NAMES.filter(
+  (name) =>
+    (inVertical && VERTICAL.includes(name)) ||
+    (inHeader && name === "page-header"),
+);
+const surfaces = belongs.length === ofItsShapes.length ? null : belongs;
+// Never asked: it follows the surface, or it's measured.
+const minWidth =
+  flag("min-width") ?? (orientationsAnswer === "vertical" ? "follow" : "160");
+if (!/^[1-9]\d*$/.test(minWidth) && minWidth !== "follow")
+  fail(`--min-width ${minWidth}: use "follow", or a whole number of px.`);
 const padding = await ask(
   "padding",
   "Does it sit inside the surface's padding (padded), or run edge to edge (flush)?",
@@ -196,23 +214,6 @@ const scrollAnswer = await ask(
   "surface",
   oneOf(["surface", "occupant", "either"]),
 );
-const SURFACE_NAMES = ["page-header", "side-panel", "content-area"];
-const surfacesAnswer = await ask(
-  "surfaces",
-  "Does it belong in only some surfaces of its shape? List them, comma separated\n" +
-    "  (page-header, side-panel, content-area), or answer none for all of them.",
-  "none",
-  (a) =>
-    a === "none" ||
-    a.split(",").every((name) => SURFACE_NAMES.includes(name.trim()))
-      ? null
-      : `Answer none, or list some of: ${SURFACE_NAMES.join(", ")}.`,
-);
-const surfaces =
-  surfacesAnswer === "none"
-    ? null
-    : surfacesAnswer.split(",").map((name) => name.trim());
-
 // The view model: a JSON file, or fields typed in as name:kind[?].
 const KINDS = [
   "title",
@@ -250,7 +251,9 @@ if (viewModelFile) {
     "fields",
     "What does each item hold? List fields as name:kind, with ? when it's optional.\n" +
       "  Kinds: title (main text), label (short, one line), value (the value in a\n" +
-      "  label and value pair), detail (secondary text), meta (small text, like a time).",
+      "  label and value pair), detail (secondary text), meta (small text, like a\n" +
+      "  time), figure (a prominent value, like an amount), status (a label with a\n" +
+      "  tone, and a count of any more).",
     "title:title, detail:detail?",
   );
   viewModel = {
@@ -334,9 +337,7 @@ const FOLLOW_TOKEN: Record<string, string> = {
 const follows = minWidth === "follow";
 // The narrowest vertical surface it belongs in.
 const followed =
-  ["side-panel", "content-area"].find(
-    (name) => !surfaces || surfaces.includes(name),
-  ) ?? "page-header";
+  VERTICAL.find((name) => belongs.includes(name)) ?? "page-header";
 if (follows && (orientationsAnswer !== "vertical" || !FOLLOW_TOKEN[followed]))
   fail(
     "--min-width follow: only a vertical occupant can follow its surface; the page header promises no width.",
@@ -1024,12 +1025,19 @@ ${unfilled.join("\n")}`
 Next:
   1. Fill in anything above, including both example adapters: real-looking
      data from ${primaryDomain} and ${secondaryDomain}.
-  2. Measure the floor, and set minWidth:
+  2. Measure it:
        pnpm measure:occupant ${occupantName}
+${
+  follows
+    ? `     Its minimum follows the ${followLabel}, so nothing may clip there: fix the
+     layout if it does. To raise it on purpose, with the reason in the spec:
+       pnpm measure:occupant ${occupantName} --set <px> --reason "<why it's wider>"`
+    : `     Then set the minimum to the floor, or raise it with the reason in the spec:
        pnpm measure:occupant ${occupantName} --apply
-       pnpm measure:occupant ${occupantName} --set <px> --reason "<why it's wider>"
-  3. Run the occupant checks:
-       pnpm exec playwright test --project=core occupants -g "${occupantName}"
+       pnpm measure:occupant ${occupantName} --set <px> --reason "<why it's wider>"`
+}
+  3. Run the occupant checks: the create-occupant skill's list, starting with
+       pnpm exec playwright test --project=core occupants docs workbench -g "${occupantName}"
 
 A new docs page won't show until the dev server's page list is rebuilt:
 stop the dev server, run rm -rf .next/dev, and start it again.

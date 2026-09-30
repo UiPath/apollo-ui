@@ -7,7 +7,8 @@
  * minWidth at or above the floor: above it when the occupant gets hard to
  * read before it breaks.
  *
- *   --apply      set minWidth to the measured floor
+ *   --apply      set minWidth to the measured floor (not when it follows a
+ *                surface: fix the layout instead)
  *   --set <px>   set minWidth to a chosen width, at or above the floor, with
  *   --reason <text>  why it's above the floor (written as the spec's comment)
  *
@@ -31,6 +32,18 @@ const occupants = registry.items
 if (!name || !occupants.includes(name)) {
   console.error(
     `measure:occupant: name a registered occupant: ${occupants.join(", ")}`,
+  );
+  process.exit(1);
+}
+
+const specPath = join(root, `registry/${name}/${name}.occupant.ts`);
+const spec = readFileSync(specPath, "utf8");
+// A minimum that follows a surface's width token, not a number.
+const followsToken = !/minWidth:\s*\d+\s*[,}\n]/.test(spec);
+if (followsToken && process.argv.includes("--apply")) {
+  console.error(
+    "measure:occupant: its minWidth follows a surface, so --apply would stop it following.\n" +
+      "If it clips there, fix the layout. To raise it on purpose, use --set <px> --reason.",
   );
   process.exit(1);
 }
@@ -78,8 +91,6 @@ if (results.length === 0) {
   console.error("measure:occupant: the measuring run wrote no results.");
   process.exit(1);
 }
-const specPath = join(root, `registry/${name}/${name}.occupant.ts`);
-const spec = readFileSync(specPath, "utf8");
 // From the index, so a minWidth that follows a surface's token resolves too.
 const declared = results[0]?.declared ?? Number.NaN;
 const MIN_WIDTH = /minWidth:\s*[^,}\n]+/;
@@ -186,7 +197,6 @@ if (declared < floor) {
   );
   process.exit(1);
 }
-const followsToken = !/minWidth:\s*\d+\s*[,}\n]/.test(spec);
 console.log(
   declared === floor
     ? "The declared minWidth is the measured floor."

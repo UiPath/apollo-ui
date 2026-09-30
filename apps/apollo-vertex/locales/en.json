@@ -424,7 +424,7 @@
   "workbench_state_loading": "Loading",
   "workbench_state_ready": "Ready",
   "workbench_status_clips": "Clips",
-  "workbench_status_clips_hint": "Narrower than the measured floor: it clips",
+  "workbench_status_clips_hint": "Something overflows at this width",
   "workbench_status_in": "In range",
   "workbench_status_in_hint": "Within the surface's range",
   "workbench_status_outside": "Outside range",
