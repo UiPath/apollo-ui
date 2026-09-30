@@ -92,9 +92,11 @@ export function GuardrailActionSection({
     filter: labels.actionFilterLabel,
     escalate: labels.actionEscalateLabel,
   };
+  // The current type is kept only against `allowedActionTypes`; `showFilter` alone still drops
+  // a stored filter action from the list, as it always has.
   const offeredActionTypes = ACTION_TYPES.filter(
     (type) =>
-      type === action.$actionType ||
+      (allowedActionTypes !== undefined && type === action.$actionType) ||
       ((type !== 'filter' || showFilter) && (allowedActionTypes?.includes(type) ?? true))
   );
 

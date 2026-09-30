@@ -2,13 +2,13 @@ import { fireEvent, render as rtlRender, screen, waitFor } from '@testing-librar
 import { TooltipProvider } from '@uipath/apollo-wind';
 import { axe } from 'jest-axe';
 import type { ReactElement } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 import type {
   GuardrailBuilderValue,
   GuardrailDefinition,
   GuardrailEscalateRecipient,
 } from './builder-types';
-import { GuardrailBuilder } from './guardrail-builder';
+import { GuardrailBuilder, type GuardrailBuilderProps } from './guardrail-builder';
 
 // The form renders a radix tooltip for the "Enable for evaluations" info icon, which
 // requires a TooltipProvider ancestor.
@@ -1376,6 +1376,13 @@ describe('GuardrailBuilder', () => {
         'Block',
         'Escalate',
       ]);
+    });
+
+    it('takes no filter in allowedActionTypes, since it has no filter field picker', () => {
+      // Type-level: a new guardrail would otherwise start on a filter action nobody can edit.
+      expectTypeOf<
+        NonNullable<GuardrailBuilderProps['allowedActionTypes']>[number]
+      >().toEqualTypeOf<'log' | 'block' | 'escalate'>();
     });
 
     it('keeps an edited guardrail on its stored action whatever is allowed', () => {
