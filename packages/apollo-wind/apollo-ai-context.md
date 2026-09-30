@@ -388,8 +388,10 @@ A field with `valueModes`, `headerActions`, `menuActions` or `badge` renders the
 menu (`FieldMenu`). Hosts register codecs, mode definitions (with `validate`), controls and
 `literalControls` through `FormPlugin.valueModes`; actions through `FormPlugin.fieldActions`
 (`header`, `menu`), built from `createInsertVariableAction`, `createAiAssistAction` and
-`createClearAction` with the configuration each needs; and strings for every built-in through
-`FormPlugin.strings` (`valueModes`, `boolean`, `insertVariable`, `aiAssist`, `clear`, `validation`).
+`createClearAction` with the configuration each needs; the form's variables through
+`FormPlugin.variables` (Insert variable falls back to them and hides itself in Variable mode; the
+Variable control's picker reads them); and
+strings for every built-in through `FormPlugin.strings` (`valueModes`, `boolean`, `insertVariable`, `aiAssist`, `clear`, `validation`).
 Keep plugin objects stable. The default codec stores every value as `{ $mode, value }` (no `value`
 once cleared) and reads a raw value as literal, so code that reads form values must expect the
 envelope once a field adopts modes. `convert` returns the value in the new mode and is asked about
@@ -397,6 +399,9 @@ empty values too, so a switch can seed one; `encode` gets the previous stored va
 conditions and data sources read a mode field's literal value only (`literalValues`; other modes
 read as `VALUE_MODE_OPAQUE`). A registered control that takes text passes `insertable: true` and
 either wires `controlRef` or renders a text input with the field's name as its id.
+The built-in Variable and Prompt controls are `VariableValueControl` (the whole control is a picker
+showing the bound reference) and `PromptValueControl` (a textarea growing from one to six lines, in
+an `InputGroup` with `variant="agent"`), both usable outside MetadataForm.
 
 ---
 

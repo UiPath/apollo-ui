@@ -21,6 +21,9 @@ export interface ValueModeStrings {
   promptDescription: string;
   /** Shown in the variable control while no variable is bound. */
   variablePlaceholder: string;
+  /** The variable picker's search box and its empty state. */
+  variableSearchPlaceholder: string;
+  variableEmpty: string;
   /** Shown in the prompt control while the prompt is empty. */
   promptPlaceholder: string;
   /** Names the menu trigger when it offers only actions and no modes. */
@@ -47,6 +50,8 @@ export const DEFAULT_VALUE_MODE_STRINGS: ValueModeStrings = {
   promptTitle: 'Prompt',
   promptDescription: 'Describe the value for the agent to fill in',
   variablePlaceholder: 'Select a variable',
+  variableSearchPlaceholder: 'Search variables...',
+  variableEmpty: 'No variables found.',
   promptPlaceholder: 'Describe the value',
   fieldActions: 'Field actions',
   expressionIndicator: 'JavaScript expression',

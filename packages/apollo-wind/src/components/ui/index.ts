@@ -43,6 +43,7 @@ export * from './popover';
 export * from './portal-container';
 export * from './progress';
 export * from './prompt-editor';
+export * from './prompt-value-control';
 export * from './quick-form-field';
 export * from './radio-group';
 export * from './resizable';
@@ -80,3 +81,4 @@ export type {
 } from './tree-view';
 export { default as FileTreeView, TreeView } from './tree-view';
 export * from './variable-picker';
+export * from './variable-value-control';

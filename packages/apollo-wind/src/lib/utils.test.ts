@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
-import { cn } from './utils';
+import { cn, composeRefs } from './utils';
 
 describe('cn utility', () => {
   it('merges class names', () => {
@@ -32,5 +32,31 @@ describe('cn utility', () => {
 
   it('deduplicates Tailwind utility classes', () => {
     expect(cn('text-red-500', 'text-blue-500')).toBe('text-blue-500');
+  });
+});
+
+describe('composeRefs', () => {
+  it('sets object and callback refs', () => {
+    const object = { current: null as string | null };
+    const callback = vi.fn();
+    composeRefs<string>(object, callback)('node');
+    expect(object.current).toBe('node');
+    expect(callback).toHaveBeenCalledWith('node');
+  });
+
+  it('returns nothing when no ref gives a cleanup, so React calls it again with null', () => {
+    expect(composeRefs<string>({ current: null }, vi.fn())('node')).toBeUndefined();
+  });
+
+  it("runs a callback ref's cleanup and resets the other refs", () => {
+    const object = { current: null as string | null };
+    const cleanup = vi.fn();
+    const plain = vi.fn();
+    const dispose = composeRefs<string>(object, () => cleanup, plain)('node');
+    expect(typeof dispose).toBe('function');
+    (dispose as () => void)();
+    expect(cleanup).toHaveBeenCalledTimes(1);
+    expect(object.current).toBeNull();
+    expect(plain).toHaveBeenLastCalledWith(null);
   });
 });

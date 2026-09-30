@@ -186,14 +186,14 @@ describe('InputGroup', () => {
     expect(group).toHaveClass('has-[>textarea]:h-auto');
   });
 
-  it('pads the textarea by the difference to a standalone Textarea, not its full inset', () => {
+  it("pads the textarea only up to the row's midline, not its full inset", () => {
     render(
       <InputGroup>
         <InputGroupTextarea placeholder="Notes" />
       </InputGroup>
     );
     const textarea = screen.getByPlaceholderText('Notes');
-    expect(textarea).toHaveClass('py-1', 'future:py-0');
+    expect(textarea).toHaveClass('py-1', 'future:py-0.5');
     expect(textarea).not.toHaveClass('py-2');
   });
 
