@@ -1,12 +1,12 @@
 export default {
-  "activity-timeline": "Activity Timeline",
+  "activity-timeline": "Activity timeline",
   "ai-chat": "AI Chat",
   "feedback-vote-widget": "Feedback Vote Widget",
-  "key-facts": "Key Facts",
+  "key-facts": "Key facts",
   "metric-card": "Metric Card",
   "page-header": "Page Header",
   participants: "Participants",
   queue: "Queue",
   shell: "Shell",
-  "stage-strip": "Stage Strip",
+  "stage-strip": "Stage strip",
 };
