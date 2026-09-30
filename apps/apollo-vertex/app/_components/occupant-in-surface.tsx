@@ -1,10 +1,8 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { ContentArea } from "@/components/ui/content-area";
+import { SURFACE_HOSTS } from "@/app/_components/surface-hosts";
 import type { OccupantState } from "@/components/ui/occupant";
-import { PageHeader } from "@/components/ui/page-header";
-import { SidePanel } from "@/components/ui/side-panel";
 import {
   occupantPadding,
   PADDED_INSET_PX,
@@ -42,7 +40,8 @@ export function OccupantInSurface({
 }: OccupantInSurfaceProps) {
   const entry = OCCUPANT_REGISTRY.find((o) => o.spec.name === occupant);
   const surface = SURFACE_SPECS.find((s) => s.name === surfaceName);
-  if (!entry || !surface) return null;
+  const Host = SURFACE_HOSTS[surfaceName];
+  if (!entry || !surface || !Host) return null;
   const { spec } = entry;
   const padding = occupantPadding(spec);
   const content = entry.render(example, { state });
@@ -50,7 +49,8 @@ export function OccupantInSurface({
     width:
       width ??
       spec.requires.minWidth + (padding === "padded" ? 2 * PADDED_INSET_PX : 0),
-    height: surface.name === "page-header" ? "auto" : height,
+    // A horizontal surface doesn't grow downward: it takes its content's height.
+    height: surface.provides.orientation === "horizontal" ? "auto" : height,
   };
 
   return (
@@ -61,25 +61,13 @@ export function OccupantInSurface({
         className="flex max-w-full flex-col"
         style={style}
       >
-        {surface.name === "page-header" && (
-          <PageHeader padding={padding}>{content}</PageHeader>
-        )}
-        {surface.name === "side-panel" && (
-          <SidePanel
-            side="end"
-            aria-label={spec.label}
-            padding={padding}
-            scroll={scrollOwner(surface, spec)}
-            className="w-full [--side-panel-width:100%]"
-          >
-            {content}
-          </SidePanel>
-        )}
-        {surface.name === "content-area" && (
-          <ContentArea padding={padding} scroll={scrollOwner(surface, spec)}>
-            {content}
-          </ContentArea>
-        )}
+        <Host
+          padding={padding}
+          scroll={scrollOwner(surface, spec)}
+          label={spec.label}
+        >
+          {content}
+        </Host>
       </div>
     </LocaleProvider>
   );
