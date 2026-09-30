@@ -11,6 +11,7 @@ import { Info } from 'lucide-react';
 import { type ReactNode, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import {
   GUARDRAIL_BYO_VALIDATOR_TYPE,
+  type GuardrailAction,
   type GuardrailAppPickerContext,
   type GuardrailBuilderErrors,
   type GuardrailBuilderValue,
@@ -27,10 +28,7 @@ import {
   getGuardrailSelectorErrorFields,
   initGuardrailBuilderFormData,
 } from './builder-utils';
-import {
-  GuardrailActionSection,
-  type GuardrailActionSectionProps,
-} from './components/guardrail-action-section';
+import { GuardrailActionSection } from './components/guardrail-action-section';
 import { GuardrailEvalsToggle } from './components/guardrail-evals-toggle';
 import { GuardrailNameFields } from './components/guardrail-name-fields';
 import { GuardrailScopeSelector } from './components/guardrail-scope-selector';
@@ -116,9 +114,10 @@ export interface GuardrailBuilderProps {
   evalsTogglePlacement?: 'form' | 'footer';
   /**
    * The action types to offer (e.g. log and block only, for a host with no escalation). A new
-   * guardrail starts on the first of them when log is not among them.
+   * guardrail starts on the first of them when log is not among them. Filter is not one: this
+   * builder has no field picker to edit it (`CustomGuardrailBuilder` does).
    */
-  allowedActionTypes?: GuardrailActionSectionProps['allowedActionTypes'];
+  allowedActionTypes?: ReadonlyArray<Exclude<GuardrailAction['$actionType'], 'filter'>>;
   renderRecipientSearch?: (ctx: GuardrailRecipientSearchContext) => ReactNode;
   /**
    * Replace the editor for static/asset recipients (types 3/4/5/6). Return `undefined` to
@@ -210,7 +209,8 @@ export function GuardrailBuilder({
     const data = initGuardrailBuilderFormData(definition, scope, guardrail, toolName);
     if (!guardrail && defaultName) data.name = defaultName;
     const [firstAllowed] = allowedActionTypes ?? [];
-    if (!guardrail && firstAllowed && !allowedActionTypes?.includes(data.action.$actionType)) {
+    const isDefaultAllowed = allowedActionTypes?.some((type) => type === data.action.$actionType);
+    if (!guardrail && firstAllowed && !isDefaultAllowed) {
       data.action = createDefaultGuardrailAction(firstAllowed);
     }
     return data;

@@ -83,6 +83,16 @@ describe('GuardrailActionSection', () => {
       expect(await optionNames()).toEqual(['Log', 'Block', 'Escalate']);
     });
 
+    it('leaves the default list as it was for a stored filter action without showFilter', async () => {
+      render(
+        <GuardrailActionSection
+          action={{ $actionType: 'filter', fields: [] }}
+          onActionChange={vi.fn()}
+        />
+      );
+      expect(await optionNames()).toEqual(['Log', 'Block', 'Escalate']);
+    });
+
     it('still offers filter only with showFilter', async () => {
       render(
         <GuardrailActionSection

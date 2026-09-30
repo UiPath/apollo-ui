@@ -802,7 +802,8 @@ const [action, setAction] = useState<GuardrailAction>({
 - **`allowedActionTypes` narrows the offered types** (log and block only, for a host with no
   escalation), `filter` still gated on `showFilter`. The current type stays listed, so a stored
   action outside the list never blanks the select. Both builders forward it, and start a new
-  guardrail on the first allowed type when log is not among them.
+  guardrail on the first allowed type when log is not among them. `GuardrailBuilder`'s takes no
+  `filter`, which it has no field picker for.
 - **Asset recipients round-trip.** Types 4 and 6 display as their static siblings (3 and 5) in
   the type select, so a value written by a host asset editor never blanks the selection.
 - **Recipient types outside 1-6 pass through.** Agents' argument (7, 8) and
