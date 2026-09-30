@@ -28,7 +28,10 @@ const revealCurrent = (node: HTMLElement | null) =>
 
 type QueueProps = OccupantViewProps<QueueViewModel> & OccupantSelectionProps;
 
-/** Occupant: A list of items to work through, grouped and filtered, where picking one opens it. */
+/**
+ * Occupant: a list of items to work through, grouped and filtered, where
+ * picking one opens it.
+ */
 function Queue({
   view,
   state = "ready",
@@ -75,7 +78,7 @@ function Queue({
           value={filter}
           onValueChange={setFilter}
           // A mask hides focus rings, so the list's ring is drawn here.
-          className="min-h-0 flex-1 gap-0 rounded-lg has-[[data-slot=tabs-content]:focus-visible]:ring-2 has-[[data-slot=tabs-content]:focus-visible]:ring-ring/50 has-[[data-slot=tabs-content]:focus-visible]:ring-inset"
+          className="min-h-0 flex-1 gap-0 rounded-lg has-[[data-slot=tabs-content]:focus-visible]:ring-2 has-[[data-slot=tabs-content]:focus-visible]:ring-ring has-[[data-slot=tabs-content]:focus-visible]:ring-inset"
         >
           <div
             ref={tabsRef}

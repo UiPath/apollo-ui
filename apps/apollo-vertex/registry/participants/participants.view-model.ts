@@ -1,7 +1,8 @@
 /**
- * The neutral view model for the participants: the people involved with an item, what each one does, and when they last acted.
- * No domain terms. A solution's adapter maps its own data into it; the
- * occupant never sees the domain.
+ * The neutral view model for the participants: the people involved with an
+ * item, what each one does, and when they last acted. No domain terms. A
+ * solution's adapter maps its own data into it; the occupant never sees the
+ * domain.
  */
 
 export interface Participant {

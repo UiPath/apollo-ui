@@ -9,7 +9,10 @@ import type { ParticipantsViewModel } from "./participants.view-model";
 
 type ParticipantsProps = OccupantViewProps<ParticipantsViewModel>;
 
-/** Occupant: The people involved with an item, what each one does, and when they last acted. */
+/**
+ * Occupant: the people involved with an item, what each one does, and when
+ * they last acted.
+ */
 function Participants({ view, state = "ready", onRetry }: ParticipantsProps) {
   const { t } = useTranslation();
   // Nothing to show is the empty state.
@@ -25,7 +28,7 @@ function Participants({ view, state = "ready", onRetry }: ParticipantsProps) {
       >
         <ul
           aria-label={t("participants_label", { subject: view.subject })}
-          className={"flex min-w-0 flex-col gap-3"}
+          className="flex min-w-0 flex-col gap-3"
         >
           {view.participants.map((entry) => (
             <li key={entry.id} className="flex min-w-0 flex-col">
