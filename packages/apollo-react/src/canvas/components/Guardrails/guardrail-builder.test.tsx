@@ -1250,6 +1250,48 @@ describe('GuardrailBuilder', () => {
       expect(recipientType).toHaveTextContent('Group');
     });
 
+    it('offers only allowedActionTypes and starts a new guardrail on the first', async () => {
+      render(
+        <GuardrailBuilder
+          open
+          inline
+          hideHeader
+          definition={makeDef()}
+          scope="Agent"
+          allowedActionTypes={['block', 'escalate']}
+          onSave={vi.fn()}
+          onCancel={vi.fn()}
+        />
+      );
+
+      const actionType = screen.getByRole('combobox', { name: /action type/i });
+      expect(actionType).toHaveTextContent('Block');
+      fireEvent.click(actionType);
+      await screen.findAllByRole('option');
+      expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual([
+        'Block',
+        'Escalate',
+      ]);
+    });
+
+    it('keeps an edited guardrail on its stored action whatever is allowed', () => {
+      render(
+        <GuardrailBuilder
+          open
+          inline
+          hideHeader
+          definition={makeDef()}
+          scope="Agent"
+          guardrail={makeGuardrail({ action: { $actionType: 'log', severityLevel: 'Error' } })}
+          allowedActionTypes={['block']}
+          onSave={vi.fn()}
+          onCancel={vi.fn()}
+        />
+      );
+
+      expect(screen.getByRole('combobox', { name: /action type/i })).toHaveTextContent('Log');
+    });
+
     it('renders in modal mode with a dialog', () => {
       render(
         <GuardrailBuilder

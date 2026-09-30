@@ -494,6 +494,28 @@ describe('CustomGuardrailBuilder', () => {
       expect(screen.getByText('No schema available to show fields')).toBeInTheDocument();
     });
 
+    it('offers only allowedActionTypes and starts a new guardrail on the first', async () => {
+      render(
+        <CustomGuardrailBuilder
+          open
+          inline
+          hideHeader
+          allowedActionTypes={['filter', 'block']}
+          onSave={vi.fn()}
+          onCancel={vi.fn()}
+        />
+      );
+
+      const actionType = screen.getByRole('combobox', { name: /action type/i });
+      expect(actionType).toHaveTextContent('Filter');
+      fireEvent.click(actionType);
+      await screen.findAllByRole('option');
+      expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual([
+        'Block',
+        'Filter',
+      ]);
+    });
+
     it('passes the escalate slots through to the action section', () => {
       render(
         <CustomGuardrailBuilder

@@ -23,12 +23,22 @@ import { createDefaultGuardrailAction } from '../builder-utils';
 import { type GuardrailActionLabels, useGuardrailActionLabels } from '../i18n';
 import { EscalateActionFields } from './escalate-action-fields';
 
+type GuardrailActionType = GuardrailAction['$actionType'];
+
+const ACTION_TYPES: readonly GuardrailActionType[] = ['log', 'block', 'filter', 'escalate'];
+
 export interface GuardrailActionSectionProps {
   action: GuardrailAction;
   /** Receives the whole next action; switching the type resets the payload. */
   onActionChange: (action: GuardrailAction) => void;
   /** Whether to include 'filter' as an option (custom guardrails only) */
   showFilter?: boolean;
+  /**
+   * The action types to offer (e.g. log and block only, for a host with no escalation). Default:
+   * all of them, filter still gated on `showFilter`. The current type stays listed, so a stored
+   * action outside the list never blanks the select.
+   */
+  allowedActionTypes?: readonly GuardrailActionType[];
   /** Content rendered as the second grid column when $actionType === 'filter' */
   filterContent?: ReactNode;
   /** Validation messages; each renders as soon as it is present. */
@@ -61,6 +71,7 @@ export function GuardrailActionSection({
   action,
   onActionChange,
   showFilter = false,
+  allowedActionTypes,
   filterContent,
   errors,
   recipientTypeDisabled,
@@ -75,6 +86,18 @@ export function GuardrailActionSection({
   // Namespaced per instance — two builders can share a document (inline panels).
   const uid = useId();
 
+  const actionTypeLabels: Record<GuardrailActionType, string> = {
+    log: labels.actionLogLabel,
+    block: labels.actionBlockLabel,
+    filter: labels.actionFilterLabel,
+    escalate: labels.actionEscalateLabel,
+  };
+  const offeredActionTypes = ACTION_TYPES.filter(
+    (type) =>
+      type === action.$actionType ||
+      ((type !== 'filter' || showFilter) && (allowedActionTypes?.includes(type) ?? true))
+  );
+
   const actionTypeSelect = (
     <FormField>
       <Label htmlFor={`${uid}-action-type`}>
@@ -84,17 +107,18 @@ export function GuardrailActionSection({
       <Select
         value={action.$actionType}
         onValueChange={(type) =>
-          onActionChange(createDefaultGuardrailAction(type as GuardrailAction['$actionType']))
+          onActionChange(createDefaultGuardrailAction(type as GuardrailActionType))
         }
       >
         <SelectTrigger id={`${uid}-action-type`}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="log">{labels.actionLogLabel}</SelectItem>
-          <SelectItem value="block">{labels.actionBlockLabel}</SelectItem>
-          {showFilter && <SelectItem value="filter">{labels.actionFilterLabel}</SelectItem>}
-          <SelectItem value="escalate">{labels.actionEscalateLabel}</SelectItem>
+          {offeredActionTypes.map((type) => (
+            <SelectItem key={type} value={type}>
+              {actionTypeLabels[type]}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
     </FormField>
