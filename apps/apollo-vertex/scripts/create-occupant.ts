@@ -45,7 +45,7 @@
  *     title   the item's main text; wraps (on a card: one line, truncated,
  *             with the full title in a tooltip)
  *     label   a short single line; truncates, full text in a tooltip
- *     value   the main text of a label and value pair; shows "Not set" when empty
+ *     value   the value in a label and value pair; shows "Not set" when empty
  *     detail  secondary text; wraps
  *     meta    small text, like a time; wraps
  *     figure  a prominent value, like an amount; at the end of the title's line
@@ -897,7 +897,7 @@ ${
 ## Selection
 
 Your page owns which item is current: pass \`currentId\`, and change it in
-\`onSelect\`, usually to open that item in main. Picking a card, or stepping
+\`onSelect\`, usually to open that item in the content area. Picking a card, or stepping
 with Previous and Next, calls \`onSelect\`. Stepping follows the order on
 screen${filtered ? ", within the active filter" : ""}.
 `

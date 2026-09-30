@@ -59,7 +59,8 @@ occupant together with anything outside it.
   (a filter, a group, an action, another field), don't build it: list it as a
   suggestion when you finish, with a sentence on why.
 - **No pixels from the person.** Ask which surfaces it belongs in. The
-  minimum width follows the surface, or is measured (step 5).
+  minimum width follows the surface, or is measured (step 6). It's raised
+  only when it's hard to read, with the reason written in the spec.
 
 ## 1. Look for one that already exists
 
@@ -210,15 +211,15 @@ pnpm measure:occupant <name>
 It reports the floor for each example in each surface: the narrowest width
 where nothing clips.
 
-- **It follows the surface:** the floor must be at or below the surface's
-  minimum. If it isn't, fix the layout (wrap or truncate what clips); don't
-  raise the minimum.
+- **It follows the surface (the default):** the floor must be at or below
+  the surface's minimum. If it isn't, fix the layout (wrap or truncate what
+  clips) rather than raising the minimum.
 - **It doesn't (a horizontal occupant):** set it to the floor with
-  `pnpm measure:occupant <name> --apply`. Raise it only when the person,
-  looking at the workbench, says it's hard to read there; then use `--set`
-  with a width you choose and `--reason` saying why.
+  `pnpm measure:occupant <name> --apply`.
 
-Both update the spec and the comment above `requires`. Point the person to
+Either way, raise it only when the person, looking at the workbench, says
+it's hard to read at its minimum: `--set` with a width you choose and
+`--reason` saying why. The reason is written in the spec, above `requires`. Point the person to
 the workbench, `/preview/occupants?occupant=<name>`, to try it in every
 surface, sample, state, and theme.
 

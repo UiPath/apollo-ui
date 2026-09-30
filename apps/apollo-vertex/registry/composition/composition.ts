@@ -107,9 +107,11 @@ export interface SurfaceSpec<TName extends string = string> {
 /** What an occupant needs from the surface it sits in. */
 export interface OccupantRequirements {
   /**
-   * The narrowest inner width, in px, where the occupant still works. An
-   * occupant must render without clipping or overflowing at any width from
-   * its minWidth up.
+   * The narrowest inner width, in px, where the occupant still works: it
+   * must render without clipping at any width from here up. By default it
+   * follows the width token of the narrowest surface it belongs in; a
+   * horizontal occupant's is its measured floor. A raised minimum has its
+   * reason in a comment above `requires`.
    */
   minWidth: number;
   scroll: ScrollOwner | "either";
@@ -125,9 +127,8 @@ export interface OccupantSpec<TName extends string = string> {
   /** Optional icon for pickers and switchers, a lucide icon component. */
   icon?: LucideIcon;
   /**
-   * The surfaces the occupant works in, by name. Omit it when any surface
-   * will do. An occupant built from one surface's parts (like an item header
-   * made of PageHeader parts) lists only that surface.
+   * The surfaces the occupant belongs in, by name: only when it's some, not
+   * all, of the surfaces of its orientations. Leave it out otherwise.
    */
   surfaces?: readonly string[];
   /** The surface orientations the occupant works in. Defaults to ["vertical"]. */
