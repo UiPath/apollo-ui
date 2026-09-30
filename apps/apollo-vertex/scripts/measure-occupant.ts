@@ -68,6 +68,8 @@ type Result = {
   example: string;
   floor: number | null;
   from: number;
+  /** The spec's minWidth, as the occupant index resolves it. */
+  declared: number;
 };
 const results: Result[] = readdirSync(out).map((file) =>
   JSON.parse(readFileSync(join(out, file), "utf8")),
@@ -78,7 +80,9 @@ if (results.length === 0) {
 }
 const specPath = join(root, `registry/${name}/${name}.occupant.ts`);
 const spec = readFileSync(specPath, "utf8");
-const declared = Number(spec.match(/minWidth:\s*(\d+)/)?.[1] ?? Number.NaN);
+// From the index, so a minWidth that follows a surface's token resolves too.
+const declared = results[0]?.declared ?? Number.NaN;
+const MIN_WIDTH = /minWidth:\s*[^,}\n]+/;
 
 const floorText = (r: (typeof results)[number]) =>
   r.floor === null ? `>${r.from}` : r.floor <= 40 ? "<=40" : String(r.floor);
@@ -155,9 +159,7 @@ if (chosen !== null) {
     process.exit(1);
   }
   // Replace the comment right above `requires` with the reason, wrapped.
-  const lines = spec
-    .replace(/minWidth:\s*\d+/, `minWidth: ${chosen}`)
-    .split("\n");
+  const lines = spec.replace(MIN_WIDTH, `minWidth: ${chosen}`).split("\n");
   const at = lines.findIndex((line) => /^\s*requires:/.test(line));
   let top = at;
   while (top > 0 && /^\s*\/\//.test(lines[top - 1] ?? "")) top--;
@@ -184,8 +186,11 @@ if (declared < floor) {
   );
   process.exit(1);
 }
+const followsToken = !/minWidth:\s*\d+\s*[,}\n]/.test(spec);
 console.log(
   declared === floor
     ? "The declared minWidth is the measured floor."
-    : `The declared minWidth is ${declared - floor}px above the floor. Keep it there only if it reads better.`,
+    : followsToken
+      ? `The declared minWidth follows a surface's width token, ${declared - floor}px above the floor.`
+      : `The declared minWidth is ${declared - floor}px above the floor. Keep it there only if it reads better.`,
 );

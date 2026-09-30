@@ -44,11 +44,27 @@ the content, never a business ("title", "owner", "dueAt", not "invoiceTotal").
 
 Pick each field's kind from how it should behave, and say why in plain terms:
 
-- `title`: the item's main text; wraps.
+- `title`: the item's main text; wraps. On a card, it stays on one line and
+  truncates, with the full title in a tooltip.
 - `label`: a short single line; truncates, with the full text in a title.
 - `value`: the value in a label and value pair; shows "Not set" when empty.
 - `detail`: secondary text; wraps.
 - `meta`: small text, like a time; wraps.
+- `figure`: a prominent value, like an amount; at the end of the title's line.
+- `status`: a label with a tone (neutral, info, success, warning, error),
+  shown as a colored dot, plus a count of any more ("+2").
+
+If people work through the list, ask about three options, and add each one
+that's true to the JSON:
+
+- `"selectable": true`: "Do people pick an item, so it opens somewhere
+  else?" Items become cards, and a footer steps through them. The page owns
+  the current item (`currentId`, `onSelect`).
+- `"groups": true`: "Are items grouped under labels, like 'Due today'?"
+- `"filters": true`: "Are there tabs that filter the list?"
+
+A selectable or filtered occupant is vertical only and scrolls itself, so
+skip the orientation and scrolling questions for it: vertical, `occupant`.
 
 Mark a field optional when some items won't have it. Every field needs a
 one-sentence description: it becomes the view model's doc comment and the
@@ -68,7 +84,9 @@ Ask one at a time, with the default in brackets:
    information, or less?" Less means two occupants sharing a view model;
    build the larger one first.
 4. **Narrowest width.** "What's the narrowest width, in pixels, where this
-   still works?" A first guess: you'll measure it in step 5.
+   still works? Or should it follow the surface, so it fits any side
+   panel?" A number is a first guess: you'll measure it in step 5. Following
+   the surface is `--min-width follow` (vertical occupants only).
 5. **Padding.** "Inside the surface's padding, or edge to edge?" (padded or
    flush)
 6. **Scrolling.** "When there's more than fits, should the surface scroll it,
@@ -95,7 +113,7 @@ Pass every answer, so nothing is asked twice:
 ```bash
 pnpm create:occupant <name> --view-model <file.json> \
   --label "<label>" --description "<sentence>" --icon <Icon> \
-  --orientations <vertical|horizontal|both> --min-width <px> \
+  --orientations <vertical|horizontal|both> --min-width <px|follow> \
   --padding <padded|flush> --scroll <surface|occupant|either> \
   --surfaces <none|page-header|side-panel|content-area> \
   --subject "<noun>" --empty "<sentence>" \
@@ -117,6 +135,8 @@ Replace `registry/<name>/examples/primary.example-adapter.ts` and
   record has none.
 - Realistic sample data: three to six items, with at least one optional
   field missing.
+- With groups or filters: group labels the domain would use, and filters
+  from the record's own states, with every item in one.
 - A header comment: "EXAMPLE ADAPTER (primary|secondary). Not shipped: it
   shows how a solution (<domain>) maps its own data into the <label> view
   model. Adapters belong to solutions."
@@ -130,9 +150,11 @@ Leave `stress.example-adapter.ts` and `examples/index.ts` as generated.
 pnpm measure:occupant <name>
 ```
 
-It reports the floor for each example in each surface. Decide with the
-person: the floor itself, or a wider minimum when the occupant gets hard to
-read before it clips. Then write it:
+It reports the floor for each example in each surface. If the minimum
+follows the surface, the floor must be at or below it; if it isn't, fix
+the layout, don't raise the minimum. Otherwise decide with the person: the
+floor itself, or a wider minimum when the occupant gets hard to read before
+it clips. Then write it:
 
 ```bash
 pnpm measure:occupant <name> --apply
