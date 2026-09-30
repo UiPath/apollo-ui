@@ -9,6 +9,9 @@ import {
 import { OCCUPANT_SPECS, SURFACE_SPECS } from "@/lib/occupants.generated";
 import { surfaceLabel } from "@/lib/surface-labels";
 
+/** Docs links look like the page's other links. */
+const LINK = "text-primary underline underline-offset-2";
+
 /*
  * Docs for occupants, generated from the specs. Nothing here is typed by
  * hand: a page shows what the spec says.
@@ -46,7 +49,7 @@ export function WhereItFits({ name }: WhereItFitsProps) {
       surfaces.map((surface, index) => (
         <span key={surface.name}>
           {index > 0 && ", "}
-          <Link href={`/surfaces/${surface.name}`}>
+          <Link className={LINK} href={`/surfaces/${surface.name}`}>
             {surfaceLabel(surface.name)}
           </Link>
         </span>
@@ -75,9 +78,9 @@ export function WhereItFits({ name }: WhereItFitsProps) {
           ))}
         </tbody>
       </Table>
-      <p>
+      <p className="mt-4">
         Try it in every surface, with each sample, state, and theme, in the{" "}
-        <Link href={`/preview/occupants?occupant=${name}`}>
+        <Link className={LINK} href={`/preview/occupants?occupant=${name}`}>
           occupant workbench
         </Link>
         .
@@ -112,7 +115,9 @@ export function OccupantsThatFit({ surface: name }: OccupantsThatFitProps) {
         {fitting.map((spec) => (
           <Table.Tr key={spec.name}>
             <Table.Td>
-              <Link href={`/patterns/${spec.name}`}>{spec.label}</Link>
+              <Link className={LINK} href={`/patterns/${spec.name}`}>
+                {spec.label}
+              </Link>
             </Table.Td>
             <Table.Td>{`${spec.requires.minWidth}px`}</Table.Td>
             <Table.Td>{occupantPadding(spec)}</Table.Td>
