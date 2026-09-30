@@ -101,7 +101,7 @@ Pick each field's kind from how it should behave, and say why in plain terms:
 
 - `title`: the item's main text; wraps. On a card, it stays on one line and
   truncates, with the full title in a tooltip.
-- `label`: a short single line; truncates, with the full text in a title.
+- `label`: a short single line; truncates, with the full text in a tooltip.
 - `value`: the value in a label and value pair; shows "Not set" when empty.
 - `detail`: secondary text; wraps.
 - `meta`: small text, like a time; wraps.

@@ -1,13 +1,9 @@
 import { createRequire } from "node:module";
 import type { Page } from "@playwright/test";
-import {
-  fitsSurface,
-  occupantPadding,
-  PADDED_INSET_PX,
-} from "@/lib/composition";
+import { fitsSurface, occupantInset } from "@/lib/composition";
 import { OCCUPANT_SPECS, SURFACE_SPECS } from "@/lib/occupants.generated";
-import { expect, test, type Theme } from "./fixtures";
-import { INNER, inspect, openFixture } from "./occupant-inspect";
+import { expect, type Theme, test } from "./fixtures";
+import { inspect, openFixture } from "./occupant-inspect";
 
 /*
  * Every registered occupant, in every surface it claims (fitsSurface),
@@ -64,7 +60,7 @@ const CASES: Case[] = OCCUPANT_SPECS.flatMap(({ spec, examples }) =>
         surface: surface.name,
         example,
         query: `occupant=${spec.name}&surface=${surface.name}&example=${example}`,
-        inset: occupantPadding(spec) === "padded" ? 2 * PADDED_INSET_PX : 0,
+        inset: occupantInset(spec),
       })),
   ),
 );
@@ -95,11 +91,7 @@ for (const c of CASES) {
         await openFixture(page, c.query);
         for (const extra of run.steps) {
           const width = c.spec.requires.minWidth + extra;
-          const r = await inspect(
-            page,
-            INNER[c.surface] ?? "",
-            width + c.inset,
-          );
+          const r = await inspect(page, c.surface, width + c.inset);
           expect(r.occupantWidth, `rendered at ${width}px`).toBe(width);
           expect(r.problems, `at ${width}px`).toEqual([]);
         }

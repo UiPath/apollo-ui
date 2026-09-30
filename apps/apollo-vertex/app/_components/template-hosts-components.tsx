@@ -1,25 +1,23 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { ContentArea } from "@/components/ui/content-area";
-import { PageHeader } from "@/components/ui/page-header";
-import { SidePanel } from "@/components/ui/side-panel";
 import {
   type OccupantSpec,
   occupantPadding,
   scrollOwner,
 } from "@/lib/composition";
-import { contentAreaSurface } from "@/registry/content-area/content-area.surface";
-import { sidePanelSurface } from "@/registry/side-panel/side-panel.surface";
+import { SURFACE_SPECS } from "@/lib/occupants.generated";
 import { DetailPage } from "@/templates/detail-page/DetailPage";
-import type {
-  DetailPageSlotName,
-  PanelPlacement,
+import {
+  type DetailPageSlotName,
+  detailPageTemplate,
+  type PanelPlacement,
 } from "@/templates/detail-page/detail-page.template";
 import { placeholderOccupant } from "@/templates/detail-page/placeholder-occupants";
 import { SlotPlaceholder } from "@/templates/detail-page/SlotPlaceholder";
 import { useDetailPage } from "@/templates/detail-page/use-detail-page";
 import { DETAIL_PAGE_SLOT_LABELS } from "./detail-page-slots";
+import { SURFACE_HOSTS } from "./surface-hosts";
 
 /** What a preview gives a template to hold one occupant in one slot. */
 export interface TemplateFrameProps {
@@ -60,45 +58,35 @@ export function DetailPageFrame({
     const shown = own
       ? spec
       : placeholderOccupant(DETAIL_PAGE_SLOT_LABELS[name], "padded");
-    const surface =
-      name === "header"
-        ? "page-header"
-        : name === "main"
-          ? "content-area"
-          : "side-panel";
-    const inner = own ? (
-      occupant
-    ) : (
-      <SlotPlaceholder
-        occupant={shown}
-        surface={surface}
-        className={
-          name === "header"
-            ? "col-span-full min-h-11 flex-row gap-3 self-stretch"
-            : ""
-        }
-      />
+    const surface = SURFACE_SPECS.find((s) =>
+      detailPageTemplate.slots
+        .find((t) => t.name === name)
+        ?.surfaces.some((accepted) => accepted === s.name),
     );
-    if (name === "header")
-      return <PageHeader padding={occupantPadding(shown)}>{inner}</PageHeader>;
-    if (name === "main")
-      return (
-        <ContentArea
-          padding={occupantPadding(shown)}
-          scroll={scrollOwner(contentAreaSurface, shown)}
-        >
-          {inner}
-        </ContentArea>
-      );
+    const Host = surface && SURFACE_HOSTS[surface.name]?.Host;
+    if (!surface || !Host) return null;
     return (
-      <SidePanel
-        side={name === "start-panel" ? "start" : "end"}
-        aria-label={DETAIL_PAGE_SLOT_LABELS[name]}
+      <Host
         padding={occupantPadding(shown)}
-        scroll={scrollOwner(sidePanelSurface, shown)}
+        scroll={scrollOwner(surface, shown)}
+        label={DETAIL_PAGE_SLOT_LABELS[name]}
+        side={name === "start-panel" ? "start" : "end"}
+        fill={false}
       >
-        {inner}
-      </SidePanel>
+        {own ? (
+          occupant
+        ) : (
+          <SlotPlaceholder
+            occupant={shown}
+            surface={surface.name}
+            className={
+              name === "header"
+                ? "col-span-full min-h-11 flex-row gap-3 self-stretch"
+                : ""
+            }
+          />
+        )}
+      </Host>
     );
   };
   return (

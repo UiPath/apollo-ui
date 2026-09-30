@@ -6,14 +6,9 @@
  */
 
 import { readdirSync, readFileSync, statSync } from "node:fs";
-import { dirname, join, relative } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join, relative } from "node:path";
+import { PLACEHOLDER, root } from "./lib.ts";
 
-// The placeholder token. Split so the scripts that define it don't contain it;
-// check-placeholders.ts and create-occupant.ts define it the same way.
-const PLACEHOLDER = ["@fill", "in"].join("-");
-
-const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const DIRECTORIES = ["app", "registry", "lib", "templates", "tests"];
 const FILES = ["registry.json", "locales/en.json"];
 const EXTENSIONS = /\.(ts|tsx|mdx|md|json|css)$/;

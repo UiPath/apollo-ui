@@ -21,15 +21,14 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { namesIn, registryItems, root } from "./lib.ts";
 
 const args = process.argv.slice(2);
 const flag = (name: string) => {
   const i = args.indexOf(`--${name}`);
   return i === -1 ? undefined : args[i + 1];
 };
-const app = flag("app") ?? join(dirname(fileURLToPath(import.meta.url)), "..");
+const app = flag("app") ?? root;
 const range = flag("range");
 if (!range) {
   console.error("check:occupant-scope: pass --range <base>..<head>.");
@@ -57,15 +56,9 @@ const show = (commit: string, path: string): string | null => {
 const prefix = git("rev-parse", "--show-prefix").trim();
 const SELF = "scripts/check-occupant-scope.ts";
 
-interface RegistryItem {
-  name: string;
-  meta?: { layer?: string };
-}
 const occupantsAt = (commit: string): string[] => {
   const registry = show(commit, "registry.json");
-  if (!registry) return [];
-  const items: RegistryItem[] = JSON.parse(registry).items ?? [];
-  return items.filter((i) => i.meta?.layer === "occupant").map((i) => i.name);
+  return registry ? namesIn(registryItems(registry), "occupant") : [];
 };
 
 const ownerOf = (path: string, occupants: string[]) =>
@@ -89,7 +82,7 @@ const REGISTRATIONS: Record<string, Registration> = {
     const strip = (text: string) => {
       const registry = JSON.parse(text);
       registry.items = (registry.items ?? []).filter(
-        (item: RegistryItem) => !names.includes(item.name),
+        (item: { name: string }) => !names.includes(item.name),
       );
       return JSON.stringify(registry);
     };

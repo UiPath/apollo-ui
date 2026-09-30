@@ -24,35 +24,14 @@
 
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
+import { camel, namesIn, pascal, readRegistry, root } from "./lib.ts";
 
-const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const checkOnly = process.argv.includes("--check");
 
-interface RegistryItem {
-  name: string;
-  meta?: { layer?: string };
-  files?: { path: string }[];
-}
-
-const camel = (name: string) =>
-  name.replace(/-([a-z0-9])/g, (_, c: string) => c.toUpperCase());
-const pascal = (name: string) =>
-  camel(name).replace(/^[a-z]/, (c) => c.toUpperCase());
-
-const registry: { items: RegistryItem[] } = JSON.parse(
-  readFileSync(join(root, "registry.json"), "utf8"),
-);
-const occupants = registry.items
-  .filter((item) => item.meta?.layer === "occupant")
-  .map((item) => item.name)
-  .sort();
-
-const surfaces = registry.items
-  .filter((item) => item.meta?.layer === "surface")
-  .map((item) => item.name)
-  .sort();
+const items = readRegistry();
+const occupants = namesIn(items, "occupant").toSorted();
+const surfaces = namesIn(items, "surface").toSorted();
 
 const problems: string[] = [];
 for (const name of surfaces) {

@@ -7,12 +7,15 @@ import { OccupantInSurface } from "@/app/_components/occupant-in-surface";
 import { SURFACE_HOSTS } from "@/app/_components/surface-hosts";
 import { fitsSurface } from "@/lib/composition";
 import { EXAMPLE_ROLES, type ExampleRole } from "@/lib/occupant-entry";
+import { specFor } from "@/lib/occupant-lookup";
+import { overflowProblems } from "@/lib/overflow-problems";
 import { surfaceLabel } from "@/lib/surface-labels";
 import { DetailsPanel } from "./details-panel";
 import { type Floor, FloorProbe } from "./floor-probe";
 import { NoFitCard } from "./no-fit-card";
 import { OccupantList } from "./occupant-list";
-import { afterLayout, overflowProblems, settled } from "./overflow";
+import { afterLayout, settled } from "./overflow";
+import { StageFrame } from "./stage-frame";
 import { TemplateDock } from "./template-dock";
 import { TemplateStage } from "./template-stage";
 import { usePageTheme } from "./use-page-theme";
@@ -26,13 +29,10 @@ import {
   HOSTED_SURFACES,
   serializeWorkbenchView,
   slotFit,
-  specFor,
   templateFor,
   type WorkbenchView,
 } from "./workbench-url-state";
 
-/** A vertical surface's height on the stage. */
-const STAGE_HEIGHT = 560;
 const LIST_ID = "workbench-list";
 const DETAILS_ID = "workbench-details";
 
@@ -232,26 +232,12 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
                   pageWidth={view.pageWidth}
                 />
               ) : claim.fits ? (
-                // The page's ground under the surface, as in a template, and its edge.
-                <div
-                  data-workbench-frame
-                  className="relative bg-background outline-1 outline-border"
+                <StageFrame
+                  tag={t("workbench_frame_tag", {
+                    surface: surfaceLabel(surface.name),
+                    width: view.width,
+                  })}
                 >
-                  {/*
-                   * The frame's name, like an artboard's: above its top-left
-                   * corner, never over the occupant. Decorative: the dock and the
-                   * slider's value text say the same.
-                   */}
-                  <span
-                    aria-hidden="true"
-                    data-workbench-frame-tag
-                    className="pointer-events-none absolute start-0 bottom-full mb-1.5 whitespace-nowrap text-xs text-muted-foreground select-none"
-                  >
-                    {t("workbench_frame_tag", {
-                      surface: surfaceLabel(surface.name),
-                      width: view.width,
-                    })}
-                  </span>
                   <OccupantInSurface
                     // A fresh occupant per sample, so its own state (a selection) resets.
                     key={`${spec.name}-${view.sample}`}
@@ -260,9 +246,8 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
                     example={view.sample}
                     state={view.state}
                     width={view.width}
-                    height={STAGE_HEIGHT}
                   />
-                </div>
+                </StageFrame>
               ) : (
                 <NoFitCard
                   title={t("workbench_no_fit_title", {

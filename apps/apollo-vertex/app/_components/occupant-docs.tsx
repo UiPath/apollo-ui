@@ -9,6 +9,7 @@ import {
   occupantOrientations,
   occupantPadding,
 } from "@/lib/composition";
+import { specFor } from "@/lib/occupant-lookup";
 import { OCCUPANT_SPECS, SURFACE_SPECS } from "@/lib/occupants.generated";
 import { surfaceLabel } from "@/lib/surface-labels";
 import { workbenchHref } from "./workbench-href";
@@ -21,10 +22,11 @@ const LINK = "text-primary underline underline-offset-2";
  * hand: a page shows what the spec says.
  */
 
-const specFor = (name: string) => {
-  const entry = OCCUPANT_SPECS.find((o) => o.spec.name === name);
-  if (!entry) throw new Error(`No registered occupant named ${name}`);
-  return entry.spec;
+/** A registered occupant's spec; a docs page naming any other is a mistake. */
+const registeredSpec = (name: string) => {
+  const spec = specFor(name);
+  if (!spec) throw new Error(`No registered occupant named ${name}`);
+  return spec;
 };
 
 /** The docs' own page title, so an occupant's title looks like every other page's. */
@@ -42,7 +44,7 @@ interface OccupantTitleProps {
  * wraps under the title only when the title is too long for one line.
  */
 export function OccupantTitle({ name }: OccupantTitleProps) {
-  const spec = specFor(name);
+  const spec = registeredSpec(name);
   return (
     <div
       data-occupant-title
@@ -82,7 +84,7 @@ interface WhereItFitsProps {
 
 /** Where an occupant fits, from its spec: surfaces, orientation, and requirements. */
 export function WhereItFits({ name }: WhereItFitsProps) {
-  const spec = specFor(name);
+  const spec = registeredSpec(name);
   const surfaces = SURFACE_SPECS.filter(
     (surface) => fitsSurface(surface, spec).fits,
   );

@@ -9,11 +9,11 @@ import {
   fits,
   fitsSurface,
   type OccupantSpec,
-  occupantPadding,
-  PADDED_INSET_PX,
+  occupantInset,
   type SurfaceSpec,
 } from "@/lib/composition";
 import { EXAMPLE_ROLES, type ExampleRole } from "@/lib/occupant-entry";
+import { specFor } from "@/lib/occupant-lookup";
 import { OCCUPANT_SPECS, SURFACE_SPECS } from "@/lib/occupants.generated";
 import type { PanelPlacement } from "@/templates/detail-page/detail-page.template";
 
@@ -107,16 +107,13 @@ export function defaultSlot(
 /** The slider's range, in px of the surface's outer width. */
 export const WIDTH_RANGE = { min: 40, max: 1600 } as const;
 
+/** How far a surface's width moves per step, on the slider and when measuring. */
+export const WIDTH_STEP = 4;
+
 /** Registered surfaces that previews can render, in the hosts' order. */
 export const HOSTED_SURFACES: readonly SurfaceSpec[] = Object.keys(
   SURFACE_HOSTS,
 ).flatMap((name) => SURFACE_SPECS.filter((s) => s.name === name));
-
-export const occupantInset = (spec: OccupantSpec) =>
-  occupantPadding(spec) === "padded" ? 2 * PADDED_INSET_PX : 0;
-
-export const specFor = (name: string) =>
-  OCCUPANT_SPECS.find((o) => o.spec.name === name)?.spec;
 
 /** The first surface the occupant fits, or the first surface. */
 export function defaultSurface(spec: OccupantSpec | undefined): string {

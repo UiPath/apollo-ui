@@ -37,7 +37,7 @@ export function useSurface(): SurfaceContextValue {
 }
 
 /** Attaches a ref of either kind, returning how to detach it. */
-function attach<T>(ref: Ref<T> | undefined, node: T): () => void {
+export function attachRef<T>(ref: Ref<T> | undefined, node: T): () => void {
   if (typeof ref === "function") {
     const cleanup = ref(node);
     return () => (typeof cleanup === "function" ? cleanup() : ref(null));
@@ -65,7 +65,7 @@ export function useSurfaceFrame<T extends HTMLElement>(
   const [width, setWidth] = useState<number | null>(null);
   const ref: RefCallback<T> = (node) => {
     if (!node) return;
-    const detach = attach(forwarded, node);
+    const detach = attachRef(forwarded, node);
     const observer = new ResizeObserver(([entry]) => {
       const box = entry?.contentBoxSize[0];
       if (box) setWidth(Math.round(box.inlineSize));

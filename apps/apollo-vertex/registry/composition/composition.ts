@@ -161,6 +161,11 @@ export function slotAccepts(slot: SlotSpec, surface: SurfaceSpec): boolean {
   return slot.surfaces.includes(surface.name);
 }
 
+/** How much wider than the occupant its surface is: both insets when padded, 0 when flush. */
+export function occupantInset(occupant: OccupantSpec): number {
+  return occupantPadding(occupant) === "padded" ? 2 * PADDED_INSET_PX : 0;
+}
+
 /** The padding a surface should apply for an occupant. */
 export function occupantPadding(occupant: OccupantSpec): SurfacePadding {
   return occupant.requires.padding ?? "padded";
