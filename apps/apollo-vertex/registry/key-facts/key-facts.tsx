@@ -4,6 +4,7 @@ import {
   OccupantStateView,
   OccupantTruncatedText,
   type OccupantViewProps,
+  occupantRowStyle,
 } from "@/components/ui/occupant";
 import { useSurface } from "@/lib/surface-context";
 import { cn } from "@/lib/utils";
@@ -35,10 +36,11 @@ function KeyFacts({ view, state = "ready", onRetry }: KeyFactsProps) {
       >
         <dl
           aria-label={t("key_facts_label", { subject: view.subject })}
+          style={occupantRowStyle}
           className={cn(
             "grid min-w-0",
             row
-              ? "grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] gap-x-6 gap-y-2"
+              ? "grid-cols-[repeat(auto-fill,minmax(var(--occupant-row-item-min),1fr))] gap-x-6 gap-y-2"
               : "grid-cols-1 gap-3",
           )}
         >
