@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { TEMPLATE_HOSTS } from "@/app/_components/template-hosts";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { OCCUPANT_STATES, type OccupantState } from "@/components/ui/occupant";
@@ -22,7 +23,11 @@ import {
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { EXAMPLE_ROLES, type ExampleRole } from "@/lib/occupant-entry";
-import type { WorkbenchTheme } from "./workbench-url-state";
+import {
+  TEMPLATE_NAMES,
+  type WorkbenchMode,
+  type WorkbenchTheme,
+} from "./workbench-url-state";
 
 interface Choice<T extends string> {
   label: string;
@@ -114,6 +119,10 @@ interface WorkbenchHeaderProps {
   onState: (state: OccupantState) => void;
   theme: WorkbenchTheme;
   onTheme: (theme: WorkbenchTheme) => void;
+  mode: WorkbenchMode;
+  onMode: (mode: WorkbenchMode) => void;
+  template: string;
+  onTemplate: (template: string) => void;
 }
 
 /**
@@ -215,6 +224,36 @@ export function WorkbenchHeader(props: WorkbenchHeaderProps) {
           {t("workbench_occupant")}
         </Badge>
       </div>
+      <ToggleGroup
+        type="single"
+        variant="outline"
+        size="sm"
+        className="shrink-0"
+        aria-label={t("workbench_view")}
+        value={props.mode}
+        onValueChange={(next) => {
+          if (next === "surface" || next === "template") props.onMode(next);
+        }}
+      >
+        <ToggleGroupItem value="surface">
+          {t("workbench_view_surface")}
+        </ToggleGroupItem>
+        <ToggleGroupItem value="template">
+          {t("workbench_view_template")}
+        </ToggleGroupItem>
+      </ToggleGroup>
+      {/* Only with a choice to make: one template needs no picker. */}
+      {props.mode === "template" && TEMPLATE_NAMES.length > 1 && (
+        <SelectChoice
+          label={t("workbench_template")}
+          value={props.template}
+          options={TEMPLATE_NAMES.map((name) => ({
+            value: name,
+            label: TEMPLATE_HOSTS[name]?.label ?? name,
+          }))}
+          onChange={props.onTemplate}
+        />
+      )}
       <div ref={controlsRef} className="flex shrink-0 items-center gap-4">
         {compact ? (
           <>
