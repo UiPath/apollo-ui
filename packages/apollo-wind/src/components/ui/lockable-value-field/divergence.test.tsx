@@ -315,8 +315,8 @@ describe('LockableValueField — divergences from apollo-wind', () => {
     });
 
     it('is offered every mode, including the ones with built-in controls', () => {
-      // A surface that authors its own choices can replace the `fixed` control too.
-      for (const mode of ['fixed', 'expression'] as const) {
+      // A surface that authors its own choices can replace the `literal` control too.
+      for (const mode of ['literal', 'expression'] as const) {
         const render_ = vi.fn(() => <span>{mode} taken over</span>);
         const { unmount } = render(
           <LockableValueField
@@ -339,7 +339,7 @@ describe('LockableValueField — divergences from apollo-wind', () => {
       render(
         <LockableValueField
           locked={false}
-          mode="fixed"
+          mode="literal"
           onValueChange={vi.fn()}
           renderModeControl={() => null}
         />

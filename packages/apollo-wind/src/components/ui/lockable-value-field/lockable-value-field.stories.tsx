@@ -1,9 +1,22 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Trash2 } from 'lucide-react';
+import { Braces, Code2, MessageSquareText, Trash2, Type } from 'lucide-react';
 import { useId, useState } from 'react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../dropdown-menu';
+import { InputGroupButton, InputGroupInput } from '../input-group';
 import { Label, RequiredIndicator } from '../label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../select';
 import { LockableValueField } from './lockable-value-field';
-import { FIELD_TYPE_META, type LockableFieldType, type LockableValueFieldMode } from './types';
+import {
+  FIELD_TYPE_META,
+  type LockableFieldType,
+  type LockableValueFieldMode,
+  type LockableValueFieldStrings,
+} from './types';
 
 const meta = {
   title: 'Components/UiPath/Lockable Value Field',
@@ -14,21 +27,31 @@ const meta = {
       description: {
         component: `
 A field that can be locked to read-only, typed as one of several data types,
-and (for scalar types) switched between a literal value and a JS expression.
+and expressed in one of four modes: a literal, a JS expression, a bound
+variable, or a prompt an agent fills in.
 
 - Left lock icon toggles Editable / Read-only. Read-only fields show plain
   text, not a disabled control.
 - Right value-mode icon switches between Fixed value and Expression,
   updating the value styling. Only shown for types an expression can
-  produce.
-- Field type dropdown swaps the control itself: String, Integer, Date,
-  Boolean, Single select, Multi select, and File each render their own
-  matching input.
+  produce. \`renderModeControl\` supplies the control for any mode, and a
+  consumer's \`trailingAddon\` can offer all four. See **Variable and prompt modes**.
+- Field type dropdown swaps the control itself: String, Integer, Decimal
+  number, Date, Date and time, Boolean, Single select, Multi select, Array,
+  and File each render their own matching input. \`fieldTypes\` chooses which
+  of them the picker offers.
+- Insert variable renders \`variables\` as supplied and splices the choice at
+  the caret, or appends when none is placed. \`onInsertVariable\` takes over
+  what inserting means.
+- Enter commits through \`onValueBlur\`; Escape restores the value as of focus.
+- Every user-visible string can be overridden through \`strings\`. See
+  **Localized strings**.
 - Required switch toggles the shared foreground asterisk on the label. Only shown when
   \`onRequiredChange\` is provided.
-- Built-in AI-assist popover to describe and generate a value, and an
-  Insert-variable affordance for binding to upstream data. Both hidden via
-  \`showFieldActions={false}\` for read-only reviewer contexts.
+- Built-in AI-assist popover to describe and generate a value, rendered only
+  when \`onGenerateWithAi\` is provided, and an Insert-variable affordance for
+  binding to upstream data. Both hidden via \`showFieldActions={false}\` for
+  read-only reviewer contexts.
 - \`label\` accepts any ReactNode, so a consumer can compose its own
   inline-editable title in place of the default text.
 - When provided, header actions are shown at all times.
@@ -69,7 +92,7 @@ function DefaultDemo() {
   const fieldId = useId();
   const [value, setValue] = useState('');
   const [locked, setLocked] = useState(true);
-  const [mode, setMode] = useState<LockableValueFieldMode>('fixed');
+  const [mode, setMode] = useState<LockableValueFieldMode>('literal');
   const [fieldType, setFieldType] = useState<LockableFieldType>('string');
   const [required, setRequired] = useState(true);
   const [deleted, setDeleted] = useState(false);
@@ -78,7 +101,7 @@ function DefaultDemo() {
     setFieldType(type);
     setValue('');
     if (!FIELD_TYPE_META[type].supportsExpression) {
-      setMode('fixed');
+      setMode('literal');
     }
   };
 
@@ -118,7 +141,7 @@ export const Default: Story = {
 function MoreActionsDemo() {
   const fieldId = 'lockable-value-field-more-actions';
   const [value, setValue] = useState('Invoice value');
-  const [mode, setMode] = useState<LockableValueFieldMode>('fixed');
+  const [mode, setMode] = useState<LockableValueFieldMode>('literal');
 
   return (
     <div className="w-80">
@@ -166,9 +189,15 @@ function ExpressionValueFieldDemo() {
         locked={false}
         mode="expression"
         variables={[
-          { label: 'Customer name', value: '$input.customerName' },
-          { label: 'Invoice number', value: '$input.invoiceNumber' },
-          { label: 'User email', value: '$user.email' },
+          {
+            label: '$input',
+            value: '',
+            children: [
+              { label: 'Customer name', value: '$input.customerName' },
+              { label: 'Invoice number', value: '$input.invoiceNumber' },
+            ],
+          },
+          { label: '$user', value: '', children: [{ label: 'User email', value: '$user.email' }] },
         ]}
       />
     </div>
@@ -238,7 +267,13 @@ function ReferenceExamplesDemo() {
         locked={false}
         leadingAddon={<EqualsAddon />}
         mode="expression"
-        variables={[{ label: 'Flow array', value: '$vars.flowArray' }]}
+        variables={[
+          {
+            label: '$vars',
+            value: '',
+            children: [{ label: 'Flow array', value: '$vars.flowArray' }],
+          },
+        ]}
       />
       <LockableValueField
         id={`${idPrefix}-attachment`}
@@ -377,13 +412,275 @@ export const InlineValidation: Story = {
   },
 };
 
+const MODE_ITEMS: { mode: LockableValueFieldMode; label: string; icon: typeof Type }[] = [
+  { mode: 'literal', label: 'Fixed value', icon: Type },
+  { mode: 'expression', label: 'Expression', icon: Code2 },
+  { mode: 'variable', label: 'Variable', icon: Braces },
+  { mode: 'prompt', label: 'Prompt', icon: MessageSquareText },
+];
+
+const WORKFLOW_VARIABLES = [
+  { label: 'Customer name', value: 'vars.customerName' },
+  { label: 'Invoice number', value: 'vars.invoiceNumber' },
+];
+
+function FourModeMenu({
+  mode,
+  onModeChange,
+}: {
+  mode: LockableValueFieldMode;
+  onModeChange: (mode: LockableValueFieldMode) => void;
+}) {
+  const active = MODE_ITEMS.find((item) => item.mode === mode) ?? MODE_ITEMS[0];
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <InputGroupButton icon size="3xs" aria-label="Choose value mode">
+          <active.icon />
+        </InputGroupButton>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {MODE_ITEMS.map((item) => (
+          <DropdownMenuItem key={item.mode} onClick={() => onModeChange(item.mode)}>
+            <item.icon />
+            {item.label}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function ValueModesDemo() {
+  const fieldId = useId();
+  const [mode, setMode] = useState<LockableValueFieldMode>('variable');
+  const [values, setValues] = useState<Record<LockableValueFieldMode, string>>({
+    literal: '',
+    expression: '',
+    variable: 'vars.customerName',
+    prompt: '',
+  });
+  const setValue = (value: string) => setValues((current) => ({ ...current, [mode]: value }));
+
+  return (
+    <div className="w-80">
+      <LockableValueField
+        id={fieldId}
+        label={<Label htmlFor={fieldId}>Recipient</Label>}
+        value={values[mode]}
+        onValueChange={setValue}
+        locked={false}
+        showLock={false}
+        showFieldActions={false}
+        mode={mode}
+        onModeChange={setMode}
+        trailingAddon={<FourModeMenu mode={mode} onModeChange={setMode} />}
+        renderModeControl={(activeMode, control) => {
+          if (activeMode === 'variable') {
+            return (
+              <Select value={control.value} onValueChange={control.onValueChange}>
+                <SelectTrigger id={control.id} className="min-w-0 flex-1">
+                  <SelectValue placeholder="Select a variable" />
+                </SelectTrigger>
+                <SelectContent>
+                  {WORKFLOW_VARIABLES.map((variable) => (
+                    <SelectItem key={variable.value} value={variable.value}>
+                      {variable.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            );
+          }
+          if (activeMode === 'prompt') {
+            return (
+              <InputGroupInput
+                id={control.id}
+                value={control.value}
+                onChange={(event) => control.onValueChange?.(event.target.value)}
+                onBlur={control.onBlur}
+                readOnly={control.readOnly}
+                placeholder="Describe the value for the agent to fill in"
+              />
+            );
+          }
+          return null;
+        }}
+      />
+    </div>
+  );
+}
+
+export const ValueModes: Story = {
+  name: 'Variable and prompt modes',
+  render: () => <ValueModesDemo />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A field can be a literal, an expression, a bound variable or an agent prompt. `renderModeControl` supplies the control for any mode and returns nothing to keep the built-in one, so literal and expression still render the defaults here. `trailingAddon` carries the four-mode switch, and it renders for every type, including selects.',
+      },
+    },
+  },
+};
+
+function AddedTypesDemo() {
+  const [values, setValues] = useState<Record<string, string>>({
+    double: '10.5',
+    datetime: '',
+    array: '[1, 2, 3]',
+  });
+  const types: LockableFieldType[] = ['double', 'datetime', 'array'];
+
+  return (
+    <div className="flex w-80 flex-col gap-4">
+      {types.map((fieldType) => (
+        <LockableValueField
+          key={fieldType}
+          fieldType={fieldType}
+          value={values[fieldType]}
+          onValueChange={(value) => setValues((current) => ({ ...current, [fieldType]: value }))}
+          locked={false}
+          showFieldActions={false}
+          mode={fieldType === 'array' ? 'expression' : 'literal'}
+        />
+      ))}
+    </div>
+  );
+}
+
+export const AddedTypes: Story = {
+  name: 'Decimal, date and time, and array',
+  render: () => <AddedTypesDemo />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A decimal accepts fractions (the number input uses `step="any"`), a date and time keeps the time of day in a DateTimePicker and is stored as an ISO string, and an array is expression-capable like an object.',
+      },
+    },
+  },
+};
+
+function OfferedTypesDemo() {
+  const fieldId = useId();
+  const [fieldType, setFieldType] = useState<LockableFieldType>('string');
+  const [value, setValue] = useState('');
+
+  return (
+    <div className="w-80">
+      <LockableValueField
+        id={fieldId}
+        label={<Label htmlFor={fieldId}>Amount</Label>}
+        value={value}
+        onValueChange={setValue}
+        locked={false}
+        showFieldActions={false}
+        fieldType={fieldType}
+        fieldTypes={['string', 'integer', 'double', 'boolean']}
+        onFieldTypeChange={(type) => {
+          setFieldType(type);
+          setValue('');
+        }}
+      />
+    </div>
+  );
+}
+
+export const OfferedTypes: Story = {
+  name: 'Offered types',
+  render: () => <OfferedTypesDemo />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The component can render every type in `FIELD_TYPE_ORDER`, but a surface with a narrower vocabulary passes `fieldTypes` to choose which ones the picker offers, in display order.',
+      },
+    },
+  },
+};
+
+const GERMAN_STRINGS: Partial<LockableValueFieldStrings> = {
+  fieldTypeTooltip: 'Typ',
+  fieldTypeAriaLabel: 'Feldtyp',
+  typeLabels: {
+    string: 'Text',
+    integer: 'Ganzzahl',
+    double: 'Dezimalzahl',
+    boolean: 'Wahrheitswert',
+  },
+  literalLabels: { string: 'Fester Wert', integer: 'Fester Wert', boolean: 'Fester Wert' },
+  literalDescriptions: {
+    string: 'Einen Textwert verwenden',
+    integer: 'Einen Zahlenwert verwenden',
+  },
+  valueFieldLabel: (typeLabel) => `Wert (${typeLabel})`,
+  expressionFieldLabel: (typeLabel) => `Ausdruck (${typeLabel})`,
+  trueLabel: 'Wahr',
+  falseLabel: 'Falsch',
+  requiredTooltip: 'Pflichtfeld',
+  requiredAriaLabel: 'Pflichtfeld',
+  optionalAriaLabel: 'Optionales Feld',
+  insertLabel: 'Einfügen',
+  insertAriaLabel: 'Variable einfügen',
+  valueModeAriaLabel: 'Wertmodus wählen',
+  expressionLabel: 'Ausdruck',
+  expressionDescription: 'JS-Ausdruck verwenden',
+  lockedLabel: 'Schreibgeschützt',
+  unlockedLabel: 'Bearbeitbar',
+  lockedHint: 'Schreibgeschützt. Zum Bearbeiten klicken.',
+  unlockedHint: 'Bearbeitbar. Klicken, um den Schreibschutz zu aktivieren.',
+};
+
+function LocalizedDemo() {
+  const fieldId = useId();
+  const [value, setValue] = useState('');
+  const [locked, setLocked] = useState(false);
+  const [required, setRequired] = useState(true);
+  const [fieldType, setFieldType] = useState<LockableFieldType>('string');
+  const [mode, setMode] = useState<LockableValueFieldMode>('literal');
+
+  return (
+    <div className="w-80">
+      <LockableValueField
+        id={fieldId}
+        value={value}
+        onValueChange={setValue}
+        locked={locked}
+        onLockedChange={setLocked}
+        required={required}
+        onRequiredChange={setRequired}
+        fieldType={fieldType}
+        onFieldTypeChange={setFieldType}
+        mode={mode}
+        onModeChange={setMode}
+        variables={[{ label: 'Kundenname', value: 'vars.customerName' }]}
+        strings={GERMAN_STRINGS}
+      />
+    </div>
+  );
+}
+
+export const Localized: Story = {
+  name: 'Localized strings',
+  render: () => <LocalizedDemo />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'apollo-wind ships no translation runtime, so every user-visible string comes from the `strings` prop, with English defaults for any key left out. This example overrides the chrome in German.',
+      },
+    },
+  },
+};
+
 function ResponsiveDemo() {
   const fullWidthId = useId();
   const narrowId = useId();
   const compactId = useId();
   const [value, setValue] = useState('');
   const [locked, setLocked] = useState(true);
-  const [mode, setMode] = useState<LockableValueFieldMode>('fixed');
+  const [mode, setMode] = useState<LockableValueFieldMode>('literal');
   const [fieldType, setFieldType] = useState<LockableFieldType>('string');
   const [required, setRequired] = useState(true);
 
@@ -391,7 +688,7 @@ function ResponsiveDemo() {
     setFieldType(type);
     setValue('');
     if (!FIELD_TYPE_META[type].supportsExpression) {
-      setMode('fixed');
+      setMode('literal');
     }
   };
 

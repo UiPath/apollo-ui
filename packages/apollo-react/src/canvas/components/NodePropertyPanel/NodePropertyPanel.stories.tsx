@@ -1379,7 +1379,7 @@ function InlineCaseRow({
   const titleRef = useRef<HTMLInputElement>(null);
   const [value, setValue] = useState(defaultValue);
   const [locked, setLocked] = useState(false);
-  const [mode, setMode] = useState<LockableValueFieldMode>('fixed');
+  const [mode, setMode] = useState<LockableValueFieldMode>('literal');
 
   return (
     <LockableValueField
@@ -2521,7 +2521,7 @@ function isValidLockableCase(item: unknown): item is LockableCase {
     typeof c.required === 'boolean' &&
     typeof c.value === 'string' &&
     typeof c.locked === 'boolean' &&
-    (c.mode === 'fixed' || c.mode === 'expression') &&
+    (c.mode === 'literal' || c.mode === 'expression') &&
     typeof c.fieldType === 'string' &&
     Object.hasOwn(FIELD_TYPE_META, c.fieldType)
   );
@@ -2534,7 +2534,7 @@ const DEFAULT_LOCKABLE_CASES: LockableCase[] = [
     required: true,
     value: '',
     locked: true,
-    mode: 'fixed',
+    mode: 'literal',
     fieldType: 'string',
   },
   {
@@ -2543,7 +2543,7 @@ const DEFAULT_LOCKABLE_CASES: LockableCase[] = [
     required: true,
     value: '',
     locked: true,
-    mode: 'fixed',
+    mode: 'literal',
     fieldType: 'date',
   },
   {
@@ -2552,7 +2552,7 @@ const DEFAULT_LOCKABLE_CASES: LockableCase[] = [
     required: true,
     value: '',
     locked: true,
-    mode: 'fixed',
+    mode: 'literal',
     fieldType: 'integer',
   },
 ];
@@ -2882,7 +2882,7 @@ function LockableValueFieldShowcase({
   const compactViewId = useId();
   const [showcaseValue, setShowcaseValue] = useState('');
   const [showcaseLocked, setShowcaseLocked] = useState(true);
-  const [showcaseMode, setShowcaseMode] = useState<LockableValueFieldMode>('fixed');
+  const [showcaseMode, setShowcaseMode] = useState<LockableValueFieldMode>('literal');
   const [showcaseFieldType, setShowcaseFieldType] = useState<LockableFieldType>('string');
   const [showcaseRequired, setShowcaseRequired] = useState(true);
 
@@ -2890,7 +2890,7 @@ function LockableValueFieldShowcase({
     setShowcaseFieldType(type);
     setShowcaseValue('');
     if (!FIELD_TYPE_META[type].supportsExpression) {
-      setShowcaseMode('fixed');
+      setShowcaseMode('literal');
     }
   };
 
@@ -3093,7 +3093,7 @@ export function QuickFormPanel({
         required: true,
         value: '',
         locked: true,
-        mode: 'fixed',
+        mode: 'literal',
         fieldType,
       },
     ]);
@@ -3116,7 +3116,7 @@ export function QuickFormPanel({
               ...c,
               fieldType,
               value: '',
-              mode: FIELD_TYPE_META[fieldType].supportsExpression ? c.mode : 'fixed',
+              mode: FIELD_TYPE_META[fieldType].supportsExpression ? c.mode : 'literal',
             }
           : c
       )
@@ -3842,7 +3842,7 @@ function PanelUIInventoryStory() {
   const compositionFieldId = useId();
   const [compositionValue, setCompositionValue] = useState('invoice.total');
   const [compositionLocked, setCompositionLocked] = useState(true);
-  const [compositionMode, setCompositionMode] = useState<LockableValueFieldMode>('fixed');
+  const [compositionMode, setCompositionMode] = useState<LockableValueFieldMode>('literal');
   const [compositionFieldType, setCompositionFieldType] = useState<LockableFieldType>('string');
   const [compositionRequired, setCompositionRequired] = useState(true);
   const [compositionEditor, setCompositionEditor] = useState('ui');
@@ -3926,7 +3926,7 @@ function PanelUIInventoryStory() {
   const updateCompositionFieldType = (fieldType: LockableFieldType) => {
     setCompositionFieldType(fieldType);
     setCompositionValue('');
-    if (!FIELD_TYPE_META[fieldType].supportsExpression) setCompositionMode('fixed');
+    if (!FIELD_TYPE_META[fieldType].supportsExpression) setCompositionMode('literal');
   };
 
   return (
