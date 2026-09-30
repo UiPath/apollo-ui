@@ -1,11 +1,15 @@
-import { OccupantLabel, WhereItFits } from '@/app/_components/occupant-docs';
+---
+title: Queue
+---
+
+import { OccupantTitle, OpenInWorkbench, WhereItFits } from '@/app/_components/occupant-docs';
 import { OccupantInSurface } from '@/app/_components/occupant-in-surface';
 
-# Queue
+<OccupantTitle name="queue" />
 
-<OccupantLabel />
+A list of items to work through, grouped and filtered, where picking one opens it. It takes the [occupant](/guidelines/design-architecture/creating-occupants) role.
 
-A list of items to work through, grouped and filtered, where picking one opens it. It takes the [occupant](/guidelines/creating-occupants) role.
+<OpenInWorkbench name="queue" />
 
 <div className="not-prose my-6 flex flex-wrap gap-6">
   <OccupantInSurface occupant="queue" surface="side-panel" example="primary" width={360} height={560} />

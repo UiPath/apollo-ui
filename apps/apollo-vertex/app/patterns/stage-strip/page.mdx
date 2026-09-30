@@ -1,13 +1,17 @@
-import { OccupantLabel, WhereItFits } from '@/app/_components/occupant-docs';
+---
+title: Stage strip
+---
+
+import { OccupantTitle, OpenInWorkbench, WhereItFits } from '@/app/_components/occupant-docs';
 import { OccupantInSurface } from '@/app/_components/occupant-in-surface';
 
-# Stage strip
-
-<OccupantLabel />
+<OccupantTitle name="stage-strip" />
 
 Where an item is in its stages, as a one-band summary: a compact marker per
 stage, then the current stage and its latest event. It takes the
-[occupant](/guidelines/creating-occupants) role in horizontal surfaces.
+[occupant](/guidelines/design-architecture/creating-occupants) role in horizontal surfaces.
+
+<OpenInWorkbench name="stage-strip" />
 
 <div className="not-prose my-6 flex flex-col gap-6">
   <OccupantInSurface occupant="stage-strip" surface="page-header" example="primary" width="100%" />

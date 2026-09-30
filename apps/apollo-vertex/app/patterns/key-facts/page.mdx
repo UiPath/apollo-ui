@@ -1,13 +1,17 @@
-import { OccupantLabel, WhereItFits } from '@/app/_components/occupant-docs';
+---
+title: Key facts
+---
+
+import { OccupantTitle, OpenInWorkbench, WhereItFits } from '@/app/_components/occupant-docs';
 import { OccupantInSurface } from '@/app/_components/occupant-in-surface';
 
-# Key facts
-
-<OccupantLabel />
+<OccupantTitle name="key-facts" />
 
 The few facts that matter most about an item, as label and value pairs. It
-takes the [occupant](/guidelines/creating-occupants) role in both shapes of
+takes the [occupant](/guidelines/design-architecture/creating-occupants) role in both shapes of
 space: the facts stack in a column, or sit in a wrapping row in a band.
+
+<OpenInWorkbench name="key-facts" />
 
 <div className="not-prose my-6 flex flex-col gap-6">
   <OccupantInSurface occupant="key-facts" surface="page-header" example="primary" width="100%" />

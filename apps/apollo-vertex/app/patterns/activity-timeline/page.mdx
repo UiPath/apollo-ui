@@ -1,13 +1,17 @@
-import { OccupantLabel, WhereItFits } from '@/app/_components/occupant-docs';
+---
+title: Activity timeline
+---
+
+import { OccupantTitle, OpenInWorkbench, WhereItFits } from '@/app/_components/occupant-docs';
 import { OccupantInSurface } from '@/app/_components/occupant-in-surface';
 
-# Activity timeline
-
-<OccupantLabel />
+<OccupantTitle name="activity-timeline" />
 
 Every event for an item, oldest first: who did it (a person or an agent), how
-it stands, and when. It takes the [occupant](/guidelines/creating-occupants)
+it stands, and when. It takes the [occupant](/guidelines/design-architecture/creating-occupants)
 role: it goes in any surface that gives it the space it needs.
+
+<OpenInWorkbench name="activity-timeline" />
 
 <div className="not-prose my-6 flex flex-wrap gap-6">
   <OccupantInSurface occupant="activity-timeline" surface="side-panel" example="primary" width={360} height={520} />

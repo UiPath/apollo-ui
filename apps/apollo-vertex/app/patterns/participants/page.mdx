@@ -1,11 +1,15 @@
-import { OccupantLabel, WhereItFits } from '@/app/_components/occupant-docs';
+---
+title: Participants
+---
+
+import { OccupantTitle, OpenInWorkbench, WhereItFits } from '@/app/_components/occupant-docs';
 import { OccupantInSurface } from '@/app/_components/occupant-in-surface';
 
-# Participants
+<OccupantTitle name="participants" />
 
-<OccupantLabel />
+The people involved with an item, what each one does, and when they last acted. It takes the [occupant](/guidelines/design-architecture/creating-occupants) role.
 
-The people involved with an item, what each one does, and when they last acted. It takes the [occupant](/guidelines/creating-occupants) role.
+<OpenInWorkbench name="participants" />
 
 <div className="not-prose my-6 flex flex-wrap gap-6">
   <OccupantInSurface occupant="participants" surface="side-panel" example="primary" width={320} height="auto" />
