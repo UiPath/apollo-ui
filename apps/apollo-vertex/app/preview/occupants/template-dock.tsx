@@ -3,7 +3,10 @@
 import { Ban, CircleCheck } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import type { TemplateHost } from "@/app/_components/template-hosts";
+import {
+  slotRegions,
+  type TemplateHost,
+} from "@/app/_components/template-hosts";
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -62,7 +65,7 @@ export function TemplateDock({
       className="absolute inset-x-4 bottom-6 z-10 mx-auto flex w-fit max-w-full flex-wrap items-center gap-4 rounded-xl border border-border bg-background/75 px-4 py-3 shadow-lg backdrop-blur-md"
     >
       <PageMap
-        regions={host.regions[slot] ?? []}
+        regions={slotRegions(host, slot)}
         name={slotName.toLowerCase()}
       />
       <Separator orientation="vertical" className="h-8" />

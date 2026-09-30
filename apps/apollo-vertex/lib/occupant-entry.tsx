@@ -28,13 +28,8 @@ export type OccupantExamples<ViewModel> = Record<ExampleRole, ViewModel>;
 /** A registered occupant, ready for a preview or a check to render. */
 export interface RegisteredOccupant {
   spec: OccupantSpec;
-  /** Its example view names, "stress" included. */
-  examples: readonly string[];
-  /** Renders it with one of its examples; unknown names fall back to the first. */
-  render: (
-    example: string,
-    options?: { state?: OccupantState; onRetry?: () => void },
-  ) => ReactNode;
+  /** Renders it with one of its examples; unknown names fall back to primary. */
+  render: (example: string, options?: { state?: OccupantState }) => ReactNode;
 }
 
 /**
@@ -49,7 +44,6 @@ export function defineOccupant<ViewModel>(entry: {
   const { Component, examples } = entry;
   return {
     spec: entry.spec,
-    examples: EXAMPLE_ROLES,
     render: (example, options = {}) => {
       const role = EXAMPLE_ROLES.find((r) => r === example) ?? "primary";
       return (

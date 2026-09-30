@@ -59,16 +59,14 @@ export function OccupantTitle({ name }: OccupantTitleProps) {
 interface OpenInWorkbenchProps {
   /** Opens the workbench with this occupant. Leave out for the workbench alone. */
   name?: string;
-  /** And with this surface. */
-  surface?: string;
 }
 
 /** A button that opens the occupant workbench, which runs outside the docs layout. */
-export function OpenInWorkbench({ name, surface }: OpenInWorkbenchProps) {
+export function OpenInWorkbench({ name }: OpenInWorkbenchProps) {
   return (
     <p className="not-prose my-4">
       <Button asChild variant="outline" size="sm">
-        <Link href={workbenchHref(name, surface)} data-workbench-entry>
+        <Link href={workbenchHref(name)} data-workbench-entry>
           {name ? "Open in workbench" : "Open the workbench"}
           <LinkArrowIcon height="1em" aria-hidden="true" />
         </Link>

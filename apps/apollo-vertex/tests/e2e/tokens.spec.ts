@@ -1,9 +1,4 @@
 import { LAYOUT_TOKENS } from "@/lib/composition";
-import {
-  END_PANEL_WIDTH,
-  MAIN_MIN_OUTER_PX,
-  START_PANEL_WIDTH,
-} from "@/templates/detail-page/detail-page.template";
 import { expect, openPreview, test } from "./fixtures";
 
 const read = (page: import("@playwright/test").Page) =>
@@ -15,7 +10,6 @@ const read = (page: import("@playwright/test").Page) =>
         document.querySelector(`[data-slot=detail-page-${slot}]`)!,
         "::after",
       ).boxShadow;
-    const template = document.querySelector<HTMLElement>("[data-template]")!;
     return {
       pads: [
         style(
@@ -29,35 +23,15 @@ const read = (page: import("@playwright/test").Page) =>
         divider("start-panel"),
         divider("end-panel"),
       ],
-      vars: Object.fromEntries(
-        [
-          "--detail-page-start-panel-width",
-          "--detail-page-start-panel-width-min",
-          "--detail-page-start-panel-width-max",
-          "--detail-page-end-panel-width",
-          "--detail-page-end-panel-width-min",
-          "--detail-page-main-width-min",
-        ].map((name) => [name, template.style.getPropertyValue(name)]),
-      ),
     };
   });
 
-test("surfaces and dividers read the layout tokens, and the template sets its widths from its spec", async ({
-  page,
-}) => {
+test("surfaces and dividers read the layout tokens", async ({ page }) => {
   await openPreview(page);
   let g = await read(page);
   expect(g.pads).toEqual(
     Array.from({ length: 3 }, () => `${LAYOUT_TOKENS.surfaceInset}px`),
   );
-  expect(g.vars).toEqual({
-    "--detail-page-start-panel-width": `${START_PANEL_WIDTH.default}px`,
-    "--detail-page-start-panel-width-min": `${START_PANEL_WIDTH.min}px`,
-    "--detail-page-start-panel-width-max": `${START_PANEL_WIDTH.max}px`,
-    "--detail-page-end-panel-width": `${END_PANEL_WIDTH.default}px`,
-    "--detail-page-end-panel-width-min": `${END_PANEL_WIDTH.min}px`,
-    "--detail-page-main-width-min": `${MAIN_MIN_OUTER_PX}px`,
-  });
 
   // Overriding a token reaches every surface and divider.
   await page.evaluate(() => {

@@ -91,5 +91,5 @@ function ContentArea({
   );
 }
 
-export { ContentArea, contentAreaBodyVariants, contentAreaVariants };
+export { ContentArea };
 export type { ContentAreaProps };

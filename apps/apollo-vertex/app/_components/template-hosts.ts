@@ -5,7 +5,7 @@ import {
   MAIN_MIN_OUTER_PX,
 } from "@/templates/detail-page/detail-page.template";
 import { DETAIL_PAGE_SLOT_LABELS } from "./detail-page-slots";
-import type { MapRegion } from "./surface-hosts";
+import { MAP_REGIONS, type MapRegion } from "./surface-hosts";
 import {
   DetailPageFrame,
   type TemplateFrameProps,
@@ -17,8 +17,11 @@ export interface TemplateHost {
   label: string;
   /** Each slot's name, in sentence case. */
   slotLabels: Record<string, string>;
-  /** Where each slot sits on the workbench's page map. */
-  regions: Record<string, readonly MapRegion[]>;
+  /**
+   * Where a slot sits on the workbench's page map, when that isn't the
+   * region with the slot's own name.
+   */
+  regions?: Record<string, readonly MapRegion[]>;
   /** Slots that sit below or beside the header. */
   placeable: readonly string[];
   /** The narrowest page width where the template still works, in px. */
@@ -41,15 +44,18 @@ export const TEMPLATE_HOSTS: Record<string, TemplateHost> = {
     spec: detailPageTemplate,
     label: "Detail page",
     slotLabels: DETAIL_PAGE_SLOT_LABELS,
-    regions: {
-      header: ["header"],
-      "start-panel": ["start-panel"],
-      main: ["main"],
-      "end-panel": ["end-panel"],
-    },
     placeable: ["start-panel", "end-panel"],
     // Main's own minimum: narrower, and there's no room even without panels.
     minWidth: MAIN_MIN_OUTER_PX,
     Frame: DetailPageFrame,
   },
 };
+
+/** Where a template's slot sits on the page map. */
+export function slotRegions(
+  host: TemplateHost,
+  slot: string,
+): readonly MapRegion[] {
+  const named = MAP_REGIONS.find((region) => region === slot);
+  return host.regions?.[slot] ?? (named ? [named] : []);
+}

@@ -1,3 +1,4 @@
+import type { SidePanelPlacement } from "@/components/ui/side-panel";
 import type { SlotWidth, TemplateSpec } from "@/lib/composition";
 import { contentAreaSurface } from "@/registry/content-area/content-area.surface";
 import { sidePanelSurface } from "@/registry/side-panel/side-panel.surface";
@@ -87,7 +88,7 @@ export type DetailPagePanels = "none" | "start" | "end" | "both";
  * the next item, does the panel's content change? Yes → below header.
  * No → beside header. Don't choose placement for visual emphasis.
  */
-export type PanelPlacement = "below-header" | "beside-header";
+export type PanelPlacement = SidePanelPlacement;
 
 export interface DetailPagePanelConfig {
   placement: PanelPlacement;

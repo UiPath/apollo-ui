@@ -1,5 +1,4 @@
-import type { SurfacePadding } from "@/lib/composition";
-import type { ScrollOwner } from "@/lib/composition";
+import type { ScrollOwner, SurfacePadding } from "@/lib/composition";
 import type {
   ScrollableSlotName,
   SlotContents,
@@ -53,7 +52,7 @@ export interface PreviewSettings {
 }
 
 /** Slots whose surface can scroll, in page order. */
-export const SCROLLABLE_SLOTS: readonly ScrollableSlotName[] = [
+const SCROLLABLE_SLOTS: readonly ScrollableSlotName[] = [
   "start-panel",
   "main",
   "end-panel",

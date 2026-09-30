@@ -72,8 +72,6 @@ interface SidePanelProps extends React.ComponentProps<"aside"> {
    * fades, and gives the occupant its full height to scroll itself.
    */
   scroll?: ScrollOwner;
-  /** Overrides the open state a template provides. Defaults to open. */
-  open?: boolean;
   /** Names the landmark for assistive tech. */
   "aria-label": string;
 }
@@ -82,7 +80,6 @@ function SidePanel({
   side,
   padding = "padded",
   scroll = "surface",
-  open: openProp,
   className,
   children,
   ...props
@@ -99,7 +96,7 @@ function SidePanel({
     },
   );
   const slot = React.useContext(SidePanelSlotContext);
-  const open = openProp ?? slot?.open ?? true;
+  const open = slot?.open ?? true;
   const placement = slot?.placement ?? "below-header";
   return (
     <aside
@@ -123,10 +120,5 @@ function SidePanel({
   );
 }
 
-export {
-  SidePanel,
-  SidePanelSlotContext,
-  sidePanelBodyVariants,
-  sidePanelVariants,
-};
+export { SidePanel, SidePanelSlotContext };
 export type { SidePanelPlacement, SidePanelProps, SidePanelSlotState };

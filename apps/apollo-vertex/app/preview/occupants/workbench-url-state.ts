@@ -59,7 +59,7 @@ export interface WorkbenchView {
 
 /** The page width slider's range; its start is each template's own minimum. */
 export const PAGE_WIDTH_MAX = 1920;
-export const DEFAULT_PAGE_WIDTH = 1440;
+const DEFAULT_PAGE_WIDTH = 1440;
 
 /** Templates previews can render, in the hosts' order. */
 export const TEMPLATE_NAMES: readonly string[] = Object.keys(TEMPLATE_HOSTS);

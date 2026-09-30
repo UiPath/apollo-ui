@@ -158,6 +158,8 @@ const layoutTokensTs = [
 ].join("\n");
 
 if (checkOnly) {
+  // Only layout-tokens.ts is committed. theme.generated.css is gitignored
+  // and written on every dev run and build, so a fresh checkout has none.
   const committed = existsSync(layoutTokensPath)
     ? readFileSync(layoutTokensPath, "utf-8")
     : "";

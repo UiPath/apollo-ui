@@ -11,14 +11,6 @@ interface PageMapProps {
   name: string;
 }
 
-/** Where each part of the outline sits: a header over three columns. */
-const PLACEMENT: Record<MapRegion, string> = {
-  header: "col-span-3",
-  "start-panel": "",
-  main: "",
-  "end-panel": "",
-};
-
 /**
  * A small template outline (header, start panel, main, end panel) with the
  * selected surface's or slot's regions highlighted, from its host.
@@ -39,7 +31,7 @@ export function PageMap({ regions, name }: PageMapProps) {
           data-highlighted={regions.includes(region)}
           className={cn(
             "rounded-sm border border-border",
-            PLACEMENT[region],
+            region === "header" && "col-span-3",
             regions.includes(region) && "border-primary bg-primary",
           )}
         />
