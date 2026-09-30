@@ -2705,6 +2705,30 @@
       ]
     },
     {
+      "name": "participants",
+      "type": "registry:ui",
+      "title": "Participants",
+      "description": "Occupant: the people involved with an item, what each one does, and when they last acted. Vertical surfaces.",
+      "dependencies": ["lucide-react", "react-i18next"],
+      "registryDependencies": ["@uipath/composition", "@uipath/occupant"],
+      "meta": { "layer": "occupant" },
+      "categories": ["occupant"],
+      "files": [
+        {
+          "path": "registry/participants/participants.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/participants/participants.occupant.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/participants/participants.view-model.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
       "name": "use-mobile",
       "type": "registry:hook",
       "title": "useMobile",

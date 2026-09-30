@@ -8,6 +8,9 @@ import { EXAMPLES as activityTimelineExamples } from "@/registry/activity-timeli
 import { KeyFacts } from "@/registry/key-facts/key-facts";
 import { keyFactsOccupant } from "@/registry/key-facts/key-facts.occupant";
 import { EXAMPLES as keyFactsExamples } from "@/registry/key-facts/examples";
+import { Participants } from "@/registry/participants/participants";
+import { participantsOccupant } from "@/registry/participants/participants.occupant";
+import { EXAMPLES as participantsExamples } from "@/registry/participants/examples";
 import { StageStrip } from "@/registry/stage-strip/stage-strip";
 import { stageStripOccupant } from "@/registry/stage-strip/stage-strip.occupant";
 import { EXAMPLES as stageStripExamples } from "@/registry/stage-strip/examples";
@@ -23,6 +26,11 @@ export const OCCUPANT_REGISTRY: readonly RegisteredOccupant[] = [
     spec: keyFactsOccupant,
     Component: KeyFacts,
     examples: keyFactsExamples,
+  }),
+  defineOccupant({
+    spec: participantsOccupant,
+    Component: Participants,
+    examples: participantsExamples,
   }),
   defineOccupant({
     spec: stageStripOccupant,

@@ -5,6 +5,7 @@ export default {
   "key-facts": "Key Facts",
   "metric-card": "Metric Card",
   "page-header": "Page Header",
+  participants: "Participants",
   shell: "Shell",
   "stage-strip": "Stage Strip",
 };
