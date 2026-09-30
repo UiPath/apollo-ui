@@ -132,6 +132,9 @@ test("the Detail page docs embed the preview without the Configure card or URL w
 test("the Surfaces section is in the nav, and every internal link resolves", async ({
   page,
 }) => {
+  // It visits every page and link, which grows with each occupant, and a dev
+  // server compiles each page on its first visit.
+  test.setTimeout(180_000);
   const links = new Set<string>();
   for (const path of Object.keys(PAGES)) {
     await page.goto(path);
