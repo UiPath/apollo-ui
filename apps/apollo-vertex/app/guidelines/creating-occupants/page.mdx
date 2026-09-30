@@ -141,11 +141,27 @@ file: the item type, the list's name, and each field with a kind.
 
 | Kind | How it renders |
 | --- | --- |
-| `title` | The item's main text. It wraps |
+| `title` | The item's main text. It wraps, or on a card, truncates with the full title in a tooltip |
 | `label` | A short single line. It truncates, with the full text in a title |
 | `value` | The value in a label and value pair. It shows "Not set" when empty |
 | `detail` | Secondary text. It wraps |
 | `meta` | Small text, like a time. It wraps |
+| `figure` | A prominent value, like an amount. It sits at the end of the title's line |
+| `status` | A label with a tone, shown as a colored dot, and a count of any more |
+
+### Lists people work through
+
+Three options in the view model file cover lists people work through, like a
+queue:
+
+| Option | What it adds |
+| --- | --- |
+| `"selectable": true` | Items render as cards people pick. The page owns the current item, through `currentId` and `onSelect`, and a footer steps through the items |
+| `"groups": true` | Each item has a `group`, and items show under their group's label, with a count |
+| `"filters": true` | The view model has `filters`, each item a `filter`, and tabs filter the list, with All first |
+
+A selectable or filtered occupant keeps its tabs and footer in place and
+scrolls its own list, so its scroll is `occupant`. It's vertical only.
 
 ```bash
 pnpm create:occupant key-facts --view-model key-facts.json \
@@ -154,6 +170,9 @@ pnpm create:occupant key-facts --view-model key-facts.json \
   --surfaces none --subject "key facts" --empty "Facts show here once there are some." \
   --primary-domain "shipment tracking" --secondary-domain "customer support"
 ```
+
+`--min-width follow` makes the minimum follow the narrowest surface it
+claims, instead of a guess to measure.
 
 Anything left out, it asks for in plain terms. From those answers it writes, in
 `registry/<name>/`:
@@ -180,8 +199,9 @@ filled in. It runs in lint.
 Then measure, and set the minimum width:
 
 ```bash
-pnpm measure:occupant key-facts            # report the floor
-pnpm measure:occupant key-facts --set 160  # or --apply for the floor itself
+pnpm measure:occupant key-facts   # report the floor
+pnpm measure:occupant key-facts --apply   # set it to the floor
+pnpm measure:occupant key-facts --set 160 --reason "Why it's wider than the floor."
 ```
 
 In Claude Code, the `create-occupant` skill does this with you: it asks the

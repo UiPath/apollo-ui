@@ -56,6 +56,7 @@ if (entry) {
           example,
           floor,
           from,
+          declared: spec.requires.minWidth,
         };
         if (OUT)
           writeFileSync(

@@ -10,7 +10,8 @@
  *                               description, and the docs page's opening
  *   --icon <LucideName>         its icon in pickers
  *   --orientations <vertical|horizontal|both>
- *   --min-width <px>            a first guess; measure:occupant finds the floor
+ *   --min-width <px|follow>     a first guess; measure:occupant finds the floor.
+ *                               "follow" tracks the narrowest surface it claims
  *   --padding <padded|flush>
  *   --scroll <surface|occupant|either>
  *   --surfaces <none|page-header|side-panel|content-area>
@@ -29,14 +30,25 @@
  *     "fields": [
  *       { "name": "name", "kind": "title", "description": "The person's name." },
  *       { "name": "role", "kind": "detail", "optional": true, "description": "..." }
- *     ]
+ *     ],
+ *     "selectable": true,   optional: cards people pick, with previous and next
+ *     "groups": true,       optional: items grouped under labels, with counts
+ *     "filters": true       optional: tabs that filter the items, with "All"
  *   }
  *   Kinds decide how a field renders and how the stress adapter tests it:
- *     title   the item's main text; wraps
+ *     title   the item's main text; wraps (on a card: one line, truncated,
+ *             with the full title in a tooltip)
  *     label   a short single line; truncates, full text in a title
  *     value   the main text of a label and value pair; shows "Not set" when empty
  *     detail  secondary text; wraps
  *     meta    small text, like a time; wraps
+ *     figure  a prominent value, like an amount; at the end of the title's line
+ *     status  a label with a tone (a colored dot), and a count of any more
+ *
+ *   Selectable items render as cards: the page owns the current item
+ *   (currentId, onSelect), and a footer steps through the visible items.
+ *   Selectable or filtered occupants scroll themselves, so the tabs and the
+ *   footer stay put: scroll is "occupant". They're vertical only.
  *
  * It writes, in registry/<name>/: the spec, the view model, the component
  * (wrapped in <Occupant>, with the standard states, reading useSurface() when
@@ -162,7 +174,10 @@ const minWidth = await ask(
   "What's the narrowest width, in px, where it still works? Guess for now:\n" +
     "  pnpm measure:occupant finds the real floor across every example.",
   "240",
-  (a) => (/^[1-9]\d*$/.test(a) ? null : "Use a whole number of px."),
+  (a) =>
+    /^[1-9]\d*$/.test(a) || a === "follow"
+      ? null
+      : 'Use a whole number of px, or "follow" to track the surface.',
 );
 const padding = await ask(
   "padding",
@@ -170,7 +185,7 @@ const padding = await ask(
   "padded",
   oneOf(["padded", "flush"]),
 );
-const scroll = await ask(
+const scrollAnswer = await ask(
   "scroll",
   "When its content is taller than the space, who scrolls it?\n" +
     "  surface: the surface scrolls it (most occupants)\n" +
@@ -188,7 +203,15 @@ const surfacesAnswer = await ask(
 );
 
 // The view model: a JSON file, or fields typed in as name:kind[?].
-const KINDS = ["title", "label", "value", "detail", "meta"] as const;
+const KINDS = [
+  "title",
+  "label",
+  "value",
+  "detail",
+  "meta",
+  "figure",
+  "status",
+] as const;
 type Kind = (typeof KINDS)[number];
 interface Field {
   name: string;
@@ -201,6 +224,9 @@ interface ViewModelSpec {
   collection: string;
   subject: string;
   fields: Field[];
+  selectable?: boolean;
+  groups?: boolean;
+  filters?: boolean;
 }
 let viewModel: ViewModelSpec;
 const viewModelFile = flag("view-model");
@@ -248,7 +274,23 @@ for (const field of viewModel.fields) {
     fail(
       `view model: ${field.name}'s kind "${field.kind}" isn't one of ${KINDS.join(", ")}.`,
     );
+  if (["group", "filter", "subject"].includes(field.name))
+    fail(
+      `view model: "${field.name}" is reserved (groups and filters add group and filter).`,
+    );
 }
+const selectable = viewModel.selectable === true;
+const grouped = viewModel.groups === true;
+const filtered = viewModel.filters === true;
+// Tabs and the footer stay put, so the occupant scrolls its own list.
+const ownScroll = selectable || filtered;
+if (ownScroll && orientationsAnswer !== "vertical")
+  fail("selectable and filtered occupants are vertical only.");
+if (ownScroll && flag("scroll") !== undefined && scrollAnswer !== "occupant")
+  fail(
+    '--scroll: selectable and filtered occupants scroll themselves, so the tabs and footer stay put. Use "occupant".',
+  );
+const scroll = ownScroll ? "occupant" : scrollAnswer;
 
 const subject = await ask(
   "subject",
@@ -271,6 +313,23 @@ const secondaryDomain = await ask(
   FILL("the secondary example's domain"),
 );
 rl.close();
+
+// "follow": the narrowest vertical surface it claims, from its width token,
+// so the minimum moves with the token. Flush gets the surface's full width.
+const FOLLOW_TOKEN: Record<string, string> = {
+  "side-panel": "sidePanelWidthMin",
+  "content-area": "contentAreaWidthMin",
+};
+const follows = minWidth === "follow";
+const followed = surfacesAnswer === "none" ? "side-panel" : surfacesAnswer;
+if (follows && (orientationsAnswer !== "vertical" || !FOLLOW_TOKEN[followed]))
+  fail(
+    "--min-width follow: only a vertical occupant can follow its surface; the page header promises no width.",
+  );
+const followLabel = followed.replace("-", " ");
+const minWidthSource = follows
+  ? `LAYOUT_TOKENS.${FOLLOW_TOKEN[followed]}${padding === "padded" ? " - 2 * PADDED_INSET_PX" : ""}`
+  : minWidth;
 
 const orientations =
   orientationsAnswer === "both"
@@ -295,7 +354,7 @@ const comment = (text: string, indent = "") => `${indent}/** ${text} */`;
 
 files[`registry/${occupantName}/${occupantName}.occupant.ts`] =
   `import { ${icon} } from "lucide-react";
-import type { OccupantSpec } from "@/lib/composition";
+${follows ? `import { LAYOUT_TOKENS, type OccupantSpec${padding === "padded" ? ", PADDED_INSET_PX" : ""} } from "@/lib/composition";` : 'import type { OccupantSpec } from "@/lib/composition";'}
 
 /**
  * The ${label.toLowerCase()} spec. It describes the space it needs from a
@@ -306,26 +365,33 @@ export const ${camel}Occupant = {
   label: "${label}",
   icon: ${icon},
   orientations: ${JSON.stringify(orientations)},
-${surfaces ? `  // Built from ${surfaces[0]}'s own parts, so it only works there.\n  surfaces: ${JSON.stringify(surfaces)},\n` : ""}  // Set with pnpm measure:occupant: at or above the measured floor.
-  requires: { minWidth: ${minWidth}, padding: "${padding}", scroll: "${scroll}" },
+${surfaces ? `  // Built from ${surfaces[0]}'s own parts, so it only works there.\n  surfaces: ${JSON.stringify(surfaces)},\n` : ""}${
+  follows
+    ? `  // Follows the ${followLabel}'s minimum width${padding === "padded" ? ", less its padding" : ""}, so it fits any
+  // ${followLabel}. pnpm measure:occupant checks nothing clips there.\n`
+    : "  // Set with pnpm measure:occupant: at or above the measured floor.\n"
+}  requires: { minWidth: ${minWidthSource}, padding: "${padding}", scroll: "${scroll}" },
 } as const satisfies OccupantSpec;
 `;
 
+const hasStatus = fields.some((f) => f.kind === "status");
+const fieldType = (f: Field) =>
+  f.kind === "status" ? "OccupantStatusValue" : "string";
 files[`registry/${occupantName}/${occupantName}.view-model.ts`] = `/**
  * The neutral view model for the ${label.toLowerCase()}: ${description.replace(/\.$/, "").replace(/^[A-Z]/, (c) => c.toLowerCase())}.
  * No domain terms. A solution's adapter maps its own data into it; the
  * occupant never sees the domain.
  */
-
+${hasStatus ? '\nimport type { OccupantStatusValue } from "@/components/ui/occupant";\n' : ""}
 export interface ${item} {
   id: string;
-${fields.map((f) => `${comment(f.description, "  ")}\n  ${f.name}${f.optional ? "?" : ""}: string;`).join("\n")}
-}
-
+${fields.map((f) => `${comment(f.description, "  ")}\n  ${f.name}${f.optional ? "?" : ""}: ${fieldType(f)};`).join("\n")}
+${grouped ? `${comment("The label it's grouped under. Groups show in the order they first appear.", "  ")}\n  group: string;\n` : ""}${filtered ? `${comment("The id of the filter it belongs to, from filters.", "  ")}\n  filter: string;\n` : ""}}
+${filtered ? `\nexport interface ${pascal}Filter {\n  id: string;\n  label: string;\n}\n` : ""}
 export interface ${pascal}ViewModel {
 ${comment(viewModel.subject, "  ")}
   subject: string;
-  ${collection}: ${item}[];
+${filtered ? `${comment('The tabs that filter the items, in order. "All" comes first on its own.', "  ")}\n  filters: ${pascal}Filter[];\n` : ""}  ${collection}: ${item}[];
 }
 `;
 
@@ -354,7 +420,62 @@ const fieldMarkup = (f: Field) => {
       return wrap(
         `<p className="mt-1 text-xs text-muted-foreground wrap-anywhere">{${v}}</p>`,
       );
+    case "figure":
+      return wrap(
+        `<p className="text-sm font-semibold text-foreground tabular-nums wrap-anywhere">{${v}}</p>`,
+      );
+    case "status":
+      return wrap(`<OccupantStatus status={${v}} />`);
   }
+};
+
+// Cards: the title's line (titles, then figures at its end), the status line
+// (statuses, then labels at its end), then any details and meta. What sits
+// at a line's end takes up to half of it, so every card lays out the same
+// way at a width: a long figure wraps there, and a long label truncates.
+// Titles stay on one line, truncated, with the full title in a tooltip.
+// Titles are text-sm; everything else in a card is text-xs.
+const cardMarkup = () => {
+  const of = (...kinds: Kind[]) => fields.filter((f) => kinds.includes(f.kind));
+  const optional = (f: Field, element: string) =>
+    f.optional ? `{entry.${f.name} && (\n${element}\n)}` : element;
+  const line = (items: string[], className: string) =>
+    items.length
+      ? `<div className="flex min-w-0 items-baseline justify-between ${className}">\n${items.join("\n")}\n</div>`
+      : "";
+  const first = [
+    ...of("title").map((f) =>
+      optional(
+        f,
+        `<OccupantTruncatedText className="flex-1 text-sm font-semibold text-foreground">{entry.${f.name}}</OccupantTruncatedText>`,
+      ),
+    ),
+    ...of("figure").map((f) =>
+      optional(
+        f,
+        `<p className="max-w-1/2 shrink-0 text-end text-xs font-semibold text-foreground tabular-nums wrap-anywhere">{entry.${f.name}}</p>`,
+      ),
+    ),
+  ];
+  const second = [
+    ...of("status").map((f) =>
+      optional(
+        f,
+        `<OccupantStatus status={entry.${f.name}} className="flex-1 text-xs" />`,
+      ),
+    ),
+    ...of("label").map((f) =>
+      optional(
+        f,
+        `<p className="max-w-1/2 shrink-0 truncate text-xs text-muted-foreground" title={entry.${f.name}}>{entry.${f.name}}</p>`,
+      ),
+    ),
+  ];
+  const rest = of("value", "detail", "meta").map(fieldMarkup);
+  // 32px between a title and what's to its right.
+  return [line(first, "gap-8"), line(second, "mt-2 gap-3"), ...rest]
+    .filter(Boolean)
+    .join("\n");
 };
 const usesCn = both || fields.some((f) => f.kind === "value");
 const verticalList = "flex min-w-0 flex-col gap-3";
@@ -364,34 +485,196 @@ const listClass = both
   ? `cn(orientation === "horizontal" ? "${horizontalList}" : "${verticalList}")`
   : `"${horizontalOnly ? horizontalList : verticalList}"`;
 
-files[`registry/${occupantName}/${occupantName}.tsx`] =
-  `import { useTranslation } from "react-i18next";
-import { Occupant, OccupantStateView, type OccupantViewProps } from "@/components/ui/occupant";
-${both ? 'import { useSurface } from "@/lib/surface-context";\n' : ""}${usesCn ? 'import { cn } from "@/lib/utils";\n' : ""}import { ${camel}Occupant } from "./${occupantName}.occupant";
-import type { ${pascal}ViewModel } from "./${occupantName}.view-model";
+const listItems = (items: string) =>
+  selectable
+    ? `{${items}.map((entry) => (
+  <li key={entry.id}>
+    <Card
+      selectable="standard"
+      selected={entry.id === currentId}
+      className="rounded-md"
+      onClick={() => onSelect?.(entry.id)}
+      // Keep the current item in view as people step through.
+      ref={entry.id === currentId ? revealCurrent : null}
+    >
+${cardMarkup()}
+    </Card>
+  </li>
+))}`
+    : `{${items}.map((entry) => (
+  <li key={entry.id} className="flex min-w-0 flex-col">
+${fields.map(fieldMarkup).join("\n")}
+  </li>
+))}`;
+// Flush occupants pad their own parts with the surface inset.
+const inset = padding === "flush" ? " px-(--surface-inset)" : "";
+const listAria = `aria-label={t("${snake}_label", { subject: view.subject })}`;
+const groupsMarkup = `{groups.map((group, index) => (
+  <div key={group.label} role="group" aria-labelledby={\`\${groupId}-\${index}\`} className="flex min-w-0 flex-col gap-3">
+    <p id={\`\${groupId}-\${index}\`} className="text-xs text-muted-foreground wrap-anywhere">
+      {t("occupant_group", { label: group.label, count: group.items.length })}
+    </p>
+    <ul className="flex min-w-0 flex-col gap-3">
+${listItems("group.items")}
+    </ul>
+  </div>
+))}`;
+const itemsMarkup = grouped
+  ? `<div ${listAria} role="group" className="flex min-w-0 flex-col gap-6">\n${groupsMarkup}\n</div>`
+  : `<ul ${listAria} className={${listClass}}>\n${listItems("visible")}\n</ul>`;
+const noMatch = filtered
+  ? `{visible.length === 0 && (
+  <p className="py-6 text-center text-sm text-muted-foreground wrap-anywhere">
+    {t("occupant_none_match", { subject: t("${snake}_subject") })}
+  </p>
+)}`
+  : "";
+const scrollList = (element: string, inner: string) =>
+  `<${element}
+  ref={listRef}
+  className={cn("min-h-0 flex-1 overflow-y-auto outline-none${inset} py-4", SCROLL_FADE_MASK)}
+>
+${inner}
+</${element.split(" ")[0]}>`;
+const listBody = `${noMatch}\n${itemsMarkup}`;
+const tabsMarkup = `<div
+  ref={tabsRef}
+  data-scroll-x
+  className={cn("shrink-0 overflow-x-auto${inset} pt-(--surface-inset) pb-2", SCROLL_FADE_MASK_X)}
+>
+  {/* As wide as the list, or its content when that's wider; spare space is shared evenly. */}
+  <TabsList className="w-full min-w-max" aria-label={t("occupant_filter", { subject: t("${snake}_subject") })}>
+    {[{ id: ALL, label: t("all") }, ...view.filters].map((option) => (
+      <TabsTrigger key={option.id} value={option.id} className="flex-auto">
+        {option.label}
+        {option.id === filter && (
+          <span className="rounded-full bg-muted px-1.5 text-xs tabular-nums text-muted-foreground">
+            {visible.length}
+          </span>
+        )}
+      </TabsTrigger>
+    ))}
+  </TabsList>
+</div>`;
+const pagerMarkup = `<div className="flex shrink-0 items-center justify-between gap-2 border-t border-border${inset} py-2">
+  <Button
+    variant="ghost"
+    size="icon"
+    aria-label={t("occupant_previous_item")}
+    disabled={position <= 0}
+    onClick={() => step(position - 1)}
+  >
+    <ChevronLeft aria-hidden />
+  </Button>
+  <p aria-live="polite" className="min-w-0 text-center text-sm text-muted-foreground wrap-anywhere">
+    {position === -1
+      ? t("occupant_count", { count: ordered.length })
+      : t("occupant_position", { position: position + 1, count: ordered.length })}
+  </p>
+  <Button
+    variant="ghost"
+    size="icon"
+    aria-label={t("occupant_next_item")}
+    disabled={position === ordered.length - 1}
+    onClick={() => step(position + 1)}
+  >
+    <ChevronRight aria-hidden />
+  </Button>
+</div>`;
+// The ready view: the list alone, or tabs, a scrolling list, and the footer.
+const readyMarkup = ownScroll
+  ? filtered
+    ? `<Tabs
+  value={filter}
+  onValueChange={setFilter}
+  // A mask hides focus rings, so the list's ring is drawn here.
+  className="min-h-0 flex-1 gap-0 rounded-lg has-[[data-slot=tabs-content]:focus-visible]:ring-2 has-[[data-slot=tabs-content]:focus-visible]:ring-ring/50 has-[[data-slot=tabs-content]:focus-visible]:ring-inset"
+>
+${tabsMarkup}
+${scrollList("TabsContent value={filter}", listBody)}
+${selectable ? pagerMarkup : ""}
+</Tabs>`
+    : `<div className="flex min-h-0 flex-1 flex-col rounded-lg has-[[data-scroll-list]:focus-visible]:ring-2 has-[[data-scroll-list]:focus-visible]:ring-ring/50 has-[[data-scroll-list]:focus-visible]:ring-inset">
+${scrollList("div data-scroll-list", listBody)}
+${pagerMarkup}
+</div>`
+  : itemsMarkup;
 
-type ${pascal}Props = OccupantViewProps<${pascal}ViewModel>;
+const reactNames = [grouped && "useId", filtered && "useState"].filter(Boolean);
+const imports = [
+  reactNames.length > 0 && `import { ${reactNames.join(", ")} } from "react";`,
+  selectable && 'import { ChevronLeft, ChevronRight } from "lucide-react";',
+  'import { useTranslation } from "react-i18next";',
+  selectable && 'import { Button } from "@/components/ui/button";',
+  selectable && 'import { Card } from "@/components/ui/card";',
+  `import { Occupant, ${hasStatus ? "OccupantStatus, " : ""}OccupantStateView, ${selectable && fields.some((f) => f.kind === "title") ? "OccupantTruncatedText, " : ""} type OccupantViewProps${selectable ? ", type OccupantSelectionProps" : ""} } from "@/components/ui/occupant";`,
+  filtered &&
+    'import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";',
+  ownScroll &&
+    `import { SCROLL_FADE_MASK, ${filtered ? "SCROLL_FADE_MASK_X, " : ""}useScrollFade } from "@/hooks/use-scroll-fade";`,
+  both && 'import { useSurface } from "@/lib/surface-context";',
+  (usesCn || ownScroll) && 'import { cn } from "@/lib/utils";',
+  `import { ${camel}Occupant } from "./${occupantName}.occupant";`,
+  `import type { ${pascal}ViewModel } from "./${occupantName}.view-model";`,
+].filter((line): line is string => typeof line === "string");
+
+const componentBody = [
+  both &&
+    "  // Adapt to the shape of the space, never to the surface's name.\n  const { orientation } = useSurface();",
+  filtered &&
+    `  // Filtering happens here, so the tab counts always match what's shown.
+  const [filter, setFilter] = useState(ALL);
+  const visible = filter === ALL ? view.${collection} : view.${collection}.filter((entry) => entry.filter === filter);`,
+  !filtered && `  const visible = view.${collection};`,
+  grouped &&
+    `  const groupId = useId();
+  // Groups in the order they first appear, each with its visible items.
+  const groups: { label: string; items: typeof visible }[] = [];
+  for (const entry of visible) {
+    const group = groups.find((g) => g.label === entry.group);
+    if (group) group.items.push(entry);
+    else groups.push({ label: entry.group, items: [entry] });
+  }`,
+  selectable &&
+    `  // Stepping follows the order on screen: group by group.
+  const ordered = ${grouped ? "groups.flatMap((group) => group.items)" : "visible"};
+  const position = ordered.findIndex((entry) => entry.id === currentId);
+  const step = (index: number) => {
+    const next = ordered[index];
+    if (next) onSelect?.(next.id);
+  };`,
+  ownScroll &&
+    `  const listRef = useScrollFade<HTMLDivElement>();${filtered ? '\n  const tabsRef = useScrollFade<HTMLDivElement>(true, null, { axis: "x" });' : ""}`,
+  `  // Nothing to show is the empty state.
+  const shown = state === "ready" && view.${collection}.length === 0 ? "empty" : state;`,
+]
+  .filter(Boolean)
+  .join("\n");
+
+files[`registry/${occupantName}/${occupantName}.tsx`] = `${imports.join("\n")}
+
+${filtered ? 'const ALL = "all";\n\n' : ""}${
+  selectable
+    ? `const revealCurrent = (node: HTMLElement | null) =>
+  node?.scrollIntoView({ block: "nearest" });
+
+`
+    : ""
+}type ${pascal}Props = OccupantViewProps<${pascal}ViewModel>${selectable ? " & OccupantSelectionProps" : ""};
 
 /** Occupant: ${description} */
-function ${pascal}({ view, state = "ready", onRetry }: ${pascal}Props) {
+function ${pascal}({ view, state = "ready", onRetry${selectable ? ", currentId, onSelect" : ""} }: ${pascal}Props) {
   const { t } = useTranslation();
-${both ? "  // Adapt to the shape of the space, never to the surface's name.\n  const { orientation } = useSurface();\n" : ""}  // Nothing to show is the empty state.
-  const shown = state === "ready" && view.${collection}.length === 0 ? "empty" : state;
+${componentBody}
   return (
     <Occupant spec={${camel}Occupant}>
       <OccupantStateView
         state={shown}
         subject={t("${snake}_subject")}
         emptyDescription={t("${snake}_empty")}
-        onRetry={onRetry}
+        onRetry={onRetry}${padding === "flush" && ownScroll ? "\n        flush" : ""}
       >
-        <ul aria-label={t("${snake}_label", { subject: view.subject })} className={${listClass}}>
-          {view.${collection}.map((entry) => (
-            <li key={entry.id} className="flex min-w-0 flex-col">
-${fields.map(fieldMarkup).join("\n")}
-            </li>
-          ))}
-        </ul>
+${readyMarkup}
       </OccupantStateView>
     </Occupant>
   );
@@ -415,7 +698,7 @@ import type { ${pascal}ViewModel } from "../${occupantName}.view-model";
 // ${FILL(`a record type from ${domain}, a function that maps it to ${pascal}ViewModel, and sample data.`)}
 export const ${constant}: ${pascal}ViewModel = {
   subject: "${PLACEHOLDER}",
-  ${collection}: [],
+${filtered ? "  filters: [],\n" : ""}  ${collection}: [],
 };
 `;
 files[`registry/${occupantName}/examples/primary.example-adapter.ts`] = adapter(
@@ -428,6 +711,10 @@ files[`registry/${occupantName}/examples/secondary.example-adapter.ts`] =
 
 const stressValue = (f: Field, i: string) => {
   switch (f.kind) {
+    case "status":
+      return `{ label: ${i} % 2 ? \`\${LONG} \${${i}}\` : \`\${UNBROKEN}\${${i}}\`, tone: TONES[${i} % TONES.length] ?? "neutral", ...(${i} % 4 === 1 ? { more: 12 } : {}) }`;
+    case "figure":
+      return `${i} % 5 ? \`\${UNBROKEN.slice(0, 18)}\${${i}}\` : LONG`;
     case "label":
       return `${i} % 2 ? \`A ${f.name} that runs long \${i}\` : \`\${UNBROKEN}\${i}\``;
     case "meta":
@@ -442,20 +729,35 @@ files[`registry/${occupantName}/examples/stress.example-adapter.ts`] = `/**
  * Long values, long unbroken tokens, many items, and missing or empty
  * optional values. Generated from the view model's fields.
  */
-import type { ${pascal}ViewModel } from "../${occupantName}.view-model";
+${hasStatus ? 'import type { OccupantTone } from "@/components/ui/occupant";\n' : ""}import type { ${pascal}ViewModel } from "../${occupantName}.view-model";
 
-const UNBROKEN = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const UNBROKEN = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";${
+  hasStatus
+    ? '\nconst TONES: OccupantTone[] = ["neutral", "info", "success", "warning", "error"];'
+    : ""
+}
 const LONG =
   "A very long value that keeps going well past any width a narrow slot can give it, to test wrapping";
 
 export const STRESS: ${pascal}ViewModel = {
-  subject: \`REF-\${UNBROKEN}\`,
+  subject: \`REF-\${UNBROKEN}\`,${
+    filtered
+      ? `
+  // Many filters, with long labels and one no item belongs to.
+  filters: Array.from({ length: 8 }, (_, i) => ({
+    id: \`f\${i}\`,
+    label: i % 2 ? \`\${LONG.slice(0, 40)} \${i}\` : \`\${UNBROKEN.slice(0, 20)}\${i}\`,
+  })),`
+      : ""
+  }
   ${collection}: Array.from({ length: 30 }, (_, i) => ({
-    id: \`s\${i}\`,
+    id: \`s\${i}\`,${grouped ? "\n    // Long and unbroken group labels.\n    group: i < 10 ? \`\${LONG} \${Math.floor(i / 5)}\` : \`\${UNBROKEN}\${Math.floor(i / 10)}\`," : ""}${filtered ? "\n    filter: \`f\${i % 7}\`," : ""}
 ${fields
   .map((f) =>
     f.optional
-      ? `    // Missing every third item, empty every third.\n    ...(i % 3 === 0 ? {} : { ${f.name}: i % 3 === 1 ? ${stressValue(f, "i")} : "" }),`
+      ? f.kind === "status"
+        ? `    // Missing every third item.\n    ...(i % 3 === 0 ? {} : { ${f.name}: ${stressValue(f, "i")} }),`
+        : `    // Missing every third item, empty every third.\n    ...(i % 3 === 0 ? {} : { ${f.name}: i % 3 === 1 ? ${stressValue(f, "i")} : "" }),`
       : `    ${f.name}: ${stressValue(f, "i")},`,
   )
   .join("\n")}
@@ -488,14 +790,28 @@ const demos = horizontalOnly
   <OccupantInSurface occupant="${occupantName}" surface="${demoSurface}" example="primary" width="100%" />
   <OccupantInSurface occupant="${occupantName}" surface="${demoSurface}" example="secondary" width="100%" />
 </div>`
-  : `<div className="not-prose my-6 flex flex-wrap gap-6">
-  <OccupantInSurface occupant="${occupantName}" surface="${demoSurface}" example="primary" width={320} height="auto" />
-  <OccupantInSurface occupant="${occupantName}" surface="${demoSurface}" example="secondary" width={320} height="auto" />
+  : // An occupant that scrolls itself needs a height to scroll in.
+    `<div className="not-prose my-6 flex flex-wrap gap-6">
+  <OccupantInSurface occupant="${occupantName}" surface="${demoSurface}" example="primary" width={${ownScroll ? 360 : 320}} height=${ownScroll ? "{560}" : '"auto"'} />
+  <OccupantInSurface occupant="${occupantName}" surface="${demoSurface}" example="secondary" width={${ownScroll ? 360 : 320}} height=${ownScroll ? "{560}" : '"auto"'} />
 </div>`;
 const a11y = [
-  `- The ${subject} are a list, named for the subject ("${label} for …").`,
+  grouped
+    ? `- The ${subject} are a group named for the subject ("${label} for …"), and each group within it is named by its label and count.`
+    : `- The ${subject} are a list, named for the subject ("${label} for …").`,
+  filtered &&
+    "- The filters are tabs, named for what they filter. The active tab shows its count, and the list is its tab panel.",
+  selectable &&
+    '- Each card is a button, pressed while its item is current. Previous and Next are named buttons, and the position ("3 of 10") is announced as it changes.',
+  ownScroll &&
+    "- The list scrolls on its own, and takes keyboard focus so it can be scrolled.",
+  hasStatus &&
+    '- A status is never color alone: its label says it, and "+2" is read as "2 more".',
   fields.some((f) => f.kind === "label") &&
     "- Short labels truncate, with the full text in a title.",
+  selectable &&
+    fields.some((f) => f.kind === "title") &&
+    "- Card titles stay on one line. When one is cut off, hovering shows the full title, and screen readers always read it in full.",
   "- Everything else wraps, so nothing is cut off at any width from the minimum up.",
   fields.some((f) => f.kind === "value") &&
     '- A missing or empty value shows as "Not set".',
@@ -528,12 +844,23 @@ It renders a \`${pascal}ViewModel\`. Nothing in it names a domain.
 | Field | What it holds |
 | --- | --- |
 | \`subject\` | ${viewModel.subject} |
-| \`${collection}\` | Each item's \`id\`, and: ${fields.map((f) => `\`${f.name}\`${f.optional ? " (optional)" : ""}`).join(", ")} |
-${fields.map((f) => `| \`${f.name}\` | ${f.description} |`).join("\n")}
+${filtered ? '| \`filters\` | The tabs that filter the items, each an \`id\` and \`label\`. "All" comes first on its own. |\n' : ""}| \`${collection}\` | Each item's \`id\`, and: ${[...fields.map((f) => `\`${f.name}\`${f.optional ? " (optional)" : ""}`), grouped && "\`group\`", filtered && "\`filter\`"].filter(Boolean).join(", ")} |
+${fields.map((f) => `| \`${f.name}\` | ${f.description}${f.kind === "status" ? " A \`label\`, a \`tone\` (neutral, info, success, warning, or error), and \`more\`, how many more it has." : ""} |`).join("\n")}${grouped ? "\n| \`group\` | The label it's grouped under. Groups show in the order they first appear. |" : ""}${filtered ? "\n| \`filter\` | The id of the filter it belongs to. |" : ""}
 
 Your solution maps its own data into this shape with an adapter. The adapter
 belongs to your solution, not to the occupant.
+${
+  selectable
+    ? `
+## Selection
 
+Your page owns which item is current: pass \`currentId\`, and change it in
+\`onSelect\`, usually to open that item in main. Picking a card, or stepping
+with Previous and Next, calls \`onSelect\`. Stepping follows the order on
+screen${filtered ? ", within the active filter" : ""}.
+`
+    : ""
+}
 ## States
 
 It renders the standard occupant states. With no ${subject}, it shows the empty
@@ -565,7 +892,13 @@ const registryItem = `,
       "title": "${label}",
       "description": ${JSON.stringify(`Occupant: ${description.replace(/\.$/, "").replace(/^[A-Z]/, (c) => c.toLowerCase())}. ${orientationSentence}`)},
       "dependencies": ["lucide-react", "react-i18next"],
-      "registryDependencies": ["@uipath/composition", "@uipath/occupant"],
+      "registryDependencies": ${JSON.stringify([
+        ...(selectable ? ["@uipath/button", "@uipath/card"] : []),
+        "@uipath/composition",
+        "@uipath/occupant",
+        ...(filtered ? ["@uipath/tabs"] : []),
+        ...(ownScroll ? ["@uipath/use-scroll-fade"] : []),
+      ])},
       "meta": { "layer": "occupant" },
       "categories": ["occupant"],
       "files": [
@@ -625,9 +958,11 @@ for (const [path, content] of Object.entries(files)) write(path, content);
 const biome = join(root, "node_modules/.bin/biome");
 execFileSync(
   biome,
+  // check, not format, so imports are sorted too; lint rules stay off here.
   [
-    "format",
+    "check",
     "--write",
+    "--linter-enabled=false",
     `registry/${occupantName}`,
     "registry.json",
     "tsconfig.json",
