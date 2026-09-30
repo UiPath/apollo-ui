@@ -75,11 +75,6 @@ title, detail, and time. It doesn't know about invoices, claims, or loans.
   {activityTimelineOccupant.requires.minWidth}px: both could go narrower
   without clipping, but their titles get hard to read.
 
-```text
-Measure the key-facts occupant's minimum width,
-and tell me the floor in each surface.
-```
-
 Measuring reports the floor for each example in each surface the occupant
 claims, and fails if the minimum is below it. When a minimum that follows its
 surface clips there, fix the layout rather than raising it.
@@ -135,72 +130,48 @@ The recommendation comes from the view model, so the solution decides it.
 
 ## Create one with Claude Code
 
-Every step is a prompt for Claude Code, in this repository. Copy it, fill in
-the parts in angle brackets, and paste it. The `create-occupant` skill does
-the work: it looks for something that already fits, asks its questions in
-plain language, writes the occupant, and runs the checks.
+### Run /create-occupant
 
-### 1. Describe it
+In Claude Code, in this repository, run:
 
 ```text
-Use the create-occupant skill.
-I want an occupant that shows <what it shows, in a sentence or two>.
-It belongs in <the side panel, the content area, or the page header>.
+/create-occupant <name>
 ```
 
-It first shows you any occupant, pattern, or component that already shows
-this, and asks whether one fits. Then it asks about each item's content,
-and drafts a view model for you to confirm. You won't be asked for widths:
-the minimum follows the surfaces it belongs in, or is measured.
+The name is optional: lowercase with hyphens, like `key-facts`. Saying
+"I want to create an occupant" starts the same flow. It works on its own
+`occupant/<name>` branch, goes one step at a time, and waits for your answer
+wherever it asks. At the end it commits the occupant on that branch, without
+pushing, and asks what was unclear, so the team can improve the flow.
 
-It builds only what you describe. Anything else that might help comes back
-as a suggestion.
+`/create-occupant` is listed in the `/` menu, in the terminal and in the
+VS Code extension. If it isn't there, type the command anyway. If Claude
+Code says there's no such skill, start it at the repository root, or update
+Claude Code: older versions find skills only in the folder they start in.
 
-### 2. Try it
+After pulling changes to the skill, start a new session; a running one
+keeps the version it loaded.
 
-Open it in the [occupant workbench](/preview/occupants): every surface on
-its own, with each sample, state, and theme, and a width slider for each
-surface.
+### What it asks, and why
 
-```text
-Give me the occupant workbench link for the <name> occupant.
-```
-
-### 3. Change it
-
-```text
-In the <name> occupant, <what to change>. Keep the change inside the occupant.
-```
-
-The skill changes only the occupant: its folder, its examples, and its
-Patterns page. When a change needs the kit, the generator, a surface, a
-spec, a token, or a template, it stops and writes a proposal in the
-occupant's `PROPOSALS.md` instead.
-
-### 4. Check it
-
-```text
-Run every check for the <name> occupant, and explain anything that fails.
-```
-
-### 5. Commit it
-
-```text
-Commit the <name> occupant on its own:
-its folder, its Patterns page, and its registration.
-```
-
-### 6. Take a proposal forward
-
-```text
-Show me the proposals for the <name> occupant,
-and draft each one as its own change to the shared layers.
-```
-
-### What you can describe
-
-The skill turns what each item shows into fields, each with a kind that
-decides how it renders:
+- **Whether something already does this.** It first searches the
+  components, patterns, and occupants. A near duplicate is harder to
+  maintain than a small change to what exists, so if one fits, it stops and
+  suggests using or extending it.
+- **What it shows, what it's for, its scope, and what's left out.** It
+  describes the content without domain words, because an occupant serves
+  every solution, not one. It builds only the scope: anything else that
+  would help comes back as a suggestion. A design reference is welcome, for
+  layout; its values still come from tokens.
+- **What each item has.** Each piece of content becomes a field, with a
+  kind that decides how it renders.
+- **Which surfaces, and how it sits in them.** The surfaces decide its
+  orientation. Padding decides whether it runs edge to edge, and scrolling
+  decides whether the surface or the occupant scrolls. It never asks for a
+  width: the minimum follows the surface, or is measured, and it's raised
+  only for a reason written in the spec.
+- **Two domains from different lines of business.** Its examples come from
+  both, which shows the view model isn't tied to either.
 
 | Kind | How it renders |
 | --- | --- |
@@ -223,28 +194,38 @@ Lists people work through can also have:
 A selectable or filtered occupant keeps its tabs and footer in place and
 scrolls its own list. It's vertical only.
 
-### What it writes
+### What it checks
 
-In `registry/<name>/`:
+Before running anything, it reviews what it wrote:
 
-- `<name>.occupant.ts`: the spec.
-- `<name>.view-model.ts`: the view model, with each field's description.
-- `<name>.tsx`: the component, rendering each field by its kind, wrapped in
-  `<Occupant>` with the standard states.
-- `examples/`: a primary and a secondary example from two different domains,
-  and a stress example made from the fields. None are shipped.
+- It shows only the scope you gave.
+- Every value comes from a token. A value with no token becomes a proposal,
+  never a hardcoded number.
+- It uses the kit and existing components rather than rebuilding them.
+- All copy is in sentence case.
+- It changed only the occupant: its folder, its examples, its Patterns page,
+  and its registration.
 
-It also writes the Patterns page and registers the occupant: its registry
-item, a path alias, the Patterns nav, its copy in `locales/en.json`, and the
-occupant index. The checks, the docs, and the workbench read the index.
+Then it measures the minimum width and runs the [checks](#checks), fixing
+failures inside the occupant and explaining any it can't. Last, it gives you
+the links to try it in the [occupant workbench](/preview/occupants), in the
+surface view and the template view, with every sample, state, theme, and
+width.
 
-All copy is in sentence case, and every value comes from a token. A value
-with no token becomes a proposal, never a hardcoded number.
+### Take a proposal forward
 
-A new docs page doesn't show until the dev server rebuilds its page list:
-stop the dev server, run `rm -rf .next/dev`, and start it again.
+When the occupant needs something shared (a token, a field kind, a kit part,
+a surface behavior), the flow doesn't change it. It writes a proposal in the
+occupant's `PROPOSALS.md`: what's needed, why, what it would change, and what
+the occupant does until then. Shared layers serve every occupant, so they
+change on their own, with their own review.
 
-### Add a surface or template
+```text
+Show me the proposals for the <name> occupant,
+and draft each one as its own change to the shared layers.
+```
+
+## Add a surface or template
 
 The workbench shows every surface and template that's registered for
 previews, with no change to the workbench itself.
