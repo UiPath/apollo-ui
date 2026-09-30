@@ -29,3 +29,16 @@ export interface OccupantViewProps<ViewModel> {
   /** Shows a Retry button in the error state. */
   onRetry?: () => void;
 }
+
+/**
+ * For occupants whose items can be picked, like a queue whose current item
+ * is open in main. The page owns which item is current; the occupant shows
+ * it and asks to change it. An occupant takes these only when it lists
+ * items people pick from.
+ */
+export interface OccupantSelectionProps {
+  /** The item that's current, by id. None is current when it's omitted. */
+  currentId?: string;
+  /** Called with an item's id when someone picks it or steps to it. */
+  onSelect?: (id: string) => void;
+}

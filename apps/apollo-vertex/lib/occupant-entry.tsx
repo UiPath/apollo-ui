@@ -1,9 +1,10 @@
-import type { ComponentType, ReactNode } from "react";
-import type {
-  OccupantState,
-  OccupantViewProps,
-} from "@/components/ui/occupant";
+import type { ReactNode } from "react";
+import type { OccupantState } from "@/components/ui/occupant";
 import type { OccupantSpec } from "@/lib/composition";
+import {
+  type EntryComponent,
+  WithSelection,
+} from "@/lib/occupant-with-selection";
 
 /**
  * The roles an occupant's example views play, the same for every occupant,
@@ -42,7 +43,7 @@ export interface RegisteredOccupant {
  */
 export function defineOccupant<ViewModel>(entry: {
   spec: OccupantSpec;
-  Component: ComponentType<OccupantViewProps<ViewModel>>;
+  Component: EntryComponent<ViewModel>;
   examples: OccupantExamples<ViewModel>;
 }): RegisteredOccupant {
   const { Component, examples } = entry;
@@ -51,7 +52,14 @@ export function defineOccupant<ViewModel>(entry: {
     examples: EXAMPLE_ROLES,
     render: (example, options = {}) => {
       const role = EXAMPLE_ROLES.find((r) => r === example) ?? "primary";
-      return <Component view={examples[role]} {...options} />;
+      return (
+        <WithSelection
+          key={role}
+          Component={Component}
+          view={examples[role]}
+          {...options}
+        />
+      );
     },
   };
 }

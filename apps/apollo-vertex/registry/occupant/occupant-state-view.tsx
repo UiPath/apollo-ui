@@ -18,6 +18,11 @@ interface OccupantStateViewProps {
   skeleton?: ReactNode;
   /** Shows a Retry button in the error state. */
   onRetry?: () => void;
+  /**
+   * For a flush occupant, which pads its own parts: gives the messages and
+   * the agent line the surface inset, and leaves the content edge to edge.
+   */
+  flush?: boolean;
   /** The content, shown when ready and while an agent updates it. */
   children: ReactNode;
 }
@@ -43,12 +48,15 @@ function OccupantStateView({
   emptyDescription,
   skeleton,
   onRetry,
+  flush = false,
   children,
 }: OccupantStateViewProps) {
   const { t } = useTranslation();
   const { orientation } = useSurface();
+  const inset = flush && "p-(--surface-inset)";
   const message = cn(
     "flex min-w-0 gap-3 text-sm wrap-anywhere",
+    inset,
     orientation === "horizontal"
       ? "items-center"
       : "flex-1 flex-col items-center justify-center py-6 text-center",
@@ -63,6 +71,7 @@ function OccupantStateView({
           role="status"
           aria-label={t("occupant_loading", { subject })}
           aria-busy="true"
+          className={cn(inset)}
         >
           {skeleton ?? <DefaultSkeleton />}
         </div>
@@ -108,18 +117,21 @@ function OccupantStateView({
       return (
         <div
           data-occupant-state="agent-updating"
-          className="flex min-h-0 flex-col gap-4"
+          className="flex min-h-0 flex-1 flex-col gap-4"
         >
           <div
             role="status"
-            className="flex items-center gap-2 text-xs text-muted-foreground"
+            className={cn(
+              "flex items-center gap-2 text-xs text-muted-foreground",
+              flush && "px-(--surface-inset) pt-(--surface-inset)",
+            )}
           >
             <span aria-hidden className="shrink-0">
               <TimelineMarker variant="ai-progress" compact />
             </span>
             {t("occupant_agent_updating", { subject })}
           </div>
-          <div aria-busy="true" className="flex min-h-0 flex-col">
+          <div aria-busy="true" className="flex min-h-0 flex-1 flex-col">
             {children}
           </div>
         </div>

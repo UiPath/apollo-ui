@@ -41,4 +41,16 @@ export type { OccupantProps };
 export { OccupantStateView } from "./occupant-state-view";
 export type { OccupantStateViewProps } from "./occupant-state-view";
 export { OCCUPANT_STATES } from "./occupant-states";
-export type { OccupantState, OccupantViewProps } from "./occupant-states";
+export type {
+  OccupantSelectionProps,
+  OccupantState,
+  OccupantViewProps,
+} from "./occupant-states";
+export { OccupantStatus } from "./occupant-status";
+export { OccupantTruncatedText } from "./occupant-truncated-text";
+export type { OccupantTruncatedTextProps } from "./occupant-truncated-text";
+export type {
+  OccupantStatusProps,
+  OccupantStatusValue,
+  OccupantTone,
+} from "./occupant-status";
