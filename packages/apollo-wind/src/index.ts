@@ -354,7 +354,7 @@ export {
   FIELD_TYPE_ORDER,
   LockableValueField,
 } from './components/ui/lockable-value-field';
-export type { MultiSelectProps } from './components/ui/multi-select';
+export type { MultiSelectOption, MultiSelectProps } from './components/ui/multi-select';
 export { MultiSelect } from './components/ui/multi-select';
 export {
   Pagination,
