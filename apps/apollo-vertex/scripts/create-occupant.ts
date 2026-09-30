@@ -14,7 +14,9 @@
  *                               "follow" tracks the narrowest surface it claims
  *   --padding <padded|flush>
  *   --scroll <surface|occupant|either>
- *   --surfaces <none|page-header|side-panel|content-area>
+ *   --surfaces <none|list>      the surfaces it belongs in, when not every
+ *                               surface of its orientations: a comma list of
+ *                               page-header, side-panel, content-area
  *   --view-model <file.json>    the view model (see VIEW MODEL below)
  *   --subject <noun>            copy: what it shows, lowercase ("participants")
  *   --empty <sentence>          copy: the empty state's message
@@ -194,13 +196,22 @@ const scrollAnswer = await ask(
   "surface",
   oneOf(["surface", "occupant", "either"]),
 );
+const SURFACE_NAMES = ["page-header", "side-panel", "content-area"];
 const surfacesAnswer = await ask(
   "surfaces",
-  "Is it built from one surface's own parts, so it only works there?\n" +
-    "  Name that surface (page-header, side-panel, content-area), or answer none.",
+  "Does it belong in only some surfaces of its shape? List them, comma separated\n" +
+    "  (page-header, side-panel, content-area), or answer none for all of them.",
   "none",
-  oneOf(["none", "page-header", "side-panel", "content-area"]),
+  (a) =>
+    a === "none" ||
+    a.split(",").every((name) => SURFACE_NAMES.includes(name.trim()))
+      ? null
+      : `Answer none, or list some of: ${SURFACE_NAMES.join(", ")}.`,
 );
+const surfaces =
+  surfacesAnswer === "none"
+    ? null
+    : surfacesAnswer.split(",").map((name) => name.trim());
 
 // The view model: a JSON file, or fields typed in as name:kind[?].
 const KINDS = [
@@ -321,7 +332,11 @@ const FOLLOW_TOKEN: Record<string, string> = {
   "content-area": "contentAreaWidthMin",
 };
 const follows = minWidth === "follow";
-const followed = surfacesAnswer === "none" ? "side-panel" : surfacesAnswer;
+// The narrowest vertical surface it belongs in.
+const followed =
+  ["side-panel", "content-area"].find(
+    (name) => !surfaces || surfaces.includes(name),
+  ) ?? "page-header";
 if (follows && (orientationsAnswer !== "vertical" || !FOLLOW_TOKEN[followed]))
   fail(
     "--min-width follow: only a vertical occupant can follow its surface; the page header promises no width.",
@@ -335,11 +350,11 @@ const orientations =
   orientationsAnswer === "both"
     ? ["vertical", "horizontal"]
     : [orientationsAnswer];
-const surfaces = surfacesAnswer === "none" ? null : [surfacesAnswer];
 const both = orientations.length > 1;
 const horizontalOnly = orientationsAnswer === "horizontal";
-const demoSurface =
-  surfaces?.[0] ?? (horizontalOnly ? "page-header" : "side-panel");
+const demoSurface = horizontalOnly
+  ? "page-header"
+  : (surfaces?.find((name) => name !== "page-header") ?? "side-panel");
 const { item, collection, fields } = viewModel;
 const orientationSentence = both
   ? "Vertical and horizontal surfaces."
@@ -365,7 +380,7 @@ export const ${camel}Occupant = {
   label: "${label}",
   icon: ${icon},
   orientations: ${JSON.stringify(orientations)},
-${surfaces ? `  // Built from ${surfaces[0]}'s own parts, so it only works there.\n  surfaces: ${JSON.stringify(surfaces)},\n` : ""}${
+${surfaces ? `  // It belongs in these surfaces only.\n  surfaces: ${JSON.stringify(surfaces)},\n` : ""}${
   follows
     ? `  // Follows the ${followLabel}'s minimum width${padding === "padded" ? ", less its padding" : ""}, so it fits any
   // ${followLabel}. pnpm measure:occupant checks nothing clips there.\n`
@@ -783,8 +798,12 @@ export const EXAMPLES: OccupantExamples<${pascal}ViewModel> = {
 };
 `;
 
-const title = label.replace(/\b[a-z]/g, (c) => c.toUpperCase());
+// Sentence case: only the first word starts with a capital.
+const title = label.replace(/^[a-z]/, (c) => c.toUpperCase());
 const docsPage = `app/patterns/${occupantName}/page.mdx`;
+// A content area is never as narrow as a side panel: its demos take the page's width.
+const demoWidth =
+  demoSurface === "content-area" ? '"100%"' : `{${ownScroll ? 360 : 320}}`;
 const demos = horizontalOnly
   ? `<div className="not-prose my-6 flex flex-col gap-6">
   <OccupantInSurface occupant="${occupantName}" surface="${demoSurface}" example="primary" width="100%" />
@@ -792,8 +811,8 @@ const demos = horizontalOnly
 </div>`
   : // An occupant that scrolls itself needs a height to scroll in.
     `<div className="not-prose my-6 flex flex-wrap gap-6">
-  <OccupantInSurface occupant="${occupantName}" surface="${demoSurface}" example="primary" width={${ownScroll ? 360 : 320}} height=${ownScroll ? "{560}" : '"auto"'} />
-  <OccupantInSurface occupant="${occupantName}" surface="${demoSurface}" example="secondary" width={${ownScroll ? 360 : 320}} height=${ownScroll ? "{560}" : '"auto"'} />
+  <OccupantInSurface occupant="${occupantName}" surface="${demoSurface}" example="primary" width=${demoWidth} height=${ownScroll ? "{560}" : '"auto"'} />
+  <OccupantInSurface occupant="${occupantName}" surface="${demoSurface}" example="secondary" width=${demoWidth} height=${ownScroll ? "{560}" : '"auto"'} />
 </div>`;
 const a11y = [
   grouped
