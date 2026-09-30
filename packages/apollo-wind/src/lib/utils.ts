@@ -1,4 +1,5 @@
 import { type ClassValue, clsx } from 'clsx';
+import type * as React from 'react';
 import { twMerge } from 'tailwind-merge';
 
 /**
@@ -48,4 +49,31 @@ export function deepEqual(a: unknown, b: unknown): boolean {
   }
 
   return true;
+}
+
+type AnyRef<T> = React.Ref<T> | React.Ref<unknown> | undefined;
+
+/** Sets `ref` to `node`, returning the cleanup a React 19 callback ref may give. */
+function setRef<T>(ref: AnyRef<T>, node: T | null): unknown {
+  if (typeof ref === 'function') return ref(node);
+  if (ref) (ref as React.MutableRefObject<T | null>).current = node;
+  return undefined;
+}
+
+/**
+ * One callback ref that sets every given ref. When any of them returns a cleanup, so does this
+ * one, which runs those cleanups and resets the refs that returned none, as React would.
+ */
+export function composeRefs<T>(...refs: AnyRef<T>[]): React.RefCallback<T> {
+  return (node) => {
+    const cleanups = refs.map((ref) => setRef(ref, node));
+    if (!cleanups.some((cleanup) => typeof cleanup === 'function')) return;
+    return () => {
+      refs.forEach((ref, index) => {
+        const cleanup = cleanups[index];
+        if (typeof cleanup === 'function') cleanup();
+        else setRef(ref, null);
+      });
+    };
+  };
 }

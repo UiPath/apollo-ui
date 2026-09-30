@@ -22,10 +22,10 @@ export {
   type FieldActionGenerate,
   type FieldActionRegistry,
   type FieldActionsPluginConfig,
-  type FieldActionVariables,
   type FieldHeaderAction,
   type FieldMenuAction,
   type InsertVariableActionOptions,
+  resolveVariables,
   type ValueModeVariable,
 } from './field-actions';
 export {
@@ -64,6 +64,7 @@ export type {
   FormSchema,
   FormSection,
   FormStep,
+  FormVariables,
   StringListFieldMetadata,
   ValueModeControlRef,
   ValueModeId,

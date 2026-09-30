@@ -23,9 +23,10 @@ export interface InputGroupProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
    * `default` paints the field box, `ghost` a borderless fill, `outline` a border with no fill and
    * no ring, and `none` nothing at all while keeping the row's height and right-hand padding, so an
-   * unboxed control still lines up with the boxed fields around it.
+   * unboxed control still lines up with the boxed fields around it. `agent` tints the box for a
+   * value an agent fills in, such as a prompt.
    */
-  variant?: 'default' | 'ghost' | 'outline' | 'none';
+  variant?: 'default' | 'ghost' | 'outline' | 'none' | 'agent';
   size?: 'default' | 'xs';
   /**
    * `row` is one control row. `grow` keeps that as a minimum and lets the content grow it. `block`
@@ -46,8 +47,8 @@ export interface InputGroupProps extends React.HTMLAttributes<HTMLDivElement> {
 // The layouts whose box holds only the control row. `block`'s box also holds a body of whole fields,
 // which ring, hover and pad themselves.
 const ROW_LAYOUTS = ['row', 'grow', 'fill'] satisfies InputGroupLayout[];
-const FILLED = ['default', 'ghost'] satisfies InputGroupProps['variant'][];
-const BOXED = ['default', 'ghost', 'outline'] satisfies InputGroupProps['variant'][];
+const FILLED = ['default', 'ghost', 'agent'] satisfies InputGroupProps['variant'][];
+const BOXED = ['default', 'ghost', 'outline', 'agent'] satisfies InputGroupProps['variant'][];
 
 const inputGroupVariants = cva(
   [
@@ -89,6 +90,10 @@ const inputGroupVariants = cva(
         outline:
           'border border-input bg-transparent shadow-none future:border future:border-input future:bg-transparent future:has-[[data-slot][aria-invalid=true]]:border-error',
         none: 'border-0 bg-transparent shadow-none future:bg-transparent',
+        // From the agent gradient tokens. Future drops the border, as `default` does, so the edge is
+        // an inset ring, which the focus ring draws over rather than replaces.
+        agent:
+          'border border-gradient-agent-start/60 bg-linear-to-r from-gradient-agent-start/25 to-gradient-agent-end/25 future:border-0 future:inset-ring-1 future:inset-ring-gradient-agent-start/60 future:bg-linear-to-r future:from-gradient-agent-start/25 future:to-gradient-agent-end/25',
       },
       // The group's `invalid` or `error`. Paints nothing alone; the compounds below draw it.
       invalid: { true: '', false: '' },
