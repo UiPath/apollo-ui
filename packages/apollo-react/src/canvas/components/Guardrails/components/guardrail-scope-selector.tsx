@@ -20,6 +20,11 @@ export interface GuardrailScopeSelectorProps {
   availableToolNames?: string[];
   /** When provided, only these scopes are shown as options */
   allowedScopes?: GuardrailScope[];
+  /**
+   * Lock the selection when `allowedScopes` holds a single scope and it is selected, as Agents'
+   * legacy builder does. Without it the lone chip toggles off, leaving no scope to save.
+   */
+  lockSingleScope?: boolean;
   /** Validation messages; each renders as soon as it is present. */
   errors?: GuardrailScopeSelectorErrors;
   /** Per-string overrides; anything omitted resolves from the canvas lingui catalog. */
@@ -39,6 +44,7 @@ export function GuardrailScopeSelector({
   onChange,
   availableToolNames = [],
   allowedScopes,
+  lockSingleScope = false,
   errors,
   labels: labelOverrides,
   className,
@@ -57,6 +63,12 @@ export function GuardrailScopeSelector({
   );
   const selectedScopes = useMemo(() => selector.scopes ?? [], [selector.scopes]);
   const hasTools = availableToolNames.length > 0;
+  const [onlyAllowedScope, ...otherAllowedScopes] = allowedScopes ?? [];
+  const isScopeLocked =
+    lockSingleScope &&
+    onlyAllowedScope !== undefined &&
+    otherAllowedScopes.length === 0 &&
+    selectedScopes.includes(onlyAllowedScope);
   const visibleScopes = useMemo(() => {
     const scopes = allowedScopes ?? ALL_SCOPES;
     return hasTools ? scopes : scopes.filter((s) => s !== 'Tool');
@@ -152,6 +164,7 @@ export function GuardrailScopeSelector({
                 key={scope}
                 pressed={selectedScopes.includes(scope)}
                 onPressedChange={() => handleToggleScope(scope)}
+                disabled={isScopeLocked}
               >
                 {scopeLabels[scope]}
               </GuardrailChip>

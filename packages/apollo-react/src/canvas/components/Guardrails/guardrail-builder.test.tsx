@@ -1337,6 +1337,23 @@ describe('GuardrailBuilder', () => {
       expect(recipientType).toHaveTextContent('Group');
     });
 
+    it('locks a single allowed scope with lockSingleScope', () => {
+      render(
+        <GuardrailBuilder
+          open
+          inline
+          hideHeader
+          definition={makeDef({ allowedScopes: ['Agent'] })}
+          scope="Agent"
+          lockSingleScope
+          onSave={vi.fn()}
+          onCancel={vi.fn()}
+        />
+      );
+
+      expect(screen.getByRole('button', { name: 'Agent' })).toBeDisabled();
+    });
+
     it('offers only allowedActionTypes and starts a new guardrail on the first', async () => {
       render(
         <GuardrailBuilder

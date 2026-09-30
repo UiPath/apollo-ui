@@ -79,6 +79,8 @@ export interface GuardrailBuilderProps {
   toolName?: string;
   /** Tool names available for targeting (shown when Tool scope is selected). */
   availableToolNames?: string[];
+  /** Lock the scope selector when the definition allows a single scope (Agents' rule). */
+  lockSingleScope?: boolean;
   onSave: (guardrail: GuardrailBuilderValue) => void;
   onCancel: () => void;
   /**
@@ -172,6 +174,7 @@ export function GuardrailBuilder({
   existingNames,
   toolName,
   availableToolNames,
+  lockSingleScope,
   onSave,
   onCancel,
   onSaveAsNew,
@@ -481,6 +484,7 @@ export function GuardrailBuilder({
           onChange={handleSelectorChange}
           availableToolNames={availableToolNames}
           allowedScopes={definition.allowedScopes}
+          lockSingleScope={lockSingleScope}
           errors={{ scopes: displayErrors.scopes, toolNames: displayErrors.toolNames }}
           labels={labels}
         />
