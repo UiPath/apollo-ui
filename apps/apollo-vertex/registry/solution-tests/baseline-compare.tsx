@@ -17,6 +17,7 @@ export interface BaselineCompareRow {
 
 // Shows baseline and new-run values side by side rather than collapsing to a
 // single value, so an unchanged value reads as unchanged on its own.
+// Value columns may shrink below their content so long ids wrap in a narrow pane.
 export const BaselineCompare = ({ rows }: { rows: BaselineCompareRow[] }) => {
   const visible = rows.filter(
     (row) => row.baseline != null || row.current != null,
@@ -24,7 +25,7 @@ export const BaselineCompare = ({ rows }: { rows: BaselineCompareRow[] }) => {
   if (visible.length === 0) return null;
 
   return (
-    <div className="grid w-fit max-w-full grid-cols-[max-content_max-content_max-content] items-center gap-x-6 gap-y-1 overflow-x-auto rounded-md border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+    <div className="grid w-fit max-w-full grid-cols-[max-content_minmax(0,max-content)_minmax(0,max-content)] items-center gap-x-6 gap-y-1 rounded-md border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
       {visible.map((row) => (
         <CompareRow key={row.label} row={row} />
       ))}
@@ -34,7 +35,10 @@ export const BaselineCompare = ({ rows }: { rows: BaselineCompareRow[] }) => {
 
 const CompareRow = ({ row }: { row: BaselineCompareRow }) => {
   const { t } = useTranslation();
-  const valueClass = cn("text-foreground", row.mono && "font-mono");
+  const valueClass = cn(
+    "text-foreground [overflow-wrap:anywhere]",
+    row.mono && "font-mono",
+  );
 
   return (
     <div className="contents">
@@ -43,7 +47,7 @@ const CompareRow = ({ row }: { row: BaselineCompareRow }) => {
         {`${t("compare_baseline")}: `}
         <span className={valueClass}>{row.baseline ?? EMPTY_VALUE}</span>
       </span>
-      <span className="inline-flex items-center gap-1">
+      <span className="inline-flex min-w-0 flex-wrap items-center gap-1">
         {`${t("compare_new_run")}: `}
         <span className={valueClass}>{row.current ?? EMPTY_VALUE}</span>
         {row.marker}
