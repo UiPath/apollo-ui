@@ -131,7 +131,7 @@ export const EditInline: Story = {
 };
 
 /**
- * Edit mode in the modal dialog shell.
+ * Edit mode in the modal dialog shell. Closing it returns focus to the button that opened it.
  *
  * Opens on the story canvas. In docs it waits for the button instead: `open` is a controlled prop
  * on a portalled Radix dialog, so hardcoding `true` rendered a real modal with a body-level
