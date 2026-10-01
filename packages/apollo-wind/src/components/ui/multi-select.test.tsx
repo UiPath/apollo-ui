@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { describe, expect, it, vi } from 'vitest';
@@ -253,6 +253,29 @@ describe('MultiSelect', () => {
       expect(placeholder).toHaveClass('text-foreground-muted');
     });
 
+    it('says what the remove control does, without a provider from the consumer', async () => {
+      const user = userEvent.setup();
+      render(<MultiSelect options={mockOptions} selected={['react']} onChange={vi.fn()} />);
+      const remove = screen.getByRole('button', { name: 'Remove React' });
+      // Its own hover, distinct from the badge's.
+      expect(remove).toHaveClass('hover:bg-foreground/15');
+
+      await user.hover(remove);
+      expect(await screen.findByRole('tooltip')).toHaveTextContent('Remove React');
+    });
+
+    it('lights a hovered badge rather than the field around it', () => {
+      render(<MultiSelect options={mockOptions} selected={['react']} onChange={vi.fn()} />);
+      const badge = screen.getByText('React').closest('[data-slot="badge"]');
+      expect(badge).toHaveClass('future:hover:bg-surface-hover');
+      expect(badge).not.toHaveClass('future:hover:bg-surface-raised');
+      // The field stays at rest while a badge inside it is hovered.
+      expect(screen.getByRole('combobox')).toHaveClass(
+        'future:hover:bg-surface-overlay',
+        'future:[&:hover:not(:has([data-slot=badge]:hover))]:bg-surface-hover'
+      );
+    });
+
     it('overrides the outline variant so the trigger is not globally muted', () => {
       render(<MultiSelect options={mockOptions} selected={[]} onChange={vi.fn()} />);
       const trigger = screen.getByRole('combobox');
@@ -375,5 +398,343 @@ describe('MultiSelect inline validation', () => {
       // `w-[--x]` compiles to `width: --x` under Tailwind v4, which is no width at all.
       expect(panel).toHaveClass('w-(--radix-popover-trigger-width)');
     });
+  });
+});
+
+describe('MultiSelect option details', () => {
+  const people = [
+    {
+      label: 'Avery Stone',
+      value: 'U7K2M9QX1',
+      description: 'avery.stone@example.com',
+      keywords: ['U7K2M9QX1'],
+    },
+    {
+      label: 'Blake Rivera',
+      value: 'U3H8T4LW6',
+      description: 'blake.rivera@example.com',
+      keywords: ['U3H8T4LW6'],
+    },
+  ];
+
+  it('shows the description on the row and searches it', async () => {
+    const user = userEvent.setup();
+    render(<MultiSelect options={people} selected={[]} onChange={vi.fn()} />);
+    await user.click(screen.getByRole('combobox'));
+    expect(screen.getByText('avery.stone@example.com')).toBeInTheDocument();
+
+    await user.type(screen.getByPlaceholderText('Search...'), 'blake.rivera@');
+    expect(screen.getByRole('option', { name: /Blake Rivera/ })).toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: /Avery Stone/ })).not.toBeInTheDocument();
+  });
+
+  it('finds a row by a keyword it does not print', async () => {
+    const user = userEvent.setup();
+    render(<MultiSelect options={people} selected={[]} onChange={vi.fn()} />);
+    await user.click(screen.getByRole('combobox'));
+    await user.type(screen.getByPlaceholderText('Search...'), 'u3h8t4');
+    expect(screen.getByRole('option', { name: /Blake Rivera/ })).toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: /Avery Stone/ })).not.toBeInTheDocument();
+  });
+});
+
+describe('MultiSelect collapse', () => {
+  // Per-label overrides, keyed by the option value the badge shows.
+  const offsetWidthFor: Record<string, number> = {};
+  const widthOf = (el: HTMLElement) => {
+    if (el.getAttribute('data-slot') !== 'badge') return 0;
+    if (el.textContent?.includes('more')) return 60;
+    if (el.textContent?.startsWith('React Native') && offsetWidthFor.react)
+      return offsetWidthFor.react;
+    return 80;
+  };
+
+  const mockLayout = (containerWidth: number) => {
+    const offsetWidth = vi
+      .spyOn(HTMLElement.prototype, 'offsetWidth', 'get')
+      .mockImplementation(function (this: HTMLElement) {
+        return widthOf(this);
+      });
+    const clientWidth = vi
+      .spyOn(HTMLElement.prototype, 'clientWidth', 'get')
+      .mockImplementation(() => containerWidth);
+    return () => {
+      offsetWidth.mockRestore();
+      clientWidth.mockRestore();
+    };
+  };
+
+  it('keeps the field one line tall', () => {
+    render(
+      <MultiSelect
+        options={mockOptions}
+        selected={['react', 'vue', 'angular']}
+        onChange={vi.fn()}
+        overflow="collapse"
+      />
+    );
+    const trigger = screen.getByRole('combobox');
+    expect(trigger).toHaveClass('h-10');
+    expect(trigger).not.toHaveClass('h-auto');
+  });
+
+  it('shows every badge and no count when they all fit', () => {
+    const restore = mockLayout(400);
+    render(
+      <MultiSelect
+        options={mockOptions}
+        selected={['react', 'vue', 'angular']}
+        onChange={vi.fn()}
+        overflow="collapse"
+      />
+    );
+    expect(screen.getByText('React').closest('[data-slot="badge"]')).not.toHaveClass('invisible');
+    expect(screen.getByText('Angular').closest('[data-slot="badge"]')).not.toHaveClass('invisible');
+    expect(screen.getByText(/more$/).closest('[data-slot="badge"]')).toHaveClass('invisible');
+    restore();
+  });
+
+  it('counts the badges that do not fit', () => {
+    // Four 80px badges overflow 200px. Beside the 60px chip there is room for one: 84 + 80 > 200 - 64.
+    const restore = mockLayout(200);
+    render(
+      <MultiSelect
+        options={mockOptions}
+        selected={['react', 'vue', 'angular', 'svelte']}
+        onChange={vi.fn()}
+        overflow="collapse"
+      />
+    );
+    expect(screen.getByText('React').closest('[data-slot="badge"]')).not.toHaveClass('invisible');
+    expect(screen.getByText('Vue').closest('[data-slot="badge"]')).toHaveClass('invisible');
+    expect(screen.getByText('+3 more')).not.toHaveClass('invisible');
+    restore();
+  });
+
+  it('re-measures when the field is resized', () => {
+    let width = 400;
+    const offsetWidth = vi
+      .spyOn(HTMLElement.prototype, 'offsetWidth', 'get')
+      .mockImplementation(function (this: HTMLElement) {
+        return widthOf(this);
+      });
+    const clientWidth = vi
+      .spyOn(HTMLElement.prototype, 'clientWidth', 'get')
+      .mockImplementation(() => width);
+    const callbacks: (() => void)[] = [];
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(callback: () => void) {
+          callbacks.push(callback);
+        }
+        observe() {}
+        disconnect() {}
+      }
+    );
+
+    render(
+      <MultiSelect
+        options={mockOptions}
+        selected={['react', 'vue', 'angular', 'svelte']}
+        onChange={vi.fn()}
+        overflow="collapse"
+      />
+    );
+    expect(screen.getByText('Vue').closest('[data-slot="badge"]')).not.toHaveClass('invisible');
+
+    width = 200;
+    act(() => {
+      for (const callback of callbacks) callback();
+    });
+    expect(screen.getByText('Vue').closest('[data-slot="badge"]')).toHaveClass('invisible');
+    expect(screen.getByText('+3 more')).not.toHaveClass('invisible');
+
+    vi.unstubAllGlobals();
+    offsetWidth.mockRestore();
+    clientWidth.mockRestore();
+  });
+
+  it('measures once collapse is turned on after a wrapped render', () => {
+    const restore = mockLayout(200);
+    const selected = ['react', 'vue', 'angular', 'svelte'];
+    const { rerender } = render(
+      <MultiSelect options={mockOptions} selected={selected} onChange={vi.fn()} />
+    );
+    expect(screen.queryByText(/more$/)).not.toBeInTheDocument();
+
+    rerender(
+      <MultiSelect
+        options={mockOptions}
+        selected={selected}
+        onChange={vi.fn()}
+        overflow="collapse"
+      />
+    );
+    expect(screen.getByText('+3 more')).not.toHaveClass('invisible');
+    restore();
+  });
+
+  it('re-measures when a badge is relabelled with the same value', () => {
+    const restore = mockLayout(200);
+    const props = { selected: ['react', 'vue'], onChange: vi.fn(), overflow: 'collapse' as const };
+    const { rerender } = render(<MultiSelect options={mockOptions} {...props} />);
+    // Two 80px badges fit 200px.
+    expect(screen.queryByText(/^\+\d+ more$/)?.closest('[data-slot="badge"]')).toHaveClass(
+      'invisible'
+    );
+    offsetWidthFor.react = 150;
+    rerender(
+      <MultiSelect
+        options={mockOptions.map((option) =>
+          option.value === 'react' ? { ...option, label: 'React Native' } : option
+        )}
+        {...props}
+      />
+    );
+    expect(screen.getByText('+1 more')).not.toHaveClass('invisible');
+    delete offsetWidthFor.react;
+    restore();
+  });
+
+  it('measures the first badge at its natural width while others are shown', () => {
+    // All four render before the first measurement; the first must not be shrinkable then, or its
+    // squeezed width would make extra badges look like they fit.
+    const restore = mockLayout(400);
+    render(
+      <MultiSelect
+        options={mockOptions}
+        selected={['react', 'vue', 'angular', 'svelte']}
+        onChange={vi.fn()}
+        overflow="collapse"
+      />
+    );
+    expect(screen.getByText('React').closest('[data-slot="badge"]')).toHaveClass('shrink-0');
+    expect(screen.getByText('React').closest('[data-slot="badge"]')).not.toHaveClass('min-w-0');
+    restore();
+  });
+
+  it('keeps one badge in a field too narrow for it', () => {
+    const restore = mockLayout(50);
+    render(
+      <MultiSelect
+        options={mockOptions}
+        selected={['react', 'vue']}
+        onChange={vi.fn()}
+        overflow="collapse"
+      />
+    );
+    expect(screen.getByText('React').closest('[data-slot="badge"]')).not.toHaveClass('invisible');
+    expect(screen.getByText('+1 more')).toBeInTheDocument();
+    // The kept badge may shrink, so the count beside it stays in view.
+    expect(screen.getByText('React').closest('[data-slot="badge"]')).toHaveClass('min-w-0');
+    expect(screen.getByText('React').closest('[data-slot="badge"]')).not.toHaveClass('shrink-0');
+    restore();
+  });
+});
+
+describe('MultiSelect create', () => {
+  it('offers the query when nothing matches it, and passes it on', async () => {
+    const user = userEvent.setup();
+    const onCreate = vi.fn();
+    render(
+      <MultiSelect options={mockOptions} selected={[]} onChange={vi.fn()} onCreate={onCreate} />
+    );
+    await user.click(screen.getByRole('combobox'));
+    await user.type(screen.getByPlaceholderText('Search...'), '  new.person@example.com ');
+    await user.click(screen.getByRole('option', { name: 'Add "new.person@example.com"' }));
+    expect(onCreate).toHaveBeenCalledWith('new.person@example.com');
+    expect(screen.getByPlaceholderText('Search...')).toHaveValue('');
+  });
+
+  it('offers the query after the matches', async () => {
+    const user = userEvent.setup();
+    render(
+      <MultiSelect options={mockOptions} selected={[]} onChange={vi.fn()} onCreate={vi.fn()} />
+    );
+    await user.click(screen.getByRole('combobox'));
+    await user.type(screen.getByPlaceholderText('Search...'), 'vu');
+    const rows = screen.getAllByRole('option');
+    expect(rows[0]).toHaveTextContent('Vue');
+    expect(rows.at(-1)).toHaveAccessibleName('Add "vu"');
+  });
+
+  it('does not offer an exact match again', async () => {
+    const user = userEvent.setup();
+    render(
+      <MultiSelect options={mockOptions} selected={[]} onChange={vi.fn()} onCreate={vi.fn()} />
+    );
+    await user.click(screen.getByRole('combobox'));
+    await user.type(screen.getByPlaceholderText('Search...'), 'vue');
+    expect(screen.queryByRole('option', { name: /^Add / })).not.toBeInTheDocument();
+  });
+
+  it('shows the create row in place of the empty message, and creates on Enter', async () => {
+    const user = userEvent.setup();
+    const onCreate = vi.fn();
+    render(
+      <MultiSelect
+        options={mockOptions}
+        selected={[]}
+        onChange={vi.fn()}
+        onCreate={onCreate}
+        emptyMessage="No users found."
+      />
+    );
+    await user.click(screen.getByRole('combobox'));
+    await user.type(screen.getByPlaceholderText('Search...'), 'zzz');
+    expect(screen.queryByText('No users found.')).not.toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Add "zzz"' })).toBeInTheDocument();
+    await user.keyboard('{Enter}');
+    expect(onCreate).toHaveBeenCalledWith('zzz');
+  });
+
+  it('shows no create row without onCreate or a query', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(
+      <MultiSelect options={mockOptions} selected={[]} onChange={vi.fn()} onCreate={vi.fn()} />
+    );
+    await user.click(screen.getByRole('combobox'));
+    expect(screen.queryByRole('option', { name: /^Add / })).not.toBeInTheDocument();
+
+    rerender(<MultiSelect options={mockOptions} selected={[]} onChange={vi.fn()} />);
+    await user.type(screen.getByPlaceholderText('Search...'), 'zzz');
+    expect(screen.queryByRole('option', { name: /^Add / })).not.toBeInTheDocument();
+  });
+
+  it('disables the create row at maxSelected', async () => {
+    const user = userEvent.setup();
+    const onCreate = vi.fn();
+    render(
+      <MultiSelect
+        options={mockOptions}
+        selected={['react']}
+        onChange={vi.fn()}
+        onCreate={onCreate}
+        maxSelected={1}
+      />
+    );
+    await user.click(screen.getByRole('combobox'));
+    await user.type(screen.getByPlaceholderText('Search...'), 'zzz');
+    const row = screen.getByRole('option', { name: 'Add "zzz"' });
+    expect(row).toHaveAttribute('aria-disabled', 'true');
+    await user.click(row);
+    expect(onCreate).not.toHaveBeenCalled();
+  });
+
+  it('uses a custom create label', async () => {
+    const user = userEvent.setup();
+    render(
+      <MultiSelect
+        options={mockOptions}
+        selected={[]}
+        onChange={vi.fn()}
+        onCreate={vi.fn()}
+        createLabel={(query) => `Invite ${query}`}
+      />
+    );
+    await user.click(screen.getByRole('combobox'));
+    await user.type(screen.getByPlaceholderText('Search...'), 'zzz');
+    expect(screen.getByRole('option', { name: 'Invite zzz' })).toBeInTheDocument();
   });
 });

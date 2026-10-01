@@ -323,7 +323,7 @@ describe('InputGroup', () => {
   describe('hover', () => {
     const HOVER = 'has-[button[data-slot=input-group-control]:not(:disabled):hover]:bg-accent';
     const FUTURE_HOVER =
-      'future:has-[button[data-slot=input-group-control]:not(:disabled):hover]:bg-surface-hover';
+      'future:has-[button[data-slot=input-group-control]:not(:disabled):hover:not(:has([data-slot=badge]:hover))]:bg-surface-hover';
 
     it('lights the box while an enabled trigger is hovered, keyed on the trigger alone', () => {
       render(<InputGroup data-testid="group" />);
