@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.58.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.57.1...@uipath/apollo-wind@2.58.0) (2026-10-01)
+
+### Features
+
+* **apollo-wind:** four built-in value modes, strings props, FieldMenu [MST-15841] ([b91b801](https://github.com/UiPath/apollo-ui/commit/b91b801a647105b1420e5fe7608c7db306af62c5)), closes [#1220](https://github.com/UiPath/apollo-ui/issues/1220)
+
 ## [@uipath/apollo-wind-v2.57.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.57.0...@uipath/apollo-wind@2.57.1) (2026-10-01)
 
 ### Bug Fixes
