@@ -352,10 +352,10 @@ Put the control inside `InputGroup`. Apollo's controls detect the group and beco
 Accordion, Alert, AlertDialog, AspectRatio, Avatar, Breadcrumb, ButtonGroup,
 Calendar, Checkbox, Collapsible, Combobox, Command, ContextMenu, DatePicker,
 DateTimePicker, Drawer, DropdownMenu, EditableCell, EmptyState, FileTreeView,
-FileUpload, HoverCard, Layout (Grid/Row/Column), Menubar, MultiSelect,
-NavigationMenu, Pagination, Popover, Progress, RadioGroup, Resizable,
-ScrollArea, Search, Separator, Skeleton, Slider, Sonner, Spinner, StatsCard,
-Stepper, Switch, Toggle, ToggleGroup, Tooltip
+FileUpload, HoverCard, JsonTreeView, Layout (Grid/Row/Column), Menubar,
+MultiSelect, NavigationMenu, Pagination, Popover, Progress, RadioGroup,
+Resizable, ScrollArea, Search, Separator, Skeleton, Slider, Sonner, Spinner,
+StatsCard, Stepper, Switch, Toggle, ToggleGroup, Tooltip
 
 All imported from `@/components/ui/<component-name>`, except `FileTreeView`, which
 is imported from `@/components/ui/tree-view`.

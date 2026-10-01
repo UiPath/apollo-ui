@@ -1,17 +1,17 @@
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib';
 import {
-  Button,
-  cn,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
-  Input,
-} from '@uipath/apollo-wind';
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 import { ChevronsDownUp, ChevronsUpDown, Filter, Search, X } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
-import { useSafeLingui } from '../../../i18n';
-import { CanvasTooltip } from '../CanvasTooltip';
+import { JsonTreeViewProvider, type JsonTreeViewStrings, useJsonTreeViewStrings } from './strings';
+import { JsonTreeTooltip } from './JsonTreeTooltip';
 import type { JsonTreeFilterOption } from './JsonTree.types';
 
 // Radio values must be strings; this stands in for the "no filter" (null) state.
@@ -41,11 +41,27 @@ export interface JsonTreeToolbarProps {
    * Use when a non-tree tab is active and the controls would be inert.
    */
   controlsHidden?: boolean;
+  /** String overrides; see `JsonTreeViewProps.strings`. */
+  strings?: Partial<JsonTreeViewStrings>;
+  /** Extra classes for every tooltip panel (e.g. a z-index above a host's overlays). */
+  tooltipContentClassName?: string;
   className?: string;
 }
 
 /** Leading slot + search, filter, and collapse-all controls for a `JsonTreeView`. */
 export function JsonTreeToolbar({
+  strings,
+  tooltipContentClassName,
+  ...props
+}: JsonTreeToolbarProps) {
+  return (
+    <JsonTreeViewProvider strings={strings} tooltipContentClassName={tooltipContentClassName}>
+      <JsonTreeToolbarContent {...props} />
+    </JsonTreeViewProvider>
+  );
+}
+
+function JsonTreeToolbarContent({
   query,
   onQueryChange,
   searchPlaceholder,
@@ -57,33 +73,14 @@ export function JsonTreeToolbar({
   leading,
   controlsHidden = false,
   className,
-}: JsonTreeToolbarProps) {
-  const { _ } = useSafeLingui();
+}: Omit<JsonTreeToolbarProps, 'strings' | 'tooltipContentClassName'>) {
+  const strings = useJsonTreeViewStrings();
   const [searchOpen, setSearchOpen] = useState(false);
   const activeFilter = filters?.find((f) => f.id === activeFilterId);
-  const resolvedSearchPlaceholder =
-    searchPlaceholder ??
-    _({
-      id: 'canvas.json_value_panel.search_fields',
-      message: 'Search fields and values...',
-    });
-  const filterLabel = activeFilter
-    ? _({
-        id: 'canvas.json_value_panel.filter_active',
-        message: 'Filter: {label}',
-        values: { label: activeFilter.label },
-      })
-    : _({
-        id: 'canvas.json_value_panel.filter',
-        message: 'Filter',
-      });
-  const searchActionLabel = _({
-    id: 'canvas.json_value_panel.search_fields_action',
-    message: 'Search fields and values',
-  });
-  const toggleAllLabel = allCollapsed
-    ? _({ id: 'canvas.json_value_panel.expand_all', message: 'Expand all' })
-    : _({ id: 'canvas.json_value_panel.collapse_all', message: 'Collapse all' });
+  const resolvedSearchPlaceholder = searchPlaceholder ?? strings.searchFields;
+  const filterLabel = activeFilter ? strings.filterActive(activeFilter.label) : strings.filter;
+  const searchActionLabel = strings.searchFieldsAction;
+  const toggleAllLabel = allCollapsed ? strings.expandAll : strings.collapseAll;
 
   const closeSearch = () => {
     onQueryChange('');
@@ -127,10 +124,7 @@ export function JsonTreeToolbar({
               <button
                 type="button"
                 onClick={closeSearch}
-                aria-label={_({
-                  id: 'canvas.json_value_panel.clear_search',
-                  message: 'Clear search',
-                })}
+                aria-label={strings.clearSearch}
                 className="absolute right-1.5 grid size-4 place-items-center text-foreground-subtle transition hover:text-foreground"
               >
                 <X size={12} />
@@ -141,7 +135,7 @@ export function JsonTreeToolbar({
             // icon controls. When expanded, the search itself fills the gap.
             <>
               <div className="flex-1" />
-              <CanvasTooltip content={searchActionLabel} placement="top" delay>
+              <JsonTreeTooltip content={searchActionLabel} placement="top" delay>
                 <Button
                   variant="ghost"
                   size="3xs"
@@ -152,14 +146,14 @@ export function JsonTreeToolbar({
                 >
                   <Search size={14} />
                 </Button>
-              </CanvasTooltip>
+              </JsonTreeTooltip>
             </>
           )}
           {!!filters?.length && onFilterChange && (
             <DropdownMenu>
               {/* The active filter is surfaced as a dot on the icon rather than
                   an inline label; the tooltip carries "Filter: <label>". */}
-              <CanvasTooltip content={filterLabel} placement="top" delay>
+              <JsonTreeTooltip content={filterLabel} placement="top" delay>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
@@ -174,7 +168,7 @@ export function JsonTreeToolbar({
                     )}
                   </Button>
                 </DropdownMenuTrigger>
-              </CanvasTooltip>
+              </JsonTreeTooltip>
               <DropdownMenuContent align="end" className="w-52">
                 {/* Radio semantics so the selected filter carries a menu
                     indicator (and is announced), matching the view switcher. */}
@@ -188,10 +182,7 @@ export function JsonTreeToolbar({
                     value={ALL_FILTER_VALUE}
                     className="text-[11px] [&>span:first-child]:text-foreground-accent"
                   >
-                    {_({
-                      id: 'canvas.json_value_panel.filter_all',
-                      message: 'All',
-                    })}
+                    {strings.filterAll}
                   </DropdownMenuRadioItem>
                   {filters.map((filter) => (
                     <DropdownMenuRadioItem
@@ -212,7 +203,7 @@ export function JsonTreeToolbar({
             </DropdownMenu>
           )}
           {onToggleAll && (
-            <CanvasTooltip content={toggleAllLabel} placement="top" delay>
+            <JsonTreeTooltip content={toggleAllLabel} placement="top" delay>
               <Button
                 variant="ghost"
                 size="3xs"
@@ -223,7 +214,7 @@ export function JsonTreeToolbar({
               >
                 {allCollapsed ? <ChevronsUpDown size={14} /> : <ChevronsDownUp size={14} />}
               </Button>
-            </CanvasTooltip>
+            </JsonTreeTooltip>
           )}
         </>
       )}

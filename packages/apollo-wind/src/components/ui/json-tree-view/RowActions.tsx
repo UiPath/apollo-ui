@@ -1,15 +1,15 @@
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib';
 import {
-  Button,
-  cn,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@uipath/apollo-wind';
+} from '@/components/ui/dropdown-menu';
 import { MoreHorizontal } from 'lucide-react';
 import { useState } from 'react';
-import { useSafeLingui } from '../../../i18n';
-import { CanvasTooltip } from '../CanvasTooltip';
+import { useJsonTreeViewStrings } from './strings';
+import { JsonTreeTooltip } from './JsonTreeTooltip';
 import type { JsonTreeNode, NodeAction, NodeDecorationTone } from './JsonTree.types';
 
 const ACTION_BUTTON_CLASS =
@@ -37,17 +37,14 @@ export interface RowActionsProps {
  * the row has a single, predictable overflow state.
  */
 export function RowActions({ node, actions, maxInline }: RowActionsProps) {
-  const { _ } = useSafeLingui();
+  const strings = useJsonTreeViewStrings();
   const [menuOpen, setMenuOpen] = useState(false);
   if (actions.length === 0) return null;
 
   const overflowing = actions.length > maxInline;
   const inline = overflowing ? [] : actions;
   const overflow = overflowing ? actions : [];
-  const moreLabel = _({
-    id: 'canvas.json_value_panel.more_actions',
-    message: 'More actions',
-  });
+  const moreLabel = strings.moreActions;
 
   return (
     // Own wrapper with a tight gap: the buttons group together instead of
@@ -55,7 +52,7 @@ export function RowActions({ node, actions, maxInline }: RowActionsProps) {
     // right edge without a spacer div (which would cost two extra row gaps).
     <span className="ml-auto flex shrink-0 items-center gap-0.5">
       {inline.map((action) => (
-        <CanvasTooltip
+        <JsonTreeTooltip
           key={action.id}
           content={action.tooltip ?? action.label}
           placement="top"
@@ -77,11 +74,11 @@ export function RowActions({ node, actions, maxInline }: RowActionsProps) {
           >
             {action.icon}
           </Button>
-        </CanvasTooltip>
+        </JsonTreeTooltip>
       ))}
       {overflow.length > 0 && (
         <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
-          <CanvasTooltip content={moreLabel} placement="top" delay hide={menuOpen}>
+          <JsonTreeTooltip content={moreLabel} placement="top" delay hide={menuOpen}>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
@@ -93,7 +90,7 @@ export function RowActions({ node, actions, maxInline }: RowActionsProps) {
                 <MoreHorizontal />
               </Button>
             </DropdownMenuTrigger>
-          </CanvasTooltip>
+          </JsonTreeTooltip>
           <DropdownMenuContent side="left" align="start" sideOffset={-12} className="min-w-40">
             {overflow.map((action) => (
               <DropdownMenuItem

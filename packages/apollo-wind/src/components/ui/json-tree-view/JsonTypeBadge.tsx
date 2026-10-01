@@ -1,8 +1,8 @@
-import { cn } from '@uipath/apollo-wind';
+import { cn } from '@/lib';
 import type { LucideIcon } from 'lucide-react';
 import { Braces, Brackets, CircleSlash2, Hash, ToggleLeft, Type } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { CanvasTooltip } from '../CanvasTooltip';
+import { JsonTreeTooltip } from './JsonTreeTooltip';
 import type { JsonTreeNodeType } from './JsonTree.types';
 
 const TYPE_ICON: Record<JsonTreeNodeType, LucideIcon> = {
@@ -43,7 +43,7 @@ export interface JsonTypeBadgeProps {
 export function JsonTypeBadge({ type, icon, className, tooltip }: JsonTypeBadgeProps) {
   const DefaultIcon = TYPE_ICON[type];
   return (
-    <CanvasTooltip
+    <JsonTreeTooltip
       content={
         <span className="break-all font-mono text-xs font-semibold leading-4">
           {tooltip ?? TYPE_LABEL[type]}
@@ -60,6 +60,6 @@ export function JsonTypeBadge({ type, icon, className, tooltip }: JsonTypeBadgeP
       >
         {icon ?? <DefaultIcon />}
       </span>
-    </CanvasTooltip>
+    </JsonTreeTooltip>
   );
 }

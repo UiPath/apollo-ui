@@ -1,5 +1,5 @@
-import { cn } from '@uipath/apollo-wind';
-import { CanvasTooltip } from '../CanvasTooltip';
+import { cn } from '@/lib';
+import { JsonTreeTooltip } from './JsonTreeTooltip';
 import type { NodeDecoration, NodeDecorationTone } from './JsonTree.types';
 
 const CHIP_TONE_TEXT_CLASS: Record<NodeDecorationTone, string> = {
@@ -46,8 +46,8 @@ export function DecorationChip({ decoration }: { decoration?: NodeDecoration }) 
 
   if (!chip.tooltip) return content;
   return (
-    <CanvasTooltip placement="top" content={<span className="text-xs">{chip.tooltip}</span>}>
+    <JsonTreeTooltip placement="top" content={<span className="text-xs">{chip.tooltip}</span>}>
       {content}
-    </CanvasTooltip>
+    </JsonTreeTooltip>
   );
 }

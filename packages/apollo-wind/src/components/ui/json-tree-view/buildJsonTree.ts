@@ -11,6 +11,12 @@ import type {
 
 const IDENTIFIER_RE = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
 
+/** `Object.hasOwn`, which apollo-wind's ES2020 target does not include. */
+function hasOwn(object: object, key: PropertyKey): boolean {
+  // biome-ignore lint/suspicious/noPrototypeBuiltins: Object.hasOwn is outside the ES2020 target.
+  return Object.prototype.hasOwnProperty.call(object, key);
+}
+
 export function isJsonObject(value: JsonValue | undefined): value is JsonObject {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -167,7 +173,7 @@ function buildObjectChildren(
   // checks throughout so keys named after Object.prototype members
   // (`constructor`, `toString`, `__proto__`, …) are treated as real data.
   for (const [key, childSchema] of Object.entries(properties)) {
-    const hasValue = value !== undefined && Object.hasOwn(value, key);
+    const hasValue = value !== undefined && hasOwn(value, key);
     children.push(
       buildNode({
         key,
@@ -186,7 +192,7 @@ function buildObjectChildren(
   // is itself a schema it describes those keys (descriptions, enum editing).
   if (value !== undefined) {
     for (const [key, childValue] of Object.entries(value)) {
-      if (Object.hasOwn(properties, key)) continue;
+      if (hasOwn(properties, key)) continue;
       children.push(
         buildNode({
           key,
@@ -383,7 +389,7 @@ export function getValueAtPath(
     } else {
       // Own-property read: `current['__proto__']` would otherwise return the
       // prototype rather than a data value.
-      if (!isJsonObject(current) || !Object.hasOwn(current, segment)) return undefined;
+      if (!isJsonObject(current) || !hasOwn(current, segment)) return undefined;
       current = current[segment];
     }
   }
@@ -411,7 +417,7 @@ export function setValueAtPath(
   // Define the property rather than assign it: `object['__proto__'] = …` hits
   // the prototype setter (dropping the data / mutating the prototype), while a
   // data-property definition stores an own, JSON-serializable value for any key.
-  const previous = Object.hasOwn(object, head) ? object[head] : undefined;
+  const previous = hasOwn(object, head) ? object[head] : undefined;
   Object.defineProperty(object, head, {
     value: setValueAtPath(previous, rest, value),
     enumerable: true,
@@ -445,7 +451,7 @@ export function removeValueAtPath(
     array[head] = child;
     return array;
   }
-  if (!isJsonObject(root) || !Object.hasOwn(root, head)) return root;
+  if (!isJsonObject(root) || !hasOwn(root, head)) return root;
   if (rest.length === 0) {
     const object = { ...root };
     delete object[head];
