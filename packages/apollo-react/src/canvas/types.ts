@@ -369,7 +369,12 @@ export type AgentFlowProps = {
   redoCount?: number;
   /** Called when the Run button is clicked. The button only renders when provided. */
   onRun?: () => void;
-  /** Whether a run is in progress. Disables Run and shows a spinner. */
+  /**
+   * Called when the Stop button is clicked. While `isRunning` is true the Run
+   * button becomes a Stop button; it only renders when this is provided.
+   */
+  onStop?: () => void;
+  /** Whether a run is in progress. Swaps Run for Stop (when `onStop` is set). */
   isRunning?: boolean;
 
   // feature flags
@@ -662,6 +667,7 @@ export interface CanvasTranslations {
   undo: string;
   redo: string;
   run: string;
+  stop: string;
 }
 
 export interface StickyNoteNodeTranslations {
@@ -683,6 +689,7 @@ export const DefaultCanvasTranslations: CanvasTranslations = {
   undo: 'Undo',
   redo: 'Redo',
   run: 'Run',
+  stop: 'Stop',
 };
 
 export interface SuggestionTranslations {

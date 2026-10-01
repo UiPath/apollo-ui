@@ -374,9 +374,7 @@ describe('AgentFlow', () => {
       const onUndo = vi.fn();
       const onRedo = vi.fn();
       const onRun = vi.fn();
-      render(
-        <AgentFlow {...toolbarProps} onUndo={onUndo} onRedo={onRedo} onRun={onRun} />
-      );
+      render(<AgentFlow {...toolbarProps} onUndo={onUndo} onRedo={onRedo} onRun={onRun} />);
       fireEvent.click(screen.getByTestId('agent-flow-undo-button'));
       fireEvent.click(screen.getByTestId('agent-flow-redo-button'));
       fireEvent.click(screen.getByTestId('agent-flow-run-button'));
@@ -385,9 +383,21 @@ describe('AgentFlow', () => {
       expect(onRun).toHaveBeenCalledTimes(1);
     });
 
-    it('disables the run button while running', () => {
+    it('swaps the run button for a stop button while running', () => {
+      const onStop = vi.fn();
+      render(<AgentFlow {...toolbarProps} isRunning onStop={onStop} />);
+      expect(screen.queryByTestId('agent-flow-run-button')).not.toBeInTheDocument();
+      const stopButton = screen.getByTestId('agent-flow-stop-button');
+      expect(stopButton).toBeInTheDocument();
+      fireEvent.click(stopButton);
+      expect(onStop).toHaveBeenCalledTimes(1);
+    });
+
+    it('hides the run control while running when no onStop is provided', () => {
       render(<AgentFlow {...toolbarProps} isRunning />);
-      expect(screen.getByTestId('agent-flow-run-button')).toBeDisabled();
+      // Without onStop there is nothing to toggle to, so no run control shows while running.
+      expect(screen.queryByTestId('agent-flow-stop-button')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('agent-flow-run-button')).not.toBeInTheDocument();
     });
 
     it('omits undo/redo/run but keeps add-note when only sticky notes are enabled', () => {
