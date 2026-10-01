@@ -1270,7 +1270,7 @@ describe('StageNode - Status Badges', () => {
       label?: string;
       tooltip?: string;
       onClick?: () => void;
-      variant?: 'solid' | 'outline';
+      variant?: 'solid' | 'outline' | 'success';
     }[]
   ) => ({
     stageDetails: { ...defaultProps.stageDetails, headerChips: chips },
@@ -1322,6 +1322,24 @@ describe('StageNode - Status Badges', () => {
   it('renders the Ends case badge filled when variant is solid', () => {
     renderStageNode(withChips([{ type: StageHeaderChipType.EndsCase, variant: 'solid' }]));
     expect(endsCaseBadge()).toHaveClass('bg-error-icon');
+  });
+
+  it('renders the Ends case badge in the success color with a custom label when variant is success', () => {
+    renderStageNode(
+      withChips([
+        { type: StageHeaderChipType.EndsCase, variant: 'success', label: 'Completed case' },
+      ])
+    );
+    const badge = endsCaseBadge();
+    expect(badge).toHaveClass('bg-success-icon');
+    expect(badge).not.toHaveClass('bg-error-icon');
+    expect(badge).toHaveTextContent('Completed case');
+  });
+
+  it('keeps the default styling for a success variant on a badge that has no success style', () => {
+    renderStageNode(withChips([{ type: StageHeaderChipType.Optional, variant: 'success' }]));
+    expect(optionalBadge()).toHaveClass('bg-background-secondary');
+    expect(optionalBadge()).not.toHaveClass('bg-success-icon');
   });
 
   it('keeps the default styling for an outline variant on a badge that has no outline style', () => {
