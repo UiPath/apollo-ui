@@ -2,13 +2,7 @@ import { Column } from '@uipath/apollo-react/canvas/layouts';
 import { Panel, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import type { NodeProps } from '@uipath/apollo-react/canvas/xyflow/system';
 import { Separator } from '@uipath/apollo-wind';
-import {
-  Loader2,
-  Play,
-  Redo2,
-  StickyNote as StickyNoteIcon,
-  Undo2,
-} from 'lucide-react';
+import { Play, Redo2, Square, StickyNote as StickyNoteIcon, Undo2 } from 'lucide-react';
 import type React from 'react';
 import type { PropsWithChildren } from 'react';
 import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
@@ -34,11 +28,7 @@ import {
   type SuggestionTranslations,
 } from '../../types';
 import { hasAgentRunning } from '../../utils/props-helpers';
-import {
-  CanvasModeToolbar,
-  CountBadge,
-  TOOLBAR_ICON_BUTTON_CLASS,
-} from '../CanvasModeToolbar';
+import { CanvasModeToolbar, CountBadge, TOOLBAR_ICON_BUTTON_CLASS } from '../CanvasModeToolbar';
 import { CanvasZoomControls } from '../CanvasZoomControls';
 import { StickyNoteNode, type StickyNoteNodeProps } from '../StickyNoteNode';
 import { ToolbarButton } from '../ToolbarButton';
@@ -280,6 +270,7 @@ const AgentFlowInner = memo(
     undoCount,
     redoCount,
     onRun,
+    onStop,
     isRunning,
   }: PropsWithChildren<AgentFlowProps>) => {
     const {
@@ -618,6 +609,19 @@ const AgentFlowInner = memo(
       [onZoomLevelChange, zoomLevel]
     );
 
+    // Bottom-center mode toolbar visibility. Edit controls are design-mode only;
+    // the Run/Stop control also stays visible during a run so Stop can be shown
+    // (a run flips the canvas to view mode in hosts like Studio Web).
+    const showEditControls = mode === 'design' && !suggestionGroup?.suggestions.length;
+    const showUndo = showEditControls && !!onUndo;
+    const showRedo = showEditControls && !!onRedo;
+    const showAddNote = showEditControls && !!enableStickyNotes;
+    const showStop = !!isRunning && !!onStop;
+    const showPlay = showEditControls && !!onRun && !isRunning;
+    const showRunControl = showPlay || showStop;
+    const showModeToolbar = showUndo || showRedo || showRunControl || showAddNote;
+    const translations = canvasTranslations ?? DefaultCanvasTranslations;
+
     return (
       <Column w="100%" h="100%" style={{ touchAction: 'none' }}>
         <Column flex={1} position="relative" style={{ touchAction: 'none' }}>
@@ -663,63 +667,71 @@ const AgentFlowInner = memo(
                 />
               </div>
               <div ref={toolbarContainerRef}>
-                {mode === 'design' &&
-                  !suggestionGroup?.suggestions.length &&
-                  (onUndo || onRedo || onRun || enableStickyNotes) && (
-                    <CanvasModeToolbar className="nodrag nopan nowheel">
-                      {onUndo && (
-                        <ToolbarButton
-                          testId="agent-flow-undo-button"
-                          label={(canvasTranslations ?? DefaultCanvasTranslations).undo}
-                          className={`relative ${TOOLBAR_ICON_BUTTON_CLASS}`}
-                          onClick={onUndo}
-                          disabled={!canUndo}
-                        >
-                          <Undo2 />
-                          <CountBadge count={undoCount ?? 0} />
-                        </ToolbarButton>
-                      )}
-                      {onRedo && (
-                        <ToolbarButton
-                          testId="agent-flow-redo-button"
-                          label={(canvasTranslations ?? DefaultCanvasTranslations).redo}
-                          className={`relative ${TOOLBAR_ICON_BUTTON_CLASS}`}
-                          onClick={onRedo}
-                          disabled={!canRedo}
-                        >
-                          <Redo2 />
-                          <CountBadge count={redoCount ?? 0} />
-                        </ToolbarButton>
-                      )}
-                      {(onUndo || onRedo) && (onRun || enableStickyNotes) && (
-                        <Separator orientation="vertical" className="h-5" />
-                      )}
-                      {onRun && (
+                {showModeToolbar && (
+                  <CanvasModeToolbar className="nodrag nopan nowheel">
+                    {showUndo && (
+                      <ToolbarButton
+                        testId="agent-flow-undo-button"
+                        label={translations.undo}
+                        className={`relative ${TOOLBAR_ICON_BUTTON_CLASS}`}
+                        onClick={onUndo}
+                        disabled={!canUndo}
+                      >
+                        <Undo2 />
+                        <CountBadge count={undoCount ?? 0} />
+                      </ToolbarButton>
+                    )}
+                    {showRedo && (
+                      <ToolbarButton
+                        testId="agent-flow-redo-button"
+                        label={translations.redo}
+                        className={`relative ${TOOLBAR_ICON_BUTTON_CLASS}`}
+                        onClick={onRedo}
+                        disabled={!canRedo}
+                      >
+                        <Redo2 />
+                        <CountBadge count={redoCount ?? 0} />
+                      </ToolbarButton>
+                    )}
+                    {(showUndo || showRedo) && (showRunControl || showAddNote) && (
+                      <Separator orientation="vertical" className="h-5" />
+                    )}
+                    {showStop ? (
+                      <ToolbarButton
+                        testId="agent-flow-stop-button"
+                        label={translations.stop}
+                        className={TOOLBAR_ICON_BUTTON_CLASS}
+                        onClick={onStop}
+                      >
+                        <Square strokeWidth={0} className="fill-current text-destructive" />
+                      </ToolbarButton>
+                    ) : (
+                      showPlay && (
                         <ToolbarButton
                           testId="agent-flow-run-button"
-                          label={(canvasTranslations ?? DefaultCanvasTranslations).run}
+                          label={translations.run}
                           className={TOOLBAR_ICON_BUTTON_CLASS}
                           onClick={onRun}
-                          disabled={isRunning}
                         >
-                          {isRunning ? <Loader2 className="animate-spin" /> : <Play />}
+                          <Play />
                         </ToolbarButton>
-                      )}
-                      {onRun && enableStickyNotes && (
-                        <Separator orientation="vertical" className="h-5" />
-                      )}
-                      {enableStickyNotes && (
-                        <ToolbarButton
-                          testId="agent-flow-add-note-button"
-                          label={(canvasTranslations ?? DefaultCanvasTranslations).addNote}
-                          className={TOOLBAR_ICON_BUTTON_CLASS}
-                          onClick={() => addStickyNote()}
-                        >
-                          <StickyNoteIcon />
-                        </ToolbarButton>
-                      )}
-                    </CanvasModeToolbar>
-                  )}
+                      )
+                    )}
+                    {showRunControl && showAddNote && (
+                      <Separator orientation="vertical" className="h-5" />
+                    )}
+                    {showAddNote && (
+                      <ToolbarButton
+                        testId="agent-flow-add-note-button"
+                        label={translations.addNote}
+                        className={TOOLBAR_ICON_BUTTON_CLASS}
+                        onClick={() => addStickyNote()}
+                      >
+                        <StickyNoteIcon />
+                      </ToolbarButton>
+                    )}
+                  </CanvasModeToolbar>
+                )}
               </div>
               <div ref={suggestionGroupPanelRef}>
                 <SuggestionGroupPanel

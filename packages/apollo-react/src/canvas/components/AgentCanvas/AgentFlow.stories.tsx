@@ -1153,11 +1153,13 @@ const DesignModePlayground = () => {
   const undoCount = historyIndex;
   const redoCount = historyLength - 1 - historyIndex;
 
-  // Simulated run: toggles the running state (and the toolbar spinner) briefly.
+  // Simulated run: Run starts it, Stop ends it (the button toggles between the two).
   const [isRunning, setIsRunning] = useState(false);
   const handleRun = useCallback(() => {
     setIsRunning(true);
-    setTimeout(() => setIsRunning(false), 1500);
+  }, []);
+  const handleStop = useCallback(() => {
+    setIsRunning(false);
   }, []);
 
   // Dragging handlers
@@ -1583,6 +1585,7 @@ const DesignModePlayground = () => {
             undoCount={undoCount}
             redoCount={redoCount}
             onRun={handleRun}
+            onStop={handleStop}
             isRunning={isRunning}
             onOrganize={handleOrganize}
             onRequestResourcePlaceholder={
@@ -1682,7 +1685,7 @@ export const DesignMode: Story = {
           '• **Hover Preview**: Hover over the agent node for 0.5s to see settings preview\n\n' +
           'Canvas toolbars are fully wired here:\n' +
           '• **Visual controls** (bottom-right): zoom in/out, fit-to-screen, and tidy-up (broom).\n' +
-          '• **Mode toolbar** (bottom-center): **Undo**/**Redo** with live step-count badges, **Run** (shows a spinner for ~1.5s), and **Add note**. Undo/Redo restore real canvas snapshots — add or remove a resource, add a note, then undo/redo to see it revert and replay.\n\n' +
+          '• **Mode toolbar** (bottom-center): **Undo**/**Redo** with live step-count badges, **Run** (toggles to a red **Stop** while running), and **Add note**. Undo/Redo restore real canvas snapshots — add or remove a resource, add a note, then undo/redo to see it revert and replay.\n\n' +
           'Test features in isolation or combine them to verify interactions.',
       },
     },
