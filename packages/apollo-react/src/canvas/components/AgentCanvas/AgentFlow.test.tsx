@@ -443,15 +443,26 @@ describe('AgentFlow', () => {
       expect(screen.getByTestId('agent-flow-add-note-button')).toBeDisabled();
     });
 
-    it('wraps a disabled run button in a focusable tooltip trigger', () => {
-      // A disabled Apollo Button can't open a tooltip, so the disabled run control must
-      // sit inside a focusable span to keep `runDisabledReason` discoverable.
-      render(<AgentFlow {...toolbarProps} canRun={false} runDisabledReason="Fix errors" />);
+    it('keeps a disabled run button focusable via aria-disabled when a reason is provided', () => {
+      // A disabled action with an explanation stays focusable (aria-disabled, not native
+      // disabled) so `runDisabledReason` is reachable by pointer and keyboard; activation
+      // is guarded.
+      const onRun = vi.fn();
+      render(
+        <AgentFlow {...toolbarProps} canRun={false} runDisabledReason="Fix errors" onRun={onRun} />
+      );
+      const runButton = screen.getByTestId('agent-flow-run-button');
+      expect(runButton).toHaveAttribute('aria-disabled', 'true');
+      expect(runButton).not.toBeDisabled();
+      fireEvent.click(runButton);
+      expect(onRun).not.toHaveBeenCalled();
+    });
+
+    it('natively disables the run button when no reason is provided', () => {
+      render(<AgentFlow {...toolbarProps} canRun={false} />);
       const runButton = screen.getByTestId('agent-flow-run-button');
       expect(runButton).toBeDisabled();
-      const wrapper = runButton.parentElement;
-      expect(wrapper?.tagName).toBe('SPAN');
-      expect(wrapper).toHaveAttribute('tabindex', '0');
+      expect(runButton).not.toHaveAttribute('aria-disabled', 'true');
     });
 
     const suggestionGroupFixture = {

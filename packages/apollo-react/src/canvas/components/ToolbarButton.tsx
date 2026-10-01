@@ -19,42 +19,34 @@ export const ToolbarButton = forwardRef<HTMLButtonElement, ToolbarButtonProps>(
     { label, tooltip, testId, onClick, disabled, ariaPressed, className, tooltipSide, children },
     ref
   ) {
-    const button = (
-      <Button
-        ref={ref}
-        data-testid={testId}
-        // When disabled, the focusable wrapper span below carries the accessible
-        // name so the name is not announced twice.
-        aria-label={disabled ? undefined : label}
-        aria-pressed={ariaPressed}
-        variant="ghost"
-        size="xs"
-        icon
-        className={className}
-        onClick={onClick}
-        disabled={disabled}
-      >
-        {children}
-      </Button>
-    );
+    // A disabled action WITH an explanation (tooltip) stays focusable via aria-disabled
+    // so its tooltip is reachable by pointer and keyboard — a native `disabled` button has
+    // `pointer-events-none` and cannot take focus, so its tooltip could never open.
+    // Activation is guarded below. Disabled actions WITHOUT an explanation use the native
+    // disabled attribute: no tooltip to surface and no extra tab stop.
+    const softDisabled = !!disabled && tooltip != null;
+    const nativeDisabled = !!disabled && !softDisabled;
 
     return (
       <Tooltip>
         <TooltipTrigger asChild>
-          {disabled ? (
-            // A disabled Apollo Button has `pointer-events-none` and cannot receive
-            // focus, so it can never open the tooltip. Wrap it in a focusable,
-            // hoverable span that becomes the tooltip trigger while the button keeps
-            // its disabled semantics — this is how `runDisabledReason` stays discoverable
-            // by both pointer and keyboard users.
-            // biome-ignore lint/a11y/noNoninteractiveTabindex: intentional focusable tooltip trigger for a disabled control
-            // biome-ignore lint/a11y/useAriaPropsSupportedByRole: the span is the interactive trigger and needs an accessible name
-            <span tabIndex={0} aria-label={label} className="inline-flex">
-              {button}
-            </span>
-          ) : (
-            button
-          )}
+          <Button
+            ref={ref}
+            data-testid={testId}
+            aria-label={label}
+            aria-pressed={ariaPressed}
+            aria-disabled={softDisabled || undefined}
+            variant="ghost"
+            size="xs"
+            icon
+            className={
+              softDisabled ? `${className ?? ''} opacity-50 cursor-not-allowed`.trim() : className
+            }
+            onClick={softDisabled ? undefined : onClick}
+            disabled={nativeDisabled}
+          >
+            {children}
+          </Button>
         </TooltipTrigger>
         <TooltipContent side={tooltipSide}>{tooltip ?? label}</TooltipContent>
       </Tooltip>
