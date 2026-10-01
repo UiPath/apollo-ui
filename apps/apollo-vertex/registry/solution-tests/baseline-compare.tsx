@@ -3,6 +3,14 @@
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { EMPTY_VALUE } from "./constants";
 
 export interface BaselineCompareRow {
@@ -17,41 +25,59 @@ export interface BaselineCompareRow {
 
 // Shows baseline and new-run values side by side rather than collapsing to a
 // single value, so an unchanged value reads as unchanged on its own.
-// Value columns may shrink below their content so long ids wrap in a narrow pane.
 export const BaselineCompare = ({ rows }: { rows: BaselineCompareRow[] }) => {
+  const { t } = useTranslation();
   const visible = rows.filter(
     (row) => row.baseline != null || row.current != null,
   );
   if (visible.length === 0) return null;
 
   return (
-    <div className="grid w-fit max-w-full grid-cols-[max-content_minmax(0,max-content)_minmax(0,max-content)] items-center gap-x-6 gap-y-1 rounded-md border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
-      {visible.map((row) => (
-        <CompareRow key={row.label} row={row} />
-      ))}
+    <div className="w-fit max-w-full rounded-md border bg-muted/30">
+      <Table className="w-auto text-xs">
+        <TableHeader>
+          <TableRow className="hover:bg-transparent">
+            <TableHead className="h-8 px-3" />
+            <TableHead className="h-8 px-3 text-xs">
+              {t("compare_baseline")}
+            </TableHead>
+            <TableHead className="h-8 px-3 text-xs">
+              {t("compare_new_run")}
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {visible.map((row) => (
+            <CompareRow key={row.label} row={row} />
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 };
 
 const CompareRow = ({ row }: { row: BaselineCompareRow }) => {
-  const { t } = useTranslation();
+  // whitespace-normal + overflow-wrap so long ids wrap in a narrow pane
+  // instead of pushing the new-run column out of view.
   const valueClass = cn(
-    "text-foreground [overflow-wrap:anywhere]",
+    "px-3 py-1.5 whitespace-normal [overflow-wrap:anywhere] text-foreground",
     row.mono && "font-mono",
   );
 
   return (
-    <div className="contents">
-      <span className="font-medium">{row.label}</span>
-      <span>
-        {`${t("compare_baseline")}: `}
-        <span className={valueClass}>{row.baseline ?? EMPTY_VALUE}</span>
-      </span>
-      <span className="inline-flex min-w-0 flex-wrap items-center gap-1">
-        {`${t("compare_new_run")}: `}
-        <span className={valueClass}>{row.current ?? EMPTY_VALUE}</span>
-        {row.marker}
-      </span>
-    </div>
+    <TableRow className="hover:bg-transparent">
+      <TableCell className="px-3 py-1.5 font-medium text-muted-foreground">
+        {row.label}
+      </TableCell>
+      <TableCell className={valueClass}>
+        {row.baseline ?? EMPTY_VALUE}
+      </TableCell>
+      <TableCell className={valueClass}>
+        <span className="inline-flex flex-wrap items-center gap-1">
+          {row.current ?? EMPTY_VALUE}
+          {row.marker}
+        </span>
+      </TableCell>
+    </TableRow>
   );
 };
