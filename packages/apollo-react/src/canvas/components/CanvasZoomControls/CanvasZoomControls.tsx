@@ -4,6 +4,13 @@ import { useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ToolbarButton } from '../ToolbarButton';
 import { useSafeLingui } from '../../../i18n';
 
+export interface CanvasZoomControlsLabels {
+  zoomIn?: string;
+  zoomOut?: string;
+  fitView?: string;
+  organize?: string;
+}
+
 export interface CanvasZoomControlsProps {
   orientation?: 'vertical' | 'horizontal';
   fitViewOptions?: { duration?: number; padding?: number; maxZoom?: number };
@@ -11,6 +18,11 @@ export interface CanvasZoomControlsProps {
   zoomOutOptions?: { duration?: number };
   onOrganize?: () => void;
   onFitView?: () => void;
+  /**
+   * Optional label overrides. When omitted, each label falls back to the
+   * component's built-in localized string.
+   */
+  labels?: CanvasZoomControlsLabels;
 }
 
 const ZOOM_ICON_BUTTON_CLASS =
@@ -25,6 +37,7 @@ export const CanvasZoomControls = memo(
       zoomOutOptions,
       onOrganize,
       onFitView,
+      labels,
     },
     ref
   ) {
@@ -59,7 +72,7 @@ export const CanvasZoomControls = memo(
       >
         <ToolbarButton
           testId="zoom-in-button"
-          label={_({ id: 'canvas.zoom.zoom_in', message: 'Zoom in' })}
+          label={labels?.zoomIn ?? _({ id: 'canvas.zoom.zoom_in', message: 'Zoom in' })}
           tooltipSide={tooltipSide}
           onClick={handleZoomIn}
           className={ZOOM_ICON_BUTTON_CLASS}
@@ -69,7 +82,7 @@ export const CanvasZoomControls = memo(
 
         <ToolbarButton
           testId="zoom-out-button"
-          label={_({ id: 'canvas.zoom.zoom_out', message: 'Zoom out' })}
+          label={labels?.zoomOut ?? _({ id: 'canvas.zoom.zoom_out', message: 'Zoom out' })}
           tooltipSide={tooltipSide}
           onClick={handleZoomOut}
           className={ZOOM_ICON_BUTTON_CLASS}
@@ -79,7 +92,7 @@ export const CanvasZoomControls = memo(
 
         <ToolbarButton
           testId="fit-to-view-button"
-          label={_({ id: 'canvas.zoom.fit_to_screen', message: 'Fit to screen' })}
+          label={labels?.fitView ?? _({ id: 'canvas.zoom.fit_to_screen', message: 'Fit to screen' })}
           tooltipSide={tooltipSide}
           onClick={handleFitView}
           className={ZOOM_ICON_BUTTON_CLASS}
@@ -90,7 +103,7 @@ export const CanvasZoomControls = memo(
         {onOrganize && (
           <ToolbarButton
             testId="organize-button"
-            label={_({ id: 'canvas.zoom.tidy_up', message: 'Tidy up' })}
+            label={labels?.organize ?? _({ id: 'canvas.zoom.tidy_up', message: 'Tidy up' })}
             tooltipSide={tooltipSide}
             onClick={onOrganize}
             className={ZOOM_ICON_BUTTON_CLASS}

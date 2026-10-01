@@ -664,10 +664,12 @@ export interface CanvasTranslations {
   zoomOut: string;
   zoomToFit: string;
   addNote: string;
-  undo: string;
-  redo: string;
-  run: string;
-  stop: string;
+  // Optional so existing consumers' CanvasTranslations keep type-checking; callers
+  // fall back to DefaultCanvasTranslations per field (e.g. the AgentFlow toolbar).
+  undo?: string;
+  redo?: string;
+  run?: string;
+  stop?: string;
 }
 
 export interface StickyNoteNodeTranslations {
@@ -679,7 +681,7 @@ export const DefaultStickyNoteNodeTranslations: StickyNoteNodeTranslations = {
     '# Add a Note\n\nUse notes to describe canvas areas and explain the purpose of each tool to organize your agent flow.\n\n*Supports Markdown formatting.*\n\n[Learn more](https://docs.uipath.com)',
 };
 
-export const DefaultCanvasTranslations: CanvasTranslations = {
+export const DefaultCanvasTranslations: Required<CanvasTranslations> = {
   panShortcutTeaching: 'Hold Space and drag to pan around the canvas',
   organize: 'Organize',
   zoomIn: 'Zoom in',
