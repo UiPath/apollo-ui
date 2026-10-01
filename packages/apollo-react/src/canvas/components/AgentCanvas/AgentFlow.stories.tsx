@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Column, Row } from '@uipath/apollo-react/canvas/layouts';
 import { ReactFlowProvider } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Button } from '@uipath/apollo-wind';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { IRawSpan } from '../../../types/TraceModels';
 import { StoryInfoPanel } from '../../storybook-utils';
 import {
@@ -1090,6 +1090,76 @@ const DesignModePlayground = () => {
     setStickyNotes((prev) => prev.filter((n) => n.id !== id));
   }, []);
 
+  // --- Functional undo/redo history for the canvas (resources + sticky notes) ---
+  // Snapshots canvas content on every change so Undo/Redo can restore it. In a
+  // real host this comes from the app's history service; here it is self-contained.
+  type CanvasSnapshot = {
+    resources: AgentFlowResource[];
+    stickyNotes: AgentFlowStickyNote[];
+  };
+  const historyRef = useRef<CanvasSnapshot[]>();
+  if (!historyRef.current) {
+    historyRef.current = [{ resources, stickyNotes }];
+  }
+  const [historyIndex, setHistoryIndex] = useState(0);
+  const isRestoringRef = useRef(false);
+
+  useEffect(() => {
+    // Skip the snapshot that a restore (undo/redo) itself triggers.
+    if (isRestoringRef.current) {
+      isRestoringRef.current = false;
+      return;
+    }
+    const history = historyRef.current ?? [];
+    const current = history[historyIndex];
+    if (current && current.resources === resources && current.stickyNotes === stickyNotes) {
+      return;
+    }
+    const next = history.slice(0, historyIndex + 1);
+    next.push({ resources, stickyNotes });
+    historyRef.current = next;
+    setHistoryIndex(next.length - 1);
+    // Intentionally only reacting to canvas-content changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resources, stickyNotes]);
+
+  const restoreSnapshot = useCallback((snapshot: CanvasSnapshot) => {
+    isRestoringRef.current = true;
+    setResources(snapshot.resources);
+    setStickyNotes(snapshot.stickyNotes);
+  }, []);
+
+  const handleUndo = useCallback(() => {
+    setHistoryIndex((index) => {
+      const history = historyRef.current ?? [];
+      if (index <= 0) return index;
+      restoreSnapshot(history[index - 1]);
+      return index - 1;
+    });
+  }, [restoreSnapshot]);
+
+  const handleRedo = useCallback(() => {
+    setHistoryIndex((index) => {
+      const history = historyRef.current ?? [];
+      if (index >= history.length - 1) return index;
+      restoreSnapshot(history[index + 1]);
+      return index + 1;
+    });
+  }, [restoreSnapshot]);
+
+  const historyLength = historyRef.current?.length ?? 1;
+  const canUndo = historyIndex > 0;
+  const canRedo = historyIndex < historyLength - 1;
+  const undoCount = historyIndex;
+  const redoCount = historyLength - 1 - historyIndex;
+
+  // Simulated run: toggles the running state (and the toolbar spinner) briefly.
+  const [isRunning, setIsRunning] = useState(false);
+  const handleRun = useCallback(() => {
+    setIsRunning(true);
+    setTimeout(() => setIsRunning(false), 1500);
+  }, []);
+
   // Dragging handlers
   const handleOrganize = useCallback(() => {
     setAgentNodePosition(undefined);
@@ -1506,6 +1576,14 @@ const DesignModePlayground = () => {
             onAddStickyNote={handleAddStickyNote}
             onUpdateStickyNote={handleUpdateStickyNote}
             onRemoveStickyNote={handleRemoveStickyNote}
+            onUndo={handleUndo}
+            onRedo={handleRedo}
+            canUndo={canUndo}
+            canRedo={canRedo}
+            undoCount={undoCount}
+            redoCount={redoCount}
+            onRun={handleRun}
+            isRunning={isRunning}
             onOrganize={handleOrganize}
             onRequestResourcePlaceholder={
               suggestionMode === 'placeholders' ? handleRequestPlaceholder : undefined
@@ -1602,6 +1680,9 @@ export const DesignMode: Story = {
           '• **Dragging**: Enable/disable position control\n' +
           '• **Instructions**: Toggle instruction prompts (system/user) on the agent node\n' +
           '• **Hover Preview**: Hover over the agent node for 0.5s to see settings preview\n\n' +
+          'Canvas toolbars are fully wired here:\n' +
+          '• **Visual controls** (bottom-right): zoom in/out, fit-to-screen, and tidy-up (broom).\n' +
+          '• **Mode toolbar** (bottom-center): **Undo**/**Redo** with live step-count badges, **Run** (shows a spinner for ~1.5s), and **Add note**. Undo/Redo restore real canvas snapshots — add or remove a resource, add a note, then undo/redo to see it revert and replay.\n\n' +
           'Test features in isolation or combine them to verify interactions.',
       },
     },
