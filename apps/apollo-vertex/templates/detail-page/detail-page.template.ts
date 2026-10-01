@@ -95,6 +95,11 @@ export interface DetailPageConfig {
   start: DetailPagePanelConfig;
   /** Resizable. See the end panel width rules below. */
   end: ResizablePanelConfig;
+  /**
+   * A panel that always counts as the one opened most recently, whatever
+   * the user opens after it, so the main-width rule never closes it.
+   */
+  latest?: PanelSide;
 }
 
 /** The start panel's rendered outer width. */
@@ -175,6 +180,19 @@ export function resolvePanels(
     }
   }
   return { open, closedBy };
+}
+
+/**
+ * The intent with `side` as the panel opened most recently, when it's
+ * wanted open: newest in the open order, and protected from the rule.
+ */
+export function withLatest(intent: PanelIntent, side: PanelSide): PanelIntent {
+  if (!intent.wanted[side]) return intent;
+  return {
+    ...intent,
+    openOrder: [...intent.openOrder.filter((s) => s !== side), side],
+    lastOpened: side,
+  };
 }
 
 export function enabledPanels(
