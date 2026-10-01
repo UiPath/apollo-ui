@@ -1097,7 +1097,7 @@ const DesignModePlayground = () => {
     resources: AgentFlowResource[];
     stickyNotes: AgentFlowStickyNote[];
   };
-  const historyRef = useRef<CanvasSnapshot[]>();
+  const historyRef = useRef<CanvasSnapshot[] | undefined>(undefined);
   if (!historyRef.current) {
     historyRef.current = [{ resources, stickyNotes }];
   }
