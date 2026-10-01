@@ -26,7 +26,8 @@ const EvaluationViewSchema = z.object({
 const EvaluationPairSchema = z.object({
   // The stable identity the two sides were matched on.
   policy_id: z.string().optional().default(""),
-  status: z.string(),
+  // An unknown status fails validation rather than rendering as "new".
+  status: z.enum(EvaluationPairStatus),
   outcome_match: z.boolean().optional().default(false),
   summary_verdict: z.string().optional().default(""),
   summary_deltas: z.array(z.string()).optional().default([]),
