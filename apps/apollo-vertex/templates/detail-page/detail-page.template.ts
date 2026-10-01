@@ -66,6 +66,14 @@ export type PanelSide = "start" | "end";
 
 export type DetailPagePanels = "none" | "start" | "end" | "both";
 
+/** Every panels setting, in the order a picker shows them. */
+export const DETAIL_PAGE_PANELS: readonly DetailPagePanels[] = [
+  "none",
+  "start",
+  "end",
+  "both",
+];
+
 /**
  * Below the header (it spans the page), or beside it (the panel runs the
  * template's full height). Choosing one: the Detail page docs.

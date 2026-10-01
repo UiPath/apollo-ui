@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
 import {
   type OccupantSpec,
   occupantPadding,
@@ -11,13 +11,14 @@ import { DetailPage } from "@/templates/detail-page/DetailPage";
 import {
   type DetailPageSlotName,
   detailPageTemplate,
-  type PanelPlacement,
+  type PanelSide,
 } from "@/templates/detail-page/detail-page.template";
 import { placeholderOccupant } from "@/templates/detail-page/placeholder-occupants";
 import { SlotPlaceholder } from "@/templates/detail-page/SlotPlaceholder";
 import { useDetailPage } from "@/templates/detail-page/use-detail-page";
 import { DETAIL_PAGE_SLOT_LABELS } from "./detail-page-slots";
 import { SURFACE_HOSTS } from "./surface-hosts";
+import type { PanelStatus, TemplateLayout } from "./template-hosts";
 
 /** What a preview gives a template to hold one occupant in one slot. */
 export interface TemplateFrameProps {
@@ -27,35 +28,47 @@ export interface TemplateFrameProps {
   spec: OccupantSpec;
   /** The occupant, rendered. */
   occupant: ReactNode;
-  /** Where a side slot sits: below or beside the header. */
-  placement: PanelPlacement;
+  /** Which panels it has, and each one's open state and placement. */
+  layout: TemplateLayout;
+  /** Called with each panel's state after the template's rules, as it changes. */
+  onPanels?: (panels: Record<PanelSide, PanelStatus>) => void;
 }
 
 /**
- * The Detail page with both panels, the occupant in its slot, and labeled
+ * The Detail page in the given layout, the occupant in its slot, and labeled
  * placeholders in the others. The template's own rules run as usual: its
  * width is the frame's, so a panel closes when main would get too narrow.
+ * The occupant's panel counts as the one opened last, so the rule closes
+ * the other panel first and never closes the occupant's.
  */
 export function DetailPageFrame({
   slot,
   spec,
   occupant,
-  placement,
+  layout,
+  onPanels,
 }: TemplateFrameProps) {
+  const own: PanelSide | null =
+    slot === "start-panel" ? "start" : slot === "end-panel" ? "end" : null;
   const state = useDetailPage({
-    panels: "both",
+    panels: layout.panels,
     start: {
-      placement: slot === "start-panel" ? placement : "below-header",
-      defaultOpen: true,
+      placement: layout.start.placement,
+      defaultOpen: layout.start.open,
     },
-    end: {
-      placement: slot === "end-panel" ? placement : "below-header",
-      defaultOpen: true,
-    },
+    end: { placement: layout.end.placement, defaultOpen: layout.end.open },
+    ...(own && { latest: own }),
   });
+  const { open, closedBy } = state;
+  useEffect(() => {
+    onPanels?.({
+      start: { open: open.start, closedBy: closedBy.start },
+      end: { open: open.end, closedBy: closedBy.end },
+    });
+  }, [onPanels, open.start, open.end, closedBy.start, closedBy.end]);
   const content = (name: DetailPageSlotName) => {
-    const own = name === slot;
-    const shown = own
+    const isOwn = name === slot;
+    const shown = isOwn
       ? spec
       : placeholderOccupant(DETAIL_PAGE_SLOT_LABELS[name], "padded");
     const surface = SURFACE_SPECS.find((s) =>
@@ -73,7 +86,7 @@ export function DetailPageFrame({
         side={name === "start-panel" ? "start" : "end"}
         fill={false}
       >
-        {own ? (
+        {isOwn ? (
           occupant
         ) : (
           <SlotPlaceholder occupant={shown} surface={surface.name} />

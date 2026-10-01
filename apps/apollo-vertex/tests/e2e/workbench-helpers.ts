@@ -84,6 +84,6 @@ export const slotStates = (page: Page) =>
       return states;
     });
 
-/** axe violations inside the workbench. */
-export const axeViolations = (page: Page) =>
-  axeIn(page, "[data-slot=workbench]");
+/** axe violations inside the workbench, leaving out anything inside `exclude`. */
+export const axeViolations = (page: Page, exclude: readonly string[] = []) =>
+  axeIn(page, "[data-slot=workbench]", exclude);
