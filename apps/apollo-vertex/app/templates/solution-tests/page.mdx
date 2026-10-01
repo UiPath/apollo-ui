@@ -167,36 +167,10 @@ const config: SolutionTestsConfig = {
 
 ### Building blocks
 
-Custom renderers can reuse the comparison pieces the built-ins use:
+Custom renderers can reuse these helpers:
 
-- **`BaselineCompare`** lays out a few scalar fields with the baseline and new
-  run side by side, so an unchanged value reads as unchanged. Each row takes a
-  `label`, `baseline`, `current`, an optional `mono` flag and an optional
-  `marker` shown after the new-run value. The IXP provenance bar and the case
-  evaluation use it.
-- **`VersionDeltaGlyph`** with **`versionDelta(baseline, current)`** shows a ▲
-  or ▼ when a version moved. The comparison is numeric-aware ("2.0" equals 2)
-  and shows nothing for an unchanged or non-numeric version.
-
-```tsx
-const { direction } = versionDelta(baseline.version, current.version);
-
-<BaselineCompare
-  rows={[
-    {
-      label: "Model version",
-      baseline: baseline.version,
-      current: current.version,
-      marker: <VersionDeltaGlyph direction={direction} baseline={baseline.version} />,
-    },
-    { label: "Extractor", baseline: baseline.id, current: current.id, mono: true },
-  ]}
-/>
-```
-
-The same glyph flags the tested agent version and the vertical config version
-(`ConfigVersion` against `BaselineConfigVersion` on a run) when they differ
-from the baseline.
+- **`BaselineCompare`** shows a few fields from the baseline and the new run side by side.
+- **`VersionDeltaGlyph`** (with **`versionDelta`**) marks a version that moved up or down from the baseline.
 
 ## Telemetry
 
