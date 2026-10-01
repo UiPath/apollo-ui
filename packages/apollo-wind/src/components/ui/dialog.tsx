@@ -10,6 +10,7 @@ import {
   type PortalContainerOverride,
   useResolvedPortalContainer,
 } from '@/components/ui/portal-container';
+import { dialogSurfaceClassName } from '@/lib/dialog-surface';
 import { cn } from '@/lib/index';
 
 function Dialog({ ...props }: React.ComponentProps<typeof DialogPrimitive.Root>) {
@@ -28,7 +29,7 @@ function DialogPortal({ ...props }: React.ComponentProps<typeof DialogPrimitive.
 }
 
 const dialogContentVariants = cva(
-  'bg-surface-raised text-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 relative z-50 border border-border-subtle shadow-xl duration-200',
+  `${dialogSurfaceClassName} data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 relative z-50 duration-200`,
   {
     variants: {
       variant: {
