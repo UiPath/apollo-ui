@@ -2,13 +2,21 @@
 
 import type { CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
-import type { TemplateHost } from "@/app/_components/template-hosts";
+import type {
+  PanelStatus,
+  TemplateHost,
+  TemplateLayout,
+} from "@/app/_components/template-hosts";
 import type { OccupantState } from "@/components/ui/occupant";
 import type { OccupantSpec } from "@/lib/composition";
 import type { ExampleRole } from "@/lib/occupant-entry";
 import { OCCUPANT_REGISTRY } from "@/lib/occupant-registry.generated";
 import { LocaleProvider } from "@/registry/shell/shell-locale-provider";
-import type { PanelPlacement } from "@/templates/detail-page/detail-page.template";
+import type { PanelSide } from "@/templates/detail-page/detail-page.template";
+import {
+  PreviewShell,
+  type PreviewShellVariant,
+} from "@/templates/shell/PreviewShell";
 import { NoFitCard } from "./no-fit-card";
 import { StageFrame } from "./stage-frame";
 import { slotFit } from "./workbench-url-state";
@@ -17,7 +25,9 @@ interface TemplateStageProps {
   host: TemplateHost;
   spec: OccupantSpec;
   slot: string;
-  placement: PanelPlacement;
+  shell: PreviewShellVariant;
+  layout: TemplateLayout;
+  onPanels: (panels: Record<PanelSide, PanelStatus>) => void;
   sample: ExampleRole;
   state: OccupantState;
   pageWidth: number;
@@ -31,13 +41,16 @@ interface TemplateStageProps {
  * The template view's stage: the template at the page width, with the
  * occupant in its slot, or why it doesn't go there. The frame takes the
  * scaled size, and the page inside it keeps its real width, so the
- * template's rules and the frame tag see the real page width.
+ * template's rules and the frame tag see the real page width. The page is
+ * the whole window: the template inside the real ApolloShell.
  */
 export function TemplateStage({
   host,
   spec,
   slot,
-  placement,
+  shell,
+  layout,
+  onPanels,
   sample,
   state,
   pageWidth,
@@ -83,16 +96,24 @@ export function TemplateStage({
         data-slot="workbench-page"
         className="flex h-(--page-height) w-(--page-width) origin-top-left scale-(--zoom) flex-col"
       >
-        <LocaleProvider>
-          <Frame
-            // A fresh template per slot and placement: its panels start as configured.
-            key={`${slot}-${placement}`}
-            slot={slot}
-            spec={spec}
-            placement={placement}
-            occupant={entry.render(sample, { state })}
-          />
-        </LocaleProvider>
+        {/* ApolloShell sizes itself to the window (h-screen); here it fills the page. */}
+        <div className="h-full [&_.h-screen]:h-full [&_.min-h-svh]:min-h-0">
+          <PreviewShell variant={shell} basePath="/preview/occupants">
+            <LocaleProvider>
+              <Frame
+                // A fresh template when the slot or a panel's open state
+                // changes: its panels start as configured. Placement and
+                // which panels it has apply live.
+                key={`${slot}-${layout.start.open}-${layout.end.open}`}
+                slot={slot}
+                spec={spec}
+                layout={layout}
+                onPanels={onPanels}
+                occupant={entry.render(sample, { state })}
+              />
+            </LocaleProvider>
+          </PreviewShell>
+        </div>
       </div>
     </StageFrame>
   );

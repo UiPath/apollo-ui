@@ -1,7 +1,11 @@
 import { SURFACE_HOSTS } from "@/app/_components/surface-hosts";
 import {
+  DEFAULT_LAYOUT,
+  type PanelLayout,
+  panelSide,
   TEMPLATE_HOSTS,
   type TemplateHost,
+  type TemplateLayout,
 } from "@/app/_components/template-hosts";
 import { OCCUPANT_STATES, type OccupantState } from "@/components/ui/occupant";
 import {
@@ -15,13 +19,19 @@ import {
 import { EXAMPLE_ROLES, type ExampleRole } from "@/lib/occupant-entry";
 import { specFor } from "@/lib/occupant-lookup";
 import { OCCUPANT_SPECS, SURFACE_SPECS } from "@/lib/occupants.generated";
-import type { PanelPlacement } from "@/templates/detail-page/detail-page.template";
+import {
+  DETAIL_PAGE_PANELS,
+  enabledPanels,
+  type PanelSide,
+} from "@/templates/detail-page/detail-page.template";
+import type { PreviewShellVariant } from "@/templates/shell/PreviewShell";
 
 /**
  * The whole workbench view as query params: occupant, surface, sample,
  * state, theme, width, list=closed, details=open, view=template, template,
- * slot, placement, page, zoom=100. Only non-default values are written;
- * invalid ones fall back to the defaults.
+ * slot, page, zoom=100, and the template's layout: shell=minimal, panels,
+ * start and end (placement), start-state and end-state (closed). Only
+ * non-default values are written; invalid ones fall back to the defaults.
  */
 export type WorkbenchTheme = "light" | "dark";
 export type WorkbenchMode = "surface" | "template";
@@ -40,14 +50,62 @@ export interface WorkbenchView {
   mode: WorkbenchMode;
   template: string;
   slot: string;
-  placement: PanelPlacement;
+  /** The shell around the template. The page width includes it. */
+  shell: PreviewShellVariant;
+  layout: TemplateLayout;
   pageWidth: number;
   zoom: WorkbenchZoom;
 }
 
-/** The page width slider's range; its start is each template's own minimum. */
+/**
+ * The page width slider's range. It's the whole window, shell included, so
+ * its start is the template's own minimum plus the shell's width.
+ */
 export const PAGE_WIDTH_MAX = 1920;
 const DEFAULT_PAGE_WIDTH = 1440;
+
+/** How wide each shell is beside the page: ApolloShell's --sidebar-width. */
+const SHELL_WIDTH: Record<PreviewShellVariant, number> = {
+  sidebar: 280,
+  minimal: 0,
+};
+
+export const pageWidthMin = (
+  host: TemplateHost | undefined,
+  shell: PreviewShellVariant,
+): number => (host?.minWidth ?? 0) + SHELL_WIDTH[shell];
+
+const SIDES: readonly PanelSide[] = ["start", "end"];
+
+/**
+ * The layout with the occupant's panel present and open: the slot holding
+ * the occupant can't be removed or closed.
+ */
+export function withOccupantPanel(
+  layout: TemplateLayout,
+  host: TemplateHost | undefined,
+  slot: string,
+): TemplateLayout {
+  const side = host && panelSide(host, slot);
+  if (!side) return layout;
+  const present = enabledPanels(layout.panels);
+  const other = side === "start" ? "end" : "start";
+  return {
+    ...layout,
+    panels: present[other] ? "both" : side,
+    [side]: { ...layout[side], open: true },
+  };
+}
+
+/** The view as it can be: the occupant's panel kept, the width in range. */
+export function normalizeView(view: WorkbenchView): WorkbenchView {
+  const host = templateFor(view.template);
+  return {
+    ...view,
+    layout: withOccupantPanel(view.layout, host, view.slot),
+    pageWidth: Math.max(view.pageWidth, pageWidthMin(host, view.shell)),
+  };
+}
 
 /** Templates previews can render, in the hosts' order. */
 export const TEMPLATE_NAMES: readonly string[] = Object.keys(TEMPLATE_HOSTS);
@@ -144,7 +202,14 @@ export function parseWorkbenchView(search: string): WorkbenchView {
     host?.spec.slots.find((s) => s.name === params.get("slot"))?.name ??
     defaultSlot(host, spec);
   const pageWidth = Number(params.get("page"));
-  return {
+  const shell: PreviewShellVariant =
+    params.get("shell") === "minimal" ? "minimal" : "sidebar";
+  const panelLayout = (side: PanelSide): PanelLayout => ({
+    open: params.get(`${side}-state`) !== "closed",
+    placement:
+      params.get(side) === "beside-header" ? "beside-header" : "below-header",
+  });
+  return normalizeView({
     occupant,
     surface,
     sample: EXAMPLE_ROLES.find((r) => r === params.get("sample")) ?? "primary",
@@ -161,18 +226,22 @@ export function parseWorkbenchView(search: string): WorkbenchView {
     mode: params.get("view") === "template" ? "template" : "surface",
     template,
     slot,
-    placement:
-      params.get("placement") === "beside-header"
-        ? "beside-header"
-        : "below-header",
+    shell,
+    layout: {
+      panels:
+        DETAIL_PAGE_PANELS.find((p) => p === params.get("panels")) ??
+        DEFAULT_LAYOUT.panels,
+      start: panelLayout("start"),
+      end: panelLayout("end"),
+    },
     pageWidth:
       Number.isInteger(pageWidth) &&
-      pageWidth >= (host?.minWidth ?? 0) &&
+      pageWidth >= pageWidthMin(host, shell) &&
       pageWidth <= PAGE_WIDTH_MAX
         ? pageWidth
         : DEFAULT_PAGE_WIDTH,
     zoom: params.get("zoom") === "100" ? "actual" : "fit",
-  };
+  });
 }
 
 export function serializeWorkbenchView(view: WorkbenchView): string {
@@ -192,8 +261,14 @@ export function serializeWorkbenchView(view: WorkbenchView): string {
   if (view.template !== DEFAULT_TEMPLATE) params.set("template", view.template);
   if (view.slot !== defaultSlot(templateFor(view.template), spec))
     params.set("slot", view.slot);
-  if (view.placement !== "below-header")
-    params.set("placement", view.placement);
+  if (view.shell !== "sidebar") params.set("shell", view.shell);
+  if (view.layout.panels !== DEFAULT_LAYOUT.panels)
+    params.set("panels", view.layout.panels);
+  for (const side of SIDES) {
+    if (view.layout[side].placement !== "below-header")
+      params.set(side, view.layout[side].placement);
+    if (!view.layout[side].open) params.set(`${side}-state`, "closed");
+  }
   if (view.pageWidth !== DEFAULT_PAGE_WIDTH)
     params.set("page", String(view.pageWidth));
   if (view.zoom !== "fit") params.set("zoom", "100");

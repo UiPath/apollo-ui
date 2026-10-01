@@ -5,11 +5,13 @@ import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { OccupantInSurface } from "@/app/_components/occupant-in-surface";
 import { SURFACE_HOSTS } from "@/app/_components/surface-hosts";
+import type { PanelStatus } from "@/app/_components/template-hosts";
 import { fitsSurface } from "@/lib/composition";
 import { EXAMPLE_ROLES, type ExampleRole } from "@/lib/occupant-entry";
 import { specFor } from "@/lib/occupant-lookup";
 import { overflowProblems } from "@/lib/overflow-problems";
 import { surfaceLabel } from "@/lib/surface-labels";
+import type { PanelSide } from "@/templates/detail-page/detail-page.template";
 import { DetailsPanel } from "./details-panel";
 import { type Floor, FloorProbe } from "./floor-probe";
 import { NoFitCard } from "./no-fit-card";
@@ -29,6 +31,7 @@ import {
   defaultSurface,
   defaultWidth,
   HOSTED_SURFACES,
+  normalizeView,
   serializeWorkbenchView,
   slotFit,
   templateFor,
@@ -47,8 +50,14 @@ interface WorkbenchProps {
 export function Workbench({ initial, docsHref }: WorkbenchProps) {
   const { t } = useTranslation();
   const [view, setView] = useState(initial);
+  // Every change keeps the occupant's panel and the page width in range.
   const update = (patch: Partial<WorkbenchView>) =>
-    setView((current) => ({ ...current, ...patch }));
+    setView((current) => normalizeView({ ...current, ...patch }));
+  // Each panel after the template's rules, reported by the template.
+  const [panelStatus, setPanelStatus] = useState<Record<
+    PanelSide,
+    PanelStatus
+  > | null>(null);
 
   // The whole view lives in the URL. replaceState, so changes don't fill history.
   useEffect(() => {
@@ -238,7 +247,9 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
                   host={templateHost}
                   spec={spec}
                   slot={view.slot}
-                  placement={view.placement}
+                  shell={view.shell}
+                  layout={view.layout}
+                  onPanels={setPanelStatus}
                   sample={view.sample}
                   state={view.state}
                   pageWidth={view.pageWidth}
@@ -280,8 +291,11 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
               spec={spec}
               slot={view.slot}
               onSlot={(slot) => update({ slot })}
-              placement={view.placement}
-              onPlacement={(placement) => update({ placement })}
+              shell={view.shell}
+              onShell={(shell) => update({ shell })}
+              layout={view.layout}
+              onLayout={(layout) => update({ layout })}
+              panelStatus={panelStatus}
               pageWidth={view.pageWidth}
               onPageWidth={(pageWidth) => update({ pageWidth })}
               zoom={view.zoom}

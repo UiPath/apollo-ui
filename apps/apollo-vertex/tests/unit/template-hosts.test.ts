@@ -21,8 +21,10 @@ describe.each(Object.entries(TEMPLATE_HOSTS))("%s", (name, host) => {
     }
   });
 
-  it("only offers placement for its own slots", () => {
+  it("names its own slots as its panels, and offers panels settings", () => {
     const slots = host.spec.slots.map((slot) => slot.name);
-    for (const slot of host.placeable) expect(slots).toContain(slot);
+    for (const slot of Object.values(host.panels))
+      expect(slots).toContain(slot);
+    expect(host.panelSets.length).toBeGreaterThan(0);
   });
 });
