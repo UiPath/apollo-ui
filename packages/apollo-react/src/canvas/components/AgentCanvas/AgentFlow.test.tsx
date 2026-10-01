@@ -443,6 +443,45 @@ describe('AgentFlow', () => {
       expect(screen.getByTestId('agent-flow-add-note-button')).toBeDisabled();
     });
 
+    it('wraps a disabled run button in a focusable tooltip trigger', () => {
+      // A disabled Apollo Button can't open a tooltip, so the disabled run control must
+      // sit inside a focusable span to keep `runDisabledReason` discoverable.
+      render(<AgentFlow {...toolbarProps} canRun={false} runDisabledReason="Fix errors" />);
+      const runButton = screen.getByTestId('agent-flow-run-button');
+      expect(runButton).toBeDisabled();
+      const wrapper = runButton.parentElement;
+      expect(wrapper?.tagName).toBe('SPAN');
+      expect(wrapper).toHaveAttribute('tabindex', '0');
+    });
+
+    const suggestionGroupFixture = {
+      id: 'sg-1',
+      suggestions: [
+        {
+          id: 's1',
+          type: 'add',
+          resource: { id: 'r1', type: 'tool', name: 'T', description: 'd' },
+        },
+      ],
+    } as unknown as AgentFlowProps['suggestionGroup'];
+
+    it('suppresses the toolbar while a suggestion group is active and not running', () => {
+      render(<AgentFlow {...toolbarProps} suggestionGroup={suggestionGroupFixture} />);
+      expect(screen.queryByTestId('canvas-toolbar')).not.toBeInTheDocument();
+    });
+
+    it('keeps Stop reachable while a suggestion group is active during a run', () => {
+      render(
+        <AgentFlow
+          {...toolbarProps}
+          isRunning
+          onStop={vi.fn()}
+          suggestionGroup={suggestionGroupFixture}
+        />
+      );
+      expect(screen.getByTestId('agent-flow-stop-button')).toBeInTheDocument();
+    });
+
     it('omits undo/redo/run but keeps add-note when only sticky notes are enabled', () => {
       render(
         <AgentFlow
