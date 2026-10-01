@@ -1130,22 +1130,18 @@ const DesignModePlayground = () => {
   }, []);
 
   const handleUndo = useCallback(() => {
-    setHistoryIndex((index) => {
-      const history = historyRef.current ?? [];
-      if (index <= 0) return index;
-      restoreSnapshot(history[index - 1]);
-      return index - 1;
-    });
-  }, [restoreSnapshot]);
+    if (historyIndex <= 0) return;
+    const history = historyRef.current ?? [];
+    restoreSnapshot(history[historyIndex - 1]);
+    setHistoryIndex(historyIndex - 1);
+  }, [historyIndex, restoreSnapshot]);
 
   const handleRedo = useCallback(() => {
-    setHistoryIndex((index) => {
-      const history = historyRef.current ?? [];
-      if (index >= history.length - 1) return index;
-      restoreSnapshot(history[index + 1]);
-      return index + 1;
-    });
-  }, [restoreSnapshot]);
+    const history = historyRef.current ?? [];
+    if (historyIndex >= history.length - 1) return;
+    restoreSnapshot(history[historyIndex + 1]);
+    setHistoryIndex(historyIndex + 1);
+  }, [historyIndex, restoreSnapshot]);
 
   const historyLength = historyRef.current?.length ?? 1;
   const canUndo = historyIndex > 0;
