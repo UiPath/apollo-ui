@@ -370,6 +370,14 @@ export type AgentFlowProps = {
   /** Called when the Run button is clicked. The button only renders when provided. */
   onRun?: () => void;
   /**
+   * Whether running is currently allowed. The Run button is disabled when this is
+   * explicitly `false` (e.g. the agent has blocking validation errors). Defaults to
+   * enabled; only an explicit `false` disables it, matching `canUndo`/`canRedo`.
+   */
+  canRun?: boolean;
+  /** Optional tooltip shown on the Run button while it is disabled. */
+  runDisabledReason?: string;
+  /**
    * Called when the Stop button is clicked. While `isRunning` is true the Run
    * button becomes a Stop button; it only renders when this is provided.
    */

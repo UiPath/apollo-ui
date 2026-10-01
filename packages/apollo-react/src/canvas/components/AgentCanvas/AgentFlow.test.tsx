@@ -407,16 +407,40 @@ describe('AgentFlow', () => {
       expect(screen.queryByTestId('agent-flow-run-button')).not.toBeInTheDocument();
     });
 
-    it('keeps the stop control reachable in view mode while hiding edit controls', () => {
-      // A run flips hosts (e.g. Studio Web) to view mode; Stop must stay reachable
-      // while the design-only edit controls disappear.
+    it('keeps every item during a run but disables all except Stop', () => {
+      // A run flips hosts (e.g. Studio Web) to view mode. The toolbar must keep all its
+      // items; everything is disabled except Stop.
       render(<AgentFlow {...toolbarProps} mode="view" isRunning onStop={vi.fn()} />);
       expect(screen.getByTestId('canvas-toolbar')).toBeInTheDocument();
-      expect(screen.getByTestId('agent-flow-stop-button')).toBeInTheDocument();
-      expect(screen.queryByTestId('agent-flow-undo-button')).not.toBeInTheDocument();
-      expect(screen.queryByTestId('agent-flow-redo-button')).not.toBeInTheDocument();
-      expect(screen.queryByTestId('agent-flow-add-note-button')).not.toBeInTheDocument();
+      // Stop replaces Run and stays enabled.
       expect(screen.queryByTestId('agent-flow-run-button')).not.toBeInTheDocument();
+      expect(screen.getByTestId('agent-flow-stop-button')).toBeEnabled();
+      // Editing items remain visible but disabled.
+      expect(screen.getByTestId('agent-flow-undo-button')).toBeDisabled();
+      expect(screen.getByTestId('agent-flow-redo-button')).toBeDisabled();
+      expect(screen.getByTestId('agent-flow-add-note-button')).toBeDisabled();
+    });
+
+    it('disables the run button when canRun is explicitly false', () => {
+      render(<AgentFlow {...toolbarProps} canRun={false} />);
+      expect(screen.getByTestId('agent-flow-run-button')).toBeDisabled();
+      // Other controls remain usable in design mode.
+      expect(screen.getByTestId('agent-flow-undo-button')).toBeEnabled();
+      expect(screen.getByTestId('agent-flow-add-note-button')).toBeEnabled();
+    });
+
+    it('keeps the run button enabled when canRun is omitted', () => {
+      render(<AgentFlow {...toolbarProps} />);
+      expect(screen.getByTestId('agent-flow-run-button')).toBeEnabled();
+    });
+
+    it('shows all items disabled in read-only (view) mode', () => {
+      render(<AgentFlow {...toolbarProps} mode="view" />);
+      expect(screen.getByTestId('canvas-toolbar')).toBeInTheDocument();
+      expect(screen.getByTestId('agent-flow-undo-button')).toBeDisabled();
+      expect(screen.getByTestId('agent-flow-redo-button')).toBeDisabled();
+      expect(screen.getByTestId('agent-flow-run-button')).toBeDisabled();
+      expect(screen.getByTestId('agent-flow-add-note-button')).toBeDisabled();
     });
 
     it('omits undo/redo/run but keeps add-note when only sticky notes are enabled', () => {

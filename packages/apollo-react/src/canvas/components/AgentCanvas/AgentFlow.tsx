@@ -270,6 +270,8 @@ const AgentFlowInner = memo(
     undoCount,
     redoCount,
     onRun,
+    canRun,
+    runDisabledReason,
     onStop,
     isRunning,
   }: PropsWithChildren<AgentFlowProps>) => {
@@ -609,17 +611,20 @@ const AgentFlowInner = memo(
       [onZoomLevelChange, zoomLevel]
     );
 
-    // Bottom-center mode toolbar visibility. Edit controls are design-mode only;
-    // the Run/Stop control also stays visible during a run so Stop can be shown
-    // (a run flips the canvas to view mode in hosts like Studio Web).
-    const showEditControls = mode === 'design' && !suggestionGroup?.suggestions.length;
-    const showUndo = showEditControls && !!onUndo;
-    const showRedo = showEditControls && !!onRedo;
-    const showAddNote = showEditControls && !!enableStickyNotes;
+    // Bottom-center mode toolbar. The items stay stable across design, debug-run,
+    // and read-only/view: they remain visible and are disabled contextually rather
+    // than hidden. Editing is locked during a run or in any non-design (view/read-only)
+    // mode; only the Stop button stays active while a run is in progress.
+    const editingLocked = !!isRunning || mode !== 'design';
+    const showUndo = !!onUndo;
+    const showRedo = !!onRedo;
+    const showAddNote = !!enableStickyNotes;
     const showStop = !!isRunning && !!onStop;
-    const showPlay = showEditControls && !!onRun && !isRunning;
+    const showPlay = !!onRun && !isRunning;
     const showRunControl = showPlay || showStop;
-    const showModeToolbar = showUndo || showRedo || showRunControl || showAddNote;
+    const showModeToolbar =
+      !suggestionGroup?.suggestions.length &&
+      (showUndo || showRedo || showRunControl || showAddNote);
     const translations = canvasTranslations ?? DefaultCanvasTranslations;
     // The newer toolbar labels are optional on CanvasTranslations, so fall back to
     // the defaults per field for consumers that supply the previous translation shape.
@@ -687,7 +692,7 @@ const AgentFlowInner = memo(
                         label={undoLabel}
                         className={`relative ${TOOLBAR_ICON_BUTTON_CLASS}`}
                         onClick={onUndo}
-                        disabled={canUndo === false}
+                        disabled={canUndo === false || editingLocked}
                       >
                         <Undo2 />
                         <CountBadge count={undoCount ?? 0} />
@@ -699,7 +704,7 @@ const AgentFlowInner = memo(
                         label={redoLabel}
                         className={`relative ${TOOLBAR_ICON_BUTTON_CLASS}`}
                         onClick={onRedo}
-                        disabled={canRedo === false}
+                        disabled={canRedo === false || editingLocked}
                       >
                         <Redo2 />
                         <CountBadge count={redoCount ?? 0} />
@@ -722,8 +727,12 @@ const AgentFlowInner = memo(
                         <ToolbarButton
                           testId="agent-flow-run-button"
                           label={runLabel}
+                          tooltip={
+                            canRun === false || editingLocked ? runDisabledReason : undefined
+                          }
                           className={TOOLBAR_ICON_BUTTON_CLASS}
                           onClick={onRun}
+                          disabled={canRun === false || editingLocked}
                         >
                           <Play />
                         </ToolbarButton>
@@ -738,6 +747,7 @@ const AgentFlowInner = memo(
                         label={translations.addNote}
                         className={TOOLBAR_ICON_BUTTON_CLASS}
                         onClick={() => addStickyNote()}
+                        disabled={editingLocked}
                       >
                         <StickyNoteIcon />
                       </ToolbarButton>
