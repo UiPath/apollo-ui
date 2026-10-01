@@ -92,7 +92,9 @@ export const CanvasZoomControls = memo(
 
         <ToolbarButton
           testId="fit-to-view-button"
-          label={labels?.fitView ?? _({ id: 'canvas.zoom.fit_to_screen', message: 'Fit to screen' })}
+          label={
+            labels?.fitView ?? _({ id: 'canvas.zoom.fit_to_screen', message: 'Fit to screen' })
+          }
           tooltipSide={tooltipSide}
           onClick={handleFitView}
           className={ZOOM_ICON_BUTTON_CLASS}
