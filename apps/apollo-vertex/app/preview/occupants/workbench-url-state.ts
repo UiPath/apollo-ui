@@ -20,11 +20,13 @@ import type { PanelPlacement } from "@/templates/detail-page/detail-page.templat
 /**
  * The whole workbench view as query params: occupant, surface, sample,
  * state, theme, width, list=closed, details=open, view=template, template,
- * slot, placement, page. Only non-default values are written; invalid ones
- * fall back to the defaults.
+ * slot, placement, page, zoom=100. Only non-default values are written;
+ * invalid ones fall back to the defaults.
  */
 export type WorkbenchTheme = "light" | "dark";
 export type WorkbenchMode = "surface" | "template";
+/** The template view's zoom: scaled to fit the stage, or at its real size. */
+export type WorkbenchZoom = "fit" | "actual";
 
 export interface WorkbenchView {
   occupant: string;
@@ -40,6 +42,7 @@ export interface WorkbenchView {
   slot: string;
   placement: PanelPlacement;
   pageWidth: number;
+  zoom: WorkbenchZoom;
 }
 
 /** The page width slider's range; its start is each template's own minimum. */
@@ -168,6 +171,7 @@ export function parseWorkbenchView(search: string): WorkbenchView {
       pageWidth <= PAGE_WIDTH_MAX
         ? pageWidth
         : DEFAULT_PAGE_WIDTH,
+    zoom: params.get("zoom") === "100" ? "actual" : "fit",
   };
 }
 
@@ -192,6 +196,7 @@ export function serializeWorkbenchView(view: WorkbenchView): string {
     params.set("placement", view.placement);
   if (view.pageWidth !== DEFAULT_PAGE_WIDTH)
     params.set("page", String(view.pageWidth));
+  if (view.zoom !== "fit") params.set("zoom", "100");
   const query = params.toString();
   return query ? `?${query}` : "";
 }
