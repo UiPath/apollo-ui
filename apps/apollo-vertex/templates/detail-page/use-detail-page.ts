@@ -66,14 +66,15 @@ export interface DetailPageState {
 /**
  * The template's border-box width: measured once when the node attaches,
  * then followed with ResizeObserver. No requestAnimationFrame, which never
- * fires in a hidden tab.
+ * fires in a hidden tab. Both reads are layout widths, so a scaled preview
+ * (a CSS transform) measures the same as an unscaled one.
  */
 function useTemplateWidth(): [RefCallback<HTMLDivElement | null>, number] {
   const [width, setWidth] = useState(0);
   const ref = (node: HTMLDivElement | null) => {
     if (!node) return;
     // Applied after this commit: an update while the node attaches is lost.
-    const initial = node.getBoundingClientRect().width;
+    const initial = node.offsetWidth;
     queueMicrotask(() => setWidth(initial));
     const observer = new ResizeObserver(([entry]) => {
       if (!entry) return;

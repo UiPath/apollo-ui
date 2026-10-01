@@ -46,6 +46,20 @@ for (const [width, q, full] of CASES) {
           ? new DOMRect(0, 0, 0, 0)
           : original.call(this);
       };
+      // The template's first read is its offsetWidth: block that too. The
+      // checks below read the template's width as clientWidth instead.
+      const offsetWidth = Object.getOwnPropertyDescriptor(
+        HTMLElement.prototype,
+        "offsetWidth",
+      );
+      Object.defineProperty(HTMLElement.prototype, "offsetWidth", {
+        configurable: true,
+        get(this: HTMLElement) {
+          return this.matches("[data-template]")
+            ? 0
+            : Number(offsetWidth?.get?.call(this) ?? 0);
+        },
+      });
       window.ResizeObserver = class {
         observe() {
           // Measurement is blocked.
@@ -62,9 +76,9 @@ for (const [width, q, full] of CASES) {
     const g = await page.evaluate(() => {
       const w = (s: string) => {
         const el = document.querySelector<HTMLElement>(s);
-        return el && getComputedStyle(el).display !== "none"
-          ? el.offsetWidth
-          : 0;
+        if (!el || getComputedStyle(el).display === "none") return 0;
+        // The template has no border, so its clientWidth is its width.
+        return el.matches("[data-template]") ? el.clientWidth : el.offsetWidth;
       };
       return {
         template: w("[data-template]"),

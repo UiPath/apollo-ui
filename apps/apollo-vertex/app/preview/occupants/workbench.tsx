@@ -18,10 +18,12 @@ import { afterLayout, settled } from "./overflow";
 import { StageFrame } from "./stage-frame";
 import { TemplateDock } from "./template-dock";
 import { TemplateStage } from "./template-stage";
+import { useFitScale } from "./use-fit-scale";
 import { usePageTheme } from "./use-page-theme";
 import { WorkbenchDock } from "./workbench-dock";
 import { WorkbenchHeader } from "./workbench-header";
 import { lowerLabel, surfaceRange, widthStatus } from "./workbench-model";
+import { STAGE_HEIGHT } from "@/app/_components/stage";
 import {
   defaultSlot,
   defaultSurface,
@@ -127,6 +129,15 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
     observer.observe(dock);
     return () => observer.disconnect();
   }, []);
+  // The template view fits the page to the stage, past its padding (p-8) and
+  // the room kept for the dock (pb-[dock + 12]); at 100% it scrolls instead.
+  const scale = useFitScale(stageRef, {
+    width: view.pageWidth,
+    height: STAGE_HEIGHT,
+    reservedX: 2 * 32,
+    reservedY: 32 + dockHeight + 48,
+    enabled: view.mode === "template" && view.zoom === "fit",
+  });
   const dockSpace =
     // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- CSS custom properties aren't in React.CSSProperties
     { "--dock-space": `${dockHeight}px` } as CSSProperties;
@@ -231,6 +242,7 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
                   sample={view.sample}
                   state={view.state}
                   pageWidth={view.pageWidth}
+                  scale={scale}
                 />
               ) : claim.fits ? (
                 <StageFrame
@@ -271,6 +283,9 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
               onPlacement={(placement) => update({ placement })}
               pageWidth={view.pageWidth}
               onPageWidth={(pageWidth) => update({ pageWidth })}
+              zoom={view.zoom}
+              onZoom={(zoom) => update({ zoom })}
+              scale={scale}
             />
           ) : (
             <WorkbenchDock
