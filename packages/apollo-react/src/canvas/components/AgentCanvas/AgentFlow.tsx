@@ -621,6 +621,12 @@ const AgentFlowInner = memo(
     const showRunControl = showPlay || showStop;
     const showModeToolbar = showUndo || showRedo || showRunControl || showAddNote;
     const translations = canvasTranslations ?? DefaultCanvasTranslations;
+    // The newer toolbar labels are optional on CanvasTranslations, so fall back to
+    // the defaults per field for consumers that supply the previous translation shape.
+    const undoLabel = translations.undo ?? DefaultCanvasTranslations.undo;
+    const redoLabel = translations.redo ?? DefaultCanvasTranslations.redo;
+    const runLabel = translations.run ?? DefaultCanvasTranslations.run;
+    const stopLabel = translations.stop ?? DefaultCanvasTranslations.stop;
 
     return (
       <Column w="100%" h="100%" style={{ touchAction: 'none' }}>
@@ -657,6 +663,12 @@ const AgentFlowInner = memo(
                 orientation="vertical"
                 onFitView={() => reactFlowFitView(adjustedFitViewOptions)}
                 onOrganize={mode === 'design' ? onOrganize : undefined}
+                labels={{
+                  zoomIn: translations.zoomIn,
+                  zoomOut: translations.zoomOut,
+                  fitView: translations.zoomToFit,
+                  organize: translations.organize,
+                }}
               />
             </Panel>
             <Panel position="bottom-center">
@@ -672,7 +684,7 @@ const AgentFlowInner = memo(
                     {showUndo && (
                       <ToolbarButton
                         testId="agent-flow-undo-button"
-                        label={translations.undo}
+                        label={undoLabel}
                         className={`relative ${TOOLBAR_ICON_BUTTON_CLASS}`}
                         onClick={onUndo}
                         disabled={!canUndo}
@@ -684,7 +696,7 @@ const AgentFlowInner = memo(
                     {showRedo && (
                       <ToolbarButton
                         testId="agent-flow-redo-button"
-                        label={translations.redo}
+                        label={redoLabel}
                         className={`relative ${TOOLBAR_ICON_BUTTON_CLASS}`}
                         onClick={onRedo}
                         disabled={!canRedo}
@@ -699,7 +711,7 @@ const AgentFlowInner = memo(
                     {showStop ? (
                       <ToolbarButton
                         testId="agent-flow-stop-button"
-                        label={translations.stop}
+                        label={stopLabel}
                         className={TOOLBAR_ICON_BUTTON_CLASS}
                         onClick={onStop}
                       >
@@ -709,7 +721,7 @@ const AgentFlowInner = memo(
                       showPlay && (
                         <ToolbarButton
                           testId="agent-flow-run-button"
-                          label={translations.run}
+                          label={runLabel}
                           className={TOOLBAR_ICON_BUTTON_CLASS}
                           onClick={onRun}
                         >

@@ -1685,7 +1685,7 @@ export const DesignMode: Story = {
           '• **Hover Preview**: Hover over the agent node for 0.5s to see settings preview\n\n' +
           'Canvas toolbars are fully wired here:\n' +
           '• **Visual controls** (bottom-right): zoom in/out, fit-to-screen, and tidy-up (broom).\n' +
-          '• **Mode toolbar** (bottom-center): **Undo**/**Redo** with live step-count badges, **Run** (toggles to a red **Stop** while running), and **Add note**. Undo/Redo restore real canvas snapshots — add or remove a resource, add a note, then undo/redo to see it revert and replay.\n\n' +
+          '• **Mode toolbar** (bottom-center): **Undo**/**Redo** with live step-count badges, **Run** (toggles to a red **Stop** while running), and **Add note**. Undo/Redo restore real canvas snapshots: add or remove a resource, add a note, then undo/redo to see it revert and replay.\n\n' +
           'Test features in isolation or combine them to verify interactions.',
       },
     },
