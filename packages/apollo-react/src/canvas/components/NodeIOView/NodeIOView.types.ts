@@ -12,7 +12,7 @@ import type {
   NodeDecoration,
   RenderCodeEditor,
   RenderValueCell,
-} from '../JsonTree/JsonTree.types';
+} from '../JsonTree';
 
 /** A consumer-provided tab rendered after the built-in Schema and JSON tabs. */
 export interface NodeIOViewTab {

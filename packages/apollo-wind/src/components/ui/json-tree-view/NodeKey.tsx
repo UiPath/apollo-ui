@@ -1,6 +1,6 @@
-import { cn } from '@uipath/apollo-wind';
-import { useSafeLingui } from '../../../i18n';
-import { CanvasTooltip } from '../CanvasTooltip';
+import { cn } from '@/lib';
+import { useJsonTreeViewStrings } from './strings';
+import { JsonTreeTooltip } from './JsonTreeTooltip';
 import type { JsonTreeNode } from './JsonTree.types';
 
 export interface NodeKeyProps {
@@ -19,7 +19,7 @@ export interface NodeKeyProps {
  * and a copy hint; clicking copies the path.
  */
 export function NodeKey({ node, label, displayPath, onCopyPath, className }: NodeKeyProps) {
-  const { _ } = useSafeLingui();
+  const strings = useJsonTreeViewStrings();
   const text = label ?? node.key;
   // The tooltip/aria surface the exact string that gets copied so it matches
   // consumer path transforms (e.g. a `$vars.` prefix), not the raw tree path.
@@ -41,7 +41,7 @@ export function NodeKey({ node, label, displayPath, onCopyPath, className }: Nod
   if (!onCopyPath) return <span className={keyClass}>{text}</span>;
 
   return (
-    <CanvasTooltip
+    <JsonTreeTooltip
       placement="top"
       delay
       content={
@@ -52,23 +52,14 @@ export function NodeKey({ node, label, displayPath, onCopyPath, className }: Nod
           {node.schema?.description && (
             <span className="text-xs leading-4">{node.schema.description}</span>
           )}
-          <span className="text-[11px] leading-4 opacity-70">
-            {_({
-              id: 'canvas.json_value_panel.copy_path_hint',
-              message: 'Click to copy this path',
-            })}
-          </span>
+          <span className="text-[11px] leading-4 opacity-70">{strings.copyPathHint}</span>
         </div>
       }
     >
       <button
         type="button"
         onClick={() => onCopyPath(node)}
-        aria-label={_({
-          id: 'canvas.json_value_panel.copy_path_for',
-          message: 'Copy path for {path}',
-          values: { path: copyPathText },
-        })}
+        aria-label={strings.copyPathFor(copyPathText)}
         className={cn(
           keyClass,
           'cursor-pointer decoration-foreground-subtle underline-offset-2 hover:underline'
@@ -76,6 +67,6 @@ export function NodeKey({ node, label, displayPath, onCopyPath, className }: Nod
       >
         {text}
       </button>
-    </CanvasTooltip>
+    </JsonTreeTooltip>
   );
 }

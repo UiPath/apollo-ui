@@ -1,6 +1,6 @@
-import { cn } from '@uipath/apollo-wind';
+import { cn } from '@/lib';
 import { useEffect, useRef, useState } from 'react';
-import { useSafeLingui } from '../../../i18n';
+import { useJsonTreeViewStrings } from './strings';
 import type { JsonTreeNode, JsonValue } from './JsonTree.types';
 import { isNumericEdit, parseLeafValue, resolveLeafEditType } from './leafEditTypes';
 
@@ -21,7 +21,7 @@ export function JsonLeafValueEditor({
   onCancel,
   className,
 }: JsonLeafValueEditorProps) {
-  const { _ } = useSafeLingui();
+  const strings = useJsonTreeViewStrings();
   const editType = resolveLeafEditType(node.type, node.schema);
   const initial =
     node.value === undefined || node.value === null
@@ -74,23 +74,9 @@ export function JsonLeafValueEditor({
           onCancel();
         }
       }}
-      aria-label={_({
-        id: 'canvas.json_value_panel.edit_value_of',
-        message: 'Edit value of {key}',
-        values: { key: node.key },
-      })}
+      aria-label={strings.editValueOf(node.key)}
       aria-invalid={invalid || undefined}
-      placeholder={
-        isNumericEdit(editType)
-          ? _({
-              id: 'canvas.json_value_panel.enter_number',
-              message: 'Enter a number',
-            })
-          : _({
-              id: 'canvas.json_value_panel.enter_value',
-              message: 'Enter a value',
-            })
-      }
+      placeholder={isNumericEdit(editType) ? strings.enterNumber : strings.enterValue}
       className={cn(
         'min-w-0 flex-1 rounded bg-transparent font-mono text-xs text-foreground outline-none ring-1',
         invalid ? 'ring-error' : 'ring-brand',

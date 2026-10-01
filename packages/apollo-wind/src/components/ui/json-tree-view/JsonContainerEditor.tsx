@@ -1,6 +1,7 @@
-import { cn, FormFieldError } from '@uipath/apollo-wind';
+import { cn } from '@/lib';
+import { FormFieldError } from '@/components/ui/form-field';
 import { useState } from 'react';
-import { useSafeLingui } from '../../../i18n';
+import { useJsonTreeViewStrings } from './strings';
 import { EditorActions, EditorTextarea } from './EditorChrome';
 import type { JsonTreeNode, JsonValue, RenderCodeEditor } from './JsonTree.types';
 
@@ -37,7 +38,7 @@ export function JsonContainerEditor({
   renderCodeEditor,
   className,
 }: JsonContainerEditorProps) {
-  const { _ } = useSafeLingui();
+  const strings = useJsonTreeViewStrings();
   const initialValue = node.value ?? (node.type === 'array' ? [] : {});
   const [raw, setRaw] = useState(() => JSON.stringify(initialValue, null, 2));
   const [error, setError] = useState<string | null>(null);
@@ -50,15 +51,10 @@ export function JsonContainerEditor({
   const apply = () => {
     try {
       onCommit(JSON.parse(raw) as JsonValue);
-    } catch (e) {
-      setError(
-        e instanceof Error
-          ? e.message
-          : _({
-              id: 'canvas.json_value_panel.invalid_json',
-              message: 'Invalid JSON',
-            })
-      );
+    } catch {
+      // The parser's own message is engine-specific English, so show the
+      // localizable string instead.
+      setError(strings.invalidJson);
     }
   };
 
@@ -82,11 +78,7 @@ export function JsonContainerEditor({
           onCancel={onCancel}
           invalid={!!error}
           rows={Math.min(12, Math.max(3, raw.split('\n').length))}
-          ariaLabel={_({
-            id: 'canvas.json_value_panel.edit_json_of',
-            message: 'Edit JSON of {key}',
-            values: { key: node.key },
-          })}
+          ariaLabel={strings.editJsonOf(node.key)}
         />
       )}
       <FormFieldError>{error}</FormFieldError>

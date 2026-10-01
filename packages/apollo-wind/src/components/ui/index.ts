@@ -30,6 +30,7 @@ export * from './form-field';
 export * from './hover-card';
 export * from './info-tooltip';
 export * from './input';
+export * from './json-tree-view';
 export * from './input-group';
 export * from './label';
 export * from './layout';

@@ -1,6 +1,6 @@
-import { cn } from '@uipath/apollo-wind';
+import { cn } from '@/lib';
 import { useState } from 'react';
-import { useSafeLingui } from '../../../i18n';
+import { useJsonTreeViewStrings } from './strings';
 import { EditorActions, EditorTextarea } from './EditorChrome';
 import type { JsonTreeNode, JsonValue } from './JsonTree.types';
 import { isNumericEdit, parseLeafValue, resolveLeafEditType } from './leafEditTypes';
@@ -23,7 +23,7 @@ export function JsonMultilineLeafEditor({
   onCancel,
   className,
 }: JsonMultilineLeafEditorProps) {
-  const { _ } = useSafeLingui();
+  const strings = useJsonTreeViewStrings();
   const editType = resolveLeafEditType(node.type, node.schema);
   const initial =
     node.value === undefined || node.value === null
@@ -47,22 +47,8 @@ export function JsonMultilineLeafEditor({
         onCancel={onCancel}
         invalid={invalid}
         rows={Math.min(10, Math.max(3, raw.split('\n').length + 1))}
-        ariaLabel={_({
-          id: 'canvas.json_value_panel.edit_value_of',
-          message: 'Edit value of {key}',
-          values: { key: node.key },
-        })}
-        placeholder={
-          isNumericEdit(editType)
-            ? _({
-                id: 'canvas.json_value_panel.enter_number',
-                message: 'Enter a number',
-              })
-            : _({
-                id: 'canvas.json_value_panel.enter_value',
-                message: 'Enter a value',
-              })
-        }
+        ariaLabel={strings.editValueOf(node.key)}
+        placeholder={isNumericEdit(editType) ? strings.enterNumber : strings.enterValue}
         className="whitespace-pre-wrap"
       />
       <EditorActions onApply={apply} onCancel={onCancel} applyDisabled={invalid} />

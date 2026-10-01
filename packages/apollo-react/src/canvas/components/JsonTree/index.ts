@@ -1,9 +1,59 @@
-export * from './buildJsonTree';
-export * from './clipboard';
-export * from './JsonContainerEditor';
-export * from './JsonLeafValueEditor';
-export * from './JsonMultilineLeafEditor';
+// The Json tree view lives in apollo-wind. The components are re-exported with canvas
+// translations (./JsonTree); everything else passes through unchanged.
+export type {
+  BuildJsonTreeOptions,
+  ContainerPath,
+  CopyEvent,
+  DeriveTypeIcon,
+  FlatJsonTreeRow,
+  FlattenOptions,
+  JsonCodeEditorRenderProps,
+  JsonContainer,
+  JsonContainerEditorProps,
+  JsonLeafValueEditorProps,
+  JsonMultilineLeafEditorProps,
+  JsonObject,
+  JsonSchema,
+  JsonSchemaTypeName,
+  JsonTreeChange,
+  JsonTreeFilterOption,
+  JsonTreeNode,
+  JsonTreeNodeType,
+  JsonTreeRowWrapper,
+  JsonTreeRowWrapperProps,
+  JsonTreeToolbarProps,
+  JsonTreeViewStrings,
+  JsonTreeViewProps,
+  JsonTreeViewProviderProps,
+  JsonTypeBadgeProps,
+  JsonValue,
+  NodeAction,
+  NodeActionContext,
+  NodeActionsResolver,
+  NodeDecoration,
+  NodeDecorationBadge,
+  NodeDecorationChip,
+  NodeDecorationTone,
+  NodeDisplayTexts,
+  PathSegment,
+  RenderCodeEditor,
+  RenderValueCell,
+  RenderValueContext,
+} from '@uipath/apollo-wind';
+export {
+  appendPathSegment,
+  buildJsonTree,
+  collectContainerPaths,
+  copyTextToClipboard,
+  DEFAULT_JSON_TREE_VIEW_STRINGS,
+  flattenJsonTree,
+  formatLeafValue,
+  getValueAtPath,
+  inferValueType,
+  isArrayItemTemplateRoot,
+  isJsonObject,
+  removeValueAtPath,
+  schemaDisplayType,
+  setValueAtPath,
+} from '@uipath/apollo-wind';
 export * from './JsonTree';
-export * from './JsonTree.types';
-export * from './JsonTreeToolbar';
-export * from './JsonTypeBadge';

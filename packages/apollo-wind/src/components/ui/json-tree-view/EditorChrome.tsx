@@ -1,6 +1,7 @@
-import { Button, cn } from '@uipath/apollo-wind';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib';
 import { useEffect, useRef } from 'react';
-import { useSafeLingui } from '../../../i18n';
+import { useJsonTreeViewStrings } from './strings';
 
 /** Apply/Cancel row shared by the multiline editors. */
 export function EditorActions({
@@ -12,14 +13,14 @@ export function EditorActions({
   onCancel: () => void;
   applyDisabled?: boolean;
 }) {
-  const { _ } = useSafeLingui();
+  const strings = useJsonTreeViewStrings();
   return (
     <div className="flex items-center gap-1.5">
       <Button size="3xs" onClick={onApply} disabled={applyDisabled}>
-        {_({ id: 'canvas.json_value_panel.apply', message: 'Apply' })}
+        {strings.apply}
       </Button>
       <Button size="3xs" variant="ghost" onClick={onCancel}>
-        {_({ id: 'canvas.json_value_panel.cancel', message: 'Cancel' })}
+        {strings.cancel}
       </Button>
     </div>
   );
