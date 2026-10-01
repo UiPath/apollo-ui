@@ -82,8 +82,22 @@ const PairFields = ({ pair }: { pair: EvaluationPair }) => {
   );
 };
 
-/** One run's summary prose, or a "no counterpart" chip for a one-sided pair. */
-const SummarySide = ({ view }: { view: EvaluationView | null }) => {
+/** One run's summary prose under its run label, or a "no counterpart" chip
+ * for a one-sided pair. */
+const SummarySide = ({
+  label,
+  view,
+}: {
+  label: string;
+  view: EvaluationView | null;
+}) => (
+  <div className="flex min-w-0 flex-col gap-1">
+    <span className="text-xs text-muted-foreground">{label}</span>
+    <SummaryCard view={view} />
+  </div>
+);
+
+const SummaryCard = ({ view }: { view: EvaluationView | null }) => {
   const { t } = useTranslation();
   if (!view) {
     return (
@@ -148,8 +162,8 @@ const SummaryComparison = ({ pair }: { pair: EvaluationPair }) => {
         )}
       </div>
       <div className="grid grid-cols-2 gap-3">
-        <SummarySide view={pair.expected} />
-        <SummarySide view={pair.actual} />
+        <SummarySide label={t("compare_baseline")} view={pair.expected} />
+        <SummarySide label={t("compare_new_run")} view={pair.actual} />
       </div>
       {pair.summary_deltas.length > 0 && (
         <div className="rounded-md border border-warning/40 bg-warning/10 p-3">

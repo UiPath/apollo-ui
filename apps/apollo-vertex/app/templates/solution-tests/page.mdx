@@ -140,9 +140,9 @@ generic card or a JSON panel.
 | `uipath-pe-case-evaluation`                    | Per policy: outcome, confidence and decision-model version, then both summaries with the judge's semantic deltas |
 
 A vertical adds its own through `config.evaluatorRenderers`. `makeRenderer`
-binds a zod schema to a component, and details that fail the schema fall back
-to the generic card. `genericRenderer({ label })` reuses the generic card
-under a friendlier name.
+binds a zod schema to a component; details that fail the schema render
+nothing. `genericRenderer({ label })` reuses the generic card under a
+friendlier name.
 
 **Output renderers** are keyed by stable agent id or process name, since only
 the vertical knows which agent is which. Bind the shipped ones in
