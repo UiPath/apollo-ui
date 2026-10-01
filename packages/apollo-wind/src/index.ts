@@ -577,6 +577,12 @@ export {
   TooltipTrigger,
 } from './components/ui/tooltip';
 export type {
+  FileTreeViewIconMap,
+  FileTreeViewItem,
+  FileTreeViewItemAction,
+  FileTreeViewMenuItem,
+  FileTreeViewProps,
+  FileTreeViewSelectionMode,
   TreeViewIconMap,
   TreeViewItem,
   TreeViewItemAction,
@@ -584,7 +590,7 @@ export type {
   TreeViewProps,
   TreeViewSelectionMode,
 } from './components/ui/tree-view';
-export { default as TreeView } from './components/ui/tree-view';
+export { default as FileTreeView, TreeView } from './components/ui/tree-view';
 export type {
   VariablePickerContentProps,
   VariablePickerItem,

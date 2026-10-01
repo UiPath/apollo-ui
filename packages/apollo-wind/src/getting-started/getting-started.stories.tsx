@@ -402,7 +402,7 @@ const components = [
   { category: 'Navigation', name: 'Breadcrumb', description: 'Hierarchical location trail' },
   { category: 'Navigation', name: 'Pagination', description: 'Page navigation controls' },
   { category: 'Navigation', name: 'Accordion', description: 'Collapsible content sections' },
-  { category: 'Navigation', name: 'TreeView', description: 'Hierarchical item tree' },
+  { category: 'Navigation', name: 'FileTreeView', description: 'Hierarchical file tree' },
   { category: 'Overlays', name: 'Dialog', description: 'Modal overlay' },
   { category: 'Overlays', name: 'Sheet', description: 'Slide-in side panel' },
   { category: 'Overlays', name: 'AlertDialog', description: 'Confirmation dialog' },

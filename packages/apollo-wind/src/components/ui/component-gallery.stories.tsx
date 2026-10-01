@@ -758,9 +758,9 @@ const components: ComponentInfo[] = [
     ),
   },
   {
-    name: 'Tree View',
+    name: 'Tree View (Files)',
     description: 'Hierarchical tree with expand, search, selection',
-    storyPath: 'components-data-display-tree-view--docs',
+    storyPath: 'components-data-display-tree-view-files--docs',
     category: Category.DataDisplay,
     preview: (
       <div className="w-full space-y-1 text-xs">

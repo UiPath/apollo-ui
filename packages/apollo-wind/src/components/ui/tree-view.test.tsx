@@ -1,9 +1,10 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
-import TreeView, { type TreeViewItem } from './tree-view';
+import { FileTreeView as PublicFileTreeView, TreeView } from '@/index';
+import FileTreeView, { type FileTreeViewItem } from './tree-view';
 
-const tree: TreeViewItem[] = [
+const tree: FileTreeViewItem[] = [
   {
     id: 'root',
     name: 'Root',
@@ -12,13 +13,20 @@ const tree: TreeViewItem[] = [
   },
 ];
 
-describe('TreeView', () => {
+describe('FileTreeView', () => {
   it('renders children through AnimatePresence after expansion', async () => {
     const user = userEvent.setup();
-    render(<TreeView data={tree} title="Files" />);
+    render(<FileTreeView data={tree} title="Files" />);
 
     expect(screen.queryByText('Child')).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Expand' }));
     expect(await screen.findByText('Child')).toBeInTheDocument();
+  });
+
+  it('keeps the deprecated TreeView export working', () => {
+    expect(TreeView).toBe(PublicFileTreeView);
+    expect(PublicFileTreeView).toBe(FileTreeView);
+    render(<TreeView data={tree} title="Files" />);
+    expect(screen.getByText('Root')).toBeInTheDocument();
   });
 });

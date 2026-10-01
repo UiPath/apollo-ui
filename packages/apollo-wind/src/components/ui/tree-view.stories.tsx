@@ -1,14 +1,14 @@
 import type { Meta } from '@storybook/react-vite';
 import { Folder, File, Globe, Pencil } from 'lucide-react';
-import TreeView, {
-  type TreeViewItem,
-  type TreeViewIconMap,
-  type TreeViewMenuItem,
+import FileTreeView, {
+  type FileTreeViewItem,
+  type FileTreeViewIconMap,
+  type FileTreeViewMenuItem,
 } from './tree-view';
 
-const meta: Meta<typeof TreeView> = {
-  title: 'Components/Data Display/Tree View',
-  component: TreeView,
+const meta: Meta<typeof FileTreeView> = {
+  title: 'Components/Data Display/Tree View (Files)',
+  component: FileTreeView,
   tags: ['autodocs'],
   parameters: {
     layout: 'centered',
@@ -53,7 +53,7 @@ The tree uses a fixed vertical layout: **Title** → **Search bar** (full width)
 
 export default meta;
 
-const sampleData: TreeViewItem[] = [
+const sampleData: FileTreeViewItem[] = [
   {
     id: '1',
     name: 'Root',
@@ -88,7 +88,7 @@ const sampleData: TreeViewItem[] = [
   },
 ];
 
-const iconMap: TreeViewIconMap = {
+const iconMap: FileTreeViewIconMap = {
   region: <Globe className="h-4 w-4 text-muted-foreground" />,
   store: <Folder className="h-4 w-4 text-primary/80" />,
   department: <Folder className="h-4 w-4 text-primary/60" />,
@@ -104,7 +104,7 @@ export const Basic = {
   parameters: {
     docs: { description: { story: 'Default tree with expand/collapse and search.' } },
   },
-  render: () => <TreeView data={sampleData} title="File Explorer" iconMap={iconMap} />,
+  render: () => <FileTreeView data={sampleData} title="File Explorer" iconMap={iconMap} />,
 };
 
 // ============================================================================
@@ -119,7 +119,7 @@ export const WithCheckboxes = {
     },
   },
   render: () => (
-    <TreeView
+    <FileTreeView
       data={sampleData}
       title="Select Items"
       showCheckboxes
@@ -135,7 +135,7 @@ export const WithCheckboxes = {
 // With Disabled Items, Badges, Meta, and Actions
 // ============================================================================
 
-const sampleDataWithFeatures: TreeViewItem[] = [
+const sampleDataWithFeatures: FileTreeViewItem[] = [
   {
     id: '1',
     name: 'Root',
@@ -189,7 +189,7 @@ export const WithDisabledBadgesMetaAndActions = {
     },
   },
   render: () => (
-    <TreeView
+    <FileTreeView
       data={sampleDataWithFeatures}
       title="Feature showcase"
       iconMap={iconMap}
@@ -208,7 +208,7 @@ export const SingleSelectionMode = {
     docs: { description: { story: 'Only one item can be selected at a time.' } },
   },
   render: () => (
-    <TreeView
+    <FileTreeView
       data={sampleData}
       title="Single selection only"
       iconMap={iconMap}
@@ -228,7 +228,7 @@ export const NoSelectionMode = {
     docs: { description: { story: 'Expand/collapse only; no selection or selection UI.' } },
   },
   render: () => (
-    <TreeView
+    <FileTreeView
       data={sampleData}
       title="Expand/collapse only"
       iconMap={iconMap}
@@ -247,7 +247,7 @@ export const WithContextMenu = {
     docs: { description: { story: 'Right-click for custom context menu actions.' } },
   },
   render: () => {
-    const menuItems: TreeViewMenuItem[] = [
+    const menuItems: FileTreeViewMenuItem[] = [
       {
         id: 'open',
         label: 'Open',
@@ -269,7 +269,7 @@ export const WithContextMenu = {
     ];
 
     return (
-      <TreeView
+      <FileTreeView
         data={sampleData}
         title="Right-click for menu"
         iconMap={iconMap}
