@@ -16,6 +16,7 @@ import {
   type AgentFlowResourceNode,
   type AgentFlowResourceNodeData,
   type AgentNodeTranslations,
+  type CanvasTranslations,
   DefaultAgentNodeTranslations,
   DefaultCanvasTranslations,
   DefaultResourceNodeTranslations,
@@ -628,12 +629,15 @@ const AgentFlowInner = memo(
     const showModeToolbar =
       hasToolbarItems && (!!isRunning || !suggestionGroup?.suggestions.length);
     const translations = canvasTranslations ?? DefaultCanvasTranslations;
-    // The newer toolbar labels are optional on CanvasTranslations, so fall back to
-    // the defaults per field for consumers that supply the previous translation shape.
-    const undoLabel = translations.undo ?? DefaultCanvasTranslations.undo;
-    const redoLabel = translations.redo ?? DefaultCanvasTranslations.redo;
-    const runLabel = translations.run ?? DefaultCanvasTranslations.run;
-    const stopLabel = translations.stop ?? DefaultCanvasTranslations.stop;
+    // The newer toolbar labels are optional on CanvasTranslations, so fall back per
+    // field for consumers that supply the previous translation shape. DefaultCanvasTranslations
+    // defines every field; cast locally to read them as definite strings without widening
+    // the public export type.
+    const defaults = DefaultCanvasTranslations as Required<CanvasTranslations>;
+    const undoLabel = translations.undo ?? defaults.undo;
+    const redoLabel = translations.redo ?? defaults.redo;
+    const runLabel = translations.run ?? defaults.run;
+    const stopLabel = translations.stop ?? defaults.stop;
 
     return (
       <Column w="100%" h="100%" style={{ touchAction: 'none' }}>
