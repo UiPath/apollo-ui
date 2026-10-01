@@ -2,7 +2,6 @@ import { formatTemplate } from '@uipath/apollo-wind';
 import type { CustomValueType, FieldMetadata, FormSchema } from '@uipath/apollo-wind';
 import type { GuardrailValidatorFormLabels } from './i18n';
 import type { GuardrailParameterDefinition, GuardrailValidatorParameter } from './types';
-import { getValidatedBounds } from './utils';
 
 /** Registered custom-component names for the parameter editors that stay guardrail-owned. */
 export const GUARDRAIL_ENUM_LIST_CHIPS_COMPONENT = 'guardrail-enum-list-chips';
@@ -51,14 +50,13 @@ function buildFieldValidation(
     messages.required = labels.requiredError;
   }
   if (def.type === 'number') {
-    const { min, max } = getValidatedBounds(def);
-    if (min != null) {
-      validation.min = min;
-      messages.min = formatTemplate(labels.minError, { min: String(min) });
+    if (def.min != null) {
+      validation.min = def.min;
+      messages.min = formatTemplate(labels.minError, { min: String(def.min) });
     }
-    if (max != null) {
-      validation.max = max;
-      messages.max = formatTemplate(labels.maxError, { max: String(max) });
+    if (def.max != null) {
+      validation.max = def.max;
+      messages.max = formatTemplate(labels.maxError, { max: String(def.max) });
     }
   }
 

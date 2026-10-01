@@ -214,14 +214,12 @@ describe('enrichGuardrailDefinitions', () => {
         min: 0,
         max: 1,
         step: 0.1,
-        inputOnlyBounds: ['min', 'max'],
       });
       // `null` is the wire's other way of sending no bound.
       expect(harmfulContentThresholds({ min: null, max: null })).toMatchObject({
         min: 0,
         max: 1,
         step: 0.1,
-        inputOnlyBounds: ['min', 'max'],
       });
     });
 
@@ -229,20 +227,11 @@ describe('enrichGuardrailDefinitions', () => {
       const thresholds = param(enrichOne(HARMFUL_CONTENT_WIRE), 'harmfulContentEntityThresholds');
 
       expect(thresholds).toMatchObject({ min: 0, max: 6, step: 2 });
-      expect(thresholds).not.toHaveProperty('inputOnlyBounds');
     });
 
     it('defaults each missing map-enum bound on its own', () => {
-      expect(harmfulContentThresholds({ min: 0.2 })).toMatchObject({
-        min: 0.2,
-        max: 1,
-        inputOnlyBounds: ['max'],
-      });
-      expect(harmfulContentThresholds({ max: 6 })).toMatchObject({
-        min: 0,
-        max: 6,
-        inputOnlyBounds: ['min'],
-      });
+      expect(harmfulContentThresholds({ min: 0.2 })).toMatchObject({ min: 0.2, max: 1 });
+      expect(harmfulContentThresholds({ max: 6 })).toMatchObject({ min: 0, max: 6 });
     });
 
     it('copies number, text and text-list constraints only when present', () => {
@@ -254,10 +243,10 @@ describe('enrichGuardrailDefinitions', () => {
       expect(param(enrichOne(UNCURATED_WIRE), 'maxDriftScore')).not.toHaveProperty('min');
     });
 
-    it('range-checks only the map-enum bounds the backend sent', () => {
-      // `getOutOfRangeParameterIds` checks map rows and the builder gates Save on it. Both
-      // legacy editors used their 0..1 default for the spinner arrows alone, so a defaulted
-      // bound must not block a save: a BYO map can sit on a scale nobody published.
+    it('range-checks defaulted map-enum bounds like the ones the backend sends', () => {
+      // `getOutOfRangeParameterIds` checks map rows and the builder gates Save on it. Legacy
+      // used its 0..1 default for the spinner arrows alone; here a typed threshold outside it
+      // is reported, so it cannot save.
       const outOfRange = (
         definition: GuardrailParameterDefinition,
         value: Record<string, number>
@@ -267,15 +256,16 @@ describe('enrichGuardrailDefinitions', () => {
           [{ $parameterType: 'map-enum', id: definition.id, value }]
         );
 
-      expect(
-        outOfRange(param(enrichOne(PII_DETECTION_WIRE), 'entityThresholds'), { Email: 1.5 })
-      ).toEqual([]);
-      expect(outOfRange(harmfulContentThresholds({}), { Hate: -3 })).toEqual([]);
+      const pii = param(enrichOne(PII_DETECTION_WIRE), 'entityThresholds');
+      expect(outOfRange(pii, { Email: 14 })).toEqual(['entityThresholds']);
+      expect(outOfRange(pii, { Email: -0.1 })).toEqual(['entityThresholds']);
+      expect(outOfRange(pii, { Email: 0, CreditCardNumber: 1 })).toEqual([]);
 
-      // A stated bound still reports, including next to a defaulted one.
+      // A wire bound next to a defaulted one: both are checked.
       const minOnly = harmfulContentThresholds({ min: 0.2 });
       expect(outOfRange(minOnly, { Hate: 0.1 })).toEqual(['harmfulContentEntityThresholds']);
-      expect(outOfRange(minOnly, { Hate: 5 })).toEqual([]);
+      expect(outOfRange(minOnly, { Hate: 5 })).toEqual(['harmfulContentEntityThresholds']);
+      expect(outOfRange(minOnly, { Hate: 0.5 })).toEqual([]);
       expect(
         outOfRange(param(enrichOne(HARMFUL_CONTENT_WIRE), 'harmfulContentEntityThresholds'), {
           Hate: 8,

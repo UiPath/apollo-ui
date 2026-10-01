@@ -93,13 +93,13 @@ cache rather than adopting a second one, and it is why the hook stays a `useStat
   is React-free, so non-React and bridge callers use it directly.
   `EnrichedGuardrailDefinition extends GuardrailDefinition`, so its output feeds
   `GuardrailBuilder` with no mapping.
-- **A threshold map without bounds gets 0..1, step 0.1, for the input only.** A `map-enum`
-  whose `min` / `max` / `step` the wire omits gets `0` / `1` / `0.1`, as both products' legacy
-  editors did, and wire values win. Each defaulted bound is listed in the parameter's
-  `inputOnlyBounds`, so it limits the spinner arrows but neither the form's resolver nor
-  `getOutOfRangeParameterIds` checks it. Legacy never blocked a save on it, and a BYO map can sit
-  on a scale nobody published. Bounds the backend sends are enforced as before, and `number`
-  parameters get only what the wire states.
+- **A threshold map without bounds gets 0..1, step 0.1.** A `map-enum` whose `min` / `max` /
+  `step` the wire omits gets `0` / `1` / `0.1`, as both products' legacy editors did, and wire
+  values win. The defaults are enforced like bounds the backend sends:
+  `getOutOfRangeParameterIds` reports a row outside them, so `GuardrailBuilder` blocks Save on a
+  typed threshold above 1 or below 0. Legacy only limited the spinner arrows, so this is
+  stricter on purpose. A map on another scale (a BYO manifest, say) has to send its own bounds.
+  `number` parameters get only what the wire states.
 - **Context and `hiddenValidators` are compared by content, not identity**, so a host can
   build them inline. (`useDiscoveryModels` compares the context by identity; an inline object
   there refetches on every render and never settles.) `options.definitions` is the exception,
@@ -1032,9 +1032,7 @@ state and exposes a plugin seam, so the translation lives in one named place,
 - **Fully controlled values; validation is shared.** The host owns values (`parameters` +
   `onChange`). Validation runs on both sides, and the split is deliberate:
   - *The form* declares `required`/`min`/`max` from the parameter definitions and its resolver
-    evaluates them, with messages from the label catalog so they translate. Bounds a definition
-    lists in `inputOnlyBounds` only reach the input, here and in `getOutOfRangeParameterIds`
-    alike. A field can
+    evaluates them, with messages from the label catalog so they translate. A field can
     therefore show an error with no `errors` entry at all. **When** it reports is `validateLive`:
     on by default, since a host mounting `GuardrailValidatorForm` standalone has no save of its
     own and nothing else would validate. `GuardrailBuilder` passes its own post-save-attempt

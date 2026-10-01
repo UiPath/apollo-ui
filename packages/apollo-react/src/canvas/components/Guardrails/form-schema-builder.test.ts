@@ -62,21 +62,6 @@ describe('buildGuardrailFormSchema', () => {
     expect(field).toMatchObject({ type: 'number', min: 0, max: 1, step: 0.1, defaultValue: 0 });
   });
 
-  it('validates number bounds except the input-only ones, which still reach the input', () => {
-    const field = fieldFor({
-      id: 'n',
-      type: 'number',
-      label: 'N',
-      required: false,
-      defaultValue: 0.5,
-      min: 0,
-      max: 1,
-      inputOnlyBounds: ['max'],
-    });
-    expect(field).toMatchObject({ type: 'number', min: 0, max: 1 });
-    expect(field.validation).toEqual({ min: 0, messages: { min: 'Must be at least 0' } });
-  });
-
   it('maps text -> textarea with minRows and maxLength', () => {
     const field = fieldFor({
       id: 't',

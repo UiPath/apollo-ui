@@ -887,8 +887,8 @@ describe('GuardrailBuilder', () => {
     });
   });
 
-  // Enrichment defaults 0..1 step 0.1 onto a threshold map the backend sends unbounded. Both
-  // legacy editors used it for the spinner arrows only, so a typed value outside it saves.
+  // Enrichment defaults 0..1 step 0.1 onto a threshold map the backend sends unbounded, and the
+  // Save gate enforces it like a bound the backend sent.
   describe('threshold map bounds from the definitions layer', () => {
     function renderEnriched(wire: GuardrailDefinitionWire, entity: string, value: number) {
       const [definition] = enrichGuardrailDefinitions([wire]);
@@ -918,26 +918,31 @@ describe('GuardrailBuilder', () => {
       return onSave;
     }
 
-    it('limits the arrows to the defaulted 0..1 but saves a value typed past it', () => {
+    it('blocks Save on a threshold typed past the defaulted 0..1, then saves a valid one', () => {
       const onSave = renderEnriched(PII_DETECTION_WIRE, 'Email', 0.8);
       const input = screen.getByRole('spinbutton');
       expect(input).toHaveAttribute('min', '0');
       expect(input).toHaveAttribute('max', '1');
       expect(input).toHaveAttribute('step', '0.1');
 
-      fireEvent.change(input, { target: { value: '1.5' } });
+      fireEvent.change(input, { target: { value: '14' } });
       fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
 
-      expect(screen.queryByText('Value is out of range')).not.toBeInTheDocument();
+      expect(onSave).not.toHaveBeenCalled();
+      expect(screen.getAllByText('Value is out of range').length).toBeGreaterThan(0);
+
+      fireEvent.change(input, { target: { value: '0.9' } });
+      fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
+
       const saved = onSave.mock.calls[0]?.[0] as GuardrailBuilderValue;
       expect(saved.validatorParameters).toContainEqual({
         $parameterType: 'map-enum',
         id: 'entityThresholds',
-        value: { Email: 1.5 },
+        value: { Email: 0.9 },
       });
     });
 
-    it('still blocks Save on a bound the backend sent', () => {
+    it('blocks Save on a bound the backend sent', () => {
       const onSave = renderEnriched(HARMFUL_CONTENT_WIRE, 'Hate', 2);
 
       fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '8' } });
