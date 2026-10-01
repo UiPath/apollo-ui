@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { BaselineCompare } from "../../baseline-compare";
+import { EMPTY_VALUE } from "../../constants";
 import type { EvaluatorResultProps } from "../registry";
 import {
   type CaseEvaluationDetails,
@@ -189,7 +190,7 @@ const PairRow = ({ pair }: { pair: EvaluationPair }) => {
         <span className="font-semibold text-muted-foreground">
           {t("pe_eval_policy")}
         </span>
-        <span className="font-mono">{pair.policy_id || "—"}</span>
+        <span className="font-mono">{pair.policy_id || EMPTY_VALUE}</span>
         {oneSided && (
           <Badge status="error" variant="secondary">
             {t(

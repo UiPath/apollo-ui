@@ -23,7 +23,13 @@ export const VersionDeltaGlyph = ({
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <button type="button" aria-label={label} className="text-foreground">
+        <button
+          type="button"
+          aria-label={label}
+          className="text-foreground"
+          // Inspecting the delta must not trigger an enclosing row's action.
+          onClick={(e) => e.stopPropagation()}
+        >
           {direction > 0 ? "▲" : "▼"}
         </button>
       </TooltipTrigger>
