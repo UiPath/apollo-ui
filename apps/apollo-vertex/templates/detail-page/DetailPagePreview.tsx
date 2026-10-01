@@ -1,21 +1,6 @@
 "use client";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import {
-  createMemoryHistory,
-  createRootRoute,
-  createRoute,
-  createRouter,
-  Outlet,
-  RouterProvider,
-} from "@tanstack/react-router";
-import {
-  BarChart3,
-  FolderOpen,
-  Home,
-  SlidersHorizontal,
-  X,
-} from "lucide-react";
+import { SlidersHorizontal, X } from "lucide-react";
 import {
   type CSSProperties,
   createContext,
@@ -26,7 +11,7 @@ import {
 } from "react";
 import { Button } from "@/components/ui/button";
 import { SIDE_PANEL_TINT_STRENGTH } from "@/lib/composition";
-import { ApolloShell, type ShellNavItem } from "@/registry/shell/shell";
+import { PreviewShell } from "@/templates/shell/PreviewShell";
 import { DetailPageExample } from "./DetailPageExample";
 import type { PanelSide } from "./detail-page.template";
 import { PreviewControlBar } from "./PreviewControlBar";
@@ -45,35 +30,9 @@ interface PreviewContextValue {
 
 const PREVIEW_PATH = "/preview/detail-page";
 
-const navItems: ShellNavItem[] = [
-  { path: `${PREVIEW_PATH}/home`, label: "dashboard", icon: Home },
-  { path: PREVIEW_PATH, label: "projects", icon: FolderOpen },
-  { path: `${PREVIEW_PATH}/analytics`, label: "analytics", icon: BarChart3 },
-];
-
-// The router renders outside the preview's own tree, so settings reach the
-// route through context.
+// The page renders inside the shell's router, so settings reach it through
+// context.
 const PreviewContext = createContext<PreviewContextValue | null>(null);
-
-function PreviewShell() {
-  const settings =
-    useContext(PreviewContext)?.settings ?? DEFAULT_PREVIEW_SETTINGS;
-  return (
-    <ApolloShell
-      companyName="UiPath"
-      productName="Apollo Vertex"
-      companyLogo={{
-        url: "/UiPath.svg",
-        darkUrl: "/UiPath_dark.svg",
-        alt: "UiPath logo",
-      }}
-      {...(settings.shellVariant === "minimal" && { variant: "minimal" })}
-      navItems={navItems}
-    >
-      <Outlet />
-    </ApolloShell>
-  );
-}
 
 function PreviewPage() {
   const preview = useContext(PreviewContext);
@@ -86,24 +45,6 @@ function PreviewPage() {
       scrolls={preview.settings.scrolls}
     />
   );
-}
-
-// Every path renders the same page, so nav clicks stay on the preview.
-const rootRoute = createRootRoute({ component: PreviewShell });
-const catchAllRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "$",
-  component: PreviewPage,
-});
-const routeTree = rootRoute.addChildren([catchAllRoute]);
-
-const queryClient = new QueryClient();
-
-function createPreviewRouter() {
-  return createRouter({
-    routeTree,
-    history: createMemoryHistory({ initialEntries: [PREVIEW_PATH] }),
-  });
 }
 
 const CONFIG_CARD_ID = "detail-page-preview-config";
@@ -120,7 +61,6 @@ interface DetailPagePreviewProps {
 export function DetailPagePreview({
   embedded = false,
 }: DetailPagePreviewProps) {
-  const [router] = useState(createPreviewRouter);
   // The preview only renders client-side, so the URL is readable up front.
   const [settings, setSettings] = useState<PreviewSettings>(() =>
     embedded
@@ -221,11 +161,13 @@ export function DetailPagePreview({
   };
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <>
       {/* Scopes the tint override to the preview; `contents` adds no box. */}
       <div className="contents" style={tintStyle}>
         <PreviewContext.Provider value={{ settings, detailPage }}>
-          <RouterProvider router={router} />
+          <PreviewShell variant={settings.shellVariant} basePath={PREVIEW_PATH}>
+            <PreviewPage />
+          </PreviewShell>
         </PreviewContext.Provider>
       </div>
       {!embedded && (
@@ -258,6 +200,6 @@ export function DetailPagePreview({
           </Button>
         </div>
       )}
-    </QueryClientProvider>
+    </>
   );
 }
