@@ -1,3 +1,14 @@
+## [@uipath/apollo-react-v6.66.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.65.1...@uipath/apollo-react@6.66.0) (2026-10-01)
+
+### Features
+
+* **apollo-react:** show what each guardrail validator reads from files [AL-602] ([55eec07](https://github.com/UiPath/apollo-ui/commit/55eec076557181152801f76040b48a61c21f3c22))
+
+### Bug Fixes
+
+* **apollo-react:** let a host rename one file-format label alone [AL-602] ([5ce14ff](https://github.com/UiPath/apollo-ui/commit/5ce14ffa9f81371a93263c305ab3f5288b7c7e0c))
+* **apollo-react:** show file support for a validator with no parameters left [AL-602] ([55d0979](https://github.com/UiPath/apollo-ui/commit/55d097964bf5586cee8cbcf0c2891f0c302d5ad0))
+
 ## [@uipath/apollo-react-v6.65.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.65.0...@uipath/apollo-react@6.65.1) (2026-10-01)
 
 ### Bug Fixes
