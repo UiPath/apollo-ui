@@ -173,6 +173,31 @@ export function dropEmptyOptionalParameters(
   });
 }
 
+interface ValidatedBounds {
+  min?: number;
+  max?: number;
+}
+
+/**
+ * The `min` / `max` a range check enforces: the definition's own, minus any it lists in
+ * `inputOnlyBounds`. Shared by `getOutOfRangeParameterIds` and the form schema's validation, so
+ * the two agree on which bounds count.
+ *
+ * @internal
+ */
+export function getValidatedBounds(
+  paramDef: Pick<GuardrailParameterDefinition, 'min' | 'max' | 'inputOnlyBounds'>
+): ValidatedBounds {
+  const bounds: ValidatedBounds = {};
+  if (paramDef.min != null && !paramDef.inputOnlyBounds?.includes('min')) {
+    bounds.min = paramDef.min;
+  }
+  if (paramDef.max != null && !paramDef.inputOnlyBounds?.includes('max')) {
+    bounds.max = paramDef.max;
+  }
+  return bounds;
+}
+
 /**
  * Ids of parameters whose value falls outside the definition's `min`/`max`.
  *
@@ -185,24 +210,27 @@ export function dropEmptyOptionalParameters(
  * edited as a number), and checking only the scalar let an out-of-range map threshold through.
  * A map is reported once, by parameter id, however many of its rows are out of range — the id
  * is what a host maps to an error message.
+ *
+ * Bounds listed in `inputOnlyBounds` are skipped, such as the 0..1 `enrichGuardrailDefinitions`
+ * defaults onto a threshold map the backend sent unbounded.
  */
 export function getOutOfRangeParameterIds(
   definitions: readonly GuardrailParameterDefinition[],
   parameters: readonly GuardrailValidatorParameter[]
 ): string[] {
-  const isOutOfRange = (value: number, paramDef: GuardrailParameterDefinition) =>
-    (paramDef.min != null && value < paramDef.min) ||
-    (paramDef.max != null && value > paramDef.max);
+  const isOutOfRange = (value: number, { min, max }: ValidatedBounds) =>
+    (min != null && value < min) || (max != null && value > max);
 
   const ids: string[] = [];
   for (const paramDef of definitions) {
     if (paramDef.type !== 'number' && paramDef.type !== 'map-enum') continue;
-    if (paramDef.min == null && paramDef.max == null) continue;
+    const bounds = getValidatedBounds(paramDef);
+    if (bounds.min == null && bounds.max == null) continue;
     const value = parameters.find((p) => p.id === paramDef.id)?.value;
 
     if (paramDef.type === 'number') {
       if (typeof value !== 'number' || Number.isNaN(value)) continue;
-      if (isOutOfRange(value, paramDef)) ids.push(paramDef.id);
+      if (isOutOfRange(value, bounds)) ids.push(paramDef.id);
       continue;
     }
 
@@ -210,8 +238,7 @@ export function getOutOfRangeParameterIds(
     const entries = Object.values(value as Record<string, unknown>);
     if (
       entries.some(
-        (entry) =>
-          typeof entry === 'number' && !Number.isNaN(entry) && isOutOfRange(entry, paramDef)
+        (entry) => typeof entry === 'number' && !Number.isNaN(entry) && isOutOfRange(entry, bounds)
       )
     ) {
       ids.push(paramDef.id);

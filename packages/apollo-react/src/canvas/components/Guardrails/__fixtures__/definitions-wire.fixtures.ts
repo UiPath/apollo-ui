@@ -49,8 +49,8 @@ export const PII_DETECTION_WIRE: GuardrailDefinitionWire = {
       options: PII_ENTITY_OPTIONS,
     },
     {
-      // The backend omits the bounds here, and enrichment leaves them off: only `step` is
-      // defaulted. See the map-enum branch in `definitions-enrich.ts`.
+      // The backend omits the bounds here, and enrichment defaults 0..1 step 0.1 for the input
+      // only. See the map-enum branch in `definitions-enrich.ts`.
       id: 'entityThresholds',
       type: 'map-enum',
       required: false,

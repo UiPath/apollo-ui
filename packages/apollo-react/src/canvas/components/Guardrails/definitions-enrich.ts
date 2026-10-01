@@ -159,16 +159,19 @@ function toParameterDefinition(
     case 'enum-list':
       definition.options = param.options;
       break;
-    case 'map-enum':
+    case 'map-enum': {
       definition.keySource = param.keySource;
-      // Bounds only when the backend states them: `getOutOfRangeParameterIds` range-checks
-      // map rows and hosts gate Save on it, so an invented bound would reject a threshold on
-      // a scale nobody published. `step` stays a hint (nothing enforces it) but is defaulted,
-      // or the row spinners step by 1 through a 0..1 score.
-      if (param.min != null) definition.min = param.min;
-      if (param.max != null) definition.max = param.max;
+      // A threshold map the backend leaves unbounded (PII's `entityThresholds`) gets 0..1 step
+      // 0.1, as both legacy editors gave it; wire values win. A defaulted bound is input-only:
+      // legacy limited the spinner arrows with it and nothing else, and enforcing it would block
+      // Save on a threshold the backend never bounded (a BYO map on its own scale).
+      definition.min = param.min ?? 0;
+      definition.max = param.max ?? 1;
       definition.step = param.step ?? 0.1;
+      const inputOnlyBounds = (['min', 'max'] as const).filter((bound) => param[bound] == null);
+      if (inputOnlyBounds.length > 0) definition.inputOnlyBounds = inputOnlyBounds;
       break;
+    }
     case 'number':
       if (param.min != null) definition.min = param.min;
       if (param.max != null) definition.max = param.max;

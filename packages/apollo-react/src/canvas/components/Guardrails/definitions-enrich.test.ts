@@ -17,7 +17,8 @@ import {
   withGuardrailFolderMetadata,
 } from './definitions-enrich';
 import type { GuardrailDefinitionWire } from './definitions-wire';
-import { getOutOfRangeParameterIds, seedGuardrailParameters } from './utils';
+import type { GuardrailParameterDefinition } from './types';
+import { getOutOfRangeParameterIds } from './utils';
 
 function enrichOne(wire: GuardrailDefinitionWire, copy?: GuardrailCopyTable) {
   const [definition] = enrichGuardrailDefinitions([wire], copy ? { copy } : undefined);
@@ -194,20 +195,54 @@ describe('enrichGuardrailDefinitions', () => {
   });
 
   describe('parameter constraints', () => {
-    it('gives an unbounded map-enum a step but no bounds', () => {
-      const thresholds = param(enrichOne(PII_DETECTION_WIRE), 'entityThresholds');
+    // Harmful content's threshold map with the wire's bounds and step replaced by `bounds`.
+    function harmfulContentThresholds(bounds: { min?: number | null; max?: number | null }) {
+      const wire: GuardrailDefinitionWire = {
+        ...HARMFUL_CONTENT_WIRE,
+        parameters: HARMFUL_CONTENT_WIRE.parameters.map((p) =>
+          p.id === 'harmfulContentEntityThresholds'
+            ? { ...p, min: undefined, max: undefined, step: undefined, ...bounds }
+            : p
+        ),
+      };
+      return param(enrichOne(wire), 'harmfulContentEntityThresholds');
+    }
 
-      expect(thresholds).toMatchObject({ keySource: 'entities', step: 0.1 });
-      // 0..1 used to be synthesized here from PII detection's confidence range. See the
-      // range-check test below for why a bound nobody states is no longer safe to invent.
-      expect(thresholds).not.toHaveProperty('min');
-      expect(thresholds).not.toHaveProperty('max');
+    it('defaults an unbounded map-enum to 0..1 step 0.1, as both legacy editors did', () => {
+      expect(param(enrichOne(PII_DETECTION_WIRE), 'entityThresholds')).toMatchObject({
+        keySource: 'entities',
+        min: 0,
+        max: 1,
+        step: 0.1,
+        inputOnlyBounds: ['min', 'max'],
+      });
+      // `null` is the wire's other way of sending no bound.
+      expect(harmfulContentThresholds({ min: null, max: null })).toMatchObject({
+        min: 0,
+        max: 1,
+        step: 0.1,
+        inputOnlyBounds: ['min', 'max'],
+      });
     });
 
     it('keeps map-enum bounds the backend does send', () => {
       const thresholds = param(enrichOne(HARMFUL_CONTENT_WIRE), 'harmfulContentEntityThresholds');
 
       expect(thresholds).toMatchObject({ min: 0, max: 6, step: 2 });
+      expect(thresholds).not.toHaveProperty('inputOnlyBounds');
+    });
+
+    it('defaults each missing map-enum bound on its own', () => {
+      expect(harmfulContentThresholds({ min: 0.2 })).toMatchObject({
+        min: 0.2,
+        max: 1,
+        inputOnlyBounds: ['max'],
+      });
+      expect(harmfulContentThresholds({ max: 6 })).toMatchObject({
+        min: 0,
+        max: 6,
+        inputOnlyBounds: ['min'],
+      });
     });
 
     it('copies number, text and text-list constraints only when present', () => {
@@ -219,44 +254,32 @@ describe('enrichGuardrailDefinitions', () => {
       expect(param(enrichOne(UNCURATED_WIRE), 'maxDriftScore')).not.toHaveProperty('min');
     });
 
-    it('invents no map-enum bound for the enforced range check to act on', () => {
-      // #1138 widened `getOutOfRangeParameterIds` from `number` to `map-enum`: a row outside
-      // the parameter's `min`/`max` now reports the id, and hosts gate Save on it. So a bound
-      // this layer invented would block a save over a number the backend never stated. The
-      // unbounded map stays unbounded, and only the backend's own bounds are enforced.
-      const unbounded: GuardrailDefinitionWire = {
-        ...HARMFUL_CONTENT_WIRE,
-        parameters: HARMFUL_CONTENT_WIRE.parameters.map((p) =>
-          p.id === 'harmfulContentEntityThresholds'
-            ? { ...p, min: undefined, max: undefined, step: undefined }
-            : p
-        ),
-      };
+    it('range-checks only the map-enum bounds the backend sent', () => {
+      // `getOutOfRangeParameterIds` checks map rows and the builder gates Save on it. Both
+      // legacy editors used their 0..1 default for the spinner arrows alone, so a defaulted
+      // bound must not block a save: a BYO map can sit on a scale nobody published.
+      const outOfRange = (
+        definition: GuardrailParameterDefinition,
+        value: Record<string, number>
+      ) =>
+        getOutOfRangeParameterIds(
+          [definition],
+          [{ $parameterType: 'map-enum', id: definition.id, value }]
+        );
 
-      for (const wire of [PII_DETECTION_WIRE, unbounded]) {
-        const enriched = enrichOne(wire);
-        expect(
-          getOutOfRangeParameterIds(
-            enriched.parameters,
-            seedGuardrailParameters(enriched.parameters)
-          )
-        ).toEqual([]);
-      }
-
-      // ...and that is because enrichment left the bounds off, not because the check is
-      // blind to map-enum: the same map on the backend's own 0..6 does report.
-      expect(param(enrichOne(unbounded), 'harmfulContentEntityThresholds')).toMatchObject({
-        step: 0.1,
-      });
-      const bounded = enrichOne(HARMFUL_CONTENT_WIRE);
       expect(
-        getOutOfRangeParameterIds(bounded.parameters, [
-          {
-            id: 'harmfulContentEntityThresholds',
-            $parameterType: 'map-enum',
-            value: { Hate: 8 },
-          },
-        ])
+        outOfRange(param(enrichOne(PII_DETECTION_WIRE), 'entityThresholds'), { Email: 1.5 })
+      ).toEqual([]);
+      expect(outOfRange(harmfulContentThresholds({}), { Hate: -3 })).toEqual([]);
+
+      // A stated bound still reports, including next to a defaulted one.
+      const minOnly = harmfulContentThresholds({ min: 0.2 });
+      expect(outOfRange(minOnly, { Hate: 0.1 })).toEqual(['harmfulContentEntityThresholds']);
+      expect(outOfRange(minOnly, { Hate: 5 })).toEqual([]);
+      expect(
+        outOfRange(param(enrichOne(HARMFUL_CONTENT_WIRE), 'harmfulContentEntityThresholds'), {
+          Hate: 8,
+        })
       ).toEqual(['harmfulContentEntityThresholds']);
     });
 

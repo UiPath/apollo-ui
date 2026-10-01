@@ -46,6 +46,13 @@ export interface GuardrailParameterDefinition {
   min?: number;
   max?: number;
   step?: number;
+  /**
+   * Which of `min` / `max` only reach the input (its spinner arrows) and are never validated:
+   * neither the form's resolver nor `getOutOfRangeParameterIds` checks them.
+   * `enrichGuardrailDefinitions` lists the 0..1 it defaults onto a threshold map the backend
+   * sent without bounds, since that is all both legacy editors did with it.
+   */
+  inputOnlyBounds?: readonly ('min' | 'max')[];
   /** For text / text-list: per-item character cap. */
   maxLength?: number;
   /** For text-list: cap on how many entries can be added. */

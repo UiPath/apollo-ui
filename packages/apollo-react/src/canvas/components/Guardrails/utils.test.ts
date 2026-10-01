@@ -378,6 +378,44 @@ describe('getOutOfRangeParameterIds', () => {
       ).toEqual([]);
     });
   });
+
+  describe('input-only bounds', () => {
+    // The 0..1 enrichment defaults onto an unbounded threshold map shapes the spinner only.
+    const hinted = [
+      {
+        id: 'perEntity',
+        type: 'map-enum',
+        label: 'Per entity',
+        required: false,
+        min: 0,
+        max: 1,
+        inputOnlyBounds: ['min', 'max'],
+      },
+      {
+        id: 'threshold',
+        type: 'number',
+        label: 'Threshold',
+        required: false,
+        min: 10,
+        max: 90,
+        inputOnlyBounds: ['max'],
+      },
+    ] as const;
+
+    it('skips the bounds a definition lists and checks the rest', () => {
+      expect(
+        getOutOfRangeParameterIds(hinted as never, [
+          { $parameterType: 'map-enum', id: 'perEntity', value: { Email: -1, Phone: 5 } },
+          { $parameterType: 'number', id: 'threshold', value: 95 },
+        ])
+      ).toEqual([]);
+      expect(
+        getOutOfRangeParameterIds(hinted as never, [
+          { $parameterType: 'number', id: 'threshold', value: 5 },
+        ])
+      ).toEqual(['threshold']);
+    });
+  });
 });
 
 describe('malformed values from the wire', () => {

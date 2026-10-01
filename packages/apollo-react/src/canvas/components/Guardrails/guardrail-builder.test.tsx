@@ -3,11 +3,14 @@ import { TooltipProvider } from '@uipath/apollo-wind';
 import { axe } from 'jest-axe';
 import type { ReactElement } from 'react';
 import { describe, expect, expectTypeOf, it, vi } from 'vitest';
+import { HARMFUL_CONTENT_WIRE, PII_DETECTION_WIRE } from './__fixtures__/definitions-wire.fixtures';
 import type {
   GuardrailBuilderValue,
   GuardrailDefinition,
   GuardrailEscalateRecipient,
 } from './builder-types';
+import { enrichGuardrailDefinitions } from './definitions-enrich';
+import type { GuardrailDefinitionWire } from './definitions-wire';
 import { GuardrailBuilder, type GuardrailBuilderProps } from './guardrail-builder';
 
 // The form renders a radix tooltip for the "Enable for evaluations" info icon, which
@@ -881,6 +884,67 @@ describe('GuardrailBuilder', () => {
 
       fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
       expect(onSave).not.toHaveBeenCalled();
+    });
+  });
+
+  // Enrichment defaults 0..1 step 0.1 onto a threshold map the backend sends unbounded. Both
+  // legacy editors used it for the spinner arrows only, so a typed value outside it saves.
+  describe('threshold map bounds from the definitions layer', () => {
+    function renderEnriched(wire: GuardrailDefinitionWire, entity: string, value: number) {
+      const [definition] = enrichGuardrailDefinitions([wire]);
+      if (!definition) throw new Error('expected one enriched definition');
+      const [entities, thresholds] = definition.parameters;
+      if (!entities || !thresholds) throw new Error('expected a key list and a threshold map');
+      const onSave = vi.fn();
+      render(
+        <GuardrailBuilder
+          open
+          inline
+          hideHeader
+          definition={definition}
+          scope="Llm"
+          guardrail={makeGuardrail({
+            selector: { scopes: ['Llm'] },
+            validatorType: definition.validator,
+            validatorParameters: [
+              { $parameterType: 'enum-list', id: entities.id, value: [entity] },
+              { $parameterType: 'map-enum', id: thresholds.id, value: { [entity]: value } },
+            ],
+          })}
+          onSave={onSave}
+          onCancel={vi.fn()}
+        />
+      );
+      return onSave;
+    }
+
+    it('limits the arrows to the defaulted 0..1 but saves a value typed past it', () => {
+      const onSave = renderEnriched(PII_DETECTION_WIRE, 'Email', 0.8);
+      const input = screen.getByRole('spinbutton');
+      expect(input).toHaveAttribute('min', '0');
+      expect(input).toHaveAttribute('max', '1');
+      expect(input).toHaveAttribute('step', '0.1');
+
+      fireEvent.change(input, { target: { value: '1.5' } });
+      fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
+
+      expect(screen.queryByText('Value is out of range')).not.toBeInTheDocument();
+      const saved = onSave.mock.calls[0]?.[0] as GuardrailBuilderValue;
+      expect(saved.validatorParameters).toContainEqual({
+        $parameterType: 'map-enum',
+        id: 'entityThresholds',
+        value: { Email: 1.5 },
+      });
+    });
+
+    it('still blocks Save on a bound the backend sent', () => {
+      const onSave = renderEnriched(HARMFUL_CONTENT_WIRE, 'Hate', 2);
+
+      fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '8' } });
+      fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
+
+      expect(onSave).not.toHaveBeenCalled();
+      expect(screen.getAllByText('Value is out of range').length).toBeGreaterThan(0);
     });
   });
 
