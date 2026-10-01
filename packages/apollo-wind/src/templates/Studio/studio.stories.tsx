@@ -32,7 +32,10 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
-import TreeView, { type TreeViewIconMap, type TreeViewItem } from '@/components/ui/tree-view';
+import FileTreeView, {
+  type FileTreeViewIconMap,
+  type FileTreeViewItem,
+} from '@/components/ui/tree-view';
 import { StudioGrid, StudioGridItem, StudioTemplate } from './template-studio';
 
 // ============================================================================
@@ -72,7 +75,7 @@ function PanelView({ index }: { index: number }) {
 // Explorer panel view
 // ============================================================================
 
-const explorerData: TreeViewItem[] = [
+const explorerData: FileTreeViewItem[] = [
   {
     id: 'root',
     name: 'POPoC',
@@ -133,13 +136,13 @@ const explorerData: TreeViewItem[] = [
                 id: 'edit',
                 icon: <Pencil className="h-3.5 w-3.5" />,
                 label: 'Edit',
-                onClick: (item: TreeViewItem) => console.log('Edit', item.name),
+                onClick: (item: FileTreeViewItem) => console.log('Edit', item.name),
               },
               {
                 id: 'delete',
                 icon: <Trash2 className="h-3.5 w-3.5" />,
                 label: 'Delete',
-                onClick: (item: TreeViewItem) => console.log('Delete', item.name),
+                onClick: (item: FileTreeViewItem) => console.log('Delete', item.name),
               },
             ],
           },
@@ -191,7 +194,7 @@ const explorerData: TreeViewItem[] = [
   },
 ];
 
-const explorerIconMap: TreeViewIconMap = {
+const explorerIconMap: FileTreeViewIconMap = {
   region: <Globe className="h-4 w-4 text-foreground-muted" />,
   enterprise: <Folder className="h-4 w-4 text-foreground-muted" />,
   folder: <Code className="h-4 w-4 text-foreground-muted" />,
@@ -206,7 +209,7 @@ function ExplorerPanelView() {
         <h3 className="text-sm font-semibold text-foreground">Explorer</h3>
       </div>
       <div className="min-h-0 flex-1 overflow-auto">
-        <TreeView
+        <FileTreeView
           data={explorerData}
           iconMap={explorerIconMap}
           containerClassName="p-4 w-full max-w-full border-0 rounded-none shadow-none bg-transparent"

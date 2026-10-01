@@ -62,6 +62,12 @@ export * from './toggle';
 export * from './toggle-group';
 export * from './tooltip';
 export type {
+  FileTreeViewIconMap,
+  FileTreeViewItem,
+  FileTreeViewItemAction,
+  FileTreeViewMenuItem,
+  FileTreeViewProps,
+  FileTreeViewSelectionMode,
   TreeViewIconMap,
   TreeViewItem,
   TreeViewItemAction,
@@ -69,5 +75,5 @@ export type {
   TreeViewProps,
   TreeViewSelectionMode,
 } from './tree-view';
-export { default as TreeView } from './tree-view';
+export { default as FileTreeView, TreeView } from './tree-view';
 export * from './variable-picker';

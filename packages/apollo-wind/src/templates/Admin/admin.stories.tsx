@@ -60,7 +60,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import TreeView, { type TreeViewIconMap, type TreeViewItem } from '@/components/ui/tree-view';
+import FileTreeView, {
+  type FileTreeViewIconMap,
+  type FileTreeViewItem,
+} from '@/components/ui/tree-view';
 import { cn } from '@/lib';
 import type { Theme } from '@/foundation/Future/types';
 import { AdminPageHeader, AdminSidebar, AdminTemplate, AdminToolbar } from './template-admin';
@@ -279,7 +282,7 @@ function AdminMenuNav() {
 // ============================================================================
 
 /** Admin demo: varied tree structure for layout/scroll demo. */
-const adminTreeDataExpanded: TreeViewItem[] = [
+const adminTreeDataExpanded: FileTreeViewItem[] = [
   {
     id: 'root',
     name: 'POPoC',
@@ -408,7 +411,7 @@ const adminTreeDataExpanded: TreeViewItem[] = [
   },
 ];
 
-const adminTreeIconMap: TreeViewIconMap = {
+const adminTreeIconMap: FileTreeViewIconMap = {
   region: <Globe className="h-4 w-4 text-foreground-muted" />,
   enterprise: <Folder className="h-4 w-4 text-foreground-muted" />,
   folder: <Code className="h-4 w-4 text-foreground-muted" />,
@@ -726,7 +729,7 @@ function AdminPageDemo({ theme }: { theme: Theme }) {
             POPoC
           </div>
           <div className="flex-1 min-h-0 overflow-auto">
-            <TreeView
+            <FileTreeView
               data={adminTreeDataExpanded}
               iconMap={adminTreeIconMap}
               containerClassName="p-4 w-full max-w-full border-0 rounded-none shadow-none bg-transparent"

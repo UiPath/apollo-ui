@@ -32,7 +32,7 @@ import { Checkbox } from '@/components/ui/checkbox';
  * Action shown in the item's dropdown menu (Edit, Delete, etc.).
  * Actions appear as a single "more" icon that opens a dropdown to avoid horizontal overflow.
  */
-export interface TreeViewItemAction {
+export interface FileTreeViewItemAction {
   /** Unique action identifier */
   id: string;
   /** Icon to display in the dropdown menu item */
@@ -40,13 +40,13 @@ export interface TreeViewItemAction {
   /** Accessible label for the action */
   label?: string;
   /** Called when the action is clicked */
-  onClick: (item: TreeViewItem) => void;
+  onClick: (item: FileTreeViewItem) => void;
 }
 
 /**
  * A single item in the tree. Supports hierarchical structure, selection, and rich metadata.
  */
-export interface TreeViewItem {
+export interface FileTreeViewItem {
   /** Unique identifier (must be unique across the entire tree) */
   id: string;
   /** Display name */
@@ -54,7 +54,7 @@ export interface TreeViewItem {
   /** Type used for icon lookup in iconMap */
   type: string;
   /** Child items for expandable folders */
-  children?: TreeViewItem[];
+  children?: FileTreeViewItem[];
   /** Checked state when using access-rights checkboxes (showCheckboxes) */
   checked?: boolean;
   /** When true, item is greyed out and cannot be selected */
@@ -64,18 +64,18 @@ export interface TreeViewItem {
   /** Secondary metadata shown after the badge (e.g. "Production", "2 workflows") */
   meta?: string | React.ReactNode;
   /** Actions shown in a dropdown menu (Edit, Delete, etc.). Uses a single "more" icon to prevent horizontal scroll. */
-  actions?: TreeViewItemAction[];
+  actions?: FileTreeViewItemAction[];
 }
 
-export interface TreeViewIconMap {
+export interface FileTreeViewIconMap {
   [key: string]: React.ReactNode | undefined;
 }
 
-export interface TreeViewMenuItem {
+export interface FileTreeViewMenuItem {
   id: string;
   label: string;
   icon?: React.ReactNode;
-  action: (items: TreeViewItem[]) => void;
+  action: (items: FileTreeViewItem[]) => void;
 }
 
 /**
@@ -84,19 +84,19 @@ export interface TreeViewMenuItem {
  * - `"single"`: Only one item can be selected at a time
  * - `"none"`: No selection; expand/collapse only
  */
-export type TreeViewSelectionMode = 'single' | 'multiple' | 'none';
+export type FileTreeViewSelectionMode = 'single' | 'multiple' | 'none';
 
-export interface TreeViewProps {
+export interface FileTreeViewProps {
   className?: string;
   containerClassName?: string;
-  data: TreeViewItem[];
+  data: FileTreeViewItem[];
   title?: string;
   showExpandAll?: boolean;
   showCheckboxes?: boolean;
   /** Show selection checkboxes on leaf items only (folders do not get checkboxes) */
   showSelectionCheckboxes?: boolean;
   /** Selection behavior: "multiple" (default), "single", or "none" */
-  selectionMode?: TreeViewSelectionMode;
+  selectionMode?: FileTreeViewSelectionMode;
   checkboxPosition?: 'left' | 'right';
   searchPlaceholder?: string;
   selectionText?: string;
@@ -104,39 +104,39 @@ export interface TreeViewProps {
     check: string;
     uncheck: string;
   };
-  getIcon?: (item: TreeViewItem, depth: number) => React.ReactNode;
-  onSelectionChange?: (selectedItems: TreeViewItem[]) => void;
-  onAction?: (action: string, items: TreeViewItem[]) => void;
-  onCheckChange?: (item: TreeViewItem, checked: boolean) => void;
-  iconMap?: TreeViewIconMap;
-  menuItems?: TreeViewMenuItem[];
+  getIcon?: (item: FileTreeViewItem, depth: number) => React.ReactNode;
+  onSelectionChange?: (selectedItems: FileTreeViewItem[]) => void;
+  onAction?: (action: string, items: FileTreeViewItem[]) => void;
+  onCheckChange?: (item: FileTreeViewItem, checked: boolean) => void;
+  iconMap?: FileTreeViewIconMap;
+  menuItems?: FileTreeViewMenuItem[];
 }
 
 interface TreeItemProps {
-  item: TreeViewItem;
+  item: FileTreeViewItem;
   depth?: number;
   selectedIds: Set<string>;
   lastSelectedId: React.MutableRefObject<string | null>;
   onSelect: (ids: Set<string>) => void;
   expandedIds: Set<string>;
   onToggleExpand: (id: string, isOpen: boolean) => void;
-  selectionMode: TreeViewSelectionMode;
-  getIcon?: (item: TreeViewItem, depth: number) => React.ReactNode;
-  onAction?: (action: string, items: TreeViewItem[]) => void;
-  onAccessChange?: (item: TreeViewItem, hasAccess: boolean) => void;
-  allItems: TreeViewItem[];
+  selectionMode: FileTreeViewSelectionMode;
+  getIcon?: (item: FileTreeViewItem, depth: number) => React.ReactNode;
+  onAction?: (action: string, items: FileTreeViewItem[]) => void;
+  onAccessChange?: (item: FileTreeViewItem, hasAccess: boolean) => void;
+  allItems: FileTreeViewItem[];
   showAccessRights?: boolean;
   showSelectionCheckboxes?: boolean;
-  itemMap: Map<string, TreeViewItem>;
-  iconMap?: TreeViewIconMap;
-  menuItems?: TreeViewMenuItem[];
-  getSelectedItems: () => TreeViewItem[];
+  itemMap: Map<string, FileTreeViewItem>;
+  iconMap?: FileTreeViewIconMap;
+  menuItems?: FileTreeViewMenuItem[];
+  getSelectedItems: () => FileTreeViewItem[];
 }
 
 // Helper function to build a map of all items by ID
-const buildItemMap = (items: TreeViewItem[]): Map<string, TreeViewItem> => {
-  const map = new Map<string, TreeViewItem>();
-  const processItem = (item: TreeViewItem) => {
+const buildItemMap = (items: FileTreeViewItem[]): Map<string, FileTreeViewItem> => {
+  const map = new Map<string, FileTreeViewItem>();
+  const processItem = (item: FileTreeViewItem) => {
     map.set(item.id, item);
     item.children?.forEach(processItem);
   };
@@ -146,8 +146,8 @@ const buildItemMap = (items: TreeViewItem[]): Map<string, TreeViewItem> => {
 
 // Update the getCheckState function to work bottom-up
 const getCheckState = (
-  item: TreeViewItem,
-  itemMap: Map<string, TreeViewItem>
+  item: FileTreeViewItem,
+  itemMap: Map<string, FileTreeViewItem>
 ): 'checked' | 'unchecked' | 'indeterminate' => {
   // Get the original item from the map
   const originalItem = itemMap.get(item.id);
@@ -184,7 +184,7 @@ const getCheckState = (
 };
 
 // Add this default icon map
-const defaultIconMap: TreeViewIconMap = {
+const defaultIconMap: FileTreeViewIconMap = {
   file: <Box className="h-4 w-4 text-error" />,
   folder: <Folder className="h-4 w-4 text-primary/80" />,
 };
@@ -217,8 +217,8 @@ function TreeItem({
 
   // Get all visible items in order
   const getVisibleItems = useCallback(
-    (items: TreeViewItem[]): TreeViewItem[] => {
-      let visibleItems: TreeViewItem[] = [];
+    (items: FileTreeViewItem[]): FileTreeViewItem[] => {
+      let visibleItems: FileTreeViewItem[] = [];
 
       items.forEach((item) => {
         visibleItems.push(item);
@@ -311,7 +311,7 @@ function TreeItem({
   };
 
   // Helper function to get all descendants of an item (including the item itself)
-  const getAllDescendants = (item: TreeViewItem): TreeViewItem[] => {
+  const getAllDescendants = (item: FileTreeViewItem): FileTreeViewItem[] => {
     const descendants = [item];
     if (item.children) {
       item.children.forEach((child) => {
@@ -340,10 +340,10 @@ function TreeItem({
     return iconMap[item.type] || iconMap.folder || defaultIconMap.folder;
   };
 
-  const getItemPath = (item: TreeViewItem, items: TreeViewItem[]): string => {
+  const getItemPath = (item: FileTreeViewItem, items: FileTreeViewItem[]): string => {
     const path: string[] = [item.name];
 
-    const findParent = (currentItem: TreeViewItem, allItems: TreeViewItem[]) => {
+    const findParent = (currentItem: FileTreeViewItem, allItems: FileTreeViewItem[]) => {
       for (const potentialParent of allItems) {
         if (potentialParent.children?.some((child) => child.id === currentItem.id)) {
           path.unshift(potentialParent.name);
@@ -361,7 +361,7 @@ function TreeItem({
   };
 
   // Add function to count selected items in a folder
-  const getSelectedChildrenCount = (item: TreeViewItem): number => {
+  const getSelectedChildrenCount = (item: FileTreeViewItem): number => {
     let count = 0;
 
     if (!item.children) return 0;
@@ -789,7 +789,7 @@ function TreeItem({
 }
 
 /**
- * TreeView displays hierarchical data with expand/collapse, search, selection, and optional actions.
+ * FileTreeView displays hierarchical data with expand/collapse, search, selection, and optional actions.
  *
  * **Features:**
  * - **Search**: Filters items by name and auto-expands matching branches
@@ -803,7 +803,7 @@ function TreeItem({
  *
  * **Layout**: Title → Search bar → Expand/Collapse + Selected count + Clear → Tree. No horizontal scroll.
  */
-const TreeView = React.forwardRef<HTMLDivElement, TreeViewProps>(function TreeView(
+const FileTreeView = React.forwardRef<HTMLDivElement, FileTreeViewProps>(function FileTreeView(
   {
     className,
     containerClassName,
@@ -858,7 +858,7 @@ const TreeView = React.forwardRef<HTMLDivElement, TreeViewProps>(function TreeVi
     const newExpandedIds = new Set<string>();
 
     // Helper function to check if an item or its descendants match the search
-    const itemMatches = (item: TreeViewItem): boolean => {
+    const itemMatches = (item: FileTreeViewItem): boolean => {
       const nameMatches = item.name.toLowerCase().includes(searchLower);
       if (nameMatches) return true;
 
@@ -870,7 +870,7 @@ const TreeView = React.forwardRef<HTMLDivElement, TreeViewProps>(function TreeVi
     };
 
     // Helper function to filter tree while keeping parent structure
-    const filterTree = (items: TreeViewItem[]): TreeViewItem[] => {
+    const filterTree = (items: FileTreeViewItem[]): FileTreeViewItem[] => {
       return items
         .map((item) => {
           if (!item.children) {
@@ -889,7 +889,7 @@ const TreeView = React.forwardRef<HTMLDivElement, TreeViewProps>(function TreeVi
           }
           return null;
         })
-        .filter((item): item is TreeViewItem => item !== null);
+        .filter((item): item is FileTreeViewItem => item !== null);
     };
 
     return {
@@ -927,7 +927,7 @@ const TreeView = React.forwardRef<HTMLDivElement, TreeViewProps>(function TreeVi
   }, []);
 
   // Function to collect all folder IDs
-  const getAllFolderIds = (items: TreeViewItem[]): string[] => {
+  const getAllFolderIds = (items: FileTreeViewItem[]): string[] => {
     let ids: string[] = [];
     items.forEach((item) => {
       if (item.children) {
@@ -957,9 +957,9 @@ const TreeView = React.forwardRef<HTMLDivElement, TreeViewProps>(function TreeVi
   };
 
   // Get selected items
-  const getSelectedItems = useCallback((): TreeViewItem[] => {
-    const items: TreeViewItem[] = [];
-    const processItem = (item: TreeViewItem) => {
+  const getSelectedItems = useCallback((): FileTreeViewItem[] => {
+    const items: FileTreeViewItem[] = [];
+    const processItem = (item: FileTreeViewItem) => {
       if (selectedIds.has(item.id)) {
         items.push(item);
       }
@@ -970,7 +970,7 @@ const TreeView = React.forwardRef<HTMLDivElement, TreeViewProps>(function TreeVi
   }, [selectedIds, data]);
 
   // Get selected items, filtering out parents if their children are selected
-  const getEffectiveSelectedItems = useCallback((): TreeViewItem[] => {
+  const getEffectiveSelectedItems = useCallback((): FileTreeViewItem[] => {
     const selectedItems = getSelectedItems();
 
     // Build a set of all selected IDs for quick lookup
@@ -1166,7 +1166,7 @@ const TreeView = React.forwardRef<HTMLDivElement, TreeViewProps>(function TreeVi
                     className="h-8 px-2 text-success hover:text-success-text hover:bg-success-background"
                     onClick={() => {
                       const effectiveItems = getEffectiveSelectedItems();
-                      const processItem = (item: TreeViewItem) => {
+                      const processItem = (item: FileTreeViewItem) => {
                         onCheckChange?.(item, true);
                         item.children?.forEach(processItem);
                       };
@@ -1181,7 +1181,7 @@ const TreeView = React.forwardRef<HTMLDivElement, TreeViewProps>(function TreeVi
                     className="h-8 px-2 text-error hover:text-error-text hover:bg-error-background"
                     onClick={() => {
                       const effectiveItems = getEffectiveSelectedItems();
-                      const processItem = (item: TreeViewItem) => {
+                      const processItem = (item: FileTreeViewItem) => {
                         onCheckChange?.(item, false);
                         item.children?.forEach(processItem);
                       };
@@ -1239,4 +1239,19 @@ const TreeView = React.forwardRef<HTMLDivElement, TreeViewProps>(function TreeVi
   );
 });
 
-export default TreeView;
+export default FileTreeView;
+
+/** @deprecated Use `FileTreeView`. */
+export const TreeView = FileTreeView;
+/** @deprecated Use `FileTreeViewItemAction`. */
+export type TreeViewItemAction = FileTreeViewItemAction;
+/** @deprecated Use `FileTreeViewItem`. */
+export type TreeViewItem = FileTreeViewItem;
+/** @deprecated Use `FileTreeViewIconMap`. */
+export type TreeViewIconMap = FileTreeViewIconMap;
+/** @deprecated Use `FileTreeViewMenuItem`. */
+export type TreeViewMenuItem = FileTreeViewMenuItem;
+/** @deprecated Use `FileTreeViewSelectionMode`. */
+export type TreeViewSelectionMode = FileTreeViewSelectionMode;
+/** @deprecated Use `FileTreeViewProps`. */
+export type TreeViewProps = FileTreeViewProps;
