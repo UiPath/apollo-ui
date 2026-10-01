@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.57.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.57.0...@uipath/apollo-wind@2.57.1) (2026-10-01)
+
+### Bug Fixes
+
+* **apollo-wind:** align alert dialog styling with modal ([eb06771](https://github.com/UiPath/apollo-ui/commit/eb067715326bfb8c1c778102897ca1341d7c6e7c))
+
 ## [@uipath/apollo-wind-v2.57.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.56.0...@uipath/apollo-wind@2.57.0) (2026-09-28)
 
 ### Features
