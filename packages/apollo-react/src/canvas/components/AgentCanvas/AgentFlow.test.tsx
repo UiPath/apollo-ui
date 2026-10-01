@@ -400,6 +400,18 @@ describe('AgentFlow', () => {
       expect(screen.queryByTestId('agent-flow-run-button')).not.toBeInTheDocument();
     });
 
+    it('keeps the stop control reachable in view mode while hiding edit controls', () => {
+      // A run flips hosts (e.g. Studio Web) to view mode; Stop must stay reachable
+      // while the design-only edit controls disappear.
+      render(<AgentFlow {...toolbarProps} mode="view" isRunning onStop={vi.fn()} />);
+      expect(screen.getByTestId('canvas-toolbar')).toBeInTheDocument();
+      expect(screen.getByTestId('agent-flow-stop-button')).toBeInTheDocument();
+      expect(screen.queryByTestId('agent-flow-undo-button')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('agent-flow-redo-button')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('agent-flow-add-note-button')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('agent-flow-run-button')).not.toBeInTheDocument();
+    });
+
     it('omits undo/redo/run but keeps add-note when only sticky notes are enabled', () => {
       render(
         <AgentFlow
