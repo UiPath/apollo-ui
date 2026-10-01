@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '../../utils/testing';
 import { buildJsonTree } from './buildJsonTree';
-import { JsonTree } from './JsonTree';
+import { JsonTreeView } from './JsonTree';
 import { ROW_MIN_HEIGHT_PX } from './JsonTreeRow';
 
 interface VirtualizerOptions {
@@ -81,7 +81,7 @@ const value = Object.fromEntries(
 );
 const nodes = buildJsonTree({ value });
 
-describe('JsonTree', () => {
+describe('JsonTreeView', () => {
   beforeEach(() => {
     virtualizerCalls.length = 0;
     attachedScrollElements.length = 0;
@@ -90,14 +90,14 @@ describe('JsonTree', () => {
   });
 
   it('mounts every row by default', () => {
-    render(<JsonTree nodes={nodes} readOnly />);
+    render(<JsonTreeView nodes={nodes} readOnly />);
 
     expect(screen.getByText('field0')).toBeInTheDocument();
     expect(screen.getByText(`field${FIELD_COUNT - 1}`)).toBeInTheDocument();
   });
 
   it('mounts only the rows the virtualizer reports when virtualized', () => {
-    render(<JsonTree nodes={nodes} readOnly virtualized />);
+    render(<JsonTreeView nodes={nodes} readOnly virtualized />);
 
     expect(screen.getByText('field0')).toBeInTheDocument();
     expect(screen.getByText(`field${WINDOW_SIZE - 1}`)).toBeInTheDocument();
@@ -105,7 +105,7 @@ describe('JsonTree', () => {
   });
 
   it('reserves the full height and positions each row at its offset', () => {
-    render(<JsonTree nodes={nodes} readOnly virtualized />);
+    render(<JsonTreeView nodes={nodes} readOnly virtualized />);
 
     const rowHost = screen.getByText('field1').closest('[data-index]') as HTMLElement;
     expect(rowHost.dataset.index).toBe('1');
@@ -118,7 +118,7 @@ describe('JsonTree', () => {
   // Rendered without the shared i18n provider: activating it re-renders the tree
   // a second time, which resolves the box by chance and hides the defect below.
   it('re-renders to hand the virtualizer its own scroll box on mount', () => {
-    const { container } = bareRender(<JsonTree nodes={nodes} readOnly virtualized />);
+    const { container } = bareRender(<JsonTreeView nodes={nodes} readOnly virtualized />);
 
     // A parent's ref is assigned only after its children's layout effects have
     // run, so reading the box through a ref leaves it null for the whole mount
@@ -131,8 +131,8 @@ describe('JsonTree', () => {
   });
 
   it('caps its own scroll box at the viewport so rows out of view never mount', () => {
-    const { container: plain } = render(<JsonTree nodes={nodes} readOnly />);
-    const { container: virtual } = render(<JsonTree nodes={nodes} readOnly virtualized />);
+    const { container: plain } = render(<JsonTreeView nodes={nodes} readOnly />);
+    const { container: virtual } = render(<JsonTreeView nodes={nodes} readOnly virtualized />);
 
     expect((plain.querySelector('.overflow-y-auto') as HTMLElement).className).not.toContain(
       'max-h-screen'
@@ -145,7 +145,7 @@ describe('JsonTree', () => {
   it('grows to its content and scrolls with the given ancestor instead of its own box', () => {
     const scroller = document.createElement('div');
     const { container } = render(
-      <JsonTree nodes={nodes} readOnly virtualized scrollElement={scroller} />
+      <JsonTreeView nodes={nodes} readOnly virtualized scrollElement={scroller} />
     );
 
     // Nothing here may scroll or be capped, or the ancestor's scrollbar would be the second one
@@ -162,7 +162,7 @@ describe('JsonTree', () => {
   it('measures how far it sits down the ancestor scroller and passes that as the margin', () => {
     const scroller = document.createElement('div');
     // A fresh element each time: React skips re-rendering a referentially identical one.
-    const view = () => <JsonTree nodes={nodes} readOnly virtualized scrollElement={scroller} />;
+    const view = () => <JsonTreeView nodes={nodes} readOnly virtualized scrollElement={scroller} />;
     const { container, rerender } = render(view());
     expect(lastScrollMargin()).toBe(0);
 
@@ -180,25 +180,25 @@ describe('JsonTree', () => {
   it('drops the margin when the ancestor scroller goes away', () => {
     const scroller = document.createElement('div');
     const { container, rerender } = render(
-      <JsonTree nodes={nodes} readOnly virtualized scrollElement={scroller} />
+      <JsonTreeView nodes={nodes} readOnly virtualized scrollElement={scroller} />
     );
     stubOffsets(container.firstElementChild as HTMLElement, scroller, {
       container: 200,
       scroller: 50,
       scrollTop: 10,
     });
-    rerender(<JsonTree nodes={nodes} readOnly virtualized scrollElement={scroller} />);
+    rerender(<JsonTreeView nodes={nodes} readOnly virtualized scrollElement={scroller} />);
     expect(lastScrollMargin()).toBe(160);
 
     // A stale margin here would shift every measurement while the offset restarts at 0.
-    rerender(<JsonTree nodes={nodes} readOnly virtualized scrollElement={null} />);
+    rerender(<JsonTreeView nodes={nodes} readOnly virtualized scrollElement={null} />);
 
     expect(lastScrollMargin()).toBe(0);
   });
 
   it('does not re-measure mid-scroll', () => {
     const scroller = document.createElement('div');
-    const view = () => <JsonTree nodes={nodes} readOnly virtualized scrollElement={scroller} />;
+    const view = () => <JsonTreeView nodes={nodes} readOnly virtualized scrollElement={scroller} />;
     const { container, rerender } = render(view());
     stubOffsets(container.firstElementChild as HTMLElement, scroller, {
       container: 200,
@@ -214,7 +214,7 @@ describe('JsonTree', () => {
 
   it('keeps the row being edited mounted after the window moves past it', async () => {
     const onEdit = vi.fn();
-    const view = () => <JsonTree nodes={nodes} virtualized onEdit={onEdit} />;
+    const view = () => <JsonTreeView nodes={nodes} virtualized onEdit={onEdit} />;
     const { rerender } = render(view());
 
     await userEvent.click(screen.getByRole('button', { name: 'Edit value of field0' }));
@@ -241,7 +241,7 @@ describe('JsonTree', () => {
 
   it('renders the pinned row once, with its draft intact, when the window returns to it', async () => {
     const onEdit = vi.fn();
-    const view = () => <JsonTree nodes={nodes} virtualized onEdit={onEdit} />;
+    const view = () => <JsonTreeView nodes={nodes} virtualized onEdit={onEdit} />;
     const { rerender } = render(view());
 
     await userEvent.click(screen.getByRole('button', { name: 'Edit value of field0' }));
@@ -262,7 +262,7 @@ describe('JsonTree', () => {
 
   it('renders each row once when a value is refreshed under an open editor', async () => {
     const onEdit = vi.fn();
-    const view = (tree: typeof nodes) => <JsonTree nodes={tree} virtualized onEdit={onEdit} />;
+    const view = (tree: typeof nodes) => <JsonTreeView nodes={tree} virtualized onEdit={onEdit} />;
     const { rerender } = render(view(nodes));
     await userEvent.click(screen.getByRole('button', { name: 'Edit value of field0' }));
     windowStart = 20;
@@ -277,16 +277,16 @@ describe('JsonTree', () => {
 
   it('keys rows by their new path after the rows reorder', () => {
     const reordered = buildJsonTree({ value: { later: 'x', ...value } });
-    const { rerender } = render(<JsonTree nodes={nodes} readOnly virtualized />);
+    const { rerender } = render(<JsonTreeView nodes={nodes} readOnly virtualized />);
     expect(virtualizerCalls.at(-1)?.getItemKey?.(0)).toBe('field0');
 
-    rerender(<JsonTree nodes={reordered} readOnly virtualized />);
+    rerender(<JsonTreeView nodes={reordered} readOnly virtualized />);
 
     expect(virtualizerCalls.at(-1)?.getItemKey?.(0)).toBe('later');
   });
 
   it('keys rows by path so row state survives the window moving', () => {
-    render(<JsonTree nodes={nodes} readOnly virtualized />);
+    render(<JsonTreeView nodes={nodes} readOnly virtualized />);
 
     const options = virtualizerCalls.at(-1);
     expect(options?.count).toBe(FIELD_COUNT);

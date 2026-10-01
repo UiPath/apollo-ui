@@ -25,7 +25,7 @@ import {
   ROW_MIN_HEIGHT_PX,
 } from './JsonTreeRow';
 
-export interface JsonTreeProps {
+export interface JsonTreeViewProps {
   /** Tree built with `buildJsonTree`. */
   nodes: JsonTreeNode[];
   /** Collapsed container paths. */
@@ -238,7 +238,7 @@ const DefaultRowWrapper: JsonTreeRowWrapper = ({ className, style, onClick, chil
  * path, and the row actions copy the value or wrap long scalars
  * into a full-width block with a multiline editor.
  */
-export function JsonTree({
+export function JsonTreeView({
   nodes,
   collapsed = {},
   onToggleCollapsed,
@@ -259,7 +259,7 @@ export function JsonTree({
   scrollElement,
   emptyMessage,
   className,
-}: JsonTreeProps) {
+}: JsonTreeViewProps) {
   const { _ } = useSafeLingui();
   // State, not a ref — see `VirtualRows`' `container` prop.
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
@@ -417,3 +417,8 @@ export function JsonTree({
     </TooltipProvider>
   );
 }
+
+/** @deprecated Use `JsonTreeViewProps`. */
+export type JsonTreeProps = JsonTreeViewProps;
+/** @deprecated Use `JsonTreeView`. */
+export const JsonTree = JsonTreeView;

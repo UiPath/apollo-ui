@@ -2,11 +2,11 @@ import type { Meta, StoryFn } from '@storybook/react';
 import { useMemo, useState } from 'react';
 import { Column, Row } from '../../layouts';
 import { buildJsonTree } from './buildJsonTree';
-import { JsonTree } from './JsonTree';
+import { JsonTreeView } from './JsonTree';
 import type { JsonTreeNode } from './JsonTree.types';
 
 export default {
-  title: 'Components/JsonTree',
+  title: 'Components/Tree View (Json)',
   parameters: {
     layout: 'fullscreen',
   },
@@ -74,7 +74,7 @@ export const VirtualizedOwnScrollBox: StoryFn = () => {
       <span style={{ fontSize: 14 }}>
         {RECORD_COUNT.toLocaleString()} records, every container expanded. Scroll the tree.
       </span>
-      <JsonTree
+      <JsonTreeView
         nodes={nodes}
         collapsed={collapsed}
         onToggleCollapsed={toggle}
@@ -108,7 +108,7 @@ export const VirtualizedInsidePanel: StoryFn = () => {
         <Row p={16} style={{ borderBottom: '1px solid var(--canvas-border)' }}>
           <span style={{ fontSize: 14, fontWeight: 500 }}>Output</span>
         </Row>
-        <JsonTree
+        <JsonTreeView
           nodes={nodes}
           collapsed={collapsed}
           onToggleCollapsed={toggle}
@@ -133,7 +133,7 @@ export const VirtualizedEditable: StoryFn = () => {
     <Column p={24} gap={12} minH="100vh" style={frame}>
       <span style={{ fontSize: 14 }}>Click a value to edit it, scroll away, then scroll back.</span>
       <span style={{ fontSize: 14 }}>Last commit: {lastEdit}</span>
-      <JsonTree
+      <JsonTreeView
         nodes={nodes}
         collapsed={collapsed}
         onToggleCollapsed={toggle}
@@ -153,7 +153,7 @@ export const NotVirtualized: StoryFn = () => {
       <span style={{ fontSize: 14 }}>
         The same shape without virtualization, at {SMALL_RECORD_COUNT} records.
       </span>
-      <JsonTree nodes={nodes} collapsed={collapsed} onToggleCollapsed={toggle} readOnly />
+      <JsonTreeView nodes={nodes} collapsed={collapsed} onToggleCollapsed={toggle} readOnly />
     </Column>
   );
 };

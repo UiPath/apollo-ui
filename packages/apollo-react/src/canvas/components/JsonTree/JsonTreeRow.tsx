@@ -48,7 +48,7 @@ const KEY_ALIGN_OFFSET = 44;
 
 /**
  * Shared, node-invariant context every row needs: the tree config, the mutable
- * edit/copy state, and the handlers that mutate it. Held once by `JsonTree` so
+ * edit/copy state, and the handlers that mutate it. Held once by `JsonTreeView` so
  * each `JsonTreeRow` only takes its own `node`/`depth`.
  */
 export interface JsonTreeRowContextValue {
