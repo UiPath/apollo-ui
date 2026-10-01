@@ -11,9 +11,14 @@ import type { OccupantSpec } from "@/lib/composition";
 import type { PanelPlacement } from "@/templates/detail-page/detail-page.template";
 import { Dock, DockSlider, FitToggleGroup } from "./dock-parts";
 import { PageMap } from "./page-map";
-import { PAGE_WIDTH_MAX, slotFit } from "./workbench-url-state";
+import {
+  PAGE_WIDTH_MAX,
+  slotFit,
+  type WorkbenchZoom,
+} from "./workbench-url-state";
 
 const PLACEMENTS: readonly PanelPlacement[] = ["below-header", "beside-header"];
+const ZOOMS: readonly WorkbenchZoom[] = ["fit", "actual"];
 /** The page width moves in larger steps than a surface's. */
 const PAGE_WIDTH_STEP = 8;
 
@@ -26,12 +31,16 @@ interface TemplateDockProps {
   onPlacement: (placement: PanelPlacement) => void;
   pageWidth: number;
   onPageWidth: (width: number) => void;
+  zoom: WorkbenchZoom;
+  onZoom: (zoom: WorkbenchZoom) => void;
+  /** The page's current scale on the stage, for the zoom level. */
+  scale: number;
 }
 
 /**
  * The template view's dock: the page map with the chosen slot, the slot
- * switcher (fits() against each slot), placement for a side slot, and the
- * page width.
+ * switcher (fits() against each slot), placement for a side slot, the
+ * page width, and the zoom.
  */
 export function TemplateDock({
   host,
@@ -42,6 +51,9 @@ export function TemplateDock({
   onPlacement,
   pageWidth,
   onPageWidth,
+  zoom,
+  onZoom,
+  scale,
 }: TemplateDockProps) {
   const { t } = useTranslation();
   const slotName = host.slotLabels[slot] ?? slot;
@@ -96,6 +108,33 @@ export function TemplateDock({
           onChange={onPageWidth}
           measures="page-width"
         />
+      </div>
+      <Separator orientation="vertical" className="h-8" />
+      <div className="flex items-center gap-3">
+        <ToggleGroup
+          type="single"
+          variant="outline"
+          size="sm"
+          aria-label={t("workbench_zoom")}
+          value={zoom}
+          onValueChange={(next) => {
+            const chosen = ZOOMS.find((z) => z === next);
+            if (chosen) onZoom(chosen);
+          }}
+        >
+          {ZOOMS.map((z) => (
+            <ToggleGroupItem key={z} value={z}>
+              {t(`workbench_zoom_${z}`)}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+        <output
+          data-slot="workbench-zoom-level"
+          aria-label={t("workbench_zoom_level")}
+          className="w-10 text-sm tabular-nums text-muted-foreground"
+        >
+          {t("workbench_percent", { percent: Math.round(scale * 100) })}
+        </output>
       </div>
     </Dock>
   );
