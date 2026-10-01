@@ -29,7 +29,11 @@ const EvaluationPairSchema = z.object({
   // An unknown status fails validation rather than rendering as "new".
   status: z.enum(EvaluationPairStatus),
   outcome_match: z.boolean().optional().default(false),
-  summary_verdict: z.string().optional().default(""),
+  // Empty on one-sided pairs; any other unknown verdict fails validation.
+  summary_verdict: z
+    .union([z.enum(SummaryVerdict), z.literal("")])
+    .optional()
+    .default(""),
   summary_deltas: z.array(z.string()).optional().default([]),
   summary_reason: z.string().optional().default(""),
   // Absent on a new evaluation (no baseline) / a removed one (no new run).

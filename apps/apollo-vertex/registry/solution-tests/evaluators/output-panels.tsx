@@ -1,7 +1,9 @@
 "use client";
 
+import { EMPTY_VALUE } from "../constants";
+
 export function formatJson(data: unknown): string {
-  if (data == null) return "—";
+  if (data == null) return EMPTY_VALUE;
   // Normalize JSON strings to 2-space indentation so a stringified payload
   // renders the same as an object one; leave non-JSON strings untouched.
   if (typeof data === "string") {

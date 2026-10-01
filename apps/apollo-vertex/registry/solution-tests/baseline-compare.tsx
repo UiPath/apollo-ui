@@ -66,9 +66,12 @@ const CompareRow = ({ row }: { row: BaselineCompareRow }) => {
 
   return (
     <TableRow className="hover:bg-transparent">
-      <TableCell className="px-3 py-1.5 font-medium text-muted-foreground">
+      <TableHead
+        scope="row"
+        className="h-auto px-3 py-1.5 text-xs font-medium text-muted-foreground"
+      >
         {row.label}
-      </TableCell>
+      </TableHead>
       <TableCell className={valueClass}>
         {row.baseline ?? EMPTY_VALUE}
       </TableCell>

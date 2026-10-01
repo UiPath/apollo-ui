@@ -18,6 +18,7 @@ import { renderValueOrEmptyState } from "@/lib/renderValueOrEmptyState";
 import {
   defaultRunResultStatusLabels,
   defaultRunStatusLabels,
+  EMPTY_VALUE,
 } from "./constants";
 import {
   type ExpandedRowData,
@@ -232,11 +233,11 @@ const RunDetailsPane = ({
               {`${t("baseline_agent_version")}: `}
               {showBaselineVersion
                 ? (result.BaselineProcessVersion ?? "-")
-                : "—"}
+                : EMPTY_VALUE}
             </span>
             <span className="inline-flex items-center gap-1">
               {`${t("tested_agent_version")}: `}
-              {showActualVersion ? (result.ProcessVersion ?? "-") : "—"}
+              {showActualVersion ? (result.ProcessVersion ?? "-") : EMPTY_VALUE}
               {showActualVersion && (
                 <VersionDeltaGlyph
                   direction={versionDirection}
@@ -251,7 +252,7 @@ const RunDetailsPane = ({
                     type: "number",
                     options: { style: "percent", maximumFractionDigits: 0 },
                   })
-                : "—"}
+                : EMPTY_VALUE}
             </span>
           </div>
         </div>

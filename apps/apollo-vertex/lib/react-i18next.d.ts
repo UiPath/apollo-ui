@@ -1,7 +1,15 @@
 import type { ComponentType, ReactElement } from "react";
 import type en from "../locales/en.json";
 
-type ValidKeys = keyof typeof en;
+type LocaleKeys = keyof typeof en;
+
+// i18next resolves "x_one" / "x_other" from a call to "x" with a `count`.
+type PluralBase<Key> =
+  Key extends `${infer Base}_${"zero" | "one" | "two" | "few" | "many" | "other"}`
+    ? Base
+    : never;
+
+type ValidKeys = LocaleKeys | PluralBase<LocaleKeys>;
 
 type InterpolateValuesOfKey<Key extends string> =
   Key extends `${infer _Start}{{${infer Value}}}${infer Rest}`
