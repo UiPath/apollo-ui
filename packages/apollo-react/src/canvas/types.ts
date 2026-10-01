@@ -354,6 +354,24 @@ export type AgentFlowProps = {
   onUpdateStickyNote?: (id: string, updates: Partial<Omit<AgentFlowStickyNote, 'id'>>) => void;
   onRemoveStickyNote?: (id: string) => void;
 
+  // history & run (bottom-center mode toolbar)
+  /** Called when the Undo button is clicked. The button only renders when provided. */
+  onUndo?: () => void;
+  /** Called when the Redo button is clicked. The button only renders when provided. */
+  onRedo?: () => void;
+  /** Whether there is a step available to undo. Disables the Undo button when false. */
+  canUndo?: boolean;
+  /** Whether there is a step available to redo. Disables the Redo button when false. */
+  canRedo?: boolean;
+  /** Number of available undo steps, shown as a badge. No badge is shown when 0/undefined. */
+  undoCount?: number;
+  /** Number of available redo steps, shown as a badge. No badge is shown when 0/undefined. */
+  redoCount?: number;
+  /** Called when the Run button is clicked. The button only renders when provided. */
+  onRun?: () => void;
+  /** Whether a run is in progress. Disables Run and shows a spinner. */
+  isRunning?: boolean;
+
   // feature flags
   enableMcpTools?: boolean;
   /** TODO: Remove once memory feature is fully implemented */
@@ -641,6 +659,9 @@ export interface CanvasTranslations {
   zoomOut: string;
   zoomToFit: string;
   addNote: string;
+  undo: string;
+  redo: string;
+  run: string;
 }
 
 export interface StickyNoteNodeTranslations {
@@ -659,6 +680,9 @@ export const DefaultCanvasTranslations: CanvasTranslations = {
   zoomOut: 'Zoom out',
   zoomToFit: 'Zoom to fit',
   addNote: 'Add note',
+  undo: 'Undo',
+  redo: 'Redo',
+  run: 'Run',
 };
 
 export interface SuggestionTranslations {

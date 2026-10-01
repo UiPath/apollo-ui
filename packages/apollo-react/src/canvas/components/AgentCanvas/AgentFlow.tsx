@@ -1,8 +1,14 @@
-import styled from '@emotion/styled';
 import { Column } from '@uipath/apollo-react/canvas/layouts';
 import { Panel, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import type { NodeProps } from '@uipath/apollo-react/canvas/xyflow/system';
-import { StickyNote as StickyNoteIcon } from 'lucide-react';
+import { Separator } from '@uipath/apollo-wind';
+import {
+  Loader2,
+  Play,
+  Redo2,
+  StickyNote as StickyNoteIcon,
+  Undo2,
+} from 'lucide-react';
 import type React from 'react';
 import type { PropsWithChildren } from 'react';
 import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
@@ -28,8 +34,14 @@ import {
   type SuggestionTranslations,
 } from '../../types';
 import { hasAgentRunning } from '../../utils/props-helpers';
-import { CanvasPositionControls } from '../CanvasPositionControls';
+import {
+  CanvasModeToolbar,
+  CountBadge,
+  TOOLBAR_ICON_BUTTON_CLASS,
+} from '../CanvasModeToolbar';
+import { CanvasZoomControls } from '../CanvasZoomControls';
 import { StickyNoteNode, type StickyNoteNodeProps } from '../StickyNoteNode';
+import { ToolbarButton } from '../ToolbarButton';
 import { agentFlowManifest } from './agent-flow.manifest';
 import { PaneContextMenu } from './components/PaneContextMenu';
 import { SuggestionGroupPanel } from './components/SuggestionGroupPanel';
@@ -39,35 +51,6 @@ import { Edge } from './edges/Edge';
 import { AgentNodeElement } from './nodes/AgentNode';
 import { ResourceNode } from './nodes/ResourceNode';
 import { AgentFlowProvider, useAgentFlowStore } from './store/agent-flow-store';
-
-const ToolbarContainer = styled.div`
-  display: flex;
-  align-items: center;
-  background: var(--canvas-background);
-  border: 1px solid var(--canvas-border-de-emp);
-  border-radius: 16px;
-  padding: 4px;
-  gap: 4px;
-  height: 50px;
-`;
-
-const ToolbarButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  border-radius: 16px;
-  transition: background-color 0.15s ease;
-  color: var(--canvas-foreground);
-
-  &:hover {
-    background: var(--canvas-background-hover);
-  }
-`;
 
 const edgeTypes = {
   default: Edge,
@@ -290,6 +273,14 @@ const AgentFlowInner = memo(
     onUpdateStickyNote,
     zoomLevel,
     onZoomLevelChange,
+    onUndo,
+    onRedo,
+    canUndo,
+    canRedo,
+    undoCount,
+    redoCount,
+    onRun,
+    isRunning,
   }: PropsWithChildren<AgentFlowProps>) => {
     const {
       nodes,
@@ -658,9 +649,9 @@ const AgentFlowInner = memo(
             }
           >
             <Panel position="bottom-right">
-              <CanvasPositionControls
-                fitViewOptions={adjustedFitViewOptions}
-                translations={canvasTranslations ?? DefaultCanvasTranslations}
+              <CanvasZoomControls
+                orientation="vertical"
+                onFitView={() => reactFlowFitView(adjustedFitViewOptions)}
                 onOrganize={mode === 'design' ? onOrganize : undefined}
               />
             </Panel>
@@ -672,17 +663,63 @@ const AgentFlowInner = memo(
                 />
               </div>
               <div ref={toolbarContainerRef}>
-                {enableStickyNotes && mode === 'design' && !suggestionGroup?.suggestions.length && (
-                  <ToolbarContainer className="nodrag nopan nowheel">
-                    <ToolbarButton
-                      type="button"
-                      onClick={() => addStickyNote()}
-                      title={(canvasTranslations ?? DefaultCanvasTranslations).addNote}
-                    >
-                      <StickyNoteIcon size={16} />
-                    </ToolbarButton>
-                  </ToolbarContainer>
-                )}
+                {mode === 'design' &&
+                  !suggestionGroup?.suggestions.length &&
+                  (onUndo || onRedo || onRun || enableStickyNotes) && (
+                    <CanvasModeToolbar className="nodrag nopan nowheel">
+                      {onUndo && (
+                        <ToolbarButton
+                          testId="agent-flow-undo-button"
+                          label={(canvasTranslations ?? DefaultCanvasTranslations).undo}
+                          className={`relative ${TOOLBAR_ICON_BUTTON_CLASS}`}
+                          onClick={onUndo}
+                          disabled={!canUndo}
+                        >
+                          <Undo2 />
+                          <CountBadge count={undoCount ?? 0} />
+                        </ToolbarButton>
+                      )}
+                      {onRedo && (
+                        <ToolbarButton
+                          testId="agent-flow-redo-button"
+                          label={(canvasTranslations ?? DefaultCanvasTranslations).redo}
+                          className={`relative ${TOOLBAR_ICON_BUTTON_CLASS}`}
+                          onClick={onRedo}
+                          disabled={!canRedo}
+                        >
+                          <Redo2 />
+                          <CountBadge count={redoCount ?? 0} />
+                        </ToolbarButton>
+                      )}
+                      {(onUndo || onRedo) && (onRun || enableStickyNotes) && (
+                        <Separator orientation="vertical" className="h-5" />
+                      )}
+                      {onRun && (
+                        <ToolbarButton
+                          testId="agent-flow-run-button"
+                          label={(canvasTranslations ?? DefaultCanvasTranslations).run}
+                          className={TOOLBAR_ICON_BUTTON_CLASS}
+                          onClick={onRun}
+                          disabled={isRunning}
+                        >
+                          {isRunning ? <Loader2 className="animate-spin" /> : <Play />}
+                        </ToolbarButton>
+                      )}
+                      {onRun && enableStickyNotes && (
+                        <Separator orientation="vertical" className="h-5" />
+                      )}
+                      {enableStickyNotes && (
+                        <ToolbarButton
+                          testId="agent-flow-add-note-button"
+                          label={(canvasTranslations ?? DefaultCanvasTranslations).addNote}
+                          className={TOOLBAR_ICON_BUTTON_CLASS}
+                          onClick={() => addStickyNote()}
+                        >
+                          <StickyNoteIcon />
+                        </ToolbarButton>
+                      )}
+                    </CanvasModeToolbar>
+                  )}
               </div>
               <div ref={suggestionGroupPanelRef}>
                 <SuggestionGroupPanel

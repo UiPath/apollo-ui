@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 import type { AgentFlowProps } from '../../types';
-import { render, screen } from '../../utils/testing';
+import { fireEvent, render, screen } from '../../utils/testing';
 
 // Mock the BaseCanvas viewport hooks to avoid ReactFlow dependencies in tests.
 // The rest of the module is kept so newly added hooks don't break this mock.
@@ -329,6 +329,82 @@ describe('AgentFlow', () => {
     // Empty nodes to avoid initial layout
     render(<AgentFlow {...mockProps} />);
     expect(screen.getByTestId('canvas-controls')).toBeInTheDocument();
+  });
+
+  describe('bottom-center mode toolbar', () => {
+    const toolbarProps: AgentFlowProps = {
+      ...mockProps,
+      enableStickyNotes: true,
+      onUndo: vi.fn(),
+      onRedo: vi.fn(),
+      onRun: vi.fn(),
+      canUndo: true,
+      canRedo: true,
+      undoCount: 3,
+      redoCount: 1,
+    };
+
+    it('does not render when no toolbar handlers or sticky notes are enabled', () => {
+      render(<AgentFlow {...mockProps} />);
+      expect(screen.queryByTestId('canvas-toolbar')).not.toBeInTheDocument();
+    });
+
+    it('renders undo, redo, run and add-note buttons when wired', () => {
+      render(<AgentFlow {...toolbarProps} />);
+      expect(screen.getByTestId('canvas-toolbar')).toBeInTheDocument();
+      expect(screen.getByTestId('agent-flow-undo-button')).toBeInTheDocument();
+      expect(screen.getByTestId('agent-flow-redo-button')).toBeInTheDocument();
+      expect(screen.getByTestId('agent-flow-run-button')).toBeInTheDocument();
+      expect(screen.getByTestId('agent-flow-add-note-button')).toBeInTheDocument();
+    });
+
+    it('shows undo/redo count badges', () => {
+      render(<AgentFlow {...toolbarProps} />);
+      expect(screen.getByTestId('agent-flow-undo-button')).toHaveTextContent('3');
+      expect(screen.getByTestId('agent-flow-redo-button')).toHaveTextContent('1');
+    });
+
+    it('disables undo and redo when there are no steps', () => {
+      render(<AgentFlow {...toolbarProps} canUndo={false} canRedo={false} />);
+      expect(screen.getByTestId('agent-flow-undo-button')).toBeDisabled();
+      expect(screen.getByTestId('agent-flow-redo-button')).toBeDisabled();
+    });
+
+    it('invokes handlers on click', () => {
+      const onUndo = vi.fn();
+      const onRedo = vi.fn();
+      const onRun = vi.fn();
+      render(
+        <AgentFlow {...toolbarProps} onUndo={onUndo} onRedo={onRedo} onRun={onRun} />
+      );
+      fireEvent.click(screen.getByTestId('agent-flow-undo-button'));
+      fireEvent.click(screen.getByTestId('agent-flow-redo-button'));
+      fireEvent.click(screen.getByTestId('agent-flow-run-button'));
+      expect(onUndo).toHaveBeenCalledTimes(1);
+      expect(onRedo).toHaveBeenCalledTimes(1);
+      expect(onRun).toHaveBeenCalledTimes(1);
+    });
+
+    it('disables the run button while running', () => {
+      render(<AgentFlow {...toolbarProps} isRunning />);
+      expect(screen.getByTestId('agent-flow-run-button')).toBeDisabled();
+    });
+
+    it('omits undo/redo/run but keeps add-note when only sticky notes are enabled', () => {
+      render(
+        <AgentFlow
+          {...mockProps}
+          enableStickyNotes
+          onUndo={undefined}
+          onRedo={undefined}
+          onRun={undefined}
+        />
+      );
+      expect(screen.getByTestId('canvas-toolbar')).toBeInTheDocument();
+      expect(screen.getByTestId('agent-flow-add-note-button')).toBeInTheDocument();
+      expect(screen.queryByTestId('agent-flow-undo-button')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('agent-flow-run-button')).not.toBeInTheDocument();
+    });
   });
 
   it('renders timeline player with spans', () => {
