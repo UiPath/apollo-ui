@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.65.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.65.0...@uipath/apollo-react@6.65.1) (2026-10-01)
+
+### Bug Fixes
+
+* **apollo-react:** rename the GenerateFile built-in tool type to CreateFile ([6638465](https://github.com/UiPath/apollo-ui/commit/6638465f9f11176b02e8a9a728b3ef01ed589491))
+
 ## [@uipath/apollo-react-v6.65.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.64.1...@uipath/apollo-react@6.65.0) (2026-09-30)
 
 ### Features
