@@ -44,7 +44,7 @@ export interface JsonTreeToolbarProps {
   className?: string;
 }
 
-/** Leading slot + search, filter, and collapse-all controls for a `JsonTree`. */
+/** Leading slot + search, filter, and collapse-all controls for a `JsonTreeView`. */
 export function JsonTreeToolbar({
   query,
   onQueryChange,

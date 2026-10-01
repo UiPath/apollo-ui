@@ -18,7 +18,7 @@ import {
   buildJsonTree,
   collectContainerPaths,
   type JsonContainer,
-  JsonTree,
+  JsonTreeView,
   type JsonTreeNode,
   JsonTreeToolbar,
   type JsonValue,
@@ -251,7 +251,7 @@ export function NodeIOView({
 
         <TabsContent value="schema" className="mt-0 flex min-h-0 flex-1 flex-col">
           <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-surface-overlay bg-surface-overlay/40">
-            <JsonTree
+            <JsonTreeView
               nodes={nodes}
               collapsed={collapsed}
               onToggleCollapsed={toggleCollapsed}
@@ -269,7 +269,7 @@ export function NodeIOView({
               pathForCopy={pathForCopy}
               onCopy={onCopy}
               virtualized={virtualized}
-              // JsonTree shows its own "no match" text while a search or
+              // JsonTreeView shows its own "no match" text while a search or
               // filter is active; this only covers the genuinely-empty case.
               emptyMessage={emptyMessage}
             />
