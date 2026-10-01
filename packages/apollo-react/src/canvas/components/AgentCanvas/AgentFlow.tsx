@@ -687,7 +687,7 @@ const AgentFlowInner = memo(
                         label={undoLabel}
                         className={`relative ${TOOLBAR_ICON_BUTTON_CLASS}`}
                         onClick={onUndo}
-                        disabled={!canUndo}
+                        disabled={canUndo === false}
                       >
                         <Undo2 />
                         <CountBadge count={undoCount ?? 0} />
@@ -699,7 +699,7 @@ const AgentFlowInner = memo(
                         label={redoLabel}
                         className={`relative ${TOOLBAR_ICON_BUTTON_CLASS}`}
                         onClick={onRedo}
-                        disabled={!canRedo}
+                        disabled={canRedo === false}
                       >
                         <Redo2 />
                         <CountBadge count={redoCount ?? 0} />

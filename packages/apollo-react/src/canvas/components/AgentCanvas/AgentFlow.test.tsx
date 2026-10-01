@@ -370,6 +370,13 @@ describe('AgentFlow', () => {
       expect(screen.getByTestId('agent-flow-redo-button')).toBeDisabled();
     });
 
+    it('leaves undo and redo enabled when canUndo/canRedo are omitted', () => {
+      // Only explicit false disables; omitting the flag (handler-driven) stays enabled.
+      render(<AgentFlow {...toolbarProps} canUndo={undefined} canRedo={undefined} />);
+      expect(screen.getByTestId('agent-flow-undo-button')).toBeEnabled();
+      expect(screen.getByTestId('agent-flow-redo-button')).toBeEnabled();
+    });
+
     it('invokes handlers on click', () => {
       const onUndo = vi.fn();
       const onRedo = vi.fn();
