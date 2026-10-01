@@ -1,0 +1,69 @@
+import { OccupantsThatFit } from '@/app/_components/occupant-docs';
+import { Code } from 'nextra/components';
+import { LAYOUT_TOKENS, PADDED_INSET_PX } from '@/lib/composition';
+import { contentAreaSurface } from '@/registry/content-area/content-area.surface';
+
+# Content area
+
+The surface for a template's main slot.
+
+## Purpose
+
+The page's main content: the item itself, a form, a table, a document.
+
+## What it provides
+
+| | |
+| --- | --- |
+| Shape | <Code>{contentAreaSurface.provides.orientation}</Code>: a column that grows downward. |
+| Width | The rest of the page, after the panels. Never narrower than {contentAreaSurface.width.min}px. |
+| Inner width | {contentAreaSurface.provides.width.min}px at the minimum when padded |
+| Padding | `padded` ({PADDED_INSET_PX}px) or `flush` |
+| Scroll | `surface` (it scrolls and fades) or `occupant` (the occupant scrolls itself) |
+
+## Specs
+
+| Field | Value |
+| --- | --- |
+| `name` | <Code>{contentAreaSurface.name}</Code> |
+| `width.min` | {contentAreaSurface.width.min}px (`--content-area-width-min`) |
+| `provides.orientation` | <Code>{contentAreaSurface.provides.orientation}</Code> |
+| `provides.width.min` | {contentAreaSurface.provides.width.min}px |
+| `provides.scroll` | <Code>{contentAreaSurface.provides.scroll}</Code> |
+| `data-surface` | `content-area` |
+| `data-padding` | `padded` or `flush` |
+| `data-scroll` | `surface` or `occupant` |
+
+## Occupants that fit here
+
+<OccupantsThatFit surface="content-area" />
+
+Generated from every registered occupant's spec. How wide one can be depends
+on the slot that holds this surface; see the template's width rules.
+
+## Configurations
+
+- `padding` and `scroll`: from the occupant's specs.
+- Nothing else. Its width follows the template's width rules.
+
+## Appearance
+
+- Transparent over the Shell's ambient layer.
+- **Scroll fades:** a mask at an edge while there is more content that way,
+  growing to {LAYOUT_TOKENS.scrollFadeSize}px. Content scrolls under the fades
+  to the surface's edge. Flush content fades too.
+- Fades don't animate. They follow the scroll position.
+
+## Accessibility
+
+- It scrolls on its own. Scrolling it never moves the header or the panels.
+- In forced-colors mode the fades still apply at the edges, and the content in
+  between stays at full contrast.
+- When a panel that had focus closes, focus moves to the main slot, which
+  holds this surface.
+
+## When not to use
+
+- For content beside the main content. Use a
+  [side panel](/surfaces/side-panel).
+- For a page with no header and no panels. Use a simpler layout.

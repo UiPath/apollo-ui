@@ -1,0 +1,64 @@
+import { OccupantsThatFit } from '@/app/_components/occupant-docs';
+import { Code } from 'nextra/components';
+import { PADDED_INSET_PX } from '@/lib/composition';
+import { pageHeaderSurface } from '@/registry/page-header/page-header.surface';
+import { HEADER_WIDTH } from '@/templates/detail-page/detail-page.template';
+
+# Page header
+
+The page header surface fills a template's header slot. It is the existing
+[Page Header](/patterns/page-header) component, used as a surface.
+
+## Purpose
+
+The top of a page: the title, back navigation, key fields, and page actions.
+
+## What it provides
+
+| | |
+| --- | --- |
+| Shape | <Code>{pageHeaderSurface.provides.orientation}</Code>: a wide, short band. Content lays out in a row and never scrolls. |
+| Width | The slot's full width. No minimum of its own ({pageHeaderSurface.provides.width.min}px); the slot sets it. The Detail page's header slot guarantees {HEADER_WIDTH.min}px. |
+| Padding | `padded` ({PADDED_INSET_PX}px) or `flush` when a template sets it. Unset, it keeps its standalone responsive padding. |
+| Scroll | Never scrolls. Content has to fit, or scroll itself. |
+
+## Specs
+
+| Field | Value |
+| --- | --- |
+| `name` | <Code>{pageHeaderSurface.name}</Code> |
+| `provides.orientation` | <Code>{pageHeaderSurface.provides.orientation}</Code> |
+| `provides.width.min` | {pageHeaderSurface.provides.width.min}px |
+| `provides.scroll` | <Code>{pageHeaderSurface.provides.scroll}</Code> |
+| `data-surface` | `page-header` |
+| `data-padding` | `padded` or `flush`, when a template sets it |
+
+## Occupants that fit here
+
+<OccupantsThatFit surface="page-header" />
+
+Generated from every registered occupant's spec. How wide one can be depends
+on the slot that holds this surface; see the template's width rules.
+
+## Configurations
+
+- `padding`: `padded` or `flush`, from the occupant's specs.
+- The component's own props (`size`, `bordered`) work as on the
+  [pattern page](/patterns/page-header). Inside a template, leave `bordered`
+  off. The template draws the divider under the header.
+
+## Appearance
+
+Transparent over the Shell's ambient layer. The template draws the line under
+it.
+
+## Accessibility
+
+- Render the page title as the page's `h1` with `PageHeaderTitle`.
+- The back button has an accessible name.
+- The header never scrolls, so the title and actions stay in view.
+
+## When not to use
+
+- For a section heading inside main. Use a heading in the occupant.
+- For controls that belong to one panel. Put them in that panel.

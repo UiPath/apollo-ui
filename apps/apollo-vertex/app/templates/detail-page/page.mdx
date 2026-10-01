@@ -1,0 +1,195 @@
+import { DetailPageTemplate } from '@/templates/detail-page/DetailPageTemplate';
+import { PreviewFullScreen } from '@/app/_components/preview-full-screen';
+import { PADDED_INSET_PX } from '@/lib/composition';
+import {
+  END_PANEL_WIDTH,
+  HEADER_WIDTH,
+  MAIN_MIN_OUTER_PX,
+  START_PANEL_WIDTH,
+} from '@/templates/detail-page/detail-page.template';
+
+# Detail page
+
+A page for one item: its header, the item's content in main, and up to two
+side panels. It is the partner to the [List page](/templates/list-page). It
+renders inside an [`ApolloShell`](/patterns/shell) and follows the
+[design architecture](/guidelines/design-architecture): the template holds
+surfaces, and the surfaces hold occupants.
+
+<PreviewFullScreen title="Detail page preview">
+  <DetailPageTemplate />
+</PreviewFullScreen>
+
+The preview uses the minimal shell with both panels. At this width the
+main-width rule closes the start panel; expand the preview to full screen to
+see both. To try every configuration, open the
+[full preview with the Configure card](/preview/detail-page).
+
+## Composition
+
+- **[`Shell`](/patterns/shell)** (outer). Provides the chrome: sidebar or top
+  bar, auth, theme.
+- **`DetailPage`**. The template. It lays out the slots, draws the dividers,
+  and runs the width rules.
+- **Surfaces** fill the slots: the [page header](/surfaces/page-header), up
+  to two [side panels](/surfaces/side-panel), and the
+  [content area](/surfaces/content-area) for main.
+- **Occupants** are your content inside each surface.
+
+## Slots
+
+| Slot | `data-slot` | Required | Accepts |
+| --- | --- | --- | --- |
+| Header | `detail-page-header` | Yes | [Page header](/surfaces/page-header) |
+| Start panel | `detail-page-start-panel` | No | [Side panel](/surfaces/side-panel) |
+| Main | `detail-page-main` | Yes | [Content area](/surfaces/content-area) |
+| End panel | `detail-page-end-panel` | No | [Side panel](/surfaces/side-panel) |
+
+## Configurations
+
+These are the only settings. Everything else is fixed. All three are
+required: there are no defaults, so every Detail page states them.
+
+| Setting | Values | Required |
+| --- | --- | --- |
+| `panels` | `none`, `start`, `end`, `both` | Yes |
+| `start.placement`, `end.placement` | `below-header`, `beside-header` | Yes |
+| `start.defaultOpen`, `end.defaultOpen` | `true`, `false` | Yes |
+
+- **Below header.** The header spans the full width. The panel sits under it.
+- **Beside header.** The panel runs the full height of the page, and the
+  header moves over. In the minimal shell it stops under the Shell's top bar.
+  Beside-header panels get the side panel tint.
+- **defaultOpen** is where a panel starts. After that, the user opens and
+  closes it.
+
+## Choosing placement
+
+Placement shows what the panel's content belongs to.
+
+- **Below header:** content about this item, which changes when the user opens
+  a different item. For example: the source document, activity history, rules
+  applied, line items.
+- **Beside header:** content that works across items, which stays in place
+  when the user opens a different item. For example: a work queue, secondary
+  navigation, the AI assistant.
+
+Quick test: if the user opens the next item, does the panel's content change?
+Yes → below header. No → beside header.
+
+Don't choose placement for visual emphasis.
+
+## Width rules
+
+| Region | Default | Minimum | Maximum | Resizable |
+| --- | --- | --- | --- | --- |
+| Header | Spans the page | {HEADER_WIDTH.min}px (main's floor) | No limit | No |
+| Start panel | {START_PANEL_WIDTH.default}px | {START_PANEL_WIDTH.min}px | {START_PANEL_WIDTH.max}px | No |
+| End panel | {END_PANEL_WIDTH.default}px | {END_PANEL_WIDTH.min}px | Never wider than main | Yes |
+| Main | Fills the rest | {MAIN_MIN_OUTER_PX}px | No limit | No |
+
+- The header is always at least as wide as main, so it guarantees
+  {HEADER_WIDTH.min}px. Header occupants are checked against that.
+- Panels are exactly their width. Dividers take no space.
+- The start panel always renders at its default. Its minimum and maximum are
+  in the spec for when it becomes resizable.
+- The end panel is never wider than main. With no start panel open, that is a
+  50/50 split of the page. With one, it is 50/50 of what's left.
+- Main never gets narrower than {MAIN_MIN_OUTER_PX}px. On narrow windows the
+  end panel's maximum shrinks to keep it.
+- The start panel at {START_PANEL_WIDTH.default}px and the end panel at its
+  {END_PANEL_WIDTH.min}px minimum need
+  {MAIN_MIN_OUTER_PX + START_PANEL_WIDTH.default + END_PANEL_WIDTH.min}px. The
+  start panel alone needs
+  {MAIN_MIN_OUTER_PX + START_PANEL_WIDTH.default}px. The end panel alone needs
+  {MAIN_MIN_OUTER_PX + END_PANEL_WIDTH.min}px.
+
+### When space runs out
+
+When the open panels would push main below {MAIN_MIN_OUTER_PX}px, panels
+close, oldest first, until main fits.
+
+**The user's most recent action always wins.** The panel the user opened last
+is never closed by this rule, even if main ends up narrower than
+{MAIN_MIN_OUTER_PX}px. The rule only decides which other panel closes.
+
+- The rule also runs when the window gets narrower.
+- Panels the rule closed reopen when there is room again.
+- Panels the user closed stay closed.
+
+### Resizing the end panel
+
+Drag the divider between main and the end panel, or focus it and use the
+keyboard. Double-click resets to {END_PANEL_WIDTH.default}px. The chosen width
+is kept when the window resizes, so the panel returns to it when there is
+room. Dragging to the maximum stores "max", which keeps following the 50/50
+split.
+
+## Shells
+
+The Detail page works in both [Shell](/patterns/shell) variants:
+
+- **Sidebar.** The page fills the space beside the Shell sidebar, expanded or
+  collapsed.
+- **Minimal.** The page sits under the Shell's top bar. Beside-header panels
+  stop under it.
+
+## Installation
+
+The template is copied into your app. The surfaces install from the registry:
+
+```bash
+npx shadcn@latest add @uipath/page-header
+npx shadcn@latest add @uipath/side-panel
+npx shadcn@latest add @uipath/content-area
+```
+
+The side panel and content area bring in `@uipath/composition` (the specs and
+tokens) and `@uipath/use-scroll-fade`. The layout tokens come with the theme,
+`@uipath/apollo-vertex-theme`.
+
+Copy these files from `templates/detail-page/` into your app:
+
+- `DetailPage.tsx`: the frame
+- `detail-page.template.ts`: the specs, width rules, and main-width rule
+- `use-detail-page.ts`: the panel state
+- `PanelResizeHandle.tsx`: the end panel's resize handle
+
+```tsx
+const detailPage = useDetailPage({
+  panels: 'both',
+  start: { placement: 'beside-header', defaultOpen: true },
+  end: { placement: 'below-header', defaultOpen: true },
+});
+
+return (
+  <DetailPage
+    state={detailPage}
+    header={<PageHeader padding="padded">{/* title, back, actions */}</PageHeader>}
+    startPanel={<SidePanel side="start" aria-label="Queue">{/* queue */}</SidePanel>}
+    main={<ContentArea>{/* the item */}</ContentArea>}
+    endPanel={<SidePanel side="end" aria-label="Activity">{/* activity */}</SidePanel>}
+  />
+);
+```
+
+Open and close panels with `detailPage.setPanelOpen(side, open)`.
+
+## Customizing
+
+- **Padding.** Each occupant chooses `padded` ({PADDED_INSET_PX}px) or
+  `flush`. Pass it to the surface's `padding` prop.
+- **Scrolling.** Each occupant chooses who scrolls. Pass it to the surface's
+  `scroll` prop. A table with a sticky header should scroll itself.
+- **Motion.** Opening and closing a panel animates like the Shell sidebar.
+  Only the user's own opens and closes animate. Reduced motion turns it off.
+- **Not customizable.** Slot positions, dividers, backgrounds, default widths,
+  and the width rules are fixed.
+
+## Known gaps
+
+- **Small screens.** There is no overlay surface yet. On narrow windows the
+  main-width rule closes panels instead.
+- **Panel triggers.** There are no in-page controls to open or close panels
+  yet. Your app calls `setPanelOpen`.
+- **Start panel resizing.** The start panel isn't resizable yet.

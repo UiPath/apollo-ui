@@ -1,0 +1,66 @@
+---
+title: Stage strip
+---
+
+import { OccupantTitle, OpenInWorkbench, WhereItFits } from '@/app/_components/occupant-docs';
+import { OccupantInSurface } from '@/app/_components/occupant-in-surface';
+
+<OccupantTitle name="stage-strip" />
+
+Where an item is in its stages, as a one-band summary: a compact marker per
+stage, then the current stage and its latest event. It takes the
+[occupant](/guidelines/design-architecture/creating-occupants) role in horizontal surfaces.
+
+<OpenInWorkbench name="stage-strip" />
+
+<div className="not-prose my-6 flex flex-col gap-6">
+  <OccupantInSurface occupant="stage-strip" surface="page-header" example="primary" width="100%" />
+  <OccupantInSurface occupant="stage-strip" surface="page-header" example="secondary" width="100%" />
+</div>
+
+## Where it fits
+
+<WhereItFits name="stage-strip" />
+
+## A separate occupant, on purpose
+
+The stage strip and the [activity timeline](/patterns/activity-timeline) read
+the same view model. They're two occupants because they show different
+information: the strip is a summary of where the item is, and the timeline is
+every event. A smaller version that shows different information is a separate
+occupant that shares the data mapping.
+
+## View model
+
+It renders a `ProgressViewModel` from `@uipath/progress-view-model`: the
+`stages`, each done, current, or upcoming, with an optional owner, and the
+latest of the `events`. See the
+[activity timeline](/patterns/activity-timeline#view-model) for the fields.
+
+## Installation
+
+```bash
+npx shadcn@latest add @uipath/stage-strip
+```
+
+## Usage
+
+```tsx
+import { StageStrip, StageStripView } from '@/components/ui/stage-strip';
+
+// As an occupant of a horizontal surface.
+<PageHeader padding="padded">
+  <StageStrip view={progress} />
+</PageHeader>
+
+// Inside another view, without its own occupant root.
+<StageStripView view={progress} />
+```
+
+## Accessibility
+
+- The stages are an ordered list named for the subject ("Stages for …").
+- Each stage has a label and status for assistive tech, and the current one
+  is `aria-current="step"`.
+- A compact marker fits one letter, so a person's marker shows their first
+  initial. Their full name is in the stage's label.

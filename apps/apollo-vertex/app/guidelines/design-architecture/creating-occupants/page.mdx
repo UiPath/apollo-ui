@@ -1,0 +1,269 @@
+import { OpenInWorkbench } from '@/app/_components/occupant-docs';
+import { activityTimelineOccupant } from '@/registry/activity-timeline/activity-timeline.occupant';
+import { LAYOUT_TOKENS } from '@/lib/composition';
+import { queueOccupant } from '@/registry/queue/queue.occupant';
+import { stageStripOccupant } from '@/registry/stage-strip/stage-strip.occupant';
+
+# Creating occupants
+
+An occupant is the content inside a surface: a pattern that knows the space
+it needs, and works in any surface that gives it that space. This page covers
+how to design one. The [design architecture](/guidelines/design-architecture)
+page covers the specs in detail. To try any occupant in every surface and
+template, open the workbench.
+
+<OpenInWorkbench />
+
+## An occupant is a role
+
+Occupant isn't a kind of component, and there's no separate section for
+them. It's a role a pattern takes on when it has an occupant spec. The
+[activity timeline](/patterns/activity-timeline) is a pattern first. Its spec
+is what lets it go in a side panel or a content area.
+
+- Occupant patterns live under Patterns, with an "Occupant" label and a
+  "Where it fits" table made from the spec.
+- Each surface page lists the occupants that fit it, also made from the
+  specs.
+- Occupants never name a template. A spec describes what the occupant needs
+  from a surface, so it works in every template that has that surface.
+
+## The spec
+
+| Field | What it says |
+| --- | --- |
+| `name` | Rendered as `data-occupant`. Lowercase and hyphenated |
+| `label` | Shown in docs and tooling |
+| `icon` | A lucide icon, for pickers |
+| `orientations` | The surface shapes it works in. Defaults to `["vertical"]` |
+| `surfaces` | Only when it belongs in some surfaces of its orientations, not all. Leave it out otherwise |
+| `requires.minWidth` | The narrowest inner width where it still works |
+| `requires.padding` | `padded` or `flush` |
+| `requires.scroll` | `surface`, `occupant`, or `either` |
+
+## View models and adapters
+
+An occupant renders a neutral view model: the shape of its content, with no
+domain in it. The activity timeline shows events with an actor, status,
+title, detail, and time. It doesn't know about invoices, claims, or loans.
+
+- Your solution maps its own data into the view model with an adapter.
+- Adapters belong to the solution, not the occupant. The registry item never
+  ships one.
+- In this repo, example adapters live in an `examples/` folder next to the
+  view model, and nothing outside `examples/` may import them. The dependency
+  rules check this.
+- Every occupant has at least two examples from different domains, and a
+  stress example. The docs and checks render it with each.
+
+## Minimum width is a design decision
+
+`minWidth` is the narrowest inner width where the occupant still works.
+
+- **By default, it follows its surface.** A vertical occupant's minimum reads
+  the width token of the narrowest surface it belongs in, so it fits every
+  such surface and moves with the token. The queue follows the side panel:
+  it declares {queueOccupant.requires.minWidth}px, the side panel's minimum
+  of {LAYOUT_TOKENS.sidePanelWidthMin}px, because it runs edge to edge.
+- **A horizontal occupant is measured.** The page header promises no width,
+  so its minimum is the measured floor: the narrowest width where nothing
+  clips, across every example, stress included.
+- **A raised minimum needs a reason, written in the spec.** When an occupant
+  gets hard to read before it clips, its minimum can be wider, with a
+  comment in its spec saying why. The stage strip declares
+  {stageStripOccupant.requires.minWidth}px and the activity timeline
+  {activityTimelineOccupant.requires.minWidth}px: both could go narrower
+  without clipping, but their titles get hard to read.
+
+Measuring reports the floor for each example in each surface the occupant
+claims, and fails if the minimum is below it. When a minimum that follows its
+surface clips there, fix the layout rather than raising it.
+
+For the minimum to hold for any data, long values truncate or wrap:
+
+- Truncate single-line labels, and keep the full text in a tooltip.
+- Wrap everything else, including long unbroken strings (`wrap-anywhere`).
+- Handle missing and empty optional values.
+
+## Orientations
+
+Surfaces give a space with an orientation. The page header is horizontal: a
+wide, short band. Side panels and the content area are vertical: columns that
+grow downward.
+
+- An occupant lists the orientations it works in.
+- It adapts to the shape of the space with `useSurface()`, never to the
+  surface's name. For style-only changes, use container queries.
+- If it shows the same information in both shapes, it's one occupant with
+  both orientations.
+- If a smaller version shows different information, it's a separate
+  occupant that shares the view model. The
+  [stage strip](/patterns/stage-strip) is the timeline's summary: same data,
+  different information, so a different occupant.
+
+## Standard states
+
+Every occupant renders the same states with `OccupantStateView`:
+
+| State | What it shows |
+| --- | --- |
+| `ready` | The content |
+| `loading` | Placeholders shaped like the content |
+| `empty` | A short message about what will appear here |
+| `error` | What failed, and Retry when the occupant is given `onRetry` |
+| `agent-updating` | The content, still readable, marked busy, with a status line |
+
+The state view adapts to orientation too: messages stack in a vertical
+surface and sit in one row in a horizontal one.
+
+## Recommended actions
+
+When an occupant shows actions, at most one is recommended:
+
+- The recommended action gets primary emphasis and stays visible.
+- Its reason is available as a tooltip and as a description for assistive
+  tech.
+- Without a recommendation, every action gets equal emphasis, and any can
+  fold into an overflow menu when space runs short.
+
+The recommendation comes from the view model, so the solution decides it.
+
+## Create one with Claude Code
+
+### Run /create-occupant
+
+In Claude Code, in this repository, run:
+
+```text
+/create-occupant <name>
+```
+
+The name is optional: lowercase with hyphens, like `key-facts`. Saying
+"I want to create an occupant" starts the same flow. It works on its own
+`occupant/<name>` branch, goes one step at a time, and waits for your answer
+wherever it asks. At the end it commits the occupant on that branch, without
+pushing, and asks what was unclear, so the team can improve the flow.
+
+`/create-occupant` is listed in the `/` menu, in the terminal and in the
+VS Code extension. If it isn't there, type the command anyway. If Claude
+Code says there's no such skill, start it at the repository root, or update
+Claude Code: older versions find skills only in the folder they start in.
+
+After pulling changes to the skill, start a new session; a running one
+keeps the version it loaded.
+
+### What it asks, and why
+
+- **Whether something already does this.** It first searches the
+  components, patterns, and occupants. A near duplicate is harder to
+  maintain than a small change to what exists, so if one fits, it stops and
+  suggests using or extending it.
+- **What it shows, what it's for, its scope, and what's left out.** It
+  describes the content without domain words, because an occupant serves
+  every solution, not one. It builds only the scope: anything else that
+  would help comes back as a suggestion. A design reference is welcome, for
+  layout; its values still come from tokens.
+- **What each item has.** Each piece of content becomes a field, with a
+  kind that decides how it renders.
+- **Which surfaces, and how it sits in them.** The surfaces decide its
+  orientation. Padding decides whether it runs edge to edge, and scrolling
+  decides whether the surface or the occupant scrolls. It never asks for a
+  width: the minimum follows the surface, or is measured, and it's raised
+  only for a reason written in the spec.
+- **Two domains from different lines of business.** Its examples come from
+  both, which shows the view model isn't tied to either.
+
+| Kind | How it renders |
+| --- | --- |
+| `title` | The item's main text. It wraps, or on a card, truncates with the full title in a tooltip |
+| `label` | A short single line. It truncates, with the full text in a tooltip |
+| `value` | The value in a label and value pair. It shows "Not set" when empty |
+| `detail` | Secondary text. It wraps |
+| `meta` | Small text, like a time. It wraps |
+| `figure` | A prominent value, like an amount. It sits at the end of the title's line |
+| `status` | A label with a tone, shown as a colored dot, and a count of any more |
+
+Lists people work through can also have:
+
+| Option | What it adds |
+| --- | --- |
+| Selectable items | Items render as cards people pick. The page owns the current item, through `currentId` and `onSelect`, and a footer steps through the items |
+| Groups | Items show under their group's label, with a count |
+| Filters | Tabs filter the list, with All first |
+
+A selectable or filtered occupant keeps its tabs and footer in place and
+scrolls its own list. It's vertical only.
+
+### What it checks
+
+Before running anything, it reviews what it wrote:
+
+- It shows only the scope you gave.
+- Every value comes from a token. A value with no token becomes a proposal,
+  never a hardcoded number.
+- It uses the kit and existing components rather than rebuilding them.
+- All copy is in sentence case.
+- It changed only the occupant: its folder, its examples, its Patterns page,
+  and its registration.
+
+Then it measures the minimum width and runs the [checks](#checks), fixing
+failures inside the occupant and explaining any it can't. Last, it gives you
+the links to try it in the [occupant workbench](/preview/occupants), in the
+surface view and the template view, with every sample, state, theme, and
+width.
+
+### Take a proposal forward
+
+When the occupant needs something shared (a token, a field kind, a kit part,
+a surface behavior), the flow doesn't change it. It writes a proposal in the
+occupant's `PROPOSALS.md`: what's needed, why, what it would change, and what
+the occupant does until then. Shared layers serve every occupant, so they
+change on their own, with their own review.
+
+```text
+Show me the proposals for the <name> occupant,
+and draft each one as its own change to the shared layers.
+```
+
+## Add a surface or template
+
+The workbench shows every surface and template that's registered for
+previews, with no change to the workbench itself.
+
+- **A surface:** register it in `registry.json` with `"layer": "surface"` and
+  its `<name>.surface.ts` spec, give it a label in `lib/surface-labels.ts`,
+  and add its host to `app/_components/surface-hosts.ts`: how to render it
+  on its own, the element that holds its padding, and where it sits on the
+  page map.
+- **A template:** add its host to `app/_components/template-hosts.ts`: its
+  spec, a label for each slot, which slots are its side panels and the
+  panels settings it offers, its narrowest useful width, and a frame that
+  renders it with one occupant in one slot, in the layout the workbench's
+  Layout menu sets.
+
+Unit tests fail until each has everything it needs.
+
+## Checks
+
+Every registered occupant is checked automatically, in every surface it
+claims, with every example.
+
+On every pull request:
+
+- No clipping at its minimum width, and at 40px and 200px wider, in the
+  light theme.
+- An accessibility scan with axe of its ready state, in light and dark.
+- It claims at least one surface. In the workbench, it shows in every
+  surface it claims, and every other surface says why not.
+- Its Patterns page renders its spec's values.
+- Lint: its copy is in sentence case, nothing is left to fill in, and the
+  occupant index is current.
+- Its registry item's dependencies match its imports, and its code follows
+  the dependency rules.
+- A commit that changes it changes nothing outside it but its registration.
+
+Nightly, and on demand:
+
+- No clipping at every 16px from its minimum to 480px wider, in light and
+  dark.
+- An accessibility scan with axe of every standard state, in light and dark.

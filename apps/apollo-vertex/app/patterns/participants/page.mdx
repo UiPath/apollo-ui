@@ -1,0 +1,55 @@
+---
+title: Participants
+---
+
+import { OccupantTitle, OpenInWorkbench, WhereItFits } from '@/app/_components/occupant-docs';
+import { OccupantInSurface } from '@/app/_components/occupant-in-surface';
+
+<OccupantTitle name="participants" />
+
+The people involved with an item, what each one does, and when they last acted. It takes the [occupant](/guidelines/design-architecture/creating-occupants) role.
+
+<OpenInWorkbench name="participants" />
+
+<div className="not-prose my-6 flex flex-wrap gap-6">
+  <OccupantInSurface occupant="participants" surface="side-panel" example="primary" width={320} height="auto" />
+  <OccupantInSurface occupant="participants" surface="side-panel" example="secondary" width={320} height="auto" />
+</div>
+
+The same occupant, with data from hiring and home renovation.
+Neither is built into it.
+
+## Where it fits
+
+<WhereItFits name="participants" />
+
+## View model
+
+It renders a `ParticipantsViewModel`. Nothing in it names a domain.
+
+| Field | What it holds |
+| --- | --- |
+| `subject` | What the people are involved with, for accessible names, like an item's id. |
+| `participants` | Each item's `id`, and: `name`, `role` (optional), `lastActive` (optional) |
+| `name` | The person's name. |
+| `role` | What they do on this item, like reviewer or owner. |
+| `lastActive` | When they last acted on it, formatted for display. |
+
+Your solution maps its own data into this shape with an adapter. The adapter
+belongs to your solution, not to the occupant.
+
+## States
+
+It renders the standard occupant states. With no participants, it shows the empty
+state.
+
+## Installation
+
+```bash
+npx shadcn@latest add @uipath/participants
+```
+
+## Accessibility
+
+- The participants are a list, named for the subject ("Participants for …").
+- Everything else wraps, so nothing is cut off at any width from the minimum up.
