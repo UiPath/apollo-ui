@@ -5,6 +5,7 @@ import {
   type PanelSide,
   resolveEndWidth,
   resolvePanels,
+  withLatest,
 } from "@/templates/detail-page/detail-page.template";
 
 const intent = (
@@ -58,6 +59,16 @@ describe("main-width rule", () => {
     const wanted = intent(both, ["start", "end"]);
     expect(resolvePanels(wanted, 920).open.start).toBe(false);
     expect(resolvePanels(wanted, 1160).open.start).toBe(true);
+  });
+
+  it("never closes a panel kept as the latest, whatever opened after it", () => {
+    // The user opened the end panel last, but the start panel is kept latest.
+    const kept = withLatest(intent(both, ["start", "end"], "end"), "start");
+    expect(resolvePanels(kept, 920).open).toEqual({ start: true, end: false });
+    expect(resolvePanels(kept, 420).open).toEqual({ start: true, end: false });
+    // A panel the user closed stays closed: keeping it latest doesn't open it.
+    const closed = intent({ start: false, end: true }, ["end"], "end");
+    expect(withLatest(closed, "start")).toBe(closed);
   });
 
   it("waits for the template to be measured", () => {

@@ -12,6 +12,7 @@ import {
   type PanelWidth,
   resolveEndWidth,
   resolvePanels,
+  withLatest,
 } from "./detail-page.template";
 
 const SIDES: readonly PanelSide[] = ["start", "end"];
@@ -148,7 +149,10 @@ export function useDetailPage(config: DetailPageConfig): DetailPageState {
   }
 
   const enabled = enabledPanels(config.panels);
-  const resolved = resolvePanels(intent, width);
+  const resolved = resolvePanels(
+    config.latest ? withLatest(intent, config.latest) : intent,
+    width,
+  );
   const closedBy = {
     start: enabled.start ? resolved.closedBy.start : null,
     end: enabled.end ? resolved.closedBy.end : null,
