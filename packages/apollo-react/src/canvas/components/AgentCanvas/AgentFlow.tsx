@@ -622,9 +622,11 @@ const AgentFlowInner = memo(
     const showStop = !!isRunning && !!onStop;
     const showPlay = !!onRun && !isRunning;
     const showRunControl = showPlay || showStop;
+    // A run's Stop action must always stay reachable, even while a suggestion group is
+    // active (which otherwise suppresses the toolbar to avoid clutter).
+    const hasToolbarItems = showUndo || showRedo || showRunControl || showAddNote;
     const showModeToolbar =
-      !suggestionGroup?.suggestions.length &&
-      (showUndo || showRedo || showRunControl || showAddNote);
+      hasToolbarItems && (!!isRunning || !suggestionGroup?.suggestions.length);
     const translations = canvasTranslations ?? DefaultCanvasTranslations;
     // The newer toolbar labels are optional on CanvasTranslations, so fall back to
     // the defaults per field for consumers that supply the previous translation shape.
