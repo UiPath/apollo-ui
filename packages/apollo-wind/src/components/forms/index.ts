@@ -13,6 +13,22 @@ export {
   FetchAdapter,
 } from './data-fetcher';
 export {
+  type AiAssistActionOptions,
+  type ClearActionOptions,
+  createAiAssistAction,
+  createClearAction,
+  createInsertVariableAction,
+  type FieldActionContext,
+  type FieldActionGenerate,
+  type FieldActionRegistry,
+  type FieldActionsPluginConfig,
+  type FieldActionVariables,
+  type FieldHeaderAction,
+  type FieldMenuAction,
+  type InsertVariableActionOptions,
+  type ValueModeVariable,
+} from './field-actions';
+export {
   FIELD_CONTROL_GEOMETRY,
   FieldControl,
   type FieldControlFormField,
@@ -33,6 +49,7 @@ export {
 } from './form-plugins';
 // Types
 export type {
+  CustomComponents,
   CustomFieldComponentProps,
   CustomValueType,
   DataSource,
@@ -48,6 +65,9 @@ export type {
   FormSection,
   FormStep,
   StringListFieldMetadata,
+  ValueModeControlRef,
+  ValueModeId,
+  ValueModesConfig,
 } from './form-schema';
 // Type guards
 export {
@@ -57,7 +77,37 @@ export {
   isFileField,
 } from './form-schema';
 export { FormStateViewer } from './form-state-viewer';
+export {
+  type ClearActionStrings,
+  DEFAULT_METADATA_FORM_STRINGS,
+  type FormValidationStrings,
+  type MetadataFormStringOverrides,
+  type MetadataFormStrings,
+} from './form-strings';
 // Core exports
 export { MetadataForm, type MetadataFormProps, useWatch } from './metadata-form';
+export {
+  ModeAwareField,
+  type ModeAwareFieldProps,
+} from './mode-aware-field';
 export { ExpressionBuilder, RuleBuilder, RulesEngine } from './rules-engine';
 export { formatTemplate, StringListField, type StringListFieldProps } from './string-list-field';
+export {
+  type CodecContext,
+  type ConvertResult,
+  type DecodedValue,
+  envelopeCodec,
+  type FieldControlRegistration,
+  isEmptyModeValue,
+  isValueModeEnvelope,
+  literalValues,
+  VALUE_MODE_OPAQUE,
+  type ValueModeCodec,
+  type ValueModeControlHandle,
+  type ValueModeControlProps,
+  type ValueModeControlRegistration,
+  type ValueModeDefinition,
+  type ValueModeEnvelope,
+  type ValueModeRegistry,
+  type ValueModesPluginConfig,
+} from './value-modes';

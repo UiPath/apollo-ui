@@ -150,6 +150,11 @@ describe('FormFieldHeader', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
+  it('gives the label the id a control names itself by', () => {
+    render(<FormFieldHeader label="Flag" labelId="flag-label" />);
+    expect(screen.getByText('Flag').closest('label')).toHaveAttribute('id', 'flag-label');
+  });
+
   it('is the container its actions collapse by, with a forwarded ref and extra props', () => {
     const ref = React.createRef<HTMLDivElement>();
     render(<FormFieldHeader ref={ref} label="Summary" data-testid="header" />);

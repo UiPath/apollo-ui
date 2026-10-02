@@ -1,6 +1,7 @@
 import jsep from 'jsep';
 import { get } from '@/lib';
 import type { FieldCondition, FieldOption, FieldRule, FormContext } from './form-schema';
+import { isValueModeOpaque } from './opaque-value';
 
 /**
  * Rules Engine - Evaluates conditions and applies effects using jsep
@@ -57,8 +58,9 @@ export class RulesEngine {
       return !condition.notIn.includes(fieldValue);
     }
 
-    // Regex pattern matching
+    // Regex pattern matching. A value in another mode matches no pattern.
     if (condition.matches !== undefined) {
+      if (isValueModeOpaque(fieldValue)) return false;
       const regex = new RegExp(condition.matches);
       return regex.test(String(fieldValue));
     }
@@ -165,6 +167,12 @@ export class RulesEngine {
         const binary = node as jsep.BinaryExpression;
         const left = RulesEngine.evaluateNode(binary.left, values);
         const right = RulesEngine.evaluateNode(binary.right, values);
+
+        // A value in a mode other than `literal` equals nothing, itself included, and is in no order.
+        if (isValueModeOpaque(left) || isValueModeOpaque(right)) {
+          if (binary.operator === '!=' || binary.operator === '!==') return true;
+          if (['==', '===', '<', '>', '<=', '>='].includes(binary.operator)) return false;
+        }
 
         switch (binary.operator) {
           case '==':

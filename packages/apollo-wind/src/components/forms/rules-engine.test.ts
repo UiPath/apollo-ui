@@ -1,8 +1,27 @@
-import { describe, it, expect } from 'vitest';
-import { RulesEngine, RuleBuilder, ExpressionBuilder } from './rules-engine';
+import { describe, expect, it } from 'vitest';
 import type { FieldCondition, FieldRule, FormContext } from './form-schema';
+import { VALUE_MODE_OPAQUE } from './opaque-value';
+import { ExpressionBuilder, RuleBuilder, RulesEngine } from './rules-engine';
 
 describe('RulesEngine', () => {
+  describe('a value in a mode other than literal', () => {
+    const values = { a: VALUE_MODE_OPAQUE, b: VALUE_MODE_OPAQUE, n: 3 };
+
+    it('matches no pattern and no literal', () => {
+      expect(RulesEngine.evaluateCondition({ when: 'a', matches: '.+' }, values)).toBe(false);
+      expect(RulesEngine.evaluateCondition({ when: 'a', is: 'x' }, values)).toBe(false);
+      expect(RulesEngine.evaluateCondition({ when: 'a', isNot: 'x' }, values)).toBe(true);
+    });
+
+    it('equals nothing in a custom expression, another such value included', () => {
+      expect(RulesEngine.evaluateCondition({ when: 'a', custom: 'a === b' }, values)).toBe(false);
+      expect(RulesEngine.evaluateCondition({ when: 'a', custom: 'a == a' }, values)).toBe(false);
+      expect(RulesEngine.evaluateCondition({ when: 'a', custom: 'a !== b' }, values)).toBe(true);
+      expect(RulesEngine.evaluateCondition({ when: 'a', custom: "a > 'A'" }, values)).toBe(false);
+      expect(RulesEngine.evaluateCondition({ when: 'n', custom: 'n > 2' }, values)).toBe(true);
+    });
+  });
+
   describe('evaluateCondition', () => {
     it("evaluates 'is' condition correctly when matching", () => {
       const condition: FieldCondition = { when: 'status', is: 'active' };
