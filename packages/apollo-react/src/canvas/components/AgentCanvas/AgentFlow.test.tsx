@@ -481,9 +481,9 @@ describe('AgentFlow', () => {
       expect(screen.queryByTestId('canvas-toolbar')).not.toBeInTheDocument();
     });
 
-    it('hides the toolbar while a suggestion group is active, even during a run', () => {
-      // Only one thing occupies the bottom-center region: the suggestion panel takes
-      // precedence over the mode toolbar.
+    it('keeps Stop reachable during a run even when a suggestion group is active', () => {
+      // Stop must stay reachable throughout a run, so the toolbar wins over the suggestion
+      // panel while a run is active.
       render(
         <AgentFlow
           {...toolbarProps}
@@ -492,7 +492,24 @@ describe('AgentFlow', () => {
           suggestionGroup={suggestionGroupFixture}
         />
       );
-      expect(screen.queryByTestId('canvas-toolbar')).not.toBeInTheDocument();
+      expect(screen.getByTestId('agent-flow-stop-button')).toBeInTheDocument();
+    });
+
+    it('does not hide the toolbar for an all-standalone suggestion group', () => {
+      // Standalone suggestions render no panel, so they must not suppress the toolbar.
+      const standaloneGroup = {
+        id: 'sg-standalone',
+        suggestions: [
+          {
+            id: 's1',
+            type: 'add',
+            isStandalone: true,
+            resource: { id: 'r1', type: 'tool', name: 'T', description: 'd' },
+          },
+        ],
+      } as unknown as AgentFlowProps['suggestionGroup'];
+      render(<AgentFlow {...toolbarProps} suggestionGroup={standaloneGroup} />);
+      expect(screen.getByTestId('canvas-toolbar')).toBeInTheDocument();
     });
 
     it('hides the toolbar while the timeline player is visible', () => {
