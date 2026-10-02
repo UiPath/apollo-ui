@@ -6,7 +6,7 @@ import type { GuardrailScope } from './builder-types';
 /** Agents' `ActionType` string enum assigns to this union as well as Flow's `z.enum`. */
 export type CentralizedGuardrailActionType = 'block' | 'escalate' | 'filter' | 'log';
 
-/** A BYO guardrail's configured parameter; `parameterType` and `value` are unvalidated. */
+/** A guardrail's configured parameter; `parameterType` and `value` are unvalidated. */
 export interface CentralizedGuardrailParameter {
   id: string;
   parameterType?: string | null;
@@ -29,7 +29,10 @@ export interface CentralizedGuardrail {
   /** Built-in validators only: the detected entities, and their per-entity thresholds. */
   entities?: string[] | null;
   entityThresholds?: Record<string, number> | null;
-  /** BYO only: connector-specific configuration, passed through from the policy. */
+  /**
+   * BYO: connector-specific configuration, passed through from the policy. Built-in: settings
+   * the entity fields cannot hold, such as sentiment's `language`.
+   */
   parameters?: CentralizedGuardrailParameter[] | null;
 }
 
