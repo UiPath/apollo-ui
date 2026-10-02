@@ -614,10 +614,11 @@ const AgentFlowInner = memo(
       [onZoomLevelChange, zoomLevel]
     );
 
-    // Bottom-center mode toolbar. The items stay stable across design, debug-run,
-    // and read-only/view: they remain visible and are disabled contextually rather
-    // than hidden. Editing is locked during a run or in any non-design (view/read-only)
-    // mode; only the Stop button stays active while a run is in progress.
+    // Bottom-center mode toolbar. When the toolbar is the control shown in this region
+    // (see showModeToolbar below), it keeps all its items rather than collapsing — they are
+    // disabled contextually instead of removed. Editing is locked during a run or in any
+    // non-design (view/read-only) mode; only the Stop button stays active while a run is in
+    // progress. The toolbar itself yields the region to the timeline player / suggestion panel.
     const editingLocked = !!isRunning || mode !== 'design';
     const showUndo = !!onUndo;
     const showRedo = !!onRedo;
