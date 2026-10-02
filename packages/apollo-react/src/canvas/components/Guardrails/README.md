@@ -588,10 +588,11 @@ orchestration. The `Details in a dialog` and `Details in a panel overlay` storie
 ```
 
 - **One configuration renderer for both origins.** A BYO guardrail states its configuration
-  as connector parameters and a built-in as `entities` / `entityThresholds`.
-  `resolveCentralizedGuardrailParameters` lifts the built-in fields onto the parameter shape
-  so one resolver covers both, and a threshold map absorbs its `keySource` list into its key
-  column.
+  as connector parameters and a built-in as `entities` / `entityThresholds`, plus
+  `parameters` for whatever those cannot hold (sentiment's languages).
+  `resolveCentralizedGuardrailParameters` lifts the built-in fields onto the parameter shape,
+  followed by the built-in's own parameters, so one resolver covers both, and a threshold map
+  absorbs its `keySource` list into its key column.
 - **Labels and entity names come from the matching definition**, so a centralized guardrail
   names its entities the way the guardrail editor names them ("US Social Security Number
   (SSN)", not `USSocialSecurityNumber`) and each validator names its own configuration

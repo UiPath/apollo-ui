@@ -2,8 +2,10 @@ import { render, screen, within } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { describe, expect, it } from 'vitest';
 import { ApI18nProvider } from '../../../i18n';
+import { SENTIMENT_WIRE } from './__fixtures__/definitions-wire.fixtures';
 import { CentralizedGuardrailDetails } from './centralized-guardrail-details';
 import type { CentralizedGuardrail, CentralizedGuardrailDefinition } from './centralized-types';
+import { enrichGuardrailDefinitions } from './definitions-enrich';
 
 const guardrail = (overrides: Partial<CentralizedGuardrail> = {}): CentralizedGuardrail => ({
   validator: 'pii_detection',
@@ -128,6 +130,31 @@ describe('CentralizedGuardrailDetails', () => {
     const thresholds = screen.getByText('Detection thresholds').parentElement as HTMLElement;
     const rows = within(thresholds).getAllByRole('listitem');
     expect(rows.map((row) => row.textContent)).toEqual(['Email address0.8', 'US SSN—']);
+  });
+
+  it('shows a built-in’s own settings next to its thresholds, such as sentiment’s languages', () => {
+    render(
+      <CentralizedGuardrailDetails
+        guardrail={guardrail({
+          validator: 'sentiment',
+          scopes: ['Llm'],
+          entities: ['Negative'],
+          entityThresholds: { Negative: 0.7 },
+          parameters: [{ id: 'language', parameterType: 'enum-list', value: ['en', 'fr'] }],
+        })}
+        definitions={enrichGuardrailDefinitions([SENTIMENT_WIRE])}
+        policyName="Acme policy"
+      />
+    );
+
+    expect(valueFor('Guardrail type')).toContain('Sentiment');
+    const thresholds = screen.getByText('Confidence thresholds').parentElement as HTMLElement;
+    expect(
+      within(thresholds)
+        .getAllByRole('listitem')
+        .map((row) => row.textContent)
+    ).toEqual(['Negative0.7']);
+    expect(valueFor('Languages')).toBe('English, French');
   });
 
   it('renders a BYO connector configuration in the order the connector declares', () => {
