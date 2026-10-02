@@ -1,1 +1,1 @@
-export { cn, get, deepEqual } from './utils';
+export { cn, composeRefs, deepEqual, get } from './utils';

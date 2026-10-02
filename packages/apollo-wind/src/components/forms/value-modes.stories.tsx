@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Regex } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { createInsertVariableAction } from './field-actions';
 import type { FormPlugin, FormSchema } from './form-schema';
 import { MetadataForm } from './metadata-form';
 import {
@@ -24,8 +25,8 @@ existing data loads, and wraps it on its first write. Rules, conditions and data
 field's fixed value only. Switching a non-empty value asks first; an empty one never does, though a
 codec's \`convert\` may seed it. Hosts add codecs, modes and controls through
 \`FormPlugin.valueModes\` (a definition for a built-in mode changes only what it gives, such as its
-control) and strings through \`FormPlugin.strings\`. The built-in Variable and Prompt modes have no
-control of their own yet.
+control) and strings through \`FormPlugin.strings\`. The form's variables, from
+\`FormPlugin.variables\`, feed the Variable mode's picker and Insert variable.
 `,
       },
     },
@@ -54,7 +55,7 @@ function Demo({ schema, plugins = [] }: { schema: FormSchema; plugins?: FormPlug
   return (
     <div className="grid max-w-xl gap-6">
       <MetadataForm schema={schema} plugins={all} />
-      <pre className="rounded-md bg-surface-overlay p-3 text-xs">
+      <pre className="rounded-md bg-surface-overlay p-3 text-xs max-w-xl text-wrap wrap-break-word">
         {JSON.stringify(values, null, 2)}
       </pre>
     </div>
@@ -146,6 +147,58 @@ const everyFieldType: FormSchema = {
 /** Every field type in scope, each offering a fixed value and an expression. */
 export const EveryFieldType: Story = {
   render: () => <Demo schema={everyFieldType} />,
+};
+
+const variablesPlugin: FormPlugin = {
+  name: 'variables',
+  variables: [
+    {
+      id: 'vars',
+      label: '$vars',
+      children: [
+        { id: 'orderId', label: 'orderId', value: '$vars.orderId', type: 'string' },
+        { id: 'email', label: 'email', value: '$vars.email', type: 'object' },
+      ],
+    },
+  ],
+  fieldActions: { header: { 'insert-variable': createInsertVariableAction({}) } },
+};
+
+const allModesSchema: FormSchema = {
+  id: 'all-modes',
+  title: 'All modes',
+  initialData: {
+    orderId: { $mode: 'variable', value: '$vars.orderId' },
+    summary: { $mode: 'prompt', value: 'A one-line summary of the email' },
+  },
+  sections: [
+    {
+      id: 'main',
+      fields: [
+        {
+          name: 'orderId',
+          type: 'text',
+          label: 'Order id',
+          description: 'Bound to a variable: the whole control picks it.',
+          valueModes: { modes: ['literal', 'expression', 'variable', 'prompt'] },
+          headerActions: ['insert-variable'],
+        },
+        {
+          name: 'summary',
+          type: 'text',
+          label: 'Summary',
+          description: 'A prompt for the agent, in a box that grows to six lines.',
+          valueModes: { modes: ['literal', 'expression', 'variable', 'prompt'] },
+          headerActions: ['insert-variable'],
+        },
+      ],
+    },
+  ],
+};
+
+/** The four built-in modes on one field, with the form's variables feeding the picker and Insert. */
+export const AllBuiltInModes: Story = {
+  render: () => <Demo schema={allModesSchema} plugins={[variablesPlugin]} />,
 };
 
 function PatternControl({ id, value, onChange, disabled, controlProps }: ValueModeControlProps) {

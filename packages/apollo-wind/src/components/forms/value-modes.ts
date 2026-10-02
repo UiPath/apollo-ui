@@ -7,6 +7,7 @@ import {
 } from '@/components/ui/field-addons/built-in-value-modes';
 import type { ValueModeStrings } from '@/components/ui/field-addons/value-mode-strings';
 import type { InputGroupLayout, InputGroupProps } from '@/components/ui/input-group';
+import type { VariablePickerItem } from '@/components/ui/variable-picker';
 import { get } from '@/lib';
 import type { FieldControlLabelTarget } from './field-control';
 import type {
@@ -196,6 +197,10 @@ export interface ValueModeControlProps extends CustomFieldComponentProps {
   labelId: string;
   invalid: boolean;
   placeholder?: string;
+  /** The form's variables for this field, resolved when called; never call it during render. */
+  variables: () => VariablePickerItem[];
+  /** The form's value-mode strings. */
+  strings: ValueModeStrings;
   /** Spread on the element that takes focus, so the group's focus ring and error wiring find it. */
   controlProps: {
     'data-slot': 'input-group-control';
@@ -267,9 +272,9 @@ export interface ValueModeDefinition {
  * 1. the field's `valueModes.controls[mode]`, a name in `controlRegistry`;
  * 2. for `literal`, `literalControls[fieldType]`, since a fixed value is edited per field type;
  * 3. `definitions[mode].control`;
- * 4. the built-in: the field type's own control for `literal`, a plain Input for `expression`;
- * 5. a plain Input, with a warning. The built-in `variable` and `prompt` modes have no control of
- *    their own yet, so they land here until the host registers one.
+ * 4. the built-in: the field type's own control for `literal`, a plain Input for `expression`,
+ *    `VariableValueControl` for `variable` and `PromptValueControl` for `prompt`;
+ * 5. for a host mode with none of these, a plain Input, with a warning.
  *
  * Only a field schema refers to controls by name, since it has to stay JSON; the plugin's own
  * settings hold the registration itself.

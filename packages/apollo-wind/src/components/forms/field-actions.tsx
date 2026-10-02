@@ -10,7 +10,7 @@ import {
   type InsertVariableActionStrings,
 } from '@/components/ui/field-actions/insert-variable-action';
 import type { VariablePickerItem } from '@/components/ui/variable-picker';
-import type { FieldMetadata, FormPlugin, ValueModeId } from './form-schema';
+import type { FieldMetadata, FormPlugin, FormVariables, ValueModeId } from './form-schema';
 import type { ClearActionStrings, MetadataFormStrings } from './form-strings';
 import { type DecodedValue, type ValueModeControlHandle, warnOnce } from './value-modes';
 
@@ -31,6 +31,8 @@ export interface FieldActionContext {
   control: ValueModeControlHandle | null;
   /** Whether the active control takes text at its caret. */
   insertable: boolean;
+  /** The form's variables for this field, resolved when called; never call it during render. */
+  variables(): ValueModeVariable[];
   form: UseFormReturn<FieldValues>;
   /** The form's strings, every plugin's over the English defaults. */
   strings: MetadataFormStrings;
@@ -74,10 +76,14 @@ export interface FieldMenuAction {
 /** A variable Insert variable offers, rendered as supplied. */
 export type ValueModeVariable = VariablePickerItem;
 
-/** The variables to offer. A function is called when a picker opens, never during render. */
-export type FieldActionVariables =
-  | ValueModeVariable[]
-  | ((ctx: { field: FieldMetadata }) => ValueModeVariable[]);
+/** `source` for `field`: a function is called now, so only call this when a picker opens. */
+export function resolveVariables(
+  source: FormVariables | undefined,
+  field: FieldMetadata
+): ValueModeVariable[] {
+  if (!source) return [];
+  return typeof source === 'function' ? source({ field }) : source;
+}
 
 /**
  * Generates a value from a prompt. Resolving with a value writes it, in `mode` or else the mode
@@ -107,7 +113,8 @@ export interface FieldActionRegistry {
 // ============================================================================
 
 export interface InsertVariableActionOptions {
-  variables: FieldActionVariables;
+  /** Defaults to the form's `FormPlugin.variables`. */
+  variables?: FormVariables;
   /**
    * How a picked reference is written at the caret, such as `{{ ref }}` inside fixed-value text.
    * A field that switches to `expression` or `variable` to take the reference gets it as picked.
@@ -171,12 +178,16 @@ export function createInsertVariableAction({
   return {
     id,
     render: (ctx) => {
+      // A variable's own control already picks the variable.
+      if (ctx.mode?.mode === 'variable') return null;
       const text = { ...ctx.strings.insertVariable, ...strings };
       const insert = insertTarget(ctx, formatReference, text);
       return (
         <InsertVariableAction
           variables={
-            typeof variables === 'function' ? () => variables({ field: ctx.field }) : variables
+            Array.isArray(variables)
+              ? variables
+              : () => (variables ? resolveVariables(variables, ctx.field) : ctx.variables())
           }
           // Resolved at pick time: the mode or control may have changed since render.
           onInsert={

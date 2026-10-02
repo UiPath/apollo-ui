@@ -1,5 +1,6 @@
 import type { FieldValues, UseFormReturn } from 'react-hook-form';
 import type { ValueMode } from '@/components/ui/field-addons/value-mode-strings';
+import type { VariablePickerItem } from '@/components/ui/variable-picker';
 import type { FieldActionRegistry, FieldActionsPluginConfig } from './field-actions';
 import type { MetadataFormStringOverrides, MetadataFormStrings } from './form-strings';
 import type {
@@ -599,7 +600,18 @@ export interface FormContext<T extends FieldValues = FieldValues> {
   fieldActions?: FieldActionRegistry;
   /** Every plugin's `strings` over the English defaults. */
   strings?: MetadataFormStrings;
+  /** The last plugin's `variables`. */
+  variables?: FormVariables;
 }
+
+/**
+ * The variables a form offers, rendered as supplied, to Insert variable and the `variable` mode's
+ * control. A function is called each time a picker opens, never during render, so a host can hand
+ * over a live source without re-rendering its fields.
+ */
+export type FormVariables =
+  | VariablePickerItem[]
+  | ((ctx: { field: FieldMetadata }) => VariablePickerItem[]);
 
 // ============================================================================
 // Extension/Plugin System
@@ -631,6 +643,8 @@ export interface FormPlugin<T extends FieldValues = FieldValues> {
    * `strings` still override these for its action.
    */
   strings?: MetadataFormStringOverrides;
+  /** The form's variables; the last plugin that gives them wins. */
+  variables?: FormVariables;
 
   // Rules engine extensions
   customConditions?: Record<string, (value: unknown, condition: unknown) => boolean>;

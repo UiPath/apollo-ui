@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { Controller, type ControllerRenderProps, useFormContext } from 'react-hook-form';
 import { Badge } from '@/components/ui/badge';
 import { isBuiltInValueMode } from '@/components/ui/field-addons/built-in-value-modes';
@@ -9,11 +9,15 @@ import { ValueModeSwitchDialog } from '@/components/ui/field-addons/value-mode-s
 import { FormField, FormFieldDescription, FormFieldHeader } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { InputGroup, InputGroupAddon } from '@/components/ui/input-group';
+import { PromptValueControl } from '@/components/ui/prompt-value-control';
+import { VariableValueControl } from '@/components/ui/variable-value-control';
 import {
   EMPTY_FIELD_ACTION_REGISTRY,
   type FieldActionConfirm,
   type FieldActionContext,
   resolveFieldActions,
+  resolveVariables,
+  type ValueModeVariable,
 } from './field-actions';
 import {
   FIELD_CONTROL_GEOMETRY,
@@ -83,6 +87,17 @@ interface FieldAnatomyProps extends ModeAwareFieldProps {
   error?: string;
 }
 
+// Their props are a subset of `ValueModeControlProps`, taking the value as a string.
+const BUILT_IN_MODE_CONTROLS: Record<string, ValueModeControlRegistration> = {
+  variable: { component: VariableValueControl as ValueModeControlRegistration['component'] },
+  prompt: {
+    component: PromptValueControl as ValueModeControlRegistration['component'],
+    layout: 'grow',
+    variant: 'agent',
+    insertable: true,
+  },
+};
+
 /** Which step of the control resolution won, shown as `data-value-mode-control` outside production. */
 type ControlSource =
   | 'field'
@@ -90,6 +105,7 @@ type ControlSource =
   | 'definition'
   | 'custom'
   | 'field-type'
+  | 'built-in'
   | 'fallback';
 
 interface Resolved {
@@ -149,6 +165,12 @@ function FieldAnatomy({
   const { name } = field;
   const errorId = `${name}-error`;
   const labelId = `${name}-label`;
+  // Resolved only when a picker opens, so a live variables source never re-renders the field.
+  const formVariables = context.variables;
+  const variables = useCallback(
+    () => resolveVariables(formVariables, field),
+    [formVariables, field]
+  );
 
   const { value } = formField;
 
@@ -297,6 +319,7 @@ function FieldAnatomy({
     modeAware: !!config,
     latest,
     strings,
+    variables,
     control: () => {
       const own = controlRef.current;
       if (!own) return domHandle;
@@ -351,6 +374,8 @@ function FieldAnatomy({
       labelId,
       invalid: !!error,
       placeholder: field.placeholder,
+      variables,
+      strings: strings.valueModes,
       controlProps: {
         'data-slot': 'input-group-control',
         'aria-invalid': error ? true : undefined,
@@ -504,6 +529,7 @@ interface ActionContextInput {
     insertable: boolean;
   }>;
   strings: MetadataFormStrings;
+  variables: () => ValueModeVariable[];
   control: () => ValueModeControlHandle | null;
   commit: (mode: ValueModeId, stored: unknown, via: 'change' | 'set') => void;
   write: (stored: unknown, via: 'change' | 'set') => unknown;
@@ -564,6 +590,7 @@ function useActionContext(input: ActionContextInput): FieldActionContext {
       get insertable() {
         return current().latest.current.insertable;
       },
+      variables: () => current().variables(),
     };
     if (modeAware) {
       Object.defineProperty(ctx, 'mode', {
@@ -636,11 +663,23 @@ function resolveControl(input: ResolveControlInput): Resolved {
   }
 
   if (mode === 'literal') return builtInLiteral(input);
-  if (mode !== 'expression' && !(mode in registry.definitions) && !isBuiltInValueMode(mode)) {
+  const builtIn = BUILT_IN_MODE_CONTROLS[mode];
+  if (builtIn) {
+    const Control = builtIn.component;
+    return {
+      node: <Control {...input.valueModeProps()} />,
+      geometry: registrationGeometry(builtIn),
+      source: 'built-in',
+    };
+  }
+  if (mode === 'expression') {
+    return { node: <FallbackControl {...input} />, geometry: TEXT_GEOMETRY, source: 'built-in' };
+  }
+  if (!(mode in registry.definitions) && !isBuiltInValueMode(mode)) {
     warnOnce(`Field "${field.name}" is in value mode "${mode}", which has no definition.`);
-  } else if (mode !== 'expression') {
+  } else {
     warnOnce(
-      `Value mode "${mode}" has no built-in control yet, so it renders as a plain input; register one as \`definitions.${mode}.control\`.`
+      `Value mode "${mode}" has no control, so it renders as a plain input; register one as \`definitions.${mode}.control\`.`
     );
   }
   return {
@@ -651,23 +690,8 @@ function resolveControl(input: ResolveControlInput): Resolved {
 }
 
 /** The built-in control of a mode with none of its own: a plain Input over a string value. */
-function FallbackControl({
-  field,
-  mode,
-  strings,
-  binding,
-  disabled,
-  error,
-  errorId,
-}: ResolveControlInput) {
+function FallbackControl({ field, binding, disabled, error, errorId }: ResolveControlInput) {
   const { value } = binding;
-  const placeholder =
-    field.placeholder ??
-    (mode === 'variable'
-      ? strings.valueModes.variablePlaceholder
-      : mode === 'prompt'
-        ? strings.valueModes.promptPlaceholder
-        : undefined);
   return (
     <Input
       id={field.name}
@@ -676,7 +700,7 @@ function FallbackControl({
       value={typeof value === 'string' ? value : value == null ? '' : String(value)}
       onChange={(event) => binding.onChange(event.target.value)}
       onBlur={binding.onBlur}
-      placeholder={placeholder}
+      placeholder={field.placeholder}
       disabled={disabled}
       aria-invalid={error ? true : undefined}
       aria-describedby={error ? errorId : undefined}
