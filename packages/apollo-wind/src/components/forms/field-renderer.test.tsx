@@ -452,6 +452,57 @@ describe('FormFieldRenderer', () => {
     });
   });
 
+  describe('changed fields', () => {
+    const field: FieldMetadata = {
+      name: 'url',
+      type: 'text',
+      label: 'URL',
+    };
+
+    const renderField = (context: FormContext) =>
+      render(
+        <FormWrapper>
+          <FormFieldRenderer field={field} context={context} customComponents={{}} />
+        </FormWrapper>
+      ).container.firstChild as HTMLElement;
+
+    it('always tags the field with data-field-name', () => {
+      const wrapper = renderField(createMockContext());
+
+      expect(wrapper).toHaveAttribute('data-field-name', 'url');
+      expect(wrapper).not.toHaveAttribute('data-changed');
+      expect(wrapper.className).toBe('');
+    });
+
+    it('flags a field named in context.changedFields and labels it for screen readers', () => {
+      const wrapper = renderField({
+        ...createMockContext(),
+        changedFields: new Set(['url']),
+        changedFieldLabel: 'Geändert',
+      });
+
+      expect(wrapper).toHaveAttribute('data-changed', 'true');
+      expect(wrapper.className).toContain('border-warning');
+      expect(screen.getByText('Geändert')).toHaveClass('sr-only');
+    });
+
+    it('falls back to an English screen-reader label', () => {
+      renderField({ ...createMockContext(), changedFields: new Set(['url']) });
+
+      expect(screen.getByText('Changed')).toHaveClass('sr-only');
+    });
+
+    it('does not flag a field absent from context.changedFields', () => {
+      const wrapper = renderField({
+        ...createMockContext(),
+        changedFields: new Set(['other_field']),
+      });
+
+      expect(wrapper.className).toBe('');
+      expect(screen.queryByText('Changed')).not.toBeInTheDocument();
+    });
+  });
+
   describe('accessibility', () => {
     it('has no accessibility violations for text input', async () => {
       const field: FieldMetadata = {

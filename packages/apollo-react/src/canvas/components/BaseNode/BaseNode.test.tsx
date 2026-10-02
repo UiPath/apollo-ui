@@ -73,6 +73,7 @@ vi.mock('@uipath/apollo-react/canvas/xyflow/react', async (importOriginal) => ({
 vi.mock('../../hooks', () => ({
   useNodeExecutionState: () => undefined,
   useElementValidationStatus: () => undefined,
+  useToolbarActionStoreContext: () => undefined,
 }));
 
 vi.mock('../../core', () => ({
