@@ -547,6 +547,32 @@ describe('AgentFlow', () => {
       expect(screen.queryByTestId('canvas-toolbar')).not.toBeInTheDocument();
     });
 
+    it('hides the toolbar when the timeline renders by default (enableTimelinePlayer omitted)', () => {
+      // TimelinePlayer defaults enableTimelinePlayer to true, so omitting the prop must
+      // still hide the toolbar when a timeline is present.
+      const now = Date.now();
+      const iso = (ms: number) => new Date(ms).toISOString();
+      const timelineSpans = [
+        {
+          ...(mockProps.spans[0] as IRawSpan),
+          Id: 'run-1',
+          SpanType: 'agentRun',
+          ParentId: undefined,
+          StartTime: iso(now),
+          EndTime: iso(now + 60_000),
+        },
+        {
+          ...(mockProps.spans[0] as IRawSpan),
+          Id: 'child-1',
+          ParentId: 'run-1',
+          StartTime: iso(now),
+          EndTime: iso(now + 10_000),
+        },
+      ] as IRawSpan[];
+      render(<AgentFlow {...toolbarProps} spans={timelineSpans} />);
+      expect(screen.queryByTestId('canvas-toolbar')).not.toBeInTheDocument();
+    });
+
     it('omits undo/redo/run but keeps add-note when only sticky notes are enabled', () => {
       render(
         <AgentFlow
