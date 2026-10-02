@@ -9,7 +9,7 @@ import {
 /**
  * Pins this package's English copy against what each product ships today.
  *
- * Two rules, both enforced mechanically:
+ * Three rules, all enforced mechanically:
  *
  * 1. Where the products already agree, this package says the same thing. Inventing a third
  *    wording is how a shared table stops being adoptable.
