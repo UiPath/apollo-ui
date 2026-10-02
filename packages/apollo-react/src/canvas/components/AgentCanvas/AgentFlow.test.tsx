@@ -465,6 +465,15 @@ describe('AgentFlow', () => {
       expect(runButton).not.toHaveAttribute('aria-disabled', 'true');
     });
 
+    it('does not surface the run reason when Run is disabled only by view mode', () => {
+      // canRun is not false here; the button is disabled purely by mode locking, so the
+      // validation reason must not be announced (native disabled path, no aria-disabled).
+      render(<AgentFlow {...toolbarProps} mode="view" runDisabledReason="Fix errors" />);
+      const runButton = screen.getByTestId('agent-flow-run-button');
+      expect(runButton).toBeDisabled();
+      expect(runButton).not.toHaveAttribute('aria-disabled', 'true');
+    });
+
     const suggestionGroupFixture = {
       id: 'sg-1',
       suggestions: [

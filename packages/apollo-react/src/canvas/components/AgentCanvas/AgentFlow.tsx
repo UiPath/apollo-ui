@@ -740,9 +740,10 @@ const AgentFlowInner = memo(
                         <ToolbarButton
                           testId="agent-flow-run-button"
                           label={runLabel}
-                          tooltip={
-                            canRun === false || editingLocked ? runDisabledReason : undefined
-                          }
+                          // Only surface the run-disabled reason when it actually applies
+                          // (canRun === false). Mode-only locking has no explanation and uses
+                          // the native disabled path.
+                          tooltip={canRun === false ? runDisabledReason : undefined}
                           className={TOOLBAR_ICON_BUTTON_CLASS}
                           onClick={onRun}
                           disabled={canRun === false || editingLocked}
