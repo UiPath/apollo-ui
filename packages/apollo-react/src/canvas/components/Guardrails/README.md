@@ -120,7 +120,7 @@ cache rather than adopting a second one, and it is why the hook stays a `useStat
 
 ### Canonical copy
 
-The display copy for the six built-in validators lives here, as lingui messages in the shared
+The display copy for the built-in validators lives here, as lingui messages in the shared
 canvas catalog, rather than in each product's own table. Both products get the same wording,
 and the strings enter the real localization pipeline instead of a host-side constant.
 
@@ -136,7 +136,8 @@ moved is the six validators both products had already transcribed by hand, where
 copies in sync is what produced `finNationalId` in one product and `fiNationalId` in the
 other. The components are unchanged: they still resolve nothing and render what they are
 handed, so a host that would rather keep its own table simply does not call
-`enrichGuardrailDefinitions`.
+`enrichGuardrailDefinitions`. A validator only one product ships (sentiment, Agents only so
+far) takes that product's wording verbatim, so its own screens and these read the same.
 
 Message ids use the raw wire values, never a transcribed slug:
 
@@ -1119,7 +1120,7 @@ state and exposes a plugin seam, so the translation lives in one named place,
 - **Definitions arrive pre-resolved.** `label`, `tooltip` and `optionLabels` are display
   strings; this form resolves nothing and renders what it is handed. Two things can produce
   them: the host's own table, or the package's own [definitions layer](#definitions-layer),
-  whose `enrichGuardrailDefinitions` resolves the six built-in validators from the shared
+  whose `enrichGuardrailDefinitions` resolves the built-in validators from the shared
   canvas catalog. Domain copy for a validator this package has not learned (a BYO manifest, a
   newly shipped backend parameter) still belongs to whoever ships it, and reaches the form the
   same way.

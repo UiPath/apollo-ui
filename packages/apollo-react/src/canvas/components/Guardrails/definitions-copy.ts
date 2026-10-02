@@ -191,8 +191,8 @@ function buildGuardrailCopy(_: CopyTranslate): GuardrailCopyTable {
         id: 'guardrails.definitions.prompt_injection.display-name',
         message: 'Prompt injection',
       }),
-      // The one description that keeps its "This validator is provided by..." form: the
-      // third-party vendor attribution is load-bearing and only Agents carries it.
+      // Keeps its "This validator is provided by..." form: the third-party vendor attribution
+      // is load-bearing and only Agents carries it.
       description: _({
         id: 'guardrails.definitions.prompt_injection.description',
         message:
@@ -367,6 +367,124 @@ function buildGuardrailCopy(_: CopyTranslate): GuardrailCopyTable {
         }),
       },
     },
+
+    // Agents' wording throughout: Flow has no sentiment guardrail yet.
+    sentiment: {
+      displayName: _({
+        id: 'guardrails.definitions.sentiment.display-name',
+        message: 'Sentiment',
+      }),
+      description: _({
+        id: 'guardrails.definitions.sentiment.description',
+        message:
+          'This validator is provided by Microsoft Azure AI Language and detects the sentiment of text in LLM calls, so a configured tone can be blocked.',
+      }),
+      paramLabels: {
+        sentiments: _({
+          id: 'guardrails.definitions.sentiment.param.sentiments.label',
+          message: 'Sentiments',
+        }),
+        sentimentThresholds: _({
+          id: 'guardrails.definitions.sentiment.param.sentimentThresholds.label',
+          message: 'Confidence thresholds',
+        }),
+        language: _({
+          id: 'guardrails.definitions.sentiment.param.language.label',
+          message: 'Languages',
+        }),
+      },
+      paramTooltips: {
+        sentiments: _({
+          id: 'guardrails.definitions.sentiment.param.sentiments.tooltip',
+          message:
+            'The guardrail trips when the detected sentiment is one of these. Mixed has no confidence score, so selecting it trips on the label alone and its threshold is ignored.',
+        }),
+        sentimentThresholds: _({
+          id: 'guardrails.definitions.sentiment.param.sentimentThresholds.tooltip',
+          message:
+            'Minimum confidence, from 0 to 1, before a selected sentiment trips the guardrail. The threshold for Mixed has no effect.',
+        }),
+        language: _({
+          id: 'guardrails.definitions.sentiment.param.language.tooltip',
+          message:
+            'Which language the text is scored as. One language is used directly; listing several detects the language first, which doubles the calls made to Azure.',
+        }),
+      },
+      optionLabels: {
+        sentiments: {
+          Positive: _({
+            id: 'guardrails.definitions.sentiment.option.sentiments.Positive',
+            message: 'Positive',
+          }),
+          Neutral: _({
+            id: 'guardrails.definitions.sentiment.option.sentiments.Neutral',
+            message: 'Neutral',
+          }),
+          Negative: _({
+            id: 'guardrails.definitions.sentiment.option.sentiments.Negative',
+            message: 'Negative',
+          }),
+          Mixed: _({
+            id: 'guardrails.definitions.sentiment.option.sentiments.Mixed',
+            message: 'Mixed',
+          }),
+        },
+        language: {
+          en: _({ id: 'guardrails.definitions.sentiment.option.language.en', message: 'English' }),
+          es: _({ id: 'guardrails.definitions.sentiment.option.language.es', message: 'Spanish' }),
+          fr: _({ id: 'guardrails.definitions.sentiment.option.language.fr', message: 'French' }),
+          de: _({ id: 'guardrails.definitions.sentiment.option.language.de', message: 'German' }),
+          it: _({ id: 'guardrails.definitions.sentiment.option.language.it', message: 'Italian' }),
+          'pt-BR': _({
+            id: 'guardrails.definitions.sentiment.option.language.pt-BR',
+            message: 'Portuguese (Brazil)',
+          }),
+          'pt-PT': _({
+            id: 'guardrails.definitions.sentiment.option.language.pt-PT',
+            message: 'Portuguese (Portugal)',
+          }),
+          nl: _({ id: 'guardrails.definitions.sentiment.option.language.nl', message: 'Dutch' }),
+          sv: _({ id: 'guardrails.definitions.sentiment.option.language.sv', message: 'Swedish' }),
+          da: _({ id: 'guardrails.definitions.sentiment.option.language.da', message: 'Danish' }),
+          no: _({
+            id: 'guardrails.definitions.sentiment.option.language.no',
+            message: 'Norwegian',
+          }),
+          fi: _({ id: 'guardrails.definitions.sentiment.option.language.fi', message: 'Finnish' }),
+          pl: _({ id: 'guardrails.definitions.sentiment.option.language.pl', message: 'Polish' }),
+          cs: _({ id: 'guardrails.definitions.sentiment.option.language.cs', message: 'Czech' }),
+          ru: _({ id: 'guardrails.definitions.sentiment.option.language.ru', message: 'Russian' }),
+          uk: _({
+            id: 'guardrails.definitions.sentiment.option.language.uk',
+            message: 'Ukrainian',
+          }),
+          tr: _({ id: 'guardrails.definitions.sentiment.option.language.tr', message: 'Turkish' }),
+          el: _({ id: 'guardrails.definitions.sentiment.option.language.el', message: 'Greek' }),
+          he: _({ id: 'guardrails.definitions.sentiment.option.language.he', message: 'Hebrew' }),
+          ar: _({ id: 'guardrails.definitions.sentiment.option.language.ar', message: 'Arabic' }),
+          hi: _({ id: 'guardrails.definitions.sentiment.option.language.hi', message: 'Hindi' }),
+          ja: _({ id: 'guardrails.definitions.sentiment.option.language.ja', message: 'Japanese' }),
+          ko: _({ id: 'guardrails.definitions.sentiment.option.language.ko', message: 'Korean' }),
+          'zh-hans': _({
+            id: 'guardrails.definitions.sentiment.option.language.zh-hans',
+            message: 'Chinese (Simplified)',
+          }),
+          'zh-hant': _({
+            id: 'guardrails.definitions.sentiment.option.language.zh-hant',
+            message: 'Chinese (Traditional)',
+          }),
+          id: _({
+            id: 'guardrails.definitions.sentiment.option.language.id',
+            message: 'Indonesian',
+          }),
+          vi: _({
+            id: 'guardrails.definitions.sentiment.option.language.vi',
+            message: 'Vietnamese',
+          }),
+          th: _({ id: 'guardrails.definitions.sentiment.option.language.th', message: 'Thai' }),
+        },
+      },
+    },
   };
 }
 
@@ -378,6 +496,7 @@ export const CURATED_GUARDRAIL_VALIDATORS: readonly string[] = Object.freeze([
   'user_prompt_attacks',
   'intellectual_property',
   'llm_as_judge',
+  'sentiment',
 ]);
 
 /**
