@@ -320,9 +320,11 @@ const AgentFlowInner = memo(
     const suggestionGroupPanelRef = useRef<HTMLDivElement>(null);
     const toolbarContainerRef = useRef<HTMLDivElement>(null);
 
-    // Calculate if timeline will be visible
+    // Calculate if timeline will be visible. TimelinePlayer defaults enableTimelinePlayer
+    // to true, so normalize the same way here — otherwise omitting the prop would render
+    // the timeline while timelineHeight stayed 0, letting the toolbar show alongside it.
     const timelineHeight = useMemo(
-      () => calculateTimelineHeight(enableTimelinePlayer, spans),
+      () => calculateTimelineHeight(enableTimelinePlayer ?? true, spans),
       [enableTimelinePlayer, spans]
     );
     // Calculate suggestion group panel height
