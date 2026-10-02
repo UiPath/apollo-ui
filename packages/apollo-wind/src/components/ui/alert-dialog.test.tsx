@@ -71,6 +71,40 @@ describe('AlertDialog', () => {
     });
   });
 
+  it('sets its own text color instead of inheriting the host body color', async () => {
+    const user = userEvent.setup();
+    render(<AlertDialogExample />);
+
+    await user.click(screen.getByRole('button', { name: 'Delete' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alertdialog')).toHaveClass('text-foreground');
+    });
+  });
+
+  it('exposes title and description slots for host CSS shields', async () => {
+    const user = userEvent.setup();
+    render(<AlertDialogExample />);
+
+    await user.click(screen.getByRole('button', { name: 'Delete' }));
+
+    await waitFor(() => {
+      expect(document.querySelector('[data-slot="alert-dialog-title"]')).toBeInTheDocument();
+      expect(document.querySelector('[data-slot="alert-dialog-description"]')).toBeInTheDocument();
+    });
+  });
+
+  it('spaces header children with gap rather than title margins', async () => {
+    const user = userEvent.setup();
+    render(<AlertDialogExample />);
+
+    await user.click(screen.getByRole('button', { name: 'Delete' }));
+
+    await waitFor(() => {
+      expect(document.querySelector('[data-slot="alert-dialog-header"]')).toHaveClass('gap-2');
+    });
+  });
+
   it('displays alert dialog title', async () => {
     const user = userEvent.setup();
     render(<AlertDialogExample />);

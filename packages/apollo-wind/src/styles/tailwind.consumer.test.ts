@@ -211,3 +211,95 @@ describe('tabs theme tokens', () => {
     expect(classicDark).not.toContain('--muted:');
   });
 });
+
+describe('host Material shield', () => {
+  const stripComments = (s: string) => s.replace(/\/\*[\s\S]*?\*\//g, '');
+  const marker = css.indexOf('/* Host Material shield');
+  const before = marker === -1 ? '' : stripComments(css.slice(0, marker));
+
+  // The shield is the contiguous run of top-level `.mat-typography` rules after the marker.
+  const rules: { selector: string; body: string }[] = [];
+  if (marker !== -1) {
+    const rest = stripComments(css.slice(marker));
+    const rule = /([^{}]+)\{([^{}]*)\}/g;
+    let match: RegExpExecArray | null = rule.exec(rest);
+    while (match) {
+      const selector = match[1].trim();
+      if (!selector.startsWith('.mat-typography')) break;
+      rules.push({ selector, body: match[2] });
+      match = rule.exec(rest);
+    }
+  }
+  const shield = rules.map((r) => `${r.selector} {${r.body}}`).join('\n');
+  const topLevelSelectors = (selector: string) =>
+    selector
+      .replace(/:(is|where)\([^)]*\)/g, ':$1()')
+      .split(',')
+      .map((s) => s.trim());
+
+  const roots = ['dialog-content', 'sheet-content', 'alert-dialog-content', 'drawer-content'];
+  const slots = [
+    'dialog-title',
+    'sheet-title',
+    'alert-dialog-title',
+    'drawer-title',
+    'dialog-takeover-title',
+    'accordion-header',
+    'alert-title',
+  ];
+  const rootList = roots.map((r) => String.raw`\[data-slot="${r}"\]`).join(String.raw`,\s*`);
+  const insideRoots = (element: string) =>
+    new RegExp(String.raw`\.mat-typography\s+:is\(\s*${rootList}\s*\)\s+:where\(${element}\)`);
+
+  it('ships in the consumer stylesheet', () => {
+    expect(marker).toBeGreaterThan(-1);
+    expect(rules.length).toBeGreaterThan(0);
+  });
+
+  it('is unlayered so it can outrank the unlayered Material rules', () => {
+    const depth = (before.match(/\{/g)?.length ?? 0) - (before.match(/\}/g)?.length ?? 0);
+    expect(depth).toBe(0);
+  });
+
+  it('only matches inside a Material host', () => {
+    for (const { selector } of rules) {
+      for (const s of topLevelSelectors(selector)) {
+        expect(s.startsWith('.mat-typography')).toBe(true);
+      }
+    }
+  });
+
+  it.each(slots)('covers the %s slot', (slot) => {
+    expect(shield).toMatch(new RegExp(String.raw`\.mat-typography[^{]*\[data-slot="${slot}"\]`));
+  });
+
+  it('resets paragraph margins and heading fonts inside every overlay root', () => {
+    expect(shield).toMatch(insideRoots('p'));
+    expect(shield).toMatch(insideRoots('h1, h2, h3, h4, h5, h6'));
+  });
+
+  it('restores each title with its own line-height and tracking', () => {
+    const titleRules = rules.filter((r) => r.selector.includes('-title'));
+    const resetIndex = rules.findIndex((r) => r.selector.includes(':where(h1'));
+    for (const rule of titleRules) {
+      expect(rules.indexOf(rule)).toBeGreaterThan(resetIndex);
+    }
+    expect(shield).toMatch(/\[data-slot="drawer-title"\]\) \{\s*line-height: 1;/);
+    expect(shield).toMatch(
+      /\[data-slot="drawer-title"\] \{\s*letter-spacing: var\(--tracking-tight\);/
+    );
+    expect(shield).toMatch(
+      /\[data-slot="dialog-takeover-title"\] \{[^}]*font-size: var\(--text-sm\);/
+    );
+    expect(shield).toMatch(/\[data-slot="alert-title"\] \{[^}]*font-size: var\(--text-xs\);/);
+  });
+
+  it('uses theme tokens, no absolute length literals or !important', () => {
+    expect(shield).not.toContain('!important');
+    expect(shield).not.toMatch(/\b\d+(\.\d+)?(px|rem|em)\b/);
+    expect(shield).toMatch(/font-family: var\(--font-sans\)/);
+    expect(shield).toMatch(/font-size: var\(--text-lg\)/);
+    expect(shield).toMatch(/font-weight: var\(--font-weight-semibold\)/);
+    expect(shield).toMatch(/letter-spacing: var\(--tracking-normal\)/);
+  });
+});

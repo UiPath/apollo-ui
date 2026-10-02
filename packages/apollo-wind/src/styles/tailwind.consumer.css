@@ -925,3 +925,75 @@ body.canvas, .canvas {
     background-color: var(--color-border-hover);
   }
 }
+
+/* Host Material shield: unlayered so it outranks the host's unlayered typography rules. */
+.mat-typography
+  :is(
+    [data-slot="dialog-content"],
+    [data-slot="sheet-content"],
+    [data-slot="alert-dialog-content"],
+    [data-slot="drawer-content"]
+  )
+  :where(p) {
+  margin: 0;
+}
+
+.mat-typography
+  :is(
+    [data-slot="dialog-content"],
+    [data-slot="sheet-content"],
+    [data-slot="alert-dialog-content"],
+    [data-slot="drawer-content"]
+  )
+  :where(h1, h2, h3, h4, h5, h6) {
+  font: inherit;
+  letter-spacing: inherit;
+  margin: 0;
+}
+
+.mat-typography [data-slot="accordion-header"] {
+  font: inherit;
+  letter-spacing: inherit;
+  margin: 0;
+}
+
+.mat-typography
+  :is(
+    [data-slot="dialog-title"],
+    [data-slot="sheet-title"],
+    [data-slot="alert-dialog-title"],
+    [data-slot="drawer-title"]
+  ) {
+  font-family: var(--font-sans);
+  font-size: var(--text-lg);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--text-lg--line-height);
+  letter-spacing: var(--tracking-normal);
+  margin: 0;
+}
+
+.mat-typography
+  :is([data-slot="dialog-title"], [data-slot="alert-dialog-title"], [data-slot="drawer-title"]) {
+  line-height: 1;
+}
+
+.mat-typography [data-slot="drawer-title"] {
+  letter-spacing: var(--tracking-tight);
+}
+
+.mat-typography [data-slot="dialog-takeover-title"] {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--text-sm--line-height);
+  letter-spacing: var(--tracking-normal);
+  margin: 0;
+}
+
+.mat-typography [data-slot="alert-title"] {
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-semibold);
+  line-height: calc(var(--spacing) * 4);
+  letter-spacing: var(--tracking-normal);
+  margin: 0;
+}

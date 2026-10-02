@@ -180,7 +180,10 @@ const DialogContent = React.forwardRef<
           <>
             <header className="flex h-12 shrink-0 items-center gap-3 border-b border-border-subtle px-4">
               {headerTitle !== undefined && headerTitle !== null ? (
-                <DialogPrimitive.Title className="min-w-0 flex-1 truncate text-sm font-semibold">
+                <DialogPrimitive.Title
+                  data-slot="dialog-takeover-title"
+                  className="min-w-0 flex-1 truncate text-sm font-semibold"
+                >
                   {headerTitle}
                 </DialogPrimitive.Title>
               ) : (
