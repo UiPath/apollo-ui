@@ -1,7 +1,11 @@
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { findCatalogDrift, findCatalogOrphans } from './__fixtures__/catalog-coverage';
-import { PII_ENTITY_OPTIONS } from './__fixtures__/definitions-wire.fixtures';
+import {
+  PII_ENTITY_OPTIONS,
+  SENTIMENT_LANGUAGE_OPTIONS,
+  SENTIMENT_OPTIONS,
+} from './__fixtures__/definitions-wire.fixtures';
 import {
   CURATED_GUARDRAIL_VALIDATORS,
   GUARDRAIL_COPY_EN,
@@ -9,8 +13,9 @@ import {
   useGuardrailDefinitionCopy,
 } from './definitions-copy';
 
+// Option segments allow `-`: they are raw wire values, and language codes such as `pt-BR` carry one.
 const ID_PATTERN =
-  /^guardrails\.definitions\.[a-z0-9_]+\.(display-name|description|usage-note|param\.[A-Za-z0-9]+\.(label|tooltip)|option\.[A-Za-z0-9]+\.[A-Za-z0-9]+)$/;
+  /^guardrails\.definitions\.[a-z0-9_]+\.(display-name|description|usage-note|param\.[A-Za-z0-9]+\.(label|tooltip)|option\.[A-Za-z0-9]+\.[A-Za-z0-9-]+)$/;
 
 describe('GUARDRAIL_COPY_EN', () => {
   it('covers every curated validator', () => {
@@ -21,6 +26,17 @@ describe('GUARDRAIL_COPY_EN', () => {
     const labels = GUARDRAIL_COPY_EN.pii_detection?.optionLabels?.entities ?? {};
 
     expect(Object.keys(labels).sort()).toEqual([...PII_ENTITY_OPTIONS].sort());
+  });
+
+  it('labels every sentiment and language the backend can return', () => {
+    const optionLabels = GUARDRAIL_COPY_EN.sentiment?.optionLabels ?? {};
+
+    expect(Object.keys(optionLabels.sentiments ?? {}).sort()).toEqual(
+      [...SENTIMENT_OPTIONS].sort()
+    );
+    expect(Object.keys(optionLabels.language ?? {}).sort()).toEqual(
+      [...SENTIMENT_LANGUAGE_OPTIONS].sort()
+    );
   });
 
   it('resolves to English without a lingui provider', () => {

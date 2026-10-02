@@ -9,7 +9,8 @@ import type { GuardrailCopyTable } from '../definitions-copy';
  * - Agents `origin/main`:
  *   `frontend-sw/src/components/definition/AddGuardrailPalette/AddGuardrailPalette.utils.tsx`
  *   (`OOB_GUARDRAILS_I8N`; its `name` / `params[].infoTooltip` / `params[].options` map onto
- *   `displayName` / `paramTooltips` / `optionLabels` here)
+ *   `displayName` / `paramTooltips` / `optionLabels` here). The `sentiment` entry is read from
+ *   the same file on Agents' `feat/sentiment` branch (UiPath/Agents#6457).
  * - Flow `origin/develop`:
  *   `packages/canvas/src/components/properties-panel/guardrails/ootb-guardrail-definitions.ts`
  *   (`buildValidatorDisplayInfo`)
@@ -137,6 +138,62 @@ export const AGENTS_COPY_EN: GuardrailCopyTable = {
       ...SHARED_LLM_AS_JUDGE_TOOLTIPS,
       threshold:
         'Integer value between 0 and 6 (step 2). Lower values are stricter — borderline payloads will fail. Higher values are more lenient — only clear violations are flagged.',
+    },
+  },
+  sentiment: {
+    displayName: 'Sentiment',
+    description:
+      'This validator is provided by Microsoft Azure AI Language and detects the sentiment of text in LLM calls, so a configured tone can be blocked.',
+    paramLabels: {
+      sentiments: 'Sentiments',
+      sentimentThresholds: 'Confidence thresholds',
+      language: 'Languages',
+    },
+    paramTooltips: {
+      sentiments:
+        'The guardrail trips when the detected sentiment is one of these. Mixed has no confidence score, so selecting it trips on the label alone and its threshold is ignored.',
+      sentimentThresholds:
+        'Minimum confidence, from 0 to 1, before a selected sentiment trips the guardrail. The threshold for Mixed has no effect.',
+      language:
+        'Which language the text is scored as. One language is used directly; listing several detects the language first, which doubles the calls made to Azure.',
+    },
+    optionLabels: {
+      sentiments: {
+        Positive: 'Positive',
+        Neutral: 'Neutral',
+        Negative: 'Negative',
+        Mixed: 'Mixed',
+      },
+      language: {
+        en: 'English',
+        es: 'Spanish',
+        fr: 'French',
+        de: 'German',
+        it: 'Italian',
+        'pt-BR': 'Portuguese (Brazil)',
+        'pt-PT': 'Portuguese (Portugal)',
+        nl: 'Dutch',
+        sv: 'Swedish',
+        da: 'Danish',
+        no: 'Norwegian',
+        fi: 'Finnish',
+        pl: 'Polish',
+        cs: 'Czech',
+        ru: 'Russian',
+        uk: 'Ukrainian',
+        tr: 'Turkish',
+        el: 'Greek',
+        he: 'Hebrew',
+        ar: 'Arabic',
+        hi: 'Hindi',
+        ja: 'Japanese',
+        ko: 'Korean',
+        'zh-hans': 'Chinese (Simplified)',
+        'zh-hant': 'Chinese (Traditional)',
+        id: 'Indonesian',
+        vi: 'Vietnamese',
+        th: 'Thai',
+      },
     },
   },
 };

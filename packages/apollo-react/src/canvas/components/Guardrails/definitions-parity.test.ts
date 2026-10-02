@@ -15,6 +15,8 @@ import {
  *    wording is how a shared table stops being adoptable.
  * 2. Where they disagree, the choice is declared below with a reason, and this package says
  *    exactly what the chosen product says, so its existing translations harvest cleanly.
+ * 3. A validator only one product ships takes that product's copy verbatim, and is declared
+ *    as such below.
  *
  * When a product changes its copy, update `__fixtures__/host-copy-baselines.ts` first: this
  * suite then says whether the choice still holds.
@@ -128,6 +130,14 @@ const EXPECTED_DIVERGENCES: CopyDivergence[] = [
   },
 ];
 
+/**
+ * Validators only one product curates so far, so there is nothing to choose between. Remove the
+ * entry once the other product ships the validator: its strings then fall under the rules above.
+ */
+const SINGLE_HOST_VALIDATORS: Readonly<Record<string, Host>> = {
+  sentiment: 'agents',
+};
+
 function flatten(table: GuardrailCopyTable): Map<string, string> {
   const flat = new Map<string, string>();
   for (const [validator, copy] of Object.entries(table)) {
@@ -155,15 +165,42 @@ const ours = flatten(GUARDRAIL_COPY_EN);
 const allPaths = [...new Set([...agents.keys(), ...flow.keys(), ...ours.keys()])].sort();
 const divergenceByPath = new Map(EXPECTED_DIVERGENCES.map((d) => [d.path, d]));
 
+const validatorOf = (path: string) => path.slice(0, path.indexOf('.'));
+/** The paths both products could have an opinion on. */
+const sharedPaths = allPaths.filter(
+  (path) => !Object.hasOwn(SINGLE_HOST_VALIDATORS, validatorOf(path))
+);
+const pathsOf = (flat: Map<string, string>, validator: string) =>
+  new Map([...flat].filter(([path]) => validatorOf(path) === validator));
+
 describe('canonical copy parity with both products', () => {
-  it('covers the same validators both products curate', () => {
-    expect([...CURATED_GUARDRAIL_VALIDATORS].sort()).toEqual(Object.keys(AGENTS_COPY_EN).sort());
-    expect([...CURATED_GUARDRAIL_VALIDATORS].sort()).toEqual(Object.keys(FLOW_COPY_EN).sort());
+  it('covers every validator either product curates', () => {
+    const hostValidators = new Set([...Object.keys(AGENTS_COPY_EN), ...Object.keys(FLOW_COPY_EN)]);
+
+    expect([...CURATED_GUARDRAIL_VALIDATORS].sort()).toEqual([...hostValidators].sort());
     expect(Object.keys(GUARDRAIL_COPY_EN).sort()).toEqual([...CURATED_GUARDRAIL_VALIDATORS].sort());
   });
 
+  it('declares every validator only one product curates', () => {
+    const singleHost = CURATED_GUARDRAIL_VALIDATORS.filter(
+      (validator) =>
+        Object.hasOwn(AGENTS_COPY_EN, validator) !== Object.hasOwn(FLOW_COPY_EN, validator)
+    );
+
+    expect([...singleHost].sort()).toEqual(Object.keys(SINGLE_HOST_VALIDATORS).sort());
+  });
+
+  it.each(
+    Object.entries(SINGLE_HOST_VALIDATORS)
+  )('%s takes the %s wording verbatim, as the only product that ships it', (validator, host) => {
+    const source = pathsOf(host === 'agents' ? agents : flow, validator);
+
+    expect(source.size).toBeGreaterThan(0);
+    expect(pathsOf(ours, validator)).toEqual(source);
+  });
+
   it('matches both products wherever they already agree', () => {
-    const invented = allPaths
+    const invented = sharedPaths
       .filter((path) => agents.get(path) === flow.get(path))
       .filter((path) => ours.get(path) !== agents.get(path))
       .map((path) => `${path}\n    ours:  ${ours.get(path)}\n    hosts: ${agents.get(path)}`);
@@ -172,7 +209,7 @@ describe('canonical copy parity with both products', () => {
   });
 
   it('declares every disagreement between the products', () => {
-    const undeclared = allPaths
+    const undeclared = sharedPaths
       .filter((path) => agents.get(path) !== flow.get(path))
       .filter((path) => !divergenceByPath.has(path))
       .map((path) => `${path}\n    agents: ${agents.get(path)}\n    flow:   ${flow.get(path)}`);
