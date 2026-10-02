@@ -101,7 +101,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     toolbarConfig: toolbarConfigProp,
     handleConfigurations: handleConfigurationsProp,
     adornments: adornmentsProp,
-    suggestionType,
+    suggestionType: suggestionTypeOverride,
     disabled,
     executionStatusOverride,
     labelTooltip,
@@ -113,6 +113,8 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     subLabelComponent,
     iconComponent,
   } = useBaseNodeOverrideConfig();
+  // The override context wins; plain consumers set `data.suggestionType`.
+  const suggestionType = suggestionTypeOverride ?? data.suggestionType;
 
   const updateNodeInternals = useUpdateNodeInternals();
   const { updateNodeData, updateNode, getNode } = useReactFlow();

@@ -5,21 +5,31 @@ import { BaseCanvasModeProvider } from '../BaseCanvas/BaseCanvasModeProvider';
 import { CanvasEdge } from './CanvasEdge';
 import type { CanvasEdgeProps } from './shared/types';
 
-const { addSelectedEdges, edgeLookup, getState, setState, unselectNodesAndEdges, useEdgeGeometry } =
-  vi.hoisted(() => ({
-    addSelectedEdges: vi.fn(),
-    edgeLookup: new Map(),
-    getState: vi.fn(),
-    setState: vi.fn(),
-    unselectNodesAndEdges: vi.fn(),
-    useEdgeGeometry: vi.fn((_args: { autoRouted: boolean }) => ({
-      arrow: { angle: 0, offset: 0 },
-      edgePath: 'M 0 0 L 100 0',
-      labelPoint: { x: 50, y: 0 },
-      pathPoints: [],
-      segments: [],
-    })),
-  }));
+const {
+  addSelectedEdges,
+  capturedEdgePathProps,
+  edgeLookup,
+  getState,
+  setState,
+  unselectNodesAndEdges,
+  useEdgeGeometry,
+} = vi.hoisted(() => ({
+  addSelectedEdges: vi.fn(),
+  capturedEdgePathProps: {
+    current: undefined as { color?: string; strokeStyle?: string } | undefined,
+  },
+  edgeLookup: new Map(),
+  getState: vi.fn(),
+  setState: vi.fn(),
+  unselectNodesAndEdges: vi.fn(),
+  useEdgeGeometry: vi.fn((_args: { autoRouted: boolean }) => ({
+    arrow: { angle: 0, offset: 0 },
+    edgePath: 'M 0 0 L 100 0',
+    labelPoint: { x: 50, y: 0 },
+    pathPoints: [],
+    segments: [],
+  })),
+}));
 
 vi.mock('@uipath/apollo-react/canvas/xyflow/react', async () => {
   const actual = await vi.importActual('@uipath/apollo-react/canvas/xyflow/react');
@@ -49,7 +59,10 @@ vi.mock('./shared/primitives', () => ({
       {text}
     </button>
   ),
-  EdgePath: () => null,
+  EdgePath: (props: { color?: string; strokeStyle?: string }) => {
+    capturedEdgePathProps.current = props;
+    return null;
+  },
   SegmentDragHandle: () => null,
   WaypointHandle: () => null,
 }));
@@ -81,7 +94,7 @@ function renderEdge(
     unselectNodesAndEdges,
   });
 
-  render(
+  return render(
     <BaseCanvasModeProvider mode={mode}>
       <svg>
         <CanvasEdge {...baseProps} data={data} selected={edge.selected ?? false} />
@@ -177,5 +190,51 @@ describe('CanvasEdge autoRouted', () => {
     renderEdge('design', {}, { routedWaypoints: [{ id: 'r0', x: 50, y: 20 }], autoRouted: false });
 
     expect(lastAutoRouted()).toBe(false);
+  });
+});
+
+describe('CanvasEdge suggestionType', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    edgeLookup.clear();
+    capturedEdgePathProps.current = undefined;
+  });
+
+  it('stamps data-suggestion-type on the edge group', () => {
+    const { container } = renderEdge('design', {}, { suggestionType: 'update' });
+
+    expect(container.querySelector('g[data-suggestion-type="update"]')).not.toBeNull();
+  });
+
+  it('omits data-suggestion-type when unset', () => {
+    const { container } = renderEdge('design', {}, {});
+
+    expect(container.querySelector('g[data-suggestion-type]')).toBeNull();
+  });
+
+  it('dashes the path for a delete suggestion', () => {
+    renderEdge('design', {}, { suggestionType: 'delete' });
+
+    expect(capturedEdgePathProps.current?.strokeStyle).toBe('dashed');
+  });
+
+  it('does not dash add/update suggestions', () => {
+    renderEdge('design', {}, { suggestionType: 'add' });
+    expect(capturedEdgePathProps.current?.strokeStyle).toBe('solid');
+
+    renderEdge('design', {}, { suggestionType: 'update' });
+    expect(capturedEdgePathProps.current?.strokeStyle).toBe('solid');
+  });
+
+  it('suggestionType overrides a stale legacy isDiffRemoved flag for dashing', () => {
+    renderEdge('design', {}, { suggestionType: 'add', isDiffRemoved: true });
+
+    expect(capturedEdgePathProps.current?.strokeStyle).toBe('solid');
+  });
+
+  it('falls back to the legacy isDiffRemoved flag when suggestionType is absent', () => {
+    renderEdge('design', {}, { isDiffRemoved: true });
+
+    expect(capturedEdgePathProps.current?.strokeStyle).toBe('dashed');
   });
 });

@@ -24,6 +24,7 @@ import {
   useCanvasStory,
   withCanvasProviders,
 } from '../../storybook-utils';
+import type { SuggestionType } from '../../types';
 import { ElementStatusValues } from '../../types/execution';
 import { BaseCanvas } from '../BaseCanvas';
 import { CanvasEdge } from './CanvasEdge';
@@ -836,6 +837,112 @@ export const ExecutionStates: Story = {
       description: {
         story:
           "Each Start → Step → End chain shows one execution state: the middle node carries the status (its label and its own node execution state), and both edges set `enableExecution: true`, coloring their stroke to match and animating a traveling dot while `InProgress`. Edges also set `enableEditing: true` to show the behaviors compose — hover an edge to drag segments or double-click to add waypoints. Status is mocked from element ids (`edge-<Status>-…`, `mid-<Status>`); host apps provide it via `ExecutionStatusContext`. Selection and hover intentionally override status colors (see `resolveEdgeColor` priority). The same flags work with `routing: 'handle'` — that combination is the `SequenceEdge` preset shown in HandleRouting.",
+      },
+    },
+  },
+};
+
+// ============================================================================
+// Suggestion Types
+// ============================================================================
+
+function createSuggestionNode(
+  id: string,
+  label: string,
+  x: number,
+  y: number,
+  suggestionType: SuggestionType,
+  position: 'source' | 'target'
+): Node {
+  return createMockNode({
+    id,
+    type: 'uipath.blank-node',
+    position: { x, y },
+    display: { label },
+    data: { suggestionType },
+    handleConfigurations: [
+      position === 'source'
+        ? {
+            position: Position.Right,
+            handles: [{ id: `out-${Position.Right}`, type: 'source', handleType: 'output' }],
+          }
+        : {
+            position: Position.Left,
+            handles: [{ id: `in-${Position.Left}`, type: 'target', handleType: 'input' }],
+          },
+    ],
+  });
+}
+
+/**
+ * `data.suggestionType` on a `canvas-edge` picks the same three colors as
+ * the node's `getStatusBorder`: success-green for `add`, warning-amber for
+ * `update`, and error-red (dashed) for `delete`. `BaseNode` reads the same
+ * `data.suggestionType`, so node and edge read consistently.
+ */
+function SuggestionTypesStory() {
+  const initialNodes = useMemo(
+    () => [
+      createSuggestionNode('add-source', 'Add', 100, 100, 'add', 'source'),
+      createSuggestionNode('add-target', 'Target', 400, 100, 'add', 'target'),
+
+      createSuggestionNode('update-source', 'Update', 100, 240, 'update', 'source'),
+      createSuggestionNode('update-target', 'Target', 400, 240, 'update', 'target'),
+
+      createSuggestionNode('delete-source', 'Delete', 100, 380, 'delete', 'source'),
+      createSuggestionNode('delete-target', 'Target', 400, 380, 'delete', 'target'),
+    ],
+    []
+  );
+
+  const initialEdges: Edge<CanvasEdgeData>[] = useMemo(
+    () => [
+      {
+        id: 'e-add',
+        source: 'add-source',
+        target: 'add-target',
+        sourceHandle: `out-${Position.Right}`,
+        targetHandle: `in-${Position.Left}`,
+        type: 'canvas-edge',
+        data: { suggestionType: 'add' },
+      },
+      {
+        id: 'e-update',
+        source: 'update-source',
+        target: 'update-target',
+        sourceHandle: `out-${Position.Right}`,
+        targetHandle: `in-${Position.Left}`,
+        type: 'canvas-edge',
+        data: { suggestionType: 'update' },
+      },
+      {
+        id: 'e-delete',
+        source: 'delete-source',
+        target: 'delete-target',
+        sourceHandle: `out-${Position.Right}`,
+        targetHandle: `in-${Position.Left}`,
+        type: 'canvas-edge',
+        data: { suggestionType: 'delete' },
+      },
+    ],
+    []
+  );
+
+  const { canvasProps } = useCanvasStory({
+    initialNodes,
+    initialEdges,
+  });
+
+  return <BaseCanvas {...canvasProps} edgeTypes={edgeTypes} mode="design" />;
+}
+
+export const SuggestionTypes: Story = {
+  render: () => <SuggestionTypesStory />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Edges and nodes sharing `suggestionType`: `add` renders success-green, `update` renders warning-amber, and `delete` renders error-red and dashed. Edge color comes from `resolveEdgeColor`, node border comes from `getStatusBorder`. Set `data.suggestionType` on both the edge and the plain `BaseNode`.',
       },
     },
   },

@@ -63,3 +63,50 @@ describe('resolveEdgeColor', () => {
     expect(resolveEdgeColor({ statusColor: STATUS })).toBe(STATUS);
   });
 });
+
+describe('resolveEdgeColor suggestionType', () => {
+  it('resolves add to the diffAdded color', () => {
+    expect(resolveEdgeColor({ suggestionType: 'add' })).toBe(EDGE_COLORS.diffAdded);
+  });
+
+  it('resolves update to the diffUpdated color', () => {
+    expect(resolveEdgeColor({ suggestionType: 'update' })).toBe(EDGE_COLORS.diffUpdated);
+  });
+
+  it('resolves delete to the diffRemoved color', () => {
+    expect(resolveEdgeColor({ suggestionType: 'delete' })).toBe(EDGE_COLORS.diffRemoved);
+  });
+
+  it('takes precedence over the legacy isDiffAdded/isDiffRemoved flags', () => {
+    expect(
+      resolveEdgeColor({
+        suggestionType: 'update',
+        isDiffAdded: true,
+        isDiffRemoved: true,
+      })
+    ).toBe(EDGE_COLORS.diffUpdated);
+    expect(resolveEdgeColor({ suggestionType: 'add', isDiffRemoved: true })).toBe(
+      EDGE_COLORS.diffAdded
+    );
+    expect(resolveEdgeColor({ suggestionType: 'delete', isDiffAdded: true })).toBe(
+      EDGE_COLORS.diffRemoved
+    );
+  });
+
+  it('takes precedence over invalid/selection/hover/status', () => {
+    expect(
+      resolveEdgeColor({
+        suggestionType: 'update',
+        isInvalid: true,
+        selected: true,
+        isHovered: true,
+        statusColor: STATUS,
+      })
+    ).toBe(EDGE_COLORS.diffUpdated);
+  });
+
+  it('falls back to the legacy flags when suggestionType is absent', () => {
+    expect(resolveEdgeColor({ isDiffAdded: true })).toBe(EDGE_COLORS.diffAdded);
+    expect(resolveEdgeColor({ isDiffRemoved: true })).toBe(EDGE_COLORS.diffRemoved);
+  });
+});
