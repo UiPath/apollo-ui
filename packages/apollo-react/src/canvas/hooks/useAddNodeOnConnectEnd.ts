@@ -1,6 +1,6 @@
 import { type OnConnectEnd, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useCallback } from 'react';
-import { getInnerHandleContainerId } from '../components/LoopNode/LoopNode.helpers';
+import { getInnerHandleContainerId } from '../components/ContainerNode/ContainerNode.helpers';
 import { showPreviewGraph } from '../utils';
 import { useNodeManifestResolver } from './useCanvasNodeLayout';
 

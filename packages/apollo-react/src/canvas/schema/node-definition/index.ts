@@ -22,11 +22,13 @@ export {
   handleTypeSchema,
 } from './handle';
 export type {
+  NodeContainerDisplayManifest,
   NodeDisplayManifest,
   NodeManifest,
   RuntimeConstraints,
 } from './node-manifest';
 export {
+  nodeContainerDisplayManifestSchema,
   nodeDisplayManifestSchema,
   nodeManifestSchema,
   nodeRuntimeConstraintsManifestSchema,

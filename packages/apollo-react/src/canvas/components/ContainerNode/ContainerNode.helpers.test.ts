@@ -1,7 +1,11 @@
 import type { Edge, Node, ReactFlowInstance } from '@uipath/apollo-react/canvas/xyflow/react';
 import { describe, expect, it } from 'vitest';
 import type { NodeManifest } from '../../schema/node-definition';
-import { getInnerHandleContainerId, resolveContainerAddNodePreview } from './LoopNode.helpers';
+import {
+  getInnerHandleContainerId,
+  resolveContainerAddNodePreview,
+  resolveContainerPreviewConnectionHandles,
+} from './ContainerNode.helpers';
 
 type PreviewManifest = Pick<NodeManifest, 'display' | 'handleConfiguration'>;
 
@@ -528,5 +532,52 @@ describe('getInnerHandleContainerId', () => {
         getManifestForNode,
       })
     ).toBeUndefined();
+  });
+});
+
+describe('resolveContainerPreviewConnectionHandles', () => {
+  it('returns the inner source and target handles of a loop', () => {
+    expect(resolveContainerPreviewConnectionHandles(loopManifest, { nodeId: 'loop' })).toEqual({
+      sourceHandleId: 'start',
+      sourceHandlePosition: 'right',
+      targetHandleId: 'continue',
+    });
+  });
+
+  it('returns only the source handle for an entry-only container', () => {
+    const entryOnlyManifest: PreviewManifest = {
+      display: { label: 'Error handler', icon: 'triangle-alert', shape: 'container' },
+      handleConfiguration: [
+        {
+          position: 'left',
+          boundary: 'inner',
+          handles: [{ id: 'entry', type: 'source', handleType: 'output' }],
+        },
+      ],
+    };
+
+    expect(
+      resolveContainerPreviewConnectionHandles(entryOnlyManifest, { nodeId: 'handler' })
+    ).toEqual({
+      sourceHandleId: 'entry',
+      sourceHandlePosition: 'right',
+    });
+  });
+
+  it('returns null when the container has no inner source handle', () => {
+    const targetOnlyManifest: PreviewManifest = {
+      display: { label: 'Sink', icon: 'box', shape: 'container' },
+      handleConfiguration: [
+        {
+          position: 'right',
+          boundary: 'inner',
+          handles: [{ id: 'done', type: 'target', handleType: 'input' }],
+        },
+      ],
+    };
+
+    expect(resolveContainerPreviewConnectionHandles(targetOnlyManifest, { nodeId: 'sink' })).toBe(
+      null
+    );
   });
 });

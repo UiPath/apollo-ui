@@ -19,6 +19,40 @@ export const nodeDebugManifestSchema = z.object({
 });
 
 /**
+ * Container presentation for `shape: 'container'` nodes. Every field is optional;
+ * props passed to `ContainerNode` win over these, and these win over the preset
+ * defaults (for example the loop look used when `container` is omitted).
+ */
+export const nodeContainerDisplayManifestSchema = z.object({
+  /** Container kind, set as `data-container-kind` on the root. `'loop'` keeps the loop preset. */
+  kind: z.string().min(1).optional(),
+
+  /** Badge next to the title. `false` hides it; a string renders a neutral pill. */
+  badge: z.union([z.literal(false), z.string().min(1)]).optional(),
+
+  /** Second line under the title. */
+  subtitle: z.string().min(1).optional(),
+
+  /** Tooltip and accessible name of the add-first-step button. */
+  emptyStateLabel: z.string().min(1).optional(),
+
+  /** Outer frame border style. `dashed` is the BPMN event sub-process look. */
+  borderStyle: z.enum(['solid', 'dashed']).optional(),
+
+  /** Outer frame accent color, drawn from the semantic status tokens. */
+  accent: z.enum(['default', 'info', 'warning', 'error', 'success']).optional(),
+
+  /** Outer frame corner radius. */
+  radius: z.enum(['default', 'lg', 'xl']).optional(),
+
+  /** Inner body frame style. */
+  bodyFrame: z.enum(['dashed', 'solid', 'none']).optional(),
+
+  /** Lets users rename the title and subtitle inline, like BaseNode. Defaults to `false`. */
+  labelEditable: z.boolean().optional(),
+});
+
+/**
  * Display configuration for a node
  */
 export const nodeDisplayManifestSchema = z.object({
@@ -58,6 +92,9 @@ export const nodeDisplayManifestSchema = z.object({
    * flush with the canvas (e.g. trigger entry points).
    */
   shadow: z.boolean().optional(),
+
+  /** Container presentation. Only read when `shape` is `'container'`. */
+  container: nodeContainerDisplayManifestSchema.optional(),
 });
 
 /**
@@ -149,6 +186,7 @@ export const nodeManifestSchema = z.object({
 });
 
 // Export inferred types
+export type NodeContainerDisplayManifest = z.infer<typeof nodeContainerDisplayManifestSchema>;
 export type NodeDisplayManifest = z.infer<typeof nodeDisplayManifestSchema>;
 export type NodeManifest = z.infer<typeof nodeManifestSchema>;
 export type RuntimeConstraints = z.infer<typeof nodeRuntimeConstraintsManifestSchema>;
