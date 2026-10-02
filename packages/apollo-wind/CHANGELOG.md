@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.59.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.58.0...@uipath/apollo-wind@2.59.0) (2026-10-02)
+
+### Features
+
+* **apollo-wind:** rename Tree View to Tree View (Files) ([ddcc5bf](https://github.com/UiPath/apollo-ui/commit/ddcc5bf63c1d75c190af91a1eea3dc7a4766ad68))
+
 ## [@uipath/apollo-wind-v2.58.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.57.1...@uipath/apollo-wind@2.58.0) (2026-10-01)
 
 ### Features

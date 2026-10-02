@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.68.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.67.1...@uipath/apollo-react@6.68.0) (2026-10-02)
+
+### Features
+
+* **apollo-react:** rename JsonTree to Tree View (Json) ([7ec2de4](https://github.com/UiPath/apollo-ui/commit/7ec2de4af0df57669339206fc30e8d1c093059f3))
+
 ## [@uipath/apollo-react-v6.67.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.67.0...@uipath/apollo-react@6.67.1) (2026-10-02)
 
 ### Bug Fixes
