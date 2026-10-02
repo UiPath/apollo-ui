@@ -1,3 +1,11 @@
+## [@uipath/apollo-react-v6.69.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.68.0...@uipath/apollo-react@6.69.0) (2026-10-02)
+
+### Features
+
+* **apollo-wind:** align LockableValueField with wind's value modes and strings [MST-15690] ([a598622](https://github.com/UiPath/apollo-ui/commit/a598622aa31b4d0e994128e234e82d35e971b8c5))
+* **apollo-wind:** port hitl-schema's LockableValueField widenings [MST-15690] ([b738f6b](https://github.com/UiPath/apollo-ui/commit/b738f6be2ed795704a0e94e16716c63e19c85536))
+* **apollo-wind:** rename LockableValueField to QuickFormField [MST-15678] ([2cec6b2](https://github.com/UiPath/apollo-ui/commit/2cec6b2dbad1945f84ffeb0ace958a8f633f1848))
+
 ## [@uipath/apollo-react-v6.68.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.67.1...@uipath/apollo-react@6.68.0) (2026-10-02)
 
 ### Features

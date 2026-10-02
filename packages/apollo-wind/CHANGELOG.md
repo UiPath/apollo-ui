@@ -1,3 +1,12 @@
+## [@uipath/apollo-wind-v2.60.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.59.0...@uipath/apollo-wind@2.60.0) (2026-10-02)
+
+### Features
+
+* **apollo-wind:** align LockableValueField with wind's value modes and strings [MST-15690] ([a598622](https://github.com/UiPath/apollo-ui/commit/a598622aa31b4d0e994128e234e82d35e971b8c5))
+* **apollo-wind:** port hitl-schema's LockableValueField widenings [MST-15690] ([b738f6b](https://github.com/UiPath/apollo-ui/commit/b738f6be2ed795704a0e94e16716c63e19c85536))
+* **apollo-wind:** rebuild LockableValueField on the shared field primitives [MST-15679] ([a416e08](https://github.com/UiPath/apollo-ui/commit/a416e0861b65a2be689f8c34f9120f6be4edd6a5))
+* **apollo-wind:** rename LockableValueField to QuickFormField [MST-15678] ([2cec6b2](https://github.com/UiPath/apollo-ui/commit/2cec6b2dbad1945f84ffeb0ace958a8f633f1848))
+
 ## [@uipath/apollo-wind-v2.59.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.58.0...@uipath/apollo-wind@2.59.0) (2026-10-02)
 
 ### Features
