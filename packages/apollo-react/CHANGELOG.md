@@ -1,3 +1,24 @@
+## [@uipath/apollo-react-v6.67.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.66.0...@uipath/apollo-react@6.67.0) (2026-10-02)
+
+### Features
+
+* **apollo-react:** keep AgentFlow toolbar items stable with contextual disabling ([164eb1a](https://github.com/UiPath/apollo-ui/commit/164eb1a005db46ea1297838d9e7cb40c9326d8c9))
+* **apollo-react:** modernize AgentFlow canvas toolbars ([815b646](https://github.com/UiPath/apollo-ui/commit/815b64608ac12b144c88f57a5ca0a4e880401cce))
+* **apollo-react:** toggle AgentFlow Run button to Stop during a run ([fc6f36c](https://github.com/UiPath/apollo-ui/commit/fc6f36c64e230d160e8cf65e14ba73bd1976d548))
+
+### Bug Fixes
+
+* **apollo-react:** address AgentFlow toolbar PR feedback ([812f666](https://github.com/UiPath/apollo-ui/commit/812f666d1634537746b9ef8ceff19ed52d1b5f6b))
+* **apollo-react:** disable AgentFlow undo/redo only on explicit false ([232a245](https://github.com/UiPath/apollo-ui/commit/232a245b16fb19aef34cd8a79f68355e3f31852a))
+* **apollo-react:** give AgentFlow story history ref an explicit initial value ([815c5cd](https://github.com/UiPath/apollo-ui/commit/815c5cd90bbbb10c3b4d377e8350cb9b1dd5a577))
+* **apollo-react:** keep Stop reachable during runs; base suggestion suppression on panel ([851acae](https://github.com/UiPath/apollo-ui/commit/851acaea8a26469eeaecf6d117ff3fb22b8a159a))
+* **apollo-react:** keep Stop reachable with suggestions and make disabled tooltips accessible ([289a678](https://github.com/UiPath/apollo-ui/commit/289a678d61813978ebd32907662b7102c89e4709))
+* **apollo-react:** non-breaking translations default and accessible disabled toolbar buttons ([f662d06](https://github.com/UiPath/apollo-ui/commit/f662d062ef618e2a30c02485d7b9d4f2d45980a3))
+* **apollo-react:** normalize timeline-visible default so toolbar yields when timeline renders ([967dc8b](https://github.com/UiPath/apollo-ui/commit/967dc8b832e0b201bb20d946c451ec0a0d390ded))
+* **apollo-react:** show only one control in the AgentFlow bottom-center region ([50b3998](https://github.com/UiPath/apollo-ui/commit/50b39983165079d8ba6292768bb90da1620a9d98))
+* **apollo-react:** suppress hover on soft-disabled toolbar buttons; trim prop docs ([317b2bc](https://github.com/UiPath/apollo-ui/commit/317b2bc8891292af26cf3f31a81c35f9cc8f9567))
+* **apollo-react:** surface runDisabledReason only when canRun is false ([d4d3021](https://github.com/UiPath/apollo-ui/commit/d4d30218c23bfdb2837fa14935515ec69deeed83))
+
 ## [@uipath/apollo-react-v6.66.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.65.1...@uipath/apollo-react@6.66.0) (2026-10-01)
 
 ### Features
