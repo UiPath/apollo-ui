@@ -623,11 +623,13 @@ const AgentFlowInner = memo(
     const showStop = !!isRunning && !!onStop;
     const showPlay = !!onRun && !isRunning;
     const showRunControl = showPlay || showStop;
-    // A run's Stop action must always stay reachable, even while a suggestion group is
-    // active (which otherwise suppresses the toolbar to avoid clutter).
     const hasToolbarItems = showUndo || showRedo || showRunControl || showAddNote;
-    const showModeToolbar =
-      hasToolbarItems && (!!isRunning || !suggestionGroup?.suggestions.length);
+    // The bottom-center region shows only one thing at a time. The timeline player and
+    // the suggestion-group panel take precedence over the mode toolbar, so the toolbar
+    // is hidden whenever either of them occupies that space.
+    const timelineVisible = timelineHeight > 0;
+    const suggestionsVisible = !!suggestionGroup?.suggestions.length;
+    const showModeToolbar = hasToolbarItems && !timelineVisible && !suggestionsVisible;
     const translations = canvasTranslations ?? DefaultCanvasTranslations;
     // The newer toolbar labels are optional on CanvasTranslations, so fall back per
     // field for consumers that supply the previous translation shape. DefaultCanvasTranslations

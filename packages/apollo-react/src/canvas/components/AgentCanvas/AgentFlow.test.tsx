@@ -481,7 +481,9 @@ describe('AgentFlow', () => {
       expect(screen.queryByTestId('canvas-toolbar')).not.toBeInTheDocument();
     });
 
-    it('keeps Stop reachable while a suggestion group is active during a run', () => {
+    it('hides the toolbar while a suggestion group is active, even during a run', () => {
+      // Only one thing occupies the bottom-center region: the suggestion panel takes
+      // precedence over the mode toolbar.
       render(
         <AgentFlow
           {...toolbarProps}
@@ -490,7 +492,33 @@ describe('AgentFlow', () => {
           suggestionGroup={suggestionGroupFixture}
         />
       );
-      expect(screen.getByTestId('agent-flow-stop-button')).toBeInTheDocument();
+      expect(screen.queryByTestId('canvas-toolbar')).not.toBeInTheDocument();
+    });
+
+    it('hides the toolbar while the timeline player is visible', () => {
+      // The timeline player and the mode toolbar never share the bottom-center region.
+      const now = Date.now();
+      const iso = (ms: number) => new Date(ms).toISOString();
+      const timelineSpans = [
+        {
+          ...(mockProps.spans[0] as IRawSpan),
+          Id: 'run-1',
+          SpanType: 'agentRun',
+          ParentId: undefined,
+          StartTime: iso(now),
+          EndTime: iso(now + 60_000),
+        },
+        {
+          ...(mockProps.spans[0] as IRawSpan),
+          Id: 'child-1',
+          ParentId: 'run-1',
+          StartTime: iso(now),
+          EndTime: iso(now + 10_000),
+        },
+      ] as IRawSpan[];
+      render(<AgentFlow {...toolbarProps} spans={timelineSpans} enableTimelinePlayer />);
+      expect(screen.getByTestId('timeline-player')).toBeInTheDocument();
+      expect(screen.queryByTestId('canvas-toolbar')).not.toBeInTheDocument();
     });
 
     it('omits undo/redo/run but keeps add-note when only sticky notes are enabled', () => {
