@@ -5,7 +5,7 @@ import { getAbsolutePosition, snapToGrid } from '../../utils/NodeUtils';
 import {
   type ContainerPreviewConnectionHandles,
   getContainerRelativeBodyCenter,
-} from './LoopNode.helpers';
+} from './ContainerNode.helpers';
 
 export function showCenteredContainerPreview({
   containerId,
@@ -48,10 +48,12 @@ export function showCenteredContainerPreview({
     position: previewCenter,
     positionMode: 'center',
     handlePosition: previewHandles.sourceHandlePosition,
-    target: {
-      nodeId: containerId,
-      handleId: previewHandles.targetHandleId,
-    },
+    target: previewHandles.targetHandleId
+      ? {
+          nodeId: containerId,
+          handleId: previewHandles.targetHandleId,
+        }
+      : undefined,
     data: { placement },
     containerId,
     trailingEdgeId,

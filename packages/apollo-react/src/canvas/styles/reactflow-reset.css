@@ -40,12 +40,10 @@
  * React Flow sets z-index inline, so `!important` is required to override it.
  *
  * Exclusions:
- *   - loop containers need to stay below sticky notes even when selected
+ *   - containers (loops included) need to stay below sticky notes even when selected
  *   - sticky notes own annotation/active annotation layers in StickyNoteNode.styles
  */
-.react-flow__node:not(.parent):not(:has([data-sticky-note])):not(
-    :has([data-loop-container])
-  ):hover {
+.react-flow__node:not(.parent):not(:has([data-sticky-note])):not(:has([data-container])):hover {
   z-index: 1002 !important;
 }
 
@@ -73,8 +71,8 @@ svg.react-flow__connectionline {
   z-index: 1002 !important;
 }
 
-/* Keep loop shells behind sticky-note annotations; empty loop body still hit-tests to the loop. */
-.react-flow__node:has([data-loop-container]) {
+/* Keep container shells behind sticky-note annotations; an empty body still hit-tests to the container. */
+.react-flow__node:has([data-container]) {
   z-index: -20 !important;
 }
 

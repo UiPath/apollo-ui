@@ -61,7 +61,7 @@ import { BaseCanvas, type BaseCanvasRef } from '../BaseCanvas';
 import { BaseNode } from '../BaseNode';
 import { BlankCanvasNode } from '../BlankCanvasNode';
 import { CanvasPositionControls } from '../CanvasPositionControls';
-import { LoopCanvasNode } from '../LoopNode';
+import { ContainerCanvasNode } from '../ContainerNode';
 import { MiniCanvasNavigator } from '../MiniCanvasNavigator';
 
 interface HierarchicalCanvasProps {
@@ -133,7 +133,7 @@ export const HierarchicalCanvas: React.FC<HierarchicalCanvasProps> = ({
   const nodeTypes = useMemo(() => {
     return nodeManifests.reduce(
       (acc, manifest) => {
-        acc[manifest.nodeType] = isContainerNodeManifest(manifest) ? LoopCanvasNode : BaseNode;
+        acc[manifest.nodeType] = isContainerNodeManifest(manifest) ? ContainerCanvasNode : BaseNode;
         return acc;
       },
       { ...DEFAULT_NODE_TYPES } as NodeTypes

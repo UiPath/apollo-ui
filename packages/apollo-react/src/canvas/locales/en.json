@@ -407,5 +407,11 @@
   "guardrails.custom-builder.rule-fields-required-error": "Fields selection is required",
   "guardrails.custom-builder.rule-value-required-error": "Value is required",
   "canvas.suggestion_group_panel.previous_suggestion": "Previous suggestion",
-  "canvas.suggestion_group_panel.next_suggestion": "Next suggestion"
+  "canvas.suggestion_group_panel.next_suggestion": "Next suggestion",
+  "container-node.title": "Container",
+  "container-node.add-node": "Add node to container",
+  "container-node.edit.title-placeholder": "Name",
+  "container-node.edit.subtitle-placeholder": "Description",
+  "container-node.edit.title": "Edit container name",
+  "container-node.edit.subtitle": "Edit container description"
 }

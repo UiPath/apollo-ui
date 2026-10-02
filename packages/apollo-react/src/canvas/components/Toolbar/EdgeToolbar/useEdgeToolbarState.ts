@@ -9,7 +9,7 @@ import {
   useIsConnectionReadOnly,
   useReadOnlyConnectionCheck,
 } from '../../BaseCanvas/ReadOnlyNodesContext';
-import { resolveContainerAddNodePreview } from '../../LoopNode/LoopNode.helpers';
+import { resolveContainerAddNodePreview } from '../../ContainerNode/ContainerNode.helpers';
 import type { EdgeToolbarConfig, EdgeToolbarPositionData } from './EdgeToolbar.types';
 import { useEdgeToolbarPositioning } from './useEdgeToolbarPositioning';
 

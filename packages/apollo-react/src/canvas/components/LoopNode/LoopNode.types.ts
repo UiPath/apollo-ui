@@ -1,16 +1,14 @@
 import type { Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
-import type { SuggestionType } from '../../types';
 import type { ElementStatusValues } from '../../types/execution';
 import type { BaseNodeData } from '../BaseNode';
-import type { NodeAdornments } from '../BaseNode/BaseNode.types';
-import type { NodeToolbarConfig } from '../Toolbar';
+import type {
+  ContainerNodeConfig,
+  ContainerNodeResizeSize,
+} from '../ContainerNode/ContainerNode.types';
 
 export type LoopNodeData = BaseNodeData;
 
-export interface LoopNodeResizeSize {
-  width: number;
-  height: number;
-}
+export type LoopNodeResizeSize = ContainerNodeResizeSize;
 
 export interface LoopNodeExecutionCountState {
   activeIndex: number;
@@ -22,11 +20,8 @@ export interface LoopNodeExecutionCountState {
   iterationStatuses?: Map<number, ElementStatusValues>;
 }
 
-export interface LoopNodeConfig {
-  toolbarConfig?: NodeToolbarConfig | null;
-  adornments?: NodeAdornments;
-  executionStatusOverride?: ElementStatusValues;
-  suggestionType?: SuggestionType;
+export interface LoopNodeConfig extends ContainerNodeConfig {
+  /** Execution counter shown in the header. Ignored when `headerEnd` is passed. */
   iterationPillState?: LoopNodeExecutionCountState;
 }
 

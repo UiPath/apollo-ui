@@ -5,7 +5,7 @@ import type { HandleBoundaryResolver } from '../../utils/NodeUtils';
 import {
   type ContainerPreviewManifestResolver,
   resolveContainerAddNodePreview,
-} from '../LoopNode/LoopNode.helpers';
+} from '../ContainerNode/ContainerNode.helpers';
 
 export interface AddNodePreviewOptions {
   getManifestForNode?: ContainerPreviewManifestResolver;

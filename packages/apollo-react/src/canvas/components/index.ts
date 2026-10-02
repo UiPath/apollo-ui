@@ -13,6 +13,7 @@ export * from './CanvasTooltip';
 export * from './CanvasZoomControls';
 export * from './CaseFlow';
 export * from './CodedAgent';
+export * from './ContainerNode';
 export * from './Edges';
 export * from './ExecutionStatusIcon';
 export * from './FloatingCanvasPanel';

@@ -77,6 +77,7 @@ vi.mock('@uipath/apollo-react/canvas/xyflow/react', async (importOriginal) => ({
     return typeof selector === 'function' ? selector(state) : false;
   },
   useUpdateNodeInternals: () => vi.fn(),
+  useReactFlow: () => ({ updateNodeData: vi.fn() }),
 }));
 
 vi.mock('../../utils/container', async (importOriginal) => ({

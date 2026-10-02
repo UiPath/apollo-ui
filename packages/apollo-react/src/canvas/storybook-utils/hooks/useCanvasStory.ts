@@ -9,8 +9,8 @@ import { addEdge, useEdgesState, useNodesState } from '@uipath/apollo-react/canv
 import { useCallback, useMemo } from 'react';
 import { AddNodePreview } from '../../components';
 import { BaseNode } from '../../components/BaseNode/BaseNode';
+import { ContainerCanvasNode } from '../../components/ContainerNode';
 import { SequenceEdge } from '../../components/Edges';
-import { LoopCanvasNode } from '../../components/LoopNode';
 import { useNodeTypeRegistry } from '../../core';
 import { isContainerNodeManifest } from '../../utils';
 
@@ -130,7 +130,9 @@ export function useCanvasStory(options: UseCanvasStoryOptions): UseCanvasStoryRe
   const nodeTypes = useMemo(() => {
     const types = nodeTypeRegistry.getAllManifests().reduce(
       (acc, manifest) => {
-        acc[manifest.nodeType] = isContainerNodeManifest(manifest) ? LoopCanvasNode : nodeComponent;
+        acc[manifest.nodeType] = isContainerNodeManifest(manifest)
+          ? ContainerCanvasNode
+          : nodeComponent;
         return acc;
       },
       {
@@ -192,7 +194,9 @@ export function useNodeTypesFromRegistry(nodeComponent: NodeTypes[string] = Base
   return useMemo(() => {
     return nodeTypeRegistry.getAllManifests().reduce(
       (acc, manifest) => {
-        acc[manifest.nodeType] = isContainerNodeManifest(manifest) ? LoopCanvasNode : nodeComponent;
+        acc[manifest.nodeType] = isContainerNodeManifest(manifest)
+          ? ContainerCanvasNode
+          : nodeComponent;
         return acc;
       },
       { default: nodeComponent } as NodeTypes
