@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.67.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.67.0...@uipath/apollo-react@6.67.1) (2026-10-02)
+
+### Bug Fixes
+
+* **apollo-react:** limit unbounded guardrail threshold arrows to 0..1 ([de223c9](https://github.com/UiPath/apollo-ui/commit/de223c91324ed01222dbd8095795324de5e9b10b))
+
 ## [@uipath/apollo-react-v6.67.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.66.0...@uipath/apollo-react@6.67.0) (2026-10-02)
 
 ### Features
