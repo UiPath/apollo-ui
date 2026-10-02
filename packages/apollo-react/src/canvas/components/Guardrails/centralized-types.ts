@@ -65,5 +65,6 @@ export type CentralizedGuardrailParameterRow =
       id: string;
       label: string;
       kind: 'thresholds';
+      /** `value` is `undefined` when the policy set none, or the validator ignores it. */
       thresholds: Array<{ key: string; label: string; value: number | undefined }>;
     };

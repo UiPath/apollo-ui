@@ -96,6 +96,14 @@ export interface CentralizedParameterFallbackLabels {
   thresholds: string;
 }
 
+/**
+ * Threshold keys a built-in validator matches on the label alone, so a stored threshold has no
+ * effect and shows as unset. Azure returns sentiment's `Mixed` with no confidence score.
+ */
+const UNSCORED_THRESHOLD_KEYS: ReadonlyMap<string, ReadonlySet<string>> = new Map([
+  ['sentiment', new Set(['Mixed'])],
+]);
+
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   value !== null && typeof value === 'object' && !Array.isArray(value);
 
@@ -177,6 +185,9 @@ export function resolveCentralizedGuardrailParameters(
   );
 
   const rendersAsThresholds = (id: string): boolean => isPlainObject(valuesById.get(id));
+  const unscoredKeys = guardrail.isByo
+    ? undefined
+    : UNSCORED_THRESHOLD_KEYS.get(guardrail.validator);
 
   // Own properties only, as in `definitions-enrich.ts`: `option` is wire data, and a bare
   // lookup of `constructor` or `__proto__` returns something React cannot render.
@@ -239,7 +250,8 @@ export function resolveCentralizedGuardrailParameters(
       thresholds: keys.map((key) => ({
         key,
         label: optionLabel(keySourceList, key),
-        value: Object.hasOwn(thresholds, key) ? thresholds[key] : undefined,
+        value:
+          Object.hasOwn(thresholds, key) && !unscoredKeys?.has(key) ? thresholds[key] : undefined,
       })),
     };
   };

@@ -80,8 +80,8 @@ const sentimentGuardrail: CentralizedGuardrail = {
   appliesToConversationalAgents: true,
   scopes: ['Llm'],
   action: 'block',
-  entities: ['Negative'],
-  entityThresholds: { Negative: 0.7 },
+  entities: ['Negative', 'Mixed'],
+  entityThresholds: { Negative: 0.7, Mixed: 0.5 },
   parameters: [{ id: 'language', parameterType: 'enum-list', value: ['en', 'fr', 'de'] }],
 };
 
@@ -278,7 +278,7 @@ export const SentimentDetails: Story = {
     docs: {
       description: {
         story:
-          'Sentiment keeps its languages in `parameters`, next to the entity fields every built-in uses, so they show as a line of their own under the thresholds.',
+          'Sentiment keeps its languages in `parameters`, next to the entity fields every built-in uses, so they show as a line of their own under the thresholds. Mixed shows a dash: Azure returns it without a confidence score, so its threshold has no effect.',
       },
     },
   },
