@@ -9,7 +9,7 @@ import { Row, cn } from '@uipath/apollo-wind';
 export const CANVAS_MODE_TOOLBAR_HEIGHT = 48;
 
 export const TOOLBAR_ICON_BUTTON_CLASS =
-  'text-foreground-muted hover:bg-surface-hover hover:text-foreground [&_svg]:size-5 [&_svg]:transition-all hover:[&_svg]:size-6 disabled:hover:[&_svg]:size-5';
+  'text-foreground-muted hover:bg-surface-hover hover:text-foreground [&_svg]:size-5 [&_svg]:transition-all hover:[&_svg]:size-6 disabled:hover:[&_svg]:size-5 aria-disabled:hover:bg-transparent aria-disabled:hover:text-foreground-muted aria-disabled:hover:[&_svg]:size-5';
 
 // ---------------------------------------------------------------------------
 // CountBadge

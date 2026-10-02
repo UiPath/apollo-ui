@@ -354,35 +354,21 @@ export type AgentFlowProps = {
   onUpdateStickyNote?: (id: string, updates: Partial<Omit<AgentFlowStickyNote, 'id'>>) => void;
   onRemoveStickyNote?: (id: string) => void;
 
-  // history & run (bottom-center mode toolbar)
-  /** Called when the Undo button is clicked. The button only renders when provided. */
+  // history & run (bottom-center mode toolbar). Each control renders only when its
+  // handler/flag is provided. `canUndo`/`canRedo`/`canRun` disable their button only when
+  // explicitly `false`; `undoCount`/`redoCount` show a badge when greater than 0.
   onUndo?: () => void;
-  /** Called when the Redo button is clicked. The button only renders when provided. */
   onRedo?: () => void;
-  /** Whether there is a step available to undo. Disables the Undo button when false. */
   canUndo?: boolean;
-  /** Whether there is a step available to redo. Disables the Redo button when false. */
   canRedo?: boolean;
-  /** Number of available undo steps, shown as a badge. No badge is shown when 0/undefined. */
   undoCount?: number;
-  /** Number of available redo steps, shown as a badge. No badge is shown when 0/undefined. */
   redoCount?: number;
-  /** Called when the Run button is clicked. The button only renders when provided. */
   onRun?: () => void;
-  /**
-   * Whether running is currently allowed. The Run button is disabled when this is
-   * explicitly `false` (e.g. the agent has blocking validation errors). Defaults to
-   * enabled; only an explicit `false` disables it, matching `canUndo`/`canRedo`.
-   */
   canRun?: boolean;
   /** Optional tooltip shown on the Run button while it is disabled. */
   runDisabledReason?: string;
-  /**
-   * Called when the Stop button is clicked. While `isRunning` is true the Run
-   * button becomes a Stop button; it only renders when this is provided.
-   */
+  /** While `isRunning` is true the Run button becomes a Stop button (requires `onStop`). */
   onStop?: () => void;
-  /** Whether a run is in progress. Swaps Run for Stop (when `onStop` is set). */
   isRunning?: boolean;
 
   // feature flags
