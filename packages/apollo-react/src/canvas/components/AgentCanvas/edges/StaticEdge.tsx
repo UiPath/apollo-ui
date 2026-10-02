@@ -10,7 +10,7 @@ import type { AgentFlowDefaultEdge, SuggestionType } from '../../../types';
 import { useAgentFlowStore } from '../store/agent-flow-store';
 
 type StaticEdgeProps = EdgeProps &
-  AgentFlowDefaultEdge & {
+  Omit<AgentFlowDefaultEdge, 'type'> & {
     sourceX: number;
     sourceY: number;
     targetX: number;
