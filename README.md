@@ -202,8 +202,8 @@ When contributing components:
 - ✅ Write unit tests
 - ✅ Update package README
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed guidelines.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed contribution guidelines.
 
 ## License
 
-MIT © UiPath
+MIT © UiPath. See [LICENSE](./LICENSE).
