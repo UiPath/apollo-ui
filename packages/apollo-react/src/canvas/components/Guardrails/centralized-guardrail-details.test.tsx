@@ -157,6 +157,28 @@ describe('CentralizedGuardrailDetails', () => {
     expect(valueFor('Languages')).toBe('English, French');
   });
 
+  it('shows a dash for Mixed, whose threshold sentiment ignores', () => {
+    render(
+      <CentralizedGuardrailDetails
+        guardrail={guardrail({
+          validator: 'sentiment',
+          scopes: ['Llm'],
+          entities: ['Negative', 'Mixed'],
+          entityThresholds: { Negative: 0.7, Mixed: 0.5 },
+        })}
+        definitions={enrichGuardrailDefinitions([SENTIMENT_WIRE])}
+        policyName="Acme policy"
+      />
+    );
+
+    const thresholds = screen.getByText('Confidence thresholds').parentElement as HTMLElement;
+    expect(
+      within(thresholds)
+        .getAllByRole('listitem')
+        .map((row) => row.textContent)
+    ).toEqual(['Negative0.7', 'Mixed—']);
+  });
+
   it('renders a BYO connector configuration in the order the connector declares', () => {
     render(
       <CentralizedGuardrailDetails

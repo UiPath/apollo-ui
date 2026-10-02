@@ -344,6 +344,48 @@ describe('resolveCentralizedGuardrailParameters, built-in guardrails', () => {
     ]);
   });
 
+  it('shows no threshold for Mixed, which sentiment matches on the label alone', () => {
+    const rows = resolveCentralizedGuardrailParameters(
+      guardrail({
+        validator: 'sentiment',
+        entities: ['Negative', 'Mixed'],
+        entityThresholds: { Negative: 0.7, Mixed: 0.9 },
+      }),
+      { definition: SENTIMENT_DEFINITION, labels: FALLBACK_LABELS }
+    );
+
+    expect(rows).toEqual([
+      {
+        id: 'sentimentThresholds',
+        kind: 'thresholds',
+        label: 'Confidence thresholds',
+        thresholds: [
+          { key: 'Negative', label: 'Negative', value: 0.7 },
+          { key: 'Mixed', label: 'Mixed', value: undefined },
+        ],
+      },
+    ]);
+  });
+
+  it('keeps a Mixed threshold on a BYO connector or another validator', () => {
+    const thresholdsOf = (overrides: Partial<CentralizedGuardrail>) =>
+      resolveCentralizedGuardrailParameters(guardrail(overrides), {
+        labels: FALLBACK_LABELS,
+      }).flatMap((row) => (row.kind === 'thresholds' ? row.thresholds : []));
+
+    expect(thresholdsOf({ validator: 'harmful_content', entityThresholds: { Mixed: 4 } })).toEqual([
+      { key: 'Mixed', label: 'Mixed', value: 4 },
+    ]);
+    expect(
+      thresholdsOf({
+        validator: 'sentiment',
+        isByo: true,
+        name: 'Acme tone',
+        parameters: [{ id: 'scores', value: { Mixed: 0.9 } }],
+      })
+    ).toEqual([{ key: 'Mixed', label: 'Mixed', value: 0.9 }]);
+  });
+
   it('still shows a built-in’s own parameters, raw, when no definition matched', () => {
     const rows = resolveCentralizedGuardrailParameters(
       guardrail({

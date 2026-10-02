@@ -592,7 +592,9 @@ orchestration. The `Details in a dialog` and `Details in a panel overlay` storie
   `parameters` for whatever those cannot hold (sentiment's languages).
   `resolveCentralizedGuardrailParameters` lifts the built-in fields onto the parameter shape,
   followed by the built-in's own parameters, so one resolver covers both, and a threshold map
-  absorbs its `keySource` list into its key column.
+  absorbs its `keySource` list into its key column. A threshold the validator ignores shows a
+  dash, as an unset one does: sentiment matches `Mixed` on the label alone, since Azure gives
+  it no confidence score.
 - **Labels and entity names come from the matching definition**, so a centralized guardrail
   names its entities the way the guardrail editor names them ("US Social Security Number
   (SSN)", not `USSocialSecurityNumber`) and each validator names its own configuration
