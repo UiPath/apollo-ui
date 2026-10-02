@@ -1025,7 +1025,7 @@ types:
 | `enum` | single select (a stored value missing from `options` is kept as a synthetic option) |
 | `enum-list` | toggleable chips inline for ≤8 options, otherwise the wind `MultiSelect` |
 | `text-list` | repeated textarea rows with Add/Remove (`maxItems`, `maxLength`) |
-| `map-enum` | one numeric input per key selected in the sibling `keySource` enum-list |
+| `map-enum` | one numeric input per key selected in the sibling `keySource` enum-list, with `min`/`max`/`step`. Unstated ones fall back to `0`/`1`/`0.1` for the input's arrows only, as both legacy editors did: the definition stays unbounded, so `getOutOfRangeParameterIds` never rejects a typed value outside them |
 
 ```tsx
 import {

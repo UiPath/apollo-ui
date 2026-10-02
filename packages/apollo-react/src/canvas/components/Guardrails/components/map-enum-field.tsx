@@ -83,9 +83,12 @@ export function MapEnumField(props: CustomFieldComponentProps) {
               type="number"
               value={currentMap[key] ?? defaults[key] ?? paramDef.min ?? 0}
               onChange={(e) => handleThresholdChange(key, Number.parseFloat(e.target.value) || 0)}
-              min={paramDef.min}
-              max={paramDef.max}
-              step={paramDef.step}
+              // Unstated bounds fall back to 0..1 step 0.1 for the arrows only, as both legacy
+              // editors did. The definition stays unbounded, so `getOutOfRangeParameterIds` never
+              // blocks a typed value on a scale nobody published.
+              min={paramDef.min ?? 0}
+              max={paramDef.max ?? 1}
+              step={paramDef.step ?? 0.1}
               className="flex-1"
             />
           </div>

@@ -585,6 +585,60 @@ describe('GuardrailValidatorForm', () => {
 
       expect(screen.queryByText('Thresholds')).not.toBeInTheDocument();
     });
+
+    // Both legacy editors limited the arrows of an unbounded threshold map to 0..1 step 0.1.
+    // Stated bounds win, and the stored value is never clamped.
+    it('limits the arrows to 0..1 step 0.1 only when the definition states no bounds', () => {
+      const thresholds = (bounds: Partial<GuardrailParameterDefinition>) =>
+        [
+          {
+            id: 'entities',
+            type: 'enum-list',
+            label: 'Entities',
+            required: true,
+            defaultValue: ['Hate'],
+            options: ['Hate'],
+          },
+          {
+            id: 'thresholds',
+            type: 'map-enum',
+            label: 'Thresholds',
+            required: true,
+            defaultValue: {},
+            keySource: 'entities',
+            ...bounds,
+          },
+        ] satisfies GuardrailParameterDefinition[];
+      const parameters: GuardrailValidatorParameter[] = [
+        { $parameterType: 'map-enum', id: 'thresholds', value: { Hate: 4 } },
+      ];
+
+      const { unmount } = render(
+        <GuardrailValidatorForm
+          parameterDefinitions={thresholds({})}
+          parameters={parameters}
+          onChange={() => {}}
+        />
+      );
+      const unbounded = screen.getByRole('spinbutton');
+      expect(unbounded).toHaveAttribute('min', '0');
+      expect(unbounded).toHaveAttribute('max', '1');
+      expect(unbounded).toHaveAttribute('step', '0.1');
+      expect(unbounded).toHaveValue(4);
+      unmount();
+
+      render(
+        <GuardrailValidatorForm
+          parameterDefinitions={thresholds({ min: 0, max: 6, step: 2 })}
+          parameters={parameters}
+          onChange={() => {}}
+        />
+      );
+      const bounded = screen.getByRole('spinbutton');
+      expect(bounded).toHaveAttribute('min', '0');
+      expect(bounded).toHaveAttribute('max', '6');
+      expect(bounded).toHaveAttribute('step', '2');
+    });
   });
 
   describe('text parameter', () => {

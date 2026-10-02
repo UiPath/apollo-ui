@@ -164,7 +164,8 @@ function toParameterDefinition(
       // Bounds only when the backend states them: `getOutOfRangeParameterIds` range-checks
       // map rows and hosts gate Save on it, so an invented bound would reject a threshold on
       // a scale nobody published. `step` stays a hint (nothing enforces it) but is defaulted,
-      // or the row spinners step by 1 through a 0..1 score.
+      // or the row spinners step by 1 through a 0..1 score. `MapEnumField` limits its arrows to
+      // 0..1 when no bound is stated, without touching the definition.
       if (param.min != null) definition.min = param.min;
       if (param.max != null) definition.max = param.max;
       definition.step = param.step ?? 0.1;
