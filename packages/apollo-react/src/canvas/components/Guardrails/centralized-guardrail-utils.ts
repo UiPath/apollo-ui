@@ -111,7 +111,10 @@ const asNumberRecord = (value: unknown): Record<string, number> =>
       )
     : {};
 
-/** Lifts a built-in's `entities` / `entityThresholds` onto the parameter shape. */
+/**
+ * Lifts a built-in's `entities` / `entityThresholds` onto the parameter shape, followed by its
+ * own `parameters` (settings the entity fields cannot hold, such as sentiment's languages).
+ */
 function liftBuiltInConfiguration(
   guardrail: CentralizedGuardrail,
   definition: CentralizedGuardrailDefinition | undefined,
@@ -135,6 +138,11 @@ function liftBuiltInConfiguration(
   }
   if (guardrail.entityThresholds != null) {
     parameters.push({ id: thresholdsId, value: guardrail.entityThresholds });
+  }
+  // A lifted entity field wins over a parameter repeating its id.
+  const liftedIds = new Set(parameters.map((parameter) => parameter.id));
+  for (const parameter of guardrail.parameters ?? []) {
+    if (!liftedIds.has(parameter.id)) parameters.push(parameter);
   }
 
   const definitions: CentralizedGuardrailParameterDefinition[] =

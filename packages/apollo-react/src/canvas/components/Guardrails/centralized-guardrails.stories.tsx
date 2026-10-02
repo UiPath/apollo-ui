@@ -73,6 +73,18 @@ const harmfulContentGuardrail: CentralizedGuardrail = {
   entityThresholds: { Hate: 2, Violence: 4 },
 };
 
+const sentimentGuardrail: CentralizedGuardrail = {
+  validator: 'sentiment',
+  executionStage: 'Both',
+  appliesToAutonomousAgents: true,
+  appliesToConversationalAgents: true,
+  scopes: ['Llm'],
+  action: 'block',
+  entities: ['Negative'],
+  entityThresholds: { Negative: 0.7 },
+  parameters: [{ id: 'language', parameterType: 'enum-list', value: ['en', 'fr', 'de'] }],
+};
+
 const byoGuardrail: CentralizedGuardrail = {
   validator: 'pii_detection',
   name: 'Acme strict PII',
@@ -142,6 +154,29 @@ const definitions: CentralizedGuardrailDefinition[] = [
         type: 'map-enum',
         label: 'Severity thresholds',
         keySource: 'harmfulContentEntities',
+      },
+    ],
+  },
+  {
+    validator: 'sentiment',
+    parameters: [
+      {
+        id: 'sentiments',
+        type: 'enum-list',
+        label: 'Sentiments',
+        optionLabels: { Negative: 'Negative', Mixed: 'Mixed' },
+      },
+      {
+        id: 'sentimentThresholds',
+        type: 'map-enum',
+        label: 'Confidence thresholds',
+        keySource: 'sentiments',
+      },
+      {
+        id: 'language',
+        type: 'enum-list',
+        label: 'Languages',
+        optionLabels: { en: 'English', fr: 'French', de: 'German' },
       },
     ],
   },
@@ -226,6 +261,27 @@ export const InsideHostChrome: Story = {
       </div>
     ),
   ],
+};
+
+/** The details content alone, for a built-in configured beyond its threshold table. */
+export const SentimentDetails: Story = {
+  name: 'Sentiment details',
+  args: { ...Default.args, guardrails: [sentimentGuardrail] },
+  render: (args) => (
+    <CentralizedGuardrailDetails
+      guardrail={sentimentGuardrail}
+      definitions={args.definitions}
+      policyName={args.policyName}
+    />
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Sentiment keeps its languages in `parameters`, next to the entity fields every built-in uses, so they show as a line of their own under the thresholds.',
+      },
+    },
+  },
 };
 
 /** The details content in the dialog one product opens. */

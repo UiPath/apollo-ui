@@ -224,6 +224,25 @@ describe('getCentralizedGuardrailDisplay', () => {
   });
 });
 
+const SENTIMENT_DEFINITION: CentralizedGuardrailDefinition = {
+  validator: 'sentiment',
+  parameters: [
+    { id: 'sentiments', type: 'enum-list', label: 'Sentiments' },
+    {
+      id: 'sentimentThresholds',
+      type: 'map-enum',
+      label: 'Confidence thresholds',
+      keySource: 'sentiments',
+    },
+    {
+      id: 'language',
+      type: 'enum-list',
+      label: 'Languages',
+      optionLabels: { en: 'English', 'pt-BR': 'Portuguese (Brazil)' },
+    },
+  ],
+};
+
 describe('resolveCentralizedGuardrailParameters, built-in guardrails', () => {
   it('folds the entity list into the threshold rows through the definition keySource', () => {
     const rows = resolveCentralizedGuardrailParameters(
@@ -300,6 +319,54 @@ describe('resolveCentralizedGuardrailParameters, built-in guardrails', () => {
         label: 'Detection thresholds',
         thresholds: [{ key: 'Email', label: 'Email', value: 0.8 }],
       },
+    ]);
+  });
+
+  it('follows the entity configuration with the built-in’s own parameters', () => {
+    const rows = resolveCentralizedGuardrailParameters(
+      guardrail({
+        validator: 'sentiment',
+        entities: ['Negative'],
+        entityThresholds: { Negative: 0.7 },
+        parameters: [{ id: 'language', parameterType: 'enum-list', value: ['en', 'pt-BR'] }],
+      }),
+      { definition: SENTIMENT_DEFINITION, labels: FALLBACK_LABELS }
+    );
+
+    expect(rows).toEqual([
+      {
+        id: 'sentimentThresholds',
+        kind: 'thresholds',
+        label: 'Confidence thresholds',
+        thresholds: [{ key: 'Negative', label: 'Negative', value: 0.7 }],
+      },
+      { id: 'language', kind: 'value', label: 'Languages', value: 'English, Portuguese (Brazil)' },
+    ]);
+  });
+
+  it('still shows a built-in’s own parameters, raw, when no definition matched', () => {
+    const rows = resolveCentralizedGuardrailParameters(
+      guardrail({
+        validator: 'sentiment',
+        parameters: [{ id: 'language', parameterType: 'enum-list', value: ['en', 'fr'] }],
+      }),
+      { labels: FALLBACK_LABELS }
+    );
+
+    expect(rows).toEqual([{ id: 'language', kind: 'value', label: 'language', value: 'en, fr' }]);
+  });
+
+  it('keeps a lifted entity field over a parameter repeating its id', () => {
+    const rows = resolveCentralizedGuardrailParameters(
+      guardrail({
+        entities: ['Email'],
+        parameters: [{ id: 'entities', value: ['USSocialSecurityNumber'] }],
+      }),
+      { definition: PII_DEFINITION, labels: FALLBACK_LABELS }
+    );
+
+    expect(rows).toEqual([
+      { id: 'entities', kind: 'value', label: 'Entities to detect', value: 'Email address' },
     ]);
   });
 
