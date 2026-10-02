@@ -624,12 +624,17 @@ const AgentFlowInner = memo(
     const showPlay = !!onRun && !isRunning;
     const showRunControl = showPlay || showStop;
     const hasToolbarItems = showUndo || showRedo || showRunControl || showAddNote;
-    // The bottom-center region shows only one thing at a time. The timeline player and
-    // the suggestion-group panel take precedence over the mode toolbar, so the toolbar
-    // is hidden whenever either of them occupies that space.
+    // The bottom-center region shows only one thing at a time: the timeline player and the
+    // suggestion-group panel take precedence over the mode toolbar. The one exception is
+    // Stop — it must stay reachable throughout an active run, so the toolbar always wins
+    // while Stop is shown. Suggestion suppression keys on whether the panel actually renders
+    // (it only shows non-standalone suggestions), so an all-standalone group doesn't hide it.
     const timelineVisible = timelineHeight > 0;
-    const suggestionsVisible = !!suggestionGroup?.suggestions.length;
-    const showModeToolbar = hasToolbarItems && !timelineVisible && !suggestionsVisible;
+    const suggestionPanelVisible =
+      (suggestionGroup?.suggestions.filter((suggestion) => !suggestion.isStandalone).length ?? 0) >
+      0;
+    const showModeToolbar =
+      hasToolbarItems && (showStop || (!timelineVisible && !suggestionPanelVisible));
     const translations = canvasTranslations ?? DefaultCanvasTranslations;
     // The newer toolbar labels are optional on CanvasTranslations, so fall back per
     // field for consumers that supply the previous translation shape. DefaultCanvasTranslations
