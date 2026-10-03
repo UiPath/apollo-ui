@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.70.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.69.0...@uipath/apollo-react@6.70.0) (2026-10-03)
+
+### Features
+
+* **apollo-react:** add a customizable ContainerNode with LoopNode as a preset ([c0ce9f3](https://github.com/UiPath/apollo-ui/commit/c0ce9f3c0d67a98e757f9d43ab6085cde4715098))
+
 ## [@uipath/apollo-react-v6.69.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.68.0...@uipath/apollo-react@6.69.0) (2026-10-02)
 
 ### Features
