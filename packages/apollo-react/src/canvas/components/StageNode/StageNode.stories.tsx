@@ -449,6 +449,9 @@ export const ExecutionStatus: Story = {
               [{ id: '5', label: 'Processing Review', icon: <ProcessIcon /> }],
             ],
             selectedTasks: ['2'],
+            headerChips: [
+              { type: StageHeaderChipType.EndsCase, variant: 'success', label: 'Completed case' },
+            ],
           },
           execution: {
             stageStatus: {
@@ -2814,31 +2817,13 @@ export const WithRulesTags: Story = {
         width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
-            label: 'ReadOnly + completed + chips',
+            label: 'ReadOnly + completed (runtime)',
             isReadOnly: true,
             tasks: [
               [{ id: 't10', label: 'Verify applicant identity', icon: <VerificationIcon /> }],
               [{ id: 't11', label: 'Pull credit report', icon: <DocumentIcon /> }],
             ],
-            headerChips: [
-              {
-                type: StageHeaderChipType.Entry,
-                count: 1,
-                tooltip: 'Entry rules',
-                onClick: () => window.alert('Open entry rules panel'),
-              },
-              {
-                type: StageHeaderChipType.Exit,
-                count: 3,
-                tooltip: 'Exit rules',
-                onClick: () => window.alert('Open exit rules panel'),
-              },
-              {
-                type: StageHeaderChipType.Completion,
-                tooltip: 'Stage completion',
-                onClick: () => window.alert('Open stage completion panel'),
-              },
-            ],
+            headerChips: [{ type: StageHeaderChipType.EndsCase, label: 'Ended case' }],
           },
           execution: {
             stageStatus: { status: 'Completed', label: 'Completed', slaText: 'SLA: 4h' },
@@ -2852,25 +2837,15 @@ export const WithRulesTags: Story = {
         width: DEFAULT_STAGE_WIDTH,
         data: {
           stageDetails: {
-            label: 'ReadOnly + in progress + chips',
+            label: 'ReadOnly + in progress (runtime)',
             isReadOnly: true,
             tasks: [
               [{ id: 't12', label: 'Verify applicant identity', icon: <VerificationIcon /> }],
               [{ id: 't13', label: 'Pull credit report', icon: <DocumentIcon /> }],
             ],
             headerChips: [
-              {
-                type: StageHeaderChipType.Entry,
-                count: 2,
-                tooltip: 'Entry rules',
-                onClick: () => window.alert('Open entry rules panel'),
-              },
-              {
-                type: StageHeaderChipType.Exit,
-                count: 1,
-                tooltip: 'Exit rules',
-                onClick: () => window.alert('Open exit rules panel'),
-              },
+              { type: StageHeaderChipType.Optional },
+              { type: StageHeaderChipType.EndsCase, variant: 'outline' },
             ],
           },
           execution: {

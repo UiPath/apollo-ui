@@ -45,8 +45,9 @@ const STATUS_BADGE_CONFIG: Partial<
     {
       className: string;
       hoverClassName: string;
-      outlineClassName?: string;
-      outlineHoverClassName?: string;
+      variants?: Partial<
+        Record<'outline' | 'success', { className: string; hoverClassName: string }>
+      >;
       testId: string;
       labelKey: 'optionalBadge' | 'endsCaseBadge';
     }
@@ -61,8 +62,16 @@ const STATUS_BADGE_CONFIG: Partial<
   [StageHeaderChipType.EndsCase]: {
     className: 'border-transparent bg-error-icon text-foreground-inverse',
     hoverClassName: 'hover:bg-error-icon/80',
-    outlineClassName: 'border-border bg-transparent text-foreground-muted',
-    outlineHoverClassName: 'hover:bg-surface-overlay',
+    variants: {
+      outline: {
+        className: 'border-border bg-transparent text-foreground-muted',
+        hoverClassName: 'hover:bg-surface-overlay',
+      },
+      success: {
+        className: 'border-transparent bg-success-icon text-foreground-inverse',
+        hoverClassName: 'hover:bg-success-icon/80',
+      },
+    },
     testId: 'ends-case',
     labelKey: 'endsCaseBadge',
   },
@@ -248,21 +257,23 @@ const StageNodeHeaderInner = ({
             </span>
           )}
           {stageDetails.headerChips && stageDetails.headerChips.length > 0 && (
-            <div className="flex flex-wrap items-center gap-x-1 gap-y-2">
+            <div
+              className="ml-auto flex flex-wrap items-center gap-x-1 gap-y-2"
+              data-testid={`stage-header-chips-${id}`}
+            >
               {stageDetails.headerChips.map((chip) => {
                 const statusBadge = STATUS_BADGE_CONFIG[chip.type];
                 if (statusBadge) {
-                  const outlineClassName =
-                    chip.variant === 'outline' ? statusBadge.outlineClassName : undefined;
+                  const variantStyle =
+                    chip.variant && chip.variant !== 'solid'
+                      ? statusBadge.variants?.[chip.variant]
+                      : undefined;
                   return (
                     <StageStatusBadge
                       key={chip.type}
                       testId={`stage-${statusBadge.testId}-badge-${id}`}
-                      className={outlineClassName ?? statusBadge.className}
-                      hoverClassName={
-                        (outlineClassName && statusBadge.outlineHoverClassName) ||
-                        statusBadge.hoverClassName
-                      }
+                      className={variantStyle?.className ?? statusBadge.className}
+                      hoverClassName={variantStyle?.hoverClassName ?? statusBadge.hoverClassName}
                       label={chip.label || labels[statusBadge.labelKey]}
                       tooltip={chip.tooltip}
                       onClick={chip.onClick}
