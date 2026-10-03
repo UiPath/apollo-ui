@@ -165,6 +165,27 @@ describe('InputGroup', () => {
     );
   });
 
+  it('forwards the cyan Future focus ring from the inner control, with the error ring on top', () => {
+    render(
+      <InputGroup data-testid="group">
+        <InputGroupInput aria-label="Search" />
+      </InputGroup>
+    );
+    const group = screen.getByTestId('group');
+    expect(group).toHaveClass(
+      'future:has-[[data-slot=input-group-control]:focus-visible]:ring-cyan-600',
+      'future:has-[[data-slot=input-group-control]_:focus-visible]:ring-cyan-600',
+      'has-[[data-slot][aria-invalid=true]]:has-[[data-slot=input-group-control]:focus-visible]:ring-error'
+    );
+  });
+
+  it('keeps an invalid group on the error ring rather than cyan', () => {
+    render(<InputGroup data-testid="group" invalid />);
+    expect(screen.getByTestId('group')).not.toHaveClass(
+      'future:has-[[data-slot=input-group-control]:focus-visible]:ring-cyan-600'
+    );
+  });
+
   it('supports a textarea control', () => {
     render(
       <InputGroup>

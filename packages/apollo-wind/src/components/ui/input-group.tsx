@@ -110,7 +110,7 @@ const inputGroupVariants = cva(
         layout: ROW_LAYOUTS,
         invalid: false,
         class:
-          'has-[[data-slot=input-group-control]:focus-visible]:ring-ring has-[[data-slot=input-group-control]_:focus-visible]:ring-ring',
+          'has-[[data-slot=input-group-control]:focus-visible]:ring-ring has-[[data-slot=input-group-control]_:focus-visible]:ring-ring future:has-[[data-slot=input-group-control]:focus-visible]:ring-cyan-600 future:has-[[data-slot=input-group-control]_:focus-visible]:ring-cyan-600',
       },
       {
         layout: ROW_LAYOUTS,
@@ -319,7 +319,7 @@ const InputGroupRow = React.forwardRef<HTMLDivElement, InputGroupRowProps>(
         'flex min-h-9 min-w-0 items-stretch gap-2 px-3 has-[>[data-slot=input-group-addon][data-align=inline-end]]:pr-2 future:min-h-10',
         // The block box does not ring, since its body holds fields that ring themselves, so the row
         // rings for its own control. Inset, and on the box's corners, since the box clips to them.
-        'rounded-[inherit] has-[[data-slot=input-group-control]:focus-visible]:ring-2 has-[[data-slot=input-group-control]:focus-visible]:ring-inset has-[[data-slot=input-group-control]:focus-visible]:ring-ring has-[[data-slot=input-group-control]_:focus-visible]:ring-2 has-[[data-slot=input-group-control]_:focus-visible]:ring-inset has-[[data-slot=input-group-control]_:focus-visible]:ring-ring has-[[data-slot][aria-invalid=true]]:has-[[data-slot=input-group-control]:focus-visible]:ring-error has-[[data-slot][aria-invalid=true]]:has-[[data-slot=input-group-control]_:focus-visible]:ring-error',
+        'rounded-[inherit] has-[[data-slot=input-group-control]:focus-visible]:ring-2 has-[[data-slot=input-group-control]:focus-visible]:ring-inset has-[[data-slot=input-group-control]:focus-visible]:ring-ring has-[[data-slot=input-group-control]_:focus-visible]:ring-2 has-[[data-slot=input-group-control]_:focus-visible]:ring-inset has-[[data-slot=input-group-control]_:focus-visible]:ring-ring future:has-[[data-slot=input-group-control]:focus-visible]:ring-cyan-600 future:has-[[data-slot=input-group-control]_:focus-visible]:ring-cyan-600 has-[[data-slot][aria-invalid=true]]:has-[[data-slot=input-group-control]:focus-visible]:ring-error has-[[data-slot][aria-invalid=true]]:has-[[data-slot=input-group-control]_:focus-visible]:ring-error',
         className
       )}
       {...props}
