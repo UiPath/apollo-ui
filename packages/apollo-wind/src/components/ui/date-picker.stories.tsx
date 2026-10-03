@@ -56,6 +56,77 @@ export const Disabled = {
   },
 };
 
+export const Bounded = {
+  args: {},
+  render: () => {
+    const [date, setDate] = useState<Date | undefined>();
+    const year = new Date().getFullYear();
+
+    return (
+      <DatePicker
+        value={date}
+        onValueChange={setDate}
+        calendarProps={{
+          startMonth: new Date(year - 20, 0, 1),
+          endMonth: new Date(year + 20, 11, 1),
+        }}
+      />
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The calendar opens on the selected month and uses the drilldown caption: click the month or year to jump there. Pass `startMonth` and `endMonth` through `calendarProps` to bound how far it can go. Picking a date closes the popover.',
+      },
+    },
+  },
+};
+
+export const CustomFormat = {
+  args: {},
+  render: () => {
+    const [date, setDate] = useState<Date | undefined>(new Date());
+
+    return <DatePicker value={date} onValueChange={setDate} displayFormat="dd/MM/yyyy" />;
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: '`displayFormat` takes any date-fns format string. The default is `PPP`.',
+      },
+    },
+  },
+};
+
+export const CompactInPanel = {
+  args: {},
+  render: () => {
+    const [date, setDate] = useState<Date | undefined>();
+
+    return (
+      <div className="grid w-[280px] gap-1.5">
+        <Label htmlFor="date-picker-compact">Effective date</Label>
+        <DatePicker
+          id="date-picker-compact"
+          value={date}
+          onValueChange={setDate}
+          calendarProps={{ size: 'sm' }}
+          popoverProps={{ sideOffset: 8 }}
+        />
+      </div>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'For a narrow panel, `calendarProps={{ size: "sm" }}` keeps the calendar close to the field width. `popoverProps` sets alignment, offset and class on the popover.',
+      },
+    },
+  },
+};
+
 export const DateRangeStory = {
   args: {},
   render: () => {
