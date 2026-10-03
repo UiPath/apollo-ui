@@ -1,7 +1,8 @@
-import { cn, RequiredIndicator } from '@uipath/apollo-wind';
+import { cn } from '@/lib';
+import { RequiredIndicator } from '@/components/ui/label';
 import { ChevronDown, CircleCheck, Copy, Pencil, WrapText } from 'lucide-react';
 import { createContext, type MouseEvent, type ReactNode, useContext } from 'react';
-import { useSafeLingui } from '../../../i18n';
+import { useJsonTreeViewStrings } from './strings';
 import { formatLeafValue, isArrayItemTemplateRoot } from './buildJsonTree';
 import { DecorationChip } from './DecorationChip';
 import { JsonContainerEditor } from './JsonContainerEditor';
@@ -98,7 +99,7 @@ function useJsonTreeRowContext(): JsonTreeRowContextValue {
  * shared state and handlers come from `JsonTreeRowContext`.
  */
 export function JsonTreeRow({ node, depth }: { node: JsonTreeNode; depth: number }) {
-  const { _ } = useSafeLingui();
+  const strings = useJsonTreeViewStrings();
   const {
     collapsed,
     onToggleCollapsed,
@@ -145,26 +146,8 @@ export function JsonTreeRow({ node, depth }: { node: JsonTreeNode; depth: number
         id: 'wrap',
         icon: <WrapText />,
         active: flags.wrapped,
-        tooltip: flags.wrapped
-          ? _({
-              id: 'canvas.json_value_panel.unwrap_value',
-              message: 'Unwrap value',
-            })
-          : _({
-              id: 'canvas.json_value_panel.wrap_value',
-              message: 'Wrap value',
-            }),
-        label: flags.wrapped
-          ? _({
-              id: 'canvas.json_value_panel.unwrap_value_of',
-              message: 'Unwrap value of {key}',
-              values: { key: node.key },
-            })
-          : _({
-              id: 'canvas.json_value_panel.wrap_value_of',
-              message: 'Wrap value of {key}',
-              values: { key: node.key },
-            }),
+        tooltip: flags.wrapped ? strings.unwrapValue : strings.wrapValue,
+        label: flags.wrapped ? strings.unwrapValueOf(node.key) : strings.wrapValueOf(node.key),
         onSelect: () => toggleWrapped(node),
       });
     }
@@ -172,15 +155,8 @@ export function JsonTreeRow({ node, depth }: { node: JsonTreeNode; depth: number
       actions.push({
         id: 'edit-json',
         icon: <Pencil />,
-        tooltip: _({
-          id: 'canvas.json_value_panel.edit_as_json',
-          message: 'Edit as JSON',
-        }),
-        label: _({
-          id: 'canvas.json_value_panel.edit_key_as_json',
-          message: 'Edit {key} as JSON',
-          values: { key: node.key },
-        }),
+        tooltip: strings.editAsJson,
+        label: strings.editKeyAsJson(node.key),
         onSelect: () => setJsonEditingPath(node.path),
       });
     }
@@ -190,15 +166,8 @@ export function JsonTreeRow({ node, depth }: { node: JsonTreeNode; depth: number
         // The copied confirmation rides on the icon, not an active button
         // state, matching the pre-descriptor behavior.
         icon: flags.copiedValue ? <CircleCheck className="text-brand" /> : <Copy />,
-        tooltip: _({
-          id: 'canvas.json_value_panel.copy_value',
-          message: 'Copy value',
-        }),
-        label: _({
-          id: 'canvas.json_value_panel.copy_value_of',
-          message: 'Copy value of {key}',
-          values: { key: node.key },
-        }),
+        tooltip: strings.copyValue,
+        label: strings.copyValueOf(node.key),
         onSelect: () => copyValue(node),
       });
     }
@@ -283,17 +252,7 @@ export function JsonTreeRow({ node, depth }: { node: JsonTreeNode; depth: number
             type="button"
             onClick={() => onToggleCollapsed?.(node.path)}
             aria-label={
-              collapsed[node.path]
-                ? _({
-                    id: 'canvas.json_value_panel.expand_key',
-                    message: 'Expand {key}',
-                    values: { key: node.key },
-                  })
-                : _({
-                    id: 'canvas.json_value_panel.collapse_key',
-                    message: 'Collapse {key}',
-                    values: { key: node.key },
-                  })
+              collapsed[node.path] ? strings.expandKey(node.key) : strings.collapseKey(node.key)
             }
             aria-expanded={!collapsed[node.path]}
             className="grid size-2.5 shrink-0 cursor-pointer place-items-center text-foreground-subtle transition hover:text-foreground"
@@ -328,10 +287,7 @@ export function JsonTreeRow({ node, depth }: { node: JsonTreeNode; depth: number
             size={11}
             className="shrink-0 text-brand"
             role="img"
-            aria-label={_({
-              id: 'canvas.json_value_panel.path_copied',
-              message: 'Path copied',
-            })}
+            aria-label={strings.pathCopied}
           />
         )}
         {decoration?.sublabel && (
@@ -344,10 +300,7 @@ export function JsonTreeRow({ node, depth }: { node: JsonTreeNode; depth: number
         {node.required && (
           <RequiredIndicator
             className="ml-0 shrink-0 text-[10px] text-foreground"
-            srLabel={_({
-              id: 'canvas.json_value_panel.required_marker',
-              message: 'required',
-            })}
+            srLabel={strings.requiredMarker}
           />
         )}
         {isContainer ? (
@@ -355,16 +308,8 @@ export function JsonTreeRow({ node, depth }: { node: JsonTreeNode; depth: number
             {!decoration?.hideCount && (
               <span className="shrink-0 whitespace-nowrap font-mono italic text-[10px] text-foreground-subtle">
                 {node.type === 'array'
-                  ? _({
-                      id: 'canvas.json_value_panel.item_count',
-                      message: '{count, plural, one {# item} other {# items}}',
-                      values: { count: childCount },
-                    })
-                  : _({
-                      id: 'canvas.json_value_panel.key_count',
-                      message: '{count, plural, one {# key} other {# keys}}',
-                      values: { count: childCount },
-                    })}
+                  ? strings.itemCount(childCount)
+                  : strings.keyCount(childCount)}
               </span>
             )}
             {customCell != null && <span className={VALUE_CELL_CLASS}>{customCell}</span>}
@@ -420,19 +365,8 @@ export function JsonTreeRow({ node, depth }: { node: JsonTreeNode; depth: number
               type="button"
               disabled={!canEdit}
               onClick={() => setEditingPath(node.path)}
-              aria-label={_({
-                id: 'canvas.json_value_panel.edit_value_of',
-                message: 'Edit value of {key}',
-                values: { key: node.key },
-              })}
-              title={
-                canEdit
-                  ? _({
-                      id: 'canvas.json_value_panel.edit_hint',
-                      message: 'Click to edit',
-                    })
-                  : undefined
-              }
+              aria-label={strings.editValueOf(node.key)}
+              title={canEdit ? strings.editHint : undefined}
               className={cn(
                 'w-full whitespace-pre-wrap break-all rounded text-left font-mono text-xs leading-5',
                 canEdit && 'cursor-text',

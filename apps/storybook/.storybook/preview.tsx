@@ -163,6 +163,7 @@ const preview: Preview = {
                 'Toggle',
               ],
               'Data Display',
+              ['*', 'Tree View (Files)', 'Tree View (Json)'],
               'Feedback',
               'Layout',
               'Navigation',

@@ -777,6 +777,30 @@ const components: ComponentInfo[] = [
     ),
   },
   {
+    name: 'Tree View (Json)',
+    description: 'Explore and edit JSON data with schema types',
+    storyPath: 'components-data-display-tree-view-json--docs',
+    category: Category.DataDisplay,
+    preview: (
+      <div className="w-full space-y-1 font-mono text-xs">
+        <div className="flex items-center gap-1">
+          <span className="text-muted-foreground">▾</span>
+          <span>customer</span>
+        </div>
+        <div className="flex items-center gap-1 pl-4">
+          <span>name</span>
+          <span className="text-muted-foreground">=</span>
+          <span className="text-success">"Ada"</span>
+        </div>
+        <div className="flex items-center gap-1 pl-4">
+          <span>seats</span>
+          <span className="text-muted-foreground">=</span>
+          <span className="text-info">12</span>
+        </div>
+      </div>
+    ),
+  },
+  {
     name: 'Textarea',
     description: 'Multi-line text input',
     storyPath: 'components-core-textarea--docs',

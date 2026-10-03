@@ -1,11 +1,11 @@
+import { cn } from '@/lib';
 import {
-  cn,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@uipath/apollo-wind';
-import { useSafeLingui } from '../../../i18n';
+} from '@/components/ui/dropdown-menu';
+import { useJsonTreeViewStrings } from './strings';
 import { formatLeafValue, inferValueType } from './buildJsonTree';
 import { JsonLeafValueEditor } from './JsonLeafValueEditor';
 import type { JsonTreeNode, JsonTreeNodeType, JsonValue } from './JsonTree.types';
@@ -49,11 +49,9 @@ export function ScalarValueCell({
   onStopEdit,
   onEdit,
 }: ScalarValueCellProps) {
-  const { _ } = useSafeLingui();
+  const strings = useJsonTreeViewStrings();
   const missing = node.value === undefined;
-  const display = missing
-    ? _({ id: 'canvas.json_value_panel.unset_value', message: 'unset' })
-    : formatLeafValue(node.type, node.value);
+  const display = missing ? strings.unsetValue : formatLeafValue(node.type, node.value);
   const colorClass = missing
     ? 'italic text-foreground-subtle'
     : valueColorClass(node.type, node.value);
@@ -81,11 +79,7 @@ export function ScalarValueCell({
     return <span className={cn('min-w-0 truncate font-mono text-xs', colorClass)}>{display}</span>;
   }
 
-  const editTitle = _({
-    id: 'canvas.json_value_panel.edit_value_of',
-    message: 'Edit value of {key}',
-    values: { key: node.key },
-  });
+  const editTitle = strings.editValueOf(node.key);
 
   // Booleans toggle on a single click (unset/false become true, true becomes
   // false). Enum-constrained booleans fall through to the dropdown below.
@@ -95,10 +89,7 @@ export function ScalarValueCell({
         type="button"
         onClick={() => onEdit(node, node.value !== true)}
         aria-label={editTitle}
-        title={_({
-          id: 'canvas.json_value_panel.toggle_hint',
-          message: 'Click to toggle',
-        })}
+        title={strings.toggleHint}
         className={cn(VALUE_CELL_CLASS, 'cursor-pointer', colorClass)}
       >
         {display}
@@ -114,10 +105,7 @@ export function ScalarValueCell({
           <button
             type="button"
             aria-label={editTitle}
-            title={_({
-              id: 'canvas.json_value_panel.edit_hint',
-              message: 'Click to edit',
-            })}
+            title={strings.editHint}
             className={cn(VALUE_CELL_CLASS, 'cursor-pointer', colorClass)}
           >
             {display}
@@ -146,17 +134,7 @@ export function ScalarValueCell({
       type="button"
       onClick={() => onStartEdit(node)}
       aria-label={editTitle}
-      title={
-        missing
-          ? _({
-              id: 'canvas.json_value_panel.unset_edit_hint',
-              message: 'Click to set a value',
-            })
-          : _({
-              id: 'canvas.json_value_panel.edit_hint',
-              message: 'Click to edit',
-            })
-      }
+      title={missing ? strings.unsetEditHint : strings.editHint}
       className={cn(VALUE_CELL_CLASS, 'cursor-text', colorClass)}
     >
       {display}
