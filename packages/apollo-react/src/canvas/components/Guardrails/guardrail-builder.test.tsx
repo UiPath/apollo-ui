@@ -3,7 +3,11 @@ import { TooltipProvider } from '@uipath/apollo-wind';
 import { axe } from 'jest-axe';
 import type { ReactElement } from 'react';
 import { describe, expect, expectTypeOf, it, vi } from 'vitest';
-import { HARMFUL_CONTENT_WIRE, PII_DETECTION_WIRE } from './__fixtures__/definitions-wire.fixtures';
+import {
+  HARMFUL_CONTENT_WIRE,
+  PII_DETECTION_WIRE,
+  SENTIMENT_WIRE,
+} from './__fixtures__/definitions-wire.fixtures';
 import type {
   GuardrailBuilderValue,
   GuardrailDefinition,
@@ -945,6 +949,48 @@ describe('GuardrailBuilder', () => {
 
       expect(onSave).not.toHaveBeenCalled();
       expect(screen.getAllByText('Value is out of range').length).toBeGreaterThan(0);
+    });
+
+    it('gives sentiment, which states no bounds either, the same 0..1 arrows', () => {
+      renderEnriched(SENTIMENT_WIRE, 'Negative', 0.7);
+      const input = screen.getByRole('spinbutton', { name: 'Confidence thresholds: Negative' });
+
+      expect(input).toHaveAttribute('min', '0');
+      expect(input).toHaveAttribute('max', '1');
+      expect(input).toHaveAttribute('step', '0.1');
+    });
+  });
+
+  // Sentiment needs no editor of its own: two enum-lists and a map-enum keyed by the first.
+  describe('sentiment', () => {
+    it('adds one with its defaults through the existing editors', () => {
+      const [definition] = enrichGuardrailDefinitions([SENTIMENT_WIRE]);
+      if (!definition) throw new Error('expected one enriched definition');
+      const onSave = vi.fn();
+      render(
+        <GuardrailBuilder
+          open
+          inline
+          hideHeader
+          definition={definition}
+          scope="Llm"
+          defaultName="Sentiment 1"
+          onSave={onSave}
+          onCancel={vi.fn()}
+        />
+      );
+
+      expect(
+        screen.getByRole('spinbutton', { name: 'Confidence thresholds: Negative' })
+      ).toHaveValue(0.5);
+      fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
+
+      const saved = onSave.mock.calls[0]?.[0] as GuardrailBuilderValue;
+      expect(saved.validatorParameters).toEqual([
+        { $parameterType: 'enum-list', id: 'sentiments', value: ['Negative'] },
+        { $parameterType: 'map-enum', id: 'sentimentThresholds', value: { Negative: 0.5 } },
+        { $parameterType: 'enum-list', id: 'language', value: ['en'] },
+      ]);
     });
   });
 

@@ -7,7 +7,7 @@ export interface CentralizedGuardrailParametersProps {
   heading?: string;
 }
 
-/** Placeholder for a key the policy selected but gave no threshold. */
+/** Placeholder for a key with no threshold, or one its validator ignores. */
 const UNSET_THRESHOLD = '—';
 
 /**

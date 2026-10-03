@@ -5,6 +5,7 @@ import {
   LLM_AS_JUDGE_WIRE,
   PII_DETECTION_WIRE,
   PROMPT_INJECTION_WIRE,
+  SENTIMENT_WIRE,
   UNCURATED_WIRE,
 } from './__fixtures__/definitions-wire.fixtures';
 import type { GuardrailDefinition } from './builder-types';
@@ -143,6 +144,21 @@ describe('enrichGuardrailDefinitions', () => {
         SelfHarm: 'Self-harm',
         Sexual: 'Sexual',
         Violence: 'Violence',
+      });
+    });
+
+    it('labels both of sentiment’s lists, keyed by the raw codes the backend sends', () => {
+      const definition = enrichOne(SENTIMENT_WIRE);
+
+      expect(definition.displayName).toBe('Sentiment');
+      expect(param(definition, 'sentiments').optionLabels?.Mixed).toBe('Mixed');
+      expect(param(definition, 'language')).toMatchObject({
+        label: 'Languages',
+        optionLabels: { 'pt-BR': 'Portuguese (Brazil)', 'zh-hant': 'Chinese (Traditional)' },
+      });
+      expect(param(definition, 'sentimentThresholds')).toMatchObject({
+        label: 'Confidence thresholds',
+        keySource: 'sentiments',
       });
     });
 

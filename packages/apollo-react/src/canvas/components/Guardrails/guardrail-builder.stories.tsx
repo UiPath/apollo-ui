@@ -10,6 +10,8 @@ import {
 import { useMemo, useState } from 'react';
 import { ApI18nProvider } from '../../../i18n';
 import type { GuardrailBuilderValue, GuardrailDefinition } from './builder-types';
+import { enrichGuardrailDefinitions } from './definitions-enrich';
+import type { GuardrailDefinitionWire } from './definitions-wire';
 import { GuardrailBuilder } from './guardrail-builder';
 
 const meta = {
@@ -396,5 +398,84 @@ export const HostErrorsOverride: Story = {
       );
     }
     return <HostErrorsExample />;
+  },
+};
+
+/** Sentiment as the backend sends it: options and defaults, but no copy at all. */
+const sentimentWire: GuardrailDefinitionWire = {
+  validator: 'sentiment',
+  allowedScopes: ['Llm'],
+  status: 'Available',
+  parameters: [
+    {
+      id: 'sentiments',
+      type: 'enum-list',
+      required: true,
+      defaultValue: ['Negative'],
+      options: ['Positive', 'Neutral', 'Negative', 'Mixed'],
+    },
+    {
+      id: 'sentimentThresholds',
+      type: 'map-enum',
+      required: true,
+      defaultValue: { Positive: 0.5, Neutral: 0.5, Negative: 0.5, Mixed: 0.5 },
+      keySource: 'sentiments',
+    },
+    {
+      id: 'language',
+      type: 'enum-list',
+      required: false,
+      defaultValue: ['en'],
+      options: [
+        'en',
+        'es',
+        'fr',
+        'de',
+        'it',
+        'pt-BR',
+        'pt-PT',
+        'nl',
+        'sv',
+        'da',
+        'no',
+        'fi',
+        'pl',
+        'cs',
+        'ru',
+        'uk',
+        'tr',
+        'el',
+        'he',
+        'ar',
+        'hi',
+        'ja',
+        'ko',
+        'zh-hans',
+        'zh-hant',
+        'id',
+        'vi',
+        'th',
+      ],
+    },
+  ],
+};
+
+function enrichOne(wire: GuardrailDefinitionWire): GuardrailDefinition {
+  const [definition] = enrichGuardrailDefinitions([wire]);
+  if (!definition) throw new Error(`${wire.validator} did not enrich`);
+  return definition;
+}
+
+/**
+ * A definition straight from the definitions layer. The wire carries no copy, so the name,
+ * description, labels, tooltips and the sentiment and language names all come from the shared
+ * canvas catalog.
+ */
+export const Sentiment: Story = {
+  args: {
+    ...AddInline.args,
+    definition: enrichOne(sentimentWire),
+    scope: 'Llm',
+    defaultName: 'Sentiment 1',
   },
 };

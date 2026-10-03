@@ -22,6 +22,7 @@ describe('parseGuardrailDefinitions', () => {
       'user_prompt_attacks',
       'intellectual_property',
       'llm_as_judge',
+      'sentiment',
     ]);
     expect(result.invalid).toEqual([]);
     expect(result.inputError).toBeUndefined();

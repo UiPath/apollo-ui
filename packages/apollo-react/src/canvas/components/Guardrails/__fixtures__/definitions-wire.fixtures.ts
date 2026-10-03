@@ -171,6 +171,71 @@ export const LLM_AS_JUDGE_WIRE: GuardrailDefinitionWire = {
   ],
 };
 
+/** The four labels Azure AI Language returns. */
+export const SENTIMENT_OPTIONS: string[] = ['Positive', 'Neutral', 'Negative', 'Mixed'];
+
+/** The language codes the sentiment validator scores, spelled as the backend sends them. */
+export const SENTIMENT_LANGUAGE_OPTIONS: string[] = [
+  'en',
+  'es',
+  'fr',
+  'de',
+  'it',
+  'pt-BR',
+  'pt-PT',
+  'nl',
+  'sv',
+  'da',
+  'no',
+  'fi',
+  'pl',
+  'cs',
+  'ru',
+  'uk',
+  'tr',
+  'el',
+  'he',
+  'ar',
+  'hi',
+  'ja',
+  'ko',
+  'zh-hans',
+  'zh-hant',
+  'id',
+  'vi',
+  'th',
+];
+
+export const SENTIMENT_WIRE: GuardrailDefinitionWire = {
+  validator: 'sentiment',
+  allowedScopes: ['Llm'],
+  status: 'Available',
+  parameters: [
+    {
+      id: 'sentiments',
+      type: 'enum-list',
+      required: true,
+      defaultValue: ['Negative'],
+      options: SENTIMENT_OPTIONS,
+    },
+    {
+      // No bounds on the wire: the backend relies on the 0..1 step 0.1 the editors default to.
+      id: 'sentimentThresholds',
+      type: 'map-enum',
+      required: true,
+      defaultValue: { Positive: 0.5, Neutral: 0.5, Negative: 0.5, Mixed: 0.5 },
+      keySource: 'sentiments',
+    },
+    {
+      id: 'language',
+      type: 'enum-list',
+      required: false,
+      defaultValue: ['en'],
+      options: SENTIMENT_LANGUAGE_OPTIONS,
+    },
+  ],
+};
+
 /** A bring-your-own guardrail: manifest copy only, no curated table entry applies. */
 export const BYO_WIRE: GuardrailDefinitionWire = {
   validator: 'pii_detection',
@@ -221,6 +286,7 @@ export const ALL_BUILT_IN_WIRE: GuardrailDefinitionWire[] = [
   USER_PROMPT_ATTACKS_WIRE,
   INTELLECTUAL_PROPERTY_WIRE,
   LLM_AS_JUDGE_WIRE,
+  SENTIMENT_WIRE,
 ];
 
 /**
