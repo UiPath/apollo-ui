@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.70.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.70.0...@uipath/apollo-react@6.70.1) (2026-10-04)
+
+### Bug Fixes
+
+* **apollo-react:** upgrade @xyflow/react to 12.11.6 ([9b40f22](https://github.com/UiPath/apollo-ui/commit/9b40f225646dbdfa9a7e1e99c18c7264ac306f77))
+
 ## [@uipath/apollo-react-v6.70.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.69.0...@uipath/apollo-react@6.70.0) (2026-10-03)
 
 ### Features
