@@ -96,6 +96,130 @@ describe('GuardrailFileSupportIndicator', () => {
     expect(screen.getByText('Reads file contents (text, PDF files)')).toBeInTheDocument();
   });
 
+  describe('warning section', () => {
+    const UNINSPECTED =
+      'Not inspected yet: PDF, images, Office documents, HTML. Files of these kinds attached to a run pass this guardrail without being checked.';
+    const VISION = 'Read only when the selected model supports images: PDF, images.';
+    const warningSlot = (container: HTMLElement) =>
+      container.querySelector('[data-slot="guardrail-file-support-warning"]');
+
+    it('names the uninspected kinds in display order, not payload order', () => {
+      const { container } = render(
+        <GuardrailFileSupportIndicator
+          fileSupport={{
+            supported: true,
+            formats: ['Text'],
+            uninspectedFormats: ['Html', 'Office', 'Image', 'Pdf'],
+          }}
+        />
+      );
+
+      expect(screen.getByText('Reads file contents (text)')).toBeInTheDocument();
+      expect(warningSlot(container)).toHaveTextContent(UNINSPECTED);
+    });
+
+    it('carries the vision sentence alone', () => {
+      const { container } = render(
+        <GuardrailFileSupportIndicator
+          fileSupport={{
+            supported: true,
+            formats: ['Text', 'Pdf', 'Image'],
+            visionModelFormats: ['Image', 'Pdf'],
+          }}
+        />
+      );
+
+      expect(warningSlot(container)?.textContent).toBe(VISION);
+    });
+
+    it('carries both sentences, uninspected first', () => {
+      const { container } = render(
+        <GuardrailFileSupportIndicator
+          fileSupport={{
+            supported: true,
+            formats: ['Text', 'Pdf', 'Image'],
+            uninspectedFormats: ['Office', 'Html'],
+            visionModelFormats: ['Pdf', 'Image'],
+          }}
+        />
+      );
+
+      expect(warningSlot(container)?.textContent).toBe(
+        `Not inspected yet: Office documents, HTML. Files of these kinds attached to a run pass this guardrail without being checked. ${VISION}`
+      );
+    });
+
+    it('is a polite status region', () => {
+      render(
+        <GuardrailFileSupportIndicator
+          fileSupport={{ supported: true, formats: ['Text'], uninspectedFormats: ['Pdf'] }}
+        />
+      );
+
+      expect(screen.getByRole('status')).toHaveTextContent('Not inspected yet: PDF.');
+    });
+
+    const noWarningCases: [string, GuardrailFileSupport][] = [
+      ['absent', { supported: true, formats: ['Text'] }],
+      [
+        'empty',
+        { supported: true, formats: ['Text'], uninspectedFormats: [], visionModelFormats: [] },
+      ],
+      [
+        'unsupported',
+        {
+          supported: false,
+          formats: [],
+          unavailableReason: 'NotEnabled',
+          uninspectedFormats: ['Pdf'],
+          visionModelFormats: ['Image'],
+        },
+      ],
+    ];
+
+    it.each(noWarningCases)('renders no warning when %s', (_, fileSupport) => {
+      const { container } = render(<GuardrailFileSupportIndicator fileSupport={fileSupport} />);
+
+      expect(warningSlot(container)).toBeNull();
+      expect(screen.queryByRole('status')).not.toBeInTheDocument();
+      expect(container.firstElementChild).toHaveAttribute('data-slot', 'guardrail-file-support');
+    });
+
+    it('takes overrides for both sentences', () => {
+      const { container } = render(
+        <GuardrailFileSupportIndicator
+          fileSupport={{
+            supported: true,
+            formats: ['Text'],
+            uninspectedFormats: ['Pdf'],
+            visionModelFormats: ['Image'],
+          }}
+          labels={{
+            uninspectedFormats: 'Skipped: {{formats}}.',
+            visionModelFormats: 'Vision only: {{formats}}.',
+          }}
+        />
+      );
+
+      expect(warningSlot(container)?.textContent).toBe('Skipped: PDF. Vision only: images.');
+    });
+
+    it('has no accessibility violations', async () => {
+      const { container } = render(
+        <GuardrailFileSupportIndicator
+          fileSupport={{
+            supported: true,
+            formats: ['Text', 'Pdf', 'Image'],
+            uninspectedFormats: ['Office', 'Html'],
+            visionModelFormats: ['Pdf', 'Image'],
+          }}
+        />
+      );
+
+      expect(await axe(container)).toHaveNoViolations();
+    });
+  });
+
   it('has no accessibility violations', async () => {
     const { container } = render(
       <GuardrailFileSupportIndicator fileSupport={{ supported: true, formats: ['Text'] }} />

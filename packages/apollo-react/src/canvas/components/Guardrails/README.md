@@ -789,6 +789,29 @@ quiet rather than claiming either way.
 `formats` are coarse kinds (`Text`, `Pdf`, `Image`, `Office`, `Html`), not MIME types, and render
 in a fixed display order whatever order the host listed them in.
 
+Two optional fields add a warning below the line, rendered as a `GuardrailStatusBanner`
+(`tone="warning"`, `role="status"`) inside `data-slot="guardrail-file-support-warning"`:
+
+| field | warning sentence |
+| --- | --- |
+| `uninspectedFormats` | "Not inspected yet: {kinds}. Files of these kinds attached to a run pass this guardrail without being checked." |
+| `visionModelFormats` | "Read only when the selected model supports images: {kinds}." |
+
+Both are host-supplied and opt-in: the indicator never derives them from `formats`, so a host that
+sends neither gets exactly the line above. Both are ignored when `supported` is false. Labels
+`uninspectedFormats` and `visionModelFormats` override the two sentences.
+
+```tsx
+<GuardrailFileSupportIndicator
+  fileSupport={{
+    supported: true,
+    formats: ['Text', 'Pdf', 'Image'],
+    uninspectedFormats: ['Office', 'Html'],
+    visionModelFormats: ['Pdf', 'Image'],
+  }}
+/>
+```
+
 ## GuardrailActionSection
 
 The action half of a guardrail: an action-type select plus the field that type needs. `log`

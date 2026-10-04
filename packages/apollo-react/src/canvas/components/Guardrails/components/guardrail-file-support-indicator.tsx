@@ -7,6 +7,7 @@ import {
   type GuardrailFileSupportLabels,
   useGuardrailFileSupportLabels,
 } from '../i18n';
+import { GuardrailStatusBanner } from './guardrail-status-banner';
 
 export interface GuardrailFileSupportIndicatorProps {
   /**
@@ -42,7 +43,8 @@ function formatNames(
  * flag flip rather than a change to this component.
  *
  * Three states, all data-driven:
- * - reads files: the kinds
+ * - reads files: the kinds, plus a warning when the host names kinds that pass unchecked or
+ *   that depend on the selected model
  * - reads none: why, when the host gave a reason it can name
  * - nothing known: renders `null`
  */
@@ -55,10 +57,10 @@ export function GuardrailFileSupportIndicator({
 
   if (fileSupport === undefined) return null;
 
-  const shell = (icon: React.ReactNode, text: string) => (
+  const shell = (icon: React.ReactNode, text: string, lineClassName?: string) => (
     <div
       data-slot="guardrail-file-support"
-      className={cn('flex items-center gap-1.5 text-xs text-muted-foreground', className)}
+      className={cn('flex items-center gap-1.5 text-xs text-muted-foreground', lineClassName)}
     >
       {icon}
       <span>{text}</span>
@@ -70,7 +72,7 @@ export function GuardrailFileSupportIndicator({
       fileSupport.unavailableReason === 'AutomationSuite'
         ? labels.unavailableOnAutomationSuite
         : labels.notSupported;
-    return shell(<FileText className="size-3.5 shrink-0" aria-hidden />, reason);
+    return shell(<FileText className="size-3.5 shrink-0" aria-hidden />, reason, className);
   }
 
   const names = formatNames(fileSupport.formats, labels);
@@ -84,5 +86,34 @@ export function GuardrailFileSupportIndicator({
           formats: names.join(labels.formatSeparator),
         });
 
-  return shell(<Paperclip className="size-3.5 shrink-0" aria-hidden />, text);
+  const warning = warningMessage(fileSupport, labels);
+  if (warning === undefined) {
+    return shell(<Paperclip className="size-3.5 shrink-0" aria-hidden />, text, className);
+  }
+
+  return (
+    <div className={cn('space-y-2', className)}>
+      {shell(<Paperclip className="size-3.5 shrink-0" aria-hidden />, text)}
+      <div data-slot="guardrail-file-support-warning">
+        <GuardrailStatusBanner tone="warning" message={warning} />
+      </div>
+    </div>
+  );
+}
+
+function warningMessage(
+  fileSupport: GuardrailFileSupport,
+  labels: GuardrailFileSupportLabels
+): string | undefined {
+  const sentence = (template: string, formats: readonly GuardrailFileFormat[] | undefined) => {
+    const names = formatNames(formats ?? [], labels);
+    return names.length === 0
+      ? undefined
+      : formatGuardrailFormMessage(template, { formats: names.join(labels.formatSeparator) });
+  };
+  const sentences = [
+    sentence(labels.uninspectedFormats, fileSupport.uninspectedFormats),
+    sentence(labels.visionModelFormats, fileSupport.visionModelFormats),
+  ].filter((value): value is string => value !== undefined);
+  return sentences.length === 0 ? undefined : sentences.join(' ');
 }

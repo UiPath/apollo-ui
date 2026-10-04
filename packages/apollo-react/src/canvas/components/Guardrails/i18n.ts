@@ -387,6 +387,10 @@ export interface GuardrailFileSupportLabels {
   notSupported: string;
   /** Shown when the deployment, not the validator, is why no files are read. */
   unavailableOnAutomationSuite: string;
+  /** Warning naming the kinds a run may carry that pass unchecked; `{{formats}}` is the list. */
+  uninspectedFormats: string;
+  /** Warning naming the kinds read only by an image-capable model; `{{formats}}` is the list. */
+  visionModelFormats: string;
   /** Display names of the file kinds, keyed by the wire value. */
   formats: {
     Text: string;
@@ -433,6 +437,17 @@ function buildGuardrailFileSupportLabels(_: FileSupportTranslate): GuardrailFile
     unavailableOnAutomationSuite: _({
       id: 'guardrails.file-support.unavailable-automation-suite',
       message: 'Text prompts only (files are not available in this environment)',
+    }),
+    uninspectedFormats: _({
+      id: 'guardrails.file-support.uninspected-formats',
+      message:
+        'Not inspected yet: {formats}. Files of these kinds attached to a run pass this guardrail without being checked.',
+      values: TEMPLATE_TOKENS,
+    }),
+    visionModelFormats: _({
+      id: 'guardrails.file-support.vision-model-formats',
+      message: 'Read only when the selected model supports images: {formats}.',
+      values: TEMPLATE_TOKENS,
     }),
     formats: {
       Text: _({ id: 'guardrails.file-support.format.Text', message: 'text' }),

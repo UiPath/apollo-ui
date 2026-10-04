@@ -224,6 +224,8 @@
   "guardrails.file-support.format-separator": ", ",
   "guardrails.file-support.not-supported": "Text prompts only",
   "guardrails.file-support.unavailable-automation-suite": "Text prompts only (files are not available in this environment)",
+  "guardrails.file-support.uninspected-formats": "Not inspected yet: {formats}. Files of these kinds attached to a run pass this guardrail without being checked.",
+  "guardrails.file-support.vision-model-formats": "Read only when the selected model supports images: {formats}.",
   "guardrails.file-support.format.Text": "text",
   "guardrails.file-support.format.Pdf": "PDF",
   "guardrails.file-support.format.Image": "images",

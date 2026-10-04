@@ -1739,6 +1739,34 @@ describe('file support indicator', () => {
     expect(screen.getByText('Reads file contents (text, PDF, images)')).toBeInTheDocument();
   });
 
+  it('warns about the kinds the host says pass unchecked', () => {
+    const { container } = render(
+      <GuardrailBuilder
+        open
+        inline
+        definition={makeDef({
+          validator: 'llm_as_judge',
+          parameters: judgeParameters,
+          fileSupport: {
+            supported: true,
+            formats: ['Text', 'Pdf', 'Image'],
+            uninspectedFormats: ['Office', 'Html'],
+            visionModelFormats: ['Pdf', 'Image'],
+          },
+        })}
+        scope="Agent"
+        onSave={() => {}}
+        onCancel={() => {}}
+      />
+    );
+
+    const warning = container.querySelector('[data-slot="guardrail-file-support-warning"]');
+    expect(warning).toHaveTextContent('Not inspected yet: Office documents, HTML.');
+    expect(warning).toHaveTextContent(
+      'Read only when the selected model supports images: PDF, images.'
+    );
+  });
+
   it('says nothing when the definition carries no descriptor', () => {
     // An older backend, or a BYO manifest.
     render(
@@ -1830,5 +1858,31 @@ describe('file support indicator on a parameterless definition', () => {
     );
 
     expect(screen.getByText('Text prompts only')).toBeInTheDocument();
+  });
+
+  it('still warns about uninspected kinds when it has no parameters', () => {
+    const { container } = render(
+      <GuardrailBuilder
+        open
+        inline
+        definition={makeDef({
+          validator: 'user_prompt_attacks',
+          parameters: [],
+          fileSupport: {
+            supported: true,
+            formats: ['Text'],
+            uninspectedFormats: ['Pdf', 'Image', 'Office', 'Html'],
+          },
+        })}
+        scope="Agent"
+        onSave={() => {}}
+        onCancel={() => {}}
+      />
+    );
+
+    expect(screen.getByText('Reads file contents (text)')).toBeInTheDocument();
+    expect(
+      container.querySelector('[data-slot="guardrail-file-support-warning"]')
+    ).toHaveTextContent('Not inspected yet: PDF, images, Office documents, HTML.');
   });
 });
