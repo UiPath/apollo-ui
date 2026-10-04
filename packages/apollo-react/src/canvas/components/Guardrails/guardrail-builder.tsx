@@ -47,6 +47,8 @@ import { type GuardrailErrorMerges, useGuardrailFormErrors } from './use-guardra
 import { useSwallowEnter } from './use-swallow-enter';
 import {
   dropEmptyOptionalParameters,
+  GUARDRAIL_APPLIES_TO_PARAMETER_ID,
+  getGuardrailAppliesTo,
   getOutOfRangeParameterIds,
   getRequiredEmptyParameterIds,
   syncMapEnumParameters,
@@ -419,6 +421,15 @@ export function GuardrailBuilder({
 
   const validatorFormErrors = displayErrors.parameters;
 
+  const fileSupportIndicator = (
+    <GuardrailFileSupportIndicator fileSupport={definition.fileSupport} />
+  );
+  const appliesTo = getGuardrailAppliesTo(definition.parameters, formData.validatorParameters);
+  // Supported, it describes the Applies to choice, so it sits under that field while the field
+  // reads files. Otherwise it stays above the parameters, which may be none at all.
+  const fileSupportUnderAppliesTo =
+    definition.fileSupport?.supported === true && appliesTo !== undefined;
+
   const formBody = (
     <div ref={rootRef} data-slot="guardrail-builder" className={cn('space-y-4 py-4', className)}>
       {statusBanner}
@@ -454,11 +465,7 @@ export function GuardrailBuilder({
         labels={labels}
       />
 
-      {/* Above the parameters, because `appliesTo` is one of them and this says what "Files"
-          will actually mean for this validator — and outside their gate on purpose: a validator
-          whose only parameter was `appliesTo` has none once file support is withheld, and that
-          is exactly when it must say so. */}
-      <GuardrailFileSupportIndicator fileSupport={definition.fileSupport} />
+      {!fileSupportUnderAppliesTo && fileSupportIndicator}
 
       {/* Validator parameters */}
       {definition.parameters.length > 0 && (
@@ -480,6 +487,11 @@ export function GuardrailBuilder({
             }
             renderParameter={renderParameter}
             overrideParameterIds={overrideParameterIds}
+            parameterFooters={
+              fileSupportUnderAppliesTo && appliesTo !== 'Text'
+                ? { [GUARDRAIL_APPLIES_TO_PARAMETER_ID]: fileSupportIndicator }
+                : undefined
+            }
           />
         </div>
       )}

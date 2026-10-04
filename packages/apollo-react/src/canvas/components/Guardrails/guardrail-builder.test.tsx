@@ -8,10 +8,12 @@ import type {
   GuardrailBuilderValue,
   GuardrailDefinition,
   GuardrailEscalateRecipient,
+  GuardrailFileSupport,
 } from './builder-types';
 import { enrichGuardrailDefinitions } from './definitions-enrich';
 import type { GuardrailDefinitionWire } from './definitions-wire';
 import { GuardrailBuilder, type GuardrailBuilderProps } from './guardrail-builder';
+import type { GuardrailParameterDefinition } from './types';
 
 // The form renders a radix tooltip for the "Enable for evaluations" info icon, which
 // requires a TooltipProvider ancestor.
@@ -1701,7 +1703,25 @@ describe('saveDisabled passthrough', () => {
 });
 
 describe('file support indicator', () => {
-  const judgeParameters: GuardrailDefinition['parameters'] = [
+  const appliesTo = (defaultValue: string): GuardrailParameterDefinition => ({
+    id: 'appliesTo',
+    type: 'enum',
+    label: 'Applies to',
+    required: false,
+    defaultValue,
+    options: ['Text', 'Files', 'Both'],
+    optionLabels: { Text: 'Text only', Files: 'Files only', Both: 'Text and files' },
+  });
+  const threshold: GuardrailParameterDefinition = {
+    id: 'threshold',
+    type: 'number',
+    label: 'Threshold',
+    required: false,
+    defaultValue: 0.5,
+    min: 0,
+    max: 1,
+  };
+  const judgeParameters: GuardrailParameterDefinition[] = [
     {
       id: 'model',
       type: 'enum',
@@ -1710,96 +1730,261 @@ describe('file support indicator', () => {
       defaultValue: '',
       options: ['gpt-4o'],
     },
-    {
-      id: 'appliesTo',
-      type: 'enum',
-      label: 'Applies to',
-      required: false,
-      defaultValue: 'Both',
-      options: ['Text', 'Files', 'Both'],
-      optionLabels: { Text: 'Text only', Files: 'Files only', Both: 'Text and files' },
-    },
+    appliesTo('Both'),
   ];
+  // The five GA validators default to Text; the judge to Both.
+  const gaParameters: GuardrailParameterDefinition[] = [threshold, appliesTo('Text')];
+  const SUPPORTED: GuardrailFileSupport = {
+    supported: true,
+    formats: ['Text', 'Pdf', 'Image'],
+    uninspectedFormats: ['Office', 'Html'],
+    visionModelFormats: ['Pdf', 'Image'],
+  };
+  const READS = 'Reads file contents (text, PDF, images)';
+  const WARNING =
+    'Not inspected yet: Office documents, HTML. Files of these kinds attached to a run pass this guardrail without being checked. Read only when the selected model supports images: PDF, images.';
 
-  it('describes what the validator reads, above its parameters', () => {
-    render(
+  function renderFileBuilder(
+    definition: Partial<GuardrailDefinition>,
+    extra?: Partial<GuardrailBuilderProps>
+  ) {
+    return render(
       <GuardrailBuilder
         open
         inline
-        definition={makeDef({
-          parameters: judgeParameters,
-          fileSupport: { supported: true, formats: ['Text', 'Pdf', 'Image'] },
-        })}
+        definition={makeDef(definition)}
         scope="Agent"
         onSave={() => {}}
         onCancel={() => {}}
+        {...extra}
       />
     );
+  }
 
-    expect(screen.getByText('Reads file contents (text, PDF, images)')).toBeInTheDocument();
+  const storedAppliesTo = (value: string) =>
+    makeGuardrail({ validatorParameters: [{ $parameterType: 'enum', id: 'appliesTo', value }] });
+
+  const slot = (container: HTMLElement, name: string) =>
+    container.querySelector(`[data-slot="${name}"]`);
+
+  function expectUnderAppliesTo(container: HTMLElement) {
+    const footer = slot(container, 'guardrail-parameter-footer');
+    expect(footer).not.toBeNull();
+    expect(footer).toHaveTextContent(READS);
+    expect(slot(container, 'guardrail-file-support-warning')).toHaveTextContent(WARNING);
+    expect(footer).toContainElement(slot(container, 'guardrail-file-support') as HTMLElement);
+    expect(footer).toContainElement(
+      slot(container, 'guardrail-file-support-warning') as HTMLElement
+    );
+    expect(
+      screen.getByRole('combobox', { name: /Applies to/ }).compareDocumentPosition(footer as Node)
+    ).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    // Nowhere else, in particular not above the parameters.
+    expect(container.querySelectorAll('[data-slot="guardrail-file-support"]')).toHaveLength(1);
+  }
+
+  function expectNothingAboutFiles(container: HTMLElement) {
+    expect(screen.queryByText(/Reads file contents/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Text prompts only/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Not inspected yet/)).not.toBeInTheDocument();
+    expect(slot(container, 'guardrail-file-support-warning')).toBeNull();
+    expect(slot(container, 'guardrail-parameter-footer')).toBeNull();
+  }
+
+  function expectAboveParameters(container: HTMLElement, text: string) {
+    const line = screen.getByText(text).closest('[data-slot="guardrail-file-support"]');
+    const form = slot(container, 'guardrail-validator-form');
+    expect(form).not.toBeNull();
+    expect(form).not.toContainElement(line as HTMLElement);
+    expect(line?.compareDocumentPosition(form as Node)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(slot(container, 'guardrail-parameter-footer')).toBeNull();
+  }
+
+  async function pickAppliesTo(option: string) {
+    fireEvent.click(screen.getByRole('combobox', { name: /Applies to/ }));
+    fireEvent.click(await screen.findByRole('option', { name: option }));
+  }
+
+  it('says nothing about files while a GA validator applies to its default, Text', () => {
+    const { container } = renderFileBuilder({ parameters: gaParameters, fileSupport: SUPPORTED });
+
+    expect(screen.getByRole('combobox', { name: /Applies to/ })).toHaveTextContent('Text only');
+    expectNothingAboutFiles(container);
   });
 
-  it('warns about the kinds the host says pass unchecked', () => {
-    const { container } = render(
-      <GuardrailBuilder
-        open
-        inline
-        definition={makeDef({
-          validator: 'llm_as_judge',
-          parameters: judgeParameters,
-          fileSupport: {
-            supported: true,
-            formats: ['Text', 'Pdf', 'Image'],
-            uninspectedFormats: ['Office', 'Html'],
-            visionModelFormats: ['Pdf', 'Image'],
-          },
-        })}
-        scope="Agent"
-        onSave={() => {}}
-        onCancel={() => {}}
-      />
+  it('describes files under Applies to for the judge, which defaults to Both', () => {
+    const { container } = renderFileBuilder({
+      validator: 'llm_as_judge',
+      parameters: judgeParameters,
+      fileSupport: SUPPORTED,
+    });
+
+    expect(screen.getByRole('combobox', { name: /Applies to/ })).toHaveTextContent(
+      'Text and files'
+    );
+    expectUnderAppliesTo(container);
+  });
+
+  it('shows the lines as soon as Files is picked, and hides them again on Text', async () => {
+    const { container } = renderFileBuilder({ parameters: gaParameters, fileSupport: SUPPORTED });
+    expectNothingAboutFiles(container);
+
+    await pickAppliesTo('Files only');
+    expectUnderAppliesTo(container);
+
+    await pickAppliesTo('Text only');
+    expectNothingAboutFiles(container);
+  });
+
+  it('shows the lines when Both is picked', async () => {
+    const { container } = renderFileBuilder({ parameters: gaParameters, fileSupport: SUPPORTED });
+
+    await pickAppliesTo('Text and files');
+
+    expectUnderAppliesTo(container);
+  });
+
+  it.each([
+    'Files',
+    'Both',
+    ' files ',
+    'BOTH',
+  ])('shows the lines for a stored %j over a Text default', (value) => {
+    const { container } = renderFileBuilder(
+      { parameters: gaParameters, fileSupport: SUPPORTED },
+      { guardrail: storedAppliesTo(value) }
     );
 
-    const warning = container.querySelector('[data-slot="guardrail-file-support-warning"]');
-    expect(warning).toHaveTextContent('Not inspected yet: Office documents, HTML.');
-    expect(warning).toHaveTextContent(
-      'Read only when the selected model supports images: PDF, images.'
+    expectUnderAppliesTo(container);
+  });
+
+  it.each([
+    'Text',
+    'Prompts',
+    'Images',
+  ])('hides the lines for a stored %j over a Both default', (value) => {
+    const { container } = renderFileBuilder(
+      { validator: 'llm_as_judge', parameters: judgeParameters, fileSupport: SUPPORTED },
+      { guardrail: storedAppliesTo(value) }
     );
+
+    expectNothingAboutFiles(container);
+  });
+
+  it('falls back to the default for a guardrail saved without appliesTo', () => {
+    const judge = renderFileBuilder(
+      { validator: 'llm_as_judge', parameters: judgeParameters, fileSupport: SUPPORTED },
+      { guardrail: makeGuardrail() }
+    );
+    expectUnderAppliesTo(judge.container);
+    judge.unmount();
+
+    const ga = renderFileBuilder(
+      { parameters: gaParameters, fileSupport: SUPPORTED },
+      { guardrail: makeGuardrail() }
+    );
+    expectNothingAboutFiles(ga.container);
+  });
+
+  it('keeps "Text prompts only" above the parameters when files are not supported', () => {
+    const { container } = renderFileBuilder({
+      parameters: [threshold],
+      fileSupport: { supported: false, formats: [], unavailableReason: 'NotEnabled' },
+    });
+
+    expectAboveParameters(container, 'Text prompts only');
+  });
+
+  it('keeps the Automation Suite line above the parameters', () => {
+    const { container } = renderFileBuilder({
+      parameters: [threshold],
+      fileSupport: { supported: false, formats: [], unavailableReason: 'AutomationSuite' },
+    });
+
+    expectAboveParameters(
+      container,
+      'Text prompts only (files are not available in this environment)'
+    );
+  });
+
+  it('keeps an unsupported line above the parameters even beside an appliesTo set to Text', () => {
+    const { container } = renderFileBuilder({
+      parameters: gaParameters,
+      fileSupport: { supported: false, formats: [], unavailableReason: 'NotEnabled' },
+    });
+
+    expectAboveParameters(container, 'Text prompts only');
+  });
+
+  it('keeps supported lines above the parameters, ungated, without an appliesTo parameter', () => {
+    const { container } = renderFileBuilder({ parameters: [threshold], fileSupport: SUPPORTED });
+
+    expectAboveParameters(container, READS);
+    expect(slot(container, 'guardrail-file-support-warning')).toHaveTextContent(WARNING);
   });
 
   it('says nothing when the definition carries no descriptor', () => {
     // An older backend, or a BYO manifest.
-    render(
-      <GuardrailBuilder
-        open
-        inline
-        definition={makeDef({ parameters: judgeParameters })}
-        scope="Agent"
-        onSave={() => {}}
-        onCancel={() => {}}
-      />
+    const { container } = renderFileBuilder({
+      parameters: judgeParameters,
+      byoValidatorName: 'vendor-check',
+    });
+
+    expectNothingAboutFiles(container);
+  });
+
+  it('renders the warning as a caption line, not an alert box', () => {
+    const { container } = renderFileBuilder({
+      validator: 'llm_as_judge',
+      parameters: judgeParameters,
+      fileSupport: SUPPORTED,
+    });
+
+    const warning = slot(container, 'guardrail-file-support-warning');
+    expect(screen.getByRole('status')).toBe(warning);
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(warning?.querySelector('[data-slot="alert"]')).toBeNull();
+    expect(container.querySelector('[data-slot="guardrail-status-banner"]')).toBeNull();
+  });
+
+  it('saves the picked scope and nothing of the lines under it', async () => {
+    const onSave = vi.fn();
+    renderFileBuilder({ parameters: gaParameters, fileSupport: SUPPORTED }, { onSave });
+
+    await pickAppliesTo('Files only');
+    fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
+
+    expect(onSave).toHaveBeenCalledTimes(1);
+    const saved = onSave.mock.calls[0]?.[0] as GuardrailBuilderValue;
+    expect(saved.validatorParameters.map((p) => p.id)).toEqual(['threshold', 'appliesTo']);
+    expect(saved.validatorParameters).toContainEqual({
+      $parameterType: 'enum',
+      id: 'appliesTo',
+      value: 'Files',
+    });
+  });
+
+  it('keeps the lines under Applies to when a host overrides another parameter', () => {
+    const { container } = renderFileBuilder(
+      { validator: 'llm_as_judge', parameters: judgeParameters, fileSupport: SUPPORTED },
+      {
+        overrideParameterIds: ['model'],
+        renderParameter: (ctx) =>
+          ctx.definition.id === 'model' ? <div data-testid="host-picker" /> : undefined,
+      }
     );
 
-    expect(screen.queryByText(/Reads file contents/)).not.toBeInTheDocument();
-    expect(screen.queryByText(/Text prompts only/)).not.toBeInTheDocument();
+    expect(screen.getByTestId('host-picker')).toBeInTheDocument();
+    expectUnderAppliesTo(container);
   });
 
   it('renders the appliesTo dropdown from the definition, with the backend’s labels', () => {
     // The generic enum renderer is expected to need no change for this parameter; this is
     // the assertion that keeps that true.
-    render(
-      <GuardrailBuilder
-        open
-        inline
-        definition={makeDef({
-          parameters: judgeParameters,
-          fileSupport: { supported: true, formats: ['Text'] },
-        })}
-        scope="Agent"
-        onSave={() => {}}
-        onCancel={() => {}}
-      />
-    );
+    renderFileBuilder({
+      parameters: judgeParameters,
+      fileSupport: { supported: true, formats: ['Text'] },
+    });
 
     expect(screen.getByRole('combobox', { name: /Applies to/ })).toHaveTextContent(
       'Text and files'
@@ -1811,23 +1996,15 @@ describe('file support indicator', () => {
     // not reach it, and must not stop the picker from claiming its own.
     const claimed: string[] = [];
 
-    render(
-      <GuardrailBuilder
-        open
-        inline
-        definition={makeDef({
-          parameters: judgeParameters,
-          fileSupport: { supported: true, formats: ['Text'] },
-        })}
-        scope="Agent"
-        onSave={() => {}}
-        onCancel={() => {}}
-        renderParameter={(ctx) => {
+    renderFileBuilder(
+      { parameters: judgeParameters, fileSupport: { supported: true, formats: ['Text'] } },
+      {
+        renderParameter: (ctx) => {
           if (ctx.definition.id !== 'model') return undefined;
           claimed.push(ctx.definition.id);
           return <div data-testid="host-picker" />;
-        }}
-      />
+        },
+      }
     );
 
     expect(screen.getByTestId('host-picker')).toBeInTheDocument();
@@ -1835,6 +2012,17 @@ describe('file support indicator', () => {
     // The picker replaced the model enum, and only that one.
     expect(screen.queryByRole('combobox', { name: /Judge model/ })).not.toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: /Applies to/ })).toBeInTheDocument();
+  });
+
+  it('has no accessibility violations with the lines under Applies to', async () => {
+    const { container } = renderFileBuilder({
+      validator: 'llm_as_judge',
+      parameters: judgeParameters,
+      fileSupport: SUPPORTED,
+    });
+
+    expectUnderAppliesTo(container);
+    expect(await axe(container)).toHaveNoViolations();
   });
 });
 

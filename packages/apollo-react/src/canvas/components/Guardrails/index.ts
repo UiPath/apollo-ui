@@ -266,6 +266,7 @@ export {
   guardrailOperatorTakesValue,
 } from './rules-utils';
 export type {
+  GuardrailAppliesTo,
   GuardrailParameterDefinition,
   GuardrailParameterRenderContext,
   GuardrailParameterType,
@@ -283,6 +284,8 @@ export {
 } from './use-guardrail-definitions';
 export {
   dropEmptyOptionalParameters,
+  GUARDRAIL_APPLIES_TO_PARAMETER_ID,
+  getGuardrailAppliesTo,
   getOutOfRangeParameterIds,
   getRequiredEmptyParameterIds,
   seedGuardrailParameters,

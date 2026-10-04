@@ -1313,6 +1313,106 @@ describe('GuardrailValidatorForm', () => {
     });
   });
 
+  describe('parameterFooters', () => {
+    const defs: GuardrailParameterDefinition[] = [
+      {
+        id: 'appliesTo',
+        type: 'enum',
+        label: 'Applies to',
+        required: false,
+        defaultValue: 'Text',
+        options: ['Text', 'Files', 'Both'],
+      },
+      { id: 'threshold', type: 'number', label: 'Threshold', required: false, defaultValue: 0.5 },
+    ];
+    const footerSlot = (container: HTMLElement) =>
+      container.querySelector('[data-slot="guardrail-parameter-footer"]');
+
+    it('renders the node directly below its parameter, before the next one', () => {
+      const { container } = render(
+        <GuardrailValidatorForm
+          parameterDefinitions={defs}
+          parameters={[]}
+          onChange={() => {}}
+          parameterFooters={{ appliesTo: <p>About files</p> }}
+        />
+      );
+
+      const footer = footerSlot(container);
+      expect(footer).toHaveTextContent('About files');
+      const select = screen.getByRole('combobox', { name: 'Applies to' });
+      const threshold = screen.getByRole('spinbutton');
+      expect(select.compareDocumentPosition(footer as Node)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+      expect(footer?.compareDocumentPosition(threshold)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    });
+
+    it.each([
+      ['null', null],
+      ['undefined', undefined],
+      ['false', false],
+    ])('renders no row for a %s entry', (_, node) => {
+      const { container } = render(
+        <GuardrailValidatorForm
+          parameterDefinitions={defs}
+          parameters={[]}
+          onChange={() => {}}
+          parameterFooters={{ appliesTo: node }}
+        />
+      );
+
+      expect(footerSlot(container)).toBeNull();
+    });
+
+    it('ignores an id with no definition', () => {
+      const { container } = render(
+        <GuardrailValidatorForm
+          parameterDefinitions={defs}
+          parameters={[]}
+          onChange={() => {}}
+          parameterFooters={{ missing: <p>Orphan</p> }}
+        />
+      );
+
+      expect(footerSlot(container)).toBeNull();
+      expect(screen.queryByText('Orphan')).not.toBeInTheDocument();
+    });
+
+    it('adds, updates and drops the row as the host changes it', () => {
+      const props = { parameterDefinitions: defs, parameters: [], onChange: () => {} };
+      const { container, rerender } = render(<GuardrailValidatorForm {...props} />);
+      expect(footerSlot(container)).toBeNull();
+
+      rerender(<GuardrailValidatorForm {...props} parameterFooters={{ appliesTo: 'First' }} />);
+      expect(footerSlot(container)).toHaveTextContent('First');
+
+      rerender(<GuardrailValidatorForm {...props} parameterFooters={{ appliesTo: 'Second' }} />);
+      expect(footerSlot(container)).toHaveTextContent('Second');
+
+      rerender(<GuardrailValidatorForm {...props} parameterFooters={{ appliesTo: null }} />);
+      expect(footerSlot(container)).toBeNull();
+      expect(screen.getByRole('combobox', { name: 'Applies to' })).toBeInTheDocument();
+    });
+
+    it('never emits the footer row as a parameter', async () => {
+      const onChange = vi.fn();
+      render(
+        <GuardrailValidatorForm
+          parameterDefinitions={defs}
+          parameters={[]}
+          onChange={onChange}
+          parameterFooters={{ appliesTo: <p>About files</p> }}
+        />
+      );
+
+      fireEvent.click(screen.getByRole('combobox', { name: 'Applies to' }));
+      fireEvent.click(await screen.findByRole('option', { name: 'Files' }));
+
+      expect(onChange).toHaveBeenLastCalledWith([
+        { $parameterType: 'enum', id: 'appliesTo', value: 'Files' },
+      ]);
+    });
+  });
+
   describe('localization', () => {
     it('overrides individual strings via the labels prop', () => {
       const defs: GuardrailParameterDefinition[] = [

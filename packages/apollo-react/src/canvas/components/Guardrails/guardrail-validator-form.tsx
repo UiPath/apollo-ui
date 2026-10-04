@@ -7,9 +7,14 @@ import {
   coerceGuardrailParameterValue,
   GUARDRAIL_ENUM_LIST_CHIPS_COMPONENT,
   GUARDRAIL_MAP_ENUM_COMPONENT,
+  GUARDRAIL_PARAMETER_FOOTER_COMPONENT,
   GUARDRAIL_RENDER_PARAMETER_COMPONENT,
 } from './form-schema-builder';
 import { useGuardrailFormLabels } from './i18n';
+import {
+  GuardrailParameterFootersProvider,
+  ParameterFooterBridge,
+} from './parameter-footer-bridge';
 import { GuardrailRenderParameterProvider, RenderParameterBridge } from './render-parameter-bridge';
 import type {
   GuardrailParameterDefinition,
@@ -22,6 +27,7 @@ const GUARDRAIL_CUSTOM_COMPONENTS = {
   [GUARDRAIL_ENUM_LIST_CHIPS_COMPONENT]: EnumListChipsField,
   [GUARDRAIL_MAP_ENUM_COMPONENT]: MapEnumField,
   [GUARDRAIL_RENDER_PARAMETER_COMPONENT]: RenderParameterBridge,
+  [GUARDRAIL_PARAMETER_FOOTER_COMPONENT]: ParameterFooterBridge,
 };
 
 const EMPTY_OVERRIDES: ReadonlySet<string> = new Set();
@@ -65,6 +71,7 @@ export const GuardrailValidatorForm = forwardRef<HTMLDivElement, GuardrailValida
       renderParameter,
       overrideParameterIds,
       validateLive = true,
+      parameterFooters,
       labels: labelOverrides,
       className,
     },
@@ -164,6 +171,17 @@ export const GuardrailValidatorForm = forwardRef<HTMLDivElement, GuardrailValida
       return map;
     }, [parameterDefinitions, parameters]);
 
+    // Keyed on which ids have content, so a footer coming or going adds or drops its row while
+    // a new `parameterFooters` object on every host render leaves the schema alone.
+    const footerIdsKey = Object.entries(parameterFooters ?? {})
+      .filter(([, node]) => node != null && node !== false)
+      .map(([id]) => id)
+      .join('\n');
+    const footerIds = useMemo(
+      () => new Set(footerIdsKey ? footerIdsKey.split('\n') : []),
+      [footerIdsKey]
+    );
+
     // Frozen at mount so keystrokes never churn schema identity: it only seeds field
     // defaultValues for the first paint. Later external changes arrive via `values`.
     const [initialParameters] = useState(parameters);
@@ -174,8 +192,16 @@ export const GuardrailValidatorForm = forwardRef<HTMLDivElement, GuardrailValida
           overriddenIds,
           initialParameters,
           enumSyntheticValues,
+          footerIds,
         }),
-      [parameterDefinitions, labels, overriddenIds, initialParameters, enumSyntheticValues]
+      [
+        parameterDefinitions,
+        labels,
+        overriddenIds,
+        initialParameters,
+        enumSyntheticValues,
+        footerIds,
+      ]
     );
 
     // parameters -> record: only ids with a definition enter the form; sidecars stay in
@@ -215,7 +241,9 @@ export const GuardrailValidatorForm = forwardRef<HTMLDivElement, GuardrailValida
     return (
       <div ref={ref} data-slot="guardrail-validator-form" className={cn('space-y-4', className)}>
         <GuardrailRenderParameterProvider value={bridgeContext}>
-          <MetadataForm schema={formSchema} plugins={plugins} container="div" />
+          <GuardrailParameterFootersProvider value={parameterFooters}>
+            <MetadataForm schema={formSchema} plugins={plugins} container="div" />
+          </GuardrailParameterFootersProvider>
         </GuardrailRenderParameterProvider>
       </div>
     );

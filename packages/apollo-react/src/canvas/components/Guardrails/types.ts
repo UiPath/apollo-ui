@@ -131,7 +131,15 @@ export interface GuardrailValidatorFormProps {
    * revealed them rather than on the next keystroke.
    */
   validateLive?: boolean;
+  /**
+   * Content rendered directly below a parameter's editor, keyed by parameter id. A nullish or
+   * `false` entry renders nothing and takes no space; ids with no definition are ignored.
+   */
+  parameterFooters?: Readonly<Record<string, React.ReactNode>>;
   /** Per-string overrides; take precedence over the ambient lingui catalog. */
   labels?: Partial<GuardrailValidatorFormLabels>;
   className?: string;
 }
+
+/** What an `appliesTo` parameter selects; see `getGuardrailAppliesTo`. */
+export type GuardrailAppliesTo = 'Text' | 'Files' | 'Both';

@@ -159,6 +159,26 @@ describe('GuardrailFileSupportIndicator', () => {
       expect(screen.getByRole('status')).toHaveTextContent('Not inspected yet: PDF.');
     });
 
+    it('is a caption line like the one above it, not an alert box', () => {
+      const { container } = render(
+        <GuardrailFileSupportIndicator
+          fileSupport={{ supported: true, formats: ['Text'], uninspectedFormats: ['Pdf'] }}
+        />
+      );
+
+      const line = container.querySelector('[data-slot="guardrail-file-support"]');
+      const warning = warningSlot(container);
+      expect(warning).toBe(screen.getByRole('status'));
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+      expect(container.querySelector('[data-slot="alert"]')).toBeNull();
+      expect(container.querySelector('[data-slot="guardrail-status-banner"]')).toBeNull();
+      expect(warning?.className).toBe(line?.className);
+      expect(line?.querySelector('svg')).toHaveClass('size-3.5', 'shrink-0');
+      const icon = warning?.querySelector('svg');
+      expect(icon).toHaveClass('lucide-info', 'size-3.5', 'shrink-0');
+      expect(icon).toHaveAttribute('aria-hidden', 'true');
+    });
+
     const noWarningCases: [string, GuardrailFileSupport][] = [
       ['absent', { supported: true, formats: ['Text'] }],
       [

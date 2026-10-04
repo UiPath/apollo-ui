@@ -7,6 +7,15 @@ import type { GuardrailParameterDefinition, GuardrailValidatorParameter } from '
 export const GUARDRAIL_ENUM_LIST_CHIPS_COMPONENT = 'guardrail-enum-list-chips';
 export const GUARDRAIL_MAP_ENUM_COMPONENT = 'guardrail-map-enum';
 export const GUARDRAIL_RENDER_PARAMETER_COMPONENT = 'guardrail-render-parameter';
+export const GUARDRAIL_PARAMETER_FOOTER_COMPONENT = 'guardrail-parameter-footer';
+
+/**
+ * Name of the display-only field that carries a parameter's footer. It holds no value, and the
+ * form never emits it: only names with a parameter definition reach the host.
+ */
+export function guardrailParameterFooterFieldName(parameterId: string): string {
+  return `guardrail-footer:${parameterId}`;
+}
 
 /** enum-list option sets at or below this render as inline chips; larger sets as MultiSelect. */
 export const MAX_INLINE_ENUM_OPTIONS = 8;
@@ -26,6 +35,8 @@ export interface BuildGuardrailFormSchemaOptions {
    * silently blanks.
    */
   enumSyntheticValues?: Record<string, string>;
+  /** Definition ids followed by a `guardrail-parameter-footer` row. */
+  footerIds?: ReadonlySet<string>;
 }
 
 /**
@@ -83,9 +94,20 @@ export function buildGuardrailFormSchema(
 ): FormSchema {
   const initialById = new Map((options?.initialParameters ?? []).map((p) => [p.id, p]));
 
-  const fields = definitions.map((def) =>
-    buildGuardrailField(def, definitions, labels, initialById, options)
-  );
+  const fields = definitions.flatMap((def): FieldMetadata[] => {
+    const field = buildGuardrailField(def, definitions, labels, initialById, options);
+    if (!options?.footerIds?.has(def.id)) return [field];
+    return [
+      field,
+      {
+        type: 'custom',
+        name: guardrailParameterFooterFieldName(def.id),
+        label: '',
+        component: GUARDRAIL_PARAMETER_FOOTER_COMPONENT,
+        componentProps: { parameterId: def.id },
+      },
+    ];
+  });
 
   return {
     id: 'guardrail-validator-form',
