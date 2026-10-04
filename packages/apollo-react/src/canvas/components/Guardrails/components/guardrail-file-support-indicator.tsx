@@ -1,5 +1,5 @@
 import { cn } from '@uipath/apollo-wind';
-import { FileText, Paperclip } from 'lucide-react';
+import { FileText, Info, Paperclip } from 'lucide-react';
 import type { GuardrailFileFormat, GuardrailFileSupport } from '../builder-types';
 import {
   formatGuardrailFormMessage,
@@ -7,7 +7,6 @@ import {
   type GuardrailFileSupportLabels,
   useGuardrailFileSupportLabels,
 } from '../i18n';
-import { GuardrailStatusBanner } from './guardrail-status-banner';
 
 export interface GuardrailFileSupportIndicatorProps {
   /**
@@ -20,6 +19,9 @@ export interface GuardrailFileSupportIndicatorProps {
   labels?: GuardrailFileSupportLabelOverrides;
   className?: string;
 }
+
+const LINE_CLASS = 'flex items-center gap-1.5 text-xs text-muted-foreground';
+const ICON_CLASS = 'size-3.5 shrink-0';
 
 /** Display order of the format names, independent of the order the host listed them in. */
 const FORMAT_ORDER: readonly GuardrailFileFormat[] = ['Text', 'Pdf', 'Image', 'Office', 'Html'];
@@ -58,10 +60,7 @@ export function GuardrailFileSupportIndicator({
   if (fileSupport === undefined) return null;
 
   const shell = (icon: React.ReactNode, text: string, lineClassName?: string) => (
-    <div
-      data-slot="guardrail-file-support"
-      className={cn('flex items-center gap-1.5 text-xs text-muted-foreground', lineClassName)}
-    >
+    <div data-slot="guardrail-file-support" className={cn(LINE_CLASS, lineClassName)}>
       {icon}
       <span>{text}</span>
     </div>
@@ -72,7 +71,7 @@ export function GuardrailFileSupportIndicator({
       fileSupport.unavailableReason === 'AutomationSuite'
         ? labels.unavailableOnAutomationSuite
         : labels.notSupported;
-    return shell(<FileText className="size-3.5 shrink-0" aria-hidden />, reason, className);
+    return shell(<FileText className={ICON_CLASS} aria-hidden />, reason, className);
   }
 
   const names = formatNames(fileSupport.formats, labels);
@@ -88,15 +87,16 @@ export function GuardrailFileSupportIndicator({
 
   const warning = warningMessage(fileSupport, labels);
   if (warning === undefined) {
-    return shell(<Paperclip className="size-3.5 shrink-0" aria-hidden />, text, className);
+    return shell(<Paperclip className={ICON_CLASS} aria-hidden />, text, className);
   }
 
   return (
-    <div className={cn('space-y-2', className)}>
-      {shell(<Paperclip className="size-3.5 shrink-0" aria-hidden />, text)}
-      <div data-slot="guardrail-file-support-warning">
-        <GuardrailStatusBanner tone="warning" message={warning} />
-      </div>
+    <div className={cn('space-y-1', className)}>
+      {shell(<Paperclip className={ICON_CLASS} aria-hidden />, text)}
+      <output data-slot="guardrail-file-support-warning" className={LINE_CLASS}>
+        <Info className={ICON_CLASS} aria-hidden />
+        <span>{warning}</span>
+      </output>
     </div>
   );
 }

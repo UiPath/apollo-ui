@@ -11,6 +11,7 @@ import { useMemo, useState } from 'react';
 import { ApI18nProvider } from '../../../i18n';
 import type { GuardrailBuilderValue, GuardrailDefinition } from './builder-types';
 import { GuardrailBuilder } from './guardrail-builder';
+import type { GuardrailParameterDefinition } from './types';
 
 const meta = {
   title: 'Components/UiPath/Guardrail Builder',
@@ -396,5 +397,91 @@ export const HostErrorsOverride: Story = {
       );
     }
     return <HostErrorsExample />;
+  },
+};
+
+const appliesToParameter = (defaultValue: string): GuardrailParameterDefinition => ({
+  id: 'appliesTo',
+  type: 'enum',
+  label: 'Applies to',
+  required: false,
+  defaultValue,
+  options: ['Text', 'Files', 'Both'],
+  optionLabels: { Text: 'Text only', Files: 'Files only', Both: 'Text and files' },
+});
+
+const piiWithFiles: GuardrailDefinition = {
+  ...piiDefinition,
+  parameters: [...piiDefinition.parameters, appliesToParameter('Text')],
+  fileSupport: {
+    supported: true,
+    formats: ['Text'],
+    uninspectedFormats: ['Pdf', 'Image', 'Office', 'Html'],
+  },
+};
+
+/**
+ * File support sits under Applies to while it selects Files or Both. Pick Text only and both
+ * lines go.
+ */
+export const FileSupportFilesSelected: Story = {
+  args: {
+    ...EditInline.args,
+    hideHeader: true,
+    definition: piiWithFiles,
+    guardrail: {
+      ...existingGuardrail,
+      validatorParameters: [
+        ...existingGuardrail.validatorParameters,
+        { $parameterType: 'enum', id: 'appliesTo', value: 'Files' },
+      ],
+    },
+  },
+};
+
+/** A GA validator starts on Text, so nothing about files shows until Files or Both is picked. */
+export const FileSupportTextSelected: Story = {
+  args: { ...AddInline.args, definition: piiWithFiles },
+};
+
+/** The judge defaults to Both: the kinds it reads, and the warning for the rest. */
+export const FileSupportJudgeBoth: Story = {
+  args: {
+    ...AddInline.args,
+    defaultName: 'LLM as judge 1',
+    definition: {
+      validator: 'llm_as_judge',
+      displayName: 'LLM as judge',
+      allowedScopes: ['Agent', 'Llm', 'Tool'],
+      status: 'Available',
+      parameters: [
+        {
+          id: 'model',
+          type: 'enum',
+          label: 'Judge model',
+          required: true,
+          defaultValue: 'gpt-4o',
+          options: ['gpt-4o'],
+        },
+        appliesToParameter('Both'),
+      ],
+      fileSupport: {
+        supported: true,
+        formats: ['Text', 'Pdf', 'Image'],
+        uninspectedFormats: ['Office', 'Html'],
+        visionModelFormats: ['Pdf', 'Image'],
+      },
+    },
+  },
+};
+
+/** Without file support there is no Applies to field, and the line stays above the parameters. */
+export const FileSupportUnavailable: Story = {
+  args: {
+    ...AddInline.args,
+    definition: {
+      ...piiDefinition,
+      fileSupport: { supported: false, formats: [], unavailableReason: 'NotEnabled' },
+    },
   },
 };

@@ -4,7 +4,9 @@ import {
   coerceGuardrailParameterValue,
   GUARDRAIL_ENUM_LIST_CHIPS_COMPONENT,
   GUARDRAIL_MAP_ENUM_COMPONENT,
+  GUARDRAIL_PARAMETER_FOOTER_COMPONENT,
   GUARDRAIL_RENDER_PARAMETER_COMPONENT,
+  guardrailParameterFooterFieldName,
   MAX_INLINE_ENUM_OPTIONS,
 } from './form-schema-builder';
 import { GUARDRAIL_FORM_EN_LABELS } from './i18n';
@@ -224,6 +226,60 @@ describe('buildGuardrailFormSchema', () => {
       }
     );
     expect(field.defaultValue).toBe(0.8);
+  });
+
+  describe('footerIds', () => {
+    const defs: GuardrailParameterDefinition[] = [
+      { id: 'threshold', type: 'number', label: 'Threshold', required: false, defaultValue: 0.5 },
+      {
+        id: 'appliesTo',
+        type: 'enum',
+        label: 'Applies to',
+        required: false,
+        defaultValue: 'Text',
+        options: ['Text', 'Files', 'Both'],
+      },
+      { id: 'strict', type: 'boolean', label: 'Strict', required: false, defaultValue: false },
+    ];
+    const names = (options?: Parameters<typeof buildGuardrailFormSchema>[2]) =>
+      buildGuardrailFormSchema(defs, LABELS, options).sections?.[0]?.fields.map((f) => f.name);
+
+    it('puts a display-only row directly after the parameter it names', () => {
+      const schema = buildGuardrailFormSchema(defs, LABELS, {
+        footerIds: new Set(['appliesTo']),
+      });
+      const fields = schema.sections?.[0]?.fields ?? [];
+
+      expect(fields.map((f) => f.name)).toEqual([
+        'threshold',
+        'appliesTo',
+        guardrailParameterFooterFieldName('appliesTo'),
+        'strict',
+      ]);
+      expect(fields[2]).toEqual({
+        type: 'custom',
+        name: guardrailParameterFooterFieldName('appliesTo'),
+        label: '',
+        component: GUARDRAIL_PARAMETER_FOOTER_COMPONENT,
+        componentProps: { parameterId: 'appliesTo' },
+      });
+      // The parameter itself keeps its own editor.
+      expect(fields[1]).toMatchObject({ name: 'appliesTo', type: 'select' });
+    });
+
+    it('adds nothing without footerIds, or for an id with no definition', () => {
+      expect(names()).toEqual(['threshold', 'appliesTo', 'strict']);
+      expect(names({ footerIds: new Set(['missing']) })).toEqual([
+        'threshold',
+        'appliesTo',
+        'strict',
+      ]);
+    });
+
+    it('names footer rows so they cannot be mistaken for a parameter', () => {
+      expect(guardrailParameterFooterFieldName('appliesTo')).not.toBe('appliesTo');
+      expect(guardrailParameterFooterFieldName('appliesTo')).not.toMatch(/[.[\]]/);
+    });
   });
 });
 

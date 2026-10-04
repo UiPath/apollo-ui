@@ -3,6 +3,7 @@ import type { GuardrailParameterDefinition, GuardrailValidatorParameter } from '
 import {
   normalizeGuardrailParameters,
   dropEmptyOptionalParameters,
+  getGuardrailAppliesTo,
   getOutOfRangeParameterIds,
   getRequiredEmptyParameterIds,
   seedGuardrailParameters,
@@ -556,5 +557,64 @@ describe('getRequiredEmptyParameterIds', () => {
       { $parameterType: 'boolean', id: 'strict', value: false },
     ];
     expect(getRequiredEmptyParameterIds(defs, params)).toEqual([]);
+  });
+});
+
+describe('getGuardrailAppliesTo', () => {
+  const appliesTo = (defaultValue: unknown): GuardrailParameterDefinition => ({
+    id: 'appliesTo',
+    type: 'enum',
+    label: 'Applies to',
+    required: false,
+    defaultValue,
+    options: ['Text', 'Files', 'Both'],
+  });
+  const stored = (value: string): GuardrailValidatorParameter[] => [
+    { $parameterType: 'enum', id: 'appliesTo', value },
+  ];
+
+  it('is undefined when the definitions have no appliesTo parameter', () => {
+    const threshold: GuardrailParameterDefinition = {
+      id: 'threshold',
+      type: 'number',
+      label: 'Threshold',
+      required: false,
+      defaultValue: 0.5,
+    };
+    expect(getGuardrailAppliesTo([threshold], stored('Files'))).toBeUndefined();
+  });
+
+  it.each([
+    ['a GA validator', 'Text', 'Text'],
+    ['the judge', 'Both', 'Both'],
+  ] as const)('falls back to the default of %s when nothing is stored', (_, fallback, expected) => {
+    expect(getGuardrailAppliesTo([appliesTo(fallback)], [])).toBe(expected);
+    expect(getGuardrailAppliesTo([appliesTo(fallback)], stored(''))).toBe(expected);
+    expect(getGuardrailAppliesTo([appliesTo(fallback)], stored('   '))).toBe(expected);
+  });
+
+  it.each([
+    ['Files', 'Files'],
+    ['Both', 'Both'],
+    [' files ', 'Files'],
+    ['BOTH', 'Both'],
+    ['Text', 'Text'],
+    ['Prompts', 'Text'],
+    ['Images', 'Text'],
+  ] as const)('reads a stored %j as %s, whatever the default', (value, expected) => {
+    expect(getGuardrailAppliesTo([appliesTo('Both')], stored(value))).toBe(expected);
+  });
+
+  it('reads a default the same way, and a missing one as Text', () => {
+    expect(getGuardrailAppliesTo([appliesTo(' both ')], [])).toBe('Both');
+    expect(getGuardrailAppliesTo([appliesTo(null)], [])).toBe('Text');
+    expect(getGuardrailAppliesTo([appliesTo(undefined)], [])).toBe('Text');
+  });
+
+  it('falls back to the default when the stored value is not a string', () => {
+    const malformed = [
+      { $parameterType: 'number', id: 'appliesTo', value: 1 },
+    ] as GuardrailValidatorParameter[];
+    expect(getGuardrailAppliesTo([appliesTo('Both')], malformed)).toBe('Both');
   });
 });

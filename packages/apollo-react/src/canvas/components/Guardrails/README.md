@@ -759,9 +759,7 @@ Both hosts adopt it behind the flags they already have:
 
 ## GuardrailFileSupportIndicator
 
-Says whether a validator reads the files attached to a run, and which kinds. `GuardrailBuilder`
-renders it above the validator parameters, because `appliesTo` is one of them and this is what
-says what "Files" will actually mean for this validator.
+Says whether a validator reads the files attached to a run, and which kinds.
 
 ```tsx
 import { GuardrailFileSupportIndicator } from '@uipath/apollo-react/canvas/guardrails';
@@ -789,8 +787,9 @@ quiet rather than claiming either way.
 `formats` are coarse kinds (`Text`, `Pdf`, `Image`, `Office`, `Html`), not MIME types, and render
 in a fixed display order whatever order the host listed them in.
 
-Two optional fields add a warning below the line, rendered as a `GuardrailStatusBanner`
-(`tone="warning"`, `role="status"`) inside `data-slot="guardrail-file-support-warning"`:
+Two optional fields add a warning below the line: a second caption line in the same format, with
+an info icon, as an `<output>` (implicit `role="status"`) with
+`data-slot="guardrail-file-support-warning"`. No box, border or tone colour:
 
 | field | warning sentence |
 | --- | --- |
@@ -811,6 +810,23 @@ sends neither gets exactly the line above. Both are ignored when `supported` is 
   }}
 />
 ```
+
+### In GuardrailBuilder
+
+Where it renders depends on `fileSupport` and on the definition's `appliesTo` parameter:
+
+| `fileSupport` | `appliesTo` parameter | renders |
+| --- | --- | --- |
+| absent | any | nothing |
+| `supported: true` | present | under the Applies to field, only while it selects Files or Both |
+| `supported: true` | absent | above the parameters, always |
+| `supported: false` | any | above the parameters, always |
+
+What Applies to selects is `getGuardrailAppliesTo(definitions, parameters)`, which reads it the
+way the backend does: the stored value, trimmed and case-insensitive, when non-empty, otherwise
+the definition's `defaultValue` (Text for the five GA validators, Both for `llm_as_judge`). Any
+other value, Flow's legacy `Prompts` included, is Text. The builder recomputes it on every edit,
+so the lines follow the select as it changes.
 
 ## GuardrailActionSection
 
@@ -1113,6 +1129,10 @@ state and exposes a plugin seam, so the translation lives in one named place,
   (return `undefined` to fall through). `ctx.onValueChange` upserts the parameter;
   `ctx.onParametersChange` replaces the whole array for overrides that persist sidecar
   parameters (e.g. a model picker storing connection metadata).
+- **Per-parameter footer.** `parameterFooters` maps a parameter id to a node rendered directly
+  below that parameter's editor, overridden or not (`GuardrailBuilder` puts file support under
+  `appliesTo` this way). A nullish or `false` entry renders nothing and takes no space, so a
+  footer can come and go with a value; ids with no definition are ignored.
 
 ### Save-time companions
 
@@ -1258,11 +1278,12 @@ How each parameter type maps:
 | `text-list` | field type `string-list` (added to forms/ for this convergence — generic) |
 | `map-enum` | custom component `guardrail-map-enum` (reads the `keySource` sibling via the form context) |
 | any id claimed by `renderParameter` | custom component `guardrail-render-parameter` (the bridge that mounts the host's node and exposes `onValueChange`/`onParametersChange`) |
+| any id with a `parameterFooters` entry | an extra display-only row after it, custom component `guardrail-parameter-footer`, named `guardrail-footer:<id>` so it never reaches the host |
 
-Why the three custom components stay guardrail-owned: the chip-toggle UX is a product
+Why the four custom components stay guardrail-owned: the chip-toggle UX is a product
 decision (small option sets read better as chips than a dropdown), `map-enum` derives its
-rows from a sibling field's live selection, and `renderParameter` is a host seam — all three
-are exactly what `type: 'custom'` + component registration exists for.
+rows from a sibling field's live selection, and `renderParameter` and `parameterFooters` are
+host seams — all four are exactly what `type: 'custom'` + component registration exists for.
 
 Adapter invariants (guarded by the `controlled contract` tests in
 `guardrail-validator-form.test.tsx`):

@@ -1,4 +1,8 @@
-import type { GuardrailParameterDefinition, GuardrailValidatorParameter } from './types';
+import type {
+  GuardrailAppliesTo,
+  GuardrailParameterDefinition,
+  GuardrailValidatorParameter,
+} from './types';
 
 /**
  * Coerce an arbitrary value into the shape `GuardrailValidatorParameter` declares for this
@@ -262,4 +266,30 @@ export function getRequiredEmptyParameterIds(
     if (isEmpty) emptyIds.push(paramDef.id);
   }
   return emptyIds;
+}
+
+export const GUARDRAIL_APPLIES_TO_PARAMETER_ID = 'appliesTo';
+
+/**
+ * What a validator's `appliesTo` parameter selects, or `undefined` when its definitions have
+ * none. Reads it the way the backend does (`GuardrailAttachmentPrompt.GetScope`): the stored
+ * value, trimmed and case-insensitive, when non-empty, otherwise the definition's default; any
+ * value but Files or Both, Flow's legacy "Prompts" included, is Text.
+ */
+export function getGuardrailAppliesTo(
+  definitions: readonly GuardrailParameterDefinition[],
+  parameters: readonly GuardrailValidatorParameter[]
+): GuardrailAppliesTo | undefined {
+  const definition = definitions.find((d) => d.id === GUARDRAIL_APPLIES_TO_PARAMETER_ID);
+  if (!definition) return undefined;
+  const asText = (value: unknown) => (typeof value === 'string' ? value.trim() : '');
+  const stored = asText(parameters.find((p) => p.id === definition.id)?.value);
+  switch ((stored || asText(definition.defaultValue)).toLowerCase()) {
+    case 'files':
+      return 'Files';
+    case 'both':
+      return 'Both';
+    default:
+      return 'Text';
+  }
 }

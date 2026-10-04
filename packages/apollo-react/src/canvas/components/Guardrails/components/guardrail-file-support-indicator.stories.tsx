@@ -27,6 +27,9 @@ Three states, all reached from data alone:
 
 Absent is *unknown*, not "reads none": a host that has not adopted the field, and every BYO
 definition, say nothing, and the card stays quiet rather than claiming either way.
+
+In \`GuardrailBuilder\` a supported indicator sits under the Applies to field and shows only while
+it selects Files or Both; see the builder's FileSupport stories.
         `,
       },
     },
