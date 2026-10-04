@@ -93,6 +93,16 @@ export interface GuardrailFileSupport {
   /** Empty whenever `supported` is false. */
   formats: GuardrailFileFormat[];
   unavailableReason?: GuardrailFileSupportUnavailableReason;
+  /**
+   * Host-supplied: kinds a run may carry that this validator passes without checking. Never
+   * derived from `formats`. Ignored when `supported` is false.
+   */
+  uninspectedFormats?: GuardrailFileFormat[];
+  /**
+   * Host-supplied: kinds read only when the selected model accepts images. Ignored when
+   * `supported` is false.
+   */
+  visionModelFormats?: GuardrailFileFormat[];
 }
 
 /**

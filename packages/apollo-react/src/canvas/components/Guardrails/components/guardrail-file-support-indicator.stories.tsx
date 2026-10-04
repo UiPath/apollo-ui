@@ -22,6 +22,7 @@ Three states, all reached from data alone:
 | --- | --- |
 | absent | nothing |
 | \`{ supported: true, formats: [...] }\` | the kinds it reads |
+| ...plus \`uninspectedFormats\` or \`visionModelFormats\` | the kinds, and a warning naming the rest |
 | \`{ supported: false, unavailableReason }\` | why it reads none |
 
 Absent is *unknown*, not "reads none": a host that has not adopted the field, and every BYO
@@ -43,6 +44,29 @@ export const ReadsFiles: Story = {};
 /** Before file text extraction is rolled out, most validators inline text only. */
 export const TextFilesOnly: Story = {
   args: { fileSupport: { supported: true, formats: ['Text'] } },
+};
+
+/** Text is read, the extracted kinds are not yet, so the card says they pass unchecked. */
+export const TextOnlyWithWarning: Story = {
+  args: {
+    fileSupport: {
+      supported: true,
+      formats: ['Text'],
+      uninspectedFormats: ['Pdf', 'Image', 'Office', 'Html'],
+    },
+  },
+};
+
+/** A judge without text extraction: PDF and images go to the model, Office and HTML do not. */
+export const JudgeWithoutExtraction: Story = {
+  args: {
+    fileSupport: {
+      supported: true,
+      formats: ['Text', 'Pdf', 'Image'],
+      uninspectedFormats: ['Office', 'Html'],
+      visionModelFormats: ['Pdf', 'Image'],
+    },
+  },
 };
 
 /** Everything the backend can currently offer. */
@@ -76,6 +100,21 @@ export const AllStates: Story = {
         fileSupport={{ supported: true, formats: ['Text', 'Pdf', 'Image'] }}
       />
       <GuardrailFileSupportIndicator fileSupport={{ supported: true, formats: ['Text'] }} />
+      <GuardrailFileSupportIndicator
+        fileSupport={{
+          supported: true,
+          formats: ['Text'],
+          uninspectedFormats: ['Pdf', 'Image', 'Office', 'Html'],
+        }}
+      />
+      <GuardrailFileSupportIndicator
+        fileSupport={{
+          supported: true,
+          formats: ['Text', 'Pdf', 'Image'],
+          uninspectedFormats: ['Office', 'Html'],
+          visionModelFormats: ['Pdf', 'Image'],
+        }}
+      />
       <GuardrailFileSupportIndicator
         fileSupport={{ supported: false, formats: [], unavailableReason: 'NotEnabled' }}
       />
