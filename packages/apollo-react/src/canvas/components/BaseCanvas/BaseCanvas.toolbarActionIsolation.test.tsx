@@ -11,6 +11,7 @@ import type { NodeManifest } from '../../schema/node-definition';
 import { resolveToolbar } from '../../utils/toolbar-resolver';
 import type { NodeStatusContext } from '../BaseNode/BaseNode.types';
 import { BaseCanvas } from './BaseCanvas';
+import { useBaseCanvasMode } from './BaseCanvasModeProvider';
 
 // Two side-by-side read-only diff panes are both `BaseCanvas`, each wrapped in
 // its own `ReactFlowProvider` + `NodeRegistryProvider` - mirrors how a real
@@ -173,5 +174,28 @@ describe('two BaseCanvas instances mounted side by side (e.g. a before/after dif
 
     unmount();
     expect(getToolbarActionStore().onToolbarAction).toBeUndefined();
+  });
+
+  it("gives the toolbar store BaseCanvas's own default mode when none is passed", () => {
+    let store: ToolbarActionStore | undefined;
+    let canvasMode: string | undefined;
+    function Probe() {
+      store = useToolbarActionStoreContext();
+      canvasMode = useBaseCanvasMode().mode;
+      return null;
+    }
+
+    render(
+      <ReactFlowProvider>
+        <NodeRegistryProvider>
+          <BaseCanvas nodes={[]} edges={[]}>
+            <Probe />
+          </BaseCanvas>
+        </NodeRegistryProvider>
+      </ReactFlowProvider>
+    );
+
+    expect(canvasMode).toBe('view');
+    expect(store?.mode).toBe(canvasMode);
   });
 });
