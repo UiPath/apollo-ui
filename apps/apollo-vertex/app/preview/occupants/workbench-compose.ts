@@ -6,7 +6,6 @@ import {
   type OccupantSpec,
   slotHolds,
 } from "@/lib/composition";
-import { specFor } from "@/lib/occupant-lookup";
 import { OCCUPANT_SPECS, SURFACE_SPECS } from "@/lib/occupants.generated";
 import {
   normalizePanel,
@@ -78,7 +77,13 @@ export type ComposeLock =
   | "full"
   | "present";
 
-const specs = (): OccupantSpec[] => OCCUPANT_SPECS.map((entry) => entry.spec);
+/**
+ * The occupants the composer can use: every registered one. Each function
+ * takes a list of its own (`known`), for tests.
+ */
+const REGISTERED: readonly OccupantSpec[] = OCCUPANT_SPECS.map(
+  (entry) => entry.spec,
+);
 
 const refName = (ref: OccupantRef) =>
   typeof ref === "string" ? ref : ref.occupant;
@@ -93,13 +98,18 @@ const holdsPanel = (host: TemplateHost, slot: string) => {
 };
 
 /** Whether a slot's composition is one it can hold, by every declared rule. */
-function isValid(host: TemplateHost, slot: string, panel: PanelSpec): boolean {
+function isValid(
+  host: TemplateHost,
+  slot: string,
+  panel: PanelSpec,
+  known: readonly OccupantSpec[],
+): boolean {
   const names = occupantsIn(panel);
   if (names.length === 0) return false;
   if (!holdsPanel(host, slot) && names.length > 1) return false;
-  if (validatePanel(panel, specs()).length > 0) return false;
+  if (validatePanel(panel, known).length > 0) return false;
   return names.every((name) => {
-    const spec = specFor(name);
+    const spec = known.find((s) => s.name === name);
     return spec ? slotFit(host, slot, spec).fits : false;
   });
 }
@@ -122,6 +132,7 @@ export function normalizeContents(
   contents: SlotContents,
   focusSlot: string,
   focus: string,
+  known: readonly OccupantSpec[] = REGISTERED,
 ): SlotContents {
   const slots = host.spec.slots.map((slot) => slot.name);
   const kept: Record<string, PanelSpec> = {};
@@ -130,14 +141,14 @@ export function normalizeContents(
     if (!panel) continue;
     // The focused occupant goes in its own slot only.
     const elsewhere = slot === focusSlot ? panel : removeOccupant(panel, focus);
-    if (isValid(host, slot, elsewhere)) kept[slot] = elsewhere;
+    if (isValid(host, slot, elsewhere, known)) kept[slot] = elsewhere;
   }
   const alone = normalizePanel(focus);
   const own = kept[focusSlot];
   if (!own || !occupantsIn(own).includes(focus)) {
     const placed =
       own && holdsPanel(host, focusSlot) ? withFocusFirst(own, focus) : alone;
-    kept[focusSlot] = isValid(host, focusSlot, placed) ? placed : alone;
+    kept[focusSlot] = isValid(host, focusSlot, placed, known) ? placed : alone;
   }
   return kept;
 }
@@ -166,6 +177,7 @@ export function addChoices(
   contents: SlotContents,
   slot: string,
   focus: string,
+  known: readonly OccupantSpec[] = REGISTERED,
 ): ComposeChoice<string>[] {
   const here = contents[slot];
   const names = here ? occupantsIn(here) : [];
@@ -176,7 +188,7 @@ export function addChoices(
     if (!slotFit(host, slot, spec).fits) return "no-fit";
     return full ? "full" : null;
   };
-  return specs().map((spec) => ({ value: spec.name, lock: lockFor(spec) }));
+  return known.map((spec) => ({ value: spec.name, lock: lockFor(spec) }));
 }
 
 /** Where an occupant can go in a panel slot: a new tab, or into a tab, by index. */
@@ -192,6 +204,7 @@ export function destinations(
   contents: SlotContents,
   slot: string,
   occupant: string,
+  known: readonly OccupantSpec[] = REGISTERED,
 ): ComposeChoice<Destination>[] {
   if (!holdsPanel(host, slot)) return [];
   const panel = contents[slot] ?? { surface: "side-panel", tabs: [] };
@@ -199,11 +212,15 @@ export function destinations(
     { value: "new-tab", lock: canAddTab(panel) ? null : "tab-cap" },
     ...panel.tabs.map((tab, index) => ({
       value: index,
-      lock: stackProblem(tab, occupant, specs())
-        ? ("fill-alone" as const)
-        : null,
+      lock: stackProblem(tab, occupant, known) ? ("fill-alone" as const) : null,
     })),
   ];
+}
+
+interface AddOptions {
+  /** The label a tab stacked into takes, when it has none. */
+  label?: LocaleKey;
+  known?: readonly OccupantSpec[];
 }
 
 /**
@@ -217,7 +234,7 @@ export function addOccupant(
   slot: string,
   occupant: string,
   to: Destination = "new-tab",
-  label?: LocaleKey,
+  { label, known = REGISTERED }: AddOptions = {},
 ): SlotContents {
   const here = contents[slot];
   const panel = here ?? { surface: "side-panel" as const, tabs: [] };
@@ -225,8 +242,8 @@ export function addOccupant(
   const next =
     to === "new-tab"
       ? addAsTab(panel, occupant, occupant)
-      : addToTab(panel, to, occupant, specs(), label);
-  if (next === panel || !isValid(host, slot, next)) return contents;
+      : addToTab(panel, to, occupant, known, label);
+  if (next === panel || !isValid(host, slot, next, known)) return contents;
   return { ...contents, [slot]: next };
 }
 

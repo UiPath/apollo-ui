@@ -9,8 +9,9 @@ import {
   occupantsIn,
   removeFromSlot,
   removeLock,
+  type SlotContents,
 } from "@/app/preview/occupants/workbench-compose";
-import type { LocaleKey } from "@/lib/composition";
+import type { LocaleKey, OccupantSpec } from "@/lib/composition";
 import { TWO_UP_HOST } from "./fixtures/two-up-template";
 
 // What each template slot holds in the workbench, from what the template
@@ -20,6 +21,14 @@ const detailPage = TEMPLATE_HOSTS["detail-page"];
 if (!detailPage) throw new Error("No Detail page host");
 
 const label = "workbench_tab_label_overview" as LocaleKey;
+
+/** A flow occupant of the tests' own, for a side panel. */
+const flowSpec = (name: string): OccupantSpec => ({
+  name,
+  label: name,
+  titleKey: label,
+  requires: { minWidth: 0, scroll: "either" },
+});
 
 describe("the focused occupant", () => {
   it("is placed in its slot, alone, when nothing else is there", () => {
@@ -130,7 +139,7 @@ describe("adding to a panel", () => {
       "end-panel",
       "participants",
       0,
-      label,
+      { label },
     );
     expect(contents["end-panel"]?.tabs).toEqual([
       { id: "key-facts", label, occupants: ["key-facts", "participants"] },
@@ -144,18 +153,70 @@ describe("adding to a panel", () => {
     );
   });
 
-  // Only four registered occupants fit a side panel, so the cap is
-  // checked on a panel of five tabs built directly: it counts tabs.
+  // Only four registered occupants fit a side panel, and none fills its
+  // tab, so these two use occupants of their own.
   it("locks a new tab at the tab cap", () => {
     const names = ["a", "b", "c", "d", "e"];
-    const contents = {
-      "end-panel": {
-        surface: "side-panel" as const,
-        tabs: names.map((name) => ({ id: name, occupants: [name] })),
-      },
-    };
-    const [newTab] = destinations(detailPage, contents, "end-panel", "queue");
+    const known = names.map((name) => flowSpec(name));
+    let contents: SlotContents = {};
+    for (const name of names)
+      contents = addOccupant(
+        detailPage,
+        contents,
+        "end-panel",
+        name,
+        "new-tab",
+        { known },
+      );
+    expect(contents["end-panel"]?.tabs).toHaveLength(5);
+    const [newTab] = destinations(
+      detailPage,
+      contents,
+      "end-panel",
+      "f",
+      known,
+    );
     expect(newTab).toEqual({ value: "new-tab", lock: "tab-cap" });
+    expect(
+      addOccupant(detailPage, contents, "end-panel", "f", "new-tab", {
+        known: [...known, flowSpec("f")],
+      }),
+    ).toBe(contents);
+  });
+
+  it("locks stacking a fill occupant, or into a fill occupant's tab", () => {
+    const known = [
+      flowSpec("a"),
+      flowSpec("b"),
+      { ...flowSpec("doc"), sizing: "fill" as const },
+    ];
+    let contents = addOccupant(detailPage, {}, "end-panel", "a", "new-tab", {
+      known,
+    });
+    contents = addOccupant(
+      detailPage,
+      contents,
+      "end-panel",
+      "doc",
+      "new-tab",
+      { known },
+    );
+    expect(
+      destinations(detailPage, contents, "end-panel", "doc", known),
+    ).toEqual([
+      { value: "new-tab", lock: null },
+      { value: 0, lock: "fill-alone" },
+      { value: 1, lock: "fill-alone" },
+    ]);
+    expect(
+      destinations(detailPage, contents, "end-panel", "b", known)[2],
+    ).toEqual({
+      value: 1,
+      lock: "fill-alone",
+    });
+    expect(
+      addOccupant(detailPage, contents, "end-panel", "b", 1, { label, known }),
+    ).toBe(contents);
   });
 
   it("offers every registered occupant, locking ones that don't fit", () => {

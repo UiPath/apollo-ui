@@ -103,7 +103,9 @@ function SlotSection({
     setStackInto(null);
   };
   const add = (occupant: string, to: Destination, tabLabel?: LocaleKey) =>
-    finish(addOccupant(host, contents, slot, occupant, to, tabLabel));
+    finish(
+      addOccupant(host, contents, slot, occupant, to, { label: tabLabel }),
+    );
   const choose = (occupant: string) => {
     // A slot that holds one takes it straight away.
     if (spec && slotHolds(spec) === "one") add(occupant, "new-tab");
