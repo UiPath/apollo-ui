@@ -19,10 +19,9 @@ import {
   END_PANEL_MIN_PX,
 } from "./detail-page.template";
 import {
-  type PanelComposition,
-  parseComposition,
-  SINGLE_OCCUPANT,
-  serializeComposition,
+  type Arrangement,
+  type PanelSlotName,
+  parseArrangement,
 } from "./preview-panels";
 
 export type ShellVariant = "sidebar" | "minimal";
@@ -40,9 +39,9 @@ export type ShellVariant = "sidebar" | "minimal";
  *   <slot>-padding  padded | flush, e.g. main-padding=flush
  *   <slot>-content  short | long   (start-panel, main, end-panel)
  *   <slot>-scroll   surface | occupant   (who owns scrolling there)
- *   <slot>-tabs     what a panel holds, as tabs and stacks (start-panel,
- *                   end-panel), like base~overview:details+people. See
- *                   preview-panels.ts
+ *   <slot>-arrangement  single | stack | tabs | overflow: how a panel
+ *                   arranges its occupants (start-panel, end-panel). See
+ *                   preview-panels.ts. An unknown value is single.
  *   <slot>-tab      the tab a panel shows first, by id (start-panel,
  *                   end-panel). An unknown id shows the first tab.
  *
@@ -60,23 +59,22 @@ export interface PreviewSettings {
   paddings: SlotPaddings;
   contents: SlotContents;
   scrolls: SlotScrolls;
-  /** What each panel holds: its own placeholder, and any tabs and stacks. */
-  compositions: PanelCompositions;
+  /** How each panel arranges its occupants. */
+  arrangements: PanelArrangements;
   /** Each panel's tab to show first, by id. Empty shows the first tab. */
   tabs: PanelTabs;
 }
 
-/** The slots that hold a side panel, so can have tabs. */
-export type PanelSlotName = "start-panel" | "end-panel";
+export type { PanelSlotName };
 
 export type PanelTabs = Record<PanelSlotName, string>;
 
-export type PanelCompositions = Record<PanelSlotName, PanelComposition>;
+export type PanelArrangements = Record<PanelSlotName, Arrangement>;
 
 const PANEL_SLOTS: readonly PanelSlotName[] = ["start-panel", "end-panel"];
 
 const tabKey = (slot: PanelSlotName) => `${slot}-tab`;
-const compositionKey = (slot: PanelSlotName) => `${slot}-tabs`;
+const arrangementKey = (slot: PanelSlotName) => `${slot}-arrangement`;
 
 /** Slots whose surface can scroll, in page order. */
 const SCROLLABLE_SLOTS: readonly ScrollableSlotName[] = [
@@ -108,10 +106,7 @@ export const DEFAULT_PREVIEW_SETTINGS: PreviewSettings = {
     main: "surface",
     "end-panel": "surface",
   },
-  compositions: {
-    "start-panel": SINGLE_OCCUPANT,
-    "end-panel": SINGLE_OCCUPANT,
-  },
+  arrangements: { "start-panel": "single", "end-panel": "single" },
   tabs: { "start-panel": "", "end-panel": "" },
 };
 
@@ -186,10 +181,10 @@ export function parsePreviewSettings(search: string): PreviewSettings {
   }
 
   const tabs = { ...defaults.tabs };
-  const compositions = { ...defaults.compositions };
+  const arrangements = { ...defaults.arrangements };
   for (const slot of PANEL_SLOTS) {
     tabs[slot] = params.get(tabKey(slot)) ?? "";
-    compositions[slot] = parseComposition(params.get(compositionKey(slot)));
+    arrangements[slot] = parseArrangement(params.get(arrangementKey(slot)));
   }
 
   return {
@@ -205,7 +200,7 @@ export function parsePreviewSettings(search: string): PreviewSettings {
     paddings,
     contents,
     scrolls,
-    compositions,
+    arrangements,
     tabs,
   };
 }
@@ -257,9 +252,9 @@ export function serializePreviewSettings(settings: PreviewSettings): string {
 
   for (const slot of PANEL_SLOTS) {
     setIfChanged(
-      compositionKey(slot),
-      serializeComposition(settings.compositions[slot]),
-      "",
+      arrangementKey(slot),
+      settings.arrangements[slot],
+      defaults.arrangements[slot],
     );
     setIfChanged(tabKey(slot), settings.tabs[slot], defaults.tabs[slot]);
   }

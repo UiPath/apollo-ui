@@ -46,7 +46,7 @@ function PreviewPage() {
       paddings={preview.settings.paddings}
       contents={preview.settings.contents}
       scrolls={preview.settings.scrolls}
-      compositions={preview.settings.compositions}
+      arrangements={preview.settings.arrangements}
       tabs={preview.settings.tabs}
       onTabChange={preview.onTabChange}
     />

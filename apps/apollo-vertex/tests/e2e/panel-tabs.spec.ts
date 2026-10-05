@@ -10,9 +10,9 @@ import {
 } from "./fixtures";
 
 /*
- * Tabs and stacks in a side panel, through the Detail page preview. Most
- * tests open a composed end panel from a link (end-panel-tabs, see
- * preview-panels.ts); one composes it with the Configure card.
+ * Tabs and stacks in a side panel, through the Detail page preview's fixed
+ * arrangements (preview-panels.ts), opened from a link with
+ * end-panel-arrangement, or picked in the Configure card.
  */
 
 const end = (page: Page) => page.locator("[data-slot=detail-page-end-panel]");
@@ -37,18 +37,26 @@ async function openPanel(page: Page, query: string, width?: number) {
   await settle(page);
 }
 
-const THREE_TABS = "?end-panel-tabs=base~details~activity";
-const STACK = "?end-panel-tabs=base~overview:details%2Bpeople";
-const FIVE_TABS = "?end-panel-tabs=base~details~activity~people~notes";
+// End panel, Details, and the fill stand-in, Document.
+const THREE_TABS = "?end-panel-arrangement=tabs";
+// One tab: the end panel's own placeholder stacked with Details.
+const STACK = "?end-panel-arrangement=stack";
+// End panel, Details, Activity, People, Notes.
+const FIVE_TABS = "?end-panel-arrangement=overflow";
 
 test("one tab shows no tab bar; several tabs show one", async ({ page }) => {
   await openPreview(page);
   await expect(tablist(page)).toHaveCount(0);
   await expect(end(page).locator("[data-occupant]")).toHaveCount(1);
 
+  // A stack is one tab, so it has no tab bar either.
+  await openPreview(page, STACK);
+  await expect(tablist(page)).toHaveCount(0);
+  await expect(end(page).locator("[data-occupant]")).toHaveCount(2);
+
   await openPreview(page, THREE_TABS);
   await expect(tablist(page)).toBeVisible();
-  expect(await shownTabs(page)).toEqual(["End panel", "Details", "Activity"]);
+  expect(await shownTabs(page)).toEqual(["End panel", "Details", "Document"]);
   // Each tab is a panel of its own, and only the active one shows.
   await expect(end(page).locator("[data-tab]")).toHaveCount(3);
   await expect(end(page).locator("[data-tab]:visible")).toHaveCount(1);
@@ -58,41 +66,33 @@ test("a stack has a heading per occupant; a single occupant has none", async ({
   page,
 }) => {
   await openPreview(page, STACK);
-  await expect(tabBody(page, "base").getByRole("heading")).toHaveCount(0);
-  await end(page).getByRole("tab", { name: "Overview" }).click();
-  const headings = tabBody(page, "details").getByRole("heading", { level: 2 });
-  await expect(headings).toHaveText(["Details", "People"]);
+  const headings = tabBody(page, "base").getByRole("heading", { level: 2 });
+  await expect(headings).toHaveText(["End panel", "Details"]);
   // Each heading names its occupant's section.
   await expect(
-    tabBody(page, "details").getByRole("region", { name: "People" }),
+    tabBody(page, "base").getByRole("region", { name: "Details" }),
   ).toBeVisible();
+
+  await openPreview(page, THREE_TABS);
+  await expect(tabBody(page, "base").getByRole("heading")).toHaveCount(0);
 });
 
-test("a fill occupant can't be stacked with another", async ({ page }) => {
+test("a fill occupant is alone in its tab and scrolls itself", async ({
+  page,
+}) => {
   await openPreview(page, THREE_TABS);
-  await openCard(page);
-  await page
-    .getByRole("group", { name: "End panel: Add an occupant" })
-    .getByRole("radio", { name: "Document" })
-    .click();
-  const where = page.getByRole("group", { name: "End panel: Where it goes" });
-  const stackInto = where.getByRole("button", { name: /^Add to tab/ });
-  await expect(stackInto).toHaveCount(3);
-  for (const button of await stackInto.all())
-    await expect(button).toBeDisabled();
-  await expect(where).toContainText("It fills its tab, so it can't share one.");
-  // It can still go in a tab of its own, where it fills the tab.
-  await where.getByRole("button", { name: "New tab" }).click();
-  // Close the card, which sits over the end panel.
-  await page.getByRole("button", { name: "Configure" }).click();
   await end(page).getByRole("tab", { name: "Document" }).click();
-  await expect(tabBody(page, "document")).toHaveAttribute(
-    "data-scroll",
-    "occupant",
-  );
-  // A link that stacks it is refused, and the panel falls back to one tab.
-  await openPreview(page, "?end-panel-tabs=base~overview:details%2Bdocument");
-  await expect(tablist(page)).toHaveCount(0);
+  const body = tabBody(page, "document");
+  await expect(body).toBeVisible();
+  await expect(body.locator("[data-occupant]")).toHaveCount(1);
+  await expect(body.getByRole("heading")).toHaveCount(0);
+  // The tab hands scrolling to it, and it takes the tab's whole height.
+  await expect(body).toHaveAttribute("data-scroll", "occupant");
+  const [tabHeight, occupantHeight] = await body.evaluate((el) => [
+    el.getBoundingClientRect().height,
+    el.querySelector("[data-occupant]")?.getBoundingClientRect().height ?? 0,
+  ]);
+  expect(occupantHeight).toBe(tabHeight);
 });
 
 test("the panel's width stays the same across tab switches", async ({
@@ -130,9 +130,9 @@ test("each tab keeps its scroll position", async ({ page }) => {
 test("a link opens on its tab; an unknown tab opens the first", async ({
   page,
 }) => {
-  await openPreview(page, `${THREE_TABS}&end-panel-tab=activity`);
-  await expect(selectedTab(page)).toHaveText("Activity");
-  await expect(tabBody(page, "activity")).toBeVisible();
+  await openPreview(page, `${THREE_TABS}&end-panel-tab=document`);
+  await expect(selectedTab(page)).toHaveText("Document");
+  await expect(tabBody(page, "document")).toBeVisible();
 
   await openPreview(page, `${THREE_TABS}&end-panel-tab=nope`);
   await expect(selectedTab(page)).toHaveText("End panel");
@@ -141,6 +141,33 @@ test("a link opens on its tab; an unknown tab opens the first", async ({
   // Switching writes the tab to the URL.
   await end(page).getByRole("tab", { name: "Details" }).click();
   await expect(page).toHaveURL(/end-panel-tab=details/);
+});
+
+test("the Configure card switches a panel's arrangement, and links it", async ({
+  page,
+}) => {
+  await openPreview(page);
+  await openCard(page);
+  const arrangement = page.getByRole("group", {
+    name: "End panel arrangement",
+  });
+  await expect(arrangement.getByRole("radio")).toHaveText([
+    "Single",
+    "Stack",
+    "Tabs",
+    "Overflow",
+  ]);
+  await arrangement.getByRole("radio", { name: "Tabs" }).click();
+  await expect(page).toHaveURL(/end-panel-arrangement=tabs/);
+  await expect(tablist(page)).toBeVisible();
+  await arrangement.getByRole("radio", { name: "Single" }).click();
+  await expect(tablist(page)).toHaveCount(0);
+  await expect(page).not.toHaveURL(/end-panel-arrangement/);
+
+  // An unknown arrangement in a link is single.
+  await openPreview(page, "?end-panel-arrangement=nope");
+  await expect(tablist(page)).toHaveCount(0);
+  await expect(end(page).locator("[data-occupant]")).toHaveCount(1);
 });
 
 test(`at a narrow width, tabs past the room go into More`, async ({ page }) => {

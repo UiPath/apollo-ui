@@ -3,33 +3,19 @@ import { ContentArea } from "@/components/ui/content-area";
 import { PageHeader } from "@/components/ui/page-header";
 import { SidePanel, type SidePanelOccupants } from "@/components/ui/side-panel";
 import type {
-  LocaleKey,
   OccupantSpec,
   ScrollOwner,
   SurfacePadding,
 } from "@/lib/composition";
 import { occupantPadding, scrollOwner } from "@/lib/composition";
-import type { PanelSpec } from "@/lib/panel";
 import { contentAreaSurface } from "@/registry/content-area/content-area.surface";
 import { sidePanelSurface } from "@/registry/side-panel/side-panel.surface";
 import { DetailPage } from "./DetailPage";
 import type { DetailPageSlotName } from "./detail-page.template";
-import {
-  fillPlaceholderOccupant,
-  namedPlaceholderOccupant,
-  placeholderOccupant,
-} from "./placeholder-occupants";
-import {
-  EXTRA_TITLES,
-  isSingleOccupant,
-  PANEL_TITLES,
-  type PanelComposition,
-  type PreviewOccupant,
-  previewTabId,
-  TAB_LABELS,
-} from "./preview-panels";
+import { placeholderOccupant } from "./placeholder-occupants";
+import { arrangementPanel } from "./preview-panels";
 import type {
-  PanelCompositions,
+  PanelArrangements,
   PanelSlotName,
   PanelTabs,
 } from "./preview-url-state";
@@ -49,67 +35,11 @@ interface DetailPageExampleProps {
   paddings: SlotPaddings;
   contents: SlotContents;
   scrolls: SlotScrolls;
-  /** What each panel holds. Defaults to its own placeholder alone. */
-  compositions?: PanelCompositions;
+  /** How each panel arranges its occupants. Defaults to single. */
+  arrangements?: PanelArrangements;
   /** Each panel's tab to show first. */
   tabs?: PanelTabs;
   onTabChange?: (slot: PanelSlotName, id: string) => void;
-}
-
-const specName = (occupant: PreviewOccupant) =>
-  occupant === "base" ? "placeholder" : `placeholder-${occupant}`;
-
-/**
- * A composed panel's spec and occupants: the panel's own placeholder, now
- * titled, and each placeholder the composer added.
- */
-function composedPanel(
-  slot: PanelSlotName,
-  composition: PanelComposition,
-  base: OccupantSpec,
-  long: boolean,
-  translate: (key: LocaleKey) => string,
-): { panel: PanelSpec; occupants: SidePanelOccupants } {
-  const occupants: Record<string, SidePanelOccupants[string]> = {};
-  for (const occupant of composition.flatMap((tab) => tab.occupants)) {
-    let spec: OccupantSpec;
-    if (occupant === "base") {
-      const titleKey = PANEL_TITLES[slot];
-      spec = { ...base, label: translate(titleKey), titleKey };
-    } else {
-      const title = EXTRA_TITLES[occupant];
-      spec =
-        occupant === "document"
-          ? fillPlaceholderOccupant(translate(title), title)
-          : namedPlaceholderOccupant(
-              specName(occupant),
-              translate(title),
-              title,
-            );
-    }
-    occupants[spec.name] = {
-      spec,
-      node: (
-        <SlotPlaceholder
-          occupant={spec}
-          surface="side-panel"
-          // The document stand-in is always long enough to scroll itself.
-          long={long || occupant === "document"}
-        />
-      ),
-    };
-  }
-  return {
-    panel: {
-      surface: "side-panel",
-      tabs: composition.map((tab) => ({
-        id: previewTabId(tab),
-        ...(tab.label && { label: TAB_LABELS[tab.label] }),
-        occupants: tab.occupants.map(specName),
-      })),
-    },
-    occupants,
-  };
 }
 
 export function DetailPageExample({
@@ -117,16 +47,40 @@ export function DetailPageExample({
   paddings,
   contents,
   scrolls,
-  compositions,
+  arrangements,
   tabs,
   onTabChange,
 }: DetailPageExampleProps) {
   const { t } = useTranslation();
+  // A panel's arrangement, with a placeholder box for each occupant in it.
   const panelFor = (slot: PanelSlotName, base: OccupantSpec) => {
-    const composition = compositions?.[slot];
-    if (!composition || isSingleOccupant(composition)) return null;
+    const arranged = arrangementPanel(
+      slot,
+      arrangements?.[slot] ?? "single",
+      base,
+      t,
+    );
+    if (!arranged) return null;
+    const long = contents[slot] === "long";
+    const occupants: SidePanelOccupants = Object.fromEntries(
+      arranged.specs.map((spec) => [
+        spec.name,
+        {
+          spec,
+          node: (
+            <SlotPlaceholder
+              occupant={spec}
+              surface="side-panel"
+              // The fill stand-in is always long enough to scroll itself.
+              long={long || spec.sizing === "fill"}
+            />
+          ),
+        },
+      ]),
+    );
     return {
-      ...composedPanel(slot, composition, base, contents[slot] === "long", t),
+      panel: arranged.panel,
+      occupants,
       ...(tabs?.[slot] && { defaultTab: tabs[slot] }),
       ...(onTabChange && {
         onTabChange: (id: string) => onTabChange(slot, id),
