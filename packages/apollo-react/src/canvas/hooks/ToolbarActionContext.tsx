@@ -2,10 +2,11 @@
  * Toolbar action store: the canvas mode, action handler and breakpoints that
  * `resolveToolbar` reads. `ToolbarActionStoreProvider` holds one per BaseCanvas and nodes
  * read it first; the module-level store is the fallback for code outside any canvas
- * (e.g. `getToolbar` in node-factory, which cannot use hooks).
+ * (e.g. `getToolbar` in node-factory, which cannot use hooks), and mirrors the most
+ * recently mounted canvas that is still mounted.
  */
 
-import { createContext, type ReactNode, useContext, useEffect, useMemo } from 'react';
+import { createContext, type ReactNode, useContext, useEffect, useMemo, useRef } from 'react';
 import type { ToolbarActionHandler } from '../schema/toolbar';
 
 export interface ToolbarActionStore {
@@ -37,27 +38,43 @@ export function getToolbarActionStore(): ToolbarActionStore {
   return toolbarActionStore;
 }
 
+// Stores of the mounted canvases, oldest first; the module-level store mirrors the newest.
+const mountedCanvases: { store: ToolbarActionStore }[] = [];
+
+function syncToNewestCanvas(): void {
+  setToolbarActionStore(
+    mountedCanvases[mountedCanvases.length - 1]?.store ?? {
+      mode: 'design',
+      onToolbarAction: undefined,
+      breakpoints: undefined,
+    }
+  );
+}
+
 /**
- * React hook to sync toolbar action store with component props
- * Use this in FlowEditor to keep the store updated
+ * Keeps the module-level store on the most recently mounted canvas that is still mounted.
+ * When that canvas unmounts, the next newest takes over, or the default once none is left.
  */
 export function useToolbarActionStore(
   mode: string,
   onToolbarAction?: ToolbarActionHandler,
   breakpoints?: Set<string>
 ): void {
-  useEffect(() => {
-    setToolbarActionStore({ mode, onToolbarAction, breakpoints });
+  const entryRef = useRef({ store: { mode, onToolbarAction, breakpoints } });
 
-    // Cleanup: reset handler when component unmounts or switches
-    // This prevents stale handlers from being invoked on the wrong canvas
+  useEffect(() => {
+    const entry = entryRef.current;
+    mountedCanvases.push(entry);
+    syncToNewestCanvas();
     return () => {
-      setToolbarActionStore({
-        mode: 'design',
-        onToolbarAction: undefined,
-        breakpoints: undefined,
-      });
+      mountedCanvases.splice(mountedCanvases.indexOf(entry), 1);
+      syncToNewestCanvas();
     };
+  }, []);
+
+  useEffect(() => {
+    entryRef.current.store = { mode, onToolbarAction, breakpoints };
+    syncToNewestCanvas();
   }, [mode, onToolbarAction, breakpoints]);
 }
 
