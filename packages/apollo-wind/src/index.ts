@@ -501,8 +501,12 @@ export {
   useModelPickerState,
   VirtualOptionList,
 } from './components/ui/model-picker';
-export type { MultiSelectProps } from './components/ui/multi-select';
-export { MultiSelect } from './components/ui/multi-select';
+export type {
+  MultiSelectOption,
+  MultiSelectProps,
+  MultiSelectStrings,
+} from './components/ui/multi-select';
+export { DEFAULT_MULTI_SELECT_STRINGS, MultiSelect } from './components/ui/multi-select';
 export {
   Pagination,
   PaginationContent,

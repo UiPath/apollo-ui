@@ -322,13 +322,17 @@ describe('InputGroup', () => {
 
   describe('hover', () => {
     const HOVER = 'has-[button[data-slot=input-group-control]:not(:disabled):hover]:bg-accent';
+    // Future restates the resting fill for any hover first, since the unprefixed rule above still
+    // matches there and would otherwise show through while a badge is hovered.
+    const FUTURE_REST =
+      'future:has-[button[data-slot=input-group-control]:not(:disabled):hover]:bg-surface-overlay';
     const FUTURE_HOVER =
-      'future:has-[button[data-slot=input-group-control]:not(:disabled):hover]:bg-surface-hover';
+      'future:has-[button[data-slot=input-group-control]:not(:disabled):hover]:not-has-[[data-slot=input-group-control]_[data-slot=badge]:hover]:bg-surface-hover';
 
     it('lights the box while an enabled trigger is hovered, keyed on the trigger alone', () => {
       render(<InputGroup data-testid="group" />);
       // Addons sit beside the trigger, so hovering one matches nothing here.
-      expect(screen.getByTestId('group')).toHaveClass(HOVER, FUTURE_HOVER);
+      expect(screen.getByTestId('group')).toHaveClass(HOVER, FUTURE_REST, FUTURE_HOVER);
     });
 
     it.each([
@@ -338,6 +342,7 @@ describe('InputGroup', () => {
     ])('leaves %s alone', (_, props) => {
       render(<InputGroup data-testid="group" {...props} />);
       expect(screen.getByTestId('group')).not.toHaveClass(HOVER);
+      expect(screen.getByTestId('group')).not.toHaveClass(FUTURE_REST);
     });
   });
 
