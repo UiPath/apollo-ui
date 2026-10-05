@@ -263,11 +263,15 @@ const columns = [
 
 #### Input, Label, Select, Textarea
 
+In a form, describe the fields to `MetadataForm` (see Forms System). For a single field, stack the
+field anatomy parts in `FormField`, never a hand-rolled `div` with `space-y`:
+
 ```tsx
-<div className="space-y-2">
-  <Label htmlFor="name">Name</Label>
-  <Input id="name" placeholder="Enter name..." />
-</div>
+<FormField>
+  <FormFieldLabel htmlFor="name" required>Name</FormFieldLabel>
+  <Input id="name" placeholder="Enter name..." error={error} />
+  <FormFieldDescription>Up to 40 characters.</FormFieldDescription>
+</FormField>
 
 <Textarea placeholder="Write a description..." />
 
@@ -309,7 +313,7 @@ Put the control inside `InputGroup`. Apollo's controls detect the group and beco
 - `layout`: `row` (one line), `grow` (textarea, multi-select), `fill` (code editor), `block` (`InputGroupRow` above `InputGroupBody`, for a collapsible section of nested fields).
 - Controls inside `InputGroupAddon` or `InputGroupBody` are standard fields with their own box. Give a nested field addons by wrapping it in its own `InputGroup`.
 - A custom control that also renders standalone can read `useInputGroup()` (`inGroup`, `layout`, `anchor`).
-- `FieldMenu` is the trailing menu: the field's modes, then its actions (`actions`), or an overflow menu alone (`modesDisabled`). Built-in modes are listed by id (`modes={['literal', 'expression', 'variable', 'prompt']}`; default `['literal', 'expression']`); `builtInValueModes(strings)` returns their options. `ValueModeIndicator` shows `=` in expression mode only.
+- `FieldMenu` is the trailing menu: the field's modes, then its actions (`actions`), or an overflow menu alone (`modesDisabled`). Built-in modes are listed by id (`modes={['literal', 'expression', 'variable', 'prompt']}`; default `['literal', 'expression']`); `builtInValueModes(strings)` returns their options. `ValueModeIndicator` shows `=` in expression mode; inside MetadataForm a mode definition's `indicator` marks any other mode.
 - `InsertVariableAction` renders `variables` (`VariablePickerItem[]`) as supplied, with no root of its own; pass a function to resolve them when the picker opens. Its strings include the picker's search placeholder and empty state. `AiAssistAction`'s `onGenerate(prompt)` may return a promise (any thenable): the prompt stays busy until it settles and shows `strings.error` on rejection. `disabled` disables the trigger.
 - Localization: every addon and action takes a `strings` prop merged over its `DEFAULT_*_STRINGS`. There is no provider.
 
@@ -355,7 +359,11 @@ DateTimePicker, Drawer, DropdownMenu, EditableCell, EmptyState, FileTreeView,
 FileUpload, HoverCard, JsonTreeView, Layout (Grid/Row/Column), Menubar,
 MultiSelect, NavigationMenu, Pagination, Popover, Progress, RadioGroup,
 Resizable, ScrollArea, Search, Separator, Skeleton, Slider, Sonner, Spinner,
-StatsCard, Stepper, Switch, Toggle, ToggleGroup, Tooltip
+StatsCard, Stepper, Switch, Toggle, ToggleGroup, Tooltip, InfoTooltip,
+FormField (with FormFieldLabel, FormFieldHeader, FormFieldDescription, FormFieldError),
+BooleanRadioGroup (True / False / unset), VariablePicker, PromptEditor,
+VariableValueControl, PromptValueControl, QuickFormField (only inside a Quick Form builder, where
+end users configure their own fields)
 
 All imported from `@/components/ui/<component-name>`, except `FileTreeView`, which
 is imported from `@/components/ui/tree-view`.
@@ -378,21 +386,47 @@ is imported from `@/components/ui/tree-view`.
 
 ### Forms System (`@/components/forms/`)
 
-MetadataForm, FormFieldRenderer, FieldControl, FormDesigner, FormStateViewer, RulesEngine,
-RuleBuilder, ExpressionBuilder, DataFetcher, DataSourceBuilder
+**Build forms with `MetadataForm`.** Describe the fields and it renders each one's anatomy and
+owns the values, validation, rules, value modes and field actions. Compose the anatomy parts
+(`FormField`, `FormFieldHeader`, `InputGroup`, `FieldControl`, `FieldMenu`, `FormFieldDescription`,
+`FormFieldError`) by hand for a single field outside any form, and inside a custom control so its
+label, description and message match every other field. Never hand-roll label,
+description or message markup, or wrap fields in a local shell; field messages are
+`FormFieldError` (`text-error`), never `text-destructive`. A custom component without modes or
+actions renders its whole field from these parts; with them MetadataForm renders the parts and the
+component is only the control, inside the field's `InputGroup`. Validation runs in the browser: servers validate
+submitted values too.
 
-All imported from `@/components/forms/<component-name>`.
+Exports (all from `@/components/forms`): MetadataForm, ModeAwareField, FormFieldRenderer,
+FieldControl, FIELD_CONTROL_GEOMETRY, FormDesigner, FormStateViewer, StringListField, RulesEngine,
+RuleBuilder, ExpressionBuilder, DataFetcher, DataSourceBuilder, the built-in plugins
+(analyticsPlugin, autoSavePlugin, workflowPlugin, auditPlugin, validationPlugin, formattingPlugin),
+createInsertVariableAction, createAiAssistAction, createClearAction, envelopeCodec, literalValues,
+VALUE_MODE_OPAQUE, DEFAULT_METADATA_FORM_STRINGS.
+
+Field types: text, email, textarea, number, select, multiselect, radio, checkbox, switch, boolean
+(True / False radios with an unset state, `boolean | null`), slider (`maxRef` reads its max from
+another field), date, datetime, file, string-list, custom (a component from
+`FormPlugin.components`, bare or a `FieldControlRegistration`; declare `valueType` so validation
+applies).
 
 A field with `valueModes`, `headerActions`, `menuActions` or `badge` renders the field anatomy
 (`ModeAwareField`): header actions and badge, a mode glyph, the active mode's control and a trailing
-menu (`FieldMenu`). Hosts register codecs, mode definitions (with `validate`), controls and
-`literalControls` through `FormPlugin.valueModes`; actions through `FormPlugin.fieldActions`
-(`header`, `menu`), built from `createInsertVariableAction`, `createAiAssistAction` and
+menu (`FieldMenu`). `valueModes` takes `modes` (built in: `literal`, `expression`, `variable`, `prompt`; each is
+opt-in), `defaultMode`, `switchable`, `expectedType`, `indicator`, `controls` (names in
+`controlRegistry`), `codec` and `labels`. Hosts register `codecs`, mode `definitions` (`icon`,
+`title`, `description`, `indicator`, `control`, `validate`), named controls (`controlRegistry`) and
+`literalControls` through `FormPlugin.valueModes`; a mode's control resolves from the field's
+`controls[mode]`, then `literalControls[fieldType]` (fixed value only), then the definition's
+`control`, then the built-in, then a plain input. Actions go through `FormPlugin.fieldActions`
+(`header`, `menu`; fields list them in `headerActions` / `menuActions`, with no defaults, and `clear` is
+registered unless replaced), built from `createInsertVariableAction`, `createAiAssistAction` and
 `createClearAction` with the configuration each needs; the form's variables through
 `FormPlugin.variables` (Insert variable falls back to them and hides itself in Variable mode; the
 Variable control's picker reads them); and
 strings for every built-in through `FormPlugin.strings` (`valueModes`, `boolean`, `insertVariable`, `aiAssist`, `clear`, `validation`).
-Keep plugin objects stable. The default codec stores every value as `{ $mode, value }` (no `value`
+Keep plugin objects stable (module constants or memoized), pass `variables` as a function when the
+list is long or changes, and keep codecs pure. The default codec stores every value as `{ $mode, value }` (no `value`
 once cleared) and reads a raw value as literal, so code that reads form values must expect the
 envelope once a field adopts modes. `convert` returns the value in the new mode and is asked about
 empty values too, so a switch can seed one; `encode` gets the previous stored value. Rules,
@@ -401,7 +435,11 @@ read as `VALUE_MODE_OPAQUE`). A registered control that takes text passes `inser
 either wires `controlRef` or renders a text input with the field's name as its id.
 The built-in Variable and Prompt controls are `VariableValueControl` (the whole control is a picker
 showing the bound reference) and `PromptValueControl` (a textarea growing from one to six lines, in
-an `InputGroup` with `variant="agent"`), both usable outside MetadataForm.
+an `InputGroup` with `variant="agent"`), both usable outside MetadataForm. A cleared value is
+`{ $mode }` with modes and `null` without, never `undefined`.
+
+Reference: `src/components/forms/README.md`, and the Storybook pages Forms/Metadata Form,
+Forms/Value modes, Forms/Field actions, Forms/Guidance Field Anatomy and Forms/Guidance Field Type.
 
 ---
 

@@ -1,7 +1,25 @@
 # Apollo-Wind Metadata Form System
 
-A powerful, enterprise-grade, metadata-driven form system built on **React Hook
-Form**, **Zod**, and **shadcn/ui** for the apollo-wind design system.
+A metadata-driven form system built on **React Hook Form**, **Zod**, and **shadcn/ui** for the
+apollo-wind design system.
+
+## Where to start
+
+- **Build a form with `MetadataForm`.** Describe the fields; it renders every field's anatomy and
+  owns the values, validation, rules, value modes and field actions. This is the fully controlled
+  path.
+- **Compose the field anatomy by hand** (`FormField`, `FormFieldHeader`, `InputGroup`, …) for a
+  single field with no form to belong to, and inside a custom control, so its label, description
+  and message match every other field. See [Field anatomy](#-field-anatomy).
+- **`QuickFormField`** is for end users configuring their own fields in a HITL Quick Form, not for
+  form authors.
+
+Storybook: **Forms/Metadata Form** (one story per capability), **Forms/Value modes**,
+**Forms/Field actions**, **Forms/Custom Controls**, **Forms/Designer**, and the guidance pages
+**Forms/Guidance Field Anatomy** and **Forms/Guidance Field Type**.
+
+All examples import from `@uipath/apollo-wind/components/forms`; the same API is exported from
+`@uipath/apollo-wind`.
 
 ## Ownership contract
 
@@ -43,8 +61,8 @@ a no-op.
 - ✅ **JSON-Serializable Validation** - ValidationConfig objects that can be
   stored in databases and transmitted via APIs
 - ✅ **shadcn/ui Integration** - Beautiful, accessible components out of the box
-- ✅ **Zero Re-renders** - Optimized field watching with targeted subscriptions
-- ✅ **Visual Form Designer** - Drag-and-drop interface for building forms
+- ✅ **Targeted watching** - Rules subscribe only to the fields they read
+- ✅ **Visual Form Designer** - Build a schema with a live preview, value modes included
 
 ### Advanced Features
 
@@ -56,23 +74,32 @@ a no-op.
 - 📊 **Multi-Step Forms** - Wizard-style forms with conditional step navigation
 - 💾 **Auto-save** - Draft management with localStorage persistence
 - 🎯 **Custom Components** - Type-safe custom field renderers
-- 🌍 **Internationalization Ready** - Schema-driven translations support
+- 🔀 **Value Modes and Field Actions** - A field's value as a fixed value, an expression, a
+  variable or a prompt, with Insert variable, AI assist and Clear
+- 🌍 **Localisable** - Every built-in string through `FormPlugin.strings`
 - ♿ **Accessibility First** - WCAG compliant with proper ARIA attributes
 
 ## 📁 Architecture
 
 ```
-src/forms/
+src/components/forms/
 ├── form-schema.ts              # Core type definitions (discriminated unions)
 ├── metadata-form.tsx           # Main form component with RHF integration
-├── field-renderer.tsx          # Field type renderers for all built-in types
+├── field-renderer.tsx          # Renders each field: plain, custom, or the field anatomy
+├── field-control.tsx           # FieldControl: the bare control for each field type
+├── mode-aware-field.tsx        # ModeAwareField: the field anatomy with value modes and actions
+├── value-modes.ts              # Codecs, mode definitions, control resolution, literalValues
+├── field-actions.tsx           # Insert variable, AI assist and Clear action factories
+├── form-strings.ts             # MetadataFormStrings and the English defaults
+├── string-list-field.tsx       # The string-list field type
 ├── rules-engine.ts             # Conditional logic engine with jsep
 ├── data-fetcher.ts             # Data source handling with caching
 ├── validation-converter.ts     # Converts ValidationConfig to Zod at runtime
 ├── schema-serializer.ts        # Serializes FormSchema to JSON for storage/API
-├── form-plugins.tsx            # Plugin examples (analytics, auto-save, etc.)
+├── form-plugins.ts             # Built-in plugins (analytics, auto-save, etc.)
 ├── form-designer.tsx           # Visual form builder with live preview
-├── form-examples.tsx           # Real-world schema examples
+├── form-state-viewer.tsx       # Debug view of a react-hook-form instance
+├── schema-viewer.tsx           # Dialog showing a schema as JSON
 └── index.ts                    # Public API exports
 ```
 
@@ -123,10 +150,15 @@ classDiagram
         +FieldType type
         +string label
         +string? description
+        +string? tooltip
         +ValidationConfig? validation
         +FieldRule[]? rules
         +DataSource? dataSource
         +GridConfig? grid
+        +ValueModesConfig? valueModes
+        +string[]? headerActions
+        +string[]? menuActions
+        +string? badge
     }
 
     class ValidationConfig {
@@ -217,6 +249,10 @@ classDiagram
         +boolean isSubmitting
         +boolean isDirty
         +number? currentStep
+        +ValueModeRegistry? valueModes
+        +FieldActionRegistry? fieldActions
+        +MetadataFormStrings? strings
+        +FormVariables? variables
         +evaluateConditions()
         +fetchData()
         +registerCustomComponent()
@@ -225,12 +261,15 @@ classDiagram
     class FormPlugin {
         <<interface>>
         +string name
-        +string version
+        +string? version
         +onFormInit()
         +onValueChange()
         +onSubmit()
-        +Record validators?
-        +Record components?
+        +CustomComponents? components
+        +ValueModesPluginConfig? valueModes
+        +FieldActionsPluginConfig? fieldActions
+        +MetadataFormStringOverrides? strings
+        +FormVariables? variables
     }
 
     class RulesEngine {
@@ -273,8 +312,8 @@ classDiagram
 ### 1. Basic Form
 
 ```tsx
-import { MetadataForm } from "@uipath/apollo-wind/forms";
-import type { FormSchema } from "@uipath/apollo-wind/forms";
+import { MetadataForm } from "@uipath/apollo-wind/components/forms";
+import type { FormSchema } from "@uipath/apollo-wind/components/forms";
 
 const schema: FormSchema = {
   id: "contact-form",
@@ -373,7 +412,7 @@ const onboardingSchema = {
 ### 3. With Plugins
 
 ```tsx
-import { analyticsPlugin, autoSavePlugin } from "@uipath/apollo-wind/forms";
+import { analyticsPlugin, autoSavePlugin, MetadataForm } from "@uipath/apollo-wind/components/forms";
 
 <MetadataForm
   schema={schema}
@@ -385,7 +424,7 @@ import { analyticsPlugin, autoSavePlugin } from "@uipath/apollo-wind/forms";
 ### 4. Visual Form Designer
 
 ```tsx
-import { FormDesigner } from "@uipath/apollo-wind/forms";
+import { FormDesigner } from "@uipath/apollo-wind/components/forms";
 
 function FormBuilderPage() {
   // FormDesigner is a self-contained visual editor
@@ -635,24 +674,268 @@ sequenceDiagram
 
 ## 🎨 Field Types
 
-The system supports 15+ built-in field types with full TypeScript support:
+The system has 16 built-in field types:
 
-| Type          | Description                 | Props                         |
-| ------------- | --------------------------- | ----------------------------- |
-| `text`        | Single-line text input      | `placeholder`                 |
-| `email`       | Email input with validation | `placeholder`                 |
-| `textarea`    | Multi-line text input       | `rows`, `placeholder`         |
-| `number`      | Number input with min/max   | `min`, `max`, `step`          |
-| `select`      | Single-select dropdown      | `options`, `dataSource`       |
-| `multiselect` | Multi-select with search    | `options`, `maxSelected`      |
-| `radio`       | Radio button group          | `options`                     |
-| `checkbox`    | Single checkbox             | -                             |
-| `switch`      | Toggle switch               | -                             |
-| `slider`      | Range slider                | `min`, `max`, `step`          |
-| `date`        | Date picker                 | `placeholder`                 |
-| `datetime`    | Date and time picker        | `use12Hour`                   |
-| `file`        | File upload                 | `accept`, `multiple`          |
-| `custom`      | Custom component            | `component`, `componentProps` |
+| Type          | Description                                  | Props                                                          |
+| ------------- | -------------------------------------------- | -------------------------------------------------------------- |
+| `text`        | Single-line text input                       | `placeholder`                                                  |
+| `email`       | Email input with validation                  | `placeholder`                                                  |
+| `textarea`    | Multi-line text input                        | `rows`, `minRows`, `maxLength`, `placeholder`                  |
+| `number`      | Number input with min/max                    | `min`, `max`, `step`                                           |
+| `select`      | Single-select dropdown                       | `options`, `dataSource`                                        |
+| `multiselect` | Multi-select with search                     | `options`, `maxSelected`, `emptyMessage`, `searchPlaceholder`  |
+| `radio`       | Radio button group                           | `options`                                                      |
+| `checkbox`    | Single checkbox                              | -                                                              |
+| `switch`      | Toggle switch                                | -                                                              |
+| `boolean`     | True / False radios with an unset state      | - (value `boolean \| null`)                                    |
+| `slider`      | Range slider                                 | `min`, `max`, `step`, `maxRef`                                 |
+| `date`        | Date picker                                  | `placeholder`                                                  |
+| `datetime`    | Date and time picker                         | `use12Hour`                                                    |
+| `file`        | File upload                                  | `accept`, `multiple`, `maxSize`, `showPreview`                 |
+| `string-list` | Rows of text with Add and Remove             | `maxItems`, `maxLength`, `minRows`, `addItemLabel`, `removeItemAriaLabel` |
+| `custom`      | A component the host registers               | `component`, `componentProps`, `valueType`                     |
+
+Every field also takes `label`, `description`, `placeholder`, `tooltip`, `tooltipAriaLabel`,
+`ariaLabel`, `defaultValue`, `validation`, `rules`, `dataSource` and `grid`, and the field anatomy's
+`valueModes`, `headerActions`, `menuActions` and `badge`.
+
+## 🧩 Field anatomy
+
+Every field is built from the same parts. `MetadataForm` assembles them from the field's metadata;
+for a field with `valueModes`, `headerActions`, `menuActions` or `badge` it renders them through
+`ModeAwareField`, and any other field renders the label, the control, and the description or
+message.
+
+| Part        | Component                                                                  | From the metadata                                     |
+| ----------- | -------------------------------------------------------------------------- | ----------------------------------------------------- |
+| Field       | `FormField`                                                                | -                                                     |
+| Header      | `FormFieldHeader` (label, required marker, tooltip, badge, actions)        | `label`, `validation.required`, `tooltip`, `badge`, `headerActions` |
+| Box         | `InputGroup` (`layout`, `variant`)                                         | the control's registration, or `FIELD_CONTROL_GEOMETRY` |
+| Mode glyph  | `ValueModeIndicator` in an `InputGroupAddon`                               | the active mode                                       |
+| Control     | `FieldControl`, `VariableValueControl`, `PromptValueControl`, or a registered control | `type`, the active mode, `valueModes.controls` |
+| Menu        | `FieldMenu` in a trailing `InputGroupAddon`                                | `valueModes.modes`, then `menuActions`                |
+| Description | `FormFieldDescription`                                                     | `description`                                         |
+| Message     | `FormFieldError`, or the `error` prop of a control with a message slot     | `validation`                                          |
+
+For a field outside any form, and inside a custom control, compose the same parts (see
+[Custom Components](#-custom-components) for a registered control):
+
+```tsx
+import {
+  FieldMenu,
+  FormField,
+  FormFieldDescription,
+  FormFieldHeader,
+  Input,
+  InputGroup,
+  InputGroupAddon,
+  InsertVariableAction,
+  type ValueMode,
+  ValueModeIndicator,
+} from "@uipath/apollo-wind/components/ui";
+import { X } from "lucide-react";
+import { useState } from "react";
+
+function OrderIdField() {
+  const [mode, setMode] = useState<ValueMode>("literal");
+  const [value, setValue] = useState("");
+  return (
+    <FormField>
+      <FormFieldHeader
+        label="Order id"
+        htmlFor="order-id"
+        actions={
+          <InsertVariableAction
+            variables={[{ id: "orderId", label: "orderId", value: "$vars.orderId" }]}
+            onInsert={(reference) => {
+              setMode("expression");
+              setValue(reference);
+            }}
+          />
+        }
+      />
+      <InputGroup error={value ? undefined : "Enter an order id."}>
+        <InputGroupAddon>
+          <ValueModeIndicator mode={mode} className="px-0" />
+        </InputGroupAddon>
+        <Input id="order-id" value={value} onChange={(e) => setValue(e.target.value)} />
+        <InputGroupAddon align="inline-end">
+          <FieldMenu
+            mode={mode}
+            onSelect={setMode}
+            modes={["literal", "expression"]}
+            actions={[{ id: "clear", label: "Clear value", icon: X, onSelect: () => setValue("") }]}
+          />
+        </InputGroupAddon>
+      </InputGroup>
+      <FormFieldDescription>The order to look up.</FormFieldDescription>
+    </FormField>
+  );
+}
+```
+
+You then own what `MetadataForm` did: the value and its mode, validation, and what each action
+writes. Rules for any field, in a form or not:
+
+- Compose a custom field or control from whichever of these parts apply. Never hand-roll label,
+  description or message markup, or wrap fields in a local shell.
+- Field messages use `FormFieldError` (the `error` token), never `text-destructive`.
+- Actions go in the header, never inside the box.
+- Localise with each component's `strings` prop, or `FormPlugin.strings` in a form. There is no
+  provider.
+
+The Storybook page **Forms/Guidance Field Anatomy** shows both paths side by side.
+
+## 🔀 Value modes and field actions
+
+A field opts in through its metadata; behaviour comes from plugins.
+
+```tsx
+import {
+  createAiAssistAction,
+  createInsertVariableAction,
+  type FormPlugin,
+  type FormSchema,
+  MetadataForm,
+} from "@uipath/apollo-wind/components/forms";
+
+const schema: FormSchema = {
+  id: "send-email",
+  title: "Send email",
+  sections: [
+    {
+      id: "main",
+      fields: [
+        {
+          name: "subject",
+          type: "text",
+          label: "Subject",
+          valueModes: { modes: ["literal", "expression", "variable", "prompt"] },
+          headerActions: ["insert-variable", "ai-assist"],
+          menuActions: ["clear"],
+        },
+      ],
+    },
+  ],
+};
+
+// Declared once: MetadataForm rebuilds its registries when a plugin object changes.
+const plugins: FormPlugin[] = [
+  {
+    name: "host",
+    // A list, or a function called each time a picker opens.
+    variables: [{ id: "orderId", label: "orderId", value: "$vars.orderId" }],
+    fieldActions: {
+      header: {
+        "insert-variable": createInsertVariableAction({}),
+        "ai-assist": createAiAssistAction({
+          generate: async ({ prompt }) => ({ value: await suggestSubject(prompt) }),
+        }),
+      },
+    },
+  },
+];
+
+declare function suggestSubject(prompt: string): Promise<string>;
+
+export function SendEmailForm() {
+  return <MetadataForm schema={schema} plugins={plugins} onSubmit={console.log} />;
+}
+```
+
+### `valueModes`
+
+| Key           | Meaning                                                                                  |
+| ------------- | ---------------------------------------------------------------------------------------- |
+| `modes`       | The modes offered, in menu order. Built in: `literal` (Fixed value), `expression`, `variable`, `prompt`; plugins add more. |
+| `defaultMode` | The mode of an empty value. Defaults to the first mode.                                  |
+| `switchable`  | Whether the menu offers the modes. Defaults to more than one mode.                       |
+| `expectedType`| The value's type as the modes describe it, such as `object`. Defaults to the field type's own. |
+| `indicator`   | Whether a glyph ahead of the value marks a mode other than `literal`. Defaults to true.  |
+| `controls`    | This field's control per mode, by name in `FormPlugin.valueModes.controlRegistry`.      |
+| `codec`       | A codec registered in `FormPlugin.valueModes.codecs`. Defaults to `default`.             |
+| `labels`      | Per-field overrides of a mode's title and description.                                   |
+
+Every mode is opt-in per field. The built-in controls: the field type's own control for
+`literal`, a plain input for `expression`, `VariableValueControl` (the whole box picks a variable)
+for `variable`, and `PromptValueControl` (a textarea in the agent-tinted box) for `prompt`.
+
+### Stored values
+
+With the default codec (`envelopeCodec`) every write is an envelope, fixed values included:
+
+```ts
+{ $mode: "literal", value: "Hello" }
+{ $mode: "expression", value: "$vars.firstName + ' ' + $vars.lastName" }
+{ $mode: "variable", value: "$vars.orderId" }
+{ $mode: "prompt" } // cleared: the envelope keeps its mode
+```
+
+A cleared value is never `undefined`: a field with modes keeps `{ $mode }`, and a plain field
+clears to `null`. A raw value is read as a fixed value, so existing data loads, and the first
+write wraps it. Whatever reads the form's values (submit handlers, plugins, saved drafts) must
+expect the envelope once a field adopts value modes; that migration is the host's to make. A codec
+registered as `default` in `FormPlugin.valueModes.codecs` replaces the envelope form-wide.
+
+**Rules, section conditions and data-source params read a field's fixed value only.** In any
+other mode the field reads as `VALUE_MODE_OPAQUE`: set, but equal to nothing, so it matches no
+condition. `literalValues(values, schema, codecs?)` gives the same view to host code.
+
+### Plugin `valueModes`
+
+```ts
+interface ValueModesPluginConfig {
+  codecs?: Record<string, ValueModeCodec>; // `default` replaces the envelope codec
+  definitions?: Partial<Record<ValueModeId, ValueModeDefinition>>; // host modes, or changes to built-ins
+  controlRegistry?: Record<string, ValueModeControlRegistration>; // controls a field names
+  literalControls?: Partial<Record<FieldType, ValueModeControlRegistration>>; // fixed-value control per type
+}
+
+interface ValueModeDefinition {
+  icon?: LucideIcon;
+  title?: string | ((ctx: { field: FieldMetadata }) => string);
+  description?: string;
+  indicator?: ReactNode;
+  control?: ValueModeControlRegistration;
+  validate?: (value: unknown, ctx: CodecContext) => string | undefined; // sync
+}
+```
+
+The control for a mode resolves in order: the field's `valueModes.controls[mode]`, then
+`literalControls[fieldType]` (fixed value only), then `definitions[mode].control`, then the built-in
+control, then a plain input. A registration (`{ component, layout?, variant?, labelTarget?,
+insertable? }`) also places the control in the box.
+
+Validation: a fixed value is checked by its field type's `validation`; any other mode by
+`required` and the mode's `validate`.
+
+### Field actions
+
+`headerActions` and `menuActions` name actions registered in `FormPlugin.fieldActions`
+(`{ header, menu }`), in render order. Fields list what they offer; there are no defaults.
+
+| Factory                                       | Action                                                                                         |
+| --------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `createInsertVariableAction({ variables?, formatReference?, strings?, id? })` | Inserts a variable. An `insertable` control takes it at the caret; otherwise the field switches to `expression`, then `variable`, asking before it replaces a value. Hidden in Variable mode. |
+| `createAiAssistAction({ generate, hint?, placeholder?, strings?, id? })` | Asks for a prompt and writes `generate`'s result in the field's mode, or the `mode` it returns. Skips the write if the field became disabled; closing the prompt does not cancel the request. |
+| `createClearAction({ strings?, id? })`         | Clears the value, keeping the mode. Registered as `clear` by default.                         |
+
+Register an action under the same id to replace a built-in.
+
+### Variables and strings
+
+- `FormPlugin.variables` feeds both Insert variable and the `variable` mode: a list, or a function
+  called each time a picker opens (never during render). The last plugin that gives them wins.
+- `FormPlugin.strings` overrides any built-in string by group (`valueModes`, `boolean`,
+  `insertVariable`, `aiAssist`, `clear`, `validation`); later plugins win per string. The English
+  defaults are `DEFAULT_METADATA_FORM_STRINGS`.
+
+### Render stability
+
+- Keep plugin objects stable: a module constant, or memoized. A new plugin object rebuilds the
+  registries and re-renders every field; a new array of the same plugins is fine.
+- Pass `variables` as a function when the list is long or changes.
+- Keep codecs pure: no live values captured in a codec.
 
 ## 📊 Data Sources
 
@@ -693,7 +976,7 @@ The system supports 15+ built-in field types with full TypeScript support:
 ### Dependent Data (Cascading Dropdowns)
 
 ```typescript
-import { DataSourceBuilder } from '@uipath/apollo-wind/forms';
+import { DataSourceBuilder } from '@uipath/apollo-wind/components/forms';
 
 // Parent field
 {
@@ -736,7 +1019,7 @@ import { DataSourceBuilder } from '@uipath/apollo-wind/forms';
 ### Data Source Builders
 
 ```typescript
-import { DataSourceBuilder } from "@uipath/apollo-wind/forms";
+import { DataSourceBuilder } from "@uipath/apollo-wind/components/forms";
 
 // Static
 const countries = DataSourceBuilder.static([{ label: "US", value: "US" }]);
@@ -763,7 +1046,7 @@ const total = DataSourceBuilder.computed(
 ### Basic Show/Hide Rules
 
 ```typescript
-import { RuleBuilder } from '@uipath/apollo-wind/forms';
+import { RuleBuilder } from '@uipath/apollo-wind/components/forms';
 
 {
   name: 'ssn',
@@ -806,7 +1089,7 @@ new RuleBuilder("senior-requirements")
 ### Complex Expressions with jsep
 
 ```typescript
-import { ExpressionBuilder } from "@uipath/apollo-wind/forms";
+import { ExpressionBuilder } from "@uipath/apollo-wind/components/forms";
 
 // Using ExpressionBuilder
 new RuleBuilder("discount-eligible")
@@ -871,11 +1154,7 @@ ExpressionBuilder.sum(["field1", "field2"]); // (field1 || 0) + (field2 || 0)
 ### Creating a Plugin
 
 ```typescript
-import type {
-  FormContext,
-  FormPlugin,
-  ValidationConfig,
-} from "@uipath/apollo-wind/forms";
+import type { FormContext, FormPlugin } from "@uipath/apollo-wind/components/forms";
 
 export const myPlugin: FormPlugin = {
   name: "my-plugin",
@@ -896,14 +1175,6 @@ export const myPlugin: FormPlugin = {
     return data;
   },
 
-  // Custom validators (JSON-serializable ValidationConfig)
-  validators: {
-    ssn: {
-      pattern: "^\\d{3}-\\d{2}-\\d{4}$",
-      messages: { pattern: "Invalid SSN format" },
-    } as ValidationConfig,
-  },
-
   // Custom components
   components: {
     "my-field": MyCustomFieldComponent,
@@ -911,132 +1182,119 @@ export const myPlugin: FormPlugin = {
 };
 ```
 
+`FormPlugin` also types `onFieldRegister`, `validators`, `customConditions` and `customEffects`,
+but `MetadataForm` does not call them yet, and rules do not apply the `options` and `validate`
+effects `FieldRule` types. Put a rule a plugin owns in `onValueChange` with
+`context.form.setError` / `clearErrors`, as in the [ownership contract](#ownership-contract).
+
 ### Built-in Plugins
 
-#### Analytics Plugin
+| Plugin             | What it does                                                        |
+| ------------------ | ------------------------------------------------------------------- |
+| `analyticsPlugin`  | Tracks form views, field interactions and submissions               |
+| `autoSavePlugin`   | Saves the form's values to localStorage, debounced                  |
+| `workflowPlugin`   | Integrates with automation platforms such as UiPath Orchestrator    |
+| `auditPlugin`      | Keeps field-level history for compliance and auditing               |
+| `validationPlugin` | Common validators: phone, credit card, URL, postal code (through `validators`, not applied yet) |
+| `formattingPlugin` | Custom conditions for business hours and weekends (through `customConditions`, not applied yet) |
 
-Tracks form views, field interactions, and submissions.
-
-```typescript
-import { analyticsPlugin } from "@uipath/apollo-wind/forms";
-
-<MetadataForm plugins={[analyticsPlugin]} />;
-```
-
-#### Auto-save Plugin
-
-Automatically saves form state to localStorage with debouncing.
-
-```typescript
-import { autoSavePlugin } from "@uipath/apollo-wind/forms";
-
-<MetadataForm plugins={[autoSavePlugin]} />;
-```
-
-#### Workflow Plugin
-
-Integrates with automation platforms like UiPath Orchestrator.
-
-```typescript
-import { workflowPlugin } from "@uipath/apollo-wind/forms";
-
-<MetadataForm plugins={[workflowPlugin]} />;
-```
-
-#### Audit Plugin
-
-Maintains field-level history for compliance and auditing.
-
-```typescript
-import { auditPlugin } from "@uipath/apollo-wind/forms";
-
-<MetadataForm plugins={[auditPlugin]} />;
-```
-
-#### Validation Plugin
-
-Provides common validators (phone, credit card, URL, postal code).
-
-```typescript
-import { validationPlugin } from "@uipath/apollo-wind/forms";
-
-<MetadataForm plugins={[validationPlugin]} />;
-```
-
-#### Formatting Plugin
-
-Adds custom conditions for business hours and weekend detection.
-
-```typescript
-import { formattingPlugin } from "@uipath/apollo-wind/forms";
-
-<MetadataForm plugins={[formattingPlugin]} />;
-```
+Pass them like any plugin, as in [With Plugins](#3-with-plugins).
 
 ## 🎨 Custom Components
 
 ### Register Custom Field Component
 
-```typescript
-import type { CustomFieldComponentProps } from "@uipath/apollo-wind/forms";
+Register the component in a plugin's `components`, then name it in a `custom` field. Declare
+`valueType` so `required` and the other constraints apply; without it the field validates as
+`z.any()`.
 
-// Define your custom component
-function RichTextEditor({
+```tsx
+import type {
+  CustomFieldComponentProps,
+  FormPlugin,
+  FormSchema,
+} from "@uipath/apollo-wind/components/forms";
+import { MetadataForm } from "@uipath/apollo-wind/components/forms";
+import {
+  FormField,
+  FormFieldDescription,
+  FormFieldError,
+  FormFieldLabel,
+  Textarea,
+} from "@uipath/apollo-wind/components/ui";
+
+// Without value modes or field actions, a custom component renders the whole field,
+// composed from the field anatomy parts.
+function NotesField({
+  name,
   value,
   onChange,
   onBlur,
   disabled,
+  required,
   error,
   field,
 }: CustomFieldComponentProps) {
+  const errorId = `${name}-error`;
   return (
-    <div>
-      <Label>{field?.label}</Label>
-      <TipTapEditor
-        content={value as string}
-        onUpdate={onChange}
+    <FormField>
+      <FormFieldLabel htmlFor={name} required={required}>
+        {field?.label}
+      </FormFieldLabel>
+      <Textarea
+        id={name}
+        value={typeof value === "string" ? value : ""}
+        onChange={(e) => onChange(e.target.value)}
         onBlur={onBlur}
-        editable={!disabled}
+        disabled={disabled}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? errorId : undefined}
       />
-      {error && <FormError>{error}</FormError>}
-    </div>
+      <FormFieldDescription>{field?.description}</FormFieldDescription>
+      <FormFieldError id={errorId}>{error}</FormFieldError>
+    </FormField>
   );
 }
 
-// Use in schema
-const schema = {
-  sections: [{
-    fields: [{
-      name: "content",
-      type: "custom",
-      label: "Content",
-      component: "rich-text-editor",
-      componentProps: {
-        placeholder: "Start writing...",
-        showToolbar: true,
-      },
-    }],
-  }],
+const schema: FormSchema = {
+  id: "notes",
+  title: "Notes",
+  sections: [
+    {
+      id: "main",
+      fields: [
+        {
+          name: "notes",
+          type: "custom",
+          component: "notes",
+          label: "Notes",
+          valueType: "string",
+          validation: { required: true },
+        },
+      ],
+    },
+  ],
 };
 
-// Register the component
-function MyForm() {
-  return (
-    <MetadataForm
-      schema={schema}
-      customComponents={{
-        "rich-text-editor": RichTextEditor,
-      }}
-    />
-  );
+// Declared once, so MetadataForm keeps its registries.
+const plugins: FormPlugin[] = [{ name: "host", components: { notes: NotesField } }];
+
+export function NotesForm() {
+  return <MetadataForm schema={schema} plugins={plugins} />;
 }
 ```
+
+With `valueModes`, `headerActions`, `menuActions` or `badge`, `MetadataForm` renders the anatomy
+around the component, which is then only the control. Register it with its place in the box:
+`components: { notes: { component: NotesControl, layout: "grow", insertable: true } }`. It also
+receives `controlRef`, the handle Insert variable writes through, and `labelId`, for a control
+registered with `labelTarget: "labelledby"` that names itself.
 
 ### CustomFieldComponentProps Interface
 
 ```typescript
 interface CustomFieldComponentProps {
-  value: unknown;
+  value: unknown; // in the field anatomy: the fixed value, decoded
   onChange: (value: unknown) => void;
   onBlur: () => void;
   name: string;
@@ -1044,6 +1302,8 @@ interface CustomFieldComponentProps {
   disabled?: boolean;
   required?: boolean;
   error?: string;
+  controlRef?: React.Ref<ValueModeControlHandle>; // in the field anatomy
+  labelId?: string; // in the field anatomy
   [key: string]: unknown; // Additional props from componentProps
 }
 ```
@@ -1107,7 +1367,7 @@ type FieldMetadata =
   | { type: 'number'; min?: number; max?: number; step?: number }
   | { type: 'select'; options?: FieldOption[]; dataSource?: DataSource }
   | { type: 'custom'; component: string; componentProps?: Record<string, unknown> }
-  | ... // 15+ field types
+  | ... // 16 field types
 
 // TypeScript enforces valid properties for each type
 const field: FieldMetadata = {
@@ -1125,7 +1385,7 @@ import {
   hasMinMaxStep,
   hasOptions,
   isCustomField,
-} from "@uipath/apollo-wind/forms";
+} from "@uipath/apollo-wind/components/forms";
 
 if (hasOptions(field)) {
   // TypeScript knows field is SelectField | MultiSelectField | RadioField
@@ -1156,6 +1416,11 @@ interface FormContext<T extends FieldValues = FieldValues> {
     name: string,
     component: React.ComponentType<CustomFieldComponentProps>,
   ) => void;
+
+  valueModes?: ValueModeRegistry; // codecs, definitions and controls from every plugin
+  fieldActions?: FieldActionRegistry; // actions from every plugin
+  strings?: MetadataFormStrings; // every plugin's strings over the English defaults
+  variables?: FormVariables; // the last plugin's variables
 }
 ```
 
@@ -1206,7 +1471,10 @@ interface ValidationConfig {
 ### Serializing Schemas
 
 ```typescript
-import { schemaToJson, serializeSchema } from "@uipath/apollo-wind/forms";
+import {
+  schemaToJson,
+  serializeSchema,
+} from "@uipath/apollo-wind/components/forms/schema-serializer";
 
 // Convert schema to JSON-safe object
 const jsonObject = serializeSchema(myFormSchema);
@@ -1231,10 +1499,11 @@ const schema: FormSchema = await response.json();
 
 ### Runtime Validation Conversion
 
-The `validationConfigToZod` function converts JSON configs to Zod at runtime:
+`MetadataForm` converts each field's `ValidationConfig` to Zod at runtime, with
+`validationConfigToZod`:
 
 ```typescript
-import { validationConfigToZod } from "@uipath/apollo-wind/forms";
+import { validationConfigToZod } from "@uipath/apollo-wind/components/forms/validation-converter";
 
 // Internal: MetadataForm does this automatically
 const zodSchema = validationConfigToZod(
@@ -1245,6 +1514,11 @@ const zodSchema = validationConfigToZod(
 ```
 
 ## 🔒 Security Considerations
+
+### Validation Is Client-Side
+
+`validation`, rules and value-mode `validate` help people fix a value before they submit it. They
+run in the browser, so they are not a control: validate submitted values on the server as well.
 
 ### Expression Evaluation
 
@@ -1257,7 +1531,7 @@ custom: 'age > 18 && status === "active"';
 
 // ⚠️ Production best practices:
 // 1. Validate expressions on the backend
-// 2. Whitelist allowed expressions
+// 2. Keep an allow list of expressions
 // 3. Sanitize user input
 // 4. Set expression complexity limits
 ```
@@ -1318,7 +1592,7 @@ The system only watches fields that are actually used in rules:
 Remote data is cached with a 5-minute TTL:
 
 ```typescript
-import { DataFetcher } from "@uipath/apollo-wind/forms";
+import { DataFetcher } from "@uipath/apollo-wind/components/forms";
 
 // Configure cache TTL
 DataFetcher.setCacheTTL(10 * 60 * 1000); // 10 minutes
@@ -1349,139 +1623,63 @@ Configurable validation modes:
 
 ### Unit Testing
 
-```typescript
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MetadataForm } from '@uipath/apollo-wind/forms';
+```tsx
+import "@testing-library/jest-dom/vitest";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, it, vi } from "vitest";
+import { type FormSchema, MetadataForm, RuleBuilder } from "@uipath/apollo-wind/components/forms";
 
-describe('MetadataForm', () => {
-  it('renders form from schema', () => {
-    const schema = {
-      id: 'test',
-      sections: [{
-        id: 's1',
-        fields: [
-          { name: 'name', type: 'text', label: 'Name' }
-        ]
-      }]
-    };
+const schema: FormSchema = {
+  id: "test",
+  title: "Test",
+  sections: [
+    {
+      id: "s1",
+      fields: [
+        { name: "name", type: "text", label: "Name" },
+        { name: "international", type: "switch", label: "International" },
+        {
+          name: "passport",
+          type: "text",
+          label: "Passport",
+          rules: [new RuleBuilder("show-passport").when("international").is(true).show().build()],
+        },
+      ],
+    },
+  ],
+};
 
-    render(<MetadataForm schema={schema} onSubmit={jest.fn()} />);
-    expect(screen.getByLabelText('Name')).toBeInTheDocument();
-  });
-
-  it('handles form submission', async () => {
-    const onSubmit = jest.fn();
-    const schema = { /* ... */ };
-
+describe("MetadataForm", () => {
+  it("submits the values", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
     render(<MetadataForm schema={schema} onSubmit={onSubmit} />);
 
-    fireEvent.change(screen.getByLabelText('Name'), {
-      target: { value: 'John Doe' }
-    });
+    await user.type(screen.getByLabelText("Name"), "Ada");
+    await user.click(screen.getByRole("button", { name: "Submit" }));
 
-    fireEvent.click(screen.getByText('Submit'));
-
-    await waitFor(() => {
-      expect(onSubmit).toHaveBeenCalledWith({ name: 'John Doe' });
-    });
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ name: "Ada" })));
   });
 
-  it('applies conditional rules', async () => {
-    const schema = {
-      sections: [{
-        fields: [
-          { name: 'country', type: 'select', options: [...] },
-          {
-            name: 'ssn',
-            type: 'text',
-            rules: [
-              new RuleBuilder('show-ssn')
-                .when('country').is('US')
-                .show()
-                .build()
-            ]
-          }
-        ]
-      }]
-    };
+  it("applies conditional rules", async () => {
+    const user = userEvent.setup();
+    render(<MetadataForm schema={schema} />);
+    expect(screen.queryByLabelText("Passport")).not.toBeInTheDocument();
 
-    render(<MetadataForm schema={schema} onSubmit={jest.fn()} />);
+    await user.click(screen.getByRole("switch", { name: "International" }));
 
-    // SSN field should be hidden initially
-    expect(screen.queryByLabelText('SSN')).not.toBeInTheDocument();
-
-    // Select US
-    fireEvent.change(screen.getByLabelText('Country'), {
-      target: { value: 'US' }
-    });
-
-    // SSN field should now be visible
-    await waitFor(() => {
-      expect(screen.getByLabelText('SSN')).toBeInTheDocument();
-    });
+    expect(await screen.findByLabelText("Passport")).toBeInTheDocument();
   });
 });
 ```
 
-## 🎯 Real-World Examples
+## 🎯 Examples
 
-### UiPath Automation Job Configuration
-
-```typescript
-import { automationJobSchema } from "@uipath/apollo-wind/forms";
-
-function AutomationJobPage() {
-  const handleSubmit = async (data: unknown) => {
-    const jobData = data as Record<string, unknown>;
-
-    // Start automation job
-    const response = await fetch("/api/orchestrator/jobs/start", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(jobData),
-    });
-
-    const result = await response.json();
-    console.log("Job started:", result.jobId);
-  };
-
-  return <MetadataForm schema={automationJobSchema} onSubmit={handleSubmit} />;
-}
-```
-
-### Dynamic Survey with Conditional Logic
-
-```typescript
-import { dynamicSurveySchema } from "@uipath/apollo-wind/forms";
-
-<MetadataForm
-  schema={dynamicSurveySchema}
-  plugins={[analyticsPlugin]}
-  onSubmit={async (data) => {
-    await fetch("/api/surveys/submit", {
-      method: "POST",
-      body: JSON.stringify(data),
-    });
-  }}
-/>;
-```
-
-### Multi-Step Onboarding
-
-```typescript
-import { onboardingSchema } from "@uipath/apollo-wind/forms";
-
-<MetadataForm
-  schema={onboardingSchema}
-  plugins={[autoSavePlugin]}
-  onSubmit={async (data) => {
-    await fetch("/api/users/onboarding", {
-      method: "POST",
-      body: JSON.stringify(data),
-    });
-  }}
-/>;
-```
+Every capability has a live story under **Forms/Metadata Form** in Storybook: basic form, compact
+layout, sections and tabs, multi-step wizard, field rules, section conditions, remote data
+sources, slider max from another field, file upload, string list and plugins. Each story's
+**View Schema** button shows its schema.
 
 ## 📚 API Reference
 
@@ -1490,9 +1688,16 @@ import { onboardingSchema } from "@uipath/apollo-wind/forms";
 ```typescript
 interface MetadataFormProps {
   schema: FormSchema; // Form schema definition
-  plugins?: FormPlugin[]; // Optional plugins
+  plugins?: FormPlugin[]; // Keep each plugin object stable (a module constant or memoized)
   onSubmit?: (data: unknown) => void | Promise<void>;
   className?: string; // CSS class for form wrapper
+  disabled?: boolean; // Disables every field
+  autoComplete?: "off" | "on"; // Browser autocomplete; browser default when omitted
+  stepVariant?: "wizard" | "tabs"; // Multi-step presentation (default "wizard")
+  sectionVariant?: "card" | "plain"; // Section treatment (default "card")
+  activeStepId?: string; // Controlled active tab for stepVariant="tabs"
+  onActiveStepChange?: (stepId: string) => void; // Fires when a tab is selected
+  container?: "form" | "div"; // "div" for hosts that own submission
 }
 ```
 
@@ -1506,7 +1711,7 @@ own internal state. It provides:
 - **Right panel**: Live preview and schema export
 
 ```tsx
-import { FormDesigner } from "@uipath/apollo-wind/forms";
+import { FormDesigner } from "@uipath/apollo-wind/components/forms";
 
 function FormBuilderPage() {
   return <FormDesigner />;
@@ -1514,7 +1719,9 @@ function FormBuilderPage() {
 ```
 
 The designer exports the generated schema via the "Schema" tab in the right
-panel, which can be copied and used with `MetadataForm`.
+panel, which can be copied and used with `MetadataForm`. Its field settings
+include value modes, header and menu actions, and a badge; the preview supplies
+variables and the Insert variable and AI assist actions.
 
 ### FormStateViewer Props
 
@@ -1540,23 +1747,30 @@ interface SinglePageFormSchema {
   id: string;
   title: string;
   description?: string;
+  version?: string;
   sections: FormSection[];
   layout?: LayoutConfig;
   actions?: FormAction[];
   initialData?: Record<string, unknown>;
   mode?: "onChange" | "onBlur" | "onSubmit" | "all";
   reValidateMode?: "onChange" | "onBlur" | "onSubmit";
+  metadata?: Record<string, unknown>;
 }
 
 interface MultiStepFormSchema {
+  // ...the same fields, with steps in place of sections
+  steps: FormStep[];
+}
+
+interface FormStep {
   id: string;
   title: string;
   description?: string;
-  steps: FormStep[];
-  layout?: LayoutConfig;
-  actions?: FormAction[];
-  initialData?: Record<string, unknown>;
-  mode?: "onChange" | "onBlur" | "onSubmit" | "all";
+  sections: FormSection[];
+  validation?: "onChange" | "onBlur" | "onSubmit";
+  canSkip?: boolean;
+  conditions?: FieldCondition[]; // Show or hide the whole step
+  emptyState?: string; // Tabs variant: message for a step with no visible sections
 }
 ```
 
@@ -1564,7 +1778,8 @@ interface MultiStepFormSchema {
 
 This is a reference implementation for apollo-wind. To extend:
 
-1. Add new field types in `field-renderer.tsx`
+1. Add new field types in `form-schema.ts`, `field-control.tsx` (with a `FIELD_CONTROL_GEOMETRY`
+   entry) and `validation-converter.ts`
 2. Create custom plugins in `form-plugins.tsx`
 3. Add data transformers in `data-fetcher.ts`
 4. Extend rules engine in `rules-engine.ts`
