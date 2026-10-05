@@ -2288,9 +2288,11 @@
       "type": "registry:ui",
       "title": "Side Panel",
       "description": "A docked panel surface for the start or end edge of a template.",
-      "dependencies": ["react-i18next"],
+      "dependencies": ["lucide-react", "react-i18next"],
       "registryDependencies": [
+        "@uipath/button",
         "@uipath/composition",
+        "@uipath/dropdown-menu",
         "@uipath/tabs",
         "@uipath/use-scroll-fade"
       ],
@@ -2323,6 +2325,10 @@
         },
         {
           "path": "registry/side-panel/side-panel-tabs.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/side-panel/side-panel-tab-bar.tsx",
           "type": "registry:ui"
         }
       ]

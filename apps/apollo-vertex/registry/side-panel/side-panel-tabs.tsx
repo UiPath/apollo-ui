@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useTranslation } from "react-i18next";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useScrollFade } from "@/hooks/use-scroll-fade";
 import {
   type OccupantSpec,
@@ -18,6 +18,7 @@ import { SurfaceProvider, useSurfaceFrame } from "@/lib/surface-context";
 import { cn } from "@/lib/utils";
 import { sidePanelSurface } from "./side-panel.surface";
 import { BODY_FOCUS_RING, sidePanelBodyVariants } from "./side-panel-body";
+import { SidePanelTabBar } from "./side-panel-tab-bar";
 
 /** An occupant a panel names: its spec, and what to render for it. */
 interface SidePanelOccupant {
@@ -178,7 +179,6 @@ function SidePanelTabs({
   active,
   onActiveChange,
 }: SidePanelTabsProps) {
-  const { t } = useTranslation();
   const [only] = panel.tabs;
   if (panel.tabs.length === 1 && only) {
     return (
@@ -197,18 +197,11 @@ function SidePanelTabs({
       onValueChange={onActiveChange}
       className={cn("min-h-0 flex-1 gap-0", BODY_FOCUS_RING)}
     >
-      <div
-        data-part="tab-bar"
-        className="shrink-0 px-(--surface-inset) pt-(--surface-inset)"
-      >
-        <TabsList className="w-full justify-start">
-          {panel.tabs.map((tab) => (
-            <TabsTrigger key={tab.id} value={tab.id} className="flex-none">
-              {tab.label ? t(tab.label) : null}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </div>
+      <SidePanelTabBar
+        tabs={panel.tabs}
+        active={active}
+        onActiveChange={onActiveChange}
+      />
       {panel.tabs.map((tab) => (
         <TabBody
           key={tab.id}
