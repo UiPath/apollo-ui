@@ -1,5 +1,6 @@
 import type { Page } from "@playwright/test";
 import { PANEL_TRANSITION_DURATION_MS } from "@/lib/composition";
+import { sidebarSpring } from "@/registry/shell/shell-animations";
 import {
   END_PANEL_DEFAULT_PX,
   START_PANEL_PX,
@@ -15,11 +16,9 @@ import {
 
 test.use({ reducedMotion: "no-preference" });
 
-// The Shell sidebar's spring (stiffness 400, damping 30, mass 0.5): progress at t ms.
+// The Shell sidebar's spring, integrated here on its own: progress at t ms.
 const spring = (() => {
-  const k = 400;
-  const c = 30;
-  const m = 0.5;
+  const { stiffness: k, damping: c, mass: m } = sidebarSpring;
   const dt = 0.00005;
   let x = 0;
   let v = 0;

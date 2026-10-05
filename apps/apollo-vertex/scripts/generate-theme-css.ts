@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { sidebarSpring } from "../registry/shell/shell-animations.ts";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const registryPath = join(__dirname, "../registry.json");
@@ -12,7 +13,9 @@ const layoutTokensPath = join(
 
 /**
  * With --check, nothing is written. The script fails if the committed
- * layout-tokens.ts is out of date with registry.json. Lint runs this.
+ * layout-tokens.ts is out of date with registry.json, or registry.json's
+ * --panel-transition-easing is out of date with the Shell's spring. Lint
+ * runs this.
  */
 const checkOnly = process.argv.includes("--check");
 
@@ -89,6 +92,41 @@ function renderBlock(
   );
   return `${selector} {\n${lines.join("\n")}\n}`;
 }
+
+/**
+ * The Shell sidebar's spring as a CSS linear() easing over the panel
+ * transition's duration: its progress at evenly spaced times, to three
+ * decimals, ending at 1. The spring is the source; registry.json carries
+ * the result so the theme ships it.
+ */
+function springEasing(durationMs: number, steps = 24): string {
+  const { stiffness: k, damping: c, mass: m } = sidebarSpring;
+  const dt = 1e-6;
+  let x = 0;
+  let v = 0;
+  let t = 0;
+  const points = [0];
+  for (let i = 1; i < steps; i++) {
+    const until = (i * durationMs) / steps / 1000;
+    while (t < until) {
+      v += ((-k * (x - 1) - c * v) / m) * dt;
+      x += v * dt;
+      t += dt;
+    }
+    points.push(Math.round(x * 1000) / 1000);
+  }
+  points.push(1);
+  return `linear(${points.join(", ")})`;
+}
+
+const easingKey = "panel-transition-easing";
+const easing = springEasing(transitionMs());
+const easingIn = (vars: Record<string, string>) =>
+  vars[easingKey] === undefined || vars[easingKey] === easing;
+const easingCurrent = easingIn(cssVars.light) && easingIn(cssVars.dark);
+// The CSS always gets the spring's curve, even before registry.json is updated.
+for (const vars of [cssVars.light, cssVars.dark])
+  if (vars[easingKey] !== undefined) vars[easingKey] = easing;
 
 const sections: string[] = [
   renderBlock("@theme inline", cssVars.theme),
@@ -169,13 +207,29 @@ if (checkOnly) {
         "Run `pnpm generate:theme` and commit the result.",
     );
   }
-  console.log("layout-tokens.ts is up to date with registry.json");
+  if (!easingCurrent) {
+    fail(
+      `registry.json's --${easingKey} is out of date with sidebarSpring in ` +
+        "registry/shell/shell-animations.ts. Run `pnpm generate:theme` and commit the result.",
+    );
+  }
+  console.log(
+    "layout-tokens.ts and --panel-transition-easing are up to date with registry.json and sidebarSpring",
+  );
   process.exit(0);
 }
+
+// Keep registry.json's easing on the spring, changing only that value.
+const registryUpdated = fileContent.replaceAll(
+  /("panel-transition-easing": )"[^"]*"/g,
+  (_, key: string) => `${key}${JSON.stringify(easing)}`,
+);
 
 try {
   writeFileSync(outputPath, css);
   writeFileSync(layoutTokensPath, layoutTokensTs);
+  if (registryUpdated !== fileContent)
+    writeFileSync(registryPath, registryUpdated);
 } catch (error) {
   console.error(
     "Failed to write generated theme files:",
