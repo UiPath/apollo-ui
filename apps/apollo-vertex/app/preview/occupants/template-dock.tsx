@@ -14,7 +14,7 @@ import { Dock, DockSlider, FitToggleGroup } from "./dock-parts";
 import { PageMap } from "./page-map";
 import { TemplateContentsMenu } from "./template-contents-menu";
 import { TemplateLayoutMenu } from "./template-layout-menu";
-import type { SlotContents } from "./workbench-compose";
+import { occupantsIn, type SlotContents } from "./workbench-compose";
 import {
   PAGE_WIDTH_MAX,
   pageWidthMin,
@@ -94,6 +94,12 @@ export function TemplateDock({
         layout={resolveLayout(host.spec, withStatus(layout, slotStatus))}
         highlighted={[slot]}
         cue="here"
+        counts={Object.fromEntries(
+          Object.entries(contents).map(([name, panel]) => [
+            name,
+            occupantsIn(panel).length,
+          ]),
+        )}
         name={slotName.toLowerCase()}
         shell={shell}
       />

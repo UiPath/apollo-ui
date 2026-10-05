@@ -16,6 +16,8 @@ interface PageMapProps {
    * "could", the surface could go there (outlined).
    */
   cue: "here" | "could";
+  /** How many occupants each slot holds; more than one shows as a count. */
+  counts?: Readonly<Record<string, number>>;
   /** What's highlighted, for its accessible name, in lowercase. */
   name: string;
   /** The shell around the page. Without it, the map is the page alone. */
@@ -55,6 +57,7 @@ export function PageMap({
   layout,
   highlighted,
   cue,
+  counts = {},
   name,
   shell,
 }: PageMapProps) {
@@ -95,6 +98,7 @@ export function PageMap({
         const row = lines(layout.rows, region.rows, above ? 1 : 0);
         if (!column || !row) return null;
         const on = highlighted.includes(region.slot);
+        const count = counts[region.slot] ?? 0;
         return (
           <span
             key={region.slot}
@@ -102,6 +106,7 @@ export function PageMap({
             data-highlighted={on}
             {...(on && { "data-cue": cue })}
             {...(!region.open && { "data-state": "closed" })}
+            {...(count > 1 && { "data-count": count })}
             style={{ gridColumn: column, gridRow: row }}
             className={cn(
               "rounded-sm border border-border",
@@ -110,8 +115,16 @@ export function PageMap({
                 "border-2 border-dashed border-muted-foreground/70",
               on && cue === "here" && "border-primary bg-primary",
               on && cue === "could" && "border-2 border-primary bg-transparent",
+              count > 1 &&
+                "flex items-center justify-center text-[7px] leading-none font-semibold",
+              count > 1 &&
+                (on && cue === "here"
+                  ? "text-primary-foreground"
+                  : "text-muted-foreground"),
             )}
-          />
+          >
+            {count > 1 ? count : null}
+          </span>
         );
       })}
     </div>
