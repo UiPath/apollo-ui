@@ -19,8 +19,6 @@ interface OccupantStateViewProps {
   skeleton?: ReactNode;
   /** Shows a Retry button in the error state. */
   onRetry?: () => void;
-  /** @deprecated Follows the occupant spec's padding; being removed. */
-  flush?: boolean;
   /** The content, shown when ready and while an agent updates it. */
   children: ReactNode;
 }
@@ -46,7 +44,6 @@ function OccupantStateView({
   emptyDescription,
   skeleton,
   onRetry,
-  flush: flushProp = false,
   children,
 }: OccupantStateViewProps) {
   const { t } = useTranslation();
@@ -54,8 +51,7 @@ function OccupantStateView({
   // A flush occupant pads its own parts, so the messages and the agent line
   // get the surface inset and the content stays edge to edge.
   const spec = useContext(OccupantSpecContext);
-  const flush =
-    flushProp || (spec !== null && occupantPadding(spec) === "flush");
+  const flush = spec !== null && occupantPadding(spec) === "flush";
   const inset = flush && "p-(--surface-inset)";
   const message = cn(
     "flex min-w-0 gap-3 text-sm wrap-anywhere",
