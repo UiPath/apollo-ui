@@ -1,5 +1,4 @@
 import type { Page } from "@playwright/test";
-import { STAGE_HEIGHT } from "@/app/_components/stage";
 import { expect, test } from "./fixtures";
 import { open, slotStates, urlQuery } from "./workbench-helpers";
 
@@ -61,10 +60,12 @@ test("each shell wraps the template, and the page width includes it", async ({
   await expect(pageBox.locator("[data-slot=sidebar]")).toHaveCount(1);
   expect(await templateWidth(page)).toBe(1440 - 280);
   // The shell fills the page, not the window.
-  const shellHeight = await pageBox.evaluate(
-    (el) => el.firstElementChild?.getBoundingClientRect().height,
-  );
-  expect(shellHeight).toBeLessThanOrEqual(STAGE_HEIGHT);
+  const { shell, pageHeight } = await pageBox.evaluate((el) => ({
+    shell: el.firstElementChild?.getBoundingClientRect().height ?? 0,
+    pageHeight: el.getBoundingClientRect().height,
+  }));
+  expect(Math.round(shell)).toBe(Math.round(pageHeight));
+  expect(shell).toBeLessThan(page.viewportSize()?.height ?? 0);
   expect(await mapRegions(page)).toContain("shell");
   expect(urlQuery(page)).not.toContain("shell=");
 
