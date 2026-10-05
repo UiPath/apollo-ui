@@ -3,13 +3,14 @@ import {
   type DetailPageConfig,
   type DetailPagePanels,
   END_PANEL_DEFAULT_PX,
-  END_PANEL_MIN_PX,
   enabledPanels,
   endPanelMaxWidth,
   type PanelClosedBy,
   type PanelIntent,
   type PanelSide,
   type PanelWidth,
+  type PanelWidths,
+  panelWidths,
   resolveEndWidth,
   resolvePanels,
   withLatest,
@@ -60,6 +61,13 @@ export interface DetailPageState {
   transitioning: PanelSide | null;
   /** The template calls this when that panel's transition ends. */
   settleTransition: (side: PanelSide) => void;
+  /**
+   * The start panel's width and the end panel's minimum, after the floor
+   * each panel's surface reports (its widest occupant, across its tabs).
+   */
+  widths: PanelWidths;
+  /** The template calls this with the floor a panel's surface reports. */
+  setPanelFloor: (side: PanelSide, px: number) => void;
   /** Attach to the template root so the main-width rule can measure it. */
   ref: RefCallback<HTMLDivElement | null>;
 }
@@ -140,6 +148,13 @@ export function useDetailPage(config: DetailPageConfig): DetailPageState {
   const [endWidthChosen, setEndWidthChosen] = useState<PanelWidth>(
     () => config.end.defaultWidth ?? END_PANEL_DEFAULT_PX,
   );
+  const [floor, setFloor] = useState<Record<PanelSide, number>>({
+    start: 0,
+    end: 0,
+  });
+  const widths = panelWidths(floor);
+  const setPanelFloor = (side: PanelSide, px: number) =>
+    setFloor((prev) => (prev[side] === px ? prev : { ...prev, [side]: px }));
 
   // Adjust intent while rendering when the enabled panels change.
   let intent = state;
@@ -152,6 +167,7 @@ export function useDetailPage(config: DetailPageConfig): DetailPageState {
   const resolved = resolvePanels(
     config.latest ? withLatest(intent, config.latest) : intent,
     width,
+    widths,
   );
   const closedBy = {
     start: enabled.start ? resolved.closedBy.start : null,
@@ -187,12 +203,17 @@ export function useDetailPage(config: DetailPageConfig): DetailPageState {
     });
 
   const measured = width > 0;
-  const endWidth = resolveEndWidth(endWidthChosen, width, resolved.open.start);
+  const endWidth = resolveEndWidth(
+    endWidthChosen,
+    width,
+    resolved.open.start,
+    widths,
+  );
   const endWidthRange = {
-    min: END_PANEL_MIN_PX,
+    min: widths.endMin,
     max: measured
-      ? endPanelMaxWidth(width, resolved.open.start)
-      : END_PANEL_MIN_PX,
+      ? endPanelMaxWidth(width, resolved.open.start, widths)
+      : widths.endMin,
   };
 
   // A drag or key press stores what the user can see, so the stored width
@@ -228,6 +249,8 @@ export function useDetailPage(config: DetailPageConfig): DetailPageState {
     restore,
     transitioning,
     settleTransition,
+    widths,
+    setPanelFloor,
     ref,
   };
 }

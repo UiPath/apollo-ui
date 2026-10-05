@@ -123,13 +123,33 @@ export const END_PANEL_DEFAULT_PX = END_PANEL_WIDTH.default;
 export const MAIN_MIN_OUTER_PX = contentAreaSurface.width.min;
 
 /**
- * Each panel's outer width for the main-width rule. Dividers are overlays
- * that take no layout space, so panels are exactly their width.
+ * The panels' widths after their surfaces' floors: the start panel's
+ * rendered width, and the end panel's minimum. A panel of tabs reports the
+ * widest occupant it holds, across every tab, so a slot is never narrower
+ * than that and switching tabs never changes its width.
  */
-const PANEL_RULE_PX: Record<PanelSide, number> = {
+export interface PanelWidths {
+  start: number;
+  endMin: number;
+}
+
+/**
+ * The Detail page's own widths, before any floor. They're each panel's
+ * outer width for the main-width rule too: dividers are overlays that take
+ * no layout space, so panels are exactly their width.
+ */
+export const DEFAULT_PANEL_WIDTHS: PanelWidths = {
   start: START_PANEL_PX,
-  end: END_PANEL_MIN_PX,
+  endMin: END_PANEL_MIN_PX,
 };
+
+/** The widths with each panel's reported floor applied. */
+export function panelWidths(floor: Record<PanelSide, number>): PanelWidths {
+  return {
+    start: Math.max(START_PANEL_PX, floor.start),
+    endMin: Math.max(END_PANEL_MIN_PX, floor.end),
+  };
+}
 
 /** Why a panel is closed: the user closed it, or the main-width rule did. */
 export type PanelClosedBy = "user" | "rule";
@@ -164,7 +184,12 @@ export interface ResolvedPanels {
 export function resolvePanels(
   intent: PanelIntent,
   templateWidth: number,
+  widths: PanelWidths = DEFAULT_PANEL_WIDTHS,
 ): ResolvedPanels {
+  const rulePx: Record<PanelSide, number> = {
+    start: widths.start,
+    end: widths.endMin,
+  };
   const open = { ...intent.wanted };
   const closedBy: Record<PanelSide, PanelClosedBy | null> = {
     start: intent.wanted.start ? null : "user",
@@ -176,7 +201,7 @@ export function resolvePanels(
   const openSides = intent.openOrder.filter((side) => open[side]);
   const required = () =>
     MAIN_MIN_OUTER_PX +
-    openSides.reduce((total, side) => total + PANEL_RULE_PX[side], 0);
+    openSides.reduce((total, side) => total + rulePx[side], 0);
 
   while (required() > templateWidth) {
     const index = openSides.findIndex((side) => side !== intent.lastOpened);
@@ -232,28 +257,30 @@ export function enabledPanels(
 export function endPanelMaxWidth(
   templateWidth: number,
   startOpen: boolean,
+  widths: PanelWidths = DEFAULT_PANEL_WIDTHS,
 ): number {
-  const startPx = startOpen ? PANEL_RULE_PX.start : 0;
+  const startPx = startOpen ? widths.start : 0;
   // The space main and the end panel share.
   const shared = templateWidth - startPx;
   const halfOfShared = Math.floor(shared / 2);
   const mainMinimum = shared - MAIN_MIN_OUTER_PX;
-  return Math.max(END_PANEL_MIN_PX, Math.min(halfOfShared, mainMinimum));
+  return Math.max(widths.endMin, Math.min(halfOfShared, mainMinimum));
 }
 
 export function resolveEndWidth(
   width: PanelWidth,
   templateWidth: number,
   startOpen: boolean,
+  widths: PanelWidths = DEFAULT_PANEL_WIDTHS,
 ): number {
   // Width is 0 until the template is first measured. Until then "max" has
   // no px value to report; the grid lays it out regardless (see DetailPage).
   if (templateWidth <= 0) {
     return width === "max"
-      ? END_PANEL_DEFAULT_PX
-      : Math.max(END_PANEL_MIN_PX, width);
+      ? Math.max(END_PANEL_DEFAULT_PX, widths.endMin)
+      : Math.max(widths.endMin, width);
   }
-  const max = endPanelMaxWidth(templateWidth, startOpen);
+  const max = endPanelMaxWidth(templateWidth, startOpen, widths);
   if (width === "max") return max;
-  return Math.min(Math.max(width, END_PANEL_MIN_PX), max);
+  return Math.min(Math.max(width, widths.endMin), max);
 }

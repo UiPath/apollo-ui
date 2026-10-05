@@ -5,7 +5,12 @@ import * as React from "react";
 
 import { useScrollFade } from "@/hooks/use-scroll-fade";
 import type { ScrollOwner, SurfacePadding } from "@/lib/composition";
-import { type PanelSpec, resolvePanel, validatePanel } from "@/lib/panel";
+import {
+  type PanelSpec,
+  panelMinWidth,
+  resolvePanel,
+  validatePanel,
+} from "@/lib/panel";
 import { SurfaceProvider, useSurfaceFrame } from "@/lib/surface-context";
 import { cn } from "@/lib/utils";
 import { sidePanelSurface } from "./side-panel.surface";
@@ -35,6 +40,12 @@ type SidePanelPlacement = "below-header" | "beside-header";
 interface SidePanelSlotState {
   open: boolean;
   placement: SidePanelPlacement;
+  /**
+   * The panel reports its narrowest outer width here: its widest
+   * occupant's minimum plus its inset, across every tab. The template
+   * sizes the slot to at least that.
+   */
+  onMinWidth?: (px: number) => void;
 }
 
 /**
@@ -159,6 +170,10 @@ function TabbedSidePanel({
   const errors = validatePanel(panel, specs);
   if (errors.length > 0) throw new Error(`SidePanel: ${errors.join(" ")}`);
   const resolved = resolvePanel(panel, specs);
+  // One width for every tab, so switching never resizes the panel.
+  const minWidth = panelMinWidth(sidePanelSurface, resolved);
+  const report = React.useContext(SidePanelSlotContext)?.onMinWidth;
+  React.useLayoutEffect(() => report?.(minWidth), [report, minWidth]);
   const first = resolved.tabs[0]?.id ?? "";
   const active =
     chosen !== null && resolved.tabs.some((tab) => tab.id === chosen)
