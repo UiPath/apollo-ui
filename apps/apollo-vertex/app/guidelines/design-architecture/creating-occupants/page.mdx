@@ -40,6 +40,8 @@ is what lets it go in a side panel or a content area.
 | `requires.minWidth` | The narrowest inner width where it still works |
 | `requires.padding` | `padded` or `flush` |
 | `requires.scroll` | `surface`, `occupant`, or `either` |
+| `titleKey` | Its title in a side panel's tab or stack heading, a locale key: `<name>_title` |
+| `sizing` | `flow` (the default) can share a side panel tab; `fill` takes a whole tab and scrolls itself |
 
 ## View models and adapters
 
@@ -239,7 +241,8 @@ previews, with no change to the workbench itself.
   spec, a label for each slot, which slots are its side panels and the
   panels settings it offers, its narrowest useful width, and a frame that
   renders it with one occupant in one slot, in the layout the workbench's
-  Layout menu sets.
+  Layout menu sets. A side panel can hold several occupants in tabs and
+  stacks; the workbench still shows one occupant per slot.
 
 Unit tests fail until each has everything it needs.
 

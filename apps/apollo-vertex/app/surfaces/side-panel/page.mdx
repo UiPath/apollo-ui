@@ -4,6 +4,7 @@ import {
   PADDED_INSET_PX,
   SIDE_PANEL_TINT_STRENGTH,
 } from '@/lib/composition';
+import { PANEL_MAX_TABS } from '@/lib/panel';
 import { sidePanelSurface } from '@/registry/side-panel/side-panel.surface';
 import { END_PANEL_WIDTH, START_PANEL_WIDTH } from '@/templates/detail-page/detail-page.template';
 
@@ -40,8 +41,9 @@ navigation, the AI assistant, activity history, a source document.
 | `data-side` | `start` or `end` |
 | `data-state` | `open` or `closed`, from the template |
 | `data-placement` | `below-header` or `beside-header`, from the template |
-| `data-padding` | `padded` or `flush` |
-| `data-scroll` | `surface` or `occupant` |
+| `data-padding` | `padded` or `flush`; with tabs, the active tab's |
+| `data-scroll` | `surface` or `occupant`; with tabs, the active tab's |
+| `data-tab` | On each tab's panel: the tab's id |
 
 On the Detail page:
 
@@ -61,9 +63,91 @@ on the slot that holds this surface; see the template's width rules.
 
 - `side`: `start` or `end`.
 - `padding` and `scroll`: from the occupant's specs.
+- `panel` and `occupants`: tabs and stacks, below. With them, each tab's
+  padding and scroll follow its occupants' specs, and `padding` and `scroll`
+  are ignored.
+- `headingLevel`: the level of a stack's headings, 2 by default. Set it one
+  below the heading the panel sits under.
+- `defaultTab` and `onTabChange`: the tab to show first, by id, as from a
+  link, and a call when someone switches. The panel keeps which tab shows.
 - Placement and open state come from the template. See
   [choosing placement](/templates/detail-page#choosing-placement).
 - Teams can't set the background. It follows placement.
+
+## Tabs and stacks
+
+A side panel holds one occupant, or several as data: a `PanelSpec` with up to
+{PANEL_MAX_TABS} tabs, each holding one occupant or a stack of them. Pass it
+as `panel`, with each occupant it names in `occupants`: its spec, and what to
+render.
+
+```tsx
+const panel: PanelSpec = {
+  surface: 'side-panel',
+  tabs: [
+    { id: 'activity', occupants: ['activity-timeline'] },
+    { id: 'people', label: 'item_people', occupants: ['participants', 'key-facts'] },
+    { id: 'contract', occupants: [{ occupant: 'document-viewer', title: 'item_contract' }] },
+  ],
+};
+
+<SidePanel
+  side="end"
+  aria-label="Item details"
+  panel={panel}
+  occupants={{
+    'activity-timeline': { spec: activityTimelineOccupant, node: <ActivityTimeline view={activity} /> },
+    participants: { spec: participantsOccupant, node: <Participants view={people} /> },
+    'key-facts': { spec: keyFactsOccupant, node: <KeyFacts view={facts} /> },
+    'document-viewer': { spec: documentViewerOccupant, node: <DocumentViewer view={contract} /> },
+  }}
+/>
+```
+
+- **One tab** shows no tab bar: the panel looks as it does with one occupant.
+- **Several tabs** show a tablist above a panel for each tab, with the
+  `data-tab` attribute. Switching is instant.
+- **A stack** is a tab with more than one occupant. Each gets a heading at
+  `headingLevel`; a tab with one occupant has none.
+- **Titles and labels** are locale keys. An occupant's title is its ref's
+  `title`, else its spec's `titleKey`. A tab's label is its `label`, else the
+  title of its only occupant. Neither ever falls back to the occupant's name.
+- **Scrolling.** A flow tab is one scroll container, with its own scroll
+  fades, and keeps its scroll position while another tab shows. A fill tab,
+  or one whose occupant scrolls itself, hands scrolling to the occupant.
+- **Width.** The panel reports its narrowest width, its widest occupant's
+  minimum plus inset across every tab, and the template's slot is never
+  narrower. So switching tabs never changes the panel's width.
+
+`validatePanel()` lists every rule a panel breaks, and the panel throws on
+any of them:
+
+- at most {PANEL_MAX_TABS} tabs, with unique ids;
+- a label on a tab with more than one occupant, and a title for each
+  occupant in it;
+- with several tabs, a label for each, or an occupant with a title;
+- a fill occupant alone in its tab;
+- an occupant at most once in the panel.
+
+`fits()` takes a resolved panel (`resolvePanel()`) and checks every
+occupant in every tab against the slot.
+
+### Overflow
+
+When the tabs don't fit the panel's width, the ones that don't collapse,
+from the end, into a More button after the tablist. It opens a menu of the
+hidden tabs. The active tab is always shown, and choosing a hidden tab swaps
+it in for the last visible one. Overflow follows the width, not the number
+of tabs.
+
+### Occupant sizing
+
+Each occupant's spec sets its `sizing`:
+
+| Sizing | What it does | In a tab |
+| --- | --- | --- |
+| `flow` | As tall as its content (the default) | Can share a tab; the tab scrolls |
+| `fill` | Takes the tab's whole height and scrolls itself, like a document viewer | Alone in its tab |
 
 ## Appearance
 
@@ -84,6 +168,10 @@ on the slot that holds this surface; see the template's width rules.
 - A closed panel is inert: it can't take focus and assistive tech skips it,
   even while it animates out. If focus was inside, it moves to main.
 - In forced-colors mode the dividers become real borders in `CanvasText`.
+- Tabs follow the WAI-ARIA tabs pattern: one tab stop, arrow keys to move,
+  Home and End to jump. The More button is a menu button after the tablist.
+  Choosing a tab from it moves focus to that tab.
+- A stack's occupants are regions named by their headings.
 
 ## When not to use
 
