@@ -57,8 +57,8 @@ export function SlotPlaceholder({
         data-occupant={occupant.name}
         className={cn(
           "flex flex-1 flex-col items-center justify-center gap-1 rounded-md border border-dashed border-border bg-muted/40 text-center",
-          // A band across the page header's grid, not a column.
-          surface === "page-header" &&
+          // A band across a horizontal surface's grid, not a column.
+          space.orientation === "horizontal" &&
             "col-span-full min-h-11 flex-row gap-3 self-stretch",
           className,
         )}
