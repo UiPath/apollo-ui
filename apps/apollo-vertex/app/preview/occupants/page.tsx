@@ -26,10 +26,11 @@ function docsPageBefore(): string {
 
 /*
  * Preview only: the occupant workbench. Any registered occupant, alone in
- * any registered surface's real host, with no template. The whole view is
- * in the URL (see workbench-url-state.ts). Surfaces, and their places on
- * the page map, come from SURFACE_HOSTS, so a newly registered surface
- * shows up here with no changes.
+ * any registered surface's real host, or in a slot of any registered
+ * template. The whole view is in the URL (see workbench-url-state.ts).
+ * Surfaces come from SURFACE_HOSTS and templates from TEMPLATE_HOSTS, and
+ * the page map from each template's declared layout, so a newly
+ * registered surface or template shows up here with no changes.
  */
 export default function OccupantWorkbenchPage() {
   // Client only, portaled, and nothing suspends: the docs layout would hide it.
