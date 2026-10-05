@@ -1,9 +1,9 @@
-import { cn } from '@/lib';
-import { FormFieldError } from '@/components/ui/form-field';
 import { useState } from 'react';
-import { useJsonTreeViewStrings } from './strings';
+import { FormFieldError } from '@/components/ui/form-field';
+import { cn } from '@/lib';
 import { EditorActions, EditorTextarea } from './EditorChrome';
 import type { JsonTreeNode, JsonValue, RenderCodeEditor } from './JsonTree.types';
+import { useJsonTreeViewStrings } from './strings';
 
 export interface JsonContainerEditorProps {
   node: JsonTreeNode;
@@ -51,10 +51,10 @@ export function JsonContainerEditor({
   const apply = () => {
     try {
       onCommit(JSON.parse(raw) as JsonValue);
-    } catch {
-      // The parser's own message is engine-specific English, so show the
-      // localizable string instead.
-      setError(strings.invalidJson);
+    } catch (error) {
+      setError(
+        error instanceof Error ? `${strings.invalidJson}: ${error.message}` : strings.invalidJson
+      );
     }
   };
 
