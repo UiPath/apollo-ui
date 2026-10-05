@@ -1,3 +1,17 @@
+## [@uipath/apollo-wind-v2.61.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.60.1...@uipath/apollo-wind@2.61.0) (2026-10-05)
+
+### Features
+
+* **apollo-wind:** built-in variable and prompt value controls [MST-15843] ([71de64c](https://github.com/UiPath/apollo-ui/commit/71de64ce67f5236a8505c69007bb70dadfc72f07))
+* **apollo-wind:** export FieldControl [MST-15842] ([5b76617](https://github.com/UiPath/apollo-ui/commit/5b766170079f2b45d2f34154efd3633041a1ce3b))
+* **apollo-wind:** FieldMetadata.valueModes and field actions [MST-15680] ([53df155](https://github.com/UiPath/apollo-ui/commit/53df155f0db73c2f1f5ff08d935083e9d037b8fa))
+* **apollo-wind:** move Tree View (Json) into apollo-wind ([ca83670](https://github.com/UiPath/apollo-ui/commit/ca8367072335859c9e164ae0d49d4ce8bf86fa7a))
+* **apollo-wind:** tri-state BooleanRadioGroup and ValueModeSwitchDialog [MST-15680] ([ce7252c](https://github.com/UiPath/apollo-ui/commit/ce7252c91b874b2f6a991132c37512d96522ab1f))
+
+### Bug Fixes
+
+* **apollo-wind:** preserve JSON parser error details ([bdd223e](https://github.com/UiPath/apollo-ui/commit/bdd223ec96f6c49c2248e4a16040507252846d0b))
+
 ## [@uipath/apollo-wind-v2.60.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.60.0...@uipath/apollo-wind@2.60.1) (2026-10-05)
 
 ### Bug Fixes

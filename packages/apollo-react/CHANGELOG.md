@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.73.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.72.0...@uipath/apollo-react@6.73.0) (2026-10-05)
+
+### Features
+
+* **apollo-wind:** move Tree View (Json) into apollo-wind ([ca83670](https://github.com/UiPath/apollo-ui/commit/ca8367072335859c9e164ae0d49d4ce8bf86fa7a))
+
 ## [@uipath/apollo-react-v6.72.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.71.0...@uipath/apollo-react@6.72.0) (2026-10-05)
 
 ### Features
