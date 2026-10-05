@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.60.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.60.0...@uipath/apollo-wind@2.60.1) (2026-10-05)
+
+### Bug Fixes
+
+* **apollo-wind:** shield overlay typography and color against host Material CSS ([fdcb577](https://github.com/UiPath/apollo-ui/commit/fdcb577dab54086aebfb7c5f66eec726c7e03bdd))
+
 ## [@uipath/apollo-wind-v2.60.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.59.0...@uipath/apollo-wind@2.60.0) (2026-10-02)
 
 ### Features
