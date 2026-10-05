@@ -341,6 +341,7 @@
   "stage_strip_status_upcoming": "not started",
   "stage_strip_step": " · Step {{step}} of {{total}}",
   "stage_strip_subject": "stages",
+  "stage_strip_title": "Stage strip",
   "start_conversation_with": "Start a conversation with {{name}}",
   "status": "Status",
   "stop": "Stop",

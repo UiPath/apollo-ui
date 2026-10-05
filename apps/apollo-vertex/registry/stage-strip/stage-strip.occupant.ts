@@ -8,6 +8,7 @@ import type { OccupantSpec } from "@/lib/composition";
 export const stageStripOccupant = {
   name: "stage-strip",
   label: "Stage strip",
+  titleKey: "stage_strip_title",
   icon: Waypoints,
   // A one-band summary: horizontal surfaces only.
   orientations: ["horizontal"],
