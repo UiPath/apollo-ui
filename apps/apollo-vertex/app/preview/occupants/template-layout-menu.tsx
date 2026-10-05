@@ -16,7 +16,12 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { defaultPlacement, type LayoutChoices } from "@/lib/layout";
 import type { PreviewShellVariant } from "@/templates/shell/PreviewShell";
-import { type LayoutLock, layoutMenu } from "./workbench-layout";
+import {
+  type LayoutLock,
+  layoutMenu,
+  placementCopy,
+  reasonCopy,
+} from "./workbench-layout";
 
 const SHELLS: readonly PreviewShellVariant[] = ["sidebar", "minimal"];
 
@@ -120,11 +125,12 @@ export function TemplateLayoutMenu({
   onLayout,
   status,
 }: TemplateLayoutMenuProps) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const slotName = (name: string) => host.slotLabels[name] ?? name;
+  // The template's own name for a placement, else the placement's name.
   const placementLabel = (value: string) => {
-    const key = `workbench_placement_${value}`;
-    return i18n.exists(key) ? t(key) : value;
+    const key = placementCopy(host.spec, value);
+    return key ? t(key) : value;
   };
   const choose = (name: string, change: LayoutChoices[string]) =>
     onLayout({ ...layout, [name]: { ...layout[name], ...change } });
@@ -134,7 +140,7 @@ export function TemplateLayoutMenu({
         ? t("workbench_layout_locked_open")
         : t("workbench_layout_locked", { panel: slotName(name).toLowerCase() })
       : lock === "refused"
-        ? t("workbench_layout_refused")
+        ? t(reasonCopy(host.spec, "refused"))
         : null;
 
   return (
@@ -168,7 +174,7 @@ export function TemplateLayoutMenu({
           const presenceNote = lockNote(name, firstLock(section.present));
           const stateNote =
             lockNote(name, firstLock(section.open), true) ??
-            (closedBy === "rule" ? t("workbench_layout_closed_by_rule") : null);
+            (closedBy === "rule" ? t(reasonCopy(host.spec, "rule")) : null);
           const placementNote = lockNote(name, firstLock(section.placement));
           return (
             <fieldset

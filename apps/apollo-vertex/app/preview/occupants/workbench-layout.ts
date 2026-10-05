@@ -1,4 +1,4 @@
-import type { TemplateSpec } from "@/lib/composition";
+import type { LocaleKey, TemplateSpec } from "@/lib/composition";
 import {
   type LayoutChoices,
   type SlotOption,
@@ -92,3 +92,28 @@ export function layoutMenu(
     };
   });
 }
+
+/**
+ * What the workbench says for a reason code when a template declares no
+ * copy of its own: neutral, naming no template. "rule": the template's
+ * rules closed a slot; "refused": its layout won't allow a choice.
+ */
+const NEUTRAL_REASONS: Readonly<Record<string, LocaleKey>> = {
+  rule: "workbench_layout_closed_by_layout_rule",
+  refused: "workbench_layout_refused",
+};
+
+/** The copy for why a template closed or refused something: its own, else neutral. */
+export function reasonCopy(spec: TemplateSpec, code: string): LocaleKey {
+  return (
+    spec.layout.copy?.reasons?.[code] ??
+    NEUTRAL_REASONS[code] ??
+    "workbench_layout_closed_by_layout_rule"
+  );
+}
+
+/** A placement's name in the template's own words, or null when it gives none. */
+export const placementCopy = (
+  spec: TemplateSpec,
+  placement: string,
+): LocaleKey | null => spec.layout.copy?.placements?.[placement] ?? null;

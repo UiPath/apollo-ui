@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { describe, expect, it } from "vitest";
+import en from "@/locales/en.json";
 import { detailPageTemplate } from "@/templates/detail-page/detail-page.template";
 
 /*
@@ -64,5 +65,23 @@ describe("the workbench names no template", () => {
           ),
     );
     expect(found).toEqual([]);
+  });
+});
+
+// The workbench's own copy (its workbench_ keys) is as neutral as its code:
+// a template's words come from the template's spec.
+const WORKBENCH_COPY = Object.entries(en).filter(([key]) =>
+  key.startsWith("workbench_"),
+);
+const DETAIL_PAGE_WORDS =
+  /\b(detail page|start panel|end panel|header|main|beside|below|width rule)\b/i;
+
+describe("the workbench's copy names no template", () => {
+  it("reads every workbench string", () => {
+    expect(WORKBENCH_COPY.length).toBeGreaterThan(50);
+  });
+
+  it.each(WORKBENCH_COPY)("%s", (_key, text) => {
+    expect(text).not.toMatch(DETAIL_PAGE_WORDS);
   });
 });
