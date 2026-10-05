@@ -6,7 +6,7 @@ import type {
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, render, screen, waitFor, within } from '../../utils/testing';
-import { ApolloCanvasDiffPane } from './ApolloCanvasDiffPane';
+import { ApolloCanvasDiffPane, type ApolloCanvasDiffPaneCanvasProps } from './ApolloCanvasDiffPane';
 import { CanvasDiffView } from './CanvasDiffView';
 import type { DiffModel, DiffPaneContext, DiffViewport } from './CanvasDiffView.types';
 
@@ -54,7 +54,15 @@ const model: DiffModel<Node, Edge> = {
   },
 };
 
-function renderDiff({ syncViewport }: { syncViewport?: boolean } = {}) {
+function renderDiff({
+  syncViewport,
+  diff = model,
+  canvasProps,
+}: {
+  syncViewport?: boolean;
+  diff?: DiffModel<Node, Edge>;
+  canvasProps?: ApolloCanvasDiffPaneCanvasProps<Node, Edge>;
+} = {}) {
   const reported: Array<[string, DiffViewport]> = [];
   const instances: Partial<Record<string, ReactFlowInstance>> = {};
   const renderPane = (ctx: DiffPaneContext<Node, Edge>) => (
@@ -66,13 +74,14 @@ function renderDiff({ syncViewport }: { syncViewport?: boolean } = {}) {
         ctx.onViewportChange(viewport);
       }}
       canvasProps={{
+        ...canvasProps,
         onInit: (instance) => {
           instances[ctx.side] = instance as unknown as ReactFlowInstance;
         },
       }}
     />
   );
-  render(<CanvasDiffView model={model} renderPane={renderPane} syncViewport={syncViewport} />);
+  render(<CanvasDiffView model={diff} renderPane={renderPane} syncViewport={syncViewport} />);
   const pane = (name: 'Before' | 'After') => within(screen.getByRole('region', { name }));
   return { reported, instances, pane };
 }
@@ -130,5 +139,31 @@ describe('ApolloCanvasDiffPane inside CanvasDiffView', () => {
 
     await waitFor(() => expect(reported.map(([side]) => side).sort()).toEqual(['after', 'before']));
     expect(reported.every(([, viewport]) => viewport.zoom === 1)).toBe(true);
+  });
+
+  it('fits the before pane and the after pane follows when every node was removed', async () => {
+    const allRemoved = { ...model, after: { nodes: [], edges: [] } };
+    const { reported, instances } = renderDiff({ diff: allRemoved });
+
+    await waitFor(() => expect(reported).toHaveLength(1));
+    const [side, fit] = reported[0] ?? [];
+    expect(side).toBe('before');
+    expect(instances.after?.getViewport()).toEqual(fit);
+  });
+
+  it('ignores a controlled viewport slipped through canvasProps', async () => {
+    const forced = { x: 999, y: 999, zoom: 2 };
+    const { reported, instances } = renderDiff({
+      canvasProps: { viewport: forced } as ApolloCanvasDiffPaneCanvasProps<Node, Edge>,
+    });
+    await waitFor(() => expect(reported).toHaveLength(1));
+    const pan = { x: 40, y: 30, zoom: 0.5 };
+
+    await act(async () => {
+      await instances.before?.setViewport(pan);
+    });
+
+    expect(instances.before?.getViewport()).toEqual(pan);
+    expect(instances.after?.getViewport()).toEqual(pan);
   });
 });
