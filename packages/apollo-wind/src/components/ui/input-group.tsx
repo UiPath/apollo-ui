@@ -140,8 +140,14 @@ const inputGroupVariants = cva(
       {
         variant: FILLED,
         layout: ROW_LAYOUTS,
+        // Not while a badge inside the control is hovered: the badge takes the hover fill itself,
+        // and would vanish against a lit box. Future first restates the resting fill for any hover,
+        // since the unprefixed `bg-accent` rule still matches there and out-ranks the variant's own
+        // `future:bg-surface-overlay`; the more specific no-badge rule then lights the box. Both of
+        // its conditions sit on the group (`:has(…):not(:has(…))`), since CSS drops a rule that
+        // nests `:has()` inside another.
         class:
-          'has-[button[data-slot=input-group-control]:not(:disabled):hover]:bg-accent future:has-[button[data-slot=input-group-control]:not(:disabled):hover]:bg-surface-hover',
+          'has-[button[data-slot=input-group-control]:not(:disabled):hover]:bg-accent future:has-[button[data-slot=input-group-control]:not(:disabled):hover]:bg-surface-overlay future:has-[button[data-slot=input-group-control]:not(:disabled):hover]:not-has-[[data-slot=input-group-control]_[data-slot=badge]:hover]:bg-surface-hover',
       },
     ],
     defaultVariants: {
