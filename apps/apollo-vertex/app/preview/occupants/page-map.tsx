@@ -11,6 +11,11 @@ interface PageMapProps {
   layout: ResolvedLayout;
   /** The slots to highlight: where a surface can go, or the occupant's slot. */
   highlighted: readonly string[];
+  /**
+   * How they're highlighted: "here", the occupant is in it (filled), or
+   * "could", the surface could go there (outlined).
+   */
+  cue: "here" | "could";
   /** What's highlighted, for its accessible name, in lowercase. */
   name: string;
   /** The shell around the page. Without it, the map is the page alone. */
@@ -46,7 +51,13 @@ const sizes = (tracks: ResolvedLayout["columns"]) =>
  * take room; closed slots are dashed. With a shell, it sits beside the
  * page (sidebar) or above it (minimal).
  */
-export function PageMap({ layout, highlighted, name, shell }: PageMapProps) {
+export function PageMap({
+  layout,
+  highlighted,
+  cue,
+  name,
+  shell,
+}: PageMapProps) {
   const { t } = useTranslation();
   const sidebar = shell === "sidebar";
   const above = shell === "minimal";
@@ -89,12 +100,16 @@ export function PageMap({ layout, highlighted, name, shell }: PageMapProps) {
             key={region.slot}
             data-region={region.slot}
             data-highlighted={on}
+            {...(on && { "data-cue": cue })}
             {...(!region.open && { "data-state": "closed" })}
             style={{ gridColumn: column, gridRow: row }}
             className={cn(
               "rounded-sm border border-border",
-              !region.open && "border-dashed",
-              on && "border-primary bg-primary",
+              // Closed, not missing: a heavier dashed outline, no fill.
+              !region.open &&
+                "border-2 border-dashed border-muted-foreground/70",
+              on && cue === "here" && "border-primary bg-primary",
+              on && cue === "could" && "border-2 border-primary bg-transparent",
             )}
           />
         );

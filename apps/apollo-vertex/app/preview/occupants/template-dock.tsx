@@ -86,6 +86,7 @@ export function TemplateDock({
       <PageMap
         layout={resolveLayout(host.spec, withStatus(layout, slotStatus))}
         highlighted={[slot]}
+        cue="here"
         name={slotName.toLowerCase()}
         shell={shell}
       />
