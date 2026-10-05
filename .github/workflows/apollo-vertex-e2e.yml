@@ -6,7 +6,8 @@ name: Apollo Vertex E2E
 
 on:
   pull_request:
-    branches: [main]
+    # Main, and stacked proof-of-concept branches (poc/design-architecture).
+    branches: [main, "poc/**"]
     paths:
       - "apps/apollo-vertex/**"
       - ".github/workflows/apollo-vertex-e2e.yml"
