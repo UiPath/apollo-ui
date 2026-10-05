@@ -32,11 +32,13 @@ say what it needs and what it provides.
 - An occupant can be swapped for any other occupant that meets the surface's
   specs.
 
-> Templates draw the lines between slots. Surfaces own everything inside.
+> Templates own the geometry between slots. Surfaces own everything inside
+> their box.
 
-So a template decides where things go and draws the dividers. A surface
-decides its own padding, scrolling, and background. An occupant only
-decides its content.
+So a template decides where things go and how wide each slot is. It draws
+the dividers and owns the resize handle and the open and close motion. A
+surface fills the slot it's given and decides its own padding, scrolling,
+fades, and background. An occupant only decides its content.
 
 ## Specs
 

@@ -221,7 +221,6 @@ export function DetailPage({
             PANEL_SLOT_MOTION,
             DIVIDER_OVERLAY,
             DIVIDER_INLINE_END,
-            "[&_[data-surface=side-panel]]:[--side-panel-width:var(--detail-page-start-panel-width)]",
             startBeside ? "row-span-2 row-start-1" : "row-start-2",
           )}
           style={startExtentStyle}
@@ -235,11 +234,14 @@ export function DetailPage({
             )}
             onTransitionEnd={onClipTransitionEnd("start")}
           >
-            <SidePanelSlotContext.Provider
-              value={{ open: open.start, placement: config.start.placement }}
-            >
-              {startPanel}
-            </SidePanelSlotContext.Provider>
+            {/* The panel's box: its full width, so the clip reveals it. */}
+            <div className="flex h-full w-(--detail-page-start-panel-width) shrink-0">
+              <SidePanelSlotContext.Provider
+                value={{ open: open.start, placement: config.start.placement }}
+              >
+                {startPanel}
+              </SidePanelSlotContext.Provider>
+            </div>
           </div>
         </div>
       )}
@@ -264,7 +266,6 @@ export function DetailPage({
             PANEL_SLOT_MOTION,
             DIVIDER_OVERLAY,
             DIVIDER_INLINE_START,
-            "[&_[data-surface=side-panel]]:[--side-panel-width:var(--detail-page-end-width)]",
             endBeside ? "row-span-2 row-start-1" : "row-start-2",
           )}
           style={endExtentStyle}
@@ -290,11 +291,13 @@ export function DetailPage({
             )}
             onTransitionEnd={onClipTransitionEnd("end")}
           >
-            <SidePanelSlotContext.Provider
-              value={{ open: open.end, placement: config.end.placement }}
-            >
-              {endPanel}
-            </SidePanelSlotContext.Provider>
+            <div className="flex h-full w-(--detail-page-end-width) shrink-0">
+              <SidePanelSlotContext.Provider
+                value={{ open: open.end, placement: config.end.placement }}
+              >
+                {endPanel}
+              </SidePanelSlotContext.Provider>
+            </div>
           </div>
         </div>
       )}

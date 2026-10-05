@@ -2,7 +2,6 @@ import { OccupantsThatFit } from '@/app/_components/occupant-docs';
 import { Code } from 'nextra/components';
 import {
   PADDED_INSET_PX,
-  PANEL_TRANSITION_DURATION_MS,
   SIDE_PANEL_TINT_STRENGTH,
 } from '@/lib/composition';
 import { sidePanelSurface } from '@/registry/side-panel/side-panel.surface';
@@ -74,9 +73,9 @@ on the slot that holds this surface; see the template's width rules.
   shows through.
 - **Scroll fades:** a mask at an edge while there is more content that way. The
   mask fades the content, never the tint.
-- **Dividers:** drawn by the template, not the panel.
-- **Motion:** opening and closing take {PANEL_TRANSITION_DURATION_MS}ms, like
-  the Shell sidebar.
+- **Dividers, width, resizing, and motion:** owned by the template, not the
+  panel. The panel fills the slot it's given. See the
+  [Detail page](/templates/detail-page#resizing-the-end-panel).
 
 ## Accessibility
 
@@ -84,12 +83,7 @@ on the slot that holds this surface; see the template's width rules.
   content.
 - A closed panel is inert: it can't take focus and assistive tech skips it,
   even while it animates out. If focus was inside, it moves to main.
-- The end panel's resize handle is a focusable separator named "Resize end
-  panel", with its width in `aria-valuenow`, `aria-valuemin`, and
-  `aria-valuemax`. Arrow keys follow start and end, so they flip in
-  right-to-left languages.
 - In forced-colors mode the dividers become real borders in `CanvasText`.
-- Reduced motion turns the open and close animation off.
 
 ## When not to use
 

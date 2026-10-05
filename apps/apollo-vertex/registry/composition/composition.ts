@@ -6,7 +6,9 @@
  * - Occupants are the content placed inside surfaces.
  *
  * Every slot accepts a surface. Templates never hold occupants directly.
- * Templates draw the lines between slots. Surfaces own everything inside.
+ * Templates own the geometry between slots: slot widths, dividers, the
+ * resize handle, and open and close motion. Surfaces own everything inside
+ * their box: padding, scrolling, fades, and background.
  * Each layer renders a matching data attribute: data-template, data-slot
  * (as "<template>-<slot>"), data-surface, data-occupant.
  *

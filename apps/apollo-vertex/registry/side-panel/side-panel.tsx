@@ -74,7 +74,8 @@ interface SidePanelProps extends React.ComponentProps<"aside"> {
   scroll?: ScrollOwner;
   /**
    * Take the whole width it's given, instead of its own width. For a panel
-   * outside a template, like a preview; a template sets a panel's width.
+   * outside a template, like a preview. In a template's slot it always
+   * fills: the template sizes the slot.
    */
   fill?: boolean;
   /** Names the landmark for assistive tech. */
@@ -104,6 +105,7 @@ function SidePanel({
   const slot = React.useContext(SidePanelSlotContext);
   const open = slot?.open ?? true;
   const placement = slot?.placement ?? "below-header";
+  const fills = fill || slot !== null;
   return (
     <aside
       data-surface="side-panel"
@@ -114,7 +116,7 @@ function SidePanel({
       data-scroll={scroll}
       className={cn(
         sidePanelVariants(),
-        fill && "w-full [--side-panel-width:100%]",
+        fills && "w-full [--side-panel-width:100%]",
         className,
       )}
       {...props}
@@ -124,7 +126,12 @@ function SidePanel({
         data-slot="side-panel-body"
         className={sidePanelBodyVariants({ padding, scroll })}
       >
-        <SurfaceProvider value={frame.value}>{children}</SurfaceProvider>
+        <SurfaceProvider value={frame.value}>
+          {/* A panel nested in this one isn't in the template's slot. */}
+          <SidePanelSlotContext.Provider value={null}>
+            {children}
+          </SidePanelSlotContext.Provider>
+        </SurfaceProvider>
       </div>
     </aside>
   );
