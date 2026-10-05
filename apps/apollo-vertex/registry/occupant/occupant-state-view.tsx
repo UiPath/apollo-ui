@@ -1,12 +1,13 @@
 import { CircleAlert, Inbox } from "lucide-react";
-import type { ReactNode } from "react";
+import { type ReactNode, useContext } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TimelineMarker } from "@/components/ui/timeline";
+import { occupantPadding } from "@/lib/composition";
 import { useSurface } from "@/lib/surface-context";
 import { cn } from "@/lib/utils";
-import type { OccupantState } from "./occupant-states";
+import { OccupantSpecContext, type OccupantState } from "./occupant-states";
 
 interface OccupantStateViewProps {
   state: OccupantState;
@@ -18,10 +19,7 @@ interface OccupantStateViewProps {
   skeleton?: ReactNode;
   /** Shows a Retry button in the error state. */
   onRetry?: () => void;
-  /**
-   * For a flush occupant, which pads its own parts: gives the messages and
-   * the agent line the surface inset, and leaves the content edge to edge.
-   */
+  /** @deprecated Follows the occupant spec's padding; being removed. */
   flush?: boolean;
   /** The content, shown when ready and while an agent updates it. */
   children: ReactNode;
@@ -48,11 +46,16 @@ function OccupantStateView({
   emptyDescription,
   skeleton,
   onRetry,
-  flush = false,
+  flush: flushProp = false,
   children,
 }: OccupantStateViewProps) {
   const { t } = useTranslation();
   const { orientation } = useSurface();
+  // A flush occupant pads its own parts, so the messages and the agent line
+  // get the surface inset and the content stays edge to edge.
+  const spec = useContext(OccupantSpecContext);
+  const flush =
+    flushProp || (spec !== null && occupantPadding(spec) === "flush");
   const inset = flush && "p-(--surface-inset)";
   const message = cn(
     "flex min-w-0 gap-3 text-sm wrap-anywhere",

@@ -1,3 +1,6 @@
+import { createContext } from "react";
+import type { OccupantSpec } from "@/lib/composition";
+
 /**
  * The standard states every occupant can be in. "agent-updating" means an
  * agent is changing the content right now: it stays readable, marked busy.
@@ -42,3 +45,9 @@ export interface OccupantSelectionProps {
   /** Called with an item's id when someone picks it or steps to it. */
   onSelect?: (id: string) => void;
 }
+
+/**
+ * The spec of the occupant being rendered, from its Occupant root, so the
+ * kit's parts can follow it without a prop of their own.
+ */
+export const OccupantSpecContext = createContext<OccupantSpec | null>(null);

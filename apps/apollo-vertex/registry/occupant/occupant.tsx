@@ -1,6 +1,7 @@
 import type * as React from "react";
 import type { OccupantSpec } from "@/lib/composition";
 import { cn } from "@/lib/utils";
+import { OccupantSpecContext } from "./occupant-states";
 
 interface OccupantProps extends React.ComponentProps<"div"> {
   spec: OccupantSpec;
@@ -8,16 +9,19 @@ interface OccupantProps extends React.ComponentProps<"div"> {
 
 /**
  * An occupant's root. It renders data-occupant from the spec and fills the
- * surface's inner area. It adds no padding; the surface owns that.
+ * surface's inner area. It adds no padding; the surface owns that. It
+ * passes the spec to the kit's parts inside it.
  */
 function Occupant({ spec, className, ...props }: OccupantProps) {
   return (
-    <div
-      data-slot="occupant"
-      data-occupant={spec.name}
-      className={cn("flex min-h-0 flex-1 flex-col", className)}
-      {...props}
-    />
+    <OccupantSpecContext.Provider value={spec}>
+      <div
+        data-slot="occupant"
+        data-occupant={spec.name}
+        className={cn("flex min-h-0 flex-1 flex-col", className)}
+        {...props}
+      />
+    </OccupantSpecContext.Provider>
   );
 }
 
