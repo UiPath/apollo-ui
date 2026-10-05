@@ -10,11 +10,11 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { MetadataForm } from './metadata-form';
-import type { FormSchema } from './form-schema';
-import { RuleBuilder } from './rules-engine';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import type { FormSchema } from './form-schema';
+import { MetadataForm } from './metadata-form';
+import { RuleBuilder } from './rules-engine';
 
 // ============================================================================
 // Example 1: User Registration - Cascading Dropdowns
@@ -122,102 +122,7 @@ export const cascadingDropdownsSchema: FormSchema = {
 };
 
 // ============================================================================
-// Example 2: Product Configurator - Cascading Selections
-// ============================================================================
-
-/**
- * Demonstrates cascading product selection.
- * Category -> Product -> Variant with pricing shown in variant label.
- */
-export const computedFieldsSchema: FormSchema = {
-  id: 'product-configurator',
-  title: 'Product Configuration',
-  description: 'Customize your product',
-  sections: [
-    {
-      id: 'product-selection',
-      title: 'Select Your Product',
-      fields: [
-        {
-          name: 'category',
-          type: 'select',
-          label: 'Product Category',
-          dataSource: {
-            type: 'fetch',
-            url: '/api/product-categories',
-            method: 'GET',
-            transform: 'data.categories.map(c => ({ label: c.name, value: c.id }))',
-          },
-        },
-        {
-          name: 'product',
-          type: 'select',
-          label: 'Select Product',
-          dataSource: {
-            type: 'remote',
-            endpoint: '/api/products',
-            params: { categoryId: '$category' },
-          },
-          rules: [
-            new RuleBuilder('show-product-when-category-selected')
-              .when('category')
-              .isNot('')
-              .show()
-              .require()
-              .build(),
-          ],
-        },
-        {
-          name: 'variant',
-          type: 'select',
-          label: 'Product Variant (includes price)',
-          dataSource: {
-            type: 'remote',
-            endpoint: '/api/product-variants',
-            params: { productId: '$product' },
-          },
-          rules: [
-            new RuleBuilder('show-variant-when-product-selected')
-              .when('product')
-              .isNot('')
-              .show()
-              .require()
-              .build(),
-          ],
-        },
-      ],
-    },
-    {
-      id: 'order',
-      title: 'Order Details',
-      fields: [
-        {
-          name: 'quantity',
-          type: 'number',
-          label: 'Quantity',
-          placeholder: '1',
-          min: 1,
-          max: 100,
-          defaultValue: 1,
-          validation: {
-            required: true,
-            min: 1,
-            max: 100,
-          },
-        },
-        {
-          name: 'notes',
-          type: 'textarea',
-          label: 'Order Notes',
-          placeholder: 'Any special instructions...',
-        },
-      ],
-    },
-  ],
-};
-
-// ============================================================================
-// Example 3: Job Application - Conditional Sections + Multi-Select
+// Example 2: Job Application - Conditional Sections + Multi-Select
 // ============================================================================
 
 /**
@@ -358,7 +263,7 @@ export const conditionalSectionsSchema: FormSchema = {
 };
 
 // ============================================================================
-// Example 4: Dynamic Survey - Conditional Questions
+// Example 3: Dynamic Survey - Conditional Questions
 // ============================================================================
 
 /**
@@ -435,102 +340,7 @@ export const conditionalQuestionsSchema: FormSchema = {
 };
 
 // ============================================================================
-// Example 5: Automation Job Config - UiPath Pattern
-// ============================================================================
-
-/**
- * Demonstrates UiPath Orchestrator-style cascading selection.
- * Folder -> Process -> Version -> Robot selection.
- */
-export const automationJobSchema: FormSchema = {
-  id: 'automation-job-config',
-  title: 'Configure Automation Job',
-  description: 'Set up an automation process execution',
-  sections: [
-    {
-      id: 'process',
-      title: 'Process Selection',
-      fields: [
-        {
-          name: 'folder',
-          type: 'select',
-          label: 'Orchestrator Folder',
-          dataSource: {
-            type: 'fetch',
-            url: '/api/orchestrator/folders',
-            method: 'GET',
-            transform: 'data.value.map(f => ({ label: f.DisplayName, value: f.Id }))',
-          },
-        },
-        {
-          name: 'process',
-          type: 'select',
-          label: 'Process Package',
-          dataSource: {
-            type: 'remote',
-            endpoint: '/api/orchestrator/processes',
-            params: { folderId: '$folder' },
-          },
-          rules: [
-            new RuleBuilder('show-process').when('folder').isNot('').show().require().build(),
-          ],
-        },
-        {
-          name: 'version',
-          type: 'select',
-          label: 'Package Version',
-          dataSource: {
-            type: 'remote',
-            endpoint: '/api/orchestrator/package-versions',
-            params: { processKey: '$process' },
-          },
-          rules: [
-            new RuleBuilder('show-version').when('process').isNot('').show().require().build(),
-          ],
-        },
-      ],
-    },
-    {
-      id: 'execution',
-      title: 'Execution Settings',
-      fields: [
-        {
-          name: 'robot',
-          type: 'select',
-          label: 'Robot',
-          dataSource: {
-            type: 'remote',
-            endpoint: '/api/orchestrator/robots',
-            params: { folderId: '$folder' },
-          },
-          rules: [new RuleBuilder('show-robot').when('folder').isNot('').show().require().build()],
-        },
-        {
-          name: 'priority',
-          type: 'select',
-          label: 'Priority',
-          options: [
-            { label: 'Low', value: 'Low' },
-            { label: 'Normal', value: 'Normal' },
-            { label: 'High', value: 'High' },
-          ],
-          defaultValue: 'Normal',
-        },
-        {
-          name: 'inputArguments',
-          type: 'textarea',
-          label: 'Input Arguments (JSON)',
-          placeholder: '{"argument1": "value1"}',
-          // Note: JSON validation would need custom validation at runtime
-          // For now, this is handled by the form submission handler
-        },
-      ],
-    },
-  ],
-};
-
-// ============================================================================
-// Example 6: Multi-Step Onboarding
+// Example 4: Multi-Step Onboarding
 // ============================================================================
 
 /**
@@ -647,7 +457,7 @@ export const multiStepSchema: FormSchema = {
 };
 
 // ============================================================================
-// Example 7: File Upload with Progress (React Component)
+// Example 5: File Upload with Progress (React Component)
 // ============================================================================
 
 export const fileUploadSchema: FormSchema = {

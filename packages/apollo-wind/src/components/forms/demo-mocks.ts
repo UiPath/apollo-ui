@@ -182,82 +182,6 @@ const mockCities: Record<string, Record<string, { code: string; name: string }[]
   },
 };
 
-const mockProductCategories = {
-  categories: [
-    { id: 'electronics', name: 'Electronics' },
-    { id: 'clothing', name: 'Clothing' },
-    { id: 'furniture', name: 'Furniture' },
-    { id: 'software', name: 'Software' },
-  ],
-};
-
-const mockProducts: Record<string, { id: string; name: string }[]> = {
-  electronics: [
-    { id: 'laptop', name: 'Laptop' },
-    { id: 'phone', name: 'Smartphone' },
-    { id: 'tablet', name: 'Tablet' },
-    { id: 'headphones', name: 'Headphones' },
-  ],
-  clothing: [
-    { id: 'shirt', name: 'T-Shirt' },
-    { id: 'pants', name: 'Pants' },
-    { id: 'jacket', name: 'Jacket' },
-  ],
-  furniture: [
-    { id: 'desk', name: 'Office Desk' },
-    { id: 'chair', name: 'Office Chair' },
-    { id: 'bookshelf', name: 'Bookshelf' },
-  ],
-  software: [
-    { id: 'studio', name: 'UiPath Studio' },
-    { id: 'orchestrator', name: 'UiPath Orchestrator' },
-    { id: 'assistant', name: 'UiPath Assistant' },
-  ],
-};
-
-const mockProductVariants: Record<string, { id: string; name: string; price: number }[]> = {
-  laptop: [
-    { id: 'laptop-basic', name: 'Basic - 8GB RAM', price: 799 },
-    { id: 'laptop-pro', name: 'Pro - 16GB RAM', price: 1299 },
-    { id: 'laptop-ultra', name: 'Ultra - 32GB RAM', price: 1999 },
-  ],
-  phone: [
-    { id: 'phone-128', name: '128GB Storage', price: 699 },
-    { id: 'phone-256', name: '256GB Storage', price: 799 },
-    { id: 'phone-512', name: '512GB Storage', price: 999 },
-  ],
-  tablet: [
-    { id: 'tablet-wifi', name: 'WiFi Only', price: 449 },
-    { id: 'tablet-cellular', name: 'WiFi + Cellular', price: 599 },
-  ],
-  headphones: [
-    { id: 'hp-wired', name: 'Wired', price: 99 },
-    { id: 'hp-wireless', name: 'Wireless', price: 199 },
-    { id: 'hp-pro', name: 'Pro Wireless ANC', price: 349 },
-  ],
-  shirt: [
-    { id: 'shirt-s', name: 'Small', price: 29 },
-    { id: 'shirt-m', name: 'Medium', price: 29 },
-    { id: 'shirt-l', name: 'Large', price: 29 },
-    { id: 'shirt-xl', name: 'X-Large', price: 32 },
-  ],
-  desk: [
-    { id: 'desk-std', name: 'Standard', price: 299 },
-    { id: 'desk-adj', name: 'Adjustable Height', price: 599 },
-    { id: 'desk-exec', name: 'Executive', price: 899 },
-  ],
-  chair: [
-    { id: 'chair-basic', name: 'Basic', price: 149 },
-    { id: 'chair-ergo', name: 'Ergonomic', price: 399 },
-    { id: 'chair-exec', name: 'Executive', price: 699 },
-  ],
-  studio: [
-    { id: 'studio-community', name: 'Community (Free)', price: 0 },
-    { id: 'studio-pro', name: 'Pro', price: 420 },
-    { id: 'studio-enterprise', name: 'Enterprise', price: 0 },
-  ],
-};
-
 const mockDepartments = [
   { id: 'engineering', name: 'Engineering' },
   { id: 'product', name: 'Product' },
@@ -307,67 +231,6 @@ const mockPositions: Record<string, { id: string; name: string }[]> = {
   ],
 };
 
-const mockOrchestratorFolders = {
-  value: [
-    { Id: 1, DisplayName: 'Production' },
-    { Id: 2, DisplayName: 'Development' },
-    { Id: 3, DisplayName: 'Testing' },
-    { Id: 4, DisplayName: 'Shared' },
-  ],
-};
-
-const mockOrchestratorProcesses: Record<string, { id: string; name: string }[]> = {
-  '1': [
-    { id: 'invoice-proc', name: 'Invoice Processing' },
-    { id: 'email-auto', name: 'Email Automation' },
-    { id: 'data-extract', name: 'Data Extraction' },
-  ],
-  '2': [
-    { id: 'test-proc', name: 'Test Process' },
-    { id: 'demo-workflow', name: 'Demo Workflow' },
-  ],
-  '3': [
-    { id: 'qa-test', name: 'QA Testing' },
-    { id: 'regression', name: 'Regression Suite' },
-  ],
-  '4': [
-    { id: 'utility', name: 'Utility Functions' },
-    { id: 'shared-lib', name: 'Shared Library' },
-  ],
-};
-
-const mockPackageVersions: Record<string, { id: string; name: string }[]> = {
-  'invoice-proc': [
-    { id: 'v1.0.0', name: '1.0.0' },
-    { id: 'v1.1.0', name: '1.1.0' },
-    { id: 'v2.0.0', name: '2.0.0 (latest)' },
-  ],
-  'email-auto': [
-    { id: 'v1.0.0', name: '1.0.0' },
-    { id: 'v1.0.1', name: '1.0.1 (latest)' },
-  ],
-  'data-extract': [{ id: 'v1.0.0', name: '1.0.0 (latest)' }],
-  'test-proc': [{ id: 'v0.1.0', name: '0.1.0 (dev)' }],
-  'demo-workflow': [
-    { id: 'v1.0.0', name: '1.0.0' },
-    { id: 'v1.1.0', name: '1.1.0 (latest)' },
-  ],
-};
-
-const mockRobots: Record<string, { id: string; name: string }[]> = {
-  '1': [
-    { id: 'robot-1', name: 'PROD-ROBOT-01' },
-    { id: 'robot-2', name: 'PROD-ROBOT-02' },
-    { id: 'robot-3', name: 'PROD-ROBOT-03' },
-  ],
-  '2': [
-    { id: 'dev-robot-1', name: 'DEV-ROBOT-01' },
-    { id: 'dev-robot-2', name: 'DEV-ROBOT-02' },
-  ],
-  '3': [{ id: 'test-robot-1', name: 'TEST-ROBOT-01' }],
-  '4': [{ id: 'shared-robot', name: 'SHARED-ROBOT-01' }],
-};
-
 const mockTimezones = [
   { label: 'Pacific Time (US)', value: 'America/Los_Angeles' },
   { label: 'Mountain Time (US)', value: 'America/Denver' },
@@ -378,16 +241,6 @@ const mockTimezones = [
   { label: 'British Time', value: 'Europe/London' },
   { label: 'Japan Standard Time', value: 'Asia/Tokyo' },
   { label: 'Australian Eastern Time', value: 'Australia/Sydney' },
-];
-
-const mockSurveyProducts = [
-  { id: 'studio', name: 'UiPath Studio' },
-  { id: 'orchestrator', name: 'UiPath Orchestrator' },
-  { id: 'assistant', name: 'UiPath Assistant' },
-  { id: 'automation-hub', name: 'Automation Hub' },
-  { id: 'insights', name: 'UiPath Insights' },
-  { id: 'document-understanding', name: 'Document Understanding' },
-  { id: 'test-suite', name: 'Test Suite' },
 ];
 
 /**
@@ -414,31 +267,6 @@ function createDemoMockAdapter(): MockAdapter {
     return cities.map((c) => ({ label: c.name, value: c.code }));
   });
 
-  // Product categories
-  adapter.register('/api/product-categories', () => mockProductCategories);
-
-  // Products (dependent on category)
-  adapter.register('/api/products', (params) => {
-    const categoryId = params.categoryId as string;
-    if (categoryId) {
-      const products = mockProducts[categoryId] || [];
-      return products.map((p) => ({ label: p.name, value: p.id }));
-    }
-    // For survey - return all products
-    return mockSurveyProducts;
-  });
-
-  // Product variants (dependent on product)
-  adapter.register('/api/product-variants', (params) => {
-    const productId = params.productId as string;
-    const variants = mockProductVariants[productId] || [];
-    return variants.map((v) => ({
-      label: `${v.name} - $${v.price}`,
-      value: v.id,
-      price: v.price,
-    }));
-  });
-
   // Departments
   adapter.register('/api/departments', () => mockDepartments);
 
@@ -447,30 +275,6 @@ function createDemoMockAdapter(): MockAdapter {
     const departmentId = params.departmentId as string;
     const positions = mockPositions[departmentId] || [];
     return positions.map((p) => ({ label: p.name, value: p.id }));
-  });
-
-  // Orchestrator folders
-  adapter.register('/api/orchestrator/folders', () => mockOrchestratorFolders);
-
-  // Orchestrator processes (dependent on folder)
-  adapter.register('/api/orchestrator/processes', (params) => {
-    const folderId = String(params.folderId);
-    const processes = mockOrchestratorProcesses[folderId] || [];
-    return processes.map((p) => ({ label: p.name, value: p.id }));
-  });
-
-  // Package versions (dependent on process)
-  adapter.register('/api/orchestrator/package-versions', (params) => {
-    const processKey = params.processKey as string;
-    const versions = mockPackageVersions[processKey] || [];
-    return versions.map((v) => ({ label: v.name, value: v.id }));
-  });
-
-  // Robots (dependent on folder)
-  adapter.register('/api/orchestrator/robots', (params) => {
-    const folderId = String(params.folderId);
-    const robots = mockRobots[folderId] || [];
-    return robots.map((r) => ({ label: r.name, value: r.id }));
   });
 
   // Timezones
