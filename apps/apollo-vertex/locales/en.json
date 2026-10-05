@@ -276,6 +276,7 @@
   "queue_empty": "Items to work on will appear here.",
   "queue_label": "Queue for {{subject}}",
   "queue_subject": "items",
+  "queue_title": "Queue",
   "recent_activity": "Recent Activity",
   "recent_invoices": "Recent Invoices",
   "remove": "Remove",

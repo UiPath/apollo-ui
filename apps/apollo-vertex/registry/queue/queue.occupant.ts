@@ -8,6 +8,7 @@ import { LAYOUT_TOKENS, type OccupantSpec } from "@/lib/composition";
 export const queueOccupant = {
   name: "queue",
   label: "Queue",
+  titleKey: "queue_title",
   icon: ListTodo,
   orientations: ["vertical"],
   // Follows the side panel's minimum width, so it fits any
