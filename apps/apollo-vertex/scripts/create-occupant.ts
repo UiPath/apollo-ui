@@ -732,7 +732,7 @@ const adapter = (
  */
 import type { ${pascal}ViewModel } from "../${occupantName}.view-model";
 
-// ${FILL(`a record type from ${domain}, a function that maps it to ${pascal}ViewModel, and sample data.`)}
+// ${FILL(`an item type from ${domain}, a function that maps it to ${pascal}ViewModel, and sample data.`)}
 export const ${constant}: ${pascal}ViewModel = {
   subject: "${PLACEHOLDER}",
 ${filtered ? "  filters: [],\n" : ""}  ${collection}: [],

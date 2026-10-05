@@ -345,15 +345,15 @@ docs page's field table.
 Replace `registry/<name>/examples/primary.example-adapter.ts` and
 `secondary.example-adapter.ts`. Each one, for its domain:
 
-- A record type shaped the way that domain would store it: its own field
+- An item type shaped the way that domain would store it: its own field
   names and types, not the view model's.
-- A function that maps the record to the view model, formatting values
+- A function that maps the item to the view model, formatting values
   (dates, money, units) for display and leaving optional fields out when the
-  record has none.
+  item has none.
 - Realistic sample data: three to six items, with at least one optional
   field missing.
 - With groups or filters: group labels the domain would use, and filters
-  from the record's own states, with every item in one.
+  from the item's own states, with every item in one.
 - A header comment: "EXAMPLE ADAPTER (primary|secondary). Not shipped: it
   shows how a solution (<domain>) maps its own data into the <label> view
   model. Adapters belong to solutions."
