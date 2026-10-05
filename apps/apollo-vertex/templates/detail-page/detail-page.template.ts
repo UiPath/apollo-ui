@@ -46,6 +46,7 @@ const panelArea = (column: string): LayoutArea => ({
 const panelOptions = (column: string): SlotLayoutOptions => ({
   optional: true,
   closable: true,
+  defaultPlacement: "below-header",
   // Beside the header, a panel runs the page's full height.
   placements: {
     "beside-header": { columns: [column, column], rows: ["header", "body"] },
