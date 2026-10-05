@@ -37,11 +37,11 @@ async function openPanel(page: Page, query: string, width?: number) {
   await settle(page);
 }
 
-// End panel, Details, and the fill stand-in, Document.
+// Summary, Details, and the fill stand-in, Document.
 const THREE_TABS = "?end-panel-arrangement=tabs";
-// One tab: the end panel's own placeholder stacked with Details.
+// One tab: Summary, the end panel's own placeholder, stacked with Details.
 const STACK = "?end-panel-arrangement=stack";
-// End panel, Details, Activity, People, Notes.
+// Summary, Details, Activity, People, Notes.
 const FIVE_TABS = "?end-panel-arrangement=overflow";
 
 test("one tab shows no tab bar; several tabs show one", async ({ page }) => {
@@ -56,7 +56,7 @@ test("one tab shows no tab bar; several tabs show one", async ({ page }) => {
 
   await openPreview(page, THREE_TABS);
   await expect(tablist(page)).toBeVisible();
-  expect(await shownTabs(page)).toEqual(["End panel", "Details", "Document"]);
+  expect(await shownTabs(page)).toEqual(["Summary", "Details", "Document"]);
   // Each tab is a panel of its own, and only the active one shows.
   await expect(end(page).locator("[data-tab]")).toHaveCount(3);
   await expect(end(page).locator("[data-tab]:visible")).toHaveCount(1);
@@ -67,7 +67,7 @@ test("a stack has a heading per occupant; a single occupant has none", async ({
 }) => {
   await openPreview(page, STACK);
   const headings = tabBody(page, "base").getByRole("heading", { level: 2 });
-  await expect(headings).toHaveText(["End panel", "Details"]);
+  await expect(headings).toHaveText(["Summary", "Details"]);
   // Each heading names its occupant's section.
   await expect(
     tabBody(page, "base").getByRole("region", { name: "Details" }),
@@ -122,7 +122,7 @@ test("each tab keeps its scroll position", async ({ page }) => {
   await end(page).getByRole("tab", { name: "Details" }).click();
   await expect(tabBody(page, "details")).toBeVisible();
   expect(await tabBody(page, "details").evaluate((el) => el.scrollTop)).toBe(0);
-  await end(page).getByRole("tab", { name: "End panel" }).click();
+  await end(page).getByRole("tab", { name: "Summary" }).click();
   await expect(body).toBeVisible();
   expect(await body.evaluate((el) => el.scrollTop)).toBe(240);
 });
@@ -135,7 +135,7 @@ test("a link opens on its tab; an unknown tab opens the first", async ({
   await expect(tabBody(page, "document")).toBeVisible();
 
   await openPreview(page, `${THREE_TABS}&end-panel-tab=nope`);
-  await expect(selectedTab(page)).toHaveText("End panel");
+  await expect(selectedTab(page)).toHaveText("Summary");
   await expect(tabBody(page, "base")).toBeVisible();
 
   // Switching writes the tab to the URL.
@@ -178,7 +178,7 @@ test(`at a narrow width, tabs past the room go into More`, async ({ page }) => {
   expect(shown.length).toBeLessThan(PANEL_MAX_TABS);
   await expect(more(page)).toBeVisible();
   // The tabs still showing are the first ones, in order.
-  const all = ["End panel", "Details", "Activity", "People", "Notes"];
+  const all = ["Summary", "Details", "Activity", "People", "Notes"];
   expect(shown).toEqual(all.slice(0, shown.length));
 
   // Picking a hidden tab swaps it in for the last visible one.
@@ -212,7 +212,7 @@ test("the keyboard moves through the tabs and the More menu", async ({
 }) => {
   await openPanel(page, `${FIVE_TABS}&end-width=280`);
   const shown = await shownTabs(page);
-  await end(page).getByRole("tab", { name: "End panel" }).focus();
+  await end(page).getByRole("tab", { name: "Summary" }).focus();
   // One tab stop; arrows move and select, Home and End jump.
   await page.keyboard.press("ArrowRight");
   await expect(selectedTab(page)).toHaveText("Details");
@@ -220,7 +220,7 @@ test("the keyboard moves through the tabs and the More menu", async ({
   await page.keyboard.press("End");
   await expect(selectedTab(page)).toHaveText(shown.at(-1) ?? "");
   await page.keyboard.press("Home");
-  await expect(selectedTab(page)).toHaveText("End panel");
+  await expect(selectedTab(page)).toHaveText("Summary");
   // Tab leaves the tablist for the More button, a menu button.
   await page.keyboard.press("Tab");
   await expect(more(page)).toBeFocused();

@@ -4,25 +4,22 @@ import { placeholderOccupant } from "@/templates/detail-page/placeholder-occupan
 import {
   ARRANGEMENTS,
   arrangementPanel,
-  PANEL_TITLES,
-  type PanelSlotName,
   parseArrangement,
 } from "@/templates/detail-page/preview-panels";
 
 // The Detail page preview's fixed panel arrangements are valid fixtures.
-const SLOTS = Object.keys(PANEL_TITLES) as PanelSlotName[];
 const base = placeholderOccupant("Panel", "padded");
 const translate = (key: string) => key;
 
-describe.each(SLOTS)("the %s arrangements", (slot) => {
+describe("the arrangements", () => {
   it("single renders as a plain slot", () => {
-    expect(arrangementPanel(slot, "single", base, translate)).toBeNull();
+    expect(arrangementPanel("single", base, translate)).toBeNull();
   });
 
   it.each(
     ARRANGEMENTS.filter((a) => a !== "single"),
   )("%s is a valid panel, with an entry for each occupant", (arrangement) => {
-    const arranged = arrangementPanel(slot, arrangement, base, translate);
+    const arranged = arrangementPanel(arrangement, base, translate);
     if (!arranged) throw new Error("No panel");
     const map = Object.fromEntries(
       arranged.specs.map((spec) => [spec.name, { spec }]),
@@ -34,18 +31,20 @@ describe.each(SLOTS)("the %s arrangements", (slot) => {
 
 describe("arrangement shapes", () => {
   const shape = (arrangement: (typeof ARRANGEMENTS)[number]) => {
-    const arranged = arrangementPanel(
-      "end-panel",
-      arrangement,
-      base,
-      translate,
-    );
+    const arranged = arrangementPanel(arrangement, base, translate);
     return arranged?.panel.tabs.map((tab) => tab.occupants.length) ?? [];
   };
   const sizing = (arrangement: (typeof ARRANGEMENTS)[number]) =>
-    arrangementPanel("end-panel", arrangement, base, translate)?.specs.map(
+    arrangementPanel(arrangement, base, translate)?.specs.map(
       (spec) => spec.sizing ?? "flow",
     );
+
+  it("titles the panel's own placeholder neutrally, not by its slot", () => {
+    const titles = arrangementPanel("tabs", base, translate)?.specs.map(
+      (spec) => spec.titleKey,
+    );
+    expect(titles?.[0]).toBe("detail_page_preview_occupant_summary");
+  });
 
   it("stack is two flow occupants in one tab", () => {
     expect(shape("stack")).toEqual([2]);

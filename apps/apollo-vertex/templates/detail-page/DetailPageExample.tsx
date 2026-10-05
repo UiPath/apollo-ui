@@ -55,7 +55,6 @@ export function DetailPageExample({
   // A panel's arrangement, with a placeholder box for each occupant in it.
   const panelFor = (slot: PanelSlotName, base: OccupantSpec) => {
     const arranged = arrangementPanel(
-      slot,
       arrangements?.[slot] ?? "single",
       base,
       t,

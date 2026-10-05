@@ -20,6 +20,7 @@ import {
 } from "./detail-page.template";
 import {
   type Arrangement,
+  PANEL_SLOTS,
   type PanelSlotName,
   parseArrangement,
 } from "./preview-panels";
@@ -70,8 +71,6 @@ export type { PanelSlotName };
 export type PanelTabs = Record<PanelSlotName, string>;
 
 export type PanelArrangements = Record<PanelSlotName, Arrangement>;
-
-const PANEL_SLOTS: readonly PanelSlotName[] = ["start-panel", "end-panel"];
 
 const tabKey = (slot: PanelSlotName) => `${slot}-tab`;
 const arrangementKey = (slot: PanelSlotName) => `${slot}-arrangement`;

@@ -36,13 +36,16 @@ const EXTRA_TITLES: Record<ExtraOccupant, LocaleKey> = {
   document: "detail_page_preview_occupant_document",
 };
 
-/** Each panel's own placeholder's title, once it shares the panel. */
-export const PANEL_TITLES = {
-  "start-panel": "detail_page_preview_start_panel",
-  "end-panel": "detail_page_preview_end_panel",
-} as const satisfies Record<string, LocaleKey>;
+/**
+ * The panel's own placeholder's title once it shares the panel: neutral,
+ * like the others, not the slot's name.
+ */
+const BASE_TITLE: LocaleKey = "detail_page_preview_occupant_summary";
 
-export type PanelSlotName = keyof typeof PANEL_TITLES;
+/** The slots that hold a side panel, so can be arranged. */
+export const PANEL_SLOTS = ["start-panel", "end-panel"] as const;
+
+export type PanelSlotName = (typeof PANEL_SLOTS)[number];
 
 interface PreviewTab {
   label?: LocaleKey;
@@ -89,7 +92,6 @@ const specName = (occupant: PreviewOccupant) =>
  * for single, which renders as a plain single-occupant slot.
  */
 export function arrangementPanel(
-  slot: PanelSlotName,
   arrangement: Arrangement,
   base: OccupantSpec,
   translate: (key: LocaleKey) => string,
@@ -99,10 +101,8 @@ export function arrangementPanel(
   const specs = tabs
     .flatMap((tab) => tab.occupants)
     .map((occupant): OccupantSpec => {
-      if (occupant === "base") {
-        const titleKey = PANEL_TITLES[slot];
-        return { ...base, label: translate(titleKey), titleKey };
-      }
+      if (occupant === "base")
+        return { ...base, label: translate(BASE_TITLE), titleKey: BASE_TITLE };
       const title = EXTRA_TITLES[occupant];
       return occupant === "document"
         ? fillPlaceholderOccupant(translate(title), title)
