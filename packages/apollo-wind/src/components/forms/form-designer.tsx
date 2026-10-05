@@ -41,6 +41,7 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import { createAiAssistAction, createInsertVariableAction } from './field-actions';
 import type {
   DataSource,
   FieldCondition,
@@ -50,6 +51,8 @@ import type {
   FormPlugin,
   FormSchema,
   ValidationConfig,
+  ValueModeId,
+  ValueModesConfig,
 } from './form-schema';
 import { MetadataForm } from './metadata-form';
 import { schemaToJson } from './schema-serializer';
@@ -170,6 +173,81 @@ const FIELD_TYPE_METADATA: readonly FieldTypeMetadata[] = [
     description: 'Custom field component',
   },
 ] as const;
+
+/** The field types the designer offers value modes and field actions on: those fitted to the anatomy. */
+const ANATOMY_FIELD_TYPES: readonly FieldType[] = [
+  'text',
+  'email',
+  'textarea',
+  'number',
+  'select',
+  'multiselect',
+  'switch',
+  'checkbox',
+  'boolean',
+];
+
+const VALUE_MODE_OPTIONS: { label: string; value: ValueModeId }[] = [
+  { label: 'Fixed value', value: 'literal' },
+  { label: 'Expression', value: 'expression' },
+  { label: 'Variable', value: 'variable' },
+  { label: 'Prompt', value: 'prompt' },
+];
+
+/**
+ * What the preview offers the fields: the variables the Variable mode and Insert pick from, and the
+ * header actions a field can list. Clear is built in. Module-level, as MetadataForm expects plugins
+ * to keep their identity.
+ */
+const PREVIEW_PLUGINS: FormPlugin[] = [
+  {
+    name: 'designer-preview',
+    variables: [
+      {
+        id: 'vars',
+        label: '$vars',
+        children: [
+          {
+            id: 'customerName',
+            label: 'customerName',
+            value: '$vars.customerName',
+            type: 'string',
+          },
+          { id: 'orderId', label: 'orderId', value: '$vars.orderId', type: 'string' },
+          { id: 'total', label: 'total', value: '$vars.total', type: 'number' },
+        ],
+      },
+    ],
+    fieldActions: {
+      header: {
+        'insert-variable': createInsertVariableAction({}),
+        'ai-assist': createAiAssistAction({
+          // A stand-in for a model call.
+          generate: ({ prompt }) =>
+            new Promise((resolve) =>
+              setTimeout(() => resolve({ value: `Generated from "${prompt}"` }), 600)
+            ),
+        }),
+      },
+    },
+  },
+];
+
+/** The designer's value-mode settings as `ValueModesConfig`; no modes means none. */
+function toValueModes(values: Record<string, unknown> | undefined): ValueModesConfig | undefined {
+  const modes = (values?.modes as ValueModeId[] | undefined) ?? [];
+  if (modes.length === 0) return undefined;
+  const defaultMode = values?.defaultMode as ValueModeId | undefined;
+  return {
+    modes,
+    ...(defaultMode && modes.includes(defaultMode) && { defaultMode }),
+    ...(values?.switchable === false && { switchable: false }),
+  };
+}
+
+function nonEmpty(list: unknown): string[] | undefined {
+  return Array.isArray(list) && list.length > 0 ? (list as string[]) : undefined;
+}
 
 interface ExtendedFieldConfig extends Omit<FieldMetadata, 'validation'> {
   id: string;
@@ -562,6 +640,71 @@ const createFieldConfigSchema = (field: ExtendedFieldConfig): FormSchema => ({
       ],
       conditions: [{ when: 'type', is: 'file' }],
     },
+    {
+      id: 'value-modes',
+      title: 'Value modes and actions',
+      description:
+        'A field with modes takes its value as a fixed value, an expression, a variable or a prompt. Any of these settings renders the field anatomy.',
+      fields: [
+        {
+          name: 'valueModes.modes',
+          type: 'multiselect',
+          label: 'Modes',
+          placeholder: 'No modes',
+          options: VALUE_MODE_OPTIONS,
+        },
+        {
+          name: 'valueModes.defaultMode',
+          type: 'select',
+          label: 'Default mode',
+          placeholder: 'The first mode',
+          options: VALUE_MODE_OPTIONS,
+          rules: [
+            {
+              id: 'show-with-modes',
+              conditions: [{ when: 'valueModes.modes', custom: 'valueModes.modes.length > 0' }],
+              effects: { visible: true },
+            },
+          ],
+        },
+        {
+          name: 'valueModes.switchable',
+          type: 'switch',
+          label: 'Users can switch modes',
+          rules: [
+            {
+              id: 'show-with-modes',
+              conditions: [{ when: 'valueModes.modes', custom: 'valueModes.modes.length > 0' }],
+              effects: { visible: true },
+            },
+          ],
+        },
+        {
+          name: 'headerActions',
+          type: 'multiselect',
+          label: 'Header actions',
+          placeholder: 'None',
+          options: [
+            { label: 'Insert variable', value: 'insert-variable' },
+            { label: 'AI assist', value: 'ai-assist' },
+          ],
+        },
+        {
+          name: 'menuActions',
+          type: 'multiselect',
+          label: 'Menu actions',
+          placeholder: 'None',
+          options: [{ label: 'Clear value', value: 'clear' }],
+        },
+        {
+          name: 'badge',
+          type: 'text',
+          label: 'Badge',
+          placeholder: 'e.g. Beta',
+        },
+      ],
+      conditions: [{ when: 'type', in: [...ANATOMY_FIELD_TYPES] }],
+    },
   ],
   initialData: {
     name: field.name,
@@ -574,6 +717,14 @@ const createFieldConfigSchema = (field: ExtendedFieldConfig): FormSchema => ({
     step: field.step,
     accept: field.accept || '',
     multiple: field.multiple || false,
+    valueModes: {
+      modes: field.valueModes?.modes ?? [],
+      defaultMode: field.valueModes?.defaultMode ?? '',
+      switchable: field.valueModes?.switchable ?? true,
+    },
+    headerActions: field.headerActions ?? [],
+    menuActions: field.menuActions ?? [],
+    badge: field.badge ?? '',
     validation: {
       minLength: field.validation?.minLength,
       maxLength: field.validation?.maxLength,
@@ -705,6 +856,15 @@ function FieldConfigForm({ field, onUpdate, allFields, existingFieldNames }: Fie
             placeholder: (values.placeholder as string) || undefined,
             description: (values.description as string) || undefined,
           };
+
+          // The anatomy settings; a type outside the anatomy keeps none.
+          const anatomy = ANATOMY_FIELD_TYPES.includes(newType);
+          updates.valueModes = anatomy
+            ? toValueModes(values.valueModes as Record<string, unknown>)
+            : undefined;
+          updates.headerActions = anatomy ? nonEmpty(values.headerActions) : undefined;
+          updates.menuActions = anatomy ? nonEmpty(values.menuActions) : undefined;
+          updates.badge = (anatomy && (values.badge as string)) || undefined;
 
           // Add type-specific properties and validation
           // Always preserve requiredMessage from form values
@@ -1202,7 +1362,10 @@ export function FormDesigner() {
                               <RequiredIndicator className="ml-0 text-[10px]" />
                             )}
                           </div>
-                          <div className="text-[9px] text-muted-foreground">{field.type}</div>
+                          <div className="text-[9px] text-muted-foreground">
+                            {field.type}
+                            {field.valueModes && ` · ${field.valueModes.modes.length} modes`}
+                          </div>
                         </div>
                         <div className="flex gap-0.5 opacity-0 group-hover/field:opacity-100 transition-opacity">
                           <Button
@@ -1357,10 +1520,11 @@ export function FormDesigner() {
                 key={sections
                   .map(
                     (s) =>
-                      `${s.id}:${s.collapsible}:${s.defaultExpanded}:${s.fields.map((f) => `${f.id}:${f.type}:${f.name}:${JSON.stringify(f.rules || [])}:${JSON.stringify(f.validation || {})}`).join('-')}`
+                      `${s.id}:${s.collapsible}:${s.defaultExpanded}:${s.fields.map((f) => `${f.id}:${f.type}:${f.name}:${JSON.stringify(f.rules || [])}:${JSON.stringify(f.validation || {})}:${JSON.stringify(f.valueModes || {})}`).join('-')}`
                   )
                   .join(',')}
                 schema={generatedSchema}
+                plugins={PREVIEW_PLUGINS}
                 onSubmit={(data) => {
                   console.log('Form submitted:', data);
                   alert('Form submitted! Check console for data.');

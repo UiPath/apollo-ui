@@ -388,6 +388,60 @@ describe('FormDesigner', () => {
     });
   });
 
+  describe('value modes and actions', () => {
+    /** Picks options from a multiselect in the field settings, then closes it. */
+    async function pick(
+      user: ReturnType<typeof userEvent.setup>,
+      label: string,
+      options: string[]
+    ) {
+      await user.click(screen.getByRole('combobox', { name: label }));
+      for (const option of options) {
+        await user.click(await screen.findByRole('option', { name: option }));
+      }
+      await user.keyboard('{Escape}');
+    }
+
+    it('shows the default mode and switching only once a mode is chosen', async () => {
+      const { user } = setup();
+      await screen.findByDisplayValue('Full Name');
+      expect(screen.queryByText('Default mode')).not.toBeInTheDocument();
+
+      await pick(user, 'Modes', ['Fixed value']);
+
+      expect(await screen.findByText('Default mode')).toBeInTheDocument();
+      expect(screen.getByRole('switch', { name: 'Users can switch modes' })).toBeChecked();
+    });
+
+    it('writes modes and actions into the schema and renders them in the preview', async () => {
+      const { user } = setup();
+      await screen.findByDisplayValue('Full Name');
+
+      await pick(user, 'Modes', ['Fixed value', 'Expression']);
+      await pick(user, 'Header actions', ['Insert variable']);
+      await pick(user, 'Menu actions', ['Clear value']);
+
+      expect(await screen.findByRole('button', { name: 'Insert variable' })).toBeInTheDocument();
+      const field = (await readGeneratedSchema(user)).sections[0].fields[0];
+      expect(field.valueModes).toEqual({ modes: ['literal', 'expression'] });
+      expect(field.headerActions).toEqual(['insert-variable']);
+      expect(field.menuActions).toEqual(['clear']);
+    });
+
+    it('drops them when the field changes to a type outside the anatomy', async () => {
+      const { user } = setup();
+      await screen.findByDisplayValue('Full Name');
+      await pick(user, 'Modes', ['Expression']);
+
+      await user.click(getComboboxByText('Text (Input)'));
+      await user.click(await screen.findByRole('option', { name: 'Date (Input)' }));
+
+      const field = (await readGeneratedSchema(user)).sections[0].fields[0];
+      expect(field.type).toBe('date');
+      expect(field.valueModes).toBeUndefined();
+    });
+  });
+
   describe('accessibility', () => {
     it('has no accessibility violations on the default render', async () => {
       const { container } = render(<FormDesigner />);
