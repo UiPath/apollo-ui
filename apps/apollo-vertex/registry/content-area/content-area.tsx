@@ -74,7 +74,7 @@ function ContentArea({
   return (
     <div
       ref={ref}
-      data-surface="content-area"
+      data-surface={contentAreaSurface.name}
       data-padding={padding}
       data-scroll={scroll}
       className={cn(contentAreaVariants(), className)}

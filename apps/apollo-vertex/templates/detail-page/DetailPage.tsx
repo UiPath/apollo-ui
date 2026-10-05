@@ -14,6 +14,7 @@ import { SidePanelSlotContext } from "@/components/ui/side-panel";
 import { PANEL_TRANSITION_DURATION_MS } from "@/lib/composition";
 import { cn } from "@/lib/utils";
 import {
+  type DetailPageSlotName,
   detailPageTemplate,
   END_PANEL_MIN_PX,
   enabledPanels,
@@ -65,6 +66,10 @@ function transitionFallbackMs(element: Element | null): number {
   const ms = Number.parseFloat(value);
   return (Number.isFinite(ms) ? ms : PANEL_TRANSITION_DURATION_MS) + 150;
 }
+
+/** A slot's data-slot value, "<template>-<slot>", from the template's spec. */
+const slotId = (name: DetailPageSlotName) =>
+  `${detailPageTemplate.name}-${name}`;
 
 const endPanelResizable =
   detailPageTemplate.slots.find((slot) => slot.name === "end-panel")
@@ -189,7 +194,7 @@ export function DetailPage({
         templateRef.current = node;
         return ref(node);
       }}
-      data-template="detail-page"
+      data-template={detailPageTemplate.name}
       style={templateStyle}
       className={cn(
         "relative z-10 grid h-full min-h-0 flex-1 grid-cols-(--detail-page-columns) grid-rows-[auto_minmax(0,1fr)]",
@@ -198,7 +203,7 @@ export function DetailPage({
       {...props}
     >
       <div
-        data-slot="detail-page-header"
+        data-slot={slotId("header")}
         className={cn(
           "relative row-start-1 min-w-0",
           DIVIDER_OVERLAY,
@@ -212,7 +217,7 @@ export function DetailPage({
       {hasStart && (
         <div
           ref={startSlotRef}
-          data-slot="detail-page-start-panel"
+          data-slot={slotId("start-panel")}
           data-state={open.start ? "open" : "closed"}
           data-transitioning={transitioning === "start"}
           inert={!open.start}
@@ -247,7 +252,7 @@ export function DetailPage({
       )}
       <div
         ref={mainRef}
-        data-slot="detail-page-main"
+        data-slot={slotId("main")}
         // Focus lands here when a closing panel had it.
         tabIndex={-1}
         className="col-start-2 row-start-2 min-h-0 min-w-0 outline-none"
@@ -257,7 +262,7 @@ export function DetailPage({
       {hasEnd && (
         <div
           ref={endSlotRef}
-          data-slot="detail-page-end-panel"
+          data-slot={slotId("end-panel")}
           data-state={open.end ? "open" : "closed"}
           data-transitioning={transitioning === "end"}
           inert={!open.end}

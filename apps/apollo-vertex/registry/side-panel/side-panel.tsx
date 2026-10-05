@@ -108,7 +108,7 @@ function SidePanel({
   const fills = fill || slot !== null;
   return (
     <aside
-      data-surface="side-panel"
+      data-surface={sidePanelSurface.name}
       data-side={side}
       data-padding={padding}
       data-state={open ? "open" : "closed"}
