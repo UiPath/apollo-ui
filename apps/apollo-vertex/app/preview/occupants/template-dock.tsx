@@ -12,7 +12,9 @@ import { type LayoutChoices, resolveLayout } from "@/lib/layout";
 import type { PreviewShellVariant } from "@/templates/shell/PreviewShell";
 import { Dock, DockSlider, FitToggleGroup } from "./dock-parts";
 import { PageMap } from "./page-map";
+import { TemplateContentsMenu } from "./template-contents-menu";
 import { TemplateLayoutMenu } from "./template-layout-menu";
+import type { SlotContents } from "./workbench-compose";
 import {
   PAGE_WIDTH_MAX,
   pageWidthMin,
@@ -50,6 +52,9 @@ interface TemplateDockProps {
   onLayout: (layout: LayoutChoices) => void;
   /** Each slot after the template's rules, once the template has rendered. */
   slotStatus: Readonly<Record<string, SlotStatus>> | null;
+  /** What each slot holds, and changing it. */
+  contents: SlotContents;
+  onContents: (contents: SlotContents) => void;
   pageWidth: number;
   onPageWidth: (width: number) => void;
   zoom: WorkbenchZoom;
@@ -73,6 +78,8 @@ export function TemplateDock({
   layout,
   onLayout,
   slotStatus,
+  contents,
+  onContents,
   pageWidth,
   onPageWidth,
   zoom,
@@ -110,6 +117,12 @@ export function TemplateDock({
         layout={layout}
         onLayout={onLayout}
         status={slotStatus}
+      />
+      <TemplateContentsMenu
+        host={host}
+        contents={contents}
+        focus={spec.name}
+        onContents={onContents}
       />
       <Separator orientation="vertical" className="h-8" />
       <div className="flex items-center gap-3">

@@ -101,6 +101,13 @@ export function layoutMenu(
 const NEUTRAL_REASONS: Readonly<Record<string, LocaleKey>> = {
   rule: "workbench_layout_closed_by_layout_rule",
   refused: "workbench_layout_refused",
+  // The composer's (see ComposeLock).
+  focus: "workbench_compose_reason_focus",
+  "fill-alone": "workbench_compose_reason_fill_alone",
+  "tab-cap": "workbench_compose_reason_tab_cap",
+  "no-fit": "workbench_compose_reason_no_fit",
+  full: "workbench_compose_reason_full",
+  present: "workbench_compose_reason_present",
 };
 
 /** The copy for why a template closed or refused something: its own, else neutral. */

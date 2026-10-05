@@ -296,6 +296,8 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
               layout={view.layout}
               onLayout={(layout) => update({ layout })}
               slotStatus={slotStatus}
+              contents={view.contents}
+              onContents={(contents) => update({ contents })}
               pageWidth={view.pageWidth}
               onPageWidth={(pageWidth) => update({ pageWidth })}
               zoom={view.zoom}
