@@ -176,6 +176,57 @@ describe('two BaseCanvas instances mounted side by side (e.g. a before/after dif
     expect(getToolbarActionStore().onToolbarAction).toBeUndefined();
   });
 
+  describe('module-level store with several canvases', () => {
+    const canvas = (mode: 'view' | 'design', onToolbarAction: () => void) => (
+      <ReactFlowProvider>
+        <NodeRegistryProvider>
+          <BaseCanvas nodes={[]} edges={[]} mode={mode} onToolbarAction={onToolbarAction} />
+        </NodeRegistryProvider>
+      </ReactFlowProvider>
+    );
+    const handlerA = vi.fn();
+    const handlerB = vi.fn();
+
+    it('follows the newest mounted canvas and falls back to the survivor when it unmounts', () => {
+      const a = render(canvas('view', handlerA));
+      const b = render(canvas('design', handlerB));
+      expect(getToolbarActionStore().onToolbarAction).toBe(handlerB);
+
+      b.unmount();
+      expect(getToolbarActionStore()).toMatchObject({ mode: 'view', onToolbarAction: handlerA });
+
+      a.unmount();
+      expect(getToolbarActionStore()).toEqual({
+        mode: 'design',
+        onToolbarAction: undefined,
+        breakpoints: undefined,
+      });
+    });
+
+    it('keeps the newest canvas when an older one unmounts', () => {
+      const a = render(canvas('view', handlerA));
+      const b = render(canvas('design', handlerB));
+
+      a.unmount();
+      expect(getToolbarActionStore()).toMatchObject({ mode: 'design', onToolbarAction: handlerB });
+
+      b.unmount();
+      expect(getToolbarActionStore().onToolbarAction).toBeUndefined();
+    });
+
+    it('ignores updates from a canvas that is not the newest', () => {
+      const a = render(canvas('view', handlerA));
+      const b = render(canvas('view', handlerB));
+
+      a.rerender(canvas('design', vi.fn()));
+      expect(getToolbarActionStore()).toMatchObject({ mode: 'view', onToolbarAction: handlerB });
+
+      b.unmount();
+      expect(getToolbarActionStore().mode).toBe('design');
+      a.unmount();
+    });
+  });
+
   it("gives the toolbar store BaseCanvas's own default mode when none is passed", () => {
     let store: ToolbarActionStore | undefined;
     let canvasMode: string | undefined;
