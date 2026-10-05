@@ -31,6 +31,12 @@ import { withFocus } from "./workbench-layout";
  * and <slot>-placement. A template can map its older params onto these
  * (TemplateHost.legacyParams). Only non-default values are written;
  * unknown slots and invalid values fall back to the defaults.
+ *
+ * Each view owns its params, and only the current view's are read and
+ * written. The surface view's are surface and width. The template view's
+ * are view=template, template, slot, shell, the layout, page, and zoom;
+ * there the surface comes from the slot. So a link never carries a
+ * surface and a slot that disagree.
  */
 export type WorkbenchTheme = "light" | "dark";
 export type WorkbenchMode = "surface" | "template";
@@ -76,16 +82,66 @@ export const pageWidthMin = (
 ): number => (host?.minWidth ?? 0) + SHELL_WIDTH[shell];
 
 /**
- * The view as it can be: the occupant's slot kept there and open (the
- * focus rule), the width in range.
+ * The view as it can be: in the template view, the surface is the slot's,
+ * and the occupant's slot is kept there and open (the focus rule); the
+ * width is in range.
  */
 export function normalizeView(view: WorkbenchView): WorkbenchView {
   const host = templateFor(view.template);
+  const spec = specFor(view.occupant);
+  const inTemplate = view.mode === "template" && host;
   return {
     ...view,
+    ...(inTemplate && { surface: slotSurface(host, view.slot, spec) }),
     layout: host ? withFocus(host.spec, view.layout, view.slot) : view.layout,
     pageWidth: Math.max(view.pageWidth, pageWidthMin(host, view.shell)),
   };
+}
+
+/**
+ * The surface a slot shows the occupant in: one it accepts that the
+ * occupant fits there, else the first it accepts that previews host.
+ */
+export function slotSurface(
+  host: TemplateHost,
+  slotName: string,
+  spec: OccupantSpec | undefined,
+): string {
+  const slot = host.spec.slots.find((s) => s.name === slotName);
+  const accepted = HOSTED_SURFACES.filter((surface) =>
+    slot?.surfaces.includes(surface.name),
+  );
+  const fitting = accepted.find(
+    (surface) => slot && spec && fits(slot, surface, spec).fits,
+  );
+  return (fitting ?? accepted[0])?.name ?? defaultSurface(spec);
+}
+
+/**
+ * The view switched to another mode, carrying the occupant's place over:
+ * into the template view at a slot that takes its surface, and back to
+ * the surface view in its slot's surface, at that surface's start width.
+ */
+export function switchView(
+  view: WorkbenchView,
+  mode: WorkbenchMode,
+): WorkbenchView {
+  if (mode === view.mode) return view;
+  const spec = specFor(view.occupant);
+  if (mode === "surface")
+    return { ...view, mode, width: defaultWidth(spec, view.surface) };
+  const host = templateFor(view.template);
+  const taking = host?.spec.slots.find(
+    (slot) =>
+      slot.surfaces.includes(view.surface) &&
+      spec &&
+      slotFit(host, slot.name, spec).fits,
+  );
+  return normalizeView({
+    ...view,
+    mode,
+    slot: taking?.name ?? defaultSlot(host, spec),
+  });
 }
 
 /** Templates previews can render, in the registry's order. */
@@ -225,8 +281,17 @@ export function defaultWidth(
 
 const DEFAULT_OCCUPANT = OCCUPANT_SPECS[0]?.spec.name ?? "";
 
+/** The params only one view reads and writes. */
+const SURFACE_PARAMS = ["surface", "width"];
+const TEMPLATE_PARAMS = ["template", "slot", "shell", "page", "zoom"];
+
 export function parseWorkbenchView(search: string): WorkbenchView {
   const params = new URLSearchParams(search);
+  const mode: WorkbenchMode =
+    params.get("view") === "template" ? "template" : "surface";
+  // Only the current view's own params count.
+  for (const key of mode === "template" ? SURFACE_PARAMS : TEMPLATE_PARAMS)
+    params.delete(key);
   const occupant =
     specFor(params.get("occupant") ?? "")?.name ?? DEFAULT_OCCUPANT;
   const spec = specFor(occupant);
@@ -258,11 +323,11 @@ export function parseWorkbenchView(search: string): WorkbenchView {
         : defaultWidth(spec, surface),
     listOpen: params.get("list") !== "closed",
     detailsOpen: params.get("details") === "open",
-    mode: params.get("view") === "template" ? "template" : "surface",
+    mode,
     template,
     slot,
     shell,
-    layout: parseLayout(host, params),
+    layout: mode === "template" ? parseLayout(host, params) : {},
     pageWidth:
       Number.isInteger(pageWidth) &&
       pageWidth >= pageWidthMin(host, shell) &&
@@ -273,20 +338,13 @@ export function parseWorkbenchView(search: string): WorkbenchView {
   });
 }
 
-export function serializeWorkbenchView(view: WorkbenchView): string {
-  const spec = specFor(view.occupant);
-  const params = new URLSearchParams();
-  if (view.occupant !== DEFAULT_OCCUPANT) params.set("occupant", view.occupant);
-  if (view.surface !== defaultSurface(spec))
-    params.set("surface", view.surface);
-  if (view.sample !== "primary") params.set("sample", view.sample);
-  if (view.state !== "ready") params.set("state", view.state);
-  if (view.theme !== "light") params.set("theme", view.theme);
-  if (view.width !== defaultWidth(spec, view.surface))
-    params.set("width", String(view.width));
-  if (!view.listOpen) params.set("list", "closed");
-  if (view.detailsOpen) params.set("details", "open");
-  if (view.mode !== "surface") params.set("view", view.mode);
+/** The template view's own params: only what isn't the default. */
+function writeTemplateParams(
+  view: WorkbenchView,
+  spec: OccupantSpec | undefined,
+  params: URLSearchParams,
+) {
+  params.set("view", view.mode);
   if (view.template !== defaultTemplate())
     params.set("template", view.template);
   if (view.slot !== defaultSlot(templateFor(view.template), spec))
@@ -296,6 +354,23 @@ export function serializeWorkbenchView(view: WorkbenchView): string {
   if (view.pageWidth !== DEFAULT_PAGE_WIDTH)
     params.set("page", String(view.pageWidth));
   if (view.zoom !== "fit") params.set("zoom", "100");
+}
+
+export function serializeWorkbenchView(view: WorkbenchView): string {
+  const spec = specFor(view.occupant);
+  const params = new URLSearchParams();
+  if (view.occupant !== DEFAULT_OCCUPANT) params.set("occupant", view.occupant);
+  const inTemplate = view.mode === "template";
+  if (!inTemplate && view.surface !== defaultSurface(spec))
+    params.set("surface", view.surface);
+  if (view.sample !== "primary") params.set("sample", view.sample);
+  if (view.state !== "ready") params.set("state", view.state);
+  if (view.theme !== "light") params.set("theme", view.theme);
+  if (!inTemplate && view.width !== defaultWidth(spec, view.surface))
+    params.set("width", String(view.width));
+  if (!view.listOpen) params.set("list", "closed");
+  if (view.detailsOpen) params.set("details", "open");
+  if (inTemplate) writeTemplateParams(view, spec, params);
   const query = params.toString();
   return query ? `?${query}` : "";
 }

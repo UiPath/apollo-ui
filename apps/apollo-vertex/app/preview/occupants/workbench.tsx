@@ -33,6 +33,7 @@ import {
   normalizeView,
   serializeWorkbenchView,
   slotFit,
+  switchView,
   templateFor,
   type WorkbenchView,
 } from "./workbench-url-state";
@@ -221,7 +222,7 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
           theme={view.theme}
           onTheme={(theme) => update({ theme })}
           mode={view.mode}
-          onMode={(mode) => update({ mode })}
+          onMode={(mode) => setView((prev) => switchView(prev, mode))}
           template={view.template}
           onTemplate={(template) =>
             update({ template, slot: defaultSlot(templateFor(template), spec) })
