@@ -11,6 +11,14 @@ function typeAndApply(text: string) {
   fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
 }
 
+const malformedJson = '{"city":';
+let parserMessage: string;
+try {
+  JSON.parse(malformedJson);
+} catch (error) {
+  parserMessage = (error as Error).message;
+}
+
 describe('JsonContainerEditor', () => {
   it('commits valid JSON', () => {
     const onCommit = vi.fn();
@@ -19,11 +27,11 @@ describe('JsonContainerEditor', () => {
     expect(onCommit).toHaveBeenCalledWith({ city: 'Paris' });
   });
 
-  it('shows the invalidJson string for malformed JSON and does not commit', () => {
+  it('shows the localized prefix and parser details for malformed JSON without committing', () => {
     const onCommit = vi.fn();
     render(<JsonContainerEditor node={node} onCommit={onCommit} onCancel={() => {}} />);
-    typeAndApply('{"city":');
-    expect(screen.getByText('Invalid JSON')).toBeInTheDocument();
+    typeAndApply(malformedJson);
+    expect(screen.getByText(`Invalid JSON: ${parserMessage}`)).toBeInTheDocument();
     expect(onCommit).not.toHaveBeenCalled();
   });
 
@@ -33,7 +41,7 @@ describe('JsonContainerEditor', () => {
         <JsonContainerEditor node={node} onCommit={() => {}} onCancel={() => {}} />
       </JsonTreeViewProvider>
     );
-    typeAndApply('{"city":');
-    expect(screen.getByText('JSON no válido')).toBeInTheDocument();
+    typeAndApply(malformedJson);
+    expect(screen.getByText(`JSON no válido: ${parserMessage}`)).toBeInTheDocument();
   });
 });
