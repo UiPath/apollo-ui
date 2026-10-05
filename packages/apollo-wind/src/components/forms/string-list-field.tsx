@@ -34,6 +34,8 @@ export interface StringListFieldProps {
    * indication of where it is.
    */
   inputRef?: React.Ref<HTMLTextAreaElement>;
+  /** Every row's aria-describedby. Defaults to the error message's id while there is an error. */
+  ariaDescribedBy?: string;
 }
 
 /**
@@ -52,6 +54,7 @@ export function StringListField({
   disabled = false,
   required = false,
   inputRef,
+  ariaDescribedBy = error ? `${field.name}-error` : undefined,
 }: StringListFieldProps) {
   return (
     <FormField data-slot="string-list-field">
@@ -70,6 +73,7 @@ export function StringListField({
         invalid={!!error}
         disabled={disabled}
         inputRef={inputRef}
+        ariaDescribedBy={ariaDescribedBy}
       />
       <FormFieldDescription>{field.description}</FormFieldDescription>
       <FormFieldError id={`${field.name}-error`}>{error}</FormFieldError>
@@ -91,6 +95,7 @@ export function StringListControl({
   invalid = false,
   disabled = false,
   inputRef,
+  ariaDescribedBy = invalid ? `${field.name}-error` : undefined,
 }: StringListControlProps) {
   const items = value ?? [];
   const maxItems = field.maxItems ?? Number.POSITIVE_INFINITY;
@@ -155,7 +160,7 @@ export function StringListControl({
               // styling and lets assistive tech announce the FormFieldError text below,
               // regardless of which row is focused.
               aria-invalid={invalid || undefined}
-              aria-describedby={invalid ? `${field.name}-error` : undefined}
+              aria-describedby={ariaDescribedBy}
               aria-errormessage={invalid ? `${field.name}-error` : undefined}
               className="flex-1"
             />

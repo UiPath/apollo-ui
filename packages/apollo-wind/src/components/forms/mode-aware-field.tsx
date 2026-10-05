@@ -59,6 +59,8 @@ export interface ModeAwareFieldProps {
   disabled: boolean;
   required: boolean;
   options: FieldOption[];
+  /** Further ids for the control's aria-describedby, after the error message's. */
+  describedBy?: string;
 }
 
 /**
@@ -154,6 +156,7 @@ function FieldAnatomy({
   options,
   formField,
   error,
+  describedBy,
 }: FieldAnatomyProps) {
   const form = useFormContext();
   const registry = context.valueModes ?? DEFAULT_VALUE_MODE_REGISTRY;
@@ -163,6 +166,7 @@ function FieldAnatomy({
   const { name } = field;
   const errorId = `${name}-error`;
   const labelId = `${name}-label`;
+  const controlDescribedBy = joinIds(error && errorId, describedBy);
   // Resolved only when a picker opens, so a live variables source never re-renders the field.
   const formVariables = context.variables;
   const variables = useCallback(
@@ -352,6 +356,7 @@ function FieldAnatomy({
     required,
     error,
     errorId,
+    describedBy,
     valueModeProps: () => ({
       value: inner,
       onChange: (next: unknown) => writeInner(next),
@@ -375,7 +380,7 @@ function FieldAnatomy({
       controlProps: {
         'data-slot': 'input-group-control',
         'aria-invalid': error ? true : undefined,
-        'aria-describedby': error ? errorId : undefined,
+        'aria-describedby': controlDescribedBy,
         'aria-errormessage': error ? errorId : undefined,
       },
     }),
@@ -617,6 +622,8 @@ interface ResolveControlInput {
   required: boolean;
   error: string | undefined;
   errorId: string;
+  /** Further ids for the control's aria-describedby, after the error message's. */
+  describedBy: string | undefined;
   valueModeProps: () => ValueModeControlProps;
 }
 
@@ -676,7 +683,14 @@ function resolveControl(input: ResolveControlInput): Resolved {
 }
 
 /** The built-in control of a mode with none of its own: a plain Input over a string value. */
-function FallbackControl({ field, binding, disabled, error, errorId }: ResolveControlInput) {
+function FallbackControl({
+  field,
+  binding,
+  disabled,
+  error,
+  errorId,
+  describedBy,
+}: ResolveControlInput) {
   const { value } = binding;
   return (
     <Input
@@ -689,10 +703,15 @@ function FallbackControl({ field, binding, disabled, error, errorId }: ResolveCo
       placeholder={field.placeholder}
       disabled={disabled}
       aria-invalid={error ? true : undefined}
-      aria-describedby={error ? errorId : undefined}
+      aria-describedby={joinIds(error && errorId, describedBy)}
       aria-errormessage={error ? errorId : undefined}
     />
   );
+}
+
+/** Space-joins the ids that are set, or `undefined` when none is. */
+function joinIds(...ids: (string | false | undefined)[]): string | undefined {
+  return ids.filter(Boolean).join(' ') || undefined;
 }
 
 function builtInLiteral(input: ResolveControlInput): Resolved {
@@ -722,6 +741,10 @@ function builtInLiteral(input: ResolveControlInput): Resolved {
           error={error}
           controlRef={input.controlRef}
           labelId={input.labelId}
+          aria-describedby={joinIds(
+            field.componentProps?.['aria-describedby'] as string | undefined,
+            input.describedBy
+          )}
         />
       ),
       geometry: registrationGeometry(registration),
@@ -738,6 +761,7 @@ function builtInLiteral(input: ResolveControlInput): Resolved {
         disabled={disabled}
         invalid={!!error}
         strings={strings.boolean}
+        describedBy={input.describedBy}
       />
     ),
     geometry: FIELD_CONTROL_GEOMETRY[field.type] ?? unfittedGeometry(field),
