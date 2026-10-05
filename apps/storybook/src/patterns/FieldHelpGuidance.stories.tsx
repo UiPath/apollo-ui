@@ -1,8 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { CircleHelp } from 'lucide-react';
+import { FormField, FormFieldDescription, FormFieldLabel } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { FullWorkbenchComposition } from '../../../../packages/apollo-react/src/canvas/stories/templates/Flow.stories';
 import { withCanvasProviders } from '../../../../packages/apollo-react/src/canvas/storybook-utils';
 import {
@@ -27,53 +26,35 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-function HelpTrigger({ fieldName }: { fieldName: string }) {
-  return (
-    <TooltipTrigger asChild>
-      <button
-        type="button"
-        aria-label={`Help for ${fieldName}`}
-        className="inline-flex size-5 cursor-help items-center justify-center rounded-sm text-muted-foreground ring-offset-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-      >
-        <CircleHelp aria-hidden="true" className="size-3.5" />
-      </button>
-    </TooltipTrigger>
-  );
-}
-
 function InlineDescriptionExample() {
   return (
-    <div className="grid gap-1.5">
-      <Label htmlFor="workspace-slug">Workspace URL</Label>
+    <FormField>
+      <FormFieldLabel htmlFor="workspace-slug">Workspace URL</FormFieldLabel>
       <Input
         id="workspace-slug"
         aria-describedby="workspace-slug-description"
         placeholder="team-name"
       />
-      <p id="workspace-slug-description" className="mt-1 text-xs leading-4 text-muted-foreground">
+      <FormFieldDescription id="workspace-slug-description">
         Use lowercase letters, numbers, and hyphens. You cannot change this later.
-      </p>
-    </div>
+      </FormFieldDescription>
+    </FormField>
   );
 }
 
 function TooltipHelpExample({ idSuffix }: { idSuffix: string }) {
   const inputId = `retention-period-${idSuffix}`;
   return (
-    <TooltipProvider delayDuration={300}>
-      <div className="grid gap-1.5">
-        <div className="flex items-center gap-1">
-          <Label htmlFor={inputId}>Retention period</Label>
-          <Tooltip>
-            <HelpTrigger fieldName="retention period" />
-            <TooltipContent side="top" className="max-w-64">
-              How long completed jobs remain available before they are permanently deleted.
-            </TooltipContent>
-          </Tooltip>
-        </div>
-        <Input id={inputId} inputMode="numeric" placeholder="30 days" />
-      </div>
-    </TooltipProvider>
+    <FormField>
+      <FormFieldLabel
+        htmlFor={inputId}
+        tooltip="How long completed jobs remain available before they are permanently deleted."
+        tooltipAriaLabel="Help for retention period"
+      >
+        Retention period
+      </FormFieldLabel>
+      <Input id={inputId} inputMode="numeric" placeholder="30 days" />
+    </FormField>
   );
 }
 
@@ -154,12 +135,12 @@ function FieldHelpGuidancePage({ globalTheme }: { globalTheme: string }) {
             kind="dont"
             note="Don’t make the input, select, label, or entire field an invisible hover target."
           >
-            <div className="grid gap-1.5">
-              <Label htmlFor="whole-control-example">Retention period</Label>
+            <FormField>
+              <FormFieldLabel htmlFor="whole-control-example">Retention period</FormFieldLabel>
               <div className="rounded-md border border-dashed border-destructive/60 p-1">
                 <Input id="whole-control-example" placeholder="30 days" />
               </div>
-            </div>
+            </FormField>
           </ExampleCard>
         </div>
       </section>
@@ -184,42 +165,62 @@ function FieldHelpGuidancePage({ globalTheme }: { globalTheme: string }) {
           </GuidanceItem>
           <GuidanceItem>Support activation on touch devices that do not have hover.</GuidanceItem>
           <GuidanceItem>Keep the help trigger available when the field is disabled.</GuidanceItem>
-          <GuidanceItem>
-            Hide the decorative question-mark glyph from assistive technology.
-          </GuidanceItem>
+          <GuidanceItem>Hide the decorative icon from assistive technology.</GuidanceItem>
         </GuidanceList>
       </section>
 
       <Divider />
 
       <section>
-        <SectionTitle>Recommendation</SectionTitle>
+        <SectionTitle>The components</SectionTitle>
         <SectionDescription>
-          Treat help as a field-level pattern rather than an Input feature. The same guidance
-          applies to inputs, selects, text areas, checkboxes, radio groups, and other controls.
+          Help is a field-level pattern rather than an Input feature, so it lives in the field
+          anatomy and applies the same way to inputs, selects, text areas, checkboxes, radio groups,
+          and every other control.
         </SectionDescription>
         <div className="space-y-4">
-          <InfoCallout>
-            Prefer a composed <InlineCode>FieldLabel</InlineCode> that renders the native label and
-            a sibling help trigger. Avoid placing an interactive tooltip button inside a native{' '}
-            <InlineCode>&lt;label&gt;</InlineCode>, where it can create conflicting activation
-            behavior.
-          </InfoCallout>
-          <CodeBlock>{`<FieldLabel
-  htmlFor="retention"
-  helpText="How long completed jobs remain available."
->
-  Retention period
-</FieldLabel>`}</CodeBlock>
+          <GuidanceList>
+            <GuidanceItem>
+              <InlineCode>FormFieldLabel</InlineCode> and <InlineCode>FormFieldHeader</InlineCode>{' '}
+              take <InlineCode>tooltip</InlineCode>, and render the help button beside the native{' '}
+              <InlineCode>&lt;label&gt;</InlineCode>, never inside it, where it would conflict with
+              activating the control. Name it with <InlineCode>tooltipAriaLabel</InlineCode>.
+            </GuidanceItem>
+            <GuidanceItem>
+              <InlineCode>FormFieldDescription</InlineCode> renders the persistent text below the
+              control. Give it an id and point the control at it with{' '}
+              <InlineCode>aria-describedby</InlineCode>.
+            </GuidanceItem>
+            <GuidanceItem>
+              In a MetadataForm, a field&rsquo;s <InlineCode>tooltip</InlineCode> and{' '}
+              <InlineCode>description</InlineCode> render both.
+            </GuidanceItem>
+          </GuidanceList>
+          <CodeBlock>{`<FormField>
+  <FormFieldLabel
+    htmlFor="retention"
+    tooltip="How long completed jobs remain available."
+    tooltipAriaLabel="Help for retention period"
+  >
+    Retention period
+  </FormFieldLabel>
+  <Input id="retention" aria-describedby="retention-description" />
+  <FormFieldDescription id="retention-description">
+    Jobs older than this are permanently deleted.
+  </FormFieldDescription>
+</FormField>
+
+// In a MetadataForm schema
+{
+  name: 'retention',
+  type: 'number',
+  label: 'Retention period',
+  tooltip: 'How long completed jobs remain available.',
+  description: 'Jobs older than this are permanently deleted.',
+}`}</CodeBlock>
           <p className="text-sm leading-6 text-muted-foreground">
-            Keep persistent descriptions separate as a <InlineCode>FieldDescription</InlineCode> or
-            equivalent. This proposed API is a direction for review, not an implemented component.
-            Confirm terminology, icon, placement, touch behavior, and component ownership with
-            design before engineering implementation.
-          </p>
-          <p className="text-sm leading-6 text-muted-foreground">
-            Before adding help copy for a new field, check the Field Type Guidance page to confirm
-            the type is supported and see which control it renders through.
+            The rest of the field is on the Field Anatomy Guidance page. Before adding help copy for
+            a new field, check the Field Type Guidance page for the field type to use.
           </p>
         </div>
       </section>
@@ -230,7 +231,9 @@ function FieldHelpGuidancePage({ globalTheme }: { globalTheme: string }) {
 export const Documentation: Story = {
   name: 'Documentation',
   render: (_args, { globals }) => (
-    <FieldHelpGuidancePage globalTheme={globals.theme || 'future-dark'} />
+    <TooltipProvider delayDuration={300}>
+      <FieldHelpGuidancePage globalTheme={globals.theme || 'future-dark'} />
+    </TooltipProvider>
   ),
 };
 
