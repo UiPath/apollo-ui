@@ -2288,8 +2288,10 @@
       "type": "registry:ui",
       "title": "Side Panel",
       "description": "A docked panel surface for the start or end edge of a template.",
+      "dependencies": ["react-i18next"],
       "registryDependencies": [
         "@uipath/composition",
+        "@uipath/tabs",
         "@uipath/use-scroll-fade"
       ],
       "cssVars": {
@@ -2313,6 +2315,14 @@
         },
         {
           "path": "registry/side-panel/side-panel.surface.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/side-panel/side-panel-body.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/side-panel/side-panel-tabs.tsx",
           "type": "registry:ui"
         }
       ]

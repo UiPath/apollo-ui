@@ -3,11 +3,20 @@
 import { cva } from "class-variance-authority";
 import * as React from "react";
 
-import { SCROLL_FADE_MASK, useScrollFade } from "@/hooks/use-scroll-fade";
+import { useScrollFade } from "@/hooks/use-scroll-fade";
 import type { ScrollOwner, SurfacePadding } from "@/lib/composition";
+import { type PanelSpec, resolvePanel, validatePanel } from "@/lib/panel";
 import { SurfaceProvider, useSurfaceFrame } from "@/lib/surface-context";
 import { cn } from "@/lib/utils";
 import { sidePanelSurface } from "./side-panel.surface";
+import { BODY_FOCUS_RING, sidePanelBodyVariants } from "./side-panel-body";
+import {
+  type SidePanelOccupant,
+  type SidePanelOccupants,
+  SidePanelTabs,
+  type StackHeadingLevel,
+  tabLayout,
+} from "./side-panel-tabs";
 
 // The background follows placement only, so the rules are !important:
 // neither a className nor an inline style can set it. Beside-header panels
@@ -17,33 +26,8 @@ const sidePanelVariants = cva(
   [
     "flex h-full w-(--side-panel-width) min-h-0 shrink-0 flex-col [--side-panel-width:var(--side-panel-width-min)]",
     "bg-transparent! bg-none! data-[placement=beside-header]:bg-side-panel-tint!",
-    // The body's mask would hide its own focus ring, so the panel draws it.
-    "has-[>[data-slot=side-panel-body]:focus-visible]:ring-2 has-[>[data-slot=side-panel-body]:focus-visible]:ring-inset has-[>[data-slot=side-panel-body]:focus-visible]:ring-ring",
+    BODY_FOCUS_RING,
   ].join(" "),
-);
-
-// The body holds the padding and, when the surface owns scrolling, is the
-// scroll container with the fade mask. It is separate from the panel so the
-// mask fades the content, never the panel's tint. It is the inner area: an
-// inline-size container, and what useSurface() measures.
-const sidePanelBodyVariants = cva(
-  "@container flex min-h-0 flex-1 flex-col outline-none",
-  {
-    variants: {
-      padding: {
-        padded: "p-(--surface-inset)",
-        flush: "p-0",
-      },
-      scroll: {
-        surface: ["overflow-y-auto", SCROLL_FADE_MASK].join(" "),
-        occupant: "overflow-hidden",
-      },
-    },
-    defaultVariants: {
-      padding: "padded",
-      scroll: "surface",
-    },
-  },
 );
 
 type SidePanelPlacement = "below-header" | "beside-header";
@@ -80,28 +64,52 @@ interface SidePanelProps extends React.ComponentProps<"aside"> {
   fill?: boolean;
   /** Names the landmark for assistive tech. */
   "aria-label": string;
+  /**
+   * Tabs and stacks: what the panel holds (see @/lib/panel), with every
+   * occupant it names in `occupants`. Each tab's padding and scrolling
+   * follow its occupants' specs, so `padding` and `scroll` are ignored.
+   * Without it, the panel holds `children`, one occupant.
+   */
+  panel?: PanelSpec;
+  /** The occupants `panel` names, by name: each one's spec and content. */
+  occupants?: SidePanelOccupants;
+  /** The level of a stack's headings. Defaults to 2. */
+  headingLevel?: StackHeadingLevel;
 }
 
 function SidePanel({
+  panel,
+  occupants,
+  headingLevel,
+  ...props
+}: SidePanelProps) {
+  if (panel)
+    return (
+      <TabbedSidePanel
+        panel={panel}
+        occupants={occupants ?? {}}
+        headingLevel={headingLevel ?? 2}
+        {...props}
+      />
+    );
+  return <SingleSidePanel {...props} />;
+}
+
+type SidePanelFrameProps = Omit<
+  SidePanelProps,
+  "panel" | "occupants" | "headingLevel"
+>;
+
+/** The <aside> every side panel renders, with its layer attributes. */
+function SidePanelAside({
   side,
-  padding = "padded",
-  scroll = "surface",
+  padding,
+  scroll,
   fill = false,
   className,
   children,
   ...props
-}: SidePanelProps) {
-  const frame = useSurfaceFrame<HTMLDivElement>(
-    sidePanelSurface.provides.orientation,
-  );
-  // While it scrolls, the body takes keyboard focus so it can be scrolled.
-  const bodyRef = useScrollFade<HTMLDivElement>(
-    scroll === "surface",
-    frame.ref,
-    {
-      focusable: true,
-    },
-  );
+}: SidePanelFrameProps & { padding: SurfacePadding; scroll: ScrollOwner }) {
   const slot = React.useContext(SidePanelSlotContext);
   const open = slot?.open ?? true;
   const placement = slot?.placement ?? "below-header";
@@ -121,21 +129,95 @@ function SidePanel({
       )}
       {...props}
     >
+      {/* A panel nested in this one isn't in the template's slot. */}
+      <SidePanelSlotContext.Provider value={null}>
+        {children}
+      </SidePanelSlotContext.Provider>
+    </aside>
+  );
+}
+
+interface TabbedSidePanelProps extends SidePanelFrameProps {
+  panel: PanelSpec;
+  occupants: SidePanelOccupants;
+  headingLevel: StackHeadingLevel;
+}
+
+/**
+ * A panel of tabs and stacks. It checks the panel against its occupants'
+ * specs, and throws on any broken rule. It owns which tab is showing.
+ */
+function TabbedSidePanel({
+  panel,
+  occupants,
+  headingLevel,
+  children: _children,
+  ...props
+}: TabbedSidePanelProps) {
+  const [chosen, setChosen] = React.useState<string | null>(null);
+  const specs = Object.values(occupants).map((o) => o.spec);
+  const errors = validatePanel(panel, specs);
+  if (errors.length > 0) throw new Error(`SidePanel: ${errors.join(" ")}`);
+  const resolved = resolvePanel(panel, specs);
+  const first = resolved.tabs[0]?.id ?? "";
+  const active =
+    chosen !== null && resolved.tabs.some((tab) => tab.id === chosen)
+      ? chosen
+      : first;
+  const activeTab = resolved.tabs.find((tab) => tab.id === active);
+  const layout = activeTab
+    ? tabLayout(activeTab)
+    : { padding: "padded" as const, scroll: "surface" as const };
+  return (
+    <SidePanelAside {...props} padding={layout.padding} scroll={layout.scroll}>
+      <SidePanelTabs
+        panel={resolved}
+        occupants={occupants}
+        headingLevel={headingLevel}
+        active={active}
+        onActiveChange={setChosen}
+      />
+    </SidePanelAside>
+  );
+}
+
+/** A panel that holds one occupant, its children. */
+function SingleSidePanel({
+  padding = "padded",
+  scroll = "surface",
+  children,
+  ...props
+}: SidePanelFrameProps) {
+  const frame = useSurfaceFrame<HTMLDivElement>(
+    sidePanelSurface.provides.orientation,
+  );
+  // While it scrolls, the body takes keyboard focus so it can be scrolled.
+  const bodyRef = useScrollFade<HTMLDivElement>(
+    scroll === "surface",
+    frame.ref,
+    {
+      focusable: true,
+    },
+  );
+  return (
+    <SidePanelAside {...props} padding={padding} scroll={scroll}>
       <div
         ref={bodyRef}
         data-slot="side-panel-body"
         className={sidePanelBodyVariants({ padding, scroll })}
       >
-        <SurfaceProvider value={frame.value}>
-          {/* A panel nested in this one isn't in the template's slot. */}
-          <SidePanelSlotContext.Provider value={null}>
-            {children}
-          </SidePanelSlotContext.Provider>
-        </SurfaceProvider>
+        <SurfaceProvider value={frame.value}>{children}</SurfaceProvider>
       </div>
-    </aside>
+    </SidePanelAside>
   );
 }
 
 export { SidePanel, SidePanelSlotContext };
-export type { SidePanelPlacement, SidePanelProps, SidePanelSlotState };
+export type {
+  SidePanelOccupant,
+  SidePanelOccupants,
+  SidePanelPlacement,
+  SidePanelProps,
+  SidePanelSlotState,
+  StackHeadingLevel,
+};
