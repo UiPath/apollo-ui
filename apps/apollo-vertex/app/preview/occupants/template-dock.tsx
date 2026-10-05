@@ -1,17 +1,14 @@
 "use client";
 
 import { useTranslation } from "react-i18next";
-import {
-  layoutChoices,
-  type PanelStatus,
-  type TemplateHost,
-  type TemplateLayout,
+import type {
+  SlotStatus,
+  TemplateHost,
 } from "@/app/_components/template-hosts";
 import { Separator } from "@/components/ui/separator";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { OccupantSpec } from "@/lib/composition";
-import { resolveLayout } from "@/lib/layout";
-import type { PanelSide } from "@/templates/detail-page/detail-page.template";
+import { type LayoutChoices, resolveLayout } from "@/lib/layout";
 import type { PreviewShellVariant } from "@/templates/shell/PreviewShell";
 import { Dock, DockSlider, FitToggleGroup } from "./dock-parts";
 import { PageMap } from "./page-map";
@@ -24,6 +21,21 @@ import {
 } from "./workbench-url-state";
 
 const ZOOMS: readonly WorkbenchZoom[] = ["fit", "actual"];
+
+/** The choices with each slot's open state as the template's rules left it. */
+const withStatus = (
+  layout: LayoutChoices,
+  status: Readonly<Record<string, SlotStatus>> | null,
+): LayoutChoices => {
+  if (!status) return layout;
+  const slots = new Set([...Object.keys(layout), ...Object.keys(status)]);
+  return Object.fromEntries(
+    [...slots].map((slot) => {
+      const after = status[slot];
+      return [slot, { ...layout[slot], ...(after && { open: after.open }) }];
+    }),
+  );
+};
 /** The page width moves in larger steps than a surface's. */
 const PAGE_WIDTH_STEP = 8;
 
@@ -34,10 +46,10 @@ interface TemplateDockProps {
   onSlot: (slot: string) => void;
   shell: PreviewShellVariant;
   onShell: (shell: PreviewShellVariant) => void;
-  layout: TemplateLayout;
-  onLayout: (layout: TemplateLayout) => void;
-  /** Each panel after the template's rules, once the template has rendered. */
-  panelStatus: Record<PanelSide, PanelStatus> | null;
+  layout: LayoutChoices;
+  onLayout: (layout: LayoutChoices) => void;
+  /** Each slot after the template's rules, once the template has rendered. */
+  slotStatus: Readonly<Record<string, SlotStatus>> | null;
   pageWidth: number;
   onPageWidth: (width: number) => void;
   zoom: WorkbenchZoom;
@@ -60,7 +72,7 @@ export function TemplateDock({
   onShell,
   layout,
   onLayout,
-  panelStatus,
+  slotStatus,
   pageWidth,
   onPageWidth,
   zoom,
@@ -72,13 +84,7 @@ export function TemplateDock({
   return (
     <Dock>
       <PageMap
-        layout={resolveLayout(
-          host.spec,
-          layoutChoices(host, layout, {
-            start: panelStatus?.start.open ?? layout.start.open,
-            end: panelStatus?.end.open ?? layout.end.open,
-          }),
-        )}
+        layout={resolveLayout(host.spec, withStatus(layout, slotStatus))}
         highlighted={[slot]}
         name={slotName.toLowerCase()}
         shell={shell}
@@ -102,7 +108,7 @@ export function TemplateDock({
         onShell={onShell}
         layout={layout}
         onLayout={onLayout}
-        status={panelStatus}
+        status={slotStatus}
       />
       <Separator orientation="vertical" className="h-8" />
       <div className="flex items-center gap-3">

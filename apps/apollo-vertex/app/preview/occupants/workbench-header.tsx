@@ -26,7 +26,7 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { EXAMPLE_ROLES, type ExampleRole } from "@/lib/occupant-entry";
 import {
-  TEMPLATE_NAMES,
+  templateNames,
   type WorkbenchMode,
   type WorkbenchTheme,
 } from "./workbench-url-state";
@@ -276,11 +276,11 @@ export function WorkbenchHeader({
         </ToggleGroupItem>
       </ToggleGroup>
       {/* Only with a choice to make: one template needs no picker. */}
-      {mode === "template" && TEMPLATE_NAMES.length > 1 && (
+      {mode === "template" && templateNames().length > 1 && (
         <SelectChoice
           label={t("workbench_template")}
           value={template}
-          options={TEMPLATE_NAMES.map((name) => ({
+          options={templateNames().map((name) => ({
             value: name,
             label: TEMPLATE_HOSTS[name]?.label ?? name,
           }))}

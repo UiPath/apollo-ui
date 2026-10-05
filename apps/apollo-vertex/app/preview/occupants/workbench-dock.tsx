@@ -2,10 +2,6 @@
 
 import type { CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  DEFAULT_LAYOUT,
-  layoutChoices,
-} from "@/app/_components/template-hosts";
 import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
@@ -20,18 +16,16 @@ import { Dock, DockSlider, FitToggleGroup } from "./dock-parts";
 import { PageMap } from "./page-map";
 import { lowerLabel, type WidthStatus } from "./workbench-model";
 import {
+  defaultTemplate,
   HOSTED_SURFACES,
-  TEMPLATE_NAMES,
   templateFor,
   WIDTH_RANGE,
   WIDTH_STEP,
 } from "./workbench-url-state";
 
 // The surface view's map is the default template, as it starts.
-const MAP_HOST = templateFor(TEMPLATE_NAMES[0] ?? "");
-const MAP_LAYOUT = MAP_HOST
-  ? resolveLayout(MAP_HOST.spec, layoutChoices(MAP_HOST, DEFAULT_LAYOUT))
-  : null;
+const MAP_HOST = templateFor(defaultTemplate());
+const MAP_LAYOUT = MAP_HOST ? resolveLayout(MAP_HOST.spec) : null;
 /** The default template's slots that take the surface. */
 const slotsTaking = (surface: string) =>
   MAP_HOST?.spec.slots

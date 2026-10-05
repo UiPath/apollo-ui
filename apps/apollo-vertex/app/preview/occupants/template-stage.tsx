@@ -3,16 +3,15 @@
 import type { CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import type {
-  PanelStatus,
+  SlotStatus,
   TemplateHost,
-  TemplateLayout,
 } from "@/app/_components/template-hosts";
 import type { OccupantState } from "@/components/ui/occupant";
 import type { OccupantSpec } from "@/lib/composition";
+import type { LayoutChoices } from "@/lib/layout";
 import type { ExampleRole } from "@/lib/occupant-entry";
 import { OCCUPANT_REGISTRY } from "@/lib/occupant-registry.generated";
 import { LocaleProvider } from "@/registry/shell/shell-locale-provider";
-import type { PanelSide } from "@/templates/detail-page/detail-page.template";
 import {
   PreviewShell,
   type PreviewShellVariant,
@@ -21,13 +20,20 @@ import { NoFitCard } from "./no-fit-card";
 import { StageFrame } from "./stage-frame";
 import { slotFit } from "./workbench-url-state";
 
+/** The slots the choices close, as one key. */
+const closedSlots = (layout: LayoutChoices) =>
+  Object.entries(layout)
+    .filter(([, choice]) => choice.open === false)
+    .map(([slot]) => slot)
+    .join(",");
+
 interface TemplateStageProps {
   host: TemplateHost;
   spec: OccupantSpec;
   slot: string;
   shell: PreviewShellVariant;
-  layout: TemplateLayout;
-  onPanels: (panels: Record<PanelSide, PanelStatus>) => void;
+  layout: LayoutChoices;
+  onStatus: (status: Readonly<Record<string, SlotStatus>>) => void;
   sample: ExampleRole;
   state: OccupantState;
   pageWidth: number;
@@ -50,7 +56,7 @@ export function TemplateStage({
   slot,
   shell,
   layout,
-  onPanels,
+  onStatus,
   sample,
   state,
   pageWidth,
@@ -101,14 +107,14 @@ export function TemplateStage({
           <PreviewShell variant={shell} basePath="/preview/occupants">
             <LocaleProvider>
               <Frame
-                // A fresh template when the slot or a panel's open state
-                // changes: its panels start as configured. Placement and
-                // which panels it has apply live.
-                key={`${slot}-${layout.start.open}-${layout.end.open}`}
+                // A fresh template when the slot or a slot's open state
+                // changes: its slots start as chosen. Placement and which
+                // slots it has apply live.
+                key={`${slot}-${closedSlots(layout)}`}
                 slot={slot}
                 spec={spec}
-                layout={layout}
-                onPanels={onPanels}
+                choices={layout}
+                onStatus={onStatus}
                 occupant={entry.render(sample, { state })}
               />
             </LocaleProvider>

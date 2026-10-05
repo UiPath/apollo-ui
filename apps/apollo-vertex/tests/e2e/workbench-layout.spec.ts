@@ -93,14 +93,14 @@ test("panels can be removed and closed, and the map follows", async ({
   // The occupant in main, so neither panel is locked.
   await open(page, "?occupant=key-facts&view=template&slot=main");
   await ready(page);
-  await choose(page, "Panels", "End");
+  await choose(page, "Start panel in the page", "Left out");
   await expect
     .poll(() => slotStates(page))
     .toEqual({
       "detail-page-end-panel": "open",
     });
   await expect(group(page, "Start panel state")).toHaveCount(0);
-  expect(urlQuery(page)).toContain("panels=end");
+  expect(urlQuery(page)).toContain("start-panel-present=false");
   expect(await mapRegions(page)).not.toContain("start-panel");
 
   await choose(page, "End panel state", "Closed");
@@ -109,31 +109,27 @@ test("panels can be removed and closed, and the map follows", async ({
     .toEqual({
       "detail-page-end-panel": "closed",
     });
-  expect(urlQuery(page)).toContain("end-state=closed");
+  expect(urlQuery(page)).toContain("end-panel-state=closed");
   await expect.poll(() => mapRegions(page)).toContain("end-panel:closed");
 
-  await choose(page, "Panels", "None");
+  await choose(page, "End panel in the page", "Left out");
   await expect.poll(() => slotStates(page)).toEqual({});
-  expect(urlQuery(page)).toContain("panels=none");
+  expect(urlQuery(page)).toContain("end-panel-present=false");
 });
 
 test("the occupant's panel is locked, with the reason", async ({ page }) => {
   await open(page, "?occupant=queue&view=template");
   await ready(page);
   await openMenu(page);
-  const panels = group(page, "Panels");
-  // Only settings that keep the start panel can be chosen.
-  for (const [option, disabled] of [
-    ["None", true],
-    ["Start", false],
-    ["End", true],
-    ["Both", false],
-  ] as const) {
-    const radio = panels.getByRole("radio", { name: option, exact: true });
-    if (disabled) await expect(radio).toBeDisabled();
-    else await expect(radio).toBeEnabled();
-  }
-  await expect(panels).toHaveAccessibleDescription(
+  const presence = group(page, "Start panel in the page");
+  // It can't be left out.
+  await expect(
+    presence.getByRole("radio", { name: "Included", exact: true }),
+  ).toBeEnabled();
+  await expect(
+    presence.getByRole("radio", { name: "Left out", exact: true }),
+  ).toBeDisabled();
+  await expect(presence).toHaveAccessibleDescription(
     "The start panel holds the occupant, so it stays.",
   );
   const state = group(page, "Start panel state");
@@ -151,6 +147,11 @@ test("the occupant's panel is locked, with the reason", async ({ page }) => {
   await expect(
     group(page, "End panel state").getByRole("radio", { name: "Closed" }),
   ).toBeEnabled();
+  await expect(
+    group(page, "End panel in the page").getByRole("radio", {
+      name: "Left out",
+    }),
+  ).toBeEnabled();
 });
 
 test("the width rule closes the other panel when there isn't room, and says so", async ({
@@ -167,7 +168,7 @@ test("the width rule closes the other panel when there isn't room, and says so",
     });
   await openMenu(page);
   const end = menu(page).locator(
-    "[data-slot=workbench-layout-panel][data-side=end]",
+    "[data-slot=workbench-layout-slot][data-layout-slot=end-panel]",
   );
   await expect(end).toHaveAttribute("data-closed-by", "rule");
   await expect(group(page, "End panel state")).toHaveAccessibleDescription(
@@ -198,10 +199,18 @@ test("the layout round-trips through the URL", async ({ page }) => {
   await choose(page, "End panel placement", "Beside header");
   await choose(page, "End panel state", "Closed");
   const url = urlQuery(page);
-  for (const part of ["shell=minimal", "end=beside-header", "end-state=closed"])
+  for (const part of [
+    "shell=minimal",
+    "end-panel-placement=beside-header",
+    "end-panel-state=closed",
+  ])
     expect(url).toContain(part);
   // Defaults aren't written.
-  for (const part of ["panels=", "start=", "start-state="])
+  for (const part of [
+    "-present=",
+    "start-panel-placement=",
+    "start-panel-state=",
+  ])
     expect(url).not.toContain(part);
 
   await page.reload();
@@ -235,4 +244,27 @@ test("the layout round-trips through the URL", async ({ page }) => {
       "detail-page-start-panel": "open",
       "detail-page-end-panel": "open",
     });
+});
+
+test("old layout links still open the same layout, in per-slot params", async ({
+  page,
+}) => {
+  // The occupant in main, so neither panel is locked.
+  await open(
+    page,
+    "?occupant=key-facts&view=template&slot=main&panels=end&end=beside-header&end-state=closed",
+  );
+  await ready(page);
+  await expect
+    .poll(() => slotStates(page))
+    .toEqual({ "detail-page-end-panel": "closed" });
+  const url = urlQuery(page);
+  for (const part of [
+    "start-panel-present=false",
+    "end-panel-placement=beside-header",
+    "end-panel-state=closed",
+  ])
+    expect(url).toContain(part);
+  for (const part of ["panels=", "&end=", "end-state="])
+    expect(url).not.toContain(part);
 });
