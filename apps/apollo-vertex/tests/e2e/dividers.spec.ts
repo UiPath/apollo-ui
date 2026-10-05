@@ -112,7 +112,7 @@ test.describe("dividers", () => {
     ).toBeGreaterThan(1);
 
     const handle = (await page
-      .locator("[data-slot=detail-page-resize-handle]")
+      .locator("[data-part=resize-handle]")
       .boundingBox())!;
     expect(
       Math.abs(handle.x + handle.width / 2 - (e!.x + 0.5)),
@@ -134,7 +134,7 @@ test.describe("dividers", () => {
     expect(e.shadow).toMatch(/-1px 0px 0px 0px inset$/);
     expect(s.x).toBeGreaterThan(e.x);
     const handle = (await page
-      .locator("[data-slot=detail-page-resize-handle]")
+      .locator("[data-part=resize-handle]")
       .boundingBox())!;
     expect(
       Math.abs(handle.x + handle.width / 2 - (e.right - 0.5)),

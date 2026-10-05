@@ -90,7 +90,7 @@ export function PanelResizeHandle({
       aria-valuemin={min}
       aria-valuemax={max}
       tabIndex={0}
-      data-slot="detail-page-resize-handle"
+      data-part="resize-handle"
       className="group absolute inset-y-0 start-[calc(var(--slot-divider-width)/2-(--spacing(1)))] z-20 flex w-2 cursor-col-resize touch-none select-none justify-center outline-none"
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}

@@ -48,9 +48,7 @@ const probe = (page: Page, side: "start" | "end", value: "Open" | "Closed") =>
       const slot = document.querySelector<HTMLElement>(
         `[data-slot=detail-page-${s}-panel]`,
       )!;
-      const clip = slot.querySelector<HTMLElement>(
-        "[data-slot=detail-page-panel-clip]",
-      )!;
+      const clip = slot.querySelector<HTMLElement>("[data-part=panel-clip]")!;
       const main = document.querySelector("[data-slot=detail-page-main]")!;
       const template = document.querySelector("[data-template]")!;
       radio.click();
@@ -176,7 +174,7 @@ test.describe("reduced motion", () => {
 const widthTransitions = (page: Page) =>
   page.evaluate(
     () =>
-      [...document.querySelectorAll("[data-slot=detail-page-panel-clip]")]
+      [...document.querySelectorAll("[data-part=panel-clip]")]
         .flatMap((clip) => clip.getAnimations())
         .filter((a) => (a as CSSTransition).transitionProperty === "width")
         .length,
@@ -190,7 +188,7 @@ test("window resizes, rule closes, the handle, and placement changes snap", asyn
   await page.setViewportSize({ width: 1200, height: 900 });
   expect(await widthTransitions(page)).toBe(0);
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.locator("[data-slot=detail-page-resize-handle]").focus();
+  await page.locator("[data-part=resize-handle]").focus();
   await page.keyboard.press("Home");
   expect(await widthTransitions(page)).toBe(0);
   await pick(page, "End panel placement", "Beside header");
@@ -205,9 +203,7 @@ test("the first load snaps", async ({ page }) => {
         let total = 0;
         let frames = 0;
         const tick = () => {
-          total += [
-            ...document.querySelectorAll("[data-slot=detail-page-panel-clip]"),
-          ]
+          total += [...document.querySelectorAll("[data-part=panel-clip]")]
             .flatMap((clip) => clip.getAnimations())
             .filter(
               (a) => (a as CSSTransition).transitionProperty === "width",
@@ -246,7 +242,7 @@ test("focus inside a closing panel moves to main, and its content can't take foc
       setTimeout(resolve, 0);
     });
     const clip = document.querySelector<HTMLElement>(
-      "[data-slot=detail-page-start-panel] [data-slot=detail-page-panel-clip]",
+      "[data-slot=detail-page-start-panel] [data-part=panel-clip]",
     )!;
     // Flush styles so the transition exists.
     clip.getBoundingClientRect();

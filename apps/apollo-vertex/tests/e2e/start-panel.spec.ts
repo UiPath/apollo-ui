@@ -1,7 +1,7 @@
 import { START_PANEL_PX } from "@/templates/detail-page/detail-page.template";
 import { expect, occupantWidth, openPreview, test, widths } from "./fixtures";
 
-const HANDLE = "[data-slot=detail-page-resize-handle]";
+const HANDLE = "[data-part=resize-handle]";
 
 /*
  * The main-width rule's thresholds have unit tests

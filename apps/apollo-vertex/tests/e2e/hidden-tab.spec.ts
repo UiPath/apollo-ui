@@ -16,13 +16,14 @@ test("with requestAnimationFrame never firing, the handle still renders with its
     };
   });
   await page.goto("/preview/detail-page?panels=end");
-  await page.locator("[data-slot=detail-page-resize-handle]").waitFor();
+  await page.locator("[data-part=resize-handle]").waitFor();
   const template = await page
     .locator("[data-template]")
     .evaluate((el) => el.getBoundingClientRect().width);
-  await expect(
-    page.locator("[data-slot=detail-page-resize-handle]"),
-  ).toHaveAttribute("aria-valuemax", String(endPanelMaxWidth(template, false)));
+  await expect(page.locator("[data-part=resize-handle]")).toHaveAttribute(
+    "aria-valuemax",
+    String(endPanelMaxWidth(template, false)),
+  );
 });
 
 const CASES: [number, string, boolean][] = [
@@ -86,9 +87,7 @@ for (const [width, q, full] of CASES) {
         endSlot: w("[data-slot=detail-page-end-panel]"),
         end: w("[data-surface=side-panel][data-side=end]"),
         start: w("[data-surface=side-panel][data-side=start]"),
-        handle: Boolean(
-          document.querySelector("[data-slot=detail-page-resize-handle]"),
-        ),
+        handle: Boolean(document.querySelector("[data-part=resize-handle]")),
       };
     });
     const shared = g.template - g.start;
@@ -109,7 +108,7 @@ test('measured "max" matches what the grid laid out, so nothing jumps', async ({
   const end = (await widths(page)).end;
   const now = Number(
     await page
-      .locator("[data-slot=detail-page-resize-handle]")
+      .locator("[data-part=resize-handle]")
       .getAttribute("aria-valuenow"),
   );
   expect(Math.abs(now - end)).toBeLessThanOrEqual(1);
@@ -125,9 +124,7 @@ test("the handle's range is measured from the moment it's in the document", asyn
     () =>
       new Promise<{ max: number; template: number }>((resolve) => {
         const check = () => {
-          const handle = document.querySelector(
-            "[data-slot=detail-page-resize-handle]",
-          );
+          const handle = document.querySelector("[data-part=resize-handle]");
           const template =
             document.querySelector<HTMLElement>("[data-template]");
           if (!handle?.isConnected || !template?.offsetWidth) return false;

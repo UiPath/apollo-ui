@@ -63,7 +63,7 @@ test("useSurface() reports each slot's orientation and live inner width", async 
     .poll(() => read(page).then((g) => g.main.width === g.main.actual))
     .toBe(true);
   await check(page);
-  await page.locator("[data-slot=detail-page-resize-handle]").focus();
+  await page.locator("[data-part=resize-handle]").focus();
   for (let i = 0; i < 5; i++) await page.keyboard.press("ArrowLeft");
   await expect
     .poll(() =>

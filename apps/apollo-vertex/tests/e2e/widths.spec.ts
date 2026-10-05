@@ -17,7 +17,7 @@ import {
   widths,
 } from "./fixtures";
 
-const HANDLE = "[data-slot=detail-page-resize-handle]";
+const HANDLE = "[data-part=resize-handle]";
 const handleRange = (page: Page) =>
   page.locator(HANDLE).evaluate((el) => ({
     now: Number(el.getAttribute("aria-valuenow")),

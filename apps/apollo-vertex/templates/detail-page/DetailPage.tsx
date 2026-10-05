@@ -226,7 +226,7 @@ export function DetailPage({
           style={startExtentStyle}
         >
           <div
-            data-slot="detail-page-panel-clip"
+            data-part="panel-clip"
             data-transitioning={transitioning === "start"}
             className={cn(
               "flex h-full w-(--detail-page-panel-extent) justify-start overflow-x-clip",
@@ -282,7 +282,7 @@ export function DetailPage({
             />
           )}
           <div
-            data-slot="detail-page-panel-clip"
+            data-part="panel-clip"
             data-transitioning={transitioning === "end"}
             className={cn(
               // Anchored at the end edge, so the panel reveals from there.

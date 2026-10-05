@@ -65,7 +65,7 @@ test("reset restores every default, clears the URL, and Back undoes it", async (
   await pick(page, "Main padding", "Flush");
   await pick(page, "Main content", "On");
   await pick(page, "End panel scroll owner", "Occupant");
-  await page.locator("[data-slot=detail-page-resize-handle]").focus();
+  await page.locator("[data-part=resize-handle]").focus();
   await page.keyboard.press("Home");
   await expect
     .poll(async () => (await widths(page)).end)
