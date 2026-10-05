@@ -22,6 +22,7 @@ import type {
   OccupantSpec,
   ScrollOwner,
   ScrollSupport,
+  SlotCapacity,
   SlotSpec,
   SurfaceOrientation,
   SurfacePadding,
@@ -43,6 +44,7 @@ export type {
   OccupantSpec,
   ScrollOwner,
   ScrollSupport,
+  SlotCapacity,
   SlotLayoutOptions,
   SlotSpec,
   SlotWidth,
@@ -60,6 +62,11 @@ export type {
  * as their padding.
  */
 export const PADDED_INSET_PX = LAYOUT_TOKENS.surfaceInset;
+
+/** What a slot holds, with the default applied: one occupant, or a panel. */
+export function slotHolds(slot: SlotSpec): SlotCapacity {
+  return slot.holds ?? "one";
+}
 
 /** Whether a slot accepts the given surface. */
 export function slotAccepts(slot: SlotSpec, surface: SurfaceSpec): boolean {

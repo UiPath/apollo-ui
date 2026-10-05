@@ -6,6 +6,7 @@ import {
   occupantOrientations,
   type ScrollOwner,
   type SurfacePadding,
+  slotHolds,
   slotInnerWidth,
 } from "@/lib/composition";
 import { contentAreaSurface } from "@/registry/content-area/content-area.surface";
@@ -201,5 +202,21 @@ describe("fitsSurface", () => {
     };
     const all = fits(main, pageHeaderSurface, spec).reasons;
     expect(all.slice(2)).toEqual(fitsSurface(pageHeaderSurface, spec).reasons);
+  });
+});
+
+describe("slotHolds", () => {
+  it("is one occupant unless a slot declares a panel", () => {
+    expect(slotHolds({ name: "x", required: true, surfaces: [] })).toBe("one");
+    expect(
+      Object.fromEntries(
+        detailPageTemplate.slots.map((s) => [s.name, slotHolds(s)]),
+      ),
+    ).toEqual({
+      header: "one",
+      "start-panel": "panel",
+      main: "one",
+      "end-panel": "panel",
+    });
   });
 });

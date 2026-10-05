@@ -149,7 +149,15 @@ export interface SlotSpec<TName extends string = string> {
   resizable?: boolean;
   /** Names of the surfaces this slot accepts. */
   surfaces: readonly string[];
+  /** What it holds. Defaults to "one". */
+  holds?: SlotCapacity;
 }
+
+/**
+ * How much a slot holds: "one" occupant, or a "panel" of tabs and stacks
+ * of occupants (a PanelSpec, see panel.ts).
+ */
+export type SlotCapacity = "one" | "panel";
 
 /** A template's grid track, by name, with its relative size on a page map. */
 export interface LayoutTrack {
