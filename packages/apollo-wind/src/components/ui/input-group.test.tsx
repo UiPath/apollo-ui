@@ -165,6 +165,27 @@ describe('InputGroup', () => {
     );
   });
 
+  it('forwards the primary Future focus ring from the inner control, with the error ring on top', () => {
+    render(
+      <InputGroup data-testid="group">
+        <InputGroupInput aria-label="Search" />
+      </InputGroup>
+    );
+    const group = screen.getByTestId('group');
+    expect(group).toHaveClass(
+      'future:has-[[data-slot=input-group-control]:focus-visible]:ring-primary',
+      'future:has-[[data-slot=input-group-control]_:focus-visible]:ring-primary',
+      'has-[[data-slot][aria-invalid=true]]:has-[[data-slot=input-group-control]:focus-visible]:ring-error'
+    );
+  });
+
+  it('keeps an invalid group on the error ring rather than primary', () => {
+    render(<InputGroup data-testid="group" invalid />);
+    expect(screen.getByTestId('group')).not.toHaveClass(
+      'future:has-[[data-slot=input-group-control]:focus-visible]:ring-primary'
+    );
+  });
+
   it('supports a textarea control', () => {
     render(
       <InputGroup>
@@ -315,7 +336,32 @@ describe('InputGroup', () => {
         'rounded-[inherit]',
         'has-[[data-slot=input-group-control]:focus-visible]:ring-2',
         'has-[[data-slot=input-group-control]:focus-visible]:ring-inset',
-        'has-[[data-slot=input-group-control]:focus-visible]:ring-ring'
+        'has-[[data-slot=input-group-control]:focus-visible]:ring-ring',
+        'future:has-[[data-slot=input-group-control]:focus-visible]:ring-primary',
+        'future:has-[[data-slot=input-group-control]_:focus-visible]:ring-primary'
+      );
+    });
+
+    it.each([
+      ['invalid', { invalid: true }],
+      ['error', { error: 'Required' }],
+    ])('rings an %s block group’s row in error rather than primary', (_, flag) => {
+      render(
+        <InputGroup layout="block" {...flag}>
+          <InputGroupRow data-testid="row">
+            <InputGroupTrigger>Filters</InputGroupTrigger>
+          </InputGroupRow>
+        </InputGroup>
+      );
+      const row = screen.getByTestId('row');
+      expect(row).toHaveClass(
+        'has-[[data-slot=input-group-control]:focus-visible]:ring-error',
+        'has-[[data-slot=input-group-control]_:focus-visible]:ring-error'
+      );
+      expect(row).not.toHaveClass(
+        'has-[[data-slot=input-group-control]:focus-visible]:ring-ring',
+        'future:has-[[data-slot=input-group-control]:focus-visible]:ring-primary',
+        'future:has-[[data-slot=input-group-control]_:focus-visible]:ring-primary'
       );
     });
   });

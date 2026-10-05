@@ -118,7 +118,17 @@ export interface MultiSelectProps {
   onChange: (selected: string[]) => void;
   placeholder?: string;
   emptyMessage?: string;
+  /**
+   * Applied to the outer wrapper `div`, not the trigger button. To restyle the trigger, such as
+   * overriding the Future focus ring, use `triggerClassName`.
+   */
   className?: string;
+  /**
+   * Applied to the trigger button, merged after its own classes, e.g.
+   * `future:focus-visible:ring-foreground` to replace the Future primary focus ring. Inside an
+   * InputGroup the group draws the ring, so set it there.
+   */
+  triggerClassName?: string;
   maxSelected?: number;
   disabled?: boolean;
   searchPlaceholder?: string;
@@ -160,6 +170,7 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
       placeholder = 'Select items...',
       emptyMessage = 'No items found.',
       className,
+      triggerClassName,
       maxSelected,
       disabled = false,
       searchPlaceholder = 'Search...',
@@ -413,7 +424,11 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
             {grouped ? (
               <InputGroupTrigger
                 {...triggerProps}
-                className={cn('items-start', selected.length > 0 && !collapse && 'h-auto')}
+                className={cn(
+                  'items-start',
+                  selected.length > 0 && !collapse && 'h-auto',
+                  triggerClassName
+                )}
               >
                 {triggerContent}
               </InputGroupTrigger>
@@ -422,8 +437,9 @@ const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
                 variant="outline"
                 {...triggerProps}
                 className={cn(
-                  'w-full justify-between future:rounded-xl future:border-0 future:bg-surface-overlay future:px-4 future:gap-4 future:hover:bg-surface-overlay future:[&:hover:not(:has([data-slot=badge]:hover))]:bg-surface-hover future:font-normal future:text-foreground future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background',
-                  selected.length > 0 && !collapse ? 'h-auto min-h-10' : 'h-10'
+                  'w-full justify-between future:rounded-xl future:border-0 future:bg-surface-overlay future:px-4 future:gap-4 future:hover:bg-surface-overlay future:[&:hover:not(:has([data-slot=badge]:hover))]:bg-surface-hover future:font-normal future:text-foreground future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background future:focus-visible:ring-primary future:aria-invalid:focus-visible:ring-error',
+                  selected.length > 0 && !collapse ? 'h-auto min-h-10' : 'h-10',
+                  triggerClassName
                 )}
               >
                 {triggerContent}

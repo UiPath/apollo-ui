@@ -144,6 +144,22 @@ describe('Textarea', () => {
     expect(textarea).toHaveClass('focus-visible:ring-2');
   });
 
+  it('uses the primary focus ring in Future themes, with the error ring on top', () => {
+    render(<Textarea aria-label="Message" />);
+    const textarea = screen.getByRole('textbox');
+    expect(textarea).toHaveClass(
+      'future:focus-visible:ring-primary',
+      'future:aria-invalid:focus-visible:ring-error'
+    );
+  });
+
+  it('lets consumers override the Future focus color', () => {
+    render(<Textarea aria-label="Message" className="future:focus-visible:ring-foreground" />);
+    const textarea = screen.getByRole('textbox');
+    expect(textarea).toHaveClass('future:focus-visible:ring-foreground');
+    expect(textarea).not.toHaveClass('future:focus-visible:ring-primary');
+  });
+
   it('supports default value', () => {
     render(<Textarea defaultValue="Default text" aria-label="Message" />);
     const textarea = screen.getByRole('textbox');

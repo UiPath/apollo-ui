@@ -115,7 +115,7 @@ const inputGroupVariants = cva(
         layout: ROW_LAYOUTS,
         invalid: false,
         class:
-          'has-[[data-slot=input-group-control]:focus-visible]:ring-ring has-[[data-slot=input-group-control]_:focus-visible]:ring-ring',
+          'has-[[data-slot=input-group-control]:focus-visible]:ring-ring has-[[data-slot=input-group-control]_:focus-visible]:ring-ring future:has-[[data-slot=input-group-control]:focus-visible]:ring-primary future:has-[[data-slot=input-group-control]_:focus-visible]:ring-primary',
       },
       {
         layout: ROW_LAYOUTS,
@@ -322,20 +322,30 @@ export interface InputGroupRowProps extends React.HTMLAttributes<HTMLDivElement>
  * control instead would inset its caret out of line with other fields.
  */
 const InputGroupRow = React.forwardRef<HTMLDivElement, InputGroupRowProps>(
-  ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      data-slot="input-group-row"
-      className={cn(
-        'flex min-h-9 min-w-0 items-stretch gap-2 px-3 has-[>[data-slot=input-group-addon][data-align=inline-end]]:pr-2 future:min-h-10',
-        // The block box does not ring, since its body holds fields that ring themselves, so the row
-        // rings for its own control. Inset, and on the box's corners, since the box clips to them.
-        'rounded-[inherit] has-[[data-slot=input-group-control]:focus-visible]:ring-2 has-[[data-slot=input-group-control]:focus-visible]:ring-inset has-[[data-slot=input-group-control]:focus-visible]:ring-ring has-[[data-slot=input-group-control]_:focus-visible]:ring-2 has-[[data-slot=input-group-control]_:focus-visible]:ring-inset has-[[data-slot=input-group-control]_:focus-visible]:ring-ring has-[[data-slot][aria-invalid=true]]:has-[[data-slot=input-group-control]:focus-visible]:ring-error has-[[data-slot][aria-invalid=true]]:has-[[data-slot=input-group-control]_:focus-visible]:ring-error',
-        className
-      )}
-      {...props}
-    />
-  )
+  ({ className, ...props }, ref) => {
+    const { invalid, error } = useInputGroup();
+    // The group's `invalid` covers controls that cannot carry `aria-invalid` (a code editor), so
+    // the row reads it as the row layouts' box does, rather than relying on the descendant check.
+    const flagged = Boolean(invalid || error);
+    return (
+      <div
+        ref={ref}
+        data-slot="input-group-row"
+        className={cn(
+          'flex min-h-9 min-w-0 items-stretch gap-2 px-3 has-[>[data-slot=input-group-addon][data-align=inline-end]]:pr-2 future:min-h-10',
+          // The block box does not ring, since its body holds fields that ring themselves, so the
+          // row rings for its own control. Inset, and on the box's corners, since the box clips to
+          // them. An invalid group rings in `error` rather than primary.
+          'rounded-[inherit] has-[[data-slot=input-group-control]:focus-visible]:ring-2 has-[[data-slot=input-group-control]:focus-visible]:ring-inset has-[[data-slot=input-group-control]_:focus-visible]:ring-2 has-[[data-slot=input-group-control]_:focus-visible]:ring-inset has-[[data-slot][aria-invalid=true]]:has-[[data-slot=input-group-control]:focus-visible]:ring-error has-[[data-slot][aria-invalid=true]]:has-[[data-slot=input-group-control]_:focus-visible]:ring-error',
+          flagged
+            ? 'has-[[data-slot=input-group-control]:focus-visible]:ring-error has-[[data-slot=input-group-control]_:focus-visible]:ring-error'
+            : 'has-[[data-slot=input-group-control]:focus-visible]:ring-ring has-[[data-slot=input-group-control]_:focus-visible]:ring-ring future:has-[[data-slot=input-group-control]:focus-visible]:ring-primary future:has-[[data-slot=input-group-control]_:focus-visible]:ring-primary',
+          className
+        )}
+        {...props}
+      />
+    );
+  }
 );
 InputGroupRow.displayName = 'InputGroupRow';
 
