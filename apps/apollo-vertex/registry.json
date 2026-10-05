@@ -2280,6 +2280,11 @@
           "path": "registry/composition/panel.ts",
           "type": "registry:lib",
           "target": "lib/panel.ts"
+        },
+        {
+          "path": "registry/composition/layout.ts",
+          "type": "registry:lib",
+          "target": "lib/layout.ts"
         }
       ]
     },

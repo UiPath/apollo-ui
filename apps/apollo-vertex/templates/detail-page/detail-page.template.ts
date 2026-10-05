@@ -1,5 +1,11 @@
 import type { SidePanelPlacement } from "@/components/ui/side-panel";
-import type { SlotWidth, TemplateSpec } from "@/lib/composition";
+import type {
+  LayoutArea,
+  SlotLayoutOptions,
+  SlotWidth,
+  TemplateLayoutSpec,
+  TemplateSpec,
+} from "@/lib/composition";
 import { contentAreaSurface } from "@/registry/content-area/content-area.surface";
 import { sidePanelSurface } from "@/registry/side-panel/side-panel.surface";
 
@@ -32,8 +38,50 @@ export const HEADER_WIDTH = {
   min: contentAreaSurface.width.min,
 } as const satisfies SlotWidth;
 
+/** A side panel's area for each placement: below the header, or beside it. */
+const panelArea = (column: string): LayoutArea => ({
+  columns: [column, column],
+  rows: ["body", "body"],
+});
+const panelOptions = (column: string): SlotLayoutOptions => ({
+  optional: true,
+  closable: true,
+  // Beside the header, a panel runs the page's full height.
+  placements: {
+    "beside-header": { columns: [column, column], rows: ["header", "body"] },
+  },
+});
+
+/**
+ * The Detail page's layout, as data: three columns under a header row.
+ * DetailPage.tsx lays itself out to match, which tests check; previews
+ * draw their page map from it.
+ */
+export const DETAIL_PAGE_LAYOUT = {
+  columns: [
+    { name: "start", size: 2 },
+    { name: "main", size: 4 },
+    { name: "end", size: 2 },
+  ],
+  rows: [
+    { name: "header", size: 1 },
+    { name: "body", size: 3 },
+  ],
+  areas: {
+    header: { columns: ["start", "end"], rows: ["header", "header"] },
+    "start-panel": panelArea("start"),
+    main: { columns: ["main", "main"], rows: ["body", "body"] },
+    "end-panel": panelArea("end"),
+  },
+  options: {
+    "start-panel": panelOptions("start"),
+    "end-panel": panelOptions("end"),
+  },
+} as const satisfies TemplateLayoutSpec;
+
 export const detailPageTemplate = {
   name: "detail-page",
+  layout: DETAIL_PAGE_LAYOUT,
   slots: [
     {
       name: "header",
