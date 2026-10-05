@@ -65,7 +65,7 @@ export const PAGE_WIDTH_MAX = 1920;
 const DEFAULT_PAGE_WIDTH = 1440;
 
 /** How wide each shell is beside the page: ApolloShell's --sidebar-width. */
-const SHELL_WIDTH: Record<PreviewShellVariant, number> = {
+export const SHELL_WIDTH: Record<PreviewShellVariant, number> = {
   sidebar: 280,
   minimal: 0,
 };

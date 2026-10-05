@@ -46,10 +46,17 @@ The specs live in `@/lib/composition`.
 
 | Spec | Describes | Main fields |
 | --- | --- | --- |
-| `TemplateSpec` | A template | `name`, `slots` |
+| `TemplateSpec` | A template | `name`, `slots`, `layout` (optional) |
 | `SlotSpec` | One slot in a template | `name`, `required`, `width` (`min`, optional `default` and `max`), `resizable`, `surfaces` |
 | `SurfaceSpec` | A surface | `name`, `width` (its own minimum), `provides` (orientation, inner width, scroll) |
-| `OccupantSpec` | An occupant | `name`, `label`, `icon` (optional), `surfaces` (optional), `orientations` (optional), `requires` (minimum width, scroll, padding) |
+| `OccupantSpec` | An occupant | `name`, `label`, `titleKey` (required: its title as a locale key), `icon` (optional), `surfaces` (optional), `orientations` (optional), `sizing` (`flow` or `fill`, default `flow`), `requires` (minimum width, scroll, padding) |
+
+Each template declares its own slots and their rules in its spec, and its
+layout as data: its grid's tracks, each slot's area, and what a page can
+choose per slot (leave it out, close it, or place it elsewhere).
+`resolveLayout(spec, choices)`, in `@/lib/layout`, works out where each slot
+sits. Previews read these specs, so a new template needs no preview code of
+its own; the template's own layout is tested to agree with what it declares.
 
 `fits(slot, surface, occupant)` checks that an occupant can go in a surface
 in a given slot. It checks every requirement:

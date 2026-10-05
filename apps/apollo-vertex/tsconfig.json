@@ -39,6 +39,7 @@
       "@/lib/composition": ["./registry/composition/composition"],
       "@/lib/surface-context": ["./registry/composition/surface-context"],
       "@/lib/panel": ["./registry/composition/panel"],
+      "@/lib/layout": ["./registry/composition/layout"],
       "@/lib/progress-view-model": [
         "./registry/progress-view-model/progress-view-model"
       ],

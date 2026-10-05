@@ -230,15 +230,17 @@ and draft each one as its own change to the shared layers.
 ## Add a surface or template
 
 The workbench shows every surface and template that's registered for
-previews, with no change to the workbench itself.
+previews, with no change to the workbench itself. Each template declares its
+own slots, their rules, and its layout in its spec, and the workbench reads
+them: its page map is the template's declared layout.
 
 - **A surface:** register it in `registry.json` with `"layer": "surface"` and
   its `<name>.surface.ts` spec, give it a label in `lib/surface-labels.ts`,
   and add its host to `app/_components/surface-hosts.ts`: how to render it
-  on its own, the element that holds its padding, and where it sits on the
-  page map.
-- **A template:** add its host to `app/_components/template-hosts.ts`: its
-  spec, a label for each slot, which slots are its side panels and the
+  on its own, and the element that holds its padding. The page map shows it
+  in every slot of the default template that takes it.
+- **A template:** declare its `layout` in its spec, and add its host to
+  `app/_components/template-hosts.ts`: its spec, a label for each slot, which slots are its side panels and the
   panels settings it offers, its narrowest useful width, and a frame that
   renders it with one occupant in one slot, in the layout the workbench's
   Layout menu sets. A side panel can hold several occupants in tabs and

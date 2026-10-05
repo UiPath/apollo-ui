@@ -176,10 +176,44 @@ export interface SlotSpec<TName extends string = string> {
   surfaces: readonly string[];
 }
 
+/** A template's grid track, by name, with its relative size on a page map. */
+export interface LayoutTrack {
+  name: string;
+  size: number;
+}
+
+/** Tracks a slot spans, by name: [first, last], on each axis. */
+export interface LayoutArea {
+  columns: readonly [string, string];
+  rows: readonly [string, string];
+}
+
+/** What a page can choose for a slot in its template's layout. */
+export interface SlotLayoutOptions {
+  /** It can be left out. A required slot never is. */
+  optional?: boolean;
+  /** It can be closed; a closed slot keeps its place, at no width. */
+  closable?: boolean;
+  /** Other areas it can take, by placement name; its own area is the default. */
+  placements?: Readonly<Record<string, LayoutArea>>;
+}
+
+/**
+ * Where a template's slots sit, as data: the grid's tracks, each slot's
+ * area, and the choices a page has. resolveLayout() reads it.
+ */
+export interface TemplateLayoutSpec {
+  columns: readonly LayoutTrack[];
+  rows: readonly LayoutTrack[];
+  areas: Readonly<Record<string, LayoutArea>>;
+  options?: Readonly<Record<string, SlotLayoutOptions>>;
+}
+
 export interface TemplateSpec<TName extends string = string> {
   /** Rendered as data-template. Lowercase, hyphenated. */
   name: TName;
   slots: readonly SlotSpec[];
+  layout?: TemplateLayoutSpec;
 }
 
 /** Whether a slot accepts the given surface. */
