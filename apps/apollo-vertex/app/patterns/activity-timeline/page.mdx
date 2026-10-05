@@ -61,10 +61,10 @@ import { ActivityTimeline } from '@/components/ui/activity-timeline';
 import type { ProgressViewModel } from '@/lib/progress-view-model';
 
 // In your solution: map your data into the neutral view model.
-function toProgress(record: YourRecord): ProgressViewModel {
+function toProgress(item: YourItem): ProgressViewModel {
   return {
-    subject: record.id,
-    events: record.history.map((entry) => ({
+    subject: item.id,
+    events: item.history.map((entry) => ({
       id: entry.id,
       actor: entry.user
         ? { kind: 'person', name: entry.user.name, initials: entry.user.initials }
@@ -79,7 +79,7 @@ function toProgress(record: YourRecord): ProgressViewModel {
 }
 
 <SidePanel side="end" aria-label="Activity">
-  <ActivityTimeline view={toProgress(record)} state={isLoading ? 'loading' : 'ready'} />
+  <ActivityTimeline view={toProgress(item)} state={isLoading ? 'loading' : 'ready'} />
 </SidePanel>
 ```
 
