@@ -34,6 +34,8 @@ export type ShellVariant = "sidebar" | "minimal";
  *   <slot>-padding  padded | flush, e.g. main-padding=flush
  *   <slot>-content  short | long   (start-panel, main, end-panel)
  *   <slot>-scroll   surface | occupant   (who owns scrolling there)
+ *   <slot>-tab      the tab a panel shows first, by id (start-panel,
+ *                   end-panel). An unknown id shows the first tab.
  *
  * Only values that differ from the defaults are written. Unknown or invalid
  * values fall back to the defaults. Whether the configuration card is open
@@ -49,7 +51,18 @@ export interface PreviewSettings {
   paddings: SlotPaddings;
   contents: SlotContents;
   scrolls: SlotScrolls;
+  /** Each panel's tab to show first, by id. Empty shows the first tab. */
+  tabs: PanelTabs;
 }
+
+/** The slots that hold a side panel, so can have tabs. */
+export type PanelSlotName = "start-panel" | "end-panel";
+
+export type PanelTabs = Record<PanelSlotName, string>;
+
+const PANEL_SLOTS: readonly PanelSlotName[] = ["start-panel", "end-panel"];
+
+const tabKey = (slot: PanelSlotName) => `${slot}-tab`;
 
 /** Slots whose surface can scroll, in page order. */
 const SCROLLABLE_SLOTS: readonly ScrollableSlotName[] = [
@@ -81,6 +94,7 @@ export const DEFAULT_PREVIEW_SETTINGS: PreviewSettings = {
     main: "surface",
     "end-panel": "surface",
   },
+  tabs: { "start-panel": "", "end-panel": "" },
 };
 
 const SHELLS: readonly ShellVariant[] = ["sidebar", "minimal"];
@@ -153,6 +167,9 @@ export function parsePreviewSettings(search: string): PreviewSettings {
     );
   }
 
+  const tabs = { ...defaults.tabs };
+  for (const slot of PANEL_SLOTS) tabs[slot] = params.get(tabKey(slot)) ?? "";
+
   return {
     shellVariant: oneOf(params.get("shell"), SHELLS, defaults.shellVariant),
     config: {
@@ -166,6 +183,7 @@ export function parsePreviewSettings(search: string): PreviewSettings {
     paddings,
     contents,
     scrolls,
+    tabs,
   };
 }
 
@@ -212,6 +230,10 @@ export function serializePreviewSettings(settings: PreviewSettings): string {
       settings.scrolls[slot],
       defaults.scrolls[slot],
     );
+  }
+
+  for (const slot of PANEL_SLOTS) {
+    setIfChanged(tabKey(slot), settings.tabs[slot], defaults.tabs[slot]);
   }
 
   const query = params.toString();

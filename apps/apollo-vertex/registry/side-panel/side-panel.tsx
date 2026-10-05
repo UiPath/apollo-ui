@@ -86,12 +86,21 @@ interface SidePanelProps extends React.ComponentProps<"aside"> {
   occupants?: SidePanelOccupants;
   /** The level of a stack's headings. Defaults to 2. */
   headingLevel?: StackHeadingLevel;
+  /**
+   * The tab to show first, by id, as from a link. An unknown id shows the
+   * first tab. The panel owns which tab shows after that.
+   */
+  defaultTab?: string;
+  /** Called with a tab's id when someone switches to it. */
+  onTabChange?: (id: string) => void;
 }
 
 function SidePanel({
   panel,
   occupants,
   headingLevel,
+  defaultTab,
+  onTabChange,
   ...props
 }: SidePanelProps) {
   if (panel)
@@ -100,6 +109,8 @@ function SidePanel({
         panel={panel}
         occupants={occupants ?? {}}
         headingLevel={headingLevel ?? 2}
+        {...(defaultTab && { defaultTab })}
+        {...(onTabChange && { onTabChange })}
         {...props}
       />
     );
@@ -108,7 +119,7 @@ function SidePanel({
 
 type SidePanelFrameProps = Omit<
   SidePanelProps,
-  "panel" | "occupants" | "headingLevel"
+  "panel" | "occupants" | "headingLevel" | "defaultTab" | "onTabChange"
 >;
 
 /** The <aside> every side panel renders, with its layer attributes. */
@@ -152,6 +163,8 @@ interface TabbedSidePanelProps extends SidePanelFrameProps {
   panel: PanelSpec;
   occupants: SidePanelOccupants;
   headingLevel: StackHeadingLevel;
+  defaultTab?: string;
+  onTabChange?: (id: string) => void;
 }
 
 /**
@@ -162,10 +175,16 @@ function TabbedSidePanel({
   panel,
   occupants,
   headingLevel,
+  defaultTab,
+  onTabChange,
   children: _children,
   ...props
 }: TabbedSidePanelProps) {
-  const [chosen, setChosen] = React.useState<string | null>(null);
+  const [chosen, setChosen] = React.useState<string | null>(defaultTab ?? null);
+  const choose = (id: string) => {
+    setChosen(id);
+    onTabChange?.(id);
+  };
   const specs = Object.values(occupants).map((o) => o.spec);
   const errors = validatePanel(panel, specs);
   if (errors.length > 0) throw new Error(`SidePanel: ${errors.join(" ")}`);
@@ -190,7 +209,7 @@ function TabbedSidePanel({
         occupants={occupants}
         headingLevel={headingLevel}
         active={active}
-        onActiveChange={setChosen}
+        onActiveChange={choose}
       />
     </SidePanelAside>
   );
