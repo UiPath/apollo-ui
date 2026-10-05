@@ -283,6 +283,34 @@ describe('MultiSelect', () => {
       expect(trigger).not.toHaveClass('future:text-muted-foreground');
     });
   });
+
+  describe('Future focus ring', () => {
+    it('uses the primary ring, with the error ring on top', () => {
+      render(<MultiSelect options={mockOptions} selected={[]} onChange={vi.fn()} />);
+      expect(screen.getByRole('combobox')).toHaveClass(
+        'future:focus-visible:ring-primary',
+        'future:aria-invalid:focus-visible:ring-error'
+      );
+    });
+
+    it('lets triggerClassName replace the primary ring on the trigger', () => {
+      const override = 'future:focus-visible:ring-foreground';
+      const { container } = render(
+        <MultiSelect
+          options={mockOptions}
+          selected={[]}
+          onChange={vi.fn()}
+          className="wrapper-class"
+          triggerClassName={override}
+        />
+      );
+      const trigger = screen.getByRole('combobox');
+      expect(trigger).toHaveClass(override);
+      expect(trigger).not.toHaveClass('future:focus-visible:ring-primary');
+      expect(trigger).not.toHaveClass('wrapper-class');
+      expect(container.querySelector('[data-slot="multi-select"]')).toHaveClass('wrapper-class');
+    });
+  });
 });
 
 describe('MultiSelect inline validation', () => {

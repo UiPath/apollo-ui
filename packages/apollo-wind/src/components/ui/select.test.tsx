@@ -336,6 +336,18 @@ describe('Select', () => {
       await waitFor(() => expect(trigger).not.toHaveAttribute('data-placeholder'));
     });
   });
+
+  describe('Future focus ring', () => {
+    it('uses the primary ring for both focus and focus-visible, with the error ring on top of each', () => {
+      render(<SelectExample />);
+      expect(screen.getByRole('combobox')).toHaveClass(
+        'future:focus:ring-primary',
+        'future:focus-visible:ring-primary',
+        'future:aria-invalid:focus:ring-error',
+        'future:aria-invalid:focus-visible:ring-error'
+      );
+    });
+  });
 });
 
 describe('SelectTrigger inline validation', () => {
