@@ -10,7 +10,7 @@ import type { GuardrailCopyTable } from '../definitions-copy';
  *   `frontend-sw/src/components/definition/AddGuardrailPalette/AddGuardrailPalette.utils.tsx`
  *   (`OOB_GUARDRAILS_I8N`; its `name` / `params[].infoTooltip` / `params[].options` map onto
  *   `displayName` / `paramTooltips` / `optionLabels` here). The `sentiment` entry is read from
- *   the same file on Agents' `feat/sentiment` branch (UiPath/Agents#6457).
+ *   the same file, as UiPath/Agents#6457 added it.
  * - Flow `origin/develop`:
  *   `packages/canvas/src/components/properties-panel/guardrails/ootb-guardrail-definitions.ts`
  *   (`buildValidatorDisplayInfo`)
