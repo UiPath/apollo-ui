@@ -7,7 +7,14 @@
  */
 
 import { icons } from 'lucide-react';
-import { type JSX, memo, useMemo } from 'react';
+import { type ComponentType, type CSSProperties, type JSX, memo, useMemo } from 'react';
+import {
+  ComponentBatch,
+  ComponentBusinessRule,
+  ComponentDecisionTable,
+  ComponentDecisionTableRow,
+  ComponentLiteralExpression,
+} from '../../icons';
 import * as Icons from '../icons';
 
 export type IconComponent = (props: {
@@ -16,6 +23,18 @@ export type IconComponent = (props: {
   color?: string;
   fill?: string;
 }) => JSX.Element;
+
+type GeneratedIcon = ComponentType<{ size?: number; color?: string; style?: CSSProperties }>;
+
+// Generated icons tie width and height to one `size`, so only a non-square request
+// sets height inline; everything else stays an attribute that CSS can still size.
+const sizedIcon =
+  (Icon: GeneratedIcon): IconComponent =>
+  ({ w, h, color }) => {
+    const width = w ?? 24;
+    const height = h ?? 24;
+    return <Icon size={width} color={color} style={height === width ? undefined : { height }} />;
+  };
 
 /**
  * Registry of available icons (UIPath icons only)
@@ -48,6 +67,11 @@ const iconRegistry: Record<string, IconComponent> = {
   'file-sparkles-corner': ({ w, h, color }) => (
     <Icons.FileSparklesCornerIcon w={w ?? 24} h={h ?? 24} color={color} />
   ),
+  'business-rule': sizedIcon(ComponentBusinessRule),
+  'decision-table': sizedIcon(ComponentDecisionTable),
+  'decision-table-row': sizedIcon(ComponentDecisionTableRow),
+  'literal-expression': sizedIcon(ComponentLiteralExpression),
+  batch: sizedIcon(ComponentBatch),
 };
 
 /**

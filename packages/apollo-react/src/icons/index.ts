@@ -303,11 +303,15 @@ export { ComponentAPIWorkflow, default as ComponentAPIWorkflowIcon } from './Com
 export { ComponentAgent, default as ComponentAgentIcon } from './ComponentAgent';
 export { ComponentAgenticProcess, default as ComponentAgenticProcessIcon } from './ComponentAgenticProcess';
 export { ComponentApp, default as ComponentAppIcon } from './ComponentApp';
+export { ComponentBatch, default as ComponentBatchIcon } from './ComponentBatch';
 export { ComponentBusinessRule, default as ComponentBusinessRuleIcon } from './ComponentBusinessRule';
 export { ComponentCaseManagement, default as ComponentCaseManagementIcon } from './ComponentCaseManagement';
 export { ComponentConnector, default as ComponentConnectorIcon } from './ComponentConnector';
+export { ComponentDecisionTable, default as ComponentDecisionTableIcon } from './ComponentDecisionTable';
+export { ComponentDecisionTableRow, default as ComponentDecisionTableRowIcon } from './ComponentDecisionTableRow';
 export { ComponentGeneric, default as ComponentGenericIcon } from './ComponentGeneric';
 export { ComponentIxp, default as ComponentIxpIcon } from './ComponentIxp';
+export { ComponentLiteralExpression, default as ComponentLiteralExpressionIcon } from './ComponentLiteralExpression';
 export { ComponentRootProjectSolution, default as ComponentRootProjectSolutionIcon } from './ComponentRootProjectSolution';
 export { ComponentRpaWorkflow, default as ComponentRpaWorkflowIcon } from './ComponentRpaWorkflow';
 export { ComponentSetAsMainComponent, default as ComponentSetAsMainComponentIcon } from './ComponentSetAsMainComponent';
