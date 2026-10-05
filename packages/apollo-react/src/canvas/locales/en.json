@@ -437,5 +437,6 @@
   "canvas.diff_view.revert": "Revert",
   "canvas.diff_view.keep": "Keep",
   "canvas.diff_view.code_line_removed": "Removed",
-  "canvas.diff_view.code_line_added": "Added"
+  "canvas.diff_view.code_line_added": "Added",
+  "canvas.diff_view.code_too_large": "Too many changes to highlight. Showing both versions unmarked."
 }

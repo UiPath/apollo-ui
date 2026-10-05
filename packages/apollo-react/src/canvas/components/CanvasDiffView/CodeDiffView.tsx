@@ -1,6 +1,7 @@
 import { cn } from '@uipath/apollo-wind';
 import { useMemo } from 'react';
 import { useSafeLingui } from '../../../i18n';
+import { diffLines } from './lineDiff';
 
 export interface CodeDiffViewProps {
   /** Text before the change, e.g. the serialized workflow. */
@@ -24,21 +25,20 @@ interface Row {
 
 const toLines = (text: string) => (text === '' ? [] : text.split('\n'));
 
-/** Line diff by longest common subsequence. Removed and added runs pair up row by row. */
-function diffRows(before: string, after: string): Row[] {
-  const a = toLines(before);
-  const b = toLines(after);
+/** Pairs line k of each side with no change markers, for diffs too large to compute. */
+function unmarkedRows(a: string[], b: string[]): Row[] {
+  return Array.from({ length: Math.max(a.length, b.length) }, (_, k) => ({
+    left: k < a.length ? { number: k + 1, text: a[k] ?? '' } : undefined,
+    right: k < b.length ? { number: k + 1, text: b[k] ?? '' } : undefined,
+    changed: false,
+  }));
+}
 
-  // common[i][j]: length of the longest common subsequence of a[i..] and b[j..].
-  const common = Array.from({ length: a.length + 1 }, () =>
-    new Array<number>(b.length + 1).fill(0)
-  );
-  const lcs = (i: number, j: number) => common[i]?.[j] ?? 0;
-  for (let i = a.length - 1; i >= 0; i--) {
-    for (let j = b.length - 1; j >= 0; j--) {
-      const row = common[i] as number[];
-      row[j] = a[i] === b[j] ? lcs(i + 1, j + 1) + 1 : Math.max(lcs(i + 1, j), lcs(i, j + 1));
-    }
+/** Side-by-side rows, or `undefined` past the edit cap. Removed and added runs pair up row by row. */
+function diffRows(a: string[], b: string[]): Row[] | undefined {
+  const ops = diffLines(a, b);
+  if (!ops) {
+    return undefined;
   }
 
   const rows: Row[] = [];
@@ -52,24 +52,24 @@ function diffRows(before: string, after: string): Row[] {
     added = [];
   };
 
-  let i = 0;
-  let j = 0;
-  while (i < a.length || j < b.length) {
-    if (i < a.length && j < b.length && a[i] === b[j]) {
+  let beforeNumber = 0;
+  let afterNumber = 0;
+  for (const op of ops) {
+    if (op.type === 'removed') {
+      beforeNumber++;
+      removed.push({ number: beforeNumber, text: op.text });
+    } else if (op.type === 'added') {
+      afterNumber++;
+      added.push({ number: afterNumber, text: op.text });
+    } else {
       flushChanges();
+      beforeNumber++;
+      afterNumber++;
       rows.push({
-        left: { number: i + 1, text: a[i] ?? '' },
-        right: { number: j + 1, text: b[j] ?? '' },
+        left: { number: beforeNumber, text: op.text },
+        right: { number: afterNumber, text: op.text },
         changed: false,
       });
-      i++;
-      j++;
-    } else if (j >= b.length || (i < a.length && lcs(i + 1, j) >= lcs(i, j + 1))) {
-      removed.push({ number: i + 1, text: a[i] ?? '' });
-      i++;
-    } else {
-      added.push({ number: j + 1, text: b[j] ?? '' });
-      j++;
     }
   }
   flushChanges();
@@ -112,7 +112,12 @@ function Side({ line, kind, changed, changeLabel }: SideProps) {
  */
 export function CodeDiffView({ before, after, className }: CodeDiffViewProps) {
   const { _ } = useSafeLingui();
-  const rows = useMemo(() => diffRows(before, after), [before, after]);
+  const { rows, tooLarge } = useMemo(() => {
+    const a = toLines(before);
+    const b = toLines(after);
+    const diffed = diffRows(a, b);
+    return { rows: diffed ?? unmarkedRows(a, b), tooLarge: !diffed };
+  }, [before, after]);
   const removedLabel = _({ id: 'canvas.diff_view.code_line_removed', message: 'Removed' });
   const addedLabel = _({ id: 'canvas.diff_view.code_line_added', message: 'Added' });
 
@@ -123,6 +128,14 @@ export function CodeDiffView({ before, after, className }: CodeDiffViewProps) {
         className
       )}
     >
+      {tooLarge && (
+        <output className="block border-b border-border-subtle px-2 py-1 text-foreground-subtle">
+          {_({
+            id: 'canvas.diff_view.code_too_large',
+            message: 'Too many changes to highlight. Showing both versions unmarked.',
+          })}
+        </output>
+      )}
       <table className="w-full table-fixed border-collapse">
         <colgroup>
           <col className="w-12" />
