@@ -202,6 +202,12 @@ const COVERAGE: Coverage[] = [
     storyId: 'apollo-wind-components-core-file-upload--with-inline-validation',
   },
   {
+    component: 'Variable Value Control, Prompt Value Control',
+    api: 'error prop',
+    where: 'On the InputGroup they sit in: the message renders below the box',
+    storyId: 'apollo-wind-components-core-variable-value-control--default',
+  },
+  {
     component: 'Quick Form Field',
     api: 'error prop',
     where: 'Below the composite field',
@@ -236,6 +242,12 @@ const COVERAGE: Coverage[] = [
     api: 'aria-invalid',
     where: 'Consumer renders FormFieldError',
     storyId: 'apollo-wind-components-core-switch--with-inline-validation',
+  },
+  {
+    component: 'Boolean Radio Group',
+    api: 'aria-invalid',
+    where: 'Set on the group, or taken from an invalid InputGroup; consumer renders FormFieldError',
+    storyId: 'apollo-wind-forms-value-modes--every-field-type',
   },
   {
     component: 'Slider',
@@ -474,6 +486,14 @@ function FieldValidationGuidancePage({ globalTheme }: { globalTheme: string }) {
           render the message. Each link opens the component story for the error state. For which
           field types each control supports today, see the Field Type Guidance page.
         </SectionDescription>
+        <div className="mb-6">
+          <InfoCallout>
+            In a MetadataForm you pass none of these: each field&rsquo;s message comes from its{' '}
+            <InlineCode>validation</InlineCode> metadata, or, for a value in another mode, from{' '}
+            <InlineCode>required</InlineCode> and the mode&rsquo;s <InlineCode>validate</InlineCode>
+            .
+          </InfoCallout>
+        </div>
         <CoverageTable />
       </section>
 

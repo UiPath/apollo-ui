@@ -6,7 +6,7 @@ import { cn } from '@/lib';
 
 /**
  * Shared building blocks for the long-form guidance pages under Apollo Wind/Forms
- * (Field Help Guidance, Field Validation Guidance, Field Type Guidance). Keep additions
+ * (Field Anatomy, Field Type, Field Help and Field Validation Guidance). Keep additions
  * presentational so every page reads the same.
  */
 

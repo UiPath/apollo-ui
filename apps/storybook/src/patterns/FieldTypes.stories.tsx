@@ -1,7 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { ChevronRight, Code2, Lock, Search } from 'lucide-react';
 import type * as React from 'react';
 import { useState } from 'react';
+import {
+  createInsertVariableAction,
+  FIELD_CONTROL_GEOMETRY,
+  type FieldMetadata,
+  type FieldType,
+  type FormPlugin,
+  type FormSchema,
+  MetadataForm,
+} from '@/components/forms';
 import {
   Accordion,
   AccordionContent,
@@ -10,14 +18,6 @@ import {
 } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Input } from '@/components/ui/input';
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
-} from '@/components/ui/input-group';
 import { Label } from '@/components/ui/label';
 import {
   FIELD_TYPE_META,
@@ -35,9 +35,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { cn } from '@/lib';
 import {
+  CodeBlock,
   Divider,
+  GuidanceItem,
+  GuidanceList,
   GuidancePage,
   InfoCallout,
   InlineCode,
@@ -52,8 +56,230 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-type Status = 'supported' | 'needs-type' | 'needs-component';
-type VisualExample = QuickFieldType | 'mode-literal' | 'mode-expression' | 'insert-variable';
+// ============================================================================
+// Live examples
+// ============================================================================
+
+const VARIABLES = [
+  {
+    id: 'vars',
+    label: '$vars',
+    children: [
+      { id: 'customerName', label: 'customerName', value: '$vars.customerName', type: 'string' },
+      { id: 'orderId', label: 'orderId', value: '$vars.orderId', type: 'string' },
+    ],
+  },
+];
+
+// Module-level: MetadataForm expects its plugins to keep their identity between renders.
+const PLUGINS: FormPlugin[] = [
+  {
+    name: 'host',
+    variables: VARIABLES,
+    fieldActions: { header: { 'insert-variable': createInsertVariableAction({}) } },
+  },
+];
+
+/** A one-field form with no title or buttons, built once per field so its schema stays stable. */
+const SCHEMAS = new Map<string, FormSchema>();
+function schemaFor(field: FieldMetadata): FormSchema {
+  let schema = SCHEMAS.get(field.name);
+  if (!schema) {
+    schema = {
+      id: `example-${field.name}`,
+      title: '',
+      actions: [],
+      sections: [{ id: 'main', fields: [field] }],
+    };
+    SCHEMAS.set(field.name, schema);
+  }
+  return schema;
+}
+
+function FieldExample({ field }: { field: FieldMetadata }) {
+  return (
+    <div className="w-64">
+      <MetadataForm schema={schemaFor(field)} plugins={PLUGINS} container="div" />
+    </div>
+  );
+}
+
+const OPTIONS = [
+  { label: 'Invoices', value: 'invoices' },
+  { label: 'Receipts', value: 'receipts' },
+  { label: 'Contracts', value: 'contracts' },
+];
+
+/** One example field per MetadataForm field type. `custom` has none: the host registers it. */
+const TYPE_EXAMPLES: Partial<Record<FieldType, FieldMetadata>> = {
+  text: { name: 'text', type: 'text', label: 'Customer name', placeholder: 'Ada Lovelace' },
+  email: { name: 'email', type: 'email', label: 'Email', placeholder: 'ada@example.com' },
+  textarea: { name: 'textarea', type: 'textarea', label: 'Notes', minRows: 2 },
+  number: { name: 'number', type: 'number', label: 'Retries', min: 0, max: 10 },
+  select: { name: 'select', type: 'select', label: 'Queue', options: OPTIONS },
+  multiselect: { name: 'multiselect', type: 'multiselect', label: 'Queues', options: OPTIONS },
+  radio: { name: 'radio', type: 'radio', label: 'Priority', options: OPTIONS.slice(0, 2) },
+  checkbox: { name: 'checkbox', type: 'checkbox', label: 'Notify the owner' },
+  switch: { name: 'switch', type: 'switch', label: 'Enabled' },
+  boolean: { name: 'boolean', type: 'boolean', label: 'Approved' },
+  slider: { name: 'slider', type: 'slider', label: 'Confidence', min: 0, max: 100 },
+  date: { name: 'date', type: 'date', label: 'Due date' },
+  datetime: { name: 'datetime', type: 'datetime', label: 'Starts at' },
+  file: { name: 'file', type: 'file', label: 'Attachment' },
+  'string-list': { name: 'stringList', type: 'string-list', label: 'Keywords' },
+};
+
+// ============================================================================
+// MetadataForm field types
+// ============================================================================
+
+interface FieldTypeRow {
+  type: FieldType;
+  control: string;
+  value: string;
+  props: string;
+}
+
+const FIELD_TYPE_ROWS: FieldTypeRow[] = [
+  {
+    type: 'text',
+    control: 'Input',
+    value: 'string',
+    props: 'placeholder, validation.minLength / maxLength / pattern',
+  },
+  { type: 'email', control: 'Input type="email"', value: 'string', props: 'validation.email' },
+  { type: 'textarea', control: 'Textarea', value: 'string', props: 'rows, minRows, maxLength' },
+  {
+    type: 'number',
+    control: 'Input type="number"',
+    value: 'number',
+    props: 'min, max, step, validation.integer',
+  },
+  { type: 'select', control: 'Select', value: 'string', props: 'options, or dataSource' },
+  {
+    type: 'multiselect',
+    control: 'MultiSelect',
+    value: 'string[]',
+    props: 'options, maxSelected, validation.minItems',
+  },
+  { type: 'radio', control: 'RadioGroup', value: 'string', props: 'options' },
+  { type: 'checkbox', control: 'Checkbox', value: 'boolean', props: 'description' },
+  { type: 'switch', control: 'Switch', value: 'boolean', props: 'description' },
+  {
+    type: 'boolean',
+    control: 'BooleanRadioGroup',
+    value: 'boolean | null',
+    props: 'True, False, or not set',
+  },
+  { type: 'slider', control: 'Slider', value: 'number', props: 'min, max, step, maxRef' },
+  { type: 'date', control: 'DatePicker', value: 'Date', props: 'placeholder' },
+  { type: 'datetime', control: 'DateTimePicker', value: 'Date', props: 'use12Hour' },
+  {
+    type: 'file',
+    control: 'FileUpload',
+    value: 'File | File[]',
+    props: 'accept, multiple, maxSize',
+  },
+  {
+    type: 'string-list',
+    control: 'Rows of Textarea',
+    value: 'string[]',
+    props: 'maxItems, maxLength, addItemLabel',
+  },
+  {
+    type: 'custom',
+    control: 'The registered component',
+    value: 'valueType',
+    props: 'component, componentProps, valueType',
+  },
+];
+
+// Smaller and denser than the Table primitive's default header, so a wide reference table reads as
+// a table rather than prose.
+const HEADER_CELL_CLASS =
+  'h-9 whitespace-nowrap bg-muted/40 text-[11px] font-semibold uppercase tracking-wide';
+const BODY_CELL_CLASS = 'align-top px-4 py-3';
+
+function FieldTypesTable() {
+  return (
+    <div className="rounded-lg border border-border">
+      <Table>
+        <TableHeader>
+          <TableRow className="hover:bg-transparent">
+            <TableHead className={cn(HEADER_CELL_CLASS, 'w-[12%]')}>type</TableHead>
+            <TableHead className={cn(HEADER_CELL_CLASS, 'w-[30%]')}>Example</TableHead>
+            <TableHead className={cn(HEADER_CELL_CLASS, 'w-[15%]')}>Control</TableHead>
+            <TableHead className={cn(HEADER_CELL_CLASS, 'w-[11%]')}>Value</TableHead>
+            <TableHead className={cn(HEADER_CELL_CLASS, 'w-[10%]')}>Anatomy box</TableHead>
+            <TableHead className={HEADER_CELL_CLASS}>Type-specific metadata</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {FIELD_TYPE_ROWS.map((row) => {
+            const example = TYPE_EXAMPLES[row.type];
+            const geometry = FIELD_CONTROL_GEOMETRY[row.type];
+            return (
+              <TableRow key={row.type}>
+                <TableCell className={cn(BODY_CELL_CLASS, 'font-mono text-xs')}>
+                  {row.type}
+                </TableCell>
+                <TableCell className={BODY_CELL_CLASS}>
+                  {example ? <FieldExample field={example} /> : <HostRegistered />}
+                </TableCell>
+                <TableCell className={cn(BODY_CELL_CLASS, 'text-xs text-muted-foreground')}>
+                  {row.control}
+                </TableCell>
+                <TableCell
+                  className={cn(BODY_CELL_CLASS, 'font-mono text-xs text-muted-foreground')}
+                >
+                  {row.value}
+                </TableCell>
+                <TableCell className={cn(BODY_CELL_CLASS, 'text-xs text-muted-foreground')}>
+                  {row.type === 'custom'
+                    ? 'Its registration'
+                    : geometry
+                      ? geometry.layout
+                      : 'Not fitted yet'}
+                </TableCell>
+                <TableCell className={cn(BODY_CELL_CLASS, 'text-xs text-muted-foreground')}>
+                  {row.props}
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
+function HostRegistered() {
+  return (
+    <div className="flex h-9 w-64 items-center justify-center rounded-lg border border-dashed border-border px-2 text-center text-[11px] text-muted-foreground">
+      Registered by the host
+    </div>
+  );
+}
+
+// ============================================================================
+// Value modes
+// ============================================================================
+
+const ALL_MODES_FIELD: FieldMetadata = {
+  name: 'recipient',
+  type: 'text',
+  label: 'Recipient',
+  placeholder: 'Enter a name',
+  description: 'Switch the mode from the menu at the end of the box.',
+  valueModes: { modes: ['literal', 'expression', 'variable', 'prompt'] },
+  headerActions: ['insert-variable'],
+};
+
+// ============================================================================
+// flow-workbench type coverage
+// ============================================================================
+
+type Status = 'supported' | 'custom-control' | 'needs-component';
 
 interface TypeRow {
   type: string;
@@ -61,11 +287,7 @@ interface TypeRow {
   support: string;
   status: Status;
   action?: string;
-  // Story that shows an implementation of this row, linked under Recommended action.
-  reference?: { label: string; storyId: string };
-  visual?: VisualExample;
-  // False when it is unconfirmed that flow-workbench itself renders this as a
-  // distinct control, not just declares it in a schema. Defaults to true.
+  /** False when flow-workbench is not confirmed to render this as a distinct control. */
   flowWorkbenchConfirmed?: boolean;
 }
 
@@ -73,232 +295,229 @@ interface Category {
   title: string;
   description: string;
   rows: TypeRow[];
-  rowLabel?: string;
 }
 
 const CATEGORIES: Category[] = [
   {
     title: 'Temporal',
-    description: 'Date and time values. Only bare dates are modeled today.',
+    description:
+      'Dates and date-times have field types. Time of day and durations have no control.',
     rows: [
       {
         type: 'date',
         source: 'JSON Schema, entity fields, hitl-schema-types',
-        support: 'fieldType="date"',
+        support: "type: 'date'",
         status: 'supported',
-        visual: 'date',
       },
       {
         type: 'datetime / date-time',
         source: 'hitl-schema-types, integration-service WidgetType.Datetime, entity field dateTime',
-        support: 'Not modeled. Distinct from date today.',
-        status: 'needs-type',
-        action: 'Add a datetime fieldType with a combined date and time control.',
+        support: "type: 'datetime'",
+        status: 'supported',
       },
       {
         type: 'time',
         source: 'integration-service WidgetType.Time, entity field time',
-        support: 'Not modeled.',
-        status: 'needs-type',
-        action: 'Add a time fieldType with a time-of-day control.',
+        support: 'No time-of-day control.',
+        status: 'needs-component',
+        action: 'Build a time picker, then register it as a custom control or add a field type.',
       },
       {
         type: 'duration / timeSpan',
         source: 'integration-service WidgetType.Timespan',
-        support: 'Not modeled.',
-        status: 'needs-type',
-        action: 'Add a duration fieldType. Likely a segmented number plus unit control.',
+        support: 'No duration control.',
+        status: 'needs-component',
+        action: 'Build a segmented number plus unit control.',
       },
     ],
   },
   {
     title: 'Numeric',
-    description: 'Only integer is modeled today, without a decimal counterpart.',
+    description: 'One number field type covers integers and decimals; validation narrows it.',
     rows: [
       {
         type: 'integer',
         source: 'JSON Schema, hitl-schema-types',
-        support: 'fieldType="integer"',
+        support: "type: 'number' with validation.integer",
         status: 'supported',
-        visual: 'integer',
       },
       {
         type: 'number / float / double',
         source: 'hitl-schema-types (float, double), JSON Schema number',
-        support:
-          'Renders via integer today: a native number input with no decimal-specific formatting or precision handling, and nothing in the control currently blocks typing a decimal.',
-        status: 'needs-type',
-        action: 'Add a number fieldType for decimal values, separate from integer.',
+        support: "type: 'number'",
+        status: 'supported',
       },
       {
         type: 'int32 / int64',
         source: 'hitl-schema-types schema definitions',
-        support: 'Renders via integer.',
-        status: 'needs-type',
+        support: "type: 'number' with min and max",
+        status: 'supported',
         action:
-          'Confirm whether the 32 vs. 64 bit distinction matters at the UI layer. If it is a backend validation constraint only, no UI change is needed.',
+          'The bit width is a backend constraint; express its range with min and max if it matters.',
         flowWorkbenchConfirmed: false,
       },
     ],
   },
   {
     title: 'Boolean',
-    description: 'A single true or false value.',
+    description: 'A true or false value, with or without an unset state.',
     rows: [
       {
         type: 'boolean',
         source: 'JSON Schema, hitl-schema-types',
-        support: 'fieldType="boolean"',
+        support:
+          "type: 'boolean' (True, False or not set); 'switch' or 'checkbox' when it is never unset",
         status: 'supported',
-        visual: 'boolean',
       },
     ],
   },
   {
     title: 'Text and string formats',
     description:
-      'string covers the base case. JSON Schema format extensions and loose fallbacks currently render the same as a plain string, with no format-specific behavior.',
+      'Text field types with validation cover most formats. Code-like values need an editor.',
     rows: [
       {
         type: 'string',
         source: 'JSON Schema',
-        support: 'fieldType="string"',
+        support: "type: 'text', or 'textarea' for long text",
         status: 'supported',
-        visual: 'string',
+      },
+      {
+        type: 'email',
+        source: 'JSON Schema format',
+        support: "type: 'email'",
+        status: 'supported',
+      },
+      {
+        type: 'uri / uuid',
+        source: 'JSON Schema format extensions',
+        support: "type: 'text' with validation.pattern",
+        status: 'supported',
       },
       {
         type: 'text / any / json',
         source: 'argument-utils.ts, expression-model getEffectiveType fallback',
-        support: 'Renders via string.',
-        status: 'needs-type',
+        support: "type: 'textarea', or a code editor registered as a custom control",
+        status: 'custom-control',
         action:
-          'Decide whether any and json need a distinct, code-aware control, or should resolve to string with a monospace hint.',
-      },
-      {
-        type: 'email / uri / uuid',
-        source: 'JSON Schema format extensions',
-        support: 'Renders via string. No format validation.',
-        status: 'needs-type',
-        action:
-          'Add format-level validation and masking. Likely a format prop on string rather than a new fieldType.',
+          'Register a code editor (see Patterns/Code Editors) with layout "fill" and labelTarget "labelledby".',
       },
       {
         type: 'monetary / currency',
         source: 'JSON Schema format extensions',
-        support: 'Renders via string.',
-        status: 'needs-type',
-        action: 'Needs a currency-aware control with symbol and locale formatting.',
+        support: "type: 'number' holds the amount; no symbol or locale formatting",
+        status: 'custom-control',
+        action: 'Register a currency input as a custom control.',
       },
       {
         type: 'verbatim',
         source: 'JSON Schema format extension',
-        support: 'Renders via string.',
-        status: 'needs-type',
-        action:
-          'Clarify what verbatim means at the UI layer. Likely no visual difference from string. Confirm with the flow-workbench team.',
+        support: "type: 'text'",
+        status: 'supported',
+        action: 'Confirm with flow-workbench whether verbatim differs from string at the UI layer.',
         flowWorkbenchConfirmed: false,
       },
     ],
   },
   {
     title: 'Security',
-    description: 'No masked or credential-aware control exists today.',
+    description: 'No masked or credential-aware control exists.',
     rows: [
       {
         type: 'Secret',
         source: 'asset-binding.ts, schemaTypeDisplay.tsx',
-        support: 'Not modeled.',
-        status: 'needs-type',
-        action: 'Add a secret fieldType: masked input, no plaintext reveal even when unlocked.',
+        support: 'No masked control.',
+        status: 'needs-component',
+        action: 'Build a masked input with no plaintext reveal.',
       },
       {
         type: 'Credential',
         source: 'asset-binding.ts',
-        support: 'Not modeled.',
-        status: 'needs-type',
-        action:
-          'Add a credential fieldType. Likely a connection-style picker rather than free text.',
+        support: 'No credential picker.',
+        status: 'needs-component',
+        action: 'Likely a connection-style picker rather than free text.',
       },
       {
         type: 'secretAsset / credentialAsset',
         source: 'asset-binding.ts',
-        support: 'Not modeled.',
-        status: 'needs-type',
+        support: 'No control.',
+        status: 'needs-component',
         action:
-          'Likely the same secret and credential fieldTypes bound through the asset system. Confirm with flow-schema owners before adding separate variants.',
+          'Likely the secret and credential controls bound through the asset system; confirm with flow-schema owners.',
       },
     ],
   },
   {
     title: 'Object and collection',
     description:
-      'object is modeled. Nothing today handles an arbitrary list, a key-value map, or a heterogeneous collection.',
+      'Lists of strings have a field type. Objects, maps and lists of anything else need a control.',
     rows: [
+      {
+        type: 'stringArray / rawStringArray',
+        source: 'integration-service WidgetType',
+        support: "type: 'string-list', or 'multiselect' for a fixed set",
+        status: 'supported',
+      },
       {
         type: 'object',
         source: 'JSON Schema',
-        support: 'fieldType="object"',
-        status: 'supported',
-        visual: 'object',
+        support: 'No object field type.',
+        status: 'custom-control',
+        action: 'Register a JSON or code editor as a custom control.',
       },
       {
         type: 'array (generic)',
         source: 'Workflow variables dropdown, JSON Schema',
-        support:
-          'No generic array editor. Only multi-select, which is a fixed list of string options.',
-        status: 'needs-type',
-        action:
-          'Add a generic array fieldType: add, remove, and reorder rows of an arbitrary sub-type.',
+        support: 'No row editor for an arbitrary item type.',
+        status: 'needs-component',
+        action: 'Build a row editor: add, remove and reorder rows of any item type.',
       },
       {
         type: 'dictionary',
         source: 'integration-service WidgetType.dictionary',
-        support: 'Not modeled.',
+        support: 'No key-value editor.',
         status: 'needs-component',
-        action: 'Build a dedicated key-value map editor. Does not fit the single-value model.',
+        action: 'Build a key-value map editor.',
       },
       {
         type: 'collection',
         source: 'integration-service WidgetType.collection',
-        support: 'Not modeled.',
+        support: 'No control.',
         status: 'needs-component',
-        action:
-          'Clarify against the generic array row above. May be the same concept under a different name.',
+        action: 'Clarify against the generic array row; it may be the same concept.',
         flowWorkbenchConfirmed: false,
       },
       {
-        type: 'stringArray / rawStringArray / stringArrayWithExpression',
+        type: 'stringArrayWithExpression',
         source: 'integration-service WidgetType',
-        support: 'Overlaps with multi-select and generic array.',
-        status: 'needs-type',
-        action: 'De-duplicate with flow-workbench before adding a new fieldType.',
+        support: "type: 'string-list', with value modes on the field as a whole",
+        status: 'supported',
+        action: 'Per-row modes need a row editor; see the generic array row.',
         flowWorkbenchConfirmed: false,
       },
     ],
   },
   {
     title: 'File and media',
-    description: 'file covers upload only. There is no picker for existing resources or images.',
+    description: 'Upload has a field type; picking an existing resource does not.',
     rows: [
       {
         type: 'file',
         source: 'JSON Schema resource-kind extension, hitl-schema-types',
-        support: 'fieldType="file"',
+        support: "type: 'file'",
         status: 'supported',
-        visual: 'file',
       },
       {
         type: 'browser / localResource',
         source: 'integration-service WidgetType',
-        support: 'Not modeled.',
+        support: 'No file system or folder picker.',
         status: 'needs-component',
-        action:
-          'Build a file system or folder picker. Different from the existing upload-only file control.',
+        action: 'Build a picker for existing resources.',
       },
       {
         type: 'image / icon',
         source: 'integration-service WidgetType',
-        support: 'Not modeled.',
+        support: 'No image picker.',
         status: 'needs-component',
         action: 'Build an image or icon picker with a preview.',
       },
@@ -306,109 +525,93 @@ const CATEGORIES: Category[] = [
   },
   {
     title: 'Choice controls',
-    description:
-      'single-select and multi-select cover the base cases. Some flow-workbench choice controls may be visual variants of these rather than genuinely new types.',
+    description: 'Single and multiple choice have field types, with static or fetched options.',
     rows: [
       {
-        type: 'single-select',
+        type: 'single-select / dropdown',
         source: 'JSON Schema enum, integration-service dropdown',
-        support: 'fieldType="single-select"',
+        support: "type: 'select'",
         status: 'supported',
-        visual: 'single-select',
       },
       {
         type: 'multi-select',
         source: 'JSON Schema, integration-service',
-        support: 'fieldType="multi-select"',
+        support: "type: 'multiselect'",
         status: 'supported',
-        visual: 'multi-select',
-      },
-      {
-        type: 'dropdown',
-        source: 'integration-service WidgetType.dropdown',
-        support: 'Renders via single-select. Naming alias only.',
-        status: 'supported',
-        visual: 'single-select',
-      },
-      {
-        type: 'checkboxGroup',
-        source: 'integration-service WidgetType.checkboxGroup',
-        support: 'Closest existing analog is multi-select.',
-        status: 'needs-type',
-        action:
-          'Confirm whether an all-options-visible checkbox group is a real visual distinction worth its own fieldType, versus multi-select’s dropdown and chips.',
-        flowWorkbenchConfirmed: false,
       },
       {
         type: 'radioGroup',
         source: 'integration-service WidgetType.radioGroup',
-        support: 'Closest existing analog is single-select.',
-        status: 'needs-type',
-        action:
-          'Confirm whether a radio group is a real visual distinction worth its own fieldType, versus a single-select dropdown.',
+        support: "type: 'radio'",
+        status: 'supported',
+      },
+      {
+        type: 'checkboxGroup',
+        source: 'integration-service WidgetType.checkboxGroup',
+        support: "Closest is type: 'multiselect'",
+        status: 'custom-control',
+        action: 'Register an all-options-visible checkbox group if the distinction matters.',
         flowWorkbenchConfirmed: false,
       },
       {
         type: 'autoComplete / connectorAutocomplete',
         source: 'integration-service WidgetType',
-        support: 'Not modeled.',
+        support:
+          "type: 'select' with a remote dataSource loads options, but does not search as you type",
         status: 'needs-component',
-        action:
-          'Build an async-search autocomplete control. The existing single-select assumes a static option list.',
+        action: 'Build an async-search control; Combobox is the starting point.',
       },
     ],
   },
   {
     title: 'Resource reference',
-    description: 'A whole family with no equivalent today.',
+    description: 'A whole family with no control.',
     rows: [
       {
         type: 'connection / entity / process / app / portal / definition / solutionResource',
         source: 'solution-resource-picker/kinds',
-        support: 'Not modeled.',
+        support: 'No resource picker.',
         status: 'needs-component',
         action:
-          'Build one resource-reference picker component parameterized by kind, rather than seven separate fieldTypes.',
+          'Build one resource-reference picker parameterized by kind, then register it as a custom control.',
       },
     ],
   },
   {
     title: 'Rich and composite controls',
-    description:
-      'Controls whose interaction model is fundamentally different from a single value field.',
+    description: 'Controls whose interaction is not a single value field.',
     rows: [
+      {
+        type: 'promptComposer / promptSingleValue',
+        source: 'integration-service WidgetType',
+        support: 'The prompt value mode (PromptValueControl); PromptEditor for prompts with tokens',
+        status: 'supported',
+      },
       {
         type: 'richText / richTextComposer',
         source: 'integration-service WidgetType',
-        support: 'Not modeled.',
+        support: 'No rich text editor.',
         status: 'needs-component',
         action: 'Build a rich text editor control.',
       },
       {
-        type: 'promptComposer / promptSingleValue',
-        source: 'integration-service WidgetType',
-        support: 'Not modeled.',
-        status: 'needs-component',
-        action: 'Build an AI prompt composer control.',
-      },
-      {
         type: 'filter / conditionBuilder',
         source: 'integration-service WidgetType',
-        support: 'Not modeled.',
+        support: 'No condition builder.',
         status: 'needs-component',
         action: 'Build a condition or query builder control.',
       },
       {
         type: 'outputMapping / dataMapping',
         source: 'integration-service WidgetType',
-        support: 'Not modeled.',
+        support: 'No mapping control.',
         status: 'needs-component',
         action: 'Build a field-mapping control for source to target pairs.',
       },
       {
         type: 'typePicker',
         source: 'integration-service WidgetType',
-        support: 'Not modeled.',
+        support: 'No type picker.',
         status: 'needs-component',
         action: 'Build a schema or type picker control.',
       },
@@ -416,21 +619,20 @@ const CATEGORIES: Category[] = [
   },
   {
     title: 'Loose and fallback types',
-    description: 'Edge cases that usually resolve to another row in this table.',
+    description: 'Edge cases that usually resolve to another row.',
     rows: [
       {
         type: 'null',
         source: 'JSON Schema, flow-schema expression.ts',
-        support: 'No explicit null state.',
-        status: 'needs-type',
-        action:
-          'Usually paired with another type in a union, such as a nullable string. Confirm whether an explicit null or empty state is needed per type, or whether an empty value already covers it.',
+        support:
+          'Any field can be empty: a cleared value is null, or { $mode } for a field with modes',
+        status: 'supported',
         flowWorkbenchConfirmed: false,
       },
       {
         type: 'ref',
         source: 'generate-variable-declarations.ts',
-        support: 'Overlaps with the resource reference family above.',
+        support: 'Overlaps with the resource reference family.',
         status: 'needs-component',
         action: 'De-duplicate with the resource reference family before adding.',
         flowWorkbenchConfirmed: false,
@@ -439,260 +641,70 @@ const CATEGORIES: Category[] = [
   },
 ];
 
-const BINDING_STATE_ROWS: TypeRow[] = [
+const BINDING_ROWS: TypeRow[] = [
   {
-    type: 'literal  (QuickFormFieldMode)  ↔  Widget  (integration-service ValueType)',
-    source: 'quick-form-field/types.ts, integration-service ValueType',
-    support: 'mode="literal"',
+    type: 'Widget',
+    source: 'integration-service ValueType',
+    support: "The 'literal' mode: the field type's own control",
     status: 'supported',
-    visual: 'mode-literal',
   },
   {
-    type: 'expression  (QuickFormFieldMode)  ↔  Expression  (integration-service ValueType)',
-    source: 'quick-form-field/types.ts, integration-service ValueType',
-    support: 'mode="expression"',
+    type: 'Expression',
+    source: 'integration-service ValueType',
+    support: "The 'expression' mode",
     status: 'supported',
-    visual: 'mode-expression',
   },
   {
     type: 'Variable',
     source: 'integration-service ValueType.Variable',
-    support: 'Not modeled as a distinct mode.',
-    status: 'needs-type',
-    action:
-      'Clarify whether a bound-to-variable state needs its own visual treatment, or is already covered by inserting a variable into an expression.',
+    support: "The 'variable' mode (VariableValueControl)",
+    status: 'supported',
   },
   {
     type: 'Mapping / Dynamic',
     source: 'integration-service ValueType',
-    support: 'Not modeled.',
-    status: 'needs-type',
-    action:
-      'Add a read-only bound state to QuickFormFieldMode, rendered like the locked display but indicating an upstream binding rather than a static value.',
+    support: 'No built-in mode.',
+    status: 'custom-control',
+    action: 'Register a host mode in valueModes.definitions, with its own control.',
   },
   {
-    type: 'Insert variable (click to append)',
-    source: 'n/a, this is the Apollo Wind mechanism, not a flow-workbench type',
-    support: 'VariablePicker in field-header.tsx, wired via the variables prop',
+    type: 'Insert variable',
+    source: 'Apollo Wind, not a flow-workbench type',
+    support: "headerActions: ['insert-variable'] (createInsertVariableAction)",
     status: 'supported',
-    visual: 'insert-variable',
-    reference: {
-      label: 'Code Editors: Editor Variables',
-      storyId: 'apollo-wind-patterns-code-editors--editor-variables',
-    },
   },
   {
-    type: 'Inline reference autocomplete while typing',
+    type: 'Inline reference autocomplete',
     source: 'integration-service WidgetType.autoCompleteForExpression',
-    support:
-      'Not modeled. The expression input is a plain monospace field (or a consumer-supplied renderExpressionEditor) with no built-in suggestion behavior.',
-    status: 'needs-component',
+    support: 'The expression mode is a plain input with no suggestions.',
+    status: 'custom-control',
     action:
-      'Different from the Insert variable button above: this is IntelliSense-style, suggest a reference as the user types "$" inside an expression. Needs an editor with suggestion support (e.g. Monaco), not a fieldType addition. See the reference implementation for Monaco and PromptEditor.',
-    reference: {
-      label: 'Code Editors: Editor Variables',
-      storyId: 'apollo-wind-patterns-code-editors--editor-variables',
-    },
+      'Register an editor with suggestions (see Patterns/Code Editors) as the expression control in valueModes.definitions.',
   },
 ];
 
-// Every collapsible section on the page, category tables plus the binding-state
-// table, in the order they render.
 const ALL_SECTIONS: Category[] = [
   ...CATEGORIES,
   {
     title: 'Binding state',
     description:
-      'Separate from field type: how a value relates to fixed input versus an upstream binding. QuickFormField only distinguishes fixed and expression. The integration-service widget catalog has a richer set.',
-    rows: BINDING_STATE_ROWS,
-    rowLabel: 'State',
+      'Separate from the type: whether the value is fixed or bound. In MetadataForm these are value modes, available on any field type.',
+    rows: BINDING_ROWS,
   },
 ];
 
-const STATUS_META: Record<Status, { label: string; variant: 'success' | 'warning' | 'info' }> = {
+const STATUS_META: Record<Status, { label: string; variant: 'success' | 'info' | 'warning' }> = {
   supported: { label: 'Supported', variant: 'success' },
-  'needs-type': { label: 'Needs fieldType', variant: 'warning' },
-  'needs-component': { label: 'Needs component', variant: 'info' },
+  'custom-control': { label: 'Custom control', variant: 'info' },
+  'needs-component': { label: 'Needs component', variant: 'warning' },
 };
 
-// Smaller and denser than the Table primitive's default h-12/text-sm header,
-// so a 6-column reference table reads as a table, not a lighter block of prose.
-const HEADER_CELL_CLASS =
-  'h-9 whitespace-nowrap bg-muted/40 text-[11px] font-semibold uppercase tracking-wide';
-// Tighter than the Table primitive's default p-4, since most cells here are one
-// short line or a badge, not a paragraph.
-const BODY_CELL_CLASS = 'align-top px-4 py-3';
-
-// One level below the page's own h1: Overview, Types, QuickFormField
-// status. SectionTitle (h3) nests underneath each of these.
-function PartTitle({
-  children,
-  actions,
-}: {
-  children: React.ReactNode;
-  actions?: React.ReactNode;
-}) {
-  return (
-    <div className="mb-6 flex items-center justify-between gap-4">
-      <h2 className="text-[1.75rem] font-bold tracking-tight text-foreground">{children}</h2>
-      {actions}
-    </div>
-  );
-}
-
-// A whole Part, collapsed by default: QuickFormField status is the deep-dive
-// half of the page (the audit table), so it stays out of the way until someone
-// opens it, unlike Overview and Types which are always visible.
-function CollapsiblePart({
-  title,
-  defaultOpen = false,
-  children,
-}: {
-  title: React.ReactNode;
-  defaultOpen?: boolean;
-  children: React.ReactNode;
-}) {
-  const [open, setOpen] = useState(defaultOpen);
-  return (
-    <Collapsible open={open} onOpenChange={setOpen}>
-      <CollapsibleTrigger className="mb-6 flex w-full items-center gap-2 text-left hover:opacity-80">
-        <ChevronRight
-          aria-hidden="true"
-          className={cn('size-5 shrink-0 text-muted-foreground transition-transform', {
-            'rotate-90': open,
-          })}
-        />
-        <h2 className="text-[1.75rem] font-bold tracking-tight text-foreground">{title}</h2>
-      </CollapsibleTrigger>
-      <CollapsibleContent>{children}</CollapsibleContent>
-    </Collapsible>
-  );
-}
-
-// h3, one level below PartTitle's h2 -- guidance-primitives' SectionTitle is an h2,
-// which fits Field Help/Validation Guidance's flatter hierarchy but would collide
-// with PartTitle here, so this page keeps its own.
-function SectionTitle({ children }: { children: React.ReactNode }) {
-  return <h3 className="mb-2 text-2xl font-bold tracking-tight text-foreground">{children}</h3>;
-}
-
 function StatusBadge({ status }: { status: Status }) {
-  const meta = STATUS_META[status];
-  return <Badge variant={meta.variant}>{meta.label}</Badge>;
-}
-
-// Live, interactive demo of a real fieldType, not a screenshot, so it can never drift
-// out of sync with the component it documents. Seeded into fixed or expression mode
-// so both variants are visible without anyone having to click the mode switch.
-// showLock={false}: the lock toggle isn't wired here (no onLockedChange), and the
-// lock affordance itself is a separate axis covered by the QuickFormField state
-// tables below, not this per-type grid.
-function FieldTypeExample({
-  fieldType,
-  initialMode = 'literal',
-}: {
-  fieldType: QuickFieldType;
-  initialMode?: QuickFormFieldMode;
-}) {
-  const [value, setValue] = useState(initialMode === 'expression' ? '$vars.example' : '');
-  const [mode, setMode] = useState<QuickFormFieldMode>(initialMode);
+  const statusMeta = STATUS_META[status];
   return (
-    <div className="w-56">
-      <QuickFormField
-        fieldType={fieldType}
-        value={value}
-        onValueChange={setValue}
-        locked={false}
-        showLock={false}
-        mode={mode}
-        onModeChange={setMode}
-        showFieldActions={false}
-      />
-    </div>
-  );
-}
-
-function ExampleLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-      {children}
-    </span>
-  );
-}
-
-// showLock={false}: this cell demonstrates the mode axis, not the lock affordance.
-function ModeExample({ mode }: { mode: QuickFormFieldMode }) {
-  const [value, setValue] = useState(mode === 'expression' ? '$vars.example' : 'Example value');
-  return (
-    <div className="w-56">
-      <QuickFormField
-        fieldType="string"
-        value={value}
-        onValueChange={setValue}
-        locked={false}
-        showLock={false}
-        mode={mode}
-        showFieldActions={false}
-      />
-    </div>
-  );
-}
-
-// showFieldActions stays at its true default here (every other example turns it
-// off) since the Insert variable button only renders when it's on. showLock={false}
-// for the same reason as FieldTypeExample: not this cell's demonstrated axis.
-function InsertVariableExample() {
-  const [value, setValue] = useState('');
-  return (
-    <div className="w-56">
-      <QuickFormField
-        fieldType="string"
-        value={value}
-        onValueChange={setValue}
-        locked={false}
-        showLock={false}
-        variables={[
-          {
-            label: '$vars',
-            value: '',
-            children: [{ label: 'Customer name', value: '$vars.customerName' }],
-          },
-        ]}
-      />
-    </div>
-  );
-}
-
-// Rendered instead of a fake mockup for gap rows: there is no real control to show,
-// and a hand-drawn one would look like it already exists.
-function GapPlaceholder() {
-  return (
-    <div className="flex h-9 w-56 items-center justify-center rounded-lg border border-dashed border-border px-2 text-center text-[11px] text-muted-foreground">
-      No control yet
-    </div>
-  );
-}
-
-function VisualExampleCell({ visual }: { visual?: VisualExample }) {
-  if (!visual) return <GapPlaceholder />;
-  if (visual === 'mode-literal') return <ModeExample mode="literal" />;
-  if (visual === 'mode-expression') return <ModeExample mode="expression" />;
-  if (visual === 'insert-variable') return <InsertVariableExample />;
-
-  if (!FIELD_TYPE_META[visual].supportsExpression) {
-    return <FieldTypeExample fieldType={visual} />;
-  }
-
-  // Expression-capable types get both variants stacked, since the fixed vs.
-  // expression toggle changes the control's placeholder, styling, and (for a
-  // custom renderExpressionEditor) the editor itself, not just its value.
-  return (
-    <div className="flex flex-col gap-2">
-      <ExampleLabel>Fixed</ExampleLabel>
-      <FieldTypeExample fieldType={visual} initialMode="literal" />
-      <ExampleLabel>Expression</ExampleLabel>
-      <FieldTypeExample fieldType={visual} initialMode="expression" />
-    </div>
+    <Badge variant={statusMeta.variant} className="whitespace-nowrap">
+      {statusMeta.label}
+    </Badge>
   );
 }
 
@@ -700,26 +712,20 @@ function gapCount(rows: TypeRow[]) {
   return rows.filter((row) => row.status !== 'supported').length;
 }
 
-function CategoryTable({ description, rows, rowLabel = 'Type' }: Category) {
+function CategoryTable({ description, rows }: Category) {
   return (
     <div>
       <p className="mb-4 text-sm leading-6 text-muted-foreground">{description}</p>
-      {/* No overflow-hidden: the Visual example column's w-56 demos (doubled to
-          two stacked for expression-capable types) routinely make the table
-          wider than its container. overflow-hidden would silently clip
-          whatever's in the last column instead of letting it scroll into
-          view via the Table primitive's own overflow-auto container. */}
       <div className="rounded-lg border border-border">
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
-              <TableHead className={cn(HEADER_CELL_CLASS, 'w-[13%]')}>{rowLabel}</TableHead>
-              <TableHead className={cn(HEADER_CELL_CLASS, 'w-[23%]')}>Visual example</TableHead>
-              <TableHead className={cn(HEADER_CELL_CLASS, 'w-[13%]')}>
-                Apollo Wind support
+              <TableHead className={cn(HEADER_CELL_CLASS, 'w-[15%]')}>
+                flow-workbench type
               </TableHead>
-              <TableHead className={cn(HEADER_CELL_CLASS, 'w-[10%]')}>Status</TableHead>
-              <TableHead className={cn(HEADER_CELL_CLASS, 'w-[21%]')}>Recommended action</TableHead>
+              <TableHead className={cn(HEADER_CELL_CLASS, 'w-[23%]')}>In MetadataForm</TableHead>
+              <TableHead className={cn(HEADER_CELL_CLASS, 'w-[12%]')}>Status</TableHead>
+              <TableHead className={cn(HEADER_CELL_CLASS, 'w-[22%]')}>Recommended action</TableHead>
               <TableHead className={HEADER_CELL_CLASS}>Source</TableHead>
             </TableRow>
           </TableHeader>
@@ -731,14 +737,11 @@ function CategoryTable({ description, rows, rowLabel = 'Type' }: Category) {
                   {row.flowWorkbenchConfirmed === false && (
                     <sup
                       className="ml-0.5 cursor-help text-muted-foreground"
-                      title="Not confirmed as a distinct, separately-rendered type in flow-workbench either, only a schema-level type name. See Recommended action."
+                      title="Not confirmed as a separately rendered type in flow-workbench, only a schema-level type name."
                     >
                       †
                     </sup>
                   )}
-                </TableCell>
-                <TableCell className={BODY_CELL_CLASS}>
-                  <VisualExampleCell visual={row.visual} />
                 </TableCell>
                 <TableCell className={cn(BODY_CELL_CLASS, 'text-xs text-muted-foreground')}>
                   {row.support}
@@ -747,20 +750,7 @@ function CategoryTable({ description, rows, rowLabel = 'Type' }: Category) {
                   <StatusBadge status={row.status} />
                 </TableCell>
                 <TableCell className={cn(BODY_CELL_CLASS, 'text-xs text-muted-foreground')}>
-                  {row.action ?? (row.reference ? null : '—')}
-                  {row.reference && (
-                    <a
-                      // Relative to the iframe path so the link also works when Storybook is hosted under a subpath.
-                      href={`./?path=/story/${row.reference.storyId}`}
-                      target="_top"
-                      className={cn(
-                        'block text-primary underline-offset-4 hover:underline',
-                        row.action && 'mt-1.5'
-                      )}
-                    >
-                      {row.reference.label}
-                    </a>
-                  )}
+                  {row.action ?? ''}
                 </TableCell>
                 <TableCell className={cn(BODY_CELL_CLASS, 'text-xs text-muted-foreground')}>
                   {row.source}
@@ -774,893 +764,458 @@ function CategoryTable({ description, rows, rowLabel = 'Type' }: Category) {
   );
 }
 
-function SupportedTodayStrip() {
+function CoverageAudit() {
+  const [openSections, setOpenSections] = useState<string[]>([]);
+  const [onlyGaps, setOnlyGaps] = useState(false);
+  const visibleSections = onlyGaps
+    ? ALL_SECTIONS.map((section) => ({
+        ...section,
+        rows: section.rows.filter((row) => row.status !== 'supported'),
+      })).filter((section) => section.rows.length > 0)
+    : ALL_SECTIONS;
+
   return (
-    <div className="flex flex-wrap gap-2">
-      {FIELD_TYPE_ORDER.map((type) => {
-        const typeMeta = FIELD_TYPE_META[type];
-        return (
-          <span
-            key={type}
-            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-foreground"
+    <>
+      <div className="mb-4 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <Switch id="only-gaps" size="sm" checked={onlyGaps} onCheckedChange={setOnlyGaps} />
+          <Label htmlFor="only-gaps" className="text-sm font-medium text-foreground">
+            Only show gaps
+          </Label>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="2xs"
+            onClick={() => setOpenSections(visibleSections.map((section) => section.title))}
           >
-            <typeMeta.icon size={12} />
-            {typeMeta.label}
-          </span>
-        );
-      })}
-    </div>
+            Expand all
+          </Button>
+          <Button variant="outline" size="2xs" onClick={() => setOpenSections([])}>
+            Collapse all
+          </Button>
+        </div>
+      </div>
+      <Accordion type="multiple" value={openSections} onValueChange={setOpenSections}>
+        {visibleSections.map((section, index) => (
+          <AccordionItem
+            key={section.title}
+            value={section.title}
+            className={cn('border-border', index === visibleSections.length - 1 && 'border-b-0')}
+          >
+            <AccordionTrigger className="text-lg font-semibold text-foreground hover:no-underline">
+              <span>
+                {section.title}
+                <span className="ml-2 text-sm font-normal text-muted-foreground">
+                  {gapCount(section.rows) === 0
+                    ? 'all supported'
+                    : `${gapCount(section.rows)} gap${gapCount(section.rows) === 1 ? '' : 's'}`}
+                </span>
+              </span>
+            </AccordionTrigger>
+            <AccordionContent>
+              <CategoryTable {...section} />
+            </AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
+    </>
   );
 }
 
-interface StateRow {
-  label: string;
-  description: string;
-  Example: React.ComponentType;
-}
+// ============================================================================
+// Page
+// ============================================================================
 
-// Four states, shown twice: once with showLock={false}, once with the
-// default showLock={true}, so the two tables are directly comparable column
-// by column, the icon toggle is the only thing that differs between them.
-// Each keeps its own local `locked` state and passes onLockedChange, so the
-// with-icon column's lock button genuinely toggles instead of rendering
-// disabled -- LockToggleButton disables itself whenever that callback is
-// missing.
-function QuickFormFieldDefaultExample({ showLock }: { showLock: boolean }) {
-  const [value, setValue] = useState('Editable value');
-  const [locked, setLocked] = useState(false);
+// One level below the page's h1; the guidance-primitives SectionTitle is an h2 too, so this page
+// nests h3 section titles under these parts.
+function PartTitle({ children }: { children: React.ReactNode }) {
   return (
-    <div className="w-full">
-      <QuickFormField
-        fieldType="string"
-        value={value}
-        onValueChange={setValue}
-        locked={locked}
-        onLockedChange={setLocked}
-        showLock={showLock}
-        showFieldActions={false}
-      />
-    </div>
+    <h2 className="mb-6 text-[1.75rem] font-bold tracking-tight text-foreground">{children}</h2>
   );
 }
 
-function QuickFormFieldLockedExample({ showLock }: { showLock: boolean }) {
-  const [value, setValue] = useState('Invoice processor');
-  const [locked, setLocked] = useState(true);
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return <h3 className="mb-2 text-2xl font-bold tracking-tight text-foreground">{children}</h3>;
+}
+
+function StoryLink({ id, children }: { id: string; children: React.ReactNode }) {
   return (
-    <div className="w-full">
-      <QuickFormField
-        fieldType="string"
-        value={value}
-        onValueChange={setValue}
-        locked={locked}
-        onLockedChange={setLocked}
-        showLock={showLock}
-        showFieldActions={false}
-      />
-    </div>
+    <a
+      // Relative to the iframe path so the link also works when Storybook is hosted under a subpath.
+      href={`./?path=/${id}`}
+      target="_top"
+      className="text-primary underline-offset-4 hover:underline"
+    >
+      {children}
+    </a>
   );
 }
 
-function QuickFormFieldInvalidExample({ showLock }: { showLock: boolean }) {
-  const [value, setValue] = useState('Invalid value');
-  const [locked, setLocked] = useState(false);
-  return (
-    <div className="w-full">
-      <QuickFormField
-        fieldType="string"
-        value={value}
-        onValueChange={setValue}
-        locked={locked}
-        onLockedChange={setLocked}
-        showLock={showLock}
-        showFieldActions={false}
-        error="This field is required."
-      />
-    </div>
-  );
-}
-
-function QuickFormFieldExpressionExample({ showLock }: { showLock: boolean }) {
-  const [value, setValue] = useState('$vars.example');
-  const [locked, setLocked] = useState(false);
-  return (
-    <div className="w-full">
-      <QuickFormField
-        fieldType="string"
-        value={value}
-        onValueChange={setValue}
-        locked={locked}
-        onLockedChange={setLocked}
-        showLock={showLock}
-        mode="expression"
-        showFieldActions={false}
-      />
-    </div>
-  );
-}
-
-function QuickFormFieldNoIconDefaultExample() {
-  return <QuickFormFieldDefaultExample showLock={false} />;
-}
-function QuickFormFieldNoIconLockedExample() {
-  return <QuickFormFieldLockedExample showLock={false} />;
-}
-function QuickFormFieldNoIconInvalidExample() {
-  return <QuickFormFieldInvalidExample showLock={false} />;
-}
-function QuickFormFieldNoIconExpressionExample() {
-  return <QuickFormFieldExpressionExample showLock={false} />;
-}
-
-function QuickFormFieldWithIconDefaultExample() {
-  return <QuickFormFieldDefaultExample showLock={true} />;
-}
-function QuickFormFieldWithIconLockedExample() {
-  return <QuickFormFieldLockedExample showLock={true} />;
-}
-function QuickFormFieldWithIconInvalidExample() {
-  return <QuickFormFieldInvalidExample showLock={true} />;
-}
-function QuickFormFieldWithIconExpressionExample() {
-  return <QuickFormFieldExpressionExample showLock={true} />;
-}
-
-const QUICK_FORM_FIELD_NO_ICON_STATES: StateRow[] = [
-  {
-    label: 'Default',
-    description: 'showLock={false}, locked={false}. No lock affordance at all.',
-    Example: QuickFormFieldNoIconDefaultExample,
+const CUSTOM_CONTROL_CODE = `// The host registers the control once, with its place in the field anatomy.
+const plugin: FormPlugin = {
+  name: 'host',
+  components: {
+    'json-editor': { component: JsonEditor, layout: 'fill', labelTarget: 'labelledby' },
   },
-  {
-    label: 'Locked',
-    description: 'showLock={false}, locked={true}. Read-only display, but nothing signals why.',
-    Example: QuickFormFieldNoIconLockedExample,
-  },
-  {
-    label: 'Invalid',
-    description: 'error, same as Input and Input Group.',
-    Example: QuickFormFieldNoIconInvalidExample,
-  },
-  {
-    label: 'Expression',
-    description: 'mode="expression". Still no lock icon, for consumers supplying their own.',
-    Example: QuickFormFieldNoIconExpressionExample,
-  },
-];
+};
 
-const QUICK_FORM_FIELD_WITH_ICON_STATES: StateRow[] = [
-  {
-    label: 'Default',
-    description: 'showLock defaults to true. The lock toggle is the built-in affordance.',
-    Example: QuickFormFieldWithIconDefaultExample,
-  },
-  {
-    label: 'Locked',
-    description: 'Read-only display, not a disabled control. The default state.',
-    Example: QuickFormFieldWithIconLockedExample,
-  },
-  {
-    label: 'Invalid',
-    description: 'error, same as Input and Input Group.',
-    Example: QuickFormFieldWithIconInvalidExample,
-  },
-  {
-    label: 'Expression',
-    description: 'mode="expression". The lock toggle stays available alongside it.',
-    Example: QuickFormFieldWithIconExpressionExample,
-  },
-];
+// A field names it. valueType lets required and the other constraints apply.
+{ name: 'payload', type: 'custom', component: 'json-editor', label: 'Payload', valueType: 'string' }`;
 
-// Mirrors the "Assignment & Binding" reference example in
-// quick-form-field.stories.tsx: leadingAddon replaces the lock icon with
-// a semantic "=" prefix, and mode is always expression, the pattern used for
-// node-property assignment fields in flow-workbench.
-function EqualsAddon() {
-  return (
-    <span className="font-mono text-sm font-semibold text-foreground-accent" aria-hidden="true">
-      =
-    </span>
-  );
-}
+const LITERAL_CONTROL_CODE = `// Replace the fixed-value control of a built-in type, for fields with value modes.
+const plugin: FormPlugin = {
+  name: 'host',
+  valueModes: { literalControls: { number: { component: Stepper } } },
+};`;
 
-// The real "Assignment & Binding" reference story renders this as a bordered,
-// divider-set button (a literal "ƒ" glyph in a box). That reads as a stray
-// outlier next to every other trailing icon on this page (mode-switch,
-// Insert variable, lock toggle), all plain ghost icon buttons with no
-// divider, so it's restyled to match those here instead of copied verbatim.
-// disabled: there's no demo expression editor behind it, and every other
-// button on this page is disabled rather than enabled-but-inert whenever its
-// callback isn't wired (LockToggleButton, the mode switch), so this matches
-// that convention instead of looking clickable and doing nothing.
-function FunctionAddon() {
-  return (
-    <InputGroupButton icon size="3xs" aria-label="Open expression editor" disabled>
-      <Code2 />
-    </InputGroupButton>
-  );
-}
-
-function BindingObjectExample() {
-  const [value, setValue] = useState('$vars.flowArray');
-  return (
-    <div className="w-full">
-      <QuickFormField
-        fieldType="object"
-        value={value}
-        onValueChange={setValue}
-        locked={false}
-        leadingAddon={<EqualsAddon />}
-        mode="expression"
-        showFieldActions={false}
-      />
-    </div>
-  );
-}
-
-function BindingFileExample() {
-  const [value, setValue] = useState('$vars.flowTest');
-  return (
-    <div className="w-full">
-      <QuickFormField
-        fieldType="file"
-        value={value}
-        onValueChange={setValue}
-        locked={false}
-        leadingAddon={<EqualsAddon />}
-        mode="expression"
-        showFieldActions={false}
-      />
-    </div>
-  );
-}
-
-function BindingWithHelperTextExample() {
-  const [value, setValue] = useState('$vars.flowTest');
-  return (
-    <div className="w-full">
-      <QuickFormField
-        fieldType="file"
-        value={value}
-        onValueChange={setValue}
-        locked={false}
-        leadingAddon={<EqualsAddon />}
-        mode="expression"
-        showFieldActions={false}
-        belowValue={<p className="text-xs text-foreground-muted">File to extract data from</p>}
-      />
-    </div>
-  );
-}
-
-function BindingFunctionAddonExample() {
-  const [value, setValue] = useState('$vars.flowTest');
-  return (
-    <div className="w-full">
-      <QuickFormField
-        fieldType="string"
-        value={value}
-        onValueChange={setValue}
-        locked={false}
-        leadingAddon={<EqualsAddon />}
-        mode="expression"
-        showFieldActions={false}
-        trailingAddon={<FunctionAddon />}
-      />
-    </div>
-  );
-}
-
-const QUICK_FORM_FIELD_BINDING_STATES: StateRow[] = [
+const QUICK_FORM_VARIABLES = [
   {
-    label: 'Object',
-    description:
-      'fieldType="object". leadingAddon="=" replaces the lock icon; mode is always expression.',
-    Example: BindingObjectExample,
-  },
-  {
-    label: 'File',
-    description: 'fieldType="file" with the same = leadingAddon and expression mode.',
-    Example: BindingFileExample,
-  },
-  {
-    label: 'With helper text',
-    description: 'belowValue adds context below the field, same prop the plain Input uses.',
-    Example: BindingWithHelperTextExample,
-  },
-  {
-    label: 'Custom expression editor',
-    description:
-      'trailingAddon replaces the built-in Fixed/Expression toggle with a dedicated "Open expression editor" button, shown disabled since this demo has no editor behind it.',
-    Example: BindingFunctionAddonExample,
-  },
-];
-
-// The Insert tree renders entries as supplied, so the namespace is an explicit group.
-const DEMO_VARIABLES = [
-  {
-    label: '$input',
+    label: '$vars',
     value: '',
     children: [
-      { label: 'Customer name', value: '$input.customerName' },
-      { label: 'Invoice number', value: '$input.invoiceNumber' },
+      { label: 'customerName', value: '$vars.customerName' },
+      { label: 'orderId', value: '$vars.orderId' },
     ],
   },
 ];
 
-// showLock={false} throughout this group: locked is used here only as a fixed
-// precondition (to show its effect on Insert variable), not as the demonstrated
-// axis, so the icon is left out rather than rendered non-interactive.
-function InsertVariableDefaultExample() {
-  const [value, setValue] = useState('');
+function QuickFormFieldExample() {
+  const [fieldType, setFieldType] = useState<QuickFieldType>('string');
+  const [value, setValue] = useState('Invoices');
+  const [mode, setMode] = useState<QuickFormFieldMode>('literal');
+  const [locked, setLocked] = useState(false);
+  const [required, setRequired] = useState(true);
   return (
-    <div className="w-full">
+    <div className="w-80">
       <QuickFormField
-        fieldType="string"
+        fieldType={fieldType}
+        onFieldTypeChange={(next) => {
+          setFieldType(next);
+          // Each type encodes its value differently, so a new type starts empty.
+          setValue('');
+        }}
         value={value}
         onValueChange={setValue}
-        locked={false}
-        showLock={false}
-        variables={DEMO_VARIABLES}
+        mode={mode}
+        onModeChange={setMode}
+        locked={locked}
+        onLockedChange={setLocked}
+        required={required}
+        onRequiredChange={setRequired}
+        variables={QUICK_FORM_VARIABLES}
+        compact
       />
     </div>
   );
 }
 
-function InsertVariableLockedExample() {
-  return (
-    <div className="w-full">
-      <QuickFormField
-        fieldType="string"
-        value="Invoice processor"
-        locked
-        showLock={false}
-        variables={DEMO_VARIABLES}
-      />
-    </div>
-  );
-}
-
-function InsertVariableEmptyExample() {
-  const [value, setValue] = useState('');
-  return (
-    <div className="w-full">
-      <QuickFormField
-        fieldType="string"
-        value={value}
-        onValueChange={setValue}
-        locked={false}
-        showLock={false}
-        variables={[]}
-      />
-    </div>
-  );
-}
-
-function InsertVariableOnlyExample() {
-  const [value, setValue] = useState('');
-  return (
-    <div className="w-full">
-      <QuickFormField
-        fieldType="string"
-        value={value}
-        onValueChange={setValue}
-        locked={false}
-        showLock={false}
-        variables={DEMO_VARIABLES}
-      />
-    </div>
-  );
-}
-
-const QUICK_FORM_FIELD_INSERT_VARIABLE_STATES: StateRow[] = [
-  {
-    label: 'Default',
-    description:
-      'showFieldActions defaults to true. Insert variable opens a popover listing variables; selecting one inserts its value at the caret, or appends it when no caret is placed.',
-    Example: InsertVariableDefaultExample,
-  },
-  {
-    label: 'Locked',
-    description:
-      'onValueChange becomes undefined when locked, so Insert variable disables automatically, not because variables is empty.',
-    Example: InsertVariableLockedExample,
-  },
-  {
-    label: 'No variables',
-    description:
-      'variables={[]} (the default). Renders but stays disabled until variables are provided.',
-    Example: InsertVariableEmptyExample,
-  },
-  {
-    label: 'Insert variable only',
-    description:
-      'Without an onGenerateWithAi handler the AI-assist button does not render; Insert variable is independent of it.',
-    Example: InsertVariableOnlyExample,
-  },
-];
-
-function InputDefaultExample() {
-  const [value, setValue] = useState('');
-  return (
-    <Input
-      className="w-full"
-      placeholder="Enter a value"
-      value={value}
-      onChange={(e) => setValue(e.target.value)}
-    />
-  );
-}
-
-function InputDisabledExample() {
-  return <Input className="w-full" placeholder="Enter a value" disabled />;
-}
-
-function InputReadOnlyExample() {
-  return <Input className="w-full" value="Read-only value" readOnly />;
-}
-
-function InputInvalidExample() {
-  const [value, setValue] = useState('Invalid value');
-  return (
-    <Input
-      className="w-full"
-      value={value}
-      onChange={(e) => setValue(e.target.value)}
-      error="This field is required."
-    />
-  );
-}
-
-const INPUT_STATES: StateRow[] = [
-  {
-    label: 'Default',
-    description: 'The bare control most fields are built on top of.',
-    Example: InputDefaultExample,
-  },
-  {
-    label: 'Disabled',
-    description:
-      'disabled. Not the same as locked: a locked field uses QuickFormField’s read-only display instead, not a disabled Input.',
-    Example: InputDisabledExample,
-  },
-  {
-    label: 'Read-only',
-    description: 'readOnly.',
-    Example: InputReadOnlyExample,
-  },
-  {
-    label: 'Invalid',
-    description: 'error sets aria-invalid and renders the message below the input.',
-    Example: InputInvalidExample,
-  },
-];
-
-function InputGroupDefaultExample() {
-  const [value, setValue] = useState('');
-  return (
-    <InputGroup className="w-full">
-      <InputGroupAddon align="inline-start">
-        <Search size={14} />
-      </InputGroupAddon>
-      <InputGroupInput
-        placeholder="Search..."
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-      />
-    </InputGroup>
-  );
-}
-
-function InputGroupDisabledExample() {
-  return (
-    <InputGroup className="w-full">
-      <InputGroupAddon align="inline-start">
-        <Search size={14} />
-      </InputGroupAddon>
-      <InputGroupInput placeholder="Search..." disabled />
-    </InputGroup>
-  );
-}
-
-function InputGroupInvalidExample() {
-  const [value, setValue] = useState('Invalid value');
-  return (
-    <InputGroup className="w-full" error="This field is required.">
-      <InputGroupInput value={value} onChange={(e) => setValue(e.target.value)} />
-    </InputGroup>
-  );
-}
-
-// disabled: this recipe's lock icon is a static "this field is locked"
-// indicator, not a toggle (that's QuickFormField's job) -- disabled keeps
-// it from looking like a clickable affordance that does nothing.
-function InputGroupLockedExample() {
-  return (
-    <InputGroup className="w-full">
-      <InputGroupAddon align="inline-start">
-        <InputGroupButton icon size="3xs" aria-label="Locked" disabled>
-          <Lock size={12} />
-        </InputGroupButton>
-      </InputGroupAddon>
-      <InputGroupInput readOnly value="Locked value" />
-    </InputGroup>
-  );
-}
-
-const INPUT_GROUP_STATES: StateRow[] = [
-  {
-    label: 'Default',
-    description: 'InputGroupAddon + InputGroupInput, e.g. a leading icon.',
-    Example: InputGroupDefaultExample,
-  },
-  {
-    label: 'Disabled',
-    description: 'disabled on InputGroupInput.',
-    Example: InputGroupDisabledExample,
-  },
-  {
-    label: 'Invalid',
-    description: 'error on InputGroup itself, shared across every input inside it.',
-    Example: InputGroupInvalidExample,
-  },
-  {
-    label: 'Locked (read-only)',
-    description:
-      'The lighter-weight recipe referenced in QuickFormField’s own docs: a lock icon addon plus a readOnly InputGroupInput, without pulling in the full component.',
-    Example: InputGroupLockedExample,
-  },
-];
-
-interface TypesSection {
-  title: string;
-  description: string;
-  rows: StateRow[];
-  reference?: TypeRow['reference'];
-}
-
-const TYPES_SECTIONS: TypesSection[] = [
-  {
-    title: 'Input',
-    description:
-      'The bare control underneath everything else on this page. Reach for it directly when a field needs nothing beyond a value and native HTML validation, no lock, no mode, no addons.',
-    rows: INPUT_STATES,
-  },
-  {
-    title: 'Input Group',
-    description:
-      'Input plus addon slots (icons, buttons, prefixes) sharing one bordered container and one validation message. Reach for it when a field needs a leading or trailing affordance but not the full lock/mode/fieldType model QuickFormField adds on top.',
-    rows: INPUT_GROUP_STATES,
-  },
-  {
-    title: 'QuickFormField, no left icon',
-    description:
-      'The showLock prop set to false: no built-in lock affordance. For consumers supplying their own, or embedding the field somewhere the lock toggle doesn’t make sense.',
-    rows: QUICK_FORM_FIELD_NO_ICON_STATES,
-  },
-  {
-    title: 'QuickFormField, with left icon',
-    description:
-      'showLock defaults to true: the built-in lock toggle. Same four states as above, so the two tables are directly comparable, the icon is the only thing that differs.',
-    rows: QUICK_FORM_FIELD_WITH_ICON_STATES,
-  },
-  {
-    title: 'QuickFormField, assignment & binding',
-    description:
-      'Mirrors the “Assignment & Binding” reference example in quick-form-field.stories.tsx: the pattern node-property assignment fields use, leadingAddon replaces the lock icon with a semantic “=”, and mode is always expression.',
-    rows: QUICK_FORM_FIELD_BINDING_STATES,
-  },
-  {
-    title: 'QuickFormField, insert variable',
-    description:
-      'The variables prop and its built-in Insert variable popover, shown independently of the AI-assist button, which renders only with an onGenerateWithAi handler. showFieldActions={false} hides both. Every other table on this page sets showFieldActions={false} to keep it out of the way; this is the one place it is shown.',
-    rows: QUICK_FORM_FIELD_INSERT_VARIABLE_STATES,
-    reference: {
-      label: 'Code Editors: Editor Variables',
-      storyId: 'apollo-wind-patterns-code-editors--editor-variables',
-    },
-  },
-];
-
-const ALL_TYPES_SECTION_TITLES = TYPES_SECTIONS.map((section) => section.title);
-
-// States run across as columns, not down as rows: with every table on this
-// page so far having exactly 4 states, 4 stacked rows (each a label + a live
-// example + a paragraph) took much more vertical room than laying them out
-// side by side and reading the example/notes pair down each column instead.
-function StatesTable({ rows }: { rows: StateRow[] }) {
-  const columnClass = rows.length === 4 ? 'w-1/4' : undefined;
-  return (
-    // table-fixed forces every column to its declared w-1/4, an even quarter
-    // of the container, rather than sizing to content. Each Example fills
-    // that with w-full instead of a fixed pixel width, so all 4 columns show
-    // at once with nothing pushed past the edge and clipped or scrolled.
-    <div className="rounded-lg border border-border">
-      <Table className="table-fixed">
-        <TableHeader>
-          <TableRow className="hover:bg-transparent">
-            {rows.map(({ label }) => (
-              <TableHead key={label} className={cn(HEADER_CELL_CLASS, columnClass)}>
-                {label}
-              </TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          <TableRow>
-            {rows.map(({ label, Example }) => (
-              <TableCell key={label} className={cn(BODY_CELL_CLASS, columnClass)}>
-                <Example />
-              </TableCell>
-            ))}
-          </TableRow>
-          <TableRow>
-            {rows.map(({ label, description }) => (
-              <TableCell
-                key={label}
-                className={cn(BODY_CELL_CLASS, columnClass, 'text-xs text-muted-foreground')}
-              >
-                {description}
-              </TableCell>
-            ))}
-          </TableRow>
-        </TableBody>
-      </Table>
-    </div>
-  );
-}
-
-const ALL_SECTION_TITLES = ALL_SECTIONS.map((section) => section.title);
+const QUICK_FORM_FIELD_CODE = `<QuickFormField
+  fieldType={fieldType}
+  onFieldTypeChange={setFieldType}
+  value={value}
+  onValueChange={setValue}
+  mode={mode}
+  onModeChange={setMode}
+  locked={locked}
+  onLockedChange={setLocked}
+  required={required}
+  onRequiredChange={setRequired}
+  variables={variables}
+  compact
+/>`;
 
 function FieldTypesPage({ globalTheme }: { globalTheme: string }) {
-  const [openTypesSections, setOpenTypesSections] = useState<string[]>(ALL_TYPES_SECTION_TITLES);
-  const [openSections, setOpenSections] = useState<string[]>(ALL_SECTION_TITLES);
-  const [onlySupported, setOnlySupported] = useState(false);
-
-  // Sections with nothing supported (e.g. Security, Resource reference) drop out
-  // entirely under the filter, rather than sticking around empty.
-  const visibleSections = onlySupported
-    ? ALL_SECTIONS.map((section) => ({
-        ...section,
-        rows: section.rows.filter((row) => row.status === 'supported'),
-      })).filter((section) => section.rows.length > 0)
-    : ALL_SECTIONS;
-  const visibleSectionTitles = visibleSections.map((section) => section.title);
-
   return (
     <GuidancePage
       globalTheme={globalTheme}
       title="Field Type Guidance"
-      intro="A single reference for every field, property, and parameter type flow-workbench needs to support, cross-referenced against what QuickFormField and the rest of Apollo Wind implement today. Use this before adding a new type case: check whether it already has a home, and if not, follow the recommended action instead of improvising a one-off control."
-      maxWidth="max-w-5xl"
+      intro="How a value's type becomes a field. In a MetadataForm, a field's type picks its control, the shape of its value and its validation, and value modes let any field take an expression, a variable or a prompt instead. Use this page to map a type you need onto a field type, or onto a custom control when no field type covers it."
+      maxWidth="max-w-6xl"
     >
       <Divider />
 
-      <PartTitle>Overview</PartTitle>
+      <PartTitle>Field types in MetadataForm</PartTitle>
 
       <section>
-        <SectionTitle>Why this exists</SectionTitle>
+        <SectionTitle>How a type becomes a field</SectionTitle>
         <SectionDescription>
-          flow-workbench does not have one canonical type enum. At least six separate, partially
-          overlapping type systems define field types across workflow variables, JSON Schema
-          manifests, entity fields, HITL forms, and the integration-service widget catalog. Apollo
-          Wind&rsquo;s QuickFieldType was designed against a narrower slice of that list, which is
-          why some flow-workbench types have nowhere to go yet.
+          A field&rsquo;s <InlineCode>type</InlineCode> decides four things: the control that edits
+          it, the value it stores, the validation its metadata can express, and how the control sits
+          in the field anatomy&rsquo;s box. Everything else about the field, its label, help,
+          actions and modes, works the same for every type.
         </SectionDescription>
-        <InfoCallout>
-          This table is a point-in-time audit, not a live sync. It was last checked against
-          flow-workbench on 2026-09-09. If a type here looks stale, re-check the cited source file
-          before trusting the row.
-        </InfoCallout>
+        <GuidanceList>
+          <GuidanceItem>
+            Pick the field type that matches the value, then narrow it with metadata:{' '}
+            <InlineCode>validation</InlineCode>, <InlineCode>min</InlineCode> and{' '}
+            <InlineCode>max</InlineCode>, <InlineCode>options</InlineCode> or a{' '}
+            <InlineCode>dataSource</InlineCode>.
+          </GuidanceItem>
+          <GuidanceItem>
+            Add <InlineCode>valueModes</InlineCode> when the value can also be bound: the type still
+            decides the control for a fixed value.
+          </GuidanceItem>
+          <GuidanceItem>
+            When no field type fits, register a control as a <InlineCode>custom</InlineCode> field
+            rather than building a field outside the form.
+          </GuidanceItem>
+        </GuidanceList>
         <p className="mt-4 text-sm leading-6 text-muted-foreground">
-          This page covers type support only. For the help text patterns shown in the visual
-          examples below, see the Field Help Guidance page. For the Invalid states, see the Field
-          Validation Guidance page, which owns the copy and behavior rules those examples follow.
+          The parts around the control are on the Field Anatomy Guidance page. For help text and
+          validation messages, see the Field Help and Field Validation Guidance pages.
         </p>
       </section>
 
       <Divider />
 
-      <PartTitle
-        actions={
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="2xs"
-              onClick={() => setOpenTypesSections(ALL_TYPES_SECTION_TITLES)}
-            >
-              Expand all
-            </Button>
-            <Button variant="outline" size="2xs" onClick={() => setOpenTypesSections([])}>
-              Collapse all
-            </Button>
-          </div>
-        }
-      >
-        Types
-      </PartTitle>
-
-      <Accordion type="multiple" value={openTypesSections} onValueChange={setOpenTypesSections}>
-        {TYPES_SECTIONS.map((section, index) => (
-          <AccordionItem
-            key={section.title}
-            value={section.title}
-            className={cn('border-border', index === TYPES_SECTIONS.length - 1 && 'border-b-0')}
-          >
-            <AccordionTrigger className="text-lg font-semibold text-foreground hover:no-underline">
-              {section.title}
-            </AccordionTrigger>
-            <AccordionContent>
-              <p className="mb-4 text-sm leading-6 text-muted-foreground">
-                {section.description}
-                {section.reference && (
-                  <>
-                    {' '}
-                    For inserting a variable into a code editor, by picker or by typing{' '}
-                    <InlineCode>$</InlineCode> in the editor, see{' '}
-                    <a
-                      // Relative to the iframe path so the link also works when Storybook is hosted under a subpath.
-                      href={`./?path=/story/${section.reference.storyId}`}
-                      target="_top"
-                      className="text-primary underline-offset-4 hover:underline"
-                    >
-                      {section.reference.label}
-                    </a>
-                    .
-                  </>
-                )}
-              </p>
-              <StatesTable rows={section.rows} />
-            </AccordionContent>
-          </AccordionItem>
-        ))}
-      </Accordion>
+      <section>
+        <SectionTitle>Every field type</SectionTitle>
+        <SectionDescription>
+          Each example is a live MetadataForm field. Anatomy box is the layout the control takes in
+          the field anatomy, read from FIELD_CONTROL_GEOMETRY; a type not fitted yet still renders,
+          without a tuned box.
+        </SectionDescription>
+        <FieldTypesTable />
+      </section>
 
       <Divider />
 
-      <CollapsiblePart title="QuickFormField status">
-        <section>
-          <SectionTitle>Supported today</SectionTitle>
-          <SectionDescription>
-            The fieldType values QuickFormField already implements, read live from{' '}
-            <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-medium text-foreground">
-              FIELD_TYPE_META
-            </code>
+      <section>
+        <SectionTitle>Value modes</SectionTitle>
+        <SectionDescription>
+          Separate from the type: whether the value is fixed or bound. A field lists the modes it
+          offers in <InlineCode>valueModes.modes</InlineCode>, and stores its value as{' '}
+          <InlineCode>{'{ $mode, value }'}</InlineCode>. The fixed value keeps the type&rsquo;s
+          control; Expression is a plain input, Variable picks a variable, and Prompt describes the
+          value for an agent.
+        </SectionDescription>
+        <div className="grid gap-5 md:grid-cols-2">
+          <div className="rounded-lg border border-border bg-card p-5">
+            <div className="w-full max-w-sm">
+              <MetadataForm schema={schemaFor(ALL_MODES_FIELD)} plugins={PLUGINS} container="div" />
+            </div>
+          </div>
+          <CodeBlock>{`{
+  name: 'recipient',
+  type: 'text',
+  label: 'Recipient',
+  valueModes: {
+    modes: ['literal', 'expression',
+            'variable', 'prompt'],
+  },
+  headerActions: ['insert-variable'],
+}`}</CodeBlock>
+        </div>
+        <p className="mt-4 text-sm leading-6 text-muted-foreground">
+          A host adds its own modes, controls and codecs through{' '}
+          <InlineCode>FormPlugin.valueModes</InlineCode>. See{' '}
+          <StoryLink id="docs/apollo-wind-forms-value-modes--docs">Forms/Value modes</StoryLink>.
+        </p>
+      </section>
+
+      <Divider />
+
+      <section>
+        <SectionTitle>Custom controls for uncovered types</SectionTitle>
+        <SectionDescription>
+          For a value no field type covers, register a control and keep the field in the form: it
+          gets the same validation, actions and modes as every other field. Build it from the field
+          anatomy parts too, so its label, description and message match: without value modes or
+          actions the component renders the whole field, and with them MetadataForm renders those
+          parts around it. See the Field Anatomy Guidance page.
+        </SectionDescription>
+        <div className="space-y-4">
+          <CodeBlock>{CUSTOM_CONTROL_CODE}</CodeBlock>
+          <GuidanceList>
+            <GuidanceItem>
+              The component gets the value, <InlineCode>onChange</InlineCode> and{' '}
+              <InlineCode>onBlur</InlineCode>; in the anatomy also{' '}
+              <InlineCode>controlRef</InlineCode> for Insert variable and{' '}
+              <InlineCode>labelId</InlineCode> for a control that names itself.
+            </GuidanceItem>
+            <GuidanceItem>
+              <InlineCode>layout</InlineCode> and <InlineCode>variant</InlineCode> fit it to the
+              box; <InlineCode>insertable</InlineCode> lets Insert variable write at its caret.
+            </GuidanceItem>
+          </GuidanceList>
+          <CodeBlock>{LITERAL_CONTROL_CODE}</CodeBlock>
+          <p className="text-sm leading-6 text-muted-foreground">
+            A field can also name a control for one mode with{' '}
+            <InlineCode>valueModes.controls</InlineCode>. See{' '}
+            <StoryLink id="docs/apollo-wind-forms-custom-controls--docs">
+              Forms/Custom Controls
+            </StoryLink>
             .
-          </SectionDescription>
-          <SupportedTodayStrip />
-        </section>
-
-        <section className="mt-10">
-          <SectionTitle>How to read the status column</SectionTitle>
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="rounded-lg border border-border bg-card p-4">
-              <div className="mb-2">
-                <StatusBadge status="supported" />
-              </div>
-              <p className="text-sm leading-6 text-muted-foreground">
-                Already implemented. Use the existing fieldType, no contribution needed.
-              </p>
-            </div>
-            <div className="rounded-lg border border-border bg-card p-4">
-              <div className="mb-2">
-                <StatusBadge status="needs-type" />
-              </div>
-              <p className="text-sm leading-6 text-muted-foreground">
-                Fits QuickFormField&rsquo;s existing lock, mode, and value model. Needs a new{' '}
-                <code className="rounded bg-muted px-1 py-0.5 text-xs font-medium text-foreground">
-                  fieldType
-                </code>{' '}
-                (or format) added to that component.
-              </p>
-            </div>
-            <div className="rounded-lg border border-border bg-card p-4">
-              <div className="mb-2">
-                <StatusBadge status="needs-component" />
-              </div>
-              <p className="text-sm leading-6 text-muted-foreground">
-                Does not fit the single-value model at all. Needs a dedicated component, not another
-                fieldType case.
-              </p>
-            </div>
-          </div>
-          <p className="mt-4 text-sm leading-6 text-muted-foreground">
-            Status describes the gap on the Apollo Wind side only. It assumes flow-workbench already
-            renders the type distinctly, which is true for most rows (backed by a real renderer: the
-            integration-service widget catalog, JSON Schema, entity fields). A type marked{' '}
-            <span className="font-mono text-foreground">†</span> is different: it is only a
-            schema-level type name, and it is not confirmed that flow-workbench itself treats it as
-            a separately-rendered control. For those rows the gap may not be &ldquo;Apollo Wind is
-            missing this,&rdquo; it may be &ldquo;no one has decided this is a real distinction yet,
-            in either place.&rdquo; See that row&rsquo;s recommended action before treating it as a
-            straightforward addition.
           </p>
-        </section>
+        </div>
+      </section>
 
-        <Divider />
+      <Divider />
 
-        <div className="mb-4 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <Switch
-              id="only-supported"
-              size="sm"
-              checked={onlySupported}
-              onCheckedChange={setOnlySupported}
-            />
-            <Label htmlFor="only-supported" className="text-sm font-medium text-foreground">
-              Only show supported
-            </Label>
+      <section>
+        <SectionTitle>When QuickFormField fits</SectionTitle>
+        <SectionDescription>
+          QuickFormField is for the people building a Quick Form, not for form authors. The end user
+          picks each field&rsquo;s type in place, from the type menu in the field&rsquo;s header,
+          and sets the rest of the field up there too. For any other form, the author picks the type
+          in the schema: describe the fields to MetadataForm.
+        </SectionDescription>
+        <div className="grid items-start gap-5 md:grid-cols-2">
+          <div className="space-y-4">
+            <div className="rounded-lg border border-border bg-card p-5">
+              <QuickFormFieldExample />
+            </div>
+            <CodeBlock>{QUICK_FORM_FIELD_CODE}</CodeBlock>
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="2xs"
-              onClick={() => setOpenSections(visibleSectionTitles)}
-            >
-              Expand all
-            </Button>
-            <Button variant="outline" size="2xs" onClick={() => setOpenSections([])}>
-              Collapse all
-            </Button>
+          <div className="space-y-4">
+            <GuidanceList>
+              <GuidanceItem>
+                <span className="font-medium text-foreground">Type.</span>{' '}
+                <InlineCode>onFieldTypeChange</InlineCode> puts the type menu in the header, and the
+                control swaps to match the type chosen. <InlineCode>fieldTypes</InlineCode> narrows
+                the menu to the types a surface supports.
+              </GuidanceItem>
+              <GuidanceItem>
+                <span className="font-medium text-foreground">Required.</span>{' '}
+                <InlineCode>onRequiredChange</InlineCode> adds the Required switch to the header.
+              </GuidanceItem>
+              <GuidanceItem>
+                <span className="font-medium text-foreground">Lock.</span>{' '}
+                <InlineCode>locked</InlineCode> and <InlineCode>onLockedChange</InlineCode> make the
+                value read-only for the person filling in the form, shown as plain text;{' '}
+                <InlineCode>showLock</InlineCode> hides the toggle.
+              </GuidanceItem>
+              <GuidanceItem>
+                <span className="font-medium text-foreground">Mode.</span>{' '}
+                <InlineCode>mode</InlineCode> and <InlineCode>onModeChange</InlineCode> switch
+                between a fixed value and an expression; <InlineCode>renderModeControl</InlineCode>{' '}
+                supplies the control for any mode, Variable and Prompt included.
+              </GuidanceItem>
+              <GuidanceItem>
+                <span className="font-medium text-foreground">Actions.</span>{' '}
+                <InlineCode>variables</InlineCode> adds Insert variable to the header and{' '}
+                <InlineCode>onGenerateWithAi</InlineCode> adds AI assist;{' '}
+                <InlineCode>showFieldActions</InlineCode> hides both, and{' '}
+                <InlineCode>headerActions</InlineCode> appends your own.
+              </GuidanceItem>
+              <GuidanceItem>
+                <span className="font-medium text-foreground">Compact.</span>{' '}
+                <InlineCode>compact</InlineCode> keeps the header to icons, for a narrow column; it
+                collapses to icons on its own when the container is narrow.
+              </GuidanceItem>
+              <GuidanceItem>
+                <span className="font-medium text-foreground">Strings.</span>{' '}
+                <InlineCode>strings</InlineCode> overrides any of its text, for localisation.
+              </GuidanceItem>
+            </GuidanceList>
+            <p className="text-sm leading-6 text-muted-foreground">
+              Its types are its own list, the types a Quick Form persists:
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {FIELD_TYPE_ORDER.map((type) => {
+                const typeMeta = FIELD_TYPE_META[type];
+                return (
+                  <span
+                    key={type}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-foreground"
+                  >
+                    <typeMeta.icon size={12} />
+                    {typeMeta.label}
+                  </span>
+                );
+              })}
+            </div>
+            <p className="text-sm leading-6 text-muted-foreground">
+              The <InlineCode>LockableValueField</InlineCode> names are deprecated aliases, removed
+              in the next major release. See{' '}
+              <StoryLink id="docs/apollo-wind-components-uipath-quick-form-field--docs">
+                Quick Form Field
+              </StoryLink>
+              .
+            </p>
           </div>
         </div>
+      </section>
 
-        <Accordion type="multiple" value={openSections} onValueChange={setOpenSections}>
-          {visibleSections.map((section, index) => (
-            <AccordionItem
-              key={section.title}
-              value={section.title}
-              className={cn('border-border', index === visibleSections.length - 1 && 'border-b-0')}
-            >
-              <AccordionTrigger className="text-lg font-semibold text-foreground hover:no-underline">
-                <span>
-                  {section.title}
-                  <span className="ml-2 text-sm font-normal text-muted-foreground">
-                    {gapCount(section.rows) === 0
-                      ? 'all supported'
-                      : `${gapCount(section.rows)} gap${gapCount(section.rows) === 1 ? '' : 's'}`}
-                  </span>
-                </span>
-              </AccordionTrigger>
-              <AccordionContent>
-                <CategoryTable {...section} />
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
-      </CollapsiblePart>
+      <Divider />
+
+      <PartTitle>flow-workbench type coverage</PartTitle>
+
+      <section>
+        <SectionDescription>
+          flow-workbench has no single type enum: at least six overlapping type systems define field
+          types across workflow variables, JSON Schema manifests, entity fields, HITL forms and the
+          integration-service widget catalog. Each row maps one of those types onto MetadataForm.
+        </SectionDescription>
+        <div className="mb-6 grid gap-4 sm:grid-cols-3">
+          <div className="rounded-lg border border-border bg-card p-4">
+            <div className="mb-2">
+              <StatusBadge status="supported" />
+            </div>
+            <p className="text-sm leading-6 text-muted-foreground">
+              A field type or value mode covers it. Use it as it is.
+            </p>
+          </div>
+          <div className="rounded-lg border border-border bg-card p-4">
+            <div className="mb-2">
+              <StatusBadge status="custom-control" />
+            </div>
+            <p className="text-sm leading-6 text-muted-foreground">
+              An existing component can edit it: register that component as a custom control or a
+              host mode.
+            </p>
+          </div>
+          <div className="rounded-lg border border-border bg-card p-4">
+            <div className="mb-2">
+              <StatusBadge status="needs-component" />
+            </div>
+            <p className="text-sm leading-6 text-muted-foreground">
+              No component edits it yet. Build one, then register it as a custom control.
+            </p>
+          </div>
+        </div>
+        <InfoCallout>
+          A point-in-time audit, not a live sync: types were last checked against flow-workbench on
+          2026-09-09 and mapped onto MetadataForm on 2026-10-05. A type marked{' '}
+          <span className="font-mono text-foreground">†</span> is only a schema-level name; it is
+          not confirmed that flow-workbench renders it as a distinct control. Re-check the cited
+          source before trusting a stale-looking row.
+        </InfoCallout>
+        <div className="mt-6">
+          <CoverageAudit />
+        </div>
+      </section>
 
       <Divider />
 
       <section>
         <SectionTitle>Out of scope</SectionTitle>
         <SectionDescription>
-          Left out of the table above on purpose, so the list stays focused on value fields.
+          Left out of the audit on purpose, so it stays focused on value fields.
         </SectionDescription>
-        <GuidanceOutOfScope />
+        <ul className="space-y-2 text-sm leading-6 text-muted-foreground">
+          <li>
+            <span className="font-medium text-foreground">
+              textBlock, button, addActivityWidget:
+            </span>{' '}
+            display-only or action widgets from the integration-service catalog. They hold no value.
+          </li>
+          <li>
+            <span className="font-medium text-foreground">Evals FieldType:</span> a separate list
+            used for eval scoring (llmModel, toolCallArgs and similar), unrelated to form rendering.
+          </li>
+        </ul>
       </section>
     </GuidancePage>
   );
 }
 
-function GuidanceOutOfScope() {
-  return (
-    <ul className="space-y-2 text-sm leading-6 text-muted-foreground">
-      <li>
-        <span className="font-medium text-foreground">textBlock, button, addActivityWidget:</span>{' '}
-        display-only or action-triggering widgets from the integration-service catalog. They do not
-        bind to a value, so they are not a QuickFormField concern.
-      </li>
-      <li>
-        <span className="font-medium text-foreground">Evals FieldType:</span> a separate, narrower
-        type list used for eval scoring (llmModel, toolCallArgs, and similar). Unrelated to node or
-        form rendering.
-      </li>
-    </ul>
-  );
-}
-
 export const Documentation: Story = {
   name: 'Documentation',
-  render: (_args, { globals }) => <FieldTypesPage globalTheme={globals.theme || 'future-dark'} />,
+  render: (_args, { globals }) => (
+    <TooltipProvider>
+      <FieldTypesPage globalTheme={globals.theme || 'future-dark'} />
+    </TooltipProvider>
+  ),
 };
