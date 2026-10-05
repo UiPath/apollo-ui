@@ -1,3 +1,10 @@
+## [@uipath/apollo-react-v6.71.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.70.1...@uipath/apollo-react@6.71.0) (2026-10-05)
+
+### Features
+
+* **apollo-react:** guardrail file-support warning for uninspected formats ([46e81fc](https://github.com/UiPath/apollo-ui/commit/46e81fcfc124cbdc51950311b53274f42cab4ca0))
+* **apollo-react:** show guardrail file support under Applies to ([e70a63f](https://github.com/UiPath/apollo-ui/commit/e70a63f49ef1fec703cfa8b0ad0e37bd4a0a55f2))
+
 ## [@uipath/apollo-react-v6.70.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.70.0...@uipath/apollo-react@6.70.1) (2026-10-04)
 
 ### Bug Fixes
