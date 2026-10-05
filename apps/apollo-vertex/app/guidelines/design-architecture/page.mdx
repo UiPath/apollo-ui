@@ -49,7 +49,7 @@ The specs live in `@/lib/composition`.
 | `TemplateSpec` | A template | `name`, `slots`, `layout` (optional) |
 | `SlotSpec` | One slot in a template | `name`, `required`, `width` (`min`, optional `default` and `max`), `resizable`, `surfaces` |
 | `SurfaceSpec` | A surface | `name`, `width` (its own minimum), `provides` (orientation, inner width, scroll) |
-| `OccupantSpec` | An occupant | `name`, `label`, `icon` (optional), `surfaces` (optional), `orientations` (optional), `requires` (minimum width, scroll, padding) |
+| `OccupantSpec` | An occupant | `name`, `label`, `titleKey` (required: its title as a locale key), `icon` (optional), `surfaces` (optional), `orientations` (optional), `sizing` (`flow` or `fill`, default `flow`), `requires` (minimum width, scroll, padding) |
 
 Each template declares its own slots and their rules in its spec, and its
 layout as data: its grid's tracks, each slot's area, and what a page can
