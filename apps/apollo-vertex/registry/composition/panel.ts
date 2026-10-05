@@ -223,6 +223,70 @@ export function validateOccupantMap(
 }
 
 /**
+ * The valid part of a panel and its occupants, for when validation fails
+ * and the panel still has to render. It keeps, in order:
+ *
+ * - entries whose key is their spec's name;
+ * - each occupant's first appearance in a tab that stays, when it has an
+ *   entry;
+ * - in a stack, only titled flow occupants;
+ * - tabs that still hold an occupant, have a unique id, and have a label
+ *   if they stack, or, with several tabs, a label or a titled occupant;
+ * - the first PANEL_MAX_TABS of those tabs, and only the entries they name.
+ *
+ * What it returns passes validatePanel() and validateOccupantMap().
+ */
+export function sanitizePanel<T extends { spec: OccupantSpec }>(
+  panel: PanelSpec,
+  occupants: Readonly<Record<string, T>>,
+): { panel: PanelSpec; occupants: Record<string, T> } {
+  const entries = Object.fromEntries(
+    Object.entries(occupants).filter(([key, { spec }]) => spec.name === key),
+  );
+  const seen = new Set<string>();
+  const ids = new Set<string>();
+  let tabs = panel.tabs.flatMap((tab): TabSpec[] => {
+    if (ids.has(tab.id)) return [];
+    const names = new Set<string>();
+    let refs = tab.occupants.filter((ref) => {
+      const name = refName(ref);
+      if (!entries[name] || seen.has(name) || names.has(name)) return false;
+      names.add(name);
+      return true;
+    });
+    if (refs.length > 1) {
+      refs = refs.filter((ref) => {
+        const spec = entries[refName(ref)]?.spec;
+        if (!spec) return false;
+        return (
+          occupantSizing(spec) === "flow" && Boolean(occupantTitle(ref, spec))
+        );
+      });
+    }
+    if (refs.length === 0) return [];
+    if (refs.length > 1 && !tab.label) return [];
+    // Only a tab that stays claims its id and its occupants.
+    ids.add(tab.id);
+    for (const ref of refs) seen.add(refName(ref));
+    return [{ ...tab, occupants: refs }];
+  });
+  if (tabs.length > 1) {
+    const specs = Object.values(entries).map((entry) => entry.spec);
+    tabs = tabs.filter(
+      (tab) => resolvePanel({ ...panel, tabs: [tab] }, specs).tabs[0]?.label,
+    );
+  }
+  tabs = tabs.slice(0, PANEL_MAX_TABS);
+  const named = new Set(tabs.flatMap((tab) => tab.occupants.map(refName)));
+  return {
+    panel: { ...panel, tabs },
+    occupants: Object.fromEntries(
+      Object.entries(entries).filter(([key]) => named.has(key)),
+    ),
+  };
+}
+
+/**
  * The narrowest outer width, in px, a panel works at: the widest of its
  * occupants' minWidth plus their inset, across every tab, and never below
  * the surface's own minimum. Switching tabs never changes it.

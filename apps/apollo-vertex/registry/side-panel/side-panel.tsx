@@ -9,6 +9,7 @@ import {
   type PanelSpec,
   panelMinWidth,
   resolvePanel,
+  sanitizePanel,
   validateOccupantMap,
   validatePanel,
 } from "@/lib/panel";
@@ -169,9 +170,30 @@ interface TabbedSidePanelProps extends SidePanelFrameProps {
 }
 
 /**
+ * The panel and occupants to render. Every broken rule throws in
+ * development and tests. In production it logs them all and renders the
+ * valid tabs and occupants only, so a bad config never takes a page down.
+ */
+function checkedPanel(panel: PanelSpec, occupants: SidePanelOccupants) {
+  const specs = Object.values(occupants).map((o) => o.spec);
+  const errors = [
+    ...validateOccupantMap(panel, occupants),
+    ...validatePanel(panel, specs),
+  ];
+  if (errors.length === 0) return { panel, occupants };
+  if (process.env.NODE_ENV !== "production")
+    throw new Error(`SidePanel: ${errors.join(" ")}`);
+  // oxlint-disable-next-line eslint(no-console) -- production has no other channel for a broken panel config
+  console.error(
+    `SidePanel: ${errors.length} broken panel rules; rendering the valid tabs only.`,
+    errors,
+  );
+  return sanitizePanel(panel, occupants);
+}
+
+/**
  * A panel of tabs and stacks. It checks the panel against its occupants
- * and their specs, and throws on any broken rule. It owns which tab is
- * showing.
+ * and their specs (see checkedPanel). It owns which tab is showing.
  */
 function TabbedSidePanel({
   panel,
@@ -187,13 +209,11 @@ function TabbedSidePanel({
     setChosen(id);
     onTabChange?.(id);
   };
-  const specs = Object.values(occupants).map((o) => o.spec);
-  const errors = [
-    ...validateOccupantMap(panel, occupants),
-    ...validatePanel(panel, specs),
-  ];
-  if (errors.length > 0) throw new Error(`SidePanel: ${errors.join(" ")}`);
-  const resolved = resolvePanel(panel, specs);
+  const shown = checkedPanel(panel, occupants);
+  const resolved = resolvePanel(
+    shown.panel,
+    Object.values(shown.occupants).map((o) => o.spec),
+  );
   // One width for every tab, so switching never resizes the panel.
   const minWidth = panelMinWidth(sidePanelSurface, resolved);
   const report = React.useContext(SidePanelSlotContext)?.onMinWidth;
@@ -209,13 +229,16 @@ function TabbedSidePanel({
     : { padding: "padded" as const, scroll: "surface" as const };
   return (
     <SidePanelAside {...props} padding={layout.padding} scroll={layout.scroll}>
-      <SidePanelTabs
-        panel={resolved}
-        occupants={occupants}
-        headingLevel={headingLevel}
-        active={active}
-        onActiveChange={choose}
-      />
+      {/* With nothing valid left, the panel is empty. */}
+      {resolved.tabs.length > 0 && (
+        <SidePanelTabs
+          panel={resolved}
+          occupants={shown.occupants}
+          headingLevel={headingLevel}
+          active={active}
+          onActiveChange={choose}
+        />
+      )}
     </SidePanelAside>
   );
 }

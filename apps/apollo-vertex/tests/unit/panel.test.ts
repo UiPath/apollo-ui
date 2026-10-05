@@ -14,6 +14,7 @@ import {
   type PanelSpec,
   panelMinWidth,
   resolvePanel,
+  sanitizePanel,
   type TabSpec,
   validateOccupantMap,
   validatePanel,
@@ -274,5 +275,75 @@ describe("validateOccupantMap", () => {
     expect(validateOccupantMap(twoTabs, swapped)).toEqual([
       "The gamma entry holds the wide occupant's spec.",
     ]);
+  });
+});
+
+describe("sanitizePanel", () => {
+  const entries = (...names: string[]) =>
+    Object.fromEntries(
+      names.map((name) => [
+        name,
+        { spec: SPECS.find((s) => s.name === name) ?? spec(name) },
+      ]),
+    );
+  const clean = (result: ReturnType<typeof sanitizePanel>) => {
+    const specs = Object.values(result.occupants).map((o) => o.spec);
+    expect(validatePanel(result.panel, specs)).toEqual([]);
+    expect(validateOccupantMap(result.panel, result.occupants)).toEqual([]);
+  };
+
+  it("leaves a valid panel as it is", () => {
+    const valid = panel(tab("a", ["alpha"]), tab("b", ["beta"]));
+    const result = sanitizePanel(valid, entries("alpha", "beta"));
+    expect(result.panel).toEqual(valid);
+    expect(Object.keys(result.occupants)).toEqual(["alpha", "beta"]);
+  });
+
+  it("keeps only the valid tabs and occupants", () => {
+    const broken = panel(
+      tab("a", ["alpha"]),
+      // A repeated id, an unknown occupant, and a repeat of alpha.
+      tab("a", ["beta"]),
+      tab("x", ["nope"]),
+      tab("again", ["alpha"]),
+      // A fill occupant in a stack, and an unlabeled stack.
+      tab("docs", ["viewer", "gamma"], "docs_label"),
+      tab("pair", ["beta", "wide"]),
+    );
+    const map = {
+      ...entries("alpha", "beta", "gamma", "viewer", "wide", "untitled"),
+      // Under the wrong key.
+      misfiled: { spec: spec("misfiled-spec") },
+    };
+    const result = sanitizePanel(broken, map);
+    expect(result.panel.tabs).toEqual([
+      { id: "a", occupants: ["alpha"] },
+      { id: "docs", label: "docs_label", occupants: ["gamma"] },
+    ]);
+    expect(Object.keys(result.occupants)).toEqual(["alpha", "gamma"]);
+    clean(result);
+  });
+
+  it(`keeps at most ${PANEL_MAX_TABS} tabs`, () => {
+    const names = ["alpha", "beta", "gamma", "viewer", "wide", "untitled"];
+    const six = panel(...names.map((n) => tab(n, [n], `${n}_label`)));
+    const result = sanitizePanel(six, entries(...names));
+    expect(result.panel.tabs).toHaveLength(PANEL_MAX_TABS);
+    clean(result);
+  });
+
+  it("drops a tab with no label among several", () => {
+    const result = sanitizePanel(
+      panel(tab("a", ["alpha"]), tab("u", ["untitled"])),
+      { ...entries("alpha"), untitled: { spec: UNTITLED } },
+    );
+    expect(result.panel.tabs.map((t) => t.id)).toEqual(["a"]);
+    clean(result);
+  });
+
+  it("can leave nothing to render", () => {
+    const result = sanitizePanel(panel(tab("x", ["nope"])), {});
+    expect(result.panel.tabs).toEqual([]);
+    expect(result.occupants).toEqual({});
   });
 });
