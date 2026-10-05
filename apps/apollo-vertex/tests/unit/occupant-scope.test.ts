@@ -3,6 +3,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { keyPrefixCollision } from "../../scripts/lib.ts";
 
 // check:occupant-scope, run against a throwaway repository with the app in a
 // subdirectory, as it is in this monorepo.
@@ -141,6 +142,91 @@ describe("check:occupant-scope", () => {
     expect(check().status).toBe(0);
   });
 
+  it("fails an occupant commit that deletes another key", () => {
+    write("registry/demo/demo.tsx", "export const changed = true;\n");
+    write("locales/en.json", { demo_label: "Demo" });
+    commit("feat: change demo, drop retry");
+    const result = check();
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(
+      "locales/en.json changes more than the demo registration",
+    );
+  });
+
+  it("passes an occupant commit that changes and removes its own keys", () => {
+    write("locales/en.json", {
+      demo_empty: "Nothing yet.",
+      demo_label: "Demo",
+      retry: "Retry",
+    });
+    commit("feat: add demo copy");
+    write("registry/demo/demo.tsx", "export const changed = true;\n");
+    write("locales/en.json", { demo_label: "Demo, renamed", retry: "Retry" });
+    commit("feat: change demo copy");
+    expect(check().status).toBe(0);
+  });
+
+  // A new occupant owns every key with its prefix, so the prefix must be free.
+  it.each([
+    ["workbench", "workbench_title", "a shared namespace"],
+    ["stage", "stage_strip_label", "another occupant's keys"],
+    ["key", "key_facts_label", "another occupant's keys"],
+  ])("fails a new occupant named %s, whose prefix matches %s (%s)", (name, existing) => {
+    write("locales/en.json", {
+      demo_label: "Demo",
+      [existing]: "Taken",
+      retry: "Retry",
+    });
+    commit("chore: shared copy");
+    write(`registry/${name}/${name}.tsx`, "export {};\n");
+    write("registry.json", REGISTRY([{ name, meta: { layer: "occupant" } }]));
+    write("locales/en.json", {
+      demo_label: "Demo",
+      [existing]: "Taken",
+      [`${name}_label`]: "New",
+      retry: "Retry",
+    });
+    commit(`feat: add ${name}`);
+    const result = check();
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(`the ${name} occupant's name collides`);
+    expect(result.stderr).toContain(`"${existing}" already does`);
+  });
+
+  it("fails a new occupant whose prefix nests with another occupant's", () => {
+    write("registry/demo-extra/demo-extra.tsx", "export {};\n");
+    write(
+      "registry.json",
+      REGISTRY([{ name: "demo-extra", meta: { layer: "occupant" } }]),
+    );
+    commit("feat: add demo-extra");
+    const result = check();
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("would overlap the demo occupant's");
+  });
+
+  it("fails an occupant commit that changes a file outside the app", () => {
+    write("registry/demo/demo.tsx", "export const changed = true;\n");
+    const skill = join(repo, ".claude/skills/demo/SKILL.md");
+    mkdirSync(dirname(skill), { recursive: true });
+    writeFileSync(skill, "# Demo\n");
+    commit("feat: change demo and a skill");
+    const result = check();
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(
+      ".claude/skills/demo/SKILL.md is outside the app",
+    );
+  });
+
+  it("passes a shared commit that changes files outside the app", () => {
+    const pkg = join(repo, "packages/lib/index.ts");
+    mkdirSync(dirname(pkg), { recursive: true });
+    writeFileSync(pkg, "export {};\n");
+    write("registry/occupant/occupant.tsx", "export const kit = true;\n");
+    commit("feat: change the kit and a package");
+    expect(check().status).toBe(0);
+  });
+
   it("skips commits from before the check existed", () => {
     git("rm", "-q", "apps/app/scripts/check-occupant-scope.ts");
     commit("chore: before the check");
@@ -149,5 +235,30 @@ describe("check:occupant-scope", () => {
     write("registry/occupant/occupant.tsx", "export const kit = true;\n");
     commit("feat: mixed, but before the check");
     expect(check().status).toBe(0);
+  });
+});
+
+// The same rule the generator runs on a name before it writes anything.
+describe("keyPrefixCollision", () => {
+  const KEYS = ["key_facts_label", "stage_strip_label", "workbench_title"];
+  const OCCUPANTS = ["key-facts", "stage-strip"];
+
+  it.each([
+    "workbench",
+    "stage",
+    "key",
+    "key-facts-extra",
+    "stage-strip-mini",
+  ])("rejects %s", (name) => {
+    expect(keyPrefixCollision(name, KEYS, OCCUPANTS)).not.toBeNull();
+  });
+
+  it.each([
+    "in-page-navigation",
+    "work",
+    "keys",
+    "stages",
+  ])("accepts %s", (name) => {
+    expect(keyPrefixCollision(name, KEYS, OCCUPANTS)).toBeNull();
   });
 });

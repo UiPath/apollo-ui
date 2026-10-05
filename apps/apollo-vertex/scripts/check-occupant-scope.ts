@@ -13,6 +13,10 @@
  *   lib/occupants.generated.ts,   the occupant index, derived from
  *   lib/occupant-registry.generated.tsx   registry.json (lint checks it)
  *
+ * It may change nothing outside the app. A new occupant's name may not
+ * share a key prefix with existing copy or another occupant (see
+ * keyPrefixCollision), so every <name>_ key is one the occupant added.
+ *
  * The kit, the generator, surfaces, specs, tokens, templates, and tests
  * change in their own commits. A commit made before this check existed is
  * skipped, so it applies from here on.
@@ -21,7 +25,13 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { namesIn, registryItems, root } from "./lib.ts";
+import {
+  keyPrefix,
+  keyPrefixCollision,
+  namesIn,
+  registryItems,
+  root,
+} from "./lib.ts";
 
 const args = process.argv.slice(2);
 const flag = (name: string) => {
@@ -103,10 +113,7 @@ const REGISTRATIONS: Record<string, Registration> = {
       JSON.stringify(
         Object.fromEntries(
           Object.entries(JSON.parse(text)).filter(
-            ([key]) =>
-              !names.some((name) =>
-                key.startsWith(`${name.replaceAll("-", "_")}_`),
-              ),
+            ([key]) => !names.some((name) => key.startsWith(keyPrefix(name))),
           ),
         ),
       );
@@ -131,7 +138,7 @@ for (const commit of commits) {
     .split(" ")
     .slice(1);
   const parent = parents[0] ?? null;
-  const changed = git(
+  const all = git(
     "diff-tree",
     "--root",
     "--no-commit-id",
@@ -140,14 +147,12 @@ for (const commit of commits) {
     commit,
   )
     .split("\n")
-    .filter((path) => path.startsWith(prefix) && path !== prefix)
-    .map((path) => path.slice(prefix.length));
-  const occupants = [
-    ...new Set([
-      ...occupantsAt(commit),
-      ...(parent ? occupantsAt(parent) : []),
-    ]),
-  ];
+    .filter(Boolean);
+  const inApp = (path: string) => path.startsWith(prefix) && path !== prefix;
+  const changed = all.filter(inApp).map((path) => path.slice(prefix.length));
+  const outside = all.filter((path) => !inApp(path));
+  const before = parent ? occupantsAt(parent) : [];
+  const occupants = [...new Set([...occupantsAt(commit), ...before])];
   const touched = [
     ...new Set(
       changed
@@ -158,6 +163,21 @@ for (const commit of commits) {
   if (touched.length === 0) continue;
 
   const subject = git("log", "-1", "--format=%h %s", commit).trim();
+  for (const path of outside) {
+    problems.push(
+      `${subject}\n    ${path} is outside the app, so outside the ${touched.join(", ")} occupant.`,
+    );
+  }
+  // A new occupant's key prefix, against the copy and occupants before it.
+  const parentCopy = parent ? show(parent, "locales/en.json") : null;
+  const keys = parentCopy ? Object.keys(JSON.parse(parentCopy)) : [];
+  for (const name of touched.filter((n) => !before.includes(n))) {
+    const collision = keyPrefixCollision(name, keys, before);
+    if (collision)
+      problems.push(
+        `${subject}\n    the ${name} occupant's name collides: ${collision}`,
+      );
+  }
   for (const path of changed) {
     if (ownerOf(path, touched)) continue;
     const registration = REGISTRATIONS[path];

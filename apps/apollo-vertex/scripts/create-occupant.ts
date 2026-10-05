@@ -73,7 +73,10 @@ import { dirname, join } from "node:path";
 import { stdin, stdout } from "node:process";
 import { createInterface } from "node:readline/promises";
 import {
+  keyPrefixCollision,
+  namesIn,
   PLACEHOLDER,
+  readRegistry,
   root,
   camel as toCamel,
   pascal as toPascal,
@@ -110,6 +113,12 @@ if (!/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/.test(name ?? "")) {
 const occupantName = name as string;
 if (existsSync(join(root, "registry", occupantName)))
   fail(`registry/${occupantName} already exists.`);
+const collision = keyPrefixCollision(
+  occupantName,
+  Object.keys(JSON.parse(read("locales/en.json"))),
+  namesIn(readRegistry(), "occupant"),
+);
+if (collision) fail(`"${occupantName}" can't be used: ${collision}`);
 
 const camel = toCamel(occupantName);
 const pascal = toPascal(occupantName);
