@@ -197,6 +197,7 @@
   "participants_empty": "People show here once someone is involved.",
   "participants_label": "Participants for {{subject}}",
   "participants_subject": "participants",
+  "participants_title": "Participants",
   "process_results_viewer_description": "Inspect the process output.",
   "debug_dev_only": "Debug — Dev only",
   "ixp_doc_reclassified": "Reclassified",
