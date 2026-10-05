@@ -50,17 +50,6 @@ export default withNextra({
         },
       }
     : {
-        // Pages that moved. A static export has no server, so there the old
-        // paths aren't redirected.
-        redirects() {
-          return [
-            {
-              source: "/guidelines/creating-occupants",
-              destination: "/guidelines/design-architecture/creating-occupants",
-              permanent: true,
-            },
-          ];
-        },
         rewrites() {
           return [
             {

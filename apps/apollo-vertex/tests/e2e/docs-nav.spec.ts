@@ -51,24 +51,6 @@ test("Design architecture is a folder: Overview, Creating occupants, and the wor
   ).toBe(0);
 });
 
-test("the old URLs still work", async ({ page }) => {
-  // The overview kept its path.
-  expect(
-    (await page.request.get("/guidelines/design-architecture")).status(),
-  ).toBe(200);
-  // Creating occupants moved, and its old path redirects there, permanently.
-  const moved = await page.request.get("/guidelines/creating-occupants", {
-    maxRedirects: 0,
-  });
-  expect(moved.status()).toBe(308);
-  expect(moved.headers().location).toBe(CREATING);
-  await page.goto("/guidelines/creating-occupants");
-  expect(new URL(page.url()).pathname).toBe(CREATING);
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-    "Creating occupants",
-  );
-});
-
 test("Creating occupants opens the workbench near the top and where it says what it checks", async ({
   page,
 }) => {
