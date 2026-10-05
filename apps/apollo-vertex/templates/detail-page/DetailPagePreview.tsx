@@ -4,6 +4,7 @@ import { SlidersHorizontal, X } from "lucide-react";
 import {
   type CSSProperties,
   createContext,
+  Suspense,
   useContext,
   useEffect,
   useRef,
@@ -17,6 +18,7 @@ import type { PanelSide } from "./detail-page.template";
 import { PreviewControlBar } from "./PreviewControlBar";
 import {
   DEFAULT_PREVIEW_SETTINGS,
+  type PanelSlotName,
   type PreviewSettings,
   parsePreviewSettings,
   serializePreviewSettings,
@@ -26,6 +28,7 @@ import { type DetailPageState, useDetailPage } from "./use-detail-page";
 interface PreviewContextValue {
   settings: PreviewSettings;
   detailPage: DetailPageState;
+  onTabChange: (slot: PanelSlotName, id: string) => void;
 }
 
 const PREVIEW_PATH = "/preview/detail-page";
@@ -43,6 +46,9 @@ function PreviewPage() {
       paddings={preview.settings.paddings}
       contents={preview.settings.contents}
       scrolls={preview.settings.scrolls}
+      compositions={preview.settings.compositions}
+      tabs={preview.settings.tabs}
+      onTabChange={preview.onTabChange}
     />
   );
 }
@@ -147,6 +153,10 @@ export function DetailPagePreview({
     window.history.replaceState(null, "", url);
   }, [settings, endWidthChosen, embedded]);
 
+  // The tab a panel shows goes in the URL, so a link opens on it.
+  const onTabChange = (slot: PanelSlotName, id: string) =>
+    setSettings((prev) => ({ ...prev, tabs: { ...prev.tabs, [slot]: id } }));
+
   // Save the user's choice as the panel's defaultOpen so it lands in the
   // URL. Closes made by the main-width rule never reach here.
   const setPanelOpen = (side: PanelSide, open: boolean) => {
@@ -164,7 +174,7 @@ export function DetailPagePreview({
     <>
       {/* Scopes the tint override to the preview; `contents` adds no box. */}
       <div className="contents" style={tintStyle}>
-        <PreviewContext.Provider value={{ settings, detailPage }}>
+        <PreviewContext.Provider value={{ settings, detailPage, onTabChange }}>
           <PreviewShell variant={settings.shellVariant} basePath={PREVIEW_PATH}>
             <PreviewPage />
           </PreviewShell>
@@ -173,19 +183,26 @@ export function DetailPagePreview({
       {!embedded && (
         <div className="fixed right-4 bottom-4 z-60 flex flex-col items-end gap-2">
           <div id={CONFIG_CARD_ID} hidden={!isCardOpen}>
-            <PreviewControlBar
-              settings={settings}
-              onChange={setSettings}
-              open={detailPage.open}
-              closedBy={detailPage.closedBy}
-              onOpenChange={setPanelOpen}
-              endWidth={detailPage.endWidth}
-              endWidthChosen={detailPage.endWidthChosen}
-              onResetEndWidth={detailPage.resetEndWidth}
-              tintStrength={tintStrength ?? SIDE_PANEL_TINT_STRENGTH}
-              onTintStrengthChange={setTintStrength}
-              onReset={resetToDefaults}
-            />
+            {/*
+              The card sits outside the shell, which loads translations, and
+              its copy is translated: while they load it suspends here, not
+              the whole preview.
+            */}
+            <Suspense fallback={null}>
+              <PreviewControlBar
+                settings={settings}
+                onChange={setSettings}
+                open={detailPage.open}
+                closedBy={detailPage.closedBy}
+                onOpenChange={setPanelOpen}
+                endWidth={detailPage.endWidth}
+                endWidthChosen={detailPage.endWidthChosen}
+                onResetEndWidth={detailPage.resetEndWidth}
+                tintStrength={tintStrength ?? SIDE_PANEL_TINT_STRENGTH}
+                onTintStrengthChange={setTintStrength}
+                onReset={resetToDefaults}
+              />
+            </Suspense>
           </div>
           <Button
             variant="outline"

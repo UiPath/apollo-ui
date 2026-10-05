@@ -18,6 +18,12 @@ import {
   END_PANEL_DEFAULT_PX,
   END_PANEL_MIN_PX,
 } from "./detail-page.template";
+import {
+  type PanelComposition,
+  parseComposition,
+  SINGLE_OCCUPANT,
+  serializeComposition,
+} from "./preview-panels";
 
 export type ShellVariant = "sidebar" | "minimal";
 
@@ -34,6 +40,9 @@ export type ShellVariant = "sidebar" | "minimal";
  *   <slot>-padding  padded | flush, e.g. main-padding=flush
  *   <slot>-content  short | long   (start-panel, main, end-panel)
  *   <slot>-scroll   surface | occupant   (who owns scrolling there)
+ *   <slot>-tabs     what a panel holds, as tabs and stacks (start-panel,
+ *                   end-panel), like base~overview:details+people. See
+ *                   preview-panels.ts
  *   <slot>-tab      the tab a panel shows first, by id (start-panel,
  *                   end-panel). An unknown id shows the first tab.
  *
@@ -51,6 +60,8 @@ export interface PreviewSettings {
   paddings: SlotPaddings;
   contents: SlotContents;
   scrolls: SlotScrolls;
+  /** What each panel holds: its own placeholder, and any tabs and stacks. */
+  compositions: PanelCompositions;
   /** Each panel's tab to show first, by id. Empty shows the first tab. */
   tabs: PanelTabs;
 }
@@ -60,9 +71,12 @@ export type PanelSlotName = "start-panel" | "end-panel";
 
 export type PanelTabs = Record<PanelSlotName, string>;
 
+export type PanelCompositions = Record<PanelSlotName, PanelComposition>;
+
 const PANEL_SLOTS: readonly PanelSlotName[] = ["start-panel", "end-panel"];
 
 const tabKey = (slot: PanelSlotName) => `${slot}-tab`;
+const compositionKey = (slot: PanelSlotName) => `${slot}-tabs`;
 
 /** Slots whose surface can scroll, in page order. */
 const SCROLLABLE_SLOTS: readonly ScrollableSlotName[] = [
@@ -93,6 +107,10 @@ export const DEFAULT_PREVIEW_SETTINGS: PreviewSettings = {
     "start-panel": "surface",
     main: "surface",
     "end-panel": "surface",
+  },
+  compositions: {
+    "start-panel": SINGLE_OCCUPANT,
+    "end-panel": SINGLE_OCCUPANT,
   },
   tabs: { "start-panel": "", "end-panel": "" },
 };
@@ -168,7 +186,11 @@ export function parsePreviewSettings(search: string): PreviewSettings {
   }
 
   const tabs = { ...defaults.tabs };
-  for (const slot of PANEL_SLOTS) tabs[slot] = params.get(tabKey(slot)) ?? "";
+  const compositions = { ...defaults.compositions };
+  for (const slot of PANEL_SLOTS) {
+    tabs[slot] = params.get(tabKey(slot)) ?? "";
+    compositions[slot] = parseComposition(params.get(compositionKey(slot)));
+  }
 
   return {
     shellVariant: oneOf(params.get("shell"), SHELLS, defaults.shellVariant),
@@ -183,6 +205,7 @@ export function parsePreviewSettings(search: string): PreviewSettings {
     paddings,
     contents,
     scrolls,
+    compositions,
     tabs,
   };
 }
@@ -233,6 +256,11 @@ export function serializePreviewSettings(settings: PreviewSettings): string {
   }
 
   for (const slot of PANEL_SLOTS) {
+    setIfChanged(
+      compositionKey(slot),
+      serializeComposition(settings.compositions[slot]),
+      "",
+    );
     setIfChanged(tabKey(slot), settings.tabs[slot], defaults.tabs[slot]);
   }
 

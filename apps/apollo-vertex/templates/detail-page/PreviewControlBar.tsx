@@ -13,6 +13,8 @@ import type {
   PanelWidth,
 } from "./detail-page.template";
 import { END_PANEL_DEFAULT_PX, enabledPanels } from "./detail-page.template";
+import { PanelComposer } from "./PanelComposer";
+import { PANEL_TITLES } from "./preview-panels";
 import type { PreviewSettings, ShellVariant } from "./preview-url-state";
 
 interface Option<T extends string> {
@@ -126,6 +128,9 @@ const PADDING_OPTIONS: Option<SurfacePadding>[] = [
   { value: "flush", label: "Flush" },
 ];
 
+const panelSlot = (side: PanelSide) =>
+  side === "start" ? "start-panel" : "end-panel";
+
 interface PreviewControlBarProps {
   settings: PreviewSettings;
   onChange: (update: (prev: PreviewSettings) => PreviewSettings) => void;
@@ -237,6 +242,19 @@ export function PreviewControlBar({
         }
       />
       {scrollFields(side === "start" ? "start-panel" : "end-panel", title)}
+      <PanelComposer
+        composition={settings.compositions[panelSlot(side)]}
+        onChange={(next) =>
+          onChange((prev) => ({
+            ...prev,
+            compositions: { ...prev.compositions, [panelSlot(side)]: next },
+            // A new composition opens on its first tab.
+            tabs: { ...prev.tabs, [panelSlot(side)]: "" },
+          }))
+        }
+        baseTitle={PANEL_TITLES[panelSlot(side)]}
+        panelName={title}
+      />
       {side === "end" && (
         <div className="flex items-center justify-between gap-2">
           <div className="flex flex-col">
