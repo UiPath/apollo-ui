@@ -19,7 +19,8 @@ interface CanvasProvidersProps {
   children: ReactNode;
   nodes: Node[];
   edges: Edge[];
-  mode: BaseCanvasProps['mode'];
+  /** The resolved mode. `BaseCanvas` owns the default, so both mode consumers below agree. */
+  mode: NonNullable<BaseCanvasProps['mode']>;
   isDarkMode?: boolean;
   locale?: BaseCanvasProps['locale'];
   stickyNoteOptions?: StickyNoteCanvasOptions;
@@ -57,7 +58,7 @@ export function CanvasProviders({
                   <ReadOnlyNodesProvider readOnlyNodeIds={readOnlyNodeIds}>
                     <StickyNoteCanvasOptionsProvider options={stickyNoteOptions}>
                       <ToolbarActionStoreProvider
-                        mode={mode ?? 'design'}
+                        mode={mode}
                         onToolbarAction={onToolbarAction}
                         breakpoints={breakpoints}
                       >

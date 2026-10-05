@@ -7,6 +7,7 @@ import {
   Position,
   ReactFlowProvider,
 } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { FormSchema } from '@uipath/apollo-wind';
 import {
   Button,
   cn,
@@ -18,6 +19,7 @@ import {
 } from '@uipath/apollo-wind';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { NodeRegistryProvider } from '../../core';
+import type { ToolbarActionEvent } from '../../schema/toolbar';
 import {
   createNode,
   StoryCard,
@@ -44,6 +46,7 @@ import type { BaseNodeData } from '../BaseNode/BaseNode.types';
 import { CanvasPositionControls } from '../CanvasPositionControls';
 import { CanvasEdge } from '../Edges';
 import { LoopNode } from '../LoopNode';
+import { NodePropertyPanel } from '../NodePropertyPanel';
 import { StageNodeWrapper } from '../StageNode/StageNode.stories.utils';
 import type { StageNodeBaseProps } from '../StageNode/StageNode.types';
 import { StickyNoteNode } from '../StickyNoteNode';
@@ -1944,4 +1947,154 @@ function CustomNode({ id }: NodeProps) {
 export const PerNodeReadOnly: Story = {
   name: 'Per-Node Read-Only',
   render: (_, { globals }) => <PerNodeReadOnlyPage globalTheme={globals.theme || 'future-dark'} />,
+};
+
+// ============================================================================
+// Side-by-side canvases
+// ============================================================================
+
+function createReviewNodes(extractLabel: string): Node<BaseNodeData>[] {
+  return [
+    createNode({
+      id: 'trigger',
+      type: 'uipath.blank-node',
+      position: { x: 0, y: 0 },
+      display: { label: 'Invoice received', icon: 'mail' },
+    }),
+    createNode({
+      id: 'extract',
+      type: 'uipath.blank-node',
+      position: { x: 240, y: 0 },
+      display: { label: extractLabel, icon: 'file-text' },
+    }),
+  ];
+}
+
+const reviewEdges: Edge[] = [{ id: 'trigger->extract', source: 'trigger', target: 'extract' }];
+
+const extractFieldsForm: FormSchema = {
+  id: 'extract-fields',
+  title: 'Extract fields',
+  mode: 'onChange',
+  steps: [
+    {
+      id: 'parameters',
+      title: 'Parameters',
+      sections: [
+        {
+          id: 'main',
+          fields: [
+            {
+              type: 'text',
+              name: 'document_type',
+              label: 'Document type',
+              defaultValue: 'Invoice',
+            },
+            {
+              type: 'number',
+              name: 'confidence_threshold',
+              label: 'Confidence threshold (%)',
+              description: 'Fields below this confidence go to a person for review.',
+              defaultValue: 90,
+            },
+            {
+              type: 'switch',
+              name: 'validate_totals',
+              label: 'Validate totals',
+              defaultValue: true,
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};
+
+const REVIEW_CHANGED_FIELDS = ['confidence_threshold', 'validate_totals'];
+// Frames both nodes at 100% in a half-width pane.
+const REVIEW_VIEWPORT = { x: 56, y: 280, zoom: 1 };
+
+function ReviewCanvas({
+  label,
+  mode,
+  extractLabel,
+  onToolbarAction,
+}: {
+  label: string;
+  mode: 'view' | 'design';
+  extractLabel: string;
+  onToolbarAction: (event: ToolbarActionEvent) => void;
+}) {
+  const initialNodes = useMemo(() => createReviewNodes(extractLabel), [extractLabel]);
+  const { canvasProps } = useCanvasStory({ initialNodes, initialEdges: reviewEdges });
+
+  return (
+    <section aria-label={label} className="relative min-h-0 min-w-0 flex-1">
+      <span className="pointer-events-none absolute left-3 top-2 z-10 rounded bg-surface-raised px-1.5 py-0.5 text-xs font-medium text-foreground-muted">
+        {label} · mode="{mode}"
+      </span>
+      <ReactFlowProvider>
+        <BaseCanvas
+          {...canvasProps}
+          mode={mode}
+          onToolbarAction={onToolbarAction}
+          defaultViewport={REVIEW_VIEWPORT}
+        />
+      </ReactFlowProvider>
+    </section>
+  );
+}
+
+function SideBySideCanvasesStory() {
+  const [lastAction, setLastAction] = useState('Hover a node on the right and pick an action.');
+  const report = (pane: string) => (event: ToolbarActionEvent) =>
+    setLastAction(`${pane} canvas handled "${event.actionId}" on ${event.nodeId} (${event.mode})`);
+
+  return (
+    <div className="flex h-full w-full bg-surface">
+      <div className="flex min-w-0 flex-1 divide-x divide-border-subtle">
+        <ReviewCanvas
+          label="Before"
+          mode="view"
+          extractLabel="Extract fields"
+          onToolbarAction={report('Before')}
+        />
+        <ReviewCanvas
+          label="After"
+          mode="design"
+          extractLabel="Extract and validate fields"
+          onToolbarAction={report('After')}
+        />
+      </div>
+      <aside className="flex w-[380px] shrink-0 flex-col border-l border-border-subtle">
+        <NodePropertyPanel
+          panelTitle="Properties"
+          nodeLabel="Extract and validate fields"
+          nodeCategory="Document understanding"
+          schema={extractFieldsForm}
+          changedFields={REVIEW_CHANGED_FIELDS}
+          className="min-h-0 flex-1"
+        />
+        <output
+          aria-live="polite"
+          className="border-t border-border-subtle px-4 py-2 text-xs text-foreground-muted"
+        >
+          {lastAction}
+        </output>
+      </aside>
+    </div>
+  );
+}
+
+export const SideBySideCanvases: Story = {
+  name: 'Side-by-Side Canvases',
+  render: () => <SideBySideCanvasesStory />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Two `BaseCanvas` instances on one page, as in a before/after review. Each canvas owns its toolbar store, so the node toolbars follow their own `mode` and `onToolbarAction`: the `mode="view"` canvas on the left shows no editing actions, while the `mode="design"` canvas on the right offers Delete, Duplicate and Toggle breakpoint, and the line under the panel names the canvas that handled the click. The `NodePropertyPanel` passes `changedFields` to flag the two fields the change touched.',
+      },
+    },
+  },
 };
