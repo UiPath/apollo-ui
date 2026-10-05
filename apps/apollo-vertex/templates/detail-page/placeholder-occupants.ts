@@ -1,4 +1,5 @@
 import type {
+  LocaleKey,
   OccupantSpec,
   ScrollOwner,
   SurfacePadding,
@@ -16,5 +17,24 @@ export function placeholderOccupant(
     // A dashed box works in any shape of space.
     orientations: ["horizontal", "vertical"],
     requires: { minWidth: 0, scroll, padding },
+  };
+}
+
+/**
+ * Preview-only stand-in for a document viewer: a "fill" occupant, so it is
+ * alone in its tab, takes the tab's whole height, and scrolls itself. Pass
+ * the translated label for its placeholder box.
+ */
+export function fillPlaceholderOccupant(
+  label: string,
+  titleKey: LocaleKey,
+): OccupantSpec<"placeholder-document"> {
+  return {
+    name: "placeholder-document",
+    label,
+    titleKey,
+    sizing: "fill",
+    orientations: ["vertical"],
+    requires: { minWidth: 0, scroll: "occupant", padding: "flush" },
   };
 }
