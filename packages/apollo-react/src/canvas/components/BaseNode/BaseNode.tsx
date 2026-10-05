@@ -117,8 +117,9 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     subLabelComponent,
     iconComponent,
   } = useBaseNodeOverrideConfig();
-  // The override context wins; plain consumers set `data.suggestionType`.
-  const suggestionType = suggestionTypeOverride ?? data.suggestionType;
+  // A `null` override suppresses styling; otherwise the override wins over `data.suggestionType`.
+  const suggestionType =
+    suggestionTypeOverride === null ? undefined : (suggestionTypeOverride ?? data.suggestionType);
 
   const updateNodeInternals = useUpdateNodeInternals();
   const { updateNodeData, updateNode, getNode } = useReactFlow();

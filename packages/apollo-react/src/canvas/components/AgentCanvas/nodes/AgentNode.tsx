@@ -129,7 +129,8 @@ const AgentNodeComponent = memo((props: NodeProps<Node<AgentNodeData>> & AgentNo
 
   const { name, definition, suggestionId } = data;
   const isSuggestion = data.isSuggestion ?? false;
-  const suggestionType = isSuggestion ? data.suggestionType : undefined;
+  // `null` stops BaseNode falling back to `data.suggestionType` for non-suggestion nodes.
+  const suggestionType = isSuggestion ? data.suggestionType : null;
   const isConversational =
     (definition?.metadata as Record<string, unknown>)?.isConversational === true;
   const suggestTranslations = suggestionTranslations ?? DefaultSuggestionTranslations;
