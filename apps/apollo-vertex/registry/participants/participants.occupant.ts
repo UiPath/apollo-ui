@@ -8,6 +8,7 @@ import type { OccupantSpec } from "@/lib/composition";
 export const participantsOccupant = {
   name: "participants",
   label: "Participants",
+  titleKey: "participants_title",
   icon: Users,
   orientations: ["vertical"],
   // Everything wraps, so the measured floor is under 40px. 200px keeps a name

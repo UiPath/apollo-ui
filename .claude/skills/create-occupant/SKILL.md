@@ -117,11 +117,15 @@ these words; they're the Creating occupants page's.
    build the larger one now, and note the smaller one for later.
 3. **Padding.** "Should it sit inside the surface's padding, or run edge to
    edge, like a list whose rows reach the sides?" (padded or flush)
-4. **Scrolling.** "When there's more than fits, should the surface scroll
+4. **Sizing.** "In a side panel, does it grow with its content, so it can
+   share a tab with other occupants, or take the whole tab and scroll
+   itself, like a document viewer?" (flow or fill) [flow]. Fill is vertical
+   only, and a fill occupant scrolls itself, so skip the next question.
+5. **Scrolling.** "When there's more than fits, should the surface scroll
    it, or does it scroll itself, like a table with a sticky header?"
    (surface, occupant, or either). Skip this for a selectable or filtered
    occupant: it scrolls itself.
-5. **Two domains.** "Name two places this data could come from, in quite
+6. **Two domains.** "Name two places this data could come from, in quite
    different lines of business." They must be from different verticals
    (not two kinds of insurance). If they don't have two, propose two
    unrelated ones and confirm.
@@ -133,7 +137,8 @@ and is measured in step 6. It's raised only when the person gives a reason
 
 Then draft, from the conversation, and confirm, all in sentence case:
 
-- **Label:** what people call it in docs and pickers ("Key facts").
+- **Label:** what people call it in docs and pickers ("Key facts"). It is
+  also its title in a panel's tab or stack heading, as `<name>_title`.
 - **Icon:** a lucide icon that fits. Check it exists in `lucide-react`.
 - **Description:** one sentence on what it shows. It becomes the doc
   comment, the registry description, and the docs page's opening.
@@ -148,7 +153,8 @@ Pass every answer, so nothing is asked twice:
 pnpm create:occupant <name> --view-model <file.json> \
   --label "<label>" --description "<sentence>" --icon <Icon> \
   --surfaces <a comma list of page-header, side-panel, content-area> \
-  --padding <padded|flush> --scroll <surface|occupant|either> \
+  --padding <padded|flush> --sizing <flow|fill> \
+  --scroll <surface|occupant|either> \
   --subject "<noun>" --empty "<sentence>" \
   --primary-domain "<domain>" --secondary-domain "<domain>" < /dev/null
 ```

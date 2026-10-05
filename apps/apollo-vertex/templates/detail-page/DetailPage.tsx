@@ -16,11 +16,8 @@ import { cn } from "@/lib/utils";
 import {
   type DetailPageSlotName,
   detailPageTemplate,
-  END_PANEL_MIN_PX,
   enabledPanels,
   MAIN_MIN_OUTER_PX,
-  START_PANEL_PX,
-  START_PANEL_WIDTH,
 } from "./detail-page.template";
 import { PanelResizeHandle } from "./PanelResizeHandle";
 import type { DetailPageState } from "./use-detail-page";
@@ -108,7 +105,7 @@ export function DetailPage({
   ...props
 }: DetailPageProps) {
   const { t } = useTranslation();
-  const { config, open, ref, endWidth, endWidthRange } = state;
+  const { config, open, ref, endWidth, endWidthRange, widths } = state;
   const enabled = enabledPanels(config.panels);
   const hasStart = enabled.start && Boolean(startPanel);
   const hasEnd = enabled.end && Boolean(endPanel);
@@ -119,22 +116,22 @@ export function DetailPage({
   // measured, its px value is the same, and px can animate.
   const endAtMax =
     hasEnd && open.end && state.endWidthChosen === "max" && !state.measured;
-  const startOpenPx = hasStart && open.start ? START_PANEL_PX : 0;
+  const startOpenPx = hasStart && open.start ? widths.start : 0;
   const mainTrack = endAtMax
-    ? `minmax(min(${MAIN_MIN_OUTER_PX}px, calc(100% - ${startOpenPx + END_PANEL_MIN_PX}px)), 1fr)`
+    ? `minmax(min(${MAIN_MIN_OUTER_PX}px, calc(100% - ${startOpenPx + widths.endMin}px)), 1fr)`
     : "minmax(0, 1fr)";
-  const endTrack = endAtMax ? `minmax(${END_PANEL_MIN_PX}px, 1fr)` : "auto";
+  const endTrack = endAtMax ? `minmax(${widths.endMin}px, 1fr)` : "auto";
   // The Detail page's own widths, from its spec, as CSS variables on the
   // template root: one source for CSS and TypeScript.
   const templateStyle: CSSProperties &
     Record<`--detail-page-${string}`, string> = {
-    "--detail-page-start-panel-width": `${START_PANEL_WIDTH.default}px`,
+    "--detail-page-start-panel-width": `${widths.start}px`,
     "--detail-page-columns": `auto ${mainTrack} ${endTrack}`,
   };
   // Each panel's clip box width: its width when open, 0 when closed.
   const startExtentStyle: CSSProperties &
     Record<"--detail-page-panel-extent", string> = {
-    "--detail-page-panel-extent": open.start ? `${START_PANEL_PX}px` : "0px",
+    "--detail-page-panel-extent": open.start ? `${widths.start}px` : "0px",
   };
   const endExtentStyle: CSSProperties &
     Record<"--detail-page-panel-extent" | "--detail-page-end-width", string> = {
@@ -145,6 +142,10 @@ export function DetailPage({
         : `${endWidth}px`
       : "0px",
   };
+
+  // Each panel's surface reports its floor; the slot is never narrower.
+  const reportStart = (px: number) => state.setPanelFloor("start", px);
+  const reportEnd = (px: number) => state.setPanelFloor("end", px);
 
   const templateRef = useRef<HTMLDivElement | null>(null);
   const mainRef = useRef<HTMLDivElement | null>(null);
@@ -242,7 +243,11 @@ export function DetailPage({
             {/* The panel's box: its full width, so the clip reveals it. */}
             <div className="flex h-full w-(--detail-page-start-panel-width) shrink-0">
               <SidePanelSlotContext.Provider
-                value={{ open: open.start, placement: config.start.placement }}
+                value={{
+                  open: open.start,
+                  placement: config.start.placement,
+                  onMinWidth: reportStart,
+                }}
               >
                 {startPanel}
               </SidePanelSlotContext.Provider>
@@ -298,7 +303,11 @@ export function DetailPage({
           >
             <div className="flex h-full w-(--detail-page-end-width) shrink-0">
               <SidePanelSlotContext.Provider
-                value={{ open: open.end, placement: config.end.placement }}
+                value={{
+                  open: open.end,
+                  placement: config.end.placement,
+                  onMinWidth: reportEnd,
+                }}
               >
                 {endPanel}
               </SidePanelSlotContext.Provider>

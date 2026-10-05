@@ -18,6 +18,12 @@ import {
   END_PANEL_DEFAULT_PX,
   END_PANEL_MIN_PX,
 } from "./detail-page.template";
+import {
+  type Arrangement,
+  PANEL_SLOTS,
+  type PanelSlotName,
+  parseArrangement,
+} from "./preview-panels";
 
 export type ShellVariant = "sidebar" | "minimal";
 
@@ -34,6 +40,11 @@ export type ShellVariant = "sidebar" | "minimal";
  *   <slot>-padding  padded | flush, e.g. main-padding=flush
  *   <slot>-content  short | long   (start-panel, main, end-panel)
  *   <slot>-scroll   surface | occupant   (who owns scrolling there)
+ *   <slot>-arrangement  single | stack | tabs | overflow: how a panel
+ *                   arranges its occupants (start-panel, end-panel). See
+ *                   preview-panels.ts. An unknown value is single.
+ *   <slot>-tab      the tab a panel shows first, by id (start-panel,
+ *                   end-panel). An unknown id shows the first tab.
  *
  * Only values that differ from the defaults are written. Unknown or invalid
  * values fall back to the defaults. Whether the configuration card is open
@@ -49,7 +60,20 @@ export interface PreviewSettings {
   paddings: SlotPaddings;
   contents: SlotContents;
   scrolls: SlotScrolls;
+  /** How each panel arranges its occupants. */
+  arrangements: PanelArrangements;
+  /** Each panel's tab to show first, by id. Empty shows the first tab. */
+  tabs: PanelTabs;
 }
+
+export type { PanelSlotName };
+
+export type PanelTabs = Record<PanelSlotName, string>;
+
+export type PanelArrangements = Record<PanelSlotName, Arrangement>;
+
+const tabKey = (slot: PanelSlotName) => `${slot}-tab`;
+const arrangementKey = (slot: PanelSlotName) => `${slot}-arrangement`;
 
 /** Slots whose surface can scroll, in page order. */
 const SCROLLABLE_SLOTS: readonly ScrollableSlotName[] = [
@@ -81,6 +105,8 @@ export const DEFAULT_PREVIEW_SETTINGS: PreviewSettings = {
     main: "surface",
     "end-panel": "surface",
   },
+  arrangements: { "start-panel": "single", "end-panel": "single" },
+  tabs: { "start-panel": "", "end-panel": "" },
 };
 
 const SHELLS: readonly ShellVariant[] = ["sidebar", "minimal"];
@@ -153,6 +179,13 @@ export function parsePreviewSettings(search: string): PreviewSettings {
     );
   }
 
+  const tabs = { ...defaults.tabs };
+  const arrangements = { ...defaults.arrangements };
+  for (const slot of PANEL_SLOTS) {
+    tabs[slot] = params.get(tabKey(slot)) ?? "";
+    arrangements[slot] = parseArrangement(params.get(arrangementKey(slot)));
+  }
+
   return {
     shellVariant: oneOf(params.get("shell"), SHELLS, defaults.shellVariant),
     config: {
@@ -166,6 +199,8 @@ export function parsePreviewSettings(search: string): PreviewSettings {
     paddings,
     contents,
     scrolls,
+    arrangements,
+    tabs,
   };
 }
 
@@ -212,6 +247,15 @@ export function serializePreviewSettings(settings: PreviewSettings): string {
       settings.scrolls[slot],
       defaults.scrolls[slot],
     );
+  }
+
+  for (const slot of PANEL_SLOTS) {
+    setIfChanged(
+      arrangementKey(slot),
+      settings.arrangements[slot],
+      defaults.arrangements[slot],
+    );
+    setIfChanged(tabKey(slot), settings.tabs[slot], defaults.tabs[slot]);
   }
 
   const query = params.toString();

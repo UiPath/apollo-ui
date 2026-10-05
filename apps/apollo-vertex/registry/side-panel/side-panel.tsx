@@ -3,11 +3,27 @@
 import { cva } from "class-variance-authority";
 import * as React from "react";
 
-import { SCROLL_FADE_MASK, useScrollFade } from "@/hooks/use-scroll-fade";
+import { useScrollFade } from "@/hooks/use-scroll-fade";
 import type { ScrollOwner, SurfacePadding } from "@/lib/composition";
+import {
+  type PanelSpec,
+  panelMinWidth,
+  resolvePanel,
+  sanitizePanel,
+  validateOccupantMap,
+  validatePanel,
+} from "@/lib/panel";
 import { SurfaceProvider, useSurfaceFrame } from "@/lib/surface-context";
 import { cn } from "@/lib/utils";
 import { sidePanelSurface } from "./side-panel.surface";
+import { BODY_FOCUS_RING, sidePanelBodyVariants } from "./side-panel-body";
+import {
+  type SidePanelOccupant,
+  type SidePanelOccupants,
+  SidePanelTabs,
+  type StackHeadingLevel,
+  tabLayout,
+} from "./side-panel-tabs";
 
 // The background follows placement only, so the rules are !important:
 // neither a className nor an inline style can set it. Beside-header panels
@@ -17,33 +33,8 @@ const sidePanelVariants = cva(
   [
     "flex h-full w-(--side-panel-width) min-h-0 shrink-0 flex-col [--side-panel-width:var(--side-panel-width-min)]",
     "bg-transparent! bg-none! data-[placement=beside-header]:bg-side-panel-tint!",
-    // The body's mask would hide its own focus ring, so the panel draws it.
-    "has-[>[data-slot=side-panel-body]:focus-visible]:ring-2 has-[>[data-slot=side-panel-body]:focus-visible]:ring-inset has-[>[data-slot=side-panel-body]:focus-visible]:ring-ring",
+    BODY_FOCUS_RING,
   ].join(" "),
-);
-
-// The body holds the padding and, when the surface owns scrolling, is the
-// scroll container with the fade mask. It is separate from the panel so the
-// mask fades the content, never the panel's tint. It is the inner area: an
-// inline-size container, and what useSurface() measures.
-const sidePanelBodyVariants = cva(
-  "@container flex min-h-0 flex-1 flex-col outline-none",
-  {
-    variants: {
-      padding: {
-        padded: "p-(--surface-inset)",
-        flush: "p-0",
-      },
-      scroll: {
-        surface: ["overflow-y-auto", SCROLL_FADE_MASK].join(" "),
-        occupant: "overflow-hidden",
-      },
-    },
-    defaultVariants: {
-      padding: "padded",
-      scroll: "surface",
-    },
-  },
 );
 
 type SidePanelPlacement = "below-header" | "beside-header";
@@ -51,6 +42,12 @@ type SidePanelPlacement = "below-header" | "beside-header";
 interface SidePanelSlotState {
   open: boolean;
   placement: SidePanelPlacement;
+  /**
+   * The panel reports its narrowest outer width here: its widest
+   * occupant's minimum plus its inset, across every tab. The template
+   * sizes the slot to at least that.
+   */
+  onMinWidth?: (px: number) => void;
 }
 
 /**
@@ -80,28 +77,63 @@ interface SidePanelProps extends React.ComponentProps<"aside"> {
   fill?: boolean;
   /** Names the landmark for assistive tech. */
   "aria-label": string;
+  /**
+   * Tabs and stacks: what the panel holds (see @/lib/panel), with every
+   * occupant it names in `occupants`. Each tab's padding and scrolling
+   * follow its occupants' specs, so `padding` and `scroll` are ignored.
+   * Without it, the panel holds `children`, one occupant.
+   */
+  panel?: PanelSpec;
+  /** The occupants `panel` names, by name: each one's spec and content. */
+  occupants?: SidePanelOccupants;
+  /** The level of a stack's headings. Defaults to 2. */
+  headingLevel?: StackHeadingLevel;
+  /**
+   * The tab to show first, by id, as from a link. An unknown id shows the
+   * first tab. The panel owns which tab shows after that.
+   */
+  defaultTab?: string;
+  /** Called with a tab's id when someone switches to it. */
+  onTabChange?: (id: string) => void;
 }
 
 function SidePanel({
+  panel,
+  occupants,
+  headingLevel,
+  defaultTab,
+  onTabChange,
+  ...props
+}: SidePanelProps) {
+  if (panel)
+    return (
+      <TabbedSidePanel
+        panel={panel}
+        occupants={occupants ?? {}}
+        headingLevel={headingLevel ?? 2}
+        {...(defaultTab && { defaultTab })}
+        {...(onTabChange && { onTabChange })}
+        {...props}
+      />
+    );
+  return <SingleSidePanel {...props} />;
+}
+
+type SidePanelFrameProps = Omit<
+  SidePanelProps,
+  "panel" | "occupants" | "headingLevel" | "defaultTab" | "onTabChange"
+>;
+
+/** The <aside> every side panel renders, with its layer attributes. */
+function SidePanelAside({
   side,
-  padding = "padded",
-  scroll = "surface",
+  padding,
+  scroll,
   fill = false,
   className,
   children,
   ...props
-}: SidePanelProps) {
-  const frame = useSurfaceFrame<HTMLDivElement>(
-    sidePanelSurface.provides.orientation,
-  );
-  // While it scrolls, the body takes keyboard focus so it can be scrolled.
-  const bodyRef = useScrollFade<HTMLDivElement>(
-    scroll === "surface",
-    frame.ref,
-    {
-      focusable: true,
-    },
-  );
+}: SidePanelFrameProps & { padding: SurfacePadding; scroll: ScrollOwner }) {
   const slot = React.useContext(SidePanelSlotContext);
   const open = slot?.open ?? true;
   const placement = slot?.placement ?? "below-header";
@@ -121,21 +153,133 @@ function SidePanel({
       )}
       {...props}
     >
+      {/* A panel nested in this one isn't in the template's slot. */}
+      <SidePanelSlotContext.Provider value={null}>
+        {children}
+      </SidePanelSlotContext.Provider>
+    </aside>
+  );
+}
+
+interface TabbedSidePanelProps extends SidePanelFrameProps {
+  panel: PanelSpec;
+  occupants: SidePanelOccupants;
+  headingLevel: StackHeadingLevel;
+  defaultTab?: string;
+  onTabChange?: (id: string) => void;
+}
+
+/**
+ * The panel and occupants to render. Every broken rule throws in
+ * development and tests. In production it logs them all and renders the
+ * valid tabs and occupants only, so a bad config never takes a page down.
+ */
+function checkedPanel(panel: PanelSpec, occupants: SidePanelOccupants) {
+  const specs = Object.values(occupants).map((o) => o.spec);
+  const errors = [
+    ...validateOccupantMap(panel, occupants),
+    ...validatePanel(panel, specs),
+  ];
+  if (errors.length === 0) return { panel, occupants };
+  if (process.env.NODE_ENV !== "production")
+    throw new Error(`SidePanel: ${errors.join(" ")}`);
+  // oxlint-disable-next-line eslint(no-console) -- production has no other channel for a broken panel config
+  console.error(
+    `SidePanel: ${errors.length} broken panel rules; rendering the valid tabs only.`,
+    errors,
+  );
+  return sanitizePanel(panel, occupants);
+}
+
+/**
+ * A panel of tabs and stacks. It checks the panel against its occupants
+ * and their specs (see checkedPanel). It owns which tab is showing.
+ */
+function TabbedSidePanel({
+  panel,
+  occupants,
+  headingLevel,
+  defaultTab,
+  onTabChange,
+  children: _children,
+  ...props
+}: TabbedSidePanelProps) {
+  const [chosen, setChosen] = React.useState<string | null>(defaultTab ?? null);
+  const choose = (id: string) => {
+    setChosen(id);
+    onTabChange?.(id);
+  };
+  const shown = checkedPanel(panel, occupants);
+  const resolved = resolvePanel(
+    shown.panel,
+    Object.values(shown.occupants).map((o) => o.spec),
+  );
+  // One width for every tab, so switching never resizes the panel.
+  const minWidth = panelMinWidth(sidePanelSurface, resolved);
+  const report = React.useContext(SidePanelSlotContext)?.onMinWidth;
+  React.useLayoutEffect(() => report?.(minWidth), [report, minWidth]);
+  const first = resolved.tabs[0]?.id ?? "";
+  const active =
+    chosen !== null && resolved.tabs.some((tab) => tab.id === chosen)
+      ? chosen
+      : first;
+  const activeTab = resolved.tabs.find((tab) => tab.id === active);
+  const layout = activeTab
+    ? tabLayout(activeTab)
+    : { padding: "padded" as const, scroll: "surface" as const };
+  return (
+    <SidePanelAside {...props} padding={layout.padding} scroll={layout.scroll}>
+      {/* With nothing valid left, the panel is empty. */}
+      {resolved.tabs.length > 0 && (
+        <SidePanelTabs
+          panel={resolved}
+          occupants={shown.occupants}
+          headingLevel={headingLevel}
+          active={active}
+          onActiveChange={choose}
+        />
+      )}
+    </SidePanelAside>
+  );
+}
+
+/** A panel that holds one occupant, its children. */
+function SingleSidePanel({
+  padding = "padded",
+  scroll = "surface",
+  children,
+  ...props
+}: SidePanelFrameProps) {
+  const frame = useSurfaceFrame<HTMLDivElement>(
+    sidePanelSurface.provides.orientation,
+  );
+  // While it scrolls, the body takes keyboard focus so it can be scrolled.
+  const bodyRef = useScrollFade<HTMLDivElement>(
+    scroll === "surface",
+    frame.ref,
+    {
+      focusable: true,
+    },
+  );
+  return (
+    <SidePanelAside {...props} padding={padding} scroll={scroll}>
       <div
         ref={bodyRef}
         data-slot="side-panel-body"
         className={sidePanelBodyVariants({ padding, scroll })}
       >
-        <SurfaceProvider value={frame.value}>
-          {/* A panel nested in this one isn't in the template's slot. */}
-          <SidePanelSlotContext.Provider value={null}>
-            {children}
-          </SidePanelSlotContext.Provider>
-        </SurfaceProvider>
+        <SurfaceProvider value={frame.value}>{children}</SurfaceProvider>
       </div>
-    </aside>
+    </SidePanelAside>
   );
 }
 
 export { SidePanel, SidePanelSlotContext };
-export type { SidePanelPlacement, SidePanelProps, SidePanelSlotState };
+export type {
+  SidePanelOccupant,
+  SidePanelOccupants,
+  SidePanelPlacement,
+  SidePanelProps,
+  SidePanelSlotState,
+  StackHeadingLevel,
+};

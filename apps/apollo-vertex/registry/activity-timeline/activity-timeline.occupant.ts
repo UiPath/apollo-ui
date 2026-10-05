@@ -8,6 +8,7 @@ import type { OccupantSpec } from "@/lib/composition";
 export const activityTimelineOccupant = {
   name: "activity-timeline",
   label: "Activity timeline",
+  titleKey: "activity_timeline_title",
   icon: History,
   // The full event list grows downward: vertical surfaces only.
   orientations: ["vertical"],

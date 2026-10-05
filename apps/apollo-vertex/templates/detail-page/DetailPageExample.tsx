@@ -1,13 +1,24 @@
+import { useTranslation } from "react-i18next";
 import { ContentArea } from "@/components/ui/content-area";
 import { PageHeader } from "@/components/ui/page-header";
-import { SidePanel } from "@/components/ui/side-panel";
-import type { ScrollOwner, SurfacePadding } from "@/lib/composition";
+import { SidePanel, type SidePanelOccupants } from "@/components/ui/side-panel";
+import type {
+  OccupantSpec,
+  ScrollOwner,
+  SurfacePadding,
+} from "@/lib/composition";
 import { occupantPadding, scrollOwner } from "@/lib/composition";
 import { contentAreaSurface } from "@/registry/content-area/content-area.surface";
 import { sidePanelSurface } from "@/registry/side-panel/side-panel.surface";
 import { DetailPage } from "./DetailPage";
 import type { DetailPageSlotName } from "./detail-page.template";
 import { placeholderOccupant } from "./placeholder-occupants";
+import { arrangementPanel } from "./preview-panels";
+import type {
+  PanelArrangements,
+  PanelSlotName,
+  PanelTabs,
+} from "./preview-url-state";
 import { SlotPlaceholder } from "./SlotPlaceholder";
 import type { DetailPageState } from "./use-detail-page";
 
@@ -24,6 +35,11 @@ interface DetailPageExampleProps {
   paddings: SlotPaddings;
   contents: SlotContents;
   scrolls: SlotScrolls;
+  /** How each panel arranges its occupants. Defaults to single. */
+  arrangements?: PanelArrangements;
+  /** Each panel's tab to show first. */
+  tabs?: PanelTabs;
+  onTabChange?: (slot: PanelSlotName, id: string) => void;
 }
 
 export function DetailPageExample({
@@ -31,7 +47,45 @@ export function DetailPageExample({
   paddings,
   contents,
   scrolls,
+  arrangements,
+  tabs,
+  onTabChange,
 }: DetailPageExampleProps) {
+  const { t } = useTranslation();
+  // A panel's arrangement, with a placeholder box for each occupant in it.
+  const panelFor = (slot: PanelSlotName, base: OccupantSpec) => {
+    const arranged = arrangementPanel(
+      arrangements?.[slot] ?? "single",
+      base,
+      t,
+    );
+    if (!arranged) return null;
+    const long = contents[slot] === "long";
+    const occupants: SidePanelOccupants = Object.fromEntries(
+      arranged.specs.map((spec) => [
+        spec.name,
+        {
+          spec,
+          node: (
+            <SlotPlaceholder
+              occupant={spec}
+              surface="side-panel"
+              // The fill stand-in is always long enough to scroll itself.
+              long={long || spec.sizing === "fill"}
+            />
+          ),
+        },
+      ]),
+    );
+    return {
+      panel: arranged.panel,
+      occupants,
+      ...(tabs?.[slot] && { defaultTab: tabs[slot] }),
+      ...(onTabChange && {
+        onTabChange: (id: string) => onTabChange(slot, id),
+      }),
+    };
+  };
   const header = placeholderOccupant("Header", paddings.header);
   const startPanel = placeholderOccupant(
     "Start panel",
@@ -59,6 +113,7 @@ export function DetailPageExample({
           aria-label="Start panel"
           padding={occupantPadding(startPanel)}
           scroll={scrollOwner(sidePanelSurface, startPanel)}
+          {...panelFor("start-panel", startPanel)}
         >
           <SlotPlaceholder
             occupant={startPanel}
@@ -85,6 +140,7 @@ export function DetailPageExample({
           aria-label="End panel"
           padding={occupantPadding(endPanel)}
           scroll={scrollOwner(sidePanelSurface, endPanel)}
+          {...panelFor("end-panel", endPanel)}
         >
           <SlotPlaceholder
             occupant={endPanel}

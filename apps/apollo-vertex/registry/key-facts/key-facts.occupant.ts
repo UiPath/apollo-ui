@@ -8,6 +8,7 @@ import type { OccupantSpec } from "@/lib/composition";
 export const keyFactsOccupant = {
   name: "key-facts",
   label: "Key facts",
+  titleKey: "key_facts_title",
   icon: Info,
   orientations: ["vertical", "horizontal"],
   // Above the row item minimum (OCCUPANT_ROW_ITEM_MIN_PX) in a horizontal

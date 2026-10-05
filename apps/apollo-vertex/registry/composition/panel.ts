@@ -1,0 +1,305 @@
+/**
+ * Panels: what a side panel holds, as tabs of occupants. One tab shows no
+ * tab bar; a tab with several occupants stacks them under headings.
+ *
+ *   type OccupantRef = string | { occupant: string; title?: LocaleKey };
+ *   type TabSpec = { id: string; label?: LocaleKey; occupants: OccupantRef[] };
+ *   type PanelSpec = { surface: "side-panel"; tabs: TabSpec[] };
+ *
+ * A slot given one occupant normalizes to a panel of one tab, so every
+ * single-occupant slot keeps working. Validate a panel with
+ * validatePanel(), and check it fits a slot with fits().
+ */
+
+import {
+  type LocaleKey,
+  type OccupantSpec,
+  occupantInset,
+  occupantSizing,
+  type SurfaceSpec,
+} from "./composition";
+
+/** An occupant in a panel: its name, or its name and a title for here. */
+export type OccupantRef = string | { occupant: string; title?: LocaleKey };
+
+/** One tab of a panel: one occupant, or several stacked under headings. */
+export interface TabSpec {
+  /** Unique in its panel; rendered as data-tab and used in links. */
+  id: string;
+  /** Required when the tab holds more than one occupant. */
+  label?: LocaleKey;
+  occupants: readonly OccupantRef[];
+}
+
+/**
+ * What a side panel holds: its tabs. One tab shows no tab bar. Validate it
+ * with validatePanel().
+ */
+export interface PanelSpec {
+  surface: "side-panel";
+  tabs: readonly TabSpec[];
+}
+
+/** The most tabs a panel can have. */
+export const PANEL_MAX_TABS = 5;
+
+const refName = (ref: OccupantRef) =>
+  typeof ref === "string" ? ref : ref.occupant;
+
+/**
+ * A panel from either form a slot can be given: one occupant, the form
+ * every slot took before tabs, or a whole panel. One occupant becomes one
+ * tab, named after it.
+ */
+export function normalizePanel(config: OccupantRef | PanelSpec): PanelSpec {
+  if (typeof config === "object" && "tabs" in config) return config;
+  return {
+    surface: "side-panel",
+    tabs: [{ id: refName(config), occupants: [config] }],
+  };
+}
+
+/** An occupant in a resolved panel: its spec, and the title it shows. */
+export interface ResolvedOccupant {
+  spec: OccupantSpec;
+  /**
+   * The ref's title, else the spec's titleKey. Absent only for a spec that
+   * skipped the types; validatePanel() reports it.
+   */
+  title?: LocaleKey;
+}
+
+export interface ResolvedTab {
+  id: string;
+  /** The tab's label, else its only occupant's title. */
+  label?: LocaleKey;
+  occupants: readonly ResolvedOccupant[];
+}
+
+/** A panel with its occupants' specs looked up, ready to render or check. */
+export interface ResolvedPanel {
+  tabs: readonly ResolvedTab[];
+}
+
+/** An occupant's title: the ref's own, else its spec's titleKey. */
+export function occupantTitle(
+  ref: OccupantRef,
+  spec: OccupantSpec,
+): LocaleKey | undefined {
+  if (typeof ref === "object" && ref.title) return ref.title;
+  return spec.titleKey;
+}
+
+/** A tab's label: its own, else the title of its only occupant. */
+export function tabLabel(
+  tab: Pick<TabSpec, "label">,
+  occupants: readonly ResolvedOccupant[],
+): LocaleKey | undefined {
+  if (tab.label) return tab.label;
+  if (occupants.length !== 1) return;
+  return occupants[0]?.title;
+}
+
+/**
+ * Looks up every occupant in a panel by name. Unknown names are left out
+ * and reported by validatePanel().
+ */
+export function resolvePanel(
+  panel: PanelSpec,
+  specs: readonly OccupantSpec[],
+): ResolvedPanel {
+  return {
+    tabs: panel.tabs.map((tab) => {
+      const occupants = tab.occupants.flatMap((ref) => {
+        const spec = specs.find((s) => s.name === refName(ref));
+        if (!spec) return [];
+        const title = occupantTitle(ref, spec);
+        return [{ spec, ...(title && { title }) }];
+      });
+      const label = tabLabel(tab, occupants);
+      return { id: tab.id, ...(label && { label }), occupants };
+    }),
+  };
+}
+
+/**
+ * Every rule a panel breaks, one plain sentence each. Empty when it's
+ * valid:
+ *
+ * - it has 1 to PANEL_MAX_TABS tabs, with unique ids;
+ * - every tab holds at least one occupant, each a known one;
+ * - an occupant appears at most once in the panel;
+ * - a tab with more than one occupant has a label, and every occupant in
+ *   it has a title for its heading;
+ * - with more than one tab, every tab has a label or a titled occupant;
+ * - a "fill" occupant is alone in its tab.
+ */
+export function validatePanel(
+  panel: PanelSpec,
+  specs: readonly OccupantSpec[],
+): string[] {
+  const errors: string[] = [];
+  const { tabs } = panel;
+  if (tabs.length === 0) errors.push("A panel needs at least one tab.");
+  if (tabs.length > PANEL_MAX_TABS) {
+    errors.push(
+      `A panel has at most ${PANEL_MAX_TABS} tabs; this one has ${tabs.length}.`,
+    );
+  }
+  const ids = new Set<string>();
+  const seen = new Set<string>();
+  const resolved = resolvePanel(panel, specs);
+  tabs.forEach((tab, index) => {
+    if (ids.has(tab.id)) errors.push(`Tab id "${tab.id}" is used twice.`);
+    ids.add(tab.id);
+    if (tab.occupants.length === 0)
+      errors.push(`Tab "${tab.id}" holds no occupant.`);
+    for (const ref of tab.occupants) {
+      const name = refName(ref);
+      if (!specs.some((s) => s.name === name))
+        errors.push(`Tab "${tab.id}" names an unknown occupant, "${name}".`);
+      if (seen.has(name))
+        errors.push(`The ${name} occupant appears more than once.`);
+      seen.add(name);
+    }
+    const { occupants, label } = resolved.tabs[index] ?? { occupants: [] };
+    const stacked = tab.occupants.length > 1;
+    if (stacked && !tab.label) {
+      errors.push(
+        `Tab "${tab.id}" stacks ${tab.occupants.length} occupants, so it needs a label.`,
+      );
+    }
+    if (stacked) {
+      for (const occupant of occupants) {
+        if (!occupant.title)
+          errors.push(
+            `The ${occupant.spec.name} occupant in tab "${tab.id}" needs a title for its heading.`,
+          );
+      }
+    }
+    if (tabs.length > 1 && !label && !stacked) {
+      errors.push(
+        `Tab "${tab.id}" needs a label, or an occupant with a title.`,
+      );
+    }
+    for (const occupant of occupants) {
+      if (stacked && occupantSizing(occupant.spec) === "fill") {
+        errors.push(
+          `The ${occupant.spec.name} occupant fills its tab, so it can't share tab "${tab.id}".`,
+        );
+      }
+    }
+  });
+  return errors;
+}
+
+/**
+ * Every way a panel's occupants map, by name, breaks with the panel, one
+ * plain sentence each. Empty when they match:
+ *
+ * - every occupant the panel names has an entry;
+ * - every entry is named by the panel;
+ * - each entry's key is its spec's name.
+ */
+export function validateOccupantMap(
+  panel: PanelSpec,
+  occupants: Readonly<Record<string, { spec: OccupantSpec }>>,
+): string[] {
+  const errors: string[] = [];
+  const named = new Set(
+    panel.tabs.flatMap((tab) => tab.occupants.map(refName)),
+  );
+  for (const name of named) {
+    if (!(name in occupants))
+      errors.push(`The panel names the ${name} occupant, but it has no entry.`);
+  }
+  for (const [key, { spec }] of Object.entries(occupants)) {
+    if (!named.has(key))
+      errors.push(`The ${key} entry isn't named by any tab in the panel.`);
+    if (spec.name !== key)
+      errors.push(`The ${key} entry holds the ${spec.name} occupant's spec.`);
+  }
+  return errors;
+}
+
+/**
+ * The valid part of a panel and its occupants, for when validation fails
+ * and the panel still has to render. It keeps, in order:
+ *
+ * - entries whose key is their spec's name;
+ * - each occupant's first appearance in a tab that stays, when it has an
+ *   entry;
+ * - in a stack, only titled flow occupants;
+ * - tabs that still hold an occupant, have a unique id, and have a label
+ *   if they stack, or, with several tabs, a label or a titled occupant;
+ * - the first PANEL_MAX_TABS of those tabs, and only the entries they name.
+ *
+ * What it returns passes validatePanel() and validateOccupantMap().
+ */
+export function sanitizePanel<T extends { spec: OccupantSpec }>(
+  panel: PanelSpec,
+  occupants: Readonly<Record<string, T>>,
+): { panel: PanelSpec; occupants: Record<string, T> } {
+  const entries = Object.fromEntries(
+    Object.entries(occupants).filter(([key, { spec }]) => spec.name === key),
+  );
+  const seen = new Set<string>();
+  const ids = new Set<string>();
+  let tabs = panel.tabs.flatMap((tab): TabSpec[] => {
+    if (ids.has(tab.id)) return [];
+    const names = new Set<string>();
+    let refs = tab.occupants.filter((ref) => {
+      const name = refName(ref);
+      if (!entries[name] || seen.has(name) || names.has(name)) return false;
+      names.add(name);
+      return true;
+    });
+    if (refs.length > 1) {
+      refs = refs.filter((ref) => {
+        const spec = entries[refName(ref)]?.spec;
+        if (!spec) return false;
+        return (
+          occupantSizing(spec) === "flow" && Boolean(occupantTitle(ref, spec))
+        );
+      });
+    }
+    if (refs.length === 0) return [];
+    if (refs.length > 1 && !tab.label) return [];
+    // Only a tab that stays claims its id and its occupants.
+    ids.add(tab.id);
+    for (const ref of refs) seen.add(refName(ref));
+    return [{ ...tab, occupants: refs }];
+  });
+  if (tabs.length > 1) {
+    const specs = Object.values(entries).map((entry) => entry.spec);
+    tabs = tabs.filter(
+      (tab) => resolvePanel({ ...panel, tabs: [tab] }, specs).tabs[0]?.label,
+    );
+  }
+  tabs = tabs.slice(0, PANEL_MAX_TABS);
+  const named = new Set(tabs.flatMap((tab) => tab.occupants.map(refName)));
+  return {
+    panel: { ...panel, tabs },
+    occupants: Object.fromEntries(
+      Object.entries(entries).filter(([key]) => named.has(key)),
+    ),
+  };
+}
+
+/**
+ * The narrowest outer width, in px, a panel works at: the widest of its
+ * occupants' minWidth plus their inset, across every tab, and never below
+ * the surface's own minimum. Switching tabs never changes it.
+ */
+export function panelMinWidth(
+  surface: SurfaceSpec,
+  panel: ResolvedPanel,
+): number {
+  let min = surface.width?.min ?? 0;
+  for (const tab of panel.tabs) {
+    for (const { spec } of tab.occupants) {
+      min = Math.max(min, spec.requires.minWidth + occupantInset(spec));
+    }
+  }
+  return min;
+}

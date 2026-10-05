@@ -179,6 +179,33 @@ return (
 
 Open and close panels with `detailPage.setPanelOpen(side, open)`.
 
+A panel slot can hold several occupants, as tabs or stacked in a tab. Give
+its side panel a `panel` and its `occupants` (see
+[tabs and stacks](/surfaces/side-panel#tabs-and-stacks)):
+
+```tsx
+endPanel={
+  <SidePanel
+    side="end"
+    aria-label="Item details"
+    panel={{
+      surface: 'side-panel',
+      tabs: [
+        { id: 'activity', occupants: ['activity-timeline'] },
+        { id: 'people', label: 'item_people', occupants: ['participants', 'key-facts'] },
+      ],
+    }}
+    occupants={occupants}
+  />
+}
+```
+
+A single occupant is a panel of one tab, so a slot given one occupant works
+as before. The template sizes the slot to at least the panel's widest
+occupant, across every tab. In the preview, each panel's Arrangement in the
+Configure card shows it single, as a stack, as tabs (one of them a fill
+occupant), or with enough tabs to overflow.
+
 ## Customizing
 
 - **Padding.** Each occupant chooses `padded` ({PADDED_INSET_PX}px) or

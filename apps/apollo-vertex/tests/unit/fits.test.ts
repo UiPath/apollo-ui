@@ -30,6 +30,7 @@ const occupant = (
 ): OccupantSpec => ({
   name: "x",
   label: "X",
+  titleKey: "detail_page_preview_placeholder",
   requires: { minWidth, scroll, padding },
 });
 const horizontal = (spec: OccupantSpec): OccupantSpec => ({

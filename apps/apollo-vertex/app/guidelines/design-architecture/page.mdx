@@ -94,6 +94,19 @@ An occupant lists the orientations it works in as `orientations`. Most
 occupants are columns of content, so it defaults to `["vertical"]`. fits()
 rejects an occupant in a surface whose orientation it doesn't list.
 
+### Sizing
+
+A side panel can hold several occupants, as tabs or stacked in a tab, so
+each occupant says how it takes up the height, as `sizing`:
+
+- `flow`, the default: as tall as its content. It can share a tab, and the
+  tab scrolls.
+- `fill`: takes the tab's whole height and scrolls itself, like a document
+  viewer. It is alone in its tab.
+
+An occupant's title in a tab or stack heading is its `titleKey`, a locale
+key. See [tabs and stacks](/surfaces/side-panel#tabs-and-stacks).
+
 > Occupants adapt to the shape of the space a surface provides, never to the
 > surface's name. If a smaller version shows different information, it's a
 > separate occupant that shares the same data mapping.

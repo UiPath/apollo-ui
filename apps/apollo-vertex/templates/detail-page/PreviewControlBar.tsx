@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -13,6 +14,11 @@ import type {
   PanelWidth,
 } from "./detail-page.template";
 import { END_PANEL_DEFAULT_PX, enabledPanels } from "./detail-page.template";
+import {
+  ARRANGEMENT_LABELS,
+  ARRANGEMENTS,
+  type Arrangement,
+} from "./preview-panels";
 import type { PreviewSettings, ShellVariant } from "./preview-url-state";
 
 interface Option<T extends string> {
@@ -126,6 +132,9 @@ const PADDING_OPTIONS: Option<SurfacePadding>[] = [
   { value: "flush", label: "Flush" },
 ];
 
+const panelSlot = (side: PanelSide) =>
+  side === "start" ? "start-panel" : "end-panel";
+
 interface PreviewControlBarProps {
   settings: PreviewSettings;
   onChange: (update: (prev: PreviewSettings) => PreviewSettings) => void;
@@ -161,6 +170,7 @@ export function PreviewControlBar({
   onTintStrengthChange,
   onReset,
 }: PreviewControlBarProps) {
+  const { t } = useTranslation();
   const { config, paddings } = settings;
   const enabled = enabledPanels(config.panels);
   const anyBeside =
@@ -237,6 +247,28 @@ export function PreviewControlBar({
         }
       />
       {scrollFields(side === "start" ? "start-panel" : "end-panel", title)}
+      <Field
+        label={t("detail_page_preview_arrangement")}
+        ariaLabel={t("detail_page_preview_arrangement_of", { panel: title })}
+        value={settings.arrangements[panelSlot(side)]}
+        options={ARRANGEMENTS.map(
+          (value): Option<Arrangement> => ({
+            value,
+            label: t(ARRANGEMENT_LABELS[value]),
+          }),
+        )}
+        onChange={(arrangement) =>
+          onChange((prev) => ({
+            ...prev,
+            arrangements: {
+              ...prev.arrangements,
+              [panelSlot(side)]: arrangement,
+            },
+            // A new arrangement opens on its first tab.
+            tabs: { ...prev.tabs, [panelSlot(side)]: "" },
+          }))
+        }
+      />
       {side === "end" && (
         <div className="flex items-center justify-between gap-2">
           <div className="flex flex-col">
