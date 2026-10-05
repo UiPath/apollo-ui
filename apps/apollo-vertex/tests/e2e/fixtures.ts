@@ -104,11 +104,24 @@ export const widths = (page: Page) =>
     };
   });
 
-/** The rounded width a side panel gives its occupant. */
-export const occupantWidth = (page: Page, side: "start" | "end") =>
+/**
+ * The rounded width a side panel gives an occupant: the named one, else
+ * the first one showing. A panel can hold several, and the ones in its
+ * other tabs are hidden.
+ */
+export const occupantWidth = (
+  page: Page,
+  side: "start" | "end",
+  name?: string,
+) =>
   page
-    .locator(`[data-surface=side-panel][data-side=${side}] [data-occupant]`)
-    .evaluate((el) => Math.round(el.getBoundingClientRect().width));
+    .locator(
+      `[data-surface=side-panel][data-side=${side}] [data-occupant${name ? `="${name}"` : ""}]`,
+    )
+    .evaluateAll((els) => {
+      const shown = els.find((el) => el.getClientRects().length > 0);
+      return shown ? Math.round(shown.getBoundingClientRect().width) : 0;
+    });
 
 export const search = (page: Page) => page.evaluate(() => location.search);
 
