@@ -4,7 +4,8 @@ import type { TemplateSpec } from "@/lib/composition";
 /*
  * Test only: a second template, to prove the workbench needs nothing but
  * a template's spec. Two slots side by side, taking different surfaces;
- * the aside can be left out or closed. Registered only in the tests that
+ * the body holds one occupant, the aside a panel, and the aside can be
+ * left out or closed. Registered only in the tests that
  * use it, never in the docs, nav, or shipped registry.
  */
 
@@ -12,7 +13,13 @@ export const twoUpTemplate = {
   name: "two-up",
   slots: [
     { name: "body", required: true, surfaces: ["content-area"] },
-    { name: "aside", required: false, surfaces: ["side-panel"] },
+    // One slot of each capacity: the aside holds tabs and stacks.
+    {
+      name: "aside",
+      required: false,
+      surfaces: ["side-panel"],
+      holds: "panel",
+    },
   ],
   layout: {
     columns: [

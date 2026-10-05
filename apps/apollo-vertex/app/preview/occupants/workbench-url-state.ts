@@ -5,7 +5,6 @@ import {
 } from "@/app/_components/template-hosts";
 import { OCCUPANT_STATES, type OccupantState } from "@/components/ui/occupant";
 import {
-  type FitResult,
   fits,
   fitsSurface,
   type OccupantSpec,
@@ -21,7 +20,14 @@ import { EXAMPLE_ROLES, type ExampleRole } from "@/lib/occupant-entry";
 import { specFor } from "@/lib/occupant-lookup";
 import { OCCUPANT_SPECS, SURFACE_SPECS } from "@/lib/occupants.generated";
 import type { PreviewShellVariant } from "@/templates/shell/PreviewShell";
+import {
+  normalizeContents,
+  type SlotContents,
+  slotFit,
+} from "./workbench-compose";
 import { withFocus } from "./workbench-layout";
+
+export { slotFit } from "./workbench-compose";
 
 /**
  * The whole workbench view as query params: occupant, surface, sample,
@@ -59,6 +65,8 @@ export interface WorkbenchView {
   shell: PreviewShellVariant;
   /** The page's choices for the template's slots. */
   layout: LayoutChoices;
+  /** What each slot holds: the focused occupant, and any added beside it. */
+  contents: SlotContents;
   pageWidth: number;
   zoom: WorkbenchZoom;
 }
@@ -92,7 +100,15 @@ export function normalizeView(view: WorkbenchView): WorkbenchView {
   const inTemplate = view.mode === "template" && host;
   return {
     ...view,
-    ...(inTemplate && { surface: slotSurface(host, view.slot, spec) }),
+    ...(inTemplate && {
+      surface: slotSurface(host, view.slot, spec),
+      contents: normalizeContents(
+        host,
+        view.contents,
+        view.slot,
+        view.occupant,
+      ),
+    }),
     layout: host ? withFocus(host.spec, view.layout, view.slot) : view.layout,
     pageWidth: Math.max(view.pageWidth, pageWidthMin(host, view.shell)),
   };
@@ -210,31 +226,6 @@ function writeLayout(
 export const templateFor = (name: string): TemplateHost | undefined =>
   TEMPLATE_HOSTS[name];
 
-/**
- * fits() for the occupant in a template slot: against each surface the
- * slot accepts, the first that fits, or the first one's reasons.
- */
-export function slotFit(
-  host: TemplateHost,
-  slotName: string,
-  spec: OccupantSpec,
-): FitResult {
-  const slot = host.spec.slots.find((s) => s.name === slotName);
-  if (!slot) return { fits: false, reasons: [`No ${slotName} slot.`] };
-  const results = slot.surfaces.flatMap((name) =>
-    SURFACE_SPECS.filter((s) => s.name === name).map((surface) =>
-      fits(slot, surface, spec),
-    ),
-  );
-  return (
-    results.find((result) => result.fits) ??
-    results[0] ?? {
-      fits: false,
-      reasons: [`The ${slotName} slot takes no surface.`],
-    }
-  );
-}
-
 /** The first slot the occupant fits, or the first slot. */
 export function defaultSlot(
   host: TemplateHost | undefined,
@@ -328,6 +319,7 @@ export function parseWorkbenchView(search: string): WorkbenchView {
     slot,
     shell,
     layout: mode === "template" ? parseLayout(host, params) : {},
+    contents: {},
     pageWidth:
       Number.isInteger(pageWidth) &&
       pageWidth >= pageWidthMin(host, shell) &&
