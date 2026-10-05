@@ -1,0 +1,24 @@
+// Auto-generated from object/component/component-decision-table.svg
+import React from 'react';
+
+export interface ComponentDecisionTableProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
+
+export const ComponentDecisionTable = React.forwardRef<SVGSVGElement, ComponentDecisionTableProps>(
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
+      <path d="M5.30775 20.5C4.80258 20.5 4.375 20.325 4.025 19.975C3.675 19.625 3.5 19.1974 3.5 18.6923V5.30775C3.5 4.80258 3.675 4.375 4.025 4.025C4.375 3.675 4.80258 3.5 5.30775 3.5H18.6923C19.1974 3.5 19.625 3.675 19.975 4.025C20.325 4.375 20.5 4.80258 20.5 5.30775V18.6923C20.5 19.1974 20.325 19.625 19.975 19.975C19.625 20.325 19.1974 20.5 18.6923 20.5H5.30775ZM5.30775 19H18.6923C18.7692 19 18.8398 18.9679 18.9038 18.9038C18.9679 18.8398 19 18.7692 19 18.6923V8.077H5V18.6923C5 18.7692 5.03208 18.8398 5.09625 18.9038C5.16025 18.9679 5.23075 19 5.30775 19Z" fill="currentColor"/>
+<path d="M19 14V15.5H5V14H19Z" fill="currentColor"/>
+<path d="M12.75 20L11.25 20L11.25 14L12.75 14L12.75 20Z" fill="currentColor"/>
+    </svg>
+  )
+);
+
+ComponentDecisionTable.displayName = 'ComponentDecisionTable';
+
+export default ComponentDecisionTable;

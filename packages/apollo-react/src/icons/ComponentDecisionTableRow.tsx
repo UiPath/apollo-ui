@@ -1,0 +1,23 @@
+// Auto-generated from object/component/component-decision-table-row.svg
+import React from 'react';
+
+export interface ComponentDecisionTableRowProps extends Omit<React.SVGProps<SVGSVGElement>, 'width' | 'height'> {
+  /**
+   * Size to apply to both width and height.
+   * @default 24
+   */
+  size?: string | number;
+}
+
+export const ComponentDecisionTableRow = React.forwardRef<SVGSVGElement, ComponentDecisionTableRowProps>(
+  ({ size, ...props }, ref) => (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" ref={ref} {...props} width={size ?? 24} height={size ?? 24}>
+      <path d="M5.30775 20.5C4.80258 20.5 4.375 20.325 4.025 19.975C3.675 19.625 3.5 19.1974 3.5 18.6923V5.30775C3.5 4.80258 3.675 4.375 4.025 4.025C4.375 3.675 4.80258 3.5 5.30775 3.5H18.6923C19.1974 3.5 19.625 3.675 19.975 4.025C20.325 4.375 20.5 4.80258 20.5 5.30775V18.6923C20.5 19.1974 20.325 19.625 19.975 19.975C19.625 20.325 19.1974 20.5 18.6923 20.5H5.30775ZM5.30775 19H18.6923C18.7692 19 18.8398 18.9679 18.9038 18.9038C18.9679 18.8398 19 18.7692 19 18.6923V5.30775C19 5.23075 18.9679 5.16025 18.9038 5.09625C18.8398 5.03208 18.7692 5 18.6923 5H5.30775C5.23075 5 5.16025 5.03208 5.09625 5.09625C5.03208 5.16025 5 5.23075 5 5.30775V18.6923C5 18.7692 5.03208 18.8398 5.09625 18.9038C5.16025 18.9679 5.23075 19 5.30775 19Z" fill="currentColor"/>
+<path d="M18.7368 14H5.26316C4.9047 14 4.60463 13.8084 4.36295 13.4253C4.12098 13.0427 4 12.5676 4 12C4 11.4324 4.12098 10.9573 4.36295 10.5747C4.60463 10.1916 4.9047 10 5.26316 10H18.7368C19.0953 10 19.3954 10.1916 19.6371 10.5747C19.879 10.9573 20 11.4324 20 12C20 12.5676 19.879 13.0427 19.6371 13.4253C19.3954 13.8084 19.0953 14 18.7368 14Z" fill="currentColor"/>
+    </svg>
+  )
+);
+
+ComponentDecisionTableRow.displayName = 'ComponentDecisionTableRow';
+
+export default ComponentDecisionTableRow;

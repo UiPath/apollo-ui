@@ -475,11 +475,15 @@ export { default as ComponentAgent } from './svg/object/component/component-agen
 export { default as ComponentAgenticProcess } from './svg/object/component/component-agentic-process.svg';
 export { default as ComponentAPIWorkflow } from './svg/object/component/component-api-workflow.svg';
 export { default as ComponentApp } from './svg/object/component/component-app.svg';
+export { default as ComponentBatch } from './svg/object/component/component-batch.svg';
 export { default as ComponentBusinessRule } from './svg/object/component/component-business-rule.svg';
 export { default as ComponentCaseManagement } from './svg/object/component/component-case-management.svg';
 export { default as ComponentConnector } from './svg/object/component/component-connector.svg';
+export { default as ComponentDecisionTableRow } from './svg/object/component/component-decision-table-row.svg';
+export { default as ComponentDecisionTable } from './svg/object/component/component-decision-table.svg';
 export { default as ComponentGeneric } from './svg/object/component/component-generic.svg';
 export { default as ComponentIxp } from './svg/object/component/component-ixp.svg';
+export { default as ComponentLiteralExpression } from './svg/object/component/component-literal-expression.svg';
 export { default as ComponentRootProjectSolution } from './svg/object/component/component-root-project-solution.svg';
 export { default as ComponentRpaWorkflow } from './svg/object/component/component-rpa-workflow.svg';
 export { default as ComponentSetAsMainComponent } from './svg/object/component/component-set-as-main-component.svg';

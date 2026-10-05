@@ -54,6 +54,47 @@ describe('getIcon', () => {
     expect(svg?.querySelector('circle')).toBeInTheDocument();
   });
 
+  it.each([
+    ['business-rule', 5],
+    ['decision-table', 3],
+    ['decision-table-row', 2],
+    ['literal-expression', 2],
+    ['batch', 2],
+  ])('returns the business rule %s icon instead of a Lucide fallback', (id, shapeCount) => {
+    const Icon = getIcon(id);
+    const { container } = render(<Icon w={20} h={20} color="rgb(1, 2, 3)" />);
+    const svg = container.querySelector('svg');
+    expect(svg).not.toHaveClass('lucide');
+    expect(svg).toHaveAttribute('width', '20');
+    expect(svg).toHaveAttribute('color', 'rgb(1, 2, 3)');
+    expect(svg?.querySelectorAll('path, rect')).toHaveLength(shapeCount);
+  });
+
+  it.each([
+    // BaseNode renders registry icons without a size; an inline height would beat its --icon-size CSS.
+    ['dimensionless', {}, '24', '24', ''],
+    ['square', { w: 20, h: 20 }, '20', '20', ''],
+    ['non-square', { w: 32, h: 16 }, '32', '32', '16px'],
+    ['width-only', { w: 32 }, '32', '32', '24px'],
+    ['height-only', { h: 16 }, '24', '24', '16px'],
+  ])('keeps a %s request for every business rule icon', (_, size, width, heightAttr, styleHeight) => {
+    for (const id of [
+      'business-rule',
+      'decision-table',
+      'decision-table-row',
+      'literal-expression',
+      'batch',
+    ]) {
+      const Icon = getIcon(id);
+      const { container, unmount } = render(<Icon {...size} />);
+      const svg = container.querySelector('svg');
+      expect(svg).toHaveAttribute('width', width);
+      expect(svg).toHaveAttribute('height', heightAttr);
+      expect(svg?.style.height).toBe(styleHeight);
+      unmount();
+    }
+  });
+
   it('applies the color prop to the file-sparkles-corner stroke', () => {
     const Icon = getIcon('file-sparkles-corner');
     const { container } = render(<Icon w={24} h={24} color="rgb(1, 2, 3)" />);

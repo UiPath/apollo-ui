@@ -305,11 +305,15 @@ export type IconName =
   | 'ComponentAgent'
   | 'ComponentAgenticProcess'
   | 'ComponentApp'
+  | 'ComponentBatch'
   | 'ComponentBusinessRule'
   | 'ComponentCaseManagement'
   | 'ComponentConnector'
+  | 'ComponentDecisionTable'
+  | 'ComponentDecisionTableRow'
   | 'ComponentGeneric'
   | 'ComponentIxp'
+  | 'ComponentLiteralExpression'
   | 'ComponentRootProjectSolution'
   | 'ComponentRpaWorkflow'
   | 'ComponentSetAsMainComponent'
@@ -1637,11 +1641,15 @@ export const iconNames: readonly IconName[] = [
   'ComponentAgent',
   'ComponentAgenticProcess',
   'ComponentApp',
+  'ComponentBatch',
   'ComponentBusinessRule',
   'ComponentCaseManagement',
   'ComponentConnector',
+  'ComponentDecisionTable',
+  'ComponentDecisionTableRow',
   'ComponentGeneric',
   'ComponentIxp',
+  'ComponentLiteralExpression',
   'ComponentRootProjectSolution',
   'ComponentRpaWorkflow',
   'ComponentSetAsMainComponent',
