@@ -10,7 +10,7 @@ export interface BaseNodeData extends Record<string, unknown> {
    * Marks this node as part of a pending suggestion or diff: `add` renders a
    * success border, `update` a warning glow, `delete` an error glow (see
    * `getStatusBorder`). Serializable counterpart of
-   * `BaseNodeOverrideConfig.suggestionType`, which takes precedence when both are set.
+   * `BaseNodeOverrideConfig.suggestionType`, which takes precedence when set (`null` suppresses both).
    */
   suggestionType?: SuggestionType;
   display?: {

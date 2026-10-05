@@ -38,7 +38,8 @@ export interface BaseNodeOverrideConfig {
   adornments?: NodeAdornments;
 
   // Visual State
-  suggestionType?: 'add' | 'update' | 'delete';
+  /** `null` suppresses suggestion styling; `undefined` falls back to `data.suggestionType`. */
+  suggestionType?: 'add' | 'update' | 'delete' | null;
   disabled?: boolean;
   executionStatusOverride?: ElementStatusValues;
 

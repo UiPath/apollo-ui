@@ -82,7 +82,8 @@ export const ResourceNode = memo(
     const isDisabled = data.isDisabled ?? false;
     const isSuggestion = data.isSuggestion ?? false;
     const suggestionId = data.suggestionId;
-    const suggestionType = isSuggestion ? data.suggestionType : undefined;
+    // `null` stops BaseNode falling back to `data.suggestionType` for non-suggestion nodes.
+    const suggestionType = isSuggestion ? data.suggestionType : null;
     const suggestTranslations = suggestionTranslations ?? DefaultSuggestionTranslations;
     const errorAction = data.errorAction ?? undefined;
 

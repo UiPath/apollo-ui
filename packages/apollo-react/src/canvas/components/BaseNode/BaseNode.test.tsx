@@ -212,6 +212,13 @@ describe('BaseNode', () => {
       expect(container.querySelector('.border-error')).not.toBeNull();
       expect(container.querySelector('.border-success')).toBeNull();
     });
+
+    it('a null override suppresses the node data suggestion', () => {
+      mockOverrideConfig.current = { suggestionType: null };
+      const { container } = render(<BaseNode {...defaultProps} data={{ suggestionType: 'add' }} />);
+      expect(container.querySelector('[data-suggestion-type]')).toBeNull();
+      expect(container.querySelector('.border-success')).toBeNull();
+    });
   });
 
   // The handle count sets `--node-h` (the node height), which is also written to

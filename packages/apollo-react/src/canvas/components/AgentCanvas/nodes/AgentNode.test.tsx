@@ -407,3 +407,25 @@ describe('AgentNode - Instructions Footer', () => {
     });
   });
 });
+
+describe('AgentNode - Suggestion styling', () => {
+  it('ignores data.suggestionType when the node is not a suggestion', () => {
+    const { container } = renderWithProviders(
+      <AgentNodeElement
+        {...defaultNodeProps}
+        data={{ ...defaultNodeProps.data, isSuggestion: false, suggestionType: 'add' }}
+      />
+    );
+    expect(container.querySelector('[data-suggestion-type]')).toBeNull();
+  });
+
+  it('renders suggestion styling when the node is a suggestion', () => {
+    const { container } = renderWithProviders(
+      <AgentNodeElement
+        {...defaultNodeProps}
+        data={{ ...defaultNodeProps.data, isSuggestion: true, suggestionType: 'add' }}
+      />
+    );
+    expect(container.querySelector('[data-suggestion-type="add"]')).not.toBeNull();
+  });
+});
