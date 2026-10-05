@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { MAP_REGIONS, SURFACE_HOSTS } from "@/app/_components/surface-hosts";
+import { SURFACE_HOSTS } from "@/app/_components/surface-hosts";
+import { TEMPLATE_HOSTS } from "@/app/_components/template-hosts";
 import { SURFACE_SPECS } from "@/lib/occupants.generated";
 import { surfaceLabel } from "@/lib/surface-labels";
 
@@ -15,10 +16,11 @@ describe.each(SURFACE_SPECS.map((s) => [s.name] as const))("%s", (name) => {
     expect(SURFACE_HOSTS[name]?.inner).toMatch(/^\[data-slot=[a-z-]+\]$/);
   });
 
+  // The surface view's map is the default template: a slot there takes it.
   it("has a place on the page map", () => {
-    const regions = SURFACE_HOSTS[name]?.regions ?? [];
-    expect(regions.length).toBeGreaterThan(0);
-    for (const region of regions) expect(MAP_REGIONS).toContain(region);
+    const [defaultHost] = Object.values(TEMPLATE_HOSTS);
+    const slots = defaultHost?.spec.slots ?? [];
+    expect(slots.some((slot) => slot.surfaces.includes(name))).toBe(true);
   });
 
   it("has a label", () => {

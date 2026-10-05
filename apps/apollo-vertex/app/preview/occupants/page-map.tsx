@@ -1,158 +1,104 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
-import { MAP_REGIONS, type MapRegion } from "@/app/_components/surface-hosts";
+import type { LayoutRegion, ResolvedLayout } from "@/lib/layout";
 import { cn } from "@/lib/utils";
-import {
-  type DetailPagePanels,
-  enabledPanels,
-  type PanelPlacement,
-  type PanelSide,
-} from "@/templates/detail-page/detail-page.template";
 import type { PreviewShellVariant } from "@/templates/shell/PreviewShell";
 
-/** A template's current layout, as the map draws it. */
-interface PageMapLayout {
-  shell: PreviewShellVariant;
-  panels: DetailPagePanels;
-  /** Whether each panel is open after the template's rules. */
-  open: Record<PanelSide, boolean>;
-  placement: Record<PanelSide, PanelPlacement>;
-}
-
 interface PageMapProps {
-  /** The parts to highlight: a surface's regions, or a template slot's. */
-  regions: readonly MapRegion[];
+  /** The template's layout, from resolveLayout(). */
+  layout: ResolvedLayout;
+  /** The slots to highlight: where a surface can go, or the occupant's slot. */
+  highlighted: readonly string[];
   /** What's highlighted, for its accessible name, in lowercase. */
   name: string;
-  /** The template's layout. Without it, the map shows the whole outline. */
-  layout?: PageMapLayout;
+  /** The shell around the page. Without it, the map is the page alone. */
+  shell?: PreviewShellVariant;
 }
 
-/** A grid line pair covering one track, from `from`. */
-const span = (from: number) => `${from} / ${from + 1}`;
-
-type Placed = {
-  region: MapRegion | "shell";
-  column: string;
-  row: string;
-  closed?: boolean;
-};
-
-/**
- * Where each part sits on the map's grid for a layout: the shell beside or
- * above the page, only the panels it has, and beside-header panels running
- * the page's full height.
- */
-function placeParts(layout: PageMapLayout): {
-  columns: string;
-  rows: string;
-  parts: Placed[];
-} {
-  const present = enabledPanels(layout.panels);
-  const sidebar = layout.shell === "sidebar";
-  const columns = [
-    sidebar && "1fr",
-    present.start && "2fr",
-    "4fr",
-    present.end && "2fr",
-  ].filter(Boolean);
-  let column = 1;
-  const shellColumn = sidebar ? column++ : 0;
-  const startColumn = present.start ? column++ : 0;
-  const mainColumn = column++;
-  const endColumn = present.end ? column++ : 0;
-  const firstPageColumn = sidebar ? 2 : 1;
-  const top = sidebar ? 1 : 2;
-  const header = top;
-  const body = top + 1;
-  const beside = (side: PanelSide) =>
-    present[side] && layout.placement[side] === "beside-header";
-  const panel = (side: PanelSide, at: number): Placed => ({
-    region: side === "start" ? "start-panel" : "end-panel",
-    column: span(at),
-    row: beside(side) ? `${header} / ${body + 1}` : span(body),
-    closed: !layout.open[side],
+/** Grid lines covering the used tracks inside a region's first and last. */
+function lines(
+  tracks: ResolvedLayout["columns"],
+  [first, last]: LayoutRegion["columns"],
+  offset: number,
+): string | null {
+  const used = tracks.filter((track) => track.used);
+  const start = tracks.findIndex((track) => track.name === first);
+  const end = tracks.findIndex((track) => track.name === last);
+  const inside = used.filter((track) => {
+    const at = tracks.indexOf(track);
+    return at >= start && at <= end;
   });
-  const parts: Placed[] = [
-    sidebar
-      ? { region: "shell", column: span(shellColumn), row: "1 / -1" }
-      : { region: "shell", column: "1 / -1", row: "1 / 2" },
-    {
-      region: "header",
-      column: `${beside("start") ? startColumn + 1 : firstPageColumn} / ${
-        beside("end") ? endColumn : column
-      }`,
-      row: span(header),
-    },
-    { region: "main", column: span(mainColumn), row: span(body) },
-  ];
-  if (present.start) parts.push(panel("start", startColumn));
-  if (present.end) parts.push(panel("end", endColumn));
-  return {
-    columns: columns.join(" "),
-    rows: sidebar ? "1fr 3fr" : "1fr 1fr 3fr",
-    parts,
-  };
+  const firstUsed = inside[0];
+  const lastUsed = inside.at(-1);
+  if (!firstUsed || !lastUsed) return null;
+  return `${used.indexOf(firstUsed) + 1 + offset} / ${used.indexOf(lastUsed) + 2 + offset}`;
 }
 
+/** The used tracks' sizes, as grid tracks. */
+const sizes = (tracks: ResolvedLayout["columns"]) =>
+  tracks.filter((track) => track.used).map((track) => `${track.size}fr`);
+
 /**
- * A small template outline with the selected surface's or slot's regions
- * highlighted, from its host. With a layout, it follows the template's
- * shell, panels, and placement; closed panels are dashed.
+ * A small outline of a template's layout, from what its spec declares,
+ * with the given slots highlighted. Only the tracks a slot sits in alone
+ * take room; closed slots are dashed. With a shell, it sits beside the
+ * page (sidebar) or above it (minimal).
  */
-export function PageMap({ regions, name, layout }: PageMapProps) {
+export function PageMap({ layout, highlighted, name, shell }: PageMapProps) {
   const { t } = useTranslation();
-  const placed = layout && placeParts(layout);
+  const sidebar = shell === "sidebar";
+  const above = shell === "minimal";
+  const grid: CSSProperties = {
+    gridTemplateColumns: [
+      ...(sidebar ? ["1fr"] : []),
+      ...sizes(layout.columns),
+    ].join(" "),
+    gridTemplateRows: [...(above ? ["1fr"] : []), ...sizes(layout.rows)].join(
+      " ",
+    ),
+  };
   return (
     <div
       role="img"
       aria-label={t("workbench_map", { surface: name })}
       data-slot="workbench-map"
-      data-shell={layout?.shell}
-      style={
-        placed && {
-          gridTemplateColumns: placed.columns,
-          gridTemplateRows: placed.rows,
-        }
-      }
-      className={cn(
-        "grid h-10 w-16 shrink-0 gap-0.5",
-        !placed && "grid-cols-[1fr_2fr_1fr] grid-rows-[1fr_3fr]",
-      )}
+      data-shell={shell}
+      style={grid}
+      className="grid h-10 w-16 shrink-0 gap-0.5"
     >
-      {placed
-        ? placed.parts.map((part) => {
-            const highlighted =
-              part.region !== "shell" && regions.includes(part.region);
-            return (
-              <span
-                key={part.region}
-                data-region={part.region}
-                data-highlighted={highlighted}
-                {...(part.closed && { "data-state": "closed" })}
-                style={{ gridColumn: part.column, gridRow: part.row }}
-                className={cn(
-                  "rounded-sm border border-border",
-                  part.region === "shell" && "bg-muted",
-                  part.closed && "border-dashed",
-                  highlighted && "border-primary bg-primary",
-                )}
-              />
-            );
-          })
-        : MAP_REGIONS.map((region) => (
-            <span
-              key={region}
-              data-region={region}
-              data-highlighted={regions.includes(region)}
-              className={cn(
-                "rounded-sm border border-border",
-                region === "header" && "col-span-3",
-                regions.includes(region) && "border-primary bg-primary",
-              )}
-            />
-          ))}
+      {shell && (
+        <span
+          data-region="shell"
+          style={
+            sidebar
+              ? { gridColumn: "1 / 2", gridRow: "1 / -1" }
+              : { gridColumn: "1 / -1", gridRow: "1 / 2" }
+          }
+          className="rounded-sm border border-border bg-muted"
+        />
+      )}
+      {layout.regions.map((region) => {
+        const column = lines(layout.columns, region.columns, sidebar ? 1 : 0);
+        const row = lines(layout.rows, region.rows, above ? 1 : 0);
+        if (!column || !row) return null;
+        const on = highlighted.includes(region.slot);
+        return (
+          <span
+            key={region.slot}
+            data-region={region.slot}
+            data-highlighted={on}
+            {...(!region.open && { "data-state": "closed" })}
+            style={{ gridColumn: column, gridRow: row }}
+            className={cn(
+              "rounded-sm border border-border",
+              !region.open && "border-dashed",
+              on && "border-primary bg-primary",
+            )}
+          />
+        );
+      })}
     </div>
   );
 }

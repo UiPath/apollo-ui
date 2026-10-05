@@ -1,16 +1,17 @@
 import type { ComponentType } from "react";
 import type { TemplateSpec } from "@/lib/composition";
+import type { LayoutChoices } from "@/lib/layout";
 import {
   DETAIL_PAGE_PANELS,
   type DetailPagePanels,
   detailPageTemplate,
+  enabledPanels,
   MAIN_MIN_OUTER_PX,
   type PanelClosedBy,
   type PanelPlacement,
   type PanelSide,
 } from "@/templates/detail-page/detail-page.template";
 import { DETAIL_PAGE_SLOT_LABELS } from "./detail-page-slots";
-import { MAP_REGIONS, type MapRegion } from "./surface-hosts";
 import {
   DetailPageFrame,
   type TemplateFrameProps,
@@ -52,11 +53,6 @@ export interface TemplateHost {
   /** Each slot's name, in sentence case. */
   slotLabels: Record<string, string>;
   /**
-   * Where a slot sits on the workbench's page map, when that isn't the
-   * region with the slot's own name.
-   */
-  regions?: Record<string, readonly MapRegion[]>;
-  /**
    * The slot each side panel is: a preview can remove it, open or close
    * it, and place it below or beside the header.
    */
@@ -87,13 +83,29 @@ export const TEMPLATE_HOSTS: Record<string, TemplateHost> = {
   },
 };
 
-/** Where a template's slot sits on the page map. */
-export function slotRegions(
+const SIDES: readonly PanelSide[] = ["start", "end"];
+
+/**
+ * A preview's layout as the template's layout choices (see resolveLayout),
+ * by its panels' slots: whether each is there, open, and where it's placed.
+ * Pass `open` for each panel's state after the template's own rules.
+ */
+export function layoutChoices(
   host: TemplateHost,
-  slot: string,
-): readonly MapRegion[] {
-  const named = MAP_REGIONS.find((region) => region === slot);
-  return host.regions?.[slot] ?? (named ? [named] : []);
+  layout: TemplateLayout,
+  open?: Partial<Record<PanelSide, boolean>>,
+): LayoutChoices {
+  const present = enabledPanels(layout.panels);
+  return Object.fromEntries(
+    SIDES.map((side) => [
+      host.panels[side],
+      {
+        present: present[side],
+        open: open?.[side] ?? layout[side].open,
+        placement: layout[side].placement,
+      },
+    ]),
+  );
 }
 
 /** The side a slot's panel is on, or null when the slot isn't a side panel. */

@@ -2,14 +2,15 @@
 
 import { useTranslation } from "react-i18next";
 import {
+  layoutChoices,
   type PanelStatus,
-  slotRegions,
   type TemplateHost,
   type TemplateLayout,
 } from "@/app/_components/template-hosts";
 import { Separator } from "@/components/ui/separator";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { OccupantSpec } from "@/lib/composition";
+import { resolveLayout } from "@/lib/layout";
 import type { PanelSide } from "@/templates/detail-page/detail-page.template";
 import type { PreviewShellVariant } from "@/templates/shell/PreviewShell";
 import { Dock, DockSlider, FitToggleGroup } from "./dock-parts";
@@ -71,20 +72,16 @@ export function TemplateDock({
   return (
     <Dock>
       <PageMap
-        regions={slotRegions(host, slot)}
-        name={slotName.toLowerCase()}
-        layout={{
-          shell,
-          panels: layout.panels,
-          open: {
+        layout={resolveLayout(
+          host.spec,
+          layoutChoices(host, layout, {
             start: panelStatus?.start.open ?? layout.start.open,
             end: panelStatus?.end.open ?? layout.end.open,
-          },
-          placement: {
-            start: layout.start.placement,
-            end: layout.end.placement,
-          },
-        }}
+          }),
+        )}
+        highlighted={[slot]}
+        name={slotName.toLowerCase()}
+        shell={shell}
       />
       <Separator orientation="vertical" className="h-8" />
       <FitToggleGroup
