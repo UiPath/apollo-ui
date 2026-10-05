@@ -1,3 +1,13 @@
+## [@uipath/apollo-react-v6.74.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.73.0...@uipath/apollo-react@6.74.0) (2026-10-05)
+
+### Features
+
+* **apollo-react:** add a success variant to the StageNode Ends case badge ([92e90d2](https://github.com/UiPath/apollo-ui/commit/92e90d25dd60137210020ba58d83d7d17ec2e620))
+
+### Bug Fixes
+
+* **apollo-react:** keep StageNode header chips right-aligned without SLA text ([3669aae](https://github.com/UiPath/apollo-ui/commit/3669aae98054aba259b59a17bccb51dcf3703f43))
+
 ## [@uipath/apollo-react-v6.73.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.72.0...@uipath/apollo-react@6.73.0) (2026-10-05)
 
 ### Features
