@@ -65,7 +65,9 @@ function Choice<Value extends string>({
             key={option.value}
             value={option.value}
             disabled={option.disabled}
-            className="flex-1"
+            // The toggle's own selected fill is too faint to read here,
+            // and a locked choice dims it further: the chosen one is filled.
+            className="flex-1 data-[state=on]:border-primary data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
           >
             {option.label}
           </ToggleGroupItem>
