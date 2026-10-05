@@ -114,6 +114,15 @@ function isValid(
   });
 }
 
+/** The panel with each tab's id its first occupant, as links give them. */
+const withTabIds = (panel: PanelSpec): PanelSpec => ({
+  ...panel,
+  tabs: panel.tabs.map((tab) => {
+    const [first] = tab.occupants;
+    return first ? { ...tab, id: refName(first) } : tab;
+  }),
+});
+
 /** The focused occupant placed first in a panel, as its own tab. */
 const withFocusFirst = (panel: PanelSpec, focus: string): PanelSpec => ({
   ...panel,
@@ -125,7 +134,7 @@ const withFocusFirst = (panel: PanelSpec, focus: string): PanelSpec => ({
  * slots, each valid by its rules or dropped, and the focused occupant in
  * its slot (first, when the slot holds a panel) and in no other. A slot
  * that can't take the focused occupant beside what it holds falls back to
- * the focused occupant alone.
+ * the focused occupant alone. Each tab's id is its first occupant.
  */
 export function normalizeContents(
   host: TemplateHost,
@@ -140,7 +149,8 @@ export function normalizeContents(
     const panel = contents[slot];
     if (!panel) continue;
     // The focused occupant goes in its own slot only.
-    const elsewhere = slot === focusSlot ? panel : removeOccupant(panel, focus);
+    const ided = withTabIds(panel);
+    const elsewhere = slot === focusSlot ? ided : removeOccupant(ided, focus);
     if (isValid(host, slot, elsewhere, known)) kept[slot] = elsewhere;
   }
   const alone = normalizePanel(focus);

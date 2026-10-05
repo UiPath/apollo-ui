@@ -24,15 +24,11 @@ import {
   removeLock,
   type SlotContents,
 } from "./workbench-compose";
+import { TAB_LABELS } from "./workbench-contents-url";
 import { reasonCopy } from "./workbench-layout";
 
 /** Labels a stack's tab can take, in the order the composer offers them. */
-const TAB_LABELS: readonly LocaleKey[] = [
-  "workbench_tab_label_overview",
-  "workbench_tab_label_details",
-  "workbench_tab_label_activity",
-  "workbench_tab_label_people",
-];
+const LABEL_KEYS: readonly LocaleKey[] = TAB_LABELS.map((l) => l.key);
 
 const refName = (ref: OccupantRef) =>
   typeof ref === "string" ? ref : ref.occupant;
@@ -84,7 +80,7 @@ function SlotSection({
   const [adding, setAdding] = useState<string | null>(null);
   const [stackInto, setStackInto] = useState<number | null>(null);
   const [label, setLabel] = useState<LocaleKey>(
-    TAB_LABELS[0] ?? "workbench_tab_label_overview",
+    LABEL_KEYS[0] ?? "workbench_tab_label_overview",
   );
   const spec = host.spec.slots.find((s) => s.name === slot);
   const slotName = host.slotLabels[slot] ?? slot;
@@ -274,14 +270,14 @@ function SlotSection({
             className="w-full flex-wrap"
             value={label}
             onValueChange={(next) => {
-              const match = TAB_LABELS.find((key) => key === next);
+              const match = LABEL_KEYS.find((key) => key === next);
               if (match) setLabel(match);
             }}
             aria-label={t("workbench_compose_tab_label", {
               label: tabName(panel.tabs[stackInto]),
             })}
           >
-            {TAB_LABELS.map((key) => (
+            {LABEL_KEYS.map((key) => (
               <ToggleGroupItem
                 key={key}
                 value={key}

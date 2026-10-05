@@ -25,6 +25,7 @@ import {
   type SlotContents,
   slotFit,
 } from "./workbench-compose";
+import { parseContents, writeContents } from "./workbench-contents-url";
 import { withFocus } from "./workbench-layout";
 
 export { slotFit } from "./workbench-compose";
@@ -34,7 +35,8 @@ export { slotFit } from "./workbench-compose";
  * state, theme, width, list=closed, details=open, view=template, template,
  * slot, page, zoom=100, shell=minimal, and the template's layout, per
  * slot it declares choices for: <slot>-present=false, <slot>-state=closed,
- * and <slot>-placement. A template can map its older params onto these
+ * and <slot>-placement, and what each slot holds, <slot>-contents (see
+ * workbench-contents-url). A template can map its older params onto these
  * (TemplateHost.legacyParams). Only non-default values are written;
  * unknown slots and invalid values fall back to the defaults.
  *
@@ -319,7 +321,7 @@ export function parseWorkbenchView(search: string): WorkbenchView {
     slot,
     shell,
     layout: mode === "template" ? parseLayout(host, params) : {},
-    contents: {},
+    contents: mode === "template" ? parseContents(host, params) : {},
     pageWidth:
       Number.isInteger(pageWidth) &&
       pageWidth >= pageWidthMin(host, shell) &&
@@ -343,6 +345,12 @@ function writeTemplateParams(
     params.set("slot", view.slot);
   if (view.shell !== "sidebar") params.set("shell", view.shell);
   writeLayout(templateFor(view.template), view.layout, params);
+  writeContents(
+    templateFor(view.template),
+    view.contents,
+    view.occupant,
+    params,
+  );
   if (view.pageWidth !== DEFAULT_PAGE_WIDTH)
     params.set("page", String(view.pageWidth));
   if (view.zoom !== "fit") params.set("zoom", "100");
@@ -363,6 +371,8 @@ export function serializeWorkbenchView(view: WorkbenchView): string {
   if (!view.listOpen) params.set("list", "closed");
   if (view.detailsOpen) params.set("details", "open");
   if (inTemplate) writeTemplateParams(view, spec, params);
-  const query = params.toString();
+  // A colon and a tilde need no escaping in a query, and links with
+  // contents read better without.
+  const query = params.toString().replaceAll("%3A", ":").replaceAll("%7E", "~");
   return query ? `?${query}` : "";
 }
