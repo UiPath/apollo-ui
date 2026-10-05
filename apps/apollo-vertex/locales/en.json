@@ -178,6 +178,7 @@
   "key_facts_label": "Key facts for {{subject}}",
   "key_facts_not_set": "Not set",
   "key_facts_subject": "key facts",
+  "key_facts_title": "Key facts",
   "occupant_agent_updating": "Agent is updating {{subject}}",
   "occupant_count": "{{count}} total",
   "occupant_empty_title": "No {{subject}} yet",
