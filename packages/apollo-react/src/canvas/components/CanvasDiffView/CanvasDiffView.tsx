@@ -262,24 +262,33 @@ export function CanvasDiffView<Node, Edge>({
         )
       : _({ id: 'canvas.diff_view.no_changes', message: 'No changes' });
 
+  // Side projections depend on the model only, so panning and selecting keep their identities.
+  const projections = useMemo(() => {
+    const project = (side: DiffSide) => ({
+      highlight: highlightForSide(model.highlight, side),
+      changePhases: model.changePhases?.map((phase) => ({
+        ...phase,
+        highlight: highlightForSide(phase.highlight, side),
+      })),
+    });
+    return { before: project('before'), after: project('after') };
+  }, [model]);
+
   const buildContext = useCallback(
     (side: DiffSide): DiffPaneContext<Node, Edge> => ({
       side,
       nodes: model[side].nodes,
       edges: model[side].edges,
       data: model[side].data,
-      highlight: highlightForSide(model.highlight, side),
-      changePhases: model.changePhases?.map((phase) => ({
-        ...phase,
-        highlight: highlightForSide(phase.highlight, side),
-      })),
+      highlight: projections[side].highlight,
+      changePhases: projections[side].changePhases,
       selectedNodeId,
       onSelectNode,
       viewport,
       onViewportChange,
       fitViewOnMount: viewport === undefined && (side === 'after' || !syncViewport),
     }),
-    [model, selectedNodeId, onSelectNode, viewport, onViewportChange, syncViewport]
+    [model, projections, selectedNodeId, onSelectNode, viewport, onViewportChange, syncViewport]
   );
   const beforeContext = useMemo(() => buildContext('before'), [buildContext]);
   const afterContext = useMemo(() => buildContext('after'), [buildContext]);

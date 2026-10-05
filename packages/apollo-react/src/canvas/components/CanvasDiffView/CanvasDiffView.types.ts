@@ -114,7 +114,7 @@ export interface CanvasDiffViewProps<Node, Edge> {
   headerActions?: ReactNode;
   title?: string;
   /** Heading level of the title, to fit the host page outline. @default 2 */
-  headingLevel?: 2 | 3 | 4 | 5 | 6;
+  headingLevel?: 1 | 2 | 3 | 4 | 5 | 6;
   /** Shows a Keep button. Omit both `onKeep` and `onRevert` for a read-only preview. */
   onKeep?(): void;
   /** Shows a Revert button. */

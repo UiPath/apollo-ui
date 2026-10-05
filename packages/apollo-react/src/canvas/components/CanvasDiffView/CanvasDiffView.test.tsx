@@ -123,6 +123,26 @@ describe('CanvasDiffView', () => {
     expect(screen.getByTestId('viewport-before')).toHaveTextContent('10,20,1.5');
   });
 
+  it("keeps each side's highlight maps across pans and selection, so panes do no per-frame remapping", async () => {
+    const user = userEvent.setup();
+    const seen: DiffPaneContext<TestNode, TestEdge>['highlight'][] = [];
+    render(
+      <CanvasDiffView
+        model={model}
+        renderPane={(ctx) => {
+          if (ctx.side === 'after') seen.push(ctx.highlight);
+          return <TestPane {...ctx} />;
+        }}
+      />
+    );
+
+    await user.click(screen.getByRole('button', { name: 'pan-before' }));
+    await user.click(screen.getByRole('button', { name: 'select-before' }));
+
+    expect(seen.length).toBeGreaterThan(1);
+    expect(new Set(seen).size).toBe(1);
+  });
+
   it('keeps viewports independent when syncViewport is false', async () => {
     const user = userEvent.setup();
     render(<CanvasDiffView model={model} renderPane={renderPane} syncViewport={false} />);

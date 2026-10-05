@@ -70,10 +70,18 @@ function useLocalLayoutNodes<N extends Node>(nodes: N[]) {
   return [layoutNodes, onNodesChange] as const;
 }
 
-/** `BaseCanvas` props a host may add. The pane owns the rest (nodes, mode, selection, moves). */
+/** `BaseCanvas` props a host may add. The pane owns the rest (nodes, mode, selection, moves, initial viewport). */
 export type ApolloCanvasDiffPaneCanvasProps<N extends Node, E extends Edge> = Omit<
   BaseCanvasProps<N, E>,
-  'nodes' | 'edges' | 'mode' | 'nodeTypes' | 'edgeTypes' | 'children' | 'onNodesChange'
+  | 'nodes'
+  | 'edges'
+  | 'mode'
+  | 'nodeTypes'
+  | 'edgeTypes'
+  | 'children'
+  | 'onNodesChange'
+  | 'fitView'
+  | 'defaultViewport'
 >;
 
 /** The pane context (spread `ctx` in) plus canvas setup. Phases are not drawn separately. */
@@ -161,9 +169,9 @@ function DiffPaneCanvas<N extends Node, E extends Edge>({
 
   return (
     <BaseCanvas<N, E>
+      {...canvasProps}
       fitView={initial.fitView}
       defaultViewport={initial.viewport}
-      {...canvasProps}
       mode="view"
       nodes={renderedNodes}
       edges={marked.edges}
