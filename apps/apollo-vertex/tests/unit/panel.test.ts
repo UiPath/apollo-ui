@@ -15,6 +15,7 @@ import {
   panelMinWidth,
   resolvePanel,
   type TabSpec,
+  validateOccupantMap,
   validatePanel,
 } from "@/lib/panel";
 import { sidePanelSurface } from "@/registry/side-panel/side-panel.surface";
@@ -231,5 +232,47 @@ describe("panelMinWidth", () => {
     expect(panelMinWidth(sidePanelSurface, resolved)).toBe(
       Math.max(sidePanelSurface.width.min, 200 + 2 * PADDED_INSET_PX),
     );
+  });
+});
+
+describe("validateOccupantMap", () => {
+  const entries = (...names: string[]) =>
+    Object.fromEntries(names.map((name) => [name, { spec: spec(name) }]));
+  const twoTabs = panel(tab("a", ["alpha"]), tab("b", ["beta", "gamma"], "b"));
+
+  it("accepts an entry for each occupant the panel names, and no more", () => {
+    expect(
+      validateOccupantMap(twoTabs, entries("alpha", "beta", "gamma")),
+    ).toEqual([]);
+  });
+
+  it("needs an entry for every occupant the panel names", () => {
+    expect(validateOccupantMap(twoTabs, entries("alpha", "beta"))).toEqual([
+      "The panel names the gamma occupant, but it has no entry.",
+    ]);
+  });
+
+  it("finds a named occupant written as a ref with a title", () => {
+    const titled = panel(tab("a", [{ occupant: "alpha", title: "a_title" }]));
+    expect(validateOccupantMap(titled, entries("alpha"))).toEqual([]);
+    expect(validateOccupantMap(titled, entries())).toEqual([
+      "The panel names the alpha occupant, but it has no entry.",
+    ]);
+  });
+
+  it("refuses an entry no tab names", () => {
+    expect(
+      validateOccupantMap(twoTabs, entries("alpha", "beta", "gamma", "wide")),
+    ).toEqual(["The wide entry isn't named by any tab in the panel."]);
+  });
+
+  it("needs each entry's key to be its spec's name", () => {
+    const swapped = {
+      ...entries("alpha", "beta"),
+      gamma: { spec: spec("wide") },
+    };
+    expect(validateOccupantMap(twoTabs, swapped)).toEqual([
+      "The gamma entry holds the wide occupant's spec.",
+    ]);
   });
 });

@@ -9,6 +9,7 @@ import {
   type PanelSpec,
   panelMinWidth,
   resolvePanel,
+  validateOccupantMap,
   validatePanel,
 } from "@/lib/panel";
 import { SurfaceProvider, useSurfaceFrame } from "@/lib/surface-context";
@@ -168,8 +169,9 @@ interface TabbedSidePanelProps extends SidePanelFrameProps {
 }
 
 /**
- * A panel of tabs and stacks. It checks the panel against its occupants'
- * specs, and throws on any broken rule. It owns which tab is showing.
+ * A panel of tabs and stacks. It checks the panel against its occupants
+ * and their specs, and throws on any broken rule. It owns which tab is
+ * showing.
  */
 function TabbedSidePanel({
   panel,
@@ -186,7 +188,10 @@ function TabbedSidePanel({
     onTabChange?.(id);
   };
   const specs = Object.values(occupants).map((o) => o.spec);
-  const errors = validatePanel(panel, specs);
+  const errors = [
+    ...validateOccupantMap(panel, occupants),
+    ...validatePanel(panel, specs),
+  ];
   if (errors.length > 0) throw new Error(`SidePanel: ${errors.join(" ")}`);
   const resolved = resolvePanel(panel, specs);
   // One width for every tab, so switching never resizes the panel.

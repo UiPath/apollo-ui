@@ -194,6 +194,35 @@ export function validatePanel(
 }
 
 /**
+ * Every way a panel's occupants map, by name, breaks with the panel, one
+ * plain sentence each. Empty when they match:
+ *
+ * - every occupant the panel names has an entry;
+ * - every entry is named by the panel;
+ * - each entry's key is its spec's name.
+ */
+export function validateOccupantMap(
+  panel: PanelSpec,
+  occupants: Readonly<Record<string, { spec: OccupantSpec }>>,
+): string[] {
+  const errors: string[] = [];
+  const named = new Set(
+    panel.tabs.flatMap((tab) => tab.occupants.map(refName)),
+  );
+  for (const name of named) {
+    if (!(name in occupants))
+      errors.push(`The panel names the ${name} occupant, but it has no entry.`);
+  }
+  for (const [key, { spec }] of Object.entries(occupants)) {
+    if (!named.has(key))
+      errors.push(`The ${key} entry isn't named by any tab in the panel.`);
+    if (spec.name !== key)
+      errors.push(`The ${key} entry holds the ${spec.name} occupant's spec.`);
+  }
+  return errors;
+}
+
+/**
  * The narrowest outer width, in px, a panel works at: the widest of its
  * occupants' minWidth plus their inset, across every tab, and never below
  * the surface's own minimum. Switching tabs never changes it.
