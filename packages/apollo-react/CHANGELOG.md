@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.72.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.71.0...@uipath/apollo-react@6.72.0) (2026-10-05)
+
+### Features
+
+* **apollo-ui-icons:** redraw the Business Rule icon and add its decision icons [MST-15893] ([ba251f9](https://github.com/UiPath/apollo-ui/commit/ba251f987e960bfc5579c27c33b7b446fcf68a14))
+
 ## [@uipath/apollo-react-v6.71.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.70.1...@uipath/apollo-react@6.71.0) (2026-10-05)
 
 ### Features
