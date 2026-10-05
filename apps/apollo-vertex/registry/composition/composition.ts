@@ -17,6 +17,7 @@
  */
 
 import type { LucideIcon } from "lucide-react";
+import type { ParseKeys } from "react-i18next";
 import { LAYOUT_TOKENS } from "./layout-tokens";
 
 export {
@@ -121,6 +122,21 @@ export interface OccupantRequirements {
   padding?: SurfacePadding;
 }
 
+/**
+ * A locale key: a key in locales/en.json, translated where it's shown, and
+ * checked against en.json by the compiler. Titles and labels in specs are
+ * always keys, never English.
+ */
+export type LocaleKey = ParseKeys;
+
+/**
+ * How an occupant takes up a panel's height. "flow" (the default) is as
+ * tall as its content, so it can share a tab with others and the tab
+ * scrolls. "fill" takes the whole tab, like a document viewer: it's alone
+ * in its tab and handles its own scrolling.
+ */
+export type OccupantSizing = "flow" | "fill";
+
 export interface OccupantSpec<TName extends string = string> {
   /** Rendered as data-occupant. Lowercase, hyphenated. */
   name: TName;
@@ -135,6 +151,13 @@ export interface OccupantSpec<TName extends string = string> {
   surfaces?: readonly string[];
   /** The surface orientations the occupant works in. Defaults to ["vertical"]. */
   orientations?: readonly SurfaceOrientation[];
+  /**
+   * Its display title, as a locale key: a panel's stack heading or tab
+   * label when the panel gives none. Never shown as the slug.
+   */
+  titleKey?: LocaleKey;
+  /** Defaults to "flow". */
+  sizing?: OccupantSizing;
   requires: OccupantRequirements;
 }
 
@@ -224,6 +247,17 @@ export function slotInnerWidth(
   return padding === "flush" && min > 0 ? min + 2 * PADDED_INSET_PX : min;
 }
 
+/**
+ * What fits() needs of a panel: each tab's id and its occupants' specs. A
+ * ResolvedPanel (see panel.ts) is one.
+ */
+export interface PanelOccupants {
+  tabs: readonly {
+    id: string;
+    occupants: readonly { spec: OccupantSpec }[];
+  }[];
+}
+
 /** The result of fits(): whether it fits, and every requirement that failed. */
 export interface FitResult {
   fits: boolean;
@@ -281,8 +315,9 @@ export function fitsSurface(
 export function fits(
   slot: SlotSpec,
   surface: SurfaceSpec,
-  occupant: OccupantSpec,
+  occupant: OccupantSpec | PanelOccupants,
 ): FitResult {
+  if ("tabs" in occupant) return fitsPanel(slot, surface, occupant);
   const reasons: string[] = [];
   const { minWidth } = occupant.requires;
   const padding = occupantPadding(occupant);
@@ -298,4 +333,25 @@ export function fits(
   }
   reasons.push(...fitsSurface(surface, occupant).reasons);
   return { fits: reasons.length === 0, reasons };
+}
+
+/** fits() for a panel: every occupant in every tab, reasons by occupant. */
+function fitsPanel(
+  slot: SlotSpec,
+  surface: SurfaceSpec,
+  panel: PanelOccupants,
+): FitResult {
+  const reasons = panel.tabs.flatMap((tab) =>
+    tab.occupants.flatMap(({ spec }) =>
+      fits(slot, surface, spec).reasons.map(
+        (reason) => `${spec.name} (tab "${tab.id}"): ${reason}`,
+      ),
+    ),
+  );
+  return { fits: reasons.length === 0, reasons };
+}
+
+/** An occupant's sizing, with the default applied. */
+export function occupantSizing(occupant: OccupantSpec): OccupantSizing {
+  return occupant.sizing ?? "flow";
 }

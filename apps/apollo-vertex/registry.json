@@ -2259,7 +2259,7 @@
       "type": "registry:lib",
       "title": "Composition",
       "description": "Specs for the template, slot, surface, and occupant layout layers, helpers to check that a surface fits a slot and an occupant fits a surface, and useSurface() for occupants to read the shape of their space.",
-      "dependencies": ["lucide-react"],
+      "dependencies": ["lucide-react", "react-i18next"],
       "files": [
         {
           "path": "registry/composition/composition.ts",
@@ -2275,6 +2275,11 @@
           "path": "registry/composition/surface-context.tsx",
           "type": "registry:lib",
           "target": "lib/surface-context.tsx"
+        },
+        {
+          "path": "registry/composition/panel.ts",
+          "type": "registry:lib",
+          "target": "lib/panel.ts"
         }
       ]
     },
