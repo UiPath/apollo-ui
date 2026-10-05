@@ -209,6 +209,11 @@ export interface TemplateLayoutSpec {
   rows: readonly LayoutTrack[];
   areas: Readonly<Record<string, LayoutArea>>;
   options?: Readonly<Record<string, SlotLayoutOptions>>;
+  /** Its own words as locale keys, by placement name and reason code. */
+  copy?: {
+    placements?: Readonly<Record<string, LocaleKey>>;
+    reasons?: Readonly<Record<string, LocaleKey>>;
+  };
 }
 
 export interface TemplateSpec<TName extends string = string> {

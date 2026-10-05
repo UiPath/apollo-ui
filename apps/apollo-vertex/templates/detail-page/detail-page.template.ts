@@ -78,6 +78,14 @@ export const DETAIL_PAGE_LAYOUT = {
     "start-panel": panelOptions("start"),
     "end-panel": panelOptions("end"),
   },
+  copy: {
+    placements: {
+      "below-header": "detail_page_placement_below_header",
+      "beside-header": "detail_page_placement_beside_header",
+    },
+    // "rule": the main-width rule closed a panel.
+    reasons: { rule: "detail_page_closed_by_main_width" },
+  },
 } as const satisfies TemplateLayoutSpec;
 
 export const detailPageTemplate = {
