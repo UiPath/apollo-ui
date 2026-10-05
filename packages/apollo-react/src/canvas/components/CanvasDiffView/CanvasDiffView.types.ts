@@ -108,7 +108,10 @@ export interface CanvasDiffViewProps<Node, Edge> {
   renderPane(ctx: DiffPaneContext<Node, Edge>): ReactNode;
   /** Optional side content (e.g. a properties panel) rendered beside its pane. */
   panelSlot?(ctx: DiffPaneContext<Node, Edge>): ReactNode;
-  /** Alternate code view. The visual/code toggle appears only when given. */
+  /**
+   * Alternate code view. The visual/code toggle appears only when given. Pass
+   * `<CodeDiffView before={…} after={…} />` for a side-by-side line diff of the serialized graphs.
+   */
   codeView?: ReactNode;
   /** Extra controls rendered at the end of the header. */
   headerActions?: ReactNode;

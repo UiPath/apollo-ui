@@ -10,16 +10,24 @@ import type {
 import {
   applyNodeChanges,
   ReactFlowProvider,
+  useNodesInitialized,
   useReactFlow,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { NodeRegistryProvider } from '../../core';
 import type { CategoryManifest, NodeManifest } from '../../schema/node-definition';
-import { BaseCanvas, type BaseCanvasProps } from '../BaseCanvas';
+import { BASE_CANVAS_DEFAULTS, BaseCanvas, type BaseCanvasProps } from '../BaseCanvas';
 import { applyDiffHighlight } from './applyDiffHighlight';
 import type { DiffPaneContext, DiffViewport } from './CanvasDiffView.types';
 
 const VIEWPORT_EPSILON = 1e-3;
+
+/** Fits a small graph at 100% instead of blowing it up to fill the pane. */
+const DIFF_PANE_FIT_VIEW_OPTIONS = {
+  ...BASE_CANVAS_DEFAULTS.fitViewOptions,
+  padding: 0.2,
+  maxZoom: BASE_CANVAS_DEFAULTS.zoom.default,
+};
 
 function viewportsClose(a: DiffViewport | undefined, b: DiffViewport | undefined): boolean {
   return (
@@ -111,7 +119,7 @@ function DiffPaneCanvas<N extends Node, E extends Edge>({
   canvasProps,
   children,
 }: ApolloCanvasDiffPaneProps<N, E>) {
-  const { getViewport, setViewport } = useReactFlow();
+  const { fitView, getViewport, setViewport } = useReactFlow();
 
   const marked = useMemo(
     () => applyDiffHighlight(nodes, edges, highlight),
@@ -148,7 +156,22 @@ function DiffPaneCanvas<N extends Node, E extends Edge>({
 
   // Viewport sync: start from the shared viewport (or fit, when told to), then report every
   // move except the echo of a shared viewport this pane just applied.
-  const initial = useRef({ viewport, fitView: fitViewOnMount }).current;
+  const initialViewport = useRef(viewport).current;
+  const fitViewOptions = useMemo(
+    () => ({ ...DIFF_PANE_FIT_VIEW_OPTIONS, ...canvasProps?.fitViewOptions }),
+    [canvasProps?.fitViewOptions]
+  );
+
+  // Fit once every node is measured. React Flow's `fitView` prop fits on the first batch of
+  // measurements, which can frame (and zoom in on) a single node.
+  const nodesInitialized = useNodesInitialized();
+  const fitPending = useRef(fitViewOnMount);
+  useEffect(() => {
+    if (!fitPending.current || !nodesInitialized) return;
+    fitPending.current = false;
+    void fitView({ ...fitViewOptions, duration: 0 });
+  }, [nodesInitialized, fitView, fitViewOptions]);
+
   const appliedViewport = useRef<DiffViewport | undefined>(undefined);
   const userOnMove = canvasProps?.onMove;
   const handleMove = useCallback<OnMove>(
@@ -170,8 +193,8 @@ function DiffPaneCanvas<N extends Node, E extends Edge>({
   return (
     <BaseCanvas<N, E>
       {...canvasProps}
-      fitView={initial.fitView}
-      defaultViewport={initial.viewport}
+      fitViewOptions={fitViewOptions}
+      defaultViewport={initialViewport}
       mode="view"
       nodes={renderedNodes}
       edges={marked.edges}

@@ -19,6 +19,7 @@ import type {
   DiffModel,
   DiffPaneContext,
 } from './CanvasDiffView.types';
+import { CodeDiffView } from './CodeDiffView';
 import { diffById } from './diffById';
 
 const meta: Meta<typeof CanvasDiffView> = {
@@ -302,20 +303,26 @@ export const SinglePane: Story = {
   ),
 };
 
+/** The fields a reviewer reads, one per line, so each change is a line of its own. */
+function serializeGraph({ nodes, edges }: Graph): string {
+  const graph = {
+    nodes: nodes.map(({ id, position, data }) => ({ id, label: data.display?.label, position })),
+    edges: edges.map(({ id, source, target }) => ({ id, source, target })),
+  };
+  return JSON.stringify(graph, null, 2);
+}
+
 export const WithCodeView: Story = {
   name: 'With code view',
   render: () => {
     const model = useMemo(() => buildModel(beforeGraph, afterGraph), []);
     const codeView = (
-      <div className="grid h-full grid-cols-2 divide-x divide-border-subtle overflow-auto text-xs">
-        <pre className="p-4">{JSON.stringify(beforeGraph, null, 2)}</pre>
-        <pre className="p-4">{JSON.stringify(afterGraph, null, 2)}</pre>
-      </div>
+      <CodeDiffView before={serializeGraph(beforeGraph)} after={serializeGraph(afterGraph)} />
     );
     return <DiffStory model={model} codeView={codeView} />;
   },
   parameters: describeStory(
-    'Passing `codeView` adds a visual/code toggle. The product supplies the code diff (e.g. Monaco); apollo ships none.'
+    'Passing `codeView` adds a visual/code toggle. Here it is apollo `CodeDiffView`: a side-by-side line diff of the serialized graphs, removed lines tinted on the left and added lines on the right in the canvas diff colors. A product may pass its own code diff instead.'
   ),
 };
 
