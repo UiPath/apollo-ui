@@ -22,10 +22,16 @@ import { OCCUPANT_SPECS, SURFACE_SPECS } from "@/lib/occupants.generated";
 import type { PreviewShellVariant } from "@/templates/shell/PreviewShell";
 import {
   normalizeContents,
+  normalizeTabs,
   type SlotContents,
   slotFit,
 } from "./workbench-compose";
-import { parseContents, writeContents } from "./workbench-contents-url";
+import {
+  parseContents,
+  parseTabs,
+  writeContents,
+  writeTabs,
+} from "./workbench-contents-url";
 import { withFocus } from "./workbench-layout";
 
 export { slotFit } from "./workbench-compose";
@@ -35,7 +41,7 @@ export { slotFit } from "./workbench-compose";
  * state, theme, width, list=closed, details=open, view=template, template,
  * slot, page, zoom=100, shell=minimal, and the template's layout, per
  * slot it declares choices for: <slot>-present=false, <slot>-state=closed,
- * and <slot>-placement, and what each slot holds, <slot>-contents (see
+ * and <slot>-placement, and what each slot holds and shows, <slot>-contents and <slot>-tab (see
  * workbench-contents-url). A template can map its older params onto these
  * (TemplateHost.legacyParams). Only non-default values are written;
  * unknown slots and invalid values fall back to the defaults.
@@ -69,6 +75,8 @@ export interface WorkbenchView {
   layout: LayoutChoices;
   /** What each slot holds: the focused occupant, and any added beside it. */
   contents: SlotContents;
+  /** The tab each slot shows, when one was chosen. */
+  tabs: Readonly<Record<string, string>>;
   pageWidth: number;
   zoom: WorkbenchZoom;
 }
@@ -100,16 +108,15 @@ export function normalizeView(view: WorkbenchView): WorkbenchView {
   const host = templateFor(view.template);
   const spec = specFor(view.occupant);
   const inTemplate = view.mode === "template" && host;
+  const contents = inTemplate
+    ? normalizeContents(host, view.contents, view.slot, view.occupant)
+    : view.contents;
   return {
     ...view,
     ...(inTemplate && {
       surface: slotSurface(host, view.slot, spec),
-      contents: normalizeContents(
-        host,
-        view.contents,
-        view.slot,
-        view.occupant,
-      ),
+      contents,
+      tabs: normalizeTabs(contents, view.tabs),
     }),
     layout: host ? withFocus(host.spec, view.layout, view.slot) : view.layout,
     pageWidth: Math.max(view.pageWidth, pageWidthMin(host, view.shell)),
@@ -322,6 +329,7 @@ export function parseWorkbenchView(search: string): WorkbenchView {
     shell,
     layout: mode === "template" ? parseLayout(host, params) : {},
     contents: mode === "template" ? parseContents(host, params) : {},
+    tabs: mode === "template" ? parseTabs(host, params) : {},
     pageWidth:
       Number.isInteger(pageWidth) &&
       pageWidth >= pageWidthMin(host, shell) &&
@@ -351,6 +359,7 @@ function writeTemplateParams(
     view.occupant,
     params,
   );
+  writeTabs(view.contents, view.tabs, view.occupant, params);
   if (view.pageWidth !== DEFAULT_PAGE_WIDTH)
     params.set("page", String(view.pageWidth));
   if (view.zoom !== "fit") params.set("zoom", "100");

@@ -249,6 +249,10 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
                   shell={view.shell}
                   layout={view.layout}
                   contents={view.contents}
+                  tabs={view.tabs}
+                  onTab={(slot, id) =>
+                    update({ tabs: { ...view.tabs, [slot]: id } })
+                  }
                   onStatus={setSlotStatus}
                   sample={view.sample}
                   state={view.state}

@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { removeFromSlot } from "@/app/preview/occupants/workbench-compose";
 import {
+  normalizeView,
   parseWorkbenchView,
   serializeWorkbenchView,
 } from "@/app/preview/occupants/workbench-url-state";
@@ -80,5 +82,54 @@ describe("slot contents in links", () => {
     expect(roundTrip("?occupant=queue&end-panel-contents=key-facts")).toBe(
       "?occupant=queue",
     );
+  });
+});
+
+describe("the chosen tab in links", () => {
+  const stacked = `${base}&end-panel-contents=queue~overview:key-facts.participants`;
+
+  it("reads and writes it by its id, the tab's first occupant", () => {
+    const query = `${stacked}&end-panel-tab=key-facts`;
+    expect(parseWorkbenchView(query).tabs).toEqual({
+      "end-panel": "key-facts",
+    });
+    expect(roundTrip(query)).toBe(query);
+  });
+
+  it("writes nothing for the tab the slot opens on", () => {
+    expect(roundTrip(`${stacked}&end-panel-tab=queue`)).toBe(stacked);
+  });
+
+  it("falls back to the first tab once its first occupant is taken out", () => {
+    const view = parseWorkbenchView(`${stacked}&end-panel-tab=key-facts`);
+    const next = normalizeView({
+      ...view,
+      contents: removeFromSlot(
+        view.contents,
+        "end-panel",
+        "key-facts",
+        "queue",
+      ),
+    });
+    // The tab is Participants' now, so key-facts names no tab.
+    expect(next.contents["end-panel"]?.tabs.map((tab) => tab.id)).toEqual([
+      "queue",
+      "participants",
+    ]);
+    expect(next.tabs).toEqual({ "end-panel": "queue" });
+    expect(serializeWorkbenchView(next)).toBe(
+      `${base}&end-panel-contents=queue~participants`,
+    );
+  });
+
+  it("falls back to the first tab, not the focused one, for an id a link no longer has", () => {
+    const view = parseWorkbenchView(
+      `${base}&end-panel-contents=key-facts~queue&end-panel-tab=participants`,
+    );
+    expect(view.tabs).toEqual({ "end-panel": "key-facts" });
+  });
+
+  it("drops a tab for a slot that holds nothing", () => {
+    expect(roundTrip(`${base}&start-panel-tab=key-facts`)).toBe(base);
   });
 });

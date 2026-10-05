@@ -36,6 +36,9 @@ interface TemplateStageProps {
   layout: LayoutChoices;
   /** What each slot holds: the focused occupant, and any added. */
   contents: SlotContents;
+  /** The tab each slot shows, when one was chosen. */
+  tabs: Readonly<Record<string, string>>;
+  onTab: (slot: string, id: string) => void;
   onStatus: (status: Readonly<Record<string, SlotStatus>>) => void;
   sample: ExampleRole;
   state: OccupantState;
@@ -60,6 +63,8 @@ export function TemplateStage({
   shell,
   layout,
   contents,
+  tabs,
+  onTab,
   onStatus,
   sample,
   state,
@@ -89,7 +94,8 @@ export function TemplateStage({
       name,
       {
         panel,
-        defaultTab: activeTab(panel, spec.name),
+        defaultTab: tabs[name] ?? activeTab(panel, spec.name),
+        onTabChange: (id: string) => onTab(name, id),
         occupants: Object.fromEntries(
           occupantsIn(panel).flatMap((occupant) => {
             const found = OCCUPANT_REGISTRY.find(

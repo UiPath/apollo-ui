@@ -18,6 +18,8 @@ export interface SlotContent {
   occupants: Readonly<Record<string, { spec: OccupantSpec; node: ReactNode }>>;
   /** The tab it shows first. */
   defaultTab: string;
+  /** Called with the tab's id when another is chosen. */
+  onTabChange?: (id: string) => void;
 }
 
 /** What a preview gives a template: what each slot holds, and the layout. */

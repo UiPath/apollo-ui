@@ -1,7 +1,7 @@
 import type { TemplateHost } from "@/app/_components/template-hosts";
 import type { LocaleKey } from "@/lib/composition";
 import type { OccupantRef, TabSpec } from "@/lib/panel";
-import { occupantsIn, type SlotContents } from "./workbench-compose";
+import { activeTab, occupantsIn, type SlotContents } from "./workbench-compose";
 
 /*
  * Each template slot's contents as a link param, <slot>-contents. Tabs are
@@ -10,6 +10,9 @@ import { occupantsIn, type SlotContents } from "./workbench-compose";
  * written. For example:
  *
  *   end-panel-contents=queue~overview:key-facts.participants~activity-timeline
+ *
+ * The tab showing in each slot is <slot>-tab, by its id, only when it isn't
+ * the one the slot opens on (activeTab).
  *
  * The focused occupant is written where it sits; a slot holding it alone
  * writes nothing. Whatever a slot can't hold is dropped when the view is
@@ -89,5 +92,33 @@ export function writeContents(
       contentsParam(slot.name),
       panel.tabs.map((tab) => writeTab(tab)).join(TABS),
     );
+  }
+}
+
+const tabParam = (slot: string) => `${slot}-tab`;
+
+/** The tab each of the template's slots shows, as the link gives it. */
+export function parseTabs(
+  host: TemplateHost | undefined,
+  params: URLSearchParams,
+): Readonly<Record<string, string>> {
+  return Object.fromEntries(
+    (host?.spec.slots ?? []).flatMap((slot) => {
+      const id = params.get(tabParam(slot.name));
+      return id ? [[slot.name, id]] : [];
+    }),
+  );
+}
+
+/** The params for each slot's tab, but one the slot opens on anyway. */
+export function writeTabs(
+  contents: SlotContents,
+  tabs: Readonly<Record<string, string>>,
+  focus: string,
+  params: URLSearchParams,
+) {
+  for (const [slot, id] of Object.entries(tabs)) {
+    const panel = contents[slot];
+    if (panel && id !== activeTab(panel, focus)) params.set(tabParam(slot), id);
   }
 }

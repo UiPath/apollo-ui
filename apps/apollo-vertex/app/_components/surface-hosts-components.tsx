@@ -28,6 +28,7 @@ export interface SurfaceHostProps {
     spec: PanelSpec;
     occupants: SidePanelOccupants;
     defaultTab: string;
+    onTabChange?: (id: string) => void;
   };
   children?: ReactNode;
 }
@@ -56,6 +57,7 @@ export function SidePanelHost({
         panel: panel.spec,
         occupants: panel.occupants,
         defaultTab: panel.defaultTab,
+        ...(panel.onTabChange && { onTabChange: panel.onTabChange }),
       })}
     >
       {children}

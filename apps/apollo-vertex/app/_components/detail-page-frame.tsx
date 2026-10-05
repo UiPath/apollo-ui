@@ -121,6 +121,7 @@ function DetailPageFrame({
             spec: filled.panel,
             occupants: filled.occupants,
             defaultTab: filled.defaultTab,
+            ...(filled.onTabChange && { onTabChange: filled.onTabChange }),
           },
         })}
       >

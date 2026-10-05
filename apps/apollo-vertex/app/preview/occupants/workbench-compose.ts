@@ -171,6 +171,24 @@ export function activeTab(panel: PanelSpec, focus: string): string {
   return (own ?? panel.tabs[0])?.id ?? "";
 }
 
+/**
+ * The tab chosen in each slot, kept while the slot has it. A tab that's
+ * gone, as when its first occupant is taken out, falls back to the first.
+ */
+export function normalizeTabs(
+  contents: SlotContents,
+  tabs: Readonly<Record<string, string>>,
+): Readonly<Record<string, string>> {
+  return Object.fromEntries(
+    Object.entries(tabs).flatMap(([slot, id]) => {
+      const panel = contents[slot];
+      const first = panel?.tabs[0]?.id;
+      if (!panel || !first) return [];
+      return [[slot, panel.tabs.some((tab) => tab.id === id) ? id : first]];
+    }),
+  );
+}
+
 /** A choice in the composer, and why it's locked, or null when it can be made. */
 export interface ComposeChoice<T> {
   value: T;
