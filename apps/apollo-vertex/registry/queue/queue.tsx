@@ -72,7 +72,6 @@ function Queue({
         subject={t("queue_subject")}
         emptyDescription={t("queue_empty")}
         onRetry={onRetry}
-        flush
       >
         <Tabs
           value={filter}
