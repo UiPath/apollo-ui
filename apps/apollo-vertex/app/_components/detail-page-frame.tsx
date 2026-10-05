@@ -45,8 +45,7 @@ const PANEL_SLOTS: Record<PanelSide, DetailPageSlotName> = {
  */
 function DetailPageFrame({
   slot,
-  spec,
-  occupant,
+  contents,
   choices,
   onStatus,
 }: TemplateFrameProps) {
@@ -94,10 +93,14 @@ function DetailPageFrame({
     });
   }, [onStatus, open.start, open.end, closedBy.start, closedBy.end]);
   const content = (name: DetailPageSlotName) => {
-    const isOwn = name === slot;
-    const shown = isOwn
-      ? spec
-      : placeholderOccupant(SLOT_LABELS[name], "padded");
+    const filled = contents[name];
+    const held = filled ? Object.values(filled.occupants) : [];
+    const [only] = held;
+    // One occupant renders as before; several make a panel of tabs.
+    const shown =
+      held.length === 1 && only
+        ? only.spec
+        : placeholderOccupant(SLOT_LABELS[name], "padded");
     const surface = SURFACE_SPECS.find((s) =>
       detailPageTemplate.slots
         .find((t) => t.name === name)
@@ -105,6 +108,7 @@ function DetailPageFrame({
     );
     const Host = surface && SURFACE_HOSTS[surface.name]?.Host;
     if (!surface || !Host) return null;
+    const several = filled && held.length > 1;
     return (
       <Host
         padding={occupantPadding(shown)}
@@ -112,9 +116,16 @@ function DetailPageFrame({
         label={SLOT_LABELS[name]}
         side={name === PANEL_SLOTS.start ? "start" : "end"}
         fill={false}
+        {...(several && {
+          panel: {
+            spec: filled.panel,
+            occupants: filled.occupants,
+            defaultTab: filled.defaultTab,
+          },
+        })}
       >
-        {isOwn ? (
-          occupant
+        {several ? null : only ? (
+          only.node
         ) : (
           <SlotPlaceholder occupant={shown} surface={surface.name} />
         )}

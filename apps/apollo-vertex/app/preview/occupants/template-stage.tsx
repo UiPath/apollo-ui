@@ -18,6 +18,7 @@ import {
 } from "@/templates/shell/PreviewShell";
 import { NoFitCard } from "./no-fit-card";
 import { StageFrame } from "./stage-frame";
+import { activeTab, occupantsIn, type SlotContents } from "./workbench-compose";
 import { slotFit } from "./workbench-url-state";
 
 /** The slots the choices close, as one key. */
@@ -33,6 +34,8 @@ interface TemplateStageProps {
   slot: string;
   shell: PreviewShellVariant;
   layout: LayoutChoices;
+  /** What each slot holds: the focused occupant, and any added. */
+  contents: SlotContents;
   onStatus: (status: Readonly<Record<string, SlotStatus>>) => void;
   sample: ExampleRole;
   state: OccupantState;
@@ -56,6 +59,7 @@ export function TemplateStage({
   slot,
   shell,
   layout,
+  contents,
   onStatus,
   sample,
   state,
@@ -78,6 +82,30 @@ export function TemplateStage({
       />
     );
   const { Frame } = host;
+  // The focused occupant in the chosen sample and state; any added beside
+  // it in their primary sample, ready.
+  const rendered = Object.fromEntries(
+    Object.entries(contents).map(([name, panel]) => [
+      name,
+      {
+        panel,
+        defaultTab: activeTab(panel, spec.name),
+        occupants: Object.fromEntries(
+          occupantsIn(panel).flatMap((occupant) => {
+            const found = OCCUPANT_REGISTRY.find(
+              (o) => o.spec.name === occupant,
+            );
+            if (!found) return [];
+            const focused = occupant === spec.name;
+            const node = found.render(focused ? sample : "primary", {
+              state: focused ? state : "ready",
+            });
+            return [[occupant, { spec: found.spec, node }]];
+          }),
+        ),
+      },
+    ]),
+  );
   const size =
     // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- CSS custom properties aren't in React.CSSProperties
     {
@@ -112,10 +140,9 @@ export function TemplateStage({
                 // slots it has apply live.
                 key={`${slot}-${closedSlots(layout)}`}
                 slot={slot}
-                spec={spec}
+                contents={rendered}
                 choices={layout}
                 onStatus={onStatus}
-                occupant={entry.render(sample, { state })}
               />
             </LocaleProvider>
           </PreviewShell>

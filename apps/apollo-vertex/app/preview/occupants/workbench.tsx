@@ -248,6 +248,7 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
                   slot={view.slot}
                   shell={view.shell}
                   layout={view.layout}
+                  contents={view.contents}
                   onStatus={setSlotStatus}
                   sample={view.sample}
                   state={view.state}
