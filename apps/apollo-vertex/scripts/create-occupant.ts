@@ -19,7 +19,11 @@
  *                               measures it. A px value is a raised minimum,
  *                               with its reason written in the spec
  *   --padding <padded|flush>
- *   --scroll <surface|occupant|either>
+ *   --sizing <flow|fill>        flow (the default) grows with its content and
+ *                               can share a side panel tab; fill takes the
+ *                               whole tab and scrolls itself, like a
+ *                               document viewer. Fill is vertical only
+ *   --scroll <surface|occupant|either>   a fill occupant's is "occupant"
  *   --fields <name:kind,...>    the fields, without a --view-model file
  *   --view-model <file.json>    the view model (see VIEW MODEL below)
  *   --subject <noun>            copy: what it shows, lowercase ("participants")
@@ -61,7 +65,8 @@
  * it claims both orientations), and in examples/ the primary and secondary
  * adapters (to fill in) and a complete stress adapter. It writes a Patterns
  * page, and registers the occupant: registry.json, a path alias, the
- * Patterns nav, its copy in locales/en.json, and the occupant index.
+ * Patterns nav, its copy in locales/en.json (with <name>_title, its title in
+ * a panel's tab or stack heading), and the occupant index.
  *
  * Anything it can't know is marked with the placeholder token, which
  * `pnpm check:placeholders` (part of lint) refuses.
@@ -212,15 +217,29 @@ const padding = await ask(
   "padded",
   oneOf(["padded", "flush"]),
 );
-const scrollAnswer = await ask(
-  "scroll",
-  "When its content is taller than the space, who scrolls it?\n" +
-    "  surface: the surface scrolls it (most occupants)\n" +
-    "  occupant: it scrolls itself, like a table with a sticky header\n" +
-    "  either: whichever the surface supports",
-  "surface",
-  oneOf(["surface", "occupant", "either"]),
+const sizing = await ask(
+  "sizing",
+  "In a side panel tab, does it grow with its content and share the tab with others (flow),\n" +
+    "or take the whole tab and scroll itself, like a document viewer (fill)?",
+  "flow",
+  oneOf(["flow", "fill"]),
 );
+const fill = sizing === "fill";
+if (fill && orientationsAnswer !== "vertical")
+  fail("a fill occupant takes a panel's whole height, so it's vertical only.");
+if (fill && flag("scroll") !== undefined && flag("scroll") !== "occupant")
+  fail('--scroll: a fill occupant scrolls itself. Use "occupant".');
+const scrollAnswer = fill
+  ? "occupant"
+  : await ask(
+      "scroll",
+      "When its content is taller than the space, who scrolls it?\n" +
+        "  surface: the surface scrolls it (most occupants)\n" +
+        "  occupant: it scrolls itself, like a table with a sticky header\n" +
+        "  either: whichever the surface supports",
+      "surface",
+      oneOf(["surface", "occupant", "either"]),
+    );
 // The view model: a JSON file, or fields typed in as name:kind[?].
 const KINDS = [
   "title",
@@ -404,9 +423,10 @@ ${follows ? `import { LAYOUT_TOKENS, type OccupantSpec${padding === "padded" ? "
 export const ${camel}Occupant = {
   name: "${occupantName}",
   label: "${label}",
+  titleKey: "${snake}_title",
   icon: ${icon},
   orientations: ${JSON.stringify(orientations)},
-${surfaces ? `  // It belongs in these surfaces only.\n  surfaces: ${JSON.stringify(surfaces)},\n` : ""}${
+${fill ? '  // Takes a panel tab\'s whole height, alone, and scrolls itself.\n  sizing: "fill",\n' : ""}${surfaces ? `  // It belongs in these surfaces only.\n  surfaces: ${JSON.stringify(surfaces)},\n` : ""}${
   follows
     ? `  // Follows the ${followLabel}'s minimum width${padding === "padded" ? ", less its padding" : ""}, so it fits any
   // ${followLabel}. pnpm measure:occupant checks nothing clips there.\n`
@@ -997,6 +1017,7 @@ const newKeys: Record<string, string> = {
   [`${snake}_empty`]: emptyMessage,
   [`${snake}_label`]: `${label} for {{subject}}`,
   [`${snake}_subject`]: subject,
+  [`${snake}_title`]: label,
 };
 for (const [key, value] of Object.entries(newKeys).sort()) {
   const line = `  ${JSON.stringify(key)}: ${JSON.stringify(value)}`;
