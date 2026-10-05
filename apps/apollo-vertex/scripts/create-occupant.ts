@@ -718,7 +718,7 @@ ${componentBody}
         state={shown}
         subject={t("${snake}_subject")}
         emptyDescription={t("${snake}_empty")}
-        onRetry={onRetry}${padding === "flush" && ownScroll ? "\n        flush" : ""}
+        onRetry={onRetry}
       >
 ${readyMarkup}
       </OccupantStateView>
