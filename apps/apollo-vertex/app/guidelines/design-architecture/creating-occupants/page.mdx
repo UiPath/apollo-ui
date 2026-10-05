@@ -246,13 +246,35 @@ slots: `<slot>-present`, `<slot>-state`, and `<slot>-placement`.
 - **A template:** declare its `layout`, with its slots' choices, in its
   spec, and register its host in `app/_components/template-hosts.ts`: its
   spec, a label for each slot, its narrowest useful width, and a frame that
-  renders it with one occupant in one slot, in the page's layout choices.
-  The host is the only place the workbench knows the template, and a unit
-  test fails if workbench code names it anywhere else. A side panel can
-  hold several occupants in tabs and stacks; the workbench still shows one
-  occupant per slot.
+  renders what each slot holds, in the page's layout choices. Declare
+  `holds: "panel"` on each slot that takes tabs and stacks. The host is
+  the only place the workbench knows the template, and a unit test fails
+  if workbench code names it anywhere else.
 
 Unit tests fail until each has everything it needs.
+
+### Compose a slot
+
+In the template view, the Contents menu beside Layout composes each slot:
+add an occupant, or take one out. The template declares how much each slot
+holds, so the menu offers only that. A slot that holds one takes one
+occupant. A slot that holds a panel (`holds: "panel"`) takes tabs and
+stacks: add an occupant as a new tab, or into a tab, which then needs a
+label. Anything the composition rules refuse is locked, with why: an
+occupant that doesn't fit the slot's surface, one there already, a full
+slot, a panel at its tab limit, and a fill occupant, which is alone in its
+tab. The occupant you're looking at stays in its slot, and can't be taken
+out or added anywhere else.
+
+Links carry each slot's contents as `<slot>-contents`. Tabs are joined by
+`~`, a stack's occupants by `.`, and a stack starts with its label's id
+(`overview`, `details`, `activity`, or `people`) and `:`. A tab's id is its first occupant, and `<slot>-tab` names the tab
+showing, when it isn't the one the slot opens on. If that tab is gone, the
+slot opens on its first tab. For example:
+
+```text
+end-panel-contents=queue~overview:key-facts.participants~activity-timeline
+```
 
 ## Checks
 
