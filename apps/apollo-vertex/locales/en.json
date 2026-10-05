@@ -6,6 +6,7 @@
   "activity_timeline_empty": "Events show here as work on this item happens.",
   "activity_timeline_label": "Activity for {{subject}}",
   "activity_timeline_subject": "activity",
+  "activity_timeline_title": "Activity timeline",
   "actual_input": "Actual input",
   "actual_output": "Actual output",
   "add_attachment": "Add attachment",
