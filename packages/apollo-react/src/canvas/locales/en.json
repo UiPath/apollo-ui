@@ -435,5 +435,7 @@
   "canvas.diff_view.show_side_by_side": "Show side by side",
   "canvas.diff_view.show_stacked": "Show stacked",
   "canvas.diff_view.revert": "Revert",
-  "canvas.diff_view.keep": "Keep"
+  "canvas.diff_view.keep": "Keep",
+  "canvas.diff_view.code_line_removed": "Removed",
+  "canvas.diff_view.code_line_added": "Added"
 }

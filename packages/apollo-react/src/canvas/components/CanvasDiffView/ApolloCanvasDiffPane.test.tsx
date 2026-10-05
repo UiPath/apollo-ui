@@ -1,9 +1,8 @@
-import {
-  type Edge,
-  type Node,
-  type NodeProps,
-  type ReactFlowInstance,
-  useStore,
+import type {
+  Edge,
+  Node,
+  NodeProps,
+  ReactFlowInstance,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, render, screen, waitFor, within } from '../../utils/testing';
@@ -24,13 +23,15 @@ function ProbeNode({ id, data, selected }: NodeProps) {
   );
 }
 
-function FitProbe() {
-  const fitQueued = useStore((state) => state.fitViewQueued);
-  return <span data-testid="fit-queued">{String(fitQueued)}</span>;
-}
-
 const nodeTypes = { probe: ProbeNode };
-const node = (id: string): Node => ({ id, type: 'probe', position: { x: 0, y: 0 }, data: {} });
+// Pre-measured, since jsdom lays nothing out: React Flow fits only measured nodes.
+const node = (id: string): Node => ({
+  id,
+  type: 'probe',
+  position: { x: 0, y: 0 },
+  measured: { width: 100, height: 40 },
+  data: {},
+});
 
 const model: DiffModel<Node, Edge> = {
   before: { nodes: [node('kept'), node('edited'), node('gone')], edges: [] },
@@ -69,9 +70,7 @@ function renderDiff({ syncViewport }: { syncViewport?: boolean } = {}) {
           instances[ctx.side] = instance as unknown as ReactFlowInstance;
         },
       }}
-    >
-      <FitProbe />
-    </ApolloCanvasDiffPane>
+    />
   );
   render(<CanvasDiffView model={model} renderPane={renderPane} syncViewport={syncViewport} />);
   const pane = (name: 'Before' | 'After') => within(screen.getByRole('region', { name }));
@@ -104,6 +103,8 @@ describe('ApolloCanvasDiffPane inside CanvasDiffView', () => {
     const { reported, instances } = renderDiff();
     const pan = { x: 40, y: 30, zoom: 0.5 };
     await waitFor(() => expect(instances.before && instances.after).toBeDefined());
+    await waitFor(() => expect(reported).toHaveLength(1)); // the after pane's initial fit
+    reported.length = 0;
 
     await act(async () => {
       await instances.before?.setViewport(pan);
@@ -113,17 +114,21 @@ describe('ApolloCanvasDiffPane inside CanvasDiffView', () => {
     expect(reported).toEqual([['before', pan]]);
   });
 
-  it('fits only the after pane on mount while viewports are synced', () => {
-    const { pane } = renderDiff();
+  it('fits the after pane at no more than 100% and the before pane follows', async () => {
+    const { reported, instances } = renderDiff();
 
-    expect(pane('Before').getByTestId('fit-queued')).toHaveTextContent('false');
-    expect(pane('After').getByTestId('fit-queued')).toHaveTextContent('true');
+    await waitFor(() => expect(reported).toHaveLength(1));
+    const [side, fit] = reported[0] ?? [];
+    expect(side).toBe('after');
+    // A 100x40 graph in jsdom's 500x500 fallback pane would fit at the 3x zoom limit uncapped.
+    expect(fit?.zoom).toBe(1);
+    expect(instances.before?.getViewport()).toEqual(fit);
   });
 
-  it('fits both panes when viewports are independent', () => {
-    const { pane } = renderDiff({ syncViewport: false });
+  it('fits both panes when viewports are independent', async () => {
+    const { reported } = renderDiff({ syncViewport: false });
 
-    expect(pane('Before').getByTestId('fit-queued')).toHaveTextContent('true');
-    expect(pane('After').getByTestId('fit-queued')).toHaveTextContent('true');
+    await waitFor(() => expect(reported.map(([side]) => side).sort()).toEqual(['after', 'before']));
+    expect(reported.every(([, viewport]) => viewport.zoom === 1)).toBe(true);
   });
 });
