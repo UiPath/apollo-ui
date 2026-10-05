@@ -231,20 +231,26 @@ and draft each one as its own change to the shared layers.
 
 The workbench shows every surface and template that's registered for
 previews, with no change to the workbench itself. Each template declares its
-own slots, their rules, and its layout in its spec, and the workbench reads
-them: its page map is the template's declared layout.
+slots, their rules, its layout, and the choices a page has per slot (leave
+it out, close it, or place it elsewhere) in its spec, and the workbench
+reads them. Its page map is the template's declared layout, and its Layout
+menu offers exactly the declared choices, locking only what the layout
+refuses or the slot holding the occupant needs. Links name the template's
+slots: `<slot>-present`, `<slot>-state`, and `<slot>-placement`.
 
 - **A surface:** register it in `registry.json` with `"layer": "surface"` and
   its `<name>.surface.ts` spec, give it a label in `lib/surface-labels.ts`,
   and add its host to `app/_components/surface-hosts.ts`: how to render it
   on its own, and the element that holds its padding. The page map shows it
   in every slot of the default template that takes it.
-- **A template:** declare its `layout` in its spec, and add its host to
-  `app/_components/template-hosts.ts`: its spec, a label for each slot, which slots are its side panels and the
-  panels settings it offers, its narrowest useful width, and a frame that
-  renders it with one occupant in one slot, in the layout the workbench's
-  Layout menu sets. A side panel can hold several occupants in tabs and
-  stacks; the workbench still shows one occupant per slot.
+- **A template:** declare its `layout`, with its slots' choices, in its
+  spec, and register its host in `app/_components/template-hosts.ts`: its
+  spec, a label for each slot, its narrowest useful width, and a frame that
+  renders it with one occupant in one slot, in the page's layout choices.
+  The host is the only place the workbench knows the template, and a unit
+  test fails if workbench code names it anywhere else. A side panel can
+  hold several occupants in tabs and stacks; the workbench still shows one
+  occupant per slot.
 
 Unit tests fail until each has everything it needs.
 
