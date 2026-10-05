@@ -53,4 +53,16 @@ describe('CodeDiffView', () => {
   it('shows every line as added when the before text is empty', () => {
     expect(rowsOf('', 'a\nb')).toEqual(['| 1 Added a', '| 2 Added b']);
   });
+
+  it('shows both sides unmarked when too many lines changed to diff', () => {
+    const numbered = (prefix: string) =>
+      Array.from({ length: 1001 }, (_, index) => `${prefix}${index}`).join('\n');
+    const rows = rowsOf(numbered('old'), numbered('new'));
+
+    expect(rows[0]).toBe('1 old0 | 1 new0');
+    expect(rows).toHaveLength(1001);
+    expect(screen.getByRole('status')).toHaveTextContent('Too many changes to highlight');
+    expect(screen.queryByText('Added')).not.toBeInTheDocument();
+    expect(document.querySelector('.bg-success-background')).toBeNull();
+  });
 });
