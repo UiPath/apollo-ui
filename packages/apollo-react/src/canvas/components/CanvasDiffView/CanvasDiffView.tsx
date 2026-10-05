@@ -274,6 +274,10 @@ export function CanvasDiffView<Node, Edge>({
     return { before: project('before'), after: project('after') };
   }, [model]);
 
+  // The after pane fits and leads the shared viewport, unless it is empty and before is not.
+  const fitLeader: DiffSide =
+    model.after.nodes.length === 0 && model.before.nodes.length > 0 ? 'before' : 'after';
+
   const buildContext = useCallback(
     (side: DiffSide): DiffPaneContext<Node, Edge> => ({
       side,
@@ -286,9 +290,18 @@ export function CanvasDiffView<Node, Edge>({
       onSelectNode,
       viewport,
       onViewportChange,
-      fitViewOnMount: viewport === undefined && (side === 'after' || !syncViewport),
+      fitViewOnMount: viewport === undefined && (side === fitLeader || !syncViewport),
     }),
-    [model, projections, selectedNodeId, onSelectNode, viewport, onViewportChange, syncViewport]
+    [
+      model,
+      projections,
+      selectedNodeId,
+      onSelectNode,
+      viewport,
+      onViewportChange,
+      syncViewport,
+      fitLeader,
+    ]
   );
   const beforeContext = useMemo(() => buildContext('before'), [buildContext]);
   const afterContext = useMemo(() => buildContext('after'), [buildContext]);

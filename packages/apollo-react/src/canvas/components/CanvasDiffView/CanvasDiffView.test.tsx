@@ -45,6 +45,7 @@ function TestPane(ctx: DiffPaneContext<TestNode, TestEdge>) {
   return (
     <div data-testid={`pane-${ctx.side}`}>
       <span data-testid={`nodes-${ctx.side}`}>{ctx.nodes.map((n) => n.id).join(',')}</span>
+      <span data-testid={`fit-${ctx.side}`}>{String(ctx.fitViewOnMount)}</span>
       <span data-testid={`selected-${ctx.side}`}>{ctx.selectedNodeId ?? 'none'}</span>
       <span data-testid={`viewport-${ctx.side}`}>
         {ctx.viewport ? `${ctx.viewport.x},${ctx.viewport.y},${ctx.viewport.zoom}` : 'none'}
@@ -141,6 +142,29 @@ describe('CanvasDiffView', () => {
 
     expect(seen.length).toBeGreaterThan(1);
     expect(new Set(seen).size).toBe(1);
+  });
+
+  it('lets the after pane lead the mount-time fit', () => {
+    render(<CanvasDiffView model={model} renderPane={renderPane} />);
+
+    expect(screen.getByTestId('fit-after')).toHaveTextContent('true');
+    expect(screen.getByTestId('fit-before')).toHaveTextContent('false');
+  });
+
+  it('lets the before pane lead the fit when every node was removed', () => {
+    const allRemoved = { ...model, after: { nodes: [], edges: [] } };
+    render(<CanvasDiffView model={allRemoved} renderPane={renderPane} />);
+
+    expect(screen.getByTestId('fit-before')).toHaveTextContent('true');
+    expect(screen.getByTestId('fit-after')).toHaveTextContent('false');
+  });
+
+  it('keeps the after pane as fit leader when every node was added', () => {
+    const allAdded = { ...model, before: { nodes: [], edges: [] } };
+    render(<CanvasDiffView model={allAdded} renderPane={renderPane} />);
+
+    expect(screen.getByTestId('fit-after')).toHaveTextContent('true');
+    expect(screen.getByTestId('fit-before')).toHaveTextContent('false');
   });
 
   it('keeps viewports independent when syncViewport is false', async () => {

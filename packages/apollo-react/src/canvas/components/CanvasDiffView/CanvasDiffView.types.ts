@@ -82,8 +82,9 @@ export interface DiffPaneContext<Node, Edge> {
   viewport?: DiffViewport;
   /**
    * Whether to fit the graph when the pane mounts. False once a shared viewport exists, and
-   * for the before pane while viewports are synced: it adopts the after pane's fit, so two
-   * mount-time fits never race for the shared viewport.
+   * for the follower pane while viewports are synced: it adopts the leader's fit, so two
+   * mount-time fits never race. The leader is the after pane, or the before pane when the
+   * after graph is empty and the before graph is not.
    */
   fitViewOnMount: boolean;
   /** Report a user pan/zoom so the other pane follows. No-op when sync is off. */
