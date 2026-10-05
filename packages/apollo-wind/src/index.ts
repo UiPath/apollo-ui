@@ -143,6 +143,25 @@ export {
   AlertDialogTrigger,
 } from './components/ui/alert-dialog';
 export { AspectRatio } from './components/ui/aspect-ratio';
+export type {
+  AttachmentActionProps,
+  AttachmentMediaProps,
+  AttachmentProps,
+  AttachmentState,
+  AttachmentTriggerProps,
+} from './components/ui/attachment';
+export {
+  Attachment,
+  AttachmentAction,
+  AttachmentActions,
+  AttachmentContent,
+  AttachmentDescription,
+  AttachmentGroup,
+  AttachmentMedia,
+  AttachmentTitle,
+  AttachmentTrigger,
+  attachmentVariants,
+} from './components/ui/attachment';
 export { Avatar, AvatarFallback, AvatarImage } from './components/ui/avatar';
 export type { BadgeProps } from './components/ui/badge';
 export { Badge, badgeVariants } from './components/ui/badge';
@@ -163,6 +182,14 @@ export {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from './components/ui/breadcrumb';
+export type { BubbleContentProps, BubbleProps, BubbleReactionsProps } from './components/ui/bubble';
+export {
+  Bubble,
+  BubbleContent,
+  BubbleGroup,
+  BubbleReactions,
+  bubbleVariants,
+} from './components/ui/bubble';
 export type { ButtonProps } from './components/ui/button';
 // -----------------------------------------------------------------------------
 // Button Components
@@ -422,6 +449,44 @@ export type {
   LockableValueFieldStrings,
 } from './components/ui/lockable-value-field';
 export { LockableValueField } from './components/ui/lockable-value-field';
+export type { MarkerProps } from './components/ui/marker';
+export { Marker, MarkerContent, MarkerIcon, markerVariants } from './components/ui/marker';
+export type { MessageProps } from './components/ui/message';
+export {
+  Message,
+  MessageAvatar,
+  MessageContent,
+  MessageFooter,
+  MessageGroup,
+  MessageHeader,
+} from './components/ui/message';
+export type {
+  MessageScrollerButtonProps,
+  MessageScrollerButtonStrings,
+  MessageScrollerContentProps,
+  MessageScrollerDefaultScrollPosition,
+  MessageScrollerItemProps,
+  MessageScrollerProps,
+  MessageScrollerScrollable,
+  MessageScrollerScrollAlign,
+  MessageScrollerScrollOptions,
+  MessageScrollerViewportProps,
+  MessageScrollerViewportStrings,
+  MessageScrollerVisibilityState,
+} from './components/ui/message-scroller';
+export {
+  DEFAULT_MESSAGE_SCROLLER_BUTTON_STRINGS,
+  DEFAULT_MESSAGE_SCROLLER_VIEWPORT_STRINGS,
+  MessageScroller,
+  MessageScrollerButton,
+  MessageScrollerContent,
+  MessageScrollerItem,
+  MessageScrollerProvider,
+  MessageScrollerViewport,
+  useMessageScroller,
+  useMessageScrollerScrollable,
+  useMessageScrollerVisibility,
+} from './components/ui/message-scroller';
 export type {
   AnnotatedModel,
   ByomDetails,
