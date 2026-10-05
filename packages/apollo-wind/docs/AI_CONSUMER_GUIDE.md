@@ -127,7 +127,23 @@ Same props as Row.
 | `DateTimePicker`  | Date + time picker        | `value`, `onValueChange`, `use12Hour`                                                                                                                                                    |
 | `FileUpload`      | Drag-and-drop upload      | `accept`, `multiple`, `maxSize`, `onFilesChange`                                                                                                                                         |
 | `Search`          | Search input              | `value`, `onChange`, `onClear`, `placeholder`                                                                                                                                            |
-| `Label`           | Form label                | `htmlFor`                                                                                                                                                                                |
+| **Form Fields**   |                           |                                                                                                                                                                                          |
+| `MetadataForm`    | Schema-driven form        | `schema`, `plugins`, `onSubmit`. The default way to build a form; see [Metadata Forms](#metadata-forms)                                                                                  |
+| `FormField`       | Field stack               | Children: the parts below. Spaces them with the field rhythm; use it instead of a `div` or `space-y-*`                                                                                   |
+| `FormFieldLabel`  | Field label               | `htmlFor`, `required`, `tooltip`, `tooltipAriaLabel` (a tooltip needs a `TooltipProvider` ancestor)                                                                                      |
+| `FormFieldHeader` | Label row with extras     | `label`, `htmlFor`, `labelId`, `required`, `tooltip`, `leading`, `badge`, `actions`, `variant`: default\|muted                                                                           |
+| `InputGroup`      | Box for control + addons  | `layout`: row\|grow\|block\|fill, `variant`: default\|ghost\|outline\|none\|agent, `error`, `errorId`. Children: `InputGroupAddon` (`align`: inline-start\|inline-end), `InputGroupRow`, `InputGroupBody` |
+| `FormFieldDescription` | Helper text               | Children. Goes below the control                                                                                                                                                         |
+| `FormFieldError`  | Validation message        | `id`. Uses the `text-error` token; renders nothing when empty                                                                                                                            |
+| `BooleanRadioGroup` | True / False / not set    | `value`: boolean\|null, `onValueChange`, `strings`                                                                                                                                       |
+| `FieldMenu`       | Mode and actions menu     | `mode`, `onSelect`, `modes`, `actions`, `modesDisabled`, `strings`                                                                                                                       |
+| `ValueModeIndicator` | `=` before an expression  | `mode`, `strings`                                                                                                                                                                        |
+| `InsertVariableAction` | Header variable picker    | `variables`, `onInsert`, `compact`, `strings`                                                                                                                                            |
+| `AiAssistAction`  | Header AI prompt          | `onGenerate`, `hint`, `strings`                                                                                                                                                          |
+| `VariableValueControl` | Variable-bound control    | `value`, `onChange`, `variables`, `strings`                                                                                                                                              |
+| `PromptValueControl` | Prompt for an agent       | `value`, `onChange`, `strings`. Render in `InputGroup` with `variant="agent"` `layout="grow"`                                                                                            |
+| `QuickFormField`  | Quick Form builder field  | Only where end users configure fields in a HITL Quick Form. `fieldTypes`, `renderModeControl`, `variables`, `strings`                                                                    |
+| `Label`           | Bare label primitive      | `htmlFor`. For a field use `FormFieldLabel`                                                                                                                                              |
 | **Data Display**  |                           |                                                                                                                                                                                          |
 | `Card`            | Container card            | Children: `CardHeader`, `CardTitle`, `CardDescription`, `CardContent`, `CardFooter`                                                                                                      |
 | `StatsCard`       | Metrics card              | `title`, `value`, `trend`, `description`, `icon`, `variant`                                                                                                                              |
@@ -216,10 +232,45 @@ Same props as Row.
 
 ### Forms
 
+**Build forms with `MetadataForm`** (see [Metadata Forms](#metadata-forms)). Compose the anatomy
+parts for a field with no form, and inside a custom control, so its label, description and message
+match every other field. Never hand-roll label, description or error markup, or wrap
+fields in a local shell. Localise with each component's `strings` prop (or `FormPlugin.strings`);
+there is no provider.
+
 ```tsx
-// Text input
-<Label htmlFor="email">Email</Label>
-<Input id="email" type="email" value={v} onChange={e => setV(e.target.value)} />
+// One field outside a form: FormField stacks the parts with the field rhythm
+<FormField>
+  <FormFieldLabel htmlFor="email" required>Email</FormFieldLabel>
+  <Input
+    id="email"
+    type="email"
+    value={v}
+    onChange={(e) => setV(e.target.value)}
+    aria-invalid={!!error}
+    aria-describedby={error ? "email-error" : undefined}
+  />
+  <FormFieldDescription>Used for receipts only.</FormFieldDescription>
+  <FormFieldError id="email-error">{error}</FormFieldError>
+</FormField>
+
+// A control with addons and header actions: InputGroup draws the box and its error
+<FormField>
+  <FormFieldHeader
+    label="Endpoint"
+    htmlFor="endpoint"
+    actions={<InsertVariableAction variables={vars} onInsert={insertAtCaret} />}
+  />
+  <InputGroup error={error}>
+    <Input id="endpoint" value={v} onChange={(e) => setV(e.target.value)} />
+    <InputGroupAddon align="inline-end">.json</InputGroupAddon>
+  </InputGroup>
+</FormField>
+
+// A boolean that may be unset (value: true | false | null)
+<BooleanRadioGroup value={flag} onValueChange={setFlag} aria-labelledby="flag-label" />
+
+// The controls below sit where Input sits above
 
 // Select
 <Select value={v} onValueChange={setV}>
@@ -400,26 +451,30 @@ toast.error("Failed", { description: "Try again" });
 
 ### Form Layout
 
+A form is a `MetadataForm`: it lays out, validates and submits the fields its schema describes.
+Don't assemble a `<form>` from `Label` + `Input` pairs.
+
 ```tsx
-<form className="grid gap-4 max-w-md">
-  <Column gap={2}>
-    <Label htmlFor="name">Name</Label>
-    <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
-  </Column>
-  <Column gap={2}>
-    <Label>Category</Label>
-    <Select value={category} onValueChange={setCategory}>
-      <SelectTrigger>
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="a">Option A</SelectItem>
-      </SelectContent>
-    </Select>
-  </Column>
-  <Button type="submit">Save</Button>
-</form>
+const schema: FormSchema = {
+  id: "item",
+  title: "Item",
+  layout: { columns: 2 },
+  sections: [
+    {
+      id: "main",
+      fields: [
+        { name: "name", type: "text", label: "Name", validation: { required: true } },
+        { name: "category", type: "select", label: "Category", options: [{ label: "Option A", value: "a" }] },
+      ],
+    },
+  ],
+};
+
+<MetadataForm schema={schema} onSubmit={save} />;
 ```
+
+For a single field with no form (a toolbar filter, a settings row), compose the anatomy parts
+shown in [Forms](#forms).
 
 ### Card Grid
 
@@ -484,8 +539,9 @@ const columns: ColumnDef<Item>[] = [
 - Use `Row`, `Column`, `Grid` for all layout
 - Use component props (`gap`, `align`, `justify`) for spacing/alignment
 - Use `Button`, `Card`, `Badge` for UI elements
-- Use semantic color classes: `text-muted-foreground`, `bg-muted`,
-  `text-destructive`
+- Use semantic color classes: `text-muted-foreground`, `bg-muted`
+- Build forms with `MetadataForm`; compose `FormField` parts for a field with no form and inside custom controls
+- Show field errors with `FormFieldError` (`text-error`), never `text-destructive`
 - Use `cn()` only for conditional classes
 
 ### Don't
@@ -495,6 +551,7 @@ const columns: ColumnDef<Item>[] = [
 - Don't hardcode colors (`text-gray-500`, `bg-blue-600`)
 - Don't use inline styles for layout
 - Don't recreate existing components
+- Don't hand-roll field label, description or error markup, or wrap fields in a local shell
 
 ---
 
@@ -516,25 +573,34 @@ const columns: ColumnDef<Item>[] = [
 | ----------------------- | --------------------- |
 | `text-foreground`       | Primary text          |
 | `text-muted-foreground` | Secondary/helper text |
-| `text-destructive`      | Error/danger text     |
+| `text-error`            | Error text            |
+| `text-destructive`      | Destructive actions   |
 | `bg-background`         | Page background       |
 | `bg-muted`              | Subtle background     |
 | `bg-accent`             | Hover/active states   |
 | `border-border`         | Default borders       |
 
+Field validation messages use `FormFieldError`, which applies `text-error`. Some themes resolve
+`destructive` and `error` to different colors, so never color a field error with `text-destructive`.
+
 ---
 
 ## Metadata Forms
 
-For complex, data-driven forms use the `MetadataForm` system. Forms are defined
-as JSON schemas and rendered automatically with validation, conditional logic,
-and multi-step support.
+`MetadataForm` is the default way to build a form. Describe the fields in a JSON-serializable
+`FormSchema`; the form owns their state (react-hook-form and zod), validation, rules, data
+sources, layout and steps, and renders every field with the field anatomy. It has no `value` or
+`onChange` prop: seed values with `schema.initialData` or a field's `defaultValue`, read them in
+`onSubmit`, and watch or drive them through plugins.
 
 ### Import
 
 ```tsx
 import { MetadataForm } from "@uipath/apollo-wind";
-import type { FormSchema } from "@uipath/apollo-wind";
+import type { FormPlugin, FormSchema } from "@uipath/apollo-wind";
+
+// The same API from the forms sub-entry
+import { MetadataForm } from "@uipath/apollo-wind/components/forms";
 ```
 
 ### Basic Form
@@ -577,22 +643,37 @@ const schema: FormSchema = {
 
 ### Field Types
 
-| Type          | Description           | Extra Props                   |
-| ------------- | --------------------- | ----------------------------- |
-| `text`        | Single-line input     | `placeholder`                 |
-| `email`       | Email with validation | `placeholder`                 |
-| `textarea`    | Multi-line input      | `rows`, `placeholder`         |
-| `number`      | Numeric input         | `min`, `max`, `step`          |
-| `select`      | Dropdown              | `options`, `dataSource`       |
-| `multiselect` | Multi-select          | `options`, `maxSelected`      |
-| `radio`       | Radio group           | `options`                     |
-| `checkbox`    | Single checkbox       | -                             |
-| `switch`      | Toggle switch         | -                             |
-| `slider`      | Range slider          | `min`, `max`, `step`          |
-| `date`        | Date picker           | `placeholder`                 |
-| `datetime`    | Date + time picker    | `use12Hour`                   |
-| `file`        | File upload           | `accept`, `multiple`          |
-| `custom`      | Custom component      | `component`, `componentProps` |
+| Type          | Description                                  | Extra Props                                                                               |
+| ------------- | -------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `text`        | Single-line input                            | -                                                                                         |
+| `email`       | Email input                                  | -                                                                                         |
+| `textarea`    | Multi-line input                             | `rows`, `minRows` (autosize floor), `maxLength`                                           |
+| `number`      | Numeric input                                | `min`, `max`, `step`                                                                      |
+| `select`      | Dropdown                                     | `options` (or `dataSource`)                                                               |
+| `multiselect` | Multi-select                                 | `options`, `maxSelected`, `emptyMessage`, `searchPlaceholder`                             |
+| `radio`       | Radio group                                  | `options`                                                                                 |
+| `checkbox`    | Single checkbox                              | -                                                                                         |
+| `switch`      | Toggle switch                                | -                                                                                         |
+| `boolean`     | True / False / not set (`BooleanRadioGroup`) | Value is `boolean \| null`                                                                |
+| `slider`      | Range slider                                 | `min`, `max`, `step`, `maxRef` (`{ fromField, fallback }`, a max read from another field) |
+| `date`        | Date picker                                  | -                                                                                         |
+| `datetime`    | Date + time picker                           | `use12Hour`                                                                               |
+| `file`        | File upload                                  | `accept`, `multiple`, `maxSize`, `showPreview`                                            |
+| `string-list` | List of text rows                            | `maxItems`, `maxLength`, `minRows`, `addItemLabel`, `removeItemAriaLabel`                 |
+| `custom`      | Registered component                         | `component`, `componentProps`, `valueType`: string\|number\|boolean\|string-array         |
+
+Every field takes `name`, `label` and these base props: `placeholder`, `description`, `tooltip`,
+`tooltipAriaLabel`, `ariaLabel`, `ariaDescribedBy`, `defaultValue`, `validation`, `dataSource`,
+`rules` and `grid`, plus the field anatomy props `valueModes`, `headerActions`, `menuActions` and
+`badge` (see [Value modes and field actions](#value-modes-and-field-actions)). There is no
+per-field `disabled`: disable a field with a rule's `disabled` effect, or the whole form with
+`MetadataForm`'s `disabled`.
+
+A `custom` field renders the component registered under `component` in `FormPlugin.components`.
+Without `valueType` it validates as anything, so `required` does nothing. Without value modes or
+actions the component renders the whole field: compose `FormField`, `FormFieldLabel`,
+`FormFieldDescription` and `FormFieldError` around its control. With them, MetadataForm renders
+those parts and the component is only the control, inside the field's `InputGroup`.
 
 ### Validation
 
@@ -615,16 +696,22 @@ Validation is JSON-serializable (no Zod in schema):
 }
 ```
 
-| Constraint                | Type      | Description           |
-| ------------------------- | --------- | --------------------- |
-| `required`                | `boolean` | Field is required     |
-| `minLength` / `maxLength` | `number`  | String length         |
-| `pattern`                 | `string`  | Regex pattern         |
-| `email` / `url`           | `boolean` | Format validation     |
-| `min` / `max`             | `number`  | Number range          |
-| `integer`                 | `boolean` | Must be integer       |
-| `minItems` / `maxItems`   | `number`  | Array length          |
-| `messages`                | `object`  | Custom error messages |
+| Constraint                | Type       | Description                                                                  |
+| ------------------------- | ---------- | ---------------------------------------------------------------------------- |
+| `required`                | `boolean`  | Field is required (a value in any mode)                                      |
+| `minLength` / `maxLength` | `number`   | String length                                                                |
+| `pattern`                 | `string`   | Regex pattern                                                                |
+| `email` / `url`           | `boolean`  | Format validation                                                            |
+| `min` / `max`             | `number`   | Number range                                                                 |
+| `integer`                 | `boolean`  | Must be integer                                                              |
+| `positive` / `negative`   | `boolean`  | Sign of a number                                                             |
+| `minItems` / `maxItems`   | `number`   | Array length                                                                 |
+| `maxFileSize`             | `number`   | File size in bytes                                                           |
+| `allowedTypes`            | `string[]` | MIME types or extensions (`.pdf`, `image/*`)                                 |
+| `custom`                  | `string`   | Expression over this field's `value` only; cross-field logic goes in `rules` |
+| `messages`                | `object`   | Custom error messages                                                        |
+
+Validation runs in the browser as an aid to the user. Validate submitted values on the server too.
 
 ### Multi-Step Forms
 
@@ -752,12 +839,18 @@ new RuleBuilder("premium-features")
 
 ### Rule Effects
 
-| Effect     | Type      | Description          |
-| ---------- | --------- | -------------------- |
-| `visible`  | `boolean` | Show/hide field      |
-| `disabled` | `boolean` | Enable/disable field |
-| `required` | `boolean` | Make field required  |
-| `value`    | `unknown` | Set field value      |
+| Effect     | Type               | Description                                               |
+| ---------- | ------------------ | --------------------------------------------------------- |
+| `visible`  | `boolean`          | Show/hide field                                           |
+| `disabled` | `boolean`          | Enable/disable field                                      |
+| `required` | `boolean`          | Make field required                                       |
+| `value`    | `unknown`          | Set field value                                           |
+| `options`  | `DataSource`       | Typed on `FieldRule`, not applied by the rules engine yet |
+| `validate` | `ValidationConfig` | Typed on `FieldRule`, not applied by the rules engine yet |
+
+Rules, section and step conditions, and data-source params read a mode-aware field's fixed
+(`literal`) value only. While the field is in another mode its value reads as `VALUE_MODE_OPAQUE`:
+set, but equal to nothing, so it matches no condition.
 
 ### Plugins
 
@@ -773,13 +866,137 @@ import { analyticsPlugin, autoSavePlugin } from "@uipath/apollo-wind";
 />;
 ```
 
-| Plugin             | Description                                  |
-| ------------------ | -------------------------------------------- |
-| `analyticsPlugin`  | Tracks form views, interactions, submissions |
-| `autoSavePlugin`   | Auto-saves drafts to localStorage            |
-| `validationPlugin` | Common validators (phone, credit card, etc.) |
-| `workflowPlugin`   | UiPath Orchestrator integration              |
-| `auditPlugin`      | Field-level change history                   |
+| Plugin             | Description                                                                              |
+| ------------------ | ---------------------------------------------------------------------------------------- |
+| `analyticsPlugin`  | Logs init, value changes and submit (tracking stubs)                                     |
+| `autoSavePlugin`   | Saves drafts to localStorage, restores them on init, clears them on submit               |
+| `validationPlugin` | Sample `validators` configs (phone, credit card, postal code)                            |
+| `workflowPlugin`   | Pre-fills from and submits to `window.__workflowContext`                                 |
+| `auditPlugin`      | Records field-level change history and attaches it on submit                             |
+| `formattingPlugin` | Sample `customConditions` (`isBusinessHours`, `isWeekend`) and a logging `onValueChange` |
+
+The shipped plugins are examples: most log to the console or read `window` globals. Use them as
+templates and write your own for production.
+
+`FormPlugin` keys:
+
+| Key                                                                  | Description                                                                                                                                                            |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`, `version`                                                    | Identity                                                                                                                                                               |
+| `onFormInit(context)`                                                | Runs once after initial data loads. `context.form` is the react-hook-form instance                                                                                     |
+| `onValueChange(name, value, context)`                                | Runs on every change with the stored value (an envelope on a mode-aware field)                                                                                         |
+| `onSubmit(data, context)`                                            | Transforms submitted data, plugin by plugin; return the data                                                                                                           |
+| `components`                                                         | Custom controls by name, bare or as `FieldControlRegistration` `{ component, layout, variant, labelTarget, insertable }` (the control's geometry in the field anatomy) |
+| `valueModes`                                                         | `{ codecs, definitions, controlRegistry, literalControls }`: host modes, codecs and per-mode controls                                                                  |
+| `fieldActions`                                                       | `{ header, menu }` by id. Build with `createInsertVariableAction`, `createAiAssistAction`, `createClearAction` (`clear` is registered by default)                      |
+| `strings`                                                            | `MetadataFormStrings` overrides by group: `valueModes`, `boolean`, `insertVariable`, `aiAssist`, `clear`, `validation`. Later plugins win per string                   |
+| `variables`                                                          | `FormVariables`: `VariablePickerItem[]` or `({ field }) => VariablePickerItem[]`, called when a picker opens. The last plugin that gives them wins                     |
+| `onFieldRegister`, `validators`, `customConditions`, `customEffects` | Typed but not called by `MetadataForm` yet                                                                                                                             |
+
+Keep each plugin object referentially stable: declare it at module scope or memoize it. A new
+plugin object rebuilds the registries and re-renders every field; a new array holding the same
+plugins is fine.
+
+### Value modes and field actions
+
+A field opts in to value modes with `valueModes`: its value can then be written as a fixed value,
+an expression, a variable or a prompt, switched from a trailing menu.
+
+| Mode         | Title       | Control                                                     |
+| ------------ | ----------- | ----------------------------------------------------------- |
+| `literal`    | Fixed value | The field type's own control                                |
+| `expression` | Expression  | A plain input behind an `=` indicator                       |
+| `variable`   | Variable    | `VariableValueControl`, picking from `FormPlugin.variables` |
+| `prompt`     | Prompt      | `PromptValueControl` in an agent-tinted `InputGroup`        |
+
+| Key            | Description                                                                                  |
+| -------------- | -------------------------------------------------------------------------------------------- |
+| `modes`        | Offered modes, in menu order. The first is an empty value's mode unless `defaultMode` is set |
+| `defaultMode`  | The mode of an empty value                                                                   |
+| `switchable`   | Whether the menu offers the modes. Defaults to more than one mode                            |
+| `expectedType` | The value's type (`object`, `array`, ...) for the Fixed value description and the codec      |
+| `indicator`    | Whether a glyph marks a non-literal value. Defaults to `true`                                |
+| `controls`     | Control per mode, by name from `FormPlugin.valueModes.controlRegistry`                       |
+| `codec`        | Codec name from `FormPlugin.valueModes.codecs`. Defaults to `'default'` (the envelope)       |
+| `labels`       | Per-mode `{ title, description }` overrides                                                  |
+
+Hosts add modes, or change a built-in one, in `FormPlugin.valueModes.definitions`; a new mode
+needs an `icon` and a `title`.
+
+How values are stored (default codec):
+
+- Every write is an envelope, fixed values included: `{ $mode: "literal", value: "https://..." }`.
+- A cleared value keeps its mode, `{ $mode: "expression" }`, and is never `undefined`. A field
+  without value modes clears to `null`.
+- A raw stored value reads as `literal`, so existing data keeps loading; the first write wraps it.
+  Submit handlers, plugins and saved drafts must expect the envelope once a field adopts modes.
+- Switching a non-empty value to another mode asks first; an empty value never asks.
+
+Field actions:
+
+- `headerActions` (such as `"insert-variable"`, `"ai-assist"`) render behind the label;
+  `menuActions` (such as `"clear"`) render in the trailing menu below the modes. Ids resolve
+  against `FormPlugin.fieldActions`; unregistered ids are skipped.
+- Insert variable writes at the caret of a text control, otherwise it switches the field to
+  `expression` or `variable` mode, asking before it replaces a value.
+- `badge` adds text after the label, such as the value's type.
+
+Any of `valueModes`, `headerActions`, `menuActions` or `badge` renders the field through
+`ModeAwareField`, the field anatomy: a header with its actions, then an `InputGroup` holding the
+mode glyph, the active mode's control and the trailing menu.
+
+```tsx
+import {
+  createAiAssistAction,
+  createInsertVariableAction,
+  MetadataForm,
+  type FormPlugin,
+  type FormSchema,
+} from "@uipath/apollo-wind";
+
+const schema: FormSchema = {
+  id: "request",
+  title: "Request",
+  sections: [
+    {
+      id: "main",
+      fields: [
+        {
+          name: "url",
+          type: "text",
+          label: "URL",
+          badge: "string",
+          valueModes: { modes: ["literal", "expression", "variable"] },
+          headerActions: ["insert-variable", "ai-assist"],
+          menuActions: ["clear"],
+          validation: { required: true },
+        },
+      ],
+    },
+  ],
+};
+
+// Module scope, so the plugin object stays stable
+const hostPlugin: FormPlugin = {
+  name: "host",
+  variables: [{ id: "orderId", label: "orderId", value: "$vars.orderId" }],
+  fieldActions: {
+    header: {
+      "insert-variable": createInsertVariableAction({}),
+      "ai-assist": createAiAssistAction({
+        generate: async ({ prompt }) => ({ value: await generateValue(prompt) }),
+      }),
+    },
+  },
+  strings: { clear: { label: "Clear value" } },
+};
+
+<MetadataForm schema={schema} plugins={[hostPlugin]} onSubmit={save} />;
+// onSubmit receives { url: { $mode: "variable", value: "$vars.orderId" } }
+```
+
+Storybook: **Apollo Wind/Forms/Value modes**, **Apollo Wind/Forms/Field actions**,
+**Apollo Wind/Forms/Metadata Form**, and the guidance page **Apollo Wind/Forms/Guidance Field Anatomy**.
 
 ### Layout Options
 
@@ -812,10 +1029,16 @@ const schema: FormSchema = {
 
 ### MetadataForm Props
 
-| Prop        | Type             | Description        |
-| ----------- | ---------------- | ------------------ |
-| `schema`    | `FormSchema`     | Form definition    |
-| `plugins`   | `FormPlugin[]`   | Optional plugins   |
-| `onSubmit`  | `(data) => void` | Submit handler     |
-| `className` | `string`         | CSS class          |
-| `disabled`  | `boolean`        | Disable all fields |
+| Prop                 | Type                              | Description                                                                                                                                                                            |
+| -------------------- | --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `schema`             | `FormSchema`                      | Form definition. Compared deeply, so an inline object is fine                                                                                                                          |
+| `plugins`            | `FormPlugin[]`                    | Optional plugins. Keep each plugin object stable (module constant or memoized)                                                                                                         |
+| `onSubmit`           | `(data) => void \| Promise<void>` | Submit handler; gets the data after every plugin's `onSubmit`                                                                                                                          |
+| `className`          | `string`                          | CSS class                                                                                                                                                                              |
+| `disabled`           | `boolean`                         | Disable all fields                                                                                                                                                                     |
+| `autoComplete`       | `'off' \| 'on'`                   | Browser autocomplete. Unset keeps the browser default                                                                                                                                  |
+| `stepVariant`        | `'wizard' \| 'tabs'`              | Multi-step presentation. `wizard` (default): Previous/Next with Submit on the last step. `tabs`: a tab bar over one form, values and validation shared. Ignored for `sections` schemas |
+| `sectionVariant`     | `'card' \| 'plain'`               | `card` (default) boxes each titled section. `plain` drops the box and divides sections with a hairline, for hosts that frame the form                                                  |
+| `activeStepId`       | `string`                          | Controlled active tab (`tabs` only). An id that isn't visible shows the first tab                                                                                                      |
+| `onActiveStepChange` | `(stepId: string) => void`        | Fires when a tab is selected, controlled or not                                                                                                                                        |
+| `container`          | `'form' \| 'div'`                 | `div` for a host that owns submission: Enter doesn't submit and submit actions become plain buttons. Hide the action row with `actions: []` in the schema                              |

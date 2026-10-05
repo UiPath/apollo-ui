@@ -29,8 +29,9 @@ const meta = {
 A Quick Form is assembled by end users, like a form builder. QuickFormField is the control for an individual field within a Quick Form. Each QuickFormField carries its own configuration controls detailed below, and its value can be a literal, a JS expression, a bound variable, or a prompt an agent fills in.
 
 This is not the default component to use for a form field. For standard forms,
-compose the form-field anatomy (\`FormField\`, \`FormFieldLabel\`,
-\`InputGroup\`) or describe them to \`MetadataForm\`.
+describe the fields to \`MetadataForm\`; for a single field outside a form, compose
+the form-field anatomy (\`FormField\`, \`FormFieldLabel\`, \`InputGroup\`). See
+**Forms/Guidance Field Anatomy**.
 
 - Left lock icon toggles Editable / Read-only. Read-only fields show plain
   text, not a disabled control.
