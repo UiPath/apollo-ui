@@ -5,7 +5,7 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DataFetcher } from './data-fetcher';
 import { FormFieldRenderer } from './field-renderer';
-import type { FieldMetadata, FormContext } from './form-schema';
+import type { CustomFieldComponentProps, FieldMetadata, FormContext } from './form-schema';
 
 // Wrapper component to provide form context
 function FormWrapper({
@@ -500,6 +500,129 @@ describe('FormFieldRenderer', () => {
 
       expect(wrapper.className).toBe('');
       expect(screen.queryByText('Changed')).not.toBeInTheDocument();
+    });
+
+    describe('describes every control with the changed note', () => {
+      const changed = (name: string): FormContext => ({
+        ...createMockContext(),
+        changedFields: new Set([name]),
+      });
+
+      function Custom(props: CustomFieldComponentProps) {
+        return <input aria-label="Custom" aria-describedby={props['aria-describedby']} />;
+      }
+
+      const cases: { field: FieldMetadata; getControl: () => HTMLElement }[] = [
+        {
+          field: { name: 'f', type: 'text', label: 'Text' },
+          getControl: () => screen.getByRole('textbox'),
+        },
+        {
+          field: {
+            name: 'f',
+            type: 'select',
+            label: 'Pick',
+            options: [{ label: 'A', value: 'a' }],
+          },
+          getControl: () => screen.getByRole('combobox'),
+        },
+        {
+          field: { name: 'f', type: 'checkbox', label: 'Agree' },
+          getControl: () => screen.getByRole('checkbox'),
+        },
+        {
+          field: { name: 'f', type: 'switch', label: 'On' },
+          getControl: () => screen.getByRole('switch'),
+        },
+        {
+          field: { name: 'f', type: 'custom', label: 'Custom', component: 'Custom' },
+          getControl: () => screen.getByRole('textbox', { name: 'Custom' }),
+        },
+        {
+          field: { name: 'f', type: 'string-list', label: 'Items', defaultValue: ['a'] },
+          getControl: () => screen.getByRole('textbox'),
+        },
+        // A badge renders the field anatomy (ModeAwareField) rather than the plain layout.
+        {
+          field: { name: 'f', type: 'text', label: 'Badged', badge: 'Beta' },
+          getControl: () => screen.getByRole('textbox'),
+        },
+        {
+          field: { name: 'f', type: 'custom', label: 'Custom', component: 'Custom', badge: 'Beta' },
+          getControl: () => screen.getByRole('textbox', { name: 'Custom' }),
+        },
+      ];
+
+      it.each(cases)('$field.type: described as changed only when flagged', ({
+        field,
+        getControl,
+      }) => {
+        const { unmount } = render(
+          <FormWrapper>
+            <FormFieldRenderer field={field} context={changed('f')} customComponents={{ Custom }} />
+          </FormWrapper>
+        );
+        expect(getControl()).toHaveAccessibleDescription('Changed');
+        unmount();
+
+        render(
+          <FormWrapper>
+            <FormFieldRenderer
+              field={field}
+              context={changed('other')}
+              customComponents={{ Custom }}
+            />
+          </FormWrapper>
+        );
+        expect(getControl()).not.toHaveAttribute('aria-describedby');
+      });
+
+      it('keeps the error message in the description', async () => {
+        function WithError({ children }: { children: React.ReactNode }) {
+          const methods = useForm();
+          useEffect(() => {
+            methods.setError('f', { type: 'manual', message: 'Required' });
+          }, [methods]);
+          return <FormProvider {...methods}>{children}</FormProvider>;
+        }
+
+        render(
+          <WithError>
+            <FormFieldRenderer
+              field={{ name: 'f', type: 'text', label: 'Text' }}
+              context={changed('f')}
+              customComponents={{}}
+            />
+          </WithError>
+        );
+
+        await waitFor(() =>
+          expect(screen.getByRole('textbox')).toHaveAccessibleDescription('Required Changed')
+        );
+      });
+
+      it("merges a custom field's own componentProps aria-describedby", () => {
+        render(
+          <FormWrapper>
+            <span id="hint">Hint</span>
+            <FormFieldRenderer
+              field={{
+                name: 'f',
+                type: 'custom',
+                label: 'Custom',
+                component: 'Custom',
+                componentProps: { 'aria-describedby': 'hint' },
+              }}
+              context={changed('f')}
+              customComponents={{ Custom }}
+            />
+          </FormWrapper>
+        );
+
+        expect(screen.getByRole('textbox', { name: 'Custom' })).toHaveAccessibleDescription(
+          'Hint Changed'
+        );
+      });
     });
   });
 

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import type { BooleanRadioGroupStrings } from '@/components/ui/boolean-radio-group';
 import {
@@ -47,6 +47,7 @@ export function FormFieldRenderer({
   disabled: formDisabled = false,
 }: FormFieldRendererProps) {
   const { control, watch, getValues } = useFormContext();
+  const changedNoteId = `${useId()}-${field.name}-changed`;
 
   // Ref for context to avoid unnecessary effect re-runs
   const contextRef = useRef(context);
@@ -278,8 +279,11 @@ export function FormFieldRenderer({
     'data-field-name': field.name,
     'data-changed': isChanged || undefined,
   };
+  // Each control lists this note in its aria-describedby, so focusing it announces the change.
   const changedNote = isChanged ? (
-    <span className="sr-only">{context.changedFieldLabel ?? 'Changed'}</span>
+    <span id={changedNoteId} className="sr-only">
+      {context.changedFieldLabel ?? 'Changed'}
+    </span>
   ) : null;
 
   // Value modes or field actions: the field anatomy, custom fields included.
@@ -294,6 +298,7 @@ export function FormFieldRenderer({
           disabled={formDisabled || fieldState.disabled}
           required={fieldState.required}
           options={fieldState.options}
+          describedBy={isChanged ? changedNoteId : undefined}
         />
       </div>
     );
@@ -323,6 +328,10 @@ export function FormFieldRenderer({
               disabled={formDisabled || fieldState.disabled}
               required={fieldState.required}
               error={error?.message}
+              aria-describedby={joinIds(
+                field.componentProps?.['aria-describedby'] as string | undefined,
+                isChanged && changedNoteId
+              )}
             />
           )}
         />
@@ -346,6 +355,7 @@ export function FormFieldRenderer({
             required={fieldState.required}
             options={fieldState.options}
             strings={context.strings?.boolean}
+            changedNoteId={isChanged ? changedNoteId : undefined}
           />
         )}
       />
@@ -365,6 +375,13 @@ interface BuiltInFieldProps {
   required: boolean;
   options: FieldOption[];
   strings?: Partial<BooleanRadioGroupStrings>;
+  /** Id of the changed-field note, when the field is flagged as changed. */
+  changedNoteId?: string;
+}
+
+/** Space-joins the ids that are set, or `undefined` when none is. */
+function joinIds(...ids: (string | false | undefined)[]): string | undefined {
+  return ids.filter(Boolean).join(' ') || undefined;
 }
 
 function BuiltInField({
@@ -375,6 +392,7 @@ function BuiltInField({
   required,
   options,
   strings,
+  changedNoteId,
 }: BuiltInFieldProps) {
   const control = (
     <FieldControl
@@ -384,6 +402,7 @@ function BuiltInField({
       disabled={disabled}
       invalid={!!error}
       strings={strings}
+      describedBy={changedNoteId}
     />
   );
 
@@ -461,6 +480,7 @@ function BuiltInField({
           error={error}
           disabled={disabled}
           required={required}
+          ariaDescribedBy={joinIds(error && `${field.name}-error`, changedNoteId)}
         />
       );
 

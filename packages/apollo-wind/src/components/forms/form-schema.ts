@@ -567,6 +567,8 @@ export interface CustomFieldComponentProps {
   controlRef?: React.Ref<ValueModeControlHandle>;
   /** In the field anatomy: the label's id, for a component registered with `labelTarget: 'labelledby'`. */
   labelId?: string;
+  /** Id of the changed-field note while the field is flagged; put it on the focusable control. */
+  'aria-describedby'?: string;
   [key: string]: unknown; // Allow additional props from componentProps
 }
 

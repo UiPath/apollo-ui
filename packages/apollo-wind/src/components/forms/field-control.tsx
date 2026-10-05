@@ -47,6 +47,8 @@ export interface FieldControlProps {
   invalid?: boolean;
   /** Labels of a `boolean` field's radios. */
   strings?: Partial<BooleanRadioGroupStrings>;
+  /** Further ids for the control's aria-describedby, after the error message's. */
+  describedBy?: string;
 }
 
 /**
@@ -148,8 +150,10 @@ export function FieldControl({
   disabled = false,
   invalid = false,
   strings,
+  describedBy,
 }: FieldControlProps) {
   const errorId = invalid ? `${field.name}-error` : undefined;
+  const describedById = [errorId, describedBy].filter(Boolean).join(' ') || undefined;
   const { onChange } = formField;
   const multipleFiles = field.type === 'file' && field.multiple;
   const onTextChange = useCallback(
@@ -189,7 +193,7 @@ export function FieldControl({
           placeholder={field.placeholder}
           disabled={disabled}
           aria-invalid={invalid || undefined}
-          aria-describedby={errorId}
+          aria-describedby={describedById}
           aria-errormessage={errorId}
           aria-label={field.ariaLabel}
         />
@@ -210,7 +214,7 @@ export function FieldControl({
           placeholder={field.placeholder}
           disabled={disabled}
           aria-invalid={invalid || undefined}
-          aria-describedby={errorId}
+          aria-describedby={describedById}
           aria-errormessage={errorId}
           onChange={onNumberChange}
         />
@@ -229,7 +233,7 @@ export function FieldControl({
           disabled={disabled}
           maxLength={field.maxLength}
           aria-invalid={invalid || undefined}
-          aria-describedby={errorId}
+          aria-describedby={describedById}
           aria-errormessage={errorId}
           {...(field.minRows != null ? { minRows: field.minRows } : { rows: field.rows || 4 })}
         />
@@ -246,7 +250,7 @@ export function FieldControl({
             id={field.name}
             aria-label={field.label}
             aria-invalid={invalid || undefined}
-            aria-describedby={errorId}
+            aria-describedby={describedById}
             aria-errormessage={errorId}
           >
             <SelectValue placeholder={field.placeholder || 'Select...'} />
@@ -278,7 +282,7 @@ export function FieldControl({
           searchPlaceholder={field.searchPlaceholder ?? 'Search...'}
           maxSelected={field.maxSelected}
           aria-invalid={invalid || undefined}
-          aria-describedby={errorId}
+          aria-describedby={describedById}
           aria-errormessage={errorId}
         />
       );
@@ -290,7 +294,7 @@ export function FieldControl({
           onCheckedChange={onCheckedChange}
           disabled={disabled}
           aria-invalid={invalid || undefined}
-          aria-describedby={errorId}
+          aria-describedby={describedById}
           aria-errormessage={errorId}
           id={field.name}
         />
@@ -305,7 +309,7 @@ export function FieldControl({
           onBlur={formField.onBlur}
           disabled={disabled}
           aria-invalid={invalid || undefined}
-          aria-describedby={errorId}
+          aria-describedby={describedById}
           aria-errormessage={errorId}
           strings={strings}
         />
@@ -319,7 +323,7 @@ export function FieldControl({
           onCheckedChange={onCheckedChange}
           disabled={disabled}
           aria-invalid={invalid || undefined}
-          aria-describedby={errorId}
+          aria-describedby={describedById}
           aria-errormessage={errorId}
         />
       );
@@ -332,7 +336,7 @@ export function FieldControl({
           onValueChange={formField.onChange}
           disabled={disabled}
           aria-invalid={invalid || undefined}
-          aria-describedby={errorId}
+          aria-describedby={describedById}
           aria-errormessage={errorId}
         >
           {options.map((option) => (
@@ -358,6 +362,7 @@ export function FieldControl({
           disabled={disabled}
           invalid={invalid}
           errorId={errorId}
+          describedById={describedById}
         />
       );
 
@@ -370,7 +375,7 @@ export function FieldControl({
           disabled={disabled}
           placeholder={field.placeholder}
           aria-invalid={invalid || undefined}
-          aria-describedby={errorId}
+          aria-describedby={describedById}
           aria-errormessage={errorId}
         />
       );
@@ -380,7 +385,7 @@ export function FieldControl({
         <DateTimePicker
           aria-labelledby={`${field.name}-label`}
           aria-invalid={invalid || undefined}
-          aria-describedby={errorId}
+          aria-describedby={describedById}
           aria-errormessage={errorId}
           value={formField.value as Date | undefined}
           onValueChange={formField.onChange}
@@ -396,7 +401,7 @@ export function FieldControl({
           id={field.name}
           ariaLabel={field.ariaLabel ?? field.label}
           aria-invalid={invalid || undefined}
-          aria-describedby={errorId}
+          aria-describedby={describedById}
           aria-errormessage={errorId}
           accept={field.accept}
           multiple={field.multiple}
@@ -417,6 +422,7 @@ export function FieldControl({
           onBlur={formField.onBlur}
           invalid={invalid}
           disabled={disabled}
+          ariaDescribedBy={describedById}
         />
       );
 
@@ -436,9 +442,17 @@ interface SliderControlProps {
   disabled: boolean;
   invalid: boolean;
   errorId: string | undefined;
+  describedById: string | undefined;
 }
 
-function SliderControl({ field, formField, disabled, invalid, errorId }: SliderControlProps) {
+function SliderControl({
+  field,
+  formField,
+  disabled,
+  invalid,
+  errorId,
+  describedById,
+}: SliderControlProps) {
   const resolvedMax = useSliderMax(field);
 
   // Clamp the form value if the resolved max drops below it (e.g. user
@@ -467,7 +481,7 @@ function SliderControl({ field, formField, disabled, invalid, errorId }: SliderC
     <Slider
       aria-labelledby={`${field.name}-label`}
       aria-invalid={invalid || undefined}
-      aria-describedby={errorId}
+      aria-describedby={describedById}
       aria-errormessage={errorId}
       value={sliderValue}
       onValueChange={onValueChange}
