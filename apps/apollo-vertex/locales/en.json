@@ -103,6 +103,7 @@
   "detail_page_preview_occupant_notes": "Notes",
   "detail_page_preview_occupant_people": "People",
   "detail_page_preview_occupants": "Occupants",
+  "detail_page_preview_placeholder": "Placeholder",
   "detail_page_preview_remove": "Remove {{name}}",
   "detail_page_preview_start_panel": "Start panel",
   "detail_page_preview_tab": "Tab {{index}}: {{names}}",

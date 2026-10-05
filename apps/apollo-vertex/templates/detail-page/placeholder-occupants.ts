@@ -14,6 +14,8 @@ export function placeholderOccupant(
   return {
     name: "placeholder",
     label,
+    // A preview box shows its label; a panel that titles it sets its own.
+    titleKey: "detail_page_preview_placeholder",
     // A dashed box works in any shape of space.
     orientations: ["horizontal", "vertical"],
     requires: { minWidth: 0, scroll, padding },

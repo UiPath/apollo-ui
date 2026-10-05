@@ -155,7 +155,7 @@ export interface OccupantSpec<TName extends string = string> {
    * Its display title, as a locale key: a panel's stack heading or tab
    * label when the panel gives none. Never shown as the slug.
    */
-  titleKey?: LocaleKey;
+  titleKey: LocaleKey;
   /** Defaults to "flow". */
   sizing?: OccupantSizing;
   requires: OccupantRequirements;

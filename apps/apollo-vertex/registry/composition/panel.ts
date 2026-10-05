@@ -62,7 +62,10 @@ export function normalizePanel(config: OccupantRef | PanelSpec): PanelSpec {
 /** An occupant in a resolved panel: its spec, and the title it shows. */
 export interface ResolvedOccupant {
   spec: OccupantSpec;
-  /** The ref's title, else the spec's titleKey. Absent when neither is set. */
+  /**
+   * The ref's title, else the spec's titleKey. Absent only for a spec that
+   * skipped the types; validatePanel() reports it.
+   */
   title?: LocaleKey;
 }
 

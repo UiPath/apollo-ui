@@ -37,12 +37,13 @@ const spec = (
   requires: { minWidth, scroll: "either" },
   ...extra,
 });
-// No titleKey, so nothing to fall back to but the slug, which is never used.
-const UNTITLED: OccupantSpec = {
+// Specs require a titleKey, but data that skips the types can lack one.
+// Then there's nothing to fall back to but the slug, which is never used.
+const UNTITLED = {
   name: "untitled",
   label: "UNTITLED",
   requires: { minWidth: 200, scroll: "either" },
-};
+} as unknown as OccupantSpec;
 const SPECS = [
   spec("alpha"),
   spec("beta"),
