@@ -45,6 +45,8 @@ interface TemplateStageProps {
   revisions: Readonly<Record<string, number>>;
   /** Edit mode: every slot outlined and opened by a click, the page inert. */
   editing: boolean;
+  /** Includes a slot the page left out, from its ghost in Edit mode. */
+  onInclude: (slot: string) => void;
   /** The slot whose popover is open, and opening one from a slot. */
   opened: SlotTarget | null;
   onOpen: (target: SlotTarget) => void;
@@ -77,6 +79,7 @@ export function TemplateStage({
   onTab,
   revisions,
   editing,
+  onInclude,
   opened,
   onOpen,
   onClose,
@@ -150,6 +153,8 @@ export function TemplateStage({
       {editing && (
         <EditSlots
           host={host}
+          layout={layout}
+          onInclude={onInclude}
           contents={contents}
           focus={spec.name}
           opened={opened}

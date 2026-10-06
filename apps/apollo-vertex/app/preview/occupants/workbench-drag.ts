@@ -10,6 +10,8 @@ import type { DropTarget } from "./workbench-drop";
 /** The data a drop zone carries. */
 export interface ZoneData {
   target: DropTarget;
+  /** A left-out slot's ghost: dropping there includes the slot too. */
+  include?: string;
 }
 
 /** The data a dragged list row carries. */

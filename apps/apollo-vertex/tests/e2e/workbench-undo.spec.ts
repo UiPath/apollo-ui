@@ -129,3 +129,77 @@ test("Reset layout, in Edit mode, goes back to the defaults and undoes", async (
   expect(urlQuery(page)).toContain("start-panel-present=false");
   expect(urlQuery(page)).toContain("end-panel-placement=beside-header");
 });
+
+const ghost = (page: Page, slot: string) =>
+  page.locator(`[data-slot=workbench-ghost-slot][data-ghost-slot=${slot}]`);
+const LEFT_OUT = `${QUERY}&start-panel-present=false`;
+
+test("in Edit, a left-out slot is a ghost where it would sit; a click includes it", async ({
+  page,
+}) => {
+  await ready(page, LEFT_OUT);
+  await expect(ghost(page, "start-panel")).toHaveCount(0);
+  await ready(page, `${LEFT_OUT}&mode=edit`);
+  const start = ghost(page, "start-panel");
+  await expect(start).toHaveText("Start panel, left out");
+  await expect(start).toHaveAccessibleName("Include the start panel");
+  // Where it would sit: at the template's start, in main's rows.
+  const [box, main, template] = await Promise.all([
+    start.boundingBox(),
+    page
+      .locator("[data-slot=workbench-page] [data-slot=detail-page-main]")
+      .boundingBox(),
+    page
+      .locator("[data-slot=workbench-page] [data-template=detail-page]")
+      .boundingBox(),
+  ]);
+  expect(Math.round(box?.x ?? 0)).toBe(Math.round(template?.x ?? 0));
+  expect(Math.round(box?.y ?? 0)).toBe(Math.round(main?.y ?? 0));
+  await start.click();
+  await expect(toast(page)).toContainText("Start panel included");
+  await expect.poll(() => urlQuery(page)).not.toContain("start-panel-present");
+  await expect(start).toHaveCount(0);
+  await undo(page).click();
+  await expect
+    .poll(() => urlQuery(page))
+    .toContain("start-panel-present=false");
+});
+
+test("dropping on a ghost includes the slot and adds the occupant, as one change", async ({
+  page,
+}) => {
+  await ready(page, `${LEFT_OUT}&mode=edit`);
+  const row = page
+    .locator("#workbench-list li")
+    .filter({ hasText: "Key facts" })
+    .getByRole("button")
+    .first();
+  const from = await row.boundingBox();
+  if (!from) throw new Error("No row");
+  await page.mouse.move(from.x + 40, from.y + from.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(from.x + 60, from.y + from.height / 2 + 16, {
+    steps: 4,
+  });
+  const zone = page.locator(
+    '[data-slot=workbench-drop-zone][data-zone="start-panel:ghost"]',
+  );
+  const to = await zone.boundingBox();
+  if (!to) throw new Error("No ghost zone");
+  await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, {
+    steps: 8,
+  });
+  await expect(zone).toHaveAttribute("data-over", "true");
+  await page.mouse.up();
+  await expect(toast(page)).toContainText("Key facts added to Start panel");
+  await expect
+    .poll(() => urlQuery(page))
+    .toContain("start-panel-contents=key-facts");
+  expect(urlQuery(page)).not.toContain("start-panel-present");
+  // One Undo takes back both.
+  await undo(page).click();
+  await expect
+    .poll(() => urlQuery(page))
+    .toContain("start-panel-present=false");
+  expect(urlQuery(page)).not.toContain("start-panel-contents");
+});

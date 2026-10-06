@@ -49,6 +49,14 @@ const targetOf = (data: unknown): DropTarget | null =>
       (data.target as DropTarget)
     : null;
 
+const includeOf = (data: unknown): string | null =>
+  typeof data === "object" &&
+  data &&
+  "include" in data &&
+  typeof data.include === "string"
+    ? data.include
+    : null;
+
 interface WorkbenchDndProps {
   host: TemplateHost | undefined;
   contents: SlotContents;
@@ -191,7 +199,11 @@ export function WorkbenchDnd({
     const target = targetOf(event.over?.data.current);
     if (!occupant || !target) return;
     const result = outcome(target, occupant);
-    if (result?.ok) onContents(result.next, result.show);
+    const include = includeOf(event.over?.data.current);
+    if (!result?.ok) return;
+    // On a left-out slot's ghost, the drop includes the slot too: one change.
+    if (include) onContents(result.next, result.show, include);
+    else onContents(result.next, result.show);
   };
 
   return (

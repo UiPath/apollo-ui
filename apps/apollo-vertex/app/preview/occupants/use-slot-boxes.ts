@@ -59,6 +59,9 @@ export const sideTowardCenter = (
     : "left";
 };
 
+/** The key of the template's own box among the slots' boxes. */
+export const TEMPLATE_BOX = "@template";
+
 /**
  * Each of the template's slots' boxes on the frame that `ref` is in, kept
  * current as the page resizes and the template redraws. A slot left out
@@ -83,6 +86,11 @@ export function useSlotBoxes(
         const box = element ? boxOn(frame, element) : null;
         if (box && box.width > 0 && box.height > 0) next[slot] = box;
       }
+      // The template's own box, under its name, for left-out slots' ghosts.
+      const template = frame.querySelector(
+        `[data-template="${host.spec.name}"]`,
+      );
+      if (template) next[TEMPLATE_BOX] = boxOn(frame, template);
       // Most changes are an occupant's own, and move no slot.
       setBoxes((current) =>
         JSON.stringify(current) === JSON.stringify(next) ? current : next,

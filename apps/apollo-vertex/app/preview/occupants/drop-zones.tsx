@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import type { TemplateHost } from "@/app/_components/template-hosts";
 import { cn } from "@/lib/utils";
 import { type DropZone, measureZones } from "./drop-zones-geometry";
-import { frameOf } from "./use-slot-boxes";
+import { type Box, frameOf } from "./use-slot-boxes";
 import type { SlotContents } from "./workbench-compose";
 import { useWorkbenchDrag, type ZoneData } from "./workbench-drag";
 import { type DropOutcome, dropOutcome } from "./workbench-drop";
@@ -26,7 +26,10 @@ interface ZoneProps {
  * the drag.
  */
 function Zone({ zone, outcome, reason }: ZoneProps) {
-  const data: ZoneData = { target: zone.target };
+  const data: ZoneData = {
+    target: zone.target,
+    ...(zone.include && { include: zone.include }),
+  };
   const { setNodeRef, isOver } = useDroppable({ id: zone.id, data });
   const refused = !outcome.ok;
   return (
@@ -84,6 +87,8 @@ function Zone({ zone, outcome, reason }: ZoneProps) {
 
 interface DropZonesProps {
   host: TemplateHost;
+  /** The left-out slots' ghosts: dropping on one includes the slot too. */
+  ghosts: readonly { slot: string; box: Box }[];
   contents: SlotContents;
   /** The focused occupant. */
   focus: string;
@@ -94,7 +99,7 @@ interface DropZonesProps {
  * when the drag starts. Each says what dropping there does, by
  * dropOutcome, so it's the same as each slot's popover.
  */
-export function DropZones({ host, contents, focus }: DropZonesProps) {
+export function DropZones({ host, contents, focus, ghosts }: DropZonesProps) {
   const { t } = useTranslation();
   const drag = useWorkbenchDrag();
   const dragging = drag?.dragging ?? null;
@@ -102,11 +107,22 @@ export function DropZones({ host, contents, focus }: DropZonesProps) {
   const [zones, setZones] = useState<readonly DropZone[]>([]);
   useLayoutEffect(() => {
     const frame = frameOf(ref.current);
-    const measured =
-      dragging && frame ? measureZones(frame, host, contents) : [];
+    const measured: DropZone[] =
+      dragging && frame
+        ? [
+            ...measureZones(frame, host, contents),
+            ...ghosts.map(({ slot, box }) => ({
+              id: `${slot}:ghost`,
+              target: { slot, kind: "slot" as const },
+              look: "slot" as const,
+              box,
+              include: slot,
+            })),
+          ]
+        : [];
     setZones(measured);
     if (drag) drag.zones.current = measured;
-  }, [dragging, host, contents, drag]);
+  }, [dragging, host, contents, drag, ghosts]);
   if (!dragging) return <div ref={ref} hidden />;
   return (
     <div

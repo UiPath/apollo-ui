@@ -21,6 +21,8 @@ export interface DropZone {
   look: ZoneLook;
   /** Its box on the frame. */
   box: Box;
+  /** A left-out slot's ghost: a drop there includes the slot too. */
+  include?: string;
 }
 
 /** How wide a between-tabs zone is, centered on the gap. */

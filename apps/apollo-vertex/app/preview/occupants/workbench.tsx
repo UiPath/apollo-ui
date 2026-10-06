@@ -65,7 +65,7 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
   // Changes from the composer, by popover or drop, and each panel's revision.
   // Every change to what the page holds or how it's laid out, with a toast to undo it.
   const { change, reset } = useChangeLog(view, setView);
-  const { compose, revisions } = useCompose(view, change);
+  const { compose, include, revisions } = useCompose(view, change);
   const [slotStatus, setSlotStatus] = useState<Readonly<
     Record<string, SlotStatus>
   > | null>(null);
@@ -280,6 +280,7 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
                     tabs={view.tabs}
                     revisions={revisions}
                     editing={view.editing}
+                    onInclude={include}
                     opened={opened}
                     onOpen={setOpened}
                     onClose={() => setOpened(null)}

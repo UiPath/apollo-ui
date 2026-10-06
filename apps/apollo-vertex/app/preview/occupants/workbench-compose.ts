@@ -59,6 +59,8 @@ export type SlotContents = Readonly<Record<string, PanelSpec>>;
 export type ContentsChange = (
   contents: SlotContents,
   show?: { slot: string; tab: string },
+  /** A slot the page left out, to include in the same change. */
+  include?: string,
 ) => void;
 
 /**

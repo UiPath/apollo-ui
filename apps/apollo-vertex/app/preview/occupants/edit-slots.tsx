@@ -3,13 +3,16 @@
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import type { TemplateHost } from "@/app/_components/template-hosts";
+import type { LayoutChoices } from "@/lib/layout";
 import { DropZones } from "./drop-zones";
+import { ghostBox, leftOutSlots } from "./ghost-geometry";
 import type { SlotTarget } from "./slot-popover";
 import {
   type Box,
   frameOf,
   sideTowardCenter,
   slotElement,
+  TEMPLATE_BOX,
   useSlotBoxes,
 } from "./use-slot-boxes";
 import type { SlotContents } from "./workbench-compose";
@@ -28,6 +31,10 @@ const frameBox = (element: HTMLElement | null): Box => {
 
 interface EditSlotsProps {
   host: TemplateHost;
+  /** The page's layout choices, for the slots it left out. */
+  layout: LayoutChoices;
+  /** Includes a slot the page left out. */
+  onInclude: (slot: string) => void;
   /** What each slot holds, and the focused occupant, for the drop zones. */
   contents: SlotContents;
   focus: string;
@@ -45,6 +52,8 @@ interface EditSlotsProps {
  */
 export function EditSlots({
   host,
+  layout,
+  onInclude,
   contents,
   focus,
   opened,
@@ -54,6 +63,14 @@ export function EditSlots({
   const { t } = useTranslation();
   const ref = useRef<HTMLDivElement>(null);
   const boxes = useSlotBoxes(host, ref);
+  // Each left-out slot's ghost, where it would sit.
+  const template = boxes[TEMPLATE_BOX];
+  const ghosts = template
+    ? leftOutSlots(host.spec, layout).flatMap((slot) => {
+        const box = ghostBox(host.spec, layout, slot, template, boxes);
+        return box ? [{ slot, box }] : [];
+      })
+    : [];
   // While dragging, the tabs are what to see: the names step aside.
   const dragging = useWorkbenchDrag()?.dragging ?? null;
   return (
@@ -107,7 +124,41 @@ export function EditSlots({
           </button>
         );
       })}
-      <DropZones host={host} contents={contents} focus={focus} />
+      {ghosts.map(({ slot, box }) => {
+        const label = host.slotLabels[slot] ?? slot;
+        return (
+          <button
+            key={slot}
+            type="button"
+            data-slot="workbench-ghost-slot"
+            data-ghost-slot={slot}
+            aria-label={t("workbench_ghost_include", {
+              slot: label.toLowerCase(),
+            })}
+            style={{
+              left: `${box.x}px`,
+              top: `${box.y}px`,
+              width: `${box.width}px`,
+              height: `${box.height}px`,
+            }}
+            className="pointer-events-auto absolute flex cursor-pointer items-center justify-center rounded-sm border-2 border-dashed border-muted-foreground/50 bg-background/70 bg-[repeating-linear-gradient(135deg,transparent_0_8px,var(--border)_8px_9px)] text-xs font-medium text-muted-foreground backdrop-blur-[1px] hover:border-primary hover:text-foreground focus-visible:border-primary focus-visible:outline-none"
+            onClick={() => onInclude(slot)}
+          >
+            <span
+              aria-hidden="true"
+              className="rounded-sm bg-background px-1.5 py-0.5"
+            >
+              {t("workbench_ghost_label", { slot: label })}
+            </span>
+          </button>
+        );
+      })}
+      <DropZones
+        host={host}
+        contents={contents}
+        focus={focus}
+        ghosts={ghosts}
+      />
     </div>
   );
 }
