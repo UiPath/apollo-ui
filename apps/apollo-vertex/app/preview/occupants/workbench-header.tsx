@@ -7,6 +7,7 @@ import {
   PanelLeftOpen,
   PanelRightClose,
   PanelRightOpen,
+  RotateCcw,
   Sun,
 } from "lucide-react";
 import Link from "next/link";
@@ -24,6 +25,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { EXAMPLE_ROLES, type ExampleRole } from "@/lib/occupant-entry";
 import { ModeToggle } from "./mode-toggle";
 import {
@@ -131,6 +137,8 @@ interface WorkbenchHeaderProps {
   /** The template view's Edit mode, and switching it. */
   editing: boolean;
   onEditing: (editing: boolean) => void;
+  /** Edit mode's Reset layout: every slot back to the template's defaults. */
+  onReset: () => void;
 }
 
 /**
@@ -160,6 +168,7 @@ export function WorkbenchHeader({
   onTemplate,
   editing,
   onEditing,
+  onReset,
 }: WorkbenchHeaderProps) {
   const { t } = useTranslation();
   const sampleChoice: ChoiceProps<ExampleRole> = {
@@ -284,6 +293,23 @@ export function WorkbenchHeader({
       </ToggleGroup>
       {mode === "template" && (
         <ModeToggle editing={editing} onEditing={onEditing} />
+      )}
+      {mode === "template" && editing && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="shrink-0"
+              data-slot="workbench-reset"
+              aria-label={t("workbench_reset_layout")}
+              onClick={onReset}
+            >
+              <RotateCcw aria-hidden />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{t("workbench_reset_layout")}</TooltipContent>
+        </Tooltip>
       )}
       {/* Only with a choice to make: one template needs no picker. */}
       {mode === "template" && templateNames().length > 1 && (

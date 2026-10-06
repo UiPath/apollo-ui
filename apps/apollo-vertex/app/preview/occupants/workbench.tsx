@@ -21,6 +21,7 @@ import type { SlotTarget } from "./slot-popover";
 import { StageFrame } from "./stage-frame";
 import { TemplateDock } from "./template-dock";
 import { TemplateStage } from "./template-stage";
+import { useChangeLog } from "./use-change-log";
 import { useCompose } from "./use-compose";
 import { useFitScale } from "./use-fit-scale";
 import { usePageTheme } from "./use-page-theme";
@@ -29,6 +30,7 @@ import { WorkbenchDock } from "./workbench-dock";
 import { WorkbenchHeader } from "./workbench-header";
 import { lowerLabel, surfaceRange, widthStatus } from "./workbench-model";
 import { onPage } from "./workbench-picker";
+import { WorkbenchToaster } from "./workbench-toaster";
 import {
   defaultSlot,
   defaultSurface,
@@ -61,7 +63,9 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
   // The slot whose popover is open: one at a time.
   const [opened, setOpened] = useState<SlotTarget | null>(null);
   // Changes from the composer, by popover or drop, and each panel's revision.
-  const { compose, revisions } = useCompose(view, update);
+  // Every change to what the page holds or how it's laid out, with a toast to undo it.
+  const { change, reset } = useChangeLog(view, setView);
+  const { compose, revisions } = useCompose(view, change);
   const [slotStatus, setSlotStatus] = useState<Readonly<
     Record<string, SlotStatus>
   > | null>(null);
@@ -244,6 +248,7 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
             template={view.template}
             editing={view.editing}
             onEditing={(editing) => update({ editing })}
+            onReset={reset}
             onTemplate={(template) =>
               update({
                 template,
@@ -322,11 +327,11 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
                 host={templateHost}
                 spec={spec}
                 slot={view.slot}
-                onSlot={(slot) => update({ slot })}
+                onSlot={(slot) => change({ slot })}
                 shell={view.shell}
                 onShell={(shell) => update({ shell })}
                 layout={view.layout}
-                onLayout={(layout) => update({ layout })}
+                onLayout={(layout) => change({ layout })}
                 slotStatus={slotStatus}
                 contents={view.contents}
                 onContents={compose}
@@ -386,6 +391,7 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
             </div>,
             document.body,
           )}
+        <WorkbenchToaster theme={view.theme} />
       </div>
     </WorkbenchDnd>
   );
