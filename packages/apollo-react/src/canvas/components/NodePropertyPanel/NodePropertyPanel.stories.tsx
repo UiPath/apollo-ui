@@ -39,6 +39,11 @@ import {
   Card,
   CardContent,
   Checkbox,
+  CollapsibleBox,
+  CollapsibleBoxActions,
+  CollapsibleBoxContent,
+  CollapsibleBoxHeader,
+  CollapsibleBoxTrigger,
   Combobox,
   cn,
   DatePicker,
@@ -3605,6 +3610,26 @@ function PatternNote({
   );
 }
 
+function InventoryCollapsibleBoxMenu({ label }: { label: string }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="3xs" icon aria-label={`${label} actions`}>
+          <MoreHorizontal />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem>
+          <Copy /> Duplicate
+        </DropdownMenuItem>
+        <DropdownMenuItem className="text-error focus:text-error">
+          <Trash2 /> Remove
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 function InventorySubContainer({
   expandedSections,
   onExpandedSectionsChange,
@@ -3614,168 +3639,133 @@ function InventorySubContainer({
 }) {
   const [enabled, setEnabled] = useState(true);
   const [checked, setChecked] = useState(true);
-  const toggleSection = (section: string) => {
+  const setSectionOpen = (section: string, open: boolean) => {
     onExpandedSectionsChange(
-      expandedSections.includes(section)
-        ? expandedSections.filter((value) => value !== section)
-        : [...expandedSections, section]
+      open ? [...expandedSections, section] : expandedSections.filter((value) => value !== section)
     );
   };
 
   return (
     <div className="grid gap-3">
-      <div className="overflow-hidden rounded-xl border border-border-subtle">
-        <button
-          type="button"
-          onClick={() => toggleSection('text-fields')}
-          aria-expanded={expandedSections.includes('text-fields')}
-          className="flex w-full items-center gap-2 px-3 py-2.5 text-left transition hover:bg-surface-overlay"
-        >
-          <ChevronDown
-            size={12}
-            className={cn(
-              'shrink-0 text-foreground-subtle transition-transform duration-150',
-              !expandedSections.includes('text-fields') && '-rotate-90'
-            )}
-          />
-          <span className="min-w-0 flex-1 text-xs font-medium text-foreground">
-            Text and numeric fields
-          </span>
-        </button>
+      <CollapsibleBox
+        open={expandedSections.includes('text-fields')}
+        onOpenChange={(open) => setSectionOpen('text-fields', open)}
+      >
+        <CollapsibleBoxHeader>
+          <CollapsibleBoxTrigger>Text and numeric fields</CollapsibleBoxTrigger>
+          <CollapsibleBoxActions>
+            <InventoryCollapsibleBoxMenu label="Text and numeric fields" />
+          </CollapsibleBoxActions>
+        </CollapsibleBoxHeader>
+        <CollapsibleBoxContent>
+          <InventoryField label="Display name">
+            <Input defaultValue="Invoice extraction" />
+          </InventoryField>
+          <InventoryField label="Instructions">
+            <Textarea defaultValue="Extract the invoice number and total." rows={3} />
+          </InventoryField>
+          <InventoryField label="Retries">
+            <Input type="number" defaultValue="3" min="0" />
+          </InventoryField>
+          <InventoryField label="System identifier">
+            <Input value="invoice-extraction-01" readOnly />
+          </InventoryField>
+        </CollapsibleBoxContent>
+      </CollapsibleBox>
 
-        {expandedSections.includes('text-fields') && (
-          <div className="border-t border-border-subtle">
-            <section className="grid gap-4 px-3 py-4">
-              <InventoryField label="Display name">
-                <Input defaultValue="Invoice extraction" />
-              </InventoryField>
-              <InventoryField label="Instructions">
-                <Textarea defaultValue="Extract the invoice number and total." rows={3} />
-              </InventoryField>
-              <InventoryField label="Retries">
-                <Input type="number" defaultValue="3" min="0" />
-              </InventoryField>
-              <InventoryField label="System identifier">
-                <Input value="invoice-extraction-01" readOnly />
-              </InventoryField>
-            </section>
-          </div>
-        )}
-      </div>
-
-      <div className="overflow-hidden rounded-xl border border-border-subtle">
-        <button
-          type="button"
-          onClick={() => toggleSection('choices')}
-          aria-expanded={expandedSections.includes('choices')}
-          className="flex w-full items-center gap-2 px-3 py-2.5 text-left transition hover:bg-surface-overlay"
-        >
-          <ChevronDown
-            size={12}
-            className={cn(
-              'shrink-0 text-foreground-subtle transition-transform duration-150',
-              !expandedSections.includes('choices') && '-rotate-90'
-            )}
-          />
-          <span className="min-w-0 flex-1 text-xs font-medium text-foreground">
-            Selection controls
-          </span>
-        </button>
-        {expandedSections.includes('choices') && (
-          <section className="grid gap-5 border-t border-border-subtle px-3 py-4">
-            <InventoryField label="Connection">
-              <Select defaultValue="production">
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="production">Production</SelectItem>
-                  <SelectItem value="staging">Staging</SelectItem>
-                </SelectContent>
-              </Select>
-            </InventoryField>
-            <InventoryField label="Processing mode">
-              <RadioGroup defaultValue="automatic" className="grid gap-2">
-                <Label variant="muted" className="flex items-center gap-2">
-                  <RadioGroupItem value="automatic" />
-                  Automatic
-                </Label>
-                <Label variant="muted" className="flex items-center gap-2">
-                  <RadioGroupItem value="manual" />
-                  Manual review
-                </Label>
-              </RadioGroup>
-            </InventoryField>
-            <div className="flex items-start gap-2">
-              <Checkbox
-                id="sub-container-save-output"
-                checked={checked}
-                onCheckedChange={(value) => setChecked(value === true)}
-              />
-              <Label variant="muted" htmlFor="sub-container-save-output">
-                Save output for later steps
+      <CollapsibleBox
+        open={expandedSections.includes('choices')}
+        onOpenChange={(open) => setSectionOpen('choices', open)}
+      >
+        <CollapsibleBoxHeader>
+          <CollapsibleBoxTrigger>Selection controls</CollapsibleBoxTrigger>
+          <CollapsibleBoxActions>
+            <InventoryCollapsibleBoxMenu label="Selection controls" />
+          </CollapsibleBoxActions>
+        </CollapsibleBoxHeader>
+        <CollapsibleBoxContent className="gap-5">
+          <InventoryField label="Connection">
+            <Select defaultValue="production">
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="production">Production</SelectItem>
+                <SelectItem value="staging">Staging</SelectItem>
+              </SelectContent>
+            </Select>
+          </InventoryField>
+          <InventoryField label="Processing mode">
+            <RadioGroup defaultValue="automatic" className="grid gap-2">
+              <Label variant="muted" className="flex items-center gap-2">
+                <RadioGroupItem value="automatic" />
+                Automatic
               </Label>
-            </div>
-            <div className="flex items-center justify-between gap-4">
-              <Label htmlFor="sub-container-enabled">Enabled</Label>
-              <Switch
-                id="sub-container-enabled"
-                size="sm"
-                checked={enabled}
-                onCheckedChange={setEnabled}
-              />
-            </div>
-            <InventoryField label="Confidence threshold" description="Current value: 75%">
-              <Slider defaultValue={[75]} max={100} step={5} />
-            </InventoryField>
-          </section>
-        )}
-      </div>
+              <Label variant="muted" className="flex items-center gap-2">
+                <RadioGroupItem value="manual" />
+                Manual review
+              </Label>
+            </RadioGroup>
+          </InventoryField>
+          <div className="flex items-start gap-2">
+            <Checkbox
+              id="sub-container-save-output"
+              checked={checked}
+              onCheckedChange={(value) => setChecked(value === true)}
+            />
+            <Label variant="muted" htmlFor="sub-container-save-output">
+              Save output for later steps
+            </Label>
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            <Label htmlFor="sub-container-enabled">Enabled</Label>
+            <Switch
+              id="sub-container-enabled"
+              size="sm"
+              checked={enabled}
+              onCheckedChange={setEnabled}
+            />
+          </div>
+          <InventoryField label="Confidence threshold" description="Current value: 75%">
+            <Slider defaultValue={[75]} max={100} step={5} />
+          </InventoryField>
+        </CollapsibleBoxContent>
+      </CollapsibleBox>
 
-      <div className="overflow-hidden rounded-xl border border-border-subtle">
-        <button
-          type="button"
-          onClick={() => toggleSection('advanced')}
-          aria-expanded={expandedSections.includes('advanced')}
-          className="flex w-full items-center gap-2 px-3 py-2.5 text-left transition hover:bg-surface-overlay"
-        >
-          <ChevronDown
-            size={12}
-            className={cn(
-              'shrink-0 text-foreground-subtle transition-transform duration-150',
-              !expandedSections.includes('advanced') && '-rotate-90'
-            )}
-          />
-          <span className="min-w-0 flex-1 text-xs font-medium text-foreground">
-            Advanced options
-          </span>
-        </button>
-        {expandedSections.includes('advanced') && (
-          <section className="grid gap-4 border-t border-border-subtle px-3 py-4">
-            <Alert>
-              <CircleCheck />
-              <AlertTitle>Configuration is valid</AlertTitle>
-              <AlertDescription>All required values are ready.</AlertDescription>
-            </Alert>
-            <InventoryField label="Field with validation" description="Use a unique name.">
-              <Input
-                defaultValue="Existing configuration"
-                aria-invalid="true"
-                className="border-destructive"
-              />
-            </InventoryField>
-            <div className="flex flex-wrap gap-2">
-              <Badge>Active</Badge>
-              <Badge variant="outline">Optional</Badge>
-            </div>
-            <div className="flex justify-end gap-2 border-t border-border-subtle pt-4">
-              <Button variant="ghost">Cancel</Button>
-              <Button variant="outline">Test</Button>
-              <Button>Save</Button>
-            </div>
-          </section>
-        )}
-      </div>
+      <CollapsibleBox
+        open={expandedSections.includes('advanced')}
+        onOpenChange={(open) => setSectionOpen('advanced', open)}
+      >
+        <CollapsibleBoxHeader>
+          <CollapsibleBoxTrigger>Advanced options</CollapsibleBoxTrigger>
+          <CollapsibleBoxActions>
+            <InventoryCollapsibleBoxMenu label="Advanced options" />
+          </CollapsibleBoxActions>
+        </CollapsibleBoxHeader>
+        <CollapsibleBoxContent>
+          <Alert>
+            <CircleCheck />
+            <AlertTitle>Configuration is valid</AlertTitle>
+            <AlertDescription>All required values are ready.</AlertDescription>
+          </Alert>
+          <InventoryField label="Field with validation" description="Use a unique name.">
+            <Input
+              defaultValue="Existing configuration"
+              aria-invalid="true"
+              className="border-destructive"
+            />
+          </InventoryField>
+          <div className="flex flex-wrap gap-2">
+            <Badge>Active</Badge>
+            <Badge variant="outline">Optional</Badge>
+          </div>
+          <div className="flex justify-end gap-2 border-t border-border-subtle pt-4">
+            <Button variant="ghost">Cancel</Button>
+            <Button variant="outline">Test</Button>
+            <Button>Save</Button>
+          </div>
+        </CollapsibleBoxContent>
+      </CollapsibleBox>
     </div>
   );
 }

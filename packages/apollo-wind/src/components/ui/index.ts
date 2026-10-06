@@ -15,6 +15,7 @@ export * from './card';
 export * from './chart';
 export * from './checkbox';
 export * from './collapsible';
+export * from './collapsible-box';
 export * from './combobox';
 export * from './command';
 export * from './context-menu';
