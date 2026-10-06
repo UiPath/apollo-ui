@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.63.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.62.0...@uipath/apollo-wind@2.63.0) (2026-10-06)
+
+### Features
+
+* **apollo-wind:** add FolderPicker ([828480c](https://github.com/UiPath/apollo-ui/commit/828480ce4a307ef390005648beee4e91f534ffd3))
+
 ## [@uipath/apollo-wind-v2.62.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.61.0...@uipath/apollo-wind@2.62.0) (2026-10-06)
 
 ### Features
