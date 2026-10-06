@@ -5,9 +5,26 @@ import { useTranslation } from "react-i18next";
 import type { TemplateHost } from "@/app/_components/template-hosts";
 import { DropZones } from "./drop-zones";
 import type { SlotTarget } from "./slot-popover";
-import { frameOf, slotElement, useSlotBoxes } from "./use-slot-boxes";
+import {
+  type Box,
+  frameOf,
+  sideTowardCenter,
+  slotElement,
+  useSlotBoxes,
+} from "./use-slot-boxes";
 import type { SlotContents } from "./workbench-compose";
 import { useWorkbenchDrag } from "./workbench-drag";
+
+/** The frame's own box, from its top-left corner. */
+const frameBox = (element: HTMLElement | null): Box => {
+  const frame = frameOf(element);
+  return {
+    x: 0,
+    y: 0,
+    width: frame?.offsetWidth ?? 0,
+    height: frame?.offsetHeight ?? 0,
+  };
+};
 
 interface EditSlotsProps {
   host: TemplateHost;
@@ -76,6 +93,7 @@ export function EditSlots({
                 slot,
                 opener: event.currentTarget,
                 anchor: element ?? event.currentTarget,
+                side: sideTowardCenter(box, frameBox(ref.current)),
               });
             }}
           >

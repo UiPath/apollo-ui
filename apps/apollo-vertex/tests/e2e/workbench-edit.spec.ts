@@ -104,18 +104,60 @@ test("Edit outlines every slot, makes occupants inert, and opens a slot on a cli
     "aria-expanded",
     "true",
   );
-  // Placed against the slot: above its bottom edge, clear of the dock.
+  // Beside the slot, toward the page's middle, never over it; clear of the dock.
   const [shown, end, dock] = await Promise.all([
     popover(page).boundingBox(),
     slotBox(page, "end-panel").boundingBox(),
     page.locator("[data-slot=workbench-dock]").boundingBox(),
   ]);
-  const bottom = (shown?.y ?? 0) + (shown?.height ?? 0);
-  expect(bottom).toBeLessThanOrEqual((end?.y ?? 0) + (end?.height ?? 0));
-  expect(bottom).toBeLessThanOrEqual(dock?.y ?? 0);
+  expect((shown?.x ?? 0) + (shown?.width ?? 0)).toBeLessThanOrEqual(
+    end?.x ?? 0,
+  );
+  expect((shown?.y ?? 0) + (shown?.height ?? 0)).toBeLessThanOrEqual(
+    dock?.y ?? 0,
+  );
   await page.keyboard.press("Escape");
   await expect(popover(page)).toHaveCount(0);
   await expect(editSlot(page, "end-panel")).toBeFocused();
+});
+
+test("a slot opened on the stage gets its popover beside it, toward the middle", async ({
+  page,
+}) => {
+  await ready(page, `${QUERY}&mode=edit`);
+  const placed = async (slot: string) => {
+    await editSlot(page, slot).click();
+    await expect(popover(page)).toHaveAttribute("data-popover-slot", slot);
+    const [shown, box] = await Promise.all([
+      popover(page).boundingBox(),
+      slotBox(page, slot).boundingBox(),
+    ]);
+    await page.keyboard.press("Escape");
+    await expect(popover(page)).toHaveCount(0);
+    return { shown, box };
+  };
+  // The start panel's opens on its right.
+  const start = await placed("start-panel");
+  expect(start.shown?.x ?? 0).toBeGreaterThanOrEqual(
+    (start.box?.x ?? 0) + (start.box?.width ?? 0),
+  );
+  // The header spans the page: its opens below it.
+  const header = await placed("header");
+  expect(header.shown?.y ?? 0).toBeGreaterThanOrEqual(
+    (header.box?.y ?? 0) + (header.box?.height ?? 0),
+  );
+  // From the dock, it still opens above the chip.
+  const chip = page.locator(
+    "[data-slot=workbench-slot-chip][data-chip-slot=main]",
+  );
+  await chip.click();
+  const [shown, chipBox] = await Promise.all([
+    popover(page).boundingBox(),
+    chip.boundingBox(),
+  ]);
+  expect((shown?.y ?? 0) + (shown?.height ?? 0)).toBeLessThanOrEqual(
+    chipBox?.y ?? 0,
+  );
 });
 
 test("in Edit, slots are focusable and Enter opens one", async ({ page }) => {

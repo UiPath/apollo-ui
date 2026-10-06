@@ -54,7 +54,18 @@ export interface SlotTarget {
   /** Focus goes back here when it closes. */
   opener: HTMLElement;
   anchor: Measurable;
+  /**
+   * The side of the anchor it opens on, beside a slot on the stage. Left
+   * out, it opens above the anchor (a dock chip).
+   */
+  side?: "top" | "right" | "bottom" | "left";
 }
+
+/** The room the dock takes at the bottom of the window, so the popover stays clear of it. */
+const dockRoom = () => {
+  const dock = document.querySelector("[data-slot=workbench-dock]");
+  return dock ? window.innerHeight - dock.getBoundingClientRect().top + 8 : 8;
+};
 
 interface SlotPopoverProps {
   host: TemplateHost;
@@ -100,7 +111,11 @@ export function SlotPopover({
     if (target) opener.current = target.opener;
   }, [target]);
   const anchor: RefObject<Measurable | null> = {
-    current: target ? above(target.anchor) : null,
+    current: target
+      ? target.side
+        ? target.anchor
+        : above(target.anchor)
+      : null,
   };
   const slot = target?.slot ?? "";
   const slotName = host.slotLabels[slot] ?? slot;
@@ -118,10 +133,12 @@ export function SlotPopover({
       <PopoverAnchor virtualRef={anchor as RefObject<Measurable>} />
       {target && (
         <PopoverContent
-          side="top"
+          side={target.side ?? "top"}
           align="start"
           sideOffset={8}
-          collisionPadding={8}
+          collisionPadding={
+            target.side ? { top: 8, left: 8, right: 8, bottom: dockRoom() } : 8
+          }
           aria-labelledby={headingId}
           data-slot="workbench-slot-popover"
           data-popover-slot={slot}
