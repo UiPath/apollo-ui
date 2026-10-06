@@ -4,8 +4,9 @@ import { open, urlQuery } from "./workbench-helpers";
 
 /*
  * The template view's composer, in each slot's popover: adding an
- * occupant to a slot as a new tab or into a tab, taking one out, the
- * focused occupant's lock, and the link. Queue is focused in the Detail
+ * occupant as a new tab or into a tab, a stack's label, taking one out,
+ * replacing or clearing a slot that holds one, the focused occupant's
+ * lock, each occupant once on the page, and the link. Queue is focused in the Detail
  * page's end panel throughout.
  */
 
@@ -14,7 +15,7 @@ const BASE = `${SLOT}&zoom=100`;
 
 const menu = (page: Page) => page.locator("[data-slot=workbench-slot-popover]");
 const section = (page: Page, slot: string) =>
-  menu(page).locator(`[data-contents-slot=${slot}]`);
+  menu(page).and(page.locator(`[data-popover-slot=${slot}]`));
 const end = (page: Page) =>
   page.locator("[data-slot=workbench-page] [data-slot=detail-page-end-panel]");
 /** The panel's own tab bar; an occupant can have tabs of its own. */
@@ -43,27 +44,48 @@ async function ready(page: Page, query: string) {
   await settle(page);
 }
 
-/** Picks an occupant in a slot's Add list. */
-const pick = (page: Page, slot: string, occupant: string) =>
-  section(page, slot)
-    .getByRole("group", { name: /^Add an occupant to / })
+/** The tab rows in a panel slot's popover, by number. */
+const tabRow = (page: Page, number: number) =>
+  menu(page)
+    .locator("[data-slot=workbench-contents-tab]")
+    .nth(number - 1);
+
+/** Picks an occupant in the picker that's open. */
+const pick = (page: Page, occupant: string) =>
+  menu(page)
+    .locator("[data-slot=workbench-picker]")
     .getByRole("button", { name: occupant, exact: true });
 
-const where = (page: Page, occupant: string) =>
-  menu(page).getByRole("group", { name: `Where ${occupant} goes` });
+/** The occupant focus is on: its row in the popover. */
+const focusedRow = (page: Page) =>
+  page.evaluate(
+    () => (document.activeElement as HTMLElement | null)?.dataset.row ?? null,
+  );
 
 test.beforeEach(async ({ page }) => {
   await page.setViewportSize({ width: 1920, height: 1000 });
 });
 
-test("adds an occupant as a new tab", async ({ page }) => {
+test("adds an occupant as a new tab, in one click", async ({ page }) => {
   await ready(page, BASE);
   await expect(bar(page)).toHaveCount(0);
   await openMenu(page);
-  await pick(page, "end-panel", "Key facts").click();
-  await where(page, "Key facts")
-    .getByRole("button", { name: "New tab" })
-    .click();
+  const newTab = menu(page).getByRole("button", { name: "New tab" });
+  await newTab.click();
+  await expect(newTab).toHaveAttribute("aria-expanded", "true");
+  // Only what fits a side panel and isn't on the page; the rest is counted.
+  await expect(
+    menu(page).locator("[data-slot=workbench-picker] button"),
+  ).toHaveText(["Activity timeline", "Key facts", "Participants"]);
+  await expect(
+    menu(page).locator("[data-slot=workbench-picker-left-out]"),
+  ).toHaveText(["1 is on the page already", "1 doesn't fit a side panel"]);
+  await pick(page, "Key facts").click();
+  // The picker closes, and focus is on the new row.
+  await expect(menu(page).locator("[data-slot=workbench-picker]")).toHaveCount(
+    0,
+  );
+  expect(await focusedRow(page)).toBe("key-facts");
   await expect.poll(() => tabNames(page)).toEqual(["Queue", "Key facts"]);
   expect(urlQuery(page)).toContain("end-panel-contents=queue~key-facts");
   await expect(
@@ -71,16 +93,21 @@ test("adds an occupant as a new tab", async ({ page }) => {
   ).toHaveAttribute("data-count", "2");
 });
 
-test("stacks an occupant into a tab, with a label", async ({ page }) => {
+test("stacks an occupant into a tab, which takes a label", async ({ page }) => {
   await ready(page, `${BASE}&end-panel-contents=queue~key-facts`);
   await openMenu(page);
-  await pick(page, "end-panel", "Participants").click();
-  await where(page, "Participants")
-    .getByRole("button", { name: "Add to tab Key facts" })
+  // A tab of one occupant shows no label.
+  await expect(
+    menu(page).locator("[data-slot=workbench-contents-label]"),
+  ).toHaveCount(0);
+  await tabRow(page, 2)
+    .getByRole("button", { name: "Add to this tab" })
     .click();
-  // A tab that becomes a stack needs a label.
-  await menu(page).getByRole("radio", { name: "Overview" }).click();
-  await menu(page).getByRole("button", { name: "Add", exact: true }).click();
+  await pick(page, "Participants").click();
+  expect(await focusedRow(page)).toBe("participants");
+  // Becoming a stack, it takes the first preset no tab has.
+  const chip = tabRow(page, 2).locator("[data-slot=workbench-contents-label]");
+  await expect(chip).toHaveText("Overview");
   await expect.poll(() => tabNames(page)).toEqual(["Queue", "Overview"]);
   expect(urlQuery(page)).toContain(
     "end-panel-contents=queue~overview:key-facts.participants",
@@ -89,6 +116,19 @@ test("stacks an occupant into a tab, with a label", async ({ page }) => {
   const body = end(page).locator('[data-tab="key-facts"]');
   await expect(body.locator("[data-occupant=key-facts]")).toBeVisible();
   await expect(body.locator("[data-occupant=participants]")).toBeVisible();
+
+  // The chip picks another preset. (The stage click closed the popover.)
+  await openMenu(page);
+  await chip.click();
+  await expect(chip).toHaveAttribute("aria-expanded", "true");
+  await menu(page)
+    .getByRole("group", { name: "Labels for tab 2" })
+    .getByRole("radio", { name: "People" })
+    .click();
+  await expect(chip).toHaveText("People");
+  await expect(chip).toBeFocused();
+  await expect.poll(() => tabNames(page)).toEqual(["Queue", "People"]);
+  expect(urlQuery(page)).toContain("people:key-facts.participants");
 });
 
 test("removes occupants, and a tab they empty goes", async ({ page }) => {
@@ -101,7 +141,7 @@ test("removes occupants, and a tab they empty goes", async ({ page }) => {
     .toEqual(["Queue", "Overview", "Activity timeline"]);
   await openMenu(page);
   const remove = (name: string) =>
-    section(page, "end-panel")
+    menu(page)
       .getByRole("button", { name: `Remove ${name}` })
       .click();
 
@@ -110,33 +150,66 @@ test("removes occupants, and a tab they empty goes", async ({ page }) => {
   // Back to one occupant, the tab takes that occupant's title again.
   await remove("Participants");
   await expect.poll(() => tabNames(page)).toEqual(["Queue", "Key facts"]);
+  await expect(
+    menu(page).locator("[data-slot=workbench-contents-label]"),
+  ).toHaveCount(0);
   await remove("Key facts");
   await expect(bar(page)).toHaveCount(0);
   expect(urlQuery(page)).not.toContain("end-panel-contents");
 });
 
-test("the focused occupant stays, and says why", async ({ page }) => {
+test("the focused occupant stays, says why, and isn't offered elsewhere", async ({
+  page,
+}) => {
   await ready(page, `${BASE}&end-panel-contents=queue~key-facts`);
   await openMenu(page);
-  const reason =
-    "It's the occupant you're looking at, so it stays where it is.";
-  const remove = section(page, "end-panel").getByRole("button", {
-    name: "Remove Queue",
-  });
-  await expect(remove).toBeDisabled();
-  await expect(remove).toHaveAccessibleDescription(reason);
-  // Not offered in another slot either.
-  await openMenu(page, "start-panel");
-  const elsewhere = pick(page, "start-panel", "Queue");
-  await expect(elsewhere).toBeDisabled();
-  await expect(elsewhere).toHaveAccessibleDescription(reason);
+  const row = menu(page).locator("[data-row=queue]");
+  await expect(row.getByRole("button")).toHaveCount(0);
+  await expect(row).toContainText(
+    "It's the occupant you're looking at, so it stays where it is.",
+  );
   // Another occupant can go.
-  await openMenu(page);
   await expect(
-    section(page, "end-panel").getByRole("button", {
-      name: "Remove Key facts",
-    }),
+    menu(page).getByRole("button", { name: "Remove Key facts" }),
   ).toBeEnabled();
+  // Neither is offered in another slot: each is on the page once.
+  await openMenu(page, "start-panel");
+  await menu(page).getByRole("button", { name: "New tab" }).click();
+  const offered = menu(page).locator("[data-slot=workbench-picker] button");
+  await expect(offered).toHaveText(["Activity timeline", "Participants"]);
+  await expect(
+    menu(page).locator("[data-slot=workbench-picker-left-out]").first(),
+  ).toHaveText("2 are on the page already");
+});
+
+test("a slot that holds one: Replace and Clear, and the picker when empty", async ({
+  page,
+}) => {
+  await ready(page, `${BASE}&main-contents=key-facts`);
+  const main = page.locator(
+    "[data-slot=workbench-page] [data-slot=detail-page-main]",
+  );
+  await expect(main.locator("[data-occupant=key-facts]")).toBeVisible();
+  await openMenu(page, "main");
+  // No tabs and no stacks: one occupant, replaced or cleared.
+  await expect(menu(page).getByRole("button", { name: "New tab" })).toHaveCount(
+    0,
+  );
+  await menu(page).getByRole("button", { name: "Replace" }).click();
+  await pick(page, "Participants").click();
+  await expect(main.locator("[data-occupant=participants]")).toBeVisible();
+  expect(urlQuery(page)).toContain("main-contents=participants");
+  expect(await focusedRow(page)).toBe("participants");
+
+  await menu(page).getByRole("button", { name: "Clear" }).click();
+  // Empty, it opens the picker straight away, and focus goes into it.
+  await expect(menu(page)).toContainText("Nothing here yet.");
+  await expect(
+    menu(page).locator("[data-slot=workbench-picker] button").first(),
+  ).toBeFocused();
+  expect(urlQuery(page)).not.toContain("main-contents");
+  await pick(page, "Key facts").click();
+  await expect(main.locator("[data-occupant=key-facts]")).toBeVisible();
 });
 
 test("a link opens the same contents and tab", async ({ page }) => {

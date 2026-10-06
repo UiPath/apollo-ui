@@ -16,8 +16,8 @@ import {
 import type { OccupantSpec } from "@/lib/composition";
 import type { LayoutChoices } from "@/lib/layout";
 import { Locked } from "./locked";
+import { SlotContentsSection } from "./slot-contents";
 import { SlotLayoutSection } from "./slot-layout-section";
-import { SlotSection } from "./template-contents-menu";
 import type { SlotContents } from "./workbench-compose";
 import { hasLayout, leftOut, reasonCopy } from "./workbench-layout";
 import { slotFit } from "./workbench-url-state";
@@ -163,7 +163,7 @@ export function SlotPopover({
                 <SlotLayoutSection {...layoutProps} parts={["present"]} />
               </>
             ) : (
-              <SlotSection
+              <SlotContentsSection
                 host={host}
                 slot={slot}
                 contents={contents}

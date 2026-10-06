@@ -13,13 +13,7 @@ import {
   type PanelSpec,
   validatePanel,
 } from "@/lib/panel";
-import {
-  addAsTab,
-  addToTab,
-  canAddTab,
-  removeOccupant,
-  stackProblem,
-} from "@/lib/panel-editing";
+import { addAsTab, addToTab, removeOccupant } from "@/lib/panel-editing";
 
 /*
  * What each slot of the template view holds, for any template: a panel of
@@ -66,16 +60,8 @@ export type SlotContents = Readonly<Record<string, PanelSpec>>;
  * - fill-alone: a fill occupant has a tab to itself.
  * - tab-cap: the panel has as many tabs as it can.
  * - no-fit: the occupant doesn't fit this slot's surface.
- * - full: the slot holds one occupant, and has one.
- * - present: the occupant is in this slot already.
  */
-export type ComposeLock =
-  | "focus"
-  | "fill-alone"
-  | "tab-cap"
-  | "no-fit"
-  | "full"
-  | "present";
+export type ComposeLock = "focus" | "fill-alone" | "tab-cap" | "no-fit";
 
 /** Labels a stack's tab can take, by their id in links, in the order the composer offers them. */
 export const TAB_LABELS = [
@@ -198,61 +184,8 @@ export function normalizeTabs(
   );
 }
 
-/** A choice in the composer, and why it's locked, or null when it can be made. */
-export interface ComposeChoice<T> {
-  value: T;
-  lock: ComposeLock | null;
-}
-
-/**
- * Every registered occupant as a choice to add to a slot, each locked when
- * it can't go there: it's there already, it's the focused occupant, which
- * stays in its own slot, it doesn't fit, or the slot holds one and has it.
- */
-export function addChoices(
-  host: TemplateHost,
-  contents: SlotContents,
-  slot: string,
-  focus: string,
-  known: readonly OccupantSpec[] = REGISTERED,
-): ComposeChoice<string>[] {
-  const here = contents[slot];
-  const names = here ? occupantsIn(here) : [];
-  const full = !holdsPanel(host, slot) && names.length > 0;
-  const lockFor = (spec: OccupantSpec): ComposeLock | null => {
-    if (names.includes(spec.name)) return "present";
-    if (spec.name === focus) return "focus";
-    if (!slotFit(host, slot, spec).fits) return "no-fit";
-    return full ? "full" : null;
-  };
-  return known.map((spec) => ({ value: spec.name, lock: lockFor(spec) }));
-}
-
-/** Where an occupant can go in a panel slot: a new tab, or into a tab, by index. */
+/** Where an occupant goes in a panel slot: a new tab, or into a tab, by index. */
 export type Destination = "new-tab" | number;
-
-/**
- * Where an occupant can go in a slot that holds a panel: a new tab, locked
- * at the tab cap, and each tab to stack it in, locked when either is a
- * fill occupant.
- */
-export function destinations(
-  host: TemplateHost,
-  contents: SlotContents,
-  slot: string,
-  occupant: string,
-  known: readonly OccupantSpec[] = REGISTERED,
-): ComposeChoice<Destination>[] {
-  if (!holdsPanel(host, slot)) return [];
-  const panel = contents[slot] ?? { surface: "side-panel", tabs: [] };
-  return [
-    { value: "new-tab", lock: canAddTab(panel) ? null : "tab-cap" },
-    ...panel.tabs.map((tab, index) => ({
-      value: index,
-      lock: stackProblem(tab, occupant, known) ? ("fill-alone" as const) : null,
-    })),
-  ];
-}
 
 interface AddOptions {
   /** The label a tab stacked into takes, when it has none. */

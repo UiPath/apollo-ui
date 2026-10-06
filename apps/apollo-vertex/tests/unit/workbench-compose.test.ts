@@ -2,15 +2,15 @@ import { describe, expect, it } from "vitest";
 import { TEMPLATE_HOSTS } from "@/app/_components/template-hosts";
 import {
   activeTab,
-  addChoices,
   addOccupant,
-  destinations,
+  holdsPanel,
   normalizeContents,
   occupantsIn,
   removeFromSlot,
   removeLock,
   type SlotContents,
 } from "@/app/preview/occupants/workbench-compose";
+import { panelLocks, picker } from "@/app/preview/occupants/workbench-picker";
 import type { LocaleKey, OccupantSpec } from "@/lib/composition";
 import { TWO_UP_HOST } from "./fixtures/two-up-template";
 
@@ -60,15 +60,12 @@ describe("the focused occupant", () => {
     expect(contents).not.toHaveProperty("start-panel");
   });
 
-  it("can't be added to another slot, with the focus reason", () => {
+  it("isn't offered for another slot", () => {
     const contents = normalizeContents(detailPage, {}, "end-panel", "queue");
-    const choice = addChoices(
-      detailPage,
-      contents,
-      "start-panel",
-      "queue",
-    ).find((c) => c.value === "queue");
-    expect(choice?.lock).toBe("focus");
+    // The composer never offers it there: it's on the page already.
+    const start = picker(detailPage, contents, "start-panel", "new-tab");
+    expect(start.choices).not.toContain("queue");
+    expect(start.left[0]).toEqual({ reason: "on-page", count: 1 });
   });
 
   it("can't be removed, with the focus reason", () => {
@@ -96,12 +93,11 @@ describe("capacity", () => {
       occupantsIn(main.main ?? { surface: "side-panel", tabs: [] }),
     ).toEqual(["key-facts"]);
     expect(addOccupant(detailPage, main, "main", "participants")).toBe(main);
-    const full = addChoices(detailPage, main, "main", "queue").find(
-      (c) => c.value === "participants",
+    // There's nowhere to put another but in place of the one there.
+    expect(holdsPanel(detailPage, "main")).toBe(false);
+    expect(picker(detailPage, main, "main", "replace").choices).toContain(
+      "participants",
     );
-    expect(full?.lock).toBe("full");
-    // There's nowhere to put it but in place of the one there.
-    expect(destinations(detailPage, main, "main", "participants")).toEqual([]);
   });
 
   it("drops a single-occupant slot given more than one", () => {
@@ -169,14 +165,7 @@ describe("adding to a panel", () => {
         { known },
       );
     expect(contents["end-panel"]?.tabs).toHaveLength(5);
-    const [newTab] = destinations(
-      detailPage,
-      contents,
-      "end-panel",
-      "f",
-      known,
-    );
-    expect(newTab).toEqual({ value: "new-tab", lock: "tab-cap" });
+    expect(panelLocks(contents, "end-panel", known).newTab).toBe("tab-cap");
     expect(
       addOccupant(detailPage, contents, "end-panel", "f", "new-tab", {
         known: [...known, flowSpec("f")],
@@ -184,7 +173,7 @@ describe("adding to a panel", () => {
     ).toBe(contents);
   });
 
-  it("locks stacking a fill occupant, or into a fill occupant's tab", () => {
+  it("keeps a fill occupant alone in its tab", () => {
     const known = [
       flowSpec("a"),
       flowSpec("b"),
@@ -201,37 +190,28 @@ describe("adding to a panel", () => {
       "new-tab",
       { known },
     );
-    expect(
-      destinations(detailPage, contents, "end-panel", "doc", known),
-    ).toEqual([
-      { value: "new-tab", lock: null },
-      { value: 0, lock: "fill-alone" },
-      { value: 1, lock: "fill-alone" },
-    ]);
-    expect(
-      destinations(detailPage, contents, "end-panel", "b", known)[2],
-    ).toEqual({
-      value: 1,
-      lock: "fill-alone",
+    // Its own tab takes nothing else (the picker tests cover offering it).
+    expect(panelLocks(contents, "end-panel", known)).toEqual({
+      newTab: null,
+      tabs: [null, "fill-alone"],
     });
     expect(
       addOccupant(detailPage, contents, "end-panel", "b", 1, { label, known }),
     ).toBe(contents);
   });
 
-  it("offers every registered occupant, locking ones that don't fit", () => {
-    const choices = addChoices(detailPage, {}, "header", "key-facts");
-    expect(choices.length).toBeGreaterThan(1);
-    expect(choices.find((c) => c.value === "queue")?.lock).toBe("no-fit");
+  it("offers what fits, leaving out the ones that don't", () => {
+    const header = picker(detailPage, {}, "header", "replace");
+    expect(header.choices.length).toBeGreaterThan(0);
+    expect(header.choices).not.toContain("queue");
+    expect(header.left).toContainEqual({ reason: "no-fit", count: 3 });
   });
 
-  it("marks an occupant already there", () => {
+  it("doesn't offer an occupant already there", () => {
     const contents = addOccupant(detailPage, {}, "end-panel", "key-facts");
-    expect(
-      addChoices(detailPage, contents, "end-panel", "queue").find(
-        (c) => c.value === "key-facts",
-      )?.lock,
-    ).toBe("present");
+    const end = picker(detailPage, contents, "end-panel", "new-tab");
+    expect(end.choices).not.toContain("key-facts");
+    expect(end.left).toContainEqual({ reason: "on-page", count: 1 });
   });
 });
 
