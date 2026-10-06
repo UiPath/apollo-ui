@@ -202,13 +202,8 @@ export function StageSlotChips({
                   slot,
                   from: "stage",
                   opener: event.currentTarget,
-                  // Its top edge, so the popover opens just inside the slot.
-                  anchor: {
-                    getBoundingClientRect: () => {
-                      const r = element.getBoundingClientRect();
-                      return new DOMRect(r.x, r.y, r.width, 0);
-                    },
-                  },
+                  // The slot itself: the popover opens above its bottom edge.
+                  anchor: element,
                 });
               }}
             >

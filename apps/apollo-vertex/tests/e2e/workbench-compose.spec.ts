@@ -237,6 +237,32 @@ test("a slot that holds one: Replace and Clear, and the picker when empty", asyn
   await expect(main.locator("[data-occupant=key-facts]")).toBeVisible();
 });
 
+test("the popover opens above the dock, and scrolls to its layout", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1920, height: 760 });
+  await ready(
+    page,
+    `${SLOT}&end-panel-contents=queue~overview:key-facts.participants~activity-timeline`,
+  );
+  await openMenu(page);
+  const [box, dock] = await Promise.all([
+    menu(page).boundingBox(),
+    page.locator("[data-slot=workbench-dock]").boundingBox(),
+  ]);
+  expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(dock?.y ?? 0);
+  // Taller than the room: it scrolls itself, down to the layout.
+  expect(
+    await menu(page).evaluate((el) => el.scrollHeight > el.clientHeight),
+  ).toBe(true);
+  const placement = menu(page)
+    .getByRole("group", { name: "End panel placement" })
+    .getByRole("radio", { name: "Beside header" });
+  await placement.click();
+  await expect(placement).toHaveAttribute("aria-checked", "true");
+  expect(urlQuery(page)).toContain("end-panel-placement=beside-header");
+});
+
 test("a link opens the same contents and tab", async ({ page }) => {
   // In the order the workbench writes its params.
   const query = `${SLOT}&start-panel-contents=participants&end-panel-contents=queue~overview:key-facts.activity-timeline&end-panel-tab=key-facts&zoom=100`;

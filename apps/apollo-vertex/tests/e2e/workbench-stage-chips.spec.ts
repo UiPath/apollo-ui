@@ -76,7 +76,9 @@ test("pointing at a slot outlines it, and its chip takes the tag's place", async
   await expect(tag(page)).toBeVisible();
 });
 
-test("the chip opens the slot's popover, inside the slot", async ({ page }) => {
+test("the chip opens the slot's popover, above the slot's bottom", async ({
+  page,
+}) => {
   await ready(page);
   await pointAt(page, "end-panel");
   const end = chip(page, "end-panel");
@@ -92,12 +94,16 @@ test("the chip opens the slot's popover, inside the slot", async ({ page }) => {
   await end.click();
   await expect(popover(page)).toHaveAttribute("data-popover-slot", "end-panel");
   await expect(end).toHaveAttribute("aria-expanded", "true");
-  // The same popover as the dock's, placed against the slot.
-  const [slot, shown] = await Promise.all([
+  // The same popover as the dock's, above the slot's bottom edge, at its
+  // start, and clear of the dock.
+  const [slot, shown, dock] = await Promise.all([
     slotBox(page, "end-panel").boundingBox(),
     popover(page).boundingBox(),
+    page.locator("[data-slot=workbench-dock]").boundingBox(),
   ]);
-  expect(shown?.y ?? 0).toBeGreaterThanOrEqual(slot?.y ?? 0);
+  const bottom = (shown?.y ?? 0) + (shown?.height ?? 0);
+  expect(bottom).toBeLessThanOrEqual((slot?.y ?? 0) + (slot?.height ?? 0));
+  expect(bottom).toBeLessThanOrEqual(dock?.y ?? 0);
   // Escape closes it, and focus goes back to the chip.
   await page.keyboard.press("Escape");
   await expect(popover(page)).toHaveCount(0);

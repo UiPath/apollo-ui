@@ -27,6 +27,27 @@ interface Measurable {
   getBoundingClientRect: () => DOMRect;
 }
 
+/** The least room above a slot for its popover; with less, it opens above the dock. */
+const MIN_ROOM_PX = 360;
+
+/**
+ * Where the popover opens above: the anchor's bottom edge, never lower
+ * than the dock's top, so it never covers the dock. A slot with too
+ * little room above its bottom, like a header, opens above the dock too.
+ */
+const above = (anchor: Measurable): Measurable => ({
+  getBoundingClientRect: () => {
+    const box = anchor.getBoundingClientRect();
+    const dockTop =
+      document
+        .querySelector("[data-slot=workbench-dock]")
+        ?.getBoundingClientRect().top ?? window.innerHeight;
+    const bottom = Math.min(box.bottom, dockTop);
+    const y = bottom < MIN_ROOM_PX ? dockTop : bottom;
+    return new DOMRect(box.x, y, box.width, 0);
+  },
+});
+
 /** The slot a popover is open for, what opened it, and what it's placed against. */
 export interface SlotTarget {
   slot: string;
@@ -81,7 +102,7 @@ export function SlotPopover({
     if (target) opener.current = target.opener;
   }, [target]);
   const anchor: RefObject<Measurable | null> = {
-    current: target?.anchor ?? null,
+    current: target ? above(target.anchor) : null,
   };
   const slot = target?.slot ?? "";
   const slotName = host.slotLabels[slot] ?? slot;
@@ -99,12 +120,15 @@ export function SlotPopover({
       <PopoverAnchor virtualRef={anchor as RefObject<Measurable>} />
       {target && (
         <PopoverContent
-          side={target.from === "stage" ? "bottom" : "top"}
+          side="top"
           align="start"
+          sideOffset={8}
+          collisionPadding={8}
           aria-labelledby={headingId}
           data-slot="workbench-slot-popover"
           data-popover-slot={slot}
-          className="flex max-h-[min(40rem,var(--radix-popover-content-available-height))] w-80 flex-col gap-4 overflow-y-auto"
+          // Its own scroll, so all of it, down to the layout, stays reachable.
+          className="flex max-h-[min(40rem,var(--radix-popover-content-available-height))] w-80 flex-col gap-4 overflow-y-auto overscroll-contain"
           // Its own opener toggles it, so a press there isn't "outside".
           onInteractOutside={(event) => {
             if (
