@@ -1,8 +1,8 @@
 "use client";
 
-import { Lock } from "lucide-react";
 import { useId } from "react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { LockIcon } from "./lock-hint";
 
 interface ChoiceProps<Value extends string> {
   label: string;
@@ -28,9 +28,13 @@ export function Choice<Value extends string>({
   const noteId = useId();
   return (
     <div className="flex flex-col gap-1.5">
-      <p id={labelId} className="text-xs font-medium text-muted-foreground">
-        {label}
-      </p>
+      <div className="flex min-h-6 items-center gap-1">
+        <p id={labelId} className="text-xs font-medium text-muted-foreground">
+          {label}
+        </p>
+        {/* Why some options are locked: a lock, its tooltip, and the group's description. */}
+        {note && <LockIcon reason={note} id={noteId} />}
+      </div>
       <ToggleGroup
         type="single"
         variant="outline"
@@ -57,16 +61,6 @@ export function Choice<Value extends string>({
           </ToggleGroupItem>
         ))}
       </ToggleGroup>
-      {note && (
-        <p
-          id={noteId}
-          data-slot="workbench-layout-note"
-          className="flex items-start gap-1.5 text-xs text-muted-foreground"
-        >
-          <Lock aria-hidden className="mt-0.5 size-3 shrink-0" />
-          {note}
-        </p>
-      )}
     </div>
   );
 }

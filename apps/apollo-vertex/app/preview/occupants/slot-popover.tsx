@@ -7,7 +7,6 @@ import type {
   SlotStatus,
   TemplateHost,
 } from "@/app/_components/template-hosts";
-import { Button } from "@/components/ui/button";
 import {
   Popover,
   PopoverAnchor,
@@ -15,7 +14,7 @@ import {
 } from "@/components/ui/popover";
 import type { OccupantSpec } from "@/lib/composition";
 import type { LayoutChoices } from "@/lib/layout";
-import { Locked } from "./locked";
+import { LockableButton } from "./lock-hint";
 import { SlotContentsSection } from "./slot-contents";
 import { SlotLayoutSection } from "./slot-layout-section";
 import type { ContentsChange, SlotContents } from "./workbench-compose";
@@ -156,24 +155,19 @@ export function SlotPopover({
             {slotName}
           </h2>
           {slot !== focusSlot && (
-            <Locked reason={fits ? null : t(reasonCopy(host.spec, "no-fit"))}>
-              {(described) => (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="justify-start"
-                  disabled={!fits}
-                  {...described}
-                  onClick={() => {
-                    onSlot(slot);
-                    headingRef.current?.focus();
-                  }}
-                >
-                  <MoveRight aria-hidden />
-                  {t("workbench_slot_show_here", { occupant: spec.label })}
-                </Button>
-              )}
-            </Locked>
+            <LockableButton
+              variant="outline"
+              size="sm"
+              className="justify-start"
+              reason={fits ? null : t(reasonCopy(host.spec, "no-fit"))}
+              onClick={() => {
+                onSlot(slot);
+                headingRef.current?.focus();
+              }}
+            >
+              {fits ? <MoveRight aria-hidden /> : null}
+              {t("workbench_slot_show_here", { occupant: spec.label })}
+            </LockableButton>
           )}
           <section
             aria-label={t("workbench_compose")}

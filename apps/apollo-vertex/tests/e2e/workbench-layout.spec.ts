@@ -164,6 +164,21 @@ test("the occupant's panel is locked, with the reason", async ({ page }) => {
   await expect(presence).toHaveAccessibleDescription(
     "The start panel holds the occupant, so it stays.",
   );
+  // Why is a lock by its label, with the reason as its tooltip.
+  const lock = popover(page)
+    .locator("[data-slot=workbench-layout-slot]")
+    .getByRole("img", { name: "Locked" })
+    .first();
+  await expect(lock).toHaveAccessibleDescription(
+    "The start panel holds the occupant, so it stays.",
+  );
+  await lock.hover();
+  await expect(page.getByRole("tooltip")).toHaveText(
+    "The start panel holds the occupant, so it stays.",
+  );
+  await expect(
+    popover(page).locator("[data-slot=workbench-layout-note]"),
+  ).toHaveCount(0);
   const state = group(page, "Start panel state");
   await expect(state.getByRole("radio", { name: "Closed" })).toBeDisabled();
   await expect(state).toHaveAccessibleDescription(

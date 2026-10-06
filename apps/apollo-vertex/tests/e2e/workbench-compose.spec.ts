@@ -99,18 +99,32 @@ test("adds an occupant as a new tab, in one click", async ({ page }) => {
 test("stacks an occupant into a tab, which takes a label", async ({ page }) => {
   await ready(page, `${BASE}&end-panel-contents=queue~key-facts`);
   await openMenu(page);
-  // A tab of one occupant shows no label.
+  // A tab of one occupant shows no label: it's one row, its name, ×, and +.
   await expect(
     menu(page).locator("[data-slot=workbench-contents-label]"),
   ).toHaveCount(0);
-  await tabRow(page, 2)
-    .getByRole("button", { name: "Add to this tab" })
-    .click();
+  const plus = tabRow(page, 2).getByRole("button", { name: "Add to this tab" });
+  await expect(tabRow(page, 2).locator("[data-row]")).toHaveCount(1);
+  await plus.hover();
+  await expect(page.getByRole("tooltip")).toHaveText("Add to this tab");
+  await plus.click();
+  // The picker opens under that row.
+  await expect(
+    tabRow(page, 2).locator("[data-slot=workbench-picker]"),
+  ).toBeVisible();
   await pick(page, "Participants").click();
   expect(await focusedRow(page)).toBe("participants");
   // Becoming a stack, it takes the first preset no tab has.
   const chip = tabRow(page, 2).locator("[data-slot=workbench-contents-label]");
   await expect(chip).toHaveText("Overview");
+  // Its occupants are rows under the label, each with ×.
+  await expect(tabRow(page, 2).locator("[data-row]")).toHaveText([
+    "Key facts",
+    "Participants",
+  ]);
+  await expect(
+    tabRow(page, 2).getByRole("button", { name: /^Remove / }),
+  ).toHaveCount(2);
   await expect.poll(() => tabNames(page)).toEqual(["Queue", "Overview"]);
   // The tab it went in is the one showing.
   await expect(selected(page)).toHaveText("Overview");
@@ -240,7 +254,8 @@ test("a slot that holds one: Replace and Clear, and the picker when empty", asyn
 test("the popover opens above the dock, and scrolls to its layout", async ({
   page,
 }) => {
-  await page.setViewportSize({ width: 1920, height: 760 });
+  // Short enough that the popover is taller than the room above the dock.
+  await page.setViewportSize({ width: 1920, height: 560 });
   await ready(
     page,
     `${SLOT}&end-panel-contents=queue~overview:key-facts.participants~activity-timeline`,

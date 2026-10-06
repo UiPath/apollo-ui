@@ -1,21 +1,15 @@
 "use client";
 
-import { ChevronDown, Lock, Plus, X } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { type ReactNode, useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { TemplateHost } from "@/app/_components/template-hosts";
 import { Button } from "@/components/ui/button";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import type { LocaleKey } from "@/lib/composition";
 import { specFor } from "@/lib/occupant-lookup";
 import type { OccupantRef, TabSpec } from "@/lib/panel";
-import { Locked } from "./locked";
+import { LockableButton, LockIcon } from "./lock-hint";
 import { SlotPicker } from "./slot-picker";
+import { SlotTabRows } from "./slot-tab-rows";
 import {
   addOccupant,
   type ComposeLock,
@@ -24,7 +18,6 @@ import {
   occupantsIn,
   removeFromSlot,
   type SlotContents,
-  TAB_LABELS,
 } from "./workbench-compose";
 import { reasonCopy } from "./workbench-layout";
 import {
@@ -51,11 +44,11 @@ interface SlotContentsSectionProps {
 }
 
 /**
- * A slot's contents, as the slot holds them. A panel slot lists its tabs,
- * each with its occupants and "Add to this tab", then "New tab": which
- * one you press decides tab or stack. A slot that holds one shows its
- * occupant, with Replace and Clear, or the picker when it's empty. Only
- * the real limits lock a button: a fill occupant's tab, and the tab cap.
+ * A slot's contents, as the slot holds them. A panel slot lists its tabs
+ * as rows, each with a "+" that adds to it, then "New tab": which you
+ * press decides tab or stack. A slot that holds one shows its occupant,
+ * with Replace and Clear, or the picker when it's empty. Only the real
+ * limits lock: a fill occupant's tab, and the tab cap.
  */
 export function SlotContentsSection({
   host,
@@ -141,42 +134,39 @@ export function SlotContentsSection({
         onPick={(occupant) => add(occupant, to)}
       />
     );
-  // The focused occupant's row: a lock, with why as a tooltip, and as the
-  // description of the lock and the row.
-  const focusLock = (
-    <>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span
-            role="img"
-            tabIndex={0}
-            data-slot="workbench-contents-lock"
-            aria-label={t("workbench_contents_locked")}
-            aria-describedby={reasonId}
-            className="flex size-6 items-center justify-center rounded-sm text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <Lock aria-hidden className="size-3.5" />
-          </span>
-        </TooltipTrigger>
-        <TooltipContent>{why("focus")}</TooltipContent>
-      </Tooltip>
-      <span id={reasonId} className="sr-only">
-        {why("focus")}
-      </span>
-    </>
-  );
-  const row = (occupant: string, actions: ReactNode) => (
-    <li
-      key={occupant}
+  const remove = (occupant: string) =>
+    change(removeFromSlot(contents, slot, occupant, focus), null);
+  // An occupant's own row: its name (or what's given in its place), then
+  // × or, for the focused one, a lock.
+  const row = (
+    occupant: string,
+    actions: ReactNode,
+    label: ReactNode = <span className="truncate">{name(occupant)}</span>,
+  ) => (
+    <div
       data-slot="workbench-contents-occupant"
       data-row={occupant}
       tabIndex={-1}
       {...(occupant === focus && { "aria-describedby": reasonId })}
-      className="flex min-h-7 items-center justify-between gap-2 rounded-sm px-1 py-0.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="flex min-h-7 min-w-0 flex-1 items-center justify-between gap-2 rounded-sm px-1 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <span>{name(occupant)}</span>
-      {occupant === focus ? focusLock : actions}
-    </li>
+      {label}
+      {occupant === focus ? (
+        <LockIcon reason={why("focus") ?? ""} id={reasonId} />
+      ) : (
+        actions
+      )}
+    </div>
+  );
+  const removeButton = (occupant: string) => (
+    <Button
+      variant="ghost"
+      size="icon-xs"
+      aria-label={t("workbench_compose_remove", { occupant: name(occupant) })}
+      onClick={() => remove(occupant)}
+    >
+      <X />
+    </Button>
   );
 
   // A slot that holds one: its occupant, or the picker straight away.
@@ -186,34 +176,32 @@ export function SlotContentsSection({
       <div ref={root} className="flex flex-col gap-2">
         {only ? (
           <>
-            <ul>
-              {row(
-                only,
-                <div className="flex gap-1">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-6 px-2 text-xs"
-                    aria-expanded={picking === "replace"}
-                    onClick={() => toggle("replace")}
-                  >
-                    {t("workbench_contents_replace")}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-6 px-2 text-xs"
-                    onClick={() =>
-                      change(removeFromSlot(contents, slot, only, focus), {
-                        picker: true,
-                      })
-                    }
-                  >
-                    {t("workbench_contents_clear")}
-                  </Button>
-                </div>,
-              )}
-            </ul>
+            {row(
+              only,
+              <div className="flex gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-6 px-2 text-xs"
+                  aria-expanded={picking === "replace"}
+                  onClick={() => toggle("replace")}
+                >
+                  {t("workbench_contents_replace")}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-6 px-2 text-xs"
+                  onClick={() =>
+                    change(removeFromSlot(contents, slot, only, focus), {
+                      picker: true,
+                    })
+                  }
+                >
+                  {t("workbench_contents_clear")}
+                </Button>
+              </div>,
+            )}
             {picker("replace")}
           </>
         ) : (
@@ -236,158 +224,45 @@ export function SlotContentsSection({
   }
 
   const locks = panelLocks(contents, slot);
-  const labels: readonly LocaleKey[] = TAB_LABELS.map((l) => l.key);
+  const newTabLock = why(locks.newTab);
   return (
-    <div ref={root} className="flex flex-col gap-3">
+    <div ref={root} className="flex flex-col gap-2">
       {panel && panel.tabs.length > 0 ? (
-        <ol className="flex flex-col gap-2">
-          {panel.tabs.map((tab, index) => {
-            const number = index + 1;
-            const stacked = tab.occupants.length > 1;
-            const tabLock = locks.tabs[index] ?? null;
-            return (
-              <li
-                key={tab.id}
-                data-slot="workbench-contents-tab"
-                data-tab={tab.id}
-                className="flex flex-col gap-1.5 rounded-md border border-border p-2"
-              >
-                {/* The tab's name as the page shows it; a stack's is its label, to change. */}
-                <div
-                  data-slot="workbench-contents-tab-name"
-                  className="flex min-h-6 items-center gap-2"
-                >
-                  {stacked && tab.label ? (
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="h-6 px-2 text-xs"
-                      data-slot="workbench-contents-label"
-                      data-label-tab={index}
-                      aria-expanded={labeling === index}
-                      aria-label={t("workbench_contents_change_label", {
-                        index: number,
-                        label: t(tab.label),
-                      })}
-                      onClick={() => {
-                        setPicking(null);
-                        setLabeling(labeling === index ? null : index);
-                      }}
-                    >
-                      {t(tab.label)}
-                      <ChevronDown aria-hidden />
-                    </Button>
-                  ) : (
-                    <span className="text-xs font-medium text-muted-foreground">
-                      {tabName(tab)}
-                    </span>
-                  )}
-                </div>
-                {labeling === index && tab.label && (
-                  <ToggleGroup
-                    type="single"
-                    variant="outline"
-                    size="sm"
-                    className="w-full flex-wrap"
-                    aria-label={t("workbench_contents_labels", {
-                      index: number,
-                    })}
-                    value={tab.label}
-                    onValueChange={(next) => {
-                      const chosen = labels.find((key) => key === next);
-                      if (chosen)
-                        change(relabel(contents, slot, index, chosen), {
-                          label: index,
-                        });
-                    }}
-                  >
-                    {labels.map((key) => (
-                      <ToggleGroupItem
-                        key={key}
-                        value={key}
-                        className="data-[state=on]:border-primary data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-                      >
-                        {t(key)}
-                      </ToggleGroupItem>
-                    ))}
-                  </ToggleGroup>
-                )}
-                <ul className="flex flex-col gap-0.5">
-                  {tab.occupants.map((ref) => {
-                    const occupant = refName(ref);
-                    return row(
-                      occupant,
-                      <Button
-                        variant="ghost"
-                        size="icon-xs"
-                        aria-label={t("workbench_compose_remove", {
-                          occupant: name(occupant),
-                        })}
-                        onClick={() =>
-                          change(
-                            removeFromSlot(contents, slot, occupant, focus),
-                            null,
-                          )
-                        }
-                      >
-                        <X />
-                      </Button>,
-                    );
-                  })}
-                </ul>
-                <AddButton
-                  label={t("workbench_contents_add_to_tab")}
-                  reason={why(tabLock)}
-                  expanded={picking === index}
-                  onClick={() => toggle(index)}
-                />
-                {picker(index)}
-              </li>
-            );
-          })}
-        </ol>
+        <SlotTabRows
+          tabs={panel.tabs}
+          locks={locks.tabs.map(why)}
+          picking={picking}
+          labeling={labeling}
+          tabName={tabName}
+          row={row}
+          removeButton={removeButton}
+          picker={picker}
+          onAdd={(index) => toggle(index)}
+          onLabel={(index) => {
+            setPicking(null);
+            setLabeling(labeling === index ? null : index);
+          }}
+          onRelabel={(index, label) =>
+            change(relabel(contents, slot, index, label), { label: index })
+          }
+        />
       ) : (
         <p className="text-xs text-muted-foreground">
           {t("workbench_compose_empty")}
         </p>
       )}
-      <AddButton
-        label={t("workbench_contents_new_tab")}
-        reason={why(locks.newTab)}
-        expanded={picking === "new-tab"}
+      <LockableButton
+        variant="outline"
+        size="sm"
+        className="w-full justify-start"
+        reason={newTabLock}
+        aria-expanded={picking === "new-tab"}
         onClick={() => toggle("new-tab")}
-      />
+      >
+        {newTabLock ? null : <Plus aria-hidden />}
+        {t("workbench_contents_new_tab")}
+      </LockableButton>
       {picker("new-tab")}
     </div>
-  );
-}
-
-interface AddButtonProps {
-  label: string;
-  /** Why it's locked, or null. */
-  reason: string | null;
-  expanded: boolean;
-  onClick: () => void;
-}
-
-/** "+ Add to this tab" or "+ New tab": opens the picker under it, or says why not. */
-function AddButton({ label, reason, expanded, onClick }: AddButtonProps) {
-  return (
-    <Locked reason={reason}>
-      {(described) => (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="justify-start"
-          disabled={reason !== null}
-          aria-expanded={expanded}
-          {...described}
-          onClick={onClick}
-        >
-          {reason ? <Lock aria-hidden /> : <Plus aria-hidden />}
-          {label}
-        </Button>
-      )}
-    </Locked>
   );
 }
