@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.65.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.64.0...@uipath/apollo-wind@2.65.0) (2026-10-06)
+
+### Features
+
+* **apollo-wind:** add Sidebar component ([b94caa0](https://github.com/UiPath/apollo-ui/commit/b94caa02ca127d46373c466e3373ba0062ccf6ad))
+
 ## [@uipath/apollo-wind-v2.64.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.63.0...@uipath/apollo-wind@2.64.0) (2026-10-06)
 
 ### Features
