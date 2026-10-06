@@ -1,3 +1,18 @@
+## [@uipath/apollo-react-v6.76.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.75.0...@uipath/apollo-react@6.76.0) (2026-10-06)
+
+### Features
+
+* **apollo-react:** add CanvasDiffView for before/after canvas reviews ([2df3eb9](https://github.com/UiPath/apollo-ui/commit/2df3eb91f96c968045310a174ed13a0079bfb38b))
+
+### Bug Fixes
+
+* **apollo-react:** diff CodeDiffView lines with Myers instead of an LCS matrix ([560ff9f](https://github.com/UiPath/apollo-ui/commit/560ff9fcdbc379b85a1eb92151f138173b80bf33))
+* **apollo-react:** fit CanvasDiffView panes at 100% and add CodeDiffView ([e21df6a](https://github.com/UiPath/apollo-ui/commit/e21df6a36824b4ee09ba897661a62f22eff84fbc))
+* **apollo-react:** import canvas defaults from their constants module ([f881c1c](https://github.com/UiPath/apollo-ui/commit/f881c1cdac3e1871ef3f3a0dc5f824b9aefb39d7))
+* **apollo-react:** keep CanvasDiffView viewport ownership in the pane ([4ada836](https://github.com/UiPath/apollo-ui/commit/4ada8368fbf9a4fbb8f57ee8caff7d18022fe3d4))
+* **apollo-react:** keep CanvasDiffView's pane projections and initial viewport stable ([f306530](https://github.com/UiPath/apollo-ui/commit/f306530fb771a07200472d51913628c448adf3fe))
+* **apollo-react:** let node wrappers suppress the data.suggestionType fallback ([31e4268](https://github.com/UiPath/apollo-ui/commit/31e4268378b72f9581a0b9762f3d7daa0745216b))
+
 ## [@uipath/apollo-react-v6.75.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.74.0...@uipath/apollo-react@6.75.0) (2026-10-06)
 
 ### Features
