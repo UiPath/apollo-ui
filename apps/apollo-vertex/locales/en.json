@@ -439,7 +439,6 @@
   "workbench_contents_pick_add": "Occupants to add",
   "workbench_contents_pick_replace": "Occupants to put in its place",
   "workbench_contents_replace": "Replace",
-  "workbench_contents_tab": "Tab {{index}}",
   "workbench_copy_failed": "Couldn't copy the link",
   "workbench_copy_link": "Copy link to this view",
   "workbench_creating_occupants": "Creating occupants",

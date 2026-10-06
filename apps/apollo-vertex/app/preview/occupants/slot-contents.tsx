@@ -1,6 +1,6 @@
 "use client";
 
-import { Lock, Plus, X } from "lucide-react";
+import { ChevronDown, Lock, Plus, X } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { TemplateHost } from "@/app/_components/template-hosts";
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { LocaleKey } from "@/lib/composition";
 import { specFor } from "@/lib/occupant-lookup";
-import type { OccupantRef } from "@/lib/panel";
+import type { OccupantRef, TabSpec } from "@/lib/panel";
 import { Locked } from "./locked";
 import { SlotPicker } from "./slot-picker";
 import {
@@ -78,6 +78,15 @@ export function SlotContentsSection({
   });
   const panel = contents[slot];
   const name = (occupant: string) => specFor(occupant)?.label ?? occupant;
+  // As the page names a tab: its label, else its occupant's title.
+  const tabName = (tab: TabSpec) => {
+    if (tab.label) return t(tab.label);
+    const [first] = tab.occupants;
+    if (!first) return tab.id;
+    const title =
+      typeof first === "string" ? specFor(first)?.titleKey : first.title;
+    return title ? t(title) : name(refName(first));
+  };
   const why = (lock: ComposeLock | null) =>
     lock ? t(reasonCopy(host.spec, lock)) : null;
   const change = (next: SlotContents, to: FocusTo | null) => {
@@ -212,11 +221,12 @@ export function SlotContentsSection({
                 data-tab={tab.id}
                 className="flex flex-col gap-1.5 rounded-md border border-border p-2"
               >
-                <div className="flex min-h-6 items-center justify-between gap-2">
-                  <span className="text-xs font-medium text-muted-foreground">
-                    {t("workbench_contents_tab", { index: number })}
-                  </span>
-                  {stacked && tab.label && (
+                {/* The tab's name as the page shows it; a stack's is its label, to change. */}
+                <div
+                  data-slot="workbench-contents-tab-name"
+                  className="flex min-h-6 items-center gap-2"
+                >
+                  {stacked && tab.label ? (
                     <Button
                       variant="secondary"
                       size="sm"
@@ -234,7 +244,12 @@ export function SlotContentsSection({
                       }}
                     >
                       {t(tab.label)}
+                      <ChevronDown aria-hidden />
                     </Button>
+                  ) : (
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {tabName(tab)}
+                    </span>
                   )}
                 </div>
                 {labeling === index && tab.label && (

@@ -140,6 +140,13 @@ test("removes occupants, and a tab they empty goes", async ({ page }) => {
     .poll(() => tabNames(page))
     .toEqual(["Queue", "Overview", "Activity timeline"]);
   await openMenu(page);
+  // Each tab is named as the page names it; a stack by its label chip.
+  await expect(
+    menu(page).locator("[data-slot=workbench-contents-tab-name]"),
+  ).toHaveText(["Queue", "Overview", "Activity timeline"]);
+  await expect(
+    tabRow(page, 2).locator("[data-slot=workbench-contents-label]"),
+  ).toHaveText("Overview");
   const remove = (name: string) =>
     menu(page)
       .getByRole("button", { name: `Remove ${name}` })
@@ -150,6 +157,9 @@ test("removes occupants, and a tab they empty goes", async ({ page }) => {
   // Back to one occupant, the tab takes that occupant's title again.
   await remove("Participants");
   await expect.poll(() => tabNames(page)).toEqual(["Queue", "Key facts"]);
+  await expect(
+    menu(page).locator("[data-slot=workbench-contents-tab-name]"),
+  ).toHaveText(["Queue", "Key facts"]);
   await expect(
     menu(page).locator("[data-slot=workbench-contents-label]"),
   ).toHaveCount(0);
