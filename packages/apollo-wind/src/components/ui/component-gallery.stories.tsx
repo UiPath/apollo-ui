@@ -645,6 +645,19 @@ const components: ComponentInfo[] = [
     ),
   },
   {
+    name: 'Sidebar',
+    description: 'Left menu for app layouts and panels',
+    storyPath: 'components-navigation-sidebar--docs',
+    category: Category.Navigation,
+    preview: (
+      <div className="flex w-32 flex-col gap-1 text-xs">
+        <span className="rounded-md bg-surface-selected px-2 py-1">Overview</span>
+        <span className="rounded-md px-2 py-1 text-foreground-muted">Inbox</span>
+        <span className="rounded-md px-2 py-1 text-foreground-muted">Settings</span>
+      </div>
+    ),
+  },
+  {
     name: 'Skeleton',
     description: 'Loading placeholder',
     storyPath: 'components-feedback-skeleton--docs',

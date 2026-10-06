@@ -629,6 +629,39 @@ export {
   SheetTitle,
   SheetTrigger,
 } from './components/ui/sheet';
+export type {
+  SidebarMenuButtonProps,
+  SidebarMenuSubButtonProps,
+  SidebarProps,
+  SidebarProviderProps,
+} from './components/ui/sidebar';
+export {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupAction,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarInput,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuAction,
+  SidebarMenuBadge,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSkeleton,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+  SidebarProvider,
+  SidebarRail,
+  SidebarSeparator,
+  SidebarTrigger,
+  sidebarMenuButtonVariants,
+  useSidebar,
+} from './components/ui/sidebar';
 export { Skeleton } from './components/ui/skeleton';
 export { Slider } from './components/ui/slider';
 export { Toaster, toast } from './components/ui/sonner';
