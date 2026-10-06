@@ -3,6 +3,9 @@ import type { SupportedLocale } from '../../i18n';
 
 export type ApChatTheme = 'light' | 'light-hc' | 'dark' | 'dark-hc';
 
+/** UI implementation that renders the chat. */
+export type AutopilotChatRenderer = 'material' | 'wind';
+
 export enum AutopilotChatMode {
   Closed = 'closed',
   SideBySide = 'side-by-side',
@@ -215,6 +218,7 @@ export interface AutopilotChatError {
  * @property {string} ResourceItemSelected - Emitted when a resource item is selected from the variable picker
  * @property {string} SpeechToTextToggle - Emitted when the STT dictate button is clicked (payload: boolean — new active state)
  * @property {string} SetSpeechToTextState - Emitted when the STT active state changes (payload: boolean)
+ * @property {string} RendererChange - Emitted when the renderer is set (payload: AutopilotChatRenderer)
  */
 export enum AutopilotChatEvent {
   Error = 'error',
@@ -257,6 +261,7 @@ export enum AutopilotChatEvent {
   ResourceItemSelected = 'resourceItemSelected',
   SpeechToTextToggle = 'speechToTextToggle',
   SetSpeechToTextState = 'setSpeechToTextState',
+  RendererChange = 'rendererChange',
 }
 
 /**
@@ -497,6 +502,7 @@ export enum AutopilotChatPreHookAction {
  * @property embeddedContainer - The container to embed the chat in
  * @property locale - The locale/language for the chat interface (e.g., 'en', 'de', 'es', 'fr', 'ja', etc.)
  * @property theme - The theme variant for the chat ('light', 'dark', 'light-hc', 'dark-hc')
+ * @property renderer - The UI implementation to render ('material' or 'wind'); falls back to the host's default
  * @property disabledFeatures - The disabled features of the chat
  * @property overrideLabels - The override labels of the chat
  * @property firstRunExperience - The first run experience of the chat
@@ -522,6 +528,7 @@ export interface AutopilotChatConfiguration {
   embeddedContainer?: HTMLElement;
   locale?: SupportedLocale;
   theme?: ApChatTheme;
+  renderer?: AutopilotChatRenderer;
   disabledFeatures?: AutopilotChatDisabledFeatures;
   overrideLabels?: AutopilotChatOverrideLabels;
   firstRunExperience?: {

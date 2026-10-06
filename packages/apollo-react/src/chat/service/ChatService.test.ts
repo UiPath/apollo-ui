@@ -4,6 +4,7 @@ import {
   AutopilotChatEvent,
   AutopilotChatInterceptableEvent,
   AutopilotChatInternalEvent,
+  AutopilotChatMode,
 } from './ChatModel';
 import { AutopilotChatService } from './ChatService';
 
@@ -117,6 +118,30 @@ describe('AutopilotChatService', () => {
       await vi.waitFor(() => expect(handler).toHaveBeenCalled());
       expect(interceptor).not.toHaveBeenCalled();
       expect(remove).toBeTypeOf('function');
+    });
+  });
+
+  describe('renderer', () => {
+    it('stores the renderer and emits RendererChange', () => {
+      const service = createService();
+      const handler = vi.fn();
+      service.on(AutopilotChatEvent.RendererChange, handler);
+
+      service.setRenderer('wind');
+
+      expect(service.getConfig().renderer).toBe('wind');
+      expect(handler).toHaveBeenCalledWith('wind');
+    });
+
+    it('applies config.renderer on initialize', () => {
+      const service = createService();
+      const handler = vi.fn();
+      service.on(AutopilotChatEvent.RendererChange, handler);
+
+      service.initialize({ mode: AutopilotChatMode.SideBySide, renderer: 'material' });
+
+      expect(service.getConfig().renderer).toBe('material');
+      expect(handler).toHaveBeenCalledWith('material');
     });
   });
 });
