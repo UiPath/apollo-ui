@@ -178,11 +178,21 @@ test("the focused occupant stays, says why, and isn't offered elsewhere", async 
 }) => {
   await ready(page, `${BASE}&end-panel-contents=queue~key-facts`);
   await openMenu(page);
+  const reason =
+    "It's the occupant you're looking at, so it stays where it is.";
   const row = menu(page).locator("[data-row=queue]");
   await expect(row.getByRole("button")).toHaveCount(0);
-  await expect(row).toContainText(
-    "It's the occupant you're looking at, so it stays where it is.",
-  );
+  // A lock on its row, with why as its description and a tooltip, not a
+  // sentence in the list.
+  const lock = row.getByRole("img", { name: "Locked" });
+  await expect(lock).toHaveAccessibleDescription(reason);
+  await expect(row).toHaveAccessibleDescription(reason);
+  await expect(
+    menu(page).locator("[data-slot=workbench-contents-reason]"),
+  ).toHaveCount(0);
+  await lock.hover();
+  await expect(page.getByRole("tooltip")).toHaveText(reason);
+  await page.mouse.move(0, 0);
   // Another occupant can go.
   await expect(
     menu(page).getByRole("button", { name: "Remove Key facts" }),

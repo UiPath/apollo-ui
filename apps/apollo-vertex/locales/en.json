@@ -435,6 +435,7 @@
   "workbench_contents_change_label": "Change the label of tab {{index}}, {{label}}",
   "workbench_contents_clear": "Clear",
   "workbench_contents_labels": "Labels for tab {{index}}",
+  "workbench_contents_locked": "Locked",
   "workbench_contents_new_tab": "New tab",
   "workbench_contents_pick_add": "Occupants to add",
   "workbench_contents_pick_replace": "Occupants to put in its place",

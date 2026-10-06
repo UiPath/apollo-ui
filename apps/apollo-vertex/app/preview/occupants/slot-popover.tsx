@@ -113,6 +113,11 @@ export function SlotPopover({
             )
               event.preventDefault();
           }}
+          // Focus starts on its heading, not on the first control in it.
+          onOpenAutoFocus={(event) => {
+            event.preventDefault();
+            headingRef.current?.focus();
+          }}
           onCloseAutoFocus={(event) => {
             event.preventDefault();
             opener.current?.focus();

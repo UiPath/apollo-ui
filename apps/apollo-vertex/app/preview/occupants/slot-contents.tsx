@@ -1,11 +1,16 @@
 "use client";
 
 import { ChevronDown, Lock, Plus, X } from "lucide-react";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { TemplateHost } from "@/app/_components/template-hosts";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { LocaleKey } from "@/lib/composition";
 import { specFor } from "@/lib/occupant-lookup";
 import type { OccupantRef, TabSpec } from "@/lib/panel";
@@ -63,6 +68,7 @@ export function SlotContentsSection({
   const [picking, setPicking] = useState<PickTarget | null>(null);
   const [labeling, setLabeling] = useState<number | null>(null);
   const root = useRef<HTMLDivElement>(null);
+  const reasonId = useId();
   // Set by a change, read once the change has rendered.
   const focusTo = useRef<FocusTo | null>(null);
   useEffect(() => {
@@ -135,14 +141,29 @@ export function SlotContentsSection({
         onPick={(occupant) => add(occupant, to)}
       />
     );
+  // The focused occupant's row: a lock, with why as a tooltip, and as the
+  // description of the lock and the row.
   const focusLock = (
-    <span
-      data-slot="workbench-contents-reason"
-      className="flex items-start gap-1.5 text-xs text-muted-foreground"
-    >
-      <Lock aria-hidden className="mt-0.5 size-3 shrink-0" />
-      {why("focus")}
-    </span>
+    <>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span
+            role="img"
+            tabIndex={0}
+            data-slot="workbench-contents-lock"
+            aria-label={t("workbench_contents_locked")}
+            aria-describedby={reasonId}
+            className="flex size-6 items-center justify-center rounded-sm text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Lock aria-hidden className="size-3.5" />
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>{why("focus")}</TooltipContent>
+      </Tooltip>
+      <span id={reasonId} className="sr-only">
+        {why("focus")}
+      </span>
+    </>
   );
   const row = (occupant: string, actions: ReactNode) => (
     <li
@@ -150,13 +171,11 @@ export function SlotContentsSection({
       data-slot="workbench-contents-occupant"
       data-row={occupant}
       tabIndex={-1}
-      className="flex flex-col gap-1 rounded-sm px-1 py-0.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      {...(occupant === focus && { "aria-describedby": reasonId })}
+      className="flex min-h-7 items-center justify-between gap-2 rounded-sm px-1 py-0.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <div className="flex min-h-6 items-center justify-between gap-2">
-        <span>{name(occupant)}</span>
-        {occupant !== focus && actions}
-      </div>
-      {occupant === focus && focusLock}
+      <span>{name(occupant)}</span>
+      {occupant === focus ? focusLock : actions}
     </li>
   );
 
