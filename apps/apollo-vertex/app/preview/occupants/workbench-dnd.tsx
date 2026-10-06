@@ -20,6 +20,7 @@ import { useTranslation } from "react-i18next";
 import type { TemplateHost } from "@/app/_components/template-hosts";
 import { specFor } from "@/lib/occupant-lookup";
 import type { TabSpec } from "@/lib/panel";
+import { offsetFromPointer } from "./drag-preview-offset";
 import type { DropZone } from "./drop-zones-geometry";
 import type { ContentsChange, SlotContents } from "./workbench-compose";
 import { DragContext } from "./workbench-drag";
@@ -217,7 +218,7 @@ export function WorkbenchDnd({
         }}
       >
         {children}
-        <DragOverlay dropAnimation={null}>
+        <DragOverlay dropAnimation={null} modifiers={[offsetFromPointer]}>
           {dragging && (
             <div
               data-slot="workbench-drag-preview"

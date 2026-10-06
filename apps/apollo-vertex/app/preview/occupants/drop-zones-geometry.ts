@@ -5,7 +5,7 @@ import type { DropTarget } from "./workbench-drop";
 
 /*
  * Where an occupant can be dropped on the template view, measured from
- * the page: in a panel slot, between its tabs and at the end of its tab
+ * the page (a tab's zones are as tall as the tab itself): in a panel slot, between its tabs and at the end of its tab
  * bar (a new tab there), on a tab's label (into that tab), and on the
  * showing tab's content (into it); anywhere in a slot that holds one, or
  * in an empty panel slot.
@@ -79,9 +79,9 @@ function panelZones(
       look: "insert",
       box: {
         x: tab.box.x - INSERT_PX / 2,
-        y: barBox.y,
+        y: tab.box.y,
         width: INSERT_PX,
-        height: barBox.height,
+        height: tab.box.height,
       },
     });
     zones.push({
@@ -90,9 +90,9 @@ function panelZones(
       look: "tab",
       box: {
         x: tab.box.x + INSERT_PX / 2,
-        y: barBox.y,
+        y: tab.box.y,
         width: Math.max(0, tab.box.width - INSERT_PX),
-        height: barBox.height,
+        height: tab.box.height,
       },
     });
   }
@@ -105,9 +105,9 @@ function panelZones(
       look: "insert",
       box: {
         x: start,
-        y: barBox.y,
+        y: last.box.y,
         width: Math.max(INSERT_PX, barBox.x + barBox.width - start),
-        height: barBox.height,
+        height: last.box.height,
       },
     });
   }

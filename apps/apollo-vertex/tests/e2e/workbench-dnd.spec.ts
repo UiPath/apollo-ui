@@ -91,6 +91,60 @@ test("dropping between two tabs makes a new tab there, and shows it", async ({
   await expect(selected(page)).toHaveText("Key facts");
 });
 
+/** Whether two boxes overlap. */
+const overlaps = (
+  a: { x: number; y: number; width: number; height: number } | null,
+  b: { x: number; y: number; width: number; height: number } | null,
+) =>
+  !!a &&
+  !!b &&
+  a.x < b.x + b.width &&
+  b.x < a.x + a.width &&
+  a.y < b.y + b.height &&
+  b.y < a.y + a.height;
+
+test("the drag preview stays clear of the insertion line and the highlighted tab", async ({
+  page,
+}) => {
+  await ready(page, `${EDIT}&end-panel-contents=queue~participants`);
+  const preview = page.locator("[data-slot=workbench-drag-preview]");
+  const line = page.locator("[data-slot=workbench-insert-line]");
+  await pickUp(page, "Key facts");
+  await over(page, "end-panel:insert:1");
+  await expect(line).toBeVisible();
+  expect(overlaps(await line.boundingBox(), await preview.boundingBox())).toBe(
+    false,
+  );
+  await over(page, "end-panel:tab:1");
+  expect(
+    overlaps(
+      await zone(page, "end-panel:tab:1").boundingBox(),
+      await preview.boundingBox(),
+    ),
+  ).toBe(false);
+  await page.keyboard.press("Escape");
+  await page.mouse.up();
+
+  // By keyboard too.
+  await row(page, "Key facts")
+    .getByRole("button", { name: "Drag Key facts" })
+    .focus();
+  await page.keyboard.press("Space");
+  await page.locator("[data-slot=workbench-drop-zones]").waitFor();
+  const order = await page
+    .locator("[data-slot=workbench-drop-zone]")
+    .evaluateAll((zones) =>
+      zones.map((z) => (z instanceof HTMLElement ? z.dataset.zone : "")),
+    );
+  const steps = order.indexOf("end-panel:insert:1") + 1;
+  for (let i = 0; i < steps; i++) await page.keyboard.press("ArrowRight");
+  await expect(line).toBeVisible();
+  expect(overlaps(await line.boundingBox(), await preview.boundingBox())).toBe(
+    false,
+  );
+  await page.keyboard.press("Escape");
+});
+
 test("dropping on a tab's label stacks into it, which highlights", async ({
   page,
 }) => {
