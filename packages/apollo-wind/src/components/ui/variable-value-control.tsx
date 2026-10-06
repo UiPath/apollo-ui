@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { joinIds } from '@/components/forms/aria-ids';
 import {
   DEFAULT_VALUE_MODE_STRINGS,
   type ValueModeStrings,
@@ -31,6 +32,9 @@ export interface VariableValueControlProps {
   className?: string;
   'aria-label'?: string;
   'aria-labelledby'?: string;
+  'aria-describedby'?: string;
+  /** The value-mode wiring; its `aria-describedby` joins the control's own. */
+  controlProps?: { 'aria-describedby'?: string };
 }
 
 /**
@@ -54,6 +58,8 @@ const VariableValueControl = React.forwardRef<HTMLButtonElement, VariableValueCo
       className,
       'aria-label': ariaLabel,
       'aria-labelledby': ariaLabelledBy,
+      'aria-describedby': ariaDescribedBy,
+      controlProps,
     },
     ref
   ) => {
@@ -91,6 +97,7 @@ const VariableValueControl = React.forwardRef<HTMLButtonElement, VariableValueCo
           className={className}
           aria-label={ariaLabel}
           aria-labelledby={ariaLabelledBy}
+          aria-describedby={joinIds(ariaDescribedBy, controlProps?.['aria-describedby'])}
         >
           {reference && <span className="truncate font-mono text-sm">{reference}</span>}
         </InputGroupPopoverTrigger>

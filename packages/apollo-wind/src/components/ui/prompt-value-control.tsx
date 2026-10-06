@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { joinIds } from '@/components/forms/aria-ids';
 import {
   DEFAULT_VALUE_MODE_STRINGS,
   type ValueModeStrings,
@@ -23,6 +24,9 @@ export interface PromptValueControlProps {
   className?: string;
   'aria-label'?: string;
   'aria-labelledby'?: string;
+  'aria-describedby'?: string;
+  /** The value-mode wiring; its `aria-describedby` joins the control's own. */
+  controlProps?: { 'aria-describedby'?: string };
 }
 
 /**
@@ -46,6 +50,8 @@ const PromptValueControl = React.forwardRef<HTMLTextAreaElement, PromptValueCont
       className,
       'aria-label': ariaLabel,
       'aria-labelledby': ariaLabelledBy,
+      'aria-describedby': ariaDescribedBy,
+      controlProps,
     },
     ref
   ) => {
@@ -68,6 +74,7 @@ const PromptValueControl = React.forwardRef<HTMLTextAreaElement, PromptValueCont
         className={className}
         aria-label={ariaLabel}
         aria-labelledby={ariaLabelledBy}
+        aria-describedby={joinIds(ariaDescribedBy, controlProps?.['aria-describedby'])}
         // Set `rows` too: auto-grow measures from the natural height, which defaults to two rows.
         rows={1}
         minRows={1}

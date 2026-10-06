@@ -577,6 +577,51 @@ describe('FormFieldRenderer', () => {
         expect(getControl()).not.toHaveAttribute('aria-describedby');
       });
 
+      it('describes a field whose name has a space', () => {
+        render(
+          <FormWrapper>
+            <FormFieldRenderer
+              field={{ name: 'first name', type: 'text', label: 'First name' }}
+              context={changed('first name')}
+              customComponents={{}}
+            />
+          </FormWrapper>
+        );
+
+        expect(screen.getByRole('textbox')).toHaveAccessibleDescription('Changed');
+      });
+
+      const modeCases: { mode: string; getControl: () => HTMLElement }[] = [
+        { mode: 'variable', getControl: () => screen.getByRole('button', { name: /Value/ }) },
+        { mode: 'prompt', getControl: () => screen.getByRole('textbox', { name: /Value/ }) },
+      ];
+
+      it.each(modeCases)('$mode mode: described as changed only when flagged', ({
+        mode,
+        getControl,
+      }) => {
+        const field: FieldMetadata = {
+          name: 'f',
+          type: 'text',
+          label: 'Value',
+          valueModes: { modes: [mode] },
+        };
+        const { unmount } = render(
+          <FormWrapper>
+            <FormFieldRenderer field={field} context={changed('f')} customComponents={{}} />
+          </FormWrapper>
+        );
+        expect(getControl()).toHaveAccessibleDescription('Changed');
+        unmount();
+
+        render(
+          <FormWrapper>
+            <FormFieldRenderer field={field} context={changed('other')} customComponents={{}} />
+          </FormWrapper>
+        );
+        expect(getControl()).not.toHaveAttribute('aria-describedby');
+      });
+
       it('keeps the error message in the description', async () => {
         function WithError({ children }: { children: React.ReactNode }) {
           const methods = useForm();
