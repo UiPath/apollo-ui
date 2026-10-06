@@ -95,6 +95,33 @@ test("a layout change says so, and undoes too", async ({ page }) => {
   await expect.poll(() => urlQuery(page)).not.toContain("start-panel-present");
 });
 
+test("leaving a slot out or closing it keeps its occupants, and says so", async ({
+  page,
+}) => {
+  await ready(page, `${QUERY}&end-panel-contents=queue~key-facts`);
+  await selectSlot(page, "end-panel");
+  const choose = (group: string, option: string) =>
+    inspector(page)
+      .getByRole("group", { name: group })
+      .getByRole("radio", { name: option })
+      .click();
+  await choose("End panel state", "Closed");
+  await expect(toast(page)).toContainText(
+    "End panel closed. Its 2 occupants are kept.",
+  );
+  expect(urlQuery(page)).toContain("end-panel-contents=queue~key-facts");
+  await undo(page).click();
+  await expect.poll(() => urlQuery(page)).not.toContain("end-panel-state");
+  await choose("End panel in the page", "Left out");
+  await expect(toast(page)).toContainText(
+    "End panel left out. Its 2 occupants are kept.",
+  );
+  expect(urlQuery(page)).toContain("end-panel-contents=queue~key-facts");
+  // Included again, it has them back.
+  await choose("End panel in the page", "Included");
+  await expect.poll(() => tabNames(page)).toEqual(["Queue", "Key facts"]);
+});
+
 test("Reset layout, in Edit mode, empties the page and undoes", async ({
   page,
 }) => {

@@ -95,6 +95,28 @@ describe("describing a change", () => {
     });
   });
 
+  it("says a hidden slot keeps what it holds, and how many", () => {
+    const two = after({
+      contents: addOccupant(host, start.contents, "end-panel", "key-facts"),
+    });
+    const left = normalizeView({
+      ...two,
+      layout: { "end-panel": { present: false } },
+    });
+    // Its contents stay, left out or not.
+    expect(left.contents).toEqual(two.contents);
+    expect(say(left, two)).toEqual({
+      key: "workbench_change_left_out_kept",
+      values: { slot: "End panel", count: 2 },
+    });
+    const closed = after({ layout: { "end-panel": { open: false } } });
+    expect(closed.contents).toEqual(start.contents);
+    expect(say(closed)).toEqual({
+      key: "workbench_change_closed_kept",
+      values: { slot: "End panel", count: 1 },
+    });
+  });
+
   it("says nothing when nothing it covers changed", () => {
     expect(say(after({ pageWidth: 1200 }))).toBeNull();
   });

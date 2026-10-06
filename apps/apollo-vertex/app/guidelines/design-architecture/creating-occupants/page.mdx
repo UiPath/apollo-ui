@@ -274,8 +274,16 @@ Edit. Opening the template view on an empty page puts the occupant
 selected in the list in the first slot that fits it, in the template's
 slot order. After that, it's an ordinary occupant. In the template view,
 clicking an occupant in the list switches to Edit and selects its slot,
-or, for one that isn't on the page, says how to add it. Back in the surface view, the occupant last selected
-in the list is the one that opens.
+or, for one that isn't on the page, says how to add it. Back in the
+surface view, the occupant last selected in the list is the one that
+opens.
+
+In the template view, the list says where each placed occupant is: "In
+End panel", or, muted, "In End panel · left out" or "In End panel ·
+closed" when its slot isn't showing. Leaving a slot out or closing it
+keeps what it holds, so those occupants are still placed: they don't
+drag, the picker never offers them, and a click in the list selects
+their slot's ghost or strip.
 
 ### Compose a slot
 
@@ -288,7 +296,9 @@ header and carried in links as `mode=edit`:
   makes the occupants inert and slightly dimmed. A click anywhere in a
   slot selects it, with a solid outline, and the inspector shows it.
   A slot that's left out shows as a ghost where it would sit, and a
-  closed one as a strip on its edge; each is selected the same way.
+  closed one as a strip on its edge, each saying how many occupants it
+  keeps ("End panel, left out · 2 occupants"); each is selected the same
+  way.
   Escape deselects. With nothing selected, the inspector says to select
   a slot.
 
@@ -301,7 +311,7 @@ inspector, and Escape returns focus to the slot. The dock holds the
 shell, the page width, and the zoom.
 
 In Edit mode, you can also drag an occupant from the list onto the page.
-Occupants on the page are marked "On the page" and don't drag. Where you
+Occupants already placed say where they are, and don't drag. Where you
 drop it decides what happens:
 
 - **Between two tabs, or at the end of a tab bar:** a new tab there,
@@ -322,7 +332,9 @@ occupant.
 
 Every change to what the page holds or how it's laid out says what it
 did in a toast, like "Key facts added to End panel", with an Undo for
-that change. A newer change replaces the toast, so Undo is always for
+that change. Leaving out or closing a slot that holds occupants says
+they're kept, like "End panel left out. Its 2 occupants are kept." A
+newer change replaces the toast, so Undo is always for
 the latest. In Edit mode, Reset layout in the header empties every slot
 and puts every slot's layout back to the template's defaults; its toast
 undoes it too.

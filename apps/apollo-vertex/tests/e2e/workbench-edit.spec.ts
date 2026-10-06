@@ -172,7 +172,7 @@ test("a ghost and a closed slot are selected the same way", async ({
   const closed = page.locator(
     "[data-slot=workbench-closed-slot][data-edit-slot=end-panel]",
   );
-  await expect(closed).toHaveAccessibleName("End panel, closed");
+  await expect(closed).toHaveAccessibleName("End panel, closed · 1 occupant");
   await closed.click();
   await expect(heading(page)).toHaveText("End panel");
   await expect(ghost).toHaveAttribute("aria-pressed", "false");

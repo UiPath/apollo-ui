@@ -7,7 +7,7 @@ import type { LayoutChoices } from "@/lib/layout";
 import { DropZones } from "./drop-zones";
 import { ghostBox, leftOutSlots } from "./ghost-geometry";
 import { type Box, TEMPLATE_BOX, useSlotBoxes } from "./use-slot-boxes";
-import type { SlotContents } from "./workbench-compose";
+import { occupantsIn, type SlotContents } from "./workbench-compose";
 import { useWorkbenchDrag } from "./workbench-drag";
 
 /** A box as an absolutely placed element's style. */
@@ -77,6 +77,19 @@ export function EditSlots({
   // A click selects; Enter or Space (a click with no pointer) moves on to it.
   const select = (slot: string) => (event: MouseEvent<HTMLButtonElement>) =>
     onSelect(slot, event.detail === 0);
+  // A hidden slot keeps what it holds: its ghost or strip says how many.
+  const held = (slot: string, hidden: "left-out" | "closed") => {
+    const panel = contents[slot];
+    const count = panel ? occupantsIn(panel).length : 0;
+    const values = { slot: host.slotLabels[slot] ?? slot, count };
+    if (hidden === "closed")
+      return count > 0
+        ? t("workbench_closed_label_held", values)
+        : t("workbench_closed_label", values);
+    return count > 0
+      ? t("workbench_ghost_label_held", values)
+      : t("workbench_ghost_label", values);
+  };
   return (
     <div
       ref={ref}
@@ -97,13 +110,13 @@ export function EditSlots({
               data-selected={selected === slot}
               aria-pressed={selected === slot}
               aria-controls={inspectorId}
-              aria-label={t("workbench_closed_label", { slot: label })}
+              aria-label={held(slot, "closed")}
               style={place(strip(box, template))}
               className="pointer-events-auto absolute z-10 flex cursor-pointer items-center justify-center rounded-sm border-2 border-dashed border-muted-foreground/50 bg-background/90 text-[11px] font-medium text-muted-foreground hover:border-primary hover:text-foreground focus-visible:border-primary focus-visible:outline-none data-[selected=true]:border-solid data-[selected=true]:border-primary data-[selected=true]:text-foreground"
               onClick={select(slot)}
             >
               <span aria-hidden="true" className="[writing-mode:vertical-rl]">
-                {t("workbench_closed_label", { slot: label })}
+                {held(slot, "closed")}
               </span>
             </button>
           );
@@ -132,7 +145,6 @@ export function EditSlots({
         );
       })}
       {ghosts.map(({ slot, box }) => {
-        const label = host.slotLabels[slot] ?? slot;
         return (
           <button
             key={slot}
@@ -142,7 +154,7 @@ export function EditSlots({
             data-selected={selected === slot}
             aria-pressed={selected === slot}
             aria-controls={inspectorId}
-            aria-label={t("workbench_ghost_label", { slot: label })}
+            aria-label={held(slot, "left-out")}
             style={place(box)}
             className="pointer-events-auto absolute flex cursor-pointer items-center justify-center rounded-sm border-2 border-dashed border-muted-foreground/50 bg-background/70 bg-[repeating-linear-gradient(135deg,transparent_0_8px,var(--border)_8px_9px)] text-xs font-medium text-muted-foreground backdrop-blur-[1px] hover:border-primary hover:text-foreground focus-visible:border-primary focus-visible:outline-none data-[selected=true]:border-solid data-[selected=true]:border-primary data-[selected=true]:text-foreground"
             onClick={select(slot)}
@@ -151,7 +163,7 @@ export function EditSlots({
               aria-hidden="true"
               className="rounded-sm bg-background px-1.5 py-0.5"
             >
-              {t("workbench_ghost_label", { slot: label })}
+              {held(slot, "left-out")}
             </span>
           </button>
         );

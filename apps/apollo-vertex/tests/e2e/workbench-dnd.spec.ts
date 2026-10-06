@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 import { expect, settle, test } from "./fixtures";
-import { open, urlQuery } from "./workbench-helpers";
+import { inspector, open, selectSlot, urlQuery } from "./workbench-helpers";
 
 /*
  * Dragging an occupant from the list onto the template view, in Edit
@@ -251,17 +251,20 @@ test("the keyboard drags from a row's handle, and is announced", async ({
   );
 });
 
-test("the list marks what's on the page, which doesn't drag", async ({
+const location = (page: Page, occupant: string) =>
+  row(page, occupant).locator("[data-slot=workbench-location]");
+
+test("the list says where each placed occupant is, and those don't drag", async ({
   page,
 }) => {
   await ready(page, `${EDIT}&end-panel-contents=queue~participants`);
   for (const occupant of ["Queue", "Participants"]) {
-    await expect(row(page, occupant)).toContainText("On the page");
+    await expect(location(page, occupant)).toHaveText("In End panel");
     await expect(
       row(page, occupant).getByRole("button", { name: `Drag ${occupant}` }),
     ).toHaveCount(0);
   }
-  await expect(row(page, "Key facts")).not.toContainText("On the page");
+  await expect(location(page, "Key facts")).toHaveCount(0);
   // A plain click still selects an occupant: no drag starts.
   const keyFacts = row(page, "Key facts").getByRole("button").first();
   await keyFacts.click();
@@ -269,14 +272,68 @@ test("the list marks what's on the page, which doesn't drag", async ({
   await expect(page.locator("[data-slot=workbench-drop-zones]")).toHaveCount(0);
 });
 
+test("an occupant in a hidden slot is still placed: muted, never offered, and selectable", async ({
+  page,
+}) => {
+  await ready(
+    page,
+    "?view=template&start-panel-contents=participants~activity-timeline&start-panel-present=false&end-panel-contents=queue&end-panel-state=closed&main-contents=key-facts&mode=edit",
+  );
+  await expect(location(page, "Participants")).toHaveText(
+    "In Start panel · left out",
+  );
+  await expect(location(page, "Queue")).toHaveText("In End panel · closed");
+  await expect(location(page, "Key facts")).toHaveText("In Main");
+  // Hidden: muted, unlike a slot that shows.
+  const color = (occupant: string) =>
+    location(page, occupant).evaluate((el) => getComputedStyle(el).color);
+  expect(await color("Participants")).not.toBe(await color("Key facts"));
+  expect(await color("Queue")).toBe(await color("Participants"));
+  await expect(
+    row(page, "Participants").getByRole("button", {
+      name: "Drag Participants",
+    }),
+  ).toHaveCount(0);
+  // The ghost and the strip say how many they keep.
+  await expect(
+    page.locator("[data-ghost-slot=start-panel]"),
+  ).toHaveAccessibleName("Start panel, left out · 2 occupants");
+  await expect(
+    page.locator("[data-slot=workbench-closed-slot][data-edit-slot=end-panel]"),
+  ).toHaveAccessibleName("End panel, closed · 1 occupant");
+  // Never offered again, hidden or not.
+  await selectSlot(page, "main");
+  await inspector(page).getByRole("button", { name: "Replace" }).click();
+  // Every one that fits main is placed: Key facts here, three hidden.
+  await expect(
+    inspector(page).locator("[data-slot=workbench-picker] button"),
+  ).toHaveCount(0);
+  await expect(
+    inspector(page).locator("[data-slot=workbench-picker-left-out]").first(),
+  ).toHaveText("4 are on the page already");
+  // A click in the list selects its slot's ghost, or its strip.
+  await row(page, "Participants").getByRole("button").first().click();
+  await expect(page.locator("[data-ghost-slot=start-panel]")).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await expect(inspector(page)).toHaveAttribute(
+    "data-inspector-slot",
+    "start-panel",
+  );
+  await row(page, "Queue").getByRole("button").first().click();
+  await expect(
+    page.locator("[data-slot=workbench-closed-slot][data-edit-slot=end-panel]"),
+  ).toHaveAttribute("aria-pressed", "true");
+});
+
 test("there's no dragging in Preview", async ({ page }) => {
   await ready(page, "?occupant=queue&view=template&slot=end-panel");
   await expect(page.locator("[data-slot=workbench-drag-handle]")).toHaveCount(
     0,
   );
-  await expect(page.locator("#workbench-list")).not.toContainText(
-    "On the page",
-  );
+  // Where each is still shows: it's the template view's.
+  await expect(location(page, "Queue")).toHaveText("In End panel");
   const box = await row(page, "Key facts")
     .getByRole("button")
     .first()

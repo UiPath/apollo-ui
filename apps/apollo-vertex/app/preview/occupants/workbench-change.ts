@@ -10,14 +10,14 @@ import type { WorkbenchView } from "./workbench-url-state";
 /*
  * What a change to the template view did, in words, for its toast: the
  * composition (an occupant added, removed, replaced; a tab renamed), or
- * a slot's layout. And what Reset
- * layout goes back to.
+ * a slot's layout, with how many occupants a hidden slot keeps. And what
+ * Reset layout goes back to.
  */
 
 /** A change in words: its copy, and what fills it in. */
 export interface ChangeCopy {
   key: LocaleKey;
-  values: Readonly<Record<string, string>>;
+  values: Readonly<Record<string, string | number>>;
 }
 
 /** The fields a change can touch, so Undo puts back exactly those. */
@@ -97,22 +97,25 @@ export function describeChange(
     const was = before.layout[slot] ?? {};
     const now = after.layout[slot] ?? {};
     const values = { slot: slotName(slot) };
-    if ((was.present !== false) !== (now.present !== false))
-      return {
-        key:
-          now.present === false
-            ? "workbench_change_left_out"
-            : "workbench_change_included",
-        values,
-      };
-    if ((was.open !== false) !== (now.open !== false))
-      return {
-        key:
-          now.open === false
-            ? "workbench_change_closed"
-            : "workbench_change_opened",
-        values,
-      };
+    // Hiding a slot keeps what it holds, and says so.
+    const panel = after.contents[slot];
+    const count = panel ? occupantsIn(panel).length : 0;
+    if ((was.present !== false) !== (now.present !== false)) {
+      if (now.present !== false)
+        return { key: "workbench_change_included", values };
+      return count > 0
+        ? {
+            key: "workbench_change_left_out_kept",
+            values: { ...values, count },
+          }
+        : { key: "workbench_change_left_out", values };
+    }
+    if ((was.open !== false) !== (now.open !== false)) {
+      if (now.open !== false) return { key: "workbench_change_opened", values };
+      return count > 0
+        ? { key: "workbench_change_closed_kept", values: { ...values, count } }
+        : { key: "workbench_change_closed", values };
+    }
     const placed = (choice: { placement?: string }) =>
       choice.placement ?? defaultPlacement(host.spec, slot);
     if (placed(was) !== placed(now)) {

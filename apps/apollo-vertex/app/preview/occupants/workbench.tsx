@@ -28,8 +28,8 @@ import { useStageOverflow } from "./use-stage-overflow";
 import { WorkbenchDnd } from "./workbench-dnd";
 import { WorkbenchDock } from "./workbench-dock";
 import { WorkbenchHeader } from "./workbench-header";
+import { locationsOf } from "./workbench-locations";
 import { lowerLabel, surfaceRange, widthStatus } from "./workbench-model";
-import { onPage } from "./workbench-picker";
 import { WorkbenchToaster } from "./workbench-toaster";
 import {
   defaultSurface,
@@ -199,7 +199,14 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
           onSelect={selectOccupant}
           docsHref={docsHref}
           editing={editMode}
-          onPage={onPage(view.contents)}
+          {...(inTemplate && {
+            locations: locationsOf(
+              inTemplate,
+              view.contents,
+              view.layout,
+              slotStatus,
+            ),
+          })}
         />
 
         <main className="flex min-w-0 flex-1 flex-col">

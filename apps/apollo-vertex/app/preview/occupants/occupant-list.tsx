@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { OCCUPANT_SPECS } from "@/lib/occupants.generated";
 import { cn } from "@/lib/utils";
 import type { DragData } from "./workbench-drag";
+import { type Location, locationCopy } from "./workbench-locations";
 import { claimedSurfacesText } from "./workbench-model";
 
 interface OccupantListProps {
@@ -18,10 +19,10 @@ interface OccupantListProps {
   onSelect: (name: string) => void;
   /** Where "Back to docs" goes. */
   docsHref: string;
-  /** Edit mode: rows drag onto the page, but not those on it already. */
+  /** Edit mode: rows drag onto the page, but not those placed already. */
   editing?: boolean;
-  /** The occupants on the page, the focused one included. */
-  onPage?: ReadonlySet<string>;
+  /** In the template view, where each placed occupant is, hidden slots included. */
+  locations?: Readonly<Record<string, Location>>;
 }
 
 interface RowProps {
@@ -32,8 +33,8 @@ interface RowProps {
   onSelect: () => void;
   /** Whether it can be dragged onto the page. */
   draggable: boolean;
-  /** Whether it's marked as on the page. */
-  placed: boolean;
+  /** Where it's placed, if it is. */
+  location: Location | undefined;
 }
 
 /** Of a draggable's listeners, the pointer's: the row starts a drag by pointer only. */
@@ -56,7 +57,7 @@ function Row({
   selected,
   onSelect,
   draggable,
-  placed,
+  location,
 }: RowProps) {
   const { t } = useTranslation();
   const data: DragData = { occupant: name };
@@ -81,12 +82,14 @@ function Row({
       >
         <span className="block text-sm font-medium">{label}</span>
         <span className="block text-xs text-muted-foreground">{surfaces}</span>
-        {placed && (
+        {location && (
           <span
-            data-slot="workbench-on-page"
-            className="mt-0.5 block text-xs font-medium text-primary"
+            data-slot="workbench-location"
+            {...(location.hidden && { "data-hidden": location.hidden })}
+            // A slot that isn't showing: its occupants are kept, muted.
+            className="mt-0.5 block text-xs font-medium text-primary data-hidden:text-muted-foreground"
           >
-            {t("workbench_on_page")}
+            {t(locationCopy(location), { slot: location.label })}
           </span>
         )}
       </button>
@@ -115,7 +118,7 @@ export function OccupantList({
   onSelect,
   docsHref,
   editing = false,
-  onPage,
+  locations,
 }: OccupantListProps) {
   const { t } = useTranslation();
   const [query, setQuery] = useState("");
@@ -154,7 +157,7 @@ export function OccupantList({
       </div>
       <ul className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-2">
         {listed.map(({ spec }) => {
-          const placed = editing && (onPage?.has(spec.name) ?? false);
+          const location = locations?.[spec.name];
           return (
             <Row
               key={spec.name}
@@ -163,8 +166,8 @@ export function OccupantList({
               surfaces={claimedSurfacesText(spec, t("workbench_fits_none"))}
               selected={spec.name === selected}
               onSelect={() => onSelect(spec.name)}
-              draggable={editing && !placed}
-              placed={placed}
+              draggable={editing && !location}
+              location={location}
             />
           );
         })}
