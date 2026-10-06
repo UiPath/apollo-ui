@@ -18,6 +18,13 @@ const place = (box: Box) => ({
   height: `${box.height}px`,
 });
 
+/**
+ * The room a slot's label needs above the slot's top edge. With less
+ * (the header, at the top of the page), it sits inside the top-right
+ * corner instead. Either way it's clear of the slot's content's start.
+ */
+const LABEL_ROOM = 18;
+
 /** How wide a closed slot's strip is, on its edge of the template. */
 const STRIP = 24;
 
@@ -42,7 +49,8 @@ interface EditSlotsProps {
 }
 
 /**
- * Edit mode's layer over the page: every slot outlined, with its name,
+ * Edit mode's layer over the page: every slot outlined, with its name
+ * above its top edge (inside its top-right corner without room there),
  * and the whole slot a button that selects it, for the inspector; a slot
  * the page left out is a ghost where it would sit, and a closed one a
  * strip on its edge, each selected the same way.
@@ -120,6 +128,7 @@ export function EditSlots({
               </span>
             </button>
           );
+        const inside = box.y < LABEL_ROOM;
         return (
           <button
             key={slot}
@@ -137,7 +146,10 @@ export function EditSlots({
             <span
               aria-hidden="true"
               hidden={dragging !== null}
-              className="absolute top-1 left-1 rounded-sm bg-primary px-1.5 py-0.5 text-[11px] leading-none font-medium text-primary-foreground"
+              data-slot="workbench-edit-slot-label"
+              data-label-at={inside ? "inside" : "above"}
+              // Above the top edge, so it never covers the slot's content.
+              className="absolute bottom-full left-0 mb-px rounded-sm bg-primary px-1.5 py-0.5 text-[11px] leading-none font-medium text-primary-foreground data-[label-at=inside]:top-1 data-[label-at=inside]:right-1 data-[label-at=inside]:bottom-auto data-[label-at=inside]:left-auto data-[label-at=inside]:mb-0"
             >
               {label}
             </span>
