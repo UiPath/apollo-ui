@@ -48,7 +48,7 @@ export function FormFieldRenderer({
   disabled: formDisabled = false,
 }: FormFieldRendererProps) {
   const { control, watch, getValues } = useFormContext();
-  const changedNoteId = `${useId()}-${field.name}-changed`;
+  const changedNoteId = `${useId()}-changed`;
 
   // Ref for context to avoid unnecessary effect re-runs
   const contextRef = useRef(context);
