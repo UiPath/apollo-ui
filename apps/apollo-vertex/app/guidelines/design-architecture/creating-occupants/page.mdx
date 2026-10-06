@@ -256,16 +256,20 @@ Unit tests fail until each has everything it needs.
 
 ### Compose a slot
 
-The template view has two modes, switched in the header and carried in
-links as `mode=edit`:
+The template view has two modes, switched with Preview | Edit in the
+header and carried in links as `mode=edit`:
 
 - **Preview**, the default, is the page as people use it: no outlines,
   and every occupant works.
 - **Edit** outlines every slot with its name, and makes the occupants
   inert and slightly dimmed. A click anywhere in a slot, or Enter on it,
-  opens its popover. No slot changes width.
+  opens its popover beside the slot, toward the middle of the page. No
+  slot changes width. A slot that's left out shows as a ghost where it
+  would sit: click it to include it.
 
-In either mode, each slot's chip in the dock opens its popover too. It
+In either mode, each slot's chip in the dock opens its popover too,
+above the chip. A chip shows how many occupants its slot holds, or,
+dashed, that it's left out. The popover
 has the slot's contents first, then "Move Queue here", with the name of
 the occupant you're looking at, for a slot it isn't in, then its layout.
 A slot that's left out says to include it first. The Shell menu in the
@@ -281,6 +285,8 @@ the page" and don't drag. Where you drop it decides what happens:
 - **On a tab's content:** into the tab that's showing.
 - **On a slot that holds one:** in place of the occupant there, unless
   it's the one you're looking at.
+- **On a left-out slot's ghost:** the slot is included, with the
+  occupant in it, as one change.
 
 A place that refuses the occupant is dimmed while you drag, and says why
 when you're over it. A fill occupant can still go between tabs. After a
@@ -289,6 +295,13 @@ in the list, press Space, move between places with the arrow keys, and
 press Space to drop. The popover offers the same choices, by the same
 rules: a drop is allowed exactly where the popover would offer that
 occupant.
+
+Every change to what the page holds or how it's laid out says what it
+did in a toast, like "Key facts added to End panel", with an Undo for
+that change. A newer change replaces the toast, so Undo is always for
+the latest. In Edit mode, Reset layout in the header puts every slot's
+contents and layout back to the template's defaults, with the occupant
+you're looking at in its slot; its toast undoes it too.
 
 The template declares how much each slot holds, so the contents follow
 it. A slot that holds one shows its occupant with Replace and Clear, and
