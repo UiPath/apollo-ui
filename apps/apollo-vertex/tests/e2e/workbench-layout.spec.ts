@@ -156,82 +156,55 @@ test("panels can be removed and closed, and the map follows", async ({
   expect(urlQuery(page)).toContain("end-panel-present=false");
 });
 
-test("the occupant's panel is locked, with the reason", async ({ page }) => {
-  await open(page, "?occupant=queue&view=template");
-  await ready(page);
-  await openSlot(page, "start-panel");
-  const presence = group(page, "Start panel in the page");
-  // It can't be left out.
-  await expect(
-    presence.getByRole("radio", { name: "Included", exact: true }),
-  ).toBeEnabled();
-  await expect(
-    presence.getByRole("radio", { name: "Left out", exact: true }),
-  ).toBeDisabled();
-  await expect(presence).toHaveAccessibleDescription(
-    "The start panel holds the occupant, so it stays.",
-  );
-  // Why is a lock by its label, with the reason as its tooltip.
-  const lock = popover(page)
-    .locator("[data-slot=workbench-layout-slot]")
-    .getByRole("img", { name: "Locked" })
-    .first();
-  await expect(lock).toHaveAccessibleDescription(
-    "The start panel holds the occupant, so it stays.",
-  );
-  await lock.hover();
-  await expect(page.getByRole("tooltip")).toHaveText(
-    "The start panel holds the occupant, so it stays.",
-  );
-  await expect(
-    popover(page).locator("[data-slot=workbench-layout-note]"),
-  ).toHaveCount(0);
-  const state = group(page, "Start panel state");
-  await expect(state.getByRole("radio", { name: "Closed" })).toBeDisabled();
-  await expect(state).toHaveAccessibleDescription(
-    "It holds the occupant, so it stays open.",
-  );
-  // Its placement can still change.
-  await expect(
-    group(page, "Start panel placement").getByRole("radio", {
-      name: "Beside header",
-    }),
-  ).toBeEnabled();
-  // The other panel isn't locked.
-  await openSlot(page, "end-panel");
-  await expect(
-    group(page, "End panel state").getByRole("radio", { name: "Closed" }),
-  ).toBeEnabled();
-  await expect(
-    group(page, "End panel in the page").getByRole("radio", {
-      name: "Left out",
-    }),
-  ).toBeEnabled();
-});
-
-test("the width rule closes the other panel when there isn't room, and says so", async ({
+test("no panel is locked: the template view has no focused occupant", async ({
   page,
 }) => {
-  // 720px inside the shell: room for main and one panel.
-  await open(page, "?occupant=queue&view=template&page=1000");
+  await open(page, "?occupant=queue&view=template");
   await ready(page);
+  // Queue's panel can be left out and closed like any other.
+  for (const slot of ["start-panel", "end-panel"]) {
+    await openSlot(page, slot);
+    const name = slot === "start-panel" ? "Start panel" : "End panel";
+    for (const [group_, option] of [
+      [`${name} in the page`, "Left out"],
+      [`${name} state`, "Closed"],
+      [`${name} placement`, "Beside header"],
+    ] as const)
+      await expect(
+        group(page, group_).getByRole("radio", { name: option, exact: true }),
+      ).toBeEnabled();
+    await expect(
+      popover(page)
+        .locator("[data-slot=workbench-layout-slot]")
+        .getByRole("img", { name: "Locked" }),
+    ).toHaveCount(0);
+  }
+});
+
+test("the width rule closes panels when there isn't room, and says so", async ({
+  page,
+}) => {
+  // 720px inside the shell. No panel is focused, so none is kept: the
+  // template's own rule closes both.
+  await open(page, "?occupant=queue&view=template&page=1000");
+  await page.locator("[data-template=detail-page]").waitFor();
   await expect
     .poll(() => slotStates(page))
     .toEqual({
-      "detail-page-start-panel": "open",
+      "detail-page-start-panel": "closed",
       "detail-page-end-panel": "closed",
     });
-  await openSlot(page, "end-panel");
-  const end = popover(page).locator(
-    "[data-slot=workbench-layout-slot][data-layout-slot=end-panel]",
+  await openSlot(page, "start-panel");
+  const start = popover(page).locator(
+    "[data-slot=workbench-layout-slot][data-layout-slot=start-panel]",
   );
-  await expect(end).toHaveAttribute("data-closed-by", "rule");
-  await expect(group(page, "End panel state")).toHaveAccessibleDescription(
+  await expect(start).toHaveAttribute("data-closed-by", "rule");
+  await expect(group(page, "Start panel state")).toHaveAccessibleDescription(
     /Closed by the width rule/,
   );
   // It's still wanted open, so the menu keeps Open chosen.
   await expect(
-    group(page, "End panel state").getByRole("radio", { name: "Open" }),
+    group(page, "Start panel state").getByRole("radio", { name: "Open" }),
   ).toHaveAttribute("aria-checked", "true");
   // With room again, it reopens on its own.
   await closeMenus(page);
@@ -243,8 +216,8 @@ test("the width rule closes the other panel when there isn't room, and says so",
       "detail-page-start-panel": "open",
       "detail-page-end-panel": "open",
     });
-  await openSlot(page, "end-panel");
-  await expect(end).not.toHaveAttribute("data-closed-by", "rule");
+  await openSlot(page, "start-panel");
+  await expect(start).not.toHaveAttribute("data-closed-by", "rule");
 });
 
 test("the layout round-trips through the URL", async ({ page }) => {

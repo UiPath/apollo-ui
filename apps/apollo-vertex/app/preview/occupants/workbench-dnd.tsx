@@ -60,8 +60,6 @@ const includeOf = (data: unknown): string | null =>
 interface WorkbenchDndProps {
   host: TemplateHost | undefined;
   contents: SlotContents;
-  /** The focused occupant. */
-  focus: string;
   onContents: ContentsChange;
   children: ReactNode;
 }
@@ -70,7 +68,6 @@ interface WorkbenchDndProps {
 export function WorkbenchDnd({
   host,
   contents,
-  focus,
   onContents,
   children,
 }: WorkbenchDndProps) {
@@ -99,9 +96,10 @@ export function WorkbenchDnd({
         : (now + (forward ? 1 : -1) + order.length) % order.length;
     const zone = order[next];
     if (!zone) return;
-    keyboardZone.current = zone.id;
+    // Only once the place is measured: the drag and the place stay together.
     const rect = context.droppableRects.get(zone.id);
     if (!rect) return;
+    keyboardZone.current = zone.id;
     return { x: rect.left, y: rect.top };
   };
   const sensors = useSensors(
@@ -151,7 +149,7 @@ export function WorkbenchDnd({
       : t("workbench_drop_slot", { slot });
   };
   const outcome = (target: DropTarget, occupant: string) =>
-    host ? dropOutcome(host, contents, focus, target, occupant) : null;
+    host ? dropOutcome(host, contents, target, occupant) : null;
 
   const announcements: Announcements = {
     onDragStart: ({ active }) =>

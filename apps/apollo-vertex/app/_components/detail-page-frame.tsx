@@ -37,18 +37,12 @@ const PANEL_SLOTS: Record<PanelSide, DetailPageSlotName> = {
 };
 
 /**
- * The Detail page in the given layout choices, the occupant in its slot,
- * and labeled placeholders in the others. The template's own rules run as
- * usual: its width is the frame's, so a panel closes when main would get
- * too narrow. The occupant's panel counts as the one opened last, so the
- * rule closes the other panel first and never closes the occupant's.
+ * The Detail page in the given layout choices, each slot with what it
+ * holds, and labeled placeholders in empty ones. The template's own rules
+ * run as usual: its width is the frame's, so a panel closes when main
+ * would get too narrow.
  */
-function DetailPageFrame({
-  slot,
-  contents,
-  choices,
-  onStatus,
-}: TemplateFrameProps) {
+function DetailPageFrame({ contents, choices, onStatus }: TemplateFrameProps) {
   const choice = (side: PanelSide): SlotChoice =>
     choices[PANEL_SLOTS[side]] ?? {};
   const present = {
@@ -67,12 +61,6 @@ function DetailPageFrame({
     choice(side).placement === "beside-header"
       ? "beside-header"
       : "below-header";
-  const own: PanelSide | null =
-    slot === PANEL_SLOTS.start
-      ? "start"
-      : slot === PANEL_SLOTS.end
-        ? "end"
-        : null;
   const state = useDetailPage({
     panels,
     start: {
@@ -83,7 +71,6 @@ function DetailPageFrame({
       placement: placement("end"),
       defaultOpen: choice("end").open !== false,
     },
-    ...(own && { latest: own }),
   });
   const { open, closedBy } = state;
   useEffect(() => {

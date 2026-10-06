@@ -5,7 +5,6 @@ import {
 } from "@/app/_components/template-hosts";
 import { OCCUPANT_STATES, type OccupantState } from "@/components/ui/occupant";
 import {
-  fits,
   fitsSurface,
   type OccupantSpec,
   occupantInset,
@@ -23,6 +22,7 @@ import type { PreviewShellVariant } from "@/templates/shell/PreviewShell";
 import {
   normalizeContents,
   normalizeTabs,
+  placeOccupant,
   type SlotContents,
   slotFit,
 } from "./workbench-compose";
@@ -32,14 +32,13 @@ import {
   writeContents,
   writeTabs,
 } from "./workbench-contents-url";
-import { withFocus } from "./workbench-layout";
 
 export { slotFit } from "./workbench-compose";
 
 /**
  * The whole workbench view as query params: occupant, surface, sample,
  * state, theme, width, list=closed, details=open, view=template, template,
- * slot, page, zoom=100, shell=minimal, mode=edit, and the template's layout, per
+ * page, zoom=100, shell=minimal, mode=edit, and the template's layout, per
  * slot it declares choices for: <slot>-present=false, <slot>-state=closed,
  * and <slot>-placement, and what each slot holds and shows, <slot>-contents and <slot>-tab (see
  * workbench-contents-url). A template can map its older params onto these
@@ -47,10 +46,11 @@ export { slotFit } from "./workbench-compose";
  * unknown slots and invalid values fall back to the defaults.
  *
  * Each view owns its params, and only the current view's are read and
- * written. The surface view's are surface and width. The template view's
- * are view=template, template, slot, shell, the layout, page, zoom, and mode;
- * there the surface comes from the slot. So a link never carries a
- * surface and a slot that disagree.
+ * written. The surface view's are occupant, surface, width, sample, and
+ * state. The template view's are view=template, template, shell, the
+ * layout and contents, page, zoom, and mode; it has no focused occupant.
+ * A template link from before that, with occupant or slot, places that
+ * occupant once in its slot, as it did then (see parseWorkbenchView).
  */
 export type WorkbenchTheme = "light" | "dark";
 export type WorkbenchMode = "surface" | "template";
@@ -68,12 +68,11 @@ export interface WorkbenchView {
   detailsOpen: boolean;
   mode: WorkbenchMode;
   template: string;
-  slot: string;
   /** The shell around the template. The page width includes it. */
   shell: PreviewShellVariant;
   /** The page's choices for the template's slots. */
   layout: LayoutChoices;
-  /** What each slot holds: the focused occupant, and any added beside it. */
+  /** What each slot holds. */
   contents: SlotContents;
   /** The tab each slot shows, when one was chosen. */
   tabs: Readonly<Record<string, string>>;
@@ -102,52 +101,40 @@ export const pageWidthMin = (
 ): number => (host?.minWidth ?? 0) + SHELL_WIDTH[shell];
 
 /**
- * The view as it can be: in the template view, the surface is the slot's,
- * and the occupant's slot is kept there and open (the focus rule); the
- * width is in range.
+ * The view as it can be: in the template view, each slot only what it can
+ * hold; the page width in range.
  */
 export function normalizeView(view: WorkbenchView): WorkbenchView {
   const host = templateFor(view.template);
-  const spec = specFor(view.occupant);
   const inTemplate = view.mode === "template" && host;
   const contents = inTemplate
-    ? normalizeContents(host, view.contents, view.slot, view.occupant)
+    ? normalizeContents(host, view.contents)
     : view.contents;
   return {
     ...view,
-    ...(inTemplate && {
-      surface: slotSurface(host, view.slot, spec),
-      contents,
-      tabs: normalizeTabs(contents, view.tabs),
-    }),
-    layout: host ? withFocus(host.spec, view.layout, view.slot) : view.layout,
+    ...(inTemplate && { contents, tabs: normalizeTabs(contents, view.tabs) }),
     pageWidth: Math.max(view.pageWidth, pageWidthMin(host, view.shell)),
   };
 }
 
 /**
- * The surface a slot shows the occupant in: one it accepts that the
- * occupant fits there, else the first it accepts that previews host.
+ * The contents with the occupant selected in the list placed in a slot:
+ * when the template view starts with nothing on its page.
  */
-export function slotSurface(
-  host: TemplateHost,
-  slotName: string,
-  spec: OccupantSpec | undefined,
-): string {
-  const slot = host.spec.slots.find((s) => s.name === slotName);
-  const accepted = HOSTED_SURFACES.filter((surface) =>
-    slot?.surfaces.includes(surface.name),
-  );
-  const fitting = accepted.find(
-    (surface) => slot && spec && fits(slot, surface, spec).fits,
-  );
-  return (fitting ?? accepted[0])?.name ?? defaultSurface(spec);
+export function seeded(
+  host: TemplateHost | undefined,
+  contents: SlotContents,
+  occupant: string,
+  slot = defaultSlot(host, specFor(occupant)),
+): SlotContents {
+  return host ? placeOccupant(host, contents, slot, occupant) : contents;
 }
 
 /**
- * The view switched to another mode, carrying the occupant's place over:
- * into the template view at a slot that takes its surface, and back to
- * the surface view in its slot's surface, at that surface's start width.
+ * The view switched to another mode. Into the template view with nothing
+ * on its page, the occupant selected in the list goes in the first slot
+ * it fits; back to the surface view, that occupant opens in its surface,
+ * at that surface's start width.
  */
 export function switchView(
   view: WorkbenchView,
@@ -158,17 +145,33 @@ export function switchView(
   if (mode === "surface")
     return { ...view, mode, width: defaultWidth(spec, view.surface) };
   const host = templateFor(view.template);
-  const taking = host?.spec.slots.find(
-    (slot) =>
-      slot.surfaces.includes(view.surface) &&
-      spec &&
-      slotFit(host, slot.name, spec).fits,
-  );
+  const empty = Object.keys(view.contents).length === 0;
   return normalizeView({
     ...view,
     mode,
-    slot: taking?.name ?? defaultSlot(host, spec),
+    contents: empty ? seeded(host, {}, view.occupant) : view.contents,
   });
+}
+
+/**
+ * A link from before the template view had no focused occupant: its slot
+ * stays in the page and open, as the focus rule kept it.
+ */
+function keepOpen(
+  host: TemplateHost | undefined,
+  layout: LayoutChoices,
+  slot: string,
+): LayoutChoices {
+  const own = host?.spec.layout.options?.[slot];
+  if (!own?.optional && !own?.closable) return layout;
+  return {
+    ...layout,
+    [slot]: {
+      ...layout[slot],
+      ...(own.optional && { present: true }),
+      ...(own.closable && { open: true }),
+    },
+  };
 }
 
 /** Templates previews can render, in the registry's order. */
@@ -284,13 +287,18 @@ export function defaultWidth(
 const DEFAULT_OCCUPANT = OCCUPANT_SPECS[0]?.spec.name ?? "";
 
 /** The params only one view reads and writes. */
-const SURFACE_PARAMS = ["surface", "width"];
+const SURFACE_PARAMS = ["surface", "width", "sample", "state"];
 const TEMPLATE_PARAMS = ["template", "slot", "shell", "page", "zoom", "mode"];
 
 export function parseWorkbenchView(search: string): WorkbenchView {
   const params = new URLSearchParams(search);
   const mode: WorkbenchMode =
     params.get("view") === "template" ? "template" : "surface";
+  // A template link that names an occupant or a slot is from when the
+  // template view had a focused occupant: it's placed, once, where it was.
+  const legacy =
+    mode === "template" && (params.has("occupant") || params.has("slot"));
+  const slotParam = params.get("slot");
   // Only the current view's own params count.
   for (const key of mode === "template" ? SURFACE_PARAMS : TEMPLATE_PARAMS)
     params.delete(key);
@@ -306,8 +314,10 @@ export function parseWorkbenchView(search: string): WorkbenchView {
     : defaultTemplate();
   const host = templateFor(template);
   const slot =
-    host?.spec.slots.find((s) => s.name === params.get("slot"))?.name ??
+    host?.spec.slots.find((s) => s.name === slotParam)?.name ??
     defaultSlot(host, spec);
+  const layout = mode === "template" ? parseLayout(host, params) : {};
+  const contents = mode === "template" ? parseContents(host, params) : {};
   const pageWidth = Number(params.get("page"));
   const shell: PreviewShellVariant =
     params.get("shell") === "minimal" ? "minimal" : "sidebar";
@@ -327,10 +337,9 @@ export function parseWorkbenchView(search: string): WorkbenchView {
     detailsOpen: params.get("details") === "open",
     mode,
     template,
-    slot,
     shell,
-    layout: mode === "template" ? parseLayout(host, params) : {},
-    contents: mode === "template" ? parseContents(host, params) : {},
+    layout: legacy ? keepOpen(host, layout, slot) : layout,
+    contents: legacy ? seeded(host, contents, occupant, slot) : contents,
     tabs: mode === "template" ? parseTabs(host, params) : {},
     pageWidth:
       Number.isInteger(pageWidth) &&
@@ -344,25 +353,14 @@ export function parseWorkbenchView(search: string): WorkbenchView {
 }
 
 /** The template view's own params: only what isn't the default. */
-function writeTemplateParams(
-  view: WorkbenchView,
-  spec: OccupantSpec | undefined,
-  params: URLSearchParams,
-) {
+function writeTemplateParams(view: WorkbenchView, params: URLSearchParams) {
   params.set("view", view.mode);
   if (view.template !== defaultTemplate())
     params.set("template", view.template);
-  if (view.slot !== defaultSlot(templateFor(view.template), spec))
-    params.set("slot", view.slot);
   if (view.shell !== "sidebar") params.set("shell", view.shell);
   writeLayout(templateFor(view.template), view.layout, params);
-  writeContents(
-    templateFor(view.template),
-    view.contents,
-    view.occupant,
-    params,
-  );
-  writeTabs(view.contents, view.tabs, view.occupant, params);
+  writeContents(templateFor(view.template), view.contents, params);
+  writeTabs(view.contents, view.tabs, params);
   if (view.pageWidth !== DEFAULT_PAGE_WIDTH)
     params.set("page", String(view.pageWidth));
   if (view.zoom !== "fit") params.set("zoom", "100");
@@ -372,18 +370,21 @@ function writeTemplateParams(
 export function serializeWorkbenchView(view: WorkbenchView): string {
   const spec = specFor(view.occupant);
   const params = new URLSearchParams();
-  if (view.occupant !== DEFAULT_OCCUPANT) params.set("occupant", view.occupant);
   const inTemplate = view.mode === "template";
+  // The occupant, its sample, and its state are the surface view's.
+  if (!inTemplate && view.occupant !== DEFAULT_OCCUPANT)
+    params.set("occupant", view.occupant);
   if (!inTemplate && view.surface !== defaultSurface(spec))
     params.set("surface", view.surface);
-  if (view.sample !== "primary") params.set("sample", view.sample);
-  if (view.state !== "ready") params.set("state", view.state);
+  if (!inTemplate && view.sample !== "primary")
+    params.set("sample", view.sample);
+  if (!inTemplate && view.state !== "ready") params.set("state", view.state);
   if (view.theme !== "light") params.set("theme", view.theme);
   if (!inTemplate && view.width !== defaultWidth(spec, view.surface))
     params.set("width", String(view.width));
   if (!view.listOpen) params.set("list", "closed");
   if (view.detailsOpen) params.set("details", "open");
-  if (inTemplate) writeTemplateParams(view, spec, params);
+  if (inTemplate) writeTemplateParams(view, params);
   // A colon and a tilde need no escaping in a query, and links with
   // contents read better without.
   const query = params.toString().replaceAll("%3A", ":").replaceAll("%7E", "~");

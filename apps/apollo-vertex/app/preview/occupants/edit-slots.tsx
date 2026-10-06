@@ -35,9 +35,8 @@ interface EditSlotsProps {
   layout: LayoutChoices;
   /** Includes a slot the page left out. */
   onInclude: (slot: string) => void;
-  /** What each slot holds, and the focused occupant, for the drop zones. */
+  /** What each slot holds, for the drop zones. */
   contents: SlotContents;
-  focus: string;
   /** The slot whose popover is open, if any. */
   opened: SlotTarget | null;
   onOpen: (target: SlotTarget) => void;
@@ -55,7 +54,6 @@ export function EditSlots({
   layout,
   onInclude,
   contents,
-  focus,
   opened,
   onOpen,
   onClose,
@@ -153,12 +151,7 @@ export function EditSlots({
           </button>
         );
       })}
-      <DropZones
-        host={host}
-        contents={contents}
-        focus={focus}
-        ghosts={ghosts}
-      />
+      <DropZones host={host} contents={contents} ghosts={ghosts} />
     </div>
   );
 }

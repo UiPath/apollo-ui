@@ -90,8 +90,6 @@ interface DropZonesProps {
   /** The left-out slots' ghosts: dropping on one includes the slot too. */
   ghosts: readonly { slot: string; box: Box }[];
   contents: SlotContents;
-  /** The focused occupant. */
-  focus: string;
 }
 
 /**
@@ -99,7 +97,7 @@ interface DropZonesProps {
  * when the drag starts. Each says what dropping there does, by
  * dropOutcome, so it's the same as each slot's popover.
  */
-export function DropZones({ host, contents, focus, ghosts }: DropZonesProps) {
+export function DropZones({ host, contents, ghosts }: DropZonesProps) {
   const { t } = useTranslation();
   const drag = useWorkbenchDrag();
   const dragging = drag?.dragging ?? null;
@@ -107,37 +105,36 @@ export function DropZones({ host, contents, focus, ghosts }: DropZonesProps) {
   const [zones, setZones] = useState<readonly DropZone[]>([]);
   useLayoutEffect(() => {
     const frame = frameOf(ref.current);
-    const measured: DropZone[] =
-      dragging && frame
-        ? [
-            ...measureZones(frame, host, contents),
-            ...ghosts.map(({ slot, box }) => ({
-              id: `${slot}:ghost`,
-              target: { slot, kind: "slot" as const },
-              look: "slot" as const,
-              box,
-              include: slot,
-            })),
-          ]
-        : [];
+    // Measured again as a drag starts, as the tabs may have changed.
+    const measured: DropZone[] = frame
+      ? [
+          ...measureZones(frame, host, contents),
+          ...ghosts.map(({ slot, box }) => ({
+            id: `${slot}:ghost`,
+            target: { slot, kind: "slot" as const },
+            look: "slot" as const,
+            box,
+            include: slot,
+          })),
+        ]
+      : [];
     setZones(measured);
     if (drag) drag.zones.current = measured;
   }, [dragging, host, contents, drag, ghosts]);
-  if (!dragging) return <div ref={ref} hidden />;
+  // The places are there before a drag starts, unseen, so the drag
+  // measures them as it starts and the keyboard can reach every one.
   return (
     <div
       ref={ref}
-      data-slot="workbench-drop-zones"
+      data-slot={
+        dragging ? "workbench-drop-zones" : "workbench-drop-zones-idle"
+      }
       className="pointer-events-none absolute inset-0 z-30"
     >
       {zones.map((zone) => {
-        const outcome = dropOutcome(
-          host,
-          contents,
-          focus,
-          zone.target,
-          dragging,
-        );
+        const outcome: DropOutcome = dragging
+          ? dropOutcome(host, contents, zone.target, dragging)
+          : { ok: true, next: contents };
         return (
           <Zone
             key={zone.id}

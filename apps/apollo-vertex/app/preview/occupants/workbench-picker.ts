@@ -151,20 +151,17 @@ export function relabel(
 
 /**
  * The contents with a slot that holds one given another occupant in place
- * of its own. Unchanged for a panel slot, the focused occupant's slot, or
- * an occupant the slot can't hold.
+ * of its own. Unchanged for a panel slot, or an occupant the slot can't
+ * hold.
  */
 export function replaceIn(
   host: TemplateHost,
   contents: SlotContents,
   slot: string,
   occupant: string,
-  focus: string,
   known: readonly OccupantSpec[] = REGISTERED,
 ): SlotContents {
-  const here = contents[slot];
-  if (holdsPanel(host, slot) || (here && occupantsIn(here).includes(focus)))
-    return contents;
+  if (holdsPanel(host, slot)) return contents;
   const next = normalizePanel(occupant);
   return isValid(host, slot, next, known)
     ? { ...contents, [slot]: next }

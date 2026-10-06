@@ -23,9 +23,8 @@ for (const window of WINDOWS)
     }) => {
       await page.setViewportSize(window);
       await open(page, `?occupant=queue&view=template&page=${pageWidth}`);
-      await page
-        .locator("[data-template=detail-page] [data-occupant=queue]")
-        .waitFor();
+      // The page, not an occupant: a narrow one closes the panels.
+      await page.locator("[data-template=detail-page]").waitFor();
 
       // Fit: the whole frame is on the stage, clear of the dock.
       const fitted = await page.evaluate(() => {
@@ -53,7 +52,7 @@ for (const window of WINDOWS)
         pageWidth,
       });
       await expect(page.locator("[data-slot=workbench-frame-tag]")).toHaveText(
-        `Detail page · Start panel · ${pageWidth}px`,
+        `Detail page · ${pageWidth}px`,
       );
       // The zoom level is the frame's scale.
       const zoom = Number(await frame(page).getAttribute("data-zoom"));
@@ -77,7 +76,7 @@ for (const window of WINDOWS)
       );
       expect(scrolls).toBe(true);
       await expect(page.locator("[data-slot=workbench-frame-tag]")).toHaveText(
-        `Detail page · Start panel · ${pageWidth}px`,
+        `Detail page · ${pageWidth}px`,
       );
       // The template's rules see the same width at either zoom.
       expect(await slotStates(page)).toEqual(fitStates);

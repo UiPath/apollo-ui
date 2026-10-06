@@ -1,13 +1,13 @@
 "use client";
 
 import { Plus, X } from "lucide-react";
-import { type ReactNode, useEffect, useId, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { TemplateHost } from "@/app/_components/template-hosts";
 import { Button } from "@/components/ui/button";
 import { specFor } from "@/lib/occupant-lookup";
 import type { OccupantRef, TabSpec } from "@/lib/panel";
-import { LockableButton, LockIcon } from "./lock-hint";
+import { LockableButton } from "./lock-hint";
 import { SlotPicker } from "./slot-picker";
 import { SlotTabRows } from "./slot-tab-rows";
 import {
@@ -31,6 +31,27 @@ import {
 const refName = (ref: OccupantRef) =>
   typeof ref === "string" ? ref : ref.occupant;
 
+/** An occupant's name, as people know it. */
+const name = (occupant: string) => specFor(occupant)?.label ?? occupant;
+
+// An occupant's own row: its name (or what's given in its place), then
+// × (or Replace and Clear).
+const row = (
+  occupant: string,
+  actions: ReactNode,
+  label: ReactNode = <span className="truncate">{name(occupant)}</span>,
+) => (
+  <div
+    data-slot="workbench-contents-occupant"
+    data-row={occupant}
+    tabIndex={-1}
+    className="flex min-h-7 min-w-0 flex-1 items-center justify-between gap-2 rounded-sm px-1 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+  >
+    {label}
+    {actions}
+  </div>
+);
+
 /** Where focus goes once the contents change: a row, a tab's label, or the picker. */
 type FocusTo = { row: string } | { label: number } | { picker: true };
 
@@ -38,8 +59,6 @@ interface SlotContentsSectionProps {
   host: TemplateHost;
   slot: string;
   contents: SlotContents;
-  /** The focused occupant: it stays where it is. */
-  focus: string;
   onContents: ContentsChange;
 }
 
@@ -54,14 +73,12 @@ export function SlotContentsSection({
   host,
   slot,
   contents,
-  focus,
   onContents,
 }: SlotContentsSectionProps) {
   const { t } = useTranslation();
   const [picking, setPicking] = useState<PickTarget | null>(null);
   const [labeling, setLabeling] = useState<number | null>(null);
   const root = useRef<HTMLDivElement>(null);
-  const reasonId = useId();
   // Set by a change, read once the change has rendered.
   const focusTo = useRef<FocusTo | null>(null);
   useEffect(() => {
@@ -77,7 +94,6 @@ export function SlotContentsSection({
     root.current?.querySelector<HTMLElement>(selector)?.focus();
   });
   const panel = contents[slot];
-  const name = (occupant: string) => specFor(occupant)?.label ?? occupant;
   // As the page names a tab: its label, else its occupant's title.
   const tabName = (tab: TabSpec) => {
     if (tab.label) return t(tab.label);
@@ -101,7 +117,7 @@ export function SlotContentsSection({
   };
   const add = (occupant: string, to: PickTarget) => {
     if (to === "replace") {
-      change(replaceIn(host, contents, slot, occupant, focus), {
+      change(replaceIn(host, contents, slot, occupant), {
         row: occupant,
       });
       return;
@@ -135,29 +151,7 @@ export function SlotContentsSection({
       />
     );
   const remove = (occupant: string) =>
-    change(removeFromSlot(contents, slot, occupant, focus), null);
-  // An occupant's own row: its name (or what's given in its place), then
-  // × or, for the focused one, a lock.
-  const row = (
-    occupant: string,
-    actions: ReactNode,
-    label: ReactNode = <span className="truncate">{name(occupant)}</span>,
-  ) => (
-    <div
-      data-slot="workbench-contents-occupant"
-      data-row={occupant}
-      tabIndex={-1}
-      {...(occupant === focus && { "aria-describedby": reasonId })}
-      className="flex min-h-7 min-w-0 flex-1 items-center justify-between gap-2 rounded-sm px-1 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-    >
-      {label}
-      {occupant === focus ? (
-        <LockIcon reason={why("focus") ?? ""} id={reasonId} />
-      ) : (
-        actions
-      )}
-    </div>
-  );
+    change(removeFromSlot(contents, slot, occupant), null);
   const removeButton = (occupant: string) => (
     <Button
       variant="ghost"
@@ -193,7 +187,7 @@ export function SlotContentsSection({
                   size="sm"
                   className="h-6 px-2 text-xs"
                   onClick={() =>
-                    change(removeFromSlot(contents, slot, only, focus), {
+                    change(removeFromSlot(contents, slot, only), {
                       picker: true,
                     })
                   }

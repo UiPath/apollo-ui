@@ -7,10 +7,10 @@ import {
   choose,
   floorMeasured,
   open,
-  urlQuery,
   stage,
   status,
   themeColors,
+  urlQuery,
 } from "./workbench-helpers";
 
 /*
@@ -293,9 +293,16 @@ for (const [width, view] of [
       .boundingBox();
     expect(list?.x).toBe(Math.min(...lefts));
     expect(details?.x).toBe(Math.max(...lefts));
-    // Sample and State still work, in whichever form fits.
-    await choose(page, "Sample", "Stress");
-    expect(urlQuery(page)).toContain("sample=stress");
+    // Sample and State work, in whichever form fits: the surface view's only.
+    if (view === "surface") {
+      await choose(page, "Sample", "Stress");
+      expect(urlQuery(page)).toContain("sample=stress");
+    } else {
+      await expect(page.getByRole("group", { name: "Sample" })).toHaveCount(0);
+      await expect(page.getByRole("combobox", { name: "Sample" })).toHaveCount(
+        0,
+      );
+    }
   });
 }
 

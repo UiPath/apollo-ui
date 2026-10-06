@@ -57,7 +57,7 @@ describe("a second template, from its spec alone", () => {
   });
 
   it("offers only the choices it declares in its slots' layout", () => {
-    expect(layoutMenu(twoUpTemplate, {}, "body")).toEqual([
+    expect(layoutMenu(twoUpTemplate, {})).toEqual([
       {
         slot: "aside",
         present: [
@@ -73,10 +73,9 @@ describe("a second template, from its spec alone", () => {
   });
 
   it("round-trips its layout through a link", () => {
-    // body is the occupant's default slot here, so it isn't written.
     for (const query of [
-      "?occupant=key-facts&view=template&template=two-up&aside-present=false",
-      "?occupant=key-facts&view=template&template=two-up&aside-state=closed",
+      "?view=template&template=two-up&aside-present=false",
+      "?view=template&template=two-up&aside-state=closed",
     ])
       expect(serializeWorkbenchView(parseWorkbenchView(query))).toBe(query);
     // Detail page params mean nothing to it.
@@ -102,15 +101,18 @@ describe("a second template, from its spec alone", () => {
     );
   });
 
-  it("keeps the occupant's slot there and open: the focus rule", () => {
+  it("opens an older link with its occupant's slot there and open, once", () => {
     const view = parseWorkbenchView(
       "?occupant=queue&view=template&template=two-up&slot=aside&aside-present=false&aside-state=closed",
     );
-    expect(view.slot).toBe("aside");
     expect(view.layout).toEqual({ aside: { present: true, open: true } });
+    expect(view.contents.aside?.tabs).toEqual([
+      { id: "queue", occupants: ["queue"] },
+    ]);
     expect(normalizeView(view)).toEqual(view);
-    const [aside] = layoutMenu(twoUpTemplate, view.layout, "aside");
-    expect(aside?.present?.find((o) => !o.value)?.lock).toBe("focus");
-    expect(aside?.open?.find((o) => !o.value)?.lock).toBe("focus");
+    // After that, no slot is focused: the aside can be left out or closed.
+    const [aside] = layoutMenu(twoUpTemplate, view.layout);
+    expect(aside?.present?.every((o) => o.lock === null)).toBe(true);
+    expect(aside?.open?.every((o) => o.lock === null)).toBe(true);
   });
 });

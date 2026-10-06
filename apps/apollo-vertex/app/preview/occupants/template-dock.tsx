@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { Separator } from "@/components/ui/separator";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import type { OccupantSpec } from "@/lib/composition";
 import { type LayoutChoices, resolveLayout } from "@/lib/layout";
 import type { PreviewShellVariant } from "@/templates/shell/PreviewShell";
 import { Dock, DockSlider } from "./dock-parts";
@@ -48,9 +47,6 @@ const PAGE_WIDTH_STEP = 8;
 
 interface TemplateDockProps {
   host: TemplateHost;
-  spec: OccupantSpec;
-  slot: string;
-  onSlot: (slot: string) => void;
   shell: PreviewShellVariant;
   onShell: (shell: PreviewShellVariant) => void;
   layout: LayoutChoices;
@@ -79,9 +75,6 @@ interface TemplateDockProps {
  */
 export function TemplateDock({
   host,
-  spec,
-  slot,
-  onSlot,
   shell,
   onShell,
   layout,
@@ -99,12 +92,11 @@ export function TemplateDock({
   scale,
 }: TemplateDockProps) {
   const { t } = useTranslation();
-  const slotName = host.slotLabels[slot] ?? slot;
   return (
     <Dock>
       <PageMap
         layout={resolveLayout(host.spec, withStatus(layout, slotStatus))}
-        highlighted={[slot]}
+        highlighted={[]}
         cue="here"
         counts={Object.fromEntries(
           Object.entries(contents).map(([name, panel]) => [
@@ -112,7 +104,7 @@ export function TemplateDock({
             occupantsIn(panel).length,
           ]),
         )}
-        name={slotName.toLowerCase()}
+        name={host.label.toLowerCase()}
         shell={shell}
       />
       <Separator orientation="vertical" className="h-8" />
@@ -122,7 +114,6 @@ export function TemplateDock({
           const left = layout[s.name]?.present === false;
           const panel = contents[s.name];
           const count = panel ? occupantsIn(panel).length : 0;
-          const here = s.name === slot;
           const open = opened?.slot === s.name;
           const state = left
             ? t("workbench_slot_chip_left_out", { place })
@@ -134,20 +125,12 @@ export function TemplateDock({
               size="sm"
               data-slot="workbench-slot-chip"
               data-chip-slot={s.name}
-              data-here={here}
               data-left-out={left}
               aria-haspopup="dialog"
               aria-expanded={open}
-              aria-label={
-                here
-                  ? t("workbench_slot_chip_here", {
-                      state,
-                      occupant: spec.label,
-                    })
-                  : state
-              }
+              aria-label={state}
               // Left out: dashed and muted, with no count to show.
-              className="px-2 has-[>svg]:px-2 data-[here=true]:bg-accent data-[here=true]:text-accent-foreground data-[left-out=true]:border-dashed data-[left-out=true]:text-muted-foreground"
+              className="px-2 has-[>svg]:px-2 data-[left-out=true]:border-dashed data-[left-out=true]:text-muted-foreground"
               onClick={(event) => {
                 if (open) onClose();
                 else
@@ -177,9 +160,6 @@ export function TemplateDock({
         host={host}
         target={opened}
         onClose={onClose}
-        spec={spec}
-        focusSlot={slot}
-        onSlot={onSlot}
         layout={layout}
         onLayout={onLayout}
         status={slotStatus}

@@ -11,13 +11,10 @@ const roundTrip = (query: string) =>
   serializeWorkbenchView(parseWorkbenchView(query));
 
 describe("each view's own params", () => {
-  it("in the template view, ignores a surface and width, and takes the slot's surface", () => {
-    const view = parseWorkbenchView(
-      "?occupant=queue&view=template&slot=end-panel&surface=content-area&width=500",
+  it("in the template view, ignores a surface and width", () => {
+    const query = serializeWorkbenchView(
+      parseWorkbenchView("?view=template&surface=content-area&width=500"),
     );
-    expect(view.surface).toBe("side-panel");
-    const query = serializeWorkbenchView(view);
-    expect(query).toContain("slot=end-panel");
     expect(query).not.toContain("surface=");
     expect(query).not.toContain("width=");
   });
@@ -30,31 +27,33 @@ describe("each view's own params", () => {
     ).toBe("?occupant=queue");
   });
 
-  it("never writes a surface and a slot together", () => {
+  it("never writes a slot: the template view has no focused occupant", () => {
     for (const query of [
       "?occupant=queue&surface=content-area&width=600",
       "?occupant=queue&view=template&slot=main",
-    ]) {
-      const written = roundTrip(query);
-      expect(
-        written.includes("surface=") && written.includes("slot="),
-        written,
-      ).toBe(false);
-    }
+    ])
+      expect(roundTrip(query), query).not.toContain("slot=");
   });
 });
 
 describe("switching views", () => {
-  it("carries the occupant into the slot that takes its surface, and back", () => {
+  it("seeds an empty page with the occupant, in the first slot it fits", () => {
     const surface = parseWorkbenchView("?occupant=queue&surface=content-area");
     const template = switchView(surface, "template");
-    expect(template.slot).toBe("main");
-    expect(template.surface).toBe("content-area");
+    expect(Object.keys(template.contents)).toEqual(["start-panel"]);
+    // Back in the surface view, that occupant opens in its surface.
     const back = switchView(template, "surface");
-    expect(back.surface).toBe("content-area");
     expect(serializeWorkbenchView(back)).toBe(
       "?occupant=queue&surface=content-area",
     );
+  });
+
+  it("doesn't seed a page that has something on it", () => {
+    const template = parseWorkbenchView(
+      "?view=template&end-panel-contents=key-facts",
+    );
+    const surface = switchView(template, "surface");
+    expect(switchView(surface, "template").contents).toEqual(template.contents);
   });
 });
 
@@ -63,11 +62,14 @@ describe("unknown slots and values", () => {
     const view = parseWorkbenchView(
       "?occupant=queue&view=template&slot=nope&start-panel-placement=sideways&end-panel-state=weird&end-panel-present=maybe&nope-state=closed",
     );
-    expect(view.slot).toBe("start-panel");
+    // An older link: the occupant goes in the first slot it fits.
+    expect(Object.keys(view.contents)).toEqual(["start-panel"]);
     expect(view.layout).toEqual({
       "start-panel": { present: true, open: true },
     });
-    expect(serializeWorkbenchView(view)).toBe("?occupant=queue&view=template");
+    expect(serializeWorkbenchView(view)).toBe(
+      "?view=template&start-panel-contents=queue",
+    );
   });
 
   it("map the Detail page's old params onto per-slot ones", () => {
@@ -76,7 +78,7 @@ describe("unknown slots and values", () => {
         "?occupant=key-facts&view=template&slot=main&panels=start&start=beside-header&start-state=closed",
       ),
     ).toBe(
-      "?occupant=key-facts&view=template&slot=main&start-panel-state=closed&start-panel-placement=beside-header&end-panel-present=false",
+      "?view=template&start-panel-state=closed&start-panel-placement=beside-header&end-panel-present=false&main-contents=key-facts",
     );
   });
 });

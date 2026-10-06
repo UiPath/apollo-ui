@@ -18,8 +18,9 @@ import { addAsTab, addToTab, removeOccupant } from "@/lib/panel-editing";
 /*
  * What each slot of the template view holds, for any template: a panel of
  * tabs and stacks (see @/lib/panel) for a slot that declares it holds one,
- * else at most one occupant. The focused occupant, the one picked in the
- * list, is always placed in its slot. Every rule comes from the template's
+ * else at most one occupant. The template view has no focused occupant:
+ * every one on the page can be taken out or replaced. Every rule comes
+ * from the template's
  * declarations and composition's checks: fits(), validatePanel(), and the
  * slot's capacity.
  */
@@ -67,12 +68,11 @@ export type ContentsChange = (
  * Why a composer choice can't be made, as a reason code; each has its copy
  * as a locale key (reasonCopy).
  *
- * - focus: it's the focused occupant, so it stays.
  * - fill-alone: a fill occupant has a tab to itself.
  * - tab-cap: the panel has as many tabs as it can.
  * - no-fit: the occupant doesn't fit this slot's surface.
  */
-export type ComposeLock = "focus" | "fill-alone" | "tab-cap" | "no-fit";
+export type ComposeLock = "fill-alone" | "tab-cap" | "no-fit";
 
 /** Labels a stack's tab can take, by their id in links, in the order the composer offers them. */
 export const TAB_LABELS = [
@@ -129,53 +129,61 @@ const withTabIds = (panel: PanelSpec): PanelSpec => ({
   }),
 });
 
-/** The focused occupant placed first in a panel, as its own tab. */
-const withFocusFirst = (panel: PanelSpec, focus: string): PanelSpec => ({
-  ...panel,
-  tabs: [{ id: focus, occupants: [focus] }, ...panel.tabs],
-});
-
 /**
  * The contents as the template view can show them: only the template's
- * slots, each valid by its rules or dropped, and the focused occupant in
- * its slot (first, when the slot holds a panel) and in no other. A slot
- * that can't take the focused occupant beside what it holds falls back to
- * the focused occupant alone. Each tab's id is its first occupant.
+ * slots, each valid by its rules or dropped. Each tab's id is its first
+ * occupant.
  */
 export function normalizeContents(
   host: TemplateHost,
   contents: SlotContents,
-  focusSlot: string,
-  focus: string,
   known: readonly OccupantSpec[] = REGISTERED,
 ): SlotContents {
-  const slots = host.spec.slots.map((slot) => slot.name);
   const kept: Record<string, PanelSpec> = {};
-  for (const slot of slots) {
+  for (const { name: slot } of host.spec.slots) {
     const panel = contents[slot];
     if (!panel) continue;
-    // The focused occupant goes in its own slot only.
     const ided = withTabIds(panel);
-    const elsewhere = slot === focusSlot ? ided : removeOccupant(ided, focus);
-    if (isValid(host, slot, elsewhere, known)) kept[slot] = elsewhere;
-  }
-  const alone = normalizePanel(focus);
-  const own = kept[focusSlot];
-  if (!own || !occupantsIn(own).includes(focus)) {
-    const placed =
-      own && holdsPanel(host, focusSlot) ? withFocusFirst(own, focus) : alone;
-    kept[focusSlot] = isValid(host, focusSlot, placed, known) ? placed : alone;
+    if (isValid(host, slot, ided, known)) kept[slot] = ided;
   }
   return kept;
 }
 
-/** The tab a slot shows first: the focused occupant's, else its first. */
-export function activeTab(panel: PanelSpec, focus: string): string {
-  const own = panel.tabs.find((tab) =>
-    tab.occupants.some((ref) => refName(ref) === focus),
-  );
-  return (own ?? panel.tabs[0])?.id ?? "";
+/**
+ * The contents with an occupant placed in a slot, once, as a page starts:
+ * first in it when it holds a panel, else alone, and in no other slot. A
+ * slot that can't take it beside what it holds gets it alone. Links from
+ * before the template view had no focused occupant open this way.
+ */
+export function placeOccupant(
+  host: TemplateHost,
+  contents: SlotContents,
+  slot: string,
+  occupant: string,
+  known: readonly OccupantSpec[] = REGISTERED,
+): SlotContents {
+  const kept: Record<string, PanelSpec> = {};
+  for (const [name, panel] of Object.entries(
+    normalizeContents(host, contents, known),
+  )) {
+    const elsewhere = name === slot ? panel : removeOccupant(panel, occupant);
+    if (elsewhere.tabs.length > 0) kept[name] = elsewhere;
+  }
+  const alone = normalizePanel(occupant);
+  const own = kept[slot];
+  if (own && occupantsIn(own).includes(occupant)) return kept;
+  const first: PanelSpec | null =
+    own && holdsPanel(host, slot)
+      ? { ...own, tabs: [{ id: occupant, occupants: [occupant] }, ...own.tabs] }
+      : null;
+  const placed = first && isValid(host, slot, first, known) ? first : alone;
+  return isValid(host, slot, placed, known)
+    ? { ...kept, [slot]: placed }
+    : kept;
 }
+
+/** The tab a slot shows first: its first. */
+export const activeTab = (panel: PanelSpec): string => panel.tabs[0]?.id ?? "";
 
 /**
  * The tab chosen in each slot, kept while the slot has it. A tab that's
@@ -230,21 +238,14 @@ export function addOccupant(
   return { ...contents, [slot]: next };
 }
 
-/** Whether an occupant can be taken out of a slot: never the focused one. */
-export const removeLock = (
-  occupant: string,
-  focus: string,
-): ComposeLock | null => (occupant === focus ? "focus" : null);
-
 /** The contents without an occupant in a slot; a tab it empties goes too. */
 export function removeFromSlot(
   contents: SlotContents,
   slot: string,
   occupant: string,
-  focus: string,
 ): SlotContents {
   const here = contents[slot];
-  if (!here || removeLock(occupant, focus)) return contents;
+  if (!here) return contents;
   const next = removeOccupant(here, occupant);
   const { [slot]: _gone, ...rest } = contents;
   return next.tabs.length > 0 ? { ...rest, [slot]: next } : rest;

@@ -6,10 +6,7 @@ import type {
   SlotStatus,
   TemplateHost,
 } from "@/app/_components/template-hosts";
-import type { OccupantState } from "@/components/ui/occupant";
-import type { OccupantSpec } from "@/lib/composition";
 import type { LayoutChoices } from "@/lib/layout";
-import type { ExampleRole } from "@/lib/occupant-entry";
 import { OCCUPANT_REGISTRY } from "@/lib/occupant-registry.generated";
 import { LocaleProvider } from "@/registry/shell/shell-locale-provider";
 import {
@@ -17,11 +14,9 @@ import {
   type PreviewShellVariant,
 } from "@/templates/shell/PreviewShell";
 import { EditSlots } from "./edit-slots";
-import { NoFitCard } from "./no-fit-card";
 import type { SlotTarget } from "./slot-popover";
 import { StageFrame } from "./stage-frame";
 import { activeTab, occupantsIn, type SlotContents } from "./workbench-compose";
-import { slotFit } from "./workbench-url-state";
 
 /** The slots the choices close, as one key. */
 const closedSlots = (layout: LayoutChoices) =>
@@ -32,11 +27,9 @@ const closedSlots = (layout: LayoutChoices) =>
 
 interface TemplateStageProps {
   host: TemplateHost;
-  spec: OccupantSpec;
-  slot: string;
   shell: PreviewShellVariant;
   layout: LayoutChoices;
-  /** What each slot holds: the focused occupant, and any added. */
+  /** What each slot holds. */
   contents: SlotContents;
   /** The tab each slot shows, when one was chosen. */
   tabs: Readonly<Record<string, string>>;
@@ -52,8 +45,6 @@ interface TemplateStageProps {
   onOpen: (target: SlotTarget) => void;
   onClose: () => void;
   onStatus: (status: Readonly<Record<string, SlotStatus>>) => void;
-  sample: ExampleRole;
-  state: OccupantState;
   pageWidth: number;
   /** The page's real height: tall enough for the frame to fill the stage. */
   pageHeight: number;
@@ -62,16 +53,15 @@ interface TemplateStageProps {
 }
 
 /**
- * The template view's stage: the template at the page width, with the
- * occupant in its slot, or why it doesn't go there. The frame takes the
+ * The template view's stage: the template at the page width, each slot
+ * with what it holds, every occupant in its primary sample, ready. The
+ * frame takes the
  * scaled size, and the page inside it keeps its real width, so the
  * template's rules and the frame tag see the real page width. The page is
  * the whole window: the template inside the real ApolloShell.
  */
 export function TemplateStage({
   host,
-  spec,
-  slot,
   shell,
   layout,
   contents,
@@ -84,35 +74,20 @@ export function TemplateStage({
   onOpen,
   onClose,
   onStatus,
-  sample,
-  state,
   pageWidth,
   pageHeight,
   scale,
 }: TemplateStageProps) {
   const { t } = useTranslation();
-  const slotName = host.slotLabels[slot] ?? slot;
-  const result = slotFit(host, slot, spec);
-  const entry = OCCUPANT_REGISTRY.find((o) => o.spec.name === spec.name);
-  if (!result.fits || !entry)
-    return (
-      <NoFitCard
-        title={t("workbench_no_fit_slot_title", {
-          occupant: spec.label,
-          slot: slotName.toLowerCase(),
-        })}
-        reasons={result.reasons}
-      />
-    );
   const { Frame } = host;
-  // The focused occupant in the chosen sample and state; any added beside
-  // it in their primary sample, ready.
+  // Every occupant in its primary sample, ready: Sample and State are the
+  // surface view's.
   const rendered = Object.fromEntries(
     Object.entries(contents).map(([name, panel]) => [
       name,
       {
         panel,
-        defaultTab: tabs[name] ?? activeTab(panel, spec.name),
+        defaultTab: tabs[name] ?? activeTab(panel),
         onTabChange: (id: string) => onTab(name, id),
         revision: revisions[name] ?? 0,
         occupants: Object.fromEntries(
@@ -121,10 +96,7 @@ export function TemplateStage({
               (o) => o.spec.name === occupant,
             );
             if (!found) return [];
-            const focused = occupant === spec.name;
-            const node = found.render(focused ? sample : "primary", {
-              state: focused ? state : "ready",
-            });
+            const node = found.render("primary", { state: "ready" });
             return [[occupant, { spec: found.spec, node }]];
           }),
         ),
@@ -146,7 +118,6 @@ export function TemplateStage({
       className="h-[calc(var(--page-height)*var(--zoom))] w-[calc(var(--page-width)*var(--zoom))] shrink-0"
       tag={t("workbench_frame_tag_template", {
         template: host.label,
-        slot: slotName,
         width: pageWidth,
       })}
     >
@@ -156,7 +127,6 @@ export function TemplateStage({
           layout={layout}
           onInclude={onInclude}
           contents={contents}
-          focus={spec.name}
           opened={opened}
           onOpen={onOpen}
           onClose={onClose}
@@ -175,11 +145,10 @@ export function TemplateStage({
           <PreviewShell variant={shell} basePath="/preview/occupants">
             <LocaleProvider>
               <Frame
-                // A fresh template when the slot or a slot's open state
-                // changes: its slots start as chosen. Placement and which
+                // A fresh template when a slot's open state changes: its
+                // slots start as chosen. Placement and which
                 // slots it has apply live.
-                key={`${slot}-${closedSlots(layout)}`}
-                slot={slot}
+                key={closedSlots(layout)}
                 contents={rendered}
                 choices={layout}
                 onStatus={onStatus}

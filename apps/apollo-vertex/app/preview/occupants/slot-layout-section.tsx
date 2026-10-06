@@ -29,8 +29,6 @@ const asText = (value: boolean) => (value ? "true" : "false");
 interface SlotLayoutSectionProps {
   host: TemplateHost;
   slot: string;
-  /** The slot holding the occupant: the focus rule keeps it there and open. */
-  focusSlot: string;
   layout: LayoutChoices;
   onLayout: (layout: LayoutChoices) => void;
   /** Each slot after the template's rules, to say when the rule closed one. */
@@ -41,22 +39,18 @@ interface SlotLayoutSectionProps {
 
 /**
  * One slot's layout choices: in the page, its state, and its placement,
- * only those it declares. Locked options say why: the focus rule, or the
- * template's layout.
+ * only those it declares. A locked option says why: the template's layout.
  */
 export function SlotLayoutSection({
   host,
   slot,
-  focusSlot,
   layout,
   onLayout,
   status,
   parts = ALL_PARTS,
 }: SlotLayoutSectionProps) {
   const { t } = useTranslation();
-  const section = layoutMenu(host.spec, layout, focusSlot).find(
-    (s) => s.slot === slot,
-  );
+  const section = layoutMenu(host.spec, layout).find((s) => s.slot === slot);
   if (!section) return null;
   const slotName = host.slotLabels[slot] ?? slot;
   // The template's own name for a placement, else the placement's name.
@@ -66,20 +60,14 @@ export function SlotLayoutSection({
   };
   const choose = (change: LayoutChoices[string]) =>
     onLayout({ ...layout, [slot]: { ...layout[slot], ...change } });
-  const lockNote = (lock: LayoutLock | null, open = false) =>
-    lock === "focus"
-      ? open
-        ? t("workbench_layout_locked_open")
-        : t("workbench_layout_locked", { panel: slotName.toLowerCase() })
-      : lock === "refused"
-        ? t(reasonCopy(host.spec, "refused"))
-        : null;
+  const lockNote = (lock: LayoutLock | null) =>
+    lock === "refused" ? t(reasonCopy(host.spec, "refused")) : null;
   const choice = layout[slot] ?? {};
   const present = choice.present !== false;
   const closedBy = status?.[slot]?.closedBy;
   const presenceNote = lockNote(firstLock(section.present));
   const stateNote =
-    lockNote(firstLock(section.open), true) ??
+    lockNote(firstLock(section.open)) ??
     (closedBy === "rule" ? t(reasonCopy(host.spec, "rule")) : null);
   const placementNote = lockNote(firstLock(section.placement));
   const shows = (part: LayoutPart) => parts.includes(part);

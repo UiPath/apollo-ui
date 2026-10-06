@@ -21,7 +21,7 @@ const CHANGE_TOAST = "workbench-change";
 /**
  * Makes a change to what the template view holds or how it's laid out,
  * and says what it did in a toast, with an Undo that puts back what that
- * change touched (contents, layout, slot, tabs) and nothing else.
+ * change touched (contents, layout, tabs) and nothing else.
  */
 export function useChangeLog(
   view: WorkbenchView,
@@ -56,7 +56,7 @@ export function useChangeLog(
   };
   // Edit mode's Reset layout: every slot back to the template's defaults.
   const reset = () =>
-    change(resetComposition(view), {
+    change(resetComposition(), {
       key: "workbench_change_reset",
       values: {},
     });

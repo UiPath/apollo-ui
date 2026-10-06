@@ -1,6 +1,5 @@
 "use client";
 
-import { MoveRight } from "lucide-react";
 import { type RefObject, useEffect, useId, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import type {
@@ -12,14 +11,11 @@ import {
   PopoverAnchor,
   PopoverContent,
 } from "@/components/ui/popover";
-import type { OccupantSpec } from "@/lib/composition";
 import type { LayoutChoices } from "@/lib/layout";
-import { LockableButton } from "./lock-hint";
 import { SlotContentsSection } from "./slot-contents";
 import { SlotLayoutSection } from "./slot-layout-section";
 import type { ContentsChange, SlotContents } from "./workbench-compose";
-import { hasLayout, leftOut, reasonCopy } from "./workbench-layout";
-import { slotFit } from "./workbench-url-state";
+import { hasLayout, leftOut } from "./workbench-layout";
 
 /** Anything the popover can be placed against: an element, or a box of one. */
 interface Measurable {
@@ -72,10 +68,6 @@ interface SlotPopoverProps {
   /** The slot it's open for, or null when it's closed. */
   target: SlotTarget | null;
   onClose: () => void;
-  /** The focused occupant, and the slot it's in. */
-  spec: OccupantSpec;
-  focusSlot: string;
-  onSlot: (slot: string) => void;
   layout: LayoutChoices;
   onLayout: (layout: LayoutChoices) => void;
   status: Readonly<Record<string, SlotStatus>> | null;
@@ -93,9 +85,6 @@ export function SlotPopover({
   host,
   target,
   onClose,
-  spec,
-  focusSlot,
-  onSlot,
   layout,
   onLayout,
   status,
@@ -120,8 +109,7 @@ export function SlotPopover({
   const slot = target?.slot ?? "";
   const slotName = host.slotLabels[slot] ?? slot;
   const out = leftOut(layout, slot);
-  const fits = slotFit(host, slot, spec).fits;
-  const layoutProps = { host, slot, focusSlot, layout, onLayout, status };
+  const layoutProps = { host, slot, layout, onLayout, status };
   return (
     <Popover
       open={target !== null}
@@ -194,27 +182,10 @@ export function SlotPopover({
                 host={host}
                 slot={slot}
                 contents={contents}
-                focus={spec.name}
                 onContents={onContents}
               />
             )}
           </section>
-          {/* Moving the focused occupant comes after what the slot holds. */}
-          {slot !== focusSlot && (
-            <LockableButton
-              variant="outline"
-              size="sm"
-              className="justify-start"
-              reason={fits ? null : t(reasonCopy(host.spec, "no-fit"))}
-              onClick={() => {
-                onSlot(slot);
-                headingRef.current?.focus();
-              }}
-            >
-              {fits ? <MoveRight aria-hidden /> : null}
-              {t("workbench_slot_move_here", { occupant: spec.label })}
-            </LockableButton>
-          )}
           {hasLayout(host.spec, slot) && !out && (
             <section
               aria-label={t("workbench_layout")}

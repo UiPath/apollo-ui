@@ -29,8 +29,6 @@ export interface SlotContent {
 
 /** What a preview gives a template: what each slot holds, and the layout. */
 export interface TemplateFrameProps {
-  /** The slot holding the focused occupant. */
-  slot: string;
   /** What each slot holds; a slot left out shows a placeholder. */
   contents: Readonly<Record<string, SlotContent>>;
   /** The page's choices for the template's slots (see resolveLayout). */

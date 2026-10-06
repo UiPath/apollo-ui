@@ -4,7 +4,6 @@ import {
   addOccupant,
   type ComposeLock,
   holdsPanel,
-  occupantsIn,
   REGISTERED,
   type SlotContents,
 } from "./workbench-compose";
@@ -45,7 +44,6 @@ const refuse = (reason: DropRefusal): DropOutcome => ({ ok: false, reason });
 export function dropOutcome(
   host: TemplateHost,
   contents: SlotContents,
-  focus: string,
   target: DropTarget,
   occupant: string,
   known: readonly OccupantSpec[] = REGISTERED,
@@ -60,16 +58,14 @@ export function dropOutcome(
       return dropOutcome(
         host,
         contents,
-        focus,
         { slot, kind: "new-tab", at: 0 },
         occupant,
         known,
       );
-    if (panel && occupantsIn(panel).includes(focus)) return refuse("focus");
     const why = leftOutFor(host, contents, slot, "replace", spec, known);
     if (why) return refuse(why);
     const next = panel
-      ? replaceIn(host, contents, slot, occupant, focus, known)
+      ? replaceIn(host, contents, slot, occupant, known)
       : addOccupant(host, contents, slot, occupant, "new-tab", { known });
     return next === contents ? refuse("no-fit") : { ok: true, next };
   }

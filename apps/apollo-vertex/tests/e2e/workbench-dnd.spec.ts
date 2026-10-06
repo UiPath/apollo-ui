@@ -6,7 +6,7 @@ import { open, urlQuery } from "./workbench-helpers";
  * Dragging an occupant from the list onto the template view, in Edit
  * mode: a new tab at a position, stacking onto a tab or the showing tab's
  * content, replacing a single slot's occupant, refused places with why,
- * the keyboard, and the link. Queue is focused in the end panel.
+ * the keyboard, and the link. Queue starts in the end panel.
  */
 
 const EDIT = "?occupant=queue&view=template&slot=end-panel&mode=edit";
@@ -61,6 +61,26 @@ async function drag(page: Page, occupant: string, id: string) {
   await over(page, id);
   await page.mouse.up();
   await expect(page.locator("[data-slot=workbench-drop-zones]")).toHaveCount(0);
+}
+
+/**
+ * Moves a keyboard drag place by place to a zone, waiting for each place
+ * to be the one under the drag before the next press.
+ */
+async function keyTo(page: Page, id: string) {
+  const order = await page
+    .locator("[data-slot=workbench-drop-zone]")
+    .evaluateAll((zones) =>
+      zones.map((z) => (z instanceof HTMLElement ? z.dataset.zone : "")),
+    );
+  const steps = order.indexOf(id) + 1;
+  expect(steps).toBeGreaterThan(0);
+  // dnd-kit starts listening for keys a moment after the drag starts.
+  await settle(page);
+  for (const place of order.slice(0, steps)) {
+    await page.keyboard.press("ArrowRight");
+    await expect(zone(page, place ?? "")).toHaveAttribute("data-over", "true");
+  }
 }
 
 test.beforeEach(async ({ page }) => {
@@ -131,13 +151,7 @@ test("the drag preview stays clear of the insertion line and the highlighted tab
     .focus();
   await page.keyboard.press("Space");
   await page.locator("[data-slot=workbench-drop-zones]").waitFor();
-  const order = await page
-    .locator("[data-slot=workbench-drop-zone]")
-    .evaluateAll((zones) =>
-      zones.map((z) => (z instanceof HTMLElement ? z.dataset.zone : "")),
-    );
-  const steps = order.indexOf("end-panel:insert:1") + 1;
-  for (let i = 0; i < steps; i++) await page.keyboard.press("ArrowRight");
+  await keyTo(page, "end-panel:insert:1");
   await expect(line).toBeVisible();
   expect(overlaps(await line.boundingBox(), await preview.boundingBox())).toBe(
     false,
@@ -209,17 +223,7 @@ test("a refused place is dimmed while dragging, and says why when it's under the
   ).toHaveText("It doesn't fit this slot's surface.");
   await page.mouse.up();
   await expect.poll(() => tabNames(page)).toEqual([]);
-  expect(urlQuery(page)).not.toContain("end-panel-contents");
-
-  // The focused occupant's slot that holds one keeps it.
-  await ready(page, "?occupant=key-facts&view=template&slot=main&mode=edit");
-  await pickUp(page, "Participants");
-  await over(page, "main:slot");
-  await expect(
-    zone(page, "main:slot").locator("[data-slot=workbench-drop-reason]"),
-  ).toHaveText("It's the occupant you're looking at, so it stays where it is.");
-  await page.mouse.up();
-  expect(urlQuery(page)).not.toContain("main-contents");
+  expect(urlQuery(page)).not.toContain("stage-strip");
 });
 
 test("the keyboard drags from a row's handle, and is announced", async ({
@@ -232,17 +236,8 @@ test("the keyboard drags from a row's handle, and is announced", async ({
   await handle.focus();
   await page.keyboard.press("Space");
   await page.locator("[data-slot=workbench-drop-zones]").waitFor();
-  const order = await page
-    .locator("[data-slot=workbench-drop-zone]")
-    .evaluateAll((zones) =>
-      zones.map((z) => (z instanceof HTMLElement ? z.dataset.zone : "")),
-    );
-  const steps = order.indexOf("end-panel:insert:1") + 1;
-  for (let i = 0; i < steps; i++) await page.keyboard.press("ArrowRight");
-  await expect(zone(page, "end-panel:insert:1")).toHaveAttribute(
-    "data-over",
-    "true",
-  );
+  // The arrow keys move place by place.
+  await keyTo(page, "end-panel:insert:1");
   const live = page.locator("[id^=DndLiveRegion]");
   await expect(live).toContainText(
     "A new tab in the end panel, before Participants.",
@@ -267,11 +262,11 @@ test("the list marks what's on the page, which doesn't drag", async ({
     ).toHaveCount(0);
   }
   await expect(row(page, "Key facts")).not.toContainText("On the page");
-  // A plain click still selects an occupant.
-  await row(page, "Key facts").getByRole("button").first().click();
-  await expect(page.locator("[data-slot=workbench-header] h2")).toHaveText(
-    "Key facts",
-  );
+  // A plain click still selects an occupant: no drag starts.
+  const keyFacts = row(page, "Key facts").getByRole("button").first();
+  await keyFacts.click();
+  await expect(keyFacts).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("[data-slot=workbench-drop-zones]")).toHaveCount(0);
 });
 
 test("there's no dragging in Preview", async ({ page }) => {

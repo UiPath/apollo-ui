@@ -6,39 +6,14 @@ import {
 } from "@/lib/layout";
 
 /*
- * The template view's layout rules, for any template: what each slot's
- * popover offers for its layout comes from the slot choices the template
- * declares, and what's locked comes from the template's own layout or the
- * focus rule. Nothing here names a template or a slot.
+ * The template view's layout rules, for any template: what a slot's
+ * inspector offers for its layout comes from the slot choices the
+ * template declares, and what's locked comes from the template's own
+ * layout. Nothing here names a template or a slot.
  */
 
-/**
- * Why a layout option can't be chosen. "refused": the template's
- * layout won't allow it. "focus": the slot holds the occupant.
- */
-export type LayoutLock = "refused" | "focus";
-
-/**
- * The focus rule: the slot holding the occupant stays there and stays
- * open. It only fixes what the slot's options let a page change: present,
- * for an optional slot, and open, for a closable one.
- */
-export function withFocus(
-  spec: TemplateSpec,
-  choices: LayoutChoices,
-  slot: string,
-): LayoutChoices {
-  const own = spec.layout.options?.[slot];
-  if (!own?.optional && !own?.closable) return choices;
-  return {
-    ...choices,
-    [slot]: {
-      ...choices[slot],
-      ...(own.optional && { present: true }),
-      ...(own.closable && { open: true }),
-    },
-  };
-}
+/** Why a layout option can't be chosen: the template's layout won't allow it. */
+export type LayoutLock = "refused";
 
 /** A layout option, and why it's locked, or null when it can be chosen. */
 export interface MenuOption<T> {
@@ -54,43 +29,23 @@ export interface MenuSlot {
   placement?: readonly MenuOption<string>[];
 }
 
-/**
- * The layout choices for a template: each slot's declared choices, locked by
- * the focus rule (the focused slot can't be left out or closed) or by the
- * template's layout refusing them.
- */
+/** An option, locked when the template's layout refuses it. */
+const lockOn = <T>(option: SlotOption<T>): MenuOption<T> => ({
+  value: option.value,
+  lock: option.refused ? "refused" : null,
+});
+
+/** The layout choices for a template: each slot's, locked where its layout refuses them. */
 export function layoutMenu(
   spec: TemplateSpec,
   choices: LayoutChoices,
-  focus: string,
 ): MenuSlot[] {
-  return slotControls(spec, choices).map((controls) => {
-    const focused = controls.slot === focus;
-    const lockOn =
-      (focusLocks: boolean) =>
-      (option: SlotOption<boolean>): MenuOption<boolean> => ({
-        value: option.value,
-        lock:
-          focusLocks && focused && !option.value
-            ? "focus"
-            : option.refused
-              ? "refused"
-              : null,
-      });
-    return {
-      slot: controls.slot,
-      ...(controls.present && { present: controls.present.map(lockOn(true)) }),
-      ...(controls.open && { open: controls.open.map(lockOn(true)) }),
-      ...(controls.placement && {
-        placement: controls.placement.map(
-          (option): MenuOption<string> => ({
-            value: option.value,
-            lock: option.refused ? "refused" : null,
-          }),
-        ),
-      }),
-    };
-  });
+  return slotControls(spec, choices).map((controls) => ({
+    slot: controls.slot,
+    ...(controls.present && { present: controls.present.map(lockOn) }),
+    ...(controls.open && { open: controls.open.map(lockOn) }),
+    ...(controls.placement && { placement: controls.placement.map(lockOn) }),
+  }));
 }
 
 /** Whether a slot declares any layout choice at all. */
@@ -110,7 +65,6 @@ const NEUTRAL_REASONS: Readonly<Record<string, LocaleKey>> = {
   rule: "workbench_layout_closed_by_layout_rule",
   refused: "workbench_layout_refused",
   // The composer's (see ComposeLock).
-  focus: "workbench_compose_reason_focus",
   "fill-alone": "workbench_compose_reason_fill_alone",
   "tab-cap": "workbench_compose_reason_tab_cap",
   "no-fit": "workbench_compose_reason_no_fit",

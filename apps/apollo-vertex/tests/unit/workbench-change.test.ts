@@ -72,8 +72,7 @@ describe("describing a change", () => {
     });
   });
 
-  it("says where the occupant moved, and each layout change", () => {
-    expect(say(after({ slot: "main" }))?.key).toBe("workbench_change_moved");
+  it("says each layout change", () => {
     expect(
       say(after({ layout: { "start-panel": { present: false } } })),
     ).toEqual({
@@ -102,16 +101,16 @@ describe("describing a change", () => {
 });
 
 describe("resetting", () => {
-  it("goes back to the template's defaults, the occupant in its slot", () => {
+  it("empties every slot and goes back to the template's layout", () => {
     const busy = after({
       contents: addOccupant(host, start.contents, "end-panel", "key-facts"),
       layout: { "start-panel": { present: false } },
       tabs: { "end-panel": "key-facts" },
     });
-    const reset = normalizeView({ ...busy, ...resetComposition(busy) });
-    expect(reset.contents).toEqual(start.contents);
-    expect(reset.layout).toEqual(start.layout);
+    const reset = normalizeView({ ...busy, ...resetComposition() });
+    // No occupant is focused, so nothing stays: Queue goes too.
+    expect(reset.contents).toEqual({});
+    expect(reset.layout).toEqual({});
     expect(reset.tabs).toEqual({});
-    expect(reset.slot).toBe("end-panel");
   });
 });

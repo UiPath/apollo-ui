@@ -16,11 +16,11 @@ import {
  *   end-panel-contents=queue~overview:key-facts.participants~activity-timeline
  *
  * The tab showing in each slot is <slot>-tab, by its id, only when it isn't
- * the one the slot opens on (activeTab).
+ * the one the slot opens on, its first.
  *
- * The focused occupant is written where it sits; a slot holding it alone
- * writes nothing. Whatever a slot can't hold is dropped when the view is
- * normalized (normalizeContents), so a bad link opens as if it had none.
+ * Every slot that holds something is written. Whatever a slot can't hold
+ * is dropped when the view is normalized (normalizeContents), so a bad
+ * link opens as if it had none.
  */
 
 const TABS = "~";
@@ -72,18 +72,15 @@ function writeTab(tab: TabSpec): string {
   return labelId ? `${labelId}${LABEL}${names}` : names;
 }
 
-/** The params for each slot's contents, but a slot holding only the focused occupant. */
+/** The params for each slot's contents. */
 export function writeContents(
   host: TemplateHost | undefined,
   contents: SlotContents,
-  focus: string,
   params: URLSearchParams,
 ) {
   for (const slot of host?.spec.slots ?? []) {
     const panel = contents[slot.name];
-    if (!panel) continue;
-    const names = occupantsIn(panel);
-    if (names.length === 1 && names[0] === focus) continue;
+    if (!panel || occupantsIn(panel).length === 0) continue;
     params.set(
       contentsParam(slot.name),
       panel.tabs.map((tab) => writeTab(tab)).join(TABS),
@@ -110,11 +107,10 @@ export function parseTabs(
 export function writeTabs(
   contents: SlotContents,
   tabs: Readonly<Record<string, string>>,
-  focus: string,
   params: URLSearchParams,
 ) {
   for (const [slot, id] of Object.entries(tabs)) {
     const panel = contents[slot];
-    if (panel && id !== activeTab(panel, focus)) params.set(tabParam(slot), id);
+    if (panel && id !== activeTab(panel)) params.set(tabParam(slot), id);
   }
 }

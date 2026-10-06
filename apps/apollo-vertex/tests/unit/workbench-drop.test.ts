@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { TEMPLATE_HOSTS } from "@/app/_components/template-hosts";
 import {
   addOccupant,
-  normalizeContents,
   occupantsIn,
+  placeOccupant,
   type SlotContents,
 } from "@/app/preview/occupants/workbench-compose";
 import {
@@ -20,13 +20,13 @@ import { OCCUPANT_SPECS } from "@/lib/occupants.generated";
 const detailPage = TEMPLATE_HOSTS["detail-page"];
 if (!detailPage) throw new Error("No Detail page host");
 
-const queueInEnd = normalizeContents(detailPage, {}, "end-panel", "queue");
+const queueInEnd = placeOccupant(detailPage, {}, "end-panel", "queue");
 const twoTabs = addOccupant(detailPage, queueInEnd, "end-panel", "key-facts");
 const tabIds = (contents: SlotContents) =>
   contents["end-panel"]?.tabs.map((tab) => tab.id);
 
 const drop = (contents: SlotContents, target: DropTarget, occupant: string) =>
-  dropOutcome(detailPage, contents, "queue", target, occupant);
+  dropOutcome(detailPage, contents, target, occupant);
 
 describe("dropping between tabs", () => {
   it("makes a new tab at that position, and shows it", () => {
@@ -69,7 +69,6 @@ describe("dropping between tabs", () => {
       dropOutcome(
         detailPage,
         contents,
-        "a",
         { slot: "end-panel", kind: "new-tab", at: 2 },
         "f",
         known,
@@ -109,7 +108,6 @@ describe("dropping on a tab", () => {
       dropOutcome(
         detailPage,
         one,
-        "a",
         { slot: "end-panel", kind: "tab", index: 0 },
         "doc",
         known,
@@ -119,7 +117,6 @@ describe("dropping on a tab", () => {
       dropOutcome(
         detailPage,
         one,
-        "a",
         { slot: "end-panel", kind: "new-tab", at: 1 },
         "doc",
         known,
@@ -146,22 +143,15 @@ describe("dropping on a slot that holds one", () => {
     ).toEqual(["participants"]);
   });
 
-  it("refuses the focused occupant's slot, and an occupant that doesn't fit", () => {
-    const keyFactsInMain = normalizeContents(
-      detailPage,
-      {},
-      "main",
-      "key-facts",
+  it("replaces any occupant, and refuses one that doesn't fit", () => {
+    // No occupant is focused: the one in main can be replaced too.
+    const keyFactsInMain = placeOccupant(detailPage, {}, "main", "key-facts");
+    const replaced = drop(
+      keyFactsInMain,
+      { slot: "main", kind: "slot" },
+      "participants",
     );
-    expect(
-      dropOutcome(
-        detailPage,
-        keyFactsInMain,
-        "key-facts",
-        { slot: "main", kind: "slot" },
-        "participants",
-      ),
-    ).toEqual({ ok: false, reason: "focus" });
+    expect(replaced.ok).toBe(true);
     expect(
       drop(queueInEnd, { slot: "header", kind: "slot" }, "participants"),
     ).toEqual({

@@ -9,8 +9,8 @@ import type { WorkbenchView } from "./workbench-url-state";
 
 /*
  * What a change to the template view did, in words, for its toast: the
- * composition (an occupant added, removed, replaced; a tab renamed),
- * where the focused occupant is, or a slot's layout. And what Reset
+ * composition (an occupant added, removed, replaced; a tab renamed), or
+ * a slot's layout. And what Reset
  * layout goes back to.
  */
 
@@ -21,15 +21,11 @@ export interface ChangeCopy {
 }
 
 /** The fields a change can touch, so Undo puts back exactly those. */
-export type Composition = Pick<
-  WorkbenchView,
-  "contents" | "layout" | "slot" | "tabs"
->;
+export type Composition = Pick<WorkbenchView, "contents" | "layout" | "tabs">;
 
 export const compositionOf = (view: WorkbenchView): Composition => ({
   contents: view.contents,
   layout: view.layout,
-  slot: view.slot,
   tabs: view.tabs,
 });
 
@@ -77,8 +73,8 @@ function contentsCopy(
 }
 
 /**
- * What a change did, in words: where the focused occupant moved, else
- * the first of what changed in a slot's contents, else a slot's layout.
+ * What a change did, in words: the first of what changed in a slot's
+ * contents, else a slot's layout.
  * Null when it changed none of these.
  */
 export function describeChange(
@@ -88,12 +84,6 @@ export function describeChange(
   t: (key: LocaleKey) => string,
 ): ChangeCopy | null {
   const slotName = (slot: string) => host.slotLabels[slot] ?? slot;
-  // Moving the occupant changes two slots' contents: it's one move.
-  if (before.slot !== after.slot)
-    return {
-      key: "workbench_change_moved",
-      values: { occupant: name(after.occupant), slot: slotName(after.slot) },
-    };
   for (const { name: slot } of host.spec.slots) {
     const copy = contentsCopy(
       slotName(slot),
@@ -141,13 +131,11 @@ export function describeChange(
 }
 
 /**
- * The template's defaults: no slot holds more than its own, every layout
- * choice as the template declares it. The focused occupant stays in its
- * slot (normalizeView puts it back).
+ * The template's defaults: every slot empty, every layout choice as the
+ * template declares it.
  */
-export const resetComposition = (view: WorkbenchView): Composition => ({
+export const resetComposition = (): Composition => ({
   contents: {},
   layout: {},
-  slot: view.slot,
   tabs: {},
 });

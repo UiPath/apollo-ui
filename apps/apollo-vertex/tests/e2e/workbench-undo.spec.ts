@@ -77,7 +77,7 @@ test("a change says what it did, and Undo takes it back", async ({ page }) => {
     "Undone: Key facts added to End panel",
   );
   await expect(undo(page)).toHaveCount(0);
-  expect(urlQuery(page)).not.toContain("end-panel-contents");
+  expect(urlQuery(page)).not.toContain("key-facts");
 });
 
 test("Undo takes back that change only, the latest", async ({ page }) => {
@@ -105,7 +105,7 @@ test("a layout change says so, and undoes too", async ({ page }) => {
   await expect.poll(() => urlQuery(page)).not.toContain("start-panel-present");
 });
 
-test("Reset layout, in Edit mode, goes back to the defaults and undoes", async ({
+test("Reset layout, in Edit mode, empties the page and undoes", async ({
   page,
 }) => {
   const busy =
@@ -119,9 +119,12 @@ test("Reset layout, in Edit mode, goes back to the defaults and undoes", async (
   await expect(toast(page)).toContainText(
     "Layout reset to the template's defaults",
   );
-  // Queue stays in its slot; everything else is the template's own.
-  await expect.poll(() => urlQuery(page)).toBe(`${QUERY}&mode=edit`);
-  await expect(end(page).locator("[data-occupant=queue]")).toBeVisible();
+  // No occupant is focused: every slot empties, and the layout is the
+  // template's own.
+  await expect.poll(() => urlQuery(page)).toBe("?view=template&mode=edit");
+  await expect(
+    page.locator("[data-slot=workbench-page] [data-occupant=queue]"),
+  ).toHaveCount(0);
   await undo(page).click();
   await expect
     .poll(() => urlQuery(page))

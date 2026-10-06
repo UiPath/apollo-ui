@@ -6,8 +6,8 @@ import {
   holdsPanel,
   normalizeContents,
   occupantsIn,
+  placeOccupant,
   removeFromSlot,
-  removeLock,
   type SlotContents,
 } from "@/app/preview/occupants/workbench-compose";
 import { panelLocks, picker } from "@/app/preview/occupants/workbench-picker";
@@ -30,9 +30,11 @@ const flowSpec = (name: string): OccupantSpec => ({
   requires: { minWidth: 0, scroll: "either" },
 });
 
-describe("the focused occupant", () => {
-  it("is placed in its slot, alone, when nothing else is there", () => {
-    const contents = normalizeContents(detailPage, {}, "end-panel", "queue");
+describe("placing an occupant as a page starts", () => {
+  // The template view has no focused occupant: one is placed once, as the
+  // view opens with nothing on its page, or from an older link.
+  it("puts it in its slot, alone, when nothing else is there", () => {
+    const contents = placeOccupant(detailPage, {}, "end-panel", "queue");
     expect(contents).toEqual({
       "end-panel": {
         surface: "side-panel",
@@ -41,48 +43,46 @@ describe("the focused occupant", () => {
     });
   });
 
-  it("goes first in a panel slot that holds others", () => {
+  it("puts it first in a panel slot that holds others", () => {
     const added = addOccupant(detailPage, {}, "end-panel", "key-facts");
-    const contents = normalizeContents(detailPage, added, "end-panel", "queue");
+    const contents = placeOccupant(detailPage, added, "end-panel", "queue");
     expect(
       occupantsIn(contents["end-panel"] ?? { surface: "side-panel", tabs: [] }),
     ).toEqual(["queue", "key-facts"]);
   });
 
-  it("is in no other slot", () => {
+  it("takes it out of any other slot", () => {
     const elsewhere = addOccupant(detailPage, {}, "start-panel", "queue");
-    const contents = normalizeContents(
-      detailPage,
-      elsewhere,
-      "end-panel",
-      "queue",
-    );
+    const contents = placeOccupant(detailPage, elsewhere, "end-panel", "queue");
     expect(contents).not.toHaveProperty("start-panel");
   });
+});
 
-  it("isn't offered for another slot", () => {
-    const contents = normalizeContents(detailPage, {}, "end-panel", "queue");
-    // The composer never offers it there: it's on the page already.
+describe("no focused occupant", () => {
+  it("leaves the contents as they are, only what each slot can hold", () => {
+    const added = addOccupant(detailPage, {}, "end-panel", "key-facts");
+    expect(normalizeContents(detailPage, added)).toEqual(added);
+    expect(normalizeContents(detailPage, {})).toEqual({});
+  });
+
+  it("never offers an occupant on the page for another slot", () => {
+    const contents = placeOccupant(detailPage, {}, "end-panel", "queue");
     const start = picker(detailPage, contents, "start-panel", "new-tab");
     expect(start.choices).not.toContain("queue");
     expect(start.left[0]).toEqual({ reason: "on-page", count: 1 });
   });
 
-  it("can't be removed, with the focus reason", () => {
-    expect(removeLock("queue", "queue")).toBe("focus");
-    const contents = normalizeContents(detailPage, {}, "end-panel", "queue");
-    expect(removeFromSlot(contents, "end-panel", "queue", "queue")).toBe(
-      contents,
-    );
+  it("lets any occupant be taken out", () => {
+    const contents = placeOccupant(detailPage, {}, "end-panel", "queue");
+    expect(removeFromSlot(contents, "end-panel", "queue")).toEqual({});
   });
 
-  it("opens on its own tab", () => {
+  it("opens a slot on its first tab", () => {
     let contents = addOccupant(detailPage, {}, "end-panel", "key-facts");
-    contents = normalizeContents(detailPage, contents, "end-panel", "queue");
+    contents = addOccupant(detailPage, contents, "end-panel", "queue");
     const panel = contents["end-panel"];
     if (!panel) throw new Error("No end panel");
-    expect(activeTab(panel, "queue")).toBe("queue");
-    expect(activeTab(panel, "nobody")).toBe(panel.tabs[0]?.id);
+    expect(activeTab(panel)).toBe("key-facts");
   });
 });
 
@@ -110,9 +110,7 @@ describe("capacity", () => {
         ],
       },
     };
-    expect(
-      normalizeContents(detailPage, two, "end-panel", "queue"),
-    ).not.toHaveProperty("main");
+    expect(normalizeContents(detailPage, two)).not.toHaveProperty("main");
   });
 
   it("reads a second template's declarations the same way", () => {
@@ -219,11 +217,11 @@ describe("removing", () => {
   it("removes an occupant, and a tab it empties", () => {
     let contents = addOccupant(detailPage, {}, "end-panel", "key-facts");
     contents = addOccupant(detailPage, contents, "end-panel", "participants");
-    contents = removeFromSlot(contents, "end-panel", "participants", "queue");
+    contents = removeFromSlot(contents, "end-panel", "participants");
     expect(contents["end-panel"]?.tabs).toEqual([
       { id: "key-facts", occupants: ["key-facts"] },
     ]);
-    contents = removeFromSlot(contents, "end-panel", "key-facts", "queue");
+    contents = removeFromSlot(contents, "end-panel", "key-facts");
     expect(contents).not.toHaveProperty("end-panel");
   });
 });

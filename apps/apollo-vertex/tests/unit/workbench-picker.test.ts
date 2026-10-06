@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { TEMPLATE_HOSTS } from "@/app/_components/template-hosts";
 import {
   addOccupant,
-  normalizeContents,
+  placeOccupant,
   type SlotContents,
 } from "@/app/preview/occupants/workbench-compose";
 import {
@@ -36,7 +36,7 @@ const fillSpec = (name: string): OccupantSpec => ({
   sizing: "fill",
 });
 
-const queueInEnd = normalizeContents(detailPage, {}, "end-panel", "queue");
+const queueInEnd = placeOccupant(detailPage, {}, "end-panel", "queue");
 
 describe("the picker", () => {
   it("offers what fits the slot and isn't on the page", () => {
@@ -55,7 +55,7 @@ describe("the picker", () => {
     const end = picker(detailPage, contents, "end-panel", "new-tab");
     expect(end.choices).not.toContain("key-facts");
     expect(end.left[0]).toEqual({ reason: "on-page", count: 2 });
-    // The focused occupant isn't offered anywhere else either.
+    // Nor is one on the page offered for another slot.
     expect(
       picker(detailPage, contents, "start-panel", "new-tab").choices,
     ).not.toContain("queue");
@@ -198,20 +198,21 @@ describe("replacing a single slot's occupant", () => {
   const main = addOccupant(detailPage, queueInEnd, "main", "key-facts");
 
   it("puts another occupant in its place", () => {
-    const next = replaceIn(detailPage, main, "main", "participants", "queue");
+    const next = replaceIn(detailPage, main, "main", "participants");
     expect(next.main?.tabs).toEqual([
       { id: "participants", occupants: ["participants"] },
     ]);
   });
 
-  it("leaves a panel slot, the focused occupant's slot, and a misfit alone", () => {
+  it("leaves a panel slot and a misfit alone", () => {
+    expect(replaceIn(detailPage, main, "end-panel", "participants")).toBe(main);
+    expect(replaceIn(detailPage, main, "header", "queue")).toBe(main);
+  });
+
+  it("replaces any occupant: none is focused", () => {
+    const keyFactsInMain = placeOccupant(detailPage, {}, "main", "key-facts");
     expect(
-      replaceIn(detailPage, main, "end-panel", "participants", "queue"),
-    ).toBe(main);
-    const focused = normalizeContents(detailPage, {}, "main", "key-facts");
-    expect(
-      replaceIn(detailPage, focused, "main", "participants", "key-facts"),
-    ).toBe(focused);
-    expect(replaceIn(detailPage, main, "header", "queue", "queue")).toBe(main);
+      replaceIn(detailPage, keyFactsInMain, "main", "participants").main?.tabs,
+    ).toEqual([{ id: "participants", occupants: ["participants"] }]);
   });
 });

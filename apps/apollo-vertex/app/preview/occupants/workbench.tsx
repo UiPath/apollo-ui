@@ -32,13 +32,11 @@ import { lowerLabel, surfaceRange, widthStatus } from "./workbench-model";
 import { onPage } from "./workbench-picker";
 import { WorkbenchToaster } from "./workbench-toaster";
 import {
-  defaultSlot,
   defaultSurface,
   defaultWidth,
   HOSTED_SURFACES,
   normalizeView,
   serializeWorkbenchView,
-  slotFit,
   switchView,
   templateFor,
   type WorkbenchView,
@@ -170,14 +168,10 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
     const next = specFor(name);
     const keep = next && fitsSurface(surface, next).fits;
     const nextSurface = keep ? view.surface : defaultSurface(next);
-    const nextTemplate = templateFor(view.template);
-    const keepSlot =
-      nextTemplate && next && slotFit(nextTemplate, view.slot, next).fits;
     update({
       occupant: name,
       surface: nextSurface,
       width: defaultWidth(next, nextSurface),
-      slot: keepSlot ? view.slot : defaultSlot(nextTemplate, next),
     });
   };
 
@@ -209,7 +203,6 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
     <WorkbenchDnd
       host={templateFor(view.template)}
       contents={view.contents}
-      focus={view.occupant}
       onContents={compose}
     >
       <div
@@ -229,7 +222,12 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
 
         <main className="flex min-w-0 flex-1 flex-col">
           <WorkbenchHeader
-            label={spec.label}
+            // The template view has no focused occupant: it's the page.
+            label={
+              view.mode === "template" && templateHost
+                ? templateHost.label
+                : spec.label
+            }
             docsHref={docsHref}
             listId={LIST_ID}
             listOpen={view.listOpen}
@@ -249,12 +247,7 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
             editing={view.editing}
             onEditing={(editing) => update({ editing })}
             onReset={reset}
-            onTemplate={(template) =>
-              update({
-                template,
-                slot: defaultSlot(templateFor(template), spec),
-              })
-            }
+            onTemplate={(template) => update({ template })}
           />
 
           <div ref={stageAreaRef} className="relative min-h-0 flex-1">
@@ -272,8 +265,6 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
                 {templateHost && view.mode === "template" ? (
                   <TemplateStage
                     host={templateHost}
-                    spec={spec}
-                    slot={view.slot}
                     shell={view.shell}
                     layout={view.layout}
                     contents={view.contents}
@@ -288,8 +279,6 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
                       update({ tabs: { ...view.tabs, [slot]: id } })
                     }
                     onStatus={setSlotStatus}
-                    sample={view.sample}
-                    state={view.state}
                     pageWidth={view.pageWidth}
                     pageHeight={pageHeight}
                     scale={scale}
@@ -326,9 +315,6 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
             {templateHost && view.mode === "template" ? (
               <TemplateDock
                 host={templateHost}
-                spec={spec}
-                slot={view.slot}
-                onSlot={(slot) => change({ slot })}
                 shell={view.shell}
                 onShell={(shell) => update({ shell })}
                 layout={view.layout}

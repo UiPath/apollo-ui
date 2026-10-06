@@ -270,7 +270,7 @@ export function WorkbenchHeader({
           {label}
         </h2>
         <Badge variant="secondary" className="shrink-0">
-          {t("workbench_occupant")}
+          {t(mode === "template" ? "workbench_template" : "workbench_occupant")}
         </Badge>
       </div>
       <ToggleGroup
@@ -323,19 +323,22 @@ export function WorkbenchHeader({
           onChange={onTemplate}
         />
       )}
-      <div ref={controlsRef} className="flex shrink-0 items-center gap-4">
-        {compact ? (
-          <>
-            <SelectChoice {...sampleChoice} />
-            <SelectChoice {...stateChoice} />
-          </>
-        ) : (
-          <>
-            <ToggleChoice {...sampleChoice} />
-            <ToggleChoice {...stateChoice} />
-          </>
-        )}
-      </div>
+      {/* Sample and State are one occupant's: the surface view's only. */}
+      {mode === "surface" && (
+        <div ref={controlsRef} className="flex shrink-0 items-center gap-4">
+          {compact ? (
+            <>
+              <SelectChoice {...sampleChoice} />
+              <SelectChoice {...stateChoice} />
+            </>
+          ) : (
+            <>
+              <ToggleChoice {...sampleChoice} />
+              <ToggleChoice {...stateChoice} />
+            </>
+          )}
+        </div>
+      )}
       <Button
         variant="ghost"
         size="icon"
@@ -360,15 +363,17 @@ export function WorkbenchHeader({
         {detailsOpen ? <PanelRightClose /> : <PanelRightOpen />}
       </Button>
       {/* The toggle groups' width, measured out of sight. */}
-      <div
-        ref={sizerRef}
-        aria-hidden="true"
-        inert
-        className="invisible absolute top-0 start-0 flex items-center gap-4 whitespace-nowrap"
-      >
-        <ToggleChoice {...sampleChoice} />
-        <ToggleChoice {...stateChoice} />
-      </div>
+      {mode === "surface" && (
+        <div
+          ref={sizerRef}
+          aria-hidden="true"
+          inert
+          className="invisible absolute top-0 start-0 flex items-center gap-4 whitespace-nowrap"
+        >
+          <ToggleChoice {...sampleChoice} />
+          <ToggleChoice {...stateChoice} />
+        </div>
+      )}
     </div>
   );
 }

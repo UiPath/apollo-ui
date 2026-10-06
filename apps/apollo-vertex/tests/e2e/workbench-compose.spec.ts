@@ -184,32 +184,22 @@ test("removes occupants, and a tab they empty goes", async ({ page }) => {
   ).toHaveCount(0);
   await remove("Key facts");
   await expect(bar(page)).toHaveCount(0);
-  expect(urlQuery(page)).not.toContain("end-panel-contents");
+  expect(urlQuery(page)).toContain("end-panel-contents=queue");
+  expect(urlQuery(page)).not.toContain("key-facts");
+  // No occupant is focused: the last one goes too, and the slot is empty.
+  await remove("Queue");
+  await expect.poll(() => urlQuery(page)).not.toContain("end-panel-contents");
 });
 
-test("the focused occupant stays, says why, and isn't offered elsewhere", async ({
+test("any occupant can be taken out, and none is offered twice", async ({
   page,
 }) => {
   await ready(page, `${BASE}&end-panel-contents=queue~key-facts`);
   await openMenu(page);
-  const reason =
-    "It's the occupant you're looking at, so it stays where it is.";
-  const row = menu(page).locator("[data-row=queue]");
-  await expect(row.getByRole("button")).toHaveCount(0);
-  // A lock on its row, with why as its description and a tooltip, not a
-  // sentence in the list.
-  const lock = row.getByRole("img", { name: "Locked" });
-  await expect(lock).toHaveAccessibleDescription(reason);
-  await expect(row).toHaveAccessibleDescription(reason);
+  // No lock: the template view has no focused occupant.
+  await expect(menu(page).getByRole("img", { name: "Locked" })).toHaveCount(0);
   await expect(
-    menu(page).locator("[data-slot=workbench-contents-reason]"),
-  ).toHaveCount(0);
-  await lock.hover();
-  await expect(page.getByRole("tooltip")).toHaveText(reason);
-  await page.mouse.move(0, 0);
-  // Another occupant can go.
-  await expect(
-    menu(page).getByRole("button", { name: "Remove Key facts" }),
+    menu(page).getByRole("button", { name: "Remove Queue" }),
   ).toBeEnabled();
   // Neither is offered in another slot: each is on the page once.
   await openMenu(page, "start-panel");
@@ -280,7 +270,7 @@ test("the popover opens above the dock, and scrolls to its layout", async ({
 
 test("a link opens the same contents and tab", async ({ page }) => {
   // In the order the workbench writes its params.
-  const query = `${SLOT}&start-panel-contents=participants&end-panel-contents=queue~overview:key-facts.activity-timeline&end-panel-tab=key-facts&zoom=100`;
+  const query = `?view=template&start-panel-contents=participants&end-panel-contents=queue~overview:key-facts.activity-timeline&end-panel-tab=key-facts&zoom=100`;
   await ready(page, query);
   await expect.poll(() => tabNames(page)).toEqual(["Queue", "Overview"]);
   await expect(selected(page)).toHaveText("Overview");
