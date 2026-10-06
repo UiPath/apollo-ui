@@ -3,11 +3,17 @@
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import type { TemplateHost } from "@/app/_components/template-hosts";
+import { DropZones } from "./drop-zones";
 import type { SlotTarget } from "./slot-popover";
 import { frameOf, slotElement, useSlotBoxes } from "./use-slot-boxes";
+import type { SlotContents } from "./workbench-compose";
+import { useWorkbenchDrag } from "./workbench-drag";
 
 interface EditSlotsProps {
   host: TemplateHost;
+  /** What each slot holds, and the focused occupant, for the drop zones. */
+  contents: SlotContents;
+  focus: string;
   /** The slot whose popover is open, if any. */
   opened: SlotTarget | null;
   onOpen: (target: SlotTarget) => void;
@@ -20,10 +26,19 @@ interface EditSlotsProps {
  * It sits beside the page, not in it, so the page can be inert, and it
  * takes no room, so no slot's width changes.
  */
-export function EditSlots({ host, opened, onOpen, onClose }: EditSlotsProps) {
+export function EditSlots({
+  host,
+  contents,
+  focus,
+  opened,
+  onOpen,
+  onClose,
+}: EditSlotsProps) {
   const { t } = useTranslation();
   const ref = useRef<HTMLDivElement>(null);
   const boxes = useSlotBoxes(host, ref);
+  // While dragging, the tabs are what to see: the names step aside.
+  const dragging = useWorkbenchDrag()?.dragging ?? null;
   return (
     <div
       ref={ref}
@@ -66,6 +81,7 @@ export function EditSlots({ host, opened, onOpen, onClose }: EditSlotsProps) {
           >
             <span
               aria-hidden="true"
+              hidden={dragging !== null}
               className="absolute top-1 left-1 rounded-sm bg-primary px-1.5 py-0.5 text-[11px] leading-none font-medium text-primary-foreground"
             >
               {label}
@@ -73,6 +89,7 @@ export function EditSlots({ host, opened, onOpen, onClose }: EditSlotsProps) {
           </button>
         );
       })}
+      <DropZones host={host} contents={contents} focus={focus} />
     </div>
   );
 }

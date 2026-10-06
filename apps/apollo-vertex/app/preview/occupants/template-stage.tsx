@@ -150,6 +150,8 @@ export function TemplateStage({
       {editing && (
         <EditSlots
           host={host}
+          contents={contents}
+          focus={spec.name}
           opened={opened}
           onOpen={onOpen}
           onClose={onClose}

@@ -21,11 +21,14 @@ import type { SlotTarget } from "./slot-popover";
 import { StageFrame } from "./stage-frame";
 import { TemplateDock } from "./template-dock";
 import { TemplateStage } from "./template-stage";
+import { useCompose } from "./use-compose";
 import { useFitScale } from "./use-fit-scale";
 import { usePageTheme } from "./use-page-theme";
+import { WorkbenchDnd } from "./workbench-dnd";
 import { WorkbenchDock } from "./workbench-dock";
 import { WorkbenchHeader } from "./workbench-header";
 import { lowerLabel, surfaceRange, widthStatus } from "./workbench-model";
+import { onPage } from "./workbench-picker";
 import {
   defaultSlot,
   defaultSurface,
@@ -57,10 +60,8 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
   // Each panel after the template's rules, reported by the template.
   // The slot whose popover is open: one at a time.
   const [opened, setOpened] = useState<SlotTarget | null>(null);
-  // Bumped when the composer shows a tab, so that slot's panel starts on it.
-  const [revisions, setRevisions] = useState<Readonly<Record<string, number>>>(
-    {},
-  );
+  // Changes from the composer, by popover or drop, and each panel's revision.
+  const { compose, revisions } = useCompose(view, update);
   const [slotStatus, setSlotStatus] = useState<Readonly<
     Record<string, SlotStatus>
   > | null>(null);
@@ -198,192 +199,194 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
     overflows: (current?.problems.length ?? 0) > 0,
   });
 
-  return (
-    <div
-      data-slot="workbench"
-      data-theme={view.theme}
-      className="fixed inset-0 z-50 flex bg-background text-foreground not-prose"
-    >
-      <OccupantList
-        id={LIST_ID}
-        open={view.listOpen}
-        selected={view.occupant}
-        onSelect={selectOccupant}
-        docsHref={docsHref}
-      />
+  const editMode = view.mode === "template" && view.editing;
 
-      <main className="flex min-w-0 flex-1 flex-col">
-        <WorkbenchHeader
-          label={spec.label}
+  return (
+    <WorkbenchDnd
+      host={templateFor(view.template)}
+      contents={view.contents}
+      focus={view.occupant}
+      onContents={compose}
+    >
+      <div
+        data-slot="workbench"
+        data-theme={view.theme}
+        className="fixed inset-0 z-50 flex bg-background text-foreground not-prose"
+      >
+        <OccupantList
+          id={LIST_ID}
+          open={view.listOpen}
+          selected={view.occupant}
+          onSelect={selectOccupant}
           docsHref={docsHref}
-          listId={LIST_ID}
-          listOpen={view.listOpen}
-          onToggleList={() => update({ listOpen: !view.listOpen })}
-          detailsId={DETAILS_ID}
-          detailsOpen={view.detailsOpen}
-          onToggleDetails={() => update({ detailsOpen: !view.detailsOpen })}
-          sample={view.sample}
-          onSample={(sample) => update({ sample })}
-          state={view.state}
-          onState={(state) => update({ state })}
-          theme={view.theme}
-          onTheme={(theme) => update({ theme })}
-          mode={view.mode}
-          onMode={(mode) => setView((prev) => switchView(prev, mode))}
-          template={view.template}
-          editing={view.editing}
-          onEditing={(editing) => update({ editing })}
-          onTemplate={(template) =>
-            update({ template, slot: defaultSlot(templateFor(template), spec) })
-          }
+          editing={editMode}
+          onPage={onPage(view.contents)}
         />
 
-        <div ref={stageAreaRef} className="relative min-h-0 flex-1">
-          <div
-            ref={stageRef}
-            data-slot="workbench-stage"
-            // Its own stacking context: a template's z-index stays inside it.
-            className="absolute inset-0 isolate overflow-auto bg-[radial-gradient(var(--divider)_1px,transparent_1px)] bg-size-[--spacing(4)_--spacing(4)]"
-          >
-            {/* Room under the occupant for the dock, so it's never hidden behind it. */}
+        <main className="flex min-w-0 flex-1 flex-col">
+          <WorkbenchHeader
+            label={spec.label}
+            docsHref={docsHref}
+            listId={LIST_ID}
+            listOpen={view.listOpen}
+            onToggleList={() => update({ listOpen: !view.listOpen })}
+            detailsId={DETAILS_ID}
+            detailsOpen={view.detailsOpen}
+            onToggleDetails={() => update({ detailsOpen: !view.detailsOpen })}
+            sample={view.sample}
+            onSample={(sample) => update({ sample })}
+            state={view.state}
+            onState={(state) => update({ state })}
+            theme={view.theme}
+            onTheme={(theme) => update({ theme })}
+            mode={view.mode}
+            onMode={(mode) => setView((prev) => switchView(prev, mode))}
+            template={view.template}
+            editing={view.editing}
+            onEditing={(editing) => update({ editing })}
+            onTemplate={(template) =>
+              update({
+                template,
+                slot: defaultSlot(templateFor(template), spec),
+              })
+            }
+          />
+
+          <div ref={stageAreaRef} className="relative min-h-0 flex-1">
             <div
-              style={dockSpace}
-              className="flex min-h-full min-w-fit items-center justify-center p-8 pb-[calc(var(--dock-space)+--spacing(12))]"
+              ref={stageRef}
+              data-slot="workbench-stage"
+              // Its own stacking context: a template's z-index stays inside it.
+              className="absolute inset-0 isolate overflow-auto bg-[radial-gradient(var(--divider)_1px,transparent_1px)] bg-size-[--spacing(4)_--spacing(4)]"
             >
-              {templateHost && view.mode === "template" ? (
-                <TemplateStage
-                  host={templateHost}
-                  spec={spec}
-                  slot={view.slot}
-                  shell={view.shell}
-                  layout={view.layout}
-                  contents={view.contents}
-                  tabs={view.tabs}
-                  revisions={revisions}
-                  editing={view.editing}
-                  opened={opened}
-                  onOpen={setOpened}
-                  onClose={() => setOpened(null)}
-                  onTab={(slot, id) =>
-                    update({ tabs: { ...view.tabs, [slot]: id } })
-                  }
-                  onStatus={setSlotStatus}
-                  sample={view.sample}
-                  state={view.state}
-                  pageWidth={view.pageWidth}
-                  pageHeight={pageHeight}
-                  scale={scale}
-                />
-              ) : claim.fits ? (
-                <StageFrame
-                  tag={t("workbench_frame_tag", {
-                    surface: surfaceLabel(surface.name),
-                    width: view.width,
-                  })}
-                >
-                  <OccupantInSurface
-                    // A fresh occupant per sample, so its own state (a selection) resets.
-                    key={`${spec.name}-${view.sample}`}
-                    occupant={spec.name}
-                    surface={surface.name}
-                    example={view.sample}
+              {/* Room under the occupant for the dock, so it's never hidden behind it. */}
+              <div
+                style={dockSpace}
+                className="flex min-h-full min-w-fit items-center justify-center p-8 pb-[calc(var(--dock-space)+--spacing(12))]"
+              >
+                {templateHost && view.mode === "template" ? (
+                  <TemplateStage
+                    host={templateHost}
+                    spec={spec}
+                    slot={view.slot}
+                    shell={view.shell}
+                    layout={view.layout}
+                    contents={view.contents}
+                    tabs={view.tabs}
+                    revisions={revisions}
+                    editing={view.editing}
+                    opened={opened}
+                    onOpen={setOpened}
+                    onClose={() => setOpened(null)}
+                    onTab={(slot, id) =>
+                      update({ tabs: { ...view.tabs, [slot]: id } })
+                    }
+                    onStatus={setSlotStatus}
+                    sample={view.sample}
                     state={view.state}
-                    width={view.width}
+                    pageWidth={view.pageWidth}
+                    pageHeight={pageHeight}
+                    scale={scale}
                   />
-                </StageFrame>
-              ) : (
-                <NoFitCard
-                  title={t("workbench_no_fit_title", {
-                    occupant: spec.label,
-                    surface: lowerLabel(surface.name),
-                  })}
-                  reasons={claim.reasons}
-                />
-              )}
+                ) : claim.fits ? (
+                  <StageFrame
+                    tag={t("workbench_frame_tag", {
+                      surface: surfaceLabel(surface.name),
+                      width: view.width,
+                    })}
+                  >
+                    <OccupantInSurface
+                      // A fresh occupant per sample, so its own state (a selection) resets.
+                      key={`${spec.name}-${view.sample}`}
+                      occupant={spec.name}
+                      surface={surface.name}
+                      example={view.sample}
+                      state={view.state}
+                      width={view.width}
+                    />
+                  </StageFrame>
+                ) : (
+                  <NoFitCard
+                    title={t("workbench_no_fit_title", {
+                      occupant: spec.label,
+                      surface: lowerLabel(surface.name),
+                    })}
+                    reasons={claim.reasons}
+                  />
+                )}
+              </div>
             </div>
-          </div>
 
-          {templateHost && view.mode === "template" ? (
-            <TemplateDock
-              host={templateHost}
-              spec={spec}
-              slot={view.slot}
-              onSlot={(slot) => update({ slot })}
-              shell={view.shell}
-              onShell={(shell) => update({ shell })}
-              layout={view.layout}
-              onLayout={(layout) => update({ layout })}
-              slotStatus={slotStatus}
-              contents={view.contents}
-              onContents={(contents, show) => {
-                update({
-                  contents,
-                  ...(show && {
-                    tabs: { ...view.tabs, [show.slot]: show.tab },
-                  }),
-                });
-                if (show)
-                  setRevisions((before) => ({
-                    ...before,
-                    [show.slot]: (before[show.slot] ?? 0) + 1,
-                  }));
-              }}
-              opened={opened}
-              onOpen={setOpened}
-              onClose={() => setOpened(null)}
-              pageWidth={view.pageWidth}
-              onPageWidth={(pageWidth) => update({ pageWidth })}
-              zoom={view.zoom}
-              onZoom={(zoom) => update({ zoom })}
-              scale={scale}
-            />
-          ) : (
-            <WorkbenchDock
-              spec={spec}
-              surface={surface.name}
-              onSurface={(name) =>
-                update({ surface: name, width: defaultWidth(spec, name) })
-              }
-              fitsHere={claim.fits}
-              width={view.width}
-              onWidth={(width) => update({ width })}
-              marks={{ ...range, floor: floorOuter }}
-              status={status}
-            />
-          )}
-        </div>
-      </main>
-
-      <DetailsPanel
-        id={DETAILS_ID}
-        open={view.detailsOpen}
-        spec={spec}
-        surface={surface.name}
-        width={view.width}
-        floor={claim.fits ? worstFloor : "unavailable"}
-        overflow={current}
-      />
-
-      {claim.fits &&
-        view.mode === "surface" &&
-        createPortal(
-          <div
-            aria-hidden="true"
-            inert
-            className="pointer-events-none fixed start-full top-0"
-          >
-            {EXAMPLE_ROLES.map((sample) => (
-              <FloorProbe
-                key={`${probeKey}:${sample}`}
-                occupant={spec.name}
-                surface={surface.name}
-                sample={sample}
-                onFloor={onFloor}
+            {templateHost && view.mode === "template" ? (
+              <TemplateDock
+                host={templateHost}
+                spec={spec}
+                slot={view.slot}
+                onSlot={(slot) => update({ slot })}
+                shell={view.shell}
+                onShell={(shell) => update({ shell })}
+                layout={view.layout}
+                onLayout={(layout) => update({ layout })}
+                slotStatus={slotStatus}
+                contents={view.contents}
+                onContents={compose}
+                opened={opened}
+                onOpen={setOpened}
+                onClose={() => setOpened(null)}
+                pageWidth={view.pageWidth}
+                onPageWidth={(pageWidth) => update({ pageWidth })}
+                zoom={view.zoom}
+                onZoom={(zoom) => update({ zoom })}
+                scale={scale}
               />
-            ))}
-          </div>,
-          document.body,
-        )}
-    </div>
+            ) : (
+              <WorkbenchDock
+                spec={spec}
+                surface={surface.name}
+                onSurface={(name) =>
+                  update({ surface: name, width: defaultWidth(spec, name) })
+                }
+                fitsHere={claim.fits}
+                width={view.width}
+                onWidth={(width) => update({ width })}
+                marks={{ ...range, floor: floorOuter }}
+                status={status}
+              />
+            )}
+          </div>
+        </main>
+
+        <DetailsPanel
+          id={DETAILS_ID}
+          open={view.detailsOpen}
+          spec={spec}
+          surface={surface.name}
+          width={view.width}
+          floor={claim.fits ? worstFloor : "unavailable"}
+          overflow={current}
+        />
+
+        {claim.fits &&
+          view.mode === "surface" &&
+          createPortal(
+            <div
+              aria-hidden="true"
+              inert
+              className="pointer-events-none fixed start-full top-0"
+            >
+              {EXAMPLE_ROLES.map((sample) => (
+                <FloorProbe
+                  key={`${probeKey}:${sample}`}
+                  occupant={spec.name}
+                  surface={surface.name}
+                  sample={sample}
+                  onFloor={onFloor}
+                />
+              ))}
+            </div>,
+            document.body,
+          )}
+      </div>
+    </WorkbenchDnd>
   );
 }
