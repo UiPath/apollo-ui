@@ -59,6 +59,76 @@ export const With12HourFormat = {
   },
 };
 
+export const MinuteStep = {
+  args: {},
+  render: () => {
+    const [date, setDate] = useState<Date | undefined>();
+    return (
+      <div className="w-[400px]">
+        <DateTimePicker value={date} onValueChange={setDate} minuteStep={15} />
+      </div>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The time is set with hour and minute selects. `minuteStep` sets the minutes offered and defaults to 5. A value off the step stays selectable. Picking a day keeps the time already chosen, and the popover stays open until the time is set.',
+      },
+    },
+  },
+};
+
+export const WithTimeZone = {
+  args: {},
+  render: () => {
+    const [date, setDate] = useState<Date | undefined>(new Date());
+    const [timeZone, setTimeZone] = useState('Europe/Bucharest');
+    return (
+      <div className="w-[400px]">
+        <DateTimePicker
+          value={date}
+          onValueChange={setDate}
+          showTimeZone
+          timeZone={timeZone}
+          onTimeZoneChange={setTimeZone}
+        />
+        {date && (
+          <p className="mt-4 text-sm text-muted-foreground">Stored as: {date.toISOString()}</p>
+        )}
+      </div>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          '`showTimeZone` adds a searchable timezone select under the time. The date and time are read in that zone, so 14:00 in Bucharest is stored as 11:00Z in summer, and the trigger shows the offset. Changing the zone keeps the date and time on screen and moves the stored instant. Pass `timeZone` and `onTimeZoneChange` to track the zone, or `defaultTimeZone` to set where it starts.',
+      },
+    },
+  },
+};
+
+export const Compact = {
+  args: {},
+  render: () => {
+    const [date, setDate] = useState<Date | undefined>(new Date());
+    return (
+      <div className="w-[320px]">
+        <DateTimePicker value={date} onValueChange={setDate} calendarProps={{ size: 'sm' }} />
+      </div>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          '`calendarProps={{ size: "sm" }}` uses 36px day cells instead of 44px. With the time row below the calendar, this keeps the popover closer to the field width and height.',
+      },
+    },
+  },
+};
+
 export const Disabled = {
   args: {},
   render: () => {

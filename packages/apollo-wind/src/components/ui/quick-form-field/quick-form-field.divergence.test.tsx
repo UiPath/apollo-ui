@@ -96,7 +96,7 @@ describe('QuickFormField — divergences from apollo-wind', () => {
       const trigger = container.querySelector('button[data-slot="input-group-control"]');
       expect(trigger).toBeInTheDocument();
       await user.click(trigger as HTMLElement);
-      expect(document.querySelector('input[type="time"]')).toBeInTheDocument();
+      expect(screen.getByRole('combobox', { name: 'Hour' })).toBeInTheDocument();
     });
 
     it('still gives a date field the plain trigger, unchanged from upstream', () => {
