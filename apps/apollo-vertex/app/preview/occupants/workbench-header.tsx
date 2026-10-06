@@ -2,12 +2,14 @@
 
 import {
   ArrowLeft,
+  LayoutTemplate,
   Moon,
   PanelLeftClose,
   PanelLeftOpen,
   PanelRightClose,
   PanelRightOpen,
   RotateCcw,
+  Square,
   Sun,
 } from "lucide-react";
 import Link from "next/link";
@@ -26,13 +28,19 @@ import {
 import { EXAMPLE_ROLES, type ExampleRole } from "@/lib/occupant-entry";
 import { type ChoiceProps, SelectChoice, ToggleChoice } from "./header-choice";
 import { ModeToggle } from "./mode-toggle";
-import { SELECTED_SEGMENT } from "./segment";
+import { INVERTED_SEGMENT } from "./segment";
 import { SegmentLabel } from "./segment-label";
 import {
   templateNames,
   type WorkbenchMode,
   type WorkbenchTheme,
 } from "./workbench-url-state";
+
+/**
+ * The view switch's icons are decorative: below this header width they go,
+ * the same in both views, so the header still fits on one row.
+ */
+const SWITCH_ICON = "hidden @min-[36rem]/header:block";
 
 interface WorkbenchHeaderProps {
   label: string;
@@ -166,7 +174,8 @@ export function WorkbenchHeader({
       ref={headerRef}
       data-slot="workbench-header"
       data-compact={compact}
-      className="relative flex items-center gap-3 border-b border-border px-3 py-2"
+      // A container: on a narrow header, the switch drops its icons.
+      className="@container/header relative flex items-center gap-3 border-b border-border px-3 py-2"
     >
       <Button
         variant="ghost"
@@ -191,7 +200,7 @@ export function WorkbenchHeader({
           </Link>
         </Button>
       )}
-      {/* The view switch, at a fixed place. */}
+      {/* The view switch: the one inverted control, at a fixed place. */}
       <ToggleGroup
         type="single"
         variant="outline"
@@ -204,10 +213,12 @@ export function WorkbenchHeader({
           if (next === "surface" || next === "template") onMode(next);
         }}
       >
-        <ToggleGroupItem value="surface" className={SELECTED_SEGMENT}>
+        <ToggleGroupItem value="surface" className={INVERTED_SEGMENT}>
+          <Square aria-hidden className={SWITCH_ICON} />
           <SegmentLabel>{t("workbench_view_surface")}</SegmentLabel>
         </ToggleGroupItem>
-        <ToggleGroupItem value="template" className={SELECTED_SEGMENT}>
+        <ToggleGroupItem value="template" className={INVERTED_SEGMENT}>
+          <LayoutTemplate aria-hidden className={SWITCH_ICON} />
           <SegmentLabel>{t("workbench_view_template")}</SegmentLabel>
         </ToggleGroupItem>
       </ToggleGroup>

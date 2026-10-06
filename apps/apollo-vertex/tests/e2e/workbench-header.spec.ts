@@ -5,7 +5,8 @@ import { open } from "./workbench-helpers";
 /*
  * The header's stable layout: the view switch, the title's start, and the
  * theme and panel toggles stay put between views at every width, and the
- * view's own controls swap in place with a fade.
+ * view's own controls swap in place with a fade. The switch is the one
+ * inverted control, and meets WCAG AA in both themes.
  */
 
 const header = (page: Page) => page.locator("[data-slot=workbench-header]");
@@ -109,6 +110,28 @@ test("the view's controls swap in place: Reset keeps its room, and they fade", a
   expect(await animation()).toEqual({ name: "enter", duration: "0.35s" });
 });
 
+test("on a narrow header, the switch drops its icons and the header still fits", async ({
+  page,
+}) => {
+  // The list and the inspector both open: the header is about 516px.
+  await page.setViewportSize({ width: 1100, height: 900 });
+  await open(page, "?occupant=queue&view=template&mode=edit");
+  await page.evaluate(() => document.fonts.ready);
+  await settle(page);
+  await expect(viewSwitch(page).locator("svg").first()).toBeHidden();
+  await expect(viewSwitch(page).getByRole("radio")).toHaveText([
+    "Surface",
+    "Template",
+  ]);
+  const fits = await header(page).evaluate(
+    (el) => el.scrollWidth <= el.clientWidth,
+  );
+  expect(fits).toBe(true);
+  await expect(
+    page.getByRole("button", { name: "Hide inspector" }),
+  ).toBeInViewport();
+});
+
 test("with reduced motion, the controls swap with no fade", async ({
   page,
 }) => {
@@ -121,3 +144,103 @@ test("with reduced motion, the controls swap with no fade", async ({
       .evaluate((el) => getComputedStyle(el).animationName),
   ).toBe("none");
 });
+
+/** The switch's chosen segment, inverted: its colors, weight, and contrast. */
+const segments = (page: Page) =>
+  page.evaluate(() => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1;
+    canvas.height = 1;
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    if (!ctx) throw new Error("No 2D context");
+    // Over the chrome's ground, so a transparent fill reads as it shows.
+    const ground = getComputedStyle(
+      document.querySelector("[data-slot=workbench]") ?? document.body,
+    ).backgroundColor;
+    const rgb = (color: string) => {
+      ctx.clearRect(0, 0, 1, 1);
+      ctx.fillStyle = ground;
+      ctx.fillRect(0, 0, 1, 1);
+      ctx.fillStyle = color;
+      ctx.fillRect(0, 0, 1, 1);
+      const [r = 0, g = 0, b = 0] = ctx.getImageData(0, 0, 1, 1).data;
+      return [r, g, b];
+    };
+    const token = (name: string) => {
+      const probe = document.createElement("span");
+      probe.style.color = `var(${name})`;
+      document.querySelector("[data-slot=workbench]")?.append(probe);
+      const color = rgb(getComputedStyle(probe).color).join();
+      probe.remove();
+      return color;
+    };
+    const luminance = (color: string) => {
+      const [r = 0, g = 0, b = 0] = rgb(color).map((v) => {
+        const c = v / 255;
+        return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+      });
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    };
+    const read = (selector: string) => {
+      const el = document.querySelector(selector);
+      const style = el ? getComputedStyle(el) : null;
+      const fill = style?.backgroundColor ?? "transparent";
+      const text = style?.color ?? "transparent";
+      const [hi, lo] = [luminance(text), luminance(fill)].toSorted(
+        (a, b) => b - a,
+      );
+      return {
+        fill: rgb(fill).join(),
+        text: rgb(text).join(),
+        weight: Number(style?.fontWeight),
+        contrast: ((hi ?? 0) + 0.05) / ((lo ?? 0) + 0.05),
+      };
+    };
+    return {
+      foreground: token("--foreground"),
+      background: token("--background"),
+      primary: token("--primary"),
+      on: read("[data-slot=workbench-view-switch] [data-state=on]"),
+      off: read("[data-slot=workbench-view-switch] [data-state=off]"),
+      mode: read("[data-slot=workbench-mode] [data-state=on]"),
+    };
+  });
+
+for (const theme of ["light", "dark"] as const) {
+  test(`the view switch is the one inverted control, ${theme}`, async ({
+    page,
+  }) => {
+    await open(page, `?occupant=queue&view=template&theme=${theme}`);
+    await settle(page);
+    // The theme applies after mount, and the toggle's colors ease into it.
+    await page
+      .locator("[data-slot=workbench-view-switch] [data-state=on]")
+      .evaluate((el) =>
+        Promise.all(el.getAnimations().map((animation) => animation.finished)),
+      );
+    const seen = await segments(page);
+    // Inverted: the text color as the fill, the surface color as the label.
+    expect(seen.on.fill).toBe(seen.foreground);
+    expect(seen.on.text).toBe(seen.background);
+    expect(seen.on.fill).not.toBe(seen.primary);
+    // Clear without color: a fill opposite the others', and heavier text.
+    expect(seen.on.weight).toBeGreaterThan(seen.off.weight);
+    expect(seen.on.contrast).toBeGreaterThanOrEqual(4.5);
+    expect(seen.off.contrast).toBeGreaterThanOrEqual(4.5);
+    // Preview | Edit keeps the neutral selected style.
+    expect(seen.mode.fill).not.toBe(seen.foreground);
+    expect(seen.mode.contrast).toBeGreaterThanOrEqual(4.5);
+    // Each segment keeps its words; its icon is decorative.
+    await expect(viewSwitch(page).getByRole("radio")).toHaveText([
+      "Surface",
+      "Template",
+    ]);
+    for (const name of ["Surface", "Template"])
+      await expect(
+        viewSwitch(page).getByRole("radio", { name, exact: true }),
+      ).toHaveCount(1);
+    await expect(viewSwitch(page).locator("svg[aria-hidden=true]")).toHaveCount(
+      2,
+    );
+  });
+}
