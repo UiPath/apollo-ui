@@ -41,6 +41,8 @@ interface TemplateStageProps {
   /** The tab each slot shows, when one was chosen. */
   tabs: Readonly<Record<string, string>>;
   onTab: (slot: string, id: string) => void;
+  /** Each slot's panel revision: a new one starts its panel on its tab. */
+  revisions: Readonly<Record<string, number>>;
   /** The slot whose popover is open, and opening one from the stage. */
   opened: SlotTarget | null;
   onOpen: (target: SlotTarget) => void;
@@ -71,6 +73,7 @@ export function TemplateStage({
   contents,
   tabs,
   onTab,
+  revisions,
   opened,
   onOpen,
   onClose,
@@ -105,6 +108,7 @@ export function TemplateStage({
         panel,
         defaultTab: tabs[name] ?? activeTab(panel, spec.name),
         onTabChange: (id: string) => onTab(name, id),
+        revision: revisions[name] ?? 0,
         occupants: Object.fromEntries(
           occupantsIn(panel).flatMap((occupant) => {
             const found = OCCUPANT_REGISTRY.find(

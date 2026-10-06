@@ -18,7 +18,7 @@ import type { LayoutChoices } from "@/lib/layout";
 import { Locked } from "./locked";
 import { SlotContentsSection } from "./slot-contents";
 import { SlotLayoutSection } from "./slot-layout-section";
-import type { SlotContents } from "./workbench-compose";
+import type { ContentsChange, SlotContents } from "./workbench-compose";
 import { hasLayout, leftOut, reasonCopy } from "./workbench-layout";
 import { slotFit } from "./workbench-url-state";
 
@@ -50,7 +50,7 @@ interface SlotPopoverProps {
   onLayout: (layout: LayoutChoices) => void;
   status: Readonly<Record<string, SlotStatus>> | null;
   contents: SlotContents;
-  onContents: (contents: SlotContents) => void;
+  onContents: ContentsChange;
 }
 
 /**

@@ -111,6 +111,8 @@ function DetailPageFrame({
     const several = filled && held.length > 1;
     return (
       <Host
+        // A new revision starts the panel again, on the tab the preview picked.
+        key={filled?.revision ?? 0}
         padding={occupantPadding(shown)}
         scroll={scrollOwner(surface, shown)}
         label={SLOT_LABELS[name]}

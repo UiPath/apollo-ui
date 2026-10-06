@@ -14,6 +14,7 @@ import { SlotPicker } from "./slot-picker";
 import {
   addOccupant,
   type ComposeLock,
+  type ContentsChange,
   holdsPanel,
   occupantsIn,
   removeFromSlot,
@@ -41,7 +42,7 @@ interface SlotContentsSectionProps {
   contents: SlotContents;
   /** The focused occupant: it stays where it is. */
   focus: string;
-  onContents: (contents: SlotContents) => void;
+  onContents: ContentsChange;
 }
 
 /**
@@ -89,21 +90,32 @@ export function SlotContentsSection({
   };
   const why = (lock: ComposeLock | null) =>
     lock ? t(reasonCopy(host.spec, lock)) : null;
-  const change = (next: SlotContents, to: FocusTo | null) => {
+  const change = (
+    next: SlotContents,
+    to: FocusTo | null,
+    show?: { slot: string; tab: string },
+  ) => {
     focusTo.current = to;
     setPicking(null);
     setLabeling(null);
-    onContents(next);
+    onContents(next, show);
   };
-  const add = (occupant: string, to: PickTarget) =>
-    change(
-      to === "replace"
-        ? replaceIn(host, contents, slot, occupant, focus)
-        : addOccupant(host, contents, slot, occupant, to, {
-            label: firstUnusedLabel(panel),
-          }),
-      { row: occupant },
-    );
+  const add = (occupant: string, to: PickTarget) => {
+    if (to === "replace") {
+      change(replaceIn(host, contents, slot, occupant, focus), {
+        row: occupant,
+      });
+      return;
+    }
+    const next = addOccupant(host, contents, slot, occupant, to, {
+      label: firstUnusedLabel(panel),
+    });
+    // The tab it went in shows: a new one is its own, by its id.
+    const tab = to === "new-tab" ? occupant : panel?.tabs[to]?.id;
+    if (next !== contents && holdsPanel(host, slot) && tab)
+      change(next, { row: occupant }, { slot, tab });
+    else change(next, { row: occupant });
+  };
   const toggle = (to: PickTarget) => {
     setLabeling(null);
     setPicking(picking === to ? null : to);

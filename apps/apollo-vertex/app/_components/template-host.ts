@@ -20,6 +20,11 @@ export interface SlotContent {
   defaultTab: string;
   /** Called with the tab's id when another is chosen. */
   onTabChange?: (id: string) => void;
+  /**
+   * Changes when the preview picks the tab to show: the panel starts again
+   * on `defaultTab`. Choosing a tab in the panel doesn't change it.
+   */
+  revision?: number;
 }
 
 /** What a preview gives a template: what each slot holds, and the layout. */

@@ -53,6 +53,15 @@ export function slotFit(
 export type SlotContents = Readonly<Record<string, PanelSpec>>;
 
 /**
+ * Takes the composer's change: the new contents, and the tab to show
+ * after it, when it added to a tab or made one.
+ */
+export type ContentsChange = (
+  contents: SlotContents,
+  show?: { slot: string; tab: string },
+) => void;
+
+/**
  * Why a composer choice can't be made, as a reason code; each has its copy
  * as a locale key (reasonCopy).
  *

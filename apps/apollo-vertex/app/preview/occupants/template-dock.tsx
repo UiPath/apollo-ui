@@ -16,7 +16,11 @@ import { Dock, DockSlider, FitIcon } from "./dock-parts";
 import { PageMap } from "./page-map";
 import { ShellMenu } from "./shell-menu";
 import { SlotPopover, type SlotTarget } from "./slot-popover";
-import { occupantsIn, type SlotContents } from "./workbench-compose";
+import {
+  type ContentsChange,
+  occupantsIn,
+  type SlotContents,
+} from "./workbench-compose";
 import {
   PAGE_WIDTH_MAX,
   pageWidthMin,
@@ -56,7 +60,7 @@ interface TemplateDockProps {
   slotStatus: Readonly<Record<string, SlotStatus>> | null;
   /** What each slot holds, and changing it. */
   contents: SlotContents;
-  onContents: (contents: SlotContents) => void;
+  onContents: ContentsChange;
   /** The slot whose popover is open, and opening or closing one. */
   opened: SlotTarget | null;
   onOpen: (target: SlotTarget) => void;

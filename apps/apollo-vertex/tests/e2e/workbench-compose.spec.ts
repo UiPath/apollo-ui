@@ -87,7 +87,10 @@ test("adds an occupant as a new tab, in one click", async ({ page }) => {
   );
   expect(await focusedRow(page)).toBe("key-facts");
   await expect.poll(() => tabNames(page)).toEqual(["Queue", "Key facts"]);
+  // The new tab is the one showing.
+  await expect(selected(page)).toHaveText("Key facts");
   expect(urlQuery(page)).toContain("end-panel-contents=queue~key-facts");
+  expect(urlQuery(page)).toContain("end-panel-tab=key-facts");
   await expect(
     page.locator("[data-slot=workbench-map] [data-region=end-panel]"),
   ).toHaveAttribute("data-count", "2");
@@ -109,6 +112,8 @@ test("stacks an occupant into a tab, which takes a label", async ({ page }) => {
   const chip = tabRow(page, 2).locator("[data-slot=workbench-contents-label]");
   await expect(chip).toHaveText("Overview");
   await expect.poll(() => tabNames(page)).toEqual(["Queue", "Overview"]);
+  // The tab it went in is the one showing.
+  await expect(selected(page)).toHaveText("Overview");
   expect(urlQuery(page)).toContain(
     "end-panel-contents=queue~overview:key-facts.participants",
   );
