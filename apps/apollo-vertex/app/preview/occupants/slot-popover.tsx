@@ -153,21 +153,6 @@ export function SlotPopover({
           >
             {slotName}
           </h2>
-          {slot !== focusSlot && (
-            <LockableButton
-              variant="outline"
-              size="sm"
-              className="justify-start"
-              reason={fits ? null : t(reasonCopy(host.spec, "no-fit"))}
-              onClick={() => {
-                onSlot(slot);
-                headingRef.current?.focus();
-              }}
-            >
-              {fits ? <MoveRight aria-hidden /> : null}
-              {t("workbench_slot_show_here", { occupant: spec.label })}
-            </LockableButton>
-          )}
           <section
             aria-label={t("workbench_compose")}
             className="flex flex-col gap-3"
@@ -194,6 +179,22 @@ export function SlotPopover({
               />
             )}
           </section>
+          {/* Moving the focused occupant comes after what the slot holds. */}
+          {slot !== focusSlot && (
+            <LockableButton
+              variant="outline"
+              size="sm"
+              className="justify-start"
+              reason={fits ? null : t(reasonCopy(host.spec, "no-fit"))}
+              onClick={() => {
+                onSlot(slot);
+                headingRef.current?.focus();
+              }}
+            >
+              {fits ? <MoveRight aria-hidden /> : null}
+              {t("workbench_slot_move_here", { occupant: spec.label })}
+            </LockableButton>
+          )}
           {hasLayout(host.spec, slot) && !out && (
             <section
               aria-label={t("workbench_layout")}

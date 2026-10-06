@@ -28,11 +28,11 @@ async function openSlot(page: Page, slot: string) {
     .waitFor();
 }
 
-/** Moves the occupant to a slot with that slot's "Show here", and closes it. */
+/** Moves the occupant to a slot with that slot's "Move here", and closes it. */
 async function moveTo(page: Page, slot: string, occupant: string) {
   await openSlot(page, slot);
   await popover(page)
-    .getByRole("button", { name: `Show ${occupant} here` })
+    .getByRole("button", { name: `Move ${occupant} here` })
     .click();
   await closePopover(page);
 }
@@ -95,7 +95,13 @@ test("a template slot the occupant doesn't fit shows why", async ({ page }) => {
     page.getByRole("button", { name: "Header, doesn't fit" }),
   ).toBeVisible();
   await openSlot(page, "header");
-  const show = popover(page).getByRole("button", { name: "Show Queue here" });
+  const show = popover(page).getByRole("button", { name: "Move Queue here" });
+  // It comes after the slot's contents, before its layout.
+  const contents = popover(page).getByRole("region", { name: "Contents" });
+  const below = async () =>
+    ((await show.boundingBox())?.y ?? 0) >
+    ((await contents.boundingBox())?.y ?? 0);
+  expect(await below()).toBe(true);
   await expect(show).toBeDisabled();
   await expect(show).toHaveAccessibleDescription(
     "It doesn't fit this slot's surface.",
