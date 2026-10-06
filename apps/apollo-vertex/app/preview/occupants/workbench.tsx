@@ -17,6 +17,7 @@ import { type Floor, FloorProbe } from "./floor-probe";
 import { NoFitCard } from "./no-fit-card";
 import { OccupantList } from "./occupant-list";
 import { afterLayout, settled } from "./overflow";
+import type { SlotTarget } from "./slot-popover";
 import { StageFrame } from "./stage-frame";
 import { TemplateDock } from "./template-dock";
 import { TemplateStage } from "./template-stage";
@@ -54,6 +55,8 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
   const update = (patch: Partial<WorkbenchView>) =>
     setView((current) => normalizeView({ ...current, ...patch }));
   // Each panel after the template's rules, reported by the template.
+  // The slot whose popover is open: one at a time, from the dock or stage.
+  const [opened, setOpened] = useState<SlotTarget | null>(null);
   const [slotStatus, setSlotStatus] = useState<Readonly<
     Record<string, SlotStatus>
   > | null>(null);
@@ -302,6 +305,9 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
               slotStatus={slotStatus}
               contents={view.contents}
               onContents={(contents) => update({ contents })}
+              opened={opened}
+              onOpen={setOpened}
+              onClose={() => setOpened(null)}
               pageWidth={view.pageWidth}
               onPageWidth={(pageWidth) => update({ pageWidth })}
               zoom={view.zoom}

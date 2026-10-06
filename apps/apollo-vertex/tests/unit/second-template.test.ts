@@ -56,7 +56,7 @@ describe("a second template, from its spec alone", () => {
     expect(regions(map({ aside: { present: false } }))).toEqual(["body"]);
   });
 
-  it("offers only the choices it declares in the Layout menu", () => {
+  it("offers only the choices it declares in its slots' layout", () => {
     expect(layoutMenu(twoUpTemplate, {}, "body")).toEqual([
       {
         slot: "aside",

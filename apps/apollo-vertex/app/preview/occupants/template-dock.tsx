@@ -5,15 +5,17 @@ import type {
   SlotStatus,
   TemplateHost,
 } from "@/app/_components/template-hosts";
+import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
 import { Separator } from "@/components/ui/separator";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { OccupantSpec } from "@/lib/composition";
 import { type LayoutChoices, resolveLayout } from "@/lib/layout";
 import type { PreviewShellVariant } from "@/templates/shell/PreviewShell";
-import { Dock, DockSlider, FitToggleGroup } from "./dock-parts";
+import { Dock, DockSlider, FitIcon } from "./dock-parts";
 import { PageMap } from "./page-map";
-import { TemplateContentsMenu } from "./template-contents-menu";
-import { TemplateLayoutMenu } from "./template-layout-menu";
+import { ShellMenu } from "./shell-menu";
+import { SlotPopover, type SlotTarget } from "./slot-popover";
 import { occupantsIn, type SlotContents } from "./workbench-compose";
 import {
   PAGE_WIDTH_MAX,
@@ -55,6 +57,10 @@ interface TemplateDockProps {
   /** What each slot holds, and changing it. */
   contents: SlotContents;
   onContents: (contents: SlotContents) => void;
+  /** The slot whose popover is open, and opening or closing one. */
+  opened: SlotTarget | null;
+  onOpen: (target: SlotTarget) => void;
+  onClose: () => void;
   pageWidth: number;
   onPageWidth: (width: number) => void;
   zoom: WorkbenchZoom;
@@ -65,8 +71,8 @@ interface TemplateDockProps {
 
 /**
  * The template view's dock: the page map with the chosen slot and layout,
- * the slot switcher (fits() against each slot), the Layout menu, the page
- * width (the whole window, shell included), and the zoom.
+ * a chip per slot (fits() against each) that opens its popover, the shell,
+ * the page width (the whole window, shell included), and the zoom.
  */
 export function TemplateDock({
   host,
@@ -80,6 +86,9 @@ export function TemplateDock({
   slotStatus,
   contents,
   onContents,
+  opened,
+  onOpen,
+  onClose,
   pageWidth,
   onPageWidth,
   zoom,
@@ -104,32 +113,69 @@ export function TemplateDock({
         shell={shell}
       />
       <Separator orientation="vertical" className="h-8" />
-      <FitToggleGroup
-        label={t("workbench_slot")}
-        value={slot}
-        onChange={onSlot}
-        options={host.spec.slots.map((s) => ({
-          value: s.name,
-          label: host.slotLabels[s.name] ?? s.name,
-          fits: slotFit(host, s.name, spec).fits,
-        }))}
-      />
-      <Separator orientation="vertical" className="h-8" />
-      <TemplateLayoutMenu
+      <ButtonGroup aria-label={t("workbench_slot")}>
+        {host.spec.slots.map((s) => {
+          const place = host.slotLabels[s.name] ?? s.name;
+          const fits = slotFit(host, s.name, spec).fits;
+          const here = s.name === slot;
+          const open = opened?.from === "dock" && opened.slot === s.name;
+          return (
+            <Button
+              key={s.name}
+              variant="outline"
+              size="sm"
+              data-slot="workbench-slot-chip"
+              data-chip-slot={s.name}
+              data-fits={fits}
+              data-here={here}
+              aria-haspopup="dialog"
+              aria-expanded={open}
+              aria-label={
+                here
+                  ? t("workbench_slot_chip_here", {
+                      place,
+                      occupant: spec.label,
+                    })
+                  : t(
+                      fits ? "workbench_place_fits" : "workbench_place_no_fit",
+                      {
+                        place,
+                      },
+                    )
+              }
+              className="data-[here=true]:bg-accent data-[here=true]:text-accent-foreground"
+              onClick={(event) => {
+                if (open) onClose();
+                else
+                  onOpen({
+                    slot: s.name,
+                    from: "dock",
+                    opener: event.currentTarget,
+                    anchor: event.currentTarget,
+                  });
+              }}
+            >
+              <FitIcon fits={fits} />
+              {place}
+            </Button>
+          );
+        })}
+      </ButtonGroup>
+      <SlotPopover
         host={host}
-        slot={slot}
-        shell={shell}
-        onShell={onShell}
+        target={opened}
+        onClose={onClose}
+        spec={spec}
+        focusSlot={slot}
+        onSlot={onSlot}
         layout={layout}
         onLayout={onLayout}
         status={slotStatus}
-      />
-      <TemplateContentsMenu
-        host={host}
         contents={contents}
-        focus={spec.name}
         onContents={onContents}
       />
+      <Separator orientation="vertical" className="h-8" />
+      <ShellMenu shell={shell} onShell={onShell} />
       <Separator orientation="vertical" className="h-8" />
       <div className="flex items-center gap-3">
         <DockSlider

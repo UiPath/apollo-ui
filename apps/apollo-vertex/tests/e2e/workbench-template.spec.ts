@@ -9,18 +9,43 @@ import {
 } from "./workbench-helpers";
 
 /*
- * The workbench's template view: the occupant in a template slot, the
- * slot switcher, placement, the template's width rules, the URL, and an
- * axe scan. The page width is the whole window: the default shell's
- * sidebar takes 280px of it. The Layout menu has its own spec.
+ * The workbench's template view: the occupant in a template slot, moving
+ * it to another slot, placement, the template's width rules, the URL, and
+ * an axe scan. The page width is the whole window: the default shell's
+ * sidebar takes 280px of it. Each slot's layout has its own spec.
  */
 
-/** Opens the Layout menu and picks an option in one of its groups. */
-async function chooseLayout(page: Page, group: string, option: string) {
-  const menu = page.locator("[data-slot=workbench-layout-menu]");
-  if (!(await menu.isVisible()))
-    await page.getByRole("button", { name: "Layout" }).click();
-  await menu
+const popover = (page: Page) =>
+  page.locator("[data-slot=workbench-slot-popover]");
+const chip = (page: Page, slot: string) =>
+  page.locator(`[data-slot=workbench-slot-chip][data-chip-slot=${slot}]`);
+
+/** Opens a slot's popover from its dock chip. */
+async function openSlot(page: Page, slot: string) {
+  await chip(page, slot).click();
+  await popover(page)
+    .and(page.locator(`[data-popover-slot=${slot}]`))
+    .waitFor();
+}
+
+/** Moves the occupant to a slot with that slot's "Show here", and closes it. */
+async function moveTo(page: Page, slot: string, occupant: string) {
+  await openSlot(page, slot);
+  await popover(page)
+    .getByRole("button", { name: `Show ${occupant} here` })
+    .click();
+  await page.keyboard.press("Escape");
+}
+
+/** Picks an option in one of a slot's layout groups, in its popover. */
+async function chooseLayout(
+  page: Page,
+  slot: string,
+  group: string,
+  option: string,
+) {
+  await openSlot(page, slot);
+  await popover(page)
     .getByRole("group", { name: group, exact: true })
     .getByRole("radio", { name: option, exact: true })
     .click();
@@ -40,10 +65,10 @@ test("switching views keeps the occupant, sample, and state", async ({
       "[data-template=detail-page] [data-slot=detail-page-start-panel] [data-occupant=queue]",
     ),
   ).toBeVisible();
-  // The dock is now slots and the page width.
+  // The dock is now slots and the page width; the occupant's slot is marked.
   await expect(
-    page.getByRole("radio", { name: "Start panel, fits" }),
-  ).toHaveAttribute("aria-checked", "true");
+    page.getByRole("button", { name: "Start panel, holds Queue" }),
+  ).toHaveAttribute("data-here", "true");
   await expect(page.getByRole("slider", { name: "Page width" })).toBeVisible();
   expect(urlQuery(page)).toContain("view=template");
   expect(urlQuery(page)).toContain("sample=stress");
@@ -59,8 +84,18 @@ test("switching views keeps the occupant, sample, and state", async ({
 
 test("a template slot the occupant doesn't fit shows why", async ({ page }) => {
   await open(page, "?occupant=queue&view=template");
-  const header = page.getByRole("radio", { name: "Header, doesn't fit" });
-  await header.click();
+  // It can't be moved there, and its popover says why.
+  await expect(
+    page.getByRole("button", { name: "Header, doesn't fit" }),
+  ).toBeVisible();
+  await openSlot(page, "header");
+  const show = popover(page).getByRole("button", { name: "Show Queue here" });
+  await expect(show).toBeDisabled();
+  await expect(show).toHaveAccessibleDescription(
+    "It doesn't fit this slot's surface.",
+  );
+  // A link can still put it there: the stage says why it doesn't go.
+  await open(page, "?occupant=queue&view=template&slot=header");
   const card = stage(page).locator("[data-slot=workbench-no-fit]");
   await expect(card).toContainText("Queue doesn't go in the header");
   await expect(card).toContainText("Works only in vertical surfaces");
@@ -111,12 +146,17 @@ test("a side slot's placement puts it beside the header", async ({ page }) => {
   const panel = page.locator("[data-slot=detail-page-start-panel]");
   // Below: the header spans the page, over the panel.
   expect((await header.boundingBox())?.x).toBe((await panel.boundingBox())?.x);
-  await chooseLayout(page, "Start panel placement", "Beside header");
+  await chooseLayout(
+    page,
+    "start-panel",
+    "Start panel placement",
+    "Beside header",
+  );
   await expect
     .poll(async () => (await header.boundingBox())?.x ?? 0)
     .toBeGreaterThan((await panel.boundingBox())?.x ?? 0);
   expect(urlQuery(page)).toContain("start-panel-placement=beside-header");
-  // Placement isn't in the dock any more: it's per panel, in the menu.
+  // Placement isn't in the dock: it's per panel, in its popover.
   await page.keyboard.press("Escape");
   await expect(
     page
@@ -129,8 +169,8 @@ test("the template view round-trips through the URL", async ({ page }) => {
   await page.setViewportSize({ width: 1920, height: 1000 });
   await open(page, "?occupant=queue");
   await page.getByRole("radio", { name: "Template", exact: true }).click();
-  await page.getByRole("radio", { name: "End panel, fits" }).click();
-  await chooseLayout(page, "End panel placement", "Beside header");
+  await moveTo(page, "end-panel", "Queue");
+  await chooseLayout(page, "end-panel", "End panel placement", "Beside header");
   await page.keyboard.press("Escape");
   await page.getByRole("slider", { name: "Page width" }).focus();
   await page.keyboard.press("ArrowLeft");
@@ -201,7 +241,7 @@ test("the dock stays above the template, every control reachable", async ({
       ),
   );
   expect(hidden).toEqual([]);
-  await page.getByRole("radio", { name: "Main, fits" }).click();
+  await moveTo(page, "main", "Queue");
   await expect(page.locator("[data-slot=workbench-frame-tag]")).toContainText(
     "Main",
   );

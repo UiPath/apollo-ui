@@ -6,14 +6,14 @@ import {
 } from "@/lib/layout";
 
 /*
- * The template view's layout rules, for any template: what its Layout menu
- * offers comes from the slot choices the template declares, and what's
- * locked comes from the template's own layout or the focus rule. Nothing
- * here names a template or a slot.
+ * The template view's layout rules, for any template: what each slot's
+ * popover offers for its layout comes from the slot choices the template
+ * declares, and what's locked comes from the template's own layout or the
+ * focus rule. Nothing here names a template or a slot.
  */
 
 /**
- * Why a Layout menu option can't be chosen. "refused": the template's
+ * Why a layout option can't be chosen. "refused": the template's
  * layout won't allow it. "focus": the slot holds the occupant.
  */
 export type LayoutLock = "refused" | "focus";
@@ -40,13 +40,13 @@ export function withFocus(
   };
 }
 
-/** A Layout menu option, and why it's locked, or null when it can be chosen. */
+/** A layout option, and why it's locked, or null when it can be chosen. */
 export interface MenuOption<T> {
   value: T;
   lock: LayoutLock | null;
 }
 
-/** One slot's section of the Layout menu: only what the slot declares. */
+/** One slot's layout choices: only what the slot declares. */
 export interface MenuSlot {
   slot: string;
   present?: readonly MenuOption<boolean>[];
@@ -55,7 +55,7 @@ export interface MenuSlot {
 }
 
 /**
- * The Layout menu for a template: each slot's declared choices, locked by
+ * The layout choices for a template: each slot's declared choices, locked by
  * the focus rule (the focused slot can't be left out or closed) or by the
  * template's layout refusing them.
  */
@@ -92,6 +92,14 @@ export function layoutMenu(
     };
   });
 }
+
+/** Whether a slot declares any layout choice at all. */
+export const hasLayout = (spec: TemplateSpec, slot: string) =>
+  Boolean(spec.layout.options?.[slot]);
+
+/** Whether the page has left the slot out. */
+export const leftOut = (layout: LayoutChoices, slot: string) =>
+  layout[slot]?.present === false;
 
 /**
  * What the workbench says for a reason code when a template declares no

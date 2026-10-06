@@ -3,7 +3,7 @@ import { expect, settle, test } from "./fixtures";
 import { open, urlQuery } from "./workbench-helpers";
 
 /*
- * The template view's composer, the Contents menu in the dock: adding an
+ * The template view's composer, in each slot's popover: adding an
  * occupant to a slot as a new tab or into a tab, taking one out, the
  * focused occupant's lock, and the link. Queue is focused in the Detail
  * page's end panel throughout.
@@ -12,8 +12,7 @@ import { open, urlQuery } from "./workbench-helpers";
 const SLOT = "?occupant=queue&view=template&slot=end-panel";
 const BASE = `${SLOT}&zoom=100`;
 
-const menu = (page: Page) =>
-  page.locator("[data-slot=workbench-contents-menu]");
+const menu = (page: Page) => page.locator("[data-slot=workbench-slot-popover]");
 const section = (page: Page, slot: string) =>
   menu(page).locator(`[data-contents-slot=${slot}]`);
 const end = (page: Page) =>
@@ -29,10 +28,12 @@ const selected = (page: Page) =>
 const shown = (page: Page) =>
   end(page).locator("[data-occupant]").filter({ visible: true }).first();
 
-async function openMenu(page: Page) {
-  if (!(await menu(page).isVisible()))
-    await page.getByRole("button", { name: "Contents" }).click();
-  await menu(page).waitFor();
+/** Opens a slot's popover from its dock chip. */
+async function openMenu(page: Page, slot = "end-panel") {
+  await page
+    .locator(`[data-slot=workbench-slot-chip][data-chip-slot=${slot}]`)
+    .click();
+  await section(page, slot).waitFor();
 }
 
 async function ready(page: Page, query: string) {
@@ -125,10 +126,12 @@ test("the focused occupant stays, and says why", async ({ page }) => {
   await expect(remove).toBeDisabled();
   await expect(remove).toHaveAccessibleDescription(reason);
   // Not offered in another slot either.
+  await openMenu(page, "start-panel");
   const elsewhere = pick(page, "start-panel", "Queue");
   await expect(elsewhere).toBeDisabled();
   await expect(elsewhere).toHaveAccessibleDescription(reason);
   // Another occupant can go.
+  await openMenu(page);
   await expect(
     section(page, "end-panel").getByRole("button", {
       name: "Remove Key facts",

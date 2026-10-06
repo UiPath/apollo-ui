@@ -1,19 +1,15 @@
 "use client";
 
-import { Layers, Lock, Plus, X } from "lucide-react";
-import { useId, useState } from "react";
+import { Plus, X } from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { TemplateHost } from "@/app/_components/template-hosts";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { type LocaleKey, slotHolds } from "@/lib/composition";
 import { specFor } from "@/lib/occupant-lookup";
 import type { OccupantRef, TabSpec } from "@/lib/panel";
+import { Locked } from "./locked";
 import {
   addChoices,
   addOccupant,
@@ -33,33 +29,6 @@ const LABEL_KEYS: readonly LocaleKey[] = TAB_LABELS.map((l) => l.key);
 const refName = (ref: OccupantRef) =>
   typeof ref === "string" ? ref : ref.occupant;
 
-interface LockedProps {
-  /** Why it can't be chosen; null when it can. */
-  reason: string | null;
-  /** Renders the control; spread what it's given onto it. */
-  children: (described: { "aria-describedby"?: string }) => React.ReactNode;
-}
-
-/** A control, with why it's locked under it when it is. */
-function Locked({ reason, children }: LockedProps) {
-  const id = useId();
-  return (
-    <div className="flex flex-col gap-1">
-      {children(reason ? { "aria-describedby": id } : {})}
-      {reason && (
-        <p
-          id={id}
-          data-slot="workbench-contents-reason"
-          className="flex items-start gap-1.5 text-xs text-muted-foreground"
-        >
-          <Lock aria-hidden className="mt-0.5 size-3 shrink-0" />
-          {reason}
-        </p>
-      )}
-    </div>
-  );
-}
-
 interface SlotSectionProps {
   host: TemplateHost;
   slot: string;
@@ -69,7 +38,7 @@ interface SlotSectionProps {
 }
 
 /** One slot's contents: its tabs and occupants, and adding one more. */
-function SlotSection({
+export function SlotSection({
   host,
   slot,
   contents,
@@ -297,55 +266,5 @@ function SlotSection({
         </div>
       )}
     </fieldset>
-  );
-}
-
-interface TemplateContentsMenuProps {
-  host: TemplateHost;
-  contents: SlotContents;
-  /** The focused occupant: always placed, and it stays. */
-  focus: string;
-  onContents: (contents: SlotContents) => void;
-}
-
-/**
- * The template view's composer, in a popover beside Layout: for every slot,
- * its tabs and occupants, and adding an occupant as a new tab or into a
- * tab. What it offers and locks comes from the template's declarations and
- * composition's checks.
- */
-export function TemplateContentsMenu({
-  host,
-  contents,
-  focus,
-  onContents,
-}: TemplateContentsMenuProps) {
-  const { t } = useTranslation();
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" data-slot="workbench-contents">
-          <Layers aria-hidden />
-          {t("workbench_compose")}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent
-        side="top"
-        align="start"
-        className="flex max-h-[min(36rem,var(--radix-popover-content-available-height))] w-80 flex-col gap-4 overflow-y-auto"
-        data-slot="workbench-contents-menu"
-      >
-        {host.spec.slots.map((slot) => (
-          <SlotSection
-            key={slot.name}
-            host={host}
-            slot={slot.name}
-            contents={contents}
-            focus={focus}
-            onContents={onContents}
-          />
-        ))}
-      </PopoverContent>
-    </Popover>
   );
 }
