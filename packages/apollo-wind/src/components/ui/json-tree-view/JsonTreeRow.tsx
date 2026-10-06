@@ -272,6 +272,7 @@ export function JsonTreeRow({ node, depth }: { node: JsonTreeNode; depth: number
           type={node.type}
           icon={decoration?.badge?.icon ?? deriveTypeIcon?.(node)}
           className={decoration?.badge?.className}
+          reference={decoration?.badge?.reference}
         />
         <NodeKey
           node={node}

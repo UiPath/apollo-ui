@@ -12,5 +12,6 @@ export {
   type JsonTreeViewStrings,
   JsonTreeViewProvider,
   type JsonTreeViewProviderProps,
+  type ResolvedJsonTreeViewStrings,
   useJsonTreeViewStrings,
 } from './strings';

@@ -8,7 +8,13 @@ import {
   setValueAtPath,
 } from './buildJsonTree';
 import { JsonTreeView } from './JsonTree';
-import type { JsonObject, JsonSchema, JsonTreeNode, JsonValue } from './JsonTree.types';
+import type {
+  JsonObject,
+  JsonSchema,
+  JsonTreeNode,
+  JsonValue,
+  NodeDecoration,
+} from './JsonTree.types';
 import { JsonTreeToolbar } from './JsonTreeToolbar';
 import type { JsonTreeViewStrings } from './strings';
 
@@ -31,6 +37,7 @@ A tree for exploring and editing JSON data, such as variables, node inputs and o
 - **Search and filter**: Pass \`query\` and \`filterPredicate\`, or pair the tree with \`JsonTreeToolbar\`.
 - **Virtualization**: Pass \`virtualized\` for large values. Only the rows in view mount.
 - **Customization**: \`decorateNode\`, \`renderValue\`, \`nodeActions\`, and \`rowWrapper\` change how rows look and behave.
+- **Reference variables**: \`decorateNode\` can mark a field as a reference. Its type badge gets a corner arrow and a tooltip naming the source.
 - **Localization**: Every string comes from the \`strings\` prop, with English defaults in \`DEFAULT_JSON_TREE_VIEW_STRINGS\`.
         `,
       },
@@ -153,6 +160,57 @@ export const CustomStrings: StoryFn = () => {
           collapsed={collapsed}
           onToggleCollapsed={toggle}
           strings={SPANISH_STRINGS}
+        />
+      </div>
+    </div>
+  );
+};
+
+const sendEmailValue: JsonObject = {
+  to: 'ada@example.com',
+  subject: 'Your Pro plan renews soon',
+  customerName: 'Ada Lovelace',
+  seats: 12,
+  sendCopy: false,
+  options: { priority: 'normal', trackOpens: true },
+};
+
+/**
+ * Fields bound to another step's output. Each maps a path in this tree to the
+ * source the value is read from.
+ */
+const REFERENCES: Record<string, string> = {
+  to: 'Live from Read customer · output.email',
+  customerName: 'Live from Read customer · output.name',
+  seats: 'Live from Read customer · output.seats',
+  'options.trackOpens': 'Live from Workflow settings · trackOpens',
+};
+
+function decorateReference(node: JsonTreeNode): NodeDecoration | undefined {
+  const source = REFERENCES[node.path];
+  return source ? { badge: { reference: { source } } } : undefined;
+}
+
+/**
+ * A field that references another variable gets a corner tab with an arrow on its type badge.
+ * Hover the badge to see the type and where the value comes from. Mark a node with
+ * `decorateNode` returning `{ badge: { reference: { source } } }`.
+ */
+export const ReferenceVariables: StoryFn = () => {
+  const nodes = useMemo(() => buildJsonTree({ value: sendEmailValue }), []);
+  const { collapsed, toggle } = useCollapsed();
+  return (
+    <div className={frame}>
+      <span className={caption}>
+        Send email inputs. Hover a badge with a corner arrow to see the referenced source.
+      </span>
+      <div className="w-full max-w-md rounded-lg border border-border">
+        <JsonTreeView
+          nodes={nodes}
+          collapsed={collapsed}
+          onToggleCollapsed={toggle}
+          decorateNode={decorateReference}
+          readOnly
         />
       </div>
     </div>

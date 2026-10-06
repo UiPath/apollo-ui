@@ -1,5 +1,5 @@
-import { buildJsonTree } from '@uipath/apollo-wind';
 import { render, screen } from '@testing-library/react';
+import { buildJsonTree } from '@uipath/apollo-wind';
 import { describe, expect, it } from 'vitest';
 import { ApI18nProvider } from '../../../i18n';
 import { JsonLeafValueEditor, JsonTreeView, JsonTreeViewProvider } from './JsonTree';
@@ -79,5 +79,41 @@ describe('JsonTreeView (canvas)', () => {
       </ApI18nProvider>
     );
     expect(screen.getByText('outer')).toBeInTheDocument();
+  });
+
+  describe('reference badge', () => {
+    const referenceNodes = buildJsonTree({ value: { to: 'ada@example.com' } });
+    const decorateNode = () => ({ badge: { reference: { source: 'output.email' } } });
+
+    it('interpolates the type into the canvas catalog message', () => {
+      render(<JsonTreeView nodes={referenceNodes} decorateNode={decorateNode} />);
+      expect(
+        screen.getByRole('img', { name: 'String · reference, output.email' })
+      ).toBeInTheDocument();
+    });
+
+    it('falls back to the English message in a locale without a translation yet', () => {
+      render(
+        <ApI18nProvider component="canvas" locale="ja">
+          <JsonTreeView nodes={referenceNodes} decorateNode={decorateNode} />
+        </ApI18nProvider>
+      );
+      expect(
+        screen.getByRole('img', { name: 'String · reference, output.email' })
+      ).toBeInTheDocument();
+    });
+
+    it('lets a strings prop override the reference title', () => {
+      render(
+        <ApI18nProvider component="canvas" locale="ja">
+          <JsonTreeView
+            nodes={referenceNodes}
+            decorateNode={decorateNode}
+            strings={{ referenceType: (type) => `${type} (ref)` }}
+          />
+        </ApI18nProvider>
+      );
+      expect(screen.getByRole('img', { name: 'String (ref), output.email' })).toBeInTheDocument();
+    });
   });
 });

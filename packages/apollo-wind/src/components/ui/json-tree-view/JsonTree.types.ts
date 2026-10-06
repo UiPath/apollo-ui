@@ -124,6 +124,20 @@ export interface NodeDecorationBadge {
    * neutral default, e.g. `'border-info/30 bg-info/10 text-info'`.
    */
   className?: string;
+  /**
+   * Marks the node as a reference to another variable. The badge gets a
+   * corner tab with an arrow, and its tooltip names the reference.
+   */
+  reference?: NodeBadgeReference;
+}
+
+/** A reference marker on a row's type badge. */
+export interface NodeBadgeReference {
+  /**
+   * Where the value comes from, shown under the tooltip title
+   * (e.g. `'Live from Read customer · output.email'`).
+   */
+  source?: string;
 }
 
 /** Consumer-provided visual annotation for a tree node. */
