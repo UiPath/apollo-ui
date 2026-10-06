@@ -12,7 +12,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { OccupantSpec } from "@/lib/composition";
 import { type LayoutChoices, resolveLayout } from "@/lib/layout";
 import type { PreviewShellVariant } from "@/templates/shell/PreviewShell";
-import { Dock, DockSlider, FitIcon } from "./dock-parts";
+import { Dock, DockSlider } from "./dock-parts";
 import { PageMap } from "./page-map";
 import { ShellMenu } from "./shell-menu";
 import { SlotPopover, type SlotTarget } from "./slot-popover";
@@ -24,7 +24,6 @@ import {
 import {
   PAGE_WIDTH_MAX,
   pageWidthMin,
-  slotFit,
   type WorkbenchZoom,
 } from "./workbench-url-state";
 
@@ -120,9 +119,14 @@ export function TemplateDock({
       <ButtonGroup aria-label={t("workbench_slot")}>
         {host.spec.slots.map((s) => {
           const place = host.slotLabels[s.name] ?? s.name;
-          const fits = slotFit(host, s.name, spec).fits;
+          const left = layout[s.name]?.present === false;
+          const panel = contents[s.name];
+          const count = panel ? occupantsIn(panel).length : 0;
           const here = s.name === slot;
           const open = opened?.slot === s.name;
+          const state = left
+            ? t("workbench_slot_chip_left_out", { place })
+            : t("workbench_slot_chip_count", { place, count });
           return (
             <Button
               key={s.name}
@@ -130,24 +134,20 @@ export function TemplateDock({
               size="sm"
               data-slot="workbench-slot-chip"
               data-chip-slot={s.name}
-              data-fits={fits}
               data-here={here}
+              data-left-out={left}
               aria-haspopup="dialog"
               aria-expanded={open}
               aria-label={
                 here
                   ? t("workbench_slot_chip_here", {
-                      place,
+                      state,
                       occupant: spec.label,
                     })
-                  : t(
-                      fits ? "workbench_place_fits" : "workbench_place_no_fit",
-                      {
-                        place,
-                      },
-                    )
+                  : state
               }
-              className="data-[here=true]:bg-accent data-[here=true]:text-accent-foreground"
+              // Left out: dashed and muted, with no count to show.
+              className="px-2 has-[>svg]:px-2 data-[here=true]:bg-accent data-[here=true]:text-accent-foreground data-[left-out=true]:border-dashed data-[left-out=true]:text-muted-foreground"
               onClick={(event) => {
                 if (open) onClose();
                 else
@@ -158,8 +158,17 @@ export function TemplateDock({
                   });
               }}
             >
-              <FitIcon fits={fits} />
               {place}
+              {/* The slot's state: how many it holds; a left-out one is dashed. */}
+              {!left && (
+                <span
+                  aria-hidden="true"
+                  data-slot="workbench-slot-chip-state"
+                  className="rounded-full bg-muted px-1.5 text-[11px] leading-4 font-medium tabular-nums text-muted-foreground"
+                >
+                  {count}
+                </span>
+              )}
             </Button>
           );
         })}

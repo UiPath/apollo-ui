@@ -73,7 +73,7 @@ test("switching views keeps the occupant, sample, and state", async ({
   ).toBeVisible();
   // The dock is now slots and the page width; the occupant's slot is marked.
   await expect(
-    page.getByRole("button", { name: "Start panel, holds Queue" }),
+    page.getByRole("button", { name: "Start panel, 1 occupant, holds Queue" }),
   ).toHaveAttribute("data-here", "true");
   await expect(page.getByRole("slider", { name: "Page width" })).toBeVisible();
   expect(urlQuery(page)).toContain("view=template");
@@ -91,8 +91,9 @@ test("switching views keeps the occupant, sample, and state", async ({
 test("a template slot the occupant doesn't fit shows why", async ({ page }) => {
   await open(page, "?occupant=queue&view=template");
   // It can't be moved there, and its popover says why.
+  // The chips say each slot's state, not whether it fits.
   await expect(
-    page.getByRole("button", { name: "Header, doesn't fit" }),
+    page.getByRole("button", { name: "Header, 0 occupants" }),
   ).toBeVisible();
   await openSlot(page, "header");
   const show = popover(page).getByRole("button", { name: "Move Queue here" });
@@ -265,18 +266,52 @@ test("the dock fits one row on a 1416px window, with the list open", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1416, height: 900 });
-  await open(page, "?occupant=queue&view=template");
-  await page.evaluate(() => document.fonts.ready);
-  const rows = await page.locator("[data-slot=workbench-dock]").evaluate(
-    (dock) =>
-      new Set(
-        [...dock.children].map((part) => {
-          const box = part.getBoundingClientRect();
-          return Math.round(box.top + box.height / 2);
-        }),
-      ).size,
-  );
-  expect(rows).toBe(1);
+  for (const query of [
+    "?occupant=queue&view=template",
+    "?occupant=queue&view=template&start-panel-present=false",
+  ]) {
+    await open(page, query);
+    await page.evaluate(() => document.fonts.ready);
+    const rows = await page.locator("[data-slot=workbench-dock]").evaluate(
+      (dock) =>
+        new Set(
+          [...dock.children].map((part) => {
+            const box = part.getBoundingClientRect();
+            return Math.round(box.top + box.height / 2);
+          }),
+        ).size,
+    );
+    expect(rows, query).toBe(1);
+  }
   // The shell is an icon there, named for its menu.
   await expect(page.getByRole("button", { name: "Shell" })).toBeVisible();
+});
+
+test("each dock chip says its slot's state", async ({ page }) => {
+  await open(
+    page,
+    "?occupant=queue&view=template&slot=end-panel&end-panel-contents=queue~key-facts&start-panel-present=false",
+  );
+  // How many each holds, and which holds the occupant.
+  await expect(chip(page, "end-panel")).toHaveAccessibleName(
+    "End panel, 2 occupants, holds Queue",
+  );
+  await expect(chip(page, "end-panel")).toContainText("2");
+  await expect(chip(page, "main")).toHaveAccessibleName("Main, 0 occupants");
+  // A left-out slot: dashed and muted, with no count.
+  await expect(chip(page, "start-panel")).toHaveAccessibleName(
+    "Start panel, left out",
+  );
+  await expect(chip(page, "start-panel")).toHaveAttribute(
+    "data-left-out",
+    "true",
+  );
+  expect(
+    await chip(page, "start-panel").evaluate(
+      (el) => getComputedStyle(el).borderStyle,
+    ),
+  ).toContain("dashed");
+  await expect(
+    chip(page, "start-panel").locator("[data-slot=workbench-slot-chip-state]"),
+  ).toHaveCount(0);
 });
