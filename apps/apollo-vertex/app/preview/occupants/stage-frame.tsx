@@ -9,7 +9,8 @@ interface StageFrameProps extends ComponentProps<"div"> {
 }
 
 /**
- * The page's ground under what's on the stage, with its edge drawn, and its
+ * The page's ground under what's on the stage, with its edge drawn and a
+ * faint lift off the recessed canvas, and its
  * tag above its top-left corner, never over it. The tag is decorative: the
  * dock and the slider's value text say the same.
  */
@@ -23,7 +24,8 @@ export function StageFrame({
     <div
       data-slot="workbench-frame"
       className={cn(
-        "relative bg-background outline-1 outline-border",
+        // A hairline and a faint lift: the thing on the bench.
+        "relative bg-background shadow-sm outline-1 outline-border",
         className,
       )}
       {...props}

@@ -6,7 +6,7 @@ import { open } from "./workbench-helpers";
  * The workbench chrome keeps primary teal for the selected slot, focus
  * rings, and links. Segmented controls, other slots' labels, and where
  * an occupant is in the list are neutral, and meet WCAG AA in both
- * themes.
+ * themes. The stage is a recessed canvas, with the page lifted off it.
  */
 
 const QUERY =
@@ -117,6 +117,15 @@ const read = (page: Page) =>
           style("[data-slot=workbench-location]:not([data-hidden])")?.color !==
           style("[data-slot=workbench-location][data-hidden]")?.color,
       },
+      canvas: {
+        chrome: luminance(
+          behind(q("[data-slot=workbench-header]") ?? document.body),
+        ),
+        stage: luminance(
+          behind(q("[data-slot=workbench-stage]") ?? document.body),
+        ),
+        frameShadow: style("[data-slot=workbench-frame]")?.boxShadow ?? "none",
+      },
     };
   });
 
@@ -155,5 +164,25 @@ for (const theme of ["light", "dark"] as const) {
       seen.location.hidden,
     ])
       expect(ratio).toBeGreaterThanOrEqual(4.5);
+    // The canvas is a step darker than the chrome; the page is lifted off it.
+    expect(seen.canvas.stage).toBeLessThan(seen.canvas.chrome);
+    expect(seen.canvas.frameShadow).not.toBe("none");
   });
 }
+
+test("the surface view uses the same canvas", async ({ page }) => {
+  await open(page, "?occupant=queue");
+  await page
+    .locator("[data-slot=workbench-stage] [data-occupant]")
+    .first()
+    .waitFor();
+  const [stage, chrome] = await Promise.all(
+    ["[data-slot=workbench-stage]", "[data-slot=workbench]"].map((selector) =>
+      page
+        .locator(selector)
+        .evaluate((el) => getComputedStyle(el).backgroundColor),
+    ),
+  );
+  expect(stage).not.toBe(chrome);
+  expect(stage).not.toBe("rgba(0, 0, 0, 0)");
+});
