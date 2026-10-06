@@ -1,17 +1,11 @@
 "use client";
 
-import { Eye, Pencil } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 const MODES = [
-  { value: "preview", icon: Eye, label: "workbench_mode_preview" },
-  { value: "edit", icon: Pencil, label: "workbench_mode_edit" },
+  { value: "preview", label: "workbench_mode_preview" },
+  { value: "edit", label: "workbench_mode_edit" },
 ] as const;
 
 interface ModeToggleProps {
@@ -20,9 +14,9 @@ interface ModeToggleProps {
 }
 
 /**
- * Preview or Edit, in the header in the template view. Preview is the
- * page as people use it; Edit outlines every slot and opens one with a
- * click. Two icons, named, with tooltips.
+ * Preview or Edit, in the header in the template view: a segmented
+ * control, labeled, with the chosen one filled. Preview is the page as
+ * people use it; Edit outlines every slot and opens one with a click.
  */
 export function ModeToggle({ editing, onEditing }: ModeToggleProps) {
   const { t } = useTranslation();
@@ -33,24 +27,20 @@ export function ModeToggle({ editing, onEditing }: ModeToggleProps) {
       size="sm"
       aria-label={t("workbench_mode")}
       data-slot="workbench-mode"
+      className="shrink-0"
       value={editing ? "edit" : "preview"}
       onValueChange={(next) => {
         if (next) onEditing(next === "edit");
       }}
     >
-      {MODES.map(({ value, icon: Icon, label }) => (
-        <Tooltip key={value}>
-          <TooltipTrigger asChild>
-            <ToggleGroupItem
-              value={value}
-              aria-label={t(label)}
-              className="data-[state=on]:border-primary data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-            >
-              <Icon aria-hidden />
-            </ToggleGroupItem>
-          </TooltipTrigger>
-          <TooltipContent>{t(label)}</TooltipContent>
-        </Tooltip>
+      {MODES.map(({ value, label }) => (
+        <ToggleGroupItem
+          key={value}
+          value={value}
+          className="px-3 data-[state=on]:border-primary data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+        >
+          {t(label)}
+        </ToggleGroupItem>
       ))}
     </ToggleGroup>
   );

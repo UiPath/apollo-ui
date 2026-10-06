@@ -45,6 +45,15 @@ test("Preview, the default, has no outlines, and occupants work", async ({
     "aria-checked",
     "true",
   );
+  // A labeled segmented control: its words show, and the chosen one is filled.
+  await expect(page.getByRole("group", { name: "Mode" })).toHaveText(
+    "PreviewEdit",
+  );
+  const fill = (name: "Preview" | "Edit") =>
+    modeButton(page, name).evaluate(
+      (el) => getComputedStyle(el).backgroundColor,
+    );
+  expect(await fill("Preview")).not.toBe(await fill("Edit"));
   await expect(page.locator("[data-slot=workbench-edit-slot]")).toHaveCount(0);
   await expect(page.locator("[data-slot=workbench-page]")).not.toHaveAttribute(
     "inert",
