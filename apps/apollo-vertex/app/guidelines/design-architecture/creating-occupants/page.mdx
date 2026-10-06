@@ -256,11 +256,39 @@ Unit tests fail until each has everything it needs.
 
 ### Compose a slot
 
-In the template view, each slot has a popover: open it from the slot's
-chip in the dock. It has the slot's contents first, then its layout, and
-"Show Queue here", with the name of the occupant you're looking at, for
-a slot it isn't in. A slot that's left out says to include it first. The Shell
-menu in the dock holds the shell.
+The template view has two modes, switched in the header and carried in
+links as `mode=edit`:
+
+- **Preview**, the default, is the page as people use it: no outlines,
+  and every occupant works.
+- **Edit** outlines every slot with its name, and makes the occupants
+  inert and slightly dimmed. A click anywhere in a slot, or Enter on it,
+  opens its popover. No slot changes width.
+
+In either mode, each slot's chip in the dock opens its popover too. It
+has the slot's contents first, then its layout, and "Show Queue here",
+with the name of the occupant you're looking at, for a slot it isn't in.
+A slot that's left out says to include it first. The Shell menu in the
+dock holds the shell.
+
+In Edit mode, you can also drag an occupant from the list onto the page.
+Occupants on the page, and the one you're looking at, are marked "On
+the page" and don't drag. Where you drop it decides what happens:
+
+- **Between two tabs, or at the end of a tab bar:** a new tab there,
+  shown by an insertion line.
+- **On a tab's label:** into that tab, which becomes a stack.
+- **On a tab's content:** into the tab that's showing.
+- **On a slot that holds one:** in place of the occupant there, unless
+  it's the one you're looking at.
+
+A place that refuses the occupant is dimmed while you drag, and says why
+when you're over it. A fill occupant can still go between tabs. After a
+drop, the tab it went in shows. By keyboard, focus an occupant's handle
+in the list, press Space, move between places with the arrow keys, and
+press Space to drop. The popover offers the same choices, by the same
+rules: a drop is allowed exactly where the popover would offer that
+occupant.
 
 The template declares how much each slot holds, so the contents follow
 it. A slot that holds one shows its occupant with Replace and Clear, and
