@@ -1,13 +1,14 @@
 "use client";
 
+import { Eye, Pencil } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { SELECTED_SEGMENT } from "./segment";
 import { SegmentLabel } from "./segment-label";
 
 const MODES = [
-  { value: "preview", label: "workbench_mode_preview" },
-  { value: "edit", label: "workbench_mode_edit" },
+  { value: "preview", label: "workbench_mode_preview", Icon: Eye },
+  { value: "edit", label: "workbench_mode_edit", Icon: Pencil },
 ] as const;
 
 interface ModeToggleProps {
@@ -36,12 +37,14 @@ export function ModeToggle({ editing, onEditing }: ModeToggleProps) {
         if (next) onEditing(next === "edit");
       }}
     >
-      {MODES.map(({ value, label }) => (
+      {MODES.map(({ value, label, Icon }) => (
         <ToggleGroupItem
           key={value}
           value={value}
           className={`px-3 ${SELECTED_SEGMENT}`}
         >
+          {/* Decorative, sized and spaced like the view switch's. */}
+          <Icon aria-hidden />
           <SegmentLabel>{t(label)}</SegmentLabel>
         </ToggleGroupItem>
       ))}

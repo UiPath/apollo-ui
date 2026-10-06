@@ -186,6 +186,35 @@ test("short of room, the title truncates, then its badge goes, and nothing reach
   await expect(page.getByRole("tooltip")).toHaveText("Detail page");
 });
 
+test("Preview and Edit carry icons like the switch's, and keep their words", async ({
+  page,
+}) => {
+  await open(page, "?occupant=queue&view=template");
+  await settle(page);
+  const mode = page.locator("[data-slot=workbench-mode]");
+  await expect(mode.getByRole("radio")).toHaveText(["Preview", "Edit"]);
+  await expect(mode.locator("svg[aria-hidden=true]")).toHaveCount(2);
+  // Sized and spaced like the view switch's.
+  const measure = (selector: string) =>
+    page.locator(selector).evaluate((el) => {
+      const item = el.querySelector("[role=radio]");
+      const icon = item?.querySelector("svg");
+      const label = icon?.nextElementSibling;
+      if (!item || !icon || !label) return null;
+      const [box, glyph, text] = [item, icon, label].map((n) =>
+        n.getBoundingClientRect(),
+      );
+      return {
+        size: [glyph?.width, glyph?.height],
+        gap: (text?.left ?? 0) - (glyph?.right ?? 0),
+        inset: (glyph?.left ?? 0) - (box?.left ?? 0),
+      };
+    });
+  expect(await measure("[data-slot=workbench-mode]")).toEqual(
+    await measure("[data-slot=workbench-view-switch]"),
+  );
+});
+
 test("with reduced motion, the controls swap with no fade", async ({
   page,
 }) => {
