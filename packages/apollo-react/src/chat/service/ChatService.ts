@@ -26,6 +26,7 @@ import type {
   AutopilotChatOverrideLabels,
   AutopilotChatPreHookAction,
   AutopilotChatPrompt,
+  AutopilotChatRenderer,
   AutopilotChatResourceManager,
   AutopilotChatSuggestion,
   ContentPart,
@@ -169,6 +170,7 @@ export class AutopilotChatService {
     this.setLocale = this.setLocale.bind(this);
     this.getLocale = this.getLocale.bind(this);
     this.setTheme = this.setTheme.bind(this);
+    this.setRenderer = this.setRenderer.bind(this);
     this.getTheme = this.getTheme.bind(this);
     this.setResourceManager = this.setResourceManager.bind(this);
     this.getResourceManager = this.getResourceManager.bind(this);
@@ -288,6 +290,10 @@ export class AutopilotChatService {
 
     if (config.spacing) {
       this._internalService.publish(AutopilotChatInternalEvent.SetSpacing, config.spacing);
+    }
+
+    if (config.renderer) {
+      this.setRenderer(config.renderer);
     }
 
     if (config.theming) {
@@ -1126,6 +1132,17 @@ export class AutopilotChatService {
    */
   getLocale() {
     return this._locale;
+  }
+
+  /**
+   * Sets the UI implementation that renders the chat. Hosts such as `ChatRoot` switch renderer
+   * on the RendererChange event.
+   *
+   * @param renderer - The renderer to use ('material' or 'wind')
+   */
+  setRenderer(renderer: AutopilotChatRenderer) {
+    this._config.renderer = renderer;
+    this._eventBus.publish(AutopilotChatEvent.RendererChange, renderer);
   }
 
   /**
