@@ -3,7 +3,7 @@ import { useLingui } from '@lingui/react';
 import { Box, styled } from '@mui/material';
 import token, { type FontVariantToken } from '@uipath/apollo-core';
 import React from 'react';
-import { useAttachments } from '../../../../../chat/headless/providers/attachements-provider';
+import { useAttachments } from '../../../../../chat/headless/providers/attachments-provider';
 import { useChatService } from '../../../../../chat/headless/providers/chat-service.provider';
 import { useChatState } from '../../../../../chat/headless/providers/chat-state-provider';
 import { useLoading } from '../../../../../chat/headless/providers/loading-provider';

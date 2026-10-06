@@ -4,7 +4,7 @@ import { styled } from '@mui/material/styles';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 import React from 'react';
 import { type DropzoneOptions, ErrorCode, type FileRejection, useDropzone } from 'react-dropzone';
-import { useAttachments } from '../../../../../chat/headless/providers/attachements-provider';
+import { useAttachments } from '../../../../../chat/headless/providers/attachments-provider';
 import { useChatState } from '../../../../../chat/headless/providers/chat-state-provider';
 import { useError } from '../../../../../chat/headless/providers/error-provider';
 import { parseFiles } from '../../../../../chat/headless/utils/file-reader';

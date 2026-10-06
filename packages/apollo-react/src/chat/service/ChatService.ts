@@ -108,7 +108,7 @@ export class AutopilotChatService {
     this._instanceName = instanceName;
     this._eventBus = new EventBus();
 
-    this._internalService = AutopilotChatInternalService.Instantiate();
+    this._internalService = new AutopilotChatInternalService();
     LocalHistoryService.Initialize(instanceName, this);
 
     this.getConfig = this.getConfig.bind(this);
