@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.62.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.61.0...@uipath/apollo-wind@2.62.0) (2026-10-06)
+
+### Features
+
+* **apollo-wind:** add indeterminate state to checkbox ([fb8ee5e](https://github.com/UiPath/apollo-ui/commit/fb8ee5ea5d7e3941a9f6bc67c10ac708999b5eb5))
+
 ## [@uipath/apollo-wind-v2.61.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.60.1...@uipath/apollo-wind@2.61.0) (2026-10-05)
 
 ### Features
