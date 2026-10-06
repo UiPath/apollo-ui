@@ -1,0 +1,16 @@
+/**
+ * Chat-specific Tailwind CSS
+ *
+ * Pre-compiles only the Tailwind utility classes used by chat components
+ * and their apollo-wind dependencies.
+ *
+ * Consumers include the compiled CSS the same way as the canvas CSS; see {@link ../../canvas/README.md}.
+ */
+
+@import "@uipath/apollo-wind/tailwind.css";
+
+/* Scan chat source files for inline Tailwind class usage */
+@source "../../chat/**/*.{ts,tsx}";
+
+/* Scan apollo-wind compiled components for CVA class strings */
+@source "../../../node_modules/@uipath/apollo-wind/dist/**/*.js";

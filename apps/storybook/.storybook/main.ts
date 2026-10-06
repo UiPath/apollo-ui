@@ -53,6 +53,11 @@ const config: StorybookConfig = {
       titlePrefix: 'Apollo React/Canvas',
     },
     {
+      directory: '../../../packages/apollo-react/src/chat',
+      files: '**/*.stories.@(tsx|ts|jsx|js|mdx)',
+      titlePrefix: 'Apollo React/Chat',
+    },
+    {
       directory: '../../../packages/apollo-react/src/material',
       files: '**/*.stories.@(tsx|ts|jsx|js|mdx)',
       titlePrefix: 'Apollo React/Material (Maintenance Only)',
@@ -162,6 +167,7 @@ const config: StorybookConfig = {
     const sourceAliasRules: Array<[RegExp, string]> = [
       [/^@uipath\/apollo-wind\/(?!.*\.css$)(.*)/, `${apolloWindSrc}/$1`],
       [/^@uipath\/apollo-react\/canvas\/(?!xyflow\/.*\.css)(.*)/, `${apolloReactSrc}/canvas/$1`],
+      [/^@uipath\/apollo-react\/chat\/(.*)/, `${apolloReactSrc}/chat/$1`],
       [/^@uipath\/apollo-react\/material\/(.*)/, `${apolloReactSrc}/material/$1`],
     ];
     const sourceAliasPlugin = {
@@ -223,6 +229,11 @@ const config: StorybookConfig = {
           {
             find: /^@uipath\/apollo-react\/canvas$/,
             replacement: resolve(apolloReactSrc, 'canvas/index.ts'),
+          },
+          // Chat barrel (exact match, no trailing path)
+          {
+            find: /^@uipath\/apollo-react\/chat$/,
+            replacement: resolve(apolloReactSrc, 'chat/index.ts'),
           },
           // Material barrel (exact match, no trailing path)
           {

@@ -27,12 +27,13 @@ try {
   // react-scan optional; preview works without it
 }
 
-// Apollo core + canvas CSS
+// Apollo core + canvas + chat CSS
 import '@uipath/apollo-react/core/tokens/css/variables.css';
 import '@uipath/apollo-react/core/tokens/css/theme-variables.css';
 import '@uipath/apollo-react/canvas/styles/variables.css';
 import '@uipath/apollo-react/canvas/styles/tailwind.canvas.css';
 import '@uipath/apollo-react/canvas/xyflow/style.css';
+import '@uipath/apollo-react/chat/styles/tailwind.chat.css';
 
 // Wind: fonts via the same subpath consumers use, plus source Tailwind CSS
 // (processed by PostCSS/Tailwind at dev time)
