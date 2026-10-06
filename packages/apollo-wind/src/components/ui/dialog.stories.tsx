@@ -1,9 +1,10 @@
 import type { Meta } from '@storybook/react-vite';
-import { ExternalLink, Maximize2, Play, Plus, Trash2, X } from 'lucide-react';
+import { Copy, ExternalLink, Maximize2, Play, Plus, Trash2, X } from 'lucide-react';
 import * as React from 'react';
 import { cn } from '@/lib/index';
 import { Badge } from './badge';
 import { Button } from './button';
+import { Checkbox } from './checkbox';
 import { LiveMonacoEditor, monacoFullSample, useEditorThemeConfig } from './code-editors.shared';
 import {
   Dialog,
@@ -17,6 +18,18 @@ import {
 } from './dialog';
 import { Input } from './input';
 import { Label } from './label';
+import { RadioGroup, RadioGroupItem } from './radio-group';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+} from './sidebar';
+import { Textarea } from './textarea';
 
 // Storybook decorator injects viewMode so story components can open by default
 // on the canvas page but stay closed on the docs page.
@@ -26,6 +39,7 @@ const meta: Meta<typeof Dialog> = {
   title: 'Components/Overlays/Modal',
   component: Dialog,
   tags: ['autodocs'],
+  excludeStories: /^__/,
   decorators: [
     (Story, context) => (
       <ViewModeContext.Provider value={context.viewMode}>
@@ -534,6 +548,480 @@ export const TakeoverNoSidebar = {
   name: 'Takeover no Sidebar',
   tags: ['!autodocs'],
   render: () => <TakeoverModalStory withSidebar={false} />,
+};
+
+// ============================================================================
+// Takeover w/ Content
+// ============================================================================
+
+type CaseRole = {
+  id: string;
+  name: string;
+  description: string;
+  scope: 'case' | 'stages';
+  stages: string[];
+  actions: string[];
+};
+
+const caseStages = ['Intake', 'Review', 'Decision'];
+
+const caseActionGroups = [
+  {
+    id: 'view',
+    label: 'View',
+    actions: [
+      {
+        id: 'view-list',
+        label: 'View case list',
+        description: 'See cases in the case list. Required to use the case app.',
+      },
+      {
+        id: 'view-details',
+        label: 'View case details',
+        description:
+          'Open a case to see its details, case plan and execution timeline. Required to use the case app.',
+      },
+      { id: 'view-logs', label: 'View logs', description: 'View the execution logs of a case.' },
+    ],
+  },
+  {
+    id: 'work',
+    label: 'Case work',
+    actions: [
+      {
+        id: 'create',
+        label: 'Create cases',
+        description: 'Start a new case from the case app or an API call.',
+      },
+      { id: 'edit', label: 'Edit case data', description: 'Change field values on an open case.' },
+      {
+        id: 'assign',
+        label: 'Assign cases',
+        description: 'Assign or reassign a case to a person or team.',
+      },
+      { id: 'close', label: 'Close cases', description: 'Mark a case as complete.' },
+      {
+        id: 'reopen',
+        label: 'Reopen cases',
+        description: 'Reopen a closed case so work can continue.',
+      },
+    ],
+  },
+  {
+    id: 'admin',
+    label: 'Administration',
+    actions: [
+      {
+        id: 'sla',
+        label: 'Change SLAs',
+        description: 'Edit due dates and escalation rules on a case.',
+      },
+      {
+        id: 'publish',
+        label: 'Publish case definition',
+        description: 'Publish changes to the case definition.',
+      },
+      { id: 'roles', label: 'Manage roles', description: 'Create, edit and delete case roles.' },
+      {
+        id: 'delete',
+        label: 'Delete cases',
+        description: 'Permanently remove a case and its history.',
+      },
+    ],
+  },
+];
+
+const allCaseActions = caseActionGroups.flatMap((group) => group.actions.map((a) => a.id));
+
+const initialCaseRoles: CaseRole[] = [
+  {
+    id: 'owner',
+    name: 'Owner',
+    description:
+      'Accountable for each loan application from intake to decision. Can create, edit, assign, close and reopen cases, change SLAs, and publish the case definition.',
+    scope: 'case',
+    stages: [],
+    actions: allCaseActions,
+  },
+  {
+    id: 'worker',
+    name: 'Worker',
+    description: 'Processes loan applications in the stages they are assigned to.',
+    scope: 'stages',
+    stages: ['Intake', 'Review'],
+    actions: ['view-list', 'view-details', 'view-logs', 'create', 'edit', 'assign', 'close'],
+  },
+  {
+    id: 'observer',
+    name: 'Observer',
+    description: 'Follows case progress without making changes.',
+    scope: 'case',
+    stages: [],
+    actions: ['view-list', 'view-details'],
+  },
+  {
+    id: 'auditor',
+    name: 'Auditor',
+    description: 'Reviews case history and logs for compliance.',
+    scope: 'case',
+    stages: [],
+    actions: ['view-list', 'view-details', 'view-logs'],
+  },
+];
+
+function caseRoleScopeLabel(role: CaseRole) {
+  return role.scope === 'case'
+    ? 'Whole case'
+    : `${role.stages.length} ${role.stages.length === 1 ? 'stage' : 'stages'}`;
+}
+
+function caseRoleSummary(role: CaseRole) {
+  const count = role.actions.length;
+  return `${caseRoleScopeLabel(role)} · ${count} ${count === 1 ? 'action' : 'actions'}`;
+}
+
+function TakeoverSection({
+  title,
+  subtitle,
+  badge,
+  children,
+}: {
+  title: string;
+  subtitle: string;
+  badge: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="rounded-lg border border-border-subtle">
+      <div className="flex items-center gap-2 border-b border-border-subtle px-4 py-3">
+        <h3 className="text-sm font-semibold">{title}</h3>
+        <span className="text-sm text-foreground-muted">{subtitle}</span>
+        <Badge variant="secondary" className="ml-auto font-normal">
+          {badge}
+        </Badge>
+      </div>
+      <div className="p-4">{children}</div>
+    </section>
+  );
+}
+
+/**
+ * The roles-and-permissions takeover, shared with the Sidebar page's Example layout.
+ * The `__` prefix and `excludeStories` keep Storybook from listing it as a story.
+ */
+export function __CaseRolesTakeoverModal({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const [expanded, setExpanded] = React.useState(false);
+  const [savedRoles, setSavedRoles] = React.useState(initialCaseRoles);
+  const [roles, setRoles] = React.useState(initialCaseRoles);
+  const [selectedId, setSelectedId] = React.useState('owner');
+  const role = roles.find((item) => item.id === selectedId) ?? roles[0];
+  const dirty = JSON.stringify(roles) !== JSON.stringify(savedRoles);
+
+  const updateRole = (patch: Partial<CaseRole>) =>
+    setRoles((prev) => prev.map((item) => (item.id === role.id ? { ...item, ...patch } : item)));
+
+  const toggleAction = (actionId: string, checked: boolean) =>
+    updateRole({
+      actions: checked
+        ? allCaseActions.filter((id) => id === actionId || role.actions.includes(id))
+        : role.actions.filter((id) => id !== actionId),
+    });
+
+  const toggleGroup = (groupActions: string[], checked: boolean) =>
+    updateRole({
+      actions: checked
+        ? allCaseActions.filter((id) => groupActions.includes(id) || role.actions.includes(id))
+        : role.actions.filter((id) => !groupActions.includes(id)),
+    });
+
+  const toggleStage = (stage: string, checked: boolean) =>
+    updateRole({
+      stages: checked
+        ? caseStages.filter((s) => s === stage || role.stages.includes(s))
+        : role.stages.filter((s) => s !== stage),
+    });
+
+  const addRole = () => {
+    const id = `role-${Date.now()}`;
+    setRoles((prev) => [
+      ...prev,
+      { id, name: 'New role', description: '', scope: 'case', stages: [], actions: [] },
+    ]);
+    setSelectedId(id);
+  };
+
+  const duplicateRole = () => {
+    const id = `role-${Date.now()}`;
+    setRoles((prev) => [...prev, { ...role, id, name: `${role.name} copy` }]);
+    setSelectedId(id);
+  };
+
+  const deleteRole = () => {
+    if (roles.length <= 1) return;
+    const remaining = roles.filter((item) => item.id !== role.id);
+    setRoles(remaining);
+    setSelectedId(remaining[0].id);
+  };
+
+  // Every role needs a name before the changes can be saved.
+  const invalid = roles.some((item) => item.name.trim() === '');
+
+  // Closing by any route (Cancel, the close button, Escape or the backdrop) discards unsaved edits.
+  const handleOpenChange = (next: boolean) => {
+    if (!next) {
+      setRoles(savedRoles);
+      if (!savedRoles.some((item) => item.id === selectedId)) setSelectedId(savedRoles[0].id);
+    }
+    onOpenChange(next);
+  };
+  const cancel = () => handleOpenChange(false);
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent
+        variant="takeover"
+        headerTitle="Case roles and permissions"
+        expanded={expanded}
+        onExpandedChange={setExpanded}
+        sidebar={
+          <SidebarProvider className="h-full min-h-0">
+            <Sidebar collapsible="none" className="w-full">
+              <SidebarHeader className="flex-row items-center justify-between px-4 pt-4">
+                <span className="text-sm font-semibold">Roles ({roles.length})</span>
+                <Button variant="outline" size="2xs" icon aria-label="Add role" onClick={addRole}>
+                  <Plus />
+                </Button>
+              </SidebarHeader>
+              <SidebarContent>
+                <SidebarGroup>
+                  <SidebarMenu>
+                    {roles.map((item) => (
+                      <SidebarMenuItem key={item.id}>
+                        <SidebarMenuButton
+                          size="lg"
+                          isActive={item.id === role.id}
+                          onClick={() => setSelectedId(item.id)}
+                        >
+                          <div className="grid flex-1 text-left leading-tight">
+                            <span className="truncate font-medium">
+                              {item.name || 'Untitled role'}
+                            </span>
+                            <span className="truncate text-xs font-normal text-foreground-muted future:in-data-[active=true]:text-foreground">
+                              {caseRoleSummary(item)}
+                            </span>
+                          </div>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroup>
+              </SidebarContent>
+            </Sidebar>
+          </SidebarProvider>
+        }
+      >
+        <div className="flex h-full min-h-0 flex-col">
+          <div className="min-h-0 flex-1 overflow-auto">
+            <div className="mx-auto flex max-w-[720px] flex-col gap-5 px-6 py-6">
+              <div className="flex items-center justify-between gap-4">
+                <h2 className="text-lg font-semibold">{role.name || 'Untitled role'}</h2>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="xs"
+                    icon
+                    aria-label="Duplicate role"
+                    onClick={duplicateRole}
+                  >
+                    <Copy />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="xs"
+                    icon
+                    aria-label="Delete role"
+                    disabled={roles.length <= 1}
+                    onClick={deleteRole}
+                  >
+                    <Trash2 />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="role-name">Name *</Label>
+                <Input
+                  id="role-name"
+                  value={role.name}
+                  required
+                  error={role.name.trim() === '' ? 'Enter a name for this role.' : undefined}
+                  onChange={(event) => updateRole({ name: event.target.value })}
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="role-description">Description</Label>
+                <Textarea
+                  id="role-description"
+                  rows={2}
+                  value={role.description}
+                  aria-describedby="role-description-help"
+                  onChange={(event) => updateRole({ description: event.target.value })}
+                />
+                <p id="role-description-help" className="text-xs text-foreground-muted">
+                  Describe what this role is responsible for and who holds it. Shown to deployers on
+                  the Solutions deploy screen and used by teammates, the Case Manager, and agents.
+                </p>
+              </div>
+
+              <TakeoverSection
+                title="1. Scope"
+                subtitle="Where this role sees the case."
+                badge={caseRoleScopeLabel(role)}
+              >
+                <RadioGroup
+                  value={role.scope}
+                  onValueChange={(value) => updateRole({ scope: value as CaseRole['scope'] })}
+                  className="gap-4"
+                >
+                  <div className="flex gap-3">
+                    <RadioGroupItem value="case" id="scope-case" className="mt-0.5" />
+                    <div className="grid gap-1">
+                      <Label htmlFor="scope-case">Whole case</Label>
+                      <p className="text-sm text-foreground-muted">
+                        Applies at the case level, including between stages when no stage is active.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <RadioGroupItem value="stages" id="scope-stages" className="mt-0.5" />
+                    <div className="grid gap-1">
+                      <Label htmlFor="scope-stages">Specific stages</Label>
+                      <p className="text-sm text-foreground-muted">
+                        Only applies while one of the selected stages is active.
+                      </p>
+                      {role.scope === 'stages' && (
+                        <div className="mt-2 flex flex-wrap gap-4">
+                          {caseStages.map((stage) => (
+                            <div key={stage} className="flex items-center gap-2">
+                              <Checkbox
+                                id={`stage-${stage}`}
+                                checked={role.stages.includes(stage)}
+                                onCheckedChange={(checked) => toggleStage(stage, checked === true)}
+                              />
+                              <Label htmlFor={`stage-${stage}`} className="font-normal">
+                                {stage}
+                              </Label>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </RadioGroup>
+              </TakeoverSection>
+
+              <TakeoverSection
+                title="2. Actions on a case"
+                subtitle="What this role can do."
+                badge={`${role.actions.length} of ${allCaseActions.length} granted`}
+              >
+                <div className="flex flex-col divide-y divide-border-subtle">
+                  {caseActionGroups.map((group) => {
+                    const ids = group.actions.map((action) => action.id);
+                    const granted = ids.filter((id) => role.actions.includes(id)).length;
+                    const groupState =
+                      granted === ids.length ? true : granted === 0 ? false : 'indeterminate';
+                    return (
+                      <div key={group.id} className="flex flex-col gap-3 py-4 first:pt-0 last:pb-0">
+                        <div className="flex items-center gap-3">
+                          <Checkbox
+                            id={`group-${group.id}`}
+                            checked={groupState}
+                            onCheckedChange={(checked) => toggleGroup(ids, checked === true)}
+                          />
+                          <Label htmlFor={`group-${group.id}`} className="text-sm">
+                            {group.label}
+                          </Label>
+                        </div>
+                        {group.actions.map((action) => (
+                          <div key={action.id} className="flex gap-3 pl-6">
+                            <Checkbox
+                              id={`action-${action.id}`}
+                              className="mt-0.5"
+                              checked={role.actions.includes(action.id)}
+                              aria-describedby={`action-${action.id}-help`}
+                              onCheckedChange={(checked) =>
+                                toggleAction(action.id, checked === true)
+                              }
+                            />
+                            <div className="grid gap-1">
+                              <Label htmlFor={`action-${action.id}`} className="font-normal">
+                                {action.label}
+                              </Label>
+                              <p
+                                id={`action-${action.id}-help`}
+                                className="text-sm text-foreground-muted"
+                              >
+                                {action.description}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })}
+                </div>
+              </TakeoverSection>
+            </div>
+          </div>
+          <div className="flex shrink-0 justify-end gap-2 border-t border-border-subtle px-6 py-4">
+            <Button variant="outline" onClick={cancel}>
+              Cancel
+            </Button>
+            <Button onClick={() => setSavedRoles(roles)} disabled={!dirty || invalid}>
+              Save
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function TakeoverWithContentStory() {
+  const viewMode = React.useContext(ViewModeContext);
+  const [open, setOpen] = React.useState(viewMode === 'story');
+
+  return (
+    <div className="relative h-screen min-h-[640px] overflow-hidden bg-surface">
+      <div className="grid h-full place-items-center bg-[radial-gradient(circle_at_center,var(--color-surface-overlay)_1px,transparent_1px)] bg-[length:20px_20px]">
+        {!open && <Button onClick={() => setOpen(true)}>Open takeover modal</Button>}
+      </div>
+      <__CaseRolesTakeoverModal open={open} onOpenChange={setOpen} />
+    </div>
+  );
+}
+
+export const TakeoverWithContent = {
+  name: 'Takeover w/ Content',
+  tags: ['!autodocs'],
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A complete takeover modal to start from: a Sidebar menu of roles on the left and a scrollable form ' +
+          'with a sticky footer on the right. For the empty shell, see Takeover w/ Sidebar.',
+      },
+    },
+  },
+  render: () => <TakeoverWithContentStory />,
 };
 
 // ============================================================================

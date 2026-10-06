@@ -401,6 +401,7 @@ const components = [
   { category: 'Navigation', name: 'Tabs', description: 'Tabbed content switcher' },
   { category: 'Navigation', name: 'Breadcrumb', description: 'Hierarchical location trail' },
   { category: 'Navigation', name: 'Pagination', description: 'Page navigation controls' },
+  { category: 'Navigation', name: 'Sidebar', description: 'Left menu for app layouts and panels' },
   { category: 'Navigation', name: 'Accordion', description: 'Collapsible content sections' },
   { category: 'Overlays', name: 'Dialog', description: 'Modal overlay' },
   { category: 'Overlays', name: 'Sheet', description: 'Slide-in side panel' },

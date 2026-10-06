@@ -171,6 +171,7 @@ Same props as Row.
 | `Pagination`      | Page navigation           | Children: `PaginationContent`, `PaginationItem`, `PaginationLink`, `PaginationPrevious`, `PaginationNext`                                                                                |
 | `Stepper`         | Step indicator            | `steps`, `currentStep`, `orientation`: horizontal\|vertical, `onStepClick`                                                                                                               |
 | `NavigationMenu`  | Header navigation         | Children: `NavigationMenuList`, `NavigationMenuItem`, `NavigationMenuTrigger`, `NavigationMenuContent`                                                                                   |
+| `Sidebar`         | Left menu / app sidebar   | Wrap in `SidebarProvider`. `Sidebar` (`collapsible`: offcanvas\|icon\|none). Children: `SidebarHeader`, `SidebarContent`, `SidebarGroup`, `SidebarMenu`, `SidebarMenuItem`, `SidebarMenuButton` (`isActive`), `SidebarFooter`, `SidebarTrigger` |
 | **Menus**         |                           |                                                                                                                                                                                          |
 | `DropdownMenu`    | Click menu                | Children: `DropdownMenuTrigger`, `DropdownMenuContent`, `DropdownMenuItem`, `DropdownMenuSeparator`, `DropdownMenuCheckboxItem`                                                          |
 | `ContextMenu`     | Right-click menu          | Children: `ContextMenuTrigger`, `ContextMenuContent`, `ContextMenuItem`                                                                                                                  |
@@ -403,6 +404,25 @@ toast.error("Failed", { description: "Try again" });
     <BreadcrumbItem><BreadcrumbPage>Current</BreadcrumbPage></BreadcrumbItem>
   </BreadcrumbList>
 </Breadcrumb>
+
+// Sidebar (inside a modal or split pane: collapsible="none" and <SidebarProvider className="min-h-0">)
+<SidebarProvider>
+  <Sidebar collapsible="icon">
+    <SidebarContent>
+      <SidebarGroup>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton isActive tooltip="Home"><Home /><span>Home</span></SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarGroup>
+    </SidebarContent>
+  </Sidebar>
+  <SidebarInset>
+    <header><SidebarTrigger /></header>
+    {/* page */}
+  </SidebarInset>
+</SidebarProvider>
 ```
 
 ### Menus

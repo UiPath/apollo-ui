@@ -51,6 +51,7 @@ export * from './scroll-area';
 export * from './search';
 export * from './select';
 export * from './separator';
+export * from './sidebar';
 export * from './sheet';
 export * from './skeleton';
 export * from './slider';
