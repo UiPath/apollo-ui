@@ -1,32 +1,29 @@
 import type { Page } from "@playwright/test";
 import { expect, test } from "./fixtures";
-import { open, slotStates, urlQuery } from "./workbench-helpers";
+import {
+  inspector,
+  open,
+  selectSlot,
+  slotStates,
+  urlQuery,
+} from "./workbench-helpers";
 
 /*
- * The template view's layout: the Shell menu, and in each slot's popover,
- * whether the template has the slot, its open state and placement, the
- * occupant's locked slot, the template's own width rule, the page map,
- * and the URL.
+ * The template view's layout: the Shell menu, and in the inspector for
+ * the slot selected, whether the template has the slot, its open state
+ * and placement, no locks with no focused occupant, the template's own
+ * width rule, the page map, and the URL.
  */
 
-const popover = (page: Page) =>
-  page.locator("[data-slot=workbench-slot-popover]");
 const shellMenu = (page: Page) =>
   page.locator("[data-slot=workbench-shell-menu]");
 
-/** Opens a slot's popover from its dock chip, unless it's open already. */
-async function openSlot(page: Page, slot: string) {
-  const its = popover(page).and(page.locator(`[data-popover-slot=${slot}]`));
-  if (await its.isVisible()) return;
-  await page
-    .locator(`[data-slot=workbench-slot-chip][data-chip-slot=${slot}]`)
-    .click();
-  await its.waitFor();
-}
+/** Shows a slot in the inspector, unless it's showing already. */
+const openSlot = (page: Page, slot: string) => selectSlot(page, slot);
 
 /**
  * Opens what holds a setting: the Shell menu for the shell, else the
- * popover of the slot the setting names ("End panel state").
+ * inspector for the slot the setting names ("End panel state").
  */
 async function show(page: Page, name: string) {
   if (name === "Shell") {
@@ -39,17 +36,16 @@ async function show(page: Page, name: string) {
   await openSlot(page, slot);
 }
 
-/** Escape, and wait for it to close: it hands focus back to its opener. */
+/** Escape closes the Shell menu, if it's open; the inspector stays. */
 async function closeMenus(page: Page) {
-  await page.keyboard.press("Escape");
-  await expect(popover(page)).toHaveCount(0);
+  if (await shellMenu(page).isVisible()) await page.keyboard.press("Escape");
   await expect(shellMenu(page)).toHaveCount(0);
 }
 
 const group = (page: Page, name: string) =>
   page
     .locator(
-      "[data-slot=workbench-slot-popover], [data-slot=workbench-shell-menu]",
+      "[data-slot=workbench-inspector], [data-slot=workbench-shell-menu]",
     )
     .getByRole("group", { name, exact: true });
 
@@ -133,10 +129,10 @@ test("panels can be removed and closed, and the map follows", async ({
     .toEqual({
       "detail-page-end-panel": "open",
     });
-  // Left out, its popover says to include it first, above that choice.
+  // Left out, the inspector says to include it first, above that choice.
   await expect(group(page, "Start panel state")).toHaveCount(0);
   await expect(
-    popover(page).locator("[data-slot=workbench-slot-left-out]"),
+    inspector(page).locator("[data-slot=workbench-slot-left-out]"),
   ).toHaveText("Include the start panel first to put occupants in it.");
   await expect(group(page, "Start panel in the page")).toBeVisible();
   expect(urlQuery(page)).toContain("start-panel-present=false");
@@ -174,7 +170,7 @@ test("no panel is locked: the template view has no focused occupant", async ({
         group(page, group_).getByRole("radio", { name: option, exact: true }),
       ).toBeEnabled();
     await expect(
-      popover(page)
+      inspector(page)
         .locator("[data-slot=workbench-layout-slot]")
         .getByRole("img", { name: "Locked" }),
     ).toHaveCount(0);
@@ -195,7 +191,7 @@ test("the width rule closes panels when there isn't room, and says so", async ({
       "detail-page-end-panel": "closed",
     });
   await openSlot(page, "start-panel");
-  const start = popover(page).locator(
+  const start = inspector(page).locator(
     "[data-slot=workbench-layout-slot][data-layout-slot=start-panel]",
   );
   await expect(start).toHaveAttribute("data-closed-by", "rule");

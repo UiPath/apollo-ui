@@ -14,12 +14,7 @@ import type { PreviewShellVariant } from "@/templates/shell/PreviewShell";
 import { Dock, DockSlider } from "./dock-parts";
 import { PageMap } from "./page-map";
 import { ShellMenu } from "./shell-menu";
-import { SlotPopover, type SlotTarget } from "./slot-popover";
-import {
-  type ContentsChange,
-  occupantsIn,
-  type SlotContents,
-} from "./workbench-compose";
+import { occupantsIn, type SlotContents } from "./workbench-compose";
 import {
   PAGE_WIDTH_MAX,
   pageWidthMin,
@@ -50,16 +45,13 @@ interface TemplateDockProps {
   shell: PreviewShellVariant;
   onShell: (shell: PreviewShellVariant) => void;
   layout: LayoutChoices;
-  onLayout: (layout: LayoutChoices) => void;
   /** Each slot after the template's rules, once the template has rendered. */
   slotStatus: Readonly<Record<string, SlotStatus>> | null;
   /** What each slot holds, and changing it. */
   contents: SlotContents;
-  onContents: ContentsChange;
-  /** The slot whose popover is open, and opening or closing one. */
-  opened: SlotTarget | null;
-  onOpen: (target: SlotTarget) => void;
-  onClose: () => void;
+  /** The slot selected, and selecting one for the inspector. */
+  selected: string | null;
+  onSelect: (slot: string) => void;
   pageWidth: number;
   onPageWidth: (width: number) => void;
   zoom: WorkbenchZoom;
@@ -78,13 +70,10 @@ export function TemplateDock({
   shell,
   onShell,
   layout,
-  onLayout,
   slotStatus,
   contents,
-  onContents,
-  opened,
-  onOpen,
-  onClose,
+  selected,
+  onSelect,
   pageWidth,
   onPageWidth,
   zoom,
@@ -114,7 +103,6 @@ export function TemplateDock({
           const left = layout[s.name]?.present === false;
           const panel = contents[s.name];
           const count = panel ? occupantsIn(panel).length : 0;
-          const open = opened?.slot === s.name;
           const state = left
             ? t("workbench_slot_chip_left_out", { place })
             : t("workbench_slot_chip_count", { place, count });
@@ -126,20 +114,11 @@ export function TemplateDock({
               data-slot="workbench-slot-chip"
               data-chip-slot={s.name}
               data-left-out={left}
-              aria-haspopup="dialog"
-              aria-expanded={open}
+              aria-pressed={selected === s.name}
               aria-label={state}
               // Left out: dashed and muted, with no count to show.
               className="px-2 has-[>svg]:px-2 data-[left-out=true]:border-dashed data-[left-out=true]:text-muted-foreground"
-              onClick={(event) => {
-                if (open) onClose();
-                else
-                  onOpen({
-                    slot: s.name,
-                    opener: event.currentTarget,
-                    anchor: event.currentTarget,
-                  });
-              }}
+              onClick={() => onSelect(s.name)}
             >
               {place}
               {/* The slot's state: how many it holds; a left-out one is dashed. */}
@@ -156,16 +135,6 @@ export function TemplateDock({
           );
         })}
       </ButtonGroup>
-      <SlotPopover
-        host={host}
-        target={opened}
-        onClose={onClose}
-        layout={layout}
-        onLayout={onLayout}
-        status={slotStatus}
-        contents={contents}
-        onContents={onContents}
-      />
       <Separator orientation="vertical" className="h-8" />
       <ShellMenu shell={shell} onShell={onShell} />
       <Separator orientation="vertical" className="h-8" />

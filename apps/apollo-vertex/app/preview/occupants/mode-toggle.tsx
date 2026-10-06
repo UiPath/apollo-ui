@@ -16,7 +16,8 @@ interface ModeToggleProps {
 /**
  * Preview or Edit, in the header in the template view: a segmented
  * control, labeled, with the chosen one filled. Preview is the page as
- * people use it; Edit outlines every slot and opens one with a click.
+ * people use it; Edit outlines every slot, and a click selects one for
+ * the inspector.
  */
 export function ModeToggle({ editing, onEditing }: ModeToggleProps) {
   const { t } = useTranslation();

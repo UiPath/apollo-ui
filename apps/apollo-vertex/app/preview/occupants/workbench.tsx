@@ -10,21 +10,21 @@ import type { SlotStatus } from "@/app/_components/template-hosts";
 import { fitsSurface } from "@/lib/composition";
 import { EXAMPLE_ROLES, type ExampleRole } from "@/lib/occupant-entry";
 import { specFor } from "@/lib/occupant-lookup";
-import { overflowProblems } from "@/lib/overflow-problems";
 import { surfaceLabel } from "@/lib/surface-labels";
 import { DetailsPanel } from "./details-panel";
 import { type Floor, FloorProbe } from "./floor-probe";
+import { Inspector } from "./inspector";
 import { NoFitCard } from "./no-fit-card";
 import { OccupantList } from "./occupant-list";
-import { afterLayout, settled } from "./overflow";
-import type { SlotTarget } from "./slot-popover";
 import { StageFrame } from "./stage-frame";
 import { TemplateDock } from "./template-dock";
 import { TemplateStage } from "./template-stage";
 import { useChangeLog } from "./use-change-log";
 import { useCompose } from "./use-compose";
 import { useFitScale } from "./use-fit-scale";
+import { useInspector } from "./use-inspector";
 import { usePageTheme } from "./use-page-theme";
+import { useStageOverflow } from "./use-stage-overflow";
 import { WorkbenchDnd } from "./workbench-dnd";
 import { WorkbenchDock } from "./workbench-dock";
 import { WorkbenchHeader } from "./workbench-header";
@@ -44,6 +44,7 @@ import {
 
 const LIST_ID = "workbench-list";
 const DETAILS_ID = "workbench-details";
+const INSPECTOR_ID = "workbench-inspector";
 
 interface WorkbenchProps {
   initial: WorkbenchView;
@@ -57,13 +58,15 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
   // Every change keeps the occupant's panel and the page width in range.
   const update = (patch: Partial<WorkbenchView>) =>
     setView((current) => normalizeView({ ...current, ...patch }));
-  // Each panel after the template's rules, reported by the template.
-  // The slot whose popover is open: one at a time.
-  const [opened, setOpened] = useState<SlotTarget | null>(null);
-  // Changes from the composer, by popover or drop, and each panel's revision.
+  // The template view's inspector, and the slot selected on its stage.
+  const inspector = useInspector(
+    initial.mode === "template" && initial.editing,
+  );
   // Every change to what the page holds or how it's laid out, with a toast to undo it.
   const { change, reset } = useChangeLog(view, setView);
-  const { compose, include, revisions } = useCompose(view, change);
+  // Changes from the composer, by inspector or drop, and each panel's revision.
+  const { compose, revisions } = useCompose(view, change);
+  // Each panel after the template's rules, reported by the template.
   const [slotStatus, setSlotStatus] = useState<Readonly<
     Record<string, SlotStatus>
   > | null>(null);
@@ -94,41 +97,9 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
     }));
   const measured = floors.key === probeKey ? floors.bySample : {};
 
-  // Whether the occupant on the stage overflows right now, measured after layout.
+  // Whether the occupant on the stage overflows right now.
   const stageRef = useRef<HTMLDivElement>(null);
-  const [overflow, setOverflow] = useState<{
-    width: number;
-    problems: string[];
-  } | null>(null);
-  useEffect(() => {
-    let cancelled = false;
-    void afterLayout(
-      () =>
-        host &&
-        stageRef.current?.querySelector(
-          `[data-slot=occupant-fixture] ${host.inner}`,
-        ),
-    ).then(async (inner) => {
-      // Measure once the resize has finished animating, not mid-transition.
-      const fixture = inner?.closest("[data-slot=occupant-fixture]");
-      if (fixture) await settled(fixture);
-      if (cancelled) return;
-      setOverflow(
-        inner ? { width: view.width, problems: overflowProblems(inner) } : null,
-      );
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [
-    host,
-    view.occupant,
-    view.surface,
-    view.sample,
-    view.state,
-    view.theme,
-    view.width,
-  ]);
+  const overflow = useStageOverflow(stageRef, host?.inner, view);
 
   // The theme applies to the whole page while the workbench is open.
   usePageTheme(view.theme);
@@ -164,6 +135,11 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
   const claim = fitsSurface(surface, spec);
   const templateHost = templateFor(view.template);
 
+  // Edit opens the inspector; Preview closes it. It's open only in Edit.
+  const setEditing = (editing: boolean) => {
+    update({ editing });
+    inspector.setEditing(editing);
+  };
   const selectOccupant = (name: string) => {
     const next = specFor(name);
     const keep = next && fitsSurface(surface, next).fits;
@@ -173,7 +149,13 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
       surface: nextSurface,
       width: defaultWidth(next, nextSurface),
     });
+    // In the template view the list selects on the page, which is Edit's.
+    if (view.mode === "template") {
+      if (!view.editing) setEditing(true);
+      inspector.fromList(name, view.contents);
+    }
   };
+  const inTemplate = view.mode === "template" && templateHost;
 
   // Every width here is the surface's outer width, padding included: the
   // slider, the frame tag, the floor, and the overflow check.
@@ -232,9 +214,17 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
             listId={LIST_ID}
             listOpen={view.listOpen}
             onToggleList={() => update({ listOpen: !view.listOpen })}
-            detailsId={DETAILS_ID}
-            detailsOpen={view.detailsOpen}
-            onToggleDetails={() => update({ detailsOpen: !view.detailsOpen })}
+            // The right-hand column is one view's at a time.
+            panel={inTemplate ? "inspector" : "details"}
+            detailsId={inTemplate ? INSPECTOR_ID : DETAILS_ID}
+            detailsOpen={inTemplate ? inspector.open : view.detailsOpen}
+            onToggleDetails={() =>
+              inTemplate
+                ? view.editing
+                  ? inspector.toggle()
+                  : setEditing(true)
+                : update({ detailsOpen: !view.detailsOpen })
+            }
             sample={view.sample}
             onSample={(sample) => update({ sample })}
             state={view.state}
@@ -245,7 +235,7 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
             onMode={(mode) => setView((prev) => switchView(prev, mode))}
             template={view.template}
             editing={view.editing}
-            onEditing={(editing) => update({ editing })}
+            onEditing={setEditing}
             onReset={reset}
             onTemplate={(template) => update({ template })}
           />
@@ -271,10 +261,9 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
                     tabs={view.tabs}
                     revisions={revisions}
                     editing={view.editing}
-                    onInclude={include}
-                    opened={opened}
-                    onOpen={setOpened}
-                    onClose={() => setOpened(null)}
+                    selected={inspector.selected}
+                    onSelect={inspector.select}
+                    inspectorId={INSPECTOR_ID}
                     onTab={(slot, id) =>
                       update({ tabs: { ...view.tabs, [slot]: id } })
                     }
@@ -318,13 +307,10 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
                 shell={view.shell}
                 onShell={(shell) => update({ shell })}
                 layout={view.layout}
-                onLayout={(layout) => change({ layout })}
                 slotStatus={slotStatus}
                 contents={view.contents}
-                onContents={compose}
-                opened={opened}
-                onOpen={setOpened}
-                onClose={() => setOpened(null)}
+                selected={inspector.selected}
+                onSelect={(slot) => inspector.select(slot)}
                 pageWidth={view.pageWidth}
                 onPageWidth={(pageWidth) => update({ pageWidth })}
                 zoom={view.zoom}
@@ -348,15 +334,30 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
           </div>
         </main>
 
-        <DetailsPanel
-          id={DETAILS_ID}
-          open={view.detailsOpen}
-          spec={spec}
-          surface={surface.name}
-          width={view.width}
-          floor={claim.fits ? worstFloor : "unavailable"}
-          overflow={current}
-        />
+        {inTemplate ? (
+          <Inspector
+            id={INSPECTOR_ID}
+            open={inspector.open}
+            host={inTemplate}
+            selected={inspector.selected}
+            hint={inspector.hint}
+            layout={view.layout}
+            onLayout={(layout) => change({ layout })}
+            status={slotStatus}
+            contents={view.contents}
+            onContents={compose}
+          />
+        ) : (
+          <DetailsPanel
+            id={DETAILS_ID}
+            open={view.detailsOpen}
+            spec={spec}
+            surface={surface.name}
+            width={view.width}
+            floor={claim.fits ? worstFloor : "unavailable"}
+            overflow={current}
+          />
+        )}
 
         {claim.fits &&
           view.mode === "surface" &&
@@ -378,7 +379,11 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
             </div>,
             document.body,
           )}
-        <WorkbenchToaster theme={view.theme} />
+        <WorkbenchToaster
+          theme={view.theme}
+          dockHeight={dockHeight}
+          columnOpen={inTemplate ? inspector.open : view.detailsOpen}
+        />
       </div>
     </WorkbenchDnd>
   );

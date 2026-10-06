@@ -268,7 +268,8 @@ for (const [width, view] of [
     await page.setViewportSize({ width, height: 800 });
     await open(
       page,
-      `?occupant=activity-timeline&details=open${view === "template" ? "&view=template" : ""}`,
+      // The template view's right-hand column is the inspector: Edit opens it.
+      `?occupant=activity-timeline&details=open${view === "template" ? "&view=template&mode=edit" : ""}`,
     );
     const header = page.locator("[data-slot=workbench-header]");
     const rows = await header.evaluate((el) =>
@@ -289,7 +290,9 @@ for (const [width, view] of [
       .getByRole("button", { name: "Hide occupant list" })
       .boundingBox();
     const details = await page
-      .getByRole("button", { name: "Hide details" })
+      .getByRole("button", {
+        name: view === "template" ? "Hide inspector" : "Hide details",
+      })
       .boundingBox();
     expect(list?.x).toBe(Math.min(...lefts));
     expect(details?.x).toBe(Math.max(...lefts));

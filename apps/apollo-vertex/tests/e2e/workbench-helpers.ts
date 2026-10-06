@@ -87,3 +87,33 @@ export const slotStates = (page: Page) =>
 /** axe violations inside the workbench, leaving out anything inside `exclude`. */
 export const axeViolations = (page: Page, exclude: readonly string[] = []) =>
   axeIn(page, "[data-slot=workbench]", exclude);
+
+/** The template view's inspector, the one place to edit a slot. */
+export const inspector = (page: Page) =>
+  page.locator("[data-slot=workbench-inspector]");
+
+/** Switches the template view to Edit or Preview, from the header. */
+export async function setMode(page: Page, mode: "Edit" | "Preview") {
+  const toggle = page
+    .getByRole("group", { name: "Mode" })
+    .getByRole("radio", { name: mode });
+  if ((await toggle.getAttribute("aria-checked")) !== "true")
+    await toggle.click();
+  await toggle.and(page.locator("[aria-checked=true]")).waitFor();
+}
+
+/**
+ * Selects a slot, or its ghost, on the stage in Edit mode, and waits for
+ * the inspector to show it.
+ */
+export async function selectSlot(page: Page, slot: string) {
+  await setMode(page, "Edit");
+  const button = page.locator(
+    `[data-edit-slot="${slot}"], [data-ghost-slot="${slot}"]`,
+  );
+  if ((await button.getAttribute("aria-pressed")) !== "true")
+    await button.click();
+  await inspector(page)
+    .and(page.locator(`[data-inspector-slot="${slot}"]`))
+    .waitFor();
+}

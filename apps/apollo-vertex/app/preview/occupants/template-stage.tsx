@@ -14,7 +14,6 @@ import {
   type PreviewShellVariant,
 } from "@/templates/shell/PreviewShell";
 import { EditSlots } from "./edit-slots";
-import type { SlotTarget } from "./slot-popover";
 import { StageFrame } from "./stage-frame";
 import { activeTab, occupantsIn, type SlotContents } from "./workbench-compose";
 
@@ -38,12 +37,11 @@ interface TemplateStageProps {
   revisions: Readonly<Record<string, number>>;
   /** Edit mode: every slot outlined and opened by a click, the page inert. */
   editing: boolean;
-  /** Includes a slot the page left out, from its ghost in Edit mode. */
-  onInclude: (slot: string) => void;
-  /** The slot whose popover is open, and opening one from a slot. */
-  opened: SlotTarget | null;
-  onOpen: (target: SlotTarget) => void;
-  onClose: () => void;
+  /** The slot selected in Edit mode, and selecting one. */
+  selected: string | null;
+  onSelect: (slot: string, byKeyboard: boolean) => void;
+  /** The inspector's id, which a slot's selection shows. */
+  inspectorId: string;
   onStatus: (status: Readonly<Record<string, SlotStatus>>) => void;
   pageWidth: number;
   /** The page's real height: tall enough for the frame to fill the stage. */
@@ -69,10 +67,9 @@ export function TemplateStage({
   onTab,
   revisions,
   editing,
-  onInclude,
-  opened,
-  onOpen,
-  onClose,
+  selected,
+  onSelect,
+  inspectorId,
   onStatus,
   pageWidth,
   pageHeight,
@@ -125,11 +122,10 @@ export function TemplateStage({
         <EditSlots
           host={host}
           layout={layout}
-          onInclude={onInclude}
           contents={contents}
-          opened={opened}
-          onOpen={onOpen}
-          onClose={onClose}
+          selected={selected}
+          onSelect={onSelect}
+          inspectorId={inspectorId}
         />
       )}
       {/* Always scaled, even by 1: a fixed-position part stays in the frame. */}

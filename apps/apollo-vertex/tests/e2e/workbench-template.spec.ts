@@ -2,47 +2,33 @@ import type { Page } from "@playwright/test";
 import { expect, test } from "./fixtures";
 import {
   axeViolations,
+  inspector,
   open,
+  selectSlot,
   slotStates,
   stage,
   urlQuery,
 } from "./workbench-helpers";
 
 /*
- * The workbench's template view: the occupant in a template slot, moving
- * it to another slot, placement, the template's width rules, the URL, and
- * an axe scan. The page width is the whole window: the default shell's
+ * The workbench's template view: the page seeded with the occupant,
+ * placement, the template's width rules, the URL, and axe scans in
+ * Preview and Edit. The page width is the whole window: the default shell's
  * sidebar takes 280px of it. Each slot's layout has its own spec.
  */
 
-const popover = (page: Page) =>
-  page.locator("[data-slot=workbench-slot-popover]");
 const chip = (page: Page, slot: string) =>
   page.locator(`[data-slot=workbench-slot-chip][data-chip-slot=${slot}]`);
 
-/** Opens a slot's popover from its dock chip. */
-async function openSlot(page: Page, slot: string) {
-  await chip(page, slot).click();
-  await popover(page)
-    .and(page.locator(`[data-popover-slot=${slot}]`))
-    .waitFor();
-}
-
-/** Escape, and wait for it to close: it hands focus back to its opener. */
-async function closePopover(page: Page) {
-  await page.keyboard.press("Escape");
-  await expect(popover(page)).toHaveCount(0);
-}
-
-/** Picks an option in one of a slot's layout groups, in its popover. */
+/** Picks an option in one of a slot's layout groups, in the inspector. */
 async function chooseLayout(
   page: Page,
   slot: string,
   group: string,
   option: string,
 ) {
-  await openSlot(page, slot);
-  await popover(page)
+  await selectSlot(page, slot);
+  await inspector(page)
     .getByRole("group", { name: group, exact: true })
     .getByRole("radio", { name: option, exact: true })
     .click();
@@ -133,8 +119,7 @@ test("a side slot's placement puts it beside the header", async ({ page }) => {
     .poll(async () => (await header.boundingBox())?.x ?? 0)
     .toBeGreaterThan((await panel.boundingBox())?.x ?? 0);
   expect(urlQuery(page)).toContain("start-panel-placement=beside-header");
-  // Placement isn't in the dock: it's per panel, in its popover.
-  await page.keyboard.press("Escape");
+  // Placement isn't in the dock: it's per panel, in the inspector.
   await expect(
     page
       .locator("[data-slot=workbench-dock]")
@@ -147,7 +132,6 @@ test("the template view round-trips through the URL", async ({ page }) => {
   await open(page, "?occupant=queue");
   await page.getByRole("radio", { name: "Template", exact: true }).click();
   await chooseLayout(page, "end-panel", "End panel placement", "Beside header");
-  await closePopover(page);
   await page.getByRole("slider", { name: "Page width" }).focus();
   await page.keyboard.press("ArrowLeft");
   // The link is written after the change renders.
@@ -158,6 +142,7 @@ test("the template view round-trips through the URL", async ({ page }) => {
     "start-panel-contents=queue",
     "end-panel-placement=beside-header",
     "page=1432",
+    "mode=edit",
   ])
     expect(url).toContain(part);
   // One template: no picker, and its name isn't written.
@@ -190,6 +175,12 @@ test("passes an axe scan in the template view", async ({ page }) => {
   expect(
     violations.filter((v) => !v.startsWith("landmark-no-duplicate-main:")),
   ).toEqual([]);
+  // In Edit, with a slot in the inspector, the same holds.
+  await selectSlot(page, "end-panel");
+  const editing = await axeViolations(page, ["[data-slot=workbench-page]"]);
+  expect(
+    editing.filter((v) => !v.startsWith("landmark-no-duplicate-main:")),
+  ).toEqual([]);
 });
 
 test("the dock stays above the template, every control reachable", async ({
@@ -219,8 +210,9 @@ test("the dock stays above the template, every control reachable", async ({
       ),
   );
   expect(hidden).toEqual([]);
-  // And works: a chip opens its slot.
-  await openSlot(page, "main");
+  // And works: the Shell button opens its menu.
+  await page.getByRole("button", { name: "Shell" }).click();
+  await page.locator("[data-slot=workbench-shell-menu]").waitFor();
 });
 
 test("the dock fits one row on a 1416px window, with the list open", async ({

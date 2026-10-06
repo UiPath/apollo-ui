@@ -1,21 +1,25 @@
 import type { Page } from "@playwright/test";
 import { expect, settle, test } from "./fixtures";
-import { open, urlQuery } from "./workbench-helpers";
+import {
+  inspector,
+  open,
+  selectSlot,
+  setMode,
+  urlQuery,
+} from "./workbench-helpers";
 
 /*
- * The template view's composer, in each slot's popover: adding an
- * occupant as a new tab or into a tab, a stack's label, taking one out,
- * replacing or clearing a slot that holds one, the focused occupant's
- * lock, each occupant once on the page, and the link. Queue is focused in the Detail
- * page's end panel throughout.
+ * The template view's composer, in the inspector for the slot selected
+ * in Edit mode: adding an occupant as a new tab or into a tab, a stack's
+ * label, taking one out, replacing or clearing a slot that holds one,
+ * no locks with no focused occupant, each occupant once on the page, and
+ * the link. Queue starts in the Detail page's end panel throughout.
  */
 
 const SLOT = "?occupant=queue&view=template&slot=end-panel";
 const BASE = `${SLOT}&zoom=100`;
 
-const menu = (page: Page) => page.locator("[data-slot=workbench-slot-popover]");
-const section = (page: Page, slot: string) =>
-  menu(page).and(page.locator(`[data-popover-slot=${slot}]`));
+const menu = inspector;
 const end = (page: Page) =>
   page.locator("[data-slot=workbench-page] [data-slot=detail-page-end-panel]");
 /** The panel's own tab bar; an occupant can have tabs of its own. */
@@ -29,13 +33,8 @@ const selected = (page: Page) =>
 const shown = (page: Page) =>
   end(page).locator("[data-occupant]").filter({ visible: true }).first();
 
-/** Opens a slot's popover from its dock chip. */
-async function openMenu(page: Page, slot = "end-panel") {
-  await page
-    .locator(`[data-slot=workbench-slot-chip][data-chip-slot=${slot}]`)
-    .click();
-  await section(page, slot).waitFor();
-}
+/** Shows a slot in the inspector, selecting it on the stage. */
+const openMenu = (page: Page, slot = "end-panel") => selectSlot(page, slot);
 
 async function ready(page: Page, query: string) {
   await open(page, query);
@@ -44,7 +43,7 @@ async function ready(page: Page, query: string) {
   await settle(page);
 }
 
-/** The tab rows in a panel slot's popover, by number. */
+/** The tab rows in a panel slot's inspector, by number. */
 const tabRow = (page: Page, number: number) =>
   menu(page)
     .locator("[data-slot=workbench-contents-tab]")
@@ -56,7 +55,7 @@ const pick = (page: Page, occupant: string) =>
     .locator("[data-slot=workbench-picker]")
     .getByRole("button", { name: occupant, exact: true });
 
-/** The occupant focus is on: its row in the popover. */
+/** The occupant focus is on: its row in the inspector. */
 const focusedRow = (page: Page) =>
   page.evaluate(
     () => (document.activeElement as HTMLElement | null)?.dataset.row ?? null,
@@ -131,12 +130,14 @@ test("stacks an occupant into a tab, which takes a label", async ({ page }) => {
   expect(urlQuery(page)).toContain(
     "end-panel-contents=queue~overview:key-facts.participants",
   );
+  // The page is inert in Edit mode: its tabs are clicked in Preview.
+  await setMode(page, "Preview");
   await tab(page, "Overview").click();
   const body = end(page).locator('[data-tab="key-facts"]');
   await expect(body.locator("[data-occupant=key-facts]")).toBeVisible();
   await expect(body.locator("[data-occupant=participants]")).toBeVisible();
 
-  // The chip picks another preset. (The stage click closed the popover.)
+  // The chip picks another preset.
   await openMenu(page);
   await chip.click();
   await expect(chip).toHaveAttribute("aria-expanded", "true");
@@ -241,22 +242,25 @@ test("a slot that holds one: Replace and Clear, and the picker when empty", asyn
   await expect(main.locator("[data-occupant=key-facts]")).toBeVisible();
 });
 
-test("the popover opens above the dock, and scrolls to its layout", async ({
+test("a tall inspector scrolls itself, down to the layout", async ({
   page,
 }) => {
-  // Short enough that the popover is taller than the room above the dock.
+  // Short enough that the inspector is taller than the window.
   await page.setViewportSize({ width: 1920, height: 560 });
   await ready(
     page,
     `${SLOT}&end-panel-contents=queue~overview:key-facts.participants~activity-timeline`,
   );
   await openMenu(page);
+  // It's the window's height, beside the stage, never over the dock.
   const [box, dock] = await Promise.all([
     menu(page).boundingBox(),
     page.locator("[data-slot=workbench-dock]").boundingBox(),
   ]);
-  expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(dock?.y ?? 0);
-  // Taller than the room: it scrolls itself, down to the layout.
+  expect(box?.height).toBe(560);
+  expect(box?.x ?? 0).toBeGreaterThanOrEqual(
+    (dock?.x ?? 0) + (dock?.width ?? 0),
+  );
   expect(
     await menu(page).evaluate((el) => el.scrollHeight > el.clientHeight),
   ).toBe(true);

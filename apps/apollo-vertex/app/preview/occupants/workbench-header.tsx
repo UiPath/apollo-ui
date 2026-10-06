@@ -121,6 +121,8 @@ interface WorkbenchHeaderProps {
   listId: string;
   listOpen: boolean;
   onToggleList: () => void;
+  /** What the right-hand column holds in this view, which its toggle names. */
+  panel: "details" | "inspector";
   detailsId: string;
   detailsOpen: boolean;
   onToggleDetails: () => void;
@@ -153,6 +155,7 @@ export function WorkbenchHeader({
   listId,
   listOpen,
   onToggleList,
+  panel,
   detailsId,
   detailsOpen,
   onToggleDetails,
@@ -354,7 +357,13 @@ export function WorkbenchHeader({
         size="icon"
         className="shrink-0"
         aria-label={t(
-          detailsOpen ? "workbench_hide_details" : "workbench_show_details",
+          panel === "inspector"
+            ? detailsOpen
+              ? "workbench_hide_inspector"
+              : "workbench_show_inspector"
+            : detailsOpen
+              ? "workbench_hide_details"
+              : "workbench_show_details",
         )}
         aria-expanded={detailsOpen}
         aria-controls={detailsId}

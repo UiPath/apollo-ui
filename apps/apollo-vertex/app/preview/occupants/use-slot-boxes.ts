@@ -35,37 +35,13 @@ export const boxOn = (frame: Element, element: Element): Box => {
   };
 };
 
-/** The middle of a span. */
-const middle = (start: number, size: number) => start + size / 2;
-
-/** A slot this much of the page's width or more opens its popover above or below it. */
-const WIDE = 0.6;
-
-/**
- * The side of a slot its popover opens on: toward the page's center, so
- * it's beside the slot, never over it. A slot as wide as most of the page,
- * like a header, opens it below, or above when it's in the lower half.
- */
-export const sideTowardCenter = (
-  slot: Box,
-  page: Box,
-): "top" | "right" | "bottom" | "left" => {
-  if (slot.width >= page.width * WIDE)
-    return middle(slot.y, slot.height) < middle(page.y, page.height)
-      ? "bottom"
-      : "top";
-  return middle(slot.x, slot.width) < middle(page.x, page.width)
-    ? "right"
-    : "left";
-};
-
 /** The key of the template's own box among the slots' boxes. */
 export const TEMPLATE_BOX = "@template";
 
 /**
  * Each of the template's slots' boxes on the frame that `ref` is in, kept
  * current as the page resizes and the template redraws. A slot left out
- * or closed has none.
+ * has none; a closed one has no width, at its edge.
  */
 export function useSlotBoxes(
   host: TemplateHost,
@@ -84,7 +60,7 @@ export function useSlotBoxes(
         // A slot can appear later, as when it's put back in the page.
         if (element) resize.observe(element);
         const box = element ? boxOn(frame, element) : null;
-        if (box && box.width > 0 && box.height > 0) next[slot] = box;
+        if (box && box.height > 0) next[slot] = box;
       }
       // The template's own box, under its name, for left-out slots' ghosts.
       const template = frame.querySelector(

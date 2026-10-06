@@ -14,8 +14,6 @@ export function useCompose(
   update: (patch: Partial<WorkbenchView>) => void,
 ): {
   compose: ContentsChange;
-  /** Includes a slot the page left out, as a change of its own. */
-  include: (slot: string) => void;
   revisions: Readonly<Record<string, number>>;
 } {
   const [revisions, setRevisions] = useState<Readonly<Record<string, number>>>(
@@ -38,12 +36,5 @@ export function useCompose(
         [show.slot]: (before[show.slot] ?? 0) + 1,
       }));
   };
-  const include = (slot: string) =>
-    update({
-      layout: {
-        ...view.layout,
-        [slot]: { ...view.layout[slot], present: true },
-      },
-    });
-  return { compose, include, revisions };
+  return { compose, revisions };
 }
