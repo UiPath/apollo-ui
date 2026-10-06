@@ -17,9 +17,7 @@ import {
   type PreviewShellVariant,
 } from "@/templates/shell/PreviewShell";
 import { NoFitCard } from "./no-fit-card";
-import type { SlotTarget } from "./slot-popover";
 import { StageFrame } from "./stage-frame";
-import { StageSlotChips } from "./stage-slot-chips";
 import { activeTab, occupantsIn, type SlotContents } from "./workbench-compose";
 import { slotFit } from "./workbench-url-state";
 
@@ -43,10 +41,6 @@ interface TemplateStageProps {
   onTab: (slot: string, id: string) => void;
   /** Each slot's panel revision: a new one starts its panel on its tab. */
   revisions: Readonly<Record<string, number>>;
-  /** The slot whose popover is open, and opening one from the stage. */
-  opened: SlotTarget | null;
-  onOpen: (target: SlotTarget) => void;
-  onClose: () => void;
   onStatus: (status: Readonly<Record<string, SlotStatus>>) => void;
   sample: ExampleRole;
   state: OccupantState;
@@ -74,9 +68,6 @@ export function TemplateStage({
   tabs,
   onTab,
   revisions,
-  opened,
-  onOpen,
-  onClose,
   onStatus,
   sample,
   state,
@@ -137,20 +128,13 @@ export function TemplateStage({
       data-template-name={host.spec.name}
       data-zoom={Math.round(scale * 100)}
       style={size}
-      // A slot's chip takes the tag's place while it shows.
-      className="h-[calc(var(--page-height)*var(--zoom))] w-[calc(var(--page-width)*var(--zoom))] shrink-0 has-[[data-slot=workbench-stage-chip][data-shown=true]]:[&>[data-slot=workbench-frame-tag]]:invisible"
+      className="h-[calc(var(--page-height)*var(--zoom))] w-[calc(var(--page-width)*var(--zoom))] shrink-0"
       tag={t("workbench_frame_tag_template", {
         template: host.label,
         slot: slotName,
         width: pageWidth,
       })}
     >
-      <StageSlotChips
-        host={host}
-        opened={opened}
-        onOpen={onOpen}
-        onClose={onClose}
-      />
       {/* Always scaled, even by 1: a fixed-position part stays in the frame. */}
       <div
         data-slot="workbench-page"

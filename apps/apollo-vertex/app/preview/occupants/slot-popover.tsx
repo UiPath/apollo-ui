@@ -26,13 +26,9 @@ interface Measurable {
   getBoundingClientRect: () => DOMRect;
 }
 
-/** The least room above a slot for its popover; with less, it opens above the dock. */
-const MIN_ROOM_PX = 360;
-
 /**
  * Where the popover opens above: the anchor's bottom edge, never lower
- * than the dock's top, so it never covers the dock. A slot with too
- * little room above its bottom, like a header, opens above the dock too.
+ * than the dock's top, so it never covers the dock.
  */
 const above = (anchor: Measurable): Measurable => ({
   getBoundingClientRect: () => {
@@ -41,17 +37,13 @@ const above = (anchor: Measurable): Measurable => ({
       document
         .querySelector("[data-slot=workbench-dock]")
         ?.getBoundingClientRect().top ?? window.innerHeight;
-    const bottom = Math.min(box.bottom, dockTop);
-    const y = bottom < MIN_ROOM_PX ? dockTop : bottom;
-    return new DOMRect(box.x, y, box.width, 0);
+    return new DOMRect(box.x, Math.min(box.bottom, dockTop), box.width, 0);
   },
 });
 
 /** The slot a popover is open for, what opened it, and what it's placed against. */
 export interface SlotTarget {
   slot: string;
-  /** Where it was opened: a dock chip, or a slot on the stage. */
-  from: "dock" | "stage";
   /** Focus goes back here when it closes. */
   opener: HTMLElement;
   anchor: Measurable;

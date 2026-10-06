@@ -122,7 +122,7 @@ export function TemplateDock({
           const place = host.slotLabels[s.name] ?? s.name;
           const fits = slotFit(host, s.name, spec).fits;
           const here = s.name === slot;
-          const open = opened?.from === "dock" && opened.slot === s.name;
+          const open = opened?.slot === s.name;
           return (
             <Button
               key={s.name}
@@ -153,7 +153,6 @@ export function TemplateDock({
                 else
                   onOpen({
                     slot: s.name,
-                    from: "dock",
                     opener: event.currentTarget,
                     anchor: event.currentTarget,
                   });

@@ -55,7 +55,7 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
   const update = (patch: Partial<WorkbenchView>) =>
     setView((current) => normalizeView({ ...current, ...patch }));
   // Each panel after the template's rules, reported by the template.
-  // The slot whose popover is open: one at a time, from the dock or stage.
+  // The slot whose popover is open: one at a time.
   const [opened, setOpened] = useState<SlotTarget | null>(null);
   // Bumped when the composer shows a tab, so that slot's panel starts on it.
   const [revisions, setRevisions] = useState<Readonly<Record<string, number>>>(
@@ -258,9 +258,6 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
                   contents={view.contents}
                   tabs={view.tabs}
                   revisions={revisions}
-                  opened={opened}
-                  onOpen={setOpened}
-                  onClose={() => setOpened(null)}
                   onTab={(slot, id) =>
                     update({ tabs: { ...view.tabs, [slot]: id } })
                   }
