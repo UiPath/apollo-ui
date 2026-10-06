@@ -16,6 +16,7 @@ import type {
   NodeAction,
   NodeActionsResolver,
   NodeDecoration,
+  PathForCopy,
   RenderCodeEditor,
   RenderValueCell,
 } from './JsonTree.types';
@@ -62,7 +63,7 @@ export interface JsonTreeRowContextValue {
   nodeActions?: NodeActionsResolver;
   maxInlineActions: number;
   renderCodeEditor?: RenderCodeEditor;
-  pathForCopy?: (path: string) => string;
+  pathForCopy?: PathForCopy;
   /** Editability is row-invariant (props only), so it is resolved once. */
   canEdit: boolean;
   RowWrapper: JsonTreeRowWrapper;
@@ -277,7 +278,7 @@ export function JsonTreeRow({ node, depth }: { node: JsonTreeNode; depth: number
         <NodeKey
           node={node}
           label={isTemplateItem ? templateItemLabel : decoration?.label}
-          displayPath={pathForCopy?.(node.path) ?? node.path}
+          displayPath={pathForCopy?.(node.path, node.segments) ?? node.path}
           onCopyPath={copyPath}
           className={isTemplateItem ? 'font-normal italic text-foreground-subtle' : undefined}
         />

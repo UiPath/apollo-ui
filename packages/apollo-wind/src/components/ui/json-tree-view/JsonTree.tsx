@@ -11,6 +11,7 @@ import type {
   JsonValue,
   NodeActionsResolver,
   NodeDecoration,
+  PathForCopy,
   RenderCodeEditor,
   RenderValueCell,
 } from './JsonTree.types';
@@ -69,7 +70,7 @@ export interface JsonTreeViewProps {
   /** Renders the object/array editing surface as a code editor (defaults to a textarea). */
   renderCodeEditor?: RenderCodeEditor;
   /** Builds the text copied when a field name is clicked. Defaults to the path itself. */
-  pathForCopy?: (path: string) => string;
+  pathForCopy?: PathForCopy;
   /** Called after something is copied to the clipboard. */
   onCopy?: (event: CopyEvent) => void;
   /**
@@ -319,7 +320,7 @@ function JsonTreeViewContent({
   };
 
   const copyPath = (node: JsonTreeNode) =>
-    copy(node, 'path', pathForCopy?.(node.path) ?? node.path);
+    copy(node, 'path', pathForCopy?.(node.path, node.segments) ?? node.path);
   const copyValue = (node: JsonTreeNode) => copy(node, 'value', valueAsText(node));
 
   const toggleWrapped = (node: JsonTreeNode) => {

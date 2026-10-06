@@ -238,6 +238,13 @@ export interface CopyEvent {
   text: string;
 }
 
+/**
+ * Builds the text copied when a field name is clicked. `segments` is the
+ * unquoted form of `path`, so a consumer can rewrite part of it (e.g. the root
+ * key) without re-parsing the bracket-quoted string.
+ */
+export type PathForCopy = (path: string, segments: PathSegment[]) => string;
+
 /** Details about a single value edit. */
 export interface JsonTreeChange {
   path: string;
