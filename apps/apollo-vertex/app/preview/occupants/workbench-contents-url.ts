@@ -1,7 +1,11 @@
 import type { TemplateHost } from "@/app/_components/template-hosts";
-import type { LocaleKey } from "@/lib/composition";
 import type { OccupantRef, TabSpec } from "@/lib/panel";
-import { activeTab, occupantsIn, type SlotContents } from "./workbench-compose";
+import {
+  activeTab,
+  occupantsIn,
+  type SlotContents,
+  TAB_LABELS,
+} from "./workbench-compose";
 
 /*
  * Each template slot's contents as a link param, <slot>-contents. Tabs are
@@ -22,14 +26,6 @@ import { activeTab, occupantsIn, type SlotContents } from "./workbench-compose";
 const TABS = "~";
 const STACK = ".";
 const LABEL = ":";
-
-/** Labels a stack's tab can take, by their id in links, in the order the composer offers them. */
-export const TAB_LABELS = [
-  { id: "overview", key: "workbench_tab_label_overview" },
-  { id: "details", key: "workbench_tab_label_details" },
-  { id: "activity", key: "workbench_tab_label_activity" },
-  { id: "people", key: "workbench_tab_label_people" },
-] as const satisfies readonly { id: string; key: LocaleKey }[];
 
 const refName = (ref: OccupantRef) =>
   typeof ref === "string" ? ref : ref.occupant;

@@ -77,11 +77,19 @@ export type ComposeLock =
   | "full"
   | "present";
 
+/** Labels a stack's tab can take, by their id in links, in the order the composer offers them. */
+export const TAB_LABELS = [
+  { id: "overview", key: "workbench_tab_label_overview" },
+  { id: "details", key: "workbench_tab_label_details" },
+  { id: "activity", key: "workbench_tab_label_activity" },
+  { id: "people", key: "workbench_tab_label_people" },
+] as const satisfies readonly { id: string; key: LocaleKey }[];
+
 /**
  * The occupants the composer can use: every registered one. Each function
  * takes a list of its own (`known`), for tests.
  */
-const REGISTERED: readonly OccupantSpec[] = OCCUPANT_SPECS.map(
+export const REGISTERED: readonly OccupantSpec[] = OCCUPANT_SPECS.map(
   (entry) => entry.spec,
 );
 
@@ -92,13 +100,14 @@ const refName = (ref: OccupantRef) =>
 export const occupantsIn = (panel: PanelSpec): string[] =>
   panel.tabs.flatMap((tab) => tab.occupants.map(refName));
 
-const holdsPanel = (host: TemplateHost, slot: string) => {
+/** Whether a slot declares it holds a panel of tabs and stacks. */
+export const holdsPanel = (host: TemplateHost, slot: string) => {
   const spec = host.spec.slots.find((s) => s.name === slot);
   return spec ? slotHolds(spec) === "panel" : false;
 };
 
 /** Whether a slot's composition is one it can hold, by every declared rule. */
-function isValid(
+export function isValid(
   host: TemplateHost,
   slot: string,
   panel: PanelSpec,

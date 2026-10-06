@@ -23,8 +23,8 @@ import {
   removeFromSlot,
   removeLock,
   type SlotContents,
+  TAB_LABELS,
 } from "./workbench-compose";
-import { TAB_LABELS } from "./workbench-contents-url";
 import { reasonCopy } from "./workbench-layout";
 
 /** Labels a stack's tab can take, in the order the composer offers them. */
