@@ -89,6 +89,8 @@ describe('Checkbox', () => {
     render(<Checkbox checked="indeterminate" aria-label="Checkbox" />);
     const checkbox = screen.getByRole('checkbox');
     expect(checkbox).toHaveAttribute('data-state', 'indeterminate');
+    expect(checkbox).toHaveAttribute('aria-checked', 'mixed');
+    expect(checkbox.querySelector('.lucide-minus')).toBeInTheDocument();
   });
 
   it('applies custom className', () => {
