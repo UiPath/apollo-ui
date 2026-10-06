@@ -180,13 +180,6 @@ function mergeToolbarConfigs(
   };
 }
 
-export interface ResolveToolbarOptions {
-  /** Node data passed through to the action handler. */
-  nodeData?: Record<string, unknown>;
-  /** The owning canvas's toolbar store; the module-level store when omitted. */
-  store?: ToolbarActionStore;
-}
-
 /**
  * Resolve final toolbar configuration
  * Combines: Mode defaults → Node type extensions → Conditional filtering
@@ -194,7 +187,9 @@ export interface ResolveToolbarOptions {
 export function resolveToolbar(
   manifest: NodeManifest,
   context: ExtendedNodeContext,
-  { nodeData, store }: ResolveToolbarOptions = {}
+  nodeData?: Record<string, unknown>,
+  // The owning canvas's toolbar store; the module-level store when omitted.
+  store?: ToolbarActionStore
 ): NodeToolbarConfig | undefined {
   const {
     nodeType,

@@ -10,14 +10,15 @@ import type { NodePropertyPanelProps } from './NodePropertyPanel.types';
 // classic bg-surface panel and stock input surfaces (no remap).
 const SURFACE_REMAP = 'future:[--surface-raised:var(--surface-overlay)]';
 
-// `field.name` may contain characters (`.`, `[`, `]`, quotes) that are invalid in an
-// unescaped CSS attribute-value selector. `CSS.escape` isn't implemented by every DOM
-// (older Safari, some test environments), hence the fallback.
-function escapeFieldName(name: string): string {
-  if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') {
-    return CSS.escape(name);
+// Compares attribute values instead of building a selector, so any field name matches as-is.
+function findFieldElement(root: HTMLElement, name: string): HTMLElement | null {
+  const fields = root.querySelectorAll<HTMLElement>('[data-field-name]');
+  for (const field of fields) {
+    if (field.getAttribute('data-field-name') === name) {
+      return field;
+    }
   }
-  return name.replace(/["\\]/g, '\\$&');
+  return null;
 }
 
 /**
@@ -105,7 +106,7 @@ export function NodePropertyPanel({
       return;
     }
 
-    const scrollKey = `${resetKey ?? ''}::${changedFields.join('|')}`;
+    const scrollKey = JSON.stringify([resetKey ?? null, changedFields]);
     if (scrolledKeyRef.current === scrollKey) {
       return;
     }
@@ -117,8 +118,10 @@ export function NodePropertyPanel({
 
     const findTarget = (): HTMLElement | null => {
       for (const name of changedFields) {
-        const el = root.querySelector<HTMLElement>(`[data-field-name="${escapeFieldName(name)}"]`);
-        if (el) return el;
+        const el = findFieldElement(root, name);
+        if (el) {
+          return el;
+        }
       }
       return null;
     };

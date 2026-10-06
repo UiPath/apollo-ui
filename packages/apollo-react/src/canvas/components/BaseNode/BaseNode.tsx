@@ -256,7 +256,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
 
     // Priority 2: Manifest default
     return manifest
-      ? resolveToolbar(manifest, statusContext, { store: toolbarActionStore })
+      ? resolveToolbar(manifest, statusContext, undefined, toolbarActionStore)
       : undefined;
   }, [toolbarConfigProp, manifest, statusContext, toolbarActionStore]);
 

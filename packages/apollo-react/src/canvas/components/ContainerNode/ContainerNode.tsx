@@ -211,9 +211,7 @@ function ContainerNodeComponent(props: ContainerNodeProps) {
       return toolbarConfigProp === null ? undefined : toolbarConfigProp;
     }
 
-    return manifest
-      ? resolveToolbar(manifest, statusContext, { nodeData: data, store: toolbarActionStore })
-      : undefined;
+    return manifest ? resolveToolbar(manifest, statusContext, data, toolbarActionStore) : undefined;
   }, [data, manifest, statusContext, toolbarConfigProp, toolbarActionStore]);
 
   // Matches BaseNode: a locked container keeps its toolbar with every action
