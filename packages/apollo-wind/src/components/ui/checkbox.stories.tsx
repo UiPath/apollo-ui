@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import * as React from 'react';
 import { Checkbox } from './checkbox';
 import { FormFieldError } from './form-field';
 import { Label } from './label';
@@ -36,6 +37,104 @@ export const Checked: Story = {
     defaultChecked: true,
   },
 };
+
+const CHECKBOX_STATES = [
+  { id: 'state-unchecked', label: 'Unchecked', props: {} },
+  { id: 'state-checked', label: 'Checked', props: { defaultChecked: true } },
+  { id: 'state-indeterminate', label: 'Indeterminate', props: { defaultChecked: 'indeterminate' } },
+  {
+    id: 'state-disabled-indeterminate',
+    label: 'Disabled indeterminate',
+    props: { defaultChecked: 'indeterminate', disabled: true },
+  },
+  {
+    id: 'state-invalid-indeterminate',
+    label: 'Invalid indeterminate',
+    props: { defaultChecked: 'indeterminate', 'aria-invalid': true },
+  },
+] satisfies { id: string; label: string; props: React.ComponentProps<typeof Checkbox> }[];
+
+export const Indeterminate = {
+  render: () => (
+    <Row gap={6} align="center">
+      {CHECKBOX_STATES.map((state) => (
+        <Row key={state.id} gap={2} align="center">
+          <Checkbox id={state.id} {...state.props} />
+          <Label htmlFor={state.id} className="future:font-normal future:text-foreground">
+            {state.label}
+          </Label>
+        </Row>
+      ))}
+    </Row>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The indeterminate state next to the other states for comparison. It shares the checked fill and swaps the check for a dash.',
+      },
+    },
+  },
+} satisfies Story;
+
+const NOTIFICATION_CHANNELS = [
+  { id: 'select-all-email', label: 'Email notifications' },
+  { id: 'select-all-push', label: 'Push notifications' },
+  { id: 'select-all-sms', label: 'SMS notifications' },
+];
+
+function SelectAllExample() {
+  const [selected, setSelected] = React.useState<string[]>([NOTIFICATION_CHANNELS[0].id]);
+  const allSelected = selected.length === NOTIFICATION_CHANNELS.length;
+  const someSelected = selected.length > 0 && !allSelected;
+
+  return (
+    <Column gap={2}>
+      <Row gap={2} align="center">
+        <Checkbox
+          id="select-all"
+          checked={allSelected ? true : someSelected ? 'indeterminate' : false}
+          onCheckedChange={(value) =>
+            setSelected(value === true ? NOTIFICATION_CHANNELS.map((c) => c.id) : [])
+          }
+        />
+        <Label htmlFor="select-all" className="future:font-normal future:text-foreground">
+          All notifications
+        </Label>
+      </Row>
+      <Column gap={2} className="pl-6">
+        {NOTIFICATION_CHANNELS.map((channel) => (
+          <Row key={channel.id} gap={2} align="center">
+            <Checkbox
+              id={channel.id}
+              checked={selected.includes(channel.id)}
+              onCheckedChange={(value) =>
+                setSelected((prev) =>
+                  value === true ? [...prev, channel.id] : prev.filter((id) => id !== channel.id)
+                )
+              }
+            />
+            <Label htmlFor={channel.id} className="future:font-normal future:text-foreground">
+              {channel.label}
+            </Label>
+          </Row>
+        ))}
+      </Column>
+    </Column>
+  );
+}
+
+export const SelectAll = {
+  render: () => <SelectAllExample />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Pass `checked="indeterminate"` when only some children are selected. The parent shows a dash and reports `aria-checked="mixed"`. Clicking an indeterminate parent selects every child.',
+      },
+    },
+  },
+} satisfies Story;
 
 export const Disabled = {
   render: () => (
