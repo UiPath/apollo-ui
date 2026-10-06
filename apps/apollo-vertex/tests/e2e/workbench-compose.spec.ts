@@ -309,7 +309,15 @@ const more = (page: Page) =>
 test("the panel's width stays the same across tab switches", async ({
   page,
 }) => {
+  // Choosing a hidden tab from More once looped the tab bar's fit.
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
   await ready(page, FOUR_TABS);
+  // The underlined tablist keeps its gap between tabs, and the fit counts it.
+  const gap = await bar(page)
+    .getByRole("tablist")
+    .evaluate((list) => Number.parseFloat(getComputedStyle(list).columnGap));
+  expect(gap).toBeGreaterThan(0);
   const panelWidth = () =>
     end(page)
       .locator("[data-surface=side-panel]")
@@ -326,6 +334,7 @@ test("the panel's width stays the same across tab switches", async ({
     await settle(page);
     expect(await panelWidth(), name).toBe(first);
   }
+  expect(errors).toEqual([]);
 });
 
 test("at the end panel's minimum width, tabs past the room go into More", async ({
