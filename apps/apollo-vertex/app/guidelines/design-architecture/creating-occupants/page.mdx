@@ -233,10 +233,11 @@ The workbench shows every surface and template that's registered for
 previews, with no change to the workbench itself. Each template declares its
 slots, their rules, its layout, and the choices a page has per slot (leave
 it out, close it, or place it elsewhere) in its spec, and the workbench
-reads them. Its page map is the template's declared layout, and its Layout
-menu offers exactly the declared choices, locking only what the layout
-refuses or the slot holding the occupant needs. Links name the template's
-slots: `<slot>-present`, `<slot>-state`, and `<slot>-placement`.
+reads them. Its page map is the template's declared layout, and each
+slot's popover offers exactly the choices that slot declares, locking only
+what the layout refuses or the slot holding the occupant needs. Links name
+the template's slots: `<slot>-present`, `<slot>-state`, and
+`<slot>-placement`.
 
 - **A surface:** register it in `registry.json` with `"layer": "surface"` and
   its `<name>.surface.ts` spec, give it a label in `lib/surface-labels.ts`,
@@ -255,22 +256,32 @@ Unit tests fail until each has everything it needs.
 
 ### Compose a slot
 
-In the template view, the Contents menu beside Layout composes each slot:
-add an occupant, or take one out. The template declares how much each slot
-holds, so the menu offers only that. A slot that holds one takes one
-occupant. A slot that holds a panel (`holds: "panel"`) takes tabs and
-stacks: add an occupant as a new tab, or into a tab, which then needs a
-label. Anything the composition rules refuse is locked, with why: an
-occupant that doesn't fit the slot's surface, one there already, a full
-slot, a panel at its tab limit, and a fill occupant, which is alone in its
-tab. The occupant you're looking at stays in its slot, and can't be taken
-out or added anywhere else.
+In the template view, each slot has a popover: open it from the slot's
+chip in the dock, or point at the slot on the stage and press the chip
+that shows above the page. It has the slot's contents first, then its
+layout, and "Show Queue here", with the name of the occupant you're
+looking at, for a slot it isn't in. A slot that's left out says to include it first. The Shell
+menu in the dock holds the shell.
+
+The template declares how much each slot holds, so the contents follow
+it. A slot that holds one shows its occupant with Replace and Clear, and
+the picker when it's empty. A slot that holds a panel (`holds: "panel"`)
+lists its tabs, each with its occupants and "Add to this tab", then "New
+tab": which one you press decides tab or stack. The picker under it lists
+only occupants that fit the slot and aren't on the page yet, and says how
+many it leaves out, and why. A tab that becomes a stack takes the first
+preset label no tab has, shown as a chip you can press to pick another.
+Only real limits lock a button: a fill occupant is alone in its tab, and
+a panel has at most five tabs. The occupant you're looking at stays in its
+slot. Offering each occupant once on the page is the workbench's rule,
+not composition's.
 
 Links carry each slot's contents as `<slot>-contents`. Tabs are joined by
 `~`, a stack's occupants by `.`, and a stack starts with its label's id
-(`overview`, `details`, `activity`, or `people`) and `:`. A tab's id is its first occupant, and `<slot>-tab` names the tab
-showing, when it isn't the one the slot opens on. If that tab is gone, the
-slot opens on its first tab. For example:
+(`overview`, `details`, `activity`, or `people`) and `:`. A tab's id is
+its first occupant, and `<slot>-tab` names the tab showing, when it isn't
+the one the slot opens on. If that tab is gone, the slot opens on its
+first tab. For example:
 
 ```text
 end-panel-contents=queue~overview:key-facts.participants~activity-timeline
