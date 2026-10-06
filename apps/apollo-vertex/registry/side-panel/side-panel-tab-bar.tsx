@@ -180,7 +180,13 @@ function SidePanelTabBar({
       data-part="tab-bar"
       className="flex shrink-0 items-center gap-1 px-(--surface-inset) pt-(--surface-inset)"
     >
-      <TabsList className="min-w-0 justify-start">
+      {/*
+       * Underlined, so it never reads as a segmented control inside an
+       * occupant. No gap between tabs: the measuring takes everything in the
+       * list but the tabs as fixed, and a gap would change with how many
+       * show. The tabs' own padding spaces them.
+       */}
+      <TabsList variant="line" className="min-w-0 justify-start gap-0">
         {shown.map((id, index) => (
           <TabsTrigger
             key={id}
