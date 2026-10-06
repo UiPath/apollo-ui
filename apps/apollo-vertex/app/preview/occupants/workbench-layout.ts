@@ -114,6 +114,7 @@ const NEUTRAL_REASONS: Readonly<Record<string, LocaleKey>> = {
   "fill-alone": "workbench_compose_reason_fill_alone",
   "tab-cap": "workbench_compose_reason_tab_cap",
   "no-fit": "workbench_compose_reason_no_fit",
+  "on-page": "workbench_compose_reason_on_page",
 };
 
 /** The copy for why a template closed or refused something: its own, else neutral. */

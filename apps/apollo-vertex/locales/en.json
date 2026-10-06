@@ -429,6 +429,7 @@
   "workbench_compose_reason_fill_alone": "Its occupant fills the tab, so nothing else can go in it.",
   "workbench_compose_reason_focus": "It's the occupant you're looking at, so it stays where it is.",
   "workbench_compose_reason_no_fit": "It doesn't fit this slot's surface.",
+  "workbench_compose_reason_on_page": "It's on the page already.",
   "workbench_compose_reason_tab_cap": "There's no room for another tab.",
   "workbench_compose_remove": "Remove {{occupant}}",
   "workbench_contents_add_to_tab": "Add to this tab",

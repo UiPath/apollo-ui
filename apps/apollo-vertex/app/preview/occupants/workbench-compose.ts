@@ -199,6 +199,8 @@ export type Destination = "new-tab" | number;
 interface AddOptions {
   /** The label a tab stacked into takes, when it has none. */
   label?: LocaleKey;
+  /** Where a new tab goes among the tabs (0 is first); at the end when left out. */
+  at?: number;
   known?: readonly OccupantSpec[];
 }
 
@@ -213,14 +215,14 @@ export function addOccupant(
   slot: string,
   occupant: string,
   to: Destination = "new-tab",
-  { label, known = REGISTERED }: AddOptions = {},
+  { label, at, known = REGISTERED }: AddOptions = {},
 ): SlotContents {
   const here = contents[slot];
   const panel = here ?? { surface: "side-panel" as const, tabs: [] };
   if (!holdsPanel(host, slot) && here) return contents;
   const next =
     to === "new-tab"
-      ? addAsTab(panel, occupant, occupant)
+      ? addAsTab(panel, occupant, occupant, at ?? panel.tabs.length)
       : addToTab(panel, to, occupant, known, label);
   if (next === panel || !isValid(host, slot, next, known)) return contents;
   return { ...contents, [slot]: next };

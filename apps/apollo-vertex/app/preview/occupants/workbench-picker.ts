@@ -47,6 +47,25 @@ export type LeftOut = "on-page" | "no-fit" | "fill";
 
 const LEFT_OUT_ORDER: readonly LeftOut[] = ["on-page", "no-fit", "fill"];
 
+/**
+ * Why the picker leaves one occupant out of a place in a slot, or null
+ * when it offers it. Dropping it there reads the same (see
+ * workbench-drop).
+ */
+export function leftOutFor(
+  host: TemplateHost,
+  contents: SlotContents,
+  slot: string,
+  to: PickTarget,
+  spec: OccupantSpec,
+  known: readonly OccupantSpec[] = REGISTERED,
+): LeftOut | null {
+  if (onPage(contents).has(spec.name)) return "on-page";
+  if (!slotFit(host, slot, spec).fits) return "no-fit";
+  const tab = typeof to === "number" ? contents[slot]?.tabs[to] : null;
+  return tab && stackProblem(tab, spec.name, known) ? "fill" : null;
+}
+
 /** What the picker offers, and how many it leaves out, by why. */
 export interface Picker {
   choices: string[];
@@ -65,17 +84,10 @@ export function picker(
   to: PickTarget,
   known: readonly OccupantSpec[] = REGISTERED,
 ): Picker {
-  const placed = onPage(contents);
-  const tab = typeof to === "number" ? contents[slot]?.tabs[to] : null;
-  const leftOut = (spec: OccupantSpec): LeftOut | null => {
-    if (placed.has(spec.name)) return "on-page";
-    if (!slotFit(host, slot, spec).fits) return "no-fit";
-    return tab && stackProblem(tab, spec.name, known) ? "fill" : null;
-  };
   const choices: string[] = [];
   const counts = new Map<LeftOut, number>();
   for (const spec of known) {
-    const reason = leftOut(spec);
+    const reason = leftOutFor(host, contents, slot, to, spec, known);
     if (reason) counts.set(reason, (counts.get(reason) ?? 0) + 1);
     else choices.push(spec.name);
   }
