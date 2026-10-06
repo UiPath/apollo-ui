@@ -21,6 +21,7 @@ import { TemplateDock } from "./template-dock";
 import { TemplateStage } from "./template-stage";
 import { useChangeLog } from "./use-change-log";
 import { useCompose } from "./use-compose";
+import { useDockHeight } from "./use-dock-height";
 import { useFitScale } from "./use-fit-scale";
 import { useFloors } from "./use-floors";
 import { useInspector } from "./use-inspector";
@@ -100,22 +101,14 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
 
   // The dock floats over the stage: its height is kept free below the occupant.
   const stageAreaRef = useRef<HTMLDivElement>(null);
-  const [dockHeight, setDockHeight] = useState(0);
-  useEffect(() => {
-    const dock = stageAreaRef.current?.querySelector(
-      "[data-slot=workbench-dock]",
-    );
-    if (!dock) return;
-    const observer = new ResizeObserver(() =>
-      setDockHeight(dock.getBoundingClientRect().height),
-    );
-    observer.observe(dock);
-    return () => observer.disconnect();
-    // Each view has its own dock: observe the one showing.
-  }, [view.mode]);
+  const dockHeight = useDockHeight(stageAreaRef, view.mode);
   // The template view fits the page to the stage, past its padding (p-8) and
   // the room kept for the dock (pb-[dock + 12]); at 100% it scrolls instead.
-  const { scale, height: pageHeight } = useFitScale(stageRef, {
+  const {
+    scale,
+    height: pageHeight,
+    roomY,
+  } = useFitScale(stageRef, {
     width: view.pageWidth,
     minHeight: STAGE_HEIGHT,
     reservedX: 2 * 32,
@@ -292,6 +285,9 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
                         example={view.sample}
                         state={view.state}
                         width={view.width}
+                        // Above the dock, like the template's page: the
+                        // occupant scrolls inside a shorter frame.
+                        height={Math.min(STAGE_HEIGHT, roomY)}
                       />
                     </StageFrame>
                   ) : (

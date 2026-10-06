@@ -17,6 +17,12 @@ interface FitScale {
   scale: number;
   /** The page's real height, so the scaled frame fills the stage's height. */
   height: number;
+  /**
+   * The stage's height past its padding and the dock's room: how tall a
+   * frame can be and still end above the dock. The page's shortest height
+   * until the stage has been measured.
+   */
+  roomY: number;
 }
 
 /**
@@ -40,10 +46,14 @@ export function useFitScale(
     return () => observer.disconnect();
   }, [stageRef]);
   if (stage.width === 0 || width === 0 || minHeight === 0)
-    return { scale: 1, height: minHeight };
+    return { scale: 1, height: minHeight, roomY: minHeight };
   const roomX = Math.max(0, stage.width - reservedX);
   const roomY = Math.max(0, stage.height - reservedY);
   const scale = enabled ? Math.min(1, roomX / width, roomY / minHeight) : 1;
-  if (scale === 0) return { scale, height: minHeight };
-  return { scale, height: Math.max(minHeight, Math.floor(roomY / scale)) };
+  if (scale === 0) return { scale, height: minHeight, roomY };
+  return {
+    scale,
+    height: Math.max(minHeight, Math.floor(roomY / scale)),
+    roomY,
+  };
 }

@@ -6,8 +6,9 @@ import { open } from "./workbench-helpers";
  * At Fit, the template view scales the page into the stage above the
  * dock, with a gap, so the frame's bottom edge is never under it: with
  * the columns open or closed, and after arriving from the surface view,
- * whose dock is a different height. The surface view has no Fit: like
- * 100%, it scrolls under the dock instead.
+ * whose dock is a different height. The surface view keeps the same room
+ * for the dock: its frame is shorter instead, and the occupant scrolls
+ * inside it.
  */
 
 /** The dock's top less the frame's bottom, in px: positive is clear. */
@@ -58,6 +59,46 @@ for (const [width, height] of [
     await clearOfTheDock(page, "Edit, both closed");
     await toggle("workbench-list");
     await clearOfTheDock(page, "Edit, list open, inspector closed");
+  });
+}
+
+for (const [width, height] of [
+  [1280, 720],
+  [1100, 720],
+  [1416, 700],
+] as const) {
+  test(`in the surface view, the frame's bottom stays above the dock, ${width}x${height}`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height });
+    await open(page, "?occupant=queue");
+    const occupant = page.locator(
+      "[data-slot=workbench-stage] [data-occupant=queue]",
+    );
+    await occupant.waitFor();
+    await clearOfTheDock(page, "list open, details closed");
+    const toggle = (panel: string) =>
+      page
+        .locator(`[data-slot=workbench-header] [aria-controls="${panel}"]`)
+        .click();
+    // Details open: the dock wraps to two rows, and the frame is shorter.
+    await toggle("workbench-details");
+    await clearOfTheDock(page, "list and details open");
+    await toggle("workbench-list");
+    await clearOfTheDock(page, "list closed, details open");
+    await toggle("workbench-details");
+    await clearOfTheDock(page, "both closed");
+    // The occupant's column scrolls inside the frame, not under the dock.
+    const scroller = await page
+      .locator("[data-slot=workbench-stage] [data-slot=workbench-frame]")
+      .evaluate((frame) =>
+        [...frame.querySelectorAll("*")].some(
+          (el) =>
+            el.scrollHeight > el.clientHeight + 1 &&
+            ["auto", "scroll"].includes(getComputedStyle(el).overflowY),
+        ),
+      );
+    expect(scroller).toBe(true);
   });
 }
 
