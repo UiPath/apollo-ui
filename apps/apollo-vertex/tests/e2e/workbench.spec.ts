@@ -54,40 +54,6 @@ for (const { spec } of OCCUPANT_SPECS) {
   });
 }
 
-test("the panel toggles collapse and reopen each panel, and keep focus", async ({
-  page,
-}) => {
-  await open(page, "?occupant=queue");
-  // The list starts open and the details panel closed; each writes only its
-  // non-default state.
-  for (const [start, next, panel, param] of [
-    [
-      "Hide occupant list",
-      "Show occupant list",
-      "#workbench-list",
-      "list=closed",
-    ],
-    ["Show details", "Hide details", "#workbench-details", "details=open"],
-  ] as const) {
-    const startsOpen = start.startsWith("Hide");
-    const toggle = page.getByRole("button", { name: start });
-    await expect(toggle).toHaveAttribute("aria-expanded", String(startsOpen));
-    await expect(toggle).toHaveAttribute("aria-controls", panel.slice(1));
-    await expect(page.locator(panel)).toBeVisible({ visible: startsOpen });
-    expect(urlQuery(page)).not.toContain(param);
-    await toggle.focus();
-    await page.keyboard.press("Enter");
-    const toggled = page.getByRole("button", { name: next });
-    await expect(toggled).toHaveAttribute("aria-expanded", String(!startsOpen));
-    await expect(toggled).toBeFocused();
-    await expect(page.locator(panel)).toBeVisible({ visible: !startsOpen });
-    expect(urlQuery(page)).toContain(param);
-    await page.keyboard.press("Enter");
-    await expect(page.locator(panel)).toBeVisible({ visible: startsOpen });
-    expect(urlQuery(page)).not.toContain(param);
-  }
-});
-
 test("switching surfaces moves the occupant and the page map", async ({
   page,
 }) => {

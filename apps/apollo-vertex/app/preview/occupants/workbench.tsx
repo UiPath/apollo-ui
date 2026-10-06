@@ -31,6 +31,7 @@ import { WorkbenchDock } from "./workbench-dock";
 import { WorkbenchHeader } from "./workbench-header";
 import { locationsOf } from "./workbench-locations";
 import { lowerLabel, surfaceRange, widthStatus } from "./workbench-model";
+import { WorkbenchPanel } from "./workbench-panel";
 import { WorkbenchToaster } from "./workbench-toaster";
 import {
   defaultSurface,
@@ -187,22 +188,23 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
         // in either theme, with dots at a low contrast to match.
         className="fixed inset-0 z-50 flex bg-background text-foreground not-prose [--workbench-canvas:var(--sidebar)] [--workbench-dots:color-mix(in_oklab,var(--muted-foreground)_8%,var(--workbench-canvas))]"
       >
-        <OccupantList
-          id={LIST_ID}
-          open={view.listOpen}
-          selected={view.occupant}
-          onSelect={selectOccupant}
-          docsHref={docsHref}
-          editing={editMode}
-          {...(inTemplate && {
-            locations: locationsOf(
-              inTemplate,
-              view.contents,
-              view.layout,
-              slotStatus,
-            ),
-          })}
-        />
+        <WorkbenchPanel id={LIST_ID} open={view.listOpen} kind="list">
+          <OccupantList
+            id={LIST_ID}
+            selected={view.occupant}
+            onSelect={selectOccupant}
+            docsHref={docsHref}
+            editing={editMode}
+            {...(inTemplate && {
+              locations: locationsOf(
+                inTemplate,
+                view.contents,
+                view.layout,
+                slotStatus,
+              ),
+            })}
+          />
+        </WorkbenchPanel>
 
         <main className="flex min-w-0 flex-1 flex-col">
           <WorkbenchHeader
@@ -331,30 +333,34 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
           </div>
         </main>
 
-        {inTemplate ? (
-          <Inspector
-            id={INSPECTOR_ID}
-            open={inspector.open}
-            host={inTemplate}
-            selected={inspector.selected}
-            hint={inspector.hint}
-            layout={view.layout}
-            onLayout={(layout) => change({ layout })}
-            status={slotStatus}
-            contents={view.contents}
-            onContents={compose}
-          />
-        ) : (
-          <DetailsPanel
-            id={DETAILS_ID}
-            open={view.detailsOpen}
-            spec={spec}
-            surface={surface.name}
-            width={view.width}
-            floor={claim.fits ? worstFloor : "unavailable"}
-            overflow={current}
-          />
-        )}
+        <WorkbenchPanel
+          id={inTemplate ? INSPECTOR_ID : DETAILS_ID}
+          open={inTemplate ? inspector.open : view.detailsOpen}
+          kind="column"
+        >
+          {inTemplate ? (
+            <Inspector
+              id={INSPECTOR_ID}
+              host={inTemplate}
+              selected={inspector.selected}
+              hint={inspector.hint}
+              layout={view.layout}
+              onLayout={(layout) => change({ layout })}
+              status={slotStatus}
+              contents={view.contents}
+              onContents={compose}
+            />
+          ) : (
+            <DetailsPanel
+              id={DETAILS_ID}
+              spec={spec}
+              surface={surface.name}
+              width={view.width}
+              floor={claim.fits ? worstFloor : "unavailable"}
+              overflow={current}
+            />
+          )}
+        </WorkbenchPanel>
 
         {claim.fits &&
           view.mode === "surface" &&

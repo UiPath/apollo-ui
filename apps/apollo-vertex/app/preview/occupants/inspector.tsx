@@ -25,7 +25,6 @@ const heading = (text: string) => (
 
 interface InspectorProps {
   id: string;
-  open: boolean;
   host: TemplateHost;
   /** The slot selected on the stage, if any. */
   selected: string | null;
@@ -47,7 +46,6 @@ interface InspectorProps {
  */
 export function Inspector({
   id,
-  open,
   host,
   selected,
   hint,
@@ -131,10 +129,11 @@ export function Inspector({
     <aside
       id={id}
       aria-label={t("workbench_inspector")}
-      hidden={!open}
+      // The column around it opens and closes it; focus lands here.
+      tabIndex={-1}
       data-slot="workbench-inspector"
       {...(selected && { "data-inspector-slot": selected })}
-      className="flex w-80 shrink-0 flex-col gap-4 overflow-y-auto border-s border-border p-4 text-sm"
+      className="flex w-80 shrink-0 flex-col gap-4 overflow-y-auto border-s border-border p-4 text-sm outline-none"
     >
       {body()}
     </aside>

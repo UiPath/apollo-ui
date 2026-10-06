@@ -14,7 +14,6 @@ import { claimedSurfacesText } from "./workbench-model";
 
 interface OccupantListProps {
   id: string;
-  open: boolean;
   selected: string;
   onSelect: (name: string) => void;
   /** Where "Back to docs" goes. */
@@ -113,7 +112,6 @@ function Row({
 /** Every registered occupant, searchable, with the surfaces it fits. */
 export function OccupantList({
   id,
-  open,
   selected,
   onSelect,
   docsHref,
@@ -129,8 +127,9 @@ export function OccupantList({
     <aside
       id={id}
       aria-label={t("workbench_occupants")}
-      hidden={!open}
-      className="flex w-66 shrink-0 flex-col border-e border-border"
+      // The column around it opens and closes it; focus lands here.
+      tabIndex={-1}
+      className="flex w-66 shrink-0 flex-col border-e border-border outline-none"
     >
       <div className="flex flex-col gap-3 p-4">
         <Link
