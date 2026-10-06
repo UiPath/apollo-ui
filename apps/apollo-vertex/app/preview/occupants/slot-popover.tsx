@@ -142,7 +142,10 @@ export function SlotPopover({
           }}
           onCloseAutoFocus={(event) => {
             event.preventDefault();
-            opener.current?.focus();
+            // Back to its opener, unless focus has already moved on: this
+            // comes a moment after it closes.
+            const now = document.activeElement;
+            if (!now || now === document.body) opener.current?.focus();
           }}
         >
           <h2
