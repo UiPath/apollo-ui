@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { InputGroup, InputGroupAddon } from '@/components/ui/input-group';
 import { PromptValueControl } from '@/components/ui/prompt-value-control';
 import { VariableValueControl } from '@/components/ui/variable-value-control';
+import { joinIds } from './aria-ids';
 import {
   DEFAULT_FIELD_ACTION_REGISTRY,
   type FieldActionConfirm,
@@ -707,11 +708,6 @@ function FallbackControl({
       aria-errormessage={error ? errorId : undefined}
     />
   );
-}
-
-/** Space-joins the ids that are set, or `undefined` when none is. */
-function joinIds(...ids: (string | false | undefined)[]): string | undefined {
-  return ids.filter(Boolean).join(' ') || undefined;
 }
 
 function builtInLiteral(input: ResolveControlInput): Resolved {

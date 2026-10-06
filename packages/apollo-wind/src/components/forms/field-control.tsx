@@ -24,6 +24,7 @@ import {
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { joinIds } from './aria-ids';
 import type { FieldMetadata, FieldOption, FieldType, SliderFieldMetadata } from './form-schema';
 import { LiteralValueContext } from './literal-value-context';
 import { StringListControl } from './string-list-field';
@@ -153,7 +154,7 @@ export function FieldControl({
   describedBy,
 }: FieldControlProps) {
   const errorId = invalid ? `${field.name}-error` : undefined;
-  const describedById = [errorId, describedBy].filter(Boolean).join(' ') || undefined;
+  const describedById = joinIds(errorId, describedBy);
   const { onChange } = formField;
   const multipleFiles = field.type === 'file' && field.multiple;
   const onTextChange = useCallback(

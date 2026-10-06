@@ -8,6 +8,7 @@ import {
   FormFieldLabel,
 } from '@/components/ui/form-field';
 import { deepEqual } from '@/lib';
+import { joinIds } from './aria-ids';
 import { DataFetcher } from './data-fetcher';
 import {
   clampSliderValue,
@@ -377,11 +378,6 @@ interface BuiltInFieldProps {
   strings?: Partial<BooleanRadioGroupStrings>;
   /** Id of the changed-field note, when the field is flagged as changed. */
   changedNoteId?: string;
-}
-
-/** Space-joins the ids that are set, or `undefined` when none is. */
-function joinIds(...ids: (string | false | undefined)[]): string | undefined {
-  return ids.filter(Boolean).join(' ') || undefined;
 }
 
 function BuiltInField({
