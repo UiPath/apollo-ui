@@ -18,6 +18,7 @@ export * from './checkbox';
 export * from './citation';
 export * from './code-block';
 export * from './collapsible';
+export * from './collapsible-box';
 export * from './combobox';
 export * from './command';
 export * from './context-menu';
