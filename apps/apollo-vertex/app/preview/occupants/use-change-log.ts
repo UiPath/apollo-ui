@@ -40,9 +40,11 @@ export function useChangeLog(
     const message = t(said.key, said.values);
     const undo = (back: Composition) => {
       setView((current) => normalizeView({ ...current, ...back }));
+      // Updating the toast keeps its fields: drop the Undo, it's done.
       toast(t("workbench_change_undone", { change: message }), {
         id: CHANGE_TOAST,
         toasterId: WORKBENCH_TOASTER,
+        action: null,
       });
     };
     toast(message, {
@@ -50,7 +52,13 @@ export function useChangeLog(
       toasterId: WORKBENCH_TOASTER,
       action: {
         label: t("workbench_change_undo"),
-        onClick: () => undo(before),
+        onClick: (event) => {
+          // The Undone toast takes this one's place. Sonner would also
+          // dismiss it, and that dismissal, by the shared id, could take
+          // the next change's toast with it.
+          event.preventDefault();
+          undo(before);
+        },
       },
     });
   };
