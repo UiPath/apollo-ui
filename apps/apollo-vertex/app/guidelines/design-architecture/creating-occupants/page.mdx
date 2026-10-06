@@ -266,14 +266,16 @@ menu in the dock holds the shell.
 The template declares how much each slot holds, so the contents follow
 it. A slot that holds one shows its occupant with Replace and Clear, and
 the picker when it's empty. A slot that holds a panel (`holds: "panel"`)
-lists its tabs, each with its occupants and "Add to this tab", then "New
-tab": which one you press decides tab or stack. The picker under it lists
-only occupants that fit the slot and aren't on the page yet, and says how
-many it leaves out, and why. A tab that becomes a stack takes the first
-preset label no tab has, shown as a chip you can press to pick another.
-Only real limits lock a button: a fill occupant is alone in its tab, and
-a panel has at most five tabs. The occupant you're looking at stays in its
-slot. Offering each occupant once on the page is the workbench's rule,
+lists its tabs as rows, each named as the page names it, with a "+" that
+adds to that tab, then "New tab": which one you press decides tab or
+stack. A stack's row is its label chip, with its occupants as rows under
+it. The picker opens under the row, lists only occupants that fit the
+slot and aren't on the page yet, and says how many it leaves out, and
+why. A tab that becomes a stack takes the first preset label no tab has;
+press the chip to pick another. The tab you add to is the one the page
+shows. Only real limits lock, and a lock is an icon with why in its
+tooltip: a fill occupant is alone in its tab, a panel has at most five
+tabs, and the occupant you're looking at stays in its slot. Offering each occupant once on the page is the workbench's rule,
 not composition's.
 
 Links carry each slot's contents as `<slot>-contents`. Tabs are joined by
