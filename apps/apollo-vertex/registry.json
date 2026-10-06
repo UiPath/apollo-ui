@@ -2340,6 +2340,10 @@
         {
           "path": "registry/side-panel/side-panel-tab-bar.tsx",
           "type": "registry:ui"
+        },
+        {
+          "path": "registry/side-panel/side-panel-tab-fit.ts",
+          "type": "registry:ui"
         }
       ]
     },
