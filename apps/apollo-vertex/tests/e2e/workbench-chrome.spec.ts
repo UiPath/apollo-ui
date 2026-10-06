@@ -186,3 +186,84 @@ test("the surface view uses the same canvas", async ({ page }) => {
   expect(stage).not.toBe(chrome);
   expect(stage).not.toBe("rgba(0, 0, 0, 0)");
 });
+
+for (const theme of ["light", "dark"] as const) {
+  test(`the frame is borderless, rounded, and clipped; the dots read but stay quiet, ${theme}`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1600, height: 1000 });
+    await open(
+      page,
+      `?view=template&end-panel-contents=queue&mode=edit&theme=${theme}`,
+    );
+    await page.locator("[data-slot=workbench-edit-slot]").first().waitFor();
+    await settle(page);
+    const seen = await page.evaluate(() => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 1;
+      canvas.height = 1;
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      if (!ctx) throw new Error("No 2D context");
+      const rgb = (color: string, under = "#fff") => {
+        ctx.fillStyle = under;
+        ctx.fillRect(0, 0, 1, 1);
+        ctx.fillStyle = color;
+        ctx.fillRect(0, 0, 1, 1);
+        return [...ctx.getImageData(0, 0, 1, 1).data].slice(0, 3);
+      };
+      const luminance = (c: number[]) => {
+        const [r = 0, g = 0, b = 0] = c.map((v) => {
+          const x = v / 255;
+          return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
+        });
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      };
+      const ratio = (a: number[], b: number[]) => {
+        const [hi = 0, lo = 0] = [luminance(a), luminance(b)].toSorted(
+          (x, y) => y - x,
+        );
+        return (hi + 0.05) / (lo + 0.05);
+      };
+      const root = document.querySelector("[data-slot=workbench]");
+      const token = (name: string, property: "color" | "borderRadius") => {
+        const probe = document.createElement("span");
+        probe.style[property] = `var(${name})`;
+        root?.append(probe);
+        const value = getComputedStyle(probe)[property];
+        probe.remove();
+        return value;
+      };
+      const frame = document.querySelector("[data-slot=workbench-frame]");
+      const clip = document.querySelector("[data-slot=workbench-frame-clip]");
+      const slot = document.querySelector("[data-edit-slot=main]");
+      if (!frame || !clip || !slot) throw new Error("No frame");
+      const frameStyle = getComputedStyle(frame);
+      const clipStyle = getComputedStyle(clip);
+      const ground = rgb(clipStyle.backgroundColor);
+      const canvasColor = rgb(token("--workbench-canvas", "color"));
+      return {
+        border: [frameStyle.borderTopWidth, frameStyle.outlineStyle],
+        radius: [frameStyle.borderRadius, clipStyle.borderRadius],
+        cardRadius: token("--radius-xl", "borderRadius"),
+        clips: clipStyle.overflow,
+        lifted: frameStyle.boxShadow !== "none",
+        frameOnCanvas: ratio(ground, canvasColor),
+        dots: ratio(rgb(token("--workbench-dots", "color")), canvasColor),
+        outline: ratio(
+          rgb(getComputedStyle(slot).outlineColor, clipStyle.backgroundColor),
+          ground,
+        ),
+      };
+    });
+    // No border; the card's radius, on the frame and its clip.
+    expect(seen.border).toEqual(["0px", "none"]);
+    expect(seen.radius).toEqual([seen.cardRadius, seen.cardRadius]);
+    expect(seen.clips).toBe("hidden");
+    // Apart from the canvas by its shade and a lift.
+    expect(seen.lifted).toBe(true);
+    expect(seen.frameOnCanvas).toBeGreaterThan(1.05);
+    // The dots read as a grid, and stay quieter than a slot's outline.
+    expect(seen.dots).toBeGreaterThan(1.25);
+    expect(seen.dots).toBeLessThan(seen.outline);
+  });
+}

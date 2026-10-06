@@ -184,9 +184,9 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
       <div
         data-slot="workbench"
         data-theme={view.theme}
-        // The stage's canvas is recessed: one step darker than the chrome,
-        // in either theme, with dots at a low contrast to match.
-        className="fixed inset-0 z-50 flex bg-background text-foreground not-prose [--workbench-canvas:var(--sidebar)] [--workbench-dots:color-mix(in_oklab,var(--muted-foreground)_8%,var(--workbench-canvas))]"
+        // A recessed canvas, a step darker than the chrome in either theme;
+        // its dots read as a grid, quieter than any Edit-mode slot outline.
+        className="fixed inset-0 z-50 flex bg-background text-foreground not-prose [--workbench-canvas:var(--sidebar)] [--workbench-dots:color-mix(in_oklab,var(--muted-foreground)_20%,var(--workbench-canvas))]"
       >
         <WorkbenchPanel id={LIST_ID} open={view.listOpen} kind="list">
           <OccupantList
