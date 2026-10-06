@@ -8,6 +8,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { PreviewShellVariant } from "@/templates/shell/PreviewShell";
 import { Choice } from "./layout-choice";
 
@@ -27,12 +32,22 @@ export function ShellMenu({ shell, onShell }: ShellMenuProps) {
   const { t } = useTranslation();
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" data-slot="workbench-shell">
-          <PanelLeft aria-hidden />
-          {t("workbench_shell")}
-        </Button>
-      </PopoverTrigger>
+      {/* An icon alone, so the dock fits one row on a laptop screen. */}
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              size="icon-sm"
+              data-slot="workbench-shell"
+              aria-label={t("workbench_shell")}
+            >
+              <PanelLeft aria-hidden />
+            </Button>
+          </PopoverTrigger>
+        </TooltipTrigger>
+        <TooltipContent>{t("workbench_shell")}</TooltipContent>
+      </Tooltip>
       <PopoverContent
         side="top"
         align="start"

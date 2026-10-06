@@ -246,3 +246,23 @@ test("the dock stays above the template, every control reachable", async ({
     "Main",
   );
 });
+
+test("the dock fits one row on a 1416px window, with the list open", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1416, height: 900 });
+  await open(page, "?occupant=queue&view=template");
+  await page.evaluate(() => document.fonts.ready);
+  const rows = await page.locator("[data-slot=workbench-dock]").evaluate(
+    (dock) =>
+      new Set(
+        [...dock.children].map((part) => {
+          const box = part.getBoundingClientRect();
+          return Math.round(box.top + box.height / 2);
+        }),
+      ).size,
+  );
+  expect(rows).toBe(1);
+  // The shell is an icon there, named for its menu.
+  await expect(page.getByRole("button", { name: "Shell" })).toBeVisible();
+});
