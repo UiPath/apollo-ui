@@ -210,9 +210,9 @@ Before running anything, it reviews what it wrote:
 
 Then it measures the minimum width and runs the [checks](#checks), fixing
 failures inside the occupant and explaining any it can't. Last, it gives you
-the links to try it in the [occupant workbench](/preview/occupants), in the
-surface view and the template view, with every sample, state, theme, and
-width.
+the links to try it in the [occupant workbench](/preview/occupants): in the
+surface view with every sample, state, theme, and width, and in the
+template view on a page with other occupants.
 
 ### Take a proposal forward
 
@@ -233,9 +233,9 @@ The workbench shows every surface and template that's registered for
 previews, with no change to the workbench itself. Each template declares its
 slots, their rules, its layout, and the choices a page has per slot (leave
 it out, close it, or place it elsewhere) in its spec, and the workbench
-reads them. Its page map is the template's declared layout, and each
-slot's popover offers exactly the choices that slot declares, locking only
-what the layout refuses or the slot holding the occupant needs. Links name
+reads them. The surface view's page map is the default template's
+declared layout, and the template view's inspector offers exactly the
+choices each slot declares, locking only what the layout refuses. Links name
 the template's slots: `<slot>-present`, `<slot>-state`, and
 `<slot>-placement`.
 
@@ -254,37 +254,61 @@ the template's slots: `<slot>-present`, `<slot>-state`, and
 
 Unit tests fail until each has everything it needs.
 
+### Two views
+
+The workbench has two views, switched with Surface | Template in the
+header:
+
+- **The surface view** shows one occupant in one surface. Sample and
+  State in the header pick its example and its state, like loading or
+  empty, and they're only here. The right-hand column is
+  Details: where it fits, its spec, and its checks.
+- **The template view** shows a whole page. There's no focused
+  occupant: every occupant on the page is one of its contents, renders
+  its primary sample in its ready state, and can be removed or replaced.
+  The right-hand column is the inspector, and Details never shows here.
+
+The header's panel toggle opens and closes the column the view has. The
+inspector is open only in Edit mode, so in Preview the toggle switches to
+Edit. Opening the template view on an empty page puts the occupant
+selected in the list in the first slot that fits it, in the template's
+slot order. After that, it's an ordinary occupant. In the template view,
+clicking an occupant in the list switches to Edit and selects its slot,
+or, for one that isn't on the page, says how to add it. Back in the surface view, the occupant last selected
+in the list is the one that opens.
+
 ### Compose a slot
 
 The template view has two modes, switched with Preview | Edit in the
 header and carried in links as `mode=edit`:
 
 - **Preview**, the default, is the page as people use it: no outlines,
-  and every occupant works.
-- **Edit** outlines every slot with its name, and makes the occupants
-  inert and slightly dimmed. A click anywhere in a slot, or Enter on it,
-  opens its popover beside the slot, toward the middle of the page. No
-  slot changes width. A slot that's left out shows as a ghost where it
-  would sit: click it to include it.
+  and every occupant works. The inspector is closed.
+- **Edit** opens the inspector, outlines every slot with its name, and
+  makes the occupants inert and slightly dimmed. A click anywhere in a
+  slot selects it, with a solid outline, and the inspector shows it.
+  A slot that's left out shows as a ghost where it would sit, and a
+  closed one as a strip on its edge; each is selected the same way.
+  Escape deselects. With nothing selected, the inspector says to select
+  a slot.
 
-In either mode, each slot's chip in the dock opens its popover too,
-above the chip. A chip shows how many occupants its slot holds, or,
-dashed, that it's left out. The popover
-has the slot's contents first, then "Move Queue here", with the name of
-the occupant you're looking at, for a slot it isn't in, then its layout.
-A slot that's left out says to include it first. The Shell menu in the
-dock holds the shell.
+The inspector is the one place to edit a slot: its contents first, then
+its layout. A slot that's left out says to include it first. It sits
+beside the stage, so the stage narrows and Fit scales the page to suit;
+the page's width and every slot's width stay the same. By keyboard,
+slots are focusable: Enter selects one and moves focus into the
+inspector, and Escape returns focus to the slot. The dock holds the
+shell, the page width, and the zoom.
 
 In Edit mode, you can also drag an occupant from the list onto the page.
-Occupants on the page, and the one you're looking at, are marked "On
-the page" and don't drag. Where you drop it decides what happens:
+Occupants on the page are marked "On the page" and don't drag. Where you
+drop it decides what happens:
 
 - **Between two tabs, or at the end of a tab bar:** a new tab there,
   shown by an insertion line.
 - **On a tab's label:** into that tab, which becomes a stack.
 - **On a tab's content:** into the tab that's showing.
-- **On a slot that holds one:** in place of the occupant there, unless
-  it's the one you're looking at.
+- **On a slot that holds one:** in place of the occupant there.
 - **On a left-out slot's ghost:** the slot is included, with the
   occupant in it, as one change.
 
@@ -292,16 +316,16 @@ A place that refuses the occupant is dimmed while you drag, and says why
 when you're over it. A fill occupant can still go between tabs. After a
 drop, the tab it went in shows. By keyboard, focus an occupant's handle
 in the list, press Space, move between places with the arrow keys, and
-press Space to drop. The popover offers the same choices, by the same
-rules: a drop is allowed exactly where the popover would offer that
+press Space to drop. The inspector offers the same choices, by the same
+rules: a drop is allowed exactly where the inspector would offer that
 occupant.
 
 Every change to what the page holds or how it's laid out says what it
 did in a toast, like "Key facts added to End panel", with an Undo for
 that change. A newer change replaces the toast, so Undo is always for
-the latest. In Edit mode, Reset layout in the header puts every slot's
-contents and layout back to the template's defaults, with the occupant
-you're looking at in its slot; its toast undoes it too.
+the latest. In Edit mode, Reset layout in the header empties every slot
+and puts every slot's layout back to the template's defaults; its toast
+undoes it too.
 
 The template declares how much each slot holds, so the contents follow
 it. A slot that holds one shows its occupant with Replace and Clear, and
@@ -314,8 +338,8 @@ slot and aren't on the page yet, and says how many it leaves out, and
 why. A tab that becomes a stack takes the first preset label no tab has;
 press the chip to pick another. The tab you add to is the one the page
 shows. Only real limits lock, and a lock is an icon with why in its
-tooltip: a fill occupant is alone in its tab, a panel has at most five
-tabs, and the occupant you're looking at stays in its slot. Offering each occupant once on the page is the workbench's rule,
+tooltip: a fill occupant is alone in its tab, and a panel has at most five
+tabs. Offering each occupant once on the page is the workbench's rule,
 not composition's.
 
 Links carry each slot's contents as `<slot>-contents`. Tabs are joined by
