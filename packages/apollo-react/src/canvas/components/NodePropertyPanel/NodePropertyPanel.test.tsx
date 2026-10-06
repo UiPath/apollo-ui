@@ -315,6 +315,49 @@ describe('NodePropertyPanel', () => {
         expect(scrollIntoView.mock.instances[0]).toBe(methodField);
         expect(scrollIntoView).toHaveBeenCalledWith(expect.objectContaining({ block: 'nearest' }));
       });
+
+      it('scrolls to a field whose name has a quote, a space, a dot and a backslash', () => {
+        const scrollIntoView = vi.fn();
+        Element.prototype.scrollIntoView = scrollIntoView;
+        const name = 'say "hi" a.b\\c';
+        const schema: FormSchema = {
+          id: 'odd',
+          title: 'Odd',
+          sections: [{ id: 'p', fields: [{ name, type: 'text', label: 'Odd' }] }],
+        };
+
+        const { container } = render(<NodePropertyPanel schema={schema} changedFields={[name]} />);
+
+        const field = [...container.querySelectorAll('[data-field-name]')].find(
+          (el) => el.getAttribute('data-field-name') === name
+        );
+        expect(field).toBeDefined();
+        expect(scrollIntoView).toHaveBeenCalledOnce();
+        expect(scrollIntoView.mock.instances[0]).toBe(field);
+      });
+
+      it("treats ['a|b'] and ['a', 'b'] as different changes", () => {
+        const scrollIntoView = vi.fn();
+        Element.prototype.scrollIntoView = scrollIntoView;
+        const schema: FormSchema = {
+          id: 'pipes',
+          title: 'Pipes',
+          sections: [
+            {
+              id: 'p',
+              fields: [
+                { name: 'a|b', type: 'text', label: 'A or B' },
+                { name: 'a', type: 'text', label: 'A' },
+              ],
+            },
+          ],
+        };
+
+        const { rerender } = render(<NodePropertyPanel schema={schema} changedFields={['a|b']} />);
+        rerender(<NodePropertyPanel schema={schema} changedFields={['a', 'b']} />);
+
+        expect(scrollIntoView).toHaveBeenCalledTimes(2);
+      });
     });
   });
 });

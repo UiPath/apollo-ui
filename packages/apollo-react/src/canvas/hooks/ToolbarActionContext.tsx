@@ -8,6 +8,7 @@
 
 import { createContext, type ReactNode, useContext, useEffect, useMemo, useRef } from 'react';
 import type { ToolbarActionHandler } from '../schema/toolbar';
+import { addMountedCanvas, newestMountedCanvas, removeMountedCanvas } from './mountedCanvases';
 
 export interface ToolbarActionStore {
   mode: string;
@@ -38,12 +39,9 @@ export function getToolbarActionStore(): ToolbarActionStore {
   return toolbarActionStore;
 }
 
-// Stores of the mounted canvases, oldest first; the module-level store mirrors the newest.
-const mountedCanvases: { store: ToolbarActionStore }[] = [];
-
 function syncToNewestCanvas(): void {
   setToolbarActionStore(
-    mountedCanvases[mountedCanvases.length - 1]?.store ?? {
+    newestMountedCanvas()?.store ?? {
       mode: 'design',
       onToolbarAction: undefined,
       breakpoints: undefined,
@@ -64,10 +62,10 @@ export function useToolbarActionStore(
 
   useEffect(() => {
     const entry = entryRef.current;
-    mountedCanvases.push(entry);
+    addMountedCanvas(entry);
     syncToNewestCanvas();
     return () => {
-      mountedCanvases.splice(mountedCanvases.indexOf(entry), 1);
+      removeMountedCanvas(entry);
       syncToNewestCanvas();
     };
   }, []);

@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { NodeStatusContext } from '../components/BaseNode/BaseNode.types';
+import { getToolbarActionStore, setToolbarActionStore } from '../hooks/ToolbarActionContext';
 import type { NodeManifest } from '../schema/node-definition';
 import { resolveToolbar } from './toolbar-resolver';
 
@@ -119,6 +120,26 @@ describe('resolveToolbar', () => {
 
       expect(deletes).toHaveLength(1);
       expect(deletes[0]!.label).toBe('Remove forever');
+    });
+  });
+
+  describe('nodeData', () => {
+    const originalStore = getToolbarActionStore();
+    afterEach(() => {
+      setToolbarActionStore(originalStore);
+    });
+
+    it('passes the third argument through to the handler as nodeData', () => {
+      const onToolbarAction = vi.fn();
+      setToolbarActionStore({ mode: 'design', onToolbarAction });
+      const nodeData = { label: 'Script' };
+
+      const actions = resolveToolbar(plainManifest, context, nodeData)?.actions ?? [];
+      actions.find((action) => action.id === 'delete')?.onAction('n1');
+
+      expect(onToolbarAction).toHaveBeenCalledWith(
+        expect.objectContaining({ actionId: 'delete', nodeId: 'n1', nodeData })
+      );
     });
   });
 });

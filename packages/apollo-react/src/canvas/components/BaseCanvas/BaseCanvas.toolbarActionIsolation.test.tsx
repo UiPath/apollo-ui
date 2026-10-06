@@ -92,7 +92,7 @@ describe('two BaseCanvas instances mounted side by side (e.g. a before/after dif
     // The store each canvas resolves is exactly what a node inside it would
     // get from `resolveToolbar` - prove the handler wiring is isolated too,
     // by invoking a resolved action's `onAction` directly.
-    const actionsB = resolveToolbar(manifest, nodeContext, { store: storeB })?.actions ?? [];
+    const actionsB = resolveToolbar(manifest, nodeContext, undefined, storeB)?.actions ?? [];
     const deleteAction = actionsB.find((action) => action.id === 'delete');
     expect(deleteAction).toBeDefined();
 
