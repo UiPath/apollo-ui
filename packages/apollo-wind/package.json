@@ -66,6 +66,7 @@
     "build": "rslib build && npm run build:css",
     "build:css": "npx @tailwindcss/cli -i ./src/styles/tailwind.css -o ./dist/styles.css",
     "test": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
     "lint": "biome lint .",
