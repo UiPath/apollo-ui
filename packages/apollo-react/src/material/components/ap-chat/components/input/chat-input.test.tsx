@@ -2,7 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type React from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { AutopilotAttachmentsProvider } from '../../../../../chat/headless/providers/attachements-provider';
+import { AutopilotAttachmentsProvider } from '../../../../../chat/headless/providers/attachments-provider';
 import { AutopilotChatServiceProvider } from '../../../../../chat/headless/providers/chat-service.provider';
 import { AutopilotChatStateProvider } from '../../../../../chat/headless/providers/chat-state-provider';
 import { AutopilotErrorProvider } from '../../../../../chat/headless/providers/error-provider';

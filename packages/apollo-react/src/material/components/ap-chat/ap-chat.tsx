@@ -2,7 +2,7 @@ import { ThemeProvider as MuiThemeProvider, styled } from '@mui/material/styles'
 import token from '@uipath/apollo-core';
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { AutopilotAttachmentsProvider } from '../../../chat/headless/providers/attachements-provider';
+import { AutopilotAttachmentsProvider } from '../../../chat/headless/providers/attachments-provider';
 import { AutopilotChatScrollProvider } from '../../../chat/headless/providers/chat-scroll-provider';
 import { AutopilotChatServiceProvider } from '../../../chat/headless/providers/chat-service.provider';
 import {

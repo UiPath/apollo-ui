@@ -1,14 +1,22 @@
 import type { AutopilotChatEventHandler, AutopilotChatInternalEvent } from './ChatModel';
 import { EventBus } from './EventBus';
 
+/**
+ * Internal events between the chat service and its renderer. Each AutopilotChatService owns one,
+ * so instances on the same page do not see each other's theme, locale or toggle events.
+ */
 export class AutopilotChatInternalService {
   private static instance: AutopilotChatInternalService;
   private eventBus: EventBus;
 
-  private constructor() {
+  constructor() {
     this.eventBus = new EventBus();
   }
 
+  /**
+   * @deprecated Chat services no longer share an internal service; this singleton is not
+   * connected to any of them. Use `chatService.__internalService__` instead.
+   */
   static Instantiate() {
     if (!AutopilotChatInternalService.instance) {
       AutopilotChatInternalService.instance = new AutopilotChatInternalService();
@@ -17,6 +25,9 @@ export class AutopilotChatInternalService {
     return AutopilotChatInternalService.instance;
   }
 
+  /**
+   * @deprecated See {@link AutopilotChatInternalService.Instantiate}.
+   */
   static get Instance() {
     return AutopilotChatInternalService.instance;
   }
