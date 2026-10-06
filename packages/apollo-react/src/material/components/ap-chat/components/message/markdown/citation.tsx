@@ -4,15 +4,15 @@ import { Box } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 import { ApIcon } from '@uipath/apollo-react/material/components';
 import React from 'react';
-import { ApTypography } from '../../../../ap-typography';
-import { useChatService } from '../../../providers/chat-service.provider';
-import { useChatState } from '../../../providers/chat-state-provider';
+import { useChatService } from '../../../../../../chat/headless/providers/chat-service.provider';
+import { useChatState } from '../../../../../../chat/headless/providers/chat-state-provider';
 import {
   AutopilotChatPreHookAction,
   CHAT_CITATION_START,
   type PdfCitation,
   type UrlCitation,
-} from '../../../service';
+} from '../../../../../../chat/service';
+import { ApTypography } from '../../../../ap-typography';
 import { AutopilotChatTooltip } from '../../common/tooltip';
 
 // Helpers for additive range highlighting

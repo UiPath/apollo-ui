@@ -1,8 +1,7 @@
 import React from 'react';
-
+import type { AutopilotChatMessage } from '../../service';
+import { AutopilotChatEvent } from '../../service';
 import { useChatService } from '../providers/chat-service.provider';
-import type { AutopilotChatMessage } from '../service';
-import { AutopilotChatEvent } from '../service';
 
 export const useIsStreamingMessage = (message: AutopilotChatMessage) => {
   const chatService = useChatService();

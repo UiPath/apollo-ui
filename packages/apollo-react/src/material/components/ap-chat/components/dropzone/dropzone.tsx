@@ -4,13 +4,12 @@ import { styled } from '@mui/material/styles';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 import React from 'react';
 import { type DropzoneOptions, ErrorCode, type FileRejection, useDropzone } from 'react-dropzone';
-
+import { useAttachments } from '../../../../../chat/headless/providers/attachements-provider';
+import { useChatState } from '../../../../../chat/headless/providers/chat-state-provider';
+import { useError } from '../../../../../chat/headless/providers/error-provider';
+import { parseFiles } from '../../../../../chat/headless/utils/file-reader';
+import type { AutopilotChatFileInfo } from '../../../../../chat/service';
 import { ApTypography } from '../../../ap-typography';
-import { useAttachments } from '../../providers/attachements-provider';
-import { useChatState } from '../../providers/chat-state-provider';
-import { useError } from '../../providers/error-provider';
-import type { AutopilotChatFileInfo } from '../../service';
-import { parseFiles } from '../../utils/file-reader';
 
 interface AutopilotChatDropzoneProps extends DropzoneOptions {
   children: React.ReactNode;

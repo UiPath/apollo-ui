@@ -18,12 +18,11 @@ import React, {
 } from 'react';
 import type { RowComponentProps } from 'react-window';
 import { List, type ListImperativeAPI, useListRef } from 'react-window';
-import { ApSkeleton } from '../../../ap-skeleton';
-import { useChatState } from '../../providers/chat-state-provider';
+import { useChatState } from '../../../../../chat/headless/providers/chat-state-provider';
 import {
   isResourceSelector,
   useAutopilotChatResourcePicker,
-} from '../../providers/resource-picker-provider';
+} from '../../../../../chat/headless/providers/resource-picker-provider';
 import {
   type AutopilotChatResourceItem,
   CHAT_RESOURCE_PICKER_ITEM_HEIGHT,
@@ -33,7 +32,8 @@ import {
   CHAT_RESOURCE_PICKER_MENU_WIDTH,
   CHAT_RESOURCE_PICKER_MIN_SKELETON_COUNT,
   CHAT_RESOURCE_PICKER_TOOLTIP_ENTER_DELAY,
-} from '../../service';
+} from '../../../../../chat/service';
+import { ApSkeleton } from '../../../ap-skeleton';
 import { AutopilotChatIconButton } from '../common/icon-button';
 import { AutopilotChatTooltip } from '../common/tooltip';
 

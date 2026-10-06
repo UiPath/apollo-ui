@@ -3,11 +3,11 @@ import { useLingui } from '@lingui/react';
 import { styled } from '@mui/material/styles';
 import token from '@uipath/apollo-core';
 import React from 'react';
-import { useAttachments } from '../../providers/attachements-provider';
-import { useChatService } from '../../providers/chat-service.provider';
-import { useChatState } from '../../providers/chat-state-provider';
-import { usePicker } from '../../providers/picker-provider';
-import { AutopilotChatMode, AutopilotChatPreHookAction } from '../../service';
+import { useAttachments } from '../../../../../chat/headless/providers/attachements-provider';
+import { useChatService } from '../../../../../chat/headless/providers/chat-service.provider';
+import { useChatState } from '../../../../../chat/headless/providers/chat-state-provider';
+import { usePicker } from '../../../../../chat/headless/providers/picker-provider';
+import { AutopilotChatMode, AutopilotChatPreHookAction } from '../../../../../chat/service';
 import { AutopilotChatActionButton } from '../common/action-button';
 import { AutopilotChatHeaderActionMenu } from './header-action-menu';
 

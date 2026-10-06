@@ -7,14 +7,10 @@ import { differenceInDays, differenceInMonths, isToday, isYesterday } from 'date
 import debounce from 'debounce';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import FocusLock from 'react-focus-lock';
-
-import { ApSkeleton } from '../../../ap-skeleton';
-import { ApTextField } from '../../../ap-text-field';
-import { ApTypography } from '../../../ap-typography';
-import { useScheduledCallback } from '../../hooks/use-scheduled-callback';
-import { useChatService } from '../../providers/chat-service.provider';
-import { useChatState } from '../../providers/chat-state-provider';
-import { useChatWidth } from '../../providers/chat-width-provider';
+import { useScheduledCallback } from '../../../../../chat/headless/hooks/use-scheduled-callback';
+import { useChatService } from '../../../../../chat/headless/providers/chat-service.provider';
+import { useChatState } from '../../../../../chat/headless/providers/chat-state-provider';
+import { useChatWidth } from '../../../../../chat/headless/providers/chat-width-provider';
 import {
   AutopilotChatEvent,
   type AutopilotChatHistorySearchPayload,
@@ -23,7 +19,10 @@ import {
   CHAT_HISTORY_FULL_SCREEN_WIDTH,
   CHAT_HISTORY_SIDE_BY_SIDE_MAX_HEIGHT,
   CHAT_HISTORY_SIDE_BY_SIDE_MAX_WIDTH,
-} from '../../service';
+} from '../../../../../chat/service';
+import { ApSkeleton } from '../../../ap-skeleton';
+import { ApTextField } from '../../../ap-text-field';
+import { ApTypography } from '../../../ap-typography';
 import { AutopilotChatHistoryGroup } from './chat-history-group';
 
 const ChatHistoryContainer = styled('div')<{

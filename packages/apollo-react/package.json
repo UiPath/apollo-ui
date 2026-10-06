@@ -135,7 +135,12 @@
       "import": "./dist/chat/index.js",
       "require": "./dist/chat/index.cjs"
     },
-    "./chat/styles/*.css": "./dist/chat/styles/*.css"
+    "./chat/styles/*.css": "./dist/chat/styles/*.css",
+    "./chat/service": {
+      "types": "./dist/chat/service/index.d.ts",
+      "import": "./dist/chat/service/index.js",
+      "require": "./dist/chat/service/index.cjs"
+    }
   },
   "sideEffects": [
     "**/*.css",

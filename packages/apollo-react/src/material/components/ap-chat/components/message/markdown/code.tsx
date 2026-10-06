@@ -7,10 +7,9 @@ import katex from 'katex';
 import React from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
-
+import { useChatState } from '../../../../../../chat/headless/providers/chat-state-provider';
+import { useTheme } from '../../../../../../chat/headless/providers/theme-provider';
 import { ApChip } from '../../../../ap-chip';
-import { useChatState } from '../../../providers/chat-state-provider';
-import { useTheme } from '../../../providers/theme-provider';
 import { AutopilotChatActionButton } from '../../common/action-button';
 
 enum LANGUAGES {

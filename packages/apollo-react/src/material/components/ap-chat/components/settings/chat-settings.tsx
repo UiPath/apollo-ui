@@ -3,9 +3,9 @@ import token from '@uipath/apollo-core';
 import React, { useEffect, useRef } from 'react';
 import FocusLock from 'react-focus-lock';
 
-import { useChatService } from '../../providers/chat-service.provider';
-import { useChatState } from '../../providers/chat-state-provider';
-import { CHAT_DRAWER_WIDTH_FULL_SCREEN } from '../../service';
+import { useChatService } from '../../../../../chat/headless/providers/chat-service.provider';
+import { useChatState } from '../../../../../chat/headless/providers/chat-state-provider';
+import { CHAT_DRAWER_WIDTH_FULL_SCREEN } from '../../../../../chat/service';
 import { AutopilotChatSettingsHeader } from './chat-settings-header';
 
 const ChatSettingsContainer = styled('div')<{ isOpen: boolean; isFullScreen: boolean }>(

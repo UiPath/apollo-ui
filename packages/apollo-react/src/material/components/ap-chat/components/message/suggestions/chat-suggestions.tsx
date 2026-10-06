@@ -3,11 +3,13 @@ import { useLingui } from '@lingui/react';
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
 import React from 'react';
-
+import { useChatService } from '../../../../../../chat/headless/providers/chat-service.provider';
+import { useChatState } from '../../../../../../chat/headless/providers/chat-state-provider';
+import {
+  AutopilotChatInternalEvent,
+  type AutopilotChatSuggestion,
+} from '../../../../../../chat/service';
 import { ApTypography } from '../../../../ap-typography';
-import { useChatService } from '../../../providers/chat-service.provider';
-import { useChatState } from '../../../providers/chat-state-provider';
-import { AutopilotChatInternalEvent, type AutopilotChatSuggestion } from '../../../service';
 
 const SuggestionList = styled('div')(
   ({ disableAnimation, gap }: { disableAnimation?: boolean; gap: number }) => ({

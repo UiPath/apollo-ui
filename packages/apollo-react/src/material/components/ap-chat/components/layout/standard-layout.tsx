@@ -6,7 +6,7 @@ import {
   type AutopilotChatMode,
   CHAT_DRAWER_WIDTH_FULL_SCREEN,
   CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,
-} from '../../service';
+} from '../../../../../chat/service';
 import { AutopilotChatHeader } from '../header/header';
 import { AutopilotChatHistory } from '../history/chat-history';
 import { AutopilotChatInput } from '../input/chat-input';

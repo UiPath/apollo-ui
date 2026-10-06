@@ -3,18 +3,18 @@ import { useLingui } from '@lingui/react';
 import { Box, styled } from '@mui/material';
 import token, { type FontVariantToken } from '@uipath/apollo-core';
 import React from 'react';
-import { useAttachments } from '../../providers/attachements-provider';
-import { useChatService } from '../../providers/chat-service.provider';
-import { useChatState } from '../../providers/chat-state-provider';
-import { useLoading } from '../../providers/loading-provider';
-import { useResourceData } from '../../providers/resource-data-provider';
-import { useStreaming } from '../../providers/streaming-provider';
+import { useAttachments } from '../../../../../chat/headless/providers/attachements-provider';
+import { useChatService } from '../../../../../chat/headless/providers/chat-service.provider';
+import { useChatState } from '../../../../../chat/headless/providers/chat-state-provider';
+import { useLoading } from '../../../../../chat/headless/providers/loading-provider';
+import { useResourceData } from '../../../../../chat/headless/providers/resource-data-provider';
+import { useStreaming } from '../../../../../chat/headless/providers/streaming-provider';
+import { parseFiles } from '../../../../../chat/headless/utils/file-reader';
 import {
   AutopilotChatEvent,
   AutopilotChatInternalEvent,
   type AutopilotChatPrompt,
-} from '../../service';
-import { parseFiles } from '../../utils/file-reader';
+} from '../../../../../chat/service';
 import { fontByVariant } from '../../utils/font-by-variant';
 import { AutopilotChatInputActions } from './chat-input-actions';
 import { AutopilotChatInputAttachments } from './chat-input-attachments';

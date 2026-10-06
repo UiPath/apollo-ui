@@ -2,24 +2,23 @@ import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type React from 'react';
 import { describe, expect, it, vi } from 'vitest';
-
-import { ApI18nProvider } from '../../../../../i18n';
-import { AutopilotAttachmentsProvider } from '../../providers/attachements-provider';
-import { AutopilotChatServiceProvider } from '../../providers/chat-service.provider';
-import { AutopilotChatStateProvider } from '../../providers/chat-state-provider';
-import { AutopilotErrorProvider } from '../../providers/error-provider';
-import { AutopilotLoadingProvider } from '../../providers/loading-provider';
-import { LocaleProvider } from '../../providers/locale-provider';
-import { AutopilotPickerProvider } from '../../providers/picker-provider';
-import { AutopilotResourceDataProvider } from '../../providers/resource-data-provider';
-import { AutopilotStreamingProvider } from '../../providers/streaming-provider';
+import { AutopilotAttachmentsProvider } from '../../../../../chat/headless/providers/attachements-provider';
+import { AutopilotChatServiceProvider } from '../../../../../chat/headless/providers/chat-service.provider';
+import { AutopilotChatStateProvider } from '../../../../../chat/headless/providers/chat-state-provider';
+import { AutopilotErrorProvider } from '../../../../../chat/headless/providers/error-provider';
+import { AutopilotLoadingProvider } from '../../../../../chat/headless/providers/loading-provider';
+import { LocaleProvider } from '../../../../../chat/headless/providers/locale-provider';
+import { AutopilotPickerProvider } from '../../../../../chat/headless/providers/picker-provider';
+import { AutopilotResourceDataProvider } from '../../../../../chat/headless/providers/resource-data-provider';
+import { AutopilotStreamingProvider } from '../../../../../chat/headless/providers/streaming-provider';
 import {
   type AutopilotChatDisabledFeatures,
   AutopilotChatEvent,
   AutopilotChatMode,
   AutopilotChatService,
   DEFAULT_MESSAGE_RENDERER,
-} from '../../service';
+} from '../../../../../chat/service';
+import { ApI18nProvider } from '../../../../../i18n';
 import { AutopilotChatInput } from './chat-input';
 
 let instanceCount = 0;

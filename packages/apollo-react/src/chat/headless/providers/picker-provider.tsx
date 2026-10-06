@@ -6,7 +6,7 @@ import {
   type AutopilotChatCustomHeaderAction,
   AutopilotChatEvent,
   type AutopilotChatModelInfo,
-} from '../service';
+} from '../../service';
 import { useChatService } from './chat-service.provider';
 
 interface PickerContextType {

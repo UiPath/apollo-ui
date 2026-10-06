@@ -1,10 +1,14 @@
 import { useReducer } from 'react';
-import type { CursorCoordinates } from '../components/input/tiptap';
 import {
   type AutopilotChatResourceItem,
   type AutopilotChatResourceItemSelector,
   CHAT_RESOURCE_PICKER_MIN_SKELETON_COUNT,
-} from '../service';
+} from '../../service';
+
+export interface CursorCoordinates {
+  top: number;
+  left: number;
+}
 
 export interface DrillDownState {
   category: AutopilotChatResourceItemSelector;

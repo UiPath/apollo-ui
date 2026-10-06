@@ -1,9 +1,9 @@
 import { Box } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 import React from 'react';
+import { useChatState } from '../../../../../../chat/headless/providers/chat-state-provider';
 import { ApLink } from '../../../../ap-link';
 import { ApTypography } from '../../../../ap-typography';
-import { useChatState } from '../../../providers/chat-state-provider';
 import { fontByVariant } from '../../../utils/font-by-variant';
 
 // Create a context for typography variant

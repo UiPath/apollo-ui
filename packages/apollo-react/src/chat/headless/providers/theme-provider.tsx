@@ -1,8 +1,8 @@
 import type React from 'react';
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
-import type { ApChatTheme } from '../service/ChatModel';
-import { AutopilotChatInternalEvent } from '../service/ChatModel';
+import type { ApChatTheme } from '../../service/ChatModel';
+import { AutopilotChatInternalEvent } from '../../service/ChatModel';
 import { useChatService } from './chat-service.provider';
 
 interface ThemeContextValue {

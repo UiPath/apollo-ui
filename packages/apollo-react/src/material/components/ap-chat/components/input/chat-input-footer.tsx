@@ -3,9 +3,8 @@ import { useLingui } from '@lingui/react';
 import { Box } from '@mui/material';
 import { FontVariantToken } from '@uipath/apollo-core';
 import React from 'react';
-
+import { useChatState } from '../../../../../chat/headless/providers/chat-state-provider';
 import { ApTypography } from '../../../ap-typography';
-import { useChatState } from '../../providers/chat-state-provider';
 
 function AutopilotChatInputFooterComponent() {
   const { _ } = useLingui();

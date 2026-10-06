@@ -27,7 +27,7 @@ export interface ApI18nProviderProps {
   /**
    * Apollo-react component group whose pre-built lingui catalogs should be
    * activated. Must be a key registered in `locale-registry.ts`
-   * (e.g. `'canvas'`, `'material/components/ap-chat'`). Unknown values log
+   * (e.g. `'canvas'`, `'chat'`). Unknown values log
    * an error and activate empty messages.
    */
   component: string;
@@ -55,7 +55,7 @@ export interface ApI18nProviderProps {
  * ```tsx
  * import { ApI18nProvider } from '@uipath/apollo-react/i18n';
  *
- * <ApI18nProvider component="material/components/ap-chat">
+ * <ApI18nProvider component="chat">
  *   <ApChat chatServiceInstance={chatService} />
  * </ApI18nProvider>
  * ```

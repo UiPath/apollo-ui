@@ -5,7 +5,7 @@ import {
   CHAT_WIDTH_KEY,
   CHAT_WIDTH_SIDE_BY_SIDE_MIN,
   StorageService,
-} from '../service';
+} from '../../service';
 import { useChatService } from './chat-service.provider';
 import { useChatState } from './chat-state-provider';
 

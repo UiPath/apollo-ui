@@ -2,8 +2,8 @@ import { type TooltipProps as MuiTooltipProps, Tooltip } from '@mui/material';
 import token from '@uipath/apollo-core';
 import React from 'react';
 
-import { useChatScroll } from '../../providers/chat-scroll-provider';
-import { useChatState } from '../../providers/chat-state-provider';
+import { useChatScroll } from '../../../../../chat/headless/providers/chat-scroll-provider';
+import { useChatState } from '../../../../../chat/headless/providers/chat-state-provider';
 
 export interface AutopilotChatTooltipProps {
   title: React.ReactNode;

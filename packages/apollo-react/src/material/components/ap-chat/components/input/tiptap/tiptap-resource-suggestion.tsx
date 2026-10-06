@@ -1,17 +1,13 @@
 import type { Editor, Range } from '@tiptap/core';
 import type { MentionOptions } from '@tiptap/extension-mention';
 import { PluginKey } from '@tiptap/pm/state';
-import { CHAT_RESOURCE_MENTION_TERMINATOR } from '../../../service';
+import type { CursorCoordinates } from '../../../../../../chat/headless/hooks/use-resource-picker-state';
+import { CHAT_RESOURCE_MENTION_TERMINATOR } from '../../../../../../chat/service';
 
 export const ResourceMentionPluginKey = new PluginKey('resourceMention');
 
 // Allowed first characters after @ -> letters, digits, underscore, dot, slashes
 const RESOURCE_QUERY_START_PATTERN = /^[a-zA-Z0-9_./\\&]/;
-
-export interface CursorCoordinates {
-  top: number;
-  left: number;
-}
 
 interface ResourceSuggestionCallbacks {
   onStart?: (range: Range, coords: CursorCoordinates) => void;

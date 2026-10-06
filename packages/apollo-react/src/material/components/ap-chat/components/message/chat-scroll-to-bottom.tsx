@@ -3,9 +3,9 @@ import { useLingui } from '@lingui/react';
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
 import React from 'react';
-import { useChatScroll } from '../../providers/chat-scroll-provider';
-import { useChatService } from '../../providers/chat-service.provider';
-import { AutopilotChatEvent, AutopilotChatInternalEvent } from '../../service';
+import { useChatScroll } from '../../../../../chat/headless/providers/chat-scroll-provider';
+import { useChatService } from '../../../../../chat/headless/providers/chat-service.provider';
+import { AutopilotChatEvent, AutopilotChatInternalEvent } from '../../../../../chat/service';
 import { AutopilotChatActionButton } from '../common/action-button';
 
 const ScrollButtonContainer = styled('div')<{ visible: boolean; bottom: number; left: number }>(

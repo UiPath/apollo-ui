@@ -2,11 +2,10 @@ import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { Fade } from '@mui/material';
 import { useEffect, useState } from 'react';
-
+import { useChatService } from '../../../../../../chat/headless/providers/chat-service.provider';
+import { useChatState } from '../../../../../../chat/headless/providers/chat-state-provider';
+import { AutopilotChatEvent } from '../../../../../../chat/service';
 import { ApTypography } from '../../../../ap-typography';
-import { useChatService } from '../../../providers/chat-service.provider';
-import { useChatState } from '../../../providers/chat-state-provider';
-import { AutopilotChatEvent } from '../../../service';
 
 const SECONDS = 1000;
 const FADE_DURATION = 0.5 * SECONDS;

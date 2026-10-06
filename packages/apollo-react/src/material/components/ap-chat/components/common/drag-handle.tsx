@@ -2,16 +2,16 @@ import { styled } from '@mui/material/styles';
 import token from '@uipath/apollo-core';
 import React from 'react';
 
-import { useChatService } from '../../providers/chat-service.provider';
-import { useChatState } from '../../providers/chat-state-provider';
-import { useChatWidth } from '../../providers/chat-width-provider';
+import { useChatService } from '../../../../../chat/headless/providers/chat-service.provider';
+import { useChatState } from '../../../../../chat/headless/providers/chat-state-provider';
+import { useChatWidth } from '../../../../../chat/headless/providers/chat-width-provider';
 import {
   AutopilotChatInternalEvent,
   CHAT_WIDTH_KEY,
   CHAT_WIDTH_SIDE_BY_SIDE_MAX,
   CHAT_WIDTH_SIDE_BY_SIDE_MIN,
   StorageService,
-} from '../../service';
+} from '../../../../../chat/service';
 
 const DragHandleContainer = styled('div')(() => ({
   position: 'absolute',

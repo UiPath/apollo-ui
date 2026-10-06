@@ -5,10 +5,10 @@ import { Menu, MenuItem, styled } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 import { ApIcon } from '@uipath/apollo-react/material/components';
 import React from 'react';
+import { useScheduledCallback } from '../../../../../chat/headless/hooks/use-scheduled-callback';
+import { useChatState } from '../../../../../chat/headless/providers/chat-state-provider';
+import { AutopilotChatInternalEvent } from '../../../../../chat/service';
 import { ApTypography } from '../../../ap-typography';
-import { useScheduledCallback } from '../../hooks/use-scheduled-callback';
-import { useChatState } from '../../providers/chat-state-provider';
-import { AutopilotChatInternalEvent } from '../../service';
 import { AutopilotChatActionButton } from './action-button';
 import { AutopilotChatTooltip } from './tooltip';
 
