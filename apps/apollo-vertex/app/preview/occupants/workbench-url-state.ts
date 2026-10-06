@@ -39,7 +39,7 @@ export { slotFit } from "./workbench-compose";
 /**
  * The whole workbench view as query params: occupant, surface, sample,
  * state, theme, width, list=closed, details=open, view=template, template,
- * slot, page, zoom=100, shell=minimal, and the template's layout, per
+ * slot, page, zoom=100, shell=minimal, mode=edit, and the template's layout, per
  * slot it declares choices for: <slot>-present=false, <slot>-state=closed,
  * and <slot>-placement, and what each slot holds and shows, <slot>-contents and <slot>-tab (see
  * workbench-contents-url). A template can map its older params onto these
@@ -48,7 +48,7 @@ export { slotFit } from "./workbench-compose";
  *
  * Each view owns its params, and only the current view's are read and
  * written. The surface view's are surface and width. The template view's
- * are view=template, template, slot, shell, the layout, page, and zoom;
+ * are view=template, template, slot, shell, the layout, page, zoom, and mode;
  * there the surface comes from the slot. So a link never carries a
  * surface and a slot that disagree.
  */
@@ -79,6 +79,8 @@ export interface WorkbenchView {
   tabs: Readonly<Record<string, string>>;
   pageWidth: number;
   zoom: WorkbenchZoom;
+  /** Edit mode: slots outlined and opened by a click, occupants inert. */
+  editing: boolean;
 }
 
 /**
@@ -283,7 +285,7 @@ const DEFAULT_OCCUPANT = OCCUPANT_SPECS[0]?.spec.name ?? "";
 
 /** The params only one view reads and writes. */
 const SURFACE_PARAMS = ["surface", "width"];
-const TEMPLATE_PARAMS = ["template", "slot", "shell", "page", "zoom"];
+const TEMPLATE_PARAMS = ["template", "slot", "shell", "page", "zoom", "mode"];
 
 export function parseWorkbenchView(search: string): WorkbenchView {
   const params = new URLSearchParams(search);
@@ -337,6 +339,7 @@ export function parseWorkbenchView(search: string): WorkbenchView {
         ? pageWidth
         : DEFAULT_PAGE_WIDTH,
     zoom: params.get("zoom") === "100" ? "actual" : "fit",
+    editing: params.get("mode") === "edit",
   });
 }
 
@@ -363,6 +366,7 @@ function writeTemplateParams(
   if (view.pageWidth !== DEFAULT_PAGE_WIDTH)
     params.set("page", String(view.pageWidth));
   if (view.zoom !== "fit") params.set("zoom", "100");
+  if (view.editing) params.set("mode", "edit");
 }
 
 export function serializeWorkbenchView(view: WorkbenchView): string {

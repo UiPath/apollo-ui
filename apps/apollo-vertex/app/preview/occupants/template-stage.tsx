@@ -16,7 +16,9 @@ import {
   PreviewShell,
   type PreviewShellVariant,
 } from "@/templates/shell/PreviewShell";
+import { EditSlots } from "./edit-slots";
 import { NoFitCard } from "./no-fit-card";
+import type { SlotTarget } from "./slot-popover";
 import { StageFrame } from "./stage-frame";
 import { activeTab, occupantsIn, type SlotContents } from "./workbench-compose";
 import { slotFit } from "./workbench-url-state";
@@ -41,6 +43,12 @@ interface TemplateStageProps {
   onTab: (slot: string, id: string) => void;
   /** Each slot's panel revision: a new one starts its panel on its tab. */
   revisions: Readonly<Record<string, number>>;
+  /** Edit mode: every slot outlined and opened by a click, the page inert. */
+  editing: boolean;
+  /** The slot whose popover is open, and opening one from a slot. */
+  opened: SlotTarget | null;
+  onOpen: (target: SlotTarget) => void;
+  onClose: () => void;
   onStatus: (status: Readonly<Record<string, SlotStatus>>) => void;
   sample: ExampleRole;
   state: OccupantState;
@@ -68,6 +76,10 @@ export function TemplateStage({
   tabs,
   onTab,
   revisions,
+  editing,
+  opened,
+  onOpen,
+  onClose,
   onStatus,
   sample,
   state,
@@ -135,10 +147,21 @@ export function TemplateStage({
         width: pageWidth,
       })}
     >
+      {editing && (
+        <EditSlots
+          host={host}
+          opened={opened}
+          onOpen={onOpen}
+          onClose={onClose}
+        />
+      )}
       {/* Always scaled, even by 1: a fixed-position part stays in the frame. */}
       <div
         data-slot="workbench-page"
-        className="flex h-(--page-height) w-(--page-width) origin-top-left scale-(--zoom) flex-col"
+        // In Edit mode the occupants can't be used, and look it.
+        inert={editing}
+        data-editing={editing}
+        className="flex h-(--page-height) w-(--page-width) origin-top-left scale-(--zoom) flex-col data-[editing=true]:opacity-75"
       >
         {/* ApolloShell sizes itself to the window (h-screen); here it fills the page. */}
         <div className="h-full [&_.h-screen]:h-full [&_.min-h-svh]:min-h-0">

@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { EXAMPLE_ROLES, type ExampleRole } from "@/lib/occupant-entry";
+import { ModeToggle } from "./mode-toggle";
 import {
   templateNames,
   type WorkbenchMode,
@@ -127,6 +128,9 @@ interface WorkbenchHeaderProps {
   onMode: (mode: WorkbenchMode) => void;
   template: string;
   onTemplate: (template: string) => void;
+  /** The template view's Edit mode, and switching it. */
+  editing: boolean;
+  onEditing: (editing: boolean) => void;
 }
 
 /**
@@ -154,6 +158,8 @@ export function WorkbenchHeader({
   onMode,
   template,
   onTemplate,
+  editing,
+  onEditing,
 }: WorkbenchHeaderProps) {
   const { t } = useTranslation();
   const sampleChoice: ChoiceProps<ExampleRole> = {
@@ -216,7 +222,8 @@ export function WorkbenchHeader({
     observer.observe(header);
     observer.observe(sizer);
     return () => observer.disconnect();
-  }, []);
+    // The view adds controls without resizing the header: measure again.
+  }, [mode]);
 
   const dark = theme === "dark";
   return (
@@ -275,6 +282,9 @@ export function WorkbenchHeader({
           {t("workbench_view_template")}
         </ToggleGroupItem>
       </ToggleGroup>
+      {mode === "template" && (
+        <ModeToggle editing={editing} onEditing={onEditing} />
+      )}
       {/* Only with a choice to make: one template needs no picker. */}
       {mode === "template" && templateNames().length > 1 && (
         <SelectChoice

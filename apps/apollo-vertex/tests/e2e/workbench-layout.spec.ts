@@ -39,6 +39,13 @@ async function show(page: Page, name: string) {
   await openSlot(page, slot);
 }
 
+/** Escape, and wait for it to close: it hands focus back to its opener. */
+async function closeMenus(page: Page) {
+  await page.keyboard.press("Escape");
+  await expect(popover(page)).toHaveCount(0);
+  await expect(shellMenu(page)).toHaveCount(0);
+}
+
 const group = (page: Page, name: string) =>
   page
     .locator(
@@ -106,7 +113,7 @@ test("each shell wraps the template, and the page width includes it", async ({
     "minimal",
   );
   // The narrowest page is main's minimum plus the shell's width.
-  await page.keyboard.press("Escape");
+  await closeMenus(page);
   await page.getByRole("slider", { name: "Page width" }).focus();
   await page.keyboard.press("Home");
   await expect(page.locator("[data-slot=workbench-page-width]")).toHaveText(
@@ -227,7 +234,7 @@ test("the width rule closes the other panel when there isn't room, and says so",
     group(page, "End panel state").getByRole("radio", { name: "Open" }),
   ).toHaveAttribute("aria-checked", "true");
   // With room again, it reopens on its own.
-  await page.keyboard.press("Escape");
+  await closeMenus(page);
   await page.getByRole("slider", { name: "Page width" }).focus();
   for (let i = 0; i < 60; i++) await page.keyboard.press("ArrowRight");
   await expect
@@ -279,7 +286,7 @@ test("the layout round-trips through the URL", async ({ page }) => {
     await expect(
       group(page, name).getByRole("radio", { name: option, exact: true }),
     ).toHaveAttribute("aria-checked", "true");
-    await page.keyboard.press("Escape");
+    await closeMenus(page);
   }
 
   // A slot whose panel the URL removed gets it back: the occupant's slot stays.

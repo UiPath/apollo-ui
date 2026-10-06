@@ -34,7 +34,13 @@ async function moveTo(page: Page, slot: string, occupant: string) {
   await popover(page)
     .getByRole("button", { name: `Show ${occupant} here` })
     .click();
+  await closePopover(page);
+}
+
+/** Escape, and wait for it to close: it hands focus back to its opener. */
+async function closePopover(page: Page) {
   await page.keyboard.press("Escape");
+  await expect(popover(page)).toHaveCount(0);
 }
 
 /** Picks an option in one of a slot's layout groups, in its popover. */
@@ -171,9 +177,11 @@ test("the template view round-trips through the URL", async ({ page }) => {
   await page.getByRole("radio", { name: "Template", exact: true }).click();
   await moveTo(page, "end-panel", "Queue");
   await chooseLayout(page, "end-panel", "End panel placement", "Beside header");
-  await page.keyboard.press("Escape");
+  await closePopover(page);
   await page.getByRole("slider", { name: "Page width" }).focus();
   await page.keyboard.press("ArrowLeft");
+  // The link is written after the change renders.
+  await expect.poll(() => urlQuery(page)).toContain("page=1432");
   const url = urlQuery(page);
   for (const part of [
     "view=template",

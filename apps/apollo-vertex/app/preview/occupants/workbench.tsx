@@ -231,6 +231,8 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
           mode={view.mode}
           onMode={(mode) => setView((prev) => switchView(prev, mode))}
           template={view.template}
+          editing={view.editing}
+          onEditing={(editing) => update({ editing })}
           onTemplate={(template) =>
             update({ template, slot: defaultSlot(templateFor(template), spec) })
           }
@@ -258,6 +260,10 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
                   contents={view.contents}
                   tabs={view.tabs}
                   revisions={revisions}
+                  editing={view.editing}
+                  opened={opened}
+                  onOpen={setOpened}
+                  onClose={() => setOpened(null)}
                   onTab={(slot, id) =>
                     update({ tabs: { ...view.tabs, [slot]: id } })
                   }

@@ -26,9 +26,14 @@ interface Measurable {
   getBoundingClientRect: () => DOMRect;
 }
 
+/** The least room above a slot for its popover; with less, it opens above the dock. */
+const MIN_ROOM_PX = 360;
+
 /**
- * Where the popover opens above: the anchor's bottom edge, never lower
- * than the dock's top, so it never covers the dock.
+ * Where the popover opens above: the anchor's bottom edge (a dock chip,
+ * or a slot in Edit mode), never lower than the dock's top, so it never
+ * covers the dock. A slot with too little room above its bottom, like a
+ * header, opens above the dock instead.
  */
 const above = (anchor: Measurable): Measurable => ({
   getBoundingClientRect: () => {
@@ -37,7 +42,9 @@ const above = (anchor: Measurable): Measurable => ({
       document
         .querySelector("[data-slot=workbench-dock]")
         ?.getBoundingClientRect().top ?? window.innerHeight;
-    return new DOMRect(box.x, Math.min(box.bottom, dockTop), box.width, 0);
+    const bottom = Math.min(box.bottom, dockTop);
+    const y = bottom < MIN_ROOM_PX ? dockTop : bottom;
+    return new DOMRect(box.x, y, box.width, 0);
   },
 });
 
