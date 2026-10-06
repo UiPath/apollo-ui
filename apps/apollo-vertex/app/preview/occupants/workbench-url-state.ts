@@ -32,6 +32,7 @@ import {
   writeContents,
   writeTabs,
 } from "./workbench-contents-url";
+import type { Renames } from "./workbench-renames";
 
 export { slotFit } from "./workbench-compose";
 
@@ -80,6 +81,8 @@ export interface WorkbenchView {
   zoom: WorkbenchZoom;
   /** Edit mode: slots outlined and opened by a click, occupants inert. */
   editing: boolean;
+  /** Preview-only renames, for this session: never in the link. */
+  renames: Renames;
 }
 
 /**
@@ -349,6 +352,8 @@ export function parseWorkbenchView(search: string): WorkbenchView {
         : DEFAULT_PAGE_WIDTH,
     zoom: params.get("zoom") === "100" ? "actual" : "fit",
     editing: params.get("mode") === "edit",
+    // A link never carries renames: a reload shows the declared titles.
+    renames: {},
   });
 }
 

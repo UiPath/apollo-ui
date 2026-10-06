@@ -21,12 +21,16 @@ export interface ChangeCopy {
 }
 
 /** The fields a change can touch, so Undo puts back exactly those. */
-export type Composition = Pick<WorkbenchView, "contents" | "layout" | "tabs">;
+export type Composition = Pick<
+  WorkbenchView,
+  "contents" | "layout" | "tabs" | "renames"
+>;
 
 export const compositionOf = (view: WorkbenchView): Composition => ({
   contents: view.contents,
   layout: view.layout,
   tabs: view.tabs,
+  renames: view.renames,
 });
 
 const name = (occupant: string) => specFor(occupant)?.label ?? occupant;
@@ -135,10 +139,11 @@ export function describeChange(
 
 /**
  * The template's defaults: every slot empty, every layout choice as the
- * template declares it.
+ * template declares it, and no renames.
  */
 export const resetComposition = (): Composition => ({
   contents: {},
   layout: {},
   tabs: {},
+  renames: {},
 });

@@ -357,6 +357,16 @@ tooltip: a fill occupant is alone in its tab, and a panel has at most five
 tabs. Offering each occupant once on the page is the workbench's rule,
 not composition's.
 
+To try another name, click an occupant's name or a stack's label in the
+inspector and type: Enter saves, Escape cancels, and an empty name
+restores the default, as does the reset icon beside a renamed one. The
+page shows the new name wherever that title renders: the tab, the
+stack's heading, and More. A rename is only for this preview. It isn't
+written to the link, Reset layout clears it (Undo brings it back), and a
+reload shows the declared titles. Each new name is a translation
+registered at runtime under a workbench-only key, so the panel's API
+takes no string titles.
+
 Links carry each slot's contents as `<slot>-contents`. Tabs are joined by
 `~`, a stack's occupants by `.`, and a stack starts with its label's id
 (`overview`, `details`, `activity`, or `people`) and `:`. A tab's id is

@@ -11,6 +11,7 @@ import { SlotContentsSection } from "./slot-contents";
 import { SlotLayoutSection } from "./slot-layout-section";
 import type { ContentsChange, SlotContents } from "./workbench-compose";
 import { hasLayout, leftOut } from "./workbench-layout";
+import type { Renames } from "./workbench-renames";
 
 /** The inspector's heading: focus lands here when a slot is chosen by keyboard. */
 const heading = (text: string) => (
@@ -35,6 +36,9 @@ interface InspectorProps {
   status: Readonly<Record<string, SlotStatus>> | null;
   contents: SlotContents;
   onContents: ContentsChange;
+  /** Preview-only renames, and changing them. */
+  renames: Renames;
+  onRenames: (renames: Renames) => void;
 }
 
 /**
@@ -54,6 +58,8 @@ export function Inspector({
   status,
   contents,
   onContents,
+  renames,
+  onRenames,
 }: InspectorProps) {
   const { t } = useTranslation();
   const body = () => {
@@ -108,6 +114,8 @@ export function Inspector({
               slot={selected}
               contents={contents}
               onContents={onContents}
+              renames={renames}
+              onRenames={onRenames}
             />
           )}
         </section>

@@ -6,8 +6,9 @@ import { useTranslation } from "react-i18next";
 import type { TemplateHost } from "@/app/_components/template-hosts";
 import { Button } from "@/components/ui/button";
 import { specFor } from "@/lib/occupant-lookup";
-import type { OccupantRef, TabSpec } from "@/lib/panel";
+import type { TabSpec } from "@/lib/panel";
 import { LockableButton } from "./lock-hint";
+import { RenameField } from "./rename-field";
 import { SlotPicker } from "./slot-picker";
 import { SlotTabRows } from "./slot-tab-rows";
 import {
@@ -27,9 +28,13 @@ import {
   relabel,
   replaceIn,
 } from "./workbench-picker";
-
-const refName = (ref: OccupantRef) =>
-  typeof ref === "string" ? ref : ref.occupant;
+import {
+  occupantTarget,
+  type Renames,
+  rename,
+  restore,
+  stackTarget,
+} from "./workbench-renames";
 
 /** An occupant's name, as people know it. */
 const name = (occupant: string) => specFor(occupant)?.label ?? occupant;
@@ -60,6 +65,9 @@ interface SlotContentsSectionProps {
   slot: string;
   contents: SlotContents;
   onContents: ContentsChange;
+  /** Preview-only renames, and changing them. */
+  renames: Renames;
+  onRenames: (renames: Renames) => void;
 }
 
 /**
@@ -74,6 +82,8 @@ export function SlotContentsSection({
   slot,
   contents,
   onContents,
+  renames,
+  onRenames,
 }: SlotContentsSectionProps) {
   const { t } = useTranslation();
   const [picking, setPicking] = useState<PickTarget | null>(null);
@@ -94,14 +104,40 @@ export function SlotContentsSection({
     root.current?.querySelector<HTMLElement>(selector)?.focus();
   });
   const panel = contents[slot];
-  // As the page names a tab: its label, else its occupant's title.
-  const tabName = (tab: TabSpec) => {
-    if (tab.label) return t(tab.label);
-    const [first] = tab.occupants;
-    if (!first) return tab.id;
-    const title =
-      typeof first === "string" ? specFor(first)?.titleKey : first.title;
-    return title ? t(title) : name(refName(first));
+  // As the page titles an occupant: renamed, else its declared title.
+  const titleOf = (occupant: string) => {
+    const key =
+      renames[occupantTarget(occupant)] ?? specFor(occupant)?.titleKey;
+    return key ? t(key) : name(occupant);
+  };
+  // A tab of one is named for its occupant; in a stack, it's a heading.
+  const nameField = (occupant: string, stacked: boolean) => (
+    <RenameField
+      name={titleOf(occupant)}
+      renamed={occupantTarget(occupant) in renames}
+      onRename={(text) =>
+        onRenames(rename(renames, occupantTarget(occupant), text))
+      }
+      onRestore={() => onRenames(restore(renames, occupantTarget(occupant)))}
+      slot={
+        stacked
+          ? "workbench-contents-occupant-name"
+          : "workbench-contents-tab-name"
+      }
+    />
+  );
+  const labelField = (index: number, tab: TabSpec) => {
+    const target = stackTarget(slot, tab.id);
+    const key = renames[target] ?? tab.label;
+    return (
+      <RenameField
+        name={key ? t(key) : tab.id}
+        renamed={target in renames}
+        onRename={(text) => onRenames(rename(renames, target, text))}
+        onRestore={() => onRenames(restore(renames, target))}
+        slot="workbench-contents-label"
+      />
+    );
   };
   const why = (lock: ComposeLock | null) =>
     lock ? t(reasonCopy(host.spec, lock)) : null;
@@ -227,7 +263,8 @@ export function SlotContentsSection({
           locks={locks.tabs.map(why)}
           picking={picking}
           labeling={labeling}
-          tabName={tabName}
+          nameField={nameField}
+          labelField={labelField}
           row={row}
           removeButton={removeButton}
           picker={picker}
@@ -236,9 +273,12 @@ export function SlotContentsSection({
             setPicking(null);
             setLabeling(labeling === index ? null : index);
           }}
-          onRelabel={(index, label) =>
-            change(relabel(contents, slot, index, label), { label: index })
-          }
+          onRelabel={(index, label) => {
+            // A preset replaces the stack's preview-only name.
+            const tab = panel.tabs[index];
+            if (tab) onRenames(restore(renames, stackTarget(slot, tab.id)));
+            change(relabel(contents, slot, index, label), { label: index });
+          }}
         />
       ) : (
         <p className="text-xs text-muted-foreground">

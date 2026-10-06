@@ -257,6 +257,7 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
                       layout={view.layout}
                       contents={view.contents}
                       tabs={view.tabs}
+                      renames={view.renames}
                       revisions={revisions}
                       editing={view.editing}
                       selected={inspector.selected}
@@ -346,6 +347,8 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
                 status={slotStatus}
                 contents={view.contents}
                 onContents={compose}
+                renames={view.renames}
+                onRenames={(renames) => update({ renames })}
               />
             ) : (
               <DetailsPanel

@@ -138,16 +138,19 @@ test("stacks an occupant into a tab, which takes a label", async ({ page }) => {
   await expect(body.locator("[data-occupant=key-facts]")).toBeVisible();
   await expect(body.locator("[data-occupant=participants]")).toBeVisible();
 
-  // The chip picks another preset.
+  // The presets beside the label pick another; focus stays on them.
   await openMenu(page);
-  await chip.click();
-  await expect(chip).toHaveAttribute("aria-expanded", "true");
+  const presets = tabRow(page, 2).locator(
+    "[data-slot=workbench-contents-label-presets]",
+  );
+  await presets.click();
+  await expect(presets).toHaveAttribute("aria-expanded", "true");
   await menu(page)
     .getByRole("group", { name: "Labels for tab 2" })
     .getByRole("radio", { name: "People" })
     .click();
   await expect(chip).toHaveText("People");
-  await expect(chip).toBeFocused();
+  await expect(presets).toBeFocused();
   await expect.poll(() => tabNames(page)).toEqual(["Queue", "People"]);
   expect(urlQuery(page)).toContain("people:key-facts.participants");
 });

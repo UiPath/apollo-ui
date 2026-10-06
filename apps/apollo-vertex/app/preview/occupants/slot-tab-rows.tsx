@@ -25,8 +25,10 @@ interface SlotTabRowsProps {
   picking: PickTarget | null;
   /** The tab whose label is being picked, if any. */
   labeling: number | null;
-  /** A tab's name as the page shows it. */
-  tabName: (tab: TabSpec) => string;
+  /** An occupant's name, renamable, as the page shows it. */
+  nameField: (occupant: string, stacked: boolean) => ReactNode;
+  /** A stack's label, renamable, as the page shows it. */
+  labelField: (index: number, tab: TabSpec) => ReactNode;
   /** An occupant's row, with its actions, and what to show as its name. */
   row: (occupant: string, actions: ReactNode, label?: ReactNode) => ReactNode;
   removeButton: (occupant: string) => ReactNode;
@@ -40,15 +42,17 @@ interface SlotTabRowsProps {
 /**
  * A panel's tabs as rows, with light dividers between them. A tab of one
  * occupant is one row: its name, × or a lock, and "+", which adds to that
- * tab. A stack's row is its label chip, to change it, and "+", with its
- * occupants as rows under it. The picker opens under the row it's for.
+ * tab. A stack's row is its label, with its presets beside it, and "+",
+ * with its occupants as rows under it. Names and labels rename in place,
+ * for this preview. The picker opens under the row it's for.
  */
 export function SlotTabRows({
   tabs,
   locks,
   picking,
   labeling,
-  tabName,
+  nameField,
+  labelField,
   row,
   removeButton,
   picker,
@@ -90,13 +94,14 @@ export function SlotTabRows({
                 <div className="flex items-center gap-1">
                   <div
                     data-slot="workbench-contents-tab-name"
-                    className="min-w-0 flex-1"
+                    className="flex min-w-0 flex-1 items-center gap-0.5 text-xs font-medium"
                   >
+                    {labelField(index, tab)}
+                    {/* The presets, beside the label you can rename. */}
                     <Button
-                      variant="secondary"
-                      size="sm"
-                      className="h-6 px-2 text-xs"
-                      data-slot="workbench-contents-label"
+                      variant="ghost"
+                      size="icon-xs"
+                      data-slot="workbench-contents-label-presets"
                       data-label-tab={index}
                       aria-expanded={labeling === index}
                       aria-label={t("workbench_contents_change_label", {
@@ -105,7 +110,6 @@ export function SlotTabRows({
                       })}
                       onClick={() => onLabel(index)}
                     >
-                      {t(tab.label)}
                       <ChevronDown aria-hidden />
                     </Button>
                   </div>
@@ -142,7 +146,11 @@ export function SlotTabRows({
                     const occupant = refName(ref);
                     return (
                       <li key={occupant} className="flex">
-                        {row(occupant, removeButton(occupant))}
+                        {row(
+                          occupant,
+                          removeButton(occupant),
+                          nameField(occupant, true),
+                        )}
                       </li>
                     );
                   })}
@@ -155,12 +163,7 @@ export function SlotTabRows({
                   {row(
                     refName(first),
                     removeButton(refName(first)),
-                    <span
-                      data-slot="workbench-contents-tab-name"
-                      className="truncate"
-                    >
-                      {tabName(tab)}
-                    </span>,
+                    nameField(refName(first), false),
                   )}
                   {add}
                 </div>

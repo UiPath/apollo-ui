@@ -16,6 +16,7 @@ import {
 import { EditSlots } from "./edit-slots";
 import { StageFrame } from "./stage-frame";
 import { activeTab, occupantsIn, type SlotContents } from "./workbench-compose";
+import { type Renames, withRenames } from "./workbench-renames";
 
 /** The slots the choices close, as one key. */
 const closedSlots = (layout: LayoutChoices) =>
@@ -30,6 +31,8 @@ interface TemplateStageProps {
   layout: LayoutChoices;
   /** What each slot holds. */
   contents: SlotContents;
+  /** Preview-only renames, applied to the page's panels. */
+  renames: Renames;
   /** The tab each slot shows, when one was chosen. */
   tabs: Readonly<Record<string, string>>;
   onTab: (slot: string, id: string) => void;
@@ -64,6 +67,7 @@ export function TemplateStage({
   layout,
   contents,
   tabs,
+  renames,
   onTab,
   revisions,
   editing,
@@ -83,7 +87,8 @@ export function TemplateStage({
     Object.entries(contents).map(([name, panel]) => [
       name,
       {
-        panel,
+        // Preview-only renames point the panel at their own keys.
+        panel: withRenames(name, panel, renames),
         defaultTab: tabs[name] ?? activeTab(panel),
         onTabChange: (id: string) => onTab(name, id),
         revision: revisions[name] ?? 0,
