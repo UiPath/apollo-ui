@@ -668,6 +668,12 @@ describe('NodeIOView', () => {
     });
   });
 
+  it('passes the path segments to pathForCopy', () => {
+    const pathForCopy = vi.fn((path: string) => path);
+    render(<NodeIOView schema={SCHEMA} value={VALUE} pathForCopy={pathForCopy} />);
+    expect(pathForCopy).toHaveBeenCalledWith('responseBody.currency', ['responseBody', 'currency']);
+  });
+
   it('renders custom row actions alongside the defaults via ctx.defaultActions', async () => {
     const onSelect = vi.fn();
     render(

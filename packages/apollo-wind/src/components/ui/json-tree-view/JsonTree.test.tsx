@@ -1,8 +1,9 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { buildJsonTree } from './buildJsonTree';
 import { JsonTreeView } from './JsonTree';
+import type { PathSegment } from './JsonTree.types';
 import { ROW_MIN_HEIGHT_PX } from './JsonTreeRow';
 
 interface VirtualizerOptions {
@@ -290,5 +291,34 @@ describe('JsonTreeView', () => {
     const options = virtualizerCalls.at(-1);
     expect(options?.count).toBe(FIELD_COUNT);
     expect(options?.getItemKey?.(1)).toBe('field1');
+  });
+});
+
+describe('JsonTreeView pathForCopy', () => {
+  // A flattened key with dots is bracket-quoted in `path`; `segments` keeps it whole.
+  const dottedNodes = buildJsonTree({ value: { 'agent1.output.day': { name: 'Monday' } } });
+
+  it('receives the unquoted segments alongside the path', async () => {
+    const pathForCopy = vi.fn((_path: string, segments: PathSegment[]) => segments.join(' > '));
+    const onCopy = vi.fn();
+    const user = userEvent.setup();
+    render(<JsonTreeView nodes={dottedNodes} readOnly pathForCopy={pathForCopy} onCopy={onCopy} />);
+
+    expect(pathForCopy).toHaveBeenCalledWith('["agent1.output.day"].name', [
+      'agent1.output.day',
+      'name',
+    ]);
+
+    // The copy affordance and the clipboard text both use the transformed path.
+    await user.click(
+      screen.getByRole('button', { name: 'Copy path for agent1.output.day > name' })
+    );
+    await waitFor(() =>
+      expect(onCopy).toHaveBeenCalledWith({
+        kind: 'path',
+        path: '["agent1.output.day"].name',
+        text: 'agent1.output.day > name',
+      })
+    );
   });
 });

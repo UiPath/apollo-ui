@@ -10,6 +10,7 @@ import type {
   JsonTreeRowWrapper,
   NodeActionsResolver,
   NodeDecoration,
+  PathForCopy,
   RenderCodeEditor,
   RenderValueCell,
 } from '../JsonTree';
@@ -95,8 +96,9 @@ export interface NodeIOViewProps {
   /**
    * Builds the text copied when a field name is clicked. Defaults to the path
    * itself; consumers with an expression syntax can wrap it (e.g. `{{path}}`).
+   * `segments` is the unquoted form of `path`, for rewriting part of it.
    */
-  pathForCopy?: (path: string) => string;
+  pathForCopy?: PathForCopy;
   /** Called after something is copied to the clipboard. */
   onCopy?: (event: CopyEvent) => void;
   /** Windows the schema tree's rows so only those in view mount. See `JsonTreeViewProps.virtualized`. */

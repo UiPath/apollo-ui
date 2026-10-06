@@ -36,6 +36,7 @@ export type {
   NodeDecorationChip,
   NodeDecorationTone,
   NodeDisplayTexts,
+  PathForCopy,
   PathSegment,
   RenderCodeEditor,
   RenderValueCell,
