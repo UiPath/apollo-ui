@@ -90,9 +90,10 @@ test("adds an occupant as a new tab, in one click", async ({ page }) => {
   await expect(selected(page)).toHaveText("Key facts");
   expect(urlQuery(page)).toContain("end-panel-contents=queue~key-facts");
   expect(urlQuery(page)).toContain("end-panel-tab=key-facts");
+  // The inspector lists both tabs.
   await expect(
-    page.locator("[data-slot=workbench-map] [data-region=end-panel]"),
-  ).toHaveAttribute("data-count", "2");
+    menu(page).locator("[data-slot=workbench-contents-tab]"),
+  ).toHaveCount(2);
 });
 
 test("stacks an occupant into a tab, which takes a label", async ({ page }) => {

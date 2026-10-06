@@ -17,9 +17,6 @@ import {
  * sidebar takes 280px of it. Each slot's layout has its own spec.
  */
 
-const chip = (page: Page, slot: string) =>
-  page.locator(`[data-slot=workbench-slot-chip][data-chip-slot=${slot}]`);
-
 /** Picks an option in one of a slot's layout groups, in the inspector. */
 async function chooseLayout(
   page: Page,
@@ -215,13 +212,14 @@ test("the dock stays above the template, every control reachable", async ({
   await page.locator("[data-slot=workbench-shell-menu]").waitFor();
 });
 
-test("the dock fits one row on a 1416px window, with the list open", async ({
+test("the dock fits one row on a 1416px window, with the list and inspector open", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1416, height: 900 });
   for (const query of [
     "?occupant=queue&view=template",
-    "?view=template&end-panel-contents=queue&start-panel-present=false",
+    "?occupant=queue&view=template&mode=edit",
+    "?view=template&end-panel-contents=queue&start-panel-present=false&mode=edit",
   ]) {
     await open(page, query);
     await page.evaluate(() => document.fonts.ready);
@@ -238,33 +236,4 @@ test("the dock fits one row on a 1416px window, with the list open", async ({
   }
   // The shell is an icon there, named for its menu.
   await expect(page.getByRole("button", { name: "Shell" })).toBeVisible();
-});
-
-test("each dock chip says its slot's state", async ({ page }) => {
-  await open(
-    page,
-    "?occupant=queue&view=template&slot=end-panel&end-panel-contents=queue~key-facts&start-panel-present=false",
-  );
-  // How many each holds, and which holds the occupant.
-  await expect(chip(page, "end-panel")).toHaveAccessibleName(
-    "End panel, 2 occupants",
-  );
-  await expect(chip(page, "end-panel")).toContainText("2");
-  await expect(chip(page, "main")).toHaveAccessibleName("Main, 0 occupants");
-  // A left-out slot: dashed and muted, with no count.
-  await expect(chip(page, "start-panel")).toHaveAccessibleName(
-    "Start panel, left out",
-  );
-  await expect(chip(page, "start-panel")).toHaveAttribute(
-    "data-left-out",
-    "true",
-  );
-  expect(
-    await chip(page, "start-panel").evaluate(
-      (el) => getComputedStyle(el).borderStyle,
-    ),
-  ).toContain("dashed");
-  await expect(
-    chip(page, "start-panel").locator("[data-slot=workbench-slot-chip-state]"),
-  ).toHaveCount(0);
 });

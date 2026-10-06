@@ -1,20 +1,12 @@
 "use client";
 
 import { useTranslation } from "react-i18next";
-import type {
-  SlotStatus,
-  TemplateHost,
-} from "@/app/_components/template-hosts";
-import { Button } from "@/components/ui/button";
-import { ButtonGroup } from "@/components/ui/button-group";
+import type { TemplateHost } from "@/app/_components/template-hosts";
 import { Separator } from "@/components/ui/separator";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { type LayoutChoices, resolveLayout } from "@/lib/layout";
 import type { PreviewShellVariant } from "@/templates/shell/PreviewShell";
 import { Dock, DockSlider } from "./dock-parts";
-import { PageMap } from "./page-map";
 import { ShellMenu } from "./shell-menu";
-import { occupantsIn, type SlotContents } from "./workbench-compose";
 import {
   PAGE_WIDTH_MAX,
   pageWidthMin,
@@ -23,20 +15,6 @@ import {
 
 const ZOOMS: readonly WorkbenchZoom[] = ["fit", "actual"];
 
-/** The choices with each slot's open state as the template's rules left it. */
-const withStatus = (
-  layout: LayoutChoices,
-  status: Readonly<Record<string, SlotStatus>> | null,
-): LayoutChoices => {
-  if (!status) return layout;
-  const slots = new Set([...Object.keys(layout), ...Object.keys(status)]);
-  return Object.fromEntries(
-    [...slots].map((slot) => {
-      const after = status[slot];
-      return [slot, { ...layout[slot], ...(after && { open: after.open }) }];
-    }),
-  );
-};
 /** The page width moves in larger steps than a surface's. */
 const PAGE_WIDTH_STEP = 8;
 
@@ -44,14 +22,6 @@ interface TemplateDockProps {
   host: TemplateHost;
   shell: PreviewShellVariant;
   onShell: (shell: PreviewShellVariant) => void;
-  layout: LayoutChoices;
-  /** Each slot after the template's rules, once the template has rendered. */
-  slotStatus: Readonly<Record<string, SlotStatus>> | null;
-  /** What each slot holds, and changing it. */
-  contents: SlotContents;
-  /** The slot selected, and selecting one for the inspector. */
-  selected: string | null;
-  onSelect: (slot: string) => void;
   pageWidth: number;
   onPageWidth: (width: number) => void;
   zoom: WorkbenchZoom;
@@ -61,19 +31,14 @@ interface TemplateDockProps {
 }
 
 /**
- * The template view's dock: the page map with the chosen slot and layout,
- * a chip per slot (fits() against each) that opens its popover, the shell,
- * the page width (the whole window, shell included), and the zoom.
+ * The template view's dock: the shell, the page width (the whole window,
+ * shell included), and the zoom. Slots are selected on the stage, and
+ * edited in the inspector.
  */
 export function TemplateDock({
   host,
   shell,
   onShell,
-  layout,
-  slotStatus,
-  contents,
-  selected,
-  onSelect,
   pageWidth,
   onPageWidth,
   zoom,
@@ -83,59 +48,6 @@ export function TemplateDock({
   const { t } = useTranslation();
   return (
     <Dock>
-      <PageMap
-        layout={resolveLayout(host.spec, withStatus(layout, slotStatus))}
-        highlighted={[]}
-        cue="here"
-        counts={Object.fromEntries(
-          Object.entries(contents).map(([name, panel]) => [
-            name,
-            occupantsIn(panel).length,
-          ]),
-        )}
-        name={host.label.toLowerCase()}
-        shell={shell}
-      />
-      <Separator orientation="vertical" className="h-8" />
-      <ButtonGroup aria-label={t("workbench_slot")}>
-        {host.spec.slots.map((s) => {
-          const place = host.slotLabels[s.name] ?? s.name;
-          const left = layout[s.name]?.present === false;
-          const panel = contents[s.name];
-          const count = panel ? occupantsIn(panel).length : 0;
-          const state = left
-            ? t("workbench_slot_chip_left_out", { place })
-            : t("workbench_slot_chip_count", { place, count });
-          return (
-            <Button
-              key={s.name}
-              variant="outline"
-              size="sm"
-              data-slot="workbench-slot-chip"
-              data-chip-slot={s.name}
-              data-left-out={left}
-              aria-pressed={selected === s.name}
-              aria-label={state}
-              // Left out: dashed and muted, with no count to show.
-              className="px-2 has-[>svg]:px-2 data-[left-out=true]:border-dashed data-[left-out=true]:text-muted-foreground"
-              onClick={() => onSelect(s.name)}
-            >
-              {place}
-              {/* The slot's state: how many it holds; a left-out one is dashed. */}
-              {!left && (
-                <span
-                  aria-hidden="true"
-                  data-slot="workbench-slot-chip-state"
-                  className="rounded-full bg-muted px-1.5 text-[11px] leading-4 font-medium tabular-nums text-muted-foreground"
-                >
-                  {count}
-                </span>
-              )}
-            </Button>
-          );
-        })}
-      </ButtonGroup>
-      <Separator orientation="vertical" className="h-8" />
       <ShellMenu shell={shell} onShell={onShell} />
       <Separator orientation="vertical" className="h-8" />
       <div className="flex items-center gap-3">

@@ -306,11 +306,6 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
                 host={templateHost}
                 shell={view.shell}
                 onShell={(shell) => update({ shell })}
-                layout={view.layout}
-                slotStatus={slotStatus}
-                contents={view.contents}
-                selected={inspector.selected}
-                onSelect={(slot) => inspector.select(slot)}
                 pageWidth={view.pageWidth}
                 onPageWidth={(pageWidth) => update({ pageWidth })}
                 zoom={view.zoom}

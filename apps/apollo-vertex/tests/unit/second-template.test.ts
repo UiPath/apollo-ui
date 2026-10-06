@@ -44,7 +44,6 @@ describe("a second template, from its spec alone", () => {
         createElement(PageMap, {
           layout: resolveLayout(twoUpTemplate, choices),
           highlighted: ["aside"],
-          cue: "here",
           name: "aside",
         }),
       );

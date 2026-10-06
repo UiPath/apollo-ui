@@ -12,7 +12,7 @@ import {
  * The template view's layout: the Shell menu, and in the inspector for
  * the slot selected, whether the template has the slot, its open state
  * and placement, no locks with no focused occupant, the template's own
- * width rule, the page map, and the URL.
+ * width rule, and the URL.
  */
 
 const shellMenu = (page: Page) =>
@@ -65,17 +65,6 @@ const templateWidth = (page: Page) =>
     .locator("[data-template=detail-page]")
     .evaluate((el) => (el instanceof HTMLElement ? el.offsetWidth : 0));
 
-const mapRegions = (page: Page) =>
-  page
-    .locator("[data-slot=workbench-map] [data-region]")
-    .evaluateAll((parts) =>
-      parts.map((part) =>
-        part instanceof HTMLElement
-          ? `${part.dataset.region}${part.dataset.state === "closed" ? ":closed" : ""}`
-          : "",
-      ),
-    );
-
 test.beforeEach(async ({ page }) => {
   await page.setViewportSize({ width: 1920, height: 1000 });
 });
@@ -96,7 +85,10 @@ test("each shell wraps the template, and the page width includes it", async ({
   }));
   expect(Math.round(shell)).toBe(Math.round(pageHeight));
   expect(shell).toBeLessThan(page.viewportSize()?.height ?? 0);
-  expect(await mapRegions(page)).toContain("shell");
+  // The template view's dock has no map: the page is on the stage.
+  await expect(
+    page.locator("[data-slot=workbench-dock] [data-slot=workbench-map]"),
+  ).toHaveCount(0);
   expect(urlQuery(page)).not.toContain("shell=");
 
   // Minimal: a top bar and no sidebar, so the template is the page's width.
@@ -104,10 +96,6 @@ test("each shell wraps the template, and the page width includes it", async ({
   await expect(pageBox.locator("[data-slot=sidebar]")).toHaveCount(0);
   await expect.poll(() => templateWidth(page)).toBe(1440);
   expect(urlQuery(page)).toContain("shell=minimal");
-  await expect(page.locator("[data-slot=workbench-map]")).toHaveAttribute(
-    "data-shell",
-    "minimal",
-  );
   // The narrowest page is main's minimum plus the shell's width.
   await closeMenus(page);
   await page.getByRole("slider", { name: "Page width" }).focus();
@@ -117,7 +105,7 @@ test("each shell wraps the template, and the page width includes it", async ({
   );
 });
 
-test("panels can be removed and closed, and the map follows", async ({
+test("panels can be removed and closed, and Edit's stage follows", async ({
   page,
 }) => {
   // The occupant in main, so neither panel is locked.
@@ -136,7 +124,8 @@ test("panels can be removed and closed, and the map follows", async ({
   ).toHaveText("Include the start panel first to put occupants in it.");
   await expect(group(page, "Start panel in the page")).toBeVisible();
   expect(urlQuery(page)).toContain("start-panel-present=false");
-  expect(await mapRegions(page)).not.toContain("start-panel");
+  // Left out, it's a ghost where it would sit.
+  await expect(page.locator("[data-ghost-slot=start-panel]")).toBeVisible();
 
   await choose(page, "End panel state", "Closed");
   await expect
@@ -145,7 +134,10 @@ test("panels can be removed and closed, and the map follows", async ({
       "detail-page-end-panel": "closed",
     });
   expect(urlQuery(page)).toContain("end-panel-state=closed");
-  await expect.poll(() => mapRegions(page)).toContain("end-panel:closed");
+  // Closed, it's a strip on its edge.
+  await expect(
+    page.locator("[data-slot=workbench-closed-slot][data-edit-slot=end-panel]"),
+  ).toBeVisible();
 
   await choose(page, "End panel in the page", "Left out");
   await expect.poll(() => slotStates(page)).toEqual({});
