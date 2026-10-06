@@ -272,13 +272,17 @@ for (const [width, view] of [
       `?occupant=activity-timeline&details=open${view === "template" ? "&view=template&mode=edit" : ""}`,
     );
     const header = page.locator("[data-slot=workbench-header]");
+    // Its controls, in order: the header groups them in three parts.
+    // Reset is hidden in Preview, but keeps its room.
     const rows = await header.evaluate((el) =>
-      [...el.children]
-        .filter((child) => !child.hasAttribute("inert"))
-        .map((child) => {
-          const box = child.getBoundingClientRect();
-          return { top: box.top, bottom: box.bottom, left: box.left };
-        }),
+      [
+        ...el.querySelectorAll(
+          "button:not([data-shown=false]), a, [role=combobox]",
+        ),
+      ].map((control) => {
+        const box = control.getBoundingClientRect();
+        return { top: box.top, bottom: box.bottom, left: box.left };
+      }),
     );
     const top = Math.min(...rows.map((r) => r.top));
     const bottom = Math.max(...rows.map((r) => r.bottom));

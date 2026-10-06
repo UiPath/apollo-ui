@@ -3,9 +3,10 @@ import { expect, settle, test } from "./fixtures";
 import { open } from "./workbench-helpers";
 
 /*
- * The header's stable layout: the view switch, the title's start, and the
- * theme and panel toggles stay put between views at every width, and the
- * view's own controls swap in place with a fade. The switch is the one
+ * The header's layout: the view switch on the header's own center, the
+ * title's start and the theme and panel toggles staying put between
+ * views, the title giving way first when room runs out, Sample and State
+ * as selects, and the view's own controls swapping in place with a fade. The switch is the one
  * inverted control, and meets WCAG AA in both themes.
  */
 
@@ -41,30 +42,56 @@ async function view(page: Page, name: "Surface" | "Template") {
   await settle(page);
 }
 
-// 1416px; where Sample and State collapse to selects with the list open
-// (1540px); and just wide enough for their toggle groups (1542px).
-for (const [width, compact] of [
-  [1416, true],
-  [1540, true],
-  [1542, false],
+/** The switch's center, off the header's own, in px. */
+const offCenter = (page: Page) =>
+  header(page).evaluate((el) => {
+    const bar = el.getBoundingClientRect();
+    const found = el.querySelector("[data-slot=workbench-view-switch]");
+    const box = found?.getBoundingClientRect();
+    return box
+      ? Math.abs(box.x + box.width / 2 - (bar.x + bar.width / 2))
+      : Number.POSITIVE_INFINITY;
+  });
+
+// 1416px with the list open, and 1040px with it closed: the narrowest
+// header that fits everything (the surface view's selects set it).
+for (const [width, query] of [
+  [1416, "?occupant=queue"],
+  [1040, "?occupant=queue&list=closed"],
 ] as const) {
-  test(`the switch, title, and icons don't move between views at ${width}px`, async ({
+  test(`the switch sits on the header's center, and nothing moves between views, at ${width}px`, async ({
     page,
   }) => {
     await page.setViewportSize({ width, height: 900 });
-    await open(page, "?occupant=queue");
+    await open(page, query);
     await page.evaluate(() => document.fonts.ready);
     await settle(page);
-    await expect(header(page)).toHaveAttribute("data-compact", String(compact));
+    expect(await offCenter(page)).toBeLessThanOrEqual(0.5);
     const surface = await fixed(page);
     await view(page, "Template");
-    const template = await fixed(page);
-    expect(template).toEqual(surface);
+    expect(await offCenter(page)).toBeLessThanOrEqual(0.5);
+    expect(await fixed(page)).toEqual(surface);
     // And back, with nothing moved.
     await view(page, "Surface");
     expect(await fixed(page)).toEqual(surface);
   });
 }
+
+test("Sample and State are selects at every width", async ({ page }) => {
+  await open(page, "?occupant=queue");
+  for (const width of [1920, 1416, 1040, 800]) {
+    await page.setViewportSize({ width, height: 900 });
+    await settle(page);
+    for (const name of ["Sample", "State"])
+      await expect(
+        header(page).getByRole("combobox", { name }),
+        `${name} at ${width}px`,
+      ).toHaveCount(1);
+    await expect(
+      header(page).getByRole("radio", { name: "Primary" }),
+    ).toHaveCount(0);
+  }
+});
 
 test("the view's controls swap in place: Reset keeps its room, and they fade", async ({
   page,
@@ -110,26 +137,53 @@ test("the view's controls swap in place: Reset keeps its room, and they fade", a
   expect(await animation()).toEqual({ name: "enter", duration: "0.35s" });
 });
 
-test("on a narrow header, the switch drops its icons and the header still fits", async ({
+test("short of room, the title truncates, then its badge goes, and nothing reaches the switch", async ({
   page,
 }) => {
-  // The list and the inspector both open: the header is about 516px.
-  await page.setViewportSize({ width: 1100, height: 900 });
-  await open(page, "?occupant=queue&view=template&mode=edit");
+  await open(page, "?occupant=queue&view=template&list=closed");
   await page.evaluate(() => document.fonts.ready);
+  const title = header(page).locator("h2");
+  const badge = header(page).locator("[data-slot=workbench-header-badge]");
+  const look = () =>
+    header(page).evaluate((el) => {
+      const heading = el.querySelector("h2");
+      const start = el
+        .querySelector("[data-slot=workbench-header-start]")
+        ?.getBoundingClientRect();
+      const end = el
+        .querySelector("[data-slot=workbench-header-end]")
+        ?.getBoundingClientRect();
+      const middle = el
+        .querySelector("[data-slot=workbench-view-switch]")
+        ?.getBoundingClientRect();
+      return {
+        truncated: heading ? heading.scrollWidth > heading.clientWidth : false,
+        clear:
+          !!start &&
+          !!end &&
+          !!middle &&
+          start.right <= middle.left + 0.5 &&
+          end.left >= middle.right - 0.5,
+      };
+    });
+  // Roomy: the full title and its badge.
+  await page.setViewportSize({ width: 900, height: 900 });
   await settle(page);
-  await expect(viewSwitch(page).locator("svg").first()).toBeHidden();
-  await expect(viewSwitch(page).getByRole("radio")).toHaveText([
-    "Surface",
-    "Template",
-  ]);
-  const fits = await header(page).evaluate(
-    (el) => el.scrollWidth <= el.clientWidth,
-  );
-  expect(fits).toBe(true);
-  await expect(
-    page.getByRole("button", { name: "Hide inspector" }),
-  ).toBeInViewport();
+  expect(await look()).toEqual({ truncated: false, clear: true });
+  await expect(badge).toBeVisible();
+  // Tighter: the title truncates first, and the badge stays.
+  await page.setViewportSize({ width: 760, height: 900 });
+  await settle(page);
+  expect(await look()).toEqual({ truncated: true, clear: true });
+  await expect(badge).toBeVisible();
+  // Tighter still: the badge goes.
+  await page.setViewportSize({ width: 640, height: 900 });
+  await settle(page);
+  await expect(badge).toBeHidden();
+  expect((await look()).clear).toBe(true);
+  // The full title is in a tooltip.
+  await title.hover();
+  await expect(page.getByRole("tooltip")).toHaveText("Detail page");
 });
 
 test("with reduced motion, the controls swap with no fade", async ({
