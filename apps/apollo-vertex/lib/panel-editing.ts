@@ -30,14 +30,22 @@ const isFill = (name: string, specs: readonly OccupantSpec[]) => {
 export const canAddTab = (panel: PanelSpec) =>
   panel.tabs.length < PANEL_MAX_TABS;
 
-/** The panel with the occupant in a new tab at the end; unchanged when full. */
+/**
+ * The panel with the occupant in a new tab: at `at`, a position among the
+ * tabs (0 is first), kept within range, or at the end when it's left out.
+ * Unchanged when the panel has no room for another tab.
+ */
 export function addAsTab(
   panel: PanelSpec,
   ref: OccupantRef,
   id: string,
+  at: number = panel.tabs.length,
 ): PanelSpec {
   if (!canAddTab(panel)) return panel;
-  return { ...panel, tabs: [...panel.tabs, { id, occupants: [ref] }] };
+  const index = Math.min(Math.max(Math.trunc(at), 0), panel.tabs.length);
+  const tabs = [...panel.tabs];
+  tabs.splice(index, 0, { id, occupants: [ref] });
+  return { ...panel, tabs };
 }
 
 /**

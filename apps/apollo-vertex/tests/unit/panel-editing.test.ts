@@ -56,6 +56,53 @@ describe("addAsTab", () => {
   });
 });
 
+describe("addAsTab at a position", () => {
+  const THREE: PanelSpec = {
+    surface: "side-panel",
+    tabs: ["alpha", "beta", "gamma"].map((id) => ({ id, occupants: [id] })),
+  };
+  const ids = (panel: PanelSpec) => panel.tabs.map((tab) => tab.id);
+
+  it("puts the new tab first at 0", () => {
+    expect(ids(addAsTab(THREE, "delta", "delta", 0))).toEqual([
+      "delta",
+      "alpha",
+      "beta",
+      "gamma",
+    ]);
+  });
+
+  it("puts it between two tabs in the middle", () => {
+    expect(ids(addAsTab(THREE, "delta", "delta", 2))).toEqual([
+      "alpha",
+      "beta",
+      "delta",
+      "gamma",
+    ]);
+  });
+
+  it("puts it last at the end, as when no position is given", () => {
+    const atEnd = addAsTab(THREE, "delta", "delta", 3);
+    expect(ids(atEnd)).toEqual(["alpha", "beta", "gamma", "delta"]);
+    expect(addAsTab(THREE, "delta", "delta")).toEqual(atEnd);
+  });
+
+  it("keeps a position out of range within it", () => {
+    expect(ids(addAsTab(THREE, "delta", "delta", -2))[0]).toBe("delta");
+    expect(ids(addAsTab(THREE, "delta", "delta", 99)).at(-1)).toBe("delta");
+    expect(ids(addAsTab(THREE, "delta", "delta", 1.7))[1]).toBe("delta");
+  });
+
+  it("adds nothing at any position when the panel has its most tabs", () => {
+    let panel = ONE;
+    for (const name of ["beta", "gamma", "delta", "epsilon"])
+      panel = addAsTab(panel, name, name);
+    expect(panel.tabs).toHaveLength(PANEL_MAX_TABS);
+    expect(addAsTab(panel, "zeta", "zeta", 0)).toBe(panel);
+    expect(addAsTab(panel, "zeta", "zeta", 2)).toBe(panel);
+  });
+});
+
 describe("addToTab", () => {
   it("stacks into a tab, giving it the label", () => {
     const next = addToTab(ONE, 0, "beta", SPECS, key("stack_label"));
