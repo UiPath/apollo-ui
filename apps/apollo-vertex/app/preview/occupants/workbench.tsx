@@ -111,7 +111,8 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
     );
     observer.observe(dock);
     return () => observer.disconnect();
-  }, []);
+    // Each view has its own dock: observe the one showing.
+  }, [view.mode]);
   // The template view fits the page to the stage, past its padding (p-8) and
   // the room kept for the dock (pb-[dock + 12]); at 100% it scrolls instead.
   const { scale, height: pageHeight } = useFitScale(stageRef, {
