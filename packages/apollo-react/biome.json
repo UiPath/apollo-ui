@@ -106,6 +106,35 @@
           }
         }
       }
+    },
+    {
+      "includes": ["src/chat/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@mui/**", "@emotion/**"],
+                    "message": "src/chat must stay MUI-free; use apollo-wind components and Tailwind classes"
+                  },
+                  {
+                    "group": [
+                      "**/material",
+                      "**/material/**",
+                      "@uipath/apollo-react/material*",
+                      "!@mui/**"
+                    ],
+                    "message": "src/chat must not depend on the Material renderer; see src/chat/README.md"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
     }
   ]
 }
