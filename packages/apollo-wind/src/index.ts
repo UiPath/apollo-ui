@@ -345,6 +345,17 @@ export {
 export type { FileUploadProps } from './components/ui/file-upload';
 export { FileUpload } from './components/ui/file-upload';
 export type {
+  FolderPickerContentProps,
+  FolderPickerEntry,
+  FolderPickerLoadChildren,
+  FolderPickerProps,
+} from './components/ui/folder-picker';
+export {
+  FolderPicker,
+  FolderPickerContent,
+  keepFolderSearchOnEscape,
+} from './components/ui/folder-picker';
+export type {
   FormFieldDescriptionProps,
   FormFieldErrorProps,
   FormFieldHeaderProps,
