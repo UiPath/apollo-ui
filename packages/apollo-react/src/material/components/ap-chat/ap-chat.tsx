@@ -2,7 +2,32 @@ import { ThemeProvider as MuiThemeProvider, styled } from '@mui/material/styles'
 import token from '@uipath/apollo-core';
 import React from 'react';
 import { createPortal } from 'react-dom';
-
+import { AutopilotAttachmentsProvider } from '../../../chat/headless/providers/attachements-provider';
+import { AutopilotChatScrollProvider } from '../../../chat/headless/providers/chat-scroll-provider';
+import { AutopilotChatServiceProvider } from '../../../chat/headless/providers/chat-service.provider';
+import {
+  AutopilotChatStateProvider,
+  useChatState,
+} from '../../../chat/headless/providers/chat-state-provider';
+import {
+  AutopilotChatWidthProvider,
+  useChatWidth,
+} from '../../../chat/headless/providers/chat-width-provider';
+import { AutopilotErrorProvider } from '../../../chat/headless/providers/error-provider';
+import { AutopilotLoadingProvider } from '../../../chat/headless/providers/loading-provider';
+import { LocaleProvider, useLocale } from '../../../chat/headless/providers/locale-provider';
+import { AutopilotPickerProvider } from '../../../chat/headless/providers/picker-provider';
+import { AutopilotResourceDataProvider } from '../../../chat/headless/providers/resource-data-provider';
+import { AutopilotStreamingProvider } from '../../../chat/headless/providers/streaming-provider';
+import { ThemeProvider } from '../../../chat/headless/providers/theme-provider';
+import {
+  type ApChatTheme,
+  AutopilotChatEvent,
+  AutopilotChatMode,
+  type AutopilotChatService,
+  CHAT_CONTAINER_ANIMATION_DURATION,
+  CHAT_WIDTH_FULL_SCREEN,
+} from '../../../chat/service';
 import { ApI18nProvider, type SupportedLocale } from '../../../i18n';
 import {
   apolloMaterialUiThemeDark,
@@ -13,26 +38,6 @@ import {
 import { DragHandle } from './components/common/drag-handle';
 import { AutopilotChatDropzone } from './components/dropzone/dropzone';
 import { FullScreenLayout, StandardLayout } from './components/layout';
-import { AutopilotAttachmentsProvider } from './providers/attachements-provider';
-import { AutopilotChatScrollProvider } from './providers/chat-scroll-provider';
-import { AutopilotChatServiceProvider } from './providers/chat-service.provider';
-import { AutopilotChatStateProvider, useChatState } from './providers/chat-state-provider';
-import { AutopilotChatWidthProvider, useChatWidth } from './providers/chat-width-provider';
-import { AutopilotErrorProvider } from './providers/error-provider';
-import { AutopilotLoadingProvider } from './providers/loading-provider';
-import { LocaleProvider, useLocale } from './providers/locale-provider';
-import { AutopilotPickerProvider } from './providers/picker-provider';
-import { AutopilotResourceDataProvider } from './providers/resource-data-provider';
-import { AutopilotStreamingProvider } from './providers/streaming-provider';
-import { ThemeProvider } from './providers/theme-provider';
-import {
-  type ApChatTheme,
-  AutopilotChatEvent,
-  AutopilotChatMode,
-  type AutopilotChatService,
-  CHAT_CONTAINER_ANIMATION_DURATION,
-  CHAT_WIDTH_FULL_SCREEN,
-} from './service';
 
 // Theme lookup map - created once, reused across all instances
 const MUI_THEME_MAP = {
@@ -84,7 +89,7 @@ const ApI18nWithLocale = React.memo(({ children }: { children: React.ReactNode }
   const { locale } = useLocale();
 
   return (
-    <ApI18nProvider component="material/components/ap-chat" locale={locale}>
+    <ApI18nProvider component="chat" locale={locale}>
       {children}
     </ApI18nProvider>
   );

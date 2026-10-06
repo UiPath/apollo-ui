@@ -6,8 +6,8 @@ import type {
   AutopilotChatResourceManager,
   AutopilotChatResourceResult,
   AutopilotChatResourceSearchPayload,
-} from '../service';
-import { AutopilotChatEvent } from '../service';
+} from '../../service';
+import { AutopilotChatEvent } from '../../service';
 import { useChatService } from './chat-service.provider';
 
 const EMPTY_RESULT: AutopilotChatResourceResult = { items: [], done: true };

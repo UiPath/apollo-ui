@@ -5,10 +5,10 @@ import { styled } from '@mui/material/styles';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 import { ApIcon } from '@uipath/apollo-react/material/components';
 import React from 'react';
+import { useScheduledCallback } from '../../../../../chat/headless/hooks/use-scheduled-callback';
+import { useChatState } from '../../../../../chat/headless/providers/chat-state-provider';
+import type { AutopilotChatCustomHeaderAction } from '../../../../../chat/service';
 import { ApTypography } from '../../../ap-typography';
-import { useScheduledCallback } from '../../hooks/use-scheduled-callback';
-import { useChatState } from '../../providers/chat-state-provider';
-import type { AutopilotChatCustomHeaderAction } from '../../service';
 import { AutopilotChatTooltip } from '../common/tooltip';
 
 const StyledMenuItem = styled(MenuItem)(() => ({

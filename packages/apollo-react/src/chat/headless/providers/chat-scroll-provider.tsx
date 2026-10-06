@@ -6,7 +6,7 @@ import {
   AutopilotChatInternalEvent,
   CHAT_SCROLL_BOTTOM_BUFFER,
   CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,
-} from '../service';
+} from '../../service';
 import { useChatService } from './chat-service.provider';
 import { useStreaming } from './streaming-provider';
 

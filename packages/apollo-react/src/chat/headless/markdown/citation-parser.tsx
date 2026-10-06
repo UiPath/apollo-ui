@@ -1,6 +1,6 @@
 import { visit } from 'unist-util-visit';
 
-import { CHAT_CITATION_START, type ContentPart } from '../../../../service';
+import { CHAT_CITATION_START, type ContentPart } from '../../service';
 
 /**
  * Citation plugin that finds citation markers within text nodes and places citation components at exact positions

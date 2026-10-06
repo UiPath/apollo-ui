@@ -2,17 +2,16 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type React from 'react';
 import { describe, expect, it } from 'vitest';
-
-import { ApI18nProvider } from '../../../../../i18n';
-import { AutopilotChatServiceProvider } from '../../providers/chat-service.provider';
-import { AutopilotChatStateProvider } from '../../providers/chat-state-provider';
-import { LocaleProvider } from '../../providers/locale-provider';
+import { AutopilotChatServiceProvider } from '../../../../../chat/headless/providers/chat-service.provider';
+import { AutopilotChatStateProvider } from '../../../../../chat/headless/providers/chat-state-provider';
+import { LocaleProvider } from '../../../../../chat/headless/providers/locale-provider';
 import {
   AGENTS_TOOL_CALL_RENDERER,
   type AutopilotChatMessage,
   AutopilotChatRole,
   AutopilotChatService,
-} from '../../service';
+} from '../../../../../chat/service';
+import { ApI18nProvider } from '../../../../../i18n';
 import { AutopilotChatMessageContent } from './chat-message-content';
 
 const START_TIME = '2026-01-01T00:00:00.000Z';

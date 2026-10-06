@@ -2,7 +2,7 @@ import { Box } from '@mui/material';
 import token from '@uipath/apollo-core';
 import React from 'react';
 
-import { useChatState } from '../../../providers/chat-state-provider';
+import { useChatState } from '../../../../../../chat/headless/providers/chat-state-provider';
 import { Text } from './text';
 
 export const Ul = React.memo(({ children }: { children?: React.ReactNode }) => {

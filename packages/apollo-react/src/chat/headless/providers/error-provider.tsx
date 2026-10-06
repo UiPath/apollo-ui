@@ -4,7 +4,7 @@ import {
   type AutopilotChatError,
   type AutopilotChatErrorLevel,
   AutopilotChatEvent,
-} from '../service';
+} from '../../service';
 import { useChatService } from './chat-service.provider';
 
 interface AutopilotErrorContextType {

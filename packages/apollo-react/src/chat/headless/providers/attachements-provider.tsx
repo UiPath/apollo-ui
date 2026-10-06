@@ -8,7 +8,7 @@ import {
   type AutopilotChatFileInfo,
   AutopilotChatInternalEvent,
   type AutopilotChatPrompt,
-} from '../service';
+} from '../../service';
 import { useChatService } from './chat-service.provider';
 import { useChatState } from './chat-state-provider';
 import { useError } from './error-provider';

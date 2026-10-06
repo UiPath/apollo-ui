@@ -1,15 +1,15 @@
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import React, { useEffect } from 'react';
-import { useIsStreamingMessage } from '../../../hooks/use-is-streaming-message';
-import { useChatService } from '../../../providers/chat-service.provider';
-import { useChatState } from '../../../providers/chat-state-provider';
+import { useIsStreamingMessage } from '../../../../../../chat/headless/hooks/use-is-streaming-message';
+import { useChatService } from '../../../../../../chat/headless/providers/chat-service.provider';
+import { useChatState } from '../../../../../../chat/headless/providers/chat-state-provider';
 import {
   AutopilotChatEvent,
   type AutopilotChatMessage,
   AutopilotChatPreHookAction,
   AutopilotChatRole,
-} from '../../../service';
+} from '../../../../../../chat/service';
 import { AutopilotChatActionsList } from './chat-actions-list';
 
 interface AutopilotChatMessageActionsProps {

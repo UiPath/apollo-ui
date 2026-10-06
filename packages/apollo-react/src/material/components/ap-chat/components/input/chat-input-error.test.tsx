@@ -2,9 +2,9 @@ import { act, render, screen } from '@testing-library/react';
 import token from '@uipath/apollo-core';
 import { describe, expect, it } from 'vitest';
 
-import { AutopilotChatServiceProvider } from '../../providers/chat-service.provider';
-import { AutopilotErrorProvider } from '../../providers/error-provider';
-import { AutopilotChatService } from '../../service';
+import { AutopilotChatServiceProvider } from '../../../../../chat/headless/providers/chat-service.provider';
+import { AutopilotErrorProvider } from '../../../../../chat/headless/providers/error-provider';
+import { AutopilotChatService } from '../../../../../chat/service';
 import { AutopilotChatInputError } from './chat-input-error';
 
 let instanceCount = 0;

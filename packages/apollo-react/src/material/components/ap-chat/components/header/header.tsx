@@ -3,13 +3,12 @@ import { useLingui } from '@lingui/react';
 import { styled } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 import React from 'react';
-
+import { useChatState } from '../../../../../chat/headless/providers/chat-state-provider';
+import { AutopilotChatMode } from '../../../../../chat/service';
 import { StatusTypes } from '../../../../../types/statusTypes';
 import { ApBadge } from '../../../ap-badge';
 import { ApTypography } from '../../../ap-typography';
 import AutopilotLogo from '../../assets/autopilot-logo.svg';
-import { useChatState } from '../../providers/chat-state-provider';
-import { AutopilotChatMode } from '../../service';
 import { AutopilotChatHeaderActions } from './header-actions';
 
 const StyledHeader = styled('div')<{ hideSeparator?: boolean }>(({ hideSeparator }) => ({

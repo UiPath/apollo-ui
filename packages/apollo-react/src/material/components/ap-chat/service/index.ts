@@ -1,8 +1,2 @@
-export * from './ChatConstants';
-export * from './ChatInternalService';
-export * from './ChatModel';
-export * from './ChatService';
-export * from './ContentPartBuilder';
-export * from './EventBus';
-export * from './LocalHistory';
-export * from './StorageService';
+// Backs the `@uipath/apollo-react/ap-chat/service` export; the service now lives in src/chat.
+export * from '../../../../chat/service';

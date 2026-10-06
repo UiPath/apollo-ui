@@ -1,5 +1,5 @@
 import type { FontVariantToken } from '@uipath/apollo-core';
-import type { SupportedLocale } from '../../../../i18n';
+import type { SupportedLocale } from '../../i18n';
 
 export type ApChatTheme = 'light' | 'light-hc' | 'dark' | 'dark-hc';
 

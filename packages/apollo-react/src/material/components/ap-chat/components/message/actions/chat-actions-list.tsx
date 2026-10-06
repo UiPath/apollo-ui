@@ -4,16 +4,16 @@ import { Menu, MenuItem, styled } from '@mui/material';
 import token from '@uipath/apollo-core';
 import React from 'react';
 
-import { useScheduledCallback } from '../../../hooks/use-scheduled-callback';
-import { useChatService } from '../../../providers/chat-service.provider';
-import { useChatState } from '../../../providers/chat-state-provider';
+import { useScheduledCallback } from '../../../../../../chat/headless/hooks/use-scheduled-callback';
+import { useChatService } from '../../../../../../chat/headless/providers/chat-service.provider';
+import { useChatState } from '../../../../../../chat/headless/providers/chat-state-provider';
 import {
   type AutopilotChatActionPayload,
   type AutopilotChatMessage,
   type AutopilotChatMessageAction,
   type AutopilotChatPreHookAction,
   AutopilotChatRole,
-} from '../../../service';
+} from '../../../../../../chat/service';
 import { AutopilotChatActionButton } from '../../common/action-button';
 
 const ActionsListContainer = styled('div')<{ isRequest: boolean }>(({ isRequest }) => ({

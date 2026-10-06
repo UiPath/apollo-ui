@@ -11,16 +11,19 @@ import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
-import { useIsStreamingMessage } from '../../../hooks/use-is-streaming-message';
-import { useChatService } from '../../../providers/chat-service.provider';
-import { useChatState } from '../../../providers/chat-state-provider';
-import { useStreaming } from '../../../providers/streaming-provider';
-import { AutopilotChatEvent, type AutopilotChatMessage } from '../../../service';
+import { useIsStreamingMessage } from '../../../../../../chat/headless/hooks/use-is-streaming-message';
+import {
+  citationPlugin,
+  contentPartsToMarkdown,
+} from '../../../../../../chat/headless/markdown/citation-parser';
+import { resourceTokenPlugin } from '../../../../../../chat/headless/markdown/resource-token-parser';
+import { useChatService } from '../../../../../../chat/headless/providers/chat-service.provider';
+import { useChatState } from '../../../../../../chat/headless/providers/chat-state-provider';
+import { useStreaming } from '../../../../../../chat/headless/providers/streaming-provider';
+import { AutopilotChatEvent, type AutopilotChatMessage } from '../../../../../../chat/service';
 import { Citation } from './citation';
 import { Code } from './code';
 import { Li, Ol, Ul } from './lists';
-import { citationPlugin, contentPartsToMarkdown } from './parsers/citation-parser';
-import { resourceTokenPlugin } from './parsers/resource-token-parser';
 import { ResourceChip } from './resource-chip';
 import { Cell, HeaderCell, Row, Table, TableHeader } from './table';
 import {

@@ -1,5 +1,6 @@
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
+import type { Range as TipTapRange } from '@tiptap/core';
 import type React from 'react';
 import {
   createContext,
@@ -10,13 +11,16 @@ import {
   useMemo,
   useRef,
 } from 'react';
-import type { CursorCoordinates, TipTapRange } from '../components/input/tiptap';
-import { type DrillDownState, useResourcePickerState } from '../hooks/use-resource-picker-state';
 import {
   type AutopilotChatResourceItem,
   type AutopilotChatResourceItemSelector,
   CHAT_RESOURCE_PICKER_SEARCH_DEBOUNCE_MS,
-} from '../service';
+} from '../../service';
+import {
+  type CursorCoordinates,
+  type DrillDownState,
+  useResourcePickerState,
+} from '../hooks/use-resource-picker-state';
 import { useResourceData } from './resource-data-provider';
 
 export type { DrillDownState };

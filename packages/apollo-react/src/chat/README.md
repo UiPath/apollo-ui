@@ -2,7 +2,9 @@
 
 Renderer-agnostic home of the Apollo chat. The state layer (service, providers, hooks) lives here and is shared by two renderers: the existing Material UI renderer and the Tailwind-based Wind renderer.
 
-The legacy `@uipath/apollo-react/ap-chat` and `@uipath/apollo-react/ap-chat/service` entry points keep working and re-export from here once the move lands.
+The legacy `@uipath/apollo-react/ap-chat` and `@uipath/apollo-react/ap-chat/service` entry points keep working and re-export the service from here.
+
+`@uipath/apollo-react/chat/service` exposes the service on its own, without React, for code that drives a chat it does not render.
 
 ## Layout
 

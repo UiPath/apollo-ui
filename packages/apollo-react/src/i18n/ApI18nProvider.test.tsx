@@ -235,6 +235,12 @@ describe('ApI18nProvider', () => {
       expect(apToolCallLocales).toBeDefined();
     });
 
+    it('should serve chat catalogs under both the chat key and the legacy ap-chat key', () => {
+      const chatLocales = getAllPreImportedLocales('chat');
+      expect(chatLocales).toBeDefined();
+      expect(getAllPreImportedLocales('material/components/ap-chat')).toBe(chatLocales);
+    });
+
     it('should have all SUPPORTED_LOCALES for each registered component', () => {
       const apChatLocales = getAllPreImportedLocales('material/components/ap-chat');
 

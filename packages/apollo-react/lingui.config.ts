@@ -1,4 +1,4 @@
-import { LinguiConfig } from '@lingui/conf';
+import type { LinguiConfig } from '@lingui/conf';
 import { formatter } from '@lingui/format-json';
 
 const config: LinguiConfig = {
@@ -21,8 +21,8 @@ const config: LinguiConfig = {
   // sourceLocale: 'en', // Use keys, we can add this back if we want to fallback to english
   catalogs: [
     {
-      path: 'src/material/components/ap-chat/locales/{locale}',
-      include: ['src/material/components/ap-chat'],
+      path: 'src/chat/locales/{locale}',
+      include: ['src/chat', 'src/material/components/ap-chat'],
     },
     {
       path: 'src/material/components/ap-tool-call/locales/{locale}',

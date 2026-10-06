@@ -18,7 +18,7 @@ import {
   CHAT_MESSAGE_GROUP_GAP,
   CHAT_MESSAGE_SPACING,
   CHAT_SUGGESTION_SPACING,
-} from '../service';
+} from '../../service';
 import { useChatService } from './chat-service.provider';
 
 // Converts all properties of the type to required since we have defaults for all properties

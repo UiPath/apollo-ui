@@ -2,9 +2,8 @@ import { Table as MuiTable, TableCell, TableHead, TableRow } from '@mui/material
 import token from '@uipath/apollo-core';
 import type { ReactNode } from 'react';
 import React from 'react';
-
+import { useChatState } from '../../../../../../chat/headless/providers/chat-state-provider';
 import { ApTypography } from '../../../../ap-typography';
-import { useChatState } from '../../../providers/chat-state-provider';
 import { Text } from './text';
 
 interface TableProps {

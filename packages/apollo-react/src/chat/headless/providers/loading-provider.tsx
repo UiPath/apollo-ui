@@ -6,7 +6,7 @@ import {
   AutopilotChatInternalEvent,
   type AutopilotChatMessage,
   AutopilotChatRole,
-} from '../service';
+} from '../../service';
 import { useChatService } from './chat-service.provider';
 
 interface AutopilotLoadingContextType {

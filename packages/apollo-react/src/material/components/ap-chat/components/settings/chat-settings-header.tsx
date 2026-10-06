@@ -3,10 +3,9 @@ import { useLingui } from '@lingui/react';
 import { styled } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
 import React from 'react';
-
+import { useChatService } from '../../../../../chat/headless/providers/chat-service.provider';
+import { AutopilotChatPreHookAction } from '../../../../../chat/service';
 import { ApTypography } from '../../../ap-typography';
-import { useChatService } from '../../providers/chat-service.provider';
-import { AutopilotChatPreHookAction } from '../../service';
 import { AutopilotChatActionButton } from '../common/action-button';
 import { VisuallyHidden } from '../common/shared-controls';
 

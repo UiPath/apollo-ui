@@ -3,16 +3,15 @@ import { useLingui } from '@lingui/react';
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
 import React from 'react';
-
-import { ApTypography } from '../../../ap-typography';
-import { useChatService } from '../../providers/chat-service.provider';
-import { useChatState } from '../../providers/chat-state-provider';
-import { useLoading } from '../../providers/loading-provider';
+import { useChatService } from '../../../../../chat/headless/providers/chat-service.provider';
+import { useChatState } from '../../../../../chat/headless/providers/chat-state-provider';
+import { useLoading } from '../../../../../chat/headless/providers/loading-provider';
 import {
   AutopilotChatEvent,
-  AutopilotChatPreHookAction,
   type AutopilotChatHistory,
-} from '../../service';
+  AutopilotChatPreHookAction,
+} from '../../../../../chat/service';
+import { ApTypography } from '../../../ap-typography';
 import { AutopilotChatActionButton } from '../common/action-button';
 
 const GroupItem = styled('div')<{ isActive: boolean; showActionButtons: boolean }>(

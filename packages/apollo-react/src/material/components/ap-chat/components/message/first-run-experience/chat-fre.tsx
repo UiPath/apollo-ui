@@ -1,9 +1,8 @@
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
 import React from 'react';
-
+import { useChatState } from '../../../../../../chat/headless/providers/chat-state-provider';
 import { ApTypography } from '../../../../ap-typography';
-import { useChatState } from '../../../providers/chat-state-provider';
 import { AutopilotChatSuggestions } from '../suggestions/chat-suggestions';
 
 const FREContainer = styled('div')(() => ({

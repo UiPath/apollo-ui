@@ -4,8 +4,11 @@ import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { useChatService } from '../../providers/chat-service.provider';
-import { AutopilotChatEvent, type AutopilotChatOutputStreamEvent } from '../../service';
+import { useChatService } from '../../../../../chat/headless/providers/chat-service.provider';
+import {
+  AutopilotChatEvent,
+  type AutopilotChatOutputStreamEvent,
+} from '../../../../../chat/service';
 import {
   type AudioInputDataHandler,
   type AudioInputEndHandler,

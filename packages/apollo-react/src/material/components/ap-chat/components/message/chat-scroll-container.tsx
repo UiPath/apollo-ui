@@ -2,13 +2,13 @@ import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
 import React from 'react';
 
-import { useChatScroll } from '../../providers/chat-scroll-provider';
-import { useChatState } from '../../providers/chat-state-provider';
+import { useChatScroll } from '../../../../../chat/headless/providers/chat-scroll-provider';
+import { useChatState } from '../../../../../chat/headless/providers/chat-state-provider';
 import {
   type AutopilotChatConfiguration,
   AutopilotChatMode,
   CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,
-} from '../../service';
+} from '../../../../../chat/service';
 import { AutopilotChatMessages } from './chat-message';
 import { AutopilotChatScrollToBottomButton } from './chat-scroll-to-bottom';
 

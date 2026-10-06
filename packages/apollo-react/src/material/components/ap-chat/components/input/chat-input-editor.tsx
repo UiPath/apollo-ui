@@ -8,8 +8,8 @@ import React, {
 import {
   AutopilotChatResourcePickerProvider,
   useAutopilotChatResourcePicker,
-} from '../../providers/resource-picker-provider';
-import type { AutopilotChatResourceItem } from '../../service';
+} from '../../../../../chat/headless/providers/resource-picker-provider';
+import type { AutopilotChatResourceItem } from '../../../../../chat/service';
 import {
   ResourcePickerDropdown,
   type ResourcePickerDropdownHandle,
