@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { TemplateSpec } from "@/lib/composition";
-import { type LayoutChoices, resolveLayout } from "@/lib/layout";
+import { type LayoutChoices, resolveLayout, slotControls } from "@/lib/layout";
 import { detailPageTemplate } from "@/templates/detail-page/detail-page.template";
 
 // resolveLayout() for the Detail page's declared layout, and the rules it
@@ -101,8 +101,10 @@ describe("resolveLayout's rules for any template", () => {
     },
   };
 
+  // The type requires a layout; data that skips the types can lack one.
   it("has nothing to lay out without a declared layout", () => {
-    expect(resolveLayout({ name: "bare", slots: [] }).regions).toEqual([]);
+    const bare = { name: "bare", slots: [] } as unknown as TemplateSpec;
+    expect(resolveLayout(bare).regions).toEqual([]);
   });
 
   it("refuses a placement that would cut a slot in two", () => {
@@ -139,5 +141,61 @@ describe("resolveLayout's rules for any template", () => {
     expect(() => resolveLayout(twoUp, { band: { placement: "wide" } })).toThrow(
       "leaves left no room",
     );
+  });
+});
+
+describe("slotControls", () => {
+  it("offers only what the Detail page declares, for its panels", () => {
+    const controls = slotControls(detailPageTemplate);
+    expect(controls.map((c) => c.slot)).toEqual(["start-panel", "end-panel"]);
+    for (const control of controls) {
+      expect(control.present?.map((o) => o.value)).toEqual([true, false]);
+      expect(control.open?.map((o) => o.value)).toEqual([true, false]);
+      expect(control.placement?.map((o) => o.value)).toEqual([
+        "below-header",
+        "beside-header",
+      ]);
+      const all = [
+        ...(control.present ?? []),
+        ...(control.open ?? []),
+        ...(control.placement ?? []),
+      ];
+      expect(all.every((o) => !o.refused)).toBe(true);
+    }
+  });
+
+  it("marks a choice the layout would refuse", () => {
+    const tight: TemplateSpec = {
+      name: "tight",
+      slots: [
+        { name: "body", required: true, surfaces: [] },
+        { name: "rail", required: false, surfaces: [] },
+      ],
+      layout: {
+        columns: [
+          { name: "a", size: 1 },
+          { name: "b", size: 1 },
+        ],
+        rows: [{ name: "r", size: 1 }],
+        areas: {
+          body: { columns: ["a", "a"], rows: ["r", "r"] },
+          rail: { columns: ["b", "b"], rows: ["r", "r"] },
+        },
+        options: {
+          rail: {
+            optional: true,
+            // Taking column a would leave body no room.
+            placements: { over: { columns: ["a", "a"], rows: ["r", "r"] } },
+          },
+        },
+      },
+    };
+    const [rail] = slotControls(tight);
+    expect(rail?.slot).toBe("rail");
+    expect(rail?.open).toBeUndefined();
+    expect(rail?.placement).toEqual([
+      { value: "default", refused: false },
+      { value: "over", refused: true },
+    ]);
   });
 });

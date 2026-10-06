@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  DEFAULT_LAYOUT,
-  layoutChoices,
-  TEMPLATE_HOSTS,
-} from "@/app/_components/template-hosts";
+import { TEMPLATE_HOSTS } from "@/app/_components/template-hosts";
 import { resolveLayout } from "@/lib/layout";
 
 // Registering a template for previews is its host: the workbench's template
@@ -18,20 +14,19 @@ describe.each(Object.entries(TEMPLATE_HOSTS))("%s", (name, host) => {
 
   it("labels every slot and places it on the page map", () => {
     // The map is the template's declared layout, as previews start it.
-    const placed = resolveLayout(
-      host.spec,
-      layoutChoices(host, DEFAULT_LAYOUT),
-    ).regions.map((region) => region.slot);
+    const placed = resolveLayout(host.spec).regions.map(
+      (region) => region.slot,
+    );
     for (const slot of host.spec.slots) {
       expect(host.slotLabels[slot.name]?.trim(), slot.name).toBeTruthy();
       expect(placed, slot.name).toContain(slot.name);
     }
   });
 
-  it("names its own slots as its panels, and offers panels settings", () => {
+  it("declares layout areas and choices only for its own slots", () => {
     const slots = host.spec.slots.map((slot) => slot.name);
-    for (const slot of Object.values(host.panels))
+    const { areas, options = {} } = host.spec.layout;
+    for (const slot of [...Object.keys(areas), ...Object.keys(options)])
       expect(slots).toContain(slot);
-    expect(host.panelSets.length).toBeGreaterThan(0);
   });
 });

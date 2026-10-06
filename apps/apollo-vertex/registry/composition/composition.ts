@@ -196,6 +196,8 @@ export interface SlotLayoutOptions {
   closable?: boolean;
   /** Other areas it can take, by placement name; its own area is the default. */
   placements?: Readonly<Record<string, LayoutArea>>;
+  /** What its own area is called as a placement, when it has others. */
+  defaultPlacement?: string;
 }
 
 /**
@@ -207,13 +209,18 @@ export interface TemplateLayoutSpec {
   rows: readonly LayoutTrack[];
   areas: Readonly<Record<string, LayoutArea>>;
   options?: Readonly<Record<string, SlotLayoutOptions>>;
+  /** Its own words as locale keys, by placement name and reason code. */
+  copy?: {
+    placements?: Readonly<Record<string, LocaleKey>>;
+    reasons?: Readonly<Record<string, LocaleKey>>;
+  };
 }
 
 export interface TemplateSpec<TName extends string = string> {
   /** Rendered as data-template. Lowercase, hyphenated. */
   name: TName;
   slots: readonly SlotSpec[];
-  layout?: TemplateLayoutSpec;
+  layout: TemplateLayoutSpec;
 }
 
 /** Whether a slot accepts the given surface. */

@@ -3,11 +3,9 @@
 import { LayoutPanelLeft, Lock } from "lucide-react";
 import { useId } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  type PanelStatus,
-  panelSide,
-  type TemplateHost,
-  type TemplateLayout,
+import type {
+  SlotStatus,
+  TemplateHost,
 } from "@/app/_components/template-hosts";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,17 +14,16 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import {
-  type DetailPagePanels,
-  enabledPanels,
-  type PanelPlacement,
-  type PanelSide,
-} from "@/templates/detail-page/detail-page.template";
+import { defaultPlacement, type LayoutChoices } from "@/lib/layout";
 import type { PreviewShellVariant } from "@/templates/shell/PreviewShell";
+import {
+  type LayoutLock,
+  layoutMenu,
+  placementCopy,
+  reasonCopy,
+} from "./workbench-layout";
 
 const SHELLS: readonly PreviewShellVariant[] = ["sidebar", "minimal"];
-const PLACEMENTS: readonly PanelPlacement[] = ["below-header", "beside-header"];
-const SIDES: readonly PanelSide[] = ["start", "end"];
 
 interface ChoiceProps<Value extends string> {
   label: string;
@@ -73,7 +70,9 @@ function Choice<Value extends string>({
             key={option.value}
             value={option.value}
             disabled={option.disabled}
-            className="flex-1"
+            // The toggle's own selected fill is too faint to read here,
+            // and a locked choice dims it further: the chosen one is filled.
+            className="flex-1 data-[state=on]:border-primary data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
           >
             {option.label}
           </ToggleGroupItem>
@@ -95,19 +94,27 @@ function Choice<Value extends string>({
 
 interface TemplateLayoutMenuProps {
   host: TemplateHost;
-  /** The slot holding the occupant: its panel can't be removed or closed. */
+  /** The slot holding the occupant: the focus rule keeps it there and open. */
   slot: string;
   shell: PreviewShellVariant;
   onShell: (shell: PreviewShellVariant) => void;
-  layout: TemplateLayout;
-  onLayout: (layout: TemplateLayout) => void;
-  /** Each panel after the template's rules, to say when the rule closed one. */
-  status: Record<PanelSide, PanelStatus> | null;
+  layout: LayoutChoices;
+  onLayout: (layout: LayoutChoices) => void;
+  /** Each slot after the template's rules, to say when the rule closed one. */
+  status: Readonly<Record<string, SlotStatus>> | null;
 }
+
+/** The first lock among a control's options: what its note explains. */
+const firstLock = (options: readonly { lock: LayoutLock | null }[] = []) =>
+  options.find((o) => o.lock)?.lock ?? null;
+
+/** "true" and "false", for boolean options in a toggle group. */
+const asText = (value: boolean) => (value ? "true" : "false");
 
 /**
  * The template's configuration, in a popover so the dock doesn't grow: the
- * shell, which panels it has, and each panel's open state and placement.
+ * shell, then a section for each slot that declares choices, offering only
+ * those. Locked options say why: the focus rule, or the template's layout.
  */
 export function TemplateLayoutMenu({
   host,
@@ -119,13 +126,23 @@ export function TemplateLayoutMenu({
   status,
 }: TemplateLayoutMenuProps) {
   const { t } = useTranslation();
-  const own = panelSide(host, slot);
-  const present = enabledPanels(layout.panels);
-  const panelName = (side: PanelSide) =>
-    host.slotLabels[host.panels[side]] ?? side;
-  const locked =
-    own &&
-    t("workbench_layout_locked", { panel: panelName(own).toLowerCase() });
+  const slotName = (name: string) => host.slotLabels[name] ?? name;
+  // The template's own name for a placement, else the placement's name.
+  const placementLabel = (value: string) => {
+    const key = placementCopy(host.spec, value);
+    return key ? t(key) : value;
+  };
+  const choose = (name: string, change: LayoutChoices[string]) =>
+    onLayout({ ...layout, [name]: { ...layout[name], ...change } });
+  const lockNote = (name: string, lock: LayoutLock | null, open = false) =>
+    lock === "focus"
+      ? open
+        ? t("workbench_layout_locked_open")
+        : t("workbench_layout_locked", { panel: slotName(name).toLowerCase() })
+      : lock === "refused"
+        ? t(reasonCopy(host.spec, "refused"))
+        : null;
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -149,74 +166,81 @@ export function TemplateLayoutMenu({
             label: t(`workbench_shell_${value}`),
           }))}
         />
-        <Choice<DetailPagePanels>
-          label={t("workbench_panels")}
-          value={layout.panels}
-          onChange={(panels) => onLayout({ ...layout, panels })}
-          options={host.panelSets.map((value) => ({
-            value,
-            label: t(`workbench_panels_${value}`),
-            // A setting without the occupant's panel would remove its slot.
-            disabled: own !== null && !enabledPanels(value)[own],
-          }))}
-          {...(locked && { note: locked })}
-        />
-        {SIDES.filter((side) => present[side]).map((side) => {
-          const closedBy = status?.[side]?.closedBy;
-          const closedByRule = closedBy === "rule";
-          const note =
-            side === own
-              ? t("workbench_layout_locked_open")
-              : closedByRule
-                ? t("workbench_layout_closed_by_rule")
-                : null;
+        {layoutMenu(host.spec, layout, slot).map((section) => {
+          const name = section.slot;
+          const choice = layout[name] ?? {};
+          const present = choice.present !== false;
+          const closedBy = status?.[name]?.closedBy;
+          const presenceNote = lockNote(name, firstLock(section.present));
+          const stateNote =
+            lockNote(name, firstLock(section.open), true) ??
+            (closedBy === "rule" ? t(reasonCopy(host.spec, "rule")) : null);
+          const placementNote = lockNote(name, firstLock(section.placement));
           return (
             <fieldset
-              key={side}
-              data-slot="workbench-layout-panel"
-              data-side={side}
+              key={name}
+              data-slot="workbench-layout-slot"
+              data-layout-slot={name}
               {...(closedBy && { "data-closed-by": closedBy })}
               className="flex flex-col gap-3 border-t border-border pt-3"
             >
               <legend className="float-left mb-3 w-full text-sm font-medium">
-                {panelName(side)}
+                {slotName(name)}
               </legend>
-              <Choice
-                label={t("workbench_layout_state")}
-                name={t("workbench_layout_state_of", {
-                  panel: panelName(side),
-                })}
-                value={layout[side].open ? "open" : "closed"}
-                onChange={(next) =>
-                  onLayout({
-                    ...layout,
-                    [side]: { ...layout[side], open: next === "open" },
-                  })
-                }
-                options={(["open", "closed"] as const).map((value) => ({
-                  value,
-                  label: t(`workbench_layout_${value}`),
-                  disabled: side === own,
-                }))}
-                {...(note && { note })}
-              />
-              <Choice
-                label={t("workbench_layout_placement")}
-                name={t("workbench_layout_placement_of", {
-                  panel: panelName(side),
-                })}
-                value={layout[side].placement}
-                onChange={(placement) =>
-                  onLayout({
-                    ...layout,
-                    [side]: { ...layout[side], placement },
-                  })
-                }
-                options={PLACEMENTS.map((value) => ({
-                  value,
-                  label: t(`workbench_placement_${value}`),
-                }))}
-              />
+              {section.present && (
+                <Choice
+                  label={t("workbench_layout_presence")}
+                  name={t("workbench_layout_presence_of", {
+                    panel: slotName(name),
+                  })}
+                  value={asText(present)}
+                  onChange={(next) =>
+                    choose(name, { present: next === "true" })
+                  }
+                  options={section.present.map((option) => ({
+                    value: asText(option.value),
+                    label: option.value
+                      ? t("workbench_layout_included")
+                      : t("workbench_layout_left_out"),
+                    disabled: option.lock !== null,
+                  }))}
+                  {...(presenceNote && { note: presenceNote })}
+                />
+              )}
+              {present && section.open && (
+                <Choice
+                  label={t("workbench_layout_state")}
+                  name={t("workbench_layout_state_of", {
+                    panel: slotName(name),
+                  })}
+                  value={choice.open === false ? "closed" : "open"}
+                  onChange={(next) => choose(name, { open: next === "open" })}
+                  options={section.open.map((option) => ({
+                    value: option.value ? "open" : "closed",
+                    label: option.value
+                      ? t("workbench_layout_open")
+                      : t("workbench_layout_closed"),
+                    disabled: option.lock !== null,
+                  }))}
+                  {...(stateNote && { note: stateNote })}
+                />
+              )}
+              {present && section.placement && (
+                <Choice
+                  label={t("workbench_layout_placement")}
+                  name={t("workbench_layout_placement_of", {
+                    panel: slotName(name),
+                  })}
+                  value={choice.placement ?? defaultPlacement(host.spec, name)}
+                  onChange={(placement) => choose(name, { placement })}
+                  options={section.placement.map((option) => ({
+                    value: option.value,
+                    label: placementLabel(option.value),
+                    disabled: option.lock !== null,
+                  }))}
+                  {...(placementNote && { note: placementNote })}
+                />
+              )}
             </fieldset>
           );
         })}

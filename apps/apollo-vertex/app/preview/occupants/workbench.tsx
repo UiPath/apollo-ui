@@ -4,14 +4,14 @@ import { type CSSProperties, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { OccupantInSurface } from "@/app/_components/occupant-in-surface";
+import { STAGE_HEIGHT } from "@/app/_components/stage";
 import { SURFACE_HOSTS } from "@/app/_components/surface-hosts";
-import type { PanelStatus } from "@/app/_components/template-hosts";
+import type { SlotStatus } from "@/app/_components/template-hosts";
 import { fitsSurface } from "@/lib/composition";
 import { EXAMPLE_ROLES, type ExampleRole } from "@/lib/occupant-entry";
 import { specFor } from "@/lib/occupant-lookup";
 import { overflowProblems } from "@/lib/overflow-problems";
 import { surfaceLabel } from "@/lib/surface-labels";
-import type { PanelSide } from "@/templates/detail-page/detail-page.template";
 import { DetailsPanel } from "./details-panel";
 import { type Floor, FloorProbe } from "./floor-probe";
 import { NoFitCard } from "./no-fit-card";
@@ -25,7 +25,6 @@ import { usePageTheme } from "./use-page-theme";
 import { WorkbenchDock } from "./workbench-dock";
 import { WorkbenchHeader } from "./workbench-header";
 import { lowerLabel, surfaceRange, widthStatus } from "./workbench-model";
-import { STAGE_HEIGHT } from "@/app/_components/stage";
 import {
   defaultSlot,
   defaultSurface,
@@ -34,6 +33,7 @@ import {
   normalizeView,
   serializeWorkbenchView,
   slotFit,
+  switchView,
   templateFor,
   type WorkbenchView,
 } from "./workbench-url-state";
@@ -54,9 +54,8 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
   const update = (patch: Partial<WorkbenchView>) =>
     setView((current) => normalizeView({ ...current, ...patch }));
   // Each panel after the template's rules, reported by the template.
-  const [panelStatus, setPanelStatus] = useState<Record<
-    PanelSide,
-    PanelStatus
+  const [slotStatus, setSlotStatus] = useState<Readonly<
+    Record<string, SlotStatus>
   > | null>(null);
 
   // The whole view lives in the URL. replaceState, so changes don't fill history.
@@ -223,7 +222,7 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
           theme={view.theme}
           onTheme={(theme) => update({ theme })}
           mode={view.mode}
-          onMode={(mode) => update({ mode })}
+          onMode={(mode) => setView((prev) => switchView(prev, mode))}
           template={view.template}
           onTemplate={(template) =>
             update({ template, slot: defaultSlot(templateFor(template), spec) })
@@ -249,7 +248,7 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
                   slot={view.slot}
                   shell={view.shell}
                   layout={view.layout}
-                  onPanels={setPanelStatus}
+                  onStatus={setSlotStatus}
                   sample={view.sample}
                   state={view.state}
                   pageWidth={view.pageWidth}
@@ -295,7 +294,7 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
               onShell={(shell) => update({ shell })}
               layout={view.layout}
               onLayout={(layout) => update({ layout })}
-              panelStatus={panelStatus}
+              slotStatus={slotStatus}
               pageWidth={view.pageWidth}
               onPageWidth={(pageWidth) => update({ pageWidth })}
               zoom={view.zoom}

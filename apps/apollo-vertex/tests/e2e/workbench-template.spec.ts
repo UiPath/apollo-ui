@@ -4,8 +4,8 @@ import {
   axeViolations,
   open,
   slotStates,
-  urlQuery,
   stage,
+  urlQuery,
 } from "./workbench-helpers";
 
 /*
@@ -115,7 +115,7 @@ test("a side slot's placement puts it beside the header", async ({ page }) => {
   await expect
     .poll(async () => (await header.boundingBox())?.x ?? 0)
     .toBeGreaterThan((await panel.boundingBox())?.x ?? 0);
-  expect(urlQuery(page)).toContain("start=beside-header");
+  expect(urlQuery(page)).toContain("start-panel-placement=beside-header");
   // Placement isn't in the dock any more: it's per panel, in the menu.
   await page.keyboard.press("Escape");
   await expect(
@@ -138,7 +138,7 @@ test("the template view round-trips through the URL", async ({ page }) => {
   for (const part of [
     "view=template",
     "slot=end-panel",
-    "end=beside-header",
+    "end-panel-placement=beside-header",
     "page=1432",
   ])
     expect(url).toContain(part);

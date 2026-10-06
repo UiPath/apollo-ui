@@ -1,11 +1,7 @@
 import { SURFACE_HOSTS } from "@/app/_components/surface-hosts";
 import {
-  DEFAULT_LAYOUT,
-  type PanelLayout,
-  panelSide,
   TEMPLATE_HOSTS,
   type TemplateHost,
-  type TemplateLayout,
 } from "@/app/_components/template-hosts";
 import { OCCUPANT_STATES, type OccupantState } from "@/components/ui/occupant";
 import {
@@ -16,22 +12,31 @@ import {
   occupantInset,
   type SurfaceSpec,
 } from "@/lib/composition";
+import {
+  defaultPlacement,
+  type LayoutChoices,
+  type SlotChoice,
+} from "@/lib/layout";
 import { EXAMPLE_ROLES, type ExampleRole } from "@/lib/occupant-entry";
 import { specFor } from "@/lib/occupant-lookup";
 import { OCCUPANT_SPECS, SURFACE_SPECS } from "@/lib/occupants.generated";
-import {
-  DETAIL_PAGE_PANELS,
-  enabledPanels,
-  type PanelSide,
-} from "@/templates/detail-page/detail-page.template";
 import type { PreviewShellVariant } from "@/templates/shell/PreviewShell";
+import { withFocus } from "./workbench-layout";
 
 /**
  * The whole workbench view as query params: occupant, surface, sample,
  * state, theme, width, list=closed, details=open, view=template, template,
- * slot, page, zoom=100, and the template's layout: shell=minimal, panels,
- * start and end (placement), start-state and end-state (closed). Only
- * non-default values are written; invalid ones fall back to the defaults.
+ * slot, page, zoom=100, shell=minimal, and the template's layout, per
+ * slot it declares choices for: <slot>-present=false, <slot>-state=closed,
+ * and <slot>-placement. A template can map its older params onto these
+ * (TemplateHost.legacyParams). Only non-default values are written;
+ * unknown slots and invalid values fall back to the defaults.
+ *
+ * Each view owns its params, and only the current view's are read and
+ * written. The surface view's are surface and width. The template view's
+ * are view=template, template, slot, shell, the layout, page, and zoom;
+ * there the surface comes from the slot. So a link never carries a
+ * surface and a slot that disagree.
  */
 export type WorkbenchTheme = "light" | "dark";
 export type WorkbenchMode = "surface" | "template";
@@ -52,7 +57,8 @@ export interface WorkbenchView {
   slot: string;
   /** The shell around the template. The page width includes it. */
   shell: PreviewShellVariant;
-  layout: TemplateLayout;
+  /** The page's choices for the template's slots. */
+  layout: LayoutChoices;
   pageWidth: number;
   zoom: WorkbenchZoom;
 }
@@ -75,40 +81,131 @@ export const pageWidthMin = (
   shell: PreviewShellVariant,
 ): number => (host?.minWidth ?? 0) + SHELL_WIDTH[shell];
 
-const SIDES: readonly PanelSide[] = ["start", "end"];
-
 /**
- * The layout with the occupant's panel present and open: the slot holding
- * the occupant can't be removed or closed.
+ * The view as it can be: in the template view, the surface is the slot's,
+ * and the occupant's slot is kept there and open (the focus rule); the
+ * width is in range.
  */
-export function withOccupantPanel(
-  layout: TemplateLayout,
-  host: TemplateHost | undefined,
-  slot: string,
-): TemplateLayout {
-  const side = host && panelSide(host, slot);
-  if (!side) return layout;
-  const present = enabledPanels(layout.panels);
-  const other = side === "start" ? "end" : "start";
-  return {
-    ...layout,
-    panels: present[other] ? "both" : side,
-    [side]: { ...layout[side], open: true },
-  };
-}
-
-/** The view as it can be: the occupant's panel kept, the width in range. */
 export function normalizeView(view: WorkbenchView): WorkbenchView {
   const host = templateFor(view.template);
+  const spec = specFor(view.occupant);
+  const inTemplate = view.mode === "template" && host;
   return {
     ...view,
-    layout: withOccupantPanel(view.layout, host, view.slot),
+    ...(inTemplate && { surface: slotSurface(host, view.slot, spec) }),
+    layout: host ? withFocus(host.spec, view.layout, view.slot) : view.layout,
     pageWidth: Math.max(view.pageWidth, pageWidthMin(host, view.shell)),
   };
 }
 
-/** Templates previews can render, in the hosts' order. */
-export const TEMPLATE_NAMES: readonly string[] = Object.keys(TEMPLATE_HOSTS);
+/**
+ * The surface a slot shows the occupant in: one it accepts that the
+ * occupant fits there, else the first it accepts that previews host.
+ */
+export function slotSurface(
+  host: TemplateHost,
+  slotName: string,
+  spec: OccupantSpec | undefined,
+): string {
+  const slot = host.spec.slots.find((s) => s.name === slotName);
+  const accepted = HOSTED_SURFACES.filter((surface) =>
+    slot?.surfaces.includes(surface.name),
+  );
+  const fitting = accepted.find(
+    (surface) => slot && spec && fits(slot, surface, spec).fits,
+  );
+  return (fitting ?? accepted[0])?.name ?? defaultSurface(spec);
+}
+
+/**
+ * The view switched to another mode, carrying the occupant's place over:
+ * into the template view at a slot that takes its surface, and back to
+ * the surface view in its slot's surface, at that surface's start width.
+ */
+export function switchView(
+  view: WorkbenchView,
+  mode: WorkbenchMode,
+): WorkbenchView {
+  if (mode === view.mode) return view;
+  const spec = specFor(view.occupant);
+  if (mode === "surface")
+    return { ...view, mode, width: defaultWidth(spec, view.surface) };
+  const host = templateFor(view.template);
+  const taking = host?.spec.slots.find(
+    (slot) =>
+      slot.surfaces.includes(view.surface) &&
+      spec &&
+      slotFit(host, slot.name, spec).fits,
+  );
+  return normalizeView({
+    ...view,
+    mode,
+    slot: taking?.name ?? defaultSlot(host, spec),
+  });
+}
+
+/** Templates previews can render, in the registry's order. */
+export const templateNames = (): readonly string[] =>
+  Object.keys(TEMPLATE_HOSTS);
+
+/** The template previews show first: the registry's first. */
+export const defaultTemplate = () => templateNames()[0] ?? "";
+
+/**
+ * A template's layout choices from link params: per slot it declares
+ * choices for, whether it's left out, closed, and where it's placed. The
+ * template's older params count where the link gives no per-slot ones.
+ */
+function parseLayout(
+  host: TemplateHost | undefined,
+  params: URLSearchParams,
+): LayoutChoices {
+  if (!host) return {};
+  const legacy = host.legacyParams?.(params) ?? {};
+  const get = (key: string) => params.get(key) ?? legacy[key] ?? null;
+  const options = host.spec.layout.options ?? {};
+  return Object.fromEntries(
+    Object.entries(options).flatMap(([slot, own]) => {
+      const choice: SlotChoice = {
+        ...(own.optional &&
+          get(`${slot}-present`) === "false" && { present: false }),
+        ...(own.closable &&
+          get(`${slot}-state`) === "closed" && { open: false }),
+      };
+      const placement = get(`${slot}-placement`);
+      const placed =
+        placement &&
+        placement !== defaultPlacement(host.spec, slot) &&
+        own.placements?.[placement]
+          ? { placement }
+          : {};
+      const all = { ...choice, ...placed };
+      return Object.keys(all).length > 0 ? [[slot, all]] : [];
+    }),
+  );
+}
+
+/** The params for a template's layout choices: only what isn't the default. */
+function writeLayout(
+  host: TemplateHost | undefined,
+  layout: LayoutChoices,
+  params: URLSearchParams,
+) {
+  if (!host) return;
+  for (const [slot, own] of Object.entries(host.spec.layout.options ?? {})) {
+    const choice = layout[slot] ?? {};
+    if (own.optional && choice.present === false)
+      params.set(`${slot}-present`, "false");
+    if (own.closable && choice.open === false)
+      params.set(`${slot}-state`, "closed");
+    if (
+      choice.placement &&
+      choice.placement !== defaultPlacement(host.spec, slot) &&
+      own.placements?.[choice.placement]
+    )
+      params.set(`${slot}-placement`, choice.placement);
+  }
+}
 
 export const templateFor = (name: string): TemplateHost | undefined =>
   TEMPLATE_HOSTS[name];
@@ -183,10 +280,18 @@ export function defaultWidth(
 }
 
 const DEFAULT_OCCUPANT = OCCUPANT_SPECS[0]?.spec.name ?? "";
-const DEFAULT_TEMPLATE = TEMPLATE_NAMES[0] ?? "";
+
+/** The params only one view reads and writes. */
+const SURFACE_PARAMS = ["surface", "width"];
+const TEMPLATE_PARAMS = ["template", "slot", "shell", "page", "zoom"];
 
 export function parseWorkbenchView(search: string): WorkbenchView {
   const params = new URLSearchParams(search);
+  const mode: WorkbenchMode =
+    params.get("view") === "template" ? "template" : "surface";
+  // Only the current view's own params count.
+  for (const key of mode === "template" ? SURFACE_PARAMS : TEMPLATE_PARAMS)
+    params.delete(key);
   const occupant =
     specFor(params.get("occupant") ?? "")?.name ?? DEFAULT_OCCUPANT;
   const spec = specFor(occupant);
@@ -195,8 +300,8 @@ export function parseWorkbenchView(search: string): WorkbenchView {
     defaultSurface(spec);
   const width = Number(params.get("width"));
   const template = templateFor(params.get("template") ?? "")
-    ? (params.get("template") ?? DEFAULT_TEMPLATE)
-    : DEFAULT_TEMPLATE;
+    ? (params.get("template") ?? defaultTemplate())
+    : defaultTemplate();
   const host = templateFor(template);
   const slot =
     host?.spec.slots.find((s) => s.name === params.get("slot"))?.name ??
@@ -204,11 +309,6 @@ export function parseWorkbenchView(search: string): WorkbenchView {
   const pageWidth = Number(params.get("page"));
   const shell: PreviewShellVariant =
     params.get("shell") === "minimal" ? "minimal" : "sidebar";
-  const panelLayout = (side: PanelSide): PanelLayout => ({
-    open: params.get(`${side}-state`) !== "closed",
-    placement:
-      params.get(side) === "beside-header" ? "beside-header" : "below-header",
-  });
   return normalizeView({
     occupant,
     surface,
@@ -223,17 +323,11 @@ export function parseWorkbenchView(search: string): WorkbenchView {
         : defaultWidth(spec, surface),
     listOpen: params.get("list") !== "closed",
     detailsOpen: params.get("details") === "open",
-    mode: params.get("view") === "template" ? "template" : "surface",
+    mode,
     template,
     slot,
     shell,
-    layout: {
-      panels:
-        DETAIL_PAGE_PANELS.find((p) => p === params.get("panels")) ??
-        DEFAULT_LAYOUT.panels,
-      start: panelLayout("start"),
-      end: panelLayout("end"),
-    },
+    layout: mode === "template" ? parseLayout(host, params) : {},
     pageWidth:
       Number.isInteger(pageWidth) &&
       pageWidth >= pageWidthMin(host, shell) &&
@@ -244,34 +338,39 @@ export function parseWorkbenchView(search: string): WorkbenchView {
   });
 }
 
+/** The template view's own params: only what isn't the default. */
+function writeTemplateParams(
+  view: WorkbenchView,
+  spec: OccupantSpec | undefined,
+  params: URLSearchParams,
+) {
+  params.set("view", view.mode);
+  if (view.template !== defaultTemplate())
+    params.set("template", view.template);
+  if (view.slot !== defaultSlot(templateFor(view.template), spec))
+    params.set("slot", view.slot);
+  if (view.shell !== "sidebar") params.set("shell", view.shell);
+  writeLayout(templateFor(view.template), view.layout, params);
+  if (view.pageWidth !== DEFAULT_PAGE_WIDTH)
+    params.set("page", String(view.pageWidth));
+  if (view.zoom !== "fit") params.set("zoom", "100");
+}
+
 export function serializeWorkbenchView(view: WorkbenchView): string {
   const spec = specFor(view.occupant);
   const params = new URLSearchParams();
   if (view.occupant !== DEFAULT_OCCUPANT) params.set("occupant", view.occupant);
-  if (view.surface !== defaultSurface(spec))
+  const inTemplate = view.mode === "template";
+  if (!inTemplate && view.surface !== defaultSurface(spec))
     params.set("surface", view.surface);
   if (view.sample !== "primary") params.set("sample", view.sample);
   if (view.state !== "ready") params.set("state", view.state);
   if (view.theme !== "light") params.set("theme", view.theme);
-  if (view.width !== defaultWidth(spec, view.surface))
+  if (!inTemplate && view.width !== defaultWidth(spec, view.surface))
     params.set("width", String(view.width));
   if (!view.listOpen) params.set("list", "closed");
   if (view.detailsOpen) params.set("details", "open");
-  if (view.mode !== "surface") params.set("view", view.mode);
-  if (view.template !== DEFAULT_TEMPLATE) params.set("template", view.template);
-  if (view.slot !== defaultSlot(templateFor(view.template), spec))
-    params.set("slot", view.slot);
-  if (view.shell !== "sidebar") params.set("shell", view.shell);
-  if (view.layout.panels !== DEFAULT_LAYOUT.panels)
-    params.set("panels", view.layout.panels);
-  for (const side of SIDES) {
-    if (view.layout[side].placement !== "below-header")
-      params.set(side, view.layout[side].placement);
-    if (!view.layout[side].open) params.set(`${side}-state`, "closed");
-  }
-  if (view.pageWidth !== DEFAULT_PAGE_WIDTH)
-    params.set("page", String(view.pageWidth));
-  if (view.zoom !== "fit") params.set("zoom", "100");
+  if (inTemplate) writeTemplateParams(view, spec, params);
   const query = params.toString();
   return query ? `?${query}` : "";
 }

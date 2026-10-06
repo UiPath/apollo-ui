@@ -72,7 +72,8 @@ export function resolveLayout(
   spec: TemplateSpec,
   choices: LayoutChoices = {},
 ): ResolvedLayout {
-  const layout = spec.layout;
+  // Required by the type; data that skips it has nothing to lay out.
+  const layout = spec.layout as TemplateSpec["layout"] | undefined;
   if (!layout) return { columns: [], rows: [], regions: [] };
   const { columns, rows, areas, options = {} } = layout;
 
@@ -137,4 +138,74 @@ export function resolveLayout(
       rows: [nameAt(rows, r.rows.from), nameAt(rows, r.rows.to)],
     })),
   };
+}
+
+/** One choice a page can make for a slot, and whether its layout refuses it. */
+export interface SlotOption<T> {
+  value: T;
+  /** resolveLayout() would refuse it with the other choices as they are. */
+  refused: boolean;
+}
+
+/** The choices a slot declares, each with whether the layout allows it now. */
+export interface SlotControls {
+  slot: string;
+  /** For an optional slot: there, or left out. */
+  present?: readonly SlotOption<boolean>[];
+  /** For a closable slot: open, or closed. */
+  open?: readonly SlotOption<boolean>[];
+  /** For a slot with placements: its own area first, then the others. */
+  placement?: readonly SlotOption<string>[];
+}
+
+/** The name a slot's own area goes by as a placement. */
+export const defaultPlacement = (spec: TemplateSpec, slot: string) =>
+  spec.layout.options?.[slot]?.defaultPlacement ?? "default";
+
+/**
+ * Every choice a template declares for its slots, in slot order, and only
+ * those: a slot with no options has none. Each is marked refused when
+ * resolveLayout() would refuse it, with every other choice as it is.
+ */
+export function slotControls(
+  spec: TemplateSpec,
+  choices: LayoutChoices = {},
+): SlotControls[] {
+  const options = spec.layout.options ?? {};
+  const refused = (slot: string, change: SlotChoice) => {
+    try {
+      resolveLayout(spec, {
+        ...choices,
+        [slot]: { ...choices[slot], ...change },
+      });
+      return false;
+    } catch {
+      return true;
+    }
+  };
+  return spec.slots.flatMap((slot) => {
+    const own = options[slot.name];
+    if (!own) return [];
+    const name = slot.name;
+    const controls: SlotControls = { slot: name };
+    const both = [true, false];
+    if (own.optional && !slot.required)
+      controls.present = both.map((value) => ({
+        value,
+        refused: refused(name, { present: value }),
+      }));
+    if (own.closable)
+      controls.open = both.map((value) => ({
+        value,
+        refused: refused(name, { open: value }),
+      }));
+    const placements = Object.keys(own.placements ?? {});
+    if (placements.length > 0)
+      controls.placement = [defaultPlacement(spec, name), ...placements].map(
+        (value) => ({ value, refused: refused(name, { placement: value }) }),
+      );
+    return controls.present || controls.open || controls.placement
+      ? [controls]
+      : [];
+  });
 }
