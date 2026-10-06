@@ -16,7 +16,8 @@ import {
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { NodeRegistryProvider } from '../../core';
 import type { CategoryManifest, NodeManifest } from '../../schema/node-definition';
-import { BASE_CANVAS_DEFAULTS, BaseCanvas, type BaseCanvasProps } from '../BaseCanvas';
+import { BaseCanvas, type BaseCanvasProps } from '../BaseCanvas';
+import { BASE_CANVAS_DEFAULTS } from '../BaseCanvas/BaseCanvas.constants';
 import { applyDiffHighlight } from './applyDiffHighlight';
 import type { DiffPaneContext, DiffViewport } from './CanvasDiffView.types';
 
