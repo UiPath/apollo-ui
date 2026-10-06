@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { PreviewShellVariant } from "@/templates/shell/PreviewShell";
 import { Dock, DockSlider } from "./dock-parts";
+import { SELECTED_SEGMENT } from "./segment";
 import { ShellMenu } from "./shell-menu";
 import {
   PAGE_WIDTH_MAX,
@@ -76,7 +77,7 @@ export function TemplateDock({
           }}
         >
           {ZOOMS.map((z) => (
-            <ToggleGroupItem key={z} value={z}>
+            <ToggleGroupItem key={z} value={z} className={SELECTED_SEGMENT}>
               {t(`workbench_zoom_${z}`)}
             </ToggleGroupItem>
           ))}

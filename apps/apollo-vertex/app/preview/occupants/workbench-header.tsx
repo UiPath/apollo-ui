@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/tooltip";
 import { EXAMPLE_ROLES, type ExampleRole } from "@/lib/occupant-entry";
 import { ModeToggle } from "./mode-toggle";
+import { SELECTED_SEGMENT } from "./segment";
 import {
   templateNames,
   type WorkbenchMode,
@@ -70,7 +71,11 @@ function ToggleChoice<T extends string>({
         }}
       >
         {options.map((option) => (
-          <ToggleGroupItem key={option.value} value={option.value}>
+          <ToggleGroupItem
+            key={option.value}
+            value={option.value}
+            className={SELECTED_SEGMENT}
+          >
             {option.label}
           </ToggleGroupItem>
         ))}
@@ -287,10 +292,10 @@ export function WorkbenchHeader({
           if (next === "surface" || next === "template") onMode(next);
         }}
       >
-        <ToggleGroupItem value="surface">
+        <ToggleGroupItem value="surface" className={SELECTED_SEGMENT}>
           {t("workbench_view_surface")}
         </ToggleGroupItem>
-        <ToggleGroupItem value="template">
+        <ToggleGroupItem value="template" className={SELECTED_SEGMENT}>
           {t("workbench_view_template")}
         </ToggleGroupItem>
       </ToggleGroup>

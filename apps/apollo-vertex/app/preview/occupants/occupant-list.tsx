@@ -86,8 +86,8 @@ function Row({
           <span
             data-slot="workbench-location"
             {...(location.hidden && { "data-hidden": location.hidden })}
-            // A slot that isn't showing: its occupants are kept, muted.
-            className="mt-0.5 block text-xs font-medium text-primary data-hidden:text-muted-foreground"
+            // Secondary text; a slot that isn't showing keeps its occupants, muted.
+            className="mt-0.5 block text-xs font-medium text-secondary-foreground data-hidden:font-normal data-hidden:text-muted-foreground"
           >
             {t(locationCopy(location), { slot: location.label })}
           </span>

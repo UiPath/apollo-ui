@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { Slider } from "@/components/ui/slider";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
+import { SELECTED_SEGMENT } from "./segment";
 
 interface DockProps {
   children: ReactNode;
@@ -79,6 +80,7 @@ export function FitToggleGroup({
           key={option.value}
           value={option.value}
           data-fits={option.fits}
+          className={SELECTED_SEGMENT}
           aria-label={t(
             option.fits ? "workbench_place_fits" : "workbench_place_no_fit",
             { place: option.label },

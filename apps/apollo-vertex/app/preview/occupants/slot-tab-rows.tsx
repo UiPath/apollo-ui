@@ -8,6 +8,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { LocaleKey } from "@/lib/composition";
 import type { OccupantRef, TabSpec } from "@/lib/panel";
 import { LockableButton } from "./lock-hint";
+import { SELECTED_SEGMENT } from "./segment";
 import { TAB_LABELS } from "./workbench-compose";
 import type { PickTarget } from "./workbench-picker";
 
@@ -129,7 +130,7 @@ export function SlotTabRows({
                       <ToggleGroupItem
                         key={key}
                         value={key}
-                        className="data-[state=on]:border-primary data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                        className={SELECTED_SEGMENT}
                       >
                         {t(key)}
                       </ToggleGroupItem>

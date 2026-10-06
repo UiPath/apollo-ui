@@ -120,7 +120,7 @@ export function EditSlots({
               aria-controls={inspectorId}
               aria-label={held(slot, "closed")}
               style={place(strip(box, template))}
-              className="pointer-events-auto absolute z-10 flex cursor-pointer items-center justify-center rounded-sm border-2 border-dashed border-muted-foreground/50 bg-background/90 text-[11px] font-medium text-muted-foreground hover:border-primary hover:text-foreground focus-visible:border-primary focus-visible:outline-none data-[selected=true]:border-solid data-[selected=true]:border-primary data-[selected=true]:text-foreground"
+              className="pointer-events-auto absolute z-10 flex cursor-pointer items-center justify-center rounded-sm border-2 border-dashed border-muted-foreground/50 bg-background/90 text-[11px] font-medium text-muted-foreground hover:border-muted-foreground hover:text-foreground focus-visible:border-ring focus-visible:outline-none data-[selected=true]:border-solid data-[selected=true]:border-primary data-[selected=true]:text-foreground"
               onClick={select(slot)}
             >
               <span aria-hidden="true" className="[writing-mode:vertical-rl]">
@@ -140,7 +140,7 @@ export function EditSlots({
             aria-controls={inspectorId}
             aria-label={t("workbench_edit_slot", { slot: label })}
             style={place(box)}
-            className="group pointer-events-auto absolute cursor-pointer rounded-sm outline-1 -outline-offset-1 outline-primary/60 outline-dashed hover:bg-primary/5 hover:outline-2 hover:outline-solid focus-visible:outline-2 focus-visible:outline-solid data-[selected=true]:bg-primary/5 data-[selected=true]:outline-2 data-[selected=true]:outline-solid data-[selected=true]:outline-primary"
+            className="group pointer-events-auto absolute cursor-pointer rounded-sm outline-1 -outline-offset-1 outline-muted-foreground/50 outline-dashed hover:outline-2 hover:outline-solid hover:outline-muted-foreground focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-ring data-[selected=true]:outline-2 data-[selected=true]:outline-solid data-[selected=true]:outline-primary"
             onClick={select(slot)}
           >
             <span
@@ -149,7 +149,7 @@ export function EditSlots({
               data-slot="workbench-edit-slot-label"
               data-label-at={inside ? "inside" : "above"}
               // Above the top edge, so it never covers the slot's content.
-              className="absolute bottom-full left-0 mb-px rounded-sm bg-primary px-1.5 py-0.5 text-[11px] leading-none font-medium text-primary-foreground data-[label-at=inside]:top-1 data-[label-at=inside]:right-1 data-[label-at=inside]:bottom-auto data-[label-at=inside]:left-auto data-[label-at=inside]:mb-0"
+              className="absolute bottom-full left-0 mb-px rounded-sm border border-border bg-secondary px-1.5 py-0.5 text-[11px] leading-none font-medium text-secondary-foreground group-data-[selected=true]:border-primary group-data-[selected=true]:bg-primary group-data-[selected=true]:text-primary-foreground data-[label-at=inside]:top-1 data-[label-at=inside]:right-1 data-[label-at=inside]:bottom-auto data-[label-at=inside]:left-auto data-[label-at=inside]:mb-0"
             >
               {label}
             </span>
@@ -168,7 +168,7 @@ export function EditSlots({
             aria-controls={inspectorId}
             aria-label={held(slot, "left-out")}
             style={place(box)}
-            className="pointer-events-auto absolute flex cursor-pointer items-center justify-center rounded-sm border-2 border-dashed border-muted-foreground/50 bg-background/70 bg-[repeating-linear-gradient(135deg,transparent_0_8px,var(--border)_8px_9px)] text-xs font-medium text-muted-foreground backdrop-blur-[1px] hover:border-primary hover:text-foreground focus-visible:border-primary focus-visible:outline-none data-[selected=true]:border-solid data-[selected=true]:border-primary data-[selected=true]:text-foreground"
+            className="pointer-events-auto absolute flex cursor-pointer items-center justify-center rounded-sm border-2 border-dashed border-muted-foreground/50 bg-background/70 bg-[repeating-linear-gradient(135deg,transparent_0_8px,var(--border)_8px_9px)] text-xs font-medium text-muted-foreground backdrop-blur-[1px] hover:border-muted-foreground hover:text-foreground focus-visible:border-ring focus-visible:outline-none data-[selected=true]:border-solid data-[selected=true]:border-primary data-[selected=true]:text-foreground"
             onClick={select(slot)}
           >
             <span

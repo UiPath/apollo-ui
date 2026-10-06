@@ -3,6 +3,7 @@
 import { useId } from "react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { LockIcon } from "./lock-hint";
+import { SELECTED_SEGMENT } from "./segment";
 
 interface ChoiceProps<Value extends string> {
   label: string;
@@ -53,9 +54,7 @@ export function Choice<Value extends string>({
             key={option.value}
             value={option.value}
             disabled={option.disabled}
-            // The toggle's own selected fill is too faint to read here,
-            // and a locked choice dims it further: the chosen one is filled.
-            className="flex-1 data-[state=on]:border-primary data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+            className={`flex-1 ${SELECTED_SEGMENT}`}
           >
             {option.label}
           </ToggleGroupItem>
