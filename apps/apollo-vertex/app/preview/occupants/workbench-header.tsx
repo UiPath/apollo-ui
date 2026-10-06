@@ -11,19 +11,12 @@ import {
   Sun,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { TEMPLATE_HOSTS } from "@/app/_components/template-hosts";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { OCCUPANT_STATES, type OccupantState } from "@/components/ui/occupant";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Tooltip,
@@ -31,93 +24,15 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { EXAMPLE_ROLES, type ExampleRole } from "@/lib/occupant-entry";
+import { type ChoiceProps, SelectChoice, ToggleChoice } from "./header-choice";
 import { ModeToggle } from "./mode-toggle";
 import { SELECTED_SEGMENT } from "./segment";
+import { SegmentLabel } from "./segment-label";
 import {
   templateNames,
   type WorkbenchMode,
   type WorkbenchTheme,
 } from "./workbench-url-state";
-
-interface ChoiceProps<T extends string> {
-  label: string;
-  value: T;
-  options: readonly { value: T; label: string }[];
-  onChange: (value: T) => void;
-}
-
-/** A labeled, single-choice toggle group: the roomy form. */
-function ToggleChoice<T extends string>({
-  label,
-  value,
-  options,
-  onChange,
-}: ChoiceProps<T>) {
-  const id = useId();
-  return (
-    <div className="flex shrink-0 items-center gap-2">
-      <span id={id} className="text-xs text-muted-foreground">
-        {label}
-      </span>
-      <ToggleGroup
-        type="single"
-        variant="outline"
-        size="sm"
-        aria-labelledby={id}
-        value={value}
-        onValueChange={(next) => {
-          const option = options.find((o) => o.value === next);
-          if (option) onChange(option.value);
-        }}
-      >
-        {options.map((option) => (
-          <ToggleGroupItem
-            key={option.value}
-            value={option.value}
-            className={SELECTED_SEGMENT}
-          >
-            {option.label}
-          </ToggleGroupItem>
-        ))}
-      </ToggleGroup>
-    </div>
-  );
-}
-
-/** The same choice as a select: the compact form. */
-function SelectChoice<T extends string>({
-  label,
-  value,
-  options,
-  onChange,
-}: ChoiceProps<T>) {
-  const id = useId();
-  return (
-    <div className="flex shrink-0 items-center gap-2">
-      <span id={id} className="text-xs text-muted-foreground">
-        {label}
-      </span>
-      <Select
-        value={value}
-        onValueChange={(next) => {
-          const option = options.find((o) => o.value === next);
-          if (option) onChange(option.value);
-        }}
-      >
-        <SelectTrigger size="sm" aria-labelledby={id}>
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {options.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
-  );
-}
 
 interface WorkbenchHeaderProps {
   label: string;
@@ -149,10 +64,13 @@ interface WorkbenchHeaderProps {
 }
 
 /**
- * One row at every width: the list toggle, the occupant, Sample and State,
- * the theme, and the details toggle. Sample and State are toggle groups
- * when they fit beside the full occupant label, and compact selects when
- * they don't; the label truncates before anything wraps.
+ * One row at every width, in a fixed order: the list toggle, the view
+ * switch, the title and its badge, the view's own controls right-aligned
+ * (Sample and State, or Preview | Edit and Reset), then the theme and
+ * panel toggles at the edge. The switch, the title's start, and the
+ * icons never move between views. Sample and State are toggle groups
+ * when they fit beside the full label, and compact selects when they
+ * don't; the label truncates before anything wraps.
  */
 export function WorkbenchHeader({
   label,
@@ -273,19 +191,13 @@ export function WorkbenchHeader({
           </Link>
         </Button>
       )}
-      <div ref={titleRef} className="flex min-w-0 flex-1 items-center gap-2">
-        <h2 className="truncate text-base font-semibold" title={label}>
-          {label}
-        </h2>
-        <Badge variant="secondary" className="shrink-0">
-          {t(mode === "template" ? "workbench_template" : "workbench_occupant")}
-        </Badge>
-      </div>
+      {/* The view switch, at a fixed place. */}
       <ToggleGroup
         type="single"
         variant="outline"
         size="sm"
         className="shrink-0"
+        data-slot="workbench-view-switch"
         aria-label={t("workbench_view")}
         value={mode}
         onValueChange={(next) => {
@@ -293,48 +205,37 @@ export function WorkbenchHeader({
         }}
       >
         <ToggleGroupItem value="surface" className={SELECTED_SEGMENT}>
-          {t("workbench_view_surface")}
+          <SegmentLabel>{t("workbench_view_surface")}</SegmentLabel>
         </ToggleGroupItem>
         <ToggleGroupItem value="template" className={SELECTED_SEGMENT}>
-          {t("workbench_view_template")}
+          <SegmentLabel>{t("workbench_view_template")}</SegmentLabel>
         </ToggleGroupItem>
       </ToggleGroup>
-      {mode === "template" && (
-        <ModeToggle editing={editing} onEditing={onEditing} />
-      )}
-      {mode === "template" && editing && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="shrink-0"
-              data-slot="workbench-reset"
-              aria-label={t("workbench_reset_layout")}
-              onClick={onReset}
-            >
-              <RotateCcw aria-hidden />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>{t("workbench_reset_layout")}</TooltipContent>
-        </Tooltip>
-      )}
-      {/* Only with a choice to make: one template needs no picker. */}
-      {mode === "template" && templateNames().length > 1 && (
-        <SelectChoice
-          label={t("workbench_template")}
-          value={template}
-          options={templateNames().map((name) => ({
-            value: name,
-            label: TEMPLATE_HOSTS[name]?.label ?? name,
-          }))}
-          onChange={onTemplate}
-        />
-      )}
-      {/* Sample and State are one occupant's: the surface view's only. */}
-      {mode === "surface" && (
-        <div ref={controlsRef} className="flex shrink-0 items-center gap-4">
-          {compact ? (
+      {/* It gives way first: truncated, then clipped, never over the zone. */}
+      <div
+        ref={titleRef}
+        className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden"
+      >
+        <h2 className="truncate text-base font-semibold" title={label}>
+          {label}
+        </h2>
+        <Badge variant="secondary" className="shrink-0">
+          {t(mode === "template" ? "workbench_template" : "workbench_occupant")}
+        </Badge>
+      </div>
+      {/*
+        The view's own controls, right-aligned before the theme and panel
+        icons. A new view's fade in, in place; nothing slides.
+      */}
+      <div
+        key={mode}
+        ref={controlsRef}
+        data-slot="workbench-header-zone"
+        className="flex shrink-0 items-center gap-4 animate-in fade-in duration-(--panel-transition-duration) ease-(--panel-transition-easing) motion-reduce:animate-none"
+      >
+        {mode === "surface" &&
+          // Sample and State are one occupant's: the surface view's only.
+          (compact ? (
             <>
               <SelectChoice {...sampleChoice} />
               <SelectChoice {...stateChoice} />
@@ -344,9 +245,44 @@ export function WorkbenchHeader({
               <ToggleChoice {...sampleChoice} />
               <ToggleChoice {...stateChoice} />
             </>
-          )}
-        </div>
-      )}
+          ))}
+        {mode === "template" && (
+          <>
+            {/* Only with a choice to make: one template needs no picker. */}
+            {templateNames().length > 1 && (
+              <SelectChoice
+                label={t("workbench_template")}
+                value={template}
+                options={templateNames().map((name) => ({
+                  value: name,
+                  label: TEMPLATE_HOSTS[name]?.label ?? name,
+                }))}
+                onChange={onTemplate}
+              />
+            )}
+            <div className="flex items-center gap-1">
+              <ModeToggle editing={editing} onEditing={onEditing} />
+              {/* Edit's only, but its room is kept, so Preview | Edit stays put. */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    data-slot="workbench-reset"
+                    data-shown={editing}
+                    aria-label={t("workbench_reset_layout")}
+                    onClick={onReset}
+                    className="shrink-0 transition-[opacity,visibility] duration-(--panel-transition-duration) ease-(--panel-transition-easing) motion-reduce:transition-none data-[shown=false]:invisible data-[shown=false]:opacity-0"
+                  >
+                    <RotateCcw aria-hidden />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{t("workbench_reset_layout")}</TooltipContent>
+              </Tooltip>
+            </div>
+          </>
+        )}
+      </div>
       <Button
         variant="ghost"
         size="icon"

@@ -3,6 +3,7 @@
 import { useTranslation } from "react-i18next";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { SELECTED_SEGMENT } from "./segment";
+import { SegmentLabel } from "./segment-label";
 
 const MODES = [
   { value: "preview", label: "workbench_mode_preview" },
@@ -41,7 +42,7 @@ export function ModeToggle({ editing, onEditing }: ModeToggleProps) {
           value={value}
           className={`px-3 ${SELECTED_SEGMENT}`}
         >
-          {t(label)}
+          <SegmentLabel>{t(label)}</SegmentLabel>
         </ToggleGroupItem>
       ))}
     </ToggleGroup>
