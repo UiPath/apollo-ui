@@ -77,6 +77,37 @@ test("a stack has a heading per occupant; a single occupant has none", async ({
   await expect(tabBody(page, "base").getByRole("heading")).toHaveCount(0);
 });
 
+test("a stack's heading sits 16px above its occupant, from the spacing scale", async ({
+  page,
+}) => {
+  await openPanel(page, STACK);
+  const items = tabBody(page, "base").locator("[data-part=stack-item]");
+  await expect(items).toHaveCount(2);
+  const spacing = await page.evaluate(
+    () =>
+      Number.parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue(
+          "--spacing",
+        ),
+      ) *
+      Number.parseFloat(getComputedStyle(document.documentElement).fontSize),
+  );
+  // The step that equals 16px on the scale.
+  expect(spacing * 4).toBe(16);
+  for (const item of await items.all()) {
+    const gap = await item.evaluate((el) => {
+      const heading = el.querySelector("[data-part=stack-heading]");
+      const content = heading?.nextElementSibling;
+      if (!heading || !content) return null;
+      return (
+        content.getBoundingClientRect().top -
+        heading.getBoundingClientRect().bottom
+      );
+    });
+    expect(gap).toBe(16);
+  }
+});
+
 test("a fill occupant is alone in its tab and scrolls itself", async ({
   page,
 }) => {

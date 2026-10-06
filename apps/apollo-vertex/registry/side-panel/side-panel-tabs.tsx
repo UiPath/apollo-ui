@@ -70,14 +70,16 @@ function StackedOccupant({
       data-part="stack-item"
       aria-labelledby={headingId}
       className={cn(
-        "flex flex-col gap-2 border-b border-border last:border-b-0",
+        "flex flex-col border-b border-border last:border-b-0",
         flush ? "py-(--surface-inset)" : "p-(--surface-inset)",
       )}
     >
+      {/* The heading sets the room before its occupant, from the spacing scale. */}
       <Heading
         id={headingId}
+        data-part="stack-heading"
         className={cn(
-          "text-sm font-semibold text-foreground",
+          "mb-4 text-sm font-semibold text-foreground",
           flush && "px-(--surface-inset)",
         )}
       >
