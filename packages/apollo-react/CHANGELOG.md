@@ -1,3 +1,16 @@
+## [@uipath/apollo-react-v6.75.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.74.0...@uipath/apollo-react@6.75.0) (2026-10-06)
+
+### Features
+
+* **apollo-react:** per-canvas toolbar store and changed-field highlight in NodePropertyPanel ([b3ec692](https://github.com/UiPath/apollo-ui/commit/b3ec69278e8cb353207313b84cdc9cf472779544))
+* **apollo-wind:** add reference marker to Json tree type badge ([f42b40a](https://github.com/UiPath/apollo-ui/commit/f42b40af244b533c60fa625632d560363275a98f))
+
+### Bug Fixes
+
+* **apollo-react:** address toolbar store and changed-field review findings ([d1e7fdb](https://github.com/UiPath/apollo-ui/commit/d1e7fdbeef53ad447be33332a283e3041d3e1e74))
+* **apollo-react:** keep the toolbar store on a surviving canvas ([0e3e2be](https://github.com/UiPath/apollo-ui/commit/0e3e2be5d73eb4e47ecf50469f10de0f00ff778f))
+* **apollo-react:** one default canvas mode for the toolbar store, and a side-by-side demo ([158a4f6](https://github.com/UiPath/apollo-ui/commit/158a4f6dedead846f21f0a2dd7c21abc1c696729))
+
 ## [@uipath/apollo-react-v6.74.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.73.0...@uipath/apollo-react@6.74.0) (2026-10-05)
 
 ### Features

@@ -1,3 +1,16 @@
+## [@uipath/apollo-wind-v2.64.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.63.0...@uipath/apollo-wind@2.64.0) (2026-10-06)
+
+### Features
+
+* **apollo-wind:** add reference marker to Json tree type badge ([f42b40a](https://github.com/UiPath/apollo-ui/commit/f42b40af244b533c60fa625632d560363275a98f))
+* **apollo-wind:** per-field highlight and data-field-name in MetadataForm ([9f7f8af](https://github.com/UiPath/apollo-ui/commit/9f7f8af1e6cd8251860fe87d46d94a884715e1e3))
+* **apollo-wind:** value modes and field actions in the Form Designer [MST-15681] ([beec34e](https://github.com/UiPath/apollo-ui/commit/beec34e967ec7df3c3cebdbf60fa56d8a7eaf31c))
+
+### Bug Fixes
+
+* **apollo-wind:** announce the changed note for spaced names and variable/prompt modes ([5697c2c](https://github.com/UiPath/apollo-ui/commit/5697c2c8f3f885e918da7c6b099f94b95dd7ee87))
+* **apollo-wind:** describe changed fields' controls with the changed note ([1e2d7df](https://github.com/UiPath/apollo-ui/commit/1e2d7df6886a7234d73ab58076b6d704e497ce5e))
+
 ## [@uipath/apollo-wind-v2.63.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.62.0...@uipath/apollo-wind@2.63.0) (2026-10-06)
 
 ### Features
