@@ -59,6 +59,12 @@ export function useCanvasJsonTreeViewStrings(): JsonTreeViewStrings {
           values: { count },
         }),
       requiredMarker: _({ id: 'canvas.json_value_panel.required_marker', message: 'required' }),
+      referenceType: (typeLabel) =>
+        _({
+          id: 'canvas.json_value_panel.reference_type',
+          message: '{typeLabel} · reference',
+          values: { typeLabel },
+        }),
       pathCopied: _({ id: 'canvas.json_value_panel.path_copied', message: 'Path copied' }),
       copyPathHint: _({
         id: 'canvas.json_value_panel.copy_path_hint',

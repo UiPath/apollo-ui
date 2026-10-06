@@ -20,6 +20,12 @@ export interface JsonTreeViewStrings {
   keyCount: (count: number) => string;
   /** Screen-reader text for the required-field marker. */
   requiredMarker: string;
+  /**
+   * Type badge tooltip title for a reference, given the type name (e.g. "String").
+   * Optional so catalogs written before it was added still type-check; falls
+   * back to the English default.
+   */
+  referenceType?: (typeLabel: string) => string;
   pathCopied: string;
   copyPathHint: string;
   copyPathFor: (path: string) => string;
@@ -56,7 +62,10 @@ export interface JsonTreeViewStrings {
   collapseAll: string;
 }
 
-export const DEFAULT_JSON_TREE_VIEW_STRINGS: JsonTreeViewStrings = {
+/** Strings with every optional key filled in, as the tree parts read them. */
+export type ResolvedJsonTreeViewStrings = Required<JsonTreeViewStrings>;
+
+export const DEFAULT_JSON_TREE_VIEW_STRINGS: ResolvedJsonTreeViewStrings = {
   arrayItem: 'item',
   emptySearch: 'No fields match your search.',
   emptyDefault: 'No fields to display.',
@@ -65,6 +74,7 @@ export const DEFAULT_JSON_TREE_VIEW_STRINGS: JsonTreeViewStrings = {
   itemCount: (count) => (count === 1 ? '1 item' : `${count} items`),
   keyCount: (count) => (count === 1 ? '1 key' : `${count} keys`),
   requiredMarker: 'required',
+  referenceType: (typeLabel) => `${typeLabel} · reference`,
   pathCopied: 'Path copied',
   copyPathHint: 'Click to copy this path',
   copyPathFor: (path) => `Copy path for ${path}`,
@@ -99,7 +109,7 @@ export const DEFAULT_JSON_TREE_VIEW_STRINGS: JsonTreeViewStrings = {
 };
 
 interface JsonTreeViewSettings {
-  strings: JsonTreeViewStrings;
+  strings: ResolvedJsonTreeViewStrings;
   tooltipContentClassName?: string;
 }
 
@@ -109,9 +119,9 @@ const JsonTreeViewSettingsContext = createContext<JsonTreeViewSettings>({
 
 /** Overrides win key by key; an `undefined` override keeps the inherited string. */
 function mergeStrings(
-  base: JsonTreeViewStrings,
+  base: ResolvedJsonTreeViewStrings,
   overrides: Partial<JsonTreeViewStrings>
-): JsonTreeViewStrings {
+): ResolvedJsonTreeViewStrings {
   const merged = { ...base };
   for (const key of Object.keys(overrides) as (keyof JsonTreeViewStrings)[]) {
     const value = overrides[key];
@@ -154,7 +164,7 @@ export function JsonTreeViewProvider({
   );
 }
 
-export function useJsonTreeViewStrings(): JsonTreeViewStrings {
+export function useJsonTreeViewStrings(): ResolvedJsonTreeViewStrings {
   return useContext(JsonTreeViewSettingsContext).strings;
 }
 

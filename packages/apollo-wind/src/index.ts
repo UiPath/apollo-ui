@@ -701,6 +701,7 @@ export type {
   NodeAction,
   NodeActionContext,
   NodeActionsResolver,
+  NodeBadgeReference,
   NodeDecoration,
   NodeDecorationBadge,
   NodeDecorationChip,
@@ -710,6 +711,7 @@ export type {
   RenderCodeEditor,
   RenderValueCell,
   RenderValueContext,
+  ResolvedJsonTreeViewStrings,
 } from './components/ui/json-tree-view';
 export {
   appendPathSegment,

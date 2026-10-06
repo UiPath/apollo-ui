@@ -131,6 +131,7 @@
   "canvas.json_value_panel.json_tab": "JSON",
   "canvas.json_value_panel.key_count": "{count, plural, one {# key} other {# keys}}",
   "canvas.json_value_panel.path_copied": "Path copied",
+  "canvas.json_value_panel.reference_type": "{typeLabel} · reference",
   "canvas.json_value_panel.required_marker": "required",
   "canvas.json_value_panel.schema_tab": "Schema",
   "canvas.json_value_panel.search_fields": "Search fields and values...",
