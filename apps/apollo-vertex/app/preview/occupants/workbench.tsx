@@ -253,6 +253,9 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
                   layout={view.layout}
                   contents={view.contents}
                   tabs={view.tabs}
+                  opened={opened}
+                  onOpen={setOpened}
+                  onClose={() => setOpened(null)}
                   onTab={(slot, id) =>
                     update({ tabs: { ...view.tabs, [slot]: id } })
                   }

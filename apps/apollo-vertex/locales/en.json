@@ -516,6 +516,7 @@
   "workbench_spec_padding": "Padding",
   "workbench_spec_scroll": "Scroll",
   "workbench_spec_surfaces": "Surfaces",
+  "workbench_stage_chip": "{{slot}} settings",
   "workbench_state": "State",
   "workbench_state_agent-updating": "Agent updating",
   "workbench_state_empty": "Empty",
