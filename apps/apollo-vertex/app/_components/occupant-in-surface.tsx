@@ -1,13 +1,13 @@
 "use client";
 
 import type { CSSProperties } from "react";
+import { LocaleReady } from "@/app/_components/locale-ready";
 import { STAGE_HEIGHT } from "@/app/_components/stage";
 import { SURFACE_HOSTS } from "@/app/_components/surface-hosts";
 import type { OccupantState } from "@/components/ui/occupant";
 import { occupantInset, occupantPadding, scrollOwner } from "@/lib/composition";
 import { OCCUPANT_REGISTRY } from "@/lib/occupant-registry.generated";
 import { SURFACE_SPECS } from "@/lib/occupants.generated";
-import { LocaleProvider } from "@/registry/shell/shell-locale-provider";
 
 interface OccupantInSurfaceProps {
   /** A registered occupant's name. */
@@ -49,7 +49,7 @@ export function OccupantInSurface({
   };
 
   return (
-    <LocaleProvider>
+    <LocaleReady>
       <div
         data-slot="occupant-fixture"
         data-surface-name={surface.name}
@@ -64,6 +64,6 @@ export function OccupantInSurface({
           {content}
         </Host>
       </div>
-    </LocaleProvider>
+    </LocaleReady>
   );
 }

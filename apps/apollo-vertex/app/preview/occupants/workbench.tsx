@@ -8,7 +8,7 @@ import { STAGE_HEIGHT } from "@/app/_components/stage";
 import { SURFACE_HOSTS } from "@/app/_components/surface-hosts";
 import type { SlotStatus } from "@/app/_components/template-hosts";
 import { fitsSurface } from "@/lib/composition";
-import { EXAMPLE_ROLES, type ExampleRole } from "@/lib/occupant-entry";
+import { EXAMPLE_ROLES } from "@/lib/occupant-entry";
 import { specFor } from "@/lib/occupant-lookup";
 import { surfaceLabel } from "@/lib/surface-labels";
 import { DetailsPanel } from "./details-panel";
@@ -22,6 +22,7 @@ import { TemplateStage } from "./template-stage";
 import { useChangeLog } from "./use-change-log";
 import { useCompose } from "./use-compose";
 import { useFitScale } from "./use-fit-scale";
+import { useFloors } from "./use-floors";
 import { useInspector } from "./use-inspector";
 import { usePageTheme } from "./use-page-theme";
 import { useStageOverflow } from "./use-stage-overflow";
@@ -81,21 +82,13 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
   const surface = HOSTED_SURFACES.find((s) => s.name === view.surface);
   const host = SURFACE_HOSTS[view.surface];
 
-  // Floors, measured out of sight for every sample in the selected surface.
-  const probeKey = `${view.occupant}:${view.surface}`;
-  const [floors, setFloors] = useState<{
-    key: string;
-    bySample: Partial<Record<ExampleRole, Floor>>;
-  }>({ key: probeKey, bySample: {} });
-  const onFloor = (sample: ExampleRole, floor: Floor) =>
-    setFloors((current) => ({
-      key: probeKey,
-      bySample: {
-        ...(current.key === probeKey ? current.bySample : {}),
-        [sample]: floor,
-      },
-    }));
-  const measured = floors.key === probeKey ? floors.bySample : {};
+  // Floors, measured out of sight once the stage has shown the occupant.
+  const {
+    key: probeKey,
+    probing,
+    measured,
+    onFloor,
+  } = useFloors(view.occupant, view.surface);
 
   // Whether the occupant on the stage overflows right now.
   const stageRef = useRef<HTMLDivElement>(null);
@@ -365,6 +358,7 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
 
         {claim.fits &&
           view.mode === "surface" &&
+          probing &&
           createPortal(
             <div
               aria-hidden="true"

@@ -2,13 +2,13 @@
 
 import type { CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
+import { LocaleReady } from "@/app/_components/locale-ready";
 import type {
   SlotStatus,
   TemplateHost,
 } from "@/app/_components/template-hosts";
 import type { LayoutChoices } from "@/lib/layout";
 import { OCCUPANT_REGISTRY } from "@/lib/occupant-registry.generated";
-import { LocaleProvider } from "@/registry/shell/shell-locale-provider";
 import {
   PreviewShell,
   type PreviewShellVariant,
@@ -139,7 +139,7 @@ export function TemplateStage({
         {/* ApolloShell sizes itself to the window (h-screen); here it fills the page. */}
         <div className="h-full [&_.h-screen]:h-full [&_.min-h-svh]:min-h-0">
           <PreviewShell variant={shell} basePath="/preview/occupants">
-            <LocaleProvider>
+            <LocaleReady>
               <Frame
                 // A fresh template when a slot's open state changes: its
                 // slots start as chosen. Placement and which
@@ -149,7 +149,7 @@ export function TemplateStage({
                 choices={layout}
                 onStatus={onStatus}
               />
-            </LocaleProvider>
+            </LocaleReady>
           </PreviewShell>
         </div>
       </div>
