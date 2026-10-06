@@ -186,181 +186,182 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
         data-theme={view.theme}
         // A recessed canvas, a step darker than the chrome in either theme;
         // its dots read as a grid, quieter than any Edit-mode slot outline.
-        className="fixed inset-0 z-50 flex bg-background text-foreground not-prose [--workbench-canvas:var(--sidebar)] [--workbench-dots:color-mix(in_oklab,var(--muted-foreground)_20%,var(--workbench-canvas))]"
+        className="fixed inset-0 z-50 flex flex-col bg-background text-foreground not-prose [--workbench-canvas:var(--sidebar)] [--workbench-dots:color-mix(in_oklab,var(--muted-foreground)_20%,var(--workbench-canvas))]"
       >
-        <WorkbenchPanel id={LIST_ID} open={view.listOpen} kind="list">
-          <OccupantList
-            id={LIST_ID}
-            selected={view.occupant}
-            onSelect={selectOccupant}
-            docsHref={docsHref}
-            editing={editMode}
-            {...(inTemplate && {
-              locations: locationsOf(
-                inTemplate,
-                view.contents,
-                view.layout,
-                slotStatus,
-              ),
-            })}
-          />
-        </WorkbenchPanel>
+        {/* A top bar across the window; the columns and stage below it. */}
+        <WorkbenchHeader
+          // The template view has no focused occupant: it's the page.
+          label={
+            view.mode === "template" && templateHost
+              ? templateHost.label
+              : spec.label
+          }
+          docsHref={docsHref}
+          listId={LIST_ID}
+          listOpen={view.listOpen}
+          onToggleList={() => update({ listOpen: !view.listOpen })}
+          // The right-hand column is one view's at a time.
+          panel={inTemplate ? "inspector" : "details"}
+          detailsId={inTemplate ? INSPECTOR_ID : DETAILS_ID}
+          detailsOpen={inTemplate ? inspector.open : view.detailsOpen}
+          onToggleDetails={() =>
+            inTemplate
+              ? view.editing
+                ? inspector.toggle()
+                : setEditing(true)
+              : update({ detailsOpen: !view.detailsOpen })
+          }
+          sample={view.sample}
+          onSample={(sample) => update({ sample })}
+          state={view.state}
+          onState={(state) => update({ state })}
+          theme={view.theme}
+          onTheme={(theme) => update({ theme })}
+          mode={view.mode}
+          onMode={(mode) => setView((prev) => switchView(prev, mode))}
+          template={view.template}
+          editing={view.editing}
+          onEditing={setEditing}
+          onReset={reset}
+          onTemplate={(template) => update({ template })}
+        />
+        <div className="flex min-h-0 flex-1">
+          <WorkbenchPanel id={LIST_ID} open={view.listOpen} kind="list">
+            <OccupantList
+              id={LIST_ID}
+              selected={view.occupant}
+              onSelect={selectOccupant}
+              editing={editMode}
+              {...(inTemplate && {
+                locations: locationsOf(
+                  inTemplate,
+                  view.contents,
+                  view.layout,
+                  slotStatus,
+                ),
+              })}
+            />
+          </WorkbenchPanel>
 
-        <main className="flex min-w-0 flex-1 flex-col">
-          <WorkbenchHeader
-            // The template view has no focused occupant: it's the page.
-            label={
-              view.mode === "template" && templateHost
-                ? templateHost.label
-                : spec.label
-            }
-            docsHref={docsHref}
-            listId={LIST_ID}
-            listOpen={view.listOpen}
-            onToggleList={() => update({ listOpen: !view.listOpen })}
-            // The right-hand column is one view's at a time.
-            panel={inTemplate ? "inspector" : "details"}
-            detailsId={inTemplate ? INSPECTOR_ID : DETAILS_ID}
-            detailsOpen={inTemplate ? inspector.open : view.detailsOpen}
-            onToggleDetails={() =>
-              inTemplate
-                ? view.editing
-                  ? inspector.toggle()
-                  : setEditing(true)
-                : update({ detailsOpen: !view.detailsOpen })
-            }
-            sample={view.sample}
-            onSample={(sample) => update({ sample })}
-            state={view.state}
-            onState={(state) => update({ state })}
-            theme={view.theme}
-            onTheme={(theme) => update({ theme })}
-            mode={view.mode}
-            onMode={(mode) => setView((prev) => switchView(prev, mode))}
-            template={view.template}
-            editing={view.editing}
-            onEditing={setEditing}
-            onReset={reset}
-            onTemplate={(template) => update({ template })}
-          />
-
-          <div ref={stageAreaRef} className="relative min-h-0 flex-1">
-            <div
-              ref={stageRef}
-              data-slot="workbench-stage"
-              // Its own stacking context: a template's z-index stays inside it.
-              className="absolute inset-0 isolate overflow-auto bg-(color:--workbench-canvas) bg-[radial-gradient(var(--workbench-dots)_1px,transparent_1px)] bg-size-[--spacing(4)_--spacing(4)]"
-            >
-              {/* Room under the occupant for the dock, so it's never hidden behind it. */}
+          <main className="flex min-w-0 flex-1 flex-col">
+            <div ref={stageAreaRef} className="relative min-h-0 flex-1">
               <div
-                style={dockSpace}
-                className="flex min-h-full min-w-fit items-center justify-center p-8 pb-[calc(var(--dock-space)+--spacing(12))]"
+                ref={stageRef}
+                data-slot="workbench-stage"
+                // Its own stacking context: a template's z-index stays inside it.
+                className="absolute inset-0 isolate overflow-auto bg-(color:--workbench-canvas) bg-[radial-gradient(var(--workbench-dots)_1px,transparent_1px)] bg-size-[--spacing(4)_--spacing(4)]"
               >
-                {templateHost && view.mode === "template" ? (
-                  <TemplateStage
-                    host={templateHost}
-                    shell={view.shell}
-                    layout={view.layout}
-                    contents={view.contents}
-                    tabs={view.tabs}
-                    revisions={revisions}
-                    editing={view.editing}
-                    selected={inspector.selected}
-                    onSelect={inspector.select}
-                    inspectorId={INSPECTOR_ID}
-                    onTab={(slot, id) =>
-                      update({ tabs: { ...view.tabs, [slot]: id } })
-                    }
-                    onStatus={setSlotStatus}
-                    pageWidth={view.pageWidth}
-                    pageHeight={pageHeight}
-                    scale={scale}
-                  />
-                ) : claim.fits ? (
-                  <StageFrame
-                    tag={t("workbench_frame_tag", {
-                      surface: surfaceLabel(surface.name),
-                      width: view.width,
-                    })}
-                  >
-                    <OccupantInSurface
-                      // A fresh occupant per sample, so its own state (a selection) resets.
-                      key={`${spec.name}-${view.sample}`}
-                      occupant={spec.name}
-                      surface={surface.name}
-                      example={view.sample}
-                      state={view.state}
-                      width={view.width}
+                {/* Room under the occupant for the dock, so it's never hidden behind it. */}
+                <div
+                  style={dockSpace}
+                  className="flex min-h-full min-w-fit items-center justify-center p-8 pb-[calc(var(--dock-space)+--spacing(12))]"
+                >
+                  {templateHost && view.mode === "template" ? (
+                    <TemplateStage
+                      host={templateHost}
+                      shell={view.shell}
+                      layout={view.layout}
+                      contents={view.contents}
+                      tabs={view.tabs}
+                      revisions={revisions}
+                      editing={view.editing}
+                      selected={inspector.selected}
+                      onSelect={inspector.select}
+                      inspectorId={INSPECTOR_ID}
+                      onTab={(slot, id) =>
+                        update({ tabs: { ...view.tabs, [slot]: id } })
+                      }
+                      onStatus={setSlotStatus}
+                      pageWidth={view.pageWidth}
+                      pageHeight={pageHeight}
+                      scale={scale}
                     />
-                  </StageFrame>
-                ) : (
-                  <NoFitCard
-                    title={t("workbench_no_fit_title", {
-                      occupant: spec.label,
-                      surface: lowerLabel(surface.name),
-                    })}
-                    reasons={claim.reasons}
-                  />
-                )}
+                  ) : claim.fits ? (
+                    <StageFrame
+                      tag={t("workbench_frame_tag", {
+                        surface: surfaceLabel(surface.name),
+                        width: view.width,
+                      })}
+                    >
+                      <OccupantInSurface
+                        // A fresh occupant per sample, so its own state (a selection) resets.
+                        key={`${spec.name}-${view.sample}`}
+                        occupant={spec.name}
+                        surface={surface.name}
+                        example={view.sample}
+                        state={view.state}
+                        width={view.width}
+                      />
+                    </StageFrame>
+                  ) : (
+                    <NoFitCard
+                      title={t("workbench_no_fit_title", {
+                        occupant: spec.label,
+                        surface: lowerLabel(surface.name),
+                      })}
+                      reasons={claim.reasons}
+                    />
+                  )}
+                </div>
               </div>
-            </div>
 
-            {templateHost && view.mode === "template" ? (
-              <TemplateDock
-                host={templateHost}
-                shell={view.shell}
-                onShell={(shell) => update({ shell })}
-                pageWidth={view.pageWidth}
-                onPageWidth={(pageWidth) => update({ pageWidth })}
-                zoom={view.zoom}
-                onZoom={(zoom) => update({ zoom })}
-                scale={scale}
+              {templateHost && view.mode === "template" ? (
+                <TemplateDock
+                  host={templateHost}
+                  shell={view.shell}
+                  onShell={(shell) => update({ shell })}
+                  pageWidth={view.pageWidth}
+                  onPageWidth={(pageWidth) => update({ pageWidth })}
+                  zoom={view.zoom}
+                  onZoom={(zoom) => update({ zoom })}
+                  scale={scale}
+                />
+              ) : (
+                <WorkbenchDock
+                  spec={spec}
+                  surface={surface.name}
+                  onSurface={(name) =>
+                    update({ surface: name, width: defaultWidth(spec, name) })
+                  }
+                  fitsHere={claim.fits}
+                  width={view.width}
+                  onWidth={(width) => update({ width })}
+                  marks={{ ...range, floor: floorOuter }}
+                  status={status}
+                />
+              )}
+            </div>
+          </main>
+
+          <WorkbenchPanel
+            id={inTemplate ? INSPECTOR_ID : DETAILS_ID}
+            open={inTemplate ? inspector.open : view.detailsOpen}
+            kind="column"
+          >
+            {inTemplate ? (
+              <Inspector
+                id={INSPECTOR_ID}
+                host={inTemplate}
+                selected={inspector.selected}
+                hint={inspector.hint}
+                layout={view.layout}
+                onLayout={(layout) => change({ layout })}
+                status={slotStatus}
+                contents={view.contents}
+                onContents={compose}
               />
             ) : (
-              <WorkbenchDock
+              <DetailsPanel
+                id={DETAILS_ID}
                 spec={spec}
                 surface={surface.name}
-                onSurface={(name) =>
-                  update({ surface: name, width: defaultWidth(spec, name) })
-                }
-                fitsHere={claim.fits}
                 width={view.width}
-                onWidth={(width) => update({ width })}
-                marks={{ ...range, floor: floorOuter }}
-                status={status}
+                floor={claim.fits ? worstFloor : "unavailable"}
+                overflow={current}
               />
             )}
-          </div>
-        </main>
-
-        <WorkbenchPanel
-          id={inTemplate ? INSPECTOR_ID : DETAILS_ID}
-          open={inTemplate ? inspector.open : view.detailsOpen}
-          kind="column"
-        >
-          {inTemplate ? (
-            <Inspector
-              id={INSPECTOR_ID}
-              host={inTemplate}
-              selected={inspector.selected}
-              hint={inspector.hint}
-              layout={view.layout}
-              onLayout={(layout) => change({ layout })}
-              status={slotStatus}
-              contents={view.contents}
-              onContents={compose}
-            />
-          ) : (
-            <DetailsPanel
-              id={DETAILS_ID}
-              spec={spec}
-              surface={surface.name}
-              width={view.width}
-              floor={claim.fits ? worstFloor : "unavailable"}
-              overflow={current}
-            />
-          )}
-        </WorkbenchPanel>
+          </WorkbenchPanel>
+        </div>
 
         {claim.fits &&
           view.mode === "surface" &&

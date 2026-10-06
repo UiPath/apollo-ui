@@ -80,6 +80,17 @@ test("the workbench's columns animate on the panel tokens, and the stage follows
     duration: "0.35s",
     easing: true,
   });
+  // The list moves on the very same spring.
+  const list = page.locator("[data-slot=workbench-panel][data-panel=list]");
+  const timing = (el: Element) => {
+    const style = getComputedStyle(el);
+    return [
+      style.transitionProperty,
+      style.transitionDuration,
+      style.transitionTimingFunction,
+    ];
+  };
+  expect(await list.evaluate(timing)).toEqual(await column.evaluate(timing));
   // Mid-open: the column is partway, the details keep their own width (they
   // clip, not squeeze), and the stage has narrowed by what the column took.
   const before =

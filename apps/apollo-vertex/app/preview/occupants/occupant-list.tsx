@@ -1,7 +1,7 @@
 "use client";
 
 import { type DraggableSyntheticListeners, useDraggable } from "@dnd-kit/core";
-import { ArrowLeft, GripVertical } from "lucide-react";
+import { GripVertical } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -16,8 +16,6 @@ interface OccupantListProps {
   id: string;
   selected: string;
   onSelect: (name: string) => void;
-  /** Where "Back to docs" goes. */
-  docsHref: string;
   /** Edit mode: rows drag onto the page, but not those placed already. */
   editing?: boolean;
   /** In the template view, where each placed occupant is, hidden slots included. */
@@ -114,7 +112,6 @@ export function OccupantList({
   id,
   selected,
   onSelect,
-  docsHref,
   editing = false,
   locations,
 }: OccupantListProps) {
@@ -132,14 +129,6 @@ export function OccupantList({
       className="flex w-66 shrink-0 flex-col border-e border-border outline-none"
     >
       <div className="flex flex-col gap-3 p-4">
-        <Link
-          href={docsHref}
-          data-slot="workbench-back"
-          className="flex w-fit items-center gap-1 text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <ArrowLeft aria-hidden className="size-4" />
-          {t("workbench_back_to_docs")}
-        </Link>
         <div>
           <h1 className="text-base font-semibold">{t("workbench_title")}</h1>
           <p className="text-sm text-muted-foreground">

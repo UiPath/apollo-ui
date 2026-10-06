@@ -39,7 +39,7 @@ import {
 
 interface WorkbenchHeaderProps {
   label: string;
-  /** Where "Back to docs" goes, shown here while the list is collapsed. */
+  /** Where "Back to docs" goes. */
   docsHref: string;
   listId: string;
   listOpen: boolean;
@@ -67,9 +67,9 @@ interface WorkbenchHeaderProps {
 }
 
 /**
- * One row, in three parts: at the start, the list toggle, Back to docs
- * while the list is collapsed, and the title with its badge; the view
- * switch on the header's own center; at the end, the view's controls
+ * The workbench's top bar, across the whole window, in three parts: at
+ * the start, the list toggle, Back to docs, and the title with its badge;
+ * the view switch on the window's center; at the end, the view's controls
  * (Sample and State as selects, or Preview | Edit and Reset), then the
  * theme and panel toggles at the edge. Short of room, the title
  * truncates, then its badge goes; nothing reaches the switch.
@@ -154,18 +154,20 @@ export function WorkbenchHeader({
         >
           {listOpen ? <PanelLeftClose /> : <PanelLeftOpen />}
         </Button>
-        {/* The list holds "Back to docs"; while it's collapsed, it's here. */}
-        {!listOpen && (
-          <Button asChild variant="ghost" size="icon" className="shrink-0">
-            <Link
-              href={docsHref}
-              data-slot="workbench-back"
-              aria-label={t("workbench_back_to_docs")}
-            >
-              <ArrowLeft aria-hidden />
-            </Link>
-          </Button>
-        )}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button asChild variant="ghost" size="icon" className="shrink-0">
+              <Link
+                href={docsHref}
+                data-slot="workbench-back"
+                aria-label={t("workbench_back_to_docs")}
+              >
+                <ArrowLeft aria-hidden />
+              </Link>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{t("workbench_back_to_docs")}</TooltipContent>
+        </Tooltip>
         {/*
           It gives way first: the title truncates, its full text in a
           tooltip, then the badge goes, when the title's room is short.

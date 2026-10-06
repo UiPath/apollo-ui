@@ -253,12 +253,15 @@ test("a tall inspector scrolls itself, down to the layout", async ({
     `${SLOT}&end-panel-contents=queue~overview:key-facts.participants~activity-timeline`,
   );
   await openMenu(page);
-  // It's the window's height, beside the stage, never over the dock.
-  const [box, dock] = await Promise.all([
+  // It runs from the bar to the window's bottom, beside the stage, never
+  // over the dock.
+  const [box, dock, topBar] = await Promise.all([
     menu(page).boundingBox(),
     page.locator("[data-slot=workbench-dock]").boundingBox(),
+    page.locator("[data-slot=workbench-header]").boundingBox(),
   ]);
-  expect(box?.height).toBe(560);
+  expect(box?.y).toBe((topBar?.y ?? 0) + (topBar?.height ?? 0));
+  expect((box?.y ?? 0) + (box?.height ?? 0)).toBe(560);
   expect(box?.x ?? 0).toBeGreaterThanOrEqual(
     (dock?.x ?? 0) + (dock?.width ?? 0),
   );

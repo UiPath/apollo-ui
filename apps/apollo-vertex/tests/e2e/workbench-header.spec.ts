@@ -3,9 +3,10 @@ import { expect, settle, test } from "./fixtures";
 import { open } from "./workbench-helpers";
 
 /*
- * The header's layout: the view switch on the header's own center, the
- * title's start and the theme and panel toggles staying put between
- * views, the title giving way first when room runs out, Sample and State
+ * The workbench's top bar, across the window: the view switch on the
+ * window's center, it, the title's start, and the theme and panel
+ * toggles staying put between views and as the columns below open and
+ * close, the title giving way first when room runs out, Sample and State
  * as selects, and the view's own controls swapping in place with a fade. The switch is the one
  * inverted control, and meets WCAG AA in both themes.
  */
@@ -42,24 +43,26 @@ async function view(page: Page, name: "Surface" | "Template") {
   await settle(page);
 }
 
-/** The switch's center, off the header's own, in px. */
+/** The switch's center, off the window's, in px. */
 const offCenter = (page: Page) =>
-  header(page).evaluate((el) => {
-    const bar = el.getBoundingClientRect();
-    const found = el.querySelector("[data-slot=workbench-view-switch]");
-    const box = found?.getBoundingClientRect();
-    return box
-      ? Math.abs(box.x + box.width / 2 - (bar.x + bar.width / 2))
-      : Number.POSITIVE_INFINITY;
+  viewSwitch(page).evaluate((el) => {
+    const box = el.getBoundingClientRect();
+    return Math.abs(box.x + box.width / 2 - window.innerWidth / 2);
   });
 
+/** Clicks a column's toggle in the bar, by the panel it controls. */
+const toggleColumn = async (page: Page, panel: string) => {
+  await header(page).locator(`[aria-controls="${panel}"]`).click();
+  await settle(page);
+};
+
 // 1416px with the list open, and 1040px with it closed: the narrowest
-// header that fits everything (the surface view's selects set it).
+// window that fits everything (the surface view's selects set it).
 for (const [width, query] of [
   [1416, "?occupant=queue"],
   [1040, "?occupant=queue&list=closed"],
 ] as const) {
-  test(`the switch sits on the header's center, and nothing moves between views, at ${width}px`, async ({
+  test(`the switch sits on the window's center, and nothing in the bar moves, at ${width}px`, async ({
     page,
   }) => {
     await page.setViewportSize({ width, height: 900 });
@@ -67,13 +70,33 @@ for (const [width, query] of [
     await page.evaluate(() => document.fonts.ready);
     await settle(page);
     expect(await offCenter(page)).toBeLessThanOrEqual(0.5);
-    const surface = await fixed(page);
+    const start = await fixed(page);
+    // The bar spans the window: the columns opening and closing below it
+    // move nothing in it.
+    for (const panel of ["workbench-list", "workbench-details"]) {
+      await toggleColumn(page, panel);
+      expect(await fixed(page), `${panel} toggled`).toEqual(start);
+      await toggleColumn(page, panel);
+      expect(await fixed(page), `${panel} back`).toEqual(start);
+    }
     await view(page, "Template");
     expect(await offCenter(page)).toBeLessThanOrEqual(0.5);
-    expect(await fixed(page)).toEqual(surface);
+    expect(await fixed(page)).toEqual(start);
+    // Edit opens the inspector, below the bar.
+    await page
+      .getByRole("group", { name: "Mode" })
+      .getByRole("radio", { name: "Edit" })
+      .click();
+    await settle(page);
+    const inEdit = await fixed(page);
+    expect(inEdit.switch).toEqual(start.switch);
+    expect(inEdit.theme).toEqual(start.theme);
+    expect(inEdit.panel).toEqual(start.panel);
+    await toggleColumn(page, "workbench-inspector");
+    expect(await fixed(page)).toEqual(inEdit);
     // And back, with nothing moved.
     await view(page, "Surface");
-    expect(await fixed(page)).toEqual(surface);
+    expect(await fixed(page)).toEqual(start);
   });
 }
 
