@@ -126,7 +126,7 @@ export function ContentCard({
       })}
       tabIndex={-1}
       className={cn(
-        "flex min-h-8 min-w-0 flex-1 items-center gap-1 rounded-sm bg-muted/70 py-0.5 pe-1 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring data-[dragging=true]:opacity-40",
+        "flex min-h-8 min-w-0 flex-1 items-center gap-1 rounded-sm bg-muted py-0.5 pe-1 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring data-[dragging=true]:opacity-40",
         handle ? "ps-0.5" : "ps-2",
       )}
     >
