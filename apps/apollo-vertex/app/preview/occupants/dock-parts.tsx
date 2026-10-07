@@ -17,7 +17,7 @@ export function Dock({ children }: DockProps) {
   return (
     <div
       data-slot="workbench-dock"
-      className="absolute inset-x-4 bottom-6 z-10 mx-auto flex w-fit max-w-full flex-wrap items-center gap-4 rounded-xl border border-border bg-background/75 px-4 py-3 shadow-lg backdrop-blur-md"
+      className="absolute inset-x-4 bottom-6 z-10 mx-auto flex w-fit max-w-full flex-wrap items-center gap-4 rounded-xl border border-border bg-background/75 px-4 py-3 shadow-lg backdrop-blur-md select-none"
     >
       {children}
     </div>

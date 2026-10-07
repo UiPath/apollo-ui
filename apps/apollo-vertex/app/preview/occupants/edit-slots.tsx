@@ -102,7 +102,7 @@ export function EditSlots({
     <div
       ref={ref}
       data-slot="workbench-edit-slots"
-      className="pointer-events-none absolute inset-0 z-20"
+      className="pointer-events-none absolute inset-0 z-20 select-none"
     >
       {host.spec.slots.map(({ name: slot }) => {
         const box = boxes[slot];

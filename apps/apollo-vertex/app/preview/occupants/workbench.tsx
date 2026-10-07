@@ -243,7 +243,7 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
                 ref={stageRef}
                 data-slot="workbench-stage"
                 // Its own stacking context: a template's z-index stays inside it.
-                className="absolute inset-0 isolate overflow-auto bg-(color:--workbench-canvas) bg-[radial-gradient(var(--workbench-dots)_1px,transparent_1px)] bg-size-[--spacing(4)_--spacing(4)]"
+                className="absolute inset-0 isolate overflow-auto select-none bg-(color:--workbench-canvas) bg-[radial-gradient(var(--workbench-dots)_1px,transparent_1px)] bg-size-[--spacing(4)_--spacing(4)]"
               >
                 {/* Room under the occupant for the dock, so it's never hidden behind it. */}
                 <div

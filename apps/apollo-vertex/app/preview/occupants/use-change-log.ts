@@ -16,7 +16,26 @@ import {
 /** The workbench's own toaster, so its toasts never mix with a page's. */
 export const WORKBENCH_TOASTER = "workbench";
 /** One toast at a time: a new change replaces the last, and only it can be undone. */
-const CHANGE_TOAST = "workbench-change";
+export const CHANGE_TOAST = "workbench-change";
+/** How long a change's toast stays, unless it's hovered or its Undo has focus. */
+export const SHOWN_MS = 6000;
+
+/** What the change toast says now, so it can be held while Undo has focus. */
+let shown = "";
+
+/**
+ * Holds the change toast while its Undo has focus, and lets it go again
+ * with its full time once focus leaves. Sonner pauses for the pointer, not
+ * for focus.
+ */
+export function holdChangeToast(hold: boolean) {
+  if (!shown) return;
+  toast(shown, {
+    id: CHANGE_TOAST,
+    toasterId: WORKBENCH_TOASTER,
+    duration: hold ? Number.POSITIVE_INFINITY : SHOWN_MS,
+  });
+}
 
 /**
  * Makes a change to what the template view holds or how it's laid out,
@@ -41,15 +60,19 @@ export function useChangeLog(
     const undo = (back: Composition) => {
       setView((current) => normalizeView({ ...current, ...back }));
       // Updating the toast keeps its fields: drop the Undo, it's done.
-      toast(t("workbench_change_undone", { change: message }), {
+      shown = t("workbench_change_undone", { change: message });
+      toast(shown, {
         id: CHANGE_TOAST,
         toasterId: WORKBENCH_TOASTER,
         action: null,
+        duration: SHOWN_MS,
       });
     };
+    shown = message;
     toast(message, {
       id: CHANGE_TOAST,
       toasterId: WORKBENCH_TOASTER,
+      duration: SHOWN_MS,
       action: {
         label: t("workbench_change_undo"),
         onClick: (event) => {

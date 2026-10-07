@@ -38,7 +38,7 @@ export function StageFrame({
       </span>
       <div
         data-slot="workbench-frame-clip"
-        className="relative h-full w-full overflow-hidden rounded-xl bg-background"
+        className="relative h-full w-full overflow-hidden rounded-xl bg-background select-text"
       >
         {children}
       </div>
