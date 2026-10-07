@@ -14,6 +14,10 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'happy-dom',
+    environmentOptions: {
+      // Iframes (e.g. sticky note YouTube embeds) would otherwise fetch their real URL.
+      happyDOM: { settings: { disableIframePageLoading: true } },
+    },
     setupFiles: ['./src/test/setup.ts'],
     passWithNoTests: true,
     coverage: {
