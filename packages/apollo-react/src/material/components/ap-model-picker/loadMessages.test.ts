@@ -63,7 +63,10 @@ describe('loadModelPickerMessages', () => {
     for (const tag of MODEL_PICKER_LOCALES) {
       if (tag === 'en') continue;
       const messages = await loadModelPickerMessages(tag);
-      expect(messages['modelPicker.label.requiredSrLabel'], `${tag} is missing the required label`).toBeTruthy();
+      expect(
+        messages['modelPicker.label.requiredSrLabel'],
+        `${tag} is missing the required label`
+      ).toBeTruthy();
     }
   });
 });
