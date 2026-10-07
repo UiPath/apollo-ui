@@ -1,4 +1,3 @@
-import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -9,17 +8,6 @@ import { ApAlertBar } from '../../../ap-alert-bar';
 import { useError } from '../../providers/error-provider';
 import { Li, Ol, Ul } from '../message/markdown/lists';
 import { Link } from '../message/markdown/text';
-
-// Space between paragraphs, but not after the last one, so the text stays
-// vertically centered in the alert bar.
-const Paragraph = styled('div')({
-  margin: 0,
-  paddingBottom: token.Spacing.SpacingXs,
-
-  '&:last-child': {
-    paddingBottom: 0,
-  },
-});
 
 function AutopilotChatInputErrorComponent() {
   const { error, clearError } = useError();
@@ -45,13 +33,22 @@ function AutopilotChatInputErrorComponent() {
         width: '100%',
         maxHeight: '300px',
         overflowY: 'auto',
+        // Space between paragraphs, but not after the last one, so the text
+        // stays vertically centered in the alert bar.
+        '& [data-chat-error-paragraph]:not(:last-child)': {
+          paddingBottom: token.Spacing.SpacingXs,
+        },
       }}
       status={error.level === 'warn' ? StatusTypes.WARNING : StatusTypes.ERROR}
     >
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
-          p: ({ children }) => <Paragraph>{children}</Paragraph>,
+          p: ({ children }) => (
+            <div data-chat-error-paragraph style={{ margin: 0 }}>
+              {children}
+            </div>
+          ),
           a: Link,
           ul: Ul,
           ol: Ol,
