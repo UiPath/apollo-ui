@@ -1,3 +1,11 @@
+## [@uipath/apollo-react-v6.77.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.76.0...@uipath/apollo-react@6.77.0) (2026-10-07)
+
+### Features
+
+* **apollo-react:** curated copy for the sentiment guardrail [AL-620] ([51f559e](https://github.com/UiPath/apollo-ui/commit/51f559e536c29b3869b922a4e8ebb83b42521564)), closes [UiPath/Agents#6457](https://github.com/UiPath/Agents/issues/6457)
+* **apollo-react:** show a built-in guardrail's own parameters in the centralized details [AL-620] ([52c08a7](https://github.com/UiPath/apollo-ui/commit/52c08a7c5f9dbfd1edfc7d17817d2eeeb516bc16))
+* **apollo-react:** show no threshold for sentiment's Mixed in the centralized details [AL-620] ([c47f36d](https://github.com/UiPath/apollo-ui/commit/c47f36d4467c55800ef9e6c94ea4f1d7612bd5c4))
+
 ## [@uipath/apollo-react-v6.76.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.75.0...@uipath/apollo-react@6.76.0) (2026-10-06)
 
 ### Features
