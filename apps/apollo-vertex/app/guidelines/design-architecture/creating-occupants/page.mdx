@@ -306,7 +306,12 @@ header and carried in links as `mode=edit`:
   a slot.
 
 The inspector is the one place to edit a slot: its contents first, then
-its layout. A slot that's left out says to include it first. It sits
+its layout. Layout is property rows: Show in page and Open are switches,
+Open indented under it, and Placement is a small segmented control,
+each option with a glyph of where the slot sits and its full name in a
+tooltip. A slot that's left out keeps its contents, dimmed, with Open
+and Placement turned off until it's shown again. A locked option shows
+a lock, with why, in place of its control. It sits
 beside the stage, so the stage narrows and Fit scales the page to suit;
 the page's width and every slot's width stay the same. By keyboard,
 slots are focusable: Enter selects one and moves focus into the
@@ -345,13 +350,23 @@ undoes it too.
 The template declares how much each slot holds, so the contents follow
 it. A slot that holds one shows its occupant with Replace and Clear, and
 the picker when it's empty. A slot that holds a panel (`holds: "panel"`)
-lists its tabs as rows, each named as the page names it, with a "+" that
-adds to that tab, then "New tab": which one you press decides tab or
-stack. A stack's row is its label chip, with its occupants as rows under
-it. The picker opens under the row, lists only occupants that fit the
+lists its tabs as cards, each named as the page names it, with a "+"
+that adds to that tab, then a dashed "New tab" card: which one you press
+decides tab or stack. A stack is a light outline around its occupants'
+cards, under a header with its label and "+".
+
+Each card has a grip. Drag a stack's header grip to move the whole tab,
+or a card's grip to move that occupant: within its stack, into another
+tab, or to a new tab, between tabs or on the dashed card. A dashed slot
+the card's size opens where it will land, and says why when the panel
+rules refuse it. By keyboard, press Space on a grip and use the arrow
+keys, or use Move up and Move down in a card's menu. The tab showing
+stays the same tab, and a toast says what moved, with Undo.
+
+The picker opens under the card, lists only occupants that fit the
 slot and aren't on the page yet, and says how many it leaves out, and
 why. A tab that becomes a stack takes the first preset label no tab has;
-press the chip to pick another. The tab you add to is the one the page
+press the chevron beside the label to pick another. The tab you add to is the one the page
 shows. Only real limits lock, and a lock is an icon with why in its
 tooltip: a fill occupant is alone in its tab, and a panel has at most five
 tabs. Offering each occupant once on the page is the workbench's rule,
