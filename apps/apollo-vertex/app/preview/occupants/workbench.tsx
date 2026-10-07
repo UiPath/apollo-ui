@@ -12,6 +12,7 @@ import { EXAMPLE_ROLES } from "@/lib/occupant-entry";
 import { specFor } from "@/lib/occupant-lookup";
 import { surfaceLabel } from "@/lib/surface-labels";
 import { DetailsPanel } from "./details-panel";
+import { ExportDialog } from "./export-dialog";
 import { type Floor, FloorProbe } from "./floor-probe";
 import { Inspector } from "./inspector";
 import { NoFitCard } from "./no-fit-card";
@@ -217,6 +218,9 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
           editing={view.editing}
           onEditing={setEditing}
           onReset={reset}
+          {...(inTemplate && {
+            exporter: <ExportDialog host={inTemplate} page={view} />,
+          })}
           onTemplate={(template) => update({ template })}
         />
         <div className="flex min-h-0 flex-1">
@@ -286,8 +290,7 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
                         example={view.sample}
                         state={view.state}
                         width={view.width}
-                        // Above the dock, like the template's page: the
-                        // occupant scrolls inside a shorter frame.
+                        // Above the dock: it scrolls inside a shorter frame.
                         height={Math.min(STAGE_HEIGHT, roomY)}
                       />
                     </StageFrame>

@@ -13,7 +13,7 @@ import {
   Sun,
 } from "lucide-react";
 import Link from "next/link";
-import { useRef } from "react";
+import { type ReactNode, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { TEMPLATE_HOSTS } from "@/app/_components/template-hosts";
 import { Badge } from "@/components/ui/badge";
@@ -64,6 +64,8 @@ interface WorkbenchHeaderProps {
   onEditing: (editing: boolean) => void;
   /** Edit mode's Reset layout: every slot back to the template's defaults. */
   onReset: () => void;
+  /** The template view's Export, beside Reset in both modes. */
+  exporter?: ReactNode;
 }
 
 /**
@@ -97,6 +99,7 @@ export function WorkbenchHeader({
   editing,
   onEditing,
   onReset,
+  exporter,
 }: WorkbenchHeaderProps) {
   const { t } = useTranslation();
   const sampleChoice: ChoiceProps<ExampleRole> = {
@@ -273,6 +276,7 @@ export function WorkbenchHeader({
                   </TooltipTrigger>
                   <TooltipContent>{t("workbench_reset_layout")}</TooltipContent>
                 </Tooltip>
+                {exporter}
               </div>
             </>
           )}
