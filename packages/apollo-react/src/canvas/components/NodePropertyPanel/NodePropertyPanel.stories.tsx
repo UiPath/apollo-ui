@@ -44,6 +44,7 @@ import {
   DatePicker,
   DateTimePicker,
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
@@ -98,6 +99,9 @@ import {
   apolloFutureLightMonaco,
 } from '@uipath/apollo-wind/editor-themes';
 import {
+  ArrowDown,
+  ArrowUp,
+  Check,
   ChevronDown,
   ChevronsDownUp,
   ChevronsUpDown,
@@ -111,6 +115,7 @@ import {
   EyeOff,
   File,
   FileBracesCorner,
+  Filter,
   GitFork,
   Globe,
   GripVertical,
@@ -118,17 +123,20 @@ import {
   Info,
   Link2,
   MoreHorizontal,
+  MousePointerClick,
   Pencil,
   Play,
   Plus,
   RefreshCw,
   ScanText,
   Search,
+  Shapes,
   Sparkles,
   Trash2,
   TriangleAlert,
   Upload,
   UserRoundCheck,
+  Variable,
   WrapText,
   X,
   Zap,
@@ -137,6 +145,7 @@ import type { CSSProperties, ReactElement, ReactNode } from 'react';
 import {
   cloneElement,
   createContext,
+  Fragment,
   lazy,
   Suspense,
   useCallback,
@@ -1543,6 +1552,19 @@ export const InputEditor: Story = {
   render: () => <InputEditorStory />,
 };
 
+export const Variables: Story = {
+  name: 'Variables',
+  render: () => <VariablesStory />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A single-panel flow-workbench example for browsing node inputs, outputs, and flow variables. The hierarchy stays visible while variable rows remain directly editable.',
+      },
+    },
+  },
+};
+
 export const Output: Story = {
   name: 'Input / Output',
   render: () => <InputOutputStory />,
@@ -2516,6 +2538,1468 @@ function InputOutputStory() {
         <div className="w-[380px]">
           <Concept2PanelStory mode="output" context={context} />
         </div>
+      </div>
+      <Toaster />
+    </div>
+  );
+}
+
+// ============================================================================
+// Variables panel: flow-workbench reference layout
+// ============================================================================
+
+type VariableSection = 'inputs' | 'outputs' | 'variables' | 'otherNodes';
+
+const VARIABLE_NODES = [
+  { label: 'Manual trigger', id: 'manualTrigger1', count: 0, icon: '▷' },
+  { label: 'Scheduled trigger', id: 'scheduledTrigger1', count: 0, icon: '◷' },
+  { label: 'Message received in Slack', id: 'messageReceivedInSlack1', count: 1, icon: '✣' },
+  { label: 'HTTP webhook', id: 'httpWebhook1', count: 1, icon: '♧' },
+  { label: 'Incoming call', id: 'incomingCall1', count: 1, icon: '◔' },
+  { label: 'Conversation trigger', id: 'conversationTrigger1', count: 1, icon: '▱' },
+];
+
+const DOWNSTREAM_NODES = [
+  ['Autonomous agent', 'autonomousAgent1', 1, '♙'],
+  ['Conversational agent', 'conversationalAgent1', 1, '♙'],
+  ['Voice agent', 'voiceAgent1', 1, '◡'],
+  ['Send message', 'sendMessageToChannel1', 2, '✣'],
+  ['Batch transform', 'batchTransform1', 1, '⊞'],
+  ['Filter', 'filter1', 1, '≡'],
+  ['Group by', 'groupBy1', 1, '⌘'],
+  ['Map', 'map1', 1, '→'],
+  ['Transform', 'transform1', 1, 'Aa'],
+  ['Query entity records', 'readEntity1', 1, '⌘'],
+  ['Update entity record', 'updateEntity1', 1, '⌘'],
+  ['Summarize', 'summarize1', 1, 'Σ'],
+  ['Extract', 'extractV21', 1, '▤'],
+  ['Quick form', 'quickForm1', 2, '♧'],
+  ['Action app', 'actionApp1', 2, '♧'],
+  ['Mock', 'mock1', 1, '□'],
+  ['Decision', 'decision1', 2, '⌁'],
+  ['Switch', 'switch1', 2, '⊞'],
+  ['Loop', 'loop1', 4, '↻'],
+  ['Script', 'script1', 1, '<>'],
+  ['Wait for message', 'waitForMessage1', 1, '▣'],
+  ['Get conversation context', 'getConversationContext1', 1, '▣'],
+  ['Send message', 'sendMessage1', 1, '→'],
+  ['Create queue item', 'createQueueItem1', 1, '≡'],
+  ['Create and wait for queue item', 'createAndWaitForQueueItem1', 1, '≡'],
+  ['Create outgoing call', 'createOutgoingCall1', 1, '◔'],
+  ['End call', 'endCall1', 1, '⌁'],
+  ['HTTP webhook 2', 'httpWebhook2', 1, '♧'],
+  ['Email received (wait)', 'emailReceived2', 1, '✉'],
+  ['Subflow', 'subflow1', 0, '▱'],
+  ['HTTP request 2', 'httpRequest2', 1, '♧'],
+  ['Upload file', 'uploadFile1', 3, '↥'],
+  ['Query entity records', 'queryEntityRecords1', 1, '⌘'],
+] as const;
+
+const VARIABLE_TYPE_COLORS: Record<string, string> = {
+  string: 'text-info',
+  array: 'text-warning',
+  boolean: 'text-success',
+};
+
+const VARIABLE_EXPANDABLE_KEYS = [
+  'inputs',
+  'variables',
+  'otherNodes',
+  'event',
+  'flowConfig',
+  ...VARIABLE_NODES.filter((node) => node.count > 0).map((node) => node.id),
+] as const;
+
+const FLOW_PANEL_TAB_LIST_CLASS =
+  'h-auto justify-start gap-0.5 rounded-lg bg-transparent p-0 text-muted-foreground';
+
+type VariableExpandedState = Record<string, boolean>;
+type VariableExpandedStateUpdate =
+  | VariableExpandedState
+  | ((current: VariableExpandedState) => VariableExpandedState);
+
+type VariablesConceptStateProps = {
+  expandedState?: VariableExpandedState;
+  onExpandedStateChange?: (next: VariableExpandedStateUpdate) => void;
+};
+
+// Concept 5 draws top-level icons in the same square as TypeBadge.
+const VARIABLE_ICON_BADGE_CLASS =
+  'inline-flex h-[18px] min-w-[18px] shrink-0 items-center justify-center rounded border border-border bg-surface-overlay px-0.5 font-mono text-[9px] font-semibold leading-none text-foreground-muted';
+
+// Concept 7: an object variable to show nested, copyable references.
+const FLOW_CONFIG_FIELDS = [
+  { key: 'region', type: 'string', value: 'us-east' },
+  { key: 'retryCount', type: 'number', value: 3 },
+] as const;
+
+const SECTION_COUNT_NOUNS = {
+  inputs: 'input',
+  outputs: 'output',
+  variables: 'variable',
+  otherNodes: 'node',
+} as const;
+
+const pluralize = (count: number, noun: string) => `${count} ${noun}${count === 1 ? '' : 's'}`;
+
+// Concept 7: connectors always use their full-color brand icon.
+const CONNECTOR_ICONS: Record<string, string> = {
+  messageReceivedInSlack1: 'brand/slack.svg',
+  sendMessageToChannel1: 'brand/slack.svg',
+  emailReceived2: 'brand/google-gmail.svg',
+};
+
+// Concept 7: one icon set at one size, each section with its own color.
+const CONCEPT_SEVEN_SECTION_ICONS = {
+  inputs: { Icon: ArrowDown, color: 'text-info' },
+  outputs: { Icon: ArrowUp, color: 'text-success' },
+  variables: { Icon: Variable, color: 'text-chart-purple' },
+  otherNodes: { Icon: Shapes, color: 'text-chart-pink' },
+} as const;
+
+// Concept 6 keeps node IDs visible only where a display name is shared.
+const DUPLICATE_NODE_LABELS = new Set(
+  [...VARIABLE_NODES.map((node) => node.label), ...DOWNSTREAM_NODES.map(([label]) => label)].filter(
+    (label, index, labels) => labels.indexOf(label) !== index
+  )
+);
+
+// Concept 5 places every row on the Input / Output tree grid.
+const variableTreeIndent = (depth: number, paddingRight = '14px') => ({
+  paddingLeft: `${8 + depth * 16}px`,
+  paddingRight,
+});
+
+// Concept 6 mirrors the 8px left inset on the right edge.
+const CONCEPT_SIX_RIGHT_INSET = '8px';
+
+// Concept 4 tree rows reuse the Input / Output tree styling: flat rows, 16px
+// indentation per level, and TypeBadge type icons.
+function VariableTreeRow({
+  depth,
+  type,
+  name,
+  meta,
+  expanded,
+  onToggle,
+  paddingRight = '14px',
+}: {
+  depth: number;
+  type: OutputNode['type'];
+  name: string;
+  meta?: string;
+  expanded?: boolean;
+  onToggle?: () => void;
+  paddingRight?: string;
+}) {
+  return (
+    <div
+      className="group flex cursor-default items-center gap-2 py-1 transition hover:bg-surface-overlay"
+      style={{ paddingLeft: `${8 + depth * 16}px`, paddingRight }}
+    >
+      {onToggle ? (
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-label={expanded ? `Collapse ${name}` : `Expand ${name}`}
+          className="cursor-pointer grid size-3 shrink-0 place-items-center text-foreground-subtle transition hover:text-foreground"
+        >
+          <ChevronDown
+            size={10}
+            className={cn('transition-transform duration-100', !expanded && '-rotate-90')}
+          />
+        </button>
+      ) : (
+        <div className="size-3 shrink-0" />
+      )}
+      <TypeBadge type={type} />
+      <span className="flex-1 truncate font-mono text-xs text-foreground">{name}</span>
+      {meta && <span className="shrink-0 font-mono text-[10px] text-foreground-muted">{meta}</span>}
+    </div>
+  );
+}
+
+function VariablesConceptOne({
+  variant = 'concept1',
+  expandedState,
+  onExpandedStateChange,
+}: {
+  variant?:
+    | 'concept1'
+    | 'concept2'
+    | 'concept3'
+    | 'concept4'
+    | 'concept5'
+    | 'concept6'
+    | 'concept7';
+} & VariablesConceptStateProps) {
+  const isConceptSeven = variant === 'concept7';
+  const isConceptOne = variant === 'concept1';
+  const isConceptTwo = variant === 'concept2';
+  const isConceptThree =
+    variant === 'concept3' ||
+    variant === 'concept4' ||
+    variant === 'concept5' ||
+    variant === 'concept6' ||
+    isConceptSeven;
+  const isConceptFour =
+    variant === 'concept4' || variant === 'concept5' || variant === 'concept6' || isConceptSeven;
+  const isConceptFive = variant === 'concept5' || variant === 'concept6' || isConceptSeven;
+  const isConceptSix = variant === 'concept6' || isConceptSeven;
+  const rightInset = isConceptSix ? CONCEPT_SIX_RIGHT_INSET : undefined;
+  const rowIndent = (depth: number) => variableTreeIndent(depth, rightInset);
+  // Concept 7: rows inside a section start on the section title's column; the
+  // darker sub-area carries the hierarchy, so the first level isn't indented again.
+  const sectionDepth = (depth: number) => (isConceptSeven ? depth - 1 : depth);
+  const [selectedNodeOnly, setSelectedNodeOnly] = useState(false);
+  const [localExpanded, setLocalExpanded] = useState<VariableExpandedState>({});
+  const [search, setSearch] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchQuery = isConceptSix ? search.trim().toLowerCase() : '';
+  const matchesSearch = (...values: string[]) =>
+    !searchQuery || values.some((value) => value.toLowerCase().includes(searchQuery));
+  const storedExpanded = expandedState ?? localExpanded;
+  // While searching, every section and node opens so matches are visible.
+  const expanded: VariableExpandedState = searchQuery
+    ? Object.fromEntries(VARIABLE_EXPANDABLE_KEYS.map((key) => [key, true]))
+    : storedExpanded;
+  const setExpanded = (next: VariableExpandedStateUpdate) => {
+    if (onExpandedStateChange) {
+      onExpandedStateChange(next);
+    } else {
+      setLocalExpanded(next);
+    }
+  };
+  const [editing, setEditing] = useState<string | null>(null);
+  const [variables, setVariables] = useState(() => [
+    { name: 'flowTest', type: 'string', value: 'Invoice approval required' },
+    ...(isConceptSeven ? [{ name: 'flowConfig', type: 'object', value: '' }] : []),
+    { name: 'flowArray', type: 'array', value: '[3 items]' },
+    { name: 'flowBoolean', type: 'boolean', value: 'true' },
+  ]);
+  const copyReference = (reference: string) => {
+    void navigator.clipboard?.writeText(reference).then(
+      () => toast.success(`Copied ${reference}`),
+      () => toast.error('Could not copy to the clipboard')
+    );
+  };
+  const copyButton = (reference: string) => (
+    <CanvasTooltip content="Copy reference" placement="top" delay>
+      <button
+        type="button"
+        aria-label={`Copy ${reference}`}
+        onClick={() => copyReference(reference)}
+        className="grid size-5 shrink-0 place-items-center rounded text-foreground-subtle opacity-0 transition hover:bg-surface-overlay hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100"
+      >
+        <Copy size={12} />
+      </button>
+    </CanvasTooltip>
+  );
+  // Concept 7 explains the trailing count and focus icon with tooltips.
+  const withConceptSevenTooltip = (content: string, element: ReactElement) =>
+    isConceptSeven ? (
+      <CanvasTooltip content={content} placement="top" delay>
+        {element}
+      </CanvasTooltip>
+    ) : (
+      element
+    );
+
+  const slackNodeMatches = matchesSearch('Message received in Slack', 'messageReceivedInSlack1');
+  const visibleSlackFields = ['channel_name', 'event', 'event_ts', 'subtype'].filter(
+    (field) => slackNodeMatches || matchesSearch('output', field)
+  );
+  const showEventGroup = visibleSlackFields.some((field) =>
+    ['event', 'event_ts', 'subtype'].includes(field)
+  );
+  const visibleInputNodes = VARIABLE_NODES.filter(
+    (node) =>
+      matchesSearch(node.label, node.id, node.count > 0 ? 'output' : '') ||
+      (node.id === 'messageReceivedInSlack1' && visibleSlackFields.length > 0)
+  );
+  const visibleVariables = variables.filter((variable) => matchesSearch(variable.name));
+  // Concept 7 keeps one node per display name, as a real flow would.
+  const otherNodes = isConceptSeven
+    ? DOWNSTREAM_NODES.filter(
+        ([label], index) => DOWNSTREAM_NODES.findIndex(([other]) => other === label) === index
+      )
+    : DOWNSTREAM_NODES;
+  const visibleOtherNodes = otherNodes.filter(([label, id]) => matchesSearch(label, id));
+  const hasSearchResults =
+    visibleInputNodes.length + visibleVariables.length + visibleOtherNodes.length > 0;
+
+  const toggle = (key: string) => setExpanded((current) => ({ ...current, [key]: !current[key] }));
+  const allExpanded = VARIABLE_EXPANDABLE_KEYS.every((key) => expanded[key]);
+  const toggleAll = () =>
+    setExpanded(Object.fromEntries(VARIABLE_EXPANDABLE_KEYS.map((key) => [key, !allExpanded])));
+  const addVariable = () => {
+    const name = `flowVariable${variables.length + 1}`;
+    setVariables((current) => [...current, { name, type: 'string', value: '' }]);
+    setEditing(name);
+    setExpanded((current) => ({ ...current, variables: true }));
+  };
+
+  const sectionHeader = (
+    key: VariableSection,
+    label: string,
+    count: number,
+    color: string,
+    showAdd = true
+  ) => (
+    <div
+      className={cn(
+        'flex h-8 items-center gap-1 px-2',
+        isConceptThree
+          ? cn('border-b border-surface-overlay/80 bg-transparent', isConceptFour && 'h-9 px-3')
+          : 'border-y border-border-subtle/60 bg-surface-overlay/40',
+        isConceptFive && 'gap-2'
+      )}
+      style={isConceptFive ? rowIndent(0) : undefined}
+    >
+      <button
+        type="button"
+        aria-label={`${expanded[key] ? 'Collapse' : 'Expand'} ${label}`}
+        title={`${expanded[key] ? 'Collapse' : 'Expand'} ${label.toLowerCase()}`}
+        onClick={() => toggle(key)}
+        className={cn(
+          'grid size-5 place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground',
+          isConceptFive && 'size-3 shrink-0 rounded-none hover:bg-transparent'
+        )}
+      >
+        <ChevronDown
+          size={isConceptFive ? 10 : 12}
+          className={cn('transition-transform', !expanded[key] && '-rotate-90')}
+        />
+      </button>
+      <span
+        className={
+          isConceptSeven
+            ? cn(
+                'grid size-[18px] shrink-0 place-items-center',
+                CONCEPT_SEVEN_SECTION_ICONS[key].color
+              )
+            : isConceptFive
+              ? VARIABLE_ICON_BADGE_CLASS
+              : cn(
+                  'w-4 text-center text-sm font-semibold',
+                  isConceptFour ? 'text-foreground-muted' : color
+                )
+        }
+        aria-hidden="true"
+      >
+        {isConceptSeven
+          ? (() => {
+              const { Icon } = CONCEPT_SEVEN_SECTION_ICONS[key];
+              return <Icon size={14} />;
+            })()
+          : key === 'inputs'
+            ? '↓'
+            : key === 'outputs'
+              ? '↑'
+              : key === 'variables'
+                ? '⊙'
+                : '◇'}
+      </span>
+      <span
+        className={cn(
+          'text-xs font-medium text-foreground',
+          isConceptThree ? 'tracking-[0.02em]' : 'uppercase tracking-[0.04em]',
+          isConceptSeven && 'font-semibold'
+        )}
+      >
+        {label}
+      </span>
+      {withConceptSevenTooltip(
+        pluralize(count, SECTION_COUNT_NOUNS[key]),
+        <span
+          className={cn(
+            'ml-auto w-8 shrink-0 text-right font-mono text-[11px] text-foreground-muted',
+            isConceptSeven && 'text-[10px]',
+            isConceptFour && !isConceptSix && 'rounded-full bg-surface-overlay/70 px-1.5 py-0.5'
+          )}
+        >
+          ({count})
+        </span>
+      )}
+      {showAdd && (
+        <button
+          type="button"
+          aria-label={`Add ${label.toLowerCase()}`}
+          onClick={key === 'variables' ? addVariable : undefined}
+          className={cn(
+            'grid size-5 place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground',
+            isConceptSix && 'size-4'
+          )}
+        >
+          <Plus size={13} />
+        </button>
+      )}
+    </div>
+  );
+
+  return (
+    <PanelFrame>
+      <NodePropertyPanel
+        panelTitle="Properties"
+        onClose={() => {}}
+        contentInset="0.875rem"
+        className="h-[760px]"
+      >
+        <Tabs defaultValue="variables" className="flex h-full min-h-0 flex-col font-sans">
+          <div className="shrink-0 pt-3 [padding-inline:0.875rem]">
+            <TabsList className={FLOW_PANEL_TAB_LIST_CLASS}>
+              <TabsTrigger value="properties" className={TAB_TRIGGER_CLASS}>
+                Properties
+              </TabsTrigger>
+              <TabsTrigger value="variables" className={TAB_TRIGGER_CLASS}>
+                Variables
+              </TabsTrigger>
+            </TabsList>
+          </div>
+          <TabsContent value="properties" className="mt-0 min-h-0 flex-1 overflow-y-auto p-3">
+            <div className="rounded-lg border border-border-subtle bg-surface-overlay/30 p-4 text-xs text-foreground-muted">
+              Select a node to view its editable properties.
+            </div>
+          </TabsContent>
+          <TabsContent
+            value="variables"
+            className="mt-0 min-h-0 flex-1 flex-col overflow-hidden data-[state=active]:flex"
+          >
+            <div
+              className={cn(
+                'flex shrink-0 items-center justify-between gap-3 px-3 py-3',
+                isConceptFour && 'bg-transparent'
+              )}
+            >
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="flex min-w-0 items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
+                  >
+                    {isConceptOne && (
+                      <Filter size={13} className="shrink-0 text-foreground-subtle" />
+                    )}
+                    <span className="truncate">
+                      {selectedNodeOnly ? 'Filter: Selected node' : 'Filter: All variables'}
+                    </span>
+                    <ChevronDown size={10} className="shrink-0 text-foreground-subtle" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-48">
+                  <DropdownMenuItem
+                    onClick={() => setSelectedNodeOnly(false)}
+                    className="flex items-center justify-between text-[11px]"
+                  >
+                    <span>All variables</span>
+                    {!selectedNodeOnly && <Check size={13} className="text-foreground" />}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setSelectedNodeOnly(true)}
+                    className="flex items-center justify-between text-[11px]"
+                  >
+                    <span>Selected node</span>
+                    {selectedNodeOnly && <Check size={13} className="text-foreground" />}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <div className="ml-auto flex items-center gap-1">
+                {isConceptSix &&
+                  (searchOpen ? (
+                    <div className="relative flex items-center">
+                      <Search
+                        size={12}
+                        className="pointer-events-none absolute left-2 text-foreground-subtle"
+                      />
+                      <Input
+                        autoFocus
+                        type="text"
+                        variant="ghost"
+                        size="xs"
+                        value={search}
+                        onChange={(event) => setSearch(event.target.value)}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Escape') {
+                            setSearch('');
+                            setSearchOpen(false);
+                          }
+                        }}
+                        aria-label="Search variables"
+                        placeholder="Search variables..."
+                        className="w-36 pl-6 pr-6 text-foreground placeholder:text-foreground-subtle focus-visible:ring-0"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSearch('');
+                          setSearchOpen(false);
+                        }}
+                        aria-label="Clear search"
+                        className="absolute right-1.5 grid size-4 place-items-center text-foreground-subtle transition hover:text-foreground"
+                      >
+                        <X size={11} />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setSearchOpen(true)}
+                      title="Search variables"
+                      aria-label="Search variables"
+                      className="grid size-6 place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+                    >
+                      <Search size={13} />
+                    </button>
+                  ))}
+                <CanvasTooltip
+                  content={
+                    isConceptFour
+                      ? 'Expand a section or node to browse its values. Shared variables can be edited below.'
+                      : 'Expand a node to browse its available outputs. Shared variables appear below.'
+                  }
+                  placement="top"
+                  delay
+                >
+                  <button
+                    type="button"
+                    aria-label="About variables hierarchy"
+                    className="grid size-6 place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+                  >
+                    <Info size={13} />
+                  </button>
+                </CanvasTooltip>
+                <button
+                  type="button"
+                  onClick={toggleAll}
+                  title={allExpanded ? 'Collapse all' : 'Expand all'}
+                  aria-label={allExpanded ? 'Collapse all' : 'Expand all'}
+                  className="grid size-6 place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+                >
+                  {allExpanded ? <ChevronsDownUp size={13} /> : <ChevronsUpDown size={13} />}
+                </button>
+                {isConceptThree && !isConceptSix && (
+                  <button
+                    type="button"
+                    aria-label="Add variable"
+                    title="Add variable"
+                    onClick={addVariable}
+                    className="grid size-6 place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+                  >
+                    <Plus size={13} />
+                  </button>
+                )}
+              </div>
+            </div>
+            <div
+              className={cn(
+                'min-h-0 flex-1 text-foreground',
+                isConceptThree ? 'overflow-hidden' : 'overflow-y-auto'
+              )}
+            >
+              <div
+                className={cn(
+                  isConceptThree &&
+                    (isConceptFour
+                      ? 'h-[calc(100%-1.25rem)] min-h-0 overflow-y-auto pb-1 [margin-inline:var(--mf-content-inset,0.875rem)] mb-4 mt-1'
+                      : 'h-[calc(100%-1.25rem)] min-h-0 overflow-y-auto rounded-xl border border-surface-overlay bg-surface-overlay/40 pb-0 [margin-inline:var(--mf-content-inset,0.875rem)] mb-4 mt-1')
+                )}
+              >
+                {!selectedNodeOnly && (
+                  <>
+                    {searchQuery && !hasSearchResults && (
+                      <p className="px-3 py-6 text-center text-xs text-foreground-muted">
+                        No variables match your search.
+                      </p>
+                    )}
+                    <div
+                      className={cn(
+                        isConceptThree
+                          ? isConceptFour
+                            ? 'mx-0 mb-2 overflow-hidden rounded-lg border border-surface-overlay bg-surface-overlay/40'
+                            : 'border-b border-surface-overlay/80 bg-surface-overlay/15'
+                          : undefined
+                      )}
+                      hidden={Boolean(searchQuery) && visibleInputNodes.length === 0}
+                    >
+                      {sectionHeader(
+                        'inputs',
+                        'Inputs',
+                        4,
+                        'text-info',
+                        !isConceptThree || isConceptSix
+                      )}
+                      {expanded.inputs && (
+                        <div
+                          className={cn(
+                            'pb-1',
+                            isConceptFive
+                              ? 'pb-2'
+                              : isConceptFour
+                                ? 'px-2 pb-2'
+                                : isConceptThree && 'bg-surface-overlay/20 px-1',
+                            isConceptSeven && 'bg-surface/30 pt-1'
+                          )}
+                        >
+                          {visibleInputNodes.map((node) => (
+                            <div key={node.id}>
+                              <button
+                                type="button"
+                                onClick={() => node.count > 0 && toggle(node.id)}
+                                title={
+                                  node.count > 0
+                                    ? `${expanded[node.id] ? 'Collapse' : 'Expand'} ${node.label.toLowerCase()} outputs`
+                                    : undefined
+                                }
+                                className={cn(
+                                  'flex h-8 w-full items-center gap-1 px-2 text-left transition hover:bg-surface-overlay',
+                                  isConceptFive && 'h-auto gap-2 py-1',
+                                  isConceptSix && 'group/node'
+                                )}
+                                style={isConceptFive ? rowIndent(sectionDepth(1)) : undefined}
+                              >
+                                {isConceptFive ? (
+                                  <span className="grid size-3 shrink-0 place-items-center">
+                                    <ChevronDown
+                                      size={10}
+                                      className={cn(
+                                        'text-foreground-subtle transition-transform duration-100',
+                                        !expanded[node.id] && '-rotate-90',
+                                        node.count === 0 && 'invisible'
+                                      )}
+                                    />
+                                  </span>
+                                ) : (
+                                  <ChevronDown
+                                    size={11}
+                                    className={cn(
+                                      'text-foreground-subtle',
+                                      !expanded[node.id] && '-rotate-90',
+                                      node.count === 0 && 'invisible'
+                                    )}
+                                  />
+                                )}
+                                <span
+                                  className={
+                                    isConceptFive
+                                      ? VARIABLE_ICON_BADGE_CLASS
+                                      : cn(
+                                          'w-5 text-center text-sm',
+                                          isConceptFour ? 'text-foreground-muted' : 'text-brand'
+                                        )
+                                  }
+                                  aria-hidden="true"
+                                >
+                                  {isConceptSeven && CONNECTOR_ICONS[node.id] ? (
+                                    <img src={CONNECTOR_ICONS[node.id]} alt="" className="size-3" />
+                                  ) : (
+                                    node.icon
+                                  )}
+                                </span>
+                                <span
+                                  className={cn(
+                                    'truncate font-sans text-xs font-medium',
+                                    isConceptOne && 'uppercase tracking-[0.02em]',
+                                    isConceptSeven && 'font-normal'
+                                  )}
+                                >
+                                  {node.label}
+                                </span>
+                                <span
+                                  className={cn(
+                                    'truncate font-mono text-[10px] text-foreground-muted',
+                                    isConceptSix &&
+                                      (isConceptSeven || !DUPLICATE_NODE_LABELS.has(node.label)) &&
+                                      (isConceptSeven
+                                        ? 'hidden group-hover/node:inline group-focus-visible/node:inline'
+                                        : 'ml-auto hidden group-hover/node:inline group-focus-visible/node:inline')
+                                  )}
+                                >
+                                  {node.id}
+                                </span>
+                                {withConceptSevenTooltip(
+                                  pluralize(node.count, 'output'),
+                                  <span
+                                    className={cn(
+                                      'ml-auto w-8 shrink-0 text-right font-mono text-[11px] text-foreground-muted',
+                                      isConceptSeven && 'text-[10px]',
+                                      isConceptSix &&
+                                        !isConceptSeven &&
+                                        !DUPLICATE_NODE_LABELS.has(node.label) &&
+                                        'group-hover/node:hidden group-focus-visible/node:hidden'
+                                    )}
+                                  >
+                                    ({node.count})
+                                  </span>
+                                )}
+                                {withConceptSevenTooltip(
+                                  'Focus on node',
+                                  <span
+                                    className={cn(
+                                      'grid w-4 shrink-0 place-items-center text-foreground-subtle',
+                                      isConceptSix && 'size-4'
+                                    )}
+                                  >
+                                    <MousePointerClick size={13} />
+                                  </span>
+                                )}
+                              </button>
+                              {node.count > 0 && isConceptFour && (
+                                <>
+                                  <VariableTreeRow
+                                    paddingRight={rightInset}
+                                    depth={isConceptFive ? sectionDepth(2) : 1}
+                                    type="object"
+                                    name="output"
+                                    meta={
+                                      node.id === 'messageReceivedInSlack1' ? '2 keys' : undefined
+                                    }
+                                    expanded={expanded[node.id]}
+                                    onToggle={() => toggle(node.id)}
+                                  />
+                                  {node.id === 'messageReceivedInSlack1' && expanded[node.id] && (
+                                    <>
+                                      {visibleSlackFields.includes('channel_name') && (
+                                        <VariableTreeRow
+                                          paddingRight={rightInset}
+                                          depth={isConceptFive ? sectionDepth(3) : 2}
+                                          type="string"
+                                          name="channel_name"
+                                          meta="string"
+                                        />
+                                      )}
+                                      {showEventGroup && (
+                                        <VariableTreeRow
+                                          paddingRight={rightInset}
+                                          depth={isConceptFive ? sectionDepth(3) : 2}
+                                          type="object"
+                                          name="event"
+                                          meta="2 keys"
+                                          expanded={expanded.event}
+                                          onToggle={() => toggle('event')}
+                                        />
+                                      )}
+                                      {showEventGroup &&
+                                        expanded.event &&
+                                        ['event_ts', 'subtype']
+                                          .filter(
+                                            (field) =>
+                                              visibleSlackFields.includes('event') ||
+                                              visibleSlackFields.includes(field)
+                                          )
+                                          .map((field) => (
+                                            <VariableTreeRow
+                                              paddingRight={rightInset}
+                                              key={field}
+                                              depth={isConceptFive ? sectionDepth(4) : 3}
+                                              type="string"
+                                              name={field}
+                                              meta="string"
+                                            />
+                                          ))}
+                                    </>
+                                  )}
+                                </>
+                              )}
+                              {node.count > 0 && !isConceptFour && (
+                                <div
+                                  className={cn(
+                                    'ml-8 border-l pl-3',
+                                    isConceptThree
+                                      ? 'my-1 mr-2 overflow-hidden rounded-md border border-brand/35 bg-surface-overlay/45'
+                                      : isConceptTwo
+                                        ? 'border-brand/20 bg-surface/20'
+                                        : 'border-border-subtle'
+                                  )}
+                                >
+                                  <button
+                                    type="button"
+                                    onClick={() => toggle(node.id)}
+                                    aria-label={`${expanded[node.id] ? 'Collapse' : 'Expand'} output`}
+                                    title={`${expanded[node.id] ? 'Collapse' : 'Expand'} output fields`}
+                                    className={cn(
+                                      'flex h-7 w-full items-center gap-2 pr-2 text-left text-foreground-muted transition hover:bg-surface-overlay',
+                                      isConceptThree
+                                        ? 'h-8 rounded-r bg-surface-overlay/65 px-2 text-[11px]'
+                                        : isConceptTwo &&
+                                            'h-8 rounded-r bg-surface/20 px-2 text-[11px]'
+                                    )}
+                                  >
+                                    <ChevronDown
+                                      size={11}
+                                      className={cn(
+                                        'text-foreground-subtle transition-transform',
+                                        !expanded[node.id] && '-rotate-90'
+                                      )}
+                                    />
+                                    <span className="shrink-0 font-mono text-foreground-subtle">
+                                      {'{}'}
+                                    </span>
+                                    <span className="min-w-0 flex-1 truncate">output</span>
+                                    <span className="w-12 shrink-0 text-right text-[10px]">
+                                      object
+                                    </span>
+                                  </button>
+                                  {node.id === 'messageReceivedInSlack1' && expanded[node.id] && (
+                                    <div
+                                      className={cn(
+                                        'border-t pl-4',
+                                        isConceptThree
+                                          ? 'border-brand/25 bg-surface-overlay/30'
+                                          : isConceptTwo
+                                            ? 'border-brand/15 bg-surface/10'
+                                            : 'border-border-subtle/50'
+                                      )}
+                                    >
+                                      <div
+                                        className={cn(
+                                          'flex h-7 items-center gap-2 text-foreground-muted',
+                                          isConceptTwo ? 'text-[11px]' : 'text-xs'
+                                        )}
+                                      >
+                                        <span className="w-4 shrink-0 font-mono text-foreground-subtle">
+                                          T
+                                        </span>
+                                        <span className="min-w-0 flex-1 truncate">
+                                          channel_name
+                                        </span>
+                                        <span className="w-12 shrink-0 pr-2 text-right text-[10px]">
+                                          string
+                                        </span>
+                                      </div>
+                                      <button
+                                        type="button"
+                                        onClick={() => toggle('event')}
+                                        title={`${expanded.event ? 'Collapse' : 'Expand'} event fields`}
+                                        className={cn(
+                                          'flex h-7 w-full items-center gap-2 pr-2 text-left text-foreground-muted transition hover:bg-surface-overlay',
+                                          isConceptThree
+                                            ? 'h-8 bg-surface-overlay/30 text-[11px]'
+                                            : isConceptTwo && 'h-8 text-[11px]'
+                                        )}
+                                      >
+                                        <ChevronDown
+                                          size={11}
+                                          className={cn(
+                                            'text-foreground-subtle transition-transform',
+                                            !expanded.event && '-rotate-90'
+                                          )}
+                                        />
+                                        <span className="shrink-0 font-mono text-foreground-subtle">
+                                          {'{}'}
+                                        </span>
+                                        <span className="min-w-0 flex-1 truncate">event</span>
+                                        <span className="w-12 shrink-0 text-right text-[10px]">
+                                          object
+                                        </span>
+                                      </button>
+                                      {expanded.event && (
+                                        <div
+                                          className={cn(
+                                            'border-l pl-4',
+                                            isConceptThree
+                                              ? 'border-brand/25 bg-surface-overlay/30'
+                                              : isConceptTwo
+                                                ? 'border-brand/15 bg-surface/10'
+                                                : 'border-border-subtle/50'
+                                          )}
+                                        >
+                                          {['event_ts', 'subtype'].map((field) => (
+                                            <div
+                                              key={field}
+                                              className={cn(
+                                                'flex h-7 items-center gap-2 pr-2 text-foreground-muted',
+                                                isConceptTwo ? 'text-[11px]' : 'text-xs'
+                                              )}
+                                            >
+                                              <span className="w-4 shrink-0 font-mono text-foreground-subtle">
+                                                T
+                                              </span>
+                                              <span className="min-w-0 flex-1 truncate">
+                                                {field}
+                                              </span>
+                                              <span className="w-12 shrink-0 text-right text-[10px]">
+                                                string
+                                              </span>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div
+                      className={cn(
+                        isConceptThree
+                          ? isConceptFour
+                            ? 'mx-0 mb-2 overflow-hidden rounded-lg border border-surface-overlay bg-surface-overlay/40'
+                            : 'border-b border-surface-overlay/80 bg-surface-overlay/15'
+                          : undefined
+                      )}
+                      hidden={Boolean(searchQuery)}
+                    >
+                      {sectionHeader(
+                        'outputs',
+                        'Outputs',
+                        0,
+                        'text-success',
+                        !isConceptThree || isConceptSix
+                      )}
+                    </div>
+                    <div
+                      className={cn(
+                        isConceptThree
+                          ? isConceptFour
+                            ? 'mx-0 mb-2 overflow-hidden rounded-lg border border-surface-overlay bg-surface-overlay/40'
+                            : 'border-b border-surface-overlay/80 bg-surface-overlay/15'
+                          : undefined
+                      )}
+                      hidden={Boolean(searchQuery) && visibleVariables.length === 0}
+                    >
+                      {sectionHeader(
+                        'variables',
+                        'Variables',
+                        variables.length,
+                        'text-accent',
+                        !isConceptThree || isConceptSix
+                      )}
+                      {expanded.variables && (
+                        <div
+                          className={cn(
+                            'py-1',
+                            isConceptFour && 'px-2 pb-2',
+                            isConceptSeven && 'bg-surface/30',
+                            isConceptFive && 'px-0'
+                          )}
+                        >
+                          {isConceptFour &&
+                            visibleVariables.map((variable) => {
+                              const type = variable.type as OutputNode['type'];
+                              const isArray = type === 'array';
+                              const isObject = type === 'object';
+                              const value =
+                                type === 'boolean' ? variable.value === 'true' : variable.value;
+                              return (
+                                <Fragment key={variable.name}>
+                                  <div
+                                    className="group flex cursor-default items-center gap-2 py-1 transition hover:bg-surface-overlay"
+                                    style={
+                                      isConceptFive
+                                        ? rowIndent(sectionDepth(1))
+                                        : { paddingLeft: '8px', paddingRight: '14px' }
+                                    }
+                                  >
+                                    {isObject ? (
+                                      <button
+                                        type="button"
+                                        onClick={() => toggle(variable.name)}
+                                        aria-label={`${expanded[variable.name] ? 'Collapse' : 'Expand'} ${variable.name}`}
+                                        className="grid size-3 shrink-0 cursor-pointer place-items-center text-foreground-subtle transition hover:text-foreground"
+                                      >
+                                        <ChevronDown
+                                          size={10}
+                                          className={cn(
+                                            'transition-transform duration-100',
+                                            !expanded[variable.name] && '-rotate-90'
+                                          )}
+                                        />
+                                      </button>
+                                    ) : isArray ? (
+                                      <span className="grid size-3 shrink-0 place-items-center text-foreground-subtle">
+                                        <ChevronDown size={10} className="-rotate-90" />
+                                      </span>
+                                    ) : (
+                                      <div className="size-3 shrink-0" />
+                                    )}
+                                    <TypeBadge type={type} />
+                                    {editing === variable.name ? (
+                                      <input
+                                        autoFocus
+                                        aria-label={`Edit ${variable.name}`}
+                                        value={variable.name}
+                                        onChange={(event) =>
+                                          setVariables((current) =>
+                                            current.map((item) =>
+                                              item.name === variable.name
+                                                ? { ...item, name: event.target.value }
+                                                : item
+                                            )
+                                          )
+                                        }
+                                        onBlur={() => setEditing(null)}
+                                        onKeyDown={(event) =>
+                                          event.key === 'Enter' && setEditing(null)
+                                        }
+                                        className="min-w-0 flex-1 rounded bg-transparent px-1 font-mono text-xs outline-none ring-1 ring-brand"
+                                      />
+                                    ) : (
+                                      <span
+                                        className={cn(
+                                          'font-mono text-xs text-foreground',
+                                          isArray || isObject ? 'flex-1 truncate' : 'shrink-0'
+                                        )}
+                                      >
+                                        {variable.name}
+                                      </span>
+                                    )}
+                                    {isObject ? (
+                                      <span className="shrink-0 font-mono text-[10px] text-foreground-muted">
+                                        {pluralize(FLOW_CONFIG_FIELDS.length, 'key')}
+                                      </span>
+                                    ) : isArray ? (
+                                      <span className="shrink-0 font-mono text-[10px] text-foreground-muted">
+                                        3 items
+                                      </span>
+                                    ) : (
+                                      <>
+                                        <span className="shrink-0 font-mono text-xs text-foreground-subtle">
+                                          =
+                                        </span>
+                                        <span
+                                          className={cn(
+                                            'min-w-0 flex-1 truncate font-mono text-xs',
+                                            outputValueColorClass(type, value)
+                                          )}
+                                        >
+                                          {formatOutputValue(type, value)}
+                                        </span>
+                                      </>
+                                    )}
+                                    {isConceptSeven && copyButton(`vars.${variable.name}`)}
+                                    <button
+                                      type="button"
+                                      aria-label={`Edit ${variable.name}`}
+                                      onClick={() => setEditing(variable.name)}
+                                      className={cn(
+                                        'grid size-6 place-items-center rounded text-foreground-subtle opacity-0 transition hover:bg-surface-overlay hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100',
+                                        isConceptFive && 'size-5'
+                                      )}
+                                    >
+                                      <Pencil size={12} />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      aria-label={`Delete ${variable.name}`}
+                                      onClick={() =>
+                                        setVariables((current) =>
+                                          current.filter((item) => item.name !== variable.name)
+                                        )
+                                      }
+                                      className={cn(
+                                        'grid size-6 place-items-center rounded text-error opacity-0 transition hover:bg-error/10 group-hover:opacity-100 focus-visible:opacity-100',
+                                        isConceptFive && 'size-5'
+                                      )}
+                                    >
+                                      <Trash2 size={12} />
+                                    </button>
+                                  </div>
+                                  {isObject &&
+                                    expanded[variable.name] &&
+                                    FLOW_CONFIG_FIELDS.map((field) => (
+                                      <div
+                                        key={field.key}
+                                        className="group flex cursor-default items-center gap-2 py-1 transition hover:bg-surface-overlay"
+                                        style={rowIndent(sectionDepth(2))}
+                                      >
+                                        <div className="size-3 shrink-0" />
+                                        <TypeBadge type={field.type} />
+                                        <span className="shrink-0 font-mono text-xs text-foreground">
+                                          {field.key}
+                                        </span>
+                                        <span className="shrink-0 font-mono text-xs text-foreground-subtle">
+                                          =
+                                        </span>
+                                        <span
+                                          className={cn(
+                                            'min-w-0 flex-1 truncate font-mono text-xs',
+                                            outputValueColorClass(field.type, field.value)
+                                          )}
+                                        >
+                                          {formatOutputValue(field.type, field.value)}
+                                        </span>
+                                        {copyButton(`vars.${variable.name}.${field.key}`)}
+                                      </div>
+                                    ))}
+                                </Fragment>
+                              );
+                            })}
+                          {!isConceptFour &&
+                            variables.map((variable) => (
+                              <div
+                                key={variable.name}
+                                className="group flex min-h-9 items-center gap-1 px-2 transition hover:bg-surface-overlay"
+                              >
+                                <ChevronDown
+                                  size={11}
+                                  className={cn(
+                                    'text-foreground-subtle',
+                                    variable.type !== 'array' && 'invisible',
+                                    variable.type === 'array' && '-rotate-90'
+                                  )}
+                                />
+                                <span
+                                  className="w-5 text-center font-mono text-xs text-foreground-subtle"
+                                  aria-hidden="true"
+                                >
+                                  {variable.type === 'string'
+                                    ? 'T'
+                                    : variable.type === 'array'
+                                      ? '≡'
+                                      : '◉'}
+                                </span>
+                                {editing === variable.name ? (
+                                  <input
+                                    autoFocus
+                                    aria-label={`Edit ${variable.name}`}
+                                    value={variable.name}
+                                    onChange={(event) =>
+                                      setVariables((current) =>
+                                        current.map((item) =>
+                                          item.name === variable.name
+                                            ? { ...item, name: event.target.value }
+                                            : item
+                                        )
+                                      )
+                                    }
+                                    onBlur={() => setEditing(null)}
+                                    onKeyDown={(event) => event.key === 'Enter' && setEditing(null)}
+                                    className="min-w-0 flex-1 rounded border border-brand bg-surface px-1.5 py-0.5 font-mono text-xs outline-none"
+                                  />
+                                ) : (
+                                  <span className="min-w-0 flex-1 truncate font-mono text-xs">
+                                    {variable.name}
+                                  </span>
+                                )}
+                                <span
+                                  className={cn(
+                                    'w-14 shrink-0 truncate text-right text-[10px]',
+                                    VARIABLE_TYPE_COLORS[variable.type]
+                                  )}
+                                >
+                                  {variable.type}
+                                </span>
+                                <button
+                                  type="button"
+                                  aria-label={`Edit ${variable.name}`}
+                                  onClick={() => setEditing(variable.name)}
+                                  className="grid size-6 place-items-center rounded text-foreground-subtle opacity-0 transition hover:bg-surface-overlay hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100"
+                                >
+                                  <Pencil size={12} />
+                                </button>
+                                <button
+                                  type="button"
+                                  aria-label={`Delete ${variable.name}`}
+                                  onClick={() =>
+                                    setVariables((current) =>
+                                      current.filter((item) => item.name !== variable.name)
+                                    )
+                                  }
+                                  className="grid size-6 place-items-center rounded text-error opacity-0 transition hover:bg-error/10 group-hover:opacity-100 focus-visible:opacity-100"
+                                >
+                                  <Trash2 size={12} />
+                                </button>
+                              </div>
+                            ))}
+                        </div>
+                      )}
+                    </div>
+                    <div
+                      className={cn(
+                        isConceptThree
+                          ? isConceptFour
+                            ? 'mx-0 mb-2 overflow-hidden rounded-lg border border-surface-overlay bg-surface-overlay/40'
+                            : 'border-b border-surface-overlay/80 bg-surface-overlay/15'
+                          : undefined
+                      )}
+                      hidden={Boolean(searchQuery) && visibleOtherNodes.length === 0}
+                    >
+                      {sectionHeader(
+                        'otherNodes',
+                        'Other nodes',
+                        otherNodes.length,
+                        'text-foreground-muted',
+                        false
+                      )}
+                      {expanded.otherNodes && (
+                        <div
+                          className={cn(
+                            'border-b border-border-subtle/80 pb-1',
+                            isConceptFour && 'px-2 pb-2',
+                            isConceptFive && 'px-0',
+                            isConceptSeven && 'bg-surface/30 pt-1'
+                          )}
+                        >
+                          {visibleOtherNodes.map(([label, id, count, icon]) => (
+                            <button
+                              key={id}
+                              type="button"
+                              className={cn(
+                                'flex h-8 w-full items-center gap-1 border-b border-border-subtle/60 px-2 text-left transition hover:bg-surface-overlay',
+                                isConceptFive && 'h-auto gap-2 py-1',
+                                isConceptSix && 'group/node'
+                              )}
+                              style={isConceptFive ? rowIndent(sectionDepth(1)) : undefined}
+                            >
+                              {isConceptFive ? (
+                                <span className="size-3 shrink-0" />
+                              ) : (
+                                <ChevronDown
+                                  size={11}
+                                  className="invisible text-foreground-subtle"
+                                />
+                              )}
+                              <span
+                                className={
+                                  isConceptFive
+                                    ? VARIABLE_ICON_BADGE_CLASS
+                                    : cn(
+                                        'w-5 text-center text-sm',
+                                        isConceptFour
+                                          ? 'text-foreground-muted'
+                                          : 'text-foreground-subtle'
+                                      )
+                                }
+                                aria-hidden="true"
+                              >
+                                {isConceptSeven && CONNECTOR_ICONS[id] ? (
+                                  <img src={CONNECTOR_ICONS[id]} alt="" className="size-3" />
+                                ) : (
+                                  icon
+                                )}
+                              </span>
+                              <span
+                                className={cn(
+                                  'truncate font-sans text-xs font-medium',
+                                  isConceptOne && 'uppercase tracking-[0.02em]',
+                                  isConceptSeven && 'font-normal'
+                                )}
+                              >
+                                {label}
+                              </span>
+                              <span
+                                className={cn(
+                                  'truncate font-mono text-[10px] text-foreground-muted',
+                                  isConceptSix &&
+                                    (isConceptSeven || !DUPLICATE_NODE_LABELS.has(label)) &&
+                                    (isConceptSeven
+                                      ? 'hidden group-hover/node:inline group-focus-visible/node:inline'
+                                      : 'ml-auto hidden group-hover/node:inline group-focus-visible/node:inline')
+                                )}
+                              >
+                                {id}
+                              </span>
+                              {withConceptSevenTooltip(
+                                pluralize(count, 'output'),
+                                <span
+                                  className={cn(
+                                    'ml-auto w-8 shrink-0 text-right font-mono text-[11px] text-foreground-muted',
+                                    isConceptSeven && 'text-[10px]',
+                                    isConceptSix &&
+                                      !isConceptSeven &&
+                                      !DUPLICATE_NODE_LABELS.has(label) &&
+                                      'group-hover/node:hidden group-focus-visible/node:hidden'
+                                  )}
+                                >
+                                  ({count})
+                                </span>
+                              )}
+                              {withConceptSevenTooltip(
+                                'Focus on node',
+                                <span
+                                  className={cn(
+                                    'grid w-4 shrink-0 place-items-center text-foreground-subtle',
+                                    isConceptSix && 'size-4'
+                                  )}
+                                >
+                                  <MousePointerClick size={13} />
+                                </span>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </NodePropertyPanel>
+    </PanelFrame>
+  );
+}
+
+function VariablesConceptTwo(props: VariablesConceptStateProps) {
+  // Keep this as a separate concept entry so it can diverge from Concept 1
+  // without changing the original reference state.
+  return <VariablesConceptOne variant="concept2" {...props} />;
+}
+
+function VariablesConceptThree(props: VariablesConceptStateProps) {
+  return <VariablesConceptOne variant="concept3" {...props} />;
+}
+
+function VariablesConceptFour(props: VariablesConceptStateProps) {
+  return <VariablesConceptOne variant="concept4" {...props} />;
+}
+
+function VariablesConceptFive(props: VariablesConceptStateProps) {
+  return <VariablesConceptOne variant="concept5" {...props} />;
+}
+
+function VariablesConceptSix(props: VariablesConceptStateProps) {
+  return <VariablesConceptOne variant="concept6" {...props} />;
+}
+
+function VariablesConceptSeven(props: VariablesConceptStateProps) {
+  return <VariablesConceptOne variant="concept7" {...props} />;
+}
+
+const VARIABLE_CONCEPTS: readonly {
+  id:
+    | 'concept-1'
+    | 'concept-2'
+    | 'concept-3'
+    | 'concept-4'
+    | 'concept-5'
+    | 'concept-6'
+    | 'concept-7';
+  label: string;
+  note?: string;
+  Component: (props: VariablesConceptStateProps) => ReactNode;
+}[] = [
+  { id: 'concept-1', label: 'Concept 1', Component: VariablesConceptOne },
+  { id: 'concept-2', label: 'Concept 2', Component: VariablesConceptTwo },
+  { id: 'concept-3', label: 'Concept 3', Component: VariablesConceptThree },
+  { id: 'concept-4', label: 'Concept 4', Component: VariablesConceptFour },
+  { id: 'concept-5', label: 'Concept 5', Component: VariablesConceptFive },
+  {
+    id: 'concept-6',
+    label: 'Concept 6',
+    note: 'Node IDs on hover, always for duplicate names',
+    Component: VariablesConceptSix,
+  },
+  {
+    id: 'concept-7',
+    label: 'Concept 7',
+    note: 'Colored section icons, connector icons, IDs on hover',
+    Component: VariablesConceptSeven,
+  },
+];
+
+type VariableConceptId = (typeof VARIABLE_CONCEPTS)[number]['id'];
+
+const DEFAULT_VISIBLE_CONCEPTS: VariableConceptId[] = ['concept-6', 'concept-7'];
+
+function VariablesStory() {
+  const [expandedByConcept, setExpandedByConcept] = useState<
+    Partial<Record<VariableConceptId, VariableExpandedState>>
+  >({ 'concept-7': { otherNodes: true } });
+  const updateExpandedForConcept = (
+    conceptId: VariableConceptId,
+    next: VariableExpandedStateUpdate
+  ) => {
+    setExpandedByConcept((current) => {
+      const previous = current[conceptId] ?? {};
+      return {
+        ...current,
+        [conceptId]: typeof next === 'function' ? next(previous) : next,
+      };
+    });
+  };
+  const [visibleConcepts, setVisibleConcepts] =
+    useState<VariableConceptId[]>(DEFAULT_VISIBLE_CONCEPTS);
+  const toggleConceptVisible = (conceptId: VariableConceptId, visible: boolean) => {
+    setVisibleConcepts((current) =>
+      VARIABLE_CONCEPTS.map(({ id }) => id).filter((id) =>
+        id === conceptId ? visible : current.includes(id)
+      )
+    );
+  };
+  const allExpanded = visibleConcepts.every((id) =>
+    VARIABLE_EXPANDABLE_KEYS.every((key) => expandedByConcept[id]?.[key])
+  );
+  const toggleAllConcepts = () => {
+    const nextExpanded = Object.fromEntries(
+      VARIABLE_EXPANDABLE_KEYS.map((key) => [key, !allExpanded])
+    );
+    setExpandedByConcept((current) => ({
+      ...current,
+      ...Object.fromEntries(visibleConcepts.map((id) => [id, nextExpanded])),
+    }));
+  };
+
+  return (
+    <div className="flex flex-col gap-4 overflow-x-auto p-8">
+      <div className="flex w-max items-center gap-1">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              className="inline-flex h-7 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+            >
+              <Filter size={13} />
+              Concepts: {visibleConcepts.map((id) => id.replace('concept-', '')).join(', ')}
+              <ChevronDown size={10} />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-44">
+            {VARIABLE_CONCEPTS.map(({ id, label }) => {
+              const checked = visibleConcepts.includes(id);
+              return (
+                <DropdownMenuCheckboxItem
+                  key={id}
+                  checked={checked}
+                  disabled={checked && visibleConcepts.length === 1}
+                  onCheckedChange={(next) => toggleConceptVisible(id, next === true)}
+                  onSelect={(event) => event.preventDefault()}
+                  className="text-xs"
+                >
+                  {label}
+                </DropdownMenuCheckboxItem>
+              );
+            })}
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <button
+          type="button"
+          onClick={toggleAllConcepts}
+          className="inline-flex h-7 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+        >
+          {allExpanded ? <ChevronsDownUp size={13} /> : <ChevronsUpDown size={13} />}
+          {allExpanded ? 'Collapse all concepts' : 'Expand all concepts'}
+        </button>
+      </div>
+      <div className="flex w-max items-start gap-6">
+        {VARIABLE_CONCEPTS.map(({ id, label, note, Component }) => (
+          <section
+            key={id}
+            aria-label={label}
+            hidden={!visibleConcepts.includes(id)}
+            className="flex flex-col gap-2"
+          >
+            <div className="flex w-[380px] items-baseline gap-2 px-1">
+              <h3 className="shrink-0 whitespace-nowrap text-sm font-semibold text-foreground">
+                {label}
+              </h3>
+              {note && (
+                <p className="min-w-0 truncate text-xs text-foreground-muted" title={note}>
+                  {note}
+                </p>
+              )}
+            </div>
+            <Component
+              expandedState={expandedByConcept[id]}
+              onExpandedStateChange={(next) => updateExpandedForConcept(id, next)}
+            />
+          </section>
+        ))}
       </div>
       <Toaster />
     </div>
