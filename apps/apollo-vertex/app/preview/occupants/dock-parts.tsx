@@ -134,6 +134,8 @@ export function DockSlider({
     <>
       <span ref={ref} className="relative block w-56 py-2">
         <Slider
+          // Neutral, as the chrome keeps teal for the selected slot.
+          className="[&_[data-slot=slider-range]]:bg-foreground [&_[data-slot=slider-thumb]]:border-foreground"
           min={min}
           max={max}
           step={step}

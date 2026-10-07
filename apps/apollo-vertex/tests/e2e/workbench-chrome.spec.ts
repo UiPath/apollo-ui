@@ -271,3 +271,33 @@ for (const theme of ["light", "dark"] as const) {
     expect(seen.dots).toBeLessThan(seen.outline);
   });
 }
+
+test("the page-width slider is neutral: its range and thumb in the text's color", async ({
+  page,
+}) => {
+  await open(page, "?view=template&end-panel-contents=queue");
+  await page.locator("[data-slot=workbench-dock]").waitFor();
+  const seen = await page.evaluate(() => {
+    const color = (value: string) => {
+      const probe = document.createElement("span");
+      probe.style.color = value;
+      document.querySelector("[data-slot=workbench]")?.append(probe);
+      const resolved = getComputedStyle(probe).color;
+      probe.remove();
+      return resolved;
+    };
+    const dock = document.querySelector("[data-slot=workbench-dock]");
+    const range = dock?.querySelector("[data-slot=slider-range]");
+    const thumb = dock?.querySelector("[data-slot=slider-thumb]");
+    if (!range || !thumb) throw new Error("No slider");
+    return {
+      foreground: color("var(--foreground)"),
+      primary: color("var(--primary)"),
+      range: getComputedStyle(range).backgroundColor,
+      thumb: getComputedStyle(thumb).borderTopColor,
+    };
+  });
+  expect(seen.range).toBe(seen.foreground);
+  expect(seen.thumb).toBe(seen.foreground);
+  expect(seen.range).not.toBe(seen.primary);
+});
