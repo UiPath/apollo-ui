@@ -1,10 +1,12 @@
 import { init, t } from "i18next";
 import { beforeAll, describe, expect, it } from "vitest";
 import { TEMPLATE_HOSTS } from "@/app/_components/template-hosts";
+import { isLocalLink, shareLink } from "@/app/preview/occupants/export-link";
 import { pictureSvg } from "@/app/preview/occupants/export-picture";
 import {
   type ComposedPage,
-  exportSummary,
+  reviewSummary,
+  summaryMarkdown,
   type Translate,
 } from "@/app/preview/occupants/export-summary";
 import { parseContents } from "@/app/preview/occupants/workbench-contents-url";
@@ -31,7 +33,10 @@ const contentsOf = (host: typeof detail, query: string) =>
   parseContents(host, new URLSearchParams(query));
 
 describe("the review summary", () => {
-  it("names each slot in order, its state, placement, and what it holds", () => {
+  const markdown = (host: typeof detail, page: ComposedPage) =>
+    summaryMarkdown(reviewSummary(host, page, words, shellName));
+
+  it("gives each slot one entry in order: its state, placement, and what it holds", () => {
     const page: ComposedPage = {
       contents: contentsOf(
         detail,
@@ -45,39 +50,41 @@ describe("the review summary", () => {
       shell: "sidebar",
       pageWidth: 1440,
     };
-    expect(exportSummary(detail, page, words, shellName)).toBe(
+    // A hidden slot names no placement; a stack's occupants take the
+    // commas, so its tabs take semicolons.
+    expect(markdown(detail, page)).toBe(
       [
         "# Detail page",
         "",
         "Page width 1440px, shell: Default (sidebar).",
         "",
-        "## Header",
-        "",
-        "Open.",
-        "",
-        "- Stage strip",
-        "",
-        "## Start panel",
-        "",
-        "Hidden, its contents kept.",
-        "",
-        "- Tab: Participants",
-        "",
-        "## Main",
-        "",
-        "Open.",
-        "",
-        "- Queue",
-        "",
-        "## End panel",
-        "",
-        "Closed, beside header.",
-        "",
-        "- Tab: Shipment (preview name)",
-        "- Tab: Overview, a stack of Activity timeline, Participants",
+        "- **Header**: Stage strip",
+        "- **Start panel** · hidden: Participants",
+        "- **Main**: Queue",
+        "- **End panel** · closed, beside header: Shipment (preview name); Overview: Activity timeline, Participants (2 tabs)",
         "",
       ].join("\n"),
     );
+  });
+
+  it("joins plain tabs with commas, and says when a slot is empty", () => {
+    const page: ComposedPage = {
+      contents: contentsOf(
+        detail,
+        "end-panel-contents=activity-timeline~participants",
+      ),
+      layout: { "end-panel": { open: false } },
+      renames: {},
+      shell: "sidebar",
+      pageWidth: 1440,
+    };
+    const { entries } = reviewSummary(detail, page, words, shellName);
+    expect(entries.map((e) => `${e.name}${e.rest}`)).toEqual([
+      "Header: Empty",
+      "Start panel · open, below header: Empty",
+      "Main: Empty",
+      "End panel · closed, below header: Activity timeline, Participants (2 tabs)",
+    ]);
   });
 
   it("reads the same for any template: the two-up", () => {
@@ -88,25 +95,67 @@ describe("the review summary", () => {
       shell: "minimal",
       pageWidth: 1200,
     };
-    expect(exportSummary(TWO_UP_HOST, page, words, shellName)).toBe(
+    expect(markdown(TWO_UP_HOST, page)).toBe(
       [
         "# Two-up",
         "",
         "Page width 1200px, shell: Minimal.",
         "",
-        "## Body",
-        "",
-        "Open.",
-        "",
-        "- Queue",
-        "",
-        "## Aside",
-        "",
-        "Closed.",
-        "Empty.",
+        "- **Body**: Queue",
+        "- **Aside** · closed: Empty",
         "",
       ].join("\n"),
     );
+  });
+});
+
+describe("the shared link", () => {
+  const address = (href: string) => new URL(href);
+
+  it("is the page's own address when no public base is set", () => {
+    const here = address(
+      "http://localhost:3000/preview/occupants?view=template#x",
+    );
+    expect(shareLink(here, "", "")).toBe(here.href);
+    expect(isLocalLink(shareLink(here, "", ""))).toBe(true);
+  });
+
+  it("moves the path, query and hash onto the public base", () => {
+    const here = address(
+      "http://localhost:3000/preview/occupants?view=template&mode=edit",
+    );
+    const link = shareLink(here, "https://org.uipath.host/apollo-vertex/", "");
+    expect(link).toBe(
+      "https://org.uipath.host/apollo-vertex/preview/occupants?view=template&mode=edit",
+    );
+    expect(isLocalLink(link)).toBe(false);
+  });
+
+  it("drops this build's own sub-path before adding the base", () => {
+    const here = address(
+      "https://org.uipath.host/apollo-vertex-pr-12/preview/occupants/?view=template",
+    );
+    expect(
+      shareLink(
+        here,
+        "https://org.uipath.host/apollo-vertex",
+        "apollo-vertex-pr-12",
+      ),
+    ).toBe(
+      "https://org.uipath.host/apollo-vertex/preview/occupants/?view=template",
+    );
+  });
+
+  it("knows a link only this computer opens", () => {
+    for (const link of [
+      "http://127.0.0.1:3000/",
+      "http://[::1]:3000/",
+      "http://app.localhost/",
+    ])
+      expect(isLocalLink(link)).toBe(true);
+    expect(
+      isLocalLink("https://engdogfood.staging.uipath.host/apollo-vertex-pr-1/"),
+    ).toBe(false);
   });
 });
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { Copy, Download, Share } from "lucide-react";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { TemplateHost } from "@/app/_components/template-hosts";
@@ -16,11 +16,14 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import type { PreviewShellVariant } from "@/templates/shell/PreviewShell";
+import { isLocalLink, shareLink } from "./export-link";
 import { type PictureColors, pictureSvg, svgToPng } from "./export-picture";
 import {
   type ComposedPage,
-  exportSummary,
   holdings,
+  type ReviewSummary,
+  reviewSummary,
+  summaryMarkdown,
   type Translate,
 } from "./export-summary";
 import { WORKBENCH_TOASTER } from "./use-change-log";
@@ -55,6 +58,27 @@ function themeColors(): PictureColors {
   };
 }
 
+/** The picture's size, in px, before it's drawn at twice that. */
+const PICTURE = { width: 1200, height: 720 };
+
+/** The summary as formatted text: a heading, the page, and each slot. */
+function SummaryPreview({ summary }: { summary: ReviewSummary }) {
+  return (
+    <>
+      <h4 className="text-sm font-semibold">{summary.title}</h4>
+      <p className="mt-1 text-muted-foreground">{summary.page}</p>
+      <ul className="mt-2 flex flex-col gap-1">
+        {summary.entries.map((entry) => (
+          <li key={entry.slot} data-entry={entry.slot}>
+            <strong className="font-medium">{entry.name}</strong>
+            {entry.rest}
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
 const said = (message: string) =>
   toast(message, { toasterId: WORKBENCH_TOASTER });
 
@@ -71,6 +95,9 @@ interface ExportDialogProps {
 export function ExportDialog({ host, page }: ExportDialogProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
+  // The picture, drawn as the dialog opens, for its thumbnail.
+  const [picture, setPicture] = useState("");
+  const copyLink = useRef<HTMLButtonElement>(null);
   const words: Translate = (key, values) => t(key, values);
   const shellName = (shell: PreviewShellVariant) =>
     t(`workbench_shell_${shell}`);
@@ -78,18 +105,16 @@ export function ExportDialog({ host, page }: ExportDialogProps) {
     (panel) => occupantsIn(panel).length > 0,
   ).length;
   const occupants = onPage(page.contents).size;
-  const summary = open ? exportSummary(host, page, words, shellName) : "";
-  const link = open ? window.location.href : "";
+  const summary = reviewSummary(host, page, words, shellName);
+  const link = open ? shareLink(window.location) : "";
   const renamed = Object.keys(page.renames).length > 0;
 
   const copy = async (text: string, done: string) => {
     await navigator.clipboard.writeText(text);
     said(done);
   };
-  const download = async () => {
-    const width = 1200;
-    const height = 720;
-    const svg = pictureSvg({
+  const draw = () =>
+    pictureSvg({
       host,
       layout: page.layout,
       pageWidth: page.pageWidth,
@@ -108,10 +133,10 @@ export function ExportDialog({ host, page }: ExportDialogProps) {
         ];
       },
       colors: themeColors(),
-      width,
-      height,
+      ...PICTURE,
     });
-    const png = await svgToPng(svg, width, height);
+  const download = async () => {
+    const png = await svgToPng(draw(), PICTURE.width, PICTURE.height);
     const url = URL.createObjectURL(png);
     const anchor = document.createElement("a");
     anchor.href = url;
@@ -119,6 +144,10 @@ export function ExportDialog({ host, page }: ExportDialogProps) {
     anchor.click();
     URL.revokeObjectURL(url);
     said(t("workbench_export_picture_downloaded"));
+  };
+  const openChange = (next: boolean) => {
+    if (next) setPicture(draw());
+    setOpen(next);
   };
 
   const sections: ExportSection[] = [
@@ -141,9 +170,9 @@ export function ExportDialog({ host, page }: ExportDialogProps) {
                 aria-label={t("workbench_export_link")}
                 data-slot="workbench-export-link"
                 className="font-mono text-xs"
-                onFocus={(event) => event.currentTarget.select()}
               />
               <Button
+                ref={copyLink}
                 variant="outline"
                 aria-label={t("workbench_export_copy_link_name")}
                 onClick={() =>
@@ -154,6 +183,14 @@ export function ExportDialog({ host, page }: ExportDialogProps) {
                 {t("workbench_export_copy_link")}
               </Button>
             </div>
+            {isLocalLink(link) && (
+              <p
+                data-slot="workbench-export-local-note"
+                className="text-xs text-muted-foreground"
+              >
+                {t("workbench_export_local_note")}
+              </p>
+            )}
             {renamed && (
               <p
                 data-slot="workbench-export-renames-note"
@@ -176,23 +213,26 @@ export function ExportDialog({ host, page }: ExportDialogProps) {
                 size="sm"
                 aria-label={t("workbench_export_copy_summary_name")}
                 onClick={() =>
-                  void copy(summary, t("workbench_export_summary_copied"))
+                  void copy(
+                    summaryMarkdown(summary),
+                    t("workbench_export_summary_copied"),
+                  )
                 }
               >
                 <Copy aria-hidden />
                 {t("workbench_export_copy_summary")}
               </Button>
             </div>
-            {/* Readable by screen readers: a focusable region of plain text. */}
-            <pre
+            {/* Readable by screen readers: a focusable region of formatted text. */}
+            <div
               data-slot="workbench-export-summary"
               role="region"
               aria-label={t("workbench_export_summary_preview")}
               tabIndex={0}
-              className="max-h-64 overflow-auto rounded-md bg-muted p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="max-h-80 overflow-auto rounded-md bg-muted p-3 text-xs leading-relaxed outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              {summary}
-            </pre>
+              <SummaryPreview summary={summary} />
+            </div>
           </section>
           <section
             aria-labelledby="export-picture"
@@ -201,15 +241,28 @@ export function ExportDialog({ host, page }: ExportDialogProps) {
             <h3 id="export-picture" className="text-sm font-medium">
               {t("workbench_export_picture")}
             </h3>
-            <Button
-              variant="outline"
-              size="sm"
-              aria-label={t("workbench_export_download_name")}
-              onClick={() => void download()}
-            >
-              <Download aria-hidden />
-              {t("workbench_export_download")}
-            </Button>
+            <div className="flex items-center gap-3">
+              {picture && (
+                // Drawn the same way as the download, from the same SVG.
+                <img
+                  data-slot="workbench-export-thumbnail"
+                  src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(picture)}`}
+                  alt={t("workbench_export_picture_preview")}
+                  width={80}
+                  height={48}
+                  className="h-12 w-20 rounded-sm border border-border"
+                />
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                aria-label={t("workbench_export_download_name")}
+                onClick={() => void download()}
+              >
+                <Download aria-hidden />
+                {t("workbench_export_download")}
+              </Button>
+            </div>
           </section>
         </div>
       ),
@@ -219,7 +272,7 @@ export function ExportDialog({ host, page }: ExportDialogProps) {
   const section = sections.find((s) => s.id === shown) ?? sections[0];
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={openChange}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" data-slot="workbench-export">
           <Share aria-hidden />
@@ -229,6 +282,11 @@ export function ExportDialog({ host, page }: ExportDialogProps) {
       <DialogContent
         data-slot="workbench-export-dialog"
         className="sm:max-w-xl"
+        // Into the dialog at Copy link, not the read-only field.
+        onOpenAutoFocus={(event) => {
+          event.preventDefault();
+          copyLink.current?.focus();
+        }}
       >
         <DialogHeader>
           <DialogTitle>
