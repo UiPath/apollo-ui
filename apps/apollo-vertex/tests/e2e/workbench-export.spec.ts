@@ -6,8 +6,8 @@ import { inspector, open, selectSlot } from "./workbench-helpers";
 /*
  * Export, from the template view's header: a dialog of sections, for now
  * one, Share for review. Its link, its summary (formatted, copied as
- * Markdown), and a capture of the page frame with its thumbnail, each
- * with a toast; focus in at Copy link and back out. The dev server has no public base URL,
+ * Markdown), and a screenshot of the page frame with its thumbnail,
+ * copied or downloaded, each with a toast; focus in at Copy link and back out. The dev server has no public base URL,
  * so the link is this computer's; the base is unit tested.
  */
 
@@ -76,7 +76,7 @@ test("Copy link copies this page's link, says so, and says it's only local", asy
   await expect(
     dialog(page).locator("[data-slot=workbench-export-local-note]"),
   ).toHaveText(
-    "This link only works on your computer. Share the summary or picture instead.",
+    "This link only works on your computer. Share the summary or a screenshot instead.",
   );
   await expect(
     dialog(page).locator("[data-slot=workbench-export-renames-note]"),
@@ -150,18 +150,20 @@ const pngSize = (bytes: Buffer) => [
   bytes.readUInt32BE(20),
 ];
 
-/** Downloads the picture, and checks it's a PNG named for the template. */
-async function downloadPicture(page: Page) {
+/** Downloads the screenshot, and checks it's a PNG named for the template. */
+async function downloadScreenshot(page: Page) {
   const [download] = await Promise.all([
     page.waitForEvent("download"),
     dialog(page)
-      .getByRole("button", { name: "Download a picture of the page as a PNG" })
+      .getByRole("button", {
+        name: "Download a screenshot of the page as a PNG",
+      })
       .click(),
   ]);
-  expect(download.suggestedFilename()).toBe("detail-page.png");
+  expect(download.suggestedFilename()).toBe("detail-page-screenshot.png");
   const bytes = await readFile(await download.path());
   expect([...bytes.subarray(0, 8)]).toEqual([137, 80, 78, 71, 13, 10, 26, 10]);
-  await expect(toast(page)).toContainText("Picture downloaded");
+  await expect(toast(page)).toContainText("Screenshot downloaded");
   return bytes;
 }
 
@@ -183,10 +185,10 @@ test("Download PNG captures the page frame at its real size, twice the pixels, a
   expect(size[0]).toBe(2880);
   await exportButton(page).click();
   const thumbnail = dialog(page).getByRole("img", {
-    name: "Picture of the page",
+    name: "Screenshot of the page",
   });
   await expect(thumbnail).toBeVisible();
-  const bytes = await downloadPicture(page);
+  const bytes = await downloadScreenshot(page);
   // The page's 1440px at 2x, not the stage's zoom.
   expect(pngSize(bytes)).toEqual(size);
   // The thumbnail is the download's own capture.
@@ -230,7 +232,7 @@ const differing = (page: Page, a: Buffer, b: Buffer) =>
     [a.toString("base64"), b.toString("base64")],
   );
 
-// Edit changes how the stage shows the page, not its picture. At 100%
+// Edit changes how the stage shows the page, not its screenshot. At 100%
 // the page is the stage's height in both, so the two are the same size.
 test("in Edit, the capture is Preview's: no outlines, no fade", async ({
   page,
@@ -239,7 +241,7 @@ test("in Edit, the capture is Preview's: no outlines, no fade", async ({
     await ready(page, `${PAGE}&zoom=100${extra}`);
     const size = await frameAt2x(page);
     await exportButton(page).click();
-    const bytes = await downloadPicture(page);
+    const bytes = await downloadScreenshot(page);
     expect(pngSize(bytes)).toEqual(size);
     return bytes;
   };
@@ -248,4 +250,57 @@ test("in Edit, the capture is Preview's: no outlines, no fade", async ({
   expect(
     await differing(page, await capture("&mode=edit"), preview),
   ).toBeLessThan(0.001);
+});
+
+test("Copy image puts the screenshot on the clipboard as a PNG, and says so", async ({
+  page,
+}) => {
+  await ready(page);
+  const size = await frameAt2x(page);
+  await exportButton(page).click();
+  await expect(
+    dialog(page).getByRole("heading", { name: "Screenshot", exact: true }),
+  ).toBeVisible();
+  // Before Download PNG.
+  const buttons = dialog(page)
+    .locator("[aria-labelledby=export-screenshot]")
+    .getByRole("button");
+  expect(
+    await buttons.evaluateAll((all) =>
+      all.map((button) => button.getAttribute("aria-label")),
+    ),
+  ).toEqual([
+    "Copy the screenshot as a PNG image",
+    "Download a screenshot of the page as a PNG",
+  ]);
+  await buttons.first().click();
+  await expect(toast(page)).toContainText("Screenshot copied");
+  // On the clipboard: a PNG the size of the capture.
+  const copied = await page.evaluate(async () => {
+    const [item] = await navigator.clipboard.read();
+    if (!item?.types.includes("image/png")) return null;
+    const image = await createImageBitmap(await item.getType("image/png"));
+    return [image.width, image.height];
+  });
+  expect(copied).toEqual(size);
+});
+
+test("Copy image is hidden where the browser can't copy images; Download PNG stays", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    // As in a browser without clipboard images.
+    Reflect.deleteProperty(window, "ClipboardItem");
+  });
+  await ready(page);
+  await exportButton(page).click();
+  await expect(
+    dialog(page).getByRole("img", { name: "Screenshot of the page" }),
+  ).toBeVisible();
+  await expect(
+    dialog(page).getByRole("button", {
+      name: "Copy the screenshot as a PNG image",
+    }),
+  ).toHaveCount(0);
+  await downloadScreenshot(page);
 });

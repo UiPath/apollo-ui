@@ -1,6 +1,6 @@
 "use client";
 
-import { Copy, Download, Share } from "lucide-react";
+import { Copy, Download, ImageIcon, Share } from "lucide-react";
 import { type ReactNode, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import type { PreviewShellVariant } from "@/templates/shell/PreviewShell";
-import { type Capture, capturePage } from "./export-capture";
+import { type Capture, canCopyImage, capturePage } from "./export-capture";
 import { isLocalLink, shareLink } from "./export-link";
 import {
   type ComposedPage,
@@ -65,13 +65,15 @@ interface ExportDialogProps {
 /**
  * Export, from the template view's header: a dialog of sections. For now
  * one, Share for review: the page's link, a Markdown summary of it, and
- * a picture of it. With one section there's no navigation.
+ * a screenshot of it. With one section there's no navigation.
  */
 export function ExportDialog({ host, page }: ExportDialogProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
-  // The picture, captured as the dialog opens: its thumbnail and download.
-  const [picture, setPicture] = useState<Capture | null>(null);
+  // The screenshot, captured as the dialog opens: its thumbnail, copy and download.
+  const [screenshot, setScreenshot] = useState<Capture | null>(null);
+  // Copy image shows only where the browser can copy images.
+  const [copiesImages, setCopiesImages] = useState(false);
   const copyLink = useRef<HTMLButtonElement>(null);
   const words: Translate = (key, values) => t(key, values);
   const shellName = (shell: PreviewShellVariant) =>
@@ -99,15 +101,27 @@ export function ExportDialog({ host, page }: ExportDialogProps) {
     const url = URL.createObjectURL(shot.blob);
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = `${host.spec.name}.png`;
+    anchor.download = `${host.spec.name}-screenshot.png`;
     anchor.click();
     URL.revokeObjectURL(url);
-    said(t("workbench_export_picture_downloaded"));
+    said(t("workbench_export_screenshot_downloaded"));
+  };
+  const copyImage = async () => {
+    // The blob as a promise, so the click's permission holds while it's ready.
+    const png = capture().then((shot) => {
+      if (!shot) throw new Error("No screenshot to copy");
+      return shot.blob;
+    });
+    await navigator.clipboard.write([new ClipboardItem({ "image/png": png })]);
+    said(t("workbench_export_screenshot_copied"));
   };
   const openChange = (next: boolean) => {
     capturing.current = null;
-    setPicture(null);
-    if (next) void capture().then(setPicture);
+    setScreenshot(null);
+    if (next) {
+      setCopiesImages(canCopyImage());
+      void capture().then(setScreenshot);
+    }
     setOpen(next);
   };
 
@@ -196,23 +210,34 @@ export function ExportDialog({ host, page }: ExportDialogProps) {
             </div>
           </section>
           <section
-            aria-labelledby="export-picture"
+            aria-labelledby="export-screenshot"
             className="flex items-center justify-between gap-2"
           >
-            <h3 id="export-picture" className="text-sm font-medium">
-              {t("workbench_export_picture")}
+            <h3 id="export-screenshot" className="text-sm font-medium">
+              {t("workbench_export_screenshot")}
             </h3>
             <div className="flex items-center gap-3">
-              {picture && (
-                // The download's own capture.
+              {screenshot && (
+                // The capture that's copied and downloaded.
                 <img
                   data-slot="workbench-export-thumbnail"
-                  src={picture.url}
-                  alt={t("workbench_export_picture_preview")}
+                  src={screenshot.url}
+                  alt={t("workbench_export_screenshot_preview")}
                   width={80}
                   height={48}
                   className="h-12 w-20 rounded-sm border border-border object-cover object-left-top"
                 />
+              )}
+              {copiesImages && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  aria-label={t("workbench_export_copy_image_name")}
+                  onClick={() => void copyImage()}
+                >
+                  <ImageIcon aria-hidden />
+                  {t("workbench_export_copy_image")}
+                </Button>
               )}
               <Button
                 variant="outline"

@@ -1,15 +1,22 @@
 import { domToCanvas } from "modern-screenshot";
 
 /*
- * Export's picture: the page frame as composed, captured from the page
+ * Export's screenshot: the page frame as composed, captured from the page
  * itself. Only the frame, never the workbench around it, and as Preview
  * shows it: at its real size, whatever the stage's zoom, not faded as
  * Edit fades it (Edit's outlines sit outside the frame). At twice the
  * pixels, in the theme it's in, with its fonts embedded.
  */
 
-/** The pixel density of the picture. */
+/** The pixel density of the screenshot. */
 export const CAPTURE_SCALE = 2;
+
+/** Whether this browser can put a PNG on the clipboard. */
+export const canCopyImage = () =>
+  typeof ClipboardItem !== "undefined" &&
+  typeof navigator.clipboard?.write === "function" &&
+  (typeof ClipboardItem.supports !== "function" ||
+    ClipboardItem.supports("image/png"));
 
 /** The page frame on the template view's stage. */
 const pageFrame = () =>
