@@ -349,6 +349,7 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
                 onContents={compose}
                 renames={view.renames}
                 onRenames={(renames) => update({ renames })}
+                tabs={view.tabs}
               />
             ) : (
               <DetailsPanel

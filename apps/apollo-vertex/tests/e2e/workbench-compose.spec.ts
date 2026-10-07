@@ -250,7 +250,7 @@ test("a tall inspector scrolls itself, down to the layout", async ({
   page,
 }) => {
   // Short enough that the inspector is taller than the window.
-  await page.setViewportSize({ width: 1920, height: 560 });
+  await page.setViewportSize({ width: 1920, height: 400 });
   await ready(
     page,
     `${SLOT}&end-panel-contents=queue~overview:key-facts.participants~activity-timeline`,
@@ -264,7 +264,7 @@ test("a tall inspector scrolls itself, down to the layout", async ({
     page.locator("[data-slot=workbench-header]").boundingBox(),
   ]);
   expect(box?.y).toBe((topBar?.y ?? 0) + (topBar?.height ?? 0));
-  expect((box?.y ?? 0) + (box?.height ?? 0)).toBe(560);
+  expect((box?.y ?? 0) + (box?.height ?? 0)).toBe(400);
   expect(box?.x ?? 0).toBeGreaterThanOrEqual(
     (dock?.x ?? 0) + (dock?.width ?? 0),
   );

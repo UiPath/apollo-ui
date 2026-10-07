@@ -39,6 +39,56 @@ const labelsOf = (panel: PanelSpec | undefined) =>
     tab.label ? [`${tab.id}:${tab.label}`] : [],
   );
 
+/** A panel's shape: each tab's occupants, by name, in order. */
+const shapeOf = (panel: PanelSpec | undefined) =>
+  (panel?.tabs ?? []).map((tab) =>
+    tab.occupants.map((ref) => (typeof ref === "string" ? ref : ref.occupant)),
+  );
+const same = (a: string[][], b: string[][]) =>
+  JSON.stringify(a) === JSON.stringify(b);
+const withoutTab = (shape: string[][], tab: string[]) =>
+  shape.filter((t) => !same([t], [tab]));
+const withoutName = (shape: string[][], occupant: string) =>
+  shape.map((t) => t.filter((n) => n !== occupant)).filter((t) => t.length > 0);
+
+/**
+ * What a move did, in words, when the same occupants are arranged anew:
+ * the one tab whose taking out makes the rest agree moved, else the one
+ * occupant. Null when it isn't a move.
+ */
+function movedCopy(
+  slot: string,
+  before: PanelSpec | undefined,
+  after: PanelSpec | undefined,
+  t: (key: LocaleKey) => string,
+): ChangeCopy | null {
+  const [was, now] = [shapeOf(before), shapeOf(after)];
+  if (same(was, now)) return null;
+  const tabs = was.find(
+    (tab) =>
+      now.some((n) => same([n], [tab])) &&
+      same(withoutTab(was, tab), withoutTab(now, tab)),
+  );
+  if (tabs) {
+    const index = was.findIndex((tab) => same([tab], [tabs]));
+    const label = before?.tabs[index]?.label;
+    const [first = ""] = tabs;
+    return {
+      key: "workbench_change_moved_tab",
+      values: { tab: label ? t(label) : name(first), slot },
+    };
+  }
+  const occupant = was
+    .flat()
+    .find((n) => same(withoutName(was, n), withoutName(now, n)));
+  return occupant
+    ? {
+        key: "workbench_change_moved",
+        values: { occupant: name(occupant), slot },
+      }
+    : null;
+}
+
 /** What changed in one slot's contents, in words, or null when nothing did. */
 function contentsCopy(
   slot: string,
@@ -65,6 +115,8 @@ function contentsCopy(
       key: "workbench_change_removed",
       values: { occupant: name(gone), slot },
     };
+  const moved = movedCopy(slot, before, after, t);
+  if (moved) return moved;
   const renamed = after?.tabs.find(
     (tab) => tab.label && !labelsOf(before).includes(`${tab.id}:${tab.label}`),
   );

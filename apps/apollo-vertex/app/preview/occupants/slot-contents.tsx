@@ -1,16 +1,19 @@
 "use client";
 
 import { Plus, X } from "lucide-react";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { TemplateHost } from "@/app/_components/template-hosts";
 import { Button } from "@/components/ui/button";
 import { specFor } from "@/lib/occupant-lookup";
 import type { TabSpec } from "@/lib/panel";
+import { ContentCard } from "./content-card";
+import { InspectorDnd } from "./inspector-dnd";
 import { LockableButton } from "./lock-hint";
 import { RenameField } from "./rename-field";
 import { SlotPicker } from "./slot-picker";
 import { SlotTabRows } from "./slot-tab-rows";
+import { occupantLabel, useSlotMoves } from "./use-slot-moves";
 import {
   addOccupant,
   type ComposeLock,
@@ -37,25 +40,7 @@ import {
 } from "./workbench-renames";
 
 /** An occupant's name, as people know it. */
-const name = (occupant: string) => specFor(occupant)?.label ?? occupant;
-
-// An occupant's own row: its name (or what's given in its place), then
-// × (or Replace and Clear).
-const row = (
-  occupant: string,
-  actions: ReactNode,
-  label: ReactNode = <span className="truncate">{name(occupant)}</span>,
-) => (
-  <div
-    data-slot="workbench-contents-occupant"
-    data-row={occupant}
-    tabIndex={-1}
-    className="flex min-h-7 min-w-0 flex-1 items-center justify-between gap-2 rounded-sm px-1 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-  >
-    {label}
-    {actions}
-  </div>
-);
+const name = occupantLabel;
 
 /** Where focus goes once the contents change: a row, a tab's label, or the picker. */
 type FocusTo = { row: string } | { label: number } | { picker: true };
@@ -68,6 +53,8 @@ interface SlotContentsSectionProps {
   /** Preview-only renames, and changing them. */
   renames: Renames;
   onRenames: (renames: Renames) => void;
+  /** The tab each slot shows, when one was chosen: a move keeps it. */
+  tabs: Readonly<Record<string, string>>;
 }
 
 /**
@@ -84,6 +71,7 @@ export function SlotContentsSection({
   onContents,
   renames,
   onRenames,
+  tabs,
 }: SlotContentsSectionProps) {
   const { t } = useTranslation();
   const [picking, setPicking] = useState<PickTarget | null>(null);
@@ -139,6 +127,26 @@ export function SlotContentsSection({
       />
     );
   };
+  // A tab in words: its label, renamed or not, else its occupant's title.
+  const tabName = (index: number) => {
+    const tab = panel?.tabs[index];
+    if (!tab) return "";
+    const key = renames[stackTarget(slot, tab.id)] ?? tab.label;
+    if (key && tab.occupants.length > 1) return t(key);
+    const [first] = tab.occupants;
+    return first
+      ? titleOf(typeof first === "string" ? first : first.occupant)
+      : tab.id;
+  };
+  const moves = useSlotMoves({
+    host,
+    slot,
+    contents,
+    onContents,
+    tabs,
+    renames,
+    tabName,
+  });
   const why = (lock: ComposeLock | null) =>
     lock ? t(reasonCopy(host.spec, lock)) : null;
   const change = (
@@ -206,32 +214,35 @@ export function SlotContentsSection({
       <div ref={root} className="flex flex-col gap-2">
         {only ? (
           <>
-            {row(
-              only,
-              <div className="flex gap-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-6 px-2 text-xs"
-                  aria-expanded={picking === "replace"}
-                  onClick={() => toggle("replace")}
-                >
-                  {t("workbench_contents_replace")}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-6 px-2 text-xs"
-                  onClick={() =>
-                    change(removeFromSlot(contents, slot, only), {
-                      picker: true,
-                    })
-                  }
-                >
-                  {t("workbench_contents_clear")}
-                </Button>
-              </div>,
-            )}
+            <ContentCard
+              occupant={only}
+              name={<span className="truncate">{name(only)}</span>}
+              actions={
+                <div className="flex gap-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-6 px-2 text-xs"
+                    aria-expanded={picking === "replace"}
+                    onClick={() => toggle("replace")}
+                  >
+                    {t("workbench_contents_replace")}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-6 px-2 text-xs"
+                    onClick={() =>
+                      change(removeFromSlot(contents, slot, only), {
+                        picker: true,
+                      })
+                    }
+                  >
+                    {t("workbench_contents_clear")}
+                  </Button>
+                </div>
+              }
+            />
             {picker("replace")}
           </>
         ) : (
@@ -255,47 +266,66 @@ export function SlotContentsSection({
 
   const locks = panelLocks(contents, slot);
   const newTabLock = why(locks.newTab);
+  const newTab = (
+    <LockableButton
+      variant="outline"
+      size="sm"
+      className="w-full justify-start"
+      reason={newTabLock}
+      aria-expanded={picking === "new-tab"}
+      onClick={() => toggle("new-tab")}
+    >
+      {newTabLock ? null : <Plus aria-hidden />}
+      {t("workbench_contents_new_tab")}
+    </LockableButton>
+  );
   return (
-    <div ref={root} className="flex flex-col gap-2">
+    <div ref={root} className="flex flex-col gap-1.5">
       {panel && panel.tabs.length > 0 ? (
-        <SlotTabRows
-          tabs={panel.tabs}
-          locks={locks.tabs.map(why)}
-          picking={picking}
-          labeling={labeling}
-          nameField={nameField}
-          labelField={labelField}
-          row={row}
-          removeButton={removeButton}
-          picker={picker}
-          onAdd={(index) => toggle(index)}
-          onLabel={(index) => {
-            setPicking(null);
-            setLabeling(labeling === index ? null : index);
-          }}
-          onRelabel={(index, label) => {
-            // A preset replaces the stack's preview-only name.
-            const tab = panel.tabs[index];
-            if (tab) onRenames(restore(renames, stackTarget(slot, tab.id)));
-            change(relabel(contents, slot, index, label), { label: index });
-          }}
-        />
+        <InspectorDnd
+          panel={panel}
+          preview={moves.preview}
+          onMove={moves.onMove}
+          placeName={moves.placeName}
+          reason={moves.reason}
+        >
+          <SlotTabRows
+            tabs={panel.tabs}
+            locks={locks.tabs.map(why)}
+            picking={picking}
+            labeling={labeling}
+            nameField={nameField}
+            labelField={labelField}
+            tabName={tabName}
+            occupantName={name}
+            removeButton={removeButton}
+            picker={picker}
+            steps={moves.steps}
+            reason={moves.reason}
+            newTab={newTab}
+            onAdd={(index) => toggle(index)}
+            onLabel={(index) => {
+              setPicking(null);
+              setLabeling(labeling === index ? null : index);
+            }}
+            onRelabel={(index, label) => {
+              // A preset replaces the stack's preview-only name.
+              const tab = panel.tabs[index];
+              if (tab) onRenames(restore(renames, stackTarget(slot, tab.id)));
+              change(relabel(contents, slot, index, label), { label: index });
+            }}
+          />
+        </InspectorDnd>
       ) : (
-        <p className="text-xs text-muted-foreground">
-          {t("workbench_compose_empty")}
-        </p>
+        <>
+          <p className="text-xs text-muted-foreground">
+            {t("workbench_compose_empty")}
+          </p>
+          <div className="rounded-sm border border-dashed border-border [&_button]:border-0 [&_button]:bg-transparent [&_button]:shadow-none">
+            {newTab}
+          </div>
+        </>
       )}
-      <LockableButton
-        variant="outline"
-        size="sm"
-        className="w-full justify-start"
-        reason={newTabLock}
-        aria-expanded={picking === "new-tab"}
-        onClick={() => toggle("new-tab")}
-      >
-        {newTabLock ? null : <Plus aria-hidden />}
-        {t("workbench_contents_new_tab")}
-      </LockableButton>
       {picker("new-tab")}
     </div>
   );

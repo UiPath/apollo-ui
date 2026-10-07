@@ -14,6 +14,8 @@ import {
   validatePanel,
 } from "@/lib/panel";
 import { addAsTab, addToTab, removeOccupant } from "@/lib/panel-editing";
+import type { ChangeCopy } from "./workbench-change";
+import type { Renames } from "./workbench-renames";
 
 /*
  * What each slot of the template view holds, for any template: a panel of
@@ -61,7 +63,11 @@ export type ContentsChange = (
   contents: SlotContents,
   show?: { slot: string; tab: string },
   /** A slot the page left out, to include in the same change. */
-  include?: string,
+  include?: string | null,
+  /** Preview-only renames that follow the change, as part of it. */
+  renames?: Renames,
+  /** What the change did, in words, when it knows better than a guess. */
+  copy?: ChangeCopy,
 ) => void;
 
 /**

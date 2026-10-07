@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { ChangeCopy } from "./workbench-change";
 import type { ContentsChange } from "./workbench-compose";
 import type { WorkbenchView } from "./workbench-url-state";
 
@@ -11,7 +12,7 @@ import type { WorkbenchView } from "./workbench-url-state";
  */
 export function useCompose(
   view: WorkbenchView,
-  update: (patch: Partial<WorkbenchView>) => void,
+  update: (patch: Partial<WorkbenchView>, copy?: ChangeCopy) => void,
 ): {
   compose: ContentsChange;
   revisions: Readonly<Record<string, number>>;
@@ -19,17 +20,21 @@ export function useCompose(
   const [revisions, setRevisions] = useState<Readonly<Record<string, number>>>(
     {},
   );
-  const compose: ContentsChange = (contents, show, include) => {
-    update({
-      contents,
-      ...(show && { tabs: { ...view.tabs, [show.slot]: show.tab } }),
-      ...(include && {
-        layout: {
-          ...view.layout,
-          [include]: { ...view.layout[include], present: true },
-        },
-      }),
-    });
+  const compose: ContentsChange = (contents, show, include, renames, copy) => {
+    update(
+      {
+        contents,
+        ...(renames && { renames }),
+        ...(show && { tabs: { ...view.tabs, [show.slot]: show.tab } }),
+        ...(include && {
+          layout: {
+            ...view.layout,
+            [include]: { ...view.layout[include], present: true },
+          },
+        }),
+      },
+      copy,
+    );
     if (show)
       setRevisions((before) => ({
         ...before,

@@ -39,6 +39,8 @@ interface InspectorProps {
   /** Preview-only renames, and changing them. */
   renames: Renames;
   onRenames: (renames: Renames) => void;
+  /** The tab each slot shows, when one was chosen. */
+  tabs: Readonly<Record<string, string>>;
 }
 
 /**
@@ -60,6 +62,7 @@ export function Inspector({
   onContents,
   renames,
   onRenames,
+  tabs,
 }: InspectorProps) {
   const { t } = useTranslation();
   const body = () => {
@@ -116,6 +119,7 @@ export function Inspector({
               onContents={onContents}
               renames={renames}
               onRenames={onRenames}
+              tabs={tabs}
             />
           )}
         </section>
