@@ -167,7 +167,7 @@ test("a ghost and a closed slot are selected the same way", async ({
   await expect(heading(page)).toHaveText("Start panel");
   await expect(
     inspector(page).locator("[data-slot=workbench-slot-left-out]"),
-  ).toHaveText("Include the start panel first to put occupants in it.");
+  ).toHaveText("Kept for when the start panel is shown again.");
   // A closed panel has no width: a strip on its edge stands for it.
   const closed = page.locator(
     "[data-slot=workbench-closed-slot][data-edit-slot=end-panel]",

@@ -1,6 +1,12 @@
 import type { Page } from "@playwright/test";
 import { expect, settle, test } from "./fixtures";
-import { inspector, open, selectSlot, urlQuery } from "./workbench-helpers";
+import {
+  inspector,
+  open,
+  selectSlot,
+  setSwitch,
+  urlQuery,
+} from "./workbench-helpers";
 
 /*
  * Every change to what the template view holds, or how it's laid out,
@@ -85,10 +91,7 @@ test("Undo takes back that change only, the latest", async ({ page }) => {
 test("a layout change says so, and undoes too", async ({ page }) => {
   await ready(page, QUERY);
   await selectSlot(page, "start-panel");
-  await inspector(page)
-    .getByRole("group", { name: "Start panel in the page" })
-    .getByRole("radio", { name: "Left out" })
-    .click();
+  await setSwitch(page, "Show Start panel in the page", false);
   await expect(toast(page)).toContainText("Start panel left out");
   expect(urlQuery(page)).toContain("start-panel-present=false");
   await undo(page).click();
@@ -100,25 +103,20 @@ test("leaving a slot out or closing it keeps its occupants, and says so", async 
 }) => {
   await ready(page, `${QUERY}&end-panel-contents=queue~key-facts`);
   await selectSlot(page, "end-panel");
-  const choose = (group: string, option: string) =>
-    inspector(page)
-      .getByRole("group", { name: group })
-      .getByRole("radio", { name: option })
-      .click();
-  await choose("End panel state", "Closed");
+  await setSwitch(page, "End panel open", false);
   await expect(toast(page)).toContainText(
     "End panel closed. Its 2 occupants are kept.",
   );
   expect(urlQuery(page)).toContain("end-panel-contents=queue~key-facts");
   await undo(page).click();
   await expect.poll(() => urlQuery(page)).not.toContain("end-panel-state");
-  await choose("End panel in the page", "Left out");
+  await setSwitch(page, "Show End panel in the page", false);
   await expect(toast(page)).toContainText(
     "End panel left out. Its 2 occupants are kept.",
   );
   expect(urlQuery(page)).toContain("end-panel-contents=queue~key-facts");
-  // Included again, it has them back.
-  await choose("End panel in the page", "Included");
+  // Shown again, it has them back.
+  await setSwitch(page, "Show End panel in the page", true);
   await expect.poll(() => tabNames(page)).toEqual(["Queue", "Key facts"]);
 });
 
@@ -177,10 +175,7 @@ test("in Edit, a left-out slot is a ghost where it would sit; the inspector incl
   expect(Math.round(box?.y ?? 0)).toBe(Math.round(main?.y ?? 0));
   // A click selects it; the inspector puts it back.
   await selectSlot(page, "start-panel");
-  await inspector(page)
-    .getByRole("group", { name: "Start panel in the page" })
-    .getByRole("radio", { name: "Included" })
-    .click();
+  await setSwitch(page, "Show Start panel in the page", true);
   await expect(toast(page)).toContainText("Start panel included");
   await expect.poll(() => urlQuery(page)).not.toContain("start-panel-present");
   await expect(start).toHaveCount(0);

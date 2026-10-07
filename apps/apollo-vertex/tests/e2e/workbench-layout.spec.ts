@@ -2,8 +2,10 @@ import type { Page } from "@playwright/test";
 import { expect, test } from "./fixtures";
 import {
   inspector,
+  layoutSwitch,
   open,
   selectSlot,
+  setSwitch,
   slotStates,
   urlQuery,
 } from "./workbench-helpers";
@@ -49,8 +51,17 @@ const group = (page: Page, name: string) =>
     )
     .getByRole("group", { name, exact: true });
 
+/**
+ * Picks a setting's option. "In the page" and "state" are switches now:
+ * "Show End panel in the page" and "End panel open"; the rest are groups.
+ */
 async function choose(page: Page, name: string, option: string) {
   await show(page, name);
+  const panel = name.replace(/ (in the page|state|placement)$/, "");
+  if (name.endsWith(" in the page"))
+    return setSwitch(page, `Show ${panel} in the page`, option === "Included");
+  if (name.endsWith(" state"))
+    return setSwitch(page, `${panel} open`, option === "Open");
   await group(page, name)
     .getByRole("radio", { name: option, exact: true })
     .click();
@@ -117,12 +128,24 @@ test("panels can be removed and closed, and Edit's stage follows", async ({
     .toEqual({
       "detail-page-end-panel": "open",
     });
-  // Left out, the inspector says to include it first, above that choice.
-  await expect(group(page, "Start panel state")).toHaveCount(0);
+  // Left out, its Open and Placement wait, dimmed and off, and its
+  // contents are kept.
+  await expect(layoutSwitch(page, "Start panel open")).toBeDisabled();
+  await expect(
+    group(page, "Start panel placement").getByRole("radio").first(),
+  ).toBeDisabled();
+  await expect(
+    inspector(page).locator("[data-slot=workbench-layout-row][data-dim=true]"),
+  ).toHaveCount(2);
   await expect(
     inspector(page).locator("[data-slot=workbench-slot-left-out]"),
-  ).toHaveText("Include the start panel first to put occupants in it.");
-  await expect(group(page, "Start panel in the page")).toBeVisible();
+  ).toHaveText("Kept for when the start panel is shown again.");
+  await expect(
+    inspector(page).locator("[data-slot=workbench-slot-contents]"),
+  ).toHaveAttribute("data-kept", "true");
+  await expect(
+    layoutSwitch(page, "Show Start panel in the page"),
+  ).toHaveAttribute("aria-checked", "false");
   expect(urlQuery(page)).toContain("start-panel-present=false");
   // Left out, it's a ghost where it would sit.
   await expect(page.locator("[data-ghost-slot=start-panel]")).toBeVisible();
@@ -153,14 +176,14 @@ test("no panel is locked: the template view has no focused occupant", async ({
   for (const slot of ["start-panel", "end-panel"]) {
     await openSlot(page, slot);
     const name = slot === "start-panel" ? "Start panel" : "End panel";
-    for (const [group_, option] of [
-      [`${name} in the page`, "Left out"],
-      [`${name} state`, "Closed"],
-      [`${name} placement`, "Beside header"],
-    ] as const)
-      await expect(
-        group(page, group_).getByRole("radio", { name: option, exact: true }),
-      ).toBeEnabled();
+    await expect(layoutSwitch(page, `Show ${name} in the page`)).toBeEnabled();
+    await expect(layoutSwitch(page, `${name} open`)).toBeEnabled();
+    await expect(
+      group(page, `${name} placement`).getByRole("radio", {
+        name: "Beside header",
+        exact: true,
+      }),
+    ).toBeEnabled();
     await expect(
       inspector(page)
         .locator("[data-slot=workbench-layout-slot]")
@@ -187,13 +210,14 @@ test("the width rule closes panels when there isn't room, and says so", async ({
     "[data-slot=workbench-layout-slot][data-layout-slot=start-panel]",
   );
   await expect(start).toHaveAttribute("data-closed-by", "rule");
-  await expect(group(page, "Start panel state")).toHaveAccessibleDescription(
-    /Closed by the width rule/,
-  );
-  // It's still wanted open, so the menu keeps Open chosen.
   await expect(
-    group(page, "Start panel state").getByRole("radio", { name: "Open" }),
-  ).toHaveAttribute("aria-checked", "true");
+    layoutSwitch(page, "Start panel open"),
+  ).toHaveAccessibleDescription(/Closed by the width rule/);
+  // It's still wanted open, so its switch stays on.
+  await expect(layoutSwitch(page, "Start panel open")).toHaveAttribute(
+    "aria-checked",
+    "true",
+  );
   // With room again, it reopens on its own.
   await closeMenus(page);
   await page.getByRole("slider", { name: "Page width" }).focus();
@@ -241,7 +265,6 @@ test("the layout round-trips through the URL", async ({ page }) => {
   for (const [name, option] of [
     ["Shell", "Minimal"],
     ["End panel placement", "Beside header"],
-    ["End panel state", "Closed"],
   ] as const) {
     await show(page, name);
     await expect(
@@ -249,6 +272,12 @@ test("the layout round-trips through the URL", async ({ page }) => {
     ).toHaveAttribute("aria-checked", "true");
     await closeMenus(page);
   }
+  // Closed: its Open switch is off.
+  await show(page, "End panel state");
+  await expect(layoutSwitch(page, "End panel open")).toHaveAttribute(
+    "aria-checked",
+    "false",
+  );
 
   // A slot whose panel the URL removed gets it back: the occupant's slot stays.
   await open(

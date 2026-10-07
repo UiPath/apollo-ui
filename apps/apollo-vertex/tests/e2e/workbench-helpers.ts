@@ -117,3 +117,15 @@ export async function selectSlot(page: Page, slot: string) {
     .and(page.locator(`[data-inspector-slot="${slot}"]`))
     .waitFor();
 }
+
+/** A layout switch in the inspector, by its name: "Show End panel in the page". */
+export const layoutSwitch = (page: Page, name: string) =>
+  inspector(page).getByRole("switch", { name, exact: true });
+
+/** Turns a layout switch on or off, unless it already is. */
+export async function setSwitch(page: Page, name: string, on: boolean) {
+  const control = layoutSwitch(page, name);
+  if ((await control.getAttribute("aria-checked")) !== String(on))
+    await control.click();
+  await control.and(page.locator(`[aria-checked="${on}"]`)).waitFor();
+}

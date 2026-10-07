@@ -100,16 +100,18 @@ export function Inspector({
           <h3 className="text-xs font-medium text-muted-foreground uppercase">
             {t("workbench_compose")}
           </h3>
-          {out ? (
-            <>
-              <p className="text-sm" data-slot="workbench-slot-left-out">
-                {t("workbench_slot_include_first", {
-                  slot: slotName.toLowerCase(),
-                })}
-              </p>
-              <SlotLayoutSection {...layoutProps} parts={["present"]} />
-            </>
-          ) : (
+          {out && (
+            <p className="text-sm" data-slot="workbench-slot-left-out">
+              {t("workbench_layout_kept", { panel: slotName.toLowerCase() })}
+            </p>
+          )}
+          {/* Left out, its contents are kept, dimmed, for when it's shown again. */}
+          <div
+            data-slot="workbench-slot-contents"
+            data-kept={out}
+            inert={out}
+            className="data-[kept=true]:opacity-50"
+          >
             <SlotContentsSection
               // A fresh section per slot: its picker and labels start closed.
               key={selected}
@@ -121,9 +123,9 @@ export function Inspector({
               onRenames={onRenames}
               tabs={tabs}
             />
-          )}
+          </div>
         </section>
-        {hasLayout(host.spec, selected) && !out && (
+        {hasLayout(host.spec, selected) && (
           <section
             aria-label={t("workbench_layout")}
             className="flex flex-col gap-3 border-t border-border pt-3"

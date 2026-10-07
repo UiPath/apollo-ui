@@ -12,6 +12,8 @@ interface PageMapProps {
   highlighted: readonly string[];
   /** What's highlighted, for its accessible name, in lowercase. */
   name: string;
+  /** A glyph's size, decorative: a layout option's icon. */
+  compact?: boolean;
 }
 
 /** Grid lines covering the used tracks inside a region's first and last. */
@@ -41,7 +43,12 @@ const sizes = (tracks: ResolvedLayout["columns"]) =>
  * with the given slots highlighted. Only the tracks a slot sits in alone
  * take room; closed slots are dashed.
  */
-export function PageMap({ layout, highlighted, name }: PageMapProps) {
+export function PageMap({
+  layout,
+  highlighted,
+  name,
+  compact = false,
+}: PageMapProps) {
   const { t } = useTranslation();
   const grid: CSSProperties = {
     gridTemplateColumns: sizes(layout.columns).join(" "),
@@ -49,11 +56,15 @@ export function PageMap({ layout, highlighted, name }: PageMapProps) {
   };
   return (
     <div
-      role="img"
-      aria-label={t("workbench_map", { surface: name })}
-      data-slot="workbench-map"
+      {...(compact
+        ? { "aria-hidden": true }
+        : { role: "img", "aria-label": t("workbench_map", { surface: name }) })}
+      data-slot={compact ? "workbench-map-glyph" : "workbench-map"}
       style={grid}
-      className="grid h-10 w-16 shrink-0 gap-0.5"
+      className={cn(
+        "grid shrink-0",
+        compact ? "h-3 w-4 gap-px" : "h-10 w-16 gap-0.5",
+      )}
     >
       {layout.regions.map((region) => {
         const column = lines(layout.columns, region.columns);
@@ -72,7 +83,10 @@ export function PageMap({ layout, highlighted, name }: PageMapProps) {
               // Closed, not missing: a heavier dashed outline, no fill.
               !region.open &&
                 "border-2 border-dashed border-muted-foreground/70",
-              on && "border-2 border-primary bg-transparent",
+              on && !compact && "border-2 border-primary bg-transparent",
+              // A glyph: the slot filled in the text's color, the rest faint.
+              compact && "rounded-[1px] border-0 bg-current opacity-25",
+              compact && on && "opacity-100",
             )}
           />
         );
