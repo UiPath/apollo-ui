@@ -463,6 +463,16 @@ describe('resolveCentralizedGuardrailParameters, parameters the definition does 
     ]);
   });
 
+  it('leaves the host’s definition untouched while describing what it does not declare', () => {
+    const definition = structuredClone(PII_DEFINITION);
+    resolveCentralizedGuardrailParameters(
+      guardrail({ entities: ['Email'], parameters: [appliesTo('Files')] }),
+      { definition, labels: FALLBACK_LABELS, copy: GUARDRAIL_COPY_EN }
+    );
+
+    expect(definition).toEqual(PII_DEFINITION);
+  });
+
   it('names each appliesTo option the way the per-agent builder does', () => {
     const shownFor = (value: string) =>
       resolveCentralizedGuardrailParameters(guardrail({ parameters: [appliesTo(value)] }), {
@@ -550,6 +560,24 @@ describe('resolveCentralizedGuardrailParameters, parameters the definition does 
       'threshold',
       'model',
       'guardrailText',
+    ]);
+  });
+
+  it('keeps the policy’s order between a parameter the copy names and one it does not', () => {
+    const rows = resolveCentralizedGuardrailParameters(
+      guardrail({
+        validator: 'llm_as_judge',
+        parameters: [
+          { id: 'customFlag', parameterType: 'text', value: 'x' },
+          { id: 'guardrailText', parameterType: 'text', value: 'No medical advice.' },
+        ],
+      }),
+      { labels: FALLBACK_LABELS, copy: GUARDRAIL_COPY_EN }
+    );
+
+    expect(rows.map((row) => [row.id, row.label])).toEqual([
+      ['customFlag', 'customFlag'],
+      ['guardrailText', 'Rule prompt'],
     ]);
   });
 

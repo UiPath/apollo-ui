@@ -163,8 +163,7 @@ function describeUndeclaredParameter(
 function liftBuiltInConfiguration(
   guardrail: CentralizedGuardrail,
   definition: CentralizedGuardrailDefinition | undefined,
-  labels: CentralizedParameterFallbackLabels,
-  copy: GuardrailCopyTable | undefined
+  labels: CentralizedParameterFallbackLabels
 ): {
   parameters: CentralizedGuardrailParameter[];
   definitions: CentralizedGuardrailParameterDefinition[];
@@ -193,20 +192,11 @@ function liftBuiltInConfiguration(
 
   const definitions: CentralizedGuardrailParameterDefinition[] =
     declared.length > 0
-      ? [...declared]
+      ? declared
       : [
           { id: entitiesId, type: 'enum-list', label: labels.entities },
           { id: thresholdsId, type: 'map-enum', label: labels.thresholds, keySource: entitiesId },
         ];
-
-  const curated = ownEntry(copy, guardrail.validator);
-  const declaredIds = new Set(definitions.map((parameterDefinition) => parameterDefinition.id));
-  for (const parameter of parameters) {
-    if (declaredIds.has(parameter.id)) continue;
-    declaredIds.add(parameter.id);
-    const described = describeUndeclaredParameter(parameter, curated, labels);
-    if (described !== undefined) definitions.push(described);
-  }
 
   return { parameters, definitions };
 }
@@ -230,12 +220,21 @@ export function resolveCentralizedGuardrailParameters(
 ): CentralizedGuardrailParameterRow[] {
   const { parameters, definitions } = guardrail.isByo
     ? { parameters: guardrail.parameters ?? [], definitions: definition?.parameters ?? [] }
-    : liftBuiltInConfiguration(guardrail, definition, labels, copy);
+    : liftBuiltInConfiguration(guardrail, definition, labels);
 
   const valuesById = new Map(parameters.map((parameter) => [parameter.id, parameter.value]));
   const definitionsById = new Map(
     definitions.map((parameterDefinition) => [parameterDefinition.id, parameterDefinition])
   );
+  // Described by id only, so an undeclared parameter keeps its place in the policy's order.
+  if (!guardrail.isByo) {
+    const curated = ownEntry(copy, guardrail.validator);
+    for (const parameter of parameters) {
+      if (definitionsById.has(parameter.id)) continue;
+      const described = describeUndeclaredParameter(parameter, curated, labels);
+      if (described !== undefined) definitionsById.set(parameter.id, described);
+    }
+  }
 
   const rendersAsThresholds = (id: string): boolean => isPlainObject(valuesById.get(id));
   const unscoredKeys = guardrail.isByo
@@ -318,7 +317,7 @@ export function resolveCentralizedGuardrailParameters(
     return { id, kind: 'value', label: parameterDefinition?.label ?? id, value };
   };
 
-  // Declared order first, then values with no definition, so nothing persisted is hidden.
+  // Declared order first, then the rest as they arrive, so nothing persisted is hidden.
   const orderedIds = Array.from(
     new Set([
       ...definitions.map((parameterDefinition) => parameterDefinition.id),
