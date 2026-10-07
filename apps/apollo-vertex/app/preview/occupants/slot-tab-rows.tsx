@@ -34,21 +34,23 @@ interface DropSlotProps {
   height: number;
   /** Why it can't land here, if it can't. */
   refused: string | null;
+  /** A list item in a list; a div inside a row that's one already. */
+  as: "li" | "div";
 }
 
 /** Where the dragged thing will land: a dashed slot its size; a refused one says why. */
-function DropSlot({ height, refused }: DropSlotProps) {
+function DropSlot({ height, refused, as: Element }: DropSlotProps) {
   // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- CSS custom properties aren't in React.CSSProperties
   const style = { "--slot-height": `${height}px` } as CSSProperties;
   return (
-    <li
+    <Element
       data-slot="workbench-contents-drop-slot"
       data-refused={refused !== null}
       style={style}
       className="flex min-h-(--slot-height) list-none items-center justify-center rounded-sm border-2 border-dashed border-primary/60 bg-primary/5 px-2 text-center text-xs text-muted-foreground data-[refused=true]:border-muted-foreground/40 data-[refused=true]:bg-transparent"
     >
       {refused}
-    </li>
+    </Element>
   );
 }
 
@@ -92,9 +94,10 @@ interface SlotTabRowsProps {
 export function SlotTabRows(props: SlotTabRowsProps) {
   const { tabs, newTab } = props;
   const drag = useInspectorDrag();
-  const slot = (place: MovePlace) =>
+  const slot = (place: MovePlace, as: "li" | "div" = "li") =>
     drag && !drag.noop && samePlace(drag.place, place) ? (
       <DropSlot
+        as={as}
         height={drag.height}
         refused={
           drag.result && !drag.result.ok ? props.reason(drag.result) : null
@@ -148,7 +151,7 @@ function EndCard({ over, refused, children }: EndCardProps) {
 interface TabRowProps extends SlotTabRowsProps {
   tab: TabSpec;
   index: number;
-  slot: (place: MovePlace) => ReactNode;
+  slot: (place: MovePlace, as?: "li" | "div") => ReactNode;
 }
 
 /** One tab: its card, or its stack's outline. Either is where a drag can land. */
@@ -203,7 +206,8 @@ function TabRow({
         data-tab-index={index}
         className="flex flex-col gap-1"
       >
-        {slot({ kind: "into", tab: index, at: 0 })}
+        {/* Inside the row's own list item: not list items themselves. */}
+        {slot({ kind: "into", tab: index, at: 0 }, "div")}
         <ContentCard
           occupant={occupant}
           dragging={dragged(occupant)}
@@ -220,7 +224,7 @@ function TabRow({
             </>
           }
         />
-        {slot({ kind: "into", tab: index, at: 1 })}
+        {slot({ kind: "into", tab: index, at: 1 }, "div")}
         {picker(index)}
       </li>
     );
