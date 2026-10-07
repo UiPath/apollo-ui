@@ -1,5 +1,10 @@
 export type { SupportedLocale } from '../i18n';
 export {
+  type ChatBuiltInMessageRenderer,
+  type ResolvedMessageRenderer,
+  resolveMessageRenderer,
+} from './headless/message-renderers';
+export {
   type ChatRendererComponent,
   type ChatRendererLoader,
   type ChatRendererProps,

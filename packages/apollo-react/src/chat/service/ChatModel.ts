@@ -1,4 +1,5 @@
 import type { FontVariantToken } from '@uipath/apollo-core';
+import type { ComponentType } from 'react';
 import type { SupportedLocale } from '../../i18n';
 
 export type ApChatTheme = 'light' | 'light-hc' | 'dark' | 'dark-hc';
@@ -145,17 +146,31 @@ export interface AutopilotChatPrompt
   extends Pick<AutopilotChatMessage, 'content' | 'attachments'> {}
 
 /**
- * Represents a message renderer for the Autopilot Chat system.
- *
- * @property name - The name of the renderer
- * @property render - The function to render the message
- *
- * @returns void or a function to clean up the message renderer
+ * React component that renders a message, used by `AutopilotChatMessageRenderer.component`.
  */
-export interface AutopilotChatMessageRenderer {
+export type AutopilotChatMessageComponent = ComponentType<{ message: AutopilotChatMessage }>;
+
+/**
+ * Represents a message renderer for the Autopilot Chat system. Provide either `component` or
+ * `render`, not both.
+ *
+ * @property name - The name of the renderer, matched against `message.widget`
+ * @property render - Renders the message into a container element; may return a cleanup function,
+ * which runs before the message re-renders and on unmount
+ * @property component - React component rendered with `{ message }`, inside the chat's own tree
+ */
+export type AutopilotChatMessageRenderer = {
   name: string;
-  render: (container: HTMLElement, message: AutopilotChatMessage) => void | (() => void);
-}
+} & (
+  | {
+      render: (container: HTMLElement, message: AutopilotChatMessage) => void | (() => void);
+      component?: never;
+    }
+  | {
+      render?: never;
+      component: AutopilotChatMessageComponent;
+    }
+);
 
 /**
  * Type representing the error level in the Autopilot Chat system.

@@ -273,15 +273,15 @@ const MyComponent = () => {
 
 ### Adding a New Message Renderer
 
-Built-in renderers are defined in the `APOLLO_MESSAGE_RENDERERS` array at `components/message/chat-message-content.tsx`.
+Material's built-in renderers are defined in the `MATERIAL_MESSAGE_RENDERERS` array at `components/message/chat-message-content.tsx`, and resolved by `resolveMessageRenderer` in `src/chat/headless/message-renderers.ts` (injected renderers win, unknown widgets fall back to markdown).
 
 To add a custom renderer:
 
-1. Create your renderer component
-2. Register it using `chatService.injectMessageRenderer('your-renderer-name', YourComponent)`
+1. Create a React component taking `{ message }`, or a `render(container, message)` function
+2. Register it using `chatService.injectMessageRenderer({ name: 'your-renderer-name', component: YourComponent })` (or `render`)
 3. Use by setting `widget: 'your-renderer-name'` on messages
 
-Or add a built-in renderer by adding to the `APOLLO_MESSAGE_RENDERERS` array.
+Or add a built-in renderer by adding to the `MATERIAL_MESSAGE_RENDERERS` array.
 
 ### Adding a New Action Button
 
