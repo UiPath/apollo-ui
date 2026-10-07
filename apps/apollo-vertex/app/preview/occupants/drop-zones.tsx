@@ -1,9 +1,10 @@
 "use client";
 
-import { useDroppable } from "@dnd-kit/core";
+import { useDndContext, useDroppable } from "@dnd-kit/core";
 import { useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { TemplateHost } from "@/app/_components/template-hosts";
+import { specFor } from "@/lib/occupant-lookup";
 import { cn } from "@/lib/utils";
 import { type DropZone, measureZones } from "./drop-zones-geometry";
 import { type Box, frameOf } from "./use-slot-boxes";
@@ -17,29 +18,39 @@ interface ZoneProps {
   outcome: DropOutcome;
   /** Why it's refused, in words, when it is. */
   reason: string | null;
+  /** A large choice's name: "Add as tab", "Stack with Queue". */
+  label: string | null;
+  /** Whether the drag is over this zone's slot: its choices show. */
+  inSlot: boolean;
 }
 
 /**
- * One place to drop: invisible until the drag is over it, then a line
- * between tabs, a highlighted tab or content, or a highlighted slot. A
- * refused one is dimmed for the whole drag, and says why when it's under
- * the drag.
+ * One place to drop. A precise one is unseen until the drag is over it,
+ * then a line between tabs or a highlighted tab; a slot that holds one
+ * highlights. A large choice shows, labeled, while the drag is over its
+ * slot, and highlights under the pointer. A refused one is dimmed for the
+ * whole drag; a refused choice says why in it, and a precise one when
+ * it's under the drag.
  */
-function Zone({ zone, outcome, reason }: ZoneProps) {
+function Zone({ zone, outcome, reason, label, inSlot }: ZoneProps) {
   const data: ZoneData = {
     target: zone.target,
     ...(zone.include && { include: zone.include }),
+    ...(label && { label }),
   };
   const { setNodeRef, isOver } = useDroppable({ id: zone.id, data });
   const refused = !outcome.ok;
+  const choice = zone.look === "choice";
   return (
     <div
       ref={setNodeRef}
       data-slot="workbench-drop-zone"
       data-zone={zone.id}
       data-look={zone.look}
+      {...(zone.choice && { "data-choice": zone.choice })}
       data-refused={refused}
       data-over={isOver}
+      data-shown={choice && inSlot}
       style={{
         left: `${zone.box.x}px`,
         top: `${zone.box.y}px`,
@@ -58,10 +69,39 @@ function Zone({ zone, outcome, reason }: ZoneProps) {
           "rounded-md bg-primary/20 ring-2 ring-primary",
         !refused &&
           isOver &&
-          (zone.look === "content" || zone.look === "slot") &&
+          zone.look === "slot" &&
           "bg-primary/10 ring-2 ring-primary ring-inset",
+        // A choice: labeled while the drag is over its slot.
+        choice &&
+          inSlot &&
+          "flex flex-col items-center justify-center gap-1 rounded-md border-2 border-dashed border-primary/40 p-3 text-center",
+        choice && inSlot && !refused && "bg-background/80",
+        choice &&
+          inSlot &&
+          !refused &&
+          isOver &&
+          "border-solid border-primary bg-primary/10",
       )}
     >
+      {choice && inSlot && label && (
+        <span
+          data-slot="workbench-drop-choice"
+          className={cn(
+            "rounded-md bg-background px-2 py-1 text-sm font-medium shadow-sm",
+            refused ? "text-muted-foreground" : "text-foreground",
+          )}
+        >
+          {label}
+        </span>
+      )}
+      {choice && inSlot && refused && reason && (
+        <span
+          data-slot="workbench-drop-reason"
+          className="max-w-64 rounded-md bg-foreground px-2 py-1 text-xs text-background shadow-md"
+        >
+          {reason}
+        </span>
+      )}
       {zone.look === "insert" && isOver && !refused && (
         <span
           aria-hidden="true"
@@ -73,7 +113,7 @@ function Zone({ zone, outcome, reason }: ZoneProps) {
           )}
         />
       )}
-      {refused && isOver && reason && (
+      {!choice && refused && isOver && reason && (
         <span
           data-slot="workbench-drop-reason"
           className="absolute top-1 left-1 z-10 max-w-64 rounded-md bg-foreground px-2 py-1 text-xs text-background shadow-md"
@@ -100,6 +140,30 @@ interface DropZonesProps {
 export function DropZones({ host, contents, ghosts }: DropZonesProps) {
   const { t } = useTranslation();
   const drag = useWorkbenchDrag();
+  // The slot the drag is over: its large choices show.
+  const overSlot = String(useDndContext().over?.id ?? "").split(":")[0] ?? "";
+  // A tab as the page names it: its label, else its occupant's title.
+  const tabName = (slot: string, index: number) => {
+    const tab = contents[slot]?.tabs[index];
+    if (!tab) return "";
+    if (tab.label) return t(tab.label);
+    const [first] = tab.occupants;
+    const occupant = typeof first === "string" ? first : first?.occupant;
+    const key = occupant ? specFor(occupant)?.titleKey : null;
+    return key ? t(key) : (occupant ?? "");
+  };
+  const labelOf = (zone: DropZone) => {
+    if (zone.choice === "as-tab") return t("workbench_drop_choice_as_tab");
+    if (zone.choice === "stack" && zone.target.kind === "tab")
+      return t("workbench_drop_choice_stack", {
+        tab: tabName(zone.target.slot, zone.target.index),
+      });
+    if (zone.choice === "add-to")
+      return t("workbench_drop_choice_add_to", {
+        slot: host.slotLabels[zone.target.slot] ?? zone.target.slot,
+      });
+    return null;
+  };
   const dragging = drag?.dragging ?? null;
   const ref = useRef<HTMLDivElement>(null);
   const [zones, setZones] = useState<readonly DropZone[]>([]);
@@ -140,6 +204,8 @@ export function DropZones({ host, contents, ghosts }: DropZonesProps) {
             key={zone.id}
             zone={zone}
             outcome={outcome}
+            label={labelOf(zone)}
+            inSlot={dragging !== null && zone.target.slot === overSlot}
             reason={
               outcome.ok ? null : t(reasonCopy(host.spec, outcome.reason))
             }

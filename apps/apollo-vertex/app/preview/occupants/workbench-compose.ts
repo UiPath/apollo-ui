@@ -65,7 +65,7 @@ export type ContentsChange = (
   /** A slot the page left out, to include in the same change. */
   include?: string | null,
   /** Preview-only renames that follow the change, as part of it. */
-  renames?: Renames,
+  renames?: Renames | null,
   /** What the change did, in words, when it knows better than a guess. */
   copy?: ChangeCopy,
 ) => void;

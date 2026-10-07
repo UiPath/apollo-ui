@@ -4,8 +4,8 @@ import { inspector, open, selectSlot, urlQuery } from "./workbench-helpers";
 
 /*
  * Dragging an occupant from the list onto the template view, in Edit
- * mode: a new tab at a position, stacking onto a tab or the showing tab's
- * content, replacing a single slot's occupant, refused places with why,
+ * mode: a new tab at a position, stacking onto a tab or with the showing
+ * tab, replacing a single slot's occupant, refused places with why,
  * the keyboard, and the link. Queue starts in the end panel.
  */
 
@@ -174,14 +174,14 @@ test("dropping on a tab's label stacks into it, which highlights", async ({
   );
 });
 
-test("dropping on the content stacks into the tab that's showing", async ({
+test("the Stack choice stacks into the tab that's showing", async ({
   page,
 }) => {
   await ready(
     page,
     `${EDIT}&end-panel-contents=queue~key-facts&end-panel-tab=key-facts`,
   );
-  await drag(page, "Participants", "end-panel:content");
+  await drag(page, "Participants", "end-panel:stack");
   await expect.poll(() => tabNames(page)).toEqual(["Queue", "Overview"]);
   expect(urlQuery(page)).toContain("overview:key-facts.participants");
 });
@@ -207,20 +207,18 @@ test("a refused place is dimmed while dragging, and says why when it's under the
   // Stage strip doesn't fit a side panel.
   await ready(page, EDIT);
   await pickUp(page, "Stage strip");
-  await expect(zone(page, "end-panel:content")).toHaveAttribute(
-    "data-refused",
-    "true",
-  );
+  for (const choice of ["end-panel:as-tab", "end-panel:stack"])
+    await expect(zone(page, choice)).toHaveAttribute("data-refused", "true");
   await expect(zone(page, "header:slot")).toHaveAttribute(
     "data-refused",
     "false",
   );
-  await over(page, "end-panel:content");
-  await expect(
-    zone(page, "end-panel:content").locator(
-      "[data-slot=workbench-drop-reason]",
-    ),
-  ).toHaveText("It doesn't fit this slot's surface.");
+  // Both choices refused: each says why, and the slot dims.
+  await over(page, "end-panel:stack");
+  for (const choice of ["end-panel:as-tab", "end-panel:stack"])
+    await expect(
+      zone(page, choice).locator("[data-slot=workbench-drop-reason]"),
+    ).toHaveText("It doesn't fit this slot's surface.");
   await page.mouse.up();
   await expect.poll(() => tabNames(page)).toEqual([]);
   expect(urlQuery(page)).not.toContain("stage-strip");

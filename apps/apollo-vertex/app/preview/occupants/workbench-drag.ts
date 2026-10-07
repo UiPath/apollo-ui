@@ -12,6 +12,8 @@ export interface ZoneData {
   target: DropTarget;
   /** A left-out slot's ghost: dropping there includes the slot too. */
   include?: string;
+  /** A large choice's name, for what's announced: "Add as tab". */
+  label?: string;
 }
 
 /** The data a dragged list row carries. */

@@ -21,7 +21,8 @@ import type { TemplateHost } from "@/app/_components/template-hosts";
 import { specFor } from "@/lib/occupant-lookup";
 import type { TabSpec } from "@/lib/panel";
 import { offsetFromPointer } from "./drag-preview-offset";
-import type { DropZone } from "./drop-zones-geometry";
+import { type DropZone, isPrecise } from "./drop-zones-geometry";
+import type { ChangeCopy } from "./workbench-change";
 import type { ContentsChange, SlotContents } from "./workbench-compose";
 import { DragContext } from "./workbench-drag";
 import { type DropTarget, dropOutcome } from "./workbench-drop";
@@ -47,6 +48,14 @@ const targetOf = (data: unknown): DropTarget | null =>
   typeof data === "object" && data && "target" in data
     ? // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- only drop zones carry a target
       (data.target as DropTarget)
+    : null;
+
+const labelOf = (data: unknown): string | null =>
+  typeof data === "object" &&
+  data &&
+  "label" in data &&
+  typeof data.label === "string"
+    ? data.label
     : null;
 
 const includeOf = (data: unknown): string | null =>
@@ -108,13 +117,20 @@ export function WorkbenchDnd({
     }),
     useSensor(KeyboardSensor, { coordinateGetter: keyboardCoordinates }),
   );
-  // The pointer's zone, or the keyboard's.
-  const collisions: CollisionDetection = (args) =>
-    args.pointerCoordinates
-      ? pointerWithin(args)
-      : keyboardZone.current
-        ? [{ id: keyboardZone.current }]
-        : [];
+  // The pointer's zone, or the keyboard's. Under the pointer, a precise
+  // place in a tab bar wins over the large choice it sits in.
+  const collisions: CollisionDetection = (args) => {
+    if (!args.pointerCoordinates)
+      return keyboardZone.current ? [{ id: keyboardZone.current }] : [];
+    const under = pointerWithin(args);
+    const precise = new Set(
+      zones.current.filter((zone) => isPrecise(zone)).map((zone) => zone.id),
+    );
+    return under.toSorted(
+      (a, b) =>
+        Number(precise.has(String(b.id))) - Number(precise.has(String(a.id))),
+    );
+  };
 
   const name = (occupant: string | null) =>
     occupant ? (specFor(occupant)?.label ?? occupant) : "";
@@ -128,7 +144,9 @@ export function WorkbenchDnd({
     const spec = occupant ? specFor(occupant) : null;
     return spec ? t(spec.titleKey) : (occupant ?? "");
   };
-  const place = (target: DropTarget) => {
+  const place = (target: DropTarget, label?: string | null) => {
+    // A large choice says what it is: "Add as tab", "Stack with Queue".
+    if (label) return label;
     const slot = slotName(target.slot);
     const panel = contents[target.slot];
     if (target.kind === "new-tab") {
@@ -161,12 +179,13 @@ export function WorkbenchDnd({
       const target = targetOf(over?.data.current);
       if (!occupant || !target || !host) return;
       const result = outcome(target, occupant);
+      const label = labelOf(over?.data.current);
       return result && !result.ok
         ? t("workbench_drag_over_refused", {
-            place: place(target),
+            place: place(target, label),
             reason: t(reasonCopy(host.spec, result.reason)),
           })
-        : t("workbench_drag_over", { place: place(target) });
+        : t("workbench_drag_over", { place: place(target, label) });
     },
     onDragEnd: ({ active, over }) => {
       const occupant = occupantOf(active.data.current);
@@ -181,7 +200,7 @@ export function WorkbenchDnd({
           })
         : t("workbench_drag_end", {
             occupant: name(occupant),
-            place: place(target),
+            place: place(target, labelOf(over?.data.current)),
           });
     },
     onDragCancel: ({ active }) =>
@@ -199,9 +218,27 @@ export function WorkbenchDnd({
     const result = outcome(target, occupant);
     const include = includeOf(event.over?.data.current);
     if (!result?.ok) return;
+    // Said for what it did: added as a tab, or stacked with one.
+    const where = host?.slotLabels[target.slot] ?? target.slot;
+    const copy: ChangeCopy | null =
+      target.kind === "new-tab"
+        ? {
+            key: "workbench_change_added_tab",
+            values: { occupant: name(occupant), slot: where },
+          }
+        : target.kind === "tab"
+          ? {
+              key: "workbench_change_stacked",
+              values: {
+                occupant: name(occupant),
+                tab: tabName(contents[target.slot]?.tabs[target.index]),
+                slot: where,
+              },
+            }
+          : null;
     // On a left-out slot's ghost, the drop includes the slot too: one change.
-    if (include) onContents(result.next, result.show, include);
-    else onContents(result.next, result.show);
+    if (copy) onContents(result.next, result.show, include, null, copy);
+    else onContents(result.next, result.show, include);
   };
 
   return (

@@ -5,14 +5,24 @@ import type { DropTarget } from "./workbench-drop";
 
 /*
  * Where an occupant can be dropped on the template view, measured from
- * the page (a tab's zones are as tall as the tab itself): in a panel slot, between its tabs and at the end of its tab
- * bar (a new tab there), on a tab's label (into that tab), and on the
- * showing tab's content (into it); anywhere in a slot that holds one, or
- * in an empty panel slot.
+ * the page. A panel slot that has occupants is two large choices filling
+ * it: "Add as tab" above, a new tab at the end, and "Stack with" its
+ * showing tab below. Where it has a tab bar, its precise places win
+ * over them: between its tabs and at the bar's end (a new tab there),
+ * and on a tab's label (into that tab), each as tall as the tab. An
+ * empty panel slot is one choice, "Add to" it; a slot that holds one is
+ * one zone, in place of what it has.
  */
 
 /** What a drop zone looks like when it's the one under the drag. */
-export type ZoneLook = "insert" | "tab" | "content" | "slot";
+export type ZoneLook = "insert" | "tab" | "choice" | "slot";
+
+/** A large labeled choice: add as a tab, stack with the tab showing, or add to an empty panel. */
+export type ZoneChoice = "as-tab" | "stack" | "add-to";
+
+/** Precise places, in the tab bar, win over the large choices where they overlap. */
+export const isPrecise = (zone: DropZone) =>
+  zone.look === "insert" || zone.look === "tab";
 
 export interface DropZone {
   /** Unique on the page; also its order for the keyboard. */
@@ -23,12 +33,14 @@ export interface DropZone {
   box: Box;
   /** A left-out slot's ghost: a drop there includes the slot too. */
   include?: string;
+  /** A large labeled choice, filling half its slot or all of it. */
+  choice?: ZoneChoice;
 }
 
 /** How wide a between-tabs zone is, centered on the gap. */
 const INSERT_PX = 16;
-/** How tall the strip standing in for a tab bar is, over a panel of one tab. */
-const STRIP_PX = 40;
+/** The gap between a panel's two large choices. */
+const CHOICE_GAP_PX = 4;
 
 const visible = (element: HTMLElement) =>
   !element.hidden && element.offsetWidth > 0;
@@ -47,12 +59,14 @@ function panelZones(
       {
         id: `${slot}:slot`,
         target: { slot, kind: "slot" },
-        look: "slot",
+        look: "choice",
+        choice: "add-to",
         box: slotBox,
       },
     ];
+  const zones: DropZone[] = [];
+  // A panel of one tab has no tab bar: the two choices are all it has.
   const bar = element.querySelector<HTMLElement>("[data-part=tab-bar]");
-  // A panel of one tab shows no tab bar: a strip at its top stands in for one.
   const tabs = bar
     ? [...bar.querySelectorAll<HTMLElement>("[data-tab-trigger]")]
         .filter((trigger) => visible(trigger))
@@ -62,16 +76,8 @@ function panelZones(
           active: trigger.getAttribute("aria-selected") === "true",
         }))
         .toSorted((a, b) => a.box.x - b.box.x)
-    : [
-        {
-          id: panel.tabs[0]?.id ?? "",
-          box: { ...slotBox, height: STRIP_PX },
-          active: true,
-        },
-      ];
-  const barBox = bar ? boxOn(frame, bar) : { ...slotBox, height: STRIP_PX };
+    : [];
   const indexOf = (id: string) => panel.tabs.findIndex((tab) => tab.id === id);
-  const zones: DropZone[] = [];
   for (const tab of tabs) {
     const at = indexOf(tab.id);
     if (at < 0) continue;
@@ -99,7 +105,8 @@ function panelZones(
     });
   }
   const last = tabs.at(-1);
-  if (last) {
+  if (bar && last) {
+    const barBox = boxOn(frame, bar);
     const start = last.box.x + last.box.width - INSERT_PX / 2;
     zones.push({
       id: `${slot}:insert:${panel.tabs.length}`,
@@ -114,19 +121,24 @@ function panelZones(
     });
   }
   const active = tabs.find((tab) => tab.active) ?? tabs[0];
-  const index = active ? indexOf(active.id) : 0;
-  const top = barBox.y + barBox.height;
-  zones.push({
-    id: `${slot}:content`,
-    target: { slot, kind: "tab", index: Math.max(0, index) },
-    look: "content",
-    box: {
-      x: slotBox.x,
-      y: top,
-      width: slotBox.width,
-      height: Math.max(0, slotBox.y + slotBox.height - top),
+  const showing = active ? Math.max(0, indexOf(active.id)) : 0;
+  const half = (slotBox.height - CHOICE_GAP_PX) / 2;
+  zones.push(
+    {
+      id: `${slot}:as-tab`,
+      target: { slot, kind: "new-tab", at: panel.tabs.length },
+      look: "choice",
+      choice: "as-tab",
+      box: { ...slotBox, height: half },
     },
-  });
+    {
+      id: `${slot}:stack`,
+      target: { slot, kind: "tab", index: showing },
+      look: "choice",
+      choice: "stack",
+      box: { ...slotBox, y: slotBox.y + half + CHOICE_GAP_PX, height: half },
+    },
+  );
   return zones;
 }
 
