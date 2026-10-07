@@ -19,6 +19,7 @@
   "modelPicker.loading.label": "Carregando modelos",
   "modelPicker.group.deprecating.hint": "Migrar antes da data de término de uso",
   "modelPicker.label.default": "Modelo",
+  "modelPicker.label.requiredSrLabel": "obrigatório",
   "modelPicker.listbox.label": "Modelos",
   "modelPicker.group.byo.hint": "Modelos que você trouxe das suas próprias conexões",
   "modelPicker.group.more.label": "Mais modelos",

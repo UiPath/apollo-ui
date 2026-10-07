@@ -19,6 +19,7 @@
   "modelPicker.loading.label": "正在加载模型",
   "modelPicker.group.deprecating.hint": "请在使用结束日期之前迁移",
   "modelPicker.label.default": "模型",
+  "modelPicker.label.requiredSrLabel": "必填",
   "modelPicker.listbox.label": "模型",
   "modelPicker.group.byo.hint": "您通过自己的连接引入的模型",
   "modelPicker.group.more.label": "更多模型",

@@ -19,6 +19,7 @@
   "modelPicker.loading.label": "モデルを読み込んでいます。",
   "modelPicker.group.deprecating.hint": "使用終了日より前に移行",
   "modelPicker.label.default": "モデル",
+  "modelPicker.label.requiredSrLabel": "必須",
   "modelPicker.listbox.label": "モデル",
   "modelPicker.group.byo.hint": "独自の接続経由で使用しているモデル",
   "modelPicker.group.more.label": "その他のモデル",

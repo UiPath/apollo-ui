@@ -19,6 +19,7 @@
   "modelPicker.loading.label": "Modeller yükleniyor",
   "modelPicker.group.deprecating.hint": "Kullanım bitiş tarihinden önce taşı",
   "modelPicker.label.default": "Model",
+  "modelPicker.label.requiredSrLabel": "zorunlu",
   "modelPicker.listbox.label": "Modeller",
   "modelPicker.group.byo.hint": "Kendi bağlantılarınız aracılığıyla getirdiğiniz modeller",
   "modelPicker.group.more.label": "Daha fazla model",

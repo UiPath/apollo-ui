@@ -54,4 +54,16 @@ describe('loadModelPickerMessages', () => {
       expect(Object.keys(messages).length, `${tag} catalog is empty`).toBeGreaterThan(0);
     }
   });
+
+  it('translates the required-state announcement in every shipped locale', async () => {
+    // The key backs the trigger's accessible name; an untranslated fallback would
+    // read as mixed-language output in a screen reader.
+    const english = (await loadModelPickerMessages('en'))['modelPicker.label.requiredSrLabel'];
+    expect(english).toBeTruthy();
+    for (const tag of MODEL_PICKER_LOCALES) {
+      if (tag === 'en') continue;
+      const messages = await loadModelPickerMessages(tag);
+      expect(messages['modelPicker.label.requiredSrLabel'], `${tag} is missing the required label`).toBeTruthy();
+    }
+  });
 });
