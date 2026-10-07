@@ -306,12 +306,12 @@ header and carried in links as `mode=edit`:
   a slot.
 
 The inspector is the one place to edit a slot: its contents first, then
-its layout. Layout is property rows: Show in page and Open are switches,
-Open indented under it, and Placement is a small segmented control,
-each option with a glyph of where the slot sits and its full name in a
-tooltip. A slot that's left out keeps its contents, dimmed, with Open
-and Placement turned off until it's shown again. A locked option shows
-a lock, with why, in place of its control. It sits
+its layout. Layout is picture choices: Panel (Open, Closed, or Hidden)
+and Placement, each option a small thumbnail of the page with it, drawn
+from the template's declared layout, with its name under it. Only what
+the slot declares is offered, and a row with one option isn't shown. A
+hidden slot keeps its contents, dimmed, and its Placement is off until
+it's shown again. A locked option shows a lock, with why. It sits
 beside the stage, so the stage narrows and Fit scales the page to suit;
 the page's width and every slot's width stay the same. By keyboard,
 slots are focusable: Enter selects one and moves focus into the
@@ -345,7 +345,9 @@ occupant.
 
 Every change to what the page holds or how it's laid out says what it
 did in a toast, like "Key facts added to End panel", with an Undo for
-that change. Leaving out or closing a slot that holds occupants says
+that change. Toasts go after six seconds, wait while hovered or while
+Undo has focus, and Escape dismisses the latest one before its other
+jobs. Leaving out or closing a slot that holds occupants says
 they're kept, like "End panel left out. Its 2 occupants are kept." A
 newer change replaces the toast, so Undo is always for
 the latest. In Edit mode, Reset layout in the header empties every slot
