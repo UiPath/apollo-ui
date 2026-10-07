@@ -101,4 +101,19 @@ describe('Input', () => {
     expect(input).toHaveClass('h-6', 'text-xs', 'rounded', 'bg-surface-overlay');
     expect(input).not.toHaveClass('border-input');
   });
+
+  it('applies none variant without any future theme classes', () => {
+    render(<Input variant="none" />);
+    const input = screen.getByRole('textbox');
+    expect(input).toHaveClass('border-0', 'bg-transparent');
+    expect(input).not.toHaveClass('border-input');
+    expect([...input.classList].filter((name) => name.startsWith('future:'))).toEqual([]);
+  });
+
+  it('lets className draw the box for the none variant', () => {
+    render(<Input variant="none" className="h-[34px] rounded border bg-background" />);
+    const input = screen.getByRole('textbox');
+    expect(input).toHaveClass('h-[34px]', 'rounded', 'border', 'bg-background');
+    expect(input).not.toHaveClass('h-9', 'rounded-md', 'border-0', 'bg-transparent');
+  });
 });
