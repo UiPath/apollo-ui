@@ -1482,6 +1482,11 @@ export interface CentralizedGuardrailsLabels {
   entitiesFallback: string;
   /** Fallback label for the threshold map when no definition names it. */
   thresholdsFallback: string;
+  /** Fallback label for a built-in's `appliesTo` when no definition names it, and its options. */
+  appliesToFallback?: string;
+  appliesToText?: string;
+  appliesToFiles?: string;
+  appliesToBoth?: string;
 }
 
 /** The subset of `useSafeLingui`'s translator the centralized labels need. */
@@ -1495,7 +1500,9 @@ type CentralizedTranslate = (descriptor: {
 // the catalog test diffs and the runtime lingui path cannot drift. Same shape as
 // `definitions-copy.ts`.
 // Labels the builder or the list already declare reuse their ids, so the two cannot drift.
-function buildCentralizedGuardrailsLabels(_: CentralizedTranslate): CentralizedGuardrailsLabels {
+function buildCentralizedGuardrailsLabels(
+  _: CentralizedTranslate
+): Required<CentralizedGuardrailsLabels> {
   return {
     title: _({ id: 'guardrails.centralized.title', message: 'Centralized guardrails' }),
     info: _({
@@ -1577,6 +1584,16 @@ function buildCentralizedGuardrailsLabels(_: CentralizedTranslate): CentralizedG
       id: 'guardrails.centralized.thresholds-fallback',
       message: 'Detection thresholds',
     }),
+    appliesToFallback: _({
+      id: 'guardrails.centralized.applies-to-fallback',
+      message: 'Applies to',
+    }),
+    appliesToText: _({ id: 'guardrails.centralized.applies-to-text', message: 'Text only' }),
+    appliesToFiles: _({ id: 'guardrails.centralized.applies-to-files', message: 'Files only' }),
+    appliesToBoth: _({
+      id: 'guardrails.centralized.applies-to-both',
+      message: 'Text and files',
+    }),
   };
 }
 
@@ -1588,7 +1605,7 @@ const englishCentralizedTranslate: CentralizedTranslate = ({ message, values }) 
     : message;
 
 /** The English chrome strings, resolved without a lingui provider. */
-export const CENTRALIZED_GUARDRAILS_EN_LABELS: CentralizedGuardrailsLabels =
+export const CENTRALIZED_GUARDRAILS_EN_LABELS: Required<CentralizedGuardrailsLabels> =
   buildCentralizedGuardrailsLabels(englishCentralizedTranslate);
 
 /**
@@ -1610,14 +1627,18 @@ export const CENTRALIZED_GUARDRAILS_EN_MESSAGES: Readonly<Record<string, string>
 export function resolveCentralizedGuardrailsLabels(
   catalog?: Partial<CentralizedGuardrailsLabels>,
   overrides?: Partial<CentralizedGuardrailsLabels>
-): CentralizedGuardrailsLabels {
-  return mergeLabels(CENTRALIZED_GUARDRAILS_EN_LABELS, catalog, overrides);
+): Required<CentralizedGuardrailsLabels> {
+  return mergeLabels<Required<CentralizedGuardrailsLabels>>(
+    CENTRALIZED_GUARDRAILS_EN_LABELS,
+    catalog,
+    overrides
+  );
 }
 
 /** Localized chrome strings of the centralized section; per-string `overrides` always win. */
 export function useCentralizedGuardrailsLabels(
   overrides?: Partial<CentralizedGuardrailsLabels>
-): CentralizedGuardrailsLabels {
+): Required<CentralizedGuardrailsLabels> {
   const { _ } = useSafeLingui();
   return useMemo(
     () => resolveCentralizedGuardrailsLabels(buildCentralizedGuardrailsLabels(_), overrides),
