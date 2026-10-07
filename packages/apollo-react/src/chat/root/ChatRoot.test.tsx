@@ -108,6 +108,39 @@ describe('ChatRoot', () => {
     expect(service.getTheme()).toBe('light');
   });
 
+  it('renders the theme prop on the first render, before it reaches the service', () => {
+    const firstThemes: string[] = [];
+    const FirstThemeRenderer = () => {
+      const { theme } = useTheme();
+      if (firstThemes.length === 0) {
+        firstThemes.push(theme);
+      }
+      return null;
+    };
+    registerChatRenderer('material', FirstThemeRenderer);
+
+    render(
+      <ChatRoot chatServiceInstance={createService()} defaultRenderer="material" theme="dark" />
+    );
+
+    expect(firstThemes).toEqual(['dark']);
+  });
+
+  it('falls back to the default renderer when config.renderer is not registered', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    registerChatRenderer('material', ProbeRenderer);
+    const service = createService();
+    service.setRenderer('missing' as AutopilotChatRenderer);
+
+    render(<ChatRoot chatServiceInstance={service} defaultRenderer="material" />);
+
+    expect(screen.getByTestId('renderer')).toHaveTextContent(/^material:/);
+    expect(warn).toHaveBeenCalledWith(
+      'No chat renderer registered for "missing"; using "material".'
+    );
+    warn.mockRestore();
+  });
+
   it('logs and renders nothing when the renderer is not registered', () => {
     const error = vi.spyOn(console, 'error').mockImplementation(() => {});
 

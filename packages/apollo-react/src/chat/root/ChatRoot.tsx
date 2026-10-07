@@ -124,18 +124,22 @@ export function ChatRoot({
 
   const embeddedContainer = useEmbeddedContainer(chatServiceInstance);
   const configuredRenderer = useConfiguredRenderer(chatServiceInstance);
-  const Renderer = resolveChatRenderer({ renderer: configuredRenderer }, defaultRenderer);
-  const rendererName = configuredRenderer ?? defaultRenderer;
+  const configured = resolveChatRenderer({ renderer: configuredRenderer }, defaultRenderer);
+  const Renderer = configured ?? resolveChatRenderer(undefined, defaultRenderer);
 
   React.useEffect(() => {
-    if (!Renderer) {
-      console.error(`No chat renderer registered for "${rendererName}".`);
+    const missing = configuredRenderer ?? defaultRenderer;
+
+    if (!configured && Renderer) {
+      console.warn(`No chat renderer registered for "${missing}"; using "${defaultRenderer}".`);
+    } else if (!Renderer) {
+      console.error(`No chat renderer registered for "${missing}".`);
     }
-  }, [Renderer, rendererName]);
+  }, [configured, Renderer, configuredRenderer, defaultRenderer]);
 
   const content = (
     <AutopilotChatServiceProvider chatServiceInstance={chatServiceInstance}>
-      <ThemeProvider>
+      <ThemeProvider initialTheme={theme}>
         <LocaleProvider>
           <ChatI18n>
             <AutopilotStreamingProvider>

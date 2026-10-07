@@ -2,7 +2,6 @@ import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { Box } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
-import { ApIcon } from '@uipath/apollo-react/material/components';
 import React from 'react';
 import { useChatService } from '../../../../../../chat/headless/providers/chat-service.provider';
 import { useChatState } from '../../../../../../chat/headless/providers/chat-state-provider';
@@ -12,6 +11,7 @@ import {
   type PdfCitation,
   type UrlCitation,
 } from '../../../../../../chat/service';
+import { ApIcon } from '../../../../ap-icon';
 import { ApTypography } from '../../../../ap-typography';
 import { AutopilotChatTooltip } from '../../common/tooltip';
 

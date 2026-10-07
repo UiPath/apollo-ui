@@ -2,7 +2,6 @@ import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { Box, Collapse, styled } from '@mui/material';
 import token from '@uipath/apollo-core';
-import { ApIcon } from '@uipath/apollo-react/material/components';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useIsStreamingMessage } from '../../../../../../chat/headless/hooks/use-is-streaming-message';
 import { useChatService } from '../../../../../../chat/headless/providers/chat-service.provider';
@@ -14,6 +13,7 @@ import {
   type PdfCitation,
   type UrlCitation,
 } from '../../../../../../chat/service';
+import { ApIcon } from '../../../../ap-icon';
 import { ApTypography } from '../../../../ap-typography';
 import { AutopilotChatTooltip } from '../../common/tooltip';
 

@@ -5,7 +5,6 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { styled } from '@mui/material/styles';
 import token, { FontVariantToken } from '@uipath/apollo-core';
-import { ApButton, ApIcon, ApTypography } from '@uipath/apollo-react/material';
 import React, {
   forwardRef,
   useCallback,
@@ -33,7 +32,10 @@ import {
   CHAT_RESOURCE_PICKER_MIN_SKELETON_COUNT,
   CHAT_RESOURCE_PICKER_TOOLTIP_ENTER_DELAY,
 } from '../../../../../chat/service';
+import { ApButton } from '../../../ap-button';
+import { ApIcon } from '../../../ap-icon';
 import { ApSkeleton } from '../../../ap-skeleton';
+import { ApTypography } from '../../../ap-typography';
 import { AutopilotChatIconButton } from '../common/icon-button';
 import { AutopilotChatTooltip } from '../common/tooltip';
 

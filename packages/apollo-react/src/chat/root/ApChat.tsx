@@ -1,12 +1,7 @@
 import React from 'react';
-
-import { registerChatRenderer } from '../../../chat/headless/renderer-registry';
-import { ChatRoot } from '../../../chat/root/ChatRoot';
-import type { ApChatTheme, AutopilotChatService } from '../../../chat/service';
-import type { SupportedLocale } from '../../../i18n';
-import { MaterialChatRenderer } from './MaterialChatRenderer';
-
-registerChatRenderer('material', MaterialChatRenderer);
+import type { SupportedLocale } from '../../i18n';
+import type { ApChatTheme, AutopilotChatService } from '../service';
+import { ChatRoot } from './ChatRoot';
 
 export interface ApChatProps {
   /**
@@ -24,30 +19,28 @@ export interface ApChatProps {
    */
   theme?: ApChatTheme;
   /**
-   * Container element for MUI portals (Menu, Popover, etc).
-   * When rendering inside Shadow DOM, pass the container element inside the shadow root.
-   * @default undefined
+   * Container element for popups (menus, popovers). Pass an element inside the shadow root when
+   * rendering inside Shadow DOM.
    */
   portalContainer?: HTMLElement;
   /**
-   * Enable internal MUI ThemeProvider wrapper.
-   * Set to true when using as a web component to ensure proper theme context.
-   * React consumers should leave this false and provide their own MUI theme context.
+   * Material renderer only: wrap the chat in its own MUI ThemeProvider.
    * @default false
    * @internal
    */
   enableInternalThemeProvider?: boolean;
   /**
-   * Disable embedded mode portal behavior.
-   * When true, the component will render normally inside its container without using React portals.
-   * This should be set to true when the component is wrapped in a web component that handles
-   * the embedded mode positioning itself.
+   * Render in place instead of portalling into `config.embeddedContainer` in embedded mode.
    * @default false
    * @internal
    */
   disableEmbeddedPortal?: boolean;
 }
 
+/**
+ * Chat entry for `@uipath/apollo-react/chat`. Renders the Wind renderer unless the service config
+ * sets `renderer: 'material'`, which loads the Material renderer on demand.
+ */
 export function ApChat({
   chatServiceInstance,
   locale = 'en',
@@ -64,7 +57,7 @@ export function ApChat({
   return (
     <ChatRoot
       chatServiceInstance={chatServiceInstance}
-      defaultRenderer="material"
+      defaultRenderer="wind"
       locale={locale}
       theme={theme}
       portalContainer={portalContainer}
