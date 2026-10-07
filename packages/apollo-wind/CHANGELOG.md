@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.65.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.65.0...@uipath/apollo-wind@2.65.1) (2026-10-07)
+
+### Bug Fixes
+
+* **apollo-wind:** pass path segments to JsonTree pathForCopy ([af07b46](https://github.com/UiPath/apollo-ui/commit/af07b460483548d15d29d44c1a6c64c230896984))
+
 ## [@uipath/apollo-wind-v2.65.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.64.0...@uipath/apollo-wind@2.65.0) (2026-10-06)
 
 ### Features

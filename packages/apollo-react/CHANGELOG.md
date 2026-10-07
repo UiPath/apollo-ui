@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.77.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.77.0...@uipath/apollo-react@6.77.1) (2026-10-07)
+
+### Bug Fixes
+
+* **apollo-wind:** pass path segments to JsonTree pathForCopy ([af07b46](https://github.com/UiPath/apollo-ui/commit/af07b460483548d15d29d44c1a6c64c230896984))
+
 ## [@uipath/apollo-react-v6.77.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.76.0...@uipath/apollo-react@6.77.0) (2026-10-07)
 
 ### Features
