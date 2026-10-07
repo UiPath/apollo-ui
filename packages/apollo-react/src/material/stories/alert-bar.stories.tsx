@@ -96,3 +96,23 @@ export const LongText: Story = {
     </Section>
   ),
 };
+
+export const HostLineHeight: Story = {
+  render: () => (
+    <Section
+      title="Host Line Height"
+      description="Alerts inside a host with a taller line-height (e.g. Tailwind's base 1.5). The icon stays aligned with the first line of text."
+    >
+      <div style={{ lineHeight: 1.5 }}>
+        <DismissibleAlert label="Single line" status={StatusTypes.ERROR}>
+          An error occurred. Please try again.
+        </DismissibleAlert>
+        <DismissibleAlert label="Wrapped" status={StatusTypes.WARNING}>
+          This action will permanently delete all associated data and cannot be undone. Please
+          review your selection carefully before proceeding. Make sure you have created a backup if
+          needed.
+        </DismissibleAlert>
+      </div>
+    </Section>
+  ),
+};
