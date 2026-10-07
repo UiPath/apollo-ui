@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url';
 
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vitest/config';
+import { CiDiagnosticsReporter } from './src/test/ci-diagnostics-reporter';
 
 export default defineConfig({
   plugins: [
@@ -20,6 +21,14 @@ export default defineConfig({
     },
     setupFiles: ['./src/test/setup.ts'],
     passWithNoTests: true,
+    reporters: process.env.CI
+      ? [
+          'default',
+          new CiDiagnosticsReporter(
+            fileURLToPath(new URL('./test-results/vitest-diagnostics.md', import.meta.url))
+          ),
+        ]
+      : ['default'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'json-summary', 'html', 'lcov'],

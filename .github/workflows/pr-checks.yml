@@ -97,6 +97,29 @@ jobs:
         if: matrix.check == 'Test Coverage'
         run: pnpm test:coverage --affected
 
+      # The job log drops the end of turbo's buffered test output, so a failed run shows no
+      # reason. Vitest's reporter writes its own summary; this adds what the runner saw.
+      - name: Report Test Coverage diagnostics
+        if: failure() && matrix.check == 'Test Coverage'
+        run: |
+          {
+            echo "## Runner resources"
+            echo '```'
+            echo "CPUs: $(nproc)"
+            free -m || true
+            echo '```'
+            echo "## Kernel OOM kills"
+            echo '```'
+            { sudo -n dmesg -T 2>/dev/null || journalctl -k --no-pager 2>/dev/null; } \
+              | grep -iE 'out of memory|oom-kill|killed process' \
+              || echo "None found, or the kernel log is not readable."
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+          for report in packages/*/test-results/vitest-diagnostics.md; do
+            [ -f "$report" ] && cat "$report"
+          done
+          true
+
       - name: Upload Coverage
         if: matrix.check == 'Test Coverage'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
@@ -140,6 +163,7 @@ jobs:
           path: |
             packages/*/coverage/
             web-packages/*/coverage/
+            packages/*/test-results/
           retention-days: 3
           if-no-files-found: ignore
 
