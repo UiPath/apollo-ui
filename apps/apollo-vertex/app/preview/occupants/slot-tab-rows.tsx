@@ -219,6 +219,7 @@ function TabRow({
               <MoveMenu
                 name={occupantName(occupant)}
                 steps={steps({ kind: "tab", index })}
+                occupant={occupant}
               />
               {removeButton(occupant)}
             </>
@@ -312,6 +313,7 @@ function TabRow({
                       <MoveMenu
                         name={occupantName(occupant)}
                         steps={steps(item)}
+                        occupant={occupant}
                       />
                       {removeButton(occupant)}
                     </>

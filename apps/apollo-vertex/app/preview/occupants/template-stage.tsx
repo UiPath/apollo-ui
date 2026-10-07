@@ -1,6 +1,6 @@
 "use client";
 
-import type { CSSProperties } from "react";
+import { type CSSProperties, useContext } from "react";
 import { useTranslation } from "react-i18next";
 import { LocaleReady } from "@/app/_components/locale-ready";
 import type {
@@ -17,6 +17,7 @@ import { EditSlots } from "./edit-slots";
 import { StageFrame } from "./stage-frame";
 import { activeTab, occupantsIn, type SlotContents } from "./workbench-compose";
 import { type Renames, withRenames } from "./workbench-renames";
+import { SamplesContext } from "./workbench-samples";
 
 /** The slots the choices close, as one key. */
 const closedSlots = (layout: LayoutChoices) =>
@@ -81,8 +82,9 @@ export function TemplateStage({
 }: TemplateStageProps) {
   const { t } = useTranslation();
   const { Frame } = host;
-  // Every occupant in its primary sample, ready: Sample and State are the
-  // surface view's.
+  // Every occupant ready, in the sample the inspector chose for it, primary
+  // unless another was: State is the surface view's.
+  const samples = useContext(SamplesContext)?.samples ?? {};
   const rendered = Object.fromEntries(
     Object.entries(contents).map(([name, panel]) => [
       name,
@@ -98,7 +100,9 @@ export function TemplateStage({
               (o) => o.spec.name === occupant,
             );
             if (!found) return [];
-            const node = found.render("primary", { state: "ready" });
+            const node = found.render(samples[occupant] ?? "primary", {
+              state: "ready",
+            });
             return [[occupant, { spec: found.spec, node }]];
           }),
         ),

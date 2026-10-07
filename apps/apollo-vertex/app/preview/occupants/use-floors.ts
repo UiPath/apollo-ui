@@ -1,5 +1,5 @@
 import { useDeferredValue, useState } from "react";
-import type { ExampleRole } from "@/lib/occupant-entry";
+import { EXAMPLE_ROLES, type ExampleRole } from "@/lib/occupant-entry";
 import type { Floor } from "./floor-probe";
 
 /**
@@ -29,4 +29,15 @@ export function useFloors(occupant: string, surface: string) {
     measured: floors.key === key ? floors.bySample : {},
     onFloor,
   };
+}
+
+/** The widest floor across every sample: clips if one does, measuring until all are in. */
+export function worstFloor(
+  measured: Partial<Record<ExampleRole, Floor>>,
+): Floor | "measuring" {
+  const floors = EXAMPLE_ROLES.map((role) => measured[role]);
+  if (floors.some((f) => f === "clips")) return "clips";
+  return floors.every((f) => typeof f === "number")
+    ? Math.max(...floors.map((f) => (typeof f === "number" ? f : 0)))
+    : "measuring";
 }

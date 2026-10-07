@@ -13,7 +13,7 @@ import { specFor } from "@/lib/occupant-lookup";
 import { surfaceLabel } from "@/lib/surface-labels";
 import { DetailsPanel } from "./details-panel";
 import { ExportDialog } from "./export-dialog";
-import { type Floor, FloorProbe } from "./floor-probe";
+import { FloorProbe } from "./floor-probe";
 import { Inspector } from "./inspector";
 import { NoFitCard } from "./no-fit-card";
 import { OccupantList } from "./occupant-list";
@@ -24,7 +24,7 @@ import { useChangeLog } from "./use-change-log";
 import { useCompose } from "./use-compose";
 import { useDockHeight } from "./use-dock-height";
 import { useFitScale } from "./use-fit-scale";
-import { useFloors } from "./use-floors";
+import { useFloors, worstFloor } from "./use-floors";
 import { useInspector } from "./use-inspector";
 import { usePageTheme } from "./use-page-theme";
 import { useStageOverflow } from "./use-stage-overflow";
@@ -34,6 +34,7 @@ import { WorkbenchHeader } from "./workbench-header";
 import { locationsOf } from "./workbench-locations";
 import { lowerLabel, surfaceRange, widthStatus } from "./workbench-model";
 import { WorkbenchPanel } from "./workbench-panel";
+import { SamplesContext } from "./workbench-samples";
 import { WorkbenchToaster } from "./workbench-toaster";
 import {
   defaultSurface,
@@ -150,14 +151,6 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
   // slider, the frame tag, the floor, and the overflow check.
   const sampleFloor = measured[view.sample];
   const floorOuter = typeof sampleFloor === "number" ? sampleFloor : null;
-  const sampleFloors = EXAMPLE_ROLES.map((role) => measured[role]);
-  const worstFloor: Floor | "measuring" = sampleFloors.some(
-    (f) => f === "clips",
-  )
-    ? "clips"
-    : sampleFloors.every((f) => typeof f === "number")
-      ? Math.max(...sampleFloors.map((f) => (typeof f === "number" ? f : 0)))
-      : "measuring";
   const range = surfaceRange(surface, spec);
   const current =
     claim.fits && overflow?.width === view.width ? overflow : null;
@@ -176,225 +169,232 @@ export function Workbench({ initial, docsHref }: WorkbenchProps) {
       contents={view.contents}
       onContents={compose}
     >
-      <div
-        data-slot="workbench"
-        data-theme={view.theme}
-        // A recessed canvas, a step darker than the chrome in either theme;
-        // its dots read as a grid, quieter than any Edit-mode slot outline.
-        className="fixed inset-0 z-50 flex flex-col bg-background text-foreground not-prose [--workbench-canvas:var(--sidebar)] [--workbench-dots:color-mix(in_oklab,var(--muted-foreground)_20%,var(--workbench-canvas))]"
+      <SamplesContext
+        value={{
+          samples: view.samples,
+          onSamples: (samples) => update({ samples }),
+        }}
       >
-        {/* A top bar across the window; the columns and stage below it. */}
-        <WorkbenchHeader
-          // The template view has no focused occupant: it's the page.
-          label={
-            view.mode === "template" && templateHost
-              ? templateHost.label
-              : spec.label
-          }
-          docsHref={docsHref}
-          listId={LIST_ID}
-          listOpen={view.listOpen}
-          onToggleList={() => update({ listOpen: !view.listOpen })}
-          // The right-hand column is one view's at a time.
-          panel={inTemplate ? "inspector" : "details"}
-          detailsId={inTemplate ? INSPECTOR_ID : DETAILS_ID}
-          detailsOpen={inTemplate ? inspector.open : view.detailsOpen}
-          onToggleDetails={() =>
-            inTemplate
-              ? view.editing
-                ? inspector.toggle()
-                : setEditing(true)
-              : update({ detailsOpen: !view.detailsOpen })
-          }
-          sample={view.sample}
-          onSample={(sample) => update({ sample })}
-          state={view.state}
-          onState={(state) => update({ state })}
-          theme={view.theme}
-          onTheme={(theme) => update({ theme })}
-          mode={view.mode}
-          onMode={(mode) => setView((prev) => switchView(prev, mode))}
-          template={view.template}
-          editing={view.editing}
-          onEditing={setEditing}
-          onReset={reset}
-          {...(inTemplate && {
-            exporter: <ExportDialog host={inTemplate} page={view} />,
-          })}
-          onTemplate={(template) => update({ template })}
-        />
-        <div className="flex min-h-0 flex-1">
-          <WorkbenchPanel id={LIST_ID} open={view.listOpen} kind="list">
-            <OccupantList
-              id={LIST_ID}
-              selected={view.occupant}
-              onSelect={selectOccupant}
-              editing={editMode}
-              {...(inTemplate && {
-                locations: locationsOf(
-                  inTemplate,
-                  view.contents,
-                  view.layout,
-                  slotStatus,
-                ),
-              })}
-            />
-          </WorkbenchPanel>
+        <div
+          data-slot="workbench"
+          data-theme={view.theme}
+          // A recessed canvas, a step darker than the chrome in either theme;
+          // its dots read as a grid, quieter than any Edit-mode slot outline.
+          className="fixed inset-0 z-50 flex flex-col bg-background text-foreground not-prose [--workbench-canvas:var(--sidebar)] [--workbench-dots:color-mix(in_oklab,var(--muted-foreground)_20%,var(--workbench-canvas))]"
+        >
+          {/* A top bar across the window; the columns and stage below it. */}
+          <WorkbenchHeader
+            // The template view has no focused occupant: it's the page.
+            label={
+              view.mode === "template" && templateHost
+                ? templateHost.label
+                : spec.label
+            }
+            docsHref={docsHref}
+            listId={LIST_ID}
+            listOpen={view.listOpen}
+            onToggleList={() => update({ listOpen: !view.listOpen })}
+            // The right-hand column is one view's at a time.
+            panel={inTemplate ? "inspector" : "details"}
+            detailsId={inTemplate ? INSPECTOR_ID : DETAILS_ID}
+            detailsOpen={inTemplate ? inspector.open : view.detailsOpen}
+            onToggleDetails={() =>
+              inTemplate
+                ? view.editing
+                  ? inspector.toggle()
+                  : setEditing(true)
+                : update({ detailsOpen: !view.detailsOpen })
+            }
+            sample={view.sample}
+            onSample={(sample) => update({ sample })}
+            state={view.state}
+            onState={(state) => update({ state })}
+            theme={view.theme}
+            onTheme={(theme) => update({ theme })}
+            mode={view.mode}
+            onMode={(mode) => setView((prev) => switchView(prev, mode))}
+            template={view.template}
+            editing={view.editing}
+            onEditing={setEditing}
+            onReset={reset}
+            {...(inTemplate && {
+              exporter: <ExportDialog host={inTemplate} page={view} />,
+            })}
+            onTemplate={(template) => update({ template })}
+          />
+          <div className="flex min-h-0 flex-1">
+            <WorkbenchPanel id={LIST_ID} open={view.listOpen} kind="list">
+              <OccupantList
+                id={LIST_ID}
+                selected={view.occupant}
+                onSelect={selectOccupant}
+                editing={editMode}
+                {...(inTemplate && {
+                  locations: locationsOf(
+                    inTemplate,
+                    view.contents,
+                    view.layout,
+                    slotStatus,
+                  ),
+                })}
+              />
+            </WorkbenchPanel>
 
-          <main className="flex min-w-0 flex-1 flex-col">
-            <div ref={stageAreaRef} className="relative min-h-0 flex-1">
-              <div
-                ref={stageRef}
-                data-slot="workbench-stage"
-                // Its own stacking context: a template's z-index stays inside it.
-                className="absolute inset-0 isolate overflow-auto select-none bg-(color:--workbench-canvas) bg-[radial-gradient(var(--workbench-dots)_1px,transparent_1px)] bg-size-[--spacing(4)_--spacing(4)]"
-              >
-                {/* Room under the occupant for the dock, so it's never hidden behind it. */}
+            <main className="flex min-w-0 flex-1 flex-col">
+              <div ref={stageAreaRef} className="relative min-h-0 flex-1">
                 <div
-                  style={dockSpace}
-                  className="flex min-h-full min-w-fit items-center justify-center p-8 pb-[calc(var(--dock-space)+--spacing(12))]"
+                  ref={stageRef}
+                  data-slot="workbench-stage"
+                  // Its own stacking context: a template's z-index stays inside it.
+                  className="absolute inset-0 isolate overflow-auto select-none bg-(color:--workbench-canvas) bg-[radial-gradient(var(--workbench-dots)_1px,transparent_1px)] bg-size-[--spacing(4)_--spacing(4)]"
                 >
-                  {templateHost && view.mode === "template" ? (
-                    <TemplateStage
-                      host={templateHost}
-                      shell={view.shell}
-                      layout={view.layout}
-                      contents={view.contents}
-                      tabs={view.tabs}
-                      renames={view.renames}
-                      revisions={revisions}
-                      editing={view.editing}
-                      selected={inspector.selected}
-                      onSelect={inspector.select}
-                      inspectorId={INSPECTOR_ID}
-                      onTab={(slot, id) =>
-                        update({ tabs: { ...view.tabs, [slot]: id } })
-                      }
-                      onStatus={setSlotStatus}
-                      pageWidth={view.pageWidth}
-                      pageHeight={pageHeight}
-                      scale={scale}
-                    />
-                  ) : claim.fits ? (
-                    <StageFrame
-                      tag={t("workbench_frame_tag", {
-                        surface: surfaceLabel(surface.name),
-                        width: view.width,
-                      })}
-                    >
-                      <OccupantInSurface
-                        // A fresh occupant per sample, so its own state (a selection) resets.
-                        key={`${spec.name}-${view.sample}`}
-                        occupant={spec.name}
-                        surface={surface.name}
-                        example={view.sample}
-                        state={view.state}
-                        width={view.width}
-                        // Above the dock: it scrolls inside a shorter frame.
-                        height={Math.min(STAGE_HEIGHT, roomY)}
+                  {/* Room under the occupant for the dock, so it's never hidden behind it. */}
+                  <div
+                    style={dockSpace}
+                    className="flex min-h-full min-w-fit items-center justify-center p-8 pb-[calc(var(--dock-space)+--spacing(12))]"
+                  >
+                    {templateHost && view.mode === "template" ? (
+                      <TemplateStage
+                        host={templateHost}
+                        shell={view.shell}
+                        layout={view.layout}
+                        contents={view.contents}
+                        tabs={view.tabs}
+                        renames={view.renames}
+                        revisions={revisions}
+                        editing={view.editing}
+                        selected={inspector.selected}
+                        onSelect={inspector.select}
+                        inspectorId={INSPECTOR_ID}
+                        onTab={(slot, id) =>
+                          update({ tabs: { ...view.tabs, [slot]: id } })
+                        }
+                        onStatus={setSlotStatus}
+                        pageWidth={view.pageWidth}
+                        pageHeight={pageHeight}
+                        scale={scale}
                       />
-                    </StageFrame>
-                  ) : (
-                    <NoFitCard
-                      title={t("workbench_no_fit_title", {
-                        occupant: spec.label,
-                        surface: lowerLabel(surface.name),
-                      })}
-                      reasons={claim.reasons}
-                    />
-                  )}
+                    ) : claim.fits ? (
+                      <StageFrame
+                        tag={t("workbench_frame_tag", {
+                          surface: surfaceLabel(surface.name),
+                          width: view.width,
+                        })}
+                      >
+                        <OccupantInSurface
+                          // A fresh occupant per sample, so its own state (a selection) resets.
+                          key={`${spec.name}-${view.sample}`}
+                          occupant={spec.name}
+                          surface={surface.name}
+                          example={view.sample}
+                          state={view.state}
+                          width={view.width}
+                          // Above the dock: it scrolls inside a shorter frame.
+                          height={Math.min(STAGE_HEIGHT, roomY)}
+                        />
+                      </StageFrame>
+                    ) : (
+                      <NoFitCard
+                        title={t("workbench_no_fit_title", {
+                          occupant: spec.label,
+                          surface: lowerLabel(surface.name),
+                        })}
+                        reasons={claim.reasons}
+                      />
+                    )}
+                  </div>
                 </div>
-              </div>
 
-              {templateHost && view.mode === "template" ? (
-                <TemplateDock
-                  host={templateHost}
-                  shell={view.shell}
-                  onShell={(shell) => update({ shell })}
+                {templateHost && view.mode === "template" ? (
+                  <TemplateDock
+                    host={templateHost}
+                    shell={view.shell}
+                    onShell={(shell) => update({ shell })}
+                    layout={view.layout}
+                    pageWidth={view.pageWidth}
+                    onPageWidth={(pageWidth) => update({ pageWidth })}
+                    zoom={view.zoom}
+                    onZoom={(zoom) => update({ zoom })}
+                    scale={scale}
+                  />
+                ) : (
+                  <WorkbenchDock
+                    spec={spec}
+                    surface={surface.name}
+                    onSurface={(name) =>
+                      update({ surface: name, width: defaultWidth(spec, name) })
+                    }
+                    fitsHere={claim.fits}
+                    width={view.width}
+                    onWidth={(width) => update({ width })}
+                    marks={{ ...range, floor: floorOuter }}
+                    status={status}
+                  />
+                )}
+              </div>
+            </main>
+
+            <WorkbenchPanel
+              id={inTemplate ? INSPECTOR_ID : DETAILS_ID}
+              open={inTemplate ? inspector.open : view.detailsOpen}
+              kind="column"
+            >
+              {inTemplate ? (
+                <Inspector
+                  id={INSPECTOR_ID}
+                  host={inTemplate}
+                  selected={inspector.selected}
+                  hint={inspector.hint}
                   layout={view.layout}
-                  pageWidth={view.pageWidth}
-                  onPageWidth={(pageWidth) => update({ pageWidth })}
-                  zoom={view.zoom}
-                  onZoom={(zoom) => update({ zoom })}
-                  scale={scale}
+                  onLayout={(layout) => change({ layout })}
+                  status={slotStatus}
+                  contents={view.contents}
+                  onContents={compose}
+                  renames={view.renames}
+                  onRenames={(renames) => update({ renames })}
+                  tabs={view.tabs}
                 />
               ) : (
-                <WorkbenchDock
+                <DetailsPanel
+                  id={DETAILS_ID}
                   spec={spec}
                   surface={surface.name}
-                  onSurface={(name) =>
-                    update({ surface: name, width: defaultWidth(spec, name) })
-                  }
-                  fitsHere={claim.fits}
                   width={view.width}
-                  onWidth={(width) => update({ width })}
-                  marks={{ ...range, floor: floorOuter }}
-                  status={status}
+                  floor={claim.fits ? worstFloor(measured) : "unavailable"}
+                  overflow={current}
                 />
               )}
-            </div>
-          </main>
+            </WorkbenchPanel>
+          </div>
 
-          <WorkbenchPanel
-            id={inTemplate ? INSPECTOR_ID : DETAILS_ID}
-            open={inTemplate ? inspector.open : view.detailsOpen}
-            kind="column"
-          >
-            {inTemplate ? (
-              <Inspector
-                id={INSPECTOR_ID}
-                host={inTemplate}
-                selected={inspector.selected}
-                hint={inspector.hint}
-                layout={view.layout}
-                onLayout={(layout) => change({ layout })}
-                status={slotStatus}
-                contents={view.contents}
-                onContents={compose}
-                renames={view.renames}
-                onRenames={(renames) => update({ renames })}
-                tabs={view.tabs}
-              />
-            ) : (
-              <DetailsPanel
-                id={DETAILS_ID}
-                spec={spec}
-                surface={surface.name}
-                width={view.width}
-                floor={claim.fits ? worstFloor : "unavailable"}
-                overflow={current}
-              />
+          {claim.fits &&
+            view.mode === "surface" &&
+            probing &&
+            createPortal(
+              <div
+                aria-hidden="true"
+                inert
+                className="pointer-events-none fixed start-full top-0"
+              >
+                {EXAMPLE_ROLES.map((sample) => (
+                  <FloorProbe
+                    key={`${probeKey}:${sample}`}
+                    occupant={spec.name}
+                    surface={surface.name}
+                    sample={sample}
+                    onFloor={onFloor}
+                  />
+                ))}
+              </div>,
+              document.body,
             )}
-          </WorkbenchPanel>
+          <WorkbenchToaster
+            theme={view.theme}
+            dockHeight={dockHeight}
+            columnOpen={inTemplate ? inspector.open : view.detailsOpen}
+          />
         </div>
-
-        {claim.fits &&
-          view.mode === "surface" &&
-          probing &&
-          createPortal(
-            <div
-              aria-hidden="true"
-              inert
-              className="pointer-events-none fixed start-full top-0"
-            >
-              {EXAMPLE_ROLES.map((sample) => (
-                <FloorProbe
-                  key={`${probeKey}:${sample}`}
-                  occupant={spec.name}
-                  surface={surface.name}
-                  sample={sample}
-                  onFloor={onFloor}
-                />
-              ))}
-            </div>,
-            document.body,
-          )}
-        <WorkbenchToaster
-          theme={view.theme}
-          dockHeight={dockHeight}
-          columnOpen={inTemplate ? inspector.open : view.detailsOpen}
-        />
-      </div>
+      </SamplesContext>
     </WorkbenchDnd>
   );
 }

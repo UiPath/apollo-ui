@@ -10,11 +10,7 @@ import {
   occupantInset,
   type SurfaceSpec,
 } from "@/lib/composition";
-import {
-  defaultPlacement,
-  type LayoutChoices,
-  type SlotChoice,
-} from "@/lib/layout";
+import type { LayoutChoices } from "@/lib/layout";
 import { EXAMPLE_ROLES, type ExampleRole } from "@/lib/occupant-entry";
 import { specFor } from "@/lib/occupant-lookup";
 import { OCCUPANT_SPECS, SURFACE_SPECS } from "@/lib/occupants.generated";
@@ -32,7 +28,14 @@ import {
   writeContents,
   writeTabs,
 } from "./workbench-contents-url";
+import { parseLayout, writeLayout } from "./workbench-layout-url";
 import type { Renames } from "./workbench-renames";
+import {
+  normalizeSamples,
+  parseSamples,
+  type Samples,
+  writeSamples,
+} from "./workbench-samples";
 
 export { slotFit } from "./workbench-compose";
 
@@ -83,6 +86,8 @@ export interface WorkbenchView {
   editing: boolean;
   /** Preview-only renames, for this session: never in the link. */
   renames: Renames;
+  /** Each occupant's sample on the page, where it isn't primary. */
+  samples: Samples;
 }
 
 /**
@@ -115,7 +120,11 @@ export function normalizeView(view: WorkbenchView): WorkbenchView {
     : view.contents;
   return {
     ...view,
-    ...(inTemplate && { contents, tabs: normalizeTabs(contents, view.tabs) }),
+    ...(inTemplate && {
+      contents,
+      tabs: normalizeTabs(contents, view.tabs),
+      samples: normalizeSamples(contents, view.samples),
+    }),
     pageWidth: Math.max(view.pageWidth, pageWidthMin(host, view.shell)),
   };
 }
@@ -184,62 +193,6 @@ export const templateNames = (): readonly string[] =>
 /** The template previews show first: the registry's first. */
 export const defaultTemplate = () => templateNames()[0] ?? "";
 
-/**
- * A template's layout choices from link params: per slot it declares
- * choices for, whether it's left out, closed, and where it's placed. The
- * template's older params count where the link gives no per-slot ones.
- */
-function parseLayout(
-  host: TemplateHost | undefined,
-  params: URLSearchParams,
-): LayoutChoices {
-  if (!host) return {};
-  const legacy = host.legacyParams?.(params) ?? {};
-  const get = (key: string) => params.get(key) ?? legacy[key] ?? null;
-  const options = host.spec.layout.options ?? {};
-  return Object.fromEntries(
-    Object.entries(options).flatMap(([slot, own]) => {
-      const choice: SlotChoice = {
-        ...(own.optional &&
-          get(`${slot}-present`) === "false" && { present: false }),
-        ...(own.closable &&
-          get(`${slot}-state`) === "closed" && { open: false }),
-      };
-      const placement = get(`${slot}-placement`);
-      const placed =
-        placement &&
-        placement !== defaultPlacement(host.spec, slot) &&
-        own.placements?.[placement]
-          ? { placement }
-          : {};
-      const all = { ...choice, ...placed };
-      return Object.keys(all).length > 0 ? [[slot, all]] : [];
-    }),
-  );
-}
-
-/** The params for a template's layout choices: only what isn't the default. */
-function writeLayout(
-  host: TemplateHost | undefined,
-  layout: LayoutChoices,
-  params: URLSearchParams,
-) {
-  if (!host) return;
-  for (const [slot, own] of Object.entries(host.spec.layout.options ?? {})) {
-    const choice = layout[slot] ?? {};
-    if (own.optional && choice.present === false)
-      params.set(`${slot}-present`, "false");
-    if (own.closable && choice.open === false)
-      params.set(`${slot}-state`, "closed");
-    if (
-      choice.placement &&
-      choice.placement !== defaultPlacement(host.spec, slot) &&
-      own.placements?.[choice.placement]
-    )
-      params.set(`${slot}-placement`, choice.placement);
-  }
-}
-
 export const templateFor = (name: string): TemplateHost | undefined =>
   TEMPLATE_HOSTS[name];
 
@@ -291,7 +244,15 @@ const DEFAULT_OCCUPANT = OCCUPANT_SPECS[0]?.spec.name ?? "";
 
 /** The params only one view reads and writes. */
 const SURFACE_PARAMS = ["surface", "width", "sample", "state"];
-const TEMPLATE_PARAMS = ["template", "slot", "shell", "page", "zoom", "mode"];
+const TEMPLATE_PARAMS = [
+  "template",
+  "slot",
+  "shell",
+  "page",
+  "zoom",
+  "mode",
+  "samples",
+];
 
 export function parseWorkbenchView(search: string): WorkbenchView {
   const params = new URLSearchParams(search);
@@ -344,6 +305,7 @@ export function parseWorkbenchView(search: string): WorkbenchView {
     layout: legacy ? keepOpen(host, layout, slot) : layout,
     contents: legacy ? seeded(host, contents, occupant, slot) : contents,
     tabs: mode === "template" ? parseTabs(host, params) : {},
+    samples: mode === "template" ? parseSamples(params) : {},
     pageWidth:
       Number.isInteger(pageWidth) &&
       pageWidth >= pageWidthMin(host, shell) &&
@@ -366,6 +328,7 @@ function writeTemplateParams(view: WorkbenchView, params: URLSearchParams) {
   writeLayout(templateFor(view.template), view.layout, params);
   writeContents(templateFor(view.template), view.contents, params);
   writeTabs(view.contents, view.tabs, params);
+  writeSamples(view.samples, params);
   if (view.pageWidth !== DEFAULT_PAGE_WIDTH)
     params.set("page", String(view.pageWidth));
   if (view.zoom !== "fit") params.set("zoom", "100");

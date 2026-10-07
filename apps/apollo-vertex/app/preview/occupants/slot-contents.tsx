@@ -7,7 +7,7 @@ import type { TemplateHost } from "@/app/_components/template-hosts";
 import { Button } from "@/components/ui/button";
 import { specFor } from "@/lib/occupant-lookup";
 import type { TabSpec } from "@/lib/panel";
-import { ContentCard } from "./content-card";
+import { ContentCard, MoveMenu } from "./content-card";
 import { InspectorDnd } from "./inspector-dnd";
 import { LockableButton } from "./lock-hint";
 import { RenameField } from "./rename-field";
@@ -240,6 +240,8 @@ export function SlotContentsSection({
                   >
                     {t("workbench_contents_clear")}
                   </Button>
+                  {/* Nothing moves here: the menu holds its sample. */}
+                  <MoveMenu name={name(only)} occupant={only} />
                 </div>
               }
             />
