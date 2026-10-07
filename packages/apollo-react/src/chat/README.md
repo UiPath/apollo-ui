@@ -13,7 +13,7 @@ The legacy `@uipath/apollo-react/ap-chat` and `@uipath/apollo-react/ap-chat/serv
 | `service/` | `AutopilotChatService`, `EventBus`, models and constants. No React. |
 | `headless/` | React providers, hooks and utilities with no visual output, plus the chat and message renderer registries. |
 | `root/` | `ChatRoot`: the provider stack that resolves and mounts a renderer. |
-| `wind/` | The Wind renderer (apollo-wind components and Tailwind classes). |
+| `wind/` | The Wind renderer (apollo-wind components and Tailwind classes). For now a placeholder that names the missing renderer. |
 | `locales/` | Lingui catalogs for chat strings, shared by both renderers. |
 | `styles/` | `tailwind.chat.css`, compiled to `dist/chat/styles/tailwind.chat.css`. |
 
@@ -24,7 +24,7 @@ Code under `src/chat` must not depend on Material UI, so a bundle that only uses
 - No `@mui/*` or `@emotion/*` imports.
 - No imports from `src/material`, either relative (`../material/...`) or via `@uipath/apollo-react/material*`.
 
-The one exception is the lazy registration of the Material renderer in `index.ts`, a dynamic `import()` that is split into its own chunk and only loaded when `renderer: 'material'` is requested.
+The one exception is the lazy registration of the Material renderer in `index.ts`, a dynamic `import()` that is split into its own chunk and only loaded when `renderer: 'material'` is requested. `ApChat` from this entry defaults to the Wind renderer; `ApChat` from `@uipath/apollo-react/ap-chat` registers Material eagerly and defaults to it.
 
 The Material renderer depends on this folder, never the other way round.
 

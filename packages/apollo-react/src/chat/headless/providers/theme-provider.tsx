@@ -14,11 +14,18 @@ const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 export interface ThemeProviderProps {
   children: React.ReactNode;
+  /**
+   * Theme for the first render, before the host's prop sync reaches the service. Without it a
+   * host whose theme prop differs from the service renders one frame in the old theme.
+   */
+  initialTheme?: ApChatTheme;
 }
 
-export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
+export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialTheme }) => {
   const chatService = useChatService();
-  const [theme, setTheme] = useState<ApChatTheme>(chatService.getTheme() as ApChatTheme);
+  const [theme, setTheme] = useState<ApChatTheme>(
+    () => initialTheme ?? (chatService.getTheme() as ApChatTheme)
+  );
 
   // Subscribe to theme changes from service (service → provider)
   useEffect(() => {

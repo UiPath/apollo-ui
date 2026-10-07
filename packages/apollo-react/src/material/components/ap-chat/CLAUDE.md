@@ -32,7 +32,8 @@ The service, providers, hooks, renderer-agnostic utils, markdown parsers and loc
 
 ```
 ap-chat/
-├── ap-chat.tsx                 # Main React component (entry point)
+├── ap-chat.tsx                 # ApChat: registers the Material renderer, renders ChatRoot
+├── MaterialChatRenderer.tsx    # The Material renderer (layouts, dropzone, MUI theme map)
 ├── index.ts                    # Public exports
 ├── DOCS.md                     # Complete API documentation
 ├── CLAUDE.md                   # This file - development guide
