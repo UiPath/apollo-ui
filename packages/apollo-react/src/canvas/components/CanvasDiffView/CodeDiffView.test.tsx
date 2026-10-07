@@ -1,6 +1,16 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '../../utils/testing';
 import { CodeDiffView } from './CodeDiffView';
+
+// A small edit cap reaches the too-large fallback with a few rows; rendering enough rows to
+// pass the real cap takes seconds on CI. lineDiff.test.ts covers the real cap.
+vi.mock('./lineDiff', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('./lineDiff')>();
+  return {
+    ...actual,
+    diffLines: (before: string[], after: string[]) => actual.diffLines(before, after, 4),
+  };
+});
 
 /** Each body row as "<left number> <left text> | <right number> <right text>". */
 function rowsOf(before: string, after: string) {
@@ -55,12 +65,7 @@ describe('CodeDiffView', () => {
   });
 
   it('shows both sides unmarked when too many lines changed to diff', () => {
-    const numbered = (prefix: string) =>
-      Array.from({ length: 1001 }, (_, index) => `${prefix}${index}`).join('\n');
-    const rows = rowsOf(numbered('old'), numbered('new'));
-
-    expect(rows[0]).toBe('1 old0 | 1 new0');
-    expect(rows).toHaveLength(1001);
+    expect(rowsOf('a\nb\nc', 'x\ny\nz')).toEqual(['1 a | 1 x', '2 b | 2 y', '3 c | 3 z']);
     expect(screen.getByRole('status')).toHaveTextContent('Too many changes to highlight');
     expect(screen.queryByText('Added')).not.toBeInTheDocument();
     expect(document.querySelector('.bg-success-background')).toBeNull();
