@@ -272,7 +272,7 @@ test("a tall inspector scrolls itself, down to the layout", async ({
     await menu(page).evaluate((el) => el.scrollHeight > el.clientHeight),
   ).toBe(true);
   const placement = menu(page)
-    .getByRole("group", { name: "End panel placement" })
+    .getByRole("radiogroup", { name: "End panel: Placement" })
     .getByRole("radio", { name: "Beside header" });
   await placement.click();
   await expect(placement).toHaveAttribute("aria-checked", "true");

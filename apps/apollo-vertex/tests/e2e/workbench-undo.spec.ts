@@ -1,10 +1,10 @@
 import type { Page } from "@playwright/test";
 import { expect, settle, test } from "./fixtures";
 import {
+  chooseLayoutOption,
   inspector,
   open,
   selectSlot,
-  setSwitch,
   urlQuery,
 } from "./workbench-helpers";
 
@@ -91,7 +91,7 @@ test("Undo takes back that change only, the latest", async ({ page }) => {
 test("a layout change says so, and undoes too", async ({ page }) => {
   await ready(page, QUERY);
   await selectSlot(page, "start-panel");
-  await setSwitch(page, "Show Start panel in the page", false);
+  await chooseLayoutOption(page, "Start panel", "Panel", "Hidden");
   await expect(toast(page)).toContainText("Start panel left out");
   expect(urlQuery(page)).toContain("start-panel-present=false");
   await undo(page).click();
@@ -103,20 +103,20 @@ test("leaving a slot out or closing it keeps its occupants, and says so", async 
 }) => {
   await ready(page, `${QUERY}&end-panel-contents=queue~key-facts`);
   await selectSlot(page, "end-panel");
-  await setSwitch(page, "End panel open", false);
+  await chooseLayoutOption(page, "End panel", "Panel", "Closed");
   await expect(toast(page)).toContainText(
     "End panel closed. Its 2 occupants are kept.",
   );
   expect(urlQuery(page)).toContain("end-panel-contents=queue~key-facts");
   await undo(page).click();
   await expect.poll(() => urlQuery(page)).not.toContain("end-panel-state");
-  await setSwitch(page, "Show End panel in the page", false);
+  await chooseLayoutOption(page, "End panel", "Panel", "Hidden");
   await expect(toast(page)).toContainText(
     "End panel left out. Its 2 occupants are kept.",
   );
   expect(urlQuery(page)).toContain("end-panel-contents=queue~key-facts");
   // Shown again, it has them back.
-  await setSwitch(page, "Show End panel in the page", true);
+  await chooseLayoutOption(page, "End panel", "Panel", "Open");
   await expect.poll(() => tabNames(page)).toEqual(["Queue", "Key facts"]);
 });
 
@@ -175,7 +175,7 @@ test("in Edit, a left-out slot is a ghost where it would sit; the inspector incl
   expect(Math.round(box?.y ?? 0)).toBe(Math.round(main?.y ?? 0));
   // A click selects it; the inspector puts it back.
   await selectSlot(page, "start-panel");
-  await setSwitch(page, "Show Start panel in the page", true);
+  await chooseLayoutOption(page, "Start panel", "Panel", "Open");
   await expect(toast(page)).toContainText("Start panel included");
   await expect.poll(() => urlQuery(page)).not.toContain("start-panel-present");
   await expect(start).toHaveCount(0);

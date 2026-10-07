@@ -12,8 +12,11 @@ interface PageMapProps {
   highlighted: readonly string[];
   /** What's highlighted, for its accessible name, in lowercase. */
   name: string;
-  /** A glyph's size, decorative: a layout option's icon. */
-  compact?: boolean;
+  /**
+   * A layout option's picture, decorative: the slot in the text's color,
+   * a closed one a narrow strip, the rest faint. Neutral, no accent.
+   */
+  thumbnail?: boolean;
 }
 
 /** Grid lines covering the used tracks inside a region's first and last. */
@@ -34,9 +37,35 @@ function lines(
   return `${used.indexOf(firstUsed) + 1} / ${used.indexOf(lastUsed) + 2}`;
 }
 
-/** The used tracks' sizes, as grid tracks. */
-const sizes = (tracks: ResolvedLayout["columns"]) =>
-  tracks.filter((track) => track.used).map((track) => `${track.size}fr`);
+/** The used tracks' sizes, as grid tracks; a closed slot's own tracks narrow. */
+const sizes = (tracks: ResolvedLayout["columns"], narrow = new Set<string>()) =>
+  tracks
+    .filter((track) => track.used)
+    .map((track) => (narrow.has(track.name) ? "4px" : `${track.size}fr`));
+
+/** The tracks only closed slots sit in, along one axis. */
+function closedTracks(
+  layout: ResolvedLayout,
+  axis: "columns" | "rows",
+): Set<string> {
+  const tracks = layout[axis];
+  const within = (region: LayoutRegion, name: string) => {
+    const [first, last] = region[axis];
+    const at = tracks.findIndex((t) => t.name === name);
+    return (
+      at >= tracks.findIndex((t) => t.name === first) &&
+      at <= tracks.findIndex((t) => t.name === last)
+    );
+  };
+  return new Set(
+    tracks
+      .filter((track) => {
+        const over = layout.regions.filter((r) => within(r, track.name));
+        return over.length > 0 && over.every((r) => !r.open);
+      })
+      .map((track) => track.name),
+  );
+}
 
 /**
  * A small outline of a template's layout, from what its spec declares,
@@ -47,24 +76,24 @@ export function PageMap({
   layout,
   highlighted,
   name,
-  compact = false,
+  thumbnail = false,
 }: PageMapProps) {
   const { t } = useTranslation();
+  // A thumbnail draws a closed slot as the strip it is: its tracks narrow.
+  const closedOnly = (axis: "columns" | "rows") =>
+    thumbnail ? closedTracks(layout, axis) : new Set<string>();
   const grid: CSSProperties = {
-    gridTemplateColumns: sizes(layout.columns).join(" "),
-    gridTemplateRows: sizes(layout.rows).join(" "),
+    gridTemplateColumns: sizes(layout.columns, closedOnly("columns")).join(" "),
+    gridTemplateRows: sizes(layout.rows, closedOnly("rows")).join(" "),
   };
   return (
     <div
-      {...(compact
+      {...(thumbnail
         ? { "aria-hidden": true }
         : { role: "img", "aria-label": t("workbench_map", { surface: name }) })}
-      data-slot={compact ? "workbench-map-glyph" : "workbench-map"}
+      data-slot={thumbnail ? "workbench-map-thumbnail" : "workbench-map"}
       style={grid}
-      className={cn(
-        "grid shrink-0",
-        compact ? "h-3 w-4 gap-px" : "h-10 w-16 gap-0.5",
-      )}
+      className="grid h-10 w-16 shrink-0 gap-0.5"
     >
       {layout.regions.map((region) => {
         const column = lines(layout.columns, region.columns);
@@ -83,10 +112,12 @@ export function PageMap({
               // Closed, not missing: a heavier dashed outline, no fill.
               !region.open &&
                 "border-2 border-dashed border-muted-foreground/70",
-              on && !compact && "border-2 border-primary bg-transparent",
-              // A glyph: the slot filled in the text's color, the rest faint.
-              compact && "rounded-[1px] border-0 bg-current opacity-25",
-              compact && on && "opacity-100",
+              on && !thumbnail && "border-2 border-primary bg-transparent",
+              // A thumbnail: neutral, the slot in the text's color.
+              thumbnail && "border-border bg-muted",
+              thumbnail &&
+                on &&
+                "border-foreground bg-foreground/80 data-[state=closed]:bg-transparent",
             )}
           />
         );

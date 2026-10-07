@@ -118,14 +118,29 @@ export async function selectSlot(page: Page, slot: string) {
     .waitFor();
 }
 
-/** A layout switch in the inspector, by its name: "Show End panel in the page". */
-export const layoutSwitch = (page: Page, name: string) =>
-  inspector(page).getByRole("switch", { name, exact: true });
+/** A layout row's picture choice in the inspector: "End panel: Panel". */
+export const layoutChoice = (
+  page: Page,
+  panel: string,
+  row: "Panel" | "Placement",
+) =>
+  inspector(page).getByRole("radiogroup", {
+    name: `${panel}: ${row}`,
+    exact: true,
+  });
 
-/** Turns a layout switch on or off, unless it already is. */
-export async function setSwitch(page: Page, name: string, on: boolean) {
-  const control = layoutSwitch(page, name);
-  if ((await control.getAttribute("aria-checked")) !== String(on))
-    await control.click();
-  await control.and(page.locator(`[aria-checked="${on}"]`)).waitFor();
+/** Picks a layout option, by its row and its label, and waits for it. */
+export async function chooseLayoutOption(
+  page: Page,
+  panel: string,
+  row: "Panel" | "Placement",
+  option: string,
+) {
+  const choice = layoutChoice(page, panel, row).getByRole("radio", {
+    name: option,
+    exact: true,
+  });
+  if ((await choice.getAttribute("aria-checked")) !== "true")
+    await choice.click();
+  await choice.and(page.locator("[aria-checked=true]")).waitFor();
 }

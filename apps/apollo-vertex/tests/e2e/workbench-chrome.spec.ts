@@ -73,6 +73,7 @@ const read = (page: Page) =>
     };
     const is = (color: string | undefined) =>
       color ? rgba(color).join() === primary : false;
+    // The inspector's layout options: picture cards, chosen or not.
     const segment = "[data-slot=workbench-inspector] [role=radio]";
     const label = (slot: string) =>
       `[data-edit-slot=${slot}] [data-slot=workbench-edit-slot-label]`;
@@ -84,11 +85,14 @@ const read = (page: Page) =>
     return {
       selectedSegment: {
         teal:
-          is(style(`${segment}[data-state=on]`)?.backgroundColor) ||
-          is(style(`${segment}[data-state=on]`)?.color),
-        weight: Number(style(`${segment}[data-state=on]`)?.fontWeight),
-        otherWeight: Number(style(`${segment}[data-state=off]`)?.fontWeight),
-        contrast: contrast(q(`${segment}[data-state=on]`)),
+          is(style(`${segment}[data-state=checked]`)?.backgroundColor) ||
+          is(style(`${segment}[data-state=checked]`)?.color) ||
+          is(style(`${segment}[data-state=checked]`)?.outlineColor),
+        weight: Number(style(`${segment}[data-state=checked]`)?.fontWeight),
+        otherWeight: Number(
+          style(`${segment}[data-state=unchecked]`)?.fontWeight,
+        ),
+        contrast: contrast(q(`${segment}[data-state=checked]`)),
       },
       mode: {
         teal: is(

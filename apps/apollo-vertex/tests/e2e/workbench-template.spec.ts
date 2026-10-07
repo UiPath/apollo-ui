@@ -25,8 +25,12 @@ async function chooseLayout(
   option: string,
 ) {
   await selectSlot(page, slot);
+  // "End panel placement" is the row "End panel: Placement" now.
   await inspector(page)
-    .getByRole("group", { name: group, exact: true })
+    .getByRole("radiogroup", {
+      name: group.replace(/ placement$/, ": Placement"),
+      exact: true,
+    })
     .getByRole("radio", { name: option, exact: true })
     .click();
 }
