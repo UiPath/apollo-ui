@@ -61,7 +61,7 @@ function titleOf(occupant: string, renames: Renames, t: Translate) {
  * What a slot holds, one item each: a tab's occupant ("Queue"), a stack
  * ("Overview: Queue, Key facts"), or a single-occupant slot's occupant.
  */
-export function holdings(
+function holdings(
   slot: string,
   panel: PanelSpec,
   renames: Renames,

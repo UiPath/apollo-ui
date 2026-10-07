@@ -6,8 +6,8 @@ import { inspector, open, selectSlot } from "./workbench-helpers";
 /*
  * Export, from the template view's header: a dialog of sections, for now
  * one, Share for review. Its link, its summary (formatted, copied as
- * Markdown), and its picture with a thumbnail, each with a toast; focus
- * in at Copy link and back out. The dev server has no public base URL,
+ * Markdown), and a capture of the page frame with its thumbnail, each
+ * with a toast; focus in at Copy link and back out. The dev server has no public base URL,
  * so the link is this computer's; the base is unit tested.
  */
 
@@ -144,26 +144,14 @@ test("the summary says what's on the page; renames are marked, and left out of t
   expect(await clipboard(page)).toBe(expected);
 });
 
-test("a thumbnail shows the picture, and Download PNG saves it", async ({
-  page,
-}) => {
-  await ready(page);
-  await exportButton(page).click();
-  // The thumbnail is the download's drawing: the same SVG, its regions.
-  const thumbnail = dialog(page).getByRole("img", {
-    name: "Picture of the page",
-  });
-  await expect(thumbnail).toBeVisible();
-  const src = (await thumbnail.getAttribute("src")) ?? "";
-  expect(src.startsWith("data:image/svg+xml")).toBe(true);
-  const svg = decodeURIComponent(src.slice(src.indexOf(",") + 1));
-  expect(svg).toContain(">Default (sidebar)</text>");
-  for (const region of ["header", "main", "end-panel"])
-    expect(svg).toContain(`data-region="${region}"`);
-  expect(svg).not.toContain('data-region="start-panel"');
-  expect(
-    await thumbnail.evaluate((el: HTMLImageElement) => el.naturalWidth),
-  ).toBeGreaterThan(0);
+/** A PNG's width and height, from its header. */
+const pngSize = (bytes: Buffer) => [
+  bytes.readUInt32BE(16),
+  bytes.readUInt32BE(20),
+];
+
+/** Downloads the picture, and checks it's a PNG named for the template. */
+async function downloadPicture(page: Page) {
   const [download] = await Promise.all([
     page.waitForEvent("download"),
     dialog(page)
@@ -171,10 +159,93 @@ test("a thumbnail shows the picture, and Download PNG saves it", async ({
       .click(),
   ]);
   expect(download.suggestedFilename()).toBe("detail-page.png");
-  const path = await download.path();
-  const bytes = await readFile(path);
-  // A PNG, and not an empty one.
+  const bytes = await readFile(await download.path());
   expect([...bytes.subarray(0, 8)]).toEqual([137, 80, 78, 71, 13, 10, 26, 10]);
-  expect(bytes.length).toBeGreaterThan(5000);
   await expect(toast(page)).toContainText("Picture downloaded");
+  return bytes;
+}
+
+/** The page frame's real size, unscaled, at twice the pixels. */
+const frameAt2x = (page: Page) =>
+  page
+    .locator("[data-slot=workbench-page]")
+    .evaluate((el: HTMLElement) => [el.offsetWidth * 2, el.offsetHeight * 2]);
+
+test("Download PNG captures the page frame at its real size, twice the pixels, and the thumbnail is that capture", async ({
+  page,
+}) => {
+  await ready(page);
+  // The stage fits the page, so it's shown smaller than it is.
+  expect(
+    Number(await page.locator("[data-zoom]").getAttribute("data-zoom")),
+  ).toBeLessThan(100);
+  const size = await frameAt2x(page);
+  expect(size[0]).toBe(2880);
+  await exportButton(page).click();
+  const thumbnail = dialog(page).getByRole("img", {
+    name: "Picture of the page",
+  });
+  await expect(thumbnail).toBeVisible();
+  const bytes = await downloadPicture(page);
+  // The page's 1440px at 2x, not the stage's zoom.
+  expect(pngSize(bytes)).toEqual(size);
+  // The thumbnail is the download's own capture.
+  const src = (await thumbnail.getAttribute("src")) ?? "";
+  expect(src.startsWith("data:image/png;base64,")).toBe(true);
+  expect(
+    Buffer.from(src.slice(src.indexOf(",") + 1), "base64").equals(bytes),
+  ).toBe(true);
+});
+
+/**
+ * The share of pixels two PNGs of one size visibly differ in (by more
+ * than 24 of 255 on a channel): text antialiasing shifts a few.
+ */
+const differing = (page: Page, a: Buffer, b: Buffer) =>
+  page.evaluate(
+    async ([first, second]) => {
+      const pixels = async (base64: string) => {
+        const image = new Image();
+        image.src = `data:image/png;base64,${base64}`;
+        await image.decode();
+        const canvas = new OffscreenCanvas(image.width, image.height);
+        const context = canvas.getContext("2d");
+        context?.drawImage(image, 0, 0);
+        return context?.getImageData(0, 0, image.width, image.height).data;
+      };
+      const [x, y] = [await pixels(first), await pixels(second)];
+      if (!x || !y || x.length !== y.length) return 1;
+      let off = 0;
+      for (let i = 0; i < x.length; i += 4)
+        if (
+          Math.max(
+            Math.abs((x[i] ?? 0) - (y[i] ?? 0)),
+            Math.abs((x[i + 1] ?? 0) - (y[i + 1] ?? 0)),
+            Math.abs((x[i + 2] ?? 0) - (y[i + 2] ?? 0)),
+          ) > 24
+        )
+          off += 1;
+      return off / (x.length / 4);
+    },
+    [a.toString("base64"), b.toString("base64")],
+  );
+
+// Edit changes how the stage shows the page, not its picture. At 100%
+// the page is the stage's height in both, so the two are the same size.
+test("in Edit, the capture is Preview's: no outlines, no fade", async ({
+  page,
+}) => {
+  const capture = async (extra: string) => {
+    await ready(page, `${PAGE}&zoom=100${extra}`);
+    const size = await frameAt2x(page);
+    await exportButton(page).click();
+    const bytes = await downloadPicture(page);
+    expect(pngSize(bytes)).toEqual(size);
+    return bytes;
+  };
+  const preview = await capture("");
+  // Edit's outlines or its fade would differ over most of the page.
+  expect(
+    await differing(page, await capture("&mode=edit"), preview),
+  ).toBeLessThan(0.001);
 });

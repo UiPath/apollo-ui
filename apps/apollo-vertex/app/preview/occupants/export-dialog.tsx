@@ -16,11 +16,10 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import type { PreviewShellVariant } from "@/templates/shell/PreviewShell";
+import { type Capture, capturePage } from "./export-capture";
 import { isLocalLink, shareLink } from "./export-link";
-import { type PictureColors, pictureSvg, svgToPng } from "./export-picture";
 import {
   type ComposedPage,
-  holdings,
   type ReviewSummary,
   reviewSummary,
   summaryMarkdown,
@@ -29,7 +28,6 @@ import {
 import { WORKBENCH_TOASTER } from "./use-change-log";
 import { occupantsIn } from "./workbench-compose";
 import { onPage } from "./workbench-picker";
-import { SHELL_WIDTH } from "./workbench-url-state";
 
 /** A section of the Export dialog. Navigation shows once there are two. */
 interface ExportSection {
@@ -37,29 +35,6 @@ interface ExportSection {
   label: string;
   content: ReactNode;
 }
-
-/** The theme's colors where the workbench is, for the picture. */
-function themeColors(): PictureColors {
-  const root = document.querySelector("[data-slot=workbench]") ?? document.body;
-  const resolve = (name: string) => {
-    const probe = document.createElement("span");
-    probe.style.color = `var(${name})`;
-    root.append(probe);
-    const color = getComputedStyle(probe).color;
-    probe.remove();
-    return color;
-  };
-  return {
-    background: resolve("--background"),
-    foreground: resolve("--foreground"),
-    muted: resolve("--muted"),
-    border: resolve("--border"),
-    mutedForeground: resolve("--muted-foreground"),
-  };
-}
-
-/** The picture's size, in px, before it's drawn at twice that. */
-const PICTURE = { width: 1200, height: 720 };
 
 /** The summary as formatted text: a heading, the page, and each slot. */
 function SummaryPreview({ summary }: { summary: ReviewSummary }) {
@@ -95,8 +70,8 @@ interface ExportDialogProps {
 export function ExportDialog({ host, page }: ExportDialogProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
-  // The picture, drawn as the dialog opens, for its thumbnail.
-  const [picture, setPicture] = useState("");
+  // The picture, captured as the dialog opens: its thumbnail and download.
+  const [picture, setPicture] = useState<Capture | null>(null);
   const copyLink = useRef<HTMLButtonElement>(null);
   const words: Translate = (key, values) => t(key, values);
   const shellName = (shell: PreviewShellVariant) =>
@@ -113,31 +88,15 @@ export function ExportDialog({ host, page }: ExportDialogProps) {
     await navigator.clipboard.writeText(text);
     said(done);
   };
-  const draw = () =>
-    pictureSvg({
-      host,
-      layout: page.layout,
-      pageWidth: page.pageWidth,
-      shellWidth: SHELL_WIDTH[page.shell],
-      shellName: shellName(page.shell),
-      words: (slot) => {
-        const panel = page.contents[slot];
-        const name = host.slotLabels[slot] ?? slot;
-        const holdsTabs =
-          host.spec.slots.find((s) => s.name === slot)?.holds === "panel";
-        return [
-          name,
-          ...(panel
-            ? holdings(slot, panel, page.renames, words, holdsTabs)
-            : []),
-        ];
-      },
-      colors: themeColors(),
-      ...PICTURE,
-    });
+  const capturing = useRef<Promise<Capture | null> | null>(null);
+  const capture = () => {
+    capturing.current ??= capturePage();
+    return capturing.current;
+  };
   const download = async () => {
-    const png = await svgToPng(draw(), PICTURE.width, PICTURE.height);
-    const url = URL.createObjectURL(png);
+    const shot = await capture();
+    if (!shot) return;
+    const url = URL.createObjectURL(shot.blob);
     const anchor = document.createElement("a");
     anchor.href = url;
     anchor.download = `${host.spec.name}.png`;
@@ -146,7 +105,9 @@ export function ExportDialog({ host, page }: ExportDialogProps) {
     said(t("workbench_export_picture_downloaded"));
   };
   const openChange = (next: boolean) => {
-    if (next) setPicture(draw());
+    capturing.current = null;
+    setPicture(null);
+    if (next) void capture().then(setPicture);
     setOpen(next);
   };
 
@@ -243,14 +204,14 @@ export function ExportDialog({ host, page }: ExportDialogProps) {
             </h3>
             <div className="flex items-center gap-3">
               {picture && (
-                // Drawn the same way as the download, from the same SVG.
+                // The download's own capture.
                 <img
                   data-slot="workbench-export-thumbnail"
-                  src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(picture)}`}
+                  src={picture.url}
                   alt={t("workbench_export_picture_preview")}
                   width={80}
                   height={48}
-                  className="h-12 w-20 rounded-sm border border-border"
+                  className="h-12 w-20 rounded-sm border border-border object-cover object-left-top"
                 />
               )}
               <Button
