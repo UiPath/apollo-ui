@@ -3364,16 +3364,25 @@ export interface AutopilotChatRenameConversationPayload {
 ### AutopilotChatMessageRenderer
 
 ```typescript
-interface AutopilotChatMessageRenderer {
+type AutopilotChatMessageRenderer = {
   name: string;
-  render: (container: HTMLElement, message: AutopilotChatMessage) => void | (() => void);
-}
+} & (
+  | {
+      render: (container: HTMLElement, message: AutopilotChatMessage) => void | (() => void);
+      component?: never;
+    }
+  | {
+      render?: never;
+      component: React.ComponentType<{ message: AutopilotChatMessage }>;
+    }
+);
 ```
 
-The message renderer interface defines a custom renderer for chat messages:
+The message renderer type defines a custom renderer for chat messages. Provide either `component` or `render`, not both:
 
-- `name`: Unique identifier for the renderer
-- `render`: Function that renders the message content into the provided container element. Can optionally return a cleanup function.
+- `name`: Unique identifier for the renderer, matched against `message.widget`
+- `render`: Function that renders the message content into the provided container element. Can optionally return a cleanup function, which runs before the message re-renders and on unmount.
+- `component`: React component rendered with `{ message }` inside the chat's own React tree, so it can use the chat's providers and theme.
 
 ### AutopilotChatErrorLevel
 

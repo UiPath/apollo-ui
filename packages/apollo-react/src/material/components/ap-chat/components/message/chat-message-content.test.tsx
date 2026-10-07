@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type React from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { AutopilotChatServiceProvider } from '../../../../../chat/headless/providers/chat-service.provider';
 import { AutopilotChatStateProvider } from '../../../../../chat/headless/providers/chat-state-provider';
 import { LocaleProvider } from '../../../../../chat/headless/providers/locale-provider';
@@ -84,5 +84,76 @@ describe('<AutopilotChatMessageContent> tool call renderer', () => {
     );
 
     expect(toolCallHeader()).toHaveAttribute('aria-expanded', 'true');
+  });
+});
+
+const widgetMessage = (content = 'widget'): AutopilotChatMessage => ({
+  id: 'widget-1',
+  groupId: 'group-2',
+  content,
+  created_at: START_TIME,
+  role: AutopilotChatRole.User,
+  widget: 'test-dom-widget',
+});
+
+const widgetTree = (
+  message: AutopilotChatMessage,
+  containerRef: HTMLDivElement | null = null
+): React.ReactElement => (
+  <AutopilotChatServiceProvider chatServiceInstance={chatService}>
+    <LocaleProvider>
+      <ApI18nProvider component="chat">
+        <AutopilotChatStateProvider>
+          <AutopilotChatMessageContent
+            message={message}
+            isLastInGroup={false}
+            containerRef={containerRef}
+          />
+        </AutopilotChatStateProvider>
+      </ApI18nProvider>
+    </LocaleProvider>
+  </AutopilotChatServiceProvider>
+);
+
+describe('<AutopilotChatMessageContent> injected DOM renderer', () => {
+  it('renders once across re-renders that keep the same message', () => {
+    const renderWidget = vi.fn();
+    chatService.injectMessageRenderer({ name: 'test-dom-widget', render: renderWidget });
+    const message = widgetMessage();
+
+    const { rerender } = render(widgetTree(message));
+    rerender(widgetTree(message, document.createElement('div')));
+
+    expect(renderWidget).toHaveBeenCalledTimes(1);
+    expect(renderWidget.mock.calls[0]?.[0]).toHaveClass('chat-widget-container');
+  });
+
+  it('cleans up before rendering a new message object and on unmount', () => {
+    const cleanup = vi.fn();
+    const renderWidget = vi.fn(() => cleanup);
+    chatService.injectMessageRenderer({ name: 'test-dom-widget', render: renderWidget });
+
+    const { rerender, unmount } = render(widgetTree(widgetMessage('first')));
+    rerender(widgetTree(widgetMessage('second')));
+
+    expect(renderWidget).toHaveBeenCalledTimes(2);
+    expect(cleanup).toHaveBeenCalledTimes(1);
+
+    unmount();
+
+    expect(cleanup).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('<AutopilotChatMessageContent> injected component renderer', () => {
+  it('renders the component with the message', () => {
+    chatService.injectMessageRenderer({
+      name: 'test-component-widget',
+      component: ({ message }) => <div data-testid="custom-widget">{message.content}</div>,
+    });
+
+    render(widgetTree({ ...widgetMessage('from component'), widget: 'test-component-widget' }));
+
+    expect(screen.getByTestId('custom-widget')).toHaveTextContent('from component');
   });
 });
