@@ -468,6 +468,17 @@ describe('the shared canvas catalog', () => {
     });
   });
 
+  it('names a centralized appliesTo the way the per-agent builder’s definition does', () => {
+    // The builder's copy arrives on the backend definition; the centralized details need it
+    // when the definition does not carry the parameter, so the two must read the same.
+    expect([
+      CENTRALIZED_GUARDRAILS_EN_LABELS.appliesToFallback,
+      CENTRALIZED_GUARDRAILS_EN_LABELS.appliesToText,
+      CENTRALIZED_GUARDRAILS_EN_LABELS.appliesToFiles,
+      CENTRALIZED_GUARDRAILS_EN_LABELS.appliesToBoth,
+    ]).toEqual(['Applies to', 'Text only', 'Files only', 'Text and files']);
+  });
+
   it('carries no centralized message the source no longer declares', () => {
     expect(
       findCatalogOrphans(CENTRALIZED_GUARDRAILS_EN_MESSAGES, 'guardrails.centralized.')

@@ -7,8 +7,10 @@ import type {
   CentralizedGuardrailParameterDefinition,
   CentralizedGuardrailParameterRow,
 } from './centralized-types';
-import type { GuardrailCopyTable } from './definitions-copy';
+import type { GuardrailCopyTable, GuardrailValidatorCopy } from './definitions-copy';
 import type { CentralizedGuardrailsLabels } from './i18n';
+import type { GuardrailAppliesTo } from './types';
+import { GUARDRAIL_APPLIES_TO_PARAMETER_ID } from './utils';
 
 /** The identity fields the display and matching helpers read. */
 export type CentralizedGuardrailIdentity = Pick<
@@ -94,6 +96,8 @@ export interface CentralizedParameterFallbackLabels {
   disabled: string;
   entities: string;
   thresholds: string;
+  /** A built-in's `appliesTo` and its options when no definition carries it; absent, it renders raw. */
+  appliesTo?: { label: string; options: Record<GuardrailAppliesTo, string> };
 }
 
 /**
@@ -119,14 +123,48 @@ const asNumberRecord = (value: unknown): Record<string, number> =>
       )
     : {};
 
+const ownEntry = <T>(table: Record<string, T> | undefined, key: string): T | undefined =>
+  table !== undefined && Object.hasOwn(table, key) ? table[key] : undefined;
+
+/**
+ * Describes a built-in parameter its definition does not declare: the curated copy for the
+ * validator first, then the copy for the parameters Agents stamps onto every built-in, which
+ * the definitions may not carry yet. Nothing known leaves the row labelled by its raw id.
+ */
+function describeUndeclaredParameter(
+  parameter: CentralizedGuardrailParameter,
+  curated: GuardrailValidatorCopy | undefined,
+  labels: CentralizedParameterFallbackLabels
+): CentralizedGuardrailParameterDefinition | undefined {
+  const curatedLabel = ownEntry(curated?.paramLabels, parameter.id);
+  const curatedOptions = ownEntry(curated?.optionLabels, parameter.id);
+  const shared = parameter.id === GUARDRAIL_APPLIES_TO_PARAMETER_ID ? labels.appliesTo : undefined;
+
+  const label = typeof curatedLabel === 'string' ? curatedLabel : shared?.label;
+  const optionLabels = isPlainObject(curatedOptions)
+    ? (curatedOptions as Record<string, string>)
+    : shared?.options;
+  if (label === undefined && optionLabels === undefined) return undefined;
+
+  const described: CentralizedGuardrailParameterDefinition = {
+    id: parameter.id,
+    type: parameter.parameterType ?? 'text',
+  };
+  if (label !== undefined) described.label = label;
+  if (optionLabels !== undefined) described.optionLabels = optionLabels;
+  return described;
+}
+
 /**
  * Lifts a built-in's `entities` / `entityThresholds` onto the parameter shape, followed by its
- * own `parameters` (settings the entity fields cannot hold, such as sentiment's languages).
+ * own `parameters` (settings the entity fields cannot hold, such as sentiment's languages or
+ * the `appliesTo` scope), in the order they arrive.
  */
 function liftBuiltInConfiguration(
   guardrail: CentralizedGuardrail,
   definition: CentralizedGuardrailDefinition | undefined,
-  labels: CentralizedParameterFallbackLabels
+  labels: CentralizedParameterFallbackLabels,
+  copy: GuardrailCopyTable | undefined
 ): {
   parameters: CentralizedGuardrailParameter[];
   definitions: CentralizedGuardrailParameterDefinition[];
@@ -155,11 +193,20 @@ function liftBuiltInConfiguration(
 
   const definitions: CentralizedGuardrailParameterDefinition[] =
     declared.length > 0
-      ? declared
+      ? [...declared]
       : [
           { id: entitiesId, type: 'enum-list', label: labels.entities },
           { id: thresholdsId, type: 'map-enum', label: labels.thresholds, keySource: entitiesId },
         ];
+
+  const curated = ownEntry(copy, guardrail.validator);
+  const declaredIds = new Set(definitions.map((parameterDefinition) => parameterDefinition.id));
+  for (const parameter of parameters) {
+    if (declaredIds.has(parameter.id)) continue;
+    declaredIds.add(parameter.id);
+    const described = describeUndeclaredParameter(parameter, curated, labels);
+    if (described !== undefined) definitions.push(described);
+  }
 
   return { parameters, definitions };
 }
@@ -167,17 +214,23 @@ function liftBuiltInConfiguration(
 /**
  * A centralized guardrail's configuration as display rows, for either origin. A plain object is
  * a threshold table and anything else a value, whatever the unvalidated `parameterType` says.
+ * `copy` labels a built-in's parameters its definition does not declare; BYO never reads it.
  */
 export function resolveCentralizedGuardrailParameters(
   guardrail: CentralizedGuardrail,
   {
     definition,
     labels,
-  }: { definition?: CentralizedGuardrailDefinition; labels: CentralizedParameterFallbackLabels }
+    copy,
+  }: {
+    definition?: CentralizedGuardrailDefinition;
+    labels: CentralizedParameterFallbackLabels;
+    copy?: GuardrailCopyTable;
+  }
 ): CentralizedGuardrailParameterRow[] {
   const { parameters, definitions } = guardrail.isByo
     ? { parameters: guardrail.parameters ?? [], definitions: definition?.parameters ?? [] }
-    : liftBuiltInConfiguration(guardrail, definition, labels);
+    : liftBuiltInConfiguration(guardrail, definition, labels, copy);
 
   const valuesById = new Map(parameters.map((parameter) => [parameter.id, parameter.value]));
   const definitionsById = new Map(
@@ -209,9 +262,9 @@ export function resolveCentralizedGuardrailParameters(
   ): string => {
     if (typeof value === 'boolean') return value ? labels.enabled : labels.disabled;
     if (Array.isArray(value)) {
-      return asStringArray(value)
-        .map((item) => optionLabel(parameterDefinition, item))
-        .join(', ');
+      const items = asStringArray(value);
+      if (items.length !== value.length) return JSON.stringify(value);
+      return items.map((item) => optionLabel(parameterDefinition, item)).join(', ');
     }
     if (value === null || value === undefined) return '';
     return typeof value === 'string' ? optionLabel(parameterDefinition, value) : String(value);

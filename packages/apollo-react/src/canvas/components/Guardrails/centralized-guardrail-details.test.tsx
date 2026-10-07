@@ -2,7 +2,11 @@ import { render, screen, within } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { describe, expect, it } from 'vitest';
 import { ApI18nProvider } from '../../../i18n';
-import { SENTIMENT_WIRE } from './__fixtures__/definitions-wire.fixtures';
+import {
+  LLM_AS_JUDGE_WIRE,
+  PII_DETECTION_WIRE,
+  SENTIMENT_WIRE,
+} from './__fixtures__/definitions-wire.fixtures';
 import { CentralizedGuardrailDetails } from './centralized-guardrail-details';
 import type { CentralizedGuardrail, CentralizedGuardrailDefinition } from './centralized-types';
 import { enrichGuardrailDefinitions } from './definitions-enrich';
@@ -179,6 +183,86 @@ describe('CentralizedGuardrailDetails', () => {
     ).toEqual(['Negative0.7', 'Mixed—']);
   });
 
+  it('shows which content a built-in applies to, under its thresholds', () => {
+    render(
+      <CentralizedGuardrailDetails
+        guardrail={guardrail({
+          entities: ['Email'],
+          entityThresholds: { Email: 0.8 },
+          parameters: [{ id: 'appliesTo', parameterType: 'enum', value: 'Files' }],
+        })}
+        definitions={enrichGuardrailDefinitions([PII_DETECTION_WIRE])}
+        policyName="Acme policy"
+      />
+    );
+
+    const configuration = screen.getByText('Configuration').parentElement as HTMLElement;
+    const terms = within(configuration).getAllByRole('term');
+    expect(terms.map((term) => term.textContent)).toEqual(['Detection thresholds', 'Applies to']);
+    expect(valueFor('Applies to')).toBe('Files only');
+  });
+
+  it('names the judge’s settings the way its editor does, with no definition at all', () => {
+    render(
+      <CentralizedGuardrailDetails
+        guardrail={guardrail({
+          validator: 'llm_as_judge',
+          parameters: [
+            { id: 'guardrailText', parameterType: 'text', value: 'No medical advice.' },
+            { id: 'model', parameterType: 'enum', value: 'gpt-4o-2024-11-20' },
+            { id: 'threshold', parameterType: 'number', value: 4 },
+            { id: 'positiveExamples', parameterType: 'text-list', value: ['Take an aspirin.'] },
+            { id: 'negativeExamples', parameterType: 'text-list', value: ['See a doctor.'] },
+            { id: 'appliesTo', parameterType: 'enum', value: 'Both' },
+          ],
+        })}
+        definitions={[]}
+        policyName="Acme policy"
+      />
+    );
+
+    const configuration = screen.getByText('Configuration').parentElement as HTMLElement;
+    expect(
+      within(configuration)
+        .getAllByRole('term')
+        .map((term) => term.textContent)
+    ).toEqual([
+      'Rule prompt',
+      'Judge model',
+      'Strictness',
+      'Positive examples',
+      'Negative examples',
+      'Applies to',
+    ]);
+    expect(valueFor('Strictness')).toBe('4');
+    expect(valueFor('Applies to')).toBe('Text and files');
+  });
+
+  it('follows the definition’s order for the judge and appends what it does not declare', () => {
+    render(
+      <CentralizedGuardrailDetails
+        guardrail={guardrail({
+          validator: 'llm_as_judge',
+          parameters: [
+            { id: 'appliesTo', parameterType: 'enum', value: 'Text' },
+            { id: 'threshold', parameterType: 'number', value: 2 },
+            { id: 'guardrailText', parameterType: 'text', value: 'Stay on topic.' },
+          ],
+        })}
+        definitions={enrichGuardrailDefinitions([LLM_AS_JUDGE_WIRE])}
+        policyName="Acme policy"
+      />
+    );
+
+    const configuration = screen.getByText('Configuration').parentElement as HTMLElement;
+    expect(
+      within(configuration)
+        .getAllByRole('term')
+        .map((term) => term.textContent)
+    ).toEqual(['Rule prompt', 'Strictness', 'Applies to']);
+    expect(valueFor('Applies to')).toBe('Text only');
+  });
+
   it('renders a BYO connector configuration in the order the connector declares', () => {
     render(
       <CentralizedGuardrailDetails
@@ -247,6 +331,7 @@ describe('CentralizedGuardrailDetails', () => {
         guardrail={guardrail({
           entities: ['Email'],
           entityThresholds: { Email: 0.8 },
+          parameters: [{ id: 'appliesTo', parameterType: 'enum', value: 'Files' }],
         })}
         definitions={[PII_DEFINITION]}
         policyName="Acme policy"
