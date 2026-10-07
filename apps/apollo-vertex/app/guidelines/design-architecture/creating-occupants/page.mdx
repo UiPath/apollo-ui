@@ -325,7 +325,12 @@ drop it decides what happens:
 - **Between two tabs, or at the end of a tab bar:** a new tab there,
   shown by an insertion line.
 - **On a tab's label:** into that tab, which becomes a stack.
-- **On a tab's content:** into the tab that's showing.
+- **Anywhere else on a panel that has occupants:** two large choices
+  fill it while you're over it. "Add as tab", above, makes a new tab at
+  the end; "Stack with Queue", below, stacks into the tab showing. The
+  tab bar's places win where they overlap, and a refused choice says
+  why in it.
+- **On an empty panel:** one choice, "Add to End panel".
 - **On a slot that holds one:** in place of the occupant there.
 - **On a left-out slot's ghost:** the slot is included, with the
   occupant in it, as one change.
