@@ -1,3 +1,4 @@
+import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -8,6 +9,17 @@ import { ApAlertBar } from '../../../ap-alert-bar';
 import { useError } from '../../providers/error-provider';
 import { Li, Ol, Ul } from '../message/markdown/lists';
 import { Link } from '../message/markdown/text';
+
+// Space between paragraphs, but not after the last one, so the text stays
+// vertically centered in the alert bar.
+const Paragraph = styled('div')({
+  margin: 0,
+  paddingBottom: token.Spacing.SpacingXs,
+
+  '&:last-child': {
+    paddingBottom: 0,
+  },
+});
 
 function AutopilotChatInputErrorComponent() {
   const { error, clearError } = useError();
@@ -39,16 +51,7 @@ function AutopilotChatInputErrorComponent() {
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
-          p: ({ children }) => (
-            <div
-              style={{
-                margin: 0,
-                paddingBottom: token.Spacing.SpacingXs,
-              }}
-            >
-              {children}
-            </div>
-          ),
+          p: ({ children }) => <Paragraph>{children}</Paragraph>,
           a: Link,
           ul: Ul,
           ol: Ol,

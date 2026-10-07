@@ -63,7 +63,10 @@ const IconContainer = styled('div')({
   padding: `11px ${token.Padding.PadL} 0`,
   color: 'var(--icon-color)',
 
+  // Block-level so the icon doesn't sit on the inherited line box, which
+  // pushes it down in hosts with a taller line-height (e.g. Tailwind's 1.5).
   '& .MuiSvgIcon-root': {
+    display: 'block',
     width: token.Icon.IconS,
     height: token.Icon.IconS,
   },
@@ -72,6 +75,12 @@ const IconContainer = styled('div')({
 const TextContent = styled('div')({
   padding: `${token.Padding.PadXl} ${token.Spacing.SpacingL} ${token.Padding.PadXl} 0`,
   width: '100%',
+
+  // Block-level so the first line's height comes from the typography token
+  // rather than the inherited line-height, keeping it aligned with the icon.
+  '& > .MuiTypography-root': {
+    display: 'block',
+  },
 });
 
 const CancelButton = styled('div')({
