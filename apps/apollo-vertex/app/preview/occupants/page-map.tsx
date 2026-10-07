@@ -17,12 +17,18 @@ interface PageMapProps {
    * a closed one a narrow strip, the rest faint. Neutral, no accent.
    */
   thumbnail?: boolean;
+  /**
+   * The shell beside the page, as its width and the page's, both in px:
+   * a column that wide, before the template, named "shell".
+   */
+  shell?: { width: number; page: number };
 }
 
 /** Grid lines covering the used tracks inside a region's first and last. */
 function lines(
   tracks: ResolvedLayout["columns"],
   [first, last]: LayoutRegion["columns"],
+  offset = 0,
 ): string | null {
   const used = tracks.filter((track) => track.used);
   const start = tracks.findIndex((track) => track.name === first);
@@ -34,7 +40,7 @@ function lines(
   const firstUsed = inside[0];
   const lastUsed = inside.at(-1);
   if (!firstUsed || !lastUsed) return null;
-  return `${used.indexOf(firstUsed) + 1} / ${used.indexOf(lastUsed) + 2}`;
+  return `${used.indexOf(firstUsed) + 1 + offset} / ${used.indexOf(lastUsed) + 2 + offset}`;
 }
 
 /** The used tracks' sizes, as grid tracks; a closed slot's own tracks narrow. */
@@ -77,13 +83,26 @@ export function PageMap({
   highlighted,
   name,
   thumbnail = false,
+  shell,
 }: PageMapProps) {
   const { t } = useTranslation();
   // A thumbnail draws a closed slot as the strip it is: its tracks narrow.
   const closedOnly = (axis: "columns" | "rows") =>
     thumbnail ? closedTracks(layout, axis) : new Set<string>();
+  // The shell's column, in the template's own units: its share of the page.
+  const columns = sizes(layout.columns, closedOnly("columns"));
+  const total = layout.columns
+    .filter((track) => track.used)
+    .reduce((sum, track) => sum + track.size, 0);
+  const shellFr =
+    shell && shell.width > 0 && shell.page > shell.width
+      ? (total * shell.width) / (shell.page - shell.width)
+      : 0;
   const grid: CSSProperties = {
-    gridTemplateColumns: sizes(layout.columns, closedOnly("columns")).join(" "),
+    gridTemplateColumns: [
+      ...(shellFr > 0 ? [`${shellFr}fr`] : []),
+      ...columns,
+    ].join(" "),
     gridTemplateRows: sizes(layout.rows, closedOnly("rows")).join(" "),
   };
   return (
@@ -95,8 +114,26 @@ export function PageMap({
       style={grid}
       className="grid h-10 w-16 shrink-0 gap-0.5"
     >
+      {shellFr > 0 && (
+        <span
+          data-region="shell"
+          data-highlighted={highlighted.includes("shell")}
+          style={{ gridColumn: "1 / 2", gridRow: "1 / -1" }}
+          className={cn(
+            "rounded-sm border border-border",
+            thumbnail && "bg-muted",
+            thumbnail &&
+              highlighted.includes("shell") &&
+              "border-foreground bg-foreground/80",
+          )}
+        />
+      )}
       {layout.regions.map((region) => {
-        const column = lines(layout.columns, region.columns);
+        const column = lines(
+          layout.columns,
+          region.columns,
+          shellFr > 0 ? 1 : 0,
+        );
         const row = lines(layout.rows, region.rows);
         if (!column || !row) return null;
         const on = highlighted.includes(region.slot);

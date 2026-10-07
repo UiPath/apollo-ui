@@ -44,12 +44,16 @@ async function closeMenus(page: Page) {
   await expect(shellMenu(page)).toHaveCount(0);
 }
 
+/** A choice by its name: the Shell's picture choice is a radio group. */
 const group = (page: Page, name: string) =>
   page
     .locator(
       "[data-slot=workbench-inspector], [data-slot=workbench-shell-menu]",
     )
-    .getByRole("group", { name, exact: true });
+    .getByRole(name === "Shell" ? "radiogroup" : "group", {
+      name,
+      exact: true,
+    });
 
 /**
  * Picks a setting's option, as the old controls named them: "In the page"
@@ -243,6 +247,50 @@ test("the width rule closes panels when there isn't room, and says so", async ({
     });
   await openSlot(page, "start-panel");
   await expect(start).not.toHaveAttribute("data-closed-by", "rule");
+});
+
+test("the Shell is a picture choice: a sidebar column as wide as the shell, by keyboard too", async ({
+  page,
+}) => {
+  await open(page, "?occupant=queue&view=template&page=1440");
+  await ready(page);
+  await show(page, "Shell");
+  const shells = group(page, "Shell");
+  await expect(shells.getByRole("radio")).toHaveText([
+    "Default (sidebar)",
+    "Minimal",
+  ]);
+  // Each a picture of the page: the sidebar's column is its share of it.
+  const columns = await shells
+    .locator("[data-slot=workbench-map-thumbnail]")
+    .evaluateAll((maps) =>
+      maps.map(
+        (map) => getComputedStyle(map).gridTemplateColumns.split(" ").length,
+      ),
+    );
+  const regions = await shells
+    .locator("[data-slot=workbench-map-thumbnail]")
+    .evaluateAll((maps) =>
+      maps.map((map) => map.querySelectorAll("[data-region=shell]").length),
+    );
+  expect(regions).toEqual([1, 0]);
+  expect(columns[0]).toBe((columns[1] ?? 0) + 1);
+  // The chosen one: outlined in the text's color, and heavier.
+  const chosen = shells.getByRole("radio", { name: "Default (sidebar)" });
+  await expect(chosen).toHaveAttribute("aria-checked", "true");
+  // The arrow keys choose, held as a person holds them.
+  await chosen.focus();
+  await page.keyboard.down("ArrowRight");
+  await page.waitForTimeout(50);
+  await page.keyboard.up("ArrowRight");
+  await expect(shells.getByRole("radio", { name: "Minimal" })).toHaveAttribute(
+    "aria-checked",
+    "true",
+  );
+  await expect.poll(() => urlQuery(page)).toContain("shell=minimal");
+  await expect(
+    page.locator("[data-slot=workbench-page] [data-slot=sidebar]"),
+  ).toHaveCount(0);
 });
 
 test("the layout round-trips through the URL", async ({ page }) => {

@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import type { TemplateHost } from "@/app/_components/template-hosts";
 import { Separator } from "@/components/ui/separator";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import type { LayoutChoices } from "@/lib/layout";
 import type { PreviewShellVariant } from "@/templates/shell/PreviewShell";
 import { Dock, DockSlider } from "./dock-parts";
 import { SELECTED_SEGMENT } from "./segment";
@@ -23,6 +24,8 @@ interface TemplateDockProps {
   host: TemplateHost;
   shell: PreviewShellVariant;
   onShell: (shell: PreviewShellVariant) => void;
+  /** The page's layout choices, for the shells' pictures. */
+  layout: LayoutChoices;
   pageWidth: number;
   onPageWidth: (width: number) => void;
   zoom: WorkbenchZoom;
@@ -40,6 +43,7 @@ export function TemplateDock({
   host,
   shell,
   onShell,
+  layout,
   pageWidth,
   onPageWidth,
   zoom,
@@ -49,7 +53,13 @@ export function TemplateDock({
   const { t } = useTranslation();
   return (
     <Dock>
-      <ShellMenu shell={shell} onShell={onShell} />
+      <ShellMenu
+        shell={shell}
+        onShell={onShell}
+        host={host}
+        layout={layout}
+        pageWidth={pageWidth}
+      />
       <Separator orientation="vertical" className="h-8" />
       <div className="flex items-center gap-3">
         <DockSlider

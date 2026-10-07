@@ -13,12 +13,14 @@ export interface PictureOption {
   /** The page with this option, or null when the layout can't draw it. */
   layout: ResolvedLayout | null;
   lock: string | null;
+  /** A shell beside the page, for a shell's picture. */
+  shell?: { width: number; page: number };
 }
 
 interface PictureChoiceProps {
   /** The group's name: "End panel: Panel". */
   name: string;
-  /** The slot the pictures highlight. */
+  /** What the pictures highlight: a slot, or "shell". */
   slot: string;
   value: string;
   options: readonly PictureOption[];
@@ -75,6 +77,7 @@ export function PictureChoice({
                   name=""
                   highlighted={[slot]}
                   layout={option.layout}
+                  {...(option.shell && { shell: option.shell })}
                 />
               ) : (
                 <span aria-hidden="true" className="h-10 w-16" />
