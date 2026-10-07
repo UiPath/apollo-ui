@@ -180,7 +180,7 @@ export function SlotLayoutSection({
       data-slot="workbench-layout-slot"
       data-layout-slot={slot}
       {...(closedBy && { "data-closed-by": closedBy })}
-      className="flex flex-col gap-3"
+      className="flex flex-col gap-5"
     >
       {panelOptions.length > 1 && (
         <LayoutRow label={t("workbench_layout_panel")} note={rule}>

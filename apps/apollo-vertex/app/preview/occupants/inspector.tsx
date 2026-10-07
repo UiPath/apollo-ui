@@ -97,7 +97,7 @@ export function Inspector({
           aria-label={t("workbench_compose")}
           className="flex flex-col gap-3"
         >
-          <h3 className="text-xs font-medium text-muted-foreground uppercase">
+          <h3 className="text-xs font-medium text-muted-foreground">
             {t("workbench_compose")}
           </h3>
           {out && (
@@ -130,7 +130,7 @@ export function Inspector({
             aria-label={t("workbench_layout")}
             className="flex flex-col gap-3 border-t border-border pt-3"
           >
-            <h3 className="text-xs font-medium text-muted-foreground uppercase">
+            <h3 className="text-xs font-medium text-muted-foreground">
               {t("workbench_layout")}
             </h3>
             <SlotLayoutSection {...layoutProps} />
