@@ -159,18 +159,20 @@ export function describeChange(
     if ((was.present !== false) !== (now.present !== false)) {
       if (now.present !== false)
         return { key: "workbench_change_included", values };
+      // Hidden: its contents are kept, and it says so.
       return count > 0
-        ? {
-            key: "workbench_change_left_out_kept",
-            values: { ...values, count },
-          }
-        : { key: "workbench_change_left_out", values };
+        ? { key: "workbench_change_hidden_kept", values: { ...values, count } }
+        : { key: "workbench_change_hidden", values };
     }
     if ((was.open !== false) !== (now.open !== false)) {
-      if (now.open !== false) return { key: "workbench_change_opened", values };
-      return count > 0
-        ? { key: "workbench_change_closed_kept", values: { ...values, count } }
-        : { key: "workbench_change_closed", values };
+      // Closed, it's still on the page: there's nothing to keep.
+      return {
+        key:
+          now.open === false
+            ? "workbench_change_closed"
+            : "workbench_change_opened",
+        values,
+      };
     }
     const placed = (choice: { placement?: string }) =>
       choice.placement ?? defaultPlacement(host.spec, slot);

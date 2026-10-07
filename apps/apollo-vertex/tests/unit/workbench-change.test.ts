@@ -76,7 +76,7 @@ describe("describing a change", () => {
     expect(
       say(after({ layout: { "start-panel": { present: false } } })),
     ).toEqual({
-      key: "workbench_change_left_out",
+      key: "workbench_change_hidden",
       values: { slot: "Start panel" },
     });
     const left = after({ layout: { "start-panel": { present: false } } });
@@ -95,7 +95,7 @@ describe("describing a change", () => {
     });
   });
 
-  it("says a hidden slot keeps what it holds, and how many", () => {
+  it("says a hidden slot keeps what it holds, and how many; a closed one, just closed", () => {
     const two = after({
       contents: addOccupant(host, start.contents, "end-panel", "key-facts"),
     });
@@ -106,14 +106,15 @@ describe("describing a change", () => {
     // Its contents stay, left out or not.
     expect(left.contents).toEqual(two.contents);
     expect(say(left, two)).toEqual({
-      key: "workbench_change_left_out_kept",
+      key: "workbench_change_hidden_kept",
       values: { slot: "End panel", count: 2 },
     });
     const closed = after({ layout: { "end-panel": { open: false } } });
     expect(closed.contents).toEqual(start.contents);
+    // Closed, it's still on the page: no word about keeping.
     expect(say(closed)).toEqual({
-      key: "workbench_change_closed_kept",
-      values: { slot: "End panel", count: 1 },
+      key: "workbench_change_closed",
+      values: { slot: "End panel" },
     });
   });
 

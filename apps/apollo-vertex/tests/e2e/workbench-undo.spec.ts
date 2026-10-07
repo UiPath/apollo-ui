@@ -92,7 +92,7 @@ test("a layout change says so, and undoes too", async ({ page }) => {
   await ready(page, QUERY);
   await selectSlot(page, "start-panel");
   await chooseLayoutOption(page, "Start panel", "Panel", "Hidden");
-  await expect(toast(page)).toContainText("Start panel left out");
+  await expect(toast(page)).toContainText("Start panel hidden.");
   expect(urlQuery(page)).toContain("start-panel-present=false");
   await undo(page).click();
   await expect.poll(() => urlQuery(page)).not.toContain("start-panel-present");
@@ -104,15 +104,14 @@ test("leaving a slot out or closing it keeps its occupants, and says so", async 
   await ready(page, `${QUERY}&end-panel-contents=queue~key-facts`);
   await selectSlot(page, "end-panel");
   await chooseLayoutOption(page, "End panel", "Panel", "Closed");
-  await expect(toast(page)).toContainText(
-    "End panel closed. Its 2 occupants are kept.",
-  );
+  // Closed, it's still on the page: no word about keeping.
+  await expect(toast(page)).toHaveText(/^End panel closed\.Undo$/);
   expect(urlQuery(page)).toContain("end-panel-contents=queue~key-facts");
   await undo(page).click();
   await expect.poll(() => urlQuery(page)).not.toContain("end-panel-state");
   await chooseLayoutOption(page, "End panel", "Panel", "Hidden");
   await expect(toast(page)).toContainText(
-    "End panel left out. Its 2 occupants are kept.",
+    "End panel hidden. Its 2 occupants are kept.",
   );
   expect(urlQuery(page)).toContain("end-panel-contents=queue~key-facts");
   // Shown again, it has them back.
