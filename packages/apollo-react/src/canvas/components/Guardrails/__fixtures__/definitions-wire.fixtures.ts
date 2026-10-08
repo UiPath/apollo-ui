@@ -236,6 +236,79 @@ export const SENTIMENT_WIRE: GuardrailDefinitionWire = {
   ],
 };
 
+/** The question packs the Jev classifier offers, in the backend's order. */
+export const JEV_QUESTION_PACK_OPTIONS: string[] = [
+  'custom',
+  'pii',
+  'harmful_content',
+  'prompt_injection',
+  'intellectual_property',
+  'secrets_and_credentials',
+  'compliance_commitments',
+  'scope_and_conduct',
+  'unsafe_tool_use',
+  'code_safety',
+];
+
+/**
+ * As UiPath/Agents#6449 declares it. The backend labels `questionPack` and `jevModel` itself;
+ * `questions` and `threshold` come with no copy.
+ */
+export const JEV_CLASSIFIER_WIRE: GuardrailDefinitionWire = {
+  validator: 'jev_classifier',
+  allowedScopes: ['Agent', 'Llm', 'Tool'],
+  status: 'Available',
+  parameters: [
+    {
+      id: 'questionPack',
+      type: 'enum',
+      required: true,
+      defaultValue: 'custom',
+      displayName: 'Question pack',
+      description:
+        "A curated set of yes/no questions Jev evaluates against the payload. Pick a predefined pack or 'Custom' to use only your own questions.",
+      options: JEV_QUESTION_PACK_OPTIONS,
+      optionLabels: {
+        custom: 'Custom (own questions only)',
+        pii: 'PII',
+        harmful_content: 'Harmful content',
+        prompt_injection: 'Prompt injection',
+        intellectual_property: 'Intellectual property',
+        secrets_and_credentials: 'Secrets & credentials',
+        compliance_commitments: 'Compliance & commitments',
+        scope_and_conduct: 'Scope & conduct',
+        unsafe_tool_use: 'Unsafe tool use',
+        code_safety: 'Code safety',
+      },
+    },
+    {
+      id: 'questions',
+      type: 'text-list',
+      required: false,
+      defaultValue: [],
+      maxItems: 10,
+      maxLength: 500,
+    },
+    {
+      id: 'threshold',
+      type: 'number',
+      required: false,
+      defaultValue: 0.5,
+      min: 0,
+      max: 1,
+      step: 0.05,
+    },
+    {
+      id: 'jevModel',
+      type: 'enum',
+      required: false,
+      defaultValue: 'jev-1.13.0',
+      displayName: 'Model',
+      options: ['jev-1.13.0'],
+    },
+  ],
+};
+
 /** A bring-your-own guardrail: manifest copy only, no curated table entry applies. */
 export const BYO_WIRE: GuardrailDefinitionWire = {
   validator: 'pii_detection',
@@ -287,6 +360,7 @@ export const ALL_BUILT_IN_WIRE: GuardrailDefinitionWire[] = [
   INTELLECTUAL_PROPERTY_WIRE,
   LLM_AS_JUDGE_WIRE,
   SENTIMENT_WIRE,
+  JEV_CLASSIFIER_WIRE,
 ];
 
 /**

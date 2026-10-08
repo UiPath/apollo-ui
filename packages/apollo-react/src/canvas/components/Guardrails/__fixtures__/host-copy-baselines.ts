@@ -10,7 +10,8 @@ import type { GuardrailCopyTable } from '../definitions-copy';
  *   `frontend-sw/src/components/definition/AddGuardrailPalette/AddGuardrailPalette.utils.tsx`
  *   (`OOB_GUARDRAILS_I8N`; its `name` / `params[].infoTooltip` / `params[].options` map onto
  *   `displayName` / `paramTooltips` / `optionLabels` here). The `sentiment` entry is read from
- *   the same file, as UiPath/Agents#6457 added it.
+ *   the same file, as UiPath/Agents#6457 added it, and the `jev_classifier` entry from the same
+ *   file on Agents' `valentinabojan/jev-guardrails-ideas` branch (UiPath/Agents#6449).
  * - Flow `origin/develop`:
  *   `packages/canvas/src/components/properties-panel/guardrails/ootb-guardrail-definitions.ts`
  *   (`buildValidatorDisplayInfo`)
@@ -193,6 +194,39 @@ export const AGENTS_COPY_EN: GuardrailCopyTable = {
         id: 'Indonesian',
         vi: 'Vietnamese',
         th: 'Thai',
+      },
+    },
+  },
+  jev_classifier: {
+    displayName: 'Jev Classifier',
+    description:
+      "Evaluate yes/no questions against the payload with TypeSafe's Jev classifier. Pick a curated question pack, add your own questions, and flag when any answer's probability reaches the threshold.",
+    paramLabels: {
+      questionPack: 'Question pack',
+      questions: 'Your questions',
+      threshold: 'Flag threshold',
+      jevModel: 'Model',
+    },
+    paramTooltips: {
+      questionPack:
+        "A curated set of yes/no questions mirroring a built-in category. Pick 'Custom' to use only your own questions.",
+      questions:
+        "Yes/no questions about the payload, where 'yes' means the payload should be flagged. Added on top of the selected pack; required when the pack is 'Custom'.",
+      threshold:
+        "Probability between 0 and 1. The guardrail flags the payload when any question's P(yes) reaches this value. Lower values are stricter.",
+    },
+    optionLabels: {
+      questionPack: {
+        custom: 'Custom (own questions only)',
+        pii: 'PII',
+        harmful_content: 'Harmful content',
+        prompt_injection: 'Prompt injection',
+        intellectual_property: 'Intellectual property',
+        secrets_and_credentials: 'Secrets & credentials',
+        compliance_commitments: 'Compliance & commitments',
+        scope_and_conduct: 'Scope & conduct',
+        unsafe_tool_use: 'Unsafe tool use',
+        code_safety: 'Code safety',
       },
     },
   },

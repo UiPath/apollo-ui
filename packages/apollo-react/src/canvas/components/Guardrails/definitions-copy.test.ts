@@ -2,6 +2,7 @@ import { renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { findCatalogDrift, findCatalogOrphans } from './__fixtures__/catalog-coverage';
 import {
+  JEV_QUESTION_PACK_OPTIONS,
   PII_ENTITY_OPTIONS,
   SENTIMENT_LANGUAGE_OPTIONS,
   SENTIMENT_OPTIONS,
@@ -13,9 +14,10 @@ import {
   useGuardrailDefinitionCopy,
 } from './definitions-copy';
 
-// Option segments allow `-`: they are raw wire values, and language codes such as `pt-BR` carry one.
+// Option segments allow `-` and `_`: they are raw wire values, and language codes such as
+// `pt-BR` and Jev pack ids such as `harmful_content` carry them.
 const ID_PATTERN =
-  /^guardrails\.definitions\.[a-z0-9_]+\.(display-name|description|usage-note|param\.[A-Za-z0-9]+\.(label|tooltip)|option\.[A-Za-z0-9]+\.[A-Za-z0-9-]+)$/;
+  /^guardrails\.definitions\.[a-z0-9_]+\.(display-name|description|usage-note|param\.[A-Za-z0-9]+\.(label|tooltip)|option\.[A-Za-z0-9]+\.[A-Za-z0-9_-]+)$/;
 
 describe('GUARDRAIL_COPY_EN', () => {
   it('covers every curated validator', () => {
@@ -37,6 +39,12 @@ describe('GUARDRAIL_COPY_EN', () => {
     expect(Object.keys(optionLabels.language ?? {}).sort()).toEqual(
       [...SENTIMENT_LANGUAGE_OPTIONS].sort()
     );
+  });
+
+  it('labels every Jev question pack the backend offers', () => {
+    const labels = GUARDRAIL_COPY_EN.jev_classifier?.optionLabels?.questionPack ?? {};
+
+    expect(Object.keys(labels).sort()).toEqual([...JEV_QUESTION_PACK_OPTIONS].sort());
   });
 
   it('resolves to English without a lingui provider', () => {

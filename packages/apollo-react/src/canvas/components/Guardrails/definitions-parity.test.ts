@@ -136,6 +136,7 @@ const EXPECTED_DIVERGENCES: CopyDivergence[] = [
  */
 const SINGLE_HOST_VALIDATORS: Readonly<Record<string, Host>> = {
   sentiment: 'agents',
+  jev_classifier: 'agents',
 };
 
 function flatten(table: GuardrailCopyTable): Map<string, string> {

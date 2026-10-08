@@ -136,8 +136,8 @@ moved is the six validators both products had already transcribed by hand, where
 copies in sync is what produced `finNationalId` in one product and `fiNationalId` in the
 other. The components are unchanged: they still resolve nothing and render what they are
 handed, so a host that would rather keep its own table simply does not call
-`enrichGuardrailDefinitions`. A validator only one product ships (sentiment, Agents only so
-far) takes that product's wording verbatim, so its own screens and these read the same.
+`enrichGuardrailDefinitions`. A validator only one product ships (sentiment and the Jev
+classifier, Agents only so far) takes that product's wording verbatim, so its own screens and these read the same.
 
 Message ids use the raw wire values, never a transcribed slug:
 
