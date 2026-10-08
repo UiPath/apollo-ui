@@ -50,7 +50,7 @@ describe('ChatFirstExperience', () => {
     render(<ChatFirstExperience onSubmit={onSubmit} />);
 
     await user.type(screen.getByRole('textbox'), 'Automate onboarding');
-    await user.click(screen.getByRole('button', { name: 'Submit message' }));
+    await user.click(screen.getByRole('button', { name: 'Send message' }));
     expect(onSubmit).toHaveBeenCalledWith('Automate onboarding');
   });
 
