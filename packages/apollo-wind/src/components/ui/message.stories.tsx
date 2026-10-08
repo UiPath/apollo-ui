@@ -9,6 +9,7 @@ import {
   MessageGroup,
   MessageHeader,
 } from './message';
+import { MessageActionCopy, MessageActionFeedback, MessageActions } from './message-actions';
 
 const meta: Meta<typeof Message> = {
   title: 'Chat/Components/Message',
@@ -35,6 +36,14 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Assistant: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A MessageActions bar goes inside MessageContent after the body, so it follows the message alignment. The avatar stays level with the bubble.',
+      },
+    },
+  },
   render: () => (
     <Message align="start">
       <MessageAvatar>
@@ -50,6 +59,10 @@ export const Assistant: Story = {
           </BubbleContent>
         </Bubble>
         <MessageFooter>Just now</MessageFooter>
+        <MessageActions>
+          <MessageActionCopy text="I found 3 invoices in that batch. Want me to summarize them?" />
+          <MessageActionFeedback />
+        </MessageActions>
       </MessageContent>
     </Message>
   ),
