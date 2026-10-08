@@ -44,6 +44,15 @@ export default defineConfig({
   },
   resolve: {
     alias: [
+      // Deep self-imports; listed first because string aliases below would match them by prefix.
+      {
+        find: /^@uipath\/apollo-react\/chat\/(.*)$/,
+        replacement: `${fileURLToPath(new URL('./src/chat', import.meta.url))}/$1`,
+      },
+      {
+        find: /^@uipath\/apollo-react\/material\/components\/(.*)$/,
+        replacement: `${fileURLToPath(new URL('./src/material/components', import.meta.url))}/$1`,
+      },
       {
         find: '@uipath/apollo-ui-icons/svg',
         replacement: fileURLToPath(new URL('../apollo-ui-icons/src/svg', import.meta.url)),

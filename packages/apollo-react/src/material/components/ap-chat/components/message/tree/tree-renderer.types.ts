@@ -1,5 +1,5 @@
+import type { ApTreeViewItem } from '@uipath/apollo-react/material/components/ap-tree-view';
 import type { TSpan } from '../../../../../../types/TraceModels';
-import type { ApTreeViewItem } from '../../../../ap-tree-view';
 
 export interface ITreeNode<T = any> {
   key: string;

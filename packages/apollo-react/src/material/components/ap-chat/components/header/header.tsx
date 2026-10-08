@@ -2,12 +2,12 @@ import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { styled } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
+import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
+import { AutopilotChatMode } from '@uipath/apollo-react/chat/service';
+import { ApBadge } from '@uipath/apollo-react/material/components/ap-badge';
+import { ApTypography } from '@uipath/apollo-react/material/components/ap-typography';
 import React from 'react';
-import { useChatState } from '../../../../../chat/headless/providers/chat-state-provider';
-import { AutopilotChatMode } from '../../../../../chat/service';
 import { StatusTypes } from '../../../../../types/statusTypes';
-import { ApBadge } from '../../../ap-badge';
-import { ApTypography } from '../../../ap-typography';
 import AutopilotLogo from '../../assets/autopilot-logo.svg';
 import { AutopilotChatHeaderActions } from './header-actions';
 

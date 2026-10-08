@@ -2,19 +2,19 @@ import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { Box, styled } from '@mui/material';
 import token, { type FontVariantToken } from '@uipath/apollo-core';
-import React from 'react';
-import { useAttachments } from '../../../../../chat/headless/providers/attachments-provider';
-import { useChatService } from '../../../../../chat/headless/providers/chat-service.provider';
-import { useChatState } from '../../../../../chat/headless/providers/chat-state-provider';
-import { useLoading } from '../../../../../chat/headless/providers/loading-provider';
-import { useResourceData } from '../../../../../chat/headless/providers/resource-data-provider';
-import { useStreaming } from '../../../../../chat/headless/providers/streaming-provider';
-import { parseFiles } from '../../../../../chat/headless/utils/file-reader';
+import { useAttachments } from '@uipath/apollo-react/chat/headless/providers/attachments-provider';
+import { useChatService } from '@uipath/apollo-react/chat/headless/providers/chat-service.provider';
+import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
+import { useLoading } from '@uipath/apollo-react/chat/headless/providers/loading-provider';
+import { useResourceData } from '@uipath/apollo-react/chat/headless/providers/resource-data-provider';
+import { useStreaming } from '@uipath/apollo-react/chat/headless/providers/streaming-provider';
+import { parseFiles } from '@uipath/apollo-react/chat/headless/utils/file-reader';
 import {
   AutopilotChatEvent,
   AutopilotChatInternalEvent,
   type AutopilotChatPrompt,
-} from '../../../../../chat/service';
+} from '@uipath/apollo-react/chat/service';
+import React from 'react';
 import { fontByVariant } from '../../utils/font-by-variant';
 import { AutopilotChatInputActions } from './chat-input-actions';
 import { AutopilotChatInputAttachments } from './chat-input-attachments';

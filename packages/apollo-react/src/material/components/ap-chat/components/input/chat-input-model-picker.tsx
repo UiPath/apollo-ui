@@ -1,8 +1,8 @@
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
+import { useChatService } from '@uipath/apollo-react/chat/headless/providers/chat-service.provider';
+import { usePicker } from '@uipath/apollo-react/chat/headless/providers/picker-provider';
 import React from 'react';
-import { useChatService } from '../../../../../chat/headless/providers/chat-service.provider';
-import { usePicker } from '../../../../../chat/headless/providers/picker-provider';
 import { type DropdownOption, DropdownPicker } from '../common/dropdown-picker';
 
 function AutopilotChatInputModelPickerComponent({ useIcon }: { useIcon: boolean }) {

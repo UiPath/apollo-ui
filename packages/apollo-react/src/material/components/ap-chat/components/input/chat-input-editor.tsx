@@ -1,3 +1,8 @@
+import {
+  AutopilotChatResourcePickerProvider,
+  useAutopilotChatResourcePicker,
+} from '@uipath/apollo-react/chat/headless/providers/resource-picker-provider';
+import type { AutopilotChatResourceItem } from '@uipath/apollo-react/chat/service';
 import React, {
   forwardRef,
   useCallback,
@@ -5,11 +10,6 @@ import React, {
   useLayoutEffect,
   useRef,
 } from 'react';
-import {
-  AutopilotChatResourcePickerProvider,
-  useAutopilotChatResourcePicker,
-} from '../../../../../chat/headless/providers/resource-picker-provider';
-import type { AutopilotChatResourceItem } from '../../../../../chat/service';
 import {
   ResourcePickerDropdown,
   type ResourcePickerDropdownHandle,

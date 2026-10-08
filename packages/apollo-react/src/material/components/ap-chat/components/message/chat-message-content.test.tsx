@@ -1,16 +1,16 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import type React from 'react';
-import { describe, expect, it, vi } from 'vitest';
-import { AutopilotChatServiceProvider } from '../../../../../chat/headless/providers/chat-service.provider';
-import { AutopilotChatStateProvider } from '../../../../../chat/headless/providers/chat-state-provider';
-import { LocaleProvider } from '../../../../../chat/headless/providers/locale-provider';
+import { AutopilotChatServiceProvider } from '@uipath/apollo-react/chat/headless/providers/chat-service.provider';
+import { AutopilotChatStateProvider } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
+import { LocaleProvider } from '@uipath/apollo-react/chat/headless/providers/locale-provider';
 import {
   AGENTS_TOOL_CALL_RENDERER,
   type AutopilotChatMessage,
   AutopilotChatRole,
   AutopilotChatService,
-} from '../../../../../chat/service';
+} from '@uipath/apollo-react/chat/service';
+import type React from 'react';
+import { describe, expect, it, vi } from 'vitest';
 import { ApI18nProvider } from '../../../../../i18n';
 import { AutopilotChatMessageContent } from './chat-message-content';
 

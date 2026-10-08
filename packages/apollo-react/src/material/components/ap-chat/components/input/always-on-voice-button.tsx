@@ -2,13 +2,12 @@ import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
-import { useCallback, useEffect, useRef, useState } from 'react';
-
-import { useChatService } from '../../../../../chat/headless/providers/chat-service.provider';
+import { useChatService } from '@uipath/apollo-react/chat/headless/providers/chat-service.provider';
 import {
   AutopilotChatEvent,
   type AutopilotChatOutputStreamEvent,
-} from '../../../../../chat/service';
+} from '@uipath/apollo-react/chat/service';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   type AudioInputDataHandler,
   type AudioInputEndHandler,

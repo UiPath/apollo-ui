@@ -1,16 +1,15 @@
 import { styled } from '@mui/material/styles';
 import token from '@uipath/apollo-core';
-import React from 'react';
-
-import { useChatService } from '../../../../../chat/headless/providers/chat-service.provider';
-import { useChatState } from '../../../../../chat/headless/providers/chat-state-provider';
+import { useChatService } from '@uipath/apollo-react/chat/headless/providers/chat-service.provider';
+import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
 import {
   AutopilotChatInternalEvent,
   type AutopilotChatMode,
   CHAT_CONTAINER_ANIMATION_DURATION,
   CHAT_DRAWER_WIDTH_FULL_SCREEN,
   CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,
-} from '../../../../../chat/service';
+} from '@uipath/apollo-react/chat/service';
+import React from 'react';
 import { AutopilotChatHeader } from '../header/header';
 import { AutopilotChatHistory } from '../history/chat-history';
 import { AutopilotChatInput } from '../input/chat-input';

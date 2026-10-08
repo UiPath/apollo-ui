@@ -1,10 +1,9 @@
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
-import React, { useMemo } from 'react';
-import { stripResourceTokens } from '../../../../../chat/headless/markdown/resource-token-parser';
-import { useChatService } from '../../../../../chat/headless/providers/chat-service.provider';
-import { useChatState } from '../../../../../chat/headless/providers/chat-state-provider';
-import { useLoading } from '../../../../../chat/headless/providers/loading-provider';
+import { stripResourceTokens } from '@uipath/apollo-react/chat/headless/markdown/resource-token-parser';
+import { useChatService } from '@uipath/apollo-react/chat/headless/providers/chat-service.provider';
+import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
+import { useLoading } from '@uipath/apollo-react/chat/headless/providers/loading-provider';
 import {
   type AutopilotChatActionPayload,
   AutopilotChatEvent,
@@ -13,7 +12,8 @@ import {
   type AutopilotChatMessage,
   AutopilotChatRole,
   type AutopilotChatSuggestion,
-} from '../../../../../chat/service';
+} from '@uipath/apollo-react/chat/service';
+import React, { useMemo } from 'react';
 import { SkeletonLoader } from '../common/skeleton-loader';
 import { AutopilotChatMessageContent } from './chat-message-content';
 import { AutopilotChatFRE } from './first-run-experience/chat-fre';

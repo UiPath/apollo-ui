@@ -1,5 +1,5 @@
+import { AutopilotChatFileType } from '@uipath/apollo-react/chat/service';
 import type React from 'react';
-import { AutopilotChatFileType } from '../../../../chat/service';
 import FileIcon from '../assets/default-file.svg';
 import PowerPointFileIcon from '../assets/ppt-file.svg';
 import WordFileIcon from '../assets/word-file.svg';
