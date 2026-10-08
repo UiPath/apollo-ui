@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.67.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.66.1...@uipath/apollo-wind@2.67.0) (2026-10-08)
+
+### Features
+
+* **apollo-wind:** add chat primitives (Message, Bubble, Attachment, Marker, MessageScroller) ([aeeb8ad](https://github.com/UiPath/apollo-ui/commit/aeeb8adc0ed7df2b011c982973dbceeae2bc9cea))
+
 ## [@uipath/apollo-wind-v2.66.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.66.0...@uipath/apollo-wind@2.66.1) (2026-10-08)
 
 ### Bug Fixes
