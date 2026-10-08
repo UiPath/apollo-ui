@@ -355,7 +355,8 @@ export interface InputGroupBodyProps extends React.HTMLAttributes<HTMLDivElement
  * Content below a `layout="block"` group's first row, behind a divider. Controls here are standard
  * fields with their own box, message and popovers; one that needs addons takes its own InputGroup.
  * The divider goes when there is nothing to divide: an empty body, or a closed Radix collapsible,
- * which leaves its content in place and `hidden`.
+ * which leaves its content in place and `hidden`. Future dark's default edge colour is the box's
+ * own fill, so the divider steps up to `border` there.
  */
 const InputGroupBody = React.forwardRef<HTMLDivElement, InputGroupBodyProps>(
   ({ className, ...props }, ref) => {
@@ -365,7 +366,10 @@ const InputGroupBody = React.forwardRef<HTMLDivElement, InputGroupBodyProps>(
         <div
           ref={ref}
           data-slot="input-group-body"
-          className={cn('border-t empty:border-t-0 has-[>[hidden]]:border-t-0', className)}
+          className={cn(
+            'border-t empty:border-t-0 has-[>[hidden]]:border-t-0 future:dark:border-border',
+            className
+          )}
           {...props}
         />
       </InputGroupContext.Provider>

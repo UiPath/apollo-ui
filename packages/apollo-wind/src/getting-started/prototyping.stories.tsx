@@ -779,7 +779,7 @@ function UseCasesContent() {
           persona="Engineer"
           icon="🛠️"
           scenario="A customer needs to consolidate and format complex Excel documents into a presentation-ready format. They want a Delegate-style interface where an AI assistant guides the user through the process step by step."
-          solution="Start from the Delegate template with the sidebar navigation panel. Use the ChatComposer and ChatStepsView custom components for the AI assistant interaction. Add FileUpload for document ingestion, and use Card and DataTable components to preview the transformed output."
+          solution="Start from the Delegate template with the sidebar navigation panel. Use the ChatComposer and the ChatStepsView custom component for the AI assistant interaction. Add FileUpload for document ingestion, and use Card and DataTable components to preview the transformed output."
           outcome="A working prototype that shows the end-to-end user experience — from uploading files to reviewing AI-generated output. The prototype runs in Storybook, so stakeholders can interact with it directly in a browser."
         />
       </div>
@@ -1315,7 +1315,7 @@ function WhatNotInScopeContent() {
                 </span>
                 <br />
                 Both tools use their own shadcn/ui setup. Import paths, custom Apollo components
-                (like <InlineCode>ChatComposer</InlineCode>), and our custom design tokens won't
+                (like <InlineCode>ChatStepsView</InlineCode>), and our custom design tokens won't
                 exist in their generated code.
               </li>
               <li>
