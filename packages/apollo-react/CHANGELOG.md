@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.77.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.77.3...@uipath/apollo-react@6.77.4) (2026-10-08)
+
+### Bug Fixes
+
+* **apollo-react:** drop embedding-only models in isTextGenerationModel by capability ([7e76227](https://github.com/UiPath/apollo-ui/commit/7e762273b4af25dc6c66e1a9dcf9ac06114e6942))
+
 ## [@uipath/apollo-react-v6.77.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.77.2...@uipath/apollo-react@6.77.3) (2026-10-08)
 
 ### Bug Fixes
