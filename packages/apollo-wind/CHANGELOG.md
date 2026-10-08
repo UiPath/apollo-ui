@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.65.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.65.1...@uipath/apollo-wind@2.65.2) (2026-10-08)
+
+### Bug Fixes
+
+* **apollo-wind:** drop embedding-only models in isTextGenerationModel by capability ([f210d03](https://github.com/UiPath/apollo-ui/commit/f210d039ce4cb04ca9cc7a6cf0c86ffe0fb5ab66))
+
 ## [@uipath/apollo-wind-v2.65.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.65.0...@uipath/apollo-wind@2.65.1) (2026-10-07)
 
 ### Bug Fixes
