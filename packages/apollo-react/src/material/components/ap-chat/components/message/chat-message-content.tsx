@@ -1,14 +1,13 @@
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
-import React from 'react';
 import {
   type ChatBuiltInMessageRenderer,
   resolveMessageRenderer,
-} from '../../../../../chat/headless/message-renderers';
-import { useChatService } from '../../../../../chat/headless/providers/chat-service.provider';
-import { useChatState } from '../../../../../chat/headless/providers/chat-state-provider';
-import { useLocale } from '../../../../../chat/headless/providers/locale-provider';
-import { calculateDynamicPadding } from '../../../../../chat/headless/utils/dynamic-padding';
+} from '@uipath/apollo-react/chat/headless/message-renderers';
+import { useChatService } from '@uipath/apollo-react/chat/headless/providers/chat-service.provider';
+import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
+import { useLocale } from '@uipath/apollo-react/chat/headless/providers/locale-provider';
+import { calculateDynamicPadding } from '@uipath/apollo-react/chat/headless/utils/dynamic-padding';
 import {
   AGENTS_TOOL_CALL_RENDERER,
   APOLLO_CHAT_TREE_RENDERER,
@@ -22,8 +21,9 @@ import {
   CHAT_WIDTH_SIDE_BY_SIDE_MIN,
   DEFAULT_MESSAGE_RENDERER,
   StorageService,
-} from '../../../../../chat/service';
-import { ApToolCall } from '../../../ap-tool-call';
+} from '@uipath/apollo-react/chat/service';
+import { ApToolCall } from '@uipath/apollo-react/material/components/ap-tool-call';
+import React from 'react';
 import { Attachments } from '../common/attachments';
 import { AutopilotChatMessageActions } from './actions/chat-actions';
 import { AutopilotChatMarkdownRenderer } from './markdown/markdown';

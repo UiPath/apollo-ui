@@ -2,10 +2,10 @@ import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
+import { useChatScroll } from '@uipath/apollo-react/chat/headless/providers/chat-scroll-provider';
+import { useChatService } from '@uipath/apollo-react/chat/headless/providers/chat-service.provider';
+import { AutopilotChatEvent, AutopilotChatInternalEvent } from '@uipath/apollo-react/chat/service';
 import React from 'react';
-import { useChatScroll } from '../../../../../chat/headless/providers/chat-scroll-provider';
-import { useChatService } from '../../../../../chat/headless/providers/chat-service.provider';
-import { AutopilotChatEvent, AutopilotChatInternalEvent } from '../../../../../chat/service';
 import { AutopilotChatActionButton } from '../common/action-button';
 
 const ScrollButtonContainer = styled('div')<{ visible: boolean; bottom: number; left: number }>(

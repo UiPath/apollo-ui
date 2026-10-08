@@ -2,19 +2,19 @@ import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { Box, Collapse, styled } from '@mui/material';
 import token from '@uipath/apollo-core';
-import React, { useCallback, useEffect, useState } from 'react';
-import { useIsStreamingMessage } from '../../../../../../chat/headless/hooks/use-is-streaming-message';
-import { useChatService } from '../../../../../../chat/headless/providers/chat-service.provider';
-import { useChatState } from '../../../../../../chat/headless/providers/chat-state-provider';
+import { useIsStreamingMessage } from '@uipath/apollo-react/chat/headless/hooks/use-is-streaming-message';
+import { useChatService } from '@uipath/apollo-react/chat/headless/providers/chat-service.provider';
+import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
 import {
   AutopilotChatEvent,
   type AutopilotChatMessage,
   AutopilotChatPreHookAction,
   type PdfCitation,
   type UrlCitation,
-} from '../../../../../../chat/service';
-import { ApIcon } from '../../../../ap-icon';
-import { ApTypography } from '../../../../ap-typography';
+} from '@uipath/apollo-react/chat/service';
+import { ApIcon } from '@uipath/apollo-react/material/components/ap-icon';
+import { ApTypography } from '@uipath/apollo-react/material/components/ap-typography';
+import React, { useCallback, useEffect, useState } from 'react';
 import { AutopilotChatTooltip } from '../../common/tooltip';
 
 interface AutopilotChatSourcesProps {

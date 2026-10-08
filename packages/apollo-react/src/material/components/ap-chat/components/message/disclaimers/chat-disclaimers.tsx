@@ -1,9 +1,8 @@
 import { styled } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
+import { ApTypography } from '@uipath/apollo-react/material/components/ap-typography';
 import React from 'react';
-
 import { AppIcon } from '../../../../../../icons';
-import { ApTypography } from '../../../../ap-typography';
 
 const DisclaimerList = styled('div')(() => ({
   marginTop: token.Spacing.SpacingXl,

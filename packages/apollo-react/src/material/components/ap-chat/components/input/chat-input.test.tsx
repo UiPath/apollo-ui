@@ -1,23 +1,23 @@
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import type React from 'react';
-import { describe, expect, it, vi } from 'vitest';
-import { AutopilotAttachmentsProvider } from '../../../../../chat/headless/providers/attachments-provider';
-import { AutopilotChatServiceProvider } from '../../../../../chat/headless/providers/chat-service.provider';
-import { AutopilotChatStateProvider } from '../../../../../chat/headless/providers/chat-state-provider';
-import { AutopilotErrorProvider } from '../../../../../chat/headless/providers/error-provider';
-import { AutopilotLoadingProvider } from '../../../../../chat/headless/providers/loading-provider';
-import { LocaleProvider } from '../../../../../chat/headless/providers/locale-provider';
-import { AutopilotPickerProvider } from '../../../../../chat/headless/providers/picker-provider';
-import { AutopilotResourceDataProvider } from '../../../../../chat/headless/providers/resource-data-provider';
-import { AutopilotStreamingProvider } from '../../../../../chat/headless/providers/streaming-provider';
+import { AutopilotAttachmentsProvider } from '@uipath/apollo-react/chat/headless/providers/attachments-provider';
+import { AutopilotChatServiceProvider } from '@uipath/apollo-react/chat/headless/providers/chat-service.provider';
+import { AutopilotChatStateProvider } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
+import { AutopilotErrorProvider } from '@uipath/apollo-react/chat/headless/providers/error-provider';
+import { AutopilotLoadingProvider } from '@uipath/apollo-react/chat/headless/providers/loading-provider';
+import { LocaleProvider } from '@uipath/apollo-react/chat/headless/providers/locale-provider';
+import { AutopilotPickerProvider } from '@uipath/apollo-react/chat/headless/providers/picker-provider';
+import { AutopilotResourceDataProvider } from '@uipath/apollo-react/chat/headless/providers/resource-data-provider';
+import { AutopilotStreamingProvider } from '@uipath/apollo-react/chat/headless/providers/streaming-provider';
 import {
   type AutopilotChatDisabledFeatures,
   AutopilotChatEvent,
   AutopilotChatMode,
   AutopilotChatService,
   DEFAULT_MESSAGE_RENDERER,
-} from '../../../../../chat/service';
+} from '@uipath/apollo-react/chat/service';
+import type React from 'react';
+import { describe, expect, it, vi } from 'vitest';
 import { ApI18nProvider } from '../../../../../i18n';
 import { AutopilotChatInput } from './chat-input';
 

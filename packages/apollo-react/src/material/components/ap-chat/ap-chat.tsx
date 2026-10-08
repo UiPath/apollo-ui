@@ -1,8 +1,7 @@
+import { registerChatRenderer } from '@uipath/apollo-react/chat/headless/renderer-registry';
+import { ChatRoot } from '@uipath/apollo-react/chat/root/ChatRoot';
+import type { ApChatTheme, AutopilotChatService } from '@uipath/apollo-react/chat/service';
 import React from 'react';
-
-import { registerChatRenderer } from '../../../chat/headless/renderer-registry';
-import { ChatRoot } from '../../../chat/root/ChatRoot';
-import type { ApChatTheme, AutopilotChatService } from '../../../chat/service';
 import type { SupportedLocale } from '../../../i18n';
 import { MaterialChatRenderer } from './MaterialChatRenderer';
 

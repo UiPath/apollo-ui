@@ -3,13 +3,13 @@ import { useLingui } from '@lingui/react';
 import CloseIcon from '@mui/icons-material/Close';
 import { Box, IconButton, Modal, styled } from '@mui/material';
 import token from '@uipath/apollo-core';
+import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
+import { useTheme } from '@uipath/apollo-react/chat/headless/providers/theme-provider';
+import { ApChip } from '@uipath/apollo-react/material/components/ap-chip';
 import katex from 'katex';
 import React from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { useChatState } from '../../../../../../chat/headless/providers/chat-state-provider';
-import { useTheme } from '../../../../../../chat/headless/providers/theme-provider';
-import { ApChip } from '../../../../ap-chip';
 import { AutopilotChatActionButton } from '../../common/action-button';
 
 enum LANGUAGES {

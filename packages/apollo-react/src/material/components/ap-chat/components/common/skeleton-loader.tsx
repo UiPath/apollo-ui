@@ -1,8 +1,8 @@
 import styled from '@emotion/styled';
 import token from '@uipath/apollo-core';
+import { useChatScroll } from '@uipath/apollo-react/chat/headless/providers/chat-scroll-provider';
+import { ApSkeleton } from '@uipath/apollo-react/material/components/ap-skeleton';
 import React from 'react';
-import { useChatScroll } from '../../../../../chat/headless/providers/chat-scroll-provider';
-import { ApSkeleton } from '../../../ap-skeleton';
 
 const SkeletonLoaderContainer = styled('div')(() => ({
   width: '100%',

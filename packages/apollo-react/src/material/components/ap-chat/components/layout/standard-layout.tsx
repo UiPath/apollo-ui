@@ -1,12 +1,11 @@
 import { styled } from '@mui/material/styles';
 import token from '@uipath/apollo-core';
-import type React from 'react';
-
 import {
   type AutopilotChatMode,
   CHAT_DRAWER_WIDTH_FULL_SCREEN,
   CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,
-} from '../../../../../chat/service';
+} from '@uipath/apollo-react/chat/service';
+import type React from 'react';
 import { AutopilotChatHeader } from '../header/header';
 import { AutopilotChatHistory } from '../history/chat-history';
 import { AutopilotChatInput } from '../input/chat-input';

@@ -3,14 +3,10 @@ import { useLingui } from '@lingui/react';
 import SearchIcon from '@mui/icons-material/Search';
 import { CircularProgress, Popover, styled } from '@mui/material';
 import token from '@uipath/apollo-core';
-import { differenceInDays, differenceInMonths, isToday, isYesterday } from 'date-fns';
-import debounce from 'debounce';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import FocusLock from 'react-focus-lock';
-import { useScheduledCallback } from '../../../../../chat/headless/hooks/use-scheduled-callback';
-import { useChatService } from '../../../../../chat/headless/providers/chat-service.provider';
-import { useChatState } from '../../../../../chat/headless/providers/chat-state-provider';
-import { useChatWidth } from '../../../../../chat/headless/providers/chat-width-provider';
+import { useScheduledCallback } from '@uipath/apollo-react/chat/headless/hooks/use-scheduled-callback';
+import { useChatService } from '@uipath/apollo-react/chat/headless/providers/chat-service.provider';
+import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
+import { useChatWidth } from '@uipath/apollo-react/chat/headless/providers/chat-width-provider';
 import {
   AutopilotChatEvent,
   type AutopilotChatHistorySearchPayload,
@@ -19,10 +15,14 @@ import {
   CHAT_HISTORY_FULL_SCREEN_WIDTH,
   CHAT_HISTORY_SIDE_BY_SIDE_MAX_HEIGHT,
   CHAT_HISTORY_SIDE_BY_SIDE_MAX_WIDTH,
-} from '../../../../../chat/service';
-import { ApSkeleton } from '../../../ap-skeleton';
-import { ApTextField } from '../../../ap-text-field';
-import { ApTypography } from '../../../ap-typography';
+} from '@uipath/apollo-react/chat/service';
+import { ApSkeleton } from '@uipath/apollo-react/material/components/ap-skeleton';
+import { ApTextField } from '@uipath/apollo-react/material/components/ap-text-field';
+import { ApTypography } from '@uipath/apollo-react/material/components/ap-typography';
+import { differenceInDays, differenceInMonths, isToday, isYesterday } from 'date-fns';
+import debounce from 'debounce';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import FocusLock from 'react-focus-lock';
 import { AutopilotChatHistoryGroup } from './chat-history-group';
 
 const ChatHistoryContainer = styled('div')<{

@@ -5,6 +5,25 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { styled } from '@mui/material/styles';
 import token, { FontVariantToken } from '@uipath/apollo-core';
+import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
+import {
+  isResourceSelector,
+  useAutopilotChatResourcePicker,
+} from '@uipath/apollo-react/chat/headless/providers/resource-picker-provider';
+import {
+  type AutopilotChatResourceItem,
+  CHAT_RESOURCE_PICKER_ITEM_HEIGHT,
+  CHAT_RESOURCE_PICKER_LOAD_MORE_THRESHOLD,
+  CHAT_RESOURCE_PICKER_MAX_SKELETON_COUNT,
+  CHAT_RESOURCE_PICKER_MENU_MAX_HEIGHT,
+  CHAT_RESOURCE_PICKER_MENU_WIDTH,
+  CHAT_RESOURCE_PICKER_MIN_SKELETON_COUNT,
+  CHAT_RESOURCE_PICKER_TOOLTIP_ENTER_DELAY,
+} from '@uipath/apollo-react/chat/service';
+import { ApButton } from '@uipath/apollo-react/material/components/ap-button';
+import { ApIcon } from '@uipath/apollo-react/material/components/ap-icon';
+import { ApSkeleton } from '@uipath/apollo-react/material/components/ap-skeleton';
+import { ApTypography } from '@uipath/apollo-react/material/components/ap-typography';
 import React, {
   forwardRef,
   useCallback,
@@ -17,25 +36,6 @@ import React, {
 } from 'react';
 import type { RowComponentProps } from 'react-window';
 import { List, type ListImperativeAPI, useListRef } from 'react-window';
-import { useChatState } from '../../../../../chat/headless/providers/chat-state-provider';
-import {
-  isResourceSelector,
-  useAutopilotChatResourcePicker,
-} from '../../../../../chat/headless/providers/resource-picker-provider';
-import {
-  type AutopilotChatResourceItem,
-  CHAT_RESOURCE_PICKER_ITEM_HEIGHT,
-  CHAT_RESOURCE_PICKER_LOAD_MORE_THRESHOLD,
-  CHAT_RESOURCE_PICKER_MAX_SKELETON_COUNT,
-  CHAT_RESOURCE_PICKER_MENU_MAX_HEIGHT,
-  CHAT_RESOURCE_PICKER_MENU_WIDTH,
-  CHAT_RESOURCE_PICKER_MIN_SKELETON_COUNT,
-  CHAT_RESOURCE_PICKER_TOOLTIP_ENTER_DELAY,
-} from '../../../../../chat/service';
-import { ApButton } from '../../../ap-button';
-import { ApIcon } from '../../../ap-icon';
-import { ApSkeleton } from '../../../ap-skeleton';
-import { ApTypography } from '../../../ap-typography';
 import { AutopilotChatIconButton } from '../common/icon-button';
 import { AutopilotChatTooltip } from '../common/tooltip';
 

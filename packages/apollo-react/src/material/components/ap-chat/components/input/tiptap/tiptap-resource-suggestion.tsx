@@ -1,8 +1,8 @@
 import type { Editor, Range } from '@tiptap/core';
 import type { MentionOptions } from '@tiptap/extension-mention';
 import { PluginKey } from '@tiptap/pm/state';
-import type { CursorCoordinates } from '../../../../../../chat/headless/hooks/use-resource-picker-state';
-import { CHAT_RESOURCE_MENTION_TERMINATOR } from '../../../../../../chat/service';
+import type { CursorCoordinates } from '@uipath/apollo-react/chat/headless/hooks/use-resource-picker-state';
+import { CHAT_RESOURCE_MENTION_TERMINATOR } from '@uipath/apollo-react/chat/service';
 
 export const ResourceMentionPluginKey = new PluginKey('resourceMention');
 

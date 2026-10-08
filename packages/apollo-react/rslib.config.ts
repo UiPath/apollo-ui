@@ -104,6 +104,10 @@ export default defineConfig({
       resolve: {
         extensions: ['.tsx', '.ts', '.jsx', '.js', '.json'],
         alias: {
+          // Deep self-imports (`@uipath/apollo-react/chat/...`, `.../material/components/<name>`)
+          // resolve by prefix to source folders; bare barrels keep their exact entries below.
+          '@uipath/apollo-react/chat': './src/chat',
+          '@uipath/apollo-react/material/components/': './src/material/components/',
           '@uipath/apollo-react/icons': './src/icons/index.ts',
           '@uipath/apollo-react/material': './src/material/index.ts',
           '@uipath/apollo-react/material/theme': './src/material/theme/index.ts',

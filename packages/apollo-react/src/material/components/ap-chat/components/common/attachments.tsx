@@ -2,10 +2,13 @@ import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { CircularProgress, styled } from '@mui/material';
 import token from '@uipath/apollo-core';
+import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
+import {
+  type AutopilotChatFileInfo,
+  AutopilotChatFileType,
+} from '@uipath/apollo-react/chat/service';
+import { ApTypography } from '@uipath/apollo-react/material/components/ap-typography';
 import React from 'react';
-import { useChatState } from '../../../../../chat/headless/providers/chat-state-provider';
-import { type AutopilotChatFileInfo, AutopilotChatFileType } from '../../../../../chat/service';
-import { ApTypography } from '../../../ap-typography';
 import { fileToIcon } from '../../utils/file-to-icon';
 import { AutopilotChatActionButton } from './action-button';
 import { AutopilotChatTooltip } from './tooltip';

@@ -1,9 +1,9 @@
 import { Button, styled, type TooltipProps } from '@mui/material';
 import token from '@uipath/apollo-core';
+import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
+import { AutopilotChatMode } from '@uipath/apollo-react/chat/service';
+import { ApIcon } from '@uipath/apollo-react/material/components/ap-icon';
 import React from 'react';
-import { useChatState } from '../../../../../chat/headless/providers/chat-state-provider';
-import { AutopilotChatMode } from '../../../../../chat/service';
-import { ApIcon } from '../../../ap-icon';
 import { AutopilotChatIconButton } from './icon-button';
 import { AutopilotChatTooltip } from './tooltip';
 

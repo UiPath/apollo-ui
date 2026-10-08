@@ -108,6 +108,25 @@
       }
     },
     {
+      "includes": ["src/material/components/ap-chat/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "@uipath/apollo-react/material": "Import the component module (e.g. @uipath/apollo-react/material/components/ap-icon); the barrel re-exports ApChat and creates an import cycle",
+                  "@uipath/apollo-react/material/components": "Import the component module (e.g. @uipath/apollo-react/material/components/ap-icon); the barrel re-exports ApChat and creates an import cycle",
+                  "@uipath/apollo-react/chat": "Import the module (e.g. @uipath/apollo-react/chat/service); the barrel registers renderers and loads Material lazily"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
       "includes": ["src/chat/**"],
       "linter": {
         "rules": {

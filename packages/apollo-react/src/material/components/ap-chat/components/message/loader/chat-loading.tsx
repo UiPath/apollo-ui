@@ -1,7 +1,7 @@
 import { keyframes, styled } from '@mui/material';
 
-import { useLoading } from '../../../../../../chat/headless/providers/loading-provider';
-import { CHAT_LOADER_GRADIENT_WIDTH } from '../../../../../../chat/service';
+import { useLoading } from '@uipath/apollo-react/chat/headless/providers/loading-provider';
+import { CHAT_LOADER_GRADIENT_WIDTH } from '@uipath/apollo-react/chat/service';
 import { LoadingMessage } from './chat-loading-text';
 
 const shimmerAnimation = keyframes`

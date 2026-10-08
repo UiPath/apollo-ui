@@ -1,14 +1,14 @@
 import { ThemeProvider as MuiThemeProvider, styled } from '@mui/material/styles';
 import token from '@uipath/apollo-core';
-import React from 'react';
-import { useChatState } from '../../../chat/headless/providers/chat-state-provider';
-import { useChatWidth } from '../../../chat/headless/providers/chat-width-provider';
-import { useTheme } from '../../../chat/headless/providers/theme-provider';
+import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
+import { useChatWidth } from '@uipath/apollo-react/chat/headless/providers/chat-width-provider';
+import { useTheme } from '@uipath/apollo-react/chat/headless/providers/theme-provider';
 import {
   AutopilotChatMode,
   CHAT_CONTAINER_ANIMATION_DURATION,
   CHAT_WIDTH_FULL_SCREEN,
-} from '../../../chat/service';
+} from '@uipath/apollo-react/chat/service';
+import React from 'react';
 import {
   apolloMaterialUiThemeDark,
   apolloMaterialUiThemeDarkHC,
