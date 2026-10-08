@@ -9,7 +9,8 @@ const IN_GROUP_CLASS =
   'h-full w-full rounded-none !border-0 !ring-0 bg-transparent p-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 future:h-full future:rounded-none future:border-0 future:bg-transparent future:p-0 future:focus-visible:ring-offset-0';
 
 export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
-  variant?: 'default' | 'ghost';
+  /** `none` paints no box in any theme, for a caller whose `className` draws its own. */
+  variant?: 'default' | 'ghost' | 'none';
   size?: 'default' | 'xs';
   /**
    * Field-specific feedback rendered immediately below the input.
@@ -69,6 +70,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           // Variant
           variant === 'default' && 'border border-input bg-transparent',
           variant === 'ghost' && 'border-0 bg-surface-overlay',
+          variant === 'none' && 'border-0 bg-transparent shadow-none',
           // Future theme overrides apply only to the default variant + default size
           variant === 'default' &&
             size === 'default' &&
