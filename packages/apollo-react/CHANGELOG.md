@@ -1,3 +1,10 @@
+## [@uipath/apollo-react-v6.77.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.77.1...@uipath/apollo-react@6.77.2) (2026-10-08)
+
+### Bug Fixes
+
+* **apollo-react:** align the chat error alert bar icon and text ([399efcf](https://github.com/UiPath/apollo-ui/commit/399efcfeac5c1df1af37bb598ec202d79f62dd32))
+* **apollo-react:** drop the new styled paragraph and cover alert alignment ([f542f41](https://github.com/UiPath/apollo-ui/commit/f542f41e77a5ede6f3733b8dc053c2fbf3cbe1f3))
+
 ## [@uipath/apollo-react-v6.77.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.77.0...@uipath/apollo-react@6.77.1) (2026-10-07)
 
 ### Bug Fixes
