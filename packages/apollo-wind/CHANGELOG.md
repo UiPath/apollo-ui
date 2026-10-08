@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.66.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.66.0...@uipath/apollo-wind@2.66.1) (2026-10-08)
+
+### Bug Fixes
+
+* **apollo-wind:** give Future fields a shared primary focus ring ([9f91353](https://github.com/UiPath/apollo-ui/commit/9f9135317c33928a2bbfe5c0f507f5adaf51c9f9)), closes [#0092b8](https://github.com/UiPath/apollo-ui/issues/0092b8) [#00b8db](https://github.com/UiPath/apollo-ui/issues/00b8db)
+
 ## [@uipath/apollo-wind-v2.66.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.65.2...@uipath/apollo-wind@2.66.0) (2026-10-08)
 
 ### Features
