@@ -60,6 +60,7 @@
           "color-chart-4": "var(--chart-4)",
           "color-chart-5": "var(--chart-5)",
           "color-sidebar": "var(--sidebar)",
+          "color-side-panel-tint": "var(--side-panel-tint)",
           "color-sidebar-foreground": "var(--sidebar-foreground)",
           "color-sidebar-primary": "var(--sidebar-primary)",
           "color-sidebar-primary-foreground": "var(--sidebar-primary-foreground)",
@@ -138,6 +139,15 @@
           "chart-4": "oklch(0.7200 0.1800 320.8000)",
           "chart-5": "oklch(0.6800 0.1500 245.5000)",
           "sidebar": "oklch(0.9723 0.0074 260.7300)",
+          "side-panel-tint": "color-mix(in oklab, var(--sidebar) 60%, transparent)",
+          "divider": "color-mix(in oklab, var(--border) 50%, transparent)",
+          "surface-inset": "24px",
+          "side-panel-width-min": "280px",
+          "content-area-width-min": "480px",
+          "slot-divider-width": "1px",
+          "scroll-fade-size": "24px",
+          "panel-transition-duration": "350ms",
+          "panel-transition-easing": "linear(0, 0.064, 0.195, 0.34, 0.474, 0.589, 0.683, 0.757, 0.815, 0.86, 0.895, 0.921, 0.941, 0.955, 0.967, 0.975, 0.981, 0.986, 0.99, 0.992, 0.994, 0.996, 0.997, 0.998, 1)",
           "sidebar-foreground": "oklch(0.2394 0.0455 252.4450)",
           "sidebar-primary": "oklch(0.64 0.115 208)",
           "sidebar-primary-foreground": "oklch(0.1660 0.0283 203.3380)",
@@ -260,6 +270,8 @@
           "chart-4": "oklch(0.7200 0.1800 320.8000)",
           "chart-5": "oklch(0.6800 0.1500 245.5000)",
           "sidebar": "oklch(0.1620 0.0310 257.7000)",
+          "side-panel-tint": "color-mix(in oklab, var(--sidebar) 60%, transparent)",
+          "divider": "color-mix(in oklab, var(--border) 50%, transparent)",
           "sidebar-foreground": "oklch(0.9525 0.0110 225.9830)",
           "sidebar-primary": "oklch(0.69 0.112 207)",
           "sidebar-primary-foreground": "oklch(0.1660 0.0283 203.3380)",
@@ -2224,10 +2236,100 @@
       "title": "Page Header",
       "description": "A compound page header with back button, title, metadata fields, and collapsible action buttons that overflow into a dropdown.",
       "dependencies": ["class-variance-authority", "lucide-react"],
-      "registryDependencies": ["@uipath/button", "@uipath/dropdown-menu"],
+      "registryDependencies": [
+        "@uipath/button",
+        "@uipath/composition",
+        "@uipath/dropdown-menu"
+      ],
+      "meta": { "layer": "surface" },
+      "categories": ["surface"],
       "files": [
         {
           "path": "registry/page-header/page-header.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/page-header/page-header.surface.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "composition",
+      "type": "registry:lib",
+      "title": "Composition",
+      "description": "Specs for the template, slot, surface, and occupant layout layers, helpers to check that a surface fits a slot and an occupant fits a surface, and useSurface() for occupants to read the shape of their space.",
+      "dependencies": ["lucide-react"],
+      "files": [
+        {
+          "path": "registry/composition/composition.ts",
+          "type": "registry:lib",
+          "target": "lib/composition.ts"
+        },
+        {
+          "path": "registry/composition/layout-tokens.ts",
+          "type": "registry:lib",
+          "target": "lib/layout-tokens.ts"
+        },
+        {
+          "path": "registry/composition/surface-context.tsx",
+          "type": "registry:lib",
+          "target": "lib/surface-context.tsx"
+        }
+      ]
+    },
+    {
+      "name": "side-panel",
+      "type": "registry:ui",
+      "title": "Side Panel",
+      "description": "A docked panel surface for the start or end edge of a template.",
+      "registryDependencies": [
+        "@uipath/composition",
+        "@uipath/use-scroll-fade"
+      ],
+      "cssVars": {
+        "theme": {
+          "color-side-panel-tint": "var(--side-panel-tint)"
+        },
+        "light": {
+          "side-panel-tint": "color-mix(in oklab, var(--sidebar) 60%, transparent)",
+          "side-panel-width-min": "280px"
+        },
+        "dark": {
+          "side-panel-tint": "color-mix(in oklab, var(--sidebar) 60%, transparent)"
+        }
+      },
+      "meta": { "layer": "surface" },
+      "categories": ["surface"],
+      "files": [
+        {
+          "path": "registry/side-panel/side-panel.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/side-panel/side-panel.surface.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "content-area",
+      "type": "registry:ui",
+      "title": "Content Area",
+      "description": "A scrolling surface for a template's main slot, padded to align with the page header.",
+      "registryDependencies": [
+        "@uipath/composition",
+        "@uipath/use-scroll-fade"
+      ],
+      "meta": { "layer": "surface" },
+      "categories": ["surface"],
+      "files": [
+        {
+          "path": "registry/content-area/content-area.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/content-area/content-area.surface.ts",
           "type": "registry:ui"
         }
       ]
@@ -2473,6 +2575,194 @@
           "path": "registry/shell/shell-roles.ts",
           "type": "registry:ui"
         }
+      ]
+    },
+    {
+      "name": "use-scroll-fade",
+      "type": "registry:hook",
+      "title": "useScrollFade",
+      "description": "Scroll fades for a scroll container, vertical, horizontal, or both: a mask that fades an edge only while there is more content in that direction, sized by --scroll-fade-size.",
+      "registryDependencies": ["@uipath/composition"],
+      "files": [
+        {
+          "path": "registry/use-scroll-fade/use-scroll-fade.ts",
+          "type": "registry:hook"
+        }
+      ]
+    },
+    {
+      "name": "occupant",
+      "type": "registry:ui",
+      "title": "Occupant",
+      "description": "The kit every occupant is built with: the <Occupant> root that renders data-occupant, the standard states (loading, empty, error, agent updating), the view props every occupant takes, selection props for occupants whose items can be picked, a status with a tone, and truncated text with a tooltip.",
+      "dependencies": ["lucide-react", "react-i18next"],
+      "registryDependencies": [
+        "@uipath/composition",
+        "@uipath/button",
+        "@uipath/skeleton",
+        "@uipath/timeline",
+        "@uipath/tooltip"
+      ],
+      "files": [
+        { "path": "registry/occupant/occupant.tsx", "type": "registry:ui" },
+        {
+          "path": "registry/occupant/occupant-state-view.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/occupant/occupant-states.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/occupant/occupant-layout.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/occupant/occupant-status.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/occupant/occupant-truncated-text.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "progress-view-model",
+      "type": "registry:lib",
+      "title": "Progress view model",
+      "description": "A neutral view model for progress: events with an actor (person or agent), status, title, detail, and time, and the stages they move through. Solutions map their own data into it with an adapter.",
+      "registryDependencies": ["@uipath/timeline"],
+      "files": [
+        {
+          "path": "registry/progress-view-model/progress-view-model.ts",
+          "type": "registry:lib",
+          "target": "lib/progress-view-model.ts"
+        },
+        {
+          "path": "registry/progress-view-model/progress-markers.ts",
+          "type": "registry:lib",
+          "target": "lib/progress-markers.ts"
+        }
+      ]
+    },
+    {
+      "name": "activity-timeline",
+      "type": "registry:ui",
+      "title": "Activity timeline",
+      "description": "Occupant: every event for an item, oldest first, with who did it and how it stands. Vertical surfaces.",
+      "dependencies": ["lucide-react", "react-i18next"],
+      "registryDependencies": [
+        "@uipath/composition",
+        "@uipath/occupant",
+        "@uipath/progress-view-model",
+        "@uipath/skeleton",
+        "@uipath/timeline"
+      ],
+      "meta": { "layer": "occupant" },
+      "categories": ["occupant"],
+      "files": [
+        {
+          "path": "registry/activity-timeline/activity-timeline.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/activity-timeline/activity-timeline.occupant.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "stage-strip",
+      "type": "registry:ui",
+      "title": "Stage strip",
+      "description": "Occupant: where an item is in its stages, as a one-band summary. Horizontal surfaces.",
+      "dependencies": ["lucide-react", "react-i18next"],
+      "registryDependencies": [
+        "@uipath/composition",
+        "@uipath/occupant",
+        "@uipath/progress-view-model",
+        "@uipath/skeleton",
+        "@uipath/timeline"
+      ],
+      "meta": { "layer": "occupant" },
+      "categories": ["occupant"],
+      "files": [
+        {
+          "path": "registry/stage-strip/stage-strip.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/stage-strip/stage-strip.occupant.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "key-facts",
+      "type": "registry:ui",
+      "title": "Key facts",
+      "description": "Occupant: the few facts that matter most about an item, as label and value pairs. Vertical and horizontal surfaces.",
+      "dependencies": ["lucide-react", "react-i18next"],
+      "registryDependencies": ["@uipath/composition", "@uipath/occupant"],
+      "meta": { "layer": "occupant" },
+      "categories": ["occupant"],
+      "files": [
+        { "path": "registry/key-facts/key-facts.tsx", "type": "registry:ui" },
+        {
+          "path": "registry/key-facts/key-facts.occupant.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/key-facts/key-facts.view-model.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "participants",
+      "type": "registry:ui",
+      "title": "Participants",
+      "description": "Occupant: the people involved with an item, what each one does, and when they last acted. Vertical surfaces.",
+      "dependencies": ["lucide-react", "react-i18next"],
+      "registryDependencies": ["@uipath/composition", "@uipath/occupant"],
+      "meta": { "layer": "occupant" },
+      "categories": ["occupant"],
+      "files": [
+        {
+          "path": "registry/participants/participants.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/participants/participants.occupant.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/participants/participants.view-model.ts",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "queue",
+      "type": "registry:ui",
+      "title": "Queue",
+      "description": "Occupant: a list of items to work through, grouped and filtered, where picking one opens it. Vertical surfaces.",
+      "dependencies": ["lucide-react", "react-i18next"],
+      "registryDependencies": [
+        "@uipath/button",
+        "@uipath/card",
+        "@uipath/composition",
+        "@uipath/occupant",
+        "@uipath/tabs",
+        "@uipath/use-scroll-fade"
+      ],
+      "meta": { "layer": "occupant" },
+      "categories": ["occupant"],
+      "files": [
+        { "path": "registry/queue/queue.tsx", "type": "registry:ui" },
+        { "path": "registry/queue/queue.occupant.ts", "type": "registry:ui" },
+        { "path": "registry/queue/queue.view-model.ts", "type": "registry:ui" }
       ]
     },
     {

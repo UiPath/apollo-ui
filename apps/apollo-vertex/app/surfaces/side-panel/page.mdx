@@ -1,0 +1,102 @@
+import { OccupantsThatFit } from '@/app/_components/occupant-docs';
+import { Code } from 'nextra/components';
+import {
+  PADDED_INSET_PX,
+  SIDE_PANEL_TINT_STRENGTH,
+} from '@/lib/composition';
+import { sidePanelSurface } from '@/registry/side-panel/side-panel.surface';
+import { END_PANEL_WIDTH, START_PANEL_WIDTH } from '@/templates/detail-page/detail-page.template';
+
+# Side panel
+
+A panel at the start or end edge of a template. The same surface fills both
+panel slots.
+
+## Purpose
+
+Content that sits beside the page's main content: a work queue, secondary
+navigation, the AI assistant, activity history, a source document.
+
+## What it provides
+
+| | |
+| --- | --- |
+| Shape | <Code>{sidePanelSurface.provides.orientation}</Code>: a column that grows downward. |
+| Width | Set by the slot. The surface's own minimum is {sidePanelSurface.width.min}px. |
+| Inner width | {sidePanelSurface.provides.width.min}px at the minimum when padded. On the Detail page: start {START_PANEL_WIDTH.default - 2 * PADDED_INSET_PX}px, end {END_PANEL_WIDTH.default - 2 * PADDED_INSET_PX}px at its default. |
+| Padding | `padded` ({PADDED_INSET_PX}px) or `flush` |
+| Scroll | `surface` (it scrolls and fades) or `occupant` (the occupant scrolls itself) |
+
+## Specs
+
+| Field | Value |
+| --- | --- |
+| `name` | <Code>{sidePanelSurface.name}</Code> |
+| `width.min` | {sidePanelSurface.width.min}px (`--side-panel-width-min`) |
+| `provides.orientation` | <Code>{sidePanelSurface.provides.orientation}</Code> |
+| `provides.width.min` | {sidePanelSurface.provides.width.min}px |
+| `provides.scroll` | <Code>{sidePanelSurface.provides.scroll}</Code> |
+| `data-surface` | `side-panel` |
+| `data-side` | `start` or `end` |
+| `data-state` | `open` or `closed`, from the template |
+| `data-placement` | `below-header` or `beside-header`, from the template |
+| `data-padding` | `padded` or `flush` |
+| `data-scroll` | `surface` or `occupant` |
+
+On the Detail page:
+
+| Slot | Default | Minimum | Maximum | Resizable |
+| --- | --- | --- | --- | --- |
+| Start panel | {START_PANEL_WIDTH.default}px | {START_PANEL_WIDTH.min}px | {START_PANEL_WIDTH.max}px | No |
+| End panel | {END_PANEL_WIDTH.default}px | {END_PANEL_WIDTH.min}px | Never wider than main | Yes |
+
+## Occupants that fit here
+
+<OccupantsThatFit surface="side-panel" />
+
+Generated from every registered occupant's spec. How wide one can be depends
+on the slot that holds this surface; see the template's width rules.
+
+## Configurations
+
+- `side`: `start` or `end`.
+- `padding` and `scroll`: from the occupant's specs.
+- Placement and open state come from the template. See
+  [choosing placement](/templates/detail-page#choosing-placement).
+- Teams can't set the background. It follows placement.
+
+## Appearance
+
+- **Below header:** transparent over the Shell's ambient layer.
+- **Beside header:** the `--side-panel-tint` background, `--sidebar` at
+  {SIDE_PANEL_TINT_STRENGTH}%, over the ambient layer. The ambient layer still
+  shows through.
+- **Scroll fades:** a mask at an edge while there is more content that way. The
+  mask fades the content, never the tint.
+- **Dividers, width, resizing, and motion:** owned by the template, not the
+  panel. The panel fills the slot it's given. See the
+  [Detail page](/templates/detail-page#resizing-the-end-panel).
+
+## Accessibility
+
+- It renders an `<aside>` landmark. Give it an `aria-label` that names its
+  content.
+- A closed panel is inert: it can't take focus and assistive tech skips it,
+  even while it animates out. If focus was inside, it moves to main.
+- In forced-colors mode the dividers become real borders in `CanvasText`.
+
+## When not to use
+
+- For the page's main content. Use the [content area](/surfaces/content-area).
+- For a short, one-off task, like a confirmation or a quick edit. Use a dialog
+  or a sheet.
+- To add emphasis. Placement shows what the content belongs to, not how
+  important it is.
+
+## Known gaps
+
+- **Small screens.** There is no overlay surface yet. On narrow windows panels
+  close instead.
+- **Panel triggers.** There are no in-page controls to open or close panels
+  yet.
+- **Start panel resizing.** The start panel isn't resizable yet.

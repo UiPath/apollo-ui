@@ -5,6 +5,7 @@
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
+    "allowImportingTsExtensions": true,
     "incremental": true,
     "module": "esnext",
     "esModuleInterop": true,
@@ -35,6 +36,22 @@
       "@/components/ui/carousel": ["./registry/carousel/carousel"],
       "@/components/ui/chart": ["./registry/chart/chart"],
       "@/lib/charts-core": ["./registry/charts-core/charts-core"],
+      "@/lib/composition": ["./registry/composition/composition"],
+      "@/lib/surface-context": ["./registry/composition/surface-context"],
+      "@/lib/progress-view-model": [
+        "./registry/progress-view-model/progress-view-model"
+      ],
+      "@/lib/progress-markers": [
+        "./registry/progress-view-model/progress-markers"
+      ],
+      "@/components/ui/occupant": ["./registry/occupant/occupant"],
+      "@/components/ui/queue": ["./registry/queue/queue"],
+      "@/components/ui/participants": ["./registry/participants/participants"],
+      "@/components/ui/key-facts": ["./registry/key-facts/key-facts"],
+      "@/components/ui/activity-timeline": [
+        "./registry/activity-timeline/activity-timeline"
+      ],
+      "@/components/ui/stage-strip": ["./registry/stage-strip/stage-strip"],
       "@/lib/data-fabric-adapter": [
         "./registry/data-fabric-adapter/data-fabric-adapter"
       ],
@@ -55,6 +72,7 @@
       "@/components/ui/collapsible": ["./registry/collapsible/collapsible"],
       "@/components/ui/combobox": ["./registry/combobox/combobox"],
       "@/components/ui/command": ["./registry/command/command"],
+      "@/components/ui/content-area": ["./registry/content-area/content-area"],
       "@/components/ui/context-menu": ["./registry/context-menu/context-menu"],
       "@/components/ui/data-table": ["./registry/data-table/index"],
       "@/components/ui/dialog": ["./registry/dialog/dialog"],
@@ -99,6 +117,7 @@
       "@/components/ui/separator": ["./registry/separator/separator"],
       "@/components/ui/sheet": ["./registry/sheet/sheet"],
       "@/components/ui/shell": ["./registry/shell/shell"],
+      "@/components/ui/side-panel": ["./registry/side-panel/side-panel"],
       "@/components/ui/sidebar": ["./registry/sidebar/sidebar"],
       "@/components/ui/skeleton": ["./registry/skeleton/skeleton"],
       "@/components/ui/slider": ["./registry/slider/slider"],
@@ -117,6 +136,7 @@
       "@/components/ui/toggle-group": ["./registry/toggle-group/toggle-group"],
       "@/components/ui/tooltip": ["./registry/tooltip/tooltip"],
       "@/hooks/use-mobile": ["./registry/use-mobile/use-mobile"],
+      "@/hooks/use-scroll-fade": ["./registry/use-scroll-fade/use-scroll-fade"],
       "@/hooks/useReactTableCompat": [
         "./registry/use-data-table/useReactTableCompat"
       ],

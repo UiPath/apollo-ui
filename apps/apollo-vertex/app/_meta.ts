@@ -4,6 +4,7 @@ export default {
   foundation: "Foundation",
   components: "Components",
   patterns: "Patterns",
+  surfaces: "Surfaces",
   templates: "Templates",
   guidelines: "Guidelines",
   experiment: "Experiment",

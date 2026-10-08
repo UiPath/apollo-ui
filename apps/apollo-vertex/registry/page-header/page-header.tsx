@@ -12,48 +12,88 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import type { SurfacePadding } from "@/lib/composition";
+import { SurfaceProvider, useSurfaceFrame } from "@/lib/surface-context";
 import { cn } from "@/lib/utils";
+import { pageHeaderSurface } from "./page-header.surface";
 
 const pageHeaderVariants = cva("", {
   variants: {
     size: {
       default: [
-        "flex flex-wrap items-center gap-4 py-4 px-4 sm:px-6 lg:px-8 min-h-[92px] transition-[padding] duration-300 ease-in-out",
-        "@3xl:grid @3xl:grid-cols-[1fr_auto] @3xl:py-0",
+        "flex flex-wrap items-center gap-4 min-h-[92px] transition-[padding] duration-300 ease-in-out",
+        "@3xl:grid @3xl:grid-cols-[1fr_auto]",
         "@3xl:has-[[data-slot=page-header-content]]:grid-cols-[3fr_6fr_3fr]",
       ].join(" "),
       content: "flex flex-col gap-3 pt-[10px] pb-4",
     },
+    // "responsive" is the standalone default. "padded" and "flush" are the
+    // surface paddings a template sets from its occupant's spec.
+    padding: {
+      responsive: "",
+      padded: "p-(--surface-inset)",
+      flush: "p-0",
+    },
   },
+  compoundVariants: [
+    {
+      size: "default",
+      padding: "responsive",
+      class: "py-4 px-4 sm:px-6 lg:px-8 @3xl:py-0",
+    },
+  ],
   defaultVariants: {
     size: "default",
+    padding: "responsive",
   },
 });
 
 interface PageHeaderProps
   extends React.ComponentProps<"div">,
-    VariantProps<typeof pageHeaderVariants> {
+    Omit<VariantProps<typeof pageHeaderVariants>, "padding"> {
   bordered?: boolean;
+  /**
+   * Surface padding, set when a template places the header in a slot.
+   * Leave unset for the standalone responsive padding.
+   */
+  padding?: SurfacePadding;
 }
 
 function PageHeader({
   className,
   size,
+  padding,
   bordered = false,
+  ref,
+  children,
   ...props
 }: PageHeaderProps) {
+  // useSurface() reports the padded area's width. The container stays on the
+  // root: the header's own parts query it, and a second container on the
+  // padded area would move their breakpoints.
+  const frame = useSurfaceFrame<HTMLDivElement>(
+    pageHeaderSurface.provides.orientation,
+    ref,
+  );
   return (
-    <div className="@container shrink-0">
+    <div
+      data-surface="page-header"
+      data-padding={padding}
+      className="@container shrink-0"
+    >
       <div
+        ref={frame.ref}
         data-slot="page-header"
         data-size={size}
         className={cn(
-          pageHeaderVariants({ size }),
+          pageHeaderVariants({ size, padding: padding ?? "responsive" }),
           bordered && "border-b border-border",
           className,
         )}
         {...props}
-      />
+      >
+        <SurfaceProvider value={frame.value}>{children}</SurfaceProvider>
+      </div>
     </div>
   );
 }

@@ -97,6 +97,26 @@
   ],
   "overrides": [
     {
+      // Tests drive a page step by step and read elements they just waited
+      // for, so sequential awaits and non-null assertions are the idiom.
+      // page.evaluate() results are untyped, and Playwright's `use` fixture
+      // argument looks like a React hook to the hooks rule. Helpers inside a
+      // page.evaluate() callback run in the browser, so they must stay inside
+      // it, whatever consistent-function-scoping suggests.
+      "files": ["tests/**/*.ts"],
+      "rules": {
+        "eslint/no-await-in-loop": "off",
+        "typescript/no-non-null-assertion": "off",
+        "typescript/no-unsafe-type-assertion": "off",
+        "typescript/no-unsafe-member-access": "off",
+        "typescript/no-unsafe-assignment": "off",
+        "typescript/no-unsafe-argument": "off",
+        "typescript/no-unsafe-call": "off",
+        "react-hooks/rules-of-hooks": "off",
+        "unicorn/consistent-function-scoping": "off"
+      }
+    },
+    {
       "files": ["registry/**/*.tsx"],
       "rules": {
         "react/only-export-components": "off",

@@ -1,0 +1,91 @@
+---
+title: Activity timeline
+---
+
+import { OccupantTitle, OpenInWorkbench, WhereItFits } from '@/app/_components/occupant-docs';
+import { OccupantInSurface } from '@/app/_components/occupant-in-surface';
+
+<OccupantTitle name="activity-timeline" />
+
+Every event for an item, oldest first: who did it (a person or an agent), how
+it stands, and when. It takes the [occupant](/guidelines/design-architecture/creating-occupants)
+role: it goes in any surface that gives it the space it needs.
+
+<OpenInWorkbench name="activity-timeline" />
+
+<div className="not-prose my-6 flex flex-wrap gap-6">
+  <OccupantInSurface occupant="activity-timeline" surface="side-panel" example="primary" width={360} height={520} />
+  <OccupantInSurface occupant="activity-timeline" surface="side-panel" example="secondary" width={360} height={520} />
+</div>
+
+The same occupant, with data from two different solutions: invoice processing
+and a claim appeal. Neither is built into it.
+
+## Where it fits
+
+<WhereItFits name="activity-timeline" />
+
+The table comes from the occupant's spec. For every place it fits, see each
+surface's "Occupants that fit here".
+
+## View model
+
+It renders a `ProgressViewModel` from `@uipath/progress-view-model`. Nothing in
+it names a domain.
+
+| Field | What it holds |
+| --- | --- |
+| `subject` | What this is the progress of, for accessible names, like an item's id |
+| `events` | Oldest first. Each has an `actor` (a person or an agent, with a name and initials), a `status`, a `title`, an optional `detail`, a display `time`, and the stage it belongs to |
+| `stages` | The steps in the overall flow. The timeline doesn't use them; the [stage strip](/patterns/stage-strip) does |
+
+Your solution maps its own data into this shape with an adapter. The adapter
+belongs to your solution, not to the occupant.
+
+## States
+
+It renders the standard occupant states through `OccupantStateView`: loading
+(skeleton rows shaped like events), empty, error (with Retry when you pass
+`onRetry`), and agent updating (the events stay readable, marked busy).
+
+## Installation
+
+```bash
+npx shadcn@latest add @uipath/activity-timeline
+```
+
+## Usage
+
+```tsx
+import { ActivityTimeline } from '@/components/ui/activity-timeline';
+import type { ProgressViewModel } from '@/lib/progress-view-model';
+
+// In your solution: map your data into the neutral view model.
+function toProgress(item: YourItem): ProgressViewModel {
+  return {
+    subject: item.id,
+    events: item.history.map((entry) => ({
+      id: entry.id,
+      actor: entry.user
+        ? { kind: 'person', name: entry.user.name, initials: entry.user.initials }
+        : { kind: 'agent', name: 'Agent' },
+      status: entry.done ? 'done' : 'in-progress',
+      title: entry.summary,
+      detail: entry.note,
+      time: entry.formattedTime,
+    })),
+    stages: [],
+  };
+}
+
+<SidePanel side="end" aria-label="Activity">
+  <ActivityTimeline view={toProgress(item)} state={isLoading ? 'loading' : 'ready'} />
+</SidePanel>
+```
+
+## Accessibility
+
+- The events are an ordered list named for the subject ("Activity for …").
+- Markers are decorative: each event's title says what happened.
+- Long titles and details wrap, so nothing is cut off at any width from the
+  minimum up.

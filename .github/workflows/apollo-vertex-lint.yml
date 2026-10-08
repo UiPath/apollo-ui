@@ -2,7 +2,8 @@ name: Apollo Vertex Lint
 
 on:
   pull_request:
-    branches: [main]
+    # Main, and stacked proof-of-concept branches (poc/design-architecture).
+    branches: [main, "poc/**"]
     paths:
       - "apps/apollo-vertex/**"
       - ".github/workflows/apollo-vertex-lint.yml"
@@ -33,3 +34,23 @@ jobs:
 
       - name: Format check
         run: pnpm --filter apollo-vertex format:check
+
+  occupant-scope:
+    name: Occupant scope
+    runs-on: uipath-ubuntu-latest
+    if: github.event.pull_request.head.repo.fork == false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          persist-credentials: false
+          # Every commit in the pull request, not the merge commit.
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Check each occupant commit stays in its occupant
+        working-directory: apps/apollo-vertex
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node --experimental-strip-types --no-warnings scripts/check-occupant-scope.ts --range "$BASE_SHA..$HEAD_SHA"

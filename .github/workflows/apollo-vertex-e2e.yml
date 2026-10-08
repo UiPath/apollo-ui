@@ -1,0 +1,87 @@
+name: Apollo Vertex E2E
+
+# Browser tests for the Detail page template, its surfaces, and the design
+# architecture docs (apps/apollo-vertex/tests/e2e). Pull requests run the
+# core set; the full matrix runs nightly and on demand.
+
+on:
+  pull_request:
+    # Main, and stacked proof-of-concept branches (poc/design-architecture).
+    branches: [main, "poc/**"]
+    paths:
+      - "apps/apollo-vertex/**"
+      - ".github/workflows/apollo-vertex-e2e.yml"
+  schedule:
+    - cron: "0 5 * * *" # 05:00 UTC nightly
+  workflow_dispatch:
+    inputs:
+      project:
+        description: Which set to run
+        type: choice
+        options: [full, core]
+        default: full
+
+concurrency:
+  group: vertex-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    name: E2E (${{ github.event_name == 'pull_request' && 'core' || inputs.project || 'full' }})
+    runs-on: uipath-ubuntu-latest
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false
+    timeout-minutes: 30
+    env:
+      CI: "true"
+      PROJECT: ${{ github.event_name == 'pull_request' && 'core' || inputs.project || 'full' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          persist-credentials: false
+
+      - name: Install Node dependencies
+        uses: ./.github/actions/install-node-deps
+
+      - name: Read Playwright version
+        id: playwright
+        run: echo "version=$(pnpm --filter apollo-vertex exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright browsers
+        id: browsers
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830  # v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+
+      - name: Install Chromium
+        if: steps.browsers.outputs.cache-hit != 'true'
+        run: pnpm --filter apollo-vertex exec playwright install --with-deps chromium
+
+      - name: Install Chromium system dependencies
+        if: steps.browsers.outputs.cache-hit == 'true'
+        run: pnpm --filter apollo-vertex exec playwright install-deps chromium
+
+      # The theme CSS is generated, then a production build is served by the
+      # Playwright config's webServer (`next start`).
+      - name: Build
+        run: |
+          pnpm --filter apollo-vertex generate:theme
+          pnpm --filter apollo-vertex exec next build
+
+      - name: Run E2E (${{ env.PROJECT }})
+        run: pnpm --filter apollo-vertex exec playwright test --project="$PROJECT"
+
+      - name: Upload report
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        with:
+          name: vertex-e2e-report-${{ github.sha }}
+          path: |
+            apps/apollo-vertex/playwright-report/
+            apps/apollo-vertex/test-results/
+          retention-days: 7
+          if-no-files-found: ignore
