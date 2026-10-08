@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.78.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.78.0...@uipath/apollo-react@6.78.1) (2026-10-08)
+
+### Bug Fixes
+
+* **apollo-react:** read apollo-wind Json tree parts at render, not import ([bc747b4](https://github.com/UiPath/apollo-ui/commit/bc747b4ee642e97b9a78459da849c82d35210f57))
+
 ## [@uipath/apollo-react-v6.78.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.77.4...@uipath/apollo-react@6.78.0) (2026-10-08)
 
 ### Features
