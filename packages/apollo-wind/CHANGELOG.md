@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.66.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.65.2...@uipath/apollo-wind@2.66.0) (2026-10-08)
+
+### Features
+
+* **apollo-wind:** collapsed badges, option details and create row in MultiSelect ([48a3251](https://github.com/UiPath/apollo-ui/commit/48a32519efc8a706ff068dc8ff50b09db44ad2d3))
+
 ## [@uipath/apollo-wind-v2.65.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.65.1...@uipath/apollo-wind@2.65.2) (2026-10-08)
 
 ### Bug Fixes
