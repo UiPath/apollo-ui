@@ -225,6 +225,8 @@ export {
 } from './components/ui/chart';
 export type { CheckboxProps } from './components/ui/checkbox';
 export { Checkbox } from './components/ui/checkbox';
+export type { CitationData, CitationProps, CitationStrings } from './components/ui/citation';
+export { Citation, citationVariants, DEFAULT_CITATION_STRINGS } from './components/ui/citation';
 export type {
   CodeBlockHeaderProps,
   CodeBlockProps,
@@ -496,6 +498,31 @@ export {
   MessageHeader,
 } from './components/ui/message';
 export type {
+  MessageActionCopyProps,
+  MessageActionCopyStrings,
+  MessageActionFeedbackProps,
+  MessageActionFeedbackStrings,
+  MessageActionItem,
+  MessageActionProps,
+  MessageActionsOverflowProps,
+  MessageActionsOverflowStrings,
+  MessageActionsProps,
+  MessageActionsStrings,
+  MessageFeedbackValue,
+} from './components/ui/message-actions';
+export {
+  DEFAULT_MESSAGE_ACTION_COPY_STRINGS,
+  DEFAULT_MESSAGE_ACTION_FEEDBACK_STRINGS,
+  DEFAULT_MESSAGE_ACTIONS_OVERFLOW_STRINGS,
+  DEFAULT_MESSAGE_ACTIONS_STRINGS,
+  MessageAction,
+  MessageActionCopy,
+  MessageActionFeedback,
+  MessageActions,
+  MessageActionsOverflow,
+  messageActionsVariants,
+} from './components/ui/message-actions';
+export type {
   MessageScrollerButtonProps,
   MessageScrollerButtonStrings,
   MessageScrollerContentProps,
@@ -758,6 +785,18 @@ export {
 export { Skeleton } from './components/ui/skeleton';
 export { Slider } from './components/ui/slider';
 export { Toaster, toast } from './components/ui/sonner';
+export type {
+  SourceData,
+  SourceItemProps,
+  SourcesProps,
+  SourcesStrings,
+} from './components/ui/sources';
+export {
+  DEFAULT_SOURCES_STRINGS,
+  SourceItem,
+  Sources,
+  SourcesList,
+} from './components/ui/sources';
 export type { SpinnerProps } from './components/ui/spinner';
 export { Spinner, spinnerVariants } from './components/ui/spinner';
 export type { StatsCardProps } from './components/ui/stats-card';
