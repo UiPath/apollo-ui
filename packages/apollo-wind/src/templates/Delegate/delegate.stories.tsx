@@ -17,9 +17,9 @@ import {
   Workflow,
 } from 'lucide-react';
 import * as React from 'react';
-import { ChatComposer } from '@/components/custom/chat-composer';
 import { ChatFirstExperience } from '@/components/custom/chat-first-experience';
 import { StepsView } from '@/components/custom/chat-steps-view';
+import { DemoComposer } from '@/components/custom/demo-composer';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { NavItem } from './template-delegate';
@@ -230,7 +230,7 @@ function ChatResponsesContent() {
 
       {/* Composer — pinned to bottom */}
       <div className="flex justify-center px-6 pb-6">
-        <ChatComposer placeholder="I would like you to automate my" />
+        <DemoComposer placeholder="I would like you to automate my" />
       </div>
     </div>
   );
