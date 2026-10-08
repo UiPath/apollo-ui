@@ -1,3 +1,16 @@
+## [@uipath/apollo-react-v6.78.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.77.4...@uipath/apollo-react@6.78.0) (2026-10-08)
+
+### Features
+
+* **apollo-react:** add ChatRoot, renderer registry and renderer config ([c390bb6](https://github.com/UiPath/apollo-ui/commit/c390bb667fb50b82ee8fecbb6394bc293522ec75))
+* **apollo-react:** resolve chat message renderers per chat renderer ([0218702](https://github.com/UiPath/apollo-ui/commit/02187027598dbca34c97f38001423cae43729d26))
+* **apollo-react:** run ApChat on ChatRoot with a Material renderer ([edbc927](https://github.com/UiPath/apollo-ui/commit/edbc927d55de8b99f8ce2b1d30e1c26e005584fb))
+* **apollo-react:** wire the @uipath/apollo-react/chat subpath ([f57fc6c](https://github.com/UiPath/apollo-ui/commit/f57fc6c72ab5ff90f5e9f5ad0bf891e4a78868f1))
+
+### Bug Fixes
+
+* **apollo-react:** give each chat service its own internal event bus ([2dea53e](https://github.com/UiPath/apollo-ui/commit/2dea53e06ada29825b490ecfaf3e13100f0e7c07))
+
 ## [@uipath/apollo-react-v6.77.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.77.3...@uipath/apollo-react@6.77.4) (2026-10-08)
 
 ### Bug Fixes
