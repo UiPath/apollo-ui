@@ -460,6 +460,14 @@ export type { RowProps } from './components/ui/layout/row';
 // Layout Components
 // -----------------------------------------------------------------------------
 export { Row } from './components/ui/layout/row';
+export type { LiveRegionHandle, LiveRegionProps } from './components/ui/live-region';
+export { LiveRegion } from './components/ui/live-region';
+export type { LoadingDotsProps, LoadingDotsStrings } from './components/ui/loading-dots';
+export {
+  DEFAULT_LOADING_DOTS_STRINGS,
+  LoadingDots,
+  loadingDotsVariants,
+} from './components/ui/loading-dots';
 export type {
   LockableFieldType,
   LockableValueFieldMode,
@@ -788,6 +796,15 @@ export {
 } from './components/ui/panel-tabs';
 export type { TextareaProps } from './components/ui/textarea';
 export { Textarea } from './components/ui/textarea';
+export type {
+  ThinkingIndicatorProps,
+  ThinkingIndicatorStrings,
+} from './components/ui/thinking-indicator';
+export {
+  DEFAULT_THINKING_INDICATOR_STRINGS,
+  ThinkingIndicator,
+  thinkingIndicatorVariants,
+} from './components/ui/thinking-indicator';
 export { Toggle, toggleVariants } from './components/ui/toggle';
 export { ToggleGroup, ToggleGroupItem } from './components/ui/toggle-group';
 export type {
