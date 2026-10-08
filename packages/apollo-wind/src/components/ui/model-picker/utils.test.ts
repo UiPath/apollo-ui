@@ -533,4 +533,13 @@ describe('isTextGenerationModel', () => {
       false
     );
   });
+
+  it('drops embedding-only models by capability', () => {
+    expect(isTextGenerationModel(model({ modelId: 'a', capabilities: ['Embeddings'] }))).toBe(
+      false
+    );
+    expect(
+      isTextGenerationModel(model({ modelId: 'a', capabilities: ['Chat', 'Embeddings'] }))
+    ).toBe(true);
+  });
 });
