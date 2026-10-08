@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.77.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.77.2...@uipath/apollo-react@6.77.3) (2026-10-08)
+
+### Bug Fixes
+
+* **apollo-react:** stop the first-run experience clipping its last suggestion [JAR-10042] ([598c2b0](https://github.com/UiPath/apollo-ui/commit/598c2b0ebbaa43f706cb58f2904075adf96cf4d0))
+
 ## [@uipath/apollo-react-v6.77.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.77.1...@uipath/apollo-react@6.77.2) (2026-10-08)
 
 ### Bug Fixes
