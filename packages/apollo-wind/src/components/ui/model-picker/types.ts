@@ -136,6 +136,7 @@ export interface DiscoveryModel {
    * text generation only passes `filter={isTextGenerationModel}`.
    */
   modelType?: ModelType;
+  capabilities?: ('Chat' | 'Embeddings' | string)[];
   deprecationDetails?: DeprecationDetails | null;
   byomDetails?: ByomDetails | null;
   modelDetails?: ModelDetails;
