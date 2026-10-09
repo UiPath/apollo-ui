@@ -11,6 +11,7 @@ import {
   MessageGroup,
   MessageHeader,
 } from './message';
+import { MessageActions } from './message-actions';
 
 describe('Message', () => {
   it('renders a turn with avatar, header, body and footer', () => {
@@ -73,6 +74,27 @@ describe('Message', () => {
     expect(ref.current).toBeInstanceOf(HTMLDivElement);
     expect(ref.current).toHaveClass('custom');
     expect(ref.current).toHaveClass('group/message');
+  });
+
+  it('hosts an action bar after the body and keeps the avatar level with the bubble', () => {
+    render(
+      <Message align="end">
+        <MessageAvatar data-testid="avatar">U</MessageAvatar>
+        <MessageContent data-testid="content">
+          <Bubble>
+            <BubbleContent>Hello</BubbleContent>
+          </Bubble>
+          <MessageActions />
+        </MessageContent>
+      </Message>
+    );
+    const bar = screen.getByRole('toolbar');
+    expect(bar).toHaveAttribute('data-slot', 'message-actions');
+    expect(screen.getByTestId('content').lastElementChild).toBe(bar);
+    expect(screen.getByTestId('content')).toHaveClass('group-data-[align=end]/message:*:self-end');
+    expect(screen.getByTestId('avatar')).toHaveClass(
+      'group-has-[[data-slot=message-actions]]/message:-translate-y-10'
+    );
   });
 
   it('has no accessibility violations', async () => {

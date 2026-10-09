@@ -5,6 +5,8 @@ import { cn } from '@/lib';
  * Chat conversation row primitives, ported from shadcn/ui's chat components. A `Message` lays out
  * one turn: an optional `MessageAvatar`, then `MessageContent` holding a `MessageHeader`, the body
  * (usually a `Bubble`) and a `MessageFooter`. `align="end"` mirrors the row for the current user.
+ * A `MessageActions` bar goes inside `MessageContent` after the body, so it takes the same
+ * alignment as the bubble.
  */
 
 const MessageGroup = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
@@ -46,8 +48,8 @@ const MessageAvatar = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTML
       ref={ref}
       data-slot="message-avatar"
       className={cn(
-        // Sits level with the bubble, not the footer, when a footer is present.
-        'flex w-fit min-w-8 shrink-0 items-center justify-center self-end overflow-hidden rounded-full bg-muted group-has-[[data-slot=message-footer]]/message:-translate-y-8',
+        // Sits level with the bubble, not the footer or action bar, when those are present.
+        'flex w-fit min-w-8 shrink-0 items-center justify-center self-end overflow-hidden rounded-full bg-muted group-has-[[data-slot=message-footer]]/message:-translate-y-8 group-has-[[data-slot=message-actions]]/message:-translate-y-10 group-has-[[data-slot=message-footer]]/message:group-has-[[data-slot=message-actions]]/message:-translate-y-16',
         className
       )}
       {...props}
