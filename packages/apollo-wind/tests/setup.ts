@@ -18,7 +18,8 @@ global.IntersectionObserver = class IntersectionObserver {
   root = null;
   rootMargin = '';
   thresholds = [];
-  constructor(_callback: IntersectionObserverCallback, _options?: IntersectionObserverInit) {
+  // Takes the real constructor's arguments, which components pass, and ignores them.
+  constructor(_callback?: IntersectionObserverCallback, _options?: IntersectionObserverInit) {
     // Mock
   }
   observe() {
