@@ -427,6 +427,8 @@ function TreeItem({
             style={{ paddingLeft: `${depth * 20}px` }}
             onClick={handleClick}
             onKeyDown={(e) => {
+              // Only keys on the row itself; nested buttons keep their own Enter and Space.
+              if (e.target !== e.currentTarget) return;
               if (e.key !== 'Enter' && e.key !== ' ') return;
               e.preventDefault();
               if (selectionMode === 'none') {
