@@ -1,5 +1,6 @@
 import type { Meta } from '@storybook/react-vite';
 import { Folder, File, Globe, Pencil } from 'lucide-react';
+import { useState } from 'react';
 import FileTreeView, {
   type FileTreeViewItem,
   type FileTreeViewIconMap,
@@ -235,6 +236,73 @@ export const NoSelectionMode = {
       selectionMode="none"
     />
   ),
+};
+
+// ============================================================================
+// Checkboxes Without Selection
+// ============================================================================
+
+const propertiesData: FileTreeViewItem[] = [
+  { id: 'name', name: 'Name', type: 'item', meta: 'Text', checked: true },
+  { id: 'email', name: 'Email', type: 'item', meta: 'Text', checked: false },
+  {
+    id: 'address',
+    name: 'Address',
+    type: 'store',
+    meta: 'Object',
+    children: [
+      { id: 'address.city', name: 'City', type: 'item', meta: 'Text', checked: true },
+      { id: 'address.zip', name: 'Zip code', type: 'item', meta: 'Text', checked: false },
+    ],
+  },
+  {
+    id: 'legacyId',
+    name: 'Legacy ID',
+    type: 'item',
+    meta: 'Number',
+    checked: false,
+    disabled: true,
+  },
+];
+
+const setChecked = (
+  items: FileTreeViewItem[],
+  id: string,
+  checked: boolean,
+  inside = false
+): FileTreeViewItem[] =>
+  items.map((item) => {
+    const hit = inside || item.id === id;
+    if (item.children) return { ...item, children: setChecked(item.children, id, checked, hit) };
+    return hit ? { ...item, checked } : item;
+  });
+
+function CheckboxesWithoutSelectionDemo() {
+  const [data, setData] = useState(propertiesData);
+  return (
+    <FileTreeView
+      data={data}
+      title="Manage properties"
+      showCheckboxes
+      showExpandAll={false}
+      selectionMode="none"
+      getIcon={() => null}
+      onCheckChange={(item, checked) => setData((prev) => setChecked(prev, item.id, checked))}
+    />
+  );
+}
+
+export const CheckboxesWithoutSelection = {
+  name: 'Checkboxes Without Selection',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Checkboxes as the only state, as in a "manage properties" picker. Clicking a label toggles its checkbox, Space toggles the focused row, Enter expands a folder, and with no `menuItems` a right-click opens no menu.',
+      },
+    },
+  },
+  render: () => <CheckboxesWithoutSelectionDemo />,
 };
 
 // ============================================================================

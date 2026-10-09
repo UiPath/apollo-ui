@@ -144,6 +144,9 @@ const buildItemMap = (items: FileTreeViewItem[]): Map<string, FileTreeViewItem> 
   return map;
 };
 
+const toAriaChecked = (state: 'checked' | 'unchecked' | 'indeterminate') =>
+  state === 'indeterminate' ? 'mixed' : state === 'checked';
+
 // Update the getCheckState function to work bottom-up
 const getCheckState = (
   item: FileTreeViewItem,
@@ -323,6 +326,7 @@ function TreeItem({
 
   const handleAccessClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (isDisabled) return;
     if (onAccessChange) {
       const currentState = getCheckState(item, itemMap);
       // Toggle between checked and unchecked, treating indeterminate as unchecked
@@ -330,6 +334,16 @@ function TreeItem({
       onAccessChange(item, newChecked);
     }
   };
+
+  // Only the text toggles, not the whole row.
+  const renderName = () =>
+    showAccessRights ? (
+      // biome-ignore lint/a11y/noStaticElementInteractions: the checkbox's label.
+      // biome-ignore lint/a11y/useKeyWithClickEvents: the row handles the keyboard.
+      <span onClick={handleAccessClick}>{item.name}</span>
+    ) : (
+      item.name
+    );
 
   const renderIcon = () => {
     if (getIcon) {
@@ -383,7 +397,8 @@ function TreeItem({
 
   return (
     <ContextMenu>
-      <ContextMenuTrigger>
+      {/* No empty menu when there are no items. */}
+      <ContextMenuTrigger disabled={!menuItems?.length}>
         <div>
           <div
             ref={itemRef}
@@ -391,6 +406,9 @@ function TreeItem({
             aria-expanded={item.children ? isOpen : undefined}
             aria-selected={isSelected && selectionMode !== 'none'}
             aria-disabled={isDisabled}
+            aria-checked={
+              showAccessRights ? toAriaChecked(getCheckState(item, itemMap)) : undefined
+            }
             tabIndex={0}
             data-tree-item
             data-id={item.id}
@@ -409,10 +427,19 @@ function TreeItem({
             style={{ paddingLeft: `${depth * 20}px` }}
             onClick={handleClick}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                handleClick(e as unknown as React.MouseEvent);
+              if (e.key !== 'Enter' && e.key !== ' ') return;
+              e.preventDefault();
+              if (selectionMode === 'none') {
+                e.stopPropagation();
+                // No selection: Space toggles the checkbox, otherwise expand the folder.
+                if (e.key === ' ' && showAccessRights) {
+                  handleAccessClick(e as unknown as React.MouseEvent);
+                } else if (item.children && !isDisabled) {
+                  onToggleExpand(item.id, !isOpen);
+                }
+                return;
               }
+              handleClick(e as unknown as React.MouseEvent);
             }}
           >
             <div className="flex items-center h-8 min-w-0">
@@ -471,7 +498,7 @@ function TreeItem({
                     </button>
                   )}
                   {renderIcon()}
-                  <span className="flex-1 min-w-0 truncate">{item.name}</span>
+                  <span className="flex-1 min-w-0 truncate">{renderName()}</span>
                   {item.badge && <span className="shrink-0 ml-1">{item.badge}</span>}
                   {item.meta && (
                     <span className="text-xs text-muted-foreground shrink-0 ml-1 truncate max-w-[6rem]">
@@ -631,7 +658,7 @@ function TreeItem({
                     </button>
                   )}
                   {renderIcon()}
-                  <span className="flex-1 min-w-0 truncate">{item.name}</span>
+                  <span className="flex-1 min-w-0 truncate">{renderName()}</span>
                   {item.badge && <span className="shrink-0 ml-1">{item.badge}</span>}
                   {item.meta && (
                     <span className="text-xs text-muted-foreground shrink-0 ml-1 truncate max-w-[6rem]">
