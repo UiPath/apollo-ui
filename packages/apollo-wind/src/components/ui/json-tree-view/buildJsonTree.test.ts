@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   appendPathSegment,
   buildJsonTree,
@@ -10,7 +10,7 @@ import {
   removeValueAtPath,
   setValueAtPath,
 } from './buildJsonTree';
-import type { JsonSchema, JsonTreeNode } from './JsonTree.types';
+import type { JsonObject, JsonSchema, JsonTreeNode } from './JsonTree.types';
 
 const SCHEMA: JsonSchema = {
   type: 'object',
@@ -321,6 +321,52 @@ describe('large trees', () => {
   it('collects container paths without exceeding it either', () => {
     // The body array, each record, and each record's tags array.
     expect(collectContainerPaths(tree)).toHaveLength(40_001);
+  });
+});
+
+describe('keys named after Object.prototype members', () => {
+  it('expands a container named constructor unless its own path is collapsed', () => {
+    const tree = buildJsonTree({ value: { constructor: { name: 'x' } } });
+    expect(flattenJsonTree(tree, { collapsed: {} })).toHaveLength(2);
+    expect(flattenJsonTree(tree, { collapsed: { constructor: true } })).toHaveLength(1);
+  });
+});
+
+describe('deeply nested trees', () => {
+  // Deeper than the old recursive walks survived (they overflowed by 2,000 levels).
+  const DEPTH = 3_000;
+  let value: JsonObject = { leaf: 'found' };
+  for (let level = 0; level < DEPTH; level += 1) value = { a: value };
+  const tree = buildJsonTree({ value });
+
+  it('builds, flattens, searches, and collects paths without overflowing the stack', () => {
+    const rows = flattenJsonTree(tree);
+    // DEPTH `a` containers, then the leaf.
+    expect(rows).toHaveLength(DEPTH + 1);
+    expect(rows.at(-1)).toMatchObject({ depth: DEPTH, node: { key: 'leaf', value: 'found' } });
+    // Search keeps the whole ancestor chain of the match.
+    expect(flattenJsonTree(tree, { query: 'found' })).toHaveLength(DEPTH + 1);
+    expect(collectContainerPaths(tree)).toHaveLength(DEPTH);
+  });
+
+  it('checks each node once when filtering, so deep trees stay linear', () => {
+    const predicate = vi.fn((node: JsonTreeNode) => node.key === 'leaf');
+    const rows = flattenJsonTree(tree, { filterPredicate: predicate });
+    expect(rows).toHaveLength(DEPTH + 1);
+    // DEPTH containers plus the leaf, each tested exactly once.
+    expect(predicate).toHaveBeenCalledTimes(DEPTH + 1);
+  });
+
+  it('keeps sibling order while walking with a stack', () => {
+    const rows = flattenJsonTree(buildJsonTree({ value: { b: { c: 1, d: 2 }, e: [3, 4] } }));
+    expect(rows.map(({ node, depth }) => `${depth}:${node.path}`)).toEqual([
+      '0:b',
+      '1:b.c',
+      '1:b.d',
+      '0:e',
+      '1:e[0]',
+      '1:e[1]',
+    ]);
   });
 });
 

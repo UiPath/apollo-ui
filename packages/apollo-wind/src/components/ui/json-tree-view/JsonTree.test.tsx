@@ -321,4 +321,120 @@ describe('JsonTreeView pathForCopy', () => {
       })
     );
   });
+
+  it('shows chevrons as state, not controls, when the host fixes expansion', () => {
+    const nodes = buildJsonTree({ value: { config: { region: 'us-east' } } });
+    const { rerender } = render(<JsonTreeView nodes={nodes} />);
+    expect(screen.getByRole('button', { name: 'Collapse config' })).toBeDisabled();
+
+    rerender(<JsonTreeView nodes={nodes} onToggleCollapsed={() => {}} />);
+    expect(screen.getByRole('button', { name: 'Collapse config' })).toBeEnabled();
+  });
+});
+
+describe('JsonTreeView row decorations and actions', () => {
+  const nodes = buildJsonTree({ value: { node1: { output: 'done' } } });
+
+  it('keeps a persistent action visible at rest, and others revealed on hover', () => {
+    render(
+      <JsonTreeView
+        nodes={nodes}
+        readOnly
+        nodeActions={(node) =>
+          node.path === 'node1'
+            ? [
+                { id: 'add', icon: <span />, label: 'Add', onSelect: () => {} },
+                {
+                  id: 'focus',
+                  icon: <span />,
+                  label: 'Focus',
+                  persistent: true,
+                  onSelect: () => {},
+                },
+              ]
+            : undefined
+        }
+      />
+    );
+
+    expect(screen.getByRole('button', { name: 'Focus' })).toHaveClass('opacity-100');
+    expect(screen.getByRole('button', { name: 'Add' })).not.toHaveClass('opacity-100');
+  });
+
+  it('orders the trailing cluster as start actions, meta, then end actions', () => {
+    render(
+      <JsonTreeView
+        nodes={nodes}
+        readOnly
+        decorateNode={(node) =>
+          node.path === 'node1' ? { meta: <span data-testid="meta">(1)</span> } : undefined
+        }
+        nodeActions={(node) =>
+          node.path === 'node1'
+            ? [
+                { id: 'add', icon: <span />, label: 'Add', onSelect: () => {} },
+                {
+                  id: 'focus',
+                  icon: <span />,
+                  label: 'Focus',
+                  placement: 'start',
+                  onSelect: () => {},
+                },
+              ]
+            : undefined
+        }
+      />
+    );
+
+    const focus = screen.getByRole('button', { name: 'Focus' });
+    const meta = screen.getByTestId('meta');
+    const add = screen.getByRole('button', { name: 'Add' });
+    expect(focus.compareDocumentPosition(meta) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(meta.compareDocumentPosition(add) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('hides the value cell of a scalar row with hideValue', () => {
+    render(
+      <JsonTreeView
+        nodes={buildJsonTree({ value: { trigger1: null } })}
+        readOnly
+        decorateNode={() => ({ hideValue: true })}
+      />
+    );
+
+    expect(screen.queryByText('=')).toBeNull();
+    expect(screen.queryByText('null')).toBeNull();
+  });
+
+  it('reveals a hover-only sublabel on row hover or focus', () => {
+    render(
+      <JsonTreeView
+        nodes={nodes}
+        readOnly
+        decorateNode={(node) =>
+          node.path === 'node1' ? { sublabel: 'node-id', sublabelOnHover: true } : undefined
+        }
+      />
+    );
+
+    expect(screen.getByText('node-id')).toHaveClass(
+      'hidden',
+      'group-hover:block',
+      'group-focus-within:block'
+    );
+  });
+
+  it('names a display label in full in the key tooltip', async () => {
+    const user = userEvent.setup();
+    render(
+      <JsonTreeView
+        nodes={nodes}
+        readOnly
+        decorateNode={(node) => (node.path === 'node1' ? { label: 'Message received' } : undefined)}
+      />
+    );
+
+    await user.hover(screen.getByRole('button', { name: 'Copy path for node1' }));
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('Message received');
+  });
 });

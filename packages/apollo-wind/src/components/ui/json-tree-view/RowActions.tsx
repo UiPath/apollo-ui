@@ -7,7 +7,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { MoreHorizontal } from 'lucide-react';
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { useJsonTreeViewStrings } from './strings';
 import { JsonTreeTooltip } from './JsonTreeTooltip';
 import type { JsonTreeNode, NodeAction, NodeDecorationTone } from './JsonTree.types';
@@ -28,6 +28,8 @@ export interface RowActionsProps {
   actions: NodeAction[];
   /** When the action count exceeds this cap, all actions collapse into one menu. */
   maxInline: number;
+  /** Decoration `meta`, rendered between the `start` and `end` actions. */
+  meta?: ReactNode;
 }
 
 /**
@@ -36,46 +38,49 @@ export interface RowActionsProps {
  * inline; when the count exceeds that cap, every action moves into one menu so
  * the row has a single, predictable overflow state.
  */
-export function RowActions({ node, actions, maxInline }: RowActionsProps) {
+export function RowActions({ node, actions, maxInline, meta }: RowActionsProps) {
   const strings = useJsonTreeViewStrings();
   const [menuOpen, setMenuOpen] = useState(false);
-  if (actions.length === 0) return null;
+  if (actions.length === 0 && meta == null) return null;
 
   const overflowing = actions.length > maxInline;
   const inline = overflowing ? [] : actions;
   const overflow = overflowing ? actions : [];
   const moreLabel = strings.moreActions;
 
+  const renderInline = (action: NodeAction) => (
+    <JsonTreeTooltip key={action.id} content={action.tooltip ?? action.label} placement="top" delay>
+      <Button
+        variant="ghost"
+        size="4xs"
+        icon
+        disabled={action.disabled}
+        onClick={() => action.onSelect(node)}
+        aria-label={action.label}
+        className={cn(
+          ACTION_BUTTON_CLASS,
+          '[&_svg]:size-2.75',
+          action.tone && ACTION_TONE_CLASS[action.tone],
+          action.persistent && 'opacity-100',
+          action.active && 'text-brand opacity-100 hover:text-brand'
+        )}
+      >
+        {action.icon}
+      </Button>
+    </JsonTreeTooltip>
+  );
+
   return (
     // Own wrapper with a tight gap: the buttons group together instead of
     // each picking up the row's wider item gap. ml-auto pins the group to the
     // right edge without a spacer div (which would cost two extra row gaps).
+    // `start` actions, the meta, then `end` actions form one cluster that never
+    // shrinks, so a truncating key or sublabel can't move it.
     <span className="ml-auto flex shrink-0 items-center gap-0.5">
-      {inline.map((action) => (
-        <JsonTreeTooltip
-          key={action.id}
-          content={action.tooltip ?? action.label}
-          placement="top"
-          delay
-        >
-          <Button
-            variant="ghost"
-            size="4xs"
-            icon
-            disabled={action.disabled}
-            onClick={() => action.onSelect(node)}
-            aria-label={action.label}
-            className={cn(
-              ACTION_BUTTON_CLASS,
-              '[&_svg]:size-2.75',
-              action.tone && ACTION_TONE_CLASS[action.tone],
-              action.active && 'text-brand opacity-100 hover:text-brand'
-            )}
-          >
-            {action.icon}
-          </Button>
-        </JsonTreeTooltip>
-      ))}
+      {inline.filter((action) => action.placement === 'start').map(renderInline)}
+      {/* mx-1.5 plus the 2px gap matches the row's 8px item gap around the meta. */}
+      {meta != null && <span className="mx-1.5 flex shrink-0 items-center">{meta}</span>}
+      {inline.filter((action) => action.placement !== 'start').map(renderInline)}
       {overflow.length > 0 && (
         <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
           <JsonTreeTooltip content={moreLabel} placement="top" delay hide={menuOpen}>

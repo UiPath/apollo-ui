@@ -17,6 +17,15 @@ function hasOwn(object: object, key: PropertyKey): boolean {
   return Object.prototype.hasOwnProperty.call(object, key);
 }
 
+/**
+ * Whether `path` is collapsed. Own keys only: paths are arbitrary JSON keys, and
+ * one named after an Object.prototype member (`constructor`, `toString`, …)
+ * would otherwise read the inherited function and stay collapsed.
+ */
+export function isPathCollapsed(collapsed: Record<string, boolean>, path: string): boolean {
+  return hasOwn(collapsed, path) && !!collapsed[path];
+}
+
 export function isJsonObject(value: JsonValue | undefined): value is JsonObject {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -72,7 +81,59 @@ interface BuildNodeInput {
   isTemplate?: boolean;
 }
 
-function buildNode(input: BuildNodeInput): JsonTreeNode {
+/** A node waiting to be built, and the sibling list it belongs in. */
+interface PendingNode {
+  input: BuildNodeInput;
+  siblings: JsonTreeNode[];
+}
+
+/**
+ * Builds nodes from their inputs, in order. Walks with an explicit stack rather
+ * than recursion, so a deeply nested value (thousands of levels) can't overflow
+ * the call stack. Each node is appended to its sibling list when it is popped,
+ * and children are pushed in reverse, so siblings keep their order.
+ */
+function buildNodes(inputs: BuildNodeInput[]): JsonTreeNode[] {
+  const roots: JsonTreeNode[] = [];
+  const stack: PendingNode[] = [];
+  for (let index = inputs.length - 1; index >= 0; index -= 1) {
+    stack.push({ input: inputs[index]!, siblings: roots });
+  }
+  while (stack.length > 0) {
+    const { input, siblings } = stack.pop()!;
+    const node = createNode(input);
+    siblings.push(node);
+    const childInputs =
+      node.type === 'object'
+        ? objectChildInputs(
+            input.hasValue ? (input.value as JsonObject) : undefined,
+            input.schema,
+            input.segments,
+            input.path,
+            input.isTemplate
+          )
+        : node.type === 'array'
+          ? arrayChildInputs(
+              input.schema,
+              input.value,
+              input.hasValue,
+              input.segments,
+              input.path,
+              input.isTemplate
+            )
+          : undefined;
+    if (!childInputs) continue;
+    const children: JsonTreeNode[] = [];
+    node.children = children;
+    for (let index = childInputs.length - 1; index >= 0; index -= 1) {
+      stack.push({ input: childInputs[index]!, siblings: children });
+    }
+  }
+  return roots;
+}
+
+/** One node without its children; `buildNodes` fills those in. */
+function createNode(input: BuildNodeInput): JsonTreeNode {
   const type = input.hasValue
     ? inferValueType(input.value as JsonValue)
     : schemaDisplayType(input.schema);
@@ -87,26 +148,6 @@ function buildNode(input: BuildNodeInput): JsonTreeNode {
   };
   if (input.hasValue) node.value = input.value;
   if (input.isTemplate) node.isArrayItemTemplate = true;
-
-  if (type === 'object') {
-    node.children = buildObjectChildren(
-      input.hasValue ? (input.value as JsonObject) : undefined,
-      input.schema,
-      input.segments,
-      input.path,
-      input.isTemplate
-    );
-  } else if (type === 'array') {
-    node.children = buildArrayChildren(
-      input.schema,
-      input.value,
-      input.hasValue,
-      input.segments,
-      input.path,
-      input.isTemplate
-    );
-  }
-
   return node;
 }
 
@@ -118,74 +159,70 @@ function buildNode(input: BuildNodeInput): JsonTreeNode {
  * present-but-empty ones. The preview subtree is flagged `isArrayItemTemplate`
  * throughout via `isTemplate`.
  */
-function buildArrayChildren(
+function arrayChildInputs(
   schema: JsonSchema | undefined,
   value: JsonValue | undefined,
   hasValue: boolean,
   segments: PathSegment[],
   path: string,
   isTemplate?: boolean
-): JsonTreeNode[] {
+): BuildNodeInput[] {
   const items = hasValue && Array.isArray(value) ? value : [];
   if (items.length > 0) {
-    return items.map((item, index) =>
-      buildNode({
-        key: String(index),
-        segments: [...segments, index],
-        path: appendPathSegment(path, index),
-        schema: schema?.items,
-        value: item,
-        hasValue: true,
-        isTemplate,
-      })
-    );
+    return items.map((item, index) => ({
+      key: String(index),
+      segments: [...segments, index],
+      path: appendPathSegment(path, index),
+      schema: schema?.items,
+      value: item,
+      hasValue: true,
+      isTemplate,
+    }));
   }
   if (schema?.items) {
     return [
-      buildNode({
+      {
         key: '0',
         segments: [...segments, 0],
         path: appendPathSegment(path, 0),
         schema: schema.items,
         hasValue: false,
         isTemplate: true,
-      }),
+      },
     ];
   }
   return [];
 }
 
-function buildObjectChildren(
+function objectChildInputs(
   value: JsonObject | undefined,
   schema: JsonSchema | undefined,
   segments: PathSegment[],
   path: string,
   isTemplate?: boolean
-): JsonTreeNode[] {
+): BuildNodeInput[] {
   const properties = schema?.properties ?? {};
   const required = new Set(schema?.required ?? []);
   const additional =
     typeof schema?.additionalProperties === 'object' ? schema.additionalProperties : undefined;
 
-  const children: JsonTreeNode[] = [];
+  const children: BuildNodeInput[] = [];
 
   // Schema-declared keys first (in schema order), present or not. Own-property
   // checks throughout so keys named after Object.prototype members
   // (`constructor`, `toString`, `__proto__`, …) are treated as real data.
   for (const [key, childSchema] of Object.entries(properties)) {
     const hasValue = value !== undefined && hasOwn(value, key);
-    children.push(
-      buildNode({
-        key,
-        segments: [...segments, key],
-        path: appendPathSegment(path, key),
-        schema: childSchema,
-        value: hasValue ? value?.[key] : undefined,
-        hasValue,
-        required: required.has(key),
-        isTemplate,
-      })
-    );
+    children.push({
+      key,
+      segments: [...segments, key],
+      path: appendPathSegment(path, key),
+      schema: childSchema,
+      value: hasValue ? value?.[key] : undefined,
+      hasValue,
+      required: required.has(key),
+      isTemplate,
+    });
   }
 
   // Then value keys the schema does not declare. When `additionalProperties`
@@ -193,16 +230,14 @@ function buildObjectChildren(
   if (value !== undefined) {
     for (const [key, childValue] of Object.entries(value)) {
       if (hasOwn(properties, key)) continue;
-      children.push(
-        buildNode({
-          key,
-          segments: [...segments, key],
-          path: appendPathSegment(path, key),
-          schema: additional,
-          value: childValue,
-          hasValue: true,
-        })
-      );
+      children.push({
+        key,
+        segments: [...segments, key],
+        path: appendPathSegment(path, key),
+        schema: additional,
+        value: childValue,
+        hasValue: true,
+      });
     }
   }
 
@@ -234,10 +269,12 @@ export function buildJsonTree(options: BuildJsonTreeOptions): JsonTreeNode[] {
     value !== undefined ? Array.isArray(value) : !!schema && schemaDisplayType(schema) === 'array';
 
   if (rootIsArray) {
-    return buildArrayChildren(schema, value, value !== undefined, [], basePath);
+    return buildNodes(arrayChildInputs(schema, value, value !== undefined, [], basePath));
   }
 
-  return buildObjectChildren(isJsonObject(value) ? value : undefined, schema, [], basePath);
+  return buildNodes(
+    objectChildInputs(isJsonObject(value) ? value : undefined, schema, [], basePath)
+  );
 }
 
 /**
@@ -278,21 +315,35 @@ function nodeSelfMatchesQuery(
   );
 }
 
-function nodeMatchesQuery(
-  node: JsonTreeNode,
-  query: string,
-  displayTexts?: NodeDisplayTexts
-): boolean {
-  if (nodeSelfMatchesQuery(node, query, displayTexts)) return true;
-  return node.children?.some((c) => nodeMatchesQuery(c, query, displayTexts)) ?? false;
+/** Which nodes pass a test, and which have a passing node somewhere below them. */
+interface MatchIndex {
+  self: Set<JsonTreeNode>;
+  below: Set<JsonTreeNode>;
 }
 
-function nodeOrDescendantMatches(
-  node: JsonTreeNode,
-  predicate: (node: JsonTreeNode) => boolean
-): boolean {
-  if (predicate(node)) return true;
-  return node.children?.some((c) => nodeOrDescendantMatches(c, predicate)) ?? false;
+/**
+ * Runs `test` once per node and records, for every node, whether it or anything
+ * below it passes. One post-order pass with an explicit stack, so search and
+ * filtering stay linear in the tree size (no per-ancestor rescans) and deep
+ * trees can't overflow the call stack.
+ */
+function indexMatches(nodes: JsonTreeNode[], test: (node: JsonTreeNode) => boolean): MatchIndex {
+  const self = new Set<JsonTreeNode>();
+  const below = new Set<JsonTreeNode>();
+  // Pre-order list; walked backwards, every child is settled before its parent.
+  const order: JsonTreeNode[] = [];
+  const stack = [...nodes];
+  while (stack.length > 0) {
+    const node = stack.pop()!;
+    order.push(node);
+    if (node.children) for (const child of node.children) stack.push(child);
+  }
+  for (let index = order.length - 1; index >= 0; index -= 1) {
+    const node = order[index]!;
+    if (test(node)) self.add(node);
+    if (node.children?.some((child) => self.has(child) || below.has(child))) below.add(node);
+  }
+  return { self, below };
 }
 
 export interface FlattenOptions {
@@ -307,51 +358,65 @@ export interface FlattenOptions {
   displayTexts?: NodeDisplayTexts;
 }
 
-/** Flattens the tree to visible rows, honoring collapse state, search, and filter. */
+/** A node waiting to be visited, with the query and filter still in force for it. */
+interface FlattenFrame {
+  node: JsonTreeNode;
+  depth: number;
+  query: string;
+  filterPredicate?: (node: JsonTreeNode) => boolean;
+}
+
+/**
+ * Flattens the tree to visible rows, honoring collapse state, search, and filter.
+ * Walks depth-first with an explicit stack rather than recursion, so a deeply
+ * nested tree can't overflow the call stack.
+ */
 export function flattenJsonTree(
   nodes: JsonTreeNode[],
   options: FlattenOptions = {},
   depth = 0
 ): FlatJsonTreeRow[] {
-  const { collapsed = {}, filterPredicate } = options;
-  const query = options.query?.trim().toLowerCase() ?? '';
+  const { collapsed = {}, displayTexts } = options;
   const rows: FlatJsonTreeRow[] = [];
+  const stack: FlattenFrame[] = [];
+  const pushChildren = (
+    children: JsonTreeNode[],
+    childDepth: number,
+    query: string,
+    filterPredicate: FlattenFrame['filterPredicate']
+  ) => {
+    // Reversed, so the first child is visited first.
+    for (let index = children.length - 1; index >= 0; index -= 1) {
+      stack.push({ node: children[index]!, depth: childDepth, query, filterPredicate });
+    }
+  };
+  const rootQuery = options.query?.trim().toLowerCase() ?? '';
+  pushChildren(nodes, depth, rootQuery, options.filterPredicate);
+  // Matches are indexed once for the whole tree. A subtree only ever filters by
+  // the original query and predicate, or by none once an ancestor matched itself.
+  const queryMatches = rootQuery
+    ? indexMatches(nodes, (node) => nodeSelfMatchesQuery(node, rootQuery, displayTexts))
+    : undefined;
+  const predicateMatches = options.filterPredicate
+    ? indexMatches(nodes, options.filterPredicate)
+    : undefined;
 
-  for (const node of nodes) {
-    const selfQueryMatch = !!query && nodeSelfMatchesQuery(node, query, options.displayTexts);
-    if (
-      query &&
-      !selfQueryMatch &&
-      !(node.children?.some((c) => nodeMatchesQuery(c, query, options.displayTexts)) ?? false)
-    ) {
-      continue;
-    }
-    const selfPredicateMatch = !!filterPredicate && filterPredicate(node);
-    if (
-      filterPredicate &&
-      !selfPredicateMatch &&
-      !(node.children?.some((c) => nodeOrDescendantMatches(c, filterPredicate)) ?? false)
-    ) {
-      continue;
-    }
-    rows.push({ node, depth });
-    if (node.children && !collapsed[node.path]) {
+  while (stack.length > 0) {
+    const { node, depth: nodeDepth, query, filterPredicate } = stack.pop()!;
+    const selfQueryMatch = !!query && !!queryMatches?.self.has(node);
+    if (query && !selfQueryMatch && !queryMatches?.below.has(node)) continue;
+    const selfPredicateMatch = !!filterPredicate && !!predicateMatches?.self.has(node);
+    if (filterPredicate && !selfPredicateMatch && !predicateMatches?.below.has(node)) continue;
+    rows.push({ node, depth: nodeDepth });
+    if (node.children && !isPathCollapsed(collapsed, node.path)) {
       // A node that matches the query or filter itself shows its whole
       // subtree; descendant-driven matches keep filtering the children.
-      const childOptions =
-        selfQueryMatch || selfPredicateMatch
-          ? {
-              ...options,
-              query: selfQueryMatch ? '' : options.query,
-              filterPredicate: selfPredicateMatch ? undefined : filterPredicate,
-            }
-          : options;
-      // Appended one by one, not spread: a spread passes every descendant row as
-      // its own argument, and a large tree (a run output with tens of thousands
-      // of records) exceeds the engine's argument limit and throws RangeError.
-      for (const row of flattenJsonTree(node.children, childOptions, depth + 1)) {
-        rows.push(row);
-      }
+      pushChildren(
+        node.children,
+        nodeDepth + 1,
+        selfQueryMatch ? '' : query,
+        selfPredicateMatch ? undefined : filterPredicate
+      );
     }
   }
   return rows;
@@ -362,16 +427,22 @@ export interface ContainerPath {
   depth: number;
 }
 
-/** All container (object/array) paths in the tree, with their depth. */
+/**
+ * All container (object/array) paths in the tree, with their depth, in tree
+ * order. Walks with an explicit stack, so deep trees can't overflow the call stack.
+ */
 export function collectContainerPaths(nodes: JsonTreeNode[], depth = 0): ContainerPath[] {
   const paths: ContainerPath[] = [];
-  for (const node of nodes) {
-    if (node.children) {
-      paths.push({ path: node.path, depth });
-      // Appended, not spread — same argument-limit ceiling as flattenJsonTree above.
-      for (const child of collectContainerPaths(node.children, depth + 1)) {
-        paths.push(child);
-      }
+  const stack: { node: JsonTreeNode; depth: number }[] = [];
+  for (let index = nodes.length - 1; index >= 0; index -= 1) {
+    stack.push({ node: nodes[index]!, depth });
+  }
+  while (stack.length > 0) {
+    const { node, depth: nodeDepth } = stack.pop()!;
+    if (!node.children) continue;
+    paths.push({ path: node.path, depth: nodeDepth });
+    for (let index = node.children.length - 1; index >= 0; index -= 1) {
+      stack.push({ node: node.children[index]!, depth: nodeDepth + 1 });
     }
   }
   return paths;
