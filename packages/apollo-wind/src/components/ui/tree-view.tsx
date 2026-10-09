@@ -93,6 +93,8 @@ export interface FileTreeViewProps {
   title?: string;
   showExpandAll?: boolean;
   showCheckboxes?: boolean;
+  /** With `showCheckboxes` and `selectionMode="none"`, a row click toggles its checkbox */
+  toggleCheckOnRowClick?: boolean;
   /** Show selection checkboxes on leaf items only (folders do not get checkboxes) */
   showSelectionCheckboxes?: boolean;
   /** Selection behavior: "multiple" (default), "single", or "none" */
@@ -126,6 +128,7 @@ interface TreeItemProps {
   onAccessChange?: (item: FileTreeViewItem, hasAccess: boolean) => void;
   allItems: FileTreeViewItem[];
   showAccessRights?: boolean;
+  toggleCheckOnRowClick?: boolean;
   showSelectionCheckboxes?: boolean;
   itemMap: Map<string, FileTreeViewItem>;
   iconMap?: FileTreeViewIconMap;
@@ -203,6 +206,7 @@ function TreeItem({
   onAccessChange,
   allItems,
   showAccessRights,
+  toggleCheckOnRowClick,
   showSelectionCheckboxes,
   itemMap,
   iconMap = defaultIconMap,
@@ -258,7 +262,15 @@ function TreeItem({
     e.stopPropagation();
     e.preventDefault();
 
-    if (isDisabled || selectionMode === 'none') return;
+    if (isDisabled) return;
+
+    // Row-click selection and expansion win; toggleCheckOnRowClick applies only without them.
+    if (selectionMode === 'none') {
+      if (toggleCheckOnRowClick && showAccessRights) {
+        toggleAccess();
+      }
+      return;
+    }
 
     let newSelection = new Set(selectedIds);
 
@@ -321,14 +333,18 @@ function TreeItem({
     return descendants;
   };
 
-  const handleAccessClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const toggleAccess = () => {
     if (onAccessChange) {
       const currentState = getCheckState(item, itemMap);
       // Toggle between checked and unchecked, treating indeterminate as unchecked
       const newChecked = currentState === 'checked' ? false : true;
       onAccessChange(item, newChecked);
     }
+  };
+
+  const handleAccessClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggleAccess();
   };
 
   const renderIcon = () => {
@@ -409,6 +425,8 @@ function TreeItem({
             style={{ paddingLeft: `${depth * 20}px` }}
             onClick={handleClick}
             onKeyDown={(e) => {
+              // Keys pressed on a control inside the row (chevron, checkbox, actions) are its own.
+              if (e.target !== e.currentTarget) return;
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 handleClick(e as unknown as React.MouseEvent);
@@ -755,6 +773,7 @@ function TreeItem({
                           onAccessChange={onAccessChange}
                           allItems={allItems}
                           showAccessRights={showAccessRights}
+                          toggleCheckOnRowClick={toggleCheckOnRowClick}
                           showSelectionCheckboxes={showSelectionCheckboxes}
                           itemMap={itemMap}
                           iconMap={iconMap}
@@ -817,6 +836,7 @@ const FileTreeView = React.forwardRef<HTMLDivElement, FileTreeViewProps>(functio
     selectionText = 'selected',
     showExpandAll = true,
     showCheckboxes = false,
+    toggleCheckOnRowClick = false,
     showSelectionCheckboxes = false,
     selectionMode = 'multiple',
     title,
@@ -1226,6 +1246,7 @@ const FileTreeView = React.forwardRef<HTMLDivElement, FileTreeViewProps>(functio
               onAccessChange={onCheckChange}
               allItems={data}
               showAccessRights={showCheckboxes}
+              toggleCheckOnRowClick={toggleCheckOnRowClick}
               showSelectionCheckboxes={showSelectionCheckboxes}
               itemMap={itemMap}
               iconMap={iconMap}
