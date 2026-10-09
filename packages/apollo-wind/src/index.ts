@@ -204,9 +204,8 @@ export { Calendar } from './components/ui/calendar';
 // -----------------------------------------------------------------------------
 // Data Display Components
 // -----------------------------------------------------------------------------
-// NOTE: CodeBlock was removed. Use Monaco or CodeMirror with Apollo editor
-// themes instead. See @uipath/apollo-wind/editor-themes for the theme API and
-// Patterns → Code Editors in Storybook for integration guidance.
+// CodeBlock is a read-only highlighted sample for chat. For editable code use Monaco or
+// CodeMirror with the themes in @uipath/apollo-wind/editor-themes (Patterns → Code Editors).
 export {
   Card,
   CardContent,
@@ -226,6 +225,16 @@ export {
 } from './components/ui/chart';
 export type { CheckboxProps } from './components/ui/checkbox';
 export { Checkbox } from './components/ui/checkbox';
+export type {
+  CodeBlockHeaderProps,
+  CodeBlockProps,
+  CodeBlockStrings,
+} from './components/ui/code-block';
+export {
+  CodeBlock,
+  CodeBlockHeader,
+  DEFAULT_CODE_BLOCK_STRINGS,
+} from './components/ui/code-block';
 export {
   Collapsible,
   CollapsibleContent,
@@ -460,6 +469,13 @@ export type {
   LockableValueFieldStrings,
 } from './components/ui/lockable-value-field';
 export { LockableValueField } from './components/ui/lockable-value-field';
+export type {
+  MarkdownCodeBlock,
+  MarkdownImagePolicy,
+  MarkdownProps,
+  MarkdownStrings,
+} from './components/ui/markdown';
+export { DEFAULT_MARKDOWN_STRINGS, Markdown } from './components/ui/markdown';
 export type { MarkerProps } from './components/ui/marker';
 export { Marker, MarkerContent, MarkerIcon, markerVariants } from './components/ui/marker';
 export type { MessageProps } from './components/ui/message';
