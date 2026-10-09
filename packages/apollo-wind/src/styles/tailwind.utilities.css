@@ -322,3 +322,24 @@
     -webkit-text-fill-color: currentColor;
   }
 }
+
+/* ============================================================================
+ * Loading dots: staggered bounce for LoadingDots
+ *
+ * `animate-loading-dot` lifts a dot by its own height and dims it at rest.
+ * Stagger sibling dots with `[animation-delay:...]`. The reduced-motion rule
+ * is nested so Tailwind emits it for every variant, as `shimmer` does.
+ * ============================================================================ */
+
+@keyframes apollo-loading-dot {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30%           { transform: translateY(-100%); opacity: 1; }
+}
+
+@utility animate-loading-dot {
+  animation: apollo-loading-dot 1.2s ease-in-out infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
