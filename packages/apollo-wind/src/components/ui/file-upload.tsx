@@ -4,6 +4,7 @@ import { Upload, X } from 'lucide-react';
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib';
+import { formatFileSize, isFileTypeAccepted } from './file-validation';
 import { FormFieldError } from './form-field';
 
 export interface FileUploadProps {
@@ -80,36 +81,6 @@ export const FileUpload = React.forwardRef<HTMLFieldSetElement, FileUploadProps>
     const [previews, setPreviews] = React.useState<string[]>([]);
     const inputRef = React.useRef<HTMLInputElement>(null);
 
-    const isFileTypeAccepted = (file: File): boolean => {
-      if (!accept) return true;
-
-      const acceptedTypes = accept.split(',').map((type) => type.trim().toLowerCase());
-
-      for (const acceptedType of acceptedTypes) {
-        // Handle MIME type wildcards (e.g., "image/*")
-        if (acceptedType.endsWith('/*')) {
-          const baseType = acceptedType.slice(0, -2);
-          if (file.type.toLowerCase().startsWith(baseType)) {
-            return true;
-          }
-        }
-        // Handle exact MIME type (e.g., "image/png")
-        else if (acceptedType.includes('/')) {
-          if (file.type.toLowerCase() === acceptedType) {
-            return true;
-          }
-        }
-        // Handle file extension (e.g., ".pdf")
-        else if (acceptedType.startsWith('.')) {
-          if (file.name.toLowerCase().endsWith(acceptedType)) {
-            return true;
-          }
-        }
-      }
-
-      return false;
-    };
-
     const validateFiles = (
       fileList: File[],
       startIndex: number,
@@ -122,7 +93,7 @@ export const FileUpload = React.forwardRef<HTMLFieldSetElement, FileUploadProps>
         const fileIndex = startIndex + validFiles.length;
 
         // Check file type
-        if (!isFileTypeAccepted(file)) {
+        if (!isFileTypeAccepted(file, accept)) {
           errors.set(fileIndex, 'File type not accepted');
           validFiles.push(file);
           continue;
@@ -247,14 +218,6 @@ export const FileUpload = React.forwardRef<HTMLFieldSetElement, FileUploadProps>
       if (!disabled) {
         inputRef.current?.click();
       }
-    };
-
-    const formatFileSize = (bytes: number): string => {
-      if (bytes === 0) return '0 Bytes';
-      const k = 1024;
-      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-      const i = Math.floor(Math.log(bytes) / Math.log(k));
-      return `${Math.round((bytes / k ** i) * 100) / 100} ${sizes[i]}`;
     };
 
     return (

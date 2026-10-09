@@ -224,6 +224,38 @@ export {
   ChartTooltip,
   ChartTooltipContent,
 } from './components/ui/chart';
+export type {
+  ChatComposerAttachButtonProps,
+  ChatComposerAttachmentItem,
+  ChatComposerAttachmentsProps,
+  ChatComposerContextValue,
+  ChatComposerDensity,
+  ChatComposerErrorProps,
+  ChatComposerFooterProps,
+  ChatComposerInputGroupProps,
+  ChatComposerProps,
+  ChatComposerStatus,
+  ChatComposerStrings,
+  ChatComposerSubmitDetails,
+  ChatComposerSubmitProps,
+  ChatComposerTextareaProps,
+  ChatComposerToolbarProps,
+} from './components/ui/chat-composer';
+export {
+  ChatComposer,
+  ChatComposerAttachButton,
+  ChatComposerAttachments,
+  ChatComposerError,
+  ChatComposerFooter,
+  ChatComposerInputGroup,
+  ChatComposerSubmit,
+  ChatComposerTextarea,
+  ChatComposerToolbar,
+  chatComposerErrorVariants,
+  chatComposerVariants,
+  DEFAULT_CHAT_COMPOSER_STRINGS,
+  useChatComposer,
+} from './components/ui/chat-composer';
 export type { CheckboxProps } from './components/ui/checkbox';
 export { Checkbox } from './components/ui/checkbox';
 export {
@@ -329,6 +361,14 @@ export {
   DropdownMenuTrigger,
 } from './components/ui/dropdown-menu';
 export type {
+  DropzoneOverlayProps,
+  DropzoneOverlayStrings,
+} from './components/ui/dropzone-overlay';
+export {
+  DEFAULT_DROPZONE_OVERLAY_STRINGS,
+  DropzoneOverlay,
+} from './components/ui/dropzone-overlay';
+export type {
   EditableCellMeta,
   EditableCellType,
 } from './components/ui/editable-cell';
@@ -371,6 +411,16 @@ export {
 } from './components/ui/field-addons';
 export type { FileUploadProps } from './components/ui/file-upload';
 export { FileUpload } from './components/ui/file-upload';
+export type {
+  FileRejection,
+  FileRejectionReason,
+  FileValidationOptions,
+} from './components/ui/file-validation';
+export {
+  formatFileSize,
+  isFileTypeAccepted,
+  validateFiles,
+} from './components/ui/file-validation';
 export type {
   FolderPickerContentProps,
   FolderPickerEntry,

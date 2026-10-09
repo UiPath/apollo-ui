@@ -1,9 +1,9 @@
-import { cn } from '@/lib';
-import { ChatComposer } from '@/components/custom/chat-composer';
 import {
-  PromptSuggestions,
   type PromptSuggestion,
+  PromptSuggestions,
 } from '@/components/custom/chat-prompt-suggestions';
+import { DemoComposer } from '@/components/custom/demo-composer';
+import { cn } from '@/lib';
 
 // ============================================================================
 // Types
@@ -64,7 +64,7 @@ export function ChatFirstExperience({
         </div>
 
         {/* Composer */}
-        <ChatComposer placeholder={composerPlaceholder} onSubmit={onSubmit} />
+        <DemoComposer placeholder={composerPlaceholder} onSubmit={onSubmit} />
 
         {/* Prompt suggestions */}
         <PromptSuggestions

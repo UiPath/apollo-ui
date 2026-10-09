@@ -13,7 +13,7 @@ import {
   Workflow,
 } from 'lucide-react';
 import * as React from 'react';
-import { ChatComposer } from '@/components/custom/chat-composer';
+import { DemoComposer } from '@/components/custom/demo-composer';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -370,7 +370,7 @@ function ExpandedPanel({
 
       {/* Composer */}
       <div className="pt-12">
-        <ChatComposer placeholder="Ask me to help build your Flow" />
+        <DemoComposer placeholder="Ask me to help build your Flow" />
       </div>
     </div>
   );
