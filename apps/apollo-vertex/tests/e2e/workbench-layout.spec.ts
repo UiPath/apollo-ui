@@ -1,30 +1,91 @@
 import type { Page } from "@playwright/test";
 import { expect, test } from "./fixtures";
-import { open, slotStates, urlQuery } from "./workbench-helpers";
+import {
+  chooseLayoutOption,
+  inspector,
+  layoutChoice,
+  open,
+  selectSlot,
+  slotStates,
+  urlQuery,
+} from "./workbench-helpers";
 
 /*
- * The template view's Layout menu: the shell, which panels the template
- * has, each panel's open state and placement, the occupant's locked slot,
- * the template's own width rule, the page map, and the URL.
+ * The template view's layout: the Shell menu, and in the inspector for
+ * the slot selected, whether the template has the slot, its open state
+ * and placement, no locks with no focused occupant, the template's own
+ * width rule, and the URL.
  */
 
-const menu = (page: Page) => page.locator("[data-slot=workbench-layout-menu]");
+const shellMenu = (page: Page) =>
+  page.locator("[data-slot=workbench-shell-menu]");
 
-async function openMenu(page: Page) {
-  if (!(await menu(page).isVisible()))
-    await page.getByRole("button", { name: "Layout" }).click();
-  await menu(page).waitFor();
+/** Shows a slot in the inspector, unless it's showing already. */
+const openSlot = (page: Page, slot: string) => selectSlot(page, slot);
+
+/**
+ * Opens what holds a setting: the Shell menu for the shell, else the
+ * inspector for the slot the setting names ("End panel state").
+ */
+async function show(page: Page, name: string) {
+  if (name === "Shell") {
+    if (!(await shellMenu(page).isVisible()))
+      await page.getByRole("button", { name: "Shell" }).click();
+    await shellMenu(page).waitFor();
+    return;
+  }
+  const slot = name.startsWith("Start panel") ? "start-panel" : "end-panel";
+  await openSlot(page, slot);
 }
 
-const group = (page: Page, name: string) =>
-  menu(page).getByRole("group", { name, exact: true });
+/** Escape closes the Shell menu, if it's open; the inspector stays. */
+async function closeMenus(page: Page) {
+  if (await shellMenu(page).isVisible()) await page.keyboard.press("Escape");
+  await expect(shellMenu(page)).toHaveCount(0);
+}
 
+/** A choice by its name: the Shell's picture choice is a radio group. */
+const group = (page: Page, name: string) =>
+  page
+    .locator(
+      "[data-slot=workbench-inspector], [data-slot=workbench-shell-menu]",
+    )
+    .getByRole(name === "Shell" ? "radiogroup" : "group", {
+      name,
+      exact: true,
+    });
+
+/**
+ * Picks a setting's option, as the old controls named them: "In the page"
+ * (Included or Left out) and "state" (Open or Closed) are one Panel
+ * choice now, Open, Closed, or Hidden; placement is its own row.
+ */
 async function choose(page: Page, name: string, option: string) {
-  await openMenu(page);
+  await show(page, name);
+  const panel = name.replace(/ (in the page|state|placement)$/, "");
+  if (name.endsWith(" in the page"))
+    return chooseLayoutOption(
+      page,
+      panel,
+      "Panel",
+      option === "Left out" ? "Hidden" : "Open",
+    );
+  if (name.endsWith(" state"))
+    return chooseLayoutOption(page, panel, "Panel", option);
+  if (name.endsWith(" placement"))
+    return chooseLayoutOption(page, panel, "Placement", option);
   await group(page, name)
     .getByRole("radio", { name: option, exact: true })
     .click();
 }
+
+/** A layout row's option, by its panel, row, and label. */
+const option = (
+  page: Page,
+  panel: string,
+  row: "Panel" | "Placement",
+  name: string,
+) => layoutChoice(page, panel, row).getByRole("radio", { name, exact: true });
 
 const ready = (page: Page) =>
   page.locator("[data-template=detail-page] [data-occupant]").first().waitFor();
@@ -34,17 +95,6 @@ const templateWidth = (page: Page) =>
   page
     .locator("[data-template=detail-page]")
     .evaluate((el) => (el instanceof HTMLElement ? el.offsetWidth : 0));
-
-const mapRegions = (page: Page) =>
-  page
-    .locator("[data-slot=workbench-map] [data-region]")
-    .evaluateAll((parts) =>
-      parts.map((part) =>
-        part instanceof HTMLElement
-          ? `${part.dataset.region}${part.dataset.state === "closed" ? ":closed" : ""}`
-          : "",
-      ),
-    );
 
 test.beforeEach(async ({ page }) => {
   await page.setViewportSize({ width: 1920, height: 1000 });
@@ -66,7 +116,10 @@ test("each shell wraps the template, and the page width includes it", async ({
   }));
   expect(Math.round(shell)).toBe(Math.round(pageHeight));
   expect(shell).toBeLessThan(page.viewportSize()?.height ?? 0);
-  expect(await mapRegions(page)).toContain("shell");
+  // The template view's dock has no map: the page is on the stage.
+  await expect(
+    page.locator("[data-slot=workbench-dock] [data-slot=workbench-map]"),
+  ).toHaveCount(0);
   expect(urlQuery(page)).not.toContain("shell=");
 
   // Minimal: a top bar and no sidebar, so the template is the page's width.
@@ -74,12 +127,8 @@ test("each shell wraps the template, and the page width includes it", async ({
   await expect(pageBox.locator("[data-slot=sidebar]")).toHaveCount(0);
   await expect.poll(() => templateWidth(page)).toBe(1440);
   expect(urlQuery(page)).toContain("shell=minimal");
-  await expect(page.locator("[data-slot=workbench-map]")).toHaveAttribute(
-    "data-shell",
-    "minimal",
-  );
   // The narrowest page is main's minimum plus the shell's width.
-  await page.keyboard.press("Escape");
+  await closeMenus(page);
   await page.getByRole("slider", { name: "Page width" }).focus();
   await page.keyboard.press("Home");
   await expect(page.locator("[data-slot=workbench-page-width]")).toHaveText(
@@ -87,7 +136,7 @@ test("each shell wraps the template, and the page width includes it", async ({
   );
 });
 
-test("panels can be removed and closed, and the map follows", async ({
+test("panels can be removed and closed, and Edit's stage follows", async ({
   page,
 }) => {
   // The occupant in main, so neither panel is locked.
@@ -99,9 +148,27 @@ test("panels can be removed and closed, and the map follows", async ({
     .toEqual({
       "detail-page-end-panel": "open",
     });
-  await expect(group(page, "Start panel state")).toHaveCount(0);
+  // Left out, its Open and Placement wait, dimmed and off, and its
+  // contents are kept.
+  await expect(
+    option(page, "Start panel", "Placement", "Below header"),
+  ).toBeDisabled();
+  await expect(
+    inspector(page).locator("[data-slot=workbench-layout-row][data-dim=true]"),
+  ).toHaveCount(1);
+  await expect(
+    inspector(page).locator("[data-slot=workbench-slot-left-out]"),
+  ).toHaveText("Kept for when the start panel is shown again.");
+  await expect(
+    inspector(page).locator("[data-slot=workbench-slot-contents]"),
+  ).toHaveAttribute("data-kept", "true");
+  await expect(option(page, "Start panel", "Panel", "Hidden")).toHaveAttribute(
+    "aria-checked",
+    "true",
+  );
   expect(urlQuery(page)).toContain("start-panel-present=false");
-  expect(await mapRegions(page)).not.toContain("start-panel");
+  // Left out, it's a ghost where it would sit.
+  await expect(page.locator("[data-ghost-slot=start-panel]")).toBeVisible();
 
   await choose(page, "End panel state", "Closed");
   await expect
@@ -110,76 +177,66 @@ test("panels can be removed and closed, and the map follows", async ({
       "detail-page-end-panel": "closed",
     });
   expect(urlQuery(page)).toContain("end-panel-state=closed");
-  await expect.poll(() => mapRegions(page)).toContain("end-panel:closed");
+  // Closed, it's a strip on its edge.
+  await expect(
+    page.locator("[data-slot=workbench-closed-slot][data-edit-slot=end-panel]"),
+  ).toBeVisible();
 
   await choose(page, "End panel in the page", "Left out");
   await expect.poll(() => slotStates(page)).toEqual({});
   expect(urlQuery(page)).toContain("end-panel-present=false");
 });
 
-test("the occupant's panel is locked, with the reason", async ({ page }) => {
-  await open(page, "?occupant=queue&view=template");
-  await ready(page);
-  await openMenu(page);
-  const presence = group(page, "Start panel in the page");
-  // It can't be left out.
-  await expect(
-    presence.getByRole("radio", { name: "Included", exact: true }),
-  ).toBeEnabled();
-  await expect(
-    presence.getByRole("radio", { name: "Left out", exact: true }),
-  ).toBeDisabled();
-  await expect(presence).toHaveAccessibleDescription(
-    "The start panel holds the occupant, so it stays.",
-  );
-  const state = group(page, "Start panel state");
-  await expect(state.getByRole("radio", { name: "Closed" })).toBeDisabled();
-  await expect(state).toHaveAccessibleDescription(
-    "It holds the occupant, so it stays open.",
-  );
-  // Its placement can still change.
-  await expect(
-    group(page, "Start panel placement").getByRole("radio", {
-      name: "Beside header",
-    }),
-  ).toBeEnabled();
-  // The other panel isn't locked.
-  await expect(
-    group(page, "End panel state").getByRole("radio", { name: "Closed" }),
-  ).toBeEnabled();
-  await expect(
-    group(page, "End panel in the page").getByRole("radio", {
-      name: "Left out",
-    }),
-  ).toBeEnabled();
-});
-
-test("the width rule closes the other panel when there isn't room, and says so", async ({
+test("no panel is locked: the template view has no focused occupant", async ({
   page,
 }) => {
-  // 720px inside the shell: room for main and one panel.
-  await open(page, "?occupant=queue&view=template&page=1000");
+  await open(page, "?occupant=queue&view=template");
   await ready(page);
+  // Queue's panel can be left out and closed like any other.
+  for (const slot of ["start-panel", "end-panel"]) {
+    await openSlot(page, slot);
+    const name = slot === "start-panel" ? "Start panel" : "End panel";
+    for (const choice of ["Open", "Closed", "Hidden"])
+      await expect(option(page, name, "Panel", choice)).toBeEnabled();
+    await expect(
+      option(page, name, "Placement", "Beside header"),
+    ).toBeEnabled();
+    await expect(
+      inspector(page)
+        .locator("[data-slot=workbench-layout-slot]")
+        .getByRole("img", { name: "Locked" }),
+    ).toHaveCount(0);
+  }
+});
+
+test("the width rule closes panels when there isn't room, and says so", async ({
+  page,
+}) => {
+  // 720px inside the shell. No panel is focused, so none is kept: the
+  // template's own rule closes both.
+  await open(page, "?occupant=queue&view=template&page=1000");
+  await page.locator("[data-template=detail-page]").waitFor();
   await expect
     .poll(() => slotStates(page))
     .toEqual({
-      "detail-page-start-panel": "open",
+      "detail-page-start-panel": "closed",
       "detail-page-end-panel": "closed",
     });
-  await openMenu(page);
-  const end = menu(page).locator(
-    "[data-slot=workbench-layout-slot][data-layout-slot=end-panel]",
+  await openSlot(page, "start-panel");
+  const start = inspector(page).locator(
+    "[data-slot=workbench-layout-slot][data-layout-slot=start-panel]",
   );
-  await expect(end).toHaveAttribute("data-closed-by", "rule");
-  await expect(group(page, "End panel state")).toHaveAccessibleDescription(
-    /Closed by the width rule/,
-  );
-  // It's still wanted open, so the menu keeps Open chosen.
+  await expect(start).toHaveAttribute("data-closed-by", "rule");
   await expect(
-    group(page, "End panel state").getByRole("radio", { name: "Open" }),
-  ).toHaveAttribute("aria-checked", "true");
+    layoutChoice(page, "Start panel", "Panel"),
+  ).toHaveAccessibleDescription(/Closed by the width rule/);
+  // It's still wanted open, so Open stays chosen.
+  await expect(option(page, "Start panel", "Panel", "Open")).toHaveAttribute(
+    "aria-checked",
+    "true",
+  );
   // With room again, it reopens on its own.
-  await page.keyboard.press("Escape");
+  await closeMenus(page);
   await page.getByRole("slider", { name: "Page width" }).focus();
   for (let i = 0; i < 60; i++) await page.keyboard.press("ArrowRight");
   await expect
@@ -188,8 +245,52 @@ test("the width rule closes the other panel when there isn't room, and says so",
       "detail-page-start-panel": "open",
       "detail-page-end-panel": "open",
     });
-  await openMenu(page);
-  await expect(end).not.toHaveAttribute("data-closed-by", "rule");
+  await openSlot(page, "start-panel");
+  await expect(start).not.toHaveAttribute("data-closed-by", "rule");
+});
+
+test("the Shell is a picture choice: a sidebar column as wide as the shell, by keyboard too", async ({
+  page,
+}) => {
+  await open(page, "?occupant=queue&view=template&page=1440");
+  await ready(page);
+  await show(page, "Shell");
+  const shells = group(page, "Shell");
+  await expect(shells.getByRole("radio")).toHaveText([
+    "Default (sidebar)",
+    "Minimal",
+  ]);
+  // Each a picture of the page: the sidebar's column is its share of it.
+  const columns = await shells
+    .locator("[data-slot=workbench-map-thumbnail]")
+    .evaluateAll((maps) =>
+      maps.map(
+        (map) => getComputedStyle(map).gridTemplateColumns.split(" ").length,
+      ),
+    );
+  const regions = await shells
+    .locator("[data-slot=workbench-map-thumbnail]")
+    .evaluateAll((maps) =>
+      maps.map((map) => map.querySelectorAll("[data-region=shell]").length),
+    );
+  expect(regions).toEqual([1, 0]);
+  expect(columns[0]).toBe((columns[1] ?? 0) + 1);
+  // The chosen one: outlined in the text's color, and heavier.
+  const chosen = shells.getByRole("radio", { name: "Default (sidebar)" });
+  await expect(chosen).toHaveAttribute("aria-checked", "true");
+  // The arrow keys choose, held as a person holds them.
+  await chosen.focus();
+  await page.keyboard.down("ArrowRight");
+  await page.waitForTimeout(50);
+  await page.keyboard.up("ArrowRight");
+  await expect(shells.getByRole("radio", { name: "Minimal" })).toHaveAttribute(
+    "aria-checked",
+    "true",
+  );
+  await expect.poll(() => urlQuery(page)).toContain("shell=minimal");
+  await expect(
+    page.locator("[data-slot=workbench-page] [data-slot=sidebar]"),
+  ).toHaveCount(0);
 });
 
 test("the layout round-trips through the URL", async ({ page }) => {
@@ -222,15 +323,20 @@ test("the layout round-trips through the URL", async ({ page }) => {
       "detail-page-start-panel": "open",
       "detail-page-end-panel": "closed",
     });
-  await openMenu(page);
-  for (const [name, option] of [
-    ["Shell", "Minimal"],
-    ["End panel placement", "Beside header"],
-    ["End panel state", "Closed"],
+  await show(page, "Shell");
+  await expect(
+    group(page, "Shell").getByRole("radio", { name: "Minimal", exact: true }),
+  ).toHaveAttribute("aria-checked", "true");
+  await closeMenus(page);
+  await show(page, "End panel state");
+  for (const [row, choice] of [
+    ["Placement", "Beside header"],
+    ["Panel", "Closed"],
   ] as const)
-    await expect(
-      group(page, name).getByRole("radio", { name: option, exact: true }),
-    ).toHaveAttribute("aria-checked", "true");
+    await expect(option(page, "End panel", row, choice)).toHaveAttribute(
+      "aria-checked",
+      "true",
+    );
 
   // A slot whose panel the URL removed gets it back: the occupant's slot stays.
   await open(

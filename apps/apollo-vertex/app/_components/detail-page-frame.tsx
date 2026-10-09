@@ -37,19 +37,12 @@ const PANEL_SLOTS: Record<PanelSide, DetailPageSlotName> = {
 };
 
 /**
- * The Detail page in the given layout choices, the occupant in its slot,
- * and labeled placeholders in the others. The template's own rules run as
- * usual: its width is the frame's, so a panel closes when main would get
- * too narrow. The occupant's panel counts as the one opened last, so the
- * rule closes the other panel first and never closes the occupant's.
+ * The Detail page in the given layout choices, each slot with what it
+ * holds, and labeled placeholders in empty ones. The template's own rules
+ * run as usual: its width is the frame's, so a panel closes when main
+ * would get too narrow.
  */
-function DetailPageFrame({
-  slot,
-  spec,
-  occupant,
-  choices,
-  onStatus,
-}: TemplateFrameProps) {
+function DetailPageFrame({ contents, choices, onStatus }: TemplateFrameProps) {
   const choice = (side: PanelSide): SlotChoice =>
     choices[PANEL_SLOTS[side]] ?? {};
   const present = {
@@ -68,12 +61,6 @@ function DetailPageFrame({
     choice(side).placement === "beside-header"
       ? "beside-header"
       : "below-header";
-  const own: PanelSide | null =
-    slot === PANEL_SLOTS.start
-      ? "start"
-      : slot === PANEL_SLOTS.end
-        ? "end"
-        : null;
   const state = useDetailPage({
     panels,
     start: {
@@ -84,7 +71,6 @@ function DetailPageFrame({
       placement: placement("end"),
       defaultOpen: choice("end").open !== false,
     },
-    ...(own && { latest: own }),
   });
   const { open, closedBy } = state;
   useEffect(() => {
@@ -94,10 +80,14 @@ function DetailPageFrame({
     });
   }, [onStatus, open.start, open.end, closedBy.start, closedBy.end]);
   const content = (name: DetailPageSlotName) => {
-    const isOwn = name === slot;
-    const shown = isOwn
-      ? spec
-      : placeholderOccupant(SLOT_LABELS[name], "padded");
+    const filled = contents[name];
+    const held = filled ? Object.values(filled.occupants) : [];
+    const [only] = held;
+    // One occupant renders as before; several make a panel of tabs.
+    const shown =
+      held.length === 1 && only
+        ? only.spec
+        : placeholderOccupant(SLOT_LABELS[name], "padded");
     const surface = SURFACE_SPECS.find((s) =>
       detailPageTemplate.slots
         .find((t) => t.name === name)
@@ -105,16 +95,27 @@ function DetailPageFrame({
     );
     const Host = surface && SURFACE_HOSTS[surface.name]?.Host;
     if (!surface || !Host) return null;
+    const several = filled && held.length > 1;
     return (
       <Host
+        // A new revision starts the panel again, on the tab the preview picked.
+        key={filled?.revision ?? 0}
         padding={occupantPadding(shown)}
         scroll={scrollOwner(surface, shown)}
         label={SLOT_LABELS[name]}
         side={name === PANEL_SLOTS.start ? "start" : "end"}
         fill={false}
+        {...(several && {
+          panel: {
+            spec: filled.panel,
+            occupants: filled.occupants,
+            defaultTab: filled.defaultTab,
+            ...(filled.onTabChange && { onTabChange: filled.onTabChange }),
+          },
+        })}
       >
-        {isOwn ? (
-          occupant
+        {several ? null : only ? (
+          only.node
         ) : (
           <SlotPlaceholder occupant={shown} surface={surface.name} />
         )}

@@ -87,3 +87,60 @@ export const slotStates = (page: Page) =>
 /** axe violations inside the workbench, leaving out anything inside `exclude`. */
 export const axeViolations = (page: Page, exclude: readonly string[] = []) =>
   axeIn(page, "[data-slot=workbench]", exclude);
+
+/** The template view's inspector, the one place to edit a slot. */
+export const inspector = (page: Page) =>
+  page.locator("[data-slot=workbench-inspector]");
+
+/** Switches the template view to Edit or Preview, from the header. */
+export async function setMode(page: Page, mode: "Edit" | "Preview") {
+  const toggle = page
+    .getByRole("group", { name: "Mode" })
+    .getByRole("radio", { name: mode });
+  if ((await toggle.getAttribute("aria-checked")) !== "true")
+    await toggle.click();
+  await toggle.and(page.locator("[aria-checked=true]")).waitFor();
+}
+
+/**
+ * Selects a slot, or its ghost, on the stage in Edit mode, and waits for
+ * the inspector to show it.
+ */
+export async function selectSlot(page: Page, slot: string) {
+  await setMode(page, "Edit");
+  const button = page.locator(
+    `[data-edit-slot="${slot}"], [data-ghost-slot="${slot}"]`,
+  );
+  if ((await button.getAttribute("aria-pressed")) !== "true")
+    await button.click();
+  await inspector(page)
+    .and(page.locator(`[data-inspector-slot="${slot}"]`))
+    .waitFor();
+}
+
+/** A layout row's picture choice in the inspector: "End panel: Panel". */
+export const layoutChoice = (
+  page: Page,
+  panel: string,
+  row: "Panel" | "Placement",
+) =>
+  inspector(page).getByRole("radiogroup", {
+    name: `${panel}: ${row}`,
+    exact: true,
+  });
+
+/** Picks a layout option, by its row and its label, and waits for it. */
+export async function chooseLayoutOption(
+  page: Page,
+  panel: string,
+  row: "Panel" | "Placement",
+  option: string,
+) {
+  const choice = layoutChoice(page, panel, row).getByRole("radio", {
+    name: option,
+    exact: true,
+  });
+  if ((await choice.getAttribute("aria-checked")) !== "true")
+    await choice.click();
+  await choice.and(page.locator("[aria-checked=true]")).waitFor();
+}

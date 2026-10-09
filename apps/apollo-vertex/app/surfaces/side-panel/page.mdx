@@ -106,7 +106,9 @@ const panel: PanelSpec = {
 
 - **One tab** shows no tab bar: the panel looks as it does with one occupant.
 - **Several tabs** show a tablist above a panel for each tab, with the
-  `data-tab` attribute. Switching is instant.
+  `data-tab` attribute. Switching is instant. The tablist is underlined
+  (the tabs' `line` variant), so it never reads as a segmented control
+  inside an occupant.
 - **A stack** is a tab with more than one occupant. Each gets a heading at
   `headingLevel`; a tab with one occupant has none.
 - **Titles and labels** are locale keys. An occupant's title is its ref's

@@ -3,8 +3,9 @@
 import type { ReactNode } from "react";
 import { ContentArea } from "@/components/ui/content-area";
 import { PageHeader } from "@/components/ui/page-header";
-import { SidePanel } from "@/components/ui/side-panel";
+import { SidePanel, type SidePanelOccupants } from "@/components/ui/side-panel";
 import type { ScrollOwner, SurfacePadding } from "@/lib/composition";
+import type { PanelSpec } from "@/lib/panel";
 
 /** What a preview gives a surface to host one occupant, with no template. */
 export interface SurfaceHostProps {
@@ -19,7 +20,17 @@ export interface SurfaceHostProps {
    * Defaults to true; in a template, the template sets its width.
    */
   fill?: boolean;
-  children: ReactNode;
+  /**
+   * A side panel's tabs and stacks, with the occupants they name and the
+   * tab to open on. Without them, it holds `children`.
+   */
+  panel?: {
+    spec: PanelSpec;
+    occupants: SidePanelOccupants;
+    defaultTab: string;
+    onTabChange?: (id: string) => void;
+  };
+  children?: ReactNode;
 }
 
 export function PageHeaderHost({ padding, children }: SurfaceHostProps) {
@@ -32,6 +43,7 @@ export function SidePanelHost({
   label,
   side = "end",
   fill = true,
+  panel,
   children,
 }: SurfaceHostProps) {
   return (
@@ -41,6 +53,12 @@ export function SidePanelHost({
       padding={padding}
       scroll={scroll}
       fill={fill}
+      {...(panel && {
+        panel: panel.spec,
+        occupants: panel.occupants,
+        defaultTab: panel.defaultTab,
+        ...(panel.onTabChange && { onTabChange: panel.onTabChange }),
+      })}
     >
       {children}
     </SidePanel>

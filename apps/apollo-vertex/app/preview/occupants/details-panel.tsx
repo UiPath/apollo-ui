@@ -47,7 +47,6 @@ function Result({ pass, failTone = "destructive", children }: ResultProps) {
 
 interface DetailsPanelProps {
   id: string;
-  open: boolean;
   spec: OccupantSpec;
   surface: string;
   width: number;
@@ -60,7 +59,6 @@ interface DetailsPanelProps {
 /** Where it fits, the spec, the checks the page can run live, and links. */
 export function DetailsPanel({
   id,
-  open,
   spec,
   surface,
   width,
@@ -126,8 +124,9 @@ export function DetailsPanel({
     <aside
       id={id}
       aria-label={t("workbench_spec")}
-      hidden={!open}
-      className="flex w-80 shrink-0 flex-col gap-6 overflow-y-auto border-s border-border p-4 text-sm"
+      // The column around it opens and closes it; focus lands here.
+      tabIndex={-1}
+      className="flex w-80 shrink-0 flex-col gap-6 overflow-y-auto border-s border-border p-4 text-sm outline-none"
     >
       <section>
         <h2 className="mb-2 font-semibold">{t("workbench_where_it_fits")}</h2>

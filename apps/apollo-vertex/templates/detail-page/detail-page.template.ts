@@ -104,6 +104,8 @@ export const detailPageTemplate = {
       width: START_PANEL_WIDTH,
       resizable: false,
       surfaces: ["side-panel"],
+      // Its side panel holds tabs and stacks of occupants.
+      holds: "panel",
     },
     { name: "main", required: true, surfaces: ["content-area"] },
     {
@@ -112,6 +114,7 @@ export const detailPageTemplate = {
       width: END_PANEL_WIDTH,
       resizable: true,
       surfaces: ["side-panel"],
+      holds: "panel",
     },
   ],
 } as const satisfies TemplateSpec;

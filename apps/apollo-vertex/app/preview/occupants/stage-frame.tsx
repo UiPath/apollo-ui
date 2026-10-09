@@ -9,9 +9,13 @@ interface StageFrameProps extends ComponentProps<"div"> {
 }
 
 /**
- * The page's ground under what's on the stage, with its edge drawn, and its
- * tag above its top-left corner, never over it. The tag is decorative: the
- * dock and the slider's value text say the same.
+ * The page's ground under what's on the stage: no border, the card's
+ * radius, and a faint lift off the recessed canvas, so it reads as the
+ * thing on the bench. Its content is clipped to the rounded corners, the
+ * Shell's sidebar included; clipping moves nothing, so every measured
+ * width stays the same. Its tag sits above its top-left corner, outside
+ * the clip, never over it. The tag is decorative: the dock and the
+ * slider's value text say the same.
  */
 export function StageFrame({
   tag,
@@ -22,10 +26,7 @@ export function StageFrame({
   return (
     <div
       data-slot="workbench-frame"
-      className={cn(
-        "relative bg-background outline-1 outline-border",
-        className,
-      )}
+      className={cn("relative rounded-xl shadow-sm", className)}
       {...props}
     >
       <span
@@ -35,7 +36,12 @@ export function StageFrame({
       >
         {tag}
       </span>
-      {children}
+      <div
+        data-slot="workbench-frame-clip"
+        className="relative h-full w-full overflow-hidden rounded-xl bg-background select-text"
+      >
+        {children}
+      </div>
     </div>
   );
 }

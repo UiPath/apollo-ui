@@ -13,58 +13,23 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { ResolvedTab } from "@/lib/panel";
-
-/** What the tab bar measures: each tab's width, and the space around them. */
-interface Measured {
-  /** Each tab trigger's natural width, by tab id. */
-  widths: Readonly<Record<string, number>>;
-  /** The tab bar's inner width, less the tablist's own padding. */
-  room: number;
-  /** The More button's width, with the gap before it. */
-  more: number;
-}
-
-const NOTHING_MEASURED: Measured = { widths: {}, room: 0, more: 0 };
+import {
+  fitCount,
+  type Measured,
+  NOTHING_MEASURED,
+  sameMeasured,
+  withActiveShown,
+} from "./side-panel-tab-fit";
 
 /**
- * How many tabs fit, in order: all of them when they do, else as many as
- * fit beside the More button, and always at least one. Before everything
- * is measured, all of them, so each can be measured.
+ * How many times the bar may measure again before it paints. Measuring
+ * settles in one or two; more means a measurement depends on its own
+ * result, so it stops until the next frame instead of looping.
  */
-function fitCount(ids: readonly string[], measured: Measured): number {
-  if (measured.room <= 0 || !ids.every((id) => id in measured.widths))
-    return ids.length;
-  const widths = ids.map((id) => measured.widths[id]);
-  const total = widths.reduce<number>((sum, w = 0) => sum + w, 0);
-  if (total <= measured.room) return ids.length;
-  let used = measured.more;
-  let count = 0;
-  for (const w of widths) {
-    const width = w ?? 0;
-    if (used + width > measured.room) break;
-    used += width;
-    count++;
-  }
-  return Math.max(1, count);
-}
+const MAX_REMEASURES = 8;
 
-/** The order with the active tab moved into the last visible place. */
-function withActiveShown(
-  order: readonly string[],
-  active: string,
-  count: number,
-): string[] {
-  const shown = [...order];
-  const index = shown.indexOf(active);
-  if (index >= count) {
-    const last = shown[count - 1];
-    if (typeof last === "string") {
-      shown[count - 1] = active;
-      shown[index] = last;
-    }
-  }
-  return shown;
-}
+/** A computed length in px, or 0 when it isn't one ("normal"). */
+const px = (value: string) => Number.parseFloat(value) || 0;
 
 /** The tab ids in display order, kept as tabs come and go. */
 function reconcileOrder(
@@ -111,8 +76,12 @@ function SidePanelTabBar({
   const bar = React.useRef<HTMLDivElement | null>(null);
   const focusAfterMenu = React.useRef<string | null>(null);
 
+  // Measures in a row before a paint; reset each frame (see MAX_REMEASURES).
+  const remeasures = React.useRef(0);
+
   // Measure after every render, before paint: widths of the tabs that are
-  // showing (hidden ones keep their last width), and the bar's room.
+  // showing (hidden ones keep their last width), the gap between tabs, and
+  // the room the tablist has for them.
   React.useLayoutEffect(() => {
     const node = bar.current;
     if (!node) return;
@@ -120,41 +89,45 @@ function SidePanelTabBar({
       const list = node.querySelector<HTMLElement>("[role=tablist]");
       if (!list) return;
       const widths: Record<string, number> = {};
-      let triggers = 0;
       for (const trigger of list.querySelectorAll<HTMLElement>(
         "[data-tab-trigger]",
       )) {
         const id = trigger.dataset.tabTrigger;
-        if (id && trigger.offsetWidth > 0) {
+        if (id && trigger.offsetWidth > 0)
           widths[id] = trigger.getBoundingClientRect().width;
-          triggers += widths[id] ?? 0;
-        }
       }
       const style = getComputedStyle(node);
+      const listStyle = getComputedStyle(list);
       const inner =
-        node.clientWidth -
-        Number.parseFloat(style.paddingLeft) -
-        Number.parseFloat(style.paddingRight);
-      const chrome = list.getBoundingClientRect().width - triggers;
+        node.clientWidth - px(style.paddingLeft) - px(style.paddingRight);
+      // Only the tablist's own box is fixed; the gaps depend on how many show.
+      const listBox =
+        px(listStyle.paddingLeft) +
+        px(listStyle.paddingRight) +
+        px(listStyle.borderLeftWidth) +
+        px(listStyle.borderRightWidth);
       const button = node.querySelector<HTMLElement>("[data-part=more-tabs]");
-      const gap = Number.parseFloat(style.columnGap) || 0;
-      setMeasured((prev) => {
-        const next = {
-          widths: { ...prev.widths, ...widths },
-          room: Math.floor(inner - chrome),
-          more: button ? button.offsetWidth + gap : prev.more,
-        };
-        const same =
-          next.room === prev.room &&
-          next.more === prev.more &&
-          Object.entries(next.widths).every(([id, w]) => prev.widths[id] === w);
-        return same ? prev : next;
-      });
+      const next: Measured = {
+        widths: { ...measured.widths, ...widths },
+        gap: px(listStyle.columnGap),
+        room: Math.floor(inner - listBox),
+        more: button ? button.offsetWidth + px(style.columnGap) : measured.more,
+      };
+      if (sameMeasured(next, measured)) return;
+      if (remeasures.current >= MAX_REMEASURES) return;
+      remeasures.current++;
+      setMeasured(next);
     };
     measure();
+    const frame = requestAnimationFrame(() => {
+      remeasures.current = 0;
+    });
     const observer = new ResizeObserver(measure);
     observer.observe(node);
-    return () => observer.disconnect();
+    return () => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
   });
 
   const choose = (id: string) => {
@@ -180,7 +153,8 @@ function SidePanelTabBar({
       data-part="tab-bar"
       className="flex shrink-0 items-center gap-1 px-(--surface-inset) pt-(--surface-inset)"
     >
-      <TabsList className="min-w-0 justify-start">
+      {/* Underlined, so it never reads as a segmented control inside an occupant. */}
+      <TabsList variant="line" className="min-w-0 justify-start">
         {shown.map((id, index) => (
           <TabsTrigger
             key={id}

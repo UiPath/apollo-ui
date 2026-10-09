@@ -1,6 +1,7 @@
 import type { ComponentType, ReactNode } from "react";
 import type { OccupantSpec, TemplateSpec } from "@/lib/composition";
 import type { LayoutChoices } from "@/lib/layout";
+import type { PanelSpec } from "@/lib/panel";
 
 /** What a slot ended up as after the template's own rules. */
 export interface SlotStatus {
@@ -9,14 +10,27 @@ export interface SlotStatus {
   closedBy: "user" | "rule" | null;
 }
 
-/** What a preview gives a template to hold one occupant in one slot. */
+/** What one slot holds in a preview: its panel, and each occupant in it. */
+export interface SlotContent {
+  /** One tab of one occupant, or tabs and stacks in a slot that holds a panel. */
+  panel: PanelSpec;
+  /** Each occupant the panel names: its spec, and it rendered. */
+  occupants: Readonly<Record<string, { spec: OccupantSpec; node: ReactNode }>>;
+  /** The tab it shows first. */
+  defaultTab: string;
+  /** Called with the tab's id when another is chosen. */
+  onTabChange?: (id: string) => void;
+  /**
+   * Changes when the preview picks the tab to show: the panel starts again
+   * on `defaultTab`. Choosing a tab in the panel doesn't change it.
+   */
+  revision?: number;
+}
+
+/** What a preview gives a template: what each slot holds, and the layout. */
 export interface TemplateFrameProps {
-  /** The slot the occupant goes in. */
-  slot: string;
-  /** The occupant's spec, for its padding and scroll owner. */
-  spec: OccupantSpec;
-  /** The occupant, rendered. */
-  occupant: ReactNode;
+  /** What each slot holds; a slot left out shows a placeholder. */
+  contents: Readonly<Record<string, SlotContent>>;
   /** The page's choices for the template's slots (see resolveLayout). */
   choices: LayoutChoices;
   /** Called with each slot's state after the template's rules, as it changes. */

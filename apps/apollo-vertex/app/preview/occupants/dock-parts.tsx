@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { Slider } from "@/components/ui/slider";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
+import { SELECTED_SEGMENT } from "./segment";
 
 interface DockProps {
   children: ReactNode;
@@ -16,7 +17,7 @@ export function Dock({ children }: DockProps) {
   return (
     <div
       data-slot="workbench-dock"
-      className="absolute inset-x-4 bottom-6 z-10 mx-auto flex w-fit max-w-full flex-wrap items-center gap-4 rounded-xl border border-border bg-background/75 px-4 py-3 shadow-lg backdrop-blur-md"
+      className="absolute inset-x-4 bottom-6 z-10 mx-auto flex w-fit max-w-full flex-wrap items-center gap-4 rounded-xl border border-border bg-background/75 px-4 py-3 shadow-lg backdrop-blur-md select-none"
     >
       {children}
     </div>
@@ -79,6 +80,7 @@ export function FitToggleGroup({
           key={option.value}
           value={option.value}
           data-fits={option.fits}
+          className={SELECTED_SEGMENT}
           aria-label={t(
             option.fits ? "workbench_place_fits" : "workbench_place_no_fit",
             { place: option.label },
@@ -132,6 +134,8 @@ export function DockSlider({
     <>
       <span ref={ref} className="relative block w-56 py-2">
         <Slider
+          // Neutral, as the chrome keeps teal for the selected slot.
+          className="[&_[data-slot=slider-range]]:bg-foreground [&_[data-slot=slider-thumb]]:border-foreground"
           min={min}
           max={max}
           step={step}

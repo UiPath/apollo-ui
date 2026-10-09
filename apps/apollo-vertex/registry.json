@@ -2267,6 +2267,11 @@
           "target": "lib/composition.ts"
         },
         {
+          "path": "registry/composition/specs.ts",
+          "type": "registry:lib",
+          "target": "lib/specs.ts"
+        },
+        {
           "path": "registry/composition/layout-tokens.ts",
           "type": "registry:lib",
           "target": "lib/layout-tokens.ts"
@@ -2334,6 +2339,10 @@
         },
         {
           "path": "registry/side-panel/side-panel-tab-bar.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/side-panel/side-panel-tab-fit.ts",
           "type": "registry:ui"
         }
       ]

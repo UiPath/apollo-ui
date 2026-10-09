@@ -1,55 +1,31 @@
 "use client";
 
 import { useTranslation } from "react-i18next";
-import type {
-  SlotStatus,
-  TemplateHost,
-} from "@/app/_components/template-hosts";
+import type { TemplateHost } from "@/app/_components/template-hosts";
 import { Separator } from "@/components/ui/separator";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import type { OccupantSpec } from "@/lib/composition";
-import { type LayoutChoices, resolveLayout } from "@/lib/layout";
+import type { LayoutChoices } from "@/lib/layout";
 import type { PreviewShellVariant } from "@/templates/shell/PreviewShell";
-import { Dock, DockSlider, FitToggleGroup } from "./dock-parts";
-import { PageMap } from "./page-map";
-import { TemplateLayoutMenu } from "./template-layout-menu";
+import { Dock, DockSlider } from "./dock-parts";
+import { SELECTED_SEGMENT } from "./segment";
+import { ShellMenu } from "./shell-menu";
 import {
   PAGE_WIDTH_MAX,
   pageWidthMin,
-  slotFit,
   type WorkbenchZoom,
 } from "./workbench-url-state";
 
 const ZOOMS: readonly WorkbenchZoom[] = ["fit", "actual"];
 
-/** The choices with each slot's open state as the template's rules left it. */
-const withStatus = (
-  layout: LayoutChoices,
-  status: Readonly<Record<string, SlotStatus>> | null,
-): LayoutChoices => {
-  if (!status) return layout;
-  const slots = new Set([...Object.keys(layout), ...Object.keys(status)]);
-  return Object.fromEntries(
-    [...slots].map((slot) => {
-      const after = status[slot];
-      return [slot, { ...layout[slot], ...(after && { open: after.open }) }];
-    }),
-  );
-};
 /** The page width moves in larger steps than a surface's. */
 const PAGE_WIDTH_STEP = 8;
 
 interface TemplateDockProps {
   host: TemplateHost;
-  spec: OccupantSpec;
-  slot: string;
-  onSlot: (slot: string) => void;
   shell: PreviewShellVariant;
   onShell: (shell: PreviewShellVariant) => void;
+  /** The page's layout choices, for the shells' pictures. */
   layout: LayoutChoices;
-  onLayout: (layout: LayoutChoices) => void;
-  /** Each slot after the template's rules, once the template has rendered. */
-  slotStatus: Readonly<Record<string, SlotStatus>> | null;
   pageWidth: number;
   onPageWidth: (width: number) => void;
   zoom: WorkbenchZoom;
@@ -59,20 +35,15 @@ interface TemplateDockProps {
 }
 
 /**
- * The template view's dock: the page map with the chosen slot and layout,
- * the slot switcher (fits() against each slot), the Layout menu, the page
- * width (the whole window, shell included), and the zoom.
+ * The template view's dock: the shell, the page width (the whole window,
+ * shell included), and the zoom. Slots are selected on the stage, and
+ * edited in the inspector.
  */
 export function TemplateDock({
   host,
-  spec,
-  slot,
-  onSlot,
   shell,
   onShell,
   layout,
-  onLayout,
-  slotStatus,
   pageWidth,
   onPageWidth,
   zoom,
@@ -80,36 +51,14 @@ export function TemplateDock({
   scale,
 }: TemplateDockProps) {
   const { t } = useTranslation();
-  const slotName = host.slotLabels[slot] ?? slot;
   return (
     <Dock>
-      <PageMap
-        layout={resolveLayout(host.spec, withStatus(layout, slotStatus))}
-        highlighted={[slot]}
-        cue="here"
-        name={slotName.toLowerCase()}
-        shell={shell}
-      />
-      <Separator orientation="vertical" className="h-8" />
-      <FitToggleGroup
-        label={t("workbench_slot")}
-        value={slot}
-        onChange={onSlot}
-        options={host.spec.slots.map((s) => ({
-          value: s.name,
-          label: host.slotLabels[s.name] ?? s.name,
-          fits: slotFit(host, s.name, spec).fits,
-        }))}
-      />
-      <Separator orientation="vertical" className="h-8" />
-      <TemplateLayoutMenu
-        host={host}
-        slot={slot}
+      <ShellMenu
         shell={shell}
         onShell={onShell}
+        host={host}
         layout={layout}
-        onLayout={onLayout}
-        status={slotStatus}
+        pageWidth={pageWidth}
       />
       <Separator orientation="vertical" className="h-8" />
       <div className="flex items-center gap-3">
@@ -138,7 +87,7 @@ export function TemplateDock({
           }}
         >
           {ZOOMS.map((z) => (
-            <ToggleGroupItem key={z} value={z}>
+            <ToggleGroupItem key={z} value={z} className={SELECTED_SEGMENT}>
               {t(`workbench_zoom_${z}`)}
             </ToggleGroupItem>
           ))}

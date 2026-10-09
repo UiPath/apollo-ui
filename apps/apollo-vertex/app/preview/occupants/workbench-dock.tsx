@@ -91,7 +91,6 @@ export function WorkbenchDock({
         <PageMap
           layout={MAP_LAYOUT}
           highlighted={slotsTaking(surface)}
-          cue="could"
           name={lowerLabel(surface)}
         />
       )}

@@ -210,9 +210,9 @@ Before running anything, it reviews what it wrote:
 
 Then it measures the minimum width and runs the [checks](#checks), fixing
 failures inside the occupant and explaining any it can't. Last, it gives you
-the links to try it in the [occupant workbench](/preview/occupants), in the
-surface view and the template view, with every sample, state, theme, and
-width.
+the links to try it in the [occupant workbench](/preview/occupants): in the
+surface view with every sample, state, theme, and width, and in the
+template view on a page with other occupants.
 
 ### Take a proposal forward
 
@@ -233,10 +233,11 @@ The workbench shows every surface and template that's registered for
 previews, with no change to the workbench itself. Each template declares its
 slots, their rules, its layout, and the choices a page has per slot (leave
 it out, close it, or place it elsewhere) in its spec, and the workbench
-reads them. Its page map is the template's declared layout, and its Layout
-menu offers exactly the declared choices, locking only what the layout
-refuses or the slot holding the occupant needs. Links name the template's
-slots: `<slot>-present`, `<slot>-state`, and `<slot>-placement`.
+reads them. The surface view's page map is the default template's
+declared layout, and the template view's inspector offers exactly the
+choices each slot declares, locking only what the layout refuses. Links name
+the template's slots: `<slot>-present`, `<slot>-state`, and
+`<slot>-placement`.
 
 - **A surface:** register it in `registry.json` with `"layer": "surface"` and
   its `<name>.surface.ts` spec, give it a label in `lib/surface-labels.ts`,
@@ -246,13 +247,158 @@ slots: `<slot>-present`, `<slot>-state`, and `<slot>-placement`.
 - **A template:** declare its `layout`, with its slots' choices, in its
   spec, and register its host in `app/_components/template-hosts.ts`: its
   spec, a label for each slot, its narrowest useful width, and a frame that
-  renders it with one occupant in one slot, in the page's layout choices.
-  The host is the only place the workbench knows the template, and a unit
-  test fails if workbench code names it anywhere else. A side panel can
-  hold several occupants in tabs and stacks; the workbench still shows one
-  occupant per slot.
+  renders what each slot holds, in the page's layout choices. Declare
+  `holds: "panel"` on each slot that takes tabs and stacks. The host is
+  the only place the workbench knows the template, and a unit test fails
+  if workbench code names it anywhere else.
 
 Unit tests fail until each has everything it needs.
+
+### Two views
+
+The workbench has two views, switched with Surface | Template in the
+header:
+
+- **The surface view** shows one occupant in one surface. Sample and
+  State in the header pick its example and its state, like loading or
+  empty, and they're only here. The right-hand column is
+  Details: where it fits, its spec, and its checks.
+- **The template view** shows a whole page. There's no focused
+  occupant: every occupant on the page is one of its contents, renders
+  its primary sample in its ready state, and can be removed or replaced.
+  The right-hand column is the inspector, and Details never shows here.
+
+The header's panel toggle opens and closes the column the view has. The
+inspector is open only in Edit mode, so in Preview the toggle switches to
+Edit. Opening the template view on an empty page puts the occupant
+selected in the list in the first slot that fits it, in the template's
+slot order. After that, it's an ordinary occupant. In the template view,
+clicking an occupant in the list switches to Edit and selects its slot,
+or, for one that isn't on the page, says how to add it. Back in the
+surface view, the occupant last selected in the list is the one that
+opens.
+
+In the template view, the list says where each placed occupant is: "In
+End panel", or, muted, "In End panel · left out" or "In End panel ·
+closed" when its slot isn't showing. Leaving a slot out or closing it
+keeps what it holds, so those occupants are still placed: they don't
+drag, the picker never offers them, and a click in the list selects
+their slot's ghost or strip.
+
+### Compose a slot
+
+The template view has two modes, switched with Preview | Edit in the
+header and carried in links as `mode=edit`:
+
+- **Preview**, the default, is the page as people use it: no outlines,
+  and every occupant works. The inspector is closed.
+- **Edit** opens the inspector, outlines every slot with its name, and
+  makes the occupants inert and slightly dimmed. A slot's name sits just
+  above its outline, so it never covers what's in the slot; where
+  there's no room above, as for the header at the top of the page, it
+  sits inside the top-right corner. A click anywhere in a
+  slot selects it, with a solid outline, and the inspector shows it.
+  A slot that's left out shows as a ghost where it would sit, and a
+  closed one as a strip on its edge, each saying how many occupants it
+  keeps ("End panel, left out · 2 occupants"); each is selected the same
+  way.
+  Escape deselects. With nothing selected, the inspector says to select
+  a slot.
+
+The inspector is the one place to edit a slot: its contents first, then
+its layout. Layout is picture choices: Panel (Open, Closed, or Hidden)
+and Placement, each option a small thumbnail of the page with it, drawn
+from the template's declared layout, with its name under it. Only what
+the slot declares is offered, and a row with one option isn't shown. A
+hidden slot keeps its contents, dimmed, and its Placement is off until
+it's shown again. A locked option shows a lock, with why. It sits
+beside the stage, so the stage narrows and Fit scales the page to suit;
+the page's width and every slot's width stay the same. By keyboard,
+slots are focusable: Enter selects one and moves focus into the
+inspector, and Escape returns focus to the slot. The dock holds the
+shell, the page width, and the zoom.
+
+In Edit mode, you can also drag an occupant from the list onto the page.
+Occupants already placed say where they are, and don't drag. Where you
+drop it decides what happens:
+
+- **Between two tabs, or at the end of a tab bar:** a new tab there,
+  shown by an insertion line.
+- **On a tab's label:** into that tab, which becomes a stack.
+- **Anywhere else on a panel that has occupants:** two large choices
+  fill it while you're over it. "Add as tab", above, makes a new tab at
+  the end; "Stack with Queue", below, stacks into the tab showing. The
+  tab bar's places win where they overlap, and a refused choice says
+  why in it.
+- **On an empty panel:** one choice, "Add to End panel".
+- **On a slot that holds one:** in place of the occupant there.
+- **On a left-out slot's ghost:** the slot is included, with the
+  occupant in it, as one change.
+
+A place that refuses the occupant is dimmed while you drag, and says why
+when you're over it. A fill occupant can still go between tabs. After a
+drop, the tab it went in shows. By keyboard, focus an occupant's handle
+in the list, press Space, move between places with the arrow keys, and
+press Space to drop. The inspector offers the same choices, by the same
+rules: a drop is allowed exactly where the inspector would offer that
+occupant.
+
+Every change to what the page holds or how it's laid out says what it
+did in a toast, like "Key facts added to End panel", with an Undo for
+that change. Toasts go after six seconds, wait while hovered or while
+Undo has focus, and Escape dismisses the latest one before its other
+jobs. Leaving out or closing a slot that holds occupants says
+they're kept, like "End panel left out. Its 2 occupants are kept." A
+newer change replaces the toast, so Undo is always for
+the latest. In Edit mode, Reset layout in the header empties every slot
+and puts every slot's layout back to the template's defaults; its toast
+undoes it too.
+
+The template declares how much each slot holds, so the contents follow
+it. A slot that holds one shows its occupant with Replace and Clear, and
+the picker when it's empty. A slot that holds a panel (`holds: "panel"`)
+lists its tabs as cards, each named as the page names it, with a "+"
+that adds to that tab, then a dashed "New tab" card: which one you press
+decides tab or stack. A stack is a light outline around its occupants'
+cards, under a header with its label and "+".
+
+Each card has a grip. Drag a stack's header grip to move the whole tab,
+or a card's grip to move that occupant: within its stack, into another
+tab, or to a new tab, between tabs or on the dashed card. A dashed slot
+the card's size opens where it will land, and says why when the panel
+rules refuse it. By keyboard, press Space on a grip and use the arrow
+keys, or use Move up and Move down in a card's menu. The tab showing
+stays the same tab, and a toast says what moved, with Undo.
+
+The picker opens under the card, lists only occupants that fit the
+slot and aren't on the page yet, and says how many it leaves out, and
+why. A tab that becomes a stack takes the first preset label no tab has;
+press the chevron beside the label to pick another. The tab you add to is the one the page
+shows. Only real limits lock, and a lock is an icon with why in its
+tooltip: a fill occupant is alone in its tab, and a panel has at most five
+tabs. Offering each occupant once on the page is the workbench's rule,
+not composition's.
+
+To try another name, click an occupant's name or a stack's label in the
+inspector and type: Enter saves, Escape cancels, and an empty name
+restores the default, as does the reset icon beside a renamed one. The
+page shows the new name wherever that title renders: the tab, the
+stack's heading, and More. A rename is only for this preview. It isn't
+written to the link, Reset layout clears it (Undo brings it back), and a
+reload shows the declared titles. Each new name is a translation
+registered at runtime under a workbench-only key, so the panel's API
+takes no string titles.
+
+Links carry each slot's contents as `<slot>-contents`. Tabs are joined by
+`~`, a stack's occupants by `.`, and a stack starts with its label's id
+(`overview`, `details`, `activity`, or `people`) and `:`. A tab's id is
+its first occupant, and `<slot>-tab` names the tab showing, when it isn't
+the one the slot opens on. If that tab is gone, the slot opens on its
+first tab. For example:
+
+```text
+end-panel-contents=queue~overview:key-facts.participants~activity-timeline
+```
 
 ## Checks
 

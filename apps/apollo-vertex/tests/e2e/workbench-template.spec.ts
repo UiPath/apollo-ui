@@ -2,26 +2,35 @@ import type { Page } from "@playwright/test";
 import { expect, test } from "./fixtures";
 import {
   axeViolations,
+  inspector,
   open,
+  selectSlot,
   slotStates,
   stage,
   urlQuery,
 } from "./workbench-helpers";
 
 /*
- * The workbench's template view: the occupant in a template slot, the
- * slot switcher, placement, the template's width rules, the URL, and an
- * axe scan. The page width is the whole window: the default shell's
- * sidebar takes 280px of it. The Layout menu has its own spec.
+ * The workbench's template view: the page seeded with the occupant,
+ * placement, the template's width rules, the URL, and axe scans in
+ * Preview and Edit. The page width is the whole window: the default shell's
+ * sidebar takes 280px of it. Each slot's layout has its own spec.
  */
 
-/** Opens the Layout menu and picks an option in one of its groups. */
-async function chooseLayout(page: Page, group: string, option: string) {
-  const menu = page.locator("[data-slot=workbench-layout-menu]");
-  if (!(await menu.isVisible()))
-    await page.getByRole("button", { name: "Layout" }).click();
-  await menu
-    .getByRole("group", { name: group, exact: true })
+/** Picks an option in one of a slot's layout groups, in the inspector. */
+async function chooseLayout(
+  page: Page,
+  slot: string,
+  group: string,
+  option: string,
+) {
+  await selectSlot(page, slot);
+  // "End panel placement" is the row "End panel: Placement" now.
+  await inspector(page)
+    .getByRole("radiogroup", {
+      name: group.replace(/ placement$/, ": Placement"),
+      exact: true,
+    })
     .getByRole("radio", { name: option, exact: true })
     .click();
 }
@@ -32,22 +41,25 @@ test("switching views keeps the occupant, sample, and state", async ({
   await page.setViewportSize({ width: 1920, height: 1000 });
   await open(page, "?occupant=queue&sample=stress&state=agent-updating");
   await page.getByRole("radio", { name: "Template", exact: true }).click();
+  // No slot is the occupant's: the tag names the page.
   await expect(page.locator("[data-slot=workbench-frame-tag]")).toHaveText(
-    "Detail page · Start panel · 1440px",
+    "Detail page · 1440px",
   );
   await expect(
     page.locator(
       "[data-template=detail-page] [data-slot=detail-page-start-panel] [data-occupant=queue]",
     ),
   ).toBeVisible();
-  // The dock is now slots and the page width.
-  await expect(
-    page.getByRole("radio", { name: "Start panel, fits" }),
-  ).toHaveAttribute("aria-checked", "true");
+  // The empty page took the occupant, in the first slot it fits; after
+  // that it's an ordinary occupant, in its primary sample, ready.
   await expect(page.getByRole("slider", { name: "Page width" })).toBeVisible();
   expect(urlQuery(page)).toContain("view=template");
-  expect(urlQuery(page)).toContain("sample=stress");
-  expect(urlQuery(page)).toContain("state=agent-updating");
+  expect(urlQuery(page)).toContain("start-panel-contents=queue");
+  // Sample and State are the surface view's only.
+  await expect(page.getByRole("group", { name: "Sample" })).toHaveCount(0);
+  await expect(page.getByRole("combobox", { name: "Sample" })).toHaveCount(0);
+  expect(urlQuery(page)).not.toContain("sample=");
+  expect(urlQuery(page)).not.toContain("state=");
 
   await page.getByRole("radio", { name: "Surface", exact: true }).click();
   await expect(
@@ -55,18 +67,6 @@ test("switching views keeps the occupant, sample, and state", async ({
   ).toBeVisible();
   expect(urlQuery(page)).not.toContain("view=");
   expect(urlQuery(page)).toContain("sample=stress");
-});
-
-test("a template slot the occupant doesn't fit shows why", async ({ page }) => {
-  await open(page, "?occupant=queue&view=template");
-  const header = page.getByRole("radio", { name: "Header, doesn't fit" });
-  await header.click();
-  const card = stage(page).locator("[data-slot=workbench-no-fit]");
-  await expect(card).toContainText("Queue doesn't go in the header");
-  await expect(card).toContainText("Works only in vertical surfaces");
-  await expect(
-    page.locator("[data-slot=workbench-map] [data-highlighted=true]"),
-  ).toHaveAttribute("data-region", "header");
 });
 
 test("the template's page width rules apply live", async ({ page }) => {
@@ -79,17 +79,16 @@ test("the template's page width rules apply live", async ({ page }) => {
       "detail-page-start-panel": "open",
       "detail-page-end-panel": "open",
     });
-  // Not room for both (720px inside the shell): the occupant's panel counts
-  // as opened last, so the rule closes the other one.
+  // Not room for both (720px inside the shell). No panel is focused, so
+  // none is kept: the template's own rule closes both.
   await open(page, "?occupant=queue&view=template&page=1000");
   await expect
     .poll(() => slotStates(page))
     .toEqual({
-      "detail-page-start-panel": "open",
+      "detail-page-start-panel": "closed",
       "detail-page-end-panel": "closed",
     });
-  // The narrowest page: main's minimum plus the shell. The occupant's panel
-  // still stays; main shrinks instead.
+  // The narrowest page: main's minimum plus the shell. Both stay closed.
   const slider = page.getByRole("slider", { name: "Page width" });
   await slider.focus();
   await page.keyboard.press("Home");
@@ -99,7 +98,7 @@ test("the template's page width rules apply live", async ({ page }) => {
   await expect
     .poll(() => slotStates(page))
     .toEqual({
-      "detail-page-start-panel": "open",
+      "detail-page-start-panel": "closed",
       "detail-page-end-panel": "closed",
     });
 });
@@ -111,13 +110,17 @@ test("a side slot's placement puts it beside the header", async ({ page }) => {
   const panel = page.locator("[data-slot=detail-page-start-panel]");
   // Below: the header spans the page, over the panel.
   expect((await header.boundingBox())?.x).toBe((await panel.boundingBox())?.x);
-  await chooseLayout(page, "Start panel placement", "Beside header");
+  await chooseLayout(
+    page,
+    "start-panel",
+    "Start panel placement",
+    "Beside header",
+  );
   await expect
     .poll(async () => (await header.boundingBox())?.x ?? 0)
     .toBeGreaterThan((await panel.boundingBox())?.x ?? 0);
   expect(urlQuery(page)).toContain("start-panel-placement=beside-header");
-  // Placement isn't in the dock any more: it's per panel, in the menu.
-  await page.keyboard.press("Escape");
+  // Placement isn't in the dock: it's per panel, in the inspector.
   await expect(
     page
       .locator("[data-slot=workbench-dock]")
@@ -129,17 +132,18 @@ test("the template view round-trips through the URL", async ({ page }) => {
   await page.setViewportSize({ width: 1920, height: 1000 });
   await open(page, "?occupant=queue");
   await page.getByRole("radio", { name: "Template", exact: true }).click();
-  await page.getByRole("radio", { name: "End panel, fits" }).click();
-  await chooseLayout(page, "End panel placement", "Beside header");
-  await page.keyboard.press("Escape");
+  await chooseLayout(page, "end-panel", "End panel placement", "Beside header");
   await page.getByRole("slider", { name: "Page width" }).focus();
   await page.keyboard.press("ArrowLeft");
+  // The link is written after the change renders.
+  await expect.poll(() => urlQuery(page)).toContain("page=1432");
   const url = urlQuery(page);
   for (const part of [
     "view=template",
-    "slot=end-panel",
+    "start-panel-contents=queue",
     "end-panel-placement=beside-header",
     "page=1432",
+    "mode=edit",
   ])
     expect(url).toContain(part);
   // One template: no picker, and its name isn't written.
@@ -150,10 +154,10 @@ test("the template view round-trips through the URL", async ({ page }) => {
   await page.locator("[data-slot=workbench]").waitFor();
   expect(urlQuery(page)).toBe(url);
   await expect(page.locator("[data-slot=workbench-frame-tag]")).toHaveText(
-    "Detail page · End panel · 1432px",
+    "Detail page · 1432px",
   );
   await expect(
-    page.locator("[data-slot=detail-page-end-panel] [data-occupant=queue]"),
+    page.locator("[data-slot=detail-page-start-panel] [data-occupant=queue]"),
   ).toBeVisible();
 });
 
@@ -171,6 +175,12 @@ test("passes an axe scan in the template view", async ({ page }) => {
   const violations = await axeViolations(page, ["[data-slot=workbench-page]"]);
   expect(
     violations.filter((v) => !v.startsWith("landmark-no-duplicate-main:")),
+  ).toEqual([]);
+  // In Edit, with a slot in the inspector, the same holds.
+  await selectSlot(page, "end-panel");
+  const editing = await axeViolations(page, ["[data-slot=workbench-page]"]);
+  expect(
+    editing.filter((v) => !v.startsWith("landmark-no-duplicate-main:")),
   ).toEqual([]);
 });
 
@@ -201,8 +211,33 @@ test("the dock stays above the template, every control reachable", async ({
       ),
   );
   expect(hidden).toEqual([]);
-  await page.getByRole("radio", { name: "Main, fits" }).click();
-  await expect(page.locator("[data-slot=workbench-frame-tag]")).toContainText(
-    "Main",
-  );
+  // And works: the Shell button opens its menu.
+  await page.getByRole("button", { name: "Shell" }).click();
+  await page.locator("[data-slot=workbench-shell-menu]").waitFor();
+});
+
+test("the dock fits one row on a 1416px window, with the list and inspector open", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1416, height: 900 });
+  for (const query of [
+    "?occupant=queue&view=template",
+    "?occupant=queue&view=template&mode=edit",
+    "?view=template&end-panel-contents=queue&start-panel-present=false&mode=edit",
+  ]) {
+    await open(page, query);
+    await page.evaluate(() => document.fonts.ready);
+    const rows = await page.locator("[data-slot=workbench-dock]").evaluate(
+      (dock) =>
+        new Set(
+          [...dock.children].map((part) => {
+            const box = part.getBoundingClientRect();
+            return Math.round(box.top + box.height / 2);
+          }),
+        ).size,
+    );
+    expect(rows, query).toBe(1);
+  }
+  // The shell is an icon there, named for its menu.
+  await expect(page.getByRole("button", { name: "Shell" })).toBeVisible();
 });

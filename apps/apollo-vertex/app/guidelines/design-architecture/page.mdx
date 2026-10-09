@@ -47,18 +47,21 @@ The specs live in `@/lib/composition`.
 | Spec | Describes | Main fields |
 | --- | --- | --- |
 | `TemplateSpec` | A template | `name`, `slots`, `layout` (optional) |
-| `SlotSpec` | One slot in a template | `name`, `required`, `width` (`min`, optional `default` and `max`), `resizable`, `surfaces` |
+| `SlotSpec` | One slot in a template | `name`, `required`, `width` (`min`, optional `default` and `max`), `resizable`, `surfaces`, `holds` (`one` or `panel`, default `one`) |
 | `SurfaceSpec` | A surface | `name`, `width` (its own minimum), `provides` (orientation, inner width, scroll) |
 | `OccupantSpec` | An occupant | `name`, `label`, `titleKey` (required: its title as a locale key), `icon` (optional), `surfaces` (optional), `orientations` (optional), `sizing` (`flow` or `fill`, default `flow`), `requires` (minimum width, scroll, padding) |
 
-Each template declares its own slots and their rules in its spec, and its
-layout as data: its grid's tracks, each slot's area, and what a page can
-choose per slot (leave it out, close it, or place it elsewhere).
+Each template declares its own slots and their rules in its spec, including
+how much each slot holds: one occupant, or a panel of tabs and stacks
+(`holds: "panel"`). `slotHolds(slot)`, in `@/lib/composition`, reads it.
+It declares its layout as data too: its grid's tracks, each slot's area,
+and what a page can choose per slot (leave it out, close it, or place it
+elsewhere).
 `resolveLayout(spec, choices)`, in `@/lib/layout`, works out where each slot
 sits, and `slotControls(spec, choices)` lists the choices it declares, with
 the ones its layout would refuse. Previews read these specs, so a new
 template needs no preview code of its own: the occupant workbench draws
-its page map and builds its Layout menu from them. The template's own
+its page map and builds each slot's inspector from them. The template's own
 layout is tested to agree with what it declares.
 
 `fits(slot, surface, occupant)` checks that an occupant can go in a surface

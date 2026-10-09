@@ -7,10 +7,10 @@ import {
   choose,
   floorMeasured,
   open,
-  urlQuery,
   stage,
   status,
   themeColors,
+  urlQuery,
 } from "./workbench-helpers";
 
 /*
@@ -53,40 +53,6 @@ for (const { spec } of OCCUPANT_SPECS) {
     }
   });
 }
-
-test("the panel toggles collapse and reopen each panel, and keep focus", async ({
-  page,
-}) => {
-  await open(page, "?occupant=queue");
-  // The list starts open and the details panel closed; each writes only its
-  // non-default state.
-  for (const [start, next, panel, param] of [
-    [
-      "Hide occupant list",
-      "Show occupant list",
-      "#workbench-list",
-      "list=closed",
-    ],
-    ["Show details", "Hide details", "#workbench-details", "details=open"],
-  ] as const) {
-    const startsOpen = start.startsWith("Hide");
-    const toggle = page.getByRole("button", { name: start });
-    await expect(toggle).toHaveAttribute("aria-expanded", String(startsOpen));
-    await expect(toggle).toHaveAttribute("aria-controls", panel.slice(1));
-    await expect(page.locator(panel)).toBeVisible({ visible: startsOpen });
-    expect(urlQuery(page)).not.toContain(param);
-    await toggle.focus();
-    await page.keyboard.press("Enter");
-    const toggled = page.getByRole("button", { name: next });
-    await expect(toggled).toHaveAttribute("aria-expanded", String(!startsOpen));
-    await expect(toggled).toBeFocused();
-    await expect(page.locator(panel)).toBeVisible({ visible: !startsOpen });
-    expect(urlQuery(page)).toContain(param);
-    await page.keyboard.press("Enter");
-    await expect(page.locator(panel)).toBeVisible({ visible: startsOpen });
-    expect(urlQuery(page)).not.toContain(param);
-  }
-});
 
 test("switching surfaces moves the occupant and the page map", async ({
   page,
@@ -268,16 +234,21 @@ for (const [width, view] of [
     await page.setViewportSize({ width, height: 800 });
     await open(
       page,
-      `?occupant=activity-timeline&details=open${view === "template" ? "&view=template" : ""}`,
+      // The template view's right-hand column is the inspector: Edit opens it.
+      `?occupant=activity-timeline&details=open${view === "template" ? "&view=template&mode=edit" : ""}`,
     );
     const header = page.locator("[data-slot=workbench-header]");
+    // Its controls, in order: the header groups them in three parts.
+    // Reset is hidden in Preview, but keeps its room.
     const rows = await header.evaluate((el) =>
-      [...el.children]
-        .filter((child) => !child.hasAttribute("inert"))
-        .map((child) => {
-          const box = child.getBoundingClientRect();
-          return { top: box.top, bottom: box.bottom, left: box.left };
-        }),
+      [
+        ...el.querySelectorAll(
+          "button:not([data-shown=false]), a, [role=combobox]",
+        ),
+      ].map((control) => {
+        const box = control.getBoundingClientRect();
+        return { top: box.top, bottom: box.bottom, left: box.left };
+      }),
     );
     const top = Math.min(...rows.map((r) => r.top));
     const bottom = Math.max(...rows.map((r) => r.bottom));
@@ -289,13 +260,22 @@ for (const [width, view] of [
       .getByRole("button", { name: "Hide occupant list" })
       .boundingBox();
     const details = await page
-      .getByRole("button", { name: "Hide details" })
+      .getByRole("button", {
+        name: view === "template" ? "Hide inspector" : "Hide details",
+      })
       .boundingBox();
     expect(list?.x).toBe(Math.min(...lefts));
     expect(details?.x).toBe(Math.max(...lefts));
-    // Sample and State still work, in whichever form fits.
-    await choose(page, "Sample", "Stress");
-    expect(urlQuery(page)).toContain("sample=stress");
+    // Sample and State work, in whichever form fits: the surface view's only.
+    if (view === "surface") {
+      await choose(page, "Sample", "Stress");
+      expect(urlQuery(page)).toContain("sample=stress");
+    } else {
+      await expect(page.getByRole("group", { name: "Sample" })).toHaveCount(0);
+      await expect(page.getByRole("combobox", { name: "Sample" })).toHaveCount(
+        0,
+      );
+    }
   });
 }
 
