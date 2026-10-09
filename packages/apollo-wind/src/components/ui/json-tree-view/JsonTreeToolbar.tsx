@@ -37,7 +37,12 @@ export interface JsonTreeToolbarProps {
    */
   leading?: ReactNode;
   /**
-   * Hides the search / filter / collapse controls, keeping only `leading`.
+   * Content rendered at the end of the row, after the tree controls (e.g. a
+   * node output mode select). Stays visible when `controlsHidden` is set.
+   */
+  trailing?: ReactNode;
+  /**
+   * Hides the search / filter / collapse controls, keeping only `leading` and `trailing`.
    * Use when a non-tree tab is active and the controls would be inert.
    */
   controlsHidden?: boolean;
@@ -71,6 +76,7 @@ function JsonTreeToolbarContent({
   allCollapsed = false,
   onToggleAll,
   leading,
+  trailing,
   controlsHidden = false,
   className,
 }: Omit<JsonTreeToolbarProps, 'strings' | 'tooltipContentClassName'>) {
@@ -98,7 +104,7 @@ function JsonTreeToolbarContent({
             // pushes the filter / collapse controls out of a narrow panel.
             <div className="relative flex min-w-0 flex-1 items-center overflow-hidden">
               <Search
-                size={13}
+                size={12}
                 className="pointer-events-none absolute left-2 text-foreground-subtle"
               />
               <Input
@@ -109,17 +115,22 @@ function JsonTreeToolbarContent({
                 value={query}
                 onChange={(e) => onQueryChange(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === 'Escape') closeSearch();
+                  if (e.key !== 'Escape') return;
+                  // Escape is a common host shortcut (e.g. the canvas deselects on it);
+                  // closing the search shouldn't also trigger it.
+                  e.preventDefault();
+                  e.stopPropagation();
+                  closeSearch();
                 }}
                 aria-label={resolvedSearchPlaceholder}
                 placeholder={resolvedSearchPlaceholder}
-                // Match the h-6 toolbar buttons so opening/closing search does
+                // Match the h-5 toolbar buttons so opening/closing search does
                 // not change the toolbar height and shift the tree below it.
                 // Inline padding to clear the leading icon / trailing clear
                 // button: the `xs` variant's `px-2` outranks a `pl-*` class
                 // under Tailwind v4's utility ordering, so a class would lose.
                 style={{ paddingLeft: '1.75rem', paddingRight: '1.5rem' }}
-                className="h-6 w-full text-foreground placeholder:text-foreground-subtle focus-visible:ring-0"
+                className="h-5 w-full text-foreground placeholder:text-foreground-subtle focus-visible:ring-0"
               />
               <button
                 type="button"
@@ -138,13 +149,13 @@ function JsonTreeToolbarContent({
               <JsonTreeTooltip content={searchActionLabel} placement="top" delay>
                 <Button
                   variant="ghost"
-                  size="3xs"
+                  size="4xs"
                   icon
                   onClick={() => setSearchOpen(true)}
                   aria-label={searchActionLabel}
                   className="rounded text-foreground-subtle hover:bg-surface-overlay hover:text-foreground"
                 >
-                  <Search size={14} />
+                  <Search size={12} />
                 </Button>
               </JsonTreeTooltip>
             </>
@@ -157,12 +168,12 @@ function JsonTreeToolbarContent({
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
-                    size="3xs"
+                    size="4xs"
                     icon
                     aria-label={filterLabel}
                     className="relative rounded text-foreground-subtle hover:bg-surface-overlay hover:text-foreground"
                   >
-                    <Filter size={14} />
+                    <Filter size={12} />
                     {activeFilter && (
                       <span className="absolute right-0.5 top-0.5 size-1.5 rounded-full bg-primary ring-1 ring-surface" />
                     )}
@@ -206,16 +217,23 @@ function JsonTreeToolbarContent({
             <JsonTreeTooltip content={toggleAllLabel} placement="top" delay>
               <Button
                 variant="ghost"
-                size="3xs"
+                size="4xs"
                 icon
                 onClick={onToggleAll}
                 aria-label={toggleAllLabel}
                 className="rounded text-foreground-subtle hover:bg-surface-overlay hover:text-foreground"
               >
-                {allCollapsed ? <ChevronsUpDown size={14} /> : <ChevronsDownUp size={14} />}
+                {allCollapsed ? <ChevronsUpDown size={12} /> : <ChevronsDownUp size={12} />}
               </Button>
             </JsonTreeTooltip>
           )}
+        </>
+      )}
+      {trailing && (
+        <>
+          {/* Keeps `trailing` at the end when the controls (and their spacer) are hidden. */}
+          {controlsHidden && <div className="flex-1" />}
+          {trailing}
         </>
       )}
     </div>

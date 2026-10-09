@@ -55,6 +55,7 @@ export {
   inferValueType,
   isArrayItemTemplateRoot,
   isJsonObject,
+  isPathCollapsed,
   removeValueAtPath,
   schemaDisplayType,
   setValueAtPath,

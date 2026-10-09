@@ -6,10 +6,10 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
+  PanelTabsStrip,
+  PanelTabsTrigger,
   Tabs,
   TabsContent,
-  TabsList,
-  TabsTrigger,
 } from '@uipath/apollo-wind';
 import { ChevronDown } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -17,10 +17,11 @@ import { useSafeLingui } from '../../../i18n';
 import {
   buildJsonTree,
   collectContainerPaths,
+  isPathCollapsed,
   type JsonContainer,
-  JsonTreeView,
   type JsonTreeNode,
   JsonTreeToolbar,
+  JsonTreeView,
   type JsonValue,
   removeValueAtPath,
   setValueAtPath,
@@ -30,10 +31,6 @@ import { PanelTitleBar } from './PanelTitleBar';
 
 // Matches the tab chrome TabbedStepForm uses inside MetadataForm so the panel
 // blends with schema-driven property panels.
-const TAB_LIST_CLASS =
-  'h-auto justify-start gap-0.5 rounded-lg bg-transparent p-0 text-muted-foreground';
-const TAB_TRIGGER_CLASS =
-  'inline-flex h-6 shrink-0 items-center whitespace-nowrap rounded-md px-2.5 text-xs font-medium text-muted-foreground shadow-none transition-colors hover:text-foreground data-[state=active]:bg-surface-overlay data-[state=active]:text-foreground data-[state=active]:shadow-sm';
 
 /**
  * NodeIOView renders a JSON value merged with its JSON Schema as an
@@ -54,7 +51,7 @@ const TAB_TRIGGER_CLASS =
  *
  * @example
  * ```tsx
- * <NodePropertyPanel panelTitle="Output" onClose={deselect} contentInset="0.875rem">
+ * <NodePropertyPanel panelTitle="Output" onClose={deselect} contentInset="1rem">
  *   <NodeIOView
  *     title="HTTP Request"
  *     titleBadge="httpRequest1"
@@ -76,6 +73,7 @@ export function NodeIOView({
   titleIcon,
   titleBadge,
   titleTrailing,
+  toolbarTrailing,
   searchPlaceholder,
   emptyMessage,
   jsonView,
@@ -95,6 +93,7 @@ export function NodeIOView({
   onCopy,
   virtualized = false,
   defaultCollapsedDepth = 2,
+  inset = false,
   className,
 }: NodeIOViewProps) {
   const { _ } = useSafeLingui();
@@ -181,19 +180,22 @@ export function NodeIOView({
       </DropdownMenuContent>
     </DropdownMenu>
   ) : (
-    <TabsList className={TAB_LIST_CLASS}>
+    <PanelTabsStrip>
       {tabs.map((tab) => (
-        <TabsTrigger key={tab.id} value={tab.id} className={TAB_TRIGGER_CLASS}>
+        <PanelTabsTrigger key={tab.id} value={tab.id}>
           {tab.label}
-        </TabsTrigger>
+        </PanelTabsTrigger>
       ))}
-    </TabsList>
+    </PanelTabsStrip>
   );
 
-  const allCollapsed = containerPaths.length > 0 && containerPaths.every((c) => collapsed[c.path]);
+  const allCollapsed =
+    containerPaths.length > 0 && containerPaths.every((c) => isPathCollapsed(collapsed, c.path));
 
   const toggleCollapsed = (path: string) =>
-    setCollapsed((prev) => ({ ...prev, [path]: !prev[path] }));
+    // Own-key reads, so a key named after an Object.prototype member
+    // (`constructor`) toggles on the first click.
+    setCollapsed((prev) => ({ ...prev, [path]: !isPathCollapsed(prev, path) }));
 
   const toggleAll = () => {
     setCollapsed(allCollapsed ? {} : Object.fromEntries(containerPaths.map((c) => [c.path, true])));
@@ -216,7 +218,13 @@ export function NodeIOView({
   };
 
   return (
-    <div className={cn('flex h-full min-h-0 flex-col gap-4', className)}>
+    <div
+      className={cn(
+        'flex h-full min-h-0 flex-col gap-4',
+        inset && 'p-(--mf-content-inset,1rem)',
+        className
+      )}
+    >
       {title && (
         <PanelTitleBar
           icon={titleIcon}
@@ -232,7 +240,7 @@ export function NodeIOView({
       <Tabs
         value={activeTab}
         onValueChange={handleTabChange}
-        className="flex min-h-0 flex-1 flex-col gap-2"
+        className="flex min-h-0 flex-1 flex-col gap-3"
       >
         <JsonTreeToolbar
           query={query}
@@ -244,6 +252,7 @@ export function NodeIOView({
           allCollapsed={allCollapsed}
           onToggleAll={containerPaths.length > 0 ? toggleAll : undefined}
           leading={tabSwitcher}
+          trailing={toolbarTrailing}
           // Search / filter / collapse act on the schema tree only.
           controlsHidden={activeTab !== 'schema'}
           className="shrink-0"
@@ -272,6 +281,8 @@ export function NodeIOView({
               // JsonTreeView shows its own "no match" text while a search or
               // filter is active; this only covers the genuinely-empty case.
               emptyMessage={emptyMessage}
+              // Breathing room between the card's edge and the first and last rows.
+              className="py-1"
             />
           </div>
         </TabsContent>
