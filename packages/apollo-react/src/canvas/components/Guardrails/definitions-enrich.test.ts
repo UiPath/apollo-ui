@@ -3,7 +3,9 @@ import {
   BYO_WIRE,
   HARMFUL_CONTENT_WIRE,
   LLM_AS_JUDGE_WIRE,
+  PII_DETECTION_PREVIEW_WIRE,
   PII_DETECTION_WIRE,
+  PREVIEW_PII_ENTITY_OPTIONS,
   PROMPT_INJECTION_WIRE,
   SENTIMENT_WIRE,
   UNCURATED_WIRE,
@@ -121,6 +123,14 @@ describe('enrichGuardrailDefinitions', () => {
 
       expect(labels?.USSocialSecurityNumber).toBe('US Social Security Number (SSN)');
       expect(labels?.SwiftCode).toBe('SWIFT Code');
+    });
+
+    it('carries the preview entities through, labelled', () => {
+      const entities = param(enrichOne(PII_DETECTION_PREVIEW_WIRE), 'entities');
+
+      expect(entities.previewOptions).toEqual(PREVIEW_PII_ENTITY_OPTIONS);
+      expect(entities.optionLabels?.ATIdentityCard).toBe('Austria Identity Card');
+      expect(param(enrichOne(PII_DETECTION_WIRE), 'entities')).not.toHaveProperty('previewOptions');
     });
 
     it('merges wire labels over curated ones, per option', () => {

@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { AGENTS_COPY_EN, FLOW_COPY_EN } from './__fixtures__/host-copy-baselines';
+import {
+  AGENTS_COPY_EN,
+  AGENTS_PREVIEW_PII_ENTITY_LABELS,
+  FLOW_COPY_EN,
+} from './__fixtures__/host-copy-baselines';
 import {
   CURATED_GUARDRAIL_VALIDATORS,
   GUARDRAIL_COPY_EN,
@@ -138,6 +142,19 @@ const SINGLE_HOST_VALIDATORS: Readonly<Record<string, Host>> = {
   sentiment: 'agents',
 };
 
+/**
+ * Options only one product labels so far, declared as a set rather than one divergence each:
+ * AL-625 gave Agents 134 preview PII entities at once. Remove a set once the other product ships
+ * it: its strings then fall under the rules above.
+ */
+const SINGLE_HOST_OPTIONS: ReadonlyArray<{ param: string; host: Host; options: string[] }> = [
+  {
+    param: 'pii_detection.optionLabels.entities',
+    host: 'agents',
+    options: Object.keys(AGENTS_PREVIEW_PII_ENTITY_LABELS),
+  },
+];
+
 function flatten(table: GuardrailCopyTable): Map<string, string> {
   const flat = new Map<string, string>();
   for (const [validator, copy] of Object.entries(table)) {
@@ -166,9 +183,15 @@ const allPaths = [...new Set([...agents.keys(), ...flow.keys(), ...ours.keys()])
 const divergenceByPath = new Map(EXPECTED_DIVERGENCES.map((d) => [d.path, d]));
 
 const validatorOf = (path: string) => path.slice(0, path.indexOf('.'));
+const singleHostOptionPaths = new Map(
+  SINGLE_HOST_OPTIONS.flatMap(({ param, host, options }) =>
+    options.map((option): [string, Host] => [`${param}.${option}`, host])
+  )
+);
 /** The paths both products could have an opinion on. */
 const sharedPaths = allPaths.filter(
-  (path) => !Object.hasOwn(SINGLE_HOST_VALIDATORS, validatorOf(path))
+  (path) =>
+    !Object.hasOwn(SINGLE_HOST_VALIDATORS, validatorOf(path)) && !singleHostOptionPaths.has(path)
 );
 const pathsOf = (flat: Map<string, string>, validator: string) =>
   new Map([...flat].filter(([path]) => validatorOf(path) === validator));
@@ -197,6 +220,23 @@ describe('canonical copy parity with both products', () => {
 
     expect(source.size).toBeGreaterThan(0);
     expect(pathsOf(ours, validator)).toEqual(source);
+  });
+
+  it('declares only options the other product still lacks', () => {
+    const settled = [...singleHostOptionPaths]
+      .filter(([path, host]) => (host === 'agents' ? flow : agents).has(path))
+      .map(([path]) => path);
+
+    expect(settled).toEqual([]);
+  });
+
+  it('takes each single-host option verbatim from the product that labels it', () => {
+    const mismatched = [...singleHostOptionPaths]
+      .filter(([path, host]) => ours.get(path) !== (host === 'agents' ? agents : flow).get(path))
+      .map(([path]) => path);
+
+    expect(singleHostOptionPaths.size).toBeGreaterThan(0);
+    expect(mismatched).toEqual([]);
   });
 
   it('matches both products wherever they already agree', () => {

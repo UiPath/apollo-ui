@@ -28,6 +28,7 @@ import {
   GUARDRAIL_SCOPE_SELECTOR_LABEL_KEYS,
   type GuardrailBuilderLabels,
   type GuardrailPaletteLabels,
+  type GuardrailValidatorFormLabels,
   resolveCentralizedGuardrailsLabels,
   resolveCustomGuardrailBuilderLabels,
   resolveGuardrailActionLabels,
@@ -419,6 +420,20 @@ describe('the other label sets still layer the same way', () => {
     const paletteLabels: GuardrailPaletteLabels = paletteBefore;
     const resolved = resolveGuardrailPaletteLabels(undefined, paletteLabels);
     expect([resolved.byo, resolved.provider]).toEqual(['BYO', 'Provider']);
+  });
+
+  it('resolves the preview keys for a complete form label object written before them', () => {
+    const {
+      previewOption: _chip,
+      previewOptionLabel: _suffix,
+      ...formBefore
+    } = GUARDRAIL_FORM_EN_LABELS;
+    const formLabels: GuardrailValidatorFormLabels = formBefore;
+    const resolved = resolveGuardrailFormLabels(undefined, formLabels);
+    expect([resolved.previewOption, resolved.previewOptionLabel]).toEqual([
+      'Preview',
+      '{{label}} (Preview)',
+    ]);
   });
 
   it('merges validator form labels', () => {

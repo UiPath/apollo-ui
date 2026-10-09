@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { findCatalogDrift, findCatalogOrphans } from './__fixtures__/catalog-coverage';
 import {
   PII_ENTITY_OPTIONS,
+  PREVIEW_PII_ENTITY_OPTIONS,
   SENTIMENT_LANGUAGE_OPTIONS,
   SENTIMENT_OPTIONS,
 } from './__fixtures__/definitions-wire.fixtures';
@@ -12,6 +13,8 @@ import {
   GUARDRAIL_COPY_EN_MESSAGES,
   useGuardrailDefinitionCopy,
 } from './definitions-copy';
+
+const ALL_PII_ENTITY_OPTIONS = [...PII_ENTITY_OPTIONS, ...PREVIEW_PII_ENTITY_OPTIONS];
 
 // Option segments allow `-`: they are raw wire values, and language codes such as `pt-BR` carry one.
 const ID_PATTERN =
@@ -25,7 +28,7 @@ describe('GUARDRAIL_COPY_EN', () => {
   it('labels every PII entity the backend can return', () => {
     const labels = GUARDRAIL_COPY_EN.pii_detection?.optionLabels?.entities ?? {};
 
-    expect(Object.keys(labels).sort()).toEqual([...PII_ENTITY_OPTIONS].sort());
+    expect(Object.keys(labels).sort()).toEqual([...ALL_PII_ENTITY_OPTIONS].sort());
   });
 
   it('labels every sentiment and language the backend can return', () => {
@@ -57,7 +60,7 @@ describe('message ids', () => {
   it('use the raw wire value for option segments, never a transcribed slug', () => {
     // Transcribing is how the two products ended up with `finNationalId` and `fiNationalId`
     // for the same entity; the raw value cannot drift because it is the value we persist.
-    for (const option of PII_ENTITY_OPTIONS) {
+    for (const option of ALL_PII_ENTITY_OPTIONS) {
       expect(GUARDRAIL_COPY_EN_MESSAGES).toHaveProperty(
         `guardrails.definitions.pii_detection.option.entities.${option}`
       );

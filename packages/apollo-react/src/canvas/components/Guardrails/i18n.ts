@@ -22,6 +22,17 @@ export interface GuardrailValidatorFormLabels {
   enumPlaceholder: string;
   /** Placeholder of the multi-select (enum-list) popover trigger. */
   enumListPlaceholder: string;
+  /**
+   * Chip on a threshold row whose key the source definition lists in `previewOptions`.
+   * Optional so a complete label object written before it existed still compiles; it always
+   * resolves.
+   */
+  previewOption?: string;
+  /**
+   * Label template of an option the definition lists in `previewOptions`, in the option list
+   * and the chip editor: `{{label}}` is the option's own label. Optional like `previewOption`.
+   */
+  previewOptionLabel?: string;
   /** Label of the text-list "Add" button. */
   addItem: string;
   /** Aria-label template of a text-list row's remove button: `{{label}}`, `{{position}}`. */
@@ -38,10 +49,12 @@ export interface GuardrailValidatorFormLabels {
   maxError: string;
 }
 
-export const GUARDRAIL_FORM_EN_LABELS: GuardrailValidatorFormLabels = {
+export const GUARDRAIL_FORM_EN_LABELS: Required<GuardrailValidatorFormLabels> = {
   moreInformation: 'More information',
   enumPlaceholder: 'Select...',
   enumListPlaceholder: 'Select options...',
+  previewOption: 'Preview',
+  previewOptionLabel: '{{label}} (Preview)',
   addItem: 'Add',
   removeItem: 'Remove {{label}} {{position}}',
   requiredError: 'Value is required',
@@ -300,8 +313,12 @@ export function formatGuardrailFormMessage(
 export function resolveGuardrailFormLabels(
   catalog?: Partial<GuardrailValidatorFormLabels>,
   overrides?: Partial<GuardrailValidatorFormLabels>
-): GuardrailValidatorFormLabels {
-  return mergeLabels(GUARDRAIL_FORM_EN_LABELS, catalog, overrides);
+): Required<GuardrailValidatorFormLabels> {
+  return mergeLabels<Required<GuardrailValidatorFormLabels>>(
+    GUARDRAIL_FORM_EN_LABELS,
+    catalog,
+    overrides
+  );
 }
 
 // Reifies each ICU placeholder back into the `{{token}}` template convention: the
@@ -326,7 +343,7 @@ const TEMPLATE_TOKENS = {
 /** Localized chrome strings of the validator form; per-string `overrides` always win. */
 export function useGuardrailFormLabels(
   overrides?: Partial<GuardrailValidatorFormLabels>
-): GuardrailValidatorFormLabels {
+): Required<GuardrailValidatorFormLabels> {
   const { _ } = useSafeLingui();
   return useMemo(
     () =>
@@ -340,6 +357,12 @@ export function useGuardrailFormLabels(
           enumListPlaceholder: _({
             id: 'guardrails.form.enum-list-placeholder',
             message: 'Select options...',
+          }),
+          previewOption: _({ id: 'guardrails.form.preview-option', message: 'Preview' }),
+          previewOptionLabel: _({
+            id: 'guardrails.form.preview-option-label',
+            message: '{label} (Preview)',
+            values: TEMPLATE_TOKENS,
           }),
           addItem: _({ id: 'guardrails.form.add-item', message: 'Add' }),
           removeItem: _({

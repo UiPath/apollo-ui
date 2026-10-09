@@ -40,6 +40,8 @@ export interface GuardrailParameterDefinition {
   options?: string[];
   /** Friendly per-option labels keyed by raw option value. */
   optionLabels?: Record<string, string>;
+  /** For enum-list: the options the editors mark with a Preview chip (raw values). */
+  previewOptions?: string[];
   /** For map-enum: id of the sibling enum-list parameter whose selection provides the keys. */
   keySource?: string;
   /** For number / map-enum: numeric constraints. */
