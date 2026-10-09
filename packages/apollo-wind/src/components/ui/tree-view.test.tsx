@@ -172,4 +172,34 @@ describe('FileTreeView', () => {
 
     expect(await screen.findByText('Child')).toBeInTheDocument();
   });
+
+  it('leaves Enter and Space on nested buttons to the buttons', async () => {
+    const user = userEvent.setup();
+    const onCheckChange = vi.fn();
+    render(
+      <FileTreeView
+        data={[
+          {
+            id: 'root',
+            name: 'Root',
+            type: 'folder',
+            children: [{ id: 'a', name: 'A', type: 'file', checked: false }],
+          },
+        ]}
+        showCheckboxes
+        selectionMode="none"
+        onCheckChange={onCheckChange}
+      />
+    );
+
+    screen.getByRole('button', { name: 'Expand Root' }).focus();
+    await user.keyboard(' ');
+    expect(onCheckChange).not.toHaveBeenCalled();
+    expect(await screen.findByText('A')).toBeInTheDocument();
+
+    screen.getByRole('button', { name: 'Toggle access for Root' }).focus();
+    await user.keyboard('{Enter}');
+    expect(onCheckChange).toHaveBeenCalledWith(expect.objectContaining({ id: 'root' }), true);
+    expect(screen.getByText('A')).toBeInTheDocument();
+  });
 });
