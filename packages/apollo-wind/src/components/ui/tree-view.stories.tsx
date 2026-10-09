@@ -1,4 +1,5 @@
 import type { Meta } from '@storybook/react-vite';
+import { useState } from 'react';
 import { Folder, File, Globe, Pencil } from 'lucide-react';
 import FileTreeView, {
   type FileTreeViewItem,
@@ -47,6 +48,10 @@ The tree uses a fixed vertical layout: **Title** → **Search bar** (full width)
     },
     showCheckboxes: {
       description: 'Shows access-rights checkboxes with Check/Uncheck actions in the toolbar.',
+    },
+    toggleCheckOnRowClick: {
+      description:
+        'With `showCheckboxes` and `selectionMode="none"`, clicking a row (or pressing Enter/Space on it) toggles its checkbox. Other modes keep row-click selection and expansion.',
     },
   },
 };
@@ -129,6 +134,55 @@ export const WithCheckboxes = {
       }}
     />
   ),
+};
+
+// ============================================================================
+// Toggle Check on Row Click
+// ============================================================================
+
+const setCheckedDeep = (
+  items: FileTreeViewItem[],
+  targetId: string,
+  checked: boolean,
+  inTarget = false
+): FileTreeViewItem[] =>
+  items.map((item) => {
+    const hit = inTarget || item.id === targetId;
+    if (item.children) {
+      return {
+        ...item,
+        children: setCheckedDeep(item.children, targetId, checked, hit),
+      };
+    }
+    return hit ? { ...item, checked } : item;
+  });
+
+function ToggleCheckOnRowClickDemo() {
+  const [data, setData] = useState(sampleData);
+  return (
+    <FileTreeView
+      data={data}
+      title="Select Items"
+      showCheckboxes
+      toggleCheckOnRowClick
+      selectionMode="none"
+      iconMap={iconMap}
+      onCheckChange={(item, checked) => setData((prev) => setCheckedDeep(prev, item.id, checked))}
+    />
+  );
+}
+
+export const ToggleCheckOnRowClick = {
+  name: 'Toggle Check on Row Click',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'With `toggleCheckOnRowClick`, clicking anywhere on a row toggles its checkbox. Enter and Space do the same on a focused row. The expand chevron still only expands.',
+      },
+    },
+  },
+  render: () => <ToggleCheckOnRowClickDemo />,
 };
 
 // ============================================================================
