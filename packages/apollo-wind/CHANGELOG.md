@@ -1,3 +1,10 @@
+## [@uipath/apollo-wind-v2.67.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.67.0...@uipath/apollo-wind@2.67.1) (2026-10-09)
+
+### Bug Fixes
+
+* **apollo-wind:** leave Enter and Space on nested tree buttons to the buttons ([2c12681](https://github.com/UiPath/apollo-ui/commit/2c12681b61273db82ffefa6f54bbb3604a12db4a))
+* **apollo-wind:** tree view checkbox labels, keyboard and empty context menu ([7bd2622](https://github.com/UiPath/apollo-ui/commit/7bd2622dc1ab428c53fec7771fcadc5aac6051d8))
+
 ## [@uipath/apollo-wind-v2.67.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.66.1...@uipath/apollo-wind@2.67.0) (2026-10-08)
 
 ### Features
