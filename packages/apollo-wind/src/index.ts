@@ -231,6 +231,13 @@ export {
   CollapsibleContent,
   CollapsibleTrigger,
 } from './components/ui/collapsible';
+export {
+  CollapsibleBox,
+  CollapsibleBoxActions,
+  CollapsibleBoxContent,
+  CollapsibleBoxHeader,
+  CollapsibleBoxTrigger,
+} from './components/ui/collapsible-box';
 export type { ComboboxItem, ComboboxProps } from './components/ui/combobox';
 export { Combobox } from './components/ui/combobox';
 export {
