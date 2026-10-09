@@ -1,8 +1,19 @@
 import type { CustomFieldComponentProps } from '@uipath/apollo-wind';
-import { FormField, FormFieldError, Input, Label, useWatch } from '@uipath/apollo-wind';
+import {
+  FormField,
+  FormFieldError,
+  Input,
+  Label,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+  useWatch,
+} from '@uipath/apollo-wind';
 import { useCallback, useMemo } from 'react';
 import type { GuardrailValidatorFormLabels } from '../i18n';
 import type { GuardrailParameterDefinition } from '../types';
+import { GuardrailStatusChip } from './guardrail-status-chip';
 import { ParameterLabel } from './parameter-label';
 
 /**
@@ -18,7 +29,7 @@ export function MapEnumField(props: CustomFieldComponentProps) {
   const { value, onChange, error } = props;
   const paramDef = props.paramDef as GuardrailParameterDefinition;
   const sourceDef = props.sourceDef as GuardrailParameterDefinition | undefined;
-  const labels = props.labels as GuardrailValidatorFormLabels;
+  const labels = props.labels as Required<GuardrailValidatorFormLabels>;
   const sourceSelection = props.sourceSelection as string[] | undefined;
 
   // Live sibling selection once the sibling emits its first change; until then `useWatch`
@@ -72,28 +83,50 @@ export function MapEnumField(props: CustomFieldComponentProps) {
   return (
     <FormField data-slot="guardrail-map-enum-field">
       <ParameterLabel paramDef={paramDef} labels={labels} />
-      <div className="grid gap-1.5">
-        {keys.map((key) => (
-          <div key={key} className="flex items-center gap-3">
-            <Label variant="muted" className="w-1/3 truncate">
-              {sourceDef?.optionLabels?.[key] ?? key}
-            </Label>
-            <Input
-              aria-label={`${paramDef.label}: ${sourceDef?.optionLabels?.[key] ?? key}`}
-              type="number"
-              value={currentMap[key] ?? defaults[key] ?? paramDef.min ?? 0}
-              onChange={(e) => handleThresholdChange(key, Number.parseFloat(e.target.value) || 0)}
-              // Unstated bounds fall back to 0..1 step 0.1 for the arrows only, as both legacy
-              // editors did. The definition stays unbounded, so `getOutOfRangeParameterIds` never
-              // blocks a typed value on a scale nobody published.
-              min={paramDef.min ?? 0}
-              max={paramDef.max ?? 1}
-              step={paramDef.step ?? 0.1}
-              className="flex-1"
-            />
-          </div>
-        ))}
-      </div>
+      {/* Own provider: wind's `Tooltip` throws outside one, and this form renders where none
+          is guaranteed. */}
+      <TooltipProvider>
+        <div className="grid gap-1.5">
+          {keys.map((key) => {
+            const keyLabel = sourceDef?.optionLabels?.[key] ?? key;
+            return (
+              <div key={key} className="flex items-center gap-3">
+                {/* Fixed width so the inputs line up whether or not a row carries the chip. */}
+                <div className="flex w-1/2 min-w-0 items-center gap-1.5">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Label variant="muted" className="min-w-0 truncate">
+                        {keyLabel}
+                      </Label>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-[300px]">{keyLabel}</TooltipContent>
+                  </Tooltip>
+                  {sourceDef?.previewOptions?.includes(key) && (
+                    <GuardrailStatusChip tone="info" className="shrink-0">
+                      {labels.previewOption}
+                    </GuardrailStatusChip>
+                  )}
+                </div>
+                <Input
+                  aria-label={`${paramDef.label}: ${keyLabel}`}
+                  type="number"
+                  value={currentMap[key] ?? defaults[key] ?? paramDef.min ?? 0}
+                  onChange={(e) =>
+                    handleThresholdChange(key, Number.parseFloat(e.target.value) || 0)
+                  }
+                  // Unstated bounds fall back to 0..1 step 0.1 for the arrows only, as both legacy
+                  // editors did. The definition stays unbounded, so `getOutOfRangeParameterIds`
+                  // never blocks a typed value on a scale nobody published.
+                  min={paramDef.min ?? 0}
+                  max={paramDef.max ?? 1}
+                  step={paramDef.step ?? 0.1}
+                  className="flex-1"
+                />
+              </div>
+            );
+          })}
+        </div>
+      </TooltipProvider>
       <FormFieldError>{error}</FormFieldError>
     </FormField>
   );

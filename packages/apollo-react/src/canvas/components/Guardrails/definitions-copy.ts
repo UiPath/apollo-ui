@@ -182,6 +182,543 @@ function buildGuardrailCopy(_: CopyTranslate): GuardrailCopyTable {
             id: 'guardrails.definitions.pii_detection.option.entities.IPAddress',
             message: 'IP Address',
           }),
+          // The preview entities Agents offers behind EnablePreviewPiiEntities (AL-625).
+          Age: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.Age',
+            message: 'Age',
+          }),
+          Organization: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.Organization',
+            message: 'Organization',
+          }),
+          AzureDocumentDBAuthKey: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.AzureDocumentDBAuthKey',
+            message: 'Azure Document DB Auth Key',
+          }),
+          AzureIAASDatabaseConnectionAndSQLString: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.AzureIAASDatabaseConnectionAndSQLString',
+            message: 'Azure IaaS Database Connection and SQL String',
+          }),
+          AzureIoTConnectionString: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.AzureIoTConnectionString',
+            message: 'Azure IoT Connection String',
+          }),
+          AzurePublishSettingPassword: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.AzurePublishSettingPassword',
+            message: 'Azure Publish Setting Password',
+          }),
+          AzureRedisCacheString: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.AzureRedisCacheString',
+            message: 'Azure Redis Cache String',
+          }),
+          AzureSAS: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.AzureSAS',
+            message: 'Azure SAS',
+          }),
+          AzureServiceBusString: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.AzureServiceBusString',
+            message: 'Azure Service Bus String',
+          }),
+          AzureStorageAccountGeneric: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.AzureStorageAccountGeneric',
+            message: 'Azure Storage Account Generic',
+          }),
+          AzureStorageAccountKey: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.AzureStorageAccountKey',
+            message: 'Azure Storage Account Key',
+          }),
+          SQLServerConnectionString: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.SQLServerConnectionString',
+            message: 'SQL Server Connection String',
+          }),
+          ARNationalIdentityNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.ARNationalIdentityNumber',
+            message: 'Argentina National Identity Number',
+          }),
+          AUBankAccountNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.AUBankAccountNumber',
+            message: 'Australia Bank Account Number',
+          }),
+          AUBusinessNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.AUBusinessNumber',
+            message: 'Australia Business Number',
+          }),
+          AUCompanyNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.AUCompanyNumber',
+            message: 'Australia Company Number',
+          }),
+          AUDriversLicenseNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.AUDriversLicenseNumber',
+            message: "Australia Driver's License Number",
+          }),
+          AUMedicalAccountNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.AUMedicalAccountNumber',
+            message: 'Australia Medical Account Number',
+          }),
+          AUPassportNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.AUPassportNumber',
+            message: 'Australia Passport Number',
+          }),
+          AUTaxFileNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.AUTaxFileNumber',
+            message: 'Australia Tax File Number',
+          }),
+          ATIdentityCard: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.ATIdentityCard',
+            message: 'Austria Identity Card',
+          }),
+          ATTaxIdentificationNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.ATTaxIdentificationNumber',
+            message: 'Austria Tax Identification Number',
+          }),
+          ATValueAddedTaxNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.ATValueAddedTaxNumber',
+            message: 'Austria Value Added Tax Number',
+          }),
+          BENationalNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.BENationalNumber',
+            message: 'Belgium National Number',
+          }),
+          BEValueAddedTaxNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.BEValueAddedTaxNumber',
+            message: 'Belgium Value Added Tax Number',
+          }),
+          BRCPFNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.BRCPFNumber',
+            message: 'Brazil CPF Number',
+          }),
+          BRLegalEntityNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.BRLegalEntityNumber',
+            message: 'Brazil Legal Entity Number',
+          }),
+          BRNationalIDRG: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.BRNationalIDRG',
+            message: 'Brazil National ID (RG)',
+          }),
+          BGUniformCivilNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.BGUniformCivilNumber',
+            message: 'Bulgaria Uniform Civil Number',
+          }),
+          CABankAccountNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.CABankAccountNumber',
+            message: 'Canada Bank Account Number',
+          }),
+          CADriversLicenseNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.CADriversLicenseNumber',
+            message: "Canada Driver's License Number",
+          }),
+          CAHealthServiceNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.CAHealthServiceNumber',
+            message: 'Canada Health Service Number',
+          }),
+          CAPassportNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.CAPassportNumber',
+            message: 'Canada Passport Number',
+          }),
+          CAPersonalHealthIdentification: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.CAPersonalHealthIdentification',
+            message: 'Canada Personal Health Identification',
+          }),
+          CASocialInsuranceNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.CASocialInsuranceNumber',
+            message: 'Canada Social Insurance Number',
+          }),
+          CLIdentityCardNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.CLIdentityCardNumber',
+            message: 'Chile Identity Card Number',
+          }),
+          CNResidentIdentityCardNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.CNResidentIdentityCardNumber',
+            message: 'China Resident Identity Card Number',
+          }),
+          HRIdentityCardNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.HRIdentityCardNumber',
+            message: 'Croatia Identity Card Number',
+          }),
+          HRNationalIDNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.HRNationalIDNumber',
+            message: 'Croatia National ID Number',
+          }),
+          HRPersonalIdentificationNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.HRPersonalIdentificationNumber',
+            message: 'Croatia Personal Identification Number',
+          }),
+          CYIdentityCard: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.CYIdentityCard',
+            message: 'Cyprus Identity Card',
+          }),
+          CYTaxIdentificationNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.CYTaxIdentificationNumber',
+            message: 'Cyprus Tax Identification Number',
+          }),
+          CZPersonalIdentityNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.CZPersonalIdentityNumber',
+            message: 'Czech Republic Personal Identity Number',
+          }),
+          EEPersonalIdentificationCode: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.EEPersonalIdentificationCode',
+            message: 'Estonia Personal Identification Code',
+          }),
+          EUDebitCardNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.EUDebitCardNumber',
+            message: 'EU Debit Card Number',
+          }),
+          EUDriversLicenseNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.EUDriversLicenseNumber',
+            message: "EU Driver's License Number",
+          }),
+          EUNationalIdentificationNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.EUNationalIdentificationNumber',
+            message: 'EU National Identification Number',
+          }),
+          EUPassportNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.EUPassportNumber',
+            message: 'EU Passport Number',
+          }),
+          EUSocialSecurityNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.EUSocialSecurityNumber',
+            message: 'EU Social Security Number',
+          }),
+          EUTaxIdentificationNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.EUTaxIdentificationNumber',
+            message: 'EU Tax Identification Number',
+          }),
+          FIEuropeanHealthNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.FIEuropeanHealthNumber',
+            message: 'Finland European Health Number',
+          }),
+          FRDriversLicenseNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.FRDriversLicenseNumber',
+            message: "France Driver's License Number",
+          }),
+          FRHealthInsuranceNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.FRHealthInsuranceNumber',
+            message: 'France Health Insurance Number',
+          }),
+          FRNationalID: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.FRNationalID',
+            message: 'France National ID',
+          }),
+          FRPassportNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.FRPassportNumber',
+            message: 'France Passport Number',
+          }),
+          FRSocialSecurityNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.FRSocialSecurityNumber',
+            message: 'France Social Security Number',
+          }),
+          FRTaxIdentificationNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.FRTaxIdentificationNumber',
+            message: 'France Tax Identification Number',
+          }),
+          FRValueAddedTaxNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.FRValueAddedTaxNumber',
+            message: 'France Value Added Tax Number',
+          }),
+          DEDriversLicenseNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.DEDriversLicenseNumber',
+            message: "Germany Driver's License Number",
+          }),
+          DEIdentityCardNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.DEIdentityCardNumber',
+            message: 'Germany Identity Card Number',
+          }),
+          DEPassportNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.DEPassportNumber',
+            message: 'Germany Passport Number',
+          }),
+          DETaxIdentificationNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.DETaxIdentificationNumber',
+            message: 'Germany Tax Identification Number',
+          }),
+          DEValueAddedNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.DEValueAddedNumber',
+            message: 'Germany Value Added Tax Number',
+          }),
+          GRNationalIDCard: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.GRNationalIDCard',
+            message: 'Greece National ID Card',
+          }),
+          GRTaxIdentificationNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.GRTaxIdentificationNumber',
+            message: 'Greece Tax Identification Number',
+          }),
+          HKIdentityCardNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.HKIdentityCardNumber',
+            message: 'Hong Kong SAR Identity Card Number',
+          }),
+          HUPersonalIdentificationNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.HUPersonalIdentificationNumber',
+            message: 'Hungary Personal Identification Number',
+          }),
+          HUTaxIdentificationNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.HUTaxIdentificationNumber',
+            message: 'Hungary Tax Identification Number',
+          }),
+          HUValueAddedNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.HUValueAddedNumber',
+            message: 'Hungary Value Added Tax Number',
+          }),
+          INPermanentAccount: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.INPermanentAccount',
+            message: 'India Permanent Account Number (PAN)',
+          }),
+          INUniqueIdentificationNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.INUniqueIdentificationNumber',
+            message: 'India Unique Identification Number',
+          }),
+          IDIdentityCardNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.IDIdentityCardNumber',
+            message: 'Indonesia Identity Card Number',
+          }),
+          IEPersonalPublicServiceNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.IEPersonalPublicServiceNumber',
+            message: 'Ireland Personal Public Service Number',
+          }),
+          ILBankAccountNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.ILBankAccountNumber',
+            message: 'Israel Bank Account Number',
+          }),
+          ILNationalID: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.ILNationalID',
+            message: 'Israel National ID',
+          }),
+          ITDriversLicenseNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.ITDriversLicenseNumber',
+            message: "Italy Driver's License Number",
+          }),
+          ITFiscalCode: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.ITFiscalCode',
+            message: 'Italy Fiscal Code',
+          }),
+          ITValueAddedTaxNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.ITValueAddedTaxNumber',
+            message: 'Italy Value Added Tax Number',
+          }),
+          JPBankAccountNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.JPBankAccountNumber',
+            message: 'Japan Bank Account Number',
+          }),
+          JPDriversLicenseNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.JPDriversLicenseNumber',
+            message: "Japan Driver's License Number",
+          }),
+          JPMyNumberCorporate: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.JPMyNumberCorporate',
+            message: 'Japan My Number (Corporate)',
+          }),
+          JPMyNumberPersonal: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.JPMyNumberPersonal',
+            message: 'Japan My Number (Personal)',
+          }),
+          JPPassportNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.JPPassportNumber',
+            message: 'Japan Passport Number',
+          }),
+          JPResidenceCardNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.JPResidenceCardNumber',
+            message: 'Japan Residence Card Number',
+          }),
+          JPResidentRegistrationNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.JPResidentRegistrationNumber',
+            message: 'Japan Resident Registration Number',
+          }),
+          JPSocialInsuranceNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.JPSocialInsuranceNumber',
+            message: 'Japan Social Insurance Number',
+          }),
+          LVPersonalCode: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.LVPersonalCode',
+            message: 'Latvia Personal Code',
+          }),
+          LTPersonalCode: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.LTPersonalCode',
+            message: 'Lithuania Personal Code',
+          }),
+          LUNationalIdentificationNumberNatural: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.LUNationalIdentificationNumberNatural',
+            message: 'Luxembourg National Identification Number (Natural Persons)',
+          }),
+          LUNationalIdentificationNumberNonNatural: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.LUNationalIdentificationNumberNonNatural',
+            message: 'Luxembourg National Identification Number (Non-natural Persons)',
+          }),
+          MYIdentityCardNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.MYIdentityCardNumber',
+            message: 'Malaysia Identity Card Number',
+          }),
+          MTIdentityCardNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.MTIdentityCardNumber',
+            message: 'Malta Identity Card Number',
+          }),
+          MTTaxIDNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.MTTaxIDNumber',
+            message: 'Malta Tax ID Number',
+          }),
+          NLTaxIdentificationNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.NLTaxIdentificationNumber',
+            message: 'Netherlands Tax Identification Number',
+          }),
+          NLValueAddedTaxNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.NLValueAddedTaxNumber',
+            message: 'Netherlands Value Added Tax Number',
+          }),
+          NZBankAccountNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.NZBankAccountNumber',
+            message: 'New Zealand Bank Account Number',
+          }),
+          NZDriversLicenseNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.NZDriversLicenseNumber',
+            message: "New Zealand Driver's License Number",
+          }),
+          NZInlandRevenueNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.NZInlandRevenueNumber',
+            message: 'New Zealand Inland Revenue Number',
+          }),
+          NZMinistryOfHealthNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.NZMinistryOfHealthNumber',
+            message: 'New Zealand Ministry of Health Number',
+          }),
+          NZSocialWelfareNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.NZSocialWelfareNumber',
+            message: 'New Zealand Social Welfare Number',
+          }),
+          PHUnifiedMultiPurposeIDNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.PHUnifiedMultiPurposeIDNumber',
+            message: 'Philippines Unified Multi-Purpose ID Number',
+          }),
+          PLIdentityCard: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.PLIdentityCard',
+            message: 'Poland Identity Card',
+          }),
+          PLNationalID: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.PLNationalID',
+            message: 'Poland National ID',
+          }),
+          PLPassportNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.PLPassportNumber',
+            message: 'Poland Passport Number',
+          }),
+          PLREGONNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.PLREGONNumber',
+            message: 'Poland REGON Number',
+          }),
+          PLTaxIdentificationNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.PLTaxIdentificationNumber',
+            message: 'Poland Tax Identification Number',
+          }),
+          PTCitizenCardNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.PTCitizenCardNumber',
+            message: 'Portugal Citizen Card Number',
+          }),
+          PTTaxIdentificationNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.PTTaxIdentificationNumber',
+            message: 'Portugal Tax Identification Number',
+          }),
+          ROPersonalNumericalCode: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.ROPersonalNumericalCode',
+            message: 'Romania Personal Numerical Code',
+          }),
+          RUPassportNumberDomestic: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.RUPassportNumberDomestic',
+            message: 'Russia Passport Number (Domestic)',
+          }),
+          RUPassportNumberInternational: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.RUPassportNumberInternational',
+            message: 'Russia Passport Number (International)',
+          }),
+          SANationalID: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.SANationalID',
+            message: 'Saudi Arabia National ID',
+          }),
+          SGNationalRegistrationIdentityCardNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.SGNationalRegistrationIdentityCardNumber',
+            message: 'Singapore National Registration Identity Card Number',
+          }),
+          SKPersonalNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.SKPersonalNumber',
+            message: 'Slovakia Personal Number',
+          }),
+          SITaxIdentificationNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.SITaxIdentificationNumber',
+            message: 'Slovenia Tax Identification Number',
+          }),
+          SIUniqueMasterCitizenNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.SIUniqueMasterCitizenNumber',
+            message: 'Slovenia Unique Master Citizen Number',
+          }),
+          ZAIdentificationNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.ZAIdentificationNumber',
+            message: 'South Africa Identification Number',
+          }),
+          KRResidentRegistrationNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.KRResidentRegistrationNumber',
+            message: 'South Korea Resident Registration Number',
+          }),
+          ESDNI: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.ESDNI',
+            message: 'Spain DNI',
+          }),
+          ESSocialSecurityNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.ESSocialSecurityNumber',
+            message: 'Spain Social Security Number',
+          }),
+          ESTaxIdentificationNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.ESTaxIdentificationNumber',
+            message: 'Spain Tax Identification Number',
+          }),
+          SEPassportNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.SEPassportNumber',
+            message: 'Sweden Passport Number',
+          }),
+          SETaxIdentificationNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.SETaxIdentificationNumber',
+            message: 'Sweden Tax Identification Number',
+          }),
+          CHSocialSecurityNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.CHSocialSecurityNumber',
+            message: 'Switzerland Social Security Number',
+          }),
+          TWNationalID: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.TWNationalID',
+            message: 'Taiwan National ID',
+          }),
+          TWPassportNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.TWPassportNumber',
+            message: 'Taiwan Passport Number',
+          }),
+          TWResidentCertificate: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.TWResidentCertificate',
+            message: 'Taiwan Resident Certificate',
+          }),
+          THPopulationIdentificationCode: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.THPopulationIdentificationCode',
+            message: 'Thailand Population Identification Code',
+          }),
+          TRNationalIdentificationNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.TRNationalIdentificationNumber',
+            message: 'Türkiye National Identification Number',
+          }),
+          UAPassportNumberDomestic: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.UAPassportNumberDomestic',
+            message: 'Ukraine Passport Number (Domestic)',
+          }),
+          UAPassportNumberInternational: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.UAPassportNumberInternational',
+            message: 'Ukraine Passport Number (International)',
+          }),
+          UKElectoralRollNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.UKElectoralRollNumber',
+            message: 'UK Electoral Roll Number',
+          }),
+          UKNationalHealthNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.UKNationalHealthNumber',
+            message: 'UK National Health Number',
+          }),
+          UKNationalInsuranceNumber: _({
+            id: 'guardrails.definitions.pii_detection.option.entities.UKNationalInsuranceNumber',
+            message: 'UK National Insurance Number',
+          }),
         },
       },
     },

@@ -112,6 +112,55 @@ export const PiiDetection: Story = {
   render: (args) => <ControlledForm parameterDefinitions={args.parameterDefinitions} />,
 };
 
+const PREVIEW_STORY_ENTITIES: Record<string, string> = {
+  Person: 'Person',
+  Address: 'Address',
+  Email: 'Email',
+  PhoneNumber: 'Phone Number',
+  CreditCardNumber: 'Credit Card Number',
+  USSocialSecurityNumber: 'US Social Security Number (SSN)',
+  IPAddress: 'IP Address',
+  ATIdentityCard: 'Austria Identity Card',
+  BRCPFNumber: 'Brazil CPF Number',
+  JPMyNumberPersonal: 'Japan My Number (Personal)',
+};
+const PREVIEW_STORY_OPTIONS = Object.keys(PREVIEW_STORY_ENTITIES);
+
+/**
+ * Options the definition lists in previewOptions read "(Preview)" in the list, and carry a
+ * Preview chip on their threshold row once selected.
+ */
+export const PreviewOptions: Story = {
+  args: {
+    parameterDefinitions: [
+      {
+        id: 'entities',
+        type: 'enum-list',
+        label: 'Entities to detect',
+        required: true,
+        defaultValue: ['Email', 'ATIdentityCard'],
+        options: PREVIEW_STORY_OPTIONS,
+        optionLabels: PREVIEW_STORY_ENTITIES,
+        previewOptions: ['ATIdentityCard', 'BRCPFNumber', 'JPMyNumberPersonal'],
+      },
+      {
+        id: 'entityThresholds',
+        type: 'map-enum',
+        label: 'Detection thresholds',
+        required: false,
+        keySource: 'entities',
+        min: 0,
+        max: 1,
+        step: 0.1,
+        defaultValue: Object.fromEntries(PREVIEW_STORY_OPTIONS.map((e) => [e, 0.5])),
+      },
+    ],
+    parameters: [],
+    onChange: () => {},
+  },
+  render: (args) => <ControlledForm parameterDefinitions={args.parameterDefinitions} />,
+};
+
 const judgeDefinitions: GuardrailParameterDefinition[] = [
   {
     id: 'guardrailText',

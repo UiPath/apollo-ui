@@ -34,6 +34,8 @@ export type GuardrailParameterDefinitionWire =
       defaultValue: string[];
       options: string[];
       optionLabels?: Record<string, string>;
+      /** The subset of `options` the editors mark with a Preview chip. Agents only, so far. */
+      previewOptions?: string[];
     })
   | (GuardrailParameterWireBase & {
       type: 'map-enum';
