@@ -41,14 +41,7 @@ import {
   Checkbox,
   Combobox,
   cn,
-  DatePicker,
-  DateTimePicker,
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
   FIELD_TYPE_META,
-  FileUpload,
   FormField,
   FormFieldDescription,
   FormFieldLabel,
@@ -58,7 +51,11 @@ import {
   Input,
   Label,
   MetadataForm,
-  MultiSelect,
+  PanelTabs,
+  PanelTabsContent,
+  PanelTabsList,
+  PanelTabsStrip,
+  PanelTabsTrigger,
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -66,7 +63,6 @@ import {
   RadioGroup,
   RadioGroupItem,
   RequiredIndicator,
-  ScrollableTabsList,
   Select,
   SelectContent,
   SelectItem,
@@ -74,10 +70,6 @@ import {
   SelectValue,
   Slider,
   Switch,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
   Textarea,
   Toaster,
   ToggleGroup,
@@ -99,37 +91,30 @@ import {
 } from '@uipath/apollo-wind/editor-themes';
 import {
   ChevronDown,
-  ChevronsDownUp,
   ChevronsUpDown,
   CircleAlert,
   CircleCheck,
-  CircleDot,
-  CircleOff,
   Code2,
   Copy,
   Eye,
   EyeOff,
   File,
-  FileBracesCorner,
   GitFork,
   Globe,
   GripVertical,
   HardDrive,
   Info,
   Link2,
-  MoreHorizontal,
   Pencil,
   Play,
   Plus,
   RefreshCw,
   ScanText,
-  Search,
   Sparkles,
   Trash2,
   TriangleAlert,
   Upload,
   UserRoundCheck,
-  WrapText,
   X,
   Zap,
 } from 'lucide-react';
@@ -149,11 +134,13 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 import { NodeOutputModeSelect } from '../../controls';
+import { CanvasIcon } from '../../utils/icon-registry';
 import { CanvasTooltip } from '../CanvasTooltip';
 import type {
   DeriveTypeIcon,
   JsonCodeEditorRenderProps,
   JsonContainer,
+  JsonObject,
   JsonSchema,
   JsonTreeFilterOption,
   JsonTreeNode,
@@ -165,6 +152,11 @@ import type {
 } from '../JsonTree';
 import { isJsonObject } from '../JsonTree';
 import { NodeIOView, type NodeIOViewTab } from '../NodeIOView';
+import {
+  type NodeVariableDetails,
+  NodeVariablesPanel,
+  type NodeVariablesSource,
+} from '../NodeVariablesPanel';
 import { NodePropertyPanel } from './NodePropertyPanel';
 import { NodePropertyPanelLayout } from './NodePropertyPanelLayout';
 
@@ -472,11 +464,8 @@ dockview) renders its own drag handle and close button.
 export default meta;
 type Story = StoryObj<typeof NodePropertyPanel>;
 
-// Matches the tab chrome TabbedStepForm uses inside MetadataForm.
-const TAB_LIST_CLASS =
-  'h-auto justify-start gap-0.5 overflow-x-auto rounded-lg bg-transparent p-0.5 text-muted-foreground [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
-const TAB_TRIGGER_CLASS =
-  'inline-flex h-6 shrink-0 items-center whitespace-nowrap rounded-md px-2.5 text-xs font-medium text-muted-foreground shadow-none transition-colors hover:text-foreground data-[state=active]:bg-surface-overlay data-[state=active]:text-foreground data-[state=active]:shadow-sm';
+// Panel tabs come from apollo-wind's PanelTabs, the same shell MetadataForm
+// uses, so every panel's tab row and content spacing match.
 
 // ============================================================================
 // Stories: NodePropertyPanel
@@ -511,7 +500,6 @@ export const Default: Story = {
         nodeCategory="HTTP Request"
         action={<RunButton />}
         schema={httpRequestForm}
-        contentInset="0.875rem"
         onClose={() => {}}
         className="h-[640px]"
       />
@@ -531,7 +519,6 @@ export const ChangedFields: Story = {
         action={<RunButton />}
         schema={httpRequestForm}
         changedFields={['endpoint', 'method']}
-        contentInset="0.875rem"
         onClose={() => {}}
         className="h-[640px]"
       />
@@ -553,7 +540,9 @@ export const QuickForm: Story = {
 };
 
 function IdentityValidationStory() {
-  const [label, setLabel] = useState('Analyze files');
+  // Starts invalid (a leading digit), so the page opens on the error state that
+  // sets it apart from Form Default. Rename it to clear the error.
+  const [label, setLabel] = useState('2nd pass: Analyze files');
   const [description, setDescription] = useState('');
 
   // Stand-in for a host rule (here: an agent tool name). The editor is
@@ -581,7 +570,6 @@ function IdentityValidationStory() {
         nodeLabelError={labelError}
         action={<RunButton />}
         schema={httpRequestForm}
-        contentInset="0.875rem"
         onClose={() => {}}
         className="h-[640px]"
       />
@@ -596,7 +584,7 @@ export const IdentityValidation: Story = {
     docs: {
       description: {
         story:
-          'Rename the node to something starting with a digit to see the error state. `nodeLabelError` / `nodeDescriptionError` render below the line with a persistent error ring, matching `Input`: the control gets `aria-invalid` plus `aria-errormessage`, and the message renders through `FormFieldError` so it announces politely. The ring stays after the editor closes, so a commit the host rejects still explains itself.',
+          'Opens on the error state: the node name starts with a digit, which the host rule rejects. Rename it to clear the error. `nodeLabelError` / `nodeDescriptionError` render below the line with a persistent error ring, matching `Input`: the control gets `aria-invalid` plus `aria-errormessage`, and the message renders through `FormFieldError` so it announces politely. The ring stays after the editor closes, so a commit the host rejects still explains itself.',
       },
     },
   },
@@ -611,7 +599,6 @@ export const EmbeddedNoTitleBar: Story = {
         nodeCategory="HTTP Request"
         action={<RunButton />}
         schema={httpRequestForm}
-        contentInset="0.875rem"
         className="h-[600px]"
       />
     </PanelFrame>
@@ -628,7 +615,6 @@ export const NoParametersTab: Story = {
         nodeCategory="Starts a flow run manually"
         action={<RunButton />}
         schema={manualTriggerForm}
-        contentInset="0.875rem"
         onClose={() => {}}
         className="h-[600px]"
       />
@@ -711,15 +697,10 @@ function FullEditorStory() {
 
   return (
     <PanelFrame>
-      <NodePropertyPanel
-        panelTitle="Properties"
-        onClose={() => {}}
-        contentInset="0.875rem"
-        className="h-[560px]"
-      >
+      <NodePropertyPanel panelTitle="Properties" onClose={() => {}} className="h-[560px]">
         <div className="flex h-full flex-col">
           {/* Inline-editable identity row */}
-          <div className="flex shrink-0 items-center justify-between gap-4 py-4 [padding-inline:var(--mf-content-inset,0.875rem)]">
+          <div className="flex shrink-0 items-center justify-between gap-4 py-4 [padding-inline:var(--mf-content-inset,1rem)]">
             <div className="flex min-w-0 flex-1 items-center gap-3.5">
               <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-surface-overlay text-foreground-subtle [&>svg]:size-5">
                 <Code2 />
@@ -781,22 +762,18 @@ function FullEditorStory() {
           </div>
 
           {/* Tabs + editor */}
-          <Tabs defaultValue="parameters" className="flex min-h-0 flex-1 flex-col">
-            <div className="shrink-0 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
-              <TabsList className={TAB_LIST_CLASS}>
-                <TabsTrigger value="parameters" className={TAB_TRIGGER_CLASS}>
-                  Parameters
-                </TabsTrigger>
-                <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>
-                  Error handling
-                </TabsTrigger>
-                <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>
-                  Advanced
-                </TabsTrigger>
-              </TabsList>
-            </div>
-            <TabsContent value="parameters" className="mt-0 flex min-h-0 flex-1 flex-col">
-              <div className="flex shrink-0 items-center justify-between py-2 [padding-inline:var(--mf-content-inset,0.875rem)]">
+          <PanelTabs defaultValue="parameters">
+            <PanelTabsList>
+              <PanelTabsTrigger value="parameters">Parameters</PanelTabsTrigger>
+              <PanelTabsTrigger value="error-handling">Error handling</PanelTabsTrigger>
+              <PanelTabsTrigger value="advanced">Advanced</PanelTabsTrigger>
+            </PanelTabsList>
+            <PanelTabsContent
+              value="parameters"
+              padded={false}
+              className="flex flex-col overflow-hidden"
+            >
+              <div className="flex shrink-0 items-center justify-between pt-1.5 pb-2 [padding-inline:var(--mf-content-inset,1rem)]">
                 <FormFieldLabel className="leading-4">Path</FormFieldLabel>
                 <div className="flex items-center gap-0.5">
                   <button
@@ -810,7 +787,7 @@ function FullEditorStory() {
                   <VariablePicker items={variables} onSelect={insertVariable} />
                 </div>
               </div>
-              <div className="flex min-h-0 flex-1 flex-col pb-4 [padding-inline:var(--mf-content-inset,0.875rem)]">
+              <div className="flex min-h-0 flex-1 flex-col pb-4 [padding-inline:var(--mf-content-inset,1rem)]">
                 <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-border-subtle">
                   <MonacoEditor
                     height="100%"
@@ -850,10 +827,10 @@ function FullEditorStory() {
                   />
                 </div>
               </div>
-            </TabsContent>
-            <TabsContent value="error-handling" className="mt-0" />
-            <TabsContent value="advanced" className="mt-0" />
-          </Tabs>
+            </PanelTabsContent>
+            <PanelTabsContent value="error-handling" />
+            <PanelTabsContent value="advanced" />
+          </PanelTabs>
         </div>
       </NodePropertyPanel>
     </PanelFrame>
@@ -1252,15 +1229,10 @@ function CompactEditorStory() {
 
   return (
     <PanelFrame>
-      <NodePropertyPanel
-        panelTitle="Properties"
-        onClose={() => {}}
-        contentInset="0.875rem"
-        className="h-[640px]"
-      >
+      <NodePropertyPanel panelTitle="Properties" onClose={() => {}} className="h-[640px]">
         <div className="flex h-full flex-col">
           {/* Inline-editable identity row */}
-          <div className="flex shrink-0 items-center justify-between gap-4 py-4 [padding-inline:var(--mf-content-inset,0.875rem)]">
+          <div className="flex shrink-0 items-center justify-between gap-4 py-4 [padding-inline:var(--mf-content-inset,1rem)]">
             <div className="flex min-w-0 flex-1 items-center gap-3.5">
               <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-surface-overlay text-foreground-subtle [&>svg]:size-5">
                 <GitFork />
@@ -1321,29 +1293,21 @@ function CompactEditorStory() {
             </div>
           </div>
 
-          <Tabs defaultValue="parameters" className="flex min-h-0 flex-1 flex-col">
-            <div className="shrink-0 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
-              <TabsList className={TAB_LIST_CLASS}>
-                <TabsTrigger value="parameters" className={TAB_TRIGGER_CLASS}>
-                  Parameters
-                </TabsTrigger>
-                <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>
-                  Error handling
-                </TabsTrigger>
-                <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>
-                  Advanced
-                </TabsTrigger>
-              </TabsList>
-            </div>
+          <PanelTabs defaultValue="parameters">
+            <PanelTabsList>
+              <PanelTabsTrigger value="parameters">Parameters</PanelTabsTrigger>
+              <PanelTabsTrigger value="error-handling">Error handling</PanelTabsTrigger>
+              <PanelTabsTrigger value="advanced">Advanced</PanelTabsTrigger>
+            </PanelTabsList>
 
-            <TabsContent value="parameters" className="mt-0 min-h-0 flex-1 overflow-auto">
+            <PanelTabsContent value="parameters" padded={false}>
               {/* Cases field label row */}
-              <div className="py-2 [padding-inline:var(--mf-content-inset,0.875rem)]">
+              <div className="flex pt-1.5 pb-2 [padding-inline:var(--mf-content-inset,1rem)]">
                 <span className="text-xs font-medium leading-4 text-foreground">Cases</span>
               </div>
 
               {/* Case accordion panels: inset cards with gap */}
-              <div className="flex flex-col gap-2 pb-1 [padding-inline:var(--mf-content-inset,0.875rem)]">
+              <div className="flex flex-col gap-2 pb-1 [padding-inline:var(--mf-content-inset,1rem)]">
                 {cases.map((c, i) => (
                   <CasePanel
                     key={c.id}
@@ -1361,22 +1325,22 @@ function CompactEditorStory() {
               <button
                 type="button"
                 onClick={addCase}
-                className="flex cursor-pointer items-center gap-1.5 py-3 text-xs text-brand transition hover:text-brand-hover [padding-inline:var(--mf-content-inset,0.875rem)]"
+                className="flex cursor-pointer items-center gap-1.5 py-3 text-xs text-brand transition hover:text-brand-hover [padding-inline:var(--mf-content-inset,1rem)]"
               >
                 <Plus size={12} />
                 Add case
               </button>
 
               {/* Default branch toggle */}
-              <div className="flex items-center gap-2 py-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
+              <div className="flex items-center gap-2 py-3 [padding-inline:var(--mf-content-inset,1rem)]">
                 <Switch size="sm" checked={defaultBranch} onCheckedChange={setDefaultBranch} />
                 <span className="text-xs text-foreground-muted">Default branch</span>
               </div>
-            </TabsContent>
+            </PanelTabsContent>
 
-            <TabsContent value="error-handling" className="mt-0" />
-            <TabsContent value="advanced" className="mt-0" />
-          </Tabs>
+            <PanelTabsContent value="error-handling" />
+            <PanelTabsContent value="advanced" />
+          </PanelTabs>
         </div>
       </NodePropertyPanel>
     </PanelFrame>
@@ -1471,7 +1435,6 @@ function InputEditorStory() {
       <NodePropertyPanel
         panelTitle="Properties"
         onClose={() => {}}
-        contentInset="0.875rem"
         className="h-[640px]"
         nodeIcon={<CircleCheck />}
         nodeLabel={label}
@@ -1486,27 +1449,19 @@ function InputEditorStory() {
       >
         <div className="flex h-full flex-col">
           {/* Tabs */}
-          <Tabs defaultValue="parameters" className="flex min-h-0 flex-1 flex-col">
-            <div className="shrink-0 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
-              <TabsList className={TAB_LIST_CLASS}>
-                <TabsTrigger value="parameters" className={TAB_TRIGGER_CLASS}>
-                  Parameters
-                </TabsTrigger>
-                <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>
-                  Error handling
-                </TabsTrigger>
-                <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>
-                  Advanced
-                </TabsTrigger>
-              </TabsList>
-            </div>
-            <TabsContent value="parameters" className="mt-0 min-h-0 flex-1 overflow-auto">
-              <div className="py-2 [padding-inline:var(--mf-content-inset,0.875rem)]">
+          <PanelTabs defaultValue="parameters">
+            <PanelTabsList>
+              <PanelTabsTrigger value="parameters">Parameters</PanelTabsTrigger>
+              <PanelTabsTrigger value="error-handling">Error handling</PanelTabsTrigger>
+              <PanelTabsTrigger value="advanced">Advanced</PanelTabsTrigger>
+            </PanelTabsList>
+            <PanelTabsContent value="parameters" padded={false}>
+              <div className="flex pt-1.5 pb-2 [padding-inline:var(--mf-content-inset,1rem)]">
                 <span className="text-xs font-medium leading-4 text-foreground">
                   Output messaging
                 </span>
               </div>
-              <div className="flex flex-col gap-3 pb-1 [padding-inline:var(--mf-content-inset,0.875rem)]">
+              <div className="flex flex-col gap-3 pb-1 [padding-inline:var(--mf-content-inset,1rem)]">
                 {cases.map((c) => (
                   <InlineCaseRow
                     key={c.id}
@@ -1519,19 +1474,19 @@ function InputEditorStory() {
               <button
                 type="button"
                 onClick={addCase}
-                className="flex cursor-pointer items-center gap-1.5 py-3 text-xs text-brand transition hover:text-brand-hover [padding-inline:var(--mf-content-inset,0.875rem)]"
+                className="flex cursor-pointer items-center gap-1.5 py-3 text-xs text-brand transition hover:text-brand-hover [padding-inline:var(--mf-content-inset,1rem)]"
               >
                 <Plus size={12} />
                 Add output variable
               </button>
-              <div className="flex items-center gap-2 py-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
+              <div className="flex items-center gap-2 py-3 [padding-inline:var(--mf-content-inset,1rem)]">
                 <Switch size="sm" checked={defaultBranch} onCheckedChange={setDefaultBranch} />
                 <span className="text-xs text-foreground-muted">Default branch</span>
               </div>
-            </TabsContent>
-            <TabsContent value="error-handling" className="mt-0" />
-            <TabsContent value="advanced" className="mt-0" />
-          </Tabs>
+            </PanelTabsContent>
+            <PanelTabsContent value="error-handling" />
+            <PanelTabsContent value="advanced" />
+          </PanelTabs>
         </div>
       </NodePropertyPanel>
     </PanelFrame>
@@ -1543,6 +1498,19 @@ export const InputEditor: Story = {
   render: () => <InputEditorStory />,
 };
 
+export const Variables: Story = {
+  name: 'Variables',
+  render: () => <VariablesStory />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A single-panel flow-workbench example for browsing node inputs, outputs, and flow variables. The hierarchy stays visible while variable rows remain directly editable.',
+      },
+    },
+  },
+};
+
 export const Output: Story = {
   name: 'Input / Output',
   render: () => <InputOutputStory />,
@@ -1550,973 +1518,416 @@ export const Output: Story = {
 };
 
 // ============================================================================
-// Output Panel helpers
+// Input / Output
 // ============================================================================
 
-type OutputNode = {
-  key: string;
-  type: 'string' | 'number' | 'boolean' | 'object' | 'array' | 'null';
-  value?: string | number | boolean | null;
-  children?: OutputNode[];
-  path: string;
-};
+/**
+ * The flow-workbench Input and Output panels, built from `NodeIOView` with the
+ * same setup as the 3 Column story: Input offers the "referenced" filter, and
+ * Output has its mode select at the end of the toolbar.
+ */
+function InputOutputStory() {
+  const [inputValue, setInputValue] = useState<JsonContainer | undefined>(INPUT_VALUE);
+  const [outputValue, setOutputValue] = useState<JsonContainer | undefined>(OUTPUT_VALUE);
+  const [mode, setMode] = useState<(typeof APOLLO_MODES)[number]>('live');
+  // The mocked output is editable only in Static mode.
+  const isStatic = mode === 'static';
 
-function TypeBadge({ type }: { type: OutputNode['type'] }) {
-  const labels: Record<OutputNode['type'], string> = {
-    string: 'T',
-    number: '#',
-    boolean: '?',
-    object: '{}',
-    array: '[]',
-    null: '∅',
-  };
-  const label = labels[type];
-  const cls = 'border-border bg-surface-overlay text-foreground-muted';
-  return (
-    <span
-      className={cn(
-        'inline-flex h-[18px] min-w-[18px] shrink-0 items-center justify-center rounded border px-0.5 font-mono text-[9px] font-semibold leading-none',
-        cls
-      )}
-    >
-      {label}
-    </span>
-  );
-}
-
-function outputValueColorClass(type: OutputNode['type'], value: unknown): string {
-  if (type === 'string') return 'text-success';
-  if (type === 'number') return 'text-info';
-  if (type === 'boolean') return value ? 'text-success' : 'text-error';
-  if (type === 'null') return 'text-foreground-subtle';
-  return 'text-foreground';
-}
-
-function formatOutputValue(
-  type: OutputNode['type'],
-  value: string | number | boolean | null | undefined
-): string {
-  if (type === 'null' || value === null || value === undefined) return 'null';
-  if (type === 'string') return `"${value}"`;
-  return String(value);
-}
-
-function nodeMatchesQuery(node: OutputNode, q: string): boolean {
-  if (!q) return true;
-  if (node.key.toLowerCase().includes(q)) return true;
-  if (
-    node.value !== undefined &&
-    node.value !== null &&
-    String(node.value).toLowerCase().includes(q)
-  )
-    return true;
-  return node.children?.some((c) => nodeMatchesQuery(c, q)) ?? false;
-}
-
-function collectContainerPaths(nodes: OutputNode[]): string[] {
-  const paths: string[] = [];
-  for (const n of nodes) {
-    if (n.children) {
-      paths.push(n.path);
-      paths.push(...collectContainerPaths(n.children));
-    }
-  }
-  return paths;
-}
-
-type FlatRow = { node: OutputNode; depth: number };
-
-function flattenOutputTree(
-  nodes: OutputNode[],
-  collapsed: Record<string, boolean>,
-  query: string,
-  depth = 0
-): FlatRow[] {
-  const rows: FlatRow[] = [];
-  for (const n of nodes) {
-    if (query && !nodeMatchesQuery(n, query)) continue;
-    rows.push({ node: n, depth });
-    if (n.children && !collapsed[n.path]) {
-      rows.push(...flattenOutputTree(n.children, collapsed, query, depth + 1));
-    }
-  }
-  return rows;
-}
-
-function appendOutputTreeChild(
-  nodes: OutputNode[],
-  parentPath: string,
-  child: OutputNode
-): OutputNode[] {
-  return nodes.map((node) => {
-    if (node.path === parentPath) {
-      return { ...node, children: [...(node.children ?? []), child] };
-    }
-    if (!node.children) return node;
-    const children = appendOutputTreeChild(node.children, parentPath, child);
-    return children.some((next, index) => next !== node.children?.[index])
-      ? { ...node, children }
-      : node;
-  });
-}
-
-function removeOutputTreeNode(nodes: OutputNode[], path: string): OutputNode[] {
-  return nodes
-    .filter((node) => node.path !== path)
-    .map((node) =>
-      node.children ? { ...node, children: removeOutputTreeNode(node.children, path) } : node
-    );
-}
-
-const PANEL_NODE_ID = 'httpRequest1';
-const PANEL_NODE_LABEL = 'HTTP Request';
-
-// ============================================================================
-
-const REFERENCED_OUTPUTS = [
-  { name: 'responseBody', type: 'object' },
-  { name: 'statusCode', type: 'number' },
-  { name: 'headers', type: 'object' },
-  { name: 'errorMessage', type: 'string' },
-  { name: 'duration', type: 'number' },
-  { name: 'requestId', type: 'string' },
-  { name: 'token', type: 'string' },
-];
-
-const REFERENCED_INPUTS = [
-  { name: 'responseBody', type: 'object' },
-  { name: 'statusCode', type: 'number' },
-  { name: 'headers', type: 'object' },
-  { name: 'condition', type: 'string' },
-  { name: 'result', type: 'boolean' },
-  { name: 'prompt', type: 'string' },
-  { name: 'response', type: 'string' },
-  { name: 'assignee', type: 'string' },
-  { name: 'message', type: 'string' },
-];
-
-const HTTP_REQUEST_CHILDREN: OutputNode[] = [
-  { key: 'statusCode', type: 'number', value: 200, path: `${PANEL_NODE_ID}.statusCode` },
-  {
-    key: 'responseBody',
-    type: 'object',
-    path: `${PANEL_NODE_ID}.responseBody`,
-    children: [
-      { key: 'id', type: 'string', value: 'inv-001', path: `${PANEL_NODE_ID}.responseBody.id` },
-      {
-        key: 'amount',
-        type: 'number',
-        value: 1500,
-        path: `${PANEL_NODE_ID}.responseBody.amount`,
-      },
-      {
-        key: 'currency',
-        type: 'string',
-        value: 'USD',
-        path: `${PANEL_NODE_ID}.responseBody.currency`,
-      },
-      {
-        key: 'status',
-        type: 'string',
-        value: 'paid',
-        path: `${PANEL_NODE_ID}.responseBody.status`,
-      },
-    ],
-  },
-  {
-    key: 'headers',
-    type: 'object',
-    path: `${PANEL_NODE_ID}.headers`,
-    children: [
-      {
-        key: 'content-type',
-        type: 'string',
-        value: 'application/json',
-        path: `${PANEL_NODE_ID}.headers.content-type`,
-      },
-      {
-        key: 'x-request-id',
-        type: 'string',
-        value: 'abc-123',
-        path: `${PANEL_NODE_ID}.headers.x-request-id`,
-      },
-    ],
-  },
-  { key: 'errorMessage', type: 'string', value: null, path: `${PANEL_NODE_ID}.errorMessage` },
-  { key: 'duration', type: 'number', value: 342, path: `${PANEL_NODE_ID}.duration` },
-  { key: 'requestId', type: 'string', value: 'req-abc-123', path: `${PANEL_NODE_ID}.requestId` },
-  {
-    key: 'token',
-    type: 'string',
-    value: 'eyJhbGciOiJSUzI1NiJ9',
-    path: `${PANEL_NODE_ID}.token`,
-  },
-  { key: 'retryCount', type: 'number', value: 0, path: `${PANEL_NODE_ID}.retryCount` },
-  { key: 'cached', type: 'boolean', value: false, path: `${PANEL_NODE_ID}.cached` },
-];
-
-const INPUT_TREE_DATA: OutputNode[] = [
-  { key: PANEL_NODE_ID, type: 'object', path: PANEL_NODE_ID, children: HTTP_REQUEST_CHILDREN },
-  {
-    key: 'decision1',
-    type: 'object',
-    path: 'decision1',
-    children: [
-      {
-        key: 'condition',
-        type: 'string',
-        value: 'invoice.amount > 1000',
-        path: 'decision1.condition',
-      },
-      { key: 'result', type: 'boolean', value: true, path: 'decision1.result' },
-      { key: 'branch', type: 'string', value: 'approve', path: 'decision1.branch' },
-    ],
-  },
-  {
-    key: 'agent1',
-    type: 'object',
-    path: 'agent1',
-    children: [
-      {
-        key: 'prompt',
-        type: 'string',
-        value: 'Summarize the invoice details',
-        path: 'agent1.prompt',
-      },
-      { key: 'model', type: 'string', value: 'gpt-4o-mini', path: 'agent1.model' },
-      {
-        key: 'response',
-        type: 'string',
-        value: 'Invoice inv-001 for $1,500 USD is paid.',
-        path: 'agent1.response',
-      },
-      { key: 'tokens', type: 'number', value: 342, path: 'agent1.tokens' },
-    ],
-  },
-  {
-    key: 'approval1',
-    type: 'object',
-    path: 'approval1',
-    children: [
-      { key: 'assignee', type: 'string', value: 'finance-team', path: 'approval1.assignee' },
-      {
-        key: 'message',
-        type: 'string',
-        value: 'Please review this invoice',
-        path: 'approval1.message',
-      },
-      { key: 'dueDate', type: 'string', value: '2025-01-15', path: 'approval1.dueDate' },
-    ],
-  },
-];
-
-const HTTP_REQUEST_JSON = JSON.stringify(
-  {
-    statusCode: 200,
-    responseBody: {
-      id: 'inv-001',
-      amount: 1500.0,
-      currency: 'USD',
-      status: 'paid',
-    },
-    headers: {
-      'content-type': 'application/json',
-      'x-request-id': 'abc-123',
-    },
-    errorMessage: null,
-    duration: 342,
-    requestId: 'req-abc-123',
-    token: 'eyJhbGciOiJSUzI1NiJ9',
-    retryCount: 0,
-    cached: false,
-  },
-  null,
-  2
-);
-
-const OUTPUT_TREE_DATA: OutputNode[] = [
-  { key: PANEL_NODE_ID, type: 'object', path: PANEL_NODE_ID, children: HTTP_REQUEST_CHILDREN },
-];
-
-const INPUT_JSON = HTTP_REQUEST_JSON;
-const OUTPUT_JSON = HTTP_REQUEST_JSON;
-
-// ============================================================================
-// Concept 2: Expression Reference Panel
-// Flat list of all leaf output paths as copyable expression references.
-// ============================================================================
-
-function Concept2PanelStory({
-  mode,
-  context = 'flow',
-}: {
-  mode: 'input' | 'output';
-  context?: 'studio' | 'flow';
-}) {
-  const monacoTheme = useMonacoTheme();
-  const [treeData, setTreeData] = useState<OutputNode[]>(() =>
-    mode === 'output' ? OUTPUT_TREE_DATA : INPUT_TREE_DATA
-  );
-  const nextFieldNumber = useRef(2);
-  const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState<'default' | 'referenced' | 'all'>('default');
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(
-      [...collectContainerPaths(OUTPUT_TREE_DATA), ...collectContainerPaths(INPUT_TREE_DATA)]
-        .filter((p) => p !== PANEL_NODE_ID)
-        .map((p) => [p, true])
-    )
-  );
-  const [copiedPath, setCopiedPath] = useState<string | null>(null);
-  const [wrappedPaths, setWrappedPaths] = useState<Set<string>>(() => new Set());
-  const [openActionsPath, setOpenActionsPath] = useState<string | null>(null);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [editingPath, setEditingPath] = useState<string | null>(null);
-  const [editedValues, setEditedValues] = useState<
-    Record<string, string | number | boolean | null>
-  >({});
-  const [nodeMode, setNodeMode] = useState<'live' | 'static' | 'simulated' | 'disabled'>('live');
-
-  const NODE_MODES = [
-    {
-      value: 'live',
-      label: 'Live',
-      description: 'Use the real response from this node',
-      icon: CircleDot,
-    },
-    {
-      value: 'static',
-      label: 'Static mock',
-      description: 'Always return a value you define',
-      icon: FileBracesCorner,
-    },
-    {
-      value: 'simulated',
-      label: 'Simulated',
-      description: 'Generate a response dynamically using an LLM',
-      icon: Sparkles,
-    },
-    {
-      value: 'disabled',
-      label: 'Skip node',
-      description: "Don't execute this node",
-      icon: CircleOff,
-    },
-  ] as const;
-  const currentNodeMode = NODE_MODES.find((m) => m.value === nodeMode) ?? NODE_MODES[0];
-  const CurrentModeIcon = currentNodeMode.icon;
-
-  const isOutput = mode === 'output';
-  const currentTreeData = treeData;
-  const currentReferenced = isOutput ? REFERENCED_OUTPUTS : REFERENCED_INPUTS;
-  const currentJson = isOutput ? OUTPUT_JSON : INPUT_JSON;
-  const referencedKeys = new Set(currentReferenced.map((r) => r.name));
-
-  const activeTreeData =
-    filter !== 'referenced'
-      ? currentTreeData
-      : currentTreeData
-          .map((root) => ({
-            ...root,
-            children: root.children?.filter((n) => referencedKeys.has(n.key)),
-          }))
-          .filter((root) => (root.children?.length ?? 0) > 0);
-
-  const rows = flattenOutputTree(activeTreeData, collapsed, search.toLowerCase());
-
-  const toggleCollapsed = (path: string) =>
-    setCollapsed((prev) => ({ ...prev, [path]: !prev[path] }));
-
-  const allContainerPaths = collectContainerPaths(activeTreeData);
-  const allCollapsed = allContainerPaths.length > 0 && allContainerPaths.every((p) => collapsed[p]);
-  const toggleAll = () => {
-    if (allCollapsed) {
-      setCollapsed({});
-    } else {
-      setCollapsed(Object.fromEntries(allContainerPaths.map((p) => [p, true])));
-    }
-  };
-
-  const escapeRef = useRef(false);
-
-  const saveEdit = (node: OutputNode, raw: string) => {
-    const val =
-      node.type === 'boolean' ? raw === 'true' : node.type === 'number' ? Number(raw) || 0 : raw;
-    setEditedValues((prev) => ({ ...prev, [node.path]: val }));
-    setEditingPath(null);
-  };
-
-  const copyValue = (node: OutputNode) => {
-    const value = editedValues[node.path] ?? node.value;
-    navigator.clipboard
-      ?.writeText(typeof value === 'string' ? value : JSON.stringify(value))
-      ?.then(() => {
-        setCopiedPath(node.path);
-        setTimeout(() => setCopiedPath(null), 1500);
-      })
-      ?.catch(() => {});
-  };
-
-  const toggleWrapped = (path: string) => {
-    setWrappedPaths((current) => {
-      const next = new Set(current);
-      if (next.has(path)) next.delete(path);
-      else next.add(path);
-      return next;
-    });
-  };
-
-  const addVariable = (node: OutputNode) => {
-    const parentPath = node.path.slice(0, node.path.lastIndexOf('.'));
-    const fieldName = `field${nextFieldNumber.current++}`;
-    const path = `${parentPath}.${fieldName}`;
-    const field: OutputNode = { key: fieldName, type: 'string', value: '', path };
-
-    setTreeData((current) => appendOutputTreeChild(current, parentPath, field));
-    setCollapsed((current) => ({ ...current, [parentPath]: false }));
-    setFilter('all');
-    setSearch('');
-    setEditingPath(path);
-  };
-
-  const deleteVariable = (node: OutputNode) => {
-    setTreeData((current) => removeOutputTreeNode(current, node.path));
-    setEditedValues((current) => {
-      const next = { ...current };
-      delete next[node.path];
-      return next;
-    });
-    if (editingPath === node.path) setEditingPath(null);
-  };
-
-  const hasOverflowActions = (node: OutputNode) =>
-    node.type === 'string' &&
-    (node.key === 'requestId' || node.key === 'token' || node.key.startsWith('field'));
-
-  return (
+  const panel = (title: string, view: ReactNode) => (
     <PanelFrame>
-      <NodePropertyPanel
-        panelTitle={isOutput ? 'Output' : 'Input'}
-        contentInset="0.875rem"
-        onClose={() => {}}
-        className="h-[640px]"
-      >
-        <div className="flex h-full min-h-0 flex-col">
-          {/* Node identity bar: hidden in Studio context */}
-          {context === 'flow' && (
-            <div className="shrink-0 flex items-center justify-between gap-2 [padding-inline:var(--mf-content-inset,0.875rem)] pb-3 pt-4">
-              <div className="flex min-w-0 items-center gap-2">
-                <Globe size={13} className="shrink-0 text-foreground-subtle" />
-                <span className="text-xs font-medium text-foreground">{PANEL_NODE_LABEL}</span>
-                <span className="font-mono text-[10px] text-foreground-muted">{PANEL_NODE_ID}</span>
-              </div>
-              {isOutput && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      type="button"
-                      className="flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-2 py-0.5 text-[11px] font-medium text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
-                    >
-                      <CurrentModeIcon size={10} className="text-foreground-subtle" />
-                      <span>{currentNodeMode.label}</span>
-                      <ChevronDown size={10} className="text-foreground-subtle" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-64">
-                    {NODE_MODES.map((m) => {
-                      const Icon = m.icon;
-                      return (
-                        <DropdownMenuItem
-                          key={m.value}
-                          onClick={() => setNodeMode(m.value)}
-                          className={cn(
-                            'flex items-start gap-2',
-                            nodeMode === m.value && 'text-foreground'
-                          )}
-                        >
-                          <Icon size={13} className="mt-[2px] shrink-0 text-foreground-subtle" />
-                          <div className="flex flex-col gap-0.5">
-                            <span className="text-xs font-medium">{m.label}</span>
-                            <span className="text-[10px] leading-tight text-foreground-muted">
-                              {m.description}
-                            </span>
-                          </div>
-                        </DropdownMenuItem>
-                      );
-                    })}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-            </div>
-          )}
-
-          <Tabs defaultValue="schema" className="flex min-h-0 flex-1 flex-col">
-            {/* Tab strip: status badge moves here in Studio context */}
-            <div
-              className={cn(
-                'shrink-0 flex items-center gap-2 [padding-inline:var(--mf-content-inset,0.875rem)] pb-1.5',
-                context === 'studio' && 'pt-3'
-              )}
-            >
-              <TabsList className={TAB_LIST_CLASS}>
-                <TabsTrigger value="schema" className={TAB_TRIGGER_CLASS}>
-                  Schema
-                </TabsTrigger>
-                <TabsTrigger value="json" className={TAB_TRIGGER_CLASS}>
-                  JSON
-                </TabsTrigger>
-              </TabsList>
-              {context === 'studio' && isOutput && (
-                <>
-                  <div className="flex-1" />
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button
-                        type="button"
-                        className="flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-2 py-0.5 text-[11px] font-medium text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
-                      >
-                        <CurrentModeIcon size={10} className="text-foreground-subtle" />
-                        <span>{currentNodeMode.label}</span>
-                        <ChevronDown size={10} className="text-foreground-subtle" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-64">
-                      {NODE_MODES.map((m) => {
-                        const Icon = m.icon;
-                        return (
-                          <DropdownMenuItem
-                            key={m.value}
-                            onClick={() => setNodeMode(m.value)}
-                            className={cn(
-                              'flex items-start gap-2',
-                              nodeMode === m.value && 'text-foreground'
-                            )}
-                          >
-                            <Icon size={13} className="mt-[2px] shrink-0 text-foreground-subtle" />
-                            <div className="flex flex-col gap-0.5">
-                              <span className="text-xs font-medium">{m.label}</span>
-                              <span className="text-[10px] leading-tight text-foreground-muted">
-                                {m.description}
-                              </span>
-                            </div>
-                          </DropdownMenuItem>
-                        );
-                      })}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </>
-              )}
-            </div>
-
-            {/* Schema tab */}
-            <TabsContent value="schema" className="mt-0 flex min-h-0 flex-1 flex-col">
-              {/* Header: filter dropdown on left, search + collapse on right */}
-              <div className="shrink-0 flex items-center gap-1.5 [padding-inline:var(--mf-content-inset,0.875rem)] pb-1 pt-2">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      type="button"
-                      className="flex cursor-pointer shrink-0 items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
-                    >
-                      <span>
-                        {filter === 'referenced'
-                          ? 'Filter: Referenced in this node'
-                          : filter === 'all'
-                            ? 'Filter: All'
-                            : 'Filter'}
-                      </span>
-                      {filter === 'referenced' && (
-                        <span className="rounded-sm bg-surface-raised px-1.5 py-0.5 font-mono text-[10px] font-medium leading-none text-foreground">
-                          {currentReferenced.length}
-                        </span>
-                      )}
-                      <ChevronDown size={10} className="text-foreground-subtle" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-52">
-                    <DropdownMenuItem
-                      onClick={() => setFilter('referenced')}
-                      className={cn(
-                        'flex items-center justify-between',
-                        filter === 'referenced' && 'text-foreground'
-                      )}
-                    >
-                      <span className="text-[11px]">Referenced in this node</span>
-                      <span className="ml-3 rounded bg-surface-overlay px-1.5 py-0.5 font-mono text-[10px] font-medium leading-none text-foreground-muted">
-                        {currentReferenced.length}
-                      </span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => setFilter('all')}
-                      className={cn('text-[11px]', filter === 'all' && 'text-foreground')}
-                    >
-                      All
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <div className="flex-1" />
-                {searchOpen ? (
-                  <div className="relative flex items-center">
-                    <Search
-                      size={12}
-                      className="pointer-events-none absolute left-2 text-foreground-subtle"
-                    />
-                    <Input
-                      autoFocus
-                      type="text"
-                      variant="ghost"
-                      size="xs"
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Escape') {
-                          setSearch('');
-                          setSearchOpen(false);
-                        }
-                      }}
-                      aria-label={isOutput ? 'Search outputs' : 'Search inputs'}
-                      placeholder={isOutput ? 'Search outputs...' : 'Search inputs...'}
-                      className="w-36 pl-6 pr-6 text-foreground placeholder:text-foreground-subtle focus-visible:ring-0"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSearch('');
-                        setSearchOpen(false);
-                      }}
-                      aria-label="Clear search"
-                      className="absolute right-1.5 grid size-4 place-items-center text-foreground-subtle transition hover:text-foreground"
-                    >
-                      <X size={11} />
-                    </button>
-                  </div>
-                ) : (
-                  <Button
-                    variant="ghost"
-                    size="4xs"
-                    icon
-                    onClick={() => setSearchOpen(true)}
-                    title="Search fields"
-                    aria-label="Search fields"
-                    className="rounded text-foreground-subtle hover:bg-surface-overlay hover:text-foreground"
-                  >
-                    <Search size={12} />
-                  </Button>
-                )}
-                {allContainerPaths.length > 0 && (
-                  <Button
-                    variant="ghost"
-                    size="4xs"
-                    icon
-                    onClick={toggleAll}
-                    title={allCollapsed ? 'Expand all' : 'Collapse all'}
-                    aria-label={allCollapsed ? 'Expand all' : 'Collapse all'}
-                    className="rounded text-foreground-subtle hover:bg-surface-overlay hover:text-foreground"
-                  >
-                    {allCollapsed ? <ChevronsUpDown size={12} /> : <ChevronsDownUp size={12} />}
-                  </Button>
-                )}
-              </div>
-
-              {/* Tree list */}
-              <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-surface-overlay bg-surface-overlay/40 pb-0 [margin-inline:var(--mf-content-inset,0.875rem)] mb-4 mt-1">
-                <div className="h-full overflow-y-auto pt-1.5">
-                  {rows.map(({ node, depth }) =>
-                    node.children !== undefined ? (
-                      <div
-                        key={node.path}
-                        className="group flex cursor-default items-center gap-2 py-1 transition hover:bg-surface-overlay"
-                        style={{ paddingLeft: `${8 + depth * 16}px`, paddingRight: '14px' }}
-                      >
-                        <button
-                          type="button"
-                          onClick={() => toggleCollapsed(node.path)}
-                          aria-label={
-                            collapsed[node.path] ? `Expand ${node.key}` : `Collapse ${node.key}`
-                          }
-                          className="cursor-pointer grid size-3 shrink-0 place-items-center text-foreground-subtle transition hover:text-foreground"
-                        >
-                          <ChevronDown
-                            size={10}
-                            className={cn(
-                              'transition-transform duration-100',
-                              collapsed[node.path] && '-rotate-90'
-                            )}
-                          />
-                        </button>
-                        <TypeBadge type={node.type} />
-                        <span className="flex-1 truncate font-mono text-xs text-foreground">
-                          {node.key}
-                        </span>
-                        <span className="shrink-0 font-mono text-[10px] text-foreground-muted">
-                          {node.type === 'array'
-                            ? `${node.children.length} ${node.children.length === 1 ? 'item' : 'items'}`
-                            : `${node.children.length} ${node.children.length === 1 ? 'key' : 'keys'}`}
-                        </span>
-                      </div>
-                    ) : (
-                      <div
-                        key={node.path}
-                        className="group flex cursor-default items-center gap-2 py-1 transition hover:bg-surface-overlay"
-                        style={{ paddingLeft: `${8 + depth * 16}px`, paddingRight: '14px' }}
-                      >
-                        <div className="size-3 shrink-0" />
-                        <TypeBadge type={node.type} />
-                        <span className="shrink-0 font-mono text-xs text-foreground">
-                          {node.key}
-                        </span>
-                        <span className="shrink-0 font-mono text-xs text-foreground-subtle">=</span>
-                        {editingPath === node.path ? (
-                          <input
-                            autoFocus
-                            type="text"
-                            aria-label={`Edit value for ${node.key}`}
-                            placeholder="value"
-                            defaultValue={String(editedValues[node.path] ?? node.value ?? '')}
-                            onBlur={(e) => {
-                              if (!escapeRef.current) saveEdit(node, e.target.value);
-                              escapeRef.current = false;
-                            }}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') saveEdit(node, e.currentTarget.value);
-                              if (e.key === 'Escape') {
-                                escapeRef.current = true;
-                                setEditingPath(null);
-                              }
-                            }}
-                            className={cn(
-                              'min-w-0 flex-1 rounded bg-transparent px-1 font-mono text-xs outline-none ring-1 ring-brand',
-                              outputValueColorClass(
-                                node.type,
-                                editedValues[node.path] ?? node.value
-                              )
-                            )}
-                          />
-                        ) : (
-                          <>
-                            <button
-                              type="button"
-                              onClick={() => node.type !== 'null' && setEditingPath(node.path)}
-                              className={cn(
-                                'max-w-[55%] shrink-0 font-mono text-xs',
-                                wrappedPaths.has(node.path)
-                                  ? 'whitespace-normal break-words text-left'
-                                  : 'truncate',
-                                node.type !== 'null' ? 'cursor-text' : 'cursor-default',
-                                outputValueColorClass(
-                                  node.type,
-                                  editedValues[node.path] ?? node.value
-                                )
-                              )}
-                            >
-                              {formatOutputValue(
-                                node.type,
-                                (editedValues[node.path] ?? node.value) as
-                                  | string
-                                  | number
-                                  | boolean
-                                  | null
-                              )}
-                            </button>
-                            <div className="flex-1" />
-                            {hasOverflowActions(node) ? (
-                              <DropdownMenu
-                                open={openActionsPath === node.path}
-                                onOpenChange={(open) => setOpenActionsPath(open ? node.path : null)}
-                              >
-                                <CanvasTooltip
-                                  content="More actions"
-                                  placement="top"
-                                  delay
-                                  hide={openActionsPath === node.path}
-                                >
-                                  <DropdownMenuTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="4xs"
-                                      icon
-                                      aria-label={`More actions for ${node.key}`}
-                                      className={cn(
-                                        'shrink-0 rounded text-foreground-subtle opacity-0 hover:bg-surface-raised hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100',
-                                        openActionsPath === node.path && 'opacity-100'
-                                      )}
-                                    >
-                                      <MoreHorizontal size={11} />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                </CanvasTooltip>
-                                <DropdownMenuContent
-                                  side="left"
-                                  align="start"
-                                  sideOffset={-12}
-                                  className="min-w-40"
-                                >
-                                  <DropdownMenuItem
-                                    onClick={() => toggleWrapped(node.path)}
-                                    className={cn(
-                                      'gap-2 text-xs',
-                                      wrappedPaths.has(node.path) && 'text-brand'
-                                    )}
-                                  >
-                                    <WrapText size={14} />
-                                    {wrappedPaths.has(node.path) ? 'Unwrap value' : 'Wrap value'}
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={() => copyValue(node)}
-                                    className="gap-2 text-xs"
-                                  >
-                                    {copiedPath === node.path ? (
-                                      <CircleCheck size={14} className="text-brand" />
-                                    ) : (
-                                      <Copy size={14} />
-                                    )}
-                                    Copy value
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={() => addVariable(node)}
-                                    className="gap-2 text-xs"
-                                  >
-                                    <Plus size={14} />
-                                    Add variable
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={() => deleteVariable(node)}
-                                    className="gap-2 text-xs text-error focus:text-error"
-                                  >
-                                    <Trash2 size={14} />
-                                    Delete variable
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            ) : (
-                              <>
-                                {node.type === 'string' && (
-                                  <CanvasTooltip
-                                    content={
-                                      wrappedPaths.has(node.path) ? 'Unwrap value' : 'Wrap value'
-                                    }
-                                    placement="top"
-                                    delay
-                                  >
-                                    <Button
-                                      variant="ghost"
-                                      size="4xs"
-                                      icon
-                                      onClick={() => toggleWrapped(node.path)}
-                                      aria-label={`${
-                                        wrappedPaths.has(node.path) ? 'Unwrap' : 'Wrap'
-                                      } value of ${node.key}`}
-                                      className={cn(
-                                        'shrink-0 rounded text-foreground-subtle opacity-0 hover:bg-surface-raised hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100',
-                                        wrappedPaths.has(node.path) && 'text-brand opacity-100'
-                                      )}
-                                    >
-                                      <WrapText size={11} />
-                                    </Button>
-                                  </CanvasTooltip>
-                                )}
-                                <CanvasTooltip content="Copy value" placement="top" delay>
-                                  <Button
-                                    variant="ghost"
-                                    size="4xs"
-                                    icon
-                                    onClick={() => copyValue(node)}
-                                    aria-label={`Copy value of ${node.key}`}
-                                    className="shrink-0 rounded text-foreground-subtle opacity-0 hover:bg-surface-raised hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100"
-                                  >
-                                    {copiedPath === node.path ? (
-                                      <CircleCheck size={11} className="text-brand" />
-                                    ) : (
-                                      <Copy size={11} />
-                                    )}
-                                  </Button>
-                                </CanvasTooltip>
-                                <CanvasTooltip content="Add variable" placement="top" delay>
-                                  <Button
-                                    variant="ghost"
-                                    size="4xs"
-                                    icon
-                                    onClick={() => addVariable(node)}
-                                    aria-label={`Add ${node.key} as a variable`}
-                                    className="shrink-0 rounded text-foreground-subtle opacity-0 hover:bg-surface-raised hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100"
-                                  >
-                                    <Plus size={11} />
-                                  </Button>
-                                </CanvasTooltip>
-                              </>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    )
-                  )}
-                  {rows.length === 0 && (
-                    <p className="py-4 text-center text-xs text-foreground-subtle">
-                      No references match your search.
-                    </p>
-                  )}
-                </div>
-              </div>
-            </TabsContent>
-
-            {/* JSON tab */}
-            <TabsContent
-              value="json"
-              className="mt-0 flex min-h-0 flex-1 flex-col pb-4 pt-1 [padding-inline:var(--mf-content-inset,0.875rem)]"
-            >
-              <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-surface-overlay">
-                <MonacoEditor
-                  height="100%"
-                  language="json"
-                  value={currentJson}
-                  theme={monacoTheme}
-                  beforeMount={registerMonacoThemes}
-                  options={JSON_VIEWER_OPTIONS}
-                />
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
+      <NodePropertyPanel panelTitle={title} onClose={() => {}} className="h-[640px]">
+        <div className="flex h-full flex-col">{view}</div>
       </NodePropertyPanel>
     </PanelFrame>
   );
+
+  return (
+    <div className="flex items-start justify-center gap-4 p-8">
+      {panel(
+        'Input',
+        <NodeIOView
+          className="min-h-0 flex-1"
+          inset
+          schema={INPUT_SCHEMA}
+          value={inputValue}
+          onValueChange={setInputValue}
+          searchPlaceholder="Search inputs..."
+          filters={INPUT_FILTERS}
+          decorateNode={decorateNodeHeader}
+          deriveTypeIcon={deriveFileTypeIcon}
+          renderValue={renderFileValueCell}
+          renderCodeEditor={renderJsonCodeEditor}
+          pathForCopy={(path) => `$vars.${path}`}
+        />
+      )}
+      {panel(
+        'Output',
+        <NodeIOView
+          className="min-h-0 flex-1"
+          inset
+          toolbarTrailing={
+            <NodeOutputModeSelect
+              value={mode}
+              onChange={(m) => setMode(m as (typeof APOLLO_MODES)[number])}
+            />
+          }
+          schema={OUTPUT_SCHEMA}
+          value={outputValue}
+          readOnly={!isStatic}
+          onValueChange={isStatic ? setOutputValue : undefined}
+          searchPlaceholder="Search output..."
+          decorateNode={decorateNodeHeader}
+          deriveTypeIcon={deriveFileTypeIcon}
+          renderValue={renderFileValueCell}
+          renderCodeEditor={renderJsonCodeEditor}
+          pathForCopy={(path) => `$vars.${path}`}
+        />
+      )}
+      <Toaster />
+    </div>
+  );
 }
 
 // ============================================================================
-// In Studio / In Flow layout
+// Variables panel
 // ============================================================================
 
-function InputOutputStory() {
-  const [context, setContext] = useState<'studio' | 'flow'>('flow');
+// Node icons as flow-workbench resolves them: the manifest's icon name through
+// CanvasIcon (single color), and connectors with their full-color brand logo.
+const nodeIcon = (name: string) => <CanvasIcon icon={name} size={11} />;
+const brandLogo = (file: string) => <img src={`brand/${file}`} alt="" className="size-2.75" />;
+
+/** A node output whose shape is known but whose fields are not loaded yet. */
+const OPAQUE_OUTPUT: JsonSchema = {
+  type: 'object',
+  properties: { output: { type: 'object' } },
+};
+
+const VARIABLES_PANEL_INPUTS: NodeVariablesSource[] = [
+  { id: 'manualTrigger1', label: 'Manual trigger', icon: nodeIcon('play') },
+  { id: 'scheduledTrigger1', label: 'Scheduled trigger', icon: nodeIcon('calendar-clock') },
+  {
+    id: 'messageReceivedInSlack1',
+    label: 'Message received in Slack',
+    // Connectors always use their full-color logo.
+    icon: brandLogo('slack.svg'),
+    schema: {
+      type: 'object',
+      properties: {
+        output: {
+          type: 'object',
+          properties: {
+            channel_name: { type: 'string' },
+            event: {
+              type: 'object',
+              properties: { event_ts: { type: 'string' }, subtype: { type: 'string' } },
+            },
+          },
+        },
+      },
+    },
+  },
+  { id: 'httpWebhook1', label: 'HTTP webhook', icon: nodeIcon('webhook'), schema: OPAQUE_OUTPUT },
+  {
+    id: 'incomingCall1',
+    label: 'Incoming call',
+    icon: nodeIcon('phone-incoming'),
+    schema: OPAQUE_OUTPUT,
+  },
+  {
+    id: 'conversationTrigger1',
+    label: 'Conversation trigger',
+    icon: nodeIcon('messages-square'),
+    schema: OPAQUE_OUTPUT,
+  },
+];
+
+// Output schema helpers for the sample flow.
+const STRING: JsonSchema = { type: 'string' };
+const NUMBER: JsonSchema = { type: 'number' };
+const BOOLEAN: JsonSchema = { type: 'boolean' };
+const object = (properties: Record<string, JsonSchema>): JsonSchema => ({
+  type: 'object',
+  properties,
+});
+const list = (items: JsonSchema): JsonSchema => ({ type: 'array', items });
+const ERROR = object({ code: STRING, message: STRING });
+
+/** A flow node whose top-level outputs (each with child fields) come from its schema. */
+const flowNode = (
+  id: string,
+  label: string,
+  icon: ReactNode,
+  outputs: Record<string, JsonSchema>
+): NodeVariablesSource => ({ id, label, icon, schema: object(outputs) });
+
+// One node per display name, as a real flow would have.
+const VARIABLES_PANEL_NODES: NodeVariablesSource[] = [
+  flowNode('autonomousAgent1', 'Autonomous agent', nodeIcon('autonomous-agent'), {
+    output: object({ response: STRING, toolCalls: list(object({ name: STRING })) }),
+  }),
+  flowNode('conversationalAgent1', 'Conversational agent', nodeIcon('conversational-agent'), {
+    output: object({ reply: STRING, conversationId: STRING }),
+  }),
+  flowNode('voiceAgent1', 'Voice agent', nodeIcon('phone'), {
+    output: object({ transcript: STRING, durationSeconds: NUMBER }),
+  }),
+  flowNode('sendMessageToChannel1', 'Send message', brandLogo('slack.svg'), {
+    output: object({ ts: STRING, channel: STRING }),
+    error: ERROR,
+  }),
+  flowNode('batchTransform1', 'Batch transform', nodeIcon('grid-2x2-plus'), {
+    output: object({ rows: list(object({ id: STRING })), rowCount: NUMBER }),
+  }),
+  flowNode('filter1', 'Filter', nodeIcon('list-filter'), {
+    output: object({ items: list(object({ id: STRING })), count: NUMBER }),
+  }),
+  flowNode('groupBy1', 'Group by', nodeIcon('group'), {
+    output: object({ groups: list(object({ key: STRING, count: NUMBER })) }),
+  }),
+  flowNode('map1', 'Map', nodeIcon('arrow-right'), {
+    output: object({ items: list(object({ id: STRING })) }),
+  }),
+  flowNode('transform1', 'Transform', nodeIcon('a-large-small'), {
+    output: object({ result: STRING }),
+  }),
+  flowNode('readEntity1', 'Query entity records', nodeIcon('layers-arrow-up-right'), {
+    output: object({ records: list(object({ Id: STRING, Name: STRING })), totalCount: NUMBER }),
+  }),
+  flowNode('updateEntity1', 'Update entity record', nodeIcon('layers-arrow-up-right'), {
+    output: object({ Id: STRING, UpdateTime: STRING }),
+  }),
+  flowNode('summarize1', 'Summarize', nodeIcon('sigma'), {
+    output: object({ summary: STRING, sources: list(STRING) }),
+  }),
+  flowNode('extractV21', 'Extract', nodeIcon('file-text'), {
+    output: object({
+      fields: object({ invoiceNumber: STRING, total: NUMBER }),
+      confidence: NUMBER,
+    }),
+  }),
+  flowNode('quickForm1', 'Quick form', nodeIcon('users'), {
+    output: object({ approved: BOOLEAN, comment: STRING }),
+    assignee: object({ email: STRING, name: STRING }),
+  }),
+  flowNode('actionApp1', 'Action app', nodeIcon('users'), {
+    output: object({ action: STRING, data: object({}) }),
+    assignee: object({ email: STRING, name: STRING }),
+  }),
+  flowNode('mock1', 'Mock', nodeIcon('square-dashed'), {
+    output: object({ value: STRING }),
+  }),
+  flowNode('decision1', 'Decision', nodeIcon('trending-up-down'), {
+    output: object({ result: BOOLEAN }),
+    branch: object({ name: STRING }),
+  }),
+  flowNode('switch1', 'Switch', nodeIcon('between-horizontal-start'), {
+    output: object({ matchedCase: STRING }),
+    branch: object({ name: STRING }),
+  }),
+  flowNode('loop1', 'Loop', nodeIcon('repeat'), {
+    output: object({ results: list(object({ status: STRING })) }),
+    currentItem: object({ id: STRING }),
+    index: NUMBER,
+    error: ERROR,
+  }),
+  flowNode('script1', 'Script', nodeIcon('code'), {
+    output: object({ result: STRING, logs: list(STRING) }),
+  }),
+  flowNode('waitForMessage1', 'Wait for message', nodeIcon('message-square-more'), {
+    output: object({ message: STRING, receivedAt: STRING }),
+  }),
+  flowNode('getConversationContext1', 'Get conversation context', nodeIcon('message-square-text'), {
+    output: object({ history: list(object({ role: STRING, text: STRING })) }),
+  }),
+  flowNode('createQueueItem1', 'Create queue item', nodeIcon('list-plus'), {
+    output: object({ itemId: STRING, status: STRING }),
+  }),
+  flowNode('createAndWaitForQueueItem1', 'Create and wait for queue item', nodeIcon('list-plus'), {
+    output: object({ itemId: STRING, result: object({ status: STRING }) }),
+  }),
+  flowNode('createOutgoingCall1', 'Create outgoing call', nodeIcon('phone-outgoing'), {
+    output: object({ callId: STRING, status: STRING }),
+  }),
+  flowNode('endCall1', 'End call', nodeIcon('phone-off'), {
+    output: object({ endedAt: STRING }),
+  }),
+  flowNode('httpWebhook2', 'HTTP webhook 2', nodeIcon('webhook'), {
+    output: object({ body: object({}), headers: object({}) }),
+  }),
+  flowNode('emailReceived2', 'Email received (wait)', brandLogo('google-gmail.svg'), {
+    output: object({ from: STRING, subject: STRING }),
+  }),
+  flowNode('subflow1', 'Subflow', nodeIcon('layers'), {}),
+  flowNode('httpRequest2', 'HTTP request 2', nodeIcon('app-window'), {
+    output: object({ statusCode: NUMBER, body: object({}) }),
+  }),
+  flowNode('uploadFile1', 'Upload file', brandLogo('google-drive.svg'), {
+    output: object({ fileId: STRING, webViewLink: STRING }),
+    file: object({ name: STRING, size: NUMBER }),
+    error: ERROR,
+  }),
+];
+
+// The flow's declared outputs, with sample values from the last run.
+const VARIABLES_PANEL_OUTPUTS = {
+  schema: object({
+    approvalStatus: { type: 'string', description: 'Approved, rejected, or escalated' },
+    invoiceTotal: NUMBER,
+    approvedBy: object({ name: STRING, email: STRING }),
+    lineItems: list(object({ sku: STRING, quantity: NUMBER, amount: NUMBER })),
+  }),
+  value: {
+    approvalStatus: 'approved',
+    invoiceTotal: 1840.5,
+    approvedBy: { name: 'Dana Whitfield', email: 'dana.whitfield@example.com' },
+    lineItems: [
+      { sku: 'SKU-1001', quantity: 4, amount: 960 },
+      { sku: 'SKU-2040', quantity: 1, amount: 880.5 },
+    ],
+  },
+};
+
+const VARIABLES_PANEL_VARIABLES = {
+  schema: object({
+    flowTest: { type: 'string', description: 'Banner shown on the approval request' },
+    flowConfig: object({ region: STRING, retryCount: NUMBER }),
+    flowArray: list(STRING),
+    flowBoolean: { type: 'boolean', description: 'Whether the invoice needs a second approver' },
+  }),
+  value: {
+    flowTest: 'Invoice approval required',
+    flowConfig: { region: 'us-east', retryCount: 3 },
+    flowArray: ['INV-2041', 'INV-2042', 'INV-2043'],
+    flowBoolean: true,
+  } as JsonObject,
+};
+
+/** A variable's schema as the Edit variable dialog saved it. */
+const variableSchema = ({ type, description, defaultValue }: NodeVariableDetails): JsonSchema => ({
+  type,
+  ...(description && { description }),
+  ...(defaultValue !== undefined && { default: defaultValue }),
+});
+
+function VariablesStory() {
+  const [variables, setVariables] = useState(VARIABLES_PANEL_VARIABLES);
+  const properties = variables.schema.properties ?? {};
+
+  const addVariable = () => {
+    // First unused name, so adding after a delete never overwrites a variable.
+    let suffix = Object.keys(properties).length + 1;
+    while (`flowVariable${suffix}` in properties) suffix += 1;
+    const name = `flowVariable${suffix}`;
+    setVariables((current) => ({
+      schema: object({ ...current.schema.properties, [name]: STRING }),
+      value: { ...current.value, [name]: '' },
+    }));
+    toast.success(`Added ${name}`);
+  };
+  // Saving keeps the variable's place; a changed id renames it.
+  const editVariable = (name: string, next: NodeVariableDetails) =>
+    setVariables((current) => ({
+      schema: object(
+        Object.fromEntries(
+          Object.entries(current.schema.properties ?? {}).map(([key, schema]) =>
+            key === name ? [next.id, variableSchema(next)] : [key, schema]
+          )
+        )
+      ),
+      value: Object.fromEntries(
+        Object.entries(current.value).flatMap(([key, value]) =>
+          key !== name
+            ? [[key, value]]
+            : next.defaultValue === undefined
+              ? []
+              : [[next.id, next.defaultValue]]
+        )
+      ),
+    }));
+  const deleteVariable = (name: string) =>
+    setVariables((current) => ({
+      schema: object(
+        Object.fromEntries(
+          Object.entries(current.schema.properties ?? {}).filter(([key]) => key !== name)
+        )
+      ),
+      value: Object.fromEntries(Object.entries(current.value).filter(([key]) => key !== name)),
+    }));
+
+  // The tabs share the panel's toolbar row: passed as `leading` on the Variables
+  // tab, and on their own row (same position) on the Properties tab. Each tab
+  // mounts its own copy, so switching remounts the triggers; move focus to the
+  // new active trigger so keyboard users stay in the tablist.
+  const [activeTab, setActiveTab] = useState('variables');
+  const tabsRef = useRef<HTMLDivElement>(null);
+  const changeTab = (next: string) => {
+    const focusInTabs = document.activeElement?.getAttribute('role') === 'tab';
+    setActiveTab(next);
+    if (focusInTabs) {
+      requestAnimationFrame(() =>
+        tabsRef.current?.querySelector<HTMLElement>('[role="tab"][data-state="active"]')?.focus()
+      );
+    }
+  };
+  const tabList = (
+    <PanelTabsStrip>
+      <PanelTabsTrigger value="properties">Properties</PanelTabsTrigger>
+      <PanelTabsTrigger value="variables">Variables</PanelTabsTrigger>
+    </PanelTabsStrip>
+  );
+
   return (
-    <div className="flex flex-col items-center gap-6 p-8">
-      <div className="flex items-center overflow-hidden rounded border border-border">
-        {(['flow', 'studio'] as const).map((c, i) => (
-          <span key={c} className="contents">
-            {i > 0 && <div className="h-3 w-px bg-border" />}
-            <button
-              type="button"
-              onClick={() => setContext(c)}
-              className={cn(
-                'cursor-pointer px-3 py-1 text-xs font-medium transition',
-                context === c
-                  ? 'bg-surface-overlay text-foreground'
-                  : 'text-foreground-muted hover:text-foreground'
-              )}
+    <div className="flex flex-col gap-4 overflow-x-auto p-8">
+      <PanelFrame>
+        <NodePropertyPanel panelTitle="Properties" onClose={() => {}} className="h-[760px]">
+          <PanelTabs
+            ref={tabsRef}
+            value={activeTab}
+            onValueChange={changeTab}
+            className="h-full font-sans"
+          >
+            <PanelTabsContent
+              value="properties"
+              padded={false}
+              className="flex-col data-[state=active]:flex"
             >
-              {c === 'studio' ? 'In Studio' : 'In Flow'}
-            </button>
-          </span>
-        ))}
-      </div>
-      <div className="flex items-start gap-[50px]">
-        <div className="w-[380px]">
-          <Concept2PanelStory mode="input" context={context} />
-        </div>
-        <div className="w-[380px]">
-          <Concept2PanelStory mode="output" context={context} />
-        </div>
-      </div>
+              {/* Same row as NodeVariablesPanel's toolbar, so the tabs don't move. */}
+              <div className="flex shrink-0 items-center pt-4 pb-2 [padding-inline:var(--mf-content-inset)]">
+                {tabList}
+              </div>
+              <div className="mt-1 [padding-inline:var(--mf-content-inset)]">
+                <div className="rounded-lg border border-border-subtle bg-surface-overlay/30 p-4 text-xs text-foreground-muted">
+                  Select a node to view its editable properties.
+                </div>
+              </div>
+            </PanelTabsContent>
+            <PanelTabsContent
+              value="variables"
+              padded={false}
+              className="flex-col overflow-hidden data-[state=active]:flex"
+            >
+              <NodeVariablesPanel
+                inputs={VARIABLES_PANEL_INPUTS}
+                outputs={VARIABLES_PANEL_OUTPUTS}
+                variables={variables}
+                nodes={VARIABLES_PANEL_NODES}
+                selectedNodeId="messageReceivedInSlack1"
+                onFocusNode={(nodeId) => toast(`Focused ${nodeId}`)}
+                onAdd={(section, nodeId) =>
+                  section === 'variables'
+                    ? addVariable()
+                    : toast(nodeId ? `Add from ${nodeId}` : `Add to ${section}`)
+                }
+                onEditVariable={editVariable}
+                onDeleteVariable={deleteVariable}
+                onCopy={({ text }) => toast.success(`Copied ${text}`)}
+                leading={tabList}
+              />
+            </PanelTabsContent>
+          </PanelTabs>
+        </NodePropertyPanel>
+      </PanelFrame>
       <Toaster />
     </div>
   );
@@ -2899,147 +2310,6 @@ function FieldDragOverlay({ caseItem }: { caseItem: QuickFormFieldCase }) {
   );
 }
 
-function QuickFormFieldShowcase({
-  controlsVisibility,
-  onControlsVisibilityChange,
-}: {
-  controlsVisibility: 'visible' | 'hover';
-  onControlsVisibilityChange: (visibility: 'visible' | 'hover') => void;
-}) {
-  const fullViewId = useId();
-  const compactViewId = useId();
-  const [showcaseValue, setShowcaseValue] = useState('');
-  const [showcaseLocked, setShowcaseLocked] = useState(true);
-  const [showcaseMode, setShowcaseMode] = useState<QuickFormFieldMode>('literal');
-  const [showcaseFieldType, setShowcaseFieldType] = useState<QuickFieldType>('string');
-  const [showcaseRequired, setShowcaseRequired] = useState(true);
-
-  const handleShowcaseFieldTypeChange = (type: QuickFieldType) => {
-    setShowcaseFieldType(type);
-    setShowcaseValue('');
-    if (!FIELD_TYPE_META[type].supportsExpression) {
-      setShowcaseMode('literal');
-    }
-  };
-
-  return (
-    <div className="flex w-[380px] shrink-0 flex-col gap-4 rounded-2xl border border-border-subtle bg-surface-raised p-5">
-      <div className="flex flex-col gap-1">
-        <span className="text-sm font-semibold text-foreground">Demo controls</span>
-        <p className="text-xs leading-4 text-foreground-muted">
-          Toggle Show/Hide to preview how field controls behave in the panel on the left. Uses
-          component →{' '}
-          <a
-            href="/?path=/docs/apollo-wind-components-uipath-quick-form-field--docs"
-            target="_top"
-            className="font-medium text-brand transition hover:text-brand-hover"
-          >
-            Quick Form Field
-          </a>
-        </p>
-      </div>
-      <div className="flex items-center justify-between border-t border-border-subtle pt-4">
-        <span className="text-[11px] font-medium uppercase tracking-wide text-foreground-subtle">
-          Controls
-        </span>
-        <ToggleGroup
-          type="single"
-          size="xs"
-          value={controlsVisibility}
-          onValueChange={(v) => v && onControlsVisibilityChange(v as 'visible' | 'hover')}
-        >
-          <ToggleGroupItem value="visible" className="!px-2.5 !text-xs">
-            Show
-          </ToggleGroupItem>
-          <ToggleGroupItem value="hover" className="!px-2.5 !text-xs">
-            Hide
-          </ToggleGroupItem>
-        </ToggleGroup>
-      </div>
-      <div className="flex flex-col gap-2">
-        <span className="text-[11px] font-medium uppercase tracking-wide text-foreground-subtle">
-          Full view
-        </span>
-        <QuickFormField
-          id={fullViewId}
-          label={
-            <FormFieldLabel htmlFor={fullViewId} required={showcaseRequired} className="leading-4">
-              Label
-            </FormFieldLabel>
-          }
-          headerActions={
-            <button
-              type="button"
-              aria-label="Close field"
-              className={cn(
-                'grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground',
-                controlsVisibility === 'hover' &&
-                  'opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100'
-              )}
-            >
-              <Trash2 size={14} />
-            </button>
-          }
-          value={showcaseValue}
-          onValueChange={setShowcaseValue}
-          locked={showcaseLocked}
-          onLockedChange={setShowcaseLocked}
-          mode={showcaseMode}
-          onModeChange={setShowcaseMode}
-          fieldType={showcaseFieldType}
-          onFieldTypeChange={handleShowcaseFieldTypeChange}
-          required={showcaseRequired}
-          onRequiredChange={setShowcaseRequired}
-          variables={QUICK_FORM_FIELD_VARIABLES}
-        />
-      </div>
-      <div className="flex flex-col gap-2 border-t border-border-subtle pt-4">
-        <span className="text-[11px] font-medium uppercase tracking-wide text-foreground-subtle">
-          Compact view (narrow container)
-        </span>
-        <div className="w-[200px]">
-          <QuickFormField
-            id={compactViewId}
-            label={
-              <FormFieldLabel
-                htmlFor={compactViewId}
-                required={showcaseRequired}
-                className="leading-4"
-              >
-                Label
-              </FormFieldLabel>
-            }
-            headerActions={
-              <button
-                type="button"
-                aria-label="Close field"
-                className={cn(
-                  'grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground',
-                  controlsVisibility === 'hover' &&
-                    'opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100'
-                )}
-              >
-                <Trash2 size={14} />
-              </button>
-            }
-            value={showcaseValue}
-            onValueChange={setShowcaseValue}
-            locked={showcaseLocked}
-            onLockedChange={setShowcaseLocked}
-            mode={showcaseMode}
-            onModeChange={setShowcaseMode}
-            fieldType={showcaseFieldType}
-            onFieldTypeChange={handleShowcaseFieldTypeChange}
-            required={showcaseRequired}
-            onRequiredChange={setShowcaseRequired}
-            variables={QUICK_FORM_FIELD_VARIABLES}
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export function QuickFormPanel({
   embedded = false,
   onClose,
@@ -3064,9 +2334,6 @@ export function QuickFormPanel({
   );
   const [jsonError, setJsonError] = useState<string | null>(null);
   const [jsonCopied, setJsonCopied] = useState(false);
-  const [showcaseControlsVisibility, setShowcaseControlsVisibility] = useState<'visible' | 'hover'>(
-    'visible'
-  );
   const [buttons, setButtons] = useState<FormButtonItem[]>(DEFAULT_FORM_BUTTONS);
   const nextButtonIdRef = useRef(3);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -3196,26 +2463,18 @@ export function QuickFormPanel({
       nodeCategory="Quick approve/reject decision for the extracted invoice."
       action={<RunButton />}
       onClose={onClose}
-      contentInset="0.875rem"
       className={className}
     >
-      <Tabs defaultValue="parameters" className="flex min-h-0 flex-1 flex-col">
-        <div className="shrink-0 pt-3 [padding-inline:var(--mf-content-inset,0.875rem)]">
-          <TabsList className={TAB_LIST_CLASS}>
-            <TabsTrigger value="parameters" className={TAB_TRIGGER_CLASS}>
-              Parameters
-            </TabsTrigger>
-            <TabsTrigger value="branching" className={TAB_TRIGGER_CLASS}>
-              Branching
-            </TabsTrigger>
-            <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>
-              Error handling
-            </TabsTrigger>
-          </TabsList>
-        </div>
-        <TabsContent
+      <PanelTabs defaultValue="parameters">
+        <PanelTabsList>
+          <PanelTabsTrigger value="parameters">Parameters</PanelTabsTrigger>
+          <PanelTabsTrigger value="branching">Branching</PanelTabsTrigger>
+          <PanelTabsTrigger value="error-handling">Error handling</PanelTabsTrigger>
+        </PanelTabsList>
+        <PanelTabsContent
           value="parameters"
-          className="mt-0 flex min-h-0 flex-1 flex-col gap-4 overflow-auto py-3 [padding-inline:var(--mf-content-inset,0.875rem)]"
+          padded={false}
+          className="flex flex-col gap-4 pt-1.5 pb-3 [padding-inline:var(--mf-content-inset,1rem)]"
         >
           {/* Quick form */}
           <div className="flex flex-col gap-2">
@@ -3386,7 +2645,7 @@ export function QuickFormPanel({
                                 onFieldTypeChange={(fieldType) =>
                                   updateCaseFieldType(c.id, fieldType)
                                 }
-                                controlsVisibility={showcaseControlsVisibility}
+                                controlsVisibility="visible"
                                 monacoTheme={monacoTheme}
                                 insertBefore={isOver && activeIndex > index}
                                 insertAfter={isOver && activeIndex < index}
@@ -3480,25 +2739,16 @@ export function QuickFormPanel({
               </CardContent>
             </Card>
           </div>
-        </TabsContent>
-        <TabsContent value="branching" className="mt-0" />
-        <TabsContent value="error-handling" className="mt-0" />
-      </Tabs>
+        </PanelTabsContent>
+        <PanelTabsContent value="branching" />
+        <PanelTabsContent value="error-handling" />
+      </PanelTabs>
     </NodePropertyPanel>
   );
 
   if (embedded) return panel;
 
-  return (
-    <div className="flex items-start gap-8">
-      <PanelFrame>{panel}</PanelFrame>
-
-      <QuickFormFieldShowcase
-        controlsVisibility={showcaseControlsVisibility}
-        onControlsVisibilityChange={setShowcaseControlsVisibility}
-      />
-    </div>
-  );
+  return <PanelFrame>{panel}</PanelFrame>;
 }
 
 // ============================================================================
@@ -3841,6 +3091,96 @@ function CompositionFieldDragOverlay({ field }: { field: CompositionFieldItem })
   );
 }
 
+/** Disables a field: a rule without conditions always applies. */
+const DISABLED_RULE = { id: 'disabled', conditions: [], effects: { disabled: true } };
+
+/**
+ * Renders inventory field examples through MetadataForm's field renderer, the
+ * same path real panels use, so labels, gaps, and states can't drift from
+ * engineering.
+ */
+function InventoryFields({ id, fields }: { id: string; fields: FieldMetadata[] }) {
+  const schema = useMemo<FormSchema>(
+    () => ({ id, title: '', actions: [], sections: [{ id: `${id}-fields`, fields }] }),
+    [id, fields]
+  );
+  return <MetadataForm schema={schema} />;
+}
+
+const INVENTORY_INPUT_FIELDS: FieldMetadata[] = [
+  { name: 'default', type: 'text', label: 'Default', placeholder: 'Enter a value' },
+  {
+    name: 'disabled',
+    type: 'text',
+    label: 'Disabled',
+    placeholder: 'Disabled value',
+    rules: [DISABLED_RULE],
+  },
+];
+const INVENTORY_SELECT_FIELDS: FieldMetadata[] = [
+  {
+    name: 'executionMode',
+    type: 'select',
+    label: 'Execution mode',
+    placeholder: 'Select an execution mode',
+    defaultValue: 'standard',
+    options: [
+      { label: 'Standard', value: 'standard' },
+      { label: 'Priority', value: 'priority' },
+      { label: 'Background', value: 'background' },
+    ],
+  },
+  {
+    name: 'frameworks',
+    type: 'multiselect',
+    label: 'Frameworks',
+    placeholder: 'Select frameworks',
+    options: [
+      { label: 'React', value: 'react' },
+      { label: 'Vue', value: 'vue' },
+      { label: 'Angular', value: 'angular' },
+      { label: 'Svelte', value: 'svelte' },
+    ],
+  },
+];
+const INVENTORY_FILE_FIELDS: FieldMetadata[] = [
+  { name: 'attachments', type: 'file', label: 'Attachments', multiple: true, showPreview: true },
+];
+const INVENTORY_DATE_FIELDS: FieldMetadata[] = [
+  { name: 'deadline', type: 'date', label: 'Deadline' },
+  { name: 'runAt', type: 'datetime', label: 'Run at' },
+  { name: 'lockedDate', type: 'date', label: 'Disabled', rules: [DISABLED_RULE] },
+];
+const INVENTORY_TEXTAREA_FIELDS: FieldMetadata[] = [
+  {
+    name: 'instructions',
+    type: 'textarea',
+    label: 'Instructions',
+    rows: 3,
+    defaultValue: 'Overall extraction instructions...',
+  },
+];
+const INVENTORY_SWITCH_FIELDS: FieldMetadata[] = [
+  { name: 'autoRetry', type: 'switch', label: 'Enable automatic retry', defaultValue: true },
+  { name: 'lockedSetting', type: 'switch', label: 'Disabled setting', rules: [DISABLED_RULE] },
+];
+const INVENTORY_RADIO_FIELDS: FieldMetadata[] = [
+  {
+    name: 'runMode',
+    type: 'radio',
+    label: 'Run mode',
+    defaultValue: 'automatic',
+    options: [
+      { label: 'Automatic', value: 'automatic' },
+      { label: 'Manual', value: 'manual' },
+    ],
+  },
+];
+const INVENTORY_CHECKBOX_FIELDS: FieldMetadata[] = [
+  { name: 'enabled', type: 'checkbox', label: 'Enabled', defaultValue: true },
+  { name: 'lockedCheckbox', type: 'checkbox', label: 'Disabled', rules: [DISABLED_RULE] },
+];
+
 function PanelUIInventoryStory() {
   const [inventoryTab, setInventoryTab] = useState('components');
   const [inventorySection, setInventorySection] = useState<string | null>(null);
@@ -3850,24 +3190,6 @@ function PanelUIInventoryStory() {
   const [componentsFixedValue, setComponentsFixedValue] = useState('Invoice number');
   const [componentsConnection, setComponentsConnection] = useState('production');
   const [componentsExpressionValue, setComponentsExpressionValue] = useState('$vars.invoiceNumber');
-  const [componentsSelectedDate, setComponentsSelectedDate] = useState<Date | undefined>(() => {
-    const date = new Date();
-    date.setDate(date.getDate() + 7);
-    date.setHours(0, 0, 0, 0);
-    return date;
-  });
-  const [componentsSelectedDateTime, setComponentsSelectedDateTime] = useState<Date | undefined>(
-    () => {
-      const date = new Date();
-      date.setDate(date.getDate() + 7);
-      date.setHours(9, 30, 0, 0);
-      return date;
-    }
-  );
-  const [componentsSelectedFrameworks, setComponentsSelectedFrameworks] = useState<string[]>([
-    'react',
-  ]);
-  const [, setComponentsFiles] = useState<File[]>([]);
   const monacoTheme = useMonacoTheme();
   const compositionFieldId = useId();
   const [compositionValue, setCompositionValue] = useState('invoice.total');
@@ -3968,94 +3290,76 @@ function PanelUIInventoryStory() {
           nodeLabel="UI element inventory"
           nodeCategory="Panel reference"
           action={<RunButton />}
-          contentInset="0.875rem"
           onClose={() => {}}
           className="h-[calc(100vh-4rem)] min-h-[600px]"
         >
           <PatternNotesVisibilityContext.Provider value={notesVisible}>
-            <Tabs
+            <PanelTabs
               value={inventoryTab}
               onValueChange={handleInventoryTabChange}
-              className="flex h-full min-h-0 flex-col"
+              className="h-full"
             >
-              <div className="flex shrink-0 items-center gap-2 border-b border-border-subtle px-3.5 py-3">
-                <ScrollableTabsList
-                  className={cn(TAB_LIST_CLASS, 'min-w-0 flex-1')}
-                  scrollButtonClassName="size-6 hover:bg-surface-overlay"
-                >
-                  <TabsTrigger
-                    value="components"
-                    className={TAB_TRIGGER_CLASS}
-                    id="ui-inventory-tab-components"
-                  >
-                    Components
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="layout"
-                    className={TAB_TRIGGER_CLASS}
-                    id="ui-inventory-tab-layout"
-                  >
-                    Layout
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="states"
-                    className={TAB_TRIGGER_CLASS}
-                    id="ui-inventory-tab-states"
-                  >
-                    States
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="actions"
-                    className={TAB_TRIGGER_CLASS}
-                    id="ui-inventory-tab-actions"
-                  >
-                    Actions
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="composition"
-                    className={TAB_TRIGGER_CLASS}
-                    id="ui-inventory-tab-composition"
-                  >
-                    Composition
-                  </TabsTrigger>
-                </ScrollableTabsList>
-                <Button
-                  variant="ghost"
-                  size="4xs"
-                  icon
-                  onClick={() => setNotesVisible((visible) => !visible)}
-                  aria-label={notesVisible ? 'Hide notes' : 'Show notes'}
-                  title={notesVisible ? 'Hide notes' : 'Show notes'}
-                  className="shrink-0 text-foreground-subtle hover:bg-surface-overlay hover:text-foreground"
-                >
-                  {notesVisible ? <EyeOff size={13} /> : <Eye size={13} />}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="4xs"
-                  icon
-                  onClick={toggleAllSections}
-                  aria-label={allSectionsExpanded ? 'Collapse all sections' : 'Expand all sections'}
-                  title={allSectionsExpanded ? 'Collapse all sections' : 'Expand all sections'}
-                  className="shrink-0 text-foreground-subtle hover:bg-surface-overlay hover:text-foreground"
-                >
-                  <ChevronsUpDown size={13} />
-                </Button>
-              </div>
+              <PanelTabsList
+                trailing={
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="4xs"
+                      icon
+                      onClick={() => setNotesVisible((visible) => !visible)}
+                      aria-label={notesVisible ? 'Hide notes' : 'Show notes'}
+                      title={notesVisible ? 'Hide notes' : 'Show notes'}
+                      className="shrink-0 text-foreground-subtle hover:bg-surface-overlay hover:text-foreground"
+                    >
+                      {notesVisible ? <EyeOff size={13} /> : <Eye size={13} />}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="4xs"
+                      icon
+                      onClick={toggleAllSections}
+                      aria-label={
+                        allSectionsExpanded ? 'Collapse all sections' : 'Expand all sections'
+                      }
+                      title={allSectionsExpanded ? 'Collapse all sections' : 'Expand all sections'}
+                      className="shrink-0 text-foreground-subtle hover:bg-surface-overlay hover:text-foreground"
+                    >
+                      <ChevronsUpDown size={13} />
+                    </Button>
+                  </>
+                }
+              >
+                <PanelTabsTrigger value="components" id="ui-inventory-tab-components">
+                  Components
+                </PanelTabsTrigger>
+                <PanelTabsTrigger value="layout" id="ui-inventory-tab-layout">
+                  Layout
+                </PanelTabsTrigger>
+                <PanelTabsTrigger value="states" id="ui-inventory-tab-states">
+                  States
+                </PanelTabsTrigger>
+                <PanelTabsTrigger value="actions" id="ui-inventory-tab-actions">
+                  Actions
+                </PanelTabsTrigger>
+                <PanelTabsTrigger value="composition" id="ui-inventory-tab-composition">
+                  Composition
+                </PanelTabsTrigger>
+              </PanelTabsList>
 
-              <TabsContent value="components" className="mt-0 min-h-0 flex-1 overflow-y-auto">
-                <div id="ui-inventory-components-inputs" className="grid gap-4 px-3.5 py-5">
+              <PanelTabsContent value="components" padded={false}>
+                <div
+                  id="ui-inventory-components-inputs"
+                  className="grid gap-4 px-(--mf-content-inset) pt-1.5 pb-5"
+                >
                   <PatternNote eyebrow="Component" title="Inputs" linkTarget="components/inputs">
                     Default, compact, disabled, and inline-validation variants used by Flow
                     Workbench forms.
                   </PatternNote>
+                  <InventoryFields id="ui-inventory-inputs" fields={INVENTORY_INPUT_FIELDS} />
+                  {/* Not expressible in a MetadataForm schema yet (no field size, and errors
+                      only show after the user edits), so these stay bare controls. */}
                   <div className="grid gap-2">
-                    <Label htmlFor="ui-inventory-input-default" className="text-xs">
-                      Default
-                    </Label>
-                    <Input id="ui-inventory-input-default" placeholder="Enter a value" />
                     <Input id="ui-inventory-input-compact" size="xs" defaultValue="Compact value" />
-                    <Input id="ui-inventory-input-disabled" disabled placeholder="Disabled value" />
                     <Input
                       id="ui-inventory-input-error"
                       defaultValue="Invalid value"
@@ -4066,7 +3370,7 @@ function PanelUIInventoryStory() {
 
                 <div
                   id="ui-inventory-components-quick-form-field"
-                  className="grid gap-4 border-t border-border-subtle px-3.5 py-5"
+                  className="grid gap-4 border-t border-border-subtle px-(--mf-content-inset) py-5"
                 >
                   <PatternNote
                     eyebrow="Component"
@@ -4102,7 +3406,7 @@ function PanelUIInventoryStory() {
 
                 <div
                   id="ui-inventory-components-combobox"
-                  className="grid gap-4 border-t border-border-subtle px-3.5 py-5"
+                  className="grid gap-4 border-t border-border-subtle px-(--mf-content-inset) py-5"
                 >
                   <PatternNote
                     eyebrow="Component"
@@ -4128,7 +3432,7 @@ function PanelUIInventoryStory() {
 
                 <div
                   id="ui-inventory-components-select"
-                  className="grid gap-4 border-t border-border-subtle px-3.5 py-5"
+                  className="grid gap-4 border-t border-border-subtle px-(--mf-content-inset) py-5"
                 >
                   <PatternNote
                     eyebrow="Component"
@@ -4138,35 +3442,12 @@ function PanelUIInventoryStory() {
                     Use Select for a short fixed list and Multi-Select when users can choose several
                     values.
                   </PatternNote>
-                  <div className="grid gap-3">
-                    <Select defaultValue="standard">
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select an execution mode" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="standard">Standard</SelectItem>
-                        <SelectItem value="priority">Priority</SelectItem>
-                        <SelectItem value="background">Background</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <MultiSelect
-                      options={[
-                        { label: 'React', value: 'react' },
-                        { label: 'Vue', value: 'vue' },
-                        { label: 'Angular', value: 'angular' },
-                        { label: 'Svelte', value: 'svelte' },
-                      ]}
-                      selected={componentsSelectedFrameworks}
-                      onChange={setComponentsSelectedFrameworks}
-                      placeholder="Select frameworks"
-                      className="w-full"
-                    />
-                  </div>
+                  <InventoryFields id="ui-inventory-select" fields={INVENTORY_SELECT_FIELDS} />
                 </div>
 
                 <div
                   id="ui-inventory-components-file-upload"
-                  className="grid gap-4 border-t border-border-subtle px-3.5 py-5"
+                  className="grid gap-4 border-t border-border-subtle px-(--mf-content-inset) py-5"
                 >
                   <PatternNote
                     eyebrow="Component"
@@ -4176,12 +3457,12 @@ function PanelUIInventoryStory() {
                     Support single and multiple files, accepted file types, previews, disabled
                     state, and per-file validation feedback.
                   </PatternNote>
-                  <FileUpload onFilesChange={setComponentsFiles} multiple showPreview />
+                  <InventoryFields id="ui-inventory-file-upload" fields={INVENTORY_FILE_FIELDS} />
                 </div>
 
                 <div
                   id="ui-inventory-components-date-pickers"
-                  className="grid gap-4 border-t border-border-subtle px-3.5 py-5"
+                  className="grid gap-4 border-t border-border-subtle px-(--mf-content-inset) py-5"
                 >
                   <PatternNote
                     eyebrow="Component"
@@ -4191,26 +3472,12 @@ function PanelUIInventoryStory() {
                     Use date selection for deadlines and schedules, and date-time selection when
                     execution time is part of the configuration.
                   </PatternNote>
-                  <div className="grid gap-3">
-                    <DatePicker
-                      value={componentsSelectedDate}
-                      onValueChange={setComponentsSelectedDate}
-                    />
-                    <DateTimePicker
-                      value={componentsSelectedDateTime}
-                      onValueChange={setComponentsSelectedDateTime}
-                    />
-                    <DatePicker
-                      value={componentsSelectedDate}
-                      onValueChange={setComponentsSelectedDate}
-                      disabled
-                    />
-                  </div>
+                  <InventoryFields id="ui-inventory-dates" fields={INVENTORY_DATE_FIELDS} />
                 </div>
 
                 <div
                   id="ui-inventory-components-textarea"
-                  className="grid gap-4 border-t border-border-subtle px-3.5 py-5"
+                  className="grid gap-4 border-t border-border-subtle px-(--mf-content-inset) py-5"
                 >
                   <PatternNote
                     eyebrow="Component"
@@ -4220,12 +3487,12 @@ function PanelUIInventoryStory() {
                     Use multiline fields for prompts, instructions, scripts, and other longer
                     free-form values.
                   </PatternNote>
-                  <Textarea defaultValue="Overall extraction instructions..." rows={3} />
+                  <InventoryFields id="ui-inventory-textarea" fields={INVENTORY_TEXTAREA_FIELDS} />
                 </div>
 
                 <div
                   id="ui-inventory-components-switch"
-                  className="grid gap-4 border-t border-border-subtle px-3.5 py-5"
+                  className="grid gap-4 border-t border-border-subtle px-(--mf-content-inset) py-5"
                 >
                   <PatternNote
                     eyebrow="Component"
@@ -4235,48 +3502,22 @@ function PanelUIInventoryStory() {
                     Use switches for settings that take effect immediately or represent an on/off
                     configuration.
                   </PatternNote>
-                  <div className="grid gap-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="ui-inventory-switch-enabled" className="text-xs">
-                        Enable automatic retry
-                      </Label>
-                      <Switch id="ui-inventory-switch-enabled" size="sm" defaultChecked />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="ui-inventory-switch-disabled" className="text-xs">
-                        Disabled setting
-                      </Label>
-                      <Switch id="ui-inventory-switch-disabled" size="sm" disabled />
-                    </div>
-                  </div>
+                  <InventoryFields id="ui-inventory-switch" fields={INVENTORY_SWITCH_FIELDS} />
                 </div>
 
                 <div
                   id="ui-inventory-components-radio"
-                  className="grid gap-4 border-t border-border-subtle px-3.5 py-5"
+                  className="grid gap-4 border-t border-border-subtle px-(--mf-content-inset) py-5"
                 >
                   <PatternNote eyebrow="Component" title="Radio" linkTarget="components/radio">
                     Use radio groups when the user must choose exactly one visible option.
                   </PatternNote>
-                  <RadioGroup defaultValue="automatic" className="grid gap-2">
-                    <div className="flex items-center gap-2">
-                      <RadioGroupItem value="automatic" id="ui-inventory-radio-automatic" />
-                      <Label htmlFor="ui-inventory-radio-automatic" className="text-xs">
-                        Automatic
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <RadioGroupItem value="manual" id="ui-inventory-radio-manual" />
-                      <Label htmlFor="ui-inventory-radio-manual" className="text-xs">
-                        Manual
-                      </Label>
-                    </div>
-                  </RadioGroup>
+                  <InventoryFields id="ui-inventory-radio" fields={INVENTORY_RADIO_FIELDS} />
                 </div>
 
                 <div
                   id="ui-inventory-components-checkbox"
-                  className="grid gap-4 border-t border-border-subtle px-3.5 py-5"
+                  className="grid gap-4 border-t border-border-subtle px-(--mf-content-inset) py-5"
                 >
                   <PatternNote
                     eyebrow="Component"
@@ -4285,25 +3526,12 @@ function PanelUIInventoryStory() {
                   >
                     Use checkboxes for independent settings and opt-in behavior.
                   </PatternNote>
-                  <div className="grid gap-2">
-                    <div className="flex items-center gap-2">
-                      <Checkbox id="ui-inventory-checkbox-enabled" defaultChecked />
-                      <Label htmlFor="ui-inventory-checkbox-enabled" className="text-xs">
-                        Enabled
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Checkbox id="ui-inventory-checkbox-disabled" disabled />
-                      <Label htmlFor="ui-inventory-checkbox-disabled" className="text-xs">
-                        Disabled
-                      </Label>
-                    </div>
-                  </div>
+                  <InventoryFields id="ui-inventory-checkbox" fields={INVENTORY_CHECKBOX_FIELDS} />
                 </div>
 
                 <div
                   id="ui-inventory-components-buttons"
-                  className="grid gap-4 border-t border-border-subtle px-3.5 py-5"
+                  className="grid gap-4 border-t border-border-subtle px-(--mf-content-inset) py-5"
                 >
                   <PatternNote
                     eyebrow="Component"
@@ -4335,7 +3563,7 @@ function PanelUIInventoryStory() {
 
                 <div
                   id="ui-inventory-components-code-editor"
-                  className="grid gap-4 border-t border-border-subtle px-3.5 py-5"
+                  className="grid gap-4 border-t border-border-subtle px-(--mf-content-inset) py-5"
                 >
                   <PatternNote
                     eyebrow="Component"
@@ -4368,10 +3596,13 @@ function PanelUIInventoryStory() {
                     />
                   </div>
                 </div>
-              </TabsContent>
+              </PanelTabsContent>
 
-              <TabsContent value="layout" className="mt-0 min-h-0 flex-1 overflow-y-auto">
-                <div id="ui-inventory-layout-panel-anatomy" className="grid gap-4 px-3.5 py-5">
+              <PanelTabsContent value="layout" padded={false}>
+                <div
+                  id="ui-inventory-layout-panel-anatomy"
+                  className="grid gap-4 px-(--mf-content-inset) pt-1.5 pb-5"
+                >
                   <PatternNote title="Panel anatomy" linkTarget="layout/panel-anatomy">
                     Use a title bar, identity row, navigation tabs, scrollable content, and an
                     optional footer. Keep the primary action close to the node identity.
@@ -4379,7 +3610,7 @@ function PanelUIInventoryStory() {
                 </div>
                 <div
                   id="ui-inventory-layout-flat-content"
-                  className="grid gap-4 border-t border-border-subtle px-3.5 py-5"
+                  className="grid gap-4 border-t border-border-subtle px-(--mf-content-inset) py-5"
                 >
                   <PatternNote title="Flat content" linkTarget="layout/flat-content">
                     A simple, always-visible layout for short configurations that do not need
@@ -4416,7 +3647,7 @@ function PanelUIInventoryStory() {
                 </div>
                 <div
                   id="ui-inventory-layout-expandable-sections"
-                  className="border-t border-border-subtle px-3.5 has-[aside]:pt-5"
+                  className="border-t border-border-subtle px-(--mf-content-inset) has-[aside]:pt-5"
                 >
                   <PatternNote title="Expandable sections" linkTarget="layout/expandable-sections">
                     Full-width sections that reveal or hide related fields without adding nested
@@ -4431,7 +3662,7 @@ function PanelUIInventoryStory() {
                   <AccordionItem
                     value="text-fields"
                     id="ui-inventory-layout-text-fields"
-                    className="border-border-subtle px-3.5"
+                    className="border-border-subtle px-(--mf-content-inset)"
                   >
                     <AccordionTrigger className="group py-4 text-sm hover:no-underline">
                       <span className="text-foreground transition-colors group-hover:text-foreground-muted">
@@ -4460,7 +3691,7 @@ function PanelUIInventoryStory() {
                   <AccordionItem
                     value="choices"
                     id="ui-inventory-layout-choices"
-                    className="border-border-subtle px-3.5"
+                    className="border-border-subtle px-(--mf-content-inset)"
                   >
                     <AccordionTrigger className="group py-4 text-sm hover:no-underline">
                       <span className="text-foreground transition-colors group-hover:text-foreground-muted">
@@ -4528,7 +3759,7 @@ function PanelUIInventoryStory() {
                   <AccordionItem
                     value="advanced"
                     id="ui-inventory-layout-advanced"
-                    className="border-border-subtle px-3.5"
+                    className="border-border-subtle px-(--mf-content-inset)"
                   >
                     <AccordionTrigger className="group py-4 text-sm hover:no-underline">
                       <span className="text-foreground transition-colors group-hover:text-foreground-muted">
@@ -4544,7 +3775,7 @@ function PanelUIInventoryStory() {
                 </Accordion>
                 <div
                   id="ui-inventory-layout-sub-containers"
-                  className="grid gap-3 border-t border-border-subtle px-3.5 py-5"
+                  className="grid gap-3 border-t border-border-subtle px-(--mf-content-inset) py-5"
                 >
                   <PatternNote title="Sub-containers" linkTarget="layout/sub-containers">
                     Dense, collapsible cards for related configuration when stronger visual grouping
@@ -4555,9 +3786,13 @@ function PanelUIInventoryStory() {
                     onExpandedSectionsChange={setExpandedSubContainerSections}
                   />
                 </div>
-              </TabsContent>
+              </PanelTabsContent>
 
-              <TabsContent value="states" className="mt-0 min-h-0 flex-1 overflow-y-auto p-3.5">
+              <PanelTabsContent
+                value="states"
+                padded={false}
+                className="px-(--mf-content-inset) pt-1.5 pb-4"
+              >
                 <div className="grid gap-5">
                   <section id="ui-inventory-states-section-messages" className="grid gap-3">
                     <PatternNote
@@ -4602,22 +3837,17 @@ function PanelUIInventoryStory() {
                       Error counts on tabs reveal where unresolved issues live, including problems
                       in sections that are not currently visible.
                     </PatternNote>
-                    <Tabs defaultValue="parameters">
-                      <ScrollableTabsList
-                        className={cn(TAB_LIST_CLASS, 'w-full')}
-                        scrollButtonClassName="size-6 hover:bg-surface-overlay"
-                      >
-                        <TabsTrigger value="parameters" className={TAB_TRIGGER_CLASS}>
+                    <PanelTabs defaultValue="parameters">
+                      <PanelTabsStrip>
+                        <PanelTabsTrigger value="parameters">
                           <TabLabelWithError label="Parameters" count={1} />
-                        </TabsTrigger>
-                        <TabsTrigger value="error-handling" className={TAB_TRIGGER_CLASS}>
+                        </PanelTabsTrigger>
+                        <PanelTabsTrigger value="error-handling">
                           <TabLabelWithError label="Error handling" count={2} />
-                        </TabsTrigger>
-                        <TabsTrigger value="advanced" className={TAB_TRIGGER_CLASS}>
-                          Advanced
-                        </TabsTrigger>
-                      </ScrollableTabsList>
-                    </Tabs>
+                        </PanelTabsTrigger>
+                        <PanelTabsTrigger value="advanced">Advanced</PanelTabsTrigger>
+                      </PanelTabsStrip>
+                    </PanelTabs>
                   </section>
 
                   <section
@@ -4761,9 +3991,13 @@ function PanelUIInventoryStory() {
                     </div>
                   </section>
                 </div>
-              </TabsContent>
+              </PanelTabsContent>
 
-              <TabsContent value="actions" className="mt-0 min-h-0 flex-1 overflow-y-auto p-3.5">
+              <PanelTabsContent
+                value="actions"
+                padded={false}
+                className="px-(--mf-content-inset) pt-1.5 pb-4"
+              >
                 <div className="grid gap-5">
                   <section id="ui-inventory-actions-button-hierarchy" className="grid gap-3">
                     <PatternNote
@@ -4904,11 +4138,12 @@ function PanelUIInventoryStory() {
                     </div>
                   </section>
                 </div>
-              </TabsContent>
+              </PanelTabsContent>
 
-              <TabsContent
+              <PanelTabsContent
                 value="composition"
-                className="mt-0 min-h-0 flex-1 overflow-y-auto p-3.5"
+                padded={false}
+                className="px-(--mf-content-inset) pt-1.5 pb-4"
               >
                 <div className="grid gap-5">
                   <section id="ui-inventory-composition-repeatable-list" className="grid gap-3">
@@ -5113,8 +4348,8 @@ function PanelUIInventoryStory() {
                     </div>
                   </section>
                 </div>
-              </TabsContent>
-            </Tabs>
+              </PanelTabsContent>
+            </PanelTabs>
           </PatternNotesVisibilityContext.Provider>
         </NodePropertyPanel>
       </PanelFrame>
@@ -5124,7 +4359,7 @@ function PanelUIInventoryStory() {
 }
 
 export const InputOutput: IOStory = {
-  name: 'Input / Output 3 Column',
+  name: '3 Column',
   args: {
     showExtractionTab: true,
     readOnly: false,
@@ -5211,28 +4446,22 @@ function CompactResponsivePanelStory() {
       nodeLabel="Fetch invoice details"
       nodeCategory="HTTP Request"
       action={<RunButtonIconOnly />}
-      contentInset="0.875rem"
       onClose={() => {}}
       className="h-[480px]"
     >
-      <Tabs
+      <PanelTabs
         value={activeStepId}
         onValueChange={setActiveStepId}
-        className="flex h-full min-h-0 flex-col"
+        className="h-full"
         style={SURFACE_REMAP}
       >
-        <div className="shrink-0 pt-3 [padding-inline:0.875rem]">
-          <ScrollableTabsList
-            className={TAB_LIST_CLASS}
-            scrollButtonClassName="size-6 hover:bg-surface-overlay"
-          >
-            {steps.map((step) => (
-              <TabsTrigger key={step.id} value={step.id} className={TAB_TRIGGER_CLASS}>
-                {step.title}
-              </TabsTrigger>
-            ))}
-          </ScrollableTabsList>
-        </div>
+        <PanelTabsList>
+          {steps.map((step) => (
+            <PanelTabsTrigger key={step.id} value={step.id}>
+              {step.title}
+            </PanelTabsTrigger>
+          ))}
+        </PanelTabsList>
         {steps.map((step) => {
           const flatSchema: FormSchema = {
             id: httpRequestForm.id,
@@ -5243,19 +4472,12 @@ function CompactResponsivePanelStory() {
           };
 
           return (
-            <TabsContent
-              key={step.id}
-              value={step.id}
-              className="mt-0 min-h-0 flex-1 overflow-y-auto"
-            >
-              <MetadataForm
-                schema={flatSchema}
-                className="flex flex-col gap-4 pb-6 pt-3 [padding-inline:0.875rem]"
-              />
-            </TabsContent>
+            <PanelTabsContent key={step.id} value={step.id} innerClassName="flex flex-col gap-4">
+              <MetadataForm schema={flatSchema} />
+            </PanelTabsContent>
           );
         })}
-      </Tabs>
+      </PanelTabs>
     </NodePropertyPanel>
   );
 }
@@ -5273,7 +4495,6 @@ function ResponsiveStory() {
             nodeCategory="HTTP Request"
             action={<RunButton />}
             schema={httpRequestForm}
-            contentInset="0.875rem"
             onClose={() => {}}
             className="h-[640px]"
           />
@@ -5477,7 +4698,7 @@ function useFileNodeActions(): {
 
 function FilePreviewBanner({ file, onClose }: { file: PreviewedFile; onClose: () => void }) {
   return (
-    <div className="mb-2 flex shrink-0 items-center gap-2 rounded-lg border border-info/40 bg-info/10 px-2.5 py-1.5 text-xs">
+    <div className="flex shrink-0 items-center gap-2 rounded-lg border border-info/40 bg-info/10 px-2.5 py-1.5 text-xs">
       <Eye size={13} className="shrink-0 text-info" />
       <span className="min-w-0 flex-1 truncate">
         Previewing <span className="font-mono text-foreground">{file.FullName}</span>
@@ -5824,7 +5045,7 @@ const PROPERTIES_FORM: FormSchema = {
 
 function ExtractionTable({ fields }: { fields: ExtractionField[] }) {
   return (
-    <div className="h-full overflow-auto px-(--mf-content-inset,0.875rem) py-2">
+    <div className="h-full overflow-auto px-(--mf-content-inset,1rem) py-2">
       <table className="w-full border-collapse text-xs">
         <thead>
           <tr className="text-left text-foreground-subtle">
@@ -5887,10 +5108,11 @@ function InputPanel({
   return (
     <IOPanelFill>
       <NodePropertyPanel panelTitle="Input" onClose={() => {}} className="h-full">
-        <div className="flex h-full flex-col p-6 pt-4">
-          {preview && <FilePreviewBanner file={preview} onClose={clearPreview} />}
+        <div className="flex h-full flex-col">
           <NodeIOView
             className="min-h-0 flex-1"
+            inset
+            beforeContent={preview && <FilePreviewBanner file={preview} onClose={clearPreview} />}
             schema={schema}
             value={value}
             onValueChange={setValue}
@@ -5920,7 +5142,6 @@ function PropertiesPanel() {
         nodeIcon={<ScanText />}
         nodeLabel="Extract invoice fields"
         nodeCategory={NODE_LABEL}
-        contentInset="1.5rem"
         className="h-full"
         schema={PROPERTIES_FORM}
       />
@@ -5956,14 +5177,14 @@ function OutputPanel({
   return (
     <IOPanelFill>
       <NodePropertyPanel panelTitle="Output" onClose={() => {}} className="h-full">
-        <div className="flex h-full flex-col p-6 pt-4">
-          {preview && <FilePreviewBanner file={preview} onClose={clearPreview} />}
+        <div className="flex h-full flex-col">
           <NodeIOView
             className="min-h-0 flex-1"
-            title={NODE_LABEL}
-            titleIcon={<ScanText />}
-            titleBadge={NODE_ID}
-            titleTrailing={
+            inset
+            beforeContent={preview && <FilePreviewBanner file={preview} onClose={clearPreview} />}
+            // The tree's first row already names the node, so the mode select
+            // sits at the end of the toolbar instead of in a title bar.
+            toolbarTrailing={
               <NodeOutputModeSelect
                 value={mode}
                 onChange={(m) => setMode(m as (typeof APOLLO_MODES)[number])}

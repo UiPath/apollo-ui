@@ -9,7 +9,12 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
-import { ScrollableTabsList, Tabs, TabsContent, TabsTrigger } from '@/components/ui/tabs';
+import {
+  PanelTabs,
+  PanelTabsContent,
+  PanelTabsList,
+  PanelTabsTrigger,
+} from '@/components/ui/panel-tabs';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { deepEqual, get } from '@/lib';
 
@@ -761,93 +766,69 @@ function TabbedStepForm({
 
   return (
     <>
-      <Tabs
-        value={currentTab}
-        onValueChange={selectTab}
-        className="flex min-h-0 flex-1 flex-col gap-1"
-      >
-        {/* Pinned tab bar: shrink-0 keeps it under the panel header while the
-            active tab's content scrolls below. The wrapper supplies the
-            horizontal inset (matching the content) so the tab strip lines up
-            with the fields; px-0 on the list keeps the first pill flush to it.
-            Segmented pill tabs (properties-panel style): in a narrow panel
-            ScrollableTabsList reveals prev/next chevrons and auto-scrolls the
-            active tab into view; in a wide panel it reads as a plain strip. */}
-        <div className="shrink-0 pt-3 [padding-inline:var(--mf-content-inset,0px)]">
-          <ScrollableTabsList
-            className="h-auto justify-start gap-0.5 rounded-lg bg-transparent px-0 py-0.5 text-muted-foreground"
-            scrollButtonClassName="size-6 hover:bg-surface-overlay"
-          >
-            {visibleSteps.map((step) => {
-              const errorCount = errorCountByStepId[step.id] ?? 0;
-              return (
-                <TabsTrigger
-                  key={step.id}
-                  value={step.id}
-                  className="inline-flex h-6 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-2.5 text-xs font-medium text-muted-foreground shadow-none transition-colors hover:text-foreground data-[state=active]:bg-surface-overlay data-[state=active]:text-foreground data-[state=active]:shadow-sm"
-                >
-                  {step.title}
-                  {errorCount > 0 && (
-                    <span
-                      role="img"
-                      aria-label={`${errorCount} ${errorCount === 1 ? 'issue' : 'issues'}`}
-                      title={`${errorCount} ${errorCount === 1 ? 'issue' : 'issues'}`}
-                      className="grid h-4 min-w-4 place-items-center rounded-full bg-error px-1 text-[10px] font-semibold leading-none text-error-background"
-                    >
-                      {errorCount}
-                    </span>
-                  )}
-                </TabsTrigger>
-              );
-            })}
-          </ScrollableTabsList>
-        </div>
+      {/* The panel tab shell (PanelTabs) owns the pinned tab row, the content
+          inset, and the 12px gap under the tabs, so hand-built panels line up. */}
+      <PanelTabs value={currentTab} onValueChange={selectTab}>
+        <PanelTabsList>
+          {visibleSteps.map((step) => {
+            const errorCount = errorCountByStepId[step.id] ?? 0;
+            return (
+              <PanelTabsTrigger key={step.id} value={step.id}>
+                {step.title}
+                {errorCount > 0 && (
+                  <span
+                    role="img"
+                    aria-label={`${errorCount} ${errorCount === 1 ? 'issue' : 'issues'}`}
+                    title={`${errorCount} ${errorCount === 1 ? 'issue' : 'issues'}`}
+                    className="grid h-4 min-w-4 place-items-center rounded-full bg-error px-1 text-[10px] font-semibold leading-none text-error-background"
+                  >
+                    {errorCount}
+                  </span>
+                )}
+              </PanelTabsTrigger>
+            );
+          })}
+        </PanelTabsList>
 
         {visibleSteps.map((step) => {
           const stepSections = step.sections.filter(
             (section) => !section.conditions || context.evaluateConditions(section.conditions)
           );
+          const showEmptyState = stepSections.length === 0 && step.emptyState !== undefined;
+          // Plain sections self-space and pad themselves: the first trims its
+          // leading padding (`afterTabs`) to the shell's 6px. Card boxes have none,
+          // so they take the shell's standard padding. A step with no visible
+          // sections renders its `emptyState`.
+          const selfPadded = !showEmptyState && sectionVariant === 'plain';
+          const sections = stepSections.map((section, index) => (
+            <FormSection
+              key={section.id}
+              section={section}
+              context={context}
+              customComponents={customComponents}
+              disabled={disabled}
+              sectionVariant={sectionVariant}
+              afterTabs={index === 0}
+            />
+          ));
           return (
-            // The active tab is the scroll container so the tab bar above stays
-            // pinned and the scrollbar sits at the panel edge; the inner wrapper
-            // carries the content inset + bottom padding. Plain drops space-y-2
-            // (sections self-space) and gets its leading whitespace from the first
-            // section's own py-4/pt-4; card boxes have none, so the wrapper adds a
-            // matching pt-4 to keep the first card off the tab strip by the same
-            // amount. A step with no visible sections renders its `emptyState`.
-            <TabsContent
+            <PanelTabsContent
               key={step.id}
               value={step.id}
-              className="mt-0 min-h-0 flex-1 overflow-auto"
+              padded={!selfPadded}
+              innerClassName={showEmptyState ? 'text-sm text-muted-foreground' : 'space-y-2'}
             >
-              {stepSections.length === 0 && step.emptyState !== undefined ? (
-                <div className="pt-4 text-sm text-muted-foreground [padding-inline:var(--mf-content-inset,0px)]">
-                  {step.emptyState}
-                </div>
+              {showEmptyState ? (
+                step.emptyState
+              ) : selfPadded ? (
+                <div className="pb-6 [padding-inline:var(--mf-content-inset,0px)]">{sections}</div>
               ) : (
-                <div
-                  className={
-                    sectionVariant === 'plain'
-                      ? 'pb-6 [padding-inline:var(--mf-content-inset,0px)]'
-                      : 'space-y-2 pb-6 pt-4 [padding-inline:var(--mf-content-inset,0px)]'
-                  }
-                >
-                  {stepSections.map((section) => (
-                    <FormSection
-                      key={section.id}
-                      section={section}
-                      context={context}
-                      customComponents={customComponents}
-                      disabled={disabled}
-                      sectionVariant={sectionVariant}
-                    />
-                  ))}
-                </div>
+                sections
               )}
-            </TabsContent>
+            </PanelTabsContent>
           );
         })}
-      </Tabs>
+      </PanelTabs>
       <FormActions schema={schema} context={context} onReset={onReset} onSubmit={onSubmit} />
     </>
   );
@@ -859,6 +840,13 @@ interface FormSectionProps {
   customComponents: CustomComponents;
   disabled?: boolean;
   sectionVariant?: 'card' | 'plain';
+  /**
+   * First section of a tab, directly under the tab strip. A plain section then
+   * trims its leading padding (pt-1.5 instead of 16px) so its content sits 12px
+   * below the tabs, the same gap the tree panels use; the strip's own padding and
+   * the tabs' gap make up the rest.
+   */
+  afterTabs?: boolean;
 }
 
 const FormSection = React.memo(function FormSection({
@@ -867,6 +855,7 @@ const FormSection = React.memo(function FormSection({
   customComponents,
   disabled,
   sectionVariant = 'card',
+  afterTabs = false,
 }: FormSectionProps) {
   const gridColumns = context.schema.layout?.columns || 1;
   const gap = context.schema.layout?.gap || 4;
@@ -891,8 +880,10 @@ const FormSection = React.memo(function FormSection({
   // absent. The chevron stays on the trailing edge (AccordionTrigger's own
   // `justify-between`) so it lands in the same place in every expandable
   // section, card or plain.
+  // Leading padding of a plain section's first line (header or bare fields).
+  const plainTopClassName = afterTabs ? 'pt-1.5' : 'pt-4';
   const triggerClassName = isPlain
-    ? 'py-4 text-sm font-semibold hover:no-underline'
+    ? `${plainTopClassName} pb-4 text-sm font-semibold hover:no-underline`
     : 'text-sm font-medium';
 
   const fieldsGrid = (
@@ -922,11 +913,11 @@ const FormSection = React.memo(function FormSection({
   // adds the header-aligned pt-4/pb-4 and the between-sections divider so a
   // titleless section lines up with where a section header would sit. Any
   // tab-specific top inset for the card variant is supplied by the
-  // TabbedStepForm content wrapper's pt-4, not here, so it can't leak into
+  // TabbedStepForm content wrapper's pt-1.5, not here, so it can't leak into
   // non-tabbed layouts.
   if (!section.title) {
     return isPlain ? (
-      <div className={`${dividerClassName} pb-4 pt-4`}>{fieldsGrid}</div>
+      <div className={`${dividerClassName} pb-4 ${plainTopClassName}`}>{fieldsGrid}</div>
     ) : (
       fieldsGrid
     );
@@ -970,7 +961,7 @@ const FormSection = React.memo(function FormSection({
         <div
           className={
             isPlain
-              ? 'flex flex-1 items-center justify-start gap-2 py-4 text-sm font-semibold'
+              ? `flex flex-1 items-center justify-start gap-2 pb-4 text-sm font-semibold ${plainTopClassName}`
               : 'flex flex-1 items-center justify-between py-4 text-sm font-medium'
           }
         >

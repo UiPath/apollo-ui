@@ -46,6 +46,10 @@ export function NodeKey({ node, label, displayPath, onCopyPath, className }: Nod
       delay
       content={
         <div className="flex max-w-60 flex-col gap-1">
+          {/* A display label can truncate in the row; the tooltip names it in full. */}
+          {label != null && label !== node.key && (
+            <span className="text-xs font-semibold leading-4">{label}</span>
+          )}
           <span className="break-all font-mono text-xs font-semibold leading-4">
             {copyPathText}
           </span>

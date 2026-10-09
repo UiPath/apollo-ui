@@ -94,6 +94,16 @@ describe('NodeIOView', () => {
     expect(screen.queryByText('currency')).not.toBeInTheDocument();
   });
 
+  it('collapses a container named constructor on the first click', async () => {
+    render(<NodeIOView value={{ constructor: { name: 'x' } }} />);
+    expect(screen.getByText('name')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Collapse constructor' }));
+
+    expect(screen.queryByText('name')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Expand all' })).toBeInTheDocument();
+  });
+
   it('copies the path when the field name is clicked', async () => {
     const onCopy = vi.fn();
     render(<NodeIOView schema={SCHEMA} value={VALUE} onCopy={onCopy} />);
@@ -872,5 +882,21 @@ describe('NodeIOView', () => {
     expect(moreActions).toHaveClass('opacity-100');
     expect(screen.getByRole('menuitem', { name: 'Action 1' })).toBeInTheDocument();
     expect(screen.getByRole('menuitem', { name: 'Action 4' })).toBeInTheDocument();
+  });
+
+  it('pads itself by the host panel inset only when asked', () => {
+    const { container, rerender } = render(<NodeIOView value={{ a: 1 }} />);
+    expect(container.firstElementChild).not.toHaveClass('p-(--mf-content-inset,1rem)');
+
+    rerender(<NodeIOView value={{ a: 1 }} inset />);
+    expect(container.firstElementChild).toHaveClass('p-(--mf-content-inset,1rem)');
+  });
+
+  it('keeps the toolbar trailing slot after the tree controls', () => {
+    render(<NodeIOView value={{ a: { b: 1 } }} toolbarTrailing={<span>Live</span>} />);
+
+    const live = screen.getByText('Live');
+    expect(live.parentElement?.lastElementChild).toBe(live);
+    expect(screen.getByRole('button', { name: 'Collapse all' })).toBeInTheDocument();
   });
 });

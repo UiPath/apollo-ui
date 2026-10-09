@@ -3,7 +3,7 @@ import { RequiredIndicator } from '@/components/ui/label';
 import { ChevronDown, CircleCheck, Copy, Pencil, WrapText } from 'lucide-react';
 import { createContext, type MouseEvent, type ReactNode, useContext } from 'react';
 import { useJsonTreeViewStrings } from './strings';
-import { formatLeafValue, isArrayItemTemplateRoot } from './buildJsonTree';
+import { formatLeafValue, isArrayItemTemplateRoot, isPathCollapsed } from './buildJsonTree';
 import { DecorationChip } from './DecorationChip';
 import { JsonContainerEditor } from './JsonContainerEditor';
 import { JsonMultilineLeafEditor } from './JsonMultilineLeafEditor';
@@ -29,7 +29,7 @@ import { ScalarValueCell, valueColorClass } from './ScalarValueCell';
 // occupy layout (at opacity-0) in the view state but are unmounted while
 // editing, which would otherwise let the row collapse to the badge height.
 const ROW_CLASS =
-  'group flex min-h-7 cursor-default items-center gap-1.5 py-1 pr-1 transition hover:bg-surface-overlay';
+  'group flex min-h-7 cursor-default items-center gap-2 py-1 pr-1 transition hover:bg-surface-overlay';
 /** `min-h-7` above (1.75rem) in px at the default root size: the virtualizer's estimate
  *  until each row is measured, so a different root size costs accuracy but not correctness. */
 export const ROW_MIN_HEIGHT_PX = 28;
@@ -41,7 +41,7 @@ const VALUE_CELL_CLASS = 'flex min-w-8 flex-1 items-center';
 // Rows have no right padding of their own: the trailing icon buttons carry
 // enough internal padding to keep their glyphs off the edge.
 function rowIndent(depth: number, extra = 0) {
-  return { paddingLeft: `${6 + depth * 12 + extra}px` };
+  return { paddingLeft: `${8 + depth * 16 + extra}px` };
 }
 
 // Chevron slot (10) + gap (8) + badge (18) + gap (8): aligns nested blocks
@@ -252,17 +252,22 @@ export function JsonTreeRow({ node, depth }: { node: JsonTreeNode; depth: number
           <button
             type="button"
             onClick={() => onToggleCollapsed?.(node.path)}
+            // Without a handler the tree's expansion is fixed (e.g. a host holding
+            // search matches open), so the chevron shows state but isn't a control.
+            disabled={!onToggleCollapsed}
             aria-label={
-              collapsed[node.path] ? strings.expandKey(node.key) : strings.collapseKey(node.key)
+              isPathCollapsed(collapsed, node.path)
+                ? strings.expandKey(node.key)
+                : strings.collapseKey(node.key)
             }
-            aria-expanded={!collapsed[node.path]}
-            className="grid size-2.5 shrink-0 cursor-pointer place-items-center text-foreground-subtle transition hover:text-foreground"
+            aria-expanded={!isPathCollapsed(collapsed, node.path)}
+            className="grid size-2.5 shrink-0 cursor-pointer place-items-center text-foreground-subtle transition hover:text-foreground disabled:cursor-default disabled:hover:text-foreground-subtle"
           >
             <ChevronDown
               size={10}
               className={cn(
                 'transition-transform duration-100',
-                collapsed[node.path] && '-rotate-90'
+                isPathCollapsed(collapsed, node.path) && '-rotate-90'
               )}
             />
           </button>
@@ -293,7 +298,12 @@ export function JsonTreeRow({ node, depth }: { node: JsonTreeNode; depth: number
           />
         )}
         {decoration?.sublabel && (
-          <span className="min-w-0 truncate font-mono text-[10px] text-foreground-subtle leading-4">
+          <span
+            className={cn(
+              'min-w-0 truncate font-mono text-[10px] text-foreground-subtle leading-4',
+              decoration.sublabelOnHover && 'hidden group-hover:block group-focus-within:block'
+            )}
+          >
             {decoration.sublabel}
           </span>
         )}
@@ -316,11 +326,17 @@ export function JsonTreeRow({ node, depth }: { node: JsonTreeNode; depth: number
             )}
             {customCell != null && <span className={VALUE_CELL_CLASS}>{customCell}</span>}
             <DecorationChip decoration={decoration} />
-            <RowActions node={node} actions={actions} maxInline={maxInlineActions} />
+            <RowActions
+              node={node}
+              actions={actions}
+              maxInline={maxInlineActions}
+              meta={decoration?.meta}
+            />
           </>
         ) : (
           <>
             {!wrapped &&
+              !decoration?.hideValue &&
               (customCell != null ? (
                 <span className={VALUE_CELL_CLASS}>{customCell}</span>
               ) : (
@@ -343,7 +359,12 @@ export function JsonTreeRow({ node, depth }: { node: JsonTreeNode; depth: number
             {editingPath !== node.path && (
               <>
                 <DecorationChip decoration={decoration} />
-                <RowActions node={node} actions={actions} maxInline={maxInlineActions} />
+                <RowActions
+                  node={node}
+                  actions={actions}
+                  maxInline={maxInlineActions}
+                  meta={decoration?.meta}
+                />
               </>
             )}
           </>
