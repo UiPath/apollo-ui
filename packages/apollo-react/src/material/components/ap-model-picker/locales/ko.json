@@ -19,6 +19,7 @@
   "modelPicker.loading.label": "모델 로드 중",
   "modelPicker.group.deprecating.hint": "사용 종료 날짜 전에 마이그레이션하십시오",
   "modelPicker.label.default": "모델",
+  "modelPicker.label.requiredSrLabel": "필수",
   "modelPicker.listbox.label": "모델",
   "modelPicker.group.byo.hint": "자체 연결을 통해 가져온 모델",
   "modelPicker.group.more.label": "추가 모델",

@@ -19,6 +19,7 @@
   "modelPicker.loading.label": "Se încarcă modelele",
   "modelPicker.group.deprecating.hint": "Migrați înainte de data de încheiere a utilizării",
   "modelPicker.label.default": "Model",
+  "modelPicker.label.requiredSrLabel": "obligatoriu",
   "modelPicker.listbox.label": "Modele",
   "modelPicker.group.byo.hint": "Modele pe care le-ați adus prin propriile conexiuni",
   "modelPicker.group.more.label": "Mai multe modele",
