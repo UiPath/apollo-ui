@@ -762,6 +762,14 @@ export {
   TabsList,
   TabsTrigger,
 } from './components/ui/tabs';
+export type { PanelTabsContentProps, PanelTabsListProps } from './components/ui/panel-tabs';
+export {
+  PanelTabs,
+  PanelTabsContent,
+  PanelTabsList,
+  PanelTabsStrip,
+  PanelTabsTrigger,
+} from './components/ui/panel-tabs';
 export type { TextareaProps } from './components/ui/textarea';
 export { Textarea } from './components/ui/textarea';
 export { Toggle, toggleVariants } from './components/ui/toggle';
@@ -828,6 +836,7 @@ export {
   inferValueType,
   isArrayItemTemplateRoot,
   isJsonObject,
+  isPathCollapsed,
   JsonContainerEditor,
   JsonLeafValueEditor,
   JsonMultilineLeafEditor,

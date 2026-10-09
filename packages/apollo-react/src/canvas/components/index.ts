@@ -29,6 +29,7 @@ export * from './NodeInspector';
 export * from './NodeIOView';
 export * from './NodePropertiesPanel';
 export * from './NodePropertyPanel';
+export * from './NodeVariablesPanel';
 export * from './ProbeCard';
 export * from './StageNode';
 export * from './StickyNoteNode';

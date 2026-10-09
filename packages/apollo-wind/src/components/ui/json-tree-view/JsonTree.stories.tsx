@@ -4,6 +4,7 @@ import {
   buildJsonTree,
   collectContainerPaths,
   isJsonObject,
+  isPathCollapsed,
   removeValueAtPath,
   setValueAtPath,
 } from './buildJsonTree';
@@ -104,7 +105,8 @@ export const Basic: StoryFn = () => {
   const { collapsed, toggle, setCollapsed } = useCollapsed();
   const nodes = useMemo(() => buildJsonTree({ schema: customerSchema, value }), [value]);
   const containerPaths = useMemo(() => collectContainerPaths(nodes), [nodes]);
-  const allCollapsed = containerPaths.length > 0 && containerPaths.every((c) => collapsed[c.path]);
+  const allCollapsed =
+    containerPaths.length > 0 && containerPaths.every((c) => isPathCollapsed(collapsed, c.path));
 
   return (
     <div className={frame}>
@@ -219,7 +221,8 @@ export const ReferenceVariables: StoryFn = () => {
 
 function useCollapsed() {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
-  const toggle = (path: string) => setCollapsed((prev) => ({ ...prev, [path]: !prev[path] }));
+  const toggle = (path: string) =>
+    setCollapsed((prev) => ({ ...prev, [path]: !isPathCollapsed(prev, path) }));
   return { collapsed, toggle, setCollapsed };
 }
 

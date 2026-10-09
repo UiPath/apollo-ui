@@ -82,7 +82,7 @@ export function NodePropertyPanel({
   autoComplete,
   resetKey,
   className,
-  contentInset = '1.5rem',
+  contentInset = '1rem',
   children,
   headerExtra,
   sectionVariant,
@@ -177,15 +177,21 @@ export function NodePropertyPanel({
     >
       {/* ── Title bar (optional; host panel system may own it) ── */}
       {panelTitle && (
+        // The title bar shares the content inset. The drag handle and close button keep
+        // their larger hit areas but are pulled out so the visible marks, not the icon
+        // boxes, sit on the content edges: the grip's dots start 9px (box padding) + 5px
+        // (glyph inset) in, and the X's strokes end 5px + 3px before the button's edge.
+        // Each pull is capped at the inset, so a compact or zero inset keeps the
+        // controls inside the panel.
         <div
           data-slot="node-property-panel-titlebar"
-          className="flex h-10 shrink-0 items-center justify-between px-2"
+          className="flex h-10 shrink-0 items-center justify-between [padding-inline:var(--mf-content-inset,1rem)]"
         >
           <div className="flex items-center gap-1">
             <div
               {...dragHandleProps}
               data-slot="node-property-panel-drag-handle"
-              className="grid size-8 cursor-grab touch-none place-items-center text-foreground-subtle active:cursor-grabbing"
+              className="ml-[calc(-1*min(14px,var(--mf-content-inset,1rem)))] grid size-8 cursor-grab touch-none place-items-center text-foreground-subtle active:cursor-grabbing"
             >
               <GripVertical size={14} />
             </div>
@@ -199,7 +205,7 @@ export function NodePropertyPanel({
                 onClick={onClose}
                 title={_({ id: 'canvas.node_property_panel.close', message: 'Close' })}
                 aria-label={_({ id: 'canvas.node_property_panel.close', message: 'Close' })}
-                className="grid size-6 place-items-center rounded text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
+                className="mr-[calc(-1*min(8px,var(--mf-content-inset,1rem)))] grid size-6 place-items-center rounded text-foreground-muted transition hover:bg-surface-overlay hover:text-foreground"
               >
                 <X size={14} />
               </button>
@@ -210,7 +216,7 @@ export function NodePropertyPanel({
 
       {/* ── Node identity row ── */}
       {hasNodeHeader && (
-        <div className="flex shrink-0 items-center justify-between gap-4 py-4 [padding-inline:var(--mf-content-inset,1.5rem)]">
+        <div className="flex shrink-0 items-center justify-between gap-4 py-4 [padding-inline:var(--mf-content-inset,1rem)]">
           <div className="flex min-w-0 flex-1 items-center gap-3.5">
             {nodeIcon && (
               <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-surface-overlay text-foreground-subtle [&>svg]:size-5">
@@ -279,7 +285,7 @@ export function NodePropertyPanel({
       {children ? (
         <div className={cn('min-h-0 flex-1 overflow-auto', SURFACE_REMAP)}>{children}</div>
       ) : !formSchema ? (
-        <div className="py-4 text-xs text-foreground-subtle [padding-inline:var(--mf-content-inset,1.5rem)]">
+        <div className="py-4 text-xs text-foreground-subtle [padding-inline:var(--mf-content-inset,1rem)]">
           No form schema defined for this node.
         </div>
       ) : formSchema.steps ? (

@@ -49,6 +49,12 @@ export interface NodeIOViewProps {
   titleBadge?: string;
   /** Right-aligned slot in the title bar (e.g. a `NodeOutputModeSelect`). */
   titleTrailing?: ReactNode;
+  /**
+   * Slot at the end of the toolbar row, after the search and collapse controls
+   * (e.g. a `NodeOutputModeSelect` when the panel has no title bar). Stays
+   * visible on tabs that hide the tree controls.
+   */
+  toolbarTrailing?: ReactNode;
   /** Placeholder (and aria-label) for the tree search input. Defaults to a generic message. */
   searchPlaceholder?: string;
   /** Shown when the tree has no rows and no search/filter is active. Defaults to a generic message. */
@@ -105,5 +111,12 @@ export interface NodeIOViewProps {
   virtualized?: boolean;
   /** Containers at depth >= this start collapsed. Default 2 (top two levels open). */
   defaultCollapsedDepth?: number;
+  /**
+   * Pads the view by the host panel's content inset (`--mf-content-inset`, set by
+   * `NodePropertyPanel`; 1rem without one), so it lines up with the panel's title
+   * bar and follows inset changes. Off by default for hosts that pad the view
+   * themselves.
+   */
+  inset?: boolean;
   className?: string;
 }

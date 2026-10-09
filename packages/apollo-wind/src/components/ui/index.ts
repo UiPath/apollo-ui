@@ -66,6 +66,7 @@ export * from './stats-card';
 export * from './stepper';
 export * from './switch';
 export * from './table';
+export * from './panel-tabs';
 export * from './tabs';
 export * from './textarea';
 export * from './toggle';
