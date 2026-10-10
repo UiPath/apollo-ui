@@ -46,6 +46,8 @@ interface CapabilityRow {
 const CAPABILITIES: CapabilityRow[] = [
   { label: 'Message, Bubble, Attachment and Marker visuals', wind: true, material: true },
   { label: 'Auto-scroll, scroll anchoring, scroll to latest', wind: true, material: true },
+  { label: 'Tool call status, input, output and errors', wind: true, material: true },
+  { label: 'Tool call traces and escalation links', wind: 'planned', material: true },
   { label: 'Model and agent-mode pickers', wind: 'planned', material: true },
   { label: 'Resource manager (@ references)', wind: 'planned', material: true },
   { label: 'Streaming responses from a backend', wind: 'planned', material: true },
@@ -92,6 +94,12 @@ const PRIMITIVE_PAGES: { name: string; title: string; story: string; role: strin
     title: 'Chat/Components/Message Scroller',
     story: 'Basic',
     role: 'Auto-follow, turn anchoring, prepend preservation, jump to latest',
+  },
+  {
+    name: 'Tool Call',
+    title: 'Chat/Components/Tool Call',
+    story: 'Completed',
+    role: 'Agent tool call status line with collapsible input, output and errors',
   },
 ];
 

@@ -766,6 +766,27 @@ export type { TextareaProps } from './components/ui/textarea';
 export { Textarea } from './components/ui/textarea';
 export { Toggle, toggleVariants } from './components/ui/toggle';
 export { ToggleGroup, ToggleGroupItem } from './components/ui/toggle-group';
+export type {
+  ToolCallContentProps,
+  ToolCallHeaderProps,
+  ToolCallProps,
+  ToolCallRenderValue,
+  ToolCallSectionProps,
+  ToolCallStatus,
+  ToolCallStrings,
+  ToolCallValueProps,
+} from './components/ui/tool-call';
+export {
+  DEFAULT_TOOL_CALL_STRINGS,
+  ToolCall,
+  ToolCallContent,
+  ToolCallError,
+  ToolCallHeader,
+  ToolCallInput,
+  ToolCallOutput,
+  ToolCallSection,
+  toolCallVariants,
+} from './components/ui/tool-call';
 export {
   Tooltip,
   TooltipContent,
