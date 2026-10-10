@@ -1,4 +1,4 @@
-import { fireEvent, render as rtlRender, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render as rtlRender, screen, waitFor, within } from '@testing-library/react';
 import { TooltipProvider } from '@uipath/apollo-wind';
 import { axe } from 'jest-axe';
 import type { ReactElement, ReactNode } from 'react';
@@ -477,6 +477,43 @@ describe('GuardrailValidatorForm', () => {
       // "Email" and "Phone" appear both as enum-list chips and as map-enum threshold labels
       expect(screen.getAllByText('Email')).toHaveLength(2);
       expect(screen.getAllByText('Phone')).toHaveLength(2);
+    });
+
+    it('suffixes preview keys in the chips and marks their threshold row with a Preview chip', () => {
+      const defs: GuardrailParameterDefinition[] = [
+        {
+          id: 'entities',
+          type: 'enum-list',
+          label: 'Entities',
+          required: true,
+          defaultValue: ['Email', 'Age'],
+          options: ['Email', 'Age'],
+          previewOptions: ['Age'],
+        },
+        {
+          id: 'thresholds',
+          type: 'map-enum',
+          label: 'Thresholds',
+          required: true,
+          defaultValue: {},
+          keySource: 'entities',
+        },
+      ];
+
+      render(
+        <GuardrailValidatorForm parameterDefinitions={defs} parameters={[]} onChange={() => {}} />
+      );
+
+      expect(screen.getByRole('button', { name: 'Age (Preview)' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Email' })).toBeInTheDocument();
+      // In the threshold row the chip follows the entity name, inside the label column.
+      const ageRow = screen.getByRole('spinbutton', { name: 'Thresholds: Age' }).parentElement;
+      expect(within(ageRow as HTMLElement).getByText('Age').parentElement).toHaveTextContent(
+        'AgePreview'
+      );
+      expect(
+        screen.getByRole('spinbutton', { name: 'Thresholds: Email' }).parentElement
+      ).not.toHaveTextContent('Preview');
     });
 
     it('renders friendly labels for threshold rows via the source parameter optionLabels', () => {

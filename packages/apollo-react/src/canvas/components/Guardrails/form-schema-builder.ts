@@ -1,7 +1,23 @@
-import { formatTemplate } from '@uipath/apollo-wind';
 import type { CustomValueType, FieldMetadata, FormSchema } from '@uipath/apollo-wind';
+import { formatTemplate } from '@uipath/apollo-wind';
 import type { GuardrailValidatorFormLabels } from './i18n';
 import type { GuardrailParameterDefinition, GuardrailValidatorParameter } from './types';
+
+/**
+ * An enum-list option's label in the option list and the chip editor: its friendly label (the
+ * raw value when unmapped), wrapped in the preview template when the definition lists it in
+ * `previewOptions`.
+ */
+export function guardrailOptionLabel(
+  def: GuardrailParameterDefinition,
+  option: string,
+  labels: Pick<Required<GuardrailValidatorFormLabels>, 'previewOptionLabel'>
+): string {
+  const label = def.optionLabels?.[option] ?? option;
+  return def.previewOptions?.includes(option)
+    ? formatTemplate(labels.previewOptionLabel, { label })
+    : label;
+}
 
 /** Registered custom-component names for the parameter editors that stay guardrail-owned. */
 export const GUARDRAIL_ENUM_LIST_CHIPS_COMPONENT = 'guardrail-enum-list-chips';
@@ -46,7 +62,7 @@ export interface BuildGuardrailFormSchemaOptions {
  */
 function buildFieldValidation(
   def: GuardrailParameterDefinition,
-  labels: GuardrailValidatorFormLabels
+  labels: Required<GuardrailValidatorFormLabels>
 ) {
   const validation: {
     required?: boolean;
@@ -89,7 +105,7 @@ function buildFieldValidation(
  */
 export function buildGuardrailFormSchema(
   definitions: GuardrailParameterDefinition[],
-  labels: GuardrailValidatorFormLabels,
+  labels: Required<GuardrailValidatorFormLabels>,
   options?: BuildGuardrailFormSchemaOptions
 ): FormSchema {
   const initialById = new Map((options?.initialParameters ?? []).map((p) => [p.id, p]));
@@ -150,7 +166,7 @@ function customValueTypeFor(
 function buildGuardrailField(
   def: GuardrailParameterDefinition,
   definitions: GuardrailParameterDefinition[],
-  labels: GuardrailValidatorFormLabels,
+  labels: Required<GuardrailValidatorFormLabels>,
   initialById: Map<string, GuardrailValidatorParameter>,
   options?: BuildGuardrailFormSchemaOptions
 ): FieldMetadata {
@@ -252,7 +268,7 @@ function buildGuardrailField(
         placeholder: labels.enumListPlaceholder,
         options: (def.options ?? []).map((opt) => ({
           value: opt,
-          label: def.optionLabels?.[opt] ?? opt,
+          label: guardrailOptionLabel(def, opt, labels),
         })),
         defaultValue: selected,
       };

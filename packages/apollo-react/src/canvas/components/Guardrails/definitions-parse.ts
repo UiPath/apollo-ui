@@ -54,6 +54,7 @@ const enumListParameterSchema = z.object({
   required: z.boolean(),
   options: z.array(z.string()),
   optionLabels: z.record(z.string(), z.string()).optional(),
+  previewOptions: z.array(z.string()).optional(),
 });
 
 const mapEnumParameterSchema = z.object({

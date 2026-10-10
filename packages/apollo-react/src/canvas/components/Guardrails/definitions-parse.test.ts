@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import {
   ALL_BUILT_IN_WIRE,
   LLM_AS_JUDGE_WIRE,
+  PII_DETECTION_PREVIEW_WIRE,
   PII_DETECTION_WIRE,
   PROMPT_INJECTION_WIRE,
   RAW_PAYLOAD_WITH_NOISE,
@@ -32,6 +33,12 @@ describe('parseGuardrailDefinitions', () => {
     const result = parseGuardrailDefinitions([PII_DETECTION_WIRE]);
 
     expect(result.definitions[0]).toEqual(PII_DETECTION_WIRE);
+  });
+
+  it('keeps the preview options of an enum-list', () => {
+    const result = parseGuardrailDefinitions([PII_DETECTION_PREVIEW_WIRE]);
+
+    expect(result.definitions[0]).toEqual(PII_DETECTION_PREVIEW_WIRE);
   });
 
   describe('never throws', () => {

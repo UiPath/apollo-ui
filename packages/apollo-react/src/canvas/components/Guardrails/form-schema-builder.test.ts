@@ -153,6 +153,26 @@ describe('buildGuardrailFormSchema', () => {
     expect(many).toMatchObject({ type: 'multiselect', placeholder: LABELS.enumListPlaceholder });
   });
 
+  it('suffixes the preview options of a multiselect enum-list', () => {
+    const field = fieldFor({
+      id: 'entities',
+      type: 'enum-list',
+      label: 'Entities',
+      required: true,
+      defaultValue: [],
+      options: Array.from({ length: MAX_INLINE_ENUM_OPTIONS + 1 }, (_, i) => `o${i}`),
+      previewOptions: ['o1'],
+    });
+
+    expect(field).toMatchObject({
+      type: 'multiselect',
+      options: expect.arrayContaining([
+        { value: 'o0', label: 'o0' },
+        { value: 'o1', label: 'o1 (Preview)' },
+      ]),
+    });
+  });
+
   it('declares a valueType for host-overridden fields, matching the parameter type', () => {
     const overridden = (type: GuardrailParameterDefinition['type']) =>
       buildGuardrailFormSchema(
