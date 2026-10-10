@@ -485,6 +485,100 @@ function buildGuardrailCopy(_: CopyTranslate): GuardrailCopyTable {
         },
       },
     },
+
+    // Agents' wording throughout: Flow has no Jev classifier yet. The backend also labels
+    // `questionPack` and `jevModel` itself, and the wire wins at parameter level, so these two
+    // only show where it does not.
+    jev_classifier: {
+      displayName: _({
+        id: 'guardrails.definitions.jev_classifier.display-name',
+        message: 'Jev Classifier',
+      }),
+      description: _({
+        id: 'guardrails.definitions.jev_classifier.description',
+        message:
+          "Evaluate yes/no questions against the payload with TypeSafe's Jev classifier. Pick a curated question pack, add your own questions, and flag when any answer's probability reaches the threshold.",
+      }),
+      paramLabels: {
+        questionPack: _({
+          id: 'guardrails.definitions.jev_classifier.param.questionPack.label',
+          message: 'Question pack',
+        }),
+        questions: _({
+          id: 'guardrails.definitions.jev_classifier.param.questions.label',
+          message: 'Your questions',
+        }),
+        threshold: _({
+          id: 'guardrails.definitions.jev_classifier.param.threshold.label',
+          message: 'Flag threshold',
+        }),
+        jevModel: _({
+          id: 'guardrails.definitions.jev_classifier.param.jevModel.label',
+          message: 'Model',
+        }),
+      },
+      paramTooltips: {
+        questionPack: _({
+          id: 'guardrails.definitions.jev_classifier.param.questionPack.tooltip',
+          message:
+            "A curated set of yes/no questions mirroring a built-in category. Pick 'Custom' to use only your own questions.",
+        }),
+        questions: _({
+          id: 'guardrails.definitions.jev_classifier.param.questions.tooltip',
+          message:
+            "Yes/no questions about the payload, where 'yes' means the payload should be flagged. Added on top of the selected pack; required when the pack is 'Custom'.",
+        }),
+        threshold: _({
+          id: 'guardrails.definitions.jev_classifier.param.threshold.tooltip',
+          message:
+            "Probability between 0 and 1. The guardrail flags the payload when any question's P(yes) reaches this value. Lower values are stricter.",
+        }),
+      },
+      optionLabels: {
+        questionPack: {
+          custom: _({
+            id: 'guardrails.definitions.jev_classifier.option.questionPack.custom',
+            message: 'Custom (own questions only)',
+          }),
+          pii: _({
+            id: 'guardrails.definitions.jev_classifier.option.questionPack.pii',
+            message: 'PII',
+          }),
+          harmful_content: _({
+            id: 'guardrails.definitions.jev_classifier.option.questionPack.harmful_content',
+            message: 'Harmful content',
+          }),
+          prompt_injection: _({
+            id: 'guardrails.definitions.jev_classifier.option.questionPack.prompt_injection',
+            message: 'Prompt injection',
+          }),
+          intellectual_property: _({
+            id: 'guardrails.definitions.jev_classifier.option.questionPack.intellectual_property',
+            message: 'Intellectual property',
+          }),
+          secrets_and_credentials: _({
+            id: 'guardrails.definitions.jev_classifier.option.questionPack.secrets_and_credentials',
+            message: 'Secrets & credentials',
+          }),
+          compliance_commitments: _({
+            id: 'guardrails.definitions.jev_classifier.option.questionPack.compliance_commitments',
+            message: 'Compliance & commitments',
+          }),
+          scope_and_conduct: _({
+            id: 'guardrails.definitions.jev_classifier.option.questionPack.scope_and_conduct',
+            message: 'Scope & conduct',
+          }),
+          unsafe_tool_use: _({
+            id: 'guardrails.definitions.jev_classifier.option.questionPack.unsafe_tool_use',
+            message: 'Unsafe tool use',
+          }),
+          code_safety: _({
+            id: 'guardrails.definitions.jev_classifier.option.questionPack.code_safety',
+            message: 'Code safety',
+          }),
+        },
+      },
+    },
   };
 }
 
@@ -497,6 +591,7 @@ export const CURATED_GUARDRAIL_VALIDATORS: readonly string[] = Object.freeze([
   'intellectual_property',
   'llm_as_judge',
   'sentiment',
+  'jev_classifier',
 ]);
 
 /**

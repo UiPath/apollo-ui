@@ -23,6 +23,7 @@ describe('parseGuardrailDefinitions', () => {
       'intellectual_property',
       'llm_as_judge',
       'sentiment',
+      'jev_classifier',
     ]);
     expect(result.invalid).toEqual([]);
     expect(result.inputError).toBeUndefined();

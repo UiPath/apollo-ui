@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   BYO_WIRE,
   HARMFUL_CONTENT_WIRE,
+  JEV_CLASSIFIER_WIRE,
   LLM_AS_JUDGE_WIRE,
   PII_DETECTION_WIRE,
   PROMPT_INJECTION_WIRE,
@@ -107,6 +108,24 @@ describe('enrichGuardrailDefinitions', () => {
 
     it('omits the tooltip entirely when there is none', () => {
       expect(param(enrichOne(PII_DETECTION_WIRE), 'entities')).not.toHaveProperty('tooltip');
+    });
+
+    it('names the Jev classifier and labels the two parameters its backend leaves bare', () => {
+      const definition = enrichOne(JEV_CLASSIFIER_WIRE);
+
+      expect(definition.displayName).toBe('Jev Classifier');
+      expect(definition.description).toMatch(/^Evaluate yes\/no questions/);
+      expect(param(definition, 'questions')).toMatchObject({
+        label: 'Your questions',
+        tooltip: expect.stringMatching(/^Yes\/no questions about the payload/),
+      });
+      expect(param(definition, 'threshold')).toMatchObject({
+        label: 'Flag threshold',
+        tooltip: expect.stringMatching(/^Probability between 0 and 1/),
+      });
+      // The backend labels these two itself, and the wire wins at parameter level.
+      expect(param(definition, 'questionPack').tooltip).toMatch(/Jev evaluates against/);
+      expect(param(definition, 'jevModel').label).toBe('Model');
     });
 
     it('attaches the curated usage note', () => {
