@@ -85,6 +85,43 @@ const sentimentGuardrail: CentralizedGuardrail = {
   parameters: [{ id: 'language', parameterType: 'enum-list', value: ['en', 'fr', 'de'] }],
 };
 
+/** The scope Agents stamps onto every built-in; this PII guardrail only reads attachments. */
+const piiFilesGuardrail: CentralizedGuardrail = {
+  ...piiGuardrail,
+  entities: ['Email', 'CreditCardNumber'],
+  entityThresholds: { Email: 0.8 },
+  parameters: [{ id: 'appliesTo', parameterType: 'enum', value: 'Files' }],
+};
+
+const judgeGuardrail: CentralizedGuardrail = {
+  validator: 'llm_as_judge',
+  executionStage: 'Post',
+  appliesToAutonomousAgents: true,
+  appliesToConversationalAgents: true,
+  scopes: ['Agent', 'Llm'],
+  action: 'block',
+  parameters: [
+    {
+      id: 'guardrailText',
+      parameterType: 'text',
+      value: 'The response must not give medical advice.',
+    },
+    { id: 'model', parameterType: 'enum', value: 'gpt-4o-2024-11-20' },
+    { id: 'threshold', parameterType: 'number', value: 4 },
+    {
+      id: 'positiveExamples',
+      parameterType: 'text-list',
+      value: ['Please see a doctor about that.'],
+    },
+    {
+      id: 'negativeExamples',
+      parameterType: 'text-list',
+      value: ['Take two aspirin.', 'Double your dose.'],
+    },
+    { id: 'appliesTo', parameterType: 'enum', value: 'Both' },
+  ],
+};
+
 const byoGuardrail: CentralizedGuardrail = {
   validator: 'pii_detection',
   name: 'Acme strict PII',
@@ -279,6 +316,36 @@ export const SentimentDetails: Story = {
       description: {
         story:
           'Sentiment keeps its languages in `parameters`, next to the entity fields every built-in uses, so they show as a line of their own under the thresholds. Mixed shows a dash: Azure returns it without a confidence score, so its threshold has no effect.',
+      },
+    },
+  },
+};
+
+/** Every built-in's own parameters, including the ones no definition here declares. */
+export const BuiltInParameters: Story = {
+  name: 'Built-in parameters',
+  args: {
+    ...Default.args,
+    guardrails: [piiFilesGuardrail, judgeGuardrail, sentimentGuardrail],
+  },
+  render: (args) => (
+    <div className="space-y-6">
+      {args.guardrails.map((guardrail) => (
+        <div key={guardrail.validator} className="rounded-md border p-3">
+          <CentralizedGuardrailDetails
+            guardrail={guardrail}
+            definitions={args.definitions}
+            policyName={args.policyName}
+          />
+        </div>
+      ))}
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Agents stamps an `appliesTo` scope onto every built-in it enforces on files, and the judge carries its whole rule. The PII and sentiment definitions above declare neither, and the judge has no definition at all, so the rows take their names from the curated copy and, for `appliesTo`, from the details’ own fallback: "Applies to", "Files only", "Text and files".',
       },
     },
   },

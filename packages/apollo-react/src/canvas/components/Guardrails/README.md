@@ -600,7 +600,10 @@ orchestration. The `Details in a dialog` and `Details in a panel overlay` storie
   (SSN)", not `USSocialSecurityNumber`) and each validator names its own configuration
   ("Severity thresholds" for harmful content, "Detection thresholds" for PII). With no
   definition matched it falls back to generic labels and raw values, which is what both
-  products render today.
+  products render today. A built-in's own parameters the definition does not declare take the
+  curated copy for the validator ("Rule prompt", "Languages"), and `appliesTo`, which Agents
+  stamps onto every built-in it enforces on files, the details' own "Applies to" / "Files
+  only" fallback, so the dialog reads as the per-agent builder does.
 - **A read-only value is text, not a disabled input.** The family's parameter editors are the
   MetadataForm stack and have no read-only mode, and these values arrive as untyped wire data
   rather than `GuardrailValidatorParameter`s. A disabled input, which is how Flow renders this

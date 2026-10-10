@@ -1459,6 +1459,11 @@ export interface CentralizedGuardrailsLabels {
   entitiesFallback: string;
   /** Fallback label for the threshold map when no definition names it. */
   thresholdsFallback: string;
+  /** Fallback label for a built-in's `appliesTo` when no definition names it, and its options. */
+  appliesToFallback: string;
+  appliesToText: string;
+  appliesToFiles: string;
+  appliesToBoth: string;
 }
 
 /** The subset of `useSafeLingui`'s translator the centralized labels need. */
@@ -1553,6 +1558,16 @@ function buildCentralizedGuardrailsLabels(_: CentralizedTranslate): CentralizedG
     thresholdsFallback: _({
       id: 'guardrails.centralized.thresholds-fallback',
       message: 'Detection thresholds',
+    }),
+    appliesToFallback: _({
+      id: 'guardrails.centralized.applies-to-fallback',
+      message: 'Applies to',
+    }),
+    appliesToText: _({ id: 'guardrails.centralized.applies-to-text', message: 'Text only' }),
+    appliesToFiles: _({ id: 'guardrails.centralized.applies-to-files', message: 'Files only' }),
+    appliesToBoth: _({
+      id: 'guardrails.centralized.applies-to-both',
+      message: 'Text and files',
     }),
   };
 }

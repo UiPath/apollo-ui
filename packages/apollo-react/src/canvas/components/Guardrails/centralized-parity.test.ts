@@ -72,6 +72,12 @@ const HOST_COPY: Partial<Record<keyof CentralizedGuardrailsLabels, HostCopy>> = 
   parameterDisabled: { agents: 'Disabled', flow: 'Disabled' },
   entitiesFallback: { agents: 'Entities to detect', flow: 'Entities to detect' },
   thresholdsFallback: { agents: 'Detection threshold', flow: 'Detection thresholds' },
+  // The `appliesTo` copy Agents' backend stamps on the per-agent builder's definition; Flow has
+  // no file scope.
+  appliesToFallback: { agents: 'Applies to' },
+  appliesToText: { agents: 'Text only' },
+  appliesToFiles: { agents: 'Files only' },
+  appliesToBoth: { agents: 'Text and files' },
 };
 
 interface CopyDivergence {
@@ -117,6 +123,10 @@ const SINGLE_SOURCE: Array<keyof CentralizedGuardrailsLabels> = [
   'guardrailType',
   'policyField',
   'configuration',
+  'appliesToFallback',
+  'appliesToText',
+  'appliesToFiles',
+  'appliesToBoth',
 ];
 
 /** Neither product's centralized section has these; they are `GuardrailList`'s status chips. */
