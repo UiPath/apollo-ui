@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import ComponentsOverviewPage from "./overview/page.mdx";
+import { DocsPageView } from "../_components/docs-page-view";
 
 // Static Coded App exports cannot serve a redirect, so this index renders the
 // overview inline instead of redirecting to it.
@@ -9,5 +9,5 @@ export default function ComponentsIndex() {
   if (!codedApp) {
     redirect("/components/overview");
   }
-  return <ComponentsOverviewPage />;
+  return <DocsPageView slug={["components", "overview"]} />;
 }

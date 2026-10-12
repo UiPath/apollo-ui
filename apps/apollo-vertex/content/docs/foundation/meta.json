@@ -1,0 +1,13 @@
+{
+  "title": "Foundation",
+  "pages": [
+    "colors",
+    "spacing",
+    "grid",
+    "typography",
+    "icons",
+    "logos",
+    "...",
+    "!themes"
+  ]
+}

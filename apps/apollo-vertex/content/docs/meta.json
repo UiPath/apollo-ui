@@ -1,0 +1,15 @@
+{
+  "title": "Apollo Vertex",
+  "pages": [
+    "index",
+    "foundation",
+    "components",
+    "patterns",
+    "templates",
+    "guidelines",
+    "data-querying",
+    "localization",
+    "mcp",
+    "..."
+  ]
+}
