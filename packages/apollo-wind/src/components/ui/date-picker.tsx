@@ -1,6 +1,6 @@
 'use client';
 
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import * as React from 'react';
 import type { DateRange } from 'react-day-picker';
@@ -58,6 +58,8 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(f
 ) {
   const generatedId = React.useId();
   const validationId = errorId ?? `${id ?? `date-picker-${generatedId.replace(/:/g, '')}`}-error`;
+  // Trusts the `Date` type only as far as not throwing: anything else is no value.
+  const date = value instanceof Date && isValid(value) ? value : undefined;
 
   // Inside an InputGroup the trigger is the group's control: the group draws the box, and the
   // panel anchors to it.
@@ -77,8 +79,8 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(f
     'aria-label':
       id || ariaLabelledBy
         ? undefined
-        : value
-          ? `Selected date: ${format(value, 'PPP')}`
+        : date
+          ? `Selected date: ${format(date, 'PPP')}`
           : placeholder,
     'aria-labelledby': ariaLabelledBy,
     ...validation.aria,
@@ -95,7 +97,7 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(f
             className={className}
             placeholder={placeholder}
           >
-            {value && <span className="truncate">{format(value, 'PPP')}</span>}
+            {date && <span className="truncate">{format(date, 'PPP')}</span>}
           </InputGroupPopoverTrigger>
         ) : (
           <PopoverTrigger asChild>
@@ -110,8 +112,8 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(f
               )}
             >
               <CalendarIcon />
-              {value ? (
-                format(value, 'PPP')
+              {date ? (
+                format(date, 'PPP')
               ) : (
                 <span className="text-foreground-muted">{placeholder}</span>
               )}
@@ -121,7 +123,7 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(f
         <PopoverContent className="w-auto p-0" align={grouped ? 'start' : undefined}>
           <Calendar
             mode="single"
-            selected={value}
+            selected={date}
             onSelect={onValueChange}
             initialFocus
             {...calendarProps}

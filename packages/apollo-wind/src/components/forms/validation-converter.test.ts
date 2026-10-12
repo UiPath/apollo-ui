@@ -75,7 +75,7 @@ describe('validationConfigToZod', () => {
     it('creates date schema for date field', () => {
       const schema = validationConfigToZod(undefined, 'date');
       expect(schema.safeParse(new Date()).success).toBe(true);
-      expect(schema.safeParse('2024-01-01').success).toBe(true); // coerce
+      expect(schema.safeParse('2024-01-01').success).toBe(true);
     });
 
     it('creates date schema for datetime field', () => {
@@ -203,6 +203,56 @@ describe('validationConfigToZod', () => {
     ])('does not enforce an expression the evaluator cannot handle (%s)', (_label, custom) => {
       const schema = validationConfigToZod({ custom }, 'text');
       expect(schema.safeParse('anything').success).toBe(true);
+    });
+  });
+
+  describe('date values', () => {
+    const unrecognised = [
+      '',
+      '2026',
+      'Wed Sep 23 2026 00:00:00 GMT-0700 (Pacific Daylight Time)',
+      '=vars.when',
+      1758610800123,
+    ];
+
+    it.each(['date', 'datetime'] as const)('reads an unrecognised %s value as absent', (type) => {
+      for (const value of unrecognised) {
+        expect(validationConfigToZod(undefined, type).safeParse(value)).toEqual({
+          success: true,
+          data: undefined,
+        });
+        expect(validationConfigToZod({ required: false }, type).safeParse(value).success).toBe(
+          true
+        );
+      }
+    });
+
+    it.each([
+      'date',
+      'datetime',
+    ] as const)('gives an unrecognised required %s value the required message', (type) => {
+      const schema = validationConfigToZod(
+        { required: true, messages: { required: 'Pick a date' } },
+        type
+      );
+      for (const value of [...unrecognised, undefined, null]) {
+        const result = schema.safeParse(value);
+        expect(result.success).toBe(false);
+        expect(result.error?.issues[0].message).toBe('Pick a date');
+      }
+    });
+
+    it('parses an ISO date-time to a Date that keeps its milliseconds', () => {
+      const result = validationConfigToZod({ required: true }, 'datetime').safeParse(
+        '2026-09-23T07:00:00.123Z'
+      );
+      expect(result.success).toBe(true);
+      expect((result.data as Date).getTime()).toBe(Date.UTC(2026, 8, 23, 7, 0, 0, 123));
+    });
+
+    it('parses a date-only string to local midnight', () => {
+      const result = validationConfigToZod({ required: true }, 'date').safeParse('2026-09-23');
+      expect(result.data).toEqual(new Date(2026, 8, 23));
     });
   });
 

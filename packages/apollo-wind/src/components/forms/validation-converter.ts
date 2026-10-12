@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { toDateValue } from '@/lib/date-value';
 import type { CustomValueType, FieldType, ValidationConfig, ValueModeId } from './form-schema';
 import { type CodecContext, isDecodedEmpty, type ValueModeCodec } from './value-modes';
 
@@ -41,7 +42,7 @@ export function validationConfigToZod(
 
   // If no config, return optional base schema
   if (!config) {
-    return schema.nullish();
+    return withDateParsing(schema.nullish(), fieldType);
   }
 
   // Apply type-specific constraints
@@ -73,11 +74,24 @@ export function validationConfigToZod(
     ) {
       schema = (schema as z.ZodArray<z.ZodTypeAny>).min(1, requiredMessage);
     }
-    return applyCustomExpression(schema, config);
+    // An unrecognised date reaches the schema as undefined, so missing is its only failure.
+    if (isDateType(fieldType)) {
+      schema = z.date({ error: requiredMessage });
+    }
+    return withDateParsing(applyCustomExpression(schema, config), fieldType);
   }
 
   // `null` too: it is a cleared field's value, as react-hook-form expects one to be.
-  return applyCustomExpression(schema, config).nullish();
+  return withDateParsing(applyCustomExpression(schema, config).nullish(), fieldType);
+}
+
+function isDateType(fieldType: FieldType): boolean {
+  return fieldType === 'date' || fieldType === 'datetime';
+}
+
+// Outside the optional wrapper: an unrecognised value must read as absent, not fail `z.date()`.
+function withDateParsing(schema: z.ZodTypeAny, fieldType: FieldType): z.ZodTypeAny {
+  return isDateType(fieldType) ? z.preprocess(toDateValue, schema) : schema;
 }
 
 export interface ModeAwareSchemaOptions {
@@ -181,10 +195,9 @@ function getBaseSchemaForType(
       return z.array(z.string());
 
     case 'date':
-      return z.coerce.date();
-
     case 'datetime':
-      return z.coerce.date();
+      // Parsed by `withDateParsing`; coercion would turn numbers and locale strings into dates.
+      return z.date();
 
     case 'file':
       // File validation is typically handled separately by the file input

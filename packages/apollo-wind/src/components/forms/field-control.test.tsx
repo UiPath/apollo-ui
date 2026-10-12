@@ -105,3 +105,34 @@ describe('FIELD_CONTROL_GEOMETRY', () => {
     expect(formField.onChange).toHaveBeenCalledWith(null);
   });
 });
+
+// Hosts seed date fields from JSON, so the bound value can be any string.
+describe('FieldControl date values', () => {
+  const dateField: FieldMetadata = { name: 'day', type: 'date', label: 'Day' };
+  const dateTimeField: FieldMetadata = { name: 'at', type: 'datetime', label: 'At' };
+
+  it('shows an ISO date-only value as that local calendar day', () => {
+    render(<FieldControl field={dateField} formField={binding('2026-09-23')} />);
+    expect(screen.getByText('September 23rd, 2026')).toBeInTheDocument();
+  });
+
+  it('shows an ISO date-time value as its local date and time', () => {
+    render(<FieldControl field={dateTimeField} formField={binding('2026-09-23T07:30')} />);
+    expect(screen.getByText(/September 23rd, 2026 at 07:30/)).toBeInTheDocument();
+  });
+
+  it.each([
+    ['an empty string', ''],
+    ['a locale string', 'Wed Sep 23 2026 00:00:00 GMT-0700 (Pacific Daylight Time)'],
+    ['an expression', '=vars.when'],
+  ])('shows the placeholders for %s instead of throwing', (_label, value) => {
+    render(
+      <>
+        <FieldControl field={dateField} formField={binding(value)} />
+        <FieldControl field={dateTimeField} formField={binding(value)} />
+      </>
+    );
+    expect(screen.getByText('Pick a date')).toBeInTheDocument();
+    expect(screen.getByText('Pick a date and time')).toBeInTheDocument();
+  });
+});

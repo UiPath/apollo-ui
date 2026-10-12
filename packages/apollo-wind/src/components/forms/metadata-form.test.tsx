@@ -1,9 +1,10 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { format } from 'date-fns';
 import { axe } from 'jest-axe';
 import type React from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import type { FormPlugin, FormSchema } from './form-schema';
+import type { FormPlugin, FormSchema, ValidationConfig } from './form-schema';
 import { MetadataForm } from './metadata-form';
 
 // Basic form schema for tests
@@ -1213,5 +1214,122 @@ describe('string-list field', () => {
   it('has no accessibility violations', async () => {
     const { container } = render(<MetadataForm schema={stringListSchema} container="div" />);
     expect(await axe(container)).toHaveNoViolations();
+  });
+});
+
+// Hosts seed date fields from JSON, so a value can be any string.
+describe('MetadataForm untyped date values', () => {
+  const dateSchema = (
+    initialData: Record<string, unknown>,
+    validation?: ValidationConfig
+  ): FormSchema => ({
+    id: 'dates',
+    title: 'Dates',
+    initialData,
+    sections: [
+      {
+        id: 's',
+        fields: [
+          { name: 'day', type: 'date', label: 'Day', validation },
+          { name: 'at', type: 'datetime', label: 'At', validation },
+        ],
+      },
+    ],
+  });
+
+  it.each([
+    ['an empty string', ''],
+    ['a locale string', 'Wed Sep 23 2026 00:00:00 GMT-0700 (Pacific Daylight Time)'],
+    ['an expression', '=vars.when'],
+  ])('shows the placeholders for %s instead of throwing', (_label, value) => {
+    render(<MetadataForm schema={dateSchema({ day: value, at: value })} />);
+    expect(screen.getByText('Pick a date')).toBeInTheDocument();
+    expect(screen.getByText('Pick a date and time')).toBeInTheDocument();
+  });
+
+  it('shows an ISO date-time value on both controls', () => {
+    const iso = '2026-09-23T07:00:00.000Z';
+    render(<MetadataForm schema={dateSchema({ day: iso, at: iso })} />);
+    const instant = new Date(iso);
+    expect(screen.getByText(format(instant, 'PPP'))).toBeInTheDocument();
+    expect(
+      screen.getByText(`${format(instant, 'PPP')} at ${format(instant, 'HH:mm')}`)
+    ).toBeInTheDocument();
+  });
+
+  it('submits an optional field holding an unrecognised value as absent', async () => {
+    const user = userEvent.setup();
+    const handleSubmit = vi.fn();
+    render(
+      <MetadataForm
+        schema={dateSchema({ day: '=vars.when', at: '2026' })}
+        onSubmit={handleSubmit}
+      />
+    );
+
+    await user.click(screen.getByRole('button', { name: /submit/i }));
+
+    await waitFor(() => expect(handleSubmit).toHaveBeenCalled());
+    expect(handleSubmit.mock.calls[0][0]).toMatchObject({ day: undefined, at: undefined });
+  });
+
+  it('gives a required field holding an unrecognised value the required message', async () => {
+    const user = userEvent.setup();
+    const handleSubmit = vi.fn();
+    render(
+      <MetadataForm
+        schema={dateSchema(
+          { day: '=vars.when', at: '2026-09-23T07:00' },
+          { required: true, messages: { required: 'Choose a day' } }
+        )}
+        onSubmit={handleSubmit}
+      />
+    );
+
+    await user.click(screen.getByRole('button', { name: /submit/i }));
+
+    expect(await screen.findByText('Choose a day')).toBeInTheDocument();
+    expect(handleSubmit).not.toHaveBeenCalled();
+  });
+
+  it('treats an unrecognised value as empty for a conditionally required field', async () => {
+    const user = userEvent.setup();
+    const handleSubmit = vi.fn();
+    render(
+      <MetadataForm
+        schema={{
+          id: 'conditional-date',
+          title: 'Conditional date',
+          initialData: { toggle: 'show', day: '=vars.when' },
+          sections: [
+            {
+              id: 's',
+              fields: [
+                { name: 'toggle', type: 'text', label: 'Toggle' },
+                {
+                  name: 'day',
+                  type: 'date',
+                  label: 'Day',
+                  validation: { required: true },
+                  rules: [
+                    {
+                      id: 'hide',
+                      conditions: [{ when: 'toggle', is: 'hide' }],
+                      effects: { visible: false },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        }}
+        onSubmit={handleSubmit}
+      />
+    );
+
+    await user.click(screen.getByRole('button', { name: /submit/i }));
+
+    expect(await screen.findByText('This field is required')).toBeInTheDocument();
+    expect(handleSubmit).not.toHaveBeenCalled();
   });
 });
