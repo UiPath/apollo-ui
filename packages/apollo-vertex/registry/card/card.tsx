@@ -33,10 +33,13 @@ interface CardProps
     VariantProps<typeof cardVariants> {
   selectable?: "standard" | "ai";
   selected?: boolean;
+  /** Classes for the outermost element, e.g. `col-span-*`. When `selectable` is set, `className` and all other props go to the inner button. */
+  wrapperClassName?: string;
 }
 
 function Card({
   className,
+  wrapperClassName,
   variant,
   selectable,
   selected = false,
@@ -48,7 +51,7 @@ function Card({
 
     return (
       <div
-        className="relative group/card h-full"
+        className={cn("relative group/card h-full", wrapperClassName)}
         data-slot="card"
         data-variant={variant}
         data-selectable={selectable}
@@ -108,7 +111,7 @@ function Card({
     <div
       data-slot="card"
       data-variant={variant}
-      className={cn(cardVariants({ variant, className }))}
+      className={cn(cardVariants({ variant }), className, wrapperClassName)}
       {...props}
     >
       {children}
