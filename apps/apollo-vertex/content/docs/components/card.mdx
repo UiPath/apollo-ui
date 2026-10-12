@@ -80,6 +80,8 @@ Use `variant="solid"` for a flat card with a solid background and border.
 
 Cards can be made selectable with `selectable="standard"` or `selectable="ai"`. Selectable cards render as a `<button>` with `aria-pressed` for accessibility. They show a glow effect on hover and when selected. The `ai` glow uses the AI gradient; see the [AI Toolkit](/guidelines/ai-toolkit) for guidance and richer AI card compositions.
 
+A selectable card is a glow wrapper around a button. `className` and other props like `style` go to the button. Put grid placement such as `col-span-*` in `wrapperClassName`, which always targets the outermost element.
+
 <div className="mt-4">
   <SelectableCardDemo />
 </div>
