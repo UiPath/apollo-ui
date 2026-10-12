@@ -7,8 +7,8 @@ Notifications provide timely feedback about user actions or system status. Used 
 
 There are two primary patterns in our system:
 
-- [**Sonner**](/shadcn-components/sonner) — time-based, non-modal notifications for lightweight feedback. Floating, transient, always tied to a user action, never blocking.
-- [**Alert**](/shadcn-components/alert) — inline notifications within page content for contextual, persistent, or blocking feedback. Structural, anchored to content, can be persistent or blocking.
+- [**Sonner**](/components/sonner) — time-based, non-modal notifications for lightweight feedback. Floating, transient, always tied to a user action, never blocking.
+- [**Alert**](/components/alert) — inline notifications within page content for contextual, persistent, or blocking feedback. Structural, anchored to content, can be persistent or blocking.
 
 Both components support status variants and theme-based contrast styles. Use them intentionally.
 
@@ -26,8 +26,8 @@ Triggered directly by a user action during a task.
 - Surface validation or errors
 
 **Pattern:**
-- [Sonner](/shadcn-components/sonner) for success or lightweight confirmation
-- Inline ([Alert](/shadcn-components/alert)) for validation, warnings, or blocking errors
+- [Sonner](/components/sonner) for success or lightweight confirmation
+- Inline ([Alert](/components/alert)) for validation, warnings, or blocking errors
 
 The message must clearly relate to the user's action.
 
@@ -41,10 +41,10 @@ Triggered by the system, independent of a user action.
 - Surface out-of-context events
 
 **Pattern:**
-- Inline ([Alert](/shadcn-components/alert)), anchored near relevant UI
+- Inline ([Alert](/components/alert)), anchored near relevant UI
 - Persistent when time-sensitive or important
 
-Avoid using [Sonner](/shadcn-components/sonner) for system-level updates that require awareness over time.
+Avoid using [Sonner](/components/sonner) for system-level updates that require awareness over time.
 
 **When there is no obvious relevant UI element** (for example, a background sync failure or session timeout), surface the alert as a persistent full-width banner directly below the main header. Do not use a floating Sonner notification for these cases.
 
@@ -52,11 +52,11 @@ Avoid using [Sonner](/shadcn-components/sonner) for system-level updates that re
 
 ## Sonner variant
 
-[Sonner](/shadcn-components/sonner) notifications are short, floating, non-modal messages used for quick feedback after a user action. They are always transient, never blocking, and always tied to something the user just did.
+[Sonner](/components/sonner) notifications are short, floating, non-modal messages used for quick feedback after a user action. They are always transient, never blocking, and always tied to something the user just did.
 
 ### When to use Sonner
 
-Use [Sonner](/shadcn-components/sonner) when:
+Use [Sonner](/components/sonner) when:
 
 - Confirming a successful or completed action — _example: "Project published", "Saved successfully"_
 - The feedback is short and non-blocking
@@ -72,11 +72,11 @@ Use [Sonner](/shadcn-components/sonner) when:
 - Persistent guidance or contextual messaging
 - System-generated events with no direct user trigger
 
-Use Inline ([Alert](/shadcn-components/alert)) instead.
+Use Inline ([Alert](/components/alert)) instead.
 
 ### Placement and behavior
 
-[Sonner](/shadcn-components/sonner) notifications appear at the **top-center of the screen**.
+[Sonner](/components/sonner) notifications appear at the **top-center of the screen**.
 
 > **Rationale:** The top-right corner is reserved for primary CTAs across our solutions. The bottom-right corner is reserved for the chat component. Top-center keeps notifications prominent and visible without competing with either.
 
@@ -87,7 +87,7 @@ Use Inline ([Alert](/shadcn-components/alert)) instead.
 | Manual dismiss | Close icon |
 | Persistent | Never |
 
-> Never use [Sonner](/shadcn-components/sonner) for errors that require resolution.
+> Never use [Sonner](/components/sonner) for errors that require resolution.
 
 ### Example
 
@@ -99,11 +99,11 @@ Use Inline ([Alert](/shadcn-components/alert)) instead.
 
 ## Inline variant (Alert)
 
-Inline notifications use the [Alert](/shadcn-components/alert) component and appear within the layout, near relevant UI elements. They provide contextual feedback tied to the current task or workflow. Unlike [Sonner](/shadcn-components/sonner), they are structural — they occupy space in the layout rather than floating above it.
+Inline notifications use the [Alert](/components/alert) component and appear within the layout, near relevant UI elements. They provide contextual feedback tied to the current task or workflow. Unlike [Sonner](/components/sonner), they are structural — they occupy space in the layout rather than floating above it.
 
 ### When to use Inline
 
-Use Inline ([Alert](/shadcn-components/alert)) when:
+Use Inline ([Alert](/components/alert)) when:
 
 - Feedback must remain visible in context
 - Displaying validation errors or warnings
@@ -191,7 +191,7 @@ The following areas are reserved and must not be obscured by floating notificati
 | Top-right | Primary CTAs |
 | Bottom-right | Chat component |
 
-No [Sonner](/shadcn-components/sonner) notification or floating overlay should appear in these areas. Top-center is the designated position for all [Sonner](/shadcn-components/sonner) notifications.
+No [Sonner](/components/sonner) notification or floating overlay should appear in these areas. Top-center is the designated position for all [Sonner](/components/sonner) notifications.
 
 <div className="mt-4">
   <LayoutDiagram />
@@ -203,8 +203,8 @@ No [Sonner](/shadcn-components/sonner) notification or floating overlay should a
 
 | Variant | Auto-dismiss | User-dismissible | Persistent |
 |---|---|---|---|
-| [Sonner](/shadcn-components/sonner) | Yes (5s) | Yes | No |
-| Inline ([Alert](/shadcn-components/alert)) | No | Optional | Yes |
+| [Sonner](/components/sonner) | Yes (5s) | Yes | No |
+| Inline ([Alert](/components/alert)) | No | Optional | Yes |
 
 ### Make Inline dismissible if
 
@@ -230,7 +230,7 @@ Each notification has a status that communicates tone and urgency through color 
 
 ### Status definitions
 
-Notification statuses align with the [Badge](/shadcn-components/badge) status system for consistent semantic meaning across the design system.
+Notification statuses align with the [Badge](/components/badge) status system for consistent semantic meaning across the design system.
 
 | Status | Usage | Token | Color | Sonner | Alert |
 |---|---|---|---|---|---|
@@ -310,14 +310,14 @@ Avoid driving users away from their workflow unless necessary.
 
 ## Quick decision guide
 
-### Use [Sonner](/shadcn-components/sonner) when
+### Use [Sonner](/components/sonner) when
 
 - Confirming success
 - The message is short
 - No action is required
 - The feedback is tied to a user action
 
-### Use Inline ([Alert](/shadcn-components/alert)) when
+### Use Inline ([Alert](/components/alert)) when
 
 - Displaying validation errors
 - The issue blocks progress
@@ -326,7 +326,7 @@ Avoid driving users away from their workflow unless necessary.
 - The system requires action
 - There is no user action to tie the message to
 
-> If the message blocks progress, it should **never** use [Sonner](/shadcn-components/sonner).
+> If the message blocks progress, it should **never** use [Sonner](/components/sonner).
 
 ### Choosing an Alert style
 
