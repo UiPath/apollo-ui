@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.80.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.79.0...@uipath/apollo-react@6.80.0) (2026-10-12)
+
+### Features
+
+* **apollo-react:** add Variables panel and align all Node Property panels ([963810c](https://github.com/UiPath/apollo-ui/commit/963810c50f371b40dad608ed8bac7fe35eff2965))
+
 ## [@uipath/apollo-react-v6.79.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.78.1...@uipath/apollo-react@6.79.0) (2026-10-12)
 
 ### Features
