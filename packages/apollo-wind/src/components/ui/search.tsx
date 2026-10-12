@@ -18,11 +18,12 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/index';
 
-export interface SearchProps extends Omit<InputGroupInputProps, 'onChange'> {
+interface SearchBaseProps extends Omit<InputGroupInputProps, 'onChange'> {
   value?: string;
-  onChange?: (value: string) => void;
   onClear?: () => void;
   showClearButton?: boolean;
+  /** Accessible label for the clear button. Pass a translated string. */
+  clearLabel?: string;
   variant?: InputGroupProps['variant'];
   size?: InputGroupProps['size'];
   /** Field-specific feedback rendered immediately below the search field. */
@@ -31,14 +32,34 @@ export interface SearchProps extends Omit<InputGroupInputProps, 'onChange'> {
   errorId?: string;
 }
 
+/**
+ * - Pass `onValueChange` for the string value; `onChange` then receives the native event.
+ *   Required under `asChild` wrappers (cmdk `Command.Input`, Radix Slot), which attach an event handler.
+ * - Without `onValueChange`, `onChange` receives the string (legacy).
+ */
+export type SearchProps = SearchBaseProps &
+  (
+    | {
+        onValueChange: (value: string) => void;
+        onChange?: React.ChangeEventHandler<HTMLInputElement>;
+      }
+    | {
+        onValueChange?: undefined;
+        /** @deprecated Pass `onValueChange` instead; `onChange` will receive the native event. */
+        onChange?: (value: string) => void;
+      }
+  );
+
 const Search = React.forwardRef<HTMLInputElement, SearchProps>(
   (
     {
       className,
       value,
       onChange,
+      onValueChange,
       onClear,
       showClearButton = true,
+      clearLabel = 'Clear',
       variant,
       size,
       error,
@@ -47,8 +68,26 @@ const Search = React.forwardRef<HTMLInputElement, SearchProps>(
     },
     ref
   ) => {
+    const inputRef = React.useRef<HTMLInputElement>(null);
+    React.useImperativeHandle(ref, () => inputRef.current as HTMLInputElement);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (onValueChange) {
+        (onChange as React.ChangeEventHandler<HTMLInputElement> | undefined)?.(e);
+        onValueChange(e.target.value);
+      } else {
+        (onChange as ((value: string) => void) | undefined)?.(e.target.value);
+      }
+    };
+
+    // Clear through a real input event so every onChange listener (incl. asChild wrappers) sees it.
     const handleClear = () => {
-      onChange?.('');
+      const input = inputRef.current;
+      if (input) {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set?.call(input, '');
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.focus();
+      }
       onClear?.();
     };
 
@@ -58,19 +97,19 @@ const Search = React.forwardRef<HTMLInputElement, SearchProps>(
           <SearchIcon className="text-muted-foreground" />
         </InputGroupAddon>
         <InputGroupInput
-          ref={ref}
+          ref={inputRef}
           type="search"
           className={cn(
             '[&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none',
             className
           )}
           value={value}
-          onChange={(e) => onChange?.(e.target.value)}
+          onChange={handleChange}
           {...props}
         />
         {showClearButton && value && (
           <InputGroupAddon align="inline-end">
-            <InputGroupButton icon size="3xs" aria-label="Clear" onClick={handleClear}>
+            <InputGroupButton icon size="3xs" aria-label={clearLabel} onClick={handleClear}>
               <X />
             </InputGroupButton>
           </InputGroupAddon>
@@ -88,6 +127,8 @@ export interface SearchWithSuggestionsProps {
   suggestions?: string[];
   onSelect?: (value: string) => void;
   emptyMessage?: string;
+  /** Accessible label for the clear button. Pass a translated string. */
+  clearLabel?: string;
   className?: string;
 }
 
@@ -100,6 +141,7 @@ const SearchWithSuggestions = React.forwardRef<HTMLDivElement, SearchWithSuggest
       suggestions = [],
       onSelect,
       emptyMessage = 'No results found.',
+      clearLabel,
       className,
     },
     ref
@@ -137,12 +179,8 @@ const SearchWithSuggestions = React.forwardRef<HTMLDivElement, SearchWithSuggest
             <div>
               <Search
                 value={searchValue}
-                onChange={handleInputChange}
-                onClear={() => {
-                  setSearchValue('');
-                  onChange?.('');
-                  setOpen(false);
-                }}
+                onValueChange={handleInputChange}
+                clearLabel={clearLabel}
                 placeholder={placeholder}
               />
             </div>
