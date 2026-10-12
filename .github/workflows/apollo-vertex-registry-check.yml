@@ -25,10 +25,20 @@ jobs:
         id: check
         env:
           GH_TOKEN: ${{ github.token }}
-          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          EXPECTED_FILES: ${{ github.event.pull_request.changed_files }}
         run: |
-          VERTEX_FILES=$(gh pr diff "$PR_URL" --name-only | grep -E '^(apps/apollo-vertex/|packages/apollo-vertex/|\.github/scripts/test-registry/|\.github/workflows/apollo-vertex-registry-check\.yml)' || true)
-          if [ -n "$VERTEX_FILES" ]; then
+          # The pulls/files API paginates past the 300-file cap of `gh pr diff` but stops at 3000
+          # files, so compare against the PR total. Fetch on its own line so an API failure fails
+          # the step. Renames also list their old path, so moving a file out of another directory
+          # counts.
+          FILES_TSV=$(gh api --paginate "repos/${GH_REPO}/pulls/${PR_NUMBER}/files" --jq '.[] | [.filename, (.previous_filename // "")] | @tsv')
+          LISTED=$(printf '%s\n' "$FILES_TSV" | grep -c . || true)
+          CHANGED_FILES=$(printf '%s\n' "$FILES_TSV" | tr '\t' '\n' | grep . || true)
+          VERTEX_FILES=$(printf '%s\n' "$CHANGED_FILES" | grep -E '^(apps/apollo-vertex/|packages/apollo-vertex/|\.github/scripts/test-registry/|\.github/workflows/apollo-vertex-registry-check\.yml)' || true)
+          # A truncated list can hide vertex files, so run the check rather than skip it.
+          if [ -n "$VERTEX_FILES" ] || [ "$LISTED" -ne "$EXPECTED_FILES" ]; then
             echo "has_vertex_changes=true" >> "$GITHUB_OUTPUT"
           else
             echo "has_vertex_changes=false" >> "$GITHUB_OUTPUT"
