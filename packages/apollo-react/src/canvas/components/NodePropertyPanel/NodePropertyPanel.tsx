@@ -64,6 +64,7 @@ export function NodePropertyPanel({
   onClose,
   nodeIcon,
   nodeLabel,
+  nodeLabelBadge,
   nodeCategory,
   nodeDescription,
   nodeLabelPlaceholder,
@@ -159,7 +160,34 @@ export function NodePropertyPanel({
   const isDescriptionEditable = !!onNodeDescriptionChange && !!onNodeDescriptionSubmit;
   const showsDescription = !!nodeDescription || isDescriptionEditable || !!nodeDescriptionError;
   const showsLabel = !!nodeLabel || isLabelEditable || !!nodeLabelError;
-  const hasNodeHeader = !!(showsLabel || nodeCategory || nodeIcon || action || showsDescription);
+  const hasNodeHeader = !!(
+    showsLabel ||
+    nodeLabelBadge ||
+    nodeCategory ||
+    nodeIcon ||
+    action ||
+    showsDescription
+  );
+
+  const labelText = (
+    <EditableText
+      value={nodeLabel ?? ''}
+      placeholder={
+        nodeLabelPlaceholder ??
+        _({ id: 'canvas.node_property_panel.name_placeholder', message: 'Name' })
+      }
+      size="lg"
+      onChange={onNodeLabelChange}
+      onSubmit={onNodeLabelSubmit}
+      disabled={disabled}
+      error={nodeLabelError}
+      aria-label={_({
+        id: 'canvas.node_property_panel.node_name',
+        message: 'Node name',
+      })}
+      data-testid="node-property-panel-label"
+    />
+  );
 
   // This panel is a live-edit surface: changes persist via plugins/onChange, so
   // there is no Submit button by default. Callers can still opt in by setting
@@ -218,24 +246,21 @@ export function NodePropertyPanel({
               </div>
             )}
             <div className="flex min-w-0 flex-1 flex-col justify-center">
-              {showsLabel && (
-                <EditableText
-                  value={nodeLabel ?? ''}
-                  placeholder={
-                    nodeLabelPlaceholder ??
-                    _({ id: 'canvas.node_property_panel.name_placeholder', message: 'Name' })
-                  }
-                  size="lg"
-                  onChange={onNodeLabelChange}
-                  onSubmit={onNodeLabelSubmit}
-                  disabled={disabled}
-                  error={nodeLabelError}
-                  aria-label={_({
-                    id: 'canvas.node_property_panel.node_name',
-                    message: 'Node name',
-                  })}
-                  data-testid="node-property-panel-label"
-                />
+              {nodeLabelBadge ? (
+                // Grid, not flex: the label truncates to make room for the badge instead of the
+                // badge wrapping, and EditableText's validation message (a sibling inside its
+                // fragment) drops to its own row under both.
+                <div className="grid min-w-0 grid-cols-[minmax(0,auto)_auto] items-center justify-start gap-x-2 [&>[data-slot=form-field-error]]:col-span-2 [&>[data-slot=form-field-error]]:row-start-2">
+                  {showsLabel && labelText}
+                  <div
+                    data-slot="node-property-panel-label-badge"
+                    className="col-start-2 row-start-1 flex items-center"
+                  >
+                    {nodeLabelBadge}
+                  </div>
+                </div>
+              ) : (
+                showsLabel && labelText
               )}
               {showsDescription ? (
                 <EditableText

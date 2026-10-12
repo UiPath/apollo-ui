@@ -519,6 +519,38 @@ export const Default: Story = {
   ),
 };
 
+export const LabelBadge: Story = {
+  name: 'Form Label Badge',
+  render: () => (
+    <PanelFrame>
+      <NodePropertyPanel
+        panelTitle="Properties"
+        nodeIcon={<Globe />}
+        nodeLabel="Fetch invoice details"
+        nodeLabelBadge={
+          <Badge variant="info" className="text-[10px] leading-4 font-medium">
+            Preview
+          </Badge>
+        }
+        nodeCategory="HTTP Request"
+        action={<RunButton />}
+        schema={httpRequestForm}
+        contentInset="0.875rem"
+        onClose={() => {}}
+        className="h-[640px]"
+      />
+    </PanelFrame>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          '`nodeLabelBadge` renders a status pill on the same line as the node name, for example a release stage. A long name truncates to make room for the pill.',
+      },
+    },
+  },
+};
+
 export const ChangedFields: Story = {
   name: 'Form Changed Fields',
   render: () => (

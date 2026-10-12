@@ -90,6 +90,49 @@ describe('NodePropertyPanel', () => {
     expect(screen.getByText('HTTP Request')).toBeInTheDocument();
   });
 
+  it('renders nodeLabelBadge on the label line', () => {
+    render(
+      <NodePropertyPanel
+        nodeLabel="Incoming call"
+        nodeLabelBadge={<span>Preview</span>}
+        nodeCategory="Triggers"
+        schema={MULTI_STEP}
+      />
+    );
+    const badge = screen.getByText('Preview');
+    const label = screen.getByTestId('node-property-panel-label');
+    expect(badge.closest('[data-slot="node-property-panel-label-badge"]')).toBeInTheDocument();
+    // Same line as the name: they share a parent row, while the category stays below it.
+    expect(badge.closest('[data-slot="node-property-panel-label-badge"]')?.parentElement).toBe(
+      label.parentElement
+    );
+    expect(screen.getByText('Triggers')).toBeInTheDocument();
+  });
+
+  it('renders no badge slot when nodeLabelBadge is omitted', () => {
+    const { container } = render(
+      <NodePropertyPanel nodeLabel="Incoming call" schema={MULTI_STEP} />
+    );
+    expect(
+      container.querySelector('[data-slot="node-property-panel-label-badge"]')
+    ).not.toBeInTheDocument();
+  });
+
+  it('keeps the label validation message alongside a badge', () => {
+    render(
+      <NodePropertyPanel
+        nodeLabel="1 bad name"
+        nodeLabelBadge={<span>Preview</span>}
+        onNodeLabelChange={vi.fn()}
+        onNodeLabelSubmit={vi.fn()}
+        nodeLabelError="Name can't start with a digit"
+        schema={MULTI_STEP}
+      />
+    );
+    expect(screen.getByText('Preview')).toBeInTheDocument();
+    expect(screen.getByText("Name can't start with a digit")).toBeInTheDocument();
+  });
+
   it('renders the description instead of the category when a description is given', () => {
     render(
       <NodePropertyPanel

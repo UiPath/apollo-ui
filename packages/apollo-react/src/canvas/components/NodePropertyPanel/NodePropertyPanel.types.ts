@@ -15,6 +15,11 @@ export interface NodePropertyPanelProps {
   nodeIcon?: ReactNode;
   /** The node's display label shown in the node identity row. */
   nodeLabel?: string;
+  /**
+   * Status pill rendered right after `nodeLabel` on the same line (e.g. a "Preview" badge).
+   * The label truncates to make room; a label validation message still renders below.
+   */
+  nodeLabelBadge?: ReactNode;
   /** Category/subtitle text shown below `nodeLabel` (e.g. "HTTP Request"). Fallback: a description, an editable description, or a description error takes the line instead. */
   nodeCategory?: string;
   /** User-authored description on the identity row's second line. Takes the line from `nodeCategory` whenever it is non-empty, as does an editable description (`onNodeDescriptionChange` and `onNodeDescriptionSubmit` together). */
