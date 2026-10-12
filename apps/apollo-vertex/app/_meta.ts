@@ -5,7 +5,6 @@ export default {
   patterns: "Patterns",
   templates: "Templates",
   guidelines: "Guidelines",
-  experiment: "Experiment",
   "data-querying": "Data Querying",
   localization: "Localization",
   mcp: "MCP Server",
