@@ -595,8 +595,8 @@ export const fontTokens: FontToken[] = [
   },
   {
     variable: "--font-mono",
-    label: "Mono (IBM Plex Mono)",
-    stack: "IBM Plex Mono, ui-monospace, monospace",
+    label: "Mono",
+    stack: "ui-monospace, monospace",
     specimen: 'const theme = "apollo-vertex";',
   },
 ];
