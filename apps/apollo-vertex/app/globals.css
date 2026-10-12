@@ -13,6 +13,20 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * Fumadocs draws the nested-folder guide line behind the sidebar items, so a
+ * selected or hovered nested item's background paints over it. Clip those
+ * backgrounds to start at the line; the active indicator then sits on it.
+ */
+:is(#nd-sidebar, #nd-sidebar-mobile) [data-state] > .pt-0\.5 > a,
+:is(#nd-sidebar, #nd-sidebar-mobile)
+  [data-state]
+  > .pt-0\.5
+  > [data-state]
+  > :is(a, button) {
+  clip-path: inset(0 0 0 calc(var(--spacing) * 2.5) round var(--radius-lg));
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
