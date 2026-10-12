@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v6.79.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.78.1...@uipath/apollo-react@6.79.0) (2026-10-12)
+
+### Features
+
+* **apollo-react:** mark preview PII entities in the guardrail builder [AL-625] ([b45cb10](https://github.com/UiPath/apollo-ui/commit/b45cb10a64f2568337dd3030261359b3d9dc39a4)), closes [UiPath/Agents#6566](https://github.com/UiPath/Agents/issues/6566)
+
 ## [@uipath/apollo-react-v6.78.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.78.0...@uipath/apollo-react@6.78.1) (2026-10-08)
 
 ### Bug Fixes
