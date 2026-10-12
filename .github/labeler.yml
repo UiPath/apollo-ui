@@ -20,7 +20,9 @@
 
 "app:apollo-vertex":
   - changed-files:
-      - any-glob-to-any-file: "apps/apollo-vertex/**"
+      - any-glob-to-any-file:
+          - "apps/apollo-vertex/**"
+          - "packages/apollo-vertex/**"
 
 "app:storybook":
   - changed-files:

@@ -55,13 +55,14 @@ apollo-ui/
 │   ├── apollo-core/       # 🎨 Design tokens, fonts
 │   ├── apollo-ui-icons/   # 🖼️ SVG icon set
 │   ├── apollo-react/      # ⚛️ Canvas components, chat, icons, MUI theme
+│   ├── apollo-vertex/     # 🌟 Vertex shadcn registry components (private)
 │   └── apollo-wind/       # 🎐 Tailwind + shadcn/ui
 │
 ├── web-packages/          # Cross-framework web components
 │   └── ap-chat/           # 💬 Chat web component
 │
 └── apps/                  # Demo & development applications
-    ├── apollo-vertex/     # 🌟 Main Storybook hub
+    ├── apollo-vertex/     # 🌟 Vertex documentation site and registry
     └── storybook/         # 📚 Component documentation
 ```
 

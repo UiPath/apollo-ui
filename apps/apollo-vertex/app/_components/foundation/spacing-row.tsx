@@ -1,4 +1,4 @@
-import type { SpacingStep } from "@/lib/foundation-tokens";
+import type { SpacingStep } from "../../../lib/foundation-tokens";
 
 const MAX_BAR_WIDTH = 320;
 

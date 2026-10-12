@@ -9,6 +9,7 @@ on:
         branches: [main]
         paths:
             - "apps/apollo-vertex/**"
+            - "packages/apollo-vertex/**"
 
 # Deny-all default; the enable-auto-merge job grants only what it needs.
 permissions: {}
@@ -31,10 +32,10 @@ jobs:
                   GH_REPO: ${{ github.repository }}
                   PR_URL: ${{ github.event.pull_request.html_url }}
               run: |
-                  FILES_OUTSIDE=$(gh pr diff "$PR_URL" --name-only | grep -v '^apps/apollo-vertex/' || true)
+                  FILES_OUTSIDE=$(gh pr diff "$PR_URL" --name-only | grep -vE '^(apps|packages)/apollo-vertex/' || true)
                   if [ -n "$FILES_OUTSIDE" ]; then
                     echo "vertex_only=false" >> "$GITHUB_OUTPUT"
-                    echo "Skipping auto-merge — PR touches files outside apps/apollo-vertex/:"
+                    echo "Skipping auto-merge — PR touches files outside apps/apollo-vertex/ and packages/apollo-vertex/:"
                     echo "$FILES_OUTSIDE"
                   else
                     echo "vertex_only=true" >> "$GITHUB_OUTPUT"

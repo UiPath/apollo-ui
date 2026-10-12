@@ -37,8 +37,8 @@
     "storybook:build": "turbo run storybook:build",
     "storybook:design": "turbo run storybook --filter=storybook-app",
     "clean": "turbo run clean && rm -rf .turbo && rm -rf node_modules",
-    "release": "pnpm --workspace-concurrency=1 --sort --filter './packages/*' --filter './web-packages/*' exec -- semantic-release",
-    "release:dry-run": "pnpm --workspace-concurrency=1 --sort --filter './packages/*' --filter './web-packages/*' exec -- semantic-release --dry-run",
+    "release": "pnpm --workspace-concurrency=1 --sort --filter './packages/*' --filter './web-packages/*' --filter '!@uipath/apollo-vertex' exec -- semantic-release",
+    "release:dry-run": "pnpm --workspace-concurrency=1 --sort --filter './packages/*' --filter './web-packages/*' --filter '!@uipath/apollo-vertex' exec -- semantic-release --dry-run",
     "publish:dev": "tsx scripts/publish-dev.ts",
     "unpublish:dev": "tsx scripts/unpublish-dev.ts",
     "prepare": "husky"

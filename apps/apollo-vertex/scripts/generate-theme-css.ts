@@ -3,7 +3,10 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const registryPath = join(__dirname, "../registry.json");
+const registryPath = join(
+  __dirname,
+  "../../../packages/apollo-vertex/registry.json",
+);
 const outputPath = join(__dirname, "../app/theme.generated.css");
 
 interface ThemeItem {

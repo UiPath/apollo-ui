@@ -37,7 +37,7 @@ interface AvailableCssVars {
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, '../../..');
-const vertexRoot = join(repoRoot, 'apps/apollo-vertex');
+const vertexRoot = join(repoRoot, 'packages/apollo-vertex');
 const registryPath = join(vertexRoot, 'registry.json');
 
 const baseRuntimeVars = new Set([
