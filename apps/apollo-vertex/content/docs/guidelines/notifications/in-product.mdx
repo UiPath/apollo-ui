@@ -83,7 +83,11 @@ Use Inline ([Alert](/components/alert)) instead.
 
 [Sonner](/components/sonner) notifications appear at the **top-center of the screen**.
 
-> **Rationale:** The top-right corner is reserved for primary CTAs across our solutions. The bottom-right corner is reserved for the chat component. Top-center keeps notifications prominent and visible without competing with either.
+<Callout type="info">
+
+**Rationale:** The top-right corner is reserved for primary CTAs across our solutions. The bottom-right corner is reserved for the chat component. Top-center keeps notifications prominent and visible without competing with either.
+
+</Callout>
 
 | Property | Value |
 |---|---|
@@ -92,7 +96,11 @@ Use Inline ([Alert](/components/alert)) instead.
 | Manual dismiss | Close icon |
 | Persistent | Never |
 
-> Never use [Sonner](/components/sonner) for errors that require resolution.
+<Callout type="warn">
+
+Never use [Sonner](/components/sonner) for errors that require resolution.
+
+</Callout>
 
 ### Example
 
@@ -135,7 +143,11 @@ Inline alerts support two visual styles. Choose based on the urgency and importa
 | Default | Tinted | Routine info, background updates, blocking errors, unresolved issues | No |
 | Accent | Outline | Contextual warnings, guidance, acknowledged states, unresolved requirements | Context-dependent |
 
-> When unsure, start with **default**. Use Accent only when the message needs a distinct visual call-out.
+<Callout type="info">
+
+When unsure, start with **default**. Use Accent only when the message needs a distinct visual call-out.
+
+</Callout>
 
 #### Default (tinted)
 
@@ -223,9 +235,17 @@ No [Sonner](/components/sonner) notification or floating overlay should appear i
 - The system requires user input
 - The message provides important ongoing context
 
-> Never rely on dismissibility for critical blockers.
+<Callout type="warn">
 
-> **Note:** Visual style does not determine dismissibility. An accent (outline) alert can be either dismissible or persistent depending on whether the condition it represents requires resolution. Missing required documents, for example, should use accent styling but remain persistent until all documents are provided.
+Never rely on dismissibility for critical blockers.
+
+</Callout>
+
+<Callout type="info">
+
+**Note:** Visual style does not determine dismissibility. An accent (outline) alert can be either dismissible or persistent depending on whether the condition it represents requires resolution. Missing required documents, for example, should use accent styling but remain persistent until all documents are provided.
+
+</Callout>
 
 ---
 
@@ -244,8 +264,12 @@ Notification statuses align with the [Badge](/components/badge) status system fo
 | `warning` | Potential issues or unintended consequences | `--warning` | `oklch(0.80 0.1401 80.82)` | `toast.warning()` | `status="warning"` |
 | `error` | Failures, blockers, critical issues | `--destructive` | `oklch(0.62 0.150 18)` | `toast.error()` | `status="error"` |
 
-> The Alert component supports `status="default"`, `status="warning"`, and `status="error"`. Use Sonner for success confirmations.
-> For persistent system guidance or background alerts, use `default` or `warning` in Alert.
+<Callout type="info">
+
+The Alert component supports `status="default"`, `status="warning"`, and `status="error"`. Use Sonner for success confirmations.
+For persistent system guidance or background alerts, use `default` or `warning` in Alert.
+
+</Callout>
 
 ---
 
@@ -266,7 +290,11 @@ Users should understand:
 - For errors, state what failed or what cannot be completed
 - _Examples: "Changes saved", "Connection failed"_
 
-> **Accessibility note:** Screen readers read the entire notification as one string. Do not rely on text styling alone to convey meaning.
+<Callout type="info">
+
+**Accessibility note:** Screen readers read the entire notification as one string. Do not rely on text styling alone to convey meaning.
+
+</Callout>
 
 ### Body text
 
@@ -331,7 +359,11 @@ Avoid driving users away from their workflow unless necessary.
 - The system requires action
 - There is no user action to tie the message to
 
-> If the message blocks progress, it should **never** use [Sonner](/components/sonner).
+<Callout type="warn">
+
+If the message blocks progress, it should **never** use [Sonner](/components/sonner).
+
+</Callout>
 
 ### Choosing an Alert style
 
@@ -340,4 +372,8 @@ Avoid driving users away from their workflow unless necessary.
 | Is the message routine, informational, or does it require immediate attention? | Yes | Default (tinted) |
 | Is the message contextual, a warning, or an unresolved requirement? | Yes | Accent (outline) |
 
-> When unsure, use **default**. Use Accent only when the message needs a distinct visual call-out.
+<Callout type="info">
+
+When unsure, use **default**. Use Accent only when the message needs a distinct visual call-out.
+
+</Callout>

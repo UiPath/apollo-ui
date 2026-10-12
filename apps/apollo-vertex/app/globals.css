@@ -1,7 +1,5 @@
 @import 'tailwindcss';
 @source "../../../packages/apollo-vertex/registry";
-@source "../templates";
-@source "../content";
 
 /* Fumadocs UI with its default neutral theme */
 @import 'fumadocs-ui/css/neutral.css';
@@ -27,11 +25,21 @@
   clip-path: inset(0 0 0 calc(var(--spacing) * 2.5) round var(--radius-lg));
 }
 
+/* Vertex border and focus colors for demos. The docs chrome keeps the
+   Fumadocs defaults, and the page background comes from Fumadocs. */
 @layer base {
-  * {
+  *:not(
+      :where(
+          #nd-sidebar,
+          #nd-sidebar *,
+          #nd-sidebar-mobile,
+          #nd-sidebar-mobile *,
+          #nd-subnav,
+          #nd-subnav *,
+          #nd-toc,
+          #nd-toc *
+        )
+    ) {
     @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
   }
 }
