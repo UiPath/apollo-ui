@@ -4,7 +4,7 @@ This file provides guidance for AI coding agents working in the `apollo-vertex` 
 
 ## Project Overview
 
-This app is the Nextra documentation site for Apollo Vertex. It does not own any components: their
+This app is the Fumadocs documentation site for Apollo Vertex. It does not own any components: their
 sources live in the `@uipath/apollo-vertex` package (`packages/apollo-vertex`). Read
 `packages/apollo-vertex/AGENTS.md` before changing a component.
 
@@ -14,8 +14,8 @@ The app consumes the package in two ways:
 - **shadcn registry**: `pnpm registry:build` compiles `packages/apollo-vertex/registry.json` into
   `public/r/*.json`, which consumers install with the shadcn CLI.
 
-Because `@/` is the package's namespace, files that belong to this app (`app/`, `templates/`, `lib/`)
-import each other with relative paths.
+Because `@/` is the package's namespace, files that belong to this app (`app/`, `content/`, `templates/`,
+`lib/`) import each other with relative paths.
 
 ## Commands
 
@@ -33,9 +33,10 @@ pnpm typecheck                # TypeScript type checking
 
 ```
 apps/apollo-vertex/
-├── app/                    # Next.js app router pages (MDX docs per component)
+├── app/                    # Next.js app router: layout, docs catch-all route, search index, API proxies
+├── content/docs/           # MDX docs pages; meta.json files set sidebar order and titles
 ├── templates/              # Example compositions used on docs pages
-├── lib/                    # Docs-only helpers (API proxy, foundation tokens, theme schema)
+├── lib/                    # Docs-only helpers (content source, API proxy, foundation tokens, theme schema)
 ├── scripts/                # Theme CSS and registry index generation
 └── public/r/               # Generated registry JSON (do not edit)
 ```
@@ -43,5 +44,6 @@ apps/apollo-vertex/
 ## Documenting a New Component
 
 1. Add the component and its `registry.json` entry in `packages/apollo-vertex` (see its AGENTS.md).
-2. Create a documentation page in `app/components/<component>/page.mdx`.
+2. Create a documentation page in `content/docs/components/<component>.mdx` with a `title` in its
+   frontmatter, and add the page to `content/docs/components/meta.json` to place it in the sidebar.
 3. Run `pnpm build` to confirm the docs and registry build.

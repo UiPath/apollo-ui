@@ -33,5 +33,5 @@ pnpm format        # Biome
 1. Create the component in `registry/<component>/<component>.tsx`.
 2. Add a `@/components/ui/<component>` alias to `tsconfig.json` if other components import it.
 3. Add the item to `registry.json`.
-4. Document it in `apps/apollo-vertex/app/components/<component>/page.mdx`.
+4. Document it in `apps/apollo-vertex/content/docs/components/<component>.mdx`.
 5. Run `pnpm --filter apollo-vertex registry:build` to check the registry output.

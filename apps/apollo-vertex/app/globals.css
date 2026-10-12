@@ -1,25 +1,17 @@
 @import 'tailwindcss';
 @source "../../../packages/apollo-vertex/registry";
 @source "../templates";
+@source "../content";
 
-/* Optional: import Nextra theme styles */
-@import 'nextra-theme-docs/style.css';
+/* Fumadocs UI with its default neutral theme */
+@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/preset.css';
 @import "tw-animate-css";
 
 /* Design tokens — generated from registry.json > apollo-vertex-theme */
 @import "./theme.generated.css";
 
-@custom-variant dark (&:is(.dark *)); /* or nextra-theme-blog/style.css */
-
-:root {
-  /* Override Nextra's background to match our theme */
-  --x-color-nextra-bg: var(--background);
-}
-
-.dark {
-  /* Override Nextra's background to match our theme */
-  --x-color-nextra-bg: var(--background);
-}
+@custom-variant dark (&:is(.dark *));
 
 @layer base {
   * {
