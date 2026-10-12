@@ -777,6 +777,7 @@ export type { PromptValueControlProps } from './components/ui/prompt-value-contr
 export { PromptValueControl } from './components/ui/prompt-value-control';
 export type {
   QuickFieldType,
+  QuickFormFieldControlProps,
   QuickFormFieldMode,
   QuickFormFieldMoreActions,
   QuickFormFieldOption,

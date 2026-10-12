@@ -11,12 +11,7 @@ import { InputGroupButton, InputGroupInput } from '../input-group';
 import { Label, RequiredIndicator } from '../label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../select';
 import { QuickFormField } from './quick-form-field';
-import {
-  FIELD_TYPE_META,
-  type QuickFieldType,
-  type QuickFormFieldMode,
-  type QuickFormFieldStrings,
-} from './types';
+import type { QuickFieldType, QuickFormFieldMode, QuickFormFieldStrings } from './types';
 
 const meta = {
   title: 'Components/UiPath/Quick Form Field',
@@ -33,11 +28,11 @@ describe the fields to \`MetadataForm\`; for a single field outside a form, comp
 the form-field anatomy (\`FormField\`, \`FormFieldLabel\`, \`InputGroup\`). See
 **Forms/Guidance Field Anatomy**.
 
-- Left lock icon toggles Editable / Read-only. Read-only fields show plain
-  text, not a disabled control.
+- Left lock icon toggles Editable / Read-only for the person filling in the
+  form. The author can still edit a read-only value; \`disabled\` is what
+  disables the controls.
 - Right value-mode icon switches between Fixed value and Expression,
-  updating the value styling. Only shown for types an expression can
-  produce. \`renderModeControl\` supplies the control for any mode, and a
+  updating the value styling. \`renderModeControl\` supplies the control for any mode, and a
   consumer's \`trailingAddon\` can offer all four. See **Variable and prompt modes**.
 - Field type dropdown swaps the control itself: String, Integer, Decimal
   number, Date, Date and time, Boolean, Single select, Multi select, Array,
@@ -103,9 +98,6 @@ function DefaultDemo() {
   const handleFieldTypeChange = (type: QuickFieldType) => {
     setFieldType(type);
     setValue('');
-    if (!FIELD_TYPE_META[type].supportsExpression) {
-      setMode('literal');
-    }
   };
 
   if (deleted) return null;
@@ -415,6 +407,33 @@ export const InlineValidation: Story = {
   },
 };
 
+export const Disabled: Story = {
+  render: () => (
+    <div className="w-80">
+      <QuickFormField
+        value="option-2"
+        fieldType="single-select"
+        locked
+        onLockedChange={() => {}}
+        onValueChange={() => {}}
+        onModeChange={() => {}}
+        onFieldTypeChange={() => {}}
+        onRequiredChange={() => {}}
+        variables={[{ label: 'Item ID', value: 'item.id' }]}
+        disabled
+      />
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use `disabled` to stop the author editing the field. It disables the value control, the lock, the value-mode menu, and the header controls. A locked field stays editable: the lock only marks the value read-only for the person filling in the form.',
+      },
+    },
+  },
+};
+
 const MODE_ITEMS: { mode: QuickFormFieldMode; label: string; icon: typeof Type }[] = [
   { mode: 'literal', label: 'Fixed value', icon: Type },
   { mode: 'expression', label: 'Expression', icon: Code2 },
@@ -690,9 +709,6 @@ function ResponsiveDemo() {
   const handleFieldTypeChange = (type: QuickFieldType) => {
     setFieldType(type);
     setValue('');
-    if (!FIELD_TYPE_META[type].supportsExpression) {
-      setMode('literal');
-    }
   };
 
   const label = (fieldId: string) => (

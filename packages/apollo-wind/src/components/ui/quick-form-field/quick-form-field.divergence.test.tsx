@@ -3,7 +3,6 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { QuickFormField } from './quick-form-field';
 import { FIELD_TYPE_META, FIELD_TYPE_ORDER } from './types';
-import { getLockedDisplayValue } from './utils';
 
 /**
  * Covers the widenings added on top of the original component: the extra types
@@ -108,24 +107,19 @@ describe('QuickFormField — divergences from apollo-wind', () => {
       ).toBeInTheDocument();
     });
 
-    // Locked fields show text in place of the control, so every added type
-    // needs a display form or it renders blank.
-    it('shows the time of day when a locked datetime is displayed', () => {
-      const shown = getLockedDisplayValue('datetime', '2024-01-15T13:45:00.000Z', []);
-      expect(shown).not.toBe('');
-      expect(shown).not.toBe('2024-01-15T13:45:00.000Z');
-      // A date-only render would drop the clock time entirely.
-      const dateOnly = getLockedDisplayValue('date', '2024-01-15', []);
-      expect(shown).not.toBe(dateOnly);
-    });
-
-    it('falls back to the raw value for an unparseable datetime rather than throwing', () => {
-      expect(getLockedDisplayValue('datetime', 'not-a-date', [])).toBe('not-a-date');
-      expect(getLockedDisplayValue('datetime', '', [])).toBe('');
-    });
-
-    it('treats an array as an expression-capable value, like object', () => {
-      expect(FIELD_TYPE_META.array.supportsExpression).toBe(true);
+    it('renders the expression input for every type in expression mode', () => {
+      for (const fieldType of FIELD_TYPE_ORDER) {
+        const { unmount } = render(
+          <QuickFormField
+            fieldType={fieldType}
+            mode="expression"
+            value="$vars.x"
+            onValueChange={vi.fn()}
+          />
+        );
+        expect(screen.getByDisplayValue('$vars.x')).toHaveClass('font-mono');
+        unmount();
+      }
     });
   });
 
@@ -140,23 +134,8 @@ describe('QuickFormField — divergences from apollo-wind', () => {
       }
     });
 
-    // Only `expression` is coerced for a type that cannot hold one.
-    it('still pins a non-expression type out of expression mode', () => {
-      render(
-        <QuickFormField
-          locked
-          fieldType="single-select"
-          mode="expression"
-          value="option-1"
-          options={[{ label: 'Option 1', value: 'option-1' }]}
-        />
-      );
-      expect(screen.getByDisplayValue('Option 1')).toBeInTheDocument();
-    });
-
-    // The consumer is offered the raw mode, even one the built-in rendering
-    // would coerce away, since it may have its own editor.
-    it('offers a non-expression type its expression mode to the consumer', () => {
+    // A consumer's own editor replaces the built-in expression input for any type.
+    it('offers a select its expression mode to the consumer', () => {
       render(
         <QuickFormField
           locked={false}
@@ -169,8 +148,7 @@ describe('QuickFormField — divergences from apollo-wind', () => {
       expect(screen.getByText('consumer expression')).toBeInTheDocument();
     });
 
-    // ...but a select CAN be bound to a variable, so that mode must survive.
-    it('lets a non-expression type use a variable binding', () => {
+    it('lets a select use a variable binding', () => {
       render(
         <QuickFormField
           locked={false}

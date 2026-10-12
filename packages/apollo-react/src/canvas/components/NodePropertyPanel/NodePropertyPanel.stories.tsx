@@ -2440,7 +2440,6 @@ export function QuickFormPanel({
               ...c,
               fieldType,
               value: '',
-              mode: FIELD_TYPE_META[fieldType].supportsExpression ? c.mode : 'literal',
             }
           : c
       )
@@ -3305,7 +3304,6 @@ function PanelUIInventoryStory() {
   const updateCompositionFieldType = (fieldType: QuickFieldType) => {
     setCompositionFieldType(fieldType);
     setCompositionValue('');
-    if (!FIELD_TYPE_META[fieldType].supportsExpression) setCompositionMode('literal');
   };
 
   return (
