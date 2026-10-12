@@ -1,4 +1,4 @@
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
 import { CalendarIcon, Clock } from 'lucide-react';
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
@@ -64,23 +64,20 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
     const generatedId = React.useId();
     const validationId =
       errorId ?? `${id ?? `datetime-picker-${generatedId.replace(/:/g, '')}`}-error`;
-    const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(value);
+    // Trusts the `Date` type only as far as not throwing: anything else is no value.
+    const date = value instanceof Date && isValid(value) ? value : undefined;
+    const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(date);
     // A native time input only accepts 24-hour text; use12Hour affects the display alone.
-    const [timeValue, setTimeValue] = React.useState<string>(value ? format(value, 'HH:mm') : '');
+    const [timeValue, setTimeValue] = React.useState<string>(date ? format(date, 'HH:mm') : '');
 
     // Re-seed when the parent changes the value, compared by time so a fresh Date with the
     // same instant (or our own change echoed back) is not a change.
-    const valueTime = value?.getTime();
+    const valueTime = date?.getTime();
     const [seededTime, setSeededTime] = React.useState(valueTime);
     if (!Object.is(valueTime, seededTime)) {
       setSeededTime(valueTime);
-      if (value === undefined) {
-        setSelectedDate(undefined);
-        setTimeValue('');
-      } else if (!Number.isNaN(valueTime)) {
-        setSelectedDate(value);
-        setTimeValue(format(value, 'HH:mm'));
-      }
+      setSelectedDate(date);
+      setTimeValue(date ? format(date, 'HH:mm') : '');
     }
 
     const handleDateSelect = (date: Date | undefined) => {
@@ -91,6 +88,7 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
         date.setHours(selectedDate.getHours());
         date.setMinutes(selectedDate.getMinutes());
         date.setSeconds(selectedDate.getSeconds());
+        date.setMilliseconds(selectedDate.getMilliseconds());
       }
 
       setSelectedDate(date);

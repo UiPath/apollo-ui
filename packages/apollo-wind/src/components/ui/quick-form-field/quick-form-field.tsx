@@ -15,18 +15,13 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib';
+import { toDateValue } from '@/lib/date-value';
 import { FieldMenu, type FieldMenuItem } from '../field-addons/field-menu';
 import { FieldHeader } from './components/field-header';
 import { LockToggleButton } from './components/lock-toggle-button';
 import type { QuickFormFieldControlProps, QuickFormFieldProps } from './types';
 import { DEFAULT_QUICK_FORM_FIELD_STRINGS, FIELD_TYPE_META } from './types';
-import {
-  DEFAULT_SELECT_OPTIONS,
-  formatDateValue,
-  parseDateValue,
-  parseListValue,
-  toDateOnlyString,
-} from './utils';
+import { DEFAULT_SELECT_OPTIONS, formatDateValue, parseListValue, toDateOnlyString } from './utils';
 
 /**
  * A Quick Form is assembled by end users, like a form builder. QuickFormField is
@@ -289,7 +284,7 @@ export function QuickFormField({
         <PopoverContent align="start" className="w-auto p-0">
           <Calendar
             mode="single"
-            selected={parseDateValue(value)}
+            selected={toDateValue(value)}
             onSelect={(date) => editableOnValueChange?.(date ? toDateOnlyString(date) : '')}
             initialFocus
           />
@@ -300,7 +295,7 @@ export function QuickFormField({
       // than the date branch's Calendar popover. Stored as an ISO string.
       <DateTimePicker
         id={fieldId}
-        value={parseDateValue(value)}
+        value={toDateValue(value)}
         onValueChange={(date) => editableOnValueChange?.(date ? date.toISOString() : '')}
         onOpenChange={(open) => {
           if (!open) onValueBlur?.();
