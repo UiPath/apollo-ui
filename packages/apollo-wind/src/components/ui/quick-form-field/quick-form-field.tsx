@@ -18,12 +18,11 @@ import { cn } from '@/lib';
 import { FieldMenu, type FieldMenuItem } from '../field-addons/field-menu';
 import { FieldHeader } from './components/field-header';
 import { LockToggleButton } from './components/lock-toggle-button';
-import type { QuickFormFieldProps } from './types';
+import type { QuickFormFieldControlProps, QuickFormFieldProps } from './types';
 import { DEFAULT_QUICK_FORM_FIELD_STRINGS, FIELD_TYPE_META } from './types';
 import {
   DEFAULT_SELECT_OPTIONS,
   formatDateValue,
-  getLockedDisplayValue,
   parseDateValue,
   parseListValue,
   toDateOnlyString,
@@ -32,9 +31,9 @@ import {
 /**
  * A Quick Form is assembled by end users, like a form builder. QuickFormField is
  * the control for an individual field within it, and carries its own
- * configuration controls: a lock that makes it read-only, a data-type switch
- * that swaps the control, a Required toggle, and a value-mode switch across
- * `literal`, `expression`, `variable` and `prompt`.
+ * configuration controls: a lock that marks it read-only for the person filling
+ * in the form, a data-type switch that swaps the control, a Required toggle, and
+ * a value-mode switch across `literal`, `expression`, `variable` and `prompt`.
  *
  * Only use it within a quick form builder. For standard forms, compose the
  * form-field anatomy (`FormField`, `FormFieldLabel`, `InputGroup`, …) or
@@ -42,6 +41,8 @@ import {
  *
  * - Literal and expression have built-in controls; `renderModeControl`
  *   supplies the control for any mode, and `variable` / `prompt` need it.
+ * - `locked` is configuration the author sets, so the value stays editable;
+ *   `disabled` is what stops the author editing the field.
  * - `fieldTypes` chooses which types the picker offers.
  * - Insert variable renders `variables` as supplied and splices at the caret;
  *   `onInsertVariable` takes over what inserting means.
@@ -60,6 +61,7 @@ export function QuickFormField({
   locked = true,
   onLockedChange,
   showLock = true,
+  disabled = false,
   leadingAddon,
   trailingAddon,
   more,
@@ -107,37 +109,31 @@ export function QuickFormField({
   const fieldId = id ?? generatedId;
   const validationId = errorId ?? `${fieldId}-error`;
   const typeMeta = FIELD_TYPE_META[fieldType];
-  // Only `expression` is coerced: a select cannot hold JS, but it can still be
-  // bound to a variable or filled by a prompt.
-  const effectiveMode = mode === 'expression' && !typeMeta.supportsExpression ? 'literal' : mode;
-  const editableOnValueChange = locked ? undefined : onValueChange;
+  const editableOnValueChange = disabled ? undefined : onValueChange;
   const typeLabel = strings.typeLabels[fieldType] ?? typeMeta.label;
   const fieldLabel =
-    effectiveMode === 'expression'
+    mode === 'expression'
       ? strings.expressionFieldLabel(typeLabel)
       : strings.valueFieldLabel(typeLabel);
   // The consumer's wording wins on the control; the computed name still labels
   // the field for assistive tech.
   const valuePlaceholder = placeholder ?? fieldLabel;
   const menuActions: FieldMenuItem[] = [
-    ...(more?.onClear && !locked
+    ...(more?.onClear
       ? [{ id: 'clear', label: strings.clearValue, icon: Trash2, onSelect: more.onClear }]
       : []),
     ...(more?.onRefresh
       ? [{ id: 'refresh', label: strings.forceRefresh, icon: RefreshCw, onSelect: more.onRefresh }]
       : []),
   ];
-  // Modes and actions share one menu. A type with no expression mode, or a field with no mode
-  // handler, offers only its actions; with neither, an expression-capable type keeps a disabled
-  // mode trigger so the field still shows how its value is expressed.
-  const offersModes = typeMeta.supportsExpression && !!onModeChange;
-  const showsMenu = typeMeta.supportsExpression || menuActions.length > 0;
-  const builtInMenu = showsMenu ? (
+  // Modes and actions share one menu. A field with no mode handler offers only its actions; with
+  // neither, it keeps a disabled mode trigger so the field still shows how its value is expressed.
+  const builtInMenu = (
     <FieldMenu
-      mode={effectiveMode}
+      mode={mode}
       onSelect={(next) => onModeChange?.(next)}
-      modesDisabled={!offersModes && menuActions.length > 0}
-      disabled={!offersModes && menuActions.length === 0}
+      modesDisabled={!onModeChange && menuActions.length > 0}
+      disabled={disabled || (!onModeChange && menuActions.length === 0)}
       actions={menuActions}
       triggerLabel={strings.valueModeAriaLabel}
       literalDescription={strings.literalDescriptions[fieldType] ?? typeMeta.fixedDescription}
@@ -148,25 +144,25 @@ export function QuickFormField({
         fieldActions: strings.moreActionsAriaLabel,
       }}
     />
-  ) : null;
+  );
 
-  // Resolved before the tree so returning nothing falls back to the built-in
-  // control. Offered the raw mode, not `effectiveMode`: the coercion protects
-  // the built-in rendering and must not decide for a consumer with its own editor.
-  const modeControl =
-    renderModeControl?.(mode, {
-      id: fieldId,
-      value,
-      onValueChange: editableOnValueChange,
-      onBlur: onValueBlur,
-      readOnly: !editableOnValueChange,
-      placeholder: valuePlaceholder,
-      fieldType,
-      'aria-invalid': error ? true : undefined,
-      'aria-describedby': error ? validationId : undefined,
-      'aria-errormessage': error ? validationId : undefined,
-      'data-slot': 'input-group-control',
-    }) ?? null;
+  const controlProps: QuickFormFieldControlProps = {
+    id: fieldId,
+    value,
+    onValueChange: editableOnValueChange,
+    onBlur: onValueBlur,
+    readOnly: !editableOnValueChange,
+    disabled,
+    placeholder: valuePlaceholder,
+    fieldType,
+    'aria-invalid': error ? true : undefined,
+    'aria-describedby': error ? validationId : undefined,
+    'aria-errormessage': error ? validationId : undefined,
+    'data-slot': 'input-group-control',
+  };
+
+  // Resolved before the tree so returning nothing falls back to the built-in control.
+  const modeControl = renderModeControl?.(mode, controlProps) ?? null;
 
   // Switching mode is a prelude to writing the value, so focus the control.
   // Skipped on mount so rendering a form cannot steal focus.
@@ -186,7 +182,7 @@ export function QuickFormField({
     }
     if (e.key === 'Escape') {
       e.preventDefault();
-      onValueChange?.(committedRef.current);
+      editableOnValueChange?.(committedRef.current);
       e.currentTarget.blur();
     }
   };
@@ -214,10 +210,157 @@ export function QuickFormField({
     });
   };
 
-  // Locked fields are read-only, not disabled — the raw control (switch, date
-  // picker, select) has nothing left to do once editing is blocked, so it's
-  // replaced with plain, selectable text showing the same value.
-  const lockedDisplayValue = getLockedDisplayValue(fieldType, value, options, strings);
+  // Shared by the expression input and the literal text input, which both
+  // track the caret for Insert variable.
+  const textInputProps = {
+    id: fieldId,
+    ref: valueInputRef,
+    readOnly: !editableOnValueChange,
+    disabled,
+    value,
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => editableOnValueChange?.(e.target.value),
+    onFocus: (e: React.FocusEvent<HTMLInputElement>) => {
+      committedRef.current = value;
+      caretRef.current = {
+        start: e.currentTarget.selectionStart ?? value.length,
+        end: e.currentTarget.selectionEnd ?? value.length,
+      };
+    },
+    onSelect: (e: React.SyntheticEvent<HTMLInputElement>) => {
+      const el = e.currentTarget;
+      caretRef.current = {
+        start: el.selectionStart ?? 0,
+        end: el.selectionEnd ?? el.selectionStart ?? 0,
+      };
+    },
+    onKeyDown: handleValueKeyDown,
+    onBlur: (e: React.FocusEvent<HTMLInputElement>) => {
+      // Clicking the Insert trigger blurs this input, so this is the last
+      // moment the caret is knowable.
+      caretRef.current = {
+        start: e.currentTarget.selectionStart ?? value.length,
+        end: e.currentTarget.selectionEnd ?? value.length,
+      };
+      onValueBlur?.();
+    },
+    placeholder: valuePlaceholder,
+  };
+
+  const literalControl =
+    fieldType === 'boolean' ? (
+      <div className="flex h-full flex-1 items-center px-3">
+        <Switch
+          id={fieldId}
+          aria-invalid={controlProps['aria-invalid']}
+          aria-describedby={controlProps['aria-describedby']}
+          aria-errormessage={controlProps['aria-errormessage']}
+          checked={value === 'true'}
+          onCheckedChange={(checked) => editableOnValueChange?.(String(checked))}
+          onBlur={onValueBlur}
+          disabled={!editableOnValueChange}
+        />
+      </div>
+    ) : fieldType === 'date' ? (
+      <Popover
+        open={datePopoverOpen}
+        onOpenChange={(open) => {
+          setDatePopoverOpen(open);
+          if (!open) onValueBlur?.();
+        }}
+      >
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            id={fieldId}
+            data-slot="input-group-control"
+            aria-invalid={controlProps['aria-invalid']}
+            aria-describedby={controlProps['aria-describedby']}
+            aria-errormessage={controlProps['aria-errormessage']}
+            disabled={!editableOnValueChange}
+            className="flex h-full flex-1 items-center text-left text-sm text-foreground outline-none disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {value ? (
+              formatDateValue(value)
+            ) : (
+              <span className="text-muted-foreground">{strings.pickDate}</span>
+            )}
+          </button>
+        </PopoverTrigger>
+        <PopoverContent align="start" className="w-auto p-0">
+          <Calendar
+            mode="single"
+            selected={parseDateValue(value)}
+            onSelect={(date) => editableOnValueChange?.(date ? toDateOnlyString(date) : '')}
+            initialFocus
+          />
+        </PopoverContent>
+      </Popover>
+    ) : fieldType === 'datetime' ? (
+      // A timestamp needs the time of day, so it uses DateTimePicker rather
+      // than the date branch's Calendar popover. Stored as an ISO string.
+      <DateTimePicker
+        id={fieldId}
+        value={parseDateValue(value)}
+        onValueChange={(date) => editableOnValueChange?.(date ? date.toISOString() : '')}
+        onOpenChange={(open) => {
+          if (!open) onValueBlur?.();
+        }}
+        disabled={!editableOnValueChange}
+        placeholder={valuePlaceholder}
+      />
+    ) : fieldType === 'file' ? (
+      <FileUpload
+        id={fieldId}
+        ariaLabel={fileUploadAriaLabel ?? (typeof label === 'string' ? label : fieldLabel)}
+        className="flex-1"
+        onFilesChange={(files) => editableOnValueChange?.(files.map((f) => f.name).join(', '))}
+        disabled={!editableOnValueChange}
+        onBlur={onValueBlur}
+        aria-invalid={controlProps['aria-invalid']}
+        aria-describedby={controlProps['aria-describedby']}
+        aria-errormessage={controlProps['aria-errormessage']}
+      />
+    ) : fieldType === 'single-select' ? (
+      <Select
+        open={selectOpen}
+        onOpenChange={(open) => {
+          setSelectOpen(open);
+          if (!open && selectOpen) onValueBlur?.();
+        }}
+        value={value || undefined}
+        onValueChange={editableOnValueChange}
+        disabled={!editableOnValueChange}
+      >
+        <SelectTrigger id={fieldId}>
+          <SelectValue placeholder={strings.selectOption} />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    ) : fieldType === 'multi-select' ? (
+      <MultiSelect
+        id={fieldId}
+        options={options}
+        selected={parseListValue(value)}
+        onChange={(selected) => editableOnValueChange?.(JSON.stringify(selected))}
+        placeholder={strings.selectOptions}
+        disabled={!editableOnValueChange}
+        onBlur={onValueBlur}
+      />
+    ) : (
+      <InputGroupInput
+        {...textInputProps}
+        // `step="any"` lets a `double` accept fractions; the default step of 1
+        // makes "10.5" invalid.
+        type={fieldType === 'integer' || fieldType === 'double' ? 'number' : 'text'}
+        step={fieldType === 'double' ? 'any' : undefined}
+      />
+    );
 
   return (
     <div
@@ -236,6 +379,8 @@ export function QuickFormField({
         onFieldTypeChange={onFieldTypeChange}
         onRequiredChange={onRequiredChange}
         compact={compact}
+        disabled={disabled}
+        isExpression={mode === 'expression'}
         showFieldActions={showFieldActions}
         onValueChange={editableOnValueChange}
         variables={variables}
@@ -249,275 +394,50 @@ export function QuickFormField({
         strings={strings}
       />
 
-      {typeMeta.supportsExpression ? (
-        <InputGroup
-          error={error}
-          errorId={validationId}
-          // The dropzone is taller than a row, so the box grows to hold it.
-          layout={fieldType === 'file' && !locked && effectiveMode === 'literal' ? 'grow' : 'row'}
-        >
-          {(showLock || leadingAddon !== undefined) && leadingAddon !== null && (
-            <InputGroupAddon align="inline-start">
-              {leadingAddon !== undefined
-                ? leadingAddon
-                : showLock && (
-                    <LockToggleButton
-                      locked={locked}
-                      onLockedChange={onLockedChange}
-                      strings={strings}
-                    />
-                  )}
-            </InputGroupAddon>
-          )}
-
-          {modeControl ??
-            (effectiveMode === 'expression' ? (
-              renderExpressionEditor ? (
-                renderExpressionEditor({
-                  id: fieldId,
-                  value,
-                  onValueChange: editableOnValueChange,
-                  onBlur: onValueBlur,
-                  readOnly: !editableOnValueChange,
-                  placeholder: valuePlaceholder,
-                  fieldType,
-                  'aria-invalid': error ? true : undefined,
-                  'aria-describedby': error ? validationId : undefined,
-                  'aria-errormessage': error ? validationId : undefined,
-                  'data-slot': 'input-group-control',
-                })
-              ) : (
-                <InputGroupInput
-                  id={fieldId}
-                  ref={valueInputRef}
-                  readOnly={!editableOnValueChange}
-                  value={value}
-                  onChange={(e) => editableOnValueChange?.(e.target.value)}
-                  onFocus={(e) => {
-                    committedRef.current = value;
-                    caretRef.current = {
-                      start: e.currentTarget.selectionStart ?? value.length,
-                      end: e.currentTarget.selectionEnd ?? value.length,
-                    };
-                  }}
-                  onSelect={(e) => {
-                    const el = e.currentTarget;
-                    caretRef.current = {
-                      start: el.selectionStart ?? 0,
-                      end: el.selectionEnd ?? el.selectionStart ?? 0,
-                    };
-                  }}
-                  onKeyDown={handleValueKeyDown}
-                  onBlur={(e) => {
-                    caretRef.current = {
-                      start: e.currentTarget.selectionStart ?? value.length,
-                      end: e.currentTarget.selectionEnd ?? value.length,
-                    };
-                    onValueBlur?.();
-                  }}
-                  placeholder={valuePlaceholder}
-                  className="font-mono"
-                />
-              )
-            ) : locked ? (
-              <InputGroupInput
-                id={fieldId}
-                readOnly
-                value={lockedDisplayValue}
-                placeholder={valuePlaceholder}
-                onBlur={onValueBlur}
-              />
-            ) : fieldType === 'boolean' ? (
-              <div className="flex h-full flex-1 items-center px-3">
-                <Switch
-                  id={fieldId}
-                  aria-invalid={error ? true : undefined}
-                  aria-describedby={error ? validationId : undefined}
-                  aria-errormessage={error ? validationId : undefined}
-                  checked={value === 'true'}
-                  onCheckedChange={(checked) => onValueChange?.(String(checked))}
-                  onBlur={onValueBlur}
-                  disabled={!onValueChange}
-                />
-              </div>
-            ) : fieldType === 'date' ? (
-              <Popover
-                open={datePopoverOpen}
-                onOpenChange={(open) => {
-                  setDatePopoverOpen(open);
-                  if (!open) onValueBlur?.();
-                }}
-              >
-                <PopoverTrigger asChild>
-                  <button
-                    type="button"
-                    id={fieldId}
-                    data-slot="input-group-control"
-                    aria-invalid={error ? true : undefined}
-                    aria-describedby={error ? validationId : undefined}
-                    aria-errormessage={error ? validationId : undefined}
-                    disabled={!onValueChange}
-                    className="flex h-full flex-1 items-center text-left text-sm text-foreground outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {value ? (
-                      formatDateValue(value)
-                    ) : (
-                      <span className="text-muted-foreground">{strings.pickDate}</span>
-                    )}
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent align="start" className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={parseDateValue(value)}
-                    onSelect={(date) => onValueChange?.(date ? toDateOnlyString(date) : '')}
-                    initialFocus
+      <InputGroup
+        error={error}
+        errorId={validationId}
+        disabled={disabled}
+        // The dropzone is taller than a row and selected chips wrap past one, so
+        // the box grows to hold them.
+        layout={
+          mode === 'literal' && (fieldType === 'file' || fieldType === 'multi-select')
+            ? 'grow'
+            : 'row'
+        }
+      >
+        {(showLock || leadingAddon !== undefined) && leadingAddon !== null && (
+          <InputGroupAddon align="inline-start">
+            {leadingAddon !== undefined
+              ? leadingAddon
+              : showLock && (
+                  <LockToggleButton
+                    locked={locked}
+                    onLockedChange={onLockedChange}
+                    disabled={disabled}
+                    strings={strings}
                   />
-                </PopoverContent>
-              </Popover>
-            ) : fieldType === 'datetime' ? (
-              // A timestamp needs the time of day, so it uses DateTimePicker rather
-              // than the date branch's Calendar popover. Stored as an ISO string.
-              <DateTimePicker
-                id={fieldId}
-                value={parseDateValue(value)}
-                onValueChange={(date) => onValueChange?.(date ? date.toISOString() : '')}
-                onOpenChange={(open) => {
-                  if (!open) onValueBlur?.();
-                }}
-                disabled={!onValueChange}
-                placeholder={valuePlaceholder}
-              />
-            ) : fieldType === 'file' ? (
-              <FileUpload
-                id={fieldId}
-                ariaLabel={fileUploadAriaLabel ?? (typeof label === 'string' ? label : fieldLabel)}
-                className="flex-1"
-                onFilesChange={(files) => onValueChange?.(files.map((f) => f.name).join(', '))}
-                disabled={!onValueChange}
-                onBlur={onValueBlur}
-                aria-invalid={error ? true : undefined}
-                aria-describedby={error ? validationId : undefined}
-                aria-errormessage={error ? validationId : undefined}
-              />
+                )}
+          </InputGroupAddon>
+        )}
+
+        {modeControl ??
+          (mode === 'expression' ? (
+            renderExpressionEditor ? (
+              renderExpressionEditor(controlProps)
             ) : (
-              <InputGroupInput
-                id={fieldId}
-                ref={valueInputRef}
-                // `step="any"` lets a `double` accept fractions; the default step
-                // of 1 makes "10.5" invalid.
-                type={fieldType === 'integer' || fieldType === 'double' ? 'number' : 'text'}
-                step={fieldType === 'double' ? 'any' : undefined}
-                readOnly={!onValueChange}
-                value={value}
-                onChange={(e) => onValueChange?.(e.target.value)}
-                onFocus={(e) => {
-                  committedRef.current = value;
-                  caretRef.current = {
-                    start: e.currentTarget.selectionStart ?? value.length,
-                    end: e.currentTarget.selectionEnd ?? value.length,
-                  };
-                }}
-                onSelect={(e) => {
-                  const el = e.currentTarget;
-                  caretRef.current = {
-                    start: el.selectionStart ?? 0,
-                    end: el.selectionEnd ?? el.selectionStart ?? 0,
-                  };
-                }}
-                onKeyDown={handleValueKeyDown}
-                onBlur={(e) => {
-                  // Clicking the Insert trigger blurs this input, so this is the
-                  // last moment the caret is knowable.
-                  caretRef.current = {
-                    start: e.currentTarget.selectionStart ?? value.length,
-                    end: e.currentTarget.selectionEnd ?? value.length,
-                  };
-                  onValueBlur?.();
-                }}
-                placeholder={valuePlaceholder}
-              />
-            ))}
+              <InputGroupInput {...textInputProps} className="font-mono" />
+            )
+          ) : (
+            literalControl
+          ))}
 
-          {trailingAddon !== null && (trailingAddon !== undefined || builtInMenu) && (
-            <InputGroupAddon align="inline-end" className="cursor-default">
-              {trailingAddon !== undefined ? trailingAddon : builtInMenu}
-            </InputGroupAddon>
-          )}
-        </InputGroup>
-      ) : (
-        <InputGroup
-          error={error}
-          errorId={validationId}
-          // Selected chips wrap past one row, so the box grows to hold them.
-          layout={fieldType === 'multi-select' && !locked ? 'grow' : 'row'}
-        >
-          {(showLock || leadingAddon !== undefined) && leadingAddon !== null && (
-            <InputGroupAddon align="inline-start">
-              {leadingAddon !== undefined
-                ? leadingAddon
-                : showLock && (
-                    <LockToggleButton
-                      locked={locked}
-                      onLockedChange={onLockedChange}
-                      strings={strings}
-                    />
-                  )}
-            </InputGroupAddon>
-          )}
-
-          {modeControl ??
-            (locked ? (
-              <InputGroupInput
-                id={fieldId}
-                readOnly
-                value={lockedDisplayValue}
-                placeholder={valuePlaceholder}
-                className="min-w-0"
-                onBlur={onValueBlur}
-              />
-            ) : fieldType === 'single-select' ? (
-              <Select
-                open={selectOpen}
-                onOpenChange={(open) => {
-                  setSelectOpen(open);
-                  if (!open && selectOpen) onValueBlur?.();
-                }}
-                value={value || undefined}
-                onValueChange={onValueChange}
-                disabled={!onValueChange}
-              >
-                <SelectTrigger id={fieldId}>
-                  <SelectValue placeholder={strings.selectOption} />
-                </SelectTrigger>
-                <SelectContent>
-                  {options.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            ) : fieldType === 'multi-select' ? (
-              <MultiSelect
-                id={fieldId}
-                options={options}
-                selected={parseListValue(value)}
-                onChange={(selected) => onValueChange?.(JSON.stringify(selected))}
-                placeholder={strings.selectOptions}
-                disabled={!onValueChange}
-                onBlur={onValueBlur}
-              />
-            ) : null)}
-          {/* A select can still be bound to a variable, so the consumer's
-              trailing control renders here too or it loses its mode switch. */}
-          {trailingAddon !== null && (trailingAddon !== undefined || builtInMenu) && (
-            <InputGroupAddon align="inline-end" className="cursor-default">
-              {trailingAddon !== undefined ? trailingAddon : builtInMenu}
-            </InputGroupAddon>
-          )}
-        </InputGroup>
-      )}
+        {trailingAddon !== null && (
+          <InputGroupAddon align="inline-end" className="cursor-default">
+            {trailingAddon !== undefined ? trailingAddon : builtInMenu}
+          </InputGroupAddon>
+        )}
+      </InputGroup>
 
       {belowValue}
     </div>

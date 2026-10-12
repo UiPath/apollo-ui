@@ -4,21 +4,23 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import type { QuickFormFieldStrings } from '../types';
 
 /**
- * The lock/unlock toggle shared by both the InputGroup and plain-Input
- * layouts. Disabled (and its label adjusted) when onLockedChange isn't
- * provided, since clicking it wouldn't do anything otherwise.
+ * The lock/unlock toggle in the field's leading addon. Disabled (and its label
+ * adjusted) with the field, or when onLockedChange isn't provided, since
+ * clicking it wouldn't do anything otherwise.
  */
 export function LockToggleButton({
   locked,
   onLockedChange,
+  disabled,
   strings,
 }: {
   locked: boolean;
   onLockedChange?: (locked: boolean) => void;
+  disabled?: boolean;
   /** See QuickFormFieldStrings. */
   strings: QuickFormFieldStrings;
 }) {
-  const interactive = !!onLockedChange;
+  const interactive = !!onLockedChange && !disabled;
   return (
     <TooltipProvider delayDuration={300}>
       <Tooltip>

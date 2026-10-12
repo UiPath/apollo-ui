@@ -37,6 +37,10 @@ export type QuickFieldType =
 interface FieldTypeMeta {
   label: string;
   icon: LucideIcon;
+  /**
+   * @deprecated Will expand mode support in future update. Currently unused.
+   * Removed in the next major release.
+   */
   supportsExpression: boolean;
   fixedLabel: string;
   fixedDescription: string;
@@ -88,14 +92,14 @@ export const FIELD_TYPE_META: Record<QuickFieldType, FieldTypeMeta> = {
   'single-select': {
     label: 'Single select',
     icon: List,
-    supportsExpression: false,
+    supportsExpression: true,
     fixedLabel: 'Fixed value',
     fixedDescription: 'Choose one option',
   },
   'multi-select': {
     label: 'Multi select',
     icon: ListChecks,
-    supportsExpression: false,
+    supportsExpression: true,
     fixedLabel: 'Fixed value',
     fixedDescription: 'Choose one or more options',
   },
@@ -156,8 +160,9 @@ export interface QuickFormFieldStrings {
   valueFieldLabel: (typeLabel: string) => string;
   /** The computed field name in expression mode, from the (localized) type label. */
   expressionFieldLabel: (typeLabel: string) => string;
-  /** A locked boolean's displayed text. */
+  /** @deprecated No longer rendered: a locked boolean keeps its Switch. Removed in the next major release. */
   trueLabel: string;
+  /** @deprecated No longer rendered: a locked boolean keeps its Switch. Removed in the next major release. */
   falseLabel: string;
   requiredTooltip: string;
   requiredAriaLabel: string;
@@ -268,33 +273,60 @@ export interface VariableInsertContext {
   caret: { start: number; end: number } | null;
 }
 
+/** What a consumer-rendered value control receives from `renderModeControl` or `renderExpressionEditor`. */
+export interface QuickFormFieldControlProps {
+  id: string;
+  value: string;
+  /** Omitted while the field is disabled or has no `onValueChange`. */
+  onValueChange?: (value: string) => void;
+  onBlur?: () => void;
+  readOnly: boolean;
+  disabled: boolean;
+  placeholder: string;
+  fieldType: QuickFieldType;
+  'aria-invalid'?: AriaAttributes['aria-invalid'];
+  'aria-describedby'?: string;
+  'aria-errormessage'?: string;
+  'data-slot'?: string;
+}
+
 export interface QuickFormFieldProps {
   /** Current field value. Encoding depends on fieldType (e.g. multi-select is a JSON array string). */
   value?: string;
-  /** Called when the user edits the value (only fires while unlocked). */
+  /** Called when the user edits the value. Never fires while `disabled`. */
   onValueChange?: (value: string) => void;
   /** Called when the active value control loses focus. */
   onValueBlur?: () => void;
-  /** Whether the field is read-only. Defaults to true. */
+  /**
+   * Whether the value is read-only for the person filling in the form. It is
+   * configuration the author sets, so the value stays editable here; use
+   * `disabled` to stop editing. Defaults to true.
+   */
   locked?: boolean;
   /** Called when the user toggles the lock. */
   onLockedChange?: (locked: boolean) => void;
   /** Whether the built-in lock control renders. Defaults to true. */
   showLock?: boolean;
   /**
+   * Disables every built-in control: the value control, the lock, the mode and
+   * actions menu, and the header's type picker, Required switch, Insert
+   * variable and AI assist. `headerActions` are the consumer's to disable.
+   */
+  disabled?: boolean;
+  /**
    * Replaces the leading lock toggle with a semantic prefix such as `=`.
    * Pass `null` to suppress the built-in toggle; omitting the prop preserves it.
    */
   leadingAddon?: ReactNode;
   /**
-   * Replaces the trailing fixed/expression menu with a consumer-provided action
-   * for expression-capable field types. Pass `null` to suppress the built-in
+   * Replaces the trailing fixed/expression menu with a consumer-provided
+   * action. Pass `null` to suppress the built-in
    * menu; omitting the prop preserves it.
    */
   trailingAddon?: ReactNode;
   /** Adds a field-level overflow menu beside the value control. */
   more?: QuickFormFieldMoreActions;
-  /** How the value is expressed. Defaults to 'literal'; `expression` falls back to `literal` for types that cannot hold one. */
+  /** How the value is expressed. Defaults to 'literal'. */
   mode?: QuickFormFieldMode;
   /** Called when the user switches modes. */
   onModeChange?: (mode: QuickFormFieldMode) => void;
@@ -306,19 +338,7 @@ export interface QuickFormFieldProps {
    * existing callers; `renderModeControl` wins when both are supplied and it
    * returns something for `expression`.
    */
-  renderExpressionEditor?: (props: {
-    id: string;
-    value: string;
-    onValueChange?: (value: string) => void;
-    onBlur?: () => void;
-    readOnly: boolean;
-    placeholder: string;
-    fieldType: QuickFieldType;
-    'aria-invalid'?: AriaAttributes['aria-invalid'];
-    'aria-describedby'?: string;
-    'aria-errormessage'?: string;
-    'data-slot'?: string;
-  }) => ReactNode;
+  renderExpressionEditor?: (props: QuickFormFieldControlProps) => ReactNode;
   /**
    * Renders the value control for a given mode, replacing the built-in one.
    * `variable` and `prompt` have no built-in editor, and a surface that authors
@@ -328,22 +348,7 @@ export interface QuickFormFieldProps {
    * for the field's type, so an unhandled mode degrades to the literal editor
    * rather than rendering an empty row.
    */
-  renderModeControl?: (
-    mode: QuickFormFieldMode,
-    props: {
-      id: string;
-      value: string;
-      onValueChange?: (value: string) => void;
-      onBlur?: () => void;
-      readOnly: boolean;
-      placeholder: string;
-      fieldType: QuickFieldType;
-      'aria-invalid'?: AriaAttributes['aria-invalid'];
-      'aria-describedby'?: string;
-      'aria-errormessage'?: string;
-      'data-slot'?: string;
-    }
-  ) => ReactNode;
+  renderModeControl?: (mode: QuickFormFieldMode, props: QuickFormFieldControlProps) => ReactNode;
   /**
    * Takes over what choosing a variable does to the value. The component owns
    * the picker and hands back the chosen entry exactly as supplied in

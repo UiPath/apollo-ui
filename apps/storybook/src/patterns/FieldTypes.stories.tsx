@@ -1082,8 +1082,9 @@ function FieldTypesPage({ globalTheme }: { globalTheme: string }) {
               </GuidanceItem>
               <GuidanceItem>
                 <span className="font-medium text-foreground">Lock.</span>{' '}
-                <InlineCode>locked</InlineCode> and <InlineCode>onLockedChange</InlineCode> make the
-                value read-only for the person filling in the form, shown as plain text;{' '}
+                <InlineCode>locked</InlineCode> and <InlineCode>onLockedChange</InlineCode> mark the
+                value read-only for the person filling in the form. The author can still edit it;{' '}
+                <InlineCode>disabled</InlineCode> disables the controls, and{' '}
                 <InlineCode>showLock</InlineCode> hides the toggle.
               </GuidanceItem>
               <GuidanceItem>
