@@ -8,7 +8,7 @@
     "dev": "pnpm generate:theme && next --turbopack",
     "build": "pnpm generate:theme && pnpm registry:build && next build",
     "start": "next start",
-    "generate:theme": "node --experimental-strip-types scripts/generate-theme-css.ts",
+    "generate:theme": "pnpm --filter @uipath/apollo-vertex generate:theme \"$PWD/app/theme.generated.css\"",
     "registry:build": "shadcn build ../../packages/apollo-vertex/registry.json --cwd ../../packages/apollo-vertex --output \"$PWD/public/r\" && node --experimental-strip-types scripts/generate-registry-index.ts",
     "format": "biome format --write",
     "format:check": "biome format",

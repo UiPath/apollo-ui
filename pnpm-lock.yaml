@@ -923,33 +923,18 @@ importers:
       '@radix-ui/react-tooltip':
         specifier: ^1.2.8
         version: 1.2.8(@types/react-dom@19.2.3(@types/react@19.2.8))(@types/react@19.2.8)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      '@tanstack/ai':
-        specifier: 0.14.0
-        version: 0.14.0
-      '@tanstack/ai-client':
-        specifier: 0.8.0
-        version: 0.8.0
       '@tanstack/react-form':
         specifier: ^1.33.0
         version: 1.33.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      '@tanstack/react-query':
-        specifier: ^5.90.21
-        version: 5.90.21(react@19.2.3)
-      '@tanstack/react-router':
-        specifier: ^1.132.31
-        version: 1.167.4(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@tanstack/react-store':
         specifier: ^0.11.0
         version: 0.11.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@tanstack/react-table':
         specifier: ^8.21.3
         version: 8.21.3(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      '@ts-rest/core':
-        specifier: ^3.53.0-rc.1
-        version: 3.53.0-rc.1(@types/node@24.10.1)
-      '@uipath/uipath-typescript':
-        specifier: ^1.7.1
-        version: 1.7.1(@opentelemetry/api@1.9.1)(zod@4.4.3)
+      '@types/luxon':
+        specifier: ^3.7.1
+        version: 3.7.1
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -962,24 +947,15 @@ importers:
       embla-carousel-react:
         specifier: ^8.6.0
         version: 8.6.0(react@19.2.3)
-      eventsource-parser:
-        specifier: ^3.0.6
-        version: 3.0.6
       framer-motion:
         specifier: ^13.1.0
         version: 13.1.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      highlight.js:
-        specifier: ^11.11.1
-        version: 11.11.1
       i18next:
         specifier: ^25.8.1
         version: 25.10.10(typescript@5.9.3)
       input-otp:
         specifier: ^1.4.2
         version: 1.4.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      jwt-decode:
-        specifier: ^4.0.0
-        version: 4.0.0
       lucide-react:
         specifier: ^0.577.0
         version: 0.577.0(react@19.2.3)
@@ -989,42 +965,27 @@ importers:
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      pkce-challenge:
-        specifier: ^6.0.0
-        version: 6.0.0
       react-day-picker:
         specifier: ^9.13.0
         version: 9.14.0(react@19.2.3)
-      react-error-boundary:
-        specifier: ^6.0.0
-        version: 6.1.1(react@19.2.3)
       react-i18next:
         specifier: ^16.5.4
         version: 16.6.6(i18next@25.10.10(typescript@5.9.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3)
       react-joyride:
         specifier: ^3.0.2
         version: 3.1.0(@types/react@19.2.8)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      react-markdown:
-        specifier: ^10.1.0
-        version: 10.1.0(@types/react@19.2.8)(react@19.2.3)
       react-resizable-panels:
         specifier: ^4.7.3
         version: 4.7.3(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      recharts:
-        specifier: 2.15.4
-        version: 2.15.4(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      remark-breaks:
-        specifier: ^4.0.0
-        version: 4.0.0
-      remark-gfm:
-        specifier: ^4.0.1
-        version: 4.0.1
       sonner:
         specifier: ^2.0.7
         version: 2.0.7(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       tailwind-merge:
         specifier: ^3.4.0
         version: 3.6.0
+      tw-animate-css:
+        specifier: ^1.4.0
+        version: 1.4.0
       vaul:
         specifier: ^1.1.2
         version: 1.1.2(@types/react-dom@19.2.3(@types/react@19.2.8))(@types/react@19.2.8)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -1035,9 +996,27 @@ importers:
       '@biomejs/biome':
         specifier: ^2.3.6
         version: 2.4.4
-      '@types/luxon':
-        specifier: ^3.7.1
-        version: 3.7.1
+      '@rsbuild/plugin-react':
+        specifier: ^1.4.1
+        version: 1.4.2(@rsbuild/core@1.7.3)
+      '@rslib/core':
+        specifier: ^0.19.6
+        version: 0.19.6(typescript@5.9.3)
+      '@tanstack/ai':
+        specifier: 0.14.0
+        version: 0.14.0
+      '@tanstack/ai-client':
+        specifier: 0.8.0
+        version: 0.8.0
+      '@tanstack/react-query':
+        specifier: ^5.90.21
+        version: 5.90.21(react@19.2.3)
+      '@tanstack/react-router':
+        specifier: ^1.132.31
+        version: 1.167.4(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@ts-rest/core':
+        specifier: ^3.53.0-rc.1
+        version: 3.53.0-rc.1(@types/node@24.10.1)
       '@types/node':
         specifier: ^24.10.1
         version: 24.10.1
@@ -1047,21 +1026,57 @@ importers:
       '@types/react-dom':
         specifier: ^19.2.2
         version: 19.2.3(@types/react@19.2.8)
+      '@uipath/uipath-typescript':
+        specifier: ^1.7.1
+        version: 1.7.1(@opentelemetry/api@1.9.1)(zod@4.4.3)
       dependency-cruiser:
         specifier: ^17.3.6
         version: 17.3.6
       eslint-plugin-react:
         specifier: ^7.37.5
         version: 7.37.5(eslint@9.39.3(jiti@2.7.0))
+      eventsource-parser:
+        specifier: ^3.0.6
+        version: 3.0.6
+      highlight.js:
+        specifier: ^11.11.1
+        version: 11.11.1
+      jwt-decode:
+        specifier: ^4.0.0
+        version: 4.0.0
       oxlint:
         specifier: ^1.38.0
         version: 1.50.0(oxlint-tsgolint@0.18.1)
       oxlint-tsgolint:
         specifier: ^0.18.1
         version: 0.18.1
+      pkce-challenge:
+        specifier: ^6.0.0
+        version: 6.0.0
       react:
         specifier: 19.2.3
         version: 19.2.3
+      react-dom:
+        specifier: 19.2.3
+        version: 19.2.3(react@19.2.3)
+      react-error-boundary:
+        specifier: ^6.0.0
+        version: 6.1.1(react@19.2.3)
+      react-markdown:
+        specifier: ^10.1.0
+        version: 10.1.0(@types/react@19.2.8)(react@19.2.3)
+      recharts:
+        specifier: 2.15.4
+        version: 2.15.4(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      remark-breaks:
+        specifier: ^4.0.0
+        version: 4.0.0
+      remark-gfm:
+        specifier: ^4.0.1
+        version: 4.0.1
+      tailwindcss:
+        specifier: ^4.1.17
+        version: 4.3.0
 
   packages/apollo-wind:
     dependencies:
@@ -18632,7 +18647,7 @@ snapshots:
       '@rspack/lite-tapable': 1.1.0
       '@swc/helpers': 0.5.23
       core-js: 3.47.0
-      jiti: 2.6.1
+      jiti: 2.7.0
 
   '@rsbuild/plugin-babel@1.0.6(@rsbuild/core@1.7.3)':
     dependencies:

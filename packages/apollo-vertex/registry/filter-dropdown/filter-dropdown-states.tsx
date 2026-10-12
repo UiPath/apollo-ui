@@ -1,3 +1,5 @@
+"use client";
+
 import { type ReactNode, useEffect, useEffectEvent, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";

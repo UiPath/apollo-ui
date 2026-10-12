@@ -3,9 +3,23 @@ import {
   useMergedRef,
   useResizeObserver,
 } from "@mantine/hooks";
-import { useEffect, useRef, useState } from "react";
+import {
+  type RefCallback,
+  type RefObject,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
-export function useStickyScroll() {
+interface StickyScroll {
+  attachScrollListeners: RefCallback<HTMLDivElement | null>;
+  scrollElement: RefObject<HTMLDivElement | null>;
+  contentRef: RefCallback<HTMLDivElement | null>;
+  isStuck: boolean;
+  scrollToBottom: () => void;
+}
+
+export function useStickyScroll(): StickyScroll {
   const [isStuck, setIsStuck] = useState(true);
   const isStuckRef = useRef(true);
   const scrollElement = useRef<HTMLDivElement | null>(null);
@@ -66,7 +80,7 @@ export function useStickyScroll() {
     scrollListenerRef,
   );
 
-  const [contentRef, contentRect] = useResizeObserver();
+  const [contentRef, contentRect] = useResizeObserver<HTMLDivElement>();
 
   useEffect(() => {
     if (isStuckRef.current) {

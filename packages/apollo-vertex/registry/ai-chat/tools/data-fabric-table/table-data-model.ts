@@ -1,12 +1,12 @@
 import { assert } from "@/lib/asserts/assert";
-import { buildField } from "@/lib/charts-core";
+import { buildField, type TableDataModel } from "@/lib/charts-core";
 import {
   type Entity,
   type EntityField,
   mapFieldType,
 } from "../data-fabric/util/entities";
 
-export function buildTableDataModel(entity: Entity) {
+export function buildTableDataModel(entity: Entity): TableDataModel {
   return {
     id: entity.id,
     fields: entity.fields.map((field) =>
@@ -19,7 +19,7 @@ export function buildMultiEntityDataModel(
   id: string,
   dimensions: string[],
   fields: Map<string, EntityField>,
-) {
+): TableDataModel {
   return {
     id,
     fields: dimensions.map((d) => {

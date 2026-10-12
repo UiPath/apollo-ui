@@ -1,3 +1,5 @@
+"use client";
+
 import type { PropsWithChildren, ReactNode } from "react";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
 
