@@ -24,11 +24,9 @@ minimumReleaseAgeExclude:
   - '@next/*'                     # 16.3.8 — swc platform binaries + env co-published with next in the same OIDC release (same commit b0fad0d45 + run)
   - '@img/*'                      # 0.35.5 — sharp platform binaries (@img/sharp-*) + sharp-libvips 1.3.4 co-published with sharp in the same OIDC release, provenance ✓, vetted 2026-10-09
   - 'next@16.3.8'                 # 16.3.8 — GHSA-cjq9-62q9-8jv4 (high, Image Optimization SSRF) + GHSA-3w37/4jqv/f87g/mcj8 (moderate) + GHSA-39w2 (low), vetted 2026-10-09: provenance ✓, publisher (OIDC) ✓, tag v16.3.8 + diff ([lts-active] backports by eps1lon/gnoff) ✓, integrity ✓
-  - 'sharp@0.35.5'                # 0.35.5 — GHSA-wq5f-xc86-pv6w (high, librsvg via sharp-libvips 1.3.4), vetted 2026-10-09: provenance ✓, publisher (OIDC) ✓, signed tag v0.35.5 + diff ✓, integrity ✓, no new deps
   - 'source-map-js@1.2.2'         # 1.2.2 — GHSA-68fv-2mgg-jv7q (high, event-loop DoS), vetted 2026-10-09: provenance n/a (never published with it), publisher 7rulnik ✓, tag v1.2.2 + diff (cf76580) ✓, integrity ✓
   - 'handlebars@4.7.10'           # 4.7.10 — GHSA-8r5x-fm3f-whwj + GHSA-p8wg-vrv2-v86f (critical) + GHSA-xw65-4hp5-5hc7 (moderate), vetted 2026-10-09: provenance n/a (never published with it), publisher jaylinski ✓, tag v4.7.10 + diff ✓, integrity ✓
   - '@modelcontextprotocol/sdk@1.31.0' # 1.31.0 — GHSA-6qxp-vccf-f47h (high, OAuth credentials sent to wrong AS), vetted 2026-10-09: provenance ✓, publisher (OIDC) ✓, tag 1.31.0 + diff (#2888) ✓, integrity ✓, no dep changes
-  - 'dompurify@3.4.16'            # 3.4.16 — GHSA-p98j-92pf-mc4p (low, IN_PLACE afterSanitize hook detach XSS), vetted 2026-09-30: provenance n/a (never published with it), publisher cure53 ✓, tag 3.4.16 + src diff (_handleHookDetachedNode) ✓, integrity ✓
 # Refuse transitive git/tarball deps (pnpm 11 default; kept explicit for clarity)
 blockExoticSubdeps: true
 
