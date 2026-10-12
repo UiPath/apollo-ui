@@ -1,0 +1,26 @@
+/**
+ * Apollo Vertex: Tailwind CSS with the Vertex theme.
+ *
+ * Usage:
+ *   @import "@uipath/apollo-vertex/tailwind.css";
+ *
+ * Add your own @source directive to scan your project files. This file
+ * already registers the package's built components.
+ */
+
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "./theme.css";
+
+@source "./";
+
+@custom-variant dark (&:is(.dark *));
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}

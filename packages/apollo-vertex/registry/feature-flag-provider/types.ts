@@ -1,8 +1,3 @@
-import type {
-  FeatureFlagValues as ProteusFeatureFlagValues,
-  FlagMapping,
-} from "@uipath/proteus-client";
-
 export type FeatureFlagUserContext = {
   userId: string;
   email: string;
@@ -19,5 +14,3 @@ export type FeatureFlagProviderConfig<TFlag extends string = string> = {
   off(event: TFlag, cb: (value: boolean) => void): void;
   initialize: (context: FeatureFlagUserContext) => Promise<void>;
 };
-
-export type { ProteusFeatureFlagValues, FlagMapping };

@@ -1,9 +1,14 @@
-import type { FlagMapping } from "@uipath/proteus-client";
+import type {
+  FeatureFlagValues as ProteusFeatureFlagValues,
+  FlagMapping,
+} from "@uipath/proteus-client";
 import { initializeProteus } from "@uipath/proteus-client";
 import type {
   FeatureFlagProviderConfig,
   FeatureFlagUserContext,
 } from "@/lib/feature-flag-provider/types";
+
+export type { ProteusFeatureFlagValues, FlagMapping };
 
 type CreateProteusProviderOptions<TFlag extends string> = {
   appName: string;

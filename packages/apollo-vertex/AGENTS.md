@@ -4,9 +4,13 @@ This file provides guidance for AI coding agents working in the `@uipath/apollo-
 
 ## Project Overview
 
-This package holds the source of every Apollo Vertex component. It is not published to npm. Instead, the
-`apps/apollo-vertex` docs app imports these files for its live examples and builds them into a shadcn
-registry (`public/r/*.json`) that consumers install from. It uses:
+This package holds the source of every Apollo Vertex component. The same sources are shipped two ways:
+- `pnpm build` compiles them into `dist/` as the `@uipath/apollo-vertex` npm package. The public API is
+  the barrel files in `entries/`, one per `package.json` export.
+- The `apps/apollo-vertex` docs app imports these files for its live examples and builds them into a
+  shadcn registry (`public/r/*.json`).
+
+It uses:
 - **Tailwind CSS 4** for styling
 - **Radix UI** primitives for accessible components
 - **shadcn/ui** patterns with `class-variance-authority`
@@ -15,6 +19,8 @@ registry (`public/r/*.json`) that consumers install from. It uses:
 
 ### In this package
 ```bash
+pnpm build                    # Generate theme.css, build dist/ with rslib, check every export resolves
+pnpm build:check              # List the external packages each public entry reaches
 pnpm lint                     # Lint with oxlint (type-aware)
 pnpm format                   # Format with Biome
 pnpm format:check             # Check formatting without writing
@@ -250,7 +256,8 @@ After implementing components or making changes, **always run the build, linting
 pnpm typecheck
 pnpm lint
 pnpm format
-pnpm --filter apollo-vertex build   # verifies the docs app and registry build
+pnpm --filter @uipath/apollo-vertex build   # verifies the npm package build
+pnpm --filter apollo-vertex build           # verifies the docs app and registry build
 ```
 
 If build errors are found:

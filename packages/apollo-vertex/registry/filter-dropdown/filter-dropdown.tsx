@@ -1,3 +1,5 @@
+"use client";
+
 import type { Column } from "@tanstack/react-table";
 import { ChevronDownIcon, SearchIcon, XIcon } from "lucide-react";
 import { type ReactNode, useState } from "react";

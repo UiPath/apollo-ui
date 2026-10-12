@@ -1,13 +1,17 @@
 import { readFileSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join, resolve } from "node:path";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const registryPath = join(
-  __dirname,
-  "../../../packages/apollo-vertex/registry.json",
-);
-const outputPath = join(__dirname, "../app/theme.generated.css");
+// Renders the apollo-vertex-theme tokens from registry.json as CSS. Takes the
+// output path as its only argument, resolved from the working directory.
+const registryPath = join(import.meta.dirname, "../registry.json");
+const outputArg = process.argv[2];
+
+if (!outputArg) {
+  console.error("Usage: generate-theme-css.ts <output.css>");
+  process.exit(1);
+}
+
+const outputPath = resolve(outputArg);
 
 interface ThemeItem {
   name: string;
