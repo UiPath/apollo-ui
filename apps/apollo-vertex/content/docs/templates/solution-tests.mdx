@@ -271,15 +271,19 @@ optional `disabled`, and renders its own saving / saved states.
 npx shadcn@latest add @uipath/solution-tests
 ```
 
-> **Requires [`@uipath/vs-core`](https://www.npmjs.com/package/@uipath/vs-core)
-> `^2.0.6`.** The container reads the Solution Test collections from the
-> dedicated, name-keyed `solution.api.collections.solutionTests` namespace, and
-> resolves attachment entity ids from `solution.api.entityIds` (added in 2.0.6).
-> Install vs-core per its README — it brings its own
-> peers (`@tanstack/db`, `@tanstack/query-db-collection`,
-> `@tanstack/react-query`, `@uipath/uipath-typescript`). The component itself
-> pulls `@tanstack/react-db` (for `useLiveQuery`), `@tanstack/react-table`,
-> `@tanstack/react-router`, `recharts`, `sonner`, and `react-i18next`.
+<Callout type="info">
+
+**Requires [`@uipath/vs-core`](https://www.npmjs.com/package/@uipath/vs-core)
+`^2.0.6`.** The container reads the Solution Test collections from the
+dedicated, name-keyed `solution.api.collections.solutionTests` namespace, and
+resolves attachment entity ids from `solution.api.entityIds` (added in 2.0.6).
+Install vs-core per its README — it brings its own
+peers (`@tanstack/db`, `@tanstack/query-db-collection`,
+`@tanstack/react-query`, `@uipath/uipath-typescript`). The component itself
+pulls `@tanstack/react-db` (for `useLiveQuery`), `@tanstack/react-table`,
+`@tanstack/react-router`, `recharts`, `sonner`, and `react-i18next`.
+
+</Callout>
 
 The Solution Test entities (`UiPathST*`) are generic across verticals, so the
 only per-vertical customization most consumers need is their vertical's

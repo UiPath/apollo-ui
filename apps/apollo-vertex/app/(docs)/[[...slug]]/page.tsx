@@ -4,13 +4,19 @@ import {
   EditOnGitHub,
 } from "fumadocs-ui/layouts/docs/page";
 import { createRelativeLink } from "fumadocs-ui/mdx";
-import { getDocsPage, source } from "../../lib/source";
-import { getMDXComponents } from "../../mdx-components";
+import type { Metadata } from "next";
+import { getMDXComponents } from "../../../mdx-components";
+import { getDocsPage, source } from "../../../lib/source";
 
 const docsRepositoryBase =
   "https://github.com/UiPath/apollo-ui/blob/main/apps/apollo-vertex/content/docs";
 
-export async function DocsPageView({ slug }: { slug: string[] | undefined }) {
+interface Props {
+  params: Promise<{ slug?: string[] }>;
+}
+
+export default async function Page(props: Props) {
+  const { slug } = await props.params;
   const page = getDocsPage(slug);
   const { body: MDX, toc } = await page.data.load();
 
@@ -33,4 +39,18 @@ export async function DocsPageView({ slug }: { slug: string[] | undefined }) {
       </DocsBody>
     </DocsPage>
   );
+}
+
+export function generateStaticParams() {
+  return source.generateParams();
+}
+
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const { slug } = await props.params;
+  const page = getDocsPage(slug);
+
+  return {
+    title: page.data.metaTitle ?? page.data.title,
+    description: page.data.description,
+  };
 }

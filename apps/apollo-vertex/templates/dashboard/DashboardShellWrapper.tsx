@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import type { ShellNavItem } from "@/registry/shell/shell";
 import { ApolloShell } from "@/registry/shell/shell";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { ShellThemeProvider } from "../shell/ShellThemeProvider";
 import { BarChart3, FolderOpen, Home, Settings, Users } from "lucide-react";
 
 const sidebarNavItems: ShellNavItem[] = [
@@ -34,20 +35,22 @@ export function DashboardShellWrapper({
   children: ReactNode;
 }) {
   return (
-    <SidebarProvider className="contents">
-      <ApolloShell
-        companyName="UiPath"
-        productName="Apollo Vertex"
-        companyLogo={{
-          url: "/UiPath.svg",
-          darkUrl: "/UiPath_dark.svg",
-          alt: "UiPath logo",
-        }}
-        variant={variant}
-        navItems={variant === "minimal" ? minimalNavItems : sidebarNavItems}
-      >
-        {children}
-      </ApolloShell>
-    </SidebarProvider>
+    <ShellThemeProvider>
+      <SidebarProvider className="contents">
+        <ApolloShell
+          companyName="UiPath"
+          productName="Apollo Vertex"
+          companyLogo={{
+            url: "/UiPath.svg",
+            darkUrl: "/UiPath_dark.svg",
+            alt: "UiPath logo",
+          }}
+          variant={variant}
+          navItems={variant === "minimal" ? minimalNavItems : sidebarNavItems}
+        >
+          {children}
+        </ApolloShell>
+      </SidebarProvider>
+    </ShellThemeProvider>
   );
 }

@@ -2,6 +2,7 @@ import { BarChart3, FolderOpen, Home, Settings, Users } from "lucide-react";
 import type { ReactNode } from "react";
 import type { ShellNavItem } from "@/registry/shell/shell";
 import { ApolloShell } from "@/registry/shell/shell";
+import { ShellThemeProvider } from "./ShellThemeProvider";
 
 const navItems: ShellNavItem[] = [
   { path: "/preview/shell/dashboard", label: "dashboard", icon: Home },
@@ -33,18 +34,20 @@ export function ShellWrapper({
   children: ReactNode;
 }) {
   return (
-    <ApolloShell
-      companyName="UiPath"
-      productName="Apollo Vertex"
-      companyLogo={{
-        url: "/UiPath.svg",
-        darkUrl: "/UiPath_dark.svg",
-        alt: "UiPath logo",
-      }}
-      variant={variant}
-      navItems={variant === "minimal" ? minimalNavItems : navItems}
-    >
-      {children}
-    </ApolloShell>
+    <ShellThemeProvider>
+      <ApolloShell
+        companyName="UiPath"
+        productName="Apollo Vertex"
+        companyLogo={{
+          url: "/UiPath.svg",
+          darkUrl: "/UiPath_dark.svg",
+          alt: "UiPath logo",
+        }}
+        variant={variant}
+        navItems={variant === "minimal" ? minimalNavItems : navItems}
+      >
+        {children}
+      </ApolloShell>
+    </ShellThemeProvider>
   );
 }

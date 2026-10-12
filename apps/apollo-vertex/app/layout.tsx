@@ -1,11 +1,7 @@
 import { Analytics } from "@vercel/analytics/next";
-import { DocsLayout } from "fumadocs-ui/layouts/docs";
 import { Inter } from "next/font/google";
-import Image from "next/image";
 import type { ReactNode } from "react";
-import { source } from "../lib/source";
 import { Provider } from "./_components/provider";
-import { ThemeWrapper } from "./_components/theme-wrapper";
 import "./globals.css";
 
 const fontSans = Inter({
@@ -46,9 +42,9 @@ export const metadata = {
   },
 };
 
-// Coded App preview builds serve the app from a sub-path; Next.js basePath
-// does not rewrite plain image sources, so the logo path is prefixed here.
-const codedAppPath = process.env.NEXT_PUBLIC_APOLLO_CODED_APP_PATH;
+// Vercel Analytics only exists on the Vercel deployment, not in the static
+// Coded App build.
+const codedApp = process.env.NEXT_PUBLIC_APOLLO_CODED_APP === "1";
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
@@ -60,31 +56,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       suppressHydrationWarning
     >
       <body className="flex min-h-screen flex-col">
-        <Analytics />
-        <Provider>
-          <ThemeWrapper>
-            <DocsLayout
-              tree={source.getPageTree()}
-              nav={{
-                title: (
-                  <>
-                    <Image
-                      src={`${codedAppPath ? `/${codedAppPath}` : ""}/vertex-logo.svg`}
-                      alt="Apollo Vertex"
-                      width={32}
-                      height={32}
-                      className="dark:invert"
-                    />
-                    <b>Apollo Vertex</b>
-                  </>
-                ),
-              }}
-              githubUrl="https://github.com/UiPath/apollo-ui"
-            >
-              {children}
-            </DocsLayout>
-          </ThemeWrapper>
-        </Provider>
+        {!codedApp && <Analytics />}
+        <Provider>{children}</Provider>
       </body>
     </html>
   );
