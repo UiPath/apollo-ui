@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { proxyToUiPath } from "@/lib/api-proxy";
+import { proxyToUiPath } from "../../../../lib/api-proxy";
 
 const DATAFABRIC_SEGMENT = "datafabric_";
 

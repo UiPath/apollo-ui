@@ -17,6 +17,7 @@
 # Packages
 /packages/apollo-core/   @UiPath/Apollo
 /packages/apollo-react/  @UiPath/Apollo
+/packages/apollo-vertex/ @UiPath/team-frontendhoven @UiPath/Apollo
 /packages/apollo-wind/   @UiPath/Apollo
 
 # apps

@@ -1,11 +1,12 @@
 "use client";
 import { type ChangeEvent, startTransition, useEffect, useState } from "react";
-import { type ThemeConfig, ThemeConfigSchema } from "@/lib/schemas/theme";
 import { Button } from "@/registry/button/button";
 import { Card } from "@/registry/card/card";
 import { Input } from "@/registry/input/input";
 import { Label } from "@/registry/label/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/registry/tabs/tabs";
+import type { ThemeConfig } from "../../../../lib/schemas/theme";
+import { ThemeConfigSchema } from "../../../../lib/schemas/theme";
 import { themes } from "../../../themes";
 
 const CUSTOM_THEME_STORAGE_KEY = "apollo-vertex-custom-theme";

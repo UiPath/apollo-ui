@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { type ThemeConfig, ThemeConfigSchema } from "@/lib/schemas/theme";
+import { type ThemeConfig, ThemeConfigSchema } from "../lib/schemas/theme";
 
 export const themes = {
   default: {

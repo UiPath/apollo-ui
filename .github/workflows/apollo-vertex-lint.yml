@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "apps/apollo-vertex/**"
+      - "packages/apollo-vertex/**"
       - ".github/workflows/apollo-vertex-lint.yml"
 
 concurrency:
@@ -29,7 +30,7 @@ jobs:
         uses: ./.github/actions/install-node-deps
 
       - name: Lint
-        run: pnpm --filter apollo-vertex lint
+        run: pnpm --filter apollo-vertex --filter @uipath/apollo-vertex lint
 
       - name: Format check
-        run: pnpm --filter apollo-vertex format:check
+        run: pnpm --filter apollo-vertex --filter @uipath/apollo-vertex format:check
