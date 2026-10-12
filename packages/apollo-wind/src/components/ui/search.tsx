@@ -15,7 +15,7 @@ import {
   type InputGroupInputProps,
   type InputGroupProps,
 } from '@/components/ui/input-group';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
 import { cn } from '@/lib/index';
 
 interface SearchBaseProps extends Omit<InputGroupInputProps, 'onChange'> {
@@ -147,6 +147,7 @@ const SearchWithSuggestions = React.forwardRef<HTMLDivElement, SearchWithSuggest
     ref
   ) => {
     const [open, setOpen] = React.useState(false);
+    const anchorRef = React.useRef<HTMLDivElement>(null);
     const [searchValue, setSearchValue] = React.useState(value || '');
 
     React.useEffect(() => {
@@ -175,8 +176,9 @@ const SearchWithSuggestions = React.forwardRef<HTMLDivElement, SearchWithSuggest
     return (
       <div ref={ref} data-slot="search-with-suggestions" className={cn('relative', className)}>
         <Popover open={open && filteredSuggestions.length > 0} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <div>
+          {/* Anchor, not Trigger: typing drives open state, clicks don't toggle it. */}
+          <PopoverAnchor asChild>
+            <div ref={anchorRef}>
               <Search
                 value={searchValue}
                 onValueChange={handleInputChange}
@@ -184,8 +186,16 @@ const SearchWithSuggestions = React.forwardRef<HTMLDivElement, SearchWithSuggest
                 placeholder={placeholder}
               />
             </div>
-          </PopoverTrigger>
-          <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+          </PopoverAnchor>
+          <PopoverContent
+            className="w-[--radix-popover-trigger-width] p-0"
+            align="start"
+            // Keep focus in the input so typing continues while suggestions show.
+            onOpenAutoFocus={(e) => e.preventDefault()}
+            onInteractOutside={(e) => {
+              if (anchorRef.current?.contains(e.target as Node)) e.preventDefault();
+            }}
+          >
             <Command>
               <CommandList>
                 {filteredSuggestions.length === 0 ? (

@@ -266,6 +266,29 @@ describe('SearchWithSuggestions', () => {
     expect(container.querySelector('.custom-search')).toBeInTheDocument();
   });
 
+  it('keeps focus in the input while suggestions open', async () => {
+    const user = userEvent.setup();
+    render(<SearchWithSuggestions suggestions={suggestions} />);
+    const input = screen.getByRole('searchbox');
+
+    await user.type(input, 'an');
+
+    expect(await screen.findByText('Banana')).toBeInTheDocument();
+    expect(input).toHaveFocus();
+    expect(input).toHaveValue('an');
+  });
+
+  it('stays open when clicking back into the input', async () => {
+    const user = userEvent.setup();
+    render(<SearchWithSuggestions suggestions={suggestions} />);
+    const input = screen.getByRole('searchbox');
+
+    await user.type(input, 'an');
+    await user.click(input);
+
+    expect(screen.getByText('Banana')).toBeInTheDocument();
+  });
+
   it('forwards clearLabel to the clear button', () => {
     render(<SearchWithSuggestions value="zzz" suggestions={suggestions} clearLabel="Borrar" />);
     expect(screen.getByRole('button', { name: 'Borrar' })).toBeInTheDocument();
