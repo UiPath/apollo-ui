@@ -48,6 +48,16 @@ export default withMDX({
         },
       }
     : {
+        redirects() {
+          return [
+            {
+              // The components overview moved to the folder index.
+              source: "/components/overview",
+              destination: "/components",
+              permanent: true,
+            },
+          ];
+        },
         rewrites() {
           return [
             {
