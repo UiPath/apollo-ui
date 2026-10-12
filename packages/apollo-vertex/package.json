@@ -3,6 +3,21 @@
   "version": "0.0.0",
   "description": "UiPath Apollo Vertex design system components",
   "license": "MIT",
+  "author": "UiPath",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/UiPath/apollo-ui.git",
+    "directory": "packages/apollo-vertex"
+  },
+  "keywords": [
+    "react",
+    "components",
+    "design-system",
+    "tailwind",
+    "tailwindcss",
+    "ui",
+    "component-library"
+  ],
   "type": "module",
   "main": "./dist/entries/index.js",
   "types": "./dist/entries/index.d.ts",
@@ -227,5 +242,8 @@
     "remark-breaks": "^4.0.0",
     "remark-gfm": "^4.0.1",
     "tailwindcss": "^4.1.17"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
