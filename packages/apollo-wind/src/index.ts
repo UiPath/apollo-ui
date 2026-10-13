@@ -255,6 +255,22 @@ export {
   DEFAULT_CHAT_COMPOSER_STRINGS,
   useChatComposer,
 } from './components/ui/chat-composer';
+export type {
+  ChatHeroDensity,
+  ChatHeroLayout,
+  ChatHeroProps,
+  ChatHeroTitleProps,
+} from './components/ui/chat-hero';
+export {
+  ChatHero,
+  ChatHeroDescription,
+  ChatHeroHeader,
+  ChatHeroLogo,
+  ChatHeroTitle,
+  chatHeroDescriptionVariants,
+  chatHeroTitleVariants,
+  chatHeroVariants,
+} from './components/ui/chat-hero';
 export type { CheckboxProps } from './components/ui/checkbox';
 export { Checkbox } from './components/ui/checkbox';
 export type { CitationData, CitationProps, CitationStrings } from './components/ui/citation';
@@ -744,6 +760,19 @@ export {
   VARIABLE_PATH_REGEX,
   WORD_JOINER,
 } from './components/ui/prompt-editor';
+export type {
+  PromptSuggestionItem,
+  PromptSuggestionsDensity,
+  PromptSuggestionsOrientation,
+  PromptSuggestionsProps,
+  PromptSuggestionsStrings,
+} from './components/ui/prompt-suggestions';
+export {
+  DEFAULT_PROMPT_SUGGESTIONS_STRINGS,
+  PromptSuggestions,
+  promptSuggestionsListVariants,
+  promptSuggestionVariants,
+} from './components/ui/prompt-suggestions';
 export type { PromptValueControlProps } from './components/ui/prompt-value-control';
 export { PromptValueControl } from './components/ui/prompt-value-control';
 export type {

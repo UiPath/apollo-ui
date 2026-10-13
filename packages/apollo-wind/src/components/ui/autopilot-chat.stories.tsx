@@ -31,11 +31,13 @@ import { Card, CardFooter, CardHeader, CardTitle } from './card';
 import {
   ChatComposer,
   ChatComposerAttachButton,
+  type ChatComposerDensity,
   ChatComposerInputGroup,
   ChatComposerSubmit,
   ChatComposerTextarea,
   ChatComposerToolbar,
 } from './chat-composer';
+import { ChatHero, ChatHeroDescription, ChatHeroHeader, ChatHeroTitle } from './chat-hero';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -54,6 +56,7 @@ import {
   MessageScrollerProvider,
   MessageScrollerViewport,
 } from './message-scroller';
+import { type PromptSuggestionItem, PromptSuggestions } from './prompt-suggestions';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';
 
 const meta = {
@@ -63,7 +66,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Chat panel pattern for Autopilot, assembled from the chat primitives (MessageScroller, Message, Bubble, Attachment, Marker) plus ChatComposer for the prompt input and Card, EmptyState and DropdownMenu for the panel chrome. The transcript is scripted for the demo: press Send to reveal the next turn. The service-driven version of this panel is being built as @uipath/apollo-react/chat on top of these primitives.',
+          'Chat panel pattern for Autopilot, assembled from the chat primitives (MessageScroller, Message, Bubble, Attachment, Marker) plus ChatComposer for the prompt input and Card, EmptyState and DropdownMenu for the panel chrome. The empty-state variants open on ChatHero with PromptSuggestions: docked above the footer composer in Embedded, centered with the composer inside it in Fullscreen. The transcript is scripted for the demo: press Send, or pick a suggestion, to reveal the next turn. The service-driven version of this panel is being built as @uipath/apollo-react/chat on top of these primitives.',
       },
     },
   },
@@ -107,6 +110,13 @@ const SCRIPT: ScriptedTurn[] = [
 
 const REPLY_DELAY_MS = 900;
 
+// Every suggestion starts the scripted conversation.
+const FIRST_RUN_SUGGESTIONS: PromptSuggestionItem[] = [
+  { label: 'Check which invoices are ready for approval' },
+  { label: "Summarize this week's invoice batch" },
+  { label: 'What can you help me with?' },
+];
+
 const AGENT_MODES: { label: string; icon: LucideIcon }[] = [
   { label: 'Agent', icon: Bot },
   { label: 'Plan', icon: SquarePen },
@@ -120,9 +130,18 @@ interface AutopilotChatPanelProps {
    * and flips its icon and label in Fullscreen.
    */
   variant?: 'standard' | 'embedded' | 'fullscreen';
+  /**
+   * Opens on ChatHero instead of EmptyState: docked above the footer composer, or centered with
+   * the composer inside it in Fullscreen.
+   */
+  firstRun?: boolean;
 }
 
-function AutopilotChatPanel({ className, variant = 'standard' }: AutopilotChatPanelProps) {
+function AutopilotChatPanel({
+  className,
+  variant = 'standard',
+  firstRun = false,
+}: AutopilotChatPanelProps) {
   const [revealedCount, setRevealedCount] = React.useState(0);
   const [isBusy, setIsBusy] = React.useState(false);
   const [agentMode, setAgentMode] = React.useState(AGENT_MODES[0].label);
@@ -160,6 +179,64 @@ function AutopilotChatPanel({ className, variant = 'standard' }: AutopilotChatPa
       : isBusy
         ? 'Autopilot is replying...'
         : 'No messages queued. Start a new chat to replay the conversation.';
+
+  const showHero = firstRun && turns.length === 0;
+  const heroHoldsComposer = showHero && variant === 'fullscreen';
+
+  const renderComposer = (density: ChatComposerDensity) => {
+    const toolbarSize = density === 'compact' ? '3xs' : '2xs';
+    return (
+      <ChatComposer
+        className="w-full"
+        density={density}
+        value={composerValue}
+        onSubmit={handleSend}
+      >
+        <ChatComposerInputGroup>
+          <ChatComposerTextarea
+            readOnly
+            maxRows={4}
+            className={cn(!canSend && 'text-muted-foreground')}
+          />
+          <ChatComposerToolbar>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <ChatComposerAttachButton />
+              </TooltipTrigger>
+              <TooltipContent>Attach file</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <InputGroupButton aria-label="Add resource reference" icon size={toolbarSize}>
+                  <AtSign />
+                </InputGroupButton>
+              </TooltipTrigger>
+              <TooltipContent>Add resource</TooltipContent>
+            </Tooltip>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <InputGroupButton aria-label="Agent mode" size={toolbarSize}>
+                  <ActiveModeIcon />
+                  {agentMode}
+                </InputGroupButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" side="top" className="w-36">
+                {AGENT_MODES.map((mode) => (
+                  <DropdownMenuItem key={mode.label} onClick={() => setAgentMode(mode.label)}>
+                    <mode.icon className={mode.label === agentMode ? 'text-brand' : undefined} />
+                    <span className={mode.label === agentMode ? 'text-brand' : undefined}>
+                      {mode.label}
+                    </span>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <ChatComposerSubmit disabled={!canSend} />
+          </ChatComposerToolbar>
+        </ChatComposerInputGroup>
+      </ChatComposer>
+    );
+  };
 
   return (
     <TooltipProvider delayDuration={300}>
@@ -231,8 +308,27 @@ function AutopilotChatPanel({ className, variant = 'standard' }: AutopilotChatPa
           </div>
         </CardHeader>
 
-        <div className="flex-1 overflow-hidden">
-          {turns.length === 0 ? (
+        <div className="flex flex-1 flex-col overflow-hidden">
+          {showHero ? (
+            <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-4">
+              <ChatHero
+                layout={variant === 'fullscreen' ? 'centered' : 'docked'}
+                density={variant === 'fullscreen' ? 'comfortable' : 'compact'}
+              >
+                <ChatHeroHeader>
+                  <ChatHeroTitle>Morning!</ChatHeroTitle>
+                  <ChatHeroDescription>What are we working on today?</ChatHeroDescription>
+                </ChatHeroHeader>
+                {heroHoldsComposer && renderComposer('comfortable')}
+                <PromptSuggestions
+                  density={variant === 'fullscreen' ? 'comfortable' : 'compact'}
+                  suggestions={FIRST_RUN_SUGGESTIONS}
+                  onSelect={handleSend}
+                  disabled={!canSend}
+                />
+              </ChatHero>
+            </div>
+          ) : turns.length === 0 ? (
             <EmptyState
               className="h-full"
               icon={<MessageCircleDashed className="size-8 text-foreground-subtle" />}
@@ -293,59 +389,9 @@ function AutopilotChatPanel({ className, variant = 'standard' }: AutopilotChatPa
           )}
         </div>
 
-        <CardFooter className="flex-col gap-2 p-4 pt-2">
-          <ChatComposer
-            className="w-full"
-            density="compact"
-            value={composerValue}
-            onSubmit={handleSend}
-          >
-            <ChatComposerInputGroup>
-              <ChatComposerTextarea
-                readOnly
-                maxRows={4}
-                className={cn(!canSend && 'text-muted-foreground')}
-              />
-              <ChatComposerToolbar>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <ChatComposerAttachButton />
-                  </TooltipTrigger>
-                  <TooltipContent>Attach file</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <InputGroupButton aria-label="Add resource reference" icon size="3xs">
-                      <AtSign />
-                    </InputGroupButton>
-                  </TooltipTrigger>
-                  <TooltipContent>Add resource</TooltipContent>
-                </Tooltip>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <InputGroupButton aria-label="Agent mode" size="3xs">
-                      <ActiveModeIcon />
-                      {agentMode}
-                    </InputGroupButton>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" side="top" className="w-36">
-                    {AGENT_MODES.map((mode) => (
-                      <DropdownMenuItem key={mode.label} onClick={() => setAgentMode(mode.label)}>
-                        <mode.icon
-                          className={mode.label === agentMode ? 'text-brand' : undefined}
-                        />
-                        <span className={mode.label === agentMode ? 'text-brand' : undefined}>
-                          {mode.label}
-                        </span>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <ChatComposerSubmit disabled={!canSend} />
-              </ChatComposerToolbar>
-            </ChatComposerInputGroup>
-          </ChatComposer>
-        </CardFooter>
+        {!heroHoldsComposer && (
+          <CardFooter className="flex-col gap-2 p-4 pt-2">{renderComposer('compact')}</CardFooter>
+        )}
       </Card>
     </TooltipProvider>
   );
@@ -361,7 +407,7 @@ export const Embedded: Story = {
   name: 'Embedded',
   parameters: { layout: 'fullscreen' },
   render: () => (
-    <div className="relative h-screen w-full overflow-hidden bg-muted/30">
+    <div className="relative h-screen w-full overflow-hidden bg-background">
       <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
         Host application
       </div>
@@ -383,7 +429,44 @@ export const Fullscreen: Story = {
     <div className="h-screen w-full">
       <AutopilotChatPanel
         variant="fullscreen"
-        className="h-full max-w-none rounded-none border-0 shadow-none"
+        className="h-full max-w-none rounded-none border-0 shadow-none bg-background"
+      />
+    </div>
+  ),
+};
+
+/**
+ * Embedded before the first message: ChatHero docks above the footer composer, start-aligned, as
+ * ApChat's first-run experience does today.
+ */
+export const EmbeddedEmptyState: Story = {
+  name: 'Embedded, empty state',
+  parameters: { layout: 'fullscreen' },
+  render: () => (
+    <div className="relative h-screen w-full overflow-hidden bg-background">
+      <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+        Host application
+      </div>
+      <div className="fixed right-6 bottom-6 z-50">
+        <AutopilotChatPanel variant="embedded" firstRun className="shadow-xl" />
+      </div>
+    </div>
+  ),
+};
+
+/**
+ * Fullscreen before the first message: ChatHero centers the greeting, the composer and the
+ * suggestions. The composer moves to the footer once the conversation starts.
+ */
+export const FullscreenEmptyState: Story = {
+  name: 'Fullscreen, empty state',
+  parameters: { layout: 'fullscreen' },
+  render: () => (
+    <div className="h-screen w-full">
+      <AutopilotChatPanel
+        variant="fullscreen"
+        firstRun
+        className="h-full max-w-none rounded-none border-0 shadow-none bg-background"
       />
     </div>
   ),

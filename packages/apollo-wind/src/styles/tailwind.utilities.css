@@ -69,6 +69,8 @@
  * element in while it travels 20px to its resting position. Intended for
  * hierarchical panels where forward navigation enters from the right and
  * going back enters from the left (canvas Toolbox, nested pickers).
+ * `animate-slide-in-from-bottom` is the slower rise of chat content that
+ * appears below a reply (PromptSuggestions).
  *
  * Two keyframes rather than one parameterized by a custom property: the
  * offset is the only difference, and inlining it keeps `var()` out of the
@@ -85,6 +87,11 @@
   to   { opacity: 1; transform: translateX(0); }
 }
 
+@keyframes apollo-slide-in-from-bottom {
+  from { opacity: 0; transform: translateY(1.25rem); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 @utility animate-slide-in-from-right {
   animation: apollo-slide-in-from-right 150ms ease-out;
 }
@@ -93,10 +100,18 @@
   animation: apollo-slide-in-from-left 150ms ease-out;
 }
 
+@utility animate-slide-in-from-bottom {
+  animation: apollo-slide-in-from-bottom 300ms ease-out;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-slide-in-from-right,
   .animate-slide-in-from-left {
     animation: apollo-fade-in 150ms ease-out;
+  }
+
+  .animate-slide-in-from-bottom {
+    animation: apollo-fade-in 300ms ease-out;
   }
 }
 
