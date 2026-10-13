@@ -16,8 +16,8 @@ const numberFormat = new Intl.NumberFormat("en-US");
 
 export function TableChartTemplate() {
   return (
-    <Card className="flex flex-col w-full h-[360px] gap-2 py-4">
-      <CardContent className="flex-1 overflow-hidden p-0">
+    <Card className="w-full py-4">
+      <CardContent className="p-0">
         <TableChart
           columns={[
             {

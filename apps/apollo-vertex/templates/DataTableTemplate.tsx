@@ -307,76 +307,74 @@ function DataTableTemplateContent() {
   const [expanded, setExpanded] = useState<ExpandedState>({});
 
   return (
-    <div className="p-4">
-      <DataTable
-        {...tableState}
-        expanded={expanded}
-        onExpandedChange={setExpanded}
-        renderExpandedRow={(row) => {
-          const payment = row.original;
-          return (
-            <div className="flex flex-wrap gap-x-10 gap-y-4 p-4 justify-center text-sm">
-              <div>
-                <span className="text-muted-foreground">ID</span>
-                <p className="font-medium">{payment.id}</p>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Customer</span>
-                <p className="font-medium">{payment.name}</p>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Email</span>
-                <p className="font-medium">{payment.email}</p>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Date</span>
-                <p className="font-medium">
-                  {new Intl.DateTimeFormat("en-US", {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                  }).format(new Date(payment.date))}
-                </p>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Amount</span>
-                <p className="font-medium">
-                  {new Intl.NumberFormat("en-US", {
-                    style: "currency",
-                    currency: "USD",
-                  }).format(payment.amount)}
-                </p>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Method</span>
-                <p className="font-medium capitalize">
-                  {payment.method.replace("_", " ")}
-                </p>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Status</span>
-                <p>
-                  <Badge
-                    variant="secondary"
-                    status={statusBadgeStatus[payment.status]}
-                  >
-                    {payment.status.charAt(0).toUpperCase() +
-                      payment.status.slice(1)}
-                  </Badge>
-                </p>
-              </div>
+    <DataTable
+      {...tableState}
+      expanded={expanded}
+      onExpandedChange={setExpanded}
+      renderExpandedRow={(row) => {
+        const payment = row.original;
+        return (
+          <div className="flex flex-wrap gap-x-10 gap-y-4 p-4 justify-center text-sm">
+            <div>
+              <span className="text-muted-foreground">ID</span>
+              <p className="font-medium">{payment.id}</p>
             </div>
-          );
-        }}
-        toolbarContent={(table) => (
-          <FilterDropdown
-            column={table.getColumn("status")}
-            title="Status"
-            options={statusFilterOptions}
-          />
-        )}
-      />
-    </div>
+            <div>
+              <span className="text-muted-foreground">Customer</span>
+              <p className="font-medium">{payment.name}</p>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Email</span>
+              <p className="font-medium">{payment.email}</p>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Date</span>
+              <p className="font-medium">
+                {new Intl.DateTimeFormat("en-US", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                }).format(new Date(payment.date))}
+              </p>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Amount</span>
+              <p className="font-medium">
+                {new Intl.NumberFormat("en-US", {
+                  style: "currency",
+                  currency: "USD",
+                }).format(payment.amount)}
+              </p>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Method</span>
+              <p className="font-medium capitalize">
+                {payment.method.replace("_", " ")}
+              </p>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Status</span>
+              <p>
+                <Badge
+                  variant="secondary"
+                  status={statusBadgeStatus[payment.status]}
+                >
+                  {payment.status.charAt(0).toUpperCase() +
+                    payment.status.slice(1)}
+                </Badge>
+              </p>
+            </div>
+          </div>
+        );
+      }}
+      toolbarContent={(table) => (
+        <FilterDropdown
+          column={table.getColumn("status")}
+          title="Status"
+          options={statusFilterOptions}
+        />
+      )}
+    />
   );
 }
 

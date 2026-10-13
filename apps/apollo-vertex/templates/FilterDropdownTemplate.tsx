@@ -175,7 +175,7 @@ function FilterDropdownTemplateContent() {
   const [countryFilter, setCountryFilter] = useState<string[]>([]);
 
   return (
-    <div className="flex flex-col gap-8 p-6">
+    <div className="flex flex-col gap-8">
       {/* Multi-select */}
       <div className="space-y-2">
         <p className="text-sm font-medium text-muted-foreground">

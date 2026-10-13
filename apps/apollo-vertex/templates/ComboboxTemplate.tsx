@@ -28,26 +28,24 @@ function SingleSelectContent() {
   const selectedLabel = products.find((f) => f.value === value[0])?.label;
 
   return (
-    <div className="p-4">
-      <Combobox value={value} onValueChange={setValue}>
-        <ComboboxTrigger className="w-[240px]" placeholder={"Select a product"}>
-          {selectedLabel}
-        </ComboboxTrigger>
-        <ComboboxContent>
-          <ComboboxInput placeholder="Search products..." />
-          <ComboboxList>
-            <ComboboxEmpty>{"No products found."}</ComboboxEmpty>
-            <ComboboxGroup>
-              {products.map((f) => (
-                <ComboboxItem key={f.value} value={f.value}>
-                  {f.label}
-                </ComboboxItem>
-              ))}
-            </ComboboxGroup>
-          </ComboboxList>
-        </ComboboxContent>
-      </Combobox>
-    </div>
+    <Combobox value={value} onValueChange={setValue}>
+      <ComboboxTrigger className="w-[240px]" placeholder={"Select a product"}>
+        {selectedLabel}
+      </ComboboxTrigger>
+      <ComboboxContent>
+        <ComboboxInput placeholder="Search products..." />
+        <ComboboxList>
+          <ComboboxEmpty>{"No products found."}</ComboboxEmpty>
+          <ComboboxGroup>
+            {products.map((f) => (
+              <ComboboxItem key={f.value} value={f.value}>
+                {f.label}
+              </ComboboxItem>
+            ))}
+          </ComboboxGroup>
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
   );
 }
 
@@ -55,37 +53,35 @@ function MultiSelectContent() {
   const [values, setValues] = useState<string[]>([]);
 
   return (
-    <div className="p-4">
-      <Combobox multiple value={values} onValueChange={setValues}>
-        <ComboboxTrigger
-          className="w-[360px] h-auto min-h-9"
-          placeholder={"Select products"}
-        >
-          {values.length > 0 ? (
-            <ComboboxBadgeList>
-              {values.map((v) => (
-                <ComboboxBadge key={v} value={v}>
-                  {products.find((f) => f.value === v)?.label}
-                </ComboboxBadge>
-              ))}
-            </ComboboxBadgeList>
-          ) : null}
-        </ComboboxTrigger>
-        <ComboboxContent>
-          <ComboboxInput placeholder="Search products..." />
-          <ComboboxList>
-            <ComboboxEmpty>{"No products found."}</ComboboxEmpty>
-            <ComboboxGroup>
-              {products.map((f) => (
-                <ComboboxItem key={f.value} value={f.value}>
-                  {f.label}
-                </ComboboxItem>
-              ))}
-            </ComboboxGroup>
-          </ComboboxList>
-        </ComboboxContent>
-      </Combobox>
-    </div>
+    <Combobox multiple value={values} onValueChange={setValues}>
+      <ComboboxTrigger
+        className="w-[360px] h-auto min-h-9"
+        placeholder={"Select products"}
+      >
+        {values.length > 0 ? (
+          <ComboboxBadgeList>
+            {values.map((v) => (
+              <ComboboxBadge key={v} value={v}>
+                {products.find((f) => f.value === v)?.label}
+              </ComboboxBadge>
+            ))}
+          </ComboboxBadgeList>
+        ) : null}
+      </ComboboxTrigger>
+      <ComboboxContent>
+        <ComboboxInput placeholder="Search products..." />
+        <ComboboxList>
+          <ComboboxEmpty>{"No products found."}</ComboboxEmpty>
+          <ComboboxGroup>
+            {products.map((f) => (
+              <ComboboxItem key={f.value} value={f.value}>
+                {f.label}
+              </ComboboxItem>
+            ))}
+          </ComboboxGroup>
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
   );
 }
 
@@ -94,30 +90,28 @@ function InvalidContent() {
   const selectedLabel = products.find((f) => f.value === value[0])?.label;
 
   return (
-    <div className="p-4">
-      <Combobox value={value} onValueChange={setValue}>
-        <ComboboxTrigger
-          className="w-[240px]"
-          placeholder={"Select a product"}
-          aria-invalid="true"
-        >
-          {selectedLabel}
-        </ComboboxTrigger>
-        <ComboboxContent>
-          <ComboboxInput placeholder="Search products..." />
-          <ComboboxList>
-            <ComboboxEmpty>{"No products found."}</ComboboxEmpty>
-            <ComboboxGroup>
-              {products.map((f) => (
-                <ComboboxItem key={f.value} value={f.value}>
-                  {f.label}
-                </ComboboxItem>
-              ))}
-            </ComboboxGroup>
-          </ComboboxList>
-        </ComboboxContent>
-      </Combobox>
-    </div>
+    <Combobox value={value} onValueChange={setValue}>
+      <ComboboxTrigger
+        className="w-[240px]"
+        placeholder={"Select a product"}
+        aria-invalid="true"
+      >
+        {selectedLabel}
+      </ComboboxTrigger>
+      <ComboboxContent>
+        <ComboboxInput placeholder="Search products..." />
+        <ComboboxList>
+          <ComboboxEmpty>{"No products found."}</ComboboxEmpty>
+          <ComboboxGroup>
+            {products.map((f) => (
+              <ComboboxItem key={f.value} value={f.value}>
+                {f.label}
+              </ComboboxItem>
+            ))}
+          </ComboboxGroup>
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
   );
 }
 
