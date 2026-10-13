@@ -1,3 +1,14 @@
+## [@uipath/apollo-wind-v2.70.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.69.0...@uipath/apollo-wind@2.70.0) (2026-10-13)
+
+### Features
+
+* **apollo-wind:** add ChatComposer and DropzoneOverlay chat primitives ([a6321dd](https://github.com/UiPath/apollo-ui/commit/a6321dd2d974abce50b7883ffdc2142ffcb0aade))
+* **apollo-wind:** add MessageActions, Citation and Sources chat primitives ([674547f](https://github.com/UiPath/apollo-ui/commit/674547fab6457e813ff976c5416a0c513dc83db8))
+
+### Bug Fixes
+
+* **apollo-wind:** portal HoverCardContent through the portal container ([e29415d](https://github.com/UiPath/apollo-ui/commit/e29415dab392ae7ee63ec571439ca07dba2d5899))
+
 ## [@uipath/apollo-wind-v2.68.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.67.1...@uipath/apollo-wind@2.68.0) (2026-10-12)
 
 ### Features
