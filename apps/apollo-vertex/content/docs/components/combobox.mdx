@@ -53,20 +53,20 @@ import {
 
 ```tsx
 const [value, setValue] = useState<string[]>([])
-const selectedLabel = frameworks.find((f) => f.value === value[0])?.label
+const selectedLabel = products.find((f) => f.value === value[0])?.label
 
 <Combobox value={value} onValueChange={setValue}>
-  <ComboboxTrigger placeholder="Select a framework...">
+  <ComboboxTrigger placeholder="Select a product...">
     {selectedLabel}
   </ComboboxTrigger>
   <ComboboxContent>
-    <ComboboxInput placeholder="Search frameworks..." />
+    <ComboboxInput placeholder="Search products..." />
     <ComboboxList>
       <ComboboxEmpty>No results found.</ComboboxEmpty>
       <ComboboxGroup>
-        <ComboboxItem value="next">Next.js</ComboboxItem>
-        <ComboboxItem value="svelte">SvelteKit</ComboboxItem>
-        <ComboboxItem value="nuxt">Nuxt</ComboboxItem>
+        <ComboboxItem value="studio">Studio</ComboboxItem>
+        <ComboboxItem value="orchestrator">Orchestrator</ComboboxItem>
+        <ComboboxItem value="robot">Robot</ComboboxItem>
       </ComboboxGroup>
     </ComboboxList>
   </ComboboxContent>
@@ -79,7 +79,7 @@ const selectedLabel = frameworks.find((f) => f.value === value[0])?.label
 const [values, setValues] = useState<string[]>([])
 
 <Combobox multiple value={values} onValueChange={setValues}>
-  <ComboboxTrigger className="h-auto min-h-9" placeholder="Select frameworks...">
+  <ComboboxTrigger className="h-auto min-h-9" placeholder="Select products...">
     {values.length > 0 && (
       <ComboboxBadgeList>
         {values.map((v) => (
@@ -91,13 +91,13 @@ const [values, setValues] = useState<string[]>([])
     )}
   </ComboboxTrigger>
   <ComboboxContent>
-    <ComboboxInput placeholder="Search frameworks..." />
+    <ComboboxInput placeholder="Search products..." />
     <ComboboxList>
       <ComboboxEmpty>No results found.</ComboboxEmpty>
       <ComboboxGroup>
-        <ComboboxItem value="next">Next.js</ComboboxItem>
-        <ComboboxItem value="svelte">SvelteKit</ComboboxItem>
-        <ComboboxItem value="nuxt">Nuxt</ComboboxItem>
+        <ComboboxItem value="studio">Studio</ComboboxItem>
+        <ComboboxItem value="orchestrator">Orchestrator</ComboboxItem>
+        <ComboboxItem value="robot">Robot</ComboboxItem>
       </ComboboxGroup>
     </ComboboxList>
   </ComboboxContent>
@@ -108,17 +108,17 @@ const [values, setValues] = useState<string[]>([])
 
 ```tsx
 <Combobox value={value} onValueChange={setValue}>
-  <ComboboxTrigger placeholder="Select a framework..." aria-invalid="true">
+  <ComboboxTrigger placeholder="Select a product..." aria-invalid="true">
     {selectedLabel}
   </ComboboxTrigger>
   <ComboboxContent>
-    <ComboboxInput placeholder="Search frameworks..." />
+    <ComboboxInput placeholder="Search products..." />
     <ComboboxList>
       <ComboboxEmpty>No results found.</ComboboxEmpty>
       <ComboboxGroup>
-        <ComboboxItem value="next">Next.js</ComboboxItem>
-        <ComboboxItem value="svelte">SvelteKit</ComboboxItem>
-        <ComboboxItem value="nuxt">Nuxt</ComboboxItem>
+        <ComboboxItem value="studio">Studio</ComboboxItem>
+        <ComboboxItem value="orchestrator">Orchestrator</ComboboxItem>
+        <ComboboxItem value="robot">Robot</ComboboxItem>
       </ComboboxGroup>
     </ComboboxList>
   </ComboboxContent>

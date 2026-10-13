@@ -52,8 +52,6 @@ This component depends on the following registry components:
 ### Basic
 
 ```tsx
-"use client";
-
 import * as React from "react";
 import { FeedbackVoteWidget } from "@/components/ui/feedback-vote-widget";
 
@@ -111,7 +109,7 @@ async function handleSubmit(args: {
 
   const draft: FeedbackDraft<MyCustom, MyComment> = {
     traceId,
-    spanId: "", // Feedback API auto-resolves the root span (LLMOPS-2310)
+    spanId: "", // Feedback API auto-resolves the root span
     isPositive: args.vote === "up",
     customFields: {
       sectionName: args.sectionName,

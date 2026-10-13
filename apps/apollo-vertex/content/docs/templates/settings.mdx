@@ -65,8 +65,8 @@ Source: [`templates/settings/WorkspaceSettings.tsx`](https://github.com/UiPath/a
 
 ## Installation
 
-The composition itself is a pattern — copy the source from
-`templates/settings/WorkspaceSettings.tsx` into your app, wrap it in
+The composition itself is a pattern. Copy the source linked above into your
+app, wrap it in
 `ApolloShell`, and swap in your own state/persistence. The underlying
 components install from the registry:
 
@@ -92,7 +92,7 @@ npx shadcn@latest add @uipath/button
 - **Persistence** — form state is owned by the `Form` component
   (`useAppForm`). `onSubmit` receives the validated values; the template
   resets the form to those values so it returns to a pristine state. Swap
-  `onSubmit` for a call to your own store, server action, or settings API,
+  `onSubmit` for a call to your own store, mutation, or settings API,
   and add toast feedback with `Sonner` from the registry.
 - **Categorical fields** — `emailFrequency` and `visibility` are `z.enum`
   members in the Zod schema, rendered with `RadioGroupField`. The schema
