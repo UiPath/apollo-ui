@@ -17,8 +17,37 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    name: Detect Affected Apps
+    if: github.event.action != 'closed' && github.event.pull_request.head.repo.fork == false
+    runs-on: uipath-ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      apps: ${{ steps.affected.outputs.apps }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          # The PR head, not the merge commit, so the diff against the merge
+          # base holds only the PR's own changes. Full history for that base.
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install Node dependencies
+        uses: ./.github/actions/install-node-deps
+
+      - name: List affected apps
+        id: affected
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: node .github/scripts/preview-deploy/affected-apps.mjs
+
   initialize-comment:
     name: Initialize Apollo Coded App Preview Comment
+    needs: changes
     if: github.event.action != 'closed' && github.event.pull_request.head.repo.fork == false
     runs-on: uipath-ubuntu-latest
     permissions:
@@ -34,6 +63,8 @@ jobs:
 
       - name: Initialize PR comment
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd  # v8
+        env:
+          AFFECTED_APPS: ${{ needs.changes.outputs.apps }}
         with:
           script: |
             const { initComment } = await import(`${process.env.GITHUB_WORKSPACE}/.github/scripts/preview-deploy/preview-comment.mjs`);
@@ -41,8 +72,8 @@ jobs:
 
   deploy:
     name: Deploy ${{ matrix.label }}
-    needs: initialize-comment
-    if: ${{ !cancelled() && github.event.action != 'closed' && needs.initialize-comment.result == 'success' && github.event.pull_request.head.repo.fork == false }}
+    needs: [changes, initialize-comment]
+    if: ${{ !cancelled() && github.event.action != 'closed' && github.event.pull_request.head.repo.fork == false && needs.changes.outputs.apps != '[]' && needs.initialize-comment.result == 'success' }}
     runs-on: uipath-ubuntu-latest
     permissions:
       contents: read
@@ -57,14 +88,7 @@ jobs:
       # job fails at the end if any leg failed.
       fail-fast: false
       matrix:
-        include:
-          - label: apollo-landing
-          - label: apollo-docs
-          - label: apollo-design
-          - label: apollo-vertex
-            # Live AI Chat: pass the runtime OAuth client so uip-go bakes the
-            # platform-auth context in and registers this preview's redirect URI.
-            platform_auth: true
+        label: ${{ fromJSON(needs.changes.outputs.apps) }}
 
     steps:
       - name: Checkout code
@@ -92,7 +116,8 @@ jobs:
           GH_NPM_REGISTRY_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           APP_LABEL: ${{ matrix.label }}
-          PLATFORM_AUTH: ${{ matrix.platform_auth == true }}
+          # Live AI Chat: vertex gets the platform-auth context baked in.
+          PLATFORM_AUTH: ${{ matrix.label == 'apollo-vertex' }}
           UIPATH_BASE_URL: ${{ vars.UIPATH_BASE_URL || secrets.UIPATH_BASE_URL }}
           UIPATH_CLIENT_ID: ${{ vars.UIPATH_CLIENT_ID || secrets.UIPATH_CLIENT_ID }}
           UIPATH_CLIENT_SECRET: ${{ secrets.UIPATH_CLIENT_SECRET }}
@@ -217,8 +242,8 @@ jobs:
 
   update-comment:
     name: Update Apollo Coded App Preview Comment
-    needs: [initialize-comment, deploy]
-    if: ${{ always() && github.event.action != 'closed' && github.event.pull_request.head.repo.fork == false && needs.initialize-comment.result != 'skipped' }}
+    needs: [changes, initialize-comment, deploy]
+    if: ${{ always() && github.event.action != 'closed' && github.event.pull_request.head.repo.fork == false && needs.changes.outputs.apps != '[]' && needs.initialize-comment.result != 'skipped' }}
     runs-on: uipath-ubuntu-latest
     permissions:
       pull-requests: write
@@ -240,6 +265,7 @@ jobs:
       - name: Update PR comment
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd  # v8
         env:
+          AFFECTED_APPS: ${{ needs.changes.outputs.apps }}
           RESULTS_DIR: ${{ runner.temp }}/results
         with:
           script: |
@@ -248,14 +274,15 @@ jobs:
 
   visual-diff:
     name: Storybook Visual Diff
-    needs: deploy
+    needs: [changes, deploy]
     # Informational check (never required for merge): compares the PR's
     # apollo-design preview Storybook against the deployed main Storybook
     # with @uipath/storybook-visual-diff and posts the result as a PR
-    # comment. Only PRs targeting main are compared (the deployed baseline
-    # tracks main). The apollo-design leg's outcome is read from its result
-    # artifact so a failure in another matrix leg doesn't skip this job.
-    if: ${{ !cancelled() && github.event.action != 'closed' && github.event.pull_request.head.repo.fork == false && github.event.pull_request.base.ref == 'main' && needs.deploy.result != 'skipped' }}
+    # comment. Only PRs targeting main that affect apollo-design are compared
+    # (the deployed baseline tracks main). The apollo-design leg's outcome is
+    # read from its result artifact so a failure in another matrix leg doesn't
+    # skip this job.
+    if: ${{ !cancelled() && github.event.action != 'closed' && github.event.pull_request.head.repo.fork == false && github.event.pull_request.base.ref == 'main' && contains(fromJSON(needs.changes.outputs.apps || '[]'), 'apollo-design') && needs.deploy.result != 'skipped' }}
     runs-on: uipath-ubuntu-latest
     permissions:
       contents: read
