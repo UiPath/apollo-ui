@@ -1,3 +1,5 @@
+"use client";
+
 import type { PropsWithChildren } from "react";
 import { useAuth } from "./shell-auth-provider";
 import {

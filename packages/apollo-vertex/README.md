@@ -23,31 +23,24 @@ import { Button, DataTable } from "@uipath/apollo-vertex";
 `tailwind.css` includes Tailwind, the Vertex theme and a `@source` for the package's built files. Use
 `@uipath/apollo-vertex/theme.css` instead if you only want the theme variables.
 
-Features that need extra packages live on subpaths. Install the optional peer dependencies for the
-subpaths you use:
+Everything, including the app shell, charts, feature flags, Solution Tests and AI chat, is exported
+from the package root. Translation JSON files are available at `@uipath/apollo-vertex/locales/*`.
 
-| Subpath | Contents | Extra packages |
-| --- | --- | --- |
-| `.` | Primitives, forms, data table, sidebar | None |
-| `./charts` | Charts, chart models, Data Fabric and Insights adapters | `recharts`, `@tanstack/react-query`, `@ts-rest/core`, `react-error-boundary` |
-| `./shell` | App shell, auth, locale and theme providers | `@tanstack/react-query`, `@tanstack/react-router`, `jwt-decode`, `pkce-challenge` |
-| `./shell/entities` | Group membership and entity table hooks | `./shell` packages, `@uipath/vs-core`, `@tanstack/react-db` |
-| `./feature-flags` | Feature flag provider, guard and hooks | None |
-| `./feature-flags/proteus` | Proteus feature flag adapter | `@uipath/proteus-client` |
-| `./solution-tests` | Presentational Solution Tests views | `@tanstack/react-router`, `recharts` |
-| `./solution-tests/data` | Solution Tests containers and hooks | `./solution-tests` packages, `@uipath/vs-core`, `@tanstack/react-db`, `@tanstack/react-query`, `@uipath/uipath-typescript` |
-| `./ai-chat` | AI chat and data fabric chat tools | `@tanstack/ai`, `@tanstack/ai-client`, `@tanstack/react-query`, `@uipath/uipath-typescript`, `eventsource-parser`, `highlight.js`, `react-markdown`, `remark-breaks`, `remark-gfm`, `recharts`, `react-error-boundary`, `@ts-rest/core` |
-| `./locales/*` | Translation JSON files | None |
+npm 7+ and pnpm install the packages in `peerDependencies` automatically. Install these three
+yourself, because they are not on the public npm registry:
 
-`@uipath/vs-core`, `@uipath/proteus-client` and `@tanstack/react-db` are declared only in
-`peerDependenciesMeta` (as optional) and not in `peerDependencies`, because they are not on the public
-npm registry and pnpm would try to install them in this workspace. The host app provides them.
+- `@uipath/vs-core`
+- `@tanstack/react-db`
+- `@uipath/proteus-client`
+
+They are declared only in `peerDependenciesMeta` (as optional) so that pnpm does not try to install them
+in this workspace.
 
 ## Layout
 
 ```text
 packages/apollo-vertex/
-├── entries/           # Public API barrels, one per package.json export
+├── entries/           # Public API barrel (index.ts)
 ├── registry/          # Component sources, one directory per registry item
 ├── registry.json      # shadcn registry manifest (items, files, theme tokens)
 ├── lib/               # Helpers shipped with registry items (cn, asserts, i18n, auth)
@@ -76,6 +69,6 @@ pnpm format        # Biome
 1. Create the component in `registry/<component>/<component>.tsx`.
 2. Add a `@/components/ui/<component>` alias to `tsconfig.json` if other components import it.
 3. Add the item to `registry.json`.
-4. Export it from the matching barrel in `entries/` (the root `entries/index.ts` for primitives).
+4. Export it from `entries/index.ts`.
 5. Document it in `apps/apollo-vertex/content/docs/components/<component>.mdx`.
 6. Run `pnpm build` and `pnpm --filter apollo-vertex registry:build` to check both outputs.

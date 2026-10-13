@@ -1,3 +1,5 @@
+"use client";
+
 import { type CSSProperties, type PropsWithChildren, useId } from "react";
 import {
   SidebarInset,
