@@ -16,6 +16,7 @@ describe('QuickFormField — divergences from apollo-wind', () => {
       expect(FIELD_TYPE_ORDER).toContain('double');
       expect(FIELD_TYPE_ORDER).toContain('datetime');
       expect(FIELD_TYPE_ORDER).toContain('array');
+      expect(FIELD_TYPE_ORDER).toContain('textarea');
       // Each added type has to be addressable by the picker, which reads meta.
       for (const type of FIELD_TYPE_ORDER) {
         expect(FIELD_TYPE_META[type]).toBeDefined();
@@ -24,6 +25,7 @@ describe('QuickFormField — divergences from apollo-wind', () => {
       // integer, and a timestamp beside its date.
       expect(FIELD_TYPE_ORDER.indexOf('double')).toBe(FIELD_TYPE_ORDER.indexOf('integer') + 1);
       expect(FIELD_TYPE_ORDER.indexOf('datetime')).toBe(FIELD_TYPE_ORDER.indexOf('date') + 1);
+      expect(FIELD_TYPE_ORDER.indexOf('textarea')).toBe(FIELD_TYPE_ORDER.indexOf('string') + 1);
     });
 
     // Which types are offered is the consumer's; which the component can
