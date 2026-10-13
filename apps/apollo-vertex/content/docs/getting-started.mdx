@@ -71,6 +71,27 @@ Start with the [Vertical Solution Template](https://github.com/UiPath/vertical-s
 
 Both options give you a ready-to-use project with `@uipath/vs-core` already installed and configured.
 
+## Set up agent skills
+
+The `@uipath/apollo-vertex` package ships [agent skills](https://agentskills.io) that tell coding agents such as Claude Code, Cursor and Copilot how to build UI with Apollo Vertex. For example, one skill tells the agent to use Vertex components instead of writing its own. [TanStack Intent](https://tanstack.com/intent) finds these skills in your `node_modules` and points your agent at them.
+
+Run this once from your project root, after `@uipath/apollo-vertex` is installed:
+
+```bash
+npx @tanstack/intent@latest install
+```
+
+Run it in an interactive terminal. It asks which packages' skills your agent may load, saves your choice in `package.json`, and adds instructions to your agent config file (for example `AGENTS.md` or `CLAUDE.md`). Commit both files so everyone on the project gets the same setup.
+
+The skills are versioned with the package, so updating `@uipath/apollo-vertex` updates them too. You don't need to run `install` again.
+
+To see the skills that are available, or to read one yourself:
+
+```bash
+npx @tanstack/intent@latest list
+npx @tanstack/intent@latest load @uipath/apollo-vertex#use-vertex-components
+```
+
 ## Next Steps
 
 After using the template or CLI, your project is pre-configured with everything you need. See the [Data Querying](/data-querying/loading-data) section to learn how to load and mutate data using the `useSolution` hook.
