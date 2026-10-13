@@ -17,11 +17,17 @@ import {
   Workflow,
 } from 'lucide-react';
 import * as React from 'react';
-import { ChatFirstExperience } from '@/components/custom/chat-first-experience';
 import { StepsView } from '@/components/custom/chat-steps-view';
 import { DemoComposer } from '@/components/custom/demo-composer';
+import {
+  ChatHero,
+  ChatHeroDescription,
+  ChatHeroHeader,
+  ChatHeroTitle,
+} from '@/components/ui/chat-hero';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { type PromptSuggestionItem, PromptSuggestions } from '@/components/ui/prompt-suggestions';
 import type { NavItem } from './template-delegate';
 import { DelegateTemplate } from './template-delegate';
 
@@ -80,6 +86,16 @@ export const Blank: Story = {
   ),
 };
 
+const homeSuggestions: PromptSuggestionItem[] = [
+  { id: '1', label: 'Make a list of affordable apartments in NYC' },
+  { id: '2', label: 'Find the highest CD rates' },
+  { id: '3', label: 'Lorem ipsum dolor sit amet' },
+];
+
+// The Delegate spec's taller chips with secondary text.
+const delegateChipClasses =
+  '**:data-[slot=prompt-suggestion]:h-10 **:data-[slot=prompt-suggestion]:py-2.5 **:data-[slot=prompt-suggestion]:text-foreground-secondary **:data-[slot=prompt-suggestion]:hover:border-border-hover **:data-[slot=prompt-suggestion]:hover:text-foreground';
+
 export const Home: Story = {
   render: (_, { globals }) => (
     <DelegateTemplate
@@ -87,7 +103,18 @@ export const Home: Story = {
       navItems={defaultNavItems}
       defaultPanelOpen={true}
     >
-      <ChatFirstExperience />
+      <ChatHero layout="centered" className="gap-[37px]">
+        <ChatHeroHeader>
+          <ChatHeroTitle asChild className="text-[40px] leading-9 tracking-[-0.8px]">
+            <h1>Hello David</h1>
+          </ChatHeroTitle>
+          <ChatHeroDescription className="leading-9 text-foreground-secondary">
+            What should we work on today?
+          </ChatHeroDescription>
+        </ChatHeroHeader>
+        <DemoComposer placeholder="I would like you to automate my" />
+        <PromptSuggestions suggestions={homeSuggestions} className={delegateChipClasses} />
+      </ChatHero>
     </DelegateTemplate>
   ),
 };

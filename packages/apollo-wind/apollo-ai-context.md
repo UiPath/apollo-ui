@@ -354,10 +354,11 @@ Put the control inside `InputGroup`. Apollo's controls detect the group and beco
 #### Other available components
 
 Accordion, Alert, AlertDialog, AspectRatio, Avatar, Breadcrumb, ButtonGroup,
-Calendar, Checkbox, Collapsible, Combobox, Command, ContextMenu, DatePicker,
-DateTimePicker, Drawer, DropdownMenu, EditableCell, EmptyState, FileTreeView,
-FileUpload, HoverCard, JsonTreeView, Layout (Grid/Row/Column), Menubar,
-MultiSelect, NavigationMenu, Pagination, Popover, Progress, RadioGroup,
+Calendar, ChatHero, Checkbox, Collapsible, Combobox, Command, ContextMenu,
+DatePicker, DateTimePicker, Drawer, DropdownMenu, EditableCell, EmptyState,
+FileTreeView, FileUpload, HoverCard, JsonTreeView, Layout (Grid/Row/Column),
+Menubar, MultiSelect, NavigationMenu, Pagination, Popover, Progress,
+PromptSuggestions, RadioGroup,
 Resizable, ScrollArea, Search, Separator, Sidebar, Skeleton, Slider, Sonner, Spinner,
 StatsCard, Stepper, Switch, Toggle, ToggleGroup, Tooltip, InfoTooltip,
 FormField (with FormFieldLabel, FormFieldHeader, FormFieldDescription, FormFieldError),
@@ -379,8 +380,6 @@ is imported from `@/components/ui/tree-view`.
 | DelegatePanel | `panel-delegate` | Delegate navigation panel |
 | MaestroPanel | `panel-maestro` | Maestro side panels |
 | MaestroGrid | `grid-maestro` | Maestro content grid |
-| ChatFirstExperience | `chat-first-experience` | Empty chat state |
-| ChatPromptSuggestions | `chat-prompt-suggestions` | Suggested prompts |
 | ChatStepsView | `chat-steps-view` | Chat step progress |
 
 ### Forms System (`@/components/forms/`)
