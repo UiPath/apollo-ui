@@ -111,8 +111,8 @@ cache rather than adopting a second one, and it is why the hook stays a `useStat
   validators a product exposes is an entitlement decision, so it stays with the caller: Flow
   passes `['prompt_injection']`, Agents passes nothing.
 - **`disabledReason` is an open string.** A `Disabled` built-in validator carries
-  `disabledReason: 'Policy'` when the AI Trust Layer policy switched it off, and runs then skip
-  it rather than fail. The parser keeps any string, so a reason added later still parses, and
+  `disabledReason: 'Policy'` when the AI Trust Layer policy switched it off, and runs skip it
+  rather than fail. The parser keeps any string, so a reason added later still parses, and
   the builder and the list act on `'Policy'` alone. A disabled BYO configuration carries none.
 - **BYO folder placement stays host-side.** Resolving it needs each product's connections API
   (Agents pages `fetchResources`, Flow calls `getConnectionById`), so the hook does not reach
