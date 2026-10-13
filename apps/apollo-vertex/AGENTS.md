@@ -44,6 +44,7 @@ apps/apollo-vertex/
 ## Documenting a New Component
 
 1. Add the component and its `registry.json` entry in `packages/apollo-vertex` (see its AGENTS.md).
-2. Create a documentation page in `content/docs/components/<component>.mdx` with a `title` in its
-   frontmatter, and add the page to `content/docs/components/meta.json` to place it in the sidebar.
+2. Create a documentation page in `content/docs/components/<component>.mdx` with a `title` and a
+   one-line `description` in its frontmatter. The page renders both, so don't repeat them as an
+   H1 and intro paragraph. Add the page to `content/docs/components/meta.json` to place it in the sidebar.
 3. Run `pnpm build` to confirm the docs and registry build.

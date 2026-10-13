@@ -59,6 +59,6 @@ npx shadcn@latest add http://localhost:3000/r/button.json
 
 1.  Create the component file in `packages/apollo-vertex/registry/<component>/<component>.tsx`.
 2.  Add the component definition to `packages/apollo-vertex/registry.json`.
-3.  Create a documentation page in `content/docs/components/<component>.mdx` (with a `title` in its frontmatter) and add it to `content/docs/components/meta.json`.
+3.  Create a documentation page in `content/docs/components/<component>.mdx` (with a `title` and `description` in its frontmatter; the page renders them, so skip the H1) and add it to `content/docs/components/meta.json`.
 4.  Run `pnpm registry:build` to update the registry artifacts.
 
