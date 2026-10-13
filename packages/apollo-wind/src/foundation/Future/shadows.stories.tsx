@@ -6,7 +6,7 @@ import { fontFamily } from './typography';
 // ============================================================================
 
 const meta = {
-  title: 'Theme/Future/Shadows',
+  title: 'Patterns/Theme (Moving to Core)/Future/Shadows',
   parameters: {
     layout: 'fullscreen',
   },
