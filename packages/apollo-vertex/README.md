@@ -60,6 +60,7 @@ pnpm build         # Generate theme.css, build dist/ with rslib, check every exp
 pnpm build:check   # List the external packages each public entry reaches
 pnpm lint          # oxlint (type-aware)
 pnpm lint:deps     # Check that registry files only import from registry/ and lib/
+pnpm -w knip       # Find unused files, exports and dependencies (both workspaces)
 pnpm typecheck     # tsc --noEmit
 pnpm format        # Biome
 ```

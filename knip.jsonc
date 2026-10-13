@@ -1,0 +1,40 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema-jsonc.json",
+  // Run from the root so imports from the docs app into the package (through
+  // its "@/*" tsconfig alias) count as usages. `pnpm knip` limits the run to
+  // the Apollo Vertex workspaces.
+  "workspaces": {
+    ".": {
+      "entry": [],
+      "project": []
+    },
+    "packages/apollo-vertex": {
+      // The package exports point at dist/, so name the sources rslib builds
+      // them from. Everything public must be reachable from entries/.
+      "entry": ["entries/**/*.ts", "styles/tailwind.css"],
+      "ignoreFiles": [
+        // Barrel for shadcn consumers (components/ui/solution-tests). The npm
+        // root entry re-exports the individual files instead.
+        "registry/solution-tests/index.ts"
+      ],
+      "ignoreDependencies": [
+        // Optional peers that are not installable here. They are listed only
+        // in peerDependenciesMeta and typed in types/optional-deps.d.ts.
+        "@tanstack/react-db",
+        "@uipath/proteus-client",
+        "@uipath/vs-core"
+      ]
+    },
+    "apps/apollo-vertex": {
+      "ignoreDependencies": [
+        // Imported through the "@/*" tsconfig alias rather than by package
+        // name. The workspace dependency keeps pnpm and turbo aware of it.
+        "@uipath/apollo-vertex"
+      ],
+      "ignoreFiles": [
+        // Kept on purpose until the dashboard owners decide its fate (6b01b7d79).
+        "templates/dashboard/**"
+      ]
+    }
+  }
+}

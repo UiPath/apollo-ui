@@ -25,6 +25,7 @@ pnpm build                    # Theme CSS, registry build and Next.js build
 pnpm registry:build           # Build the shadcn registry only
 pnpm generate:theme           # Regenerate app/theme.generated.css from the package registry.json
 pnpm lint                     # oxlint (extends the package config)
+pnpm -w knip                  # Find unused files, exports and dependencies (both workspaces)
 pnpm format                   # Format with Biome
 pnpm typecheck                # TypeScript type checking
 ```
