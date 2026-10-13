@@ -1,6 +1,6 @@
 {
   "name": "@uipath/apollo-vertex",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "UiPath Apollo Vertex design system components",
   "license": "MIT",
   "type": "module",
@@ -227,5 +227,13 @@
     "remark-breaks": "^4.0.0",
     "remark-gfm": "^4.0.1",
     "tailwindcss": "^4.1.17"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/UiPath/apollo-ui.git",
+    "directory": "packages/apollo-vertex"
   }
 }
