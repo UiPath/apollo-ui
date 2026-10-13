@@ -20,15 +20,24 @@ env:
 
 jobs:
   deploy:
-    name: Deploy Apollo Coded Apps
+    name: Deploy ${{ matrix.label }}
     runs-on: uipath-ubuntu-latest
     permissions:
       contents: read
       packages: read
+    environment:
+      name: production/${{ matrix.label }}
+      url: ${{ steps.deploy.outputs.url }}
     env:
       # uipath-ubuntu-* runners have less RAM than ubuntu-latest, so Node
       # auto-sizes its heap to ~2 GB and the Storybook build OOMs (exit 134).
       NODE_OPTIONS: --max-old-space-size=6144
+    strategy:
+      # One app per runner, in parallel. Keep going if one app fails so the
+      # others still deploy.
+      fail-fast: false
+      matrix:
+        label: [apollo-landing, apollo-docs, apollo-design, apollo-vertex]
 
     steps:
       - name: Checkout code
@@ -44,13 +53,16 @@ jobs:
         uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830  # v4
         with:
           path: .turbo
-          key: ${{ runner.os }}-turbo-${{ github.ref_name }}-${{ github.sha }}
+          # Per-app key so parallel legs don't race to save one shared cache.
+          key: ${{ runner.os }}-turbo-${{ matrix.label }}-${{ github.ref_name }}-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-turbo-${{ github.ref_name }}-
+            ${{ runner.os }}-turbo-${{ matrix.label }}-${{ github.ref_name }}-
 
-      - name: Deploy Coded Apps with uip-go
+      - name: Deploy Coded App with uip-go
+        id: deploy
         env:
           GH_NPM_REGISTRY_TOKEN: ${{ github.token }}
+          APP_LABEL: ${{ matrix.label }}
           UIPATH_BASE_URL: ${{ vars.UIPATH_BASE_URL || secrets.UIPATH_BASE_URL }}
           UIPATH_CLIENT_ID: ${{ vars.UIPATH_CLIENT_ID || secrets.UIPATH_CLIENT_ID }}
           UIPATH_CLIENT_SECRET: ${{ secrets.UIPATH_CLIENT_SECRET }}
@@ -84,73 +96,44 @@ jobs:
           NPM_CONFIG_USERCONFIG="$uip_go_npmrc" npm install --prefix "$uip_go_prefix" "@uipath/uip-go@${UIP_GO_VERSION}"
           UIP_GO="${uip_go_prefix}/node_modules/.bin/uip-go"
 
-          run_uip_go() {
-            local label="$1"
-            local output_file
-            local command_exit
-            local app_url
-            local extra_args=()
-
-            output_file="$(mktemp)"
-            trap 'rm -f "$output_file"; trap - RETURN' RETURN
-            if [ "$label" = "apollo-vertex" ]; then
-              extra_args+=(--auth-client-id "$UIPATH_RUNTIME_CLIENT_ID")
-            fi
-            echo "::group::uip-go ${label}"
-            set +e
-            "$UIP_GO" "$label" \
-                --name "$label" \
-                --path-name "$label" \
-                --version "$version" \
-                --folder-key "$UIPATH_FOLDER_KEY" \
-                --base-url "$UIPATH_BASE_URL" \
-                --org-name "$UIPATH_ORG_NAME" \
-                --tenant-name "$UIPATH_TENANT_NAME" \
-                --deploy-retries 3 \
-                --deploy-retry-delay-ms 10000 \
-                "${extra_args[@]}" 2>&1 | tee "$output_file"
-            command_exit=${PIPESTATUS[0]}
-            set -e
-            echo "::endgroup::"
-
-            if [ "$command_exit" -ne 0 ]; then
-              echo "::error::uip-go ${label} failed."
-              return "$command_exit"
-            fi
-
-            app_url="$(sed -nE 's/^[[:space:]]*App URL:[[:space:]]*//p' "$output_file" | tail -n 1)"
-            if [ -n "$app_url" ]; then
-              echo "✅ Deployed ${label}: ${app_url}" >> "$GITHUB_STEP_SUMMARY"
-            else
-              echo "✅ Deployed ${label} (${version})" >> "$GITHUB_STEP_SUMMARY"
-            fi
-          }
-
-          failed_apps=()
-          deploy_or_record_failure() {
-            local label="$1"
-
-            if run_uip_go "$label"; then
-              return 0
-            fi
-
-            failed_apps+=("$label")
-            return 0
-          }
-
-          deploy_or_record_failure "apollo-landing"
-          deploy_or_record_failure "apollo-docs"
-          deploy_or_record_failure "apollo-design"
-          deploy_or_record_failure "apollo-vertex"
-
-          if [ "${#failed_apps[@]}" -ne 0 ]; then
-            echo "::error::Coded App production deployment failed for: ${failed_apps[*]}"
-            exit 1
+          extra_args=()
+          if [ "$APP_LABEL" = "apollo-vertex" ]; then
+            extra_args+=(--auth-client-id "$UIPATH_RUNTIME_CLIENT_ID")
           fi
+
+          output_file="$(mktemp)"
+          echo "::group::uip-go ${APP_LABEL}"
+          set +e
+          "$UIP_GO" "$APP_LABEL" \
+              --name "$APP_LABEL" \
+              --path-name "$APP_LABEL" \
+              --version "$version" \
+              --folder-key "$UIPATH_FOLDER_KEY" \
+              --base-url "$UIPATH_BASE_URL" \
+              --org-name "$UIPATH_ORG_NAME" \
+              --tenant-name "$UIPATH_TENANT_NAME" \
+              --deploy-retries 3 \
+              --deploy-retry-delay-ms 10000 \
+              "${extra_args[@]}" 2>&1 | tee "$output_file"
+          command_exit=${PIPESTATUS[0]}
+          set -e
+          echo "::endgroup::"
+
+          if [ "$command_exit" -ne 0 ]; then
+            echo "::error::uip-go ${APP_LABEL} failed."
+            exit "$command_exit"
+          fi
+
+          app_url="$(sed -nE 's/^[[:space:]]*App URL:[[:space:]]*//p' "$output_file" | tail -n 1)"
+          if [ -z "$app_url" ]; then
+            app_url="$(APP_NAME="$APP_LABEL" node .github/scripts/preview-deploy/derive-app-url.mjs)"
+          fi
+          echo "url=${app_url%/}/" >> "$GITHUB_OUTPUT"
+          echo "✅ Deployed ${APP_LABEL}: ${app_url}" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Save Turborepo cache
         if: always()
         uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830  # v4
         with:
           path: .turbo
-          key: ${{ runner.os }}-turbo-${{ github.ref_name }}-${{ github.sha }}
+          key: ${{ runner.os }}-turbo-${{ matrix.label }}-${{ github.ref_name }}-${{ github.sha }}
