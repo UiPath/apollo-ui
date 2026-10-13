@@ -55,9 +55,8 @@ export const WithInlineValidation: Story = {
       <Label htmlFor="node-name">Node name</Label>
       <Input
         id="node-name"
-        value="Invoice processor"
+        defaultValue="Invoice processor"
         error="This node name is already in use. Enter a unique name before saving."
-        readOnly
       />
     </div>
   ),
