@@ -1,12 +1,9 @@
 ---
 title: "Confidence Signal"
+description: "A single chip for communicating AI confidence — used everywhere the system needs to say \"can you act on this, or should you pause?\""
 ---
 
 import { ConfidenceSignal } from '@/registry/confidence-signal/confidence-signal'
-
-# Confidence Signal
-
-A single chip for communicating AI confidence — used everywhere the system needs to say "can you act on this, or should you pause?"
 
 Signal bars borrow the phone-coverage metaphor instead of a raw score. Three bars means you're covered, one bar means proceed with care, and no bars — the `unknown` level — means the system is honestly saying "I don't know" rather than guessing. Unfilled bars keep a faded tint of the level hue, so the icon shape always reads at a glance.
 

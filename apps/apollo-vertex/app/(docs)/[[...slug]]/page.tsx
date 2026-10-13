@@ -1,6 +1,8 @@
 import {
   DocsBody,
+  DocsDescription,
   DocsPage,
+  DocsTitle,
   EditOnGitHub,
 } from "fumadocs-ui/layouts/docs/page";
 import { createRelativeLink } from "fumadocs-ui/mdx";
@@ -19,17 +21,22 @@ export default async function Page(props: Props) {
   const { slug } = await props.params;
   const page = getDocsPage(slug);
   const { body: MDX, toc } = await page.data.load();
+  const isHome = page.slugs.length === 0;
 
   return (
     <DocsPage
-      // The page H1 is the title, so leave it out of "On this page".
-      toc={toc.filter((item) => item.depth > 1)}
+      toc={toc}
       full={page.data.full}
       tableOfContent={{
         footer: <EditOnGitHub href={`${docsRepositoryBase}/${page.path}`} />,
       }}
     >
-      {/* Pages render their own H1, so the frontmatter title is not repeated. */}
+      {!isHome && (
+        <>
+          <DocsTitle>{page.data.title}</DocsTitle>
+          <DocsDescription>{page.data.description}</DocsDescription>
+        </>
+      )}
       <DocsBody>
         <MDX
           components={getMDXComponents({

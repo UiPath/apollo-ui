@@ -1,13 +1,10 @@
 ---
 title: "Timeline"
+description: "Primitives for building an activity timeline: a status marker (the dot) and the row layout (the connecting line and dot slot a row sits in). Together they render a mixed trail of human and agent steps, without knowing anything about your domain."
 ---
 
 import { TimelineMarker } from '@/registry/timeline/timeline-marker'
 import { TimelineRowLayout } from '@/registry/timeline/timeline-row-layout'
-
-# Timeline
-
-Primitives for building an activity timeline: a status marker (the dot) and the row layout (the connecting line and dot slot a row sits in). Together they render a mixed trail of human and agent steps, without knowing anything about your domain.
 
 The marker takes a plain `variant`, so a solution maps its own states onto the shared set and keeps that mapping on its side. See [AI Toolkit](/guidelines/ai-toolkit#timeline-markers) for the color and expression principles this follows.
 
