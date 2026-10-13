@@ -55,7 +55,6 @@
     "@types/react": "^19.2.6",
     "@types/react-dom": "^19.2.2",
     "babel-plugin-react-compiler": "^1.0.0",
-    "eslint-plugin-react": "^7.37.5",
     "oxlint": "^1.38.0",
     "oxlint-tsgolint": "^0.18.1",
     "shadcn": "4.21.0",

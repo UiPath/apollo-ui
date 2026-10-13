@@ -70,11 +70,13 @@ export * from "@/registry/tooltip/tooltip";
 export * from "@/registry/confidence-signal/confidence-signal";
 export * from "@/registry/data-table";
 // Field's FieldError is the root public symbol. Form's FieldError is a
-// translated wrapper with the same name; omit it here instead of renaming
-// either implementation.
+// translated wrapper with the same name, so it is exported under an alias
+// instead of renaming either implementation.
 export {
   CheckboxField,
   type CheckboxFieldProps,
+  FieldError as FormFieldError,
+  type FieldErrorProps as FormFieldErrorProps,
   type FieldOption,
   RadioGroupField,
   type RadioGroupFieldProps,
@@ -106,6 +108,8 @@ export {
   useDataTable,
 } from "@/registry/use-data-table/useDataTable";
 export { cn } from "@/lib/utils";
+export { assertDateOrString } from "@/lib/asserts/assert-date-or-string";
+export { assertString } from "@/lib/asserts/assert-string";
 export { addVertexTranslations } from "@/lib/i18n";
 
 // Charts and adapters
@@ -143,12 +147,17 @@ export {
   type MembershipDeniedProps,
 } from "@/registry/shell/group-membership-screens";
 export { Role } from "@/registry/shell/shell-roles";
+export { STALE_TIME_MS } from "@/registry/shell/shell-constants";
 export { useAccessToken } from "@/registry/shell/shell-auth-provider";
 export { useTheme } from "@/registry/shell/shell-theme-provider";
 export { ShellLogin } from "@/registry/shell/shell-login";
 export { ShellLayout } from "@/registry/shell/shell-layout";
 export { ShellSidebar } from "@/registry/shell/shell-sidebar";
-export { ShellUserProvider } from "@/registry/shell/shell-user-provider";
+export {
+  ShellUserProvider,
+  useUser,
+  type User,
+} from "@/registry/shell/shell-user-provider";
 export {
   SUPPORTED_LOCALES,
   configurei18n,
@@ -157,6 +166,7 @@ export {
 export {
   STORAGE_KEYS,
   TOKEN_QUERY_KEY,
+  type TokenData,
   ensureValidToken,
   login,
   logout,
@@ -165,11 +175,25 @@ export {
 } from "@/lib/auth";
 
 // Shell entities
-export { GroupMembershipGuard } from "@/registry/shell/group-membership-guard";
-export { useGroupId } from "@/registry/shell/use-group-id";
-export { useGroupMembers } from "@/registry/shell/use-group-members";
+export {
+  GroupMembershipGuard,
+  type GroupMembershipGuardProps,
+} from "@/registry/shell/group-membership-guard";
+export {
+  useGroupId,
+  type UseGroupIdOptions,
+  type UseGroupIdResult,
+} from "@/registry/shell/use-group-id";
+export {
+  useGroupMembers,
+  type UseGroupMembersOptions,
+  type UseGroupMembersResult,
+} from "@/registry/shell/use-group-members";
 export { useIsGroupMember } from "@/registry/shell/use-is-group-member";
-export { useEntityDataTable } from "@/registry/use-data-table/useEntityDataTable";
+export {
+  useEntityDataTable,
+  type UseEntityDataTableOptions,
+} from "@/registry/use-data-table/useEntityDataTable";
 export { useEntityColumns } from "@/registry/use-data-table/useEntityColumns";
 
 // Feature flags
@@ -277,6 +301,10 @@ export type {
   SolutionTestRunResult,
   UserMessageItem,
   ResultAttachmentField,
+  SolutionTestStatusValue,
+  RunStatusValue,
+  RunResultStatusValue,
+  JobRoleValue,
 } from "@/registry/solution-tests/types";
 export type { RunConfirmTarget } from "@/registry/solution-tests/solution-tests-view";
 export { RunDetailsView } from "@/registry/solution-tests/run-details-view";
@@ -354,9 +382,11 @@ export { createConversationalAgentConnection } from "@/registry/ai-chat/adapters
 export type { ConversationalAgentAdapterConfig } from "@/registry/ai-chat/adapters/conversational-agent/adapter";
 export { AiChat } from "@/registry/ai-chat/components/ai-chat";
 export { AiChatEmptyState } from "@/registry/ai-chat/components/ai-chat-empty-state";
+export { NoDataMessage } from "@/registry/ai-chat/charts/no-data-message";
 export { AutopilotGradientIcon } from "@/registry/ai-chat/components/icons/autopilot-gradient";
 export * from "@/registry/ai-chat/tools/choices";
 export type { Entity } from "@/registry/ai-chat/tools/data-fabric/util/entities";
+export type { JoinInput } from "@/registry/ai-chat/tools/data-fabric/util/joins";
 export * from "@/registry/ai-chat/tools/data-fabric-bar";
 export * from "@/registry/ai-chat/tools/data-fabric-distribution";
 export * from "@/registry/ai-chat/tools/data-fabric-kpi";

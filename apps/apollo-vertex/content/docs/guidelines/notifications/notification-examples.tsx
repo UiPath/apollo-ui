@@ -241,12 +241,3 @@ export function ActionAlertExample() {
     </Alert>
   );
 }
-
-export function CompositeAlertExamples() {
-  return (
-    <div className="space-y-3">
-      <CollapsibleAlertExample />
-      <ActionAlertExample />
-    </div>
-  );
-}

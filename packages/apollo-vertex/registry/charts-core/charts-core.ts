@@ -60,8 +60,17 @@ export type {
   AggregationKind,
   MetricExpression,
 } from "./models/expression";
-export type { ListFilter } from "./models/filter";
-export type { FilterValues } from "./models/filter-values";
+export type { ListFilter, PeriodFilter } from "./models/filter";
+export type {
+  BooleanListFilterValues,
+  FilterValues,
+  ListFilterValues,
+  NumberListFilterValues,
+  NumberRangeFilterValues,
+  PeriodFilterValues,
+  StringListFilterValues,
+  StringSearchFilterValues,
+} from "./models/filter-values";
 export {
   type FromConfig,
   FromConfigSchema,
