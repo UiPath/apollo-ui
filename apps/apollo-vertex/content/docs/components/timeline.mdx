@@ -15,7 +15,7 @@ The marker takes a plain `variant`, so a solution maps its own states onto the s
 
 Nine variants cover human and agent steps: people, completed steps, queued and suspended work, a spinning in-progress ring, and failed, cancelled, and done outcomes. Each comes in a full and a compact size.
 
-<div className="p-4 border rounded-lg mt-4 flex flex-wrap items-center gap-4">
+<Preview className="flex flex-wrap items-center gap-4">
   <TimelineMarker variant="user" initials="PV" />
   <TimelineMarker variant="completed-user" />
   <TimelineMarker variant="completed-ai" />
@@ -25,11 +25,11 @@ Nine variants cover human and agent steps: people, completed steps, queued and s
   <TimelineMarker variant="ai-failed" />
   <TimelineMarker variant="ai-cancelled" />
   <TimelineMarker variant="ai-complete" />
-</div>
+</Preview>
 
 The same variants, `compact`:
 
-<div className="p-4 border rounded-lg mt-4 flex flex-wrap items-center gap-4">
+<Preview className="flex flex-wrap items-center gap-4">
   <TimelineMarker variant="user" initials="PV" compact />
   <TimelineMarker variant="completed-user" compact />
   <TimelineMarker variant="completed-ai" compact />
@@ -39,13 +39,13 @@ The same variants, `compact`:
   <TimelineMarker variant="ai-failed" compact />
   <TimelineMarker variant="ai-cancelled" compact />
   <TimelineMarker variant="ai-complete" compact />
-</div>
+</Preview>
 
 ## In a row
 
 `TimelineRowLayout` draws the connecting line and holds the marker in its slot. Pass `isLast` on the final row so the line is dropped (full rows fade it out instead).
 
-<div className="p-4 border rounded-lg mt-4">
+<Preview>
   <ol className="max-w-sm">
     <li>
       <TimelineRowLayout isLast={false} marker={<TimelineMarker variant="ai-upcoming" />}>
@@ -80,11 +80,11 @@ The same variants, `compact`:
       </TimelineRowLayout>
     </li>
   </ol>
-</div>
+</Preview>
 
 The compact layout tightens the gap and drops the trailing line:
 
-<div className="p-4 border rounded-lg mt-4">
+<Preview>
   <ol className="max-w-sm">
     <li>
       <TimelineRowLayout compact isLast={false} marker={<TimelineMarker variant="ai-progress" compact />}>
@@ -108,7 +108,7 @@ The compact layout tightens the gap and drops the trailing line:
       </TimelineRowLayout>
     </li>
   </ol>
-</div>
+</Preview>
 
 ## Installation
 

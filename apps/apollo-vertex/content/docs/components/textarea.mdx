@@ -10,15 +10,15 @@ import { Button } from '@/registry/button/button'
 
 Displays a form textarea or a component that looks like a textarea.
 
-<div className="p-4 border rounded-lg mt-4 space-y-4">
+<Preview className="space-y-4">
   <Textarea placeholder="Type your message here." />
   
   <Textarea placeholder="Disabled textarea" disabled />
-</div>
+</Preview>
 
 ## With Label
 
-<div className="p-4 border rounded-lg mt-4">
+<Preview>
   <div className="grid w-full gap-1.5">
     <Label htmlFor="message">Your message</Label>
     <Textarea placeholder="Type your message here." id="message" />
@@ -26,16 +26,16 @@ Displays a form textarea or a component that looks like a textarea.
       Your message will be copied to the support team.
     </p>
   </div>
-</div>
+</Preview>
 
 ## With Button
 
-<div className="p-4 border rounded-lg mt-4">
+<Preview>
   <div className="grid w-full gap-2">
     <Textarea placeholder="Type your message here." />
     <Button>Send message</Button>
   </div>
-</div>
+</Preview>
 
 ## Installation
 

@@ -10,7 +10,7 @@ import { Inbox, FileText, Search } from 'lucide-react'
 
 An empty state component for when there is no data to display.
 
-<div className="p-4 border rounded-lg mt-4 space-y-8">
+<Preview className="space-y-8">
   <Empty>
     <Inbox className="h-10 w-10 text-muted-foreground" />
     <EmptyTitle>No messages</EmptyTitle>
@@ -18,11 +18,11 @@ An empty state component for when there is no data to display.
       You don't have any messages yet. Start a conversation!
     </EmptyDescription>
   </Empty>
-</div>
+</Preview>
 
 ## With Action
 
-<div className="p-4 border rounded-lg mt-4">
+<Preview>
   <Empty>
     <FileText className="h-10 w-10 text-muted-foreground" />
     <EmptyTitle>No files uploaded</EmptyTitle>
@@ -31,11 +31,11 @@ An empty state component for when there is no data to display.
     </EmptyDescription>
     <Button className="mt-4">Upload File</Button>
   </Empty>
-</div>
+</Preview>
 
 ## Search Empty State
 
-<div className="p-4 border rounded-lg mt-4">
+<Preview>
   <Empty>
     <Search className="h-10 w-10 text-muted-foreground" />
     <EmptyTitle>No results found</EmptyTitle>
@@ -43,7 +43,7 @@ An empty state component for when there is no data to display.
       Try adjusting your search or filter to find what you're looking for.
     </EmptyDescription>
   </Empty>
-</div>
+</Preview>
 
 ## Installation
 

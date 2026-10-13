@@ -20,30 +20,30 @@ A percentage (`0.84 confidence`) looks precise but isn't, and invites debate ove
 
 `variant="min"` — icon only. Use in tight spaces where the label adds no value: dense cards, inline table cells, anywhere the icon repeats at high frequency.
 
-<div className="p-4 border rounded-lg mt-4 flex flex-wrap gap-4 items-center">
+<Preview className="flex flex-wrap gap-4 items-center">
   <ConfidenceSignal level="high" variant="min" />
   <ConfidenceSignal level="medium" variant="min" nextStep={{ label: 'Review', href: '/guidelines/ai-toolkit' }} />
   <ConfidenceSignal level="low" variant="min" nextStep={{ label: 'Review', href: '/guidelines/ai-toolkit' }} />
   <ConfidenceSignal level="unknown" variant="min" />
-</div>
+</Preview>
 
 `variant="med"` — icon + short label. The workhorse variant for data tables, list views, and recommendation rows where the level needs to be readable alongside other data.
 
-<div className="p-4 border rounded-lg mt-4 flex flex-wrap gap-4 items-center">
+<Preview className="flex flex-wrap gap-4 items-center">
   <ConfidenceSignal level="high" variant="med" />
   <ConfidenceSignal level="medium" variant="med" nextStep={{ label: 'Review', href: '/guidelines/ai-toolkit' }} />
   <ConfidenceSignal level="low" variant="med" nextStep={{ label: 'Review', href: '/guidelines/ai-toolkit' }} />
   <ConfidenceSignal level="unknown" variant="med" />
-</div>
+</Preview>
 
 `variant="max"` — icon + full label. Use when confidence is the primary decision signal on screen: report headers, single-item detail views.
 
-<div className="p-4 border rounded-lg mt-4 flex flex-wrap gap-4 items-center">
+<Preview className="flex flex-wrap gap-4 items-center">
   <ConfidenceSignal level="high" variant="max" />
   <ConfidenceSignal level="medium" variant="max" nextStep={{ label: 'Review', href: '/guidelines/ai-toolkit' }} />
   <ConfidenceSignal level="low" variant="max" nextStep={{ label: 'Review', href: '/guidelines/ai-toolkit' }} />
   <ConfidenceSignal level="unknown" variant="max" />
-</div>
+</Preview>
 
 ### Hover and details
 
@@ -60,7 +60,7 @@ Both take a `href` (rendered as a link, so it is navigable, middle-clickable, an
 
 Every level has a default explanation, and `explanation` overrides it.
 
-<div className="p-4 border rounded-lg mt-4 flex flex-wrap gap-4 items-center">
+<Preview className="flex flex-wrap gap-4 items-center">
   <ConfidenceSignal
     level="high"
     variant="max"
@@ -82,16 +82,16 @@ Every level has a default explanation, and `explanation` overrides it.
     ]}
     nextStep={{ label: 'Review manually', href: '/guidelines/ai-toolkit' }}
   />
-</div>
+</Preview>
 
 ### Acquire animation
 
 Pass `animateIn` to play the one-time "acquire" animation when the confidence value first resolves: bars grow left to right in a staggered cascade over faded track bars, signalling that the system has just computed a result. Play it once — looping animations read as errors. The animation is skipped entirely for users with `prefers-reduced-motion: reduce`.
 
-<div className="p-4 border rounded-lg mt-4 flex flex-wrap gap-4 items-center">
+<Preview className="flex flex-wrap gap-4 items-center">
   <ConfidenceSignal level="high" variant="max" animateIn />
   <ConfidenceSignal level="medium" variant="max" animateIn nextStep={{ label: 'Review', href: '/guidelines/ai-toolkit' }} />
-</div>
+</Preview>
 
 ### Props
 

@@ -10,7 +10,7 @@ import { Button } from '@/registry/button/button'
 
 Displays a form input field or a component that looks like an input field.
 
-<div className="p-4 border rounded-lg mt-4 space-y-4">
+<Preview className="space-y-4">
   <Input type="email" placeholder="Email" />
   
   <Input type="password" placeholder="Password" />
@@ -18,25 +18,25 @@ Displays a form input field or a component that looks like an input field.
   <Input disabled placeholder="Disabled" />
   
   <Input type="file" />
-</div>
+</Preview>
 
 ## With Label
 
-<div className="p-4 border rounded-lg mt-4">
+<Preview>
   <div className="grid w-full max-w-sm items-center gap-1.5">
     <Label htmlFor="email">Email</Label>
     <Input type="email" id="email" placeholder="Email" />
   </div>
-</div>
+</Preview>
 
 ## With Button
 
-<div className="p-4 border rounded-lg mt-4">
+<Preview>
   <div className="flex w-full max-w-sm items-center space-x-2">
     <Input type="email" placeholder="Email" />
     <Button type="submit">Subscribe</Button>
   </div>
-</div>
+</Preview>
 
 ## Installation
 

@@ -28,9 +28,9 @@ npx shadcn@latest add @uipath/form-wizard
 - Each step is authored with `withForm` and wraps a `form.FormGroup`. Its `onGroupSubmit` (fired only when the group's schema passes) calls `next()`; on the last step `next()` runs the full `form.handleSubmit()`.
 - `FormWizard` provides the wizard through context. `FormWizardStep` renders its child only when it is the active step. `FormWizardSteps` renders the Stepper, and `FormWizardNav` renders Back plus a submit button that advances the current group.
 
-<div className="p-6 border rounded-lg mt-4 max-w-md">
+<Preview className="p-6 max-w-md">
   <FormWizardDemo />
-</div>
+</Preview>
 
 The demo persists to `localStorage`, so refreshing the page restores the answers and the current step. Choosing the Enterprise plan reveals a conditional Billing step.
 
@@ -131,9 +131,9 @@ function SignUpWizard() {
 
 The demo below replaces the Stepper with a custom progress rail and the nav with custom buttons, using the render-prop escape hatches:
 
-<div className="p-6 border rounded-lg mt-4 max-w-md">
+<Preview className="p-6 max-w-md">
   <FormWizardHeadlessDemo />
-</div>
+</Preview>
 
 ```tsx
 // Keep the wiring, own the design.
