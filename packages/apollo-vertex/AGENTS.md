@@ -175,6 +175,9 @@ not how to work in this repo.
   frontmatter lists the files each skill is based on.
 - Use the package import paths (`@uipath/apollo-vertex`), never the `@/` aliases.
 - Keep each `SKILL.md` under 500 lines and run `pnpm lint:skills` before pushing.
+- `skills/vertex-component-catalog/SKILL.md` is generated from the docs pages. Do not edit it; change
+  the page frontmatter in `apps/apollo-vertex` and run `pnpm --filter apollo-vertex skills:generate`.
+  Exports added to `entries/index.ts` change it too.
 
 ### Error Handling
 - Use TypeScript's strict null checks

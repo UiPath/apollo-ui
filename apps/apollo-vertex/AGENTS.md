@@ -28,6 +28,8 @@ pnpm lint                     # oxlint (extends the package config)
 pnpm -w knip                  # Find unused files, exports and dependencies (both workspaces)
 pnpm format                   # Format with Biome
 pnpm typecheck                # TypeScript type checking
+pnpm skills:generate          # Regenerate the vertex-component-catalog agent skill from the docs pages
+pnpm skills:check             # Fail if the generated skill is out of date (runs in CI)
 ```
 
 ## Structure
@@ -38,7 +40,7 @@ apps/apollo-vertex/
 ├── content/docs/           # MDX docs pages; meta.json files set sidebar order and titles
 ├── templates/              # Example compositions used on docs pages
 ├── lib/                    # Docs-only helpers (content source, API proxy, foundation tokens, theme schema)
-├── scripts/                # Theme CSS and registry index generation
+├── scripts/                # Theme CSS, registry index and agent skill generation
 └── public/r/               # Generated registry JSON (do not edit)
 ```
 
@@ -50,4 +52,22 @@ apps/apollo-vertex/
    H1 and intro paragraph. Add the page to `content/docs/components/meta.json` to place it in the sidebar.
    The sidebar and index page are grouped by `---Group---` separators in `meta.json`, so put a new
    page in the group that fits its use.
-3. Run `pnpm build` to confirm the docs and registry build.
+3. Add guidance to the frontmatter when you know it. The page renders it, and `pnpm skills:generate`
+   copies it with the page's package exports into the `vertex-component-catalog` agent skill:
+
+   ```yaml
+   whenToUse:
+     - "the user must finish or dismiss a short, focused task before returning to the page."
+   avoidWhen:
+     - when: "the content is a long form or the user needs to keep the page in view."
+       use: sheet # slug of the component page to use instead
+   example: |
+     import { Dialog, DialogContent, DialogTitle } from "@uipath/apollo-vertex";
+   registry: # only when the page documents registry directories other than its slug
+     - data-table
+     - use-data-table
+   ```
+
+   Write `whenToUse` and `avoidWhen.when` as lowercase clauses that follow "Use when" and "Avoid
+   when". Keep `example` short and import from `@uipath/apollo-vertex`, never `@/`.
+4. Run `pnpm skills:generate` and `pnpm build` to confirm the skill, docs and registry build.

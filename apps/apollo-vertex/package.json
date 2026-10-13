@@ -13,7 +13,9 @@
     "format:check": "biome format",
     "lint": "oxlint --type-aware",
     "lint:fix": "oxlint --fix --type-aware",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "skills:generate": "node --experimental-strip-types --no-warnings scripts/generate-component-skill.ts",
+    "skills:check": "node --experimental-strip-types --no-warnings scripts/generate-component-skill.ts --check"
   },
   "keywords": [],
   "author": "",
