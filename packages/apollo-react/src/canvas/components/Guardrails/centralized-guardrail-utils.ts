@@ -96,8 +96,11 @@ export interface CentralizedParameterFallbackLabels {
   disabled: string;
   entities: string;
   thresholds: string;
-  /** A built-in's `appliesTo` and its options when no definition carries it; absent, it renders raw. */
-  appliesTo?: { label: string; options: Record<GuardrailDetectionScope, string> };
+  /**
+   * A built-in's detection scope and its options when no definition carries it; absent, it
+   * renders raw.
+   */
+  detectionScope?: { label: string; options: Record<GuardrailDetectionScope, string> };
 }
 
 /**
@@ -128,7 +131,7 @@ const ownEntry = <T>(table: Record<string, T> | undefined, key: string): T | und
 
 /**
  * Describes a built-in parameter its definition does not declare; with no copy for it, the row
- * keeps its raw id. Agents adds `appliesTo` to every centralized built-in even when the
+ * keeps its raw id. Agents adds the detection scope to every centralized built-in even when the
  * file-support flags drop it from the definitions (every environment but alpha, and Automation
  * Suite); the curated copy also covers a host that has no definition for the validator.
  */
@@ -140,7 +143,7 @@ function describeUndeclaredParameter(
   const curatedLabel = ownEntry(curated?.paramLabels, parameter.id);
   const curatedOptions = ownEntry(curated?.optionLabels, parameter.id);
   const shared =
-    parameter.id === GUARDRAIL_DETECTION_SCOPE_PARAMETER_ID ? labels.appliesTo : undefined;
+    parameter.id === GUARDRAIL_DETECTION_SCOPE_PARAMETER_ID ? labels.detectionScope : undefined;
 
   const label = typeof curatedLabel === 'string' ? curatedLabel : shared?.label;
   const optionLabels = isPlainObject(curatedOptions)
@@ -160,7 +163,7 @@ function describeUndeclaredParameter(
 /**
  * Lifts a built-in's `entities` / `entityThresholds` onto the parameter shape, followed by its
  * own `parameters` (settings the entity fields cannot hold, such as sentiment's languages or
- * the `appliesTo` scope), in the order they arrive.
+ * the detection scope), in the order they arrive.
  */
 function liftBuiltInConfiguration(
   guardrail: CentralizedGuardrail,
