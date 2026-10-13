@@ -32,6 +32,7 @@ jobs:
             "@uipath/apollo-ui-icons"
             "@uipath/apollo-react"
             "@uipath/apollo-wind"
+            "@uipath/apollo-vertex"
             "@uipath/ap-chat"
           )
 
