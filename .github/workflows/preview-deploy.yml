@@ -3,9 +3,6 @@ name: Coded App Preview Deployments
 on:
   pull_request:
     types: [opened, synchronize, reopened, closed]
-    branches:
-      - main
-      - 'support/**'
 
 # Deny-all default; jobs grant the minimum they need.
 permissions: {}
