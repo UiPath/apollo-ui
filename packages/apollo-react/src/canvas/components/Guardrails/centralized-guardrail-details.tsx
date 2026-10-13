@@ -74,12 +74,12 @@ export function CentralizedGuardrailDetails<
       disabled: labels.parameterDisabled,
       entities: labels.entitiesFallback,
       thresholds: labels.thresholdsFallback,
-      appliesTo: {
-        label: labels.appliesToFallback,
+      detectionScope: {
+        label: labels.detectionScopeFallback,
         options: {
-          Text: labels.appliesToText,
-          Files: labels.appliesToFiles,
-          Both: labels.appliesToBoth,
+          Text: labels.detectionScopeText,
+          Files: labels.detectionScopeFiles,
+          Both: labels.detectionScopeBoth,
         },
       },
     },

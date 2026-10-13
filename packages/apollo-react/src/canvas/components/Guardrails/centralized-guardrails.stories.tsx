@@ -345,7 +345,7 @@ export const BuiltInParameters: Story = {
     docs: {
       description: {
         story:
-          'Agents stamps an `appliesTo` scope onto every built-in it enforces on files, and the judge carries its whole rule. The PII and sentiment definitions above declare neither, and the judge has no definition at all, so the rows take their names from the curated copy and, for `appliesTo`, from the details’ own fallback: "Applies to", "Files only", "Text and files".',
+          'Agents stamps a detection scope onto every built-in it enforces on files, and the judge carries its whole rule. The PII and sentiment definitions above declare neither, and the judge has no definition at all, so the rows take their names from the curated copy and, for the detection scope, from the details’ own fallback: "Detection scope", "Files only", "Text and files".',
       },
     },
   },

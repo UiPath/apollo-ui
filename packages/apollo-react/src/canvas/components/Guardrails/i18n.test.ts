@@ -483,21 +483,21 @@ describe('the shared canvas catalog', () => {
     });
   });
 
-  it('names a centralized appliesTo the way the per-agent builder’s definition does', () => {
+  it('names a centralized detection scope the way the per-agent builder’s definition does', () => {
     // The builder's copy arrives on the backend definition; the centralized details need it
     // when the definition does not carry the parameter, so the two must read the same.
     expect([
-      CENTRALIZED_GUARDRAILS_EN_LABELS.appliesToFallback,
-      CENTRALIZED_GUARDRAILS_EN_LABELS.appliesToText,
-      CENTRALIZED_GUARDRAILS_EN_LABELS.appliesToFiles,
-      CENTRALIZED_GUARDRAILS_EN_LABELS.appliesToBoth,
-    ]).toEqual(['Applies to', 'Text only', 'Files only', 'Text and files']);
+      CENTRALIZED_GUARDRAILS_EN_LABELS.detectionScopeFallback,
+      CENTRALIZED_GUARDRAILS_EN_LABELS.detectionScopeText,
+      CENTRALIZED_GUARDRAILS_EN_LABELS.detectionScopeFiles,
+      CENTRALIZED_GUARDRAILS_EN_LABELS.detectionScopeBoth,
+    ]).toEqual(['Detection scope', 'Text only', 'Files only', 'Text and files']);
   });
 
-  it('still accepts a centralized labels table without the appliesTo fallback', () => {
+  it('still accepts a centralized labels table without the detection scope fallback', () => {
     type Legacy = Omit<
       CentralizedGuardrailsLabels,
-      'appliesToFallback' | 'appliesToText' | 'appliesToFiles' | 'appliesToBoth'
+      'detectionScopeFallback' | 'detectionScopeText' | 'detectionScopeFiles' | 'detectionScopeBoth'
     >;
     expectTypeOf<Legacy>().toExtend<CentralizedGuardrailsLabels>();
   });

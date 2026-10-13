@@ -602,10 +602,10 @@ orchestration. The `Details in a dialog` and `Details in a panel overlay` storie
   definition matched it falls back to generic labels and raw values, which is what both
   products render today. When the definition doesn't declare one of a built-in's own
   parameters, the row takes the validator's curated copy ("Rule prompt", "Languages"). The
-  `appliesTo` scope, which Agents adds to every centralized PII, prompt-attack,
-  harmful-content and judge guardrail even when the file-support flags hide it from the
-  definitions, falls back to the details' own "Applies to" / "Files only" labels, so the
-  dialog reads as the per-agent builder does.
+  detection scope, which Agents adds to every centralized PII, prompt-attack, harmful-content
+  and judge guardrail even when the file-support flags hide it from the definitions, falls
+  back to the details' own "Detection scope" / "Files only" labels, so the dialog reads as the
+  per-agent builder does.
 - **A read-only value is text, not a disabled input.** The family's parameter editors are the
   MetadataForm stack and have no read-only mode, and these values arrive as untyped wire data
   rather than `GuardrailValidatorParameter`s. A disabled input, which is how Flow renders this

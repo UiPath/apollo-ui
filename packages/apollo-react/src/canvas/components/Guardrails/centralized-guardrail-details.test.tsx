@@ -183,7 +183,7 @@ describe('CentralizedGuardrailDetails', () => {
     ).toEqual(['Negative0.7', 'Mixed—']);
   });
 
-  it('shows which content a built-in applies to, under its thresholds', () => {
+  it('shows a built-in’s detection scope, under its thresholds', () => {
     render(
       <CentralizedGuardrailDetails
         guardrail={guardrail({
@@ -198,8 +198,11 @@ describe('CentralizedGuardrailDetails', () => {
 
     const configuration = screen.getByText('Configuration').parentElement as HTMLElement;
     const terms = within(configuration).getAllByRole('term');
-    expect(terms.map((term) => term.textContent)).toEqual(['Detection thresholds', 'Applies to']);
-    expect(valueFor('Applies to')).toBe('Files only');
+    expect(terms.map((term) => term.textContent)).toEqual([
+      'Detection thresholds',
+      'Detection scope',
+    ]);
+    expect(valueFor('Detection scope')).toBe('Files only');
   });
 
   it('names the judge’s settings the way its editor does, with no definition at all', () => {
@@ -232,10 +235,10 @@ describe('CentralizedGuardrailDetails', () => {
       'Strictness',
       'Positive examples',
       'Negative examples',
-      'Applies to',
+      'Detection scope',
     ]);
     expect(valueFor('Strictness')).toBe('4');
-    expect(valueFor('Applies to')).toBe('Text and files');
+    expect(valueFor('Detection scope')).toBe('Text and files');
   });
 
   it('follows the definition’s order for the judge and appends what it does not declare', () => {
@@ -259,8 +262,8 @@ describe('CentralizedGuardrailDetails', () => {
       within(configuration)
         .getAllByRole('term')
         .map((term) => term.textContent)
-    ).toEqual(['Rule prompt', 'Strictness', 'Applies to']);
-    expect(valueFor('Applies to')).toBe('Text only');
+    ).toEqual(['Rule prompt', 'Strictness', 'Detection scope']);
+    expect(valueFor('Detection scope')).toBe('Text only');
   });
 
   it('renders a BYO connector configuration in the order the connector declares', () => {

@@ -20,12 +20,12 @@ const FALLBACK_LABELS = {
   disabled: CENTRALIZED_GUARDRAILS_EN_LABELS.parameterDisabled,
   entities: CENTRALIZED_GUARDRAILS_EN_LABELS.entitiesFallback,
   thresholds: CENTRALIZED_GUARDRAILS_EN_LABELS.thresholdsFallback,
-  appliesTo: {
-    label: CENTRALIZED_GUARDRAILS_EN_LABELS.appliesToFallback,
+  detectionScope: {
+    label: CENTRALIZED_GUARDRAILS_EN_LABELS.detectionScopeFallback,
     options: {
-      Text: CENTRALIZED_GUARDRAILS_EN_LABELS.appliesToText,
-      Files: CENTRALIZED_GUARDRAILS_EN_LABELS.appliesToFiles,
-      Both: CENTRALIZED_GUARDRAILS_EN_LABELS.appliesToBoth,
+      Text: CENTRALIZED_GUARDRAILS_EN_LABELS.detectionScopeText,
+      Files: CENTRALIZED_GUARDRAILS_EN_LABELS.detectionScopeFiles,
+      Both: CENTRALIZED_GUARDRAILS_EN_LABELS.detectionScopeBoth,
     },
   },
 };
@@ -431,7 +431,11 @@ describe('resolveCentralizedGuardrailParameters, built-in guardrails', () => {
 });
 
 describe('resolveCentralizedGuardrailParameters, parameters the definition does not declare', () => {
-  const appliesTo = (value: string) => ({ id: 'detectionScope', parameterType: 'enum', value });
+  const detectionScope = (value: string) => ({
+    id: 'detectionScope',
+    parameterType: 'enum',
+    value,
+  });
 
   const JUDGE_PARAMETERS: CentralizedGuardrail['parameters'] = [
     { id: 'guardrailText', parameterType: 'text', value: 'No medical advice.' },
@@ -439,15 +443,15 @@ describe('resolveCentralizedGuardrailParameters, parameters the definition does 
     { id: 'threshold', parameterType: 'number', value: 4 },
     { id: 'positiveExamples', parameterType: 'text-list', value: ['Take an aspirin.'] },
     { id: 'negativeExamples', parameterType: 'text-list', value: ['See a doctor.', 'Rest.'] },
-    appliesTo('Both'),
+    detectionScope('Both'),
   ];
 
-  it('follows the lifted entity rows with appliesTo, named from the shared fallback copy', () => {
+  it('follows the lifted entity rows with the detection scope, named by the fallback copy', () => {
     const rows = resolveCentralizedGuardrailParameters(
       guardrail({
         entities: ['Email'],
         entityThresholds: { Email: 0.8 },
-        parameters: [appliesTo('Files')],
+        parameters: [detectionScope('Files')],
       }),
       { definition: PII_DEFINITION, labels: FALLBACK_LABELS }
     );
@@ -459,23 +463,23 @@ describe('resolveCentralizedGuardrailParameters, parameters the definition does 
         label: 'Detection thresholds',
         thresholds: [{ key: 'Email', label: 'Email address', value: 0.8 }],
       },
-      { id: 'detectionScope', kind: 'value', label: 'Applies to', value: 'Files only' },
+      { id: 'detectionScope', kind: 'value', label: 'Detection scope', value: 'Files only' },
     ]);
   });
 
   it('leaves the host’s definition untouched while describing what it does not declare', () => {
     const definition = structuredClone(PII_DEFINITION);
     resolveCentralizedGuardrailParameters(
-      guardrail({ entities: ['Email'], parameters: [appliesTo('Files')] }),
+      guardrail({ entities: ['Email'], parameters: [detectionScope('Files')] }),
       { definition, labels: FALLBACK_LABELS, copy: GUARDRAIL_COPY_EN }
     );
 
     expect(definition).toEqual(PII_DEFINITION);
   });
 
-  it('names each appliesTo option the way the per-agent builder does', () => {
+  it('names each detection scope option the way the per-agent builder does', () => {
     const shownFor = (value: string) =>
-      resolveCentralizedGuardrailParameters(guardrail({ parameters: [appliesTo(value)] }), {
+      resolveCentralizedGuardrailParameters(guardrail({ parameters: [detectionScope(value)] }), {
         labels: FALLBACK_LABELS,
       }).map((row) => (row.kind === 'value' ? row.value : undefined));
 
@@ -486,9 +490,9 @@ describe('resolveCentralizedGuardrailParameters, parameters the definition does 
     expect(shownFor('Images')).toEqual(['Images']);
   });
 
-  it('prefers the definition’s own appliesTo copy over the shared fallback', () => {
+  it('prefers the definition’s own detection scope copy over the shared fallback', () => {
     const rows = resolveCentralizedGuardrailParameters(
-      guardrail({ parameters: [appliesTo('Files')] }),
+      guardrail({ parameters: [detectionScope('Files')] }),
       {
         definition: {
           validator: 'pii_detection',
@@ -497,7 +501,7 @@ describe('resolveCentralizedGuardrailParameters, parameters the definition does 
             {
               id: 'detectionScope',
               type: 'enum',
-              label: 'Detection scope',
+              label: 'Content checked',
               optionLabels: { Files: 'Attachments' },
             },
           ],
@@ -507,14 +511,14 @@ describe('resolveCentralizedGuardrailParameters, parameters the definition does 
     );
 
     expect(rows).toEqual([
-      { id: 'detectionScope', kind: 'value', label: 'Detection scope', value: 'Attachments' },
+      { id: 'detectionScope', kind: 'value', label: 'Content checked', value: 'Attachments' },
     ]);
   });
 
-  it('renders appliesTo raw for a host that passes no copy for it', () => {
-    const { appliesTo: _omitted, ...labels } = FALLBACK_LABELS;
+  it('renders the detection scope raw for a host that passes no copy for it', () => {
+    const { detectionScope: _omitted, ...labels } = FALLBACK_LABELS;
     const rows = resolveCentralizedGuardrailParameters(
-      guardrail({ parameters: [appliesTo('Files')] }),
+      guardrail({ parameters: [detectionScope('Files')] }),
       { labels }
     );
 
@@ -545,7 +549,7 @@ describe('resolveCentralizedGuardrailParameters, parameters the definition does 
         label: 'Negative examples',
         value: 'See a doctor., Rest.',
       },
-      { id: 'detectionScope', kind: 'value', label: 'Applies to', value: 'Text and files' },
+      { id: 'detectionScope', kind: 'value', label: 'Detection scope', value: 'Text and files' },
     ]);
   });
 
@@ -587,7 +591,10 @@ describe('resolveCentralizedGuardrailParameters, parameters the definition does 
     const rows = resolveCentralizedGuardrailParameters(
       guardrail({
         validator: 'llm_as_judge',
-        parameters: [appliesTo('Text'), { id: 'threshold', parameterType: 'number', value: 2 }],
+        parameters: [
+          detectionScope('Text'),
+          { id: 'threshold', parameterType: 'number', value: 2 },
+        ],
       }),
       {
         definition: {
@@ -649,7 +656,10 @@ describe('resolveCentralizedGuardrailParameters, parameters the definition does 
         validator: 'llm_as_judge',
         isByo: true,
         name: 'Acme judge',
-        parameters: [{ id: 'model', parameterType: 'enum', value: 'acme-1' }, appliesTo('Files')],
+        parameters: [
+          { id: 'model', parameterType: 'enum', value: 'acme-1' },
+          detectionScope('Files'),
+        ],
       }),
       { labels: FALLBACK_LABELS, copy: GUARDRAIL_COPY_EN }
     );
@@ -657,18 +667,22 @@ describe('resolveCentralizedGuardrailParameters, parameters the definition does 
     expect(rows.map((row) => row.label)).toEqual(['model', 'detectionScope']);
   });
 
-  it('shows a repeated appliesTo once, and never beside a lifted field of the same id', () => {
+  it('shows a repeated detection scope once, never beside a lifted field of the same id', () => {
     const rows = resolveCentralizedGuardrailParameters(
       guardrail({
         entities: ['Email'],
-        parameters: [appliesTo('Files'), appliesTo('Both'), { id: 'entities', value: ['URL'] }],
+        parameters: [
+          detectionScope('Files'),
+          detectionScope('Both'),
+          { id: 'entities', value: ['URL'] },
+        ],
       }),
       { definition: PII_DEFINITION, labels: FALLBACK_LABELS }
     );
 
     expect(rows.map((row) => [row.id, row.label])).toEqual([
       ['entities', 'Entities to detect'],
-      ['detectionScope', 'Applies to'],
+      ['detectionScope', 'Detection scope'],
     ]);
   });
 
