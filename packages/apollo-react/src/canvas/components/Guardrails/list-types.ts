@@ -58,8 +58,12 @@ export interface GuardrailListItemState {
   /** The configuration exists but is disabled. Both render a blocking notice on the row. */
   byoDisabled: boolean;
   byoUnavailable: boolean;
-  /** A built-in validator the AI Trust Layer policy switched off; runs skip it. Never BYO. */
-  policyDisabled: boolean;
+  /**
+   * A built-in validator the AI Trust Layer policy switched off; runs skip it. Never BYO.
+   * `resolveGuardrailListItemState` always sets it. Optional so a state object written before
+   * it existed still compiles; absent reads as `false`.
+   */
+  policyDisabled?: boolean;
 }
 
 /** One resolved chip; `id` is also the React key. */
