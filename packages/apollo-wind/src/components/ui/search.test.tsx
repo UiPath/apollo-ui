@@ -289,6 +289,39 @@ describe('SearchWithSuggestions', () => {
     expect(screen.getByText('Banana')).toBeInTheDocument();
   });
 
+  it('reopens on click after Escape while a query remains', async () => {
+    const user = userEvent.setup();
+    render(<SearchWithSuggestions suggestions={suggestions} />);
+    const input = screen.getByRole('searchbox');
+
+    await user.type(input, 'an');
+    await screen.findByText('Banana');
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByText('Banana')).not.toBeInTheDocument());
+
+    await user.click(input);
+
+    expect(await screen.findByText('Banana')).toBeInTheDocument();
+  });
+
+  it('links the input to the suggestions popup while open', async () => {
+    const user = userEvent.setup();
+    render(<SearchWithSuggestions suggestions={suggestions} />);
+    const input = screen.getByRole('searchbox');
+
+    expect(input).toHaveAttribute('aria-haspopup', 'dialog');
+    expect(input).toHaveAttribute('aria-expanded', 'false');
+    expect(input).not.toHaveAttribute('aria-controls');
+
+    await user.type(input, 'an');
+    await screen.findByText('Banana');
+
+    expect(input).toHaveAttribute('aria-expanded', 'true');
+    const popupId = input.getAttribute('aria-controls');
+    expect(popupId).toBeTruthy();
+    expect(document.getElementById(popupId as string)).toHaveAttribute('role', 'dialog');
+  });
+
   it('forwards clearLabel to the clear button', () => {
     render(<SearchWithSuggestions value="zzz" suggestions={suggestions} clearLabel="Borrar" />);
     expect(screen.getByRole('button', { name: 'Borrar' })).toBeInTheDocument();

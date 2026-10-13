@@ -148,6 +148,7 @@ const SearchWithSuggestions = React.forwardRef<HTMLDivElement, SearchWithSuggest
   ) => {
     const [open, setOpen] = React.useState(false);
     const anchorRef = React.useRef<HTMLDivElement>(null);
+    const popupId = React.useId();
     const [searchValue, setSearchValue] = React.useState(value || '');
 
     React.useEffect(() => {
@@ -173,21 +174,28 @@ const SearchWithSuggestions = React.forwardRef<HTMLDivElement, SearchWithSuggest
       setOpen(newValue.length > 0);
     };
 
+    const isOpen = open && filteredSuggestions.length > 0;
+
     return (
       <div ref={ref} data-slot="search-with-suggestions" className={cn('relative', className)}>
-        <Popover open={open && filteredSuggestions.length > 0} onOpenChange={setOpen}>
+        <Popover open={isOpen} onOpenChange={setOpen}>
           {/* Anchor, not Trigger: typing drives open state, clicks don't toggle it. */}
           <PopoverAnchor asChild>
             <div ref={anchorRef}>
               <Search
                 value={searchValue}
                 onValueChange={handleInputChange}
+                onClick={() => searchValue && setOpen(true)}
                 clearLabel={clearLabel}
                 placeholder={placeholder}
+                aria-haspopup="dialog"
+                aria-expanded={isOpen}
+                aria-controls={isOpen ? popupId : undefined}
               />
             </div>
           </PopoverAnchor>
           <PopoverContent
+            id={popupId}
             className="w-[--radix-popover-trigger-width] p-0"
             align="start"
             // Keep focus in the input so typing continues while suggestions show.
