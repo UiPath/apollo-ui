@@ -29,8 +29,8 @@ const rows = raw.map((r) => ({
 
 export function BarChartTemplate() {
   return (
-    <Card className="flex flex-col w-full h-[360px] gap-2 py-4">
-      <CardContent className="flex-1 overflow-hidden p-0">
+    <Card className="w-full py-4">
+      <CardContent className="p-0">
         <BarChart
           rows={rows}
           series={[{ id: "spend", label: "Total spend" }]}
