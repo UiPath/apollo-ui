@@ -1,5 +1,6 @@
 import {
   ALargeSmall,
+  AlignLeft,
   Braces,
   Brackets,
   CalendarClock,
@@ -23,6 +24,7 @@ export type QuickFormFieldMode = ValueMode;
 // and `date` would drop.
 export type QuickFieldType =
   | 'string'
+  | 'textarea'
   | 'integer'
   | 'double'
   | 'date'
@@ -53,6 +55,15 @@ export const FIELD_TYPE_META: Record<QuickFieldType, FieldTypeMeta> = {
     supportsExpression: true,
     fixedLabel: 'Fixed value',
     fixedDescription: 'Use a literal string value',
+  },
+  // String data with a multi-line control. Wind renders it as a single-line input, like
+  // `string`; a consumer supplies the multi-line control through `renderModeControl`.
+  textarea: {
+    label: 'Text area',
+    icon: AlignLeft,
+    supportsExpression: true,
+    fixedLabel: 'Fixed value',
+    fixedDescription: 'Use a literal multi-line string value',
   },
   integer: {
     label: 'Integer',
@@ -128,6 +139,7 @@ export const FIELD_TYPE_META: Record<QuickFieldType, FieldTypeMeta> = {
 
 export const FIELD_TYPE_ORDER: QuickFieldType[] = [
   'string',
+  'textarea',
   'integer',
   'double',
   'date',
