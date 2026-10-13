@@ -1,6 +1,11 @@
 ---
 title: "Drawer"
 description: "A drawer component that slides in from the edge of the screen."
+whenToUse:
+  - "the screen is small and the panel should slide up from the bottom edge and close with a swipe."
+avoidWhen:
+  - when: "the layout is for desktop and needs a side panel for details or a form."
+    use: sheet
 ---
 
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/registry/drawer/drawer'

@@ -1,10 +1,29 @@
 ---
 title: "Data Table"
+description: "A data table built on TanStack Table with sorting, filtering, pagination and row selection."
+registry:
+  - data-table
+  - use-data-table
+whenToUse:
+  - "a list of records needs sorting, filtering, search, pagination, row selection or column visibility."
+avoidWhen:
+  - when: "the data is a small, static table with no interaction."
+    use: table
+example: |
+  import { type ColumnDef, DataTable, useDataTable } from "@uipath/apollo-vertex";
+
+  const columns: ColumnDef<Invoice>[] = [
+    { accessorKey: "number", header: "Number" },
+    { accessorKey: "amount", header: "Amount" },
+  ];
+
+  function InvoicesTable({ data }: { data: Invoice[] }) {
+    const tableState = useDataTable({ data, columns, storageKey: "invoices" });
+    return <DataTable {...tableState} />;
+  }
 ---
 
 import { DataTableTemplate } from '../../../templates/DataTableTemplate'
-
-A powerful data table component built on [TanStack Table](https://tanstack.com/table) with sorting, filtering, pagination, and row selection.
 
 <Preview>
   <DataTableTemplate />

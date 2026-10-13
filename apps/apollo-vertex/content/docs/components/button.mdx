@@ -1,6 +1,13 @@
 ---
 title: "Button"
 description: "Displays a button or a component that looks like a button."
+whenToUse:
+  - "the user triggers an action, such as submitting a form, saving or opening a dialog."
+avoidWhen:
+  - when: "the control turns a setting on or off."
+    use: switch
+  - when: "the user picks one of a few modes or views."
+    use: toggle-group
 ---
 
 import { Button } from '@/registry/button/button'

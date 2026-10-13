@@ -1,19 +1,15 @@
 import type * as PageTree from "fumadocs-core/page-tree";
 import { loader } from "fumadocs-core/source";
-import { pageSchema } from "fumadocs-core/source/schema";
 import { defineDocs } from "fumadocs-mdx/macro";
 import { notFound } from "next/navigation";
-import { z } from "zod";
+import { docsPageSchema } from "./page-schema";
 
 const docs = defineDocs({
   dir: "content/docs",
   docs: {
     // Compile page bodies on demand instead of bundling every page up front.
     async: true,
-    schema: pageSchema.extend({
-      // Browser tab title, when it differs from the sidebar title.
-      metaTitle: z.string().optional(),
-    }),
+    schema: docsPageSchema,
   },
 });
 

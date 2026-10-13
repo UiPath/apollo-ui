@@ -1,6 +1,19 @@
 ---
 title: "Sonner"
 description: "An opinionated toast component for React."
+whenToUse:
+  - "the message briefly confirms an action the user just took and asks nothing of them, such as \"Changes saved\"."
+avoidWhen:
+  - when: "the message is a blocking error or a validation error, needs user input, or was raised by the system without a user action."
+    use: alert
+example: |
+  // Render <Toaster /> once in the root layout. toast comes from the sonner package.
+  import { Toaster } from "@uipath/apollo-vertex";
+  import { toast } from "sonner";
+
+  <Toaster />
+
+  toast.success("Changes saved", { description: "Your updates have been applied." });
 ---
 
 import { SonnerExamples } from '../guidelines/notifications/notification-examples';
