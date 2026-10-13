@@ -5,7 +5,7 @@ import useEmblaCarousel, {
 } from "embla-carousel-react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import * as React from "react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -175,7 +175,7 @@ function CarouselPrevious({
   size = "icon",
   ...props
 }: React.ComponentProps<typeof Button>) {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const { orientation, scrollPrev, canScrollPrev } = useCarousel();
 
   return (
@@ -206,7 +206,7 @@ function CarouselNext({
   size = "icon",
   ...props
 }: React.ComponentProps<typeof Button>) {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const { orientation, scrollNext, canScrollNext } = useCarousel();
 
   return (

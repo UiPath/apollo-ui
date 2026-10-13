@@ -5,7 +5,7 @@ import type { TextPart, UIMessage } from "@tanstack/ai-client";
 import { imagePartToUrl } from "../content-parts";
 import { motion } from "framer-motion";
 import { type ReactNode, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -61,7 +61,7 @@ export function AiChatMessage({
   onRegenerate,
   onEditMessage,
 }: AiChatMessageProps) {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const isUser = message.role === "user";
   const displayContent = getDisplayText(message);
   const imageParts = getImageParts(message);

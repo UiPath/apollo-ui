@@ -3,7 +3,7 @@
 import { DateTime } from "luxon";
 import { ChevronDownIcon } from "lucide-react";
 import * as React from "react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -18,7 +18,7 @@ interface DatePickerProps {
 }
 
 export function DatePicker({ value, onValueChanged }: DatePickerProps) {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
 
   return (
     <Popover>

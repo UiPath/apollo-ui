@@ -16,7 +16,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { cn } from "@/lib/utils";
 import { asBlockquote, isVisibleAssistant } from "../content-parts";
 import { useStickyScroll } from "../hooks/use-sticky-scroll";
@@ -88,7 +88,7 @@ export function AiChat<
   enableTextSelection = false,
   error,
 }: AiChatProps<TTools>) {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const [input, setInput] = useState("");
   const [quotedText, setQuotedText] = useState<string | null>(null);
   const {

@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { cn } from "@/lib/utils";
 import {
   Table,
@@ -26,7 +26,7 @@ export interface BaselineCompareRow {
 // Shows baseline and new-run values side by side rather than collapsing to a
 // single value, so an unchanged value reads as unchanged on its own.
 export const BaselineCompare = ({ rows }: { rows: BaselineCompareRow[] }) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const visible = rows.filter(
     (row) => row.baseline != null || row.current != null,
   );

@@ -2,7 +2,7 @@
 
 import type { Table as TanstackTable } from "@tanstack/react-table";
 import { Columns3Icon } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -30,7 +30,7 @@ function DataTableViewOptions<TData>({
   table,
   className,
 }: DataTableViewOptionsProps<TData>) {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
 
   const allReorderableColumns = table
     .getAllColumns()

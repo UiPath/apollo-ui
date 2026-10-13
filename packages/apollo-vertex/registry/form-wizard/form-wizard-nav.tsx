@@ -1,7 +1,7 @@
 "use client";
 
 import type { ComponentProps, ReactNode } from "react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useFormWizardContext } from "./form-wizard";
@@ -20,7 +20,7 @@ interface FormWizardNavProps extends Omit<ComponentProps<"div">, "children"> {
 
 function FormWizardNav({ className, children, ...props }: FormWizardNavProps) {
   const { form, isFirst, isLast, back, next } = useFormWizardContext();
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
 
   if (typeof children === "function") {
     return <>{children({ back, next, isFirst, isLast, form })}</>;

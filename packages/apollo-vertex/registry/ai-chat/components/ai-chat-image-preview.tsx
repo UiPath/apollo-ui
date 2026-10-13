@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import {
   Dialog,
   DialogContent,
@@ -14,7 +14,7 @@ export interface AiChatImagePreviewProps {
 }
 
 export function AiChatImagePreview({ url, onClose }: AiChatImagePreviewProps) {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   return (
     <Dialog open={!!url} onOpenChange={(open) => !open && onClose()}>
       <DialogContent

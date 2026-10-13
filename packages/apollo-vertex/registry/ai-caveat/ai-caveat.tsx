@@ -2,7 +2,7 @@
 
 import { Info } from "lucide-react";
 import type * as React from "react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { cn } from "@/lib/utils";
 
 interface AiCaveatProps {
@@ -19,7 +19,7 @@ export function AiCaveat({
   children,
   className,
 }: AiCaveatProps) {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const defaultCopy = t("ai_caveat_default", {
     defaultValue: "The output is AI generated. Please review.",
   });

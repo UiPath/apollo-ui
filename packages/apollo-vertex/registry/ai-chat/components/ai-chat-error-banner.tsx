@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertCircle, RefreshCw } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Button } from "@/components/ui/button";
 
 interface AiChatErrorBannerProps {
@@ -13,7 +13,7 @@ export function AiChatErrorBanner({
   message,
   onRetry,
 }: AiChatErrorBannerProps) {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   return (
     <div
       role="alert"

@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertCircle, Check, TriangleAlert } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { BaselineCompare } from "../../baseline-compare";
@@ -37,7 +37,7 @@ const presentOrNull = (value: string | undefined): string | null => {
 
 /** Flags a field that differs between the two runs. */
 const ChangedBadge = ({ status }: { status: "error" | "warning" }) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   return (
     <Badge status={status} variant="secondary">
       {t("pe_eval_changed")}
@@ -47,7 +47,7 @@ const ChangedBadge = ({ status }: { status: "error" | "warning" }) => {
 
 /** The scalar fields of a pair, baseline beside new run. */
 const PairFields = ({ pair }: { pair: EvaluationPair }) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const { expected, actual } = pair;
   const compared = pair.status === EvaluationPairStatus.Compared;
   // The decision-model id is a per-version record id; a new one alone doesn't
@@ -99,7 +99,7 @@ const SummarySide = ({
 );
 
 const SummaryCard = ({ view }: { view: EvaluationView | null }) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   if (!view) {
     return (
       <div className="flex min-w-0 items-center justify-center rounded-md border border-dashed bg-muted/20 p-3">
@@ -137,7 +137,7 @@ const SummaryCard = ({ view }: { view: EvaluationView | null }) => {
 /** Baseline and new summaries side by side, with the judge's verdict and its
  * enumerated semantic deltas. */
 const SummaryComparison = ({ pair }: { pair: EvaluationPair }) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const compared = pair.status === EvaluationPairStatus.Compared;
   const same = pair.summary_verdict === SummaryVerdict.Same;
   return (
@@ -182,7 +182,7 @@ const SummaryComparison = ({ pair }: { pair: EvaluationPair }) => {
 
 /** One matched (or one-sided) policy evaluation: fields diff table + summaries. */
 const PairRow = ({ pair }: { pair: EvaluationPair }) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const oneSided = pair.status !== EvaluationPairStatus.Compared;
   return (
     <div className="flex min-w-0 flex-col gap-3 rounded-md border p-3">
@@ -214,7 +214,7 @@ const PairRow = ({ pair }: { pair: EvaluationPair }) => {
 export const CaseEvaluationResult = ({
   evaluatorDetails,
 }: EvaluatorResultProps<CaseEvaluationDetails>) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const {
     pairs,
     count_mismatch,

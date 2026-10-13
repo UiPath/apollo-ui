@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import { PanelLeft } from "lucide-react";
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/ui/sidebar";
 import {
@@ -39,7 +39,7 @@ function CollapsedLogo({
   sidebarHovered,
   onExpand,
 }: CollapsedLogoProps) {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const [buttonHovered, setButtonHovered] = useState(false);
   const isCustomLogo = companyLogo?.isCustom ?? false;
   const panelBgClass = isCustomLogo
@@ -106,7 +106,7 @@ export const Company = ({
   companyLogo,
   sidebarHovered = false,
 }: CompanyProps) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const { state, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
 

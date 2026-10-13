@@ -2,7 +2,7 @@
 
 import type { Table as TanstackTable } from "@tanstack/react-table";
 import { SearchIcon } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -18,7 +18,7 @@ function DataTableSearch<TData>({
   placeholder,
   className,
 }: DataTableSearchProps<TData>) {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   return (
     <div data-slot="data-table-search" className={cn("relative", className)}>
       <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />

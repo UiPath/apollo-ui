@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -99,7 +99,7 @@ interface RunDetailsProps {
  *  than auto-navigating. In-progress runs render normally; agents that haven't
  *  finished fall back to a per-agent placeholder. */
 export const RunDetails = ({ runId, onBack }: RunDetailsProps) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const { showDebug, track } = useSolutionTestsConfig();
   const { runs, isLoading: runsLoading } = useSolutionTestRuns();
   const { tests } = useSolutionTests();

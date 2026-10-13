@@ -129,6 +129,45 @@
     {
       "files": ["registry/**/*.{ts,tsx}"],
       "rules": {
+        "eslint/no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["react-i18next"],
+                "importNamePattern": "^useTranslation$",
+                "message": "Use useVertexTranslation() from @/lib/vertex-translation, so strings are read from the apollo-vertex namespace."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["lib/**/*.ts"],
+      "rules": {
+        "eslint/no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["react"],
+                "importNamePattern": "^(useMemo|useCallback|memo)$",
+                "message": "Manual memoization is unnecessary — the React Compiler handles this automatically."
+              },
+              {
+                "group": ["react-i18next"],
+                "importNamePattern": "^useTranslation$",
+                "message": "Use useVertexTranslation() from @/lib/vertex-translation, so strings are read from the apollo-vertex namespace."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["lib/vertex-translation.ts"],
+      "rules": {
         "eslint/no-restricted-imports": "off"
       }
     },

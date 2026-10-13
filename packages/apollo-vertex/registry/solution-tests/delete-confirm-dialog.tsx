@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import {
@@ -24,7 +24,7 @@ export const DeleteConfirmDialog = ({
   onConfirm,
   onCancel,
 }: DeleteConfirmDialogProps) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
 
   return (
     <Dialog

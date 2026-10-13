@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Badge } from "@/components/ui/badge";
 import {
   makeProcessOutputRenderer,
@@ -15,7 +15,7 @@ import {
 /** One policy-engine evaluation: outcome + confidence header, summary prose,
  * and the record's own error when the evaluation faulted. */
 const EvaluationCard = ({ evaluation }: { evaluation: EvaluationRecord }) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const faulted = evaluation.STATUS === "faulted";
   // `||`, not `??`: an empty OUTCOME string also means "no outcome".
   // oxlint-disable-next-line typescript-eslint(prefer-nullish-coalescing)
@@ -54,7 +54,7 @@ const EvaluationCard = ({ evaluation }: { evaluation: EvaluationRecord }) => {
 export const CaseEvaluationOutputResult = ({
   output,
 }: ProcessOutputProps<CaseEvaluationOutput>) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
 
   if (output.evaluations.length === 0) {
     return (

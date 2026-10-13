@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowDown } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Button } from "@/components/ui/button";
 
 interface AiChatScrollToBottomButtonProps {
@@ -11,7 +11,7 @@ interface AiChatScrollToBottomButtonProps {
 export function AiChatScrollToBottomButton({
   onClick,
 }: AiChatScrollToBottomButtonProps) {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   return (
     <Button
       type="button"

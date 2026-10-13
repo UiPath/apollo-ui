@@ -7,7 +7,7 @@ import {
   XIcon,
 } from "lucide-react";
 import * as React from "react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -262,7 +262,7 @@ function ComboboxBadge({
   children,
   ...props
 }: ComboboxBadgeProps) {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const { value: selectedValues, onValueChange } = useComboboxContext();
 
   function handleRemove(e: React.MouseEvent | React.KeyboardEvent) {

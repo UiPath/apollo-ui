@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { BaselineCompare } from "../../../baseline-compare";
 import { versionDelta } from "../../../utils";
 import { VersionDeltaGlyph } from "../../../version-delta-glyph";
@@ -13,7 +13,7 @@ export const ProvenanceBar = ({
   expected: IxpProvenance | null;
   actual: IxpProvenance | null;
 }) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
 
   const baselineVersion = formatVersion(expected?.resolved_project_version);
   const currentVersion = formatVersion(actual?.resolved_project_version);

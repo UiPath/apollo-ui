@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -24,7 +24,7 @@ export const RunConfirmDialog = ({
   onConfirm,
   onCancel,
 }: RunConfirmDialogProps) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
 
   return (
     <Dialog

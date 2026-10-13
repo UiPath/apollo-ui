@@ -653,7 +653,8 @@
           "path": "registry/charts-core/util/get-metric-field-type.ts",
           "type": "registry:lib",
           "target": "lib/charts-core/util/get-metric-field-type.ts"
-        }
+        },
+        { "path": "lib/vertex-translation.ts", "type": "registry:lib" }
       ]
     },
     {
@@ -904,7 +905,8 @@
           "path": "registry/line-chart/line-chart.tsx",
           "type": "registry:ui",
           "target": "components/ui/line-chart/line-chart.tsx"
-        }
+        },
+        { "path": "lib/vertex-translation.ts", "type": "registry:lib" }
       ]
     },
     {
@@ -933,7 +935,8 @@
           "path": "registry/multi-line-chart/multi-line-chart.tsx",
           "type": "registry:ui",
           "target": "components/ui/multi-line-chart/multi-line-chart.tsx"
-        }
+        },
+        { "path": "lib/vertex-translation.ts", "type": "registry:lib" }
       ]
     },
     {
@@ -987,7 +990,8 @@
           "path": "registry/bar-chart/util/recharts-bar-data.ts",
           "type": "registry:ui",
           "target": "components/ui/bar-chart/util/recharts-bar-data.ts"
-        }
+        },
+        { "path": "lib/vertex-translation.ts", "type": "registry:lib" }
       ]
     },
     {
@@ -1016,7 +1020,8 @@
           "path": "registry/distribution-chart/distribution-chart.tsx",
           "type": "registry:ui",
           "target": "components/ui/distribution-chart/distribution-chart.tsx"
-        }
+        },
+        { "path": "lib/vertex-translation.ts", "type": "registry:lib" }
       ]
     },
     {
@@ -1041,7 +1046,8 @@
           "path": "registry/kpi-chart/kpi-chart.tsx",
           "type": "registry:ui",
           "target": "components/ui/kpi-chart/kpi-chart.tsx"
-        }
+        },
+        { "path": "lib/vertex-translation.ts", "type": "registry:lib" }
       ]
     },
     {
@@ -1073,7 +1079,8 @@
           "path": "registry/table-chart/table-chart.tsx",
           "type": "registry:ui",
           "target": "components/ui/table-chart/table-chart.tsx"
-        }
+        },
+        { "path": "lib/vertex-translation.ts", "type": "registry:lib" }
       ]
     },
     {
@@ -1478,7 +1485,8 @@
           "path": "registry/ai-chat/tools/data-fabric-kpi/index.ts",
           "type": "registry:lib",
           "target": "components/ui/ai-chat/tools/data-fabric-kpi/index.ts"
-        }
+        },
+        { "path": "lib/vertex-translation.ts", "type": "registry:lib" }
       ]
     },
     {
@@ -1607,7 +1615,8 @@
         {
           "path": "registry/breadcrumb/breadcrumb.tsx",
           "type": "registry:ui"
-        }
+        },
+        { "path": "lib/vertex-translation.ts", "type": "registry:lib" }
       ]
     },
     {
@@ -1705,7 +1714,8 @@
         {
           "path": "registry/carousel/carousel.tsx",
           "type": "registry:ui"
-        }
+        },
+        { "path": "lib/vertex-translation.ts", "type": "registry:lib" }
       ]
     },
     {
@@ -1758,7 +1768,8 @@
         {
           "path": "registry/combobox/combobox.tsx",
           "type": "registry:ui"
-        }
+        },
+        { "path": "lib/vertex-translation.ts", "type": "registry:lib" }
       ]
     },
     {
@@ -1831,7 +1842,8 @@
           "path": "registry/confidence-signal/confidence-signal-cta.tsx",
           "type": "registry:ui",
           "target": "components/ui/confidence-signal/confidence-signal-cta.tsx"
-        }
+        },
+        { "path": "lib/vertex-translation.ts", "type": "registry:lib" }
       ]
     },
     {
@@ -1946,7 +1958,8 @@
         {
           "path": "registry/use-data-table/useReactTableCompat.ts",
           "type": "registry:hook"
-        }
+        },
+        { "path": "lib/vertex-translation.ts", "type": "registry:lib" }
       ]
     },
     {
@@ -1955,7 +1968,10 @@
       "title": "Dialog",
       "description": "A modal dialog that appears in front of app content.",
       "dependencies": ["@radix-ui/react-dialog", "react-i18next"],
-      "files": [{ "path": "registry/dialog/dialog.tsx", "type": "registry:ui" }]
+      "files": [
+        { "path": "registry/dialog/dialog.tsx", "type": "registry:ui" },
+        { "path": "lib/vertex-translation.ts", "type": "registry:lib" }
+      ]
     },
     {
       "name": "drawer",
@@ -2051,7 +2067,8 @@
           "path": "registry/filter-dropdown/use-filter-dropdown-search.ts",
           "type": "registry:ui",
           "target": "components/ui/filter-dropdown/use-filter-dropdown-search.ts"
-        }
+        },
+        { "path": "lib/vertex-translation.ts", "type": "registry:lib" }
       ]
     },
     {
@@ -2215,7 +2232,8 @@
         {
           "path": "registry/pagination/pagination.tsx",
           "type": "registry:ui"
-        }
+        },
+        { "path": "lib/vertex-translation.ts", "type": "registry:lib" }
       ]
     },
     {
@@ -2324,7 +2342,10 @@
       "title": "Sheet",
       "description": "Extends the Dialog component to display content that slides in.",
       "dependencies": ["@radix-ui/react-dialog", "react-i18next"],
-      "files": [{ "path": "registry/sheet/sheet.tsx", "type": "registry:ui" }]
+      "files": [
+        { "path": "registry/sheet/sheet.tsx", "type": "registry:ui" },
+        { "path": "lib/vertex-translation.ts", "type": "registry:lib" }
+      ]
     },
     {
       "name": "shell",
@@ -2472,7 +2493,8 @@
         {
           "path": "registry/shell/shell-roles.ts",
           "type": "registry:ui"
-        }
+        },
+        { "path": "lib/vertex-translation.ts", "type": "registry:lib" }
       ]
     },
     {
@@ -2653,7 +2675,8 @@
         {
           "path": "registry/sidebar/sidebar-menu-sub-button.tsx",
           "type": "registry:ui"
-        }
+        },
+        { "path": "lib/vertex-translation.ts", "type": "registry:lib" }
       ]
     },
     {
@@ -2818,7 +2841,8 @@
           "path": "registry/form/submit-button.tsx",
           "type": "registry:ui",
           "target": "components/ui/form/submit-button.tsx"
-        }
+        },
+        { "path": "lib/vertex-translation.ts", "type": "registry:lib" }
       ]
     },
     {
@@ -2913,7 +2937,8 @@
           "path": "registry/form-wizard/wizard-schema.ts",
           "type": "registry:ui",
           "target": "components/ui/form-wizard/wizard-schema.ts"
-        }
+        },
+        { "path": "lib/vertex-translation.ts", "type": "registry:lib" }
       ]
     },
     {
@@ -2983,7 +3008,8 @@
         {
           "path": "registry/date-picker/date-picker.tsx",
           "type": "registry:ui"
-        }
+        },
+        { "path": "lib/vertex-translation.ts", "type": "registry:lib" }
       ]
     },
     {
@@ -3413,7 +3439,8 @@
           "path": "registry/solution-tests/evaluators/case-evaluation/case-evaluation-result.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/evaluators/case-evaluation/case-evaluation-result.tsx"
-        }
+        },
+        { "path": "lib/vertex-translation.ts", "type": "registry:lib" }
       ]
     },
     {

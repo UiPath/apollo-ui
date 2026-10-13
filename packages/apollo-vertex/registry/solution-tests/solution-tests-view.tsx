@@ -19,7 +19,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { type ReactNode, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -157,7 +157,7 @@ export const SolutionTestsView = ({
   activeTab: activeTabProp,
   onTabChange,
 }: SolutionTestsViewProps) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const config = useSolutionTestsConfig();
   const [internalTab, setInternalTab] = useState<TabValue>("cases");
   const activeTab = activeTabProp ?? internalTab;

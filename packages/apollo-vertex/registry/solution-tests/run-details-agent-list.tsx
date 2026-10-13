@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Badge } from "@/components/ui/badge";
 import { Empty, EmptyDescription } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -23,7 +23,7 @@ export const RunDetailsAgentList = ({
   isLoading,
   onSelect,
 }: RunDetailsAgentListProps) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
 
   return (
     <div className="flex w-[320px] min-h-0 shrink-0 flex-col border-r border-border">

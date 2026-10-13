@@ -22,7 +22,7 @@ import {
   type VisibilityState,
 } from "@tanstack/react-table";
 import * as React from "react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 
 declare module "@tanstack/react-table" {
   // eslint-disable-next-line no-unused-vars -- TValue is required by the TanStack Table module augmentation signature
@@ -127,7 +127,7 @@ function DataTable<TData, TValue>({
   skeletonColumnWidths,
   plain = false,
 }: DataTableProps<TData, TValue>) {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
 
   const isRowSelectionEnabled = !!(rowSelection && onRowSelectionChange);
   const isPaginationEnabled = !!(pagination && onPaginationChange);

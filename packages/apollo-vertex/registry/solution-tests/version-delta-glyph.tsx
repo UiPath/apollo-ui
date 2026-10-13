@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import {
   Tooltip,
   TooltipContent,
@@ -16,7 +16,7 @@ export const VersionDeltaGlyph = ({
   direction,
   baseline,
 }: VersionDeltaGlyphProps) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   if (direction === 0) return null;
 
   const label = t("version_differs_from_baseline");

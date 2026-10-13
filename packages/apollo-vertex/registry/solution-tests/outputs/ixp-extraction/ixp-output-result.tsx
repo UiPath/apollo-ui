@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { DocumentSection } from "../../ixp/shared/document-section";
 import {
   FieldCell,
@@ -19,7 +19,7 @@ import {
 } from "./schema";
 
 export const IxpOutputResult = ({ output }: ProcessOutputProps<IxpOutput>) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const documents = Object.entries(output.document_extractions);
 
   return (
@@ -48,7 +48,7 @@ const OutputSummary = ({
   output: IxpOutput;
   documentCount: number;
 }) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const parts = [
     t("ixp_output_total_files", { count: output.total_files ?? documentCount }),
   ];
@@ -69,7 +69,7 @@ const OutputSummary = ({
 };
 
 const DocumentExtractionRow = ({ doc }: { doc: IxpDocumentExtraction }) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const fieldCount = doc.extractions.reduce(
     (total, group) => total + group.fieldValues.length,
     0,
@@ -93,7 +93,7 @@ const DocumentExtractionRow = ({ doc }: { doc: IxpDocumentExtraction }) => {
 };
 
 const ExtractionGroup = ({ group }: { group: IxpExtractionGroup }) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
 
   return (
     <div className="mt-3 first:mt-0">

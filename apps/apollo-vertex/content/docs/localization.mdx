@@ -5,6 +5,24 @@ metaTitle: "Onboarding Your Repo to Localization"
 
 # Onboarding Your Repo to Localization
 
+## Using the `@uipath/apollo-vertex` package
+
+The package ships its own translations for every supported locale. Vertex components read them from the `apollo-vertex` i18next namespace, so they don't mix with your app's keys.
+
+If your app sets up i18next itself, add the vertex translations to your instance after `init`:
+
+```ts
+import i18n from "i18next";
+import { addVertexTranslations } from "@uipath/apollo-vertex";
+
+await i18n.use(initReactI18next).init({ /* your config */ });
+await addVertexTranslations(i18n);
+```
+
+It loads the current language and English, and loads other languages when the app switches to them. You don't need to copy vertex keys into your own `en.json`.
+
+The steps below cover adding localization for your app's own strings.
+
 Here are the steps to add localization support to your vertical solution. Each step roughly maps to a commit, follow them in order.
 
 ## 1. Install the latest shell from the @uipath registry

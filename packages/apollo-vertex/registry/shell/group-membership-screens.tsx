@@ -1,10 +1,10 @@
 import { ShieldX } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Button } from "@/components/ui/button";
 import type { UserInfo } from "./shell-auth-provider";
 
 export const VerifyingMembership = () => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   return (
     <div className="flex h-screen items-center justify-center bg-background">
       <div className="text-muted-foreground">{t("verifying_access")}</div>
@@ -23,7 +23,7 @@ export const MembershipDenied = ({
   onLogout,
   description,
 }: MembershipDeniedProps) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   return (
     <div className="flex h-screen items-center justify-center bg-background">
       <div className="w-full max-w-md">

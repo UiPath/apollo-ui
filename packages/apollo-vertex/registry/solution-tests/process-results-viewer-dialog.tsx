@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
@@ -28,7 +28,7 @@ export const ProcessResultsViewerDialog = ({
   loading,
   renderData,
 }: ProcessResultsViewerDialogProps) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   return (
     <Dialog
       open={open}

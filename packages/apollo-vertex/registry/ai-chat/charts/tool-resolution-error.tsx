@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertTriangle } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import type { ToolResolutionFailure } from "../tools/data-fabric/util/resolver-result";
 
 export interface ToolResolutionErrorProps {
@@ -9,7 +9,7 @@ export interface ToolResolutionErrorProps {
 }
 
 export function ToolResolutionError({ failure }: ToolResolutionErrorProps) {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const { reason, ...params } = failure;
   return (
     <div

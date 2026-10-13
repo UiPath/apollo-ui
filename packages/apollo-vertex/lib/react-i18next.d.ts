@@ -3,6 +3,9 @@ import type en from "../locales/en.json";
 
 type ValidKeys = keyof typeof en;
 
+// Must match VERTEX_NAMESPACE in ./vertex-translation.ts.
+type VertexNamespace = "apollo-vertex";
+
 type InterpolateValuesOfKey<Key extends string> =
   Key extends `${infer _Start}{{${infer Value}}}${infer Rest}`
     ? Value | InterpolateValuesOfKey<Rest>
@@ -34,10 +37,11 @@ declare module "react-i18next" {
   // instantiating that generic. Extend these props if a call site needs more.
   export const Trans: ComponentType<{
     i18nKey?: ParseKeys;
+    ns?: VertexNamespace;
     values?: Record<string, string | number | string[]>;
     components?: Record<string, ReactElement>;
   }>;
-  export function useTranslation(): {
+  export function useTranslation(ns?: VertexNamespace): {
     t: TranslationFn;
     i18n: {
       exists: (key: string) => key is ParseKeys;

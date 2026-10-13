@@ -69,7 +69,7 @@ import typescript from "highlight.js/lib/languages/typescript";
 import xml from "highlight.js/lib/languages/xml";
 import { Check, Copy } from "lucide-react";
 import { useEffect, useRef } from "react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import {
   Tooltip,
   TooltipContent,
@@ -100,7 +100,7 @@ interface AiChatCodeBlockProps {
 }
 
 export function AiChatCodeBlock({ children, language }: AiChatCodeBlockProps) {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const { copied, error, copy } = useClipboard({ timeout: 2000 });
   const codeRef = useRef<HTMLElement>(null);
 

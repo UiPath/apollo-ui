@@ -2,7 +2,7 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import type { CSSProperties } from "react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import {
   ENTRANCE_ANIMATE,
   ENTRANCE_EASE,
@@ -31,7 +31,7 @@ const TEXT_OVERLAP_PX = -7;
 // Labels will be caller-supplied once the state model is defined, so the
 // component stays agnostic to the specific agent and its toolset.
 export function AiChatLoading() {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const prefersReducedMotion = useReducedMotion();
   const thinkingLabel = t("thinking");
 

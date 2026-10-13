@@ -1,6 +1,6 @@
 import { useIsFetching, useSuspenseQuery } from "@tanstack/react-query";
 import { useDeferredValue } from "react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { assertNumber } from "@/lib/asserts/assert-number";
 import {
   ChartLoadingBoundary,
@@ -41,7 +41,7 @@ function KpiChartResolver({
 }: KpiChartWithAdapterProps) {
   const {
     i18n: { language },
-  } = useTranslation();
+  } = useVertexTranslation();
 
   const deferrableProps = useDeferredValue({ configuration, dataModel });
   const query = dataAdapter.charts.kpi(configuration, dataModel);

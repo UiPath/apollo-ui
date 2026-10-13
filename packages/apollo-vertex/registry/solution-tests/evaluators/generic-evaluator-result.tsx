@@ -1,7 +1,7 @@
 "use client";
 
 import { z } from "zod";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { EMPTY_VALUE } from "../constants";
 import { useSolutionTestsConfig } from "../context";
 import { JsonPanel } from "./output-panels";
@@ -32,7 +32,7 @@ export const GenericEvaluatorResult = ({
   expectedOutput,
   actualOutput,
 }: EvaluatorResultProps<GenericEvaluatorDetails> & { label?: string }) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const { passThreshold } = useSolutionTestsConfig();
   const displayLabel = label ?? evaluatorId;
   const justification = evaluatorDetails.justification;

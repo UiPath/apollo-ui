@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 
 interface AiChatEmptyStateProps {
   title?: string;
@@ -14,7 +14,7 @@ export function AiChatEmptyState({
   description,
   icon,
 }: AiChatEmptyStateProps) {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const displayTitle = title ?? t("how_can_i_help_you");
   return (
     <div className="flex flex-col items-center justify-center h-full text-center text-ai-chat-muted-foreground gap-4">

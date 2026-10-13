@@ -2,7 +2,7 @@
 
 import { useClipboard } from "@mantine/hooks";
 import { MoreHorizontal } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,7 +41,7 @@ export function AiChatHeader({
   conversationText,
   onClearChat,
 }: AiChatHeaderProps) {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const { copied, error, copy } = useClipboard({ timeout: 2000 });
 
   const copyLabel = error

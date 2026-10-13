@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Info } from "lucide-react";
 import {
   Tooltip,
@@ -16,7 +16,7 @@ import {
 } from "./user-messages";
 
 export const UserMessagesView = ({ messages }: { messages: unknown }) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const parsed = parseUserMessages(messages);
   if (parsed.length === 0) return null;
 
@@ -43,7 +43,7 @@ export const UserMessagesView = ({ messages }: { messages: unknown }) => {
 };
 
 export const UserMessagesIcon = ({ messages }: { messages: unknown }) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const parsed = parseUserMessages(messages);
   const severity = worstSeverity(parsed);
   if (!severity) return null;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -38,7 +38,7 @@ export const ExpandedAgentsView = ({
   onViewExpected,
   onCloseViewer,
 }: ExpandedAgentsViewProps) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
 
   if (isLoading) {
     return (
