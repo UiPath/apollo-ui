@@ -34,3 +34,6 @@ jobs:
 
       - name: Format check
         run: pnpm --filter apollo-vertex --filter @uipath/apollo-vertex format:check
+
+      - name: Validate agent skills
+        run: pnpm --filter @uipath/apollo-vertex lint:skills
