@@ -7,7 +7,7 @@ import { fontFamily } from './typography';
 // ============================================================================
 
 const meta = {
-  title: 'Theme/Future/Responsive',
+  title: 'Patterns/Theme (Moving to Core)/Future/Responsive',
   parameters: {
     layout: 'fullscreen',
   },

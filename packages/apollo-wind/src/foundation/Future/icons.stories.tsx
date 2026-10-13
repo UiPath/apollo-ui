@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta = {
-  title: 'Theme/Future/Icons',
+  title: 'Patterns/Theme (Moving to Core)/Future/Icons',
   parameters: {
     layout: 'fullscreen',
   },
