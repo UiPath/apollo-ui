@@ -110,6 +110,10 @@ cache rather than adopting a second one, and it is why the hook stays a `useStat
 - **`hiddenValidators` hides nothing by default** and never hides a BYO definition. Which
   validators a product exposes is an entitlement decision, so it stays with the caller: Flow
   passes `['prompt_injection']`, Agents passes nothing.
+- **`disabledReason` is an open string.** A `Disabled` built-in validator carries
+  `disabledReason: 'Policy'` when the AI Trust Layer policy switched it off, and runs then skip
+  it rather than fail. The parser keeps any string, so a reason added later still parses, and
+  the builder and the list act on `'Policy'` alone. A disabled BYO configuration carries none.
 - **BYO folder placement stays host-side.** Resolving it needs each product's connections API
   (Agents pages `fetchResources`, Flow calls `getConnectionById`), so the hook does not reach
   for it. Stamp the result on afterwards:
@@ -241,7 +245,7 @@ import { GuardrailList } from '@uipath/apollo-react/canvas/guardrails';
   | `hideHeader` | `false` | Agents owns the section title and its add affordance. |
   | `footer` | none | Agents' add affordance sits *below* the rows and swaps itself for an entitlement line, which the header-only `addSlot` cannot express. |
   | `emptyState` | the default line | Agents renders nothing when empty: pass `null`. An explicit `null` is honoured, so the check is for an absent prop, not a falsy value. |
-  | `rowActivatesEdit` | `false` | Agents opens the editor by clicking the row body. The body becomes a `role="button"`, whose children ARIA treats as presentational, so the status and administration chips, the BYO notices and the description are named in its `aria-describedby`, in that reading order. The chips are state that changes what activating the row does. The lifecycle `Preview` chip, the provider line, the action badge and the scopes stay presentational: a host that needs those announced should render them outside the activatable body. |
+  | `rowActivatesEdit` | `false` | Agents opens the editor by clicking the row body. The body becomes a `role="button"`, whose children ARIA treats as presentational, so the status and administration chips, the BYO and policy notices and the description are named in its `aria-describedby`, in that reading order. The chips are state that changes what activating the row does. The lifecycle `Preview` chip, the provider line, the action badge and the scopes stay presentational: a host that needs those announced should render them outside the activatable body. |
   | `renderItemActions` | inline buttons | Agents' actions are an overflow menu. The slot receives `defaultActions`, so it can add to them instead of replacing them. |
   | `renderRowTooltip` | none | Agents hovers a combined description, provider and scopes tooltip over the row body. A tooltipped body that is not activatable gets `tabIndex={0}`, so the content opens on focus as well as hover. On an activatable row the body's own `aria-describedby` wins over the open tooltip's, because Radix `Slot` lets the child's non-handler props override the slot's; that is the intended precedence, since the tooltip only repeats row metadata the row already announces. |
   | `formatScopes` / `formatAction` | raw values | Scope and action wording is product copy; return `null` to hide either line. |
@@ -272,6 +276,9 @@ import { GuardrailList } from '@uipath/apollo-react/canvas/guardrails';
   several `tailwind.consumer.css` theme blocks and wind's `FormFieldError` settled on
   `text-error`. The BYO notices keep `role="alert"` rather than the family banner's
   `role="status"`: Flow announces them on mount today and the shared row keeps that parity.
+- **The policy notice is a warning.** A built-in validator row whose definition is `Disabled`
+  with `disabledReason: 'Policy'` shows `policyDisabledNotice` in `text-warning`, with no
+  live-region role: the run goes ahead without the guardrail, and nothing on the row changes that.
 
 ### Chips and notices
 
@@ -657,6 +664,11 @@ Contract highlights:
   title, as both do; `providerField` adds a read-only Provider field above the name holding
   `definition.byoConnectorName`, as Flow's does. A host composing its own `title` (Agents)
   places its own BYO chip there.
+- **One status banner, from the definition.** A disabled BYO configuration is an error
+  (`byoDisabledMessage`). A built-in validator the AI Trust Layer policy switched off
+  (`status: 'Disabled'`, `disabledReason: 'Policy'`) is a warning (`policyDisabledMessage`),
+  since the run skips it and goes ahead; `Unauthorised` and `FeatureDisabled` are warnings too.
+  Save stays disabled for every status but `Available`.
 - Requires an ancestor `TooltipProvider`.
 
 `GuardrailFormLayout` is exported standalone for hosts composing their own screen: three

@@ -209,6 +209,18 @@ export const StatusByoDisabled: Story = {
 };
 
 /**
+ * A built-in validator the AI Trust Layer policy switched off (`disabledReason: 'Policy'`). Runs
+ * skip it, so the banner is a warning, and Save stays disabled like every other non-available
+ * status.
+ */
+export const StatusPolicyDisabled: Story = {
+  args: {
+    ...EditInline.args,
+    definition: { ...piiDefinition, status: 'Disabled', disabledReason: 'Policy' },
+  },
+};
+
+/**
  * A bring-your-own definition with byoDisplay, which names the title by the configuration, and
  * providerField, which shows the connector read-only above the name (Flow's legacy builder).
  */

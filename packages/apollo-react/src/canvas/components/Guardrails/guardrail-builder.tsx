@@ -35,6 +35,7 @@ import { GuardrailNameFields } from './components/guardrail-name-fields';
 import { GuardrailScopeSelector } from './components/guardrail-scope-selector';
 import { GuardrailStatusBanner } from './components/guardrail-status-banner';
 import { MixedScopesBanner } from './components/mixed-scopes-banner';
+import { isPolicyDisabledGuardrailDefinition } from './definitions-enrich';
 import { GuardrailFormLayout } from './guardrail-form-layout';
 import { GuardrailValidatorForm } from './guardrail-validator-form';
 import {
@@ -395,8 +396,12 @@ export function GuardrailBuilder({
     name: titleName,
   });
 
+  // The policy banner is a warning, not an error: the run goes ahead and skips the guardrail,
+  // and only an administrator can change that.
   const statusBanner = isByoConfigurationDisabled ? (
     <GuardrailStatusBanner tone="error" message={labels.byoDisabledMessage} />
+  ) : isPolicyDisabledGuardrailDefinition(definition) ? (
+    <GuardrailStatusBanner tone="warning" message={labels.policyDisabledMessage} />
   ) : definition.status === 'Unauthorised' ? (
     <GuardrailStatusBanner tone="warning" message={labels.unauthorizedMessage} />
   ) : definition.status === 'FeatureDisabled' ? (

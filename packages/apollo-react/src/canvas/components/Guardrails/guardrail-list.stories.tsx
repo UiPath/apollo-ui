@@ -132,6 +132,28 @@ export const ByoNotices: Story = {
   },
 };
 
+/**
+ * A built-in validator the AI Trust Layer policy switched off (`disabledReason: 'Policy'`). The
+ * row stays editable and removable; the notice says runs skip it.
+ */
+export const PolicyDisabledNotice: Story = {
+  args: {
+    guardrails,
+    definitions: [
+      { validator: 'pii_detection', status: 'Disabled', disabledReason: 'Policy' },
+      {
+        validator: 'byo',
+        status: 'Available',
+        byoValidatorName: 'noma_prompt_injection',
+        byoConnectorName: 'Noma Security',
+      },
+    ],
+    previewChip: true,
+    onEdit: noop,
+    onRemove: noop,
+  },
+};
+
 /** Status and administration chips, both off by default. */
 export const StatusChips: Story = {
   args: {

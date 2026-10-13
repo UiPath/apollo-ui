@@ -202,6 +202,99 @@ describe('GuardrailBuilder', () => {
     });
   });
 
+  describe('disabled by the AI Trust Layer policy', () => {
+    const POLICY_COPY = /disabled by your organization's AI Trust Layer policy/;
+
+    function renderBuilder(
+      definition: GuardrailDefinition,
+      props?: Partial<GuardrailBuilderProps>
+    ) {
+      return render(
+        <GuardrailBuilder
+          open
+          inline
+          hideHeader
+          definition={definition}
+          scope="Agent"
+          guardrail={makeGuardrail()}
+          onSave={vi.fn()}
+          onCancel={vi.fn()}
+          {...props}
+        />
+      );
+    }
+
+    it('warns that runs skip the guardrail, and keeps Save disabled', () => {
+      renderBuilder(makeDef({ status: 'Disabled', disabledReason: 'Policy' }));
+
+      // A warning (`role="status"`), like Unauthorised and FeatureDisabled: the run goes ahead.
+      expect(screen.getByRole('status')).toHaveTextContent(POLICY_COPY);
+      expect(screen.getByRole('status')).toHaveTextContent('is skipped when the agent runs');
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /^save$/i })).toBeDisabled();
+    });
+
+    it('takes the host override', () => {
+      renderBuilder(makeDef({ status: 'Disabled', disabledReason: 'Policy' }), {
+        labels: { policyDisabledMessage: 'Off by policy' },
+      });
+
+      expect(screen.getByRole('status')).toHaveTextContent('Off by policy');
+    });
+
+    it.each([
+      ['an unknown reason', 'Retired'],
+      ['no reason', undefined],
+    ])('shows no banner for a disabled built-in validator with %s, as before', (_, reason) => {
+      renderBuilder(makeDef({ status: 'Disabled', disabledReason: reason }));
+
+      expect(screen.queryByText(POLICY_COPY)).not.toBeInTheDocument();
+      expect(document.querySelector('[data-slot="guardrail-status-banner"]')).toBeNull();
+    });
+
+    it('reads the reason only on a Disabled definition', () => {
+      renderBuilder(makeDef({ status: 'FeatureDisabled', disabledReason: 'Policy' }));
+
+      expect(screen.queryByText(POLICY_COPY)).not.toBeInTheDocument();
+      expect(screen.getByText(/guardrail feature is disabled/i)).toBeInTheDocument();
+    });
+
+    it('keeps a BYO configuration on its own error even with the policy reason', () => {
+      renderBuilder(
+        makeDef({
+          validator: 'vendor_validator',
+          byoValidatorName: 'my-pii',
+          status: 'Disabled',
+          disabledReason: 'Policy',
+        }),
+        { guardrail: makeGuardrail({ validatorType: 'byo', byoValidatorName: 'my-pii' }) }
+      );
+
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        "This guardrail's configuration has been disabled"
+      );
+      expect(screen.queryByText(POLICY_COPY)).not.toBeInTheDocument();
+    });
+
+    it('renders straight from the definitions layer', () => {
+      const [definition] = enrichGuardrailDefinitions([
+        { ...PII_DETECTION_WIRE, status: 'Disabled', disabledReason: 'Policy' },
+      ]);
+      if (definition === undefined) throw new Error('the fixture did not enrich');
+      renderBuilder(definition);
+
+      expect(screen.getByRole('status')).toHaveTextContent(POLICY_COPY);
+    });
+
+    it('has no axe violations', async () => {
+      const { container } = renderBuilder(
+        makeDef({ status: 'Disabled', disabledReason: 'Policy' })
+      );
+
+      expect(await axe(container)).toHaveNoViolations();
+    });
+  });
+
   describe('required-param validation blocks Save', () => {
     const llmJudgeDefinition = (): GuardrailDefinition =>
       makeDef({
