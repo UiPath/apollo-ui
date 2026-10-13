@@ -48,4 +48,6 @@ apps/apollo-vertex/
 2. Create a documentation page in `content/docs/components/<component>.mdx` with a `title` and a
    one-line `description` in its frontmatter. The page renders both, so don't repeat them as an
    H1 and intro paragraph. Add the page to `content/docs/components/meta.json` to place it in the sidebar.
+   The sidebar and index page are grouped by `---Group---` separators in `meta.json`, so put a new
+   page in the group that fits its use.
 3. Run `pnpm build` to confirm the docs and registry build.
