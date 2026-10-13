@@ -27,14 +27,14 @@ Everything, including the app shell, charts, feature flags, Solution Tests and A
 from the package root. Translation JSON files are available at `@uipath/apollo-vertex/locales/*`.
 
 npm 7+ and pnpm install the packages in `peerDependencies` automatically. Install these three
-yourself, because they are not on the public npm registry:
+yourself:
 
 - `@uipath/vs-core`
 - `@tanstack/react-db`
 - `@uipath/proteus-client`
 
 They are declared only in `peerDependenciesMeta` (as optional) so that pnpm does not try to install them
-in this workspace.
+in this workspace. The two `@uipath` packages are not on the public npm registry.
 
 ## Layout
 

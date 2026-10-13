@@ -14,12 +14,6 @@ A multi-step form built on TanStack Form's composition model. Values are nested 
 - **Per-step schemas via `FormGroup`.** Each step is a `withForm` component whose `form.FormGroup` validates only that step's slice with its own schema on advance. The full `schema` passed to `useFormWizard` is not sliced per step; it is only the final-submit backstop.
 - **A composable Stepper** renders the progress indicator from the visible steps.
 
-## Installation
-
-```bash
-npx shadcn@latest add @uipath/form-wizard
-```
-
 ## How it works
 
 - `useFormWizard` returns the `form`, the visible `steps`, the `currentStepId`, and navigation helpers (`next`, `back`, `goToStep`, `reset`).
@@ -39,9 +33,9 @@ Define nested `formOptions` and a schema per step, then author each step with `w
 ```tsx
 import { formOptions } from '@tanstack/react-form'
 import { z } from 'zod'
-import { FieldGroup } from '@/components/ui/field'
-import { withForm } from '@/components/ui/form'
 import {
+  FieldGroup,
+  withForm,
   FormWizard,
   FormWizardNav,
   FormWizardStep,
@@ -49,7 +43,7 @@ import {
   useFormWizard,
   useFormWizardContext,
   type WizardStepDef,
-} from '@/components/ui/form-wizard'
+} from '@uipath/apollo-vertex'
 
 const accountSchema = z.object({ email: z.email('Enter a valid email.') })
 const planSchema = z.object({ tier: z.string().min(1) })

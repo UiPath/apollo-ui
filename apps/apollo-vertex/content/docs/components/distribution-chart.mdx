@@ -9,20 +9,12 @@ import { DistributionChartTemplate } from '../../../templates/charts/Distributio
   <DistributionChartTemplate />
 </Preview>
 
-## Installation
-
-```bash
-npx shadcn@latest add @uipath/distribution-chart
-```
-
-Installs both the prop-driven `DistributionChart` view and the `DistributionChartWithAdapter` variant.
-
 ## View
 
 `DistributionChart` plots an array of `{ x, y }` points where `x` is the bin label. Same shape as `LineChart` but rendered as bars (no curve).
 
 ```tsx
-import { DistributionChart } from "@/components/ui/distribution-chart";
+import { DistributionChart } from "@uipath/apollo-vertex";
 
 const data = [
   { x: "0–100", y: 12 },
@@ -52,17 +44,13 @@ const formatValue = (value: number) =>
 
 `DistributionChartWithAdapter` runs a min/max query, computes bin cutoff points, then queries the binned data — all behind Suspense + error boundary.
 
-The chart package does not bundle an adapter. Install one of the ready-made adapters (or implement the `DataAdapter` interface yourself):
-
-```bash
-npx shadcn@latest add @uipath/data-fabric-adapter
-# or
-npx shadcn@latest add @uipath/insights-adapter
-```
+Pass one of the ready-made adapters, `dataFabricAdapter` or `insightsAdapter`, or implement the `DataAdapter` interface yourself:
 
 ```tsx
-import { DistributionChartWithAdapter } from "@/components/ui/distribution-chart";
-import { dataFabricAdapter } from "@/lib/data-fabric-adapter";
+import {
+  DistributionChartWithAdapter,
+  dataFabricAdapter,
+} from "@uipath/apollo-vertex";
 
 const adapter = dataFabricAdapter({
   baseUrl: "/api/datafabric/.../api",

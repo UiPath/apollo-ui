@@ -13,12 +13,6 @@ The Form component is a thin Apollo layer over two libraries, so you get their b
 - **TanStack Form** handles state, subscriptions, and submission. `useAppForm` is created once via `createFormHook` and wired to the Apollo field components, so each field is rendered with `form.AppField`.
 - **Zod** describes the shape and rules. Zod v4 implements the [Standard Schema](https://standardschema.dev) spec, so a schema passes directly into TanStack Form validators. No resolver or adapter is required.
 
-## Installation
-
-```bash
-npx shadcn@latest add @uipath/form
-```
-
 ## How it works
 
 - `form.AppField` provides the field context. Its render prop exposes the bound components (`field.TextField`, `field.SelectField`, etc).
@@ -35,8 +29,7 @@ Validation is defined once as a whole-form Zod schema passed to `validators.onCh
 
 ```tsx
 import { z } from 'zod'
-import { FieldGroup } from '@/components/ui/field'
-import { useAppForm } from '@/components/ui/form'
+import { FieldGroup, useAppForm } from '@uipath/apollo-vertex'
 
 const schema = z.object({
   fullName: z.string().min(2, 'Name must be at least 2 characters.'),

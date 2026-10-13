@@ -9,20 +9,12 @@ import { MultiLineChartTemplate } from '../../../templates/charts/MultiLineChart
   <MultiLineChartTemplate />
 </Preview>
 
-## Installation
-
-```bash
-npx shadcn@latest add @uipath/multi-line-chart
-```
-
-Installs both the prop-driven `MultiLineChart` view and the `MultiLineChartWithAdapter` variant.
-
 ## View
 
 `MultiLineChart` plots up to two series sharing an X axis. Pass series with `axis: "left" | "right"` to drive independent Y axes (useful when units differ).
 
 ```tsx
-import { MultiLineChart } from "@/components/ui/multi-line-chart";
+import { MultiLineChart } from "@uipath/apollo-vertex";
 
 const data = [
   { month: "Jan", orders: 120, revenue: 12000 },
@@ -72,17 +64,13 @@ const currencyFormat = new Intl.NumberFormat("en-US", {
 
 `MultiLineChartWithAdapter` issues one query per metric (parallel) against the shared dimension, bins datetime, and renders the dual-axis chart.
 
-The chart package does not bundle an adapter. Install one of the ready-made adapters (or implement the `DataAdapter` interface yourself):
-
-```bash
-npx shadcn@latest add @uipath/data-fabric-adapter
-# or
-npx shadcn@latest add @uipath/insights-adapter
-```
+Pass one of the ready-made adapters, `dataFabricAdapter` or `insightsAdapter`, or implement the `DataAdapter` interface yourself:
 
 ```tsx
-import { MultiLineChartWithAdapter } from "@/components/ui/multi-line-chart";
-import { dataFabricAdapter } from "@/lib/data-fabric-adapter";
+import {
+  MultiLineChartWithAdapter,
+  dataFabricAdapter,
+} from "@uipath/apollo-vertex";
 
 const adapter = dataFabricAdapter({
   baseUrl: "/api/datafabric/.../api",

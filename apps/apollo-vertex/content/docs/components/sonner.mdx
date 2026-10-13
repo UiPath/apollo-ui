@@ -13,17 +13,13 @@ import { SonnerExamples } from '../guidelines/notifications/notification-example
   <SonnerExamples />
 </Preview>
 
-## Installation
-
-```bash
-npx shadcn@latest add @uipath/sonner
-```
+## Setup
 
 Add the `<Toaster />` component once to your root route. Status colors, icons, close button, and positioning are included by default:
 
 ```tsx
 import { createRootRoute, Outlet } from "@tanstack/react-router"
-import { Toaster } from "@/components/ui/sonner"
+import { Toaster } from "@uipath/apollo-vertex"
 
 export const Route = createRootRoute({
   component: () => (
@@ -36,6 +32,10 @@ export const Route = createRootRoute({
 ```
 
 ## Usage
+
+Call `toast` from `sonner`. Install it if your project doesn't have it yet:
+
+<PackageInstall packages="sonner" />
 
 ```tsx
 import { toast } from "sonner"
@@ -94,7 +94,7 @@ If you need to apply the Apollo status styles to your own `Toaster` instance, im
 
 ```tsx
 import { Toaster } from "sonner"
-import { apolloToastClassNames } from "@/components/ui/sonner"
+import { apolloToastClassNames } from "@uipath/apollo-vertex"
 
 <Toaster toastOptions={{ classNames: apolloToastClassNames }} />
 ```

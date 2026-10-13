@@ -141,12 +141,6 @@ The `group` variant is a wider, amorphous wash. Set the AI context once at the g
 </div>
 ```
 
-## Installation
-
-```bash
-npx shadcn@latest add @uipath/card
-```
-
 ## Usage
 
 ```tsx
@@ -158,7 +152,7 @@ import {
   CardHeader,
   CardTitle,
   GLASS_CLASSES,
-} from "@/components/ui/card"
+} from "@uipath/apollo-vertex"
 ```
 
 ```tsx
@@ -181,7 +175,7 @@ import {
 The `GLASS_CLASSES` constant is exported for reuse in other components that need the same frosted glass styling:
 
 ```tsx
-import { GLASS_CLASSES } from "@/components/ui/card"
+import { GLASS_CLASSES } from "@uipath/apollo-vertex"
 
 <div className={cn(GLASS_CLASSES, "p-4")}>
   Glass morphism container

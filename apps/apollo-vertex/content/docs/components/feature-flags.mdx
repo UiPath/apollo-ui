@@ -9,22 +9,13 @@ import { FeatureFlagDemo } from './feature-flag-demo'
   <FeatureFlagDemo />
 </Preview>
 
-## Installation
-
-```bash
-npx shadcn@latest add @uipath/feature-flag-provider
-npx shadcn@latest add @uipath/use-feature-flag
-npx shadcn@latest add @uipath/feature-flag-guard
-npx shadcn@latest add @uipath/protected-feature-route
-```
-
 ## Setup
 
 ### 1. Define your flags
 
 ```ts
 import { FeatureFlagKind } from "@uipath/proteus-client";
-import type { FlagMapping } from "@/lib/feature-flag-provider/proteus-adapter";
+import type { FlagMapping } from "@uipath/apollo-vertex";
 
 export enum Flag {
   NewOnboarding = "NewOnboarding",
@@ -46,8 +37,10 @@ export const flagConfig = {
 ### 2. Wrap your app with the provider
 
 ```tsx
-import { FeatureFlagProvider } from "@/lib/feature-flag-provider";
-import { createProteusProvider } from "@/lib/feature-flag-provider/proteus-adapter";
+import {
+  FeatureFlagProvider,
+  createProteusProvider,
+} from "@uipath/apollo-vertex";
 import { flagConfig } from "@/lib/flags";
 
 const provider = createProteusProvider({
@@ -82,7 +75,7 @@ function App() {
 React hook that reads a boolean flag value and re-renders when it changes.
 
 ```tsx
-import { useFeatureFlag } from "@/hooks/use-feature-flag";
+import { useFeatureFlag } from "@uipath/apollo-vertex";
 
 function MyComponent() {
   const isEnabled = useFeatureFlag("NewOnboarding");
@@ -95,7 +88,7 @@ function MyComponent() {
 Conditionally renders children based on a boolean feature flag.
 
 ```tsx
-import { FeatureFlagGuard } from "@/components/ui/feature-flag-guard";
+import { FeatureFlagGuard } from "@uipath/apollo-vertex";
 
 <FeatureFlagGuard featureFlag="NewOnboarding" fallback={<OldOnboarding />}>
   <NewOnboarding />
@@ -113,7 +106,7 @@ Route-level guard that throws when a feature is disabled, intended to be caught 
 
 ```tsx
 import { createFileRoute } from "@tanstack/react-router";
-import { ProtectedFeatureRoute } from "@/components/ui/protected-feature-route";
+import { ProtectedFeatureRoute } from "@uipath/apollo-vertex";
 
 export const Route = createFileRoute("/beta")({
   component: () => (
