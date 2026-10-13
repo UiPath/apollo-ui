@@ -115,13 +115,16 @@ import { FeatureFlagGuard } from "@/components/ui/feature-flag-guard";
 Route-level guard that throws when a feature is disabled, intended to be caught by an error boundary.
 
 ```tsx
+import { createFileRoute } from "@tanstack/react-router";
 import { ProtectedFeatureRoute } from "@/components/ui/protected-feature-route";
 
-<Route element={
-  <ProtectedFeatureRoute feature="BetaPage">
-    <BetaPage />
-  </ProtectedFeatureRoute>
-} />
+export const Route = createFileRoute("/beta")({
+  component: () => (
+    <ProtectedFeatureRoute feature="BetaPage">
+      <BetaPage />
+    </ProtectedFeatureRoute>
+  ),
+});
 ```
 
 | Prop | Type | Description |

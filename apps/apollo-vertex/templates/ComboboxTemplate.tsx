@@ -15,33 +15,30 @@ import {
   ComboboxTrigger,
 } from "@/components/ui/combobox";
 
-const frameworks = [
-  { value: "next", label: "Next.js" },
-  { value: "svelte", label: "SvelteKit" },
-  { value: "nuxt", label: "Nuxt" },
-  { value: "remix", label: "Remix" },
-  { value: "astro", label: "Astro" },
+const products = [
+  { value: "studio", label: "Studio" },
+  { value: "orchestrator", label: "Orchestrator" },
+  { value: "robot", label: "Robot" },
+  { value: "maestro", label: "Maestro" },
+  { value: "action-center", label: "Action Center" },
 ];
 
 function SingleSelectContent() {
   const [value, setValue] = useState<string[]>([]);
-  const selectedLabel = frameworks.find((f) => f.value === value[0])?.label;
+  const selectedLabel = products.find((f) => f.value === value[0])?.label;
 
   return (
     <div className="p-4">
       <Combobox value={value} onValueChange={setValue}>
-        <ComboboxTrigger
-          className="w-[240px]"
-          placeholder={"Select a framework"}
-        >
+        <ComboboxTrigger className="w-[240px]" placeholder={"Select a product"}>
           {selectedLabel}
         </ComboboxTrigger>
         <ComboboxContent>
-          <ComboboxInput placeholder="Search frameworks..." />
+          <ComboboxInput placeholder="Search products..." />
           <ComboboxList>
-            <ComboboxEmpty>{"No frameworks found."}</ComboboxEmpty>
+            <ComboboxEmpty>{"No products found."}</ComboboxEmpty>
             <ComboboxGroup>
-              {frameworks.map((f) => (
+              {products.map((f) => (
                 <ComboboxItem key={f.value} value={f.value}>
                   {f.label}
                 </ComboboxItem>
@@ -62,24 +59,24 @@ function MultiSelectContent() {
       <Combobox multiple value={values} onValueChange={setValues}>
         <ComboboxTrigger
           className="w-[360px] h-auto min-h-9"
-          placeholder={"Select frameworks"}
+          placeholder={"Select products"}
         >
           {values.length > 0 ? (
             <ComboboxBadgeList>
               {values.map((v) => (
                 <ComboboxBadge key={v} value={v}>
-                  {frameworks.find((f) => f.value === v)?.label}
+                  {products.find((f) => f.value === v)?.label}
                 </ComboboxBadge>
               ))}
             </ComboboxBadgeList>
           ) : null}
         </ComboboxTrigger>
         <ComboboxContent>
-          <ComboboxInput placeholder="Search frameworks..." />
+          <ComboboxInput placeholder="Search products..." />
           <ComboboxList>
-            <ComboboxEmpty>{"No frameworks found."}</ComboboxEmpty>
+            <ComboboxEmpty>{"No products found."}</ComboboxEmpty>
             <ComboboxGroup>
-              {frameworks.map((f) => (
+              {products.map((f) => (
                 <ComboboxItem key={f.value} value={f.value}>
                   {f.label}
                 </ComboboxItem>
@@ -94,24 +91,24 @@ function MultiSelectContent() {
 
 function InvalidContent() {
   const [value, setValue] = useState<string[]>([]);
-  const selectedLabel = frameworks.find((f) => f.value === value[0])?.label;
+  const selectedLabel = products.find((f) => f.value === value[0])?.label;
 
   return (
     <div className="p-4">
       <Combobox value={value} onValueChange={setValue}>
         <ComboboxTrigger
           className="w-[240px]"
-          placeholder={"Select a framework"}
+          placeholder={"Select a product"}
           aria-invalid="true"
         >
           {selectedLabel}
         </ComboboxTrigger>
         <ComboboxContent>
-          <ComboboxInput placeholder="Search frameworks..." />
+          <ComboboxInput placeholder="Search products..." />
           <ComboboxList>
-            <ComboboxEmpty>{"No frameworks found."}</ComboboxEmpty>
+            <ComboboxEmpty>{"No products found."}</ComboboxEmpty>
             <ComboboxGroup>
-              {frameworks.map((f) => (
+              {products.map((f) => (
                 <ComboboxItem key={f.value} value={f.value}>
                   {f.label}
                 </ComboboxItem>

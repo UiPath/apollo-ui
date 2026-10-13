@@ -41,8 +41,6 @@ This component requires the following dependencies:
 ### 1. Define your columns
 
 ```tsx
-"use client"
-
 import type { ColumnDef } from "@/components/ui/data-table"
 import { DataTableColumnHeader } from "@/components/ui/data-table"
 
@@ -87,8 +85,6 @@ export const columns: ColumnDef<Payment>[] = [
 Use the `useDataTable` hook to manage all table state, then spread it into `DataTable`:
 
 ```tsx
-"use client"
-
 import { DataTable } from "@/components/ui/data-table"
 import { useDataTable } from "@/hooks/use-data-table"
 import { columns } from "./columns"
@@ -162,8 +158,6 @@ npx shadcn@latest add @uipath/use-data-table
 The hook returns an object that can be spread directly into `DataTable`:
 
 ```tsx
-"use client"
-
 import { DataTable } from "@/components/ui/data-table"
 import { useDataTable } from "@/hooks/use-data-table"
 import { columns } from "./columns"
@@ -204,8 +198,6 @@ npx shadcn@latest add @uipath/use-entity-data-table
 #### Usage
 
 ```tsx
-"use client"
-
 import { DataTable } from "@/components/ui/data-table"
 import { useEntityDataTable } from "@/hooks/use-entity-data-table"
 

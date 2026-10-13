@@ -242,8 +242,6 @@ hook, which POSTs the subject id to the `solution-tests/create` action through
 the same `triggerBaseUrl` / `getToken` plumbing as the other writes.
 
 ```tsx
-"use client";
-
 import {
   SaveAsTestButton,
   useCreateTest,
@@ -303,8 +301,6 @@ trigger/auth plumbing. (Toggle-active and attachment reads aren't triggers — t
 go through the vs-core collections/sdk.)
 
 ```tsx
-"use client";
-
 import {
   SolutionTests,
   SolutionTestsProvider,
@@ -316,7 +312,7 @@ const config: SolutionTestsConfig = {
   subjectNoun: { singular: "Loan", plural: "Loans" },
 };
 
-export default function SolutionTestsPage() {
+export function SolutionTestsPage() {
   // List reads come from the vs-core solution's `collections.solutionTests` in
   // context (provided higher up by your shell). No read wiring required.
   return (
