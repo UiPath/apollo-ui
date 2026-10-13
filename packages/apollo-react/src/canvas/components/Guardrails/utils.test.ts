@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { GuardrailParameterDefinition, GuardrailValidatorParameter } from './types';
 import {
-  normalizeGuardrailParameters,
   dropEmptyOptionalParameters,
-  getGuardrailAppliesTo,
+  getGuardrailDetectionScope,
   getOutOfRangeParameterIds,
   getRequiredEmptyParameterIds,
+  normalizeGuardrailParameters,
   seedGuardrailParameters,
   syncMapEnumParameters,
 } from './utils';
@@ -560,20 +560,20 @@ describe('getRequiredEmptyParameterIds', () => {
   });
 });
 
-describe('getGuardrailAppliesTo', () => {
-  const appliesTo = (defaultValue: unknown): GuardrailParameterDefinition => ({
-    id: 'appliesTo',
+describe('getGuardrailDetectionScope', () => {
+  const detectionScope = (defaultValue: unknown): GuardrailParameterDefinition => ({
+    id: 'detectionScope',
     type: 'enum',
-    label: 'Applies to',
+    label: 'Detection scope',
     required: false,
     defaultValue,
     options: ['Text', 'Files', 'Both'],
   });
   const stored = (value: string): GuardrailValidatorParameter[] => [
-    { $parameterType: 'enum', id: 'appliesTo', value },
+    { $parameterType: 'enum', id: 'detectionScope', value },
   ];
 
-  it('is undefined when the definitions have no appliesTo parameter', () => {
+  it('is undefined when the definitions have no detectionScope parameter', () => {
     const threshold: GuardrailParameterDefinition = {
       id: 'threshold',
       type: 'number',
@@ -581,16 +581,16 @@ describe('getGuardrailAppliesTo', () => {
       required: false,
       defaultValue: 0.5,
     };
-    expect(getGuardrailAppliesTo([threshold], stored('Files'))).toBeUndefined();
+    expect(getGuardrailDetectionScope([threshold], stored('Files'))).toBeUndefined();
   });
 
   it.each([
     ['a GA validator', 'Text', 'Text'],
     ['the judge', 'Both', 'Both'],
   ] as const)('falls back to the default of %s when nothing is stored', (_, fallback, expected) => {
-    expect(getGuardrailAppliesTo([appliesTo(fallback)], [])).toBe(expected);
-    expect(getGuardrailAppliesTo([appliesTo(fallback)], stored(''))).toBe(expected);
-    expect(getGuardrailAppliesTo([appliesTo(fallback)], stored('   '))).toBe(expected);
+    expect(getGuardrailDetectionScope([detectionScope(fallback)], [])).toBe(expected);
+    expect(getGuardrailDetectionScope([detectionScope(fallback)], stored(''))).toBe(expected);
+    expect(getGuardrailDetectionScope([detectionScope(fallback)], stored('   '))).toBe(expected);
   });
 
   it.each([
@@ -602,19 +602,19 @@ describe('getGuardrailAppliesTo', () => {
     ['Prompts', 'Text'],
     ['Images', 'Text'],
   ] as const)('reads a stored %j as %s, whatever the default', (value, expected) => {
-    expect(getGuardrailAppliesTo([appliesTo('Both')], stored(value))).toBe(expected);
+    expect(getGuardrailDetectionScope([detectionScope('Both')], stored(value))).toBe(expected);
   });
 
   it('reads a default the same way, and a missing one as Text', () => {
-    expect(getGuardrailAppliesTo([appliesTo(' both ')], [])).toBe('Both');
-    expect(getGuardrailAppliesTo([appliesTo(null)], [])).toBe('Text');
-    expect(getGuardrailAppliesTo([appliesTo(undefined)], [])).toBe('Text');
+    expect(getGuardrailDetectionScope([detectionScope(' both ')], [])).toBe('Both');
+    expect(getGuardrailDetectionScope([detectionScope(null)], [])).toBe('Text');
+    expect(getGuardrailDetectionScope([detectionScope(undefined)], [])).toBe('Text');
   });
 
   it('falls back to the default when the stored value is not a string', () => {
     const malformed = [
-      { $parameterType: 'number', id: 'appliesTo', value: 1 },
+      { $parameterType: 'number', id: 'detectionScope', value: 1 },
     ] as GuardrailValidatorParameter[];
-    expect(getGuardrailAppliesTo([appliesTo('Both')], malformed)).toBe('Both');
+    expect(getGuardrailDetectionScope([detectionScope('Both')], malformed)).toBe('Both');
   });
 });
