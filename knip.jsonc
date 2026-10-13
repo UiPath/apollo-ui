@@ -3,6 +3,7 @@
   // Run from the root so imports from the docs app into the package (through
   // its "@/*" tsconfig alias) count as usages. `pnpm knip` limits the run to
   // the Apollo Vertex workspaces.
+  "ignoreExportsUsedInFile": true,
   "workspaces": {
     ".": {
       "entry": [],

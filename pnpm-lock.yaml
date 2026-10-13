@@ -287,9 +287,6 @@ importers:
       babel-plugin-react-compiler:
         specifier: ^1.0.0
         version: 1.0.0
-      eslint-plugin-react:
-        specifier: ^7.37.5
-        version: 7.37.5(eslint@9.39.3(jiti@2.7.0))
       oxlint:
         specifier: ^1.38.0
         version: 1.50.0(oxlint-tsgolint@0.18.1)
