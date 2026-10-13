@@ -9,20 +9,12 @@ import { TableChartTemplate } from '../../../templates/charts/TableChartTemplate
   <TableChartTemplate />
 </Preview>
 
-## Installation
-
-```bash
-npx shadcn@latest add @uipath/table-chart
-```
-
-Installs both the prop-driven `TableChart` view and the `TableChartWithAdapter` variant.
-
 ## View
 
 `TableChart` renders rows with column-level formatting and optional client-controlled sorting.
 
 ```tsx
-import { TableChart } from "@/components/ui/table-chart";
+import { TableChart } from "@uipath/apollo-vertex";
 
 const rows = [
   { department: "Marketing", headcount: 12, avgSalary: 58000, active: true },
@@ -74,19 +66,15 @@ const numberFormat = new Intl.NumberFormat("en-US");
 
 `TableChartWithAdapter` fetches rows via the adapter, derives column formatters from the data model's field types (currency, percentage, boolean format, etc.), and threads sort state into the query.
 
-The chart package does not bundle an adapter. Install one of the ready-made adapters (or implement the `DataAdapter` interface yourself):
-
-```bash
-npx shadcn@latest add @uipath/data-fabric-adapter
-# or
-npx shadcn@latest add @uipath/insights-adapter
-```
+Pass one of the ready-made adapters, `dataFabricAdapter` or `insightsAdapter`, or implement the `DataAdapter` interface yourself:
 
 ```tsx
 import { useState } from "react";
-import { TableChartWithAdapter } from "@/components/ui/table-chart";
-import type { TableChartState } from "@/lib/charts-core";
-import { dataFabricAdapter } from "@/lib/data-fabric-adapter";
+import {
+  TableChartWithAdapter,
+  type TableChartState,
+  dataFabricAdapter,
+} from "@uipath/apollo-vertex";
 
 const adapter = dataFabricAdapter({
   baseUrl: "/api/datafabric/.../api",

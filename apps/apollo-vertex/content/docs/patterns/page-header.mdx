@@ -27,12 +27,6 @@ With metadata fields:
 - **Collapsible Actions**: Buttons that automatically overflow into a dropdown based on available space
 - **Responsive**: Wraps gracefully on smaller screens
 
-## Installation
-
-```bash
-npx shadcn@latest add @uipath/page-header
-```
-
 ## Usage
 
 ### Basic Header
@@ -44,8 +38,8 @@ import {
   PageHeaderBackButton,
   PageHeaderTitle,
   PageHeaderActions,
-} from '@/components/ui/page-header';
-import { Button } from '@/components/ui/button';
+  Button,
+} from '@uipath/apollo-vertex';
 
 function MyPage() {
   return (
@@ -75,8 +69,8 @@ import {
   PageHeaderFieldLabel,
   PageHeaderFieldValue,
   PageHeaderActions,
-} from '@/components/ui/page-header';
-import { Button } from '@/components/ui/button';
+  Button,
+} from '@uipath/apollo-vertex';
 
 function DetailPage() {
   return (
@@ -117,9 +111,9 @@ import {
   PageHeaderActions,
   PageHeaderCollapsibleActions,
   type CollapsibleAction,
-} from '@/components/ui/page-header';
-import { Button } from '@/components/ui/button';
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+  Button,
+  DropdownMenuItem,
+} from '@uipath/apollo-vertex';
 import { Download, Share2 } from 'lucide-react';
 
 const actions: CollapsibleAction[] = [

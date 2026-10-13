@@ -62,11 +62,6 @@ const sections = [
     name: "Localization",
     description: "Add translations to a solution.",
   },
-  {
-    href: "/mcp",
-    name: "MCP server",
-    description: "Install Vertex components from an AI assistant.",
-  },
 ];
 
 export function Home() {

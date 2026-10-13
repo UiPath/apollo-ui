@@ -20,38 +20,13 @@ A thumbs up / thumbs down control with an optional comment textarea. Designed to
 - **Composes existing primitives** — Built on [Button](/components/button) and [Textarea](/components/textarea)
 - **Test hook** — Each vote button carries `data-vote="up"` / `data-vote="down"` for E2E selectors
 
-## Installation
-
-Apollo Vertex components are published to a custom shadcn registry under the `@uipath` namespace. Register the namespace once in your project's `components.json`:
-
-```json
-{
-  "registries": {
-    "@uipath": "https://engdogfood.staging.uipath.host/apollo-vertex/r/{name}.json"
-  }
-}
-```
-
-Then install the component:
-
-```bash
-npx shadcn@latest add @uipath/feedback-vote-widget
-```
-
-### Dependencies
-
-This component depends on the following registry components:
-
-- [Button](/components/button)
-- [Textarea](/components/textarea)
-
 ## Usage
 
 ### Basic
 
 ```tsx
 import * as React from "react";
-import { FeedbackVoteWidget } from "@/components/ui/feedback-vote-widget";
+import { FeedbackVoteWidget } from "@uipath/apollo-vertex";
 
 export function MyFeedback() {
   const [vote, setVote] = React.useState<"up" | "down" | null>(null);

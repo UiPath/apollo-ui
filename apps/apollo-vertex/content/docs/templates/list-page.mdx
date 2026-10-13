@@ -31,20 +31,11 @@ lg:px-8` margins so it aligns with the default `PageHeader` padding.
 
 Source: [`templates/list-page/ClinicalReviewList.tsx`](https://github.com/UiPath/apollo-ui/blob/main/apps/apollo-vertex/templates/list-page/ClinicalReviewList.tsx)
 
-## Installation
+## Using the template
 
 The composition itself is a pattern. Copy the source linked above into your
-app, wrap it in
-`ApolloShell`, and swap in your own data. The underlying components install
-from the registry:
-
-```bash
-npx shadcn@latest add @uipath/shell
-npx shadcn@latest add @uipath/page-header
-npx shadcn@latest add @uipath/metric-card
-npx shadcn@latest add @uipath/data-table
-npx shadcn@latest add @uipath/filter-dropdown
-```
+app, wrap it in `ApolloShell`, and swap in your own data. Every component
+it uses is exported from `@uipath/apollo-vertex`.
 
 ## Customizing
 

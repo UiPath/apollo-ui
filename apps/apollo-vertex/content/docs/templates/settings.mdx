@@ -61,25 +61,11 @@ on each section.
 
 Source: [`templates/settings/WorkspaceSettings.tsx`](https://github.com/UiPath/apollo-ui/blob/main/apps/apollo-vertex/templates/settings/WorkspaceSettings.tsx)
 
-## Installation
+## Using the template
 
 The composition itself is a pattern. Copy the source linked above into your
-app, wrap it in
-`ApolloShell`, and swap in your own state/persistence. The underlying
-components install from the registry:
-
-```bash
-npx shadcn@latest add @uipath/shell
-npx shadcn@latest add @uipath/page-header
-npx shadcn@latest add @uipath/form
-npx shadcn@latest add @uipath/field
-npx shadcn@latest add @uipath/input
-npx shadcn@latest add @uipath/textarea
-npx shadcn@latest add @uipath/select
-npx shadcn@latest add @uipath/radio-group
-npx shadcn@latest add @uipath/switch
-npx shadcn@latest add @uipath/button
-```
+app, wrap it in `ApolloShell`, and swap in your own state/persistence. Every component
+it uses is exported from `@uipath/apollo-vertex`.
 
 ## Customizing
 
@@ -91,7 +77,7 @@ npx shadcn@latest add @uipath/button
   (`useAppForm`). `onSubmit` receives the validated values; the template
   resets the form to those values so it returns to a pristine state. Swap
   `onSubmit` for a call to your own store, mutation, or settings API,
-  and add toast feedback with `Sonner` from the registry.
+  and add toast feedback with [Sonner](/components/sonner).
 - **Categorical fields** — `emailFrequency` and `visibility` are `z.enum`
   members in the Zod schema, rendered with `RadioGroupField`. The schema
   keeps their values type-safe end-to-end. Follow the same pattern when
@@ -114,5 +100,5 @@ npx shadcn@latest add @uipath/button
 - **Validation** — the whole-form Zod schema is passed to the `Form`'s
   `validators.onChange`. Each field renders its own translatable errors inline.
 - **i18n** — wrap your app in `ApolloShell` (which initializes i18n via
-  `LocaleProvider`) or provide your own `I18nextProvider` so any
-  registry-component strings render correctly.
+  `LocaleProvider`) or provide your own `I18nextProvider` so the
+  Vertex component strings render correctly.

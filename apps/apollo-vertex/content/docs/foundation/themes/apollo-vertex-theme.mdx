@@ -5,12 +5,18 @@ description: "Apollo Vertex design system tokens — colors, typography, spacing
 
 ## Installation
 
-```bash
-npx shadcn@latest add @uipath/apollo-vertex-theme
+The theme ships with `@uipath/apollo-vertex`. Importing `tailwind.css` from your app's CSS includes it, along with Tailwind and the component styles:
+
+```css
+@import "@uipath/apollo-vertex/tailwind.css";
 ```
 
-This will update your global CSS file (the `tailwind.css` path in `components.json`) with all Apollo Vertex design tokens for both light and dark mode.
+To use only the design tokens for both light and dark mode, import `theme.css` instead:
+
+```css
+@import "@uipath/apollo-vertex/theme.css";
+```
 
 ## Updating
 
-Re-run the same command to pull the latest token values.
+Update `@uipath/apollo-vertex` to get the latest token values.

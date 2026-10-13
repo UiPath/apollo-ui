@@ -9,20 +9,12 @@ import { LineChartTemplate } from '../../../templates/charts/LineChartTemplate';
   <LineChartTemplate />
 </Preview>
 
-## Installation
-
-```bash
-npx shadcn@latest add @uipath/line-chart
-```
-
-Installs both the prop-driven `LineChart` view and the `LineChartWithAdapter` variant.
-
 ## View
 
 `LineChart` plots an array of `{ x, y }` points. Use it when the series is already in memory.
 
 ```tsx
-import { LineChart } from "@/components/ui/line-chart";
+import { LineChart } from "@uipath/apollo-vertex";
 
 const data = [
   { x: "Jan", y: 120 },
@@ -52,17 +44,10 @@ const formatValue = (value: number) =>
 
 `LineChartWithAdapter` queries the configured `DataAdapter`, bins the response on the dimension's time axis, and renders the line. Wrapped in Suspense + error boundary.
 
-The chart package does not bundle an adapter. Install one of the ready-made adapters (or implement the `DataAdapter` interface yourself):
-
-```bash
-npx shadcn@latest add @uipath/data-fabric-adapter
-# or
-npx shadcn@latest add @uipath/insights-adapter
-```
+Pass one of the ready-made adapters, `dataFabricAdapter` or `insightsAdapter`, or implement the `DataAdapter` interface yourself:
 
 ```tsx
-import { LineChartWithAdapter } from "@/components/ui/line-chart";
-import { dataFabricAdapter } from "@/lib/data-fabric-adapter";
+import { LineChartWithAdapter, dataFabricAdapter } from "@uipath/apollo-vertex";
 
 const adapter = dataFabricAdapter({
   baseUrl: "/api/datafabric/.../api",
