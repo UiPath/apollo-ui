@@ -13,7 +13,7 @@ export function Preview({
   children: ReactNode;
 }) {
   return (
-    <div className={cn("mt-4 rounded-lg border p-4", className)}>
+    <div className={cn("not-prose mt-4 rounded-lg border p-4", className)}>
       {children}
     </div>
   );
