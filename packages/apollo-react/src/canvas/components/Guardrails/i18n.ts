@@ -86,6 +86,12 @@ export interface GuardrailBuilderLabels {
   save: string;
   // Status banners
   byoDisabledMessage: string;
+  /**
+   * A built-in validator the AI Trust Layer policy switched off (`disabledReason: 'Policy'`).
+   * Optional so a complete label object written before it existed still compiles; it always
+   * resolves.
+   */
+  policyDisabledMessage?: string;
   unauthorizedMessage: string;
   featureDisabledMessage: string;
   // Scope selector
@@ -157,6 +163,8 @@ export const GUARDRAIL_BUILDER_EN_LABELS: Required<GuardrailBuilderLabels> = {
   save: 'Save',
   byoDisabledMessage:
     "This guardrail's configuration has been disabled and can no longer be used. Contact your administrator to re-enable the configuration or replace this guardrail before running the agent.",
+  policyDisabledMessage:
+    "This guardrail is disabled by your organization's AI Trust Layer policy and is skipped when the agent runs.",
   unauthorizedMessage:
     'You are not entitled to use guardrails. You can access the configuration settings, but modifications cannot be saved.',
   featureDisabledMessage:
@@ -597,6 +605,11 @@ export function useGuardrailBuilderLabels(
             message:
               "This guardrail's configuration has been disabled and can no longer be used. Contact your administrator to re-enable the configuration or replace this guardrail before running the agent.",
           }),
+          policyDisabledMessage: _({
+            id: 'guardrails.builder.policy-disabled-message',
+            message:
+              "This guardrail is disabled by your organization's AI Trust Layer policy and is skipped when the agent runs.",
+          }),
           unauthorizedMessage: _({
             id: 'guardrails.builder.unauthorized-message',
             message:
@@ -791,6 +804,11 @@ export interface GuardrailListLabels {
   byoDisabledNotice: string;
   /** Row notice: the BYO configuration this guardrail points at is gone. */
   byoUnavailableNotice: string;
+  /**
+   * Row notice: the AI Trust Layer policy switched this built-in validator off. Optional so a
+   * complete label object written before it existed still compiles; it always resolves.
+   */
+  policyDisabledNotice?: string;
   /** Status chip: the validator's feature flag is off tenant-wide. */
   statusFeatureDisabled: string;
   /** Status chip: the tenant is not entitled to the validator. */
@@ -813,7 +831,7 @@ type ListTranslate = (descriptor: {
 // One builder holds every `_({ id, message })` call, so the English defaults, the flat record
 // the catalog test diffs and the runtime lingui path cannot drift, and `lingui extract` still
 // sees static calls. Same shape as `definitions-copy.ts`.
-function buildGuardrailListLabels(_: ListTranslate): GuardrailListLabels {
+function buildGuardrailListLabels(_: ListTranslate): Required<GuardrailListLabels> {
   return {
     title: _({ id: 'guardrails.list.title', message: 'Guardrails' }),
     add: _({ id: 'guardrails.list.add', message: 'Add' }),
@@ -849,6 +867,11 @@ function buildGuardrailListLabels(_: ListTranslate): GuardrailListLabels {
       message:
         "This guardrail's configuration is no longer available. Replace it before running the agent.",
     }),
+    policyDisabledNotice: _({
+      id: 'guardrails.list.policy-disabled-notice',
+      message:
+        "This guardrail is disabled by your organization's AI Trust Layer policy and is skipped when the agent runs.",
+    }),
     statusFeatureDisabled: _({
       id: 'guardrails.list.status-feature-disabled',
       message: 'Feature disabled',
@@ -874,7 +897,7 @@ const englishListTranslate: ListTranslate = ({ message, values }) =>
     : message;
 
 /** The English chrome strings, resolved without a lingui provider. */
-export const GUARDRAIL_LIST_EN_LABELS: GuardrailListLabels =
+export const GUARDRAIL_LIST_EN_LABELS: Required<GuardrailListLabels> =
   buildGuardrailListLabels(englishListTranslate);
 
 /**
@@ -896,14 +919,14 @@ export const GUARDRAIL_LIST_EN_MESSAGES: Readonly<Record<string, string>> = Obje
 export function resolveGuardrailListLabels(
   catalog?: Partial<GuardrailListLabels>,
   overrides?: Partial<GuardrailListLabels>
-): GuardrailListLabels {
-  return mergeLabels(GUARDRAIL_LIST_EN_LABELS, catalog, overrides);
+): Required<GuardrailListLabels> {
+  return mergeLabels<Required<GuardrailListLabels>>(GUARDRAIL_LIST_EN_LABELS, catalog, overrides);
 }
 
 /** Localized chrome strings of the list section; per-string `overrides` always win. */
 export function useGuardrailListLabels(
   overrides?: Partial<GuardrailListLabels>
-): GuardrailListLabels {
+): Required<GuardrailListLabels> {
   const { _ } = useSafeLingui();
   return useMemo(
     () => resolveGuardrailListLabels(buildGuardrailListLabels(_), overrides),

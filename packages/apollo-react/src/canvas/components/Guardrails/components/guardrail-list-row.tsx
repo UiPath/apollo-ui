@@ -28,7 +28,7 @@ export interface GuardrailListRowProps
   index: number;
   /** What resolving the row against the definitions produced. */
   state: GuardrailListItemState;
-  labels: GuardrailListLabels;
+  labels: Required<GuardrailListLabels>;
   /** Read-only: edit and remove are disabled. Reorder is the list's decision, not the row's. */
   disabled?: boolean;
   /** Drag handle, already wired to the sortable. Absent when the list cannot be reordered. */
@@ -154,20 +154,22 @@ const GuardrailListRow = React.forwardRef<HTMLDivElement, GuardrailListRowProps>
 
     // ARIA treats the children of a `role="button"` as presentational, so an activatable row
     // is announced as its label alone. `aria-describedby` puts back only what changes what
-    // activating it does: the status and administration chips, the BYO notices and the
-    // description. `Preview`, the provider, the action and the scopes stay presentational,
+    // activating it does: the status and administration chips, the BYO and policy notices and
+    // the description. `Preview`, the provider, the action and the scopes stay presentational,
     // being repeated metadata; naming them all turns one announcement into a paragraph. The
     // README's `rowActivatesEdit` row says so, for a host that needs them outside the body.
     const bodyId = React.useId();
     const chipId = (chip: string) => `${bodyId}-chip-${chip}`;
     const byoDisabledId = `${bodyId}-byo-disabled`;
     const byoUnavailableId = `${bodyId}-byo-unavailable`;
+    const policyDisabledId = `${bodyId}-policy-disabled`;
     const descriptionId = `${bodyId}-description`;
     const describedBy = activatable
       ? [
           ...chips.map((chip) => chipId(chip.id)),
           state.byoDisabled ? byoDisabledId : undefined,
           state.byoUnavailable ? byoUnavailableId : undefined,
+          state.policyDisabled ? policyDisabledId : undefined,
           item.description ? descriptionId : undefined,
         ]
           .filter(Boolean)
@@ -244,6 +246,14 @@ const GuardrailListRow = React.forwardRef<HTMLDivElement, GuardrailListRowProps>
             role="alert"
           >
             {labels.byoUnavailableNotice}
+          </div>
+        )}
+        {/* A warning, like the builder's banner: the run goes ahead without this guardrail, and
+              only an administrator can change that. No live-region role, since nothing here
+              asks for action; the row's `aria-describedby` and reading order carry it. */}
+        {state.policyDisabled && (
+          <div id={policyDisabledId} className="whitespace-normal break-words text-xs text-warning">
+            {labels.policyDisabledNotice}
           </div>
         )}
         {item.description && (

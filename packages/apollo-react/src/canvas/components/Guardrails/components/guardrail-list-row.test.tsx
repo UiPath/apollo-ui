@@ -193,6 +193,88 @@ describe('GuardrailListRow', () => {
     });
   });
 
+  describe('AI Trust Layer policy notice', () => {
+    const POLICY_DISABLED = [
+      { validator: 'pii_detection', status: 'Disabled' as const, disabledReason: 'Policy' },
+    ];
+    const POLICY_COPY = "disabled by your organization's AI Trust Layer policy";
+
+    it('tells a built-in validator the policy switched off is skipped at run time', () => {
+      renderRow(PII_GUARDRAIL, {}, POLICY_DISABLED);
+
+      expect(screen.getByText(new RegExp(POLICY_COPY))).toHaveTextContent(
+        'is skipped when the agent runs'
+      );
+    });
+
+    it('is a warning, not an alert: the run goes ahead', () => {
+      renderRow(PII_GUARDRAIL, {}, POLICY_DISABLED);
+
+      expect(screen.getByText(new RegExp(POLICY_COPY))).toHaveClass('text-warning');
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
+
+    it('takes the host override', () => {
+      renderRow(
+        PII_GUARDRAIL,
+        { labels: { ...labels, policyDisabledNotice: 'Off by policy' } },
+        POLICY_DISABLED
+      );
+
+      expect(screen.getByText('Off by policy')).toBeInTheDocument();
+    });
+
+    it.each([
+      [
+        'an unknown reason',
+        [{ validator: 'pii_detection', status: 'Disabled' as const, disabledReason: 'Retired' }],
+      ],
+      ['no reason', [{ validator: 'pii_detection', status: 'Disabled' as const }]],
+      ['an available definition', DEFINITIONS],
+    ])('shows nothing for %s', (_, definitions) => {
+      renderRow(PII_GUARDRAIL, {}, definitions);
+
+      expect(screen.queryByText(new RegExp(POLICY_COPY))).not.toBeInTheDocument();
+    });
+
+    it('leaves a BYO row on its own notice even with the policy reason', () => {
+      renderRow(BYO_GUARDRAIL, {}, [
+        {
+          validator: 'byo',
+          status: 'Disabled',
+          disabledReason: 'Policy',
+          byoValidatorName: 'noma_prompt_injection',
+        },
+      ]);
+
+      expect(screen.getByRole('alert')).toHaveTextContent('has been disabled');
+      expect(screen.queryByText(new RegExp(POLICY_COPY))).not.toBeInTheDocument();
+    });
+
+    it('describes the activatable body with it', () => {
+      const described = { ...PII_GUARDRAIL, description: 'Scans agent output.' };
+      const { container } = renderRow(
+        described,
+        { onEdit: vi.fn(), rowActivatesEdit: true },
+        POLICY_DISABLED
+      );
+
+      const ids = rowBody(container).getAttribute('aria-describedby')?.split(' ') ?? [];
+      const texts = ids.map((id) => document.getElementById(id)?.textContent);
+      expect(texts).toEqual([expect.stringContaining(POLICY_COPY), 'Scans agent output.']);
+    });
+
+    it('has no axe violations', async () => {
+      const { container } = renderRow(
+        PII_GUARDRAIL,
+        { onEdit: vi.fn(), rowActivatesEdit: true },
+        POLICY_DISABLED
+      );
+
+      expect(await axe(container)).toHaveNoViolations();
+    });
+  });
+
   describe('actions', () => {
     it('renders only the actions the host wired up', () => {
       renderRow(PII_GUARDRAIL, { onEdit: vi.fn() });

@@ -118,6 +118,12 @@ export interface GuardrailDefinition {
   allowedScopes: GuardrailScope[];
   parameters: GuardrailParameterDefinition[];
   status: GuardrailDefinitionStatus;
+  /**
+   * Why a `Disabled` definition is disabled, verbatim from the wire. `'Policy'`: the AI Trust
+   * Layer policy switched a built-in validator off, and runs skip it. Absent for a disabled BYO
+   * configuration. Open-ended, so a reason added later still parses; unknown values show nothing.
+   */
+  disabledReason?: string;
   /** Pre-resolved informational note rendered above the form. */
   usageNote?: React.ReactNode;
   /** What this validator reads out of attached files. Absent means the host said nothing. */
