@@ -143,5 +143,5 @@ export interface GuardrailValidatorFormProps {
   className?: string;
 }
 
-/** What an `appliesTo` parameter selects; see `getGuardrailAppliesTo`. */
-export type GuardrailAppliesTo = 'Text' | 'Files' | 'Both';
+/** What a `detectionScope` parameter selects; see `getGuardrailDetectionScope`. */
+export type GuardrailDetectionScope = 'Text' | 'Files' | 'Both';

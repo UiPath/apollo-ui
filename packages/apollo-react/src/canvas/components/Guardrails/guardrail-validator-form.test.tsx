@@ -1353,9 +1353,9 @@ describe('GuardrailValidatorForm', () => {
   describe('parameterFooters', () => {
     const defs: GuardrailParameterDefinition[] = [
       {
-        id: 'appliesTo',
+        id: 'detectionScope',
         type: 'enum',
-        label: 'Applies to',
+        label: 'Detection scope',
         required: false,
         defaultValue: 'Text',
         options: ['Text', 'Files', 'Both'],
@@ -1371,13 +1371,13 @@ describe('GuardrailValidatorForm', () => {
           parameterDefinitions={defs}
           parameters={[]}
           onChange={() => {}}
-          parameterFooters={{ appliesTo: <p>About files</p> }}
+          parameterFooters={{ detectionScope: <p>About files</p> }}
         />
       );
 
       const footer = footerSlot(container);
       expect(footer).toHaveTextContent('About files');
-      const select = screen.getByRole('combobox', { name: 'Applies to' });
+      const select = screen.getByRole('combobox', { name: 'Detection scope' });
       const threshold = screen.getByRole('spinbutton');
       expect(select.compareDocumentPosition(footer as Node)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
       expect(footer?.compareDocumentPosition(threshold)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
@@ -1393,7 +1393,7 @@ describe('GuardrailValidatorForm', () => {
           parameterDefinitions={defs}
           parameters={[]}
           onChange={() => {}}
-          parameterFooters={{ appliesTo: node }}
+          parameterFooters={{ detectionScope: node }}
         />
       );
 
@@ -1419,15 +1419,19 @@ describe('GuardrailValidatorForm', () => {
       const { container, rerender } = render(<GuardrailValidatorForm {...props} />);
       expect(footerSlot(container)).toBeNull();
 
-      rerender(<GuardrailValidatorForm {...props} parameterFooters={{ appliesTo: 'First' }} />);
+      rerender(
+        <GuardrailValidatorForm {...props} parameterFooters={{ detectionScope: 'First' }} />
+      );
       expect(footerSlot(container)).toHaveTextContent('First');
 
-      rerender(<GuardrailValidatorForm {...props} parameterFooters={{ appliesTo: 'Second' }} />);
+      rerender(
+        <GuardrailValidatorForm {...props} parameterFooters={{ detectionScope: 'Second' }} />
+      );
       expect(footerSlot(container)).toHaveTextContent('Second');
 
-      rerender(<GuardrailValidatorForm {...props} parameterFooters={{ appliesTo: null }} />);
+      rerender(<GuardrailValidatorForm {...props} parameterFooters={{ detectionScope: null }} />);
       expect(footerSlot(container)).toBeNull();
-      expect(screen.getByRole('combobox', { name: 'Applies to' })).toBeInTheDocument();
+      expect(screen.getByRole('combobox', { name: 'Detection scope' })).toBeInTheDocument();
     });
 
     it('never emits the footer row as a parameter', async () => {
@@ -1437,15 +1441,15 @@ describe('GuardrailValidatorForm', () => {
           parameterDefinitions={defs}
           parameters={[]}
           onChange={onChange}
-          parameterFooters={{ appliesTo: <p>About files</p> }}
+          parameterFooters={{ detectionScope: <p>About files</p> }}
         />
       );
 
-      fireEvent.click(screen.getByRole('combobox', { name: 'Applies to' }));
+      fireEvent.click(screen.getByRole('combobox', { name: 'Detection scope' }));
       fireEvent.click(await screen.findByRole('option', { name: 'Files' }));
 
       expect(onChange).toHaveBeenLastCalledWith([
-        { $parameterType: 'enum', id: 'appliesTo', value: 'Files' },
+        { $parameterType: 'enum', id: 'detectionScope', value: 'Files' },
       ]);
     });
   });
