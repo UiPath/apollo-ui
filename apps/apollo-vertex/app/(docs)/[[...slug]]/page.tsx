@@ -8,6 +8,7 @@ import {
 import { createRelativeLink } from "fumadocs-ui/mdx";
 import type { Metadata } from "next";
 import { getMDXComponents } from "../../../mdx-components";
+import { ComponentGuidance } from "../../_components/component-guidance";
 import { getDocsPage, source } from "../../../lib/source";
 
 const docsRepositoryBase =
@@ -38,6 +39,11 @@ export default async function Page(props: Props) {
         </>
       )}
       <DocsBody>
+        <ComponentGuidance
+          whenToUse={page.data.whenToUse}
+          avoidWhen={page.data.avoidWhen}
+          example={page.data.example}
+        />
         <MDX
           components={getMDXComponents({
             a: createRelativeLink(source, page),

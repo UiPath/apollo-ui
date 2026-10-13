@@ -1,6 +1,12 @@
 ---
 title: "Alert"
 description: "Displays a callout for user attention."
+whenToUse:
+  - "feedback must stay visible in context, such as validation errors, warnings or a blocking error."
+  - "the user must act on the message, or the system raised it without a user action. With no related UI to anchor it to, show it as a persistent full-width banner below the main header."
+avoidWhen:
+  - when: "the message only confirms that an action the user just took succeeded."
+    use: sonner
 ---
 
 import { AlertOutlineExamples, AlertExamples, CollapsibleAlertExample, ActionAlertExample } from '../guidelines/notifications/notification-examples'

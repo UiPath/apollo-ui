@@ -1,6 +1,13 @@
 ---
 title: "Sheet"
 description: "Extends the Dialog component to display content that complements the main content."
+whenToUse:
+  - "the user views or edits a record, a long form, filters or settings in a side panel while the page stays in context."
+avoidWhen:
+  - when: "the task is short and needs the user's full attention."
+    use: dialog
+  - when: "the panel is for small screens and should slide up from the bottom and be dismissed with a swipe."
+    use: drawer
 ---
 
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SheetFooter, SheetClose } from '@/registry/sheet/sheet'

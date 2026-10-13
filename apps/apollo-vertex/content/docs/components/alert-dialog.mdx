@@ -1,6 +1,11 @@
 ---
 title: "Alert Dialog"
 description: "A modal dialog that interrupts the user with important content and expects a response."
+whenToUse:
+  - "the user must confirm or cancel an action that is destructive or cannot be undone, such as deleting a record."
+avoidWhen:
+  - when: "the dialog holds a form or other content beyond a confirm or cancel choice."
+    use: dialog
 ---
 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/registry/alert-dialog/alert-dialog'
