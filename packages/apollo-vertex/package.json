@@ -157,7 +157,8 @@
     "recharts": "2.15.4",
     "remark-breaks": "^4.0.0",
     "remark-gfm": "^4.0.1",
-    "tailwindcss": "^4.1.17"
+    "tailwindcss": "^4.1.17",
+    "typescript": "^5.9.3"
   },
   "publishConfig": {
     "access": "public"

@@ -25,6 +25,7 @@ pnpm lint                     # Lint with oxlint (type-aware)
 pnpm format                   # Format with Biome
 pnpm format:check             # Check formatting without writing
 pnpm lint:deps                # Check registry import boundaries
+pnpm -w knip                  # Find unused files, exports and dependencies (both workspaces)
 pnpm typecheck                # TypeScript type checking
 ```
 
@@ -266,6 +267,7 @@ After implementing components or making changes, **always run the build, linting
 ```bash
 pnpm typecheck
 pnpm lint
+pnpm -w knip
 pnpm format
 pnpm --filter @uipath/apollo-vertex build   # verifies the npm package build
 pnpm --filter apollo-vertex build           # verifies the docs app and registry build

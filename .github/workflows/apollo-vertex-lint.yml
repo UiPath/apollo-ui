@@ -6,6 +6,7 @@ on:
     paths:
       - "apps/apollo-vertex/**"
       - "packages/apollo-vertex/**"
+      - "knip.jsonc"
       - ".github/workflows/apollo-vertex-lint.yml"
 
 concurrency:
@@ -31,6 +32,9 @@ jobs:
 
       - name: Lint
         run: pnpm --filter apollo-vertex --filter @uipath/apollo-vertex lint
+
+      - name: Knip
+        run: pnpm knip
 
       - name: Format check
         run: pnpm --filter apollo-vertex --filter @uipath/apollo-vertex format:check
