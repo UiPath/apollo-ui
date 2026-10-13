@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Button } from "@/components/ui/button";
 import {
   FieldCell,
@@ -22,7 +22,7 @@ export const FieldGroup = ({
   group: string;
   fields: IxpField[];
 }) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const [showUnchanged, setShowUnchanged] = useState(false);
 
   const changed = fields.filter((f) => f.verdict !== IxpVerdict.Identical);

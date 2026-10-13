@@ -1,7 +1,7 @@
 "use client";
 
 import { FileText, X } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Button } from "@/components/ui/button";
 import type { PendingFile } from "../hooks/use-pending-files";
 
@@ -22,7 +22,7 @@ export function AiChatPendingFiles({
   onRemove,
   onPreview,
 }: AiChatPendingFilesProps) {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   if (files.length === 0) return null;
   return (
     <div className="flex flex-wrap gap-1.5 px-3 pt-2">

@@ -1,6 +1,6 @@
 import { useIsFetching, useSuspenseQuery } from "@tanstack/react-query";
 import { useDeferredValue } from "react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import {
   ChartLoadingBoundary,
   type DataAdapter,
@@ -58,7 +58,7 @@ function TableChartResolver({
 }: TableChartWithAdapterProps) {
   const {
     i18n: { language },
-  } = useTranslation();
+  } = useVertexTranslation();
 
   const deferrableProps = useDeferredValue({
     configuration,

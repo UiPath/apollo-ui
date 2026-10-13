@@ -2,7 +2,7 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import {
   Collapsible,
   CollapsibleContent,
@@ -111,7 +111,7 @@ function SidebarNav({
   companyLogo,
   navItems,
 }: SidebarNavProps) {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const { state, toggleSidebar } = useSidebar();
   const { pathname } = useLocation();
   const isCollapsed = state === "collapsed";

@@ -5,7 +5,7 @@ import {
   useEffectEvent,
   useState,
 } from "react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Spinner } from "@/components/ui/spinner";
 import { configurei18n } from "@/lib/i18n";
 import { LANGUAGE_CHANGED_EVENT } from "./shell-constants";
@@ -15,7 +15,7 @@ interface LocaleProviderProps {
 }
 
 export const LocaleProviderComponent = ({ children }: PropsWithChildren) => {
-  const { i18n } = useTranslation();
+  const { i18n } = useVertexTranslation();
 
   const handleLanguageChanged = useEffectEvent((event: Event) => {
     if (!(event instanceof CustomEvent)) return;

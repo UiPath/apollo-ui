@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -22,7 +22,7 @@ export const UserProfile = ({
   collapsedMenuSide = "top",
   collapsedMenuAlign = "start",
 }: UserProfileProps) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const { user } = useUser();
   const userInitials = user
     ? user.name

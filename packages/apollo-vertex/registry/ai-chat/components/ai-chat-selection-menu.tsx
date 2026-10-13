@@ -3,7 +3,7 @@
 import { useTextSelection } from "@mantine/hooks";
 import { AnimatePresence, motion } from "framer-motion";
 import type { RefObject } from "react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Button } from "@/components/ui/button";
 import {
   POP_ANIMATE,
@@ -69,7 +69,7 @@ export function AiChatSelectionMenu({
   onAskAi,
   containerRef,
 }: AiChatSelectionMenuProps) {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const selection = useTextSelection();
   const menu = deriveMenuState(selection, containerRef?.current ?? null);
 

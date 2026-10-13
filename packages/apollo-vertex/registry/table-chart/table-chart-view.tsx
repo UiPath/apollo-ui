@@ -8,7 +8,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import {
   Table,
   TableBody,
@@ -44,7 +44,7 @@ export function TableChart({
   sort,
   onSortChange,
 }: TableChartProps) {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
 
   const [sorting, setSorting] = useState<SortingState>(() =>
     sort ? [{ id: sort.field, desc: sort.direction === "desc" }] : [],

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 
 function Fallback({
   error,
@@ -9,7 +9,7 @@ function Fallback({
   error: unknown;
   resetErrorBoundary: () => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const message = error instanceof Error ? error.message : String(error);
   return (
     <div role="alert">

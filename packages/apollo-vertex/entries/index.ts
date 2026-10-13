@@ -107,3 +107,4 @@ export {
   useDataTable,
 } from "@/registry/use-data-table/useDataTable";
 export { cn } from "@/lib/utils";
+export { addVertexTranslations } from "@/lib/i18n";

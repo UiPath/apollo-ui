@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import type { EvaluatorResultProps } from "../registry";
 import type { IxpDetails } from "./schema";
 import { ProvenanceBar } from "./internal/provenance-bar";
@@ -14,7 +14,7 @@ import { DocumentRow } from "./internal/document-row";
 export const IxpExtractionResult = ({
   evaluatorDetails,
 }: EvaluatorResultProps<IxpDetails>) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const {
     documents,
     different_field_count,

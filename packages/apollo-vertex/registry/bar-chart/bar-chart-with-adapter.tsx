@@ -1,6 +1,6 @@
 import { useIsFetching, useSuspenseQuery } from "@tanstack/react-query";
 import { useDeferredValue } from "react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { assertNumberOrNull } from "@/lib/asserts/assert-number-or-null";
 import {
   type BarChartConfiguration,
@@ -50,7 +50,7 @@ function BarChartResolver({
 }: BarChartWithAdapterProps) {
   const {
     i18n: { language },
-  } = useTranslation();
+  } = useVertexTranslation();
 
   const deferrableProps = useDeferredValue({
     configuration,

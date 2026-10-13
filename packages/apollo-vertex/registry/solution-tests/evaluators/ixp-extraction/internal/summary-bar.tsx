@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Badge } from "@/components/ui/badge";
 
 /** Top-level verdict tally across all compared documents. */
@@ -13,7 +13,7 @@ export const SummaryBar = ({
   semanticallySame: number;
   identical: number;
 }) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   return (
     <div className="flex flex-wrap items-center gap-2">
       <Badge status={different > 0 ? "error" : "success"} variant="secondary">

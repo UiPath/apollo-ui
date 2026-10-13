@@ -7,7 +7,7 @@ import {
   ChevronsLeftIcon,
   ChevronsRightIcon,
 } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -33,7 +33,7 @@ function DataTablePagination<TData>({
   // React Compiler compat: TanStack Table objects have stable references with mutable state.
   // codeql[js/unknown-directive] - valid React Compiler directive
   "use no memo";
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const { pageIndex, pageSize } = table.getState().pagination;
   const totalRows = table.getFilteredRowModel().rows.length;
   const pageCount = table.getPageCount();

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { ChevronRight } from "lucide-react";
 import {
   Collapsible,
@@ -40,7 +40,7 @@ export const ResultExpandedContent = ({
   result,
   data,
 }: ResultExpandedContentProps) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const { showDebug } = useSolutionTestsConfig();
   const [debugOpen, setDebugOpen] = useState(false);
   const status = result.Status;

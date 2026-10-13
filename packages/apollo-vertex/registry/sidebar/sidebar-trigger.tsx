@@ -2,7 +2,7 @@
 
 import { PanelLeftIcon } from "lucide-react";
 import * as React from "react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "./sidebar-provider";
@@ -12,7 +12,7 @@ function SidebarTrigger({
   onClick,
   ...props
 }: React.ComponentProps<typeof Button>) {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const { toggleSidebar } = useSidebar();
 
   return (

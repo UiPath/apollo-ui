@@ -6,7 +6,7 @@ import {
   MoreHorizontalIcon,
 } from "lucide-react";
 import * as React from "react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { type Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -71,7 +71,7 @@ function PaginationPrevious({
   className,
   ...props
 }: React.ComponentProps<typeof PaginationLink>) {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   return (
     <PaginationLink
       aria-label={t("go_to_previous_page")}
@@ -89,7 +89,7 @@ function PaginationNext({
   className,
   ...props
 }: React.ComponentProps<typeof PaginationLink>) {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   return (
     <PaginationLink
       aria-label={t("go_to_next_page")}
@@ -107,7 +107,7 @@ function PaginationEllipsis({
   className,
   ...props
 }: React.ComponentProps<"span">) {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   return (
     <span
       aria-hidden

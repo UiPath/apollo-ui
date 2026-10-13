@@ -1,4 +1,4 @@
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "./shell-auth-provider";
 
@@ -8,7 +8,7 @@ export interface ShellLoginProps {
 }
 
 export const ShellLogin = ({ title, description }: ShellLoginProps) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const { login } = useAuth();
 
   return (

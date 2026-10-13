@@ -3,7 +3,7 @@
 import type { Column } from "@tanstack/react-table";
 import { ChevronDownIcon, SearchIcon, XIcon } from "lucide-react";
 import { type ReactNode, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -126,7 +126,7 @@ function FilterDropdown<TData, TValue>({
   // React Compiler compat: TanStack Table Column objects have stable references with mutable state.
   // codeql[js/unknown-directive] - valid React Compiler directive
   "use no memo";
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const [open, setOpen] = useState(false);
   const { searchQuery, updateSearch, resetSearch } = useFilterDropdownSearch({
     onSearchChange,

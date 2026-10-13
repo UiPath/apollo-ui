@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Badge } from "@/components/ui/badge";
 import {
   Tooltip,
@@ -39,7 +39,7 @@ const DocumentSummary = ({
   different: number;
   semanticallySame: number;
 }) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   if (doc.status === IxpDocStatus.MissingInActual) {
     return <Badge status="error">{t("ixp_doc_missing")}</Badge>;
   }
@@ -88,7 +88,7 @@ const DocumentSummary = ({
 /** A collapsible per-document section. Clean (all-identical) documents start
  * collapsed; anything with a change or a missing/new status starts open. */
 export const DocumentRow = ({ doc }: { doc: IxpDocument }) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const verdictCounts = doc.fields.reduce<Record<string, number>>((acc, f) => {
     acc[f.verdict] = (acc[f.verdict] ?? 0) + 1;
     return acc;

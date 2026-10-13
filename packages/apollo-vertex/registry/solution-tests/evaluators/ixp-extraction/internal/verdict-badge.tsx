@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Badge } from "@/components/ui/badge";
 import { IxpVerdict } from "../schema";
 
@@ -26,7 +26,7 @@ const VERDICT_CONFIG: Record<
 };
 
 export const VerdictBadge = ({ verdict }: { verdict: string }) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const config = VERDICT_CONFIG[verdict];
   return (
     <Badge status={config?.status ?? "info"} variant="outline">

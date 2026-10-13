@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { toast } from "sonner";
 import type { SolutionTest, SolutionTestRun } from "./types";
 import { useSolutionTestsConfig } from "./context";
@@ -15,7 +15,7 @@ interface ExpandedRunTestsProps {
 /** Smart wrapper: force-stop action + opening the run-details route (the host
  *  owns navigation via `config.onOpenRun`). */
 export const ExpandedRunTests = ({ runs, tests }: ExpandedRunTestsProps) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const { track, onOpenRun } = useSolutionTestsConfig();
   const forceStopRun = useForceStopRun();
 

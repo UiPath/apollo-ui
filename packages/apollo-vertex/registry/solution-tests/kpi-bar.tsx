@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { TrendingUp } from "lucide-react";
 import {
   Line,
@@ -35,7 +35,7 @@ interface KpiBarProps {
 }
 
 export const KpiBar = ({ batchRuns, loading = false }: KpiBarProps) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const { subjectNoun, passThreshold } = useSolutionTestsConfig();
 
   const scoreTrendChartConfig = {

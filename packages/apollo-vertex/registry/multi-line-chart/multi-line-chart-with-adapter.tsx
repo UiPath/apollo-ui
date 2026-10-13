@@ -1,6 +1,6 @@
 import { useIsFetching, useSuspenseQuery } from "@tanstack/react-query";
 import { useDeferredValue } from "react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { assert } from "@/lib/asserts/assert";
 import { assertDefined } from "@/lib/asserts/assert-defined";
 import {
@@ -51,7 +51,7 @@ function MultiLineChartResolver({
   const {
     t,
     i18n: { language },
-  } = useTranslation();
+  } = useVertexTranslation();
 
   const deferrableProps = useDeferredValue({ configuration, dataModel });
   const query = dataAdapter.charts.multiLine(configuration, dataModel);

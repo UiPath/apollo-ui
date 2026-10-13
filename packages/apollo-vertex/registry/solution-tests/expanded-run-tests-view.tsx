@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Info, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,7 +36,7 @@ export const ExpandedRunTestsView = ({
   onOpenDetails,
   onForceStop,
 }: ExpandedRunTestsViewProps) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
 
   return (
     <div className="p-4">

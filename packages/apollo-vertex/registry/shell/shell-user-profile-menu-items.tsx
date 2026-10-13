@@ -1,5 +1,5 @@
 import { Globe, LogOut, Monitor, Moon, Sun } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import {
   DropdownMenuItem,
   DropdownMenuSeparator,
@@ -16,7 +16,7 @@ import { Text } from "./shell-text";
 import { useTheme } from "./shell-theme-provider";
 
 export const UserProfileMenuItems = () => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useVertexTranslation();
   const { logout } = useAuth();
   const { setTheme } = useTheme();
   const language = i18n.language;

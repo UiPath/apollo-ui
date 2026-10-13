@@ -2,7 +2,7 @@
 
 import { ArrowLeftRight, Plus, Trash2 } from "lucide-react";
 import type { ReactNode } from "react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Empty, EmptyDescription } from "@/components/ui/empty";
@@ -79,7 +79,7 @@ export const RunDetailsView = ({
   onUpdateBaseline,
   onRemoveBaseline,
 }: RunDetailsViewProps) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
 
   // subjectLabel is the test's display name (falling back to its subject id),
   // so the title reads e.g. "Acme Term Loan Run Results".
@@ -190,7 +190,7 @@ const RunDetailsPane = ({
   onUpdateBaseline,
   onRemoveBaseline,
 }: RunDetailsPaneProps) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const status = result.Status;
   const showBaselineVersion = status !== RunResultStatus.NoBaseline;
   const showActualVersion = status !== RunResultStatus.Missing;
@@ -317,7 +317,7 @@ const BaselineStateLabel = ({
   inBaseline,
   hadBaseline,
 }: BaselineStateLabelProps) => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
 
   if (isBaselineSource) {
     return (

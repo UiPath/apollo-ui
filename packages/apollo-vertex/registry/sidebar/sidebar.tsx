@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import * as React from "react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import {
   Sheet,
   SheetContent,
@@ -36,7 +36,7 @@ function Sidebar({
   variant?: "sidebar" | "floating" | "inset";
   collapsible?: "offcanvas" | "icon" | "none";
 }) {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const {
     isMobile,
     state,

@@ -11,7 +11,7 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { normalizeTab, type SolutionTestsTab } from "./tabs";
 import { RunStatus } from "./types";
 import type { SolutionTest, SolutionTestBatchRun } from "./types";
@@ -39,7 +39,7 @@ function getRunsForBatch(
 }
 
 export const SolutionTests = () => {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const { tests, isLoading: testsLoading } = useSolutionTests();
   const { batchRuns, isLoading: batchLoading } = useSolutionTestBatchRuns();
   const { runs: allRuns } = useSolutionTestRuns();

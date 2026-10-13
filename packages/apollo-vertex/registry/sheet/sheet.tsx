@@ -3,7 +3,7 @@
 import * as SheetPrimitive from "@radix-ui/react-dialog";
 import { XIcon } from "lucide-react";
 import * as React from "react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 
 import { cn } from "@/lib/utils";
 
@@ -53,7 +53,7 @@ function SheetContent({
 }: React.ComponentProps<typeof SheetPrimitive.Content> & {
   side?: "top" | "right" | "bottom" | "left";
 }) {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   return (
     <SheetPortal>
       <SheetOverlay />

@@ -11,7 +11,7 @@ import {
   ThumbsUp,
 } from "lucide-react";
 import type { ReactNode } from "react";
-import { useTranslation } from "react-i18next";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Button } from "@/components/ui/button";
 import {
   TooltipContent,
@@ -62,7 +62,7 @@ interface CopyToClipboardButtonProps {
 }
 
 function CopyToClipboardButton({ value }: CopyToClipboardButtonProps) {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
   const { copied, error, copy } = useClipboard({ timeout: 2000 });
 
   const label = copied ? t("copied") : error ? t("copy_failed") : t("copy");
@@ -108,7 +108,7 @@ export function AiChatMessageActions({
   onRegenerate,
   onEdit,
 }: AiChatMessageActionsProps) {
-  const { t } = useTranslation();
+  const { t } = useVertexTranslation();
 
   return (
     <TooltipProvider delayDuration={0} skipDelayDuration={150}>

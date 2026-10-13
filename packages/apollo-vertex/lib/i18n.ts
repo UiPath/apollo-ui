@@ -1,6 +1,7 @@
-import type { Namespace, ReadCallback } from "i18next";
+import type { i18n as I18n, Namespace, ReadCallback } from "i18next";
 import { default as i18n } from "i18next";
 import { initReactI18next } from "react-i18next";
+import { VERTEX_NAMESPACE } from "@/lib/vertex-translation";
 
 type LocaleTranslations = Record<string, string>;
 type LocaleLoader = () => Promise<{ default: LocaleTranslations }>;
@@ -29,6 +30,57 @@ export const SUPPORTED_LOCALES = Object.keys(
 ) as SupportedLocale[];
 const DEFAULT_LOCALE: SupportedLocale = "en";
 
+const isSupportedLocale = (language: string): language is SupportedLocale =>
+  language in localeLoaders;
+
+const loadVertexLocale = async (instance: I18n, language: string) => {
+  if (
+    !isSupportedLocale(language) ||
+    instance.hasResourceBundle(language, VERTEX_NAMESPACE)
+  ) {
+    return false;
+  }
+  const { default: translations } = await localeLoaders[language]();
+  instance.addResourceBundle(language, VERTEX_NAMESPACE, translations);
+  return true;
+};
+
+/**
+ * Adds the translations bundled with Apollo Vertex to an existing i18next
+ * instance, under the `apollo-vertex` namespace. Use this when the app sets up
+ * i18next itself instead of using `LocaleProvider`.
+ *
+ * Loads the current language and its fallbacks up front, and loads other
+ * languages when the app switches to them. Returns a function that stops
+ * listening.
+ */
+export const addVertexTranslations = async (instance: I18n) => {
+  // `languages` is the resolved lookup order, e.g. ["de-DE", "de", "en"].
+  const loadCurrentLanguages = async () => {
+    const added = await Promise.all(
+      [...instance.languages, DEFAULT_LOCALE].map((language) =>
+        loadVertexLocale(instance, language),
+      ),
+    );
+    return added.includes(true);
+  };
+
+  const handleLanguageChanged = (language: string) => {
+    void loadCurrentLanguages().then((added) => {
+      // react-i18next re-renders on `languageChanged`, not when resources are
+      // added, so switch again once the strings are in.
+      if (added && instance.language === language) {
+        return instance.changeLanguage(language);
+      }
+    });
+  };
+
+  instance.on("languageChanged", handleLanguageChanged);
+  await loadCurrentLanguages();
+
+  return () => instance.off("languageChanged", handleLanguageChanged);
+};
+
 export const configurei18n = async () => {
   await i18n
     .use({
@@ -38,13 +90,12 @@ export const configurei18n = async () => {
         _namespace: Namespace,
         callback: ReadCallback,
       ) {
-        if (!(language in localeLoaders)) {
+        if (!isSupportedLocale(language)) {
           callback(new Error(`Locale not found: ${language}`), null);
           return;
         }
 
-        // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- `in` guard above validates membership but TS can't narrow string to keyof
-        const loadLocale = localeLoaders[language as SupportedLocale];
+        const loadLocale = localeLoaders[language];
 
         try {
           const module = await loadLocale();
@@ -62,6 +113,10 @@ export const configurei18n = async () => {
       fallbackLng: DEFAULT_LOCALE,
       lng: DEFAULT_LOCALE,
       supportedLngs: SUPPORTED_LOCALES,
+      // Vertex components read from the `apollo-vertex` namespace. The backend
+      // serves the same locale files for every namespace.
+      ns: ["translation", VERTEX_NAMESPACE],
+      defaultNS: "translation",
       returnNull: false,
     });
 
