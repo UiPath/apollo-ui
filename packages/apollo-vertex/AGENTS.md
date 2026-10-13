@@ -6,7 +6,7 @@ This file provides guidance for AI coding agents working in the `@uipath/apollo-
 
 This package holds the source of every Apollo Vertex component. The same sources are shipped two ways:
 - `pnpm build` compiles them into `dist/` as the `@uipath/apollo-vertex` npm package. The public API is
-  the barrel files in `entries/`, one per `package.json` export.
+  the root barrel `entries/index.ts`.
 - The `apps/apollo-vertex` docs app imports these files for its live examples and builds them into a
   shadcn registry (`public/r/*.json`).
 

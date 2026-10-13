@@ -1,8 +1,7 @@
 // Fails when an export target in package.json is missing from dist/, when a
 // relative import in the import graph of a JS entry does not resolve, when an
-// entry imports a package the manifest does not declare, or when the root
-// entry reaches an optional peer. Pass --list to print the external packages
-// each entry reaches.
+// entry imports a package the manifest does not declare. Pass --list to print
+// the external packages each entry reaches.
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 
@@ -40,11 +39,6 @@ const declared = new Set([
   // Optional peers that are not on the public registry are declared here only.
   ...Object.keys(pkg.peerDependenciesMeta ?? {}),
 ]);
-const optionalPeers = new Set(
-  Object.entries(pkg.peerDependenciesMeta ?? {})
-    .filter(([, meta]) => meta.optional)
-    .map(([name]) => name),
-);
 const list = process.argv.includes("--list");
 const errors = [];
 for (const [subpath, target] of Object.entries(pkg.exports)) {
@@ -63,8 +57,6 @@ for (const [subpath, target] of Object.entries(pkg.exports)) {
   for (const name of externals) {
     if (!declared.has(name)) {
       errors.push(`${subpath}: imports undeclared package ${name}`);
-    } else if (subpath === "." && optionalPeers.has(name)) {
-      errors.push(`.: root entry imports optional peer ${name}`);
     }
   }
   if (list) {

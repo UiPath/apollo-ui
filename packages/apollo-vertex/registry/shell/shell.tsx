@@ -1,3 +1,5 @@
+"use client";
+
 import type { LucideIcon } from "lucide-react";
 import type { FC, PropsWithChildren } from "react";
 import { useContext } from "react";

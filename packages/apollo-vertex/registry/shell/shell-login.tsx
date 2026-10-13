@@ -1,3 +1,5 @@
+"use client";
+
 import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "./shell-auth-provider";

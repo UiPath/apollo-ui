@@ -14,38 +14,6 @@
       "types": "./dist/entries/index.d.ts",
       "default": "./dist/entries/index.js"
     },
-    "./charts": {
-      "types": "./dist/entries/charts/index.d.ts",
-      "default": "./dist/entries/charts/index.js"
-    },
-    "./shell": {
-      "types": "./dist/entries/shell/index.d.ts",
-      "default": "./dist/entries/shell/index.js"
-    },
-    "./shell/entities": {
-      "types": "./dist/entries/shell/entities.d.ts",
-      "default": "./dist/entries/shell/entities.js"
-    },
-    "./feature-flags": {
-      "types": "./dist/entries/feature-flags/index.d.ts",
-      "default": "./dist/entries/feature-flags/index.js"
-    },
-    "./feature-flags/proteus": {
-      "types": "./dist/entries/feature-flags/proteus.d.ts",
-      "default": "./dist/entries/feature-flags/proteus.js"
-    },
-    "./solution-tests": {
-      "types": "./dist/entries/solution-tests/index.d.ts",
-      "default": "./dist/entries/solution-tests/index.js"
-    },
-    "./solution-tests/data": {
-      "types": "./dist/entries/solution-tests/data.d.ts",
-      "default": "./dist/entries/solution-tests/data.js"
-    },
-    "./ai-chat": {
-      "types": "./dist/entries/ai-chat/index.d.ts",
-      "default": "./dist/entries/ai-chat/index.js"
-    },
     "./theme.css": "./dist/theme.css",
     "./tailwind.css": "./dist/tailwind.css",
     "./locales/*": "./dist/locales/*"
@@ -143,58 +111,13 @@
     "tailwindcss": "^4.0.0"
   },
   "peerDependenciesMeta": {
-    "@tanstack/ai": {
-      "optional": true
-    },
-    "@tanstack/ai-client": {
-      "optional": true
-    },
     "@tanstack/react-db": {
-      "optional": true
-    },
-    "@tanstack/react-query": {
-      "optional": true
-    },
-    "@tanstack/react-router": {
-      "optional": true
-    },
-    "@ts-rest/core": {
       "optional": true
     },
     "@uipath/proteus-client": {
       "optional": true
     },
-    "@uipath/uipath-typescript": {
-      "optional": true
-    },
     "@uipath/vs-core": {
-      "optional": true
-    },
-    "eventsource-parser": {
-      "optional": true
-    },
-    "highlight.js": {
-      "optional": true
-    },
-    "jwt-decode": {
-      "optional": true
-    },
-    "pkce-challenge": {
-      "optional": true
-    },
-    "react-error-boundary": {
-      "optional": true
-    },
-    "react-markdown": {
-      "optional": true
-    },
-    "recharts": {
-      "optional": true
-    },
-    "remark-breaks": {
-      "optional": true
-    },
-    "remark-gfm": {
       "optional": true
     }
   },

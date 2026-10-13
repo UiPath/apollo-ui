@@ -1,3 +1,5 @@
+"use client";
+
 import { Link, useLocation } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
