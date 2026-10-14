@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.1.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.1.0...@uipath/apollo-react@7.1.1) (2026-10-14)
+
+### Bug Fixes
+
+* **storybook:** address guidance review feedback ([25424fa](https://github.com/UiPath/apollo-ui/commit/25424fab63495fa899248b8af9ebb95410581c8e))
+
 ## [@uipath/apollo-react-v7.1.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.0.0...@uipath/apollo-react@7.1.0) (2026-10-14)
 
 ### Features
