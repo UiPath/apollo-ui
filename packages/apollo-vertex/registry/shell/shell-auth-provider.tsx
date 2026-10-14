@@ -9,7 +9,7 @@ import {
   useContext,
 } from "react";
 import { z } from "zod";
-import { ensureValidToken, login, logout, TOKEN_QUERY_KEY } from "@/lib/auth";
+import { ensureValidToken, getTokenQueryKey, login, logout } from "@/lib/auth";
 
 export interface AuthContextValue {
   user: UserInfo | null;
@@ -75,19 +75,18 @@ interface UseAccessTokenProps {
   clientId: string;
   baseUrl: string;
   redirectPath?: string;
+  scope: string;
 }
 
 export const useAccessToken = ({
   clientId,
   baseUrl,
   redirectPath,
+  scope,
 }: UseAccessTokenProps) => {
-  const queryClient = useQueryClient();
-
   const { data: token, isLoading } = useQuery({
-    queryKey: TOKEN_QUERY_KEY,
-    queryFn: () =>
-      ensureValidToken(queryClient, clientId, baseUrl, redirectPath),
+    queryKey: getTokenQueryKey(clientId, scope),
+    queryFn: () => ensureValidToken(clientId, scope, baseUrl, redirectPath),
     refetchInterval: 60 * 1000,
     enabled: typeof window !== "undefined",
   });
@@ -110,6 +109,7 @@ export const ShellAuthProvider: FC<
     clientId,
     baseUrl,
     redirectPath,
+    scope,
   });
   const user = accessToken ? decodeJWT(accessToken) : null;
   const isAuthenticated = accessToken != null;
@@ -119,7 +119,7 @@ export const ShellAuthProvider: FC<
     isAuthenticated,
     isLoading,
     login: () => login(clientId, scope, baseUrl, redirectPath),
-    logout: () => logout(queryClient),
+    logout: () => logout(queryClient, clientId),
     accessToken,
   };
 
