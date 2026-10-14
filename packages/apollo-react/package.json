@@ -1,6 +1,6 @@
 {
   "name": "@uipath/apollo-react",
-  "version": "6.80.0",
+  "version": "7.1.0",
   "description": "Apollo Design System - React component library with Material UI theming",
   "repository": {
     "type": "git",
