@@ -666,19 +666,12 @@ function SkillsTab() {
         </SectionDescription>
       </div>
 
-      <div
-        className="flex flex-wrap gap-2 border-b border-border"
-        role="tablist"
-        aria-label="Skills guidance"
-      >
+      <div className="flex flex-wrap gap-2 border-b border-border">
         {(['Set up', 'Apollo skills', 'UiPath skills', 'Create a skill'] as const).map((view) => (
           <button
             key={view}
             type="button"
-            role="tab"
-            id={`skills-tab-${view.replaceAll(' ', '-')}`}
-            aria-selected={activeView === view}
-            aria-controls="skills-panel"
+            aria-pressed={activeView === view}
             onClick={() => setActiveView(view)}
             className={cn(
               'cursor-pointer px-4 py-3 text-sm font-medium transition-colors',
@@ -692,12 +685,7 @@ function SkillsTab() {
         ))}
       </div>
 
-      <div
-        id="skills-panel"
-        role="tabpanel"
-        aria-labelledby={`skills-tab-${activeView.replaceAll(' ', '-')}`}
-        className="space-y-6"
-      >
+      <div className="space-y-6">
         {activeView === 'Set up' && (
           <div className="rounded-xl border border-border bg-card p-5">
             <h3 className="mb-4 text-lg font-semibold text-foreground">Set up a skill</h3>
