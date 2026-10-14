@@ -1,0 +1,141 @@
+import { act, render, screen } from '@testing-library/react';
+import { beforeEach, describe, expect, it } from 'vitest';
+
+import { AutopilotChatMode, AutopilotChatService } from '../index';
+import {
+  ChatPlayground,
+  type ChatPlaygroundProps,
+  featureArgName,
+  PLAYGROUND_FEATURE_FLAGS,
+} from './chat-playground';
+
+let storyCounter = 0;
+let instanceKey = '';
+
+beforeEach(() => {
+  instanceKey = `test-${++storyCounter}`;
+});
+
+const slotService = (slot: 'primary' | 'compare') =>
+  AutopilotChatService.getInstance(`storybook-chat-playground-${instanceKey}-${slot}`);
+
+const baseProps = (): ChatPlaygroundProps => ({
+  ...(Object.fromEntries(
+    PLAYGROUND_FEATURE_FLAGS.map((flag) => [featureArgName(flag), false])
+  ) as Pick<ChatPlaygroundProps, ReturnType<typeof featureArgName>>),
+  theme: 'light',
+  instanceKey,
+  renderer: 'wind',
+  mode: AutopilotChatMode.Embedded,
+  locale: 'en',
+  compactMode: false,
+  readOnly: false,
+  disableClose: 'unset',
+  title: '',
+  inputPlaceholder: '',
+  footerDisclaimer: '',
+  firstRunExperience: false,
+  customHeaderActions: false,
+  preHooks: false,
+  scenario: 'none',
+  autoReply: 'off',
+  streamDelayMs: 1,
+});
+
+const flush = () => act(() => new Promise((resolve) => setTimeout(resolve, 20)));
+
+describe('ChatPlayground', () => {
+  it('applies args to the running chat without a new chat', async () => {
+    const props = baseProps();
+    const { rerender } = render(<ChatPlayground {...props} scenario="conversation" />);
+    await flush();
+    const service = slotService('primary');
+    const root = document.querySelector('[data-slot="wind-chat"]');
+    const transcript = service?.getConversation().length;
+
+    rerender(
+      <ChatPlayground {...props} scenario="conversation" compactMode title="Agent" theme="dark" />
+    );
+    await flush();
+
+    expect(document.querySelector('[data-slot="wind-chat"]')).toBe(root);
+    expect(root).toHaveAttribute('data-density', 'compact');
+    expect(root).toHaveClass('dark');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Agent');
+
+    // ChatRoot stops portalling when leaving Embedded, so the DOM is new but the chat is not.
+    rerender(
+      <ChatPlayground
+        {...props}
+        scenario="conversation"
+        compactMode
+        title="Agent"
+        theme="dark"
+        mode={AutopilotChatMode.FullScreen}
+      />
+    );
+    await flush();
+
+    expect(slotService('primary')).toBe(service);
+    expect(service?.getConversation().length).toBe(transcript);
+    expect(document.querySelector('[data-slot="wind-chat"]')).toHaveAttribute(
+      'data-mode',
+      AutopilotChatMode.FullScreen
+    );
+  });
+
+  it('appends a scenario to the current transcript', async () => {
+    const props = baseProps();
+    const { rerender } = render(<ChatPlayground {...props} scenario="conversation" />);
+    await flush();
+    const service = slotService('primary');
+    expect(service?.getConversation()).toHaveLength(2);
+
+    rerender(<ChatPlayground {...props} scenario="attachments" />);
+    await flush();
+
+    expect(service?.getConversation()).toHaveLength(4);
+  });
+
+  it('mirrors a sent message to the other renderer once', async () => {
+    render(<ChatPlayground {...baseProps()} renderer="both" />);
+    await flush();
+    const wind = slotService('primary');
+    const material = slotService('compare');
+
+    await act(async () => {
+      material?.sendRequest({ content: 'hello' });
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    });
+
+    expect(material?.getConversation()).toHaveLength(1);
+    expect(wind?.getConversation().map((message) => message.content)).toEqual(['hello']);
+  });
+
+  it('reuses its service across remounts and starts it over', async () => {
+    const first = render(<ChatPlayground {...baseProps()} scenario="conversation" />);
+    await flush();
+    const service = slotService('primary');
+    first.unmount();
+
+    render(<ChatPlayground {...baseProps()} scenario="none" />);
+    await flush();
+
+    expect(slotService('primary')).toBe(service);
+    expect(service?.getConversation()).toHaveLength(0);
+  });
+
+  it('offers to reopen a closed chat in the selected mode', async () => {
+    render(<ChatPlayground {...baseProps()} mode={AutopilotChatMode.FullScreen} />);
+    await flush();
+    const service = slotService('primary');
+
+    act(() => service?.close());
+    await act(async () => {
+      screen.getByRole('button', { name: 'Open chat' }).click();
+    });
+
+    expect(service?.getConfig().mode).toBe(AutopilotChatMode.FullScreen);
+    expect(screen.queryByRole('button', { name: 'Open chat' })).toBeNull();
+  });
+});

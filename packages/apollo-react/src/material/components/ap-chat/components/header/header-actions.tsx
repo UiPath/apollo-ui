@@ -2,11 +2,9 @@ import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { styled } from '@mui/material/styles';
 import token from '@uipath/apollo-core';
-import { useAttachments } from '@uipath/apollo-react/chat/headless/providers/attachments-provider';
-import { useChatService } from '@uipath/apollo-react/chat/headless/providers/chat-service.provider';
+import { useChatHeaderActions } from '@uipath/apollo-react/chat/headless/hooks/use-chat-header-actions';
 import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
-import { usePicker } from '@uipath/apollo-react/chat/headless/providers/picker-provider';
-import { AutopilotChatMode, AutopilotChatPreHookAction } from '@uipath/apollo-react/chat/service';
+import type { AutopilotChatCustomHeaderAction } from '@uipath/apollo-react/chat/service';
 import React from 'react';
 import { AutopilotChatActionButton } from '../common/action-button';
 import { AutopilotChatHeaderActionMenu } from './header-action-menu';
@@ -19,134 +17,50 @@ const StyledActions = styled('div')(() => ({
 
 function AutopilotChatHeaderActionsComponent() {
   const { _ } = useLingui();
-  const chatService = useChatService();
+  const { setHistoryAnchorElement } = useChatState();
   const {
-    disabledFeatures,
-    chatMode,
-    historyOpen,
-    settingsOpen,
-    setHistoryAnchorElement,
-    readOnly,
-  } = useChatState();
-  const { clearAttachments } = useAttachments();
-  const { customHeaderActions, handleCustomHeaderAction } = usePicker();
+    visibility,
+    isFullScreen,
+    customHeaderActions,
+    newChat,
+    toggleSettings,
+    toggleHistory,
+    toggleFullScreen,
+    close,
+    runCustomAction,
+  } = useChatHeaderActions();
   const [actionMenuAnchorEl, setActionMenuAnchorEl] = React.useState<HTMLElement | null>(null);
 
-  const handleOpenActionMenu = React.useCallback(
-    (event: React.MouseEvent<HTMLElement>) => {
-      setActionMenuAnchorEl(event.currentTarget);
-    },
-    [setActionMenuAnchorEl]
-  );
+  const handleOpenActionMenu = React.useCallback((event: React.MouseEvent<HTMLElement>) => {
+    setActionMenuAnchorEl(event.currentTarget);
+  }, []);
 
   const handleCloseActionMenu = React.useCallback(() => {
     setActionMenuAnchorEl(null);
-  }, [setActionMenuAnchorEl]);
+  }, []);
 
   const handleActionMenuItemClick = React.useCallback(
-    (action: any) => {
-      handleCustomHeaderAction(action);
+    (action: AutopilotChatCustomHeaderAction) => {
+      runCustomAction(action);
       setActionMenuAnchorEl(null);
     },
-    [handleCustomHeaderAction, setActionMenuAnchorEl]
+    [runCustomAction]
   );
-
-  const handleClose = React.useCallback(() => {
-    if (!chatService) {
-      return;
-    }
-
-    chatService
-      .getPreHook(AutopilotChatPreHookAction.CloseChat)()
-      .then((proceed) => {
-        if (!proceed) {
-          return;
-        }
-        chatService?.close();
-      });
-  }, [chatService]);
-
-  const handleToggleChat = React.useCallback(() => {
-    if (!chatService) {
-      return;
-    }
-
-    chatService
-      .getPreHook(AutopilotChatPreHookAction.ToggleChat)({ chatMode })
-      .then((proceed) => {
-        if (!proceed) {
-          return;
-        }
-        chatService?.setChatMode(
-          chatMode === AutopilotChatMode.FullScreen
-            ? AutopilotChatMode.SideBySide
-            : AutopilotChatMode.FullScreen
-        );
-      });
-  }, [chatService, chatMode]);
-
-  const handleNewChat = React.useCallback(() => {
-    if (!chatService) {
-      return;
-    }
-
-    chatService
-      .getPreHook(AutopilotChatPreHookAction.NewChat)()
-      .then((proceed) => {
-        if (!proceed) {
-          return;
-        }
-        chatService.newChat();
-        chatService.stopResponse();
-        chatService.setPrompt('');
-        clearAttachments();
-      });
-  }, [clearAttachments, chatService]);
-
-  const toggleHistory = React.useCallback(() => {
-    if (!chatService) {
-      return;
-    }
-
-    chatService
-      .getPreHook(AutopilotChatPreHookAction.ToggleHistory)({ historyOpen })
-      .then((proceed) => {
-        if (!proceed) {
-          return;
-        }
-        chatService?.toggleHistory();
-      });
-  }, [chatService, historyOpen]);
-
-  const toggleSettings = React.useCallback(() => {
-    if (!chatService) {
-      return;
-    }
-
-    chatService
-      .getPreHook(AutopilotChatPreHookAction.ToggleSettings)({ settingsOpen })
-      .then((proceed) => {
-        if (!proceed) {
-          return;
-        }
-        chatService?.toggleSettings();
-      });
-  }, [chatService, settingsOpen]);
 
   return (
     <StyledActions>
-      {!readOnly && !disabledFeatures.newChat && (
+      {visibility.newChat && (
         <AutopilotChatActionButton
           iconName="new_chat"
           variant="custom"
           tooltip={_(msg({ id: 'autopilot-chat.header.actions.new-chat', message: `New chat` }))}
           ariaLabel={_(msg({ id: 'autopilot-chat.header.actions.new-chat', message: `New chat` }))}
-          onClick={handleNewChat}
+          onClick={newChat}
           data-testid="autopilot-chat-new-chat"
         />
       )}
 
-      {!readOnly && !disabledFeatures.settings && (
+      {visibility.settings && (
         <AutopilotChatActionButton
           iconName="settings"
           tooltip={_(msg({ id: 'autopilot-chat.header.actions.settings', message: `Settings` }))}
@@ -156,7 +70,7 @@ function AutopilotChatHeaderActionsComponent() {
         />
       )}
 
-      {!readOnly && !disabledFeatures.history && (
+      {visibility.history && (
         <AutopilotChatActionButton
           ref={setHistoryAnchorElement}
           iconName="history"
@@ -168,25 +82,25 @@ function AutopilotChatHeaderActionsComponent() {
         />
       )}
 
-      {!disabledFeatures.fullScreen && chatMode !== AutopilotChatMode.Embedded && (
+      {visibility.fullScreenToggle && (
         <AutopilotChatActionButton
-          iconName={chatMode !== AutopilotChatMode.FullScreen ? 'open_in_full' : 'close_fullscreen'}
+          iconName={!isFullScreen ? 'open_in_full' : 'close_fullscreen'}
           tooltip={
-            chatMode !== AutopilotChatMode.FullScreen
+            !isFullScreen
               ? _(msg({ id: 'autopilot-chat.header.actions.expand', message: `Expand` }))
               : _(msg({ id: 'autopilot-chat.header.actions.collapse', message: `Collapse` }))
           }
           ariaLabel={
-            chatMode !== AutopilotChatMode.FullScreen
+            !isFullScreen
               ? _(msg({ id: 'autopilot-chat.header.actions.expand', message: `Expand` }))
               : _(msg({ id: 'autopilot-chat.header.actions.collapse', message: `Collapse` }))
           }
-          onClick={handleToggleChat}
+          onClick={toggleFullScreen}
           data-testid="autopilot-chat-toggle-fullscreen"
         />
       )}
 
-      {!readOnly && customHeaderActions.length > 0 && (
+      {visibility.customActions && (
         <>
           <AutopilotChatActionButton
             iconName="more_vert"
@@ -207,11 +121,10 @@ function AutopilotChatHeaderActionsComponent() {
         </>
       )}
 
-      {((chatMode !== AutopilotChatMode.Embedded && !disabledFeatures.close) ||
-        (chatMode === AutopilotChatMode.Embedded && disabledFeatures.close === false)) && (
+      {visibility.close && (
         <AutopilotChatActionButton
           iconName="remove"
-          onClick={handleClose}
+          onClick={close}
           tooltip={_(msg({ id: 'autopilot-chat.header.actions.close', message: `Close` }))}
           ariaLabel={_(msg({ id: 'autopilot-chat.header.actions.close', message: `Close` }))}
           data-testid="autopilot-chat-close"

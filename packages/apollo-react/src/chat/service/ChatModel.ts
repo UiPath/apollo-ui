@@ -2,7 +2,13 @@ import type { FontVariantToken } from '@uipath/apollo-core';
 import type { ComponentType } from 'react';
 import type { SupportedLocale } from '../../i18n';
 
-export type ApChatTheme = 'light' | 'light-hc' | 'dark' | 'dark-hc';
+export type ApChatTheme =
+  | 'light'
+  | 'light-hc'
+  | 'dark'
+  | 'dark-hc'
+  | 'future-light'
+  | 'future-dark';
 
 /** UI implementation that renders the chat. */
 export type AutopilotChatRenderer = 'material' | 'wind';
@@ -516,7 +522,7 @@ export enum AutopilotChatPreHookAction {
  * @property mode - The mode of the chat
  * @property embeddedContainer - The container to embed the chat in
  * @property locale - The locale/language for the chat interface (e.g., 'en', 'de', 'es', 'fr', 'ja', etc.)
- * @property theme - The theme variant for the chat ('light', 'dark', 'light-hc', 'dark-hc')
+ * @property theme - The theme variant for the chat ('light', 'dark', 'light-hc', 'dark-hc', 'future-light', 'future-dark')
  * @property renderer - The UI implementation to render ('material' or 'wind'); falls back to the host's default
  * @property disabledFeatures - The disabled features of the chat
  * @property overrideLabels - The override labels of the chat

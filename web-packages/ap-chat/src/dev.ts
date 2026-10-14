@@ -5,6 +5,7 @@
 import './index'; // Load the web component
 
 import {
+  type ApChatTheme,
   AutopilotChatEvent,
   AutopilotChatMode,
   AutopilotChatRole,
@@ -321,12 +322,12 @@ document.head.appendChild(iconStyles);
 let chatService: AutopilotChatService | null = null;
 let chatElement: any = null;
 let locale: string = 'en';
-let theme: 'light' | 'dark' | 'light-hc' | 'dark-hc' = 'light';
+let theme: ApChatTheme = 'light';
 let chatMode: AutopilotChatMode = AutopilotChatMode.SideBySide;
 let embeddedContainerRef: HTMLElement | null = null;
 
 // Load saved theme from localStorage
-const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | 'light-hc' | 'dark-hc';
+const savedTheme = localStorage.getItem('theme') as ApChatTheme;
 if (savedTheme) {
   theme = savedTheme;
 }
@@ -716,11 +717,18 @@ function updateFeatures() {
 }
 
 // Theme management
-function applyTheme(newTheme: 'light' | 'dark' | 'light-hc' | 'dark-hc') {
+function applyTheme(newTheme: ApChatTheme) {
   theme = newTheme;
 
   // Remove all theme classes
-  document.body.classList.remove('light', 'dark', 'light-hc', 'dark-hc');
+  document.body.classList.remove(
+    'light',
+    'dark',
+    'light-hc',
+    'dark-hc',
+    'future-light',
+    'future-dark'
+  );
 
   // Add the new theme class
   document.body.classList.add(newTheme);
@@ -1344,6 +1352,8 @@ function createUI() {
         <option value="dark">Dark</option>
         <option value="light-hc">Light High Contrast</option>
         <option value="dark-hc">Dark High Contrast</option>
+        <option value="future-light">Future Light</option>
+        <option value="future-dark">Future Dark</option>
       </select>
     </div>
 
@@ -1535,11 +1545,7 @@ function createUI() {
   });
 
   document.getElementById('theme-select')?.addEventListener('change', (e) => {
-    const newTheme = (e.target as HTMLSelectElement).value as
-      | 'light'
-      | 'dark'
-      | 'light-hc'
-      | 'dark-hc';
+    const newTheme = (e.target as HTMLSelectElement).value as ApChatTheme;
     applyTheme(newTheme);
   });
 

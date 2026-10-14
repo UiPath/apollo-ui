@@ -148,7 +148,9 @@
     "dist/canvas/index.js",
     "dist/canvas/index.cjs",
     "dist/chat/index.js",
-    "dist/chat/index.cjs"
+    "dist/chat/index.cjs",
+    "dist/chat/root/ApChat.js",
+    "dist/chat/root/ApChat.cjs"
   ],
   "files": [
     "dist"
