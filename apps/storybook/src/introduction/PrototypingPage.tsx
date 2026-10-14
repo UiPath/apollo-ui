@@ -498,9 +498,9 @@ function UseCasesContent() {
     <div className="space-y-8">
       <div>
         <SectionDescription>
-          Apollo is built for anyone who needs to create product experiences quickly — whether
-          you're pitching a customer, validating a design, or building a proof of concept. Here's
-          how different roles use the system to turn ideas into working prototypes.
+          Apollo is built for anyone who needs to create product experiences quickly, whether you're
+          pitching a customer, validating a design, or building a proof of concept. Here's how
+          different roles use the system to turn ideas into working prototypes.
         </SectionDescription>
       </div>
 
@@ -510,7 +510,7 @@ function UseCasesContent() {
           icon="📋"
           scenario="A supply chain customer needs to visualize their automation workflows and monitor performance across 50+ processes. They want a dashboard that shows analytics, status, and trends at a glance."
           solution="Start from the Maestro Dashboard template. Use the DataTable component for process listings with sorting and filtering. Add StatsCards for KPIs (throughput, error rate, uptime) and the Tabs component to organize views by Overview, Analytics, and Reports."
-          outcome="A fully interactive dashboard prototype you can demo to the customer — built in hours, not weeks. Because it uses the same components as production, the engineering team can adopt it directly."
+          outcome="A fully interactive dashboard prototype you can demo to the customer, built in hours rather than weeks. Because it uses the same components as production, the engineering team can adopt it directly."
         />
 
         <PersonaCard
@@ -526,14 +526,14 @@ function UseCasesContent() {
           icon="🛠️"
           scenario="A customer needs to consolidate and format complex Excel documents into a presentation-ready format. They want a Delegate-style interface where an AI assistant guides the user through the process step by step."
           solution="Start from the Delegate template with the sidebar navigation panel. Use the ChatComposer and ChatStepsView custom components for the AI assistant interaction. Add FileUpload for document ingestion, and use Card and DataTable components to preview the transformed output."
-          outcome="A working prototype that shows the end-to-end user experience — from uploading files to reviewing AI-generated output. The prototype runs in Storybook, so stakeholders can interact with it directly in a browser."
+          outcome="A working prototype that shows the end-to-end user experience, from uploading files to reviewing AI-generated output. The prototype runs in Storybook, so stakeholders can interact with it directly in a browser."
         />
       </div>
 
       <Divider />
 
       <InfoCallout>
-        These are starting points. Every template and component in Apollo is composable — mix and
+        These are starting points. Every template and component in Apollo is composable, so mix and
         match to fit your specific customer scenario. Browse the Templates section in the Storybook
         sidebar to see what's available.
       </InfoCallout>
@@ -709,7 +709,7 @@ function SkillsTab() {
                     Apollo design skills
                   </DocLink>{' '}
                   and{' '}
-                  <DocLink href="https://github.com/UiPath/apollo-ui/tree/main/.agents/skills">
+                  <DocLink href="https://github.com/UiPath/apollo-ui/tree/main/.claude/skills">
                     repository maintenance skills
                   </DocLink>
                   . Read the skill’s SKILL.md to confirm when it applies.
@@ -900,9 +900,14 @@ function BestPracticesContent() {
     <div className="space-y-8">
       <div>
         <SectionDescription>
-          Guidelines for getting the most out of AI-assisted prototyping with Apollo.
+          Guidelines for getting the most out of AI-assisted prototyping with Apollo Wind.
         </SectionDescription>
       </div>
+
+      <InfoCallout>
+        These implementation details apply to Apollo Wind. For Apollo Core or Apollo React, start
+        with that package’s Getting Started page and its component examples.
+      </InfoCallout>
 
       <Accordion type="multiple" defaultValue={['setting-up']} className="w-full">
         <AccordionItem value="setting-up" className="border rounded-lg px-4 mb-3">
@@ -1030,14 +1035,11 @@ function WhatNotInScopeContent() {
       <div>
         <h3 className="mb-3 text-lg font-semibold text-foreground">Separate Systems</h3>
         <SectionDescription>
-          The following are separate systems and not part of this prototyping workflow:
+          The following are separate systems and not part of the Apollo Wind prototyping workflow:
         </SectionDescription>
         <ul className="space-y-2 text-sm leading-6 text-muted-foreground">
           <li>
-            <InlineCode>apollo-react</InlineCode> — Material UI component library
-          </li>
-          <li>
-            <InlineCode>apollo-angular</InlineCode> — Angular Material component library
+            <InlineCode>apollo-angular</InlineCode>, Angular Material component library
           </li>
           <li>Web Components (ap-chat, ap-data-grid)</li>
         </ul>

@@ -736,7 +736,7 @@ function PreviewCard({ name, status, description, regions, storyId, preview }: P
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-sm font-semibold text-foreground">{name}</h3>
             {status && (
-              <span className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-800 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-300">
+              <span className="rounded-full border border-warning/50 bg-warning-background/25 px-2 py-0.5 text-[10px] font-semibold text-warning">
                 {status}
               </span>
             )}
