@@ -7,6 +7,30 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import type { CSSProperties, ReactNode } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  BASIC_CUSTOM_HEADER_ACTIONS,
+  CITATION_RESPONSE,
+  CODE_BLOCK_MESSAGE,
+  createStoryResourceManager,
+  createStorySettingsRenderer,
+  customHeaderActionReply,
+  HTML_PREVIEW_MESSAGE,
+  MATERIAL_CUSTOM_HEADER_ACTIONS,
+  RESOURCE_TOKEN_CHUNKS,
+  RESOURCE_TOKEN_MESSAGE,
+  RESPONSE_ACTIONS,
+  SAMPLE_CONVERSATION,
+  STORY_AGENT_MODES,
+  STORY_FIRST_RUN_EXPERIENCE,
+  STORY_LOADING_MESSAGES,
+  STORY_MODELS,
+  STORY_SUGGESTIONS,
+  STREAMED_CITATION_CHUNKS,
+  type StoryToolCallDisplayMode,
+  storyHistoryItems,
+  storyToolCallMeta,
+} from '../../chat/stories/chat-story-fixtures';
+import { embeddedPanelStyle } from '../../chat/stories/chat-story-frame';
 import { FontVariantToken } from '../../core';
 import {
   ApChat,
@@ -14,9 +38,7 @@ import {
   ApTypography,
   AutopilotChatEvent,
   AutopilotChatMode,
-  type AutopilotChatResourceItem,
   type AutopilotChatResourceManager,
-  AutopilotChatRole,
   AutopilotChatService,
   ConversationalDisplayModeTypes,
   type SupportedLocale,
@@ -32,54 +54,7 @@ import {
  * wiring, event handlers, mock data and interactive controls are kept intact.
  */
 
-/**
- * Maps the Storybook global theme to the closest ApChat theme. ApChat only
- * supports the classic themes — future themes fall back to their classic
- * equivalent (mirrors the playground's `chatBaseTheme`/`chatTheme` logic),
- * and Wind-only demo themes (wireframe/vertex/canvas) fall back to dark.
- */
-const CHAT_LOCALES: SupportedLocale[] = [
-  'en',
-  'de',
-  'es',
-  'es-MX',
-  'fr',
-  'ja',
-  'ko',
-  'pt',
-  'pt-BR',
-  'ro',
-  'ru',
-  'tr',
-  'zh-CN',
-  'zh-TW',
-];
-
-/** Maps Storybook's global locale to a chat-supported locale (fallback: en). */
-export function mapToChatLocale(globalLocale: unknown): SupportedLocale {
-  return CHAT_LOCALES.includes(globalLocale as SupportedLocale)
-    ? (globalLocale as SupportedLocale)
-    : 'en';
-}
-
-export function mapToChatTheme(globalTheme: unknown): ApChatTheme {
-  switch (globalTheme) {
-    case 'light':
-      return 'light';
-    case 'light-hc':
-      return 'light-hc';
-    case 'dark':
-      return 'dark';
-    case 'dark-hc':
-      return 'dark-hc';
-    case 'future-light':
-      return 'light';
-    case 'future-dark':
-      return 'dark';
-    default:
-      return 'dark';
-  }
-}
+export { mapToChatLocale, mapToChatTheme } from '../../chat/stories/chat-story-fixtures';
 
 /* ------------------------------------------------------------------ */
 /* Layout primitives (ports of ApChatShowcase.styles.tsx)             */
@@ -286,261 +261,17 @@ export function ChatShowcaseDemo({
   const [resourcePageSize, setResourcePageSize] = useState(10);
 
   // Resource manager creation function
-  const createResourceManager = useCallback((): AutopilotChatResourceManager => {
-    const topLevelItems = [
-      {
-        id: 'variables',
-        type: 'category',
-        displayName: 'Variables',
-        icon: 'data_object',
-        hasNestedResources: true,
-      },
-      {
-        id: 'files',
-        type: 'category',
-        displayName: 'This is an intentionally very very long category name',
-        icon: 'folder',
-        hasNestedResources: true,
-      },
-      {
-        id: 'current-user',
-        type: 'context',
-        displayName: 'This is an intentionally very very long resource name',
-        icon: 'person',
-        tooltip: 'The currently logged in user context',
-        hasNestedResources: false,
-      },
-      {
-        id: 'current-date',
-        type: 'context',
-        displayName: 'Current Date',
-        icon: 'calendar_today',
-        tooltip: "Today's date in ISO format",
-        hasNestedResources: false,
-      },
-    ];
-
-    const variableIcons = [
-      'text_fields',
-      'mail',
-      'numbers',
-      'toggle_on',
-      'settings',
-      'person',
-      'calendar_today',
-      'list',
-      'data_object',
-      'code',
-    ] as const;
-    const variableItems = Array.from({ length: 50 }, (_, i) => ({
-      id: `var-${i}`,
-      type: 'variable',
-      displayName: `variable_${i.toString().padStart(2, '0')}`,
-      icon: variableIcons[i % variableIcons.length] as string,
-      tooltip: `Variable ${i} - This is a sample variable for testing pagination`,
-    }));
-
-    const fileIcons = [
-      'description',
-      'table_chart',
-      'picture_as_pdf',
-      'image',
-      'code',
-      'folder',
-    ] as const;
-    const fileExtensions = [
-      '.json',
-      '.csv',
-      '.pdf',
-      '.png',
-      '.ts',
-      '.txt',
-      '.xml',
-      '.yaml',
-    ] as const;
-    const fileItems = Array.from({ length: 30 }, (_, i) => ({
-      id: `file-${i}`,
-      type: 'file',
-      displayName: `document_${i.toString().padStart(2, '0')}${fileExtensions[i % fileExtensions.length]}`,
-      icon: fileIcons[i % fileIcons.length] as string,
-      tooltip: `File ${i} - Sample file for testing pagination`,
-    }));
-
-    const paginate = <T,>(
-      items: T[],
-      skip: number,
-      pageSize: number,
-      paginationEnabled: boolean
-    ): { paginatedItems: T[]; done: boolean } => {
-      if (!paginationEnabled) {
-        return { paginatedItems: items, done: true };
-      }
-      const paginatedItems = items.slice(skip, skip + pageSize);
-      const done = skip + pageSize >= items.length;
-      return { paginatedItems, done };
-    };
-
-    return {
-      getTopLevelResources: () => topLevelItems,
-      getNestedResources: async (resourceId, options) => {
-        await new Promise((resolve) => setTimeout(resolve, 300));
-
-        let items: typeof variableItems = [];
-        if (resourceId === 'variables') {
-          items = variableItems;
-        } else if (resourceId === 'files') {
-          items = fileItems;
-        }
-
-        if (options?.searchText) {
-          const searchLower = options.searchText.toLowerCase();
-          items = items.filter((item) => item.displayName.toLowerCase().includes(searchLower));
-        }
-
-        const skip = options?.skip ?? 0;
-        const { paginatedItems, done } = paginate(
-          items,
-          skip,
-          resourcePageSize,
-          resourcePaginationEnabled
-        );
-
-        console.log(
-          `[ResourceManager] getNestedResources: resourceId=${resourceId}, skip=${skip}, returned=${paginatedItems.length}, done=${done}`
-        );
-
-        return { items: paginatedItems, done };
-      },
-      globalSearch: async (options) => {
-        await new Promise((resolve) => setTimeout(resolve, 300));
-
-        let allItems: AutopilotChatResourceItem[] = [...variableItems, ...fileItems];
-
-        const skip = options.skip ?? 0;
-        if (options.searchText) {
-          const searchLower = options.searchText.toLowerCase();
-          if (skip === 0) {
-            const matchingTopLevel = topLevelItems.filter((item) =>
-              item.displayName.toLowerCase().includes(searchLower)
-            );
-            allItems = [...matchingTopLevel, ...allItems];
-          }
-          allItems = allItems.filter((item) =>
-            item.displayName.toLowerCase().includes(searchLower)
-          );
-        }
-        const { paginatedItems, done } = paginate(
-          allItems,
-          skip,
-          resourcePageSize,
-          resourcePaginationEnabled
-        );
-
-        console.log(
-          `[ResourceManager] globalSearch: searchText="${options.searchText ?? ''}", skip=${skip}, returned=${paginatedItems.length}, done=${done}`
-        );
-
-        return { items: paginatedItems, done };
-      },
-      onResourceSelected: (item) => {
-        console.log('Resource selected:', item.displayName);
-      },
-    };
-  }, [resourcePaginationEnabled, resourcePageSize]);
+  const createResourceManager = useCallback(
+    (): AutopilotChatResourceManager =>
+      createStoryResourceManager({
+        paginationEnabled: resourcePaginationEnabled,
+        pageSize: resourcePageSize,
+      }),
+    [resourcePaginationEnabled, resourcePageSize]
+  );
 
   // Custom settings renderer function
-  const createSettingsRenderer = useCallback(
-    () => (container: HTMLElement) => {
-      // Create custom settings panel
-      const settingsDiv = document.createElement('div');
-      settingsDiv.style.padding = '24px';
-      settingsDiv.style.color = 'var(--color-foreground)';
-
-      settingsDiv.innerHTML = `
-				<h2 style="margin: 0 0 16px 0; font-size: 20px; font-weight: 600;">Chat Settings</h2>
-
-				<div style="margin-bottom: 24px;">
-					<h3 style="margin: 0 0 12px 0; font-size: 16px; font-weight: 500;">Appearance</h3>
-					<label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 8px;">
-						<input type="checkbox" id="darkMode" style="cursor: pointer;" />
-						<span>Dark Mode</span>
-					</label>
-					<label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-						<input type="checkbox" id="compactMode" checked style="cursor: pointer;" />
-						<span>Compact Mode</span>
-					</label>
-				</div>
-
-				<div style="margin-bottom: 24px;">
-					<h3 style="margin: 0 0 12px 0; font-size: 16px; font-weight: 500;">Behavior</h3>
-					<label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 8px;">
-						<input type="checkbox" id="autoScroll" checked style="cursor: pointer;" />
-						<span>Auto-scroll to new messages</span>
-					</label>
-					<label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-						<input type="checkbox" id="soundEnabled" style="cursor: pointer;" />
-						<span>Enable sound notifications</span>
-					</label>
-				</div>
-
-				<div style="margin-bottom: 24px;">
-					<h3 style="margin: 0 0 12px 0; font-size: 16px; font-weight: 500;">Advanced</h3>
-					<label style="display: block; margin-bottom: 8px;">
-						<span style="display: block; margin-bottom: 4px;">Max Messages</span>
-						<input type="number" id="maxMessages" value="100" min="10" max="500"
-							style="padding: 8px; border: 1px solid var(--color-border); border-radius: 4px; background: var(--color-background); color: var(--color-foreground); width: 100px;" />
-					</label>
-					<label style="display: block;">
-						<span style="display: block; margin-bottom: 4px;">Response Delay (ms)</span>
-						<input type="number" id="responseDelay" value="0" min="0" max="5000" step="100"
-							style="padding: 8px; border: 1px solid var(--color-border); border-radius: 4px; background: var(--color-background); color: var(--color-foreground); width: 100px;" />
-					</label>
-				</div>
-
-				<div style="display: flex; gap: 12px;">
-					<button id="saveSettings" style="padding: 8px 16px; background: var(--color-primary); color: var(--color-foreground-on-accent); border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">
-						Save Settings
-					</button>
-					<button id="resetSettings" style="padding: 8px 16px; background: transparent; color: var(--color-foreground); border: 1px solid var(--color-border); border-radius: 4px; cursor: pointer;">
-						Reset to Defaults
-					</button>
-				</div>
-			`;
-
-      // Add event listeners
-      const darkModeCheckbox = settingsDiv.querySelector('#darkMode') as HTMLInputElement;
-      darkModeCheckbox?.addEventListener('change', (e) => {
-        console.log('Dark mode:', (e.target as HTMLInputElement).checked);
-      });
-
-      const saveButton = settingsDiv.querySelector('#saveSettings');
-      saveButton?.addEventListener('click', () => {
-        console.log('Settings saved:', {
-          darkMode: (settingsDiv.querySelector('#darkMode') as HTMLInputElement).checked,
-          compactMode: (settingsDiv.querySelector('#compactMode') as HTMLInputElement).checked,
-          autoScroll: (settingsDiv.querySelector('#autoScroll') as HTMLInputElement).checked,
-          soundEnabled: (settingsDiv.querySelector('#soundEnabled') as HTMLInputElement).checked,
-          maxMessages: (settingsDiv.querySelector('#maxMessages') as HTMLInputElement).value,
-          responseDelay: (settingsDiv.querySelector('#responseDelay') as HTMLInputElement).value,
-        });
-        console.log('Settings saved successfully!');
-      });
-
-      const resetButton = settingsDiv.querySelector('#resetSettings');
-      resetButton?.addEventListener('click', () => {
-        (settingsDiv.querySelector('#darkMode') as HTMLInputElement).checked = false;
-        (settingsDiv.querySelector('#compactMode') as HTMLInputElement).checked = true;
-        (settingsDiv.querySelector('#autoScroll') as HTMLInputElement).checked = true;
-        (settingsDiv.querySelector('#soundEnabled') as HTMLInputElement).checked = false;
-        (settingsDiv.querySelector('#maxMessages') as HTMLInputElement).value = '100';
-        (settingsDiv.querySelector('#responseDelay') as HTMLInputElement).value = '0';
-        console.log('Settings reset to defaults');
-      });
-
-      container.appendChild(settingsDiv);
-    },
-    []
-  );
+  const createSettingsRenderer = useCallback(() => createStorySettingsRenderer(), []);
 
   useEffect(() => {
     // Initialize chat service
@@ -574,68 +305,21 @@ export function ChatShowcaseDemo({
     const unsubscribes: Array<() => void> = [];
 
     // Set up models
-    service.setModels([
-      { id: 'gpt-4', name: 'GPT-4', description: 'Most capable model' },
-      {
-        id: 'gpt-3.5',
-        name: 'GPT-3.5 Turbo',
-        description: 'Fast and efficient',
-      },
-      { id: 'claude-3', name: 'Claude 3', description: 'Anthropic model' },
-    ]);
+    service.setModels(STORY_MODELS);
     service.setSelectedModel('gpt-4');
 
     // Set up agent modes
-    service.setAgentModes([
-      {
-        id: 'agent',
-        name: 'Agent',
-        description: 'AI-powered autonomous agent mode',
-        icon: 'smart_toy',
-      },
-      {
-        id: 'plan',
-        name: 'Plan',
-        description: 'Create and review execution plans',
-        icon: 'edit_note',
-      },
-      {
-        id: 'attended',
-        name: 'Attended',
-        description: 'Human assisted execution',
-        icon: 'play_arrow',
-      },
-    ]);
+    service.setAgentModes(STORY_AGENT_MODES);
     service.setAgentMode('agent');
 
     // Set up custom header actions
-    service.setCustomHeaderActions([
-      {
-        id: 'export',
-        name: 'Export Chat',
-        icon: 'download',
-      },
-      {
-        id: 'share',
-        name: 'Share',
-        icon: 'share',
-      },
-    ]);
+    service.setCustomHeaderActions(BASIC_CUSTOM_HEADER_ACTIONS);
 
     // Set up suggestions
-    service.setSuggestions([
-      { label: 'What can you do?', prompt: 'What can you do?' },
-      { label: 'Show me an example', prompt: 'Show me an example' },
-      { label: 'Help me with code', prompt: 'Help me with code' },
-    ]);
+    service.setSuggestions(STORY_SUGGESTIONS);
 
     // Set default loading messages
-    service.setDefaultLoadingMessages([
-      'Thinking...',
-      'Processing your request...',
-      'Analyzing...',
-      'Working on it...',
-    ]);
+    service.setDefaultLoadingMessages(STORY_LOADING_MESSAGES);
 
     // Set up resource manager by default
     service.setResourceManager(createResourceManager());
@@ -874,52 +558,7 @@ export function ChatShowcaseDemo({
         const actionData = action as any;
         console.log('Custom header action clicked:', actionData);
 
-        let responseContent = '';
-        switch (actionData.id) {
-          case 'export-pdf':
-            responseContent =
-              '📄 **Exporting as PDF...**\n\nYour conversation has been exported to a PDF file.';
-            break;
-          case 'export-docx':
-            responseContent =
-              '📝 **Exporting as DOCX...**\n\nYour conversation has been exported to a Word document.';
-            break;
-          case 'export-json':
-            responseContent =
-              '💾 **Exporting as JSON...**\n\nYour conversation has been exported as JSON data.';
-            break;
-          case 'export-txt':
-            responseContent =
-              '📋 **Exporting as Text...**\n\nYour conversation has been exported as plain text.';
-            break;
-          case 'share':
-            responseContent =
-              '🔗 **Share Conversation**\n\nA shareable link has been generated:\n`https://example.com/chat/abc123`';
-            break;
-          case 'translate-es':
-            responseContent =
-              '🇪🇸 **Traduciendo al español...**\n\nSu conversación ha sido traducida al español.';
-            break;
-          case 'translate-fr':
-            responseContent =
-              '🇫🇷 **Traduction en français...**\n\nVotre conversation a été traduite en français.';
-            break;
-          case 'translate-de':
-            responseContent =
-              '🇩🇪 **Übersetzung ins Deutsche...**\n\nIhre Unterhaltung wurde ins Deutsche übersetzt.';
-            break;
-          case 'translate-ja':
-            responseContent = '🇯🇵 **日本語に翻訳中...**\n\n会話が日本語に翻訳されました。';
-            break;
-          case 'translate-zh':
-            responseContent = '🇨🇳 **正在翻译成中文...**\n\n您的对话已翻译成中文。';
-            break;
-          case 'print':
-            responseContent = '🖨️ **Print Conversation**\n\nPreparing conversation for printing...';
-            break;
-          default:
-            responseContent = `✅ Action triggered: **${actionData.name}** (ID: ${actionData.id})`;
-        }
+        const responseContent = customHeaderActionReply(actionData);
 
         service.sendResponse({
           content: responseContent,
@@ -1000,41 +639,14 @@ export function ChatShowcaseDemo({
 
       // Re-set models and agent modes after initialization (or clear if disabled)
       if (features.model) {
-        chatService.setModels([
-          { id: 'gpt-4', name: 'GPT-4', description: 'Most capable model' },
-          {
-            id: 'gpt-3.5',
-            name: 'GPT-3.5 Turbo',
-            description: 'Fast and efficient',
-          },
-          { id: 'claude-3', name: 'Claude 3', description: 'Anthropic model' },
-        ]);
+        chatService.setModels(STORY_MODELS);
         chatService.setSelectedModel(selectedModel);
       } else {
         chatService.setModels([]);
       }
 
       if (features.agentMode) {
-        chatService.setAgentModes([
-          {
-            id: 'agent',
-            name: 'Agent',
-            description: 'AI-powered autonomous agent mode',
-            icon: 'smart_toy',
-          },
-          {
-            id: 'plan',
-            name: 'Plan',
-            description: 'Create and review execution plans',
-            icon: 'edit_note',
-          },
-          {
-            id: 'attended',
-            name: 'Attended',
-            description: 'Human assisted execution',
-            icon: 'play_arrow',
-          },
-        ]);
+        chatService.setAgentModes(STORY_AGENT_MODES);
         chatService.setAgentMode(selectedAgentMode);
       } else {
         chatService.setAgentModes([]);
@@ -1148,20 +760,7 @@ export function ChatShowcaseDemo({
       content: 'Here is a response with custom actions. Try the buttons below!',
       created_at: '22-10-2025',
       widget: 'apollo-markdown-renderer',
-      actions: [
-        {
-          name: 'copy-action',
-          label: 'Copy to Clipboard',
-          icon: 'content_copy',
-          eventName: 'copy-custom',
-        },
-        {
-          name: 'regenerate-action',
-          label: 'Regenerate',
-          icon: 'refresh',
-          eventName: 'regenerate-custom',
-        },
-      ],
+      actions: RESPONSE_ACTIONS,
     });
 
     // Listen for the custom events
@@ -1178,34 +777,7 @@ export function ChatShowcaseDemo({
   };
 
   const sendResponseWithCitations = () => {
-    chatService?.sendResponse({
-      content:
-        'According to research, the sky is blue due to Rayleigh scattering. See references below for more information.',
-      widget: 'default',
-      contentParts: [
-        {
-          text: 'According to research, the sky is blue due to Rayleigh scattering. ',
-          citations: [
-            {
-              id: 1,
-              title: 'Why is the Sky Blue?',
-              url: 'https://example.com/sky',
-            },
-          ],
-        },
-        {
-          text: 'See references below for more information.',
-          citations: [
-            {
-              id: 2,
-              title: 'Atmospheric Science',
-              url: 'https://example.com/atmosphere',
-            },
-          ],
-        },
-      ],
-      // biome-ignore lint/suspicious/noExplicitAny: contentParts and citations not in public type definition
-    } as any);
+    chatService?.sendResponse({ ...CITATION_RESPONSE, created_at: '22-10-2025' });
   };
 
   const sendStreamingResponse = () => {
@@ -1219,70 +791,19 @@ export function ChatShowcaseDemo({
   };
 
   const sendCodeBlock = () => {
-    const codeContent = `\`\`\`typescript
-// This is a long comment line that should wrap properly when displayed in the code block to test the wrapping functionality
-interface UserProfile {
-  id: number;
-  username: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  createdAt: Date;
-  updatedAt: Date;
-  preferences: { theme: 'light' | 'dark'; language: string; notifications: boolean };
-}
-
-function processUserData(user: UserProfile, additionalMetadata: Record<string, unknown>): string {
-  const fullName = \`\${user.firstName} \${user.lastName}\`;
-  const metadataString = JSON.stringify(additionalMetadata, null, 2);
-
-  return \`User: \${fullName} (\${user.email}) - Created: \${user.createdAt.toISOString()} - Metadata: \${metadataString}\`;
-}
-
-const exampleUser: UserProfile = {
-  id: 12345,
-  username: 'john_doe_with_a_very_long_username_that_should_test_wrapping',
-  email: 'john.doe.with.a.very.long.email.address@example-domain-name.com',
-  firstName: 'John',
-  lastName: 'Doe',
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  preferences: { theme: 'dark', language: 'en-US', notifications: true }
-};
-
-console.log(processUserData(exampleUser, { source: 'web', ipAddress: '192.168.1.1', userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36' }));
-\`\`\``;
-
     chatService?.sendResponse({
-      content: `Here's a TypeScript example with long lines to test wrapping:\n\n${codeContent}`,
+      content: CODE_BLOCK_MESSAGE,
       widget: 'default',
-      // biome-ignore lint/suspicious/noExplicitAny: widget property not properly typed
-    } as any);
+      created_at: '22-10-2025',
+    });
   };
 
   const sendHTMLPreview = () => {
-    const htmlContent = `\`\`\`html
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Hello World</title>
-  <style>
-    body { font-family: Arial; text-align: center; padding: 50px; }
-    h1 { color: #fa4616; }
-  </style>
-</head>
-<body>
-  <h1>Hello, World!</h1>
-  <p>This is an HTML preview example.</p>
-</body>
-</html>
-\`\`\``;
-
     chatService?.sendResponse({
-      content: `Here's an HTML example with live preview:\n\n${htmlContent}`,
+      content: HTML_PREVIEW_MESSAGE,
       widget: 'default',
-      // biome-ignore lint/suspicious/noExplicitAny: widget property not properly typed
-    } as any);
+      created_at: '22-10-2025',
+    });
   };
 
   // Loading and error states
@@ -1312,23 +833,7 @@ console.log(processUserData(exampleUser, { source: 'web', ipAddress: '192.168.1.
   };
 
   const addHistoryItems = () => {
-    chatService?.setHistory([
-      {
-        id: '1',
-        name: 'Previous Conversation 1',
-        timestamp: new Date(Date.now() - 86400000).toISOString(),
-      },
-      {
-        id: '2',
-        name: 'Previous Conversation 2',
-        timestamp: new Date(Date.now() - 172800000).toISOString(),
-      },
-      {
-        id: '3',
-        name: 'Previous Conversation 3',
-        timestamp: new Date(Date.now() - 259200000).toISOString(),
-      },
-    ]);
+    chatService?.setHistory(storyHistoryItems());
   };
 
   // Utility
@@ -1374,176 +879,24 @@ console.log(processUserData(exampleUser, { source: 'web', ipAddress: '192.168.1.
   };
 
   const setFirstRunExperience = () => {
-    chatService?.setFirstRunExperience({
-      title: 'Welcome to UiPath Autopilot',
-      description:
-        "I'm here to help you build, understand, and troubleshoot your automation projects.",
-      suggestions: [
-        {
-          label: 'New process',
-          prompt:
-            'Can you provide a detailed step-by-step guide on how to create a new automation process?',
-        },
-        {
-          label: 'Debug workflow',
-          prompt:
-            "I'm having trouble with my workflow execution. Can you explain debugging techniques?",
-        },
-        {
-          label: 'Studio updates',
-          prompt: 'What are the latest features in UiPath Studio?',
-        },
-      ],
-    });
+    chatService?.setFirstRunExperience(STORY_FIRST_RUN_EXPERIENCE);
   };
 
   const setConversation = () => {
-    chatService?.setConversation([
-      {
-        id: '1',
-        role: AutopilotChatRole.User,
-        content: 'How do I create a workflow that extracts data from invoices?',
-        created_at: '22-10-2022',
-        widget: '',
-      },
-      {
-        id: '2',
-        role: AutopilotChatRole.Assistant,
-        content:
-          'To extract data from invoices, you can use UiPath Document Understanding. Here\'s a step-by-step approach:\n\n1. Install the Document Understanding package\n2. Create a new workflow and add the "Digitize Document" activity\n3. Configure it to use ML skills\n4. Use the "Data Extraction" activity\n5. Validate the extracted data',
-        created_at: '23-10-2022',
-        widget: '',
-      },
-    ]);
+    chatService?.setConversation(SAMPLE_CONVERSATION);
   };
 
   const setSuggestions = () => {
-    chatService?.setSuggestions(
-      [
-        { label: 'What can you do?', prompt: 'What can you do?' },
-        { label: 'Show me an example', prompt: 'Show me an example' },
-        { label: 'Help me with code', prompt: 'Help me with code' },
-      ],
-      true
-    );
+    chatService?.setSuggestions(STORY_SUGGESTIONS, true);
   };
 
-  const sendToolCall = (displayMode: string) => {
-    const now = new Date().toISOString();
-    const start = new Date(Date.now() - 2500).toISOString();
-
-    if (displayMode === ConversationalDisplayModeTypes.FullTrace) {
-      chatService?.sendResponse({
-        content: 'Tool call response',
-        widget: 'apollo-agents-tool-call',
-        meta: {
-          displayMode,
-          span: {
-            key: 'multi-web-search',
-            name: 'Tool call - Multi_Web_Search',
-            data: {
-              id: 'root-span',
-              name: 'Tool call - Multi_Web_Search',
-              startTime: new Date(Date.now() - 25000).toISOString(),
-              endTime: now,
-              status: 'ok',
-              type: 'toolCall',
-              attributes: {
-                toolName: 'Multi_Web_Search',
-                toolType: 'Agent',
-                arguments: { query: 'what are trending right now' },
-                result: { result: 'Multi web search completed successfully.' },
-              },
-            },
-            children: [
-              {
-                key: 'autonomous-web-search',
-                name: 'Autonomous Web Search',
-                data: {
-                  id: 'agentTool-1',
-                  name: 'Autonomous Web Search',
-                  startTime: new Date(Date.now() - 25000).toISOString(),
-                  endTime: now,
-                  status: 'ok',
-                  type: 'agentTool',
-                },
-                children: [
-                  {
-                    key: 'agent-run-1',
-                    name: 'Agent run - Autonomous Web Search',
-                    data: {
-                      id: 'agentRun-1',
-                      name: 'Agent run - Autonomous Web Search',
-                      startTime: new Date(Date.now() - 23000).toISOString(),
-                      endTime: now,
-                      status: 'ok',
-                      type: 'agentRun',
-                    },
-                    children: [
-                      {
-                        key: 'tool-call-web-search-1',
-                        name: 'Tool call - Web_Search',
-                        data: {
-                          id: 'ws1',
-                          name: 'Tool call - Web_Search',
-                          type: 'toolCall',
-                          status: 'ok',
-                          startTime: new Date(Date.now() - 21000).toISOString(),
-                          endTime: new Date(Date.now() - 17000).toISOString(),
-                        },
-                        children: [],
-                      },
-                      {
-                        key: 'tool-call-web-search-2',
-                        name: 'Tool call - Web_Search',
-                        data: {
-                          id: 'ws2',
-                          name: 'Tool call - Web_Search',
-                          type: 'toolCall',
-                          status: 'ok',
-                          startTime: new Date(Date.now() - 16000).toISOString(),
-                          endTime: new Date(Date.now() - 10000).toISOString(),
-                        },
-                        children: [],
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-        },
-        // biome-ignore lint/suspicious/noExplicitAny: meta property not in public type definition
-      } as any);
-      return;
-    }
-
+  const sendToolCall = (displayMode: StoryToolCallDisplayMode) => {
     chatService?.sendResponse({
       content: 'Tool call response',
       widget: 'apollo-agents-tool-call',
-      meta: {
-        displayMode,
-        input: {
-          provider: 'GoogleCustomSearch',
-          query: 'most interesting scientific fact discovered recently 2025',
-          num: 5,
-        },
-        output: {
-          results: [
-            {
-              snippet: 'Breaking science news and articles...',
-              title: 'ScienceDaily: Latest Research News',
-              url: 'https://www.sciencedaily.com/',
-            },
-          ],
-        },
-        isError: false,
-        startTime: start,
-        endTime: now,
-        toolName: 'Web_Search',
-      },
-      // biome-ignore lint/suspicious/noExplicitAny: meta property not in public type definition
-    } as any);
+      created_at: new Date().toISOString(),
+      meta: storyToolCallMeta(displayMode),
+    });
   };
 
   const sendResponseDisabledActions = () => {
@@ -1574,98 +927,7 @@ console.log(processUserData(exampleUser, { source: 'web', ipAddress: '192.168.1.
 
   // Custom Header Actions
   const setCustomHeaderActions = () => {
-    chatService?.setCustomHeaderActions([
-      {
-        id: 'export',
-        name: 'Export',
-        icon: 'download',
-        description: 'Export conversation in various formats',
-        children: [
-          {
-            id: 'export-pdf',
-            name: 'Export as PDF',
-            icon: 'picture_as_pdf',
-            description: 'Download conversation as PDF file',
-          },
-          {
-            id: 'export-docx',
-            name: 'Export as DOCX',
-            icon: 'description',
-            description: 'Download conversation as Word document',
-          },
-          {
-            id: 'export-json',
-            name: 'Export as JSON',
-            icon: 'data_object',
-            description: 'Download conversation as JSON file',
-          },
-          {
-            id: 'export-txt',
-            name: 'Export as Text',
-            icon: 'text_snippet',
-            description: 'Download conversation as plain text',
-          },
-        ],
-      },
-      {
-        id: 'share',
-        name: 'Share Conversation',
-        icon: 'share',
-        description: 'Share this conversation with others',
-      },
-      {
-        id: 'translate',
-        name: 'Translate',
-        icon: 'translate',
-        description: 'Translate conversation to different languages',
-        children: [
-          {
-            id: 'translate-es',
-            name: 'Spanish',
-            icon: 'language',
-            description: 'Translate to Spanish',
-          },
-          {
-            id: 'translate-fr',
-            name: 'French',
-            icon: 'language',
-            description: 'Translate to French',
-          },
-          {
-            id: 'translate-de',
-            name: 'German',
-            icon: 'language',
-            description: 'Translate to German',
-          },
-          {
-            id: 'translate-ja',
-            name: 'Japanese',
-            icon: 'language',
-            description: 'Translate to Japanese',
-          },
-          {
-            id: 'translate-zh',
-            name: 'Chinese',
-            icon: 'language',
-            description: 'Translate to Chinese',
-          },
-        ],
-      },
-      {
-        id: 'print',
-        name: 'Print',
-        icon: 'print',
-        description: 'Print conversation',
-      },
-      {
-        id: 'advanced',
-        name: 'Advanced Settings',
-        icon: 'tune',
-        description: 'Advanced configuration options',
-        disabled: true,
-      },
-      // biome-ignore lint/suspicious/noExplicitAny: Custom header actions type not fully defined
-    ] as any);
+    chatService?.setCustomHeaderActions(MATERIAL_CUSTOM_HEADER_ACTIONS);
     console.log('Custom header actions set');
   };
 
@@ -1698,7 +960,7 @@ console.log(processUserData(exampleUser, { source: 'web', ipAddress: '192.168.1.
 
   const sendResponseWithVariables = () => {
     chatService?.sendResponse({
-      content: `I will update [[resource-token:{"id":"var-email","type":"variable","icon":"mail","displayName":"email"}]] and [[resource-token:{"id":"var-long","type":"variable","icon":"data_object","displayName":"this_is_a_very_long_variable_name_that_should_test_truncation"}]] in the system, then notify [[resource-token:{"id":"var-username","type":"variable","icon":"person","displayName":"username"}]] when complete.`,
+      content: RESOURCE_TOKEN_MESSAGE,
       created_at: '02-02-2026',
       widget: 'default',
     });
@@ -1710,29 +972,7 @@ console.log(processUserData(exampleUser, { source: 'web', ipAddress: '192.168.1.
     const messageId = `streaming-resources-${Date.now()}`;
     let chunkIndex = 0;
 
-    const chunks = [
-      'I will update the ',
-      '[[resource-token:', // Start of token (incomplete)
-      '{"id":"var-', // JSON starts (still incomplete)
-      'email","type":"variable",', // More JSON
-      '"icon":"mail","displayName":"email"}]]', // Token completes
-      ' variable in the system.\n\n',
-      "Then I'll notify ",
-      '[[resource-token:{', // Another token starts
-      '"id":"var-username",',
-      '"type":"variable","icon":"person",',
-      '"displayName":"username"}]]', // Token completes
-      ' when the process is complete.\n\n',
-      "I'll also update ",
-      '[[resource-token:{',
-      '"id":"var-long","type":"variable",',
-      '"icon":"data_object","displayName":',
-      '"this_is_a_very_long_variable_name_that_should_test_truncation"}]]', // Long label token
-      ' for testing.\n\n',
-      "Finally, I'll log the result to ",
-      '[[resource-token:{"id":"var-log","type":"variable","icon":"description","displayName":"activity_log"}]]', // Complete token in one chunk
-      '.',
-    ];
+    const chunks = RESOURCE_TOKEN_CHUNKS;
 
     const streamChunk = () => {
       if (chunkIndex >= chunks.length) {
@@ -1774,108 +1014,7 @@ console.log(processUserData(exampleUser, { source: 'web', ipAddress: '192.168.1.
     const messageId = `streaming-citations-${Date.now()}`;
     let streamIndex = 0;
 
-    const streamingParts = [
-      { index: 0, text: 'Based on the search results' },
-      { index: 0, text: ", I'll" },
-      { index: 0, text: ' create a comprehensive' },
-      { index: 0, text: ' summary about UiPath with' },
-      { index: 0, text: ' citations:\n\n##' },
-      { index: 0, text: ' Company Background' },
-      { index: 0, text: '\n- ' },
-      { index: 1, text: '**UiPath Inc**' },
-      { index: 1, text: '. is a global' },
-      { index: 1, text: ' software company that was' },
-      { index: 1, text: ' founded in ' },
-      { index: 1, text: '_Bucharest, Romania_' },
-      { index: 1, text: ', by' },
-      { index: 1, text: ' **Daniel Dines**' },
-      {
-        index: 1,
-        text: '',
-        citation: {
-          id: 1,
-          title: 'UiPath - Wikipedia',
-          url: 'https://en.wikipedia.org/wiki/UiPath',
-        },
-      },
-      { index: 2, text: '. ' },
-      { index: 3, text: 'The' },
-      { index: 3, text: ' company starte' },
-      { index: 3, text: 'd its journey' },
-      { index: 3, text: ' in 2005' },
-      { index: 3, text: ' and has' },
-      { index: 3, text: ' grown to become a leading' },
-      { index: 3, text: ' enterprise automation software ven' },
-      {
-        index: 3,
-        text: 'dor',
-        citation: {
-          id: 1,
-          title: 'UiPath - Wikipedia',
-          url: 'https://en.wikipedia.org/wiki/UiPath',
-        },
-      },
-      {
-        index: 3,
-        text: '',
-        citation: {
-          id: 2,
-          title: 'UiPath, Inc. (PATH)',
-          url: 'https://ir.uipath.com/',
-        },
-      },
-      { index: 4, text: '. \n\n## Core' },
-      { index: 4, text: ' Business' },
-      { index: 4, text: '\nU' },
-      { index: 4, text: 'iPath special' },
-      { index: 4, text: 'izes in several' },
-      { index: 4, text: ' key areas:\n\n1' },
-      { index: 4, text: '. **Rob' },
-      { index: 4, text: 'otic Process Automation' },
-      { index: 4, text: ':**' },
-      { index: 4, text: '\n' },
-      { index: 5, text: 'R' },
-      { index: 5, text: 'PA has' },
-      { index: 5, text: ' revolutionized how work' },
-      { index: 5, text: ' gets done globally' },
-      { index: 5, text: ' by eliminating time' },
-      { index: 5, text: '-consuming, repet' },
-      { index: 5, text: 'itive tasks from employees' },
-      { index: 5, text: "' worklo" },
-      {
-        index: 5,
-        text: 'ads',
-        citation: {
-          id: 3,
-          title: 'Discovery Phase Guide',
-          download_url: 'https://ontheline.trincoll.edu/images/bookdown/sample-local-pdf.pdf',
-          page_number: 2,
-        },
-      },
-      { index: 6, text: '.' },
-      { index: 6, text: '\n\n2. **' },
-      { index: 6, text: 'Business Automation Platform**' },
-      { index: 6, text: '\n' },
-      { index: 7, text: 'The platform' },
-      { index: 7, text: ' offers en' },
-      { index: 7, text: 'd-to-en' },
-      { index: 7, text: 'd process transformation' },
-      { index: 7, text: ' capabilities on' },
-      { index: 7, text: ' a single platform,' },
-      { index: 7, text: ' featuring fully' },
-      { index: 7, text: ' governed agentic' },
-      { index: 7, text: ' automation that integ' },
-      { index: 7, text: 'rates with existing systems' },
-      {
-        index: 7,
-        text: '',
-        citation: {
-          id: 4,
-          title: 'UiPath Business Automation Platform | UiPath',
-          url: 'https://www.uipath.com/product',
-        },
-      },
-    ];
+    const streamingParts = STREAMED_CITATION_CHUNKS;
 
     const streamChunk = () => {
       if (streamIndex >= streamingParts.length) {
@@ -2430,20 +1569,11 @@ console.log(processUserData(exampleUser, { source: 'web', ipAddress: '192.168.1.
       <Box
         ref={embeddedContainerRef}
         sx={{
-          position: 'fixed',
-          bottom: 24,
-          right: 24,
-          width: 400,
-          height: 600,
-          boxShadow: 'var(--shadow-xl, 0 12px 32px rgba(0, 0, 0, 0.35))',
-          borderRadius: '12px',
-          overflow: 'hidden',
-          zIndex: 1000,
           // Needed for absolute positioned chat content in embedded mode
           '& > *': { position: 'relative' },
         }}
         style={{
-          background: 'var(--color-background)',
+          ...embeddedPanelStyle(),
           display: chatMode === AutopilotChatMode.Embedded ? 'block' : 'none',
         }}
       />

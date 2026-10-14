@@ -1,9 +1,11 @@
 import { ThemeProvider as MuiThemeProvider, styled } from '@mui/material/styles';
 import token from '@uipath/apollo-core';
+import { resolveChatLayout } from '@uipath/apollo-react/chat/headless/layout/chat-layout';
 import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
 import { useChatWidth } from '@uipath/apollo-react/chat/headless/providers/chat-width-provider';
 import { useTheme } from '@uipath/apollo-react/chat/headless/providers/theme-provider';
 import {
+  type ApChatTheme,
   AutopilotChatMode,
   CHAT_CONTAINER_ANIMATION_DURATION,
   CHAT_WIDTH_FULL_SCREEN,
@@ -12,6 +14,8 @@ import React from 'react';
 import {
   apolloMaterialUiThemeDark,
   apolloMaterialUiThemeDarkHC,
+  apolloMaterialUiThemeFutureDark,
+  apolloMaterialUiThemeFutureLight,
   apolloMaterialUiThemeLight,
   apolloMaterialUiThemeLightHC,
 } from '../../theme';
@@ -20,12 +24,14 @@ import { AutopilotChatDropzone } from './components/dropzone/dropzone';
 import { FullScreenLayout, StandardLayout } from './components/layout';
 
 // Theme lookup map - created once, reused across all instances
-const MUI_THEME_MAP = {
+export const MUI_THEME_MAP = {
   light: apolloMaterialUiThemeLight,
   dark: apolloMaterialUiThemeDark,
   'light-hc': apolloMaterialUiThemeLightHC,
   'dark-hc': apolloMaterialUiThemeDarkHC,
-} as const;
+  'future-light': apolloMaterialUiThemeFutureLight,
+  'future-dark': apolloMaterialUiThemeFutureDark,
+} as const satisfies Record<ApChatTheme, unknown>;
 
 const ChatContainer = styled('div')<{
   shouldAnimate: boolean;
@@ -67,13 +73,14 @@ const ChatContainer = styled('div')<{
 const AutopilotChatContent = React.memo(() => {
   const { width, shouldAnimate } = useChatWidth();
   const { historyOpen, settingsOpen, disabledFeatures, chatMode, readOnly } = useChatState();
+  const layout = resolveChatLayout({ chatMode, disabledFeatures, readOnly });
 
   return (
     <ChatContainer
       shouldAnimate={shouldAnimate}
       mode={chatMode}
       width={width}
-      fullHeight={disabledFeatures.fullHeight === false}
+      fullHeight={layout.fullHeight}
     >
       {chatMode === AutopilotChatMode.SideBySide && <DragHandle />}
 
@@ -81,22 +88,22 @@ const AutopilotChatContent = React.memo(() => {
         <FullScreenLayout
           historyOpen={historyOpen}
           settingsOpen={settingsOpen}
-          historyDisabled={disabledFeatures.history ?? false}
-          settingsDisabled={disabledFeatures.settings ?? false}
-          headerSeparatorDisabled={disabledFeatures.headerSeparator ?? false}
+          historyDisabled={!layout.historyAvailable}
+          settingsDisabled={!layout.settingsAvailable}
+          headerSeparatorDisabled={!layout.showHeaderSeparator}
           mode={chatMode}
-          readOnly={readOnly}
+          readOnly={!layout.showComposer}
         />
       ) : (
         <StandardLayout
           historyOpen={historyOpen}
           settingsOpen={settingsOpen}
-          historyDisabled={disabledFeatures.history ?? false}
-          settingsDisabled={disabledFeatures.settings ?? false}
-          headerDisabled={disabledFeatures.header ?? false}
-          headerSeparatorDisabled={disabledFeatures.headerSeparator ?? false}
+          historyDisabled={!layout.historyAvailable}
+          settingsDisabled={!layout.settingsAvailable}
+          headerDisabled={!layout.showHeader}
+          headerSeparatorDisabled={!layout.showHeaderSeparator}
           mode={chatMode}
-          readOnly={readOnly}
+          readOnly={!layout.showComposer}
         />
       )}
     </ChatContainer>

@@ -139,7 +139,7 @@ chatElement.chatServiceInstance = service;
 chatElement.locale = 'en';
 
 // Theme (optional, default: 'light')
-// Supported: 'light', 'dark', 'light-hc', 'dark-hc'
+// Supported: 'light', 'dark', 'light-hc', 'dark-hc', 'future-light', 'future-dark'
 chatElement.theme = 'light';
 ```
 

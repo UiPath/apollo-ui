@@ -2,13 +2,14 @@ import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { styled } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
+import { AutopilotLogo } from '@uipath/apollo-react/chat/assets/autopilot-logo';
+import { useChatLabels } from '@uipath/apollo-react/chat/headless/hooks/use-chat-labels';
 import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
 import { AutopilotChatMode } from '@uipath/apollo-react/chat/service';
 import { ApBadge } from '@uipath/apollo-react/material/components/ap-badge';
 import { ApTypography } from '@uipath/apollo-react/material/components/ap-typography';
 import React from 'react';
 import { StatusTypes } from '../../../../../types/statusTypes';
-import AutopilotLogo from '../../assets/autopilot-logo.svg';
 import { AutopilotChatHeaderActions } from './header-actions';
 
 const StyledHeader = styled('div')<{ hideSeparator?: boolean }>(({ hideSeparator }) => ({
@@ -32,7 +33,8 @@ const StyledLogo = styled('div')(() => ({
 
 function AutopilotChatHeaderComponent() {
   const { _ } = useLingui();
-  const { disabledFeatures, overrideLabels, chatMode } = useChatState();
+  const { disabledFeatures, chatMode } = useChatState();
+  const { title } = useChatLabels();
 
   return (
     <StyledHeader hideSeparator={disabledFeatures.headerSeparator}>
@@ -45,8 +47,7 @@ function AutopilotChatHeaderComponent() {
           role="heading"
           aria-level={1}
         >
-          {overrideLabels.title ??
-            _(msg({ id: 'autopilot-chat.header.title', message: `Autopilot` }))}
+          {title}
         </ApTypography>
 
         {!disabledFeatures.preview && (

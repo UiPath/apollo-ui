@@ -1,13 +1,5 @@
-import { registerChatRenderer, registerLazyChatRenderer } from './headless/renderer-registry';
-import { WindChatPlaceholder } from './wind/WindChatPlaceholder';
-
-registerChatRenderer('wind', WindChatPlaceholder);
-registerLazyChatRenderer(
-  'material',
-  // biome-ignore lint/style/noRestrictedImports: the one allowed src/chat → Material edge; a dynamic import keeps MUI out of the initial chunk
-  () => import('../material/components/ap-chat/MaterialChatRenderer')
-);
-
+// The Wind and lazy Material renderers are registered by `root/ApChat`, which this entry
+// re-exports, so they are in place for every consumer of this entry.
 export type { SupportedLocale } from '../i18n';
 export {
   type ChatBuiltInMessageRenderer,

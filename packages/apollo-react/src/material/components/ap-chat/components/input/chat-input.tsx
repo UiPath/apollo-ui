@@ -1,7 +1,6 @@
-import { msg } from '@lingui/core/macro';
-import { useLingui } from '@lingui/react';
 import { Box, styled } from '@mui/material';
 import token, { type FontVariantToken } from '@uipath/apollo-core';
+import { useChatLabels } from '@uipath/apollo-react/chat/headless/hooks/use-chat-labels';
 import { useAttachments } from '@uipath/apollo-react/chat/headless/providers/attachments-provider';
 import { useChatService } from '@uipath/apollo-react/chat/headless/providers/chat-service.provider';
 import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
@@ -83,10 +82,10 @@ const GradientContainer = styled('div')(() => ({
 }));
 
 function AutopilotChatInputComponent() {
-  const { _ } = useLingui();
   const chatService = useChatService();
   const initialPrompt = chatService?.getPrompt?.();
-  const { disabledFeatures, overrideLabels, spacing } = useChatState();
+  const { disabledFeatures, spacing } = useChatState();
+  const { inputPlaceholder } = useChatLabels();
 
   const { hasResources } = useResourceData();
   const [message, setMessage] = React.useState(
@@ -303,10 +302,7 @@ function AutopilotChatInputComponent() {
             <ChatInputEditor
               ref={editorRef}
               value={message}
-              placeholder={
-                overrideLabels?.inputPlaceholder ??
-                _(msg({ id: 'autopilot-chat.input.placeholder', message: `Type a message...` }))
-              }
+              placeholder={inputPlaceholder}
               onChange={handleChange}
               onKeyDown={handleKeyDown}
               minRows={spacing.promptBox.minRows}

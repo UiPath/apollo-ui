@@ -9,6 +9,7 @@ import {
   AutopilotChatInternalEvent,
   type AutopilotChatPrompt,
 } from '../../service';
+import { publishChatEvent } from '../utils/publish-chat-event';
 import { useChatService } from './chat-service.provider';
 import { useChatState } from './chat-state-provider';
 import { useError } from './error-provider';
@@ -68,14 +69,9 @@ export function AutopilotAttachmentsProvider({ children }: { children: React.Rea
 
       attachmentsRef.current = attachments;
 
-      const eventBus = (chatService as any)?._eventBus;
-
-      if (eventBus && (added.length > 0 || removed.length > 0)) {
-        eventBus.publish(AutopilotChatEvent.Attachments, attachments);
-        eventBus.publish(AutopilotChatEvent.SetAttachments, {
-          added,
-          removed,
-        });
+      if (chatService && (added.length > 0 || removed.length > 0)) {
+        publishChatEvent(chatService, AutopilotChatEvent.Attachments, attachments);
+        publishChatEvent(chatService, AutopilotChatEvent.SetAttachments, { added, removed });
       }
     }
   }, [attachments, chatService]);

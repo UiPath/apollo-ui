@@ -88,7 +88,6 @@ ap-chat/
 │   └── font-by-variant.ts
 │
 └── assets/                     # Static assets
-    ├── autopilot-logo.svg
     ├── default-file.svg
     ├── word-file.svg
     ├── ppt-file.svg
