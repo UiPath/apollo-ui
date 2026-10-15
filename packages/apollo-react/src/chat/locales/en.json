@@ -81,5 +81,10 @@
   "autopilot-chat.resource-picker.search-error": "Search failed",
   "autopilot-chat.resource-picker.back": "Go back",
   "autopilot-chat.input.resource-chip.remove": "Remove",
-  "autopilot-chat.input.resource-chip.remove-name": "Remove {label}"
+  "autopilot-chat.input.resource-chip.remove-name": "Remove {label}",
+  "autopilot-chat.message.list-label": "Conversation",
+  "autopilot-chat.message.response-received": "New response",
+  "autopilot-chat.message.actions.copied": "Copied",
+  "autopilot-chat.message.actions.feedback": "Rate this response",
+  "autopilot-chat.message.loading-older": "Loading older messages"
 }

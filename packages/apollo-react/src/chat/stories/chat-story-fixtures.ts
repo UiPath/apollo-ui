@@ -418,6 +418,25 @@ export const RESPONSE_ACTIONS: AutopilotChatMessageAction[] = [
   },
 ];
 
+/** The same actions with lucide icon names, for the Wind renderer. */
+export const WIND_RESPONSE_ACTIONS: AutopilotChatMessageAction[] = RESPONSE_ACTIONS.map(
+  (action) => ({
+    ...action,
+    icon: action.icon === 'content_copy' ? 'clipboard-copy' : 'refresh-cw',
+  })
+);
+
+/** An action for the "More" menu, with the icon name each renderer takes. */
+export function overflowResponseAction(renderer: 'wind' | 'material'): AutopilotChatMessageAction {
+  return {
+    name: 'share-action',
+    label: 'Share',
+    icon: renderer === 'wind' ? 'share-2' : 'share',
+    eventName: 'share-custom',
+    showInOverflow: true,
+  };
+}
+
 export const CITATION_RESPONSE = {
   content:
     'According to research, the sky is blue due to Rayleigh scattering. See references below for more information.',

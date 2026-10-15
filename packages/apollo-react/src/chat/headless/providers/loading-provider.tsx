@@ -12,6 +12,8 @@ import { useChatService } from './chat-service.provider';
 interface AutopilotLoadingContextType {
   waitingResponse: boolean;
   isLoadingMoreMessages: boolean;
+  /** False once the host said there are no older messages (`prependOlderMessages(..., true)`). */
+  hasMoreMessages: boolean;
   setWaitingResponse: (waitingResponse: boolean) => void;
   showLoading: boolean;
   skeletonLoader: boolean;
@@ -20,6 +22,7 @@ interface AutopilotLoadingContextType {
 export const AutopilotLoadingContext = React.createContext<AutopilotLoadingContextType>({
   waitingResponse: false,
   isLoadingMoreMessages: false,
+  hasMoreMessages: true,
   setWaitingResponse: () => {},
   showLoading: false,
   skeletonLoader: false,
@@ -28,6 +31,7 @@ export const AutopilotLoadingContext = React.createContext<AutopilotLoadingConte
 export function AutopilotLoadingProvider({ children }: { children: React.ReactNode }) {
   const [waitingResponse, setWaitingResponse] = React.useState<boolean>(false);
   const [isLoadingMoreMessages, setIsLoadingMoreMessages] = React.useState<boolean>(false);
+  const [hasMoreMessages, setHasMoreMessages] = React.useState<boolean>(true);
   const [showLoading, setShowLoading] = React.useState<boolean>(false);
   const [skeletonLoader, setSkeletonLoader] = React.useState<boolean>(false);
   const disableDefaultShowLoadingBehaviorRef = React.useRef<boolean>(false);
@@ -49,6 +53,7 @@ export function AutopilotLoadingProvider({ children }: { children: React.ReactNo
     const unsubscribeShouldShowLoadingMoreMessages = chatService.__internalService__.on(
       AutopilotChatInternalEvent.ShouldShowLoadingMoreMessages,
       (value: boolean) => {
+        setHasMoreMessages(value);
         if (!value) {
           setIsLoadingMoreMessages(false);
         }
@@ -148,6 +153,7 @@ export function AutopilotLoadingProvider({ children }: { children: React.ReactNo
         waitingResponse,
         setWaitingResponse,
         isLoadingMoreMessages,
+        hasMoreMessages,
         showLoading,
         skeletonLoader,
       }}

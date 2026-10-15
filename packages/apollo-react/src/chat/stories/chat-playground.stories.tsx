@@ -44,7 +44,7 @@ const featureArgTypes = Object.fromEntries(
 const ARG_BEHAVIOUR = `
 Controls apply to the running chat through the service setters, without a new chat or a remount:
 
-- **In place**: \`mode\` (setChatMode), \`readOnly\` (setReadOnly), Flags (setDisabledFeatures), \`title\`, \`inputPlaceholder\` and \`footerDisclaimer\` (setOverrideLabels), \`compactMode\` (patchConfig spacing), \`firstRunExperience\` (setFirstRunExperience, visible while the transcript is empty), \`customHeaderActions\` (setCustomHeaderActions), \`preHooks\` (setPreHook), \`locale\` (prop), \`autoReply\` and \`streamDelayMs\` (read on the next turn). The theme follows the Storybook theme toolbar and is passed to each chat as its \`theme\` prop. Switching between Embedded and FullScreen rebuilds the chat's DOM, because ChatRoot portals only in Embedded, but the service and transcript stay.
+- **In place**: \`mode\` (setChatMode), \`readOnly\` (setReadOnly), Flags (setDisabledFeatures), \`title\`, \`inputPlaceholder\` and \`footerDisclaimer\` (setOverrideLabels), \`compactMode\` (patchConfig spacing), \`firstRunExperience\` (setFirstRunExperience, visible while the transcript is empty), \`customHeaderActions\` (setCustomHeaderActions), \`preHooks\` (setPreHook), \`autoScroll\` (toggleAutoScroll), \`locale\` (prop), \`autoReply\` and \`streamDelayMs\` (read on the next turn). The theme follows the Storybook theme toolbar and is passed to each chat as its \`theme\` prop. Switching between Embedded and FullScreen rebuilds the chat's DOM, because ChatRoot portals only in Embedded, but the service and transcript stay.
 - **In place, with a chat added or removed**: \`renderer\`. Switching between wind and material calls setRenderer on the same service and keeps the transcript. Choosing both adds a Material chat on its own service that copies the current transcript; leaving both removes it.
 - **Appends**: \`scenario\` scripts its traffic into the current transcript. Scenarios that need an empty transcript start a new chat first and say so: First-run experience, Long history with pagination. Changing scenario stops whatever the previous one still had scheduled (for example the rest of a stream).
 - **Remounts**: nothing driven by a control. Storybook's Remount button and the locale toolbar (which remounts every story) are the full reset: the chat keeps its service instance and starts it over from the story's controls.
@@ -106,6 +106,12 @@ const meta = {
         'Nested custom header actions: lucide icon names for Wind, Material Icons names for Material.',
       table: { category: 'Configuration' },
     },
+    autoScroll: {
+      control: 'boolean',
+      description:
+        'chatService.toggleAutoScroll: follow new content while the reader is at the end.',
+      table: { category: 'Configuration' },
+    },
     preHooks: {
       control: 'boolean',
       description: 'Every pre-hook asks for confirmation before the action runs.',
@@ -157,6 +163,7 @@ const meta = {
     firstRunExperience: true,
     customHeaderActions: true,
     preHooks: false,
+    autoScroll: true,
     disableClose: 'unset',
     ...featureArgs,
     title: '',
