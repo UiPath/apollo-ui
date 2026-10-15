@@ -49,6 +49,7 @@ export const PE_OUTPUT_CHANGED_FIXTURE: CaseEvaluationOutput = {
 
 const eligibleView = {
   outcome: "Eligible",
+  confidence: 0.94,
   summary: PE_OUTPUT_FIXTURE.evaluations[0].SUMMARY ?? "",
   decision_model_id: DECISION_MODEL_V1,
   status: "success",
@@ -57,6 +58,7 @@ const eligibleView = {
 
 const referView = {
   outcome: "Refer",
+  confidence: 0.71,
   summary: PE_OUTPUT_FIXTURE.evaluations[1].SUMMARY ?? "",
   decision_model_id: DECISION_MODEL_V1,
   status: "success",
@@ -89,6 +91,11 @@ export const PE_EVALUATOR_SAME_FIXTURE: CaseEvaluationDetails = {
       actual: referView,
     },
   ],
+  same_count: 2,
+  outcome_mismatch_count: 0,
+  summary_differs_count: 0,
+  missing_count: 0,
+  added_count: 0,
 };
 
 export const PE_EVALUATOR_CHANGED_FIXTURE: CaseEvaluationDetails = {
@@ -107,6 +114,7 @@ export const PE_EVALUATOR_CHANGED_FIXTURE: CaseEvaluationDetails = {
       expected: referView,
       actual: {
         outcome: "Ineligible",
+        confidence: 0.88,
         summary: PE_OUTPUT_CHANGED_FIXTURE.evaluations[1].SUMMARY ?? "",
         decision_model_id: DECISION_MODEL_V2,
         status: "success",
@@ -114,4 +122,7 @@ export const PE_EVALUATOR_CHANGED_FIXTURE: CaseEvaluationDetails = {
       },
     },
   ],
+  same_count: 1,
+  outcome_mismatch_count: 1,
+  summary_differs_count: 1,
 };

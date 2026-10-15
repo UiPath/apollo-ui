@@ -8,10 +8,11 @@ export function resolveComponentLabel(
   source: { agentId?: string; processName: string },
   labels: Record<string, string>,
 ): string {
+  // Own keys only: a process named e.g. "constructor" must not hit Object.prototype.
+  const lookup = (key: string | undefined) =>
+    key != null && Object.hasOwn(labels, key) ? labels[key] : null;
   return (
-    (source.agentId == null ? null : labels[source.agentId]) ??
-    labels[source.processName] ??
-    source.processName
+    lookup(source.agentId) ?? lookup(source.processName) ?? source.processName
   );
 }
 
