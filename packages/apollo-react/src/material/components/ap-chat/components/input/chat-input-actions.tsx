@@ -2,12 +2,15 @@ import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { styled } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
+import {
+  checkAttachmentFiles,
+  useAttachmentIntake,
+} from '@uipath/apollo-react/chat/headless/hooks/use-attachment-intake';
+import { useAttachmentLimits } from '@uipath/apollo-react/chat/headless/hooks/use-attachment-limits';
 import { useAttachments } from '@uipath/apollo-react/chat/headless/providers/attachments-provider';
 import { useChatService } from '@uipath/apollo-react/chat/headless/providers/chat-service.provider';
 import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
-import { useError } from '@uipath/apollo-react/chat/headless/providers/error-provider';
 import { usePicker } from '@uipath/apollo-react/chat/headless/providers/picker-provider';
-import { parseFiles } from '@uipath/apollo-react/chat/headless/utils/file-reader';
 import { AutopilotChatEvent } from '@uipath/apollo-react/chat/service';
 import { ApTypography } from '@uipath/apollo-react/material/components/ap-typography';
 import React from 'react';
@@ -77,8 +80,8 @@ function AutopilotChatInputActionsComponent({
 }: AutopilotChatInputActionsProps) {
   const { _ } = useLingui();
   const chatService = useChatService();
-  const { addAttachments } = useAttachments();
-  const { setError } = useError();
+  const { attachments } = useAttachments();
+  const takeFiles = useAttachmentIntake();
   const { disabledFeatures, allowedAttachments } = useChatState();
   const { models, agentModes } = usePicker();
 
@@ -113,83 +116,25 @@ function AutopilotChatInputActionsComponent({
     }
   };
 
+  // The same checks and messages as the drop target, so both validate types, size and count.
   const handleAttachment = React.useCallback(
-    async (event: React.ChangeEvent<HTMLInputElement>) => {
-      try {
-        const parsedFiles = await parseFiles(Array.from(event.target.files ?? []));
-        const oversizedFiles = parsedFiles.filter((file) => file.size > allowedAttachments.maxSize);
-
-        if (oversizedFiles.length > 0) {
-          const errorMessages = oversizedFiles.map((file) => {
-            const fileSizeMB = Math.round(file.size / 1024 / 1024);
-            const fileName = file.name;
-            const fileSize = fileSizeMB;
-            const maxSize = allowedAttachments.maxSize / 1024 / 1024;
-
-            return _(
-              msg({
-                id: 'autopilot-chat.input.actions.error.file-too-large',
-                message: `File "${fileName}" (${fileSize}MB) exceeds the maximum size of ${maxSize}MB`,
-              })
-            );
-          });
-
-          setError(errorMessages.join('\n'));
-        } else {
-          setError(undefined);
-        }
-
-        addAttachments(parsedFiles.filter((file) => file.size <= allowedAttachments.maxSize));
-      } catch (err) {
-        setError(err as string);
-      }
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const { accepted, rejected } = checkAttachmentFiles(
+        Array.from(event.target.files ?? []),
+        allowedAttachments,
+        attachments.length
+      );
+      void takeFiles(accepted, rejected);
     },
-    [addAttachments, setError, allowedAttachments.maxSize, _]
+    [takeFiles, allowedAttachments, attachments.length]
   );
-
   const acceptedExtensions = React.useMemo(() => {
     return Object.values(allowedAttachments.types).flat().join(',');
   }, [allowedAttachments]);
 
-  // Build full description text for screen readers
-  const attachmentDescription = React.useMemo(() => {
-    const parts: string[] = [];
-    const maxCount = allowedAttachments.maxCount;
-    const maxSize = allowedAttachments.maxSize / 1024 / 1024;
-    const fileTypes = acceptedExtensions.split(',').join(', ');
-
-    if (
-      allowedAttachments.maxCount &&
-      allowedAttachments.maxCount > 1 &&
-      allowedAttachments.multiple
-    ) {
-      parts.push(
-        _(
-          msg({
-            id: 'autopilot-chat.input.actions.attachments.max-count',
-            message: `Maximum ${maxCount} files`,
-          })
-        )
-      );
-    }
-
-    parts.push(
-      _(
-        msg({
-          id: 'autopilot-chat.input.actions.attachments.max-size',
-          message: `Maximum ${maxSize}MB per file`,
-        })
-      ),
-      _(
-        msg({
-          id: 'autopilot-chat.input.actions.attachments.allowed-types',
-          message: `Allowed types: ${fileTypes}`,
-        })
-      )
-    );
-
-    return parts.join('. ');
-  }, [allowedAttachments, acceptedExtensions, _]);
+  // The limits, shared with the Wind renderer: as tooltip lines and as screen-reader text.
+  const attachmentLimits = useAttachmentLimits(allowedAttachments);
+  const attachmentDescription = attachmentLimits.join('. ');
 
   // Show voice interaction button when audioStreaming is enabled and either voice
   // is already active, or the input is genuinely empty (no text, no attachments).
@@ -246,59 +191,15 @@ function AutopilotChatInputActionsComponent({
                     )}
                   </ApTypography>
 
-                  {allowedAttachments.maxCount &&
-                    allowedAttachments.maxCount > 1 &&
-                    allowedAttachments.multiple &&
-                    (() => {
-                      const maxCount = allowedAttachments.maxCount;
-                      return (
-                        <ApTypography
-                          color={'var(--color-foreground-inverse)'}
-                          variant={FontVariantToken.fontSizeXs}
-                        >
-                          {_(
-                            msg({
-                              id: 'autopilot-chat.input.actions.attachments.max-count',
-                              message: `Maximum ${maxCount} files`,
-                            })
-                          )}
-                        </ApTypography>
-                      );
-                    })()}
-
-                  {(() => {
-                    const maxSize = allowedAttachments.maxSize / 1024 / 1024;
-                    return (
-                      <ApTypography
-                        color={'var(--color-foreground-inverse)'}
-                        variant={FontVariantToken.fontSizeXs}
-                      >
-                        {_(
-                          msg({
-                            id: 'autopilot-chat.input.actions.attachments.max-size',
-                            message: `Maximum ${maxSize}MB per file`,
-                          })
-                        )}
-                      </ApTypography>
-                    );
-                  })()}
-
-                  {(() => {
-                    const fileTypes = acceptedExtensions.split(',').join(', ');
-                    return (
-                      <ApTypography
-                        color={'var(--color-foreground-inverse)'}
-                        variant={FontVariantToken.fontSizeXs}
-                      >
-                        {_(
-                          msg({
-                            id: 'autopilot-chat.input.actions.attachments.allowed-types',
-                            message: `Allowed types: ${fileTypes}`,
-                          })
-                        )}
-                      </ApTypography>
-                    );
-                  })()}
+                  {attachmentLimits.map((line) => (
+                    <ApTypography
+                      key={line}
+                      color={'var(--color-foreground-inverse)'}
+                      variant={FontVariantToken.fontSizeXs}
+                    >
+                      {line}
+                    </ApTypography>
+                  ))}
                 </>
               }
             />

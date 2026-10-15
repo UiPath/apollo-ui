@@ -22,7 +22,8 @@ const COMPONENTS = {
   'resource-chip': MarkdownResourceChip,
 } as unknown as MarkdownProps['components'];
 
-function useMarkdownStrings(): MarkdownProps['strings'] {
+/** The Markdown primitive's strings from the chat catalog. */
+export function useMarkdownStrings(): MarkdownProps['strings'] {
   const { _ } = useLingui();
 
   return React.useMemo(
