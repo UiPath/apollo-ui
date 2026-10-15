@@ -8,6 +8,7 @@ import { WIND_MESSAGE_RENDERERS } from '../renderers';
 import { InjectedMessage } from './injected-message';
 import { MessageActionBar } from './message-action-bar';
 import { MessageAttachments } from './message-attachments';
+import { MessageSources } from './message-sources';
 
 // Material's user bubble colour (with the host override it honours) and the leading inset it keeps
 // from the panel edge; the padding stays the Bubble primitive's.
@@ -85,6 +86,7 @@ function ChatMessageComponent({
             </div>
           ))
         )}
+        {isLastInGroup && !isUser && <MessageSources message={message} />}
         {showActions && (
           <MessageActionBar message={message} isLatestReply={isLatestReply} copyText={copyText} />
         )}

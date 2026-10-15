@@ -1,7 +1,8 @@
 import { act, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { AutopilotChatMode, AutopilotChatService } from '../index';
+import { publishChatEvent } from '../headless/utils/publish-chat-event';
+import { AutopilotChatEvent, AutopilotChatMode, AutopilotChatService } from '../index';
 import {
   ChatPlayground,
   type ChatPlaygroundProps,
@@ -96,6 +97,48 @@ describe('ChatPlayground', () => {
     } finally {
       toggle.mockRestore();
     }
+  });
+
+  it('clears every chat and stops the running scenario without a remount', async () => {
+    render(
+      <ChatPlayground {...baseProps()} renderer="both" scenario="streaming" streamDelayMs={30} />
+    );
+    await flush();
+    const wind = slotService('primary');
+    const material = slotService('compare');
+    const root = document.querySelector('[data-slot="wind-chat"]');
+    expect(wind?.getConversation().length).toBeGreaterThan(0);
+
+    act(() => screen.getByRole('button', { name: 'Clear chat' }).click());
+    await act(() => new Promise((resolve) => setTimeout(resolve, 300)));
+
+    expect(wind?.getConversation()).toHaveLength(0);
+    expect(material?.getConversation()).toHaveLength(0);
+    expect(document.querySelector('[data-slot="wind-chat"]')).toBe(root);
+  });
+
+  it('runs the scenario cleanups on Clear chat', async () => {
+    const props = baseProps();
+    const { rerender } = render(<ChatPlayground {...props} scenario="loading" />);
+    await flush();
+    const service = slotService('primary');
+    expect(service?.getLoadingMessage()).toBe('Searching the knowledge base...');
+
+    act(() => screen.getByRole('button', { name: 'Clear chat' }).click());
+    expect(service?.getLoadingMessage()).toBe('');
+
+    rerender(<ChatPlayground {...props} scenario="long-history" />);
+    await flush();
+    expect(service?.getConfig().paginatedMessages).toBe(true);
+    act(() => screen.getByRole('button', { name: 'Clear chat' }).click());
+    expect(service?.getConfig().paginatedMessages).toBe(false);
+
+    // The history scenario's load-more listener is gone, so no older page arrives.
+    act(() => {
+      if (service) publishChatEvent(service, AutopilotChatEvent.ConversationLoadMore);
+    });
+    await act(() => new Promise((resolve) => setTimeout(resolve, 700)));
+    expect(service?.getConversation()).toHaveLength(0);
   });
 
   it('appends a scenario to the current transcript', async () => {

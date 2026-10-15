@@ -2,41 +2,21 @@ import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { Box, Collapse, styled } from '@mui/material';
 import token from '@uipath/apollo-core';
-import { useIsStreamingMessage } from '@uipath/apollo-react/chat/headless/hooks/use-is-streaming-message';
-import { useChatService } from '@uipath/apollo-react/chat/headless/providers/chat-service.provider';
-import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
 import {
-  AutopilotChatEvent,
-  type AutopilotChatMessage,
-  AutopilotChatPreHookAction,
-  type PdfCitation,
-  type UrlCitation,
-} from '@uipath/apollo-react/chat/service';
+  useMessageSources,
+  useOpenCitation,
+} from '@uipath/apollo-react/chat/headless/hooks/use-citations';
+import { useIsStreamingMessage } from '@uipath/apollo-react/chat/headless/hooks/use-is-streaming-message';
+import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
+import type { AutopilotChatMessage } from '@uipath/apollo-react/chat/service';
 import { ApIcon } from '@uipath/apollo-react/material/components/ap-icon';
 import { ApTypography } from '@uipath/apollo-react/material/components/ap-typography';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { AutopilotChatTooltip } from '../../common/tooltip';
 
 interface AutopilotChatSourcesProps {
-  groupId: string;
   message: AutopilotChatMessage;
 }
-
-const getSources = (group: AutopilotChatMessage[]) => {
-  const allCitations = group
-    .flatMap((message) => message.contentParts?.flatMap((part) => part.citations) ?? [])
-    .filter((citation): citation is UrlCitation | PdfCitation => citation !== undefined);
-
-  // Deduplicate citations by ID, keeping the first occurrence
-  const seenIds = new Set<number>();
-  return allCitations.filter((citation) => {
-    if (seenIds.has(citation.id)) {
-      return false;
-    }
-    seenIds.add(citation.id);
-    return true;
-  });
-};
 
 const COLLAPSED_ITEMS_COUNT = 2;
 
@@ -147,50 +127,14 @@ const StyledActionButton = styled(Box)(() => ({
   '&:focus, &:active': { outlineColor: 'var(--color-focus-indicator)' },
 }));
 
-function AutopilotChatSourcesComponent({ groupId, message }: AutopilotChatSourcesProps) {
+function AutopilotChatSourcesComponent({ message }: AutopilotChatSourcesProps) {
   const { _ } = useLingui();
-  const chatService = useChatService();
   const { spacing } = useChatState();
-
-  const [sources, setSources] = useState<Array<UrlCitation | PdfCitation>>(
-    getSources(chatService?.getMessagesInGroup(groupId) ?? [])
-  );
+  const { sources, isWaitingForMoreMessages } = useMessageSources(message);
+  const handleSourceClick = useOpenCitation();
   const { isStreaming } = useIsStreamingMessage(message);
-  const [isWaitingForMoreMessages, setIsWaitingForMoreMessages] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [showFullList, setShowFullList] = useState(false);
-
-  useEffect(() => {
-    if (!chatService) {
-      return;
-    }
-
-    const unsubscribeResponse = chatService.on(
-      AutopilotChatEvent.Response,
-      (response: AutopilotChatMessage) => {
-        if (response.groupId === groupId || response.id === message.id) {
-          setSources(getSources(chatService.getMessagesInGroup(groupId)));
-          setIsWaitingForMoreMessages(!!response.shouldWaitForMoreMessages);
-        }
-      }
-    );
-
-    const unsubscribeChunk = chatService.on(AutopilotChatEvent.SendChunk, (chunk) => {
-      if (chunk.groupId === groupId || chunk.id === message.id) {
-        setSources(getSources(chatService.getMessagesInGroup(groupId)));
-      }
-    });
-
-    const unsubscribeStopResponse = chatService.on(AutopilotChatEvent.StopResponse, () => {
-      setSources(getSources(chatService.getMessagesInGroup(groupId)));
-    });
-
-    return () => {
-      unsubscribeResponse();
-      unsubscribeChunk();
-      unsubscribeStopResponse();
-    };
-  }, [chatService, message.id, groupId]);
 
   const handleToggleExpand = useCallback(() => {
     setIsExpanded(!isExpanded);
@@ -203,31 +147,6 @@ function AutopilotChatSourcesComponent({ groupId, message }: AutopilotChatSource
   const handleShowLess = useCallback(() => {
     setShowFullList(false);
   }, []);
-
-  const handleSourceClick = useCallback(
-    (source: UrlCitation | PdfCitation) => {
-      if (!chatService) {
-        return;
-      }
-
-      chatService
-        ?.getPreHook(AutopilotChatPreHookAction.CitationClick)({ citation: source })
-        .then((proceed) => {
-          if (!proceed) {
-            return;
-          }
-
-          const url =
-            'url' in source
-              ? source.url
-              : `${source.download_url}${source.page_number ? `#page=${source.page_number}` : ''}`;
-          if (url) {
-            window.open(url, '_blank', 'noopener,noreferrer');
-          }
-        });
-    },
-    [chatService]
-  );
 
   if (isWaitingForMoreMessages || isStreaming || sources.length === 0) {
     return null;

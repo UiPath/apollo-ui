@@ -51,6 +51,8 @@ Controls apply to the running chat through the service setters, without a new ch
 
 Closing a chat leaves an **Open chat** button where the host would put its launcher; it reopens in the selected \`mode\`.
 
+**Clear chat** is a host-side button beside the panels (in the host bar in FullScreen). It stops the running scenario (what it still has scheduled, and its cleanup: listeners, loading message, error, config it changed) and calls \`newChat()\` on every chat in the story, without a remount. It is a button because args cannot trigger an action.
+
 Icons on custom header actions and message actions come from the consumer: the Material renderer takes Material Icons names (\`picture_as_pdf\`), the Wind renderer takes lucide names, kebab-case (\`file-text\`) or the PascalCase export name (\`FileText\`). Names Wind cannot resolve show a neutral box. The playground gives each renderer its own action set for that reason.
 
 With both renderers, every control applies to both chats, scenarios replay into both on the same timers, and a message sent from either composer is mirrored to the other. Service events from each chat appear in the Actions panel, prefixed with the renderer.
@@ -197,4 +199,10 @@ export const FullScreen: Story = {
 export const CompareRenderers: Story = {
   name: 'Compare renderers',
   args: { renderer: 'both' },
+};
+
+/** Code blocks with HTML preview turned on, compared across both renderers. */
+export const HtmlPreview: Story = {
+  name: 'HTML preview',
+  args: { renderer: 'both', scenario: 'code', disableHtmlPreview: false },
 };

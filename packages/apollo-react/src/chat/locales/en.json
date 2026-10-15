@@ -86,5 +86,10 @@
   "autopilot-chat.message.response-received": "New response",
   "autopilot-chat.message.actions.copied": "Copied",
   "autopilot-chat.message.actions.feedback": "Rate this response",
-  "autopilot-chat.message.loading-older": "Loading older messages"
+  "autopilot-chat.message.loading-older": "Loading older messages",
+  "autopilot-chat.message.html-preview": "HTML preview",
+  "autopilot-chat.message.dialog-close": "Close",
+  "autopilot-chat.message.footnote-back": "Back to content",
+  "autopilot-chat.message.task-done": "Done",
+  "autopilot-chat.message.task-open": "Not done"
 }
