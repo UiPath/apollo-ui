@@ -35,6 +35,7 @@ import { GuardrailNameFields } from './components/guardrail-name-fields';
 import { GuardrailScopeSelector } from './components/guardrail-scope-selector';
 import { GuardrailStatusBanner } from './components/guardrail-status-banner';
 import { MixedScopesBanner } from './components/mixed-scopes-banner';
+import { nonBlankPolicyName, PolicyNameText } from './components/policy-name-text';
 import { isPolicyDisabledGuardrailDefinition } from './definitions-enrich';
 import { GuardrailFormLayout } from './guardrail-form-layout';
 import { GuardrailValidatorForm } from './guardrail-validator-form';
@@ -114,6 +115,12 @@ export interface GuardrailBuilderProps {
    * Flow's legacy builder does. Only a definition with a connector has one.
    */
   providerField?: boolean;
+  /**
+   * Name of the AI Trust Layer policy, for the banner on a definition that policy disabled
+   * (`disabledReason: 'Policy'`). The host already has it for `CentralizedGuardrailsSection`.
+   * Blank or absent, the banner says "your organization's AI Trust Layer policy" instead.
+   */
+  policyName?: string;
   /** Where the enable-for-evaluations switch renders. Default 'form'. */
   evalsTogglePlacement?: 'form' | 'footer';
   /**
@@ -188,6 +195,7 @@ export function GuardrailBuilder({
   title,
   byoDisplay = false,
   providerField = false,
+  policyName,
   evalsTogglePlacement = 'form',
   allowedActionTypes,
   renderRecipientSearch,
@@ -398,10 +406,20 @@ export function GuardrailBuilder({
 
   // The policy banner is a warning, not an error: the run goes ahead and skips the guardrail,
   // and only an administrator can change that.
+  const namedPolicy = nonBlankPolicyName(policyName);
   const statusBanner = isByoConfigurationDisabled ? (
     <GuardrailStatusBanner tone="error" message={labels.byoDisabledMessage} />
   ) : isPolicyDisabledGuardrailDefinition(definition) ? (
-    <GuardrailStatusBanner tone="warning" message={labels.policyDisabledMessage} />
+    <GuardrailStatusBanner
+      tone="warning"
+      message={
+        namedPolicy === undefined ? (
+          labels.policyDisabledMessage
+        ) : (
+          <PolicyNameText template={labels.policyDisabledNamedMessage} policyName={namedPolicy} />
+        )
+      }
+    />
   ) : definition.status === 'Unauthorised' ? (
     <GuardrailStatusBanner tone="warning" message={labels.unauthorizedMessage} />
   ) : definition.status === 'FeatureDisabled' ? (

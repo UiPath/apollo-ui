@@ -211,12 +211,14 @@ export const StatusByoDisabled: Story = {
 /**
  * A built-in validator the AI Trust Layer policy switched off (`disabledReason: 'Policy'`). Runs
  * skip it, so the banner is a warning, and Save stays disabled like every other non-available
- * status.
+ * status. With `policyName` the banner names the policy; without it, it says "your organization's
+ * AI Trust Layer policy".
  */
 export const StatusPolicyDisabled: Story = {
   args: {
     ...EditInline.args,
     definition: { ...piiDefinition, status: 'Disabled', disabledReason: 'Policy' },
+    policyName: 'Enterprise AI Trust Layer policy',
   },
 };
 

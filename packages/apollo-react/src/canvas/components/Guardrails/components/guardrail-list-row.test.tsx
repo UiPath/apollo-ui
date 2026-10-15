@@ -224,6 +224,29 @@ describe('GuardrailListRow', () => {
       expect(screen.getByText('Off by policy')).toBeInTheDocument();
     });
 
+    it('names the policy, emphasized, when the host passes it', () => {
+      const { container } = renderRow(
+        PII_GUARDRAIL,
+        { policyName: 'Enterprise', onEdit: vi.fn(), rowActivatesEdit: true },
+        POLICY_DISABLED
+      );
+
+      const notice = screen.getByText(/Disabled by AI Trust Layer policy:/);
+      expect(notice).toHaveTextContent(
+        'Disabled by AI Trust Layer policy: Enterprise. This guardrail is skipped when the agent runs.'
+      );
+      expect(notice.querySelector('em')).toHaveTextContent('Enterprise');
+      // The description reads the name too: it is part of the notice's text.
+      const ids = rowBody(container).getAttribute('aria-describedby')?.split(' ') ?? [];
+      expect(document.getElementById(ids[0] ?? '')?.textContent).toContain('policy: Enterprise');
+    });
+
+    it('falls back to the generic notice for a blank policy name', () => {
+      renderRow(PII_GUARDRAIL, { policyName: '' }, POLICY_DISABLED);
+
+      expect(screen.getByText(new RegExp(POLICY_COPY))).toBeInTheDocument();
+    });
+
     it.each([
       [
         'an unknown reason',

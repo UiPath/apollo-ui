@@ -279,6 +279,9 @@ import { GuardrailList } from '@uipath/apollo-react/canvas/guardrails';
 - **The policy notice is a warning.** A built-in validator row whose definition is `Disabled`
   with `disabledReason: 'Policy'` shows `policyDisabledNotice` in `text-warning`, with no
   live-region role: the run goes ahead without the guardrail, and nothing on the row changes that.
+  With `policyName` it names the policy instead (`policyDisabledNamedNotice`, the name in `<em>`
+  as in the centralized caption). The hosts already load that name for
+  `CentralizedGuardrailsSection`; a blank one falls back to the generic notice.
 
 ### Chips and notices
 
@@ -673,7 +676,8 @@ Contract highlights:
   (`byoDisabledMessage`). A built-in validator the AI Trust Layer policy switched off
   (`status: 'Disabled'`, `disabledReason: 'Policy'`) is a warning (`policyDisabledMessage`),
   since the run skips it and goes ahead; `Unauthorised` and `FeatureDisabled` are warnings too.
-  Save stays disabled for every status but `Available`.
+  Pass `policyName` and that banner names the policy (`policyDisabledNamedMessage`), as
+  `GuardrailList` does. Save stays disabled for every status but `Available`.
 - Requires an ancestor `TooltipProvider`.
 
 `GuardrailFormLayout` is exported standalone for hosts composing their own screen: three

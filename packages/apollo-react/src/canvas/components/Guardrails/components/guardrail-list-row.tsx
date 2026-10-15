@@ -19,6 +19,7 @@ import type {
   GuardrailRowTooltipRenderer,
 } from '../list-types';
 import { GuardrailStatusChip } from './guardrail-status-chip';
+import { nonBlankPolicyName, PolicyNameText } from './policy-name-text';
 
 export interface GuardrailListRowProps
   extends Omit<React.ComponentPropsWithoutRef<'div'>, 'children'> {
@@ -37,6 +38,8 @@ export interface GuardrailListRowProps
   statusChips?: boolean;
   previewChip?: boolean;
   byoChip?: boolean;
+  /** Names the AI Trust Layer policy in the policy notice. See `GuardrailListProps`. */
+  policyName?: string;
   /** Makes the row body a button that opens the editor (Agents' behaviour). */
   rowActivatesEdit?: boolean;
   onEdit?: (item: GuardrailListItem) => void;
@@ -69,6 +72,7 @@ const GuardrailListRow = React.forwardRef<HTMLDivElement, GuardrailListRowProps>
       statusChips = false,
       previewChip = false,
       byoChip = false,
+      policyName,
       rowActivatesEdit = false,
       onEdit,
       onRemove,
@@ -88,6 +92,7 @@ const GuardrailListRow = React.forwardRef<HTMLDivElement, GuardrailListRowProps>
       ? getGuardrailListChips({ status: state.status, administration }, labels)
       : [];
     const isBuiltInValidator = item.$guardrailType === 'builtInValidator';
+    const namedPolicy = nonBlankPolicyName(policyName);
 
     // Every row ships the same two icon buttons, so an unnamed one leaves a screen-reader user
     // unable to tell which row they are on. The generic label stays for a row with no name.
@@ -253,7 +258,14 @@ const GuardrailListRow = React.forwardRef<HTMLDivElement, GuardrailListRowProps>
               asks for action; the row's `aria-describedby` and reading order carry it. */}
         {state.policyDisabled && (
           <div id={policyDisabledId} className="whitespace-normal break-words text-xs text-warning">
-            {labels.policyDisabledNotice}
+            {namedPolicy === undefined ? (
+              labels.policyDisabledNotice
+            ) : (
+              <PolicyNameText
+                template={labels.policyDisabledNamedNotice}
+                policyName={namedPolicy}
+              />
+            )}
           </div>
         )}
         {item.description && (
