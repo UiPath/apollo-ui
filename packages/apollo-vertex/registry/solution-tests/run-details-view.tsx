@@ -60,7 +60,7 @@ export interface RunDetailsViewProps {
   updatingResultId: string | null;
   removingBaselineId: string | null;
   /** True while a run of this test is in flight; baselines can't change then. */
-  isBaselineLocked: boolean;
+  isBaselineLocked?: boolean;
   onBack: () => void;
   onSelect: (resultId: string) => void;
   onAdopt: (resultId: string) => void;
@@ -79,7 +79,7 @@ export const RunDetailsView = ({
   adoptingResultId,
   updatingResultId,
   removingBaselineId,
-  isBaselineLocked,
+  isBaselineLocked = false,
   onBack,
   onSelect,
   onAdopt,
@@ -317,7 +317,9 @@ const ActionButton = ({
 }: ActionButtonProps) => (
   <Tooltip>
     <TooltipTrigger asChild>
-      <span className="inline-flex">
+      {/* A disabled button can't take focus, so the wrapper does while
+          locked, letting keyboard users reach the reason. */}
+      <span className="inline-flex" tabIndex={lockReason == null ? -1 : 0}>
         <Button
           variant="outline"
           size="sm"
