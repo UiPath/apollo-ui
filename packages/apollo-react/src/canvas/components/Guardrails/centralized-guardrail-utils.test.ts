@@ -12,7 +12,7 @@ import {
   resolveCentralizedGuardrailParameters,
 } from './centralized-guardrail-utils';
 import type { CentralizedGuardrail, CentralizedGuardrailDefinition } from './centralized-types';
-import type { GuardrailCopyTable } from './definitions-copy';
+import { GUARDRAIL_COPY_EN, type GuardrailCopyTable } from './definitions-copy';
 import { CENTRALIZED_GUARDRAILS_EN_LABELS } from './i18n';
 
 const FALLBACK_LABELS = {
@@ -20,6 +20,14 @@ const FALLBACK_LABELS = {
   disabled: CENTRALIZED_GUARDRAILS_EN_LABELS.parameterDisabled,
   entities: CENTRALIZED_GUARDRAILS_EN_LABELS.entitiesFallback,
   thresholds: CENTRALIZED_GUARDRAILS_EN_LABELS.thresholdsFallback,
+  detectionScope: {
+    label: CENTRALIZED_GUARDRAILS_EN_LABELS.detectionScopeFallback,
+    options: {
+      Text: CENTRALIZED_GUARDRAILS_EN_LABELS.detectionScopeText,
+      Files: CENTRALIZED_GUARDRAILS_EN_LABELS.detectionScopeFiles,
+      Both: CENTRALIZED_GUARDRAILS_EN_LABELS.detectionScopeBoth,
+    },
+  },
 };
 
 const guardrail = (overrides: Partial<CentralizedGuardrail> = {}): CentralizedGuardrail => ({
@@ -419,6 +427,298 @@ describe('resolveCentralizedGuardrailParameters, built-in guardrails', () => {
         labels: FALLBACK_LABELS,
       })
     ).toEqual([]);
+  });
+});
+
+describe('resolveCentralizedGuardrailParameters, parameters the definition does not declare', () => {
+  const detectionScope = (value: string) => ({
+    id: 'detectionScope',
+    parameterType: 'enum',
+    value,
+  });
+
+  const JUDGE_PARAMETERS: CentralizedGuardrail['parameters'] = [
+    { id: 'guardrailText', parameterType: 'text', value: 'No medical advice.' },
+    { id: 'model', parameterType: 'enum', value: 'gpt-4o-2024-11-20' },
+    { id: 'threshold', parameterType: 'number', value: 4 },
+    { id: 'positiveExamples', parameterType: 'text-list', value: ['Take an aspirin.'] },
+    { id: 'negativeExamples', parameterType: 'text-list', value: ['See a doctor.', 'Rest.'] },
+    detectionScope('Both'),
+  ];
+
+  it('follows the lifted entity rows with the detection scope, named by the fallback copy', () => {
+    const rows = resolveCentralizedGuardrailParameters(
+      guardrail({
+        entities: ['Email'],
+        entityThresholds: { Email: 0.8 },
+        parameters: [detectionScope('Files')],
+      }),
+      { definition: PII_DEFINITION, labels: FALLBACK_LABELS }
+    );
+
+    expect(rows).toEqual([
+      {
+        id: 'entityThresholds',
+        kind: 'thresholds',
+        label: 'Detection thresholds',
+        thresholds: [{ key: 'Email', label: 'Email address', value: 0.8 }],
+      },
+      { id: 'detectionScope', kind: 'value', label: 'Detection scope', value: 'Files only' },
+    ]);
+  });
+
+  it('leaves the host’s definition untouched while describing what it does not declare', () => {
+    const definition = structuredClone(PII_DEFINITION);
+    resolveCentralizedGuardrailParameters(
+      guardrail({ entities: ['Email'], parameters: [detectionScope('Files')] }),
+      { definition, labels: FALLBACK_LABELS, copy: GUARDRAIL_COPY_EN }
+    );
+
+    expect(definition).toEqual(PII_DEFINITION);
+  });
+
+  it('names each detection scope option the way the per-agent builder does', () => {
+    const shownFor = (value: string) =>
+      resolveCentralizedGuardrailParameters(guardrail({ parameters: [detectionScope(value)] }), {
+        labels: FALLBACK_LABELS,
+      }).map((row) => (row.kind === 'value' ? row.value : undefined));
+
+    expect(shownFor('Text')).toEqual(['Text only']);
+    expect(shownFor('Files')).toEqual(['Files only']);
+    expect(shownFor('Both')).toEqual(['Text and files']);
+    // A scope this package has not heard of still shows what the policy stored.
+    expect(shownFor('Images')).toEqual(['Images']);
+  });
+
+  it('prefers the definition’s own detection scope copy over the shared fallback', () => {
+    const rows = resolveCentralizedGuardrailParameters(
+      guardrail({ parameters: [detectionScope('Files')] }),
+      {
+        definition: {
+          validator: 'pii_detection',
+          parameters: [
+            ...(PII_DEFINITION.parameters ?? []),
+            {
+              id: 'detectionScope',
+              type: 'enum',
+              label: 'Content checked',
+              optionLabels: { Files: 'Attachments' },
+            },
+          ],
+        },
+        labels: FALLBACK_LABELS,
+      }
+    );
+
+    expect(rows).toEqual([
+      { id: 'detectionScope', kind: 'value', label: 'Content checked', value: 'Attachments' },
+    ]);
+  });
+
+  it('renders the detection scope raw for a host that passes no copy for it', () => {
+    const { detectionScope: _omitted, ...labels } = FALLBACK_LABELS;
+    const rows = resolveCentralizedGuardrailParameters(
+      guardrail({ parameters: [detectionScope('Files')] }),
+      { labels }
+    );
+
+    expect(rows).toEqual([
+      { id: 'detectionScope', kind: 'value', label: 'detectionScope', value: 'Files' },
+    ]);
+  });
+
+  it('labels the judge’s parameters from the curated copy when no definition matched', () => {
+    const rows = resolveCentralizedGuardrailParameters(
+      guardrail({ validator: 'llm_as_judge', parameters: JUDGE_PARAMETERS }),
+      { labels: FALLBACK_LABELS, copy: GUARDRAIL_COPY_EN }
+    );
+
+    expect(rows).toEqual([
+      { id: 'guardrailText', kind: 'value', label: 'Rule prompt', value: 'No medical advice.' },
+      { id: 'model', kind: 'value', label: 'Judge model', value: 'gpt-4o-2024-11-20' },
+      { id: 'threshold', kind: 'value', label: 'Strictness', value: '4' },
+      {
+        id: 'positiveExamples',
+        kind: 'value',
+        label: 'Positive examples',
+        value: 'Take an aspirin.',
+      },
+      {
+        id: 'negativeExamples',
+        kind: 'value',
+        label: 'Negative examples',
+        value: 'See a doctor., Rest.',
+      },
+      { id: 'detectionScope', kind: 'value', label: 'Detection scope', value: 'Text and files' },
+    ]);
+  });
+
+  it('keeps the policy’s order for the parameters nothing declares', () => {
+    const rows = resolveCentralizedGuardrailParameters(
+      guardrail({ validator: 'llm_as_judge', parameters: [...JUDGE_PARAMETERS].reverse() }),
+      { labels: FALLBACK_LABELS, copy: GUARDRAIL_COPY_EN }
+    );
+
+    expect(rows.map((row) => row.id)).toEqual([
+      'detectionScope',
+      'negativeExamples',
+      'positiveExamples',
+      'threshold',
+      'model',
+      'guardrailText',
+    ]);
+  });
+
+  it('keeps the policy’s order between a parameter the copy names and one it does not', () => {
+    const rows = resolveCentralizedGuardrailParameters(
+      guardrail({
+        validator: 'llm_as_judge',
+        parameters: [
+          { id: 'customFlag', parameterType: 'text', value: 'x' },
+          { id: 'guardrailText', parameterType: 'text', value: 'No medical advice.' },
+        ],
+      }),
+      { labels: FALLBACK_LABELS, copy: GUARDRAIL_COPY_EN }
+    );
+
+    expect(rows.map((row) => [row.id, row.label])).toEqual([
+      ['customFlag', 'customFlag'],
+      ['guardrailText', 'Rule prompt'],
+    ]);
+  });
+
+  it('lets the definition’s order win over the policy’s for the parameters it declares', () => {
+    const rows = resolveCentralizedGuardrailParameters(
+      guardrail({
+        validator: 'llm_as_judge',
+        parameters: [
+          detectionScope('Text'),
+          { id: 'threshold', parameterType: 'number', value: 2 },
+        ],
+      }),
+      {
+        definition: {
+          validator: 'llm_as_judge',
+          parameters: [{ id: 'threshold', type: 'number', label: 'Strictness' }],
+        },
+        labels: FALLBACK_LABELS,
+      }
+    );
+
+    expect(rows.map((row) => row.id)).toEqual(['threshold', 'detectionScope']);
+  });
+
+  it('takes the curated option names too, so sentiment’s languages read as languages', () => {
+    const rows = resolveCentralizedGuardrailParameters(
+      guardrail({
+        validator: 'sentiment',
+        parameters: [{ id: 'language', parameterType: 'enum-list', value: ['en', 'pt-BR'] }],
+      }),
+      { labels: FALLBACK_LABELS, copy: GUARDRAIL_COPY_EN }
+    );
+
+    expect(rows).toEqual([
+      { id: 'language', kind: 'value', label: 'Languages', value: 'English, Portuguese (Brazil)' },
+    ]);
+  });
+
+  it('prefers the definition’s label over the curated copy', () => {
+    const rows = resolveCentralizedGuardrailParameters(
+      guardrail({
+        validator: 'sentiment',
+        parameters: [{ id: 'language', parameterType: 'enum-list', value: ['en'] }],
+      }),
+      { definition: SENTIMENT_DEFINITION, labels: FALLBACK_LABELS, copy: GUARDRAIL_COPY_EN }
+    );
+
+    expect(rows.map((row) => row.label)).toEqual(['Languages']);
+    expect(
+      resolveCentralizedGuardrailParameters(
+        guardrail({
+          validator: 'sentiment',
+          parameters: [{ id: 'language', parameterType: 'enum-list', value: ['en'] }],
+        }),
+        {
+          definition: {
+            validator: 'sentiment',
+            parameters: [{ id: 'language', type: 'enum-list', label: 'Scored as' }],
+          },
+          labels: FALLBACK_LABELS,
+          copy: GUARDRAIL_COPY_EN,
+        }
+      ).map((row) => row.label)
+    ).toEqual(['Scored as']);
+  });
+
+  it('never borrows curated copy for a BYO guardrail sharing a built-in’s validator id', () => {
+    const rows = resolveCentralizedGuardrailParameters(
+      guardrail({
+        validator: 'llm_as_judge',
+        isByo: true,
+        name: 'Acme judge',
+        parameters: [
+          { id: 'model', parameterType: 'enum', value: 'acme-1' },
+          detectionScope('Files'),
+        ],
+      }),
+      { labels: FALLBACK_LABELS, copy: GUARDRAIL_COPY_EN }
+    );
+
+    expect(rows.map((row) => row.label)).toEqual(['model', 'detectionScope']);
+  });
+
+  it('shows a repeated detection scope once, never beside a lifted field of the same id', () => {
+    const rows = resolveCentralizedGuardrailParameters(
+      guardrail({
+        entities: ['Email'],
+        parameters: [
+          detectionScope('Files'),
+          detectionScope('Both'),
+          { id: 'entities', value: ['URL'] },
+        ],
+      }),
+      { definition: PII_DEFINITION, labels: FALLBACK_LABELS }
+    );
+
+    expect(rows.map((row) => [row.id, row.label])).toEqual([
+      ['entities', 'Entities to detect'],
+      ['detectionScope', 'Detection scope'],
+    ]);
+  });
+
+  it('renders each value by its shape: a map as thresholds, a list of records as JSON', () => {
+    const rows = resolveCentralizedGuardrailParameters(
+      guardrail({
+        validator: 'llm_as_judge',
+        parameters: [
+          { id: 'scores', parameterType: 'map-enum', value: { Hate: 2 } },
+          { id: 'rubric', parameterType: 'rubric', value: [{ name: 'tone', weight: 1 }] },
+        ],
+      }),
+      { labels: FALLBACK_LABELS, copy: GUARDRAIL_COPY_EN }
+    );
+
+    expect(rows).toEqual([
+      {
+        id: 'scores',
+        kind: 'thresholds',
+        label: 'Detection thresholds',
+        thresholds: [{ key: 'Hate', label: 'Hate', value: 2 }],
+      },
+      { id: 'rubric', kind: 'value', label: 'rubric', value: '[{"name":"tone","weight":1}]' },
+    ]);
+  });
+
+  it('reads the curated table as own properties only', () => {
+    const rows = resolveCentralizedGuardrailParameters(
+      guardrail({
+        validator: 'constructor',
+        parameters: [{ id: 'toString', parameterType: 'text', value: 'x' }],
+      }),
+      { labels: FALLBACK_LABELS, copy: GUARDRAIL_COPY_EN }
+    );
+
+    expect(rows).toEqual([{ id: 'toString', kind: 'value', label: 'toString', value: 'x' }]);
   });
 });
 
