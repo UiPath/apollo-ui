@@ -1,5 +1,5 @@
-import type { TSpan } from '../ApToolCall.types';
-import { spanIconsMap } from '../assets/spanIcons';
+import { spanIconsMap } from './span-icons';
+import { getSpanAttributes, type ToolCallSpanData } from './tool-call-model';
 
 const SPAN_FUNCTION_TYPES = [
   'function_call_sync',
@@ -58,23 +58,11 @@ const API_WORKFLOW_TASK_ICON_MAP = new Map<string, string>([
   ['WorkflowStart', 'workflow-start-icon'],
 ]);
 
-function getAttributes(span: TSpan): Record<string, any> {
-  const attrs = span.attributes;
-  if (typeof attrs === 'string') {
-    try {
-      return JSON.parse(attrs);
-    } catch {
-      return {};
-    }
-  }
-  return (attrs as Record<string, any>) ?? {};
-}
-
 function isFunctionSpan(type: string): boolean {
   return (SPAN_FUNCTION_TYPES as readonly string[]).includes(type);
 }
 
-function getIconKey(span: TSpan): string {
+function getIconKey(span: ToolCallSpanData): string {
   const spanType = span.type ?? '';
 
   const simpleKey = SPAN_ICON_MAP.get(spanType);
@@ -82,12 +70,14 @@ function getIconKey(span: TSpan): string {
     return simpleKey;
   }
 
-  const attrs = getAttributes(span);
+  const attrs = getSpanAttributes(span);
 
   switch (spanType) {
     case 'completion':
     case 'agentOutput':
-      return (attrs.model as string | undefined)?.includes('gpt-') ? 'open-ai' : 'generic-ai';
+      return typeof attrs.model === 'string' && attrs.model.includes('gpt-')
+        ? 'open-ai'
+        : 'generic-ai';
 
     case 'toolCall':
       return attrs.toolType === 'Agent' ? 'agent-run' : 'process-tool';
@@ -100,6 +90,6 @@ function getIconKey(span: TSpan): string {
   }
 }
 
-export function getSpanIconSvg(span: TSpan): string | null {
+export function getSpanIconSvg(span: ToolCallSpanData): string | null {
   return spanIconsMap.get(getIconKey(span)) ?? null;
 }

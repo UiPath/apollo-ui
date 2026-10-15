@@ -33,7 +33,7 @@ The Material renderer depends on this folder, never the other way round.
 
 - The root element carries the chat theme as a class (`light`, `dark`, `light-hc`, `dark-hc`, `future-light`, `future-dark`), so it themes itself regardless of the host's body class. Menus, tooltips and hover cards portal inside that root, or into a themed node inside `portalContainer` when the host passes one. Modal dialogs (code block expand and HTML preview) always portal to that themed node, placed in `portalContainer` or else `document.body` at z-index 1300 (Material's modal level), so they cover the page rather than the chat panel.
 - `spacing.compactMode` sets `data-density="compact"` on the root.
-- `icon` values on custom header actions and message actions are renderer-specific: Material takes Material Icons names, Wind takes lucide names (kebab-case such as `file-text`, or the PascalCase export name `FileText`). Wind loads each icon lazily through `lucide-react/dynamic` and shows a neutral box for names it cannot resolve.
+- `icon` values on custom header actions, message actions and tree message spans (`span.data.icon`) are renderer-specific: Material takes Material Icons names, Wind takes lucide names (kebab-case such as `file-text`, or the PascalCase export name `FileText`). Wind loads each icon lazily through `lucide-react/dynamic` and shows a neutral box for names it cannot resolve.
 
 ## Styles
 

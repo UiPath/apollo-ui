@@ -34,9 +34,12 @@ import {
   STREAMED_MARKDOWN,
   STREAMING_REPLY,
   type StoryToolCallDisplayMode,
+  storyEscalationSpan,
+  storyFailedToolCallMeta,
   storyHistoryPage,
+  storyInputsAndOutputsMeta,
   storyToolCallMeta,
-  storyTraceSpan,
+  storyTreeSpan,
   WIND_RESPONSE_ACTIONS,
   withResourceIcons,
 } from './chat-story-fixtures';
@@ -263,25 +266,47 @@ export const CHAT_STORY_SCENARIOS = {
   'tool-call': {
     label: 'Tool calls',
     description:
-      'Appends one tool call per display mode: tool name only, inputs and outputs, full trace.',
+      'Appends one tool call per display mode (tool name only, inputs and outputs, full trace), then a call that runs and finishes under the same id (an expanded body stays open), a failed call, and a trace waiting on escalation task links, which opens by itself.',
     run: (context) => {
+      const { service, delayMs } = context;
+      const toolCall = (meta: object, id?: string) =>
+        respond(service, {
+          ...(id ? { id } : {}),
+          content: 'Tool call response',
+          widget: AGENTS_TOOL_CALL_RENDERER,
+          meta,
+        });
       context.sendScriptedRequest({ content: 'Search the web for me.' });
       TOOL_CALL_MODES.forEach((displayMode, index) => {
-        context.schedule(
-          () =>
-            respond(context.service, {
-              content: 'Tool call response',
-              widget: AGENTS_TOOL_CALL_RENDERER,
-              meta: storyToolCallMeta(displayMode),
-            }),
-          context.delayMs * (index + 1)
-        );
+        context.schedule(() => toolCall(storyToolCallMeta(displayMode)), delayMs * (index + 1));
       });
+
+      // Starts when it is sent and finishes 3s later, so the line reads about 3 seconds.
+      const runningId = `tool-call-${crypto.randomUUID()}`;
+      let runningMeta: ReturnType<typeof storyInputsAndOutputsMeta> | undefined;
+      context.schedule(() => {
+        runningMeta = {
+          ...storyInputsAndOutputsMeta(),
+          startTime: new Date().toISOString(),
+        };
+        const { output: _output, isError: _isError, endTime: _endTime, ...running } = runningMeta;
+        toolCall(running, runningId);
+      }, delayMs * 4);
+      context.schedule(
+        () => toolCall({ ...runningMeta, endTime: new Date().toISOString() }, runningId),
+        delayMs * 4 + 3000
+      );
+      context.schedule(() => toolCall(storyFailedToolCallMeta()), delayMs * 5);
+      context.schedule(
+        () => toolCall({ displayMode: 'FullTrace', span: storyEscalationSpan() }),
+        delayMs * 6
+      );
     },
   },
   tree: {
     label: 'Tree message',
-    description: 'Appends a trace rendered as a tree.',
+    description:
+      'Appends a trace rendered as a tree. Spans with a description show it as a tooltip; spans without one show none.',
     run: (context) => {
       context.sendScriptedRequest({ content: 'Show me the agent trace.' });
       context.schedule(
@@ -289,7 +314,7 @@ export const CHAT_STORY_SCENARIOS = {
           respond(context.service, {
             content: 'Trace',
             widget: APOLLO_CHAT_TREE_RENDERER,
-            meta: { span: storyTraceSpan() },
+            meta: { span: storyTreeSpan() },
           }),
         context.delayMs
       );
