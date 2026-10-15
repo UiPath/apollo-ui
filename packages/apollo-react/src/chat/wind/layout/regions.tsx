@@ -4,14 +4,6 @@ import { PlaceholderRegion } from './placeholder-region';
 
 // Each region is replaced by its real implementation as the Wind renderer is built out.
 
-export function MessagesRegion() {
-  return (
-    <PlaceholderRegion name="Messages" slot="wind-chat-messages" className="min-h-0 flex-1">
-      Message list: not available in the Wind renderer yet.
-    </PlaceholderRegion>
-  );
-}
-
 /**
  * Shows the configured placeholder and footer disclaimer, so label overrides are visible before
  * the real composer replaces this region.

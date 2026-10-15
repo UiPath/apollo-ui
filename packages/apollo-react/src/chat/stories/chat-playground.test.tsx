@@ -1,5 +1,5 @@
 import { act, render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AutopilotChatMode, AutopilotChatService } from '../index';
 import {
@@ -37,6 +37,7 @@ const baseProps = (): ChatPlaygroundProps => ({
   firstRunExperience: false,
   customHeaderActions: false,
   preHooks: false,
+  autoScroll: true,
   scenario: 'none',
   autoReply: 'off',
   streamDelayMs: 1,
@@ -82,6 +83,19 @@ describe('ChatPlayground', () => {
       'data-mode',
       AutopilotChatMode.FullScreen
     );
+  });
+
+  it('applies an initial autoScroll of false at mount', async () => {
+    const toggle = vi.spyOn(AutopilotChatService.prototype, 'toggleAutoScroll');
+    try {
+      render(<ChatPlayground {...baseProps()} autoScroll={false} scenario="conversation" />);
+      await flush();
+
+      expect(toggle).toHaveBeenCalledTimes(1);
+      expect(toggle).toHaveBeenCalledWith(false);
+    } finally {
+      toggle.mockRestore();
+    }
   });
 
   it('appends a scenario to the current transcript', async () => {

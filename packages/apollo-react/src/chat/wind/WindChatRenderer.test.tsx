@@ -59,12 +59,12 @@ describe('WindChatRenderer', () => {
     render(<ApChat chatServiceInstance={service} />);
 
     expect(getRoot()).not.toHaveAttribute('data-density');
-    expect(screen.getByRole('banner')).toHaveClass('min-h-12');
+    expect(screen.getByRole('banner')).toHaveClass('py-4');
 
     act(() => service.patchConfig({ spacing: { compactMode: true } }));
 
     expect(getRoot()).toHaveAttribute('data-density', 'compact');
-    expect(screen.getByRole('banner')).toHaveClass('min-h-10');
+    expect(screen.getByRole('banner')).toHaveClass('py-2');
   });
 
   it('renders the title, preview badge and override labels', () => {

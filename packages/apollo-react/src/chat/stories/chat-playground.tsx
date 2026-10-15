@@ -94,6 +94,8 @@ export interface PlaygroundArgs extends FeatureFlagArgs {
   firstRunExperience: boolean;
   customHeaderActions: boolean;
   preHooks: boolean;
+  /** `toggleAutoScroll`: follow new content while at the end. */
+  autoScroll: boolean;
   scenario: ChatStoryScenarioId;
   autoReply: PlaygroundAutoReply;
   streamDelayMs: number;
@@ -295,6 +297,8 @@ function ChatSlot({
   argsRef.current = args;
   const labelRef = React.useRef(label);
   labelRef.current = label;
+  const rendererRef = React.useRef(renderer);
+  rendererRef.current = renderer;
 
   const adoptHost = React.useCallback(
     (node: HTMLDivElement | null) => {
@@ -358,6 +362,7 @@ function ChatSlot({
           streamChunks(
             {
               service,
+              renderer: rendererRef.current,
               delayMs: streamDelayMs,
               schedule: timers.schedule,
               sendScriptedRequest: () => {},
@@ -411,6 +416,7 @@ function ChatSlot({
   useOnChange(args.customHeaderActions, (enabled) =>
     service.setCustomHeaderActions(customActionsFor(renderer, enabled))
   );
+  useOnChange(args.autoScroll, (enabled) => service.toggleAutoScroll(enabled));
   useOnChange(args.preHooks, (enabled) => {
     for (const action of PRE_HOOK_ACTIONS) {
       service.setPreHook(action, enabled ? confirmPreHook(action) : allowPreHook);
@@ -431,6 +437,7 @@ function ChatSlot({
     const cleanups: Array<() => void> = [];
     const context: ScenarioContext = {
       service,
+      renderer: rendererRef.current,
       delayMs: argsRef.current.streamDelayMs,
       sendScriptedRequest: (request) => {
         const requestId = crypto.randomUUID();
@@ -452,6 +459,14 @@ function ChatSlot({
       for (const cleanup of cleanups) cleanup();
     };
   }, [args.scenario, id, registry, service, log]);
+
+  // Like `preHooks`, the initial value is applied at mount; after the scenario, whose new chat
+  // switches following back on. A later scripted turn switches it on again, as in a host app.
+  React.useEffect(() => {
+    if (!argsRef.current.autoScroll) {
+      service.toggleAutoScroll(false);
+    }
+  }, [service]);
 
   const fullScreen = args.mode === AutopilotChatMode.FullScreen;
 
