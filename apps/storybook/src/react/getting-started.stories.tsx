@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import * as React from 'react';
 
 const meta = {
-  title: 'Introduction/Getting Started',
+  title: 'Getting Started',
   parameters: {
     layout: 'fullscreen',
   },
@@ -677,7 +677,7 @@ function GettingStartedPage({ globalTheme }: { globalTheme: string }) {
         'min-h-screen w-full bg-background text-foreground'
       )}
     >
-      <div className="mx-auto max-w-3xl space-y-2 p-8">
+      <div className="mx-auto max-w-4xl space-y-2 px-8 py-16">
         {/* Header */}
         <h1 className="text-[2rem] font-bold tracking-tight text-foreground">Apollo Canvas</h1>
         <p className="text-base leading-7 text-muted-foreground">

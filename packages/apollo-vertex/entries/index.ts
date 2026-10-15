@@ -168,6 +168,8 @@ export {
   TOKEN_QUERY_KEY,
   type TokenData,
   ensureValidToken,
+  getStoredIdToken,
+  getTokenQueryKey,
   login,
   logout,
   resolveReturnPath,

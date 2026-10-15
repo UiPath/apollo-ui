@@ -1,3 +1,4 @@
+import { isPolicyDisabledGuardrailDefinition } from './definitions-enrich';
 import type { GuardrailListLabels } from './i18n';
 import type {
   GuardrailListAdministration,
@@ -44,6 +45,8 @@ export function resolveGuardrailListItemState(
   );
   const byoUnavailable = isByo && definitions.length > 0 && definition === undefined;
   const byoDisabled = isByo && definition?.status === 'Disabled';
+  const policyDisabled =
+    definition !== undefined && isPolicyDisabledGuardrailDefinition(definition);
 
   return {
     definition,
@@ -52,6 +55,7 @@ export function resolveGuardrailListItemState(
     provider: definition?.byoConnectorName,
     byoDisabled,
     byoUnavailable,
+    policyDisabled,
   };
 }
 

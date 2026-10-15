@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 import { findCatalogDrift, findCatalogOrphans } from './__fixtures__/catalog-coverage';
-import type { GuardrailFileSupportLabels } from './i18n';
+import type { CentralizedGuardrailsLabels, GuardrailFileSupportLabels } from './i18n';
 import {
   CENTRALIZED_GUARDRAILS_EN_LABELS,
   CENTRALIZED_GUARDRAILS_EN_MESSAGES,
@@ -481,6 +481,25 @@ describe('the shared canvas catalog', () => {
       missing: [],
       drifted: [],
     });
+  });
+
+  it('names a centralized detection scope the way the per-agent builder’s definition does', () => {
+    // The builder's copy arrives on the backend definition; the centralized details need it
+    // when the definition does not carry the parameter, so the two must read the same.
+    expect([
+      CENTRALIZED_GUARDRAILS_EN_LABELS.detectionScopeFallback,
+      CENTRALIZED_GUARDRAILS_EN_LABELS.detectionScopeText,
+      CENTRALIZED_GUARDRAILS_EN_LABELS.detectionScopeFiles,
+      CENTRALIZED_GUARDRAILS_EN_LABELS.detectionScopeBoth,
+    ]).toEqual(['Detection scope', 'Text only', 'Files only', 'Text and files']);
+  });
+
+  it('still accepts a centralized labels table without the detection scope fallback', () => {
+    type Legacy = Omit<
+      CentralizedGuardrailsLabels,
+      'detectionScopeFallback' | 'detectionScopeText' | 'detectionScopeFiles' | 'detectionScopeBoth'
+    >;
+    expectTypeOf<Legacy>().toExtend<CentralizedGuardrailsLabels>();
   });
 
   it('carries no centralized message the source no longer declares', () => {

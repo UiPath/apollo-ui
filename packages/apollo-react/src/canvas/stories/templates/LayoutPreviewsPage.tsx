@@ -539,6 +539,7 @@ const contentBodies: Record<ContentVariant, ReactNode> = {
 
 type Preview = {
   name: string;
+  status?: 'Prototype';
   description: string;
   regions: string[];
   storyId?: string;
@@ -576,7 +577,9 @@ const standalonePreviews: Preview[] = [
   },
   {
     name: 'Sidebar Left',
-    description: 'A collapsible sidebar for variables, files, connections, and run history.',
+    status: 'Prototype',
+    description:
+      'A vision for a future collapsible sidebar for variables, files, connections, and run history. Exploratory concept; not an official or final design.',
     regions: ['Sidebar', 'Canvas'],
     storyId: 'apollo-react-canvas-templates-flow-standalone--with-left-sidebar',
     preview: <StandaloneShell sidebar="expanded" highlight={['sidebar']} />,
@@ -662,18 +665,21 @@ const contentPreviews: (Omit<Preview, 'preview'> & { variant: ContentVariant })[
     description: 'Schema-driven form sections for configuring a node without leaving the canvas.',
     regions: ['Sections', 'Fields'],
     variant: 'forms',
+    storyId: 'apollo-react-canvas-components-panels-node-property-panel--quick-form',
   },
   {
     name: 'Rule Building',
     description: 'Condition rows joined by AND or OR, with a clear way to add another rule.',
     regions: ['Conditions', 'Operators'],
     variant: 'rules',
+    storyId: 'apollo-wind-forms-guidance-repeatable-rows--documentation',
   },
   {
     name: 'Variables',
     description: 'Inputs, outputs, and workflow variables for a node. Expands into a takeover.',
     regions: ['Tabs', 'Variable list', 'Takeover'],
     variant: 'variables',
+    storyId: 'apollo-react-canvas-components-panels-node-property-panel--variables',
   },
   {
     name: 'Node',
@@ -708,7 +714,7 @@ const contentPreviews: (Omit<Preview, 'preview'> & { variant: ContentVariant })[
 // Page
 // ============================================================================
 
-function PreviewCard({ name, description, regions, storyId, preview }: Preview) {
+function PreviewCard({ name, status, description, regions, storyId, preview }: Preview) {
   const Wrapper = storyId ? 'a' : 'div';
   return (
     <Wrapper
@@ -727,7 +733,14 @@ function PreviewCard({ name, description, regions, storyId, preview }: Preview) 
       </div>
       <div className="flex flex-1 flex-col gap-2 p-4">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="text-sm font-semibold text-foreground">{name}</h3>
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="text-sm font-semibold text-foreground">{name}</h3>
+            {status && (
+              <span className="rounded-full border border-warning/50 bg-warning-background/25 px-2 py-0.5 text-[10px] font-semibold text-warning">
+                {status}
+              </span>
+            )}
+          </div>
           {storyId ? (
             <ArrowUpRight className="size-4 shrink-0 text-foreground-subtle transition-colors group-hover:text-brand" />
           ) : (

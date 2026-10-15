@@ -57,8 +57,6 @@ pnpm --filter @uipath/apollo-react test -- --grep "ApButton"
 pnpm --filter @uipath/apollo-wind test:watch -- button.test.tsx
 ```
 
-Note: @uipath/apollo-vertex currently has no test files. Tests are in `packages/apollo-wind` and `packages/apollo-react`.
-
 ## Code Style Guidelines
 
 ### Formatting (Biome)
