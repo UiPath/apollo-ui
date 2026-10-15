@@ -7,7 +7,7 @@ import { ChevronRight, LogIn, LogOut } from "lucide-react";
 import type { ReactNode } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { STORAGE_KEYS, toCodedAppFilePath } from "@/lib/auth";
+import { getStoredIdToken, STORAGE_KEYS, toCodedAppFilePath } from "@/lib/auth";
 import { STALE_TIME_MS } from "@/lib/constants";
 import {
   Select,
@@ -18,10 +18,12 @@ import {
 } from "@/registry/select/select";
 import { useAuth } from "@/registry/shell/shell-auth-provider";
 import {
+  AICHAT_CLIENT_ID,
   AICHAT_CODED_APP_PATH,
   AICHAT_DIRECT_BASE_URL,
   AICHAT_IS_CODED_APP,
   AICHAT_PORTAL_API_BASE,
+  AICHAT_SCOPE,
   AICHAT_STORAGE_KEYS,
 } from "./ai-chat-example-utils";
 
@@ -169,23 +171,7 @@ export function AiChatLoginGate({ children }: AiChatLoginGateProps) {
   const orgTenant = resolveOrgTenant(orgInfo, selectedTenantId);
 
   function handleLogout() {
-    const tokenDataStr = localStorage.getItem(STORAGE_KEYS.TOKEN);
-    let idToken: string | null = null;
-    if (tokenDataStr) {
-      try {
-        const parsed: unknown = JSON.parse(tokenDataStr);
-        if (
-          typeof parsed === "object" &&
-          parsed !== null &&
-          "id_token" in parsed &&
-          typeof parsed.id_token === "string"
-        ) {
-          idToken = parsed.id_token;
-        }
-      } catch {
-        idToken = null;
-      }
-    }
+    const idToken = getStoredIdToken(AICHAT_CLIENT_ID, AICHAT_SCOPE);
 
     sessionStorage.setItem(
       STORAGE_KEYS.LOGOUT_RETURN_TO,

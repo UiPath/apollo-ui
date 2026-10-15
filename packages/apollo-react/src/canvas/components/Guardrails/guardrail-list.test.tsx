@@ -157,6 +157,22 @@ describe('GuardrailList', () => {
       expect(screen.getAllByText('Governance managed')).toHaveLength(1);
     });
 
+    it('names the AI Trust Layer policy on rows it disabled', () => {
+      const { container } = renderList({
+        policyName: 'Enterprise',
+        definitions: [
+          { validator: 'pii_detection', status: 'Disabled', disabledReason: 'Policy' },
+          ...DEFINITIONS.slice(1),
+        ],
+      });
+
+      expect(screen.getByText(/Disabled by AI Trust Layer policy:/)).toHaveTextContent(
+        'policy: Enterprise. This guardrail is skipped'
+      );
+      // A prop the row consumes, not an attribute it forwards to the DOM.
+      expect(container.querySelector('[policyname], [policyName]')).toBeNull();
+    });
+
     it('forwards the row intents', () => {
       const onEdit = vi.fn();
       const onRemove = vi.fn();

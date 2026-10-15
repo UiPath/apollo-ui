@@ -66,6 +66,7 @@ describe('resolveGuardrailListItemState', () => {
       provider: undefined,
       byoDisabled: false,
       byoUnavailable: false,
+      policyDisabled: false,
     });
   });
 
@@ -117,6 +118,7 @@ describe('resolveGuardrailListItemState', () => {
       provider: undefined,
       byoDisabled: false,
       byoUnavailable: false,
+      policyDisabled: false,
     });
   });
 
@@ -125,7 +127,42 @@ describe('resolveGuardrailListItemState', () => {
       { ...PII_DEFINITION, status: 'Disabled' },
     ]);
 
-    expect(state).toMatchObject({ status: 'Disabled', byoDisabled: false });
+    expect(state).toMatchObject({ status: 'Disabled', byoDisabled: false, policyDisabled: false });
+  });
+
+  it('reports a UiPath validator the AI Trust Layer policy switched off', () => {
+    const state = resolveGuardrailListItemState(PII_GUARDRAIL, [
+      { ...PII_DEFINITION, status: 'Disabled', disabledReason: 'Policy' },
+    ]);
+
+    expect(state).toMatchObject({ status: 'Disabled', policyDisabled: true, byoDisabled: false });
+  });
+
+  it.each([
+    ['a reason it does not know', 'Retired'],
+    ['no reason', undefined],
+  ])('does not report a disabled UiPath validator with %s as policy-disabled', (_, reason) => {
+    const state = resolveGuardrailListItemState(PII_GUARDRAIL, [
+      { ...PII_DEFINITION, status: 'Disabled', disabledReason: reason },
+    ]);
+
+    expect(state.policyDisabled).toBe(false);
+  });
+
+  it('reads the reason only on a Disabled definition', () => {
+    const state = resolveGuardrailListItemState(PII_GUARDRAIL, [
+      { ...PII_DEFINITION, status: 'FeatureDisabled', disabledReason: 'Policy' },
+    ]);
+
+    expect(state.policyDisabled).toBe(false);
+  });
+
+  it('keeps a BYO configuration on its own notice even with the policy reason', () => {
+    const state = resolveGuardrailListItemState(BYO_GUARDRAIL, [
+      { ...BYO_DEFINITION, status: 'Disabled', disabledReason: 'Policy' },
+    ]);
+
+    expect(state).toMatchObject({ byoDisabled: true, policyDisabled: false });
   });
 });
 

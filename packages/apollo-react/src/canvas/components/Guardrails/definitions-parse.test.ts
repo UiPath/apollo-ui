@@ -41,6 +41,33 @@ describe('parseGuardrailDefinitions', () => {
     expect(result.definitions[0]).toEqual(PII_DETECTION_PREVIEW_WIRE);
   });
 
+  describe('disabledReason', () => {
+    it('keeps the reason a Disabled definition carries', () => {
+      const wire = { ...PII_DETECTION_WIRE, status: 'Disabled', disabledReason: 'Policy' };
+
+      const result = parseGuardrailDefinitions([wire]);
+
+      expect(result.definitions[0]).toEqual(wire);
+      expect(result.invalid).toEqual([]);
+    });
+
+    it('keeps a reason this version does not know rather than dropping the definition', () => {
+      // A closed enum would drop the whole guardrail the day the backend adds a reason.
+      const wire = { ...PII_DETECTION_WIRE, status: 'Disabled', disabledReason: 'SomethingNew' };
+
+      const result = parseGuardrailDefinitions([wire]);
+
+      expect(result.definitions[0]?.disabledReason).toBe('SomethingNew');
+      expect(result.invalid).toEqual([]);
+    });
+
+    it('leaves it absent when the backend omits it', () => {
+      const result = parseGuardrailDefinitions([PII_DETECTION_WIRE]);
+
+      expect(result.definitions[0]).not.toHaveProperty('disabledReason');
+    });
+  });
+
   describe('never throws', () => {
     // The payload crosses a trust boundary (a backend, or Flow's postMessage bridge), and a
     // properties panel must not disappear because it arrived malformed.
@@ -305,6 +332,7 @@ describe('zod boundary', () => {
       allowedScopes: ['Llm'],
       parameters: [],
       status: 'Available',
+      disabledReason: 'Policy',
       displayName: 'X',
       description: 'D',
       byoConnectorName: 'C',

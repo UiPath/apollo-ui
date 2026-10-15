@@ -4,7 +4,7 @@ import { fontFamily } from '@/foundation/Future/typography';
 import { cn } from '@/lib';
 
 const meta = {
-  title: 'Introduction/Getting Started',
+  title: 'Getting Started',
   parameters: {
     layout: 'fullscreen',
   },
@@ -519,7 +519,7 @@ function GettingStartedPage({ globalTheme }: { globalTheme: string }) {
       )}
       style={{ fontFamily: fontFamily.base }}
     >
-      <div className="mx-auto max-w-3xl space-y-2 p-8">
+      <div className="mx-auto max-w-4xl space-y-2 px-8 py-16">
         {/* Header */}
         <h1 className="text-[2rem] font-bold tracking-tight text-foreground">Apollo Wind</h1>
         <p className="text-base leading-7 text-muted-foreground">
@@ -558,5 +558,6 @@ function GettingStartedPage({ globalTheme }: { globalTheme: string }) {
 }
 
 export const Default: Story = {
+  name: 'Getting Started',
   render: (_, { globals }) => <GettingStartedPage globalTheme={globals.theme || 'future-dark'} />,
 };
