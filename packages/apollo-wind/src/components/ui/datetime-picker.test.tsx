@@ -1,17 +1,29 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
+import { hydrateRoot } from 'react-dom/client';
+import { renderToString } from 'react-dom/server';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { createRef } from 'react';
+import type * as React from 'react';
+import { useDayPicker } from 'react-day-picker';
 import { describe, expect, it, vi } from 'vitest';
 import { DateTimePicker } from './datetime-picker';
 import { InputGroup } from './input-group';
 
-function getTimeInput(): HTMLInputElement {
-  const input = document.querySelector<HTMLInputElement>('input[type="time"]');
-  if (!input) {
-    throw new Error('Time input not found');
-  }
-  return input;
+// An unset TZ is deleted again rather than assigned, which would store the string "undefined".
+function restoreTimeZone(original: string | undefined) {
+  if (original === undefined) delete process.env.TZ;
+  else process.env.TZ = original;
+}
+
+async function openPicker(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByRole('button'));
+  await waitFor(() => expect(screen.getByRole('grid')).toBeInTheDocument());
+}
+
+async function choose(user: ReturnType<typeof userEvent.setup>, select: string, option: string) {
+  await user.click(screen.getByRole('combobox', { name: select }));
+  await user.click(await screen.findByRole('option', { name: option }));
 }
 
 describe('DateTimePicker', () => {
@@ -94,24 +106,59 @@ describe('DateTimePicker', () => {
       expect(selected.getDate()).toBe(15);
     });
 
-    it('updates the value when a time is typed after picking a date', async () => {
+    it('updates the value when a time is chosen after picking a date', async () => {
       const user = userEvent.setup();
       const handleChange = vi.fn();
       render(<DateTimePicker onValueChange={handleChange} />);
 
-      await user.click(screen.getByRole('button'));
-
-      await waitFor(() => {
-        expect(screen.getByRole('grid')).toBeInTheDocument();
-      });
-
+      await openPicker(user);
       await user.click(screen.getByRole('button', { name: /15/ }));
-      fireEvent.change(getTimeInput(), { target: { value: '13:45' } });
+      await choose(user, 'Hour', '13');
+      await choose(user, 'Minute', '45');
 
       const lastCall = handleChange.mock.calls.at(-1)?.[0] as Date;
       expect(lastCall.getDate()).toBe(15);
       expect(lastCall.getHours()).toBe(13);
       expect(lastCall.getMinutes()).toBe(45);
+    });
+
+    it('stays open after a day is picked, so the time can be set', async () => {
+      const user = userEvent.setup();
+      render(<DateTimePicker />);
+
+      await openPicker(user);
+      await user.click(screen.getByRole('button', { name: /15/ }));
+
+      expect(screen.getByRole('grid')).toBeInTheDocument();
+    });
+
+    it('applies a time chosen before the day', async () => {
+      const user = userEvent.setup();
+      const handleChange = vi.fn();
+      render(
+        <DateTimePicker
+          onValueChange={handleChange}
+          calendarProps={{ defaultMonth: new Date(2024, 5, 1) }}
+        />
+      );
+
+      await openPicker(user);
+      await choose(user, 'Hour', '09');
+      expect(handleChange).not.toHaveBeenCalled();
+
+      await user.click(screen.getByRole('button', { name: /15/ }));
+      expect(handleChange).toHaveBeenLastCalledWith(new Date(2024, 5, 15, 9, 0));
+    });
+
+    it('keeps the time when the day changes', async () => {
+      const user = userEvent.setup();
+      const handleChange = vi.fn();
+      render(<DateTimePicker value={new Date(2024, 5, 15, 14, 30)} onValueChange={handleChange} />);
+
+      await openPicker(user);
+      await user.click(screen.getByText('20'));
+
+      expect(handleChange).toHaveBeenLastCalledWith(new Date(2024, 5, 20, 14, 30));
     });
 
     it('resets the value and closes when Clear is clicked', async () => {
@@ -225,6 +272,7 @@ describe('DateTimePicker inline validation', () => {
     expect(screen.getByRole('button')).not.toHaveAttribute('aria-describedby');
   });
 });
+
 describe('DateTimePicker controlled value', () => {
   it('follows a value the parent changes after mount', async () => {
     const user = userEvent.setup();
@@ -232,21 +280,15 @@ describe('DateTimePicker controlled value', () => {
     rerender(<DateTimePicker value={new Date(2025, 0, 2, 16, 20)} />);
     expect(screen.getByText(/January 2nd, 2025 at 16:20/)).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button'));
-    expect(getTimeInput()).toHaveValue('16:20');
+    await openPicker(user);
+    expect(screen.getByRole('combobox', { name: 'Hour' })).toHaveTextContent('16');
+    expect(screen.getByRole('combobox', { name: 'Minute' })).toHaveTextContent('20');
   });
 
   it('clears when the parent clears the value', () => {
     const { rerender } = render(<DateTimePicker value={new Date(2024, 5, 15, 9, 0)} />);
     rerender(<DateTimePicker value={undefined} />);
     expect(screen.getByText('Pick a date and time')).toBeInTheDocument();
-  });
-
-  it('gives the time input 24-hour text when use12Hour is set', async () => {
-    const user = userEvent.setup();
-    render(<DateTimePicker value={new Date(2024, 5, 15, 14, 30)} use12Hour />);
-    await user.click(screen.getByRole('button'));
-    expect(getTimeInput()).toHaveValue('14:30');
   });
 
   it('reports opening and closing, including through Done', async () => {
@@ -277,6 +319,253 @@ describe('DateTimePicker remount safety', () => {
   });
 });
 
+describe('DateTimePicker time selects', () => {
+  it('offers minutes in steps of minuteStep', async () => {
+    const user = userEvent.setup();
+    render(<DateTimePicker minuteStep={15} />);
+
+    await openPicker(user);
+    await user.click(screen.getByRole('combobox', { name: 'Minute' }));
+    const options = await screen.findAllByRole('option');
+    expect(options.map((option) => option.textContent)).toEqual(['00', '15', '30', '45']);
+  });
+
+  it('keeps a minute that is off the step selectable', async () => {
+    const user = userEvent.setup();
+    render(<DateTimePicker value={new Date(2024, 5, 15, 14, 37)} />);
+
+    await openPicker(user);
+    expect(screen.getByRole('combobox', { name: 'Minute' })).toHaveTextContent('37');
+  });
+
+  it('uses 12-hour selects with AM and PM when use12Hour is set', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+    render(
+      <DateTimePicker
+        use12Hour
+        value={new Date(2024, 5, 15, 14, 30)}
+        onValueChange={handleChange}
+      />
+    );
+
+    await openPicker(user);
+    expect(screen.getByRole('combobox', { name: 'Hour' })).toHaveTextContent('02');
+    expect(screen.getByRole('combobox', { name: 'AM or PM' })).toHaveTextContent('PM');
+
+    await choose(user, 'AM or PM', 'AM');
+    expect(handleChange).toHaveBeenLastCalledWith(new Date(2024, 5, 15, 2, 30));
+
+    await choose(user, 'Hour', '12');
+    expect(handleChange).toHaveBeenLastCalledWith(new Date(2024, 5, 15, 0, 30));
+  });
+
+  it('groups the time selects under the Time legend', async () => {
+    const user = userEvent.setup();
+    render(<DateTimePicker />);
+
+    await openPicker(user);
+    expect(screen.getByRole('group', { name: 'Time' })).toContainElement(
+      screen.getByRole('combobox', { name: 'Hour' })
+    );
+  });
+
+  it('has no accessibility violations when open', async () => {
+    const user = userEvent.setup();
+    render(<DateTimePicker value={new Date(2024, 5, 15, 14, 30)} />);
+
+    await openPicker(user);
+    const popover = document.querySelector("[data-slot='popover-content']") as HTMLElement;
+    expect(await axe(popover)).toHaveNoViolations();
+  });
+});
+
+describe('DateTimePicker popover', () => {
+  it('opens on the selected month with the drilldown caption', async () => {
+    const user = userEvent.setup();
+    render(<DateTimePicker value={new Date(2024, 2, 10, 9, 0)} />);
+
+    await openPicker(user);
+    expect(screen.getByRole('button', { name: /March, choose month/ })).toBeInTheDocument();
+  });
+
+  it('moves focus to the selected day', async () => {
+    const user = userEvent.setup();
+    render(<DateTimePicker value={new Date(2024, 5, 15, 9, 0)} />);
+
+    await openPicker(user);
+    await waitFor(() => expect(screen.getByText('15').closest('button')).toHaveFocus());
+  });
+
+  it('forwards popoverProps and aligns to the start by default', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<DateTimePicker />);
+
+    await openPicker(user);
+    expect(document.querySelector("[data-slot='popover-content']")).toHaveAttribute(
+      'data-align',
+      'start'
+    );
+
+    rerender(<DateTimePicker popoverProps={{ align: 'end', className: 'custom-popover' }} />);
+    const popover = document.querySelector("[data-slot='popover-content']");
+    await waitFor(() => expect(popover).toHaveAttribute('data-align', 'end'));
+    expect(popover).toHaveClass('custom-popover');
+  });
+
+  it('follows a value changed by the parent', () => {
+    const { rerender } = render(<DateTimePicker value={new Date(2024, 5, 15, 9, 0)} />);
+    expect(screen.getByRole('button')).toHaveTextContent('June 15th, 2024 at 09:00');
+
+    rerender(<DateTimePicker value={new Date(2024, 6, 1, 18, 5)} />);
+    expect(screen.getByRole('button')).toHaveTextContent('July 1st, 2024 at 18:05');
+
+    rerender(<DateTimePicker value={undefined} />);
+    expect(screen.getByRole('button')).toHaveTextContent('Pick a date and time');
+  });
+
+  it('formats the value with displayFormat', () => {
+    render(<DateTimePicker value={new Date(2024, 5, 15, 9, 0)} displayFormat="dd/MM/yyyy HH:mm" />);
+    expect(screen.getByRole('button')).toHaveTextContent('15/06/2024 09:00');
+  });
+});
+
+// The timezone list renders every zone the runtime knows, a few hundred rows, which CI's coverage
+// run renders far slower than a laptop does.
+const ZONE_LIST_TIMEOUT = 60_000;
+
+// Pasted rather than typed, so the list filters once instead of once per letter.
+async function searchZones(user: ReturnType<typeof userEvent.setup>, query: string) {
+  await user.click(screen.getByPlaceholderText('Search city, region or offset'));
+  await user.paste(query);
+}
+
+describe('DateTimePicker timezone', { timeout: ZONE_LIST_TIMEOUT }, () => {
+  // 11:00Z is 14:00 in Bucharest (GMT+3) and 20:00 in Tokyo (GMT+9) in June.
+  const instant = new Date(Date.UTC(2024, 5, 15, 11, 0));
+
+  it('shows no timezone select unless showTimeZone is set', async () => {
+    const user = userEvent.setup();
+    render(<DateTimePicker value={instant} />);
+
+    await openPicker(user);
+    expect(screen.queryByText('Timezone')).not.toBeInTheDocument();
+  });
+
+  it('reads the value in the zone and names the offset', async () => {
+    const user = userEvent.setup();
+    render(<DateTimePicker value={instant} showTimeZone timeZone="Europe/Bucharest" />);
+
+    expect(screen.getByRole('button')).toHaveTextContent('June 15th, 2024 at 14:00 GMT+3');
+    await openPicker(user);
+    expect(screen.getByRole('combobox', { name: 'Hour' })).toHaveTextContent('14');
+    expect(screen.getByRole('button', { name: /Timezone.*Bucharest/ })).toHaveTextContent('GMT+3');
+  });
+
+  it('commits the chosen wall clock in the zone', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+    render(
+      <DateTimePicker
+        value={instant}
+        showTimeZone
+        timeZone="Europe/Bucharest"
+        onValueChange={handleChange}
+      />
+    );
+
+    await openPicker(user);
+    await choose(user, 'Hour', '09');
+    expect(handleChange).toHaveBeenLastCalledWith(new Date(Date.UTC(2024, 5, 15, 6, 0)));
+  });
+
+  it('keeps the time on screen and moves the instant when the zone changes', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+    const handleZone = vi.fn();
+    render(
+      <DateTimePicker
+        value={instant}
+        showTimeZone
+        defaultTimeZone="Europe/Bucharest"
+        onValueChange={handleChange}
+        onTimeZoneChange={handleZone}
+      />
+    );
+
+    await openPicker(user);
+    await user.click(screen.getByRole('button', { name: /Timezone.*Bucharest/ }));
+    await searchZones(user, 'tokyo');
+    await user.click(await screen.findByRole('option', { name: /Tokyo/ }));
+
+    expect(handleZone).toHaveBeenCalledWith('Asia/Tokyo');
+    // 14:00 in Tokyo is 05:00Z.
+    expect(handleChange).toHaveBeenLastCalledWith(new Date(Date.UTC(2024, 5, 15, 5, 0)));
+    expect(screen.getByRole('button', { name: /Timezone.*Tokyo/ })).toHaveTextContent('GMT+9');
+  });
+
+  it('offers the viewer’s own zone first', async () => {
+    const user = userEvent.setup();
+    render(<DateTimePicker showTimeZone defaultTimeZone="UTC" />);
+
+    await openPicker(user);
+    await user.click(screen.getByRole('button', { name: /Timezone/ }));
+    expect(await screen.findByText('Your timezone')).toBeInTheDocument();
+  });
+
+  it('announces the timezone list as a dialog', async () => {
+    const user = userEvent.setup();
+    render(<DateTimePicker showTimeZone defaultTimeZone="Europe/Bucharest" />);
+
+    await openPicker(user);
+    const trigger = screen.getByRole('button', { name: /Timezone.*Bucharest/ });
+    // The popup is a dialog holding a search box and its list, not a bare listbox.
+    expect(trigger).toHaveAttribute('aria-haspopup', 'dialog');
+    await user.click(trigger);
+    expect(screen.getByRole('dialog', { name: 'Timezones' })).toBeInTheDocument();
+    expect(trigger).toHaveAttribute(
+      'aria-controls',
+      screen.getByRole('dialog', { name: 'Timezones' }).id
+    );
+  });
+});
+
+describe('DateTimePicker uncontrolled timezone', { timeout: ZONE_LIST_TIMEOUT }, () => {
+  it('keeps the picked date when the zone changes without a value prop', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+    render(
+      <DateTimePicker
+        showTimeZone
+        defaultTimeZone="Europe/Bucharest"
+        onValueChange={handleChange}
+        calendarProps={{ defaultMonth: new Date(2024, 5, 1) }}
+      />
+    );
+
+    await openPicker(user);
+    await user.click(screen.getByText('15'));
+    await choose(user, 'Hour', '14');
+    await user.click(screen.getByRole('button', { name: /Timezone.*Bucharest/ }));
+    await searchZones(user, 'tokyo');
+    await user.click(await screen.findByRole('option', { name: /Tokyo/ }));
+
+    // 14:00 in Tokyo is 05:00Z, and the field still shows the picked date and time.
+    expect(handleChange).toHaveBeenLastCalledWith(new Date(Date.UTC(2024, 5, 15, 5, 0)));
+    expect(screen.getAllByRole('button')[0]).toHaveTextContent('June 15th, 2024 at 14:00 GMT+9');
+  });
+
+  it('clears the time when a controlled value is cleared', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<DateTimePicker value={new Date(2024, 5, 15, 14, 30)} />);
+    rerender(<DateTimePicker value={undefined} />);
+
+    await openPicker(user);
+    expect(screen.getByRole('combobox', { name: 'Hour' })).toHaveTextContent('--');
+    expect(screen.getByRole('combobox', { name: 'Minute' })).toHaveTextContent('--');
+  });
+});
+
 describe('DateTimePicker in an input group', () => {
   it("is the enclosing group's control, with no box of its own", () => {
     render(
@@ -300,5 +589,514 @@ describe('DateTimePicker in an input group', () => {
 
     await user.click(screen.getByText('Pick a time'));
     await waitFor(() => expect(measure).toHaveBeenCalled());
+  });
+});
+
+describe('DateTimePicker display across daylight saving', () => {
+  it('shows the zone’s time even when the browser’s zone skips that hour', () => {
+    const original = process.env.TZ;
+    // 03:30 on 31 March 2024 does not exist in Bucharest (clocks jump 03:00 to 04:00), but it
+    // does in Tokyo: 03:30 Tokyo is 18:30Z the day before.
+    process.env.TZ = 'Europe/Bucharest';
+    try {
+      render(
+        <DateTimePicker value={new Date(Date.UTC(2024, 2, 30, 18, 30))} timeZone="Asia/Tokyo" />
+      );
+      expect(screen.getByRole('button')).toHaveTextContent('March 31st, 2024 at 03:30 GMT+9');
+    } finally {
+      restoreTimeZone(original);
+    }
+  });
+});
+
+describe('DateTimePicker review fixes', () => {
+  it('ignores a calendar timeZone, so the selected day matches the trigger', async () => {
+    const original = process.env.TZ;
+    process.env.TZ = 'UTC';
+    try {
+      const user = userEvent.setup();
+      const calendarProps = { timeZone: 'America/Los_Angeles' } as never;
+      render(
+        <DateTimePicker
+          value={new Date(Date.UTC(2024, 5, 15, 2, 0))}
+          timeZone="UTC"
+          calendarProps={calendarProps}
+        />
+      );
+      expect(screen.getAllByRole('button')[0]).toHaveTextContent('June 15th, 2024');
+
+      await openPicker(user);
+      expect(
+        screen.getByRole('button', { name: /June 15th, 2024.*selected/i })
+      ).toBeInTheDocument();
+    } finally {
+      restoreTimeZone(original);
+    }
+  });
+
+  it('portals the time selects and the timezone list into popoverProps.container', async () => {
+    const user = userEvent.setup();
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    try {
+      render(<DateTimePicker showTimeZone popoverProps={{ container }} />);
+
+      await openPicker(user);
+      await user.click(screen.getByRole('combobox', { name: 'Hour' }));
+      expect(container).toContainElement(screen.getByRole('listbox'));
+      await user.keyboard('{Escape}');
+
+      await user.click(screen.getByRole('button', { name: /Timezone/ }));
+      expect(container).toContainElement(screen.getByRole('dialog', { name: 'Timezones' }));
+    } finally {
+      container.remove();
+    }
+  });
+
+  it('mounts the timezone list in batches as it scrolls', async () => {
+    const user = userEvent.setup();
+    const callbacks: IntersectionObserverCallback[] = [];
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        constructor(callback: IntersectionObserverCallback) {
+          callbacks.push(callback);
+        }
+        observe() {}
+        disconnect() {}
+      }
+    );
+    try {
+      render(<DateTimePicker showTimeZone defaultTimeZone="UTC" />);
+      await openPicker(user);
+      await user.click(screen.getByRole('button', { name: /Timezone/ }));
+      // The viewer's own zone, then the first batch.
+      const first = screen.getAllByRole('option').length;
+      expect(first).toBe(61);
+
+      act(() => {
+        callbacks.at(-1)?.([{ isIntersecting: true } as IntersectionObserverEntry], {} as never);
+      });
+      expect(screen.getAllByRole('option').length).toBe(121);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('renders in UTC on the server and in the viewer’s zone once hydrated', async () => {
+    const original = process.env.TZ;
+    process.env.TZ = 'Asia/Tokyo';
+    try {
+      const value = new Date(Date.UTC(2024, 5, 15, 5, 0));
+      const html = renderToString(<DateTimePicker value={value} />);
+      expect(html).toContain('05:00');
+
+      const container = document.createElement('div');
+      container.innerHTML = html;
+      document.body.appendChild(container);
+      await act(async () => {
+        hydrateRoot(container, <DateTimePicker value={value} />, { onRecoverableError: () => {} });
+      });
+      expect(container).toHaveTextContent('14:00');
+      container.remove();
+    } finally {
+      restoreTimeZone(original);
+    }
+  });
+
+  it('locks the timezone select for a controlled timeZone without onTimeZoneChange', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<DateTimePicker showTimeZone timeZone="Europe/Bucharest" />);
+
+    await openPicker(user);
+    expect(screen.getByRole('button', { name: /Timezone.*Bucharest/ })).toBeDisabled();
+
+    rerender(
+      <DateTimePicker showTimeZone timeZone="Europe/Bucharest" onTimeZoneChange={() => {}} />
+    );
+    expect(screen.getByRole('button', { name: /Timezone.*Bucharest/ })).toBeEnabled();
+  });
+
+  it('falls back to the default minute step for a non-finite minuteStep', async () => {
+    const user = userEvent.setup();
+    render(<DateTimePicker minuteStep={Number.NaN} />);
+
+    await openPicker(user);
+    await user.click(screen.getByRole('combobox', { name: 'Minute' }));
+    expect(screen.getAllByRole('option')).toHaveLength(12);
+  });
+
+  it('names the offset when only defaultTimeZone is given', () => {
+    render(
+      <DateTimePicker
+        value={new Date(Date.UTC(2024, 5, 15, 11, 0))}
+        defaultTimeZone="Europe/Bucharest"
+      />
+    );
+    expect(screen.getAllByRole('button')[0]).toHaveTextContent('14:00 GMT+3');
+  });
+
+  it('opens the calendar on a value in year 50', async () => {
+    const user = userEvent.setup();
+    const value = new Date(0);
+    value.setUTCFullYear(50, 5, 15);
+    value.setUTCHours(14, 0, 0, 0);
+    render(<DateTimePicker value={value} timeZone="UTC" />);
+
+    await openPicker(user);
+    expect(screen.getByRole('button', { name: /^50, choose year/ })).toBeInTheDocument();
+  });
+
+  it('keeps the seconds when only the day changes, and resets them with a new time', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+    render(
+      <DateTimePicker
+        value={new Date(Date.UTC(2024, 5, 15, 14, 30, 45, 250))}
+        timeZone="UTC"
+        onValueChange={handleChange}
+      />
+    );
+
+    await openPicker(user);
+    await user.click(screen.getByText('20'));
+    expect(handleChange).toHaveBeenLastCalledWith(new Date(Date.UTC(2024, 5, 20, 14, 30, 45, 250)));
+
+    await choose(user, 'Minute', '45');
+    expect(handleChange).toHaveBeenLastCalledWith(new Date(Date.UTC(2024, 5, 20, 14, 45, 0, 0)));
+  });
+
+  it('falls back to the browser zone and warns for an unknown timeZone', () => {
+    const original = process.env.TZ;
+    process.env.TZ = 'Asia/Tokyo';
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      render(
+        <DateTimePicker
+          value={new Date(Date.UTC(2024, 5, 15, 5, 0))}
+          timeZone="Europe/Bucharestt"
+        />
+      );
+      // 05:00Z read in Tokyo, not as UTC.
+      expect(screen.getByRole('button')).toHaveTextContent('June 15th, 2024 at 14:00 GMT+9');
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('Europe/Bucharestt'));
+    } finally {
+      warn.mockRestore();
+      restoreTimeZone(original);
+    }
+  });
+
+  it('lets Clear remove a time picked before any day', async () => {
+    const user = userEvent.setup();
+    render(<DateTimePicker />);
+
+    await openPicker(user);
+    expect(screen.getByRole('button', { name: 'Clear' })).toBeDisabled();
+    await choose(user, 'Hour', '09');
+    const clear = screen.getByRole('button', { name: 'Clear' });
+    expect(clear).toBeEnabled();
+
+    await user.click(clear);
+    await openPicker(user);
+    expect(screen.getByRole('combobox', { name: 'Hour' })).toHaveTextContent('--');
+  });
+});
+
+describe('DateTimePicker Footer override that reads DayPicker context', () => {
+  function ContextFooter(props: React.HTMLAttributes<HTMLDivElement>) {
+    const { months } = useDayPicker();
+    return <div data-testid="context-footer" data-months={months.length} {...props} />;
+  }
+
+  it('keeps the Footer inside DayPicker', async () => {
+    const user = userEvent.setup();
+    render(
+      <DateTimePicker
+        value={new Date(2024, 5, 15, 9, 0)}
+        calendarProps={{ footer: 'Pick a day', components: { Footer: ContextFooter } }}
+      />
+    );
+
+    await openPicker(user);
+    expect(screen.getByTestId('context-footer')).toHaveTextContent('Pick a day');
+    expect(screen.getByTestId('context-footer')).toHaveAttribute('data-months', '1');
+  });
+});
+
+describe('DateTimePicker time selects when the parent clears the value', () => {
+  it('shows no time once a controlled value is cleared while open', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+    const { rerender } = render(
+      <DateTimePicker value={undefined} use12Hour onValueChange={handleChange} />
+    );
+
+    // The selects mount with no time, then take one from the reader.
+    await openPicker(user);
+    await choose(user, 'Hour', '09');
+    await choose(user, 'Minute', '30');
+    await choose(user, 'AM or PM', 'PM');
+    await user.click(screen.getByRole('button', { name: /15th/ }));
+    const picked = handleChange.mock.lastCall?.[0] as Date;
+    expect(picked.getHours()).toBe(21);
+    rerender(<DateTimePicker value={picked} use12Hour onValueChange={handleChange} />);
+
+    // The parent clears the value with the popover still open.
+    rerender(<DateTimePicker value={undefined} use12Hour onValueChange={handleChange} />);
+    expect(screen.getByRole('combobox', { name: 'Hour' })).toHaveTextContent('--');
+    expect(screen.getByRole('combobox', { name: 'Minute' })).toHaveTextContent('--');
+    expect(screen.getByRole('combobox', { name: 'AM or PM' })).toHaveTextContent('--');
+  });
+});
+
+describe('DateTimePicker seconds under an offset with seconds', () => {
+  // Paris kept GMT+0:09:21 in 1900, so its wall-clock seconds differ from the instant's UTC ones.
+  const noonParis = new Date(Date.UTC(1900, 5, 15, 11, 50, 39));
+
+  it('keeps 12:00:00 on the wall clock when the day changes', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+    render(
+      <DateTimePicker value={noonParis} timeZone="Europe/Paris" onValueChange={handleChange} />
+    );
+
+    await openPicker(user);
+    await user.click(screen.getByRole('button', { name: /June 16th, 1900/ }));
+    expect(handleChange).toHaveBeenLastCalledWith(new Date(Date.UTC(1900, 5, 16, 11, 50, 39)));
+  });
+
+  it('keeps the wall clock’s own seconds when the day changes', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+    // 12:00:30 in Paris.
+    render(
+      <DateTimePicker
+        value={new Date(Date.UTC(1900, 5, 15, 11, 51, 9))}
+        timeZone="Europe/Paris"
+        onValueChange={handleChange}
+      />
+    );
+
+    await openPicker(user);
+    await user.click(screen.getByRole('button', { name: /June 16th, 1900/ }));
+    expect(handleChange).toHaveBeenLastCalledWith(new Date(Date.UTC(1900, 5, 16, 11, 51, 9)));
+  });
+});
+
+describe('DateTimePicker calendarProps.defaultMonth', () => {
+  it('opens on the selected month, with defaultMonth only as the fallback', async () => {
+    const user = userEvent.setup();
+    const fallback = new Date(2020, 0, 1);
+    const { unmount } = render(
+      <DateTimePicker
+        value={new Date(2024, 5, 15, 9, 0)}
+        calendarProps={{ defaultMonth: fallback }}
+      />
+    );
+    await openPicker(user);
+    expect(screen.getByRole('button', { name: /^June, choose month/ })).toBeInTheDocument();
+    unmount();
+
+    render(<DateTimePicker calendarProps={{ defaultMonth: fallback }} />);
+    await openPicker(user);
+    expect(screen.getByRole('button', { name: /^January, choose month/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^2020, choose year/ })).toBeInTheDocument();
+  });
+});
+
+describe(
+  'DateTimePicker re-picking its zone in a repeated hour',
+  { timeout: ZONE_LIST_TIMEOUT },
+  () => {
+    it('keeps the later 01:30 when New York is picked again', async () => {
+      // 01:30 happened twice in New York on 3 November 2024: 05:30Z (EDT), then 06:30Z (EST).
+      const later = new Date(Date.UTC(2024, 10, 3, 6, 30));
+      const user = userEvent.setup();
+      const handleChange = vi.fn();
+      const handleZone = vi.fn();
+      render(
+        <DateTimePicker
+          value={later}
+          showTimeZone
+          defaultTimeZone="America/New_York"
+          onValueChange={handleChange}
+          onTimeZoneChange={handleZone}
+        />
+      );
+      expect(screen.getByRole('button')).toHaveTextContent('at 01:30 GMT-5');
+
+      await openPicker(user);
+      await user.click(screen.getByRole('button', { name: /Timezone.*New York/ }));
+      await searchZones(user, 'new york');
+      await user.click(await screen.findByRole('option', { name: /New York/ }));
+
+      expect(handleZone).not.toHaveBeenCalled();
+      expect(handleChange).not.toHaveBeenCalled();
+      expect(screen.getByRole('button', { name: /Timezone.*New York/ })).toHaveTextContent('GMT-5');
+    });
+  }
+);
+
+describe('DateTimePicker calendar in the picker zone', () => {
+  // A UTC host where the picker zone is already on the next day (Kiritimati, GMT+14) or still on
+  // the day before (Pago Pago, GMT-11).
+  async function inUTCAt(now: Date, run: () => Promise<void>) {
+    const original = process.env.TZ;
+    process.env.TZ = 'UTC';
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(now);
+    try {
+      await run();
+    } finally {
+      vi.useRealTimers();
+      restoreTimeZone(original);
+    }
+  }
+  // 12:00Z on 15 June 2024 is 02:00 on 16 June in Kiritimati.
+  const noonUTC = new Date(Date.UTC(2024, 5, 15, 12, 0));
+  const day = (name: RegExp) => screen.getByRole('button', { name });
+
+  it('marks the zone’s today, a day ahead of the host', () =>
+    inUTCAt(noonUTC, async () => {
+      const user = userEvent.setup();
+      render(<DateTimePicker timeZone="Pacific/Kiritimati" />);
+      await openPicker(user);
+      expect(document.querySelector('[data-today="true"]')).toHaveTextContent(/^16$/);
+    }));
+
+  it('marks the zone’s today, a day behind the host', () =>
+    // 05:00Z on 15 June is 18:00 on 14 June in Pago Pago.
+    inUTCAt(new Date(Date.UTC(2024, 5, 15, 5, 0)), async () => {
+      const user = userEvent.setup();
+      render(<DateTimePicker timeZone="Pacific/Pago_Pago" />);
+      await openPicker(user);
+      expect(document.querySelector('[data-today="true"]')).toHaveTextContent(/^14$/);
+    }));
+
+  it('reads startMonth and endMonth in the zone', () =>
+    inUTCAt(noonUTC, async () => {
+      const user = userEvent.setup();
+      render(
+        <DateTimePicker
+          value={new Date(Date.UTC(2024, 5, 20, 0, 0))}
+          timeZone="Pacific/Kiritimati"
+          calendarProps={{
+            // 1 June and 1 July in Kiritimati, still 31 May and 30 June on the host.
+            startMonth: new Date(Date.UTC(2024, 4, 31, 12, 0)),
+            endMonth: new Date(Date.UTC(2024, 5, 30, 12, 0)),
+          }}
+        />
+      );
+      await openPicker(user);
+      expect(screen.getByRole('button', { name: /previous month/i })).toBeDisabled();
+      expect(screen.getByRole('button', { name: /next month/i })).toBeEnabled();
+    }));
+
+  it('reads a disabled matcher in the zone', () =>
+    inUTCAt(noonUTC, async () => {
+      const user = userEvent.setup();
+      render(
+        <DateTimePicker
+          value={new Date(Date.UTC(2024, 5, 20, 0, 0))}
+          timeZone="Pacific/Kiritimati"
+          // Before the zone's 16 June, which is still 15 June on the host.
+          calendarProps={{ disabled: { before: noonUTC } }}
+        />
+      );
+      await openPicker(user);
+      expect(day(/June 15th, 2024/)).toBeDisabled();
+      expect(day(/June 16th, 2024/)).toBeEnabled();
+    }));
+
+  it('hands function matchers and day callbacks the zone’s midnight of the day', () =>
+    inUTCAt(noonUTC, async () => {
+      const user = userEvent.setup();
+      const handleDayClick = vi.fn();
+      render(
+        <DateTimePicker
+          value={new Date(Date.UTC(2024, 5, 20, 0, 0))}
+          timeZone="Pacific/Kiritimati"
+          calendarProps={{
+            // Days that begin, in the zone, before 12:00Z on 15 June: up to the zone's 16 June.
+            disabled: (date) => date.getTime() < noonUTC.getTime(),
+            onDayClick: handleDayClick,
+          }}
+        />
+      );
+      await openPicker(user);
+      expect(day(/June 16th, 2024/)).toBeDisabled();
+      expect(day(/June 17th, 2024/)).toBeEnabled();
+
+      await user.click(day(/June 22nd, 2024/));
+      // 00:00 on 22 June in Kiritimati is 10:00Z on 21 June.
+      const clicked = handleDayClick.mock.lastCall?.[0] as Date;
+      expect(clicked.getTime()).toBe(Date.UTC(2024, 5, 21, 10, 0));
+      expect(clicked.getDate()).toBe(22);
+    }));
+});
+
+describe('DateTimePicker Chevron override that reads DayPicker context', () => {
+  function ContextChevron({ className }: { className?: string }) {
+    const { months } = useDayPicker();
+    return <svg data-testid="context-chevron" data-months={months.length} className={className} />;
+  }
+
+  it('keeps the Chevron inside DayPicker', async () => {
+    const user = userEvent.setup();
+    render(
+      <DateTimePicker
+        value={new Date(2024, 5, 15, 9, 0)}
+        calendarProps={{ components: { Chevron: ContextChevron } }}
+      />
+    );
+
+    await openPicker(user);
+    const chevrons = screen.getAllByTestId('context-chevron');
+    expect(chevrons.length).toBeGreaterThan(0);
+    for (const chevron of chevrons) expect(chevron).toHaveAttribute('data-months', '1');
+  });
+});
+
+describe('DateTimePicker zoned midnight under an offset with seconds', () => {
+  // Paris kept GMT+0:09:21 in 1900: its midnight on 20 June is 23:50:39Z on the 19th.
+  const noonParis = new Date(Date.UTC(1900, 5, 15, 11, 50, 39));
+
+  it('hands day callbacks the exact zoned midnight, with the zone’s getters', async () => {
+    const user = userEvent.setup();
+    const handleDayClick = vi.fn();
+    render(
+      <DateTimePicker
+        value={noonParis}
+        timeZone="Europe/Paris"
+        calendarProps={{ onDayClick: handleDayClick }}
+      />
+    );
+
+    await openPicker(user);
+    await user.click(screen.getByRole('button', { name: /June 20th, 1900/ }));
+    const clicked = handleDayClick.mock.lastCall?.[0] as Date;
+    expect(clicked.getTime()).toBe(Date.UTC(1900, 5, 19, 23, 50, 39));
+    expect([
+      clicked.getDate(),
+      clicked.getHours(),
+      clicked.getMinutes(),
+      clicked.getSeconds(),
+    ]).toEqual([20, 0, 0, 0]);
+  });
+
+  it('hands function matchers the zone’s day', async () => {
+    const user = userEvent.setup();
+    render(
+      <DateTimePicker
+        value={noonParis}
+        timeZone="Europe/Paris"
+        calendarProps={{ disabled: (date) => date.getDate() === 20 }}
+      />
+    );
+
+    await openPicker(user);
+    expect(screen.getByRole('button', { name: /June 20th, 1900/ })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /June 19th, 1900/ })).toBeEnabled();
+    expect(screen.getByRole('button', { name: /June 21st, 1900/ })).toBeEnabled();
   });
 });

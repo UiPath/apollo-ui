@@ -840,9 +840,10 @@ describe('InputGroup', () => {
       );
 
       await user.click(screen.getByRole('button'));
-      const time = document.querySelector('input[type="time"]');
-      expect(time).toHaveAttribute('data-slot', 'input');
-      expect(time).not.toHaveAttribute('aria-invalid');
+      // The time is set with Selects; inside the popup they keep their own trigger and validation.
+      const hour = await screen.findByRole('combobox', { name: 'Hour' });
+      expect(hour).toHaveAttribute('data-slot', 'select-trigger');
+      expect(hour).not.toHaveAttribute('aria-invalid');
     });
 
     it('holds standard fields in a grouped Select’s and dropdown menu’s panels too', () => {
