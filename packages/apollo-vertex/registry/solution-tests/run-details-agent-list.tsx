@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { renderValueOrEmptyState } from "@/lib/renderValueOrEmptyState";
 import { cn } from "@/lib/utils";
 import { defaultRunResultStatusLabels } from "./constants";
+import { useComponentLabel } from "./context";
 import { resultBadgeClassMap, runResultStatusBadgeMap } from "./status-maps";
 import { RunResultStatus, type SolutionTestRunResult } from "./types";
 
@@ -29,7 +30,7 @@ export const RunDetailsAgentList = ({
     <div className="flex w-[320px] min-h-0 shrink-0 flex-col border-r border-border">
       <div className="px-4 pt-4 pb-2">
         <h2 className="text-xs font-bold leading-none text-muted-foreground">
-          {t("agents")}
+          {t("components")}
         </h2>
       </div>
       <div className="flex-1 min-h-0 overflow-y-auto pb-6">
@@ -69,6 +70,7 @@ const RunDetailsAgentItem = ({
   selected,
   onSelect,
 }: RunDetailsAgentItemProps) => {
+  const componentLabel = useComponentLabel();
   const status = result.Status;
   const showScore =
     status === RunResultStatus.Passed || status === RunResultStatus.Failed;
@@ -84,7 +86,10 @@ const RunDetailsAgentItem = ({
       )}
     >
       <span className="text-sm font-semibold text-foreground">
-        {result.ProcessName}
+        {componentLabel({
+          agentId: result.AgentId,
+          processName: result.ProcessName,
+        })}
       </span>
       <div className="flex items-center gap-2">
         <Badge

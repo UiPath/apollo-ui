@@ -14,10 +14,7 @@ export const ConfigVersionValue = ({ run }: { run: SolutionTestRun }) => {
   return (
     <span className="inline-flex items-center gap-1">
       {run.ConfigVersion ?? "-"}
-      <VersionDeltaGlyph
-        direction={direction}
-        baseline={run.BaselineConfigVersion}
-      />
+      <VersionDeltaGlyph direction={direction} />
     </span>
   );
 };

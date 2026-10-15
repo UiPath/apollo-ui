@@ -10,6 +10,7 @@ import {
   type SolutionTestsConfig,
 } from "./config";
 import { createSolutionTestActions } from "./create-actions";
+import { resolveComponentLabel } from "./utils";
 
 interface SolutionTestsContextValue {
   config: ResolvedSolutionTestsConfig;
@@ -65,6 +66,14 @@ export function useSolutionTestsContext(): SolutionTestsContextValue {
 
 export function useSolutionTestsConfig(): ResolvedSolutionTestsConfig {
   return useSolutionTestsContext().config;
+}
+
+export function useComponentLabel(): (source: {
+  agentId?: string;
+  processName: string;
+}) => string {
+  const { componentLabels } = useSolutionTestsConfig();
+  return (source) => resolveComponentLabel(source, componentLabels);
 }
 
 export function useSolutionTestsActions(): SolutionTestsActions {

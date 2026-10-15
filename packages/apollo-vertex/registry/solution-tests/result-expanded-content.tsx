@@ -78,7 +78,7 @@ export const ResultExpandedContent = ({
 
       {status === RunResultStatus.Pending && (
         <Empty>
-          <EmptyDescription>{t("agent_still_running")}</EmptyDescription>
+          <EmptyDescription>{t("component_still_running")}</EmptyDescription>
         </Empty>
       )}
 
@@ -144,7 +144,7 @@ export const ResultExpandedContent = ({
           <div>
             <h4 className="mb-2 text-sm font-semibold">{t("actual_output")}</h4>
             <p className="text-sm text-muted-foreground">
-              {t("agent_produced_no_output")}
+              {t("component_produced_no_output")}
             </p>
           </div>
         ) : (

@@ -31,8 +31,8 @@ touches the hooks or vs-core. From top to bottom the view stacks:
 - **KPI bar** — cards plus a `recharts` score-trend chart across recent runs.
 - **Tabs** — `Test cases` (list, enable/disable, run, delete) and
   `Test runs` (batch runs backed by live queries, per-run results, force-stop).
-- **Run details** — a dedicated page for a batch run: an agent sidebar plus a
-  per-agent detail pane with the baseline adopt / update / remove actions (see
+- **Run details** — a dedicated page for a batch run: a component sidebar plus a
+  per-component detail pane with the baseline adopt / update / remove actions (see
   [Run details](#run-details) below).
 - **Dialogs** — the JSON viewer, run confirmation, and delete confirmation.
 
@@ -41,13 +41,17 @@ Source: [`templates/SolutionTestsTemplate.tsx`](https://github.com/UiPath/apollo
 ## Run details
 
 Opening a batch run's **Details** drills into a dedicated run-details page: a
-sidebar lists every agent in the run, and selecting one shows its result in the
-detail pane — status, baseline vs tested version, score, the baseline adopt /
-update / remove actions, and the expected-vs-actual output rendered by the same
-evaluator renderers used across the view. In the smart container it's a routed
+sidebar lists every component (agent or process) in the run, and selecting one
+shows its result in the detail pane — status, score, the process name and
+baseline vs tested version behind an info icon, the baseline adopt / update /
+remove actions, and the expected-vs-actual output rendered by the same evaluator
+renderers used across the view. The baseline actions are locked while a run of
+the same test is in progress (the smart `RunDetails` derives this; pass
+`isBaselineLocked` to the view yourself) and on an aborted result. In the smart
+container it's a routed
 page synced to a `?run=` search param (so it survives reloads and is shareable);
 the example below renders the presentational `RunDetailsView` against mock data
-with agent selection wired up.
+with component selection wired up.
 
 <PreviewFullScreen title="Run details preview">
     <RunDetailsTemplate />
@@ -99,6 +103,9 @@ interface SolutionTestsConfig {
   /** Agent id and/or process name -> renderer for that agent's raw output.
    * Unmatched outputs render as JSON. */
   outputRenderers?: ProcessOutputRenderers;
+  /** Agent id and/or process name -> display name for that component.
+   * Unmatched components show their process name. */
+  componentLabels?: Record<string, string>;
   /** Typed telemetry callback. Fires a named event when each action is triggered; a no-op unless supplied. */
   track?: TrackSolutionTestEvent;
 }
@@ -139,7 +146,7 @@ generic card or a JSON panel.
 | `uipath-json-similarity`                       | Score and justification                                                                         |
 | `uipath-llm-judge-output-semantic-similarity`  | Score and justification                                                                         |
 | `uipath-ixp-document-extraction`               | Taxonomy provenance, a verdict summary, and a per-document, per-field comparison                |
-| `uipath-pe-case-evaluation`                    | Per policy: outcome, confidence and decision-model version, then both summaries with the judge's semantic deltas |
+| `uipath-pe-case-evaluation`                    | Per policy: decision model and status, then outcome and summary each marked same or differs, with the judge's semantic deltas |
 
 A vertical adds its own through `config.evaluatorRenderers`. `makeRenderer`
 binds a zod schema to a component; details that fail the schema render
@@ -166,6 +173,19 @@ const config: SolutionTestsConfig = {
 ```
 
 `makeProcessOutputRenderer` builds a custom one the same way `makeRenderer` does.
+
+**Component labels** replace a process name with a display name wherever the
+template names a component. Key them the same way as output renderers. User
+messages carry only the process name, so include it as a key:
+
+```tsx
+const config: SolutionTestsConfig = {
+  componentLabels: {
+    [evaluateCaseAgentId]: "Case evaluation",
+    [evaluateCaseProcessName]: "Case evaluation",
+  },
+};
+```
 
 ### Building blocks
 
