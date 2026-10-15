@@ -610,7 +610,12 @@ orchestration. The `Details in a dialog` and `Details in a panel overlay` storie
   (SSN)", not `USSocialSecurityNumber`) and each validator names its own configuration
   ("Severity thresholds" for harmful content, "Detection thresholds" for PII). With no
   definition matched it falls back to generic labels and raw values, which is what both
-  products render today.
+  products render today. When the definition doesn't declare one of a built-in's own
+  parameters, the row takes the validator's curated copy ("Rule prompt", "Languages"). The
+  detection scope, which Agents adds to every centralized PII, prompt-attack, harmful-content
+  and judge guardrail even when the file-support flags hide it from the definitions, falls
+  back to the details' own "Detection scope" / "Files only" labels, so the dialog reads as the
+  per-agent builder does.
 - **A read-only value is text, not a disabled input.** The family's parameter editors are the
   MetadataForm stack and have no read-only mode, and these values arrive as untyped wire data
   rather than `GuardrailValidatorParameter`s. A disabled input, which is how Flow renders this
@@ -833,20 +838,20 @@ sends neither gets exactly the line above. Both are ignored when `supported` is 
 
 ### In GuardrailBuilder
 
-Where it renders depends on `fileSupport` and on the definition's `appliesTo` parameter:
+Where it renders depends on `fileSupport` and on the definition's `detectionScope` parameter:
 
-| `fileSupport` | `appliesTo` parameter | renders |
+| `fileSupport` | `detectionScope` parameter | renders |
 | --- | --- | --- |
 | absent | any | nothing |
-| `supported: true` | present | under the Applies to field, only while it selects Files or Both |
+| `supported: true` | present | under the Detection scope field, only while it selects Files or Both |
 | `supported: true` | absent | above the parameters, always |
 | `supported: false` | any | above the parameters, always |
 
-What Applies to selects is `getGuardrailAppliesTo(definitions, parameters)`, which reads it the
-way the backend does: the stored value, trimmed and case-insensitive, when non-empty, otherwise
-the definition's `defaultValue` (Text for the five GA validators, Both for `llm_as_judge`). Any
-other value, Flow's legacy `Prompts` included, is Text. The builder recomputes it on every edit,
-so the lines follow the select as it changes.
+What Detection scope selects is `getGuardrailDetectionScope(definitions, parameters)`, which reads
+it the way the backend does: the stored value, trimmed and case-insensitive, when non-empty,
+otherwise the definition's `defaultValue` (Text for the five GA validators, Both for
+`llm_as_judge`). Any other value, Flow's legacy `Prompts` included, is Text. The builder
+recomputes it on every edit, so the lines follow the select as it changes.
 
 ## GuardrailActionSection
 
@@ -1156,7 +1161,7 @@ state and exposes a plugin seam, so the translation lives in one named place,
   parameters (e.g. a model picker storing connection metadata).
 - **Per-parameter footer.** `parameterFooters` maps a parameter id to a node rendered directly
   below that parameter's editor, overridden or not (`GuardrailBuilder` puts file support under
-  `appliesTo` this way). A nullish or `false` entry renders nothing and takes no space, so a
+  `detectionScope` this way). A nullish or `false` entry renders nothing and takes no space, so a
   footer can come and go with a value; ids with no definition are ignored.
 
 ### Save-time companions

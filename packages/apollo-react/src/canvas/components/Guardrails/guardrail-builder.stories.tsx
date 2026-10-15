@@ -416,10 +416,10 @@ export const HostErrorsOverride: Story = {
   },
 };
 
-const appliesToParameter = (defaultValue: string): GuardrailParameterDefinition => ({
-  id: 'appliesTo',
+const detectionScopeParameter = (defaultValue: string): GuardrailParameterDefinition => ({
+  id: 'detectionScope',
   type: 'enum',
-  label: 'Applies to',
+  label: 'Detection scope',
   required: false,
   defaultValue,
   options: ['Text', 'Files', 'Both'],
@@ -428,7 +428,7 @@ const appliesToParameter = (defaultValue: string): GuardrailParameterDefinition 
 
 const piiWithFiles: GuardrailDefinition = {
   ...piiDefinition,
-  parameters: [...piiDefinition.parameters, appliesToParameter('Text')],
+  parameters: [...piiDefinition.parameters, detectionScopeParameter('Text')],
   fileSupport: {
     supported: true,
     formats: ['Text'],
@@ -437,7 +437,7 @@ const piiWithFiles: GuardrailDefinition = {
 };
 
 /**
- * File support sits under Applies to while it selects Files or Both. Pick Text only and both
+ * File support sits under Detection scope while it selects Files or Both. Pick Text only and both
  * lines go.
  */
 export const FileSupportFilesSelected: Story = {
@@ -449,7 +449,7 @@ export const FileSupportFilesSelected: Story = {
       ...existingGuardrail,
       validatorParameters: [
         ...existingGuardrail.validatorParameters,
-        { $parameterType: 'enum', id: 'appliesTo', value: 'Files' },
+        { $parameterType: 'enum', id: 'detectionScope', value: 'Files' },
       ],
     },
   },
@@ -479,7 +479,7 @@ export const FileSupportJudgeBoth: Story = {
           defaultValue: 'gpt-4o',
           options: ['gpt-4o'],
         },
-        appliesToParameter('Both'),
+        detectionScopeParameter('Both'),
       ],
       fileSupport: {
         supported: true,
@@ -491,7 +491,7 @@ export const FileSupportJudgeBoth: Story = {
   },
 };
 
-/** Without file support there is no Applies to field, and the line stays above the parameters. */
+/** Without file support there is no Detection scope field; the line stays above the parameters. */
 export const FileSupportUnavailable: Story = {
   args: {
     ...AddInline.args,

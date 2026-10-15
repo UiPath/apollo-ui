@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import {
-  ArrowUp,
   AtSign,
   Bot,
   FileText,
@@ -10,7 +9,6 @@ import {
   MessageCircleDashed,
   MessageSquarePlus,
   Minimize2,
-  Paperclip,
   Play,
   Settings,
   SquarePen,
@@ -31,19 +29,21 @@ import { Bubble, BubbleContent } from './bubble';
 import { Button } from './button';
 import { Card, CardFooter, CardHeader, CardTitle } from './card';
 import {
+  ChatComposer,
+  ChatComposerAttachButton,
+  ChatComposerInputGroup,
+  ChatComposerSubmit,
+  ChatComposerTextarea,
+  ChatComposerToolbar,
+} from './chat-composer';
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from './dropdown-menu';
 import { EmptyState } from './empty-state';
-import {
-  InputGroup,
-  InputGroupBody,
-  InputGroupButton,
-  InputGroupRow,
-  InputGroupTextarea,
-} from './input-group';
+import { InputGroupButton } from './input-group';
 import { Marker, MarkerContent } from './marker';
 import { Message, MessageAvatar, MessageContent, MessageHeader } from './message';
 import {
@@ -63,7 +63,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Chat panel pattern for Autopilot, assembled from the chat primitives (MessageScroller, Message, Bubble, Attachment, Marker) plus Card, EmptyState, InputGroup and DropdownMenu for the panel chrome. The transcript is scripted for the demo: press Send to reveal the next turn. The service-driven version of this panel is being built as @uipath/apollo-react/chat on top of these primitives.',
+          'Chat panel pattern for Autopilot, assembled from the chat primitives (MessageScroller, Message, Bubble, Attachment, Marker) plus ChatComposer for the prompt input and Card, EmptyState and DropdownMenu for the panel chrome. The transcript is scripted for the demo: press Send to reveal the next turn. The service-driven version of this panel is being built as @uipath/apollo-react/chat on top of these primitives.',
       },
     },
   },
@@ -294,31 +294,22 @@ function AutopilotChatPanel({ className, variant = 'standard' }: AutopilotChatPa
         </div>
 
         <CardFooter className="flex-col gap-2 p-4 pt-2">
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSend();
-            }}
+          <ChatComposer
             className="w-full"
+            density="compact"
+            value={composerValue}
+            onSubmit={handleSend}
           >
-            {/* A block layout stacks the textarea row above a toolbar body. */}
-            <InputGroup layout="block">
-              <InputGroupRow className="py-2">
-                <InputGroupTextarea
-                  aria-label="Message"
-                  readOnly
-                  minRows={1}
-                  maxRows={4}
-                  value={composerValue}
-                  className={cn(!canSend && 'text-muted-foreground')}
-                />
-              </InputGroupRow>
-              <InputGroupBody className="flex items-center gap-1 px-2 py-1.5">
+            <ChatComposerInputGroup>
+              <ChatComposerTextarea
+                readOnly
+                maxRows={4}
+                className={cn(!canSend && 'text-muted-foreground')}
+              />
+              <ChatComposerToolbar>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <InputGroupButton aria-label="Attach file" icon size="3xs">
-                      <Paperclip />
-                    </InputGroupButton>
+                    <ChatComposerAttachButton />
                   </TooltipTrigger>
                   <TooltipContent>Attach file</TooltipContent>
                 </Tooltip>
@@ -350,20 +341,10 @@ function AutopilotChatPanel({ className, variant = 'standard' }: AutopilotChatPa
                     ))}
                   </DropdownMenuContent>
                 </DropdownMenu>
-                <InputGroupButton
-                  type="submit"
-                  variant="default"
-                  icon
-                  size="3xs"
-                  disabled={!canSend}
-                  className="ml-auto"
-                >
-                  <ArrowUp />
-                  <span className="sr-only">Send</span>
-                </InputGroupButton>
-              </InputGroupBody>
-            </InputGroup>
-          </form>
+                <ChatComposerSubmit disabled={!canSend} />
+              </ChatComposerToolbar>
+            </ChatComposerInputGroup>
+          </ChatComposer>
         </CardFooter>
       </Card>
     </TooltipProvider>

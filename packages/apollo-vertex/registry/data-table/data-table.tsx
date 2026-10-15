@@ -377,4 +377,5 @@ function DataTable<TData, TValue>({
 }
 export { DataTable };
 export type { DataTableProps };
+/** @public */
 export { DataTableColumnHeader } from "./data-table-column-header";

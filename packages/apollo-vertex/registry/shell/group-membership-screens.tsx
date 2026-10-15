@@ -1,3 +1,5 @@
+"use client";
+
 import { ShieldX } from "lucide-react";
 import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Button } from "@/components/ui/button";

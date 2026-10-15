@@ -80,6 +80,8 @@ Use `variant="solid"` for a flat card with a solid background and border.
 
 Cards can be made selectable with `selectable="standard"` or `selectable="ai"`. Selectable cards render as a `<button>` with `aria-pressed` for accessibility. They show a glow effect on hover and when selected. The `ai` glow uses the AI gradient; see the [AI Toolkit](/guidelines/ai-toolkit) for guidance and richer AI card compositions.
 
+A selectable card is a glow wrapper around a button. `className` and other props like `style` go to the button. Put grid placement such as `col-span-*` in `wrapperClassName`, which always targets the outermost element.
+
 <div className="mt-4">
   <SelectableCardDemo />
 </div>
@@ -141,12 +143,6 @@ The `group` variant is a wider, amorphous wash. Set the AI context once at the g
 </div>
 ```
 
-## Installation
-
-```bash
-npx shadcn@latest add @uipath/card
-```
-
 ## Usage
 
 ```tsx
@@ -158,7 +154,7 @@ import {
   CardHeader,
   CardTitle,
   GLASS_CLASSES,
-} from "@/components/ui/card"
+} from "@uipath/apollo-vertex"
 ```
 
 ```tsx
@@ -181,7 +177,7 @@ import {
 The `GLASS_CLASSES` constant is exported for reuse in other components that need the same frosted glass styling:
 
 ```tsx
-import { GLASS_CLASSES } from "@/components/ui/card"
+import { GLASS_CLASSES } from "@uipath/apollo-vertex"
 
 <div className={cn(GLASS_CLASSES, "p-4")}>
   Glass morphism container

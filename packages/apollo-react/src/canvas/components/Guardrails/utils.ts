@@ -1,5 +1,5 @@
 import type {
-  GuardrailAppliesTo,
+  GuardrailDetectionScope,
   GuardrailParameterDefinition,
   GuardrailValidatorParameter,
 } from './types';
@@ -268,19 +268,19 @@ export function getRequiredEmptyParameterIds(
   return emptyIds;
 }
 
-export const GUARDRAIL_APPLIES_TO_PARAMETER_ID = 'appliesTo';
+export const GUARDRAIL_DETECTION_SCOPE_PARAMETER_ID = 'detectionScope';
 
 /**
- * What a validator's `appliesTo` parameter selects, or `undefined` when its definitions have
+ * What a validator's `detectionScope` parameter selects, or `undefined` when its definitions have
  * none. Reads it the way the backend does (`GuardrailAttachmentPrompt.GetScope`): the stored
  * value, trimmed and case-insensitive, when non-empty, otherwise the definition's default; any
  * value but Files or Both, Flow's legacy "Prompts" included, is Text.
  */
-export function getGuardrailAppliesTo(
+export function getGuardrailDetectionScope(
   definitions: readonly GuardrailParameterDefinition[],
   parameters: readonly GuardrailValidatorParameter[]
-): GuardrailAppliesTo | undefined {
-  const definition = definitions.find((d) => d.id === GUARDRAIL_APPLIES_TO_PARAMETER_ID);
+): GuardrailDetectionScope | undefined {
+  const definition = definitions.find((d) => d.id === GUARDRAIL_DETECTION_SCOPE_PARAMETER_ID);
   if (!definition) return undefined;
   const asText = (value: unknown) => (typeof value === 'string' ? value.trim() : '');
   const stored = asText(parameters.find((p) => p.id === definition.id)?.value);

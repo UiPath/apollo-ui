@@ -154,7 +154,7 @@ the vertical knows which agent is which. Bind the shipped ones in
 import {
   CASE_EVALUATION_OUTPUT_RENDERER,
   IXP_OUTPUT_RENDERER,
-} from "@/components/ui/solution-tests";
+} from "@uipath/apollo-vertex";
 
 const config: SolutionTestsConfig = {
   subjectColumns,
@@ -240,10 +240,7 @@ hook, which POSTs the subject id to the `solution-tests/create` action through
 the same `triggerBaseUrl` / `getToken` plumbing as the other writes.
 
 ```tsx
-import {
-  SaveAsTestButton,
-  useCreateTest,
-} from "@/components/ui/solution-tests";
+import { SaveAsTestButton, useCreateTest } from "@uipath/apollo-vertex";
 
 function SaveSubjectAsTest({ subjectId }: { subjectId: string }) {
   const createTest = useCreateTest();
@@ -261,11 +258,7 @@ Both must sit inside a `SolutionTestsProvider` (the hook resolves the write
 actions from context). The button takes `isSaved`, `isSaving`, `onSave`, and an
 optional `disabled`, and renders its own saving / saved states.
 
-## Installation
-
-```bash
-npx shadcn@latest add @uipath/solution-tests
-```
+## Setup
 
 <Callout type="info">
 
@@ -275,9 +268,8 @@ dedicated, name-keyed `solution.api.collections.solutionTests` namespace, and
 resolves attachment entity ids from `solution.api.entityIds` (added in 2.0.6).
 Install vs-core per its README — it brings its own
 peers (`@tanstack/db`, `@tanstack/query-db-collection`,
-`@tanstack/react-query`, `@uipath/uipath-typescript`). The component itself
-pulls `@tanstack/react-db` (for `useLiveQuery`), `@tanstack/react-table`,
-`@tanstack/react-router`, `recharts`, `sonner`, and `react-i18next`.
+`@tanstack/react-query`, `@uipath/uipath-typescript`). The component also
+needs `@tanstack/react-db` (for `useLiveQuery`), which you install yourself.
 
 </Callout>
 
@@ -303,7 +295,7 @@ import {
   SolutionTests,
   SolutionTestsProvider,
   type SolutionTestsConfig,
-} from "@/components/ui/solution-tests";
+} from "@uipath/apollo-vertex";
 
 const config: SolutionTestsConfig = {
   subjectColumns, // the only per-vertical customization
@@ -339,7 +331,7 @@ you prefer to supply your own data plumbing or render the view against a mock
   collections from `solution.api.collections.solutionTests` (vs-core 2.x) via
   the collection-backed hooks in `hooks.ts`; just ensure those collections exist
   on your solution. Reads are reactive (live queries); writes POST to the
-  provider's `triggerBaseUrl` (see Installation).
+  provider's `triggerBaseUrl` (see Setup).
 - **Toolbar content**: `config.subjectToolbarContent` receives the test-cases
   table and returns extra toolbar content, such as a faceted filter on a
   subject column.

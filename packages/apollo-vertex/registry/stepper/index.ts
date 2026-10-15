@@ -1,18 +1,16 @@
-export { Stepper, type StepperProps, stepperVariants } from "./stepper";
 export {
+  Stepper,
   StepperContent,
   StepperDescription,
-  StepperTitle,
-} from "./stepper-content";
-export type {
-  StepperItemState,
-  StepperOrientation,
-} from "./stepper-context";
-export { StepperIndicator } from "./stepper-indicator";
-export {
+  StepperIndicator,
   StepperItem,
   type StepperItemProps,
+  type StepperItemState,
+  type StepperOrientation,
+  type StepperProps,
+  StepperSeparator,
+  StepperTitle,
+  StepperTrigger,
   stepperItemVariants,
-} from "./stepper-item";
-export { StepperSeparator } from "./stepper-separator";
-export { StepperTrigger } from "./stepper-trigger";
+  stepperVariants,
+} from "./stepper";

@@ -204,9 +204,8 @@ export { Calendar } from './components/ui/calendar';
 // -----------------------------------------------------------------------------
 // Data Display Components
 // -----------------------------------------------------------------------------
-// NOTE: CodeBlock was removed. Use Monaco or CodeMirror with Apollo editor
-// themes instead. See @uipath/apollo-wind/editor-themes for the theme API and
-// Patterns → Code Editors in Storybook for integration guidance.
+// CodeBlock is a read-only highlighted sample for chat. For editable code use Monaco or
+// CodeMirror with the themes in @uipath/apollo-wind/editor-themes (Patterns → Code Editors).
 export {
   Card,
   CardContent,
@@ -224,8 +223,52 @@ export {
   ChartTooltip,
   ChartTooltipContent,
 } from './components/ui/chart';
+export type {
+  ChatComposerAttachButtonProps,
+  ChatComposerAttachmentItem,
+  ChatComposerAttachmentsProps,
+  ChatComposerContextValue,
+  ChatComposerDensity,
+  ChatComposerErrorProps,
+  ChatComposerFooterProps,
+  ChatComposerInputGroupProps,
+  ChatComposerProps,
+  ChatComposerStatus,
+  ChatComposerStrings,
+  ChatComposerSubmitDetails,
+  ChatComposerSubmitProps,
+  ChatComposerTextareaProps,
+  ChatComposerToolbarProps,
+} from './components/ui/chat-composer';
+export {
+  ChatComposer,
+  ChatComposerAttachButton,
+  ChatComposerAttachments,
+  ChatComposerError,
+  ChatComposerFooter,
+  ChatComposerInputGroup,
+  ChatComposerSubmit,
+  ChatComposerTextarea,
+  ChatComposerToolbar,
+  chatComposerErrorVariants,
+  chatComposerVariants,
+  DEFAULT_CHAT_COMPOSER_STRINGS,
+  useChatComposer,
+} from './components/ui/chat-composer';
 export type { CheckboxProps } from './components/ui/checkbox';
 export { Checkbox } from './components/ui/checkbox';
+export type { CitationData, CitationProps, CitationStrings } from './components/ui/citation';
+export { Citation, citationVariants, DEFAULT_CITATION_STRINGS } from './components/ui/citation';
+export type {
+  CodeBlockHeaderProps,
+  CodeBlockProps,
+  CodeBlockStrings,
+} from './components/ui/code-block';
+export {
+  CodeBlock,
+  CodeBlockHeader,
+  DEFAULT_CODE_BLOCK_STRINGS,
+} from './components/ui/code-block';
 export {
   Collapsible,
   CollapsibleContent,
@@ -329,6 +372,14 @@ export {
   DropdownMenuTrigger,
 } from './components/ui/dropdown-menu';
 export type {
+  DropzoneOverlayProps,
+  DropzoneOverlayStrings,
+} from './components/ui/dropzone-overlay';
+export {
+  DEFAULT_DROPZONE_OVERLAY_STRINGS,
+  DropzoneOverlay,
+} from './components/ui/dropzone-overlay';
+export type {
   EditableCellMeta,
   EditableCellType,
 } from './components/ui/editable-cell';
@@ -371,6 +422,16 @@ export {
 } from './components/ui/field-addons';
 export type { FileUploadProps } from './components/ui/file-upload';
 export { FileUpload } from './components/ui/file-upload';
+export type {
+  FileRejection,
+  FileRejectionReason,
+  FileValidationOptions,
+} from './components/ui/file-validation';
+export {
+  formatFileSize,
+  isFileTypeAccepted,
+  validateFiles,
+} from './components/ui/file-validation';
 export type {
   FolderPickerContentProps,
   FolderPickerEntry,
@@ -451,6 +512,14 @@ export type { RowProps } from './components/ui/layout/row';
 // Layout Components
 // -----------------------------------------------------------------------------
 export { Row } from './components/ui/layout/row';
+export type { LiveRegionHandle, LiveRegionProps } from './components/ui/live-region';
+export { LiveRegion } from './components/ui/live-region';
+export type { LoadingDotsProps, LoadingDotsStrings } from './components/ui/loading-dots';
+export {
+  DEFAULT_LOADING_DOTS_STRINGS,
+  LoadingDots,
+  loadingDotsVariants,
+} from './components/ui/loading-dots';
 export type {
   LockableFieldType,
   LockableValueFieldMode,
@@ -460,6 +529,13 @@ export type {
   LockableValueFieldStrings,
 } from './components/ui/lockable-value-field';
 export { LockableValueField } from './components/ui/lockable-value-field';
+export type {
+  MarkdownCodeBlock,
+  MarkdownImagePolicy,
+  MarkdownProps,
+  MarkdownStrings,
+} from './components/ui/markdown';
+export { DEFAULT_MARKDOWN_STRINGS, Markdown } from './components/ui/markdown';
 export type { MarkerProps } from './components/ui/marker';
 export { Marker, MarkerContent, MarkerIcon, markerVariants } from './components/ui/marker';
 export type { MessageProps } from './components/ui/message';
@@ -471,6 +547,31 @@ export {
   MessageGroup,
   MessageHeader,
 } from './components/ui/message';
+export type {
+  MessageActionCopyProps,
+  MessageActionCopyStrings,
+  MessageActionFeedbackProps,
+  MessageActionFeedbackStrings,
+  MessageActionItem,
+  MessageActionProps,
+  MessageActionsOverflowProps,
+  MessageActionsOverflowStrings,
+  MessageActionsProps,
+  MessageActionsStrings,
+  MessageFeedbackValue,
+} from './components/ui/message-actions';
+export {
+  DEFAULT_MESSAGE_ACTION_COPY_STRINGS,
+  DEFAULT_MESSAGE_ACTION_FEEDBACK_STRINGS,
+  DEFAULT_MESSAGE_ACTIONS_OVERFLOW_STRINGS,
+  DEFAULT_MESSAGE_ACTIONS_STRINGS,
+  MessageAction,
+  MessageActionCopy,
+  MessageActionFeedback,
+  MessageActions,
+  MessageActionsOverflow,
+  messageActionsVariants,
+} from './components/ui/message-actions';
 export type {
   MessageScrollerButtonProps,
   MessageScrollerButtonStrings,
@@ -734,6 +835,18 @@ export {
 export { Skeleton } from './components/ui/skeleton';
 export { Slider } from './components/ui/slider';
 export { Toaster, toast } from './components/ui/sonner';
+export type {
+  SourceData,
+  SourceItemProps,
+  SourcesProps,
+  SourcesStrings,
+} from './components/ui/sources';
+export {
+  DEFAULT_SOURCES_STRINGS,
+  SourceItem,
+  Sources,
+  SourcesList,
+} from './components/ui/sources';
 export type { SpinnerProps } from './components/ui/spinner';
 export { Spinner, spinnerVariants } from './components/ui/spinner';
 export type { StatsCardProps } from './components/ui/stats-card';
@@ -772,8 +885,38 @@ export {
 } from './components/ui/panel-tabs';
 export type { TextareaProps } from './components/ui/textarea';
 export { Textarea } from './components/ui/textarea';
+export type {
+  ThinkingIndicatorProps,
+  ThinkingIndicatorStrings,
+} from './components/ui/thinking-indicator';
+export {
+  DEFAULT_THINKING_INDICATOR_STRINGS,
+  ThinkingIndicator,
+  thinkingIndicatorVariants,
+} from './components/ui/thinking-indicator';
 export { Toggle, toggleVariants } from './components/ui/toggle';
 export { ToggleGroup, ToggleGroupItem } from './components/ui/toggle-group';
+export type {
+  ToolCallContentProps,
+  ToolCallHeaderProps,
+  ToolCallProps,
+  ToolCallRenderValue,
+  ToolCallSectionProps,
+  ToolCallStatus,
+  ToolCallStrings,
+  ToolCallValueProps,
+} from './components/ui/tool-call';
+export {
+  DEFAULT_TOOL_CALL_STRINGS,
+  ToolCall,
+  ToolCallContent,
+  ToolCallError,
+  ToolCallHeader,
+  ToolCallInput,
+  ToolCallOutput,
+  ToolCallSection,
+  toolCallVariants,
+} from './components/ui/tool-call';
 export {
   Tooltip,
   TooltipContent,

@@ -1,3 +1,16 @@
+## [@uipath/apollo-react-v7.1.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.1.0...@uipath/apollo-react@7.1.1) (2026-10-14)
+
+### Bug Fixes
+
+* **storybook:** address guidance review feedback ([25424fa](https://github.com/UiPath/apollo-ui/commit/25424fab63495fa899248b8af9ebb95410581c8e))
+
+## [@uipath/apollo-react-v7.1.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.0.0...@uipath/apollo-react@7.1.0) (2026-10-14)
+
+### Features
+
+* **apollo-react:** keep the policy's order for the built-in parameters the copy describes ([8ba309f](https://github.com/UiPath/apollo-ui/commit/8ba309fc4396e704dc8cb559b4f41d45344cb4e2))
+* **apollo-react:** show built-in centralized guardrail parameters such as Applies to ([e0fa46a](https://github.com/UiPath/apollo-ui/commit/e0fa46a0f427b278ccbd9eb34d0c48cd0b1c477f))
+
 ## [@uipath/apollo-react-v6.80.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.79.0...@uipath/apollo-react@6.80.0) (2026-10-12)
 
 ### Features

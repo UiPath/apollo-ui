@@ -25,6 +25,7 @@ pnpm build                    # Theme CSS, registry build and Next.js build
 pnpm registry:build           # Build the shadcn registry only
 pnpm generate:theme           # Regenerate app/theme.generated.css from the package registry.json
 pnpm lint                     # oxlint (extends the package config)
+pnpm -w knip                  # Find unused files, exports and dependencies (both workspaces)
 pnpm format                   # Format with Biome
 pnpm typecheck                # TypeScript type checking
 ```
@@ -47,4 +48,6 @@ apps/apollo-vertex/
 2. Create a documentation page in `content/docs/components/<component>.mdx` with a `title` and a
    one-line `description` in its frontmatter. The page renders both, so don't repeat them as an
    H1 and intro paragraph. Add the page to `content/docs/components/meta.json` to place it in the sidebar.
+   The sidebar and index page are grouped by `---Group---` separators in `meta.json`, so put a new
+   page in the group that fits its use.
 3. Run `pnpm build` to confirm the docs and registry build.

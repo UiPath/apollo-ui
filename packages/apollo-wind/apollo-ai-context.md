@@ -379,7 +379,6 @@ is imported from `@/components/ui/tree-view`.
 | DelegatePanel | `panel-delegate` | Delegate navigation panel |
 | MaestroPanel | `panel-maestro` | Maestro side panels |
 | MaestroGrid | `grid-maestro` | Maestro content grid |
-| ChatComposer | `chat-composer` | Chat message input |
 | ChatFirstExperience | `chat-first-experience` | Empty chat state |
 | ChatPromptSuggestions | `chat-prompt-suggestions` | Suggested prompts |
 | ChatStepsView | `chat-steps-view` | Chat step progress |

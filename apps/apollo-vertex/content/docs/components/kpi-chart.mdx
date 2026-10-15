@@ -9,20 +9,12 @@ import { KpiChartTemplate } from '../../../templates/charts/KpiChartTemplate';
   <KpiChartTemplate />
 </Preview>
 
-## Installation
-
-```bash
-npx shadcn@latest add @uipath/kpi-chart
-```
-
-Installs both the prop-driven `KpiChart` view and the `KpiChartWithAdapter` variant.
-
 ## View
 
 `KpiChart` renders a static label/value pair. Format the value yourself (this component just prints it).
 
 ```tsx
-import { KpiChart } from "@/components/ui/kpi-chart";
+import { KpiChart } from "@uipath/apollo-vertex";
 
 <KpiChart label="Total revenue" value="$342,000" />
 ```
@@ -36,17 +28,10 @@ import { KpiChart } from "@/components/ui/kpi-chart";
 
 `KpiChartWithAdapter` runs a single aggregate query and renders the result with `formatMetricValue` from charts-core (which respects the metric's expression and field type).
 
-The chart package does not bundle an adapter. Install one of the ready-made adapters (or implement the `DataAdapter` interface yourself):
-
-```bash
-npx shadcn@latest add @uipath/data-fabric-adapter
-# or
-npx shadcn@latest add @uipath/insights-adapter
-```
+Pass one of the ready-made adapters, `dataFabricAdapter` or `insightsAdapter`, or implement the `DataAdapter` interface yourself:
 
 ```tsx
-import { KpiChartWithAdapter } from "@/components/ui/kpi-chart";
-import { dataFabricAdapter } from "@/lib/data-fabric-adapter";
+import { KpiChartWithAdapter, dataFabricAdapter } from "@uipath/apollo-vertex";
 
 const adapter = dataFabricAdapter({
   baseUrl: "/api/datafabric/.../api",

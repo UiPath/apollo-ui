@@ -9,20 +9,12 @@ import { BarChartTemplate } from '../../../templates/charts/BarChartTemplate';
   <BarChartTemplate />
 </Preview>
 
-## Installation
-
-```bash
-npx shadcn@latest add @uipath/bar-chart
-```
-
-Installs both the prop-driven `BarChart` view and the `BarChartWithAdapter` variant.
-
 ## View
 
 `BarChart` renders pre-shaped rows. Use it when the data is already in memory.
 
 ```tsx
-import { BarChart } from "@/components/ui/bar-chart";
+import { BarChart } from "@uipath/apollo-vertex";
 
 const rows = [
   {
@@ -50,17 +42,10 @@ const rows = [
 
 `BarChartWithAdapter` wires the chart to a `DataAdapter`. It manages its own data fetching, Suspense, and error boundary — drop it anywhere a `QueryClientProvider` is in scope.
 
-The chart package does not bundle an adapter. Install one of the ready-made adapters (or implement the `DataAdapter` interface yourself):
-
-```bash
-npx shadcn@latest add @uipath/data-fabric-adapter
-# or
-npx shadcn@latest add @uipath/insights-adapter
-```
+Pass one of the ready-made adapters, `dataFabricAdapter` or `insightsAdapter`, or implement the `DataAdapter` interface yourself:
 
 ```tsx
-import { BarChartWithAdapter } from "@/components/ui/bar-chart";
-import { dataFabricAdapter } from "@/lib/data-fabric-adapter";
+import { BarChartWithAdapter, dataFabricAdapter } from "@uipath/apollo-vertex";
 
 const adapter = dataFabricAdapter({
   baseUrl: "/api/datafabric/.../api",

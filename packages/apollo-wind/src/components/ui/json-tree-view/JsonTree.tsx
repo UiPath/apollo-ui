@@ -1,8 +1,8 @@
 import { useVirtualizer, type VirtualItem } from '@tanstack/react-virtual';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { cn } from '@/lib';
+import { copyTextToClipboard } from '@/lib/clipboard';
 import { flattenJsonTree } from './buildJsonTree';
-import { copyTextToClipboard } from './clipboard';
 import type {
   CopyEvent,
   DeriveTypeIcon,

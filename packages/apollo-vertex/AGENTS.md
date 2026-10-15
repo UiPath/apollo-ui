@@ -6,7 +6,7 @@ This file provides guidance for AI coding agents working in the `@uipath/apollo-
 
 This package holds the source of every Apollo Vertex component. The same sources are shipped two ways:
 - `pnpm build` compiles them into `dist/` as the `@uipath/apollo-vertex` npm package. The public API is
-  the barrel files in `entries/`, one per `package.json` export.
+  the root barrel `entries/index.ts`.
 - The `apps/apollo-vertex` docs app imports these files for its live examples and builds them into a
   shadcn registry (`public/r/*.json`).
 
@@ -25,6 +25,7 @@ pnpm lint                     # Lint with oxlint (type-aware)
 pnpm format                   # Format with Biome
 pnpm format:check             # Check formatting without writing
 pnpm lint:deps                # Check registry import boundaries
+pnpm -w knip                  # Find unused files, exports and dependencies (both workspaces)
 pnpm typecheck                # TypeScript type checking
 ```
 
@@ -164,6 +165,17 @@ User-facing strings are looked up via `useVertexTranslation()` from `@/lib/verte
 
 **Only edit `locales/en.json`.** Add new keys there in alphabetical order. Do not touch the other locale files — the localization team syncs translations into them as a separate workflow. PRs that modify non-English locales will be sent back.
 
+### Agent Skills
+
+`skills/<name>/SKILL.md` files ship in the npm package as [TanStack Intent](https://tanstack.com/intent)
+skills for consumers' coding agents. They tell consumers' agents how to use the published package,
+not how to work in this repo.
+
+- When you change a public API that a skill covers, update the skill in the same PR. The `sources`
+  frontmatter lists the files each skill is based on.
+- Use the package import paths (`@uipath/apollo-vertex`), never the `@/` aliases.
+- Keep each `SKILL.md` under 500 lines and run `pnpm lint:skills` before pushing.
+
 ### Error Handling
 - Use TypeScript's strict null checks
 - Handle loading and error states explicitly in UI
@@ -255,6 +267,7 @@ After implementing components or making changes, **always run the build, linting
 ```bash
 pnpm typecheck
 pnpm lint
+pnpm -w knip
 pnpm format
 pnpm --filter @uipath/apollo-vertex build   # verifies the npm package build
 pnpm --filter apollo-vertex build           # verifies the docs app and registry build

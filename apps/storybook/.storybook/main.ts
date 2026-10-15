@@ -48,6 +48,11 @@ const config: StorybookConfig = {
       titlePrefix: 'Apollo Wind',
     },
     {
+      directory: '../src/react',
+      files: '**/*.stories.@(tsx|ts|jsx|js|mdx)',
+      titlePrefix: 'Apollo React',
+    },
+    {
       directory: '../../../packages/apollo-react/src/canvas',
       files: '**/*.stories.@(tsx|ts|jsx|js|mdx)',
       titlePrefix: 'Apollo React/Canvas',

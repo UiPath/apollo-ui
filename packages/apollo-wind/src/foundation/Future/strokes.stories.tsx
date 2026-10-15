@@ -6,7 +6,7 @@ import { fontFamily } from './typography';
 // ============================================================================
 
 const meta = {
-  title: 'Theme/Future/Strokes',
+  title: 'Patterns/Theme (Moving to Core)/Future/Strokes',
   parameters: {
     layout: 'fullscreen',
   },

@@ -1,3 +1,5 @@
+"use client";
+
 import { useLiveQuery } from "@tanstack/react-db";
 import { type Group, useSolution } from "@uipath/vs-core";
 
