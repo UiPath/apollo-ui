@@ -9,7 +9,7 @@ import { fontFamily } from './typography';
 // ============================================================================
 
 const meta = {
-  title: 'Theme/Logos',
+  title: 'Patterns/Theme (Moving to Core)/Logos',
   parameters: {
     layout: 'fullscreen',
   },

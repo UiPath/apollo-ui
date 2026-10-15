@@ -122,6 +122,9 @@ const definitionSchema = z.object({
   allowedScopes: z.array(z.enum(['Agent', 'Llm', 'Tool'])).min(1),
   parameters: z.array(parameterSchema).default([]),
   status: z.enum(['Available', 'FeatureDisabled', 'Unauthorised', 'Disabled']),
+  // An open string, not an enum: a reason this version does not know must not drop the
+  // definition. Readers compare against the values they handle and ignore the rest.
+  disabledReason: z.string().optional(),
   displayName: emptyToUndefined,
   description: emptyToUndefined,
   byoConnectorName: emptyToUndefined,

@@ -281,7 +281,7 @@ const ICON_CATEGORIES = [
 const TOTAL_ICONS = ICON_CATEGORIES.reduce((sum, cat) => sum + cat.icons.length, 0);
 
 const meta = {
-  title: 'Theme/Icons',
+  title: 'Patterns/Theme (Moving to Core)/Icons',
   parameters: {
     layout: 'fullscreen',
   },

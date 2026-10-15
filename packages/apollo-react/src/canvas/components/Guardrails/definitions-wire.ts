@@ -76,6 +76,8 @@ export interface GuardrailDefinitionWire {
   allowedScopes: GuardrailScope[];
   parameters: GuardrailParameterDefinitionWire[];
   status: GuardrailDefinitionStatus;
+  /** Why a `Disabled` definition is disabled. See `GuardrailDefinition.disabledReason`. */
+  disabledReason?: string;
   displayName?: string;
   description?: string;
   byoConnectorName?: string;
