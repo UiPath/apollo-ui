@@ -17,8 +17,10 @@ import {
   enrichGuardrailDefinitions,
   humanizeGuardrailParameterId,
   isByoGuardrailDefinition,
+  isPolicyDisabledGuardrailDefinition,
   withGuardrailFolderMetadata,
 } from './definitions-enrich';
+import { parseGuardrailDefinitions } from './definitions-parse';
 import type { GuardrailDefinitionWire } from './definitions-wire';
 import { getOutOfRangeParameterIds, seedGuardrailParameters } from './utils';
 
@@ -49,6 +51,31 @@ describe('enrichGuardrailDefinitions', () => {
     const result = enrichGuardrailDefinitions([PROMPT_INJECTION_WIRE, PII_DETECTION_WIRE]);
 
     expect(result.map((d) => d.validator)).toEqual(['prompt_injection', 'pii_detection']);
+  });
+
+  describe('disabledReason', () => {
+    it('survives parse and enrich, for the builder and the list to read', () => {
+      const { definitions } = parseGuardrailDefinitions([
+        { ...PII_DETECTION_WIRE, status: 'Disabled', disabledReason: 'Policy' },
+      ]);
+      const [definition] = enrichGuardrailDefinitions(definitions);
+
+      expect(definition).toMatchObject({ status: 'Disabled', disabledReason: 'Policy' });
+    });
+
+    it('carries an unknown reason through verbatim', () => {
+      const { definitions } = parseGuardrailDefinitions([
+        { ...PII_DETECTION_WIRE, status: 'Disabled', disabledReason: 'SomethingNew' },
+      ]);
+
+      expect(enrichGuardrailDefinitions(definitions)).toEqual([
+        expect.objectContaining({ validator: 'pii_detection', disabledReason: 'SomethingNew' }),
+      ]);
+    });
+
+    it('omits it instead of setting it undefined', () => {
+      expect(enrichOne(PII_DETECTION_WIRE)).not.toHaveProperty('disabledReason');
+    });
   });
 
   describe('copy precedence', () => {
@@ -410,6 +437,26 @@ describe('isByoGuardrailDefinition', () => {
   it('is exactly "names a BYO validator"', () => {
     expect(isByoGuardrailDefinition(BYO_WIRE)).toBe(true);
     expect(isByoGuardrailDefinition(PII_DETECTION_WIRE)).toBe(false);
+  });
+});
+
+describe('isPolicyDisabledGuardrailDefinition', () => {
+  it('is a Disabled built-in validator with the Policy reason', () => {
+    expect(
+      isPolicyDisabledGuardrailDefinition({ status: 'Disabled', disabledReason: 'Policy' })
+    ).toBe(true);
+  });
+
+  it.each([
+    ['an unknown reason', { status: 'Disabled', disabledReason: 'SomethingNew' }],
+    ['no reason', { status: 'Disabled' }],
+    ['another status', { status: 'Unauthorised', disabledReason: 'Policy' }],
+    [
+      'a BYO configuration',
+      { status: 'Disabled', disabledReason: 'Policy', byoValidatorName: 'my-pii' },
+    ],
+  ] as const)('is false for %s', (_, definition) => {
+    expect(isPolicyDisabledGuardrailDefinition(definition)).toBe(false);
   });
 });
 

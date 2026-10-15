@@ -1,4 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
+import { jwtDecode } from "jwt-decode";
 import PKCEChallenge from "pkce-challenge";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -19,6 +20,7 @@ export const STORAGE_KEYS = {
   TOKEN: "uipath_token",
   CODE_VERIFIER: "uipath_code_verifier",
   STATE: "uipath_state",
+  REQUESTED_SCOPE: "uipath_requested_scope",
   AUTH_RETURN_TO: "auth_return_to",
   LOGOUT_RETURN_TO: "logout_return_to",
 } as const;
@@ -92,12 +94,49 @@ const shouldRefreshToken = (tokenData: TokenData): boolean => {
   return timeUntilExpiry < REFRESH_THRESHOLD_MS;
 };
 
-const saveTokenData = (tokenData: TokenData): void => {
-  localStorage.setItem(STORAGE_KEYS.TOKEN, JSON.stringify(tokenData));
+const normalizeScope = (scope: string): string =>
+  [...new Set(scope.split(/\s+/).filter(Boolean))].toSorted().join(" ");
+
+// Keyed by client so apps on one host (one localStorage) keep their own sessions,
+// and by scope so a scope change forces a new login: a refresh can't add scopes.
+const getTokenStorageKey = (clientId: string, scope: string): string =>
+  `${STORAGE_KEYS.TOKEN}:${clientId}:${normalizeScope(scope)}`;
+
+// Mirrors the storage key, so callers on another client or scope get their own
+// cache entry.
+export const getTokenQueryKey = (clientId: string, scope: string) =>
+  [...TOKEN_QUERY_KEY, clientId, normalizeScope(scope)] as const;
+
+const readTokenData = (storageKey: string): TokenData | null => {
+  try {
+    const { data, success } = TokenDataSchema.safeParse(
+      JSON.parse(localStorage.getItem(storageKey) ?? "null"),
+    );
+    return success ? data : null;
+  } catch {
+    return null;
+  }
 };
 
-const clearTokenData = (): void => {
-  localStorage.removeItem(STORAGE_KEYS.TOKEN);
+export const getStoredIdToken = (
+  clientId: string,
+  scope: string,
+): string | null =>
+  readTokenData(getTokenStorageKey(clientId, scope))?.id_token ?? null;
+
+const saveTokenData = (storageKey: string, tokenData: TokenData): void => {
+  localStorage.setItem(storageKey, JSON.stringify(tokenData));
+};
+
+const clearTokenData = (storageKey: string): void => {
+  localStorage.removeItem(storageKey);
+};
+
+const clearPendingLogin = (): void => {
+  sessionStorage.removeItem(STORAGE_KEYS.CODE_VERIFIER);
+  sessionStorage.removeItem(STORAGE_KEYS.STATE);
+  sessionStorage.removeItem(STORAGE_KEYS.REQUESTED_SCOPE);
+  sessionStorage.removeItem(STORAGE_KEYS.AUTH_RETURN_TO);
 };
 
 const fetchTokenData = async (baseUrl: string, body?: URLSearchParams) => {
@@ -140,6 +179,7 @@ const refreshTokenIfNeeded = async (
   tokenData: TokenData,
   clientId: string,
   baseUrl: string,
+  storageKey: string,
 ): Promise<string | null> => {
   if (!tokenData.refresh_token) {
     return null;
@@ -151,10 +191,10 @@ const refreshTokenIfNeeded = async (
       clientId,
       baseUrl,
     );
-    saveTokenData(newTokenData);
+    saveTokenData(storageKey, newTokenData);
     return newTokenData.access_token;
   } catch {
-    clearTokenData();
+    clearTokenData(storageKey);
     return null;
   }
 };
@@ -179,6 +219,7 @@ const exchangeCodeForToken = (
 
 const handleOAuthCallback = async (
   clientId: string,
+  scope: string,
   baseUrl: string,
   redirectPath?: string,
 ): Promise<void> => {
@@ -187,25 +228,37 @@ const handleOAuthCallback = async (
   const state = params.get("state");
   const error = params.get("error");
 
-  if (error) {
-    throw new Error(`OAuth error: ${error}`);
-  }
-
-  if (!code || !state) {
+  if (!state || (!code && !error)) {
     return;
   }
 
   const storedState = sessionStorage.getItem(STORAGE_KEYS.STATE);
-  if (state !== storedState) {
-    throw new Error("State mismatch");
-  }
-
   const codeVerifier = sessionStorage.getItem(STORAGE_KEYS.CODE_VERIFIER);
-  if (!codeVerifier) {
-    throw new Error("Code verifier not found");
-  }
+  const requestedScope = sessionStorage.getItem(STORAGE_KEYS.REQUESTED_SCOPE);
+  const returnTo =
+    sessionStorage.getItem(STORAGE_KEYS.AUTH_RETURN_TO) ??
+    window.location.pathname;
+  clearPendingLogin();
 
   try {
+    if (error !== null || code === null) {
+      throw new Error(`OAuth error: ${error ?? "no code returned"}`);
+    }
+    if (state !== storedState) {
+      throw new Error("State mismatch");
+    }
+    if (!codeVerifier) {
+      throw new Error("Code verifier not found");
+    }
+    // False when the login began under another scope, e.g. from a bundle
+    // deployed before this one; its token would lack the current scopes.
+    const loginUsedCurrentScope =
+      requestedScope !== null &&
+      normalizeScope(requestedScope) === normalizeScope(scope);
+    if (!loginUsedCurrentScope) {
+      toast.info("Your sign-in settings changed. Please sign in again.");
+      return;
+    }
     const tokenData = await exchangeCodeForToken(
       code,
       codeVerifier,
@@ -213,41 +266,29 @@ const handleOAuthCallback = async (
       baseUrl,
       redirectPath,
     );
-    sessionStorage.removeItem(STORAGE_KEYS.CODE_VERIFIER);
-    sessionStorage.removeItem(STORAGE_KEYS.STATE);
-    saveTokenData(tokenData);
-    const returnTo = sessionStorage.getItem(STORAGE_KEYS.AUTH_RETURN_TO);
-    sessionStorage.removeItem(STORAGE_KEYS.AUTH_RETURN_TO);
-    const targetPath = returnTo ?? window.location.pathname;
-    window.history.replaceState({}, document.title, targetPath);
+    saveTokenData(getTokenStorageKey(clientId, scope), tokenData);
   } catch (authError) {
-    clearTokenData();
-    sessionStorage.removeItem(STORAGE_KEYS.AUTH_RETURN_TO);
     const message =
       authError instanceof Error ? authError.message : "Unknown error";
     toast.error(`Authentication failed: ${message}`);
-    throw authError;
+  } finally {
+    // Strips ?code and ?state on every outcome, or each refetch retries the
+    // callback. It runs after the exchange, whose redirect_uri can be built
+    // from the current path.
+    window.history.replaceState({}, document.title, returnTo);
   }
 };
 
 export const ensureValidToken = async (
-  queryClient: ReturnType<typeof useQueryClient>,
   clientId: string,
+  scope: string,
   baseUrl: string,
   redirectPath?: string,
 ): Promise<string | null> => {
-  const params = new URLSearchParams(window.location.search);
-  const isInOAuthCallback = params.has("code") && params.has("state");
+  await handleOAuthCallback(clientId, scope, baseUrl, redirectPath);
 
-  if (isInOAuthCallback) {
-    try {
-      await handleOAuthCallback(clientId, baseUrl, redirectPath);
-    } catch {
-      void queryClient.resetQueries({ queryKey: TOKEN_QUERY_KEY });
-    }
-  }
-
-  const tokenDataStr = localStorage.getItem(STORAGE_KEYS.TOKEN);
+  const storageKey = getTokenStorageKey(clientId, scope);
+  const tokenDataStr = localStorage.getItem(storageKey);
   if (!tokenDataStr) {
     return null;
   }
@@ -256,19 +297,19 @@ export const ensureValidToken = async (
   try {
     parsed = JSON.parse(tokenDataStr);
   } catch {
-    clearTokenData();
+    clearTokenData(storageKey);
     return null;
   }
 
   const { data: tokenData, success } = TokenDataSchema.safeParse(parsed);
 
   if (!success) {
-    clearTokenData();
+    clearTokenData(storageKey);
     return null;
   }
 
   if (isTokenExpired(tokenData) || shouldRefreshToken(tokenData)) {
-    return refreshTokenIfNeeded(tokenData, clientId, baseUrl);
+    return refreshTokenIfNeeded(tokenData, clientId, baseUrl, storageKey);
   }
 
   return tokenData.access_token;
@@ -285,6 +326,7 @@ export const login = async (
 
   sessionStorage.setItem(STORAGE_KEYS.CODE_VERIFIER, pkce.code_verifier);
   sessionStorage.setItem(STORAGE_KEYS.STATE, state);
+  sessionStorage.setItem(STORAGE_KEYS.REQUESTED_SCOPE, scope);
 
   if (redirectPath && window.location.pathname !== redirectPath) {
     sessionStorage.setItem(
@@ -306,12 +348,38 @@ export const login = async (
   window.location.href = `${getAuthorizationEndpoint(baseUrl)}?${params.toString()}`;
 };
 
+// The unscoped pre-upgrade entry may belong to another app on the host; its id
+// token's audience names the client. An unreadable entry is no one's session.
+const isUnscopedSessionOf = (clientId: string): boolean => {
+  const tokenData = readTokenData(STORAGE_KEYS.TOKEN);
+  if (tokenData === null) {
+    return true;
+  }
+  try {
+    const { aud } = jwtDecode(tokenData.id_token);
+    return Array.isArray(aud) ? aud.includes(clientId) : aud === clientId;
+  } catch {
+    return true;
+  }
+};
+
 export const logout = (
   queryClient: ReturnType<typeof useQueryClient>,
+  clientId: string,
 ): void => {
-  clearTokenData();
-  sessionStorage.removeItem(STORAGE_KEYS.CODE_VERIFIER);
-  sessionStorage.removeItem(STORAGE_KEYS.STATE);
-  sessionStorage.removeItem(STORAGE_KEYS.AUTH_RETURN_TO);
-  void queryClient.resetQueries({ queryKey: TOKEN_QUERY_KEY });
+  // Signing out ends every session of this client, including ones from earlier
+  // scopes and its pre-upgrade entry, which still hold refresh tokens.
+  const clientPrefix = `${STORAGE_KEYS.TOKEN}:${clientId}:`;
+  const sessionKeys = Array.from({ length: localStorage.length }, (_, index) =>
+    localStorage.key(index),
+  ).filter((key): key is string =>
+    key === STORAGE_KEYS.TOKEN
+      ? isUnscopedSessionOf(clientId)
+      : key?.startsWith(clientPrefix) === true,
+  );
+  for (const key of sessionKeys) {
+    clearTokenData(key);
+  }
+  clearPendingLogin();
+  void queryClient.resetQueries({ queryKey: [...TOKEN_QUERY_KEY, clientId] });
 };

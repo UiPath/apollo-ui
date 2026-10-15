@@ -53,6 +53,22 @@ export function isByoGuardrailDefinition<T extends { byoValidatorName?: string }
 }
 
 /**
+ * A built-in validator the AI Trust Layer policy switched off: runs skip it rather than fail.
+ * BYO is excluded even with the same reason, since its disabled state has its own notice.
+ */
+export function isPolicyDisabledGuardrailDefinition(definition: {
+  status: GuardrailDefinitionWire['status'];
+  disabledReason?: string;
+  byoValidatorName?: string;
+}): boolean {
+  return (
+    definition.status === 'Disabled' &&
+    definition.disabledReason === 'Policy' &&
+    !isByoGuardrailDefinition(definition)
+  );
+}
+
+/**
  * Fallback label for a parameter no curated table names: `entityThresholds` reads as "Entity
  * thresholds". Acronym runs stay whole (`URLAllowList` -> "URL allow list"); splitting on every
  * capital would read worse than the raw id this exists to improve on.
@@ -218,6 +234,7 @@ function enrichOne(
     status: wire.status,
   };
 
+  if (wire.disabledReason !== undefined) enriched.disabledReason = wire.disabledReason;
   if (curated?.usageNote !== undefined) enriched.usageNote = curated.usageNote;
   if (wire.byoValidatorName !== undefined) enriched.byoValidatorName = wire.byoValidatorName;
   if (wire.byoConnectorName !== undefined) enriched.byoConnectorName = wire.byoConnectorName;

@@ -1,9 +1,11 @@
 import { Alert, AlertDescription } from '@uipath/apollo-wind';
 import { AlertCircle, AlertTriangle } from 'lucide-react';
+import type { ReactNode } from 'react';
 
 export interface GuardrailStatusBannerProps {
   tone: 'error' | 'warning';
-  message: string;
+  /** Usually a resolved label; a node when part of it is emphasized (a policy name). */
+  message: ReactNode;
 }
 
 /**

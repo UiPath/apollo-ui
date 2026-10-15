@@ -86,6 +86,17 @@ export interface GuardrailBuilderLabels {
   save: string;
   // Status banners
   byoDisabledMessage: string;
+  /**
+   * A built-in validator the AI Trust Layer policy switched off (`disabledReason: 'Policy'`).
+   * Optional so a complete label object written before it existed still compiles; it always
+   * resolves.
+   */
+  policyDisabledMessage?: string;
+  /**
+   * The same banner when the host passes `policyName`: `{{policyName}}` is the policy's name,
+   * emphasized. Optional like `policyDisabledMessage`.
+   */
+  policyDisabledNamedMessage?: string;
   unauthorizedMessage: string;
   featureDisabledMessage: string;
   // Scope selector
@@ -157,6 +168,10 @@ export const GUARDRAIL_BUILDER_EN_LABELS: Required<GuardrailBuilderLabels> = {
   save: 'Save',
   byoDisabledMessage:
     "This guardrail's configuration has been disabled and can no longer be used. Contact your administrator to re-enable the configuration or replace this guardrail before running the agent.",
+  policyDisabledMessage:
+    "This guardrail is disabled by your organization's AI Trust Layer policy and is skipped when the agent runs.",
+  policyDisabledNamedMessage:
+    'Disabled by AI Trust Layer policy: {{policyName}}. This guardrail is skipped when the agent runs.',
   unauthorizedMessage:
     'You are not entitled to use guardrails. You can access the configuration settings, but modifications cannot be saved.',
   featureDisabledMessage:
@@ -597,6 +612,17 @@ export function useGuardrailBuilderLabels(
             message:
               "This guardrail's configuration has been disabled and can no longer be used. Contact your administrator to re-enable the configuration or replace this guardrail before running the agent.",
           }),
+          policyDisabledMessage: _({
+            id: 'guardrails.builder.policy-disabled-message',
+            message:
+              "This guardrail is disabled by your organization's AI Trust Layer policy and is skipped when the agent runs.",
+          }),
+          policyDisabledNamedMessage: _({
+            id: 'guardrails.builder.policy-disabled-named-message',
+            message:
+              'Disabled by AI Trust Layer policy: {policyName}. This guardrail is skipped when the agent runs.',
+            values: TEMPLATE_TOKENS,
+          }),
           unauthorizedMessage: _({
             id: 'guardrails.builder.unauthorized-message',
             message:
@@ -791,6 +817,16 @@ export interface GuardrailListLabels {
   byoDisabledNotice: string;
   /** Row notice: the BYO configuration this guardrail points at is gone. */
   byoUnavailableNotice: string;
+  /**
+   * Row notice: the AI Trust Layer policy switched this built-in validator off. Optional so a
+   * complete label object written before it existed still compiles; it always resolves.
+   */
+  policyDisabledNotice?: string;
+  /**
+   * The same notice when the host passes `policyName`: `{{policyName}}` is the policy's name,
+   * emphasized. Optional like `policyDisabledNotice`.
+   */
+  policyDisabledNamedNotice?: string;
   /** Status chip: the validator's feature flag is off tenant-wide. */
   statusFeatureDisabled: string;
   /** Status chip: the tenant is not entitled to the validator. */
@@ -813,7 +849,7 @@ type ListTranslate = (descriptor: {
 // One builder holds every `_({ id, message })` call, so the English defaults, the flat record
 // the catalog test diffs and the runtime lingui path cannot drift, and `lingui extract` still
 // sees static calls. Same shape as `definitions-copy.ts`.
-function buildGuardrailListLabels(_: ListTranslate): GuardrailListLabels {
+function buildGuardrailListLabels(_: ListTranslate): Required<GuardrailListLabels> {
   return {
     title: _({ id: 'guardrails.list.title', message: 'Guardrails' }),
     add: _({ id: 'guardrails.list.add', message: 'Add' }),
@@ -849,6 +885,17 @@ function buildGuardrailListLabels(_: ListTranslate): GuardrailListLabels {
       message:
         "This guardrail's configuration is no longer available. Replace it before running the agent.",
     }),
+    policyDisabledNotice: _({
+      id: 'guardrails.list.policy-disabled-notice',
+      message:
+        "This guardrail is disabled by your organization's AI Trust Layer policy and is skipped when the agent runs.",
+    }),
+    policyDisabledNamedNotice: _({
+      id: 'guardrails.list.policy-disabled-named-notice',
+      message:
+        'Disabled by AI Trust Layer policy: {policyName}. This guardrail is skipped when the agent runs.',
+      values: TEMPLATE_TOKENS,
+    }),
     statusFeatureDisabled: _({
       id: 'guardrails.list.status-feature-disabled',
       message: 'Feature disabled',
@@ -874,7 +921,7 @@ const englishListTranslate: ListTranslate = ({ message, values }) =>
     : message;
 
 /** The English chrome strings, resolved without a lingui provider. */
-export const GUARDRAIL_LIST_EN_LABELS: GuardrailListLabels =
+export const GUARDRAIL_LIST_EN_LABELS: Required<GuardrailListLabels> =
   buildGuardrailListLabels(englishListTranslate);
 
 /**
@@ -896,14 +943,14 @@ export const GUARDRAIL_LIST_EN_MESSAGES: Readonly<Record<string, string>> = Obje
 export function resolveGuardrailListLabels(
   catalog?: Partial<GuardrailListLabels>,
   overrides?: Partial<GuardrailListLabels>
-): GuardrailListLabels {
-  return mergeLabels(GUARDRAIL_LIST_EN_LABELS, catalog, overrides);
+): Required<GuardrailListLabels> {
+  return mergeLabels<Required<GuardrailListLabels>>(GUARDRAIL_LIST_EN_LABELS, catalog, overrides);
 }
 
 /** Localized chrome strings of the list section; per-string `overrides` always win. */
 export function useGuardrailListLabels(
   overrides?: Partial<GuardrailListLabels>
-): GuardrailListLabels {
+): Required<GuardrailListLabels> {
   const { _ } = useSafeLingui();
   return useMemo(
     () => resolveGuardrailListLabels(buildGuardrailListLabels(_), overrides),
@@ -1482,6 +1529,11 @@ export interface CentralizedGuardrailsLabels {
   entitiesFallback: string;
   /** Fallback label for the threshold map when no definition names it. */
   thresholdsFallback: string;
+  /** Fallback label and options for a built-in's detection scope when no definition names it. */
+  detectionScopeFallback?: string;
+  detectionScopeText?: string;
+  detectionScopeFiles?: string;
+  detectionScopeBoth?: string;
 }
 
 /** The subset of `useSafeLingui`'s translator the centralized labels need. */
@@ -1495,7 +1547,9 @@ type CentralizedTranslate = (descriptor: {
 // the catalog test diffs and the runtime lingui path cannot drift. Same shape as
 // `definitions-copy.ts`.
 // Labels the builder or the list already declare reuse their ids, so the two cannot drift.
-function buildCentralizedGuardrailsLabels(_: CentralizedTranslate): CentralizedGuardrailsLabels {
+function buildCentralizedGuardrailsLabels(
+  _: CentralizedTranslate
+): Required<CentralizedGuardrailsLabels> {
   return {
     title: _({ id: 'guardrails.centralized.title', message: 'Centralized guardrails' }),
     info: _({
@@ -1577,6 +1631,22 @@ function buildCentralizedGuardrailsLabels(_: CentralizedTranslate): CentralizedG
       id: 'guardrails.centralized.thresholds-fallback',
       message: 'Detection thresholds',
     }),
+    detectionScopeFallback: _({
+      id: 'guardrails.centralized.detection-scope-fallback',
+      message: 'Detection scope',
+    }),
+    detectionScopeText: _({
+      id: 'guardrails.centralized.detection-scope-text',
+      message: 'Text only',
+    }),
+    detectionScopeFiles: _({
+      id: 'guardrails.centralized.detection-scope-files',
+      message: 'Files only',
+    }),
+    detectionScopeBoth: _({
+      id: 'guardrails.centralized.detection-scope-both',
+      message: 'Text and files',
+    }),
   };
 }
 
@@ -1588,7 +1658,7 @@ const englishCentralizedTranslate: CentralizedTranslate = ({ message, values }) 
     : message;
 
 /** The English chrome strings, resolved without a lingui provider. */
-export const CENTRALIZED_GUARDRAILS_EN_LABELS: CentralizedGuardrailsLabels =
+export const CENTRALIZED_GUARDRAILS_EN_LABELS: Required<CentralizedGuardrailsLabels> =
   buildCentralizedGuardrailsLabels(englishCentralizedTranslate);
 
 /**
@@ -1610,14 +1680,18 @@ export const CENTRALIZED_GUARDRAILS_EN_MESSAGES: Readonly<Record<string, string>
 export function resolveCentralizedGuardrailsLabels(
   catalog?: Partial<CentralizedGuardrailsLabels>,
   overrides?: Partial<CentralizedGuardrailsLabels>
-): CentralizedGuardrailsLabels {
-  return mergeLabels(CENTRALIZED_GUARDRAILS_EN_LABELS, catalog, overrides);
+): Required<CentralizedGuardrailsLabels> {
+  return mergeLabels<Required<CentralizedGuardrailsLabels>>(
+    CENTRALIZED_GUARDRAILS_EN_LABELS,
+    catalog,
+    overrides
+  );
 }
 
 /** Localized chrome strings of the centralized section; per-string `overrides` always win. */
 export function useCentralizedGuardrailsLabels(
   overrides?: Partial<CentralizedGuardrailsLabels>
-): CentralizedGuardrailsLabels {
+): Required<CentralizedGuardrailsLabels> {
   const { _ } = useSafeLingui();
   return useMemo(
     () => resolveCentralizedGuardrailsLabels(buildCentralizedGuardrailsLabels(_), overrides),

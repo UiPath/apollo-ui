@@ -6,7 +6,7 @@ import { fontFamily } from './typography';
 // ============================================================================
 
 const meta = {
-  title: 'Theme/Future/Radius',
+  title: 'Patterns/Theme (Moving to Core)/Future/Radius',
   parameters: {
     layout: 'fullscreen',
   },
