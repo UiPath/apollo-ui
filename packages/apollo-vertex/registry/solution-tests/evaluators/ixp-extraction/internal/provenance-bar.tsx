@@ -29,12 +29,7 @@ export const ProvenanceBar = ({
           label: t("ixp_taxonomy_version"),
           baseline: baselineVersion,
           current: currentVersion,
-          marker: (
-            <VersionDeltaGlyph
-              direction={direction}
-              baseline={baselineVersion}
-            />
-          ),
+          marker: <VersionDeltaGlyph direction={direction} />,
         },
         {
           label: t("ixp_extractor"),

@@ -133,6 +133,10 @@ function SolutionTestsTemplateContent() {
       [IXP_DEMO_AGENT_NAME]: IXP_OUTPUT_RENDERER,
       [PE_DEMO_AGENT_NAME]: CASE_EVALUATION_OUTPUT_RENDERER,
     },
+    componentLabels: {
+      [IXP_DEMO_AGENT_NAME]: "Documents",
+      [PE_DEMO_AGENT_NAME]: "Rules",
+    },
   };
 
   const mainView = (
@@ -261,6 +265,7 @@ function SolutionTestsTemplateContent() {
         results={results}
         isLoading={false}
         baselineJobMap={baselineJobMap}
+        isBaselineLocked={false}
         selectedResultId={selectedId}
         selectedRowData={selectedRowData}
         adoptingResultId={null}

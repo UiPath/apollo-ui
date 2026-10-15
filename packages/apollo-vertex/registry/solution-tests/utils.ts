@@ -4,6 +4,17 @@ export function isRunDone(status: number): boolean {
   return status !== RunStatus.Pending && status !== RunStatus.Running;
 }
 
+export function resolveComponentLabel(
+  source: { agentId?: string; processName: string },
+  labels: Record<string, string>,
+): string {
+  return (
+    (source.agentId == null ? null : labels[source.agentId]) ??
+    labels[source.processName] ??
+    source.processName
+  );
+}
+
 /** Compare dot-separated versions by numeric segment: 1 if a>b, -1 if a<b, else
  *  0. Segments that aren't strictly numeric (e.g. "1-beta") are skipped, so
  *  annotated/pre-release versions compare equal and show no glyph. */

@@ -83,6 +83,9 @@ export interface SolutionTestsConfig {
   evaluatorRenderers?: EvaluatorRenderers;
   /** Keyed by stable agent id and/or process name; unmatched outputs render as raw JSON. */
   outputRenderers?: ProcessOutputRenderers;
+  /** Display names for components, keyed by stable agent id and/or process
+   *  name; unmatched components show their process name. */
+  componentLabels?: Record<string, string>;
   /** Emit a telemetry event for each action. No-op unless the host supplies it. */
   track?: TrackSolutionTestEvent;
 }
@@ -98,6 +101,7 @@ export interface ResolvedSolutionTestsConfig {
   showDebug: boolean;
   evaluatorRenderers: EvaluatorRenderers;
   outputRenderers: ProcessOutputRenderers;
+  componentLabels: Record<string, string>;
   /** Optional — call sites use `track?.(…)`, so no tracking happens if absent. */
   track?: TrackSolutionTestEvent;
 }
@@ -115,6 +119,7 @@ export function resolveConfig(
     showDebug: config.showDebug ?? false,
     evaluatorRenderers: config.evaluatorRenderers ?? {},
     outputRenderers: config.outputRenderers ?? {},
+    componentLabels: config.componentLabels ?? {},
     track: config.track,
   };
 }

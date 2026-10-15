@@ -7,25 +7,45 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from "@/components/ui/tooltip";
+import { useComponentLabel } from "./context";
 import {
   parseUserMessages,
   worstSeverity,
   severityIcons,
   severityColors,
   categoryBorderStyles,
+  type UserMessageItem,
 } from "./user-messages";
 
-export const UserMessagesView = ({ messages }: { messages: unknown }) => {
+/** Localizes a message, showing a component's display name in place of the
+ *  process name the backend interpolates as `agentName`. */
+function useMessageText(): (msg: UserMessageItem) => string {
   const { t } = useVertexTranslation();
+  const componentLabel = useComponentLabel();
+  return (msg) => {
+    const { agentName } = msg.details;
+    const details =
+      agentName == null
+        ? msg.details
+        : {
+            ...msg.details,
+            agentName: componentLabel({ processName: agentName }),
+          };
+    // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- runtime message key isn't in the typed i18n catalog
+    const translated = t(msg.key as never, details);
+    return translated === msg.key ? msg.message : translated;
+  };
+}
+
+export const UserMessagesView = ({ messages }: { messages: unknown }) => {
+  const messageText = useMessageText();
   const parsed = parseUserMessages(messages);
   if (parsed.length === 0) return null;
 
   return (
     <div className="flex flex-col gap-2">
       {parsed.map((msg) => {
-        // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- runtime message key isn't in the typed i18n catalog
-        const translated = t(msg.key as never, msg.details);
-        const displayText = translated === msg.key ? msg.message : translated;
+        const displayText = messageText(msg);
 
         return (
           // key+timestamp can repeat within a run (e.g. several new-document
@@ -44,6 +64,7 @@ export const UserMessagesView = ({ messages }: { messages: unknown }) => {
 
 export const UserMessagesIcon = ({ messages }: { messages: unknown }) => {
   const { t } = useVertexTranslation();
+  const messageText = useMessageText();
   const parsed = parseUserMessages(messages);
   const severity = worstSeverity(parsed);
   if (!severity) return null;
@@ -63,10 +84,7 @@ export const UserMessagesIcon = ({ messages }: { messages: unknown }) => {
       <TooltipContent side="bottom" className="max-w-sm">
         <div className="flex flex-col gap-1.5">
           {parsed.map((msg) => {
-            // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- runtime message key isn't in the typed i18n catalog
-            const translated = t(msg.key as never, msg.details);
-            const displayText =
-              translated === msg.key ? msg.message : translated;
+            const displayText = messageText(msg);
             const MIcon = severityIcons[msg.category] ?? Info;
             return (
               <div

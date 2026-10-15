@@ -75,8 +75,14 @@ export function useRunResults(runId: string): UseRunResultsResult {
 export function useAdoptJob(): MutationHook<string> {
   const actions = useSolutionTestsActions();
   const { track } = useSolutionTestsConfig();
+  const jobsCollection = useSolutionTestCollection(ENTITY.jobs);
   return useMutation({
-    mutationFn: (resultId: string) => actions.adoptJob(resultId),
+    // The run-details buttons derive from the jobs collection, so refetch it or
+    // "Add to expected result" stays visible after the adopt succeeds.
+    mutationFn: async (resultId: string) => {
+      await actions.adoptJob(resultId);
+      await jobsCollection.utils.refetch();
+    },
     onMutate: (resultId) => track?.("VS.SolutionTest.JobAdopted", { resultId }),
   });
 }
@@ -85,8 +91,12 @@ export function useAdoptJob(): MutationHook<string> {
 export function useUpdateBaseline(): MutationHook<string> {
   const actions = useSolutionTestsActions();
   const { track } = useSolutionTestsConfig();
+  const jobsCollection = useSolutionTestCollection(ENTITY.jobs);
   return useMutation({
-    mutationFn: (resultId: string) => actions.updateBaseline(resultId),
+    mutationFn: async (resultId: string) => {
+      await actions.updateBaseline(resultId);
+      await jobsCollection.utils.refetch();
+    },
     onMutate: (resultId) =>
       track?.("VS.SolutionTest.BaselineUpdated", { resultId }),
   });
