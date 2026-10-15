@@ -180,6 +180,11 @@ interface SlotHandle {
   quietIds: Set<string>;
   /** Turns mirrored from the other chat: auto reply, no mirroring back. */
   mirroredIds: Set<string>;
+  /**
+   * Stops what is still running for this chat: scenario steps, streams and auto replies, and the
+   * scenario's own cleanup (listeners, loading message, error, config it changed).
+   */
+  cancelScheduled: Set<() => void>;
 }
 
 type SlotRegistry = Map<string, SlotHandle>;
@@ -315,9 +320,14 @@ function ChatSlot({
 
   // Registration, event logging, mirroring, auto reply and header action replies.
   React.useEffect(() => {
-    const handle: SlotHandle = { service, quietIds: new Set(), mirroredIds: new Set() };
-    registry.set(id, handle);
     const timers = createTimers();
+    const handle: SlotHandle = {
+      service,
+      quietIds: new Set(),
+      mirroredIds: new Set(),
+      cancelScheduled: new Set([timers.clear]),
+    };
+    registry.set(id, handle);
 
     const unsubscribes = Object.values(AutopilotChatEvent).map((event) =>
       service.on(event, (data) => log(event, data))
@@ -435,6 +445,15 @@ function ChatSlot({
     const scenario: ChatStoryScenario = CHAT_STORY_SCENARIOS[args.scenario];
     const timers = createTimers();
     const cleanups: Array<() => void> = [];
+    // Stops the scenario once, whether Clear chat or a scenario change comes first.
+    let stopped = false;
+    const stop = () => {
+      if (stopped) return;
+      stopped = true;
+      timers.clear();
+      for (const cleanup of cleanups) cleanup();
+    };
+    handle?.cancelScheduled.add(stop);
     const context: ScenarioContext = {
       service,
       renderer: rendererRef.current,
@@ -455,8 +474,8 @@ function ChatSlot({
     scenario.run(context);
 
     return () => {
-      timers.clear();
-      for (const cleanup of cleanups) cleanup();
+      handle?.cancelScheduled.delete(stop);
+      stop();
     };
   }, [args.scenario, id, registry, service, log]);
 
@@ -531,6 +550,25 @@ export function ChatPlayground({ theme, instanceKey, ...args }: ChatPlaygroundPr
   const primaryRenderer: AutopilotChatRenderer = args.renderer === 'both' ? 'wind' : args.renderer;
   const fullScreen = args.mode === AutopilotChatMode.FullScreen;
 
+  // An action, which args cannot express: stop the scenario and start every chat over, in place.
+  const clearChats = () => {
+    for (const handle of registry.values()) {
+      for (const cancel of handle.cancelScheduled) cancel();
+      handle.service.newChat();
+    }
+  };
+  const clearButton = (
+    <button
+      type="button"
+      title="Host control, since Storybook args cannot trigger an action: stops the running scenario and starts a new chat in every chat here, without a remount."
+      style={fullScreen ? undefined : embeddedLauncherStyle(both ? 2 : 1)}
+      className="rounded-full border border-border bg-background px-4 py-2 text-sm font-medium text-foreground shadow-lg"
+      onClick={clearChats}
+    >
+      Clear chat
+    </button>
+  );
+
   return (
     <div
       className={
@@ -539,7 +577,17 @@ export function ChatPlayground({ theme, instanceKey, ...args }: ChatPlaygroundPr
           : 'flex min-h-screen w-full items-center justify-center bg-muted text-sm text-muted-foreground'
       }
     >
-      {!fullScreen && <span>Host application</span>}
+      {fullScreen ? (
+        <div className="flex h-12 shrink-0 items-center justify-between border-b border-border-de-emp bg-background px-4 text-sm text-muted-foreground">
+          Host application
+          {clearButton}
+        </div>
+      ) : (
+        <>
+          <span>Host application</span>
+          {clearButton}
+        </>
+      )}
       <ChatSlot
         id="primary"
         instanceKey={instanceKey}

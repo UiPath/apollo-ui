@@ -205,3 +205,57 @@ describe('WindChatRenderer', () => {
     expect(screen.queryByText('Be kind')).toBeNull();
   });
 });
+
+describe('Wind overlay placement', () => {
+  const codeReply = {
+    id: 'code',
+    content: '```ts\nconst a = 1;\n```',
+    widget: 'apollo-markdown-renderer',
+    created_at: '',
+  };
+
+  it('portals modal dialogs to a themed node on the body, and keeps menus in the root', async () => {
+    const service = createService();
+    service.setCustomHeaderActions([{ id: 'share', name: 'Share' }]);
+    const { unmount } = render(<ApChat chatServiceInstance={service} theme="dark" />);
+    act(() => service.sendResponse(codeReply));
+
+    await userEvent.click(screen.getByRole('button', { name: 'More actions' }));
+    expect(getRoot()?.contains(await screen.findByRole('menu'))).toBe(true);
+    await userEvent.keyboard('{Escape}');
+
+    const expand = screen.getByRole('button', { name: 'Expand' });
+    await userEvent.click(expand);
+    const dialog = await screen.findByRole('dialog');
+    const overlays = dialog.closest('[data-slot="wind-chat-overlays"]');
+    expect(overlays?.parentElement).toBe(document.body);
+    expect(overlays).toHaveClass('dark');
+    expect(getRoot()?.contains(dialog)).toBe(false);
+    // Focus moves into the dialog and stays trapped there.
+    await waitFor(() => expect(dialog.contains(document.activeElement)).toBe(true));
+    await userEvent.tab();
+    expect(dialog.contains(document.activeElement)).toBe(true);
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(document.activeElement).toBe(expand));
+
+    unmount();
+    expect(document.querySelector('[data-slot="wind-chat-overlays"]')).toBeNull();
+  });
+
+  it('puts every overlay in the host portal container when one is given', async () => {
+    const portalContainer = document.createElement('div');
+    document.body.appendChild(portalContainer);
+    const service = createService();
+    service.setCustomHeaderActions([{ id: 'share', name: 'Share' }]);
+    render(<ApChat chatServiceInstance={service} portalContainer={portalContainer} />);
+    act(() => service.sendResponse(codeReply));
+
+    await userEvent.click(screen.getByRole('button', { name: 'More actions' }));
+    expect(portalContainer.contains(await screen.findByRole('menu'))).toBe(true);
+    await userEvent.keyboard('{Escape}');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Expand' }));
+    expect(portalContainer.contains(await screen.findByRole('dialog'))).toBe(true);
+    portalContainer.remove();
+  });
+});

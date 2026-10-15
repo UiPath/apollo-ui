@@ -111,12 +111,16 @@ afterEach(() => {
   resizeCallbacks.clear();
 });
 
+const nextFrame = () => new Promise((resolve) => requestAnimationFrame(resolve));
+
 // Lets the primitive's observers and frames run: mutation callbacks are microtasks, resize
-// handling is coalesced into a frame.
+// handling is coalesced into a frame. Waits on frames, not wall time, so a busy runner cannot
+// cut the chain short.
 async function settle() {
   await act(async () => {
     for (const callback of resizeCallbacks) callback([], {} as ResizeObserver);
-    await new Promise((resolve) => setTimeout(resolve, 40));
+    for (let frame = 0; frame < 4; frame++) await nextFrame();
+    await new Promise((resolve) => setTimeout(resolve, 20));
   });
 }
 

@@ -20,20 +20,25 @@ import {
 import {
   CITATION_RESPONSE,
   CODE_BLOCK_MESSAGE,
+  CODE_LANGUAGES_MESSAGE,
   HTML_PREVIEW_MESSAGE,
   MARKDOWN_CORPUS,
   overflowResponseAction,
+  PDF_CITATION_RESPONSE,
   RESOURCE_TOKEN_CHUNKS,
+  RESOURCE_TOKEN_LIST_MESSAGE,
   RESOURCE_TOKEN_MESSAGE,
   RESPONSE_ACTIONS,
   SAMPLE_CONVERSATION,
   STREAMED_CITATION_CHUNKS,
+  STREAMED_MARKDOWN,
   STREAMING_REPLY,
   type StoryToolCallDisplayMode,
   storyHistoryPage,
   storyToolCallMeta,
   storyTraceSpan,
   WIND_RESPONSE_ACTIONS,
+  withResourceIcons,
 } from './chat-story-fixtures';
 
 export interface ScenarioContext {
@@ -199,28 +204,31 @@ export const CHAT_STORY_SCENARIOS = {
   citations: {
     label: 'Citations',
     description:
-      'Appends a reply with content-part citations, then a streamed reply with citations.',
+      'Appends a reply with URL citations, a reply with PDF citations (page numbers, a range spanning bold text, more sources than the collapsed list shows), then a streamed reply with citations. Hover a citation to highlight what it supports; clicking runs the citation-click pre-hook.',
     run: (context) => {
       context.sendScriptedRequest({ content: 'Why is the sky blue? And tell me about UiPath.' });
       context.schedule(() => respond(context.service, CITATION_RESPONSE), context.delayMs);
-      streamChunks(context, STREAMED_CITATION_CHUNKS, context.delayMs * 3);
+      context.schedule(() => respond(context.service, PDF_CITATION_RESPONSE), context.delayMs * 2);
+      streamChunks(context, STREAMED_CITATION_CHUNKS, context.delayMs * 4);
     },
   },
   markdown: {
     label: 'Markdown corpus',
     description:
-      'Appends a reply covering headings, lists, tables, quotes, math, images and footnotes.',
+      'Appends a reply covering headings, lists, task lists, tables with line breaks, quotes, math, images (shown as links) and footnotes, then streams a shorter reply so partial markdown is seen mid-stream.',
     run: (context) => {
       context.sendScriptedRequest({ content: 'Show me every markdown feature.' });
       context.schedule(
         () => respond(context.service, { content: MARKDOWN_CORPUS }),
         context.delayMs
       );
+      streamChunks(context, splitWords(STREAMED_MARKDOWN), context.delayMs * 3);
     },
   },
   code: {
     label: 'Code and HTML preview',
-    description: 'Appends a long TypeScript block and an HTML block with preview.',
+    description:
+      'Appends a long TypeScript block, blocks in other languages with inline code, then streams an HTML block. HTML preview is off by default (disabledFeatures.htmlPreview); turn off the disableHtmlPreview control, or use the HTML preview story, to get the preview action. It stays disabled while the block streams.',
     run: (context) => {
       context.sendScriptedRequest({ content: 'Show me some code.' });
       context.schedule(
@@ -228,21 +236,28 @@ export const CHAT_STORY_SCENARIOS = {
         context.delayMs
       );
       context.schedule(
-        () => respond(context.service, { content: HTML_PREVIEW_MESSAGE }),
+        () => respond(context.service, { content: CODE_LANGUAGES_MESSAGE }),
         context.delayMs * 2
       );
+      streamChunks(context, HTML_PREVIEW_MESSAGE.split(/(?<=\n)/), context.delayMs * 3);
     },
   },
   'resource-tokens': {
     label: 'Resource tokens',
-    description: 'Appends a reply with resource tokens, then streams tokens split across chunks.',
+    description:
+      'Appends a reply with resource tokens and one with tokens in a list, then streams tokens split across chunks, which are held back until complete.',
     run: (context) => {
+      const icons = (text: string) => withResourceIcons(text, context.renderer);
       context.sendScriptedRequest({ content: 'Which variables will you touch?' });
       context.schedule(
-        () => respond(context.service, { content: RESOURCE_TOKEN_MESSAGE }),
+        () => respond(context.service, { content: icons(RESOURCE_TOKEN_MESSAGE) }),
         context.delayMs
       );
-      streamChunks(context, RESOURCE_TOKEN_CHUNKS, context.delayMs * 3);
+      context.schedule(
+        () => respond(context.service, { content: icons(RESOURCE_TOKEN_LIST_MESSAGE) }),
+        context.delayMs * 2
+      );
+      streamChunks(context, RESOURCE_TOKEN_CHUNKS.map(icons), context.delayMs * 4);
     },
   },
   'tool-call': {

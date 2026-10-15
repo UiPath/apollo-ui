@@ -7,6 +7,7 @@ import { useChatState } from '../headless/providers/chat-state-provider';
 import { useChatWidth } from '../headless/providers/chat-width-provider';
 import { useTheme } from '../headless/providers/theme-provider';
 import { AutopilotChatMode, CHAT_CONTAINER_ANIMATION_DURATION } from '../service';
+import { DialogContainerContext } from './common/dialog-container';
 import { useOpenTransition } from './hooks/use-open-transition';
 import { EmbeddedLayout } from './layout/embedded-layout';
 import { FullScreenLayout } from './layout/full-screen-layout';
@@ -65,9 +66,13 @@ export function WindChatRenderer() {
   React.useLayoutEffect(() => {
     rootRef.current?.toggleAttribute('inert', state === 'closed');
   }, [state]);
-  // A host-provided portal target (e.g. inside a shadow root) is not under the themed root, so
-  // overlays go into a themed node placed there instead.
-  const [hostPortalNode, setHostPortalNode] = React.useState<HTMLElement | null>(null);
+  // A themed node outside the root, in the host's portal target (e.g. inside a shadow root) or
+  // the body. With a host target every overlay goes there, as before; otherwise only modal
+  // dialogs do, and menus and tooltips keep the in-root boundary.
+  const [overlayNode, setOverlayNode] = React.useState<HTMLElement | null>(null);
+  // `document` is read after mount, so a server render never touches it.
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => setMounted(true), []);
 
   if (!present) {
     return null;
@@ -89,15 +94,23 @@ export function WindChatRenderer() {
       }
       className={`${themeClass} ${ROOT_SIZE[renderedMode]} flex flex-col overflow-hidden bg-background text-foreground transition-[opacity,translate] duration-(--chat-transition-duration) ease-out data-[state=closed]:translate-y-2 data-[state=closed]:opacity-0 motion-reduce:transition-none`}
     >
-      <PortalContainerProvider container={portalContainer ? hostPortalNode : undefined}>
-        <TooltipProvider delayDuration={300}>
-          <LayoutForMode layout={layout} />
-        </TooltipProvider>
+      <PortalContainerProvider container={portalContainer ? overlayNode : undefined}>
+        <DialogContainerContext.Provider value={overlayNode}>
+          <TooltipProvider delayDuration={300}>
+            <LayoutForMode layout={layout} />
+          </TooltipProvider>
+        </DialogContainerContext.Provider>
       </PortalContainerProvider>
-      {portalContainer &&
+      {mounted &&
         createPortal(
-          <div ref={setHostPortalNode} className={themeClass} data-density={density} />,
-          portalContainer
+          <div
+            ref={setOverlayNode}
+            data-slot="wind-chat-overlays"
+            // Above the host's chat panel, at the z-index Material's modals use.
+            className={`${themeClass} relative z-[1300]`}
+            data-density={density}
+          />,
+          portalContainer ?? document.body
         )}
     </div>
   );
