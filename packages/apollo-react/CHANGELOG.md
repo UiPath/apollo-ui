@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.2.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.2.0...@uipath/apollo-react@7.2.1) (2026-10-15)
+
+### Bug Fixes
+
+* **apollo-wind:** QuickFormField expression mode for selects, and a disabled prop ([d5825fa](https://github.com/UiPath/apollo-ui/commit/d5825fa2a41dd7b02fc6c144aebd8964a7abdcf3))
+
 ## [@uipath/apollo-react-v7.1.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.1.0...@uipath/apollo-react@7.1.1) (2026-10-14)
 
 ### Bug Fixes

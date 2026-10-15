@@ -1,3 +1,14 @@
+## [@uipath/apollo-wind-v2.71.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.70.0...@uipath/apollo-wind@2.71.0) (2026-10-15)
+
+### Features
+
+* **apollo-wind:** add ChatHero and PromptSuggestions chat primitives ([5582d41](https://github.com/UiPath/apollo-ui/commit/5582d4103a221e8bf9b955240354fd3e40eabbdb))
+
+### Bug Fixes
+
+* **apollo-wind:** QuickFormField expression mode for selects, and a disabled prop ([d5825fa](https://github.com/UiPath/apollo-ui/commit/d5825fa2a41dd7b02fc6c144aebd8964a7abdcf3))
+* **apollo-wind:** read ISO date strings in date fields instead of crashing ([3b0ddee](https://github.com/UiPath/apollo-ui/commit/3b0ddee080a6d7c6ef2def9334c9b9e710a7fb7c))
+
 ## [@uipath/apollo-wind-v2.70.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.69.0...@uipath/apollo-wind@2.70.0) (2026-10-13)
 
 ### Features
