@@ -86,6 +86,11 @@ export interface GuardrailListProps {
   previewChip?: boolean;
   /** Render the "BYO" badge on rows backed by a BYO validator. Provenance, opt-in per host. */
   byoChip?: boolean;
+  /**
+   * Name of the AI Trust Layer policy, for the notice on rows that policy disabled. Blank or
+   * absent, the notice says "your organization's AI Trust Layer policy" instead.
+   */
+  policyName?: string;
   /** Drop the card border and padding, for hosts that already own the section chrome. */
   unstyled?: boolean;
   /** Hide the header (title and add affordance) when the host renders its own. */
@@ -226,6 +231,7 @@ export function GuardrailList({
   statusChips = false,
   previewChip = false,
   byoChip = false,
+  policyName,
   unstyled = false,
   hideHeader = false,
   rowActivatesEdit = false,
@@ -274,6 +280,7 @@ export function GuardrailList({
       statusChips,
       previewChip,
       byoChip,
+      policyName,
       rowActivatesEdit,
       onEdit,
       onRemove,

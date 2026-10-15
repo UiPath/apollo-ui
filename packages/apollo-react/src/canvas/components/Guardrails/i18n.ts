@@ -92,6 +92,11 @@ export interface GuardrailBuilderLabels {
    * resolves.
    */
   policyDisabledMessage?: string;
+  /**
+   * The same banner when the host passes `policyName`: `{{policyName}}` is the policy's name,
+   * emphasized. Optional like `policyDisabledMessage`.
+   */
+  policyDisabledNamedMessage?: string;
   unauthorizedMessage: string;
   featureDisabledMessage: string;
   // Scope selector
@@ -165,6 +170,8 @@ export const GUARDRAIL_BUILDER_EN_LABELS: Required<GuardrailBuilderLabels> = {
     "This guardrail's configuration has been disabled and can no longer be used. Contact your administrator to re-enable the configuration or replace this guardrail before running the agent.",
   policyDisabledMessage:
     "This guardrail is disabled by your organization's AI Trust Layer policy and is skipped when the agent runs.",
+  policyDisabledNamedMessage:
+    'Disabled by AI Trust Layer policy: {{policyName}}. This guardrail is skipped when the agent runs.',
   unauthorizedMessage:
     'You are not entitled to use guardrails. You can access the configuration settings, but modifications cannot be saved.',
   featureDisabledMessage:
@@ -610,6 +617,12 @@ export function useGuardrailBuilderLabels(
             message:
               "This guardrail is disabled by your organization's AI Trust Layer policy and is skipped when the agent runs.",
           }),
+          policyDisabledNamedMessage: _({
+            id: 'guardrails.builder.policy-disabled-named-message',
+            message:
+              'Disabled by AI Trust Layer policy: {policyName}. This guardrail is skipped when the agent runs.',
+            values: TEMPLATE_TOKENS,
+          }),
           unauthorizedMessage: _({
             id: 'guardrails.builder.unauthorized-message',
             message:
@@ -809,6 +822,11 @@ export interface GuardrailListLabels {
    * complete label object written before it existed still compiles; it always resolves.
    */
   policyDisabledNotice?: string;
+  /**
+   * The same notice when the host passes `policyName`: `{{policyName}}` is the policy's name,
+   * emphasized. Optional like `policyDisabledNotice`.
+   */
+  policyDisabledNamedNotice?: string;
   /** Status chip: the validator's feature flag is off tenant-wide. */
   statusFeatureDisabled: string;
   /** Status chip: the tenant is not entitled to the validator. */
@@ -871,6 +889,12 @@ function buildGuardrailListLabels(_: ListTranslate): Required<GuardrailListLabel
       id: 'guardrails.list.policy-disabled-notice',
       message:
         "This guardrail is disabled by your organization's AI Trust Layer policy and is skipped when the agent runs.",
+    }),
+    policyDisabledNamedNotice: _({
+      id: 'guardrails.list.policy-disabled-named-notice',
+      message:
+        'Disabled by AI Trust Layer policy: {policyName}. This guardrail is skipped when the agent runs.',
+      values: TEMPLATE_TOKENS,
     }),
     statusFeatureDisabled: _({
       id: 'guardrails.list.status-feature-disabled',

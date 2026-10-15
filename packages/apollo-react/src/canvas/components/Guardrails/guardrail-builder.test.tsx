@@ -242,6 +242,45 @@ describe('GuardrailBuilder', () => {
       expect(screen.getByRole('status')).toHaveTextContent('Off by policy');
     });
 
+    describe('with the policy name', () => {
+      const policyDisabled = () => makeDef({ status: 'Disabled', disabledReason: 'Policy' });
+
+      it('names the policy, emphasized', () => {
+        renderBuilder(policyDisabled(), { policyName: 'Enterprise AI Trust Layer policy' });
+
+        const banner = screen.getByRole('status');
+        expect(banner).toHaveTextContent(
+          'Disabled by AI Trust Layer policy: Enterprise AI Trust Layer policy. This guardrail is skipped when the agent runs.'
+        );
+        expect(banner.querySelector('em')).toHaveTextContent('Enterprise AI Trust Layer policy');
+      });
+
+      it.each([
+        ['blank', '  '],
+        ['empty', ''],
+      ])('falls back to the generic wording when it is %s', (_, policyName) => {
+        renderBuilder(policyDisabled(), { policyName });
+
+        expect(screen.getByRole('status')).toHaveTextContent(POLICY_COPY);
+        expect(screen.getByRole('status').querySelector('em')).toBeNull();
+      });
+
+      it('takes the host override of the named template', () => {
+        renderBuilder(policyDisabled(), {
+          policyName: 'Enterprise',
+          labels: { policyDisabledNamedMessage: 'Off by {{policyName}}.' },
+        });
+
+        expect(screen.getByRole('status')).toHaveTextContent('Off by Enterprise.');
+      });
+
+      it('does not name the policy on any other banner', () => {
+        renderBuilder(makeDef({ status: 'Unauthorised' }), { policyName: 'Enterprise' });
+
+        expect(screen.queryByText(/Enterprise/)).not.toBeInTheDocument();
+      });
+    });
+
     it.each([
       ['an unknown reason', 'Retired'],
       ['no reason', undefined],
