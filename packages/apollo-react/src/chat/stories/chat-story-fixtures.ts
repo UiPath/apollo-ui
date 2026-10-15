@@ -768,6 +768,14 @@ export function storyToolCallMeta(displayMode: StoryToolCallDisplayMode, now = D
     return { displayMode, span: storyTraceSpan(now) };
   }
 
+  return storyInputsAndOutputsMeta(displayMode, now);
+}
+
+/** A finished web search call with input and output. */
+export function storyInputsAndOutputsMeta(
+  displayMode: Exclude<StoryToolCallDisplayMode, 'FullTrace'> = 'InputsAndOutputs',
+  now = Date.now()
+) {
   return {
     displayMode,
     input: {
@@ -788,6 +796,84 @@ export function storyToolCallMeta(displayMode: StoryToolCallDisplayMode, now = D
     startTime: new Date(now - 2500).toISOString(),
     endTime: new Date(now).toISOString(),
     toolName: 'Web_Search',
+  };
+}
+
+export interface StoryTreeNode {
+  data: Record<string, unknown>;
+  children?: StoryTreeNode[];
+}
+
+/**
+ * The trace for the tree message: some spans describe themselves (shown as a tooltip) and some
+ * do not (no tooltip), and the top rows carry their duration.
+ */
+export function storyTreeSpan(now = Date.now()) {
+  const span = structuredClone(storyTraceSpan(now)) as unknown as StoryTreeNode;
+  const search = span.children?.[0];
+  const run = search?.children?.[0];
+  const firstSearch = run?.children?.[0];
+
+  Object.assign(span.data, {
+    attributes: {
+      ...(span.data.attributes as object),
+      description: 'Runs several web searches and merges the results.',
+    },
+    additionalInfo: '25.0s',
+  });
+  if (search) {
+    search.data.attributes = {
+      description: 'Plans the searches and summarises what they found.',
+    };
+  }
+  if (run) {
+    run.data.additionalInfo = '23.0s';
+  }
+  if (firstSearch) {
+    firstSearch.data.attributes = { description: 'Searched for "trending topics this week".' };
+    firstSearch.data.additionalInfo = '4.0s';
+  }
+  return span;
+}
+
+/** A call that fails, for the error section and status. */
+export function storyFailedToolCallMeta(now = Date.now()) {
+  return {
+    displayMode: 'InputsAndOutputs' as const,
+    toolName: 'Update_Invoice',
+    input: { invoiceId: 'INV-4023', status: 'approved' },
+    output: { message: 'Invoice INV-4023 is locked by another process.' },
+    isError: true,
+    startTime: new Date(now - 1200).toISOString(),
+    endTime: new Date(now).toISOString(),
+  };
+}
+
+/** A trace waiting on a person: escalation task links, one still open. */
+export function storyEscalationSpan(now = Date.now()) {
+  const span = storyTraceSpan(now);
+  return {
+    ...span,
+    data: {
+      ...span.data,
+      status: 'unset',
+      attributes: { ...span.data.attributes, taskUrl: 'https://cloud.uipath.com/tasks/1001' },
+    },
+    children: [
+      ...span.children,
+      {
+        key: 'escalation',
+        name: 'Escalation - Approve invoice',
+        data: {
+          id: 'escalation-1',
+          name: 'Escalation - Approve invoice',
+          startTime: new Date(now - 1000).toISOString(),
+          status: 'unset',
+          type: 'escalationTool',
+          attributes: { taskUrl: 'https://cloud.uipath.com/tasks/1002' },
+        },
+      },
+    ],
   };
 }
 

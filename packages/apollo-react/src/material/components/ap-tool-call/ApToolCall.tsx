@@ -6,11 +6,19 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import { CircularProgress, styled } from '@mui/material';
 import token from '@uipath/apollo-core';
+import { getSpanIconSvg } from '@uipath/apollo-react/chat/headless/tool-call/span-icon';
+import {
+  getTaskUrls,
+  getToolCallDurationSeconds,
+  getToolCallName,
+  getToolCallState,
+  getToolCallValues,
+  getVisibleTraceChildren,
+} from '@uipath/apollo-react/chat/headless/tool-call/tool-call-model';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ApToolCallProps, ITreeNode, TSpan } from './ApToolCall.types';
 import { ConversationalDisplayModeTypes } from './ApToolCall.types';
 import { ToolCallSection } from './components/ToolCallSection';
-import { getSpanIconSvg } from './utils/traceIconUtils';
 
 const Container = styled('div')({
   fontSize: token.FontFamily.FontMSize,
@@ -130,23 +138,13 @@ const TraceIcon = styled('span')({
   },
 });
 
-function getVisibleChildren(node: ITreeNode<TSpan>): Array<ITreeNode<TSpan>> {
-  const result: Array<ITreeNode<TSpan>> = [];
-  for (const child of node.children ?? []) {
-    if (child.data.type !== 'llmCall' && child.data.type !== 'agentOutput') {
-      result.push(child);
-    }
-  }
-  return result;
-}
-
 interface TraceItemProps {
   child: ITreeNode<TSpan>;
   depth?: number;
 }
 
 const TraceItem: React.FC<TraceItemProps> = ({ child, depth = 0 }) => {
-  const visibleChildren = useMemo(() => getVisibleChildren(child), [child]);
+  const visibleChildren = useMemo(() => getVisibleTraceChildren(child), [child]);
   const hasChildren = visibleChildren.length > 0;
   const [itemExpanded, setItemExpanded] = useState(false);
   const iconSvg = useMemo(() => getSpanIconSvg(child.data), [child.data]);
@@ -204,80 +202,7 @@ export const ApToolCall = React.forwardRef<HTMLDivElement, ApToolCallProps>((pro
     errors: false,
   });
 
-  // Helper to safely access attributes
-  const getAttributes = useCallback((data: TSpan): Record<string, any> => {
-    let attrs = data.attributes;
-    if (typeof attrs === 'string') {
-      try {
-        attrs = JSON.parse(attrs);
-      } catch {
-        return {};
-      }
-    }
-    return (attrs || {}) as Record<string, any>;
-  }, []);
-
-  const taskUrls = useMemo(() => {
-    if (!span) {
-      return [];
-    }
-
-    const urls: Array<{ taskUrl: string; status: string | null }> = [];
-
-    // Check parent span
-    let attributes = span.data.attributes;
-    if (typeof attributes === 'string') {
-      try {
-        attributes = JSON.parse(attributes);
-      } catch {
-        attributes = {};
-      }
-    }
-
-    if (typeof attributes === 'object' && attributes?.taskUrl) {
-      urls.push({
-        taskUrl: attributes.taskUrl as string,
-        status: span.data.status || null,
-      });
-    }
-
-    // Check all child spans
-    const visitedSpans = new Set<string>();
-    const childStack = [...(span.children || [])];
-
-    while (childStack.length > 0) {
-      const child = childStack.pop();
-      if (!child?.data?.id) {
-        continue;
-      }
-
-      if (visitedSpans.has(child.data.id)) {
-        continue;
-      }
-      visitedSpans.add(child.data.id);
-
-      let childAttributes = child.data.attributes;
-      if (typeof childAttributes === 'string') {
-        try {
-          childAttributes = JSON.parse(childAttributes);
-        } catch {
-          childAttributes = {};
-        }
-      }
-
-      if (typeof childAttributes === 'object' && childAttributes?.taskUrl) {
-        urls.push({
-          taskUrl: childAttributes.taskUrl as string,
-          status: child.data.status || null,
-        });
-      }
-
-      if (child.children?.length) {
-        childStack.push(...child.children);
-      }
-    }
-    return urls;
-  }, [span]);
+  const taskUrls = useMemo(() => getTaskUrls(span), [span]);
 
   useEffect(() => {
     if (taskUrls.length > 0) {
@@ -285,58 +210,10 @@ export const ApToolCall = React.forwardRef<HTMLDivElement, ApToolCallProps>((pro
     }
   }, [taskUrls]);
 
-  // Check if the span has any child spans with an error
-  const hasChildSpanWithError = useMemo(() => {
-    if (!span) {
-      return false;
-    }
-
-    const visitedSpans = new Set<string>();
-    const childStack = [...(span.children || [])];
-
-    while (childStack.length > 0) {
-      const child = childStack.pop();
-      if (!child?.data?.id) {
-        continue;
-      }
-
-      if (visitedSpans.has(child.data.id)) {
-        continue;
-      }
-      visitedSpans.add(child.data.id);
-
-      if (child.data.status === 'error') {
-        return true;
-      }
-
-      if (child.children?.length) {
-        childStack.push(...child.children);
-      }
-    }
-    return false;
-  }, [span]);
-
-  const getStatus = useMemo(() => {
-    if (input && !output && isError === undefined) {
-      return 'loading';
-    }
-    if (input && (output || isError !== undefined)) {
-      return isError ? 'error' : 'success';
-    }
-
-    if (span) {
-      if (span.data.status === 'unset') {
-        return 'loading';
-      }
-      if (span.data.status === 'error' || hasChildSpanWithError) {
-        return 'error';
-      }
-      if (span.data.status === 'ok') {
-        return 'success';
-      }
-    }
-    return null;
-  }, [input, output, isError, span, hasChildSpanWithError]);
+  const getStatus = useMemo(
+    () => getToolCallState({ input, output, isError, span }),
+    [input, output, isError, span]
+  );
 
   const renderStatusIcon = useMemo(() => {
     switch (getStatus) {
@@ -352,26 +229,20 @@ export const ApToolCall = React.forwardRef<HTMLDivElement, ApToolCallProps>((pro
   }, [getStatus]);
 
   const getStatusText = useMemo(() => {
-    const status = getStatus;
-    const toolCallName =
-      toolName?.replace(/_/g, ' ') ||
-      span?.name?.replace('Tool call - ', '').replace(/_/g, ' ') ||
-      'tool';
+    const toolCallName = getToolCallName({ toolName, span });
 
-    if (status === 'loading') {
+    if (getStatus === 'loading') {
       return `Running '${toolCallName}'`;
     }
 
-    // Calculate duration
-    const endTimeStamp = endTime || span?.data?.endTime;
-    const startTimeStamp = startTime || span?.data?.startTime;
-    const duration =
-      endTimeStamp && startTimeStamp
-        ? (new Date(endTimeStamp).getTime() - new Date(startTimeStamp).getTime()) / 1000
-        : 0;
-
+    const duration = getToolCallDurationSeconds({ startTime, endTime, span });
     return `Ran '${toolCallName}' for ${duration.toFixed(2)} seconds`;
   }, [getStatus, toolName, span, startTime, endTime]);
+
+  const values = useMemo(
+    () => getToolCallValues({ input, output, isError, span }),
+    [input, output, isError, span]
+  );
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
@@ -411,7 +282,7 @@ export const ApToolCall = React.forwardRef<HTMLDivElement, ApToolCallProps>((pro
         aria-hidden={!toolCallExpanded}
         {...(!toolCallExpanded && { inert: true })}
       >
-        {(input || (span && getAttributes(span.data).arguments)) && (
+        {values.input && (
           <ToolCallSection
             type="input"
             title={_(msg({ id: 'tool-call.input', message: 'Input' }))}
@@ -422,7 +293,7 @@ export const ApToolCall = React.forwardRef<HTMLDivElement, ApToolCallProps>((pro
                 input: !prev['input'],
               }))
             }
-            data={input || (span ? getAttributes(span.data).arguments : undefined)}
+            data={values.input}
           />
         )}
         {displayMode === ConversationalDisplayModeTypes.FullTrace && span?.children?.length ? (
@@ -438,7 +309,7 @@ export const ApToolCall = React.forwardRef<HTMLDivElement, ApToolCallProps>((pro
             }
           >
             <TraceItemsContainer>
-              {getVisibleChildren(span).map((child) => (
+              {getVisibleTraceChildren(span).map((child) => (
                 <TraceItemContent key={child.key} child={child} depth={0} />
               ))}
             </TraceItemsContainer>
@@ -458,7 +329,7 @@ export const ApToolCall = React.forwardRef<HTMLDivElement, ApToolCallProps>((pro
             data={{ taskUrls }}
           />
         ) : null}
-        {((isError && output) || (span && getAttributes(span.data).error)) && (
+        {values.error && (
           <ToolCallSection
             type="errors"
             title={_(msg({ id: 'tool-call.errors', message: 'Errors' }))}
@@ -469,10 +340,10 @@ export const ApToolCall = React.forwardRef<HTMLDivElement, ApToolCallProps>((pro
                 errors: !prev['errors'],
               }))
             }
-            data={isError && output ? output : span ? getAttributes(span.data).error : {}}
+            data={values.error}
           />
         )}
-        {((!isError && output) || (span && getAttributes(span.data).result)) && (
+        {values.output && (
           <ToolCallSection
             type="output"
             title={_(msg({ id: 'tool-call.output', message: 'Output' }))}
@@ -483,7 +354,7 @@ export const ApToolCall = React.forwardRef<HTMLDivElement, ApToolCallProps>((pro
                 output: !prev['output'],
               }))
             }
-            data={output || (span ? getAttributes(span.data).result : {}) || {}}
+            data={values.output}
           />
         )}
       </SectionsContainer>

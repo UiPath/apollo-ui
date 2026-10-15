@@ -1,11 +1,17 @@
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import {
+  type ChatTreeItem,
+  type ChatTreeSpanNode,
+  getExpandedTreeIds,
+  toChatTreeItem,
+} from '@uipath/apollo-react/chat/headless/tree/chat-tree';
+import {
   ApTreeView,
   type ApTreeViewItem,
 } from '@uipath/apollo-react/material/components/ap-tree-view';
 import React from 'react';
-import type { ApolloChatTreeRendererProps, ToolData, TreeSpanNode } from './tree-renderer.types';
+import type { ApolloChatTreeRendererProps, TreeSpanNode } from './tree-renderer.types';
 
 export const ApolloChatTreeRenderer: React.FC<ApolloChatTreeRendererProps> = ({
   span,
@@ -32,68 +38,23 @@ export const ApolloChatTreeRenderer: React.FC<ApolloChatTreeRendererProps> = ({
   const defaultTransformSpanToTreeItem = (
     spanNode: TreeSpanNode,
     key: string
-  ): ApTreeViewItem | null => {
-    const spanData = spanNode?.data;
-    if (!spanData) {
-      return null;
-    }
-
-    let children: ApTreeViewItem[] | undefined;
-    if (Array.isArray(spanNode?.children) && spanNode.children.length > 0) {
-      children = spanNode.children
-        .map((child: TreeSpanNode, index: number) =>
-          (customTransformSpanToTreeItem || defaultTransformSpanToTreeItem)(
-            child,
-            `${key}-${index}`
-          )
-        )
-        .filter((item: ApTreeViewItem | null): item is ApTreeViewItem => item !== null);
-    }
-
-    const getAdditionalInfo = (data: ToolData): string | undefined => {
-      if (data.additionalInfo) {
-        return data.additionalInfo;
-      }
-      return undefined;
-    };
-
-    const item: ApTreeViewItem = {
-      id: spanData.id ?? key,
-      title: spanNode.name ?? _(msg({ id: 'autopilot-chat.tree.unknown', message: `Unknown` })),
-      description:
-        spanData.attributes?.description ??
-        spanData.attributes?.type ??
-        _(msg({ id: 'autopilot-chat.tree.no-description', message: `No description` })),
-      icon: spanData.icon,
-      expanded: spanData.expanded,
-      titleColor: spanData.titleColor,
-      customIcon: spanData.customIcon,
-      additionalInfo: getAdditionalInfo(spanData),
-      children,
-    } as ApTreeViewItem;
-
-    return item;
-  };
+  ): ApTreeViewItem | null =>
+    toChatTreeItem(
+      spanNode as unknown as ChatTreeSpanNode,
+      key,
+      { unknown: _(msg({ id: 'autopilot-chat.tree.unknown', message: `Unknown` })) },
+      (child, childKey) =>
+        (customTransformSpanToTreeItem || defaultTransformSpanToTreeItem)(
+          child as unknown as TreeSpanNode,
+          childKey
+        ) as ChatTreeItem | null
+    ) as ApTreeViewItem | null;
 
   // Use custom callback if provided, otherwise use default
   const transformSpanToTreeItem = customTransformSpanToTreeItem || defaultTransformSpanToTreeItem;
 
   const treeItems = transformToTreeItems(span);
-  const getExpandedItems = (items: ApTreeViewItem[]): string[] => {
-    const ids: string[] = [];
-    const traverse = (item: ApTreeViewItem) => {
-      if (item.expanded !== false) {
-        ids.push(item.id);
-      }
-      if (item.children) {
-        item.children.forEach(traverse);
-      }
-    };
-    items.forEach(traverse);
-    return ids;
-  };
-
-  const expandedItems = getExpandedItems(treeItems);
+  const expandedItems = getExpandedTreeIds(treeItems as ChatTreeItem[]);
 
   // Callback handlers
   const handleItemSelect = React.useCallback(

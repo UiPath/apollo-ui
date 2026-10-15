@@ -3,6 +3,7 @@ import ErrorIcon from '@mui/icons-material/Error';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
+import { isOpenableUrl } from '@uipath/apollo-react/chat/headless/utils/openable-url';
 import type React from 'react';
 import type { ToolCallSectionProps } from '../ApToolCall.types';
 import { NestedValue } from './NestedValue';
@@ -175,13 +176,18 @@ export const ToolCallSection: React.FC<ToolCallSectionProps> = ({
                       {value.map((item: any, index: number) => (
                         <TaskUrlItem key={index}>
                           <UrlValue>
-                            <TaskUrlLink
-                              href={item.taskUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              {item.taskUrl}
-                            </TaskUrlLink>
+                            {/* Never link a javascript:, data: or other non-http(s) URL. */}
+                            {isOpenableUrl(item.taskUrl) ? (
+                              <TaskUrlLink
+                                href={item.taskUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                {item.taskUrl}
+                              </TaskUrlLink>
+                            ) : (
+                              item.taskUrl
+                            )}
                           </UrlValue>
                           {item.status === 'unset' ? <WaitingStatus /> : <CompletedStatus />}
                         </TaskUrlItem>
