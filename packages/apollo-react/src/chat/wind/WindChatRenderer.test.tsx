@@ -195,7 +195,8 @@ describe('WindChatRenderer', () => {
       service.setOverrideLabels({ inputPlaceholder: 'Ask the agent', footerDisclaimer: 'Be kind' })
     );
 
-    expect(document.querySelector('[data-slot="wind-chat-composer"]')).toHaveTextContent(
+    expect(screen.getByRole('textbox', { name: 'Message' })).toHaveAttribute(
+      'placeholder',
       'Ask the agent'
     );
     expect(screen.getByText('Be kind')).toBeInTheDocument();
