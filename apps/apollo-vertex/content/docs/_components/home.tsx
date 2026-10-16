@@ -1,5 +1,6 @@
 "use client";
 
+import { Check, Copy } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/registry/button/button";
@@ -64,8 +65,29 @@ const sections = [
   },
 ];
 
+const agentPrompt = `Install @uipath/apollo-vertex with this project's package manager, then run:
+npx @tanstack/intent@latest load @uipath/apollo-vertex#setup
+Follow the skill it prints.`;
+
 export function Home() {
   const [active, setActive] = useState<LayerId | null>(null);
+  const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">(
+    "idle",
+  );
+
+  function handleCopy() {
+    if (!navigator.clipboard?.writeText) {
+      setCopyState("failed");
+      return;
+    }
+    navigator.clipboard.writeText(agentPrompt).then(
+      () => {
+        setCopyState("copied");
+        setTimeout(() => setCopyState("idle"), 1500);
+      },
+      () => setCopyState("failed"),
+    );
+  }
 
   return (
     <div className="not-prose mx-auto w-full max-w-6xl pb-16">
@@ -134,17 +156,36 @@ export function Home() {
         >
           Start a solution
         </h2>
-        <p className="mt-3 max-w-[44ch] leading-relaxed text-muted-foreground">
-          The UiPath CLI creates a new vertical solution with{" "}
-          <code className="text-[0.9em]">@uipath/vs-core</code> already
-          installed and configured.
+        <p className="mt-3 max-w-[52ch] leading-relaxed text-muted-foreground">
+          Paste the prompt into Claude Code, Cursor or Copilot from your project
+          root. Your agent installs Apollo Vertex and sets it up.
         </p>
-        <Link
-          href="/getting-started"
-          className="mt-4 inline-block text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
-        >
-          Read the setup guide
-        </Link>
+        <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
+          <Button onClick={handleCopy}>
+            {copyState === "copied" ? <Check /> : <Copy />}
+            {copyState === "copied" ? "Copied" : "Copy prompt for your agent"}
+          </Button>
+          <Link
+            href="/getting-started"
+            className="text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+          >
+            Or follow the setup guide yourself
+          </Link>
+        </div>
+        <p aria-live="polite" className="mt-3 text-sm text-muted-foreground">
+          {copyState === "failed" ? (
+            <>
+              Your browser blocked the copy.{" "}
+              <Link
+                href="/getting-started#set-up-with-your-agent"
+                className="font-medium text-primary underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+              >
+                Copy the prompt from the setup guide
+              </Link>
+              .
+            </>
+          ) : null}
+        </p>
       </section>
 
       <section aria-labelledby="more-heading" className="mt-14 border-t pt-10">

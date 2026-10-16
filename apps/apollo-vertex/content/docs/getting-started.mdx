@@ -13,63 +13,19 @@ The `@uipath/vs-core` package provides everything you need to build data-driven 
 - **TanStack Query Collections**: Ready-to-use data collections with built-in caching and reactivity
 - **TypeScript Types**: Full type safety for entities, processes, and configurations
 
-## Getting Started
+## Set up with your agent
 
-To create a new vertical solution, you have two options:
+Paste this prompt into your coding agent, such as Claude Code, Cursor or Copilot, from your project root:
 
-**Option 1: Use the UiPath CLI (Recommended)**
-
-Install the `uipcli` tool and its vertical solutions plugin:
-
-```bash
-npm install @uipath/cli @uipath/vss
+```text
+Install @uipath/apollo-vertex with this project's package manager, then run:
+npx @tanstack/intent@latest load @uipath/apollo-vertex#setup
+Follow the skill it prints.
 ```
 
-After installing, you can run commands via `uip`.
+The `setup` skill installs the peer dependencies, imports the stylesheet, sets up [agent skills](#set-up-agent-skills) and tells your agent to follow them when it changes UI. To do the same steps yourself, follow the rest of this page.
 
-### `uip vss` commands
-
-Vertical Solutions plugin for managing UiPath Vertical Solutions.
-
-Also supports flags, for more info `uip vss --help` or `uip vss [command] --help`.
-
-Plugin docs: https://github.com/UiPath/cli/tree/main/packages/vertical-solutions-tool
-
-- **Initialize a new vertical solution**
-
-```bash
-uip vss init
-```
-
-- **Scaffold a new vertical solution**
-
-```bash
-uip vss scaffold
-```
-
-- **Add an entity, process, or connection**
-
-```bash
-uip vss add <type> [path]
-```
-
-- **Sync a vertical solution**
-
-```bash
-uip vss sync
-```
-
-- **Generate types for your vertical solution**
-
-```bash
-uip vss generate
-```
-
-**Option 2: Fork the Template**
-
-Start with the [Vertical Solution Template](https://github.com/UiPath/vertical-solutions-template) for a pre-configured project structure.
-
-Both options give you a ready-to-use project with `@uipath/vs-core` already installed and configured.
+To start a new vertical solution, fork the [Vertical Solution Template](https://github.com/UiPath/vertical-solutions-template). It comes with `@uipath/vs-core` installed and configured.
 
 ## Install Apollo Vertex
 
@@ -96,10 +52,17 @@ import { Button, DataTable } from "@uipath/apollo-vertex";
 
 Apollo Vertex ships [agent skills](https://agentskills.io) that tell coding agents such as Claude Code, Cursor and Copilot how to build UI with Apollo Vertex. For example, one skill tells the agent to use Vertex components instead of writing its own. [TanStack Intent](https://tanstack.com/intent) finds these skills in your `node_modules` and points your agent at them.
 
-Run this once from your project root:
+Apollo Vertex ships these skills:
+
+- `setup` sets up a project to use Apollo Vertex. The [agent prompt](#set-up-with-your-agent) loads it.
+- `use-vertex-components` tells the agent to build UI from Vertex components.
+
+To set them up yourself, add TanStack Intent to your project and run its installer once from your project root:
+
+<PackageInstall packages="-D @tanstack/intent" />
 
 ```bash
-npx @tanstack/intent@latest install
+npx intent install
 ```
 
 Run it in an interactive terminal. It asks which packages' skills your agent may load, saves your choice in `package.json`, and adds instructions to your agent config file (for example `AGENTS.md` or `CLAUDE.md`). Commit both files so everyone on the project gets the same setup.
@@ -109,10 +72,10 @@ The skills are versioned with Apollo Vertex, so updating it updates them too. Yo
 To see the skills that are available, or to read one yourself:
 
 ```bash
-npx @tanstack/intent@latest list
-npx @tanstack/intent@latest load @uipath/apollo-vertex#use-vertex-components
+npx intent list
+npx intent load @uipath/apollo-vertex#use-vertex-components
 ```
 
 ## Next Steps
 
-After using the template or CLI, your project is pre-configured with everything you need. See the [Data Querying](/data-querying/loading-data) section to learn how to load and mutate data using the `useSolution` hook.
+See the [Data Querying](/data-querying/loading-data) section to learn how to load and mutate data using the `useSolution` hook.
