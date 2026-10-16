@@ -12,38 +12,23 @@ import {
   MessageScrollerProvider,
   MessageScrollerViewport,
   Skeleton,
-  ThinkingIndicator,
   useMessageScroller,
   useMessageScrollerScrollable,
 } from '@uipath/apollo-wind';
 import React from 'react';
 import { useChatMessages } from '../../headless/hooks/use-chat-messages';
 import { useChatScrollAdapter } from '../../headless/hooks/use-chat-scroll-adapter';
-import { useLoadingMessages } from '../../headless/hooks/use-loading-messages';
 import { useMessageInset } from '../../headless/hooks/use-message-inset';
 import { useSettledReplies } from '../../headless/hooks/use-settled-replies';
+import { useConversationSuggestions } from '../../headless/hooks/use-suggestions';
 import { getMessageCopyText } from '../../headless/messages/message-groups';
 import { useChatScroll } from '../../headless/providers/chat-scroll-provider';
 import { useChatState } from '../../headless/providers/chat-state-provider';
 import { useLoading } from '../../headless/providers/loading-provider';
 import { AutopilotChatMode, AutopilotChatRole, CHAT_MESSAGE_MAX_PADDING } from '../../service';
-import { PlaceholderRegion } from '../layout/placeholder-region';
+import { SuggestionList } from '../first-run/suggestion-list';
 import { ChatMessage } from './chat-message';
-
-function ThinkingRow() {
-  const { messages, duration, translate } = useLoadingMessages();
-  // As in Material, `setLoadingMessage('')` shows an empty label; the accessible name stays.
-  const labels = messages.map(translate);
-
-  return (
-    <ThinkingIndicator
-      data-slot="wind-chat-thinking"
-      messages={labels}
-      interval={duration}
-      label={translate('autopilot-chat-generating-response')}
-    />
-  );
-}
+import { ThinkingRow } from './thinking-row';
 
 function InitialLoading() {
   return (
@@ -129,7 +114,8 @@ function Transcript({
   }, [groups]);
 
   const { showLoading, isLoadingMoreMessages } = useLoading();
-  const { spacing, firstRunExperience, chatMode } = useChatState();
+  const { spacing, chatMode } = useChatState();
+  const conversationSuggestions = useConversationSuggestions(messages);
   const storedInset = useMessageInset();
   // Wind's FullScreen does not publish ChatResize, so it takes the maximum directly.
   const userMessageInset =
@@ -218,6 +204,17 @@ function Transcript({
                     <ThinkingRow />
                   </div>
                 )}
+                {isLastGroup && conversationSuggestions.attached && (
+                  // Inside the last group rather than a row of its own (see the overlays below),
+                  // below the action bar's 28px and one message spacing.
+                  <SuggestionList
+                    suggestions={conversationSuggestions.suggestions}
+                    sendOnClick={conversationSuggestions.sendOnClick}
+                    showLabel
+                    animated
+                    className="mt-[calc(28px+var(--chat-message-spacing))]"
+                  />
+                )}
               </MessageScrollerItem>
             );
           })}
@@ -241,15 +238,6 @@ function Transcript({
           />
         </div>
       )}
-      {messages.length === 0 && firstRunExperience?.title ? (
-        <div
-          className={spacing.compactMode ? 'absolute inset-x-3 top-2' : 'absolute inset-x-4 top-4'}
-        >
-          <PlaceholderRegion name="First-run experience" slot="wind-chat-first-run">
-            First-run experience: not available in the Wind renderer yet.
-          </PlaceholderRegion>
-        </div>
-      ) : null}
       {showLoading && groups.length === 0 && (
         <div className="absolute inset-x-4 top-4">
           <ThinkingRow />

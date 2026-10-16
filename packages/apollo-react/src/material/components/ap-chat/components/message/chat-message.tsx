@@ -1,15 +1,10 @@
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
 import { useChatMessages } from '@uipath/apollo-react/chat/headless/hooks/use-chat-messages';
-import { useChatService } from '@uipath/apollo-react/chat/headless/providers/chat-service.provider';
+import { useConversationSuggestions } from '@uipath/apollo-react/chat/headless/hooks/use-suggestions';
 import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
 import { useLoading } from '@uipath/apollo-react/chat/headless/providers/loading-provider';
-import {
-  AutopilotChatInternalEvent,
-  type AutopilotChatMessage,
-  AutopilotChatRole,
-  type AutopilotChatSuggestion,
-} from '@uipath/apollo-react/chat/service';
+import { type AutopilotChatMessage, AutopilotChatRole } from '@uipath/apollo-react/chat/service';
 import React from 'react';
 import { SkeletonLoader } from '../common/skeleton-loader';
 import { AutopilotChatMessageContent } from './chat-message-content';
@@ -95,32 +90,11 @@ function AutopilotChatMessagesComponent({
   isOverflow: boolean;
   isContainerWide: boolean;
 }) {
-  const chatService = useChatService();
   const { messages, groups: messageGroups } = useChatMessages();
   const { isLoadingMoreMessages, skeletonLoader } = useLoading();
-  const { firstRunExperience, spacing } = useChatState();
-  const [suggestions, setSuggestions] = React.useState<AutopilotChatSuggestion[]>([]);
-  const [sendOnClick, setSendOnClick] = React.useState<boolean>(false);
-
-  React.useEffect(() => {
-    if (!chatService) {
-      return;
-    }
-
-    return chatService.__internalService__.on(
-      AutopilotChatInternalEvent.SetSuggestions,
-      ({
-        suggestions: suggestionsToSet,
-        sendOnClick: sendOnClickToSet,
-      }: {
-        suggestions: AutopilotChatSuggestion[];
-        sendOnClick: boolean;
-      }) => {
-        setSuggestions(suggestionsToSet);
-        setSendOnClick(sendOnClickToSet);
-      }
-    );
-  }, [chatService]);
+  const { firstRunVisible, spacing } = useChatState();
+  // Material shows the service's suggestions after the conversation whatever came after them.
+  const { suggestions, sendOnClick } = useConversationSuggestions(undefined);
 
   return (
     <MessageContainer
@@ -133,7 +107,7 @@ function AutopilotChatMessagesComponent({
       ) : (
         <>
           {isLoadingMoreMessages && <AutopilotChatLoadingMessages />}
-          {messages.length === 0 && <AutopilotChatFRE />}
+          {firstRunVisible && <AutopilotChatFRE />}
           {messageGroups.map((group, idx) => (
             <MessageGroup
               key={group[0]?.id}
@@ -144,7 +118,7 @@ function AutopilotChatMessagesComponent({
           {messages.length > 0 && suggestions.length > 0 && (
             <AutopilotChatSuggestions
               suggestions={suggestions}
-              sendOnClick={sendOnClick ?? firstRunExperience?.sendOnClick ?? false}
+              sendOnClick={sendOnClick}
               includeTitle={true}
             />
           )}

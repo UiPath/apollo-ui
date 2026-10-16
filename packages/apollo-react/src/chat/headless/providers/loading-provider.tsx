@@ -17,7 +17,18 @@ interface AutopilotLoadingContextType {
   setWaitingResponse: (waitingResponse: boolean) => void;
   showLoading: boolean;
   skeletonLoader: boolean;
+  /**
+   * The messages the thinking state rotates through: the service's defaults
+   * (`setDefaultLoadingMessages`), replaced by `setLoadingMessage` until the next request.
+   */
+  loadingMessages: string[];
+  /** How long each loading message shows, in milliseconds. */
+  loadingMessageDuration: number;
 }
+
+/** Placeholder the service stores for "use the localized default". */
+export const DEFAULT_LOADING_MESSAGE_KEY = 'autopilot-chat-generating-response';
+export const DEFAULT_LOADING_MESSAGE_DURATION = 5000;
 
 export const AutopilotLoadingContext = React.createContext<AutopilotLoadingContextType>({
   waitingResponse: false,
@@ -26,6 +37,8 @@ export const AutopilotLoadingContext = React.createContext<AutopilotLoadingConte
   setWaitingResponse: () => {},
   showLoading: false,
   skeletonLoader: false,
+  loadingMessages: [DEFAULT_LOADING_MESSAGE_KEY],
+  loadingMessageDuration: DEFAULT_LOADING_MESSAGE_DURATION,
 });
 
 export function AutopilotLoadingProvider({ children }: { children: React.ReactNode }) {
@@ -37,6 +50,12 @@ export function AutopilotLoadingProvider({ children }: { children: React.ReactNo
   const disableDefaultShowLoadingBehaviorRef = React.useRef<boolean>(false);
   const disableDefaultSetWaitingBehaviorRef = React.useRef<boolean>(false);
   const chatService = useChatService();
+  const defaultLoadingMessages = () =>
+    chatService?.getDefaultLoadingMessages?.() ?? [DEFAULT_LOADING_MESSAGE_KEY];
+  const [loadingMessages, setLoadingMessages] = React.useState<string[]>(defaultLoadingMessages);
+  const [loadingMessageDuration, setLoadingMessageDuration] = React.useState<number>(
+    () => chatService?.getLoadingMessageDuration?.() ?? DEFAULT_LOADING_MESSAGE_DURATION
+  );
 
   React.useEffect(() => {
     if (!chatService) {
@@ -73,6 +92,12 @@ export function AutopilotLoadingProvider({ children }: { children: React.ReactNo
         disableDefaultShowLoadingBehaviorRef.current = true;
 
         setShowLoading(value);
+        // Showing again starts from the defaults, as a request does.
+        if (value) {
+          setLoadingMessages(
+            chatService.getDefaultLoadingMessages() ?? [DEFAULT_LOADING_MESSAGE_KEY]
+          );
+        }
       }
     );
 
@@ -107,7 +132,27 @@ export function AutopilotLoadingProvider({ children }: { children: React.ReactNo
       () => {
         setWaitingResponse(true);
         setShowLoading(true);
+        // Each turn starts from the defaults, as Material's loading text did when it mounted.
+        setLoadingMessages(
+          chatService.getDefaultLoadingMessages() ?? [DEFAULT_LOADING_MESSAGE_KEY]
+        );
       }
+    );
+
+    const unsubscribeDefaultLoadingMessages = chatService.on(
+      AutopilotChatEvent.SetDefaultLoadingMessages,
+      (data: { messages: string[]; duration?: number }) => {
+        setLoadingMessages(data.messages);
+        // The service keeps an earlier duration when none is given; so does this.
+        setLoadingMessageDuration(
+          chatService.getLoadingMessageDuration() ?? DEFAULT_LOADING_MESSAGE_DURATION
+        );
+      }
+    );
+
+    const unsubscribeLoadingMessage = chatService.on(
+      AutopilotChatEvent.SetLoadingMessage,
+      (message: string) => setLoadingMessages([message])
     );
 
     const unsubscribeResponse = chatService.on(
@@ -136,6 +181,8 @@ export function AutopilotLoadingProvider({ children }: { children: React.ReactNo
     return () => {
       unsubscribeShowLoadingState();
       unsubscribeRequest();
+      unsubscribeDefaultLoadingMessages();
+      unsubscribeLoadingMessage();
       unsubscribeResponse();
       unsubscribeStopResponse();
       unsubscribeNewChat();
@@ -156,6 +203,8 @@ export function AutopilotLoadingProvider({ children }: { children: React.ReactNo
         hasMoreMessages,
         showLoading,
         skeletonLoader,
+        loadingMessages,
+        loadingMessageDuration,
       }}
     >
       {children}

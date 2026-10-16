@@ -2,49 +2,20 @@ import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import React from 'react';
 
-import { AutopilotChatEvent } from '../../service';
-import { useChatService } from '../providers/chat-service.provider';
+import { DEFAULT_LOADING_MESSAGE_KEY, useLoading } from '../providers/loading-provider';
 
-/** Placeholder the service stores for "use the localized default". */
-export const DEFAULT_LOADING_MESSAGE_KEY = 'autopilot-chat-generating-response';
-export const DEFAULT_LOADING_MESSAGE_DURATION = 5000;
+export {
+  DEFAULT_LOADING_MESSAGE_DURATION,
+  DEFAULT_LOADING_MESSAGE_KEY,
+} from '../providers/loading-provider';
 
 /**
- * The loading messages to rotate while a reply is pending and how long each shows: the service's
- * defaults (`setDefaultLoadingMessages`), replaced by a single message from `setLoadingMessage`.
+ * The loading messages to rotate while a reply is pending, how long each shows, and how to
+ * display one (the default key becomes the localized "Generating response...").
  */
 export function useLoadingMessages() {
   const { _ } = useLingui();
-  const chatService = useChatService();
-  const [messages, setMessages] = React.useState<string[]>(
-    () => chatService.getDefaultLoadingMessages() ?? [DEFAULT_LOADING_MESSAGE_KEY]
-  );
-  const [duration, setDuration] = React.useState(
-    () => chatService.getLoadingMessageDuration() ?? DEFAULT_LOADING_MESSAGE_DURATION
-  );
-
-  React.useEffect(() => {
-    if (!chatService) {
-      return;
-    }
-
-    const unsubscribes = [
-      chatService.on(
-        AutopilotChatEvent.SetDefaultLoadingMessages,
-        (data: { messages: string[]; duration?: number }) => {
-          setMessages(data.messages);
-          setDuration(data.duration ?? DEFAULT_LOADING_MESSAGE_DURATION);
-        }
-      ),
-      chatService.on(AutopilotChatEvent.SetLoadingMessage, (message: string) =>
-        setMessages([message])
-      ),
-    ];
-
-    return () => {
-      for (const unsubscribe of unsubscribes) unsubscribe();
-    };
-  }, [chatService]);
+  const { loadingMessages, loadingMessageDuration } = useLoading();
 
   const translate = React.useCallback(
     (message: string) =>
@@ -59,5 +30,5 @@ export function useLoadingMessages() {
     [_]
   );
 
-  return { messages, duration, translate };
+  return { messages: loadingMessages, duration: loadingMessageDuration, translate };
 }

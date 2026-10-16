@@ -2,12 +2,9 @@ import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
-import { useChatService } from '@uipath/apollo-react/chat/headless/providers/chat-service.provider';
+import { useSuggestionSelect } from '@uipath/apollo-react/chat/headless/hooks/use-suggestions';
 import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
-import {
-  AutopilotChatInternalEvent,
-  type AutopilotChatSuggestion,
-} from '@uipath/apollo-react/chat/service';
+import type { AutopilotChatSuggestion } from '@uipath/apollo-react/chat/service';
 import { ApTypography } from '@uipath/apollo-react/material/components/ap-typography';
 import React from 'react';
 
@@ -67,22 +64,15 @@ function AutopilotChatSuggestionsComponent({
   disableAnimation,
 }: AutopilotChatSuggestionsProps) {
   const { _ } = useLingui();
-  const chatService = useChatService();
   const { spacing } = useChatState();
 
+  const selectSuggestion = useSuggestionSelect();
   const handleSuggestionClick = React.useCallback(
     (
       _event: React.MouseEvent<HTMLButtonElement> | React.KeyboardEvent<HTMLButtonElement>,
       suggestion: AutopilotChatSuggestion
-    ) => {
-      if (sendOnClick) {
-        chatService.sendRequest({ content: suggestion.prompt });
-      } else {
-        chatService.setPrompt(suggestion.prompt);
-      }
-      chatService.__internalService__.publish(AutopilotChatInternalEvent.SetInputFocused, true);
-    },
-    [chatService, sendOnClick]
+    ) => selectSuggestion(suggestion, !!sendOnClick),
+    [selectSuggestion, sendOnClick]
   );
 
   const handleSuggestionKeyDown = React.useCallback(
