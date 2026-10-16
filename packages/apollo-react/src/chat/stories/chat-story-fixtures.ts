@@ -291,6 +291,64 @@ export function storyHistoryItems(now = Date.now()): AutopilotChatHistory[] {
   ];
 }
 
+const DAY_MS = 86_400_000;
+
+/**
+ * Conversations in every date bucket the history groups by: today, yesterday, the last 7 and 30
+ * days, and months ago (one name long enough to truncate).
+ */
+export function storyHistoryBuckets(now = Date.now()): AutopilotChatHistory[] {
+  const at = (msAgo: number) => new Date(now - msAgo).toISOString();
+
+  return [
+    { id: 'bucket-today-1', name: 'Invoice extraction workflow', timestamp: at(5 * 60_000) },
+    { id: 'bucket-today-2', name: 'Vendor reconciliation', timestamp: at(20 * 60_000) },
+    { id: 'bucket-yesterday', name: 'Purchase order approvals', timestamp: at(DAY_MS) },
+    { id: 'bucket-week-1', name: 'Debugging a selector timeout', timestamp: at(3 * DAY_MS) },
+    { id: 'bucket-week-2', name: 'Queue triggers in Orchestrator', timestamp: at(6 * DAY_MS) },
+    { id: 'bucket-month-1', name: 'Document Understanding taxonomy', timestamp: at(12 * DAY_MS) },
+    { id: 'bucket-month-2', name: 'Excel automation tips', timestamp: at(25 * DAY_MS) },
+    { id: 'bucket-old-1', name: 'Studio Web project setup', timestamp: at(45 * DAY_MS) },
+    {
+      id: 'bucket-old-2',
+      name: 'A very long conversation title about reconciling vendor statements with the general ledger every month',
+      timestamp: at(75 * DAY_MS),
+    },
+    { id: 'bucket-old-3', name: 'Attended robot licensing', timestamp: at(200 * DAY_MS) },
+  ];
+}
+
+export const STORY_HISTORY_PAGE_SIZE = 10;
+
+/** Older conversations for paginated history, two days apart, newest first. */
+export function storyHistoryArchive(now = Date.now(), count = 40): AutopilotChatHistory[] {
+  return Array.from({ length: count }, (_, index) => ({
+    id: `archive-${index + 1}`,
+    name: `Archived conversation ${index + 1}`,
+    timestamp: new Date(now - (index + 1) * 2 * DAY_MS).toISOString(),
+  }));
+}
+
+/** The transcript a host would load when a history entry is opened. */
+export function storyConversationFor(item: AutopilotChatHistory): AutopilotChatMessage[] {
+  return [
+    {
+      id: `${item.id}-question`,
+      role: AutopilotChatRole.User,
+      content: `Let's pick up "${item.name}".`,
+      created_at: item.timestamp,
+      widget: '',
+    },
+    {
+      id: `${item.id}-answer`,
+      role: AutopilotChatRole.Assistant,
+      content: `This is the saved conversation **${item.name}**, loaded by the host on OpenConversation.`,
+      created_at: item.timestamp,
+      widget: '',
+    },
+  ];
+}
+
 /* ------------------------------------------------------------------ */
 /* Messages and payloads                                              */
 /* ------------------------------------------------------------------ */

@@ -3,16 +3,12 @@ import { useLingui } from '@lingui/react';
 import SearchIcon from '@mui/icons-material/Search';
 import { CircularProgress, Popover, styled } from '@mui/material';
 import token from '@uipath/apollo-core';
+import { useChatHistory } from '@uipath/apollo-react/chat/headless/hooks/use-chat-history';
 import { useScheduledCallback } from '@uipath/apollo-react/chat/headless/hooks/use-scheduled-callback';
 import { useChatService } from '@uipath/apollo-react/chat/headless/providers/chat-service.provider';
 import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
 import { useChatWidth } from '@uipath/apollo-react/chat/headless/providers/chat-width-provider';
-import { publishChatEvent } from '@uipath/apollo-react/chat/headless/utils/publish-chat-event';
 import {
-  AutopilotChatEvent,
-  type AutopilotChatHistorySearchPayload,
-  type AutopilotChatHistory as AutopilotChatHistoryType,
-  AutopilotChatInternalEvent,
   CHAT_HISTORY_FULL_SCREEN_WIDTH,
   CHAT_HISTORY_SIDE_BY_SIDE_MAX_HEIGHT,
   CHAT_HISTORY_SIDE_BY_SIDE_MAX_WIDTH,
@@ -20,9 +16,7 @@ import {
 import { ApSkeleton } from '@uipath/apollo-react/material/components/ap-skeleton';
 import { ApTextField } from '@uipath/apollo-react/material/components/ap-text-field';
 import { ApTypography } from '@uipath/apollo-react/material/components/ap-typography';
-import { differenceInDays, differenceInMonths, isToday, isYesterday } from 'date-fns';
-import debounce from 'debounce';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import FocusLock from 'react-focus-lock';
 import { AutopilotChatHistoryGroup } from './chat-history-group';
 
@@ -92,14 +86,6 @@ const HistorySkeletonLoader: React.FC = () => (
   </HistorySkeletonContainer>
 );
 
-const DEBOUNCE_DELAY_IN_MS = 400;
-const LOAD_MORE_THRESHOLD_IN_PX = 50;
-
-export interface ChatHistoryGroup {
-  title: string;
-  items: AutopilotChatHistoryType[];
-}
-
 interface AutopilotChatHistoryProps {
   open: boolean;
   isFullScreen: boolean;
@@ -111,24 +97,10 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
 }) => {
   const { _ } = useLingui();
   const chatService = useChatService();
-  const internalService = chatService?.__internalService__;
 
-  const [history, setHistory] = useState<AutopilotChatHistoryType[]>(
-    chatService?.getHistory() ?? []
-  );
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
   const [scrollContainer, setScrollContainer] = useState<HTMLDivElement | null>(null);
 
   const popperContainerRef = useRef<HTMLDivElement>(null);
-  const isLoadingMoreRef = useRef(false);
-  const shouldShowLoadingMoreRef = useRef(true);
-  const appendingRef = useRef(false);
-  const scrollTopBeforeAppendRef = useRef(0);
-  const searchQueryRef = useRef('');
-  // The query the host last searched for, so a reset is sent only when its list is filtered.
-  const sentQueryRef = useRef('');
 
   const { historyOpen, historyAnchorElement, fullScreenContainer, spacing, portalContainer } =
     useChatState();
@@ -152,221 +124,15 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
   }, [schedulePositionUpdate]);
   const { width } = useChatWidth();
 
-  const handleScroll = useCallback(() => {
-    if (!scrollContainer || !chatService) {
-      return;
-    }
-
-    const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
-    const scrollBottom = scrollHeight - scrollTop - clientHeight;
-
-    if (
-      scrollBottom < LOAD_MORE_THRESHOLD_IN_PX &&
-      !isLoadingMoreRef.current &&
-      shouldShowLoadingMoreRef.current &&
-      chatService.getConfig()?.paginatedHistory
-    ) {
-      (chatService as any)._eventBus.publish(AutopilotChatEvent.HistoryLoadMore, {
-        searchText: searchQueryRef.current,
-      } satisfies AutopilotChatHistorySearchPayload);
-      internalService.publish(AutopilotChatInternalEvent.SetIsLoadingMoreHistory, true);
-    }
-  }, [scrollContainer, chatService, internalService]);
-
-  const debouncedSearch = useMemo(
-    () =>
-      debounce((newSearchQuery: string) => {
-        if (chatService?.getConfig()?.paginatedHistory) {
-          sentQueryRef.current = newSearchQuery;
-          (chatService as any)._eventBus.publish(AutopilotChatEvent.HistorySearch, {
-            searchText: newSearchQuery,
-          } satisfies AutopilotChatHistorySearchPayload);
-          internalService.publish(AutopilotChatInternalEvent.SetIsLoadingMoreHistory, false);
-        }
-      }, DEBOUNCE_DELAY_IN_MS),
-    [chatService, internalService]
-  );
-
-  useEffect(() => {
-    if (!chatService || !internalService) {
-      return;
-    }
-
-    const unsubscribeSetHistory = chatService.on(AutopilotChatEvent.SetHistory, (newHistory) => {
-      setHistory(newHistory);
-      setIsSearching(false);
-    });
-
-    const unsubscribeSetIsLoadingMore = internalService.on(
-      AutopilotChatInternalEvent.SetIsLoadingMoreHistory,
-      (value: boolean) => {
-        isLoadingMoreRef.current = value;
-        setIsLoadingMore(value);
-      }
-    );
-
-    const unsubscribeShouldShowLoading = internalService.on(
-      AutopilotChatInternalEvent.ShouldShowLoadingMoreHistory,
-      (value: boolean) => {
-        shouldShowLoadingMoreRef.current = value;
-      }
-    );
-
-    const unsubscribeAppendOlderHistory = internalService.on(
-      AutopilotChatInternalEvent.AppendOlderHistory,
-      () => {
-        if (scrollContainer) {
-          appendingRef.current = true;
-          scrollTopBeforeAppendRef.current = scrollContainer.scrollTop;
-        }
-      }
-    );
-
-    return () => {
-      unsubscribeSetHistory();
-      unsubscribeSetIsLoadingMore();
-      unsubscribeShouldShowLoading();
-      unsubscribeAppendOlderHistory();
-    };
-  }, [chatService, internalService, scrollContainer]);
-
-  useEffect(() => {
-    if (!scrollContainer || !historyOpen || !chatService) {
-      return;
-    }
-
-    scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
-
-    return () => {
-      scrollContainer.removeEventListener('scroll', handleScroll);
-    };
-  }, [scrollContainer, handleScroll, historyOpen, chatService]);
-
-  useEffect(() => {
-    if (appendingRef.current && scrollContainer) {
-      scrollContainer.scrollTop = scrollTopBeforeAppendRef.current;
-      appendingRef.current = false;
-    }
-  }, [history, scrollContainer]);
-
-  useEffect(() => {
-    searchQueryRef.current = searchQuery;
-  }, [searchQuery]);
-
-  // Closing (or unmounting) clears the search, and the host's filtered results with it: the list
-  // follows the box. A search still waiting out the pause is dropped.
-  const resetSearch = useCallback(() => {
-    debouncedSearch.clear();
-    searchQueryRef.current = '';
-    setSearchQuery('');
-    setIsSearching(false);
-
-    if (chatService?.getConfig()?.paginatedHistory && sentQueryRef.current !== '') {
-      // No skeleton for the empty search: a host may ignore it, and keeps showing its list then.
-      sentQueryRef.current = '';
-      publishChatEvent(chatService, AutopilotChatEvent.HistorySearch, {
-        searchText: '',
-      } satisfies AutopilotChatHistorySearchPayload);
-      internalService.publish(AutopilotChatInternalEvent.SetIsLoadingMoreHistory, false);
-    }
-  }, [chatService, internalService, debouncedSearch]);
-
-  useEffect(() => {
-    if (!historyOpen) {
-      resetSearch();
-    }
-  }, [historyOpen, resetSearch]);
-
-  useEffect(() => () => debouncedSearch.clear(), [debouncedSearch]);
-
-  const resetSearchRef = useRef(resetSearch);
-  resetSearchRef.current = resetSearch;
-  useEffect(() => () => resetSearchRef.current(), []);
-
-  const groupedHistory = useMemo(() => {
-    const filteredHistory = chatService?.getConfig()?.paginatedHistory
-      ? history
-      : history.filter((item) => item.name.toLowerCase().includes(searchQuery.toLowerCase()));
-
-    const grouped = filteredHistory.reduce<ChatHistoryGroup[]>((acc, item) => {
-      const date = new Date(item.timestamp);
-      const currentDate = new Date();
-      const daysAgo = differenceInDays(currentDate, date);
-      let groupTitle = '';
-
-      if (isToday(date)) {
-        groupTitle = _(msg({ id: 'autopilot-chat.history.group.today', message: `Today` }));
-      } else if (isYesterday(date)) {
-        groupTitle = _(msg({ id: 'autopilot-chat.history.group.yesterday', message: `Yesterday` }));
-      } else if (daysAgo <= 7) {
-        groupTitle = _(
-          msg({ id: 'autopilot-chat.history.group.last-week', message: `Last 7 days` })
-        );
-      } else if (daysAgo <= 30) {
-        groupTitle = _(
-          msg({ id: 'autopilot-chat.history.group.last-30-days', message: `Last 30 days` })
-        );
-      } else {
-        const monthsAgo = differenceInMonths(currentDate, date);
-        const count = monthsAgo;
-        groupTitle = _(
-          msg({ id: 'autopilot-chat.history.group.months-ago', message: `${count} months ago` })
-        );
-      }
-
-      const existingGroup = acc.find((group) => group.title === groupTitle);
-
-      if (existingGroup) {
-        existingGroup.items.push(item);
-      } else {
-        acc.push({
-          title: groupTitle,
-          items: [item],
-        });
-      }
-
-      return acc;
-    }, []);
-
-    // Sort groups by date (most recent first)
-    grouped.sort((a, b) => {
-      const getDate = (group: ChatHistoryGroup) => {
-        if (group.items.length === 0) {
-          return new Date();
-        }
-
-        return new Date(group.items[0]!.timestamp);
-      };
-
-      return getDate(b).getTime() - getDate(a).getTime();
-    });
-
-    // Sort items within each group by date (most recent first)
-    grouped.forEach((group) => {
-      group.items.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-    });
-
-    return grouped;
-  }, [history, searchQuery, chatService, _]);
-
-  const handleSearchTextChange = useCallback(
-    (searchText: string | undefined) => {
-      const newSearchText = searchText || '';
-      setSearchQuery(newSearchText);
-
-      if (chatService?.getConfig()?.paginatedHistory) {
-        // The skeleton waits for the results of a query; an emptied box keeps the list shown.
-        setIsSearching(newSearchText !== '');
-        debouncedSearch(newSearchText);
-      }
-    },
-    [chatService, debouncedSearch]
-  );
-
-  const hasHistoryData = history.length > 0 || searchQuery || isSearching;
-  const hasNoSearchResults = groupedHistory.length === 0 && searchQuery;
-  const showSkeletonLoader = isSearching && chatService?.getConfig()?.paginatedHistory;
-  const showLoadMoreSpinner = isLoadingMore && chatService?.getConfig()?.paginatedHistory;
+  const {
+    groups: groupedHistory,
+    searchQuery,
+    setSearchQuery: handleSearchTextChange,
+    hasHistoryData,
+    noSearchResults: hasNoSearchResults,
+    showSearchSkeleton: showSkeletonLoader,
+    showLoadingMore: showLoadMoreSpinner,
+  } = useChatHistory({ open: historyOpen, scrollContainer });
 
   const renderEmptyState = (message: string) => (
     <EmptyStateContainer>
@@ -379,7 +145,7 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
   const renderHistoryGroups = () => (
     <>
       {groupedHistory.map((group) => (
-        <AutopilotChatHistoryGroup key={group.title} group={group} isHistoryOpen={historyOpen} />
+        <AutopilotChatHistoryGroup key={group.key} group={group} isHistoryOpen={historyOpen} />
       ))}
       {showLoadMoreSpinner && (
         <div

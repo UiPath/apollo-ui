@@ -21,7 +21,14 @@ import { HeaderActionButton } from './header-action-button';
  */
 export function WindChatHeader({ className, layout }: { className?: string; layout: ChatLayout }) {
   const { _ } = useLingui();
-  const { disabledFeatures, spacing } = useChatState();
+  const {
+    disabledFeatures,
+    spacing,
+    historyOpen,
+    settingsOpen,
+    setHistoryAnchorElement,
+    setSettingsAnchorElement,
+  } = useChatState();
   const { title } = useChatLabels();
   const {
     visibility,
@@ -83,7 +90,10 @@ export function WindChatHeader({ className, layout }: { className?: string; layo
         {visibility.settings && (
           <HeaderActionButton
             label={_(msg({ id: 'autopilot-chat.header.actions.settings', message: `Settings` }))}
+            // Focus returns here when the settings close.
+            ref={setSettingsAnchorElement}
             onClick={toggleSettings}
+            aria-expanded={settingsOpen}
             data-testid="autopilot-chat-settings"
           >
             <Settings />
@@ -92,7 +102,11 @@ export function WindChatHeader({ className, layout }: { className?: string; layo
         {visibility.history && (
           <HeaderActionButton
             label={_(msg({ id: 'autopilot-chat.header.actions.history', message: `History` }))}
+            // The history popover anchors to this button.
+            ref={setHistoryAnchorElement}
             onClick={toggleHistory}
+            aria-expanded={historyOpen}
+            aria-haspopup="dialog"
             data-testid="autopilot-chat-history"
           >
             <History />

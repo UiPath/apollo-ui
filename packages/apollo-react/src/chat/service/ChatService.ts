@@ -91,6 +91,8 @@ export class AutopilotChatService {
   private _historyOpen: boolean = false;
   private _settingsOpen: boolean = false;
   private _activeConversationId: string | null = null;
+  // Whether a paginated host has more history, from the `done` of its last page.
+  private _hasMoreHistory = true;
   private _defaultLoadingMessages: string[] | null = null;
   private _loadingMessage: string | null = null;
   private _loadingMessageDuration: number | null = null;
@@ -574,6 +576,7 @@ export class AutopilotChatService {
    */
   appendOlderHistoryItems(items: AutopilotChatHistory[] = [], done?: boolean) {
     if (done) {
+      this._hasMoreHistory = false;
       this._internalService.publish(AutopilotChatInternalEvent.ShouldShowLoadingMoreHistory, false);
     }
 
@@ -867,6 +870,7 @@ export class AutopilotChatService {
     this._internalService.publish(AutopilotChatInternalEvent.SetIsLoadingMoreHistory, false);
 
     if (done !== undefined) {
+      this._hasMoreHistory = !done;
       this._internalService.publish(AutopilotChatInternalEvent.ShouldShowLoadingMoreHistory, !done);
     }
 
@@ -1217,6 +1221,16 @@ export class AutopilotChatService {
    */
   get __internalService__() {
     return this._internalService;
+  }
+
+  /**
+   * Whether a paginated host has more history to load, for a history list mounted after its last
+   * `done`.
+   * Should not be consumed by the public API
+   * @internal
+   */
+  get __hasMoreHistory__() {
+    return this._hasMoreHistory;
   }
 
   /**

@@ -16,12 +16,13 @@ import {
   type AutopilotChatMessage,
   AutopilotChatMode,
   AutopilotChatPreHookAction,
+  type AutopilotChatRenameConversationPayload,
   type AutopilotChatRenderer,
   AutopilotChatService,
 } from '../service';
+import { confirmWithHostDialog } from './chat-story-confirm';
 import {
   createStoryResourceManager,
-  createStorySettingsRenderer,
   customHeaderActionReply,
   MATERIAL_CUSTOM_HEADER_ACTIONS,
   STORY_AGENT_MODES,
@@ -29,7 +30,8 @@ import {
   STORY_LOADING_MESSAGES,
   STORY_MODELS,
   STREAMING_REPLY,
-  storyHistoryItems,
+  storyConversationFor,
+  storyHistoryBuckets,
   WIND_CUSTOM_HEADER_ACTIONS,
 } from './chat-story-fixtures';
 import {
@@ -46,6 +48,7 @@ import {
   splitWords,
   streamChunks,
 } from './chat-story-scenarios';
+import { createStoryReactSettingsRenderer } from './chat-story-settings';
 
 export type PlaygroundRenderer = AutopilotChatRenderer | 'both';
 export type PlaygroundMode = AutopilotChatMode.Embedded | AutopilotChatMode.FullScreen;
@@ -153,8 +156,10 @@ function disabledFeaturesFrom(args: PlaygroundArgs): AutopilotChatDisabledFeatur
   return features;
 }
 
+// A DOM dialog rather than window.confirm, so the chat's own layers (a modal popover) meet a
+// host dialog as they would in a product.
 const confirmPreHook = (action: AutopilotChatPreHookAction) => () =>
-  Promise.resolve(window.confirm(`Pre-hook "${action}". Continue?`));
+  confirmWithHostDialog(`Pre-hook "${action}". Continue?`);
 const allowPreHook = () => Promise.resolve(true);
 
 const preHooksFrom = (enabled: boolean) =>
@@ -230,7 +235,7 @@ function createSlotService(
       selectedModel: STORY_MODELS[0],
       agentModes: STORY_AGENT_MODES,
       selectedAgentMode: STORY_AGENT_MODES[0],
-      settingsRenderer: createStorySettingsRenderer(),
+      settingsRenderer: createStoryReactSettingsRenderer(),
       resourceManager: createStoryResourceManager(),
     },
   });
@@ -240,7 +245,7 @@ function createSlotService(
   service.setLoadingMessage('');
   service.setCustomHeaderActions(customActionsFor(renderer, args.customHeaderActions));
   service.setDefaultLoadingMessages(STORY_LOADING_MESSAGES);
-  service.setHistory(storyHistoryItems());
+  service.setHistory(storyHistoryBuckets());
 
   if (seedFrom) {
     service.setConversation(seedFrom.getConversation().map((message) => ({ ...message })));
@@ -382,6 +387,25 @@ function ChatSlot({
             splitWords(STREAMING_REPLY),
             streamDelayMs * 4
           );
+        }
+      }),
+      // The host side of the history: rename and delete update the list, opening loads a transcript.
+      service.on(
+        AutopilotChatEvent.RenameConversation,
+        ({ conversationId, name }: AutopilotChatRenameConversationPayload) =>
+          service.setHistory(
+            service
+              .getHistory()
+              .map((item) => (item.id === conversationId ? { ...item, name } : item))
+          )
+      ),
+      service.on(AutopilotChatEvent.DeleteConversation, (conversationId: string) =>
+        service.setHistory(service.getHistory().filter((item) => item.id !== conversationId))
+      ),
+      service.on(AutopilotChatEvent.OpenConversation, (conversationId: string | null) => {
+        const item = service.getHistory().find((entry) => entry.id === conversationId);
+        if (item) {
+          timers.schedule(() => service.setConversation(storyConversationFor(item)), 400);
         }
       }),
       service.on(
