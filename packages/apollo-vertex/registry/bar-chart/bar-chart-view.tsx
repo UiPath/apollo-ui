@@ -1,6 +1,7 @@
 import {
-  Cell,
+  type BarShapeProps,
   LabelList,
+  Rectangle,
   Bar as RechartsBar,
   BarChart as RechartsBarChart,
   XAxis,
@@ -44,6 +45,10 @@ export interface BarChartProps {
 const BAR_SIZE = 20;
 const BAR_GAP = 4;
 const CATEGORY_GAP = 8;
+
+function PaletteBar(props: BarShapeProps) {
+  return <Rectangle {...props} fill={PALETTE[props.index % PALETTE.length]} />;
+}
 
 export function BarChart({ rows, series }: BarChartProps) {
   const dimensionKeys = rows[0]?.dimensions.map((d) => d.key) ?? [];
@@ -211,7 +216,11 @@ export function BarChart({ rows, series }: BarChartProps) {
               cursor={false}
             />
             {seriesCount === 1 ? (
-              <RechartsBar dataKey={series[0]?.label ?? ""} barSize={BAR_SIZE}>
+              <RechartsBar
+                dataKey={series[0]?.label ?? ""}
+                barSize={BAR_SIZE}
+                shape={PaletteBar}
+              >
                 <LabelList
                   content={(props: LabelListContentProps) => {
                     const payload = isRechartsBarData(props.payload)
@@ -224,9 +233,6 @@ export function BarChart({ rows, series }: BarChartProps) {
                     return <BarLabel {...props} formatted={formatted} />;
                   }}
                 />
-                {rechartsData.map((row, index) => (
-                  <Cell key={row.__id} fill={PALETTE[index % PALETTE.length]} />
-                ))}
               </RechartsBar>
             ) : (
               series.map((s, idx) => (
