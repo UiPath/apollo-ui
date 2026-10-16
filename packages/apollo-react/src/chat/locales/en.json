@@ -116,5 +116,6 @@
   "autopilot-chat.tool-call.json.copy-value": "Copy value",
   "autopilot-chat.tool-call.json.copy-value-of": "Copy value of {key}",
   "autopilot-chat.input.label": "Message",
-  "autopilot-chat.input.error.dismiss": "Dismiss"
+  "autopilot-chat.input.error.dismiss": "Dismiss",
+  "autopilot-chat.history.loading-more": "Loading more chats"
 }

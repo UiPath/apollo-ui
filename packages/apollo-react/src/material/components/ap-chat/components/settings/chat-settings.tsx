@@ -1,9 +1,9 @@
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
-import { useChatService } from '@uipath/apollo-react/chat/headless/providers/chat-service.provider';
+import { useSettingsRenderer } from '@uipath/apollo-react/chat/headless/hooks/use-settings-renderer';
 import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
 import { CHAT_DRAWER_WIDTH_FULL_SCREEN } from '@uipath/apollo-react/chat/service';
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import FocusLock from 'react-focus-lock';
 import { AutopilotChatSettingsHeader } from './chat-settings-header';
 
@@ -39,6 +39,10 @@ const ChatSettingsContainer = styled('div')<{ isOpen: boolean; isFullScreen: boo
       outline: 'none',
       flex: 1,
       overflowY: 'auto',
+      // The panel keeps its header on one line while its width animates; the host's content
+      // wraps, or a long line scrolls the panel sideways.
+      overflowX: 'hidden',
+      whiteSpace: 'normal',
       marginRight: `calc(-${token.Spacing.SpacingBase})`,
       paddingRight: token.Spacing.SpacingBase,
     },
@@ -54,9 +58,9 @@ export const AutopilotChatSettings: React.FC<AutopilotChatSettingsProps> = ({
   open,
   isFullScreen,
 }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const chatService = useChatService();
+  const [container, setContainer] = React.useState<HTMLDivElement | null>(null);
   const { settingsOpen } = useChatState();
+  useSettingsRenderer(container);
 
   // CSS variables must be set as inline styles (not in the styled component)
   // to keep the Emotion class stable and enable proper transitions
@@ -75,37 +79,12 @@ export const AutopilotChatSettings: React.FC<AutopilotChatSettingsProps> = ({
     } as React.CSSProperties;
   }, [open, isFullScreen]);
 
-  useEffect(() => {
-    if (!containerRef.current || !chatService) {
-      return;
-    }
-
-    const config = chatService.getConfig();
-    const settingsRenderer = config.settingsRenderer;
-
-    if (!settingsRenderer) {
-      return;
-    }
-
-    containerRef.current.innerHTML = '';
-
-    if (!settingsOpen) {
-      return;
-    }
-
-    try {
-      settingsRenderer(containerRef.current);
-    } catch (error) {
-      return;
-    }
-  }, [chatService, settingsOpen]);
-
   return (
     <FocusLock disabled={!open || !settingsOpen || isFullScreen} returnFocus={false}>
       <ChatSettingsContainer isOpen={open} isFullScreen={isFullScreen} style={cssVars}>
         <AutopilotChatSettingsHeader isFullScreen={isFullScreen} isSettingsOpen={settingsOpen} />
 
-        <div ref={containerRef} className="chat-settings-content" />
+        <div ref={setContainer} className="chat-settings-content" />
       </ChatSettingsContainer>
     </FocusLock>
   );

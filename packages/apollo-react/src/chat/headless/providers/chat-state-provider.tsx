@@ -33,6 +33,9 @@ type DeepRequired<T> = {
 interface AutopilotChatStateContextType {
   historyAnchorElement: HTMLElement | null;
   setHistoryAnchorElement: (element: HTMLElement | null) => void;
+  /** The header's settings button, for renderers that return focus to it on close. */
+  settingsAnchorElement: HTMLElement | null;
+  setSettingsAnchorElement: (element: HTMLElement | null) => void;
   fullScreenContainer: HTMLElement | null;
   setFullScreenContainer: (element: HTMLElement | null) => void;
   historyOpen: boolean;
@@ -169,6 +172,9 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
       }
     );
   const [historyAnchorElement, setHistoryAnchorElement] = React.useState<HTMLElement | null>(null);
+  const [settingsAnchorElement, setSettingsAnchorElement] = React.useState<HTMLElement | null>(
+    null
+  );
   const [fullScreenContainer, setFullScreenContainer] = React.useState<HTMLElement | null>(null);
   const [historyOpen, setHistoryOpen] = React.useState(chatService?.historyOpen ?? false);
   const [settingsOpen, setSettingsOpen] = React.useState(chatService?.settingsOpen ?? false);
@@ -338,6 +344,8 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
       allowedAttachments,
       historyAnchorElement,
       setHistoryAnchorElement,
+      settingsAnchorElement,
+      setSettingsAnchorElement,
       fullScreenContainer,
       setFullScreenContainer,
       hasMessages,
@@ -359,6 +367,7 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
       allowedAttachments,
       historyAnchorElement,
       setHistoryAnchorElement,
+      settingsAnchorElement,
       fullScreenContainer,
       setFullScreenContainer,
       hasMessages,
