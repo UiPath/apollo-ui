@@ -11,21 +11,21 @@ import { Search, Mail } from 'lucide-react'
     <InputGroupAddon>
       <Search className="h-4 w-4" />
     </InputGroupAddon>
-    <InputGroupInput placeholder="Search..." />
+    <InputGroupInput placeholder="Search..." aria-label="Search" />
   </InputGroup>
 
   <InputGroup>
     <InputGroupAddon>
       <InputGroupText>https://</InputGroupText>
     </InputGroupAddon>
-    <InputGroupInput placeholder="example.com" />
+    <InputGroupInput placeholder="example.com" aria-label="Website" />
   </InputGroup>
 
   <InputGroup>
     <InputGroupAddon>
       <Mail className="h-4 w-4" />
     </InputGroupAddon>
-    <InputGroupInput placeholder="Email" />
+    <InputGroupInput placeholder="Email" aria-label="Email" />
     <InputGroupAddon align="inline-end">
       <InputGroupText>@gmail.com</InputGroupText>
     </InputGroupAddon>
@@ -48,6 +48,6 @@ import {
   <InputGroupAddon>
     <SearchIcon />
   </InputGroupAddon>
-  <InputGroupInput placeholder="Search..." />
+  <InputGroupInput placeholder="Search..." aria-label="Search" />
 </InputGroup>
 ```

@@ -1777,13 +1777,14 @@
       "type": "registry:ui",
       "title": "Command",
       "description": "A command menu for searching and executing commands.",
-      "dependencies": ["cmdk"],
+      "dependencies": ["cmdk", "react-i18next"],
       "registryDependencies": ["@uipath/dialog"],
       "files": [
         {
           "path": "registry/command/command.tsx",
           "type": "registry:ui"
-        }
+        },
+        { "path": "lib/vertex-translation.ts", "type": "registry:lib" }
       ]
     },
     {

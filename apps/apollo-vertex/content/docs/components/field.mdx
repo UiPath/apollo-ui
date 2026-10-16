@@ -9,17 +9,17 @@ import { Textarea } from '@/registry/textarea/textarea'
 
 <Preview className="space-y-6">
   <Field>
-    <FieldLabel>Email</FieldLabel>
+    <FieldLabel htmlFor="field-email">Email</FieldLabel>
     <FieldContent>
-      <Input type="email" placeholder="Enter your email" />
+      <Input id="field-email" type="email" placeholder="Enter your email" />
       <FieldDescription>We'll never share your email.</FieldDescription>
     </FieldContent>
   </Field>
 
   <Field>
-    <FieldLabel>Bio</FieldLabel>
+    <FieldLabel htmlFor="field-bio">Bio</FieldLabel>
     <FieldContent>
-      <Textarea placeholder="Tell us about yourself" />
+      <Textarea id="field-bio" placeholder="Tell us about yourself" />
       <FieldDescription>Max 500 characters.</FieldDescription>
     </FieldContent>
   </Field>
@@ -38,9 +38,9 @@ import {
 
 ```tsx
 <Field>
-  <FieldLabel>Email</FieldLabel>
+  <FieldLabel htmlFor="email">Email</FieldLabel>
   <FieldContent>
-    <Input type="email" placeholder="Enter your email" />
+    <Input id="email" type="email" placeholder="Enter your email" />
     <FieldDescription>We'll never share your email.</FieldDescription>
   </FieldContent>
 </Field>

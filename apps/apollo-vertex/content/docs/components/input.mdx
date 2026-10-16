@@ -8,13 +8,13 @@ import { Label } from '@/registry/label/label'
 import { Button } from '@/registry/button/button'
 
 <Preview className="space-y-4">
-  <Input type="email" placeholder="Email" />
+  <Input type="email" placeholder="Email" aria-label="Email" />
   
-  <Input type="password" placeholder="Password" />
+  <Input type="password" placeholder="Password" aria-label="Password" />
   
-  <Input disabled placeholder="Disabled" />
+  <Input disabled placeholder="Disabled" aria-label="Disabled input" />
   
-  <Input type="file" />
+  <Input type="file" aria-label="Upload file" />
 </Preview>
 
 ## With Label
@@ -30,7 +30,7 @@ import { Button } from '@/registry/button/button'
 
 <Preview>
   <div className="flex w-full max-w-sm items-center space-x-2">
-    <Input type="email" placeholder="Email" />
+    <Input type="email" placeholder="Email" aria-label="Email" />
     <Button type="submit">Subscribe</Button>
   </div>
 </Preview>
@@ -42,5 +42,5 @@ import { Input } from "@uipath/apollo-vertex"
 ```
 
 ```tsx
-<Input type="email" placeholder="Email" />
+<Input type="email" placeholder="Email" aria-label="Email" />
 ```
