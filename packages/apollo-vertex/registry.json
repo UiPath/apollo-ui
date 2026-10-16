@@ -2704,7 +2704,8 @@
       "type": "registry:ui",
       "title": "Sonner",
       "description": "An opinionated toast component for React.",
-      "dependencies": ["sonner", "next-themes"],
+      "dependencies": ["sonner"],
+      "registryDependencies": ["@uipath/shell"],
       "cssVars": {
         "theme": {
           "color-info": "var(--info)",
