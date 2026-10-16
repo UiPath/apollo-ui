@@ -121,6 +121,25 @@ describe("navItemState", () => {
     });
   });
 
+  it("keeps the parent color when a child is outside the parent prefix", () => {
+    expect(
+      navItemState("/invoices", {
+        path: "/work",
+        childPaths: ["/invoices"],
+      }),
+    ).toEqual({
+      href: "/work",
+      prefixActive: true,
+      current: false,
+    });
+    expect(
+      navItemState("/invoices/abc", {
+        path: "/work",
+        childPaths: ["/invoices"],
+      }),
+    ).toMatchObject({ prefixActive: true, current: false });
+  });
+
   it("uses path as the link when the group has no default child", () => {
     expect(
       navItemState("/invoices", {

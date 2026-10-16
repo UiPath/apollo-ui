@@ -4,8 +4,7 @@ export function navPathIsActive(pathname: string, path: string): boolean {
 }
 
 // A parent is the current page only while none of its children is.
-// Collapsed mode uses the same rule: the parent keeps the prefix color,
-// and the current pill stays with the child even while that row is hidden.
+// The pill uses this even when the sidebar is collapsed.
 export function navItemIsCurrent(
   pathname: string,
   path: string,
@@ -36,9 +35,12 @@ export function navItemState(
   item: { path: string; to?: string; childPaths?: readonly string[] },
 ): { href: string; prefixActive: boolean; current: boolean } {
   const childPaths = item.childPaths ?? [];
+  const childActive = childPaths.some((childPath) =>
+    navPathIsActive(pathname, childPath),
+  );
   return {
     href: item.to ?? item.path,
-    prefixActive: navPathIsActive(pathname, item.path),
+    prefixActive: navPathIsActive(pathname, item.path) || childActive,
     current: navItemIsCurrent(pathname, item.path, childPaths),
   };
 }
