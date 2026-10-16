@@ -1,9 +1,9 @@
 import { styled } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
+import type { TitledChatHistoryGroup } from '@uipath/apollo-react/chat/headless/hooks/use-chat-history';
 import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
 import { ApTypography } from '@uipath/apollo-react/material/components/ap-typography';
 import React from 'react';
-import type { ChatHistoryGroup } from './chat-history';
 import { AutopilotChatHistoryItem } from './chat-history-item';
 
 const GroupContainer = styled('div')<{ compactMode: boolean }>(({ compactMode }) => ({
@@ -18,7 +18,7 @@ const GroupTitle = styled('h2')(() => ({
 }));
 
 interface AutopilotChatHistoryGroupProps {
-  group: ChatHistoryGroup;
+  group: TitledChatHistoryGroup;
   isHistoryOpen: boolean;
 }
 

@@ -11,6 +11,7 @@ import {
   type AutopilotChatConfiguration,
   AutopilotChatEvent,
   type AutopilotChatFileInfo,
+  type AutopilotChatHistorySearchPayload,
   type AutopilotChatMessage,
   type AutopilotChatRenderer,
   type AutopilotChatService,
@@ -30,12 +31,15 @@ import {
   RESOURCE_TOKEN_MESSAGE,
   RESPONSE_ACTIONS,
   SAMPLE_CONVERSATION,
+  STORY_HISTORY_PAGE_SIZE,
   STREAMED_CITATION_CHUNKS,
   STREAMED_MARKDOWN,
   STREAMING_REPLY,
   type StoryToolCallDisplayMode,
   storyEscalationSpan,
   storyFailedToolCallMeta,
+  storyHistoryArchive,
+  storyHistoryBuckets,
   storyHistoryPage,
   storyInputsAndOutputsMeta,
   storyToolCallMeta,
@@ -228,6 +232,77 @@ export const CHAT_STORY_SCENARIOS = {
       context.onCleanup(() => {
         unsubscribe();
         patchConfigInPlace(service, { paginatedMessages: false });
+      });
+    },
+  },
+  history: {
+    label: 'Chat history',
+    description:
+      'Loads conversations in every date bucket (setHistory) and opens the history (toggleHistory). Search filters the names as you type. Opening a conversation loads a transcript after 400 ms; rename (turn disableRenameChat off) and delete update the list, as a host does on RenameConversation and DeleteConversation. With preHooks on, rename and delete ask first.',
+    run: (context) => {
+      const { service } = context;
+      service.setHistory(storyHistoryBuckets());
+      service.toggleHistory(true);
+      context.onCleanup(() => service.toggleHistory(false));
+    },
+  },
+  'history-paginated': {
+    label: 'Paginated chat history',
+    description: `Turns paginatedHistory on, loads the first ${STORY_HISTORY_PAGE_SIZE} of 40 conversations and opens the history. Scrolling to the end publishes HistoryLoadMore, answered after 600 ms with the next page (appendOlderHistoryItems, done on the last one). Typing publishes HistorySearch after a pause, answered after 600 ms with the first page of matches (setHistory). Changing scenario restores the default history.`,
+    run: (context) => {
+      const { service } = context;
+      const archive = storyHistoryArchive();
+      let query = '';
+      let loaded = STORY_HISTORY_PAGE_SIZE;
+      const matches = () =>
+        archive.filter((item) => item.name.toLowerCase().includes(query.toLowerCase()));
+
+      patchConfigInPlace(service, { paginatedHistory: true });
+      service.setHistory(archive.slice(0, STORY_HISTORY_PAGE_SIZE), false);
+      const unsubscribeLoadMore = service.on(AutopilotChatEvent.HistoryLoadMore, () =>
+        context.schedule(() => {
+          const all = matches();
+          const page = all.slice(loaded, loaded + STORY_HISTORY_PAGE_SIZE);
+          loaded += STORY_HISTORY_PAGE_SIZE;
+          service.appendOlderHistoryItems(page, loaded >= all.length);
+        }, 600)
+      );
+      const unsubscribeSearch = service.on(
+        AutopilotChatEvent.HistorySearch,
+        ({ searchText }: AutopilotChatHistorySearchPayload) => {
+          query = searchText;
+          loaded = STORY_HISTORY_PAGE_SIZE;
+          context.schedule(() => {
+            const all = matches();
+            service.setHistory(
+              all.slice(0, STORY_HISTORY_PAGE_SIZE),
+              STORY_HISTORY_PAGE_SIZE >= all.length
+            );
+          }, 600);
+        }
+      );
+      service.toggleHistory(true);
+      context.onCleanup(() => {
+        unsubscribeLoadMore();
+        unsubscribeSearch();
+        service.toggleHistory(false);
+        patchConfigInPlace(service, { paginatedHistory: false });
+        service.setHistory(storyHistoryBuckets());
+      });
+    },
+  },
+  settings: {
+    label: 'Settings',
+    description:
+      "Enables settings (they are disabled by default, as in the service) and opens them (toggleSettings). The playground's settingsRenderer mounts a React root into the container, as CAS does: the container is emptied on close and handed to the renderer again on each opening, which the page counts. Changing scenario closes them and restores disableSettings.",
+    run: (context) => {
+      const { service } = context;
+      const disabled = service.getConfig().disabledFeatures?.settings;
+      service.setDisabledFeatures({ settings: false });
+      service.toggleSettings(true);
+      context.onCleanup(() => {
+        service.toggleSettings(false);
+        service.setDisabledFeatures({ settings: disabled });
       });
     },
   },

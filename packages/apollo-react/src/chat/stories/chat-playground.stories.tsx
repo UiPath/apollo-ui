@@ -116,7 +116,8 @@ const meta = {
     },
     preHooks: {
       control: 'boolean',
-      description: 'Every pre-hook asks for confirmation before the action runs.',
+      description:
+        'Every pre-hook asks for confirmation in a dialog of the host page before the action runs.',
       table: { category: 'Configuration' },
     },
     disableClose: {

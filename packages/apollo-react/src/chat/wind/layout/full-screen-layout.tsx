@@ -1,12 +1,14 @@
-import type React from 'react';
+import React from 'react';
 
 import type { ChatLayout } from '../../headless/layout/chat-layout';
 import { useChatState } from '../../headless/providers/chat-state-provider';
 import { CHAT_DRAWER_WIDTH_FULL_SCREEN, CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH } from '../../service';
 import { FirstRun, useFirstRunShown } from '../first-run/first-run';
 import { WindChatHeader } from '../header/chat-header';
+import { ChatHistory } from '../history/chat-history';
 import { MessageList } from '../messages/message-list';
-import { ComposerRegion, HistoryRegion, SettingsRegion } from './regions';
+import { ChatSettings, useSettingsClose } from '../settings/chat-settings';
+import { ComposerRegion } from './regions';
 
 const sizes = {
   '--chat-column-max-width': CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,
@@ -14,17 +16,23 @@ const sizes = {
 } as React.CSSProperties;
 
 /**
- * Full-width header above a centered conversation column, with history and settings as drawers
- * on the right.
+ * Full-width header above a centered conversation column. The history opens as a popover and the
+ * settings slide in on the right; the column makes room for either, as Material's does.
  */
 export function FullScreenLayout({ layout }: { layout: ChatLayout }) {
-  const { historyOpen, settingsOpen } = useChatState();
   const firstRunShown = useFirstRunShown();
+  const settingsClose = useSettingsClose();
+  const { historyOpen } = useChatState();
+  const [content, setContent] = React.useState<HTMLDivElement | null>(null);
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-col" style={sizes}>
+    <div
+      className="flex h-full min-h-0 w-full flex-col"
+      style={sizes}
+      onKeyDown={settingsClose.onKeyDown}
+    >
       <WindChatHeader className="px-6" layout={layout} />
-      <div className="flex min-h-0 flex-1">
+      <div ref={setContent} className="flex min-h-0 flex-1">
         <main className="flex min-w-0 flex-1 flex-col">
           {/* Hidden rather than unmounted during the first run: it owns the transcript state. */}
           <MessageList
@@ -47,16 +55,12 @@ export function FullScreenLayout({ layout }: { layout: ChatLayout }) {
             </FirstRun>
           )}
         </main>
+        {/* The history popover's place beside the column, kept clear of the transcript. */}
         {layout.historyAvailable && historyOpen && (
-          <aside className="w-[var(--chat-drawer-width)] shrink-0 border-l border-border-de-emp p-2">
-            <HistoryRegion />
-          </aside>
+          <div aria-hidden className="w-[calc(var(--chat-drawer-width)+2rem)] shrink-0" />
         )}
-        {layout.settingsAvailable && settingsOpen && (
-          <aside className="w-[var(--chat-drawer-width)] shrink-0 border-l border-border-de-emp p-2">
-            <SettingsRegion />
-          </aside>
-        )}
+        {layout.settingsAvailable && <ChatSettings layout={layout} onClose={settingsClose.close} />}
+        {layout.historyAvailable && <ChatHistory boundary={content} mode={layout.mode} />}
       </div>
     </div>
   );
