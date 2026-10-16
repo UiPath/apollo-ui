@@ -2512,10 +2512,7 @@
       "type": "registry:hook",
       "title": "useDataTable",
       "description": "A generic data table hook that manages sorting, filtering, pagination, column visibility, and column order with localStorage persistence.",
-      "dependencies": [
-        "@tanstack/react-table@^9.2.3",
-        "@mantine/hooks@^9.0.0"
-      ],
+      "dependencies": ["@tanstack/react-table@^9.2.3", "@mantine/hooks@^9.0.0"],
       "files": [
         { "path": "lib/table-features.ts", "type": "registry:lib" },
         {

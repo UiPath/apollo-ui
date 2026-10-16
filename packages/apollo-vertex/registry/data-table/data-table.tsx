@@ -54,8 +54,8 @@ import { DataTableToolbar } from "./data-table-toolbar";
 const GLASS_CLASSES =
   "bg-white/55 border border-white/80 rounded-2xl backdrop-blur-sm shadow-[0_2px_16px_2px_rgba(0,0,0,0.05),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:bg-white/[0.055] dark:border-white/[0.03] dark:shadow-[0_2px_16px_2px_rgba(0,0,0,0.2),inset_0_1px_0_0_rgba(255,255,255,0.04)]";
 
-interface DataTableProps<TData extends RowData> {
-  columns: DataTableColumnDef<TData>[];
+interface DataTableProps<TData extends RowData, TValue = unknown> {
+  columns: DataTableColumnDef<TData, TValue>[];
   data: TData[];
   className?: string;
   isLoading?: boolean;
@@ -94,7 +94,7 @@ interface DataTableProps<TData extends RowData> {
   plain?: boolean;
 }
 
-function DataTable<TData extends RowData>({
+function DataTable<TData extends RowData, TValue = unknown>({
   columns,
   data,
   className,
@@ -128,7 +128,7 @@ function DataTable<TData extends RowData>({
   getRowClassName,
   skeletonColumnWidths,
   plain = false,
-}: DataTableProps<TData>) {
+}: DataTableProps<TData, TValue>) {
   const { t } = useVertexTranslation();
 
   const isRowSelectionEnabled = !!(rowSelection && onRowSelectionChange);
@@ -143,7 +143,8 @@ function DataTable<TData extends RowData>({
   const table = useTable({
     features: dataTableFeatures,
     data,
-    columns,
+    // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- useTable types every column value as unknown; callers still name TValue
+    columns: columns as DataTableColumnDef<TData>[],
     onSortingChange,
     onColumnFiltersChange: (updater) => {
       onColumnFiltersChange(updater);
