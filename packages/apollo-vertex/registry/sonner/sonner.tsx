@@ -7,8 +7,9 @@ import {
   OctagonXIcon,
   TriangleAlertIcon,
 } from "lucide-react";
-import { useTheme } from "next-themes";
 import { Toaster as Sonner, type ToasterProps } from "sonner";
+
+import { useTheme } from "@/registry/shell/shell-theme-provider";
 
 // Shared icon alignment: top-align icons with the first line of toast text.
 const iconAlign = "[&>[data-icon]]:!items-start [&>[data-icon]>svg]:!mt-0.5";
@@ -36,15 +37,11 @@ export const apolloToastClassNames: NonNullable<
 };
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = "system" } = useTheme();
+  const { resolvedTheme } = useTheme();
 
   return (
     <Sonner
-      theme={
-        theme === "light" || theme === "dark" || theme === "system"
-          ? theme
-          : "system"
-      }
+      theme={resolvedTheme}
       className="toaster group"
       position="top-center"
       duration={5000}
