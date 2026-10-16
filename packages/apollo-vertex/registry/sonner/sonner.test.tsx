@@ -60,6 +60,18 @@ describe("Toaster", () => {
     expect(getByTestId("sonner").dataset.theme).toBe("dark");
   });
 
+  it("defaults to system when no shell theme provider is mounted", () => {
+    const { getByTestId } = render(<Toaster />);
+
+    expect(getByTestId("sonner").dataset.theme).toBe("system");
+  });
+
+  it("honors an explicit theme without a shell theme provider", () => {
+    const { getByTestId } = render(<Toaster theme="dark" />);
+
+    expect(getByTestId("sonner").dataset.theme).toBe("dark");
+  });
+
   it("resolves a system shell theme to light or dark", () => {
     installMatchMedia(true);
     localStorage.setItem(THEME_STORAGE_KEY, "system");
