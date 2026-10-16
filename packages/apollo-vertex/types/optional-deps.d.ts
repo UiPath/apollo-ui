@@ -85,6 +85,7 @@ declare module "@uipath/proteus-client" {
     appName: string;
     featureFlags: FlagMapping<TFlag>;
     authTokenFactory: () => string;
+    apiOrigin?: string;
   }): ProteusInstance<TFlag>;
 }
 

@@ -1,5 +1,11 @@
 {
   "extends": "./tsconfig.json",
   "include": ["entries", "registry", "lib", "types"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.test.tsx"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.mock.ts"
+  ]
 }
