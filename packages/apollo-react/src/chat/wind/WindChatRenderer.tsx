@@ -8,6 +8,7 @@ import { useChatWidth } from '../headless/providers/chat-width-provider';
 import { useTheme } from '../headless/providers/theme-provider';
 import { AutopilotChatMode, CHAT_CONTAINER_ANIMATION_DURATION } from '../service';
 import { DialogContainerContext } from './common/dialog-container';
+import { WindChatDropzone } from './composer/chat-dropzone';
 import { useOpenTransition } from './hooks/use-open-transition';
 import { EmbeddedLayout } from './layout/embedded-layout';
 import { FullScreenLayout } from './layout/full-screen-layout';
@@ -97,7 +98,10 @@ export function WindChatRenderer() {
       <PortalContainerProvider container={portalContainer ? overlayNode : undefined}>
         <DialogContainerContext.Provider value={overlayNode}>
           <TooltipProvider delayDuration={300}>
-            <LayoutForMode layout={layout} />
+            {/* Panel-wide, as Material's dropzone; off where there is no composer to attach to. */}
+            <WindChatDropzone disabled={!layout.showComposer || state === 'closed'}>
+              <LayoutForMode layout={layout} />
+            </WindChatDropzone>
           </TooltipProvider>
         </DialogContainerContext.Provider>
       </PortalContainerProvider>

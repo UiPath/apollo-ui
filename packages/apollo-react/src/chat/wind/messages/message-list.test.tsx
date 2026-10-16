@@ -125,6 +125,49 @@ describe('Wind message list', () => {
     expect(withText?.querySelector('[data-slot="bubble"]')).toHaveTextContent('With text');
   });
 
+  it('caps chips at half the message, not half their row', async () => {
+    const service = createService();
+    render(<ApChat chatServiceInstance={service} />);
+
+    await act(async () => {
+      service.sendRequest({
+        content: 'One file',
+        attachments: [{ name: 'a-long-file-name.docx', type: 'application/msword', size: 1 }],
+      });
+    });
+
+    const files = document.querySelector(
+      '[data-slot="wind-chat-message-attachments"]'
+    ) as HTMLElement;
+    const chip = files.querySelector('[data-slot="attachment"]') as HTMLElement;
+    // `cqw` resolves against the message content, which is full width whatever the row's size,
+    // so a lone chip in an end-aligned row keeps its width; two chips and the 8px gap fill it.
+    expect(chip).toHaveClass('max-w-[calc(50cqw-4px)]');
+    expect(files).toHaveClass('gap-2');
+    expect(files.closest('[data-slot="message-content"]')).toHaveClass('@container');
+  });
+
+  it("end-aligns a user message's files, not a reply's", async () => {
+    const service = createService();
+    render(<ApChat chatServiceInstance={service} />);
+    const files = [
+      { name: 'one.docx', type: 'application/msword', size: 1 },
+      { name: 'two.docx', type: 'application/msword', size: 2 },
+    ];
+
+    await act(async () => {
+      service.sendRequest({ content: 'Mine', attachments: files });
+    });
+    act(() => service.sendResponse(reply({ content: 'Theirs', attachments: files })));
+
+    const [mine, theirs] = Array.from(
+      document.querySelectorAll<HTMLElement>('[data-slot="wind-chat-message-attachments"]')
+    );
+    // `safe`: end-justified while the chips fit, from the start once they overflow.
+    expect(mine).toHaveClass('justify-end-safe');
+    expect(theirs).not.toHaveClass('justify-end-safe');
+  });
+
   it('follows a streamed reply in the built-in text renderer', () => {
     const service = createService();
     render(<ApChat chatServiceInstance={service} />);

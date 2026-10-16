@@ -61,11 +61,19 @@ function ChatMessageComponent({
       data-role={message.role}
       className="text-foreground"
     >
-      <MessageContent className={cn('gap-0', injected && 'w-full')}>
+      <MessageContent
+        // A container, so attachment chips are capped against the message's width.
+        className={cn('@container gap-0', injected && 'w-full')}
+      >
         {hasAttachments && message.attachments && (
-          // `messageGroupGap` between a message's parts, as in Material.
-          <div className="mb-[var(--chat-message-group-gap)]">
-            <MessageAttachments attachments={message.attachments} />
+          // `messageGroupGap` between a message's parts, as in Material. `max-w-full`: a user
+          // message aligns its parts to the end, which sizes them to their content, so without a
+          // cap the row grows past the panel instead of scrolling.
+          <div className="mb-[var(--chat-message-group-gap)] max-w-full">
+            <MessageAttachments
+              attachments={message.attachments}
+              align={isUser ? 'end' : 'start'}
+            />
           </div>
         )}
         {injected ? (

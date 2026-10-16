@@ -322,7 +322,8 @@ export const CHAT_STORY_SCENARIOS = {
   },
   attachments: {
     label: 'Attachments',
-    description: 'Appends a user turn with two attached files and a reply.',
+    description:
+      'Appends a user turn with two attached files and a reply, then puts a draft with an attachment in the composer (setPrompt). Attach more with the button, by dropping files on the panel or by pasting them; the default limits allow common document and image types up to the configured size and count. Clear chat or a scenario change clears the draft text, but not the attachment chip: the service has no call that removes a draft attachment, so remove it with its button.',
     run: (context) => {
       context.sendScriptedRequest({
         content: "Here's the invoice batch for this week. Which ones are ready?",
@@ -335,6 +336,15 @@ export const CHAT_STORY_SCENARIOS = {
           }),
         context.delayMs
       );
+      context.schedule(
+        () =>
+          context.service.setPrompt({
+            content: 'Which vendors are in this file?',
+            attachments: STORY_ATTACHMENTS.slice(1),
+          }),
+        context.delayMs * 2
+      );
+      context.onCleanup(() => context.service.setPrompt(''));
     },
   },
   actions: {
@@ -381,7 +391,8 @@ export const CHAT_STORY_SCENARIOS = {
   },
   error: {
     label: 'Error',
-    description: 'Shows a chat error (markdown supported) until the scenario changes.',
+    description:
+      'Shows a chat error (markdown supported) above the composer until it is dismissed or the scenario changes.',
     run: (context) => {
       context.service.setError('An error occurred. **Please try again.**');
       context.onCleanup(() => context.service.clearError());
@@ -389,7 +400,8 @@ export const CHAT_STORY_SCENARIOS = {
   },
   warning: {
     label: 'Warning',
-    description: 'Shows a chat warning until the scenario changes.',
+    description:
+      'Shows a chat warning above the composer until it is dismissed or the scenario changes.',
     run: (context) => {
       context.service.setError('This is a warning message.', 'warn');
       context.onCleanup(() => context.service.clearError());

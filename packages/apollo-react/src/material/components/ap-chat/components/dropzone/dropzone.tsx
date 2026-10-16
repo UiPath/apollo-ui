@@ -2,11 +2,11 @@ import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { styled } from '@mui/material/styles';
 import token, { FontVariantToken } from '@uipath/apollo-core';
-import { useAttachments } from '@uipath/apollo-react/chat/headless/providers/attachments-provider';
+import {
+  type ChatAttachmentRejectionReason,
+  useAttachmentIntake,
+} from '@uipath/apollo-react/chat/headless/hooks/use-attachment-intake';
 import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
-import { useError } from '@uipath/apollo-react/chat/headless/providers/error-provider';
-import { parseFiles } from '@uipath/apollo-react/chat/headless/utils/file-reader';
-import type { AutopilotChatFileInfo } from '@uipath/apollo-react/chat/service';
 import { ApTypography } from '@uipath/apollo-react/material/components/ap-typography';
 import React from 'react';
 import { type DropzoneOptions, ErrorCode, type FileRejection, useDropzone } from 'react-dropzone';
@@ -46,129 +46,38 @@ const DropzoneOverlay = styled('div')(() => ({
   boxSizing: 'border-box',
 }));
 
+/** react-dropzone's error codes as the shared intake's rejection reasons. */
+export function rejectionReason(code: string | undefined): ChatAttachmentRejectionReason {
+  switch (code) {
+    case ErrorCode.FileTooLarge:
+      return 'size';
+    case ErrorCode.FileInvalidType:
+      return 'type';
+    case ErrorCode.TooManyFiles:
+      return 'count';
+    default:
+      return 'other';
+  }
+}
+
 function AutopilotChatDropzoneComponent({
   children,
   ...dropzoneOptions
 }: AutopilotChatDropzoneProps) {
   const { _ } = useLingui();
-  const { addAttachments, attachments } = useAttachments();
-  const { setError } = useError();
   const { disabledFeatures, allowedAttachments } = useChatState();
-
-  const attachmentsCountRef = React.useRef(attachments.length);
-  attachmentsCountRef.current = attachments.length;
-
-  const handleRejections = React.useCallback(
-    (parsedFiles: AutopilotChatFileInfo[], fileRejections: FileRejection[]) => {
-      if (
-        !allowedAttachments.multiple &&
-        (parsedFiles.length > 1 || attachmentsCountRef.current > 0 || fileRejections.length > 1)
-      ) {
-        setError(
-          _(
-            msg({
-              id: 'autopilot-chat.error.multiple-files',
-              message: `Only one file can be attached at a time`,
-            })
-          )
-        );
-
-        return true;
-      }
-
-      if (fileRejections.length > 0) {
-        const tooManyFilesRejection = fileRejections.find(
-          (rejection) => rejection.errors[0]?.code === ErrorCode.TooManyFiles
-        );
-
-        if (tooManyFilesRejection) {
-          const maxCount = allowedAttachments.maxCount;
-          setError(
-            _(
-              msg({
-                id: 'autopilot-chat.error.too-many-files',
-                message: `Maximum ${maxCount} files allowed`,
-              })
-            )
-          );
-
-          return true;
-        }
-
-        const errorMessages: string[] = [];
-
-        for (const { errors, file } of fileRejections) {
-          const errorCode = errors[0]?.code;
-
-          if (errorCode === ErrorCode.FileTooLarge) {
-            const fileSizeMB = Math.round(file.size / 1024 / 1024);
-            const fileName = file.name;
-            const maxSize = allowedAttachments.maxSize / 1024 / 1024;
-
-            errorMessages.push(
-              _(
-                msg({
-                  id: 'autopilot-chat.error.file-too-large',
-                  message: `${fileName} (${fileSizeMB}MB) exceeds maximum size of ${maxSize}MB`,
-                })
-              )
-            );
-          }
-
-          if (errorCode === ErrorCode.FileInvalidType) {
-            const fileName = file.name;
-            errorMessages.push(
-              _(
-                msg({
-                  id: 'autopilot-chat.error.file-invalid-type',
-                  message: `${fileName} has an invalid file type`,
-                })
-              )
-            );
-          }
-        }
-
-        if (errorMessages.length > 0) {
-          setError(errorMessages.join('\n'));
-        }
-      }
-
-      return false;
-    },
-    [
-      _,
-      setError,
-      allowedAttachments.maxCount,
-      allowedAttachments.maxSize,
-      allowedAttachments.multiple,
-    ]
-  );
+  const takeFiles = useAttachmentIntake();
 
   const handleDrop = React.useCallback(
-    async (files: File[], fileRejections: FileRejection[]) => {
-      try {
-        const parsedFiles = await parseFiles(files);
-        const shouldReturn = handleRejections(parsedFiles, fileRejections);
-
-        if (shouldReturn) {
-          return;
-        }
-
-        if (fileRejections.length === 0) {
-          setError(undefined);
-        }
-
-        if (allowedAttachments.multiple) {
-          addAttachments(parsedFiles);
-        } else if (parsedFiles.length === 1) {
-          addAttachments([parsedFiles[0]!]);
-        }
-      } catch (error) {
-        setError(error as string);
-        return;
-      }
-    },
-    [addAttachments, setError, allowedAttachments.multiple, handleRejections]
+    (files: File[], fileRejections: FileRejection[]) =>
+      takeFiles(
+        files,
+        fileRejections.map(({ file, errors }) => ({
+          file,
+          reason: rejectionReason(errors[0]?.code),
+        }))
+      ),
+    [takeFiles]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
