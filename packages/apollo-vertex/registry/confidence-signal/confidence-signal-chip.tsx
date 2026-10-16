@@ -31,7 +31,8 @@ function ConfidenceSignalChip({
   return (
     <button
       className={cn(
-        "inline-flex items-center gap-1.5 text-xs font-semibold focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
+        "relative inline-flex items-center gap-1.5 text-xs font-semibold focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
+        "after:absolute after:top-1/2 after:left-1/2 after:size-full after:min-h-6 after:min-w-6 after:-translate-x-1/2 after:-translate-y-1/2",
         LEVEL_CONFIG[level].textClass,
         interactive && "cursor-pointer",
         className,
