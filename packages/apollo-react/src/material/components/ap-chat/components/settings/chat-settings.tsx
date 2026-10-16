@@ -39,6 +39,10 @@ const ChatSettingsContainer = styled('div')<{ isOpen: boolean; isFullScreen: boo
       outline: 'none',
       flex: 1,
       overflowY: 'auto',
+      // The panel keeps its header on one line while its width animates; the host's content
+      // wraps, or a long line scrolls the panel sideways.
+      overflowX: 'hidden',
+      whiteSpace: 'normal',
       marginRight: `calc(-${token.Spacing.SpacingBase})`,
       paddingRight: token.Spacing.SpacingBase,
     },
