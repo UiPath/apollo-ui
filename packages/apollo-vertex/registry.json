@@ -884,7 +884,7 @@
       "type": "registry:ui",
       "title": "Line Chart",
       "description": "A time-series line chart over a datetime dimension.",
-      "dependencies": ["@tanstack/react-query@^5.90.0", "recharts@2.15.4"],
+      "dependencies": ["@tanstack/react-query@^5.90.0", "recharts@3.8.0"],
       "registryDependencies": [
         "@uipath/card",
         "@uipath/charts-core",
@@ -914,7 +914,7 @@
       "type": "registry:ui",
       "title": "Multi-Line Chart",
       "description": "Two metrics on a shared datetime axis with independent Y axes.",
-      "dependencies": ["@tanstack/react-query@^5.90.0", "recharts@2.15.4"],
+      "dependencies": ["@tanstack/react-query@^5.90.0", "recharts@3.8.0"],
       "registryDependencies": [
         "@uipath/card",
         "@uipath/chart",
@@ -944,7 +944,7 @@
       "type": "registry:ui",
       "title": "Bar Chart",
       "description": "A metric broken down by a categorical dimension.",
-      "dependencies": ["@tanstack/react-query@^5.90.0", "recharts@2.15.4"],
+      "dependencies": ["@tanstack/react-query@^5.90.0", "recharts@3.8.0"],
       "registryDependencies": [
         "@uipath/card",
         "@uipath/charts-core",
@@ -999,7 +999,7 @@
       "type": "registry:ui",
       "title": "Distribution Chart",
       "description": "A histogram over a numeric or datetime dimension.",
-      "dependencies": ["@tanstack/react-query@^5.90.0", "recharts@2.15.4"],
+      "dependencies": ["@tanstack/react-query@^5.90.0", "recharts@3.8.0"],
       "registryDependencies": [
         "@uipath/card",
         "@uipath/charts-core",
@@ -3098,7 +3098,7 @@
         "@uipath/vs-core@^4.4.0",
         "@uipath/uipath-typescript@^1.7.1",
         "react-i18next",
-        "recharts@2.15.4",
+        "recharts@3.8.0",
         "sonner",
         "lucide-react",
         "zod"
