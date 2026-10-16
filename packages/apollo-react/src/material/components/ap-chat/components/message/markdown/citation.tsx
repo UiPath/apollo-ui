@@ -2,44 +2,17 @@ import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { Box } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
-import { useChatService } from '@uipath/apollo-react/chat/headless/providers/chat-service.provider';
-import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
+import { useOpenCitation } from '@uipath/apollo-react/chat/headless/hooks/use-citations';
+import { highlightCitedRange } from '@uipath/apollo-react/chat/headless/markdown/citation-highlight';
 import {
-  AutopilotChatPreHookAction,
-  CHAT_CITATION_START,
-  type PdfCitation,
-  type UrlCitation,
-} from '@uipath/apollo-react/chat/service';
+  citationFromMarker,
+  getCitationUrl,
+} from '@uipath/apollo-react/chat/headless/markdown/citations';
+import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
 import { ApIcon } from '@uipath/apollo-react/material/components/ap-icon';
 import { ApTypography } from '@uipath/apollo-react/material/components/ap-typography';
 import React from 'react';
 import { AutopilotChatTooltip } from '../../common/tooltip';
-
-// Helpers for additive range highlighting
-const getNearestStartMarker = (
-  id: number,
-  container: Element,
-  endEl: Element
-): HTMLElement | null => {
-  const candidates = Array.from(
-    container.querySelectorAll(`.${CHAT_CITATION_START}[data-citation-ids~="${id}"]`)
-  ) as HTMLElement[];
-  if (candidates.length === 0) {
-    return null;
-  }
-  let nearest: HTMLElement | null = null;
-  for (const marker of candidates) {
-    const rel = marker.compareDocumentPosition(endEl);
-    const isBefore =
-      !!(rel & Node.DOCUMENT_POSITION_FOLLOWING) || !!(rel & Node.DOCUMENT_POSITION_CONTAINS);
-    if (isBefore) {
-      nearest = marker;
-    }
-  }
-  return nearest;
-};
-
-type HighlightState = { highlightedElements: HTMLElement[]; wrappedTextSpans: HTMLElement[] };
 
 interface CitationProps {
   id: number;
@@ -50,144 +23,47 @@ interface CitationProps {
   messageId: string;
 }
 
-const highlightRange = (
-  startMarker: HTMLElement,
-  endEl: HTMLElement,
-  container: Element,
-  color: string
-): HighlightState => {
-  const highlightedElements: HTMLElement[] = [];
-  const wrappedTextSpans: HTMLElement[] = [];
-
-  const walker = document.createTreeWalker(
-    container,
-    NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT
-  );
-  // Position walker just before start marker: iterate until startMarker found
-  while (walker.nextNode()) {
-    if (walker.currentNode === startMarker) {
-      break;
-    }
-  }
-
-  // Now advance and highlight until we reach endEl
-  while (walker.nextNode()) {
-    const node = walker.currentNode;
-    if (node === endEl) {
-      break;
-    }
-    if (node.nodeType === Node.ELEMENT_NODE) {
-      const el = node as HTMLElement;
-      if (el === startMarker) {
-        continue;
-      }
-      // Do not highlight our citation superscripts or anything inside them
-      if (el.closest('[data-citation-sup="true"]')) {
-        continue;
-      }
-      el.style.transition = 'background-color 0.2s';
-      el.style.backgroundColor = color;
-      highlightedElements.push(el);
-    } else if (node.nodeType === Node.TEXT_NODE) {
-      const text = node as Text;
-      if (
-        text.textContent &&
-        text.textContent.trim().length > 0 &&
-        text.parentElement &&
-        // Skip text that lives inside citation superscripts
-        !text.parentElement.closest('[data-citation-sup="true"]')
-      ) {
-        const span = document.createElement('span');
-        span.style.backgroundColor = color;
-        text.parentElement.insertBefore(span, text);
-        span.appendChild(text);
-        wrappedTextSpans.push(span);
-      }
-    }
-  }
-
-  return {
-    highlightedElements,
-    wrappedTextSpans,
-  };
-};
-
-const clearHighlightRange = (state?: HighlightState) => {
-  if (!state) {
-    return;
-  }
-  state.highlightedElements.forEach((el) => {
-    el.style.backgroundColor = '';
-    el.style.transition = '';
-  });
-  state.wrappedTextSpans.forEach((span) => {
-    const parent = span.parentNode;
-    while (span.firstChild) {
-      parent?.insertBefore(span.firstChild, span);
-    }
-    parent?.removeChild(span);
-  });
-};
-
 export const Citation = React.memo(
   ({ id, title, url, page_number, download_url, messageId }: CitationProps) => {
     const { _ } = useLingui();
     const pageText = page_number
       ? ` (${_(msg({ id: 'autopilot-chat.message.page-number', message: `Page ${page_number}` }))})`
       : '';
-    const chatService = useChatService();
     const { spacing } = useChatState();
+    const openCitation = useOpenCitation();
     const ref = React.useRef<HTMLDivElement>(null);
     const [open, setOpen] = React.useState(false);
-    const highlightStateRef = React.useRef<HighlightState | undefined>(undefined);
-    const finalUrl = url || `${download_url}${page_number ? `#page=${page_number}` : ''}`;
+    const clearHighlightRef = React.useRef<(() => void) | undefined>(undefined);
+    // What a click will open, so the cursor only promises what happens.
+    const finalUrl = getCitationUrl(
+      citationFromMarker({ id, title, url, download_url, page_number, messageId })
+    );
 
     const handleOpen = React.useCallback(() => {
       setOpen(true);
 
       if (id && ref.current) {
         const container = ref.current.closest(`[id="${messageId}"]`)!;
-        const startMarker = getNearestStartMarker(id, container, ref.current);
-        if (startMarker) {
-          highlightStateRef.current = highlightRange(
-            startMarker,
-            ref.current,
-            container,
-            'var(--color-background-highlight)'
-          );
-        }
+        clearHighlightRef.current = highlightCitedRange(
+          id,
+          ref.current,
+          container,
+          'var(--color-background-highlight)'
+        );
       }
     }, [id, messageId]);
 
     const handleClose = React.useCallback(() => {
       setOpen(false);
-      clearHighlightRange(highlightStateRef.current);
-      highlightStateRef.current = undefined;
+      clearHighlightRef.current?.();
+      clearHighlightRef.current = undefined;
     }, []);
 
-    const handleClick = React.useCallback(() => {
-      if (!chatService) {
-        return;
-      }
-
-      const source: UrlCitation | PdfCitation = url
-        ? { id, title, url }
-        : {
-            id,
-            title,
-            download_url: download_url!,
-            page_number: page_number!,
-          };
-
-      chatService
-        .getPreHook(AutopilotChatPreHookAction.CitationClick)({ citation: source })
-        .then((proceed) => {
-          if (!proceed || !finalUrl) {
-            return;
-          }
-          window.open(finalUrl, '_blank', 'noopener,noreferrer');
-        });
-    }, [chatService, id, title, url, download_url, page_number, finalUrl]);
+    const handleClick = React.useCallback(
+      () =>
+        openCitation(citationFromMarker({ id, title, url, download_url, page_number, messageId })),
+      [openCitation, id, title, url, download_url, page_number, messageId]
+    );
 
     const handleKeyDown = React.useCallback(
       (event: React.KeyboardEvent) => {

@@ -124,7 +124,7 @@ const WidgetContainer = React.memo(
         {isLastInGroup && (
           <>
             {message.role === AutopilotChatRole.Assistant && (
-              <AutopilotChatSources groupId={message.groupId ?? ''} message={message} />
+              <AutopilotChatSources message={message} />
             )}
             <AutopilotChatMessageActions message={message} containerElement={containerRef} />
           </>
@@ -169,7 +169,7 @@ function AutopilotChatMessageContentComponent({
         {isLastInGroup && (
           <>
             {message.role === AutopilotChatRole.Assistant && (
-              <AutopilotChatSources groupId={message.groupId ?? ''} message={message} />
+              <AutopilotChatSources message={message} />
             )}
             {!disableActions && (
               <AutopilotChatMessageActions message={message} containerElement={containerRef} />

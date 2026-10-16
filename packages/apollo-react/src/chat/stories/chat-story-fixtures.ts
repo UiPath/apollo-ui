@@ -399,9 +399,53 @@ $$
 
 ---
 
+- [x] A finished task
+- [ ] An open task
+
+| Step | Owner | Notes |
+| --- | --- | --- |
+| Extract | Robot | Reads the invoice<br>and the vendor record |
+| Approve | Finance | Over $5,000 needs a manager, and a single dollar sign stays literal |
+
+> A quote with a nested list:
+> - first
+> - second
+
 Footnote reference[^1].
 
 [^1]: The footnote text.`;
+
+/** Replies the markdown scenario streams, so incomplete markdown is seen mid-stream. */
+export const STREAMED_MARKDOWN = `### Streamed summary
+
+1. **Open** the queue and check the _oldest_ item.
+2. Retry it with \`Invoke Workflow\`.
+
+| Queue | Pending |
+| --- | --- |
+| Invoices | 12 |
+
+\`\`\`json
+{ "queue": "Invoices", "retry": true }
+\`\`\`
+
+Done.`;
+
+/** Several languages, inline code and a plain block, for code block chrome. */
+export const CODE_LANGUAGES_MESSAGE = `Inline \`code\` sits in the sentence. A few blocks:
+
+\`\`\`python
+def retry(item, attempts=3):
+    return any(run(item) for _ in range(attempts))
+\`\`\`
+
+\`\`\`bash
+uip robot start --queue Invoices
+\`\`\`
+
+\`\`\`
+A block with no language.
+\`\`\``;
 
 export const RESPONSE_ACTIONS: AutopilotChatMessageAction[] = [
   {
@@ -449,6 +493,45 @@ export const CITATION_RESPONSE = {
     {
       text: 'See references below for more information.',
       citations: [{ id: 2, title: 'Atmospheric Science', url: 'https://example.com/atmosphere' }],
+    },
+  ],
+} satisfies Partial<AutopilotChatMessage>;
+
+/** PDF and URL sources, more than fit the collapsed list, and a range spanning formatting. */
+export const PDF_CITATION_RESPONSE = {
+  widget: 'default',
+  contentParts: [
+    { text: 'Invoices over $5,000 need ' },
+    {
+      text: 'a **finance manager** to approve them',
+      citations: [
+        {
+          id: 1,
+          title: 'Approval Policy',
+          download_url: 'https://ontheline.trincoll.edu/images/bookdown/sample-local-pdf.pdf',
+          page_number: 4,
+        },
+      ],
+    },
+    { text: ', and ' },
+    {
+      text: 'every approval is logged with a reason',
+      citations: [
+        { id: 2, title: 'Audit Requirements', url: 'https://example.com/audit' },
+        { id: 3, title: 'Finance Handbook', url: 'https://example.com/handbook' },
+      ],
+    },
+    { text: '. ' },
+    {
+      text: 'Rejected invoices go back to the vendor.',
+      citations: [
+        {
+          id: 4,
+          title: 'Vendor Guide',
+          download_url: 'https://ontheline.trincoll.edu/images/bookdown/sample-local-pdf.pdf',
+          page_number: 9,
+        },
+      ],
     },
   ],
 } satisfies Partial<AutopilotChatMessage>;
@@ -546,6 +629,31 @@ export const STREAMED_CITATION_CHUNKS: ContentPartChunk[] = [
 ];
 
 export const RESOURCE_TOKEN_MESSAGE = `I will update [[resource-token:{"id":"var-email","type":"variable","icon":"mail","displayName":"email"}]] and [[resource-token:{"id":"var-long","type":"variable","icon":"data_object","displayName":"this_is_a_very_long_variable_name_that_should_test_truncation"}]] in the system, then notify [[resource-token:{"id":"var-username","type":"variable","icon":"person","displayName":"username"}]] when complete.`;
+
+/** Tokens inside a list, for chips in block content. */
+export const RESOURCE_TOKEN_LIST_MESSAGE = `Inputs for the run:
+
+- [[resource-token:{"id":"q-invoices","type":"queue","icon":"inbox","displayName":"Invoices"}]] queue
+- [[resource-token:{"id":"b-archive","type":"bucket","icon":"folder","displayName":"Archive"}]] bucket`;
+
+// Resource icons are Material Icons names; the Wind renderer takes lucide names.
+const WIND_RESOURCE_ICONS: Record<string, string> = {
+  data_object: 'braces',
+  description: 'file-text',
+  folder: 'folder',
+  inbox: 'inbox',
+  mail: 'mail',
+  person: 'user',
+};
+
+/** `text` with its resource token icons named for `renderer`. */
+export function withResourceIcons(text: string, renderer: 'wind' | 'material') {
+  return renderer === 'wind'
+    ? text.replace(/"icon":"(\w+)"/g, (match, icon: string) =>
+        WIND_RESOURCE_ICONS[icon] ? `"icon":"${WIND_RESOURCE_ICONS[icon]}"` : match
+      )
+    : text;
+}
 
 /** Streamed with `content` chunks; tokens split across chunks exercise incomplete-token buffering. */
 export const RESOURCE_TOKEN_CHUNKS = [
