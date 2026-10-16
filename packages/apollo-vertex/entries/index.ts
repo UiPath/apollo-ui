@@ -384,6 +384,9 @@ export { createConversationalAgentConnection } from "@/registry/ai-chat/adapters
 export type { ConversationalAgentAdapterConfig } from "@/registry/ai-chat/adapters/conversational-agent/adapter";
 export { AiChat } from "@/registry/ai-chat/components/ai-chat";
 export { AiChatEmptyState } from "@/registry/ai-chat/components/ai-chat-empty-state";
+export { AiChatLoading } from "@/registry/ai-chat/components/ai-chat-loading";
+export { AiChatMarkdown } from "@/registry/ai-chat/components/ai-chat-markdown";
+export { AiChatThinking } from "@/registry/ai-chat/components/ai-chat-thinking";
 export { NoDataMessage } from "@/registry/ai-chat/charts/no-data-message";
 export { AutopilotGradientIcon } from "@/registry/ai-chat/components/icons/autopilot-gradient";
 export * from "@/registry/ai-chat/tools/choices";
