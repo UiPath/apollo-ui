@@ -22,6 +22,8 @@ import {
   shellDashboardRoute,
   shellIndexRoute,
   shellInvoiceDetailRoute,
+  shellProjectsActiveRoute,
+  shellProjectsArchiveRoute,
   shellProjectsRoute,
   shellRoute,
   shellSettingsRoute,
@@ -31,6 +33,7 @@ import { rootRoute } from "./ShellRouteTree";
 
 export interface ShellTemplateProps {
   variant?: "minimal";
+  initialPath?: string;
 }
 
 const SHELL_PREVIEW_PATH_KEY = "shell-preview-path";
@@ -54,6 +57,8 @@ const routeTree = rootRoute.addChildren([
     shellDashboardRoute,
     shellInvoiceDetailRoute,
     shellProjectsRoute,
+    shellProjectsActiveRoute,
+    shellProjectsArchiveRoute,
     shellAnalyticsRoute,
     shellTeamRoute,
     shellSettingsRoute,
@@ -68,7 +73,12 @@ const routeTree = rootRoute.addChildren([
   catchAllRoute,
 ]);
 
-function getInitialEntry(storageKey: ShellPreviewPathKey, variant?: "minimal") {
+function getInitialEntry(
+  storageKey: ShellPreviewPathKey,
+  variant?: "minimal",
+  initialPath?: string,
+) {
+  if (initialPath) return initialPath;
   const stored = localStorage.getItem(storageKey);
   if (stored) return stored;
   return variant === "minimal" ? "/preview/shell-minimal" : "/preview/shell";
@@ -77,26 +87,30 @@ function getInitialEntry(storageKey: ShellPreviewPathKey, variant?: "minimal") {
 function createShellRouter(
   storageKey: ShellPreviewPathKey,
   variant?: "minimal",
+  initialPath?: string,
 ) {
   const history = createMemoryHistory({
-    initialEntries: [getInitialEntry(storageKey, variant)],
+    initialEntries: [getInitialEntry(storageKey, variant, initialPath)],
   });
   return createRouter({ routeTree, history });
 }
 
-export function ShellTemplate({ variant }: ShellTemplateProps) {
+export function ShellTemplate({ variant, initialPath }: ShellTemplateProps) {
   const storageKey =
     variant === "minimal"
       ? SHELL_MINIMAL_PREVIEW_PATH_KEY
       : SHELL_PREVIEW_PATH_KEY;
-  const [router] = useState(() => createShellRouter(storageKey, variant));
+  const [router] = useState(() =>
+    createShellRouter(storageKey, variant, initialPath),
+  );
 
   useEffect(() => {
+    if (initialPath) return;
     const unsubscribe = router.subscribe("onResolved", ({ toLocation }) => {
       localStorage.setItem(storageKey, toLocation.pathname);
     });
     return unsubscribe;
-  }, [router, storageKey]);
+  }, [router, storageKey, initialPath]);
   return (
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />

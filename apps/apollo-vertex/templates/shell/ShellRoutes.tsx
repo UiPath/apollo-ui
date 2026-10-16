@@ -39,6 +39,18 @@ export const shellProjectsRoute = createRoute({
   component: () => <PlaceholderPage title="Projects" />,
 });
 
+export const shellProjectsActiveRoute = createRoute({
+  getParentRoute: () => shellRoute,
+  path: "/projects/active",
+  component: () => <PlaceholderPage title="Active" />,
+});
+
+export const shellProjectsArchiveRoute = createRoute({
+  getParentRoute: () => shellRoute,
+  path: "/projects/archive",
+  component: () => <PlaceholderPage title="Archive" />,
+});
+
 export const shellAnalyticsRoute = createRoute({
   getParentRoute: () => shellRoute,
   path: "/analytics",

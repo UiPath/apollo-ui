@@ -6,7 +6,16 @@ import { ShellThemeProvider } from "./ShellThemeProvider";
 
 const navItems: ShellNavItem[] = [
   { path: "/preview/shell/dashboard", label: "dashboard", icon: Home },
-  { path: "/preview/shell/projects", label: "projects", icon: FolderOpen },
+  {
+    path: "/preview/shell/projects",
+    to: "/preview/shell/projects/active",
+    label: "projects",
+    icon: FolderOpen,
+    subItems: [
+      { path: "/preview/shell/projects/active", label: "active" },
+      { path: "/preview/shell/projects/archive", label: "archive" },
+    ],
+  },
   { path: "/preview/shell/analytics", label: "analytics", icon: BarChart3 },
   { path: "/preview/shell/team", label: "team", icon: Users },
   { path: "/preview/shell/settings", label: "settings", icon: Settings },
