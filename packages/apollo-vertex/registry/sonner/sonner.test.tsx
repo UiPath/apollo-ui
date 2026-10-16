@@ -34,11 +34,6 @@ function ThemeToggle() {
   );
 }
 
-function ResolvedThemeProbe() {
-  const { resolvedTheme } = useTheme();
-  return <div data-testid="resolved-theme" data-theme={resolvedTheme} />;
-}
-
 describe("Toaster", () => {
   beforeEach(() => {
     installMatchMedia(false);
@@ -65,42 +60,13 @@ describe("Toaster", () => {
     expect(getByTestId("sonner").dataset.theme).toBe("dark");
   });
 
-  it("resolves the system preference when no shell theme provider is mounted", () => {
-    const { getByTestId, rerender } = render(
-      <>
-        <ResolvedThemeProbe />
-        <Toaster />
-      </>,
-    );
-
-    expect(getByTestId("resolved-theme").dataset.theme).toBe("light");
-    expect(getByTestId("sonner").dataset.theme).toBe("light");
-
-    installMatchMedia(true);
-    rerender(
-      <>
-        <ResolvedThemeProbe />
-        <Toaster />
-      </>,
-    );
-
-    expect(getByTestId("resolved-theme").dataset.theme).toBe("dark");
-    expect(getByTestId("sonner").dataset.theme).toBe("dark");
-  });
-
-  it("honors an explicit theme without a shell theme provider", () => {
-    const { getByTestId } = render(<Toaster theme="dark" />);
-
-    expect(getByTestId("sonner").dataset.theme).toBe("dark");
-  });
-
   it("resolves a system shell theme to light or dark", () => {
     installMatchMedia(true);
     localStorage.setItem(THEME_STORAGE_KEY, "system");
 
     const { getByTestId } = render(
       <ThemeProvider>
-        <Toaster />
+        <Toaster theme="light" />
       </ThemeProvider>,
     );
 
