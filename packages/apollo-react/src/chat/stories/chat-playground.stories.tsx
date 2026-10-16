@@ -56,6 +56,8 @@ Closing a chat leaves an **Open chat** button where the host would put its launc
 Icons on custom header actions and message actions come from the consumer: the Material renderer takes Material Icons names (\`picture_as_pdf\`), the Wind renderer takes lucide names, kebab-case (\`file-text\`) or the PascalCase export name (\`FileText\`). Names Wind cannot resolve show a neutral box. The playground gives each renderer its own action set for that reason.
 
 With both renderers, every control applies to both chats, scenarios replay into both on the same timers, and a message sent from either composer is mirrored to the other. Service events from each chat appear in the Actions panel, prefixed with the renderer.
+
+The service API, the setup for each renderer, the styles a host imports and the intended differences between the renderers are documented in \`packages/apollo-react/src/chat/DOCS.md\`.
 `;
 
 /**
