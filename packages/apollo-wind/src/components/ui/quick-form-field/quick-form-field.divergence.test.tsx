@@ -12,7 +12,7 @@ import { FIELD_TYPE_META, FIELD_TYPE_ORDER } from './types';
 describe('QuickFormField — divergences from apollo-wind', () => {
   describe('added field types', () => {
     it('offers every added type in the picker, in vocabulary order', () => {
-      // The three added types.
+      // The four added types.
       expect(FIELD_TYPE_ORDER).toContain('double');
       expect(FIELD_TYPE_ORDER).toContain('datetime');
       expect(FIELD_TYPE_ORDER).toContain('array');
@@ -233,6 +233,125 @@ describe('QuickFormField — divergences from apollo-wind', () => {
       await user.click(screen.getByRole('button', { name: 'Insert variable' }));
       await user.click(screen.getByRole('option', { name: 'Item ID' }));
       expect(onValueChange).toHaveBeenLastCalledWith('hello item.id');
+    });
+  });
+
+  // The text area is the component's own control, so consumers don't supply one.
+  describe('text area', () => {
+    it('renders a fixed value as a growing text area', () => {
+      const { container } = render(
+        <QuickFormField locked={false} fieldType="textarea" onValueChange={vi.fn()} />
+      );
+      expect(screen.getByPlaceholderText('Text area value').tagName).toBe('TEXTAREA');
+      expect(container.querySelector('[role="group"]')).toHaveAttribute('data-layout', 'grow');
+    });
+
+    it('keeps an expression on the one-line input', () => {
+      const { container } = render(
+        <QuickFormField
+          locked={false}
+          fieldType="textarea"
+          mode="expression"
+          onValueChange={vi.fn()}
+        />
+      );
+      const input = screen.getByPlaceholderText('Write a text area expression');
+      expect(input.tagName).toBe('INPUT');
+      expect(input).toHaveClass('font-mono');
+      expect(container.querySelector('[role="group"]')).toHaveAttribute('data-layout', 'row');
+    });
+
+    it('takes Enter as a new line rather than a commit', async () => {
+      const user = userEvent.setup();
+      const onValueChange = vi.fn();
+      const onValueBlur = vi.fn();
+      render(
+        <QuickFormField
+          locked={false}
+          fieldType="textarea"
+          value="hi"
+          onValueChange={onValueChange}
+          onValueBlur={onValueBlur}
+        />
+      );
+      const textarea = screen.getByPlaceholderText('Text area value');
+      await user.click(textarea);
+      await user.keyboard('{Enter}');
+      expect(onValueChange).toHaveBeenLastCalledWith(expect.stringContaining('\n'));
+      expect(onValueBlur).not.toHaveBeenCalled();
+      expect(textarea).toHaveFocus();
+    });
+
+    it.each([
+      '{Control>}{Enter}{/Control}',
+      '{Meta>}{Enter}{/Meta}',
+    ])('commits on %s', async (keys) => {
+      const user = userEvent.setup();
+      const onValueBlur = vi.fn();
+      render(
+        <QuickFormField
+          locked={false}
+          fieldType="textarea"
+          value="hi"
+          onValueChange={vi.fn()}
+          onValueBlur={onValueBlur}
+        />
+      );
+      const textarea = screen.getByPlaceholderText('Text area value');
+      await user.click(textarea);
+      await user.keyboard(keys);
+      expect(onValueBlur).toHaveBeenCalledOnce();
+      expect(textarea).not.toHaveFocus();
+    });
+
+    it('reverts to the value as of focus on Escape', async () => {
+      const user = userEvent.setup();
+      const onValueChange = vi.fn();
+      render(
+        <QuickFormField
+          locked={false}
+          fieldType="textarea"
+          value={'line one\nline two'}
+          onValueChange={onValueChange}
+        />
+      );
+      await user.click(screen.getByPlaceholderText('Text area value'));
+      await user.keyboard('{Escape}');
+      expect(onValueChange).toHaveBeenLastCalledWith('line one\nline two');
+    });
+
+    it('splices an inserted variable at its caret', async () => {
+      const user = userEvent.setup();
+      const onValueChange = vi.fn();
+      render(
+        <QuickFormField
+          locked={false}
+          fieldType="textarea"
+          value={'a\nb'}
+          onValueChange={onValueChange}
+          variables={[{ label: 'Item ID', value: 'item.id' }]}
+        />
+      );
+      const textarea = screen.getByPlaceholderText('Text area value') as HTMLTextAreaElement;
+      await user.click(textarea);
+      textarea.setSelectionRange(2, 2);
+      textarea.dispatchEvent(new Event('select', { bubbles: true }));
+      await user.click(screen.getByRole('button', { name: 'Insert variable' }));
+      await user.click(screen.getByRole('option', { name: 'Item ID' }));
+      expect(onValueChange).toHaveBeenLastCalledWith('a\nitem.idb');
+    });
+
+    it("yields to the consumer's control", () => {
+      render(
+        <QuickFormField
+          locked={false}
+          fieldType="textarea"
+          onValueChange={vi.fn()}
+          renderModeControl={(mode) => <span>consumer {mode}</span>}
+        />
+      );
+      expect(screen.getByText('consumer literal')).toBeInTheDocument();
+      expect(screen.queryByPlaceholderText('Text area value')).not.toBeInTheDocument();
     });
   });
 

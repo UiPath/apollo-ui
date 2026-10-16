@@ -34,14 +34,15 @@ the form-field anatomy (\`FormField\`, \`FormFieldLabel\`, \`InputGroup\`). See
 - Right value-mode icon switches between Fixed value and Expression,
   updating the value styling. \`renderModeControl\` supplies the control for any mode, and a
   consumer's \`trailingAddon\` can offer all four. See **Variable and prompt modes**.
-- Field type dropdown swaps the control itself: String, Integer, Decimal
-  number, Date, Date and time, Boolean, Single select, Multi select, Array,
-  and File each render their own matching input. \`fieldTypes\` chooses which
+- Field type dropdown swaps the control itself: String, Text area, Integer,
+  Decimal number, Date, Date and time, Boolean, Single select, Multi select,
+  Array, and File each render their own matching input. \`fieldTypes\` chooses which
   of them the picker offers.
 - Insert variable renders \`variables\` as supplied and splices the choice at
   the caret, or appends when none is placed. \`onInsertVariable\` takes over
   what inserting means.
 - Enter commits through \`onValueBlur\`; Escape restores the value as of focus.
+  In a text area Enter is a new line, so Cmd/Ctrl+Enter commits.
 - Every user-visible string can be overridden through \`strings\`. See
   **Localized strings**.
 - Required switch toggles the shared foreground asterisk on the label. Only shown when
