@@ -11,21 +11,6 @@ import { Toaster as Sonner, type ToasterProps } from "sonner";
 
 import { useTheme } from "@/registry/shell/shell-theme-provider";
 
-const missingThemeProvider = "useTheme must be used within a ThemeProvider";
-
-function useShellResolvedTheme(): "light" | "dark" | null {
-  try {
-    // useTheme calls useContext before it throws, so this catch does not skip a hook.
-    // oxlint-disable-next-line eslint-plugin-react-hooks(rules-of-hooks)
-    return useTheme().resolvedTheme;
-  } catch (error) {
-    if (error instanceof Error && error.message === missingThemeProvider) {
-      return null;
-    }
-    throw error;
-  }
-}
-
 // Shared icon alignment: top-align icons with the first line of toast text.
 const iconAlign = "[&>[data-icon]]:!items-start [&>[data-icon]>svg]:!mt-0.5";
 
@@ -52,7 +37,7 @@ export const apolloToastClassNames: NonNullable<
 };
 
 const Toaster = ({ theme, ...props }: ToasterProps) => {
-  const resolvedTheme = useShellResolvedTheme();
+  const { resolvedTheme } = useTheme();
 
   return (
     <Sonner
