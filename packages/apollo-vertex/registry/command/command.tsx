@@ -1,6 +1,6 @@
 "use client";
 
-import { Command as CommandPrimitive } from "cmdk";
+import { Command as CommandPrimitive, useCommandState } from "cmdk";
 import { SearchIcon } from "lucide-react";
 import * as React from "react";
 import {
@@ -125,13 +125,25 @@ function CommandGroup({
   );
 }
 
+interface CommandSeparatorProps extends React.ComponentProps<"div"> {
+  alwaysRender?: boolean;
+}
+
 function CommandSeparator({
   className,
+  alwaysRender = false,
   ...props
-}: React.ComponentProps<typeof CommandPrimitive.Separator>) {
+}: CommandSeparatorProps) {
+  const isSearchEmpty = useCommandState((state) => !state.search);
+
+  if (!alwaysRender && !isSearchEmpty) {
+    return null;
+  }
+
   return (
-    <CommandPrimitive.Separator
+    <div
       data-slot="command-separator"
+      role="none"
       className={cn("bg-border -mx-1 h-px", className)}
       {...props}
     />
@@ -181,3 +193,4 @@ export {
   CommandShortcut,
   CommandSeparator,
 };
+export type { CommandSeparatorProps };
