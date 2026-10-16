@@ -175,21 +175,12 @@ export function ThemeProvider({
   );
 }
 
-function setThemeWithoutProvider(_theme: Theme) {
-  // No ThemeProvider is mounted, so there is no theme to update.
-}
-
-export const useTheme = (): ThemeProviderState => {
+export const useTheme = () => {
   const context = useContext(ThemeProviderContext);
-  const systemDark = useSystemDark();
 
-  if (context != null) {
-    return context;
+  if (context == null) {
+    throw new Error("useTheme must be used within a ThemeProvider");
   }
 
-  return {
-    theme: "system",
-    resolvedTheme: resolveSystemTheme(systemDark),
-    setTheme: setThemeWithoutProvider,
-  };
+  return context;
 };

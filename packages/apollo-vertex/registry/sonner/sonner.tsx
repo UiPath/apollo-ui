@@ -36,12 +36,12 @@ export const apolloToastClassNames: NonNullable<
     "!left-auto !right-2 !top-2 !transform-none !border-none !bg-transparent !rounded-sm",
 };
 
-const Toaster = ({ theme, ...props }: ToasterProps) => {
+const Toaster = ({ theme: _theme, ...props }: ToasterProps) => {
   const { resolvedTheme } = useTheme();
 
   return (
     <Sonner
-      theme={theme ?? resolvedTheme}
+      theme={resolvedTheme}
       className="toaster group"
       position="top-center"
       duration={5000}
