@@ -329,7 +329,7 @@ export const colorGroups: ColorGroup[] = [
         token: "success",
         label: "Success",
         description: "Success state",
-        lightValue: "oklch(0.57 0.105 152)",
+        lightValue: "oklch(0.50 0.105 152)",
         darkValue: "oklch(0.70 0.120 152)",
       },
       {
@@ -343,7 +343,7 @@ export const colorGroups: ColorGroup[] = [
         token: "info",
         label: "Info",
         description: "Informational state",
-        lightValue: "oklch(0.60 0.125 210)",
+        lightValue: "oklch(0.47 0.120 210)",
         darkValue: "oklch(0.69 0.112 207)",
       },
       {
@@ -376,7 +376,7 @@ export const colorGroups: ColorGroup[] = [
         token: "badge",
         label: "Badge",
         description: "Badge background",
-        lightValue: "oklch(0.5995 0.0199 253.42)",
+        lightValue: "oklch(0.565 0.0199 253.42)",
         darkValue: "oklch(0.7196 0.0135 255.53)",
       },
       {
