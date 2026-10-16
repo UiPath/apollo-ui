@@ -17,7 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 import { LocaleProvider } from "@/registry/shell/shell-locale-provider";
 
-const accountSchema = z.object({
+const profileSchema = z.object({
   fullName: z.string().min(2, "Enter your name."),
   email: z.email("Enter a valid email."),
 });
@@ -31,7 +31,7 @@ const reviewSchema = z.object({
 });
 
 const wizardSchema = z.object({
-  account: accountSchema,
+  profile: profileSchema,
   plan: planSchema,
   review: reviewSchema,
 });
@@ -39,7 +39,7 @@ const wizardSchema = z.object({
 type WizardValues = z.infer<typeof wizardSchema>;
 
 const defaultValues = {
-  account: { fullName: "", email: "" },
+  profile: { fullName: "", email: "" },
   plan: { tier: "free" },
   review: { acceptTerms: false },
 };
@@ -52,7 +52,7 @@ const tierOptions = [
 ];
 
 const steps: WizardStepDef<WizardValues>[] = [
-  { id: "account", title: "Account" },
+  { id: "profile", title: "Profile" },
   { id: "plan", title: "Plan" },
   { id: "review", title: "Review" },
 ];
@@ -88,14 +88,14 @@ function CustomNav() {
   );
 }
 
-const AccountStep = withForm({
+const ProfileStep = withForm({
   ...wizardOpts,
   render: function Render({ form }) {
     const { next } = useFormWizardContext();
     return (
       <form.FormGroup
-        name="account"
-        validators={{ onDynamic: accountSchema }}
+        name="profile"
+        validators={{ onDynamic: profileSchema }}
         onGroupSubmit={() => next()}
       >
         {(group) => (
@@ -107,7 +107,7 @@ const AccountStep = withForm({
             }}
           >
             <FieldGroup>
-              <form.AppField name="account.fullName">
+              <form.AppField name="profile.fullName">
                 {(field) => (
                   <field.TextField
                     label="Full name"
@@ -115,7 +115,7 @@ const AccountStep = withForm({
                   />
                 )}
               </form.AppField>
-              <form.AppField name="account.email">
+              <form.AppField name="profile.email">
                 {(field) => (
                   <field.TextField
                     type="email"
@@ -260,8 +260,8 @@ export function FormWizardHeadlessDemo() {
           )}
         </FormWizardSteps>
 
-        <FormWizardStep stepId="account">
-          <AccountStep form={wizard.form} />
+        <FormWizardStep stepId="profile">
+          <ProfileStep form={wizard.form} />
         </FormWizardStep>
         <FormWizardStep stepId="plan">
           <PlanStep form={wizard.form} />
