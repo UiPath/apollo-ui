@@ -36,9 +36,7 @@ function ThemeToggle() {
 
 function ResolvedThemeProbe() {
   const { resolvedTheme } = useTheme();
-  return (
-    <div data-testid="resolved-theme" data-theme={resolvedTheme ?? "missing"} />
-  );
+  return <div data-testid="resolved-theme" data-theme={resolvedTheme} />;
 }
 
 describe("Toaster", () => {
@@ -67,16 +65,27 @@ describe("Toaster", () => {
     expect(getByTestId("sonner").dataset.theme).toBe("dark");
   });
 
-  it("defaults to system when no shell theme provider is mounted", () => {
-    const { getByTestId } = render(
+  it("resolves the system preference when no shell theme provider is mounted", () => {
+    const { getByTestId, rerender } = render(
       <>
         <ResolvedThemeProbe />
         <Toaster />
       </>,
     );
 
-    expect(getByTestId("resolved-theme").dataset.theme).toBe("missing");
-    expect(getByTestId("sonner").dataset.theme).toBe("system");
+    expect(getByTestId("resolved-theme").dataset.theme).toBe("light");
+    expect(getByTestId("sonner").dataset.theme).toBe("light");
+
+    installMatchMedia(true);
+    rerender(
+      <>
+        <ResolvedThemeProbe />
+        <Toaster />
+      </>,
+    );
+
+    expect(getByTestId("resolved-theme").dataset.theme).toBe("dark");
+    expect(getByTestId("sonner").dataset.theme).toBe("dark");
   });
 
   it("honors an explicit theme without a shell theme provider", () => {

@@ -72,6 +72,22 @@ function isValidTheme(value: string | null): value is Theme {
   return value === "light" || value === "dark" || value === "system";
 }
 
+function useSystemDark() {
+  return useSyncExternalStore(
+    (cb) => {
+      const mq = window.matchMedia("(prefers-color-scheme: dark)");
+      mq.addEventListener("change", cb);
+      return () => mq.removeEventListener("change", cb);
+    },
+    () => window.matchMedia("(prefers-color-scheme: dark)").matches,
+    () => false,
+  );
+}
+
+function resolveSystemTheme(systemDark: boolean): "light" | "dark" {
+  return systemDark ? "dark" : "light";
+}
+
 function applyThemeClass(resolved: "light" | "dark") {
   const root = window.document.documentElement;
   root.classList.remove("light", "dark");
@@ -117,18 +133,10 @@ export function ThemeProvider({
     return isValidTheme(stored) ? stored : defaultTheme;
   });
 
-  const systemDark = useSyncExternalStore(
-    (cb) => {
-      const mq = window.matchMedia("(prefers-color-scheme: dark)");
-      mq.addEventListener("change", cb);
-      return () => mq.removeEventListener("change", cb);
-    },
-    () => window.matchMedia("(prefers-color-scheme: dark)").matches,
-    () => false,
-  );
+  const systemDark = useSystemDark();
 
   const resolvedTheme =
-    theme === "system" ? (systemDark ? "dark" : "light") : theme;
+    theme === "system" ? resolveSystemTheme(systemDark) : theme;
 
   const setTheme = (newTheme: Theme) => {
     localStorage.setItem(storageKey, newTheme);
@@ -171,16 +179,17 @@ function setThemeWithoutProvider(_theme: Theme) {
   // No ThemeProvider is mounted, so there is no theme to update.
 }
 
-export const useTheme = () => {
+export const useTheme = (): ThemeProviderState => {
   const context = useContext(ThemeProviderContext);
+  const systemDark = useSystemDark();
 
   if (context != null) {
     return context;
   }
 
   return {
-    theme: "system" as const,
-    resolvedTheme: null,
+    theme: "system",
+    resolvedTheme: resolveSystemTheme(systemDark),
     setTheme: setThemeWithoutProvider,
   };
 };

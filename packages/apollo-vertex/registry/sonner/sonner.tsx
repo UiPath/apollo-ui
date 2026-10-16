@@ -41,7 +41,7 @@ const Toaster = ({ theme, ...props }: ToasterProps) => {
 
   return (
     <Sonner
-      theme={theme ?? resolvedTheme ?? "system"}
+      theme={theme ?? resolvedTheme}
       className="toaster group"
       position="top-center"
       duration={5000}
