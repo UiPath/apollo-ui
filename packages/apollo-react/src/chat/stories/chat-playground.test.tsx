@@ -119,13 +119,13 @@ describe('ChatPlayground', () => {
 
   it('runs the scenario cleanups on Clear chat', async () => {
     const props = baseProps();
-    const { rerender } = render(<ChatPlayground {...props} scenario="loading" />);
+    const { rerender } = render(<ChatPlayground {...props} scenario="error" />);
     await flush();
     const service = slotService('primary');
-    expect(service?.getLoadingMessage()).toBe('Searching the knowledge base...');
+    expect(service?.getError()).toBeDefined();
 
     act(() => screen.getByRole('button', { name: 'Clear chat' }).click());
-    expect(service?.getLoadingMessage()).toBe('');
+    expect(service?.getError()).toBeUndefined();
 
     rerender(<ChatPlayground {...props} scenario="long-history" />);
     await flush();
@@ -139,6 +139,25 @@ describe('ChatPlayground', () => {
     });
     await act(() => new Promise((resolve) => setTimeout(resolve, 700)));
     expect(service?.getConversation()).toHaveLength(0);
+  });
+
+  it('stops the loading scenario mid-way on Clear chat, so none of its steps fire later', async () => {
+    vi.useFakeTimers();
+    try {
+      render(<ChatPlayground {...baseProps()} scenario="loading" />);
+      await act(async () => vi.advanceTimersByTime(50));
+      const service = slotService('primary');
+      const loadingMessages: string[] = [];
+      service?.on('setLoadingMessage', (message: string) => loadingMessages.push(message));
+
+      act(() => screen.getByRole('button', { name: 'Clear chat' }).click());
+      await act(async () => vi.advanceTimersByTime(10_000));
+
+      expect(loadingMessages).not.toContain('Searching the knowledge base...');
+      expect(service?.getConversation()).toHaveLength(0);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('appends a scenario to the current transcript', async () => {

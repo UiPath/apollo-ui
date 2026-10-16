@@ -2220,6 +2220,8 @@ chatService.setFirstRunExperience({
 
 The chat service allows you to set suggestions dynamically that appear in the chat interface.
 Suggestions are automatically cleared once a request is sent in the chat.
+The service does not store suggestions: a chat mounted after `setSuggestions` does not show them, so set them again once it is rendered.
+Apart from sending a request, only starting a new chat (`newChat`) clears them; replacing the conversation with `setConversation` does not.
 
 ### Setting Suggestions
 
