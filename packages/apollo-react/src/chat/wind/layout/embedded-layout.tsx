@@ -1,5 +1,6 @@
 import type { ChatLayout } from '../../headless/layout/chat-layout';
 import { useChatState } from '../../headless/providers/chat-state-provider';
+import { FirstRun, useFirstRunShown } from '../first-run/first-run';
 import { WindChatHeader } from '../header/chat-header';
 import { MessageList } from '../messages/message-list';
 import { ComposerRegion, HistoryRegion, SettingsRegion } from './regions';
@@ -10,6 +11,7 @@ import { ComposerRegion, HistoryRegion, SettingsRegion } from './regions';
  */
 export function EmbeddedLayout({ layout }: { layout: ChatLayout }) {
   const { historyOpen, settingsOpen, spacing } = useChatState();
+  const firstRunShown = useFirstRunShown();
   // Material's panel gutter (SpacingL) in both densities, so the renderers line up.
   const gutter = 'px-6';
 
@@ -18,7 +20,12 @@ export function EmbeddedLayout({ layout }: { layout: ChatLayout }) {
       {layout.showHeader && <WindChatHeader className={gutter} layout={layout} />}
       <div className="relative flex min-h-0 flex-1 flex-col">
         <div className="flex min-h-0 flex-1 flex-col">
-          <MessageList />
+          {/* Hidden rather than unmounted during the first run: it owns the transcript state. */}
+          <MessageList className={firstRunShown ? 'hidden' : undefined} />
+          {/* Docked at the bottom of the message area, above the composer, as Material's is. */}
+          {firstRunShown && (
+            <FirstRun layout="docked" className="min-h-0 overflow-y-auto px-6 pt-3 pb-6" />
+          )}
           {layout.showComposer && (
             <div className={spacing.compactMode ? 'px-6 pb-1' : 'px-6 pb-2'}>
               <ComposerRegion />

@@ -145,6 +145,21 @@ const TOOL_CALL_MODES: StoryToolCallDisplayMode[] = [
   'FullTrace',
 ];
 
+const STORY_SUGGESTIONS = [
+  { label: 'Show the overdue ones', prompt: 'Which of these invoices are overdue?' },
+  { label: 'Draft a reminder', prompt: 'Draft a payment reminder for the overdue vendors.' },
+  { label: 'Export to Excel', prompt: 'Export the invoice list to an Excel file.' },
+];
+
+function runSuggestions(context: ScenarioContext, sendOnClick: boolean) {
+  context.sendScriptedRequest({ content: 'Which invoices came in this week?' });
+  context.schedule(() => {
+    respond(context.service, { content: 'Twelve invoices came in this week, from five vendors.' });
+    context.service.setSuggestions(STORY_SUGGESTIONS, sendOnClick);
+  }, context.delayMs);
+  context.onCleanup(() => context.service.setSuggestions([]));
+}
+
 export const CHAT_STORY_SCENARIOS = {
   none: {
     label: 'None',
@@ -154,9 +169,21 @@ export const CHAT_STORY_SCENARIOS = {
   'first-run': {
     label: 'First-run experience',
     description:
-      'Starts a new chat so the first-run experience shows (turn on the firstRunExperience arg).',
+      'Starts a new chat so the first-run experience shows (the firstRunExperience arg must be on). FullScreen centers it around the composer, with the suggestions in a row under the welcome text; Embedded docks it above the composer. Picking a suggestion fills the composer. Sending a message switches to the transcript; the composer stays in place, though sending clears the draft as it always does.',
     emptyTranscript: true,
     run: () => {},
+  },
+  suggestions: {
+    label: 'Suggestions',
+    description:
+      'Appends a turn and a reply, then sets suggestions under the reply (setSuggestions without sendOnClick): picking one fills the composer. A message after them leaves them behind in Wind.',
+    run: (context) => runSuggestions(context, false),
+  },
+  'suggestions-send': {
+    label: 'Suggestions that send',
+    description:
+      'As Suggestions, with sendOnClick: picking one sends it at once. Sending any message clears them (the service clears suggestions on every request).',
+    run: (context) => runSuggestions(context, true),
   },
   conversation: {
     label: 'Short conversation',
@@ -377,16 +404,13 @@ export const CHAT_STORY_SCENARIOS = {
   loading: {
     label: 'Loading message',
     description:
-      'Appends a user turn and shows a loading message for four seconds before replying.',
+      'Appends a user turn; the thinking state rotates the default loading messages (setDefaultLoadingMessages) for four seconds, then shows a custom one (setLoadingMessage) for four more, and disappears when the streamed reply arrives.',
     run: (context) => {
       const { service } = context;
       context.sendScriptedRequest({ content: 'Take your time.' });
-      service.setLoadingMessage('Searching the knowledge base...');
+      context.schedule(() => service.setLoadingMessage('Searching the knowledge base...'), 4000);
       context.onCleanup(() => service.setLoadingMessage(''));
-      context.schedule(() => {
-        service.setLoadingMessage('');
-        respond(service, { content: 'Found it.' });
-      }, 4000);
+      streamChunks(context, splitWords('Found it: three invoices match.'), 8000);
     },
   },
   error: {
