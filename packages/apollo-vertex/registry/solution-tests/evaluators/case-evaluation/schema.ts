@@ -15,7 +15,6 @@ export const SummaryVerdict = {
 
 const EvaluationViewSchema = z.object({
   outcome: z.string().optional().default(""),
-  confidence: z.number().nullable().optional().default(null),
   summary: z.string().optional().default(""),
   // Per-version record id; differs between sides when the model was edited.
   decision_model_id: z.string().optional().default(""),
@@ -46,11 +45,6 @@ export const CaseEvaluationDetailsSchema = z.object({
   expected_count: z.number(),
   actual_count: z.number(),
   pairs: z.array(EvaluationPairSchema),
-  same_count: z.number(),
-  outcome_mismatch_count: z.number(),
-  summary_differs_count: z.number(),
-  missing_count: z.number(),
-  added_count: z.number(),
 });
 
 export type CaseEvaluationDetails = z.infer<typeof CaseEvaluationDetailsSchema>;

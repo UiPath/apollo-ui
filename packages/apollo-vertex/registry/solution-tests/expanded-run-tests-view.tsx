@@ -46,8 +46,15 @@ export const ExpandedRunTestsView = ({
             <TableRow>
               <TableHead className="px-3 py-2">{t("test_name")}</TableHead>
               <TableHead className="px-3 py-2">{t("score")}</TableHead>
-              <TableHead className="px-3 py-2">{t("agents_passed")}</TableHead>
-              <TableHead className="px-3 py-2">{t("config_version")}</TableHead>
+              <TableHead className="px-3 py-2">
+                {t("components_passed")}
+              </TableHead>
+              <TableHead className="px-3 py-2">
+                {t("baseline_config_version")}
+              </TableHead>
+              <TableHead className="px-3 py-2">
+                {t("run_config_version")}
+              </TableHead>
               <TableHead className="px-3 py-2">{t("status")}</TableHead>
               <TableHead className="w-6 px-1 py-2" />
               <TableHead className="px-3 py-2">{t("actions")}</TableHead>
@@ -77,6 +84,9 @@ export const ExpandedRunTestsView = ({
                   </TableCell>
                   <TableCell className="px-3 py-2">
                     {`${run.JobsPassed ?? 0}/${run.JobsTotal ?? 0}`}
+                  </TableCell>
+                  <TableCell className="px-3 py-2 text-muted-foreground">
+                    {run.BaselineConfigVersion ?? "-"}
                   </TableCell>
                   <TableCell className="px-3 py-2 text-muted-foreground">
                     <ConfigVersionValue run={run} />

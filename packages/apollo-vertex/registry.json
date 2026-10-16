@@ -3326,6 +3326,11 @@
           "target": "components/ui/solution-tests/run-details-agent-list.tsx"
         },
         {
+          "path": "registry/solution-tests/run-details-version-details.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/run-details-version-details.tsx"
+        },
+        {
           "path": "registry/solution-tests/expanded-run-tests.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/expanded-run-tests.tsx"

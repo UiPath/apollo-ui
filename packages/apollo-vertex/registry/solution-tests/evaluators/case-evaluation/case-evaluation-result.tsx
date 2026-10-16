@@ -1,6 +1,7 @@
 "use client";
 
-import { AlertCircle, Check, TriangleAlert } from "lucide-react";
+import { AlertCircle, Check, TriangleAlert, X } from "lucide-react";
+import type { ReactNode } from "react";
 import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -26,32 +27,18 @@ const pairRank = (pair: EvaluationPair): number => {
 const sortPairs = (pairs: EvaluationPair[]): EvaluationPair[] =>
   pairs.toSorted((a, b) => pairRank(a) - pairRank(b));
 
-const formatConfidence = (view: EvaluationView | null): string | null =>
-  view?.confidence == null ? null : `${Math.round(view.confidence * 100)}%`;
-
 // The schema defaults absent fields to "", which should read as "no value".
 const presentOrNull = (value: string | undefined): string | null => {
   if (!value) return null;
   return value;
 };
 
-/** Flags a field that differs between the two runs. */
-const ChangedBadge = ({ status }: { status: "error" | "warning" }) => {
-  const { t } = useVertexTranslation();
-  return (
-    <Badge status={status} variant="secondary">
-      {t("pe_eval_changed")}
-    </Badge>
-  );
-};
-
-/** The scalar fields of a pair, baseline beside new run. */
-const PairFields = ({ pair }: { pair: EvaluationPair }) => {
+/** Informative baseline-vs-new metadata. None of it is scored, so a change
+ * gets a neutral flag rather than a failure. */
+const PairMetadata = ({ pair }: { pair: EvaluationPair }) => {
   const { t } = useVertexTranslation();
   const { expected, actual } = pair;
   const compared = pair.status === EvaluationPairStatus.Compared;
-  // The decision-model id is a per-version record id; a new one alone doesn't
-  // fail the pair (matching is by policy), so it gets a softer flag.
   const modelChanged =
     (expected?.decision_model_id ?? "") !== (actual?.decision_model_id ?? "");
 
@@ -59,58 +46,120 @@ const PairFields = ({ pair }: { pair: EvaluationPair }) => {
     <BaselineCompare
       rows={[
         {
-          label: t("pe_eval_field_outcome"),
-          baseline: presentOrNull(expected?.outcome),
-          current: presentOrNull(actual?.outcome),
-          marker: compared && !pair.outcome_match && (
-            <ChangedBadge status="error" />
-          ),
-        },
-        {
-          label: t("pe_eval_field_confidence"),
-          baseline: formatConfidence(expected),
-          current: formatConfidence(actual),
-        },
-        {
           label: t("pe_eval_field_decision_model"),
           baseline: presentOrNull(expected?.decision_model_id),
           current: presentOrNull(actual?.decision_model_id),
           mono: true,
-          marker: compared && modelChanged && <ChangedBadge status="warning" />,
+          marker: compared && modelChanged && (
+            <Badge status="info" variant="secondary">
+              {t("pe_eval_changed")}
+            </Badge>
+          ),
+        },
+        {
+          label: t("pe_eval_field_status"),
+          baseline: presentOrNull(expected?.status),
+          current: presentOrNull(actual?.status),
         },
       ]}
     />
   );
 };
 
-/** One run's summary prose under its run label, or a "no counterpart" chip
- * for a one-sided pair. */
-const SummarySide = ({
+const VerdictBadge = ({ same }: { same: boolean }) => {
+  const { t } = useVertexTranslation();
+  return (
+    <Badge status={same ? "success" : "error"} variant="secondary">
+      {same ? (
+        <Check className="size-3" aria-hidden />
+      ) : (
+        <X className="size-3" aria-hidden />
+      )}
+      {t(same ? "pe_eval_same" : "pe_eval_differs")}
+    </Badge>
+  );
+};
+
+const NoCounterpart = () => {
+  const { t } = useVertexTranslation();
+  return (
+    <div className="flex min-w-0 items-center justify-center rounded-md border border-dashed bg-muted/20 p-3">
+      <Badge status="error" variant="secondary">
+        {t("pe_eval_no_counterpart")}
+      </Badge>
+    </div>
+  );
+};
+
+/** One scored field: "<Field> <verdict>", then baseline beside new run. A null
+ * `same` (one-sided pair) omits the verdict. */
+const ComparedField = ({
   label,
-  view,
+  same,
+  reason,
+  baseline,
+  current,
+  children,
 }: {
   label: string;
-  view: EvaluationView | null;
+  same: boolean | null;
+  reason?: string;
+  baseline: ReactNode;
+  current: ReactNode;
+  children?: ReactNode;
+}) => {
+  const { t } = useVertexTranslation();
+  return (
+    <div className="flex min-w-0 flex-col gap-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-sm font-semibold">{label}</span>
+        {same != null && <VerdictBadge same={same} />}
+        {reason && (
+          <span className="text-[11px] italic text-muted-foreground">
+            {reason}
+          </span>
+        )}
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <FieldSide label={t("compare_baseline")}>{baseline}</FieldSide>
+        <FieldSide label={t("compare_new_run")}>{current}</FieldSide>
+      </div>
+      {children}
+    </div>
+  );
+};
+
+const FieldSide = ({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode;
 }) => (
   <div className="flex min-w-0 flex-col gap-1">
     <span className="text-xs text-muted-foreground">{label}</span>
-    <SummaryCard view={view} />
+    {children}
   </div>
 );
 
-const SummaryCard = ({ view }: { view: EvaluationView | null }) => {
-  const { t } = useVertexTranslation();
-  if (!view) {
-    return (
-      <div className="flex min-w-0 items-center justify-center rounded-md border border-dashed bg-muted/20 p-3">
-        <Badge status="error" variant="secondary">
-          {t("pe_eval_no_counterpart")}
-        </Badge>
-      </div>
-    );
-  }
+const ValueBox = ({ children }: { children: ReactNode }) => (
+  <div className="min-w-0 break-words rounded-md border p-3">{children}</div>
+);
+
+const OutcomeValue = ({ view }: { view: EvaluationView | null }) => {
+  if (!view) return <NoCounterpart />;
   return (
-    <div className="min-w-0 break-words rounded-md border p-3">
+    <ValueBox>
+      <p className="text-sm">{view.outcome || EMPTY_VALUE}</p>
+    </ValueBox>
+  );
+};
+
+const SummaryValue = ({ view }: { view: EvaluationView | null }) => {
+  const { t } = useVertexTranslation();
+  if (!view) return <NoCounterpart />;
+  return (
+    <ValueBox>
       {view.error_message && (
         // A faulted evaluation's backend error would otherwise be invisible:
         // for passed/failed rows the run view renders only this evaluator
@@ -130,79 +179,53 @@ const SummaryCard = ({ view }: { view: EvaluationView | null }) => {
           {t("pe_eval_no_summary")}
         </p>
       )}
-    </div>
+    </ValueBox>
   );
 };
 
-/** Baseline and new summaries side by side, with the judge's verdict and its
- * enumerated semantic deltas. */
-const SummaryComparison = ({ pair }: { pair: EvaluationPair }) => {
+/** One matched (or one-sided) policy evaluation: informative metadata, then
+ * the two scored fields. */
+const PairSection = ({ pair }: { pair: EvaluationPair }) => {
   const { t } = useVertexTranslation();
   const compared = pair.status === EvaluationPairStatus.Compared;
-  const same = pair.summary_verdict === SummaryVerdict.Same;
   return (
-    <div className="flex min-w-0 flex-col gap-2">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs font-semibold text-muted-foreground">
-          {t("pe_eval_field_summary")}
-        </span>
-        {compared && (
-          <Badge status={same ? "success" : "warning"} variant="secondary">
-            {same ? (
-              <Check className="size-3" aria-hidden />
-            ) : (
-              <TriangleAlert className="size-3" aria-hidden />
-            )}
-            {t(same ? "pe_eval_summary_same" : "pe_eval_summary_differs")}
-          </Badge>
-        )}
-        {pair.summary_reason && (
-          <span className="text-[11px] italic text-muted-foreground">
-            {pair.summary_reason}
-          </span>
-        )}
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <SummarySide label={t("compare_baseline")} view={pair.expected} />
-        <SummarySide label={t("compare_new_run")} view={pair.actual} />
-      </div>
-      {pair.summary_deltas.length > 0 && (
-        <div className="rounded-md border border-warning/40 bg-warning/10 p-3">
-          <p className="text-xs font-medium">{t("pe_eval_semantic_deltas")}</p>
-          <ul className="mt-1 list-disc pl-4 text-sm">
-            {pair.summary_deltas.map((delta) => (
-              <li key={delta}>{delta}</li>
-            ))}
-          </ul>
-        </div>
+    <div className="flex min-w-0 flex-col gap-4">
+      {!compared && (
+        <Badge status="error" variant="secondary" className="w-fit">
+          {t(
+            pair.status === EvaluationPairStatus.MissingInActual
+              ? "pe_eval_status_missing"
+              : "pe_eval_status_new",
+          )}
+        </Badge>
       )}
-    </div>
-  );
-};
-
-/** One matched (or one-sided) policy evaluation: fields diff table + summaries. */
-const PairRow = ({ pair }: { pair: EvaluationPair }) => {
-  const { t } = useVertexTranslation();
-  const oneSided = pair.status !== EvaluationPairStatus.Compared;
-  return (
-    <div className="flex min-w-0 flex-col gap-3 rounded-md border p-3">
-      <div className="flex flex-wrap items-center gap-2 text-xs">
-        <span className="font-semibold text-muted-foreground">
-          {t("pe_eval_policy")}
-        </span>
-        <span className="font-mono">{pair.policy_id || EMPTY_VALUE}</span>
-        {oneSided && (
-          <Badge status="error" variant="secondary">
-            {t(
-              pair.status === EvaluationPairStatus.MissingInActual
-                ? "pe_eval_status_missing"
-                : "pe_eval_status_new",
-            )}
-          </Badge>
+      <PairMetadata pair={pair} />
+      <ComparedField
+        label={t("pe_eval_field_outcome")}
+        same={compared ? pair.outcome_match : null}
+        baseline={<OutcomeValue view={pair.expected} />}
+        current={<OutcomeValue view={pair.actual} />}
+      />
+      <ComparedField
+        label={t("pe_eval_field_summary")}
+        same={compared ? pair.summary_verdict === SummaryVerdict.Same : null}
+        reason={pair.summary_reason}
+        baseline={<SummaryValue view={pair.expected} />}
+        current={<SummaryValue view={pair.actual} />}
+      >
+        {pair.summary_deltas.length > 0 && (
+          <div className="rounded-md border border-warning/40 bg-warning/10 p-3">
+            <p className="text-xs font-medium">
+              {t("pe_eval_semantic_deltas")}
+            </p>
+            <ul className="mt-1 list-disc pl-4 text-sm">
+              {pair.summary_deltas.map((delta) => (
+                <li key={delta}>{delta}</li>
+              ))}
+            </ul>
+          </div>
         )}
-      </div>
-      <PairFields pair={pair} />
-      <SummaryComparison pair={pair} />
+      </ComparedField>
     </div>
   );
 };
@@ -215,50 +238,8 @@ export const CaseEvaluationResult = ({
   evaluatorDetails,
 }: EvaluatorResultProps<CaseEvaluationDetails>) => {
   const { t } = useVertexTranslation();
-  const {
-    pairs,
-    count_mismatch,
-    expected_count,
-    actual_count,
-    same_count,
-    outcome_mismatch_count,
-    summary_differs_count,
-    missing_count,
-    added_count,
-  } = evaluatorDetails;
-
-  const summary = [
-    {
-      show: same_count > 0,
-      status: "success",
-      key: "pe_eval_count_same",
-      count: same_count,
-    },
-    {
-      show: outcome_mismatch_count > 0,
-      status: "error",
-      key: "pe_eval_count_outcome_mismatch",
-      count: outcome_mismatch_count,
-    },
-    {
-      show: summary_differs_count > 0,
-      status: "warning",
-      key: "pe_eval_count_summary_differs",
-      count: summary_differs_count,
-    },
-    {
-      show: missing_count > 0,
-      status: "error",
-      key: "pe_eval_count_missing",
-      count: missing_count,
-    },
-    {
-      show: added_count > 0,
-      status: "error",
-      key: "pe_eval_count_new",
-      count: added_count,
-    },
-  ] as const;
+  const { pairs, count_mismatch, expected_count, actual_count } =
+    evaluatorDetails;
 
   // whitespace-normal: the shadcn TableCell that hosts this expanded content
   // sets `whitespace-nowrap`, which inherits; reset it so summaries wrap.
@@ -277,25 +258,15 @@ export const CaseEvaluationResult = ({
         </Alert>
       )}
 
-      <div className="flex flex-wrap items-center gap-2">
-        {summary
-          .filter((s) => s.show)
-          .map((s) => (
-            <Badge key={s.key} status={s.status} variant="secondary">
-              {t(s.key, { count: s.count })}
-            </Badge>
-          ))}
-      </div>
-
       {pairs.length === 0 ? (
         <p className="text-sm text-muted-foreground">{t("pe_eval_no_pairs")}</p>
       ) : (
-        <div className="flex min-w-0 flex-col gap-3">
+        <div className="flex min-w-0 flex-col divide-y [&>*:not(:first-child)]:pt-4 [&>*:not(:last-child)]:pb-4">
           {sortPairs(pairs).map((pair, i) => (
             // A missing and a new pair can share a policy id and the list
             // never reorders after render, so the index is a safe key.
             // oxlint-disable-next-line react(no-array-index-key)
-            <PairRow key={i} pair={pair} />
+            <PairSection key={i} pair={pair} />
           ))}
         </div>
       )}

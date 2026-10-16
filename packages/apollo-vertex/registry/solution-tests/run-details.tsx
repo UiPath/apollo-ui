@@ -26,6 +26,7 @@ import {
 import type { ExpandedRowData } from "./result-expanded-content";
 import { RunDetailsView, type BaselineJobMap } from "./run-details-view";
 import { RunResultStatus, type SolutionTestRunResult } from "./types";
+import { isRunDone } from "./utils";
 
 type ResultAttachments = Omit<ExpandedRowData, "loading">;
 
@@ -105,6 +106,11 @@ export const RunDetails = ({ runId, onBack }: RunDetailsProps) => {
   const { tests } = useSolutionTests();
 
   const run = runs.find((r) => r.Id === runId);
+  const isBaselineLocked =
+    run != null &&
+    runs.some(
+      (r) => r.SolutionTestId === run.SolutionTestId && !isRunDone(r.Status),
+    );
   const test = run && tests.find((x) => x.Id === run.SolutionTestId);
   const subjectLabel =
     test?.TestName ?? test?.SubjectId ?? run?.SolutionTestId ?? "";
@@ -142,7 +148,7 @@ export const RunDetails = ({ runId, onBack }: RunDetailsProps) => {
   const selectedResult =
     results.find((r) => r.Id === selectedResultId) ?? results[0];
 
-  // Selected-agent attachments, cached per result id so revisiting an agent is
+  // Selected-component attachments, cached per result id so revisiting one is
   // instant and the fetch tracks the selection without manual effects/state.
   const attachments = useQuery({
     queryKey: [
@@ -205,6 +211,7 @@ export const RunDetails = ({ runId, onBack }: RunDetailsProps) => {
       adoptingResultId={adoptingResultId}
       updatingResultId={updatingResultId}
       removingBaselineId={removingBaselineId}
+      isBaselineLocked={isBaselineLocked}
       onBack={onBack}
       onSelect={(id) => {
         // Only a genuine selection change is a "view" — re-clicking the shown
@@ -216,9 +223,9 @@ export const RunDetails = ({ runId, onBack }: RunDetailsProps) => {
       }}
       onAdopt={(id) =>
         adopt.mutate(id, {
-          onSuccess: () => toast.success(t("agent_adopted_successfully")),
+          onSuccess: () => toast.success(t("component_adopted_successfully")),
           onError: (err) =>
-            toast.error(`${t("failed_to_adopt_agent")}: ${err.message}`),
+            toast.error(`${t("failed_to_adopt_component")}: ${err.message}`),
         })
       }
       onUpdateBaseline={(id) =>
@@ -231,10 +238,10 @@ export const RunDetails = ({ runId, onBack }: RunDetailsProps) => {
       onRemoveBaseline={(id) =>
         removeBaseline.mutate(id, {
           onSuccess: () =>
-            toast.success(t("agent_removed_from_expected_results")),
+            toast.success(t("component_removed_from_expected_results")),
           onError: (err) =>
             toast.error(
-              `${t("failed_to_remove_agent_baseline")}: ${err.message}`,
+              `${t("failed_to_remove_component_baseline")}: ${err.message}`,
             ),
         })
       }
