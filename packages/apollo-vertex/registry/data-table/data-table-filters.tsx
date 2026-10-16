@@ -1,10 +1,11 @@
-import type { Row, RowData } from "@tanstack/react-table";
+import type { RowData } from "@tanstack/react-table";
+import type { DataTableRow } from "@/lib/table-features";
 
-export const dataTableGlobalFilterFn = (
-  row: Row<RowData>,
+export function dataTableGlobalFilterFn<TData extends RowData>(
+  row: DataTableRow<TData>,
   _columnId: string,
   filterValue: string,
-): boolean => {
+): boolean {
   if (!filterValue) return true;
 
   const searchStr = filterValue.toLowerCase();
@@ -21,15 +22,15 @@ export const dataTableGlobalFilterFn = (
           : "";
     return displayValue.toLowerCase().includes(searchStr);
   });
-};
+}
 
-export const dataTableFacetedFilterFn = (
-  row: Row<RowData>,
+export function dataTableFacetedFilterFn<TData extends RowData>(
+  row: DataTableRow<TData>,
   columnId: string,
   filterValue: unknown,
-): boolean => {
+): boolean {
   if (!filterValue || !Array.isArray(filterValue) || filterValue.length === 0)
     return true;
   const cellValue = String(row.getValue(columnId) ?? "");
   return filterValue.includes(cellValue);
-};
+}
