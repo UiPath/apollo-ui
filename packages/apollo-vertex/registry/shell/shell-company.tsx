@@ -2,7 +2,6 @@ import { Link } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import { PanelLeft } from "lucide-react";
 import { useState } from "react";
-import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/ui/sidebar";
 import {
@@ -12,6 +11,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import type { CompanyLogo } from "./shell";
 import {
   fastFadeTransition,
@@ -187,6 +187,7 @@ export const Company = ({
                   <Button
                     variant="ghost"
                     size="icon-sm"
+                    aria-label={t("close_sidebar")}
                     onClick={toggleSidebar}
                     className="ml-auto shrink-0 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground cursor-pointer"
                   >

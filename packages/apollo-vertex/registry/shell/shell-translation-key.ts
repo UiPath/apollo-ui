@@ -8,3 +8,9 @@ export type TranslationKey =
       components: Record<string, ReactElement>;
     }
   | ParseKeys;
+
+type TranslationObject = Extract<TranslationKey, { i18nKey: ParseKeys }>;
+
+// Plain strings are app-catalog keys or vertex keys. Vertex keys are strings,
+// so they still typecheck; the app catalog is what makes invoice labels resolve.
+export type ShellNavLabel = string | TranslationObject;
