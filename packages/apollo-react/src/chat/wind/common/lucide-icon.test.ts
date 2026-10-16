@@ -4,20 +4,28 @@ import { resolveLucideIconName } from './lucide-icon';
 
 describe('resolveLucideIconName', () => {
   it.each([
-    ['file-text', 'file-text'],
-    ['FileText', 'file-text'],
-    ['Grid2x2', 'grid-2x2'],
+    ['file-text', 'FileText'],
+    ['FileText', 'FileText'],
+    ['message-circle-plus', 'MessageCirclePlus'],
+    ['grid-2x2', 'Grid2x2'],
+    ['Grid2x2', 'Grid2x2'],
+    ['arrow-down-0-1', 'ArrowDown01'],
+    ['ArrowDown01', 'ArrowDown01'],
+    ['share', 'Share'],
+    // Deprecated aliases, which lucide still exports under their old names.
+    ['alert-circle', 'AlertCircle'],
+    ['AlertCircle', 'AlertCircle'],
+    ['more-horizontal', 'MoreHorizontal'],
   ])('resolves %s to %s', (icon, expected) => {
     expect(resolveLucideIconName(icon)).toBe(expected);
   });
 
-  it('resolves PascalCase names with digit runs to a name lucide knows', () => {
-    // lucide lists both "arrow-down-0-1" and its alias "arrow-down-01"
-    expect(['arrow-down-0-1', 'arrow-down-01']).toContain(resolveLucideIconName('ArrowDown01'));
-  });
-
-  it('returns undefined for names lucide does not have', () => {
+  it('returns undefined for names lucide does not have, and for its non-icon exports', () => {
     expect(resolveLucideIconName('picture_as_pdf')).toBeUndefined();
     expect(resolveLucideIconName('')).toBeUndefined();
+    expect(resolveLucideIconName('createLucideIcon')).toBeUndefined();
+    expect(resolveLucideIconName('Icon')).toBeUndefined();
+    expect(resolveLucideIconName('icons')).toBeUndefined();
+    expect(resolveLucideIconName('default')).toBeUndefined();
   });
 });

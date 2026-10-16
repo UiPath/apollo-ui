@@ -150,7 +150,9 @@
     "dist/chat/index.js",
     "dist/chat/index.cjs",
     "dist/chat/root/ApChat.js",
-    "dist/chat/root/ApChat.cjs"
+    "dist/chat/root/ApChat.cjs",
+    "dist/material/components/ap-chat/ap-chat.js",
+    "dist/material/components/ap-chat/ap-chat.cjs"
   ],
   "files": [
     "dist"

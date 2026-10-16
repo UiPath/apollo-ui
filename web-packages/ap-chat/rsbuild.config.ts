@@ -121,7 +121,9 @@ const config: RsbuildConfig = defineConfig({
             '@emotion/react': require.resolve('@emotion/react'),
             '@emotion/styled': require.resolve('@emotion/styled'),
           },
-          extensions: ['.tsx', '.ts', '.jsx', '.js', '.json'],
+          // `.mjs` and `.cjs` for packages without an `exports` map that ship subpaths that way
+          // (lucide-react's `dynamic.mjs`, for one).
+          extensions: ['.tsx', '.ts', '.jsx', '.js', '.json', '.mjs', '.cjs'],
         },
         module: {
           ...config.module,

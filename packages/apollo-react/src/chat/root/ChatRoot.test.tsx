@@ -53,6 +53,29 @@ describe('ChatRoot', () => {
     expect(screen.getByTestId('renderer')).toHaveTextContent('wind');
   });
 
+  it('renders a pinned renderer whatever the config says, warning once', () => {
+    registerChatRenderer('material', ProbeRenderer);
+    registerChatRenderer('wind', WindRenderer);
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const service = AutopilotChatService.Instantiate({
+      instanceName: `chat-root-test-${++instanceCounter}`,
+      config: { mode: AutopilotChatMode.SideBySide, renderer: 'wind' },
+    });
+
+    const first = render(
+      <ChatRoot chatServiceInstance={service} defaultRenderer="material" renderer="material" />
+    );
+    first.unmount();
+    render(
+      <ChatRoot chatServiceInstance={service} defaultRenderer="material" renderer="material" />
+    );
+
+    expect(screen.getByTestId('renderer')).toHaveTextContent('material');
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0]![0]).toContain('renderer "wind" is ignored');
+    warn.mockRestore();
+  });
+
   it('switches renderer when the service renderer changes', async () => {
     registerChatRenderer('material', ProbeRenderer);
     registerChatRenderer('wind', WindRenderer);
