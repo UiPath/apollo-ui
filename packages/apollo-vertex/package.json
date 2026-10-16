@@ -112,7 +112,7 @@
     "react-error-boundary": "^6.0.0",
     "react-i18next": "^16.5.4 || ^17.0.0",
     "react-markdown": "^10.1.0",
-    "recharts": "^2.15.4",
+    "recharts": "^3.8.0",
     "remark-breaks": "^4.0.0",
     "remark-gfm": "^4.0.1",
     "tailwindcss": "^4.0.0"
@@ -160,7 +160,7 @@
     "react-error-boundary": "^6.0.0",
     "react-i18next": "^17.0.15",
     "react-markdown": "^10.1.0",
-    "recharts": "2.15.4",
+    "recharts": "3.8.0",
     "remark-breaks": "^4.0.0",
     "remark-gfm": "^4.0.1",
     "tailwindcss": "^4.1.17",
