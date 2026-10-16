@@ -55,7 +55,17 @@ export interface PickerTriggerProps {
    * error alongside the field.
    */
   describedById?: string;
-  /** Mark the field as required. Forwarded as `aria-required`. */
+  /**
+   * @deprecated No longer rendered. `aria-required` is not an allowed
+   * attribute on `role="button"` per the WAI-ARIA spec (axe-core's
+   * `aria-allowed-attr`, critical impact) — this trigger is a plain button
+   * that opens a listbox, not itself a `textbox`/`combobox`/`listbox`. Kept
+   * on the type for source compatibility with existing callers; communicate
+   * required-ness through the field's accessible name/label instead (see
+   * `ModelPicker`'s own label, which appends a visually-hidden "required"
+   * span next to the decorative asterisk — the same `srLabel` pattern as
+   * `RequiredIndicator` from `@uipath/apollo-wind`).
+   */
   required?: boolean;
   /** Optional className forwarded to the trigger element. */
   className?: string;
@@ -80,7 +90,6 @@ export const PickerTrigger: React.FC<PickerTriggerProps> = ({
   hideTagKinds,
   controlsId,
   describedById,
-  required,
   className,
   'data-testid': dataTestId,
 }) => {
@@ -107,7 +116,6 @@ export const PickerTrigger: React.FC<PickerTriggerProps> = ({
         aria-expanded={open}
         aria-controls={open && controlsId ? controlsId : undefined}
         aria-invalid={invalid ? true : undefined}
-        aria-required={required ? true : undefined}
         aria-describedby={describedById}
         focusRipple
         sx={{

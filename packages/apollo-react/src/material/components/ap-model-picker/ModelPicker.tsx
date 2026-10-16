@@ -146,7 +146,12 @@ export interface ModelPickerProps {
   onChange?: ModelPickerChangeHandler;
   /** Field label above the trigger. Defaults to a localized "Model". */
   label?: string;
-  /** Marks the field required: `aria-required` + a visual asterisk. */
+  /**
+   * Marks the field required: a visual asterisk plus a visually-hidden
+   * "required" label span, so assistive tech announces it via the
+   * trigger's accessible name. Not `aria-required` — that attribute isn't
+   * allowed on the trigger's `role="button"` (axe-core `aria-allowed-attr`).
+   */
   required?: boolean;
   /**
    * Trigger text when nothing is selected. Defaults to a localized
@@ -356,9 +361,18 @@ export interface ModelPickerProps {
   testId?: string;
 }
 
-// Visual-only marker. The input is announced as required via
-// `aria-required` (and `aria-invalid` when blank + invalid), so the
-// asterisk is decorative — wrapped in `aria-hidden` below.
+// The asterisk is a decorative, `aria-hidden` visual marker. It cannot
+// carry the requirement to assistive tech by itself: `aria-required` is
+// not an allowed attribute on the trigger, whose role is a plain
+// `role="button"` (axe-core `aria-allowed-attr`, critical impact — WAI-ARIA
+// only permits `aria-required` on form/input-like roles such as textbox,
+// combobox, or listbox). Instead the label carries a visually-hidden
+// "required" span alongside the asterisk (below), which — because the
+// label is associated with the trigger via `htmlFor`/`id` — becomes part
+// of the trigger's accessible name. Same `srLabel` pattern as
+// `RequiredIndicator` from `@uipath/apollo-wind`, used for the identical
+// role-doesn't-support-aria-required case on `role="group"` in
+// `canvas/components/Guardrails`.
 const REQUIRED_INDICATOR = '*';
 
 // Above this many visible options the `searchable` variant hands the
@@ -795,16 +809,46 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
         >
           {resolvedLabel}
           {required && (
-            <Box
-              component="span"
-              aria-hidden
-              sx={{
-                color: `var(--color-error-text, ${Colors.ColorRed700})`,
-                ml: 0.25,
-              }}
-            >
-              {REQUIRED_INDICATOR}
-            </Box>
+            <>
+              <Box
+                component="span"
+                aria-hidden
+                sx={{
+                  color: `var(--color-error-text, ${Colors.ColorRed700})`,
+                  ml: 0.25,
+                }}
+              >
+                {REQUIRED_INDICATOR}
+              </Box>
+              {/* Not aria-hidden: this is what actually tells assistive tech
+                  the field is required, since aria-required can't live on
+                  the trigger's role="button". Visually hidden via clip, not
+                  display:none, so it still reaches the accessible name. */}
+              <Box
+                component="span"
+                sx={{
+                  position: 'absolute',
+                  // MUI's sx sizing transform treats any numeric width/height <= 1 as a
+                  // percentage (1 -> '100%'), not a pixel value — an unstyled numeric 1 here
+                  // would make this "hidden" span stretch to fill its positioned ancestor
+                  // instead of collapsing to the intended 1x1px box. Explicit px strings only.
+                  width: '1px',
+                  height: '1px',
+                  padding: 0,
+                  margin: '-1px',
+                  overflow: 'hidden',
+                  clip: 'rect(0, 0, 0, 0)',
+                  whiteSpace: 'nowrap',
+                  border: 0,
+                }}
+              >
+                {' '}
+                {_({
+                  id: 'modelPicker.label.requiredSrLabel',
+                  message: 'required',
+                })}
+              </Box>
+            </>
           )}
         </Typography>
 
@@ -816,7 +860,6 @@ export const ModelPicker = React.forwardRef<HTMLButtonElement, ModelPickerProps>
           placeholder={resolvedPlaceholder}
           disabled={disabled}
           invalid={!!invalid || !!effectiveError || !!unknownValue}
-          required={required}
           open={open}
           controlsId={listboxId}
           describedById={(errorText ?? effectiveError) ? `${id}-error` : undefined}
