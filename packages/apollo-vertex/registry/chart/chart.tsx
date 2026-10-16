@@ -7,16 +7,23 @@ import { cn } from "@/lib/utils";
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const;
+const THEME_SELECTORS: Array<[keyof typeof THEMES, string]> = [
+  ["light", THEMES.light],
+  ["dark", THEMES.dark],
+];
 
-export type ChartConfig = {
-  [k in string]: {
+const INITIAL_DIMENSION = { width: 320, height: 200 } as const;
+
+export type ChartConfig = Record<
+  string,
+  {
     label?: React.ReactNode;
     icon?: React.ComponentType;
   } & (
     | { color?: string; theme?: never }
     | { color?: never; theme: Record<keyof typeof THEMES, string> }
-  );
-};
+  )
+>;
 
 type ChartContextProps = {
   config: ChartConfig;
@@ -39,12 +46,17 @@ function ChartContainer({
   className,
   children,
   config,
+  initialDimension = INITIAL_DIMENSION,
   ...props
 }: React.ComponentProps<"div"> & {
   config: ChartConfig;
   children: React.ComponentProps<
     typeof RechartsPrimitive.ResponsiveContainer
   >["children"];
+  initialDimension?: {
+    width: number;
+    height: number;
+  };
 }) {
   const uniqueId = React.useId();
   const chartId = `chart-${id ?? uniqueId.replaceAll(":", "")}`;
@@ -55,13 +67,15 @@ function ChartContainer({
         data-slot="chart"
         data-chart={chartId}
         className={cn(
-          "[&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-reference-line_[stroke='#ccc']]:stroke-border flex aspect-video justify-center text-xs [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-hidden [&_.recharts-sector]:outline-hidden [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-surface]:outline-hidden",
+          "flex aspect-video justify-center text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-hidden [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-reference-line_[stroke='#ccc']]:stroke-border [&_.recharts-sector]:outline-hidden [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-surface]:outline-hidden",
           className,
         )}
         {...props}
       >
         <ChartStyle id={chartId} config={config} />
-        <RechartsPrimitive.ResponsiveContainer>
+        <RechartsPrimitive.ResponsiveContainer
+          initialDimension={initialDimension}
+        >
           {children}
         </RechartsPrimitive.ResponsiveContainer>
       </div>
@@ -82,10 +96,8 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     <style
       // oxlint-disable-next-line react(no-danger) -- Safe: only generated CSS variables
       dangerouslySetInnerHTML={{
-        // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- THEMES is a small closed object; Object.entries loses keyof
-        __html: (Object.entries(THEMES) as Array<[keyof typeof THEMES, string]>)
-          .map(
-            ([theme, prefix]) => `
+        __html: THEME_SELECTORS.map(
+          ([theme, prefix]) => `
 ${prefix} [data-chart=${id}] {
 ${colorConfig
   .map(([key, itemConfig]) => {
@@ -95,8 +107,7 @@ ${colorConfig
   .join("\n")}
 }
 `,
-          )
-          .join("\n"),
+        ).join("\n"),
       }}
     />
   );
@@ -125,15 +136,19 @@ function ChartTooltipContent({
     indicator?: "line" | "dot" | "dashed";
     nameKey?: string;
     labelKey?: string;
-  }) {
+  } & Omit<
+    RechartsPrimitive.DefaultTooltipContentProps,
+    "accessibilityLayer"
+  >) {
   const { config } = useChart();
 
-  function getTooltipLabel(): React.ReactNode {
-    if (hideLabel || !payload?.length) return null;
+  const tooltipLabel = React.useMemo(() => {
+    if (hideLabel || !payload?.length) {
+      return null;
+    }
 
     const [item] = payload;
-    // oxlint-disable-next-line typescript-eslint(prefer-nullish-coalescing) -- empty string should fall through
-    const key = `${(labelKey ?? item?.dataKey) || (item?.name ?? "value")}`;
+    const key = chartConfigKey(labelKey ?? item?.dataKey ?? item?.name);
     const itemConfig = getPayloadConfigFromPayload(config, item, key);
     const value =
       !labelKey && typeof label === "string"
@@ -148,11 +163,20 @@ function ChartTooltipContent({
       );
     }
 
-    if (!value) return null;
-    return <div className={cn("font-medium", labelClassName)}>{value}</div>;
-  }
+    if (!value) {
+      return null;
+    }
 
-  const tooltipLabel = getTooltipLabel();
+    return <div className={cn("font-medium", labelClassName)}>{value}</div>;
+  }, [
+    label,
+    labelFormatter,
+    payload,
+    hideLabel,
+    labelClassName,
+    config,
+    labelKey,
+  ]);
 
   if (!active || !payload?.length) {
     return null;
@@ -163,7 +187,7 @@ function ChartTooltipContent({
   return (
     <div
       className={cn(
-        "border-border/50 bg-background grid min-w-[8rem] items-start gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl",
+        "grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl",
         className,
       )}
     >
@@ -172,24 +196,22 @@ function ChartTooltipContent({
         {payload
           .filter((item) => item.type !== "none")
           .map((item, index) => {
-            // oxlint-disable-next-line typescript-eslint(prefer-nullish-coalescing) -- empty string should fall through
-            const key = `${(nameKey ?? item.name) || (item.dataKey ?? "value")}`;
+            const key = chartConfigKey(nameKey ?? item.name ?? item.dataKey);
             const itemConfig = getPayloadConfigFromPayload(config, item, key);
-            /* oxlint-disable typescript-eslint(no-unsafe-assignment), typescript-eslint(no-unsafe-member-access) -- recharts payload is untyped */
-            const indicatorColor: string =
-              color ?? item.payload.fill ?? item.color;
-            /* oxlint-enable typescript-eslint(no-unsafe-assignment), typescript-eslint(no-unsafe-member-access) */
+            const indicatorColor = readIndicatorColor(color, item);
 
             return (
               <div
-                key={item.dataKey}
+                // dataKey may be an accessor function, which is not a valid key.
+                // oxlint-disable-next-line eslint-plugin-react(no-array-index-key)
+                key={index}
                 className={cn(
-                  "[&>svg]:text-muted-foreground flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5",
+                  "flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground",
                   indicator === "dot" && "items-center",
                 )}
               >
                 {formatter && item?.value != null && item.name ? (
-                  // oxlint-disable-next-line typescript-eslint(no-unsafe-argument) -- recharts payload is untyped
+                  // oxlint-disable-next-line typescript-eslint(no-unsafe-argument) -- recharts item payload is any
                   formatter(item.value, item.name, item, index, item.payload)
                 ) : (
                   <>
@@ -208,14 +230,13 @@ function ChartTooltipContent({
                               "my-0.5": nestLabel && indicator === "dashed",
                             },
                           )}
-                          /* oxlint-disable typescript-eslint(no-unsafe-type-assertion) -- CSS custom properties not in React.CSSProperties */
                           style={
                             {
                               "--color-bg": indicatorColor,
                               "--color-border": indicatorColor,
+                              // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- CSS custom properties are not on CSSProperties
                             } as React.CSSProperties
                           }
-                          /* oxlint-enable typescript-eslint(no-unsafe-type-assertion) */
                         />
                       )
                     )}
@@ -231,9 +252,11 @@ function ChartTooltipContent({
                           {itemConfig?.label ?? item.name}
                         </span>
                       </div>
-                      {item.value && (
-                        <span className="text-foreground font-mono font-medium tabular-nums">
-                          {item.value.toLocaleString()}
+                      {item.value != null && (
+                        <span className="font-mono font-medium text-foreground tabular-nums">
+                          {typeof item.value === "number"
+                            ? item.value.toLocaleString()
+                            : String(item.value)}
                         </span>
                       )}
                     </div>
@@ -255,11 +278,10 @@ function ChartLegendContent({
   payload,
   verticalAlign = "bottom",
   nameKey,
-}: React.ComponentProps<"div"> &
-  Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
-    hideIcon?: boolean;
-    nameKey?: string;
-  }) {
+}: React.ComponentProps<"div"> & {
+  hideIcon?: boolean;
+  nameKey?: string;
+} & RechartsPrimitive.DefaultLegendContentProps) {
   const { config } = useChart();
 
   if (!payload?.length) {
@@ -276,16 +298,17 @@ function ChartLegendContent({
     >
       {payload
         .filter((item) => item.type !== "none")
-        .map((item) => {
-          const key = String(nameKey ?? item.dataKey ?? "value");
+        .map((item, index) => {
+          const key = chartConfigKey(nameKey ?? item.dataKey);
           const itemConfig = getPayloadConfigFromPayload(config, item, key);
 
           return (
             <div
-              // oxlint-disable-next-line typescript-eslint(no-unsafe-assignment) -- recharts payload is untyped
-              key={item.value}
+              // dataKey may be an accessor function, which is not a valid key.
+              // oxlint-disable-next-line eslint-plugin-react(no-array-index-key)
+              key={index}
               className={cn(
-                "[&>svg]:text-muted-foreground flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3",
+                "flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground",
               )}
             >
               {itemConfig?.icon && !hideIcon ? (
@@ -304,6 +327,29 @@ function ChartLegendContent({
         })}
     </div>
   );
+}
+
+function chartConfigKey(value: unknown): string {
+  if (
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "function"
+  ) {
+    return String(value);
+  }
+  return "value";
+}
+
+function readIndicatorColor(
+  color: string | undefined,
+  item: { color?: string; payload?: unknown },
+): string | undefined {
+  const point = item.payload;
+  if (typeof point !== "object" || point === null || !("fill" in point)) {
+    return color ?? item.color;
+  }
+  const { fill } = point;
+  return color ?? (typeof fill === "string" ? fill : item.color);
 }
 
 // Helper to extract item config from a payload.
@@ -325,7 +371,7 @@ function getPayloadConfigFromPayload(
 
   let configLabelKey: string = key;
 
-  // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- payload is narrowed to `object`; Record cast is the only way to index by string key
+  // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- payload is narrowed to object; a record is the only way to index it
   const payloadRecord = payload as Record<string, unknown>;
   // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion)
   const nestedRecord = payloadPayload as Record<string, unknown> | null;

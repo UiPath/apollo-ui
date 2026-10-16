@@ -1723,7 +1723,7 @@
       "type": "registry:ui",
       "title": "Chart",
       "description": "Beautiful charts using Recharts with consistent theming.",
-      "dependencies": ["recharts@2.15.4", "lucide-react"],
+      "dependencies": ["recharts@3.8.0", "lucide-react"],
       "files": [{ "path": "registry/chart/chart.tsx", "type": "registry:ui" }]
     },
     {
