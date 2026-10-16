@@ -7,6 +7,7 @@ import {
   CHAT_SCROLL_BOTTOM_BUFFER,
   CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,
 } from '../../service';
+import { publishChatEvent } from '../utils/publish-chat-event';
 import { useChatService } from './chat-service.provider';
 import { useStreaming } from './streaming-provider';
 
@@ -174,7 +175,7 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
       shouldShowLoadingMoreMessagesRef.current &&
       chatService?.getConfig()?.paginatedMessages
     ) {
-      (chatService as any)._eventBus.publish(AutopilotChatEvent.ConversationLoadMore);
+      publishChatEvent(chatService, AutopilotChatEvent.ConversationLoadMore);
       chatService.__internalService__.publish(
         AutopilotChatInternalEvent.SetIsLoadingMoreMessages,
         true

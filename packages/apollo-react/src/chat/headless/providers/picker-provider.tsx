@@ -7,6 +7,7 @@ import {
   AutopilotChatEvent,
   type AutopilotChatModelInfo,
 } from '../../service';
+import { publishChatEvent } from '../utils/publish-chat-event';
 import { useChatService } from './chat-service.provider';
 
 interface PickerContextType {
@@ -141,7 +142,9 @@ export const AutopilotPickerProvider = ({ children }: { children: React.ReactNod
 
   const handleCustomHeaderAction = useCallback(
     (action: AutopilotChatCustomHeaderAction) => {
-      (chatService as any)?._eventBus.publish(AutopilotChatEvent.CustomHeaderActionClicked, action);
+      if (chatService) {
+        publishChatEvent(chatService, AutopilotChatEvent.CustomHeaderActionClicked, action);
+      }
     },
     [chatService]
   );

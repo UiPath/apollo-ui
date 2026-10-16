@@ -1148,7 +1148,7 @@ export class AutopilotChatService {
   /**
    * Sets the theme variant for the chat interface
    *
-   * @param theme - The theme to set ('light', 'dark', 'light-hc', 'dark-hc')
+   * @param theme - The theme to set ('light', 'dark', 'light-hc', 'dark-hc', 'future-light', 'future-dark')
    */
   setTheme(theme: string) {
     this._theme = theme;

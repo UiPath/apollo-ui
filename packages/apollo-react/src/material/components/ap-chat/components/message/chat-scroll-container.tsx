@@ -114,13 +114,20 @@ function ChatScrollContainerComponent({ mode }: ChatScrollContainerProps) {
   const { setOverflowContainer, contentRef, overflowContainer, isOverflow, isContainerWide } =
     useChatScroll();
   const { disabledFeatures, theming } = useChatState();
+  // Only compensate for a scrollbar that takes width. Overlay scrollbars (macOS) take none, so
+  // narrowing the padding widened the content, ended the overflow and restored the padding on the
+  // next resize, in a loop. Read during render: an overflow change re-renders this component, and
+  // by then the browser has already added or removed the scrollbar.
+  const scrollbarTakesSpace =
+    !!overflowContainer && overflowContainer.offsetWidth > overflowContainer.clientWidth;
+  const compensateScrollbar = isOverflow && scrollbarTakesSpace;
 
   return (
     <>
       <OverflowContainer
         tabIndex={0}
         id="overflow-container"
-        isOverflow={isOverflow}
+        isOverflow={compensateScrollbar}
         scrollBarTheming={theming?.scrollBar}
         isContainerWide={isContainerWide}
         ref={setOverflowContainer}
@@ -131,7 +138,10 @@ function ChatScrollContainerComponent({ mode }: ChatScrollContainerProps) {
           mode={mode}
           paddingTop={disabledFeatures.headerSeparator ? undefined : token.Spacing.SpacingXs}
         >
-          <AutopilotChatMessages isOverflow={isOverflow} isContainerWide={isContainerWide} />
+          <AutopilotChatMessages
+            isOverflow={compensateScrollbar}
+            isContainerWide={isContainerWide}
+          />
         </MessagesContainer>
 
         <GradientContainer />

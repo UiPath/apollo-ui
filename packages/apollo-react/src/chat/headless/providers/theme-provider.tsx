@@ -44,7 +44,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialT
   const value = useMemo<ThemeContextValue>(
     () => ({
       theme,
-      isDark: theme.startsWith('dark'),
+      isDark: theme.startsWith('dark') || theme === 'future-dark',
     }),
     [theme]
   );
