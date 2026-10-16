@@ -4,7 +4,6 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useVertexTranslation } from "@/lib/vertex-translation";
 import {
   Collapsible,
   CollapsibleContent,
@@ -26,6 +25,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import type { CompanyLogo, ShellNavItem } from "./shell";
 import {
   fastFadeTransition,
@@ -35,13 +35,22 @@ import {
 import { Company } from "./shell-company";
 import { MinimalCompany } from "./shell-minimal-company";
 import { MinimalNavItem } from "./shell-minimal-nav-item";
+import { mostSpecificActivePath, navItemState } from "./shell-nav-active";
+import { navCatalogFromHook, readNavLabel } from "./shell-nav-label";
 import { Text } from "./shell-text";
+import type { ShellNavLabel } from "./shell-translation-key";
 import { UserProfile } from "./shell-user-profile";
 
 const activeNavClass =
   "text-sidebar-foreground/85 hover:text-sidebar-foreground data-[active=true]:text-primary-700 dark:data-[active=true]:text-primary-400 data-[active=true]:font-semibold data-[active=true]:bg-primary-100/40 dark:data-[active=true]:bg-primary-900/30";
 const navButtonClass = `font-medium ${activeNavClass}`;
 const subButtonClass = activeNavClass;
+const prefixActiveClass = [
+  "font-semibold text-primary-700 dark:text-primary-400",
+  "hover:text-primary-700 dark:hover:text-primary-400",
+  "active:text-primary-700 dark:active:text-primary-400",
+].join(" ");
+const currentPillClass = "bg-primary-100/40 dark:bg-primary-900/30";
 
 interface ShellSidebarProps {
   companyName: string;
@@ -58,7 +67,14 @@ export const ShellSidebar = ({
   companyLogo,
   navItems,
 }: ShellSidebarProps) => {
+  const { pathname } = useLocation();
+
   if (variant === "minimal") {
+    const activePath = mostSpecificActivePath(
+      pathname,
+      navItems.map((item) => item.path),
+    );
+
     return (
       <header className="relative flex items-center justify-between px-4 sm:px-6 lg:px-8 py-6 transition-[padding] duration-300 ease-in-out">
         <MinimalCompany
@@ -72,7 +88,8 @@ export const ShellSidebar = ({
             {navItems.map((item) => (
               <MinimalNavItem
                 key={item.path}
-                to={item.path}
+                to={item.to ?? item.path}
+                active={item.path === activePath}
                 label={item.label}
               />
             ))}
@@ -113,8 +130,9 @@ function SidebarNav({
   companyLogo,
   navItems,
 }: SidebarNavProps) {
-  const { t } = useVertexTranslation();
-  const { state, toggleSidebar } = useSidebar();
+  const { t, i18n } = useVertexTranslation();
+  const catalog = navCatalogFromHook(i18n);
+  const { state } = useSidebar();
   const { pathname } = useLocation();
   const isCollapsed = state === "collapsed";
   const [sidebarHovered, setSidebarHovered] = useState(false);
@@ -147,36 +165,17 @@ function SidebarNav({
     setExpandedItems(expanded);
   }, [pathname, navItems]);
 
-  const handleMenuClick = (path: string) => {
-    if (isCollapsed) {
-      toggleSidebar();
-      setExpandedItems((prev) => new Set(prev).add(path));
-    } else {
-      setExpandedItems((prev) => {
-        const next = new Set(prev);
-        if (next.has(path)) {
-          next.delete(path);
-        } else {
-          next.add(path);
-        }
-        return next;
-      });
-    }
+  const toggleGroup = (path: string) => {
+    setExpandedItems((prev) => {
+      const next = new Set(prev);
+      if (next.has(path)) next.delete(path);
+      else next.add(path);
+      return next;
+    });
   };
 
-  const isActive = (path: string) => {
-    if (path === "/") {
-      return pathname === "/";
-    }
-    return pathname === path || pathname.startsWith(`${path}/`);
-  };
-
-  const isParentActive = (item: ShellNavItem) => {
-    return item.subItems?.some((sub) => isActive(sub.path)) ?? false;
-  };
-
-  const getTooltipText = (label: ShellNavItem["label"]): string => {
-    if (typeof label === "string") return t(label);
+  const getTooltipText = (label: ShellNavLabel): string => {
+    if (typeof label === "string") return readNavLabel(catalog, label);
     return t(label.i18nKey, label.values);
   };
 
@@ -203,87 +202,108 @@ function SidebarNav({
             <SidebarMenu>
               {navItems.map((item) => {
                 const Icon = item.icon;
-                const active = isActive(item.path);
-                const parentActive = isParentActive(item);
                 const isExpanded = expandedItems.has(item.path);
+                const childPaths = item.subItems?.map((sub) => sub.path) ?? [];
+                const row = navItemState(pathname, {
+                  path: item.path,
+                  to: item.to,
+                  childPaths,
+                });
 
                 if (item.subItems && item.subItems.length > 0) {
-                  const showParentActive = isCollapsed && parentActive;
-
                   return (
                     <Collapsible
                       key={item.path}
                       open={isExpanded && !isCollapsed}
-                      onOpenChange={() => handleMenuClick(item.path)}
+                      onOpenChange={() => toggleGroup(item.path)}
                       className="group/collapsible"
                     >
                       <SidebarMenuItem>
-                        <CollapsibleTrigger asChild>
+                        <div
+                          className={cn(
+                            "flex w-full min-w-0 items-center rounded-md",
+                            !isCollapsed && row.current && currentPillClass,
+                            !isCollapsed &&
+                              !row.current &&
+                              "hover:bg-sidebar-accent/50",
+                          )}
+                        >
                           <SidebarMenuButton
+                            asChild
                             tooltip={getTooltipText(item.label)}
-                            isActive={showParentActive}
-                            className={navButtonClass}
+                            isActive={isCollapsed && row.current}
+                            className={cn(
+                              navButtonClass,
+                              row.prefixActive && prefixActiveClass,
+                              !isCollapsed &&
+                                "w-auto min-w-0 flex-1 bg-transparent hover:bg-transparent",
+                            )}
                           >
-                            <motion.span
-                              className="inline-flex items-center justify-center shrink-0"
-                              {...(isCollapsed
-                                ? { whileHover: iconHoverScale }
-                                : {})}
-                            >
-                              <Icon className="size-4 shrink-0" />
-                            </motion.span>
-                            <AnimatePresence initial={false}>
-                              {!isCollapsed && (
-                                <motion.span
-                                  key="text"
-                                  variants={textFadeVariants}
-                                  initial="initial"
-                                  animate="animate"
-                                  exit="exit"
-                                  transition={fastFadeTransition}
-                                  className="whitespace-nowrap truncate"
-                                >
-                                  <Text value={item.label} />
-                                </motion.span>
-                              )}
-                            </AnimatePresence>
-                            <AnimatePresence initial={false}>
-                              {!isCollapsed && (
-                                <motion.div
-                                  key="chevron"
-                                  variants={textFadeVariants}
-                                  initial="initial"
-                                  animate="animate"
-                                  exit="exit"
-                                  transition={fastFadeTransition}
-                                  className="ml-auto"
-                                >
-                                  <ChevronDown
-                                    className={cn(
-                                      "size-4 transition-transform duration-200",
-                                      isExpanded && "rotate-180",
-                                    )}
-                                  />
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
+                            <Link to={row.href}>
+                              <motion.span
+                                className="inline-flex items-center justify-center shrink-0"
+                                {...(isCollapsed
+                                  ? { whileHover: iconHoverScale }
+                                  : {})}
+                              >
+                                <Icon className="size-4 shrink-0" />
+                              </motion.span>
+                              <AnimatePresence initial={false}>
+                                {!isCollapsed && (
+                                  <motion.span
+                                    key="text"
+                                    variants={textFadeVariants}
+                                    initial="initial"
+                                    animate="animate"
+                                    exit="exit"
+                                    transition={fastFadeTransition}
+                                    className="whitespace-nowrap truncate"
+                                  >
+                                    <Text value={item.label} />
+                                  </motion.span>
+                                )}
+                              </AnimatePresence>
+                            </Link>
                           </SidebarMenuButton>
-                        </CollapsibleTrigger>
+                          {!isCollapsed && (
+                            <CollapsibleTrigger asChild>
+                              <button
+                                type="button"
+                                aria-expanded={isExpanded}
+                                aria-label={t(
+                                  isExpanded ? "nav_collapse" : "nav_expand",
+                                  { label: getTooltipText(item.label) },
+                                )}
+                                className="flex size-8 shrink-0 items-center justify-center text-sidebar-foreground/70 hover:text-sidebar-foreground"
+                              >
+                                <ChevronDown
+                                  className={cn(
+                                    "size-4 transition-transform duration-200",
+                                    isExpanded && "rotate-180",
+                                  )}
+                                />
+                              </button>
+                            </CollapsibleTrigger>
+                          )}
+                        </div>
                         <CollapsibleContent>
                           <SidebarMenuSub className="ml-4 mr-0 mt-1 gap-0.5 pl-3 pr-0">
                             {item.subItems.map((subItem) => {
-                              const subActive = isActive(subItem.path);
+                              const sub = navItemState(pathname, {
+                                path: subItem.path,
+                                to: subItem.to,
+                              });
                               return (
                                 <SidebarMenuSubItem key={subItem.path}>
                                   <SidebarMenuSubButton
                                     asChild
-                                    isActive={subActive}
+                                    isActive={sub.current}
                                     className={cn(
                                       "cursor-pointer whitespace-nowrap",
                                       subButtonClass,
                                     )}
                                   >
-                                    <Link to={subItem.path}>
+                                    <Link to={sub.href}>
                                       <Text value={subItem.label} />
                                     </Link>
                                   </SidebarMenuSubButton>
@@ -301,11 +321,11 @@ function SidebarNav({
                   <SidebarMenuItem key={item.path}>
                     <SidebarMenuButton
                       tooltip={getTooltipText(item.label)}
-                      isActive={active}
+                      isActive={row.current}
                       asChild
                       className={navButtonClass}
                     >
-                      <Link to={item.path}>
+                      <Link to={row.href}>
                         <motion.span
                           className="inline-flex items-center justify-center shrink-0"
                           {...(isCollapsed
@@ -347,7 +367,7 @@ function SidebarNav({
         className="absolute inset-0 pointer-events-none"
         style={{
           boxShadow:
-            "inset -1px 0 0 0 color-mix(in srgb, var(--color-border) 50%, transparent)",
+            "inset -1px 0 0 0 color-mix(in srgb, var(--border) 50%, transparent)",
         }}
       />
     </Sidebar>

@@ -8,8 +8,17 @@ import { AuthContext, useAuth } from "./shell-auth-provider";
 import { ShellLayout } from "./shell-layout";
 import { LocaleProvider } from "./shell-locale-provider";
 import { ShellLogin } from "./shell-login";
-import type { TranslationKey } from "./shell-translation-key";
+import type { ShellNavLabel } from "./shell-translation-key";
 import { ShellUserProvider } from "./shell-user-provider";
+
+function ShellLoadingSkeleton() {
+  return (
+    <div className="flex h-screen gap-4 p-4 bg-background dark:bg-sidebar">
+      <Skeleton className="h-full w-[280px]" />
+      <Skeleton className="h-full flex-1 rounded-lg" />
+    </div>
+  );
+}
 
 export interface CompanyLogo {
   url: string;
@@ -20,12 +29,14 @@ export interface CompanyLogo {
 
 export interface ShellSubNavItem {
   path: string;
-  label: TranslationKey;
+  to?: string;
+  label: ShellNavLabel;
 }
 
 export interface ShellNavItem {
   path: string;
-  label: TranslationKey;
+  to?: string;
+  label: ShellNavLabel;
   icon: LucideIcon;
   subItems?: ShellSubNavItem[];
 }
@@ -37,6 +48,7 @@ export interface ApolloShellProps extends PropsWithChildren {
   companyLogo?: CompanyLogo;
   navItems: ShellNavItem[];
   loginDescription?: string;
+  configureI18n?: () => Promise<void>;
 }
 
 const ApolloShellContent: FC<ApolloShellProps> = ({
@@ -49,7 +61,11 @@ const ApolloShellContent: FC<ApolloShellProps> = ({
   loginDescription,
 }) => {
   const authContext = useContext(AuthContext);
-  const { accessToken } = useAuth();
+  const { accessToken, isLoading } = useAuth();
+
+  if (authContext && isLoading) {
+    return <ShellLoadingSkeleton />;
+  }
 
   if (authContext && !accessToken) {
     return <ShellLogin title={productName} description={loginDescription} />;
@@ -78,15 +94,12 @@ export const ApolloShell: FC<ApolloShellProps> = ({
   variant,
   navItems,
   loginDescription,
+  configureI18n,
 }) => {
   return (
     <LocaleProvider
-      loadingElement={
-        <div className="flex h-screen gap-4 p-4 bg-background dark:bg-sidebar">
-          <Skeleton className="h-full w-[280px]" />
-          <Skeleton className="h-full flex-1 rounded-lg" />
-        </div>
-      }
+      configureI18n={configureI18n}
+      loadingElement={<ShellLoadingSkeleton />}
     >
       <ApolloShellContent
         companyName={companyName}
