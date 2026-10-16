@@ -56,8 +56,8 @@ export const FIELD_TYPE_META: Record<QuickFieldType, FieldTypeMeta> = {
     fixedLabel: 'Fixed value',
     fixedDescription: 'Use a literal string value',
   },
-  // String data with a multi-line control. Wind renders it as a single-line input, like
-  // `string`; a consumer supplies the multi-line control through `renderModeControl`.
+  // String data with a multi-line control: a fixed value renders as a text area, an
+  // expression as the same one-line input `string` uses.
   textarea: {
     label: 'Text area',
     icon: AlignLeft,
