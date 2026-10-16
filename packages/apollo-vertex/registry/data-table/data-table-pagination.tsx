@@ -32,10 +32,17 @@ function DataTablePagination<TData extends RowData>({
 }: DataTablePaginationProps<TData>) {
   const { t } = useVertexTranslation();
   const { pageIndex, pageSize } = table.state.pagination;
-  const totalRows = table.getFilteredRowModel().rows.length;
+  const totalRows =
+    table.options.rowCount ?? table.getFilteredRowModel().rows.length;
   const pageCount = table.getPageCount();
   const canPreviousPage = pageIndex > 0;
   const canNextPage = pageCount > 0 && pageIndex < pageCount - 1;
+  const startRow =
+    totalRows === 0 ? 0 : Math.min(pageIndex * pageSize + 1, totalRows);
+  const endRow = Math.min((pageIndex + 1) * pageSize, totalRows);
+  const selectedRowCount = table.options.manualPagination
+    ? Object.values(table.state.rowSelection).filter(Boolean).length
+    : table.getFilteredSelectedRowModel().rows.length;
 
   return (
     <div
@@ -45,13 +52,26 @@ function DataTablePagination<TData extends RowData>({
         className,
       )}
     >
-      <div className="text-muted-foreground flex-1 text-sm">
-        {table.options.enableRowSelection &&
-          t("rows_selected", {
-            selected: table.getFilteredSelectedRowModel().rows.length,
-            total: totalRows,
-            defaultValue: "{{selected}} of {{total}} row(s) selected.",
-          })}
+      <div className="text-muted-foreground flex flex-1 flex-wrap items-center gap-x-4 text-sm">
+        {totalRows > 0 && (
+          <span>
+            {t("showing_rows_range", {
+              start: startRow,
+              end: endRow,
+              total: totalRows,
+              defaultValue: "Showing {{start}}–{{end}} of {{total}}",
+            })}
+          </span>
+        )}
+        {table.options.enableRowSelection && (
+          <span>
+            {t("rows_selected", {
+              selected: selectedRowCount,
+              total: totalRows,
+              defaultValue: "{{selected}} of {{total}} row(s) selected.",
+            })}
+          </span>
+        )}
       </div>
       <div className="flex items-center space-x-6 lg:space-x-8">
         <div className="flex items-center space-x-2">

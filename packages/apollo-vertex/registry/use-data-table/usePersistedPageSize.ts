@@ -8,10 +8,15 @@ import { useLocalStorage } from "@mantine/hooks";
 
 export interface UsePersistedPageSizeOptions {
   storageKey: string;
+  paginationControl?: {
+    pageIndex: number;
+    onPageIndexChange: (pageIndex: number) => void;
+  };
 }
 
 export function usePersistedPageSize({
   storageKey,
+  paginationControl,
 }: UsePersistedPageSizeOptions) {
   const [pageSize, setPageSize] = useLocalStorage<number>({
     key: `${ENTITY_TABLE_STORAGE_PREFIX}page-size-${storageKey}`,
@@ -19,14 +24,24 @@ export function usePersistedPageSize({
   });
 
   const [pageIndex, setPageIndex] = useState(0);
-  const pagination: PaginationState = { pageIndex, pageSize };
+  const resolvedPageIndex = paginationControl?.pageIndex ?? pageIndex;
+  const pagination: PaginationState = {
+    pageIndex: resolvedPageIndex,
+    pageSize,
+  };
 
   const onPaginationChange: OnChangeFn<PaginationState> = (updaterOrValue) => {
     const newPagination =
       typeof updaterOrValue === "function"
         ? updaterOrValue(pagination)
         : updaterOrValue;
-    setPageIndex(newPagination.pageIndex);
+    if (newPagination.pageIndex !== resolvedPageIndex) {
+      if (paginationControl) {
+        paginationControl.onPageIndexChange(newPagination.pageIndex);
+      } else {
+        setPageIndex(newPagination.pageIndex);
+      }
+    }
     if (newPagination.pageSize !== pageSize) {
       setPageSize(newPagination.pageSize);
     }

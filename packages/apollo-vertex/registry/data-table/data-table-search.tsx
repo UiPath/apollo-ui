@@ -19,11 +19,13 @@ function DataTableSearch<TData extends RowData>({
   className,
 }: DataTableSearchProps<TData>) {
   const { t } = useVertexTranslation();
+  const label = placeholder ?? t("search", { defaultValue: "Search..." });
   return (
     <div data-slot="data-table-search" className={cn("relative", className)}>
       <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
       <Input
-        placeholder={placeholder ?? t("search", { defaultValue: "Search..." })}
+        aria-label={label}
+        placeholder={label}
         value={String(table.state.globalFilter ?? "")}
         onChange={(e) => table.setGlobalFilter(e.target.value)}
         className="w-full sm:w-80 md:w-96 pl-9 border-0"
