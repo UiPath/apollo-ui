@@ -1,9 +1,14 @@
 import { RefreshCw, Trash2 } from 'lucide-react';
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { DateTimePicker } from '@/components/ui/datetime-picker';
 import { FileUpload } from '@/components/ui/file-upload';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  InputGroupTextarea,
+} from '@/components/ui/input-group';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
@@ -42,6 +47,7 @@ import { DEFAULT_SELECT_OPTIONS, formatDateValue, parseListValue, toDateOnlyStri
  * - Insert variable renders `variables` as supplied and splices at the caret;
  *   `onInsertVariable` takes over what inserting means.
  * - Enter commits through `onValueBlur`, Escape restores the value as of focus.
+ *   In a text area Shift+Enter adds a new line.
  * - Every user-visible string can be overridden through `strings`.
  *
  * The expression mode is styled as code but not highlighted or evaluated.
@@ -94,7 +100,7 @@ export function QuickFormField({
   const generatedId = useId().replace(/:/g, '');
   // The component owns its input, so caret-aware insert and Enter/Escape live
   // here instead of behind an exposed ref.
-  const valueInputRef = useRef<HTMLInputElement>(null);
+  const valueInputRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
   const committedRef = useRef(value);
   // Null until the author places a caret: a never-focused input reports
   // selectionStart 0, which would prepend an inserted variable.
@@ -170,8 +176,10 @@ export function QuickFormField({
 
   // Enter blurs, so a consumer commits in `onValueBlur` as it already does.
   // Escape restores the value as of focus, which only the component knows.
-  const handleValueKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+  // A text area keeps Shift+Enter for its line breaks.
+  const handleValueKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const newLine = e.shiftKey && e.currentTarget instanceof HTMLTextAreaElement;
+    if (e.key === 'Enter' && !newLine) {
       e.preventDefault();
       e.currentTarget.blur();
     }
@@ -205,23 +213,29 @@ export function QuickFormField({
     });
   };
 
-  // Shared by the expression input and the literal text input, which both
-  // track the caret for Insert variable.
+  // A callback ref, so one ref can hold either the input or the text area.
+  const setValueInput = useCallback((el: HTMLInputElement | HTMLTextAreaElement | null) => {
+    valueInputRef.current = el;
+  }, []);
+
+  // Shared by the expression input and the literal text input and text area,
+  // which all track the caret for Insert variable.
   const textInputProps = {
     id: fieldId,
-    ref: valueInputRef,
+    ref: setValueInput,
     readOnly: !editableOnValueChange,
     disabled,
     value,
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => editableOnValueChange?.(e.target.value),
-    onFocus: (e: React.FocusEvent<HTMLInputElement>) => {
+    onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+      editableOnValueChange?.(e.target.value),
+    onFocus: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       committedRef.current = value;
       caretRef.current = {
         start: e.currentTarget.selectionStart ?? value.length,
         end: e.currentTarget.selectionEnd ?? value.length,
       };
     },
-    onSelect: (e: React.SyntheticEvent<HTMLInputElement>) => {
+    onSelect: (e: React.SyntheticEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const el = e.currentTarget;
       caretRef.current = {
         start: el.selectionStart ?? 0,
@@ -229,7 +243,7 @@ export function QuickFormField({
       };
     },
     onKeyDown: handleValueKeyDown,
-    onBlur: (e: React.FocusEvent<HTMLInputElement>) => {
+    onBlur: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       // Clicking the Insert trigger blurs this input, so this is the last
       // moment the caret is knowable.
       caretRef.current = {
@@ -347,6 +361,9 @@ export function QuickFormField({
         disabled={!editableOnValueChange}
         onBlur={onValueBlur}
       />
+    ) : fieldType === 'textarea' ? (
+      // Grows with its content up to the ceiling, then scrolls.
+      <InputGroupTextarea {...textInputProps} minRows={3} maxRows={8} />
     ) : (
       <InputGroupInput
         {...textInputProps}
@@ -393,10 +410,11 @@ export function QuickFormField({
         error={error}
         errorId={validationId}
         disabled={disabled}
-        // The dropzone is taller than a row and selected chips wrap past one, so
-        // the box grows to hold them.
+        // The dropzone and a text area are taller than a row and selected chips
+        // wrap past one, so the box grows to hold them.
         layout={
-          mode === 'literal' && (fieldType === 'file' || fieldType === 'multi-select')
+          mode === 'literal' &&
+          (fieldType === 'file' || fieldType === 'multi-select' || fieldType === 'textarea')
             ? 'grow'
             : 'row'
         }

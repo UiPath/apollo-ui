@@ -12,10 +12,11 @@ import { FIELD_TYPE_META, FIELD_TYPE_ORDER } from './types';
 describe('QuickFormField — divergences from apollo-wind', () => {
   describe('added field types', () => {
     it('offers every added type in the picker, in vocabulary order', () => {
-      // The three added types.
+      // The four added types.
       expect(FIELD_TYPE_ORDER).toContain('double');
       expect(FIELD_TYPE_ORDER).toContain('datetime');
       expect(FIELD_TYPE_ORDER).toContain('array');
+      expect(FIELD_TYPE_ORDER).toContain('textarea');
       // Each added type has to be addressable by the picker, which reads meta.
       for (const type of FIELD_TYPE_ORDER) {
         expect(FIELD_TYPE_META[type]).toBeDefined();
@@ -24,6 +25,7 @@ describe('QuickFormField — divergences from apollo-wind', () => {
       // integer, and a timestamp beside its date.
       expect(FIELD_TYPE_ORDER.indexOf('double')).toBe(FIELD_TYPE_ORDER.indexOf('integer') + 1);
       expect(FIELD_TYPE_ORDER.indexOf('datetime')).toBe(FIELD_TYPE_ORDER.indexOf('date') + 1);
+      expect(FIELD_TYPE_ORDER.indexOf('textarea')).toBe(FIELD_TYPE_ORDER.indexOf('string') + 1);
     });
 
     // Which types are offered is the consumer's; which the component can
@@ -231,6 +233,124 @@ describe('QuickFormField — divergences from apollo-wind', () => {
       await user.click(screen.getByRole('button', { name: 'Insert variable' }));
       await user.click(screen.getByRole('option', { name: 'Item ID' }));
       expect(onValueChange).toHaveBeenLastCalledWith('hello item.id');
+    });
+  });
+
+  // The text area is the component's own control, so consumers don't supply one.
+  describe('text area', () => {
+    it('renders a fixed value as a growing text area', () => {
+      const { container } = render(
+        <QuickFormField locked={false} fieldType="textarea" onValueChange={vi.fn()} />
+      );
+      expect(screen.getByPlaceholderText('Text area value').tagName).toBe('TEXTAREA');
+      expect(container.querySelector('[role="group"]')).toHaveAttribute('data-layout', 'grow');
+    });
+
+    it('keeps an expression on the one-line input', () => {
+      const { container } = render(
+        <QuickFormField
+          locked={false}
+          fieldType="textarea"
+          mode="expression"
+          onValueChange={vi.fn()}
+        />
+      );
+      const input = screen.getByPlaceholderText('Write a text area expression');
+      expect(input.tagName).toBe('INPUT');
+      expect(input).toHaveClass('font-mono');
+      expect(container.querySelector('[role="group"]')).toHaveAttribute('data-layout', 'row');
+    });
+
+    it('commits on Enter, like the other text controls', async () => {
+      const user = userEvent.setup();
+      const onValueChange = vi.fn();
+      const onValueBlur = vi.fn();
+      render(
+        <QuickFormField
+          locked={false}
+          fieldType="textarea"
+          value="hi"
+          onValueChange={onValueChange}
+          onValueBlur={onValueBlur}
+        />
+      );
+      const textarea = screen.getByPlaceholderText('Text area value');
+      await user.click(textarea);
+      await user.keyboard('{Enter}');
+      expect(onValueBlur).toHaveBeenCalledOnce();
+      expect(onValueChange).not.toHaveBeenCalled();
+      expect(textarea).not.toHaveFocus();
+    });
+
+    it('adds a new line on Shift+Enter', async () => {
+      const user = userEvent.setup();
+      const onValueChange = vi.fn();
+      const onValueBlur = vi.fn();
+      render(
+        <QuickFormField
+          locked={false}
+          fieldType="textarea"
+          value="hi"
+          onValueChange={onValueChange}
+          onValueBlur={onValueBlur}
+        />
+      );
+      const textarea = screen.getByPlaceholderText('Text area value');
+      await user.click(textarea);
+      await user.keyboard('{Shift>}{Enter}{/Shift}');
+      expect(onValueChange).toHaveBeenLastCalledWith(expect.stringContaining('\n'));
+      expect(onValueBlur).not.toHaveBeenCalled();
+      expect(textarea).toHaveFocus();
+    });
+
+    it('reverts to the value as of focus on Escape', async () => {
+      const user = userEvent.setup();
+      const onValueChange = vi.fn();
+      render(
+        <QuickFormField
+          locked={false}
+          fieldType="textarea"
+          value={'line one\nline two'}
+          onValueChange={onValueChange}
+        />
+      );
+      await user.click(screen.getByPlaceholderText('Text area value'));
+      await user.keyboard('{Escape}');
+      expect(onValueChange).toHaveBeenLastCalledWith('line one\nline two');
+    });
+
+    it('splices an inserted variable at its caret', async () => {
+      const user = userEvent.setup();
+      const onValueChange = vi.fn();
+      render(
+        <QuickFormField
+          locked={false}
+          fieldType="textarea"
+          value={'a\nb'}
+          onValueChange={onValueChange}
+          variables={[{ label: 'Item ID', value: 'item.id' }]}
+        />
+      );
+      const textarea = screen.getByPlaceholderText('Text area value') as HTMLTextAreaElement;
+      await user.click(textarea);
+      textarea.setSelectionRange(2, 2);
+      textarea.dispatchEvent(new Event('select', { bubbles: true }));
+      await user.click(screen.getByRole('button', { name: 'Insert variable' }));
+      await user.click(screen.getByRole('option', { name: 'Item ID' }));
+      expect(onValueChange).toHaveBeenLastCalledWith('a\nitem.idb');
+    });
+
+    it("yields to the consumer's control", () => {
+      render(
+        <QuickFormField
+          locked={false}
+          fieldType="textarea"
+          onValueChange={vi.fn()}
+          renderModeControl={(mode) => <span>consumer {mode}</span>}
+        />
+      );
+      expect(screen.getByText('consumer literal')).toBeInTheDocument();
+      expect(screen.queryByPlaceholderText('Text area value')).not.toBeInTheDocument();
     });
   });
 
