@@ -1912,6 +1912,11 @@
           "target": "components/ui/data-table/data-table-row.tsx"
         },
         {
+          "path": "registry/data-table/data-table-data-row.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/data-table/data-table-data-row.tsx"
+        },
+        {
           "path": "registry/data-table/data-table-scroll-shadow.tsx",
           "type": "registry:ui",
           "target": "components/ui/data-table/data-table-scroll-shadow.tsx"

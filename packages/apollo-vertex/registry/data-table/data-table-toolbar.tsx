@@ -13,16 +13,24 @@ interface DataTableToolbarProps<TData extends RowData> {
   table: DataTableInstance<TData>;
   className?: string;
   enableSearch?: boolean;
+  searchPlaceholder?: string;
   enableViewOptions?: boolean;
   customContent?: React.ReactNode;
+  onColumnVisibilityToggle?: (
+    columnId: string,
+    visible: boolean,
+    visibleCount: number,
+  ) => void;
 }
 
 function DataTableToolbar<TData extends RowData>({
   table,
   className,
   enableSearch,
+  searchPlaceholder,
   enableViewOptions,
   customContent,
+  onColumnVisibilityToggle,
 }: DataTableToolbarProps<TData>) {
   if (!enableSearch && !enableViewOptions && !customContent) return null;
 
@@ -35,11 +43,20 @@ function DataTableToolbar<TData extends RowData>({
       )}
     >
       {enableSearch && (
-        <DataTableSearch table={table} className="w-full sm:w-auto" />
+        <DataTableSearch
+          table={table}
+          placeholder={searchPlaceholder}
+          className="w-full sm:w-auto"
+        />
       )}
       <div className="flex items-center gap-2">
         {customContent}
-        {enableViewOptions && <DataTableViewOptions table={table} />}
+        {enableViewOptions && (
+          <DataTableViewOptions
+            table={table}
+            onColumnVisibilityToggle={onColumnVisibilityToggle}
+          />
+        )}
       </div>
     </div>
   );

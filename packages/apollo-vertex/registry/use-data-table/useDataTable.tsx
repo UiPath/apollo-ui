@@ -2,8 +2,10 @@
 
 import type {
   ColumnFiltersState,
+  OnChangeFn,
   RowData,
   RowSelectionState,
+  SortingState,
 } from "@tanstack/react-table";
 import { useState } from "react";
 import type { DataTableColumnDef } from "@/lib/table-features";
@@ -20,6 +22,25 @@ export interface UseDataTableOptions<TData extends RowData> {
   storageKey: string;
   defaultColumnOrder?: string[];
   defaultVisibleColumns?: string[];
+  sortingControl?: {
+    sorting: SortingState;
+    onSortingChange: (sorting: SortingState) => void;
+  };
+  // When set, the search string comes from the caller instead of hook state.
+  globalFilterControl?: {
+    globalFilter: string;
+    onGlobalFilterChange: (globalFilter: string) => void;
+  };
+  onColumnVisibilityToggle?: (
+    columnId: string,
+    visible: boolean,
+    visibleCount: number,
+  ) => void;
+  paginationControl?: {
+    pageIndex: number;
+    onPageIndexChange: (pageIndex: number) => void;
+    onPageIndexOutOfRange?: (pageIndex: number) => void;
+  };
 }
 
 export function useDataTable<TData extends RowData>({
@@ -29,6 +50,10 @@ export function useDataTable<TData extends RowData>({
   storageKey,
   defaultColumnOrder: defaultColumnOrderProp,
   defaultVisibleColumns: defaultVisibleColumnsProp,
+  sortingControl,
+  globalFilterControl,
+  onColumnVisibilityToggle,
+  paginationControl,
 }: UseDataTableOptions<TData>) {
   const allColumnKeys = columns
     // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- tanstack ColumnDef doesn't expose accessorKey in its type union
@@ -44,7 +69,19 @@ export function useDataTable<TData extends RowData>({
     defaultVisibleColumns,
   });
 
-  const { sorting, onSortingChange } = usePersistedSorting({ storageKey });
+  const persistedSorting = usePersistedSorting({ storageKey });
+  const sorting = sortingControl?.sorting ?? persistedSorting.sorting;
+  const onSortingChange: OnChangeFn<SortingState> = (updaterOrValue) => {
+    if (sortingControl) {
+      const nextSorting =
+        typeof updaterOrValue === "function"
+          ? updaterOrValue(sortingControl.sorting)
+          : updaterOrValue;
+      sortingControl.onSortingChange(nextSorting);
+      return;
+    }
+    persistedSorting.onSortingChange(updaterOrValue);
+  };
 
   const { columnOrder, onColumnOrderChange } = usePersistedColumnOrder({
     storageKey,
@@ -53,9 +90,23 @@ export function useDataTable<TData extends RowData>({
 
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-  const [globalFilter, setGlobalFilter] = useState("");
+  const [uncontrolledGlobalFilter, setUncontrolledGlobalFilter] = useState("");
+  const globalFilter =
+    globalFilterControl?.globalFilter ?? uncontrolledGlobalFilter;
+  const onGlobalFilterChange: OnChangeFn<string> = (updaterOrValue) => {
+    const nextFilter =
+      typeof updaterOrValue === "function"
+        ? updaterOrValue(globalFilter)
+        : updaterOrValue;
+    if (globalFilterControl) {
+      globalFilterControl.onGlobalFilterChange(nextFilter);
+      return;
+    }
+    setUncontrolledGlobalFilter(nextFilter);
+  };
   const { pagination, onPaginationChange } = usePersistedPageSize({
     storageKey,
+    paginationControl,
   });
 
   return {
@@ -73,8 +124,10 @@ export function useDataTable<TData extends RowData>({
     rowSelection,
     onRowSelectionChange: setRowSelection,
     globalFilter,
-    onGlobalFilterChange: setGlobalFilter,
+    onGlobalFilterChange,
     pagination,
     onPaginationChange,
+    onColumnVisibilityToggle,
+    onPageIndexOutOfRange: paginationControl?.onPageIndexOutOfRange,
   };
 }
