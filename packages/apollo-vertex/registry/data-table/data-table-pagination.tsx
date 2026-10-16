@@ -40,6 +40,9 @@ function DataTablePagination<TData extends RowData>({
   const startRow =
     totalRows === 0 ? 0 : Math.min(pageIndex * pageSize + 1, totalRows);
   const endRow = Math.min((pageIndex + 1) * pageSize, totalRows);
+  const selectedRowCount = table.options.manualPagination
+    ? Object.values(table.state.rowSelection).filter(Boolean).length
+    : table.getFilteredSelectedRowModel().rows.length;
 
   return (
     <div
@@ -63,7 +66,7 @@ function DataTablePagination<TData extends RowData>({
         {table.options.enableRowSelection && (
           <span>
             {t("rows_selected", {
-              selected: table.getFilteredSelectedRowModel().rows.length,
+              selected: selectedRowCount,
               total: totalRows,
               defaultValue: "{{selected}} of {{total}} row(s) selected.",
             })}

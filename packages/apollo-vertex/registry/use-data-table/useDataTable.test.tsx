@@ -74,6 +74,32 @@ function HookProbe({
 }
 
 describe("useDataTable controls", () => {
+  it("keeps both uncontrolled filter updates made before a rerender", () => {
+    function FilterProbe() {
+      const state = useDataTable({
+        data,
+        columns,
+        storageKey: "filter-batch",
+      });
+      return (
+        <button
+          type="button"
+          onClick={() => {
+            state.onGlobalFilterChange((value) => `${value}a`);
+            state.onGlobalFilterChange((value) => `${value}b`);
+          }}
+        >
+          {`filter:${state.globalFilter}`}
+        </button>
+      );
+    }
+
+    render(<FilterProbe />);
+    fireEvent.click(screen.getByRole("button", { name: "filter:" }));
+
+    expect(screen.getByRole("button", { name: "filter:ab" })).toBeTruthy();
+  });
+
   it("keeps sorting on usePersistedSorting when no control is passed", () => {
     render(<HookProbe />);
 

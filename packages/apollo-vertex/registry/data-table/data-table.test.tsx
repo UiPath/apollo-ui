@@ -1,3 +1,4 @@
+import type { RowSelectionState } from "@tanstack/react-table";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
@@ -191,6 +192,82 @@ describe("DataTable screen props", () => {
       "noopener,noreferrer",
     );
     open.mockRestore();
+  });
+
+  it("leaves middle-clicks on nested controls and prevented events alone", () => {
+    const open = vi.spyOn(window, "open").mockImplementation(() => null);
+    renderTable({
+      columns: [
+        {
+          accessorKey: "id",
+          header: "Identifier",
+          cell: ({ row }) => (
+            <a href={`/items/${row.original.id}`}>{"Open item"}</a>
+          ),
+        },
+        {
+          accessorKey: "amount",
+          header: "Amount",
+          cell: () => <button type="button">{"Expand"}</button>,
+        },
+      ],
+      getRowHref: (row) => `/invoices/${row.id}`,
+    });
+
+    const link = screen.getAllByRole("link", { name: "Open item" })[0];
+    const expand = screen.getAllByRole("button", { name: "Expand" })[0];
+    if (!link || !expand) throw new Error("missing control");
+    const linkClick = new MouseEvent("auxclick", {
+      bubbles: true,
+      button: 1,
+      cancelable: true,
+    });
+    const expandDown = new MouseEvent("mousedown", {
+      bubbles: true,
+      button: 1,
+      cancelable: true,
+    });
+    link.dispatchEvent(linkClick);
+    expand.dispatchEvent(expandDown);
+
+    expect(open).not.toHaveBeenCalled();
+    expect(linkClick.defaultPrevented).toBe(false);
+    expect(expandDown.defaultPrevented).toBe(false);
+
+    const amountCell = screen.getAllByRole("cell")[1];
+    if (!amountCell) throw new Error("missing cell");
+    const prevented = new MouseEvent("auxclick", {
+      bubbles: true,
+      button: 1,
+      cancelable: true,
+    });
+    prevented.preventDefault();
+    amountCell.dispatchEvent(prevented);
+    expect(open).not.toHaveBeenCalled();
+
+    open.mockRestore();
+  });
+
+  it("counts selected rows on other manual pages and filtered rows on the client", () => {
+    const selection: RowSelectionState = { a: true, gone: true };
+    const shared = {
+      getRowId: (row: Row) => row.id,
+      rowSelection: selection,
+      onRowSelectionChange: ignoreChange,
+      pagination: { pageIndex: 0, pageSize: 10 },
+      onPaginationChange: ignoreChange,
+    };
+
+    const client = renderTable(shared);
+    expect(screen.getByText("1 of 2 row(s) selected.")).toBeTruthy();
+    client.unmount();
+
+    renderTable({
+      ...shared,
+      manualPagination: true,
+      rowCount: 40,
+    });
+    expect(screen.getByText("2 of 40 row(s) selected.")).toBeTruthy();
   });
 
   it("shows an empty state when the column menu search matches nothing", () => {

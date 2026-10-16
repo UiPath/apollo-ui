@@ -94,15 +94,15 @@ export function useDataTable<TData extends RowData>({
   const globalFilter =
     globalFilterControl?.globalFilter ?? uncontrolledGlobalFilter;
   const onGlobalFilterChange: OnChangeFn<string> = (updaterOrValue) => {
+    if (!globalFilterControl) {
+      setUncontrolledGlobalFilter(updaterOrValue);
+      return;
+    }
     const nextFilter =
       typeof updaterOrValue === "function"
         ? updaterOrValue(globalFilter)
         : updaterOrValue;
-    if (globalFilterControl) {
-      globalFilterControl.onGlobalFilterChange(nextFilter);
-      return;
-    }
-    setUncontrolledGlobalFilter(nextFilter);
+    globalFilterControl.onGlobalFilterChange(nextFilter);
   };
   const { pagination, onPaginationChange } = usePersistedPageSize({
     storageKey,

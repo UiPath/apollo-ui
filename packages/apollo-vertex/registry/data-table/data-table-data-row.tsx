@@ -8,6 +8,34 @@ import { cn } from "@/lib/utils";
 
 import { DATA_TABLE_ROW_HEIGHT } from "./data-table-row";
 
+const NESTED_CONTROL_SELECTOR = [
+  "a",
+  "button",
+  "input",
+  "select",
+  "textarea",
+  "[role='button']",
+  "[role='link']",
+  "[role='checkbox']",
+  "[role='menuitem']",
+  "[role='radio']",
+  "[role='switch']",
+].join(", ");
+
+function isNestedControlTarget(event: React.MouseEvent): boolean {
+  if (!(event.target instanceof Element)) return false;
+  const control = event.target.closest(NESTED_CONTROL_SELECTOR);
+  return control != null && control !== event.currentTarget;
+}
+
+function shouldHandleMiddleClick(event: React.MouseEvent): boolean {
+  return (
+    event.button === 1 &&
+    !event.defaultPrevented &&
+    !isNestedControlTarget(event)
+  );
+}
+
 interface DataTableDataRowProps<TData extends RowData> {
   row: DataTableRow<TData>;
   onRowClick?: (row: TData) => void;
@@ -45,12 +73,14 @@ function DataTableDataRow<TData extends RowData>({
         {...(rowClickHandler && { onClick: rowClickHandler })}
         {...(rowHref && {
           // Middle-click opens the row in a new tab. Suppress the browser
-          // autoscroll that mousedown would otherwise start.
+          // autoscroll that mousedown would otherwise start. Nested links
+          // and controls keep their own middle-click behavior.
           onMouseDown: (event: React.MouseEvent) => {
-            if (event.button === 1) event.preventDefault();
+            if (!shouldHandleMiddleClick(event)) return;
+            event.preventDefault();
           },
           onAuxClick: (event: React.MouseEvent) => {
-            if (event.button !== 1) return;
+            if (!shouldHandleMiddleClick(event)) return;
             event.preventDefault();
             window.open(rowHref, "_blank", "noopener,noreferrer");
           },
