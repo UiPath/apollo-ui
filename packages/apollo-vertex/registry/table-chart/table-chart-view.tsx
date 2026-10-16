@@ -2,13 +2,14 @@
 
 import {
   type ColumnDef,
+  columnVisibilityFeature,
   flexRender,
-  getCoreRowModel,
+  rowSortingFeature,
   type SortingState,
-  useReactTable,
+  tableFeatures,
+  useTable,
 } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
-import { useVertexTranslation } from "@/lib/vertex-translation";
 import {
   Table,
   TableBody,
@@ -18,6 +19,7 @@ import {
   TableRow as TableRowComponent,
 } from "@/components/ui/table";
 import type { PrimitiveValue } from "@/lib/charts-core";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 
 export interface TableChartColumn {
   id: string;
@@ -30,6 +32,11 @@ export interface TableChartSort {
   field: string;
   direction: "asc" | "desc";
 }
+
+const tableChartFeatures = tableFeatures({
+  rowSortingFeature,
+  columnVisibilityFeature,
+});
 
 export interface TableChartProps {
   columns: TableChartColumn[];
@@ -50,7 +57,9 @@ export function TableChart({
     sort ? [{ id: sort.field, desc: sort.direction === "desc" }] : [],
   );
 
-  const columnDefs = useMemo<ColumnDef<Record<string, PrimitiveValue>>[]>(
+  const columnDefs = useMemo<
+    ColumnDef<typeof tableChartFeatures, Record<string, PrimitiveValue>>[]
+  >(
     () =>
       columns.map((column) => ({
         accessorFn: (row) => row[column.id],
@@ -103,10 +112,10 @@ export function TableChart({
     [columns, t],
   );
 
-  const table = useReactTable({
+  const table = useTable({
+    features: tableChartFeatures,
     data: rows,
     columns: columnDefs,
-    getCoreRowModel: getCoreRowModel(),
     manualSorting: true,
     onSortingChange: (updater) => {
       const newSorting =

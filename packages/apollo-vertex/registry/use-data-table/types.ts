@@ -1,10 +1,12 @@
-import type { ColumnDef } from "@tanstack/react-table";
+import type { RowData } from "@tanstack/react-table";
+import type { DataTableColumnDef } from "@/lib/table-features";
 
 export type EntityRecord = Record<string, unknown>;
 
-export type ColumnDefWithAccessorKey<T> = ColumnDef<T> & {
-  accessorKey: string;
-};
+export type ColumnDefWithAccessorKey<T extends RowData> =
+  DataTableColumnDef<T> & {
+    accessorKey: string;
+  };
 
 export interface Column {
   key: string;

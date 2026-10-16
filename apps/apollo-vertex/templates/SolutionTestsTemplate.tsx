@@ -1,17 +1,29 @@
 "use client";
 
-import type { ColumnDef } from "@tanstack/react-table";
 import dynamic from "next/dynamic";
 import { useState } from "react";
 
-import { DataTableColumnHeader } from "@/components/ui/data-table";
+import {
+  type ColumnDef,
+  DataTableColumnHeader,
+} from "@/components/ui/data-table";
+import { LocaleProvider } from "@/registry/shell/shell-locale-provider";
+import type { SolutionTestsConfig } from "@/registry/solution-tests/config";
 // Import the dumb pieces directly (not the package barrel) so the demo's module
 // graph never pulls in the collection hooks (and their `@tanstack/react-db` /
 // vs-core deps) — same approach as the GroupMembershipGuard demo.
 import { SolutionTestsProvider } from "@/registry/solution-tests/context";
+import { ExpandedAgentsView } from "@/registry/solution-tests/expanded-agents-view";
+import { ExpandedRunTestsView } from "@/registry/solution-tests/expanded-run-tests-view";
+import { CASE_EVALUATION_OUTPUT_RENDERER } from "@/registry/solution-tests/outputs/case-evaluation/case-evaluation-output";
+import { IXP_OUTPUT_RENDERER } from "@/registry/solution-tests/outputs/ixp-extraction/ixp-output-result";
 import {
-  SolutionTestsView,
+  type BaselineJobMap,
+  RunDetailsView,
+} from "@/registry/solution-tests/run-details-view";
+import {
   type RunConfirmTarget,
+  SolutionTestsView,
 } from "@/registry/solution-tests/solution-tests-view";
 import type {
   SolutionTest,
@@ -19,16 +31,6 @@ import type {
   SolutionTestJob,
   SolutionTestRun,
 } from "@/registry/solution-tests/types";
-import type { SolutionTestsConfig } from "@/registry/solution-tests/config";
-import { ExpandedAgentsView } from "@/registry/solution-tests/expanded-agents-view";
-import { ExpandedRunTestsView } from "@/registry/solution-tests/expanded-run-tests-view";
-import {
-  RunDetailsView,
-  type BaselineJobMap,
-} from "@/registry/solution-tests/run-details-view";
-import { LocaleProvider } from "@/registry/shell/shell-locale-provider";
-import { CASE_EVALUATION_OUTPUT_RENDERER } from "@/registry/solution-tests/outputs/case-evaluation/case-evaluation-output";
-import { IXP_OUTPUT_RENDERER } from "@/registry/solution-tests/outputs/ixp-extraction/ixp-output-result";
 import {
   createMockDb,
   IXP_DEMO_AGENT_NAME,

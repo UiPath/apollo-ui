@@ -1,14 +1,12 @@
 "use client";
 
-import type { Table as TanstackTable } from "@tanstack/react-table";
+import type { RowData } from "@tanstack/react-table";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
   ChevronsLeftIcon,
   ChevronsRightIcon,
 } from "lucide-react";
-import { useVertexTranslation } from "@/lib/vertex-translation";
-
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -17,24 +15,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import type { DataTableInstance } from "@/lib/table-features";
 import { cn } from "@/lib/utils";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 
-interface DataTablePaginationProps<TData> {
-  table: TanstackTable<TData>;
+interface DataTablePaginationProps<TData extends RowData> {
+  table: DataTableInstance<TData>;
   paginationSizes?: number[];
   className?: string;
 }
 
-function DataTablePagination<TData>({
+function DataTablePagination<TData extends RowData>({
   table,
   paginationSizes = [10, 25, 50, 100],
   className,
 }: DataTablePaginationProps<TData>) {
-  // React Compiler compat: TanStack Table objects have stable references with mutable state.
-  // codeql[js/unknown-directive] - valid React Compiler directive
-  "use no memo";
   const { t } = useVertexTranslation();
-  const { pageIndex, pageSize } = table.getState().pagination;
+  const { pageIndex, pageSize } = table.state.pagination;
   const totalRows = table.getFilteredRowModel().rows.length;
   const pageCount = table.getPageCount();
   const canPreviousPage = pageIndex > 0;

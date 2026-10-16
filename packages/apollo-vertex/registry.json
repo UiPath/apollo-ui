@@ -1057,7 +1057,7 @@
       "description": "A sortable table of entity rows.",
       "dependencies": [
         "@tanstack/react-query@^5.90.0",
-        "@tanstack/react-table@^8.21.0"
+        "@tanstack/react-table@^9.2.3"
       ],
       "registryDependencies": [
         "@uipath/card",
@@ -1866,7 +1866,7 @@
       "title": "Data Table",
       "description": "A data table component built on TanStack Table with sorting, filtering, pagination, row selection, and column reordering.",
       "dependencies": [
-        "@tanstack/react-table@^8.21.0",
+        "@tanstack/react-table@^9.2.3",
         "@dnd-kit/core",
         "@dnd-kit/sortable",
         "@dnd-kit/utilities",
@@ -1956,10 +1956,7 @@
           "type": "registry:ui",
           "target": "components/ui/data-table/sortable-column-list.tsx"
         },
-        {
-          "path": "registry/use-data-table/useReactTableCompat.ts",
-          "type": "registry:hook"
-        },
+        { "path": "lib/table-features.ts", "type": "registry:lib" },
         { "path": "lib/vertex-translation.ts", "type": "registry:lib" }
       ]
     },
@@ -2030,7 +2027,7 @@
       "title": "Filter Dropdown",
       "description": "A versatile filter dropdown with multi-select, single-select, search, and optional TanStack Table column integration.",
       "dependencies": [
-        "@tanstack/react-table@^8.21.0",
+        "@tanstack/react-table@^9.2.3",
         "lucide-react",
         "react-i18next"
       ],
@@ -2044,6 +2041,7 @@
         "@uipath/spinner"
       ],
       "files": [
+        { "path": "lib/table-features.ts", "type": "registry:lib" },
         {
           "path": "registry/filter-dropdown/index.ts",
           "type": "registry:ui",
@@ -2516,10 +2514,11 @@
       "title": "useDataTable",
       "description": "A generic data table hook that manages sorting, filtering, pagination, column visibility, and column order with localStorage persistence.",
       "dependencies": [
-        "@tanstack/react-table@^8.21.0",
+        "@tanstack/react-table@^9.2.3",
         "@mantine/hooks@^9.0.0"
       ],
       "files": [
+        { "path": "lib/table-features.ts", "type": "registry:lib" },
         {
           "path": "registry/use-data-table/types.ts",
           "type": "registry:hook"
@@ -2557,12 +2556,13 @@
       "title": "useEntityDataTable",
       "description": "A data table hook for VSS entities that fetches live data from collections and builds column definitions from entity metadata.",
       "dependencies": [
-        "@tanstack/react-table@^8.21.0",
+        "@tanstack/react-table@^9.2.3",
         "@tanstack/react-db",
         "@uipath/vs-core@^4.4.0"
       ],
       "registryDependencies": ["@uipath/use-data-table", "@uipath/data-table"],
       "files": [
+        { "path": "lib/table-features.ts", "type": "registry:lib" },
         {
           "path": "registry/use-data-table/useEntityDataTable.tsx",
           "type": "registry:hook"
@@ -3095,7 +3095,7 @@
       "dependencies": [
         "@tanstack/react-db@^0.1.86",
         "@tanstack/react-query@^5.90.0",
-        "@tanstack/react-table@^8.21.0",
+        "@tanstack/react-table@^9.2.3",
         "@tanstack/react-router",
         "@uipath/vs-core@^4.4.0",
         "@uipath/uipath-typescript@^1.7.1",
@@ -3125,6 +3125,7 @@
         "@uipath/tooltip"
       ],
       "files": [
+        { "path": "lib/table-features.ts", "type": "registry:lib" },
         {
           "path": "registry/solution-tests/index.ts",
           "type": "registry:ui",

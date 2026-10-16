@@ -1,6 +1,6 @@
 "use client";
 
-import type { ColumnDef, ExpandedState } from "@tanstack/react-table";
+import type { ExpandedState } from "@tanstack/react-table";
 import { ChevronRightIcon, MoreHorizontalIcon } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useState } from "react";
@@ -9,14 +9,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
+  type ColumnDef,
   DataTable,
   DataTableColumnHeader,
   dataTableFacetedFilterFn,
 } from "@/components/ui/data-table";
-import {
-  FilterDropdown,
-  type FilterDropdownOption,
-} from "@/components/ui/filter-dropdown";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,6 +22,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  FilterDropdown,
+  type FilterDropdownOption,
+} from "@/components/ui/filter-dropdown";
 import { useDataTable } from "@/registry/use-data-table/useDataTable";
 
 type Payment = {

@@ -3,13 +3,12 @@
 /* eslint-disable max-lines -- page-level view composition */
 import { Link } from "@tanstack/react-router";
 import type {
-  ColumnDef,
   ColumnFiltersState,
+  ColumnVisibilityState,
   ExpandedState,
   PaginationState,
   RowSelectionState,
   SortingState,
-  VisibilityState,
 } from "@tanstack/react-table";
 import {
   ChevronRightIcon,
@@ -19,7 +18,6 @@ import {
   Trash2,
 } from "lucide-react";
 import { type ReactNode, useState } from "react";
-import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -41,6 +39,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { renderValueOrEmptyState } from "@/lib/renderValueOrEmptyState";
+import type { DataTableColumnDef } from "@/lib/table-features";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { defaultRunStatusLabels, defaultTestStatusLabels } from "./constants";
 import { useSolutionTestsConfig } from "./context";
 import { DeleteConfirmDialog } from "./delete-confirm-dialog";
@@ -72,7 +72,7 @@ function useControlledTable(initialSorting: SortingState = []) {
     [],
   );
   const [columnVisibility, onColumnVisibilityChange] =
-    useState<VisibilityState>({});
+    useState<ColumnVisibilityState>({});
   const [columnOrder, onColumnOrderChange] = useState<string[]>([]);
   const [globalFilter, onGlobalFilterChange] = useState("");
   const [pagination, onPaginationChange] = useState<PaginationState>({
@@ -178,7 +178,7 @@ export const SolutionTestsView = ({
     (id) => casesTable.rowSelection[id] && existingTestIds.has(id),
   );
 
-  const testCasesColumns: ColumnDef<SolutionTest>[] = [
+  const testCasesColumns: DataTableColumnDef<SolutionTest>[] = [
     {
       id: "select",
       header: ({ table }) => (
@@ -386,7 +386,7 @@ export const SolutionTestsView = ({
     },
   ];
 
-  const testRunsColumns: ColumnDef<SolutionTestBatchRun>[] = [
+  const testRunsColumns: DataTableColumnDef<SolutionTestBatchRun>[] = [
     {
       id: "expand",
       header: () => null,

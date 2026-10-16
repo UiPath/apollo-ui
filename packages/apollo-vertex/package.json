@@ -75,7 +75,7 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "@tanstack/react-form": "^1.33.5",
     "@tanstack/react-store": "^0.11.0",
-    "@tanstack/react-table": "^8.21.3",
+    "@tanstack/react-table": "^9.2.3",
     "@types/luxon": "^3.7.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
