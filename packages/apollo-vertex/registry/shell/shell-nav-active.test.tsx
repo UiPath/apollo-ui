@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { VERTEX_NAMESPACE } from "@/lib/vertex-translation";
 import {
+  mostSpecificActivePath,
   navItemIsCurrent,
   navItemState,
   navPathIsActive,
@@ -70,6 +71,38 @@ describe("navItemIsCurrent", () => {
         "/rules/exceptions",
       ]),
     ).toBe(false);
+  });
+});
+
+describe("mostSpecificActivePath", () => {
+  const header = [
+    "/preview/shell-minimal",
+    "/preview/shell-minimal/projects",
+    "/preview/shell-minimal/analytics",
+  ];
+
+  it("selects the section and not the landing page", () => {
+    expect(
+      mostSpecificActivePath("/preview/shell-minimal/projects", header),
+    ).toBe("/preview/shell-minimal/projects");
+  });
+
+  it("keeps prefix highlighting for a nested detail route", () => {
+    expect(
+      mostSpecificActivePath("/preview/shell-minimal/projects/42", header),
+    ).toBe("/preview/shell-minimal/projects");
+  });
+
+  it("selects the landing page on its own route", () => {
+    expect(mostSpecificActivePath("/preview/shell-minimal", header)).toBe(
+      "/preview/shell-minimal",
+    );
+  });
+
+  it("highlights a group when no more specific item exists", () => {
+    expect(mostSpecificActivePath("/rules/exceptions", ["/rules"])).toBe(
+      "/rules",
+    );
   });
 });
 

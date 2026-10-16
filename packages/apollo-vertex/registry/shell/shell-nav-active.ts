@@ -17,6 +17,20 @@ export function navItemIsCurrent(
   );
 }
 
+// Among prefix matches, the longest path wins. A detail route highlights its
+// section without also selecting a shorter landing-page link.
+export function mostSpecificActivePath(
+  pathname: string,
+  paths: readonly string[],
+): string | null {
+  let match: string | null = null;
+  for (const path of paths) {
+    if (!navPathIsActive(pathname, path)) continue;
+    if (match === null || path.length > match.length) match = path;
+  }
+  return match;
+}
+
 export function navItemState(
   pathname: string,
   item: { path: string; to?: string; childPaths?: readonly string[] },

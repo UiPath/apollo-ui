@@ -35,7 +35,7 @@ import {
 import { Company } from "./shell-company";
 import { MinimalCompany } from "./shell-minimal-company";
 import { MinimalNavItem } from "./shell-minimal-nav-item";
-import { navItemState } from "./shell-nav-active";
+import { mostSpecificActivePath, navItemState } from "./shell-nav-active";
 import { navCatalogFromHook, readNavLabel } from "./shell-nav-label";
 import { Text } from "./shell-text";
 import type { ShellNavLabel } from "./shell-translation-key";
@@ -67,7 +67,14 @@ export const ShellSidebar = ({
   companyLogo,
   navItems,
 }: ShellSidebarProps) => {
+  const { pathname } = useLocation();
+
   if (variant === "minimal") {
+    const activePath = mostSpecificActivePath(
+      pathname,
+      navItems.map((item) => item.path),
+    );
+
     return (
       <header className="relative flex items-center justify-between px-4 sm:px-6 lg:px-8 py-6 transition-[padding] duration-300 ease-in-out">
         <MinimalCompany
@@ -82,7 +89,7 @@ export const ShellSidebar = ({
               <MinimalNavItem
                 key={item.path}
                 to={item.to ?? item.path}
-                path={item.path}
+                active={item.path === activePath}
                 label={item.label}
               />
             ))}
@@ -263,9 +270,10 @@ function SidebarNav({
                               <button
                                 type="button"
                                 aria-expanded={isExpanded}
-                                aria-label={
-                                  isExpanded ? t("collapse") : t("expand")
-                                }
+                                aria-label={t(
+                                  isExpanded ? "nav_collapse" : "nav_expand",
+                                  { label: getTooltipText(item.label) },
+                                )}
                                 className="flex size-8 shrink-0 items-center justify-center text-sidebar-foreground/70 hover:text-sidebar-foreground"
                               >
                                 <ChevronDown
