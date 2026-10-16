@@ -42,7 +42,7 @@ the form-field anatomy (\`FormField\`, \`FormFieldLabel\`, \`InputGroup\`). See
   the caret, or appends when none is placed. \`onInsertVariable\` takes over
   what inserting means.
 - Enter commits through \`onValueBlur\`; Escape restores the value as of focus.
-  In a text area Enter is a new line, so Cmd/Ctrl+Enter commits.
+  In a text area Shift+Enter adds a new line.
 - Every user-visible string can be overridden through \`strings\`. See
   **Localized strings**.
 - Required switch toggles the shared foreground asterisk on the label. Only shown when

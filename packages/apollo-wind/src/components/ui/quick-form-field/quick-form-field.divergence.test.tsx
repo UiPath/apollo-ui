@@ -261,7 +261,7 @@ describe('QuickFormField — divergences from apollo-wind', () => {
       expect(container.querySelector('[role="group"]')).toHaveAttribute('data-layout', 'row');
     });
 
-    it('takes Enter as a new line rather than a commit', async () => {
+    it('commits on Enter, like the other text controls', async () => {
       const user = userEvent.setup();
       const onValueChange = vi.fn();
       const onValueBlur = vi.fn();
@@ -277,31 +277,30 @@ describe('QuickFormField — divergences from apollo-wind', () => {
       const textarea = screen.getByPlaceholderText('Text area value');
       await user.click(textarea);
       await user.keyboard('{Enter}');
-      expect(onValueChange).toHaveBeenLastCalledWith(expect.stringContaining('\n'));
-      expect(onValueBlur).not.toHaveBeenCalled();
-      expect(textarea).toHaveFocus();
+      expect(onValueBlur).toHaveBeenCalledOnce();
+      expect(onValueChange).not.toHaveBeenCalled();
+      expect(textarea).not.toHaveFocus();
     });
 
-    it.each([
-      '{Control>}{Enter}{/Control}',
-      '{Meta>}{Enter}{/Meta}',
-    ])('commits on %s', async (keys) => {
+    it('adds a new line on Shift+Enter', async () => {
       const user = userEvent.setup();
+      const onValueChange = vi.fn();
       const onValueBlur = vi.fn();
       render(
         <QuickFormField
           locked={false}
           fieldType="textarea"
           value="hi"
-          onValueChange={vi.fn()}
+          onValueChange={onValueChange}
           onValueBlur={onValueBlur}
         />
       );
       const textarea = screen.getByPlaceholderText('Text area value');
       await user.click(textarea);
-      await user.keyboard(keys);
-      expect(onValueBlur).toHaveBeenCalledOnce();
-      expect(textarea).not.toHaveFocus();
+      await user.keyboard('{Shift>}{Enter}{/Shift}');
+      expect(onValueChange).toHaveBeenLastCalledWith(expect.stringContaining('\n'));
+      expect(onValueBlur).not.toHaveBeenCalled();
+      expect(textarea).toHaveFocus();
     });
 
     it('reverts to the value as of focus on Escape', async () => {

@@ -47,7 +47,7 @@ import { DEFAULT_SELECT_OPTIONS, formatDateValue, parseListValue, toDateOnlyStri
  * - Insert variable renders `variables` as supplied and splices at the caret;
  *   `onInsertVariable` takes over what inserting means.
  * - Enter commits through `onValueBlur`, Escape restores the value as of focus.
- *   In a text area Enter is a new line, so Cmd/Ctrl+Enter commits instead.
+ *   In a text area Shift+Enter adds a new line.
  * - Every user-visible string can be overridden through `strings`.
  *
  * The expression mode is styled as code but not highlighted or evaluated.
@@ -176,10 +176,10 @@ export function QuickFormField({
 
   // Enter blurs, so a consumer commits in `onValueBlur` as it already does.
   // Escape restores the value as of focus, which only the component knows.
-  // A text area needs Enter for its line breaks, so it commits on Cmd/Ctrl+Enter.
+  // A text area keeps Shift+Enter for its line breaks.
   const handleValueKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const multiline = e.currentTarget instanceof HTMLTextAreaElement;
-    if (e.key === 'Enter' && (!multiline || e.metaKey || e.ctrlKey)) {
+    const newLine = e.shiftKey && e.currentTarget instanceof HTMLTextAreaElement;
+    if (e.key === 'Enter' && !newLine) {
       e.preventDefault();
       e.currentTarget.blur();
     }
