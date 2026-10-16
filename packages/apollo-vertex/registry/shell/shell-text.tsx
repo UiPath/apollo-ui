@@ -3,12 +3,13 @@ import {
   useVertexTranslation,
   VERTEX_NAMESPACE,
 } from "@/lib/vertex-translation";
-import type { TranslationKey } from "./shell-translation-key";
+import { navCatalogFromHook, readNavLabel } from "./shell-nav-label";
+import type { ShellNavLabel } from "./shell-translation-key";
 
-export const Text = ({ value }: { value: TranslationKey }) => {
-  const { t } = useVertexTranslation();
+export const Text = ({ value }: { value: ShellNavLabel }) => {
+  const { i18n } = useVertexTranslation();
   if (typeof value === "string") {
-    return t(value);
+    return readNavLabel(navCatalogFromHook(i18n), value);
   }
   return (
     <Trans

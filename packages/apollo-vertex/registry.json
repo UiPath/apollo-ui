@@ -2407,6 +2407,14 @@
           "type": "registry:ui"
         },
         {
+          "path": "registry/shell/shell-nav-active.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/shell/shell-nav-label.ts",
+          "type": "registry:ui"
+        },
+        {
           "path": "registry/shell/shell-company.tsx",
           "type": "registry:ui"
         },

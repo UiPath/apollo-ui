@@ -52,12 +52,35 @@ function App() {
 }
 ```
 
+## Nested navigation
+
+A group can set `to` and `subItems`. The row links to `to`, or to `path` when `to` is omitted, and stays in the active color for `path` and every route under it. The matching child gets the current background. While the sidebar is collapsed, that background stays off the parent: the parent icon keeps the active color.
+
+Labels are translation keys. A key in the app's default catalog is used first, including keys that are not in Apollo Vertex. Vertex keys such as `dashboard` still resolve when the app catalog does not define them.
+
+```tsx
+{
+  path: '/rules',
+  to: '/rules/exceptions',
+  label: 'rules',
+  icon: ListTree,
+  subItems: [
+    { path: '/rules/feedback', label: 'feedback' },
+    { path: '/rules/exceptions', label: 'exceptions' },
+  ],
+}
+```
+
+## App translations
+
+Pass `configureI18n` to `ApolloShell` or `LocaleProvider` when the app initializes i18next itself. The shell then runs that function instead of replacing the app catalog with the Vertex one.
+
 ## Adding Authentication
 
 To enable built-in OAuth2 authentication with PKCE, wrap the shell with `ShellAuthProvider`.
 Both `ShellAuthProvider` and `ApolloShell` must be inside a `QueryClientProvider` from `@tanstack/react-query`.
 
-When a `ShellAuthProvider` is present, the shell automatically shows a login screen until the user is authenticated.
+When a `ShellAuthProvider` is present, the shell automatically shows a login screen until the user is authenticated. While the token is still loading, it shows the loading skeleton instead of that login screen.
 
 ```tsx
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';

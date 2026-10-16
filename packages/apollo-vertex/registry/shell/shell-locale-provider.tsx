@@ -7,13 +7,14 @@ import {
   useEffectEvent,
   useState,
 } from "react";
-import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Spinner } from "@/components/ui/spinner";
 import { configurei18n } from "@/lib/i18n";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { LANGUAGE_CHANGED_EVENT } from "./shell-constants";
 
 interface LocaleProviderProps {
   loadingElement?: ReactNode;
+  configureI18n?: () => Promise<void>;
 }
 
 export const LocaleProviderComponent = ({ children }: PropsWithChildren) => {
@@ -50,16 +51,19 @@ export const LocaleProviderComponent = ({ children }: PropsWithChildren) => {
 export const LocaleProvider = ({
   children,
   loadingElement,
+  configureI18n = configurei18n,
 }: PropsWithChildren<LocaleProviderProps>) => {
   const [isConfigured, setIsConfigured] = useState(false);
-  const configure = async () => {
-    await configurei18n();
-    setIsConfigured(true);
-  };
 
   useEffect(() => {
-    void configure();
-  }, []);
+    let cancelled = false;
+    void configureI18n().then(() => {
+      if (!cancelled) setIsConfigured(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [configureI18n]);
 
   if (!isConfigured)
     return (

@@ -1,11 +1,11 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { Text } from "./shell-text";
-import type { TranslationKey } from "./shell-translation-key";
+import type { ShellNavLabel } from "./shell-translation-key";
 
 interface MinimalNavItemProps {
   to: string;
-  label: TranslationKey;
+  label: ShellNavLabel;
 }
 
 export const MinimalNavItem = ({ to, label }: MinimalNavItemProps) => {
