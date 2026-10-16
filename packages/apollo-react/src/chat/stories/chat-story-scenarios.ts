@@ -12,6 +12,7 @@ import {
   AutopilotChatEvent,
   type AutopilotChatFileInfo,
   type AutopilotChatMessage,
+  type AutopilotChatRenderer,
   type AutopilotChatService,
   type ContentPartChunk,
   DEFAULT_MESSAGE_RENDERER,
@@ -21,6 +22,7 @@ import {
   CODE_BLOCK_MESSAGE,
   HTML_PREVIEW_MESSAGE,
   MARKDOWN_CORPUS,
+  overflowResponseAction,
   RESOURCE_TOKEN_CHUNKS,
   RESOURCE_TOKEN_MESSAGE,
   RESPONSE_ACTIONS,
@@ -31,10 +33,13 @@ import {
   storyHistoryPage,
   storyToolCallMeta,
   storyTraceSpan,
+  WIND_RESPONSE_ACTIONS,
 } from './chat-story-fixtures';
 
 export interface ScenarioContext {
   service: AutopilotChatService;
+  /** The renderer this chat uses, for payloads whose icons differ per renderer. */
+  renderer: AutopilotChatRenderer;
   /** Delay between streamed chunks and scripted turns. */
   delayMs: number;
   /** Sends a user turn that neither triggers the auto reply nor is mirrored to the other chat. */
@@ -295,10 +300,10 @@ export const CHAT_STORY_SCENARIOS = {
   actions: {
     label: 'Message actions',
     description:
-      'Appends a reply with custom actions (logged as copy-custom and regenerate-custom) and a reply with actions disabled.',
+      'Appends a reply with custom actions (logged as copy-custom and regenerate-custom), one more in the "More" menu (share-custom), and a reply with actions disabled.',
     run: (context) => {
       const { service } = context;
-      const unsubscribes = RESPONSE_ACTIONS.map((action) =>
+      const unsubscribes = [...RESPONSE_ACTIONS, overflowResponseAction('wind')].map((action) =>
         service.on(action.eventName as AutopilotChatEvent, (data) =>
           context.log(action.eventName ?? '', data)
         )
@@ -308,7 +313,10 @@ export const CHAT_STORY_SCENARIOS = {
       });
       respond(service, {
         content: 'Here is a response with custom actions. Try the buttons below!',
-        actions: RESPONSE_ACTIONS,
+        actions: [
+          ...(context.renderer === 'wind' ? WIND_RESPONSE_ACTIONS : RESPONSE_ACTIONS),
+          overflowResponseAction(context.renderer),
+        ],
       });
       context.schedule(
         () => respond(service, { content: 'Message with no actions', disableActions: true }),

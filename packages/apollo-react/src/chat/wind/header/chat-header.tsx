@@ -40,7 +40,13 @@ export function WindChatHeader({ className, layout }: { className?: string; layo
       data-separator={layout.showHeaderSeparator ? '' : undefined}
       className={cn(
         'flex shrink-0 items-center justify-between gap-2 data-separator:border-b data-separator:border-border-de-emp',
-        compact ? 'min-h-10' : 'min-h-12',
+        // Material's header: a 32px row with 16px above and below (8px each when compact), or 8px
+        // above and a 4px gap over the separator. Heights include the padding.
+        layout.showHeaderSeparator
+          ? 'min-h-11 pt-2 pb-1'
+          : compact
+            ? 'min-h-12 py-2'
+            : 'min-h-16 py-4',
         className
       )}
     >

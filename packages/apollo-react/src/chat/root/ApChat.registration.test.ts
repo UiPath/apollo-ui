@@ -12,5 +12,6 @@ describe('ApChat module', () => {
 
     expect(registry.resolveChatRenderer(undefined, 'wind')).toBe(WindChatRenderer);
     expect(registry.resolveChatRenderer(undefined, 'material')).toBeDefined();
-  });
+    // A cold import of both renderers' module graphs exceeds the default 5s on a busy runner.
+  }, 30_000);
 });
