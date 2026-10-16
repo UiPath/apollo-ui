@@ -183,7 +183,7 @@ export function LoanQcDashboard() {
               <TableRow>
                 <TableHead>Loan ID</TableHead>
                 <TableHead>Borrower</TableHead>
-                <TableHead>Amount</TableHead>
+                <TableHead className="text-right">Amount</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Date</TableHead>
@@ -196,7 +196,9 @@ export function LoanQcDashboard() {
                   <TableRow key={loan.id}>
                     <TableCell className="font-medium">{loan.id}</TableCell>
                     <TableCell>{loan.borrower}</TableCell>
-                    <TableCell>{loan.amount}</TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {loan.amount}
+                    </TableCell>
                     <TableCell className="text-muted-foreground">
                       {loan.type}
                     </TableCell>

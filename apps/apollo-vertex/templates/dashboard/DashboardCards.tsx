@@ -164,7 +164,7 @@ export function InvoiceTable() {
             <TableRow>
               <TableHead>{t("invoice")}</TableHead>
               <TableHead>{t("vendor")}</TableHead>
-              <TableHead>{t("amount")}</TableHead>
+              <TableHead className="text-right">{t("amount")}</TableHead>
               <TableHead>{t("status")}</TableHead>
               <TableHead>{t("date")}</TableHead>
             </TableRow>
@@ -176,7 +176,9 @@ export function InvoiceTable() {
                 <TableRow key={inv.id}>
                   <TableCell className="font-medium">{inv.id}</TableCell>
                   <TableCell>{inv.vendor}</TableCell>
-                  <TableCell>{inv.amount}</TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {inv.amount}
+                  </TableCell>
                   <TableCell>
                     <Badge
                       variant={statusVariant[inv.status]}

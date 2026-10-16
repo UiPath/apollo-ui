@@ -89,7 +89,11 @@ export function TableChart({
           const value = getValue<PrimitiveValue>();
           return (
             <div
-              className={column.align === "right" ? "text-right" : "text-left"}
+              className={
+                column.align === "right"
+                  ? "text-right tabular-nums"
+                  : "text-left"
+              }
             >
               {column.format(value)}
             </div>
