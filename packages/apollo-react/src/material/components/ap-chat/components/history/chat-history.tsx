@@ -7,6 +7,7 @@ import { useScheduledCallback } from '@uipath/apollo-react/chat/headless/hooks/u
 import { useChatService } from '@uipath/apollo-react/chat/headless/providers/chat-service.provider';
 import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
 import { useChatWidth } from '@uipath/apollo-react/chat/headless/providers/chat-width-provider';
+import { publishChatEvent } from '@uipath/apollo-react/chat/headless/utils/publish-chat-event';
 import {
   AutopilotChatEvent,
   type AutopilotChatHistorySearchPayload,
@@ -126,6 +127,8 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
   const appendingRef = useRef(false);
   const scrollTopBeforeAppendRef = useRef(0);
   const searchQueryRef = useRef('');
+  // The query the host last searched for, so a reset is sent only when its list is filtered.
+  const sentQueryRef = useRef('');
 
   const { historyOpen, historyAnchorElement, fullScreenContainer, spacing, portalContainer } =
     useChatState();
@@ -174,6 +177,7 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
     () =>
       debounce((newSearchQuery: string) => {
         if (chatService?.getConfig()?.paginatedHistory) {
+          sentQueryRef.current = newSearchQuery;
           (chatService as any)._eventBus.publish(AutopilotChatEvent.HistorySearch, {
             searchText: newSearchQuery,
           } satisfies AutopilotChatHistorySearchPayload);
@@ -249,6 +253,36 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
     searchQueryRef.current = searchQuery;
   }, [searchQuery]);
 
+  // Closing (or unmounting) clears the search, and the host's filtered results with it: the list
+  // follows the box. A search still waiting out the pause is dropped.
+  const resetSearch = useCallback(() => {
+    debouncedSearch.clear();
+    searchQueryRef.current = '';
+    setSearchQuery('');
+    setIsSearching(false);
+
+    if (chatService?.getConfig()?.paginatedHistory && sentQueryRef.current !== '') {
+      // No skeleton for the empty search: a host may ignore it, and keeps showing its list then.
+      sentQueryRef.current = '';
+      publishChatEvent(chatService, AutopilotChatEvent.HistorySearch, {
+        searchText: '',
+      } satisfies AutopilotChatHistorySearchPayload);
+      internalService.publish(AutopilotChatInternalEvent.SetIsLoadingMoreHistory, false);
+    }
+  }, [chatService, internalService, debouncedSearch]);
+
+  useEffect(() => {
+    if (!historyOpen) {
+      resetSearch();
+    }
+  }, [historyOpen, resetSearch]);
+
+  useEffect(() => () => debouncedSearch.clear(), [debouncedSearch]);
+
+  const resetSearchRef = useRef(resetSearch);
+  resetSearchRef.current = resetSearch;
+  useEffect(() => () => resetSearchRef.current(), []);
+
   const groupedHistory = useMemo(() => {
     const filteredHistory = chatService?.getConfig()?.paginatedHistory
       ? history
@@ -321,7 +355,8 @@ const AutopilotChatHistoryComponent: React.FC<AutopilotChatHistoryProps> = ({
       setSearchQuery(newSearchText);
 
       if (chatService?.getConfig()?.paginatedHistory) {
-        setIsSearching(true);
+        // The skeleton waits for the results of a query; an emptied box keeps the list shown.
+        setIsSearching(newSearchText !== '');
         debouncedSearch(newSearchText);
       }
     },

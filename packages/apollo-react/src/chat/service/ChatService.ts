@@ -578,6 +578,9 @@ export class AutopilotChatService {
     }
 
     if (items.length === 0) {
+      // Nothing to append (an empty last page, or the host giving up after an error): stop the
+      // loading indicator the load-more request started.
+      this._internalService.publish(AutopilotChatInternalEvent.SetIsLoadingMoreHistory, false);
       return;
     }
 
@@ -782,6 +785,8 @@ export class AutopilotChatService {
 
     this._groupId = undefined;
     this._conversation = [];
+    // A new chat is no conversation from the history, so the history marks none as open.
+    this._activeConversationId = null;
     this._eventBus.publish(AutopilotChatEvent.NewChat);
     this._internalService.publish(AutopilotChatInternalEvent.ShouldShowLoadingMoreMessages, true);
     this._internalService.publish(AutopilotChatInternalEvent.SetIsLoadingMoreMessages, false);

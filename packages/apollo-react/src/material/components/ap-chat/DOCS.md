@@ -153,7 +153,7 @@ See [Usage Examples](#usage-examples) for complete setup details.
 
 | Property               | Description                                                                            |
 | ---------------------- | -------------------------------------------------------------------------------------- |
-| `activeConversationId` | Returns the current active conversation ID that was set with `openConversation` method |
+| `activeConversationId` | Returns the current active conversation ID that was set with `openConversation` method, or `null` after `newChat` or deleting that conversation |
 | `historyOpen`          | Returns the current history panel visibility state                                     |
 | `settingsOpen`         | Returns the current settings panel visibility state                                    |
 
@@ -2333,7 +2333,7 @@ chatService.on(AutopilotChatEvent.SetHistory, (history) => {
 #### Creating and Opening Conversations
 
 ```typescript
-// Start a new chat (clears the current conversation)
+// Start a new chat (clears the current conversation and the active conversation ID)
 // The chat component automatically calls this method when a user clicks the "New Chat" button
 chatService.newChat();
 
@@ -2506,6 +2506,8 @@ The history search functionality works in two modes:
 1. **Non-paginated mode** (`paginatedHistory: false`, default): Search is performed locally on client-side data
 2. **Paginated mode** (`paginatedHistory: true`): Search events are emitted for server-side handling
 
+The history always shows the results for its search box. Closing the history clears the box, so in paginated mode closing it after a search emits `HistorySearch` with an empty `searchText`: answer it like any other search, with the unfiltered first page.
+
 ### Implementing Search with Pagination
 
 When pagination is enabled, the chat service emits events for both search and load more operations:
@@ -2554,7 +2556,7 @@ chatService.on(AutopilotChatEvent.HistoryLoadMore, async (event) => {
 ### Best Practices for History Pagination with Search
 
 1. **Use appropriate page sizes**: 10-20 history items per batch typically provides good performance
-2. **Handle errors gracefully**: Always call `appendOlderHistoryItems([], true)` on error to stop loading
+2. **Handle errors gracefully**: Always call `appendOlderHistoryItems([], true)` on error to stop loading (an empty call also stops the loading indicator)
 3. **Cache results**: Cache loaded history items and search results to avoid redundant API calls
 
 ## Feature Controls

@@ -144,4 +144,31 @@ describe('AutopilotChatService', () => {
       expect(handler).toHaveBeenCalledWith('material');
     });
   });
+
+  describe('history', () => {
+    it('forgets the open conversation on a new chat', () => {
+      const service = createService();
+      service.openConversation('c1');
+
+      service.newChat();
+
+      expect(service.activeConversationId).toBeNull();
+    });
+
+    it('stops the load-more indicator when an empty page is appended', () => {
+      const service = createService();
+      const loading = vi.fn();
+      const hasMore = vi.fn();
+      service.__internalService__.on(AutopilotChatInternalEvent.SetIsLoadingMoreHistory, loading);
+      service.__internalService__.on(
+        AutopilotChatInternalEvent.ShouldShowLoadingMoreHistory,
+        hasMore
+      );
+
+      service.appendOlderHistoryItems([], true);
+
+      expect(hasMore).toHaveBeenCalledWith(false);
+      expect(loading).toHaveBeenCalledWith(false);
+    });
+  });
 });
