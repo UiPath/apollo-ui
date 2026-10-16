@@ -1,3 +1,18 @@
+## [@uipath/apollo-vertex-v1.3.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-vertex@1.2.0...@uipath/apollo-vertex@1.3.0) (2026-10-16)
+
+### Features
+
+* **apollo-vertex:** add a setup agent skill ([58ee75d](https://github.com/UiPath/apollo-ui/commit/58ee75d2603c9ffd5f6699bd356b349518d60655))
+* **apollo-vertex:** move the data table onto TanStack Table v9 ([0178aac](https://github.com/UiPath/apollo-ui/commit/0178aac9ebb9f0811ecaabee4349d27514aded06))
+
+### Bug Fixes
+
+* **apollo-vertex:** enlarge confidence signal chip hit area ([564317f](https://github.com/UiPath/apollo-ui/commit/564317f40d93e1e2764087078cee95b4ce7d470f))
+* **apollo-vertex:** give docs example controls accessible names ([21413af](https://github.com/UiPath/apollo-ui/commit/21413af66a39b95b227d70f3ba51183ebfd9bad5))
+* **apollo-vertex:** restore DataTable TValue and format registry ([1d2b88a](https://github.com/UiPath/apollo-ui/commit/1d2b88a9eccf44f16530294fb28a7142f95a689a))
+* **apollo-vertex:** use tabular, right-aligned figures in numeric columns ([dd561ff](https://github.com/UiPath/apollo-ui/commit/dd561ff09aa3714d8fd0cfae551679773f8e8852))
+* **apollo-vertex:** use type scale sizes in calendar and timeline ([099f8d6](https://github.com/UiPath/apollo-ui/commit/099f8d68497b0069a9d67cfd36fa4d31f9d0bb80))
+
 ## [@uipath/apollo-vertex-v1.2.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-vertex@1.1.0...@uipath/apollo-vertex@1.2.0) (2026-10-16)
 
 ### Features
