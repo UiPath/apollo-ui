@@ -1,3 +1,10 @@
+## [@uipath/apollo-react-v7.2.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.2.1...@uipath/apollo-react@7.2.2) (2026-10-16)
+
+### Bug Fixes
+
+* **apollo-react:** bump katex to 0.18.11 to fix CVE-2026-103923 [PLT-97228] ([a677237](https://github.com/UiPath/apollo-ui/commit/a6772373296033a1caa7526e8e998ac7027503bb))
+* **apollo-react:** pin katex 0.18.10 and drop GitHub registry tarball urls [PLT-97228] ([4f47d6c](https://github.com/UiPath/apollo-ui/commit/4f47d6c5a6e0752da779427c9a7266e0243995e5))
+
 ## [@uipath/apollo-react-v7.2.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.2.0...@uipath/apollo-react@7.2.1) (2026-10-15)
 
 ### Bug Fixes
