@@ -121,13 +121,13 @@
           "destructive": "oklch(0.50 0.15 18)",
           "destructive-foreground": "oklch(1 0 89.8800)",
           "brand-orange": "#fa4616",
-          "success": "oklch(0.57 0.105 152)",
+          "success": "oklch(0.50 0.105 152)",
           "success-foreground": "oklch(1 0 89.8800)",
-          "info": "oklch(0.52 0.120 210)",
+          "info": "oklch(0.47 0.120 210)",
           "info-foreground": "oklch(1 0 89.8800)",
           "warning": "oklch(0.80 0.1401 80.82)",
           "warning-foreground": "oklch(0.1660 0.0283 203.3400)",
-          "badge": "oklch(0.5995 0.0199 253.42)",
+          "badge": "oklch(0.565 0.0199 253.42)",
           "badge-foreground": "oklch(1 0 89.8800)",
           "border": "oklch(0.9229 0.0065 252.1300)",
           "input": "oklch(0.9229 0.0065 252.1300)",
@@ -1501,7 +1501,7 @@
           "color-warning-foreground": "var(--warning-foreground)"
         },
         "light": {
-          "badge": "oklch(0.5995 0.0199 253.42)",
+          "badge": "oklch(0.565 0.0199 253.42)",
           "warning": "oklch(0.80 0.1401 80.82)",
           "warning-foreground": "oklch(0.1660 0.0283 203.3400)"
         },
@@ -1570,13 +1570,13 @@
           "ai-gradient-fill": "linear-gradient(97.73deg, var(--insight-600) 8.79%, var(--primary-700) 91.48%)",
           "ai-gradient": "linear-gradient(100.64deg, var(--insight-100) 8.29%, var(--primary-50) 88.73%)",
           "ai-gradient-strong": "linear-gradient(97.73deg, #6C5AEF 8.79%, #69C7DD 91.48%)",
-          "badge": "oklch(0.5995 0.0199 253.42)",
+          "badge": "oklch(0.565 0.0199 253.42)",
           "badge-foreground": "oklch(1 0 89.8800)",
-          "info": "oklch(0.52 0.120 210)",
+          "info": "oklch(0.47 0.120 210)",
           "info-foreground": "oklch(1 0 89.8800)",
           "warning": "oklch(0.80 0.1401 80.82)",
           "warning-foreground": "oklch(0.1660 0.0283 203.3400)",
-          "success": "oklch(0.57 0.105 152)",
+          "success": "oklch(0.50 0.105 152)",
           "success-foreground": "oklch(1 0 89.8800)",
           "insight-600": "oklch(0.56 0.20 277)",
           "insight-400": "oklch(0.70 0.19 277)",
@@ -1634,8 +1634,8 @@
           "color-insight-600": "var(--insight-600)"
         },
         "light": {
-          "success": "oklch(0.57 0.105 152)",
-          "info": "oklch(0.52 0.120 210)",
+          "success": "oklch(0.50 0.105 152)",
+          "info": "oklch(0.47 0.120 210)",
           "warning": "oklch(0.80 0.1401 80.82)",
           "primary-50": "oklch(0.95 0.035 218)",
           "primary-700": "oklch(0.52 0.120 210)",
@@ -2713,9 +2713,9 @@
           "color-warning": "var(--warning)"
         },
         "light": {
-          "success": "oklch(0.57 0.105 152)",
+          "success": "oklch(0.50 0.105 152)",
           "warning": "oklch(0.80 0.1401 80.82)",
-          "info": "oklch(0.52 0.120 210)"
+          "info": "oklch(0.47 0.120 210)"
         },
         "dark": {
           "success": "oklch(0.70 0.120 152)",
@@ -3480,7 +3480,7 @@
           "color-insight-700": "var(--insight-700)"
         },
         "light": {
-          "success": "oklch(0.57 0.105 152)",
+          "success": "oklch(0.50 0.105 152)",
           "insight-100": "oklch(0.92 0.05 277)",
           "insight-400": "oklch(0.70 0.19 277)",
           "insight-700": "oklch(0.48 0.17 277)",
