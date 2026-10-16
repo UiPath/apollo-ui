@@ -265,6 +265,7 @@ function SolutionTestsTemplateContent() {
         results={results}
         isLoading={false}
         baselineJobMap={baselineJobMap}
+        isBaselineLocked={false}
         selectedResultId={selectedId}
         selectedRowData={selectedRowData}
         adoptingResultId={null}
