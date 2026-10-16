@@ -1,6 +1,8 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { Command as CommandPrimitive } from 'cmdk';
 import { axe } from 'jest-axe';
+import * as React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { Search, SearchWithSuggestions } from './search';
 
@@ -109,6 +111,93 @@ describe('Search', () => {
     render(<Search ref={ref} />);
     expect(ref.current).toBeInstanceOf(HTMLInputElement);
   });
+
+  it('uses clearLabel for the clear button', () => {
+    render(<Search value="test" onValueChange={vi.fn()} clearLabel="Borrar" />);
+    expect(screen.getByRole('button', { name: 'Borrar' })).toBeInTheDocument();
+  });
+
+  it('returns focus to the input after clearing', async () => {
+    const user = userEvent.setup();
+    render(<Search value="test" onValueChange={vi.fn()} />);
+    await user.click(screen.getByRole('button', { name: 'Clear' }));
+    expect(screen.getByRole('searchbox')).toHaveFocus();
+  });
+});
+
+describe('Search with onValueChange', () => {
+  it('passes the string to onValueChange and the native event to onChange', async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    const onChange = vi.fn();
+    render(<Search onValueChange={onValueChange} onChange={onChange} />);
+
+    await user.type(screen.getByRole('searchbox'), 'a');
+
+    expect(onValueChange).toHaveBeenCalledWith('a');
+    expect(onChange.mock.calls[0][0].target.value).toBe('a');
+  });
+
+  it('clears through a native change event', async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn();
+    const eventValues: string[] = [];
+    render(
+      <Search
+        value="test"
+        onValueChange={onValueChange}
+        onChange={(e) => eventValues.push(e.target.value)}
+      />
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Clear' }));
+
+    expect(onValueChange).toHaveBeenCalledWith('');
+    expect(eventValues).toEqual(['']);
+  });
+});
+
+describe('Search under cmdk Command.Input asChild', () => {
+  function Picker() {
+    const [query, setQuery] = React.useState('');
+    return (
+      <CommandPrimitive label="Fruits">
+        <CommandPrimitive.Input asChild>
+          <Search aria-label="Search fruits" value={query} onValueChange={setQuery} />
+        </CommandPrimitive.Input>
+        <CommandPrimitive.List>
+          <CommandPrimitive.Item>Apple</CommandPrimitive.Item>
+          <CommandPrimitive.Item>Banana</CommandPrimitive.Item>
+        </CommandPrimitive.List>
+      </CommandPrimitive>
+    );
+  }
+
+  it('gets combobox wiring and tracks the highlighted row', async () => {
+    const user = userEvent.setup();
+    render(<Picker />);
+    const input = screen.getByRole('combobox');
+
+    await user.type(input, 'a');
+    await user.keyboard('{ArrowDown}');
+
+    const selected = screen.getAllByRole('option').find((o) => o.dataset.selected === 'true');
+    expect(selected).toBeDefined();
+    expect(selected?.id).toBeTruthy();
+    expect(input).toHaveAttribute('aria-activedescendant', selected?.id);
+  });
+
+  it('filters while typing and resets the filter on clear', async () => {
+    const user = userEvent.setup();
+    render(<Picker />);
+
+    await user.type(screen.getByRole('combobox'), 'ban');
+    expect(screen.queryByRole('option', { name: 'Apple' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Clear' }));
+    expect(screen.getByRole('combobox')).toHaveValue('');
+    expect(screen.getByRole('option', { name: 'Apple' })).toBeInTheDocument();
+  });
 });
 
 describe('SearchWithSuggestions', () => {
@@ -175,6 +264,67 @@ describe('SearchWithSuggestions', () => {
       <SearchWithSuggestions className="custom-search" suggestions={suggestions} />
     );
     expect(container.querySelector('.custom-search')).toBeInTheDocument();
+  });
+
+  it('keeps focus in the input while suggestions open', async () => {
+    const user = userEvent.setup();
+    render(<SearchWithSuggestions suggestions={suggestions} />);
+    const input = screen.getByRole('searchbox');
+
+    await user.type(input, 'an');
+
+    expect(await screen.findByText('Banana')).toBeInTheDocument();
+    expect(input).toHaveFocus();
+    expect(input).toHaveValue('an');
+  });
+
+  it('stays open when clicking back into the input', async () => {
+    const user = userEvent.setup();
+    render(<SearchWithSuggestions suggestions={suggestions} />);
+    const input = screen.getByRole('searchbox');
+
+    await user.type(input, 'an');
+    await user.click(input);
+
+    expect(screen.getByText('Banana')).toBeInTheDocument();
+  });
+
+  it('reopens on click after Escape while a query remains', async () => {
+    const user = userEvent.setup();
+    render(<SearchWithSuggestions suggestions={suggestions} />);
+    const input = screen.getByRole('searchbox');
+
+    await user.type(input, 'an');
+    await screen.findByText('Banana');
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByText('Banana')).not.toBeInTheDocument());
+
+    await user.click(input);
+
+    expect(await screen.findByText('Banana')).toBeInTheDocument();
+  });
+
+  it('links the input to the suggestions popup while open', async () => {
+    const user = userEvent.setup();
+    render(<SearchWithSuggestions suggestions={suggestions} />);
+    const input = screen.getByRole('searchbox');
+
+    expect(input).toHaveAttribute('aria-haspopup', 'dialog');
+    expect(input).toHaveAttribute('aria-expanded', 'false');
+    expect(input).not.toHaveAttribute('aria-controls');
+
+    await user.type(input, 'an');
+    await screen.findByText('Banana');
+
+    expect(input).toHaveAttribute('aria-expanded', 'true');
+    const popupId = input.getAttribute('aria-controls');
+    expect(popupId).toBeTruthy();
+    expect(document.getElementById(popupId as string)).toHaveAttribute('role', 'dialog');
+  });
+
+  it('forwards clearLabel to the clear button', () => {
+    render(<SearchWithSuggestions value="zzz" suggestions={suggestions} clearLabel="Borrar" />);
+    expect(screen.getByRole('button', { name: 'Borrar' })).toBeInTheDocument();
   });
 
   it('forwards ref correctly', () => {
