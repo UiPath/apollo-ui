@@ -1,6 +1,7 @@
 import DOMPurify from 'dompurify';
 import { Marked } from 'marked';
 import { useMemo } from 'react';
+import { getReferenceChipColors } from '../../reference-chip-colors';
 import { usePromptEditorConfig } from '../prompt-editor-config';
 import { type PromptEditorToken } from '../types';
 import { buildTokenIconSvgMarkup } from './token-icon-markup';
@@ -13,6 +14,7 @@ const marked = new Marked({ async: false, gfm: true, breaks: true });
  * do), and without a per-component JS `.css` import (which doesn't resolve in the bundleless build).
  * Scoped under `.prompt-editor-preview`; colors use design tokens.
  */
+const referenceColors = getReferenceChipColors().valid;
 const MARKDOWN_PREVIEW_STYLES = `
 .prompt-editor-preview { color: var(--color-foreground); }
 .prompt-editor-preview-empty { color: var(--color-muted-foreground); }
@@ -39,8 +41,8 @@ const MARKDOWN_PREVIEW_STYLES = `
 .prompt-editor-preview th { font-weight: 600; background-color: var(--color-muted); }
 .prompt-editor-preview strong { font-weight: 700; }
 .prompt-editor-preview em { font-style: italic; }
-.prompt-editor-preview .token-pill { display: inline-flex; align-items: center; gap: 3px; height: 20px; padding: 0 4px; border-radius: 4px; font-size: 13px; line-height: 20px; vertical-align: middle; background: var(--color-info-background); color: var(--color-info-text); }
-.prompt-editor-preview .token-pill svg { display: block; flex-shrink: 0; color: var(--color-info-icon); width: 14px; height: 14px; }
+.prompt-editor-preview .token-pill { display: inline-flex; align-items: center; gap: 3px; height: 20px; padding: 0 4px; border-radius: 4px; font-size: 13px; line-height: 20px; vertical-align: middle; background: ${referenceColors.background}; color: ${referenceColors.text}; }
+.prompt-editor-preview .token-pill svg { display: block; flex-shrink: 0; color: ${referenceColors.icon}; width: 14px; height: 14px; }
 `;
 
 /** Host override for a variable pill's preview rendering (icon markup and/or label). */

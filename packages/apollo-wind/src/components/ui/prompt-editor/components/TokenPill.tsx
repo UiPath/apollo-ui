@@ -1,8 +1,8 @@
 import { Database, Paperclip, SquareFunction, Variable } from 'lucide-react';
 import { memo } from 'react';
+import { ReferenceChip } from '../../reference-chip';
 import { usePromptEditorConfig } from '../prompt-editor-config';
 import type { PromptEditorDiffType, PromptEditorTokenType } from '../types';
-import { getPromptEditorTokenColors } from '../types';
 
 /** Leading icon per token type — mirrors the SVG markup `MarkdownPreview` inlines for preview mode. */
 const TOKEN_TYPE_ICON: Record<
@@ -41,83 +41,27 @@ const TokenPillBase = ({
   onMouseDown,
 }: TokenPillProps) => {
   const { strings } = usePromptEditorConfig();
-  const PROMPT_EDITOR_TOKEN_COLORS = getPromptEditorTokenColors();
-  const colors =
-    isInvalid && !diffType ? PROMPT_EDITOR_TOKEN_COLORS.invalid : PROMPT_EDITOR_TOKEN_COLORS.valid;
   const Icon = TOKEN_TYPE_ICON[tokenType];
-
-  const handleRemoveMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const handleRemoveClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    onRemove?.();
-  };
-
-  const bgColor = diffType
-    ? diffType === 'added'
-      ? 'rgba(76, 175, 80, 0.15)'
-      : 'rgba(244, 67, 54, 0.15)'
-    : colors.background;
-
-  const outerClassName = [
-    'relative inline-flex items-center align-middle gap-[3px] h-5 rounded px-1 text-[13px] leading-5 outline-offset-1',
-    readonly ? 'cursor-default' : 'cursor-pointer',
-    diffType === 'removed' ? 'line-through opacity-60' : '',
-    isSelected ? 'z-10' : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
-
   return (
-    // biome-ignore lint/a11y/noStaticElementInteractions: the pill is a Lexical decorator chip; mousedown sets node selection. Keyboard selection is handled by Lexical at the editor root, and the chip exposes a focusable Remove button.
-    <span
+    <ReferenceChip
+      label={value}
+      icon={<Icon />}
+      onRemove={onRemove}
+      removeLabel={strings.removeToken}
+      readOnly={readonly}
+      invalid={isInvalid && !diffType}
+      selected={isSelected}
       onMouseDown={onMouseDown}
-      className={outerClassName}
-      style={{
-        backgroundColor: bgColor,
-        outline: isSelected ? `2px solid ${colors.border}` : 'none',
-      }}
-    >
-      <span className="inline-flex shrink-0" style={{ color: colors.icon }}>
-        <Icon className="h-3.5 w-3.5" />
-      </span>
-      <span
-        className="font-normal whitespace-nowrap"
-        style={{ color: colors.text, fontFamily: "'Noto Sans', sans-serif" }}
-      >
-        {value}
-      </span>
-      {!readonly && (
-        <button
-          type="button"
-          aria-label={strings.removeToken}
-          className="inline-flex items-center justify-center p-px border-0 bg-transparent cursor-pointer rounded-[2px] w-4 h-4"
-          style={{ color: colors.text }}
-          onMouseDown={handleRemoveMouseDown}
-          onClick={handleRemoveClick}
-        >
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M18 6L6 18M6 6L18 18"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
-      )}
-    </span>
+      className={`${readonly ? 'cursor-default' : 'cursor-pointer'} ${diffType === 'removed' ? 'line-through opacity-60' : ''}`}
+      style={
+        diffType
+          ? {
+              backgroundColor:
+                diffType === 'added' ? 'rgba(76, 175, 80, 0.15)' : 'rgba(244, 67, 54, 0.15)',
+            }
+          : undefined
+      }
+    />
   );
 };
 
