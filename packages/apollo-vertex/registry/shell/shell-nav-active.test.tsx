@@ -5,7 +5,11 @@ import {
   navItemState,
   navPathIsActive,
 } from "./shell-nav-active";
-import { type NavCatalog, readNavLabel } from "./shell-nav-label";
+import {
+  type NavCatalog,
+  navCatalogFromHook,
+  readNavLabel,
+} from "./shell-nav-label";
 
 describe("navPathIsActive", () => {
   it("matches the path and its nested pages", () => {
@@ -95,10 +99,26 @@ describe("navItemState", () => {
 });
 
 function catalog(bundles: Record<string, Record<string, string>>): NavCatalog {
+  const configured = Object.keys(bundles).filter(
+    (namespace) => namespace !== VERTEX_NAMESPACE,
+  );
   return {
-    defaultNamespace: "translation",
+    namespaces: [...configured, VERTEX_NAMESPACE],
     exists: (key, namespace) => Object.hasOwn(bundles[namespace] ?? {}, key),
     translate: (key, namespace) => bundles[namespace]?.[key] ?? key,
+  };
+}
+
+function hookI18n(
+  defaultNS: string | false | readonly string[] | undefined,
+  bundles: Record<string, Record<string, string>>,
+) {
+  return {
+    options: { defaultNS },
+    exists: (key: string, options?: { ns?: string }) =>
+      Object.hasOwn(bundles[options?.ns ?? ""] ?? {}, key),
+    t: (key: string, options?: { ns?: string }) =>
+      bundles[options?.ns ?? ""]?.[key] ?? key,
   };
 }
 
@@ -141,5 +161,49 @@ describe("readNavLabel", () => {
 
   it("returns the raw key when neither catalog has it", () => {
     expect(readNavLabel(catalog({ translation: {} }), "queue")).toBe("queue");
+  });
+});
+
+describe("navCatalogFromHook", () => {
+  it("walks an array defaultNS in order before the vertex catalog", () => {
+    const resolved = navCatalogFromHook(
+      hookI18n(["billing", "shared"], {
+        shared: { queue: "My work" },
+        [VERTEX_NAMESPACE]: { queue: "Queue" },
+      }),
+    );
+
+    expect(readNavLabel(resolved, "queue")).toBe("My work");
+  });
+
+  it("keeps an app-only namespace instead of replacing the list with translation", () => {
+    const resolved = navCatalogFromHook(
+      hookI18n(["invoice"], {
+        invoice: { queue: "My work" },
+      }),
+    );
+
+    expect(readNavLabel(resolved, "queue")).toBe("My work");
+  });
+
+  it("prefers an earlier configured namespace over a later one", () => {
+    const resolved = navCatalogFromHook(
+      hookI18n(["first", "second"], {
+        first: { queue: "First" },
+        second: { queue: "Second" },
+      }),
+    );
+
+    expect(readNavLabel(resolved, "queue")).toBe("First");
+  });
+
+  it("falls back to the vertex catalog when no configured namespace has the key", () => {
+    const resolved = navCatalogFromHook(
+      hookI18n(["billing", "shared"], {
+        [VERTEX_NAMESPACE]: { dashboard: "Dashboard" },
+      }),
+    );
+
+    expect(readNavLabel(resolved, "dashboard")).toBe("Dashboard");
   });
 });

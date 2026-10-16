@@ -54,7 +54,7 @@ function App() {
 
 ## Nested navigation
 
-A group can set `to` and `subItems`. The row links to `to`, or to `path` when `to` is omitted, and stays in the active color for `path` and every route under it. The matching child gets the current background. While the sidebar is collapsed, that background stays off the parent: the parent icon keeps the active color.
+A group can set `to` and `subItems`. The row links to `to`, or to `path` when `to` is omitted, and stays in the active color for `path` and every route under it, including on hover and press. The matching child gets the current background. While the sidebar is collapsed, that background stays off the parent: the parent icon keeps the active color. The minimal header uses the same path match. `to` is only the link target.
 
 Labels are translation keys. A key in the app's default catalog is used first, including keys that are not in Apollo Vertex. Vertex keys such as `dashboard` still resolve when the app catalog does not define them.
 

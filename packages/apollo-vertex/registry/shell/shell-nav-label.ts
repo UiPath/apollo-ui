@@ -1,7 +1,7 @@
 import { VERTEX_NAMESPACE } from "@/lib/vertex-translation";
 
 export interface NavCatalog {
-  defaultNamespace: string;
+  namespaces: readonly string[];
   exists: (key: string, namespace: string) => boolean;
   translate: (key: string, namespace: string) => string;
 }
@@ -12,11 +12,29 @@ interface NamespacedI18n {
   t: (key: string, options?: { ns?: string }) => unknown;
 }
 
-function defaultNamespaceOf(
-  defaultNS?: string | false | readonly string[],
-): string {
-  if (typeof defaultNS === "string" && defaultNS.length > 0) return defaultNS;
-  return "translation";
+function configuredNamespaces(
+  defaultNS: string | false | readonly string[] | undefined,
+): readonly string[] {
+  if (typeof defaultNS === "string") {
+    return defaultNS.length > 0 ? [defaultNS] : ["translation"];
+  }
+  if (!Array.isArray(defaultNS)) return ["translation"];
+
+  const namespaces: string[] = [];
+  for (const namespace of defaultNS) {
+    if (typeof namespace === "string" && namespace.length > 0) {
+      namespaces.push(namespace);
+    }
+  }
+  return namespaces.length > 0 ? namespaces : ["translation"];
+}
+
+function lookupNamespaces(
+  defaultNS: string | false | readonly string[] | undefined,
+): readonly string[] {
+  const configured = configuredNamespaces(defaultNS);
+  if (configured.includes(VERTEX_NAMESPACE)) return configured;
+  return [...configured, VERTEX_NAMESPACE];
 }
 
 function isNamespacedI18n(value: object): value is NamespacedI18n {
@@ -32,14 +50,14 @@ function isNamespacedI18n(value: object): value is NamespacedI18n {
 export function navCatalogFromHook(i18n: object): NavCatalog {
   if (!isNamespacedI18n(i18n)) {
     return {
-      defaultNamespace: "translation",
+      namespaces: ["translation", VERTEX_NAMESPACE],
       exists: () => false,
       translate: (key) => key,
     };
   }
 
   return {
-    defaultNamespace: defaultNamespaceOf(i18n.options.defaultNS),
+    namespaces: lookupNamespaces(i18n.options.defaultNS),
     exists: (key, namespace) => i18n.exists(key, { ns: namespace }),
     translate: (key, namespace) => {
       const value = i18n.t(key, { ns: namespace });
@@ -48,20 +66,12 @@ export function navCatalogFromHook(i18n: object): NavCatalog {
   };
 }
 
-// App catalog first, then the vertex catalog. A missing key stays the raw key.
+// Configured namespaces in order, then the vertex catalog. A missing key stays the raw key.
 export function readNavLabel(catalog: NavCatalog, key: string): string {
-  const { defaultNamespace } = catalog;
-  if (
-    defaultNamespace !== VERTEX_NAMESPACE &&
-    catalog.exists(key, defaultNamespace)
-  ) {
-    return catalog.translate(key, defaultNamespace);
-  }
-  if (catalog.exists(key, VERTEX_NAMESPACE)) {
-    return catalog.translate(key, VERTEX_NAMESPACE);
-  }
-  if (catalog.exists(key, defaultNamespace)) {
-    return catalog.translate(key, defaultNamespace);
+  for (const namespace of catalog.namespaces) {
+    if (catalog.exists(key, namespace)) {
+      return catalog.translate(key, namespace);
+    }
   }
   return key;
 }

@@ -45,8 +45,11 @@ const activeNavClass =
   "text-sidebar-foreground/85 hover:text-sidebar-foreground data-[active=true]:text-primary-700 dark:data-[active=true]:text-primary-400 data-[active=true]:font-semibold data-[active=true]:bg-primary-100/40 dark:data-[active=true]:bg-primary-900/30";
 const navButtonClass = `font-medium ${activeNavClass}`;
 const subButtonClass = activeNavClass;
-const prefixActiveClass =
-  "text-primary-700 dark:text-primary-400 font-semibold";
+const prefixActiveClass = [
+  "font-semibold text-primary-700 dark:text-primary-400",
+  "hover:text-primary-700 dark:hover:text-primary-400",
+  "active:text-primary-700 dark:active:text-primary-400",
+].join(" ");
 const currentPillClass = "bg-primary-100/40 dark:bg-primary-900/30";
 
 interface ShellSidebarProps {
@@ -79,6 +82,7 @@ export const ShellSidebar = ({
               <MinimalNavItem
                 key={item.path}
                 to={item.to ?? item.path}
+                path={item.path}
                 label={item.label}
               />
             ))}

@@ -1,16 +1,18 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
+import { navPathIsActive } from "./shell-nav-active";
 import { Text } from "./shell-text";
 import type { ShellNavLabel } from "./shell-translation-key";
 
 interface MinimalNavItemProps {
   to: string;
+  path: string;
   label: ShellNavLabel;
 }
 
-export const MinimalNavItem = ({ to, label }: MinimalNavItemProps) => {
+export const MinimalNavItem = ({ to, path, label }: MinimalNavItemProps) => {
   const { pathname } = useLocation();
-  const isActive = pathname === to;
+  const isActive = navPathIsActive(pathname, path);
 
   return (
     <Link
