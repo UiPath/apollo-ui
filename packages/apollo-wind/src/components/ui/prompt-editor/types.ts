@@ -1,3 +1,5 @@
+import { getReferenceChipColors } from '../reference-chip-colors';
+
 export type PromptEditorTokenType = 'input' | 'output' | 'state' | 'resource' | 'text';
 
 interface BaseToken {
@@ -89,23 +91,7 @@ export interface PromptEditorTokenColorConfig {
  * Two-state palette: invalid = red, valid = blue. Backed by apollo-wind's semantic design tokens,
  * which already resolve per light/dark theme via CSS — no JS theme detection needed.
  */
-export const getPromptEditorTokenColors = (): Record<
-  'valid' | 'invalid',
-  PromptEditorTokenColorConfig
-> => ({
-  valid: {
-    background: 'var(--color-info-background)',
-    border: 'var(--color-info-icon)',
-    text: 'var(--color-info-text)',
-    icon: 'var(--color-info-icon)',
-  },
-  invalid: {
-    background: 'var(--color-error-background)',
-    border: 'var(--color-error-icon)',
-    text: 'var(--color-error-text)',
-    icon: 'var(--color-error-icon)',
-  },
-});
+export const getPromptEditorTokenColors = getReferenceChipColors;
 
 /** The token-type label subset of `PromptEditorStrings` (structural, to avoid a config↔types cycle). */
 export interface PromptEditorTokenTypeLabels {

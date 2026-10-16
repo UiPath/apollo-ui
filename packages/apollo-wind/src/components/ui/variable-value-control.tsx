@@ -1,3 +1,4 @@
+import { Variable } from 'lucide-react';
 import * as React from 'react';
 import { joinIds } from '@/components/forms/aria-ids';
 import {
@@ -6,6 +7,7 @@ import {
 } from '@/components/ui/field-addons/value-mode-strings';
 import { InputGroupPopoverTrigger } from '@/components/ui/input-group';
 import { Popover, PopoverContent } from '@/components/ui/popover';
+import { ReferenceChip } from '@/components/ui/reference-chip';
 import { VariablePickerContent, type VariablePickerItem } from '@/components/ui/variable-picker';
 import { composeRefs } from '@/lib';
 
@@ -99,7 +101,7 @@ const VariableValueControl = React.forwardRef<HTMLButtonElement, VariableValueCo
           aria-labelledby={ariaLabelledBy}
           aria-describedby={joinIds(ariaDescribedBy, controlProps?.['aria-describedby'])}
         >
-          {reference && <span className="truncate font-mono text-sm">{reference}</span>}
+          {reference && <ReferenceChip label={reference} icon={<Variable />} />}
         </InputGroupPopoverTrigger>
         <PopoverContent align="start" className="w-(--radix-popover-trigger-width) p-0">
           <VariablePickerContent

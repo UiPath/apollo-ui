@@ -504,7 +504,8 @@ const statusTokens: CodeSyntaxToken[] = [
   },
   {
     name: '--status-info',
-    usage: 'Informational background',
+    usage:
+      'Informational background. Also the reference chip fill for variables, resources and connections',
     darkVar: 'var(--color-cyan-950)',
     darkTw: 'cyan-950',
     darkHex: '#053345',
@@ -514,7 +515,8 @@ const statusTokens: CodeSyntaxToken[] = [
   },
   {
     name: '--status-info-fg',
-    usage: 'Informational foreground (text, icons)',
+    usage:
+      'Informational foreground (text, icons). Pair with --status-info, never with a primary fill',
     darkVar: 'var(--color-cyan-400)',
     darkTw: 'cyan-400',
     darkHex: '#00d3f3',
@@ -554,7 +556,7 @@ const statusTokens: CodeSyntaxToken[] = [
   },
   {
     name: '--info-background',
-    usage: 'Info background zones — aliases --status-info',
+    usage: 'Info background zones and reference chips. Aliases --status-info',
     darkVar: 'var(--status-info)',
     darkTw: 'cyan-950',
     darkHex: '#053345',
