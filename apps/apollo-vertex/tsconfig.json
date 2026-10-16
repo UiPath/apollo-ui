@@ -3,6 +3,7 @@
   "compilerOptions": {
     "incremental": true,
     "allowJs": true,
+    "allowImportingTsExtensions": true,
     "plugins": [
       {
         "name": "next"

@@ -2,12 +2,11 @@
 name: use-vertex-components
 description: >
   Build all new UI from @uipath/apollo-vertex components instead of writing
-  new ones. Covers which Vertex component to use for common needs (buttons,
-  forms, dialogs, tables, page headers, empty states, charts, toasts), how to
-  adapt them with variants, className and composition, and what not to do:
-  hand-rolled primitives, raw Radix or other UI libraries, or copied shadcn
-  code. Load before building or changing any UI in an app that uses Apollo
-  Vertex.
+  new ones. Covers how to adapt them with variants, className and
+  composition, and what not to do: hand-rolled primitives, raw Radix or other
+  UI libraries, or copied shadcn code. Load before building or changing any
+  UI in an app that uses Apollo Vertex, together with
+  vertex-component-catalog to pick the component.
 metadata:
   type: core
   library: '@uipath/apollo-vertex'
@@ -41,23 +40,9 @@ components.
 
 ## Pick the component
 
-| Need | Use |
-| --- | --- |
-| Actions | `Button`, `ButtonGroup`, `Toggle`, `ToggleGroup` |
-| Text and choice inputs | `Input`, `InputGroup`, `Textarea`, `Select`, `Combobox`, `Checkbox`, `RadioGroup`, `Switch`, `Slider`, `InputOTP` |
-| Dates | `DatePicker`, `Calendar` |
-| Form layout, labels and errors | `Field`, `FieldGroup`, `FieldLabel`, `FieldDescription`, `FieldError`, `Label` |
-| Multi-step forms | `FormWizard`, `Stepper` |
-| Overlays | `Dialog`, `AlertDialog`, `Sheet`, `Drawer`, `Popover`, `HoverCard`, `Tooltip` |
-| Menus | `DropdownMenu`, `ContextMenu`, `Menubar`, `Command`, `NavigationMenu` |
-| Page structure | `PageHeader`, `Breadcrumb`, `Tabs`, `Card`, `Separator`, `ResizablePanelGroup`, `ScrollArea`, `Sidebar` |
-| Lists and tables | `DataTable` with `useDataTable`, `Table`, `Item`, `Pagination` |
-| Status and feedback | `Badge`, `Alert`, `Toaster`, `Progress`, `Spinner`, `Skeleton`, `Empty` |
-| Metrics and charts | `MetricCard`, plus `BarChart`, `LineChart`, `KpiChart` and the other charts |
-| AI content | `AiMark`, `AiGlow`, `AiCaveat`, `ConfidenceSignal`, `FeedbackVoteWidget` |
-| Misc | `Avatar`, `Accordion`, `Collapsible`, `Carousel`, `TimelineRowLayout`, `Kbd`, `AspectRatio` |
-
-Import all of them from `@uipath/apollo-vertex`.
+Load the `vertex-component-catalog` skill to choose the component. It lists
+every documented Vertex component by need, with its exports, when to use it
+and what to use instead. Import all of them from `@uipath/apollo-vertex`.
 
 ## Adapting a component
 

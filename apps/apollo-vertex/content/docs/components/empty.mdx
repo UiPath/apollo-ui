@@ -1,6 +1,13 @@
 ---
 title: "Empty"
 description: "An empty state component for when there is no data to display."
+whenToUse:
+  - "a list, table, search result or page has nothing to show. Say why it is empty and offer the next action when there is one."
+avoidWhen:
+  - when: "the content is still loading."
+    use: skeleton
+  - when: "loading the content failed."
+    use: alert
 ---
 
 import { Empty, EmptyDescription, EmptyTitle } from '@/registry/empty/empty'

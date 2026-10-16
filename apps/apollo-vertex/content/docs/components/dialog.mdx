@@ -1,6 +1,42 @@
 ---
 title: "Dialog"
 description: "A modal dialog that appears in front of app content to provide critical information."
+whenToUse:
+  - "the user must finish or dismiss a short, focused task before returning to the page, such as a small form or a single choice."
+avoidWhen:
+  - when: "the content is a long form or a record's details, or the user needs to keep the page in view."
+    use: sheet
+  - when: "the user confirms a destructive or irreversible action."
+    use: alert-dialog
+  - when: "the content is a few extra controls or details anchored to a trigger."
+    use: popover
+example: |
+  import {
+    Button,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+  } from "@uipath/apollo-vertex";
+
+  <Dialog>
+    <DialogTrigger asChild>
+      <Button variant="outline">Rename</Button>
+    </DialogTrigger>
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>Rename invoice</DialogTitle>
+        <DialogDescription>Everyone in the workspace sees the new name.</DialogDescription>
+      </DialogHeader>
+      {/* form fields */}
+      <DialogFooter>
+        <Button type="submit">Save</Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 ---
 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/registry/dialog/dialog'
