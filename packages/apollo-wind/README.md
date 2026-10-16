@@ -213,3 +213,28 @@ MIT - see [LICENSE](./LICENSE)
 **Peer Dependencies:** React ≥18.0.0
 
 Built with ❤️ by UiPath | Inspired by [shadcn/ui](https://ui.shadcn.com)
+
+## Reference Chip
+
+`ReferenceChip` displays selected variables, resources and connections with paired
+semantic background, text and icon colors. Find its API and state examples in
+Storybook under **Apollo Wind → Components → Data Display → Reference Chip**.
+The **Patterns → Code Editors → Editor Variables** example uses it through
+`PromptEditor`; existing editor consumers need no API changes.
+
+```tsx
+import { ReferenceChip } from '@uipath/apollo-wind';
+
+<ReferenceChip
+  label="alex@example.com"
+  icon={<ConnectionIcon />}
+  onRemove={clearConnection}
+  removeLabel="Remove Outlook connection"
+/>
+```
+
+The host supplies the icon, selection behavior and localized removal label.
+`readOnly` hides removal, `disabled` disables removal, `invalid` uses the paired
+error palette, and `selected` adds a visual outline. Keep removable chips outside
+other buttons. Inside a picker trigger, omit `onRemove` and use a separate clear
+button. Product connection fields must adopt this primitive to receive its styles.
