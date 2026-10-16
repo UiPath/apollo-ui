@@ -167,12 +167,20 @@ export function ThemeProvider({
   );
 }
 
+function setThemeWithoutProvider(_theme: Theme) {
+  // No ThemeProvider is mounted, so there is no theme to update.
+}
+
 export const useTheme = () => {
   const context = useContext(ThemeProviderContext);
 
-  if (context == null) {
-    throw new Error("useTheme must be used within a ThemeProvider");
+  if (context != null) {
+    return context;
   }
 
-  return context;
+  return {
+    theme: "system" as const,
+    resolvedTheme: null,
+    setTheme: setThemeWithoutProvider,
+  };
 };

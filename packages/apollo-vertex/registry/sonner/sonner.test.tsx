@@ -34,6 +34,13 @@ function ThemeToggle() {
   );
 }
 
+function ResolvedThemeProbe() {
+  const { resolvedTheme } = useTheme();
+  return (
+    <div data-testid="resolved-theme" data-theme={resolvedTheme ?? "missing"} />
+  );
+}
+
 describe("Toaster", () => {
   beforeEach(() => {
     installMatchMedia(false);
@@ -61,8 +68,14 @@ describe("Toaster", () => {
   });
 
   it("defaults to system when no shell theme provider is mounted", () => {
-    const { getByTestId } = render(<Toaster />);
+    const { getByTestId } = render(
+      <>
+        <ResolvedThemeProbe />
+        <Toaster />
+      </>,
+    );
 
+    expect(getByTestId("resolved-theme").dataset.theme).toBe("missing");
     expect(getByTestId("sonner").dataset.theme).toBe("system");
   });
 
