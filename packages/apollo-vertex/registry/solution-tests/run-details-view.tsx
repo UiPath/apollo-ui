@@ -60,7 +60,7 @@ export interface RunDetailsViewProps {
   updatingResultId: string | null;
   removingBaselineId: string | null;
   /** True while a run of this test is in flight; baselines can't change then. */
-  isBaselineLocked?: boolean;
+  isBaselineLocked: boolean;
   onBack: () => void;
   onSelect: (resultId: string) => void;
   onAdopt: (resultId: string) => void;
@@ -79,7 +79,7 @@ export const RunDetailsView = ({
   adoptingResultId,
   updatingResultId,
   removingBaselineId,
-  isBaselineLocked = false,
+  isBaselineLocked,
   onBack,
   onSelect,
   onAdopt,

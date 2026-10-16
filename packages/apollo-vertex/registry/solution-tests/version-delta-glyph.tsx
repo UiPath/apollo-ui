@@ -4,8 +4,6 @@ import { useVertexTranslation } from "@/lib/vertex-translation";
 
 interface VersionDeltaGlyphProps {
   direction: number;
-  /** @deprecated Ignored; the glyph no longer shows the baseline version. */
-  baseline?: string | null;
 }
 
 export const VersionDeltaGlyph = ({ direction }: VersionDeltaGlyphProps) => {
