@@ -41,6 +41,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     // The group owns the box, so the input's own variant and size do not apply inside one.
     const variant = group.inGroup ? 'default' : variantProp;
     const size = group.inGroup ? 'default' : sizeProp;
+    const disabled = props.disabled || group.disabled;
     const generatedId = React.useId();
     const validationId = errorId ?? `${id ?? `input-${generatedId.replace(/:/g, '')}`}-error`;
     const validation = useControlValidation(group, {
@@ -58,7 +59,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         id={id}
         {...props}
         {...validation.aria}
-        disabled={props.disabled || group.disabled}
+        disabled={disabled}
         className={cn(
           // Base styles (all themes)
           'flex w-full transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring read-only:cursor-default disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-error aria-invalid:focus-visible:ring-error',
@@ -75,6 +76,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           variant === 'default' &&
             size === 'default' &&
             'future:h-10 future:rounded-xl future:border-0 future:bg-surface-overlay future:py-2 future:text-sm future:placeholder:text-foreground-muted future:placeholder:font-normal future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background future:aria-invalid:ring-1 future:aria-invalid:ring-error/40',
+          // Read-only sits on a muted fill instead of a border; keyed off the prop, since `:read-only` also matches file inputs.
+          props.readOnly &&
+            !disabled &&
+            !group.inGroup &&
+            'border-transparent bg-muted future:bg-surface-raised',
           group.inGroup && IN_GROUP_CLASS,
           className
         )}
