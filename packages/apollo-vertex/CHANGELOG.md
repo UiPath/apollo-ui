@@ -1,3 +1,20 @@
+## [@uipath/apollo-vertex-v1.2.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-vertex@1.1.0...@uipath/apollo-vertex@1.2.0) (2026-10-16)
+
+### Features
+
+* **apollo-vertex:** update chart for Recharts 3 ([40aa68c](https://github.com/UiPath/apollo-ui/commit/40aa68c317d480d885ef9bd9f7ac67f370a22168))
+
+### Bug Fixes
+
+* **apollo-vertex:** color single-series bars without Cell ([a1ca0ad](https://github.com/UiPath/apollo-ui/commit/a1ca0adaf7b7505d7b7802d4aac8c2b3a0247d45))
+* **apollo-vertex:** default Toaster to system without a theme provider ([800e480](https://github.com/UiPath/apollo-ui/commit/800e48090b395c8be941d995dc071ffb67bafdf3))
+* **apollo-vertex:** follow the shell theme in Toaster ([bb4a5b4](https://github.com/UiPath/apollo-ui/commit/bb4a5b468b22f7457a1bbb7611fe140484cd848b))
+* **apollo-vertex:** keep useTheme resolvedTheme light or dark ([1354201](https://github.com/UiPath/apollo-ui/commit/1354201289b8fc615234bc8bbe7dbf96889761ec))
+* **apollo-vertex:** let useTheme run without a ThemeProvider ([f0ebb69](https://github.com/UiPath/apollo-ui/commit/f0ebb693b93419296550793b76eb9286644e3ea9))
+* **apollo-vertex:** make Toaster follow the shell theme only ([67ed3b7](https://github.com/UiPath/apollo-ui/commit/67ed3b711c76f6c0634d8c7b6f41e2d848df81d7))
+* **apollo-vertex:** match single-series tooltip color to the bar ([5814144](https://github.com/UiPath/apollo-ui/commit/581414427b0a5c738cab3d75b17f385808d47d46))
+* **apollo-vertex:** pin chart consumers to Recharts 3.8.0 ([219944f](https://github.com/UiPath/apollo-ui/commit/219944f2c678558a049cf3a68241b04453dc79b7))
+
 ## [@uipath/apollo-vertex-v1.1.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-vertex@1.0.0...@uipath/apollo-vertex@1.1.0) (2026-10-16)
 
 ### Features
