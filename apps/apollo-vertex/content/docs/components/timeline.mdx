@@ -135,7 +135,7 @@ Keep the domain mapping on your side: convert your own state into a `TimelineMar
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `variant` | `TimelineMarkerVariant` | — | Required. One of `user`, `completed-user`, `completed-ai`, `ai-upcoming`, `ai-suspended`, `ai-progress`, `ai-failed`, `ai-cancelled`, `ai-complete`. |
-| `initials` | `string` | — | Shown inside the `user` marker, falling back to `"?"` when omitted. Ignored by other variants. |
+| `initials` | `string` | — | Shown inside the `user` marker, falling back to `"?"` when omitted. The compact size shows only the first character. Ignored by other variants. |
 | `compact` | `boolean` | `false` | Render the smaller size for dense trails. |
 
 ## TimelineRowLayout props
