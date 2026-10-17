@@ -27,3 +27,29 @@ describe('SearchBox clear button accessible name', () => {
     expect(screen.queryByRole('button', { name: 'Clear search' })).not.toBeInTheDocument();
   });
 });
+
+describe('SearchBox pending indicator', () => {
+  it('does not render a spinner by default', () => {
+    render(<SearchBox {...baseProps} />);
+
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
+  it('renders a labelled spinner while pending', () => {
+    render(<SearchBox {...baseProps} pending />);
+
+    expect(screen.getByRole('status', { name: 'Searching' })).toBeInTheDocument();
+  });
+
+  it('uses the provided pendingLabel as the spinner accessible name', () => {
+    render(<SearchBox {...baseProps} pending pendingLabel="Searching nodes" />);
+
+    expect(screen.getByRole('status', { name: 'Searching nodes' })).toBeInTheDocument();
+  });
+
+  it('keeps the clear button while pending', () => {
+    render(<SearchBox {...baseProps} pending />);
+
+    expect(screen.getByRole('button', { name: 'Clear search' })).toBeInTheDocument();
+  });
+});

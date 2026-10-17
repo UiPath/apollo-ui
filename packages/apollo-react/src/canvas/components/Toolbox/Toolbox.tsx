@@ -197,8 +197,15 @@ export function Toolbox<T>({
   const { _ } = useSafeLingui();
   const searchPlaceholder = searchPlaceholderProp ?? _({ id: 'toolbox.search', message: 'Search' });
   const clearSearchLabel = _({ id: 'toolbox.search.clear', message: 'Clear search' });
+  const searchPendingLabel = _({ id: 'toolbox.search.pending', message: 'Searching' });
   const [items, setItems] = useState<ListItem<T>[]>(initialItems);
   const [search, setSearch] = useState('');
+  // True while an `onSearch` promise is in flight. Presentation only: the
+  // request-id guard in `handleSearch` already discards stale answers, so the
+  // previous list stays fully interactive (stale-while-revalidate) and the
+  // busy signal is shown in the search box and as `aria-busy` on the listbox.
+  // Rows are disabled only by `loading` (panel initialising) and
+  // `awaitingChildren` (resolving a lazy category after a click).
   const [searchLoading, setSearchLoading] = useState(false);
   // True only while we're awaiting an async `item.children(...)` resolver.
   // Distinct from the public `ListItem.childrenLoading` API field, which
@@ -736,6 +743,8 @@ export function Toolbox<T>({
           onNavigationKeyDown={handleNavigationKeyDown}
           navigateToFirstItem={navigateToFirstItem}
           activeDescendantId={activeDescendantId}
+          pending={searchLoading}
+          pendingLabel={searchPendingLabel}
         />
 
         <div className="relative flex min-h-[50px] flex-1 flex-col overflow-hidden">
@@ -747,7 +756,8 @@ export function Toolbox<T>({
           >
             <ListView
               ref={listViewRef}
-              isLoading={awaitingChildren || searchLoading || loading}
+              isLoading={awaitingChildren || loading}
+              searchPending={searchLoading}
               items={displayedItems}
               activeIndex={activeIndex}
               listRef={listRef}
