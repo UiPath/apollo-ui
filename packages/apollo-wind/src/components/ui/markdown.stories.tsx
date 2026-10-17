@@ -110,6 +110,28 @@ $$`,
   },
 };
 
+export const MathFences: Story = {
+  args: {
+    children: `Models often fence block math instead of using double dollars. A fence tagged math, latex or tex renders like a $$ block:
+
+\`\`\`math
+\\text{share}_i = \\frac{t_i}{\\sum_{j=1}^{n} t_j}
+\`\`\`
+
+\`\`\`latex
+\\text{late fee} = \\begin{cases} 0 & d \\le 30 \\\\ 0.02\\,t & d > 30 \\end{cases}
+\`\`\``,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A fenced block tagged math, latex or tex (in any case) renders as display math, as in the Material chat. A math fence or $$ block without its closing line, still streaming or cut off, renders as a code block, so half a formula never shows as a KaTeX error. It becomes math once the closing line arrives.',
+      },
+    },
+  },
+};
+
 export const NestedLists: Story = {
   args: {
     children: `1. Intake
@@ -174,6 +196,12 @@ The two approved invoices total **$2,100**. Together with last week they bring t
 | Month to date | $18,430 |
 | Budget left | $5,570 |
 
+The remaining budget is what is left after every approved invoice:
+
+$$
+b = 24{,}000 - 18{,}430 = 5{,}570
+$$
+
 If invoice 4023 is approved the month closes at $$24{,}030$$, which is over budget. Options:
 
 - [ ] Hold one of next week's smaller invoices
@@ -227,7 +255,7 @@ export const Streaming: Story = {
     docs: {
       description: {
         story:
-          'A timer reveals the reply a few characters at a time. While streaming is true a caret follows the last text (or sits after a trailing code block) and the region is marked aria-busy. Partial markdown is rendered as it arrives: an unclosed fence is already a code block and half a table is still a table. The caret stops blinking when the reader prefers reduced motion.',
+          'A timer reveals the reply a few characters at a time. While streaming is true a caret follows the last text (or sits after a trailing code block) and the region is marked aria-busy. Partial markdown is rendered as it arrives: an unclosed fence is already a code block, a math block stays code until its closing line arrives, and half a table is still a table. The caret stops blinking when the reader prefers reduced motion.',
       },
     },
   },
