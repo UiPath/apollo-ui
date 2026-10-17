@@ -83,6 +83,7 @@
   "add-node-panel.search-nodes": "Search nodes",
   "toolbox.search": "Search",
   "toolbox.search.clear": "Clear search",
+  "toolbox.search.pending": "Searching",
   "loop-node.add-node": "Add node to loop",
   "loop-node.mode.parallel": "Parallel",
   "loop-node.mode.sequential": "Sequential",

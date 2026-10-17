@@ -18,7 +18,7 @@ export const TOOLBOX_WIDTH = 320;
  */
 export const TOOLBOX_HEIGHT = 410;
 /** Horizontal padding inside the Toolbox (in px; `px` prop on its outer `Column`). */
-export const TOOLBOX_PADDING_X = 20;
+export const TOOLBOX_PADDING_X = 12;
 /** Vertical padding inside the Toolbox (in px; `py` prop on its outer `Column`). */
 export const TOOLBOX_PADDING_Y = 12;
 /** Row gap between Toolbox sections (in px; `gap` prop on its outer `Column`). */

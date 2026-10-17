@@ -106,6 +106,41 @@ export const WithInitialsFallback: Story = {
   },
 };
 
+const SLOW_SEARCH_ITEMS: ListItem[] = [
+  { id: 'task', name: 'Task', icon: { name: 'square' }, data: {} },
+  { id: 'manual-task', name: 'Manual Task', icon: { name: 'hand' }, data: {} },
+  { id: 'mail', name: 'Send Mail', icon: { name: 'mail' }, data: {} },
+  { id: 'gateway', name: 'Gateway', icon: { name: 'diamond' }, data: {} },
+  { id: 'event', name: 'Event', icon: { name: 'circle' }, data: {} },
+  { id: 'subprocess', name: 'Subprocess', icon: { name: 'layers' }, data: {} },
+];
+
+/**
+ * An `onSearch` that takes half a second, like a debounced network search.
+ * While the answer is pending the previous list stays clickable at full
+ * opacity (no dim and brighten on each pause in typing). The busy signal is a
+ * spinner in the search field plus `aria-busy` on the listbox. Rows are only
+ * disabled for the panel-level `loading` prop and while a lazy category
+ * resolves its children.
+ */
+export const WithSlowSearch: Story = {
+  args: {
+    title: 'Add element',
+    initialItems: SLOW_SEARCH_ITEMS,
+    onClose: () => {},
+    onItemSelect: () => {},
+    onSearch: (query: string) =>
+      new Promise<ListItem[]>((resolve) => {
+        const needle = query.toLowerCase();
+        setTimeout(
+          () =>
+            resolve(SLOW_SEARCH_ITEMS.filter((item) => item.name.toLowerCase().includes(needle))),
+          500
+        );
+      }),
+  },
+};
+
 const CONNECTOR_ITEMS: ListItem[] = [
   {
     id: 'gmail',
