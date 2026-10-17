@@ -224,6 +224,23 @@ export const CustomBody: Story = {
   },
 };
 
+export const CompactDensity: Story = {
+  args: { code: TS_SAMPLE, language: 'ts' },
+  render: (args) => (
+    <div data-density="compact">
+      <CodeBlock {...args} />
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Inside an ancestor with data-density="compact" the source drops to 12px on an 18px line, as Material\'s compact code renders. The header stays as it is, as in Material.',
+      },
+    },
+  },
+};
+
 export const UnknownLanguage: Story = {
   args: {
     code: 'IDENTIFICATION DIVISION.\nPROGRAM-ID. APPROVE.\nPROCEDURE DIVISION.\n    DISPLAY "Approved".\n    STOP RUN.',

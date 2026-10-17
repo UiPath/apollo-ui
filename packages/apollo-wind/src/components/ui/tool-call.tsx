@@ -106,6 +106,10 @@ export interface ToolCallProps
  * seconds") that toggles an indented body of collapsible sections (input, errors, output, or any
  * `ToolCallSection`). The body is not rendered while closed. Omit `ToolCallContent` for a
  * name-only line (the toggle hides itself).
+ *
+ * Compact density: the tool call itself is unchanged, as Material's is. Code blocks in its body
+ * follow a `data-density="compact"` ancestor like any `CodeBlock` (12px source), which Material's
+ * do not; a compact debug panel gains from it.
  */
 const ToolCall = React.forwardRef<HTMLDivElement, ToolCallProps>(
   (

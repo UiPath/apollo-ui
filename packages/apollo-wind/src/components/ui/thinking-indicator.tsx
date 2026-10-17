@@ -33,7 +33,7 @@ const thinkingIndicatorVariants = cva(
     variants: {
       size: {
         sm: 'gap-1.5 text-xs [&_[data-slot=thinking-indicator-icon]]:size-3.5',
-        md: 'gap-2 text-sm [&_[data-slot=thinking-indicator-icon]]:size-4',
+        md: 'gap-(--thinking-indicator-gap,0.5rem) text-(length:--thinking-indicator-font-size,0.875rem) leading-(--thinking-indicator-leading,1.25rem) [&_[data-slot=thinking-indicator-icon]]:size-4',
       },
     },
     defaultVariants: {
@@ -69,6 +69,11 @@ export interface ThinkingIndicatorProps
   icon?: React.ReactNode;
 }
 
+// The `sm` look, for an indicator without an explicit size inside a compact ancestor. It sets the
+// variables `md` reads, so a host className on the root still wins.
+const COMPACT_THINKING_CLASSES =
+  'in-data-[density=compact]:[--thinking-indicator-gap:0.375rem] in-data-[density=compact]:[--thinking-indicator-font-size:0.75rem] in-data-[density=compact]:[--thinking-indicator-leading:1rem] in-data-[density=compact]:[&_[data-slot=thinking-indicator-icon]]:size-3.5';
+
 /**
  * A "the assistant is working" row for a conversation: a pulsing sparkle and a shimmering label.
  * Pass `messages` to cycle through progress labels ("Searching", "Reading files") every
@@ -79,12 +84,18 @@ export interface ThinkingIndicatorProps
  * would only add noise. Announce real progress with `LiveRegion` instead.
  *
  * Under `prefers-reduced-motion` the icon and shimmer are static and the labels do not rotate.
+ *
+ * Compact density: without a `size`, inside an ancestor with `data-density="compact"` it takes
+ * the `sm` look. An explicit `size` always wins.
+ * There is no prop: the host opts in by setting the attribute (the Wind chat sets it on its root).
+ * Compact sets CSS variables the base classes read, so a host className on the root wins in
+ * both densities.
  */
 const ThinkingIndicator = React.forwardRef<HTMLDivElement, ThinkingIndicatorProps>(
   (
     {
       className,
-      size = 'md',
+      size: sizeProp,
       label,
       messages,
       interval = 2500,
@@ -95,6 +106,7 @@ const ThinkingIndicator = React.forwardRef<HTMLDivElement, ThinkingIndicatorProp
     },
     ref
   ) => {
+    const size = sizeProp ?? 'md';
     const text = { ...DEFAULT_THINKING_INDICATOR_STRINGS, ...strings };
     const staticLabel = label ?? text.label;
     const name = ariaLabel ?? staticLabel;
@@ -131,7 +143,11 @@ const ThinkingIndicator = React.forwardRef<HTMLDivElement, ThinkingIndicatorProp
         data-size={size}
         role="status"
         aria-label={name}
-        className={cn(thinkingIndicatorVariants({ size }), className)}
+        className={cn(
+          thinkingIndicatorVariants({ size }),
+          sizeProp == null && COMPACT_THINKING_CLASSES,
+          className
+        )}
         {...props}
       >
         {icon !== null && icon !== false && (

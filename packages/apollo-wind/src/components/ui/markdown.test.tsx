@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { createRef, type ReactNode, useEffect } from 'react';
 import { describe, expect, it } from 'vitest';
+import { buildTailwind, ruleBody } from '../../../tests/tailwind-compile';
 import { CodeBlock } from './code-block';
 import { Markdown, type MarkdownKatexOptions } from './markdown';
 
@@ -144,6 +145,57 @@ describe('Markdown', () => {
     // Display math sits directly in the root, where these rules reach it.
     expect(root.querySelector(':scope > .katex')).not.toBeNull();
     expect(root).toHaveClass('[&>.katex]:overflow-x-auto', '[&>.katex]:overflow-y-hidden');
+  });
+
+  it('steps type and spacing down inside a compact ancestor', async () => {
+    const { container } = render(
+      <div data-density="compact">
+        <Markdown>{'# Title\n\n### Section\n\nSome text.\n\n- one\n- two'}</Markdown>
+      </div>
+    );
+    const root = container.querySelector('[data-slot="markdown"]') as HTMLElement;
+    const parts = [
+      root,
+      root.querySelector('h1'),
+      root.querySelector('h3'),
+      root.querySelector('ul'),
+    ];
+    const css = await buildTailwind(parts.flatMap((node) => Array.from(node?.classList ?? [])));
+    const rule = (utility: string) => ruleBody(css, `.${CSS.escape(utility)}`);
+    // The root reads variables whose fallbacks are the comfortable values (14px on 22.75px, 12px gap).
+    expect(rule('text-(length:--markdown-font-size,0.875rem)')).toContain(
+      'font-size: var(--markdown-font-size,0.875rem)'
+    );
+    expect(rule('leading-(--markdown-leading,1.625)')).toContain(
+      'line-height: var(--markdown-leading,1.625)'
+    );
+    expect(rule('gap-(--markdown-gap,0.75rem)')).toContain('gap: var(--markdown-gap,0.75rem)');
+    // A compact ancestor sets them.
+    const compact = (utility: string, declaration: string) => {
+      const body = rule(`in-data-[density=compact]:${utility}`);
+      expect(body).toContain(':where(*[data-density="compact"]) &');
+      expect(body).toContain(declaration);
+    };
+    compact('[--markdown-font-size:0.75rem]', '--markdown-font-size: 0.75rem');
+    compact('[--markdown-leading:1.5]', '--markdown-leading: 1.5');
+    compact('[--markdown-gap:0.5rem]', '--markdown-gap: 0.5rem');
+    // Nested elements keep their own variants.
+    compact('text-lg', 'font-size: var(--text-lg)');
+    compact('text-sm', 'font-size: var(--text-sm)');
+    compact('gap-0.5', 'gap: calc(var(--spacing) * 0.5)');
+    expect(root.querySelector('h1')).toHaveClass('text-xl', 'in-data-[density=compact]:text-lg');
+  });
+
+  it('lets a host className on the root win in compact too', () => {
+    const { container } = render(
+      <div data-density="compact">
+        <Markdown className="gap-1 text-xs leading-4">{'Hello'}</Markdown>
+      </div>
+    );
+    const root = container.querySelector('[data-slot="markdown"]') as HTMLElement;
+    expect(root).toHaveClass('gap-1', 'text-xs', 'leading-4');
+    // The variable-reading classes are replaced, so the compact variables have nothing to change.
+    expect(root.className).not.toMatch(/gap-\(|text-\(|leading-\(/);
   });
 
   it('keeps single dollar signs literal', () => {
