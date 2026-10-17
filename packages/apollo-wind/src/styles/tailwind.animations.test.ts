@@ -1,30 +1,5 @@
-import { readFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
-import { dirname, resolve } from 'node:path';
-import { compile } from 'tailwindcss';
 import { describe, expect, it } from 'vitest';
-
-const require = createRequire(import.meta.url);
-
-async function build(candidates: string[]) {
-  const compiler = await compile('@import "tailwindcss";\n@import "./tailwind.utilities.css";', {
-    base: __dirname,
-    loadStylesheet: async (id, base) => {
-      const path = id.startsWith('.')
-        ? resolve(base, id)
-        : require.resolve(id === 'tailwindcss' ? 'tailwindcss/index.css' : id);
-      return { path, base: dirname(path), content: readFileSync(path, 'utf8') };
-    },
-  });
-  return compiler.build(candidates);
-}
-
-/** The declarations of the first rule whose selector contains `selector`. */
-function rule(css: string, selector: string) {
-  const start = css.indexOf(selector);
-  if (start < 0) return '';
-  return css.slice(css.indexOf('{', start) + 1, css.indexOf('}', start));
-}
+import { buildTailwind as build, ruleBody as rule } from '../../tests/tailwind-compile';
 
 describe('enter and exit animation utilities', () => {
   it('plays the enter and exit keyframes', async () => {

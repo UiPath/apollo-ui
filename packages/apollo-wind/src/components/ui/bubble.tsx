@@ -7,6 +7,12 @@ import { cn } from '@/lib';
  * The surface of a chat message, ported from shadcn/ui's chat components. `Bubble` positions and
  * colours; `BubbleContent` is the padded box the text lives in, so a bubble can also carry
  * reactions or actions outside that box. Use inside `MessageContent`, or standalone with `align`.
+ *
+ * Compact density: inside an ancestor with `data-density="compact"` the text drops to 12px; the
+ * padding stays, as in Material.
+ * There is no prop: the host opts in by setting the attribute (the Wind chat sets it on its root).
+ * Compact sets CSS variables the base classes read, so a host className on the root wins in
+ * both densities.
  */
 
 const BubbleGroup = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
@@ -78,7 +84,7 @@ const BubbleContent = React.forwardRef<HTMLDivElement, BubbleContentProps>(
         ref={ref}
         data-slot="bubble-content"
         className={cn(
-          'w-fit max-w-full min-w-0 overflow-hidden rounded-xl border border-transparent px-3 py-2 text-sm leading-relaxed break-words group-data-[align=end]/bubble:self-end',
+          'w-fit max-w-full min-w-0 overflow-hidden rounded-xl border border-transparent px-3 py-2 text-(length:--bubble-font-size,0.875rem) leading-(--bubble-leading,1.625) break-words group-data-[align=end]/bubble:self-end in-data-[density=compact]:[--bubble-font-size:0.75rem] in-data-[density=compact]:[--bubble-leading:1.5]',
           className
         )}
         {...props}

@@ -3,7 +3,7 @@
 import { cva, type VariantProps } from 'class-variance-authority';
 import { ArrowUp, CircleAlert, FileText, Paperclip, Square, TriangleAlert, X } from 'lucide-react';
 import * as React from 'react';
-import { cn } from '@/lib';
+import { cn, composeRefs } from '@/lib';
 import {
   Attachment,
   AttachmentAction,
@@ -48,6 +48,12 @@ import {
  *
  * Enter sends and Shift+Enter starts a new line. While `status` is `streaming` the submit button
  * becomes a stop button and Enter does not send.
+ *
+ * Density: `density="compact"` gives a one-row textarea and tighter spacing. Without the prop the
+ * composer is compact while any ancestor has `data-density="compact"`, as the other chat
+ * primitives are, so it is compact inside a compact chat panel. The prop always wins. That
+ * ancestor is watched for changes; one that only gains the attribute later is picked up on the
+ * composer's next render.
  */
 
 export interface ChatComposerStrings {
@@ -177,6 +183,46 @@ export interface ChatComposerProps
 
 const NO_ATTACHMENTS: ChatComposerAttachmentItem[] = [];
 
+const useIsomorphicLayoutEffect =
+  typeof window === 'undefined' ? React.useEffect : React.useLayoutEffect;
+
+/**
+ * `compact` while any ancestor has `data-density="compact"`, as the `in-data-[density=compact]:`
+ * variant the other chat primitives use. That ancestor's attribute is watched; an ancestor that
+ * only gains it later is picked up on the composer's next render. Off when `enabled` is false.
+ */
+function useAncestorDensity(node: React.RefObject<HTMLElement | null>, enabled: boolean) {
+  const [density, setDensity] = React.useState<ChatComposerDensity | undefined>(undefined);
+  const watched = React.useRef<{ ancestor: Element; observer?: MutationObserver } | null>(null);
+  // No dependency list: the ancestor is looked up after every render, and re-subscribed only when
+  // it changes.
+  useIsomorphicLayoutEffect(() => {
+    const ancestor =
+      (enabled && node.current?.parentElement?.closest('[data-density="compact"]')) || null;
+    setDensity(ancestor ? 'compact' : undefined);
+    if (watched.current?.ancestor === ancestor) return;
+    watched.current?.observer?.disconnect();
+    watched.current = null;
+    if (!ancestor) return;
+    const observer =
+      typeof MutationObserver === 'undefined'
+        ? undefined
+        : new MutationObserver(() =>
+            setDensity(ancestor.getAttribute('data-density') === 'compact' ? 'compact' : undefined)
+          );
+    observer?.observe(ancestor, { attributes: true, attributeFilter: ['data-density'] });
+    watched.current = { ancestor, observer };
+  });
+  React.useEffect(
+    () => () => {
+      watched.current?.observer?.disconnect();
+      watched.current = null;
+    },
+    []
+  );
+  return density;
+}
+
 const ChatComposer = React.forwardRef<HTMLFormElement, ChatComposerProps>(
   (
     {
@@ -198,7 +244,11 @@ const ChatComposer = React.forwardRef<HTMLFormElement, ChatComposerProps>(
     },
     ref
   ) => {
-    const resolvedDensity: ChatComposerDensity = density ?? 'comfortable';
+    const formRef = React.useRef<HTMLFormElement | null>(null);
+    const setFormRef = React.useMemo(() => composeRefs(ref, formRef), [ref]);
+    // The prop wins; without it the composer follows a `data-density` ancestor.
+    const ancestorDensity = useAncestorDensity(formRef, density == null);
+    const resolvedDensity: ChatComposerDensity = density ?? ancestorDensity ?? 'comfortable';
     const controlled = valueProp !== undefined;
     const [uncontrolledValue, setUncontrolledValue] = React.useState(defaultValue ?? '');
     const value = controlled ? valueProp : uncontrolledValue;
@@ -279,7 +329,7 @@ const ChatComposer = React.forwardRef<HTMLFormElement, ChatComposerProps>(
     return (
       <ChatComposerContext.Provider value={context}>
         <form
-          ref={ref}
+          ref={setFormRef}
           data-slot="chat-composer"
           data-status={status}
           data-density={resolvedDensity}

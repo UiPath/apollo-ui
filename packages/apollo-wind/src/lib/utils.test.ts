@@ -3,6 +3,18 @@ import { describe, expect, it, vi } from 'vitest';
 import { cn, composeRefs } from './utils';
 
 describe('cn utility', () => {
+  it('treats variable-reading utilities as the same group as plain ones', () => {
+    // The chat primitives read density variables this way, so a host class replaces them.
+    expect(cn('gap-(--markdown-gap,0.75rem)', 'gap-0')).toBe('gap-0');
+    expect(
+      cn(
+        'text-(length:--markdown-font-size,0.875rem) leading-(--markdown-leading,1.625)',
+        'text-xs leading-4'
+      )
+    ).toBe('text-xs leading-4');
+    expect(cn('h-(--citation-size,1.125rem)', 'h-5')).toBe('h-5');
+  });
+
   it('merges class names', () => {
     expect(cn('class1', 'class2')).toBe('class1 class2');
   });
