@@ -2,7 +2,14 @@ import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
 import * as React from 'react';
 import { Button, type ButtonProps } from '@/components/ui/button';
-import { cn } from '@/lib';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipPortal,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { cn, composeRefs } from '@/lib';
 
 /**
  * A file or image card for a chat composer or a sent message, ported from shadcn/ui's chat
@@ -104,18 +111,50 @@ const AttachmentContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<
 );
 AttachmentContent.displayName = 'AttachmentContent';
 
-const AttachmentTitle = React.forwardRef<HTMLSpanElement, React.HTMLAttributes<HTMLSpanElement>>(
-  ({ className, ...props }, ref) => (
-    <span
-      ref={ref}
-      data-slot="attachment-title"
-      className={cn(
-        'block max-w-full min-w-0 truncate font-medium group-data-[state=processing]/attachment:shimmer group-data-[state=uploading]/attachment:shimmer',
-        className
-      )}
-      {...props}
-    />
-  )
+export interface AttachmentTitleProps extends React.HTMLAttributes<HTMLSpanElement> {
+  /** Show the full title in a tooltip on hover when it is cut off. On by default. */
+  truncationTooltip?: boolean;
+}
+
+/** The file name, cut off with an ellipsis. A cut-off name shows in full in a tooltip on hover. */
+const AttachmentTitle = React.forwardRef<HTMLSpanElement, AttachmentTitleProps>(
+  ({ className, truncationTooltip = true, children, ...props }, ref) => {
+    const local = React.useRef<HTMLSpanElement | null>(null);
+    const setRef = React.useMemo(() => composeRefs(ref, local), [ref]);
+    const [open, setOpen] = React.useState(false);
+    const title = (
+      <span
+        ref={setRef}
+        data-slot="attachment-title"
+        className={cn(
+          'block max-w-full min-w-0 truncate font-medium group-data-[state=processing]/attachment:shimmer group-data-[state=uploading]/attachment:shimmer',
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </span>
+    );
+    if (!truncationTooltip) return title;
+    // Radix exposes no way to detect a provider above, so each title brings its own (a context, no
+    // DOM). The width is measured on every open, so only a name cut off right now shows it.
+    return (
+      <TooltipProvider delayDuration={300}>
+        <Tooltip
+          open={open}
+          onOpenChange={(next) => {
+            const node = local.current;
+            setOpen(next && !!node && node.scrollWidth > node.clientWidth);
+          }}
+        >
+          <TooltipTrigger asChild>{title}</TooltipTrigger>
+          <TooltipPortal>
+            <TooltipContent className="max-w-80 break-all">{children}</TooltipContent>
+          </TooltipPortal>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
 );
 AttachmentTitle.displayName = 'AttachmentTitle';
 

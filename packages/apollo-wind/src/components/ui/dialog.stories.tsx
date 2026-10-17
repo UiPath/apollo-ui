@@ -1242,3 +1242,36 @@ export const StickyFooterDialog = {
   name: 'Sticky Footer',
   render: () => <StickyFooterDialogStory />,
 };
+
+// ============================================================================
+// Strings
+// ============================================================================
+
+function StringsDialogStory() {
+  const viewMode = React.useContext(ViewModeContext);
+  return (
+    <Dialog defaultOpen={viewMode === 'story'}>
+      <DialogTrigger asChild>
+        <Button variant="outline">Profil bearbeiten</Button>
+      </DialogTrigger>
+      <DialogContent strings={{ close: 'Schließen' }}>
+        <DialogHeader>
+          <DialogTitle>Profil bearbeiten</DialogTitle>
+          <DialogDescription>Die Änderungen werden sofort gespeichert.</DialogDescription>
+        </DialogHeader>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+export const Strings = {
+  render: () => <StringsDialogStory />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The built-in button labels are overridable through strings: close for the default close button, and closeTakeover, expand and collapse for the takeover header.',
+      },
+    },
+  },
+};

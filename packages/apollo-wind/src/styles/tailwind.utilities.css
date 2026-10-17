@@ -116,6 +116,179 @@
 }
 
 /* ============================================================================
+ * Enter and exit animations (shadcn's vocabulary)
+ *
+ * The overlays ported from shadcn/ui (Dialog, Popover, Tooltip, HoverCard,
+ * Sheet, DropdownMenu, ...) animate with `animate-in` / `animate-out` plus
+ * `fade-*`, `zoom-*` and `slide-*` modifiers, the class names and variables of
+ * tailwindcss-animate and tw-animate-css. These are the subset apollo-wind
+ * uses, defined here rather than importing tw-animate-css, which would also
+ * redefine `delay-*` for every consumer and clash with the collapsible
+ * keyframes in tailwind.consumer.css.
+ *
+ * `animate-in` plays from the `--tw-enter-*` values to the element's own
+ * style; `animate-out` plays to the `--tw-exit-*` values. The duration follows
+ * `duration-*` (150ms otherwise). The modifiers only set the variables, which
+ * do not inherit, so a nested animated element starts from its own values.
+ * Reduced motion turns both animations off through an unlayered rule that
+ * matches every variant (`data-[state=open]:animate-in`), so a layered
+ * definition of the same classes (tw-animate-css) cannot win over it.
+ *
+ *   fade-in-0 / fade-out-0        opacity from or to 0 (fade-in-80: 0.8)
+ *   zoom-in-95 / zoom-out-95      scale from or to 95%
+ *   slide-in-from-top-2           from 0.5rem above (spacing scale)
+ *   slide-in-from-right           from a full width away
+ *   slide-out-to-left-1/2         to half its width to the left
+ *   slide-in-from-top-[48%]       arbitrary percentage or length
+ * ============================================================================ */
+
+@property --tw-enter-opacity { syntax: '*'; inherits: false; initial-value: 1; }
+@property --tw-enter-scale { syntax: '*'; inherits: false; initial-value: 1; }
+@property --tw-enter-translate-x { syntax: '*'; inherits: false; initial-value: 0; }
+@property --tw-enter-translate-y { syntax: '*'; inherits: false; initial-value: 0; }
+@property --tw-exit-opacity { syntax: '*'; inherits: false; initial-value: 1; }
+@property --tw-exit-scale { syntax: '*'; inherits: false; initial-value: 1; }
+@property --tw-exit-translate-x { syntax: '*'; inherits: false; initial-value: 0; }
+@property --tw-exit-translate-y { syntax: '*'; inherits: false; initial-value: 0; }
+
+@keyframes apollo-enter {
+  from {
+    opacity: var(--tw-enter-opacity, 1);
+    transform: translate3d(var(--tw-enter-translate-x, 0), var(--tw-enter-translate-y, 0), 0)
+      scale3d(var(--tw-enter-scale, 1), var(--tw-enter-scale, 1), var(--tw-enter-scale, 1));
+  }
+}
+
+@keyframes apollo-exit {
+  to {
+    opacity: var(--tw-exit-opacity, 1);
+    transform: translate3d(var(--tw-exit-translate-x, 0), var(--tw-exit-translate-y, 0), 0)
+      scale3d(var(--tw-exit-scale, 1), var(--tw-exit-scale, 1), var(--tw-exit-scale, 1));
+  }
+}
+
+@utility animate-in {
+  animation: apollo-enter var(--tw-duration, 150ms) var(--tw-ease, ease);
+}
+
+@utility animate-out {
+  animation: apollo-exit var(--tw-duration, 150ms) var(--tw-ease, ease);
+}
+
+/* Unlayered, so it also wins over a layered animate-in from tw-animate-css in the same page. It
+   matches the bare class and every variant of it (data-[state=open]:animate-in). */
+@media (prefers-reduced-motion: reduce) {
+  [class~='animate-in'],
+  [class~='animate-out'],
+  [class*=':animate-in'],
+  [class*=':animate-out'] {
+    animation: none;
+  }
+}
+
+@utility fade-in {
+  --tw-enter-opacity: 0;
+}
+@utility fade-in-* {
+  --tw-enter-opacity: calc(--value(number) / 100);
+  --tw-enter-opacity: --value([number], [percentage]);
+}
+@utility fade-out {
+  --tw-exit-opacity: 0;
+}
+@utility fade-out-* {
+  --tw-exit-opacity: calc(--value(number) / 100);
+  --tw-exit-opacity: --value([number], [percentage]);
+}
+
+@utility zoom-in {
+  --tw-enter-scale: 0;
+}
+@utility zoom-in-* {
+  --tw-enter-scale: calc(--value(number) / 100);
+  --tw-enter-scale: --value([number], [percentage]);
+}
+@utility zoom-out {
+  --tw-exit-scale: 0;
+}
+@utility zoom-out-* {
+  --tw-exit-scale: calc(--value(number) / 100);
+  --tw-exit-scale: --value([number], [percentage]);
+}
+
+@utility slide-in-from-top {
+  --tw-enter-translate-y: -100%;
+}
+@utility slide-in-from-top-* {
+  --tw-enter-translate-y: calc(--value(number) * var(--spacing) * -1);
+  --tw-enter-translate-y: calc(--value(ratio) * -100%);
+  --tw-enter-translate-y: calc(--value([percentage], [length]) * -1);
+}
+
+@utility slide-in-from-bottom {
+  --tw-enter-translate-y: 100%;
+}
+@utility slide-in-from-bottom-* {
+  --tw-enter-translate-y: calc(--value(number) * var(--spacing));
+  --tw-enter-translate-y: calc(--value(ratio) * 100%);
+  --tw-enter-translate-y: calc(--value([percentage], [length]));
+}
+
+@utility slide-in-from-left {
+  --tw-enter-translate-x: -100%;
+}
+@utility slide-in-from-left-* {
+  --tw-enter-translate-x: calc(--value(number) * var(--spacing) * -1);
+  --tw-enter-translate-x: calc(--value(ratio) * -100%);
+  --tw-enter-translate-x: calc(--value([percentage], [length]) * -1);
+}
+
+@utility slide-in-from-right {
+  --tw-enter-translate-x: 100%;
+}
+@utility slide-in-from-right-* {
+  --tw-enter-translate-x: calc(--value(number) * var(--spacing));
+  --tw-enter-translate-x: calc(--value(ratio) * 100%);
+  --tw-enter-translate-x: calc(--value([percentage], [length]));
+}
+
+@utility slide-out-to-top {
+  --tw-exit-translate-y: -100%;
+}
+@utility slide-out-to-top-* {
+  --tw-exit-translate-y: calc(--value(number) * var(--spacing) * -1);
+  --tw-exit-translate-y: calc(--value(ratio) * -100%);
+  --tw-exit-translate-y: calc(--value([percentage], [length]) * -1);
+}
+
+@utility slide-out-to-bottom {
+  --tw-exit-translate-y: 100%;
+}
+@utility slide-out-to-bottom-* {
+  --tw-exit-translate-y: calc(--value(number) * var(--spacing));
+  --tw-exit-translate-y: calc(--value(ratio) * 100%);
+  --tw-exit-translate-y: calc(--value([percentage], [length]));
+}
+
+@utility slide-out-to-left {
+  --tw-exit-translate-x: -100%;
+}
+@utility slide-out-to-left-* {
+  --tw-exit-translate-x: calc(--value(number) * var(--spacing) * -1);
+  --tw-exit-translate-x: calc(--value(ratio) * -100%);
+  --tw-exit-translate-x: calc(--value([percentage], [length]) * -1);
+}
+
+@utility slide-out-to-right {
+  --tw-exit-translate-x: 100%;
+}
+@utility slide-out-to-right-* {
+  --tw-exit-translate-x: calc(--value(number) * var(--spacing));
+  --tw-exit-translate-x: calc(--value(ratio) * 100%);
+  --tw-exit-translate-x: calc(--value([percentage], [length]));
+}
+
+/* ============================================================================
  * Chat utilities (ported from shadcn/ui's packages/shadcn/src/tailwind.css)
  *
  * `scroll-fade-y` / `scroll-fade-x` mask the edges of a scroll container and

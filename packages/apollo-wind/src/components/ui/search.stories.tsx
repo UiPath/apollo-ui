@@ -49,6 +49,31 @@ export const NoClearButton = {
   },
 };
 
+export const Strings = {
+  args: {},
+  render: () => {
+    const [value, setValue] = React.useState('Rechnungen');
+    return (
+      <div className="w-[400px]">
+        <Search
+          aria-label="Verlauf durchsuchen"
+          placeholder="Suchen..."
+          value={value}
+          onChange={setValue}
+          strings={{ clear: 'Suche löschen' }}
+        />
+      </div>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'The clear button label is overridable through strings.',
+      },
+    },
+  },
+};
+
 export const WithSuggestions = {
   args: {},
   render: () => {

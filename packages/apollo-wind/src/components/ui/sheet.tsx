@@ -11,6 +11,15 @@ import {
 } from '@/components/ui/portal-container';
 import { cn } from '@/lib';
 
+export interface SheetStrings {
+  /** Screen reader label of the close button. */
+  close: string;
+}
+
+export const DEFAULT_SHEET_STRINGS: SheetStrings = {
+  close: 'Close',
+};
+
 const Sheet = (props: React.ComponentPropsWithoutRef<typeof SheetPrimitive.Root>) => (
   <SheetPrimitive.Root data-slot="sheet" {...props} />
 );
@@ -72,13 +81,16 @@ interface SheetContentProps
   extends React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content>,
     VariantProps<typeof sheetVariants> {
   container?: PortalContainerOverride;
+  /** Overrides for any subset of the built-in labels. */
+  strings?: Partial<SheetStrings>;
 }
 
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
   SheetContentProps
->(({ side = 'right', className, children, container, ...props }, ref) => {
+>(({ side = 'right', className, children, container, strings, ...props }, ref) => {
   const resolvedContainer = useResolvedPortalContainer(container);
+  const text = { ...DEFAULT_SHEET_STRINGS, ...strings };
   return (
     <SheetPortal container={resolvedContainer}>
       <SheetOverlay />
@@ -91,7 +103,7 @@ const SheetContent = React.forwardRef<
         {children}
         <SheetPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
           <X className="h-4 w-4" />
-          <span className="sr-only">Close</span>
+          <span className="sr-only">{text.close}</span>
         </SheetPrimitive.Close>
       </SheetPrimitive.Content>
     </SheetPortal>

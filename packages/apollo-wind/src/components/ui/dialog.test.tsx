@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { describe, expect, it, vi } from 'vitest';
 import {
+  DEFAULT_DIALOG_STRINGS,
   Dialog,
   DialogClose,
   DialogContent,
@@ -282,6 +283,34 @@ describe('Dialog', () => {
     expect(dialog).toHaveAttribute('data-expanded', 'true');
     expect(onExpandedChange).toHaveBeenCalledWith(true);
     expect(screen.getByRole('button', { name: 'Collapse modal' })).toBeInTheDocument();
+  });
+
+  it('labels the built-in buttons from strings', () => {
+    const { rerender } = render(
+      <Dialog open>
+        <DialogContent strings={{ close: 'Schließen' }}>
+          <DialogTitle>Title</DialogTitle>
+        </DialogContent>
+      </Dialog>
+    );
+    expect(screen.getByRole('button', { name: 'Schließen' })).toBeInTheDocument();
+
+    rerender(
+      <Dialog open>
+        <DialogContent
+          variant="takeover"
+          headerTitle="Title"
+          strings={{ closeTakeover: 'Fermer', expand: 'Agrandir' }}
+        >
+          Content
+        </DialogContent>
+      </Dialog>
+    );
+    expect(screen.getByRole('button', { name: 'Fermer' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Agrandir' }));
+    expect(
+      screen.getByRole('button', { name: DEFAULT_DIALOG_STRINGS.collapse })
+    ).toBeInTheDocument();
   });
 
   it('prevents takeover backdrop dismissal when disabled', () => {
