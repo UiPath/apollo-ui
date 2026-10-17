@@ -1,6 +1,8 @@
 import createCache from '@emotion/cache';
 import { CacheProvider } from '@emotion/react';
-import { ApChat as ReactApChat } from '@uipath/apollo-react/ap-chat';
+// The Material-only module, not the `ap-chat` entry: that entry also registers Wind, which the
+// shadow root has no styles for, and would bring the Wind chunks into this bundle.
+import { ApChat as ReactApChat } from '@uipath/apollo-react/material/components/ap-chat/ap-chat-material';
 
 import type { ApChatProperties } from './types';
 
@@ -70,6 +72,8 @@ export function createReactRenderer(shadowRoot: ShadowRoot, portalContainer: HTM
           portalContainer={portalContainer}
           enableInternalThemeProvider={true}
           disableEmbeddedPortal={true}
+          // Material only in this release: `renderer: 'wind'` is ignored, with a console warning.
+          renderer="material"
         />
       </CacheProvider>
     );

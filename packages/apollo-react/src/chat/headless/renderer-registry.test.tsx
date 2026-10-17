@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import type { AutopilotChatRenderer } from '../service';
 import {
   registerChatRenderer,
+  registerChatRendererIfAbsent,
   registerLazyChatRenderer,
   resolveChatRenderer,
 } from './renderer-registry';
@@ -74,5 +75,29 @@ describe('renderer registry', () => {
     render(<Renderer label="forwarded" />);
 
     expect(screen.getByText('forwarded')).toBeInTheDocument();
+  });
+
+  it('registers a built-in renderer only when the name has none, never downgrading it', () => {
+    const Eager = () => <div>eager</div>;
+    const Other = () => <div>other</div>;
+    registerChatRendererIfAbsent('tree-test' as AutopilotChatRenderer, { component: Eager });
+    registerChatRendererIfAbsent('tree-test' as AutopilotChatRenderer, {
+      load: () => Promise.resolve({ default: Other }),
+    });
+    registerChatRendererIfAbsent('tree-test' as AutopilotChatRenderer, { component: Other });
+
+    expect(resolveChatRenderer({}, 'tree-test' as AutopilotChatRenderer)).toBe(Eager);
+  });
+
+  it('keeps a lazy built-in renderer rather than swapping its component type', () => {
+    const Eager = () => <div>eager</div>;
+    registerChatRendererIfAbsent('lazy-test' as AutopilotChatRenderer, {
+      load: () => Promise.resolve({ default: Eager }),
+    });
+    const lazy = resolveChatRenderer({}, 'lazy-test' as AutopilotChatRenderer);
+
+    registerChatRendererIfAbsent('lazy-test' as AutopilotChatRenderer, { component: Eager });
+
+    expect(resolveChatRenderer({}, 'lazy-test' as AutopilotChatRenderer)).toBe(lazy);
   });
 });

@@ -57,7 +57,15 @@ export interface ChatRootProps {
    * Extra props forwarded to the resolved renderer
    */
   rendererProps?: ChatRendererProps;
+  /**
+   * Render this renderer whatever `config.renderer` says, warning once when the config asks for
+   * another. The web component pins Material, since its shadow root carries no Wind styles.
+   */
+  renderer?: AutopilotChatRenderer;
 }
+
+// Warned once per page and renderer pair.
+const warnedPins = new Set<string>();
 
 const ChatI18n = React.memo(({ children }: { children: React.ReactNode }) => {
   const { locale } = useLocale();
@@ -112,6 +120,7 @@ export function ChatRoot({
   portalContainer,
   disableEmbeddedPortal = false,
   rendererProps,
+  renderer: pinnedRenderer,
 }: ChatRootProps) {
   // One-way sync: props → service → providers → renderer
   React.useEffect(() => {
@@ -123,9 +132,25 @@ export function ChatRoot({
   }, [theme, chatServiceInstance]);
 
   const embeddedContainer = useEmbeddedContainer(chatServiceInstance);
-  const configuredRenderer = useConfiguredRenderer(chatServiceInstance);
+  const serviceRenderer = useConfiguredRenderer(chatServiceInstance);
+  const configuredRenderer = pinnedRenderer ?? serviceRenderer;
   const configured = resolveChatRenderer({ renderer: configuredRenderer }, defaultRenderer);
   const Renderer = configured ?? resolveChatRenderer(undefined, defaultRenderer);
+
+  React.useEffect(() => {
+    const pin = `${pinnedRenderer}:${serviceRenderer}`;
+    if (
+      pinnedRenderer &&
+      serviceRenderer &&
+      serviceRenderer !== pinnedRenderer &&
+      !warnedPins.has(pin)
+    ) {
+      warnedPins.add(pin);
+      console.warn(
+        `This chat always renders "${pinnedRenderer}"; renderer "${serviceRenderer}" is ignored.`
+      );
+    }
+  }, [pinnedRenderer, serviceRenderer]);
 
   React.useEffect(() => {
     const missing = configuredRenderer ?? defaultRenderer;

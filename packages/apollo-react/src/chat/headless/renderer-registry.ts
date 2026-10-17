@@ -38,6 +38,26 @@ export function registerLazyChatRenderer(name: AutopilotChatRenderer, load: Chat
 }
 
 /**
+ * Registers one of the package's own renderers unless the name already has one. Both `ApChat`
+ * entries call it, so whichever loads first keeps its registration: an entry loaded later (say in
+ * a code-split route) never swaps the component type under a mounted chat, which would remount
+ * it, and never replaces a loaded renderer with a lazy one.
+ */
+export function registerChatRendererIfAbsent(
+  name: AutopilotChatRenderer,
+  renderer: { component: ChatRendererComponent } | { load: ChatRendererLoader }
+) {
+  if (renderers.has(name)) {
+    return;
+  }
+  if ('component' in renderer) {
+    registerChatRenderer(name, renderer.component);
+  } else {
+    registerLazyChatRenderer(name, renderer.load);
+  }
+}
+
+/**
  * Resolves `config.renderer`, falling back to `defaultRenderer`.
  *
  * @returns The registered component, or `undefined` when that name was never registered
