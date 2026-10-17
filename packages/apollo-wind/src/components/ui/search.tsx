@@ -18,6 +18,15 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/index';
 
+export interface SearchStrings {
+  /** Label of the button that clears the query. */
+  clear: string;
+}
+
+export const DEFAULT_SEARCH_STRINGS: SearchStrings = {
+  clear: 'Clear',
+};
+
 export interface SearchProps extends Omit<InputGroupInputProps, 'onChange'> {
   value?: string;
   onChange?: (value: string) => void;
@@ -29,6 +38,8 @@ export interface SearchProps extends Omit<InputGroupInputProps, 'onChange'> {
   error?: React.ReactNode;
   /** Optional id for the inline validation message. */
   errorId?: string;
+  /** Overrides for any subset of the built-in labels. */
+  strings?: Partial<SearchStrings>;
 }
 
 const Search = React.forwardRef<HTMLInputElement, SearchProps>(
@@ -43,10 +54,12 @@ const Search = React.forwardRef<HTMLInputElement, SearchProps>(
       size,
       error,
       errorId,
+      strings,
       ...props
     },
     ref
   ) => {
+    const text = { ...DEFAULT_SEARCH_STRINGS, ...strings };
     const handleClear = () => {
       onChange?.('');
       onClear?.();
@@ -70,7 +83,7 @@ const Search = React.forwardRef<HTMLInputElement, SearchProps>(
         />
         {showClearButton && value && (
           <InputGroupAddon align="inline-end">
-            <InputGroupButton icon size="3xs" aria-label="Clear" onClick={handleClear}>
+            <InputGroupButton icon size="3xs" aria-label={text.clear} onClick={handleClear}>
               <X />
             </InputGroupButton>
           </InputGroupAddon>
@@ -89,6 +102,8 @@ export interface SearchWithSuggestionsProps {
   onSelect?: (value: string) => void;
   emptyMessage?: string;
   className?: string;
+  /** Overrides for the search field's built-in labels. */
+  strings?: Partial<SearchStrings>;
 }
 
 const SearchWithSuggestions = React.forwardRef<HTMLDivElement, SearchWithSuggestionsProps>(
@@ -101,6 +116,7 @@ const SearchWithSuggestions = React.forwardRef<HTMLDivElement, SearchWithSuggest
       onSelect,
       emptyMessage = 'No results found.',
       className,
+      strings,
     },
     ref
   ) => {
@@ -144,6 +160,7 @@ const SearchWithSuggestions = React.forwardRef<HTMLDivElement, SearchWithSuggest
                   setOpen(false);
                 }}
                 placeholder={placeholder}
+                strings={strings}
               />
             </div>
           </PopoverTrigger>

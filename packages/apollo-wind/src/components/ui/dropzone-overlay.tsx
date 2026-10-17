@@ -14,10 +14,20 @@ import { type FileRejection, type FileValidationOptions, validateFiles } from '.
 export interface DropzoneOverlayStrings {
   /** Shown on the overlay while files are dragged over the region. */
   dropHint: string;
+  /**
+   * Lines under the hint describing the limits, such as "Allowed file types: PDF, PNG". They carry
+   * values the host formats, so they are empty, and not shown, unless given.
+   */
+  typesHint: string;
+  sizeHint: string;
+  countHint: string;
 }
 
 export const DEFAULT_DROPZONE_OVERLAY_STRINGS: DropzoneOverlayStrings = {
   dropHint: 'Drop files to attach',
+  typesHint: '',
+  sizeHint: '',
+  countHint: '',
 };
 
 export interface DropzoneOverlayProps
@@ -30,11 +40,17 @@ export interface DropzoneOverlayProps
   onFiles?: (accepted: File[], rejected: FileRejection[]) => void;
   /** Ignores drags, drops and pastes. */
   disabled?: boolean;
-  /** Also takes files pasted anywhere inside the region. Pastes without files are left alone. */
+  /**
+   * Also takes files pasted anywhere inside the region. A paste with files is kept from the field
+   * unless none was accepted and it also carries text, so that text still lands. Pastes without
+   * files are left alone.
+   */
   enablePaste?: boolean;
   /** Overrides for any subset of the English strings. */
   strings?: Partial<DropzoneOverlayStrings>;
 }
+
+const LIMITS = ['types', 'size', 'count'] as const;
 
 function hasFiles(dataTransfer: DataTransfer | null): boolean {
   return Array.from(dataTransfer?.types ?? []).includes('Files');
@@ -87,10 +103,12 @@ const DropzoneOverlay = React.forwardRef<HTMLDivElement, DropzoneOverlayProps>(
       }
     }, [disabled]);
 
+    /** Checks and hands over the files; returns how many were accepted. */
     const deliver = (files: File[]) => {
-      if (files.length === 0) return;
+      if (files.length === 0) return 0;
       const { accepted, rejected } = validateFiles(files, { accept, maxSize, maxFiles });
       onFiles?.(accepted, rejected);
+      return accepted.length;
     };
 
     return (
@@ -134,9 +152,11 @@ const DropzoneOverlay = React.forwardRef<HTMLDivElement, DropzoneOverlayProps>(
           if (disabled || !enablePaste || event.defaultPrevented) return;
           const files = filesFrom(event.clipboardData);
           if (files.length === 0) return;
-          // Keeps the browser from also pasting the file's name as text.
-          event.preventDefault();
-          deliver(files);
+          const accepted = deliver(files);
+          // A paste that attached something, or carries no text, is kept from the field (the
+          // browser would add the file's name). Text pasted with refused files still lands.
+          const hasText = Array.from(event.clipboardData?.types ?? []).includes('text/plain');
+          if (accepted > 0 || !hasText) event.preventDefault();
         }}
         {...props}
       >
@@ -148,6 +168,16 @@ const DropzoneOverlay = React.forwardRef<HTMLDivElement, DropzoneOverlayProps>(
           >
             <Upload className="size-6 text-primary" aria-hidden="true" />
             <span>{text.dropHint}</span>
+            {LIMITS.filter((limit) => text[`${limit}Hint`]).map((limit) => (
+              <span
+                key={limit}
+                data-slot="dropzone-overlay-limit"
+                data-limit={limit}
+                className="text-xs font-normal text-muted-foreground"
+              >
+                {text[`${limit}Hint`]}
+              </span>
+            ))}
           </div>
         )}
       </div>

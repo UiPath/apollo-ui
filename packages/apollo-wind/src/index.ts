@@ -148,6 +148,7 @@ export type {
   AttachmentMediaProps,
   AttachmentProps,
   AttachmentState,
+  AttachmentTitleProps,
   AttachmentTriggerProps,
 } from './components/ui/attachment';
 export {
@@ -333,7 +334,9 @@ export { DateTimePicker } from './components/ui/datetime-picker';
 // -----------------------------------------------------------------------------
 // Feedback & Overlay Components
 // -----------------------------------------------------------------------------
+export type { DialogStrings } from './components/ui/dialog';
 export {
+  DEFAULT_DIALOG_STRINGS,
   Dialog,
   DialogClose,
   DialogContent,
@@ -355,6 +358,8 @@ export {
   ModalTitle,
   ModalTrigger,
 } from './components/ui/dialog';
+export type { DisclosureTreeItem, DisclosureTreeProps } from './components/ui/disclosure-tree';
+export { DisclosureTree } from './components/ui/disclosure-tree';
 export {
   Drawer,
   DrawerClose,
@@ -548,6 +553,7 @@ export { LockableValueField } from './components/ui/lockable-value-field';
 export type {
   MarkdownCodeBlock,
   MarkdownImagePolicy,
+  MarkdownKatexOptions,
   MarkdownProps,
   MarkdownStrings,
 } from './components/ui/markdown';
@@ -800,9 +806,10 @@ export {
 export { ScrollArea, ScrollBar } from './components/ui/scroll-area';
 export type {
   SearchProps,
+  SearchStrings,
   SearchWithSuggestionsProps,
 } from './components/ui/search';
-export { Search, SearchWithSuggestions } from './components/ui/search';
+export { DEFAULT_SEARCH_STRINGS, Search, SearchWithSuggestions } from './components/ui/search';
 export type { SelectTriggerProps } from './components/ui/select';
 export {
   Select,
@@ -817,7 +824,9 @@ export {
   SelectValue,
 } from './components/ui/select';
 export { Separator } from './components/ui/separator';
+export type { SheetStrings } from './components/ui/sheet';
 export {
+  DEFAULT_SHEET_STRINGS,
   Sheet,
   SheetClose,
   SheetContent,

@@ -150,3 +150,28 @@ export const Group: Story = {
     </AttachmentGroup>
   ),
 };
+
+export const LongNames: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A name too long for the card is cut off with an ellipsis and shows in full in a tooltip on hover. A name that fits shows no tooltip. Pass truncationTooltip false to turn it off.',
+      },
+    },
+  },
+  render: () => (
+    <AttachmentGroup>
+      {['quarterly-vendor-reconciliation-2026-q3-final-approved.xlsx', 'notes.md'].map((name) => (
+        <Attachment key={name} size="sm" className="max-w-44">
+          <AttachmentMedia>
+            <FileSpreadsheet />
+          </AttachmentMedia>
+          <AttachmentContent>
+            <AttachmentTitle>{name}</AttachmentTitle>
+          </AttachmentContent>
+        </Attachment>
+      ))}
+    </AttachmentGroup>
+  ),
+};
