@@ -22,57 +22,37 @@ const NO_MOVE_OPTIONS: SequentialMoveOptions = {
 };
 
 export interface UseSequentialMoveActionsValueArgs<N extends Node, E extends Edge> {
-  /** The current sequential projection; null in flow view. */
+  /** Null in flow view. */
   projection: SequenceProjection | null;
   nodes: N[];
   edges: E[];
-  /** Canonical id -> node map (for slot handle re-resolution at commit time). */
   canonicalById: ReadonlyMap<string, N>;
-  /** Structural container predicate (drives move-availability). */
   isContainerNode: (nodeId: string) => boolean;
-  /** Registry-backed default source handle lookup, used by resolveSlotForCommit. */
   getDefaultSourceHandleId: (nodeType: string) => string | undefined;
+  /** Locked nodes offer no move options and refuse to commit. Pass a reference-stable set. */
+  readOnlyNodeIds?: ReadonlySet<string>;
   onNodesChange?: (changes: NodeChange<N>[]) => void;
   onEdgesChange?: (changes: EdgeChange<E>[]) => void;
 }
 
 /**
- * Builds the {@link SequentialMoveActionsContextValue} shared by the kebab move
- * items ({@link useSequentialMoveMenuItems}) and Alt+Arrow keyboard moves, so
- * both read move-availability and commit through the SAME binding.
- *
- * The returned value is consumed by every `SequentialStepNode` through context,
- * so its identity must be stable across a selection or data-only change:
- * context updates bypass `React.memo`, so a value that churns on every `nodes`
- * reference change would re-render every bar on each click. It is rebuilt only
- * when the structural `projection` changes, exactly when kebab move-availability
- * can actually differ. The commit path reads the latest nodes/edges at call
- * time so it never needs the value to churn to stay current.
+ * Builds the {@link SequentialMoveActionsContextValue} shared by the kebab move items and
+ * Alt+Arrow. Context updates bypass `React.memo`, so the value is rebuilt only when the
+ * structural `projection` changes; the commit path reads the latest graph at call time.
  */
 export function useSequentialMoveActionsValue<N extends Node, E extends Edge>(
   args: UseSequentialMoveActionsValueArgs<N, E>
 ): SequentialMoveActionsContextValue {
-  const { projection } = args;
+  const { projection, readOnlyNodeIds } = args;
 
-  // Latest inputs, read at call time so the returned callbacks (and thus the
-  // context value) never change identity on a selection or data-only change.
-  // Only `projection` (structural, selection-independent) keys the memos below.
-  // Render-phase ref write, and safe to keep as one: it is idempotent -- the value
-  // stored IS this render's `args` object, not an accumulation over renders -- so a
-  // StrictMode double-invoke or a discarded concurrent render writes the identical
-  // value. An effect would defer it, leaving the first commit's callbacks reading
-  // stale nodes/edges.
+  // Render-phase ref write, idempotent (stores this render's `args`). An effect would leave
+  // the first commit reading stale nodes/edges.
   const latest = useRef(args);
   latest.current = args;
 
-  // Keyed on the structural `projection` (used directly below): a selection
-  // never changes it, so the value is reused and the memoized
-  // `SequentialStepNode` consumers do not re-render on every click. The
-  // churn-prone predicate/edges are read from `latest` at call time instead of
-  // being listed as deps, so they never force a rebuild.
   const getMoveOptions = useCallback(
     (nodeId: string): SequentialMoveOptions => {
-      if (!projection) return NO_MOVE_OPTIONS;
+      if (!projection || readOnlyNodeIds?.has(nodeId)) return NO_MOVE_OPTIONS;
       const { isContainerNode, edges } = latest.current;
       const options = computeSequentialMoveOptions(projection, nodeId, isContainerNode);
       if (options.outdent && closesLoopToOwner(projection, nodeId, edges)) {
@@ -80,7 +60,7 @@ export function useSequentialMoveActionsValue<N extends Node, E extends Edge>(
       }
       return options;
     },
-    [projection]
+    [projection, readOnlyNodeIds]
   );
 
   const commitMove = useCallback((nodeId: string, slot: InsertionSlot) => {
@@ -90,8 +70,9 @@ export function useSequentialMoveActionsValue<N extends Node, E extends Edge>(
       getDefaultSourceHandleId,
       nodes,
       edges,
+      readOnlyNodeIds: lockedIds,
     } = latest.current;
-    if (!proj) return;
+    if (!proj || lockedIds?.has(nodeId)) return;
     const resolvedSlot = resolveSlotForCommit(slot, canonicalById, getDefaultSourceHandleId);
     const changeSet = moveSubtree(proj, nodeId, resolvedSlot, { nodes, edges });
     if (

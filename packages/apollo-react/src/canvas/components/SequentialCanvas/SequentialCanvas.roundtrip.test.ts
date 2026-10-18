@@ -13,13 +13,8 @@ import { synthesizePositionsForFlow } from './synthesizePositionsForFlow';
 import { deriveSequentialGraph } from './useSequentialGraph';
 
 /**
- * Acceptance test: insert a node while in the sequential view
- * (simulated via the pure insertAtSlot op, exactly what the change-forwarding
- * produces from the live pipeline), place it on toggle-to-flow with
- * synthesizePositionsForFlow, and assert:
- *   1. no inserted node overlaps another node in its frame;
- *   2. NO pre-existing node moved (returned by identity, positions intact);
- *   3. toggling back yields an identical projection (fingerprint + structure).
+ * Insert a node in sequential view (via the pure insertAtSlot op), place it on toggle-to-flow,
+ * and assert no overlap, no pre-existing node moved, and an identical projection on return.
  */
 
 function boxesOverlap(a: Node, b: Node): boolean {
@@ -70,14 +65,12 @@ describe('sequential insert round-trip (D4)', () => {
   it('inserts, places on toggle-to-flow without moving anything, and re-projects identically', () => {
     const { nodes, edges } = makeWireframeFixture();
 
-    // 1. Derive the sequential view and grab the step slot between HTTP and JS.
     const initial = deriveSequentialGraph({ nodes, edges, view: 'sequential' });
     const slot = initial.projection!.slots.find(
       (candidate) => candidate.graphEdgeId === 'e-http-js'
     );
     expect(slot).toBeDefined();
 
-    // 2. Simulate the pipeline insert: a new seqInserted node spliced into the slot.
     const newNode: Node = {
       id: 'inserted-1',
       type: 'uipath.slack',
@@ -87,7 +80,6 @@ describe('sequential insert round-trip (D4)', () => {
     const changeset = insertAtSlot(initial.projection!, slot!, newNode);
     const afterInsert = applyGraphChangeSet({ nodes, edges }, changeset);
 
-    // The insert is inline (HTTP -> inserted -> Javascript).
     const insertedProjection = projectSequence(afterInsert.nodes, afterInsert.edges);
     const insertedRow = insertedProjection.rows.find((row) => row.nodeId === 'inserted-1');
     expect(insertedRow?.depth).toBe(0);
@@ -95,24 +87,20 @@ describe('sequential insert round-trip (D4)', () => {
     const fingerprintBefore = sequenceFingerprint(afterInsert.nodes, afterInsert.edges, new Set());
     const signatureBefore = projectionSignature(afterInsert.nodes, afterInsert.edges);
 
-    // 3. Toggle to flow: synthesize a real position for the inserted node.
     const flowNodes = synthesizePositionsForFlow(afterInsert.nodes, afterInsert.edges);
 
-    // No overlaps anywhere.
     assertNoOverlapWithinFrames(flowNodes);
 
-    // No pre-existing node moved: each original node comes back by identity.
+    // Each pre-existing node comes back by identity.
     for (const id of Object.values(WIREFRAME_NODE_IDS)) {
       const original = nodes.find((node) => node.id === id)!;
       expect(flowNodes.find((node) => node.id === id)).toBe(original);
     }
 
-    // The inserted node now has a real position and no sequential marker.
     const placed = flowNodes.find((node) => node.id === 'inserted-1')!;
     expect((placed.data as Record<string, unknown>)[SEQ_INSERTED_FLAG]).toBeUndefined();
 
-    // 4. Toggle back to sequential: identical projection (positions + the cleared
-    //    flag are both ignored by the projection and the fingerprint).
+    // Positions and the cleared flag are both ignored by the projection and the fingerprint.
     const fingerprintAfter = sequenceFingerprint(flowNodes, afterInsert.edges, new Set());
     expect(fingerprintAfter).toBe(fingerprintBefore);
     expect(projectionSignature(flowNodes, afterInsert.edges)).toEqual(signatureBefore);

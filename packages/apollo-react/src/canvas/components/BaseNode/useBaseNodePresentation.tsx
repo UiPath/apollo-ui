@@ -1,7 +1,7 @@
 import type { Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useReactFlow, useStore } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useCallback, useMemo } from 'react';
-import { useNodeTypeRegistry } from '../../core';
+import type { NodeTypeRegistry } from '../../core/NodeTypeRegistry';
 import {
   useElementValidationStatus,
   useNodeExecutionState,
@@ -30,17 +30,14 @@ type PresentationNodeProps = Pick<
 
 /**
  * Manifest-backed presentation model shared by the card and sequential bar
- * node renderers. View selection stays outside this hook: both renderers
- * resolve the same display, icon, handles, toolbar, adornments, and statuses,
- * then render their own geometry and interactions.
+ * renderers, so both resolve identical display, icon, handles, toolbar, and status.
+ * The caller supplies the registry: the card requires one (`useNodeTypeRegistry`), while
+ * the bar tolerates a registry-less host and renders its missing-manifest fallback.
  */
-export function useBaseNodePresentation({
-  type,
-  data,
-  selected,
-  id,
-  dragging,
-}: PresentationNodeProps) {
+export function useBaseNodePresentation(
+  { type, data, selected, id, dragging }: PresentationNodeProps,
+  nodeTypeRegistry: NodeTypeRegistry | null
+) {
   const overrideConfig = useBaseNodeOverrideConfig();
   const {
     executionStatusOverride,
@@ -56,11 +53,8 @@ export function useBaseNodePresentation({
     suggestionTypeOverride === null ? undefined : (suggestionTypeOverride ?? data.suggestionType);
   const executionState = useNodeExecutionState(id);
   const validationState = useElementValidationStatus(id);
-  const nodeTypeRegistry = useNodeTypeRegistry();
   const { mode } = useBaseCanvasMode();
   const isNodeReadOnly = useIsNodeReadOnly(id);
-  // Per-node read-only composes with canvas mode: a node is editable only in
-  // design mode AND when not individually locked via readOnlyNodeIds.
   const canEdit = mode === 'design' && !isNodeReadOnly;
   const isConnecting = useStore(selectIsConnecting);
   const { multipleNodesSelected } = useSelectionState();
@@ -69,7 +63,7 @@ export function useBaseNodePresentation({
   // This node's own canvas store, so side-by-side canvases keep separate toolbars.
   const toolbarActionStore = useToolbarActionStoreContext();
 
-  const manifest = useMemo(() => nodeTypeRegistry.getManifest(type), [type, nodeTypeRegistry]);
+  const manifest = useMemo(() => nodeTypeRegistry?.getManifest(type), [type, nodeTypeRegistry]);
   const statusContext: NodeStatusContext = useMemo(
     () => ({
       nodeId: id,
@@ -130,8 +124,8 @@ export function useBaseNodePresentation({
       visible: group.visible,
     }));
   }, [handleConfigurationsOverride, manifest, data, id]);
-  // Hidden actions are dropped first. A locked node keeps its toolbar and disables it
-  // rather than hiding it. See `lockToolbarConfig` for why.
+  // Hidden actions are dropped first. A locked node keeps its toolbar disabled rather than
+  // hidden; see `lockToolbarConfig`.
   const toolbarConfig = useMemo((): NodeToolbarConfig | undefined => {
     const resolved = hideToolbarActions(
       toolbarConfigOverride !== undefined

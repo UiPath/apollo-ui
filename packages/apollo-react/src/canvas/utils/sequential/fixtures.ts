@@ -2,12 +2,8 @@ import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import type { GraphChangeSet } from './sequential.types';
 
 /**
- * Shared, dependency-free graph fixtures for the sequential engine tests and for
- * consumers' stories/tests. Every fixture is a plain
- * `{ nodes, edges }` graph in the canonical (flow-view) shape; positions are set
- * so flow-view-y ordering is deterministic. These are NOT re-exported from the
- * package barrel (index.ts) so test fixtures never ship to consumers; import them
- * directly from `utils/sequential/fixtures`.
+ * Graph fixtures for the sequential engine tests and stories. Positions make flow-y
+ * ordering deterministic. Not re-exported from index.ts.
  */
 
 export interface GraphFixture {
@@ -52,16 +48,8 @@ function edge(
 /**
  * The wireframe reference graph:
  *   Trigger -> HTTP Request -> Javascript -> For Each [ If -> Then: Javascript 1 / Else: HTTP Request 1 ] -> Send Message to User
- *
- * `For Each` is a container; `If` is its sole body child; the If's two branches
- * both wire back to the container's `continue` handle (loop iteration), so they
- * dead-end at the container boundary with no in-body merge. The synthetic start
- * bar replaces the canonical trigger in Sequential; the trailing placeholder is
- * injected view-only. Flow renders the same trigger as its manifest-defined circle.
- *
- * Expected projection: 7 numbered rows (HTTP=1, Javascript=2, For Each=3, If=4,
- * Javascript 1=5, HTTP Request 1=6, Send Message=7); depths 0,0,0,1,2,2,0; six
- * connectors (three `step`, three `branch-entry`: Body/Then/Else); no diagnostics.
+ * Both If branches wire back to the container's `continue` handle, so they dead-end
+ * at the container boundary with no in-body merge.
  */
 export const WIREFRAME_NODE_IDS = {
   trigger: 'trigger',
@@ -100,6 +88,36 @@ export function makeWireframeFixture(): GraphFixture {
   return { nodes, edges };
 }
 
+export const AGENT_RESOURCES_NODE_IDS = {
+  agent: 'agent',
+  after: 'after',
+  tool: 'agent-tool',
+  context: 'agent-context',
+  memory: 'agent-memory',
+} as const;
+
+/**
+ * Agent -> After, with three resources (tool, context, memory) wired to the agent's artifact
+ * handles. The resources are attachments, not steps.
+ */
+export function makeAgentWithResourcesFixture(): GraphFixture {
+  const ids = AGENT_RESOURCES_NODE_IDS;
+  const nodes: Node[] = [
+    node(ids.agent, 'uipath.agent', 'Agent', { y: 0 }),
+    node(ids.after, 'uipath.http-request', 'After', { y: 300 }),
+    node(ids.tool, 'uipath.agent.resource.tool', 'Search tool', { x: -200, y: 150 }),
+    node(ids.context, 'uipath.agent.resource.context', 'Knowledge base', { x: 0, y: 150 }),
+    node(ids.memory, 'uipath.agent.resource.memory', 'Session memory', { x: 200, y: 150 }),
+  ];
+  const edges: Edge[] = [
+    edge('e-agent-after', ids.agent, 'success', ids.after, 'input'),
+    edge('e-agent-tool', ids.agent, 'tools', ids.tool, 'input'),
+    edge('e-agent-context', ids.agent, 'context', ids.context, 'input'),
+    edge('e-agent-memory', ids.agent, 'memory', ids.memory, 'input'),
+  ];
+  return { nodes, edges };
+}
+
 /** Two disconnected linear chains: A->B and C->D. Triggers `multi-root`. */
 export function makeMultiRootFixture(): GraphFixture {
   const nodes: Node[] = [
@@ -115,11 +133,7 @@ export function makeMultiRootFixture(): GraphFixture {
   return { nodes, edges };
 }
 
-/**
- * Two roots converging on one node (X->M, Y->M): M is placed under its first
- * incomer (X) and Y draws a `goto`. Triggers `unstructured-merge` (and, since
- * the two roots are independent, `multi-root`).
- */
+/** Two roots converging on M (X->M, Y->M). Triggers `unstructured-merge` and `multi-root`. */
 export function makeUnstructuredMergeFixture(): GraphFixture {
   const nodes: Node[] = [
     node('x', 'uipath.script', 'X', { y: 0 }),
@@ -148,10 +162,7 @@ export function makeCycleFixture(): GraphFixture {
   return { nodes, edges };
 }
 
-/**
- * A While-style loop closed by a `loopBack` target handle (A->B, B->A@loopBack).
- * The loopBack edge is consumed as loop closure, so this is NOT a cycle.
- */
+/** A While loop closed by a `loopBack` target handle (A->B, B->A@loopBack). Not a cycle. */
 export function makeLoopBackFixture(): GraphFixture {
   const nodes: Node[] = [
     node('a', 'uipath.control-flow.while', 'While', { y: 0 }),
@@ -175,10 +186,7 @@ export function makeOrphanFixture(): GraphFixture {
   return { nodes, edges };
 }
 
-/**
- * Nested containers: Root -> C1 [ C2 [ Leaf ] ]. Exercises depth accumulation
- * across container nesting (Root/C1 depth 0, C2 depth 1, Leaf depth 2).
- */
+/** Nested containers: Root -> C1 [ C2 [ Leaf ] ]. */
 export function makeDeepNestingFixture(): GraphFixture {
   const nodes: Node[] = [
     node('root', 'uipath.script', 'Root', { y: 0 }),
@@ -194,11 +202,7 @@ export function makeDeepNestingFixture(): GraphFixture {
   return { nodes, edges };
 }
 
-/**
- * A Decision whose `false` branch wires straight to the join (empty Else lane):
- * A -> If; If.true -> B -> C; If.false -> C. Produces an empty-branch-body slot
- * for the Else lane and a `merge-back` from B to C.
- */
+/** Empty Else lane: A -> If; If.true -> B -> C; If.false -> C. */
 export function makeEmptyBranchFixture(): GraphFixture {
   const nodes: Node[] = [
     node('a', 'uipath.script', 'A', { y: 0 }),
@@ -216,11 +220,8 @@ export function makeEmptyBranchFixture(): GraphFixture {
 }
 
 /**
- * An if-inside-if with an empty else at both levels: A -> If1; If1.true -> If2;
- * If2.true -> B -> M; If2.false -> C -> M; If1.false -> M; M -> Z. The nested
- * If2's own merge (M) must be resolved before If1's outer merge detection can
- * see that both of ITS lanes (the If2 subtree, and the direct false edge) join
- * at M. Regression fixture for the nested-branch post-dominator fix.
+ * Nested If with empty else at both levels: A -> If1; If1.true -> If2; If2.true -> B -> M;
+ * If2.false -> C -> M; If1.false -> M; M -> Z. Both Ifs merge at M.
  */
 export function makeNestedBranchFixture(): GraphFixture {
   const nodes: Node[] = [
@@ -245,12 +246,7 @@ export function makeNestedBranchFixture(): GraphFixture {
   return { nodes, edges };
 }
 
-/**
- * A cycle closed through one of a branch node's two out-edges: A -> B;
- * B.true -> A (closes the cycle); B.false -> D. Regression fixture for
- * classifying branch-edge targets (onStack/visited) before rendering them as
- * an insertable branch-entry lane.
- */
+/** A cycle closed through a branch edge: A -> B; B.true -> A; B.false -> D. */
 export function makeBranchCycleFixture(): GraphFixture {
   const nodes: Node[] = [
     node('a', 'uipath.script', 'A', { y: 0 }),
@@ -265,12 +261,7 @@ export function makeBranchCycleFixture(): GraphFixture {
   return { nodes, edges };
 }
 
-/**
- * Two independent roots (X, Y) whose branch edges both jump straight to an
- * already-visited node (M is placed by X's lane; Y's branch edge then targets
- * M too): X -> If; If.true -> M; If.false -> M2; Y -> M. Regression fixture
- * for a branch edge landing on a node visited by an unrelated earlier lane.
- */
+/** A branch edge landing on a node an earlier lane already placed: X -> If; If.true -> M; If.false -> M2; Y -> M. */
 export function makeBranchVisitedTargetFixture(): GraphFixture {
   const nodes: Node[] = [
     node('x', 'uipath.script', 'X', { y: 0 }),
@@ -293,13 +284,7 @@ export function makeSingleNodeFixture(): GraphFixture {
   return { nodes: [node('only', 'uipath.script', 'Only', { y: 0 })], edges: [] };
 }
 
-/**
- * Two independent components with no zero-in-degree entry (each a 2-node
- * cycle, so every node has in-degree 1) plus a fully isolated orphan
- * positioned, in flow-view y, BETWEEN the two components. Regression fixture
- * proving orphans always land in a trailing section instead of splitting two
- * components' rows apart.
- */
+/** Two 2-node cycles (no zero-in-degree entry) with an isolated orphan positioned between them. */
 export function makeInterleavedOrphanFixture(): GraphFixture {
   const nodes: Node[] = [
     node('p1', 'uipath.script', 'P1', { y: 0 }),
@@ -317,13 +302,7 @@ export function makeInterleavedOrphanFixture(): GraphFixture {
   return { nodes, edges };
 }
 
-/**
- * A plain (non-branching) container body flanked by top-level siblings:
- * A -> Container [ X -> Y ] -> B. Used for indent/outdent/moveSubtree tests
- * that need an unambiguous body "tail" - unlike the wireframe's `For Each`,
- * whose sole body content (`If`) dead-ends via a hidden loop-closing edge and
- * has no single linear tail to append after.
- */
+/** A linear container body with an unambiguous tail: A -> Container [ X -> Y ] -> B. */
 export const CONTAINER_CHAIN_NODE_IDS = {
   a: 'chain-a',
   container: 'chain-container',
@@ -351,20 +330,9 @@ export function makeContainerChainFixture(): GraphFixture {
 }
 
 /**
- * Two top-level containers: C1 holds a Decision (`If`) whose Then/Else
- * branches dead-end (no shared merge, mirroring the wireframe's loop-body
- * idiom); C2 holds a single plain leaf (`Filler`) - NOT a truly childless
- * container, since this structural engine has no manifest access and can
- * only recognize a node as a container via `isContainerNode` (at least one
- * OTHER node pointing at it via `parentId`; see graph-helpers.ts). Root -> C1
- * -> C2 -> Tail. Purpose-built to exercise `moveSubtree` relocating a BARE
- * BRANCH OWNER (not itself a container) together with its lane content
- * across a container boundary (`If`'s subtree moves from C1's body to
- * append after C2's `Filler`) via a source-only slot, so the move only ADDS
- * an incoming edge to `If` and never a competing outgoing one - see
- * moveSubtree's doc comment on why splicing a new OUTGOING edge onto a bare
- * branch owner is unsound (it always reads as a third lane, not a "next
- * step").
+ * Root -> C1 [ If -> {Then, Else} dead-end ] -> C2 [ Filler ] -> Tail. Exercises
+ * `moveSubtree` relocating a bare branch owner with its lane content across a
+ * container boundary. C2 needs `Filler` because containers are recognised structurally.
  */
 export const CROSS_CONTAINER_BRANCH_NODE_IDS = {
   root: 'cc-root',
@@ -402,21 +370,9 @@ export function makeCrossContainerBranchFixture(): GraphFixture {
 }
 
 /**
- * A container body whose steps run THROUGH a branch that rejoins inside the
- * body: Container [ X -> If -> {Then: P, Else: Q} -> M ] -> N.
- *
- * Purpose-built for `findIndentSlot`'s tail resolution. The body's real last
- * step is the merge `M`, but no connector is ever sourced at the `If` except its
- * two `branch-entry` lanes (the merge-backs into `M` are sourced at `P`/`Q`), so
- * a connector walk down the body cannot cross the branch at all and mistakes the
- * `If` for the tail - then appends from the If's own source handle, which reads
- * as a THIRD LANE. Also covers the placeholder trap: the projection emits M's
- * trailing "append" placeholder row at the SAME depth and owner as M, straight
- * after it, so a row-order scan must skip synthetic rows to land on M.
- *
- * Contrast with `makeWireframeFixture`, whose body ends with an UNMERGED `If`
- * (its lanes dead-end at the container boundary), where "after the If" genuinely
- * has no in-body position.
+ * A body whose branch rejoins inside it: Container [ X -> If -> {Then, Else} -> M ] -> N.
+ * For `findIndentSlot` tail resolution: a connector walk stops at the If, so the real
+ * tail M is only reachable by row scan (skipping M's trailing append placeholder).
  */
 export const MERGED_BRANCH_BODY_NODE_IDS = {
   container: 'mb-container',
@@ -451,11 +407,7 @@ export function makeMergedBranchBodyFixture(): GraphFixture {
   return { nodes, edges };
 }
 
-/**
- * A single-root diamond that findMerge resolves cleanly: A -> If;
- * If.true -> B -> D; If.false -> C -> D. D is the immediate post-dominator;
- * both lane tails draw `merge-back` connectors into it, D is emitted once.
- */
+/** A clean diamond: A -> If; If.true -> B -> D; If.false -> C -> D. */
 export function makeDiamondFixture(): GraphFixture {
   const nodes: Node[] = [
     node('a', 'uipath.script', 'A', { y: 0 }),
@@ -474,27 +426,15 @@ export function makeDiamondFixture(): GraphFixture {
   return { nodes, edges };
 }
 
-/**
- * Applies a {@link GraphChangeSet} to a graph, the way a host's change handlers
- * would: removals first, then additions.
- *
- * Shared because four test files had grown their own identical copy (two of them
- * spelled `applyChangeset`, so a grep for the other spelling missed them). Takes
- * and returns a {@link GraphFixture} so a projected fixture can be piped straight
- * back into `projectSequence` for a round-trip assertion.
- */
+/** Applies a {@link GraphChangeSet} the way a host's change handlers would. */
 export function applyGraphChangeSet(
   fixture: GraphFixture,
   changeSet: GraphChangeSet
 ): GraphFixture {
   const removedNodeIds = new Set(changeSet.removeNodeIds);
   const removedEdgeIds = new Set(changeSet.removeEdgeIds);
-  // A node that is both removed and re-added is a MOVE, and production forwards
-  // it as a single `replace` (graphChangeSetToNodeChanges), which React Flow
-  // applies in place. Appending it instead would push a container behind its own
-  // children in the array, an order React Flow rejects — so this helper has to
-  // replace in place too, or the move tests validate a shape production never
-  // emits and stay blind to ordering regressions.
+  // A removed-and-re-added node is a move; production replaces it in place. Appending
+  // would push a container behind its children, an order React Flow rejects.
   const replacements = new Map(
     changeSet.addNodes.filter((node) => removedNodeIds.has(node.id)).map((node) => [node.id, node])
   );

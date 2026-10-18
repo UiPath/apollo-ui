@@ -8,46 +8,31 @@ import { CanvasIcon } from '../../../utils/icon-registry';
 import { useBaseCanvasMode } from '../../BaseCanvas/BaseCanvasModeProvider';
 import {
   getSeqBarVars,
+  INVISIBLE_BRANCH_HANDLE_STYLE,
   INVISIBLE_HANDLE_STYLE,
   SEQ_BAR_SHELL_CLASS,
   SEQUENTIAL_BAR_HANDLE_IDS,
 } from '../../BaseNode/BaseNodeBar';
 import { CanvasInlineButton } from '../../ButtonHandle/CanvasInlineButton';
-
-/**
- * The faint-until-hover treatment shared by every sequential insert affordance
- * (the connector plus in SequentialInsertButton and this node's plus variant),
- * so "add a step" reads and behaves identically wherever it appears.
- */
-const SEQ_INSERT_REST_CLASS =
-  'opacity-40 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100';
+import { SEQ_INSERT_REST_CLASS } from '../edges/SequentialInsertButton';
+import { useSequentialLaneAdd } from '../SequentialLaneAddContext';
 
 export interface SequentialPlaceholderNodeData extends Record<string, unknown> {
-  /** Invoked when the affordance is clicked to add a step into this scope. */
+  /** Terminal placeholder: stable append callback. Lane placeholders use the context instead. */
   onAdd?: () => void;
-  /** View-only slot identity used to recover this row's position when clicked. */
+  /** View-only slot identity; a lane placeholder adds through `useSequentialLaneAdd` with it. */
   insertionSlotId?: string;
   /**
-   * Which affordance to render (see `SequenceRow.placeholderKind`):
-   *  - 'row'  (default): a dashed "Add step" bar for a genuinely empty lane/body.
-   *  - 'plus': a quiet plus matching the between-step insert, for the trailing
-   *            add point after a populated lane's last step (or the tail).
+   * 'row' (default): a dashed "Add step" bar for an empty lane or body.
+   * 'plus': a quiet plus for the trailing add point after a populated lane.
    */
   variant?: 'row' | 'plus';
 }
 
 /**
- * Synthetic "add a step" row. Two shapes, chosen by `data.variant`:
- *  - 'row': a dashed, bar-sized drop target with a centered plus and label,
- *    styled after AddNodePreview. Used where a lane or body is genuinely empty
- *    and there is no connector to host a plus.
- *  - 'plus': the same quiet plus used between steps, anchored on the incoming
- *    connector, so appending at the end of a list looks identical to inserting
- *    between two steps.
- *
- * It carries a top target handle (the tail follows the last step) and a mid-left
- * handle (an empty lane is entered from the side). Injected view-only and
- * filtered out of the change callbacks by the canvas assembly.
+ * Synthetic "add a step" row, injected view-only. 'row' is a dashed bar-sized drop
+ * target for an empty lane or body; 'plus' matches the between-step insert for a
+ * trailing append. Carries a top handle (tail) and a mid-left handle (empty lane).
  */
 function SequentialPlaceholderNodeComponent({
   data,
@@ -55,7 +40,10 @@ function SequentialPlaceholderNodeComponent({
   height,
 }: NodeProps<Node<SequentialPlaceholderNodeData>>) {
   const { _ } = useSafeLingui();
-  const onAdd = data?.onAdd;
+  const laneAdd = useSequentialLaneAdd();
+  const slotId = data?.insertionSlotId;
+  const onAdd =
+    data?.onAdd ?? (laneAdd && slotId !== undefined ? () => laneAdd(slotId) : undefined);
   const isDesignMode = useBaseCanvasMode().mode === 'design';
   const label = _({ id: 'sequential-canvas.placeholder.add', message: 'Add step' });
   const variant = data?.variant ?? 'row';
@@ -69,23 +57,20 @@ function SequentialPlaceholderNodeComponent({
         isConnectable={false}
         style={INVISIBLE_HANDLE_STYLE}
       />
-      {/* Mid-left entry so an empty-branch-lane placeholder is entered from the
-          side like a real branch child (the tail placeholder still uses Top). */}
+      {/* Mid-left entry: an empty branch lane is entered from the side. */}
       <Handle
         type="target"
         position={Position.Left}
         id={SEQUENTIAL_BAR_HANDLE_IDS.branchTarget}
         isConnectable={false}
-        style={{ background: 'transparent', border: 'none', width: 8, height: 8 }}
+        style={INVISIBLE_BRANCH_HANDLE_STYLE}
       />
     </>
   );
 
   if (variant === 'plus') {
-    // The box spans the row gap (no reserved row). Center the plus on the shared
-    // handle column so it sits in the gap below the last step, exactly like a
-    // between-step insert. The box itself is non-interactive so only the plus
-    // takes clicks, and it hides cleanly in readonly without moving any node.
+    // The box spans the row gap; the plus centers on the handle column and is the
+    // only interactive part, so hiding it in readonly moves no node.
     return (
       <div
         className="relative h-(--node-h) w-(--node-w) pointer-events-none"
@@ -113,27 +98,30 @@ function SequentialPlaceholderNodeComponent({
     );
   }
 
+  // Handles are siblings of the button: a <button> allows only phrasing content
+  // and xyflow's <Handle> renders a <div>.
   return (
-    <button
-      type="button"
-      className={cn(
-        SEQ_BAR_SHELL_CLASS,
-        'nodrag justify-center border-dashed border-border-de-emp bg-transparent text-foreground-muted shadow-none',
-        'cursor-pointer transition-colors hover:border-border hover:text-foreground disabled:cursor-default'
-      )}
-      style={getSeqBarVars(width, height)}
-      data-testid="sequential-placeholder-bar"
-      aria-label={label}
-      disabled={!isDesignMode || !onAdd}
-      onClick={(e) => {
-        e.stopPropagation();
-        if (isDesignMode) onAdd?.();
-      }}
-    >
+    <div className="relative" style={getSeqBarVars(width, height)}>
       {handles}
-      <CanvasIcon icon="plus" size={20} />
-      <span className="text-sm font-semibold leading-[18px]">{label}</span>
-    </button>
+      <button
+        type="button"
+        className={cn(
+          SEQ_BAR_SHELL_CLASS,
+          'nodrag justify-center border-dashed border-border-de-emp bg-transparent text-foreground-muted shadow-none',
+          'cursor-pointer transition-colors hover:border-border hover:text-foreground disabled:cursor-default'
+        )}
+        data-testid="sequential-placeholder-bar"
+        aria-label={label}
+        disabled={!isDesignMode || !onAdd}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (isDesignMode) onAdd?.();
+        }}
+      >
+        <CanvasIcon icon="plus" size={20} />
+        <span className="text-sm font-semibold leading-[18px]">{label}</span>
+      </button>
+    </div>
   );
 }
 

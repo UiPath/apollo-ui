@@ -19,9 +19,7 @@ describe('SequentialViewProvider', () => {
     localStorage.clear();
   });
 
-  // The provider delegates the view itself to useCanvasViewMode, so the defaulting,
-  // `initialView` and persistence contracts are covered by useCanvasViewMode.test.ts.
-  // This only pins that the delegation is actually wired in both directions.
+  // useCanvasViewMode.test.ts covers defaulting and persistence; this only pins the delegation.
   it('exposes the stored view and writes back through setView', () => {
     const { result } = renderHook(() => useSequentialView(), { wrapper });
 

@@ -8,8 +8,7 @@ import { SequentialInsertGapProvider } from '../SequentialInsertGapContext';
 import { SequentialInsertStateProvider } from '../SequentialInsertStateContext';
 import { useSequentialInsert } from './useSequentialInsert';
 
-// The preview pipeline needs a live RF store; this hook test only exercises the
-// pending-slot bookkeeping, so stub the side effect out.
+// The preview pipeline needs a live RF store; only the pending-slot bookkeeping is under test.
 vi.mock('../../../utils/createPreviewGraph', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../utils/createPreviewGraph')>()),
   showPreviewGraph: vi.fn(),
@@ -38,11 +37,8 @@ describe('useSequentialInsert', () => {
   });
 
   it('shares the pending slot across separate hook instances so container parenting survives commit', () => {
-    // Regression: the connector plus (startInsert) and AddNodeManager's
-    // onBeforeNodeAdded are DIFFERENT useSequentialInsert instances. A
-    // per-instance ref left the commit side blind to the slot's containerId, so
-    // inserts into a For Each body / branch lane dropped parentId and orphaned
-    // the node. Both hook instances share one per-canvas provider.
+    // Regression: the ⊕ (startInsert) and AddNodeManager's onBeforeNodeAdded are
+    // different hook instances; a per-instance ref dropped the slot's containerId on commit.
     const hooks = renderHook(
       () => ({ opener: useSequentialInsert(), committer: useSequentialInsert() }),
       { wrapper: SequentialInsertStateProvider }
@@ -72,8 +68,6 @@ describe('useSequentialInsert', () => {
     };
     const { newNode } = hooks.result.current.committer.onBeforeNodeAdded(previewNode, []);
 
-    // The other instance's commit sees the opener's slot: container parent is
-    // stamped so the node splices into the lane rather than orphaning at the end.
     expect(newNode.parentId).toBe('for-each');
     expect(newNode.extent).toBe('parent');
   });
