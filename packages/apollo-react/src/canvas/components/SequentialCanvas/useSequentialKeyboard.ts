@@ -7,67 +7,29 @@ export interface SequentialKeyboardRow
   extends Pick<SequenceRow, 'nodeId' | 'collapsible' | 'collapsed'> {}
 
 export interface UseSequentialKeyboardArgs {
-  /**
-   * Visible, numbered rows in row order -- the same array `SequentialGutter`
-   * renders from (see `SequentialCanvas.tsx`), so ArrowUp/Down walk the exact
-   * order screen readers traverse the DOM in (D8: `onlyRenderVisibleElements`
-   * off means DOM order === row order).
-   */
+  /** Visible, numbered rows in row order, the same array SequentialGutter renders from. */
   rows: readonly SequentialKeyboardRow[];
-  /** The single selected row's node id, if any (single-select contract). */
   selectedNodeId?: string;
   collapsedStepIds: ReadonlySet<string>;
-  /**
-   * Moves single selection to a row's node id. The canvas assembly wires this
-   * through the same `onNodesChange` path a mouse click already uses (a
-   * `select` NodeChange per touched node), so keyboard and pointer selection
-   * are indistinguishable to the consumer's canonical state.
-   */
   onSelectNode: (nodeId: string) => void;
   onCollapsedStepIdsChange?: (ids: string[]) => void;
-  /**
-   * Enter's primary action, if the host supplies one. `SequentialCanvas` does
-   * not wire this today: a bar's toolbar actions are resolved per-node deep
-   * inside `BaseNode`/`BaseNodeBar` via `resolveToolbar` + that node's own
-   * manifest/status context (see `BaseNodeBar.tsx`'s `menuItems` memo), and are
-   * never surfaced centrally to the canvas assembly. Reusing "the first
-   * resolved action" here would require either lifting toolbar resolution out
-   * of BaseNode (a BaseNode-owning change) or adding an event-bus side channel
-   * the bars call into on mount -- both bigger than this component's scope.
-   * Enter is therefore a documented no-op until a host supplies `onPrimaryAction`.
-   */
+  /** Enter's primary action. Enter is a no-op until the host supplies this. */
   onPrimaryAction?: (nodeId: string) => void;
-  /**
-   * Alt+Arrow explorer-like tree move: Alt+ArrowUp = move
-   * up, Alt+ArrowDown = move down, Alt+ArrowLeft = outdent, Alt+ArrowRight =
-   * indent, applied to the selected row. Shares the SAME commit path the
-   * kebab items use (see `useSequentialMoveMenuItems` / `commitMove` in
-   * `SequentialCanvas.tsx`), so keyboard and kebab can never disagree.
-   * Gated on `isDesignMode` (a topology mutation, D4) in addition to the
-   * typing-target guard every other key already has; a plain Arrow key
-   * without Alt is untouched by this and keeps navigating/collapsing exactly
-   * as before.
-   */
+  /** Alt+Arrow tree move on the selected row; gated on `isDesignMode`. */
   onMoveNode?: (nodeId: string, direction: 'up' | 'down' | 'indent' | 'outdent') => void;
-  /** Semantically removes the selected step and heals its graph seam. */
+  /** Removes the selected step and heals its graph seam. */
   onDeleteNode?: (nodeId: string) => void;
   isDesignMode?: boolean;
 }
 
 export interface UseSequentialKeyboardResult {
-  /** Attach to a wrapper div around `BaseCanvas` (see `SequentialCanvas.tsx`). */
+  /** Attach to a wrapper div around BaseCanvas. */
   onKeyDown: (event: ReactKeyboardEvent) => void;
 }
 
 const TYPING_TAGS = new Set(['INPUT', 'TEXTAREA', 'SELECT']);
 
-/**
- * True when the event's target is an editable surface: an inline-rename
- * `<textarea>` (see `NodeLabel.tsx`), a host `<input>`/`<select>`, or any
- * `contenteditable` element. Arrow/Enter navigation must not hijack these --
- * a user typing "left" in a rename field must move the caret, not collapse a
- * step.
- */
+/** True when the target is an editable surface, so navigation keys move the caret instead. */
 export function isTypingTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
   if (target.isContentEditable) return true;
@@ -75,10 +37,27 @@ export function isTypingTarget(target: EventTarget | null): boolean {
 }
 
 /**
- * Pure lookup: the visible row adjacent to `selectedNodeId` in row order.
- * When nothing is selected yet, `next` jumps to the first row and `prev` to
- * the last, so a first ArrowDown/ArrowUp press always lands somewhere useful.
- * Returns `undefined` at either boundary (no wraparound) or for an empty list.
+ * The surfaces whose keys drive row navigation: the canvas pane, a node or edge wrapper, and
+ * the screen-reader list. Overlays (kebab menus, the Add Node panel, dialogs) render through
+ * portals, and React synthetic events bubble through portals to the wrapper div; allowlisting
+ * the canvas surfaces keeps their keys out without enumerating every overlay kind.
+ */
+const CANVAS_SURFACE_SELECTOR =
+  '.react-flow__pane, .react-flow__node, .react-flow__edge, [data-sequential-list]';
+
+/** True when a key on `target` should drive row navigation (see {@link CANVAS_SURFACE_SELECTOR}). */
+export function isCanvasSurfaceTarget(
+  target: EventTarget | null,
+  wrapper?: EventTarget | null
+): boolean {
+  if (target !== null && target === wrapper) return true;
+  if (!(target instanceof Element)) return false;
+  return target.closest(CANVAS_SURFACE_SELECTOR) !== null;
+}
+
+/**
+ * The row adjacent to `selectedNodeId`. With nothing selected, `next` is the first row and
+ * `prev` the last. Returns `undefined` at either boundary (no wraparound).
  */
 export function getAdjacentRowId(
   rows: readonly Pick<SequentialKeyboardRow, 'nodeId'>[],
@@ -96,7 +75,7 @@ export function getAdjacentRowId(
   return rows[nextIndex]?.nodeId;
 }
 
-/** Pure: the next `collapsedStepIds` array with `nodeId` added or removed. */
+/** The next `collapsedStepIds` array with `nodeId` added or removed. */
 export function toggleCollapsedStepIds(
   collapsedStepIds: ReadonlySet<string>,
   nodeId: string,
@@ -109,19 +88,9 @@ export function toggleCollapsedStepIds(
 }
 
 /**
- * Keyboard navigation for the Sequential Canvas (D8):
- *  - ArrowUp/ArrowDown move single selection along the visible row order;
- *  - ArrowLeft collapses / ArrowRight expands the selected row when it is
- *    collapsible (no-op otherwise);
- *  - Enter fires an optional primary action (see {@link UseSequentialKeyboardArgs.onPrimaryAction});
- *  - Delete/Backspace invoke the sequential semantic delete operation, which
- *    heals the removed step's graph seam.
- *
- * Attach the returned `onKeyDown` to a wrapper `div` around `BaseCanvas`
- * (SequentialCanvas.tsx), not to `document`: a wrapper handler only reacts
- * once focus/bubbling genuinely lands inside this canvas, which composes
- * safely with multiple canvases on one page (unlike `PanShortcutTeachingUI`'s
- * `document.body` listeners, which are page-global by construction).
+ * Keyboard navigation for the Sequential Canvas: ArrowUp/Down move selection, ArrowLeft/Right
+ * collapse/expand, Enter fires the primary action, Delete/Backspace remove the step, Alt+Arrow
+ * moves it. Attach `onKeyDown` to a wrapper div, not `document`, so multiple canvases coexist.
  */
 export function useSequentialKeyboard(
   args: UseSequentialKeyboardArgs
@@ -140,11 +109,12 @@ export function useSequentialKeyboard(
 
   const onKeyDown = useCallback(
     (event: ReactKeyboardEvent) => {
+      // A descendant that already consumed the key must not also drive row navigation.
+      if (event.defaultPrevented) return;
       if (isTypingTarget(event.target)) return;
+      if (!isCanvasSurfaceTarget(event.target, event.currentTarget)) return;
 
-      // Alt+Arrow tree move takes priority over plain arrow navigation/collapse
-      // for the same keys: holding Alt is an unambiguous "move", not
-      // "navigate" or "collapse", so it must not fall through to those below.
+      // Alt+Arrow is a move and must not fall through to navigation/collapse.
       if (
         event.altKey &&
         (event.key === 'ArrowUp' ||
