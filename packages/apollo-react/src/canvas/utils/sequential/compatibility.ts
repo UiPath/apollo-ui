@@ -1,13 +1,20 @@
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
-import { DEFAULT_TRIGGER_NODE_TYPE } from '../../constants';
-import { defaultIsSequenceEdge, LOOP_BACK_HANDLE_ID } from './graph-helpers';
+import {
+  defaultIsSequenceEdge,
+  duplicateEdgeKey,
+  filterGraphByNodes,
+  isLoopBackEdge,
+} from './graph-helpers';
+import { defaultIsSequenceNode, defaultIsStartNode } from './predicates';
 import { projectSequence } from './projectSequence';
 import type { ProjectSequenceOptions, SequenceProjection } from './sequential.types';
 
 export type SequentialCompatibilityLevel = 'exact' | 'degraded' | 'unsupported';
 
 export type SequentialCompatibilityIssueCode =
+  | 'cross-scope-edge'
   | 'cycle'
+  | 'duplicate-edge'
   | 'duplicate-node-id'
   | 'missing-parent'
   | 'multiple-roots'
@@ -27,38 +34,23 @@ export interface SequentialCompatibilityIssue {
 }
 
 /**
- * The issue codes that genuinely block sequential editing, as opposed to merely
- * degrading the projection. Stated once, here, so the policy is greppable.
- *
- * Deliberately NOT `level !== 'exact'`: `multiple-roots` and `orphan` are the
- * normal state of a half-built flow (two disconnected top-level nodes, or a
- * single node someone just dropped). Both render correctly as sequential rows
- * and both are recoverable by ordinary editing - wiring the second root up, or
- * connecting the orphan - so blocking edits on them would lock the user out of
- * the very view that flagged the problem, with no way back.
- *
- * `cycle` and `unstructured-merge` are different in kind: both are surfaced as a
- * `goto` connector, and a `goto` carries no insertion slot. The slot-based
- * mutation ops in `mutations.ts` therefore cannot express a safe splice across
- * one, so an edit near it would silently rewire or drop control flow rather than
- * degrade.
+ * Issues that block editing, as opposed to merely degrading the projection. These all
+ * surface as slot-less `goto` connectors (or a hidden duplicate edge), so a splice near
+ * them would silently rewire control flow. `multiple-roots` and `orphan` stay editable:
+ * they are the normal state of a half-built flow and are fixed by ordinary editing.
  */
 const EDIT_BLOCKING_ISSUE_CODES: ReadonlySet<SequentialCompatibilityIssueCode> = new Set([
+  'cross-scope-edge',
   'cycle',
+  'duplicate-edge',
   'unstructured-merge',
 ]);
 
 export interface SequentialCompatibilityReport {
   level: SequentialCompatibilityLevel;
   /**
-   * Whether the slot-based sequential mutation ops can be trusted on this
-   * graph: no `severity: 'error'` issue, and no issue whose code is in
-   * {@link EDIT_BLOCKING_ISSUE_CODES}. This is intentionally LOOSER than
-   * `level === 'exact'` - a `degraded` graph whose only issues are
-   * `multiple-roots` and/or `orphan` stays editable, because those shapes
-   * render fine and are recoverable by ordinary editing, whereas locking them
-   * read-only would trap the user in a half-built flow. See
-   * {@link EDIT_BLOCKING_ISSUE_CODES} for the full rationale on both sides.
+   * Whether the mutation ops can be trusted: no error and no {@link EDIT_BLOCKING_ISSUE_CODES}
+   * issue. Looser than `level === 'exact'` by design.
    */
   editable: boolean;
   issues: SequentialCompatibilityIssue[];
@@ -77,29 +69,27 @@ export interface AnalyzeSequentialCompatibilityOptions extends ProjectSequenceOp
 }
 
 /**
- * Describes how faithfully one canonical node/edge graph can be presented and
- * edited as a sequential workflow. This is analysis, not conversion: excluded
- * presentation concepts remain in canonical state and toggling views never
- * rewrites topology.
+ * How faithfully a graph can be presented and edited as a sequence. Analysis only:
+ * canonical state is never rewritten.
  */
 export function analyzeSequentialCompatibility(
   nodes: Node[],
   edges: Edge[],
   options: AnalyzeSequentialCompatibilityOptions = {}
 ): SequentialCompatibilityReport {
-  const isSequenceNode = options.isSequenceNode ?? (() => true);
-  const isStartNode =
-    options.isStartNode ?? ((node: Node) => node.type === DEFAULT_TRIGGER_NODE_TYPE);
+  const isSequenceNode = options.isSequenceNode ?? defaultIsSequenceNode;
+  const isStartNode = options.isStartNode ?? defaultIsStartNode;
   const isSequenceEdge = options.isSequenceEdge ?? defaultIsSequenceEdge;
 
-  const preservedOnlyNodes = nodes.filter((node) => !isSequenceNode(node));
-  const preservedOnlyNodeIds = new Set(preservedOnlyNodes.map((node) => node.id));
-  const semanticNodes = nodes.filter(isSequenceNode);
-  const semanticNodeIds = new Set(semanticNodes.map((node) => node.id));
-  const semanticEdges = edges.filter(
-    (edge) =>
-      semanticNodeIds.has(edge.source) && semanticNodeIds.has(edge.target) && isSequenceEdge(edge)
-  );
+  const {
+    nodes: semanticNodes,
+    edges: semanticNodeEdges,
+    nodeIds: semanticNodeIds,
+  } = filterGraphByNodes(nodes, edges, isSequenceNode);
+  const preservedOnlyNodeIds = nodes
+    .filter((node) => !semanticNodeIds.has(node.id))
+    .map((node) => node.id);
+  const semanticEdges = semanticNodeEdges.filter(isSequenceEdge);
   const semanticEdgeIds = new Set(semanticEdges.map((edge) => edge.id));
   const projection = projectSequence(semanticNodes, semanticEdges, options);
 
@@ -145,14 +135,12 @@ export function analyzeSequentialCompatibility(
     }
   }
 
-  const nonStartNodes = semanticNodes.filter((node) => !isStartNode(node));
-  const nonStartNodeIds = new Set(nonStartNodes.map((node) => node.id));
-  const forwardEdges = semanticEdges.filter(
-    (edge) =>
-      nonStartNodeIds.has(edge.source) &&
-      nonStartNodeIds.has(edge.target) &&
-      edge.targetHandle !== LOOP_BACK_HANDLE_ID
+  const { nodes: nonStartNodes, edges: nonStartEdges } = filterGraphByNodes(
+    semanticNodes,
+    semanticEdges,
+    (node) => !isStartNode(node)
   );
+  const forwardEdges = nonStartEdges.filter((edge) => !isLoopBackEdge(edge));
 
   const scopes = new Map<string | undefined, Node[]>();
   for (const node of nonStartNodes) {
@@ -203,8 +191,42 @@ export function analyzeSequentialCompatibility(
     return false;
   };
 
+  // Container entry (container -> child) and body-close (child -> container) edges are
+  // structural, not cross-scope.
+  const crossScopeGotoIds = new Set<string>();
+  for (const edge of forwardEdges) {
+    const source = nodeById.get(edge.source);
+    const target = nodeById.get(edge.target);
+    if (!source || !target || source.parentId === target.parentId) continue;
+    if (edge.source === target.parentId || edge.target === source.parentId) continue;
+    crossScopeGotoIds.add(`conn:goto:${edge.id}`);
+    issues.push({
+      code: 'cross-scope-edge',
+      severity: 'warning',
+      nodeIds: [edge.source, edge.target],
+      edgeIds: [edge.id],
+    });
+  }
+
+  // The projection keeps only the first of duplicate edges; report the rest here.
+  const seenWiring = new Map<string, Edge>();
+  for (const edge of forwardEdges) {
+    const key = duplicateEdgeKey(edge);
+    const first = seenWiring.get(key);
+    if (!first) {
+      seenWiring.set(key, edge);
+      continue;
+    }
+    issues.push({
+      code: 'duplicate-edge',
+      severity: 'warning',
+      nodeIds: [edge.source, edge.target],
+      edgeIds: [first.id, edge.id],
+    });
+  }
+
   for (const connector of projection.connectors) {
-    if (connector.kind !== 'goto') continue;
+    if (connector.kind !== 'goto' || crossScopeGotoIds.has(connector.id)) continue;
     const closesCycle = hasPath(connector.targetRowId, connector.sourceRowId);
     issues.push({
       code: closesCycle ? 'cycle' : 'unstructured-merge',
@@ -227,9 +249,6 @@ export function analyzeSequentialCompatibility(
     : issues.length > 0
       ? 'degraded'
       : 'exact';
-  // `level` reports how faithful the projection is; `editable` reports whether
-  // the mutation ops can be trusted. They are deliberately decoupled - see
-  // EDIT_BLOCKING_ISSUE_CODES.
   const editable = !issues.some(
     (issue) => issue.severity === 'error' || EDIT_BLOCKING_ISSUE_CODES.has(issue.code)
   );
@@ -241,7 +260,7 @@ export function analyzeSequentialCompatibility(
     projectedNodeIds: projection.rows
       .filter((row) => !row.lanePlaceholder)
       .map((row) => row.nodeId),
-    preservedOnlyNodeIds: [...preservedOnlyNodeIds].sort(),
+    preservedOnlyNodeIds: preservedOnlyNodeIds.sort(),
     preservedOnlyEdgeIds: edges
       .filter((edge) => !semanticEdgeIds.has(edge.id))
       .map((edge) => edge.id)

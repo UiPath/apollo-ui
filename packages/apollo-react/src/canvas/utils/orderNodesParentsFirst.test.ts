@@ -32,8 +32,7 @@ describe('orderNodesParentsFirst', () => {
   });
 
   it('keeps siblings in their original relative order', () => {
-    // Stability matters: array order is the layout's tie-breaker for nodes that
-    // share a rank, so reshuffling siblings would silently change the layout.
+    // Array order is the layout tie-breaker within a rank.
     const nodes = [
       node('c3', 'box'),
       node('c1', 'box'),
@@ -51,7 +50,6 @@ describe('orderNodesParentsFirst', () => {
     const result = orderNodesParentsFirst(nodes);
 
     expect(ids(result)).toEqual(['orphan', 'a']);
-    // The dangling parentId is preserved: this helper only reorders.
     expect(result[0]?.parentId).toBe('deleted-container');
   });
 

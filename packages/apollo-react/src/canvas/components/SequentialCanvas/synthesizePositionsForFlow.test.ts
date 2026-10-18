@@ -47,13 +47,10 @@ describe('synthesizePositionsForFlow', () => {
     const result = synthesizePositionsForFlow([a, inserted], edges);
     const placed = result.find((node) => node.id === 'n')!;
 
-    // Placed to the right of its source, no overlap with A.
     expect(placed.position.x).toBeGreaterThan(a.position.x);
     expect(boxesOverlap(placed, a)).toBe(false);
-    // Markers cleared.
     expect((placed.data as Record<string, unknown>)[SEQ_INSERTED_FLAG]).toBeUndefined();
     expect(placed.draggable).toBeUndefined();
-    // Original label data preserved.
     expect((placed.data as { display: { label: string } }).display.label).toBe('Slack');
   });
 
@@ -82,8 +79,7 @@ describe('synthesizePositionsForFlow', () => {
       position: { x: 0, y: 0 },
       data: { [SEQ_INSERTED_FLAG]: true },
     });
-    // Both inserted nodes have the same source, so they anchor to the same spot
-    // and must be pushed apart.
+    // Both inserted nodes anchor to the same source and must be pushed apart.
     const edges: Edge[] = [
       { id: 'e1', source: 'a', target: 'n1' },
       { id: 'e2', source: 'a', target: 'n2' },

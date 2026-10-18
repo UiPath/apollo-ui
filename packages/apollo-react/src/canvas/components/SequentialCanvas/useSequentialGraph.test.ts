@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react';
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
   PREVIEW_NODE_ID,
   SEQ_BAR_HEIGHT,
@@ -44,19 +44,14 @@ describe('deriveSequentialGraph', () => {
     expect(http.parentId).toBeUndefined();
   });
 
-  // Regression (perf loop): every clone AND both synthetic rows must declare an
-  // explicit bar height matching BaseNode's bar `computedHeight`. Without it the
-  // controlled `nodes` array re-applies `height: undefined` each sync, BaseNode
-  // re-writes it via updateNode, and the two fight through updateNodeInternals --
-  // a loop that blows React's nested-update limit at ~150 nodes.
+  // Every clone and both synthetic rows must declare an explicit height matching BaseNode's
+  // `computedHeight`, or the controlled array and BaseNode fight through updateNodeInternals.
   it('stamps every row with an explicit height so the store height never churns', () => {
     const { nodes, edges } = makeWireframeFixture();
     const graph = deriveSequentialGraph({ nodes, edges, view: 'sequential' });
 
     for (const node of graph.nodes) {
-      // Append plus overlays are layout-neutral (row-gap tall, no reserved row);
-      // every other row declares the fixed bar height. Both are explicit, which
-      // is what keeps the controlled store height from churning.
+      // Append plus overlays are row-gap tall; every other row declares the fixed bar height.
       const isAppendOverlay = (node.data as { variant?: string } | undefined)?.variant === 'plus';
       expect(node.height).toBe(isAppendOverlay ? SEQ_ROW_GAP : SEQ_BAR_HEIGHT);
     }
@@ -76,15 +71,9 @@ describe('deriveSequentialGraph', () => {
     expect(graph.nodes.find((node) => node.id === SEQ_PLACEHOLDER_ROW_ID)?.selectable).toBe(true);
   });
 
-  it('renders a populated lane tail as a plus placeholder wired to the same onLaneAdd path', () => {
+  it('renders a populated lane tail as a plus placeholder carrying its slot id', () => {
     const { nodes, edges } = makeWireframeFixture();
-    const onLaneAdd = vi.fn();
-    const graph = deriveSequentialGraph({
-      nodes,
-      edges,
-      view: 'sequential',
-      onLaneAdd,
-    });
+    const graph = deriveSequentialGraph({ nodes, edges, view: 'sequential', canAddToLane: true });
     const slotId = `slot:leaf:${WIREFRAME_NODE_IDS.thenJs}`;
     const placeholder = graph.nodes.find(
       (node) => (node.data as { insertionSlotId?: string } | undefined)?.insertionSlotId === slotId
@@ -94,13 +83,14 @@ describe('deriveSequentialGraph', () => {
       type: SEQ_PLACEHOLDER_NODE_TYPE,
       selectable: true,
     });
-    // The trailing add point of a populated lane renders as the between-step
-    // plus, not the dashed row an empty lane uses.
+    // A populated lane's trailing add point is the between-step plus, not the dashed row.
     expect((placeholder?.data as { variant?: string } | undefined)?.variant).toBe('plus');
-    const onAdd = (placeholder?.data as { onAdd?: () => void } | undefined)?.onAdd;
-    expect(onAdd).toBeTypeOf('function');
-    onAdd?.();
-    expect(onLaneAdd).toHaveBeenCalledWith(
+    // The click travels by slot id through SequentialLaneAddContext, never a data closure.
+    expect((placeholder?.data as { onAdd?: unknown } | undefined)?.onAdd).toBeUndefined();
+    const slot = graph.projection?.rows.find(
+      (row) => row.lanePlaceholder?.id === slotId
+    )?.lanePlaceholder;
+    expect(slot).toEqual(
       expect.objectContaining({
         id: slotId,
         source: { nodeId: WIREFRAME_NODE_IDS.thenJs },
@@ -143,7 +133,7 @@ describe('deriveSequentialGraph', () => {
       edges: [],
       view: 'sequential',
       isContainerNode: (node) => node.id === 'loop',
-      onLaneAdd: () => {},
+      canAddToLane: true,
     });
     const bodyPlaceholder = graph.nodes.find((node) =>
       (node.data as { insertionSlotId?: string } | undefined)?.insertionSlotId?.startsWith(
@@ -213,8 +203,7 @@ describe('deriveSequentialGraph', () => {
     for (const edge of graph.edges) {
       expect(edge.type).toBe(SEQ_CONNECTOR_EDGE_TYPE);
       expect(edge.sourceHandle).toBe(SEQUENTIAL_BAR_HANDLE_IDS.source);
-      // Branch/container-entry connectors enter the child's mid-left; every
-      // other kind drops into the top handle.
+      // Branch/container-entry connectors enter mid-left; every other kind drops into the top.
       expect(edge.targetHandle).toBe(
         edge.data?.kind === 'branch-entry'
           ? SEQUENTIAL_BAR_HANDLE_IDS.branchTarget
@@ -235,22 +224,15 @@ describe('deriveSequentialGraph', () => {
   });
 
   describe('insert anchors (accessible names for the ⊕ buttons)', () => {
-    /**
-     * The anchor is what stops every insert button on the canvas from announcing
-     * the same "Insert step". It must be present on exactly the connectors that
-     * render a button, and carry step numbers rather than geometry.
-     */
+    /** The anchor names each insert button; it must appear on exactly the connectors that render one. */
     it('pairs an anchor with every slot-bearing connector, and with nothing else', () => {
       const { nodes, edges } = makeWireframeFixture();
       const graph = deriveSequentialGraph({ nodes, edges, view: 'sequential' });
 
       expect(graph.edges.length).toBeGreaterThan(0);
       for (const edge of graph.edges) {
-        // `slot` is what gates the button, so the anchor that names it must appear
-        // on precisely the same set of edges.
         expect(edge.data?.insertAnchor !== undefined).toBe(edge.data?.slot !== undefined);
       }
-      // Distinct positions produce distinct names: that is the whole point.
       const names = graph.edges
         .filter((edge) => edge.data?.insertAnchor)
         .map((edge) => JSON.stringify(edge.data?.insertAnchor));
@@ -298,8 +280,7 @@ describe('deriveSequentialGraph', () => {
     });
 
     it('keeps announced numbers stable when a container collapses (D7)', () => {
-      // The numbers come off the projection's pre-order counter, not from counting
-      // rendered rows, so folding a subtree must not renumber the gaps below it.
+      // Numbers come off the projection's pre-order counter, so a collapse must not renumber.
       const { nodes, edges } = makeWireframeFixture();
       const anchorsFor = (collapsed?: Set<string>) =>
         deriveSequentialGraph({
@@ -417,9 +398,8 @@ describe('deriveSequentialGraph', () => {
   });
 
   it('places the placeholder below a trailing container body, not inside it', () => {
-    // root -> c1 (container: c2 -> leaf). c1 is the last top-level row, but its
-    // body (c2, leaf and its branch-tail placeholder) extends below it; the
-    // terminal placeholder must sit under the whole stack.
+    // root -> c1 (container: c2 -> leaf). c1's body extends below it, and the terminal
+    // placeholder must sit under the whole stack.
     const { nodes, edges } = makeDeepNestingFixture();
     const graph = deriveSequentialGraph({ nodes, edges, view: 'sequential' });
     const placeholderY =
@@ -433,8 +413,7 @@ describe('deriveSequentialGraph', () => {
   it('passes the canonical graph through unchanged in flow view', () => {
     const { nodes, edges } = makeWireframeFixture();
     const graph = deriveSequentialGraph({ nodes, edges, view: 'flow' });
-    // deriveSequentialGraph always projects; the hook is what short-circuits flow
-    // view. This asserts the projection still runs without throwing.
+    // deriveSequentialGraph always projects; only the hook short-circuits flow view.
     expect(graph.projection).not.toBeNull();
   });
 
@@ -527,13 +506,8 @@ describe('presentation-only node preservation', () => {
 
 describe('deriveSequentialGraph / useSequentialGraph projection parity', () => {
   /**
-   * `deriveSequentialGraph` is what this file, the round-trip suite, and
-   * `SequentialCanvas.insertParity.test.ts` all assert against; `useSequentialGraph`
-   * is what production renders. The two used to hold independent copies of the
-   * "which nodes/edges enter the projection" chain, so the tested path and the
-   * running path could disagree while every test stayed green. They now share
-   * `projectSequenceForView`; this pins that down from the outside, so re-splitting
-   * them fails here rather than silently invalidating the suites above.
+   * Tests assert against `deriveSequentialGraph` while production renders `useSequentialGraph`;
+   * this pins from the outside that the two project identically.
    */
   const projectionCases = [
     { name: 'the wireframe', fixture: makeWireframeFixture },
@@ -544,15 +518,13 @@ describe('deriveSequentialGraph / useSequentialGraph projection parity', () => {
   for (const { name, fixture } of projectionCases) {
     it(`projects ${name} identically through the pure function and the hook`, () => {
       const { nodes, edges } = fixture();
-      // Registry-shaped predicates, so the parity holds on the options the canvas
-      // actually passes down rather than only on the bare defaults.
+      // Registry-shaped predicates, so the parity holds on what the canvas actually passes.
       const args = {
         nodes,
         edges,
         view: 'sequential' as const,
         isSequenceNode: (node: Node) => node.type !== 'stickyNote',
-        // The fixtures' real trigger type, so the parity covers the start-node
-        // exclusion rather than a predicate that happens to match nothing.
+        // The fixtures' real trigger type, so the start-node exclusion is exercised.
         isStartNode: (node: Node) => node.type === 'uipath.first-run',
       };
 
@@ -606,7 +578,7 @@ describe('useSequentialGraph memoization (D12)', () => {
     );
     rerender({ nodes: renamed, edges });
 
-    // Edges are reference-stable across data-only changes (D12).
+    // Edges are reference-stable across data-only changes.
     expect(result.current.edges).toBe(firstEdges);
     // Nodes recompute so the rename is reflected.
     expect(result.current.nodes).not.toBe(firstNodes);
@@ -614,12 +586,8 @@ describe('useSequentialGraph memoization (D12)', () => {
     expect((http.data as { display: { label: string } }).display.label).toBe('Renamed');
   });
 
-  // The central perf claim of the whole feature: a data-only edit (a rename
-  // keystroke replaces `node.data`, and therefore the `nodes` array identity)
-  // must NOT recompute the structural projection OR the geometry pass, because
-  // `sequenceFingerprint` is unchanged and the memo is reused. Asserted on the
-  // object references directly, since that is what the memo actually guarantees
-  // and what xyflow's reconciliation depends on.
+  // The central perf claim: a data-only edit must not recompute the projection or the layout.
+  // Asserted on object references, since that is what the memo guarantees.
   it('reuses the projection and layout objects across a data-only change, but not a structural one', () => {
     const { nodes, edges } = makeWireframeFixture();
     const { result, rerender } = renderHook(
@@ -632,8 +600,7 @@ describe('useSequentialGraph memoization (D12)', () => {
     expect(firstProjection).not.toBeNull();
     expect(firstLayout).not.toBeNull();
 
-    // Exactly one node gets a fresh `data` object; ids, types, parentIds and the
-    // whole edge array are untouched, so the fingerprint string is identical.
+    // One node gets a fresh `data` object; the fingerprint string is identical.
     const renamed = nodes.map((node) =>
       node.id === WIREFRAME_NODE_IDS.http
         ? { ...node, data: { ...node.data, display: { label: 'Renamed' } } }
@@ -681,6 +648,31 @@ describe('useSequentialGraph memoization (D12)', () => {
       } else {
         expect(node).toBe(firstNodesById.get(node.id));
       }
+    }
+  });
+
+  it('reuses lane placeholder node objects across a data-only change', () => {
+    const { nodes, edges } = makeWireframeFixture();
+    const { result, rerender } = renderHook(
+      (props: { nodes: Node[] }) =>
+        useSequentialGraph({ nodes: props.nodes, edges, view: 'sequential', canAddToLane: true }),
+      { initialProps: { nodes } }
+    );
+    const placeholdersBefore = result.current.nodes.filter(
+      (node) => node.type === SEQ_PLACEHOLDER_NODE_TYPE
+    );
+    expect(placeholdersBefore.length).toBeGreaterThan(1);
+
+    const renamed = nodes.map((node) =>
+      node.id === WIREFRAME_NODE_IDS.http
+        ? { ...node, data: { display: { label: 'Renamed' } } }
+        : node
+    );
+    rerender({ nodes: renamed });
+
+    const after = new Map(result.current.nodes.map((node) => [node.id, node]));
+    for (const placeholder of placeholdersBefore) {
+      expect(after.get(placeholder.id)).toBe(placeholder);
     }
   });
 
@@ -768,6 +760,17 @@ describe('useSequentialGraph memoization (D12)', () => {
     const { nodes, edges } = makeWireframeFixture();
     const { result } = renderHook(() => useSequentialGraph({ nodes, edges, view: 'flow' }));
     expect(result.current.layout).toBeNull();
+  });
+});
+
+describe('useSequentialGraph flow view pass-through', () => {
+  it('returns the canonical arrays by identity when parents already precede children', () => {
+    const { nodes, edges } = makeDeepNestingFixture();
+    const { result } = renderHook(() => useSequentialGraph({ nodes, edges, view: 'flow' }));
+
+    expect(result.current.nodes).toBe(nodes);
+    expect(result.current.edges).toBe(edges);
+    expect(result.current.projection).toBeNull();
   });
 });
 

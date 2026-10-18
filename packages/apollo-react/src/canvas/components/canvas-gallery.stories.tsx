@@ -202,7 +202,7 @@ const components: ComponentInfo[] = [
     name: 'Sequential Canvas',
     description:
       'Vertical, n8n-style projection of a flow graph with a flow/sequential view toggle',
-    storyPath: 'components-sequentialcanvas-sequentialcanvas--wireframe',
+    storyPath: 'components-canvas-sequentialcanvas--interactive-sequence',
     category: Category.Canvas,
     preview: (
       <div className="w-full h-20 rounded border border-border bg-muted/20 relative overflow-hidden p-2 flex flex-col gap-1 justify-center">
@@ -635,7 +635,7 @@ function CanvasComponentGallery({ idPrefix }: { idPrefix: string }) {
                 Canvas components
               </h1>
               <p className="mt-2 text-lg text-muted-foreground max-w-2xl">
-                Explore the collection of {components.length} canvas components — nodes, edges,
+                Explore the collection of {components.length} canvas components: nodes, edges,
                 controls, and utilities for building interactive flow editors.
               </p>
             </div>

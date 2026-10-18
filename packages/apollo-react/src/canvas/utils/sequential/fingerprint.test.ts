@@ -132,3 +132,31 @@ describe('sequenceFingerprint', () => {
     });
   });
 });
+
+describe('sequenceFingerprint lane order', () => {
+  it('changes when a position-only drag reorders two lane targets of a branch source', () => {
+    const nodes = [plainNode('if', 0, 0), plainNode('p', 0, 100), plainNode('q', 0, 200)];
+    const edges: Edge[] = [
+      { id: 'if-p', source: 'if', target: 'p', sourceHandle: 'x' },
+      { id: 'if-q', source: 'if', target: 'q', sourceHandle: 'y' },
+    ];
+    const baseline = sequenceFingerprint(nodes, edges, EMPTY);
+    const swapped = nodes.map((node) =>
+      node.id === 'p' ? { ...node, position: { x: 0, y: 300 } } : node
+    );
+    expect(sequenceFingerprint(swapped, edges, EMPTY)).not.toBe(baseline);
+  });
+
+  it('is unchanged by a drag that keeps the lane order', () => {
+    const nodes = [plainNode('if', 0, 0), plainNode('p', 0, 100), plainNode('q', 0, 200)];
+    const edges: Edge[] = [
+      { id: 'if-p', source: 'if', target: 'p', sourceHandle: 'x' },
+      { id: 'if-q', source: 'if', target: 'q', sourceHandle: 'y' },
+    ];
+    const baseline = sequenceFingerprint(nodes, edges, EMPTY);
+    const nudged = nodes.map((node) =>
+      node.id === 'p' ? { ...node, position: { x: 40, y: 120 } } : node
+    );
+    expect(sequenceFingerprint(nudged, edges, EMPTY)).toBe(baseline);
+  });
+});

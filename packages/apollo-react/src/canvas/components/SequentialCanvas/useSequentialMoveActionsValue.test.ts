@@ -11,11 +11,8 @@ import {
 } from './useSequentialMoveActionsValue';
 
 /**
- * The move-actions value is consumed by every `SequentialStepNode` through
- * context. Because context updates bypass `React.memo`, its identity MUST stay
- * stable across a selection or data-only change, or clicking one bar re-renders
- * all of them. It must still be rebuilt on a structural change so kebab
- * move-availability refreshes. These tests pin both halves of that contract.
+ * Context updates bypass `React.memo`, so the value must stay stable across a selection or
+ * data-only change and still rebuild on a structural one.
  */
 
 function makeArgs(
@@ -36,9 +33,7 @@ function makeArgs(
   };
 }
 
-/** Mirrors the real component's selection update: a NEW nodes array (one row's
- * `selected` flipped) plus the derived NEW `canonicalById`, while the structural
- * `projection` (fingerprint-keyed, selection-independent) stays the same object. */
+/** A selection update: new nodes array and `canonicalById`, same `projection` object. */
 function withSelection(
   args: UseSequentialMoveActionsValueArgs<Node, Edge>,
   selectedId: string
@@ -60,6 +55,42 @@ function firstMovable(
   }
   return undefined;
 }
+
+describe('useSequentialMoveActionsValue read-only nodes', () => {
+  it('offers no move options and refuses to commit for a locked node', () => {
+    const { nodes, edges } = makeWireframeFixture();
+    const projection = projectSequence(nodes, edges);
+    const movable = projection.rows.find((row) => row.stepNumber === 2)!.nodeId;
+    const onNodesChange = vi.fn();
+    const onEdgesChange = vi.fn();
+    const unlocked = renderHook(() =>
+      useSequentialMoveActionsValue(makeArgs({ projection, onNodesChange, onEdgesChange }))
+    );
+    const openOptions = unlocked.result.current.getMoveOptions(movable);
+    const upSlot = openOptions.up;
+    expect(upSlot).toBeDefined();
+
+    const locked = renderHook(() =>
+      useSequentialMoveActionsValue(
+        makeArgs({
+          projection,
+          readOnlyNodeIds: new Set([movable]),
+          onNodesChange,
+          onEdgesChange,
+        })
+      )
+    );
+    expect(locked.result.current.getMoveOptions(movable)).toEqual({
+      up: undefined,
+      down: undefined,
+      indent: undefined,
+      outdent: undefined,
+    });
+    locked.result.current.commitMove(movable, upSlot!);
+    expect(onNodesChange).not.toHaveBeenCalled();
+    expect(onEdgesChange).not.toHaveBeenCalled();
+  });
+});
 
 describe('useSequentialMoveActionsValue', () => {
   it('keeps the value identity stable across a selection-only change', () => {
@@ -97,8 +128,7 @@ describe('useSequentialMoveActionsValue', () => {
       initialProps: args,
     });
 
-    // Re-render once (a selection) so we prove commit reads the CURRENT graph,
-    // not a stale closure captured at first render.
+    // Re-render once so commit provably reads the current graph, not a stale closure.
     rerender(withSelection(args, args.nodes[0]!.id));
 
     const movable = firstMovable(

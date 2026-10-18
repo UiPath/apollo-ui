@@ -16,7 +16,6 @@ import {
 import { moveSubtree } from './mutations';
 import { projectSequence } from './projectSequence';
 import type {
-  GraphChangeSet,
   InsertionSlot,
   SequenceConnector,
   SequenceProjection,
@@ -30,15 +29,8 @@ import {
 } from './slotNavigation';
 
 /**
- * Node-set-plus-parentId and edge-endpoint (source/target only, NOT handles)
- * signature. Handles are deliberately excluded: an outdent/indent round-trip
- * can force a re-splice through a SYNTHETIC slot (no original edge left to
- * copy a handle from - see slotNavigation.ts's doc comment), which is a
- * documented best-effort default (`DEFAULT_SOURCE_HANDLE_ID`), not a
- * connectivity regression. `mutations.test.ts`'s own topologyKey compares
- * handles too, but its insertAtSlot/removeStep round-trip never hits that
- * synthetic path (removeStep's heal always copies the real neighboring
- * handles), so the two helpers are intentionally not identical.
+ * Node-set-plus-parentId and edge source/target signature. Handles are excluded: a
+ * round-trip through a synthetic slot falls back to the default source handle.
  */
 function topologyKey(fixture: GraphFixture): string {
   const nodeKey = fixture.nodes
@@ -63,13 +55,7 @@ describe('slotNavigation', () => {
     it('moves up and OUT when the row is first in its lane (was: disabled)', () => {
       const fixture = makeWireframeFixture();
       const projection = projectSequence(fixture.nodes, fixture.edges);
-      // "If" is the sole entry of For Each's body: its own incomer is a
-      // branch-entry (container start), not a step, so it has no previous
-      // SIBLING. That used to disable Move up outright; the row now moves up
-      // and out instead, landing immediately before its owner (the For Each)
-      // at the owner's own level, by splicing the owner's incoming seam.
-      // (The view layer still disables all four directions for `If` itself,
-      // since it is a bare branch owner - see sequentialMoveActions.ts.)
+      // If is the sole body entry of For Each, so it lands on the owner's incoming seam.
       const slot = findMoveUpSlot(projection, WIREFRAME_NODE_IDS.ifNode);
       expect(slot?.graphEdgeId).toBe('e-js-foreach');
       expect(slot?.source?.nodeId).toBe(WIREFRAME_NODE_IDS.javascript);
@@ -77,10 +63,7 @@ describe('slotNavigation', () => {
     });
 
     it('moves a branch-lane row up and out to just before its branch owner', () => {
-      // makeWireframeFixture: For Each [ If -> Then: Javascript 1 ]. Javascript 1
-      // is first in the Then lane, so Move up exits the lane and lands before
-      // the If, INSIDE For Each's body (the If's own incoming seam), not at the
-      // top level.
+      // Lands inside For Each's body (the If's incoming seam), not at the top level.
       const fixture = makeWireframeFixture();
       const projection = projectSequence(fixture.nodes, fixture.edges);
       const slot = findMoveUpSlot(projection, WIREFRAME_NODE_IDS.thenJs);
@@ -93,8 +76,6 @@ describe('slotNavigation', () => {
       const fixture = makeContainerChainFixture();
       const projection = projectSequence(fixture.nodes, fixture.edges);
       const slot = findMoveUpSlot(projection, ids.x);
-      // The splice of A -> Container, i.e. "before the container, at the
-      // container's own level".
       expect(slot?.graphEdgeId).toBe('chain-a-container');
       expect(slot?.source?.nodeId).toBe(ids.a);
       expect(slot?.target?.nodeId).toBe(ids.container);
@@ -102,9 +83,7 @@ describe('slotNavigation', () => {
     });
 
     it('prepends before the owner when the owner is itself the first row of its scope', () => {
-      // The only shape that reaches the up-and-out PREPEND fallback: the owner
-      // has no incoming seam to splice, so there is nothing to insert into.
-      // Container [ X ] -> B, with the container as the very first row.
+      // Container [ X ] -> B: the owner has no incoming seam to splice.
       const fixture: GraphFixture = {
         nodes: [
           { id: 'c', type: 'uipath.control-flow.foreach', position: { x: 0, y: 0 }, data: {} },
@@ -120,7 +99,6 @@ describe('slotNavigation', () => {
       const slot = findMoveUpSlot(projection, 'x');
       expect(slot?.target?.nodeId).toBe('c');
       expect(slot?.source).toBeUndefined();
-      // Read off the owner's OUTGOING slot, the only one it has.
       expect(slot?.containerId).toBeUndefined();
 
       const moved = applyGraphChangeSet(fixture, moveSubtree(projection, 'x', slot!, fixture));
@@ -134,11 +112,8 @@ describe('slotNavigation', () => {
     });
 
     it('does not pull a merge node into a branch lane (regression: merge-back is not a sibling link)', () => {
-      // makeDiamondFixture: A -> If {true: B, false: C} -> D. D's only incomers
-      // are the two lanes' merge-backs, which DO carry slots. Treating either as
-      // a sibling link made Move up splice D into the Then lane (If -> D -> B),
-      // stripping the lanes' merge and orphaning them. There is also no single
-      // seam before a multi-incomer merge, so Move up is disabled.
+      // D's only incomers are slot-bearing merge-backs; treating one as a sibling
+      // link spliced D into the Then lane.
       const fixture = makeDiamondFixture();
       const projection = projectSequence(fixture.nodes, fixture.edges);
       expect(findMoveUpSlot(projection, 'd')).toBeUndefined();
@@ -147,12 +122,8 @@ describe('slotNavigation', () => {
     it('does not pull a merge node up two levels out of a nested branch (regression)', () => {
       const fixture = makeNestedBranchFixture();
       const projection = projectSequence(fixture.nodes, fixture.edges);
-      // M merges If2's two lanes AND If1's Else edge (three incoming seams).
+      // M has three incoming seams; landing "before M" would splice only one of them.
       expect(findMoveUpSlot(projection, 'm')).toBeUndefined();
-      // Z follows M at the top level. Its lane predecessor IS M, but landing
-      // "before M" would have to splice ONE of M's three incoming seams, which
-      // would put Z on only one of the paths that reach M (the old behavior
-      // spliced B -> Z -> M, dropping Z two levels down into If2's Then lane).
       expect(findMoveUpSlot(projection, 'z')).toBeUndefined();
     });
 
@@ -163,10 +134,7 @@ describe('slotNavigation', () => {
     });
 
     it('still treats a container’s own dashed continuation as a sibling link', () => {
-      // The case that rules out fixing the leak by excluding `merge-back` by
-      // kind: For Each -> Send Message is reclassified merge-back purely for
-      // dashed rendering, but it is a genuine same-level spine link, so Send
-      // Message's Move up must still swap it before the For Each.
+      // For Each -> Send Message is a merge-back by kind but a genuine same-level link.
       const fixture = makeWireframeFixture();
       const projection = projectSequence(fixture.nodes, fixture.edges);
       const slot = findMoveUpSlot(projection, WIREFRAME_NODE_IDS.sendMessage);
@@ -180,8 +148,6 @@ describe('slotNavigation', () => {
       const projection = projectSequence(fixture.nodes, fixture.edges);
       const slot = findMoveUpSlot(projection, WIREFRAME_NODE_IDS.javascript);
       expect(slot).toBeDefined();
-      // http has no predecessor of its own: prepend directly before it
-      // (target-only slot), not a source-based splice.
       expect(slot?.target?.nodeId).toBe(WIREFRAME_NODE_IDS.http);
       expect(slot?.source?.nodeId).toBeUndefined();
 
@@ -205,9 +171,7 @@ describe('slotNavigation', () => {
       const projection = projectSequence(fixture.nodes, fixture.edges);
       const slot = findMoveDownSlot(projection, WIREFRAME_NODE_IDS.javascript);
       expect(slot).toBeDefined();
-      // javascript's successor is the For Each container; moving past it
-      // must land on the container's OWN outgoing seam (its "success" edge
-      // to sendMessage), not its body-start edge.
+      // Lands on the container's own outgoing seam, not its body-start edge.
       expect(slot?.source?.nodeId).toBe(WIREFRAME_NODE_IDS.forEach);
       expect(slot?.target?.nodeId).toBe(WIREFRAME_NODE_IDS.sendMessage);
 
@@ -224,25 +188,14 @@ describe('slotNavigation', () => {
     });
 
     it('returns undefined rather than an unsound slot when the next sibling is a bare branch owner', () => {
-      // makeDiamondFixture: A -> If {true: B, false: C} -> D. Moving A "down"
-      // past If would require inserting at If's multi-incomer merge, which is
-      // not a single-edge splice. The former fallback appended a new edge via
-      // If's own source handle, injecting A as a THIRD branch of If and
-      // orphaning it (the corruption browser QA caught). It must disable
-      // instead.
+      // Appending via If's own source handle would inject A as a third branch.
       const fixture = makeDiamondFixture();
       const projection = projectSequence(fixture.nodes, fixture.edges);
       expect(findMoveDownSlot(projection, 'a')).toBeUndefined();
     });
 
     it('never steps a branch-lane row out to the top level through a merge-back (regression)', () => {
-      // makeDiamondFixture: A -> If {true: B, false: C} -> D. B's only forward
-      // connector is its lane's merge-back into D, which carries a slot: it read
-      // as B's "next sibling", so Move down appended B after D at the ROOT
-      // level, silently teleporting it out of the branch. B is now at the bottom
-      // bound of its lane, so Move down resolves out of the lane (to after the
-      // owner) instead, and the view layer refuses THAT because the owner is a
-      // bare branch owner (see sequentialMoveActions.test.ts).
+      // B's merge-back into D carries a slot and used to read as its next sibling.
       const fixture = makeDiamondFixture();
       const projection = projectSequence(fixture.nodes, fixture.edges);
       const slot = findMoveDownSlot(projection, 'b');
@@ -251,10 +204,6 @@ describe('slotNavigation', () => {
     });
 
     it('never steps a doubly-nested branch row out two levels through a merge-back (regression)', () => {
-      // makeNestedBranchFixture: B sits at depth 2 in If2's Then lane, inside
-      // If1's Then lane. Its merge-back into M read as a sibling link, so Move
-      // down returned the top-level M -> Z splice: two levels out, skipping If1
-      // entirely.
       const fixture = makeNestedBranchFixture();
       const projection = projectSequence(fixture.nodes, fixture.edges);
       const slot = findMoveDownSlot(projection, 'b');
@@ -267,16 +216,12 @@ describe('slotNavigation', () => {
       const fixture = makeContainerChainFixture();
       const projection = projectSequence(fixture.nodes, fixture.edges);
       const slot = findMoveDownSlot(projection, ids.y);
-      // The splice of Container -> B, i.e. "after the container, at the
-      // container's own level" - identical to Outdent, which it delegates to.
       expect(slot?.graphEdgeId).toBe('chain-container-b');
       expect(slot).toEqual(findOutdentSlot(projection, ids.y));
     });
 
     it('appends after the owner when the owner has no forward continuation of its own', () => {
-      // makeDeepNestingFixture: Root -> C1 [ C2 [ Leaf ] ]. Neither container has
-      // a next step, so both fall back to the append shape, each in ITS OWN
-      // scope: Leaf lands after C2 inside C1, and C2 lands after C1 at the top.
+      // Each append lands in the owner's own scope: Leaf after C2 inside C1, C2 after C1 at top.
       const fixture = makeDeepNestingFixture();
       const projection = projectSequence(fixture.nodes, fixture.edges);
 
@@ -291,9 +236,6 @@ describe('slotNavigation', () => {
     });
 
     it('still steps past a container through its own dashed continuation', () => {
-      // The preserved counterpart of the merge-back leak: A's successor is the
-      // container, and stepping past it must land on the container's OWN
-      // outgoing seam (Container -> B), not inside its body.
       const ids = CONTAINER_CHAIN_NODE_IDS;
       const fixture = makeContainerChainFixture();
       const projection = projectSequence(fixture.nodes, fixture.edges);
@@ -332,7 +274,6 @@ describe('slotNavigation', () => {
       const ids = CONTAINER_CHAIN_NODE_IDS;
       const fixture = makeContainerChainFixture();
       const projection = projectSequence(fixture.nodes, fixture.edges);
-      // Y's previous sibling is X, a plain leaf.
       expect(findIndentSlot(projection, ids.y)).toBeUndefined();
     });
 
@@ -342,7 +283,7 @@ describe('slotNavigation', () => {
       const projection = projectSequence(fixture.nodes, fixture.edges);
       const slot = findIndentSlot(projection, ids.b);
       expect(slot).toBeDefined();
-      expect(slot?.source?.nodeId).toBe(ids.y); // the body's tail
+      expect(slot?.source?.nodeId).toBe(ids.y);
       expect(slot?.containerId).toBe(ids.container);
 
       const changeSet = moveSubtree(projection, ids.b, slot!, fixture);
@@ -358,12 +299,6 @@ describe('slotNavigation', () => {
     });
 
     it('resolves the tail ACROSS a branch that rejoins inside the body (regression)', () => {
-      // makeMergedBranchBodyFixture: Container [ X -> If -> {P, Q} -> M ] -> N.
-      // The body's last step is the merge M. The old connector walk could not
-      // cross the branch - nothing but `branch-entry` is ever sourced at the If,
-      // and the merge-backs into M are sourced at P/Q - so it stopped at the If
-      // and appended from the If's OWN source handle, adding a third lane
-      // instead of a step at the end of the body.
       const ids = MERGED_BRANCH_BODY_NODE_IDS;
       const fixture = makeMergedBranchBodyFixture();
       const projection = projectSequence(fixture.nodes, fixture.edges);
@@ -380,9 +315,7 @@ describe('slotNavigation', () => {
       const fixture = makeMergedBranchBodyFixture();
       const projection = projectSequence(fixture.nodes, fixture.edges);
 
-      // Pin the trap the row scan has to survive: the merge's trailing 'append'
-      // placeholder is emitted at the SAME depth and owner as the real tail,
-      // immediately after it, so an unfiltered scan would pick the placeholder.
+      // The append placeholder sits right after the tail at the same depth and owner.
       const mergeIndex = projection.rows.findIndex((row) => row.nodeId === ids.merge);
       const next = projection.rows[mergeIndex + 1];
       expect(next?.lanePlaceholder).toBeDefined();
@@ -393,12 +326,7 @@ describe('slotNavigation', () => {
     });
 
     it('uses the FIRST lane’s tail for a multi-lane owner, even when the lanes share a handle', () => {
-      // A container body with TWO entry lanes: [ X1 -> X2 ] and [ Y1 ]. Both
-      // lanes' first rows carry `branch` metadata with the same 'start' handle
-      // (the second entry has no start edge of its own), so the scan must end
-      // the first lane on the PRESENCE of that metadata, not on a differing
-      // handle id. Pins the documented first-lane-tail rule against the
-      // row-order rewrite.
+      // Two entry lanes [ X1 -> X2 ] and [ Y1 ] whose heads share the 'start' handle.
       const fixture: GraphFixture = {
         nodes: [
           { id: 'c', type: 'uipath.control-flow.foreach', position: { x: 0, y: 0 }, data: {} },
@@ -420,7 +348,6 @@ describe('slotNavigation', () => {
         ],
       };
       const projection = projectSequence(fixture.nodes, fixture.edges);
-      // Premise: both lane heads really do share the 'start' handle.
       const laneHeads = projection.rows.filter((row) => row.branch !== undefined);
       expect(laneHeads.map((row) => row.nodeId)).toEqual(['x1', 'y1']);
       expect(new Set(laneHeads.map((row) => row.branch?.handleId))).toEqual(new Set(['start']));
@@ -428,14 +355,8 @@ describe('slotNavigation', () => {
       expect(findIndentSlot(projection, 'n')?.source?.nodeId).toBe('x2');
     });
 
-    // A hand-built malformed projection whose body connectors CYCLE (body2 steps
-    // back into body1), which `projectSequence` itself cannot produce (it turns a
-    // cycle into a slot-less `goto`). The tail is now resolved from row order, so
-    // cyclic connectors are simply irrelevant to it and the scan is a single
-    // bounded pass over `rows` - strictly stronger than the seen-set guard the
-    // old connector walk needed to avoid hanging the UI thread here. Retained,
-    // with its explicit timeout, so a future reintroduction of a connector walk
-    // fails fast instead of spinning on a keyboard/kebab code path.
+    // Hand-built malformed projection with cycling body connectors, which
+    // `projectSequence` cannot produce. The timeout makes a connector walk fail fast.
     it('resolves the tail from row order even when the lane body’s connectors cycle', () => {
       const row = (nodeId: string, extra: Partial<SequenceRow> = {}): SequenceRow => ({
         nodeId,
@@ -473,7 +394,6 @@ describe('slotNavigation', () => {
         connectors: [
           connector('c-entry', 'branch-entry', 'container', 'body1'),
           connector('c-body1-body2', 'step', 'body1', 'body2'),
-          // The malformed part: body2 steps back into body1.
           connector('c-body2-body1', 'step', 'body2', 'body1'),
           connector('c-container-target', 'step', 'container', 'target'),
         ],

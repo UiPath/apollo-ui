@@ -1,74 +1,20 @@
 /**
- * Sequential Canvas View — frozen contracts.
- *
- * These are the data shapes shared by the projection/layout engine, the
- * bar visuals, the connector/insert pipeline, and the canvas
- * assembly. They are intentionally renderer-agnostic: the projection is
- * a pure derivation of the canonical `nodes`/`edges` graph, and the flow-view
- * positions remain the persisted truth.
- *
- * Binding design decisions:
- *  D1  New `view` axis (CanvasView = 'flow' | 'sequential'); never touches
- *      BaseCanvasProps.mode, CanvasMode, or AgentFlowProps.mode.
- *  D2  Card and bar are sibling node renderers selected by each canvas's
- *      NodeTypes registry, not by wire schema or node data.
- *  D3  No trailing slot added to BaseNodeOverrideConfig; the bar's right-aligned
- *      group consumes the same shared presentation model as BaseNode.
- *  D4  Positions are never written back; sequential-only inserts are stamped
- *      data.seqInserted + crypto.randomUUID() and placed by
- *      synthesizePositionsForFlow() on toggle-to-flow.
- *  D5  Insert rides the existing AddNodeManager pipeline (never forks it);
- *      free-form position stripped; sequential node types go in ignoredNodeTypes.
- *  D6  Collapse is view-local via controlled collapsedStepIds; never node.hidden.
- *  D7  Step numbers are assigned before collapse filtering, as one flat
- *      pre-order counter; synthetic rows (start bar, placeholder) are unnumbered.
- *  D8  Accessibility is a v1 feature; SequentialCanvas sets
- *      onlyRenderVisibleElements={false} so DOM order equals reading order.
- *  D9  Degrade, never hard-fail; every non-representable shape (multi-root,
- *      unstructured merge, cycle, orphan) still renders something rather than
- *      crashing or dropping a node.
- *  D10 Pure mutation ops (insertAtSlot / removeStep / moveStep -> GraphChangeSet)
- *      are the internal semantic core; the public API stays onNodesChange /
- *      onEdgesChange. QUALIFIED: this holds for delete and move, whose paths do
- *      call removeStep / moveSubtree. It does NOT hold for INSERT. D5 requires
- *      insert to ride the existing AddNodeManager pipeline rather than fork it,
- *      so production inserts run AddNodeManager -> sequentialOnBeforeNodeAdded ->
- *      forwardSequential*Changes and never call insertAtSlot, which is exercised
- *      only by tests. The two implementations are pinned to the same canonical
- *      topology by SequentialCanvas.insertParity.test.ts; before that test the
- *      pure op's whole suite rested on an unverified claim of equivalence.
- *  D11 Toggle is an in-place array swap on the same mounted BaseCanvas (no key
- *      remount) with fitView({ duration: 300 }) and per-view viewport save/restore.
- *  D12 projectSequence memoizes on a structural fingerprint (sequenceFingerprint);
- *      data-only changes reuse the cached projection and positions.
- *  D13 SUPERSEDED. Originally: "SequentialCanvas stays out of components/index.ts
- *      until GA; types export first, component last." The component now ships from
- *      that barrel alongside every other canvas component, and the pure engine ships
- *      from utils/index.ts. Withholding the export was dropped because it did not
- *      buy what it claimed: the alternative (a separate `canvas/sequential` subpath)
- *      is equally installable and equally breakable, and the engine exported here is
- *      the more churn-prone half, so hiding only the component protected nothing.
- *      Accepted consequence: `SequentialCanvasProps` and the exports in
- *      components/SequentialCanvas/index.ts are public API, and a breaking change to
- *      them is a semver-major. Pre-GA instability is communicated through
- *      canvas/README.md and release notes instead. See components/index.ts.
- *  D14 Repo standards: Tailwind literals via apollo-wind only, lingui
- *      sequential-canvas.* ids, no em dash in story copy, colocated vitest tests.
+ * Sequential canvas view contracts, shared by the projection/layout engine, the bar
+ * renderers, the insert pipeline and the canvas assembly. Renderer-agnostic: the
+ * projection is a pure derivation of `nodes`/`edges`; flow positions stay the
+ * persisted truth and are never written back.
  */
 
 import type { Edge, Node, Rect, XYPosition } from '@uipath/apollo-react/canvas/xyflow/react';
 import type { Waypoint } from '../../components/Edges/shared/types';
 
-/** View axis, orthogonal to every existing `mode` (D1). */
+/** View axis, orthogonal to every existing `mode`. */
 export type CanvasView = 'flow' | 'sequential';
 
 /** A single row of the sequential projection, in pre-order. */
 export interface SequenceRow {
   nodeId: string;
-  /**
-   * Flat pre-order number, assigned BEFORE collapse filtering (D7). Absent on
-   * synthetic rows (start bar, placeholder).
-   */
+  /** Flat pre-order number, assigned before collapse filtering. Absent on synthetic rows. */
   stepNumber?: number;
   /** Indent level; layout uses `x = depth * SEQ_INDENT_PX`. */
   depth: number;
@@ -83,36 +29,21 @@ export interface SequenceRow {
   visible: boolean;
   /** True for a disconnected node rendered in the trailing orphan section. */
   orphan?: boolean;
-  /**
-   * Terminal non-container row with no forward sequence continuation. Nested
-   * leaves are followed by a full-width lane placeholder; the top-level tail is
-   * served by the canvas's terminal placeholder.
-   */
+  /** Terminal non-container row with no forward sequence continuation. */
   isLeaf?: boolean;
   /**
-   * Set on a synthetic placeholder row (a parent's empty declared branch handle
-   * or empty container body, or the trailing add point after a populated lane's
-   * last step). The carried slot appends a node into that scope with the correct
-   * source handle + containment. Such rows have no canonical node and are never
-   * numbered, forwarded, or keyboard-focused. See {@link placeholderKind} for how
-   * the two shapes render.
+   * Set on a synthetic add-step row (empty lane/body, or the trailing add point of a
+   * populated lane). The slot appends into that scope. Such rows have no canonical
+   * node and are never numbered, forwarded, or keyboard-focused.
    */
   lanePlaceholder?: InsertionSlot;
-  /**
-   * Which add-step affordance a {@link lanePlaceholder} row renders as:
-   *  - 'lane'   : a genuinely EMPTY branch lane or container body. Renders as the
-   *               dashed "Add step" row, because there is no connector to host a plus.
-   *  - 'append' : the trailing add point AFTER the last step of a populated lane
-   *               or body. Renders as the same quiet plus used between steps, so
-   *               adding a step looks identical wherever a line already exists.
-   */
+  /** 'lane' renders as the dashed "Add step" row; 'append' as the quiet plus used between steps. */
   placeholderKind?: 'lane' | 'append';
 }
 
-/** An insertion point between two endpoints (graft: hybrid). */
+/** An insertion point between two endpoints. */
 export interface InsertionSlot {
   id: string;
-  /** Endpoints the new node splices between. */
   source?: { nodeId: string; handleId?: string };
   target?: { nodeId: string; handleId?: string };
   /** Edge being split, if any. */
@@ -145,18 +76,12 @@ export interface SequenceProjection {
   slots: InsertionSlot[];
 }
 
-/**
- * Options for {@link projectSequence}. Named form of the inline option shape.
- */
+/** Options for {@link projectSequence}. */
 export interface ProjectSequenceOptions {
   /**
-   * Defaults to `defaultIsSequenceEdge` (graph-helpers.ts), which counts every
-   * non-preview edge as a sequence edge: this pure layer has no manifest
-   * registry access, so it cannot resolve `handleType === 'artifact'` the way
-   * `utils/container.ts:766`'s `isSequenceEdge` does. Callers with registry
-   * access (e.g. the agent-flow consumer) must pass a registry-aware predicate
-   * to exclude artifact/resource handles; otherwise those edges are traversed
-   * as forward steps.
+   * Defaults to treating every non-preview edge as a sequence edge. This layer has
+   * no registry access, so callers must pass a registry-aware predicate to exclude
+   * artifact/resource handles, or those edges are traversed as forward steps.
    */
   isSequenceEdge?: (edge: Edge) => boolean;
   /** Start/trigger nodes are represented by the synthetic Workflow start row. */
@@ -165,20 +90,15 @@ export interface ProjectSequenceOptions {
   isContainerNode?: (node: Node) => boolean;
   resolveBranchLabel?: (nodeId: string, handleId: string) => string;
   /**
-   * Manifest-driven branch lanes for a parent node (If → then/else, while →
-   * body, try/catch → try/catch/finally). Returns the node's declared branch
-   * source handles (NOT the continuation/default source), so the projection can
-   * render every lane — including empty ones as "+ Add step" placeholders —
-   * before any child edge exists. Returns [] for non-parent nodes. Registry-less
-   * callers omit it and get the legacy edge-count branch discovery only.
+   * Declared branch source handles for a parent node (not the continuation source),
+   * so empty lanes render as placeholders before any child edge exists. Returns []
+   * for non-parent nodes. Without it only edge-count branch discovery runs.
    */
   getBranchHandles?: (node: Node) => { id: string; label: string }[];
   collapsedStepIds?: ReadonlySet<string>;
 }
 
-/**
- * Options for {@link layoutSequence}. Named form of the inline option shape.
- */
+/** Options for {@link layoutSequence}. */
 export interface LayoutSequenceOptions {
   barWidth?: number;
   barHeight?: number;
@@ -186,21 +106,14 @@ export interface LayoutSequenceOptions {
   indent?: number;
 }
 
-/**
- * Geometry produced by {@link layoutSequence}. Named return shape so the gutter
- * and assembly can reference it.
- */
+/** Geometry produced by {@link layoutSequence}. */
 export interface SequenceLayout {
   positions: Map<string, XYPosition>;
   connectorWaypoints: Map<string, Waypoint[]>;
   bounds: Rect;
 }
 
-/**
- * Pure result of a mutation op (D10). The public canvas API stays
- * onNodesChange / onEdgesChange; these ops feed the insert/delete wiring
- * internally.
- */
+/** Result of a pure mutation op, applied by the caller through onNodesChange / onEdgesChange. */
 export interface GraphChangeSet {
   addNodes: Node[];
   addEdges: Edge[];

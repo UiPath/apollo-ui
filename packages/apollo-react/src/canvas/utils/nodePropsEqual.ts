@@ -17,33 +17,35 @@
  * inside its render/handlers (e.g. BlankCanvasNode) must NOT use this comparator.
  */
 export function areNodePropsEqualIgnoringPosition(prevProps: object, nextProps: object): boolean {
-  if (prevProps === nextProps) {
-    return true;
-  }
+  return shallowEqualExcept(prevProps, nextProps, ABSOLUTE_POSITION_KEYS);
+}
+
+const ABSOLUTE_POSITION_KEYS: ReadonlySet<string> = new Set([
+  'positionAbsoluteX',
+  'positionAbsoluteY',
+]);
+const NO_KEYS: ReadonlySet<string> = new Set();
+
+/**
+ * Shallow `Object.is` comparison of two records, skipping `ignoredKeys`. Key sets must still
+ * match exactly, so `{ foo: undefined }` and `{ bar: undefined }` compare unequal.
+ */
+export function shallowEqualExcept(
+  prevProps: object,
+  nextProps: object,
+  ignoredKeys: ReadonlySet<string> = NO_KEYS
+): boolean {
+  if (prevProps === nextProps) return true;
 
   const prev = prevProps as Record<string, unknown>;
   const next = nextProps as Record<string, unknown>;
-
   const prevKeys = Object.keys(prev);
-  const nextKeys = Object.keys(next);
-  if (prevKeys.length !== nextKeys.length) {
-    return false;
-  }
+  if (prevKeys.length !== Object.keys(next).length) return false;
 
   for (const key of prevKeys) {
-    if (key === 'positionAbsoluteX' || key === 'positionAbsoluteY') {
-      continue;
-    }
-    // Guard against same-length-but-different key sets, where reading a missing
-    // key on `next` would yield `undefined` and spuriously compare as equal
-    // (e.g. { foo: undefined } vs { bar: undefined }).
-    if (!Object.hasOwn(next, key)) {
-      return false;
-    }
-    if (!Object.is(prev[key], next[key])) {
-      return false;
-    }
+    if (!Object.hasOwn(next, key)) return false;
+    if (ignoredKeys.has(key)) continue;
+    if (!Object.is(prev[key], next[key])) return false;
   }
-
   return true;
 }

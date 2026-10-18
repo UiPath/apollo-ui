@@ -76,11 +76,9 @@ describe('projectSequence', () => {
     });
 
     it('marks terminal non-container rows as leaves', () => {
-      // Branch-lane terminals and the top-level tail are leaves.
       expect(rowById(projection, ids.thenJs).isLeaf).toBe(true);
       expect(rowById(projection, ids.elseHttp).isLeaf).toBe(true);
       expect(rowById(projection, ids.sendMessage).isLeaf).toBe(true);
-      // Mid-chain rows, containers, and branch sources are never leaves.
       expect(rowById(projection, ids.http).isLeaf).toBeFalsy();
       expect(rowById(projection, ids.forEach).isLeaf).toBeFalsy();
       expect(rowById(projection, ids.ifNode).isLeaf).toBeFalsy();
@@ -112,19 +110,11 @@ describe('projectSequence', () => {
     });
 
     it('renders the container-continuation out of For Each as a merge-back that still carries an insertable slot', () => {
-      // Per the concept wireframe, the edge leaving a container AFTER its
-      // indented body (here: For Each -> Send Message) visually rejoins the
-      // spine from the body, exactly like a branch lane's merge-back - so it
-      // must be classified 'merge-back', NOT 'step', even
-      // though it is still a genuine single-edge spine continuation and so,
-      // unlike an ordinary branch merge-back, keeps its InsertionSlot.
       const forEachToSend = connector(projection, ids.forEach, ids.sendMessage);
       expect(forEachToSend.kind).toBe('merge-back');
       expect(forEachToSend.slot).toBeDefined();
       expect(forEachToSend.slot?.graphEdgeId).toBe('e-foreach-send');
 
-      // A plain step between two non-container same-depth rows is untouched:
-      // http -> javascript stays 'step'.
       expect(connector(projection, ids.http, ids.javascript).kind).toBe('step');
     });
 
@@ -153,7 +143,6 @@ describe('projectSequence', () => {
           nodeId === ids.ifNode && handleId === 'true' ? 'Yes' : `${handleId}`,
       });
       expect(rowById(withResolver, ids.thenJs).branch?.label).toBe('Yes');
-      // Container start handle resolves through the resolver too.
       expect(rowById(withResolver, ids.ifNode).branch?.label).toBe('start');
     });
   });
@@ -169,7 +158,6 @@ describe('projectSequence', () => {
       expect(rowById(collapsed, ids.ifNode).visible).toBe(false);
       expect(rowById(collapsed, ids.thenJs).visible).toBe(false);
       expect(rowById(collapsed, ids.sendMessage).visible).toBe(true);
-      // Numbering is unchanged from the expanded projection (D7).
       expect(rowById(collapsed, ids.forEach).stepNumber).toBe(3);
       expect(rowById(collapsed, ids.ifNode).stepNumber).toBe(4);
       expect(rowById(collapsed, ids.sendMessage).stepNumber).toBe(7);
@@ -198,10 +186,6 @@ describe('projectSequence', () => {
     it('draws merge-back connectors from both lane tails into the join, each still insertable', () => {
       expect(connector(projection, 'b', 'd').kind).toBe('merge-back');
       expect(connector(projection, 'c', 'd').kind).toBe('merge-back');
-      // A branch that rejoins the flow must still be appendable at its end: the
-      // lane-closing edge carries the slot that splits it, so you can add a step
-      // before the merge (regression for the "cannot add at the end of the true
-      // path" gap).
       expect(connector(projection, 'b', 'd').slot?.graphEdgeId).toBe('b-d');
       expect(connector(projection, 'c', 'd').slot?.graphEdgeId).toBe('c-d');
     });
@@ -210,15 +194,12 @@ describe('projectSequence', () => {
   describe('empty branch body', () => {
     const projection = projectSequence(...toArgs(makeEmptyBranchFixture()));
 
-    it('produces an empty-branch-body insertion slot for the empty lane', () => {
-      // Id is disambiguated with the edge id (F12) so two default-handle
-      // branches from the same owner can never collide on one slot.
-      const emptySlot = projection.slots.find((s) => s.id === 'slot:empty:if:false:if-c');
+    it('produces exactly one insertion slot for the empty lane, carried by its connector', () => {
+      const emptySlot = projection.slots.find((s) => s.id === 'slot:edge:if-c');
       expect(emptySlot).toBeDefined();
+      expect(connector(projection, 'if', 'c').slot).toBe(emptySlot);
+      expect(projection.slots.filter((s) => s.graphEdgeId === 'if-c')).toHaveLength(1);
       expect(emptySlot?.source).toEqual({ nodeId: 'if', handleId: 'false' });
-      // Target is built from the edge itself, so it always carries the split
-      // edge's own targetHandle ('input' here) rather than being dropped
-      // whenever the merge happens to be undefined.
       expect(emptySlot?.target).toEqual({ nodeId: 'c', handleId: 'input' });
     });
 
@@ -228,14 +209,12 @@ describe('projectSequence', () => {
     });
 
     it('preserves the split edge target handle in the empty-lane slot', () => {
-      // Regression for F4: the slot must come from the edge, not from
-      // `merge`, so a targetHandle on the branch edge survives.
       const { nodes, edges } = makeEmptyBranchFixture();
       const withHandle = edges.map((e) =>
         e.id === 'if-c' ? { ...e, targetHandle: 'special-in' } : e
       );
       const withHandleProjection = projectSequence(nodes, withHandle);
-      const emptySlot = withHandleProjection.slots.find((s) => s.id === 'slot:empty:if:false:if-c');
+      const emptySlot = withHandleProjection.slots.find((s) => s.id === 'slot:edge:if-c');
       expect(emptySlot?.target).toEqual({ nodeId: 'c', handleId: 'special-in' });
     });
   });
@@ -252,7 +231,6 @@ describe('projectSequence', () => {
         isContainerNode: (node) => node.id === 'loop',
       });
       expect(rowById(projection, 'loop').collapsible).toBe(true);
-      // The empty body is a "+ Add step" lane placeholder row entered mid-left.
       const laneRow = projection.rows.find(
         (row) => row.lanePlaceholder?.id === 'slot:lane:loop:start'
       );
@@ -287,7 +265,6 @@ describe('projectSequence', () => {
       expect(laneRows.every((row) => row.depth === 1)).toBe(true);
       expect(laneRows.map((row) => row.branch?.label)).toEqual(['Then', 'Else']);
       expect(connector(projection, 'if', laneRows[0]?.nodeId ?? '').kind).toBe('branch-entry');
-      // The If is a branch parent, never a leaf.
       expect(rowById(projection, 'if').isLeaf).toBeFalsy();
       expect(rowById(projection, 'if').collapsible).toBe(true);
     });
@@ -491,7 +468,6 @@ describe('projectSequence', () => {
       const projection = projectSequence(...toArgs(makeBranchCycleFixture()));
       expect(connector(projection, 'b', 'a').kind).toBe('goto');
       expect(connector(projection, 'b', 'a').slot).toBeUndefined();
-      // The sibling branch that doesn't close a cycle still renders normally.
       expect(connector(projection, 'b', 'd').kind).toBe('branch-entry');
     });
 
@@ -499,7 +475,6 @@ describe('projectSequence', () => {
       const projection = projectSequence(...toArgs(makeBranchVisitedTargetFixture()));
       expect(connector(projection, 'y', 'm').kind).toBe('goto');
       expect(connector(projection, 'y', 'm').slot).toBeUndefined();
-      // The lane that legitimately reaches M first still renders normally.
       expect(connector(projection, 'if', 'm').kind).toBe('branch-entry');
     });
   });
@@ -633,3 +608,129 @@ function toArgs(
 ): [typeof fixture.nodes, typeof fixture.edges] {
   return [fixture.nodes, fixture.edges];
 }
+
+function plain(id: string, y: number, parentId?: string): Node {
+  return {
+    id,
+    type: 'uipath.script',
+    position: { x: 0, y },
+    data: {},
+    ...(parentId ? { parentId } : {}),
+  };
+}
+function wire(
+  source: string,
+  target: string,
+  sourceHandle = 'output',
+  targetHandle = 'input',
+  id = `${source}-${target}`
+) {
+  return { id, source, target, sourceHandle, targetHandle };
+}
+const rowSummary = (projection: SequenceProjection): string =>
+  projection.rows
+    .map(
+      (row) => `${row.nodeId}@${row.depth}${row.orphan ? '!' : ''}${row.lanePlaceholder ? '?' : ''}`
+    )
+    .join(' ');
+const connectorSummary = (projection: SequenceProjection): string =>
+  projection.connectors.map((c) => `${c.kind}:${c.sourceRowId}->${c.targetRowId}`).join(' ');
+
+describe('projectSequence never silently drops a sequence edge', () => {
+  it("draws a declared branch node's extra continuation edges as gotos instead of dropping them", () => {
+    const nodes = [
+      plain('a', 0),
+      plain('if', 100),
+      plain('p', 200),
+      plain('q', 300),
+      plain('t', 400),
+    ];
+    const edges = [wire('a', 'if'), wire('if', 't', 'true'), wire('if', 'p'), wire('if', 'q')];
+    const projection = projectSequence(nodes, edges, {
+      getBranchHandles: (node) =>
+        node.id === 'if'
+          ? [
+              { id: 'true', label: 'Then' },
+              { id: 'false', label: 'Else' },
+            ]
+          : [],
+    });
+    expect(connectorSummary(projection)).toContain('goto:if->p');
+    expect(connectorSummary(projection)).toContain('goto:if->q');
+    expect(projection.rows.map((row) => row.nodeId)).toEqual(
+      expect.arrayContaining(['a', 'if', 't', 'p', 'q'])
+    );
+  });
+
+  it('draws an edge crossing a container boundary as a goto', () => {
+    const nodes = [plain('a', 0), plain('c', 100), plain('x', 0, 'c'), plain('b', 200)];
+    const edges = [
+      wire('a', 'c'),
+      wire('c', 'x', 'start'),
+      wire('c', 'b', 'success'),
+      wire('a', 'x', 'output', 'input', 'cross'),
+    ];
+    const projection = projectSequence(nodes, edges);
+    expect(connectorSummary(projection)).toContain('goto:a->x');
+    expect(projection.connectors.find((c) => c.id === 'conn:goto:cross')?.slot).toBeUndefined();
+  });
+
+  it('does not draw a loop body\'s container-closing "continue" edge as a goto', () => {
+    const { nodes, edges } = makeWireframeFixture();
+    const projection = projectSequence(nodes, edges);
+    expect(projection.connectors.some((c) => c.kind === 'goto')).toBe(false);
+  });
+});
+
+describe('projectSequence container body with no entry (in-body cycle)', () => {
+  it('walks the body from its first child in flow order and closes the cycle with a goto', () => {
+    const nodes = [plain('a', 0), plain('c', 100), plain('x', 0, 'c'), plain('y', 50, 'c')];
+    const edges = [wire('a', 'c'), wire('x', 'y'), wire('y', 'x')];
+    const projection = projectSequence(nodes, edges);
+    expect(rowSummary(projection)).toBe('a@0 c@0 x@1 y@1');
+    expect(connectorSummary(projection)).toContain('branch-entry:c->x');
+    expect(connectorSummary(projection)).toContain('goto:y->x');
+    expect(projection.rows.some((row) => row.lanePlaceholder)).toBe(false);
+  });
+});
+
+describe('projectSequence lane order is stable under editing', () => {
+  it('keeps the Then lane above Else after an insert into the Then lane (no declared handles)', () => {
+    const fixture = makeDiamondFixture();
+    const before = projectSequence(fixture.nodes, fixture.edges);
+    expect(before.rows.map((row) => row.nodeId)).toEqual(['a', 'if', 'b', 'c', 'd']);
+
+    // An insert re-forms the Then edges and appends them to the array.
+    const inserted = plain('new', 150);
+    const edges = [
+      ...fixture.edges.filter((edge) => edge.id !== 'if-b'),
+      wire('if', 'new', 'true'),
+      wire('new', 'b', 'output', 'input'),
+    ];
+    const after = projectSequence([...fixture.nodes, inserted], edges);
+    expect(after.rows.map((row) => row.nodeId)).toEqual(['a', 'if', 'new', 'b', 'c', 'd']);
+  });
+
+  it('orders lanes by target flow position, then source handle, then edge id', () => {
+    const nodes = [plain('if', 0), plain('low', 300), plain('high', 100)];
+    const edges = [wire('if', 'low', 'x'), wire('if', 'high', 'y')];
+    const projection = projectSequence(nodes, edges);
+    const numbered = projection.rows.filter((row) => row.stepNumber !== undefined);
+    expect(numbered.map((row) => row.nodeId)).toEqual(['if', 'high', 'low']);
+  });
+});
+
+describe('projectSequence duplicate edges', () => {
+  it('treats two edges over the same handles as one step, not two lanes', () => {
+    const nodes = [plain('a', 0), plain('b', 10), plain('c', 20)];
+    const edges = [
+      wire('a', 'b', 'output', 'input', 'e1'),
+      wire('a', 'b', 'output', 'input', 'e2'),
+      wire('b', 'c'),
+    ];
+    const projection = projectSequence(nodes, edges);
+    expect(rowSummary(projection)).toBe('a@0 b@0 c@0');
+    expect(connectorSummary(projection)).toBe('step:a->b step:b->c');
+    expect(rowById(projection, 'a').collapsible).toBe(false);
+  });
+});

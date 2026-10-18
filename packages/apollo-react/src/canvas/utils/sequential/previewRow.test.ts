@@ -29,12 +29,10 @@ describe('projectionWithPreviewRow', () => {
 
     expect(ids(next)).toEqual(['a', PREVIEW_NODE_ID, 'b', 'c']);
     expect(previewRow(next)).toMatchObject({ depth: 1, parentRowId: 'a' });
-    // base is untouched (pure).
     expect(ids(base)).toEqual(['a', 'b', 'c']);
   });
 
   it('appends a sibling/leaf after the source subtree, at the source depth', () => {
-    // b (depth 0) owns a subtree [b-child]; appending after b lands past it.
     const base = projection([row('a', 0), row('b', 0), row('b-child', 1, 'b'), row('c', 0)]);
     const next = projectionWithPreviewRow(base, { id: 's', source: { nodeId: 'b' } });
 
@@ -62,9 +60,6 @@ describe('projectionWithPreviewRow', () => {
   });
 
   it('swaps an empty lane placeholder for the preview in place', () => {
-    // A lane placeholder occupies the lane's slot; inserting into it must keep
-    // that depth/parent, not run the generic append (which would land at the
-    // parent's depth).
     const laneRow: SequenceRow = {
       nodeId: '__sequential-lane__if::true',
       depth: 1,
@@ -78,7 +73,6 @@ describe('projectionWithPreviewRow', () => {
     const base = projection([row('if', 0), laneRow, row('c', 0)]);
     const next = projectionWithPreviewRow(base, { id: 'slot:lane:if:true' });
 
-    // The placeholder is replaced (not added) by the preview, at its depth/parent.
     expect(ids(next)).toEqual(['if', PREVIEW_NODE_ID, 'c']);
     expect(previewRow(next)).toMatchObject({
       depth: 1,
@@ -99,7 +93,6 @@ describe('projectionWithPreviewRow', () => {
     const layout = layoutSequence(withPreview);
 
     expect(layout.positions.get('a')?.y).toBe(0);
-    // The preview takes b's original slot; b and c each drop by one pitch.
     expect(layout.positions.get(PREVIEW_NODE_ID)?.y).toBe(PITCH);
     expect(layout.positions.get('b')?.y).toBe(2 * PITCH);
     expect(layout.positions.get('c')?.y).toBe(3 * PITCH);

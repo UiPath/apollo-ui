@@ -10,7 +10,7 @@ import { layoutSequence } from './layoutSequence';
 import { projectSequence } from './projectSequence';
 import type { SequenceConnector, SequenceProjection } from './sequential.types';
 
-const PITCH = SEQ_BAR_HEIGHT + SEQ_ROW_GAP; // 72 + 48 = 120
+const PITCH = SEQ_BAR_HEIGHT + SEQ_ROW_GAP;
 
 function connector(
   projection: SequenceProjection,
@@ -61,7 +61,6 @@ describe('layoutSequence', () => {
       expect(layout.positions.get(ids.http)).toEqual({ x: 0, y: 0 });
       expect(layout.positions.get(ids.javascript)).toEqual({ x: 0, y: PITCH });
       expect(layout.positions.get(ids.forEach)).toEqual({ x: 0, y: 2 * PITCH });
-      // sendMessage follows immediately after the collapsed container.
       expect(layout.positions.get(ids.sendMessage)).toEqual({ x: 0, y: 3 * PITCH });
     });
 
@@ -84,8 +83,7 @@ describe('layoutSequence', () => {
     it('routes an earlier branch through source-exit, corridor, and target-entry waypoints', () => {
       const waypoints = layout.connectorWaypoints.get(connector(projection, 'b', 'd').id);
       expect(waypoints).toHaveLength(4);
-      // The middle pair is the vertical corridor; the outer pair align with
-      // the source and target handles so neither stub loops through a row.
+      // Middle pair is the vertical corridor; outer pair align with the handles.
       expect(waypoints?.[1]?.x).toBe(waypoints?.[2]?.x);
       expect(waypoints?.[0]?.y).toBe(waypoints?.[1]?.y);
       expect(waypoints?.[2]?.y).toBe(waypoints?.[3]?.y);
@@ -103,15 +101,11 @@ describe('layoutSequence', () => {
       const first = layout.connectorWaypoints.get(connector(projection, 'b', 'd').id);
       const second = layout.connectorWaypoints.get(connector(projection, 'c', 'd').id);
 
-      // Both paths meet at one target-entry point and share only the clean final
-      // stem into D. The lower branch never traverses the outer corridor.
       expect(first?.[3]).toMatchObject({ x: second?.[1]?.x, y: second?.[1]?.y });
     });
 
     it('routes the corridor strictly left of every row it could cross (F5 regression)', () => {
-      // The diamond fixture's b->d merge-back has to descend past sibling row
-      // c (same depth, between b and d in row order); the old implementation
-      // dropped straight down b's own column, straight through c's bar.
+      // b->d must descend past sibling row c without crossing its bar.
       const waypoints = layout.connectorWaypoints.get(connector(projection, 'b', 'd').id);
       const corridorX = waypoints?.[1]?.x ?? Number.POSITIVE_INFINITY;
       const allRowLeftEdges = projection.rows.map((r) => layout.positions.get(r.nodeId)?.x ?? 0);
@@ -126,8 +120,6 @@ describe('layoutSequence', () => {
           expect(layout.connectorWaypoints.has(c.id)).toBe(false);
         }
       }
-      // Both lanes (first: If.true -> B, second: If.false -> C) now carry the
-      // shared-spine elbow: a vertical drop then a horizontal jog (wp0.y == wp1.y).
       for (const target of ['b', 'c']) {
         const waypoints = layout.connectorWaypoints.get(connector(projection, 'if', target).id);
         expect(waypoints, target).toHaveLength(2);
@@ -136,9 +128,6 @@ describe('layoutSequence', () => {
     });
 
     it('shares one vertical spine (the owner handle column) across all lanes', () => {
-      // Every lane drops down the SAME column (the owner's own source-handle x),
-      // so Then and Else trace the same shape; the later lane just turns farther
-      // down. This is what makes the two branches read as siblings.
       const first = layout.connectorWaypoints.get(connector(projection, 'if', 'b').id);
       const second = layout.connectorWaypoints.get(connector(projection, 'if', 'c').id);
       expect(first?.[0]?.x).toBe(second?.[0]?.x);
@@ -152,14 +141,7 @@ describe('layoutSequence', () => {
     const layout = layoutSequence(projection);
 
     it('drops For Each -> Send Message straight down the shared spine (no corridor jog)', () => {
-      // Unlike a branch-lane merge-back (source deeper than target, which
-      // corridors left to clear sibling bars), this connector's source (the
-      // container row) and target (the next spine row) sit at the SAME depth,
-      // so their handles already share one spine column and the body rows
-      // between them (If, Javascript 1, HTTP Request 1) are all strictly
-      // deeper (to the right). Routing it through the left corridor jogged the
-      // dashed line out past the spine and read as broken; it must instead
-      // drop straight (no waypoints) between the two aligned handles.
+      // Source and target share a depth and the body rows between are all deeper.
       const c = connector(projection, ids.forEach, ids.sendMessage);
       expect(c.kind).toBe('merge-back');
       expect(layout.connectorWaypoints.has(c.id)).toBe(false);
@@ -184,7 +166,6 @@ describe('layoutSequence', () => {
     const projection = projectSequence(nodes, edges);
     const layout = layoutSequence(projection);
 
-    /** A row's occupied rectangle, for intersection checks against a corridor run. */
     function rowBand(nodeId: string): { left: number; right: number; top: number; bottom: number } {
       const position = layout.positions.get(nodeId);
       if (!position) throw new Error(`no position for ${nodeId}`);
@@ -209,12 +190,9 @@ describe('layoutSequence', () => {
         if (!source) throw new Error(`no position for ${c.sourceRowId}`);
         const [wp0, wp1] = waypoints;
 
-        // Vertical spine at wp0.x, from the owner's bottom handle down to the jog.
         const spineX = wp0?.x ?? Number.NaN;
         const spineTop = Math.min(source.y + SEQ_BAR_HEIGHT, wp0?.y ?? 0);
         const spineBottom = Math.max(source.y + SEQ_BAR_HEIGHT, wp0?.y ?? 0);
-        // Horizontal jog at wp0.y, from wp0.x to wp1.x (sits in the gap band
-        // above the target, where no row lives).
         const jogY = wp0?.y ?? Number.NaN;
         const jogLeft = Math.min(wp0?.x ?? 0, wp1?.x ?? 0);
         const jogRight = Math.max(wp0?.x ?? 0, wp1?.x ?? 0);
@@ -236,7 +214,7 @@ describe('layoutSequence', () => {
         }
       }
 
-      expect(checked).toBeGreaterThan(0); // guards against a vacuous pass
+      expect(checked).toBeGreaterThan(0);
     });
   });
 
@@ -249,7 +227,6 @@ describe('layoutSequence', () => {
         rowGap: 10,
         indent: 20,
       });
-      // Rows are http(0), javascript(1), forEach(2), ifNode(3), ... at pitch 50.
       expect(layout.positions.get(ids.javascript)).toEqual({ x: 0, y: 50 });
       expect(layout.positions.get(ids.ifNode)).toEqual({ x: 20, y: 150 });
       expect(layout.bounds.width).toBe(2 * 20 + 400);

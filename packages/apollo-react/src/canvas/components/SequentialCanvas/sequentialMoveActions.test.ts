@@ -26,10 +26,7 @@ import {
   resolveTailInsertionSlot,
 } from './sequentialMoveActions';
 
-// Every fixture here uses `uipath.control-flow.foreach` for containers and
-// `uipath.control-flow.decision` for branch owners (If/Switch); this stand-in
-// registry check matches that convention rather than a real manifest lookup,
-// since this module only needs a `nodeId => boolean` predicate.
+// Fixtures use `uipath.control-flow.foreach` for containers and `.decision` for branch owners.
 const isForEachContainer = (nodeId: string, nodes: { id: string; type?: string }[]) =>
   nodes.find((n) => n.id === nodeId)?.type === 'uipath.control-flow.foreach';
 
@@ -85,13 +82,8 @@ describe('computeSequentialMoveOptions', () => {
   });
 
   it('disables ALL FOUR directions for a top-level bare branch owner, even though findMoveUpSlot ALONE would return a defined (unsound) slot', () => {
-    // makeDiamondFixture: A -> If {true: B, false: C} -> D. A->If is a genuine
-    // 'step' connector (A has a single outgoing edge), so `findMoveUpSlot`
-    // does NOT naturally return undefined for `If` here the way it does for
-    // the wireframe's `ifNode` (which is the FIRST/only child of its
-    // container, reached only via a 'branch-entry' connector) -- this is
-    // exactly the premise that makes this module's extra gate load-bearing
-    // for Move Up (see isBareBranchOwner's doc comment).
+    // makeDiamondFixture: A -> If {true: B, false: C} -> D. A->If is a genuine 'step'
+    // connector, so `findMoveUpSlot` would return a slot for `If` without this module's gate.
     const { nodes, edges } = makeDiamondFixture();
     const projection = projectSequence(nodes, edges);
     const isContainerNode = (id: string) => isForEachContainer(id, nodes);
@@ -141,14 +133,8 @@ describe('computeSequentialMoveOptions', () => {
   });
 
   it('refuses an out-of-lane Move down under a bare branch owner, exactly as it refuses Outdent', () => {
-    // makeDiamondFixture: A -> If {true: B, false: C} -> D. B is the sole row of
-    // the Then lane, so BOTH "move down and out" and "move out" mean the same
-    // thing: after the If. The If is a bare branch owner with no forward
-    // continuation, so that seam has to be synthesized from its own source
-    // handle, which reads as a THIRD LANE. `outdent` was already gated on this;
-    // `down` was not, so Move down was a backdoor around the same guard (it
-    // additionally used to teleport B to the top level - see
-    // slotNavigation.test.ts). Both must now be disabled, together.
+    // B is the sole row of the Then lane, so both "move down" and "move out" mean "after the
+    // If", a seam synthesized from the If's own source handle that reads as a third lane.
     const { nodes, edges } = makeDiamondFixture();
     const projection = projectSequence(nodes, edges);
     const options = computeSequentialMoveOptions(projection, 'b', (id) =>
@@ -156,15 +142,13 @@ describe('computeSequentialMoveOptions', () => {
     );
     expect(options.down).toBeUndefined();
     expect(options.outdent).toBeUndefined();
-    // Move up is NOT gated: it splices the OWNER'S INCOMING seam (A -> If), so
-    // the If only ever gains an incoming edge, never a competing lane.
+    // Move up splices the owner's incoming seam (A -> If), so it is sound.
     expect(options.up?.graphEdgeId).toBe('a-if');
   });
 
   it('keeps an in-lane Move down enabled even when the lane owner is a bare branch owner', () => {
-    // The "when (and only when)" half of the gate: the owner being a bare branch
-    // owner says nothing about a reorder BETWEEN two rows of its lane, which
-    // never touches the owner's handles. A -> If {true: B1 -> B2, false: C} -> D.
+    // A reorder between two rows of a lane never touches the owner's handles.
+    // A -> If {true: B1 -> B2, false: C} -> D.
     const nodes = [
       { id: 'a', type: 'uipath.script', position: { x: 0, y: 0 }, data: {} },
       { id: 'if', type: 'uipath.control-flow.decision', position: { x: 0, y: 100 }, data: {} },
@@ -201,8 +185,7 @@ describe('computeSequentialMoveOptions', () => {
     const options = computeSequentialMoveOptions(projection, ids.y, (id) =>
       isForEachContainer(id, nodes)
     );
-    // Y is last in the body, so Move down leaves the lane - allowed here,
-    // because a container HAS a real forward seam (Container -> B) to splice.
+    // Y is last in the body; leaving the lane is allowed because a container has a real seam.
     expect(options.down?.graphEdgeId).toBe('chain-container-b');
     expect(options.down).toEqual(options.outdent);
   });
@@ -222,15 +205,8 @@ describe('computeSequentialMoveOptions', () => {
   });
 
   it('disables Indent when the target body’s tail is a bare branch owner', () => {
-    // makeWireframeFixture: For Each's body ends with an `If` whose two lanes
-    // dead-end at the container boundary (the loop-continue idiom), so the body
-    // has no "after the If" position. `findIndentSlot` still resolves that tail
-    // and returns an append from the If's own source handle; committing it adds a
-    // THIRD LANE to the If rather than a step at the end of the body, so the view
-    // layer refuses it. (With a registry-supplied `getBranchHandles` the same
-    // edge WOULD be classified as the If's continuation, but only if the node
-    // actually has a continuation handle, which a bare branch owner does not -
-    // see computeSequentialMoveOptions' doc comment.)
+    // For Each's body ends with an `If` whose lanes dead-end at the boundary. `findIndentSlot`
+    // returns an append from the If's own source handle, which would add a third lane.
     const { nodes, edges } = makeWireframeFixture();
     const projection = projectSequence(nodes, edges);
 
@@ -245,10 +221,8 @@ describe('computeSequentialMoveOptions', () => {
   });
 
   it('allows Indent when the body’s branch REJOINS, landing after the merge', () => {
-    // makeMergedBranchBodyFixture: Container [ X -> If -> {P, Q} -> M ] -> N.
-    // The tail is the merge M, a plain step with a real forward handle, so the
-    // append is sound and Indent stays enabled. This is the case the gate must
-    // NOT swallow.
+    // Container [ X -> If -> {P, Q} -> M ] -> N. The tail M is a plain step with a real
+    // forward handle, so the append is sound and the gate must not swallow it.
     const ids = MERGED_BRANCH_BODY_NODE_IDS;
     const { nodes, edges } = makeMergedBranchBodyFixture();
     const projection = projectSequence(nodes, edges);
@@ -261,10 +235,8 @@ describe('computeSequentialMoveOptions', () => {
   });
 
   it('keys the Indent gate on the slot SHAPE, so a splice off a branch owner stays allowed', () => {
-    // Only an append hands the source node a brand-new outgoing edge. A splice
-    // reuses an edge that already leaves it, which is why the empty-lane indent
-    // shape (the lane's own branch-entry edge, sourced at the branch owner) is
-    // sound and must not be caught by the gate.
+    // Only an append hands the source a new outgoing edge; a splice reuses one that already
+    // leaves it, so the empty-lane indent shape must not be caught.
     const { nodes, edges } = makeEmptyBranchFixture();
     const projection = projectSequence(nodes, edges);
     const laneEdgeSlot = projection.connectors.find(
@@ -300,9 +272,7 @@ describe('closesLoopToOwner', () => {
     const { nodes, edges } = makeWireframeFixture();
     const projection = projectSequence(nodes, edges);
     expect(closesLoopToOwner(projection, WIREFRAME_NODE_IDS.thenJs, edges)).toBe(false);
-    // The projected owner of Then is the If branch, not the For Each container;
-    // branch protection above handles this shape. Verify the helper on a small
-    // direct loop body where the row owner and close-edge target are identical.
+    // A direct loop body where the row owner and the close-edge target are the same node.
     const directProjection = {
       ...projection,
       rows: projection.rows.map((row) =>

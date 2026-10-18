@@ -1,21 +1,18 @@
 import type { Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
-import {
-  useReactFlow,
-  useStore,
-  useUpdateNodeInternals,
-} from '@uipath/apollo-react/canvas/xyflow/react';
-import { memo, useEffect, useMemo } from 'react';
+import { useStore, useUpdateNodeInternals } from '@uipath/apollo-react/canvas/xyflow/react';
+import { memo, useEffect, useMemo, useRef } from 'react';
 import { SEQ_BAR_HEIGHT, SEQ_BAR_WIDTH } from '../../constants';
 import { areNodePropsEqualIgnoringPosition } from '../../utils/nodePropsEqual';
 import type { NodeMenuItem } from '../NodeContextMenu';
 import type { BaseNodeData } from './BaseNode.types';
-import { BaseNodeBar } from './BaseNodeBar';
+import { BaseNodeBar, type BaseNodeBarAttachment } from './BaseNodeBar';
 import { MissingManifestNode } from './BaseNodeMissingManifest';
 import { useBaseNodePresentation } from './useBaseNodePresentation';
 
 export type BaseNodeBarNodeProps = NodeProps<Node<BaseNodeData>> & {
   stacked?: boolean;
   extraMenuItems?: NodeMenuItem[];
+  attachments?: BaseNodeBarAttachment[];
 };
 
 function BaseNodeBarNodeComponent({
@@ -24,9 +21,9 @@ function BaseNodeBarNodeComponent({
   type,
   selected,
   dragging,
-  height,
   stacked,
   extraMenuItems,
+  attachments,
 }: BaseNodeBarNodeProps) {
   const presentation = useBaseNodePresentation({
     id,
@@ -35,36 +32,13 @@ function BaseNodeBarNodeComponent({
     selected,
     dragging,
   });
-  const { updateNode, getNode } = useReactFlow();
   const updateNodeInternals = useUpdateNodeInternals();
-  const barHeight = height ?? SEQ_BAR_HEIGHT;
-  // Bar width comes from the node's DECLARED width, not from the `width` prop.
-  // XYFlow hands components `measured.width ?? node.width ?? initialWidth ?? 0`,
-  // so the prop reports whatever the DOM last measured. That is wrong here in two
-  // ways: right after a flow->sequential toggle the clone still carries the
-  // `measured` card width it had in flow view (the derivation spreads the
-  // canonical node), and an unmeasured node reports `0`. The declared width is the
-  // honest signal: `buildSequentialNodes` stamps an explicit `width` (the layout's
-  // `barWidth`) on every derived bar, and XYFlow applies that same value as the
-  // node wrapper's inline width, so sizing the bar to it is correct by
-  // construction.
-  //
-  // This is a `useStore` SUBSCRIPTION rather than an imperative `getNode` read
-  // because the two values move independently: when the declared width changes but
-  // `measured.width` has not caught up yet (the "Interactive Sequence" story's
-  // barWidth slider does exactly this on every drag), no prop changes, so
-  // `areNodePropsEqualIgnoringPosition` would block the re-render and the bar would
-  // paint the stale width inside a wrapper XYFlow has already resized. Subscribing
-  // makes the declared width itself the trigger. Same pattern and same reasoning as
-  // `SequentialConnectorEdge`, which subscribes to its target's declared-then-
-  // measured height for the identical one-render slider lag.
-  //
-  // Falling back to `SEQ_BAR_WIDTH` covers the only path with no declared width:
-  // this renderer used outside the sequential derivation, e.g. the isolated
-  // `nodes/BarVariant.stories.tsx` card-vs-bar comparison, where the wrapper
-  // auto-sizes to the bar instead of the bar to the wrapper.
+  // Declared geometry from the controlled array, not the measured props: the measured values
+  // are stale after a view toggle and 0 before the first measurement.
   const declaredWidth = useStore((state) => state.nodeLookup.get(id)?.width);
+  const declaredHeight = useStore((state) => state.nodeLookup.get(id)?.height);
   const barWidth = declaredWidth ?? SEQ_BAR_WIDTH;
+  const barHeight = declaredHeight ?? SEQ_BAR_HEIGHT;
   const manifestHandleIds = useMemo(() => {
     const sources: string[] = [];
     const targets: string[] = [];
@@ -74,16 +48,21 @@ function BaseNodeBarNodeComponent({
         else if (handle.type === 'target') targets.push(handle.id);
       }
     }
-    return { sources, targets };
+    return { sources, targets, key: [...sources, '|', ...targets].join(',') };
   }, [presentation.handleConfigurations]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: handle configuration changes require XYFlow to recalculate the bar's invisible anchors.
+  // Re-measure the invisible anchors when the handle set or the bar height changes. The
+  // mount pass is skipped: xyflow's ResizeObserver measures handle bounds on first observe
+  // (`force: true`), and 150 extra per-bar store updates at mount wake every subscriber.
+  const measuredOnce = useRef(false);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: keyed on the handle-id string, not the array identity.
   useEffect(() => {
-    if (getNode(id)?.height !== barHeight) {
-      updateNode(id, { height: barHeight });
+    if (!measuredOnce.current) {
+      measuredOnce.current = true;
+      return;
     }
     updateNodeInternals(id);
-  }, [barHeight, id, presentation.handleConfigurations, getNode, updateNode, updateNodeInternals]);
+  }, [barHeight, id, manifestHandleIds.key, updateNodeInternals]);
 
   if (!presentation.manifest) {
     return (
@@ -96,23 +75,37 @@ function BaseNodeBarNodeComponent({
     );
   }
 
-  const { disabled, labelBackgroundColor, labelTooltip, onActionNeeded, subLabelComponent } =
-    presentation.overrideConfig;
+  const {
+    disabled,
+    footerComponent,
+    labelBackgroundColor,
+    labelPlaceholder,
+    labelTooltip,
+    onActionNeeded,
+    subLabelComponent,
+    subLabelPlaceholder,
+  } = presentation.overrideConfig;
+  const isStacked = Boolean(stacked || presentation.manifest.drillable || data?.isCollapsed);
 
   return (
     <BaseNodeBar
       nodeId={id}
       width={barWidth}
       height={barHeight}
+      shape={presentation.display.shape}
       mode={presentation.mode}
       locked={presentation.isNodeReadOnly}
       selected={selected}
       dragging={dragging}
       disabled={disabled}
       label={presentation.display.label}
-      subLabel={subLabelComponent ?? presentation.display.subLabel}
+      // As on the card, an explicit `null` override suppresses the manifest sub-label.
+      subLabel={subLabelComponent !== undefined ? subLabelComponent : presentation.display.subLabel}
+      labelPlaceholder={labelPlaceholder}
+      subLabelPlaceholder={subLabelPlaceholder}
       labelTooltip={labelTooltip}
       labelBackgroundColor={labelBackgroundColor}
+      footer={footerComponent}
       icon={presentation.icon}
       loading={data.loading}
       iconBackground={presentation.iconBackground}
@@ -122,11 +115,12 @@ function BaseNodeBarNodeComponent({
       executionStatus={presentation.executionStatus}
       validationStatus={presentation.validationState?.validationStatus}
       suggestionType={presentation.suggestionType}
-      statusIndicator={presentation.adornments.topRight}
+      adornments={presentation.adornments}
       toolbarConfig={presentation.toolbarConfig}
       multipleNodesSelected={presentation.multipleNodesSelected}
-      stacked={stacked}
+      stacked={isStacked}
       extraMenuItems={extraMenuItems}
+      attachments={attachments}
       manifestSourceHandleIds={manifestHandleIds.sources}
       manifestTargetHandleIds={manifestHandleIds.targets}
       onLabelChange={presentation.onLabelChange}

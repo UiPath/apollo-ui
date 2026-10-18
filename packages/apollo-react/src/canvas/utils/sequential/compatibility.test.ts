@@ -64,8 +64,6 @@ describe('analyzeSequentialCompatibility', () => {
     });
 
     expect(report.level).toBe('degraded');
-    // Degraded, but still editable: wiring the second terminal up is exactly the
-    // ordinary edit that resolves this (see EDIT_BLOCKING_ISSUE_CODES).
     expect(report.editable).toBe(true);
     expect(report.issues).toContainEqual({
       code: 'multiple-roots',
@@ -79,7 +77,7 @@ describe('analyzeSequentialCompatibility', () => {
     const { nodes, edges } = makeWireframeFixture();
     const sticky: Node = {
       id: 'note',
-      type: 'sticky-note',
+      type: 'stickyNote',
       position: { x: 100, y: 100 },
       data: { text: 'Remember this' },
     };
@@ -89,7 +87,7 @@ describe('analyzeSequentialCompatibility', () => {
       target: 'http',
     };
     const report = analyzeSequentialCompatibility([...nodes, sticky], [...edges, annotationEdge], {
-      isSequenceNode: (node) => node.type !== 'sticky-note',
+      isSequenceNode: (node) => node.type !== 'stickyNote',
     });
 
     expect(report.level).toBe('exact');
@@ -131,13 +129,6 @@ describe('analyzeSequentialCompatibility', () => {
   });
 });
 
-/**
- * `editable` is deliberately looser than `level === 'exact'`: it gates on the
- * mutation ops' actual capability, not on projection fidelity. Multi-root and
- * orphan graphs are the normal state of a half-built flow and are recoverable by
- * ordinary editing, so they must stay editable; a `goto` (cycle or unstructured
- * merge) carries no insertion slot, so no slot-based splice near it is safe.
- */
 describe('analyzeSequentialCompatibility editable policy', () => {
   it('keeps a multi-root graph degraded but editable', () => {
     const { nodes, edges } = makeMultiRootFixture();
@@ -188,5 +179,111 @@ describe('analyzeSequentialCompatibility editable policy', () => {
     expect(report.level).toBe('unsupported');
     expect(report.editable).toBe(false);
     expect(report.issues.some((issue) => issue.code === 'missing-parent')).toBe(true);
+  });
+});
+
+function plainNode(id: string, y: number, parentId?: string): Node {
+  return {
+    id,
+    type: 'uipath.script',
+    position: { x: 0, y },
+    data: {},
+    ...(parentId ? { parentId } : {}),
+  };
+}
+function plainEdge(
+  source: string,
+  target: string,
+  sourceHandle = 'output',
+  targetHandle = 'input',
+  id = `${source}-${target}`
+): Edge {
+  return { id, source, target, sourceHandle, targetHandle };
+}
+
+describe('analyzeSequentialCompatibility reports what the walk cannot place', () => {
+  it('flags an edge crossing a container boundary as cross-scope-edge and locks editing', () => {
+    const nodes = [
+      plainNode('a', 0),
+      plainNode('c', 100),
+      plainNode('x', 0, 'c'),
+      plainNode('b', 200),
+    ];
+    const edges = [
+      plainEdge('a', 'c'),
+      plainEdge('c', 'x', 'start'),
+      plainEdge('c', 'b', 'success'),
+      plainEdge('a', 'x', 'output', 'input', 'cross'),
+    ];
+    const report = analyzeSequentialCompatibility(nodes, edges);
+    expect(report.level).toBe('degraded');
+    expect(report.editable).toBe(false);
+    expect(report.issues).toEqual([
+      { code: 'cross-scope-edge', severity: 'warning', nodeIds: ['a', 'x'], edgeIds: ['cross'] },
+    ]);
+  });
+
+  it("does not treat a container's entry seam or a body's closing edge as cross-scope", () => {
+    const report = analyzeSequentialCompatibility(
+      makeWireframeFixture().nodes,
+      makeWireframeFixture().edges
+    );
+    expect(report.issues).toEqual([]);
+  });
+
+  it('flags duplicate wiring as duplicate-edge, naming both edge ids', () => {
+    const nodes = [plainNode('a', 0), plainNode('b', 10), plainNode('c', 20)];
+    const edges = [
+      plainEdge('a', 'b', 'output', 'input', 'e1'),
+      plainEdge('a', 'b', 'output', 'input', 'e2'),
+      plainEdge('b', 'c'),
+    ];
+    const report = analyzeSequentialCompatibility(nodes, edges);
+    expect(report.level).toBe('degraded');
+    expect(report.editable).toBe(false);
+    expect(report.issues).toEqual([
+      { code: 'duplicate-edge', severity: 'warning', nodeIds: ['a', 'b'], edgeIds: ['e1', 'e2'] },
+    ]);
+  });
+
+  it('degrades a declared branch node with two continuation edges instead of certifying it exact', () => {
+    const nodes = [
+      plainNode('a', 0),
+      plainNode('if', 100),
+      plainNode('p', 200),
+      plainNode('q', 300),
+      plainNode('t', 400),
+    ];
+    const edges = [
+      plainEdge('a', 'if'),
+      plainEdge('if', 't', 'true'),
+      plainEdge('if', 'p'),
+      plainEdge('if', 'q'),
+    ];
+    const report = analyzeSequentialCompatibility(nodes, edges, {
+      getBranchHandles: (node) =>
+        node.id === 'if'
+          ? [
+              { id: 'true', label: 'Then' },
+              { id: 'false', label: 'Else' },
+            ]
+          : [],
+    });
+    expect(report.level).toBe('degraded');
+    expect(report.editable).toBe(false);
+    expect(report.issues.filter((issue) => issue.code === 'unstructured-merge')).toHaveLength(2);
+  });
+
+  it('reports a cycle inside a container body as cycle, not orphan', () => {
+    const nodes = [
+      plainNode('a', 0),
+      plainNode('c', 100),
+      plainNode('x', 0, 'c'),
+      plainNode('y', 50, 'c'),
+    ];
+    const edges = [plainEdge('a', 'c'), plainEdge('x', 'y'), plainEdge('y', 'x')];
+    const report = analyzeSequentialCompatibility(nodes, edges);
+    expect(report.issues.map((issue) => issue.code)).toEqual(['cycle']);
+    expect(report.editable).toBe(false);
   });
 });

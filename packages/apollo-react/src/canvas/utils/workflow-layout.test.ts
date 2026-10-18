@@ -94,11 +94,11 @@ describe('layoutWorkflowLeftToRight', () => {
   });
 
   it('preserves presentation-only nodes by omitting them from the layout result', () => {
-    const nodes = [node('a'), node('note', 'sticky', { x: 900, y: 700 }), node('b')];
+    const nodes = [node('a'), node('note', 'stickyNote', { x: 900, y: 700 }), node('b')];
     const edges = [edge('a', 'b')];
     const result = layoutWorkflowLeftToRight(nodes, edges, {
       getNodeDimensions: fixedSize,
-      isLayoutNode: (item) => item.type !== 'sticky',
+      isLayoutNode: (item) => item.type !== 'stickyNote',
     });
 
     expect(result.positions.has('note')).toBe(false);

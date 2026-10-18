@@ -6,70 +6,29 @@ import type {
 import type { Waypoint } from '../../Edges/shared/types';
 
 /**
- * Reference-stable `data` payload for a sequential connector edge.
- *
- * The assembly builds one of these per {@link SequenceConnector} when it derives the
- * xyflow edge array (see useSequentialGraph). The object MUST be built only on
- * structural change and reused by reference otherwise, so `areEdgePropsEqual`
- * (which compares `data` by reference, see components/Edges/shared/areEdgePropsEqual.ts)
- * can short-circuit the memo during pan/zoom and data-only edits (D12).
- *
- * Field-by-field contract:
- *  - `kind`            copy from `connector.kind`. Drives stroke style: `step`
- *                      `branch-entry`, and `merge-back` render solid; only
- *                      irregular `goto` references render dashed. See
- *                      {@link resolveConnectorStrokeStyle}.
- *  - `label`           copy from `connector.label`. Branch-entry labels render
- *                      above their first row using the shared edge-label style;
- *                      other kinds
- *                      retain the centered edge pill. Omit or use an empty
- *                      string to render no label.
- *  - `waypoints`       elbow geometry from `layoutSequence().connectorWaypoints`
- *                      keyed by the connector id. Rendered verbatim (no router,
- *                      no editing). When absent, the edge draws a clean
- *                      orthogonal path between the two handle anchors. Reuse the
- *                      SAME array reference across renders; a fresh `[]` each
- *                      render defeats geometry memoization (prefer the shared
- *                      EMPTY_WAYPOINTS fallback).
- *  - `slot`            copy from `connector.slot`. The centered insert (+)
- *                      button renders IFF this is present AND the canvas is in
- *                      design mode. `goto` connectors carry no slot and so get
- *                      no button.
- *  - `insertAnchor`    where this connector sits in the numbered sequence, used
- *                      ONLY to build the insert button's accessible name. Set it
- *                      whenever `slot` is set: without it every ⊕ on the canvas
- *                      announces the same bare "Insert step", which for a
- *                      screen-reader user tabbing the stack is N indistinguishable
- *                      buttons. Resolved from row step numbers (never from
- *                      geometry) so it stays stable under collapse (D7).
- *  - `enableExecution` opt in to id-keyed execution coloring + the in-progress
- *                      dot, via the existing ExecutionStatusContext. Defaults to
- *                      off; turning it on matches CanvasEdge behavior.
- *  - `hideArrowHead`   suppress the arrow head. Defaults to showing an arrow
- *                      pointing into the target for every kind.
- */
-/**
- * Positional anchor for an insert slot, in STEP NUMBERS rather than coordinates.
- * A discriminated union so the edge component has to phrase each case rather than
- * fall back to a generic label:
- *  - `after`  : an ordinary gap below a numbered step (the common case);
- *  - `before` : a gap whose source is unnumbered (the synthetic Workflow start
- *               bar), so the target step is the only anchor available;
- *  - `branch` : the head of a labeled lane, named by both the lane and its owning
- *               step so two `Then` lanes on different steps stay distinguishable.
+ * Where an insert slot sits, in step numbers rather than coordinates. `before` is
+ * for a gap under an unnumbered source (the start bar); `branch` names both the
+ * lane and its owning step so two `Then` lanes stay distinguishable.
  */
 export type SequentialInsertAnchor =
   | { kind: 'after'; stepNumber: number }
   | { kind: 'before'; stepNumber: number }
   | { kind: 'branch'; stepNumber: number; branchLabel: string };
 
-// A `type` (not an `interface`) so it implicitly satisfies xyflow's
-// `Edge<T extends Record<string, unknown>>` constraint, matching CanvasEdgeData.
+/**
+ * Reference-stable `data` for a sequential connector edge. Rebuild it only on
+ * structural change: `areEdgePropsEqual` compares `data` by reference.
+ * A `type`, not an `interface`, to satisfy xyflow's `Edge<T extends Record>` constraint.
+ */
 export type SequentialConnectorData = {
   kind: SequenceConnectorKind;
+  /** Branch-entry labels render as a header above the lane; other kinds use the centered pill. */
   label?: string | null;
+  /** Elbows from `layoutSequence`, rendered verbatim. Reuse one reference (EMPTY_WAYPOINTS) when empty. */
   waypoints?: Waypoint[];
+  /** The ⊕ renders only when this is set and the canvas is in design mode. */
   slot?: InsertionSlot;
+  /** Set whenever `slot` is set; builds the ⊕'s accessible name from step numbers. */
   insertAnchor?: SequentialInsertAnchor;
   /** Transient Add Node connector: selected color + dashed preview stroke. */
   preview?: boolean;

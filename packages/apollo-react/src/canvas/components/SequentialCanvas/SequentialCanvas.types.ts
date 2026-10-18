@@ -12,11 +12,8 @@ import type { AddNodeManagerProps } from '../AddNodePanel/AddNodeManager';
 import type { BaseCanvasProps, BaseCanvasRef } from '../BaseCanvas/BaseCanvas.types';
 
 /**
- * Public props for the sequential view. It renders through the existing
- * BaseCanvas, so it borrows a curated subset of BaseCanvasProps and never
- * exposes the free-form node/edge handlers directly. Mutations still flow out
- * through onNodesChange / onEdgesChange (D10); synthetic rows (start bar,
- * placeholder) are filtered out before those callbacks fire.
+ * Props for the sequential view: a curated subset of BaseCanvasProps plus the standard
+ * onNodesChange / onEdgesChange, with synthetic rows filtered out before those fire.
  */
 export interface SequentialCanvasProps<N extends Node = Node, E extends Edge = Edge>
   extends Pick<
@@ -28,19 +25,16 @@ export interface SequentialCanvasProps<N extends Node = Node, E extends Edge = E
     | 'onToolbarAction'
     | 'breakpoints'
     | 'children'
+    | 'readOnlyNodeIds'
   > {
-  /** Canonical graph; flow-view positions are untouched (D4). */
+  /** Canonical graph; flow-view positions are never written. */
   nodes: N[];
   edges: E[];
-  /** Render the canonical flow graph or its sequential projection without remounting BaseCanvas. */
+  /** Flow graph or sequential projection, switched without remounting BaseCanvas. */
   view?: CanvasView;
-  /** Optional sequential-view geometry overrides. Flow-view geometry is untouched. */
+  /** Sequential-view geometry overrides. */
   sequenceLayoutOptions?: LayoutSequenceOptions;
-  /**
-   * Controls which canonical nodes participate in the sequential projection.
-   * Excluded presentation-only nodes remain untouched and reappear in Flow.
-   * Sticky notes are excluded by default.
-   */
+  /** Which canonical nodes enter the sequential projection; sticky notes are excluded by default. */
   isSequenceNode?: (node: N) => boolean;
   /** Node registrations used while `view="flow"`. */
   flowNodeTypes?: NodeTypes;
@@ -49,34 +43,22 @@ export interface SequentialCanvasProps<N extends Node = Node, E extends Edge = E
   /** Synthetic rows are filtered out before forwarding. */
   onNodesChange?: OnNodesChange<N>;
   onEdgesChange?: OnEdgesChange<E>;
-  /** Controlled, view-local collapse state (D6). */
+  /** Controlled, view-local collapse state. */
   collapsedStepIds?: string[];
   onCollapsedStepIdsChange?: (ids: string[]) => void;
-  /** Primary keyboard action invoked by Enter on the selected step. */
+  /** Invoked by Enter on the selected step. */
   onPrimaryAction?: (nodeId: string) => void;
-  /**
-   * "Add trigger" button on the start bar. Sequential-only: the start bar is a
-   * synthetic row of the projection and has no counterpart in flow view.
-   */
+  /** "Add trigger" button on the synthetic start bar (sequential view only). */
   onAddTrigger?: () => void;
   /**
-   * Options for the built-in Add Node panel.
-   *
-   * SEQUENTIAL-ONLY, and only in `mode="design"`. This canvas mounts
-   * `AddNodeManager` itself for `view="sequential"` because the insert
-   * affordances (connector ⊕, lane and terminal placeholders) are projection
-   * concepts that need a panel wired to a slot. In `view="flow"` no panel is
-   * mounted and these options are ignored: flow-view add-node UX belongs to the
-   * host, which can render its own `AddNodeManager` through `children`.
+   * Options for the Add Node panel this canvas mounts in sequential design mode. Ignored in
+   * flow view, where the host renders its own AddNodeManager through `children`.
    */
   addNodeManagerProps?: Partial<AddNodeManagerProps>;
   canvasRef?: Ref<BaseCanvasRef<N, E>>;
 }
 
-/**
- * Segmented flow/sequential control. Controlled: the host owns `value` and
- * `onChange`.
- */
+/** Controlled segmented flow/sequential control. */
 export interface ViewSwitcherProps {
   value: CanvasView;
   onChange: (view: CanvasView) => void;

@@ -13,6 +13,8 @@ export const allNodeManifests: NodeManifest[] = [
       icon: 'plus',
       shape: 'circle',
     },
+    // Also the canonical trigger (`DEFAULT_TRIGGER_NODE_TYPE`), so it needs a source
+    // handle for its outgoing edge; `resolveFlowNodeComponent.test.ts` asserts it.
     handleConfiguration: [
       {
         position: 'right',
@@ -322,6 +324,8 @@ export const allNodeManifests: NodeManifest[] = [
     category: 'control-flow',
     tags: ['control-flow', 'loop', 'while'],
     sortOrder: 4,
+    // Container with `body` and `loopBack` on inner boundaries, like For Each; the
+    // sequential view treats `loopBack` as the one sanctioned cycle.
     display: {
       label: 'While',
       icon: 'repeat',

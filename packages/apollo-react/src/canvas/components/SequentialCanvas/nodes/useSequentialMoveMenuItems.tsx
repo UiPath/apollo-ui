@@ -6,20 +6,9 @@ import type { NodeMenuAction, NodeMenuItem } from '../../NodeContextMenu';
 import { useOptionalSequentialMoveActions } from '../SequentialMoveActionsContext';
 
 /**
- * Builds the four kebab "explorer-like tree move" items (Move up, Move down,
- * Move into previous step, Move out) for a Sequential Canvas step row, backed
- * by the engine's binding contract
- * (utils/sequential/mutations.ts, slotNavigation.ts). Consumed by
- * `SequentialStepNode` and passed to `BaseNode`'s `extraMenuItems` (D3: no new
- * `BaseNodeOverrideConfig` field -- a direct component prop instead).
- *
- * Disabled state comes straight from `SequentialMoveActionsContext.getMoveOptions`
- * (see `sequentialMoveActions.ts` for the disable logic, including the
- * bare-branch-owner gate extended to all four directions). Move actions are a
- * TOPOLOGY mutation (D4), so -- like the ⊕ insert affordance
- * (`SequentialConnectorEdge`'s `showInsert`) -- they only appear in design
- * mode; outside a `SequentialMoveActionsContext` provider (isolated node
- * stories/tests) this returns an empty array rather than throwing.
+ * Kebab items for the four tree moves (up, down, into previous step, out), backed
+ * by SequentialMoveActionsContext. Design mode only; returns an empty array
+ * outside a provider so isolated stories and tests do not throw.
  */
 export function useSequentialMoveMenuItems(nodeId: string): NodeMenuItem[] {
   const { _ } = useSafeLingui();

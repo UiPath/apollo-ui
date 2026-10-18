@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import type {
   Edge,
   Node,
@@ -18,6 +18,8 @@ import type { ToolbarActionEvent } from '../../schema/toolbar';
 import { defaultWorkflowManifest } from '../../storybook-utils/manifests';
 import { sequentialWireframeManifests } from '../../storybook-utils/sequential/wireframeManifests';
 import {
+  AGENT_RESOURCES_NODE_IDS,
+  makeAgentWithResourcesFixture,
   makeDiamondFixture,
   makeWireframeFixture,
   WIREFRAME_NODE_IDS,
@@ -32,34 +34,10 @@ import {
 } from './sequentialGraph.constants';
 
 /**
- * Integration coverage for the two architectural seams of the Sequential Canvas
- * view. Everything else in the feature is covered by pure-layer tests
- * (`utils/sequential/*`) and leaf-component tests; this file is the only one that
- * MOUNTS `SequentialCanvas` and drives it end to end.
- *
- * The two seams under test:
- *
- *  - seam 1 (D4, derivation): the sequential view is a DERIVED projection. It
- *    must never write geometry back into canonical state, so a
- *    flow -> sequential -> flow round trip has to leave every canonical
- *    position / containment / dimension untouched even after xyflow reports a
- *    full mount burst of position and dimension changes.
- *  - seam 2 (change forwarding): xyflow reports every store mutation of the
- *    DERIVED arrays through onNodesChange / onEdgesChange. The canvas translates
- *    that stream before it reaches the host: view geometry is dropped, synthetic
- *    rows are dropped, and a `replace` on a real node merges only `data` +
- *    `selected` onto the CANONICAL node.
- *
- * ## Why the assertions are about props, not pixels
- *
- * `ReactFlow` is replaced with a capturing stub (the idiom in
- * `BaseCanvas.test.tsx`), so no node component ever renders. That is not a
- * limitation here: both seams are pure data flow. `capturedFlowProps.current`
- * holds exactly what `BaseCanvas` handed xyflow, so tests read
- * `.nodes` / `.edges` to inspect the derived arrays and CALL `.onNodesChange(...)`
- * to play the role of xyflow reporting a change. That drives the real
- * `handleNodesChange` -> `forwardSequentialNodeChanges` path and asserts what
- * reaches the host's spy, which is the seam itself.
+ * The only suite that mounts SequentialCanvas. It covers the derivation seam (the view never
+ * writes geometry back to canonical state) and the change-forwarding seam. ReactFlow is a
+ * capturing stub: tests read the derived arrays off `capturedFlowProps` and call its change
+ * handlers to play xyflow, then assert what reaches the host's spies.
  */
 
 const { capturedFlowProps, mockReactFlowInstance } = vi.hoisted(() => ({
@@ -67,8 +45,7 @@ const { capturedFlowProps, mockReactFlowInstance } = vi.hoisted(() => ({
     // biome-ignore lint/suspicious/noExplicitAny: holds whatever BaseCanvas passes ReactFlow
     current: undefined as any,
   },
-  // SequentialCanvas reads the instance for placeholder positions and viewport
-  // save/restore only; neither is under test here, so a flat stub is enough.
+  // Only placeholder positions and viewport save/restore read the instance; neither is under test.
   mockReactFlowInstance: {
     fitView: vi.fn(),
     setViewport: vi.fn(),
@@ -85,31 +62,23 @@ const { capturedFlowProps, mockReactFlowInstance } = vi.hoisted(() => ({
 
 vi.mock('@uipath/apollo-react/canvas/xyflow/react', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@uipath/apollo-react/canvas/xyflow/react')>()),
-  // Capture the props instead of rendering a flow. `nodes` / `edges` / the change
-  // handlers are the whole surface these tests need.
+  // Capture the props instead of rendering a flow.
   // biome-ignore lint/suspicious/noExplicitAny: test stub
   ReactFlow: (props: any) => {
     capturedFlowProps.current = props;
     return <div data-testid="react-flow">{props.children}</div>;
   },
   Background: () => <div data-testid="background" />,
-  // The real portal targets a DOM node the stubbed flow never renders; render the
-  // gutter inline instead so it is still exercised on every mount.
+  // The real portal targets a DOM node the stubbed flow never renders; render inline instead.
   // biome-ignore lint/suspicious/noExplicitAny: test stub
   ViewportPortal: ({ children }: any) => <div data-testid="viewport-portal">{children}</div>,
   useReactFlow: () => mockReactFlowInstance,
 }));
 
 /**
- * A node whose spine output is named `next` rather than `output` / `success`, and
- * which declares that fact the only way a manifest can: `isDefaultForType`.
- *
- * This manifest exists because NO Storybook manifest discriminates
- * `resolveBranchHandleIds` rule 1. `uipath.agent` is the only one that flags a
- * default, and its spine happens to be called `success`, so rule 2 would resolve
- * it even if rule 1 were removed entirely. Without a `next`-named spine there is
- * no mounted-canvas coverage of the gate at all, which is precisely the case the
- * fix was written for.
+ * A node whose spine is named `next` and declared only via `isDefaultForType`. No Storybook
+ * manifest exercises that rule: `uipath.agent` flags a default, but its spine is `success`,
+ * which the name heuristic catches anyway.
  */
 const CUSTOM_SPINE_NODE_TYPE = 'test.custom-spine';
 const customSpineManifest: NodeManifest = {
@@ -127,8 +96,7 @@ const customSpineManifest: NodeManifest = {
     {
       position: 'right',
       handles: [
-        // Deliberately NOT named `output` / `success`, so the name heuristic cannot
-        // rescue it and only the flagged default can identify the spine.
+        // Not `output` / `success`, so only the flagged default can identify the spine.
         { id: 'next', type: 'source', handleType: 'output', isDefaultForType: true },
         { id: 'error', label: 'Error', type: 'source', handleType: 'output' },
       ],
@@ -136,12 +104,7 @@ const customSpineManifest: NodeManifest = {
   ],
 };
 
-/**
- * The wireframe fixture uses two node types ("HTTP Request", "Send Message to
- * User") that have no Storybook manifest of their own. Merged additively, the
- * same way `SequentialCanvasStoryHarness` does it, so the shared
- * `defaultWorkflowManifest` every other canvas test relies on is untouched.
- */
+/** Manifests for the wireframe's two non-Storybook node types, merged additively. */
 const testManifest = {
   ...defaultWorkflowManifest,
   nodes: [...defaultWorkflowManifest.nodes, ...sequentialWireframeManifests, customSpineManifest],
@@ -152,11 +115,7 @@ let hostNodesChange: ReturnType<typeof vi.fn>;
 let hostEdgesChange: ReturnType<typeof vi.fn>;
 let hostToolbarAction: ReturnType<typeof vi.fn>;
 
-/**
- * Live mirror of the harness's canonical state, written during render. Lets a
- * test read the canonical graph after driving changes through the seam without
- * threading a callback out of the component tree.
- */
+/** Live mirror of the harness's canonical state, written during render. */
 const canonical: { nodes: Node[]; edges: Edge[] } = { nodes: [], edges: [] };
 
 interface HarnessProps {
@@ -164,23 +123,15 @@ interface HarnessProps {
   initialEdges: Edge[];
   view: CanvasView;
   mode?: 'design' | 'view' | 'readonly';
-  /**
-   * Set false to model a host that owns mutations itself and wires neither change
-   * callback. The canvas then has no channel to emit on, which is a distinct case
-   * from "not in design mode" for anything that reports whether it acted.
-   */
+  /** False models a host that owns mutations itself and wires neither change callback. */
   wireChangeHandlers?: boolean;
   /** Models a host that owns the flow view's node renderers outright. */
   flowNodeTypes?: NodeTypes;
+  readOnlyNodeIds?: readonly string[];
+  onPrimaryAction?: (nodeId: string) => void;
 }
 
-/**
- * A realistic controlled host: canonical `nodes`/`edges` in state, mutated ONLY
- * through xyflow's own reducers, with the host callbacks wrapped in spies. This
- * is the shape every consumer is expected to have (and what
- * `SequentialCanvasStoryHarness` does), so a change that only "works" against a
- * stubbed host would fail here.
- */
+/** A realistic controlled host: canonical state mutated only through xyflow's reducers. */
 function ControlledHarness({
   initialNodes,
   initialEdges,
@@ -188,6 +139,8 @@ function ControlledHarness({
   mode = 'design',
   wireChangeHandlers = true,
   flowNodeTypes,
+  readOnlyNodeIds,
+  onPrimaryAction,
 }: HarnessProps) {
   const [nodes, setNodes] = useState<Node[]>(initialNodes);
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
@@ -213,6 +166,8 @@ function ControlledHarness({
       onEdgesChange={wireChangeHandlers ? onEdgesChange : undefined}
       onToolbarAction={hostToolbarAction}
       flowNodeTypes={flowNodeTypes}
+      readOnlyNodeIds={readOnlyNodeIds}
+      onPrimaryAction={onPrimaryAction}
     />
   );
 }
@@ -243,7 +198,7 @@ function reportNodeChanges(changes: NodeChange[]): void {
   });
 }
 
-/** Every canonical field the sequential view is forbidden to write (D4). */
+/** Every canonical field the sequential view is forbidden to write. */
 function geometryOf(nodes: readonly Node[]) {
   return nodes.map((node) => ({
     id: node.id,
@@ -285,10 +240,8 @@ function makeChainFixture(length: number): { nodes: Node[]; edges: Edge[] } {
 }
 
 /**
- * An agent node feeding one downstream step. `uipath.agent` is the one manifest in
- * the Storybook set that flags `isDefaultForType` on its spine (`success`), and it
- * also carries five `artifact` source handles, so it is the real production case
- * for `resolveBranchHandleIds` rule 1.
+ * An agent feeding one step. `uipath.agent` flags `isDefaultForType` on `success` and carries
+ * five artifact source handles, so it is the real production case for the registry default.
  */
 function makeAgentFixture(): { nodes: Node[]; edges: Edge[] } {
   return {
@@ -365,26 +318,20 @@ describe('SequentialCanvas view toggle (seam 1, D4)', () => {
       view: 'flow',
     });
 
-    // Flow view passes the canonical graph straight through, so this snapshot is
-    // the real canonical geometry, taken before sequential has ever derived.
+    // Flow view passes the canonical graph through, so this is the real canonical geometry.
     const before = geometryOf(canonical.nodes);
     const identitiesBefore = new Map(canonical.nodes.map((node) => [node.id, node]));
     expect(before).toHaveLength(nodes.length);
 
     rerenderWith({ view: 'sequential' });
 
-    // The mount burst xyflow really produces: it measures every rendered bar and
-    // reports a position + dimensions change for each one. In sequential view
-    // those describe LAYOUT-owned geometry of a flattened 896px clone, so
-    // forwarding any of them would overwrite the canonical graph. Drive the
-    // whole burst through the seam at once.
+    // The mount burst xyflow produces: a position + dimensions change per bar, all describing
+    // layout-owned geometry of a flattened clone.
     const realRowIds = derivedNodeIds().filter(
       (id) => id !== SEQ_START_ROW_ID && id !== SEQ_PLACEHOLDER_ROW_ID
     );
-    // Guards the test against silently going vacuous: the burst has to actually
-    // target every canonical row (the trigger is absorbed into the start bar, so
-    // it has no row of its own). The neighbouring `select` test proves this same
-    // channel is live, so nothing here can pass merely by never arriving.
+    // Guard against vacuity: the burst must target every canonical row (the trigger is
+    // absorbed into the start bar, so it has none).
     for (const id of Object.values(WIREFRAME_NODE_IDS)) {
       if (id === WIREFRAME_NODE_IDS.trigger) continue;
       expect(realRowIds).toContain(id);
@@ -411,9 +358,7 @@ describe('SequentialCanvas view toggle (seam 1, D4)', () => {
     rerenderWith({ view: 'flow' });
 
     expect(geometryOf(canonical.nodes)).toEqual(before);
-    // Stronger than value equality and the real promise of D4: canonical nodes
-    // are not even re-created, because the seam produced no forwardable change
-    // at all and the host's reducer was never invoked.
+    // Stronger than value equality: nothing was forwarded, so the host's reducer never ran.
     for (const node of canonical.nodes) {
       expect(node).toBe(identitiesBefore.get(node.id));
     }
@@ -432,10 +377,8 @@ describe('SequentialCanvas view toggle (seam 1, D4)', () => {
     expect(capturedFlowProps.current.nodesConnectable).toBe(true);
   });
 
-  // A host can render its own AddNodeManager through `children` in flow view, and
-  // xyflow drops a node whose type is unregistered, so `preview` must resolve in
-  // both views. The two registrations must also DIFFER: the square flow ghost
-  // reads as an empty slab at the bar's 16:1 aspect ratio.
+  // xyflow drops a node whose type is unregistered, so `preview` must resolve in both views,
+  // and to different ghosts: the square flow ghost reads as an empty slab at bar aspect.
   it("registers a `preview` node type in BOTH views, with each view's own ghost", () => {
     const { nodes, edges } = makeWireframeFixture();
     const { rerenderWith } = renderCanvas({
@@ -453,9 +396,7 @@ describe('SequentialCanvas view toggle (seam 1, D4)', () => {
   });
 
   it('registers `preview` even when the host owns flowNodeTypes, without displacing it', () => {
-    // The host that supplies its own renderers is the one most likely to also
-    // render its own panel, so the registration has to survive that path rather
-    // than only the derived one. Anything the host put under `preview` wins.
+    // Anything the host registered under `preview` wins.
     const { nodes, edges } = makeWireframeFixture();
     const HostNode = () => null;
 
@@ -487,15 +428,13 @@ describe('SequentialCanvas change forwarding (seam 2)', () => {
       { id: target, type: 'dimensions', dimensions: { width: 12, height: 34 }, resizing: true },
     ]);
 
-    // The canvas may not call the host at all when nothing survives the filter;
-    // what matters is that no position/dimension change ever reaches it.
+    // The host may not be called at all; what matters is that no geometry change reaches it.
     const geometryChanges = forwardedNodeChanges().filter(
       (change) => change.type === 'position' || change.type === 'dimensions'
     );
     expect(geometryChanges).toEqual([]);
 
-    // Selection is real canonical state and must pass through untouched, which is
-    // what keeps keyboard nav and pointer selection indistinguishable to the host.
+    // Selection is canonical state and passes through untouched.
     reportNodeChanges([{ id: target, type: 'select', selected: true }]);
     expect(hostNodesChange).toHaveBeenCalledWith([{ id: target, type: 'select', selected: true }]);
     expect(canonical.nodes.find((node) => node.id === target)?.selected).toBe(true);
@@ -505,21 +444,18 @@ describe('SequentialCanvas change forwarding (seam 2)', () => {
     const { nodes, edges } = makeWireframeFixture();
     renderCanvas({ initialNodes: nodes, initialEdges: edges, view: 'sequential' });
 
-    // `if` is the interesting case: it is a CONTAINED node (parentId: for-each),
-    // and the sequential clone is flattened, so a verbatim replace would erase
-    // the containment the flow view depends on.
+    // `if` is contained (parentId: for-each) and the clone is flattened, so a verbatim replace
+    // would erase the containment.
     const targetId = WIREFRAME_NODE_IDS.ifNode;
     const canonicalBefore = canonical.nodes.find((node) => node.id === targetId);
     expect(canonicalBefore?.parentId).toBe(WIREFRAME_NODE_IDS.forEach);
     const derivedClone = derivedNodes().find((node) => node.id === targetId);
-    // Sanity-check that the clone really carries view-only geometry, otherwise
-    // the assertion below would pass for the wrong reason.
+    // The clone must really carry view-only geometry, or the assertion below is vacuous.
     expect(derivedClone?.width).toBe(SEQ_BAR_WIDTH);
     expect(derivedClone?.parentId).toBeUndefined();
     expect(derivedClone?.draggable).toBe(false);
 
-    // What an inline rename via `updateNodeData` produces: a replace whose item
-    // is the derived clone with new `data`.
+    // What an inline rename via `updateNodeData` produces.
     const renamed: Node = {
       ...(derivedClone as Node),
       data: { display: { label: 'Renamed' } },
@@ -551,22 +487,18 @@ describe('SequentialCanvas change forwarding (seam 2)', () => {
     const { nodes, edges } = makeWireframeFixture();
     renderCanvas({ initialNodes: nodes, initialEdges: edges, view: 'sequential' });
 
-    // (a) The derivation injects them: the start bar, the terminal placeholder,
-    //     and one lane placeholder per empty branch lane (every `uipath.script`
-    //     node declares an unused `error` lane).
+    // (a) The derivation injects the start bar, the terminal placeholder, and one lane
+    //     placeholder per empty branch lane (every `uipath.script` has an unused `error` lane).
     const ids = derivedNodeIds();
     expect(ids).toContain(SEQ_START_ROW_ID);
     expect(ids).toContain(SEQ_PLACEHOLDER_ROW_ID);
     const lanePlaceholderIds = ids.filter((id) => id.startsWith(SEQ_LANE_PLACEHOLDER_PREFIX));
     expect(lanePlaceholderIds.length).toBeGreaterThan(0);
-    // The canonical trigger is absorbed INTO the synthetic start bar, so it must
-    // not appear as a row of its own.
+    // The canonical trigger is absorbed into the start bar and has no row of its own.
     expect(ids).not.toContain(WIREFRAME_NODE_IDS.trigger);
 
-    // The Add Node pipeline drops its `preview` node in through the same change
-    // stream (this canvas is controlled, so `instance.setNodes` arrives as an
-    // `add` change). Driving the real `add` proves the local-capture path, not
-    // just the filter.
+    // The controlled canvas receives the Add Node preview as an `add` change; driving it
+    // proves the local-capture path, not just the filter.
     const previewNode: Node = {
       id: PREVIEW_NODE_ID,
       type: 'preview',
@@ -601,11 +533,8 @@ describe('SequentialCanvas change forwarding (seam 2)', () => {
 
 describe('SequentialCanvas toolbar delete', () => {
   /**
-   * The toolbar reaches the canvas through the module-level toolbar action store
-   * (`useToolbarActionStore`, wired by BaseCanvas), not through a rendered
-   * button, and the sequential bars are never rendered under the stubbed flow.
-   * Reading the handler back out of that store dispatches through exactly the
-   * function the real toolbar resolver calls.
+   * Bars never render under the stubbed flow, so the handler is read back out of the
+   * module-level toolbar action store BaseCanvas wires, exactly as the real resolver does.
    */
   const dispatchToolbarAction = (event: ToolbarActionEvent) => {
     const handler = getToolbarActionStore().onToolbarAction;
@@ -614,6 +543,27 @@ describe('SequentialCanvas toolbar delete', () => {
       handler?.(event);
     });
   };
+
+  it('keeps the toolbar handler identity across a rename, so bars reading it do not re-render', () => {
+    const { nodes, edges } = makeDiamondFixture();
+    renderCanvas({ initialNodes: nodes, initialEdges: edges, view: 'sequential', mode: 'design' });
+    const before = getToolbarActionStore().onToolbarAction;
+    expect(before).toBeTypeOf('function');
+
+    const a = nodes.find((node) => node.id === 'a')!;
+    reportNodeChanges([
+      {
+        type: 'replace',
+        id: 'a',
+        item: { ...a, data: { ...a.data, display: { label: 'Renamed' } } },
+      },
+    ]);
+
+    expect(canonical.nodes.find((node) => node.id === 'a')?.data).toMatchObject({
+      display: { label: 'Renamed' },
+    });
+    expect(getToolbarActionStore().onToolbarAction).toBe(before);
+  });
 
   it('cascades a branch owner and its lane descendants, and heals the seam', () => {
     // The diamond is the clean case: A -> If; If.true -> B -> D; If.false -> C -> D.
@@ -632,8 +582,7 @@ describe('SequentialCanvas toolbar delete', () => {
     expect(removedIds).not.toContain('d');
     expect(canonical.nodes.map((node) => node.id).sort()).toEqual(['a', 'd']);
 
-    // The seam is healed rather than left dangling: A now feeds D directly, and
-    // every edge that touched a removed node is gone.
+    // The seam is healed: A feeds D directly and every edge touching a removed node is gone.
     const healed = canonical.edges.find((edge) => edge.source === 'a' && edge.target === 'd');
     expect(healed).toBeDefined();
     const survivingIds = new Set(canonical.nodes.map((node) => node.id));
@@ -647,9 +596,7 @@ describe('SequentialCanvas toolbar delete', () => {
   });
 
   it('falls through to the host handler for a delete raised outside design mode', () => {
-    // The interception guard lives only in `deleteStep`, which returns whether it
-    // acted; a `delete` it cannot act on must reach the host instead of being
-    // silently swallowed.
+    // A `delete` the canvas cannot act on must reach the host instead of being swallowed.
     const { nodes, edges } = makeDiamondFixture();
     renderCanvas({ initialNodes: nodes, initialEdges: edges, view: 'sequential', mode: 'view' });
 
@@ -673,10 +620,8 @@ describe('SequentialCanvas toolbar delete', () => {
   });
 
   it('falls through to the host handler when no change callback is wired', () => {
-    // Design mode and a live projection, but no onNodesChange/onEdgesChange: there
-    // is no channel to emit the removal on, so `deleteStep` has not acted and must
-    // not claim the action. A host that owns mutations itself and handles `delete`
-    // through onToolbarAction alone would otherwise see it silently swallowed.
+    // Design mode with no change callbacks: there is no channel to emit the removal on, so
+    // the canvas must not claim the action.
     const { nodes, edges } = makeDiamondFixture();
     renderCanvas({
       initialNodes: nodes,
@@ -698,8 +643,7 @@ describe('SequentialCanvas virtualization ceiling', () => {
   const ACCESSIBLE_LIST_LABEL = 'Workflow steps';
 
   it('renders every row into the DOM below SEQ_FULL_RENDER_MAX_NODES (D8)', () => {
-    // 140 chain steps + the synthetic start bar + the terminal placeholder, which
-    // must stay under the ceiling for this case to mean anything.
+    // 140 steps plus the two synthetic rows must stay under the ceiling.
     const { nodes, edges } = makeChainFixture(140);
     renderCanvas({ initialNodes: nodes, initialEdges: edges, view: 'sequential' });
 
@@ -710,6 +654,17 @@ describe('SequentialCanvas virtualization ceiling', () => {
     expect(capturedFlowProps.current.nodesFocusable).toBe(true);
     expect(capturedFlowProps.current.edgesFocusable).toBe(true);
     expect(screen.queryByRole('list', { name: ACCESSIBLE_LIST_LABEL })).toBeNull();
+    expect(screen.getByTestId('sequential-gutter')).toBeInTheDocument();
+  });
+
+  it('counts numbered steps, not derived rows, so the ceiling is exact', () => {
+    // Exactly SEQ_FULL_RENDER_MAX_NODES real steps; the synthetic rows must not tip it over.
+    const { nodes, edges } = makeChainFixture(SEQ_FULL_RENDER_MAX_NODES);
+    renderCanvas({ initialNodes: nodes, initialEdges: edges, view: 'sequential' });
+
+    expect(derivedNodes().length).toBeGreaterThan(SEQ_FULL_RENDER_MAX_NODES);
+    expect(capturedFlowProps.current.onlyRenderVisibleElements).toBe(false);
+    expect(capturedFlowProps.current['aria-hidden']).toBeUndefined();
   });
 
   it('re-enables virtualization above the ceiling and substitutes the accessible list', () => {
@@ -718,35 +673,129 @@ describe('SequentialCanvas virtualization ceiling', () => {
 
     expect(derivedNodes().length).toBeGreaterThan(SEQ_FULL_RENDER_MAX_NODES);
     expect(capturedFlowProps.current.onlyRenderVisibleElements).toBe(true);
-    // The visual subtree is hidden from assistive tech, so the list below is the
-    // only reading order that remains.
+    // The visual subtree is hidden from assistive tech; the list is the only reading order left.
     expect(capturedFlowProps.current['aria-hidden']).toBe(true);
-    // ...which means it must also leave the tab order. xyflow defaults both of
-    // these to true and renders tabIndex=0 on each wrapper; keeping that inside an
-    // aria-hidden subtree is the `aria-hidden-focus` violation, i.e. 160 controls a
-    // keyboard user reaches but no screen reader can announce.
+    // ...and must leave the tab order too: xyflow defaults both to true and renders tabIndex=0
+    // on each wrapper, an `aria-hidden-focus` violation inside a hidden subtree.
     expect(capturedFlowProps.current.nodesFocusable).toBe(false);
     expect(capturedFlowProps.current.edgesFocusable).toBe(false);
     const list = screen.getByRole('list', { name: ACCESSIBLE_LIST_LABEL });
     expect(list.querySelectorAll('li')).toHaveLength(160);
+    // The gutter's chevrons are real buttons and would be the same violation.
+    expect(screen.queryByTestId('sequential-gutter')).toBeNull();
+  });
+});
+
+describe('SequentialCanvas read-only nodes', () => {
+  const dispatchToolbarAction = (event: ToolbarActionEvent) => {
+    const handler = getToolbarActionStore().onToolbarAction;
+    act(() => {
+      handler?.(event);
+    });
+  };
+
+  it('passes readOnlyNodeIds through to BaseCanvas', () => {
+    const { nodes, edges } = makeDiamondFixture();
+    renderCanvas({
+      initialNodes: nodes,
+      initialEdges: edges,
+      view: 'sequential',
+      mode: 'design',
+      readOnlyNodeIds: ['b'],
+    });
+    // BaseCanvas consumes the prop itself, so the observable contract is that every row renders.
+    expect(derivedNodeIds()).toContain('b');
+  });
+
+  it('does not delete a locked step and lets the host decide instead', () => {
+    const { nodes, edges } = makeDiamondFixture();
+    renderCanvas({
+      initialNodes: nodes,
+      initialEdges: edges,
+      view: 'sequential',
+      mode: 'design',
+      readOnlyNodeIds: ['b'],
+    });
+
+    dispatchToolbarAction({ actionId: 'delete', nodeId: 'b', mode: 'design' });
+
+    expect(changeIds(forwardedNodeChanges(), 'remove')).toEqual([]);
+    expect(canonical.nodes.map((node) => node.id)).toContain('b');
+    expect(hostToolbarAction).toHaveBeenCalledWith(
+      expect.objectContaining({ actionId: 'delete', nodeId: 'b' })
+    );
+
+    // An unlocked sibling in the same canvas still deletes through the canvas.
+    dispatchToolbarAction({ actionId: 'delete', nodeId: 'c', mode: 'design' });
+    expect(changeIds(forwardedNodeChanges(), 'remove')).toContain('c');
+  });
+});
+
+describe('SequentialCanvas synthetic row clicks', () => {
+  it('keeps the current step selected when a synthetic row is clicked', () => {
+    const { nodes, edges } = makeDiamondFixture();
+    const selected = nodes.map((node) => (node.id === 'a' ? { ...node, selected: true } : node));
+    renderCanvas({
+      initialNodes: selected,
+      initialEdges: edges,
+      view: 'sequential',
+      mode: 'design',
+    });
+
+    // A start-bar click arrives as "select it, deselect the rest" in one batch. The synthetic
+    // select is dropped, and the deselect must go with it.
+    reportNodeChanges([
+      { id: SEQ_START_ROW_ID, type: 'select', selected: true },
+      { id: 'a', type: 'select', selected: false },
+    ]);
+
+    expect(forwardedNodeChanges()).toEqual([]);
+    expect(canonical.nodes.find((node) => node.id === 'a')?.selected).toBe(true);
+
+    // A click on a REAL row still moves selection normally.
+    reportNodeChanges([
+      { id: 'if', type: 'select', selected: true },
+      { id: 'a', type: 'select', selected: false },
+    ]);
+    expect(canonical.nodes.find((node) => node.id === 'a')?.selected).toBe(false);
+    expect(canonical.nodes.find((node) => node.id === 'if')?.selected).toBe(true);
+  });
+});
+
+describe('SequentialCanvas keyboard scope', () => {
+  it('fires Enter on the selected step in sequential view only', () => {
+    const { nodes, edges } = makeDiamondFixture();
+    const selected = nodes.map((node) => (node.id === 'a' ? { ...node, selected: true } : node));
+    const onPrimaryAction = vi.fn();
+    const { rerenderWith } = renderCanvas({
+      initialNodes: selected,
+      initialEdges: edges,
+      view: 'flow',
+      mode: 'design',
+      onPrimaryAction,
+    });
+
+    // The handler sits on the wrapper div around the (stubbed) flow and accepts keys fired on
+    // the wrapper itself or on a canvas surface inside it.
+    const wrapper = screen.getByTestId('react-flow').parentElement!;
+    fireEvent.keyDown(wrapper, { key: 'Enter' });
+    expect(onPrimaryAction).not.toHaveBeenCalled();
+
+    rerenderWith({ view: 'sequential' });
+    fireEvent.keyDown(wrapper, { key: 'Enter' });
+    expect(onPrimaryAction).toHaveBeenCalledWith('a');
   });
 });
 
 describe('SequentialCanvas branch-lane resolution wiring', () => {
   /**
-   * `resolveBranchHandleIds` is unit-tested exhaustively in
-   * `SequentialCanvas.branchHandles.test.ts`. What that cannot cover is the SEAM
-   * between it and the registry: `getBranchHandles` filters the candidate handles
-   * to visible non-artifact sources, and passes the registry default ONLY when the
-   * manifest actually set `isDefaultForType`. These two tests assert that wiring
-   * end to end through a mounted canvas, observed as the indent depth the
-   * downstream row lands at.
+   * The seam between `resolveBranchHandleIds` and the registry: candidates are filtered to
+   * visible non-artifact sources and the default is passed only when `isDefaultForType` is
+   * set. Observed as the indent depth the downstream row lands at.
    */
   it('keeps a `next`-named spine on the spine because the manifest flags it (rule 1)', () => {
-    // The headline regression, end to end. Before the fix a spine named
-    // `next` / `then` / `done` / `out` alongside any second source handle was
-    // classified as a LANE, so the node's entire forward flow was indented
-    // underneath it and the spine was left empty.
+    // The headline regression: a spine named `next` beside a second source handle used to be
+    // classified as a lane, indenting the node's whole forward flow under it.
     const { nodes, edges } = makeCustomSpineFixture();
     renderCanvas({ initialNodes: nodes, initialEdges: edges, view: 'sequential' });
 
@@ -754,9 +803,8 @@ describe('SequentialCanvas branch-lane resolution wiring', () => {
     // `error` is a genuine empty lane, so lane detection is demonstrably live.
     expect(ids).toContain(`${SEQ_LANE_PLACEHOLDER_PREFIX}spine::error`);
 
-    // `next` carries the forward flow, so `after` must sit at the spine's own
-    // indent depth. If the `isDefaultForType` gate stopped being wired, rule 2
-    // could not rescue a handle named `next` and `after` would indent one level.
+    // `after` must sit at the spine's depth; without the `isDefaultForType` wiring it would
+    // indent one level.
     const spineRow = derivedNodes().find((node) => node.id === 'spine');
     const afterRow = derivedNodes().find((node) => node.id === 'after');
     expect(spineRow?.position.x).toBe(0);
@@ -768,24 +816,81 @@ describe('SequentialCanvas branch-lane resolution wiring', () => {
     renderCanvas({ initialNodes: nodes, initialEdges: edges, view: 'sequential' });
 
     const ids = derivedNodeIds();
-    // `error` is a genuine empty lane, so it gets a placeholder row: proof that
-    // lane detection is live at all and this test is not passing by doing nothing.
+    // `error` is a genuine empty lane, so lane detection is demonstrably live.
     expect(ids).toContain(`${SEQ_LANE_PLACEHOLDER_PREFIX}agent::error`);
-    // The five artifact source handles are filtered out before the helper sees
-    // them, so none may become a lane.
+    // The five artifact source handles are filtered out, so none may become a lane.
     for (const artifactHandle of ['memory', 'memory2', 'escalation', 'context', 'tools']) {
       expect(ids).not.toContain(`${SEQ_LANE_PLACEHOLDER_PREFIX}agent::${artifactHandle}`);
     }
 
-    // This is the assertion with the teeth. `success` is POPULATED (it feeds
-    // `after`), so laning it would produce no placeholder row to look for. It
-    // would instead push `after` down one indent level. Depth 0 rows sit at x=0
-    // and each level indents by SEQ_INDENT_PX, so equal x is exactly the claim
-    // "the agent's forward flow stayed on the spine" -- which is what breaks if
-    // the `isDefaultForType` gate or the candidate guard regresses.
+    // `success` is populated, so laning it would produce no placeholder row; it would push
+    // `after` down one indent level instead. Equal x is the claim that the flow stayed on the spine.
     const agentRow = derivedNodes().find((node) => node.id === 'agent');
     const afterRow = derivedNodes().find((node) => node.id === 'after');
     expect(agentRow?.position.x).toBe(0);
     expect(afterRow?.position.x).toBe(agentRow?.position.x);
+  });
+});
+
+describe('SequentialCanvas artifact nodes', () => {
+  const RESOURCE_IDS = [
+    AGENT_RESOURCES_NODE_IDS.tool,
+    AGENT_RESOURCES_NODE_IDS.context,
+    AGENT_RESOURCES_NODE_IDS.memory,
+  ];
+
+  it('derives no row for a resource node and numbers only the steps', () => {
+    const { nodes, edges } = makeAgentWithResourcesFixture();
+    renderCanvas({ initialNodes: nodes, initialEdges: edges, view: 'sequential' });
+
+    const ids = derivedNodeIds();
+    expect(ids).toContain(AGENT_RESOURCES_NODE_IDS.agent);
+    expect(ids).toContain(AGENT_RESOURCES_NODE_IDS.after);
+    for (const resourceId of RESOURCE_IDS) expect(ids).not.toContain(resourceId);
+
+    const after = derivedNodes().find((node) => node.id === AGENT_RESOURCES_NODE_IDS.after);
+    expect(after?.ariaLabel).toBe('Step 2 of 2: After');
+
+    // Artifact edges are never drawn as connectors.
+    const derivedEdges: Edge[] = capturedFlowProps.current.edges;
+    for (const edge of derivedEdges) {
+      expect(RESOURCE_IDS).not.toContain(edge.source);
+      expect(RESOURCE_IDS).not.toContain(edge.target);
+    }
+  });
+
+  it('returns the resources and their artifact edges untouched in flow view', () => {
+    const { nodes, edges } = makeAgentWithResourcesFixture();
+    const { rerenderWith } = renderCanvas({
+      initialNodes: nodes,
+      initialEdges: edges,
+      view: 'sequential',
+    });
+
+    rerenderWith({ view: 'flow' });
+
+    expect(geometryOf(derivedNodes())).toEqual(geometryOf(nodes));
+    expect(capturedFlowProps.current.edges.map((edge: Edge) => edge.id).sort()).toEqual(
+      edges.map((edge) => edge.id).sort()
+    );
+    expect(hostNodesChange).not.toHaveBeenCalled();
+    expect(hostEdgesChange).not.toHaveBeenCalled();
+  });
+
+  it('deleting the step removes its artifact edges and leaves the resource nodes in place', () => {
+    const { nodes, edges } = makeAgentWithResourcesFixture();
+    renderCanvas({ initialNodes: nodes, initialEdges: edges, view: 'sequential', mode: 'design' });
+
+    const handler = getToolbarActionStore().onToolbarAction;
+    act(() => {
+      handler?.({ actionId: 'delete', nodeId: AGENT_RESOURCES_NODE_IDS.agent, mode: 'design' });
+    });
+
+    expect(changeIds(forwardedNodeChanges(), 'remove')).toEqual([AGENT_RESOURCES_NODE_IDS.agent]);
+    expect(canonical.nodes.map((node) => node.id).sort()).toEqual(
+      [AGENT_RESOURCES_NODE_IDS.after, ...RESOURCE_IDS].sort()
+    );
+    // Nothing is healed: the agent had no incomer, and its artifact edges go with it.
+    expect(canonical.edges).toEqual([]);
   });
 });

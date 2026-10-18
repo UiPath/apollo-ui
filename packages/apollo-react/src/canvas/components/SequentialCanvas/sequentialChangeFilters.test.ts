@@ -87,10 +87,8 @@ describe('forwardSequentialNodeChanges', () => {
   });
 
   describe('a replace carries data, never a selection clear', () => {
-    // A `replace` is the channel for a DATA edit (an inline rename via
-    // updateNodeData); selection travels as a `select` change. So a replace may
-    // pass selection along, but must never CLEAR it by omission: that would make
-    // renaming a step silently deselect it.
+    // A replace may pass selection along but must never clear it by omission, or renaming a
+    // step would deselect it.
     const selectedCanonical = new Map([['a', { ...canonical('a'), selected: true }]]);
 
     function replaceWith(item: Partial<Node>): Node {
@@ -107,10 +105,7 @@ describe('forwardSequentialNodeChanges', () => {
     });
 
     it('still honours an explicit deselect', () => {
-      // `?? canonical` must not swallow a deliberate `false`, or a replace could
-      // never turn selection off. The `true` direction is already covered by the
-      // rename test above, and `??` can only misbehave on a present-but-falsy
-      // value, so `false` is the case worth pinning.
+      // `?? canonical` must not swallow a deliberate `false`.
       expect(replaceWith({ selected: false }).selected).toBe(false);
     });
   });
@@ -137,8 +132,6 @@ describe('forwardSequentialEdgeChanges', () => {
     { id: 'e-st', source: 's', target: 't' },
     { id: 'e-other', source: 'x', target: 'y' },
   ];
-  const canonicalEdgeIds = new Set(canonicalEdges.map((edge) => edge.id));
-
   it('drops connector and preview edge adds', () => {
     const changes: EdgeChange<Edge>[] = [
       {
@@ -147,7 +140,7 @@ describe('forwardSequentialEdgeChanges', () => {
       },
       { type: 'add', item: { id: PREVIEW_EDGE_ID, source: 's', target: PREVIEW_NODE_ID } },
     ];
-    expect(forwardSequentialEdgeChanges(changes, canonicalEdgeIds, canonicalEdges)).toEqual([]);
+    expect(forwardSequentialEdgeChanges(changes, canonicalEdges)).toEqual([]);
   });
 
   it('forwards healed default edges and removes the shadowed canonical edge on insert', () => {
@@ -155,7 +148,7 @@ describe('forwardSequentialEdgeChanges', () => {
       { type: 'add', item: { id: 'edge_s--new-', source: 's', target: 'new', type: 'default' } },
       { type: 'add', item: { id: 'edge_new--t-', source: 'new', target: 't', type: 'default' } },
     ];
-    const out = forwardSequentialEdgeChanges(changes, canonicalEdgeIds, canonicalEdges);
+    const out = forwardSequentialEdgeChanges(changes, canonicalEdges);
 
     // Both healed edges forwarded.
     expect(out.filter((change) => change.type === 'add')).toHaveLength(2);
@@ -170,7 +163,6 @@ describe('forwardSequentialEdgeChanges', () => {
       { id: 'e-split', source: 's', sourceHandle: 'out', target: 't', targetHandle: 'in' },
       { id: 'e-parallel', source: 's', sourceHandle: 'out', target: 't', targetHandle: 'in' },
     ];
-    const ids = new Set(parallelEdges.map((edge) => edge.id));
     const changes: EdgeChange<Edge>[] = [
       {
         type: 'add',
@@ -194,7 +186,7 @@ describe('forwardSequentialEdgeChanges', () => {
       },
     ];
 
-    const out = forwardSequentialEdgeChanges(changes, ids, parallelEdges);
+    const out = forwardSequentialEdgeChanges(changes, parallelEdges);
     expect(out).toContainEqual({ type: 'remove', id: 'e-split' });
     expect(out).not.toContainEqual({ type: 'remove', id: 'e-parallel' });
     const added = out.filter((change) => change.type === 'add');
@@ -209,7 +201,7 @@ describe('forwardSequentialEdgeChanges', () => {
       { type: 'select', id: 'e-other', selected: true },
       { type: 'select', id: 'conn:2', selected: true },
     ];
-    const out = forwardSequentialEdgeChanges(changes, canonicalEdgeIds, canonicalEdges);
+    const out = forwardSequentialEdgeChanges(changes, canonicalEdges);
     expect(out).toEqual([
       { type: 'remove', id: 'e-st' },
       { type: 'select', id: 'e-other', selected: true },
@@ -248,11 +240,8 @@ describe('graphChangeSetToNodeChanges (move operations)', () => {
       removeEdgeIds: [],
     };
     const changes = graphChangeSetToNodeChanges(changeSet);
-    // `replace` and not add+remove, because React Flow applies a replace IN PLACE
-    // while an add is appended. Appending would push a moved container behind its
-    // own children in the nodes array, and React Flow then drops the parent link
-    // with only a console warning: the container renders an empty body and stops
-    // carrying its children when dragged.
+    // `replace`, not add+remove: an add is appended, which would push a moved container behind
+    // its own children, and React Flow then drops the parent link with only a warning.
     expect(changes).toEqual([{ type: 'replace', id: 'a', item: movedNode }]);
     // The parentId rewrite -- the whole point of the move -- survives.
     expect((changes[0] as { item: Node }).item.parentId).toBe('new-container');

@@ -2,41 +2,25 @@ import type { Edge, EdgeChange, Node, NodeChange } from '@uipath/apollo-react/ca
 import { PREVIEW_NODE_ID } from '../../constants';
 import { isPreviewEdge } from '../../utils/createPreviewNode';
 import type { GraphChangeSet } from '../../utils/sequential/sequential.types';
-import { SEQ_INSERTED_FLAG, SEQ_SPLIT_EDGE_ID_KEY } from './edges/sequentialInsert';
+import { isSequentialInsertedNode, SEQ_SPLIT_EDGE_ID_KEY } from './edges/sequentialInsert';
 import { SEQ_CONNECTOR_EDGE_TYPE } from './sequentialGraph.constants';
 
 /**
- * Change filtering is the robust guarantee that the sequential view never
- * corrupts canonical state (seam 2). In the sequential view the nodes/edges
- * handed to ReactFlow are DERIVED clones + connector edges, not the canonical
- * graph. ReactFlow (in controlled mode) reports every store mutation through
- * onNodesChange / onEdgesChange as diff changes — including position and
- * dimension changes the derivation owns, and the Add Node pipeline's collision
- * pass nudging clones. Forwarding those verbatim would overwrite the consumer's
- * canonical positions/geometry with view-only values.
- *
- * These pure functions translate the derived-view change stream into the subset
- * that is meaningful for canonical state:
- *  - position + dimension changes are DROPPED (the derivation owns geometry);
- *  - changes referencing synthetic rows (start bar, placeholder, preview) are
- *    DROPPED (they never exist in canonical state);
- *  - a `replace` on a real node (e.g. an inline rename via updateNodeData) is
- *    rewritten to merge only `data` + `selected` onto the CANONICAL node, so the
- *    clone's view geometry (type / position / width / draggable) can't leak;
- *  - `select` and `remove` on real nodes/edges pass through;
- *  - an insert's added node (stamped `seqInserted`) and its healed real edges
- *    pass through, and the canonical edge the insert split is removed.
+ * Translates the derived view's xyflow change stream into what canonical state may see.
+ * In controlled mode ReactFlow reports every store mutation, including position and
+ * dimension changes the derivation owns; forwarding those verbatim would overwrite the
+ * consumer's canonical geometry with view-only values.
  */
 
-function nodeChangeId<N extends Node>(change: NodeChange<N>): string | undefined {
+export function nodeChangeId<N extends Node>(change: NodeChange<N>): string | undefined {
   return change.type === 'add' ? change.item.id : change.id;
 }
 
-function isInsertedNode<N extends Node>(node: N): boolean {
-  return (node.data as Record<string, unknown> | undefined)?.[SEQ_INSERTED_FLAG] === true;
-}
-
-/** Filters/translates node changes from the derived view for the consumer's canonical state. */
+/**
+ * Node changes for canonical state: geometry and synthetic-row changes are dropped, a
+ * `replace` merges only `data` + `selected` onto the canonical node, `select` / `remove` and
+ * inserted (`seqInserted`) nodes pass through.
+ */
 export function forwardSequentialNodeChanges<N extends Node>(
   changes: NodeChange<N>[],
   syntheticIds: ReadonlySet<string>,
@@ -52,9 +36,7 @@ export function forwardSequentialNodeChanges<N extends Node>(
 
     switch (change.type) {
       case 'add':
-        // Only a genuinely inserted node (seqInserted) reaches canonical here;
-        // any other add is a derivation/preview artifact.
-        if (isInsertedNode(change.item)) out.push(change);
+        if (isSequentialInsertedNode(change.item)) out.push(change);
         break;
       case 'remove':
       case 'select':
@@ -69,17 +51,12 @@ export function forwardSequentialNodeChanges<N extends Node>(
           item: {
             ...canonical,
             data: change.item.data,
-            // A `replace` is a DATA edit (an inline rename via updateNodeData);
-            // selection travels as a `select` change. Falling back to canonical
-            // means a replace built without `selected` (an xyflow internal, a
-            // host-authored change) can only ever set selection, never clear it
-            // by omission and silently deselect the node being renamed.
+            // A replace built without `selected` must not deselect the node by omission.
             selected: change.item.selected ?? canonical.selected,
           },
         });
         break;
       }
-      // Derivation owns positions and bar dimensions; never forward them.
       default:
         break;
     }
@@ -104,10 +81,8 @@ function withoutSplitMarker<E extends Edge>(edge: E): E {
 }
 
 /**
- * Canonical edges shadowed by an insert: when a new node is spliced between S and
- * T, the pipeline adds S->new and new->T, so the pivot node is the id that is
- * both a target and a source among the added edges. Any pre-existing canonical
- * edge S->T is now redundant and must be removed.
+ * Canonical edges made redundant by an insert: the pivot is the id that is both a target and
+ * a source among the added edges, and any canonical S->T across it must be removed.
  */
 function findShadowedCanonicalEdgeIds<E extends Edge>(
   addedEdges: E[],
@@ -146,12 +121,15 @@ function findShadowedCanonicalEdgeIds<E extends Edge>(
   return [...shadowed];
 }
 
-/** Filters/translates edge changes from the derived view for the consumer's canonical state. */
+/**
+ * Edge changes for canonical state: preview and connector edges are dropped, `select` /
+ * `remove` on canonical edges pass through, and the edge an insert split is removed.
+ */
 export function forwardSequentialEdgeChanges<E extends Edge>(
   changes: EdgeChange<E>[],
-  canonicalEdgeIds: ReadonlySet<string>,
   canonicalEdges: readonly E[]
 ): EdgeChange<E>[] {
+  const canonicalEdgeIds = new Set(canonicalEdges.map((edge) => edge.id));
   const out: EdgeChange<E>[] = [];
   const addedEdges: E[] = [];
   const exactSplitEdgeIds = new Set<string>();
@@ -171,8 +149,6 @@ export function forwardSequentialEdgeChanges<E extends Edge>(
       case 'select':
         if (canonicalEdgeIds.has(change.id)) out.push(change);
         break;
-      // Connector `data` replaces are view-only; canonical edges are not replaced
-      // through the view.
       default:
         break;
     }
@@ -182,9 +158,8 @@ export function forwardSequentialEdgeChanges<E extends Edge>(
     const removedIds = new Set(
       out.filter((change) => change.type === 'remove').map((change) => change.id)
     );
-    // A pending insertion carries the exact canonical edge id. Do not also run
-    // topology inference in that case: two parallel edges can legitimately
-    // have identical endpoints and handles, and inference would remove both.
+    // Prefer the exact split edge id over topology inference: two parallel edges can share
+    // endpoints and handles, and inference would remove both.
     const shadowedIds =
       exactSplitEdgeIds.size > 0
         ? exactSplitEdgeIds
@@ -198,25 +173,9 @@ export function forwardSequentialEdgeChanges<E extends Edge>(
 }
 
 /**
- * Converts a {@link GraphChangeSet} (the tree move operations -- see
- * `sequentialMoveActions.ts` / `SequentialMoveActionsContext.tsx`) into
- * `NodeChange[]` for the CANONICAL `onNodesChange` callback (D10: the public
- * API stays the standard change stream).
- *
- * Unlike `forwardSequentialNodeChanges` above, these two functions do NOT
- * translate the derived VIEW's own xyflow-emitted changes (that seam exists
- * to strip view-only geometry off a DERIVED clone). A move's `GraphChangeSet`
- * is built directly from `moveSubtree` over the CANONICAL `{nodes, edges}`
- * (see `mutations.ts`), so every node/edge here already has the real shape --
- * routing it through the clone-stripping translator would be wrong (that
- * translator's own `replace` case deliberately drops `parentId`, which is
- * exactly the field a cross-container move needs to carry). `moveSubtree`
- * expresses "this node's parentId changed" as a paired remove+add (same id in
- * both `removeNodeIds` and `addNodes`); that pairing is rewritten here as a
- * `replace` so xyflow updates the existing node in place instead of a
- * remove/re-add flicker. A genuinely new id in `addNodes` (never happens for
- * a move today, since moves never create nodes) still round-trips correctly
- * as a plain `add`.
+ * Converts a {@link GraphChangeSet} into canonical `NodeChange[]`. The set is built over the
+ * canonical graph, so it must not go through `forwardSequentialNodeChanges` (whose `replace`
+ * drops `parentId`). A paired remove+add of one id becomes a `replace` to avoid a flicker.
  */
 export function graphChangeSetToNodeChanges<N extends Node>(
   changeSet: GraphChangeSet

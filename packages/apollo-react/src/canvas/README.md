@@ -1,6 +1,6 @@
-# Canvas Tailwind CSS — Consumer Integration Guide
+# Canvas Consumer Guide
 
-Apollo React canvas components use [apollo-wind](../../../apollo-wind) (Tailwind CSS v4) for styling. This guide covers how consumers should integrate the required CSS depending on their application architecture.
+Two topics live here. The first part is the Tailwind CSS integration guide: Apollo React canvas components use [apollo-wind](../../../apollo-wind) (Tailwind CSS v4) for styling, and consumers need to wire the required CSS in a way that fits their application architecture. The second part, [Sequential view](#sequential-view), covers the vertical projection of the flow canvas and the compatibility contract hosts work against.
 
 ## Background
 
@@ -272,7 +272,7 @@ function MyFlow({ initialNodes, initialEdges }) {
 }
 ```
 
-`SequentialCanvas` supplies its own `ReactFlowProvider` and keeps one `BaseCanvas` mounted while `view` changes. For a worked example, including per-view pan save/restore and a live compatibility banner, see `SequentialCanvasStoryHarness` and the `Wireframe` story. Note that pan is saved per view but zoom is not: it carries across the toggle from the view being left, so switching views reframes the graph without changing how far the user is zoomed in.
+`SequentialCanvas` supplies its own `ReactFlowProvider` and keeps one `BaseCanvas` mounted while `view` changes. For a worked example, including per-view pan save/restore and a live compatibility banner, see `SequentialCanvasStoryHarness` and the `InteractiveSequence` story. Note that pan is saved per view but zoom is not: it carries across the toggle from the view being left, so switching views reframes the graph without changing how far the user is zoomed in.
 
 ### Containers
 
@@ -292,6 +292,12 @@ That reads as broken containment even though `parentId` is correct throughout. T
 
 Neither the projection nor the flow layout notices, because both bucket by `parentId` and are order-independent, so a mis-ordered graph projects and lays out perfectly and only misrenders. `prepareCanvasViewTransition` therefore repairs the order when entering flow view (`orderNodesParentsFirst`), and moves are forwarded as a single `replace` so React Flow applies them in place instead of appending a container behind its own children.
 
+### Artifact nodes
+
+Resources wired to a step through artifact handles (agent tools, context, memory, escalation) are not steps. By default any node whose manifest handles are all `handleType: 'artifact'` is excluded from the projection, listed in the report's `preservedOnlyNodeIds`, and rendered on the owning step's bar as attachment chips instead. The artifact edges themselves are never drawn as connectors and are listed in `preservedOnlyEdgeIds`. Toggling back to flow view returns the resources and their edges untouched. A host-supplied `isSequenceNode` replaces this default entirely, so a host that projects resources as rows must also exclude sticky notes itself.
+
+Deleting a step in sequential view removes its artifact edges with it and leaves the resource nodes in canonical state, which matches deleting the step in flow view.
+
 ### Degraded graphs
 
 Not every graph is a clean, structured sequence. The projection degrades gracefully instead of failing:
@@ -302,7 +308,9 @@ Not every graph is a clean, structured sequence. The projection degrades gracefu
 | Orphans (no sequence edges at all) | `orphan` | A de-emphasized trailing section after the terminal placeholder | Yes |
 | Unstructured merge (a node with more than one incoming edge) | `unstructured-merge` | Placed under its first incomer; the extra incoming edge draws a dashed goto connector | No |
 | Cycles other than a loop's `loopBack` handle | `cycle` | A dashed, arrowless goto connector closes the cycle | No |
+| An edge that crosses from one container scope into another | `cross-scope-edge` | A dashed goto connector between the two rows | No |
+| Two edges between the same pair of handles | `duplicate-edge` | The first edge is kept; the duplicate is ignored by the projection | No |
 
-Every case renders something rather than crashing or dropping a node: the cycle guard prevents infinite recursion, and unreachable or disconnected nodes are always appended as trailing rows. The toggle is never blocked, and rendering is independent of editability. A read-only degraded graph is still worth showing, since seeing the dashed goto connector is how a user finds the structure to fix.
+Nothing is dropped from the picture. Every node renders: the cycle guard prevents infinite recursion, and unreachable or disconnected nodes are always appended as trailing rows. Every sequence edge renders too: an edge the structured walk cannot place as a spine step, a lane, or a merge-back (a second continuation edge out of a node whose branches are declared by its manifest, an edge into another container's scope, an unreachable fan-in) is drawn as a dashed goto connector after the walk, so the rendering never hides wiring that exists in canonical state. The compatibility report is still the authoritative place to look: read its `issues` rather than inferring health from the picture. The toggle is never blocked, and rendering is independent of editability. A read-only degraded graph is still worth showing, since seeing the dashed goto connector is how a user finds the structure to fix.
 
 Both CSS delivery patterns described earlier in this guide (PostCSS scanning and precompiled Shadow DOM injection) cover the sequential view's markup with no extra configuration, since it is built entirely from Tailwind utility classes scanned from this package's `dist/canvas`.

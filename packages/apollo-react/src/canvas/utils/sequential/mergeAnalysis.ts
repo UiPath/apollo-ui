@@ -2,25 +2,10 @@ import type { Edge } from '@uipath/apollo-react/canvas/xyflow/react';
 import { forwardOut, type GraphIndex, inDegreeInScope, type Scope } from './graph-helpers';
 
 /**
- * Approximate immediate post-dominator ("merge point") for a branch node.
- *
- * A full dominator computation is overkill for the small, mostly-structured
- * scopes the projection walks. Instead each branch is descended along its
- * single-successor spine; a branch's "join" is the first node it reaches whose
- * in-scope forward in-degree is >= 2 (a convergence point). When two or more
- * branches converge on the same join, that node is the merge: lanes stop before
- * it, it is emitted once at the branch owner's depth, and lane tails draw
- * merge-back connectors into it. Irregular convergence (no shared join) returns
- * `undefined`, which the projection degrades into first-incomer-wins + goto
- * connectors (D9, precedent utils/coded-agents/d3-layout.ts:97-98).
- *
- * A lane's spine can itself split again (a branch nested inside a branch). Such
- * a lane's own merge is resolved recursively (findMerge called on the nested
- * branch's out-edges) and the walk continues from THAT merge, so a nested
- * branch never defeats the outer branch's convergence detection. `visiting`
- * threads a shared guard set through the whole recursive resolution so
- * pathologically self-referencing nested branches degrade to `undefined`
- * instead of recursing forever.
+ * Approximate immediate post-dominator for a branch node: each lane is followed to
+ * the first node with in-scope forward in-degree >= 2, and the join shared by two or
+ * more lanes is the merge. `undefined` when lanes do not converge. Nested branches are
+ * resolved recursively; `visiting` guards against self-referencing recursion.
  */
 export function findMerge(
   index: GraphIndex,
@@ -47,13 +32,7 @@ export function findMerge(
   return merge;
 }
 
-/**
- * Follows one branch's single-successor spine and returns the first convergence
- * node (forward in-degree >= 2) it reaches, or `undefined` if the branch
- * dead-ends, leaves scope, or loops before converging. When the spine itself
- * splits (a nested branch), the nested branch's own merge is resolved first
- * (recursively) and the walk resumes from it, rather than bailing out.
- */
+/** First convergence node on a lane's spine, or `undefined` if it dead-ends, leaves scope or loops. */
 function laneJoin(
   index: GraphIndex,
   startId: string,
@@ -65,23 +44,21 @@ function laneJoin(
   let current: string | undefined = startId;
 
   while (current !== undefined) {
-    // A convergence point is recognized regardless of how we arrived at it
-    // (a direct step or a resolved nested merge), so check it first.
+    // Checked first so a resolved nested merge counts as a convergence point too.
     if ((indeg.get(current) ?? 0) >= 2) return current;
-    if (seen.has(current) || visiting.has(current)) return undefined; // loops without converging
+    if (seen.has(current) || visiting.has(current)) return undefined;
     seen.add(current);
 
     const node = index.nodesById.get(current);
     if (!node || node.parentId !== scope) return undefined;
 
     const out = forwardOut(index, current, scope);
-    if (out.length === 0) return undefined; // dead-end: never converges
+    if (out.length === 0) return undefined;
     if (out.length === 1) {
       current = out[0]!.target;
       continue;
     }
 
-    // Nested branch: resolve its own merge first, then continue from there.
     visiting.add(current);
     const nestedMerge = findMerge(index, out, scope, indeg, visiting);
     visiting.delete(current);

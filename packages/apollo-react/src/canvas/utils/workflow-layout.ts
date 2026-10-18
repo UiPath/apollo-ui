@@ -1,6 +1,7 @@
 import type { Edge, Node, XYPosition } from '@uipath/apollo-react/canvas/xyflow/react';
 import { GRID_SPACING } from '../constants';
 import { getContainerFitGeometry, getNodeDimensions, type NodeDimensions } from './container';
+import { isLoopBackEdge } from './sequential/graph-helpers';
 
 export interface WorkflowLayoutOptions {
   /** Distance between dependency ranks. */
@@ -48,12 +49,9 @@ const DEFAULT_RANK_GAP = GRID_SPACING * 5;
 const DEFAULT_NODE_GAP = GRID_SPACING * 3;
 
 /**
- * Computes a deterministic left-to-right layout without changing graph data.
- *
- * Each containment scope is laid out independently. Nested scopes are resolved
- * inside-out so a container's calculated footprint participates in its parent's
- * rank spacing. Strongly connected components share a rank, which means cyclic
- * graphs remain finite and deterministic rather than hanging an auto-layout pass.
+ * Deterministic left-to-right layout. Scopes are resolved inside-out so a container's
+ * footprint feeds its parent's rank spacing; strongly connected components share a
+ * rank so cycles stay finite.
  */
 export function layoutWorkflowLeftToRight(
   nodes: Node[],
@@ -64,8 +62,7 @@ export function layoutWorkflowLeftToRight(
   const nodeGap = options.nodeGap ?? DEFAULT_NODE_GAP;
   const rootOrigin = options.origin ?? { x: 0, y: 0 };
   const shouldLayoutNode = options.isLayoutNode ?? (() => true);
-  const shouldLayoutEdge =
-    options.isLayoutEdge ?? ((edge: Edge) => edge.targetHandle !== 'loopBack');
+  const shouldLayoutEdge = options.isLayoutEdge ?? ((edge: Edge) => !isLoopBackEdge(edge));
   const resolveDimensions = options.getNodeDimensions ?? getNodeDimensions;
   const nodeById = new Map(nodes.map((node) => [node.id, node]));
   const positions = new Map<string, XYPosition>();

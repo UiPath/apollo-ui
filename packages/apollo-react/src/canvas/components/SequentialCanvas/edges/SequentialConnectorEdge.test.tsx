@@ -51,9 +51,6 @@ describe('SequentialConnectorEdge', () => {
 
       const visiblePath = container.querySelector('.react-flow__edge-path') as SVGPathElement;
       expect(visiblePath.style.strokeDasharray).toBe('0');
-      expect(screen.getByRole('button', { name: 'Insert step' }).parentElement).toHaveStyle({
-        transform: 'translate(-50%, -50%) translate(100px, 180px)',
-      });
     });
 
     it('renders an elbowed branch rejoin solid', () => {
@@ -75,72 +72,21 @@ describe('SequentialConnectorEdge', () => {
     expect(getLeftEntryArrowTargetY(undefined, 200, undefined)).toBe(228);
   });
 
-  describe('insert button accessible name', () => {
-    /**
-     * Every insertable connector renders an always-focusable button, so a
-     * screen-reader user tabs through all of them. Naming them identically makes
-     * the set unusable; each must state the step it acts relative to.
-     */
-    const slot = { id: 's-1', graphEdgeId: 'e1' };
+  // The ⊕ and the branch header belong to SequentialInsertLayer, so one portal serves every
+  // connector instead of two per edge.
+  it('renders neither an insert button nor a branch header itself', () => {
+    renderEdge(
+      { kind: 'branch-entry', label: 'True', slot: { id: 's-1', graphEdgeId: 'e1' } },
+      'design'
+    );
 
-    it('names an ordinary gap by the step it follows', () => {
-      renderEdge({ kind: 'step', slot, insertAnchor: { kind: 'after', stepNumber: 3 } });
-      expect(screen.getByRole('button', { name: 'Insert step after step 3' })).toBeInTheDocument();
-    });
-
-    it('names a gap under an unnumbered source by the step it precedes', () => {
-      renderEdge({ kind: 'step', slot, insertAnchor: { kind: 'before', stepNumber: 1 } });
-      expect(screen.getByRole('button', { name: 'Insert step before step 1' })).toBeInTheDocument();
-    });
-
-    it('names a lane head by both the lane and its owning step', () => {
-      // Two `Then` lanes on different steps must not collide, so the owner's step
-      // number is part of the name rather than the lane label alone.
-      renderEdge({
-        kind: 'branch-entry',
-        slot,
-        insertAnchor: { kind: 'branch', stepNumber: 2, branchLabel: 'Then' },
-      });
-      expect(
-        screen.getByRole('button', { name: 'Insert step into Then of step 2' })
-      ).toBeInTheDocument();
-    });
-
-    it('falls back to the bare label when neither endpoint is numbered', () => {
-      renderEdge({ kind: 'step', slot });
-      expect(screen.getByRole('button', { name: 'Insert step' })).toBeInTheDocument();
-    });
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('sequential-branch-header')).not.toBeInTheDocument();
   });
 
-  describe('step kind insert affordance', () => {
-    it('renders the insert button when a slot is present and the canvas is in design mode', () => {
-      renderEdge({ kind: 'step', slot: { id: 's-1', graphEdgeId: 'e1' } }, 'design');
-      const button = screen.getByRole('button', { name: 'Insert step' });
-      expect(button).toBeInTheDocument();
-      // Faint at rest (discoverable without hover), full on hover/focus.
-      expect(button).toHaveClass(
-        'opacity-40',
-        'group-hover:opacity-100',
-        'group-focus-within:opacity-100'
-      );
-    });
+  it('keeps the centered label pill on non-branch connectors', () => {
+    const { container } = renderEdge({ kind: 'step', label: 'Then' });
 
-    it('does not render the insert button outside design mode, even with a slot', () => {
-      renderEdge({ kind: 'step', slot: { id: 's-1', graphEdgeId: 'e1' } }, 'view');
-      expect(screen.queryByRole('button', { name: 'Insert step' })).not.toBeInTheDocument();
-    });
-
-    it('does not render the insert button in design mode without a slot', () => {
-      renderEdge({ kind: 'step' }, 'design');
-      expect(screen.queryByRole('button', { name: 'Insert step' })).not.toBeInTheDocument();
-    });
-  });
-
-  it('renders a branch-entry label above the row using the shared edge-label style', () => {
-    const { container } = renderEdge({ kind: 'branch-entry', label: 'True' });
-
-    expect(screen.getByTestId('sequential-branch-header')).toHaveTextContent('True');
-    expect(container.querySelector('.react-flow__edge-label')).toBeInTheDocument();
-    expect(container.querySelector('foreignObject')).not.toBeInTheDocument();
+    expect(container.querySelector('.react-flow__edge-label')).toHaveTextContent('Then');
   });
 });

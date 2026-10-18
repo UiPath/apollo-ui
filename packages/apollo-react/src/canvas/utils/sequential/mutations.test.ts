@@ -15,9 +15,9 @@ import {
   WIREFRAME_NODE_IDS,
 } from './fixtures';
 import { SEQ_CONTINUATION_EDGE_KEY } from './graph-helpers';
-import { insertAtSlot, moveStep, moveSubtree, removeStep } from './mutations';
+import { insertAtSlot, moveSubtree, removeStep } from './mutations';
 import { projectSequence } from './projectSequence';
-import type { GraphChangeSet, InsertionSlot } from './sequential.types';
+import type { InsertionSlot } from './sequential.types';
 import {
   findIndentSlot,
   findMoveDownSlot,
@@ -26,16 +26,8 @@ import {
 } from './slotNavigation';
 
 /**
- * Re-projects a moved graph into a readable `nodeId@depth^parentRowId` list, in
- * projected order, and asserts the two invariants no move may ever break: every
- * canonical node is still projected exactly ONCE (nothing duplicated, nothing
- * stranded), and none of them landed in the trailing orphan section. Slot-shape
- * assertions alone cannot catch a seam-healing bug; row order alone cannot catch
- * a node that quietly fell out of the sequence.
- *
- * The node-set comparison assumes the fixture has no start/trigger node (which
- * `projectSequence` folds into the synthetic start row and never emits) - true
- * of every fixture used with it below.
+ * Re-projects a graph as `nodeId@depth^parentRowId` in row order, asserting every node
+ * is projected exactly once and none is an orphan. Assumes no start/trigger node.
  */
 function projectedOrder(fixture: GraphFixture): string[] {
   const rows = projectSequence(fixture.nodes, fixture.edges).rows.filter(
@@ -62,13 +54,8 @@ function topologyKey(fixture: GraphFixture): string {
 }
 
 /**
- * Node-set-plus-parentId and edge SOURCE/TARGET (no handles) signature, for
- * moveSubtree round-trips specifically: `moveStep`/`moveSubtree`'s splice
- * never preserves the MOVED node's own handle on a re-spliced edge (only the
- * OTHER endpoint's handle, copied from the target slot, survives - the
- * engine has no manifest access to know what the moved node's real handle
- * should be), so a moveDown-then-moveUp round-trip legitimately changes the
- * moved node's OWN handles even though connectivity is fully restored.
+ * Like `topologyKey` but without handles: a move never preserves the moved node's own
+ * handle on a re-spliced edge, so round-trips restore connectivity, not handles.
  */
 function connectivityKey(fixture: GraphFixture): string {
   const nodeKey = fixture.nodes
@@ -160,8 +147,6 @@ describe('mutations', () => {
       expect(branchSlot?.containerId).toBe(WIREFRAME_NODE_IDS.forEach);
       const changeSet = insertAtSlot(projection, branchSlot!, makeNode('inserted'));
       expect(changeSet.addNodes[0]?.parentId).toBe(WIREFRAME_NODE_IDS.forEach);
-      // `extent` travels with `parentId`, matching the other two places
-      // containment is written (`sequentialOnBeforeNodeAdded`, `reparentNode`).
       expect(changeSet.addNodes[0]?.extent).toBe('parent');
     });
 
@@ -172,8 +157,6 @@ describe('mutations', () => {
         appendSlot,
         makeNode('inserted')
       );
-      // A node outside any container must not inherit `extent: 'parent'`, which
-      // would constrain it to a parent it does not have.
       expect(changeSet.addNodes[0]?.parentId).toBeUndefined();
       expect(changeSet.addNodes[0]?.extent).toBeUndefined();
     });
@@ -196,7 +179,7 @@ describe('mutations', () => {
     it('heals the seam by reconnecting the incomer to the outgoer', () => {
       const fixture = makeWireframeFixture();
       const projection = projectSequence(fixture.nodes, fixture.edges);
-      const changeSet = removeStep(projection, WIREFRAME_NODE_IDS.javascript);
+      const changeSet = removeStep(projection, WIREFRAME_NODE_IDS.javascript, fixture);
 
       expect(changeSet.removeNodeIds).toEqual([WIREFRAME_NODE_IDS.javascript]);
       expect(changeSet.addEdges).toHaveLength(1);
@@ -207,18 +190,12 @@ describe('mutations', () => {
     it('adds no healing edge when removing a terminal node', () => {
       const fixture = makeWireframeFixture();
       const projection = projectSequence(fixture.nodes, fixture.edges);
-      const changeSet = removeStep(projection, WIREFRAME_NODE_IDS.sendMessage);
+      const changeSet = removeStep(projection, WIREFRAME_NODE_IDS.sendMessage, fixture);
       expect(changeSet.addEdges).toEqual([]);
       expect(changeSet.removeNodeIds).toEqual([WIREFRAME_NODE_IDS.sendMessage]);
     });
 
     it('cascades a container removal to its descendants and every incident raw edge (F3)', () => {
-      // Removing the wireframe's "for-each" container without passing the raw
-      // graph must still be well-defined for the single-node case, but its
-      // descendants (if / javascript-1 / http-request-1) and the body-internal
-      // "continue" edges (which never became connectors at all, since
-      // forwardOut filters them out of the forward walk) can only be cleaned
-      // up when the raw graph is supplied.
       const fixture = makeWireframeFixture();
       const projection = projectSequence(fixture.nodes, fixture.edges);
       const changeSet = removeStep(projection, WIREFRAME_NODE_IDS.forEach, fixture);
@@ -231,8 +208,7 @@ describe('mutations', () => {
           WIREFRAME_NODE_IDS.elseHttp,
         ])
       );
-      // Every raw edge touching the container or a descendant is removed,
-      // including the "continue" edges that never appeared as connectors.
+      // Includes the "continue" edges that never appeared as connectors.
       expect(new Set(changeSet.removeEdgeIds)).toEqual(
         new Set([
           'e-js-foreach',
@@ -244,13 +220,10 @@ describe('mutations', () => {
           'e-foreach-send',
         ])
       );
-      // Only the container's own incomer/outgoer seam is healed.
       expect(changeSet.addEdges).toHaveLength(1);
       expect(changeSet.addEdges[0]?.source).toBe(WIREFRAME_NODE_IDS.javascript);
       expect(changeSet.addEdges[0]?.target).toBe(WIREFRAME_NODE_IDS.sendMessage);
 
-      // The resulting graph is a clean, valid, fully-connected sequence with
-      // no dangling parentId references or edges pointing at removed nodes.
       const healed = applyGraphChangeSet(fixture, changeSet);
       const survivingIds = new Set(healed.nodes.map((n) => n.id));
       expect(survivingIds).toEqual(
@@ -301,7 +274,9 @@ describe('mutations', () => {
         ],
       });
 
-      expect(removeStep(projection, 'if').removeNodeIds).toEqual(['if']);
+      expect(removeStep(projection, 'if', { nodes: [branch], edges: [] }).removeNodeIds).toEqual([
+        'if',
+      ]);
     });
 
     it('does not create a container self-loop when removing a branch that closes to its owner', () => {
@@ -319,8 +294,6 @@ describe('mutations', () => {
       const reprojected = projectSequence(healed.nodes, healed.edges, {
         isContainerNode: (node) => node.id === WIREFRAME_NODE_IDS.forEach,
       });
-      // The now-empty container body renders a "+ Add step" lane placeholder row
-      // carrying the insert slot (replacing the old bare slot:empty).
       const laneRow = reprojected.rows.find(
         (row) => row.lanePlaceholder?.id === `slot:lane:${WIREFRAME_NODE_IDS.forEach}:start`
       );
@@ -332,12 +305,12 @@ describe('mutations', () => {
     });
   });
 
-  describe('moveStep', () => {
+  describe('moveSubtree on a leaf', () => {
     it('preserves the node set (adds and removes no nodes)', () => {
       const fixture = makeWireframeFixture();
       const projection = projectSequence(fixture.nodes, fixture.edges);
       const target = firstStepSlot(fixture);
-      const changeSet = moveStep(projection, WIREFRAME_NODE_IDS.sendMessage, target);
+      const changeSet = moveSubtree(projection, WIREFRAME_NODE_IDS.sendMessage, target);
       expect(changeSet.addNodes).toEqual([]);
       expect(changeSet.removeNodeIds).toEqual([]);
       const next = applyGraphChangeSet(fixture, changeSet);
@@ -345,9 +318,6 @@ describe('mutations', () => {
     });
 
     it('no-ops instead of creating a self-loop when the target slot is the node own incoming edge (F7)', () => {
-      // X -> A -> B -> C; moveStep(B, slot of edge A->B) is a degenerate
-      // "move to where it already is" (reachable from Move Up at the top of a
-      // lane). It must not splice a b->b self-loop or orphan C.
       const nodes = ['x', 'a', 'b', 'c'].map(makeNode);
       const edges: Edge[] = [
         { id: 'x-a', source: 'x', target: 'a', type: 'default' },
@@ -360,7 +330,7 @@ describe('mutations', () => {
       )?.slot;
       expect(ownSlot).toBeDefined();
 
-      const changeSet = moveStep(projection, 'b', ownSlot!);
+      const changeSet = moveSubtree(projection, 'b', ownSlot!);
       expect(changeSet).toEqual({
         addNodes: [],
         addEdges: [],
@@ -377,7 +347,7 @@ describe('mutations', () => {
         source: { nodeId: WIREFRAME_NODE_IDS.javascript },
         target: { nodeId: WIREFRAME_NODE_IDS.javascript },
       };
-      const changeSet = moveStep(projection, WIREFRAME_NODE_IDS.javascript, selfTargetSlot);
+      const changeSet = moveSubtree(projection, WIREFRAME_NODE_IDS.javascript, selfTargetSlot);
       expect(changeSet).toEqual({
         addNodes: [],
         addEdges: [],
@@ -392,15 +362,11 @@ describe('mutations', () => {
       const fixture = makeWireframeFixture();
       const projection = projectSequence(fixture.nodes, fixture.edges);
       const slot = findMoveUpSlot(projection, WIREFRAME_NODE_IDS.forEach);
-      expect(slot).toBeDefined(); // http -> javascript, javascript's own incoming slot
+      expect(slot).toBeDefined();
 
       const changeSet = moveSubtree(projection, WIREFRAME_NODE_IDS.forEach, slot!, fixture);
-      // The container node itself is untouched (no parentId change: it was
-      // and remains top-level), and none of its descendants are touched.
       expect(changeSet.removeNodeIds).toEqual([]);
       expect(changeSet.addNodes).toEqual([]);
-      // Origin seam healed (javascript now feeds directly into sendMessage)
-      // and target seam spliced (http -> forEach -> javascript).
       expect(new Set(changeSet.removeEdgeIds)).toEqual(
         new Set(['e-js-foreach', 'e-foreach-send', 'e-http-js'])
       );
@@ -419,8 +385,6 @@ describe('mutations', () => {
       expect(rowOrder.slice(0, 2)).toEqual([WIREFRAME_NODE_IDS.http, WIREFRAME_NODE_IDS.forEach]);
       expect(rowOrder).toContain(WIREFRAME_NODE_IDS.javascript);
       expect(rowOrder).toContain(WIREFRAME_NODE_IDS.sendMessage);
-      // Descendants and body-internal branch-entry connectors are intact,
-      // and every descendant's parentId is unchanged (still forEach).
       expect(rowOrder).toEqual(
         expect.arrayContaining([
           WIREFRAME_NODE_IDS.ifNode,
@@ -435,7 +399,6 @@ describe('mutations', () => {
       ]) {
         expect(moved.nodes.find((n) => n.id === id)?.parentId).toBe(WIREFRAME_NODE_IDS.forEach);
       }
-      // D7: renumbered in the new pre-order.
       const stepNumberOf = (id: string): number | undefined =>
         movedProjection.rows.find((r) => r.nodeId === id)?.stepNumber;
       expect(stepNumberOf(WIREFRAME_NODE_IDS.http)).toBe(1);
@@ -571,8 +534,7 @@ describe('mutations', () => {
         })
       );
       const projection = projectSequence(fixture.nodes, fixture.edges);
-      // Append after C2's Filler: a source-only slot, so the splice only ADDS
-      // an incoming edge to `If` and never a competing outgoing one.
+      // Source-only slot: adds an incoming edge to If, never a competing outgoing one.
       const appendAfterFiller: InsertionSlot = {
         id: 'probe',
         source: { nodeId: ids.filler, handleId: 'output' },
@@ -595,14 +557,10 @@ describe('mutations', () => {
       expect(moved.nodes.find((n) => n.id === ids.thenLeaf)?.parentId).toBe(ids.c2);
       expect(moved.nodes.find((n) => n.id === ids.elseLeaf)?.parentId).toBe(ids.c2);
       const c1Row = movedProjection.rows.find((r) => r.nodeId === ids.c1);
-      expect(c1Row?.collapsible).toBe(false); // c1's body is now empty
+      expect(c1Row?.collapsible).toBe(false);
     });
 
-    // End-to-end coverage for the two level-crossing paths of Move up/down
-    // (`findMoveUpSlot` at the top bound of a lane, `findMoveDownSlot` at the
-    // bottom bound): take the real slot, run the real mutation, apply it, and
-    // re-project, so a seam-healing bug cannot hide behind a correct-looking
-    // slot shape.
+    // End-to-end: real slot, real mutation, re-project.
     it('moves the first row of a container body UP AND OUT, healing the body start onto its successor', () => {
       const ids = CONTAINER_CHAIN_NODE_IDS;
       const fixture = makeContainerChainFixture();
@@ -611,9 +569,7 @@ describe('mutations', () => {
       expect(slot.graphEdgeId).toBe('chain-a-container');
 
       const moved = applyGraphChangeSet(fixture, moveSubtree(projection, ids.x, slot, fixture));
-      // A -> X -> Container [ Y ] -> B. X left the body for the top level, and
-      // the container's own body-start edge was healed onto Y, which becomes the
-      // body's first row instead of being stranded behind X.
+      // A -> X -> Container [ Y ] -> B
       expect(projectedOrder(moved)).toEqual([
         `${ids.a}@0^-`,
         `${ids.x}@0^-`,
@@ -633,8 +589,7 @@ describe('mutations', () => {
       expect(slot.graphEdgeId).toBe('chain-container-b');
 
       const moved = applyGraphChangeSet(fixture, moveSubtree(projection, ids.y, slot, fixture));
-      // A -> Container [ X ] -> Y -> B. X stays in the body and simply becomes
-      // its tail.
+      // A -> Container [ X ] -> Y -> B
       expect(projectedOrder(moved)).toEqual([
         `${ids.a}@0^-`,
         `${ids.container}@0^-`,
@@ -653,10 +608,7 @@ describe('mutations', () => {
       expect(slot).toEqual(findOutdentSlot(projection, 'leaf'));
 
       const moved = applyGraphChangeSet(fixture, moveSubtree(projection, 'leaf', slot, fixture));
-      // Root -> C1 [ C2 -> Leaf ]: Leaf exits C2 into C1, one level up, landing
-      // after C2 rather than at the top level. C2 keeps its row but stops
-      // projecting as a container - this registry-less projection infers
-      // containment from `parentId` alone and C2 has no children left.
+      // Root -> C1 [ C2 -> Leaf ]. C2 stops projecting as a container (no children left).
       expect(projectedOrder(moved)).toEqual(['root@0^-', 'c1@0^-', 'c2@1^c1', 'leaf@1^c1']);
       expect(moved.nodes.find((n) => n.id === 'leaf')?.parentId).toBe('c1');
     });
@@ -668,9 +620,7 @@ describe('mutations', () => {
       expect(slot.graphEdgeId).toBe('root-c1');
 
       const moved = applyGraphChangeSet(fixture, moveSubtree(projection, 'c2', slot, fixture));
-      // Root -> C2 [ Leaf ] -> C1: C2 crossed out of C1 and took its body with
-      // it. Leaf is a genuine container child (parentId === c2), so it follows
-      // C2 by id and needs no reparent; C1 is left with an empty body.
+      // Root -> C2 [ Leaf ] -> C1. Leaf follows C2 by parentId and needs no reparent.
       expect(projectedOrder(moved)).toEqual(['root@0^-', 'c2@0^-', 'leaf@1^c2', 'c1@0^-']);
       expect(moved.nodes.find((n) => n.id === 'c2')?.parentId).toBeUndefined();
       expect(moved.nodes.find((n) => n.id === 'leaf')?.parentId).toBe('c2');
@@ -683,11 +633,7 @@ describe('mutations', () => {
       expect(slot.graphEdgeId).toBe('a-if');
 
       const moved = applyGraphChangeSet(fixture, moveSubtree(projection, 'b', slot, fixture));
-      // A -> B -> If {true: (empty), false: C} -> D. The vacated Then lane is
-      // healed straight onto the merge (If.true -> D), so the branch keeps both
-      // lanes, D stays the merge, and B is neither duplicated nor orphaned. This
-      // is the move that used to be impossible: B's only forward connector was
-      // its lane's merge-back, which made Move up look like "no predecessor".
+      // A -> B -> If {true: (empty), false: C} -> D. The vacated lane heals onto the merge.
       expect(projectedOrder(moved)).toEqual(['a@0^-', 'b@0^-', 'if@0^-', 'c@1^if', 'd@0^-']);
       expect(
         moved.edges
@@ -702,12 +648,10 @@ describe('mutations', () => {
       const fixture = makeMergedBranchBodyFixture();
       const projection = projectSequence(fixture.nodes, fixture.edges);
       const slot = findIndentSlot(projection, ids.after)!;
-      // The tail is the merge, not the If it runs through.
       expect(slot.source?.nodeId).toBe(ids.merge);
 
       const moved = applyGraphChangeSet(fixture, moveSubtree(projection, ids.after, slot, fixture));
-      // Container [ X -> If -> {Then, Else} -> Merge -> After ]: After is now the
-      // body's last step, at the body's own depth, and the branch is untouched.
+      // Container [ X -> If -> {Then, Else} -> Merge -> After ]
       expect(projectedOrder(moved)).toEqual([
         `${ids.container}@0^-`,
         `${ids.x}@1^${ids.container}`,
@@ -718,23 +662,13 @@ describe('mutations', () => {
         `${ids.after}@1^${ids.container}`,
       ]);
       expect(moved.nodes.find((node) => node.id === ids.after)?.parentId).toBe(ids.container);
-      // The If still has exactly its two lanes: no third edge was hung off it,
-      // which is what the old tail resolution did.
+      // No third lane was hung off the If.
       expect(
         moved.edges
           .filter((edge) => edge.source === ids.ifNode)
           .map((edge) => edge.target)
           .sort()
       ).toEqual([ids.elseNode, ids.thenNode]);
-    });
-
-    it('moveStep delegates to moveSubtree for a collapsible node, producing an identical result', () => {
-      const fixture = makeWireframeFixture();
-      const projection = projectSequence(fixture.nodes, fixture.edges);
-      const slot = findMoveUpSlot(projection, WIREFRAME_NODE_IDS.forEach)!;
-      const viaMoveStep = moveStep(projection, WIREFRAME_NODE_IDS.forEach, slot, fixture);
-      const viaMoveSubtree = moveSubtree(projection, WIREFRAME_NODE_IDS.forEach, slot, fixture);
-      expect(viaMoveStep).toEqual(viaMoveSubtree);
     });
   });
 
@@ -746,11 +680,7 @@ describe('mutations', () => {
       it(`${name}: every step/merge-back slot round-trips`, () => {
         const base = factory();
         const baseProjection = projectSequence(base.nodes, base.edges);
-        // Includes 'merge-back': the wireframe's For Each -> Send Message
-        // container-continuation carries a real slot (defect 5), so it must
-        // round-trip identically to a plain 'step' slot. Diamond's own
-        // merge-backs (b->d, c->d) carry no slot and are excluded by the
-        // `c.slot` check regardless, unaffected by widening past 'step'.
+        // Includes slot-bearing merge-backs (a container's continuation).
         const stepSlots = baseProjection.connectors
           .filter((c) => c.kind !== 'branch-entry' && c.kind !== 'goto' && c.slot)
           .map((c) => c.slot as InsertionSlot);
@@ -762,10 +692,45 @@ describe('mutations', () => {
             insertAtSlot(baseProjection, slot, makeNode('probe'))
           );
           const insertedProjection = projectSequence(inserted.nodes, inserted.edges);
-          const healed = applyGraphChangeSet(inserted, removeStep(insertedProjection, 'probe'));
+          const healed = applyGraphChangeSet(
+            inserted,
+            removeStep(insertedProjection, 'probe', inserted)
+          );
           expect(topologyKey(healed), `slot ${slot.id}`).toBe(topologyKey(base));
         }
       });
     }
+  });
+});
+
+describe('removeStep seam filtering (isSequenceEdge)', () => {
+  const plain = (id: string): Node => ({
+    id,
+    type: 'uipath.script',
+    position: { x: 0, y: 0 },
+    data: {},
+  });
+  const nodes = [plain('a'), plain('b'), plain('c'), plain('r')];
+  const edges: Edge[] = [
+    { id: 'a-b', source: 'a', target: 'b', sourceHandle: 'output', targetHandle: 'input' },
+    { id: 'b-c', source: 'b', target: 'c', sourceHandle: 'output', targetHandle: 'input' },
+    { id: 'b-r', source: 'b', target: 'r', sourceHandle: 'artifact', targetHandle: 'resource' },
+  ];
+  const isSequenceEdge = (edge: Edge) => edge.sourceHandle !== 'artifact';
+
+  it('removes every incident edge but heals only across sequence edges', () => {
+    const projection = projectSequence(nodes, edges, { isSequenceEdge });
+    const changeSet = removeStep(projection, 'b', { nodes, edges, isSequenceEdge });
+
+    expect(changeSet.removeNodeIds).toEqual(['b']);
+    expect(new Set(changeSet.removeEdgeIds)).toEqual(new Set(['a-b', 'b-c', 'b-r']));
+    expect(changeSet.addEdges).toHaveLength(1);
+    expect(changeSet.addEdges[0]).toMatchObject({ source: 'a', target: 'c' });
+  });
+
+  it('keeps the legacy behaviour (every raw edge is a seam) when no predicate is given', () => {
+    const projection = projectSequence(nodes, edges, { isSequenceEdge });
+    const changeSet = removeStep(projection, 'b', { nodes, edges });
+    expect(changeSet.addEdges.map((edge) => edge.target).sort()).toEqual(['c', 'r']);
   });
 });

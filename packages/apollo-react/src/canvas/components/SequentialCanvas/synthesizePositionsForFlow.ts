@@ -1,35 +1,17 @@
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
-import { DEFAULT_NODE_SIZE, GRID_SPACING } from '../../constants';
+import { GRID_SPACING } from '../../constants';
+import { getNodeDimensions } from '../../utils/container';
 import { getNonOverlappingPositionForDirection, snapToGrid } from '../../utils/NodeUtils';
-import { SEQ_INSERTED_FLAG } from './edges/sequentialInsert';
+import { isSequentialInsertedNode, SEQ_INSERTED_FLAG } from './edges/sequentialInsert';
 
 /**
- * Places nodes that were inserted while in the sequential view (D4).
- *
- * Sequential view never persists positions: layout owns them, and canonical
- * `node.position` is left untouched so toggling back to flow is lossless. The
- * one exception is a node the user added while in sequential view, which has no
- * meaningful flow position. Those are stamped `data.seqInserted` (by
- * `sequentialOnBeforeNodeAdded`); on toggle back to flow this function gives each
- * one a real, non-overlapping position and clears the flag.
- *
- * Guarantees (asserted by the round-trip test):
- *  - NO pre-existing node is moved. Existing nodes are only read as obstacles;
- *    their objects are returned by identity. Only `seqInserted` nodes change.
- *  - No inserted node overlaps another node. Placement uses
- *    `getNonOverlappingPositionForDirection`, which shifts ONLY the new node
- *    (never the obstacles) until it clears them — the opposite of
- *    `resolveCollisions`, which would move both and violate the guarantee.
- *
- * Placement anchors each inserted node just to the right of its seam source (the
- * node its incoming edge comes from), matching the left-to-right bias of the
- * free-form Add Node pipeline, then resolves overlap by shifting downward.
- * Obstacle checks stay within the node's own coordinate frame (same `parentId`),
- * so a node inserted inside a container is placed relative to its siblings.
+ * Gives each node inserted while in sequential view (stamped `data.seqInserted`) a real,
+ * non-overlapping flow position to the right of its seam source and clears the flag.
+ * Pre-existing nodes are only read as obstacles and returned by identity; placement uses
+ * `getNonOverlappingPositionForDirection`, not `resolveCollisions`, which would move them.
  */
 export function synthesizePositionsForFlow(nodes: Node[], edges: Edge[]): Node[] {
-  const hasInserted = nodes.some((node) => isSeqInserted(node));
-  if (!hasInserted) return nodes;
+  if (!nodes.some(isSequentialInsertedNode)) return nodes;
 
   const gap = GRID_SPACING * 5;
   const result = [...nodes];
@@ -41,25 +23,18 @@ export function synthesizePositionsForFlow(nodes: Node[], edges: Edge[]): Node[]
 
   for (let i = 0; i < result.length; i++) {
     const node = result[i]!;
-    if (!isSeqInserted(node)) continue;
+    if (!isSequentialInsertedNode(node)) continue;
 
-    const size = {
-      width: node.width ?? node.measured?.width ?? DEFAULT_NODE_SIZE,
-      height: node.height ?? node.measured?.height ?? DEFAULT_NODE_SIZE,
-    };
-
+    const size = getNodeDimensions(node);
     const sourceEdge = incomingByTarget.get(node.id);
     const sourceIndex = sourceEdge ? indexById.get(sourceEdge.source) : undefined;
     const source = sourceIndex !== undefined ? result[sourceIndex] : undefined;
-    const sourceWidth = source?.width ?? source?.measured?.width ?? DEFAULT_NODE_SIZE;
 
     const anchor = source
-      ? { x: source.position.x + sourceWidth + gap, y: source.position.y }
+      ? { x: source.position.x + getNodeDimensions(source).width + gap, y: source.position.y }
       : { x: 0, y: 0 };
 
-    // Obstacles: every other node sharing this node's coordinate frame. Same
-    // frame => comparing raw `position` is valid; nodes in other frames are
-    // irrelevant to overlap here.
+    // Only nodes in the same coordinate frame (same `parentId`) are comparable by raw position.
     const obstacles = result.filter(
       (other) =>
         other.id !== node.id && (other.parentId ?? undefined) === (node.parentId ?? undefined)
@@ -79,15 +54,7 @@ export function synthesizePositionsForFlow(nodes: Node[], edges: Edge[]): Node[]
   return result;
 }
 
-function isSeqInserted(node: Node): boolean {
-  return (node.data as Record<string, unknown> | undefined)?.[SEQ_INSERTED_FLAG] === true;
-}
-
-/**
- * Returns a node with a real flow position and the sequential-only markers
- * removed: the `seqInserted` flag is dropped and `draggable` (forced false by the
- * sequential insert helper) is cleared so the node behaves normally in flow view.
- */
+/** Drops the `seqInserted` flag and the `draggable: false` the sequential insert forced. */
 function clearInsertedMarker(node: Node, position: { x: number; y: number }): Node {
   const { [SEQ_INSERTED_FLAG]: _flag, ...restData } = node.data as Record<string, unknown>;
   const { draggable: _draggable, ...restNode } = node;

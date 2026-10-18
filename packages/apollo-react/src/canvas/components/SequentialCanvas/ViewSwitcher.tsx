@@ -5,11 +5,7 @@ import { CanvasIcon } from '../../utils/icon-registry';
 import type { ViewSwitcherProps } from './SequentialCanvas.types';
 import { isCanvasView } from './useCanvasViewMode';
 
-/**
- * Segmented flow/sequential control (D11). It is a controlled component: the
- * host owns `value` and `onChange` (typically wired to useCanvasViewMode /
- * SequentialViewProvider).
- */
+/** Controlled segmented flow/sequential control. */
 function ViewSwitcherComponent({ value, onChange }: ViewSwitcherProps) {
   const { _ } = useSafeLingui();
 
@@ -22,8 +18,7 @@ function ViewSwitcherComponent({ value, onChange }: ViewSwitcherProps) {
         type="single"
         value={value}
         onValueChange={(next) => {
-          // Radix emits '' when the active item is re-pressed; keep the current
-          // view rather than clearing it (a segmented control is never empty).
+          // Radix emits '' when the active item is re-pressed; a segmented control is never empty.
           if (isCanvasView(next)) onChange(next);
         }}
         aria-label={_({ id: 'sequential-canvas.view.label', message: 'Canvas view' })}

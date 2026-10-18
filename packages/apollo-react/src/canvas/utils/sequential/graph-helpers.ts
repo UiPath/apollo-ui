@@ -3,24 +3,17 @@ import { DEFAULT_SOURCE_HANDLE_ID, PREVIEW_NODE_ID } from '../../constants';
 import type { SequenceProjection, SequenceRow } from './sequential.types';
 
 /**
- * Internal pure graph helpers shared by the projection, merge analysis, and
- * layout passes. Nothing here is part of the public sequential API (kept out of
- * index.ts); it is imported directly by projectSequence / mergeAnalysis.
- *
- * The engine has zero manifest/registry access: it reasons purely from the
- * canonical `nodes`/`edges` arrays. Two structural nesting mechanisms exist:
- *  - container nesting via `node.parentId` (a node with children is a container);
- *  - branch nesting via a node with more than one in-scope forward edge.
+ * Internal graph helpers for the projection, merge analysis and layout passes. Not
+ * part of the public API. The engine has no registry access: nesting is structural,
+ * via `node.parentId` (containers) or more than one in-scope forward edge (branches).
  */
 
-/** Loop-closure target handle; consumed as loop closure, never a cycle (useEdgePath.ts:114). */
+/** Loop-closure target handle; consumed as loop closure, never a cycle. */
 export const LOOP_BACK_HANDLE_ID = 'loopBack';
 
 /**
- * Canonical edge-data marker for a structural continuation through an inserted
- * node. It prevents a downstream edge from being reinterpreted as one of a
- * newly inserted decision/container node's own lanes merely because the Add
- * Node pipeline selected that node's default source handle.
+ * Edge-data marker for a continuation through an inserted node, so a downstream edge
+ * is not reinterpreted as one of the new node's own lanes.
  */
 export const SEQ_CONTINUATION_EDGE_KEY = '__sequentialContinuation';
 
@@ -28,13 +21,7 @@ export function isSequentialContinuationEdge(edge: Edge): boolean {
   return (edge.data as Record<string, unknown> | undefined)?.[SEQ_CONTINUATION_EDGE_KEY] === true;
 }
 
-/**
- * Prefix for synthetic empty-branch-lane placeholder node ids (a parent's
- * declared branch handle with no child yet). These rows are view-only: they
- * never appear in canonical state. Change forwarding receives the exact set of
- * projected synthetic ids, so a canonical id that happens to share this prefix
- * is still handled normally.
- */
+/** Prefix for synthetic placeholder node ids. These rows never appear in canonical state. */
 export const SEQ_LANE_PLACEHOLDER_PREFIX = '__sequential-lane__';
 /** Deterministic id for a parent node's empty-lane placeholder on a given handle. */
 export const lanePlaceholderId = (parentId: string, handleId: string): string =>
@@ -63,13 +50,7 @@ export function isLoopBackEdge(edge: Edge): boolean {
   return edge.targetHandle === LOOP_BACK_HANDLE_ID;
 }
 
-/**
- * Default sequence-edge predicate. Mirrors the container-engine contract
- * (utils/container.ts:766) where the predicate is caller-supplied: without a
- * manifest registry this layer cannot resolve `handleType === 'artifact'`, so
- * every non-preview edge counts as a sequence edge. Callers with registry
- * access pass `isSequenceEdge` to exclude artifact/resource handles.
- */
+/** Default predicate: every non-preview edge. Registry-aware callers exclude artifact handles. */
 export function defaultIsSequenceEdge(edge: Edge): boolean {
   return edge.source !== PREVIEW_NODE_ID && edge.target !== PREVIEW_NODE_ID;
 }
@@ -79,20 +60,19 @@ export function buildGraphIndex(
   edges: Edge[],
   isSequenceEdge: (edge: Edge) => boolean
 ): GraphIndex {
-  const nodesById = new Map<string, Node>();
-  const childrenByParent = new Map<Scope, Node[]>();
-  for (const node of nodes) {
-    nodesById.set(node.id, node);
-    const bucket = childrenByParent.get(node.parentId);
-    if (bucket) bucket.push(node);
-    else childrenByParent.set(node.parentId, [node]);
-  }
+  const { nodesById, childrenByParent } = indexNodesByParent(nodes);
 
   const seqEdges: Edge[] = [];
   const seqEdgesBySource = new Map<string, Edge[]>();
+  const seenEndpoints = new Set<string>();
   for (const edge of edges) {
     if (edge.source === PREVIEW_NODE_ID || edge.target === PREVIEW_NODE_ID) continue;
     if (!isSequenceEdge(edge)) continue;
+    // Duplicate wiring is one step, not two lanes. First edge wins; compatibility
+    // reports the rest.
+    const endpointKey = duplicateEdgeKey(edge);
+    if (seenEndpoints.has(endpointKey)) continue;
+    seenEndpoints.add(endpointKey);
     seqEdges.push(edge);
     const bucket = seqEdgesBySource.get(edge.source);
     if (bucket) bucket.push(edge);
@@ -102,22 +82,42 @@ export function buildGraphIndex(
   return { nodesById, childrenByParent, seqEdges, seqEdgesBySource, inDegreeCache: new Map() };
 }
 
+/** Identity of an edge's wiring, ignoring its id. */
+export function duplicateEdgeKey(edge: Edge): string {
+  return JSON.stringify([
+    edge.source,
+    edge.sourceHandle ?? '',
+    edge.target,
+    edge.targetHandle ?? '',
+  ]);
+}
+
 /** A node with at least one child is treated as a container (structural). */
 export function isContainerNode(index: GraphIndex, nodeId: string): boolean {
   return (index.childrenByParent.get(nodeId)?.length ?? 0) > 0;
 }
 
 /**
- * Forward sibling edges from `nodeId` inside `scope`: source and target both
- * live directly in `scope`, loopBack excluded. Edges that wire back to the
- * container itself (target === scope) or leave the scope are not forward steps.
+ * Forward sibling edges from `nodeId` inside `scope`, loopBack excluded. Sorted by
+ * target flow position (then handle, then id), not edge-array order: a split edge is
+ * re-appended, so array order would reorder lanes on every insert.
  */
 export function forwardOut(index: GraphIndex, nodeId: string, scope: Scope): Edge[] {
   const out = index.seqEdgesBySource.get(nodeId);
   if (!out) return [];
-  return out.filter(
+  const forward = out.filter(
     (edge) => !isLoopBackEdge(edge) && index.nodesById.get(edge.target)?.parentId === scope
   );
+  if (forward.length < 2) return forward;
+  return forward.sort((a, b) => {
+    const targetA = index.nodesById.get(a.target);
+    const targetB = index.nodesById.get(b.target);
+    const byTarget = targetA && targetB ? flowOrder(targetA, targetB) : 0;
+    if (byTarget !== 0) return byTarget;
+    const byHandle = sourceHandleOf(a).localeCompare(sourceHandleOf(b));
+    if (byHandle !== 0) return byHandle;
+    return a.id.localeCompare(b.id);
+  });
 }
 
 /** More than one forward sibling edge makes a node a branch source. */
@@ -152,12 +152,7 @@ function flowOrder(a: Node, b: Node): number {
   return a.id.localeCompare(b.id);
 }
 
-/**
- * Entry nodes for a scope: direct children with zero in-scope forward in-degree
- * (no sibling points at them), ordered by flow-view y so multi-root lanes stack
- * top-to-bottom (D9). Container-boundary edges from the parent do not count as
- * sibling incomers, so a container body's first child is correctly an entry.
- */
+/** Direct children with zero in-scope forward in-degree, in flow order. */
 export function entriesForScope(index: GraphIndex, scope: Scope): Node[] {
   const children = index.childrenByParent.get(scope) ?? [];
   if (children.length === 0) return [];
@@ -182,25 +177,9 @@ export function sourceHandleOf(edge: Edge): string {
 }
 
 /**
- * `nodeId -> SequenceRow` index for a projection, memoized on the projection's
- * identity.
- *
- * Lives here, at the bottom of the dependency order, so both the engine
- * (`slotNavigation`) and the view layer (`sequentialMoveActions`) can share one
- * index without an import cycle: `slotNavigation` imports `mutations`, and
- * `mutations` imports this module, so neither of those can host it.
- *
- * Worth memoizing because the move machinery is quadratic without it. Every
- * rendered row calls `computeSequentialMoveOptions`, which fans out to
- * `findMoveUpSlot` / `findMoveDownSlot` / `findOutdentSlot` / `findIndentSlot` /
- * `hasLaneSuccessor`, and each one previously rebuilt this map from scratch: at
- * the `SEQ_FULL_RENDER_MAX_NODES` ceiling of 150 rows that is ~150 x 5 full Map
- * constructions over 150 entries each, on every structural change. Keying the
- * cache on the projection object is safe and effective precisely because the
- * projection is reference-stable across data-only changes by design (D12), so
- * the index is built once per structural change and reused for the whole fan-out.
- *
- * A `WeakMap` so a superseded projection is collected with its index.
+ * `nodeId -> SequenceRow` index, memoized per projection. Every rendered row's move
+ * options fan out to several slot finders, so without this the move machinery is
+ * quadratic. Safe because the projection is reference-stable across data-only changes.
  */
 const rowIndexByProjection = new WeakMap<SequenceProjection, ReadonlyMap<string, SequenceRow>>();
 
@@ -215,4 +194,34 @@ export function rowsById(projection: SequenceProjection): ReadonlyMap<string, Se
 /** The row for `nodeId`, via the memoized {@link rowsById} index. */
 export function rowFor(projection: SequenceProjection, nodeId: string): SequenceRow | undefined {
   return rowsById(projection).get(nodeId);
+}
+
+/** Id lookup plus parentId buckets (top level under `undefined`), in input order. */
+export function indexNodesByParent<T extends Node>(
+  nodes: readonly T[]
+): { nodesById: Map<string, T>; childrenByParent: Map<Scope, T[]> } {
+  const nodesById = new Map<string, T>();
+  const childrenByParent = new Map<Scope, T[]>();
+  for (const node of nodes) {
+    nodesById.set(node.id, node);
+    const bucket = childrenByParent.get(node.parentId);
+    if (bucket) bucket.push(node);
+    else childrenByParent.set(node.parentId, [node]);
+  }
+  return { nodesById, childrenByParent };
+}
+
+/** Keeps the nodes passing `keep` and only the edges whose endpoints both survive. */
+export function filterGraphByNodes<N extends Node, E extends Edge>(
+  nodes: readonly N[],
+  edges: readonly E[],
+  keep: (node: N) => boolean
+): { nodes: N[]; edges: E[]; nodeIds: Set<string> } {
+  const kept = nodes.filter(keep);
+  const nodeIds = new Set(kept.map((node) => node.id));
+  return {
+    nodes: kept,
+    edges: edges.filter((edge) => nodeIds.has(edge.source) && nodeIds.has(edge.target)),
+    nodeIds,
+  };
 }
