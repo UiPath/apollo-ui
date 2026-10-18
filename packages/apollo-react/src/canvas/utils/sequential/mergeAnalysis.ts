@@ -2,25 +2,20 @@ import type { Edge } from '@uipath/apollo-react/canvas/xyflow/react';
 import { forwardOut, type GraphIndex, inDegreeInScope, type Scope } from './graph-helpers';
 
 /**
- * Approximate immediate post-dominator ("merge point") for a branch node.
- *
- * A full dominator computation is overkill for the small, mostly-structured
- * scopes the projection walks. Instead each branch is descended along its
- * single-successor spine; a branch's "join" is the first node it reaches whose
- * in-scope forward in-degree is >= 2 (a convergence point). When two or more
- * branches converge on the same join, that node is the merge: lanes stop before
- * it, it is emitted once at the branch owner's depth, and lane tails draw
- * merge-back connectors into it. Irregular convergence (no shared join) returns
- * `undefined`, which the projection degrades into first-incomer-wins + goto
- * connectors (D9, precedent utils/coded-agents/d3-layout.ts:97-98).
- *
- * A lane's spine can itself split again (a branch nested inside a branch). Such
- * a lane's own merge is resolved recursively (findMerge called on the nested
- * branch's out-edges) and the walk continues from THAT merge, so a nested
- * branch never defeats the outer branch's convergence detection. `visiting`
- * threads a shared guard set through the whole recursive resolution so
- * pathologically self-referencing nested branches degrade to `undefined`
- * instead of recursing forever.
+ * A convergence node plus how many of its incoming edges the lanes that reached it account
+ * for. A join whose every incoming edge is accounted for is closed by those lanes; one with
+ * more incoming edges is also fed from outside them.
+ */
+interface Join {
+  nodeId: string;
+  arrivals: number;
+}
+
+/**
+ * Approximate immediate post-dominator for a branch node: each lane is followed to
+ * the first node with in-scope forward in-degree >= 2, and the join shared by two or
+ * more lanes is the merge. `undefined` when lanes do not converge. Nested branches are
+ * resolved recursively; `visiting` guards against self-referencing recursion.
  */
 export function findMerge(
   index: GraphIndex,
@@ -29,63 +24,80 @@ export function findMerge(
   indeg: Map<string, number> = inDegreeInScope(index, scope),
   visiting: Set<string> = new Set()
 ): string | undefined {
-  const joinCounts = new Map<string, number>();
+  return resolveMerge(index, branchEdges, scope, indeg, visiting)?.nodeId;
+}
+
+function resolveMerge(
+  index: GraphIndex,
+  branchEdges: Edge[],
+  scope: Scope,
+  indeg: Map<string, number>,
+  visiting: Set<string>
+): Join | undefined {
+  const lanesByJoin = new Map<string, { lanes: number; arrivals: number }>();
 
   for (const edge of branchEdges) {
     const join = laneJoin(index, edge.target, scope, indeg, visiting);
-    if (join !== undefined) joinCounts.set(join, (joinCounts.get(join) ?? 0) + 1);
+    if (join === undefined) continue;
+    const entry = lanesByJoin.get(join.nodeId);
+    if (entry) {
+      entry.lanes += 1;
+      entry.arrivals += join.arrivals;
+    } else {
+      lanesByJoin.set(join.nodeId, { lanes: 1, arrivals: join.arrivals });
+    }
   }
 
-  let merge: string | undefined;
-  let mergeCount = 1;
-  for (const [nodeId, count] of joinCounts) {
-    if (count >= 2 && count > mergeCount) {
-      merge = nodeId;
-      mergeCount = count;
+  let merge: Join | undefined;
+  let mergeLanes = 1;
+  for (const [nodeId, { lanes, arrivals }] of lanesByJoin) {
+    if (lanes >= 2 && lanes > mergeLanes) {
+      merge = { nodeId, arrivals };
+      mergeLanes = lanes;
     }
   }
   return merge;
 }
 
-/**
- * Follows one branch's single-successor spine and returns the first convergence
- * node (forward in-degree >= 2) it reaches, or `undefined` if the branch
- * dead-ends, leaves scope, or loops before converging. When the spine itself
- * splits (a nested branch), the nested branch's own merge is resolved first
- * (recursively) and the walk resumes from it, rather than bailing out.
- */
+/** First convergence node on a lane's spine, or `undefined` if it dead-ends, leaves scope or loops. */
 function laneJoin(
   index: GraphIndex,
   startId: string,
   scope: Scope,
   indeg: Map<string, number>,
   visiting: Set<string>
-): string | undefined {
+): Join | undefined {
   const seen = new Set<string>();
   let current: string | undefined = startId;
+  // Incoming edges of `current` this lane accounts for: one when it stepped here along its
+  // spine, or every lane of a nested branch when `current` is that branch's merge.
+  let arrivals = 1;
 
   while (current !== undefined) {
-    // A convergence point is recognized regardless of how we arrived at it
-    // (a direct step or a resolved nested merge), so check it first.
-    if ((indeg.get(current) ?? 0) >= 2) return current;
-    if (seen.has(current) || visiting.has(current)) return undefined; // loops without converging
+    // A node fed from outside this lane too is where the lane converges with its siblings.
+    // A nested branch's own merge, closed entirely by that branch, is just the next step on
+    // the spine: stopping there would hide the outer join further down.
+    const inDegree = indeg.get(current) ?? 0;
+    if (inDegree >= 2 && inDegree > arrivals) return { nodeId: current, arrivals };
+    if (seen.has(current) || visiting.has(current)) return undefined;
     seen.add(current);
 
     const node = index.nodesById.get(current);
     if (!node || node.parentId !== scope) return undefined;
 
     const out = forwardOut(index, current, scope);
-    if (out.length === 0) return undefined; // dead-end: never converges
+    if (out.length === 0) return undefined;
     if (out.length === 1) {
       current = out[0]!.target;
+      arrivals = 1;
       continue;
     }
 
-    // Nested branch: resolve its own merge first, then continue from there.
     visiting.add(current);
-    const nestedMerge = findMerge(index, out, scope, indeg, visiting);
+    const nestedMerge = resolveMerge(index, out, scope, indeg, visiting);
     visiting.delete(current);
-    current = nestedMerge;
+    current = nestedMerge?.nodeId;
+    arrivals = nestedMerge?.arrivals ?? 1;
   }
   return undefined;
 }

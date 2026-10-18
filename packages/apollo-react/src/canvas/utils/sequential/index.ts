@@ -1,13 +1,10 @@
 export * from './compatibility';
 export * from './fingerprint';
 export * from './layoutSequence';
-export * from './mutations';
+// Seam-reading helpers in mutations stay in-package, as does `./slotNavigation`:
+// its `find*Slot` results are only sound after the registry-aware gate in
+// `computeSequentialMoveOptions`, which external consumers cannot know about.
+export { insertAtSlot, moveSubtree, removeStep } from './mutations';
+export * from './predicates';
 export * from './projectSequence';
 export * from './sequential.types';
-// `./slotNavigation` is deliberately NOT re-exported. Its `find*Slot` helpers can
-// return a slot that is only sound once the caller has applied a registry-aware
-// refusal (see `computeSequentialMoveOptions`, which is the one place that does),
-// and this barrel reaches `@uipath/apollo-react/canvas` through `utils/index.ts`.
-// Exporting them would turn "the caller must gate this" from an arrangement
-// between two files in this package into a promise to external consumers who have
-// no way to know the gate exists. Import it directly for in-package use.

@@ -1,10 +1,10 @@
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
-import { DEFAULT_TRIGGER_NODE_TYPE } from '../../constants';
 import {
   buildGraphIndex,
   defaultIsSequenceEdge,
   edgeDataLabel,
   entriesForScope,
+  filterGraphByNodes,
   forwardOut,
   isBranchSource,
   isLoopBackEdge,
@@ -17,11 +17,11 @@ import {
   sourceHandleOf,
 } from './graph-helpers';
 import { findMerge } from './mergeAnalysis';
+import { defaultIsStartNode } from './predicates';
 import type {
   InsertionSlot,
   ProjectSequenceOptions,
   SequenceConnector,
-  SequenceConnectorKind,
   SequenceProjection,
   SequenceRow,
 } from './sequential.types';
@@ -31,26 +31,11 @@ const CONTAINER_START_HANDLE = 'start';
 const EMPTY_SCOPE: ReadonlySet<string> = new Set();
 
 /**
- * Pure, structure-only projection of the canonical graph into sequential rows,
- * connectors, and insertion slots.
- *
- * Algorithm (see the module helpers for the primitives):
- *  - Sequence edges = non-preview edges passing `isSequenceEdge`; `loopBack`
- *    edges are consumed as loop closure, never traversed as forward steps.
- *  - Walk begins at the entry set (nodes with no in-scope forward incomer),
- *    ordered by flow-view y. A DFS pre-order assigns the flat `stepNumber`
- *    counter BEFORE any collapse filtering (D7); synthetic rows do not exist at
- *    this layer (start bar + placeholder are injected view-only by the assembly).
- *  - Containers (a node with children) open an indented "Body" lane; branch
- *    nodes (>1 forward edge) open one labeled lane per branch. Both close at a
- *    shared merge (immediate post-dominator, see mergeAnalysis); lane tails draw
- *    `merge-back` connectors into it.
- *  - Malformed shapes never hard-fail: multi-root => stacked lanes; unstructured
- *    merge => first-incomer-wins + `goto`; non-loopBack cycle => dashed upward
- *    `goto` + visited-set guard (prevents infinite recursion); orphans =>
- *    appended trailing rows so a node is never silently dropped.
- *  - `slots` include the empty-branch-body case so an empty lane still shows an
- *    insert point.
+ * Pure projection of the canonical graph into sequential rows, connectors and slots.
+ * DFS pre-order from the entry set (flow-y ordered) numbers steps before collapse
+ * filtering. Containers and branch nodes open indented lanes closed by a shared merge.
+ * Malformed shapes degrade (multi-root stacks, unstructured merge/cycle become `goto`,
+ * orphans trail) rather than fail.
  */
 export function projectSequence(
   nodes: Node[],
@@ -58,13 +43,12 @@ export function projectSequence(
   options?: ProjectSequenceOptions
 ): SequenceProjection {
   const isSequenceEdge = options?.isSequenceEdge ?? defaultIsSequenceEdge;
-  const isStartNode =
-    options?.isStartNode ?? ((node: Node) => node.type === DEFAULT_TRIGGER_NODE_TYPE);
+  const isStartNode = options?.isStartNode ?? defaultIsStartNode;
   const collapsedSet = options?.collapsedStepIds ?? EMPTY_SCOPE;
-  const sequenceNodes = nodes.filter((node) => !isStartNode(node));
-  const sequenceNodeIds = new Set(sequenceNodes.map((node) => node.id));
-  const sequenceEdges = edges.filter(
-    (edge) => sequenceNodeIds.has(edge.source) && sequenceNodeIds.has(edge.target)
+  const { nodes: sequenceNodes, edges: sequenceEdges } = filterGraphByNodes(
+    nodes,
+    edges,
+    (node) => !isStartNode(node)
   );
   const index = buildGraphIndex(sequenceNodes, sequenceEdges, isSequenceEdge);
 
@@ -101,8 +85,12 @@ export function projectSequence(
     return slot;
   };
 
-  const slotFromEdge = (edge: Edge, containerId: Scope): InsertionSlot =>
-    addSlot({
+  // Edges the walk placed; leftovers become gotos in the post-pass so none are dropped.
+  const representedEdgeIds = new Set<string>();
+
+  const slotFromEdge = (edge: Edge, containerId: Scope): InsertionSlot => {
+    representedEdgeIds.add(edge.id);
+    return addSlot({
       id: `slot:edge:${edge.id}`,
       source: { nodeId: edge.source, handleId: edge.sourceHandle ?? undefined },
       target: { nodeId: edge.target, handleId: edge.targetHandle ?? undefined },
@@ -110,16 +98,11 @@ export function projectSequence(
       containerId: containerId ?? undefined,
       continuation: isSequentialContinuationEdge(edge) || undefined,
     });
+  };
 
-  const pushConnector = (
-    kind: SequenceConnectorKind,
-    id: string,
-    source: string,
-    target: string,
-    label?: string,
-    slot?: InsertionSlot
-  ): void => {
-    connectors.push({ id, kind, sourceRowId: source, targetRowId: target, label, slot });
+  const pushGoto = (edge: Edge, sourceRowId: string, targetRowId: string): void => {
+    representedEdgeIds.add(edge.id);
+    connectors.push({ id: `conn:goto:${edge.id}`, kind: 'goto', sourceRowId, targetRowId });
   };
 
   const emitRow = (
@@ -156,10 +139,8 @@ export function projectSequence(
     edge.sourceHandle ??
     'Branch';
 
-  // Synthetic empty-lane placeholder: a parent's declared branch handle with no
-  // child yet. Renders as an indented dashed "+ Add step" bar entered mid-left,
-  // carrying the slot that appends the first node into that lane. Not added to
-  // `visited`/`rowByNodeId` — it has no canonical node and is never numbered.
+  // Synthetic row for an empty lane. Not added to `visited`/`rowByNodeId`: it has no
+  // canonical node and is never numbered.
   const emitLanePlaceholder = (
     ownerId: string,
     depth: number,
@@ -186,24 +167,23 @@ export function projectSequence(
       lanePlaceholder: slot,
       placeholderKind: 'lane',
     });
-    // No ⊕ slot on the connector — the placeholder bar itself is the affordance.
-    pushConnector(
-      'branch-entry',
-      `conn:lane:${ownerId}:${handle.id}`,
-      ownerId,
-      placeholderNodeId,
-      handle.label
-    );
+    // No slot on the connector: the placeholder bar itself is the affordance.
+    connectors.push({
+      id: `conn:lane:${ownerId}:${handle.id}`,
+      kind: 'branch-entry',
+      sourceRowId: ownerId,
+      targetRowId: placeholderNodeId,
+      label: handle.label,
+    });
   };
 
   function walkContainerBody(containerNode: Node, depth: number): void {
     const scope = containerNode.id;
     const entries = entriesForScope(index, scope);
 
-    if (entries.length === 0) {
-      // Empty container body: render a "Body" lane placeholder ("+ Add step")
-      // so the empty body is visible and insertable, entered mid-left like any
-      // branch lane. The body handle/label come from the manifest when known.
+    const children = index.childrenByParent.get(scope) ?? [];
+
+    if (entries.length === 0 && children.length === 0) {
       const bodyHandle = options?.getBranchHandles?.(containerNode)?.[0] ?? {
         id: CONTAINER_START_HANDLE,
         label: CONTAINER_START_LABEL,
@@ -212,10 +192,12 @@ export function projectSequence(
       return;
     }
 
-    for (const entry of entries) {
-      const startEdge = index.seqEdges.find(
-        (edge) => edge.source === scope && edge.target === entry.id
-      );
+    // Children but no entry: the body is a cycle with no way in. Walk from the first
+    // child in flow order so the closing edge becomes a goto instead of orphaning them.
+    const bodyEntries = entries.length > 0 ? entries : [sortByFlow(children)[0]!];
+
+    for (const entry of bodyEntries) {
+      const startEdge = index.seqEdgesBySource.get(scope)?.find((edge) => edge.target === entry.id);
       const label =
         options?.resolveBranchLabel?.(scope, startEdge?.sourceHandle ?? CONTAINER_START_HANDLE) ??
         (startEdge ? edgeDataLabel(startEdge) : undefined) ??
@@ -228,14 +210,14 @@ export function projectSequence(
             target: { nodeId: entry.id },
             containerId: scope,
           });
-      pushConnector(
-        'branch-entry',
-        startEdge ? `conn:${startEdge.id}` : `conn:start:${scope}:${entry.id}`,
-        containerNode.id,
-        entry.id,
+      connectors.push({
+        id: startEdge ? `conn:${startEdge.id}` : `conn:start:${scope}:${entry.id}`,
+        kind: 'branch-entry',
+        sourceRowId: containerNode.id,
+        targetRowId: entry.id,
         label,
-        slot
-      );
+        slot,
+      });
       walkSpine(
         entry.id,
         scope,
@@ -261,43 +243,33 @@ export function projectSequence(
     for (const edge of branchEdges) {
       const target = edge.target;
 
-      // Classify the target BEFORE emitting anything: a branch edge that closes
-      // a cycle or jumps into a node already placed by another lane is a
-      // cycle/unstructured-merge (D9), never an insertable branch-entry lane.
-      // This mirrors walkSpine's single-successor handling below.
+      // A branch edge closing a cycle or landing on an already-placed node is a goto,
+      // never an insertable lane.
       if (onStack.has(target)) {
-        pushConnector('goto', `conn:goto:${edge.id}`, ownerId, target);
+        pushGoto(edge, ownerId, target);
         continue;
       }
       if (visited.has(target) && target !== merge) {
-        pushConnector('goto', `conn:goto:${edge.id}`, ownerId, target);
+        pushGoto(edge, ownerId, target);
         continue;
       }
 
       const label = branchLabel(ownerId, edge);
       const targetNode = index.nodesById.get(target);
+      // Keyed by edge id so two branch edges on the same source handle never collide.
       const slot = slotFromEdge(edge, scope);
       const isEmptyLane =
         target === merge || outerStop.has(target) || !targetNode || targetNode.parentId !== scope;
-      if (isEmptyLane) {
-        pushConnector('branch-entry', `conn:${edge.id}`, ownerId, target, label, slot);
-        addSlot({
-          // Disambiguated with the edge id: two branch edges sharing the
-          // default source handle (e.g. imported/degraded graphs) must not
-          // collide on the same empty-lane slot.
-          id: `slot:empty:${ownerId}:${sourceHandleOf(edge)}:${edge.id}`,
-          source: { nodeId: ownerId, handleId: edge.sourceHandle ?? undefined },
-          // Built from the edge itself, not from `merge`: this is the same
-          // endpoint the connector splits regardless of whether findMerge
-          // resolved a shared join, so the handle is never lost.
-          target: { nodeId: edge.target, handleId: edge.targetHandle ?? undefined },
-          graphEdgeId: edge.id,
-          containerId: scope ?? undefined,
-        });
-        continue;
-      }
+      connectors.push({
+        id: `conn:${edge.id}`,
+        kind: 'branch-entry',
+        sourceRowId: ownerId,
+        targetRowId: target,
+        label,
+        slot,
+      });
+      if (isEmptyLane) continue;
 
-      pushConnector('branch-entry', `conn:${edge.id}`, ownerId, target, label, slot);
       walkSpine(
         target,
         scope,
@@ -314,20 +286,16 @@ export function projectSequence(
     startId: string,
     scope: Scope,
     depth: number,
-    parentRowIdArg: string | undefined,
+    parentRowId: string | undefined,
     branchMetaArg: SequenceRow['branch'],
     stopBefore: ReadonlySet<string>
   ): void {
     let currentId: string | undefined = startId;
-    const parentRowId = parentRowIdArg;
     let branchMeta = branchMetaArg;
     let firstRow = true;
     const localStack: string[] = [];
 
-    // Advance the spine to a single forward successor, pushing the connecting
-    // edge. Returns the next node id, or undefined when the walk must stop
-    // (merge-back / goto / cycle). Shared by the plain single-successor case and
-    // a declared branch node's continuation output.
+    // Advance to a single forward successor; undefined when the walk must stop.
     const stepToSuccessor = (
       fromId: string,
       edge: Edge,
@@ -335,32 +303,27 @@ export function projectSequence(
     ): string | undefined => {
       const next = edge.target;
       if (stopBefore.has(next)) {
-        // A branch/loop lane closing into the shared merge. The closing edge is a
-        // real graph edge, so it stays insertable: splitting it appends a step to
-        // the END of this lane (before the merge), the same as any other gap. The
-        // merge-back geometry is kept; only the missing slot is restored.
-        pushConnector(
-          'merge-back',
-          `conn:merge:${edge.id}`,
-          fromId,
-          next,
-          undefined,
-          slotFromEdge(edge, scope)
-        );
+        // Lane closing into the merge. Keeps its slot: splitting it appends to the lane tail.
+        connectors.push({
+          id: `conn:merge:${edge.id}`,
+          kind: 'merge-back',
+          sourceRowId: fromId,
+          targetRowId: next,
+          slot: slotFromEdge(edge, scope),
+        });
         return undefined;
       }
       if (onStack.has(next) || visited.has(next)) {
-        pushConnector('goto', `conn:goto:${edge.id}`, fromId, next);
+        pushGoto(edge, fromId, next);
         return undefined;
       }
-      pushConnector(
-        isContainer(fromId) || followsIndentedContent ? 'merge-back' : 'step',
-        `conn:${edge.id}`,
-        fromId,
-        next,
-        undefined,
-        slotFromEdge(edge, scope)
-      );
+      connectors.push({
+        id: `conn:${edge.id}`,
+        kind: isContainer(fromId) || followsIndentedContent ? 'merge-back' : 'step',
+        sourceRowId: fromId,
+        targetRowId: next,
+        slot: slotFromEdge(edge, scope),
+      });
       return next;
     };
 
@@ -377,19 +340,14 @@ export function projectSequence(
       if (isContainer(currentId)) walkContainerBody(node, depth);
 
       const out = forwardOut(index, currentId, scope);
-      // Manifest-declared branch lanes (If → then/else, while → body, try/catch)
-      // for a non-container parent. When present, the node's forward flow is
-      // routed through its DECLARED handles rather than the edge-count heuristic,
-      // so every lane renders — populated ones walk, empty ones get a "+ Add
-      // step" placeholder — regardless of how many branches are wired yet.
+      // Declared handles take precedence over the edge-count heuristic so empty lanes
+      // still render as placeholders.
       const branchHandles = declaredBranchHandles(currentId);
       const isDeclaredBranch: boolean = branchHandles.length > 0;
 
       if (out.length === 0 && !isDeclaredBranch) {
-        // Terminal nested rows get the same full-width dashed Add step row as
-        // an empty branch. This keeps populated and empty branch insertion UX
-        // identical; the top-level tail remains served by the canvas's single
-        // terminal placeholder.
+        // Nested leaves get an append placeholder; the top-level tail is served by
+        // the canvas's terminal placeholder.
         const leafRow = rowByNodeId.get(currentId);
         if (leafRow && !isContainer(currentId)) {
           leafRow.isLeaf = true;
@@ -411,15 +369,19 @@ export function projectSequence(
               lanePlaceholder: slot,
               placeholderKind: 'append',
             });
-            pushConnector('step', `conn:leaf:${currentId}`, currentId, placeholderNodeId);
+            connectors.push({
+              id: `conn:leaf:${currentId}`,
+              kind: 'step',
+              sourceRowId: currentId,
+              targetRowId: placeholderNodeId,
+            });
           }
         }
         break;
       }
 
       if (out.length > 1 || isDeclaredBranch) {
-        // Split a declared branch node's outputs into lane edges (declared
-        // handles) vs a single continuation output (e.g. a loop's Completed).
+        // Declared-handle edges are lanes; anything else is the continuation output.
         const branchHandleIds = new Set(branchHandles.map((h) => h.id));
         const laneEdges: Edge[] = isDeclaredBranch
           ? out.filter(
@@ -436,9 +398,8 @@ export function projectSequence(
 
         let merge: string | undefined;
         if (isDeclaredBranch) {
-          // Compute the merge from every populated lane, then emit each lane in
-          // manifest order. This keeps an empty Then lane before a populated
-          // Else lane instead of grouping all populated lanes first.
+          // Resolve the merge from all populated lanes first, then emit in manifest order
+          // so an empty Then lane still precedes a populated Else.
           merge = laneEdges.length > 0 ? findMerge(index, laneEdges, scope) : undefined;
           for (const handle of branchHandles) {
             const handleEdges = laneEdges.filter((edge) => sourceHandleOf(edge) === handle.id);
@@ -455,8 +416,7 @@ export function projectSequence(
               : undefined;
         }
 
-        // Continue below the branches: prefer the branch merge; else follow a
-        // single continuation output as a plain spine step.
+        // Continue below the branches: prefer the merge, else a single continuation output.
         if (
           merge !== undefined &&
           !stopBefore.has(merge) &&
@@ -478,10 +438,7 @@ export function projectSequence(
         break;
       }
 
-      // Plain single successor (not a declared branch). A container's own
-      // forward continuation rejoins the spine after its indented body, so it
-      // uses merge-back geometry while keeping its slot. Straight container
-      // continuations render solid in SequentialConnectorEdge.
+      // A container's own continuation uses merge-back geometry but keeps its slot.
       const nextId = stepToSuccessor(currentId, out[0]!);
       if (nextId === undefined) break;
       currentId = nextId;
@@ -490,21 +447,17 @@ export function projectSequence(
     for (const id of localStack) onStack.delete(id);
   }
 
-  // Nodes touched by at least one real (non-loopBack) sequence edge. A node with
-  // none is an orphan even if its in-degree is zero, so it must not seed a lane.
+  // A node with no real (non-loopBack) sequence edge is an orphan and must not seed a lane.
   const incidentNodeIds = new Set<string>();
   for (const edge of index.seqEdges) {
     if (isLoopBackEdge(edge)) continue;
     incidentNodeIds.add(edge.source);
     incidentNodeIds.add(edge.target);
   }
-  // A graph with no sequence edges anywhere has no "real" content for a node to
-  // be orphaned relative to: every top-level node (most commonly, the single
-  // node on an otherwise-empty canvas) is trivially its own one-row sequence
-  // rather than a de-emphasized orphan (D9).
+  // With no sequence edges at all, each top-level node is its own trivial sequence,
+  // not an orphan.
   const hasSequenceContent = incidentNodeIds.size > 0;
 
-  // Top-level roots: entries with no forward incomer, stacked by flow-view y.
   const topEntries = entriesForScope(index, undefined).filter((node) =>
     incidentNodeIds.has(node.id)
   );
@@ -512,11 +465,8 @@ export function projectSequence(
     walkSpine(entry.id, undefined, 0, undefined, undefined, EMPTY_SCOPE);
   }
 
-  // Disconnected / cyclic top-level components with no zero-in-degree entry,
-  // and genuinely edge-less nodes. Orphans are collected here but their rows
-  // are emitted only after every lane has been walked, so an orphan positioned
-  // between two components (in flow-y order) always ends up in the trailing
-  // section (D9) instead of splitting the two lanes' rows apart.
+  // Cyclic components with no entry, and edge-less nodes. Orphan rows are emitted
+  // after every lane so one positioned between two components never splits them.
   const topLevel = index.childrenByParent.get(undefined) ?? [];
   const orphanNodes: Node[] = [];
   for (const node of sortByFlow(topLevel)) {
@@ -526,10 +476,7 @@ export function projectSequence(
     } else if (hasSequenceContent) {
       orphanNodes.push(node);
     } else {
-      // No sequence content anywhere in the graph: this edge-less node is a
-      // trivial entry (e.g. the first node on an empty canvas), not an orphan.
-      // Use the normal spine walk so a manifest-known empty container still
-      // emits its Body insertion slot and structural children, if any.
+      // Spine walk so a manifest-known empty container still emits its Body slot.
       walkSpine(node.id, undefined, 0, undefined, undefined, EMPTY_SCOPE);
     }
   }
@@ -538,16 +485,23 @@ export function projectSequence(
     emitRow(node.id, 0, undefined, undefined, true);
   }
 
-  // Any node never reached (e.g. a child of an unreachable container) is
-  // appended as an orphan so the projection never silently drops a node.
+  // Never-reached nodes (e.g. children of an unreachable container) trail as orphans.
   for (const node of sequenceNodes) {
     if (!visited.has(node.id)) {
       emitRow(node.id, 0, undefined, undefined, true);
     }
   }
 
-  // Visibility: a row is hidden when any ancestor row is collapsed. Rows are in
-  // pre-order so a parent's resolved visibility is always available first (D7).
+  // Unplaced sequence edges become slot-less gotos so compatibility can report them.
+  // loopBack closures and a child wiring back into its own container are never drawn.
+  for (const edge of index.seqEdges) {
+    if (representedEdgeIds.has(edge.id) || isLoopBackEdge(edge)) continue;
+    if (!rowByNodeId.has(edge.source) || !rowByNodeId.has(edge.target)) continue;
+    if (index.nodesById.get(edge.source)?.parentId === edge.target) continue;
+    pushGoto(edge, edge.source, edge.target);
+  }
+
+  // Rows are in pre-order, so a parent's visibility is always resolved first.
   const rowsById = new Map(rows.map((row) => [row.nodeId, row]));
   for (const row of rows) {
     const parent = row.parentRowId ? rowsById.get(row.parentRowId) : undefined;

@@ -1,16 +1,15 @@
 import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '../../../utils/testing';
 import { BaseCanvasModeProvider } from '../../BaseCanvas/BaseCanvasModeProvider';
+import { SequentialLaneAddProvider } from '../SequentialLaneAddContext';
 import { SequentialPlaceholderNode } from './SequentialPlaceholderNode';
 
-// The node renders xyflow <Handle>s, which need a store provider. This test
-// only exercises the affordance rendering, so stub them out.
+// xyflow <Handle>s need a store provider; only the affordance rendering is under test.
 vi.mock('@uipath/apollo-react/canvas/xyflow/react', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@uipath/apollo-react/canvas/xyflow/react')>();
   return { ...actual, Handle: () => null };
 });
 
-// Minimal NodeProps stand-in for a focused render test.
 // biome-ignore lint/suspicious/noExplicitAny: minimal NodeProps stub.
 const props = (data: object) => ({ id: 'ph', data, width: 896, height: 44 }) as any;
 
@@ -26,7 +25,6 @@ describe('SequentialPlaceholderNode', () => {
   it('renders the dashed Add step row for the row variant (empty lane/body)', () => {
     renderNode({ variant: 'row', onAdd: () => {} });
     expect(screen.getByTestId('sequential-placeholder-bar')).toBeInTheDocument();
-    // The row shows a visible label.
     expect(screen.getByText('Add step')).toBeInTheDocument();
     expect(screen.queryByTestId('sequential-placeholder-plus')).not.toBeInTheDocument();
   });
@@ -34,10 +32,17 @@ describe('SequentialPlaceholderNode', () => {
   it('renders a quiet plus (no visible label) for the plus variant (append)', () => {
     renderNode({ variant: 'plus', onAdd: () => {} });
     expect(screen.getByTestId('sequential-placeholder-plus')).toBeInTheDocument();
-    // The plus is icon-only: labelled for a11y, but no visible text.
     expect(screen.getByRole('button', { name: 'Add step' })).toBeInTheDocument();
     expect(screen.queryByText('Add step')).not.toBeInTheDocument();
     expect(screen.queryByTestId('sequential-placeholder-bar')).not.toBeInTheDocument();
+  });
+
+  it('keeps the row button free of non-phrasing content', () => {
+    renderNode({ variant: 'row', onAdd: () => {} });
+    const button = screen.getByTestId('sequential-placeholder-bar');
+    // xyflow handles are <div>s, not allowed inside a <button>; they live on the shell.
+    expect(button.querySelector('div')).toBeNull();
+    expect(button.parentElement).not.toBeNull();
   });
 
   it('defaults to the row variant when none is given', () => {
@@ -57,5 +62,23 @@ describe('SequentialPlaceholderNode', () => {
     renderNode({ variant: 'plus', onAdd }, 'view');
     fireEvent.click(screen.getByRole('button', { name: 'Add step' }));
     expect(onAdd).not.toHaveBeenCalled();
+  });
+
+  it('adds a lane placeholder through the shared lane-add context with its slot id', () => {
+    const onLaneAdd = vi.fn();
+    render(
+      <BaseCanvasModeProvider mode="design">
+        <SequentialLaneAddProvider onLaneAdd={onLaneAdd}>
+          <SequentialPlaceholderNode {...props({ variant: 'row', insertionSlotId: 'slot:x' })} />
+        </SequentialLaneAddProvider>
+      </BaseCanvasModeProvider>
+    );
+    fireEvent.click(screen.getByTestId('sequential-placeholder-bar'));
+    expect(onLaneAdd).toHaveBeenCalledWith('slot:x');
+  });
+
+  it('disables a lane placeholder when no lane-add handler is provided', () => {
+    renderNode({ variant: 'row', insertionSlotId: 'slot:x' });
+    expect(screen.getByTestId('sequential-placeholder-bar')).toBeDisabled();
   });
 });

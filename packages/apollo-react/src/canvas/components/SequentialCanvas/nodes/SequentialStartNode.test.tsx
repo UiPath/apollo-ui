@@ -3,8 +3,7 @@ import { fireEvent, render, screen } from '../../../utils/testing';
 import { BaseCanvasModeProvider } from '../../BaseCanvas/BaseCanvasModeProvider';
 import { SequentialStartNode, type SequentialStartNodeData } from './SequentialStartNode';
 
-// The node renders an xyflow <Handle>, which needs a store provider. xyflow is
-// mocked globally in test/canvas-mocks.ts, so it renders as an inert marker.
+// xyflow is mocked globally (test/canvas-mocks.ts), so <Handle> renders as an inert marker.
 
 type Mode = 'design' | 'view' | 'readonly';
 
@@ -62,8 +61,6 @@ describe('SequentialStartNode', () => {
     ] as const)('is hidden in %s mode even when a handler is wired', (mode) => {
       renderStartNode({ onAddTrigger: vi.fn() }, mode);
 
-      // The bar itself still renders: a non-design canvas shows the start row,
-      // it just offers no way to mutate the graph from it.
       expect(screen.getByTestId('sequential-start-bar')).toBeInTheDocument();
       expect(screen.queryByRole('button', { name: 'Add trigger' })).not.toBeInTheDocument();
     });

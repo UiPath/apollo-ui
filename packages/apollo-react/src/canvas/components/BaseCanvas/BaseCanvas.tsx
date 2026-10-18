@@ -16,6 +16,7 @@ import {
   useState,
 } from 'react';
 import { useToolbarActionStore } from '../../hooks/ToolbarActionContext';
+import { orderNodesParentsFirst } from '../../utils/NodeUtils';
 import { BASE_CANVAS_DEFAULTS, PAN_ON_DRAG } from './BaseCanvas.constants';
 import {
   useAutoLayout,
@@ -42,7 +43,7 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
 
   const {
     // Core props
-    nodes = [],
+    nodes: nodesProp = [],
     edges = [],
     nodeTypes,
     edgeTypes,
@@ -119,6 +120,10 @@ const BaseCanvasInnerComponent = <NodeType extends Node = Node, EdgeType extends
     // Remaining ReactFlow props
     ...reactFlowProps
   } = canvasProps;
+
+  // React Flow silently unparents a child that precedes its parent in the array (see
+  // `orderNodesParentsFirst`); repair once here for every host. Identity-preserving when ordered.
+  const nodes = useMemo(() => orderNodesParentsFirst(nodesProp), [nodesProp]);
 
   // Derive interactivity from mode
   const isInteractive = mode !== 'readonly';

@@ -1,9 +1,12 @@
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { NodeManifest } from '../../schema/node-definition';
 import { orderNodesParentsFirst } from '../../utils/NodeUtils';
 import {
   type AnalyzeSequentialCompatibilityOptions,
   analyzeSequentialCompatibility,
   type CanvasView,
+  createSequencePredicates,
+  defaultIsSequenceNode,
   type SequentialCompatibilityReport,
 } from '../../utils/sequential';
 import {
@@ -15,25 +18,26 @@ import { synthesizePositionsForFlow } from './synthesizePositionsForFlow';
 
 export interface PrepareCanvasViewTransitionOptions {
   /**
-   * Identifies structural container nodes (a for-each body, a scope) for BOTH
-   * halves of the transition. Supply this whenever the graph can hold containers:
-   * `layoutWorkflowLeftToRight` otherwise infers containment from "has at least
-   * one child in the nodes array", so an EMPTY container is sized as an ordinary
-   * node, and a container nested in one does not fit the box the layout built for
-   * it. See "Containers" in `canvas/README.md` for why that reads as broken
-   * parenting rather than as bad sizing.
-   *
-   * Hosts should take it from {@link useCanvasNodeLayout}, which derives it from
-   * the node manifest and is what the rest of the canvas uses:
-   *
-   * ```ts
-   * const { isContainerNode } = useCanvasNodeLayout();
-   * ```
-   *
-   * `flowLayout.isContainerNode` / `sequential.isContainerNode` still win when set,
-   * so a caller that needs the two halves to disagree can still say so.
+   * Manifest lookup (normally `registry.getManifest`) from which the sequence, start and
+   * container predicates are derived exactly as SequentialCanvas derives them, so the
+   * compatibility report describes the same node set the canvas renders. The explicit
+   * predicates below still win when set.
+   */
+  getManifest?: (type: string) => NodeManifest | undefined;
+  /**
+   * Structural container predicate for both halves of the transition. Without it (or
+   * `getManifest`) `layoutWorkflowLeftToRight` infers containment from "has a child", so an
+   * empty container is sized as an ordinary node. The per-half options still win when set.
    */
   isContainerNode?: (node: Node) => boolean;
+  /**
+   * Which nodes take part in the sequential projection. Defaults to everything but sticky
+   * notes; with `getManifest`, artifact-only resources are excluded too. Flow layout is
+   * unaffected: resources are still laid out as nodes there.
+   */
+  isSequenceNode?: (node: Node) => boolean;
+  /** Which nodes collapse into the synthetic start row. Sequential half only. */
+  isStartNode?: (node: Node) => boolean;
   flowLayout?: WorkflowLayoutOptions;
   sequential?: AnalyzeSequentialCompatibilityOptions;
 }
@@ -49,11 +53,9 @@ export interface CanvasViewTransitionResult<N extends Node = Node> {
 }
 
 /**
- * Prepares one canonical workflow graph for a presentation switch.
- *
- * Flow is a concrete left-to-right layout, so its positions and container sizes
- * become canonical presentation state. Sequential is a derived projection: it
- * only receives a compatibility report and leaves every node object untouched.
+ * Prepares a canonical graph for a view switch. Entering flow lays out positions and
+ * container sizes into canonical state; entering sequential only attaches a compatibility
+ * report and leaves every node untouched.
  */
 export function prepareCanvasViewTransition<N extends Node = Node>(
   targetView: CanvasView,
@@ -61,34 +63,31 @@ export function prepareCanvasViewTransition<N extends Node = Node>(
   edges: Edge[],
   options: PrepareCanvasViewTransitionOptions = {}
 ): CanvasViewTransitionResult<N> {
-  const isWorkflowNode = (node: Node) => node.type !== 'stickyNote';
+  const derived = options.getManifest ? createSequencePredicates(options.getManifest) : undefined;
+  const isSequenceNode = options.isSequenceNode ?? derived?.isSequenceNode ?? defaultIsSequenceNode;
+  const isContainerNode = options.isContainerNode ?? derived?.isContainerNode;
   if (targetView === 'sequential') {
     return {
       view: targetView,
       nodes,
       sequentialCompatibility: analyzeSequentialCompatibility(nodes, edges, {
         ...options.sequential,
-        isSequenceNode: options.sequential?.isSequenceNode ?? isWorkflowNode,
-        isContainerNode: options.sequential?.isContainerNode ?? options.isContainerNode,
+        isSequenceNode: options.sequential?.isSequenceNode ?? isSequenceNode,
+        isStartNode: options.sequential?.isStartNode ?? options.isStartNode ?? derived?.isStartNode,
+        isContainerNode: options.sequential?.isContainerNode ?? isContainerNode,
       }),
     };
   }
 
-  // Clear sequential-insert markers before laying out the entire flow. The
-  // synthesized coordinates are deliberately superseded by the deterministic
-  // layout, but marker cleanup still restores normal draggable behavior.
-  //
-  // Ordering is repaired here as well, because flow view is where it matters:
-  // containment in sequential view is read from `parentId` directly and is
-  // order-independent, while React Flow drops a parent link whose child comes
-  // first in the array (see `orderNodesParentsFirst`). The layout below shares
-  // sequential's indifference — it buckets by `parentId` — so a mis-ordered
-  // graph lays out perfectly and still renders as broken containment.
+  // Clear sequential-insert markers (the layout supersedes the synthesized coordinates, but
+  // the cleanup restores draggability) and reorder parents-first: React Flow drops a parent
+  // link whose child comes first, while the layout buckets by `parentId` and would not notice.
   const normalizedNodes = orderNodesParentsFirst(synthesizePositionsForFlow(nodes, edges) as N[]);
   const flowLayout = layoutWorkflowLeftToRight(normalizedNodes, edges, {
     ...options.flowLayout,
-    isLayoutNode: options.flowLayout?.isLayoutNode ?? isWorkflowNode,
-    isContainerNode: options.flowLayout?.isContainerNode ?? options.isContainerNode,
+    // Resources stay laid out as nodes in flow view, so the registry-free default applies.
+    isLayoutNode: options.flowLayout?.isLayoutNode ?? defaultIsSequenceNode,
+    isContainerNode: options.flowLayout?.isContainerNode ?? isContainerNode,
   });
   let changed = normalizedNodes !== nodes;
   const nextNodes = normalizedNodes.map((node) => {

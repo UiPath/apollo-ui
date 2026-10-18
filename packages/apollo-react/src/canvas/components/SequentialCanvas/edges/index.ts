@@ -1,9 +1,5 @@
-// Local barrel for the sequential connector + insert pipeline. Deliberately NOT
-// re-exported by ../index.ts, so none of it reaches the public canvas surface: the
-// connector edge and the insert plumbing are internals of SequentialCanvas, not a
-// supported API. (This is a narrower claim than the superseded D13, which withheld
-// the whole feature from the barrel; the component itself IS public now. See
-// ../../index.ts.) Types first, component/helpers after.
+// Internal barrel, deliberately not re-exported by ../index.ts: the connector edge
+// and insert plumbing are SequentialCanvas internals, not a supported API.
 
 export { SequentialBranchHeader } from './SequentialBranchHeader';
 export { SequentialConnectorEdge } from './SequentialConnectorEdge';

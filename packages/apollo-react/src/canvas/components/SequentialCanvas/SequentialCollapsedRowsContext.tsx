@@ -6,25 +6,13 @@ const SequentialCollapsedRowsContext = createContext<ReadonlySet<string>>(EMPTY_
 
 export interface SequentialCollapsedRowsProviderProps {
   children: ReactNode;
-  /** The view-local collapsed row-id set (SequentialCanvasInner's `collapsedSet`). */
   collapsedStepIds: ReadonlySet<string>;
 }
 
 /**
- * Carries the Sequential Canvas's view-local `collapsedStepIds` set down to
- * `SequentialStepNode` without touching node `data`. A
- * collapsed collapsible row must render its bar with the same decorative
- * "stacked" treatment BaseNode's card uses for drillable/collapsed nodes, but
- * the sequential clone's `data` is a by-reference passthrough from the
- * canonical node (see `useSequentialGraph.ts`) and must not be mutated (D12);
- * mutating it per collapse toggle would also break the clone/canonical
- * reference-equality memoization that keeps rename keystrokes cheap.
- *
- * Kept as a tiny dedicated context (rather than folding into the broader,
- * OPTIONAL `SequentialViewContext`) because `collapsedStepIds` is a required,
- * always-present concept of `SequentialCanvas` itself, whereas
- * `SequentialViewContext` only exists for hosts that compose an explicit
- * flow/sequential toggle and may not be mounted at all.
+ * Carries the collapsed row-id set down to SequentialStepNode without touching node `data`,
+ * which is a by-reference passthrough from the canonical node and must not be mutated.
+ * Separate from the optional SequentialViewContext because this one is always present.
  */
 export function SequentialCollapsedRowsProvider({
   children,
@@ -37,7 +25,7 @@ export function SequentialCollapsedRowsProvider({
   );
 }
 
-/** Returns the current collapsed row-id set; empty outside a provider (e.g. in isolated node tests/stories). */
+/** The collapsed row-id set; empty outside a provider. */
 export function useSequentialCollapsedRows(): ReadonlySet<string> {
   return useContext(SequentialCollapsedRowsContext);
 }

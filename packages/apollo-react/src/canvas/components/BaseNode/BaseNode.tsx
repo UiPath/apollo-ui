@@ -18,6 +18,7 @@ import {
   NODE_INNER_RADIUS_RATIO,
   NODE_INNER_SHAPE_RATIO,
 } from '../../constants';
+import { useNodeTypeRegistry } from '../../core';
 import { useBatchedUpdateNodeInternals } from '../../hooks/useBatchedUpdateNodeInternals';
 import { isWideNodeShape, type NodeShape } from '../../schema';
 import { CanvasIcon } from '../../utils/icon-registry';
@@ -29,7 +30,7 @@ import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
 import { NodeToolbar } from '../Toolbar';
 import type { BaseNodeData, FooterVariant } from './BaseNode.types';
 import { BaseBadgeSlot } from './BaseNodeBadgeSlot';
-import { BaseContainer } from './BaseNodeContainer';
+import { BaseContainer, resolveInteractionState } from './BaseNodeContainer';
 import { BaseInnerShape } from './BaseNodeInnerShape';
 import { MissingManifestNode } from './BaseNodeMissingManifest';
 import { NodeLabel } from './NodeLabel';
@@ -68,7 +69,10 @@ export type BaseNodeProps = NodeProps<Node<BaseNodeData>>;
 
 const BaseNodeComponent = (props: BaseNodeProps) => {
   const { type, data, selected, id, dragging, width, parentId } = props;
-  const presentation = useBaseNodePresentation({ type, data, selected, id, dragging });
+  const presentation = useBaseNodePresentation(
+    { type, data, selected, id, dragging },
+    useNodeTypeRegistry()
+  );
   const {
     adornments,
     canEdit,
@@ -153,16 +157,31 @@ const BaseNodeComponent = (props: BaseNodeProps) => {
     return Math.max(getIntrinsicHeight(!!footerComponent, footerVariant), handleFloor);
   }, [handleConfigurations, footerComponent, footerVariant]);
 
+  // Handle layout identity: `handleConfigurations` is re-resolved from `data` on every edit,
+  // so keying the effect on the array would re-measure the card per rename keystroke.
+  const handleLayoutKey = useMemo(
+    () =>
+      handleConfigurations
+        .map(
+          (config) =>
+            `${config.position}:${config.visible !== false}:${config.handles
+              .map((handle) => `${handle.id}/${handle.visible !== false}`)
+              .join(',')}`
+        )
+        .join('|'),
+    [handleConfigurations]
+  );
+
   // Write computedHeight to node.height and recalculate handle positions. Compare
   // against node.height (not the measured `height` prop) so a lagging measurement
   // can't retrigger the write.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: handleConfigurations triggers handle recalculation.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: keyed on the handle layout string, not the array identity.
   useEffect(() => {
     if (getNode(id)?.height !== computedHeight) {
       updateNode(id, { height: computedHeight });
     }
     updateNodeInternals(id);
-  }, [handleConfigurations, computedHeight, id, getNode, updateNode, updateNodeInternals]);
+  }, [handleLayoutKey, computedHeight, id, getNode, updateNode, updateNodeInternals]);
 
   const displayLabel = display.label;
   const displayShape = display.shape ?? 'square';
@@ -243,14 +262,13 @@ const BaseNodeComponent = (props: BaseNodeProps) => {
     } as React.CSSProperties;
   }, [containerWidth, containerHeight, displayShape, hasFooter]);
 
-  const interactionState = useMemo(() => {
-    if (disabled) return 'disabled';
-    if (dragging) return 'drag';
-    if (selected) return 'selected';
-    if (isFocused) return 'focus';
-    if (isHovered) return 'hover';
-    return 'default';
-  }, [disabled, dragging, selected, isHovered, isFocused]);
+  const interactionState = resolveInteractionState({
+    disabled,
+    dragging,
+    selected,
+    focused: isFocused,
+    hovered: isHovered,
+  });
 
   const shouldShowHandles = useMemo(
     () => (isConnecting || selected || isHovered) && !dragging,

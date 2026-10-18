@@ -1,6 +1,11 @@
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { describe, expect, it, vi } from 'vitest';
-import { makeWireframeFixture, WIREFRAME_NODE_IDS } from '../../utils/sequential/fixtures';
+import {
+  AGENT_RESOURCES_NODE_IDS,
+  makeAgentWithResourcesFixture,
+  makeWireframeFixture,
+  WIREFRAME_NODE_IDS,
+} from '../../utils/sequential/fixtures';
 import { SEQ_INSERTED_FLAG } from './edges/sequentialInsert';
 import { prepareCanvasViewTransition } from './prepareCanvasViewTransition';
 
@@ -87,9 +92,7 @@ describe('prepareCanvasViewTransition', () => {
 });
 
 describe('prepareCanvasViewTransition: nested containers', () => {
-  // A for-each inside a for-each, inner body still empty: the case the
-  // `isContainerNode` predicate exists for. Its own JSDoc explains why an
-  // unrecognized empty container reads as broken parenting.
+  // A for-each inside a for-each with an empty inner body: the case `isContainerNode` exists for.
   const FOREACH = 'uipath.control-flow.foreach';
   const nested = (): { nodes: Node[]; edges: Edge[] } => ({
     nodes: [
@@ -114,12 +117,10 @@ describe('prepareCanvasViewTransition: nested containers', () => {
 
     const outer = result.nodes.find((item) => item.id === 'outer')!;
     const inner = result.nodes.find((item) => item.id === 'inner')!;
-    // Both are recognized, so both are given real container dimensions. Without
-    // the predicate `inner.width` / `inner.height` stay undefined entirely.
+    // Without the predicate `inner.width` / `inner.height` stay undefined.
     expect(inner.width).toBeGreaterThan(0);
     expect(inner.height).toBeGreaterThan(0);
-    // The assertion with the teeth: the inner box fits inside the outer box. If
-    // it does not, xyflow clamps it to a position outside `outer`'s own origin.
+    // The inner box must fit inside the outer box, or xyflow clamps it outside `outer`'s origin.
     expect(inner.position.x + inner.width!).toBeLessThanOrEqual(outer.width!);
     expect(inner.position.y + inner.height!).toBeLessThanOrEqual(outer.height!);
     expect(inner.position.x).toBeGreaterThanOrEqual(0);
@@ -127,9 +128,7 @@ describe('prepareCanvasViewTransition: nested containers', () => {
   });
 
   it('routes the shared predicate to the sequential half', () => {
-    // The flow half is covered by the sizing assertions above and below. The
-    // sequential half forwards it to projectSequence, whose own tests cover the
-    // effect, so the wiring is what is asserted here.
+    // The sequential half forwards to projectSequence, so only the wiring is asserted here.
     const { nodes, edges } = nested();
     const spy = vi.fn(isContainerNode);
 
@@ -146,9 +145,23 @@ describe('prepareCanvasViewTransition: nested containers', () => {
       flowLayout: { isContainerNode: () => false },
     });
 
-    // Explicitly opting the flow half out reverts to child-count inference, so
-    // the empty inner container is sized as a leaf again.
+    // Opting the flow half out reverts to child-count inference, so the inner is sized as a leaf.
     expect(result.nodes.find((item) => item.id === 'inner')?.width).toBeUndefined();
+  });
+
+  it('routes the shared sequence predicate to the sequential half', () => {
+    const ids = AGENT_RESOURCES_NODE_IDS;
+    const { nodes, edges } = makeAgentWithResourcesFixture();
+    const steps = new Set<string>([ids.agent, ids.after]);
+
+    const result = prepareCanvasViewTransition('sequential', nodes, edges, {
+      isSequenceNode: (node) => steps.has(node.id),
+    });
+
+    const report = result.sequentialCompatibility!;
+    expect(report.level).toBe('exact');
+    expect(report.projectedNodeIds).toEqual([ids.agent, ids.after]);
+    expect(report.preservedOnlyNodeIds).toEqual([ids.context, ids.memory, ids.tool]);
   });
 
   it('still lays out a nested container whose body is NOT empty', () => {
@@ -199,10 +212,8 @@ describe('prepareCanvasViewTransition: nested containers', () => {
   });
 
   it('puts a parent back in front of its child when the graph arrives mis-ordered', () => {
-    // React Flow only warns about this and then leaves the child unparented for
-    // that pass, so the failure surfaces as a container with no children: it
-    // renders an empty body, and dragging it leaves the child behind. Neither the
-    // projection nor the layout notices, because both bucket by `parentId`.
+    // React Flow only warns and leaves the child unparented; neither the projection nor the
+    // layout notices because both bucket by `parentId`.
     const { nodes, edges } = nested();
     const misordered = [nodes.find((n) => n.id === 'inner')!, nodes.find((n) => n.id === 'outer')!];
 

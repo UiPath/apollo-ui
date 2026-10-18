@@ -2,37 +2,17 @@ import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   buildGraphIndex,
   defaultIsSequenceEdge,
+  forwardOut,
   isSequentialContinuationEdge,
   sortByFlow,
 } from './graph-helpers';
 
 /**
- * Structural fingerprint used to memoize the projection and layout (D12): node
- * ids + node types + parentId (structural nesting) + edge ids/endpoints/handles
- * + the sequential-continuation edge bit + each scope's resolved entry order
- * + the collapsed set. Deliberately excludes all other `node.data`/`edge.data`
- * and raw `node.position`, so data-only changes (rename keystrokes touch
- * node.data per keypress) reuse the cached projection and positions unchanged.
- *
- * Every channel value is JSON-encoded before joining so a value containing a
- * separator character (`:`, `|`, `#`) can never be confused with a field
- * boundary (e.g. `{id:'a:b', type:'c'}` must not fingerprint identically to
- * `{id:'a', type:'b:c'}`).
- *
- * Row order is not purely a function of node/edge identity: each scope's entry
- * nodes (top-level roots, and any container body with more than one
- * independent entry) are ordered by flow-view position (`entriesForScope`,
- * D9), so a position-only change that reorders them must invalidate the cache
- * even though every node/edge identity is unchanged. Rather than fingerprint
- * raw coordinates (which would invalidate the cache on every drag even when
- * relative order is untouched), each scope's RESOLVED entry-id order is
- * encoded, using the same default sequence-edge predicate `projectSequence`
- * falls back to; a caller-supplied `isSequenceEdge` may classify a handful of
- * edges differently, but the ordering signal only needs to invalidate the
- * cache when it changes, not reproduce the projection exactly.
- *
- * Sorting each channel makes the fingerprint order-independent, so reordering
- * the input arrays without changing structure keeps the cache warm.
+ * Structural fingerprint for memoizing the projection and layout. Excludes `data` and
+ * raw positions so data-only changes stay cached, but encodes each scope's resolved
+ * entry order and each branch's lane order so a drag that reorders them invalidates.
+ * Covers graph inputs only: callers must also key on the projection's option results.
+ * Values are JSON-encoded so separator characters cannot blur field boundaries.
  */
 export function sequenceFingerprint(
   nodes: Node[],
@@ -62,6 +42,13 @@ export function sequenceFingerprint(
       JSON.stringify([scope ?? '', sortByFlow(children).map((node) => node.id)])
     )
     .sort();
+  const laneParts = [...index.seqEdgesBySource.keys()]
+    .map((sourceId) => {
+      const out = forwardOut(index, sourceId, index.nodesById.get(sourceId)?.parentId);
+      return out.length > 1 ? JSON.stringify([sourceId, out.map((edge) => edge.id)]) : undefined;
+    })
+    .filter((part): part is string => part !== undefined)
+    .sort();
 
   return [
     `n=${nodeParts.length}`,
@@ -72,5 +59,7 @@ export function sequenceFingerprint(
     collapsedParts.join('|'),
     `o=${orderParts.length}`,
     orderParts.join('|'),
+    `l=${laneParts.length}`,
+    laneParts.join('|'),
   ].join('#');
 }

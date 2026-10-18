@@ -1,15 +1,17 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { BaseCanvasModeProvider } from '../../BaseCanvas/BaseCanvasModeProvider';
+import type { BaseNodeBarAttachment } from '../../BaseNode/BaseNodeBar';
+import { SequentialAttachmentsProvider } from '../SequentialAttachmentsContext';
 import { SequentialStepNode } from './SequentialStepNode';
 
-// Keep the wrapper test lightweight and free of the registry / ReactFlow
-// context the manifest-backed bar renderer needs.
+// Stub the bar renderer so the wrapper test needs no registry or ReactFlow context.
 vi.mock('../../BaseNode/BaseNodeBarNode', () => ({
-  BaseNodeBarNode: () => <div data-testid="base-node-bar" />,
+  BaseNodeBarNode: ({ attachments }: { attachments?: BaseNodeBarAttachment[] }) => (
+    <div data-testid="base-node-bar" data-attachments={attachments?.map((a) => a.id).join(',')} />
+  ),
 }));
 
-// Minimal NodeProps stand-in for a focused wrapper test.
 // biome-ignore lint/suspicious/noExplicitAny: minimal NodeProps stub for a focused render test.
 const nodeProps = { id: 'leaf-a', data: {} } as any;
 
@@ -23,5 +25,31 @@ describe('SequentialStepNode', () => {
 
     expect(screen.getByTestId('base-node-bar')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Add step' })).not.toBeInTheDocument();
+  });
+
+  it('passes the step attachments from context to the bar', () => {
+    const attachments = new Map<string, BaseNodeBarAttachment[]>([
+      [
+        'leaf-a',
+        [
+          { id: 'tool-1', label: 'Search', handleId: 'tools' },
+          { id: 'memory-1', label: 'Memory', handleId: 'memory' },
+        ],
+      ],
+      ['other', [{ id: 'tool-2', label: 'Other tool' }]],
+    ]);
+
+    render(
+      <BaseCanvasModeProvider mode="design">
+        <SequentialAttachmentsProvider attachmentsByStepId={attachments}>
+          <SequentialStepNode {...nodeProps} />
+        </SequentialAttachmentsProvider>
+      </BaseCanvasModeProvider>
+    );
+
+    expect(screen.getByTestId('base-node-bar')).toHaveAttribute(
+      'data-attachments',
+      'tool-1,memory-1'
+    );
   });
 });

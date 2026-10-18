@@ -143,9 +143,7 @@ describe('SequentialGutter', () => {
     expect(screen.getByTestId('sequential-gutter-number')).toHaveAttribute('aria-hidden', 'true');
   });
 
-  // The tree-rail rework. All numbers must sit in ONE fixed
-  // column regardless of a row's own indent depth, with a dotted leader line
-  // bridging out to each row's own (depth-varying) bar position.
+  // All numbers sit in one fixed column; a dotted leader bridges to each row's indented bar.
   describe('tree-rail geometry', () => {
     it("positions every row column at the SAME fixed x, regardless of the row's own depth", () => {
       const rows = [
@@ -210,8 +208,7 @@ describe('SequentialGutter', () => {
       expect(leaders[0].className).toContain('border-dotted');
       expect(leaders[0]).toHaveAttribute('aria-hidden', 'true');
 
-      // The deeper row's leader must span further right (it bridges a wider gap
-      // from the shared column to its own more-indented bar).
+      // The deeper row's leader bridges a wider gap.
       const widthA = Number.parseFloat(leaders[0].style.width);
       const widthB = Number.parseFloat(leaders[1].style.width);
       expect(widthB).toBeGreaterThan(widthA);

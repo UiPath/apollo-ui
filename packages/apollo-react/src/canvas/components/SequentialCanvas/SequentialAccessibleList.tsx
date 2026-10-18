@@ -54,11 +54,7 @@ const SequentialAccessibleRow = memo(function SequentialAccessibleRow({
   );
 });
 
-/**
- * Screen-reader fallback used when the visual canvas must virtualize a very
- * large graph. The visual ReactFlow subtree is aria-hidden in that mode, while
- * this focusable, DOM-ordered list keeps every step reachable and operable.
- */
+/** Screen-reader fallback for when the canvas virtualizes and its ReactFlow subtree is aria-hidden. */
 export function SequentialAccessibleList({
   rows,
   nodes,
@@ -83,6 +79,7 @@ export function SequentialAccessibleList({
   return (
     <ol
       className="sr-only"
+      data-sequential-list=""
       aria-label={_({ id: 'sequential-canvas.steps.aria-label', message: 'Workflow steps' })}
     >
       {rows.map((row) => {

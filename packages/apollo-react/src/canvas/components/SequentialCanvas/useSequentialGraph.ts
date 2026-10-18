@@ -5,18 +5,22 @@ import {
   DEFAULT_SOURCE_HANDLE_ID,
   DEFAULT_TARGET_HANDLE_ID,
   PREVIEW_NODE_ID,
-  SEQ_BAR_HEIGHT,
-  SEQ_BAR_WIDTH,
   SEQ_PLACEHOLDER_NODE_TYPE,
-  SEQ_ROW_GAP,
   SEQ_START_NODE_TYPE,
 } from '../../constants';
 import type { NodeTypeRegistry } from '../../core';
 import { useOptionalNodeTypeRegistry } from '../../core';
 import type { InstanceDisplayConfig } from '../../schema/node-instance';
+import { PREVIEW_EDGE_STYLE } from '../../utils/createPreviewNode';
 import { resolveDisplay } from '../../utils/manifest-resolver';
+import { shallowEqualExcept } from '../../utils/nodePropsEqual';
 import { sequenceFingerprint } from '../../utils/sequential/fingerprint';
-import { layoutSequence } from '../../utils/sequential/layoutSequence';
+import {
+  edgeDataLabel,
+  filterGraphByNodes,
+  sourceHandleOf,
+} from '../../utils/sequential/graph-helpers';
+import { layoutSequence, resolveSequenceMetrics } from '../../utils/sequential/layoutSequence';
 import { projectionWithPreviewRow } from '../../utils/sequential/previewRow';
 import { projectSequence } from '../../utils/sequential/projectSequence';
 import type {
@@ -27,6 +31,7 @@ import type {
   SequenceLayout,
   SequenceProjection,
 } from '../../utils/sequential/sequential.types';
+import { EMPTY_SET } from '../BaseCanvas/set-utils';
 import { EMPTY_WAYPOINTS } from '../Edges/shared/constants';
 import type {
   SequentialConnectorData,
@@ -43,15 +48,16 @@ import {
   SEQ_START_ROW_ID,
 } from './sequentialGraph.constants';
 
-/** The translate function `useSafeLingui()._` returns; used to type the aria-label formatter. */
 type TranslateFn = ReturnType<typeof useSafeLingui>['_'];
 
-const EMPTY_COLLAPSED: ReadonlySet<string> = new Set();
+/** The connector draws its own dashes, so the preview style drops the Add Node dash pattern. */
+const { strokeDasharray: _dash, ...SEQ_PREVIEW_EDGE_STYLE } = PREVIEW_EDGE_STYLE ?? {};
+
+const POSITION_AND_DATA_KEYS: ReadonlySet<string> = new Set(['position', 'data']);
 
 /**
- * Stable string over a predicate applied to each item, used only as a memo
- * guard so the projection recomputes when predicate *results* (not identity)
- * change. When the predicate is absent, every item falls back to `whenAbsent`.
+ * Memo guard: a stable string over predicate *results*, so the projection recomputes when
+ * results (not predicate identity) change. An absent predicate yields `whenAbsent` per item.
  */
 function predicateFingerprint<T extends { id: string }>(
   items: readonly T[],
@@ -90,68 +96,55 @@ export interface UseSequentialGraphArgs<N extends Node, E extends Edge> {
   resolveBranchLabel?: (nodeId: string, handleId: string) => string;
   /** Registry-driven branch-lane handles for a parent node (see projectSequence). */
   getBranchHandles?: (node: N) => { id: string; label: string }[];
-  /** Opens the Add Node panel for an empty branch lane's "+ Add step" placeholder. */
-  onLaneAdd?: (slot: InsertionSlot) => void;
   /**
-   * The slot whose Add Node panel is currently open, if any. While set, the
-   * layout re-runs with a synthetic preview row spliced in at the slot, opening
-   * a one-row gap and re-routing every connector from the shifted geometry. Only
-   * the layout memo depends on it; the projection memo stays fingerprint-keyed
-   * (D12), so this never re-projects.
+   * Makes lane placeholders clickable. The click itself is delivered through
+   * SequentialLaneAddContext by slot id, so placeholder data holds no closure.
+   */
+  canAddToLane?: boolean;
+  /**
+   * The slot whose Add Node panel is open. Only the layout memo depends on it (a preview row
+   * is spliced in at the slot); the projection memo stays fingerprint-keyed.
    */
   insertSlot?: InsertionSlot;
   /** Geometry overrides applied consistently to rows, connectors, gutter, and preview layout. */
   layoutOptions?: LayoutSequenceOptions;
+  /** The caller's id index for `nodes`, when it already has one. */
+  nodesById?: ReadonlyMap<string, N>;
 }
 
 export interface SequentialGraph<N extends Node, E extends Edge> {
   nodes: N[];
   edges: E[];
   projection: SequenceProjection | null;
-  /**
-   * The geometry pass backing `nodes`' positions. Exposed so consumers like
-   * `SequentialGutter` (WS5) can align the step-number gutter to the exact
-   * same coordinates without re-deriving them or reading node DOM.
-   */
+  /** The geometry pass behind `nodes` positions, so SequentialGutter can align without reading DOM. */
   layout: SequenceLayout | null;
 }
 
+type ProjectionArgs<N extends Node, E extends Edge> = Pick<
+  UseSequentialGraphArgs<N, E>,
+  | 'nodes'
+  | 'edges'
+  | 'isSequenceNode'
+  | 'isSequenceEdge'
+  | 'isStartNode'
+  | 'isContainerNode'
+  | 'resolveBranchLabel'
+  | 'getBranchHandles'
+>;
+
 /**
- * The projection half of the derivation: which nodes/edges enter the projection,
- * and with which options.
- *
- * ONE definition, shared by {@link deriveSequentialGraph} (the pure entry point
- * the round-trip and insert-parity tests drive) and {@link useSequentialGraph}
- * (what production renders). The two used to hold independent copies of this
- * filter chain, which meant the tested path and the running path could silently
- * disagree about the projection they were asserting on -- the same class of
- * unverified-equivalence gap `SequentialCanvas.insertParity.test.ts` exists to
- * close for insert. They cannot drift now.
- *
- * Kept as a plain function taking the args object rather than a hook: the hook's
- * call site is inside a `useMemo` keyed on the D12 structural fingerprints, not on
- * these values' identities (see that memo's biome-ignore).
+ * Which nodes/edges enter the projection, and with which options. Shared by
+ * {@link deriveSequentialGraph} (tests) and {@link useSequentialGraph} (production) so the
+ * two cannot drift. A plain function, not a hook: its call site is a fingerprint-keyed memo.
  */
 function projectSequenceForView<N extends Node, E extends Edge>(
-  args: Pick<
-    UseSequentialGraphArgs<N, E>,
-    | 'nodes'
-    | 'edges'
-    | 'isSequenceNode'
-    | 'isSequenceEdge'
-    | 'isStartNode'
-    | 'isContainerNode'
-    | 'resolveBranchLabel'
-    | 'getBranchHandles'
-  >,
+  args: ProjectionArgs<N, E>,
   collapsed: ReadonlySet<string>
 ): SequenceProjection {
-  const sequenceNodes = args.isSequenceNode ? args.nodes.filter(args.isSequenceNode) : args.nodes;
-  const sequenceNodeIds = new Set(sequenceNodes.map((node) => node.id));
-  const sequenceEdges = args.edges.filter(
-    (edge) => sequenceNodeIds.has(edge.source) && sequenceNodeIds.has(edge.target)
-  );
-  return projectSequence(sequenceNodes, sequenceEdges, {
+  const { nodes, edges } = args.isSequenceNode
+    ? filterGraphByNodes(args.nodes, args.edges, args.isSequenceNode)
+    : args;
+  return projectSequence(nodes, edges, {
     collapsedStepIds: collapsed,
     isSequenceEdge: args.isSequenceEdge as ((edge: Edge) => boolean) | undefined,
     isStartNode: args.isStartNode as ((node: Node) => boolean) | undefined,
@@ -163,70 +156,53 @@ function projectSequenceForView<N extends Node, E extends Edge>(
   });
 }
 
+interface SyntheticCallbacks {
+  onAddTrigger?: () => void;
+  onPlaceholderAdd?: () => void;
+  canAddToLane?: boolean;
+}
+
+/** The derived node array for a projection; the hook and the pure derivation both build from here. */
+function assembleSequentialNodes<N extends Node>(
+  projection: SequenceProjection,
+  layout: SequenceLayout,
+  nodesById: ReadonlyMap<string, N>,
+  callbacks: SyntheticCallbacks,
+  layoutOptions?: LayoutSequenceOptions
+): Node[] {
+  return buildSequentialNodes(projection, layout, nodesById, callbacks, layoutOptions);
+}
+
+function indexById<N extends Node>(nodes: readonly N[]): ReadonlyMap<string, N> {
+  return new Map(nodes.map((node) => [node.id, node] as const));
+}
+
 /**
- * Derives the sequential view's node/edge arrays from the canonical graph (D4):
- *  - each projected row becomes a clone of its canonical node that KEEPS its real
- *    `type` (so BaseNode resolves the real manifest and the bar looks identical to
- *    the card), takes its position from `layoutSequence`, is stamped
- *    `width = SEQ_BAR_WIDTH`, flattened (`parentId` cleared so the absolute layout
- *    positions are honored), made non-draggable, and hidden when a collapsed
- *    ancestor parks it. `data` and `selected` are passed through by reference so
- *    execution/validation contexts, memoization, and selection all keep working;
- *  - a synthetic "Workflow start" bar is injected above the first row and a
- *    terminal "Add step" placeholder below the last top-level row (both view-only,
- *    filtered from the change callbacks);
- *  - each projection connector becomes a reference-stable
- *    {@link SequentialConnectorData} edge, plus synthetic connectors joining the
- *    start/placeholder bars.
- *
- * This is a PURE function, so the round-trip / derivation / insert-parity tests
- * exercise it without mounting xyflow or any provider.
- *
- * {@link useSequentialGraph} does NOT call it: the hook additionally stamps
- * `node.ariaLabel` (needs the registry + lingui from React context) and reuses
- * unchanged node objects across renders (needs a ref), neither of which belongs in
- * a pure function. What the two DO share is {@link projectSequenceForView}, so the
- * projection this function returns is the same projection production renders --
- * see that function's comment.
+ * Pure derivation of the sequential node/edge arrays from the canonical graph: each row is
+ * a clone that keeps its real `type`, takes its position from `layoutSequence`, is flattened
+ * (`parentId` cleared) and non-draggable, with `data` and `selected` passed by reference;
+ * synthetic start/placeholder bars and connector edges are added. Tests call this without
+ * mounting xyflow. {@link useSequentialGraph} additionally stamps `ariaLabel` and reuses node
+ * objects across renders.
  */
 export function deriveSequentialGraph<N extends Node, E extends Edge>(
   args: UseSequentialGraphArgs<N, E>
 ): SequentialGraph<N, E> {
-  const { nodes } = args;
-  const collapsed = args.collapsedStepIds ?? EMPTY_COLLAPSED;
+  const collapsed = args.collapsedStepIds ?? EMPTY_SET;
   const projection = projectSequenceForView(args, collapsed);
   const renderedProjection = args.insertSlot
     ? projectionWithPreviewRow(projection, args.insertSlot)
     : projection;
   const layout = layoutSequence(renderedProjection, args.layoutOptions);
-
-  const nodesById = new Map(nodes.map((node) => [node.id, node] as const));
-  const seqNodes = buildSequentialNodes(
+  const nodes = assembleSequentialNodes(
     projection,
     layout,
-    nodesById,
-    {
-      onAddTrigger: args.onAddTrigger,
-      onPlaceholderAdd: args.onPlaceholderAdd,
-      onLaneAdd: args.onLaneAdd,
-    },
+    args.nodesById ?? indexById(args.nodes),
+    args,
     args.layoutOptions
   );
-  const seqEdges = buildSequentialEdges(renderedProjection, layout);
-
-  return {
-    nodes: seqNodes as unknown as N[],
-    edges: seqEdges as unknown as E[],
-    projection,
-    layout,
-  };
-}
-
-interface SyntheticCallbacks {
-  onAddTrigger?: () => void;
-  onPlaceholderAdd?: () => void;
-  /** Wired onto each empty branch-lane placeholder's click, with its own slot. */
-  onLaneAdd?: (slot: InsertionSlot) => void;
+  const edges = buildSequentialEdges(renderedProjection, layout);
+  return { nodes: nodes as unknown as N[], edges: edges as unknown as E[], projection, layout };
 }
 
 function buildSequentialNodes<N extends Node>(
@@ -236,46 +212,32 @@ function buildSequentialNodes<N extends Node>(
   callbacks: SyntheticCallbacks,
   layoutOptions?: LayoutSequenceOptions
 ): Node[] {
-  const barWidth = layoutOptions?.barWidth ?? SEQ_BAR_WIDTH;
-  const barHeight = layoutOptions?.barHeight ?? SEQ_BAR_HEIGHT;
-  const rowGap = layoutOptions?.rowGap ?? SEQ_ROW_GAP;
-  const pitch = barHeight + rowGap;
+  const { barWidth, barHeight, rowGap, pitch } = resolveSequenceMetrics(layoutOptions);
   const clones: Node[] = [];
   const orphanClones: Node[] = [];
   let firstTopY: number | undefined;
   let firstOrphanY: number | undefined;
-  // Lowest visible, non-orphan row (any depth), so the terminal placeholder can
-  // sit below the WHOLE stack rather than just below the last top-level row.
+  // Lowest visible non-orphan row at any depth, so the terminal placeholder sits below the
+  // whole stack.
   let maxVisibleY: number | undefined;
 
   for (const row of projection.rows) {
-    // Empty branch-lane placeholder: a synthetic dashed "+ Add step" bar with no
-    // canonical node. Rendered via the placeholder node type, entered mid-left by
-    // its branch-entry connector (Part A), and clicking it appends the first node
-    // into that lane via the carried slot.
+    // Empty branch-lane placeholder: a synthetic bar with no canonical node.
     if (row.lanePlaceholder) {
-      const laneSlot = row.lanePlaceholder;
-      const onLaneAdd = callbacks.onLaneAdd;
       clones.push({
         id: row.nodeId,
         type: SEQ_PLACEHOLDER_NODE_TYPE,
         position: layout.positions.get(row.nodeId) ?? { x: 0, y: 0 },
         width: barWidth,
-        // An append plus is an overlay in the row gap (rowGap tall, no reserved
-        // row); an empty lane/body is a full dashed row.
+        // An append plus is an overlay in the row gap; an empty lane/body is a full dashed row.
         height: row.placeholderKind === 'append' ? rowGap : barHeight,
         draggable: false,
-        // ReactFlow sets pointer-events:none on wrappers that are neither
-        // selectable nor draggable and have no node-level click handler. Keep
-        // the row hit-testable whenever its inner Add-step button is active;
-        // that button stops propagation, so this does not select the row.
-        selectable: onLaneAdd !== undefined,
+        // ReactFlow sets pointer-events:none on wrappers that are neither selectable nor
+        // draggable; keep the row hit-testable while its Add-step button is active.
+        selectable: callbacks.canAddToLane === true,
         hidden: !row.visible,
         data: {
-          onAdd: onLaneAdd ? () => onLaneAdd(laneSlot) : undefined,
-          insertionSlotId: laneSlot.id,
-          // Empty lane/body renders the dashed row; a populated lane's trailing
-          // add point renders the same quiet plus used between steps.
+          insertionSlotId: row.lanePlaceholder.id,
           variant: row.placeholderKind === 'append' ? 'plus' : 'row',
         } satisfies SequentialPlaceholderNodeData,
       });
@@ -288,17 +250,13 @@ function buildSequentialNodes<N extends Node>(
       ...canonical,
       position,
       width: barWidth,
-      // Declare the layout-owned bar height up front so it matches BaseNode's
-      // bar `computedHeight`. Without it the controlled `nodes`
-      // array re-applies `height: undefined` on every sync, BaseNode's
-      // height write-back re-sets it via `updateNode`, and the two fight
-      // through `updateNodeInternals` -- a loop that self-settles at small
-      // graphs but blows React's nested-update limit at ~150 nodes.
+      // Declare the layout-owned height so it matches BaseNode's `computedHeight`; otherwise
+      // the controlled array and BaseNode's height write-back fight through
+      // `updateNodeInternals` and blow React's nested-update limit near 150 nodes.
       height: barHeight,
       draggable: false,
       hidden: !row.visible,
-      // Flatten container nesting: layout positions are absolute, so a residual
-      // parentId would double-offset the clone.
+      // Layout positions are absolute; a residual parentId would double-offset the clone.
       parentId: undefined,
       extent: undefined,
       expandParent: undefined,
@@ -318,24 +276,18 @@ function buildSequentialNodes<N extends Node>(
     }
   }
 
-  // A laid-out preview row (Add Node panel open) can be the new lowest row on a
-  // tail append; keep the terminal placeholder below it too.
+  // A preview row can be the new lowest row on a tail append.
   const previewY = layout.positions.get(PREVIEW_NODE_ID)?.y;
   if (previewY !== undefined) {
     maxVisibleY = maxVisibleY === undefined ? previewY : Math.max(maxVisibleY, previewY);
   }
 
-  // Keep the synthetic start bar one pitch above the earliest rendered
-  // top-level row. During a head insertion the preview temporarily becomes
-  // that earliest row; deriving startY only from the first canonical row would
-  // move the start bar down into the preview's slot and stack the two nodes.
+  // One pitch above the earliest rendered top-level row, including a head-insertion preview;
+  // otherwise the start bar would drop into the preview's slot and stack on it.
   const earliestTopY = Math.min(firstTopY ?? Number.POSITIVE_INFINITY, previewY ?? Infinity);
   const startY = (Number.isFinite(earliestTopY) ? earliestTopY : 0) - pitch;
-  // Below the ENTIRE visible stack (any depth), not just the last top-level row,
-  // so it never lands inside a trailing container's body and overlap a nested
-  // leaf's add affordance.
-  // A non-empty flow's tail is a plus overlay in the gap just below the last row
-  // (no reserved row); an empty flow shows the dashed "Add step" row as a full row.
+  // Below the entire visible stack so it never lands inside a trailing container's body. A
+  // non-empty flow's tail is a plus overlay in the gap; an empty flow shows the full dashed row.
   const tailIsPlus = firstTopY !== undefined;
   const placeholderY =
     firstOrphanY !== undefined
@@ -363,8 +315,6 @@ function buildSequentialNodes<N extends Node>(
     selectable: callbacks.onPlaceholderAdd !== undefined,
     data: {
       onAdd: callbacks.onPlaceholderAdd,
-      // With real steps above, the tail is a plus overlay in the gap (append); an
-      // empty flow shows the dashed "Add step" row instead.
       variant: tailIsPlus ? 'plus' : 'row',
     } satisfies SequentialPlaceholderNodeData,
   };
@@ -373,20 +323,15 @@ function buildSequentialNodes<N extends Node>(
 }
 
 function buildSequentialEdges(projection: SequenceProjection, layout: SequenceLayout): Edge[] {
-  // A connector into a trailing insert (plus) placeholder must not draw an
-  // arrowhead: its target is an add affordance, not a real step.
+  // No arrowhead into an append placeholder: it is an add affordance, not a step.
   const appendPlaceholderIds = new Set(
     projection.rows.filter((row) => row.placeholderKind === 'append').map((row) => row.nodeId)
   );
-  // A connector touching a row hidden by a collapsed ancestor must not offer an
-  // insert: you cannot see where the node would land.
+  // No insert on a connector touching a row hidden by a collapsed ancestor.
   const hiddenRowIds = new Set(
     projection.rows.filter((row) => !row.visible).map((row) => row.nodeId)
   );
-  // Step numbers, for naming each insert affordance by its position in the
-  // sequence (see SequentialInsertAnchor). Read off the projection rather than
-  // counted here, so the announced number is the same stable pre-order number the
-  // gutter prints (D7) and does not shift under collapse.
+  // Read off the projection so the announced number is the gutter's stable pre-order number.
   const stepNumberByRowId = new Map<string, number>();
   for (const row of projection.rows) {
     if (row.stepNumber !== undefined) stepNumberByRowId.set(row.nodeId, row.stepNumber);
@@ -394,8 +339,7 @@ function buildSequentialEdges(projection: SequenceProjection, layout: SequenceLa
   const insertAnchorFor = (connector: SequenceConnector): SequentialInsertAnchor | undefined => {
     const sourceStep = stepNumberByRowId.get(connector.sourceRowId);
     if (sourceStep !== undefined) {
-      // A labeled lane head is named by lane + owner, since the owner is the
-      // source here and several steps can each own a lane of the same name.
+      // A lane head is named by lane + owner, since several steps can own a lane of the same name.
       return connector.kind === 'branch-entry' && connector.label
         ? { kind: 'branch', stepNumber: sourceStep, branchLabel: connector.label }
         : { kind: 'after', stepNumber: sourceStep };
@@ -406,16 +350,16 @@ function buildSequentialEdges(projection: SequenceProjection, layout: SequenceLa
   };
 
   const edges: Edge[] = projection.connectors.map((connector) => {
-    const isPreviewConnector =
-      connector.sourceRowId === PREVIEW_NODE_ID || connector.targetRowId === PREVIEW_NODE_ID;
+    const sourceIsPreview = connector.sourceRowId === PREVIEW_NODE_ID;
+    const targetIsPreview = connector.targetRowId === PREVIEW_NODE_ID;
+    const isPreviewConnector = sourceIsPreview || targetIsPreview;
     const previewConnectionHandleId = !isPreviewConnector
       ? undefined
-      : connector.sourceRowId === PREVIEW_NODE_ID
+      : sourceIsPreview
         ? (connector.slot?.target?.handleId ?? DEFAULT_TARGET_HANDLE_ID)
         : (connector.slot?.source?.handleId ?? DEFAULT_SOURCE_HANDLE_ID);
-    // The preview connectors retain the semantic slot for canonical handle
-    // resolution below, but must not offer another insert button while the
-    // Add Node panel is already open.
+    // Preview connectors keep the slot for handle resolution but must not offer another
+    // insert while the Add Node panel is already open.
     const renderedSlot =
       isPreviewConnector ||
       hiddenRowIds.has(connector.targetRowId) ||
@@ -427,8 +371,6 @@ function buildSequentialEdges(projection: SequenceProjection, layout: SequenceLa
       label: connector.label,
       waypoints: layout.connectorWaypoints.get(connector.id) ?? EMPTY_WAYPOINTS,
       slot: renderedSlot,
-      // Paired with `slot`: the button only renders when the slot does, so the
-      // anchor that names it is resolved on exactly the same condition.
       insertAnchor: renderedSlot ? insertAnchorFor(connector) : undefined,
       preview: isPreviewConnector || undefined,
       previewConnectionHandleId,
@@ -438,49 +380,24 @@ function buildSequentialEdges(projection: SequenceProjection, layout: SequenceLa
       id: connector.id,
       source: connector.sourceRowId,
       target: connector.targetRowId,
-      sourceHandle:
-        connector.sourceRowId === PREVIEW_NODE_ID ? 'output' : SEQUENTIAL_BAR_HANDLE_IDS.source,
-      // Branch/container-entry connectors enter the child's mid-left; every
-      // other kind drops into its top handle.
+      sourceHandle: sourceIsPreview ? DEFAULT_SOURCE_HANDLE_ID : SEQUENTIAL_BAR_HANDLE_IDS.source,
+      // Branch/container-entry connectors enter mid-left; every other kind drops into the top.
       targetHandle:
-        connector.targetRowId === PREVIEW_NODE_ID
-          ? connector.kind === 'branch-entry'
-            ? SEQUENTIAL_BAR_HANDLE_IDS.branchTarget
-            : 'input'
-          : connector.kind === 'branch-entry'
-            ? SEQUENTIAL_BAR_HANDLE_IDS.branchTarget
+        connector.kind === 'branch-entry'
+          ? SEQUENTIAL_BAR_HANDLE_IDS.branchTarget
+          : targetIsPreview
+            ? DEFAULT_TARGET_HANDLE_ID
             : SEQUENTIAL_BAR_HANDLE_IDS.target,
       type: SEQ_CONNECTOR_EDGE_TYPE,
       data,
-      ...(isPreviewConnector
-        ? {
-            style: {
-              opacity: 0.8,
-              stroke: 'var(--canvas-selection-indicator)',
-              strokeWidth: 2,
-            },
-          }
-        : {}),
+      ...(isPreviewConnector ? { style: SEQ_PREVIEW_EDGE_STYLE } : {}),
     };
   });
 
-  // Synthetic joins: start -> first top row, last top row -> placeholder. When
-  // there are no rows the two synthetic bars connect directly.
+  // Synthetic joins: start -> first top row, last top row -> placeholder.
   const topRows = projection.rows.filter((row) => row.depth === 0 && !row.orphan);
   const firstTop = topRows[0];
   const lastVisibleTop = [...topRows].reverse().find((row) => row.visible);
-
-  const syntheticData = (hideArrowHead = true): SequentialConnectorData => ({
-    kind: 'step',
-    waypoints: EMPTY_WAYPOINTS,
-    hideArrowHead,
-  });
-
-  const syntheticPreviewData = (hideArrowHead = true): SequentialConnectorData => ({
-    ...syntheticData(hideArrowHead),
-    preview: true,
-    ignorePreviewConnection: true,
-  });
 
   const previewIsFirst = firstTop?.nodeId === PREVIEW_NODE_ID;
   const headSlot: InsertionSlot | undefined =
@@ -492,29 +409,28 @@ function buildSequentialEdges(projection: SequenceProjection, layout: SequenceLa
     source: SEQ_START_ROW_ID,
     target: firstTop?.nodeId ?? SEQ_PLACEHOLDER_ROW_ID,
     sourceHandle: SEQUENTIAL_BAR_HANDLE_IDS.source,
-    targetHandle: previewIsFirst ? 'input' : SEQUENTIAL_BAR_HANDLE_IDS.target,
+    targetHandle: previewIsFirst ? DEFAULT_TARGET_HANDLE_ID : SEQUENTIAL_BAR_HANDLE_IDS.target,
     type: SEQ_CONNECTOR_EDGE_TYPE,
     data: previewIsFirst
-      ? syntheticPreviewData(false)
+      ? {
+          kind: 'step',
+          waypoints: EMPTY_WAYPOINTS,
+          hideArrowHead: false,
+          preview: true,
+          ignorePreviewConnection: true,
+        }
       : {
-          ...syntheticData(firstTop === undefined),
+          kind: 'step',
+          waypoints: EMPTY_WAYPOINTS,
+          hideArrowHead: firstTop === undefined,
           slot: headSlot,
-          // The start bar is unnumbered, so this gap can only be named by the step
-          // it precedes ("before step 1").
+          // The start bar is unnumbered, so this gap is named by the step it precedes.
           insertAnchor:
             headSlot && firstTop?.stepNumber !== undefined
               ? { kind: 'before', stepNumber: firstTop.stepNumber }
               : undefined,
         },
-    ...(previewIsFirst
-      ? {
-          style: {
-            opacity: 0.8,
-            stroke: 'var(--canvas-selection-indicator)',
-            strokeWidth: 2,
-          },
-        }
-      : {}),
+    ...(previewIsFirst ? { style: SEQ_PREVIEW_EDGE_STYLE } : {}),
   });
 
   if (lastVisibleTop) {
@@ -523,19 +439,16 @@ function buildSequentialEdges(projection: SequenceProjection, layout: SequenceLa
       id: SEQ_PLACEHOLDER_EDGE_ID,
       source: lastVisibleTop.nodeId,
       target: SEQ_PLACEHOLDER_ROW_ID,
-      sourceHandle: previewIsLast ? 'output' : SEQUENTIAL_BAR_HANDLE_IDS.source,
+      sourceHandle: previewIsLast ? DEFAULT_SOURCE_HANDLE_ID : SEQUENTIAL_BAR_HANDLE_IDS.source,
       targetHandle: SEQUENTIAL_BAR_HANDLE_IDS.target,
       type: SEQ_CONNECTOR_EDGE_TYPE,
-      data: previewIsLast ? syntheticPreviewData() : syntheticData(),
-      ...(previewIsLast
-        ? {
-            style: {
-              opacity: 0.8,
-              stroke: 'var(--canvas-selection-indicator)',
-              strokeWidth: 2,
-            },
-          }
-        : {}),
+      data: {
+        kind: 'step',
+        waypoints: EMPTY_WAYPOINTS,
+        hideArrowHead: true,
+        ...(previewIsLast ? { preview: true, ignorePreviewConnection: true } : {}),
+      },
+      ...(previewIsLast ? { style: SEQ_PREVIEW_EDGE_STYLE } : {}),
     });
   }
 
@@ -543,21 +456,10 @@ function buildSequentialEdges(projection: SequenceProjection, layout: SequenceLa
 }
 
 /**
- * Stamps each numbered row's clone with `node.ariaLabel` (xyflow renders this
- * as `aria-label` on the node's DOM wrapper): "Step {n} of {total}: {label}"
- * (D8). `total` counts every numbered row regardless of visibility, so it
- * never shifts when a container collapses (D7's stable-numbering guarantee
- * extends to the announced total). The label is resolved through the node
- * type registry the same way `BaseNode` resolves its printed label
- * (`resolveDisplay(manifest.display, {display: node.data.display})`), so the
- * announced name matches what's on the bar; a registry-less host (or an
- * unrecognized type) still gets a readable fallback ("Unknown Node") instead
- * of a blank label. Synthetic rows (start bar, placeholder) are left
- * untouched -- they already carry their own visible, non-templated text.
- *
- * This only runs inside the {@link useSequentialGraph} hook (which has React
- * context for the registry + lingui), not {@link deriveSequentialGraph} (the
- * pure function exercised directly by tests without mounting either provider).
+ * Stamps each numbered row's clone with `node.ariaLabel` ("Step {n} of {total}: {label}").
+ * `total` counts every numbered row regardless of visibility so it does not shift under
+ * collapse. The label resolves through the registry like BaseNode's printed label, with a
+ * readable fallback for registry-less hosts. Hook-only: needs registry + lingui from context.
  */
 function stampStepAriaLabels(
   nodes: Node[],
@@ -593,40 +495,9 @@ function stampStepAriaLabels(
   });
 }
 
-function shallowRecordEqual(
-  previous: Record<string, unknown>,
-  next: Record<string, unknown>
-): boolean {
-  const previousKeys = Object.keys(previous);
-  const nextKeys = Object.keys(next);
-  if (previousKeys.length !== nextKeys.length) return false;
-  for (const key of previousKeys) {
-    if (!Object.hasOwn(next, key)) return false;
-    if (!Object.is(previous[key], next[key])) return false;
-  }
-  return true;
-}
-
-function shallowNodeEqualExceptPositionAndData(previous: Node, next: Node): boolean {
-  const previousRecord = previous as unknown as Record<string, unknown>;
-  const nextRecord = next as unknown as Record<string, unknown>;
-  const previousKeys = Object.keys(previousRecord);
-  const nextKeys = Object.keys(nextRecord);
-  if (previousKeys.length !== nextKeys.length) return false;
-  for (const key of previousKeys) {
-    if (!Object.hasOwn(nextRecord, key)) return false;
-    if (key === 'position' || key === 'data') continue;
-    if (!Object.is(previousRecord[key], nextRecord[key])) return false;
-  }
-  return true;
-}
-
 /**
- * Reuses the prior object for every derived row whose rendered inputs did not
- * change. A canonical selection update replaces the canonical nodes array, but
- * normally changes only the previously-selected and newly-selected nodes.
- * Keeping every other derived node reference stable lets xyflow preserve its
- * internal node entries instead of reconciling the entire graph.
+ * Reuses the prior object for every derived row whose rendered inputs did not change, so a
+ * selection update lets xyflow keep its internal entries instead of reconciling the graph.
  */
 function reuseUnchangedSequentialNodes(previous: Node[], next: Node[]): Node[] {
   const previousById = new Map(previous.map((node) => [node.id, node]));
@@ -634,33 +505,26 @@ function reuseUnchangedSequentialNodes(previous: Node[], next: Node[]): Node[] {
     const prior = previousById.get(node.id);
     if (!prior) return node;
 
-    const priorPosition = prior.position;
-    const nextPosition = node.position;
-    const priorData = prior.data as Record<string, unknown>;
-    const nextData = node.data as Record<string, unknown>;
+    // Synthetic rows rebuild their `data` object every pass, so compare it by content.
     const hasGeneratedData =
       node.type === SEQ_START_NODE_TYPE || node.type === SEQ_PLACEHOLDER_NODE_TYPE;
     const dataEqual =
       Object.is(prior.data, node.data) ||
-      (hasGeneratedData && shallowRecordEqual(priorData, nextData));
+      (hasGeneratedData && shallowEqualExcept(prior.data, node.data));
 
-    return priorPosition.x === nextPosition.x &&
-      priorPosition.y === nextPosition.y &&
+    return prior.position.x === node.position.x &&
+      prior.position.y === node.position.y &&
       dataEqual &&
-      shallowNodeEqualExceptPositionAndData(prior, node)
+      shallowEqualExcept(prior, node, POSITION_AND_DATA_KEYS)
       ? prior
       : node;
   });
 }
 
 /**
- * React hook wrapping {@link deriveSequentialGraph} with the D12 memoization:
- * projection + layout recompute only when the STRUCTURAL fingerprint changes, so
- * a rename keystroke (data-only) reuses them. The clone nodes recompute when the
- * canonical `nodes` reference changes (to reflect new `data`), always reading the
- * fingerprint-memoized layout positions; the connector edges are reference-stable
- * across data-only changes (they depend only on projection + layout), satisfying
- * the WS3 edge-data stability contract.
+ * Hook form of {@link deriveSequentialGraph} with structural-fingerprint memoization:
+ * projection and layout recompute only when the fingerprint changes, so a rename keystroke
+ * reuses them. Connector edges are reference-stable across data-only changes.
  */
 export function useSequentialGraph<N extends Node, E extends Edge>(
   args: UseSequentialGraphArgs<N, E>
@@ -678,105 +542,84 @@ export function useSequentialGraph<N extends Node, E extends Edge>(
     isContainerNode,
     resolveBranchLabel,
     getBranchHandles,
-    onLaneAdd,
+    canAddToLane,
     insertSlot,
     layoutOptions,
+    nodesById,
   } = args;
 
   const { _ } = useSafeLingui();
   const registry = useOptionalNodeTypeRegistry();
   const previousSeqNodesRef = useRef<Node[]>([]);
 
-  const collapsed = collapsedStepIds ?? EMPTY_COLLAPSED;
-  const fingerprint = useMemo(
-    () => sequenceFingerprint(nodes, edges, collapsed),
-    [nodes, edges, collapsed]
+  // A stable wrapper, so an inline host callback does not churn the start node's data.
+  const onAddTriggerRef = useRef(onAddTrigger);
+  onAddTriggerRef.current = onAddTrigger;
+  const hasAddTrigger = onAddTrigger !== undefined;
+  const stableOnAddTrigger = useMemo(
+    () => (hasAddTrigger ? () => onAddTriggerRef.current?.() : undefined),
+    [hasAddTrigger]
   );
-  // These fingerprints only guard the sequential projection memo below, which
-  // short-circuits to null in flow view; skip the full-graph passes there.
-  const inSequentialView = view === 'sequential';
-  const labelFingerprint = useMemo(
-    () =>
-      inSequentialView
-        ? edges
-            .map((edge) => {
-              const handleId = edge.sourceHandle ?? DEFAULT_SOURCE_HANDLE_ID;
-              const resolved = resolveBranchLabel?.(edge.source, handleId);
-              const fallback = (edge.data as { label?: string | null } | undefined)?.label;
-              // NUL separates id from label so neither can forge a collision.
-              // Deliberately written as the `\u0000` ESCAPE, never as a raw 0x00
-              // byte: a literal NUL makes this whole file `data` rather than text,
-              // and grep then silently skips every match in it -- a nasty landmine
-              // in the one file that holds the D12 memo guards. The escape yields
-              // the identical runtime character, so the fingerprint string is
-              // byte-identical while the source stays plain text and greppable.
-              return `${edge.id}\u0000${resolved ?? fallback ?? ''}`;
-            })
-            .sort()
-            .join('|')
-        : '',
-    [inSequentialView, edges, resolveBranchLabel]
-  );
-  const edgeInclusionFingerprint = useMemo(
-    () => (inSequentialView ? predicateFingerprint(edges, isSequenceEdge, 1) : ''),
-    [inSequentialView, edges, isSequenceEdge]
-  );
-  const nodeInclusionFingerprint = useMemo(
-    () => (inSequentialView ? predicateFingerprint(nodes, isSequenceNode, 1) : ''),
-    [inSequentialView, nodes, isSequenceNode]
-  );
-  const startNodeFingerprint = useMemo(
-    () => (inSequentialView ? predicateFingerprint(nodes, isStartNode, 0) : ''),
-    [inSequentialView, nodes, isStartNode]
-  );
-  const containerNodeFingerprint = useMemo(
-    () => (inSequentialView ? predicateFingerprint(nodes, isContainerNode, 0) : ''),
-    [inSequentialView, nodes, isContainerNode]
-  );
-  // Which nodes are parents (branch-lane handles + their labels), so the
-  // projection recomputes when a node gains/loses lanes or a lane relabels.
-  const branchHandlesFingerprint = useMemo(
-    () =>
-      inSequentialView && getBranchHandles
-        ? nodes
-            .map(
-              (node) =>
-                `${node.id}:${getBranchHandles(node)
-                  .map((h) => `${h.id}=${h.label}`)
-                  .join(',')}`
-            )
-            .join('|')
-        : '',
-    [inSequentialView, nodes, getBranchHandles]
-  );
+  const canonicalById = useMemo(() => nodesById ?? indexById(nodes), [nodesById, nodes]);
 
-  // Recompute the projection only on a structural change (the fingerprint, D12)
-  // or when the projection predicates change identity; a data-only edit (e.g. a
-  // rename keystroke) produces the same fingerprint string and reuses the cached
-  // projection. Keying on `fingerprint` instead of the raw nodes/edges arrays is
-  // the whole point, so the exhaustive-deps rule is intentionally overridden.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: keyed on the structural fingerprint by design (D12).
-  const projection = useMemo(() => {
-    if (view !== 'sequential') return null;
-    // Shared with deriveSequentialGraph so the tested and rendered projections
-    // cannot diverge; see projectSequenceForView.
-    return projectSequenceForView(args, collapsed);
+  const collapsed = collapsedStepIds ?? EMPTY_SET;
+  const inSequentialView = view === 'sequential';
+
+  // Everything the projection reads, as one string: graph shape, resolved lane labels, and
+  // the result of every predicate (keyed on results, not identities, so a re-created
+  // predicate on a rename keystroke does not re-project). Skipped entirely in flow view.
+  const fingerprint = useMemo(() => {
+    if (!inSequentialView) return '';
+    const labels = edges
+      .map(
+        (edge) =>
+          // NUL separates id from label so neither can forge a collision. Keep it as the
+          // `\u0000` escape: a raw NUL byte makes grep treat this file as binary.
+          `${edge.id}\u0000${resolveBranchLabel?.(edge.source, sourceHandleOf(edge)) ?? edgeDataLabel(edge) ?? ''}`
+      )
+      .sort()
+      .join('|');
+    const lanes = getBranchHandles
+      ? nodes
+          .map(
+            (node) =>
+              `${node.id}:${getBranchHandles(node)
+                .map((h) => `${h.id}=${h.label}`)
+                .join(',')}`
+          )
+          .join('|')
+      : '';
+    return [
+      sequenceFingerprint(nodes, edges, collapsed),
+      labels,
+      predicateFingerprint(edges, isSequenceEdge, 1),
+      predicateFingerprint(nodes, isSequenceNode, 1),
+      predicateFingerprint(nodes, isStartNode, 0),
+      predicateFingerprint(nodes, isContainerNode, 0),
+      lanes,
+    ].join('\u0002');
   }, [
-    fingerprint,
-    labelFingerprint,
-    edgeInclusionFingerprint,
-    nodeInclusionFingerprint,
-    startNodeFingerprint,
-    containerNodeFingerprint,
-    branchHandlesFingerprint,
-    view,
+    inSequentialView,
+    nodes,
+    edges,
+    collapsed,
+    resolveBranchLabel,
+    getBranchHandles,
+    isSequenceEdge,
+    isSequenceNode,
+    isStartNode,
+    isContainerNode,
   ]);
 
-  // Layout is a cheap pure geometry pass, kept separate from the projection memo
-  // so it can re-run for the insert-preview gap WITHOUT re-projecting: while a
-  // slot's Add Node panel is open, lay out a preview-augmented projection so the
-  // gap opens one row, the preview bar lands in its slot, and every connector
-  // re-routes from the shifted positions.
+  // A data-only edit (rename keystroke) yields the same fingerprint and reuses the projection.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: keyed on the structural fingerprint by design.
+  const projection = useMemo(() => {
+    if (!inSequentialView) return null;
+    return projectSequenceForView(args, collapsed);
+  }, [fingerprint, inSequentialView]);
+
+  // Layout is kept separate from the projection memo so the insert-preview gap can re-run it
+  // without re-projecting.
   const renderedProjection = useMemo(() => {
     if (!projection) return null;
     return insertSlot ? projectionWithPreviewRow(projection, insertSlot) : projection;
@@ -789,52 +632,40 @@ export function useSequentialGraph<N extends Node, E extends Edge>(
 
   const seqNodes = useMemo(() => {
     if (!projection || !layout) return null;
-    const nodesById = new Map(nodes.map((node) => [node.id, node] as const));
-    const built = buildSequentialNodes(
+    const built = assembleSequentialNodes(
       projection,
       layout,
-      nodesById,
-      {
-        onAddTrigger,
-        onPlaceholderAdd,
-        onLaneAdd,
-      },
+      canonicalById,
+      { onAddTrigger: stableOnAddTrigger, onPlaceholderAdd, canAddToLane },
       layoutOptions
     );
     const stamped = stampStepAriaLabels(built, projection, registry, _);
-    // Unlike the other render-phase ref writes in this feature (SequentialCanvas's
-    // `tailSlotRef`, useSequentialMoveActionsValue's `latest`), this one is NOT
-    // idempotent: it folds over render history, so a StrictMode double-invoke or a
-    // concurrent render React later discards can seed `previous` from a render that
-    // never committed. That is safe, and deliberately left as-is, because
-    // `reuseUnchangedSequentialNodes` is correctness-preserving by construction: it
-    // only ever substitutes `prior` for `node` when the two compare equal on every
-    // field except the deliberately-ignored ones, so a stale `previous` can cost at
-    // most some reference stability (an extra xyflow reconciliation), never a wrong
-    // rendered value. Do not "fix" this into an effect: the reuse has to happen
-    // DURING render, since its whole purpose is to hand xyflow reference-stable node
-    // objects in the same pass that produces them.
+    // Render-phase ref write that folds over history: a StrictMode double-invoke can seed
+    // `previous` from an uncommitted render. Safe, since reuse only substitutes `prior` when
+    // equal, so staleness costs reference stability, never a wrong value. Must stay in render.
     const stable = reuseUnchangedSequentialNodes(previousSeqNodesRef.current, stamped);
     previousSeqNodesRef.current = stable;
     return stable;
   }, [
     projection,
     layout,
-    nodes,
-    onAddTrigger,
+    canonicalById,
+    stableOnAddTrigger,
     onPlaceholderAdd,
-    onLaneAdd,
+    canAddToLane,
     layoutOptions,
     registry,
     _,
   ]);
 
-  const seqEdges = useMemo(() => {
-    if (!renderedProjection || !layout) return null;
-    return buildSequentialEdges(renderedProjection, layout);
-  }, [renderedProjection, layout]);
+  // Connector edges depend only on the rendered projection and layout, so a data-only change
+  // keeps their array identity.
+  const seqEdges = useMemo(
+    () => (renderedProjection && layout ? buildSequentialEdges(renderedProjection, layout) : null),
+    [renderedProjection, layout]
+  );
 
-  if (view !== 'sequential' || !projection || !seqNodes || !seqEdges) {
+  if (!inSequentialView || !projection || !seqNodes || !seqEdges) {
     return { nodes, edges, projection: null, layout: null };
   }
 

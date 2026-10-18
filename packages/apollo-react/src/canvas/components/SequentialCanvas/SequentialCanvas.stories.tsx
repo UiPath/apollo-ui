@@ -1,11 +1,4 @@
-/**
- * Sequential Canvas stories.
- *
- * These are the flagship stories for the feature: the wireframe reproduction, a
- * generated performance graph, and execution status flowing into bars.
- * SequentialCanvas is intentionally NOT exported from components/index.ts until
- * GA (D13), so every import below is a direct source path.
- */
+/** Sequential Canvas stories: wireframe reproduction, generated performance graph, execution status. */
 import type { Meta, StoryObj } from '@storybook/react';
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { applyEdgeChanges, applyNodeChanges } from '@uipath/apollo-react/canvas/xyflow/react';
@@ -57,9 +50,7 @@ const SEQUENCE_DENSITY_PRESETS = [
 ] as const;
 const BALANCED_DENSITY_PRESET = SEQUENCE_DENSITY_PRESETS[1];
 
-// ---------------------------------------------------------------------------
 // (a) Interactive Sequence: configurable sequential workflow example.
-// ---------------------------------------------------------------------------
 
 function InteractiveSequenceStory() {
   const fixture = useMemo(() => makeWireframeFixture(), []);
@@ -222,9 +213,7 @@ export const InteractiveSequence: Story = {
   render: () => <InteractiveSequenceStory />,
 };
 
-// ---------------------------------------------------------------------------
 // (b) Performance: a generated ~150-node graph mixing branches and containers.
-// ---------------------------------------------------------------------------
 
 const PERF_TYPES = {
   step: 'uipath.data.transform',
@@ -266,12 +255,8 @@ function perfEdge(
 }
 
 /**
- * Generates a mixed branch/container graph of roughly `unitCount * 5 + 1`
- * nodes: a spine of Decision -> (Then/Else) -> For Each[one child], repeated
- * `unitCount` times, with each container child looping back into the
- * container's `continue` handle. Used to stress-test projection, layout, and
- * render cost at scale; D12's structural fingerprint memo is what keeps a
- * data-only change (e.g. an inline rename) from re-running either.
+ * Roughly `unitCount * 5 + 1` nodes: Decision -> Then/Else -> For Each with one
+ * child looping back into `continue`, repeated `unitCount` times.
  */
 function createPerformanceFixture(unitCount: number): { nodes: Node[]; edges: Edge[] } {
   const nodes: Node[] = [perfNode('perf-root', PERF_TYPES.step, 'Load batch')];
@@ -327,11 +312,7 @@ interface PerformanceControlsProps {
   onUnitCountCommit: (unitCount: number) => void;
 }
 
-/**
- * Keeps high-frequency slider state below SequentialCanvas. If this state lived
- * in PerformanceStory, every pointer tick would reconcile the full xyflow tree
- * even though graph rebuilding itself was debounced.
- */
+/** Keeps slider state below SequentialCanvas so pointer ticks do not reconcile the xyflow tree. */
 function PerformanceControls({
   showDesignAffordances,
   onShowDesignAffordancesChange,
@@ -457,13 +438,10 @@ export const Performance: Story = {
   render: () => <PerformanceStory />,
 };
 
-// ---------------------------------------------------------------------------
 // (c) ExecutionStatus: bars pulling live execution state, one per status.
-// ---------------------------------------------------------------------------
 
-// The Storybook execution-state decorator (storybook-utils/decorators.tsx)
-// derives status from the id's second dash-separated segment, so each id here
-// is `exec-<ElementStatusValues>`.
+// The execution-state decorator derives status from the id's second dash-separated
+// segment, so each id is `exec-<ElementStatusValues>`.
 const EXECUTION_STATUS_STEPS: Array<{ id: string; type: string; label: string }> = [
   { id: 'exec-Completed', type: 'uipath.script', label: 'Validate input' },
   { id: 'exec-InProgress', type: 'uipath.data.transform', label: 'Transform payload' },
