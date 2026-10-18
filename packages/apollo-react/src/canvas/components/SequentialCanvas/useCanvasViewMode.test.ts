@@ -44,10 +44,7 @@ describe('useCanvasViewMode', () => {
   });
 
   describe('untrusted stored values', () => {
-    // localStorage is shared, mutable and outlives any one version of this
-    // package, so the stored string is input rather than a CanvasView. Each case
-    // below must degrade to `initial` rather than being handed to the canvas,
-    // which would render neither view's node types.
+    // Each unknown stored value must degrade to `initial` rather than reach the canvas.
     it.each([
       ['a retired or unknown view name', JSON.stringify('kanban')],
       ['a non-string value', JSON.stringify(42)],
@@ -60,8 +57,7 @@ describe('useCanvasViewMode', () => {
       const { result } = renderHook(() => useCanvasViewMode(storageKey, 'sequential'));
 
       expect(result.current[0]).toBe('sequential');
-      // The fallback is not sticky: a stored value the hook rejects must not stop
-      // the user from choosing a view.
+      // The fallback is not sticky.
       act(() => result.current[1]('flow'));
       expect(result.current[0]).toBe('flow');
     });

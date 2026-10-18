@@ -2,11 +2,11 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import type { Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { BaseNodeData } from './BaseNode.types';
+import { BaseNodeBar } from './BaseNodeBar';
 
-// Same hoisted-mock strategy as BaseNode.test.tsx: control the mocked modules
-// through refs the tests mutate in each case.
 const {
   mockUpdateNode,
+  mockUpdateNodeInternals,
   mockGetNode,
   mockNodeState,
   mockHandleConfigs,
@@ -18,12 +18,11 @@ const {
   mockSelectionState,
 } = vi.hoisted(() => ({
   mockUpdateNode: vi.fn(),
+  mockUpdateNodeInternals: vi.fn(),
   mockGetNode: vi.fn(),
   mockNodeState: {
     current: {
       height: undefined as number | undefined,
-      // The bar's layout-owned width, read through the useStore subscription
-      // below rather than the measured `width` prop. See BaseNodeBarNode.
       width: undefined as number | undefined,
     },
   },
@@ -53,17 +52,14 @@ vi.mock('@uipath/apollo-react/canvas/xyflow/react', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@uipath/apollo-react/canvas/xyflow/react')>()),
   // Stub Handle so the bar can render without a React Flow zustand provider.
   Handle: () => null,
-  // Run the real selectors against a minimal store rather than returning a fixed
-  // value: the bar subtree has two `useStore` callers with different shapes.
-  // `useBaseNodePresentation` reads `connection.inProgress` (kept false, as the
-  // previous `() => false` stub gave it), and BaseNodeBarNode subscribes to its
-  // own node's declared width through `nodeLookup`.
+  // Real selectors over a minimal store: presentation reads `connection.inProgress`,
+  // BaseNodeBarNode reads its declared width through `nodeLookup`.
   useStore: (selector: (state: unknown) => unknown) =>
     selector({
       connection: { inProgress: false },
       nodeLookup: { get: () => mockNodeState.current },
     }),
-  useUpdateNodeInternals: () => vi.fn(),
+  useUpdateNodeInternals: () => mockUpdateNodeInternals,
   useReactFlow: () => ({
     updateNodeData: vi.fn(),
     updateNode: mockUpdateNode,
@@ -93,6 +89,9 @@ vi.mock('../BaseCanvas/CanvasThemeContext', () => ({
   useCanvasTheme: () => ({ isDarkMode: false }),
 }));
 vi.mock('../Toolbar', () => ({ NodeToolbar: () => null }));
+vi.mock('../CanvasTooltip', () => ({
+  CanvasTooltip: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
 vi.mock('../ButtonHandle/useButtonHandles', () => ({ useButtonHandles: () => null }));
 vi.mock('../ButtonHandle/SmartHandle', () => ({
   SmartHandle: () => null,
@@ -206,6 +205,7 @@ const defaultProps: NodeProps<Node<BaseNodeData>> = {
 describe('BaseNodeBar (sequential bar variant)', () => {
   afterEach(() => {
     mockUpdateNode.mockClear();
+    mockUpdateNodeInternals.mockClear();
     mockNodeState.current = { height: undefined, width: undefined };
     mockHandleConfigs.current = undefined;
     mockOverrideConfig.current = {};
@@ -219,8 +219,6 @@ describe('BaseNodeBar (sequential bar variant)', () => {
     };
   });
 
-  // The core visual-drift contract: the same node resolves to the same display
-  // (label / icon / color source) whether it renders as a card or a bar.
   describe('display parity with the card variant', () => {
     it('renders the identical resolved label and icon', () => {
       const { unmount } = render(<BaseNode {...defaultProps} />);
@@ -249,6 +247,19 @@ describe('BaseNodeBar (sequential bar variant)', () => {
   });
 
   describe('bar geometry', () => {
+    it.each([
+      ['circle', '50%'],
+      ['pill', '9999px'],
+      ['square', '8px'],
+      ['rectangle', '8px'],
+      [undefined, '8px'],
+    ] as const)('rounds the icon tile for the %s card shape to %s', (shape, radius) => {
+      render(<BaseNodeBar nodeId="n" icon={<span />} shape={shape} />);
+      expect(screen.getByTestId('sequential-bar').style.getPropertyValue('--inner-radius')).toBe(
+        radius
+      );
+    });
+
     it('renders at the fixed 896x56 bar size regardless of handle count', () => {
       render(<BaseNodeBarNode {...defaultProps} />);
       const bar = screen.getByTestId('sequential-bar');
@@ -256,19 +267,13 @@ describe('BaseNodeBar (sequential bar variant)', () => {
       expect(bar.style.getPropertyValue('--node-h')).toBe('56px');
     });
 
-    // The sequential layout stamps an explicit width on every derived bar, and
-    // that declared value is what the bar must paint. XYFlow's `width` prop is the
-    // MEASURED width, which lags a barWidth change by a render and still reports
-    // the flow-view card width right after a flow->sequential toggle.
+    // xyflow's `width` prop is the measured width, which lags a declared-width change by a render.
     it('sizes the bar from the declared node width, not the measured width prop', () => {
       mockNodeState.current = { ...mockNodeState.current, width: 560 };
       render(<BaseNodeBarNode {...defaultProps} width={400} />);
       expect(screen.getByTestId('sequential-bar').style.getPropertyValue('--node-w')).toBe('560px');
     });
 
-    // A consumer whose barWidth happens to equal a card default must still get the
-    // width it asked for. The previous sentinel check discarded exactly these two
-    // values and silently substituted 896.
     it.each([96, 288])('honors a declared width of %ipx that matches a card default', (width) => {
       mockNodeState.current = { ...mockNodeState.current, width };
       render(<BaseNodeBarNode {...defaultProps} />);
@@ -277,25 +282,59 @@ describe('BaseNodeBar (sequential bar variant)', () => {
       );
     });
 
-    // The standalone path: no sequential derivation, so no declared width. The
-    // isolated card-vs-bar story reaches the renderer this way.
     it('falls back to the default bar width when the node declares none', () => {
       render(<BaseNodeBarNode {...defaultProps} width={288} />);
       expect(screen.getByTestId('sequential-bar').style.getPropertyValue('--node-w')).toBe('896px');
     });
 
-    it('writes the fixed bar height (56) back to node.height', () => {
+    it('does not re-measure handles on mount (xyflow measures the first observe)', () => {
+      mockHandleConfigs.current = [
+        { position: 'left', handles: [{ id: 'a', type: 'target', handleType: 'input' }] },
+      ];
       render(<BaseNodeBarNode {...defaultProps} />);
-      expect(mockUpdateNode).toHaveBeenCalledWith('step-1', { height: 56 });
+      expect(mockUpdateNodeInternals).not.toHaveBeenCalled();
+    });
+
+    it('re-measures only when the handle set changes, not on a data-only edit', () => {
+      mockHandleConfigs.current = [
+        { position: 'left', handles: [{ id: 'a', type: 'target', handleType: 'input' }] },
+      ];
+      const { rerender } = render(<BaseNodeBarNode {...defaultProps} />);
+
+      rerender(<BaseNodeBarNode {...defaultProps} data={{ display: { label: 'Renamed' } }} />);
+      expect(mockUpdateNodeInternals).not.toHaveBeenCalled();
+
+      mockHandleConfigs.current = [
+        {
+          position: 'left',
+          handles: [
+            { id: 'a', type: 'target', handleType: 'input' },
+            { id: 'b', type: 'target', handleType: 'input' },
+          ],
+        },
+      ];
+      rerender(<BaseNodeBarNode {...defaultProps} data={{}} />);
+      expect(mockUpdateNodeInternals).toHaveBeenCalledTimes(1);
+    });
+
+    it('reads the declared height from the store and never writes it back', () => {
+      mockNodeState.current = { ...mockNodeState.current, height: 72 };
+      render(<BaseNodeBarNode {...defaultProps} />);
+      expect(screen.getByTestId('sequential-bar').style.getPropertyValue('--node-h')).toBe('72px');
+      expect(mockUpdateNode).not.toHaveBeenCalled();
+    });
+
+    it('falls back to the default bar height when the node declares none', () => {
+      render(<BaseNodeBarNode {...defaultProps} height={0} />);
+      expect(screen.getByTestId('sequential-bar').style.getPropertyValue('--node-h')).toBe('56px');
     });
   });
 
   it('paints the left accent strip from the resolved icon background', () => {
     render(<BaseNodeBarNode {...defaultProps} />);
     const accent = screen.getByTestId('sequential-bar-accent');
-    // Rendered as an inset box-shadow so the stripe follows the bar's rounded
-    // corners rather than a square-cornered strip.
-    expect(accent.style.boxShadow).toContain('#611f69');
+    expect(accent.style.getPropertyValue('--seq-accent')).toBe('#611f69');
+    expect(accent).toHaveClass('shadow-[inset_4px_0_0_var(--seq-accent)]');
   });
 
   it('keeps inline rename enabled in design mode (readonly=false, onChange wired)', () => {
@@ -541,23 +580,118 @@ describe('BaseNodeBar (sequential bar variant)', () => {
     });
   });
 
-  // Connectors anchor to the bar's bottom-left / top-left
-  // region instead of its horizontal center. `Handle` itself is stubbed to
-  // `null` above (BaseNode's Handle-rendering internals aren't under test
-  // here), so this asserts directly against the shared style object BOTH the
-  // top target and bottom source handles use -- the actual source of truth
-  // xyflow reads to position the real handle DOM nodes in production.
+  // `Handle` is stubbed above, so assert on the shared style object xyflow reads for both spine handles.
   describe('handle anchoring', () => {
     it('anchors the invisible top/bottom handles at SEQ_HANDLE_LEFT_OFFSET from the bar left edge, not the horizontal center', () => {
       expect(INVISIBLE_HANDLE_STYLE.left).toBe(SEQ_HANDLE_LEFT_OFFSET);
     });
   });
 
-  // A collapsed collapsible sequential row renders the same
-  // decorative "stacked" treatment BaseContainer applies to drillable/collapsed
-  // cards (a layered bar peeking out behind), driven by a `stacked` prop
-  // (threaded via context by SequentialStepNode, never node.data) rather than
-  // any state BaseNodeBar derives itself.
+  describe('card parity: adornments, footer, placeholders, drag', () => {
+    const fourCorners = {
+      topLeft: <span data-testid="adorn-tl" />,
+      topRight: <span data-testid="adorn-tr" />,
+      bottomLeft: <span data-testid="adorn-bl" />,
+      bottomRight: <span data-testid="adorn-br" />,
+    };
+
+    it('renders all four adornment corners', () => {
+      mockOverrideConfig.current = { adornments: fourCorners };
+      render(<BaseNodeBarNode {...defaultProps} />);
+      expect(screen.getByTestId('sequential-bar-adornment-top-left')).toContainElement(
+        screen.getByTestId('adorn-tl')
+      );
+      expect(screen.getByTestId('sequential-bar-adornment-top-right')).toContainElement(
+        screen.getByTestId('adorn-tr')
+      );
+      expect(screen.getByTestId('sequential-bar-adornment-bottom-left')).toContainElement(
+        screen.getByTestId('adorn-bl')
+      );
+      expect(screen.getByTestId('sequential-bar-adornment-bottom-right')).toContainElement(
+        screen.getByTestId('adorn-br')
+      );
+    });
+
+    it('suppresses only topRight while Action needed is shown, like the card', () => {
+      mockOverrideConfig.current = {
+        adornments: fourCorners,
+        executionStatusOverride: 'ActionNeeded',
+        onActionNeeded: vi.fn(),
+      };
+      render(<BaseNodeBarNode {...defaultProps} />);
+      expect(screen.getByText('Action needed')).toBeInTheDocument();
+      expect(screen.queryByTestId('adorn-tr')).not.toBeInTheDocument();
+      expect(screen.getByTestId('adorn-tl')).toBeInTheDocument();
+      expect(screen.getByTestId('adorn-bl')).toBeInTheDocument();
+      expect(screen.getByTestId('adorn-br')).toBeInTheDocument();
+    });
+
+    it('renders the footer component inline', () => {
+      mockOverrideConfig.current = { footerComponent: <span data-testid="footer">3 runs</span> };
+      render(<BaseNodeBarNode {...defaultProps} />);
+      expect(screen.getByTestId('sequential-bar-footer')).toContainElement(
+        screen.getByTestId('footer')
+      );
+    });
+
+    it('passes label placeholders to NodeLabel', () => {
+      mockOverrideConfig.current = {
+        labelPlaceholder: 'Name this step',
+        subLabelPlaceholder: 'Describe it',
+      };
+      render(<BaseNodeBarNode {...defaultProps} />);
+      const labelProps = mockNodeLabel.mock.calls.at(-1)?.[0];
+      expect(labelProps.labelPlaceholder).toBe('Name this step');
+      expect(labelProps.subLabelPlaceholder).toBe('Describe it');
+    });
+
+    it('hides the kebab while dragging', () => {
+      mockOverrideConfig.current = {
+        toolbarConfig: {
+          actions: [{ id: 'delete', icon: <span />, label: 'Delete', onAction: vi.fn() }],
+        },
+      };
+      render(<BaseNodeBarNode {...defaultProps} selected dragging />);
+      expect(screen.queryByLabelText('More options')).not.toBeInTheDocument();
+    });
+
+    it('exposes the interaction state like BaseContainer', () => {
+      render(<BaseNodeBarNode {...defaultProps} selected />);
+      expect(screen.getByTestId('sequential-bar')).toHaveAttribute(
+        'data-interaction-state',
+        'selected'
+      );
+    });
+  });
+
+  describe('attachments', () => {
+    const attachments = ['Search', 'Email', 'Calendar', 'CRM', 'Slack'].map((label, i) => ({
+      id: `tool-${i}`,
+      label,
+      icon: <span data-testid={`tool-icon-${i}`} />,
+    }));
+
+    it('renders no chips without attachments', () => {
+      render(<BaseNodeBarNode {...defaultProps} />);
+      expect(screen.queryAllByTestId('sequential-bar-attachment')).toHaveLength(0);
+    });
+
+    it('renders up to three chips and an overflow count for the rest', () => {
+      render(<BaseNodeBarNode {...defaultProps} attachments={attachments} />);
+      expect(screen.getAllByTestId('sequential-bar-attachment')).toHaveLength(3);
+      expect(screen.getByText('Search')).toBeInTheDocument();
+      expect(screen.getByTestId('tool-icon-0')).toBeInTheDocument();
+      expect(screen.getByTestId('sequential-bar-attachment-overflow')).toHaveTextContent('+2');
+      expect(screen.queryByText('Slack')).not.toBeInTheDocument();
+    });
+
+    it('renders no overflow chip at exactly three attachments', () => {
+      render(<BaseNodeBarNode {...defaultProps} attachments={attachments.slice(0, 3)} />);
+      expect(screen.getAllByTestId('sequential-bar-attachment')).toHaveLength(3);
+      expect(screen.queryByTestId('sequential-bar-attachment-overflow')).not.toBeInTheDocument();
+    });
+  });
+
   describe('collapsed stacked treatment', () => {
     it('renders no stacked-layer classes or data-stacked attribute by default', () => {
       render(<BaseNodeBarNode {...defaultProps} />);
@@ -573,6 +707,17 @@ describe('BaseNodeBar (sequential bar variant)', () => {
       expect(bar.className).toContain('before:border-brand');
       expect(bar.className).toContain('before:-z-10');
       expect(bar.className).toContain('before:translate-y-[6px]');
+    });
+
+    it('stacks a drillable manifest, like the card', () => {
+      mockManifest.current = { ...mockManifest.current, drillable: true };
+      render(<BaseNodeBarNode {...defaultProps} />);
+      expect(screen.getByTestId('sequential-bar')).toHaveAttribute('data-stacked', 'true');
+    });
+
+    it('stacks a node with data.isCollapsed, like the card', () => {
+      render(<BaseNodeBarNode {...defaultProps} data={{ isCollapsed: true }} />);
+      expect(screen.getByTestId('sequential-bar')).toHaveAttribute('data-stacked', 'true');
     });
   });
 });

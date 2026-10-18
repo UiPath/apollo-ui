@@ -19,10 +19,8 @@ export interface SequentialStartNodeData extends Record<string, unknown> {
 }
 
 /**
- * Synthetic first row of the sequential view. A bar-sized shell with a play icon
- * and a right-aligned "Add trigger" call to action. It carries only a bottom
- * source handle (nothing precedes the start). This node is injected view-only
- * and filtered out of the change callbacks by the canvas assembly.
+ * Synthetic first row: play icon, title, and a design-mode "Add trigger" button.
+ * Injected view-only; carries only a bottom source handle.
  */
 function SequentialStartNodeComponent({
   data,
@@ -36,7 +34,8 @@ function SequentialStartNodeComponent({
   return (
     <div
       className={cn(SEQ_BAR_SHELL_CLASS, 'cursor-default')}
-      style={getSeqBarVars(width, height)}
+      // The start row stands in for the trigger, which is a circle card.
+      style={getSeqBarVars(width, height, 'circle')}
       data-testid="sequential-start-bar"
     >
       <div className="shrink-0">

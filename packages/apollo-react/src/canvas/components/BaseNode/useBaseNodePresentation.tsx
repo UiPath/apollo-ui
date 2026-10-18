@@ -30,9 +30,7 @@ type PresentationNodeProps = Pick<
 
 /**
  * Manifest-backed presentation model shared by the card and sequential bar
- * node renderers. View selection stays outside this hook: both renderers
- * resolve the same display, icon, handles, toolbar, adornments, and statuses,
- * then render their own geometry and interactions.
+ * renderers, so both resolve identical display, icon, handles, toolbar, and status.
  */
 export function useBaseNodePresentation({
   type,
@@ -59,8 +57,6 @@ export function useBaseNodePresentation({
   const nodeTypeRegistry = useNodeTypeRegistry();
   const { mode } = useBaseCanvasMode();
   const isNodeReadOnly = useIsNodeReadOnly(id);
-  // Per-node read-only composes with canvas mode: a node is editable only in
-  // design mode AND when not individually locked via readOnlyNodeIds.
   const canEdit = mode === 'design' && !isNodeReadOnly;
   const isConnecting = useStore(selectIsConnecting);
   const { multipleNodesSelected } = useSelectionState();
@@ -130,8 +126,8 @@ export function useBaseNodePresentation({
       visible: group.visible,
     }));
   }, [handleConfigurationsOverride, manifest, data, id]);
-  // Hidden actions are dropped first. A locked node keeps its toolbar and disables it
-  // rather than hiding it. See `lockToolbarConfig` for why.
+  // Hidden actions are dropped first. A locked node keeps its toolbar disabled rather than
+  // hidden; see `lockToolbarConfig`.
   const toolbarConfig = useMemo((): NodeToolbarConfig | undefined => {
     const resolved = hideToolbarActions(
       toolbarConfigOverride !== undefined

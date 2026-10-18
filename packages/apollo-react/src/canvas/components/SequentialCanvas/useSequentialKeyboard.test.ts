@@ -3,6 +3,7 @@ import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import {
   getAdjacentRowId,
+  isCanvasSurfaceTarget,
   isTypingTarget,
   type SequentialKeyboardRow,
   toggleCollapsedStepIds,
@@ -13,18 +14,77 @@ function makeRow(overrides: Partial<SequentialKeyboardRow> = {}): SequentialKeyb
   return { nodeId: 'a', collapsible: false, collapsed: false, ...overrides };
 }
 
+/** `currentTarget` defaults to `target`, i.e. a key fired on the wrapper itself. */
 function makeKeyEvent(
   key: string,
   target: EventTarget = document.body,
-  altKey = false
+  altKey = false,
+  defaultPrevented = false,
+  currentTarget: EventTarget = target
 ): ReactKeyboardEvent {
   return {
     key,
     target,
+    currentTarget,
     altKey,
+    defaultPrevented,
     preventDefault: vi.fn(),
   } as unknown as ReactKeyboardEvent;
 }
+
+/** A focused item inside a kebab menu portaled to `document.body`, as Radix does. */
+function mountPortaledMenuItem(): HTMLElement {
+  const menu = document.createElement('div');
+  menu.setAttribute('role', 'menu');
+  const item = document.createElement('div');
+  item.setAttribute('role', 'menuitem');
+  menu.appendChild(item);
+  document.body.appendChild(menu);
+  return item;
+}
+
+describe('isCanvasSurfaceTarget', () => {
+  it('is true for the wrapper itself', () => {
+    const wrapper = document.createElement('div');
+    expect(isCanvasSurfaceTarget(wrapper, wrapper)).toBe(true);
+  });
+
+  it.each([
+    'react-flow__pane',
+    'react-flow__node',
+    'react-flow__edge',
+  ])('is true inside a .%s element', (className) => {
+    const surface = document.createElement('div');
+    surface.className = className;
+    const inner = document.createElement('button');
+    surface.appendChild(inner);
+    expect(isCanvasSurfaceTarget(inner, document.createElement('div'))).toBe(true);
+  });
+
+  it('is true inside the screen-reader list', () => {
+    const list = document.createElement('ol');
+    list.setAttribute('data-sequential-list', '');
+    const button = document.createElement('button');
+    list.appendChild(button);
+    expect(isCanvasSurfaceTarget(button, document.createElement('div'))).toBe(true);
+  });
+
+  it('is false for a portaled menu item, an xyflow panel, a plain element, and null', () => {
+    const wrapper = document.createElement('div');
+    const item = mountPortaledMenuItem();
+    expect(isCanvasSurfaceTarget(item, wrapper)).toBe(false);
+    item.parentElement?.remove();
+
+    const panel = document.createElement('div');
+    panel.className = 'react-flow__panel';
+    const panelChild = document.createElement('span');
+    panel.appendChild(panelChild);
+    expect(isCanvasSurfaceTarget(panelChild, wrapper)).toBe(false);
+
+    expect(isCanvasSurfaceTarget(document.createElement('div'), wrapper)).toBe(false);
+    expect(isCanvasSurfaceTarget(null, wrapper)).toBe(false);
+  });
+});
 
 describe('isTypingTarget', () => {
   it('is false for a plain div', () => {
@@ -102,6 +162,83 @@ describe('useSequentialKeyboard', () => {
 
     result.current.onKeyDown(makeKeyEvent('ArrowDown', document.createElement('input')));
     expect(onSelectNode).not.toHaveBeenCalled();
+  });
+
+  it('ignores keys that bubble up from a portaled kebab menu item', () => {
+    const onSelectNode = vi.fn();
+    const onPrimaryAction = vi.fn();
+    const onDeleteNode = vi.fn();
+    const onMoveNode = vi.fn();
+    const { result } = renderHook(() =>
+      useSequentialKeyboard({
+        rows: [makeRow({ nodeId: 'a' }), makeRow({ nodeId: 'b' })],
+        selectedNodeId: 'a',
+        collapsedStepIds: new Set(),
+        onSelectNode,
+        onPrimaryAction,
+        onDeleteNode,
+        onMoveNode,
+        isDesignMode: true,
+      })
+    );
+    const wrapper = document.createElement('div');
+    const item = mountPortaledMenuItem();
+
+    for (const key of ['ArrowDown', 'ArrowUp', 'Enter', 'Delete', 'Backspace']) {
+      const event = makeKeyEvent(key, item, false, false, wrapper);
+      result.current.onKeyDown(event);
+      expect(event.preventDefault).not.toHaveBeenCalled();
+    }
+    result.current.onKeyDown(makeKeyEvent('ArrowDown', item, true, false, wrapper));
+
+    expect(onSelectNode).not.toHaveBeenCalled();
+    expect(onPrimaryAction).not.toHaveBeenCalled();
+    expect(onDeleteNode).not.toHaveBeenCalled();
+    expect(onMoveNode).not.toHaveBeenCalled();
+    item.parentElement?.remove();
+  });
+
+  it('handles keys that bubble from a node wrapper or the screen-reader list', () => {
+    const onSelectNode = vi.fn();
+    const { result } = renderHook(() =>
+      useSequentialKeyboard({
+        rows: [makeRow({ nodeId: 'a' }), makeRow({ nodeId: 'b' })],
+        selectedNodeId: 'a',
+        collapsedStepIds: new Set(),
+        onSelectNode,
+      })
+    );
+    const wrapper = document.createElement('div');
+    const nodeWrapper = document.createElement('div');
+    nodeWrapper.className = 'react-flow__node';
+    const list = document.createElement('ol');
+    list.setAttribute('data-sequential-list', '');
+    const listButton = document.createElement('button');
+    list.appendChild(listButton);
+
+    result.current.onKeyDown(makeKeyEvent('ArrowDown', nodeWrapper, false, false, wrapper));
+    result.current.onKeyDown(makeKeyEvent('ArrowDown', listButton, false, false, wrapper));
+    expect(onSelectNode).toHaveBeenCalledTimes(2);
+  });
+
+  it('ignores a key a descendant already consumed (defaultPrevented)', () => {
+    const onSelectNode = vi.fn();
+    const onDeleteNode = vi.fn();
+    const { result } = renderHook(() =>
+      useSequentialKeyboard({
+        rows: [makeRow({ nodeId: 'a' }), makeRow({ nodeId: 'b' })],
+        selectedNodeId: 'a',
+        collapsedStepIds: new Set(),
+        onSelectNode,
+        onDeleteNode,
+        isDesignMode: true,
+      })
+    );
+
+    result.current.onKeyDown(makeKeyEvent('ArrowDown', document.body, false, true));
+    result.current.onKeyDown(makeKeyEvent('Delete', document.body, false, true));
+    expect(onSelectNode).not.toHaveBeenCalled();
+    expect(onDeleteNode).not.toHaveBeenCalled();
   });
 
   it('moves selection to the next row on ArrowDown and prevents default', () => {

@@ -6,7 +6,7 @@ import {
   useStore,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useMemo } from 'react';
-import { PREVIEW_NODE_ID } from '../constants';
+import { DEFAULT_SOURCE_HANDLE_ID, DEFAULT_TARGET_HANDLE_ID, PREVIEW_NODE_ID } from '../constants';
 import { type NodeTypeRegistry, useOptionalNodeTypeRegistry } from '../core';
 import type { HandleManifest, NodeManifest } from '../schema/node-definition';
 import { isPreviewEdge } from '../utils/createPreviewNode';
@@ -72,11 +72,17 @@ const isConnectingPreviewEdge = (edge: Edge): boolean =>
 // Returns a primitive signature rather than edge objects, so the subscription stays
 // memoized even when a caller hands React Flow equivalent but newly allocated edges.
 // Returning objects here (even copies) would compare unequal on every store update.
-const previewEdgeSignatureSelector = (state: ReactFlowState): string =>
-  state.edges
-    .filter(isConnectingPreviewEdge)
-    .map((edge) => previewConnectionKey(edge, state))
-    .join('|');
+// Runs on every store update (each pan/zoom frame), so it exits before touching the edges
+// unless a preview node is selected; `connectionInfo` is null otherwise anyway.
+export const previewEdgeSignatureSelector = (state: ReactFlowState): string => {
+  if (!previewNodeSelectedSelector(state)) return '';
+  let key = '';
+  for (const edge of state.edges) {
+    if (!isConnectingPreviewEdge(edge)) continue;
+    key += (key ? '|' : '') + previewConnectionKey(edge, state);
+  }
+  return key;
+};
 
 interface UsePreviewNodeResult {
   /** The currently selected preview node, or null if no preview node is selected. */
@@ -97,15 +103,41 @@ export function resolvePreviewExistingHandleId(previewEdge: Edge): string {
   const sourceIsPreviewNode = previewEdge.source === PREVIEW_NODE_ID;
   const canonicalHandleId = (previewEdge.data as PreviewConnectionEdgeData | undefined)
     ?.previewConnectionHandleId;
+  // `||`, not `??`: an empty-string handle id has always fallen back to the
+  // generic id here, and the flow canvas relies on that.
   return sourceIsPreviewNode
-    ? (canonicalHandleId ?? previewEdge.targetHandle ?? 'input')
-    : (canonicalHandleId ?? previewEdge.sourceHandle ?? 'output');
+    ? canonicalHandleId || previewEdge.targetHandle || DEFAULT_TARGET_HANDLE_ID
+    : canonicalHandleId || previewEdge.sourceHandle || DEFAULT_SOURCE_HANDLE_ID;
 }
 
 /**
- * Resolves a requested existing-node handle against its manifest. Generic
- * `input`/`output` ids are aliases for the manifest default when that literal
- * id is absent; any other unknown explicit id remains invalid.
+ * Resolves the existing node's handle manifest: exact id, then a `repeat` template prefix
+ * (`loop{n}` for `loop0`), then the generic `input`/`output` alias of the manifest default.
+ * Exact wins over prefix so `items-done` resolves to itself beside an `items{n}` repeat.
+ */
+export function resolvePreviewConnectionHandle(
+  registry: Pick<NodeTypeRegistry, 'getDefaultHandle' | 'getManifest'> | null,
+  nodeManifest: NodeManifest | undefined,
+  nodeType: string | undefined,
+  existingHandleId: string,
+  handleType: 'source' | 'target'
+): { handleId: string; manifest: HandleManifest | undefined } {
+  const handles = nodeManifest?.handleConfiguration.flatMap((group) => group.handles) ?? [];
+  const exactHandle = handles.find((handle) => handle.id === existingHandleId);
+  if (exactHandle) return { handleId: existingHandleId, manifest: exactHandle };
+
+  const repeatedHandle = handles.find((handle) => {
+    const repeatHandleIdBase = handle.repeat && handle.id.split('{')[0];
+    return repeatHandleIdBase ? existingHandleId.startsWith(repeatHandleIdBase) : false;
+  });
+  if (repeatedHandle) return { handleId: existingHandleId, manifest: repeatedHandle };
+
+  return resolvePreviewExistingHandle(registry, nodeType, existingHandleId, handleType);
+}
+
+/**
+ * Resolves a requested handle against its manifest. Generic `input`/`output` alias the
+ * manifest default when that literal id is absent; any other unknown id stays invalid.
  */
 export function resolvePreviewExistingHandle(
   registry: Pick<NodeTypeRegistry, 'getDefaultHandle' | 'getManifest'> | null,
@@ -119,7 +151,8 @@ export function resolvePreviewExistingHandle(
     .find((handle) => handle.id === requestedHandleId);
   if (exactHandle) return { handleId: requestedHandleId, manifest: exactHandle };
 
-  const genericAlias = handleType === 'source' ? 'output' : 'input';
+  const genericAlias =
+    handleType === 'source' ? DEFAULT_SOURCE_HANDLE_ID : DEFAULT_TARGET_HANDLE_ID;
   const defaultHandle =
     requestedHandleId === genericAlias && nodeType
       ? registry?.getDefaultHandle(nodeType, handleType)
@@ -185,22 +218,13 @@ export const usePreviewNode = (): UsePreviewNodeResult => {
       const existingHandleId = resolvePreviewExistingHandleId(previewEdge);
 
       // Pre-compute the handle manifest here so consumers don't need to look it up repeatedly.
-      // Repeating handles retain their existing prefix matching; ordinary handles
-      // additionally allow generic input/output to resolve to the manifest default.
-      const repeatedHandleManifest = existingNodeManifest?.handleConfiguration
-        .flatMap((hg) => hg.handles)
-        .find((handle) => {
-          const repeatHandleIdBase = handle.repeat && handle.id.split('{')[0];
-          return repeatHandleIdBase ? existingHandleId.startsWith(repeatHandleIdBase) : false;
-        });
-      const resolvedHandle = repeatedHandleManifest
-        ? { handleId: existingHandleId, manifest: repeatedHandleManifest }
-        : resolvePreviewExistingHandle(
-            registry,
-            existingNodeType,
-            existingHandleId,
-            sourceIsPreviewNode ? 'target' : 'source'
-          );
+      const resolvedHandle = resolvePreviewConnectionHandle(
+        registry,
+        existingNodeManifest,
+        existingNodeType,
+        existingHandleId,
+        sourceIsPreviewNode ? 'target' : 'source'
+      );
 
       return {
         addNewNodeAsSource: sourceIsPreviewNode,

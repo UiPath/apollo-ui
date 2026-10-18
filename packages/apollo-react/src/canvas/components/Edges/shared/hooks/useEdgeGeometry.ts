@@ -59,12 +59,7 @@ export type UseEdgeGeometryArgs = {
    * produce a path string with no vertices to intersect.
    */
   enableLineJumps?: boolean;
-  /**
-   * Corner radius (px) for the rounded (smooth-step) waypoint path. Defaults to
-   * `EDGE_CONSTANTS.BORDER_RADIUS`. `createRoundedPath` clamps it to half the
-   * shorter adjacent segment, so an over-large value degrades gracefully on
-   * short segments. Only affects `waypoint` routing.
-   */
+  /** Corner radius for `waypoint` routing; `createRoundedPath` clamps it to half the shorter adjacent segment. */
   borderRadius?: number;
 };
 

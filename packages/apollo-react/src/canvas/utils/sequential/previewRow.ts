@@ -1,4 +1,5 @@
 import { PREVIEW_NODE_ID } from '../../constants';
+import { rowFor } from './graph-helpers';
 import type {
   InsertionSlot,
   SequenceConnector,
@@ -29,7 +30,7 @@ function projectionWithPreviewConnectors(
   const targetId = slot.target?.nodeId ?? matched?.targetRowId;
 
   if (sourceId) {
-    const sourceRow = projection.rows.find((row) => row.nodeId === sourceId);
+    const sourceRow = rowFor(projection, sourceId);
     const ownsNestedRows = projection.rows.some((row) => row.parentRowId === sourceId);
     const inferredKind =
       previewRow.depth > (sourceRow?.depth ?? previewRow.depth)
@@ -61,23 +62,10 @@ function projectionWithPreviewConnectors(
 }
 
 /**
- * Returns a copy of `projection` with one synthetic preview row (keyed by
- * {@link PREVIEW_NODE_ID}) spliced into `rows` at the position the Add Node
- * insert would land. Feeding this to {@link layoutSequence} while the Add Node
- * panel is open makes the gap open by exactly one row pitch, positions the
- * preview bar in its real slot, and recomputes EVERY connector's waypoints from
- * the shifted geometry -- so branch/merge/goto elbows follow the shift instead
- * of keeping stale absolute waypoints (the old position-only post-pass left
- * them behind). Pure: `projection` is never mutated, and the projection memo it
- * feeds stays untouched (D12) -- only the layout memo re-runs for the insert.
- *
- * The row's depth/index mirror where the committed node parents (see
- * `sequentialOnBeforeNodeAdded`, which parents on `slot.containerId`):
- *  - splice (slot.target): before the target row, at the target's depth;
- *  - append into an empty container (slot.containerId === slot.source): as the
- *    container's first child (one level deeper), right after the container row;
- *  - sibling/leaf append: after the source's whole subtree, at the source depth.
- * If the slot's anchor row can't be found, the projection is returned unchanged.
+ * Copy of `projection` with a synthetic {@link PREVIEW_NODE_ID} row spliced where the
+ * Add Node insert would land, so `layoutSequence` opens the gap and reroutes every
+ * connector. Depth and index mirror where `sequentialOnBeforeNodeAdded` parents the
+ * committed node. Unchanged if the slot's anchor row cannot be found.
  */
 export function projectionWithPreviewRow(
   projection: SequenceProjection,
@@ -85,11 +73,8 @@ export function projectionWithPreviewRow(
 ): SequenceProjection {
   const { rows } = projection;
 
-  // Inserting into an empty branch lane: swap that lane's placeholder row for the
-  // preview IN PLACE, so the preview bar keeps the lane's depth, parent, and
-  // mid-left entry (the generic append logic below would mis-place it at the
-  // parent's depth). The stale placeholder node is dropped by the canvas while
-  // this insert is active.
+  // Empty lane: swap the placeholder row in place so the preview keeps the lane's
+  // depth and parent (the generic append below would land at the owner's depth).
   const laneIndex = rows.findIndex((row) => row.lanePlaceholder?.id === slot.id);
   if (laneIndex !== -1) {
     const laneRow = rows[laneIndex]!;
@@ -128,13 +113,11 @@ export function projectionWithPreviewRow(
     if (sourceIndex === -1) return projection;
     const sourceRow = rows[sourceIndex]!;
     if (slot.containerId === sourceId) {
-      // Append as the first child of an (empty) container body.
       depth = sourceRow.depth + 1;
       parentRowId = sourceId;
       insertIndex = sourceIndex + 1;
     } else {
-      // Sibling / leaf append: land after the source's whole subtree (the
-      // contiguous run of strictly-deeper rows immediately following it).
+      // Land after the source's whole subtree.
       depth = sourceRow.depth;
       parentRowId = sourceRow.parentRowId;
       let idx = sourceIndex + 1;

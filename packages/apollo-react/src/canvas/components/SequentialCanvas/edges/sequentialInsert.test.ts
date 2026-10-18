@@ -77,12 +77,27 @@ describe('sequentialOnBeforeNodeAdded', () => {
     expect(newNode.id).toBe(FAKE_UUID);
   });
 
+  it('keeps an id the host already assigned and rewrites edges against it', () => {
+    const spy = vi.spyOn(crypto, 'randomUUID').mockReturnValue(FAKE_UUID);
+    const hostId = 'host-chosen-id';
+    const hostNode = { ...seedNode(), id: hostId };
+    const hostEdges = seedEdges().map((edge) => ({
+      ...edge,
+      source: edge.source === previousId ? hostId : edge.source,
+      target: edge.target === previousId ? hostId : edge.target,
+    }));
+    const { newNode, newEdges } = sequentialOnBeforeNodeAdded(hostNode, hostEdges);
+    expect(spy).not.toHaveBeenCalled();
+    expect(newNode.id).toBe(hostId);
+    expect(newEdges.map((edge) => [edge.source, edge.target])).toEqual([
+      ['srcA', hostId],
+      [hostId, 'tgtB'],
+    ]);
+  });
+
   it('keeps the preview-derived position and does not force draggable false', () => {
-    // The sequential clone derivation (useSequentialGraph) already stamps
-    // draggable:false on every row unconditionally, so onBeforeNodeAdded must
-    // not also write it into canonical state, or it leaks permanently once the
-    // user toggles back to flow view (synthesizePositionsForFlow only clears it
-    // on that boundary; nothing clears it while still in sequential view).
+    // useSequentialGraph already stamps draggable:false per row; writing it here
+    // would leak into canonical state and survive the toggle back to flow view.
     vi.spyOn(crypto, 'randomUUID').mockReturnValue(FAKE_UUID);
     const seed = seedNode();
     const { newNode } = sequentialOnBeforeNodeAdded(seed, seedEdges());
@@ -158,8 +173,6 @@ describe('sequentialOnBeforeNodeAdded', () => {
 
       expect(incoming?.sourceHandle).toBe('true');
       expect(outgoing?.targetHandle).toBe('input');
-      // The inserted node's own handles are not replaced with handles that
-      // belong to the original source/target nodes.
       expect(incoming?.targetHandle).toBe(SEQUENTIAL_BAR_HANDLE_IDS.target);
       expect(outgoing?.sourceHandle).toBe(SEQUENTIAL_BAR_HANDLE_IDS.source);
     });
@@ -319,11 +332,7 @@ describe('resolvePendingSequentialInsert', () => {
 });
 
 describe('buildSequentialPreviewOptions', () => {
-  // The connector's rendered id deliberately DIFFERS from the canonical edge id
-  // it wraps (as the projection's `conn:${edge.id}` scheme actually produces), proving the
-  // lookup uses connectorEdgeId (the rendered id) and not slot.graphEdgeId (the
-  // canonical id) — those live in different id spaces in sequential view, since
-  // the store here only ever holds derived connector edges.
+  // The rendered id differs from the canonical id it wraps, so the lookup must use connectorEdgeId.
   const connectorEdge = {
     id: 'conn:e-1',
     source: 'row-a',
@@ -368,11 +377,6 @@ describe('buildSequentialPreviewOptions', () => {
       target: { nodeId: 'b', handleId: 'input' },
     };
     const options = buildSequentialPreviewOptions(makeInstance(), { ...baseArgs, slot });
-    // Node id and handle id both come from the slot: bars now render an
-    // invisible handle per manifest handle id (BaseNodeBar
-    // manifestSource/TargetHandleIds), so the preview edge renders AND
-    // usePreviewNode can resolve the existing node's handle manifest for the
-    // Add Node connection filter (bar handle ids never appeared in the manifest).
     expect(options.source).toEqual({ nodeId: 'container', handleId: 'true' });
     expect(options.target).toEqual({ nodeId: 'b', handleId: 'input' });
   });
@@ -415,9 +419,6 @@ describe('buildSequentialPreviewOptions', () => {
   });
 
   it('never finds an edge via slot.graphEdgeId alone (different id space)', () => {
-    // Regression: slot.graphEdgeId ('e-1') is the CANONICAL edge id; the store
-    // here only holds the derived connector edge ('conn:e-1'). Omitting
-    // connectorEdgeId must not accidentally match by falling back to graphEdgeId.
     const slot: InsertionSlot = { id: 'slot-1', graphEdgeId: 'e-1' };
     const options = buildSequentialPreviewOptions(makeInstance(), { ...baseArgs, slot });
     expect(options.data).toEqual({});
@@ -430,11 +431,6 @@ describe('buildSequentialPreviewOptions', () => {
   });
 
   it('never forwards slot.containerId into the preview graph options', () => {
-    // createPreviewGraph would reparent the preview onto the container's
-    // rendered clone with extent:'parent'; in sequential view that clone is a
-    // flattened bar, so the preview would clamp onto the container's own row.
-    // Canonical containment is applied to the materialized node instead (see
-    // resolvePendingSequentialInsert / sequentialOnBeforeNodeAdded).
     const withContainer = buildSequentialPreviewOptions(makeInstance(), {
       ...baseArgs,
       slot: { id: 'slot-1', containerId: 'loop-1' },
