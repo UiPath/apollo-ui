@@ -166,7 +166,7 @@ describe('useClassifierGuardrailParameters', () => {
       { $parameterType: 'text', id: 'modelVendor', value: 'typesafe' },
     ];
     const tighten = () => {
-      fireEvent.click(screen.getByRole('button', { name: /^Intellectual property d/ }));
+      fireEvent.click(screen.getByRole('button', { name: /^Intellectual property \d/ }));
       fireEvent.keyDown(screen.getByRole('slider', { name: /ip_verbatim_text/ }), {
         key: 'ArrowLeft',
       });
