@@ -5,6 +5,7 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import {
   CodeBlock,
+  type CodeBlockProps,
   type CodeBlockStrings,
   DEFAULT_CODE_BLOCK_STRINGS,
 } from '@/components/ui/code-block';
@@ -275,6 +276,18 @@ function rehypeScopeFootnoteLabel(options: { prefix: string }) {
   return (tree: HastNode) => visit(tree);
 }
 
+type RehypeKatexOptions = NonNullable<Parameters<typeof rehypeKatex>[0]>;
+
+/**
+ * rehype-katex with a fresh copy of `macros` for every render. KaTeX writes `\gdef` and friends
+ * into the macros object it is given, so a shared one would let one message redefine a host macro
+ * for every later message, and a frozen one would make KaTeX throw.
+ */
+function rehypeKatexPerRun(options: RehypeKatexOptions) {
+  return (...args: Parameters<ReturnType<typeof rehypeKatex>>) =>
+    rehypeKatex({ ...options, macros: { ...options.macros } })(...args);
+}
+
 export interface MarkdownStrings extends CodeBlockStrings {
   /** Heading of the generated footnotes section. */
   footnotes: string;
@@ -300,7 +313,7 @@ export interface MarkdownProps extends Omit<React.HTMLAttributes<HTMLDivElement>
   /**
    * react-markdown renderers merged over the built-in ones. Use it with `remarkPlugins` to render
    * custom nodes such as citations or resource chips. `code` only styles inline code: fenced blocks
-   * render through `pre`, so override `pre` (or use `renderCodeActions`) to change them.
+   * render through `pre`, so use `renderCodeBlock` or `renderCodeActions` to change them.
    */
   components?: Components;
   /** Extra remark plugins, run after GFM and math. */
@@ -325,7 +338,26 @@ export interface MarkdownProps extends Omit<React.HTMLAttributes<HTMLDivElement>
   codeWrap?: boolean;
   /** Extra header actions for each fenced code block (preview, expand), placed before the copy. */
   renderCodeActions?: (block: MarkdownCodeBlock) => React.ReactNode;
+  /**
+   * Renders each fenced code block instead of the default `CodeBlock`. `props` are what Markdown
+   * would pass it (including the `renderCodeActions` actions), so `<CodeBlock {...props} body={...} />`
+   * changes one part. Return a component element to keep state per block, such as a preview toggle.
+   */
+  renderCodeBlock?: (block: MarkdownCodeBlock, props: CodeBlockProps) => React.ReactNode;
+  /** KaTeX options for math. Output stays MathML and `trust` stays off; these cannot be changed. */
+  katexOptions?: MarkdownKatexOptions;
   strings?: Partial<MarkdownStrings>;
+}
+
+export interface MarkdownKatexOptions {
+  /**
+   * KaTeX's handling of non-standard LaTeX. Defaults to `'ignore'`. rehype-katex renders a formula
+   * that fails strict mode again with strict mode off, so stricter values report through the
+   * unified file messages but do not change what renders.
+   */
+  strict?: boolean | 'ignore' | 'warn' | 'error';
+  /** Macros available to every formula, such as `{ '\\RR': '\\mathbb{R}' }`. */
+  macros?: Record<string, string>;
 }
 
 export interface MarkdownCodeBlock {
@@ -354,6 +386,7 @@ interface MarkdownContextValue {
   images: MarkdownImagePolicy;
   codeWrap: boolean;
   renderCodeActions?: (block: MarkdownCodeBlock) => React.ReactNode;
+  renderCodeBlock?: (block: MarkdownCodeBlock, props: CodeBlockProps) => React.ReactNode;
 }
 
 // Renderers read per-instance options from context so their identities stay stable. A renderer
@@ -456,21 +489,21 @@ function MarkdownInput({
 }
 
 function MarkdownPre({ node, children, ...rest }: React.ComponentProps<'pre'> & ExtraProps) {
-  const { strings, codeWrap, renderCodeActions } = React.useContext(MarkdownContext);
+  const { strings, codeWrap, renderCodeActions, renderCodeBlock } =
+    React.useContext(MarkdownContext);
   const codeNode = (node as HastNode | undefined)?.children?.find(
     (child) => child.type === 'element' && child.tagName === 'code'
   );
   if (!codeNode) return <pre {...rest}>{children}</pre>;
   const block = { code: hastText(codeNode).replace(/\n$/, ''), language: languageOf(codeNode) };
-  return (
-    <CodeBlock
-      code={block.code}
-      language={block.language}
-      wrap={codeWrap}
-      actions={renderCodeActions?.(block)}
-      strings={strings}
-    />
-  );
+  const props: CodeBlockProps = {
+    code: block.code,
+    language: block.language,
+    wrap: codeWrap,
+    actions: renderCodeActions?.(block),
+    strings,
+  };
+  return renderCodeBlock ? renderCodeBlock(block, props) : <CodeBlock {...props} />;
 }
 
 const BUILT_IN_COMPONENTS: Components = {
@@ -588,6 +621,8 @@ const Markdown = React.forwardRef<HTMLDivElement, MarkdownProps>(
       images = 'none',
       codeWrap = false,
       renderCodeActions,
+      renderCodeBlock,
+      katexOptions,
       strings,
       className,
       ...props
@@ -600,8 +635,9 @@ const Markdown = React.forwardRef<HTMLDivElement, MarkdownProps>(
         images,
         codeWrap,
         renderCodeActions,
+        renderCodeBlock,
       }),
-      [strings, images, codeWrap, renderCodeActions]
+      [strings, images, codeWrap, renderCodeActions, renderCodeBlock]
     );
     const { footnotes, footnoteBack } = context.strings;
     // Footnote ids must be unique per message, or every reference jumps to the first transcript match.
@@ -626,11 +662,21 @@ const Markdown = React.forwardRef<HTMLDivElement, MarkdownProps>(
     const mergedRehypePlugins = React.useMemo<Options['rehypePlugins']>(
       () => [
         [rehypeScopeFootnoteLabel, { prefix: footnotePrefix }],
-        [rehypeKatex, { output: 'mathml', throwOnError: false, trust: false, strict: 'ignore' }],
+        [
+          rehypeKatexPerRun,
+          {
+            strict: katexOptions?.strict ?? 'ignore',
+            macros: katexOptions?.macros,
+            // Fixed: MathML needs no stylesheet, and trust would let a model's TeX emit links.
+            output: 'mathml',
+            throwOnError: false,
+            trust: false,
+          },
+        ],
         ...(rehypePlugins ?? []),
         ...(streaming ? [rehypeStreamingCursor] : []),
       ],
-      [rehypePlugins, streaming, footnotePrefix]
+      [rehypePlugins, streaming, footnotePrefix, katexOptions?.strict, katexOptions?.macros]
     );
 
     const remarkRehypeOptions = React.useMemo(
@@ -649,7 +695,7 @@ const Markdown = React.forwardRef<HTMLDivElement, MarkdownProps>(
         data-streaming={streaming || undefined}
         aria-busy={streaming || undefined}
         className={cn(
-          'flex min-w-0 flex-col gap-3 text-sm leading-relaxed break-words text-foreground [&_math]:text-[1.15em] [&>.katex]:overflow-x-auto [&>.katex]:py-1',
+          'flex min-w-0 flex-col gap-3 text-sm leading-relaxed break-words text-foreground [&_math]:text-[1.15em] [&>.katex]:overflow-x-auto [&>.katex]:overflow-y-hidden [&>.katex]:py-1',
           className
         )}
         {...props}

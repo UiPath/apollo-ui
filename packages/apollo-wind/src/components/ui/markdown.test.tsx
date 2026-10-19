@@ -2,7 +2,8 @@ import { render, screen } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { createRef, type ReactNode, useEffect } from 'react';
 import { describe, expect, it } from 'vitest';
-import { Markdown } from './markdown';
+import { CodeBlock } from './code-block';
+import { Markdown, type MarkdownKatexOptions } from './markdown';
 
 const CURSOR = '[data-slot="markdown-cursor"]';
 
@@ -137,6 +138,14 @@ describe('Markdown', () => {
     expect(container.querySelector('.katex')).not.toBeNull();
   });
 
+  it('lets display math scroll sideways but never vertically', () => {
+    const { container } = render(<Markdown>{'$$\nx^2\n$$'}</Markdown>);
+    const root = container.firstChild as HTMLElement;
+    // Display math sits directly in the root, where these rules reach it.
+    expect(root.querySelector(':scope > .katex')).not.toBeNull();
+    expect(root).toHaveClass('[&>.katex]:overflow-x-auto', '[&>.katex]:overflow-y-hidden');
+  });
+
   it('keeps single dollar signs literal', () => {
     const { container } = render(<Markdown>{'It costs $5 and $10.'}</Markdown>);
     expect(container.querySelector('.katex')).toBeNull();
@@ -195,6 +204,63 @@ describe('Markdown', () => {
       'data-wrap',
       'true'
     );
+  });
+
+  it('lets renderCodeBlock replace a code block with the props Markdown would pass', () => {
+    const calls: unknown[] = [];
+    render(
+      <Markdown
+        codeWrap
+        renderCodeActions={() => <button type="button">Expand</button>}
+        renderCodeBlock={(block, props) => {
+          calls.push({ block, wrap: props.wrap, code: props.code, language: props.language });
+          return <CodeBlock {...props} body={<p>Preview of {block.language}</p>} />;
+        }}
+      >
+        {'```html\n<b>Hi</b>\n```'}
+      </Markdown>
+    );
+    expect(calls).toEqual([
+      {
+        block: { code: '<b>Hi</b>', language: 'html' },
+        wrap: true,
+        code: '<b>Hi</b>',
+        language: 'html',
+      },
+    ]);
+    expect(screen.getByText('Preview of html')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Expand' })).toBeInTheDocument();
+  });
+
+  it('passes KaTeX macros through and keeps trust off', () => {
+    const { container } = render(
+      <Markdown katexOptions={{ macros: { '\\RR': '\\mathbb{R}' } }}>{'$$x \\in \\RR$$'}</Markdown>
+    );
+    expect(container.querySelector('mi[mathvariant="double-struck"]')).toHaveTextContent('R');
+
+    // trust is not an option, and a caller that forces it in still gets no link.
+    const forced = { trust: true } as MarkdownKatexOptions;
+    const { container: linked } = render(
+      <Markdown katexOptions={forced}>{'$$\\href{https://example.com}{x}$$'}</Markdown>
+    );
+    expect(linked.querySelector('[href]')).toBeNull();
+  });
+
+  it('gives each render its own copy of the KaTeX macros', () => {
+    const macros = { '\\RR': '\\mathbb{R}' };
+    const { container } = render(
+      <Markdown katexOptions={{ macros }}>{'$$\\gdef\\foo{x}\\foo + \\RR$$'}</Markdown>
+    );
+    expect(container.querySelector('.katex-error')).toBeNull();
+    expect(macros).toEqual({ '\\RR': '\\mathbb{R}' });
+
+    // A frozen object is never written to, so it still renders.
+    const frozen = Object.freeze({ '\\RR': '\\mathbb{R}' });
+    const { container: second } = render(
+      <Markdown katexOptions={{ macros: frozen }}>{'$$\\gdef\\bar{y}\\bar \\in \\RR$$'}</Markdown>
+    );
+    expect(second.querySelector('mi[mathvariant="double-struck"]')).toHaveTextContent('R');
+    expect(second.querySelector('.katex-error')).toBeNull();
   });
 
   it('drops javascript: links', () => {

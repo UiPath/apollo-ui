@@ -1,23 +1,23 @@
 import type { Meta } from '@storybook/react-vite';
 import {
-  Bold,
-  Italic,
-  Underline,
-  AlignLeft,
   AlignCenter,
+  AlignLeft,
   AlignRight,
+  Bold,
   Copy,
   Download,
   Heart,
   Info,
+  Italic,
+  Keyboard,
   Pencil,
   Plus,
+  Redo,
   Settings,
   Share2,
   Trash2,
+  Underline,
   Undo,
-  Redo,
-  Keyboard,
 } from 'lucide-react';
 import { Button } from './button';
 import { Input } from './input';

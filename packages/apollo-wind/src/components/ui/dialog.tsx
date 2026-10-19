@@ -13,6 +13,24 @@ import {
 import { dialogSurfaceClassName } from '@/lib/dialog-surface';
 import { cn } from '@/lib/index';
 
+export interface DialogStrings {
+  /** Screen reader label of the default dialog's close button. */
+  close: string;
+  /** Label of the takeover dialog's close button. */
+  closeTakeover: string;
+  /** Label of the takeover dialog's button that fills the viewport. */
+  expand: string;
+  /** Label of the takeover dialog's button that leaves the full viewport. */
+  collapse: string;
+}
+
+export const DEFAULT_DIALOG_STRINGS: DialogStrings = {
+  close: 'Close',
+  closeTakeover: 'Close modal',
+  expand: 'Expand modal',
+  collapse: 'Collapse modal',
+};
+
 function Dialog({ ...props }: React.ComponentProps<typeof DialogPrimitive.Root>) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />;
 }
@@ -109,6 +127,8 @@ const DialogContent = React.forwardRef<
     overlayProps?: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>;
     overlayTestId?: string;
     'data-expanded'?: boolean;
+    /** Overrides for any subset of the built-in button labels. */
+    strings?: Partial<DialogStrings>;
   }
 >(function DialogContent(
   {
@@ -128,6 +148,7 @@ const DialogContent = React.forwardRef<
     overlayProps,
     overlayTestId,
     'data-expanded': dataExpanded,
+    strings,
     'aria-labelledby': ariaLabelledBy,
     onPointerDownOutside,
     ...props
@@ -138,6 +159,7 @@ const DialogContent = React.forwardRef<
   const [uncontrolledExpanded, setUncontrolledExpanded] = React.useState(defaultExpanded);
   const expanded = controlledExpanded ?? uncontrolledExpanded;
   const isTakeover = variant === 'takeover';
+  const text = { ...DEFAULT_DIALOG_STRINGS, ...strings };
 
   const setExpanded = (nextExpanded: boolean) => {
     if (controlledExpanded === undefined) setUncontrolledExpanded(nextExpanded);
@@ -195,14 +217,14 @@ const DialogContent = React.forwardRef<
                   variant="ghost"
                   size="xs"
                   icon
-                  aria-label={expanded ? 'Collapse modal' : 'Expand modal'}
-                  title={expanded ? 'Collapse modal' : 'Expand modal'}
+                  aria-label={expanded ? text.collapse : text.expand}
+                  title={expanded ? text.collapse : text.expand}
                   onClick={() => setExpanded(!expanded)}
                 >
                   {expanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
                 </Button>
                 <DialogPrimitive.Close asChild>
-                  <Button variant="ghost" size="xs" icon aria-label="Close modal">
+                  <Button variant="ghost" size="xs" icon aria-label={text.closeTakeover}>
                     <XIcon size={16} />
                   </Button>
                 </DialogPrimitive.Close>
@@ -231,7 +253,7 @@ const DialogContent = React.forwardRef<
                 className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 cursor-pointer rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:cursor-default disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
               >
                 <XIcon />
-                <span className="sr-only">Close</span>
+                <span className="sr-only">{text.close}</span>
               </DialogPrimitive.Close>
             )}
           </>
