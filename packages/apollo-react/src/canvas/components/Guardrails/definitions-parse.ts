@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { GuardrailDefinitionWire } from './definitions-wire';
+import type { ClassifierQuestionGroupWire, GuardrailDefinitionWire } from './definitions-wire';
 
 /**
  * Runtime validation for the definitions payload.
@@ -254,4 +254,65 @@ export function parseGuardrailDefinitions(input: unknown): GuardrailDefinitionsP
   }
 
   return { definitions, invalid };
+}
+
+const classifierQuestionSchema = z.object({
+  name: nonBlankString,
+  question: nonBlankString,
+  type: z.enum(['noul', 'score']),
+  criteriaTrue: z.string().nullish(),
+  criteriaFalse: z.string().nullish(),
+  levels: z.array(z.string()).nullish(),
+});
+
+type ClassifierQuestionWire = ClassifierQuestionGroupWire['questions'][number];
+
+/** The same pin as `toWireDefinition`, for the classifier question catalog. */
+function toWireQuestion(parsed: z.infer<typeof classifierQuestionSchema>): ClassifierQuestionWire {
+  const asWire: ClassifierQuestionWire = parsed;
+  const asSchemaOutput: z.infer<typeof classifierQuestionSchema> = asWire;
+  return asSchemaOutput;
+}
+
+export interface ClassifierQuestionsParseResult {
+  groups: ClassifierQuestionGroupWire[];
+  /** A group dropped whole has no `question`; a dropped question names its position. */
+  invalid: Array<{ index: number; question?: number; message: string }>;
+  inputError?: string;
+}
+
+/**
+ * Validate the classifier question catalog. Never throws, like `parseGuardrailDefinitions`: a
+ * group without an id or question list is dropped whole, a malformed question alone.
+ */
+export function parseClassifierQuestions(input: unknown): ClassifierQuestionsParseResult {
+  if (!Array.isArray(input)) {
+    return {
+      groups: [],
+      invalid: [],
+      inputError: `Expected an array of classifier question groups, received ${describeInput(input)}.`,
+    };
+  }
+  const groups: ClassifierQuestionGroupWire[] = [];
+  const invalid: ClassifierQuestionsParseResult['invalid'] = [];
+  const groupSchema = z.object({ id: nonBlankString, questions: z.array(z.unknown()) });
+  for (let index = 0; index < input.length; index += 1) {
+    try {
+      const group = groupSchema.safeParse(input[index]);
+      if (!group.success) {
+        invalid.push({ index, message: describeIssues(group.error) });
+        continue;
+      }
+      const questions: ClassifierQuestionWire[] = [];
+      group.data.questions.forEach((entry, question) => {
+        const result = classifierQuestionSchema.safeParse(entry);
+        if (result.success) questions.push(toWireQuestion(result.data));
+        else invalid.push({ index, question, message: describeIssues(result.error) });
+      });
+      groups.push({ id: group.data.id, questions });
+    } catch (error: unknown) {
+      invalid.push({ index, message: error instanceof Error ? error.message : String(error) });
+    }
+  }
+  return { groups, invalid };
 }

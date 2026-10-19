@@ -1029,9 +1029,7 @@ function buildGuardrailCopy(_: CopyTranslate): GuardrailCopyTable {
       },
     },
 
-    // Agents' wording throughout: Flow has no classifier guardrail yet. `questionThresholds`
-    // and `modelVendor` have no copy, since the classifier editors render neither as a field,
-    // and the predefined questions take their text from the question catalog, not from here.
+    // Agents' wording throughout: Flow has no classifier guardrail yet.
     classifier: {
       displayName: _({
         id: 'guardrails.definitions.classifier.display-name',

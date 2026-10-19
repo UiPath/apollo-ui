@@ -107,8 +107,6 @@ export function normalizeGuardrailParameters(
  * Mirrors the map-enum editor's key resolution exactly so the persisted map matches the
  * rendered rows. Call at save time.
  *
- * A map that editor does not render has no rows to match, so `options.leaveUnsetIds` keeps
- * the fill away from it: see `SyncMapEnumParametersOptions`.
  */
 export function syncMapEnumParameters(
   parameters: GuardrailValidatorParameter[],
@@ -163,10 +161,8 @@ export function syncMapEnumParameters(
 
 export interface SyncMapEnumParametersOptions {
   /**
-   * Map ids to prune to the selection without filling in the keys they lack. For a map the host
-   * renders itself (an `overrideParameterIds` entry), where a missing key has a meaning of its
-   * own: the classifier stores a threshold only for a question the user tuned, and an absent one
-   * runs at the backend's default. Filling it with the map's `min` would save a 0 nobody chose.
+   * Maps pruned to the selection but not filled: ones the host renders, where a missing key means
+   * something (an untuned classifier question runs at the backend's default, not at `min`).
    */
   leaveUnsetIds?: readonly string[];
 }

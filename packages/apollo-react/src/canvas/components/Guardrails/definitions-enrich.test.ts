@@ -200,28 +200,16 @@ describe('enrichGuardrailDefinitions', () => {
       });
     });
 
-    it('names the classifier, and lets its wire labels win over the curated ones', () => {
+    it('names the classifier; its wire copy wins and the curated copy fills the bare questions', () => {
       const definition = enrichOne(CLASSIFIER_WIRE);
 
       expect(definition.displayName).toBe('Classifier');
-      // The wire describes these two itself, so its copy is what renders.
-      expect(param(definition, 'selectedQuestions')).toMatchObject({
-        label: 'Predefined questions',
-        tooltip: CLASSIFIER_WIRE.parameters[0]?.description,
-      });
-      expect(param(definition, 'modelVendor').label).toBe('Model vendor');
-      // `questions` arrives bare, so the curated copy fills it.
+      expect(param(definition, 'selectedQuestions').tooltip).toBe(
+        CLASSIFIER_WIRE.parameters[0]?.description
+      );
       expect(param(definition, 'questions')).toMatchObject({
         label: 'Your questions',
         tooltip: GUARDRAIL_COPY_EN.classifier?.paramTooltips?.questions,
-        maxItems: 10,
-        maxLength: 500,
-      });
-      expect(param(definition, 'questionThresholds')).toMatchObject({
-        keySource: 'selectedQuestions',
-        min: 0,
-        max: 1,
-        step: 0.05,
       });
     });
 

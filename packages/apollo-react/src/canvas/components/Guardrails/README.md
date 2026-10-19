@@ -18,9 +18,8 @@ read-only governance guardrails a policy enforces), plus the leaves the sections
 `GuardrailStatusChip`, `GuardrailStatusBanner`, `GuardrailFileSupportIndicator` and
 `MixedScopesBanner`.
 `GuardrailScopeSelector`, the builder's scope and tool targeting field, is exported on its own
-too. The classifier guardrail adds its question catalog (`useClassifierQuestions`), its two
-editors (`ClassifierQuestionPicker`, `ClassifierCustomQuestionsEditor`) and the seam that mounts
-them in the builder (`useClassifierGuardrailParameters`).
+too. The classifier guardrail adds `useClassifierQuestions`, two editors and
+`useClassifierGuardrailParameters`.
 
 ## Hover and focus, family-wide
 
@@ -664,13 +663,10 @@ Contract highlights:
 
 - **Owns form state.** Initialized from `definition`/`guardrail`/`defaultName` at mount —
   remount with a new `key` to reset (all known hosts already remount per session).
-- **Saves a host-rendered threshold map as the host left it.** At save time every `map-enum`
-  is pruned to the keys its `keySource` selects, and the keys it lacks are filled (stored
-  value, per-key default, then `min`) so the saved map matches `MapEnumField`'s rows. A map
-  listed in `overrideParameterIds` has no such rows, so it is pruned but not filled: the
-  classifier stores a threshold only for a question the user tuned, and filling the rest with
-  `min` would save 0 and flag every payload. A probed override is still filled, since only the
-  form knows the probe's answer: declare the ids.
+- **Saves a host-rendered threshold map as the host left it.** Every `map-enum` is pruned to
+  its `keySource` selection; one the builder renders also gets its missing keys filled, so it
+  matches `MapEnumField`'s rows. A map in `overrideParameterIds` is not filled: the classifier
+  leaves untuned questions unset, and filling them with `min` would save 0.
 - **Owns validation and gates its own Save.** Messages localize through lingui
   (overridable per string via `labels`); a host that validates externally (e.g. zod) passes
   `errors` — host messages display immediately, win per field, and gate Save. The pure
@@ -704,106 +700,43 @@ light DOM too.
 
 ## Classifier guardrail
 
-The `classifier` validator (Agents#6449) evaluates questions against the payload with a
-non-generative classifier: predefined questions picked across categories, plus the author's
-own. Its definition is ordinary `$parameterType`s, but read generically they render as a raw
-multi-select of question names and a bare text list, so the family ships the pieces that make
-it usable. Wire contract, unchanged from what Agents saves:
+The `classifier` validator (Agents#6449) asks predefined questions, picked across categories,
+and the author's own. Its definition uses ordinary `$parameterType`s, which the generic form
+renders as a raw list of question names, so the family ships its editors. The wire, unchanged:
 
-| parameter | type | holds |
-| --- | --- | --- |
-| `selectedQuestions` | `enum-list` | predefined question names, from the question catalog |
-| `questionThresholds` | `map-enum` keyed by `selectedQuestions` | 0..1 per tuned question; absent means the backend's 0.5. A score question stores `level / (levels - 1)` |
-| `questions` | `text-list` | the author's own yes/no questions, blank rows never persisted |
-| `questionCriteriaTrue.{i}` / `questionCriteriaFalse.{i}` | `text` sidecars, max 500 | optional "counts as yes" / "counts as no" for `questions[i]` |
-| `questionThreshold.{i}` | `number` sidecar | `questions[i]`'s threshold, omitted at 0.5 |
-| `model` | `enum`, no options | the host's model picker |
-| `modelVendor` | `text`, required | written by the host's model picker with the model |
+| parameter | holds |
+| --- | --- |
+| `selectedQuestions` (`enum-list`) | predefined question names |
+| `questionThresholds` (`map-enum`) | 0..1 per tuned question; absent runs at the backend's 0.5. A score question stores `level / (levels - 1)` |
+| `questions` (`text-list`) | the author's own yes/no questions |
+| `questionCriteriaTrue.{i}` / `questionCriteriaFalse.{i}` / `questionThreshold.{i}` | sidecars of `questions[i]`, rewritten on every edit |
+| `model` (`enum`, no options) + `modelVendor` (`text`, required) | the host's model picker writes both |
 
-The sidecars are keyed by position, so they are rewritten from scratch on every edit.
-
-### Question catalog
-
-`GET /api/execution/guardrails/classifier-questions` returns the predefined questions grouped by
-category, verbatim as the validator runs them:
-`[{ id, questions: [{ name, question, type: 'noul' | 'score', criteriaTrue?, criteriaFalse?, levels? }] }]`.
-The question text never enters this package's copy, so the designer cannot drift from what
-runs; only the seven category headings do (`categoryLabels`, see Canonical copy).
-
-```tsx
-const { categories, loading, error } = useClassifierQuestions(
-  { baseUrl, tenantId }, // the same context useGuardrailDefinitions takes
-  { enabled: definition?.validator === 'classifier' }
-);
-```
-
-The same three host shapes as `useGuardrailDefinitions` and the same request core: a context to
-fetch, `null` plus `{ questions }` for a catalog the host already holds, `null` alone to stay
-idle. It never throws: a malformed group or question is dropped and listed in `invalid`, its
-siblings kept, and `parseClassifierQuestions` / `enrichClassifierQuestions` are exported pure
-for non-React callers. A category the copy has not learned keeps its raw id as its heading, as
-Agents' picker does.
-
-### Editors
-
-- **`ClassifierQuestionPicker`**: the catalog grouped by category, searchable by question text
-  (every matching category opens), each category collapsible with a `selected/total` count and
-  a tri-state select-all. A selected yes/no question takes a Strictness slider (0..1, step 0.1,
-  marked Strict, Balanced and Lenient); a selected score question takes the severity tier it
-  flags from (Low to Critical, never the benign level 0), stored as `level / (levels - 1)`. Each
-  question's details tooltip shows its criteria or its ladder. One
-  `onChange(selectedQuestions, questionThresholds)` per edit, so a question leaving the
-  selection takes its threshold with it, and only a tuned question gets an entry.
-- **`ClassifierCustomQuestionsEditor`**: the author's own questions, each with its Strictness and
-  optional "counts as yes" / "counts as no" (max 500). Rows live in local state so a blank row
-  can be typed into; `onRowsChange` reports every row, and `writeClassifierCustomQuestions`
-  persists only those with a question. The local rows reseed only when the persisted value
-  changes from outside, never on the echo of their own edit.
-
-Both are controlled, resolve nothing (the catalog, the values, the label and tooltip arrive as
-props) and take their chrome from `guardrails.classifier.*` ids, in Agents' English, overridable
-per string through `labels`. Both need an ancestor `TooltipProvider`.
-
-Pure helpers, React-free so a host's save path and legacy screens can use them:
-`readClassifierCustomQuestions`, `writeClassifierCustomQuestions` (sidecars rebuilt from scratch,
-blank rows dropped, a 0.5 threshold omitted), `sanitizeClassifierCustomQuestions`,
-`hasClassifierQuestions` (the "no questions" save predicate), `classifierLevelToThreshold` /
-`classifierThresholdToLevel`, `getClassifierSeverityTier`, and `CLASSIFIER_PARAMETER_IDS`.
-
-### In GuardrailBuilder
-
-`useClassifierGuardrailParameters` is the one seam both hosts compose. It claims
-`selectedQuestions`, `questionThresholds`, `questions` and `modelVendor`, and returns `undefined`
-for everything else, so `model` falls through to the host's own discovery picker:
+`useClassifierQuestions` loads `GET /api/execution/guardrails/classifier-questions` with the
+same context, host shapes and request behaviour as `useGuardrailDefinitions`; the question text
+stays the backend's, and only the category headings are curated copy (`categoryLabels`).
+`ClassifierQuestionPicker` and `ClassifierCustomQuestionsEditor` are the two editors, and
+`readClassifierCustomQuestions` / `writeClassifierCustomQuestions` / `hasClassifierQuestions`
+the pure helpers. `useClassifierGuardrailParameters` is the seam both hosts compose:
 
 ```tsx
 const { categories } = useClassifierQuestions(ctx, { enabled: isClassifier });
 const classifier = useClassifierGuardrailParameters({ definition, categories });
 
 <GuardrailBuilder
-  definition={definition}
   renderParameter={(c) => classifier.renderParameter(c) ?? renderModelPicker(c)}
   overrideParameterIds={[...classifier.overrideParameterIds, 'model']}
   onSave={(value) => classifier.validateParameters(value.validatorParameters) && persist(value)}
 />;
 ```
 
-- `selectedQuestions` renders the picker, which writes both lists through `onParametersChange` in
-  one pass and drops either when it empties. `questionThresholds` renders nothing of its own.
-- `questions` renders the custom-questions editor, writing the list and its sidecars together.
-- `modelVendor` renders nothing until the builder flags it with a model chosen, then says to
-  pick the model again. The host's model picker writes `modelVendor` with `model`.
-- `validateParameters` is the cross-parameter rule the builder cannot know: neither question
-  parameter is required alone, but the classifier needs one of them. On `false` the picker shows
-  why, and the next edit to either editor clears it.
-- Declare the ids, as above: a declared threshold map is saved without filler keys (see
-  GuardrailBuilder), which is what keeps an untuned question at the backend's 0.5.
-- Nothing is claimed for another validator, or for a bring-your-own definition reusing the id.
-
-The editors mount through the existing `renderParameter` seam, which is the registered
-`guardrail-render-parameter` custom component, so this is not a renderer next to `MetadataForm`
-(the "Rule for new work" below). They are not built into the builder because two of their
-inputs are the host's: the question catalog (components resolve nothing) and the model picker.
+It renders the picker for `selectedQuestions` (writing both lists at once), the editor for
+`questions`, and a message under `modelVendor` when a model was saved without one; `model` falls
+through to the host. `validateParameters` is the rule the builder cannot know: at least one
+question across both lists. Declare the ids as above, which also keeps an untuned threshold unset
+(see GuardrailBuilder). The editors mount through `renderParameter`, the registered
+`guardrail-render-parameter` component, not a renderer beside `MetadataForm`; they are not built
+into the builder because the catalog and the model picker are the host's.
 
 ## CustomGuardrailBuilder
 

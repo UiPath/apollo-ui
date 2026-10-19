@@ -94,3 +94,20 @@ export interface GuardrailDefinitionWire {
   folderPath?: string;
   folderKey?: string;
 }
+
+/**
+ * One category of `GET /api/execution/guardrails/classifier-questions`: the classifier's
+ * predefined questions as the validator runs them. A `noul` question is yes/no; a `score`
+ * question grades `levels`, lowest first.
+ */
+export interface ClassifierQuestionGroupWire {
+  id: string;
+  questions: Array<{
+    name: string;
+    question: string;
+    type: 'noul' | 'score';
+    criteriaTrue?: string | null;
+    criteriaFalse?: string | null;
+    levels?: string[] | null;
+  }>;
+}

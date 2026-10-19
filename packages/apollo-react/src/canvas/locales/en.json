@@ -539,7 +539,6 @@
   "guardrails.classifier.search-label": "Search classifier questions",
   "guardrails.classifier.no-matches": "No predefined questions match your search.",
   "guardrails.classifier.select-all-in-category": "Select all in {category}",
-  "guardrails.classifier.toggle-category": "Show or hide {category} questions",
   "guardrails.classifier.question-details": "Question details for {name}",
   "guardrails.classifier.criteria-yes": "Counts as yes (flag):",
   "guardrails.classifier.criteria-no": "Counts as no:",

@@ -1921,70 +1921,50 @@ export function useCustomGuardrailBuilderLabels(
 }
 
 /**
- * The chrome strings of the classifier editors: `ClassifierQuestionPicker`,
- * `ClassifierCustomQuestionsEditor` and the messages `useClassifierGuardrailParameters` shows.
- * The English is Agents' own (UiPath/Agents#6449), so its screens read the same when they move
- * onto these. The parameters' labels and tooltips are validator copy, not chrome: they arrive
- * pre-resolved from the definition.
+ * Chrome of the classifier editors and of `useClassifierGuardrailParameters`, in Agents' English
+ * (UiPath/Agents#6449). The parameters' own labels come from the definition.
  */
 export interface GuardrailClassifierLabels {
-  /** Aria-label of an info-tooltip trigger. */
   moreInformation: string;
-  // Question picker
-  /** Under the picker's label: `{{count}}` questions selected. */
+  /** `{{count}}` questions selected. */
   pickerSummary: string;
   searchPlaceholder: string;
-  /** Aria-label of the search box. */
   searchLabel: string;
   noMatches: string;
-  /** Aria-label of a category's select-all checkbox: `{{category}}`. */
+  /** `{{category}}`. */
   selectAllInCategory: string;
-  /** Aria-label of a category's expand toggle: `{{category}}`. */
-  toggleCategory: string;
-  /** Aria-label of a question's details tooltip: `{{name}}`, the question's id. */
+  /** `{{name}}`, the question's id; also `severityCutoff` and `questionStrictness`. */
   questionDetails: string;
-  /** Before a yes/no question's "counts as yes" in its details. */
   criteriaYes: string;
-  /** Before a yes/no question's "counts as no" in its details. */
   criteriaNo: string;
-  /** Above a score question's levels in its details. */
   levelsIntro: string;
-  /** Before a selected score question's severity select. */
   severityCutoffLabel: string;
-  /** Aria-label of that select: `{{name}}`. */
   severityCutoff: string;
   severityLow: string;
   severityModerate: string;
   severityHigh: string;
   severityCritical: string;
-  /** Before a threshold slider, in both editors. */
   strictnessLabel: string;
-  /** Aria-label of a selected yes/no question's slider: `{{name}}`. */
   questionStrictness: string;
   thresholdStrict: string;
   thresholdBalanced: string;
   thresholdLenient: string;
-  // Custom questions
   addQuestion: string;
   questionPlaceholder: string;
-  /** Aria-label of a custom question's text: `{{label}}` (the parameter's) and `{{position}}`. */
+  /** `{{label}}` (the parameter's) and `{{position}}`; also the two below. */
   customQuestion: string;
-  /** Aria-label of its remove button: `{{label}}`, `{{position}}`. */
   removeCustomQuestion: string;
-  /** Aria-label of its slider: `{{label}}`, `{{position}}`. */
   customQuestionStrictness: string;
   criteriaTrueLabel: string;
   criteriaTruePlaceholder: string;
   criteriaFalseLabel: string;
   criteriaFalsePlaceholder: string;
-  // Parameter messages
-  /** Shown on the picker when Save finds no question at all. */
+  /** On the picker when Save finds no question. */
   questionsRequired: string;
-  /** Shown under the model when the host saved it without a vendor. */
+  /** Under the model when it was saved without a vendor. */
   modelVendorMissing: string;
 }
 
-/** The subset of `useSafeLingui`'s translator the classifier labels need. */
 type ClassifierTranslate = (descriptor: {
   id: string;
   message: string;
@@ -2014,11 +1994,6 @@ function buildGuardrailClassifierLabels(_: ClassifierTranslate): GuardrailClassi
     selectAllInCategory: _({
       id: 'guardrails.classifier.select-all-in-category',
       message: 'Select all in {category}',
-      values: TEMPLATE_TOKENS,
-    }),
-    toggleCategory: _({
-      id: 'guardrails.classifier.toggle-category',
-      message: 'Show or hide {category} questions',
       values: TEMPLATE_TOKENS,
     }),
     questionDetails: _({
@@ -2111,10 +2086,7 @@ const englishClassifierTranslate: ClassifierTranslate = ({ message, values }) =>
 export const GUARDRAIL_CLASSIFIER_EN_LABELS: GuardrailClassifierLabels =
   buildGuardrailClassifierLabels(englishClassifierTranslate);
 
-/**
- * The same strings flattened to message id to ICU source message, the form the catalogs store:
- * the i18n test compares these against `locales/en.json` verbatim.
- */
+/** Message id to ICU source, as `locales/en.json` stores them. */
 export const GUARDRAIL_CLASSIFIER_EN_MESSAGES: Readonly<Record<string, string>> = Object.freeze(
   (() => {
     const messages: Record<string, string> = {};

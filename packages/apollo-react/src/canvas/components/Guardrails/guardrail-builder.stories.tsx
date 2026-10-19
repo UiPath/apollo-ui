@@ -625,7 +625,6 @@ function StandInModelPicker({ ctx }: { ctx: GuardrailParameterRenderContext }) {
 }
 
 function ClassifierHost() {
-  // A host with its own cache passes the catalog in; one without passes a request context.
   const { categories } = useClassifierQuestions(null, { questions: CLASSIFIER_QUESTIONS_WIRE });
   const classifier = useClassifierGuardrailParameters({
     definition: classifierDefinition,
@@ -663,10 +662,8 @@ function ClassifierHost() {
 }
 
 /**
- * The classifier composed the way both hosts do: useClassifierQuestions for the catalog,
- * useClassifierGuardrailParameters for the predefined questions, the custom questions and the
- * model vendor message, and the host's own model picker after it. Save with no question shows
- * the picker's error; a successful save prints the parameters below.
+ * The classifier as hosts compose it: the catalog hook, the classifier seam, then the host's own
+ * model picker. A successful save prints the parameters below.
  */
 export const Classifier: Story = {
   args: {

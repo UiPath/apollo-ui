@@ -388,17 +388,6 @@ export const SENTIMENT_WIRE: GuardrailDefinitionWire = {
   ],
 };
 
-/** The classifier question catalog's group ids, in the order the backend sends them. */
-export const CLASSIFIER_CATEGORY_IDS: string[] = [
-  'pii',
-  'harmful_content',
-  'prompt_injection',
-  'intellectual_property',
-  'secrets_and_credentials',
-  'compliance_commitments',
-  'scope_and_conduct',
-];
-
 /** Every predefined classifier question name, `ClassifierQuestionPacks.AllQuestionNames`. */
 export const CLASSIFIER_QUESTION_NAMES: string[] = [
   'pii_contact_information',
@@ -429,11 +418,7 @@ export const CLASSIFIER_QUESTION_NAMES: string[] = [
   'conduct_profanity_abuse',
 ];
 
-/**
- * Agents' `OutOfTheBoxGuardrailDefinitions.Classifier` (UiPath/Agents#6449), as the definitions
- * endpoint sends it. The wire describes `selectedQuestions`, `model` and `modelVendor` itself;
- * `questions` carries no copy.
- */
+/** Agents' `OutOfTheBoxGuardrailDefinitions.Classifier` (UiPath/Agents#6449). */
 export const CLASSIFIER_WIRE: GuardrailDefinitionWire = {
   validator: 'classifier',
   allowedScopes: ['Agent', 'Llm', 'Tool'],
@@ -468,7 +453,6 @@ export const CLASSIFIER_WIRE: GuardrailDefinitionWire = {
       max: 1,
     },
     {
-      // No options: LLM Gateway's Model Hub owns the list, and the host's model picker finds it.
       id: 'model',
       type: 'enum',
       required: true,

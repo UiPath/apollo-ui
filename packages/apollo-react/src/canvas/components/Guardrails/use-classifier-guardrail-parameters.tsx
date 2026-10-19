@@ -3,7 +3,6 @@ import { type ReactNode, useCallback, useState } from 'react';
 import type { GuardrailDefinition } from './builder-types';
 import { ClassifierCustomQuestionsEditor } from './classifier-custom-questions-editor';
 import { ClassifierQuestionPicker } from './classifier-question-picker';
-import type { ClassifierQuestionCategory } from './classifier-questions-enrich';
 import {
   CLASSIFIER_PARAMETER_IDS,
   CLASSIFIER_VALIDATOR,
@@ -14,53 +13,32 @@ import {
 } from './classifier-utils';
 import { type GuardrailClassifierLabels, useGuardrailClassifierLabels } from './i18n';
 import type { GuardrailParameterRenderContext, GuardrailValidatorParameter } from './types';
+import type { ClassifierQuestionCategory } from './use-classifier-questions';
 
 export interface UseClassifierGuardrailParametersOptions {
-  /**
-   * The definition the builder is open on. Nothing is claimed unless it is the built-in
-   * classifier: a bring-your-own definition reusing the id renders generically.
-   */
+  /** Nothing is claimed unless this is the built-in classifier (not a BYO reusing the id). */
   definition: Pick<GuardrailDefinition, 'validator' | 'byoValidatorName'> | undefined;
-  /** The question catalog: `useClassifierQuestions(...).categories`. */
   categories: readonly ClassifierQuestionCategory[];
-  /** Per-string overrides for the editors' chrome. */
   labels?: Partial<GuardrailClassifierLabels>;
 }
 
 export interface ClassifierGuardrailParameters {
-  /**
-   * The parameter ids `renderParameter` claims: `selectedQuestions`, `questionThresholds`,
-   * `questions` and `modelVendor`. Empty for any other definition. Spread into the builder's
-   * `overrideParameterIds` next to the host's own.
-   */
+  /** `selectedQuestions`, `questionThresholds`, `questions`, `modelVendor`; else empty. */
   overrideParameterIds: readonly string[];
-  /**
-   * The classifier's editors, for the builder's `renderParameter`. Returns `undefined` for every
-   * id it does not claim, `model` included, so the host's renderer composes after it:
-   * `(ctx) => classifier.renderParameter(ctx) ?? renderModelPicker(ctx)`.
-   */
+  /** `undefined` for every other id, `model` included, so the host's renderer goes next. */
   renderParameter: (ctx: GuardrailParameterRenderContext) => ReactNode | undefined;
-  /**
-   * The save gate for the one rule the builder cannot know: the classifier needs a question,
-   * predefined or the author's own, though neither parameter is required on its own. Call it
-   * from `onSave` with the saved `validatorParameters`; on `false` the picker says why and the
-   * host should not persist. Always `true` for any other definition.
-   */
+  /** For `onSave`: `false`, with a message on the picker, when there is no question at all. */
   validateParameters: (
     parameters: readonly Pick<ClassifierParameterLike, 'id' | 'value'>[]
   ) => boolean;
 }
 
-const CLAIMED_IDS: readonly string[] = Object.freeze([
-  CLASSIFIER_PARAMETER_IDS.selectedQuestions,
-  CLASSIFIER_PARAMETER_IDS.questionThresholds,
-  CLASSIFIER_PARAMETER_IDS.questions,
-  CLASSIFIER_PARAMETER_IDS.modelVendor,
-]);
-
+const { selectedQuestions, questionThresholds, questions, model, modelVendor } =
+  CLASSIFIER_PARAMETER_IDS;
+const CLAIMED_IDS = Object.freeze([selectedQuestions, questionThresholds, questions, modelVendor]);
 const NOTHING_CLAIMED: readonly string[] = Object.freeze([]);
 
-/** Replace the parameter in place, append it, or drop it when `next` is `undefined`. */
+/** Replace a parameter in place, append it, or drop it when `next` is `undefined`. */
 function upsert(
   parameters: GuardrailValidatorParameter[],
   id: string,
@@ -72,29 +50,9 @@ function upsert(
     : [...parameters, next];
 }
 
-const isMap = (value: unknown): value is Record<string, number> =>
-  value !== null && typeof value === 'object' && !Array.isArray(value);
-
 /**
- * Everything a host composes into `GuardrailBuilder` to make the classifier guardrail usable,
- * the same in both products:
- *
- * ```tsx
- * const { categories } = useClassifierQuestions(ctx, { enabled: isClassifier });
- * const classifier = useClassifierGuardrailParameters({ definition, categories });
- *
- * <GuardrailBuilder
- *   renderParameter={(c) => classifier.renderParameter(c) ?? renderModelPicker(c)}
- *   overrideParameterIds={[...classifier.overrideParameterIds, 'model']}
- *   onSave={(value) => classifier.validateParameters(value.validatorParameters) && persist(value)}
- * />
- * ```
- *
- * `selectedQuestions` and `questionThresholds` render as one `ClassifierQuestionPicker` and are
- * written together; `questions` and its position-keyed sidecars as one
- * `ClassifierCustomQuestionsEditor`. `modelVendor` renders nothing until the builder flags it
- * with a model chosen, then says to pick the model again. `model` stays the host's discovery
- * picker, which writes `modelVendor` with it.
+ * The classifier's editors for `GuardrailBuilder`'s `renderParameter`; see the README for how a
+ * host composes it with its own model picker.
  */
 export function useClassifierGuardrailParameters({
   definition,
@@ -110,64 +68,53 @@ export function useClassifierGuardrailParameters({
     (ctx: GuardrailParameterRenderContext): ReactNode | undefined => {
       if (!isClassifier) return undefined;
       const { definition: parameter, parameters } = ctx;
+      const valueFor = (id: string) => parameters.find((p) => p.id === id)?.value;
 
       switch (parameter.id) {
-        case CLASSIFIER_PARAMETER_IDS.selectedQuestions: {
-          const selected = Array.isArray(ctx.value)
-            ? ctx.value.filter((name): name is string => typeof name === 'string')
-            : [];
-          const stored = parameters.find(
-            (p) => p.id === CLASSIFIER_PARAMETER_IDS.questionThresholds
-          )?.value;
+        case selectedQuestions: {
+          const stored = valueFor(questionThresholds);
           return (
             <ClassifierQuestionPicker
+              parameter={parameter}
               categories={categories}
-              selectedQuestions={selected}
-              questionThresholds={isMap(stored) ? stored : {}}
-              label={parameter.label}
-              tooltip={parameter.tooltip}
-              required={parameter.required}
+              selectedQuestions={Array.isArray(ctx.value) ? (ctx.value as string[]) : []}
+              questionThresholds={
+                stored && typeof stored === 'object' && !Array.isArray(stored)
+                  ? (stored as Record<string, number>)
+                  : {}
+              }
               error={ctx.error ?? (missingQuestions ? labels.questionsRequired : undefined)}
               labels={labelOverrides}
-              onChange={(nextSelected, nextThresholds) => {
+              onChange={(names, thresholds) => {
                 setMissingQuestions(false);
-                // One write for both, so the threshold map never outlives its question.
-                const withSelection = upsert(
+                // One write, so the map never outlives its question.
+                const withNames = upsert(
                   parameters,
-                  CLASSIFIER_PARAMETER_IDS.selectedQuestions,
-                  nextSelected.length === 0
-                    ? undefined
-                    : { $parameterType: 'enum-list', id: parameter.id, value: nextSelected }
+                  selectedQuestions,
+                  names.length > 0
+                    ? { $parameterType: 'enum-list', id: selectedQuestions, value: names }
+                    : undefined
                 );
                 ctx.onParametersChange(
                   upsert(
-                    withSelection,
-                    CLASSIFIER_PARAMETER_IDS.questionThresholds,
-                    Object.keys(nextThresholds).length === 0
-                      ? undefined
-                      : {
-                          $parameterType: 'map-enum',
-                          id: CLASSIFIER_PARAMETER_IDS.questionThresholds,
-                          value: nextThresholds,
-                        }
+                    withNames,
+                    questionThresholds,
+                    Object.keys(thresholds).length > 0
+                      ? { $parameterType: 'map-enum', id: questionThresholds, value: thresholds }
+                      : undefined
                   )
                 );
               }}
             />
           );
         }
-        case CLASSIFIER_PARAMETER_IDS.questionThresholds:
-          // Edited inside the picker.
+        case questionThresholds:
           return null;
-        case CLASSIFIER_PARAMETER_IDS.questions:
+        case questions:
           return (
             <ClassifierCustomQuestionsEditor
+              parameter={parameter}
               rows={readClassifierCustomQuestions(parameters)}
-              label={parameter.label}
-              tooltip={parameter.tooltip}
-              required={parameter.required}
-              maxItems={parameter.maxItems}
-              maxLength={parameter.maxLength}
               error={ctx.error}
               labels={labelOverrides}
               onRowsChange={(rows) => {
@@ -176,12 +123,10 @@ export function useClassifierGuardrailParameters({
               }}
             />
           );
-        case CLASSIFIER_PARAMETER_IDS.modelVendor: {
-          // The host's picker writes the vendor with the model, so a model without one means
-          // the pick went wrong. With no model at all, the model field's own error says enough.
-          const model = parameters.find((p) => p.id === CLASSIFIER_PARAMETER_IDS.model)?.value;
-          const hasModel = typeof model === 'string' && model.trim() !== '';
-          return hasModel && ctx.error ? (
+        case modelVendor: {
+          // The host's picker writes the vendor with the model; with no model, its error says enough.
+          const chosen = valueFor(model);
+          return typeof chosen === 'string' && chosen.trim() !== '' && ctx.error ? (
             <FormFieldError>{labels.modelVendorMissing}</FormFieldError>
           ) : null;
         }
@@ -194,8 +139,7 @@ export function useClassifierGuardrailParameters({
 
   const validateParameters = useCallback(
     (parameters: readonly Pick<ClassifierParameterLike, 'id' | 'value'>[]) => {
-      if (!isClassifier) return true;
-      const ok = hasClassifierQuestions(parameters);
+      const ok = !isClassifier || hasClassifierQuestions(parameters);
       setMissingQuestions(!ok);
       return ok;
     },
