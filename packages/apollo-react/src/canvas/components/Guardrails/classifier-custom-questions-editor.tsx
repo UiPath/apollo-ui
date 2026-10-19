@@ -102,6 +102,7 @@ export function ClassifierCustomQuestionsEditor({
                   placeholder={labels.questionPlaceholder}
                   aria-label={named(labels.customQuestion)}
                   aria-invalid={error ? true : undefined}
+                  aria-describedby={error ? `${uid}-error` : undefined}
                   maxLength={parameter.maxLength}
                   className="resize-y"
                   onChange={(e) => updateRow(index, { question: e.target.value })}
@@ -158,7 +159,7 @@ export function ClassifierCustomQuestionsEditor({
           );
         })}
       </div>
-      <FormFieldError>{error}</FormFieldError>
+      <FormFieldError id={`${uid}-error`}>{error}</FormFieldError>
     </FormField>
   );
 }
