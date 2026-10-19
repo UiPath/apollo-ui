@@ -168,7 +168,7 @@ const colorGroups: ColorGroup[] = [
         name: 'brand-lighter',
         twClass: 'bg-brand-lighter',
         usage: 'Subtle tinted states, badges',
-        dark: '#164e63',
+        dark: '#104e64',
         darkTw: 'cyan-900',
         light: '#cffafe',
         lightTw: 'cyan-100',
