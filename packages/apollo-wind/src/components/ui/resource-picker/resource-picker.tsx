@@ -163,6 +163,15 @@ export function ResourcePickerContent({
     onQueryChange?.(nextQuery);
   };
 
+  useEffect(() => {
+    if (typeof process === 'undefined' || process.env.NODE_ENV === 'production') return;
+    if (groups.some((group) => group.items.some((item) => item.id === ''))) {
+      console.warn(
+        'ResourcePicker: dropped rows with an empty id, which the picker reserves for no selection.'
+      );
+    }
+  }, [groups]);
+
   const groupIdBase = useId();
   const visibleGroups = useMemo(() => filterGroups(groups, query), [groups, query]);
   const filtering = query.trim().length > 0;
@@ -501,6 +510,8 @@ export function ResourcePicker({
   };
 
   const selected = useMemo(() => {
+    // An empty value is no selection, so it never matches a row.
+    if (!value) return null;
     for (const group of groups) {
       const hit = group.items.find((item) => item.id === value);
       if (hit) return hit;
@@ -687,6 +698,10 @@ export function ResourcePicker({
             groups={groups}
             value={value}
             onSelect={(item: ResourceItem) => {
+              // The rows stay mounted while the popover animates out, so a
+              // click or Enter can still reach one once the picker is closed,
+              // whether by the user, its owner or `disabled`.
+              if (!open) return;
               onSelect(item);
               setOpen(false);
             }}
