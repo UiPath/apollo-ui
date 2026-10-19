@@ -43,9 +43,11 @@ export interface ClassifierQuestionPickerProps {
 }
 
 // A score question stores "flag at level i and above" as i / (levels - 1); level 0 is benign.
+// A stored value between two levels (another editor's, or the unset 0.5) reads as the first
+// level that reaches it, the one that actually flags.
 const levelToThreshold = (level: number, count: number) => (count <= 1 ? 1 : level / (count - 1));
 const thresholdToLevel = (threshold: number, count: number) =>
-  count <= 1 ? 1 : Math.min(count - 1, Math.max(1, Math.round(threshold * (count - 1))));
+  count <= 1 ? 1 : Math.min(count - 1, Math.max(1, Math.ceil(threshold * (count - 1) - 1e-9)));
 
 // The level's own sentence is the grading rubric, so the picker shows a short tier: the top
 // level is critical, the ones between the baseline and the top spread over low to high.
