@@ -33,6 +33,8 @@ export function FieldHeader({
   onFieldTypeChange,
   onRequiredChange,
   compact,
+  disabled,
+  isExpression,
   showFieldActions,
   onValueChange,
   variables,
@@ -51,6 +53,9 @@ export function FieldHeader({
   onFieldTypeChange?: (fieldType: QuickFieldType) => void;
   onRequiredChange?: (required: boolean) => void;
   compact?: boolean;
+  disabled: boolean;
+  /** Whether the AI output is described as an expression rather than a value. */
+  isExpression: boolean;
   showFieldActions: boolean;
   onValueChange?: (value: string) => void;
   variables: QuickFormFieldOption[];
@@ -111,8 +116,9 @@ export function FieldHeader({
                           <button
                             type="button"
                             aria-label={strings.fieldTypeAriaLabel}
+                            disabled={disabled}
                             className={cn(
-                              'flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground',
+                              'flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground disabled:pointer-events-none disabled:opacity-50',
                               collapsedPaddingClass
                             )}
                           >
@@ -155,6 +161,7 @@ export function FieldHeader({
                               size="sm"
                               checked={!!required}
                               onCheckedChange={onRequiredChange}
+                              disabled={disabled}
                               className="data-[state=checked]:bg-brand data-[state=unchecked]:bg-foreground-subtle"
                               aria-label={
                                 required ? strings.requiredAriaLabel : strings.optionalAriaLabel
@@ -175,7 +182,8 @@ export function FieldHeader({
                                 aria-label={
                                   required ? strings.requiredAriaLabel : strings.optionalAriaLabel
                                 }
-                                className="grid size-7 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground"
+                                disabled={disabled}
+                                className="grid size-7 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
                               >
                                 <Asterisk size={12} />
                               </button>
@@ -192,6 +200,7 @@ export function FieldHeader({
                               size="sm"
                               checked={!!required}
                               onCheckedChange={onRequiredChange}
+                              disabled={disabled}
                               className="data-[state=checked]:bg-brand data-[state=unchecked]:bg-foreground-subtle"
                               aria-label={
                                 required ? strings.requiredAriaLabel : strings.optionalAriaLabel
@@ -208,9 +217,8 @@ export function FieldHeader({
                     {onGenerateWithAi && (
                       <AiAssistAction
                         onGenerate={onGenerateWithAi}
-                        hint={strings.aiOutputHint(
-                          strings.aiOutputLabel(typeLabel, typeMeta.supportsExpression)
-                        )}
+                        disabled={disabled}
+                        hint={strings.aiOutputHint(strings.aiOutputLabel(typeLabel, isExpression))}
                         strings={{
                           trigger: strings.aiAssistAriaLabel,
                           tooltip: strings.aiAssistTooltip,

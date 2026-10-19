@@ -7,6 +7,7 @@ import {
   differenceInCalendarMonths,
   endOfMonth,
   format,
+  isValid,
   max,
   min,
   startOfMonth,
@@ -94,6 +95,8 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(f
   const validationId = errorId ?? `${id ?? `date-picker-${generatedId.replace(/:/g, '')}`}-error`;
   // In the calendar's zone, so the trigger and its label name the day the calendar selects.
   const ctx = monthContext(calendarProps?.timeZone);
+  // Trusts the `Date` type only as far as not throwing: anything else is no value.
+  const date = value instanceof Date && isValid(value) ? value : undefined;
 
   // Inside an InputGroup the trigger is the group's control: the group draws the box, and the
   // panel anchors to it.
@@ -113,8 +116,8 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(f
     'aria-label':
       id || ariaLabelledBy
         ? undefined
-        : value
-          ? `Selected date: ${format(value, displayFormat, ctx)}`
+        : date
+          ? `Selected date: ${format(date, displayFormat, ctx)}`
           : placeholder,
     'aria-labelledby': ariaLabelledBy,
     ...validation.aria,
@@ -131,7 +134,7 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(f
             className={className}
             placeholder={placeholder}
           >
-            {value && <span className="truncate">{format(value, displayFormat, ctx)}</span>}
+            {date && <span className="truncate">{format(date, displayFormat, ctx)}</span>}
           </InputGroupPopoverTrigger>
         ) : (
           <PopoverTrigger asChild>
@@ -146,8 +149,8 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(f
               )}
             >
               <CalendarIcon />
-              {value ? (
-                format(value, displayFormat, ctx)
+              {date ? (
+                format(date, displayFormat, ctx)
               ) : (
                 <span className="text-foreground-muted">{placeholder}</span>
               )}
@@ -169,9 +172,9 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(f
             initialFocus
             {...calendarProps}
             // The selected month, with the consumer's defaultMonth as the fallback for no value.
-            defaultMonth={value ?? calendarProps?.defaultMonth}
+            defaultMonth={date ?? calendarProps?.defaultMonth}
             mode="single"
-            selected={value}
+            selected={date}
             onSelect={(date) => {
               onValueChange?.(date);
               // A single date is the whole answer, so picking one closes the popover.

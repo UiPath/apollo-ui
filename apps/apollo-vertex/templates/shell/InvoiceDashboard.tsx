@@ -157,7 +157,7 @@ export function InvoiceDashboard() {
                 <TableRow>
                   <TableHead>Invoice</TableHead>
                   <TableHead>Vendor</TableHead>
-                  <TableHead>Amount</TableHead>
+                  <TableHead className="text-right">Amount</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Date</TableHead>
                 </TableRow>
@@ -176,7 +176,9 @@ export function InvoiceDashboard() {
                   >
                     <TableCell className="font-medium">{inv.id}</TableCell>
                     <TableCell>{inv.vendor}</TableCell>
-                    <TableCell>{inv.amount}</TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {inv.amount}
+                    </TableCell>
                     <TableCell>
                       <Badge variant={statusVariant[inv.status]}>
                         {inv.status}

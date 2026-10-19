@@ -1,9 +1,7 @@
 "use client";
 
-import type { Column } from "@tanstack/react-table";
 import { ChevronDownIcon, SearchIcon, XIcon } from "lucide-react";
 import { type ReactNode, useState } from "react";
-import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,7 +10,9 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
+import type { DataTableColumn, RowData } from "@/lib/table-features";
 import { cn } from "@/lib/utils";
+import { useVertexTranslation } from "@/lib/vertex-translation";
 import { FilterDropdownOptionRow } from "./filter-dropdown-option";
 import {
   FILTER_DROPDOWN_LIST_SLOT,
@@ -23,17 +23,16 @@ import {
 } from "./filter-dropdown-states";
 import { useFilterDropdownSearch } from "./use-filter-dropdown-search";
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
 interface FilterDropdownOption {
   label: string;
   value: string;
   icon?: React.ComponentType<{ className?: string }>;
 }
 
-interface FilterDropdownProps<TData = unknown, TValue = unknown> {
+interface FilterDropdownProps<
+  TData extends RowData = RowData,
+  TValue = unknown,
+> {
   title: string;
   options: FilterDropdownOption[];
   className?: string;
@@ -42,7 +41,7 @@ interface FilterDropdownProps<TData = unknown, TValue = unknown> {
   multiSelect?: boolean;
 
   /** TanStack Table column integration (optional) */
-  column?: Column<TData, TValue>;
+  column?: DataTableColumn<TData, TValue>;
 
   /** Standalone value — used when no column is provided */
   value?: string[] | string;
@@ -96,7 +95,7 @@ interface FilterDropdownProps<TData = unknown, TValue = unknown> {
 // Component
 // ---------------------------------------------------------------------------
 
-function FilterDropdown<TData, TValue>({
+function FilterDropdown<TData extends RowData = RowData, TValue = unknown>({
   title,
   options,
   className,

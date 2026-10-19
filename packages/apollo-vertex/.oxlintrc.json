@@ -174,7 +174,8 @@
     {
       "files": ["entries/**/*.ts"],
       "rules": {
-        "oxc/no-barrel-file": "off"
+        "oxc/no-barrel-file": "off",
+        "eslint/max-lines": "off"
       }
     }
   ]

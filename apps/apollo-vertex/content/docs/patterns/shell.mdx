@@ -11,14 +11,6 @@ import { PreviewFullScreen } from '../../../app/_components/preview-full-screen'
     <ShellTemplate />
 </PreviewFullScreen>
 
-## Minimal Header Variant
-
-Use the `variant="minimal"` prop to render a horizontal header layout instead of the default sidebar.
-
-<PreviewFullScreen title="Shell minimal preview">
-    <ShellTemplate variant="minimal" />
-</PreviewFullScreen>
-
 ## Features
 
 - **Optional OAuth2 Authentication**: Plug-and-play authorization code flow with PKCE
@@ -52,12 +44,49 @@ function App() {
 }
 ```
 
+### Nested navigation
+
+A group sets `path` for the prefix and `to` for the link. This preview opens on Active. That child has the current background. Projects stays in the active color for `/preview/shell/projects` and the routes under it, and does not take that background.
+
+<PreviewFullScreen title="Nested navigation preview">
+    <ShellTemplate initialPath="/preview/shell/projects/active" />
+</PreviewFullScreen>
+
+```tsx
+import { FolderOpen } from 'lucide-react';
+
+const projects = {
+  path: '/preview/shell/projects',
+  to: '/preview/shell/projects/active',
+  label: 'projects',
+  icon: FolderOpen,
+  subItems: [
+    { path: '/preview/shell/projects/active', label: 'active' },
+    { path: '/preview/shell/projects/archive', label: 'archive' },
+  ],
+};
+```
+
+Labels are translation keys. A key in the app's default catalog is used first, including keys that are not in Apollo Vertex. Vertex keys such as `dashboard` still resolve when the app catalog does not define them.
+
+### App translations
+
+Pass `configureI18n` to `ApolloShell` or `LocaleProvider` when the app initializes i18next itself. The shell then runs that function instead of replacing the app catalog with the Vertex one.
+
+### Minimal header
+
+Use `variant="minimal"` for a horizontal header instead of the sidebar. The header highlights only the most specific matching path, so a landing page is not selected together with a section under it. A nested page still highlights that section. `to` is only the link target.
+
+<PreviewFullScreen title="Shell minimal preview">
+    <ShellTemplate variant="minimal" />
+</PreviewFullScreen>
+
 ## Adding Authentication
 
 To enable built-in OAuth2 authentication with PKCE, wrap the shell with `ShellAuthProvider`.
 Both `ShellAuthProvider` and `ApolloShell` must be inside a `QueryClientProvider` from `@tanstack/react-query`.
 
-When a `ShellAuthProvider` is present, the shell automatically shows a login screen until the user is authenticated.
+When a `ShellAuthProvider` is present, the shell automatically shows a login screen until the user is authenticated. While the token is still loading, it shows the loading skeleton instead of that login screen.
 
 ```tsx
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -166,7 +195,7 @@ Names that don't resolve are denied. Requires `@uipath/vs-core` 4.4.0 or later.
 </GroupMembershipGuard>
 ```
 
-## Resolving group ids by role
+### Resolving group ids by role
 
 `GroupMembershipGuard` and `useIsGroupMember` need group ids, but applications
 typically reason in terms of roles whose backing group names are known ahead of

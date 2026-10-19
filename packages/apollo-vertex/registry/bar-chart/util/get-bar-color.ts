@@ -24,12 +24,10 @@ export function getBarColor({
     const rowIndex = rechartsData.findIndex(
       (row) => row.__id === payload?.__id,
     );
-    const fallbackColor =
-      PALETTE[rowIndex >= 0 ? rowIndex % PALETTE.length : 0];
-    return assertDefined(
-      itemColor ?? payloadFill ?? fallbackColor,
-      "Bar color",
-    );
+    if (rowIndex >= 0) {
+      return assertDefined(PALETTE[rowIndex % PALETTE.length], "Bar color");
+    }
+    return assertDefined(itemColor ?? payloadFill ?? PALETTE[0], "Bar color");
   }
 
   const fallbackColor = COLORS[seriesIndex % COLORS.length];

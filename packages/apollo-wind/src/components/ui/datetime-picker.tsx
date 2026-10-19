@@ -1,7 +1,7 @@
 'use client';
 
 import { TZDate } from '@date-fns/tz';
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import * as React from 'react';
 import type { Matcher } from 'react-day-picker';
@@ -260,7 +260,9 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
     const timeZoneLabelId = `${baseId}-timezone-label`;
     const timeZoneTriggerId = `${baseId}-timezone`;
 
-    const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(value);
+    // Trusts the `Date` type only as far as not throwing: anything else is no value.
+    const date = value instanceof Date && isValid(value) ? value : undefined;
+    const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(date);
     // The time is held apart from the date so it can be chosen first and applied once a day is
     // picked, and it is the wall-clock time in the zone, not the instant's local reading.
     // A time picked before any day, held until a day is picked. Once there is a date, the time
@@ -272,16 +274,12 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
     // Re-seed only when the parent changes the value, including clearing it, compared by time so
     // a fresh Date with the same instant (or our own change echoed back) is not a change. Keyed on
     // the value alone: a zone change must not reset an uncontrolled picker's own selection.
-    const valueTime = value?.getTime();
+    const valueTime = date?.getTime();
     const [seededTime, setSeededTime] = React.useState(valueTime);
     if (!Object.is(valueTime, seededTime)) {
       setSeededTime(valueTime);
-      if (value === undefined) {
-        setSelectedDate(undefined);
-        setPendingTime(undefined);
-      } else if (!Number.isNaN(valueTime)) {
-        setSelectedDate(value);
-      }
+      setSelectedDate(date);
+      if (!date) setPendingTime(undefined);
     }
 
     const wallClock = selectedDate ? dateToZonedWallClock(selectedDate, zone) : undefined;

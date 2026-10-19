@@ -1,6 +1,6 @@
 {
   "name": "@uipath/apollo-react",
-  "version": "7.1.1",
+  "version": "7.2.2",
   "description": "Apollo Design System - React component library with Material UI theming",
   "repository": {
     "type": "git",
@@ -241,7 +241,7 @@
     "date-fns": "^4.1.0",
     "debounce": "^3.0.0",
     "html-to-image": "^1.11.11",
-    "katex": "^0.16.27",
+    "katex": "0.18.10",
     "lexical": "0.42.0",
     "lodash": "^4.18.1",
     "lucide-react": "^0.577.0",

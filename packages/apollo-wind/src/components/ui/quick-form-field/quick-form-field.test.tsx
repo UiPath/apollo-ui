@@ -5,10 +5,46 @@ import { describe, expect, it, vi } from 'vitest';
 import { QuickFormField } from './quick-form-field';
 
 describe('QuickFormField', () => {
-  it('renders a read-only display value when locked', () => {
-    render(<QuickFormField value="INV-2024-0587" locked />);
-    expect(screen.getByPlaceholderText('String value')).toHaveValue('INV-2024-0587');
-    expect(screen.getByPlaceholderText('String value')).toHaveAttribute('readonly');
+  it('keeps the value editable when locked', () => {
+    const handleChange = vi.fn();
+    render(<QuickFormField value="INV-2024-0587" locked onValueChange={handleChange} />);
+    const input = screen.getByPlaceholderText('String value');
+    expect(input).not.toHaveAttribute('readonly');
+    fireEvent.change(input, { target: { value: 'INV-2024-0588' } });
+    expect(handleChange).toHaveBeenCalledWith('INV-2024-0588');
+  });
+
+  it('disables every built-in control when disabled', () => {
+    render(
+      <QuickFormField
+        disabled
+        value="INV-2024-0587"
+        onValueChange={vi.fn()}
+        onLockedChange={vi.fn()}
+        onModeChange={vi.fn()}
+        onFieldTypeChange={vi.fn()}
+        onRequiredChange={vi.fn()}
+        onGenerateWithAi={vi.fn()}
+        variables={[{ label: 'Item ID', value: 'item.id' }]}
+        more={{ onClear: vi.fn() }}
+      />
+    );
+    expect(screen.getByPlaceholderText('String value')).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Read-only' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Choose value mode' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Field type' })).toBeDisabled();
+    expect(screen.getByRole('switch', { name: 'Optional field' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'AI assist' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Insert variable' })).toBeDisabled();
+  });
+
+  it.each([
+    ['boolean', 'switch'],
+    ['single-select', 'combobox'],
+    ['multi-select', 'combobox'],
+  ] as const)('disables the %s control when disabled', (fieldType, role) => {
+    render(<QuickFormField disabled fieldType={fieldType} onValueChange={vi.fn()} />);
+    expect(screen.getByRole(role)).toBeDisabled();
   });
 
   it('renders an editable input when unlocked and onValueChange is provided', () => {
@@ -95,12 +131,12 @@ describe('QuickFormField', () => {
     expect(handleBlur).toHaveBeenCalledOnce();
   });
 
-  it('withholds value changes from a consumer expression editor while locked', () => {
+  it('withholds value changes from a consumer expression editor while disabled', () => {
     const renderExpressionEditor = vi.fn(() => <div>Custom editor</div>);
     render(
       <QuickFormField
         value="item.id"
-        locked
+        disabled
         mode="expression"
         onValueChange={vi.fn()}
         renderExpressionEditor={renderExpressionEditor}
@@ -111,18 +147,21 @@ describe('QuickFormField', () => {
       expect.objectContaining({
         value: 'item.id',
         readOnly: true,
+        disabled: true,
         onValueChange: undefined,
       })
     );
   });
 
-  it('does not attach a value-change handler to the built-in expression input while locked', () => {
+  it('does not attach a value-change handler to the built-in expression input while disabled', () => {
     const handleChange = vi.fn();
     render(
-      <QuickFormField value="item.id" locked mode="expression" onValueChange={handleChange} />
+      <QuickFormField value="item.id" disabled mode="expression" onValueChange={handleChange} />
     );
 
-    fireEvent.change(screen.getByDisplayValue('item.id'), { target: { value: 'other.id' } });
+    const input = screen.getByDisplayValue('item.id');
+    expect(input).toBeDisabled();
+    fireEvent.change(input, { target: { value: 'other.id' } });
     expect(handleChange).not.toHaveBeenCalled();
   });
 
@@ -191,12 +230,39 @@ describe('QuickFormField', () => {
     expect(screen.getByRole('button', { name: 'Insert variable' })).toBeInTheDocument();
   });
 
-  it('only shows the value mode menu for types that support expressions', () => {
-    const { rerender } = render(<QuickFormField locked={false} fieldType="single-select" />);
-    expect(screen.queryByRole('button', { name: 'Choose value mode' })).not.toBeInTheDocument();
+  it.each([
+    'single-select',
+    'multi-select',
+  ] as const)('offers expression mode for a %s field', async (fieldType) => {
+    const user = userEvent.setup();
+    const handleModeChange = vi.fn();
+    render(
+      <QuickFormField
+        fieldType={fieldType}
+        onValueChange={vi.fn()}
+        onModeChange={handleModeChange}
+      />
+    );
 
-    rerender(<QuickFormField locked={false} fieldType="string" />);
-    expect(screen.getByRole('button', { name: 'Choose value mode' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Choose value mode' }));
+    await user.click(screen.getByRole('menuitemradio', { name: /Expression/ }));
+    expect(handleModeChange).toHaveBeenCalledWith('expression');
+  });
+
+  it.each([
+    'single-select',
+    'multi-select',
+  ] as const)('renders the expression input for a %s field in expression mode', (fieldType) => {
+    render(
+      <QuickFormField
+        fieldType={fieldType}
+        mode="expression"
+        value="$vars.choice"
+        onValueChange={vi.fn()}
+      />
+    );
+    expect(screen.getByDisplayValue('$vars.choice')).toHaveClass('font-mono');
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
   });
 
   it('lists the More actions under the value mode menu', async () => {
@@ -218,24 +284,6 @@ describe('QuickFormField', () => {
     expect(screen.queryByRole('button', { name: 'More value actions' })).not.toBeInTheDocument();
   });
 
-  it('offers only the More actions for a type with no expression mode', async () => {
-    const user = userEvent.setup();
-    render(
-      <QuickFormField
-        locked={false}
-        fieldType="single-select"
-        onValueChange={vi.fn()}
-        onModeChange={vi.fn()}
-        more={{ onClear: vi.fn() }}
-      />
-    );
-
-    expect(screen.queryByRole('button', { name: 'Choose value mode' })).not.toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'More value actions' }));
-    expect(screen.getByRole('menuitem', { name: 'Clear value' })).toBeInTheDocument();
-    expect(screen.queryByRole('menuitemradio')).not.toBeInTheDocument();
-  });
-
   it('offers only the More actions when there is no mode handler', async () => {
     const user = userEvent.setup();
     render(<QuickFormField locked={false} onValueChange={vi.fn()} more={{ onRefresh: vi.fn() }} />);
@@ -246,13 +294,13 @@ describe('QuickFormField', () => {
     expect(screen.queryByRole('menuitemradio')).not.toBeInTheDocument();
   });
 
-  it('only renders available More actions and hides Clear value when locked', async () => {
+  it('keeps Clear value available when locked', async () => {
     const user = userEvent.setup();
     render(<QuickFormField locked more={{ onClear: vi.fn(), onRefresh: vi.fn() }} />);
 
     await user.click(screen.getByRole('button', { name: 'More value actions' }));
 
-    expect(screen.queryByRole('menuitem', { name: 'Clear value' })).not.toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'Clear value' })).toBeInTheDocument();
     expect(screen.getByRole('menuitem', { name: 'Force refresh' })).toBeInTheDocument();
   });
 
@@ -355,8 +403,10 @@ describe('QuickFormField', () => {
     expect(container.querySelector('[role="group"]')).toHaveAttribute('data-layout', 'grow');
   });
 
-  it('keeps locked file fields in the compact read-only layout', () => {
-    const { container } = render(<QuickFormField locked fieldType="file" value="invoice.pdf" />);
+  it('keeps a file field in expression mode in the row layout', () => {
+    const { container } = render(
+      <QuickFormField fieldType="file" mode="expression" value="$vars.invoice" />
+    );
     expect(container.querySelector('[role="group"]')).toHaveAttribute('data-layout', 'row');
   });
 
@@ -457,59 +507,43 @@ describe('QuickFormField', () => {
     expect(screen.getByRole('button', { name: 'Supporting document' })).toBeInTheDocument();
   });
 
-  it('ignores non-string entries when parsing a locked multi-select value', () => {
+  it('ignores non-string entries when parsing a multi-select value', () => {
     const options = [{ label: 'Alpha', value: 'alpha' }];
     render(
       <QuickFormField
-        locked
         fieldType="multi-select"
         value={JSON.stringify(['alpha', 42, null])}
         options={options}
+        onValueChange={vi.fn()}
       />
     );
-    expect(screen.getByPlaceholderText('Multi select value')).toHaveValue('Alpha');
-  });
-
-  it('falls back to the raw value for a locked multi-select value that parses to no entries', () => {
-    render(<QuickFormField locked fieldType="multi-select" value="not-json" />);
-    expect(screen.getByPlaceholderText('Multi select value')).toHaveValue('not-json');
-  });
-
-  it('shows an empty display for a locked multi-select value that is an explicit empty array', () => {
-    render(<QuickFormField locked fieldType="multi-select" value="[]" />);
-    expect(screen.getByPlaceholderText('Multi select value')).toHaveValue('');
-  });
-
-  it('falls back to the raw value instead of throwing on an invalid date string', () => {
-    expect(() =>
-      render(<QuickFormField locked fieldType="date" value="not-a-date" />)
-    ).not.toThrow();
-    expect(screen.getByPlaceholderText('Date value')).toHaveValue('not-a-date');
+    expect(screen.getByText('Alpha')).toBeInTheDocument();
+    expect(screen.queryByText('42')).not.toBeInTheDocument();
   });
 
   it('shows the raw value instead of throwing when unlocked with an invalid date', () => {
-    const { container } = render(
-      <QuickFormField locked={false} fieldType="date" value="not-a-date" />
-    );
-    expect(container).toHaveTextContent('not-a-date');
+    expect(() =>
+      render(<QuickFormField locked={false} fieldType="date" value="not-a-date" />)
+    ).not.toThrow();
+    expect(screen.getByRole('button', { name: 'Date value' })).toHaveTextContent('not-a-date');
   });
 
   it('rejects an out-of-range date-only value instead of silently normalizing it', () => {
-    render(<QuickFormField locked fieldType="date" value="2024-13-40" />);
-    expect(screen.getByPlaceholderText('Date value')).toHaveValue('2024-13-40');
+    render(<QuickFormField fieldType="date" value="2024-13-40" />);
+    expect(screen.getByRole('button', { name: 'Date value' })).toHaveTextContent('2024-13-40');
   });
 
   it('formats a date-only value using the local calendar day, not UTC', () => {
     const originalTz = process.env.TZ;
     process.env.TZ = 'America/Los_Angeles';
     try {
-      render(<QuickFormField locked fieldType="date" value="2024-01-15" />);
+      render(<QuickFormField fieldType="date" value="2024-01-15" />);
       const expected = new Date(2024, 0, 15).toLocaleDateString(undefined, {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
       });
-      expect(screen.getByPlaceholderText('Date value')).toHaveValue(expected);
+      expect(screen.getByRole('button', { name: 'Date value' })).toHaveTextContent(expected);
     } finally {
       if (originalTz === undefined) {
         delete process.env.TZ;
@@ -545,24 +579,6 @@ describe('QuickFormField', () => {
     expect(screen.queryByText('Option 1')).not.toBeInTheDocument();
   });
 
-  it('shows a consumer-supplied option label for a locked single-select value', () => {
-    const options = [{ label: 'Custom option', value: 'custom' }];
-    render(<QuickFormField locked fieldType="single-select" value="custom" options={options} />);
-    expect(screen.getByPlaceholderText('Single select value')).toHaveValue('Custom option');
-  });
-
-  it('falls back to the raw value for a locked single-select value not present in options', () => {
-    render(
-      <QuickFormField
-        locked
-        fieldType="single-select"
-        value="stale-option"
-        options={[{ label: 'Option 1', value: 'option-1' }]}
-      />
-    );
-    expect(screen.getByPlaceholderText('Single select value')).toHaveValue('stale-option');
-  });
-
   it('calls onGenerateWithAi with the entered prompt when Generate is clicked', async () => {
     const user = userEvent.setup();
     const handleGenerate = vi.fn();
@@ -575,12 +591,6 @@ describe('QuickFormField', () => {
     expect(handleGenerate).toHaveBeenCalledWith('a random number');
   });
 
-  it('shows an empty display instead of "False" for an unset boolean value when locked', () => {
-    const { container } = render(<QuickFormField locked fieldType="boolean" value="" />);
-    expect(screen.getByPlaceholderText('Boolean value')).toHaveValue('');
-    expect(container).not.toHaveTextContent('False');
-  });
-
   it('disables the value mode trigger when onModeChange is not provided', () => {
     render(<QuickFormField locked={false} fieldType="string" />);
     expect(screen.getByRole('button', { name: 'Choose value mode' })).toBeDisabled();
@@ -591,18 +601,14 @@ describe('QuickFormField', () => {
     expect(screen.getByRole('button', { name: 'Choose value mode' })).not.toBeDisabled();
   });
 
-  it('reflects the current field type in the AI-assist output hint', async () => {
+  it.each([
+    ['date', 'literal', 'Output: Date value'],
+    ['single-select', 'expression', 'Output: Single select expression'],
+  ] as const)('describes a %s field in %s mode in the AI-assist output hint', async (fieldType, mode, hint) => {
     const user = userEvent.setup();
-    render(<QuickFormField locked={false} fieldType="date" onGenerateWithAi={vi.fn()} />);
+    render(<QuickFormField fieldType={fieldType} mode={mode} onGenerateWithAi={vi.fn()} />);
     await user.click(screen.getByRole('button', { name: 'AI assist' }));
-    expect(screen.getByText('Output: Date expression')).toBeInTheDocument();
-  });
-
-  it('shows a value (not expression) output hint for types that do not support expressions', async () => {
-    const user = userEvent.setup();
-    render(<QuickFormField locked={false} fieldType="single-select" onGenerateWithAi={vi.fn()} />);
-    await user.click(screen.getByRole('button', { name: 'AI assist' }));
-    expect(screen.getByText('Output: Single select value')).toBeInTheDocument();
+    expect(screen.getByText(hint)).toBeInTheDocument();
   });
 
   it('reflects the field type and mode in the default label', () => {
@@ -623,7 +629,7 @@ describe('QuickFormField', () => {
     expect(screen.getByRole('button', { name: 'Insert variable' })).toBeDisabled();
   });
 
-  it('disables Insert variable while the field is locked', () => {
+  it('keeps Insert variable available while the field is locked', () => {
     render(
       <QuickFormField
         locked
@@ -631,7 +637,7 @@ describe('QuickFormField', () => {
         variables={[{ label: 'Item ID', value: 'item.id' }]}
       />
     );
-    expect(screen.getByRole('button', { name: 'Insert variable' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Insert variable' })).not.toBeDisabled();
   });
 
   it('appends the selected variable to the current value when Insert variable is used', async () => {
@@ -720,13 +726,13 @@ describe('QuickFormField', () => {
     );
   });
 
-  it('grows the multi-select box to hold wrapped chips, and only while unlocked', () => {
+  it('grows the multi-select box to hold wrapped chips, and only in literal mode', () => {
     const { container, rerender } = render(
-      <QuickFormField locked={false} fieldType="multi-select" onValueChange={vi.fn()} />
+      <QuickFormField locked fieldType="multi-select" onValueChange={vi.fn()} />
     );
     expect(container.querySelector('[role="group"]')).toHaveAttribute('data-layout', 'grow');
 
-    rerender(<QuickFormField locked fieldType="multi-select" onValueChange={vi.fn()} />);
+    rerender(<QuickFormField fieldType="multi-select" mode="expression" onValueChange={vi.fn()} />);
     expect(container.querySelector('[role="group"]')).toHaveAttribute('data-layout', 'row');
   });
 
@@ -813,6 +819,7 @@ describe('QuickFormField', () => {
         <QuickFormField
           locked={false}
           fieldType="date"
+          mode="expression"
           onGenerateWithAi={onGenerateWithAi}
           strings={{
             typeLabels: { date: 'Datum' },
@@ -826,24 +833,12 @@ describe('QuickFormField', () => {
       await user.click(screen.getByRole('button', { name: 'AI assist' }));
       expect(screen.getByText('Ausgabe: Datum-Ausdruck')).toBeInTheDocument();
 
-      await user.type(screen.getByRole('textbox'), 'next week');
+      await user.type(screen.getByLabelText('Describe what you want'), 'next week');
       await user.click(screen.getByRole('button', { name: 'Generate' }));
       expect(await screen.findByText('Wird generiert')).toBeInTheDocument();
 
       reject(new Error('nope'));
       expect(await screen.findByText('Fehlgeschlagen')).toBeInTheDocument();
-    });
-
-    it('shows a locked boolean with the strings labels', () => {
-      render(
-        <QuickFormField
-          locked
-          fieldType="boolean"
-          value="true"
-          strings={{ trueLabel: 'Wahr', falseLabel: 'Falsch' }}
-        />
-      );
-      expect(screen.getByDisplayValue('Wahr')).toBeInTheDocument();
     });
   });
 });

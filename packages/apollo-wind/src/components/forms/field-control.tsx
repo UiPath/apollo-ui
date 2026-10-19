@@ -24,6 +24,7 @@ import {
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { toDateValue } from '@/lib/date-value';
 import { joinIds } from './aria-ids';
 import type { FieldMetadata, FieldOption, FieldType, SliderFieldMetadata } from './form-schema';
 import { LiteralValueContext } from './literal-value-context';
@@ -371,7 +372,7 @@ export function FieldControl({
       return (
         <DatePicker
           id={field.name}
-          value={formField.value as Date | undefined}
+          value={toDateValue(formField.value)}
           onValueChange={formField.onChange}
           disabled={disabled}
           placeholder={field.placeholder}
@@ -388,7 +389,7 @@ export function FieldControl({
           aria-invalid={invalid || undefined}
           aria-describedby={describedById}
           aria-errormessage={errorId}
-          value={formField.value as Date | undefined}
+          value={toDateValue(formField.value)}
           onValueChange={formField.onChange}
           disabled={disabled}
           placeholder={field.placeholder}

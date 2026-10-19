@@ -70,12 +70,9 @@ export function TimelineMarker({
       return (
         <MarkerCircle
           compact={compact}
-          className={cn(
-            "bg-muted font-medium text-muted-foreground shadow-sm",
-            compact ? "text-[9px]" : "text-xs",
-          )}
+          className="bg-muted text-xs font-medium text-muted-foreground shadow-sm"
         >
-          {initials ?? "?"}
+          {(compact ? initials?.[0] : initials) ?? "?"}
         </MarkerCircle>
       );
 

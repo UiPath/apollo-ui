@@ -19,14 +19,14 @@ Add the `<Toaster />` component once to your root route. Status colors, icons, c
 
 ```tsx
 import { createRootRoute, Outlet } from "@tanstack/react-router"
-import { Toaster } from "@uipath/apollo-vertex"
+import { ThemeProvider, Toaster } from "@uipath/apollo-vertex"
 
 export const Route = createRootRoute({
   component: () => (
-    <>
+    <ThemeProvider>
       <Outlet />
       <Toaster />
-    </>
+    </ThemeProvider>
   ),
 })
 ```
@@ -66,7 +66,7 @@ toast.error("Upload failed", {
 | `position` | `ToasterProps["position"]` | `"top-center"` | Position of the toast stack on screen |
 | `duration` | `number` | `5000` | Auto-dismiss delay in milliseconds |
 | `closeButton` | `boolean` | `true` | Show a close button on each toast |
-| `theme` | `"light" \| "dark" \| "system"` | `"system"` | Color theme. Defaults to the current app theme via `next-themes` |
+| `theme` | `"light" \| "dark" \| "system"` | shell `resolvedTheme` | Ignored. The toaster always uses the shell resolved theme from `ThemeProvider`. |
 | `toastOptions` | `ToasterProps["toastOptions"]` | — | Global options applied to all toasts (classNames, style, etc.) |
 
 ## Toast function options

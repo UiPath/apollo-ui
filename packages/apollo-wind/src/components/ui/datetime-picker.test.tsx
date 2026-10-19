@@ -1100,3 +1100,37 @@ describe('DateTimePicker zoned midnight under an offset with seconds', () => {
     expect(screen.getByRole('button', { name: /June 21st, 1900/ })).toBeEnabled();
   });
 });
+
+// Untyped callers can still hand over something other than a Date.
+describe('DateTimePicker non-Date values', () => {
+  it.each([
+    ['a string', '2026-09-23T07:00:00.000Z'],
+    ['a number', 1758610800123],
+    ['an Invalid Date', new Date(Number.NaN)],
+  ])('shows the placeholder for %s instead of throwing', (_label, value) => {
+    render(<DateTimePicker value={value as unknown as Date} />);
+    expect(screen.getByText('Pick a date and time')).toBeInTheDocument();
+  });
+});
+
+describe('DateTimePicker picking a day', () => {
+  it('keeps the milliseconds when a new day is picked', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+    render(
+      <DateTimePicker value={new Date(2024, 5, 10, 14, 30, 15, 123)} onValueChange={handleChange} />
+    );
+
+    await user.click(screen.getByRole('button'));
+    await user.click(screen.getByRole('button', { name: /15th/ }));
+
+    const selected = handleChange.mock.calls[0][0] as Date;
+    expect(selected.getDate()).toBe(15);
+    expect([
+      selected.getHours(),
+      selected.getMinutes(),
+      selected.getSeconds(),
+      selected.getMilliseconds(),
+    ]).toEqual([14, 30, 15, 123]);
+  });
+});
