@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
   ALL_BUILT_IN_WIRE,
+  CLASSIFIER_WIRE,
   LLM_AS_JUDGE_WIRE,
   PII_DETECTION_PREVIEW_WIRE,
   PII_DETECTION_WIRE,
@@ -24,6 +25,7 @@ describe('parseGuardrailDefinitions', () => {
       'intellectual_property',
       'llm_as_judge',
       'sentiment',
+      'classifier',
     ]);
     expect(result.invalid).toEqual([]);
     expect(result.inputError).toBeUndefined();
@@ -33,6 +35,13 @@ describe('parseGuardrailDefinitions', () => {
     const result = parseGuardrailDefinitions([PII_DETECTION_WIRE]);
 
     expect(result.definitions[0]).toEqual(PII_DETECTION_WIRE);
+  });
+
+  it('keeps the classifier whole: a model enum with no options, a map with an empty default', () => {
+    const result = parseGuardrailDefinitions([CLASSIFIER_WIRE]);
+
+    expect(result.invalid).toEqual([]);
+    expect(result.definitions[0]).toEqual(CLASSIFIER_WIRE);
   });
 
   it('keeps the preview options of an enum-list', () => {

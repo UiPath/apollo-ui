@@ -140,8 +140,9 @@ moved is the six validators both products had already transcribed by hand, where
 copies in sync is what produced `finNationalId` in one product and `fiNationalId` in the
 other. The components are unchanged: they still resolve nothing and render what they are
 handed, so a host that would rather keep its own table simply does not call
-`enrichGuardrailDefinitions`. A validator only one product ships (sentiment, Agents only so
-far) takes that product's wording verbatim, so its own screens and these read the same.
+`enrichGuardrailDefinitions`. A validator only one product ships (sentiment and the
+classifier, Agents only so far) takes that product's wording verbatim, so its own screens and
+these read the same.
 
 Message ids use the raw wire values, never a transcribed slug:
 
@@ -149,7 +150,12 @@ Message ids use the raw wire values, never a transcribed slug:
 guardrails.definitions.<validator>.display-name | .description | .usage-note
 guardrails.definitions.<validator>.param.<paramId>.label | .tooltip
 guardrails.definitions.<validator>.option.<paramId>.<RawWireValue>
+guardrails.definitions.<validator>.category.<RawGroupId>
 ```
+
+The last form is `categoryLabels`: headings for the groups a validator's own catalog arrives in,
+which no parameter carries, so enrichment leaves them alone. Only the classifier has one, for
+the categories its question catalog is grouped in.
 
 Transcribing is exactly how the two products ended up keying the same Finland entity as
 `finNationalId` and `fiNationalId`; `USSocialSecurityNumber` is the value we persist, so it is

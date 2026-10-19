@@ -10,7 +10,8 @@ import type { GuardrailCopyTable } from '../definitions-copy';
  *   `frontend-sw/src/components/definition/AddGuardrailPalette/AddGuardrailPalette.utils.tsx`
  *   (`OOB_GUARDRAILS_I8N`; its `name` / `params[].infoTooltip` / `params[].options` map onto
  *   `displayName` / `paramTooltips` / `optionLabels` here). The `sentiment` entry is read from
- *   the same file, as UiPath/Agents#6457 added it.
+ *   the same file, as UiPath/Agents#6457 added it, and the `classifier` entry as
+ *   UiPath/Agents#6449 did, its `categoryLabels` from `resolveClassifierCategoryLabel`.
  * - Flow `origin/develop`:
  *   `packages/canvas/src/components/properties-panel/guardrails/ootb-guardrail-definitions.ts`
  *   (`buildValidatorDisplayInfo`)
@@ -341,6 +342,31 @@ export const AGENTS_COPY_EN: GuardrailCopyTable = {
         vi: 'Vietnamese',
         th: 'Thai',
       },
+    },
+  },
+  classifier: {
+    displayName: 'Classifier',
+    description:
+      "Evaluate questions against the payload with a non-generative classifier. Pick curated questions across categories, add your own, and flag when any answer reaches that question's threshold.",
+    paramLabels: {
+      selectedQuestions: 'Predefined questions',
+      questions: 'Your questions',
+      model: 'Model',
+    },
+    paramTooltips: {
+      selectedQuestions:
+        'Curated questions grouped by category. Pick any across categories; score questions also take a severity cutoff. Add your own questions below.',
+      questions:
+        "Yes/no questions about the payload, where 'yes' means the payload should be flagged. Added on top of any predefined questions you selected. Optionally define what counts as yes and as no — the classifier grades against those definitions, which helps on judgment-style questions.",
+    },
+    categoryLabels: {
+      pii: 'PII',
+      harmful_content: 'Harmful content',
+      prompt_injection: 'Prompt injection',
+      intellectual_property: 'Intellectual property',
+      secrets_and_credentials: 'Secrets & credentials',
+      compliance_commitments: 'Compliance & commitments',
+      scope_and_conduct: 'Scope & conduct',
     },
   },
 };

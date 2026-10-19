@@ -2,6 +2,7 @@ import { renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { findCatalogDrift, findCatalogOrphans } from './__fixtures__/catalog-coverage';
 import {
+  CLASSIFIER_CATEGORY_IDS,
   PII_ENTITY_OPTIONS,
   PREVIEW_PII_ENTITY_OPTIONS,
   SENTIMENT_LANGUAGE_OPTIONS,
@@ -17,8 +18,9 @@ import {
 const ALL_PII_ENTITY_OPTIONS = [...PII_ENTITY_OPTIONS, ...PREVIEW_PII_ENTITY_OPTIONS];
 
 // Option segments allow `-`: they are raw wire values, and language codes such as `pt-BR` carry one.
+// Category segments are the raw group ids the classifier question catalog sends.
 const ID_PATTERN =
-  /^guardrails\.definitions\.[a-z0-9_]+\.(display-name|description|usage-note|param\.[A-Za-z0-9]+\.(label|tooltip)|option\.[A-Za-z0-9]+\.[A-Za-z0-9-]+)$/;
+  /^guardrails\.definitions\.[a-z0-9_]+\.(display-name|description|usage-note|param\.[A-Za-z0-9]+\.(label|tooltip)|option\.[A-Za-z0-9]+\.[A-Za-z0-9-]+|category\.[a-z0-9_]+)$/;
 
 describe('GUARDRAIL_COPY_EN', () => {
   it('covers every curated validator', () => {
@@ -39,6 +41,12 @@ describe('GUARDRAIL_COPY_EN', () => {
     );
     expect(Object.keys(optionLabels.language ?? {}).sort()).toEqual(
       [...SENTIMENT_LANGUAGE_OPTIONS].sort()
+    );
+  });
+
+  it('heads every category the classifier question catalog groups by', () => {
+    expect(Object.keys(GUARDRAIL_COPY_EN.classifier?.categoryLabels ?? {}).sort()).toEqual(
+      [...CLASSIFIER_CATEGORY_IDS].sort()
     );
   });
 
@@ -77,6 +85,7 @@ describe('message ids', () => {
       for (const options of Object.values(copy.optionLabels ?? {})) {
         stringCount += Object.keys(options).length;
       }
+      stringCount += Object.keys(copy.categoryLabels ?? {}).length;
     }
 
     // A duplicated id would silently collapse two strings into one entry.
