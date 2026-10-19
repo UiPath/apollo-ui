@@ -86,6 +86,18 @@ describe('Search', () => {
     expect(handleClear).toHaveBeenCalled();
   });
 
+  it('labels the clear button from strings', () => {
+    render(<Search value="test" onChange={vi.fn()} strings={{ clear: 'Suche löschen' }} />);
+    expect(screen.getByRole('button', { name: 'Suche löschen' })).toBeInTheDocument();
+  });
+
+  it('passes strings through SearchWithSuggestions', async () => {
+    const user = userEvent.setup();
+    render(<SearchWithSuggestions strings={{ clear: 'Suche löschen' }} />);
+    await user.type(screen.getByRole('searchbox'), 'inv');
+    expect(screen.getByRole('button', { name: 'Suche löschen' })).toBeInTheDocument();
+  });
+
   it('can hide clear button', () => {
     render(<Search value="test" onChange={vi.fn()} showClearButton={false} />);
     expect(screen.queryByRole('button', { name: 'Clear' })).not.toBeInTheDocument();

@@ -291,6 +291,12 @@ export interface CodeBlockProps extends Omit<React.HTMLAttributes<HTMLDivElement
   hideHeader?: boolean;
   /** Extra header actions, such as preview or expand, placed before the copy button. */
   actions?: React.ReactNode;
+  /**
+   * Shown instead of the highlighted source, for example a preview of it toggled from `actions`.
+   * The header and its copy button stay and still copy `code`. `undefined`, `null` and `false`
+   * keep the source, so `body={preview && <Preview />}` works.
+   */
+  body?: React.ReactNode;
   strings?: Partial<CodeBlockStrings>;
 }
 
@@ -303,6 +309,7 @@ const CodeBlock = React.forwardRef<HTMLDivElement, CodeBlockProps>(
       showLineNumbers = false,
       hideHeader = false,
       actions,
+      body,
       strings,
       className,
       ...props
@@ -327,12 +334,16 @@ const CodeBlock = React.forwardRef<HTMLDivElement, CodeBlockProps>(
             {actions}
           </CodeBlockHeader>
         )}
-        <CodeBlockBody
-          code={source}
-          language={resolved}
-          wrap={wrap}
-          showLineNumbers={showLineNumbers}
-        />
+        {body !== undefined && body !== null && body !== false ? (
+          body
+        ) : (
+          <CodeBlockBody
+            code={source}
+            language={resolved}
+            wrap={wrap}
+            showLineNumbers={showLineNumbers}
+          />
+        )}
       </div>
     );
   }

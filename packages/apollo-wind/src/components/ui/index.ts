@@ -26,6 +26,7 @@ export * from './data-table';
 export * from './date-picker';
 export * from './datetime-picker';
 export * from './dialog';
+export * from './disclosure-tree';
 export * from './drawer';
 export * from './dropdown-menu';
 export * from './dropzone-overlay';

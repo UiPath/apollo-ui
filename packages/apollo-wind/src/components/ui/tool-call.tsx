@@ -2,6 +2,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { ChevronDown, ChevronRight, CircleCheck, CircleX, Clock, Loader2 } from 'lucide-react';
 import * as React from 'react';
 import { cn } from '@/lib';
+import { disclosureRowClassName } from '@/lib/disclosure-row';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './collapsible';
 import {
   buildJsonTree,
@@ -71,8 +72,7 @@ function mergeStrings(overrides: Partial<ToolCallStrings> | undefined): ToolCall
 const useIsomorphicLayoutEffect =
   typeof window === 'undefined' ? React.useEffect : React.useLayoutEffect;
 
-const TOGGLE_CLASSES =
-  'flex w-full min-w-0 items-center gap-2 rounded p-1 text-left transition-colors hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none';
+const TOGGLE_CLASSES = `${disclosureRowClassName} hover:text-foreground`;
 
 const toolCallVariants = cva('group/tool-call flex w-full min-w-0 flex-col text-muted-foreground', {
   variants: {

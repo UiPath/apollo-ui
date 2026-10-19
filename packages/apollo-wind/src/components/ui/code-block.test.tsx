@@ -138,6 +138,26 @@ describe('CodeBlock', () => {
     expect(second).toHaveAccessibleName(DEFAULT_CODE_BLOCK_STRINGS.copy);
   });
 
+  it('shows a custom body in place of the highlighted source and keeps the header', async () => {
+    const { container } = render(
+      <CodeBlock code="<b>Hi</b>" language="html" body={<p>Preview of the markup</p>} />
+    );
+    expect(container.querySelector('[data-slot="code-block-body"]')).toBeNull();
+    expect(screen.getByText('Preview of the markup')).toBeInTheDocument();
+    expect(container.querySelector('[data-slot="code-block-language"]')).toHaveTextContent('html');
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: DEFAULT_CODE_BLOCK_STRINGS.copy }));
+    });
+    expect(writeText).toHaveBeenCalledWith('<b>Hi</b>');
+  });
+
+  it('keeps the highlighted source when body is false or null', () => {
+    const { container, rerender } = render(<CodeBlock code="x" body={false} />);
+    expect(container.querySelector('[data-slot="code-block-body"]')).toHaveTextContent('x');
+    rerender(<CodeBlock code="x" body={null} />);
+    expect(container.querySelector('[data-slot="code-block-body"]')).toHaveTextContent('x');
+  });
+
   it('has no axe violations', async () => {
     const { container } = render(<CodeBlock code={SAMPLE} language="tsx" showLineNumbers />);
     expect(await axe(container)).toHaveNoViolations();
