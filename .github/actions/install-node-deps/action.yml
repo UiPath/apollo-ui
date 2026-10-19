@@ -19,10 +19,13 @@ runs:
         node-version: ${{ inputs.node-version }}
         cache: pnpm
 
+    # The runner's Safe-chain shim applies its own minimum package age, on top of
+    # pnpm's. Our own scope is exempt in pnpm-workspace.yaml too. Exported so the
+    # later pnpm steps in the job (e.g. `pnpm audit signatures`) see it as well.
+    - name: Exempt @uipath from the Safe-chain minimum package age
+      shell: bash
+      run: echo 'SAFE_CHAIN_MINIMUM_PACKAGE_AGE_EXCLUSIONS=@uipath/*' >> "$GITHUB_ENV"
+
     - name: Install dependencies
       shell: bash
-      env:
-        # The runner's Safe-chain shim applies its own minimum package age, on
-        # top of pnpm's. Our own scope is exempt in pnpm-workspace.yaml too.
-        SAFE_CHAIN_MINIMUM_PACKAGE_AGE_EXCLUSIONS: "@uipath/*"
       run: pnpm install --frozen-lockfile
