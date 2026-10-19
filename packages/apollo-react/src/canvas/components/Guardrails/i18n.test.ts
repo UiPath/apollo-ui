@@ -11,6 +11,8 @@ import {
   GUARDRAIL_ACTION_EN_LABELS,
   GUARDRAIL_ACTION_LABEL_KEYS,
   GUARDRAIL_BUILDER_EN_LABELS,
+  GUARDRAIL_CLASSIFIER_EN_LABELS,
+  GUARDRAIL_CLASSIFIER_EN_MESSAGES,
   GUARDRAIL_FILE_SUPPORT_EN_LABELS,
   GUARDRAIL_FILE_SUPPORT_EN_MESSAGES,
   GUARDRAIL_FILTER_FIELD_SELECTOR_EN_LABELS,
@@ -176,6 +178,16 @@ describe('resolveGuardrailRulesLabels', () => {
     expect(GUARDRAIL_RULES_EN_MESSAGES['guardrails.rules.delete-rule']).toBe(
       'Delete rule {position}'
     );
+  });
+});
+
+describe('GUARDRAIL_CLASSIFIER_EN_LABELS', () => {
+  it('keeps the `{{category}}` token the picker formats', () => {
+    expect(
+      formatGuardrailFormMessage(GUARDRAIL_CLASSIFIER_EN_LABELS.selectAllInCategory, {
+        category: 'PII',
+      })
+    ).toBe('Select all in PII');
   });
 });
 
@@ -514,6 +526,19 @@ describe('the shared canvas catalog', () => {
 
   it('carries no rules message the source no longer declares', () => {
     expect(findCatalogOrphans(GUARDRAIL_RULES_EN_MESSAGES, 'guardrails.rules.')).toEqual([]);
+  });
+
+  it('carries every classifier message with the same English', () => {
+    expect(findCatalogDrift(GUARDRAIL_CLASSIFIER_EN_MESSAGES)).toEqual({
+      missing: [],
+      drifted: [],
+    });
+  });
+
+  it('carries no classifier message the source no longer declares', () => {
+    expect(findCatalogOrphans(GUARDRAIL_CLASSIFIER_EN_MESSAGES, 'guardrails.classifier.')).toEqual(
+      []
+    );
   });
 
   it('carries every custom builder message with the same English', () => {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   BYO_WIRE,
+  CLASSIFIER_WIRE,
   HARMFUL_CONTENT_WIRE,
   LLM_AS_JUDGE_WIRE,
   PII_DETECTION_PREVIEW_WIRE,
@@ -196,6 +197,19 @@ describe('enrichGuardrailDefinitions', () => {
       expect(param(definition, 'sentimentThresholds')).toMatchObject({
         label: 'Confidence thresholds',
         keySource: 'sentiments',
+      });
+    });
+
+    it('names the classifier; its wire copy wins and the curated copy fills the bare questions', () => {
+      const definition = enrichOne(CLASSIFIER_WIRE);
+
+      expect(definition.displayName).toBe('Classifier');
+      expect(param(definition, 'selectedQuestions').tooltip).toBe(
+        CLASSIFIER_WIRE.parameters[0]?.description
+      );
+      expect(param(definition, 'questions')).toMatchObject({
+        label: 'Your questions',
+        tooltip: GUARDRAIL_COPY_EN.classifier?.paramTooltips?.questions,
       });
     });
 

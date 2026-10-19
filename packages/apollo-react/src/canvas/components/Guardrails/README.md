@@ -18,7 +18,8 @@ read-only governance guardrails a policy enforces), plus the leaves the sections
 `GuardrailStatusChip`, `GuardrailStatusBanner`, `GuardrailFileSupportIndicator` and
 `MixedScopesBanner`.
 `GuardrailScopeSelector`, the builder's scope and tool targeting field, is exported on its own
-too.
+too. The classifier guardrail adds `useClassifierQuestions`, two editors and
+`useClassifierGuardrailParameters`.
 
 ## Hover and focus, family-wide
 
@@ -140,8 +141,9 @@ moved is the six validators both products had already transcribed by hand, where
 copies in sync is what produced `finNationalId` in one product and `fiNationalId` in the
 other. The components are unchanged: they still resolve nothing and render what they are
 handed, so a host that would rather keep its own table simply does not call
-`enrichGuardrailDefinitions`. A validator only one product ships (sentiment, Agents only so
-far) takes that product's wording verbatim, so its own screens and these read the same.
+`enrichGuardrailDefinitions`. A validator only one product ships (sentiment and the
+classifier, Agents only so far) takes that product's wording verbatim, so its own screens and
+these read the same.
 
 Message ids use the raw wire values, never a transcribed slug:
 
@@ -149,7 +151,12 @@ Message ids use the raw wire values, never a transcribed slug:
 guardrails.definitions.<validator>.display-name | .description | .usage-note
 guardrails.definitions.<validator>.param.<paramId>.label | .tooltip
 guardrails.definitions.<validator>.option.<paramId>.<RawWireValue>
+guardrails.definitions.<validator>.category.<RawGroupId>
 ```
+
+The last form is `categoryLabels`: headings for the groups a validator's own catalog arrives in,
+which no parameter carries, so enrichment leaves them alone. Only the classifier has one, for
+the categories its question catalog is grouped in (see [Classifier guardrail](#classifier-guardrail)).
 
 Transcribing is exactly how the two products ended up keying the same Finland entity as
 `finNationalId` and `fiNationalId`; `USSocialSecurityNumber` is the value we persist, so it is
@@ -656,6 +663,10 @@ Contract highlights:
 
 - **Owns form state.** Initialized from `definition`/`guardrail`/`defaultName` at mount —
   remount with a new `key` to reset (all known hosts already remount per session).
+- **Saves a host-rendered threshold map as the host left it.** Every `map-enum` is pruned to
+  its `keySource` selection; one the builder renders also gets its missing keys filled, so it
+  matches `MapEnumField`'s rows. A map in `overrideParameterIds` is not filled: the classifier
+  leaves untuned questions unset, and filling them with `min` would save 0.
 - **Owns validation and gates its own Save.** Messages localize through lingui
   (overridable per string via `labels`); a host that validates externally (e.g. zod) passes
   `errors` — host messages display immediately, win per field, and gate Save. The pure
@@ -686,6 +697,46 @@ modes (inline+hideHeader / inline with back-button header / modal Dialog), `seco
 that had it when it opened, looking through open shadow roots (Agents' host is one). Radix
 returns focus only to a `DialogTrigger`, which no host uses, so without this focus was lost in
 light DOM too.
+
+## Classifier guardrail
+
+The `classifier` validator (Agents#6449) asks predefined questions, picked across categories,
+and the author's own. Its definition uses ordinary `$parameterType`s, which the generic form
+renders as a raw list of question names, so the family ships its editors. The wire, unchanged:
+
+| parameter | holds |
+| --- | --- |
+| `selectedQuestions` (`enum-list`) | predefined question names |
+| `questionThresholds` (`map-enum`) | 0..1 per tuned question; absent runs at the backend's 0.5. A score question stores `level / (levels - 1)` |
+| `questions` (`text-list`) | the author's own yes/no questions |
+| `questionCriteriaTrue.{i}` / `questionCriteriaFalse.{i}` / `questionThreshold.{i}` | sidecars of `questions[i]`, rewritten on every edit |
+| `model` (`enum`, no options) + `modelVendor` (`text`, required) | the host's model picker writes both |
+
+`useClassifierQuestions` loads `GET /api/execution/guardrails/classifier-questions` with the
+same context, host shapes and request behaviour as `useGuardrailDefinitions`; the question text
+stays the backend's, and only the category headings are curated copy (`categoryLabels`).
+`ClassifierQuestionPicker` and `ClassifierCustomQuestionsEditor` are the two editors, and
+`readClassifierCustomQuestions` / `writeClassifierCustomQuestions` / `hasClassifierQuestions`
+the pure helpers. `useClassifierGuardrailParameters` is the seam both hosts compose:
+
+```tsx
+const { categories } = useClassifierQuestions(ctx, { enabled: isClassifier });
+const classifier = useClassifierGuardrailParameters({ definition, categories });
+
+<GuardrailBuilder
+  renderParameter={(c) => classifier.renderParameter(c) ?? renderModelPicker(c)}
+  overrideParameterIds={[...classifier.overrideParameterIds, 'model']}
+  onSave={(value) => classifier.validateParameters(value.validatorParameters) && persist(value)}
+/>;
+```
+
+It renders the picker for `selectedQuestions` (writing both lists at once), the editor for
+`questions`, and a message under `modelVendor` when a model was saved without one; `model` falls
+through to the host. `validateParameters` is the rule the builder cannot know: at least one
+question across both lists. Declare the ids as above, which also keeps an untuned threshold unset
+(see GuardrailBuilder). The editors mount through `renderParameter`, the registered
+`guardrail-render-parameter` component, not a renderer beside `MetadataForm`; they are not built
+into the builder because the catalog and the model picker are the host's.
 
 ## CustomGuardrailBuilder
 

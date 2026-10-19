@@ -140,6 +140,7 @@ const EXPECTED_DIVERGENCES: CopyDivergence[] = [
  */
 const SINGLE_HOST_VALIDATORS: Readonly<Record<string, Host>> = {
   sentiment: 'agents',
+  classifier: 'agents',
 };
 
 /**
@@ -171,6 +172,9 @@ function flatten(table: GuardrailCopyTable): Map<string, string> {
       for (const [option, label] of Object.entries(options)) {
         flat.set(`${validator}.optionLabels.${paramId}.${option}`, label);
       }
+    }
+    for (const [groupId, label] of Object.entries(copy.categoryLabels ?? {})) {
+      flat.set(`${validator}.categoryLabels.${groupId}`, label);
     }
   }
   return flat;

@@ -4,6 +4,7 @@ import { axe } from 'jest-axe';
 import type { ReactElement } from 'react';
 import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 import {
+  CLASSIFIER_WIRE,
   HARMFUL_CONTENT_WIRE,
   PII_DETECTION_WIRE,
   SENTIMENT_WIRE,
@@ -1763,6 +1764,63 @@ describe('renderParameter passthrough', () => {
     expect(screen.getByTestId('host-picker')).toBeInTheDocument();
     // The default enum select for the overridden parameter must not render.
     expect(screen.queryByRole('combobox', { name: /Judge model/ })).not.toBeInTheDocument();
+  });
+});
+
+// The classifier stores a threshold only for a question the user tuned, and a question with no
+// entry runs at the backend's 0.5. Filling the gap the way a rendered map's rows are filled
+// (default, then `min`) would save 0 and flag every payload.
+describe('a threshold map the host renders', () => {
+  const HOST_IDS = ['selectedQuestions', 'questionThresholds', 'questions', 'modelVendor', 'model'];
+
+  function saveClassifier(overrideParameterIds?: readonly string[]) {
+    const [definition] = enrichGuardrailDefinitions([CLASSIFIER_WIRE]);
+    if (!definition) throw new Error('expected one enriched definition');
+    const onSave = vi.fn();
+    render(
+      <GuardrailBuilder
+        open
+        inline
+        hideHeader
+        definition={definition}
+        scope="Llm"
+        guardrail={makeGuardrail({
+          selector: { scopes: ['Llm'] },
+          validatorType: 'classifier',
+          validatorParameters: [
+            {
+              $parameterType: 'enum-list',
+              id: 'selectedQuestions',
+              value: ['harmful_hate', 'secrets_passwords'],
+            },
+            // `pii_health_information` is no longer selected.
+            {
+              $parameterType: 'map-enum',
+              id: 'questionThresholds',
+              value: { harmful_hate: 0.75, pii_health_information: 0.3 },
+            },
+            { $parameterType: 'enum', id: 'model', value: 'jev-1.13.0' },
+            { $parameterType: 'text', id: 'modelVendor', value: 'typesafe' },
+          ],
+        })}
+        renderParameter={(ctx) => (HOST_IDS.includes(ctx.definition.id) ? null : undefined)}
+        overrideParameterIds={overrideParameterIds}
+        onSave={onSave}
+        onCancel={vi.fn()}
+      />
+    );
+    fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
+    const saved = onSave.mock.calls[0]?.[0] as GuardrailBuilderValue | undefined;
+    return saved?.validatorParameters.find((p) => p.id === 'questionThresholds')?.value;
+  }
+
+  it('leaves a key the host never stored unset, and still drops a deselected one', () => {
+    expect(saveClassifier(HOST_IDS)).toEqual({ harmful_hate: 0.75 });
+  });
+
+  it('fills the map as before when the host does not declare it', () => {
+    // Without the declared ids only the form knows which parameters the host claims.
+    expect(saveClassifier()).toEqual({ harmful_hate: 0.75, secrets_passwords: 0 });
   });
 });
 

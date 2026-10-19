@@ -353,6 +353,7 @@ const TEMPLATE_TOKENS = {
   count: '{{count}}',
   docsLink: '{{docsLink}}',
   formats: '{{formats}}',
+  category: '{{category}}',
 };
 
 /** Localized chrome strings of the validator form; per-string `overrides` always win. */
@@ -1916,5 +1917,209 @@ export function useCustomGuardrailBuilderLabels(
         overrides
       ),
     [_, builder, overrides]
+  );
+}
+
+/**
+ * Chrome of the classifier editors and of `useClassifierGuardrailParameters`, in Agents' English
+ * (UiPath/Agents#6449). The parameters' own labels come from the definition.
+ */
+export interface GuardrailClassifierLabels {
+  moreInformation: string;
+  /** `{{count}}` questions selected. */
+  pickerSummary: string;
+  searchPlaceholder: string;
+  searchLabel: string;
+  noMatches: string;
+  /** `{{category}}`. */
+  selectAllInCategory: string;
+  /** `{{name}}`, the question's id; also `severityCutoff` and `questionStrictness`. */
+  questionDetails: string;
+  criteriaYes: string;
+  criteriaNo: string;
+  levelsIntro: string;
+  severityCutoffLabel: string;
+  severityCutoff: string;
+  severityLow: string;
+  severityModerate: string;
+  severityHigh: string;
+  severityCritical: string;
+  strictnessLabel: string;
+  questionStrictness: string;
+  thresholdStrict: string;
+  thresholdBalanced: string;
+  thresholdLenient: string;
+  addQuestion: string;
+  questionPlaceholder: string;
+  /** A custom question's card title: `{{position}}`. */
+  customQuestionTitle: string;
+  /** `{{label}}` (the parameter's) and `{{position}}`; also the two below. */
+  customQuestion: string;
+  removeCustomQuestion: string;
+  customQuestionStrictness: string;
+  criteriaTrueLabel: string;
+  criteriaTruePlaceholder: string;
+  criteriaFalseLabel: string;
+  criteriaFalsePlaceholder: string;
+  /** On the picker when Save finds no question. */
+  questionsRequired: string;
+  /** Under the model when it was saved without a vendor. */
+  modelVendorMissing: string;
+}
+
+type ClassifierTranslate = (descriptor: {
+  id: string;
+  message: string;
+  values?: Record<string, string>;
+}) => string;
+
+function buildGuardrailClassifierLabels(_: ClassifierTranslate): GuardrailClassifierLabels {
+  return {
+    moreInformation: _({ id: 'guardrails.form.more-information', message: 'More information' }),
+    pickerSummary: _({
+      id: 'guardrails.classifier.picker-summary',
+      message: '{count} selected — pick any across categories, or add your own below.',
+      values: TEMPLATE_TOKENS,
+    }),
+    searchPlaceholder: _({
+      id: 'guardrails.classifier.search-placeholder',
+      message: 'Search questions',
+    }),
+    searchLabel: _({
+      id: 'guardrails.classifier.search-label',
+      message: 'Search classifier questions',
+    }),
+    noMatches: _({
+      id: 'guardrails.classifier.no-matches',
+      message: 'No predefined questions match your search.',
+    }),
+    selectAllInCategory: _({
+      id: 'guardrails.classifier.select-all-in-category',
+      message: 'Select all in {category}',
+      values: TEMPLATE_TOKENS,
+    }),
+    questionDetails: _({
+      id: 'guardrails.classifier.question-details',
+      message: 'Question details for {name}',
+      values: TEMPLATE_TOKENS,
+    }),
+    criteriaYes: _({ id: 'guardrails.classifier.criteria-yes', message: 'Counts as yes (flag):' }),
+    criteriaNo: _({ id: 'guardrails.classifier.criteria-no', message: 'Counts as no:' }),
+    levelsIntro: _({
+      id: 'guardrails.classifier.levels-intro',
+      message:
+        'Severity levels, lowest to highest; flags when the graded severity reaches the threshold:',
+    }),
+    severityCutoffLabel: _({
+      id: 'guardrails.classifier.severity-cutoff-label',
+      message: 'Flag when severity reaches',
+    }),
+    severityCutoff: _({
+      id: 'guardrails.classifier.severity-cutoff',
+      message: 'Severity cutoff for {name}',
+      values: TEMPLATE_TOKENS,
+    }),
+    severityLow: _({ id: 'guardrails.classifier.severity-low', message: 'Low' }),
+    severityModerate: _({ id: 'guardrails.classifier.severity-moderate', message: 'Moderate' }),
+    severityHigh: _({ id: 'guardrails.classifier.severity-high', message: 'High' }),
+    severityCritical: _({ id: 'guardrails.classifier.severity-critical', message: 'Critical' }),
+    strictnessLabel: _({ id: 'guardrails.classifier.strictness-label', message: 'Strictness' }),
+    questionStrictness: _({
+      id: 'guardrails.classifier.question-strictness',
+      message: 'Flag threshold for {name}',
+      values: TEMPLATE_TOKENS,
+    }),
+    thresholdStrict: _({ id: 'guardrails.classifier.threshold-strict', message: 'Strict' }),
+    thresholdBalanced: _({ id: 'guardrails.classifier.threshold-balanced', message: 'Balanced' }),
+    thresholdLenient: _({ id: 'guardrails.classifier.threshold-lenient', message: 'Lenient' }),
+    addQuestion: _({ id: 'guardrails.classifier.add-question', message: 'Add' }),
+    questionPlaceholder: _({
+      id: 'guardrails.classifier.question-placeholder',
+      message: 'A yes/no question about the payload, where yes means it gets flagged.',
+    }),
+    customQuestionTitle: _({
+      id: 'guardrails.classifier.custom-question-title',
+      message: 'Question {position}',
+      values: TEMPLATE_TOKENS,
+    }),
+    customQuestion: _({
+      id: 'guardrails.classifier.custom-question',
+      message: '{label} {position}',
+      values: TEMPLATE_TOKENS,
+    }),
+    removeCustomQuestion: _({
+      id: 'guardrails.classifier.remove-custom-question',
+      message: 'Remove {label} {position}',
+      values: TEMPLATE_TOKENS,
+    }),
+    customQuestionStrictness: _({
+      id: 'guardrails.classifier.custom-question-strictness',
+      message: 'Flag threshold for {label} {position}',
+      values: TEMPLATE_TOKENS,
+    }),
+    criteriaTrueLabel: _({
+      id: 'guardrails.classifier.criteria-true-label',
+      message: 'Counts as yes (flags) — optional',
+    }),
+    criteriaTruePlaceholder: _({
+      id: 'guardrails.classifier.criteria-true-placeholder',
+      message: "What makes the answer yes, e.g. 'The content commits to a refund.'",
+    }),
+    criteriaFalseLabel: _({
+      id: 'guardrails.classifier.criteria-false-label',
+      message: 'Counts as no — optional',
+    }),
+    criteriaFalsePlaceholder: _({
+      id: 'guardrails.classifier.criteria-false-placeholder',
+      message: "What makes the answer no, e.g. 'Only the refund policy is explained.'",
+    }),
+    questionsRequired: _({
+      id: 'guardrails.classifier.questions-required',
+      message: 'Pick at least one question or add your own.',
+    }),
+    modelVendorMissing: _({
+      id: 'guardrails.classifier.model-vendor-missing',
+      message: 'This model has no vendor. Pick the model again.',
+    }),
+  };
+}
+
+const englishClassifierTranslate: ClassifierTranslate = ({ message, values }) =>
+  values
+    ? message.replace(/\{(\w+)\}/g, (match, token: string) => values[token] ?? match)
+    : message;
+
+/** The English chrome strings, resolved without a lingui provider. */
+export const GUARDRAIL_CLASSIFIER_EN_LABELS: GuardrailClassifierLabels =
+  buildGuardrailClassifierLabels(englishClassifierTranslate);
+
+/** Message id to ICU source, as `locales/en.json` stores them. */
+export const GUARDRAIL_CLASSIFIER_EN_MESSAGES: Readonly<Record<string, string>> = Object.freeze(
+  (() => {
+    const messages: Record<string, string> = {};
+    buildGuardrailClassifierLabels((descriptor) => {
+      messages[descriptor.id] = descriptor.message;
+      return descriptor.message;
+    });
+    return messages;
+  })()
+);
+
+/** Merge English defaults, a loaded catalog, and per-string overrides (undefined skipped). */
+export function resolveGuardrailClassifierLabels(
+  catalog?: Partial<GuardrailClassifierLabels>,
+  overrides?: Partial<GuardrailClassifierLabels>
+): GuardrailClassifierLabels {
+  return mergeLabels(GUARDRAIL_CLASSIFIER_EN_LABELS, catalog, overrides);
+}
+
+/** Localized chrome strings of the classifier editors; per-string `overrides` always win. */
+export function useGuardrailClassifierLabels(
+  overrides?: Partial<GuardrailClassifierLabels>
+): GuardrailClassifierLabels {
+  const { _ } = useSafeLingui();
+  return useMemo(
+    () => resolveGuardrailClassifierLabels(buildGuardrailClassifierLabels(_), overrides),
+    [_, overrides]
   );
 }

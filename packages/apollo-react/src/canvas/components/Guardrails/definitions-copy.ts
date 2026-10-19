@@ -18,6 +18,7 @@ import { useSafeLingui } from '../../../i18n';
  * guardrails.definitions.<validator>.param.<paramId>.label
  * guardrails.definitions.<validator>.param.<paramId>.tooltip
  * guardrails.definitions.<validator>.option.<paramId>.<RawWireValue>
+ * guardrails.definitions.<validator>.category.<RawGroupId>
  * ```
  *
  * Validator, parameter and option segments are the **raw wire values**
@@ -44,6 +45,11 @@ export interface GuardrailValidatorCopy {
   paramTooltips?: Record<string, string>;
   /** Keyed by raw parameter id, then by raw wire option value. */
   optionLabels?: Record<string, Record<string, string>>;
+  /**
+   * Headings for the groups the validator's own catalog arrives in, keyed by raw group id: the
+   * classifier's question categories. No parameter carries them, so enrichment ignores them.
+   */
+  categoryLabels?: Record<string, string>;
 }
 
 /** Curated copy keyed by raw validator id. */
@@ -1022,6 +1028,72 @@ function buildGuardrailCopy(_: CopyTranslate): GuardrailCopyTable {
         },
       },
     },
+
+    // Agents' wording throughout: Flow has no classifier guardrail yet.
+    classifier: {
+      displayName: _({
+        id: 'guardrails.definitions.classifier.display-name',
+        message: 'Classifier',
+      }),
+      description: _({
+        id: 'guardrails.definitions.classifier.description',
+        message:
+          "Evaluate questions against the payload with a non-generative classifier. Pick curated questions across categories, add your own, and flag when any answer reaches that question's threshold.",
+      }),
+      paramLabels: {
+        selectedQuestions: _({
+          id: 'guardrails.definitions.classifier.param.selectedQuestions.label',
+          message: 'Predefined questions',
+        }),
+        questions: _({
+          id: 'guardrails.definitions.classifier.param.questions.label',
+          message: 'Your questions',
+        }),
+        model: _({
+          id: 'guardrails.definitions.classifier.param.model.label',
+          message: 'Model',
+        }),
+      },
+      paramTooltips: {
+        selectedQuestions: _({
+          id: 'guardrails.definitions.classifier.param.selectedQuestions.tooltip',
+          message:
+            'Curated questions grouped by category. Pick any across categories; score questions also take a severity cutoff. Add your own questions below.',
+        }),
+        questions: _({
+          id: 'guardrails.definitions.classifier.param.questions.tooltip',
+          message:
+            "Yes/no questions about the payload, where 'yes' means the payload should be flagged. Added on top of any predefined questions you selected. Optionally define what counts as yes and as no — the classifier grades against those definitions, which helps on judgment-style questions.",
+        }),
+      },
+      categoryLabels: {
+        pii: _({ id: 'guardrails.definitions.classifier.category.pii', message: 'PII' }),
+        harmful_content: _({
+          id: 'guardrails.definitions.classifier.category.harmful_content',
+          message: 'Harmful content',
+        }),
+        prompt_injection: _({
+          id: 'guardrails.definitions.classifier.category.prompt_injection',
+          message: 'Prompt injection',
+        }),
+        intellectual_property: _({
+          id: 'guardrails.definitions.classifier.category.intellectual_property',
+          message: 'Intellectual property',
+        }),
+        secrets_and_credentials: _({
+          id: 'guardrails.definitions.classifier.category.secrets_and_credentials',
+          message: 'Secrets & credentials',
+        }),
+        compliance_commitments: _({
+          id: 'guardrails.definitions.classifier.category.compliance_commitments',
+          message: 'Compliance & commitments',
+        }),
+        scope_and_conduct: _({
+          id: 'guardrails.definitions.classifier.category.scope_and_conduct',
+          message: 'Scope & conduct',
+        }),
+      },
+    },
   };
 }
 
@@ -1034,6 +1106,7 @@ export const CURATED_GUARDRAIL_VALIDATORS: readonly string[] = Object.freeze([
   'intellectual_property',
   'llm_as_judge',
   'sentiment',
+  'classifier',
 ]);
 
 /**
