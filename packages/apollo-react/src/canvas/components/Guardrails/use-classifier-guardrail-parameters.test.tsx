@@ -16,9 +16,11 @@ const [CLASSIFIER, SENTIMENT] = enrichGuardrailDefinitions([CLASSIFIER_WIRE, SEN
 /** A host as the README shows it: the seam first, then its own model picker. */
 function Host({
   initial,
+  errors,
   onSave,
 }: {
   initial?: GuardrailValidatorParameter[];
+  errors?: Record<string, string>;
   onSave: (value: GuardrailBuilderValue) => void;
 }) {
   const { categories } = useClassifierQuestions(null, { questions: CLASSIFIER_QUESTIONS_WIRE });
@@ -62,6 +64,7 @@ function Host({
       }
       renderParameter={(ctx) => classifier.renderParameter(ctx) ?? renderModelPicker(ctx)}
       overrideParameterIds={[...classifier.overrideParameterIds, 'model']}
+      errors={errors && { parameters: errors }}
       onSave={(value) => classifier.validateParameters(value.validatorParameters) && onSave(value)}
       onCancel={vi.fn()}
     />
@@ -153,5 +156,50 @@ describe('useClassifierGuardrailParameters', () => {
     save();
 
     expect(screen.getByText('This model has no vendor. Pick the model again.')).toBeInTheDocument();
+  });
+
+  describe('the threshold map’s errors', () => {
+    const saved = (thresholds: Record<string, number>): GuardrailValidatorParameter[] => [
+      { $parameterType: 'enum-list', id: 'selectedQuestions', value: ['ip_verbatim_text'] },
+      { $parameterType: 'map-enum', id: 'questionThresholds', value: thresholds },
+      { $parameterType: 'enum', id: 'model', value: 'jev-1.13.0' },
+      { $parameterType: 'text', id: 'modelVendor', value: 'typesafe' },
+    ];
+    const tighten = () => {
+      fireEvent.click(screen.getByRole('button', { name: /^Intellectual property d/ }));
+      fireEvent.keyDown(screen.getByRole('slider', { name: /ip_verbatim_text/ }), {
+        key: 'ArrowLeft',
+      });
+    };
+
+    it('shows a saved value out of range, which holds Save until it is fixed', () => {
+      const onSave = vi.fn();
+      render(<Host onSave={onSave} initial={saved({ ip_verbatim_text: 1.4 })} />);
+
+      save();
+      expect(onSave).not.toHaveBeenCalled();
+      expect(screen.getByText(/Value is out of range/)).toBeInTheDocument();
+
+      tighten();
+      save();
+      expect(onSave).toHaveBeenCalled();
+    });
+
+    it('clears a host’s map error once the picker rewrites the map', () => {
+      const onSave = vi.fn();
+      render(
+        <Host
+          onSave={onSave}
+          initial={saved({ ip_verbatim_text: 0.5 })}
+          errors={{ questionThresholds: 'Too lenient for this tenant.' }}
+        />
+      );
+      expect(screen.getByText(/Too lenient for this tenant/)).toBeInTheDocument();
+
+      tighten();
+      save();
+
+      expect(onSave).toHaveBeenCalled();
+    });
   });
 });

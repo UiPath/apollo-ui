@@ -110,12 +110,21 @@ export const GuardrailValidatorForm = forwardRef<HTMLDivElement, GuardrailValida
       [onChange, onClearError]
     );
 
+    // An override can write several parameters at once (the classifier's picker writes its map
+    // with its list), so every defined parameter the replacement changes counts as edited.
     const replaceParams = useCallback(
       (paramId: string, next: GuardrailValidatorParameter[]) => {
+        const serialized = (list: GuardrailValidatorParameter[], id: string) =>
+          JSON.stringify(list.find((p) => p.id === id)?.value);
         onClearError?.(paramId);
+        for (const id of defsById.keys()) {
+          if (id !== paramId && serialized(parametersRef.current, id) !== serialized(next, id)) {
+            onClearError?.(id);
+          }
+        }
         onChange(next);
       },
-      [onChange, onClearError]
+      [defsById, onChange, onClearError]
     );
 
     // Which definitions the override claims.
