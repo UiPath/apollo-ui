@@ -1,8 +1,8 @@
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { findCatalogDrift, findCatalogOrphans } from './__fixtures__/catalog-coverage';
+import { CLASSIFIER_QUESTIONS_WIRE } from './__fixtures__/classifier-questions.fixtures';
 import {
-  CLASSIFIER_CATEGORY_IDS,
   PII_ENTITY_OPTIONS,
   PREVIEW_PII_ENTITY_OPTIONS,
   SENTIMENT_LANGUAGE_OPTIONS,
@@ -46,7 +46,7 @@ describe('GUARDRAIL_COPY_EN', () => {
 
   it('heads every category the classifier question catalog groups by', () => {
     expect(Object.keys(GUARDRAIL_COPY_EN.classifier?.categoryLabels ?? {}).sort()).toEqual(
-      [...CLASSIFIER_CATEGORY_IDS].sort()
+      CLASSIFIER_QUESTIONS_WIRE.map((group) => group.id).sort()
     );
   });
 

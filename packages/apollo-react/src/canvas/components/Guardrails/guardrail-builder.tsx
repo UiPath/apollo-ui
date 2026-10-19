@@ -155,10 +155,7 @@ export interface GuardrailBuilderProps {
    * Forwarded to the internal `GuardrailValidatorForm`: the parameter ids `renderParameter`
    * claims. Declaring them avoids the deprecated probe, which calls your renderer once per
    * definition on every render — see `GuardrailValidatorFormProps.overrideParameterIds`.
-   *
-   * A declared `map-enum` is also saved as the host left it: pruned to its key source's
-   * selection, with no keys filled in (see `SyncMapEnumParametersOptions`). A probed one is
-   * still filled, since only the form knows the probe's answer.
+   * A declared `map-enum` is saved without filled-in keys (`SyncMapEnumParametersOptions`).
    */
   overrideParameterIds?: GuardrailValidatorFormProps['overrideParameterIds'];
   /**
@@ -261,9 +258,7 @@ export function GuardrailBuilder({
     [updateField]
   );
 
-  // A threshold map the host renders keeps the keys it left out: the fill below exists to match
-  // `MapEnumField`'s rows, and a claimed map has none. Keyed by content, so an inline array
-  // from the host does not recompute the result every render.
+  // Keyed by content, so a host's inline array does not recompute the result every render.
   const overrideIdsKey = (overrideParameterIds ?? []).join('\u0000');
   const syncOptions = useMemo<SyncMapEnumParametersOptions>(
     () => ({ leaveUnsetIds: overrideIdsKey === '' ? [] : overrideIdsKey.split('\u0000') }),

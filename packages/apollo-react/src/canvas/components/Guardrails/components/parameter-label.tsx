@@ -4,7 +4,7 @@ import type { GuardrailParameterDefinition } from '../types';
 
 export interface ParameterLabelProps {
   paramDef: GuardrailParameterDefinition;
-  labels: GuardrailValidatorFormLabels;
+  labels: Pick<GuardrailValidatorFormLabels, 'moreInformation'>;
   htmlFor?: string;
   asTextHeader?: boolean;
   /**

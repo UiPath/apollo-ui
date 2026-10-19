@@ -1,10 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-/**
- * Where and as whom to call the guardrails endpoints. One context serves both
- * `useGuardrailDefinitions` and `useClassifierQuestions`: they live side by side on the same
- * service.
- */
+/** Where and as whom to call the guardrails endpoints. */
 export interface GuardrailDefinitionsRequestContext {
   /** Same-origin when omitted. Flow passes its `/{org}/{tenantName}/agents_` prefix. */
   baseUrl?: string;
@@ -20,30 +16,14 @@ export interface GuardrailDefinitionsRequestContext {
   fetch?: typeof fetch;
 }
 
-/**
- * The request core both guardrails endpoints share: `useGuardrailDefinitions` and
- * `useClassifierQuestions` differ only in the path and in what they parse the payload into.
- * Private to this folder. Every behaviour below is pinned by `use-guardrail-definitions.test.tsx`.
- */
-export interface GuardrailsRequestOptions<T> {
-  /** Appended to the context's `baseUrl`. */
+interface GuardrailsRequestOptions<T> {
   path: string;
-  /** Names the endpoint in a transport error's message. */
+  /** Names the endpoint in a transport error. */
   endpointName: string;
-  /** Never throws. Must be a stable reference. */
+  /** Never throws; a stable reference, as is `empty`. */
   parse: (payload: unknown) => T;
-  /** What a hook with no settled result reports. Must be a stable reference. */
   empty: T;
-  /** The caller's own reasons to hold off, on top of a `null` context. */
   enabled: boolean;
-}
-
-export interface GuardrailsRequestResult<T> {
-  /** The parsed payload of the current request, or `empty`. */
-  data: T;
-  loading: boolean;
-  error: Error | null;
-  refetch: () => void;
 }
 
 /** A fetch outcome plus the request key it belongs to. */
@@ -61,21 +41,14 @@ const NOTHING_SETTLED_KEY = 'none';
 type GuardrailsRequest = Omit<GuardrailDefinitionsRequestContext, 'fetch'>;
 
 /**
- * Deliberately minimal, following `useDiscoveryModels`: `useState` plus `fetch` plus an
- * `AbortController`, no query library.
- *
- * The context is compared by **content**, so a host can build it inline. That departs from
- * `useDiscoveryModels`, which keys off context identity: an inline object there refetches every
- * render and, since every response sets state, never settles.
- *
- * A failed request sets `error` and **keeps the previous result** when it was a refetch of the
- * same request; disabling clears the fetched state.
+ * The request core `useGuardrailDefinitions` and `useClassifierQuestions` share; they differ in
+ * path and parser. Behaviour is documented on, and tested through, `useGuardrailDefinitions`.
  */
 export function useGuardrailsRequest<T>(
   ctx: GuardrailDefinitionsRequestContext | null,
   { path, endpointName, parse, empty, enabled: enabledOption }: GuardrailsRequestOptions<T>
-): GuardrailsRequestResult<T> {
-  // Keyed off the context's contents, not its identity: see the note above. `fetch` stays out
+): { data: T; loading: boolean; error: Error | null; refetch: () => void } {
+  // Keyed off the context's contents, not its identity (see `useGuardrailDefinitions`). `fetch` stays out
   // of the key and is read from a ref, since swapping an inline wrapper is not a reason to
   // call the API again.
   const requestKey =

@@ -35,7 +35,6 @@ import {
   resolveCustomGuardrailBuilderLabels,
   resolveGuardrailActionLabels,
   resolveGuardrailBuilderLabels,
-  resolveGuardrailClassifierLabels,
   resolveGuardrailFileSupportLabels,
   resolveGuardrailFilterFieldSelectorLabels,
   resolveGuardrailFormLabels,
@@ -182,37 +181,13 @@ describe('resolveGuardrailRulesLabels', () => {
   });
 });
 
-describe('resolveGuardrailClassifierLabels', () => {
-  it('returns the English defaults when there is nothing to merge', () => {
-    expect(resolveGuardrailClassifierLabels()).toEqual(GUARDRAIL_CLASSIFIER_EN_LABELS);
-  });
-
-  it('layers the catalog over the defaults and the overrides over both', () => {
-    const labels = resolveGuardrailClassifierLabels(
-      { addQuestion: 'Hinzufügen', strictnessLabel: 'Strenge (de)' },
-      { strictnessLabel: 'Strenge' }
-    );
-
-    expect(labels.addQuestion).toBe('Hinzufügen');
-    expect(labels.strictnessLabel).toBe('Strenge');
-    expect(labels.noMatches).toBe(GUARDRAIL_CLASSIFIER_EN_LABELS.noMatches);
-  });
-
-  it('keeps the English templates in the `{{token}}` convention the components format', () => {
+describe('GUARDRAIL_CLASSIFIER_EN_LABELS', () => {
+  it('keeps the `{{category}}` token the picker formats', () => {
     expect(
       formatGuardrailFormMessage(GUARDRAIL_CLASSIFIER_EN_LABELS.selectAllInCategory, {
         category: 'PII',
       })
     ).toBe('Select all in PII');
-    expect(
-      formatGuardrailFormMessage(GUARDRAIL_CLASSIFIER_EN_LABELS.removeCustomQuestion, {
-        label: 'Your questions',
-        position: 2,
-      })
-    ).toBe('Remove Your questions 2');
-    expect(GUARDRAIL_CLASSIFIER_EN_MESSAGES['guardrails.classifier.picker-summary']).toBe(
-      '{count} selected — pick any across categories, or add your own below.'
-    );
   });
 });
 

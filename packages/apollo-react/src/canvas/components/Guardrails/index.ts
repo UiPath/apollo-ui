@@ -70,38 +70,13 @@ export type { ClassifierCustomQuestionsEditorProps } from './classifier-custom-q
 export { ClassifierCustomQuestionsEditor } from './classifier-custom-questions-editor';
 export type { ClassifierQuestionPickerProps } from './classifier-question-picker';
 export { ClassifierQuestionPicker } from './classifier-question-picker';
-export type {
-  ClassifierQuestion,
-  ClassifierQuestionCategory,
-  EnrichClassifierQuestionsOptions,
-} from './classifier-questions-enrich';
-export { enrichClassifierQuestions } from './classifier-questions-enrich';
-export type {
-  ClassifierQuestionParseIssue,
-  ClassifierQuestionsParseResult,
-} from './classifier-questions-parse';
-export { parseClassifierQuestions } from './classifier-questions-parse';
-export type {
-  ClassifierQuestionGroupWire,
-  ClassifierQuestionType,
-  ClassifierQuestionWire,
-} from './classifier-questions-wire';
-export type {
-  ClassifierCustomQuestion,
-  ClassifierParameterLike,
-  ClassifierSeverityTier,
-} from './classifier-utils';
+export type { ClassifierCustomQuestion, ClassifierParameterLike } from './classifier-utils';
 export {
-  CLASSIFIER_CRITERIA_MAX_LENGTH,
   CLASSIFIER_DEFAULT_THRESHOLD,
   CLASSIFIER_PARAMETER_IDS,
   CLASSIFIER_VALIDATOR,
-  classifierLevelToThreshold,
-  classifierThresholdToLevel,
-  getClassifierSeverityTier,
   hasClassifierQuestions,
   readClassifierCustomQuestions,
-  sanitizeClassifierCustomQuestions,
   writeClassifierCustomQuestions,
 } from './classifier-utils';
 export type { EscalateActionFieldsProps } from './components/escalate-action-fields';
@@ -161,6 +136,7 @@ export type {
 } from './definitions-parse';
 export { parseGuardrailDefinitions } from './definitions-parse';
 export type {
+  ClassifierQuestionGroupWire,
   GuardrailDefinitionWire,
   GuardrailParameterDefinitionWire,
   GuardrailParameterWireBase,
@@ -322,6 +298,8 @@ export type {
 } from './use-classifier-guardrail-parameters';
 export { useClassifierGuardrailParameters } from './use-classifier-guardrail-parameters';
 export type {
+  ClassifierQuestion,
+  ClassifierQuestionCategory,
   UseClassifierQuestionsOptions,
   UseClassifierQuestionsResult,
 } from './use-classifier-questions';

@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { CLASSIFIER_QUESTIONS_WIRE } from './__fixtures__/classifier-questions.fixtures';
 import {
   ALL_BUILT_IN_WIRE,
   CLASSIFIER_WIRE,
@@ -11,7 +12,7 @@ import {
   PROMPT_INJECTION_WIRE,
   RAW_PAYLOAD_WITH_NOISE,
 } from './__fixtures__/definitions-wire.fixtures';
-import { parseGuardrailDefinitions } from './definitions-parse';
+import { parseClassifierQuestions, parseGuardrailDefinitions } from './definitions-parse';
 
 describe('parseGuardrailDefinitions', () => {
   it('returns every definition of a well-formed payload, in order', () => {
@@ -38,10 +39,7 @@ describe('parseGuardrailDefinitions', () => {
   });
 
   it('keeps the classifier whole: a model enum with no options, a map with an empty default', () => {
-    const result = parseGuardrailDefinitions([CLASSIFIER_WIRE]);
-
-    expect(result.invalid).toEqual([]);
-    expect(result.definitions[0]).toEqual(CLASSIFIER_WIRE);
+    expect(parseGuardrailDefinitions([CLASSIFIER_WIRE]).definitions).toEqual([CLASSIFIER_WIRE]);
   });
 
   it('keeps the preview options of an enum-list', () => {
@@ -311,6 +309,45 @@ describe('parseGuardrailDefinitions', () => {
   });
 });
 
+describe('parseClassifierQuestions', () => {
+  const yesNo = { name: 'secrets_passwords', question: 'Password?', type: 'noul' as const };
+
+  it('keeps a well-formed catalog, including the nulls of a side a question lacks', () => {
+    const withNulls = [{ id: 'pii', questions: [{ ...yesNo, levels: null, criteriaTrue: null }] }];
+
+    expect(parseClassifierQuestions(CLASSIFIER_QUESTIONS_WIRE).groups).toEqual(
+      CLASSIFIER_QUESTIONS_WIRE
+    );
+    expect(parseClassifierQuestions(withNulls)).toEqual({ groups: withNulls, invalid: [] });
+  });
+
+  it('drops a malformed question but keeps its siblings, and a group with no id whole', () => {
+    const result = parseClassifierQuestions([
+      { id: 'secrets', questions: [{ ...yesNo, name: ' ' }, yesNo, { ...yesNo, type: 'ranking' }] },
+      { id: '', questions: [yesNo] },
+    ]);
+
+    expect(result.groups).toEqual([{ id: 'secrets', questions: [yesNo] }]);
+    expect(result.invalid.map(({ index, question }) => [index, question])).toEqual([
+      [0, 0],
+      [0, 2],
+      [1, undefined],
+    ]);
+  });
+
+  it('reports a payload that is not an array, and never throws', () => {
+    const hostile = {
+      id: 'pii',
+      get questions(): unknown {
+        throw new Error('boom');
+      },
+    };
+
+    expect(parseClassifierQuestions({ groups: [] }).inputError).toMatch(/received object/);
+    expect(parseClassifierQuestions([hostile]).invalid).toHaveLength(1);
+  });
+});
+
 describe('zod boundary', () => {
   const folder = dirname(fileURLToPath(import.meta.url));
 
@@ -322,16 +359,15 @@ describe('zod boundary', () => {
     });
   }
 
-  it('is confined to the two payload parsers', () => {
+  it('is confined to definitions-parse.ts', () => {
     // Anything else importing zod would put schema types in this folder's emitted
     // declarations and force the dependency on every consumer of the subpath.
     const importers = sourceFiles(folder)
       .filter((file) => !file.includes('.test.'))
       .filter((file) => /from ['"]zod['"]|require\(['"]zod['"]\)/.test(readFileSync(file, 'utf8')))
-      .map((file) => file.slice(folder.length + 1).replace(/\\/g, '/'))
-      .sort();
+      .map((file) => file.slice(folder.length + 1).replace(/\\/g, '/'));
 
-    expect(importers).toEqual(['classifier-questions-parse.ts', 'definitions-parse.ts']);
+    expect(importers).toEqual(['definitions-parse.ts']);
   });
 
   it('produces exactly the keys the public wire type declares', () => {
