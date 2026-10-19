@@ -109,7 +109,10 @@ export function useClassifierGuardrailParameters({
           );
         }
         case questionThresholds:
-          return null;
+          // Edited in the picker; only its error, e.g. a saved value out of range, shows here.
+          return ctx.error ? (
+            <FormFieldError>{`${parameter.label}: ${ctx.error}`}</FormFieldError>
+          ) : null;
         case questions:
           return (
             <ClassifierCustomQuestionsEditor
