@@ -36,6 +36,107 @@ describe('Markdown', () => {
     expect(container.querySelector('.katex > math[display="block"]')).not.toBeNull();
   });
 
+  it('renders a math fence as display MathML instead of a code block', () => {
+    const { container } = render(<Markdown>{'```math\nE = mc^2\n```'}</Markdown>);
+    expect(container.querySelector('.katex > math[display="block"]')).not.toBeNull();
+    expect(container.querySelector('[data-slot="code-block"]')).toBeNull();
+  });
+
+  it.each([
+    '```latex\nx^2\n```',
+    '```tex\nx^2\n```',
+    '```MATH title="Area"\nx^2\n```',
+    '~~~math\nx^2\n~~~',
+    '> ```math\n> x^2\n> ```',
+    '- Area:\n\n  ```math\n  x^2\n  ```',
+  ])('renders %j as math', (source) => {
+    const { container } = render(<Markdown>{source}</Markdown>);
+    expect(container.querySelector('math[display="block"]')).not.toBeNull();
+    expect(container.querySelector('[data-slot="code-block"]')).toBeNull();
+  });
+
+  it('leaves fences in other languages as code', () => {
+    const { container } = render(<Markdown>{'```js\nconst x = 2 ^ 3;\n```'}</Markdown>);
+    expect(container.querySelector('[data-slot="code-block"]')).toHaveAttribute(
+      'data-language',
+      'javascript'
+    );
+    expect(container.querySelector('.katex')).toBeNull();
+  });
+
+  it('keeps a math fence as code until its closing fence arrives', () => {
+    const { container, rerender } = render(<Markdown streaming>{'```math\n\\frac{a}{'}</Markdown>);
+    const block = container.querySelector('[data-slot="code-block"]');
+    expect(block).toHaveTextContent('\\frac{a}{');
+    expect(block?.querySelector('[data-slot="code-block-language"]')).toHaveTextContent('math');
+    expect(container.querySelector('.katex, .katex-error')).toBeNull();
+
+    rerender(<Markdown streaming>{'```math\n\\frac{a}{b}\n```'}</Markdown>);
+    expect(container.querySelector('[data-slot="code-block"]')).toBeNull();
+    expect(container.querySelector('math[display="block"]')).not.toBeNull();
+  });
+
+  it('keeps a $$ block as code until its closing line arrives', () => {
+    const { container, rerender } = render(<Markdown streaming>{'$$\n\\frac{a}{'}</Markdown>);
+    const block = container.querySelector('[data-slot="code-block"]');
+    expect(block).toHaveTextContent('\\frac{a}{');
+    expect(block?.querySelector('[data-slot="code-block-language"]')).toHaveTextContent('math');
+    expect(container.querySelector('.katex, .katex-error')).toBeNull();
+
+    rerender(<Markdown streaming>{'$$\n\\frac{a}{b}\n$$'}</Markdown>);
+    expect(container.querySelector('[data-slot="code-block"]')).toBeNull();
+    expect(container.querySelector('math[display="block"]')).not.toBeNull();
+  });
+
+  it('closes a math block only with a run as long as the opener, of the same character', () => {
+    const { container, rerender } = render(<Markdown streaming>{'````math\nx\n```'}</Markdown>);
+    expect(container.querySelector('[data-slot="code-block"]')).not.toBeNull();
+
+    rerender(<Markdown streaming>{'````math\nx\n```\ny\n````'}</Markdown>);
+    expect(container.querySelector('[data-slot="code-block"]')).toBeNull();
+    expect(container.querySelector('.katex, .katex-error')).not.toBeNull();
+  });
+
+  it.each([
+    ['a backtick run in a tilde fence', '~~~math\nx\n```'],
+    ['a shorter $$ run', '$$$\nx\n$$'],
+    ['$$ followed by text', '$$\nx\n$$ and more'],
+    ['a fence indented 4 spaces', '```math\nx\n    ```'],
+    ['a quoted fence inside a top-level fence', '```math\nx\n> ```'],
+    ['an open fence in a blockquote in a list', '- Area:\n\n  > ```math\n  > x^2'],
+    ['an open fence with CRLF line endings', '```math\r\nx^2'],
+  ])('keeps a math block as code when it ends with %s', (_name, source) => {
+    const { container } = render(<Markdown streaming>{source}</Markdown>);
+    expect(container.querySelector('[data-slot="code-block"]')).not.toBeNull();
+    expect(container.querySelector('.katex, .katex-error')).toBeNull();
+  });
+
+  it.each([
+    ['CRLF line endings', '```math\r\nx^2\r\n```'],
+    ['a list nested 4 columns deep', '- a\n  - b\n\n    ```math\n    x^2\n    ```'],
+    ['a closer indented within 3 columns', '```math\nx^2\n   ```'],
+  ])('renders a closed math fence with %s', (_name, source) => {
+    const { container } = render(<Markdown>{source}</Markdown>);
+    expect(container.querySelector('math[display="block"]')).not.toBeNull();
+    expect(container.querySelector('[data-slot="code-block"]')).toBeNull();
+  });
+
+  it('keeps an unclosed $$ block as code when the message is not streaming', () => {
+    const { container } = render(<Markdown streaming={false}>{'$$\nx^2'}</Markdown>);
+    expect(container.querySelector('[data-slot="code-block"]')).toHaveTextContent('x^2');
+    expect(container.querySelector('.katex, .katex-error')).toBeNull();
+  });
+
+  it('keeps the text of a line opening with $$ while it streams', () => {
+    // Until the closing $$ arrives the line parses as an open block with the text as its meta.
+    const { container, rerender } = render(<Markdown streaming>{'$$b = B'}</Markdown>);
+    expect(container.querySelector('[data-slot="code-block"]')).toHaveTextContent('b = B');
+
+    rerender(<Markdown streaming>{'$$b = B$$'}</Markdown>);
+    expect(container.querySelector('[data-slot="code-block"]')).toBeNull();
+    expect(container.querySelector('.katex')).not.toBeNull();
+  });
+
   it('keeps single dollar signs literal', () => {
     const { container } = render(<Markdown>{'It costs $5 and $10.'}</Markdown>);
     expect(container.querySelector('.katex')).toBeNull();
@@ -249,6 +350,7 @@ describe('Markdown', () => {
           '```json\n{ "a": 1 }\n```',
           'Footnote reference[^1].\n\n[^1]: The note.',
           '$$\nx^2\n$$',
+          '```math\ny^2\n```',
         ].join('\n\n')}
       </Markdown>
     );
