@@ -238,8 +238,15 @@ export const GuardrailValidatorForm = forwardRef<HTMLDivElement, GuardrailValida
 
     const formSchema = useMemo(() => ({ ...schema, mode: schemaMode }), [schema, schemaMode]);
 
+    // A field that renders nothing (an override returning `null`, a threshold map with no keys
+    // selected) still owns a grid row, and the row gap around it doubled the space between its
+    // neighbours. Collapsing the empty cell removes the row.
     return (
-      <div ref={ref} data-slot="guardrail-validator-form" className={cn('space-y-4', className)}>
+      <div
+        ref={ref}
+        data-slot="guardrail-validator-form"
+        className={cn('space-y-4 [&_[data-field-name]:empty]:hidden', className)}
+      >
         <GuardrailRenderParameterProvider value={bridgeContext}>
           <GuardrailParameterFootersProvider value={parameterFooters}>
             <MetadataForm schema={formSchema} plugins={plugins} container="div" />
