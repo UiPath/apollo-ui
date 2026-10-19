@@ -15,7 +15,7 @@ import { FeatureFlagDemo } from './feature-flag-demo'
 
 ```ts
 import { FeatureFlagKind } from "@uipath/proteus-client";
-import type { FlagMapping } from "@uipath/apollo-vertex";
+import type { FlagMapping } from "@uipath/apollo-vertex/proteus";
 
 export enum Flag {
   NewOnboarding = "NewOnboarding",
@@ -37,10 +37,8 @@ export const flagConfig = {
 ### 2. Wrap your app with the provider
 
 ```tsx
-import {
-  FeatureFlagProvider,
-  createProteusProvider,
-} from "@uipath/apollo-vertex";
+import { FeatureFlagProvider } from "@uipath/apollo-vertex";
+import { createProteusProvider } from "@uipath/apollo-vertex/proteus";
 import { flagConfig } from "@/lib/flags";
 
 const provider = createProteusProvider({

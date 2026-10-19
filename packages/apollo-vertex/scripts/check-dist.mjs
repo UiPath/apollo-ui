@@ -36,9 +36,11 @@ function walk(file, seen, externals, errors) {
 const declared = new Set([
   ...Object.keys(pkg.dependencies ?? {}),
   ...Object.keys(pkg.peerDependencies ?? {}),
-  // Optional peers that are not on the public registry are declared here only.
-  ...Object.keys(pkg.peerDependenciesMeta ?? {}),
 ]);
+// Optional peers that are not on the public registry are declared only in
+// peerDependenciesMeta. Only a subpath may import them: an app that never
+// imports that subpath must not have to resolve them.
+const optional = new Set(Object.keys(pkg.peerDependenciesMeta ?? {}));
 const list = process.argv.includes("--list");
 const errors = [];
 for (const [subpath, target] of Object.entries(pkg.exports)) {
@@ -55,7 +57,11 @@ for (const [subpath, target] of Object.entries(pkg.exports)) {
   const externals = new Set();
   walk(join(root, target.default), new Set(), externals, errors);
   for (const name of externals) {
-    if (!declared.has(name)) {
+    if (
+      subpath === "."
+        ? !declared.has(name)
+        : !declared.has(name) && !optional.has(name)
+    ) {
       errors.push(`${subpath}: imports undeclared package ${name}`);
     }
   }

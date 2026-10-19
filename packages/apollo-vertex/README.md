@@ -26,15 +26,14 @@ import { Button, DataTable } from "@uipath/apollo-vertex";
 Everything, including the app shell, charts, feature flags, Solution Tests and AI chat, is exported
 from the package root. Translation JSON files are available at `@uipath/apollo-vertex/locales/*`.
 
-npm 7+ and pnpm install the packages in `peerDependencies` automatically. Install these three
-yourself:
+npm 7+ and pnpm install the packages in `peerDependencies` automatically. Use the `@tanstack/react-db`
+release that depends on the same `@tanstack/db` version as your `@tanstack/query-db-collection`; each
+release pins an exact `@tanstack/db`, and collections from two copies do not work together.
 
-- `@uipath/vs-core`
-- `@tanstack/react-db`
-- `@uipath/proteus-client`
-
-They are declared only in `peerDependenciesMeta` (as optional) so that pnpm does not try to install them
-in this workspace. The two `@uipath` packages are not on the public npm registry.
+The Proteus feature flag adapter, `createProteusProvider`, is exported from
+`@uipath/apollo-vertex/proteus` instead of the root. It needs `@uipath/proteus-client`, which is not on
+the public npm registry, so it is declared only in `peerDependenciesMeta` (as optional). Install it
+yourself if you import that subpath.
 
 ## Layout
 

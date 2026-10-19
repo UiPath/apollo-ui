@@ -19,11 +19,9 @@
         "registry/solution-tests/index.ts"
       ],
       "ignoreDependencies": [
-        // Optional peers that are not installable here. They are listed only
+        // Optional peer that is not on the public registry. It is listed only
         // in peerDependenciesMeta and typed in types/optional-deps.d.ts.
-        "@tanstack/react-db",
-        "@uipath/proteus-client",
-        "@uipath/vs-core"
+        "@uipath/proteus-client"
       ]
     },
     "apps/apollo-vertex": {

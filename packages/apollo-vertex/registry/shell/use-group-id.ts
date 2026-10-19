@@ -1,7 +1,7 @@
 "use client";
 
 import { useLiveQuery } from "@tanstack/react-db";
-import { type Group, useSolution } from "@uipath/vs-core";
+import { useSolution } from "@uipath/vs-core";
 
 export interface UseGroupIdOptions<Role extends string> {
   role: Role;
@@ -21,7 +21,7 @@ export const useGroupId = <Role extends string>({
   const solution = useSolution();
   const groupName = roleGroupMap[role];
 
-  const { data, isLoading } = useLiveQuery<Group>((q) =>
+  const { data, isLoading } = useLiveQuery((q) =>
     q.from({ groups: solution?.api.collections.identity.groups }),
   );
 

@@ -212,13 +212,6 @@ export type {
   FeatureFlagUserContext,
 } from "@/registry/feature-flag-provider/types";
 
-// Proteus feature flags
-export {
-  createProteusProvider,
-  type FlagMapping,
-  type ProteusFeatureFlagValues,
-} from "@/registry/feature-flag-provider/proteus-adapter";
-
 // Solution Tests
 export { SolutionTestsView } from "@/registry/solution-tests/solution-tests-view";
 export type { SolutionTestsViewProps } from "@/registry/solution-tests/solution-tests-view";
