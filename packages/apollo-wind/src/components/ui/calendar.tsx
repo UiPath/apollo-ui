@@ -6,7 +6,8 @@ import * as React from 'react';
 import { DayButton, DayPicker, getDefaultClassNames } from 'react-day-picker';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib';
-import { localDate } from './picker-dates';
+import { localDate, utcTime } from './picker-dates';
+import { zonedWallClockToDate } from './timezones';
 
 type DayPickerProps = React.ComponentProps<typeof DayPicker>;
 type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
@@ -265,12 +266,23 @@ const yearPageStart = (year: number) => Math.floor(year / YEARS_PER_PAGE) * YEAR
 function drillDownDates(timeZone?: string) {
   // A date's year and month as the zone reads them.
   const read = (date: Date) => (timeZone ? new TZDate(date.getTime(), timeZone) : date);
-  // The first moment of a day in the zone, keeping years 0 to 99 as given.
+  // The first moment of a day in the zone, keeping years 0 to 99 as given. The instant comes
+  // from the seconds-exact conversion, with a `TZDate` around it for the zone's getters.
+  // `TZDate`'s own wall-clock setters read a historical offset with seconds (Paris in 1900,
+  // GMT+0:09:21) to the minute and land 21 seconds early, on the day before, so June would
+  // open on May and the next-month arrow would step back onto it.
   const at = (year: number, month: number, day = 1): Date => {
     if (!timeZone) return localDate(year, month, day);
-    const date = new TZDate(2000, 0, 1, timeZone);
-    date.setFullYear(year, month, day);
-    return date;
+    // Months and days outside their range roll over first, as `localDate` lets them.
+    const rolled = new Date(utcTime(year, month, day));
+    const wall = {
+      year: rolled.getUTCFullYear(),
+      month: rolled.getUTCMonth(),
+      day: rolled.getUTCDate(),
+      hours: 0,
+      minutes: 0,
+    };
+    return new TZDate(zonedWallClockToDate(wall, timeZone).getTime(), timeZone);
   };
   const monthIndex = (date: Date) => {
     const zoned = read(date);

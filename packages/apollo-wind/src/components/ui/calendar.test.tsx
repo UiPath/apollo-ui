@@ -687,6 +687,30 @@ describe('Calendar', () => {
       }
     });
 
+    it('builds months in its timeZone to the second of a historical offset', async () => {
+      const original = process.env.TZ;
+      process.env.TZ = 'UTC';
+      try {
+        const user = userEvent.setup();
+        // Paris in 1900 was GMT+0:09:21. Its midnight on 1 June is 23:50:39Z on 31 May, which a
+        // conversion to the minute lands 21 seconds early, still in May.
+        render(
+          <Calendar
+            captionLayout="drilldown"
+            timeZone="Europe/Paris"
+            defaultMonth={new Date(Date.UTC(1900, 5, 15, 12))}
+          />
+        );
+        expect(screen.getByRole('button', { name: /^June, choose month/ })).toBeInTheDocument();
+
+        await user.click(screen.getByRole('button', { name: /next month/i }));
+        expect(screen.getByRole('button', { name: /^July, choose month/ })).toBeInTheDocument();
+      } finally {
+        if (original === undefined) delete process.env.TZ;
+        else process.env.TZ = original;
+      }
+    });
+
     it('has one calendar styling root in the days view', () => {
       const { container } = render(<Calendar captionLayout="drilldown" defaultMonth={june2024} />);
       expect(container.querySelectorAll('[data-slot="calendar"]')).toHaveLength(1);
