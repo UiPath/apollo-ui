@@ -5,15 +5,24 @@ import {
   FormFieldError,
   FormFieldLabel,
   Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   TooltipProvider,
 } from '@uipath/apollo-wind';
 import { useMemo, useState } from 'react';
 import { ApI18nProvider } from '../../../i18n';
+import { CLASSIFIER_QUESTIONS_WIRE } from './__fixtures__/classifier-questions.fixtures';
+import { CLASSIFIER_WIRE } from './__fixtures__/definitions-wire.fixtures';
 import type { GuardrailBuilderValue, GuardrailDefinition } from './builder-types';
 import { enrichGuardrailDefinitions } from './definitions-enrich';
 import type { GuardrailDefinitionWire } from './definitions-wire';
 import { GuardrailBuilder } from './guardrail-builder';
-import type { GuardrailParameterDefinition } from './types';
+import type { GuardrailParameterDefinition, GuardrailParameterRenderContext } from './types';
+import { useClassifierGuardrailParameters } from './use-classifier-guardrail-parameters';
+import { useClassifierQuestions } from './use-classifier-questions';
 
 const meta = {
   title: 'Components/UiPath/Guardrail Builder',
@@ -579,4 +588,91 @@ export const Sentiment: Story = {
     scope: 'Llm',
     defaultName: 'Sentiment 1',
   },
+};
+
+const classifierDefinition = enrichOne(CLASSIFIER_WIRE);
+
+/** Stands in for a host's model discovery: writes the model and its vendor together. */
+function StandInModelPicker({ ctx }: { ctx: GuardrailParameterRenderContext }) {
+  const vendors: Record<string, string> = { 'jev-1.13.0': 'typesafe', 'gpt-6-luna': 'openai' };
+  return (
+    <FormField>
+      <FormFieldLabel required>{ctx.definition.label}</FormFieldLabel>
+      <Select
+        value={typeof ctx.value === 'string' ? ctx.value : ''}
+        onValueChange={(model) =>
+          ctx.onParametersChange([
+            ...ctx.parameters.filter((p) => p.id !== 'model' && p.id !== 'modelVendor'),
+            { $parameterType: 'enum', id: 'model', value: model },
+            { $parameterType: 'text', id: 'modelVendor', value: vendors[model] ?? '' },
+          ])
+        }
+      >
+        <SelectTrigger aria-label={ctx.definition.label}>
+          <SelectValue placeholder="Select a model" />
+        </SelectTrigger>
+        <SelectContent>
+          {Object.keys(vendors).map((model) => (
+            <SelectItem key={model} value={model}>
+              {model}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <FormFieldError>{ctx.error}</FormFieldError>
+    </FormField>
+  );
+}
+
+function ClassifierHost() {
+  // A host with its own cache passes the catalog in; one without passes a request context.
+  const { categories } = useClassifierQuestions(null, { questions: CLASSIFIER_QUESTIONS_WIRE });
+  const classifier = useClassifierGuardrailParameters({
+    definition: classifierDefinition,
+    categories,
+  });
+  const [saved, setSaved] = useState<GuardrailBuilderValue>();
+  return (
+    <div className="flex h-full flex-col">
+      <div className="min-h-0 flex-1">
+        <GuardrailBuilder
+          open
+          inline
+          hideHeader
+          definition={classifierDefinition}
+          scope="Llm"
+          defaultName="Classifier 1"
+          renderParameter={(ctx) =>
+            classifier.renderParameter(ctx) ??
+            (ctx.definition.id === 'model' ? <StandInModelPicker ctx={ctx} /> : undefined)
+          }
+          overrideParameterIds={[...classifier.overrideParameterIds, 'model']}
+          onSave={(value) => {
+            if (classifier.validateParameters(value.validatorParameters)) setSaved(value);
+          }}
+          onCancel={() => setSaved(undefined)}
+        />
+      </div>
+      {saved && (
+        <pre className="max-h-40 overflow-auto border-t bg-muted p-2 text-xs">
+          {JSON.stringify(saved.validatorParameters, null, 2)}
+        </pre>
+      )}
+    </div>
+  );
+}
+
+/**
+ * The classifier composed the way both hosts do: useClassifierQuestions for the catalog,
+ * useClassifierGuardrailParameters for the predefined questions, the custom questions and the
+ * model vendor message, and the host's own model picker after it. Save with no question shows
+ * the picker's error; a successful save prints the parameters below.
+ */
+export const Classifier: Story = {
+  args: {
+    ...AddInline.args,
+    definition: classifierDefinition,
+    scope: 'Llm',
+  },
+  render: () => <ClassifierHost />,
 };

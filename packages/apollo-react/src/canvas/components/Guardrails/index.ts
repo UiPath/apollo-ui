@@ -317,6 +317,11 @@ export type {
   GuardrailValidatorParameter,
 } from './types';
 export type {
+  ClassifierGuardrailParameters,
+  UseClassifierGuardrailParametersOptions,
+} from './use-classifier-guardrail-parameters';
+export { useClassifierGuardrailParameters } from './use-classifier-guardrail-parameters';
+export type {
   UseClassifierQuestionsOptions,
   UseClassifierQuestionsResult,
 } from './use-classifier-questions';
