@@ -420,8 +420,12 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
               }
               initialFocus
               {...zonedCalendarProps}
-              // The selected month, with the consumer's defaultMonth as the fallback for no value.
-              defaultMonth={calendarDate ?? zonedCalendarProps.defaultMonth}
+              // The selected month, with the consumer's defaultMonth as the fallback for no value,
+              // then the zone's today. The browser's today would be another month near midnight
+              // where the zones are on different days (30 June on the host, 1 July in Tokyo).
+              defaultMonth={
+                calendarDate ?? zonedCalendarProps.defaultMonth ?? zonedCalendarProps.today
+              }
               // Dropped even if passed untyped: a second zone here would read the selected day
               // in another zone from the one the trigger shows.
               timeZone={undefined}

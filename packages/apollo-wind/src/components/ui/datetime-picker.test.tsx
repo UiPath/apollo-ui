@@ -973,6 +973,16 @@ describe('DateTimePicker calendar in the picker zone', () => {
       expect(document.querySelector('[data-today="true"]')).toHaveTextContent(/^14$/);
     }));
 
+  it('opens on the zone’s month when it is already a month ahead of the host', () =>
+    // 12:00Z on 30 June 2024 is 02:00 on 1 July in Kiritimati.
+    inUTCAt(new Date(Date.UTC(2024, 5, 30, 12, 0)), async () => {
+      const user = userEvent.setup();
+      render(<DateTimePicker timeZone="Pacific/Kiritimati" />);
+      await openPicker(user);
+      expect(screen.getByRole('button', { name: /^July, choose month/ })).toBeInTheDocument();
+      expect(document.querySelector('[data-today="true"]')).toHaveTextContent(/^1$/);
+    }));
+
   it('reads startMonth and endMonth in the zone', () =>
     inUTCAt(noonUTC, async () => {
       const user = userEvent.setup();
