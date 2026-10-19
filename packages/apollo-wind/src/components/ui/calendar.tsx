@@ -339,9 +339,11 @@ function DrillDownCalendar({
   );
   const [view, setView] = React.useState<DrillDownView>('days');
   // Opens inside the bounds, so a value before `startMonth` doesn't leave the reader paging
-  // forward through months they can't pick from.
+  // forward through months they can't pick from. Without a `defaultMonth` it opens on `today`
+  // when one is given, as DayPicker does: a DateTimePicker in another zone passes the zone's
+  // day there, which near midnight is in another month from the browser's.
   const [internalMonth, setInternalMonth] = React.useState(() =>
-    clampMonth(defaultMonth ?? now(), startMonth, endMonth)
+    clampMonth(defaultMonth ?? props.today ?? now(), startMonth, endMonth)
   );
   const month = monthProp ? startOfMonth(monthProp) : internalMonth;
   const [pageStart, setPageStart] = React.useState(() => yearPageStart(month.getFullYear()));

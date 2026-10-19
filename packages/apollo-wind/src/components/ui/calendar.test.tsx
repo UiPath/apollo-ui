@@ -711,6 +711,23 @@ describe('Calendar', () => {
       }
     });
 
+    it('opens on the month of `today` when no defaultMonth is given', () => {
+      const original = process.env.TZ;
+      process.env.TZ = 'UTC';
+      vi.useFakeTimers({ toFake: ['Date'] });
+      // Still 30 June for the browser, while the caller's day (a DateTimePicker in another zone,
+      // say) is already 1 July.
+      vi.setSystemTime(new Date(Date.UTC(2024, 5, 30, 12)));
+      try {
+        render(<Calendar captionLayout="drilldown" today={new Date(2024, 6, 1)} />);
+        expect(screen.getByRole('button', { name: /^July, choose month/ })).toBeInTheDocument();
+      } finally {
+        vi.useRealTimers();
+        if (original === undefined) delete process.env.TZ;
+        else process.env.TZ = original;
+      }
+    });
+
     it('has one calendar styling root in the days view', () => {
       const { container } = render(<Calendar captionLayout="drilldown" defaultMonth={june2024} />);
       expect(container.querySelectorAll('[data-slot="calendar"]')).toHaveLength(1);
