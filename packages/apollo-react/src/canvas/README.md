@@ -292,6 +292,18 @@ That reads as broken containment even though `parentId` is correct throughout. T
 
 Neither the projection nor the flow layout notices, because both bucket by `parentId` and are order-independent, so a mis-ordered graph projects and lays out perfectly and only misrenders. `prepareCanvasViewTransition` therefore repairs the order when entering flow view (`orderNodesParentsFirst`), and moves are forwarded as a single `replace` so React Flow applies them in place instead of appending a container behind its own children.
 
+### Sequenced containers
+
+A flow canvas can show one container's body as the bar stack inside its own frame while everything outside stays a flow. Render `SequentialCanvas` with `view="flow"` and pass `sequencedContainerIds` (plus `onSequencedContainerIdsChange` to own the state; omit it and the canvas holds the choice itself). `ContainerNode` shows a flow/sequence switch in its header when it renders inside such a canvas.
+
+Inside a sequenced frame the children render as bars parented to the container and are not draggable: the frame is the unit that moves in the outer flow. The frame is sized to the stack, its children's canonical positions are never written, and selection, renames, and inserts from the plus buttons go through the usual `onNodesChange` / `onEdgesChange`. The canvas mounts the Add Node panel itself in design mode while any container is sequenced, so a host must not render a second `AddNodeManager` in that case.
+
+Every sequenced body shows step numbers and expand/collapse chevrons in a gutter inside the frame, numbered from 1 per container. Collapse uses the same `collapsedStepIds` as the whole-canvas sequence (held internally when `onCollapsedStepIdsChange` is absent), and the frame shrinks to the visible rows. Nested steps render as indented bars of the outer frame: a for-each inside a sequenced container is one of its rows, not a frame of its own, so its header switch is hidden while the outer body is a sequence.
+
+**Runtime containers.** A container manifest with no inner-boundary handles is self-contained (`isSelfContainedContainerManifest`; the story manifest uses `display.container.kind: 'runtime'` and `badge: false`). Nothing wires the frame to its first or last step, so its sequence opens with its own "Workflow start" row, and a trigger inside the body folds into that row. The start row's "Add trigger" calls `onAddTrigger(containerId)`, so the same prop serves the whole-canvas start row (called without an argument) and every runtime container. In flow presentation, adding the first step to an empty runtime container creates an unconnected child; that empty-state add needs the host's `AddNodeManager`, as other flow-view adds already do, because the canvas mounts its own only while some container is sequenced.
+
+Limits: move, delete, and keyboard navigation inside a frame are not available yet; adding a step to an empty sequenced body is not wired; children the projection excludes (sticky notes, artifact resources) keep their flow positions inside the frame.
+
 ### Artifact nodes
 
 Resources wired to a step through artifact handles (agent tools, context, memory, escalation) are not steps. By default any node whose manifest handles are all `handleType: 'artifact'` is excluded from the projection, listed in the report's `preservedOnlyNodeIds`, and rendered on the owning step's bar as attachment chips instead. The artifact edges themselves are never drawn as connectors and are listed in `preservedOnlyEdgeIds`. Toggling back to flow view returns the resources and their edges untouched. A host-supplied `isSequenceNode` replaces this default entirely, so a host that projects resources as rows must also exclude sticky notes itself.
