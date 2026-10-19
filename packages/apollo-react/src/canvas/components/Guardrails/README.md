@@ -155,7 +155,7 @@ guardrails.definitions.<validator>.category.<RawGroupId>
 
 The last form is `categoryLabels`: headings for the groups a validator's own catalog arrives in,
 which no parameter carries, so enrichment leaves them alone. Only the classifier has one, for
-the categories its question catalog is grouped in.
+the categories its question catalog is grouped in (see [Classifier guardrail](#classifier-guardrail)).
 
 Transcribing is exactly how the two products ended up keying the same Finland entity as
 `finNationalId` and `fiNationalId`; `USSocialSecurityNumber` is the value we persist, so it is
@@ -699,6 +699,48 @@ modes (inline+hideHeader / inline with back-button header / modal Dialog), `seco
 that had it when it opened, looking through open shadow roots (Agents' host is one). Radix
 returns focus only to a `DialogTrigger`, which no host uses, so without this focus was lost in
 light DOM too.
+
+## Classifier guardrail
+
+The `classifier` validator (Agents#6449) evaluates questions against the payload with a
+non-generative classifier: predefined questions picked across categories, plus the author's
+own. Its definition is ordinary `$parameterType`s, but read generically they render as a raw
+multi-select of question names and a bare text list, so the family ships the pieces that make
+it usable. Wire contract, unchanged from what Agents saves:
+
+| parameter | type | holds |
+| --- | --- | --- |
+| `selectedQuestions` | `enum-list` | predefined question names, from the question catalog |
+| `questionThresholds` | `map-enum` keyed by `selectedQuestions` | 0..1 per tuned question; absent means the backend's 0.5. A score question stores `level / (levels - 1)` |
+| `questions` | `text-list` | the author's own yes/no questions, blank rows never persisted |
+| `questionCriteriaTrue.{i}` / `questionCriteriaFalse.{i}` | `text` sidecars, max 500 | optional "counts as yes" / "counts as no" for `questions[i]` |
+| `questionThreshold.{i}` | `number` sidecar | `questions[i]`'s threshold, omitted at 0.5 |
+| `model` | `enum`, no options | the host's model picker |
+| `modelVendor` | `text`, required | written by the host's model picker with the model |
+
+The sidecars are keyed by position, so they are rewritten from scratch on every edit.
+
+### Question catalog
+
+`GET /api/execution/guardrails/classifier-questions` returns the predefined questions grouped by
+category, verbatim as the validator runs them:
+`[{ id, questions: [{ name, question, type: 'noul' | 'score', criteriaTrue?, criteriaFalse?, levels? }] }]`.
+The question text never enters this package's copy, so the designer cannot drift from what
+runs; only the seven category headings do (`categoryLabels`, see Canonical copy).
+
+```tsx
+const { categories, loading, error } = useClassifierQuestions(
+  { baseUrl, tenantId }, // the same context useGuardrailDefinitions takes
+  { enabled: definition?.validator === 'classifier' }
+);
+```
+
+The same three host shapes as `useGuardrailDefinitions` and the same request core: a context to
+fetch, `null` plus `{ questions }` for a catalog the host already holds, `null` alone to stay
+idle. It never throws: a malformed group or question is dropped and listed in `invalid`, its
+siblings kept, and `parseClassifierQuestions` / `enrichClassifierQuestions` are exported pure
+for non-React callers. A category the copy has not learned keeps its raw id as its heading, as
+Agents' picker does.
 
 ## CustomGuardrailBuilder
 
