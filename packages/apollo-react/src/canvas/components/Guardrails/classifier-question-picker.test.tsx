@@ -144,6 +144,21 @@ describe('ClassifierQuestionPicker', () => {
     expect(onChange).toHaveBeenCalledWith(['harmful_hate'], { harmful_hate: 1 });
   });
 
+  it('shows a threshold between two levels as the first level that reaches it', () => {
+    render(
+      <Picker
+        selectedQuestions={['harmful_self_harm']}
+        questionThresholds={{ harmful_self_harm: 0.75 }}
+      />
+    );
+    expand('Harmful content');
+
+    // Four levels score 0, 1/3, 2/3 and 1: only the last reaches 0.75.
+    expect(
+      screen.getByRole('combobox', { name: 'Severity cutoff for harmful_self_harm' })
+    ).toHaveTextContent('Critical');
+  });
+
   it('details a score question’s ladder under its tiers', () => {
     vi.useFakeTimers();
     render(<Picker />);
