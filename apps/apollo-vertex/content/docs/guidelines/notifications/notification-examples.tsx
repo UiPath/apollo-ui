@@ -13,65 +13,62 @@ import { Alert, AlertDescription, AlertTitle } from "@/registry/alert/alert";
 import { Badge } from "@/registry/badge/badge";
 import { Button } from "@/registry/button/button";
 import { Toaster } from "@/registry/sonner/sonner";
-import { ShellThemeProvider } from "../../../../templates/shell/ShellThemeProvider";
 
 export function SonnerExamples() {
   return (
-    <ShellThemeProvider>
-      <div className="space-y-3">
-        <Toaster />
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            className="border-info text-info dark:text-info bg-transparent hover:bg-info/15"
-            onClick={() =>
-              toast.info("Background sync complete", {
-                description: "All data is up to date.",
-              })
-            }
-          >
-            <InfoIcon className="h-4 w-4" /> Info
-          </Button>
-          <Button
-            variant="outline"
-            className="border-success text-success dark:text-success bg-transparent hover:bg-success/10"
-            onClick={() =>
-              toast.success("Changes saved", {
-                description: "Your updates have been applied.",
-              })
-            }
-          >
-            <CircleCheckIcon className="h-4 w-4" /> Success
-          </Button>
-          <Button
-            variant="outline"
-            className="border-warning text-warning-foreground dark:text-warning bg-transparent hover:bg-warning/15"
-            onClick={() =>
-              toast.warning("Storage almost full", {
-                description: "Consider removing unused files.",
-              })
-            }
-          >
-            <TriangleAlertIcon className="h-4 w-4" /> Warning
-          </Button>
-          <Button
-            variant="outline"
-            className="border-destructive text-destructive dark:text-destructive bg-transparent hover:bg-destructive/10"
-            onClick={() =>
-              toast.error("Upload failed", {
-                description: "Please check your connection and retry.",
-              })
-            }
-          >
-            <OctagonXIcon className="h-4 w-4" /> Error
-          </Button>
-        </div>
-        <p className="text-xs text-muted-foreground">
-          Click each button to trigger a toast at the top-center of the screen.
-          Toasts auto-dismiss after 5 seconds.
-        </p>
+    <div className="space-y-3">
+      <Toaster />
+      <div className="flex flex-wrap gap-2">
+        <Button
+          variant="outline"
+          className="border-info text-info dark:text-info bg-transparent hover:bg-info/15"
+          onClick={() =>
+            toast.info("Background sync complete", {
+              description: "All data is up to date.",
+            })
+          }
+        >
+          <InfoIcon className="h-4 w-4" /> Info
+        </Button>
+        <Button
+          variant="outline"
+          className="border-success text-success dark:text-success bg-transparent hover:bg-success/10"
+          onClick={() =>
+            toast.success("Changes saved", {
+              description: "Your updates have been applied.",
+            })
+          }
+        >
+          <CircleCheckIcon className="h-4 w-4" /> Success
+        </Button>
+        <Button
+          variant="outline"
+          className="border-warning text-warning-foreground dark:text-warning bg-transparent hover:bg-warning/15"
+          onClick={() =>
+            toast.warning("Storage almost full", {
+              description: "Consider removing unused files.",
+            })
+          }
+        >
+          <TriangleAlertIcon className="h-4 w-4" /> Warning
+        </Button>
+        <Button
+          variant="outline"
+          className="border-destructive text-destructive dark:text-destructive bg-transparent hover:bg-destructive/10"
+          onClick={() =>
+            toast.error("Upload failed", {
+              description: "Please check your connection and retry.",
+            })
+          }
+        >
+          <OctagonXIcon className="h-4 w-4" /> Error
+        </Button>
       </div>
-    </ShellThemeProvider>
+      <p className="text-xs text-muted-foreground">
+        Click each button to trigger a toast at the top-center of the screen.
+        Toasts auto-dismiss after 5 seconds.
+      </p>
+    </div>
   );
 }
 
