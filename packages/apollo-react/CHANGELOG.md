@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.3.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.3.1...@uipath/apollo-react@7.3.2) (2026-10-19)
+
+### Bug Fixes
+
+* **apollo-react:** share reference chip colors in chat and flow examples ([369594f](https://github.com/UiPath/apollo-ui/commit/369594ff2a86f9b60102c5117d61c86d6cdb0cfd))
+
 ## [@uipath/apollo-react-v7.3.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.3.0...@uipath/apollo-react@7.3.1) (2026-10-19)
 
 ### Bug Fixes
