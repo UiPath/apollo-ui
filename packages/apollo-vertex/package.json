@@ -137,7 +137,7 @@
     "@tanstack/intent": "0.4.0",
     "@tanstack/query-db-collection": "1.0.36",
     "@tanstack/react-db": "0.1.83",
-    "@tanstack/react-query": "^5.104.0",
+    "@tanstack/react-query": "^5.104.1",
     "@tanstack/react-router": "^1.170.40",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.0",
