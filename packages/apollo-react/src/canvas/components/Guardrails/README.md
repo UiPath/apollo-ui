@@ -18,7 +18,9 @@ read-only governance guardrails a policy enforces), plus the leaves the sections
 `GuardrailStatusChip`, `GuardrailStatusBanner`, `GuardrailFileSupportIndicator` and
 `MixedScopesBanner`.
 `GuardrailScopeSelector`, the builder's scope and tool targeting field, is exported on its own
-too.
+too. The classifier guardrail adds its question catalog (`useClassifierQuestions`), its two
+editors (`ClassifierQuestionPicker`, `ClassifierCustomQuestionsEditor`) and the seam that mounts
+them in the builder (`useClassifierGuardrailParameters`).
 
 ## Hover and focus, family-wide
 
@@ -741,6 +743,67 @@ idle. It never throws: a malformed group or question is dropped and listed in `i
 siblings kept, and `parseClassifierQuestions` / `enrichClassifierQuestions` are exported pure
 for non-React callers. A category the copy has not learned keeps its raw id as its heading, as
 Agents' picker does.
+
+### Editors
+
+- **`ClassifierQuestionPicker`**: the catalog grouped by category, searchable by question text
+  (every matching category opens), each category collapsible with a `selected/total` count and
+  a tri-state select-all. A selected yes/no question takes a Strictness slider (0..1, step 0.1,
+  marked Strict, Balanced and Lenient); a selected score question takes the severity tier it
+  flags from (Low to Critical, never the benign level 0), stored as `level / (levels - 1)`. Each
+  question's details tooltip shows its criteria or its ladder. One
+  `onChange(selectedQuestions, questionThresholds)` per edit, so a question leaving the
+  selection takes its threshold with it, and only a tuned question gets an entry.
+- **`ClassifierCustomQuestionsEditor`**: the author's own questions, each with its Strictness and
+  optional "counts as yes" / "counts as no" (max 500). Rows live in local state so a blank row
+  can be typed into; `onRowsChange` reports every row, and `writeClassifierCustomQuestions`
+  persists only those with a question. The local rows reseed only when the persisted value
+  changes from outside, never on the echo of their own edit.
+
+Both are controlled, resolve nothing (the catalog, the values, the label and tooltip arrive as
+props) and take their chrome from `guardrails.classifier.*` ids, in Agents' English, overridable
+per string through `labels`. Both need an ancestor `TooltipProvider`.
+
+Pure helpers, React-free so a host's save path and legacy screens can use them:
+`readClassifierCustomQuestions`, `writeClassifierCustomQuestions` (sidecars rebuilt from scratch,
+blank rows dropped, a 0.5 threshold omitted), `sanitizeClassifierCustomQuestions`,
+`hasClassifierQuestions` (the "no questions" save predicate), `classifierLevelToThreshold` /
+`classifierThresholdToLevel`, `getClassifierSeverityTier`, and `CLASSIFIER_PARAMETER_IDS`.
+
+### In GuardrailBuilder
+
+`useClassifierGuardrailParameters` is the one seam both hosts compose. It claims
+`selectedQuestions`, `questionThresholds`, `questions` and `modelVendor`, and returns `undefined`
+for everything else, so `model` falls through to the host's own discovery picker:
+
+```tsx
+const { categories } = useClassifierQuestions(ctx, { enabled: isClassifier });
+const classifier = useClassifierGuardrailParameters({ definition, categories });
+
+<GuardrailBuilder
+  definition={definition}
+  renderParameter={(c) => classifier.renderParameter(c) ?? renderModelPicker(c)}
+  overrideParameterIds={[...classifier.overrideParameterIds, 'model']}
+  onSave={(value) => classifier.validateParameters(value.validatorParameters) && persist(value)}
+/>;
+```
+
+- `selectedQuestions` renders the picker, which writes both lists through `onParametersChange` in
+  one pass and drops either when it empties. `questionThresholds` renders nothing of its own.
+- `questions` renders the custom-questions editor, writing the list and its sidecars together.
+- `modelVendor` renders nothing until the builder flags it with a model chosen, then says to
+  pick the model again. The host's model picker writes `modelVendor` with `model`.
+- `validateParameters` is the cross-parameter rule the builder cannot know: neither question
+  parameter is required alone, but the classifier needs one of them. On `false` the picker shows
+  why, and the next edit to either editor clears it.
+- Declare the ids, as above: a declared threshold map is saved without filler keys (see
+  GuardrailBuilder), which is what keeps an untuned question at the backend's 0.5.
+- Nothing is claimed for another validator, or for a bring-your-own definition reusing the id.
+
+The editors mount through the existing `renderParameter` seam, which is the registered
+`guardrail-render-parameter` custom component, so this is not a renderer next to `MetadataForm`
+(the "Rule for new work" below). They are not built into the builder because two of their
+inputs are the host's: the question catalog (components resolve nothing) and the model picker.
 
 ## CustomGuardrailBuilder
 

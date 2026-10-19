@@ -28,7 +28,7 @@ never tunes stores nothing and runs at the backend's 0.5.
 
 Controlled and resolves nothing: the host passes the catalog from useClassifierQuestions, the
 selectedQuestions and questionThresholds values and the label, and gets both values back from one
-onChange.
+onChange. Inside GuardrailBuilder, useClassifierGuardrailParameters mounts it for you.
         `,
       },
     },
