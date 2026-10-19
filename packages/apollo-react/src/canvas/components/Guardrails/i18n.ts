@@ -353,6 +353,7 @@ const TEMPLATE_TOKENS = {
   count: '{{count}}',
   docsLink: '{{docsLink}}',
   formats: '{{formats}}',
+  category: '{{category}}',
 };
 
 /** Localized chrome strings of the validator form; per-string `overrides` always win. */
@@ -1916,5 +1917,230 @@ export function useCustomGuardrailBuilderLabels(
         overrides
       ),
     [_, builder, overrides]
+  );
+}
+
+/**
+ * The chrome strings of the classifier editors: `ClassifierQuestionPicker`,
+ * `ClassifierCustomQuestionsEditor` and the messages `useClassifierGuardrailParameters` shows.
+ * The English is Agents' own (UiPath/Agents#6449), so its screens read the same when they move
+ * onto these. The parameters' labels and tooltips are validator copy, not chrome: they arrive
+ * pre-resolved from the definition.
+ */
+export interface GuardrailClassifierLabels {
+  /** Aria-label of an info-tooltip trigger. */
+  moreInformation: string;
+  // Question picker
+  /** Under the picker's label: `{{count}}` questions selected. */
+  pickerSummary: string;
+  searchPlaceholder: string;
+  /** Aria-label of the search box. */
+  searchLabel: string;
+  noMatches: string;
+  /** Aria-label of a category's select-all checkbox: `{{category}}`. */
+  selectAllInCategory: string;
+  /** Aria-label of a category's expand toggle: `{{category}}`. */
+  toggleCategory: string;
+  /** Aria-label of a question's details tooltip: `{{name}}`, the question's id. */
+  questionDetails: string;
+  /** Before a yes/no question's "counts as yes" in its details. */
+  criteriaYes: string;
+  /** Before a yes/no question's "counts as no" in its details. */
+  criteriaNo: string;
+  /** Above a score question's levels in its details. */
+  levelsIntro: string;
+  /** Before a selected score question's severity select. */
+  severityCutoffLabel: string;
+  /** Aria-label of that select: `{{name}}`. */
+  severityCutoff: string;
+  severityLow: string;
+  severityModerate: string;
+  severityHigh: string;
+  severityCritical: string;
+  /** Before a threshold slider, in both editors. */
+  strictnessLabel: string;
+  /** Aria-label of a selected yes/no question's slider: `{{name}}`. */
+  questionStrictness: string;
+  thresholdStrict: string;
+  thresholdBalanced: string;
+  thresholdLenient: string;
+  // Custom questions
+  addQuestion: string;
+  questionPlaceholder: string;
+  /** Aria-label of a custom question's text: `{{label}}` (the parameter's) and `{{position}}`. */
+  customQuestion: string;
+  /** Aria-label of its remove button: `{{label}}`, `{{position}}`. */
+  removeCustomQuestion: string;
+  /** Aria-label of its slider: `{{label}}`, `{{position}}`. */
+  customQuestionStrictness: string;
+  criteriaTrueLabel: string;
+  criteriaTruePlaceholder: string;
+  criteriaFalseLabel: string;
+  criteriaFalsePlaceholder: string;
+  // Parameter messages
+  /** Shown on the picker when Save finds no question at all. */
+  questionsRequired: string;
+  /** Shown under the model when the host saved it without a vendor. */
+  modelVendorMissing: string;
+}
+
+/** The subset of `useSafeLingui`'s translator the classifier labels need. */
+type ClassifierTranslate = (descriptor: {
+  id: string;
+  message: string;
+  values?: Record<string, string>;
+}) => string;
+
+function buildGuardrailClassifierLabels(_: ClassifierTranslate): GuardrailClassifierLabels {
+  return {
+    moreInformation: _({ id: 'guardrails.form.more-information', message: 'More information' }),
+    pickerSummary: _({
+      id: 'guardrails.classifier.picker-summary',
+      message: '{count} selected — pick any across categories, or add your own below.',
+      values: TEMPLATE_TOKENS,
+    }),
+    searchPlaceholder: _({
+      id: 'guardrails.classifier.search-placeholder',
+      message: 'Search questions',
+    }),
+    searchLabel: _({
+      id: 'guardrails.classifier.search-label',
+      message: 'Search classifier questions',
+    }),
+    noMatches: _({
+      id: 'guardrails.classifier.no-matches',
+      message: 'No predefined questions match your search.',
+    }),
+    selectAllInCategory: _({
+      id: 'guardrails.classifier.select-all-in-category',
+      message: 'Select all in {category}',
+      values: TEMPLATE_TOKENS,
+    }),
+    toggleCategory: _({
+      id: 'guardrails.classifier.toggle-category',
+      message: 'Show or hide {category} questions',
+      values: TEMPLATE_TOKENS,
+    }),
+    questionDetails: _({
+      id: 'guardrails.classifier.question-details',
+      message: 'Question details for {name}',
+      values: TEMPLATE_TOKENS,
+    }),
+    criteriaYes: _({ id: 'guardrails.classifier.criteria-yes', message: 'Counts as yes (flag):' }),
+    criteriaNo: _({ id: 'guardrails.classifier.criteria-no', message: 'Counts as no:' }),
+    levelsIntro: _({
+      id: 'guardrails.classifier.levels-intro',
+      message:
+        'Severity levels, lowest to highest; flags when the graded severity reaches the threshold:',
+    }),
+    severityCutoffLabel: _({
+      id: 'guardrails.classifier.severity-cutoff-label',
+      message: 'Flag when severity reaches',
+    }),
+    severityCutoff: _({
+      id: 'guardrails.classifier.severity-cutoff',
+      message: 'Severity cutoff for {name}',
+      values: TEMPLATE_TOKENS,
+    }),
+    severityLow: _({ id: 'guardrails.classifier.severity-low', message: 'Low' }),
+    severityModerate: _({ id: 'guardrails.classifier.severity-moderate', message: 'Moderate' }),
+    severityHigh: _({ id: 'guardrails.classifier.severity-high', message: 'High' }),
+    severityCritical: _({ id: 'guardrails.classifier.severity-critical', message: 'Critical' }),
+    strictnessLabel: _({ id: 'guardrails.classifier.strictness-label', message: 'Strictness' }),
+    questionStrictness: _({
+      id: 'guardrails.classifier.question-strictness',
+      message: 'Flag threshold for {name}',
+      values: TEMPLATE_TOKENS,
+    }),
+    thresholdStrict: _({ id: 'guardrails.classifier.threshold-strict', message: 'Strict' }),
+    thresholdBalanced: _({ id: 'guardrails.classifier.threshold-balanced', message: 'Balanced' }),
+    thresholdLenient: _({ id: 'guardrails.classifier.threshold-lenient', message: 'Lenient' }),
+    addQuestion: _({ id: 'guardrails.classifier.add-question', message: 'Add' }),
+    questionPlaceholder: _({
+      id: 'guardrails.classifier.question-placeholder',
+      message: 'A yes/no question about the payload, where yes means it gets flagged.',
+    }),
+    customQuestion: _({
+      id: 'guardrails.classifier.custom-question',
+      message: '{label} {position}',
+      values: TEMPLATE_TOKENS,
+    }),
+    removeCustomQuestion: _({
+      id: 'guardrails.classifier.remove-custom-question',
+      message: 'Remove {label} {position}',
+      values: TEMPLATE_TOKENS,
+    }),
+    customQuestionStrictness: _({
+      id: 'guardrails.classifier.custom-question-strictness',
+      message: 'Flag threshold for {label} {position}',
+      values: TEMPLATE_TOKENS,
+    }),
+    criteriaTrueLabel: _({
+      id: 'guardrails.classifier.criteria-true-label',
+      message: 'Counts as yes (flags) — optional',
+    }),
+    criteriaTruePlaceholder: _({
+      id: 'guardrails.classifier.criteria-true-placeholder',
+      message: "What makes the answer yes, e.g. 'The content commits to a refund.'",
+    }),
+    criteriaFalseLabel: _({
+      id: 'guardrails.classifier.criteria-false-label',
+      message: 'Counts as no — optional',
+    }),
+    criteriaFalsePlaceholder: _({
+      id: 'guardrails.classifier.criteria-false-placeholder',
+      message: "What makes the answer no, e.g. 'Only the refund policy is explained.'",
+    }),
+    questionsRequired: _({
+      id: 'guardrails.classifier.questions-required',
+      message: 'Pick at least one question or add your own.',
+    }),
+    modelVendorMissing: _({
+      id: 'guardrails.classifier.model-vendor-missing',
+      message: 'This model has no vendor. Pick the model again.',
+    }),
+  };
+}
+
+const englishClassifierTranslate: ClassifierTranslate = ({ message, values }) =>
+  values
+    ? message.replace(/\{(\w+)\}/g, (match, token: string) => values[token] ?? match)
+    : message;
+
+/** The English chrome strings, resolved without a lingui provider. */
+export const GUARDRAIL_CLASSIFIER_EN_LABELS: GuardrailClassifierLabels =
+  buildGuardrailClassifierLabels(englishClassifierTranslate);
+
+/**
+ * The same strings flattened to message id to ICU source message, the form the catalogs store:
+ * the i18n test compares these against `locales/en.json` verbatim.
+ */
+export const GUARDRAIL_CLASSIFIER_EN_MESSAGES: Readonly<Record<string, string>> = Object.freeze(
+  (() => {
+    const messages: Record<string, string> = {};
+    buildGuardrailClassifierLabels((descriptor) => {
+      messages[descriptor.id] = descriptor.message;
+      return descriptor.message;
+    });
+    return messages;
+  })()
+);
+
+/** Merge English defaults, a loaded catalog, and per-string overrides (undefined skipped). */
+export function resolveGuardrailClassifierLabels(
+  catalog?: Partial<GuardrailClassifierLabels>,
+  overrides?: Partial<GuardrailClassifierLabels>
+): GuardrailClassifierLabels {
+  return mergeLabels(GUARDRAIL_CLASSIFIER_EN_LABELS, catalog, overrides);
+}
+
+/** Localized chrome strings of the classifier editors; per-string `overrides` always win. */
+export function useGuardrailClassifierLabels(
+  overrides?: Partial<GuardrailClassifierLabels>
+): GuardrailClassifierLabels {
+  const { _ } = useSafeLingui();
+  return useMemo(
+    () => resolveGuardrailClassifierLabels(buildGuardrailClassifierLabels(_), overrides),
+    [_, overrides]
   );
 }
