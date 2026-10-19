@@ -66,6 +66,10 @@ export type {
   CentralizedGuardrailParameterDefinition,
   CentralizedGuardrailParameterRow,
 } from './centralized-types';
+export type { ClassifierCustomQuestionsEditorProps } from './classifier-custom-questions-editor';
+export { ClassifierCustomQuestionsEditor } from './classifier-custom-questions-editor';
+export type { ClassifierQuestionPickerProps } from './classifier-question-picker';
+export { ClassifierQuestionPicker } from './classifier-question-picker';
 export type {
   ClassifierQuestion,
   ClassifierQuestionCategory,
@@ -82,6 +86,24 @@ export type {
   ClassifierQuestionType,
   ClassifierQuestionWire,
 } from './classifier-questions-wire';
+export type {
+  ClassifierCustomQuestion,
+  ClassifierParameterLike,
+  ClassifierSeverityTier,
+} from './classifier-utils';
+export {
+  CLASSIFIER_CRITERIA_MAX_LENGTH,
+  CLASSIFIER_DEFAULT_THRESHOLD,
+  CLASSIFIER_PARAMETER_IDS,
+  CLASSIFIER_VALIDATOR,
+  classifierLevelToThreshold,
+  classifierThresholdToLevel,
+  getClassifierSeverityTier,
+  hasClassifierQuestions,
+  readClassifierCustomQuestions,
+  sanitizeClassifierCustomQuestions,
+  writeClassifierCustomQuestions,
+} from './classifier-utils';
 export type { EscalateActionFieldsProps } from './components/escalate-action-fields';
 export { EscalateActionFields } from './components/escalate-action-fields';
 export type { GuardrailActionSectionProps } from './components/guardrail-action-section';
@@ -175,6 +197,7 @@ export type {
   GuardrailActionLabelKey,
   GuardrailActionLabels,
   GuardrailBuilderLabels,
+  GuardrailClassifierLabels,
   GuardrailFileSupportLabelOverrides,
   GuardrailFileSupportLabels,
   GuardrailFilterFieldSelectorLabelKey,
@@ -197,6 +220,8 @@ export {
   GUARDRAIL_ACTION_EN_LABELS,
   GUARDRAIL_ACTION_LABEL_KEYS,
   GUARDRAIL_BUILDER_EN_LABELS,
+  GUARDRAIL_CLASSIFIER_EN_LABELS,
+  GUARDRAIL_CLASSIFIER_EN_MESSAGES,
   GUARDRAIL_FILE_SUPPORT_EN_LABELS,
   GUARDRAIL_FILTER_FIELD_SELECTOR_EN_LABELS,
   GUARDRAIL_FILTER_FIELD_SELECTOR_LABEL_KEYS,
@@ -215,6 +240,7 @@ export {
   resolveCustomGuardrailBuilderLabels,
   resolveGuardrailActionLabels,
   resolveGuardrailBuilderLabels,
+  resolveGuardrailClassifierLabels,
   resolveGuardrailFileSupportLabels,
   resolveGuardrailFilterFieldSelectorLabels,
   resolveGuardrailFormLabels,
@@ -227,6 +253,7 @@ export {
   useCustomGuardrailBuilderLabels,
   useGuardrailActionLabels,
   useGuardrailBuilderLabels,
+  useGuardrailClassifierLabels,
   useGuardrailFileSupportLabels,
   useGuardrailFilterFieldSelectorLabels,
   useGuardrailFormLabels,

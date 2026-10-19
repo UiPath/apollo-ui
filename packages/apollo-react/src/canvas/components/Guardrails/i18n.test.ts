@@ -11,6 +11,8 @@ import {
   GUARDRAIL_ACTION_EN_LABELS,
   GUARDRAIL_ACTION_LABEL_KEYS,
   GUARDRAIL_BUILDER_EN_LABELS,
+  GUARDRAIL_CLASSIFIER_EN_LABELS,
+  GUARDRAIL_CLASSIFIER_EN_MESSAGES,
   GUARDRAIL_FILE_SUPPORT_EN_LABELS,
   GUARDRAIL_FILE_SUPPORT_EN_MESSAGES,
   GUARDRAIL_FILTER_FIELD_SELECTOR_EN_LABELS,
@@ -33,6 +35,7 @@ import {
   resolveCustomGuardrailBuilderLabels,
   resolveGuardrailActionLabels,
   resolveGuardrailBuilderLabels,
+  resolveGuardrailClassifierLabels,
   resolveGuardrailFileSupportLabels,
   resolveGuardrailFilterFieldSelectorLabels,
   resolveGuardrailFormLabels,
@@ -175,6 +178,40 @@ describe('resolveGuardrailRulesLabels', () => {
     // The catalogs store the ICU source instead, which is what translators receive.
     expect(GUARDRAIL_RULES_EN_MESSAGES['guardrails.rules.delete-rule']).toBe(
       'Delete rule {position}'
+    );
+  });
+});
+
+describe('resolveGuardrailClassifierLabels', () => {
+  it('returns the English defaults when there is nothing to merge', () => {
+    expect(resolveGuardrailClassifierLabels()).toEqual(GUARDRAIL_CLASSIFIER_EN_LABELS);
+  });
+
+  it('layers the catalog over the defaults and the overrides over both', () => {
+    const labels = resolveGuardrailClassifierLabels(
+      { addQuestion: 'Hinzufügen', strictnessLabel: 'Strenge (de)' },
+      { strictnessLabel: 'Strenge' }
+    );
+
+    expect(labels.addQuestion).toBe('Hinzufügen');
+    expect(labels.strictnessLabel).toBe('Strenge');
+    expect(labels.noMatches).toBe(GUARDRAIL_CLASSIFIER_EN_LABELS.noMatches);
+  });
+
+  it('keeps the English templates in the `{{token}}` convention the components format', () => {
+    expect(
+      formatGuardrailFormMessage(GUARDRAIL_CLASSIFIER_EN_LABELS.selectAllInCategory, {
+        category: 'PII',
+      })
+    ).toBe('Select all in PII');
+    expect(
+      formatGuardrailFormMessage(GUARDRAIL_CLASSIFIER_EN_LABELS.removeCustomQuestion, {
+        label: 'Your questions',
+        position: 2,
+      })
+    ).toBe('Remove Your questions 2');
+    expect(GUARDRAIL_CLASSIFIER_EN_MESSAGES['guardrails.classifier.picker-summary']).toBe(
+      '{count} selected — pick any across categories, or add your own below.'
     );
   });
 });
@@ -514,6 +551,19 @@ describe('the shared canvas catalog', () => {
 
   it('carries no rules message the source no longer declares', () => {
     expect(findCatalogOrphans(GUARDRAIL_RULES_EN_MESSAGES, 'guardrails.rules.')).toEqual([]);
+  });
+
+  it('carries every classifier message with the same English', () => {
+    expect(findCatalogDrift(GUARDRAIL_CLASSIFIER_EN_MESSAGES)).toEqual({
+      missing: [],
+      drifted: [],
+    });
+  });
+
+  it('carries no classifier message the source no longer declares', () => {
+    expect(findCatalogOrphans(GUARDRAIL_CLASSIFIER_EN_MESSAGES, 'guardrails.classifier.')).toEqual(
+      []
+    );
   });
 
   it('carries every custom builder message with the same English', () => {
