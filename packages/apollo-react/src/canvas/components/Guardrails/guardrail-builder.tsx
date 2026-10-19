@@ -53,6 +53,7 @@ import {
   getGuardrailDetectionScope,
   getOutOfRangeParameterIds,
   getRequiredEmptyParameterIds,
+  type SyncMapEnumParametersOptions,
   syncMapEnumParameters,
 } from './utils';
 
@@ -154,6 +155,10 @@ export interface GuardrailBuilderProps {
    * Forwarded to the internal `GuardrailValidatorForm`: the parameter ids `renderParameter`
    * claims. Declaring them avoids the deprecated probe, which calls your renderer once per
    * definition on every render — see `GuardrailValidatorFormProps.overrideParameterIds`.
+   *
+   * A declared `map-enum` is also saved as the host left it: pruned to its key source's
+   * selection, with no keys filled in (see `SyncMapEnumParametersOptions`). A probed one is
+   * still filled, since only the form knows the probe's answer.
    */
   overrideParameterIds?: GuardrailValidatorFormProps['overrideParameterIds'];
   /**
@@ -256,6 +261,15 @@ export function GuardrailBuilder({
     [updateField]
   );
 
+  // A threshold map the host renders keeps the keys it left out: the fill below exists to match
+  // `MapEnumField`'s rows, and a claimed map has none. Keyed by content, so an inline array
+  // from the host does not recompute the result every render.
+  const overrideIdsKey = (overrideParameterIds ?? []).join('\u0000');
+  const syncOptions = useMemo<SyncMapEnumParametersOptions>(
+    () => ({ leaveUnsetIds: overrideIdsKey === '' ? [] : overrideIdsKey.split('\u0000') }),
+    [overrideIdsKey]
+  );
+
   const guardrailResult = useMemo<GuardrailBuilderValue>(() => {
     // Reconcile map-enum values with their source enum-list selection, then drop empty /
     // whitespace-only text-list entries — otherwise reopening the guardrail surfaces phantom
@@ -269,18 +283,21 @@ export function GuardrailBuilder({
     const textListIds = new Set(
       definition.parameters.filter((p) => p.type === 'text-list').map((p) => p.id)
     );
-    const trimmed = syncMapEnumParameters(formData.validatorParameters, definition.parameters).map(
-      (param) =>
-        param.$parameterType === 'text-list' &&
-        textListIds.has(param.id) &&
-        Array.isArray(param.value)
-          ? {
-              ...param,
-              value: param.value.filter(
-                (entry) => typeof entry === 'string' && entry.trim().length > 0
-              ),
-            }
-          : param
+    const trimmed = syncMapEnumParameters(
+      formData.validatorParameters,
+      definition.parameters,
+      syncOptions
+    ).map((param) =>
+      param.$parameterType === 'text-list' &&
+      textListIds.has(param.id) &&
+      Array.isArray(param.value)
+        ? {
+            ...param,
+            value: param.value.filter(
+              (entry) => typeof entry === 'string' && entry.trim().length > 0
+            ),
+          }
+        : param
     );
     const validatorParameters = dropEmptyOptionalParameters(trimmed, definition.parameters);
     const isByo = definition.byoValidatorName !== undefined;
@@ -296,7 +313,7 @@ export function GuardrailBuilder({
       validatorParameters,
       ...(isByo ? { byoValidatorName: definition.byoValidatorName } : {}),
     };
-  }, [formData, definition]);
+  }, [formData, definition, syncOptions]);
 
   const internalErrors = useMemo<GuardrailBuilderErrors>(() => {
     const e: GuardrailBuilderErrors = {};
@@ -323,7 +340,8 @@ export function GuardrailBuilder({
     // over a value that was never going to be written.
     const reconciledParameters = syncMapEnumParameters(
       formData.validatorParameters,
-      definition.parameters
+      definition.parameters,
+      syncOptions
     );
 
     const parameterErrors: Record<string, string> = {};
@@ -347,7 +365,7 @@ export function GuardrailBuilder({
       }[field];
     }
     return e;
-  }, [formData, showScopeSelector, definition.parameters, existingNames, labels]);
+  }, [formData, showScopeSelector, definition.parameters, existingNames, labels, syncOptions]);
 
   // Host parameter errors minus the ones the user has already edited past.
   const liveHostParameterErrors = useMemo<Record<string, string>>(() => {

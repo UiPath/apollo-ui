@@ -189,6 +189,22 @@ describe('syncMapEnumParameters', () => {
     });
   });
 
+  it('prunes a map listed in leaveUnsetIds but fills none of its missing keys', () => {
+    const params: GuardrailValidatorParameter[] = [
+      { $parameterType: 'enum-list', id: 'entities', value: ['Email', 'Person', 'Address'] },
+      {
+        $parameterType: 'map-enum',
+        id: 'entityThresholds',
+        value: { Email: 0.7, Address: Number.NaN, CreditCardNumber: 0.4 },
+      },
+    ];
+
+    // Person has no entry, Address a malformed one, CreditCardNumber is no longer selected.
+    expect(
+      getMap(syncMapEnumParameters(params, paramDefs, { leaveUnsetIds: ['entityThresholds'] }))
+    ).toEqual({ Email: 0.7 });
+  });
+
   it('falls back to the source definition default selection when no selection is stored', () => {
     const params: GuardrailValidatorParameter[] = [
       {

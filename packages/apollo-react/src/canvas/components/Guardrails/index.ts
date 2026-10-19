@@ -282,6 +282,7 @@ export {
   GUARDRAIL_DEFINITIONS_PATH,
   useGuardrailDefinitions,
 } from './use-guardrail-definitions';
+export type { SyncMapEnumParametersOptions } from './utils';
 export {
   dropEmptyOptionalParameters,
   GUARDRAIL_DETECTION_SCOPE_PARAMETER_ID,
