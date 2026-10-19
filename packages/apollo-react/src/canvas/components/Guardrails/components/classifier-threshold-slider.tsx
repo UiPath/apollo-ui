@@ -25,10 +25,15 @@ export function ClassifierThresholdSlider({
     setLive(value);
   }
 
+  // The label and value sit above the track, which takes the full row: beside it, a 280px panel
+  // left the track too short for its legend.
   return (
-    <div data-slot="classifier-threshold-slider" className="flex items-center gap-3 pb-5">
-      <span className="shrink-0 text-xs text-muted-foreground">{labels.strictnessLabel}</span>
-      <div className="relative min-w-[220px] max-w-[360px] flex-1">
+    <div data-slot="classifier-threshold-slider" className="grid gap-1.5 pb-5">
+      <div className="flex items-center justify-between text-xs text-muted-foreground">
+        <span>{labels.strictnessLabel}</span>
+        <span className="tabular-nums">{Math.round(live * 100)}%</span>
+      </div>
+      <div className="relative min-w-0">
         <Slider
           value={[live]}
           min={0}
@@ -38,10 +43,11 @@ export function ClassifierThresholdSlider({
           onValueChange={([next]) => next !== undefined && setLive(next)}
           onValueCommit={([next]) => next !== undefined && onChange(next)}
         />
-        {/* Agents' anchors: 0.3, 0.5, 0.8. */}
+        {/* A legend for the scale's ends and middle: pinned to values, the labels collide on a
+            short track. */}
         <span
           aria-hidden="true"
-          className="absolute top-full left-[30%] mt-1 -translate-x-1/2 text-xs text-muted-foreground"
+          className="absolute top-full left-0 mt-1 text-xs text-muted-foreground"
         >
           {labels.thresholdStrict}
         </span>
@@ -53,14 +59,11 @@ export function ClassifierThresholdSlider({
         </span>
         <span
           aria-hidden="true"
-          className="absolute top-full left-[80%] mt-1 -translate-x-1/2 text-xs text-muted-foreground"
+          className="absolute top-full right-0 mt-1 text-xs text-muted-foreground"
         >
           {labels.thresholdLenient}
         </span>
       </div>
-      <span className="w-9 shrink-0 text-right text-xs tabular-nums text-muted-foreground">
-        {Math.round(live * 100)}%
-      </span>
     </div>
   );
 }

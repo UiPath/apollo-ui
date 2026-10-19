@@ -556,6 +556,7 @@
   "guardrails.classifier.threshold-lenient": "Lenient",
   "guardrails.classifier.add-question": "Add",
   "guardrails.classifier.question-placeholder": "A yes/no question about the payload, where yes means it gets flagged.",
+  "guardrails.classifier.custom-question-title": "Question {position}",
   "guardrails.classifier.custom-question": "{label} {position}",
   "guardrails.classifier.remove-custom-question": "Remove {label} {position}",
   "guardrails.classifier.custom-question-strictness": "Flag threshold for {label} {position}",
