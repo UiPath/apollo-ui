@@ -21,6 +21,7 @@ import { CSS } from '@dnd-kit/utilities';
 import type { EditorProps } from '@monaco-editor/react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type {
+  FieldMetadata,
   FormSchema,
   QuickFieldType,
   QuickFormFieldMode,
@@ -46,6 +47,10 @@ import {
   CollapsibleBoxTrigger,
   Combobox,
   cn,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
   FIELD_TYPE_META,
   FormField,
   FormFieldDescription,
@@ -110,6 +115,7 @@ import {
   HardDrive,
   Info,
   Link2,
+  MoreHorizontal,
   Pencil,
   Play,
   Plus,
@@ -4355,7 +4361,7 @@ function PanelUIInventoryStory() {
                           <Button size="4xs" variant="ghost">
                             Cancel
                           </Button>
-                          <Button size="4xs" variant="primary">
+                          <Button size="4xs" variant="default">
                             Apply
                           </Button>
                         </div>
