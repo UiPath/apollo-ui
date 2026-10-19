@@ -55,13 +55,16 @@ function testComponent(component: string, baseAppPath: string): TestResult {
     // when they are present in the consumer's dependency tree at install time. Without these,
     // GroupMembersCollection / GroupsCollection degrade to Collection<unknown,...> and
     // useLiveQuery result types cannot be properly inferred by TypeScript.
+    // react-db and query-db-collection each pin an exact @tanstack/db, so they are
+    // pinned to a pair that shares one (0.6.5, the version vs-core is built against).
     execFileSync(
       'pnpm',
       [
         'add',
         '-D',
         'zod@^4.1.12',
-        '@tanstack/query-db-collection@^1.0.31',
+        '@tanstack/query-db-collection@1.0.36',
+        '@tanstack/react-db@0.1.83',
         '@tanstack/react-query@^5.90.3',
         'idb-keyval@^6.2.1',
         '@uipath/uipath-typescript@^1.0.0',
