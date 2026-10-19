@@ -4,7 +4,10 @@ import * as CollapsiblePrimitive from '@radix-ui/react-collapsible';
 import { ChevronDown } from 'lucide-react';
 import * as React from 'react';
 
-import { cn } from '@/lib';
+import { cn, composeRefs } from '@/lib';
+
+// Open state of the nearest CollapsibleBox, read by a kept-mounted body to hide itself.
+const CollapsibleBoxOpenContext = React.createContext(true);
 
 /**
  * Bordered, collapsible box that groups related content, such as a set of
@@ -16,18 +19,34 @@ import { cn } from '@/lib';
 const CollapsibleBox = React.forwardRef<
   React.ElementRef<typeof CollapsiblePrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof CollapsiblePrimitive.Root>
->(({ className, defaultOpen = true, ...props }, ref) => (
-  <CollapsiblePrimitive.Root
-    ref={ref}
-    data-slot="collapsible-box"
-    defaultOpen={defaultOpen}
-    className={cn(
-      'overflow-hidden rounded-2xl border border-border-subtle bg-transparent',
-      className
-    )}
-    {...props}
-  />
-));
+>(({ className, open: openProp, defaultOpen = true, onOpenChange, ...props }, ref) => {
+  const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen);
+  const isControlled = openProp !== undefined;
+  const open = isControlled ? openProp : uncontrolledOpen;
+  const handleOpenChange = React.useCallback(
+    (next: boolean) => {
+      if (!isControlled) setUncontrolledOpen(next);
+      onOpenChange?.(next);
+    },
+    [isControlled, onOpenChange]
+  );
+
+  return (
+    <CollapsibleBoxOpenContext.Provider value={open}>
+      <CollapsiblePrimitive.Root
+        ref={ref}
+        data-slot="collapsible-box"
+        open={open}
+        onOpenChange={handleOpenChange}
+        className={cn(
+          'overflow-hidden rounded-2xl border border-border-subtle bg-transparent',
+          className
+        )}
+        {...props}
+      />
+    </CollapsibleBoxOpenContext.Provider>
+  );
+});
 CollapsibleBox.displayName = 'CollapsibleBox';
 
 /**
@@ -90,29 +109,74 @@ const CollapsibleBoxActions = React.forwardRef<
 ));
 CollapsibleBoxActions.displayName = 'CollapsibleBoxActions';
 
+interface CollapsibleBoxContentProps
+  extends Omit<
+    React.ComponentPropsWithoutRef<typeof CollapsiblePrimitive.Content>,
+    'asChild' | 'forceMount'
+  > {
+  /**
+   * Keep the body mounted while the box is collapsed, so its controls keep
+   * their local state and stay in native form submission. While collapsed it
+   * is hidden, inert and out of the tab order. Defaults to `false`: the body
+   * unmounts when collapsed.
+   */
+  keepMounted?: boolean;
+}
+
 /**
- * Body. Hidden while the box is collapsed. It wraps its children in its own
- * padded grid, so Radix's `asChild` is not supported. Its close animation does
- * not hold the collapsed height, so forced content would spring back open:
- * `forceMount` is not supported either.
+ * Body. Hidden while the box is collapsed: unmounted by default, or kept
+ * mounted but hidden and inert with `keepMounted`. It wraps its children in its
+ * own padded grid, so Radix's `asChild` is not supported. Use `keepMounted`
+ * instead of Radix's `forceMount`, which would let the collapsed body spring
+ * back open after its close animation.
  */
 const CollapsibleBoxContent = React.forwardRef<
   React.ElementRef<typeof CollapsiblePrimitive.Content>,
-  Omit<
-    React.ComponentPropsWithoutRef<typeof CollapsiblePrimitive.Content>,
-    'asChild' | 'forceMount'
-  >
->(({ className, children, ...props }, ref) => (
-  <CollapsiblePrimitive.Content
-    ref={ref}
-    data-slot="collapsible-box-content"
-    className="overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down"
-    {...props}
-  >
-    <div className={cn('grid gap-4 p-3', className)}>{children}</div>
-  </CollapsiblePrimitive.Content>
-));
+  CollapsibleBoxContentProps
+>(({ className, children, keepMounted = false, onAnimationEnd, ...props }, ref) => {
+  const open = React.useContext(CollapsibleBoxOpenContext);
+  // A kept-mounted body that has finished collapsing (or started collapsed) is
+  // hidden outright. Until its close animation ends, the animation's final
+  // frame (zero height) holds it shut.
+  const [settledClosed, setSettledClosed] = React.useState(!open);
+  if (open && settledClosed) setSettledClosed(false);
+
+  // `inert` is set on the DOM node because React 18 and 19 handle the prop differently.
+  const contentRef = React.useRef<HTMLDivElement | null>(null);
+  const setContentRef = React.useMemo(() => composeRefs(contentRef, ref), [ref]);
+  const inert = keepMounted && !open;
+  React.useEffect(() => {
+    const node = contentRef.current;
+    if (!node) return;
+    if (inert) node.setAttribute('inert', '');
+    else node.removeAttribute('inert');
+  }, [inert]);
+
+  return (
+    <CollapsiblePrimitive.Content
+      ref={setContentRef}
+      data-slot="collapsible-box-content"
+      className={cn(
+        'overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down',
+        keepMounted && 'data-[state=closed]:[animation-fill-mode:forwards]'
+      )}
+      {...props}
+      forceMount={keepMounted || undefined}
+      hidden={keepMounted ? !open && settledClosed : undefined}
+      onAnimationEnd={(event) => {
+        onAnimationEnd?.(event);
+        if (keepMounted && !open && event.target === event.currentTarget) {
+          setSettledClosed(true);
+        }
+      }}
+    >
+      <div className={cn('grid gap-4 p-3', className)}>{children}</div>
+    </CollapsiblePrimitive.Content>
+  );
+});
 CollapsibleBoxContent.displayName = 'CollapsibleBoxContent';
+
+export type { CollapsibleBoxContentProps };
 
 export {
   CollapsibleBox,

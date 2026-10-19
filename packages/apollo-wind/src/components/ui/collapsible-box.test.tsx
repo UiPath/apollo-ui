@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { describe, expect, it, vi } from 'vitest';
@@ -115,6 +115,86 @@ describe('CollapsibleBox', () => {
     }
     expect(outerHeader.matches(OWN_TRIGGER_OPEN)).toBe(true);
     expect(innerHeader.matches(OWN_TRIGGER_OPEN)).toBe(false);
+  });
+
+  describe('keepMounted', () => {
+    const KeptMountedExample = (props: React.ComponentProps<typeof CollapsibleBox>) => (
+      <CollapsibleBox {...props}>
+        <CollapsibleBoxHeader>
+          <CollapsibleBoxTrigger>Filters</CollapsibleBoxTrigger>
+        </CollapsibleBoxHeader>
+        <CollapsibleBoxContent keepMounted>
+          <label>
+            Name
+            <input name="name" />
+          </label>
+        </CollapsibleBoxContent>
+      </CollapsibleBox>
+    );
+    const getContent = (container: HTMLElement) =>
+      container.querySelector<HTMLElement>('[data-slot="collapsible-box-content"]');
+
+    it('keeps the body mounted, hidden and inert when it starts collapsed', () => {
+      const { container } = render(<KeptMountedExample defaultOpen={false} />);
+      const content = getContent(container);
+      expect(content).toHaveAttribute('data-state', 'closed');
+      expect(content).toHaveAttribute('hidden');
+      expect(content).toHaveAttribute('inert');
+      expect(screen.getByRole('textbox', { hidden: true })).not.toBeVisible();
+    });
+
+    it('keeps field state across collapse and expand', async () => {
+      const user = userEvent.setup();
+      const { container } = render(<KeptMountedExample />);
+      await user.type(screen.getByRole('textbox', { name: 'Name' }), 'Ada');
+
+      await user.click(screen.getByRole('button', { name: 'Filters' }));
+      const content = getContent(container);
+      expect(content).toHaveAttribute('inert');
+      expect(screen.getByRole('textbox', { hidden: true })).toHaveValue('Ada');
+      expect(content).toHaveClass('data-[state=closed]:[animation-fill-mode:forwards]');
+
+      fireEvent.animationEnd(content as HTMLElement);
+      expect(content).toHaveAttribute('hidden');
+
+      await user.click(screen.getByRole('button', { name: 'Filters' }));
+      expect(content).not.toHaveAttribute('hidden');
+      expect(content).not.toHaveAttribute('inert');
+      expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue('Ada');
+    });
+
+    it('keeps collapsed fields in native form submission', () => {
+      const { container } = render(
+        <form>
+          <KeptMountedExample defaultOpen={false} />
+        </form>
+      );
+      const form = container.querySelector('form') as HTMLFormElement;
+      expect(new FormData(form).has('name')).toBe(true);
+    });
+
+    it('ignores animation ends bubbling from nested content', async () => {
+      const user = userEvent.setup();
+      const { container } = render(<KeptMountedExample />);
+      await user.click(screen.getByRole('button', { name: 'Filters' }));
+      fireEvent.animationEnd(screen.getByRole('textbox', { hidden: true }));
+      expect(getContent(container)).not.toHaveAttribute('hidden');
+    });
+
+    it('follows the controlled open prop', () => {
+      const { container, rerender } = render(<KeptMountedExample open={false} />);
+      expect(getContent(container)).toHaveAttribute('hidden');
+
+      rerender(<KeptMountedExample open />);
+      expect(getContent(container)).not.toHaveAttribute('hidden');
+      expect(getContent(container)).not.toHaveAttribute('inert');
+      expect(screen.getByRole('textbox', { name: 'Name' })).toBeVisible();
+    });
+
+    it('has no accessibility violations while collapsed', async () => {
+      const { container } = render(<KeptMountedExample defaultOpen={false} />);
+      expect(await axe(container)).toHaveNoViolations();
+    });
   });
 
   it('merges custom class names', () => {

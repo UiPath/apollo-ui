@@ -131,6 +131,33 @@ export const Controlled = {
 };
 
 // ============================================================================
+// Keep mounted
+// ============================================================================
+
+export const KeepMounted = {
+  name: 'Keep mounted',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'With `keepMounted`, a collapsed body stays mounted, so its fields keep what was typed ' +
+          'and still submit with a form. While collapsed it is hidden and inert.',
+      },
+    },
+  },
+  render: () => (
+    <CollapsibleBox className="w-[420px]">
+      <CollapsibleBoxHeader>
+        <CollapsibleBoxTrigger>Retry policy</CollapsibleBoxTrigger>
+      </CollapsibleBoxHeader>
+      <CollapsibleBoxContent keepMounted>
+        <Input aria-label="Max attempts" placeholder="Max attempts" />
+      </CollapsibleBoxContent>
+    </CollapsibleBox>
+  ),
+};
+
+// ============================================================================
 // Filters
 // ============================================================================
 
