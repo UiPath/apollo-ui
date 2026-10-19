@@ -26,21 +26,15 @@ type SolutionTestRow = {
   [ENTITY.runResults]: SolutionTestRunResult;
 };
 
-/**
- * A Solution Tests collection. They are query collections, so `utils.refetch()`
- * re-pulls rows written out of band (e.g. by a backend trigger).
- */
+// vs-core creates these as query collections, which carry `utils.refetch()`.
 type SolutionTestCollection<T extends object> = Collection<
   T,
   string,
   { refetch: () => Promise<void> }
 >;
 
-/**
- * Look a Solution Tests collection up by entity name, or `undefined` when it is
- * not registered. vs-core types `solutionTests` from the app's registered
- * entities, which this package cannot see, hence the assertion.
- */
+// vs-core types `solutionTests` from the app's registered entities, which this
+// package cannot see, hence the assertion.
 export function getSolutionTestCollection<K extends keyof SolutionTestRow>(
   solution: ReturnType<typeof useSolution>,
   entity: K,
