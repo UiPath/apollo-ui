@@ -115,6 +115,19 @@ describe('ClassifierCustomQuestionsEditor', () => {
     expect(screen.queryByRole('textbox', { name: 'Your questions 2' })).not.toBeInTheDocument();
   });
 
+  it('describes each invalid question by the error', () => {
+    render(
+      <ClassifierCustomQuestionsEditor
+        parameter={PARAMETER}
+        rows={ROWS}
+        error="Value is required"
+        onRowsChange={vi.fn()}
+      />
+    );
+
+    expect(question(2)).toHaveAccessibleDescription('Value is required');
+  });
+
   it('has no accessibility violations', async () => {
     const { container } = render(
       <ClassifierCustomQuestionsEditor parameter={PARAMETER} rows={ROWS} onRowsChange={vi.fn()} />
