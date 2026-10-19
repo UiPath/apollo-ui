@@ -13,7 +13,10 @@ import { ENTITY } from "./constants";
 import { useSolutionTestsActions, useSolutionTestsConfig } from "./context";
 import type { MutationHook } from "./mutations";
 import type { SolutionTest } from "./types";
-import { useSolutionTestCollection } from "./use-solution-test-collection";
+import {
+  getSolutionTestCollection,
+  useSolutionTestCollection,
+} from "./use-solution-test-collection";
 
 export interface UseSolutionTestsResult {
   tests: SolutionTest[];
@@ -84,7 +87,8 @@ export function useToggleTestActive(): MutationHook<{
       testId: string;
       isActive: boolean;
     }) => {
-      const collection = solution?.api.collections.solutionTests[ENTITY.tests];
+      const collection =
+        solution && getSolutionTestCollection(solution, ENTITY.tests);
       if (!collection) {
         throw new Error("Solution Tests collection is unavailable.");
       }

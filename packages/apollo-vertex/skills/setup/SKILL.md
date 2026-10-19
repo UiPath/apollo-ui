@@ -30,14 +30,16 @@ Install `@uipath/apollo-vertex` if the project doesn't have it yet.
 
 Then read `peerDependencies` in
 `node_modules/@uipath/apollo-vertex/package.json` and make sure the app has
-every package listed there, in a version that matches the range. Also install
-every package listed in `peerDependenciesMeta`, even the ones marked optional
-or missing from `peerDependencies`: the package entry imports them, so the
-app's bundler fails to resolve the entry without them.
+every package listed there, in a version that matches the range. Install
+`@uipath/proteus-client` only if the app uses Proteus feature flags (it imports
+`@uipath/apollo-vertex/proteus`).
 
 - If the app already has a peer in a version outside the range, tell the user
   about the conflict instead of upgrading it on your own.
-- Some `@uipath` peers are not on the public npm registry. If installing one
+- Pick the `@tanstack/react-db` release whose `@tanstack/db` dependency matches
+  the one `@tanstack/query-db-collection` uses in the app. Each release pins an
+  exact `@tanstack/db`, and two copies do not work together.
+- `@uipath/proteus-client` is not on the public npm registry. If installing it
   fails with a 404 or an authentication error, stop and ask the user for access
   to UiPath's package registry. Do not install look-alike packages from npm.
 - If the app doesn't use Tailwind yet, set it up for the app's bundler with
