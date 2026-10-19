@@ -1,3 +1,15 @@
+## [@uipath/apollo-vertex-v1.4.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-vertex@1.3.0...@uipath/apollo-vertex@1.4.0) (2026-10-19)
+
+### Features
+
+* **apollo-vertex:** backport invoice shell nav ([c842d42](https://github.com/UiPath/apollo-ui/commit/c842d42c4e3646ccb01193969ac54dc0708bab57))
+
+### Bug Fixes
+
+* **apollo-vertex:** keep nav labels and active color ([2febebb](https://github.com/UiPath/apollo-ui/commit/2febebb23beaf8f7ce632d3a3f67fbeafa050703))
+* **apollo-vertex:** keep parent color for outside children ([c869233](https://github.com/UiPath/apollo-ui/commit/c8692334d0c56339bfe5ca1a59ec0b8acecbc9d2))
+* **apollo-vertex:** pick one minimal nav item ([5acbdf8](https://github.com/UiPath/apollo-ui/commit/5acbdf87c59a828838e9e994b146e2789baf5049))
+
 ## [@uipath/apollo-vertex-v1.3.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-vertex@1.2.0...@uipath/apollo-vertex@1.3.0) (2026-10-16)
 
 ### Features
