@@ -100,15 +100,15 @@
     "zod": "^4.3.5"
   },
   "peerDependencies": {
-    "@tanstack/ai": "^0.14.0",
-    "@tanstack/ai-client": "^0.8.0",
+    "@tanstack/ai": ">=0.14.0 <0.65.0",
+    "@tanstack/ai-client": ">=0.8.0 <0.37.0",
     "@tanstack/react-db": "^0.1.83",
     "@tanstack/react-query": "^5.90.21",
     "@tanstack/react-router": "^1.132.31",
     "@ts-rest/core": "^3.53.0-rc.1",
     "@uipath/uipath-typescript": "^1.7.1",
     "@uipath/vs-core": "^4.4.0",
-    "eventsource-parser": "^3.0.6",
+    "eventsource-parser": "^3.0.6 || ^4.0.0",
     "highlight.js": "^11.11.1",
     "i18next": "^25.8.1 || ^26.0.0",
     "jwt-decode": "^4.0.0",

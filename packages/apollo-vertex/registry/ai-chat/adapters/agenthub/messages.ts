@@ -61,7 +61,13 @@ function parseToolInput(
 function toToolResultMessage(part: ToolResultPart): NormalizedMessage {
   return {
     role: "tool",
-    content: { result: part.content, call_id: part.toolCallId },
+    content: {
+      result:
+        typeof part.content === "string"
+          ? part.content
+          : JSON.stringify(part.content),
+      call_id: part.toolCallId,
+    },
   };
 }
 

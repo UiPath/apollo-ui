@@ -218,8 +218,6 @@ async function* toStreamChunks(
     yield {
       type: EventType.TOOL_CALL_END,
       toolCallId: tc.id,
-      toolCallName: tc.name,
-      toolName: tc.name,
       timestamp: Date.now(),
     };
     let parsedInput: unknown = {};
