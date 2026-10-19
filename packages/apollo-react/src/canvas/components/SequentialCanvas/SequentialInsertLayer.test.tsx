@@ -48,6 +48,20 @@ describe('buildBarGeometry', () => {
     expect(geometry.get('a')).toEqual({ x: 0, y: 0, width: 896, height: 56 });
     expect(geometry.get('b')).toEqual({ x: 10, y: 20, width: 896, height: 56 });
   });
+
+  it('gives a row hidden by a collapsed step no rectangle, so its lane header disappears', () => {
+    const owner = bar('owner', 0, 0);
+    const head = { ...bar('head', 64, 120), hidden: true };
+    const geometry = buildBarGeometry([owner, head], BAR);
+    expect(geometry.has('head')).toBe(false);
+
+    const items = computeSequentialInsertItems(
+      [edge('e', 'owner', 'head', { kind: 'branch-entry', label: 'Start', slot })],
+      geometry,
+      { isDesignMode: true, translate }
+    );
+    expect(items).toEqual([]);
+  });
 });
 
 describe('computeSequentialInsertItems', () => {

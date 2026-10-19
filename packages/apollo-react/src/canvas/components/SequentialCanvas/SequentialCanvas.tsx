@@ -18,7 +18,9 @@ import type { Dispatch, SetStateAction } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DEFAULT_SOURCE_HANDLE_ID, PREVIEW_NODE_ID } from '../../constants';
 import { useOptionalNodeTypeRegistry } from '../../core';
+import { useCanvasNodeLayout } from '../../hooks/useCanvasNodeLayout';
 import { usePreviewNode } from '../../hooks/usePreviewNode';
+import { isSelfContainedContainerManifest } from '../../utils/container';
 import { isPreviewEdge } from '../../utils/createPreviewNode';
 import { getIcon } from '../../utils/icon-registry';
 import { resolveDisplay, resolveHandles } from '../../utils/manifest-resolver';
@@ -29,6 +31,7 @@ import {
 import { resolveSequenceMetrics } from '../../utils/sequential/layoutSequence';
 import { removeStep } from '../../utils/sequential/mutations';
 import { createSequencePredicates } from '../../utils/sequential/predicates';
+import { canSequenceContainer } from '../../utils/sequential/projectContainerSequence';
 import type {
   InsertionSlot,
   LayoutSequenceOptions,
@@ -49,8 +52,13 @@ import {
   SequentialInsertPreviewNode,
   SequentialStepNode,
 } from './nodes';
+import { BarNodeIdsContext, createFlowOrBarNodeType } from './nodes/FlowOrBarNode';
 import { resolveFlowEdgeTypes } from './resolveFlowEdgeTypes';
 import { resolveFlowNodeComponent } from './resolveFlowNodeComponent';
+import {
+  SequencedContainersProvider,
+  type SequencedContainersValue,
+} from './SequencedContainersContext';
 import { SequentialAccessibleList } from './SequentialAccessibleList';
 import {
   type SequentialAttachmentsByStepId,
@@ -66,6 +74,8 @@ import { SequentialLaneAddProvider } from './SequentialLaneAddContext';
 import { SequentialMoveActionsProvider } from './SequentialMoveActionsContext';
 import { useOptionalSequentialView } from './SequentialViewContext';
 import {
+  applyFlowInsertPlacement,
+  forwardSequencedContainerNodeChanges,
   forwardSequentialEdgeChanges,
   forwardSequentialNodeChanges,
   graphChangeSetToEdgeChanges,
@@ -82,7 +92,9 @@ import {
   resolveTailInsertionSlot,
   type SequentialMoveDirection,
 } from './sequentialMoveActions';
+import { type FlowInsertPlacement, placeInsertForFlow } from './synthesizePositionsForFlow';
 import { useCanvasViewViewport } from './useCanvasViewViewport';
+import { hasSequencedAncestor, useContainerSequences } from './useContainerSequences';
 import { SEQ_SYNTHETIC_ROW_IDS, useSequentialGraph } from './useSequentialGraph';
 import { toggleCollapsedStepIds, useSequentialKeyboard } from './useSequentialKeyboard';
 import { useSequentialMoveActionsValue } from './useSequentialMoveActionsValue';
@@ -268,6 +280,8 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
   onToolbarAction,
   breakpoints,
   readOnlyNodeIds,
+  sequencedContainerIds,
+  onSequencedContainerIdsChange,
   children,
   activeInsertSlot,
   setActiveInsertSlot,
@@ -303,6 +317,12 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
   // move paths emit changes directly, so they re-check the set here. Content-stable, so a
   // host passing a fresh array per render does not churn the move-actions context.
   const readOnlySet = useStableNodeIdSet(readOnlyNodeIds);
+  // Per-container body presentation on the flow canvas: host-owned when the callback is
+  // wired, otherwise held here.
+  const [internalSequencedIds, setInternalSequencedIds] = useState<string[]>([]);
+  const sequencedSet = useStableNodeIdSet(sequencedContainerIds ?? internalSequencedIds);
+  // Bars render in sequential view and inside sequenced containers; both show attachments.
+  const rendersBars = inSequentialView || sequencedSet.size > 0;
   const { nodesById: canonicalById, childrenByParent } = useMemo(
     () => indexNodesByParent(nodes),
     [nodes]
@@ -399,7 +419,7 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
 
   const attachmentsRef = useRef<StepAttachments>(EMPTY_STEP_ATTACHMENTS);
   const attachmentsByStepId = useMemo<SequentialAttachmentsByStepId>(() => {
-    if (!inSequentialView) return EMPTY_STEP_ATTACHMENTS.byStepId;
+    if (!rendersBars) return EMPTY_STEP_ATTACHMENTS.byStepId;
     const next = collectStepAttachments(
       nodes,
       edges,
@@ -414,7 +434,7 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
     attachmentsRef.current = next;
     return next.byStepId;
   }, [
-    inSequentialView,
+    rendersBars,
     nodes,
     edges,
     canonicalById,
@@ -448,7 +468,87 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
     [resolvedHandlesByNodeId, resolveBranchLabel, registry]
   );
 
-  const collapsedSet = useStableNodeIdSet(collapsedStepIds);
+  // Collapse is host-owned when the callback is wired, otherwise held here.
+  const [internalCollapsedIds, setInternalCollapsedIds] = useState<string[]>([]);
+  const collapsedSet = useStableNodeIdSet(collapsedStepIds ?? internalCollapsedIds);
+  const setCollapsedStepIds = useCallback(
+    (ids: string[]) => {
+      if (onCollapsedStepIdsChange) onCollapsedStepIdsChange(ids);
+      else setInternalCollapsedIds(ids);
+    },
+    [onCollapsedStepIdsChange]
+  );
+
+  const isSelfContainedContainer = useCallback(
+    (node: N) =>
+      isSelfContainedContainerManifest(node.type ? registry?.getManifest(node.type) : undefined),
+    [registry]
+  );
+
+  const containerSequences = useContainerSequences<N, E>({
+    nodes,
+    edges,
+    nodesById: canonicalById,
+    enabled: !inSequentialView && sequencedSet.size > 0,
+    sequencedContainerIds: sequencedSet,
+    isSequenceNode: isProjectedSequenceNode,
+    isSequenceEdge,
+    isContainerNode: isProjectedContainerNode,
+    isStartNode,
+    isSelfContained: isSelfContainedContainer,
+    resolveBranchLabel,
+    getBranchHandles,
+    getDefaultSourceHandleId,
+    collapsedStepIds: collapsedSet,
+    onAddTrigger: isDesignMode ? onAddTrigger : undefined,
+    layoutOptions,
+    insertSlot: inSequentialView ? undefined : activeInsertSlot,
+    canAddToLane: isDesignMode && !inSequentialView,
+  });
+  const hasSequencedContainers = containerSequences.active;
+  // Inserting through the ⊕ / placeholders is possible wherever bars render.
+  const canInsert = isDesignMode && (inSequentialView || hasSequencedContainers);
+
+  const sequencedSetRef = useRef(sequencedSet);
+  sequencedSetRef.current = sequencedSet;
+  const nodesRef = useRef(nodes);
+  nodesRef.current = nodes;
+  const edgesRef = useRef(edges);
+  edgesRef.current = edges;
+  const nodeLayout = useCanvasNodeLayout();
+  // Flow placement computed when a container-body insert commits; consumed once by the
+  // forwarding seam when the matching `add` change arrives.
+  const pendingFlowInsertRef = useRef<FlowInsertPlacement | null>(null);
+  const setSequencedContainer = useCallback(
+    (containerId: string, sequenced: boolean) => {
+      const current = sequencedSetRef.current;
+      if (current.has(containerId) === sequenced) return;
+      const next = sequenced
+        ? [...current, containerId]
+        : [...current].filter((id) => id !== containerId);
+      if (onSequencedContainerIdsChange) onSequencedContainerIdsChange(next);
+      else setInternalSequencedIds(next);
+    },
+    [onSequencedContainerIdsChange]
+  );
+  const canonicalByIdForSwitchRef = useRef(canonicalById);
+  canonicalByIdForSwitchRef.current = canonicalById;
+  const sequencedContainersValue = useMemo<SequencedContainersValue>(
+    () => ({
+      isSequenced: (containerId) => containerSequences.sequencedIds.has(containerId),
+      // A container inside a sequenced body is one of that body's rows, not a frame.
+      canSequence: (containerId) =>
+        !inSequentialView &&
+        canSequenceContainer(nodesRef.current, containerId) === undefined &&
+        !hasSequencedAncestor(
+          canonicalByIdForSwitchRef.current,
+          containerId,
+          containerSequences.sequencedIds
+        ),
+      setSequenced: setSequencedContainer,
+    }),
+    [containerSequences.sequencedIds, inSequentialView, setSequencedContainer]
+  );
 
   // Terminal "Add step" placeholder appends after the last top-level row. The slot is read
   // from a ref so the callback identity stays stable (it feeds the placeholder's data).
@@ -475,7 +575,7 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
   canonicalByIdRef.current = canonicalById;
   const onLaneAdd = useCallback(
     (slot: InsertionSlot) => {
-      if (!canEditSequence || !slot.source) return;
+      if (!canInsert || !slot.source) return;
       const sourceNode = canonicalByIdRef.current.get(slot.source.nodeId);
       const resolvedSource = {
         ...slot.source,
@@ -491,6 +591,10 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
           (node) =>
             (node.data as { insertionSlotId?: string } | undefined)?.insertionSlotId === slot.id
         );
+      // A placeholder inside a sequenced container is parented, so its position is relative.
+      const placement =
+        (placeholder && reactFlow.getInternalNode?.(placeholder.id)?.internals.positionAbsolute) ??
+        placeholder?.position;
       startInsert({
         slot: resolvedSlot,
         source: resolvedSource.nodeId,
@@ -498,10 +602,10 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
         target: '',
         targetHandleId: undefined,
         sourcePosition: Position.Bottom,
-        position: placeholder?.position ?? { x: 0, y: 0 },
+        position: placement ?? { x: 0, y: 0 },
       });
     },
-    [canEditSequence, getDefaultSourceHandleId, reactFlow, startInsert]
+    [canInsert, getDefaultSourceHandleId, reactFlow, startInsert]
   );
 
   const {
@@ -532,11 +636,13 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
   // objects); the slot itself is resolved here against the current projection.
   const projectionRef = useRef<SequenceProjection | null>(null);
   projectionRef.current = projection;
+  const containerSlotsRef = useRef(containerSequences.slotsById);
+  containerSlotsRef.current = containerSequences.slotsById;
   const onLaneAddById = useCallback(
     (slotId: string) => {
-      const slot = projectionRef.current?.rows.find(
-        (row) => row.lanePlaceholder?.id === slotId
-      )?.lanePlaceholder;
+      const slot =
+        projectionRef.current?.rows.find((row) => row.lanePlaceholder?.id === slotId)
+          ?.lanePlaceholder ?? containerSlotsRef.current.get(slotId);
       if (slot) onLaneAdd(slot);
     },
     [onLaneAdd]
@@ -558,33 +664,75 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
   const [insertPreviewNode, setInsertPreviewNode] = useState<N | null>(null);
   const [insertPreviewEdges, setInsertPreviewEdges] = useState<E[]>([]);
   const seqNodes = useMemo(() => {
+    if (!inSequentialView) {
+      const base = hasSequencedContainers ? containerSequences.nodes : seqNodesRaw;
+      if (!insertPreviewNode || !hasSequencedContainers) return base;
+      // The ghost seats in the gap the owning container opened, parented like the bars around
+      // it; otherwise it stays where the Add Node pipeline dropped it.
+      const placement = containerSequences.previewPlacement;
+      const positionedPreview: N = placement
+        ? {
+            ...insertPreviewNode,
+            parentId: placement.parentId,
+            extent: undefined,
+            position: placement.position,
+            width: containerSequences.barWidth,
+            height: containerSequences.barHeight,
+          }
+        : insertPreviewNode;
+      return [...base, positionedPreview];
+    }
     // A lane placeholder being inserted into loses its layout position (swapped for the
     // preview row), so drop it.
     const base = seqNodesRaw.filter(
       (node) => !node.id.startsWith(SEQ_LANE_PLACEHOLDER_PREFIX) || !!layout?.positions.has(node.id)
     );
-    if (!inSequentialView || !insertPreviewNode) return base;
+    if (!insertPreviewNode) return base;
     const slotPosition = layout?.positions.get(PREVIEW_NODE_ID);
+    // The pipeline parents the preview under the source's container; the sequential view is
+    // flat, so the layout position is absolute.
     const positionedPreview: N = {
       ...insertPreviewNode,
+      parentId: undefined,
+      extent: undefined,
       ...(slotPosition && { position: slotPosition }),
       width: layoutOptions?.barWidth ?? insertPreviewNode.width,
       height: layoutOptions?.barHeight ?? insertPreviewNode.height,
     };
     return [...base, positionedPreview];
-  }, [inSequentialView, seqNodesRaw, insertPreviewNode, layout, layoutOptions]);
-  // While a slot is active the hook has already routed preview connectors; rendering the raw
-  // showPreviewGraph edges too would duplicate the path with click-time geometry.
-  const seqEdgesWithPreview = useMemo(
-    () =>
-      inSequentialView && !activeInsertSlot && insertPreviewEdges.length > 0
-        ? [...seqEdges, ...insertPreviewEdges]
-        : seqEdges,
-    [inSequentialView, activeInsertSlot, seqEdges, insertPreviewEdges]
-  );
+  }, [
+    inSequentialView,
+    hasSequencedContainers,
+    containerSequences,
+    seqNodesRaw,
+    insertPreviewNode,
+    layout,
+    layoutOptions,
+  ]);
+  // While a slot is active the derivation has already routed preview connectors; rendering
+  // the raw showPreviewGraph edges too would duplicate the path with click-time geometry.
+  const seqEdgesWithPreview = useMemo(() => {
+    const base = inSequentialView
+      ? seqEdges
+      : hasSequencedContainers
+        ? containerSequences.edges
+        : seqEdges;
+    const derivesPreview = inSequentialView || hasSequencedContainers;
+    return derivesPreview && !activeInsertSlot && insertPreviewEdges.length > 0
+      ? [...base, ...insertPreviewEdges]
+      : base;
+  }, [
+    inSequentialView,
+    hasSequencedContainers,
+    containerSequences,
+    activeInsertSlot,
+    seqEdges,
+    insertPreviewEdges,
+  ]);
+  // A view switch abandons any open insert. Functional updates that return the current value
+  // bail out instead of re-rendering.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `view` is the trigger, not an input.
   useEffect(() => {
-    if (view !== 'flow') return;
-    // Functional updates that return the current value bail out instead of re-rendering.
     setInsertPreviewNode((current) => (current === null ? current : null));
     setInsertPreviewEdges((current) => (current.length === 0 ? current : []));
     setActiveInsertSlot((current) => (current === undefined ? current : undefined));
@@ -607,20 +755,43 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
     types.preview ??= SequentialInsertPreviewNode;
     return types;
   }, [presentTypes]);
+  // Every flow component is wrapped so a node inside a sequenced container renders as a bar
+  // (decided per id through BarNodeIdsContext); the wrappers are cached, so identities hold.
   const resolvedFlowNodeTypes = useMemo<NodeTypes>(() => {
-    const types: NodeTypes = { ...flowNodeTypes };
-    if (!flowNodeTypes) {
-      for (const key of presentTypes) {
-        types[key] = resolveFlowNodeComponent(registry?.getManifest(key));
+    const types: NodeTypes = { ...SEQUENTIAL_SYNTHETIC_NODE_TYPES };
+    if (flowNodeTypes) {
+      for (const [key, component] of Object.entries(flowNodeTypes)) {
+        types[key] = createFlowOrBarNodeType(
+          component as Parameters<typeof createFlowOrBarNodeType>[0]
+        );
       }
-      types.default ??= BaseNode;
+    } else {
+      for (const key of presentTypes) {
+        types[key] = createFlowOrBarNodeType(resolveFlowNodeComponent(registry?.getManifest(key)));
+      }
+      types.default ??= createFlowOrBarNodeType(BaseNode);
     }
-    types.preview ??= AddNodePreview;
+    types.preview ??= createFlowOrBarNodeType(AddNodePreview);
     return types;
   }, [flowNodeTypes, presentTypes, registry]);
   const nodeTypes = inSequentialView ? sequentialNodeTypes : resolvedFlowNodeTypes;
-  const resolvedFlowEdgeTypes = useMemo(() => resolveFlowEdgeTypes(flowEdgeTypes), [flowEdgeTypes]);
+  const resolvedFlowEdgeTypes = useMemo<EdgeTypes>(
+    () => ({
+      [SEQ_CONNECTOR_EDGE_TYPE]: SequentialConnectorEdge as EdgeTypes[string],
+      ...resolveFlowEdgeTypes(flowEdgeTypes),
+    }),
+    [flowEdgeTypes]
+  );
   const edgeTypes = inSequentialView ? EDGE_TYPES : resolvedFlowEdgeTypes;
+  // The preview joins the bar set while its slot sits inside a sequenced body, so the
+  // dispatcher renders the bar-shaped ghost instead of the flow square.
+  const barNodeIds = useMemo<ReadonlySet<string>>(
+    () =>
+      containerSequences.previewPlacement
+        ? new Set([...containerSequences.barNodeIds, PREVIEW_NODE_ID])
+        : containerSequences.barNodeIds,
+    [containerSequences.barNodeIds, containerSequences.previewPlacement]
+  );
 
   const syntheticNodeIds = useMemo(() => {
     const ids = new Set(SEQ_SYNTHETIC_ROW_IDS);
@@ -632,7 +803,7 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
 
   const handleNodesChange = useCallback(
     (changes: NodeChange<N>[]) => {
-      if (view === 'flow') {
+      if (view === 'flow' && !hasSequencedContainers) {
         onNodesChange?.(changes);
         return;
       }
@@ -647,25 +818,47 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
       }
 
       if (!onNodesChange) return;
+      const syntheticIds = view === 'flow' ? containerSequences.placeholderIds : syntheticNodeIds;
       // Clicking a synthetic row selects it and deselects the current step in one batch. The
       // synthetic select is filtered out, so forwarding the deselect alone would clear the
       // host's selection for a click that was an action. (Rows stay `selectable` because
       // xyflow only gives pointer events to selectable or draggable nodes.)
       const selectsSyntheticRow = changes.some(
-        (change) => change.type === 'select' && change.selected && syntheticNodeIds.has(change.id)
+        (change) => change.type === 'select' && change.selected && syntheticIds.has(change.id)
       );
       const effective = selectsSyntheticRow
         ? changes.filter((change) => !(change.type === 'select' && !change.selected))
         : changes;
-      const forwarded = forwardSequentialNodeChanges(effective, syntheticNodeIds, canonicalById);
-      if (forwarded.length > 0) onNodesChange(forwarded);
+      const forwarded =
+        view === 'flow'
+          ? forwardSequencedContainerNodeChanges(effective, {
+              syntheticIds,
+              barIds: containerSequences.barNodeIds,
+              containerIds: containerSequences.sequencedIds,
+              canonicalById,
+            })
+          : forwardSequentialNodeChanges(effective, syntheticIds, canonicalById);
+      const pending = pendingFlowInsertRef.current;
+      const withPlacement =
+        pending && forwarded.some((c) => c.type === 'add' && c.item.id === pending.node.id)
+          ? applyFlowInsertPlacement(forwarded, pending)
+          : forwarded;
+      if (withPlacement !== forwarded) pendingFlowInsertRef.current = null;
+      if (withPlacement.length > 0) onNodesChange(withPlacement);
     },
-    [view, onNodesChange, syntheticNodeIds, canonicalById]
+    [
+      view,
+      hasSequencedContainers,
+      containerSequences,
+      onNodesChange,
+      syntheticNodeIds,
+      canonicalById,
+    ]
   );
 
   const handleEdgesChange = useCallback(
     (changes: EdgeChange<E>[]) => {
-      if (view === 'flow') {
+      if (view === 'flow' && !hasSequencedContainers) {
         onEdgesChange?.(changes);
         return;
       }
@@ -682,7 +875,7 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
       const forwarded = forwardSequentialEdgeChanges(changes, edges);
       if (forwarded.length > 0) onEdgesChange(forwarded);
     },
-    [view, onEdgesChange, edges]
+    [view, hasSequencedContainers, onEdgesChange, edges]
   );
 
   const isContainerNode = useCallback(
@@ -814,9 +1007,9 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
   // Collapse is view-local UI, not a canonical mutation, so it stays available in every mode.
   const handleToggleCollapse = useCallback(
     (nodeId: string, collapsed: boolean) => {
-      onCollapsedStepIdsChange?.(toggleCollapsedStepIds(collapsedSet, nodeId, collapsed));
+      setCollapsedStepIds(toggleCollapsedStepIds(collapsedSet, nodeId, collapsed));
     },
-    [collapsedSet, onCollapsedStepIdsChange]
+    [collapsedSet, setCollapsedStepIds]
   );
 
   const { onKeyDown: onSequentialKeyDown } = useSequentialKeyboard({
@@ -824,7 +1017,7 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
     selectedNodeId,
     collapsedStepIds: collapsedSet,
     onSelectNode: handleSelectRow,
-    onCollapsedStepIdsChange,
+    onCollapsedStepIdsChange: setCollapsedStepIds,
     onMoveNode: handleMoveNode,
     onDeleteNode: deleteStep,
     onPrimaryAction,
@@ -842,19 +1035,42 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
 
   // The sequential hook runs first (re-id, parent into the slot's container, restore the
   // split edge's endpoints); the host's hook then sees that shape and has the last word.
-  const composedOnBeforeNodeAdded = useCallback(
-    (newNode: Node, newEdges: Edge[]) => {
-      const sequential = onBeforeNodeAdded(newNode, newEdges);
-      return (
-        addNodeManagerProps?.onBeforeNodeAdded?.(sequential.newNode, sequential.newEdges) ??
-        sequential
-      );
-    },
-    [addNodeManagerProps?.onBeforeNodeAdded, onBeforeNodeAdded]
-  );
   const ignoredNodeTypes = useMemo(
     () => getSequentialIgnoredNodeTypes(addNodeManagerProps?.ignoredNodeTypes),
     [addNodeManagerProps?.ignoredNodeTypes]
+  );
+  const composedOnBeforeNodeAdded = useCallback(
+    (newNode: Node, newEdges: Edge[]) => {
+      const sequential = onBeforeNodeAdded(newNode, newEdges);
+      const final =
+        addNodeManagerProps?.onBeforeNodeAdded?.(sequential.newNode, sequential.newEdges) ??
+        sequential;
+      if (inSequentialView) return final;
+      // In flow view the insert lands in a sequenced container body. Its ghost position is in
+      // the frame's sequence-layout space, which means nothing to the node's real parent (a
+      // nested For Each, for example). Place it in flow terms and grow its containers now, so
+      // canonical geometry stays valid for when the body switches back to flow. The Add Node
+      // manager's own placement ran against the rendered bars, so the forwarding seam swaps
+      // this result in (see handleNodesChange).
+      const placement = placeInsertForFlow({
+        nodes: nodesRef.current as Node[],
+        edges: edgesRef.current as Edge[],
+        inserted: final.newNode,
+        newEdges: final.newEdges,
+        getNodeDimensions: nodeLayout.getNodeDimensions,
+        getContainerFitGeometry: nodeLayout.getContainerFitGeometry,
+        ignoredNodeTypes,
+      });
+      pendingFlowInsertRef.current = placement;
+      return { ...final, newNode: placement.node };
+    },
+    [
+      addNodeManagerProps?.onBeforeNodeAdded,
+      onBeforeNodeAdded,
+      inSequentialView,
+      nodeLayout,
+      ignoredNodeTypes,
+    ]
   );
   const {
     onBeforeNodeAdded: _hostOnBeforeNodeAdded,
@@ -883,48 +1099,48 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
     // on one page never steal each other's key events.
     <SequentialCollapsedRowsProvider collapsedStepIds={collapsedSet}>
       <SequentialAttachmentsProvider attachmentsByStepId={attachmentsByStepId}>
-        <SequentialLaneAddProvider onLaneAdd={canEditSequence ? onLaneAddById : undefined}>
+        <SequentialLaneAddProvider onLaneAdd={canInsert ? onLaneAddById : undefined}>
           <SequentialMoveActionsProvider value={moveActionsValue}>
-            <div className="relative h-full w-full" onKeyDown={onKeyDown}>
-              <BaseCanvas<N, E>
-                ref={canvasRef}
-                nodes={seqNodes}
-                edges={seqEdgesWithPreview}
-                nodeTypes={nodeTypes}
-                edgeTypes={edgeTypes}
-                mode={mode}
-                isDarkMode={isDarkMode}
-                locale={locale}
-                fitViewOptions={fitViewOptions}
-                onToolbarAction={handleToolbarAction}
-                breakpoints={breakpoints}
-                onlyRenderVisibleElements={virtualizeForScale}
-                aria-hidden={virtualizeForScale || undefined}
-                // Must move in lockstep with `aria-hidden`: xyflow's focusable defaults render
-                // `tabIndex={0}` on every wrapper, an `aria-hidden-focus` violation inside a hidden
-                // subtree. Known gap: controls that portal into the canvas (bar toolbars, insert
-                // buttons, the Add Node panel) stay focusable and are pointer-only at this scale.
-                nodesFocusable={!virtualizeForScale}
-                edgesFocusable={!virtualizeForScale}
-                readOnlyNodeIds={readOnlyNodeIds}
-                // Sequential bars are not user-connectable in v1.
-                nodesConnectable={view === 'flow'}
-                onNodesChange={handleNodesChange}
-                onEdgesChange={handleEdgesChange}
-                onMove={handleMove}
-                defaultViewport={defaultViewport}
-              >
-                {children}
-                {inSequentialView && (
-                  <>
-                    {isDesignMode && (
+            <SequencedContainersProvider value={sequencedContainersValue}>
+              <BarNodeIdsContext.Provider value={barNodeIds}>
+                <div className="relative h-full w-full" onKeyDown={onKeyDown}>
+                  <BaseCanvas<N, E>
+                    ref={canvasRef}
+                    nodes={seqNodes}
+                    edges={seqEdgesWithPreview}
+                    nodeTypes={nodeTypes}
+                    edgeTypes={edgeTypes}
+                    mode={mode}
+                    isDarkMode={isDarkMode}
+                    locale={locale}
+                    fitViewOptions={fitViewOptions}
+                    onToolbarAction={handleToolbarAction}
+                    breakpoints={breakpoints}
+                    onlyRenderVisibleElements={virtualizeForScale}
+                    aria-hidden={virtualizeForScale || undefined}
+                    // Must move in lockstep with `aria-hidden`: xyflow's focusable defaults render
+                    // `tabIndex={0}` on every wrapper, an `aria-hidden-focus` violation inside a hidden
+                    // subtree. Known gap: controls that portal into the canvas (bar toolbars, insert
+                    // buttons, the Add Node panel) stay focusable and are pointer-only at this scale.
+                    nodesFocusable={!virtualizeForScale}
+                    edgesFocusable={!virtualizeForScale}
+                    readOnlyNodeIds={readOnlyNodeIds}
+                    // Sequential bars are not user-connectable in v1.
+                    nodesConnectable={view === 'flow'}
+                    onNodesChange={handleNodesChange}
+                    onEdgesChange={handleEdgesChange}
+                    onMove={handleMove}
+                    defaultViewport={defaultViewport}
+                  >
+                    {children}
+                    {canInsert && (
                       <AddNodeManager
                         {...remainingAddNodeManagerProps}
                         onBeforeNodeAdded={composedOnBeforeNodeAdded}
                         ignoredNodeTypes={ignoredNodeTypes}
                       />
                     )}
-                    {!virtualizeForScale && (
+                    {inSequentialView && !virtualizeForScale && (
                       <>
                         <SequentialGutter
                           rows={visibleNumberedRows}
@@ -943,19 +1159,42 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
                         />
                       </>
                     )}
-                  </>
-                )}
-              </BaseCanvas>
-              {virtualizeForScale && projection && (
-                <SequentialAccessibleList
-                  rows={visibleNumberedRows}
-                  nodes={seqNodes}
-                  selectedNodeId={selectedNodeId}
-                  onSelectNode={handleSelectRow}
-                  onToggleCollapse={handleToggleCollapse}
-                />
-              )}
-            </div>
+                    {hasSequencedContainers && (
+                      <>
+                        {containerSequences.gutters.map((gutter) => (
+                          <SequentialGutter
+                            key={gutter.containerId}
+                            rows={gutter.rows}
+                            positions={gutter.positions}
+                            barHeight={containerSequences.barHeight}
+                            collapsedStepIds={collapsedSet}
+                            onToggleCollapse={handleToggleCollapse}
+                            aboveNodes
+                          />
+                        ))}
+                        <SequentialInsertLayer
+                          edges={containerSequences.layerEdges}
+                          nodes={containerSequences.layerNodes}
+                          barWidth={containerSequences.barWidth}
+                          barHeight={containerSequences.barHeight}
+                          isDesignMode={isDesignMode}
+                          startInsert={startInsert}
+                        />
+                      </>
+                    )}
+                  </BaseCanvas>
+                  {virtualizeForScale && projection && (
+                    <SequentialAccessibleList
+                      rows={visibleNumberedRows}
+                      nodes={seqNodes}
+                      selectedNodeId={selectedNodeId}
+                      onSelectNode={handleSelectRow}
+                      onToggleCollapse={handleToggleCollapse}
+                    />
+                  )}
+                </div>
+              </BarNodeIdsContext.Provider>
+            </SequencedContainersProvider>
           </SequentialMoveActionsProvider>
         </SequentialLaneAddProvider>
       </SequentialAttachmentsProvider>

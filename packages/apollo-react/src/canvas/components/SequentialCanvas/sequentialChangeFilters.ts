@@ -4,6 +4,7 @@ import { isPreviewEdge } from '../../utils/createPreviewNode';
 import type { GraphChangeSet } from '../../utils/sequential/sequential.types';
 import { isSequentialInsertedNode, SEQ_SPLIT_EDGE_ID_KEY } from './edges/sequentialInsert';
 import { SEQ_CONNECTOR_EDGE_TYPE } from './sequentialGraph.constants';
+import type { FlowInsertPlacement } from './synthesizePositionsForFlow';
 
 /**
  * Translates the derived view's xyflow change stream into what canonical state may see.
@@ -62,6 +63,65 @@ export function forwardSequentialNodeChanges<N extends Node>(
     }
   }
 
+  return out;
+}
+
+export interface SequencedContainerChangeScope<N extends Node> {
+  /** Per-container placeholder ids; changes to them never leave the view. */
+  syntheticIds: ReadonlySet<string>;
+  /** Children rendered as bars: their geometry is layout-owned. */
+  barIds: ReadonlySet<string>;
+  /** Containers shown as sequences: their size is layout-owned, their position is the host's. */
+  containerIds: ReadonlySet<string>;
+  canonicalById: ReadonlyMap<string, N>;
+}
+
+/**
+ * Node changes for canonical state on a flow canvas with sequenced containers. Nodes outside
+ * the sequenced bodies pass through verbatim (cards still write their own height back). For
+ * bars, `position` and `dimensions` are dropped and a `replace` keeps only data + selected;
+ * for a sequenced container only `dimensions` is dropped (and a `replace` is merged the same
+ * way, since the rendered clone carries the derived size), so dragging the frame still moves it.
+ */
+export function forwardSequencedContainerNodeChanges<N extends Node>(
+  changes: NodeChange<N>[],
+  scope: SequencedContainerChangeScope<N>
+): NodeChange<N>[] {
+  const out: NodeChange<N>[] = [];
+  for (const change of changes) {
+    const id = nodeChangeId(change);
+    if (id !== undefined && (id === PREVIEW_NODE_ID || scope.syntheticIds.has(id))) continue;
+    const isBar = id !== undefined && scope.barIds.has(id);
+    const isContainer = id !== undefined && scope.containerIds.has(id);
+    if (!isBar && !isContainer) {
+      out.push(change);
+      continue;
+    }
+    switch (change.type) {
+      case 'dimensions':
+        break;
+      case 'position':
+        if (isContainer) out.push(change);
+        break;
+      case 'replace': {
+        const canonical = scope.canonicalById.get(change.id);
+        if (!canonical) break;
+        out.push({
+          type: 'replace',
+          id: change.id,
+          item: {
+            ...canonical,
+            data: change.item.data,
+            selected: change.item.selected ?? canonical.selected,
+          },
+        });
+        break;
+      }
+      default:
+        out.push(change);
+        break;
+    }
+  }
   return out;
 }
 
@@ -211,4 +271,28 @@ export function graphChangeSetToEdgeChanges<E extends Edge>(
     changes.push({ type: 'add', item: edge as E });
   }
   return changes;
+}
+
+/**
+ * Swaps the canonical flow placement of a container-body insert into the forwarded changes:
+ * the `add` takes the placed position and the cleared insert marker, and every container the
+ * placement grew (or sibling it pushed) follows as a `replace`.
+ */
+export function applyFlowInsertPlacement<N extends Node>(
+  changes: NodeChange<N>[],
+  placement: FlowInsertPlacement
+): NodeChange<N>[] {
+  const out = changes.map(
+    (change): NodeChange<N> =>
+      change.type === 'add' && change.item.id === placement.node.id
+        ? {
+            ...change,
+            item: { ...change.item, position: placement.node.position, data: placement.node.data },
+          }
+        : change
+  );
+  for (const update of placement.updates) {
+    out.push({ type: 'replace', id: update.id, item: update as N });
+  }
+  return out;
 }

@@ -1,4 +1,7 @@
 {
+  "container.body-view.flow": "Flow",
+  "container.body-view.label": "Body view",
+  "container.body-view.sequence": "Sequence",
   "guardrails.builder.parameter-out-of-range-error": "Значение вне допустимого диапазона",
   "guardrails.form.max-error": "Должно быть не более {max}",
   "guardrails.form.min-error": "Должно быть не менее {min}",

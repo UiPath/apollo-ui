@@ -184,6 +184,53 @@ describe('AddNodeManager', () => {
     });
   });
 
+  it('materializes an unconnected preview as a parented child with no edges', () => {
+    const container: Node = {
+      id: 'runtime-1',
+      type: 'runtime',
+      position: { x: 0, y: 0 },
+      width: 560,
+      height: 320,
+      data: {},
+    };
+    const unconnectedPreview: Node = {
+      ...previewNode,
+      parentId: 'runtime-1',
+      extent: 'parent',
+      data: {
+        unconnected: true,
+        placement: { containerId: 'runtime-1', mode: 'first-child' },
+      },
+    };
+    mockNodes = [container, unconnectedPreview];
+    mockEdges = [];
+    mockPreviewNodeReturn.mockReturnValue({
+      previewNode: unconnectedPreview,
+      previewNodeConnectionInfo: [],
+    });
+    const onNodeAdded = vi.fn();
+
+    render(<AddNodeManager customPanel={TestPanel} onNodeAdded={onNodeAdded} />);
+    screen.getByTestId('select-node').click();
+
+    expect(mockNodes.find((n) => n.id === PREVIEW_NODE_ID)).toBeUndefined();
+    expect(mockNodes.find((n) => n.id === 'test-node-1234567890')).toMatchObject({
+      parentId: 'runtime-1',
+      extent: 'parent',
+    });
+    expect(mockEdges).toEqual([]);
+    // No connection to report: onNodeAdded is keyed on the first connection.
+    expect(onNodeAdded).not.toHaveBeenCalled();
+  });
+
+  it('shows no panel for a preview with no connections unless it is flagged unconnected', () => {
+    mockPreviewNodeReturn.mockReturnValue({ previewNode, previewNodeConnectionInfo: [] });
+
+    render(<AddNodeManager customPanel={TestPanel} />);
+
+    expect(screen.queryByTestId('select-node')).toBeNull();
+  });
+
   it('applies onBeforeNodeAdded transforms when node is added as source', () => {
     const onBeforeNodeAdded = vi.fn((node: Node, edges: Edge[]) => ({
       newNode: {
