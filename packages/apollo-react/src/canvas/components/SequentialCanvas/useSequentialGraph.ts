@@ -1,4 +1,4 @@
-import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
+import type { Edge, Node, XYPosition } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useMemo, useRef } from 'react';
 import { useSafeLingui } from '../../../i18n';
 import {
@@ -33,6 +33,7 @@ import type {
 } from '../../utils/sequential/sequential.types';
 import { EMPTY_SET } from '../BaseCanvas/set-utils';
 import { EMPTY_WAYPOINTS } from '../Edges/shared/constants';
+import type { Waypoint } from '../Edges/shared/types';
 import type {
   SequentialConnectorData,
   SequentialInsertAnchor,
@@ -162,15 +163,38 @@ interface SyntheticCallbacks {
   canAddToLane?: boolean;
 }
 
+/**
+ * Where an assembled sequence lives. The whole-canvas view uses the defaults; a container
+ * body parents its rows under the frame, offsets them into the frame's content box, and
+ * suffixes its synthetic ids so several bodies on one canvas never collide.
+ */
+export interface SequenceAssemblyScope {
+  parentId?: string;
+  /** Added to every row position (container-local layout to parent-relative node position). */
+  origin?: XYPosition;
+  /** Added to every connector waypoint; xyflow waypoints are absolute. */
+  waypointOffset?: XYPosition;
+  idSuffix?: string;
+  /**
+   * Emit the synthetic start row. False for a container body entered from the frame's own
+   * inner handle; a self-contained (runtime) body keeps it.
+   */
+  includeStart?: boolean;
+}
+
+/** Slot id the terminal placeholder of a container body reports through SequentialLaneAddContext. */
+export const containerTailSlotId = (containerId: string): string => `slot:tail:${containerId}`;
+
 /** The derived node array for a projection; the hook and the pure derivation both build from here. */
-function assembleSequentialNodes<N extends Node>(
+export function assembleSequentialNodes<N extends Node>(
   projection: SequenceProjection,
   layout: SequenceLayout,
   nodesById: ReadonlyMap<string, N>,
   callbacks: SyntheticCallbacks,
-  layoutOptions?: LayoutSequenceOptions
+  layoutOptions?: LayoutSequenceOptions,
+  scope?: SequenceAssemblyScope
 ): Node[] {
-  return buildSequentialNodes(projection, layout, nodesById, callbacks, layoutOptions);
+  return buildSequentialNodes(projection, layout, nodesById, callbacks, layoutOptions, scope);
 }
 
 function indexById<N extends Node>(nodes: readonly N[]): ReadonlyMap<string, N> {
@@ -210,9 +234,19 @@ function buildSequentialNodes<N extends Node>(
   layout: SequenceLayout,
   nodesById: ReadonlyMap<string, N>,
   callbacks: SyntheticCallbacks,
-  layoutOptions?: LayoutSequenceOptions
+  layoutOptions?: LayoutSequenceOptions,
+  scope: SequenceAssemblyScope = {}
 ): Node[] {
   const { barWidth, barHeight, rowGap, pitch } = resolveSequenceMetrics(layoutOptions);
+  const origin = scope.origin ?? { x: 0, y: 0 };
+  const suffix = scope.idSuffix ?? '';
+  const parenting = scope.parentId
+    ? { parentId: scope.parentId, extent: 'parent' as const }
+    : { parentId: undefined, extent: undefined };
+  const at = (position: XYPosition): XYPosition => ({
+    x: position.x + origin.x,
+    y: position.y + origin.y,
+  });
   const clones: Node[] = [];
   const orphanClones: Node[] = [];
   let firstTopY: number | undefined;
@@ -227,7 +261,7 @@ function buildSequentialNodes<N extends Node>(
       clones.push({
         id: row.nodeId,
         type: SEQ_PLACEHOLDER_NODE_TYPE,
-        position: layout.positions.get(row.nodeId) ?? { x: 0, y: 0 },
+        position: at(layout.positions.get(row.nodeId) ?? { x: 0, y: 0 }),
         width: barWidth,
         // An append plus is an overlay in the row gap; an empty lane/body is a full dashed row.
         height: row.placeholderKind === 'append' ? rowGap : barHeight,
@@ -236,6 +270,7 @@ function buildSequentialNodes<N extends Node>(
         // draggable; keep the row hit-testable while its Add-step button is active.
         selectable: callbacks.canAddToLane === true,
         hidden: !row.visible,
+        ...parenting,
         data: {
           insertionSlotId: row.lanePlaceholder.id,
           variant: row.placeholderKind === 'append' ? 'plus' : 'row',
@@ -245,7 +280,9 @@ function buildSequentialNodes<N extends Node>(
     }
     const canonical = nodesById.get(row.nodeId);
     if (!canonical) continue;
-    const position = layout.positions.get(row.nodeId) ?? { x: 0, y: 0 };
+    // Track the synthetic-row anchors in layout space: `at()` applies the origin once, below.
+    const local = layout.positions.get(row.nodeId) ?? { x: 0, y: 0 };
+    const position = at(local);
     const clone: Node = {
       ...canonical,
       position,
@@ -256,9 +293,8 @@ function buildSequentialNodes<N extends Node>(
       height: barHeight,
       draggable: false,
       hidden: !row.visible,
-      // Layout positions are absolute; a residual parentId would double-offset the clone.
-      parentId: undefined,
-      extent: undefined,
+      // Layout positions are scope-relative; the canonical parentId would double-offset the clone.
+      ...parenting,
       expandParent: undefined,
       className: row.orphan
         ? [canonical.className, 'opacity-60'].filter(Boolean).join(' ')
@@ -266,13 +302,13 @@ function buildSequentialNodes<N extends Node>(
     };
     if (row.orphan) {
       orphanClones.push(clone);
-      if (row.visible && firstOrphanY === undefined) firstOrphanY = position.y;
+      if (row.visible && firstOrphanY === undefined) firstOrphanY = local.y;
       continue;
     }
     clones.push(clone);
-    if (row.depth === 0 && firstTopY === undefined) firstTopY = position.y;
+    if (row.depth === 0 && firstTopY === undefined) firstTopY = local.y;
     if (row.visible) {
-      maxVisibleY = maxVisibleY === undefined ? position.y : Math.max(maxVisibleY, position.y);
+      maxVisibleY = maxVisibleY === undefined ? local.y : Math.max(maxVisibleY, local.y);
     }
   }
 
@@ -295,34 +331,76 @@ function buildSequentialNodes<N extends Node>(
       : (maxVisibleY ?? -pitch) + (tailIsPlus ? barHeight : pitch);
 
   const startNode: Node = {
-    id: SEQ_START_ROW_ID,
+    id: `${SEQ_START_ROW_ID}${suffix}`,
     type: SEQ_START_NODE_TYPE,
-    position: { x: 0, y: startY },
+    position: at({ x: 0, y: startY }),
     width: barWidth,
     height: barHeight,
     draggable: false,
     selectable: callbacks.onAddTrigger !== undefined,
+    ...parenting,
     data: { onAddTrigger: callbacks.onAddTrigger } satisfies SequentialStartNodeData,
   };
 
+  // A container body's tail reports its slot by id (like a lane placeholder) so the
+  // placeholder data carries no per-container closure.
+  const tailSlotId = scope.parentId ? containerTailSlotId(scope.parentId) : undefined;
   const placeholderNode: Node = {
-    id: SEQ_PLACEHOLDER_ROW_ID,
+    id: `${SEQ_PLACEHOLDER_ROW_ID}${suffix}`,
     type: SEQ_PLACEHOLDER_NODE_TYPE,
-    position: { x: 0, y: placeholderY },
+    position: at({ x: 0, y: placeholderY }),
     width: barWidth,
     height: tailIsPlus ? rowGap : barHeight,
     draggable: false,
-    selectable: callbacks.onPlaceholderAdd !== undefined,
+    selectable: tailSlotId
+      ? callbacks.canAddToLane === true
+      : callbacks.onPlaceholderAdd !== undefined,
+    ...parenting,
     data: {
-      onAdd: callbacks.onPlaceholderAdd,
+      ...(tailSlotId ? { insertionSlotId: tailSlotId } : { onAdd: callbacks.onPlaceholderAdd }),
       variant: tailIsPlus ? 'plus' : 'row',
     } satisfies SequentialPlaceholderNodeData,
   };
 
-  return [startNode, ...clones, placeholderNode, ...orphanClones];
+  const assembled =
+    scope.includeStart === false
+      ? [...clones, placeholderNode, ...orphanClones]
+      : [startNode, ...clones, placeholderNode, ...orphanClones];
+  return assembled.map(withDeclaredMeasure);
 }
 
-function buildSequentialEdges(projection: SequenceProjection, layout: SequenceLayout): Edge[] {
+const measuredCache = new Map<string, { width: number; height: number }>();
+
+/**
+ * Stamps `measured` with the declared size. xyflow prefers `measured` for the props it hands
+ * a node and re-adopts it from the node object on every identity change, so a clone built
+ * from a canonical node measured in another presentation would otherwise flip between the
+ * two sizes. The object is cached per size so the reuse pass still sees equal clones.
+ */
+function withDeclaredMeasure<T extends Node>(node: T): T {
+  if (typeof node.width !== 'number' || typeof node.height !== 'number') return node;
+  const key = `${node.width}x${node.height}`;
+  let measured = measuredCache.get(key);
+  if (!measured) {
+    measured = { width: node.width, height: node.height };
+    measuredCache.set(key, measured);
+  }
+  return node.measured === measured ? node : { ...node, measured };
+}
+
+/** The derived connector edges for a projection, with the scope's waypoint offset applied. */
+export function buildSequentialEdges(
+  projection: SequenceProjection,
+  layout: SequenceLayout,
+  scope: SequenceAssemblyScope = {}
+): Edge[] {
+  const suffix = scope.idSuffix ?? '';
+  const offset = scope.waypointOffset;
+  const shifted = (waypoints: Waypoint[] | undefined): Waypoint[] => {
+    if (!waypoints || waypoints.length === 0) return EMPTY_WAYPOINTS;
+    if (!offset) return waypoints;
+    return waypoints.map((wp) => ({ ...wp, x: wp.x + offset.x, y: wp.y + offset.y }));
+  };
   // No arrowhead into an append placeholder: it is an add affordance, not a step.
   const appendPlaceholderIds = new Set(
     projection.rows.filter((row) => row.placeholderKind === 'append').map((row) => row.nodeId)
@@ -369,7 +447,7 @@ function buildSequentialEdges(projection: SequenceProjection, layout: SequenceLa
     const data: SequentialConnectorData = {
       kind: connector.kind,
       label: connector.label,
-      waypoints: layout.connectorWaypoints.get(connector.id) ?? EMPTY_WAYPOINTS,
+      waypoints: shifted(layout.connectorWaypoints.get(connector.id)),
       slot: renderedSlot,
       insertAnchor: renderedSlot ? insertAnchorFor(connector) : undefined,
       preview: isPreviewConnector || undefined,
@@ -402,12 +480,21 @@ function buildSequentialEdges(projection: SequenceProjection, layout: SequenceLa
   const previewIsFirst = firstTop?.nodeId === PREVIEW_NODE_ID;
   const headSlot: InsertionSlot | undefined =
     firstTop && !previewIsFirst
-      ? { id: `slot:head:${firstTop.nodeId}`, target: { nodeId: firstTop.nodeId } }
+      ? {
+          id: `slot:head:${firstTop.nodeId}`,
+          target: { nodeId: firstTop.nodeId },
+          // A step inserted at the head of a container body parents into that container.
+          ...(scope.parentId ? { containerId: scope.parentId } : {}),
+        }
       : undefined;
+  if (scope.includeStart === false) {
+    if (lastVisibleTop) edges.push(placeholderEdge(lastVisibleTop, suffix));
+    return edges;
+  }
   edges.push({
-    id: SEQ_START_EDGE_ID,
-    source: SEQ_START_ROW_ID,
-    target: firstTop?.nodeId ?? SEQ_PLACEHOLDER_ROW_ID,
+    id: `${SEQ_START_EDGE_ID}${suffix}`,
+    source: `${SEQ_START_ROW_ID}${suffix}`,
+    target: firstTop?.nodeId ?? `${SEQ_PLACEHOLDER_ROW_ID}${suffix}`,
     sourceHandle: SEQUENTIAL_BAR_HANDLE_IDS.source,
     targetHandle: previewIsFirst ? DEFAULT_TARGET_HANDLE_ID : SEQUENTIAL_BAR_HANDLE_IDS.target,
     type: SEQ_CONNECTOR_EDGE_TYPE,
@@ -433,26 +520,29 @@ function buildSequentialEdges(projection: SequenceProjection, layout: SequenceLa
     ...(previewIsFirst ? { style: SEQ_PREVIEW_EDGE_STYLE } : {}),
   });
 
-  if (lastVisibleTop) {
-    const previewIsLast = lastVisibleTop.nodeId === PREVIEW_NODE_ID;
-    edges.push({
-      id: SEQ_PLACEHOLDER_EDGE_ID,
-      source: lastVisibleTop.nodeId,
-      target: SEQ_PLACEHOLDER_ROW_ID,
-      sourceHandle: previewIsLast ? DEFAULT_SOURCE_HANDLE_ID : SEQUENTIAL_BAR_HANDLE_IDS.source,
-      targetHandle: SEQUENTIAL_BAR_HANDLE_IDS.target,
-      type: SEQ_CONNECTOR_EDGE_TYPE,
-      data: {
-        kind: 'step',
-        waypoints: EMPTY_WAYPOINTS,
-        hideArrowHead: true,
-        ...(previewIsLast ? { preview: true, ignorePreviewConnection: true } : {}),
-      },
-      ...(previewIsLast ? { style: SEQ_PREVIEW_EDGE_STYLE } : {}),
-    });
-  }
+  if (lastVisibleTop) edges.push(placeholderEdge(lastVisibleTop, suffix));
 
   return edges;
+}
+
+/** Last visible top row -> terminal placeholder. */
+function placeholderEdge(lastVisibleTop: { nodeId: string }, suffix: string): Edge {
+  const previewIsLast = lastVisibleTop.nodeId === PREVIEW_NODE_ID;
+  return {
+    id: `${SEQ_PLACEHOLDER_EDGE_ID}${suffix}`,
+    source: lastVisibleTop.nodeId,
+    target: `${SEQ_PLACEHOLDER_ROW_ID}${suffix}`,
+    sourceHandle: previewIsLast ? DEFAULT_SOURCE_HANDLE_ID : SEQUENTIAL_BAR_HANDLE_IDS.source,
+    targetHandle: SEQUENTIAL_BAR_HANDLE_IDS.target,
+    type: SEQ_CONNECTOR_EDGE_TYPE,
+    data: {
+      kind: 'step',
+      waypoints: EMPTY_WAYPOINTS,
+      hideArrowHead: true,
+      ...(previewIsLast ? { preview: true, ignorePreviewConnection: true } : {}),
+    },
+    ...(previewIsLast ? { style: SEQ_PREVIEW_EDGE_STYLE } : {}),
+  };
 }
 
 /**
@@ -499,7 +589,7 @@ function stampStepAriaLabels(
  * Reuses the prior object for every derived row whose rendered inputs did not change, so a
  * selection update lets xyflow keep its internal entries instead of reconciling the graph.
  */
-function reuseUnchangedSequentialNodes(previous: Node[], next: Node[]): Node[] {
+export function reuseUnchangedSequentialNodes(previous: Node[], next: Node[]): Node[] {
   const previousById = new Map(previous.map((node) => [node.id, node]));
   return next.map((node) => {
     const prior = previousById.get(node.id);

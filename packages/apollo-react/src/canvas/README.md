@@ -209,16 +209,16 @@ The consumer keeps one canonical `nodes`/`edges` array. `SequentialCanvas` deriv
 Sequential is not a symmetric conversion for every graph. `prepareCanvasViewTransition('sequential', ...)` returns a compatibility report with a `level` and an `editable` flag, and the guidance is three-way:
 
 1. **Editable.** `level: 'exact'`, and also `level: 'degraded'` when the only issues are `multiple-roots` or `orphan`. These graphs render correctly and are recoverable by ordinary editing, so keep them fully editable. Locking the view as soon as a user has two disconnected steps would lock them out of the only view that flags the problem.
-2. **Read-only.** A report containing a `cycle` or `unstructured-merge` issue. The slot-based mutation operations cannot express a safe splice across a `goto` connector, because a `goto` carries no insertion slot.
+2. **Read-only.** A report containing a `cycle`, `unstructured-merge`, `cross-scope-edge`, or `duplicate-edge` issue (the rows marked "No" in the table under "Degraded graphs"). The slot-based mutation operations cannot express a safe splice across a `goto` connector, because a `goto` carries no insertion slot.
 3. **Not supported.** `level: 'unsupported'`, which means malformed containment (a duplicate node id, a missing parent, or a parent cycle).
 
 The component does not enforce any of this. The host reads `report.editable` and chooses the `mode` it passes to `SequentialCanvas`, which is what the example below does. Presentation-only nodes and edges can be excluded from the projection and preserved in the canonical graph.
 
 ### Availability
 
-Everything ships from `@uipath/apollo-react/canvas`, the same entry point as the rest of the canvas. The component surface (`SequentialCanvas`, `SequentialCanvasProps`, `prepareCanvasViewTransition`, `ViewSwitcher`, `useCanvasViewMode`, `SequentialViewProvider`) and the pure projection engine (`analyzeSequentialCompatibility`, `projectSequence`, `layoutSequence`, the report types) are both re-exported from it, and both follow the package's normal semver.
+Everything ships from `@uipath/apollo-react/canvas`, the same entry point as the rest of the canvas. The component surface (`SequentialCanvas`, `SequentialCanvasProps`, `prepareCanvasViewTransition`, `ViewSwitcher`, `useCanvasViewMode`, `SequentialViewProvider`) and the pure projection engine (`analyzeSequentialCompatibility`, `projectSequence`, `layoutSequence`, the report types) are both re-exported from it. The projection engine follows the package's normal semver. The component surface is pre-GA: its props can still change between releases, and such changes are called out in the release notes.
 
-One caveat to plan around: the sequential view is pre-GA. Its documented v1 limitations (see "Degraded graphs" below, plus bare branch owners that cannot be moved and loop-close edges that are not relocated) mean the props are still likely to change, so pin the package version if you adopt it early and read the release notes before upgrading. If you only need to reason about a graph rather than render it, depend on the projection engine and skip the component entirely: it is pure, has no xyflow or registry dependency, and is the more settled half of the two.
+Plan around that: the component's documented v1 limitations (see "Degraded graphs" below, plus bare branch owners that cannot be moved and loop-close edges that are not relocated) mean the props are still likely to change, so pin the package version if you adopt it early and read the release notes before upgrading. If you only need to reason about a graph rather than render it, depend on the projection engine and skip the component entirely: it is pure, has no xyflow or registry dependency, and is the more settled half of the two.
 
 ### Minimal usage
 
@@ -282,7 +282,7 @@ The flow layout can otherwise only infer containment from "has at least one chil
 
 The result reads as broken containment rather than as bad sizing, because inserted nodes carry `extent: 'parent'` and xyflow re-clamps such a node into its parent's measured bounds on every measurement pass. A child larger than its parent is pulled to a position outside the parent's own origin, so the inner container appears to escape the outer one even though its `parentId` is correct throughout.
 
-Containers are sized by the layout, not by xyflow: `expandParent` is deliberately never set, so a container's footprint comes from `prepareCanvasViewTransition` alone and there is one authority over it (D4).
+Containers are sized by the layout, not by xyflow: `expandParent` is deliberately never set, so a container's footprint comes from `prepareCanvasViewTransition` alone and there is one authority over it.
 
 #### Parent ordering
 
@@ -292,11 +292,27 @@ That reads as broken containment even though `parentId` is correct throughout. T
 
 Neither the projection nor the flow layout notices, because both bucket by `parentId` and are order-independent, so a mis-ordered graph projects and lays out perfectly and only misrenders. `prepareCanvasViewTransition` therefore repairs the order when entering flow view (`orderNodesParentsFirst`), and moves are forwarded as a single `replace` so React Flow applies them in place instead of appending a container behind its own children.
 
+### Sequenced containers
+
+A flow canvas can show one container's body as the bar stack inside its own frame while everything outside stays a flow. Render `SequentialCanvas` with `view="flow"` and pass `sequencedContainerIds` (plus `onSequencedContainerIdsChange` to own the state; omit it and the canvas holds the choice itself). `ContainerNode` shows a flow/sequence switch in its header when it renders inside such a canvas.
+
+Inside a sequenced frame the children render as bars parented to the container and are not draggable: the frame is the unit that moves in the outer flow. The frame is sized to the stack, its children's canonical positions are never written, and selection, renames, and inserts from the plus buttons go through the usual `onNodesChange` / `onEdgesChange`. The canvas mounts the Add Node panel itself in design mode while any container is sequenced, so a host must not render a second `AddNodeManager` in that case. Only adds started from a plus inside a sequenced body are treated as sequence inserts; an ordinary add from a handle elsewhere on the flow canvas passes through that panel untouched and keeps the placement it was given.
+
+Every sequenced body shows step numbers and expand/collapse chevrons in a gutter inside the frame, numbered from 1 per container. Collapse uses the same `collapsedStepIds` as the whole-canvas sequence (held internally when `onCollapsedStepIdsChange` is absent), and the frame shrinks to the visible rows. Nested steps render as indented bars of the outer frame: a for-each inside a sequenced container is one of its rows, not a frame of its own, so its header switch is hidden while the outer body is a sequence.
+
+**Runtime containers.** A container manifest with no inner-boundary handles is self-contained (`isSelfContainedContainerManifest`; the story manifest uses `display.container.kind: 'runtime'` and `badge: false`). Nothing wires the frame to its first or last step, so its sequence opens with its own "Workflow start" row, and a trigger inside the body folds into that row. The start row's "Add trigger" calls `onAddTrigger(containerId)`, so the same prop serves the whole-canvas start row (called without an argument) and every runtime container. In flow presentation, adding the first step to an empty runtime container creates an unconnected child; that empty-state add needs the host's `AddNodeManager`, as other flow-view adds already do, because the canvas mounts its own only while some container is sequenced.
+
+Limits: move, delete, and keyboard navigation inside a frame are not available yet; a populated body whose last step has no continuation output (an If whose source handles are all lanes) offers no trailing "Add step", since appending there would add a lane; children the projection excludes (sticky notes, artifact resources) keep their flow positions inside the frame.
+
 ### Artifact nodes
 
 Resources wired to a step through artifact handles (agent tools, context, memory, escalation) are not steps. By default any node whose manifest handles are all `handleType: 'artifact'` is excluded from the projection, listed in the report's `preservedOnlyNodeIds`, and rendered on the owning step's bar as attachment chips instead. The artifact edges themselves are never drawn as connectors and are listed in `preservedOnlyEdgeIds`. Toggling back to flow view returns the resources and their edges untouched. A host-supplied `isSequenceNode` replaces this default entirely, so a host that projects resources as rows must also exclude sticky notes itself.
 
 Deleting a step in sequential view removes its artifact edges with it and leaves the resource nodes in canonical state, which matches deleting the step in flow view.
+
+### Triggers
+
+A start node (the first-run type, or any manifest in the `trigger` category) has no row of its own: it folds into the "Workflow start" row, and its edge into the first step is not drawn as a connector. The edge is still part of the graph the view edits. Inserting a step above the first one splits the trigger's edge, and moving the first step re-points it, so the trigger always fires whichever step is first in the list. A host that drives the pure engine directly reads these edges from `projection.startEdges`; `insertAtSlot` and `moveSubtree` already account for them.
 
 ### Degraded graphs
 

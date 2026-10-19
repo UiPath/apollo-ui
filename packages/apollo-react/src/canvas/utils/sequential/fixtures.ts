@@ -450,3 +450,109 @@ export function applyGraphChangeSet(
     edges: [...fixture.edges.filter((edge) => !removedEdgeIds.has(edge.id)), ...changeSet.addEdges],
   };
 }
+
+export const SEQUENCED_CONTAINER_NODE_IDS = {
+  trigger: 'sc-trigger',
+  http: 'sc-http',
+  container: 'sc-container',
+  notify: 'sc-notify',
+  validate: 'sc-validate',
+  decision: 'sc-decision',
+  reserve: 'sc-reserve',
+  transform: 'sc-transform',
+} as const;
+
+/**
+ * Flow canvas with one container whose body is a small sequence:
+ *   Trigger -> HTTP -> Container [ Validate -> Decision (true: Reserve, false: straight to merge) -> Transform ] -> Notify
+ * The container's inner `start` edge enters Validate; Transform exits to the container's
+ * `continue` handle. Both fall outside the body scope.
+ */
+export function makeSequencedContainerFixture(): GraphFixture {
+  const ids = SEQUENCED_CONTAINER_NODE_IDS;
+  const nodes: Node[] = [
+    node(ids.trigger, 'uipath.first-run', 'Trigger', { y: 0 }),
+    node(ids.http, 'uipath.http-request', 'HTTP', { y: 150 }),
+    node(ids.container, 'uipath.control-flow.foreach', 'For each', { y: 300 }),
+    node(ids.notify, 'uipath.send-message', 'Notify', { y: 700 }),
+    node(ids.validate, 'uipath.script', 'Validate', { parentId: ids.container, y: 0 }),
+    node(ids.decision, 'uipath.control-flow.decision', 'Decision', {
+      parentId: ids.container,
+      y: 100,
+    }),
+    node(ids.reserve, 'uipath.script', 'Reserve', { parentId: ids.container, x: 100, y: 200 }),
+    node(ids.transform, 'uipath.script', 'Transform', { parentId: ids.container, y: 300 }),
+  ];
+  const edges: Edge[] = [
+    edge('sc-trigger-http', ids.trigger, 'output', ids.http, 'input'),
+    edge('sc-http-container', ids.http, 'output', ids.container, 'input'),
+    edge('sc-container-validate', ids.container, 'start', ids.validate, 'input'),
+    edge('sc-validate-decision', ids.validate, 'output', ids.decision, 'input'),
+    edge('sc-decision-reserve', ids.decision, 'true', ids.reserve, 'input'),
+    edge('sc-decision-transform', ids.decision, 'false', ids.transform, 'input'),
+    edge('sc-reserve-transform', ids.reserve, 'output', ids.transform, 'input'),
+    edge('sc-transform-continue', ids.transform, 'output', ids.container, 'continue'),
+    edge('sc-container-notify', ids.container, 'success', ids.notify, 'input'),
+  ];
+  return { nodes, edges };
+}
+
+export const RUNTIME_CONTAINER_NODE_IDS = {
+  maestroA: 'rc-maestro-a',
+  maestroB: 'rc-maestro-b',
+  container: 'rc-api',
+  agent: 'rc-agent',
+  http: 'rc-http',
+  javascript: 'rc-javascript',
+  forEach: 'rc-foreach',
+  step4: 'rc-step-4',
+  step5: 'rc-step-5',
+  step6: 'rc-step-6',
+  step7: 'rc-step-7',
+  sendMessage: 'rc-send-message',
+} as const;
+
+/**
+ * Maestro A -> Maestro B -> runtime container "api" -> Agent. The runtime container is
+ * self-contained: no edges touch its inner side. Its body is HTTP -> Javascript -> For Each
+ * (four chained steps, entered from its inner `start` handle and closed to `continue`) ->
+ * Send Message to User, so a sequence numbers the body 1 to 8.
+ */
+export function makeRuntimeContainerFixture(): GraphFixture {
+  const ids = RUNTIME_CONTAINER_NODE_IDS;
+  const step = 'uipath.data.transform';
+  const nodes: Node[] = [
+    node(ids.maestroA, step, 'Maestro A', { x: 0 }),
+    node(ids.maestroB, step, 'Maestro B', { x: 200 }),
+    node(ids.container, 'uipath.runtime-container', 'api', { x: 400 }),
+    node(ids.agent, 'uipath.agent', 'Agent', { x: 1400 }),
+    node(ids.http, 'uipath.http-request', 'HTTP Request', { parentId: ids.container, y: 0 }),
+    node(ids.javascript, 'uipath.javascript', 'Javascript', { parentId: ids.container, y: 100 }),
+    node(ids.forEach, 'uipath.control-flow.foreach', 'For Each', {
+      parentId: ids.container,
+      y: 200,
+    }),
+    node(ids.step4, step, 'Step 4', { parentId: ids.forEach, y: 0 }),
+    node(ids.step5, step, 'Step 5', { parentId: ids.forEach, y: 100 }),
+    node(ids.step6, step, 'Step 6', { parentId: ids.forEach, y: 200 }),
+    node(ids.step7, step, 'Step 7', { parentId: ids.forEach, y: 300 }),
+    node(ids.sendMessage, 'uipath.send-message', 'Send Message to User', {
+      parentId: ids.container,
+      y: 700,
+    }),
+  ];
+  const edges: Edge[] = [
+    edge('rc-a-b', ids.maestroA, 'output', ids.maestroB, 'input'),
+    edge('rc-b-api', ids.maestroB, 'output', ids.container, 'input'),
+    edge('rc-api-agent', ids.container, 'output', ids.agent, 'input'),
+    edge('rc-http-js', ids.http, 'output', ids.javascript, 'input'),
+    edge('rc-js-foreach', ids.javascript, 'output', ids.forEach, 'input'),
+    edge('rc-foreach-start', ids.forEach, 'start', ids.step4, 'input'),
+    edge('rc-4-5', ids.step4, 'output', ids.step5, 'input'),
+    edge('rc-5-6', ids.step5, 'output', ids.step6, 'input'),
+    edge('rc-6-7', ids.step6, 'output', ids.step7, 'input'),
+    edge('rc-7-continue', ids.step7, 'output', ids.forEach, 'continue'),
+    edge('rc-foreach-send', ids.forEach, 'success', ids.sendMessage, 'input'),
+  ];
+  return { nodes, edges };
+}

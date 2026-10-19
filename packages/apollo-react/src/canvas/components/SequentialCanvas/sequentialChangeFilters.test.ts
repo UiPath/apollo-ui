@@ -4,6 +4,8 @@ import { PREVIEW_EDGE_ID, PREVIEW_NODE_ID } from '../../constants';
 import type { GraphChangeSet } from '../../utils/sequential/sequential.types';
 import { SEQ_INSERTED_FLAG } from './edges/sequentialInsert';
 import {
+  applyFlowInsertPlacement,
+  forwardSequencedContainerNodeChanges,
   forwardSequentialEdgeChanges,
   forwardSequentialNodeChanges,
   graphChangeSetToEdgeChanges,
@@ -281,5 +283,105 @@ describe('graphChangeSetToEdgeChanges (move operations)', () => {
       removeEdgeIds: [],
     };
     expect(graphChangeSetToEdgeChanges(changeSet)).toEqual([]);
+  });
+});
+
+describe('forwardSequencedContainerNodeChanges', () => {
+  const canonicalById = new Map<string, Node>([
+    ['frame', { id: 'frame', position: { x: 0, y: 0 }, data: { display: { label: 'Frame' } } }],
+    [
+      'bar',
+      {
+        id: 'bar',
+        parentId: 'frame',
+        position: { x: 1, y: 2 },
+        data: { display: { label: 'Bar' } },
+      },
+    ],
+    ['card', { id: 'card', position: { x: 5, y: 5 }, data: {} }],
+  ]);
+  const scope = {
+    syntheticIds: new Set(['__sequential-placeholder__:frame']),
+    barIds: new Set(['bar']),
+    containerIds: new Set(['frame']),
+    canonicalById,
+  };
+
+  it('passes the frame position and bar selection, drops bar and frame geometry and placeholders', () => {
+    const out = forwardSequencedContainerNodeChanges<Node>(
+      [
+        { type: 'position', id: 'frame', position: { x: 9, y: 9 } },
+        { type: 'position', id: 'bar', position: { x: 9, y: 9 } },
+        { type: 'dimensions', id: 'frame', dimensions: { width: 1, height: 1 } },
+        { type: 'dimensions', id: 'bar', dimensions: { width: 1, height: 1 } },
+        { type: 'select', id: 'bar', selected: true },
+        { type: 'select', id: '__sequential-placeholder__:frame', selected: true },
+        { type: 'remove', id: PREVIEW_NODE_ID },
+      ],
+      scope
+    );
+    expect(out).toEqual([
+      { type: 'position', id: 'frame', position: { x: 9, y: 9 } },
+      { type: 'select', id: 'bar', selected: true },
+    ]);
+  });
+
+  it('merges only data and selected onto a bar or frame replace, and passes other nodes verbatim', () => {
+    const barReplace: NodeChange<Node> = {
+      type: 'replace',
+      id: 'bar',
+      item: {
+        id: 'bar',
+        position: { x: 100, y: 100 },
+        width: 520,
+        height: 56,
+        draggable: false,
+        data: { display: { label: 'Renamed' } },
+      },
+    };
+    const cardReplace: NodeChange<Node> = {
+      type: 'replace',
+      id: 'card',
+      item: { id: 'card', position: { x: 5, y: 5 }, height: 140, data: {} },
+    };
+    const out = forwardSequencedContainerNodeChanges<Node>([barReplace, cardReplace], scope);
+    expect(out[0]).toEqual({
+      type: 'replace',
+      id: 'bar',
+      item: {
+        ...canonicalById.get('bar'),
+        data: { display: { label: 'Renamed' } },
+        selected: undefined,
+      },
+    });
+    expect(out[1]).toBe(cardReplace);
+  });
+});
+
+describe('applyFlowInsertPlacement', () => {
+  it('swaps the placed position into the add and appends the grown containers as replaces', () => {
+    const added: Node = {
+      id: 'new',
+      type: 'uipath.script',
+      parentId: 'loop',
+      position: { x: 64, y: 360 },
+      selected: true,
+      data: { label: 'New', [SEQ_INSERTED_FLAG]: true },
+    };
+    const placed: Node = { ...added, position: { x: 416, y: 80 }, data: { label: 'New' } };
+    const grownLoop: Node = { id: 'loop', position: { x: 0, y: 0 }, width: 560, data: {} };
+    const changes: NodeChange[] = [
+      { type: 'select', id: 'other', selected: false },
+      { type: 'add', item: added },
+    ];
+
+    const out = applyFlowInsertPlacement(changes, { node: placed, updates: [grownLoop] });
+
+    expect(out[0]).toBe(changes[0]);
+    const add = out[1] as Extract<NodeChange, { type: 'add' }>;
+    expect(add.item.position).toEqual({ x: 416, y: 80 });
+    expect(add.item.data).toEqual({ label: 'New' });
+    expect(add.item.selected).toBe(true);
+    expect(out[2]).toEqual({ type: 'replace', id: 'loop', item: grownLoop });
   });
 });
