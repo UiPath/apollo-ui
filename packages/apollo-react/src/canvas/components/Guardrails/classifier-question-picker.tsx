@@ -265,15 +265,14 @@ function QuestionRow({
         />
       </div>
       {selected && isScore(question) && (
-        <div className="col-start-2 flex items-center gap-2 pt-1 pb-1.5">
-          <span className="shrink-0 text-xs text-muted-foreground">
-            {labels.severityCutoffLabel}
-          </span>
+        // Spans the row from the checkbox edge; the select wraps under its label when narrow.
+        <div className="col-span-2 flex flex-wrap items-center gap-x-2 gap-y-1 pt-1 pb-1.5">
+          <span className="text-xs text-muted-foreground">{labels.severityCutoffLabel}</span>
           <Select
             value={String(level)}
             onValueChange={(next) => onThreshold(levelToThreshold(Number(next), levels.length))}
           >
-            <SelectTrigger className="w-40" aria-label={named(labels.severityCutoff)}>
+            <SelectTrigger className="min-w-32 flex-1" aria-label={named(labels.severityCutoff)}>
               <SelectValue>{tier(level)}</SelectValue>
             </SelectTrigger>
             <SelectContent className="max-w-sm">
@@ -290,7 +289,7 @@ function QuestionRow({
         </div>
       )}
       {selected && !isScore(question) && (
-        <div className="col-start-2 pt-1">
+        <div className="col-span-2 pt-1">
           <ClassifierThresholdSlider
             value={threshold}
             ariaLabel={named(labels.questionStrictness)}

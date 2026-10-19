@@ -88,31 +88,36 @@ export function ClassifierCustomQuestionsEditor({
           </Button>
         )}
       </div>
-      <div className="grid gap-4">
+      <div className="grid gap-3">
         {rows.map((row, index) => {
           const key = keys[index];
           const named = (template: string) =>
             formatGuardrailFormMessage(template, { label: parameter.label, position: index + 1 });
+          // One card per question, like a custom guardrail's rule card, so consecutive
+          // questions read apart and the delete button keeps its place at any width.
           return (
-            <div key={key} className="grid gap-2">
-              <div className="flex items-start gap-2">
-                <Textarea
-                  value={row.question}
-                  rows={2}
-                  placeholder={labels.questionPlaceholder}
-                  aria-label={named(labels.customQuestion)}
-                  aria-invalid={error ? true : undefined}
-                  aria-describedby={error ? `${uid}-error` : undefined}
-                  maxLength={parameter.maxLength}
-                  className="resize-y"
-                  onChange={(e) => updateRow(index, { question: e.target.value })}
-                />
+            // biome-ignore lint/a11y/useSemanticElements: a fieldset draws its legend on the border, as the rule card notes.
+            <div
+              key={key}
+              role="group"
+              aria-labelledby={`${uid}-title-${key}`}
+              className="grid gap-3 rounded-lg border border-border p-3"
+            >
+              <div className="flex items-center justify-between">
+                <span
+                  id={`${uid}-title-${key}`}
+                  className="text-xs font-medium text-muted-foreground"
+                >
+                  {formatGuardrailFormMessage(labels.customQuestionTitle, { position: index + 1 })}
+                </span>
                 <Button
                   type="button"
                   variant="ghost"
-                  size="xs"
+                  size="3xs"
                   icon
                   aria-label={named(labels.removeCustomQuestion)}
+                  // As on the rule card: ghost restates its foreground under `future:` and on hover.
+                  className="text-destructive future:text-destructive hover:text-destructive future:hover:text-destructive"
                   onClick={() =>
                     update(
                       rows.filter((_, i) => i !== index),
@@ -123,7 +128,18 @@ export function ClassifierCustomQuestionsEditor({
                   <Trash2 aria-hidden="true" />
                 </Button>
               </div>
-              <div className="grid gap-2 pr-10 pl-4">
+              <Textarea
+                value={row.question}
+                rows={2}
+                placeholder={labels.questionPlaceholder}
+                aria-label={named(labels.customQuestion)}
+                aria-invalid={error ? true : undefined}
+                aria-describedby={error ? `${uid}-error` : undefined}
+                maxLength={parameter.maxLength}
+                className="resize-y"
+                onChange={(e) => updateRow(index, { question: e.target.value })}
+              />
+              <div className="grid gap-2">
                 <ClassifierThresholdSlider
                   value={row.threshold ?? CLASSIFIER_DEFAULT_THRESHOLD}
                   ariaLabel={named(labels.customQuestionStrictness)}

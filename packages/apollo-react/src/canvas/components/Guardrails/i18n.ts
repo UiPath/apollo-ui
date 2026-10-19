@@ -1951,6 +1951,8 @@ export interface GuardrailClassifierLabels {
   thresholdLenient: string;
   addQuestion: string;
   questionPlaceholder: string;
+  /** A custom question's card title: `{{position}}`. */
+  customQuestionTitle: string;
   /** `{{label}}` (the parameter's) and `{{position}}`; also the two below. */
   customQuestion: string;
   removeCustomQuestion: string;
@@ -2034,6 +2036,11 @@ function buildGuardrailClassifierLabels(_: ClassifierTranslate): GuardrailClassi
     questionPlaceholder: _({
       id: 'guardrails.classifier.question-placeholder',
       message: 'A yes/no question about the payload, where yes means it gets flagged.',
+    }),
+    customQuestionTitle: _({
+      id: 'guardrails.classifier.custom-question-title',
+      message: 'Question {position}',
+      values: TEMPLATE_TOKENS,
     }),
     customQuestion: _({
       id: 'guardrails.classifier.custom-question',

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -84,7 +84,12 @@ describe('ClassifierCustomQuestionsEditor', () => {
     );
 
     expect(screen.queryByRole('button', { name: 'Add' })).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Remove Your questions 1' }));
+    // Each question is a card named by its position, its delete button in the header.
+    fireEvent.click(
+      within(screen.getByRole('group', { name: 'Question 1' })).getByRole('button', {
+        name: 'Remove Your questions 1',
+      })
+    );
 
     expect(onRowsChange).toHaveBeenCalledWith([ROWS[1]]);
     expect(question(1)).toHaveValue('Is it rude?');
