@@ -781,8 +781,8 @@ function RepeatableRowsGuidancePage({ globalTheme }: { globalTheme: string }) {
             Each control is named by its row and its column, such as “Condition 2 Field”.
           </GuidanceItem>
           <GuidanceItem>
-            Stacked rows, in narrow panels: each field gets its own small label, a{' '}
-            <InlineCode>FormFieldHeader</InlineCode> with the muted variant. Column labels
+            Stacked rows, in narrow panels: each field gets its own label, the same{' '}
+            <InlineCode>FormFieldLabel</InlineCode> as cards and other form fields. Column labels
             can&apos;t reach a value that has dropped to its own line.
           </GuidanceItem>
           <GuidanceItem>
@@ -796,9 +796,10 @@ function RepeatableRowsGuidancePage({ globalTheme }: { globalTheme: string }) {
             Build labels from the Field Anatomy parts. A standalone field is a{' '}
             <InlineCode>FormField</InlineCode> with a <InlineCode>FormFieldLabel</InlineCode>, or a{' '}
             <InlineCode>FormFieldHeader</InlineCode> when its label row carries a badge or actions.
-            Shared column labels are one muted <InlineCode>FormFieldHeader</InlineCode> per column,
-            outside any field, and each control names itself with that label through{' '}
-            <InlineCode>aria-labelledby</InlineCode>.
+            Shared column labels are one <InlineCode>FormFieldLabel</InlineCode> per column. Wrap
+            the column labels and the row list together in a <InlineCode>FormField</InlineCode> so
+            the first row sits the same distance below its label as any other field. Each control
+            names itself with its column label through <InlineCode>aria-labelledby</InlineCode>.
           </GuidanceItem>
         </GuidanceList>
         <div className="mt-6 grid gap-5 md:grid-cols-2">
