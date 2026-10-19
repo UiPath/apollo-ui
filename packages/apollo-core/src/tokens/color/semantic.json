@@ -748,7 +748,7 @@
         "value": "{color.blue.800.value}"
       },
       "future-dark": {
-        "value": "{color.cyan.300.value}"
+        "value": "{color.cyan.900.value}"
       },
       "future-light": {
         "value": "{color.cyan.100.value}"
