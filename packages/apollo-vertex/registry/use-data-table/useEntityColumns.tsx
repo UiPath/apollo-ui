@@ -1,7 +1,10 @@
 import { DataTableColumnHeader } from "@/components/ui/data-table";
 import { FORMAT_TYPE_MAP } from "@/lib/constants";
 import { renderValueOrEmptyState } from "@/lib/renderValueOrEmptyState";
-import type { DataTableColumnDef } from "@/lib/table-features";
+import type {
+  DataTableColumnDef,
+  DataTableColumnMeta,
+} from "@/lib/table-features";
 import type {
   Column,
   ColumnDefWithAccessorKey,
@@ -95,7 +98,7 @@ export function useEntityColumns<TRecord extends EntityRecord = EntityRecord>({
           meta: {
             displayName: field.displayName,
             ...(formatType ? { getFilterValue: formatValue } : {}),
-          },
+          } satisfies DataTableColumnMeta<TRecord>,
           cell: ({ getValue }) => (
             <div className="max-w-[200px] truncate">
               {formatValue(getValue())}

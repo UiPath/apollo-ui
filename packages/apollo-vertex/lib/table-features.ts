@@ -1,6 +1,7 @@
 import {
   type Column,
   type ColumnDef,
+  type ColumnMeta,
   columnFilteringFeature,
   columnOrderingFeature,
   columnResizingFeature,
@@ -34,6 +35,16 @@ import {
 
 export type { RowData };
 
+// Keeps fields that apps add to TanStack's global ColumnMeta, with Vertex's own fields taking precedence.
+interface DataTableFeaturesColumnMeta
+  extends Omit<
+      // oxlint-disable-next-line typescript-eslint(no-explicit-any) -- reads the app's augmentation for any features and row data
+      ColumnMeta<any, any, any>,
+      keyof DataTableColumnMeta
+    >,
+    // oxlint-disable-next-line typescript-eslint(no-explicit-any) -- one meta type serves every row data type
+    DataTableColumnMeta<any> {}
+
 export const dataTableFeatures = tableFeatures({
   rowSortingFeature,
   columnFilteringFeature,
@@ -45,6 +56,8 @@ export const dataTableFeatures = tableFeatures({
   columnOrderingFeature,
   columnSizingFeature,
   columnResizingFeature,
+  // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- type-only slot; TanStack reads its type, not its value
+  columnMeta: {} as DataTableFeaturesColumnMeta,
   sortedRowModel: createSortedRowModel(),
   filteredRowModel: createFilteredRowModel(),
   paginatedRowModel: createPaginatedRowModel(),
@@ -73,6 +86,19 @@ export type DataTableColumnDef<
 > = ColumnDef<DataTableFeatures, TData, TValue>;
 
 export type DataTableRow<TData extends RowData> = Row<DataTableFeatures, TData>;
+
+// TanStack rows are not assignable across row data types, so filter callbacks get the row fields
+// they need instead of the full row.
+export type DataTableFilterRow<TData extends RowData> = Pick<
+  DataTableRow<TData>,
+  "id" | "index" | "depth" | "parentId" | "original" | "getValue"
+>;
+
+export interface DataTableColumnMeta<TData extends RowData = RowData> {
+  displayName?: string;
+  getFilterValue?(value: unknown, row: DataTableFilterRow<TData>): string;
+  overflowVisible?: boolean;
+}
 
 export type DataTableColumn<TData extends RowData, TValue = unknown> = Column<
   DataTableFeatures,

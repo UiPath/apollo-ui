@@ -23,15 +23,6 @@ import {
 } from "@/lib/table-features";
 import { useVertexTranslation } from "@/lib/vertex-translation";
 
-declare module "@tanstack/react-table" {
-  // oxlint-disable-next-line no-unused-vars -- TFeatures and TValue are required by the TanStack Table module augmentation signature
-  interface ColumnMeta<TFeatures, TData extends RowData, TValue> {
-    displayName?: string;
-    getFilterValue?: (value: unknown, row: DataTableRow<TData>) => string;
-    overflowVisible?: boolean;
-  }
-}
-
 import {
   Table,
   TableBody,

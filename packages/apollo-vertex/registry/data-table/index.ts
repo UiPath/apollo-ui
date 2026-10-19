@@ -15,6 +15,8 @@ export {
 } from "@/components/ui/filter-dropdown";
 export type {
   DataTableColumnDef as ColumnDef,
+  DataTableColumnMeta,
+  DataTableFilterRow,
   DataTableInstance as TanstackTable,
   DataTableRow as Row,
 } from "@/lib/table-features";

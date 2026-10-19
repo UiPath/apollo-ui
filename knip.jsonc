@@ -12,7 +12,12 @@
     "packages/apollo-vertex": {
       // The package exports point at dist/, so name the sources rslib builds
       // them from. Everything public must be reachable from entries/.
-      "entry": ["entries/**/*.ts", "styles/tailwind.css"],
+      "entry": [
+        "entries/**/*.ts",
+        "styles/tailwind.css",
+        // Consumer fixtures type-checked against dist/ by `test:types`.
+        "type-tests/**/*.ts"
+      ],
       "ignoreFiles": [
         // Barrel for shadcn consumers (components/ui/solution-tests). The npm
         // root entry re-exports the individual files instead.

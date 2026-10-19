@@ -116,6 +116,7 @@
     ".dependency-cruiser.cjs",
     "rslib.config.ts",
     "scripts/**",
+    "type-tests/**",
     "types/**/*.d.ts"
   ],
   "overrides": [

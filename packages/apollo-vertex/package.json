@@ -30,7 +30,7 @@
     "skills"
   ],
   "scripts": {
-    "build": "pnpm generate:theme styles/theme.css && rslib build && node scripts/check-dist.mjs",
+    "build": "pnpm generate:theme styles/theme.css && rslib build && node scripts/check-dist.mjs && pnpm test:types",
     "build:check": "node scripts/check-dist.mjs --list",
     "generate:theme": "node --experimental-strip-types scripts/generate-theme-css.ts",
     "dev": "pnpm generate:theme styles/theme.css && rslib build --watch",
@@ -43,6 +43,7 @@
     "typecheck": "tsc --noEmit",
     "lint:skills": "intent validate skills",
     "test": "vitest run",
+    "test:types": "tsc -p type-tests/column-meta-augmentation/tsconfig.json && tsc -p type-tests/column-meta-without-augmentation/tsconfig.json",
     "test:coverage": "vitest run --coverage"
   },
   "packageManager": "pnpm@11.1.3",
