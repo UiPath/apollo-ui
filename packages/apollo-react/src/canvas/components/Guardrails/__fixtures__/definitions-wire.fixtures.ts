@@ -388,6 +388,104 @@ export const SENTIMENT_WIRE: GuardrailDefinitionWire = {
   ],
 };
 
+/** The classifier question catalog's group ids, in the order the backend sends them. */
+export const CLASSIFIER_CATEGORY_IDS: string[] = [
+  'pii',
+  'harmful_content',
+  'prompt_injection',
+  'intellectual_property',
+  'secrets_and_credentials',
+  'compliance_commitments',
+  'scope_and_conduct',
+];
+
+/** Every predefined classifier question name, `ClassifierQuestionPacks.AllQuestionNames`. */
+export const CLASSIFIER_QUESTION_NAMES: string[] = [
+  'pii_contact_information',
+  'pii_government_identifiers',
+  'pii_financial_identifiers',
+  'pii_health_information',
+  'harmful_hate',
+  'harmful_self_harm',
+  'harmful_sexual',
+  'harmful_violence',
+  'harmful_illegal_activity',
+  'injection_instruction_override',
+  'injection_jailbreak',
+  'injection_exfiltration',
+  'injection_indirect',
+  'ip_verbatim_text',
+  'ip_proprietary_code',
+  'secrets_api_keys_tokens',
+  'secrets_passwords',
+  'secrets_private_keys',
+  'secrets_connection_strings',
+  'compliance_financial_advice',
+  'compliance_legal_medical_advice',
+  'compliance_binding_commitments',
+  'conduct_off_topic',
+  'conduct_competitor_steering',
+  'conduct_politics_religion',
+  'conduct_profanity_abuse',
+];
+
+/**
+ * Agents' `OutOfTheBoxGuardrailDefinitions.Classifier` (UiPath/Agents#6449), as the definitions
+ * endpoint sends it. The wire describes `selectedQuestions`, `model` and `modelVendor` itself;
+ * `questions` carries no copy.
+ */
+export const CLASSIFIER_WIRE: GuardrailDefinitionWire = {
+  validator: 'classifier',
+  allowedScopes: ['Agent', 'Llm', 'Tool'],
+  status: 'Available',
+  parameters: [
+    {
+      id: 'selectedQuestions',
+      type: 'enum-list',
+      required: false,
+      defaultValue: [],
+      options: CLASSIFIER_QUESTION_NAMES,
+      displayName: 'Predefined questions',
+      description:
+        'Curated yes/no and severity questions the classifier evaluates against the payload. Pick any across categories, and/or add your own questions below.',
+    },
+    {
+      id: 'questions',
+      type: 'text-list',
+      required: false,
+      defaultValue: [],
+      maxItems: 10,
+      maxLength: 500,
+    },
+    {
+      id: 'questionThresholds',
+      type: 'map-enum',
+      required: false,
+      defaultValue: {},
+      keySource: 'selectedQuestions',
+      step: 0.05,
+      min: 0,
+      max: 1,
+    },
+    {
+      // No options: LLM Gateway's Model Hub owns the list, and the host's model picker finds it.
+      id: 'model',
+      type: 'enum',
+      required: true,
+      defaultValue: '',
+      options: [],
+      displayName: 'Model',
+    },
+    {
+      id: 'modelVendor',
+      type: 'text',
+      required: true,
+      defaultValue: '',
+      displayName: 'Model vendor',
+    },
+  ],
+};
+
 /** A bring-your-own guardrail: manifest copy only, no curated table entry applies. */
 export const BYO_WIRE: GuardrailDefinitionWire = {
   validator: 'pii_detection',
@@ -439,6 +537,7 @@ export const ALL_BUILT_IN_WIRE: GuardrailDefinitionWire[] = [
   INTELLECTUAL_PROPERTY_WIRE,
   LLM_AS_JUDGE_WIRE,
   SENTIMENT_WIRE,
+  CLASSIFIER_WIRE,
 ];
 
 /**

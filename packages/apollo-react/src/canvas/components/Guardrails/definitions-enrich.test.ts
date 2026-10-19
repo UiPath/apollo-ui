@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   BYO_WIRE,
+  CLASSIFIER_WIRE,
   HARMFUL_CONTENT_WIRE,
   LLM_AS_JUDGE_WIRE,
   PII_DETECTION_PREVIEW_WIRE,
@@ -196,6 +197,31 @@ describe('enrichGuardrailDefinitions', () => {
       expect(param(definition, 'sentimentThresholds')).toMatchObject({
         label: 'Confidence thresholds',
         keySource: 'sentiments',
+      });
+    });
+
+    it('names the classifier, and lets its wire labels win over the curated ones', () => {
+      const definition = enrichOne(CLASSIFIER_WIRE);
+
+      expect(definition.displayName).toBe('Classifier');
+      // The wire describes these two itself, so its copy is what renders.
+      expect(param(definition, 'selectedQuestions')).toMatchObject({
+        label: 'Predefined questions',
+        tooltip: CLASSIFIER_WIRE.parameters[0]?.description,
+      });
+      expect(param(definition, 'modelVendor').label).toBe('Model vendor');
+      // `questions` arrives bare, so the curated copy fills it.
+      expect(param(definition, 'questions')).toMatchObject({
+        label: 'Your questions',
+        tooltip: GUARDRAIL_COPY_EN.classifier?.paramTooltips?.questions,
+        maxItems: 10,
+        maxLength: 500,
+      });
+      expect(param(definition, 'questionThresholds')).toMatchObject({
+        keySource: 'selectedQuestions',
+        min: 0,
+        max: 1,
+        step: 0.05,
       });
     });
 
