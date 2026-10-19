@@ -28,7 +28,6 @@ import { focusBeside } from './focus';
 import type {
   ResourceGroup,
   ResourceItem,
-  ResourceItemAction,
   ResourcePickerContentProps,
   ResourcePickerProps,
 } from './types';
@@ -170,6 +169,15 @@ export function ResourcePickerContent({
     onQueryChange?.(nextQuery);
   };
 
+  useEffect(() => {
+    if (typeof process === 'undefined' || process.env.NODE_ENV === 'production') return;
+    if (groups.some((group) => group.items.some((item) => item.id === ''))) {
+      console.warn(
+        'ResourcePicker: dropped rows with an empty id, which the picker reserves for no selection.'
+      );
+    }
+  }, [groups]);
+
   const groupIdBase = useId();
   const visibleGroups = useMemo(() => filterGroups(groups, query), [groups, query]);
   const filtering = query.trim().length > 0;
@@ -192,23 +200,56 @@ export function ResourcePickerContent({
   const [cursorTarget, setCursorTarget] = useState<string | null>(null);
   const placingCursor = useRef(false);
 
-  /** The row whose actions menu is open, opened from the keyboard. */
-  const [actionsMenu, setActionsMenu] = useState<{
-    item: ResourceItem;
-    actions: ResourceItemAction[];
-    anchor: HTMLElement;
-  } | null>(null);
+  /** The id of the row whose actions menu is open, opened from the keyboard. */
+  const [actionsMenuId, setActionsMenuId] = useState<string | null>(null);
+
+  /** The rows on screen: those of every visible group the search or the user has not folded. */
+  const shownRows = visibleGroups
+    .filter((group) => filtering || !collapsedIds.has(group.id))
+    .flatMap((group) => group.items);
+
+  /**
+   * The open menu's row, its actions and the row's element it is anchored
+   * to, read afresh on every render rather than kept from when it opened. A
+   * refresh of `groups` that removes or disables the row, or changes its
+   * actions, must not leave a menu that runs them.
+   */
+  const menuFor = (id: string | null) => {
+    if (id === null || !itemActions) return null;
+    const item = shownRows.find((row) => row.id === id);
+    if (!item || item.disabled) return null;
+    const anchor = Array.from(
+      rootRef.current?.querySelectorAll<HTMLElement>('[cmdk-item]') ?? []
+    ).find((row) => row.getAttribute('data-value') === id);
+    if (!anchor) return null;
+    const actions = itemActions(item);
+    return actions.length > 0 ? { item, actions, anchor } : null;
+  };
+  const actionsMenu = menuFor(actionsMenuId);
+
+  /** The search, where the picker's keyboard lives. */
+  const searchInput = () =>
+    rootRef.current?.querySelector<HTMLInputElement>('[data-slot="resource-picker-search"]');
+
+  // The row went away under an open menu, or lost its actions. The menu
+  // unmounts with focus in it, which would drop to the page, so focus goes
+  // back to the search, unless something else has already taken it.
+  const actionsMenuGone = actionsMenuId !== null && actionsMenu === null;
+  useLayoutEffect(() => {
+    if (!actionsMenuGone) return;
+    setActionsMenuId(null);
+    const root = rootRef.current;
+    if (!root) return;
+    const active = (root.getRootNode() as Document | ShadowRoot).activeElement;
+    if (active && active !== root.ownerDocument.body) return;
+    root.querySelector<HTMLInputElement>('[data-slot="resource-picker-search"]')?.focus();
+  }, [actionsMenuGone]);
 
   /** Shift+Enter on the row under the cursor opens its actions as a menu. */
   const openActionsMenu = () => {
-    if (!itemActions) return false;
     const active = activeValue();
-    const item = visibleGroups.flatMap((group) => group.items).find((row) => row.id === active);
-    const anchor = rootRef.current?.querySelector<HTMLElement>('[cmdk-item][aria-selected="true"]');
-    if (!item || !anchor) return false;
-    const actions = itemActions(item);
-    if (actions.length === 0) return false;
-    setActionsMenu({ item, actions, anchor });
+    if (!menuFor(active)) return false;
+    setActionsMenuId(active);
     return true;
   };
 
@@ -223,7 +264,7 @@ export function ResourcePickerContent({
   const leaveActionsMenu = (backwards: boolean) => {
     const anchor = actionsMenu?.anchor;
     const root = rootRef.current;
-    setActionsMenu(null);
+    setActionsMenuId(null);
     if (!anchor || !root) return;
     if (focusBeside(anchor, backwards, root)) return;
     if (!backwards && onTabOut) {
@@ -231,17 +272,13 @@ export function ResourcePickerContent({
       return;
     }
     if (!backwards && focusBeside(root, false)) return;
-    root.querySelector<HTMLInputElement>('[data-slot="resource-picker-search"]')?.focus();
+    searchInput()?.focus();
   };
 
   const closeActionsMenu = (restoreFocus: boolean) => {
-    setActionsMenu(null);
-    // Back to the search, where the picker's keyboard lives, unless Tab has
-    // already moved focus on.
-    if (!restoreFocus) return;
-    rootRef.current
-      ?.querySelector<HTMLInputElement>('[data-slot="resource-picker-search"]')
-      ?.focus();
+    setActionsMenuId(null);
+    // Back to the search, unless focus has already moved on.
+    if (restoreFocus) searchInput()?.focus();
   };
 
   const setCollapsed = (id: string, collapse: boolean) => {
@@ -602,6 +639,8 @@ export function ResourcePicker({
   };
 
   const selected = useMemo(() => {
+    // An empty value is no selection, so it never matches a row.
+    if (!value) return null;
     for (const group of groups) {
       const hit = group.items.find((item) => item.id === value);
       if (hit) return hit;
@@ -776,11 +815,15 @@ export function ResourcePicker({
           // Closing hands focus back to the trigger, unless Tab is leaving
           // the picker: then it goes on to whatever follows the field, as Tab
           // from the field would, its own clear and adornment controls aside.
+          // With nothing after the field, focus leaves with the popover, as
+          // Tab from the last control on the page would, rather than going
+          // back to the trigger the Tab was moving away from.
           onCloseAutoFocus={(event) => {
             if (!tabbingOut.current) return;
             tabbingOut.current = false;
+            event.preventDefault();
             const field = fieldRef.current;
-            if (field && focusBeside(field, false)) event.preventDefault();
+            if (field) focusBeside(field, false);
           }}
         >
           <ResourcePickerContent
@@ -798,6 +841,10 @@ export function ResourcePicker({
             groups={groups}
             value={value}
             onSelect={(item: ResourceItem) => {
+              // The rows stay mounted while the popover animates out, so a
+              // click or Enter can still reach one once the picker is closed,
+              // whether by the user, its owner or `disabled`.
+              if (!open) return;
               onSelect(item);
               setOpen(false);
             }}

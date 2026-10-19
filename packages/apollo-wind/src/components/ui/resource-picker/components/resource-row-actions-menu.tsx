@@ -10,8 +10,9 @@ export interface ResourceRowActionsMenuProps {
   label: string;
   actions: ResourceItemAction[];
   /**
-   * Called once the menu closes. `restoreFocus` is false when the menu was
-   * left with Tab, which has already moved focus on.
+   * Called once the menu closes. `restoreFocus` is true for Escape and for an
+   * action, and false when focus or a press went elsewhere, Tab included,
+   * which has already moved focus on.
    */
   onClose: (restoreFocus: boolean) => void;
   /**
@@ -41,10 +42,11 @@ export function ResourceRowActionsMenu({
   const virtualRef = useMemo(() => ({ current: anchor }), [anchor]);
   const itemsRef = useRef<(HTMLButtonElement | null)[]>([]);
   /**
-   * Set while Tab moves focus out. Focus landing outside the menu dismisses
-   * it as well, and that dismissal must not pull focus back to the search.
+   * Set by Escape, the one dismissal that hands focus back to the search.
+   * The others, Tab, focus moving to another control or a press outside,
+   * leave focus where they put it.
    */
-  const tabbedAway = useRef(false);
+  const escaped = useRef(false);
 
   const focusItem = (index: number) => {
     const items = itemsRef.current.filter((item): item is HTMLButtonElement => item !== null);
@@ -76,7 +78,6 @@ export function ResourceRowActionsMenu({
       // Tab leaves the menu, as it does a dropdown menu, and goes on in its
       // own direction from the row the menu belongs to.
       event.preventDefault();
-      tabbedAway.current = true;
       onTabOut(event.shiftKey);
     }
   };
@@ -85,7 +86,7 @@ export function ResourceRowActionsMenu({
     <Popover
       open
       onOpenChange={(open) => {
-        if (!open) onClose(!tabbedAway.current);
+        if (!open) onClose(escaped.current);
       }}
     >
       <PopoverAnchor virtualRef={virtualRef} />
@@ -103,6 +104,9 @@ export function ResourceRowActionsMenu({
         }}
         // The picker puts focus back in its own search.
         onCloseAutoFocus={(event) => event.preventDefault()}
+        onEscapeKeyDown={() => {
+          escaped.current = true;
+        }}
         onKeyDown={handleKeyDown}
       >
         {actions.map((action, index) => (

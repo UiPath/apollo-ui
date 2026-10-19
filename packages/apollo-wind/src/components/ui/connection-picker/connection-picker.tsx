@@ -136,8 +136,8 @@ export function ConnectionPicker({
   /**
    * Whether focus is somewhere in the picker, its popover included: focus
    * events bubble through React's tree from the portal too. A control that
-   * unmounts while focused fires no blur, so this still holds when the
-   * add-only field replaces it.
+   * unmounts while focused fires no blur, so this still holds when one field
+   * replaces the other.
    */
   const focusWithin = useRef(false);
   const trackFocus = {
@@ -148,17 +148,20 @@ export function ConnectionPicker({
       focusWithin.current = false;
     },
   };
-  const addButtonRef = useRef<HTMLButtonElement>(null);
-  // Swapping in the add-only field unmounts the picker, and with it the
-  // search or clear control that had focus, which would drop to the page.
-  // Focus that was in the picker moves to the new button; focus anywhere
+  const fieldRef = useRef<HTMLDivElement>(null);
+  // Swapping one field for the other unmounts the control that had focus:
+  // the picker's search or clear control as the add-only field takes over,
+  // or the add button once the first connection arrives. Focus would drop to
+  // the page, so focus that was in the old field moves to the new one's
+  // first control, the add button or the picker's trigger; focus anywhere
   // else is left where it is.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: runs on the swap between the two fields, which `addOnly` marks.
   useLayoutEffect(() => {
-    const button = addButtonRef.current;
-    if (!addOnly || !focusWithin.current || !button) return;
-    const root = button.getRootNode() as Document | ShadowRoot;
+    const control = fieldRef.current?.querySelector<HTMLElement>('button');
+    if (!focusWithin.current || !control) return;
+    const root = control.getRootNode() as Document | ShadowRoot;
     const active = root.activeElement;
-    if (!active || active === button.ownerDocument.body) button.focus();
+    if (!active || active === control.ownerDocument.body) control.focus();
   }, [addOnly]);
 
   const byId = useMemo(
@@ -274,9 +277,8 @@ export function ConnectionPicker({
   // whose only useful content is its footer link is a wasted click.
   if (addOnly) {
     return (
-      <div className={cn('flex min-w-0 flex-col gap-1', className)} {...trackFocus}>
+      <div ref={fieldRef} className={cn('flex min-w-0 flex-col gap-1', className)} {...trackFocus}>
         <button
-          ref={addButtonRef}
           {...fieldProps}
           // A field label, through `aria-labelledby` or a `<label>` for `id`,
           // would replace the button's own text as its name, and the action
@@ -306,7 +308,7 @@ export function ConnectionPicker({
   }
 
   return (
-    <div className={cn('flex min-w-0 flex-col gap-1', className)} {...trackFocus}>
+    <div ref={fieldRef} className={cn('flex min-w-0 flex-col gap-1', className)} {...trackFocus}>
       <ResourcePicker
         {...pickerProps}
         {...fieldProps}

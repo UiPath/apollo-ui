@@ -2,10 +2,11 @@ import type { AriaAttributes, ReactElement, ReactNode } from 'react';
 
 export interface ResourceItem {
   /**
-   * Row identity, unique across every group. Labels are not: the same name
-   * can appear under two groups, so the id is what a row is keyed, matched
-   * and reported by. It may not begin with U+E000, which the picker reserves
-   * for its own heading options.
+   * Row identity, unique across every group and never empty. Labels are not
+   * unique: the same name can appear under two groups, so the id is what a
+   * row is keyed, matched and reported by. `''` is the picker's "no value",
+   * so a row with an empty id is dropped. It may not begin with U+E000, which
+   * the picker reserves for its own heading options.
    */
   id: string;
   label: string;
@@ -159,14 +160,21 @@ export interface ResourcePickerProps
   'aria-errormessage'?: string;
 }
 
+/** `''` is the picker's "no value", so a row needs an id to be chosen by. */
+const hasId = (item: ResourceItem) => item.id !== '';
+
 /**
- * A group whose own label matches keeps every row, since someone searching a
+ * Rows with an empty id are dropped first, since no selection could tell
+ * them apart from none. A group whose own label matches keeps every row, since someone searching a
  * folder name wants what is in it. Otherwise rows are matched one by one, and
  * a group is kept only while it still has a match, so no empty header
  * survives a search. A group with no rows is dropped even without one, so a
  * picker whose groups are all empty reaches the empty state.
  */
-export const filterGroups = (groups: ResourceGroup[], query: string): ResourceGroup[] => {
+export const filterGroups = (allGroups: ResourceGroup[], query: string): ResourceGroup[] => {
+  const groups = allGroups.map((group) =>
+    group.items.every(hasId) ? group : { ...group, items: group.items.filter(hasId) }
+  );
   const normalizedQuery = query.trim().toLowerCase();
   if (!normalizedQuery) return groups.filter((group) => group.items.length > 0);
 

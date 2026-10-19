@@ -504,6 +504,26 @@ describe('ConnectionPicker', () => {
     expect(screen.getByRole('button', { name: 'Add connection' })).toHaveFocus();
   });
 
+  it('moves focus to the picker when adding the first connection replaces the add-only field', async () => {
+    const user = userEvent.setup();
+    function Host() {
+      const [connections, setConnections] = useState<Connection[]>([]);
+      return (
+        <ConnectionPicker
+          connections={connections}
+          onSelect={vi.fn()}
+          onAddConnection={() => setConnections(CONNECTIONS)}
+        />
+      );
+    }
+    render(<Host />);
+
+    screen.getByRole('button', { name: 'Add connection' }).focus();
+    await user.keyboard('{Enter}');
+
+    expect(screen.getByRole('button', { name: /Select connection/ })).toHaveFocus();
+  });
+
   it('leaves focus elsewhere alone when the add-only field takes over', () => {
     const props = { onSelect: vi.fn(), onAddConnection: vi.fn() };
     const { rerender } = render(

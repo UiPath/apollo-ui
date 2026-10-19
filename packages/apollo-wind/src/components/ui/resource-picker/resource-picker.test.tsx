@@ -37,6 +37,30 @@ const headingOf = (label: string) => {
   return heading;
 };
 
+/**
+ * Keeps a popover whose content has the `rp-exit` class mounted once it
+ * closes, until an `animationend` is dispatched on it. jsdom neither runs
+ * animations nor resolves them into computed styles, and reporting an
+ * animation name is enough for Radix to wait for the exit to end.
+ */
+const holdExitAnimation = () => {
+  const computed = window.getComputedStyle.bind(window);
+  vi.spyOn(window, 'getComputedStyle').mockImplementation((element, pseudo) => {
+    const style = computed(element, pseudo);
+    if (!(element as Element).classList?.contains('rp-exit')) return style;
+    // Read when Radix asks, as a live style would be: an enter animation
+    // while open, a different, exit one once closed.
+    return new Proxy(style, {
+      get: (target, key) =>
+        key === 'animationName'
+          ? (element as Element).getAttribute('data-state') === 'closed'
+            ? 'rp-exit'
+            : 'rp-enter'
+          : Reflect.get(target, key, target),
+    });
+  });
+};
+
 describe('ResourcePickerContent', () => {
   it('passes a full accessibility check with groups present, open and collapsed', async () => {
     const user = userEvent.setup();
@@ -479,6 +503,32 @@ describe('ResourcePickerContent', () => {
 
     await user.click(screen.getByRole('option', { name: 'Locked' }));
     expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  it('drops a row with an empty id, which would read as no selection', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      render(
+        <ResourcePickerContent
+          groups={[
+            {
+              id: 'g',
+              label: 'Group',
+              items: [
+                { id: '', label: 'Blank' },
+                { id: 'g/a', label: 'Kept' },
+              ],
+            },
+          ]}
+          onSelect={vi.fn()}
+        />
+      );
+      expect(screen.queryByRole('option', { name: 'Blank' })).not.toBeInTheDocument();
+      expect(screen.getByRole('option', { name: 'Kept' })).toBeInTheDocument();
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('empty id'));
+    } finally {
+      vi.restoreAllMocks();
+    }
   });
 
   it('clears the query on Escape rather than letting it dismiss', async () => {
@@ -1233,6 +1283,100 @@ describe('ResourcePickerContent', () => {
     expect(screen.getByRole('button', { name: 'Next field' })).toHaveFocus();
   });
 
+  it.each([
+    ['removes', (groups: ResourceGroup[]) => [groups[0]]],
+    [
+      'disables',
+      (groups: ResourceGroup[]) => [
+        groups[0],
+        {
+          ...groups[1],
+          items: groups[1].items.map((item) =>
+            item.id === 'Shared/Aavi' ? { ...item, disabled: true } : item
+          ),
+        },
+      ],
+    ],
+  ])('closes the actions menu when a refresh %s its row', async (_, refresh) => {
+    const user = userEvent.setup();
+    const onEdit = vi.fn();
+    const props = {
+      onSelect: vi.fn(),
+      itemActions: (item: { id: string; label: string }) => [
+        { id: 'edit', label: `Edit ${item.label}`, text: 'Edit', onSelect: () => onEdit(item.id) },
+      ],
+    };
+    const { rerender } = render(<ResourcePickerContent {...props} groups={GROUPS} />);
+
+    const search = screen.getByRole('combobox');
+    await user.type(search, 'Aav');
+    await user.keyboard('{Shift>}{Enter}{/Shift}');
+    expect(await screen.findByRole('menu', { name: 'Actions for Aavi' })).toBeInTheDocument();
+
+    rerender(<ResourcePickerContent {...props} groups={refresh(GROUPS)} />);
+    // No menu is left to run an action for a row that is gone, and focus is
+    // not dropped to the page with it.
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(onEdit).not.toHaveBeenCalled();
+    expect(search).toHaveFocus();
+  });
+
+  it("runs the row's current action when its actions change under an open menu", async () => {
+    const user = userEvent.setup();
+    const first = vi.fn();
+    const second = vi.fn();
+    const props = { groups: GROUPS, onSelect: vi.fn() };
+    const { rerender } = render(
+      <ResourcePickerContent
+        {...props}
+        itemActions={(item) => [
+          { id: 'edit', label: `Edit ${item.label}`, text: 'Edit', onSelect: first },
+        ]}
+      />
+    );
+
+    await user.click(screen.getByRole('combobox'));
+    await user.keyboard('{Shift>}{Enter}{/Shift}');
+    await screen.findByRole('menu');
+    rerender(
+      <ResourcePickerContent
+        {...props}
+        itemActions={(item) => [
+          { id: 'edit', label: `Edit ${item.label}`, text: 'Edit', onSelect: second },
+        ]}
+      />
+    );
+    await user.keyboard('{Enter}');
+
+    expect(second).toHaveBeenCalled();
+    expect(first).not.toHaveBeenCalled();
+  });
+
+  it('leaves focus on another control that takes it from the actions menu', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <ResourcePickerContent
+          groups={GROUPS}
+          onSelect={vi.fn()}
+          itemActions={(item) => [
+            { id: 'edit', label: `Edit ${item.label}`, text: 'Edit', onSelect: vi.fn() },
+          ]}
+        />
+        <input aria-label="Other field" />
+      </>
+    );
+
+    await user.click(screen.getByRole('combobox'));
+    await user.keyboard('{Shift>}{Enter}{/Shift}');
+    await screen.findByRole('menu');
+
+    const other = screen.getByRole('textbox', { name: 'Other field' });
+    act(() => other.focus());
+    await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
+    expect(other).toHaveFocus();
+  });
+
   it('closes the actions menu on Escape and leaves the picker as it was', async () => {
     const user = userEvent.setup();
     function Host() {
@@ -1797,6 +1941,31 @@ describe('ResourcePicker', () => {
       expect(screen.getByRole('button', { name: 'Next field' })).toHaveFocus();
     });
 
+    it('lets focus leave rather than return to the field when nothing follows it', async () => {
+      const user = userEvent.setup();
+      render(
+        <ResourcePicker
+          groups={GROUPS}
+          onSelect={vi.fn()}
+          placeholder="Select entity..."
+          itemActions={(item) => [
+            { id: 'edit', label: `Edit ${item.label}`, text: 'Edit', onSelect: vi.fn() },
+          ]}
+        />
+      );
+
+      const field = screen.getByRole('button', { name: /Select entity/ });
+      await user.click(field);
+      await screen.findByRole('combobox');
+      await user.keyboard('{Shift>}{Enter}{/Shift}');
+      await screen.findByRole('menu');
+      await user.keyboard('{Tab}');
+
+      await waitFor(() => expect(screen.queryByRole('listbox')).not.toBeInTheDocument());
+      // The Tab moved on from the field, so it is not handed focus back.
+      expect(field).not.toHaveFocus();
+    });
+
     it('does the same inside an open shadow root', async () => {
       const user = userEvent.setup();
       const shadowHost = document.body.appendChild(document.createElement('div'));
@@ -1822,24 +1991,7 @@ describe('ResourcePicker', () => {
 
   it('keeps the search and the open groups as they were while the popover animates out', async () => {
     const user = userEvent.setup();
-    // jsdom neither runs animations nor resolves them into computed styles.
-    // Reporting an animation name is enough for Radix to keep the content
-    // mounted until the exit animation says it has ended.
-    const computed = window.getComputedStyle.bind(window);
-    vi.spyOn(window, 'getComputedStyle').mockImplementation((element, pseudo) => {
-      const style = computed(element, pseudo);
-      if (!(element as Element).classList?.contains('rp-exit')) return style;
-      // Read when Radix asks, as a live style would be: an enter animation
-      // while open, a different, exit one once closed.
-      return new Proxy(style, {
-        get: (target, key) =>
-          key === 'animationName'
-            ? (element as Element).getAttribute('data-state') === 'closed'
-              ? 'rp-exit'
-              : 'rp-enter'
-            : Reflect.get(target, key, target),
-      });
-    });
+    holdExitAnimation();
     try {
       const props = {
         groups: GROUPS,
@@ -1870,6 +2022,51 @@ describe('ResourcePicker', () => {
       // The next opening starts afresh.
       rerender(<ResourcePicker {...props} open />);
       expect(screen.getByRole('combobox')).toHaveValue('');
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
+
+  it.each([
+    ['closed by its owner', { open: false }],
+    ['disabled', { open: true, disabled: true }],
+  ])('commits no row while the popover animates out once %s', async (_, closing) => {
+    holdExitAnimation();
+    try {
+      const onSelect = vi.fn();
+      const onOpenChange = vi.fn();
+      const props = {
+        groups: GROUPS,
+        onSelect,
+        onOpenChange,
+        placeholder: 'Select entity...',
+        contentClassName: 'rp-exit',
+      };
+      const { rerender } = render(<ResourcePicker {...props} open />);
+      rerender(<ResourcePicker {...props} {...closing} />);
+      onOpenChange.mockClear();
+
+      // Still on screen, but no longer the picker's to commit.
+      expect(screen.getByRole('dialog')).toHaveAttribute('data-state', 'closed');
+      fireEvent.click(screen.getByRole('option', { name: 'Aavi' }));
+      expect(onSelect).not.toHaveBeenCalled();
+      expect(onOpenChange).not.toHaveBeenCalled();
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
+
+  it('shows no row as chosen for an empty value', () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      render(
+        <ResourcePicker
+          groups={[{ id: 'g', label: 'Group', items: [{ id: '', label: 'Blank' }] }]}
+          onSelect={vi.fn()}
+          placeholder="Select entity..."
+        />
+      );
+      expect(screen.getByRole('button', { name: 'Select entity...' })).toBeInTheDocument();
     } finally {
       vi.restoreAllMocks();
     }
