@@ -10,18 +10,23 @@ import type {
 import { applyEdgeChanges, applyNodeChanges } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { PREVIEW_NODE_ID, SEQ_BAR_WIDTH } from '../../constants';
+import { PREVIEW_NODE_ID, SEQ_BAR_HEIGHT, SEQ_BAR_WIDTH, SEQ_ROW_GAP } from '../../constants';
 import { NodeRegistryProvider } from '../../core';
 import { getToolbarActionStore } from '../../hooks/ToolbarActionContext';
 import type { NodeManifest } from '../../schema/node-definition';
 import type { ToolbarActionEvent } from '../../schema/toolbar';
 import { defaultWorkflowManifest } from '../../storybook-utils/manifests';
+import { runtimeContainerManifests } from '../../storybook-utils/sequential/runtimeContainerManifests';
 import { sequentialWireframeManifests } from '../../storybook-utils/sequential/wireframeManifests';
 import {
   AGENT_RESOURCES_NODE_IDS,
   makeAgentWithResourcesFixture,
   makeDiamondFixture,
+  makeRuntimeContainerFixture,
+  makeSequencedContainerFixture,
   makeWireframeFixture,
+  RUNTIME_CONTAINER_NODE_IDS,
+  SEQUENCED_CONTAINER_NODE_IDS,
   WIREFRAME_NODE_IDS,
 } from '../../utils/sequential/fixtures';
 import { SEQ_LANE_PLACEHOLDER_PREFIX } from '../../utils/sequential/graph-helpers';
@@ -72,6 +77,8 @@ vi.mock('@uipath/apollo-react/canvas/xyflow/react', async (importOriginal) => ({
   // The real portal targets a DOM node the stubbed flow never renders; render inline instead.
   // biome-ignore lint/suspicious/noExplicitAny: test stub
   ViewportPortal: ({ children }: any) => <div data-testid="viewport-portal">{children}</div>,
+  // biome-ignore lint/suspicious/noExplicitAny: test stub
+  EdgeLabelRenderer: ({ children }: any) => <div data-testid="edge-label-renderer">{children}</div>,
   useReactFlow: () => mockReactFlowInstance,
 }));
 
@@ -107,7 +114,12 @@ const customSpineManifest: NodeManifest = {
 /** Manifests for the wireframe's two non-Storybook node types, merged additively. */
 const testManifest = {
   ...defaultWorkflowManifest,
-  nodes: [...defaultWorkflowManifest.nodes, ...sequentialWireframeManifests, customSpineManifest],
+  nodes: [
+    ...defaultWorkflowManifest.nodes,
+    ...sequentialWireframeManifests,
+    ...runtimeContainerManifests,
+    customSpineManifest,
+  ],
 };
 
 /** Spies the harness wraps the host callbacks in, re-created per test. */
@@ -129,6 +141,9 @@ interface HarnessProps {
   flowNodeTypes?: NodeTypes;
   readOnlyNodeIds?: readonly string[];
   onPrimaryAction?: (nodeId: string) => void;
+  /** Flow-view containers whose body renders as a sequence. */
+  sequencedContainerIds?: string[];
+  onAddTrigger?: (containerId?: string) => void;
 }
 
 /** A realistic controlled host: canonical state mutated only through xyflow's reducers. */
@@ -141,6 +156,8 @@ function ControlledHarness({
   flowNodeTypes,
   readOnlyNodeIds,
   onPrimaryAction,
+  sequencedContainerIds,
+  onAddTrigger,
 }: HarnessProps) {
   const [nodes, setNodes] = useState<Node[]>(initialNodes);
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
@@ -168,6 +185,8 @@ function ControlledHarness({
       flowNodeTypes={flowNodeTypes}
       readOnlyNodeIds={readOnlyNodeIds}
       onPrimaryAction={onPrimaryAction}
+      sequencedContainerIds={sequencedContainerIds}
+      onAddTrigger={onAddTrigger}
     />
   );
 }
@@ -396,9 +415,16 @@ describe('SequentialCanvas view toggle (seam 1, D4)', () => {
   });
 
   it('registers `preview` even when the host owns flowNodeTypes, without displacing it', () => {
-    // Anything the host registered under `preview` wins.
+    // Anything the host registered under `preview` wins. Flow components are wrapped by the
+    // card-or-bar dispatcher, so the host's component is asserted through a render.
     const { nodes, edges } = makeWireframeFixture();
-    const HostNode = () => null;
+    const HostNode = () => <div data-testid="host-node" />;
+    const rendersHost = (Component: React.ComponentType<Record<string, unknown>>) => {
+      const probe = render(<Component id="probe" data={{}} type="task" />);
+      const found = probe.queryByTestId('host-node') !== null;
+      probe.unmount();
+      return found;
+    };
 
     const { rerenderWith } = renderCanvas({
       initialNodes: nodes,
@@ -407,11 +433,12 @@ describe('SequentialCanvas view toggle (seam 1, D4)', () => {
       flowNodeTypes: { task: HostNode },
     });
 
-    expect(capturedFlowProps.current.nodeTypes.task).toBe(HostNode);
+    expect(rendersHost(capturedFlowProps.current.nodeTypes.task)).toBe(true);
+    // The default ghost needs a flow provider to render, so only its presence is asserted here.
     expect(capturedFlowProps.current.nodeTypes.preview).toBeDefined();
 
     rerenderWith({ flowNodeTypes: { task: HostNode, preview: HostNode } });
-    expect(capturedFlowProps.current.nodeTypes.preview).toBe(HostNode);
+    expect(rendersHost(capturedFlowProps.current.nodeTypes.preview)).toBe(true);
   });
 });
 
@@ -892,5 +919,202 @@ describe('SequentialCanvas artifact nodes', () => {
     );
     // Nothing is healed: the agent had no incomer, and its artifact edges go with it.
     expect(canonical.edges).toEqual([]);
+  });
+});
+
+describe('SequentialCanvas sequenced containers (flow view)', () => {
+  const ids = SEQUENCED_CONTAINER_NODE_IDS;
+  const bodyIds = [ids.validate, ids.decision, ids.reserve, ids.transform];
+
+  it('renders the body as parented, non-draggable bars, sizes the frame, and leaves canonical geometry alone', () => {
+    const { nodes, edges } = makeSequencedContainerFixture();
+    const before = geometryOf(nodes);
+    renderCanvas({
+      initialNodes: nodes,
+      initialEdges: edges,
+      view: 'flow',
+      sequencedContainerIds: [ids.container],
+    });
+
+    const derived = derivedNodes();
+    for (const id of bodyIds) {
+      const bar = derived.find((node) => node.id === id);
+      expect(bar?.parentId).toBe(ids.container);
+      expect(bar?.extent).toBe('parent');
+      expect(bar?.draggable).toBe(false);
+    }
+    const frame = derived.find((node) => node.id === ids.container);
+    expect(frame?.width).toBeGreaterThan(0);
+    expect(frame?.height).toBeGreaterThan(0);
+    // The frame precedes its bars, as xyflow requires.
+    expect(derived.findIndex((node) => node.id === ids.container)).toBeLessThan(
+      derived.findIndex((node) => node.id === ids.validate)
+    );
+    // Cards outside the body are the canonical objects.
+    expect(derived.find((node) => node.id === ids.http)).toBe(
+      canonical.nodes.find((node) => node.id === ids.http)
+    );
+    // Body sequence edges became connectors; the entry edge enters the first bar mid-left.
+    const edgeIds = capturedFlowProps.current.edges.map((edge: Edge) => edge.id);
+    expect(edgeIds).not.toContain('sc-validate-decision');
+    expect(
+      capturedFlowProps.current.edges.some((edge: Edge) => edge.type === 'sequentialConnector')
+    ).toBe(true);
+    const entry = capturedFlowProps.current.edges.find(
+      (edge: Edge) => edge.id === 'sc-container-validate'
+    );
+    expect(entry?.targetHandle).toBe('seq-branch-target');
+    expect(geometryOf(canonical.nodes)).toEqual(before);
+  });
+
+  it('forwards the frame position and bar selection, and drops bar and frame geometry', () => {
+    const { nodes, edges } = makeSequencedContainerFixture();
+    renderCanvas({
+      initialNodes: nodes,
+      initialEdges: edges,
+      view: 'flow',
+      sequencedContainerIds: [ids.container],
+    });
+
+    reportNodeChanges([
+      { type: 'position', id: ids.container, position: { x: 50, y: 60 }, dragging: true },
+      { type: 'position', id: ids.validate, position: { x: 999, y: 999 }, dragging: true },
+      { type: 'dimensions', id: ids.container, dimensions: { width: 1, height: 1 } },
+      { type: 'dimensions', id: ids.validate, dimensions: { width: 1, height: 1 } },
+      { type: 'select', id: ids.validate, selected: true },
+    ]);
+
+    const forwarded = forwardedNodeChanges();
+    expect(changeIds(forwarded, 'position')).toEqual([ids.container]);
+    expect(changeIds(forwarded, 'dimensions')).toEqual([]);
+    expect(changeIds(forwarded, 'select')).toEqual([ids.validate]);
+    expect(canonical.nodes.find((node) => node.id === ids.container)?.position).toEqual({
+      x: 50,
+      y: 60,
+    });
+    expect(canonical.nodes.find((node) => node.id === ids.validate)?.position).toEqual({
+      x: 0,
+      y: 0,
+    });
+  });
+
+  it('opens an insert gap inside the frame from a plus button', () => {
+    const { nodes, edges } = makeSequencedContainerFixture();
+    renderCanvas({
+      initialNodes: nodes,
+      initialEdges: edges,
+      view: 'flow',
+      sequencedContainerIds: [ids.container],
+    });
+    const transformBefore = derivedNodes().find((node) => node.id === ids.transform)!.position.y;
+
+    fireEvent.click(screen.getByRole('button', { name: 'Insert step after step 1' }));
+
+    // The stubbed instance has no nodes, so the preview pipeline stops before setNodes; the
+    // gap itself comes from the slot the click published.
+    const transformAfter = derivedNodes().find((node) => node.id === ids.transform)!.position.y;
+    expect(transformAfter - transformBefore).toBe(SEQ_BAR_HEIGHT + SEQ_ROW_GAP);
+  });
+
+  it('renders a nested container and its body as bars of the outer frame', () => {
+    const { nodes, edges } = makeSequencedContainerFixture();
+    const nested: Node[] = [
+      ...nodes,
+      {
+        id: 'inner',
+        type: 'uipath.control-flow.foreach',
+        position: { x: 0, y: 400 },
+        parentId: ids.container,
+        data: { display: { label: 'Inner' } },
+      },
+      {
+        id: 'inner-step',
+        type: 'uipath.script',
+        position: { x: 0, y: 0 },
+        parentId: 'inner',
+        data: { display: { label: 'Inner step' } },
+      },
+    ];
+    renderCanvas({
+      initialNodes: nested,
+      initialEdges: edges,
+      view: 'flow',
+      sequencedContainerIds: [ids.container],
+    });
+
+    for (const id of ['inner', 'inner-step']) {
+      const bar = derivedNodes().find((node) => node.id === id);
+      expect(bar?.parentId).toBe(ids.container);
+      expect(bar?.draggable).toBe(false);
+    }
+  });
+});
+
+describe('SequentialCanvas runtime containers (flow view)', () => {
+  const rc = RUNTIME_CONTAINER_NODE_IDS;
+  const startId = `${SEQ_START_ROW_ID}:${rc.container}`;
+
+  it('collapses and expands a step from the in-frame gutter without a host collapse callback', () => {
+    const { nodes, edges } = makeRuntimeContainerFixture();
+    renderCanvas({
+      initialNodes: nodes,
+      initialEdges: edges,
+      view: 'flow',
+      sequencedContainerIds: [rc.container],
+    });
+    const frameHeight = () => derivedNodes().find((node) => node.id === rc.container)!.height!;
+    const expandedHeight = frameHeight();
+    expect(derivedNodes().find((node) => node.id === rc.step4)?.hidden).toBe(false);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Collapse step 3' }));
+    expect(derivedNodes().find((node) => node.id === rc.step4)?.hidden).toBe(true);
+    expect(frameHeight()).toBeLessThan(expandedHeight);
+    expect(
+      screen.getAllByTestId('sequential-gutter-number').map((number) => number.textContent)
+    ).toEqual(['1', '2', '3', '8']);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Expand step 3' }));
+    expect(derivedNodes().find((node) => node.id === rc.step4)?.hidden).toBe(false);
+    expect(frameHeight()).toBe(expandedHeight);
+  });
+
+  it('opens the body with a start row whose Add trigger reports the container id', () => {
+    const { nodes, edges } = makeRuntimeContainerFixture();
+    const onAddTrigger = vi.fn();
+    renderCanvas({
+      initialNodes: nodes,
+      initialEdges: edges,
+      view: 'flow',
+      sequencedContainerIds: [rc.container],
+      onAddTrigger,
+    });
+
+    const start = derivedNodes().find((node) => node.id === startId);
+    expect(start?.parentId).toBe(rc.container);
+    act(() => {
+      (start?.data as { onAddTrigger: () => void }).onAddTrigger();
+    });
+    expect(onAddTrigger).toHaveBeenCalledWith(rc.container);
+  });
+
+  it('keeps the start row and its synthetic id out of the host change stream', () => {
+    const { nodes, edges } = makeRuntimeContainerFixture();
+    renderCanvas({
+      initialNodes: nodes,
+      initialEdges: edges,
+      view: 'flow',
+      sequencedContainerIds: [rc.container],
+      onAddTrigger: () => {},
+    });
+
+    reportNodeChanges([
+      { type: 'select', id: startId, selected: true },
+      { type: 'dimensions', id: startId, dimensions: { width: 1, height: 1 } },
+      { type: 'position', id: rc.step5, position: { x: 1, y: 1 }, dragging: true },
+    ]);
+    const forwarded = forwardedNodeChanges();
+    expect(changeIds(forwarded, 'select')).toEqual([]);
+    expect(changeIds(forwarded, 'dimensions')).toEqual([]);
+    expect(changeIds(forwarded, 'position')).toEqual([]);
   });
 });

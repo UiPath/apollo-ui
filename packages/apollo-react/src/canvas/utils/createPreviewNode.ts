@@ -31,6 +31,14 @@ export function isPreviewEdge(edge: { id?: string; source?: string; target?: str
   );
 }
 
+/** Preview `data` key for an Add Node preview that materializes with no connecting edge. */
+export const PREVIEW_UNCONNECTED_DATA_KEY = 'unconnected';
+
+/** True for a preview that adds a free-standing node, such as the first step of a self-contained container. */
+export function isUnconnectedPreviewNode(node: Pick<Node, 'data'> | null | undefined): boolean {
+  return node?.data?.[PREVIEW_UNCONNECTED_DATA_KEY] === true;
+}
+
 /**
  * Returns the opposite position for a given handle position.
  * Used when dragging from a target handle where the preview should appear on the opposite side.

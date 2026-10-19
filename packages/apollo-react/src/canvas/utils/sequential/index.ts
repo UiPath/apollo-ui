@@ -6,5 +6,6 @@ export * from './layoutSequence';
 // `computeSequentialMoveOptions`, which external consumers cannot know about.
 export { insertAtSlot, moveSubtree, removeStep } from './mutations';
 export * from './predicates';
+export * from './projectContainerSequence';
 export * from './projectSequence';
 export * from './sequential.types';

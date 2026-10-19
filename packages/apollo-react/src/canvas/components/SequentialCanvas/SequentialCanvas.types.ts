@@ -43,18 +43,33 @@ export interface SequentialCanvasProps<N extends Node = Node, E extends Edge = E
   /** Synthetic rows are filtered out before forwarding. */
   onNodesChange?: OnNodesChange<N>;
   onEdgesChange?: OnEdgesChange<E>;
-  /** Controlled, view-local collapse state. */
+  /**
+   * View-local collapse state, for the whole-canvas sequence and for sequenced container
+   * bodies. Held internally when `onCollapsedStepIdsChange` is absent.
+   */
   collapsedStepIds?: string[];
   onCollapsedStepIdsChange?: (ids: string[]) => void;
   /** Invoked by Enter on the selected step. */
   onPrimaryAction?: (nodeId: string) => void;
-  /** "Add trigger" button on the synthetic start bar (sequential view only). */
-  onAddTrigger?: () => void;
   /**
-   * Options for the Add Node panel this canvas mounts in sequential design mode. Ignored in
-   * flow view, where the host renders its own AddNodeManager through `children`.
+   * "Add trigger" on a synthetic start row, design mode only. Called without an argument
+   * from the whole-canvas sequential view, and with the container id from the start row of
+   * a self-contained (runtime) container body shown as a sequence on a flow canvas.
+   */
+  onAddTrigger?: (containerId?: string) => void;
+  /**
+   * Options for the Add Node panel this canvas mounts in design mode: always in sequential
+   * view, and in flow view while any container is sequenced. Otherwise the host renders its
+   * own AddNodeManager through `children`.
    */
   addNodeManagerProps?: Partial<AddNodeManagerProps>;
+  /**
+   * Flow-view containers whose body renders as a sequence inside the frame (view state, not
+   * node data). Children of such a container are not draggable; the frame is the unit that
+   * moves. Omit the callback to let the canvas own this state internally.
+   */
+  sequencedContainerIds?: string[];
+  onSequencedContainerIdsChange?: (ids: string[]) => void;
   canvasRef?: Ref<BaseCanvasRef<N, E>>;
 }
 

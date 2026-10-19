@@ -688,5 +688,8 @@
   "sequential-canvas.move.down": "Move down",
   "sequential-canvas.move.indent": "Move into previous step",
   "sequential-canvas.move.outdent": "Move out",
-  "sequential-canvas.steps.aria-label": "Workflow steps"
+  "sequential-canvas.steps.aria-label": "Workflow steps",
+  "container.body-view.label": "Body view",
+  "container.body-view.flow": "Flow",
+  "container.body-view.sequence": "Sequence"
 }

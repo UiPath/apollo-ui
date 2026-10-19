@@ -12,6 +12,9 @@ const SEQ_GUTTER_COLUMN_WIDTH_PX = 64;
 /** Gap between the column and the leader line start; also a depth-0 row's leader length. */
 const SEQ_GUTTER_LEADER_GAP_PX = 16;
 
+/** Horizontal room the gutter needs to the left of the stack's left edge. */
+export const SEQ_GUTTER_WIDTH_PX = SEQ_GUTTER_COLUMN_WIDTH_PX + SEQ_GUTTER_LEADER_GAP_PX;
+
 export interface SequentialGutterRow
   extends Pick<SequenceRow, 'nodeId' | 'stepNumber' | 'collapsible' | 'collapsed'> {}
 
@@ -25,6 +28,11 @@ export interface SequentialGutterProps {
   collapsedStepIds: ReadonlySet<string>;
   /** Fired by a collapsible row's chevron; the caller re-derives `collapsedStepIds`. */
   onToggleCollapse: (nodeId: string, collapsed: boolean) => void;
+  /**
+   * Paint above nodes. The viewport portal sits under any node with a positive z-index (a
+   * selected container is elevated), so a gutter drawn inside a frame needs its own layer.
+   */
+  aboveNodes?: boolean;
 }
 
 /**
@@ -38,23 +46,27 @@ export const SequentialGutter = memo(function SequentialGutter({
   barHeight = SEQ_BAR_HEIGHT,
   collapsedStepIds,
   onToggleCollapse,
+  aboveNodes = false,
 }: SequentialGutterProps) {
   const { _ } = useSafeLingui();
 
   if (rows.length === 0) return null;
 
-  // Read the stack's left edge from the positions rather than assuming x = 0, so a layout
-  // change cannot desync the rail from the bars.
-  let stackLeftX = 0;
+  // The stack's left edge, read from the positions: a stack inside a frame does not start at 0.
+  let stackLeftX = Number.POSITIVE_INFINITY;
   for (const position of positions.values()) {
     if (position.x < stackLeftX) stackLeftX = position.x;
   }
-  const columnLeftX = stackLeftX - SEQ_GUTTER_COLUMN_WIDTH_PX - SEQ_GUTTER_LEADER_GAP_PX;
+  if (!Number.isFinite(stackLeftX)) stackLeftX = 0;
+  const columnLeftX = stackLeftX - SEQ_GUTTER_WIDTH_PX;
   const leaderStartX = stackLeftX - SEQ_GUTTER_LEADER_GAP_PX;
 
   return (
     <ViewportPortal>
-      <div data-testid="sequential-gutter" className="pointer-events-none">
+      <div
+        data-testid="sequential-gutter"
+        className={aboveNodes ? 'pointer-events-none relative z-1004' : 'pointer-events-none'}
+      >
         {rows.map((row) => {
           const position = positions.get(row.nodeId);
           if (!position || row.stepNumber === undefined) return null;

@@ -55,13 +55,18 @@ export interface BarGeometry {
   height: number;
 }
 
-/** Absolute bar rectangles from the derived node array (positions are layout-owned). */
+/**
+ * Absolute bar rectangles from the derived node array (positions are layout-owned). Hidden
+ * rows (inside a collapsed step) get none, so their connectors carry no ⊕ or header, just as
+ * xyflow hides the edges themselves.
+ */
 export function buildBarGeometry(
   nodes: readonly Node[],
   fallback: { width: number; height: number }
 ): Map<string, BarGeometry> {
   const geometry = new Map<string, BarGeometry>();
   for (const node of nodes) {
+    if (node.hidden) continue;
     geometry.set(node.id, {
       x: node.position.x,
       y: node.position.y,
