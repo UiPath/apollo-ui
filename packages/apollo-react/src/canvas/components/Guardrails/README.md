@@ -662,6 +662,13 @@ Contract highlights:
 
 - **Owns form state.** Initialized from `definition`/`guardrail`/`defaultName` at mount —
   remount with a new `key` to reset (all known hosts already remount per session).
+- **Saves a host-rendered threshold map as the host left it.** At save time every `map-enum`
+  is pruned to the keys its `keySource` selects, and the keys it lacks are filled (stored
+  value, per-key default, then `min`) so the saved map matches `MapEnumField`'s rows. A map
+  listed in `overrideParameterIds` has no such rows, so it is pruned but not filled: the
+  classifier stores a threshold only for a question the user tuned, and filling the rest with
+  `min` would save 0 and flag every payload. A probed override is still filled, since only the
+  form knows the probe's answer: declare the ids.
 - **Owns validation and gates its own Save.** Messages localize through lingui
   (overridable per string via `labels`); a host that validates externally (e.g. zod) passes
   `errors` — host messages display immediately, win per field, and gate Save. The pure

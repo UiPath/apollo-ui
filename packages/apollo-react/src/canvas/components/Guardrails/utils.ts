@@ -106,11 +106,16 @@ export function normalizeGuardrailParameters(
  *
  * Mirrors the map-enum editor's key resolution exactly so the persisted map matches the
  * rendered rows. Call at save time.
+ *
+ * A map that editor does not render has no rows to match, so `options.leaveUnsetIds` keeps
+ * the fill away from it: see `SyncMapEnumParametersOptions`.
  */
 export function syncMapEnumParameters(
   parameters: GuardrailValidatorParameter[],
-  definitions: GuardrailParameterDefinition[]
+  definitions: GuardrailParameterDefinition[],
+  options?: SyncMapEnumParametersOptions
 ): GuardrailValidatorParameter[] {
+  const leaveUnset = new Set(options?.leaveUnsetIds);
   const selectionBySourceId = new Map<string, string[]>();
   for (const param of parameters) {
     // Defend against non-array wire values: the type says `string[]`, but persisted data
@@ -146,13 +151,24 @@ export function syncMapEnumParameters(
       // non-numeric entries, so it reached onSave unchallenged. Only a finite number counts as
       // a value worth preserving; anything else falls back like a missing key.
       const persisted = currentMap[key];
-      synced[key] =
-        typeof persisted === 'number' && Number.isFinite(persisted)
-          ? persisted
-          : (defaults[key] ?? fallback);
+      if (typeof persisted === 'number' && Number.isFinite(persisted)) {
+        synced[key] = persisted;
+      } else if (!leaveUnset.has(param.id)) {
+        synced[key] = defaults[key] ?? fallback;
+      }
     }
     return { ...param, value: synced };
   });
+}
+
+export interface SyncMapEnumParametersOptions {
+  /**
+   * Map ids to prune to the selection without filling in the keys they lack. For a map the host
+   * renders itself (an `overrideParameterIds` entry), where a missing key has a meaning of its
+   * own: the classifier stores a threshold only for a question the user tuned, and an absent one
+   * runs at the backend's default. Filling it with the map's `min` would save a 0 nobody chose.
+   */
+  leaveUnsetIds?: readonly string[];
 }
 
 /**
