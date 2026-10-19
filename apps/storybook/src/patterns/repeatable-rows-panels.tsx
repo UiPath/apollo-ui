@@ -140,7 +140,7 @@ export function EntityFilterPanel({ onClose }: { onClose: () => void }) {
         </FormField>
 
         <FormField>
-          <FormFieldHeader label="How to look up the record" labelId="lookup-mode-label" />
+          <FormFieldLabel id="lookup-mode-label">How to look up the record</FormFieldLabel>
           <RadioGroup
             aria-labelledby="lookup-mode-label"
             defaultValue="multiple"
