@@ -1,3 +1,21 @@
+## [@uipath/apollo-react-v7.3.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.2.2...@uipath/apollo-react@7.3.0) (2026-10-19)
+
+### Features
+
+* **apollo-react:** classifier question picker and custom questions editor [AL-644] ([a00e0fc](https://github.com/UiPath/apollo-ui/commit/a00e0fc9c3f65ae874ee2831b4e2edc1ea1df676))
+* **apollo-react:** compose the classifier editors into the guardrail builder [AL-644] ([267495b](https://github.com/UiPath/apollo-ui/commit/267495bfc513881a016f7cc222c38251b9c2c25b))
+* **apollo-react:** curated copy for the classifier guardrail [AL-644] ([1daa452](https://github.com/UiPath/apollo-ui/commit/1daa452923d1d7793610866f7b4aa6d1b6e6e236)), closes [UiPath/Agents#6449](https://github.com/UiPath/Agents/issues/6449)
+* **apollo-react:** load the classifier question catalog [AL-644] ([d327daf](https://github.com/UiPath/apollo-ui/commit/d327dafde66fc3c5582a2b152cba556eea16f718))
+
+### Bug Fixes
+
+* **apollo-react:** collapse a guardrail parameter field that renders nothing [AL-644] ([6bfee4f](https://github.com/UiPath/apollo-ui/commit/6bfee4f43725d0361239d30c0ba99f2f39b24da0))
+* **apollo-react:** describe an invalid custom question by its error [AL-644] ([9f4858c](https://github.com/UiPath/apollo-ui/commit/9f4858c2a8636faa667a48671f9e4afc750b732b))
+* **apollo-react:** keep the classifier editors inside narrow panels [AL-644] ([adfa2f0](https://github.com/UiPath/apollo-ui/commit/adfa2f0d7e2cef9e954e5be7de5de35ded767b1b))
+* **apollo-react:** leave a host-rendered threshold map's missing keys unset [AL-644] ([7582b33](https://github.com/UiPath/apollo-ui/commit/7582b333c6934153092a28a2fe2d97f1e224cfba))
+* **apollo-react:** show and clear the classifier threshold map's errors [AL-644] ([e6c5643](https://github.com/UiPath/apollo-ui/commit/e6c56432da1c5b731c6d43d511239c5eed245359))
+* **apollo-react:** show the severity a score question's threshold actually flags [AL-644] ([099ca27](https://github.com/UiPath/apollo-ui/commit/099ca27463729867dd8003af21860c4f39b8290c))
+
 ## [@uipath/apollo-react-v7.2.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.2.1...@uipath/apollo-react@7.2.2) (2026-10-16)
 
 ### Bug Fixes
