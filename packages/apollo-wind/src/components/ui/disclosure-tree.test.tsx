@@ -28,6 +28,17 @@ const row = (name: string | RegExp) => screen.getByRole('treeitem', { name });
 const line = (label: string) => screen.getByText(label);
 
 describe('DisclosureTree', () => {
+  it('tightens its rows in a compact ancestor', () => {
+    const { container } = render(
+      <div data-density="compact">
+        <DisclosureTree aria-label="Trace" items={ITEMS} />
+      </div>
+    );
+    for (const row of container.querySelectorAll('[data-slot="disclosure-tree-row"]')) {
+      expect(row).toHaveClass('p-1', 'in-data-[density=compact]:py-0.5');
+    }
+  });
+
   it('renders an ARIA tree with levels, positions and open state', () => {
     render(<DisclosureTree aria-label="Trace" items={ITEMS} />);
     expect(screen.getByRole('tree', { name: 'Trace' })).toBeInTheDocument();

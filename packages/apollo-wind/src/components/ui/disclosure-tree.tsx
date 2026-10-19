@@ -18,6 +18,9 @@ import { disclosureRowClassName } from '@/lib/disclosure-row';
  * and no built-in copy: just rows with a leading icon, a label, trailing info and an optional
  * tooltip, styled like `ToolCall` sections. One row is in the tab order; arrow keys, Home and End
  * move between rows, Right and Left open, close or move in and out, and Enter or Space toggle.
+ *
+ * Compact density (Wind's own; Material's tree does not change): inside an ancestor with
+ * `data-density="compact"` rows lose 2px of vertical padding (24px to 20px with a 16px line).
  */
 
 export interface DisclosureTreeItem {

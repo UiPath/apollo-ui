@@ -26,6 +26,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tool
  *
  * The parts use Radix tooltips, which throw without a `TooltipProvider`. `MessageActions` provides
  * one, so render them inside it or under your own provider.
+ *
+ * Compact density (Wind's own; Material's action bar does not change): inside an ancestor with
+ * `data-density="compact"` the bar's controls drop from 24px to 20px with 14px icons.
  */
 
 export interface MessageActionItem {
@@ -57,20 +60,24 @@ export const DEFAULT_MESSAGE_ACTIONS_STRINGS: MessageActionsStrings = {
   label: 'Message actions',
 };
 
-const messageActionsVariants = cva('flex w-fit max-w-full items-center gap-0.5 px-2', {
-  variants: {
-    visibility: {
-      always: '',
-      // Revealed by hovering or focusing the message, kept while a menu or tooltip from the bar is
-      // open, and always shown on devices that cannot hover.
-      hover:
-        'opacity-0 transition-opacity group-hover/message:opacity-100 group-focus-within/message:opacity-100 focus-within:opacity-100 has-[[data-state=open]]:opacity-100 has-[[data-state=delayed-open]]:opacity-100 has-[[data-state=instant-open]]:opacity-100 [@media(hover:none)]:opacity-100',
+// Compact (Wind's own; Material keeps its action bar): 20px controls with 14px icons.
+const messageActionsVariants = cva(
+  'flex w-fit max-w-full items-center gap-0.5 px-2 in-data-[density=compact]:[&_[data-slot=message-action]]:size-5 in-data-[density=compact]:[&_[data-slot=message-action]]:min-w-5 in-data-[density=compact]:[&_[data-slot=message-actions-overflow]]:size-5 in-data-[density=compact]:[&_[data-slot=message-action]_svg]:size-3.5 in-data-[density=compact]:[&_[data-slot=message-actions-overflow]_svg]:size-3.5',
+  {
+    variants: {
+      visibility: {
+        always: '',
+        // Revealed by hovering or focusing the message, kept while a menu or tooltip from the bar is
+        // open, and always shown on devices that cannot hover.
+        hover:
+          'opacity-0 transition-opacity group-hover/message:opacity-100 group-focus-within/message:opacity-100 focus-within:opacity-100 has-[[data-state=open]]:opacity-100 has-[[data-state=delayed-open]]:opacity-100 has-[[data-state=instant-open]]:opacity-100 [@media(hover:none)]:opacity-100',
+      },
     },
-  },
-  defaultVariants: {
-    visibility: 'always',
-  },
-});
+    defaultVariants: {
+      visibility: 'always',
+    },
+  }
+);
 
 export interface MessageActionsProps
   extends React.HTMLAttributes<HTMLDivElement>,

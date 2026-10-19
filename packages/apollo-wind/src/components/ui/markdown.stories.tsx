@@ -149,6 +149,53 @@ export const KatexMacros: Story = {
   },
 };
 
+const DENSITY_SAMPLE = `# Invoice review
+
+Three invoices are **within policy** and one needs review.
+
+## Next steps
+
+- Invoices 4021 and 4022 are approved.
+- Invoice 4023 waits for review.
+
+| Invoice | Vendor | Amount | Status | Reviewer |
+| ------- | ------ | -----: | ------ | -------- |
+| 4021 | Northwind Traders | $1,240 | Approved | Automatic approval within policy |
+| 4023 | Contoso Pharmaceuticals | $5,600 | Waiting | Finance controller, second approver |
+
+### Query
+
+\`\`\`sql
+SELECT id, vendor, total, status FROM invoices WHERE approved = 0 AND created_at >= '2026-10-01' ORDER BY total DESC;
+\`\`\``;
+
+export const CompactDensity: Story = {
+  args: { children: DENSITY_SAMPLE },
+  render: (args) => (
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+      <Markdown {...args} />
+      <div data-density="compact">
+        <Markdown {...args} />
+      </div>
+    </div>
+  ),
+  decorators: [
+    (Story) => (
+      <div className="w-[720px] max-w-full">
+        <Story />
+      </div>
+    ),
+  ],
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Left: the default. Right: inside an ancestor with data-density="compact", as the Wind chat sets in compact mode. Body text and lists drop to 12px, each heading one step and code blocks to 12px on an 18px line, as Material\'s compactMode does. The tighter block, list and quote spacing is Wind\'s own choice; Material keeps its spacing. No prop is involved.',
+      },
+    },
+  },
+};
+
 export const NestedLists: Story = {
   args: {
     children: `1. Intake

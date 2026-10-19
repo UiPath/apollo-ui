@@ -11,6 +11,12 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './collapsib
  * given `href`; `onSelect` receives the item and the event, so a host can run its `citation-click`
  * pre-hook and call `event.preventDefault()` to stop a link. The payload drops an `href` that is
  * not http(s), mailto, tel or relative, so it is safe to open.
+ *
+ * Compact density: inside an ancestor with `data-density="compact"` source items drop to 12px.
+ * The trigger is already small, and the 16px icons are below Material's compact size, so they stay.
+ * There is no prop: the host opts in by setting the attribute (the Wind chat sets it on its root).
+ * Compact sets CSS variables the base classes read, so a host className on the root wins in
+ * both densities.
  */
 
 export interface SourcesStrings {
@@ -139,7 +145,7 @@ const SourceItem = React.forwardRef<HTMLAnchorElement | HTMLButtonElement, Sourc
       }
     };
     const itemClassName = cn(
-      'flex w-full min-w-0 cursor-pointer items-start gap-2.5 rounded-lg px-2 py-1.5 text-left text-sm transition-colors hover:bg-surface-overlay focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+      'flex w-full min-w-0 cursor-pointer items-start gap-2.5 rounded-lg px-2 py-1.5 text-left text-(length:--source-item-font-size,0.875rem) leading-(--source-item-leading,1.25rem) transition-colors hover:bg-surface-overlay focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring in-data-[density=compact]:[--source-item-font-size:0.75rem] in-data-[density=compact]:[--source-item-leading:1rem]',
       className
     );
     const newTab = target === '_blank';

@@ -16,6 +16,11 @@ import { cn, composeRefs } from '@/lib';
  * components. `state` drives the chrome: `idle` is a dashed placeholder, `uploading` and
  * `processing` shimmer the title, `error` tints it. `AttachmentGroup` scrolls a row of them with
  * faded edges.
+ *
+ * Compact density (Wind's own; Material's chips do not change): inside an ancestor with
+ * `data-density="compact"` every size steps its padding and media down one notch (an `xs` chip
+ * with a title goes from 38px to 30px tall); the type stays, so names remain legible. The padding
+ * classes are `has-*` variants, so a host override needs the same variant, as before.
  */
 
 const attachmentVariants = cva(
@@ -24,9 +29,9 @@ const attachmentVariants = cva(
     variants: {
       size: {
         default:
-          'gap-2 text-sm has-data-[slot=attachment-content]:px-2.5 has-data-[slot=attachment-content]:py-2 has-data-[slot=attachment-media]:p-2',
-        sm: 'gap-2.5 text-xs has-data-[slot=attachment-content]:px-2 has-data-[slot=attachment-content]:py-1.5 has-data-[slot=attachment-media]:p-1.5',
-        xs: 'gap-1.5 rounded-lg text-xs has-data-[slot=attachment-content]:px-1.5 has-data-[slot=attachment-content]:py-1 has-data-[slot=attachment-media]:p-1',
+          'gap-2 text-sm has-data-[slot=attachment-content]:px-2.5 has-data-[slot=attachment-content]:py-2 has-data-[slot=attachment-media]:p-2 in-data-[density=compact]:has-data-[slot=attachment-content]:py-1.5 in-data-[density=compact]:has-data-[slot=attachment-media]:p-1.5',
+        sm: 'gap-2.5 text-xs has-data-[slot=attachment-content]:px-2 has-data-[slot=attachment-content]:py-1.5 has-data-[slot=attachment-media]:p-1.5 in-data-[density=compact]:has-data-[slot=attachment-content]:py-1 in-data-[density=compact]:has-data-[slot=attachment-media]:p-1',
+        xs: 'gap-1.5 rounded-lg text-xs has-data-[slot=attachment-content]:px-1.5 has-data-[slot=attachment-content]:py-1 has-data-[slot=attachment-media]:p-1 in-data-[density=compact]:has-data-[slot=attachment-content]:py-0.5 in-data-[density=compact]:has-data-[slot=attachment-media]:p-0.5',
       },
       orientation: {
         horizontal: 'min-w-40 items-center',
@@ -64,7 +69,7 @@ const Attachment = React.forwardRef<HTMLDivElement, AttachmentProps>(
 Attachment.displayName = 'Attachment';
 
 const attachmentMediaVariants = cva(
-  "relative flex aspect-square w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted text-foreground group-data-[orientation=vertical]/attachment:w-full group-data-[size=sm]/attachment:w-8 group-data-[size=xs]/attachment:w-7 group-data-[size=xs]/attachment:rounded-md group-data-[state=error]/attachment:bg-destructive/10 group-data-[state=error]/attachment:text-destructive [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 group-data-[orientation=vertical]/attachment:[&_svg:not([class*='size-'])]:size-6 group-data-[size=xs]/attachment:[&_svg:not([class*='size-'])]:size-3.5",
+  "relative flex aspect-square w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted text-foreground group-data-[orientation=vertical]/attachment:w-full group-data-[size=sm]/attachment:w-8 group-data-[size=xs]/attachment:w-7 in-data-[density=compact]:w-8 in-data-[density=compact]:group-data-[size=sm]/attachment:w-7 in-data-[density=compact]:group-data-[size=xs]/attachment:w-6 group-data-[size=xs]/attachment:rounded-md group-data-[state=error]/attachment:bg-destructive/10 group-data-[state=error]/attachment:text-destructive [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 group-data-[orientation=vertical]/attachment:[&_svg:not([class*='size-'])]:size-6 group-data-[size=xs]/attachment:[&_svg:not([class*='size-'])]:size-3.5",
   {
     variants: {
       variant: {

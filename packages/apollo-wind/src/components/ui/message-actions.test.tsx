@@ -39,6 +39,19 @@ function mockExecCommand(result: boolean) {
 }
 
 describe('MessageActions', () => {
+  it('shrinks its controls to 20px with 14px icons in a compact ancestor', () => {
+    render(
+      <div data-density="compact">
+        <MessageActions data-testid="bar" actions={actionItems(2)} />
+      </div>
+    );
+    expect(screen.getByTestId('bar')).toHaveClass(
+      'in-data-[density=compact]:[&_[data-slot=message-action]]:size-5',
+      'in-data-[density=compact]:[&_[data-slot=message-actions-overflow]]:size-5',
+      'in-data-[density=compact]:[&_[data-slot=message-action]_svg]:size-3.5'
+    );
+  });
+
   it('renders a group named by its strings', () => {
     const { rerender } = render(<MessageActions />);
     expect(

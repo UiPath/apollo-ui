@@ -55,6 +55,26 @@ describe('EmptyState', () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 
+  it('turns compact under a compact ancestor unless a size is set', () => {
+    const { container, rerender } = render(
+      <div data-density="compact">
+        <EmptyState title="No chat history" />
+      </div>
+    );
+    const root = () => container.querySelector('[data-slot="empty-state"]');
+    expect(root()).toHaveAttribute('data-size', 'compact');
+    expect(screen.getByText('No chat history').tagName).toBe('P');
+    expect(screen.queryByRole('heading')).toBeNull();
+
+    rerender(
+      <div data-density="compact">
+        <EmptyState title="No chat history" size="default" />
+      </div>
+    );
+    expect(root()).not.toHaveAttribute('data-size');
+    expect(screen.getByRole('heading', { name: 'No chat history' })).toBeInTheDocument();
+  });
+
   it('renders with description', () => {
     render(
       <EmptyState title="No items" description="There are no items to display at this time." />

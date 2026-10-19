@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { buildTailwind } from '../../../tests/tailwind-compile';
 import {
   Attachment,
   AttachmentAction,
@@ -30,6 +31,24 @@ function Card(props: React.ComponentProps<typeof Attachment>) {
 }
 
 describe('Attachment', () => {
+  it('steps padding and media down one size in a compact ancestor', async () => {
+    const { container } = render(
+      <div data-density="compact">
+        <Card size="xs" />
+      </div>
+    );
+    const card = container.querySelector('[data-slot="attachment"]') as HTMLElement;
+    const media = container.querySelector('[data-slot="attachment-media"]') as HTMLElement;
+    const compactPadding = 'in-data-[density=compact]:has-data-[slot=attachment-media]:p-0.5';
+    expect(card).toHaveClass('has-data-[slot=attachment-media]:p-1', compactPadding);
+    expect(media).toHaveClass('in-data-[density=compact]:group-data-[size=xs]/attachment:w-6');
+    // The compact rule comes after the base one, so it wins inside a compact ancestor.
+    const css = await buildTailwind(Array.from(card.classList));
+    expect(css.indexOf(`.${CSS.escape(compactPadding)}`)).toBeGreaterThan(
+      css.indexOf(`.${CSS.escape('has-data-[slot=attachment-media]:p-1')}`)
+    );
+  });
+
   it('renders media, title and description with defaults', () => {
     render(<Card />);
     const el = screen.getByTestId('attachment');

@@ -14,6 +14,22 @@ const data = {
 };
 
 describe('Citation', () => {
+  it('takes the sm look in a compact ancestor unless a size is set', () => {
+    const compactSize = 'in-data-[density=compact]:[--citation-size:1rem]';
+    const { rerender } = render(
+      <div data-density="compact">
+        <Citation index={1} />
+      </div>
+    );
+    expect(screen.getByRole('button')).toHaveClass('h-(--citation-size,1.125rem)', compactSize);
+    rerender(
+      <div data-density="compact">
+        <Citation index={1} size="default" />
+      </div>
+    );
+    expect(screen.getByRole('button')).not.toHaveClass(compactSize);
+  });
+
   it('renders the index in a button named from the title', () => {
     render(<Citation {...data} />);
     const button = screen.getByRole('button', { name: 'Citation 2: Invoice policy 2026' });

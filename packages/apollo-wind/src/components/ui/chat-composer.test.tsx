@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import * as React from 'react';
@@ -307,6 +307,58 @@ describe('ChatComposer', () => {
     unmount();
     render(<TestComposer />);
     expect(textbox()).toHaveAttribute('rows', '2');
+  });
+
+  it('follows a compact ancestor without a prop, and the prop wins', async () => {
+    const { container, rerender } = render(
+      <div data-density="compact">
+        <TestComposer />
+      </div>
+    );
+    const composer = () => container.querySelector('[data-slot="chat-composer"]');
+    expect(composer()).toHaveAttribute('data-density', 'compact');
+    expect(textbox()).toHaveAttribute('rows', '1');
+
+    // Followed as the ancestor changes.
+    (container.firstChild as HTMLElement).setAttribute('data-density', 'comfortable');
+    await waitFor(() => expect(composer()).toHaveAttribute('data-density', 'comfortable'));
+
+    rerender(
+      <div data-density="compact">
+        <TestComposer density="comfortable" />
+      </div>
+    );
+    expect(composer()).toHaveAttribute('data-density', 'comfortable');
+  });
+
+  it('picks up an ancestor that gains the density attribute on its next render', () => {
+    const { container, rerender } = render(
+      <div>
+        <TestComposer />
+      </div>
+    );
+    const composer = () => container.querySelector('[data-slot="chat-composer"]');
+    expect(composer()).toHaveAttribute('data-density', 'comfortable');
+    rerender(
+      <div data-density="compact">
+        <TestComposer />
+      </div>
+    );
+    expect(composer()).toHaveAttribute('data-density', 'compact');
+  });
+
+  it('is compact under any compact ancestor, even with a nearer comfortable one', () => {
+    const { container } = render(
+      <div data-density="compact">
+        <div data-density="comfortable">
+          <TestComposer />
+        </div>
+      </div>
+    );
+    expect(container.querySelector('[data-slot="chat-composer"]')).toHaveAttribute(
+      'data-density',
+      'compact'
+    );
   });
 
   it('disables the whole composer', () => {

@@ -30,6 +30,27 @@ function mockReducedMotion(reduce: boolean) {
 }
 
 describe('ThinkingIndicator', () => {
+  it('takes the sm look in a compact ancestor unless a size is set', () => {
+    const compactSize = 'in-data-[density=compact]:[--thinking-indicator-font-size:0.75rem]';
+    const { rerender } = render(
+      <div data-density="compact">
+        <ThinkingIndicator />
+      </div>
+    );
+    const root = () => screen.getByRole('status');
+    expect(root()).toHaveClass(
+      'text-(length:--thinking-indicator-font-size,0.875rem)',
+      compactSize
+    );
+    expect(root()).toHaveAttribute('data-size', 'md');
+    rerender(
+      <div data-density="compact">
+        <ThinkingIndicator size="md" />
+      </div>
+    );
+    expect(root()).not.toHaveClass(compactSize);
+  });
+
   beforeEach(() => {
     vi.useFakeTimers();
   });

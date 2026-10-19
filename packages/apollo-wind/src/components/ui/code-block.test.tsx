@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { createRef } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { buildTailwind, ruleBody } from '../../../tests/tailwind-compile';
 import { CodeBlock, CodeBlockHeader, DEFAULT_CODE_BLOCK_STRINGS } from './code-block';
 
 const SAMPLE = 'const answer: number = 42;\nconsole.log(answer);\n';
@@ -156,6 +157,47 @@ describe('CodeBlock', () => {
     expect(container.querySelector('[data-slot="code-block-body"]')).toHaveTextContent('x');
     rerender(<CodeBlock code="x" body={null} />);
     expect(container.querySelector('[data-slot="code-block-body"]')).toHaveTextContent('x');
+  });
+
+  it('shrinks the source inside a compact ancestor through its type variables', async () => {
+    const { container } = render(
+      <div data-density="compact">
+        <CodeBlock code="x" language="ts" />
+      </div>
+    );
+    const block = container.querySelector('[data-slot="code-block"]') as HTMLElement;
+    const pre = block.querySelector('pre') as HTMLElement;
+    // Defaults stay 13px on 20.8px.
+    expect(pre.style.fontSize).toBe('var(--code-block-font-size, 0.8125rem)');
+    expect(pre.style.lineHeight).toBe('var(--code-block-line-height, 1.6)');
+    const css = await buildTailwind(Array.from(block.classList));
+    const size = ruleBody(
+      css,
+      `.${CSS.escape('in-data-[density=compact]:[--code-block-font-size:0.75rem]')}`
+    );
+    expect(size).toContain(':where(*[data-density="compact"]) &');
+    expect(size).toContain('--code-block-font-size: 0.75rem');
+    const lineHeight = ruleBody(
+      css,
+      `.${CSS.escape('in-data-[density=compact]:[--code-block-line-height:1.5]')}`
+    );
+    expect(lineHeight).toContain('--code-block-line-height: 1.5');
+  });
+
+  it('shortens the header and its buttons in a compact ancestor', () => {
+    const { container } = render(
+      <div data-density="compact">
+        <CodeBlock code="x" language="ts" />
+      </div>
+    );
+    const header = container.querySelector('[data-slot="code-block-header"]');
+    expect(header).toHaveClass(
+      'py-(--code-block-header-py,0.25rem)',
+      'pl-(--code-block-header-pl,1rem)',
+      'in-data-[density=compact]:[--code-block-header-py:0.125rem]',
+      'in-data-[density=compact]:[--code-block-header-pl:0.75rem]',
+      'in-data-[density=compact]:[&_button]:size-6'
+    );
   });
 
   it('has no axe violations', async () => {
