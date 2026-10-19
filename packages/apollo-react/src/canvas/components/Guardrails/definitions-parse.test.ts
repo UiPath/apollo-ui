@@ -322,15 +322,16 @@ describe('zod boundary', () => {
     });
   }
 
-  it('is confined to definitions-parse.ts', () => {
+  it('is confined to the two payload parsers', () => {
     // Anything else importing zod would put schema types in this folder's emitted
     // declarations and force the dependency on every consumer of the subpath.
     const importers = sourceFiles(folder)
       .filter((file) => !file.includes('.test.'))
       .filter((file) => /from ['"]zod['"]|require\(['"]zod['"]\)/.test(readFileSync(file, 'utf8')))
-      .map((file) => file.slice(folder.length + 1).replace(/\\/g, '/'));
+      .map((file) => file.slice(folder.length + 1).replace(/\\/g, '/'))
+      .sort();
 
-    expect(importers).toEqual(['definitions-parse.ts']);
+    expect(importers).toEqual(['classifier-questions-parse.ts', 'definitions-parse.ts']);
   });
 
   it('produces exactly the keys the public wire type declares', () => {

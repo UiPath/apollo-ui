@@ -66,6 +66,22 @@ export type {
   CentralizedGuardrailParameterDefinition,
   CentralizedGuardrailParameterRow,
 } from './centralized-types';
+export type {
+  ClassifierQuestion,
+  ClassifierQuestionCategory,
+  EnrichClassifierQuestionsOptions,
+} from './classifier-questions-enrich';
+export { enrichClassifierQuestions } from './classifier-questions-enrich';
+export type {
+  ClassifierQuestionParseIssue,
+  ClassifierQuestionsParseResult,
+} from './classifier-questions-parse';
+export { parseClassifierQuestions } from './classifier-questions-parse';
+export type {
+  ClassifierQuestionGroupWire,
+  ClassifierQuestionType,
+  ClassifierQuestionWire,
+} from './classifier-questions-wire';
 export type { EscalateActionFieldsProps } from './components/escalate-action-fields';
 export { EscalateActionFields } from './components/escalate-action-fields';
 export type { GuardrailActionSectionProps } from './components/guardrail-action-section';
@@ -273,6 +289,11 @@ export type {
   GuardrailValidatorFormProps,
   GuardrailValidatorParameter,
 } from './types';
+export type {
+  UseClassifierQuestionsOptions,
+  UseClassifierQuestionsResult,
+} from './use-classifier-questions';
+export { CLASSIFIER_QUESTIONS_PATH, useClassifierQuestions } from './use-classifier-questions';
 export type {
   GuardrailDefinitionsRequestContext,
   UseGuardrailDefinitionsOptions,
