@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/index';
+import { cn, composeRefs } from '@/lib/index';
+import { useAncestorDensity } from '@/lib/use-ancestor-density';
 
 export interface EmptyStateProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Optional visual element displayed above the content (icon, illustration, video, etc.) */
@@ -25,6 +26,9 @@ export interface EmptyStateProps extends React.HTMLAttributes<HTMLDivElement> {
    * `compact` fits inside a panel or list: smaller type and spacing. It renders no heading element
    * (the title and any code are paragraphs): inside a panel the empty message is content of the
    * panel's own section, and a heading there would add a stray entry to the page outline.
+   * Without a `size`, it is compact under an ancestor with `data-density="compact"` (a compact chat
+   * panel), like the other chat primitives. The heading changes element, which a CSS variant
+   * cannot do, so this is decided after mount; an explicit `size` always wins.
    */
   size?: 'default' | 'compact';
 }
@@ -38,15 +42,18 @@ const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
       description,
       action,
       secondaryAction,
-      size = 'default',
+      size,
       className,
       children,
       ...props
     },
     ref
   ) => {
+    const local = React.useRef<HTMLDivElement | null>(null);
+    const setRef = React.useMemo(() => composeRefs(ref, local), [ref]);
+    const ancestorDensity = useAncestorDensity(local, size == null);
     const hasSimpleActions = !children && (action || secondaryAction);
-    const compact = size === 'compact';
+    const compact = (size ?? ancestorDensity) === 'compact';
     const buttonSize = compact ? 'sm' : undefined;
     const actionsClassName = compact
       ? 'mt-4 flex flex-wrap items-center justify-center gap-2'
@@ -54,7 +61,7 @@ const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
 
     return (
       <div
-        ref={ref}
+        ref={setRef}
         data-slot="empty-state"
         data-size={compact ? 'compact' : undefined}
         className={cn(
