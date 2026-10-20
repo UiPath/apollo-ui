@@ -3,6 +3,7 @@ import { useLingui } from '@lingui/react';
 import CloseIcon from '@mui/icons-material/Close';
 import { Box, IconButton, Modal, styled } from '@mui/material';
 import token from '@uipath/apollo-core';
+import { buildHtmlPreviewDocument } from '@uipath/apollo-react/chat/headless/markdown/html-preview';
 import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
 import { useTheme } from '@uipath/apollo-react/chat/headless/providers/theme-provider';
 import { ApChip } from '@uipath/apollo-react/material/components/ap-chip';
@@ -219,7 +220,11 @@ export const Code = React.memo(({ inline, className, children, isStreaming, ...p
   }
 
   const previewContent = (
-    <PreviewIframe sandbox="allow-scripts" srcDoc={codeContent} title="HTML Preview" />
+    <PreviewIframe
+      sandbox="allow-scripts"
+      srcDoc={buildHtmlPreviewDocument(codeContent)}
+      title="HTML Preview"
+    />
   );
 
   const markdownContent = language ? (

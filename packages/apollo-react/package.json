@@ -1,6 +1,6 @@
 {
   "name": "@uipath/apollo-react",
-  "version": "7.3.2",
+  "version": "7.4.0",
   "description": "Apollo Design System - React component library with Material UI theming",
   "repository": {
     "type": "git",
@@ -148,7 +148,11 @@
     "dist/canvas/index.js",
     "dist/canvas/index.cjs",
     "dist/chat/index.js",
-    "dist/chat/index.cjs"
+    "dist/chat/index.cjs",
+    "dist/chat/root/ApChat.js",
+    "dist/chat/root/ApChat.cjs",
+    "dist/material/components/ap-chat/ap-chat.js",
+    "dist/material/components/ap-chat/ap-chat.cjs"
   ],
   "files": [
     "dist"

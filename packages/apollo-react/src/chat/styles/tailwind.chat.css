@@ -9,8 +9,11 @@
 
 @import "@uipath/apollo-wind/tailwind.css";
 
-/* Scan chat source files for inline Tailwind class usage */
+/* Scan chat source files for inline Tailwind class usage, but not the stories and tests, which
+   are not published */
 @source "../../chat/**/*.{ts,tsx}";
+@source not "../../chat/stories";
+@source not "../../chat/**/*.test.{ts,tsx}";
 
 /* Scan apollo-wind compiled components for CVA class strings */
 @source "../../../node_modules/@uipath/apollo-wind/dist/**/*.js";

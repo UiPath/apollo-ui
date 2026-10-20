@@ -35,7 +35,7 @@ const AutopilotChatSettingsHeaderComponent: React.FC<{
     }
 
     chatService
-      .getPreHook(AutopilotChatPreHookAction.ToggleHistory)({ settingsOpen: isSettingsOpen })
+      .getPreHook(AutopilotChatPreHookAction.ToggleSettings)({ settingsOpen: isSettingsOpen })
       .then((proceed) => {
         if (!proceed) {
           return;

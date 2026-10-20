@@ -24,9 +24,9 @@ const FREHeader = styled('div')(() => ({
 }));
 
 function AutopilotChatFREComponent() {
-  const { firstRunExperience, spacing } = useChatState();
+  const { firstRunExperience, firstRunVisible, spacing } = useChatState();
 
-  if (!firstRunExperience) {
+  if (!firstRunVisible || !firstRunExperience) {
     return null;
   }
 

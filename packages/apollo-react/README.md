@@ -331,7 +331,7 @@ function ChatInterface() {
 }
 ```
 
-**Note:** ApChat has extensive configuration options and events. Refer to the [complete API documentation](./src/material/components/ap-chat/DOCS.md) for all available events, methods, and configuration options.
+**Note:** ApChat has extensive configuration options and events. Refer to the [complete API documentation](./src/chat/DOCS.md) for all available events, methods, and configuration options.
 
 ## TypeScript Support
 

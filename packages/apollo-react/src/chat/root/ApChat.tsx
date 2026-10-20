@@ -1,7 +1,18 @@
 import React from 'react';
 import type { SupportedLocale } from '../../i18n';
+import { registerChatRendererIfAbsent } from '../headless/renderer-registry';
 import type { ApChatTheme, AutopilotChatService } from '../service';
+import { WindChatRenderer } from '../wind/WindChatRenderer';
 import { ChatRoot } from './ChatRoot';
+
+// Registered here rather than in the package entry: bundlers that honour `sideEffects` drop the
+// statements of a re-export-only barrel, but keep those of the module that defines `ApChat`.
+// If the `ap-chat` entry loaded first, its registrations stay.
+registerChatRendererIfAbsent('wind', { component: WindChatRenderer });
+registerChatRendererIfAbsent('material', {
+  // biome-ignore lint/style/noRestrictedImports: the one allowed src/chat → Material edge; a dynamic import keeps MUI out of the initial chunk
+  load: () => import('../../material/components/ap-chat/MaterialChatRenderer'),
+});
 
 export interface ApChatProps {
   /**

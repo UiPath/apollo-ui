@@ -10,6 +10,12 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from './hover-card';
  * not navigate on its own: `onSelect` receives the citation and the event, so a host can run its
  * `citation-click` pre-hook and decide whether to open `href`. The payload drops an `href` that is
  * not http(s), mailto, tel or relative, so it is safe to open.
+ *
+ * Compact density: without a `size`, inside an ancestor with `data-density="compact"` it takes
+ * the `sm` look (10px, Material's compact citation). An explicit `size` always wins.
+ * There is no prop: the host opts in by setting the attribute (the Wind chat sets it on its root).
+ * Compact sets CSS variables the base classes read, so a host className on the root wins in
+ * both densities.
  */
 
 export interface CitationData {
@@ -36,7 +42,8 @@ const citationVariants = cva(
   {
     variants: {
       size: {
-        default: 'h-4.5 min-w-4.5 px-1.5 text-[11px]',
+        default:
+          'h-(--citation-size,1.125rem) min-w-(--citation-size,1.125rem) px-(--citation-padding,0.375rem) text-(length:--citation-font-size,11px)',
         sm: 'h-4 min-w-4 px-1 text-[10px]',
         lg: 'h-5 min-w-5 px-1.5 text-xs',
       },
@@ -65,11 +72,16 @@ export interface CitationProps
   strings?: Partial<CitationStrings>;
 }
 
+// The `sm` look, for a citation without an explicit size inside a compact ancestor. It sets the
+// variables `default` reads, so a host className on the root still wins.
+const COMPACT_CITATION_CLASSES =
+  'in-data-[density=compact]:[--citation-size:1rem] in-data-[density=compact]:[--citation-padding:0.25rem] in-data-[density=compact]:[--citation-font-size:10px]';
+
 const Citation = React.forwardRef<HTMLButtonElement, CitationProps>(
   (
     {
       className,
-      size = 'default',
+      size: sizeProp,
       index,
       title,
       snippet,
@@ -125,6 +137,7 @@ const Citation = React.forwardRef<HTMLButtonElement, CitationProps>(
       },
       []
     );
+    const size = sizeProp ?? 'default';
     const name = ariaLabel ?? text.label(String(index), title || undefined);
     const hasPreview = preview && Boolean(title || snippet || source);
 
@@ -135,7 +148,11 @@ const Citation = React.forwardRef<HTMLButtonElement, CitationProps>(
         data-slot="citation"
         data-size={size}
         aria-label={name}
-        className={cn(citationVariants({ size }), className)}
+        className={cn(
+          citationVariants({ size }),
+          sizeProp == null && COMPACT_CITATION_CLASSES,
+          className
+        )}
         onClick={(event) => {
           onClick?.(event);
           if (hasPreview) {

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { FileX, Inbox, Search, ShoppingCart, Users, AlertTriangle } from 'lucide-react';
-import { EmptyState } from './empty-state';
+import { AlertTriangle, FileX, Inbox, Search, ShoppingCart, Users } from 'lucide-react';
 import { Button } from './button';
+import { EmptyState } from './empty-state';
 
 const meta = {
   title: 'Components/Feedback/Empty State',
@@ -90,6 +90,30 @@ export const MinimalNoIcon: Story = {
   args: {
     title: 'Nothing here yet',
     description: 'Content will appear here once available.',
+  },
+};
+
+export const Compact: Story = {
+  args: {
+    size: 'compact',
+    icon: <Inbox className="size-6 text-muted-foreground" />,
+    title: 'No chat history',
+    description: 'Conversations you start appear here.',
+  },
+  decorators: [
+    (Story) => (
+      <div className="w-[280px] rounded-lg border border-border-subtle">
+        <Story />
+      </div>
+    ),
+  ],
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'size compact fits inside a panel or list, such as an empty history panel: smaller type and spacing, and the title is a paragraph rather than a heading so it does not join the page outline.',
+      },
+    },
   },
 };
 

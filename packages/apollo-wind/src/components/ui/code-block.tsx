@@ -28,6 +28,13 @@ import { copyTextToClipboard } from '@/lib/clipboard';
  * the light build of react-syntax-highlighter (the same engine as the Material chat), with only
  * the languages below registered to keep the bundle small. For editable code use Monaco or
  * CodeMirror with the Apollo editor themes instead.
+ *
+ * Compact density: inside an ancestor with `data-density="compact"` the source drops to 12px on
+ * an 18px line, as Material's compact code renders. The header also shortens (36px to 28px) with
+ * 24px buttons, its own actions included; that is Wind's own, Material keeps its header.
+ * There is no prop: the host opts in by setting the attribute (the Wind chat sets it on its root).
+ * Compact sets CSS variables the base classes read, so a host className on the root wins in
+ * both densities.
  */
 
 // Deep imports carry `.js` so Node's ESM resolver (SSR, consumer test runners) can load them.
@@ -115,8 +122,9 @@ const codeBlockTheme: Record<string, React.CSSProperties> = {
     color: token('rest'),
     background: 'none',
     fontFamily: 'var(--font-mono)',
-    fontSize: '0.8125rem',
-    lineHeight: 1.6,
+    // Variables so a compact ancestor can shrink the type (the style is inline, so classes cannot).
+    fontSize: 'var(--code-block-font-size, 0.8125rem)',
+    lineHeight: 'var(--code-block-line-height, 1.6)',
     margin: 0,
     padding: '0.75rem 1rem',
     overflow: 'auto',
@@ -210,7 +218,7 @@ const CodeBlockHeader = React.forwardRef<HTMLDivElement, CodeBlockHeaderProps>(
         ref={ref}
         data-slot="code-block-header"
         className={cn(
-          'flex items-center justify-between gap-2 border-b border-border-subtle py-1 pr-1 pl-4',
+          'flex items-center justify-between gap-2 border-b border-border-subtle py-(--code-block-header-py,0.25rem) pr-1 pl-(--code-block-header-pl,1rem) in-data-[density=compact]:[--code-block-header-py:0.125rem] in-data-[density=compact]:[--code-block-header-pl:0.75rem] in-data-[density=compact]:[&_button]:size-6 in-data-[density=compact]:[&_button_svg]:size-3.5',
           className
         )}
         {...props}
@@ -291,6 +299,12 @@ export interface CodeBlockProps extends Omit<React.HTMLAttributes<HTMLDivElement
   hideHeader?: boolean;
   /** Extra header actions, such as preview or expand, placed before the copy button. */
   actions?: React.ReactNode;
+  /**
+   * Shown instead of the highlighted source, for example a preview of it toggled from `actions`.
+   * The header and its copy button stay and still copy `code`. `undefined`, `null` and `false`
+   * keep the source, so `body={preview && <Preview />}` works.
+   */
+  body?: React.ReactNode;
   strings?: Partial<CodeBlockStrings>;
 }
 
@@ -303,6 +317,7 @@ const CodeBlock = React.forwardRef<HTMLDivElement, CodeBlockProps>(
       showLineNumbers = false,
       hideHeader = false,
       actions,
+      body,
       strings,
       className,
       ...props
@@ -317,7 +332,7 @@ const CodeBlock = React.forwardRef<HTMLDivElement, CodeBlockProps>(
         data-slot="code-block"
         data-language={resolved ?? 'text'}
         className={cn(
-          'min-w-0 overflow-hidden rounded-lg border border-border-subtle bg-surface-overlay text-foreground',
+          'min-w-0 overflow-hidden rounded-lg border border-border-subtle bg-surface-overlay text-foreground in-data-[density=compact]:[--code-block-font-size:0.75rem] in-data-[density=compact]:[--code-block-line-height:1.5]',
           className
         )}
         {...props}
@@ -327,12 +342,16 @@ const CodeBlock = React.forwardRef<HTMLDivElement, CodeBlockProps>(
             {actions}
           </CodeBlockHeader>
         )}
-        <CodeBlockBody
-          code={source}
-          language={resolved}
-          wrap={wrap}
-          showLineNumbers={showLineNumbers}
-        />
+        {body !== undefined && body !== null && body !== false ? (
+          body
+        ) : (
+          <CodeBlockBody
+            code={source}
+            language={resolved}
+            wrap={wrap}
+            showLineNumbers={showLineNumbers}
+          />
+        )}
       </div>
     );
   }

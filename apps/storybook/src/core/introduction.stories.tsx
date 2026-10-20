@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { Braces } from 'lucide-react';
 import * as React from 'react';
 
 const meta = {
@@ -472,9 +473,9 @@ function TokensTab() {
           }
         />
         <TokenCard
-          title="Icons"
-          description="SVG icon library with 1000+ icons from the Apollo icon set."
-          storyPath="/story/apollo-core-theme-icons--all"
+          title="Icons Apollo"
+          description="Custom UiPath SVGs for products, activities, canvases, and connectors."
+          storyPath="/story/apollo-core-icons-icons-apollo--icons-apollo"
           example={
             <svg
               viewBox="0 0 24 24"
@@ -491,6 +492,12 @@ function TokensTab() {
               />
             </svg>
           }
+        />
+        <TokenCard
+          title="Icons Lucide"
+          description="The lucide UI icons our products use, with one icon per meaning."
+          storyPath="/story/apollo-core-icons-icons-lucide--icons-lucide"
+          example={<Braces className="h-6 w-6 text-foreground" aria-hidden="true" />}
         />
         <TokenCard
           title="Shadows"

@@ -22,6 +22,59 @@ describe('EmptyState', () => {
     expect(results).toHaveNoViolations();
   });
 
+  it('renders a compact size with the title as a paragraph and small actions', () => {
+    const { container } = render(
+      <EmptyState
+        size="compact"
+        title="No chat history"
+        description="Conversations appear here."
+        action={{ label: 'New chat', onClick: vi.fn() }}
+      />
+    );
+    expect(container.firstChild).toHaveAttribute('data-size', 'compact');
+    expect(screen.queryByRole('heading')).toBeNull();
+    expect(screen.getByText('No chat history').tagName).toBe('P');
+    expect(screen.getByRole('button', { name: 'New chat' })).toHaveClass('h-9');
+  });
+
+  it('keeps the title a heading by default', () => {
+    render(<EmptyState title="No data" />);
+    expect(screen.getByRole('heading', { name: 'No data' })).toBeInTheDocument();
+    expect(screen.getByText('No data').parentElement).not.toHaveAttribute('data-size');
+  });
+
+  it('has no accessibility violations when compact', async () => {
+    const { container } = render(
+      <EmptyState
+        size="compact"
+        title="No chat history"
+        description="Conversations appear here."
+        action={{ label: 'New chat', onClick: vi.fn() }}
+      />
+    );
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it('turns compact under a compact ancestor unless a size is set', () => {
+    const { container, rerender } = render(
+      <div data-density="compact">
+        <EmptyState title="No chat history" />
+      </div>
+    );
+    const root = () => container.querySelector('[data-slot="empty-state"]');
+    expect(root()).toHaveAttribute('data-size', 'compact');
+    expect(screen.getByText('No chat history').tagName).toBe('P');
+    expect(screen.queryByRole('heading')).toBeNull();
+
+    rerender(
+      <div data-density="compact">
+        <EmptyState title="No chat history" size="default" />
+      </div>
+    );
+    expect(root()).not.toHaveAttribute('data-size');
+    expect(screen.getByRole('heading', { name: 'No chat history' })).toBeInTheDocument();
+  });
+
   it('renders with description', () => {
     render(
       <EmptyState title="No items" description="There are no items to display at this time." />

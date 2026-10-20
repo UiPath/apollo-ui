@@ -1,3 +1,10 @@
+## [@uipath/ap-chat-v1.7.0](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.6.1...@uipath/ap-chat@1.7.0) (2026-10-20)
+
+### Features
+
+* **apollo-react:** add the Wind chat renderer shell ([91c4b46](https://github.com/UiPath/apollo-ui/commit/91c4b46eca15c342cd0cad92919a4c052add7b76))
+* **apollo-react:** document the Wind chat setup and its delivery ([657ced5](https://github.com/UiPath/apollo-ui/commit/657ced50e2a6dce12a08a507c7e7441f1d8ce798))
+
 ## [@uipath/ap-chat-v1.6.1](https://github.com/UiPath/apollo-ui/compare/@uipath/ap-chat@1.6.0...@uipath/ap-chat@1.6.1) (2026-07-21)
 
 ### Bug Fixes

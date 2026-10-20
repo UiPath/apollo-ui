@@ -2,14 +2,12 @@ import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { Menu, MenuItem, styled } from '@mui/material';
 import token from '@uipath/apollo-core';
+import { useMessageActionHandler } from '@uipath/apollo-react/chat/headless/hooks/use-message-actions';
 import { useScheduledCallback } from '@uipath/apollo-react/chat/headless/hooks/use-scheduled-callback';
-import { useChatService } from '@uipath/apollo-react/chat/headless/providers/chat-service.provider';
 import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
 import {
-  type AutopilotChatActionPayload,
   type AutopilotChatMessage,
   type AutopilotChatMessageAction,
-  type AutopilotChatPreHookAction,
   AutopilotChatRole,
 } from '@uipath/apollo-react/chat/service';
 import React from 'react';
@@ -80,42 +78,7 @@ function AutopilotChatActionsListComponent({
     ...(message?.actions?.filter((action) => action.showInOverflow) || []),
   ];
   const shouldBeVisible = isVisible || overflowMenuOpen;
-  const chatService = useChatService();
-
-  const handleAction = React.useCallback(
-    async (action: AutopilotChatMessageAction) => {
-      if (!action.eventName || !chatService) {
-        return;
-      }
-
-      // Get message and group info
-      const group = chatService.getMessagesInGroup(message.groupId ?? '');
-      const currentMessage = chatService
-        .getConversation()
-        .find((m) => m.id === message.id) as AutopilotChatMessage;
-
-      // Check if this action has a pre-hook
-      if (action.details?.preHookAction) {
-        const proceed = await chatService.getPreHook(
-          action.details.preHookAction as AutopilotChatPreHookAction
-        )({
-          isPositive: action.details.isPositive,
-          group,
-          message: currentMessage,
-        });
-        if (!proceed) {
-          return;
-        }
-      }
-
-      (chatService as any)._eventBus.publish(action.eventName, {
-        group,
-        message: currentMessage,
-        action,
-      } satisfies AutopilotChatActionPayload);
-    },
-    [message, chatService]
-  );
+  const handleAction = useMessageActionHandler(message);
 
   const handleOpenOverflowMenu = React.useCallback(
     (event: React.MouseEvent<HTMLElement>) => {

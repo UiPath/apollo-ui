@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Maximize2 } from 'lucide-react';
+import { Code, Eye, Maximize2 } from 'lucide-react';
+import * as React from 'react';
+import { PREVIEW_SANDBOX, previewDocument } from '../../../.storybook/html-preview';
 import { Button } from './button';
 import { CodeBlock } from './code-block';
 
@@ -167,6 +169,73 @@ export const WithActions: Story = {
       description: {
         story:
           'Extra header actions, such as an HTML preview toggle or an expand button, go in actions. They sit before the copy button.',
+      },
+    },
+  },
+};
+
+const PREVIEW_HTML = `<button type="submit" style="font: 600 14px system-ui; padding: 8px 16px; border: 0; border-radius: 8px; background: #0067df; color: white">
+  Approve
+</button>`;
+
+function PreviewToggleDemo() {
+  const [preview, setPreview] = React.useState(true);
+  const label = preview ? 'Show code' : 'Preview';
+  return (
+    <CodeBlock
+      code={PREVIEW_HTML}
+      language="html"
+      actions={
+        <Button
+          variant="ghost"
+          size="2xs"
+          icon
+          aria-label={label}
+          title={label}
+          onClick={() => setPreview(!preview)}
+        >
+          {preview ? <Code aria-hidden /> : <Eye aria-hidden />}
+        </Button>
+      }
+      body={
+        preview ? (
+          <iframe
+            title="HTML preview"
+            sandbox={PREVIEW_SANDBOX}
+            srcDoc={previewDocument(PREVIEW_HTML)}
+            className="block h-24 w-full bg-white"
+          />
+        ) : undefined
+      }
+    />
+  );
+}
+
+export const CustomBody: Story = {
+  args: { code: PREVIEW_HTML },
+  render: () => <PreviewToggleDemo />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'body replaces the highlighted source, here with a sandboxed preview of the HTML toggled from a header action. The header stays, and the copy button still copies the code.',
+      },
+    },
+  },
+};
+
+export const CompactDensity: Story = {
+  args: { code: TS_SAMPLE, language: 'ts' },
+  render: (args) => (
+    <div data-density="compact">
+      <CodeBlock {...args} />
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Inside an ancestor with data-density="compact" the source drops to 12px on an 18px line, as Material\'s compact code renders. The header also shortens with 24px buttons, a Wind-only choice.',
       },
     },
   },

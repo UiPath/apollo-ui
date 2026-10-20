@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.72.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.72.1...@uipath/apollo-wind@2.72.2) (2026-10-20)
+
+### Bug Fixes
+
+* **apollo-wind:** close a popover from its trigger inside a shadow root ([8cd6ee4](https://github.com/UiPath/apollo-ui/commit/8cd6ee4d08c7044241bef6fc5589ceccb730cd09))
+
 ## [@uipath/apollo-wind-v2.72.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.72.0...@uipath/apollo-wind@2.72.1) (2026-10-19)
 
 ### Bug Fixes

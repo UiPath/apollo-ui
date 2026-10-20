@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { buildTailwind, ruleBody } from '../../../tests/tailwind-compile';
 import { JsonTreeViewProvider } from './json-tree-view';
 import {
   ToolCall,
@@ -37,6 +38,46 @@ const toggle = () => screen.getByRole('button', { name: /search web/ });
 const section = (name: string) => screen.getByRole('button', { name });
 
 describe('ToolCall', () => {
+  it('takes the sm look in a compact ancestor unless a size is set, with a tighter body', async () => {
+    const compactPadding = 'in-data-[density=compact]:[--tool-call-padding:0.5rem]';
+    const { rerender } = render(
+      <div data-density="compact">
+        <Card defaultOpen />
+      </div>
+    );
+    const card = screen.getByTestId('tool-call');
+    expect(card).toHaveClass('p-(--tool-call-padding,0.75rem)', compactPadding);
+    expect(card).toHaveClass('in-data-[density=compact]:[--tool-call-body-gap:0.25rem]');
+    expect(document.querySelector('[data-slot="tool-call-content"]')).toHaveClass(
+      'mt-(--tool-call-body-gap,0.5rem)',
+      'ml-(--tool-call-indent,0.75rem)'
+    );
+    // The toggle row (the shared disclosure row) loses vertical padding too.
+    expect(toggle()).toHaveClass('in-data-[density=compact]:py-0.5');
+    const css = await buildTailwind([compactPadding, 'p-(--tool-call-padding,0.75rem)']);
+    expect(ruleBody(css, `.${CSS.escape(compactPadding)}`)).toContain(
+      '--tool-call-padding: 0.5rem'
+    );
+
+    rerender(
+      <div data-density="compact">
+        <Card defaultOpen size="md" />
+      </div>
+    );
+    expect(screen.getByTestId('tool-call')).not.toHaveClass(compactPadding);
+  });
+
+  it('lets a host className on the root win in compact too', () => {
+    render(
+      <div data-density="compact">
+        <Card className="p-4 text-base" />
+      </div>
+    );
+    const card = screen.getByTestId('tool-call');
+    expect(card).toHaveClass('p-4', 'text-base');
+    expect(card.className).not.toMatch(/ p-\(|text-\(/);
+  });
+
   it.each([
     ['pending', 'Pending', "Running 'search web'"],
     ['executing', 'Running', "Running 'search web'"],

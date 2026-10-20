@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { describe, expect, it, vi } from 'vitest';
 import {
+  DEFAULT_SHEET_STRINGS,
   Sheet,
   SheetClose,
   SheetContent,
@@ -212,6 +213,25 @@ describe('Sheet', () => {
     await waitFor(() => {
       expect(document.querySelector('[data-slot="sheet-header"]')).toHaveClass('gap-2');
     });
+  });
+
+  it('labels the close button from strings', () => {
+    const { rerender } = render(
+      <Sheet open>
+        <SheetContent>
+          <SheetTitle>Title</SheetTitle>
+        </SheetContent>
+      </Sheet>
+    );
+    expect(screen.getByRole('button', { name: DEFAULT_SHEET_STRINGS.close })).toBeInTheDocument();
+    rerender(
+      <Sheet open>
+        <SheetContent strings={{ close: 'Schließen' }}>
+          <SheetTitle>Title</SheetTitle>
+        </SheetContent>
+      </Sheet>
+    );
+    expect(screen.getByRole('button', { name: 'Schließen' })).toBeInTheDocument();
   });
 
   it('applies custom className to content', async () => {

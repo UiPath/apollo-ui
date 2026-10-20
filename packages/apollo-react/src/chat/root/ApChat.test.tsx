@@ -12,10 +12,10 @@ const createService = (renderer?: 'material' | 'wind') =>
   });
 
 describe('ApChat from @uipath/apollo-react/chat', () => {
-  it('renders the wind placeholder by default', () => {
+  it('renders the Wind renderer by default', () => {
     render(<ApChat chatServiceInstance={createService()} />);
 
-    expect(screen.getByText(/Wind chat renderer is not available yet/)).toBeInTheDocument();
+    expect(document.querySelector('[data-slot="wind-chat"]')).not.toBeNull();
   });
 
   it('loads the Material renderer on demand when config.renderer is material', async () => {
@@ -23,6 +23,6 @@ describe('ApChat from @uipath/apollo-react/chat', () => {
 
     // First load transforms the whole Material tree, which is slow under Vitest.
     expect(await screen.findByText('Autopilot', {}, { timeout: 25_000 })).toBeInTheDocument();
-    expect(screen.queryByText(/Wind chat renderer is not available yet/)).toBeNull();
+    expect(document.querySelector('[data-slot="wind-chat"]')).toBeNull();
   }, 30_000);
 });

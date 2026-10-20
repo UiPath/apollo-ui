@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/index';
+import { cn, composeRefs } from '@/lib/index';
+import { useAncestorDensity } from '@/lib/use-ancestor-density';
 
 export interface EmptyStateProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Optional visual element displayed above the content (icon, illustration, video, etc.) */
@@ -21,45 +22,104 @@ export interface EmptyStateProps extends React.HTMLAttributes<HTMLDivElement> {
     label: string;
     onClick: () => void;
   };
+  /**
+   * `compact` fits inside a panel or list: smaller type and spacing. It renders no heading element
+   * (the title and any code are paragraphs): inside a panel the empty message is content of the
+   * panel's own section, and a heading there would add a stray entry to the page outline.
+   * Without a `size`, it is compact under an ancestor with `data-density="compact"` (a compact chat
+   * panel), like the other chat primitives. The heading changes element, which a CSS variant
+   * cannot do, so this is decided after mount; an explicit `size` always wins.
+   */
+  size?: 'default' | 'compact';
 }
 
 const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
   (
-    { icon, code, title, description, action, secondaryAction, className, children, ...props },
+    {
+      icon,
+      code,
+      title,
+      description,
+      action,
+      secondaryAction,
+      size,
+      className,
+      children,
+      ...props
+    },
     ref
   ) => {
+    const local = React.useRef<HTMLDivElement | null>(null);
+    const setRef = React.useMemo(() => composeRefs(ref, local), [ref]);
+    const ancestorDensity = useAncestorDensity(local, size == null);
     const hasSimpleActions = !children && (action || secondaryAction);
+    const compact = (size ?? ancestorDensity) === 'compact';
+    const buttonSize = compact ? 'sm' : undefined;
+    const actionsClassName = compact
+      ? 'mt-4 flex flex-wrap items-center justify-center gap-2'
+      : 'mt-6 flex flex-wrap items-center justify-center gap-2';
 
     return (
       <div
-        ref={ref}
+        ref={setRef}
         data-slot="empty-state"
-        className={cn('flex flex-col items-center justify-center p-8 text-center', className)}
+        data-size={compact ? 'compact' : undefined}
+        className={cn(
+          compact
+            ? 'flex flex-col items-center justify-center px-4 py-8 text-center'
+            : 'flex flex-col items-center justify-center p-8 text-center',
+          className
+        )}
         {...props}
       >
-        {icon && <div className="mb-6 flex items-center justify-center">{icon}</div>}
-        {code && (
-          <h1 className="text-[40px] font-bold tracking-[-0.8px] leading-none mb-4">{code}</h1>
+        {icon && (
+          <div
+            className={
+              compact
+                ? 'mb-3 flex items-center justify-center'
+                : 'mb-6 flex items-center justify-center'
+            }
+          >
+            {icon}
+          </div>
         )}
-        <h3 className="text-xl font-semibold tracking-tight">{title}</h3>
+        {code &&
+          (compact ? (
+            <p className="mb-2 text-2xl font-bold leading-none">{code}</p>
+          ) : (
+            <h1 className="text-[40px] font-bold tracking-[-0.8px] leading-none mb-4">{code}</h1>
+          ))}
+        {compact ? (
+          <p className="text-sm text-foreground">{title}</p>
+        ) : (
+          <h3 className="text-xl font-semibold tracking-tight">{title}</h3>
+        )}
         {description && (
-          <p className="mt-3 max-w-md text-sm text-muted-foreground leading-relaxed">
+          <p
+            className={
+              compact
+                ? 'mt-1 max-w-md text-xs text-muted-foreground'
+                : 'mt-3 max-w-md text-sm text-muted-foreground leading-relaxed'
+            }
+          >
             {description}
           </p>
         )}
         {hasSimpleActions && (
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
-            {action && <Button onClick={action.onClick}>{action.label}</Button>}
+          <div className={actionsClassName}>
+            {action && (
+              <Button size={buttonSize} onClick={action.onClick}>
+                {action.label}
+              </Button>
+            )}
             {secondaryAction && (
-              <Button variant="outline" onClick={secondaryAction.onClick}>
+              <Button size={buttonSize} variant="outline" onClick={secondaryAction.onClick}>
                 {secondaryAction.label}
               </Button>
             )}
           </div>
         )}
-        {children && (
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-2">{children}</div>
-        )}
+        {children && <div className={actionsClassName}>{children}</div>}
       </div>
     );
   }

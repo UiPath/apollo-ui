@@ -1,3 +1,20 @@
+## [@uipath/apollo-react-v7.4.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.3.2...@uipath/apollo-react@7.4.0) (2026-10-20)
+
+### Features
+
+* **apollo-react:** add the Wind chat composer ([6a00ac2](https://github.com/UiPath/apollo-ui/commit/6a00ac2baae5a26a467d2c161fbc2c3b291db852))
+* **apollo-react:** add the Wind chat first run, suggestions and thinking state ([536a71c](https://github.com/UiPath/apollo-ui/commit/536a71cc9fba70b8d477cd7dd67b5eaba8a92b31))
+* **apollo-react:** add the Wind chat history and settings panels ([91a3841](https://github.com/UiPath/apollo-ui/commit/91a3841419134aa86ab71cae37a7f319198205a1))
+* **apollo-react:** add the Wind chat markdown renderer ([3aa9a00](https://github.com/UiPath/apollo-ui/commit/3aa9a00692115450741c76c99aaead51b8076a24))
+* **apollo-react:** add the Wind chat message list ([8b94176](https://github.com/UiPath/apollo-ui/commit/8b94176cf12f7ee82322fbe061b698c8f6b8eeb4))
+* **apollo-react:** add the Wind chat renderer shell ([91c4b46](https://github.com/UiPath/apollo-ui/commit/91c4b46eca15c342cd0cad92919a4c052add7b76))
+* **apollo-react:** add the Wind chat tool-call and tree renderers ([b17cd3c](https://github.com/UiPath/apollo-ui/commit/b17cd3c369bc099d48c0a965d5f33f2024a17977))
+* **apollo-react:** document the Wind chat setup and its delivery ([657ced5](https://github.com/UiPath/apollo-ui/commit/657ced50e2a6dce12a08a507c7e7441f1d8ce798))
+
+### Bug Fixes
+
+* **apollo-react:** fix chat history and settings behaviour hosts rely on ([91a9b2f](https://github.com/UiPath/apollo-ui/commit/91a9b2fa26199f502fa7833bd79bc79ce42fea48))
+
 ## [@uipath/apollo-react-v7.3.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.3.1...@uipath/apollo-react@7.3.2) (2026-10-19)
 
 ### Bug Fixes

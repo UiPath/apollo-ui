@@ -2,6 +2,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { ChevronDown, ChevronRight, CircleCheck, CircleX, Clock, Loader2 } from 'lucide-react';
 import * as React from 'react';
 import { cn } from '@/lib';
+import { disclosureRowClassName } from '@/lib/disclosure-row';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './collapsible';
 import {
   buildJsonTree,
@@ -71,14 +72,13 @@ function mergeStrings(overrides: Partial<ToolCallStrings> | undefined): ToolCall
 const useIsomorphicLayoutEffect =
   typeof window === 'undefined' ? React.useEffect : React.useLayoutEffect;
 
-const TOGGLE_CLASSES =
-  'flex w-full min-w-0 items-center gap-2 rounded p-1 text-left transition-colors hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none';
+const TOGGLE_CLASSES = `${disclosureRowClassName} hover:text-foreground`;
 
 const toolCallVariants = cva('group/tool-call flex w-full min-w-0 flex-col text-muted-foreground', {
   variants: {
     size: {
       sm: 'p-2 text-xs',
-      md: 'p-3 text-sm',
+      md: 'p-(--tool-call-padding,0.75rem) text-(length:--tool-call-font-size,0.875rem) leading-(--tool-call-leading,1.25rem)',
     },
   },
   defaultVariants: {
@@ -101,18 +101,29 @@ export interface ToolCallProps
   jsonTreeStrings?: Partial<JsonTreeViewStrings>;
 }
 
+// The `sm` look, plus a tighter body gap, for a tool call without an explicit size inside a compact
+// ancestor. It sets the variables `md` and its parts read, so a host className on the root wins.
+const COMPACT_TOOL_CALL_CLASSES =
+  'in-data-[density=compact]:[--tool-call-padding:0.5rem] in-data-[density=compact]:[--tool-call-font-size:0.75rem] in-data-[density=compact]:[--tool-call-leading:1rem] in-data-[density=compact]:[--tool-call-icon-size:1rem] in-data-[density=compact]:[--tool-call-indent:0.5rem] in-data-[density=compact]:[--tool-call-body-gap:0.25rem]';
+
 /**
  * One agent tool call, laid out like the Material ApToolCall: a status line ("Ran 'x' for 1.2
  * seconds") that toggles an indented body of collapsible sections (input, errors, output, or any
  * `ToolCallSection`). The body is not rendered while closed. Omit `ToolCallContent` for a
  * name-only line (the toggle hides itself).
+ *
+ * Compact density (Wind's own; Material's tool call does not change): without a `size`, inside an
+ * ancestor with `data-density="compact"` it takes the `sm` look (8px padding, 12px text, 16px
+ * status icon, 8px body indent) with a 4px body gap, and its toggle rows drop to 2px vertical
+ * padding. Code blocks in its body follow the ancestor like any `CodeBlock`. An explicit `size`
+ * always wins, and a host className on the root wins in both densities.
  */
 const ToolCall = React.forwardRef<HTMLDivElement, ToolCallProps>(
   (
     {
       className,
       status,
-      size = 'md',
+      size: sizeProp,
       open,
       defaultOpen,
       onOpenChange,
@@ -122,6 +133,7 @@ const ToolCall = React.forwardRef<HTMLDivElement, ToolCallProps>(
     },
     ref
   ) => {
+    const size = sizeProp ?? 'md';
     const [contentCount, setContentCount] = React.useState(0);
 
     const registerContent = React.useCallback(() => {
@@ -148,7 +160,11 @@ const ToolCall = React.forwardRef<HTMLDivElement, ToolCallProps>(
             data-slot="tool-call"
             data-status={status}
             data-size={size}
-            className={cn(toolCallVariants({ size }), className)}
+            className={cn(
+              toolCallVariants({ size }),
+              sizeProp == null && COMPACT_TOOL_CALL_CLASSES,
+              className
+            )}
             {...props}
           />
         </Collapsible>
@@ -165,16 +181,19 @@ const STATUS_ICONS: Record<ToolCallStatus, React.ComponentType<{ className?: str
   failed: CircleX,
 };
 
-const toolCallStatusIconVariants = cva('size-5 shrink-0 group-data-[size=sm]/tool-call:size-4', {
-  variants: {
-    status: {
-      pending: 'text-muted-foreground',
-      executing: 'animate-spin text-primary motion-reduce:animate-none',
-      completed: 'text-success',
-      failed: 'text-destructive',
+const toolCallStatusIconVariants = cva(
+  'size-(--tool-call-icon-size,1.25rem) shrink-0 group-data-[size=sm]/tool-call:size-4',
+  {
+    variants: {
+      status: {
+        pending: 'text-muted-foreground',
+        executing: 'animate-spin text-primary motion-reduce:animate-none',
+        completed: 'text-success',
+        failed: 'text-destructive',
+      },
     },
-  },
-});
+  }
+);
 
 export interface ToolCallHeaderProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {
@@ -226,7 +245,9 @@ const ToolCallHeader = React.forwardRef<HTMLDivElement, ToolCallHeaderProps>(
             />
           </CollapsibleTrigger>
         ) : (
-          <div className="flex min-w-0 items-center gap-2 p-1">{line}</div>
+          <div className="flex min-w-0 items-center gap-2 p-1 in-data-[density=compact]:py-0.5">
+            {line}
+          </div>
         )}
       </div>
     );
@@ -247,7 +268,7 @@ const ToolCallContent = React.forwardRef<HTMLDivElement, ToolCallContentProps>(
         ref={ref}
         data-slot="tool-call-content"
         className={cn(
-          'mt-2 ml-3 flex min-w-0 flex-col border-l pl-3 group-data-[size=sm]/tool-call:ml-2 group-data-[size=sm]/tool-call:pl-2',
+          'mt-(--tool-call-body-gap,0.5rem) ml-(--tool-call-indent,0.75rem) flex min-w-0 flex-col border-l pl-(--tool-call-indent,0.75rem) group-data-[size=sm]/tool-call:ml-2 group-data-[size=sm]/tool-call:pl-2',
           className
         )}
         {...props}

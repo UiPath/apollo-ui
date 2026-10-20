@@ -106,6 +106,30 @@ describe('DropzoneOverlay', () => {
     expect(onFiles).toHaveBeenCalledWith([png], []);
   });
 
+  it('keeps a paste with an accepted file from the field, even with text', () => {
+    const { zone, onFiles } = setup({ enablePaste: true, accept: '.pdf' });
+    const notCancelled = fireEvent.paste(zone, {
+      clipboardData: { types: ['Files', 'text/plain'], files: [pdf, png], items: [] },
+    });
+    expect(notCancelled).toBe(false);
+    expect(onFiles).toHaveBeenCalledWith([pdf], [expect.objectContaining({ file: png })]);
+  });
+
+  it('lets text through when every pasted file is refused', () => {
+    const { zone, onFiles } = setup({ enablePaste: true, accept: '.pdf' });
+    const withText = fireEvent.paste(zone, {
+      clipboardData: { types: ['Files', 'text/plain'], files: [png], items: [] },
+    });
+    expect(withText).toBe(true);
+    expect(onFiles).toHaveBeenLastCalledWith([], [expect.objectContaining({ file: png })]);
+
+    // An image-only paste has no text to keep, so the browser does not paste its name either.
+    const imageOnly = fireEvent.paste(zone, {
+      clipboardData: { types: ['Files'], files: [png], items: [] },
+    });
+    expect(imageOnly).toBe(false);
+  });
+
   it('ignores pastes without enablePaste, or without files', () => {
     const { zone, onFiles } = setup();
     fireEvent.paste(zone, { clipboardData: { files: [png], items: [] } });
@@ -116,6 +140,19 @@ describe('DropzoneOverlay', () => {
     const { zone } = setup({ strings: { dropHint: 'Dateien hier ablegen' } });
     fireEvent.dragEnter(zone, fileTransfer());
     expect(screen.getByText('Dateien hier ablegen')).toBeInTheDocument();
+  });
+
+  it('lists the limit lines it is given under the hint', () => {
+    const { zone } = setup({ strings: { typesHint: 'Allowed: PDF', countHint: 'Up to 3 files' } });
+    fireEvent.dragEnter(zone, fileTransfer());
+    const lines = Array.from(document.querySelectorAll('[data-slot="dropzone-overlay-limit"]'));
+    expect(lines.map((line) => line.textContent)).toEqual(['Allowed: PDF', 'Up to 3 files']);
+  });
+
+  it('shows no limit lines by default', () => {
+    const { zone } = setup({ accept: '.pdf', maxSize: 1024, maxFiles: 2 });
+    fireEvent.dragEnter(zone, fileTransfer());
+    expect(document.querySelector('[data-slot="dropzone-overlay-limit"]')).toBeNull();
   });
 
   it('has no axe violations while dragging', async () => {

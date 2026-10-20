@@ -15,7 +15,7 @@ import {
   ChatComposerToolbar,
   useChatComposer,
 } from './chat-composer';
-import { DropzoneOverlay } from './dropzone-overlay';
+import { DropzoneOverlay, type DropzoneOverlayStrings } from './dropzone-overlay';
 import { type FileRejection, formatFileSize } from './file-validation';
 import { InputGroupButton } from './input-group';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';
@@ -216,7 +216,7 @@ const REJECTION_TEXT: Record<FileRejection['reason'], string> = {
   count: 'more than 3 files',
 };
 
-function WithDropzoneDemo() {
+function WithDropzoneDemo({ strings }: { strings?: Partial<DropzoneOverlayStrings> }) {
   const [attachments, setAttachments] = React.useState<ChatComposerAttachmentItem[]>([]);
   const [log, setLog] = React.useState<string[]>([]);
   return (
@@ -226,6 +226,7 @@ function WithDropzoneDemo() {
         maxSize={5 * 1024 * 1024}
         maxFiles={3}
         enablePaste
+        strings={strings}
         className="rounded-xl border border-dashed border-border p-4"
         onFiles={(accepted, rejected) => {
           setAttachments((list) => [...list, ...toItems(accepted)]);
@@ -267,6 +268,23 @@ function WithDropzoneDemo() {
 /** DropzoneOverlay around the composer: drag files over the box to see the overlay. */
 export const WithDropzone: Story = {
   render: () => <WithDropzoneDemo />,
+};
+
+/**
+ * The overlay lists the limits under its hint when `strings` gives the lines. They carry values,
+ * so the host formats them. Drag files over the box to see them.
+ */
+export const WithDropzoneLimits: Story = {
+  render: () => (
+    <WithDropzoneDemo
+      strings={{
+        dropHint: 'Drop files here to add them to your prompt',
+        typesHint: 'Allowed file types: images, PDF, CSV, TXT',
+        sizeHint: 'Maximum file size: 5 MB',
+        countHint: 'Maximum files: 3',
+      }}
+    />
+  ),
 };
 
 /** Every label and placeholder comes from `strings`, so hosts can pass translated copy. */

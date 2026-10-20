@@ -3,7 +3,8 @@
 import { cva, type VariantProps } from 'class-variance-authority';
 import { ArrowUp, CircleAlert, FileText, Paperclip, Square, TriangleAlert, X } from 'lucide-react';
 import * as React from 'react';
-import { cn } from '@/lib';
+import { cn, composeRefs } from '@/lib';
+import { useAncestorDensity } from '@/lib/use-ancestor-density';
 import {
   Attachment,
   AttachmentAction,
@@ -48,6 +49,12 @@ import {
  *
  * Enter sends and Shift+Enter starts a new line. While `status` is `streaming` the submit button
  * becomes a stop button and Enter does not send.
+ *
+ * Density: `density="compact"` gives a one-row textarea and tighter spacing. Without the prop the
+ * composer is compact while any ancestor has `data-density="compact"`, as the other chat
+ * primitives are, so it is compact inside a compact chat panel. The prop always wins. That
+ * ancestor is watched for changes; one that only gains the attribute later is picked up on the
+ * composer's next render.
  */
 
 export interface ChatComposerStrings {
@@ -198,7 +205,11 @@ const ChatComposer = React.forwardRef<HTMLFormElement, ChatComposerProps>(
     },
     ref
   ) => {
-    const resolvedDensity: ChatComposerDensity = density ?? 'comfortable';
+    const formRef = React.useRef<HTMLFormElement | null>(null);
+    const setFormRef = React.useMemo(() => composeRefs(ref, formRef), [ref]);
+    // The prop wins; without it the composer follows a `data-density` ancestor.
+    const ancestorDensity = useAncestorDensity(formRef, density == null);
+    const resolvedDensity: ChatComposerDensity = density ?? ancestorDensity ?? 'comfortable';
     const controlled = valueProp !== undefined;
     const [uncontrolledValue, setUncontrolledValue] = React.useState(defaultValue ?? '');
     const value = controlled ? valueProp : uncontrolledValue;
@@ -279,7 +290,7 @@ const ChatComposer = React.forwardRef<HTMLFormElement, ChatComposerProps>(
     return (
       <ChatComposerContext.Provider value={context}>
         <form
-          ref={ref}
+          ref={setFormRef}
           data-slot="chat-composer"
           data-status={status}
           data-density={resolvedDensity}

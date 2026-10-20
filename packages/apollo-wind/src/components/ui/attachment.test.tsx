@@ -1,8 +1,9 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { buildTailwind } from '../../../tests/tailwind-compile';
 import {
   Attachment,
   AttachmentAction,
@@ -30,6 +31,24 @@ function Card(props: React.ComponentProps<typeof Attachment>) {
 }
 
 describe('Attachment', () => {
+  it('steps padding and media down one size in a compact ancestor', async () => {
+    const { container } = render(
+      <div data-density="compact">
+        <Card size="xs" />
+      </div>
+    );
+    const card = container.querySelector('[data-slot="attachment"]') as HTMLElement;
+    const media = container.querySelector('[data-slot="attachment-media"]') as HTMLElement;
+    const compactPadding = 'in-data-[density=compact]:has-data-[slot=attachment-media]:p-0.5';
+    expect(card).toHaveClass('has-data-[slot=attachment-media]:p-1', compactPadding);
+    expect(media).toHaveClass('in-data-[density=compact]:group-data-[size=xs]/attachment:w-6');
+    // The compact rule comes after the base one, so it wins inside a compact ancestor.
+    const css = await buildTailwind(Array.from(card.classList));
+    expect(css.indexOf(`.${CSS.escape(compactPadding)}`)).toBeGreaterThan(
+      css.indexOf(`.${CSS.escape('has-data-[slot=attachment-media]:p-1')}`)
+    );
+  });
+
   it('renders media, title and description with defaults', () => {
     render(<Card />);
     const el = screen.getByTestId('attachment');
@@ -120,6 +139,60 @@ describe('Attachment', () => {
     );
     expect(screen.getByTestId('group')).toHaveAttribute('data-slot', 'attachment-group');
     expect(screen.getAllByTestId('attachment')).toHaveLength(2);
+  });
+
+  it('shows a cut-off title in full in a tooltip, and no tooltip when it fits', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<AttachmentTitle>quarterly-reconciliation.xlsx</AttachmentTitle>);
+    const title = screen.getByText('quarterly-reconciliation.xlsx');
+    Object.defineProperty(title, 'clientWidth', { configurable: true, value: 100 });
+    Object.defineProperty(title, 'scrollWidth', { configurable: true, value: 100 });
+    await user.hover(title);
+    expect(screen.queryByRole('tooltip')).toBeNull();
+    await user.unhover(title);
+
+    Object.defineProperty(title, 'scrollWidth', { configurable: true, value: 240 });
+    await user.hover(title);
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('quarterly-reconciliation.xlsx');
+    await user.keyboard('{Escape}');
+    await user.unhover(title);
+    await waitFor(() => expect(screen.queryByRole('tooltip')).toBeNull());
+
+    // Measured on every open: once the name fits again, hovering shows nothing.
+    Object.defineProperty(title, 'scrollWidth', { configurable: true, value: 100 });
+    await user.hover(title);
+    expect(screen.queryByRole('tooltip')).toBeNull();
+    await user.unhover(title);
+
+    rerender(
+      <AttachmentTitle truncationTooltip={false}>quarterly-reconciliation.xlsx</AttachmentTitle>
+    );
+    const plain = screen.getByText('quarterly-reconciliation.xlsx');
+    Object.defineProperty(plain, 'clientWidth', { configurable: true, value: 100 });
+    Object.defineProperty(plain, 'scrollWidth', { configurable: true, value: 240 });
+    await user.hover(plain);
+    expect(screen.queryByRole('tooltip')).toBeNull();
+  });
+
+  it('has no accessibility violations with the title tooltip open', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <Attachment>
+        <AttachmentContent>
+          <AttachmentTitle>quarterly-reconciliation.xlsx</AttachmentTitle>
+        </AttachmentContent>
+      </Attachment>
+    );
+    const title = screen.getByText('quarterly-reconciliation.xlsx');
+    Object.defineProperty(title, 'clientWidth', { configurable: true, value: 100 });
+    Object.defineProperty(title, 'scrollWidth', { configurable: true, value: 240 });
+    await user.hover(title);
+    await screen.findByRole('tooltip');
+    expect(await axe(container)).toHaveNoViolations();
+    // The portalled tooltip too; landmarks are a page concern, not the chip's.
+    expect(
+      await axe(document.body, { rules: { region: { enabled: false } } })
+    ).toHaveNoViolations();
   });
 
   it('forwards refs', () => {

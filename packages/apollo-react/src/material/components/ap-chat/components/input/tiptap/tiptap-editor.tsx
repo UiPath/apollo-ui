@@ -191,7 +191,9 @@ function TipTapEditorInner(
   });
 
   React.useEffect(() => {
-    if (!editor) {
+    // An editor replaced after its extensions changed is destroyed and has no schema; getText
+    // would throw on it.
+    if (!editor?.schema) {
       return;
     }
 

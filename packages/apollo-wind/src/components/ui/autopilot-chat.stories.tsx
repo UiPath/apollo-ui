@@ -135,12 +135,15 @@ interface AutopilotChatPanelProps {
    * the composer inside it in Fullscreen.
    */
   firstRun?: boolean;
+  /** Sets `data-density="compact"` on the panel root, as the Wind chat does in compact mode. */
+  compact?: boolean;
 }
 
 function AutopilotChatPanel({
   className,
   variant = 'standard',
   firstRun = false,
+  compact = false,
 }: AutopilotChatPanelProps) {
   const [revealedCount, setRevealedCount] = React.useState(0);
   const [isBusy, setIsBusy] = React.useState(false);
@@ -183,8 +186,10 @@ function AutopilotChatPanel({
   const showHero = firstRun && turns.length === 0;
   const heroHoldsComposer = showHero && variant === 'fullscreen';
 
-  const renderComposer = (density: ChatComposerDensity) => {
-    const toolbarSize = density === 'compact' ? '3xs' : '2xs';
+  // Without a density the composer follows the panel's data-density.
+  const renderComposer = (density: ChatComposerDensity | undefined) => {
+    const toolbarSize =
+      (density ?? (compact ? 'compact' : 'comfortable')) === 'compact' ? '3xs' : '2xs';
     return (
       <ChatComposer
         className="w-full"
@@ -241,6 +246,7 @@ function AutopilotChatPanel({
   return (
     <TooltipProvider delayDuration={300}>
       <Card
+        data-density={compact ? 'compact' : undefined}
         className={cn('flex h-[560px] w-full max-w-sm flex-col gap-0 overflow-hidden', className)}
       >
         <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0 border-b border-border-de-emp p-4">
@@ -390,7 +396,9 @@ function AutopilotChatPanel({
         </div>
 
         {!heroHoldsComposer && (
-          <CardFooter className="flex-col gap-2 p-4 pt-2">{renderComposer('compact')}</CardFooter>
+          <CardFooter className="flex-col gap-2 p-4 pt-2">
+            {renderComposer(compact ? undefined : 'compact')}
+          </CardFooter>
         )}
       </Card>
     </TooltipProvider>
@@ -403,16 +411,24 @@ function AutopilotChatPanel({
  * 24px from the bottom-right, sized 400x600, with an elevated shadow and rounded corners. All of
  * that is the host page's choice, not the panel's.
  */
-export const Embedded: Story = {
+export const Embedded: StoryObj<{ compact: boolean }> = {
   name: 'Embedded',
+  args: { compact: false },
+  argTypes: {
+    compact: {
+      control: 'boolean',
+      description:
+        'Sets data-density="compact" on the panel root. Message and bubble text drop to 12px, bubble padding tightens, the gaps between messages and between a message\'s parts halve, the attachment chip steps down one size, and the footer composer and the empty state take their compact density from the panel instead of a prop.',
+    },
+  },
   parameters: { layout: 'fullscreen' },
-  render: () => (
+  render: ({ compact }) => (
     <div className="relative h-screen w-full overflow-hidden bg-background">
       <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
         Host application
       </div>
       <div className="fixed right-6 bottom-6 z-50">
-        <AutopilotChatPanel variant="embedded" className="shadow-xl" />
+        <AutopilotChatPanel variant="embedded" compact={compact} className="shadow-xl" />
       </div>
     </div>
   ),

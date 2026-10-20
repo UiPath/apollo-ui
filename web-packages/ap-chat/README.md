@@ -4,6 +4,8 @@ A flexible chat interface component provided as a framework-agnostic web compone
 
 ## Overview
 
+`<ap-chat>` renders the chat with the Material renderer in this release. The Wind renderer (apollo-wind and Tailwind), which React hosts can use through `@uipath/apollo-react/chat` or `renderer: 'wind'`, is not available inside the web component yet: its styles would have to be delivered into the shadow root, which is planned for a later release. The element always renders Material: a service configured with `renderer: 'wind'` is rendered with Material, and a console warning says so once.
+
 The `ap-chat` web component provides AI assistant functionality with a powerful service-based API. The component includes:
 
 - A resizable and collapsible UI that can operate in side-by-side, full-screen, or embedded mode
@@ -139,13 +141,13 @@ chatElement.chatServiceInstance = service;
 chatElement.locale = 'en';
 
 // Theme (optional, default: 'light')
-// Supported: 'light', 'dark', 'light-hc', 'dark-hc'
+// Supported: 'light', 'dark', 'light-hc', 'dark-hc', 'future-light', 'future-dark'
 chatElement.theme = 'light';
 ```
 
 ## Chat Service API
 
-The complete chat service API documentation is available in the [@uipath/apollo-react package documentation](https://github.com/UiPath/apollo-ui/tree/main/packages/apollo-react/src/material/components/ap-chat/DOCS.md).
+The complete chat service API documentation is available in the [@uipath/apollo-react package documentation](https://github.com/UiPath/apollo-ui/tree/main/packages/apollo-react/src/chat/DOCS.md).
 
 ### Quick Reference
 
@@ -256,7 +258,7 @@ For comprehensive documentation including:
 - Streaming and citations
 - And much more...
 
-See the [complete documentation](https://github.com/UiPath/apollo-ui/tree/main/packages/apollo-react/src/material/components/ap-chat/DOCS.md).
+See the [complete documentation](https://github.com/UiPath/apollo-ui/tree/main/packages/apollo-react/src/chat/DOCS.md).
 
 ## TypeScript Support
 

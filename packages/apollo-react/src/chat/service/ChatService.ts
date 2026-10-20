@@ -91,6 +91,8 @@ export class AutopilotChatService {
   private _historyOpen: boolean = false;
   private _settingsOpen: boolean = false;
   private _activeConversationId: string | null = null;
+  // Whether a paginated host has more history, from the `done` of its last page.
+  private _hasMoreHistory = true;
   private _defaultLoadingMessages: string[] | null = null;
   private _loadingMessage: string | null = null;
   private _loadingMessageDuration: number | null = null;
@@ -574,10 +576,14 @@ export class AutopilotChatService {
    */
   appendOlderHistoryItems(items: AutopilotChatHistory[] = [], done?: boolean) {
     if (done) {
+      this._hasMoreHistory = false;
       this._internalService.publish(AutopilotChatInternalEvent.ShouldShowLoadingMoreHistory, false);
     }
 
     if (items.length === 0) {
+      // Nothing to append (an empty last page, or the host giving up after an error): stop the
+      // loading indicator the load-more request started.
+      this._internalService.publish(AutopilotChatInternalEvent.SetIsLoadingMoreHistory, false);
       return;
     }
 
@@ -782,6 +788,8 @@ export class AutopilotChatService {
 
     this._groupId = undefined;
     this._conversation = [];
+    // A new chat is no conversation from the history, so the history marks none as open.
+    this._activeConversationId = null;
     this._eventBus.publish(AutopilotChatEvent.NewChat);
     this._internalService.publish(AutopilotChatInternalEvent.ShouldShowLoadingMoreMessages, true);
     this._internalService.publish(AutopilotChatInternalEvent.SetIsLoadingMoreMessages, false);
@@ -862,6 +870,7 @@ export class AutopilotChatService {
     this._internalService.publish(AutopilotChatInternalEvent.SetIsLoadingMoreHistory, false);
 
     if (done !== undefined) {
+      this._hasMoreHistory = !done;
       this._internalService.publish(AutopilotChatInternalEvent.ShouldShowLoadingMoreHistory, !done);
     }
 
@@ -1148,7 +1157,7 @@ export class AutopilotChatService {
   /**
    * Sets the theme variant for the chat interface
    *
-   * @param theme - The theme to set ('light', 'dark', 'light-hc', 'dark-hc')
+   * @param theme - The theme to set ('light', 'dark', 'light-hc', 'dark-hc', 'future-light', 'future-dark')
    */
   setTheme(theme: string) {
     this._theme = theme;
@@ -1212,6 +1221,16 @@ export class AutopilotChatService {
    */
   get __internalService__() {
     return this._internalService;
+  }
+
+  /**
+   * Whether a paginated host has more history to load, for a history list mounted after its last
+   * `done`.
+   * Should not be consumed by the public API
+   * @internal
+   */
+  get __hasMoreHistory__() {
+    return this._hasMoreHistory;
   }
 
   /**

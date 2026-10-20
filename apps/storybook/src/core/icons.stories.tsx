@@ -2,7 +2,11 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Icon, iconNames } from '@uipath/apollo-react/core';
 import * as ApolloIcons from '@uipath/apollo-react/icons';
 import type React from 'react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+// Raw source of the generated icon index: each export line names the SVG's
+// category folder, which is the only place that grouping is recorded.
+import apolloIconsIndex from '../../../../packages/apollo-ui-icons/src/index.ts?raw';
+import { GuidanceLink } from './icon-guidance';
 import {
   PageContainer,
   PageDescription,
@@ -15,8 +19,7 @@ import {
 } from './shared';
 
 const meta = {
-  title: 'Theme/Icons',
-  tags: ['autodocs'],
+  title: 'Icons/Icons Apollo',
   parameters: {
     layout: 'fullscreen',
   },
@@ -53,6 +56,64 @@ function formatXml(xml: string): string {
     .join('\n');
 }
 
+const CATEGORY_INFO: Record<string, { label: string; description: string }> = {
+  action: { label: 'Actions', description: 'Verbs a user triggers, such as copy, deploy, or run.' },
+  navigation: { label: 'Navigation', description: 'Arrows, menus, paging, and zoom.' },
+  'indicator-and-alert': {
+    label: 'Status & alerts',
+    description: 'Errors, warnings, success, notifications, and progress.',
+  },
+  toggle: {
+    label: 'Toggles & selection',
+    description: 'Checkbox, radio, favourite, and visibility states.',
+  },
+  editor: {
+    label: 'Editor & charts',
+    description: 'Text formatting, layout alignment, and chart types.',
+  },
+  object: {
+    label: 'Objects',
+    description:
+      'Automation artifacts: files, folders, robots, queues, expressions, and data types.',
+  },
+  logic: {
+    label: 'Workflow logic',
+    description: 'Control flow such as if, switch, loops, and retry.',
+  },
+  social: { label: 'People & social', description: 'Users, groups, sharing, and sentiment.' },
+  'product-logo': {
+    label: 'UiPath products',
+    description: 'Logos for UiPath products and services.',
+  },
+  'third-party': { label: 'Third-party logos', description: 'Connector and vendor brand marks.' },
+  'studio-icons': { label: 'Studio', description: 'Studio commands and activity shortcuts.' },
+  'studio-activities-icon-sets': {
+    label: 'Studio activities',
+    description: 'Activity icons grouped by activity package.',
+  },
+  'ui-agents-icons': { label: 'Agents', description: 'Agent nodes and agent trace views.' },
+  'ui-bpmn-canvas': {
+    label: 'BPMN canvas',
+    description: 'BPMN events, gateways, data, and toolbar.',
+  },
+};
+
+// icon name → category folder, parsed from the generated index exports.
+const ICON_CATEGORY = new Map<string, string>(
+  [...apolloIconsIndex.matchAll(/export \{ default as (\w+) \} from '\.\/svg\/([^/]+)\//g)].map(
+    (m) => [m[1], m[2]] as [string, string]
+  )
+);
+
+const CATEGORY_ORDER = [
+  ...Object.keys(CATEGORY_INFO),
+  ...new Set([...ICON_CATEGORY.values()].filter((c) => !(c in CATEGORY_INFO))),
+];
+
+function categoryLabel(key: string) {
+  return CATEGORY_INFO[key]?.label ?? key;
+}
+
 function IconsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const { copied, copy } = useCopyToClipboard();
@@ -74,6 +135,22 @@ function IconsPage() {
       )
     : iconNames;
 
+  const [category, setCategory] = useState<string | null>(null);
+
+  const groups = useMemo(() => {
+    const byCategory = new Map<string, string[]>();
+    for (const name of filteredIconNames) {
+      const key = ICON_CATEGORY.get(name) ?? 'other';
+      if (category && key !== category) continue;
+      byCategory.set(key, [...(byCategory.get(key) ?? []), name]);
+    }
+    return [...CATEGORY_ORDER, 'other']
+      .filter((key) => byCategory.has(key))
+      .map((key) => ({ key, icons: byCategory.get(key) ?? [] }));
+  }, [filteredIconNames, category]);
+
+  const visibleCount = groups.reduce((sum, g) => sum + g.icons.length, 0);
+
   const handleCopySvg = (e: React.MouseEvent<HTMLButtonElement>, iconName: string) => {
     const svgElement = e.currentTarget.querySelector('svg');
     if (svgElement) {
@@ -90,17 +167,21 @@ function IconsPage() {
 
   return (
     <PageContainer>
-      <PageTitle>Icons</PageTitle>
+      <PageTitle>Icons Apollo</PageTitle>
       <PageDescription>
-        Complete Apollo icon library with {iconNames.length} icons and sizing tokens
+        The custom UiPath icon set, with {iconNames.length} icons grouped by what they represent,
+        plus sizing tokens.
       </PageDescription>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 56 }}>
+        <GuidanceLink />
+
         {/* Icon Browser */}
         <section>
-          <SectionHeader>Icon Library ({filteredIconNames.length} icons)</SectionHeader>
+          <SectionHeader>Icon Library ({visibleCount} icons)</SectionHeader>
           <SectionDescription>
-            Search and browse all available icons in the Apollo Design System
+            Each category is a folder in apollo-ui-icons. Pick a category or search by name, then
+            click an icon to copy its SVG.
           </SectionDescription>
 
           <input
@@ -122,83 +203,136 @@ function IconsPage() {
               borderRadius: 12,
               background: 'var(--color-background)',
               color: 'var(--color-foreground-emp)',
-              marginBottom: 32,
+              marginBottom: 16,
               outline: 'none',
               transition: 'all 0.2s ease',
             }}
           />
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(96px, 1fr))',
-              gap: 8,
-              marginTop: 24,
-            }}
-          >
-            {filteredIconNames.map((iconName) => {
-              const IconComponent = (
-                ApolloIcons as Record<
-                  string,
-                  React.ComponentType<{
-                    size?: string | number;
-                    color?: string;
-                  }>
-                >
-              )[iconName];
-              if (!IconComponent) return null;
-
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 32 }}>
+            {[null, ...CATEGORY_ORDER].map((key) => {
+              const active = category === key;
               return (
                 <button
                   type="button"
-                  key={iconName}
-                  className="sb-core-icon-card"
-                  onClick={(e) => handleCopySvg(e, iconName)}
-                  title={`Click to copy SVG: ${iconName}`}
+                  key={key ?? 'all'}
+                  aria-pressed={active}
+                  onClick={() => setCategory(key)}
                   style={{
-                    background: 'var(--color-background)',
-                    border: '2px solid var(--color-border)',
-                    borderRadius: 8,
-                    padding: 12,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 8,
-                    cursor: 'pointer',
-                    minHeight: 110,
-                    color: 'var(--color-foreground)',
                     font: 'inherit',
+                    fontSize: 13,
+                    padding: '6px 12px',
+                    borderRadius: 999,
+                    cursor: 'pointer',
+                    border: `1px solid ${active ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                    background: active ? 'var(--color-primary)' : 'var(--color-background)',
+                    color: active ? 'var(--color-foreground-inverse)' : 'var(--color-foreground)',
                   }}
                 >
-                  <IconComponent size={48} color="var(--color-foreground)" />
-                  <div
-                    style={{
-                      fontSize: 10,
-                      color:
-                        copied === iconName
-                          ? 'var(--color-primary)'
-                          : 'var(--color-foreground-de-emp)',
-                      textAlign: 'center',
-                      wordBreak: 'break-word',
-                      lineHeight: 1.2,
-                      maxWidth: '100%',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                      fontWeight: copied === iconName ? 'bold' : 'normal',
-                    }}
-                  >
-                    {copied === iconName ? 'Copied!' : iconName}
-                  </div>
+                  {key ? categoryLabel(key) : 'All'}
                 </button>
               );
             })}
           </div>
 
-          {filteredIconNames.length === 0 && (
+          {groups.map((group) => (
+            <div key={group.key} style={{ marginBottom: 40 }}>
+              <h3
+                style={{
+                  fontSize: 16,
+                  fontWeight: 600,
+                  marginBottom: 4,
+                  color: 'var(--color-foreground-emp)',
+                }}
+              >
+                {categoryLabel(group.key)}{' '}
+                <span style={{ fontWeight: 400, color: 'var(--color-foreground-de-emp)' }}>
+                  ({group.icons.length})
+                </span>
+              </h3>
+              {CATEGORY_INFO[group.key] && (
+                <p
+                  style={{
+                    fontSize: 13,
+                    marginBottom: 12,
+                    color: 'var(--color-foreground-de-emp)',
+                  }}
+                >
+                  {CATEGORY_INFO[group.key].description}
+                </p>
+              )}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(96px, 1fr))',
+                  gap: 8,
+                }}
+              >
+                {group.icons.map((iconName) => {
+                  const IconComponent = (
+                    ApolloIcons as Record<
+                      string,
+                      React.ComponentType<{
+                        size?: string | number;
+                        color?: string;
+                      }>
+                    >
+                  )[iconName];
+                  if (!IconComponent) return null;
+
+                  return (
+                    <button
+                      type="button"
+                      key={iconName}
+                      className="sb-core-icon-card"
+                      onClick={(e) => handleCopySvg(e, iconName)}
+                      title={`Click to copy SVG: ${iconName}`}
+                      style={{
+                        background: 'var(--color-background)',
+                        border: '2px solid var(--color-border)',
+                        borderRadius: 8,
+                        padding: 12,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 8,
+                        cursor: 'pointer',
+                        minHeight: 110,
+                        color: 'var(--color-foreground)',
+                        font: 'inherit',
+                      }}
+                    >
+                      <IconComponent size={48} color="var(--color-foreground)" />
+                      <div
+                        style={{
+                          fontSize: 10,
+                          color:
+                            copied === iconName
+                              ? 'var(--color-primary)'
+                              : 'var(--color-foreground-de-emp)',
+                          textAlign: 'center',
+                          wordBreak: 'break-word',
+                          lineHeight: 1.2,
+                          maxWidth: '100%',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          fontWeight: copied === iconName ? 'bold' : 'normal',
+                        }}
+                      >
+                        {copied === iconName ? 'Copied!' : iconName}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+
+          {visibleCount === 0 && (
             <div
               style={{
                 textAlign: 'center',
@@ -299,6 +433,7 @@ function IconsPage() {
   );
 }
 
-export const All: Story = {
+// Story name matches the page name so Storybook shows it as one sidebar entry.
+export const IconsApollo: Story = {
   render: () => <IconsPage />,
 };

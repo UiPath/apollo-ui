@@ -1,3 +1,4 @@
+import type React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createReactRenderer } from '../react-renderer';
@@ -17,7 +18,7 @@ vi.mock('@emotion/react', () => ({
   CacheProvider: ({ children }: any) => children,
 }));
 
-vi.mock('@uipath/apollo-react/ap-chat', () => ({
+vi.mock('@uipath/apollo-react/material/components/ap-chat/ap-chat-material', () => ({
   ApChat: vi.fn(() => null),
 }));
 
@@ -167,5 +168,19 @@ describe('createReactRenderer', () => {
     // The ReactApChat component should be called with enableInternalThemeProvider=true
     // and disableEmbeddedPortal=true (verified through mock in setup)
     expect(result).toBeTruthy();
+  });
+
+  it('pins the Material renderer, since the shadow root has no Wind styles', () => {
+    const ReactRenderer = createReactRenderer(shadowRoot, portalContainer);
+
+    const result = ReactRenderer({ chatServiceInstance: mockService }) as React.ReactElement<{
+      children: React.ReactElement<Record<string, unknown>>;
+    }>;
+
+    expect(result.props.children.props).toMatchObject({
+      renderer: 'material',
+      enableInternalThemeProvider: true,
+      disableEmbeddedPortal: true,
+    });
   });
 });

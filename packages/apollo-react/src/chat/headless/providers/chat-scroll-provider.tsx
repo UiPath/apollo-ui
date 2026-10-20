@@ -7,6 +7,7 @@ import {
   CHAT_SCROLL_BOTTOM_BUFFER,
   CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH,
 } from '../../service';
+import { publishChatEvent } from '../utils/publish-chat-event';
 import { useChatService } from './chat-service.provider';
 import { useStreaming } from './streaming-provider';
 
@@ -174,7 +175,7 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
       shouldShowLoadingMoreMessagesRef.current &&
       chatService?.getConfig()?.paginatedMessages
     ) {
-      (chatService as any)._eventBus.publish(AutopilotChatEvent.ConversationLoadMore);
+      publishChatEvent(chatService, AutopilotChatEvent.ConversationLoadMore);
       chatService.__internalService__.publish(
         AutopilotChatInternalEvent.SetIsLoadingMoreMessages,
         true
@@ -246,32 +247,12 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
     }
   }, [overflowContainer]);
 
+  // Service state is tracked from mount rather than from when the renderer's scroll container
+  // exists, so a toggle sent before a lazily loaded renderer mounts, or across a remount, holds.
   React.useEffect(() => {
-    const content = contentRef.current;
-
-    if (!content || !overflowContainer || !chatService) {
+    if (!chatService) {
       return;
     }
-
-    // Initial checks
-    checkOverflow();
-    checkContainerWidth();
-
-    const resizeObserver = new ResizeObserver(handleResize);
-    resizeObserver.observe(content);
-
-    // Also observe the overflow container for size changes
-    const containerResizeObserver = new ResizeObserver(() => {
-      checkOverflow();
-      checkContainerWidth();
-    });
-    containerResizeObserver.observe(overflowContainer);
-
-    overflowContainer.addEventListener('mousedown', handleMouseDown);
-    overflowContainer.addEventListener('mouseup', handleMouseUp);
-    overflowContainer.addEventListener('keydown', handleKeyDown);
-    overflowContainer.addEventListener('wheel', handleWheel, { passive: true });
-    overflowContainer.addEventListener('scroll', handleScroll, { passive: true });
 
     const unsubscribeRequestIntercept = chatService.intercept(
       AutopilotChatInterceptableEvent.Request,
@@ -319,6 +300,45 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
       }
     );
 
+    return () => {
+      unsubscribeRequestIntercept();
+      unsubscribeNewChat();
+      unsubscribeOpenConversation();
+      unsubscribeSetConversation();
+      unsubscribeModeChange();
+      unsubscribeToggleAutoScroll();
+      unsubscribeSetIsLoadingMoreMessages();
+      unsubscribeShouldShowLoadingMoreMessages();
+    };
+  }, [chatService]);
+
+  React.useEffect(() => {
+    const content = contentRef.current;
+
+    if (!content || !overflowContainer || !chatService) {
+      return;
+    }
+
+    // Initial checks
+    checkOverflow();
+    checkContainerWidth();
+
+    const resizeObserver = new ResizeObserver(handleResize);
+    resizeObserver.observe(content);
+
+    // Also observe the overflow container for size changes
+    const containerResizeObserver = new ResizeObserver(() => {
+      checkOverflow();
+      checkContainerWidth();
+    });
+    containerResizeObserver.observe(overflowContainer);
+
+    overflowContainer.addEventListener('mousedown', handleMouseDown);
+    overflowContainer.addEventListener('mouseup', handleMouseUp);
+    overflowContainer.addEventListener('keydown', handleKeyDown);
+    overflowContainer.addEventListener('wheel', handleWheel, { passive: true });
+    overflowContainer.addEventListener('scroll', handleScroll, { passive: true });
+
     const unsubscribePrependOlderMessages = chatService.__internalService__.on(
       AutopilotChatInternalEvent.PrependOlderMessages,
       () => {
@@ -339,14 +359,6 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
       overflowContainer.removeEventListener('keydown', handleKeyDown);
       overflowContainer.removeEventListener('scroll', handleScroll);
 
-      unsubscribeRequestIntercept();
-      unsubscribeNewChat();
-      unsubscribeOpenConversation();
-      unsubscribeSetConversation();
-      unsubscribeModeChange();
-      unsubscribeToggleAutoScroll();
-      unsubscribeSetIsLoadingMoreMessages();
-      unsubscribeShouldShowLoadingMoreMessages();
       unsubscribePrependOlderMessages();
     };
   }, [

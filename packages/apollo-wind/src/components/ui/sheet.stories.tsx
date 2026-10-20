@@ -1,14 +1,14 @@
 import type { Meta } from '@storybook/react-vite';
 import {
-  Settings,
-  User,
   Bell,
-  Shield,
-  CreditCard,
-  FileText,
   Clock,
-  Tag,
+  CreditCard,
   ExternalLink,
+  FileText,
+  Settings,
+  Shield,
+  Tag,
+  User,
 } from 'lucide-react';
 import { Button } from './button';
 import { Input } from './input';
@@ -306,4 +306,31 @@ export const SettingsPanel = {
       </SheetContent>
     </Sheet>
   ),
+};
+
+// ============================================================================
+// Strings
+// ============================================================================
+
+export const Strings = {
+  render: () => (
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button variant="outline">Einstellungen öffnen</Button>
+      </SheetTrigger>
+      <SheetContent strings={{ close: 'Schließen' }}>
+        <SheetHeader>
+          <SheetTitle>Einstellungen</SheetTitle>
+          <SheetDescription>Die Änderungen werden sofort gespeichert.</SheetDescription>
+        </SheetHeader>
+      </SheetContent>
+    </Sheet>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'The close button label is overridable through strings.',
+      },
+    },
+  },
 };

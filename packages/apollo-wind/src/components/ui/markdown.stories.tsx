@@ -1,8 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { ExternalLink } from 'lucide-react';
+import { Code, ExternalLink, Eye } from 'lucide-react';
 import * as React from 'react';
+import { PREVIEW_SANDBOX, previewDocument } from '../../../.storybook/html-preview';
 import { Button } from './button';
-import { Markdown } from './markdown';
+import { CodeBlock, type CodeBlockProps } from './code-block';
+import { Markdown, type MarkdownCodeBlock } from './markdown';
 
 const meta: Meta<typeof Markdown> = {
   title: 'Chat/Components/Markdown',
@@ -110,6 +112,90 @@ $$`,
   },
 };
 
+export const MathFences: Story = {
+  args: {
+    children: `Models often fence block math instead of using double dollars. A fence tagged math, latex or tex renders like a $$ block:
+
+\`\`\`math
+\\text{share}_i = \\frac{t_i}{\\sum_{j=1}^{n} t_j}
+\`\`\`
+
+\`\`\`latex
+\\text{late fee} = \\begin{cases} 0 & d \\le 30 \\\\ 0.02\\,t & d > 30 \\end{cases}
+\`\`\``,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A fenced block tagged math, latex or tex (in any case) renders as display math, as in the Material chat. A math fence or $$ block without its closing line, still streaming or cut off, renders as a code block, so half a formula never shows as a KaTeX error. It becomes math once the closing line arrives.',
+      },
+    },
+  },
+};
+
+export const KatexMacros: Story = {
+  args: {
+    katexOptions: { macros: { '\\RR': '\\mathbb{R}', '\\budget': 'B' } },
+    children: `Macros passed through katexOptions are available to every formula: each total is $$t_i \\in \\RR$$ and the overrun is $$\\max(0, \\sum t_i - \\budget)$$.`,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'katexOptions passes KaTeX macros and the strict mode through. Output stays MathML and trust stays off, so a formula can never emit a link or other HTML.',
+      },
+    },
+  },
+};
+
+const DENSITY_SAMPLE = `# Invoice review
+
+Three invoices are **within policy** and one needs review.
+
+## Next steps
+
+- Invoices 4021 and 4022 are approved.
+- Invoice 4023 waits for review.
+
+| Invoice | Vendor | Amount | Status | Reviewer |
+| ------- | ------ | -----: | ------ | -------- |
+| 4021 | Northwind Traders | $1,240 | Approved | Automatic approval within policy |
+| 4023 | Contoso Pharmaceuticals | $5,600 | Waiting | Finance controller, second approver |
+
+### Query
+
+\`\`\`sql
+SELECT id, vendor, total, status FROM invoices WHERE approved = 0 AND created_at >= '2026-10-01' ORDER BY total DESC;
+\`\`\``;
+
+export const CompactDensity: Story = {
+  args: { children: DENSITY_SAMPLE },
+  render: (args) => (
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+      <Markdown {...args} />
+      <div data-density="compact">
+        <Markdown {...args} />
+      </div>
+    </div>
+  ),
+  decorators: [
+    (Story) => (
+      <div className="w-[720px] max-w-full">
+        <Story />
+      </div>
+    ),
+  ],
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Left: the default. Right: inside an ancestor with data-density="compact", as the Wind chat sets in compact mode. Body text and lists drop to 12px, each heading one step and code blocks to 12px on an 18px line, as Material\'s compactMode does. The tighter block, list and quote spacing is Wind\'s own choice; Material keeps its spacing. No prop is involved.',
+      },
+    },
+  },
+};
+
 export const NestedLists: Story = {
   args: {
     children: `1. Intake
@@ -174,6 +260,12 @@ The two approved invoices total **$2,100**. Together with last week they bring t
 | Month to date | $18,430 |
 | Budget left | $5,570 |
 
+The remaining budget is what is left after every approved invoice:
+
+$$
+b = 24{,}000 - 18{,}430 = 5{,}570
+$$
+
 If invoice 4023 is approved the month closes at $$24{,}030$$, which is over budget. Options:
 
 - [ ] Hold one of next week's smaller invoices
@@ -227,7 +319,7 @@ export const Streaming: Story = {
     docs: {
       description: {
         story:
-          'A timer reveals the reply a few characters at a time. While streaming is true a caret follows the last text (or sits after a trailing code block) and the region is marked aria-busy. Partial markdown is rendered as it arrives: an unclosed fence is already a code block and half a table is still a table. The caret stops blinking when the reader prefers reduced motion.',
+          'A timer reveals the reply a few characters at a time. While streaming is true a caret follows the last text (or sits after a trailing code block) and the region is marked aria-busy. Partial markdown is rendered as it arrives: an unclosed fence is already a code block, a math block stays code until its closing line arrives, and half a table is still a table. The caret stops blinking when the reader prefers reduced motion.',
       },
     },
   },
@@ -257,6 +349,61 @@ export const ComponentsOverride: Story = {
       description: {
         story:
           'The components prop is merged over the built-in renderers. Here links render as chips, the same hook the chat layer uses for citations and resource chips (paired with remarkPlugins for custom syntax).',
+      },
+    },
+  },
+};
+
+function PreviewableCodeBlock({
+  block,
+  props,
+}: {
+  block: MarkdownCodeBlock;
+  props: CodeBlockProps;
+}) {
+  const [preview, setPreview] = React.useState(false);
+  if (block.language !== 'html') return <CodeBlock {...props} />;
+  const label = preview ? 'Show code' : 'Preview';
+  return (
+    <CodeBlock
+      {...props}
+      actions={
+        <Button
+          variant="ghost"
+          size="2xs"
+          icon
+          aria-label={label}
+          title={label}
+          onClick={() => setPreview(!preview)}
+        >
+          {preview ? <Code aria-hidden /> : <Eye aria-hidden />}
+        </Button>
+      }
+      body={
+        preview ? (
+          <iframe
+            title="HTML preview"
+            sandbox={PREVIEW_SANDBOX}
+            srcDoc={previewDocument(block.code)}
+            className="block h-24 w-full bg-white"
+          />
+        ) : undefined
+      }
+    />
+  );
+}
+
+export const CustomCodeBlocks: Story = {
+  args: {
+    children:
+      'The approve button:\n\n```html\n<button type="submit" style="font: 600 14px system-ui; padding: 8px 16px; border: 0; border-radius: 8px; background: #0067df; color: white">Approve</button>\n```\n\nAnd the handler:\n\n```ts\nconst approve = () => submit(invoice);\n```',
+    renderCodeBlock: (block, props) => <PreviewableCodeBlock block={block} props={props} />,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'renderCodeBlock renders each fenced block. It receives the block and the props Markdown would pass to CodeBlock, so a host can add a preview toggle to HTML blocks through actions and body and leave the rest as they are. Return a component element so each block keeps its own state.',
       },
     },
   },

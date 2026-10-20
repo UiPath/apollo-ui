@@ -1,13 +1,12 @@
-import { msg } from '@lingui/core/macro';
-import { useLingui } from '@lingui/react';
 import { Box, styled } from '@mui/material';
 import token, { type FontVariantToken } from '@uipath/apollo-core';
+import { useChatLabels } from '@uipath/apollo-react/chat/headless/hooks/use-chat-labels';
+import { useComposerSend } from '@uipath/apollo-react/chat/headless/hooks/use-composer-send';
 import { useAttachments } from '@uipath/apollo-react/chat/headless/providers/attachments-provider';
 import { useChatService } from '@uipath/apollo-react/chat/headless/providers/chat-service.provider';
 import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
 import { useLoading } from '@uipath/apollo-react/chat/headless/providers/loading-provider';
 import { useResourceData } from '@uipath/apollo-react/chat/headless/providers/resource-data-provider';
-import { useStreaming } from '@uipath/apollo-react/chat/headless/providers/streaming-provider';
 import { parseFiles } from '@uipath/apollo-react/chat/headless/utils/file-reader';
 import {
   AutopilotChatEvent,
@@ -83,10 +82,10 @@ const GradientContainer = styled('div')(() => ({
 }));
 
 function AutopilotChatInputComponent() {
-  const { _ } = useLingui();
   const chatService = useChatService();
   const initialPrompt = chatService?.getPrompt?.();
-  const { disabledFeatures, overrideLabels, spacing } = useChatState();
+  const { disabledFeatures, spacing } = useChatState();
+  const { inputPlaceholder } = useChatLabels();
 
   const { hasResources } = useResourceData();
   const [message, setMessage] = React.useState(
@@ -95,8 +94,7 @@ function AutopilotChatInputComponent() {
 
   const editorRef = React.useRef<ChatInputEditorHandle>(null);
   const inputContainerRef = React.useRef<HTMLDivElement>(null);
-  const { waitingResponse, skeletonLoader } = useLoading();
-  const { streaming } = useStreaming();
+  const { skeletonLoader } = useLoading();
   const { attachments, clearAttachments, addAttachments, attachmentsLoading } = useAttachments();
 
   const editorLineHeight = React.useMemo(() => {
@@ -144,43 +142,24 @@ function AutopilotChatInputComponent() {
     [chatService]
   );
 
-  const isResponseInFlight = waitingResponse || streaming;
-
   // Stop is the submit button flipped, not a separate control. When the stopResponse
   // feature is disabled the button stays a disabled send button instead of offering stop.
-  const canStopResponse = isResponseInFlight && !disabledFeatures?.stopResponse;
+  const { isResponseInFlight, canStopResponse, send, stop } = useComposerSend();
 
   const handleSubmit = React.useCallback(() => {
+    // Stopping does not also end dictation; only a send does.
     if (isResponseInFlight) {
-      if (canStopResponse) {
-        chatService.stopResponse();
-      }
-
+      stop();
       return;
     }
 
-    // Stop dictation before sending so the growing transcript can't re-populate the
-    // input we're about to clear. Using `publishSpeechToTextToggle` (not
-    // `setSpeechToTextState`) is deliberate — consumers listen for
-    // SpeechToTextToggle to tear down the recognizer. Intentionally gated behind the
-    // stop-response early-return above so hitting "Stop response" doesn't also kill
-    // active dictation.
-    if (chatService.isSpeechToTextActive) {
-      chatService.publishSpeechToTextToggle();
-    }
-
-    const serializedContent = editorRef.current?.getSerializedContent() ?? message;
-
-    chatService.sendRequest({
-      content: serializedContent,
-      attachments,
-    });
+    send(editorRef.current?.getSerializedContent() ?? message, attachments);
 
     // clear input
     editorRef.current?.clear();
     setMessage('');
     clearAttachments();
-  }, [message, attachments, clearAttachments, chatService, isResponseInFlight, canStopResponse]);
+  }, [message, attachments, clearAttachments, isResponseInFlight, send, stop]);
 
   const handleKeyDown = React.useCallback(
     (event: KeyboardEvent): boolean => {
@@ -303,10 +282,7 @@ function AutopilotChatInputComponent() {
             <ChatInputEditor
               ref={editorRef}
               value={message}
-              placeholder={
-                overrideLabels?.inputPlaceholder ??
-                _(msg({ id: 'autopilot-chat.input.placeholder', message: `Type a message...` }))
-              }
+              placeholder={inputPlaceholder}
               onChange={handleChange}
               onKeyDown={handleKeyDown}
               minRows={spacing.promptBox.minRows}

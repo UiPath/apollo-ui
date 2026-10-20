@@ -1,71 +1,38 @@
-import { msg } from '@lingui/core/macro';
-import { useLingui } from '@lingui/react';
 import { Fade } from '@mui/material';
-import { useChatService } from '@uipath/apollo-react/chat/headless/providers/chat-service.provider';
+import { useLoadingMessages } from '@uipath/apollo-react/chat/headless/hooks/use-loading-messages';
 import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
-import { AutopilotChatEvent } from '@uipath/apollo-react/chat/service';
 import { ApTypography } from '@uipath/apollo-react/material/components/ap-typography';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const SECONDS = 1000;
 const FADE_DURATION = 0.5 * SECONDS;
-const DEFAULT_MESSAGE_DURATION = 5 * SECONDS;
-
-const defaultMessages = ['autopilot-chat-generating-response'];
 
 export const LoadingMessage = () => {
-  const { _ } = useLingui();
-  const chatService = useChatService();
+  const { messages: loadingMessages, duration: loadingDuration, translate } = useLoadingMessages();
   const [messageIdx, setMessageIdx] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
-  const [messages, setMessages] = useState(
-    chatService.getDefaultLoadingMessages() ?? defaultMessages
-  );
-  const [messageDuration, setMessageDuration] = useState(
-    chatService.getLoadingMessageDuration() ?? DEFAULT_MESSAGE_DURATION
-  );
+  // What shows; follows the loading provider's messages after a fade, as before.
+  const [messages, setMessages] = useState(loadingMessages);
+  const [messageDuration, setMessageDuration] = useState(loadingDuration);
+  const shown = useRef({ messages: loadingMessages, duration: loadingDuration });
   const { spacing } = useChatState();
 
   useEffect(() => {
-    if (!chatService) {
+    if (shown.current.messages === loadingMessages && shown.current.duration === loadingDuration) {
       return;
     }
+    shown.current = { messages: loadingMessages, duration: loadingDuration };
 
-    let setDefaultLoadingMessagesTimeout: ReturnType<typeof setTimeout> | undefined;
-    let setLoadingMessageTimeout: ReturnType<typeof setTimeout> | undefined;
+    setIsVisible(false);
+    const timeout = setTimeout(() => {
+      setMessageIdx(0);
+      setMessages(loadingMessages);
+      setMessageDuration(loadingDuration);
+      setIsVisible(true);
+    }, FADE_DURATION);
 
-    const unsubscribeSetDefaultLoadingMessages = chatService.on(
-      AutopilotChatEvent.SetDefaultLoadingMessages,
-      (data: { messages: string[]; duration?: number }) => {
-        setIsVisible(false);
-        setDefaultLoadingMessagesTimeout = setTimeout(() => {
-          setMessageIdx(0);
-          setMessages(data.messages);
-          setMessageDuration(data.duration ?? DEFAULT_MESSAGE_DURATION);
-          setIsVisible(true);
-        }, FADE_DURATION);
-      }
-    );
-
-    const unsubscribeSetLoadingMessage = chatService.on(
-      AutopilotChatEvent.SetLoadingMessage,
-      (message: string) => {
-        setIsVisible(false);
-        setLoadingMessageTimeout = setTimeout(() => {
-          setMessageIdx(0);
-          setMessages([message]);
-          setIsVisible(true);
-        }, FADE_DURATION);
-      }
-    );
-
-    return () => {
-      unsubscribeSetDefaultLoadingMessages();
-      unsubscribeSetLoadingMessage();
-      clearTimeout(setDefaultLoadingMessagesTimeout);
-      clearTimeout(setLoadingMessageTimeout);
-    };
-  }, [chatService]);
+    return () => clearTimeout(timeout);
+  }, [loadingMessages, loadingDuration]);
 
   useEffect(() => {
     if (messages.length === 1) {
@@ -88,18 +55,6 @@ export const LoadingMessage = () => {
     };
   }, [messageIdx, messageDuration, messages]);
 
-  // Map the current message key to translation
-  const currentMessage = messages[messageIdx];
-  const translatedMessage =
-    currentMessage === 'autopilot-chat-generating-response'
-      ? _(
-          msg({
-            id: 'autopilot-chat.message.generating-response',
-            message: `Generating response...`,
-          })
-        )
-      : currentMessage; // For custom messages, display as-is
-
   return (
     <Fade in={isVisible} timeout={FADE_DURATION}>
       <ApTypography
@@ -107,7 +62,7 @@ export const LoadingMessage = () => {
         color={'var(--color-foreground)'}
         aria-live="polite"
       >
-        {translatedMessage}
+        {translate(messages[messageIdx] ?? '')}
       </ApTypography>
     </Fade>
   );

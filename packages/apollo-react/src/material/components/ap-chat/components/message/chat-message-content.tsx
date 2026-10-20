@@ -1,5 +1,7 @@
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
+import { useInjectedMessageRenderer } from '@uipath/apollo-react/chat/headless/hooks/use-injected-message-renderer';
+import { useMessageInset } from '@uipath/apollo-react/chat/headless/hooks/use-message-inset';
 import {
   type ChatBuiltInMessageRenderer,
   resolveMessageRenderer,
@@ -7,20 +9,12 @@ import {
 import { useChatService } from '@uipath/apollo-react/chat/headless/providers/chat-service.provider';
 import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
 import { useLocale } from '@uipath/apollo-react/chat/headless/providers/locale-provider';
-import { calculateDynamicPadding } from '@uipath/apollo-react/chat/headless/utils/dynamic-padding';
 import {
   AGENTS_TOOL_CALL_RENDERER,
   APOLLO_CHAT_TREE_RENDERER,
-  AutopilotChatEvent,
-  AutopilotChatInternalEvent,
   type AutopilotChatMessage,
-  AutopilotChatMode,
   AutopilotChatRole,
-  CHAT_MESSAGE_MAX_PADDING,
-  CHAT_WIDTH_KEY,
-  CHAT_WIDTH_SIDE_BY_SIDE_MIN,
   DEFAULT_MESSAGE_RENDERER,
-  StorageService,
 } from '@uipath/apollo-react/chat/service';
 import { ApToolCall } from '@uipath/apollo-react/material/components/ap-tool-call';
 import React from 'react';
@@ -80,50 +74,8 @@ const MessageBoxComponent = styled('div')<{
   isAssistant: boolean;
   isCustomWidget?: boolean;
 }>(({ isAssistant, isCustomWidget }) => {
-  const chatService = useChatService();
   const { spacing } = useChatState();
-  const chatInternalService = chatService.__internalService__;
-  const [padding, setPadding] = React.useState(
-    calculateDynamicPadding(
-      parseInt(
-        StorageService.Instance.get(CHAT_WIDTH_KEY) ?? CHAT_WIDTH_SIDE_BY_SIDE_MIN.toString(),
-        10
-      )
-    )
-  );
-
-  React.useEffect(() => {
-    if (!chatInternalService || !chatService) {
-      return;
-    }
-
-    const unsubscribeResize = chatInternalService.on(
-      AutopilotChatInternalEvent.ChatResize,
-      (width: number) => {
-        setPadding(calculateDynamicPadding(width));
-      }
-    );
-
-    const unsubscribeMode = chatService.on(
-      AutopilotChatEvent.ModeChange,
-      (mode: AutopilotChatMode) => {
-        if (mode === AutopilotChatMode.FullScreen) {
-          setPadding(CHAT_MESSAGE_MAX_PADDING);
-        } else {
-          const defaultWidth = CHAT_WIDTH_SIDE_BY_SIDE_MIN.toString();
-          const storedWidth = StorageService.Instance.get(CHAT_WIDTH_KEY) ?? defaultWidth;
-          const width = parseInt(storedWidth, 10);
-
-          setPadding(calculateDynamicPadding(width));
-        }
-      }
-    );
-
-    return () => {
-      unsubscribeResize();
-      unsubscribeMode();
-    };
-  }, [chatInternalService, chatService]);
+  const padding = useMessageInset();
 
   return {
     display: 'flex',
@@ -160,22 +112,8 @@ const WidgetContainer = React.memo(
     isLastInGroup: boolean;
     containerRef: HTMLDivElement | null;
   }) => {
-    const chatService = useChatService();
     const widgetRef = React.useRef<HTMLDivElement>(null);
-
-    // An effect, not an inline ref callback: React re-runs a new callback on every re-render, which
-    // would call `render` again without the previous cleanup.
-    React.useLayoutEffect(() => {
-      if (!widgetRef.current) {
-        return;
-      }
-
-      const cleanup = chatService.renderMessage(widgetRef.current, message);
-
-      return () => {
-        cleanup?.();
-      };
-    }, [chatService, message]);
+    useInjectedMessageRenderer(widgetRef, message);
 
     return (
       <MessageBox isAssistant={message.role === AutopilotChatRole.Assistant} isCustomWidget>
@@ -186,7 +124,7 @@ const WidgetContainer = React.memo(
         {isLastInGroup && (
           <>
             {message.role === AutopilotChatRole.Assistant && (
-              <AutopilotChatSources groupId={message.groupId ?? ''} message={message} />
+              <AutopilotChatSources message={message} />
             )}
             <AutopilotChatMessageActions message={message} containerElement={containerRef} />
           </>
@@ -231,7 +169,7 @@ function AutopilotChatMessageContentComponent({
         {isLastInGroup && (
           <>
             {message.role === AutopilotChatRole.Assistant && (
-              <AutopilotChatSources groupId={message.groupId ?? ''} message={message} />
+              <AutopilotChatSources message={message} />
             )}
             {!disableActions && (
               <AutopilotChatMessageActions message={message} containerElement={containerRef} />

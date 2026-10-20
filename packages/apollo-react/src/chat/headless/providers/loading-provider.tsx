@@ -12,27 +12,50 @@ import { useChatService } from './chat-service.provider';
 interface AutopilotLoadingContextType {
   waitingResponse: boolean;
   isLoadingMoreMessages: boolean;
+  /** False once the host said there are no older messages (`prependOlderMessages(..., true)`). */
+  hasMoreMessages: boolean;
   setWaitingResponse: (waitingResponse: boolean) => void;
   showLoading: boolean;
   skeletonLoader: boolean;
+  /**
+   * The messages the thinking state rotates through: the service's defaults
+   * (`setDefaultLoadingMessages`), replaced by `setLoadingMessage` until the next request.
+   */
+  loadingMessages: string[];
+  /** How long each loading message shows, in milliseconds. */
+  loadingMessageDuration: number;
 }
+
+/** Placeholder the service stores for "use the localized default". */
+export const DEFAULT_LOADING_MESSAGE_KEY = 'autopilot-chat-generating-response';
+export const DEFAULT_LOADING_MESSAGE_DURATION = 5000;
 
 export const AutopilotLoadingContext = React.createContext<AutopilotLoadingContextType>({
   waitingResponse: false,
   isLoadingMoreMessages: false,
+  hasMoreMessages: true,
   setWaitingResponse: () => {},
   showLoading: false,
   skeletonLoader: false,
+  loadingMessages: [DEFAULT_LOADING_MESSAGE_KEY],
+  loadingMessageDuration: DEFAULT_LOADING_MESSAGE_DURATION,
 });
 
 export function AutopilotLoadingProvider({ children }: { children: React.ReactNode }) {
   const [waitingResponse, setWaitingResponse] = React.useState<boolean>(false);
   const [isLoadingMoreMessages, setIsLoadingMoreMessages] = React.useState<boolean>(false);
+  const [hasMoreMessages, setHasMoreMessages] = React.useState<boolean>(true);
   const [showLoading, setShowLoading] = React.useState<boolean>(false);
   const [skeletonLoader, setSkeletonLoader] = React.useState<boolean>(false);
   const disableDefaultShowLoadingBehaviorRef = React.useRef<boolean>(false);
   const disableDefaultSetWaitingBehaviorRef = React.useRef<boolean>(false);
   const chatService = useChatService();
+  const defaultLoadingMessages = () =>
+    chatService?.getDefaultLoadingMessages?.() ?? [DEFAULT_LOADING_MESSAGE_KEY];
+  const [loadingMessages, setLoadingMessages] = React.useState<string[]>(defaultLoadingMessages);
+  const [loadingMessageDuration, setLoadingMessageDuration] = React.useState<number>(
+    () => chatService?.getLoadingMessageDuration?.() ?? DEFAULT_LOADING_MESSAGE_DURATION
+  );
 
   React.useEffect(() => {
     if (!chatService) {
@@ -49,6 +72,7 @@ export function AutopilotLoadingProvider({ children }: { children: React.ReactNo
     const unsubscribeShouldShowLoadingMoreMessages = chatService.__internalService__.on(
       AutopilotChatInternalEvent.ShouldShowLoadingMoreMessages,
       (value: boolean) => {
+        setHasMoreMessages(value);
         if (!value) {
           setIsLoadingMoreMessages(false);
         }
@@ -68,6 +92,12 @@ export function AutopilotLoadingProvider({ children }: { children: React.ReactNo
         disableDefaultShowLoadingBehaviorRef.current = true;
 
         setShowLoading(value);
+        // Showing again starts from the defaults, as a request does.
+        if (value) {
+          setLoadingMessages(
+            chatService.getDefaultLoadingMessages() ?? [DEFAULT_LOADING_MESSAGE_KEY]
+          );
+        }
       }
     );
 
@@ -102,7 +132,27 @@ export function AutopilotLoadingProvider({ children }: { children: React.ReactNo
       () => {
         setWaitingResponse(true);
         setShowLoading(true);
+        // Each turn starts from the defaults, as Material's loading text did when it mounted.
+        setLoadingMessages(
+          chatService.getDefaultLoadingMessages() ?? [DEFAULT_LOADING_MESSAGE_KEY]
+        );
       }
+    );
+
+    const unsubscribeDefaultLoadingMessages = chatService.on(
+      AutopilotChatEvent.SetDefaultLoadingMessages,
+      (data: { messages: string[]; duration?: number }) => {
+        setLoadingMessages(data.messages);
+        // The service keeps an earlier duration when none is given; so does this.
+        setLoadingMessageDuration(
+          chatService.getLoadingMessageDuration() ?? DEFAULT_LOADING_MESSAGE_DURATION
+        );
+      }
+    );
+
+    const unsubscribeLoadingMessage = chatService.on(
+      AutopilotChatEvent.SetLoadingMessage,
+      (message: string) => setLoadingMessages([message])
     );
 
     const unsubscribeResponse = chatService.on(
@@ -131,6 +181,8 @@ export function AutopilotLoadingProvider({ children }: { children: React.ReactNo
     return () => {
       unsubscribeShowLoadingState();
       unsubscribeRequest();
+      unsubscribeDefaultLoadingMessages();
+      unsubscribeLoadingMessage();
       unsubscribeResponse();
       unsubscribeStopResponse();
       unsubscribeNewChat();
@@ -148,8 +200,11 @@ export function AutopilotLoadingProvider({ children }: { children: React.ReactNo
         waitingResponse,
         setWaitingResponse,
         isLoadingMoreMessages,
+        hasMoreMessages,
         showLoading,
         skeletonLoader,
+        loadingMessages,
+        loadingMessageDuration,
       }}
     >
       {children}

@@ -2,13 +2,25 @@ import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
 import * as React from 'react';
 import { Button, type ButtonProps } from '@/components/ui/button';
-import { cn } from '@/lib';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipPortal,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { cn, composeRefs } from '@/lib';
 
 /**
  * A file or image card for a chat composer or a sent message, ported from shadcn/ui's chat
  * components. `state` drives the chrome: `idle` is a dashed placeholder, `uploading` and
  * `processing` shimmer the title, `error` tints it. `AttachmentGroup` scrolls a row of them with
  * faded edges.
+ *
+ * Compact density (Wind's own; Material's chips do not change): inside an ancestor with
+ * `data-density="compact"` every size steps its padding and media down one notch (an `xs` chip
+ * with a title goes from 38px to 30px tall); the type stays, so names remain legible. The padding
+ * classes are `has-*` variants, so a host override needs the same variant, as before.
  */
 
 const attachmentVariants = cva(
@@ -17,9 +29,9 @@ const attachmentVariants = cva(
     variants: {
       size: {
         default:
-          'gap-2 text-sm has-data-[slot=attachment-content]:px-2.5 has-data-[slot=attachment-content]:py-2 has-data-[slot=attachment-media]:p-2',
-        sm: 'gap-2.5 text-xs has-data-[slot=attachment-content]:px-2 has-data-[slot=attachment-content]:py-1.5 has-data-[slot=attachment-media]:p-1.5',
-        xs: 'gap-1.5 rounded-lg text-xs has-data-[slot=attachment-content]:px-1.5 has-data-[slot=attachment-content]:py-1 has-data-[slot=attachment-media]:p-1',
+          'gap-2 text-sm has-data-[slot=attachment-content]:px-2.5 has-data-[slot=attachment-content]:py-2 has-data-[slot=attachment-media]:p-2 in-data-[density=compact]:has-data-[slot=attachment-content]:py-1.5 in-data-[density=compact]:has-data-[slot=attachment-media]:p-1.5',
+        sm: 'gap-2.5 text-xs has-data-[slot=attachment-content]:px-2 has-data-[slot=attachment-content]:py-1.5 has-data-[slot=attachment-media]:p-1.5 in-data-[density=compact]:has-data-[slot=attachment-content]:py-1 in-data-[density=compact]:has-data-[slot=attachment-media]:p-1',
+        xs: 'gap-1.5 rounded-lg text-xs has-data-[slot=attachment-content]:px-1.5 has-data-[slot=attachment-content]:py-1 has-data-[slot=attachment-media]:p-1 in-data-[density=compact]:has-data-[slot=attachment-content]:py-0.5 in-data-[density=compact]:has-data-[slot=attachment-media]:p-0.5',
       },
       orientation: {
         horizontal: 'min-w-40 items-center',
@@ -57,7 +69,7 @@ const Attachment = React.forwardRef<HTMLDivElement, AttachmentProps>(
 Attachment.displayName = 'Attachment';
 
 const attachmentMediaVariants = cva(
-  "relative flex aspect-square w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted text-foreground group-data-[orientation=vertical]/attachment:w-full group-data-[size=sm]/attachment:w-8 group-data-[size=xs]/attachment:w-7 group-data-[size=xs]/attachment:rounded-md group-data-[state=error]/attachment:bg-destructive/10 group-data-[state=error]/attachment:text-destructive [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 group-data-[orientation=vertical]/attachment:[&_svg:not([class*='size-'])]:size-6 group-data-[size=xs]/attachment:[&_svg:not([class*='size-'])]:size-3.5",
+  "relative flex aspect-square w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted text-foreground group-data-[orientation=vertical]/attachment:w-full group-data-[size=sm]/attachment:w-8 group-data-[size=xs]/attachment:w-7 in-data-[density=compact]:w-8 in-data-[density=compact]:group-data-[size=sm]/attachment:w-7 in-data-[density=compact]:group-data-[size=xs]/attachment:w-6 group-data-[size=xs]/attachment:rounded-md group-data-[state=error]/attachment:bg-destructive/10 group-data-[state=error]/attachment:text-destructive [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 group-data-[orientation=vertical]/attachment:[&_svg:not([class*='size-'])]:size-6 group-data-[size=xs]/attachment:[&_svg:not([class*='size-'])]:size-3.5",
   {
     variants: {
       variant: {
@@ -104,18 +116,50 @@ const AttachmentContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<
 );
 AttachmentContent.displayName = 'AttachmentContent';
 
-const AttachmentTitle = React.forwardRef<HTMLSpanElement, React.HTMLAttributes<HTMLSpanElement>>(
-  ({ className, ...props }, ref) => (
-    <span
-      ref={ref}
-      data-slot="attachment-title"
-      className={cn(
-        'block max-w-full min-w-0 truncate font-medium group-data-[state=processing]/attachment:shimmer group-data-[state=uploading]/attachment:shimmer',
-        className
-      )}
-      {...props}
-    />
-  )
+export interface AttachmentTitleProps extends React.HTMLAttributes<HTMLSpanElement> {
+  /** Show the full title in a tooltip on hover when it is cut off. On by default. */
+  truncationTooltip?: boolean;
+}
+
+/** The file name, cut off with an ellipsis. A cut-off name shows in full in a tooltip on hover. */
+const AttachmentTitle = React.forwardRef<HTMLSpanElement, AttachmentTitleProps>(
+  ({ className, truncationTooltip = true, children, ...props }, ref) => {
+    const local = React.useRef<HTMLSpanElement | null>(null);
+    const setRef = React.useMemo(() => composeRefs(ref, local), [ref]);
+    const [open, setOpen] = React.useState(false);
+    const title = (
+      <span
+        ref={setRef}
+        data-slot="attachment-title"
+        className={cn(
+          'block max-w-full min-w-0 truncate font-medium group-data-[state=processing]/attachment:shimmer group-data-[state=uploading]/attachment:shimmer',
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </span>
+    );
+    if (!truncationTooltip) return title;
+    // Radix exposes no way to detect a provider above, so each title brings its own (a context, no
+    // DOM). The width is measured on every open, so only a name cut off right now shows it.
+    return (
+      <TooltipProvider delayDuration={300}>
+        <Tooltip
+          open={open}
+          onOpenChange={(next) => {
+            const node = local.current;
+            setOpen(next && !!node && node.scrollWidth > node.clientWidth);
+          }}
+        >
+          <TooltipTrigger asChild>{title}</TooltipTrigger>
+          <TooltipPortal>
+            <TooltipContent className="max-w-80 break-all">{children}</TooltipContent>
+          </TooltipPortal>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
 );
 AttachmentTitle.displayName = 'AttachmentTitle';
 

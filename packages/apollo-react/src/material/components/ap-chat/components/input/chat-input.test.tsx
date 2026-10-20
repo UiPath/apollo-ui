@@ -138,3 +138,31 @@ describe('<AutopilotChatInput> stop response', () => {
     expect(submitButton()).toBeDisabled();
   });
 });
+
+describe('<AutopilotChatInput> attach button', () => {
+  it('checks picked files as the drop target does: type, size and count', async () => {
+    const user = userEvent.setup({ applyAccept: false });
+    const { chatService } = renderInput();
+    act(() => {
+      chatService.stopResponse();
+      chatService.setAllowedAttachments({
+        multiple: true,
+        types: { 'text/plain': ['.txt'] },
+        maxSize: 5,
+        maxCount: 3,
+      });
+    });
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const errors: Array<string | undefined> = [];
+    chatService.on(AutopilotChatEvent.Error, (error: { message?: string } | undefined) =>
+      errors.push(error?.message)
+    );
+
+    await user.upload(input, [
+      new File(['x'.repeat(20)], 'big.txt', { type: 'text/plain' }),
+      new File(['x'], 'tool.exe', { type: 'application/octet-stream' }),
+    ]);
+
+    await vi.waitFor(() => expect(errors.at(-1)).toMatch(/big\.txt[\s\S]*tool\.exe/));
+  });
+});

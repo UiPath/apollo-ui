@@ -2,7 +2,9 @@ import { render, screen } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { createRef, type ReactNode, useEffect } from 'react';
 import { describe, expect, it } from 'vitest';
-import { Markdown } from './markdown';
+import { buildTailwind, ruleBody } from '../../../tests/tailwind-compile';
+import { CodeBlock } from './code-block';
+import { Markdown, type MarkdownKatexOptions } from './markdown';
 
 const CURSOR = '[data-slot="markdown-cursor"]';
 
@@ -34,6 +36,166 @@ describe('Markdown', () => {
     );
     expect(container.querySelectorAll('.katex')).toHaveLength(2);
     expect(container.querySelector('.katex > math[display="block"]')).not.toBeNull();
+  });
+
+  it('renders a math fence as display MathML instead of a code block', () => {
+    const { container } = render(<Markdown>{'```math\nE = mc^2\n```'}</Markdown>);
+    expect(container.querySelector('.katex > math[display="block"]')).not.toBeNull();
+    expect(container.querySelector('[data-slot="code-block"]')).toBeNull();
+  });
+
+  it.each([
+    '```latex\nx^2\n```',
+    '```tex\nx^2\n```',
+    '```MATH title="Area"\nx^2\n```',
+    '~~~math\nx^2\n~~~',
+    '> ```math\n> x^2\n> ```',
+    '- Area:\n\n  ```math\n  x^2\n  ```',
+  ])('renders %j as math', (source) => {
+    const { container } = render(<Markdown>{source}</Markdown>);
+    expect(container.querySelector('math[display="block"]')).not.toBeNull();
+    expect(container.querySelector('[data-slot="code-block"]')).toBeNull();
+  });
+
+  it('leaves fences in other languages as code', () => {
+    const { container } = render(<Markdown>{'```js\nconst x = 2 ^ 3;\n```'}</Markdown>);
+    expect(container.querySelector('[data-slot="code-block"]')).toHaveAttribute(
+      'data-language',
+      'javascript'
+    );
+    expect(container.querySelector('.katex')).toBeNull();
+  });
+
+  it('keeps a math fence as code until its closing fence arrives', () => {
+    const { container, rerender } = render(<Markdown streaming>{'```math\n\\frac{a}{'}</Markdown>);
+    const block = container.querySelector('[data-slot="code-block"]');
+    expect(block).toHaveTextContent('\\frac{a}{');
+    expect(block?.querySelector('[data-slot="code-block-language"]')).toHaveTextContent('math');
+    expect(container.querySelector('.katex, .katex-error')).toBeNull();
+
+    rerender(<Markdown streaming>{'```math\n\\frac{a}{b}\n```'}</Markdown>);
+    expect(container.querySelector('[data-slot="code-block"]')).toBeNull();
+    expect(container.querySelector('math[display="block"]')).not.toBeNull();
+  });
+
+  it('keeps a $$ block as code until its closing line arrives', () => {
+    const { container, rerender } = render(<Markdown streaming>{'$$\n\\frac{a}{'}</Markdown>);
+    const block = container.querySelector('[data-slot="code-block"]');
+    expect(block).toHaveTextContent('\\frac{a}{');
+    expect(block?.querySelector('[data-slot="code-block-language"]')).toHaveTextContent('math');
+    expect(container.querySelector('.katex, .katex-error')).toBeNull();
+
+    rerender(<Markdown streaming>{'$$\n\\frac{a}{b}\n$$'}</Markdown>);
+    expect(container.querySelector('[data-slot="code-block"]')).toBeNull();
+    expect(container.querySelector('math[display="block"]')).not.toBeNull();
+  });
+
+  it('closes a math block only with a run as long as the opener, of the same character', () => {
+    const { container, rerender } = render(<Markdown streaming>{'````math\nx\n```'}</Markdown>);
+    expect(container.querySelector('[data-slot="code-block"]')).not.toBeNull();
+
+    rerender(<Markdown streaming>{'````math\nx\n```\ny\n````'}</Markdown>);
+    expect(container.querySelector('[data-slot="code-block"]')).toBeNull();
+    expect(container.querySelector('.katex, .katex-error')).not.toBeNull();
+  });
+
+  it.each([
+    ['a backtick run in a tilde fence', '~~~math\nx\n```'],
+    ['a shorter $$ run', '$$$\nx\n$$'],
+    ['$$ followed by text', '$$\nx\n$$ and more'],
+    ['a fence indented 4 spaces', '```math\nx\n    ```'],
+    ['a quoted fence inside a top-level fence', '```math\nx\n> ```'],
+    ['an open fence in a blockquote in a list', '- Area:\n\n  > ```math\n  > x^2'],
+    ['an open fence with CRLF line endings', '```math\r\nx^2'],
+  ])('keeps a math block as code when it ends with %s', (_name, source) => {
+    const { container } = render(<Markdown streaming>{source}</Markdown>);
+    expect(container.querySelector('[data-slot="code-block"]')).not.toBeNull();
+    expect(container.querySelector('.katex, .katex-error')).toBeNull();
+  });
+
+  it.each([
+    ['CRLF line endings', '```math\r\nx^2\r\n```'],
+    ['a list nested 4 columns deep', '- a\n  - b\n\n    ```math\n    x^2\n    ```'],
+    ['a closer indented within 3 columns', '```math\nx^2\n   ```'],
+  ])('renders a closed math fence with %s', (_name, source) => {
+    const { container } = render(<Markdown>{source}</Markdown>);
+    expect(container.querySelector('math[display="block"]')).not.toBeNull();
+    expect(container.querySelector('[data-slot="code-block"]')).toBeNull();
+  });
+
+  it('keeps an unclosed $$ block as code when the message is not streaming', () => {
+    const { container } = render(<Markdown streaming={false}>{'$$\nx^2'}</Markdown>);
+    expect(container.querySelector('[data-slot="code-block"]')).toHaveTextContent('x^2');
+    expect(container.querySelector('.katex, .katex-error')).toBeNull();
+  });
+
+  it('keeps the text of a line opening with $$ while it streams', () => {
+    // Until the closing $$ arrives the line parses as an open block with the text as its meta.
+    const { container, rerender } = render(<Markdown streaming>{'$$b = B'}</Markdown>);
+    expect(container.querySelector('[data-slot="code-block"]')).toHaveTextContent('b = B');
+
+    rerender(<Markdown streaming>{'$$b = B$$'}</Markdown>);
+    expect(container.querySelector('[data-slot="code-block"]')).toBeNull();
+    expect(container.querySelector('.katex')).not.toBeNull();
+  });
+
+  it('lets display math scroll sideways but never vertically', () => {
+    const { container } = render(<Markdown>{'$$\nx^2\n$$'}</Markdown>);
+    const root = container.firstChild as HTMLElement;
+    // Display math sits directly in the root, where these rules reach it.
+    expect(root.querySelector(':scope > .katex')).not.toBeNull();
+    expect(root).toHaveClass('[&>.katex]:overflow-x-auto', '[&>.katex]:overflow-y-hidden');
+  });
+
+  it('steps type and spacing down inside a compact ancestor', async () => {
+    const { container } = render(
+      <div data-density="compact">
+        <Markdown>{'# Title\n\n### Section\n\nSome text.\n\n- one\n- two'}</Markdown>
+      </div>
+    );
+    const root = container.querySelector('[data-slot="markdown"]') as HTMLElement;
+    const parts = [
+      root,
+      root.querySelector('h1'),
+      root.querySelector('h3'),
+      root.querySelector('ul'),
+    ];
+    const css = await buildTailwind(parts.flatMap((node) => Array.from(node?.classList ?? [])));
+    const rule = (utility: string) => ruleBody(css, `.${CSS.escape(utility)}`);
+    // The root reads variables whose fallbacks are the comfortable values (14px on 22.75px, 12px gap).
+    expect(rule('text-(length:--markdown-font-size,0.875rem)')).toContain(
+      'font-size: var(--markdown-font-size,0.875rem)'
+    );
+    expect(rule('leading-(--markdown-leading,1.625)')).toContain(
+      'line-height: var(--markdown-leading,1.625)'
+    );
+    expect(rule('gap-(--markdown-gap,0.75rem)')).toContain('gap: var(--markdown-gap,0.75rem)');
+    // A compact ancestor sets them.
+    const compact = (utility: string, declaration: string) => {
+      const body = rule(`in-data-[density=compact]:${utility}`);
+      expect(body).toContain(':where(*[data-density="compact"]) &');
+      expect(body).toContain(declaration);
+    };
+    compact('[--markdown-font-size:0.75rem]', '--markdown-font-size: 0.75rem');
+    compact('[--markdown-leading:1.5]', '--markdown-leading: 1.5');
+    compact('[--markdown-gap:0.5rem]', '--markdown-gap: 0.5rem');
+    // Nested elements keep their own variants.
+    compact('text-lg', 'font-size: var(--text-lg)');
+    compact('text-sm', 'font-size: var(--text-sm)');
+    compact('gap-0.5', 'gap: calc(var(--spacing) * 0.5)');
+    expect(root.querySelector('h1')).toHaveClass('text-xl', 'in-data-[density=compact]:text-lg');
+  });
+
+  it('lets a host className on the root win in compact too', () => {
+    const { container } = render(
+      <div data-density="compact">
+        <Markdown className="gap-1 text-xs leading-4">{'Hello'}</Markdown>
+      </div>
+    );
+    const root = container.querySelector('[data-slot="markdown"]') as HTMLElement;
+    expect(root).toHaveClass('gap-1', 'text-xs', 'leading-4');
+    // The variable-reading classes are replaced, so the compact variables have nothing to change.
+    expect(root.className).not.toMatch(/gap-\(|text-\(|leading-\(/);
   });
 
   it('keeps single dollar signs literal', () => {
@@ -94,6 +256,63 @@ describe('Markdown', () => {
       'data-wrap',
       'true'
     );
+  });
+
+  it('lets renderCodeBlock replace a code block with the props Markdown would pass', () => {
+    const calls: unknown[] = [];
+    render(
+      <Markdown
+        codeWrap
+        renderCodeActions={() => <button type="button">Expand</button>}
+        renderCodeBlock={(block, props) => {
+          calls.push({ block, wrap: props.wrap, code: props.code, language: props.language });
+          return <CodeBlock {...props} body={<p>Preview of {block.language}</p>} />;
+        }}
+      >
+        {'```html\n<b>Hi</b>\n```'}
+      </Markdown>
+    );
+    expect(calls).toEqual([
+      {
+        block: { code: '<b>Hi</b>', language: 'html' },
+        wrap: true,
+        code: '<b>Hi</b>',
+        language: 'html',
+      },
+    ]);
+    expect(screen.getByText('Preview of html')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Expand' })).toBeInTheDocument();
+  });
+
+  it('passes KaTeX macros through and keeps trust off', () => {
+    const { container } = render(
+      <Markdown katexOptions={{ macros: { '\\RR': '\\mathbb{R}' } }}>{'$$x \\in \\RR$$'}</Markdown>
+    );
+    expect(container.querySelector('mi[mathvariant="double-struck"]')).toHaveTextContent('R');
+
+    // trust is not an option, and a caller that forces it in still gets no link.
+    const forced = { trust: true } as MarkdownKatexOptions;
+    const { container: linked } = render(
+      <Markdown katexOptions={forced}>{'$$\\href{https://example.com}{x}$$'}</Markdown>
+    );
+    expect(linked.querySelector('[href]')).toBeNull();
+  });
+
+  it('gives each render its own copy of the KaTeX macros', () => {
+    const macros = { '\\RR': '\\mathbb{R}' };
+    const { container } = render(
+      <Markdown katexOptions={{ macros }}>{'$$\\gdef\\foo{x}\\foo + \\RR$$'}</Markdown>
+    );
+    expect(container.querySelector('.katex-error')).toBeNull();
+    expect(macros).toEqual({ '\\RR': '\\mathbb{R}' });
+
+    // A frozen object is never written to, so it still renders.
+    const frozen = Object.freeze({ '\\RR': '\\mathbb{R}' });
+    const { container: second } = render(
+      <Markdown katexOptions={{ macros: frozen }}>{'$$\\gdef\\bar{y}\\bar \\in \\RR$$'}</Markdown>
+    );
+    expect(second.querySelector('mi[mathvariant="double-struck"]')).toHaveTextContent('R');
+    expect(second.querySelector('.katex-error')).toBeNull();
   });
 
   it('drops javascript: links', () => {
@@ -249,6 +468,7 @@ describe('Markdown', () => {
           '```json\n{ "a": 1 }\n```',
           'Footnote reference[^1].\n\n[^1]: The note.',
           '$$\nx^2\n$$',
+          '```math\ny^2\n```',
         ].join('\n\n')}
       </Markdown>
     );

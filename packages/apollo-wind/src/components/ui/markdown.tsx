@@ -5,6 +5,7 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import {
   CodeBlock,
+  type CodeBlockProps,
   type CodeBlockStrings,
   DEFAULT_CODE_BLOCK_STRINGS,
 } from '@/components/ui/code-block';
@@ -17,8 +18,21 @@ import { cn } from '@/lib';
  *
  * Math is emitted as MathML, as in the Material chat, so no KaTeX stylesheet or fonts are needed.
  * Inline math uses `$$...$$` inside a sentence; a single `$` stays literal so prices are safe.
+ * Block math is a `$$` block or a ```math (also `latex`, `tex`) fence. A math block without its
+ * closing line, still streaming or cut off, renders as code, so half a formula never shows as a
+ * KaTeX error. A fenced block's language is the `language-*` class on its `<code>`, or
+ * `data-language` for a math block that is still open. A host overriding `pre` or `code` should
+ * read both; `renderCodeActions` receives it already resolved.
  * Raw HTML in the source is shown as text (except `<br>`, which becomes a line break), and unsafe
  * link protocols are dropped by react-markdown. Links open in a new tab, except in-page anchors.
+ *
+ * Compact density: inside an ancestor with `data-density="compact"` the text, headings and lists
+ * drop one size step (body 12px), as Material's `compactMode` does. Two choices are Wind's own:
+ * the body keeps the comfortable leading's ratio to Material's (18px, not Material's 16px), and
+ * block, list and quote spacing tightens (Material keeps its 24px).
+ * There is no prop: the host opts in by setting the attribute (the Wind chat sets it on its root).
+ * Compact sets CSS variables the base classes read, so a host className on the root wins in
+ * both densities.
  */
 
 type HastNode = {
@@ -37,14 +51,151 @@ function hastText(node: HastNode): string {
 function languageOf(node: HastNode): string | undefined {
   const className = node.properties?.className;
   const classes = Array.isArray(className) ? className.map(String) : [];
-  return classes.find((name) => name.startsWith('language-'))?.slice('language-'.length);
+  const fromClass = classes.find((name) => name.startsWith('language-'))?.slice('language-'.length);
+  const dataLanguage = node.properties?.dataLanguage;
+  return fromClass ?? (typeof dataLanguage === 'string' ? dataLanguage : undefined);
 }
 
 // Chat sits inside a host app, so following a link in place would drop the conversation. Only
 // in-page anchors and mail or phone links stay in the current tab.
 const opensInNewTab = (href: string | undefined) => !!href && !/^(#|mailto:|tel:)/i.test(href);
 
-type MdastNode = { type: string; value?: string; children?: MdastNode[] };
+type MdastNode = {
+  type: string;
+  value?: string;
+  lang?: string | null;
+  meta?: string | null;
+  position?: { start: { offset?: number }; end: { offset?: number } };
+  data?: Record<string, unknown>;
+  children?: MdastNode[];
+};
+
+const MATH_FENCE_LANGUAGES = new Set(['math', 'latex', 'tex']);
+
+/**
+ * The first line of a block, from where the parser placed it (after any container prefix).
+ * - `^[ \t]*` the fence's own indentation, if the node starts before it.
+ * - Group 1, the fence run: three or more backticks, three or more tildes, or two or more `$`
+ *   (a `$$` block). What follows (a language, or `$$b = B` text) does not matter here.
+ */
+const OPENING_FENCE = /^[ \t]*(`{3,}|~{3,}|\${2,})/;
+
+/**
+ * The last line of a block, with its blockquote markers already removed by `unquote`.
+ * - Group 1, the indentation: spaces only (tabs are expanded first). `hasClosingFence` caps it at
+ *   3 columns past the opener's container, so a deeper line is content, not a closer.
+ * - Group 2, the fence run, in the same three forms as the opener. `hasClosingFence` checks it uses
+ *   the opener's character and is at least as long.
+ * - `[ \t]*$` only trailing whitespace may follow, so a line such as `$$ and more` is content,
+ *   not a closer.
+ */
+const CLOSING_FENCE = /^( *)(`{3,}|~{3,}|\${2,})[ \t]*$/;
+
+/**
+ * A line's blockquote prefix: any number of `>` markers, each after optional indentation and
+ * followed by at most one space (the marker's own). Their count is the line's quote depth.
+ */
+const QUOTE_MARKERS = /^(?:[ \t]*>[ ]?)*/;
+
+/** Splits a line's blockquote markers from the rest, with tabs expanded so indents compare. */
+function unquote(line: string) {
+  const markers = QUOTE_MARKERS.exec(line)?.[0] ?? '';
+  const rest = line.slice(markers.length).replace(/\t/g, '    ');
+  return { depth: markers.split('>').length - 1, rest };
+}
+
+/**
+ * Whether a code fence or `$$` block has its closing line. Without one the parser runs the block
+ * to the end of input, which is what a block still streaming (or cut off) looks like. A closer sits
+ * in the same blockquotes as the opener, indented at most 3 columns past the opener's container
+ * (a list item's content column), so deeper lines inside a fence are content.
+ */
+function hasClosingFence(node: MdastNode, source: string): boolean {
+  const start = node.position?.start.offset;
+  const end = node.position?.end.offset;
+  if (start === undefined || end === undefined) return true;
+  const lines = source.slice(start, end).split(/\r?\n|\r/);
+  const open = OPENING_FENCE.exec(lines[0])?.[1];
+  // A block of one line has no closer yet.
+  if (!open || lines.length < 2) return false;
+  // The container prefix: what precedes the opener on its line (blockquote markers, a list
+  // marker or a list item's indentation).
+  const lineStart =
+    Math.max(source.lastIndexOf('\n', start - 1), source.lastIndexOf('\r', start - 1)) + 1;
+  const container = unquote(source.slice(lineStart, start));
+  const last = unquote(lines[lines.length - 1]);
+  const [, indent = '', close = ''] = CLOSING_FENCE.exec(last.rest) ?? [];
+  return (
+    // Inside the same blockquotes as the opener,
+    last.depth === container.depth &&
+    // indented at most 3 columns past the opener's container,
+    indent.length <= container.rest.length + 3 &&
+    // with a run of the opener's character, at least as long.
+    close[0] === open[0] &&
+    close.length >= open.length
+  );
+}
+
+const isMathFence = (node: MdastNode) =>
+  node.type === 'code' && MATH_FENCE_LANGUAGES.has(node.lang?.toLowerCase() ?? '');
+
+/** The node remark-math makes for a `$$` block, which rehype-katex renders as display math. */
+function displayMath(node: MdastNode): MdastNode {
+  const value = node.value ?? '';
+  return {
+    type: 'math',
+    value,
+    position: node.position,
+    data: {
+      hName: 'pre',
+      hChildren: [
+        {
+          type: 'element',
+          tagName: 'code',
+          properties: { className: ['language-math', 'math-display'] },
+          children: [{ type: 'text', value }],
+        },
+      ],
+    },
+  };
+}
+
+/**
+ * An open math block as code. rehype-katex renders any `language-math` code, so the node has no
+ * `lang` (which is what makes that class) and the label rides only in `data-language`. A host
+ * plugin that replaces `hProperties` then loses the label but can never bring the class back.
+ * A `$$b = B` line parses as a block whose text is all meta, so keep it.
+ */
+function pendingMath(node: MdastNode): MdastNode {
+  const value =
+    node.type === 'math' ? [node.meta, node.value].filter(Boolean).join('\n') : node.value;
+  return {
+    type: 'code',
+    lang: null,
+    value: value ?? '',
+    position: node.position,
+    data: { hProperties: { dataLanguage: node.type === 'code' ? node.lang : 'math' } },
+  };
+}
+
+/**
+ * Renders ```math, ```latex and ```tex fences as display math, as the Material chat does, and
+ * keeps math blocks (fenced or `$$`) as code until their closing line arrives.
+ */
+function remarkMathBlocks() {
+  const visit = (node: MdastNode, source: string) => {
+    node.children?.forEach((child, index, children) => {
+      const fence = isMathFence(child);
+      if (!fence && child.type !== 'math') {
+        visit(child, source);
+        return;
+      }
+      if (!hasClosingFence(child, source)) children[index] = pendingMath(child);
+      else if (fence) children[index] = displayMath(child);
+    });
+  };
+  return (tree: MdastNode, file: { value?: unknown }) => visit(tree, String(file.value ?? ''));
+}
 
 const BR_TAG = /^<br\s*\/?>$/i;
 
@@ -133,6 +284,18 @@ function rehypeScopeFootnoteLabel(options: { prefix: string }) {
   return (tree: HastNode) => visit(tree);
 }
 
+type RehypeKatexOptions = NonNullable<Parameters<typeof rehypeKatex>[0]>;
+
+/**
+ * rehype-katex with a fresh copy of `macros` for every render. KaTeX writes `\gdef` and friends
+ * into the macros object it is given, so a shared one would let one message redefine a host macro
+ * for every later message, and a frozen one would make KaTeX throw.
+ */
+function rehypeKatexPerRun(options: RehypeKatexOptions) {
+  return (...args: Parameters<ReturnType<typeof rehypeKatex>>) =>
+    rehypeKatex({ ...options, macros: { ...options.macros } })(...args);
+}
+
 export interface MarkdownStrings extends CodeBlockStrings {
   /** Heading of the generated footnotes section. */
   footnotes: string;
@@ -158,7 +321,7 @@ export interface MarkdownProps extends Omit<React.HTMLAttributes<HTMLDivElement>
   /**
    * react-markdown renderers merged over the built-in ones. Use it with `remarkPlugins` to render
    * custom nodes such as citations or resource chips. `code` only styles inline code: fenced blocks
-   * render through `pre`, so override `pre` (or use `renderCodeActions`) to change them.
+   * render through `pre`, so use `renderCodeBlock` or `renderCodeActions` to change them.
    */
   components?: Components;
   /** Extra remark plugins, run after GFM and math. */
@@ -167,7 +330,8 @@ export interface MarkdownProps extends Omit<React.HTMLAttributes<HTMLDivElement>
   rehypePlugins?: Options['rehypePlugins'];
   /**
    * The source is still arriving. Shows a caret after the last text and marks the region busy.
-   * Partial markdown is safe to pass: unclosed fences render as code and broken TeX as source.
+   * Partial markdown is safe to pass: an unclosed fence renders as code, and so does a math block
+   * without its closing line (still streaming or cut off) until it closes. Broken TeX shows as source.
    */
   streaming?: boolean;
   /**
@@ -182,13 +346,32 @@ export interface MarkdownProps extends Omit<React.HTMLAttributes<HTMLDivElement>
   codeWrap?: boolean;
   /** Extra header actions for each fenced code block (preview, expand), placed before the copy. */
   renderCodeActions?: (block: MarkdownCodeBlock) => React.ReactNode;
+  /**
+   * Renders each fenced code block instead of the default `CodeBlock`. `props` are what Markdown
+   * would pass it (including the `renderCodeActions` actions), so `<CodeBlock {...props} body={...} />`
+   * changes one part. Return a component element to keep state per block, such as a preview toggle.
+   */
+  renderCodeBlock?: (block: MarkdownCodeBlock, props: CodeBlockProps) => React.ReactNode;
+  /** KaTeX options for math. Output stays MathML and `trust` stays off; these cannot be changed. */
+  katexOptions?: MarkdownKatexOptions;
   strings?: Partial<MarkdownStrings>;
+}
+
+export interface MarkdownKatexOptions {
+  /**
+   * KaTeX's handling of non-standard LaTeX. Defaults to `'ignore'`. rehype-katex renders a formula
+   * that fails strict mode again with strict mode off, so stricter values report through the
+   * unified file messages but do not change what renders.
+   */
+  strict?: boolean | 'ignore' | 'warn' | 'error';
+  /** Macros available to every formula, such as `{ '\\RR': '\\mathbb{R}' }`. */
+  macros?: Record<string, string>;
 }
 
 export interface MarkdownCodeBlock {
   /** The block's source without the trailing newline. */
   code: string;
-  /** The fence's info string as written, e.g. `ts` or `html`. */
+  /** The first word of the fence's info string as written (`ts`, `html`), or `math` for an open `$$` block. */
   language: string | undefined;
 }
 
@@ -211,6 +394,7 @@ interface MarkdownContextValue {
   images: MarkdownImagePolicy;
   codeWrap: boolean;
   renderCodeActions?: (block: MarkdownCodeBlock) => React.ReactNode;
+  renderCodeBlock?: (block: MarkdownCodeBlock, props: CodeBlockProps) => React.ReactNode;
 }
 
 // Renderers read per-instance options from context so their identities stay stable. A renderer
@@ -313,48 +497,75 @@ function MarkdownInput({
 }
 
 function MarkdownPre({ node, children, ...rest }: React.ComponentProps<'pre'> & ExtraProps) {
-  const { strings, codeWrap, renderCodeActions } = React.useContext(MarkdownContext);
+  const { strings, codeWrap, renderCodeActions, renderCodeBlock } =
+    React.useContext(MarkdownContext);
   const codeNode = (node as HastNode | undefined)?.children?.find(
     (child) => child.type === 'element' && child.tagName === 'code'
   );
   if (!codeNode) return <pre {...rest}>{children}</pre>;
   const block = { code: hastText(codeNode).replace(/\n$/, ''), language: languageOf(codeNode) };
-  return (
-    <CodeBlock
-      code={block.code}
-      language={block.language}
-      wrap={codeWrap}
-      actions={renderCodeActions?.(block)}
-      strings={strings}
-    />
-  );
+  const props: CodeBlockProps = {
+    code: block.code,
+    language: block.language,
+    wrap: codeWrap,
+    actions: renderCodeActions?.(block),
+    strings,
+  };
+  return renderCodeBlock ? renderCodeBlock(block, props) : <CodeBlock {...props} />;
 }
 
 const BUILT_IN_COMPONENTS: Components = {
   h1: ({ node: _node, className, ...rest }) => (
-    <h1 className={cn('text-xl font-semibold tracking-tight', className)} {...rest} />
+    <h1
+      className={cn(
+        'text-xl font-semibold tracking-tight in-data-[density=compact]:text-lg',
+        className
+      )}
+      {...rest}
+    />
   ),
   h2: ({ node: _node, className, ...rest }) => (
-    <h2 className={cn('text-lg font-semibold tracking-tight', className)} {...rest} />
+    <h2
+      className={cn(
+        'text-lg font-semibold tracking-tight in-data-[density=compact]:text-base',
+        className
+      )}
+      {...rest}
+    />
   ),
   h3: ({ node: _node, className, ...rest }) => (
-    <h3 className={cn('text-base font-semibold', className)} {...rest} />
+    <h3
+      className={cn('text-base font-semibold in-data-[density=compact]:text-sm', className)}
+      {...rest}
+    />
   ),
   h4: ({ node: _node, className, ...rest }) => (
-    <h4 className={cn('text-sm font-semibold', className)} {...rest} />
+    <h4
+      className={cn('text-sm font-semibold in-data-[density=compact]:text-xs', className)}
+      {...rest}
+    />
   ),
   h5: ({ node: _node, className, ...rest }) => (
-    <h5 className={cn('text-sm font-semibold', className)} {...rest} />
+    <h5
+      className={cn('text-sm font-semibold in-data-[density=compact]:text-xs', className)}
+      {...rest}
+    />
   ),
   h6: ({ node: _node, className, ...rest }) => (
-    <h6 className={cn('text-sm font-semibold text-muted-foreground', className)} {...rest} />
+    <h6
+      className={cn(
+        'text-sm font-semibold text-muted-foreground in-data-[density=compact]:text-xs',
+        className
+      )}
+      {...rest}
+    />
   ),
   p: ({ node: _node, ...rest }) => <p {...rest} />,
   a: MarkdownLink,
   ul: ({ node: _node, className, ...rest }) => (
     <ul
       className={cn(
-        'flex flex-col gap-1 pl-6',
+        'flex flex-col gap-1 pl-6 in-data-[density=compact]:gap-0.5',
         className?.includes('contains-task-list') ? 'list-none pl-1' : 'list-disc',
         'marker:text-muted-foreground',
         className
@@ -365,7 +576,7 @@ const BUILT_IN_COMPONENTS: Components = {
   ol: ({ node: _node, className, ...rest }) => (
     <ol
       className={cn(
-        'flex list-decimal flex-col gap-1 pl-6 marker:text-muted-foreground',
+        'flex list-decimal flex-col gap-1 pl-6 marker:text-muted-foreground in-data-[density=compact]:gap-0.5',
         className
       )}
       {...rest}
@@ -374,7 +585,7 @@ const BUILT_IN_COMPONENTS: Components = {
   li: ({ node: _node, className, ...rest }) => (
     <li
       className={cn(
-        'pl-1 [&>ol]:mt-1 [&>p+p]:mt-2 [&>ul]:mt-1 [&>ul.contains-task-list]:pl-6',
+        'pl-1 [&>ol]:mt-1 [&>p+p]:mt-2 [&>ul]:mt-1 [&>ul.contains-task-list]:pl-6 in-data-[density=compact]:[&>p+p]:mt-1.5',
         className
       )}
       {...rest}
@@ -384,7 +595,7 @@ const BUILT_IN_COMPONENTS: Components = {
   blockquote: ({ node: _node, className, ...rest }) => (
     <blockquote
       className={cn(
-        'flex flex-col gap-2 border-l-2 border-border pl-4 text-muted-foreground',
+        'flex flex-col gap-2 border-l-2 border-border pl-4 text-muted-foreground in-data-[density=compact]:gap-1.5',
         className
       )}
       {...rest}
@@ -445,6 +656,8 @@ const Markdown = React.forwardRef<HTMLDivElement, MarkdownProps>(
       images = 'none',
       codeWrap = false,
       renderCodeActions,
+      renderCodeBlock,
+      katexOptions,
       strings,
       className,
       ...props
@@ -457,8 +670,9 @@ const Markdown = React.forwardRef<HTMLDivElement, MarkdownProps>(
         images,
         codeWrap,
         renderCodeActions,
+        renderCodeBlock,
       }),
-      [strings, images, codeWrap, renderCodeActions]
+      [strings, images, codeWrap, renderCodeActions, renderCodeBlock]
     );
     const { footnotes, footnoteBack } = context.strings;
     // Footnote ids must be unique per message, or every reference jumps to the first transcript match.
@@ -473,6 +687,7 @@ const Markdown = React.forwardRef<HTMLDivElement, MarkdownProps>(
       () => [
         remarkGfm,
         [remarkMath, { singleDollarTextMath: false }],
+        remarkMathBlocks,
         remarkHtmlBreaks,
         ...(remarkPlugins ?? []),
       ],
@@ -482,11 +697,21 @@ const Markdown = React.forwardRef<HTMLDivElement, MarkdownProps>(
     const mergedRehypePlugins = React.useMemo<Options['rehypePlugins']>(
       () => [
         [rehypeScopeFootnoteLabel, { prefix: footnotePrefix }],
-        [rehypeKatex, { output: 'mathml', throwOnError: false, trust: false, strict: 'ignore' }],
+        [
+          rehypeKatexPerRun,
+          {
+            strict: katexOptions?.strict ?? 'ignore',
+            macros: katexOptions?.macros,
+            // Fixed: MathML needs no stylesheet, and trust would let a model's TeX emit links.
+            output: 'mathml',
+            throwOnError: false,
+            trust: false,
+          },
+        ],
         ...(rehypePlugins ?? []),
         ...(streaming ? [rehypeStreamingCursor] : []),
       ],
-      [rehypePlugins, streaming, footnotePrefix]
+      [rehypePlugins, streaming, footnotePrefix, katexOptions?.strict, katexOptions?.macros]
     );
 
     const remarkRehypeOptions = React.useMemo(
@@ -505,7 +730,7 @@ const Markdown = React.forwardRef<HTMLDivElement, MarkdownProps>(
         data-streaming={streaming || undefined}
         aria-busy={streaming || undefined}
         className={cn(
-          'flex min-w-0 flex-col gap-3 text-sm leading-relaxed break-words text-foreground [&_math]:text-[1.15em] [&>.katex]:overflow-x-auto [&>.katex]:py-1',
+          'flex min-w-0 flex-col gap-(--markdown-gap,0.75rem) text-(length:--markdown-font-size,0.875rem) leading-(--markdown-leading,1.625) break-words text-foreground [&_math]:text-[1.15em] [&>.katex]:overflow-x-auto [&>.katex]:overflow-y-hidden [&>.katex]:py-1 in-data-[density=compact]:[--markdown-gap:0.5rem] in-data-[density=compact]:[--markdown-font-size:0.75rem] in-data-[density=compact]:[--markdown-leading:1.5]',
           className
         )}
         {...props}

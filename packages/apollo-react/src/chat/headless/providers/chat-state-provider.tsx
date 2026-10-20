@@ -6,9 +6,13 @@ import {
   type AutopilotChatConfiguration,
   type AutopilotChatDisabledFeatures,
   AutopilotChatEvent,
+  AutopilotChatInterceptableEvent,
   AutopilotChatInternalEvent,
+  type AutopilotChatMessage,
   AutopilotChatMode,
   type AutopilotChatOverrideLabels,
+  AutopilotChatRole,
+  type AutopilotChatSuggestion,
   CHAT_COMPACT_MODE_INPUT_MAX_ROWS,
   CHAT_COMPACT_MODE_INPUT_MIN_ROWS,
   CHAT_COMPACT_MODE_MESSAGE_GROUP_GAP,
@@ -29,6 +33,9 @@ type DeepRequired<T> = {
 interface AutopilotChatStateContextType {
   historyAnchorElement: HTMLElement | null;
   setHistoryAnchorElement: (element: HTMLElement | null) => void;
+  /** The header's settings button, for renderers that return focus to it on close. */
+  settingsAnchorElement: HTMLElement | null;
+  setSettingsAnchorElement: (element: HTMLElement | null) => void;
   fullScreenContainer: HTMLElement | null;
   setFullScreenContainer: (element: HTMLElement | null) => void;
   historyOpen: boolean;
@@ -44,7 +51,28 @@ interface AutopilotChatStateContextType {
   theming?: AutopilotChatConfiguration['theming'];
   portalContainer?: HTMLElement;
   readOnly: boolean;
+  /** The first-run experience shows: it has content and the conversation is empty. */
+  firstRunVisible: boolean;
+  /** The service's current suggestions (`setSuggestions`), cleared by the service on request. */
+  suggestions: ChatSuggestionsState;
 }
+
+/** Suggestions from `setSuggestions`, with the user turn they were set in. */
+export interface ChatSuggestionsState {
+  items: AutopilotChatSuggestion[];
+  /** As passed to `setSuggestions`; `undefined` falls back to the first-run setting. */
+  sendOnClick?: boolean;
+  /**
+   * How many user messages the conversation had when the suggestions were set. They belong to
+   * that turn, replies included, and are left behind once another user message follows.
+   */
+  userTurns?: number;
+}
+
+export const countUserTurns = (messages: readonly AutopilotChatMessage[]) =>
+  messages.reduce((count, message) => count + (message.role === AutopilotChatRole.User ? 1 : 0), 0);
+
+const NO_SUGGESTIONS: ChatSuggestionsState = { items: [] };
 
 const AutopilotChatStateContext = React.createContext<AutopilotChatStateContextType | null>(null);
 
@@ -144,6 +172,9 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
       }
     );
   const [historyAnchorElement, setHistoryAnchorElement] = React.useState<HTMLElement | null>(null);
+  const [settingsAnchorElement, setSettingsAnchorElement] = React.useState<HTMLElement | null>(
+    null
+  );
   const [fullScreenContainer, setFullScreenContainer] = React.useState<HTMLElement | null>(null);
   const [historyOpen, setHistoryOpen] = React.useState(chatService?.historyOpen ?? false);
   const [settingsOpen, setSettingsOpen] = React.useState(chatService?.settingsOpen ?? false);
@@ -163,10 +194,15 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
       suggestions: [],
     }
   );
-  const [hasMessages, setHasMessages] = React.useState(false);
+  // Kept in step with the service from the same events as the transcript, so the first-run
+  // experience never shows for a render beside an existing conversation.
+  const [hasMessages, setHasMessages] = React.useState(
+    () => (chatService?.getConversation?.().length ?? 0) > 0
+  );
   const [readOnly, setReadOnly] = React.useState(chatService?.getReadOnly() ?? false);
   const [spacing, setSpacing] = React.useState(calculateSpacing(chatService?.getConfig()?.spacing));
   const [theming, setTheming] = React.useState(chatService?.getConfig()?.theming);
+  const [suggestions, setSuggestions] = React.useState<ChatSuggestionsState>(NO_SUGGESTIONS);
 
   React.useEffect(() => {
     if (!chatService) {
@@ -240,7 +276,41 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
       }
     );
 
+    const unsubscribeSuggestions = chatInternalService.on(
+      AutopilotChatInternalEvent.SetSuggestions,
+      ({
+        suggestions: items,
+        sendOnClick,
+      }: {
+        suggestions: AutopilotChatSuggestion[];
+        sendOnClick?: boolean;
+      }) => {
+        setSuggestions(
+          items.length === 0
+            ? NO_SUGGESTIONS
+            : { items, sendOnClick, userTurns: countUserTurns(chatService.getConversation()) }
+        );
+      }
+    );
+
+    const unsubscribes = [
+      chatService.intercept(AutopilotChatInterceptableEvent.Request, () => {
+        setHasMessages(true);
+      }),
+      chatService.on(AutopilotChatEvent.Response, () => setHasMessages(true)),
+      chatService.on(AutopilotChatEvent.SetConversation, (conversation: AutopilotChatMessage[]) =>
+        setHasMessages(conversation.length > 0)
+      ),
+      chatService.on(AutopilotChatEvent.NewChat, () => {
+        setHasMessages(false);
+        // A new chat starts without the last one's suggestions, in both renderers.
+        setSuggestions(NO_SUGGESTIONS);
+      }),
+    ];
+
     return () => {
+      unsubscribeSuggestions();
+      for (const unsubscribe of unsubscribes) unsubscribe();
       unsubscribeHistoryToggle();
       unsubscribeSettingsToggle();
       unsubscribeModeChange();
@@ -254,6 +324,15 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
     };
   }, [chatService, chatInternalService]);
 
+  const firstRunVisible =
+    !hasMessages &&
+    !!firstRunExperience &&
+    !!(
+      firstRunExperience.title ||
+      firstRunExperience.description ||
+      firstRunExperience.suggestions?.length
+    );
+
   const value = React.useMemo(
     () => ({
       historyOpen,
@@ -265,6 +344,8 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
       allowedAttachments,
       historyAnchorElement,
       setHistoryAnchorElement,
+      settingsAnchorElement,
+      setSettingsAnchorElement,
       fullScreenContainer,
       setFullScreenContainer,
       hasMessages,
@@ -273,6 +354,8 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
       theming,
       portalContainer,
       readOnly,
+      firstRunVisible,
+      suggestions,
     }),
     [
       historyOpen,
@@ -284,6 +367,7 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
       allowedAttachments,
       historyAnchorElement,
       setHistoryAnchorElement,
+      settingsAnchorElement,
       fullScreenContainer,
       setFullScreenContainer,
       hasMessages,
@@ -292,6 +376,8 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
       theming,
       portalContainer,
       readOnly,
+      firstRunVisible,
+      suggestions,
     ]
   );
 
