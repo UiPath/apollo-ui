@@ -1,26 +1,6 @@
 ---
 title: "Detail page"
 description: "A page for one record: a header, the record in the middle, and up to two sidebars."
-whenToUse:
-  - "a page shows one record, with a header, the record's content, and optional sidebars for a queue, document, or activity."
-avoidWhen:
-  - when: "the page lists many records."
-example: |
-  import { DetailPage, PageHeader, useDetailPage } from "@uipath/apollo-vertex";
-
-  const state = useDetailPage({
-    panels: "both",
-    start: { placement: "beside-header", defaultOpen: true },
-    end: { placement: "below-header", defaultOpen: true },
-  });
-
-  <DetailPage
-    state={state}
-    header={<PageHeader bordered>{/* title and actions */}</PageHeader>}
-    startSidebar={<aside aria-label="Queue">{/* queue */}</aside>}
-    content={<article>{/* the record */}</article>}
-    endSidebar={<aside aria-label="Activity">{/* activity */}</aside>}
-  />
 ---
 
 import { DetailPagePreview } from '../../../templates/detail-page/DetailPagePreview';
@@ -37,9 +17,13 @@ an [`ApolloShell`](/patterns/shell).
   <DetailPagePreview />
 </PreviewFullScreen>
 
-The preview uses both sidebars. On a narrow preview the main-width rule
-closes the start sidebar so the content keeps its width. Expand the preview
-to see both, or use the header buttons to open and close them.
+The preview fills the slots with existing components: a
+[`PageHeader`](/surfaces/page-header) for the record, an
+[`Item`](/components/item) queue beside the header, [`MetricCard`](/patterns/metric-card)
+and [`Card`](/components/card) for the record, and a
+[`Timeline`](/components/timeline) under the header. On a narrow preview the
+main-width rule closes the queue so the content keeps its width. Expand the
+preview to see both sidebars, or use the header buttons to open and close them.
 
 ## Slots
 
@@ -90,7 +74,14 @@ open. Sidebars the rule closed reopen when there is room. Sidebars the user
 closed stay closed.
 
 ```tsx
-import { DetailPage, PageHeader, useDetailPage } from "@uipath/apollo-vertex";
+import {
+  DetailPage,
+  MetricCard,
+  PageHeader,
+  PageHeaderNav,
+  PageHeaderTitle,
+  useDetailPage,
+} from "@uipath/apollo-vertex";
 
 const state = useDetailPage({
   panels: "both",
@@ -101,10 +92,16 @@ const state = useDetailPage({
 return (
   <DetailPage
     state={state}
-    header={<PageHeader bordered>{/* title, back, actions */}</PageHeader>}
-    startSidebar={<aside aria-label="Queue">{/* queue */}</aside>}
-    content={<article>{/* the record */}</article>}
-    endSidebar={<aside aria-label="Activity">{/* activity */}</aside>}
+    header={
+      <PageHeader bordered>
+        <PageHeaderNav>
+          <PageHeaderTitle>INV-4021</PageHeaderTitle>
+        </PageHeaderNav>
+      </PageHeader>
+    }
+    startSidebar={<aside aria-label="Queue">{/* Item queue */}</aside>}
+    content={<MetricCard label="Amount" value="$12,450.00" />}
+    endSidebar={<aside aria-label="Activity">{/* Timeline */}</aside>}
   />
 );
 ```
