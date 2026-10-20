@@ -19,7 +19,7 @@ export const Default = {
     const [value, setValue] = React.useState('');
     return (
       <div className="w-[400px]">
-        <Search placeholder="Search..." value={value} onChange={setValue} />
+        <Search placeholder="Search..." value={value} onValueChange={setValue} />
       </div>
     );
   },
@@ -31,7 +31,7 @@ export const WithValue = {
     const [value, setValue] = React.useState('React components');
     return (
       <div className="w-[400px]">
-        <Search placeholder="Search..." value={value} onChange={setValue} />
+        <Search placeholder="Search..." value={value} onValueChange={setValue} />
       </div>
     );
   },
@@ -43,7 +43,12 @@ export const NoClearButton = {
     const [value, setValue] = React.useState('');
     return (
       <div className="w-[400px]">
-        <Search placeholder="Search..." value={value} onChange={setValue} showClearButton={false} />
+        <Search
+          placeholder="Search..."
+          value={value}
+          onValueChange={setValue}
+          showClearButton={false}
+        />
       </div>
     );
   },
@@ -198,7 +203,7 @@ export const WithInlineValidation = {
       <Search
         aria-label="Search stages"
         value="ab"
-        onChange={() => {}}
+        onValueChange={() => {}}
         error="Enter at least 3 characters to search."
       />
     </div>

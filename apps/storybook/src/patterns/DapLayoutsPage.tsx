@@ -182,7 +182,7 @@ function ManagePropertiesExample() {
             <Search
               aria-label="Search properties"
               className="h-10"
-              onChange={setQuery}
+              onValueChange={setQuery}
               placeholder="Search"
               showClearButton
               value={query}
@@ -1070,7 +1070,7 @@ function GmailConnectionPickerExample() {
             <Search
               aria-label="Search connections"
               className="flex-1"
-              onChange={setQuery}
+              onValueChange={setQuery}
               placeholder="Search connections"
               value={query}
             />
