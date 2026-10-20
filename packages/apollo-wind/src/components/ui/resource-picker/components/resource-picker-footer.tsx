@@ -20,13 +20,14 @@ export function ResourcePickerFooter({ leading, trailing }: ResourcePickerFooter
     // Keys stop here, so a focused footer control keeps them to itself: Enter
     // runs its own action rather than cmdk committing the active row, and the
     // arrows, Home and End neither move cmdk's cursor nor fold a group behind
-    // it. Native activation still happens. Escape alone goes on, so the
-    // picker can still clear its search from here.
+    // it. Native activation still happens. Escape and Tab go on: Escape so
+    // the picker can still clear its search from here, and Tab so a hosting
+    // focus scope, such as the popover's, can loop it back to the search.
     // biome-ignore lint/a11y/noStaticElementInteractions: only stops propagation; the controls inside are interactive
     <div
       className="flex shrink-0 items-center justify-between gap-2 border-t border-border bg-popover px-3 py-2"
       onKeyDown={(event) => {
-        if (event.key !== 'Escape') event.stopPropagation();
+        if (event.key !== 'Escape' && event.key !== 'Tab') event.stopPropagation();
       }}
     >
       <div className="flex min-w-0 items-center gap-1">{leading}</div>
