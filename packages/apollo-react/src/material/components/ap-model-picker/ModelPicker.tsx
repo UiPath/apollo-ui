@@ -361,18 +361,9 @@ export interface ModelPickerProps {
   testId?: string;
 }
 
-// The asterisk is a decorative, `aria-hidden` visual marker. It cannot
-// carry the requirement to assistive tech by itself: `aria-required` is
-// not an allowed attribute on the trigger, whose role is a plain
-// `role="button"` (axe-core `aria-allowed-attr`, critical impact — WAI-ARIA
-// only permits `aria-required` on form/input-like roles such as textbox,
-// combobox, or listbox). Instead the label carries a visually-hidden
-// "required" span alongside the asterisk (below), which — because the
-// label is associated with the trigger via `htmlFor`/`id` — becomes part
-// of the trigger's accessible name. Same `srLabel` pattern as
-// `RequiredIndicator` from `@uipath/apollo-wind`, used for the identical
-// role-doesn't-support-aria-required case on `role="group"` in
-// `canvas/components/Guardrails`.
+// Decorative marker. `aria-required` isn't allowed on the trigger's
+// `role="button"` (axe `aria-allowed-attr`), so the label also carries a
+// visually-hidden "required" span that joins the trigger's accessible name.
 const REQUIRED_INDICATOR = '*';
 
 // Above this many visible options the `searchable` variant hands the
