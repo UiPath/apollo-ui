@@ -6,6 +6,7 @@ import {
   type ChatAttachmentRejectionReason,
   useAttachmentIntake,
 } from '@uipath/apollo-react/chat/headless/hooks/use-attachment-intake';
+import { useDropzoneLimitHints } from '@uipath/apollo-react/chat/headless/hooks/use-attachment-limits';
 import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
 import { ApTypography } from '@uipath/apollo-react/material/components/ap-typography';
 import React from 'react';
@@ -67,6 +68,7 @@ function AutopilotChatDropzoneComponent({
   const { _ } = useLingui();
   const { disabledFeatures, allowedAttachments } = useChatState();
   const takeFiles = useAttachmentIntake();
+  const { countHint, sizeHint, typesHint } = useDropzoneLimitHints(allowedAttachments);
 
   const handleDrop = React.useCallback(
     (files: File[], fileRejections: FileRejection[]) =>
@@ -107,48 +109,18 @@ function AutopilotChatDropzoneComponent({
             {_(msg({ id: 'autopilot-chat.dropzone.overlay-title', message: `Drop files here` }))}
           </ApTypography>
 
-          {allowedAttachments.maxCount &&
-            allowedAttachments.maxCount > 1 &&
-            allowedAttachments.multiple &&
-            (() => {
-              const maxCount = allowedAttachments.maxCount;
-              return (
-                <ApTypography
-                  variant={FontVariantToken.fontSizeS}
-                  color={'var(--color-foreground)'}
-                >
-                  {_(
-                    msg({
-                      id: 'autopilot-chat.dropzone.overlay-max-count',
-                      message: `Maximum ${maxCount} files`,
-                    })
-                  )}
-                </ApTypography>
-              );
-            })()}
+          {countHint && (
+            <ApTypography variant={FontVariantToken.fontSizeS} color={'var(--color-foreground)'}>
+              {countHint}
+            </ApTypography>
+          )}
 
           <ApTypography variant={FontVariantToken.fontSizeS} color={'var(--color-foreground)'}>
-            {(() => {
-              const maxSize = allowedAttachments.maxSize / 1024 / 1024;
-              return _(
-                msg({
-                  id: 'autopilot-chat.dropzone.overlay-max-size',
-                  message: `Maximum file size: ${maxSize}MB`,
-                })
-              );
-            })()}
+            {sizeHint}
           </ApTypography>
 
           <ApTypography variant={FontVariantToken.fontSizeS} color={'var(--color-foreground)'}>
-            {(() => {
-              const fileTypes = Object.values(allowedAttachments.types).flat().join(', ');
-              return _(
-                msg({
-                  id: 'autopilot-chat.dropzone.allowed-file-types',
-                  message: `Allowed file types: ${fileTypes}`,
-                })
-              );
-            })()}
+            {typesHint}
           </ApTypography>
         </DropzoneOverlay>
       )}

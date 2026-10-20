@@ -29,7 +29,8 @@ export function getAcceptedFileTypes(types: AutopilotChatAllowedAttachments['typ
 
 /**
  * Checks picked files against `allowedAttachments` the way the drop targets do: a type matches by
- * MIME type or extension, then size, then the count left after `existingCount`.
+ * MIME type or extension, then size, then the count left after `existingCount`. `maxCount: 0`
+ * or unset means no limit.
  */
 export function checkAttachmentFiles(
   files: readonly File[],
@@ -37,8 +38,7 @@ export function checkAttachmentFiles(
   existingCount = 0
 ): { accepted: File[]; rejected: ChatAttachmentRejection[] } {
   const accept = getAcceptedFileTypes(allowed.types).map((entry) => entry.toLowerCase());
-  const remaining =
-    allowed.maxCount === undefined ? Number.POSITIVE_INFINITY : allowed.maxCount - existingCount;
+  const remaining = allowed.maxCount ? allowed.maxCount - existingCount : Number.POSITIVE_INFINITY;
   const accepted: File[] = [];
   const rejected: ChatAttachmentRejection[] = [];
 
@@ -62,25 +62,63 @@ export function checkAttachmentFiles(
   return { accepted, rejected };
 }
 
+const sameFile = (a: { name: string; size: number }, b: { name: string; size: number }) =>
+  a.name === b.name && a.size === b.size;
+
+/**
+ * Leaves out files already in the draft (same name and size) or earlier in the batch, then
+ * applies `maxCount` to what is left. The checks before the intake counted those duplicates
+ * against the free slots, so they are counted again here; `maxCount: 0` means no limit.
+ */
+export function dropAttachedFiles(
+  accepted: readonly File[],
+  rejected: readonly ChatAttachmentRejection[],
+  draft: readonly { name: string; size: number }[],
+  maxCount: number | undefined
+): { accepted: File[]; rejected: ChatAttachmentRejection[] } {
+  const seen = [...draft];
+  const isNew = (file: File) => {
+    if (seen.some((other) => sameFile(other, file))) return false;
+    seen.push(file);
+    return true;
+  };
+  // Accepted files come before the ones turned away for count, as the checks saw them.
+  const candidates = [
+    ...accepted,
+    ...rejected.filter(({ reason }) => reason === 'count').map(({ file }) => file),
+  ].filter(isNew);
+  const free = maxCount ? Math.max(0, maxCount - draft.length) : Number.POSITIVE_INFINITY;
+  return {
+    accepted: candidates.slice(0, free),
+    rejected: [
+      ...rejected.filter(
+        ({ reason, file }) => reason !== 'count' && !draft.some((other) => sameFile(other, file))
+      ),
+      ...candidates.slice(free).map((file) => ({ file, reason: 'count' as const })),
+    ],
+  };
+}
+
 /**
  * Takes files checked against `allowedAttachments` into the draft, as Material's dropzone does:
  * a second file when only one is allowed, or more than `maxCount`, rejects the whole batch with
  * one message; oversized and wrongly typed files are named in the error and the rest are
- * attached. Clears the error when nothing was rejected.
+ * attached. A file already in the draft is left out silently. Clears the error when nothing was
+ * rejected.
  */
 export function useAttachmentIntake() {
   const { _ } = useLingui();
-  const { addAttachments, attachments } = useAttachments();
+  const { addAttachments, getAttachments } = useAttachments();
   const { setError } = useError();
   const { allowedAttachments } = useChatState();
-  const attachmentsCount = React.useRef(attachments.length);
-  attachmentsCount.current = attachments.length;
 
   const handleRejections = React.useCallback(
     (parsedFiles: AutopilotChatFileInfo[], rejections: ChatAttachmentRejection[]) => {
       if (
         !allowedAttachments.multiple &&
-        (parsedFiles.length > 1 || attachmentsCount.current > 0 || rejections.length > 1)
+        (parsedFiles.length > 1 ||
+          (parsedFiles.length > 0 && getAttachments().length > 0) ||
+          rejections.length > 1)
       ) {
         setError(
           _(
@@ -139,6 +177,7 @@ export function useAttachmentIntake() {
     [
       _,
       setError,
+      getAttachments,
       allowedAttachments.maxCount,
       allowedAttachments.maxSize,
       allowedAttachments.multiple,
@@ -146,8 +185,14 @@ export function useAttachmentIntake() {
   );
 
   return React.useCallback(
-    async (accepted: File[], rejected: ChatAttachmentRejection[]) => {
+    async (checked: File[], checkRejected: ChatAttachmentRejection[]) => {
       try {
+        const { accepted, rejected } = dropAttachedFiles(
+          checked,
+          checkRejected,
+          getAttachments(),
+          allowedAttachments.maxCount
+        );
         const parsedFiles = await parseFiles(accepted);
         if (handleRejections(parsedFiles, rejected)) {
           return;
@@ -164,6 +209,13 @@ export function useAttachmentIntake() {
         setError(error as string);
       }
     },
-    [addAttachments, setError, allowedAttachments.multiple, handleRejections]
+    [
+      addAttachments,
+      getAttachments,
+      setError,
+      allowedAttachments.maxCount,
+      allowedAttachments.multiple,
+      handleRejections,
+    ]
   );
 }

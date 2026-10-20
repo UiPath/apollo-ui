@@ -10,6 +10,7 @@ import { AutopilotErrorProvider, useError } from '../providers/error-provider';
 import {
   type ChatAttachmentRejection,
   checkAttachmentFiles,
+  dropAttachedFiles,
   getAcceptedFileTypes,
   useAttachmentIntake,
 } from './use-attachment-intake';
@@ -84,6 +85,19 @@ describe('useAttachmentIntake', () => {
     ]);
   });
 
+  it('reads maxCount 0 or unset as no limit when checking picked files', () => {
+    const picked = [file('a.txt'), file('b.txt')];
+    for (const maxCount of [0, undefined]) {
+      const { accepted, rejected } = checkAttachmentFiles(
+        picked,
+        { multiple: true, types, maxSize: 1024, maxCount },
+        5
+      );
+      expect(accepted).toHaveLength(2);
+      expect(rejected).toEqual([]);
+    }
+  });
+
   it('attaches accepted files and names the rejected ones', async () => {
     setup({ multiple: true, types, maxSize: 1024, maxCount: 5 });
 
@@ -113,5 +127,54 @@ describe('useAttachmentIntake', () => {
     await act(() => take?.([file('a.txt')], []));
     expect(state.names).toEqual(['a.txt']);
     expect(state.error).toBeUndefined();
+  });
+
+  it('leaves out files already in the draft or the batch, then counts the free slots again', () => {
+    const draft = [{ name: 'a.txt', size: 10 }];
+    const { accepted, rejected } = dropAttachedFiles(
+      [file('a.txt'), file('b.txt')],
+      [reject('b.txt', 'count'), reject('c.txt', 'count'), reject('x.exe', 'type')],
+      draft,
+      3
+    );
+
+    expect(accepted.map(({ name }) => name)).toEqual(['b.txt', 'c.txt']);
+    expect(rejected.map(({ file, reason }) => [file.name, reason])).toEqual([['x.exe', 'type']]);
+    // A new size is a new file; no limit with maxCount 0.
+    expect(dropAttachedFiles([file('a.txt', 11)], [], draft, 0).accepted).toHaveLength(1);
+  });
+
+  it('drops a file already attached without an error, even with the draft full', async () => {
+    setup({ multiple: true, types, maxSize: 1024, maxCount: 1 });
+    await act(() => take?.([file('a.txt')], []));
+
+    // The checks before the intake counted it against the free slots.
+    await act(() => take?.([], [reject('a.txt', 'count')]));
+
+    expect(state.names).toEqual(['a.txt']);
+    expect(state.error).toBeUndefined();
+  });
+
+  it('keeps both of two intakes that finish before a re-render', async () => {
+    setup({ multiple: true, types, maxSize: 1024, maxCount: 5 });
+
+    await act(() => Promise.all([take?.([file('a.txt')], []), take?.([file('b.txt')], [])]));
+
+    expect(state.names).toEqual(['a.txt', 'b.txt']);
+  });
+
+  it('takes a file already attached silently when only one file is allowed', async () => {
+    setup({ multiple: false, types, maxSize: 1024 });
+    await act(() => take?.([file('a.txt')], []));
+
+    await act(() => take?.([file('a.txt')], []));
+
+    expect(state.names).toEqual(['a.txt']);
+    expect(state.error).toBeUndefined();
+
+    // A different file is still turned away.
+    await act(() => take?.([file('b.txt')], []));
+    expect(state.names).toEqual(['a.txt']);
+    expect(state.error).toBeTruthy();
   });
 });
