@@ -194,6 +194,8 @@ const preview: Preview = {
                 '*',
               ],
             ],
+            'Chat',
+            ['Patterns', 'Components', '*'],
             'Templates',
             ['Admin', 'Delegate', 'Flow', 'Maestro', 'Studio', 'Future'],
             'Forms',
