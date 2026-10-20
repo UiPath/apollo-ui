@@ -11,7 +11,7 @@ overrides:
   picomatch: '>=4.0.4'
   postcss: ^8.5.23
   hono: 4.13.9
-  '@hono/node-server': ^2.0.10
+  '@hono/node-server': 2.0.10
   dompurify: '>=3.4.16'
   browserslist: '>=4.28.7'
   fast-uri: ^3.1.8
@@ -1105,6 +1105,9 @@ importers:
 
   packages/apollo-wind:
     dependencies:
+      '@date-fns/tz':
+        specifier: ^1.4.1
+        version: 1.4.1
       '@dnd-kit/core':
         specifier: ^6.3.1
         version: 6.3.1(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -2963,8 +2966,8 @@ packages:
       react: ^18 || ^19 || ^19.0.0-rc
       react-dom: ^18 || ^19 || ^19.0.0-rc
 
-  '@hono/node-server@2.0.11':
-    resolution: {integrity: sha512-bjD221KPLoJTWUwso1J6fGKiTXEUFedG/s0visavY4zakFPkeGURMRNly+FhBHs7T8Dz4qHaZIMX9ZoJHSJtKA==}
+  '@hono/node-server@2.0.10':
+    resolution: {integrity: sha512-ZcnNVhKTmyDJeg0UlnZjvM73JBsTAuhrH/J4fjwGOw59PwOW51r4J+p6CsKZWXdKSme4MFqU62CZMOsdDrU4CA==}
     engines: {node: '>=20'}
     peerDependencies:
       hono: 4.13.9
@@ -16268,7 +16271,7 @@ snapshots:
       react-dom: 19.2.3(react@19.2.3)
       use-sync-external-store: 1.6.0(react@19.2.3)
 
-  '@hono/node-server@2.0.11(hono@4.13.9)':
+  '@hono/node-server@2.0.10(hono@4.13.9)':
     dependencies:
       hono: 4.13.9
 
@@ -16877,7 +16880,7 @@ snapshots:
 
   '@modelcontextprotocol/sdk@1.31.0(zod@3.25.76)':
     dependencies:
-      '@hono/node-server': 2.0.11(hono@4.13.9)
+      '@hono/node-server': 2.0.10(hono@4.13.9)
       ajv: 8.18.0
       ajv-formats: 3.0.1(ajv@8.18.0)
       content-type: 1.0.5
