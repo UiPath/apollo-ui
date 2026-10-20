@@ -466,10 +466,11 @@ function RangeCalendars({
   // The popover unmounts when closed, so these re-seed from the value on every open: the left
   // month on the start, the right on the end when it falls in a later month. The deprecated
   // `month`, else `defaultMonth`, stands in for the start, as each set the first of the old two
-  // months over the value.
+  // months over the value. With neither and no start, a given `today` seeds it, as it seeds
+  // DayPicker's own month, so a today in another month from the browser's is on screen.
   const [fitted, setFitted] = React.useState(() =>
     initialRangeMonths(
-      { from: monthProp ?? defaultMonth ?? value?.from, to: value?.to },
+      { from: monthProp ?? defaultMonth ?? value?.from ?? rest.today, to: value?.to },
       startMonth,
       endMonth,
       timeZone

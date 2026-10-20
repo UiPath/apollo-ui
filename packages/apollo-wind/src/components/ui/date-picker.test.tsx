@@ -851,6 +851,23 @@ describe('DateRangePicker in a timeZone', () => {
       }
     }));
 
+  it('opens on calendarProps.today without a value', () =>
+    inUTC(async () => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(new Date(Date.UTC(2024, 5, 15, 12)));
+      try {
+        const user = userEvent.setup();
+        render(<DateRangePicker calendarProps={{ today: new Date(Date.UTC(2024, 9, 10)) }} />);
+
+        await user.click(screen.getByRole('button'));
+        const [left, right] = monthButtons();
+        expect(left).toHaveTextContent('October');
+        expect(right).toHaveTextContent('November');
+      } finally {
+        vi.useRealTimers();
+      }
+    }));
+
   it('keeps a controlled month inside the zone’s endMonth', () =>
     inUTC(async () => {
       const user = userEvent.setup();
