@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   CollapsibleBox,
   CollapsibleBoxActions,
@@ -118,12 +118,15 @@ describe('CollapsibleBox', () => {
   });
 
   describe('keepMounted', () => {
-    const KeptMountedExample = (props: React.ComponentProps<typeof CollapsibleBox>) => (
+    const KeptMountedExample = ({
+      contentStyle,
+      ...props
+    }: React.ComponentProps<typeof CollapsibleBox> & { contentStyle?: React.CSSProperties }) => (
       <CollapsibleBox {...props}>
         <CollapsibleBoxHeader>
           <CollapsibleBoxTrigger>Filters</CollapsibleBoxTrigger>
         </CollapsibleBoxHeader>
-        <CollapsibleBoxContent keepMounted>
+        <CollapsibleBoxContent keepMounted style={contentStyle}>
           <label>
             Name
             <input name="name" />
@@ -133,6 +136,20 @@ describe('CollapsibleBox', () => {
     );
     const getContent = (container: HTMLElement) =>
       container.querySelector<HTMLElement>('[data-slot="collapsible-box-content"]');
+
+    // jsdom runs no CSS animations. Stand in for the browser's list of the
+    // animations running on an element, such as the close animation.
+    let runningAnimations: Partial<Animation>[] = [];
+    const mockAnimations = (animations: Partial<Animation>[]) => {
+      runningAnimations = animations;
+      Object.defineProperty(HTMLElement.prototype, 'getAnimations', {
+        configurable: true,
+        value: () => runningAnimations,
+      });
+    };
+    afterEach(() => {
+      delete (HTMLElement.prototype as Partial<HTMLElement>).getAnimations;
+    });
 
     it('keeps the body mounted, hidden and inert when it starts collapsed', () => {
       const { container } = render(<KeptMountedExample defaultOpen={false} />);
@@ -144,6 +161,7 @@ describe('CollapsibleBox', () => {
     });
 
     it('keeps field state across collapse and expand', async () => {
+      mockAnimations([{ playState: 'running' }]);
       const user = userEvent.setup();
       const { container } = render(<KeptMountedExample />);
       await user.type(screen.getByRole('textbox', { name: 'Name' }), 'Ada');
@@ -153,7 +171,10 @@ describe('CollapsibleBox', () => {
       expect(content).toHaveAttribute('inert');
       expect(screen.getByRole('textbox', { hidden: true })).toHaveValue('Ada');
       expect(content).toHaveClass('data-[state=closed]:[animation-fill-mode:forwards]');
+      // The running close animation holds the body shut until it ends.
+      expect(content).not.toHaveAttribute('hidden');
 
+      runningAnimations = [{ playState: 'finished' }];
       fireEvent.animationEnd(content as HTMLElement);
       expect(content).toHaveAttribute('hidden');
 
@@ -174,11 +195,41 @@ describe('CollapsibleBox', () => {
     });
 
     it('ignores animation ends bubbling from nested content', async () => {
+      mockAnimations([{ playState: 'running' }]);
       const user = userEvent.setup();
       const { container } = render(<KeptMountedExample />);
       await user.click(screen.getByRole('button', { name: 'Filters' }));
       fireEvent.animationEnd(screen.getByRole('textbox', { hidden: true }));
       expect(getContent(container)).not.toHaveAttribute('hidden');
+    });
+
+    it('hides the body at once when animations are disabled', async () => {
+      const user = userEvent.setup();
+      const { container } = render(<KeptMountedExample contentStyle={{ animation: 'none' }} />);
+      await user.click(screen.getByRole('button', { name: 'Filters' }));
+      expect(getContent(container)).toHaveAttribute('hidden');
+      expect(screen.getByRole('textbox', { hidden: true })).not.toBeVisible();
+    });
+
+    it('hides the body at once when no close animation runs', async () => {
+      mockAnimations([]);
+      const user = userEvent.setup();
+      const { container } = render(<KeptMountedExample />);
+      await user.click(screen.getByRole('button', { name: 'Filters' }));
+      expect(getContent(container)).toHaveAttribute('hidden');
+    });
+
+    it('hides the body when its close animation is cancelled', async () => {
+      mockAnimations([{ playState: 'running' }]);
+      const user = userEvent.setup();
+      const { container } = render(<KeptMountedExample />);
+      await user.click(screen.getByRole('button', { name: 'Filters' }));
+      const content = getContent(container) as HTMLElement;
+      expect(content).not.toHaveAttribute('hidden');
+
+      runningAnimations = [];
+      fireEvent(content, new Event('animationcancel'));
+      expect(content).toHaveAttribute('hidden');
     });
 
     it('follows the controlled open prop', () => {

@@ -109,6 +109,16 @@ const CollapsibleBoxActions = React.forwardRef<
 ));
 CollapsibleBoxActions.displayName = 'CollapsibleBoxActions';
 
+// Whether an animation, such as the close animation, is running on the node.
+// Falls back to the computed animation name where getAnimations is missing.
+function hasRunningAnimation(node: HTMLElement) {
+  if (typeof node.getAnimations === 'function') {
+    return node.getAnimations().some((animation) => animation.playState === 'running');
+  }
+  const { animationName } = window.getComputedStyle(node);
+  return Boolean(animationName) && animationName !== 'none';
+}
+
 interface CollapsibleBoxContentProps
   extends Omit<
     React.ComponentPropsWithoutRef<typeof CollapsiblePrimitive.Content>,
@@ -136,7 +146,7 @@ const CollapsibleBoxContent = React.forwardRef<
 >(({ className, children, keepMounted = false, onAnimationEnd, ...props }, ref) => {
   const open = React.useContext(CollapsibleBoxOpenContext);
   // A kept-mounted body that has finished collapsing (or started collapsed) is
-  // hidden outright. Until its close animation ends, the animation's final
+  // hidden outright. While its close animation runs, the animation's final
   // frame (zero height) holds it shut.
   const [settledClosed, setSettledClosed] = React.useState(!open);
   if (open && settledClosed) setSettledClosed(false);
@@ -152,6 +162,25 @@ const CollapsibleBoxContent = React.forwardRef<
     else node.removeAttribute('inert');
   }, [inert]);
 
+  // Settle the closed state once no close animation is running: when it ends,
+  // is cancelled, or never starts (`animation: none`, reduced motion).
+  const settleIfIdle = React.useCallback(() => {
+    const node = contentRef.current;
+    if (!node || !hasRunningAnimation(node)) setSettledClosed(true);
+  }, []);
+  const settling = keepMounted && !open && !settledClosed;
+  React.useEffect(() => {
+    const node = contentRef.current;
+    if (!settling || !node) return;
+    settleIfIdle();
+    // React has no animationcancel event prop, so listen on the node.
+    const handleCancel = (event: AnimationEvent) => {
+      if (event.target === node) settleIfIdle();
+    };
+    node.addEventListener('animationcancel', handleCancel);
+    return () => node.removeEventListener('animationcancel', handleCancel);
+  }, [settling, settleIfIdle]);
+
   return (
     <CollapsiblePrimitive.Content
       ref={setContentRef}
@@ -165,9 +194,7 @@ const CollapsibleBoxContent = React.forwardRef<
       hidden={keepMounted ? !open && settledClosed : undefined}
       onAnimationEnd={(event) => {
         onAnimationEnd?.(event);
-        if (keepMounted && !open && event.target === event.currentTarget) {
-          setSettledClosed(true);
-        }
+        if (settling && event.target === event.currentTarget) settleIfIdle();
       }}
     >
       <div className={cn('grid gap-4 p-3', className)}>{children}</div>
