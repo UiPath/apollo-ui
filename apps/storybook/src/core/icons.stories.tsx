@@ -83,7 +83,8 @@ const CATEGORY_INFO: Record<string, { label: string; description: string }> = {
   social: { label: 'People & social', description: 'Users, groups, sharing, and sentiment.' },
   'product-logo': {
     label: 'UiPath products',
-    description: 'Logos for UiPath products and services.',
+    description:
+      'Logos for UiPath products and services. The Logos page shows them full size, with brand logos.',
   },
   'third-party': { label: 'Third-party logos', description: 'Connector and vendor brand marks.' },
   'studio-icons': { label: 'Studio', description: 'Studio commands and activity shortcuts.' },
