@@ -1,2 +1,6 @@
+export type {
+  CanvasZoomControlsLabels,
+  CanvasZoomControlsProps,
+  TidyUpMenuOption,
+} from './CanvasZoomControls';
 export { CanvasZoomControls } from './CanvasZoomControls';
-export type { CanvasZoomControlsLabels, CanvasZoomControlsProps } from './CanvasZoomControls';
