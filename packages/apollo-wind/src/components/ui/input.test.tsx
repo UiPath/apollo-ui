@@ -132,11 +132,12 @@ describe('Input', () => {
       expect(screen.getByRole('textbox')).toHaveClass('focus-visible:ring-2');
     });
 
-    it('replaces the ghost surface', () => {
+    it('steps the ghost surface down to surface-raised', () => {
       render(<Input variant="ghost" readOnly value="Generated" />);
       const input = screen.getByRole('textbox');
-      expect(input).toHaveClass('bg-muted');
-      expect(input).not.toHaveClass('bg-surface-overlay');
+      // `bg-muted` would not do: Light maps --muted to --surface-overlay, the ghost's editable fill.
+      expect(input).toHaveClass('bg-surface-raised', 'future:bg-surface-raised');
+      expect(input).not.toHaveClass('bg-surface-overlay', 'bg-muted');
     });
 
     it('leaves editable inputs unchanged', () => {

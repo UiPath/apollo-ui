@@ -77,10 +77,14 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             size === 'default' &&
             'future:h-10 future:rounded-xl future:border-0 future:bg-surface-overlay future:py-2 future:text-sm future:placeholder:text-foreground-muted future:placeholder:font-normal future:focus-visible:ring-offset-2 future:focus-visible:ring-offset-background future:aria-invalid:ring-1 future:aria-invalid:ring-error/40',
           // Read-only sits on a muted fill instead of a border; keyed off the prop, since `:read-only` also matches file inputs.
+          // Ghost already fills with surface-overlay, which `muted` aliases in Light, so it steps down to surface-raised.
           props.readOnly &&
             !disabled &&
             !group.inGroup &&
-            'border-transparent bg-muted future:bg-surface-raised',
+            cn(
+              'border-transparent future:bg-surface-raised',
+              variant === 'ghost' ? 'bg-surface-raised' : 'bg-muted'
+            ),
           group.inGroup && IN_GROUP_CLASS,
           className
         )}
