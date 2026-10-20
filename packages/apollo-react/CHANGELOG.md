@@ -1,3 +1,15 @@
+## [@uipath/apollo-react-v7.3.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.3.1...@uipath/apollo-react@7.3.2) (2026-10-19)
+
+### Bug Fixes
+
+* **apollo-react:** share reference chip colors in chat and flow examples ([369594f](https://github.com/UiPath/apollo-ui/commit/369594ff2a86f9b60102c5117d61c86d6cdb0cfd))
+
+## [@uipath/apollo-react-v7.3.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.3.0...@uipath/apollo-react@7.3.1) (2026-10-19)
+
+### Bug Fixes
+
+* **apollo-react:** keep Toolbox rows interactive while a search is pending ([4c83456](https://github.com/UiPath/apollo-ui/commit/4c83456d5e6753065ba5ac70e448fd74844c7843))
+
 ## [@uipath/apollo-react-v7.3.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.2.2...@uipath/apollo-react@7.3.0) (2026-10-19)
 
 ### Features

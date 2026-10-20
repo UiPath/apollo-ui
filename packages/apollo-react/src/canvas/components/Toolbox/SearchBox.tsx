@@ -3,6 +3,7 @@ import {
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
+  Spinner,
 } from '@uipath/apollo-wind';
 import { memo, useEffect, useRef } from 'react';
 
@@ -19,6 +20,13 @@ interface SearchBoxProps {
   onNavigationKeyDown?: (e: React.KeyboardEvent) => void;
   navigateToFirstItem?: () => void;
   activeDescendantId?: string;
+  /**
+   * A search request is in flight. Swaps the leading search icon for a
+   * same-sized spinner so the busy signal lives in the field, not on the rows.
+   */
+  pending?: boolean;
+  /** Accessible name for the pending spinner. */
+  pendingLabel?: string;
 }
 
 export const SearchBox = memo(function SearchBox({
@@ -32,6 +40,8 @@ export const SearchBox = memo(function SearchBox({
   onNavigationKeyDown,
   navigateToFirstItem,
   activeDescendantId,
+  pending = false,
+  pendingLabel = 'Searching',
 }: SearchBoxProps) {
   const internalRef = useRef<HTMLInputElement>(null);
   const inputRef = externalInputRef ?? internalRef;
@@ -65,7 +75,13 @@ export const SearchBox = memo(function SearchBox({
           the roomier default costs list rows the panel can't spare. */}
       <InputGroup className="h-8 future:h-9">
         <InputGroupAddon align="inline-start">
-          <CanvasIcon icon="search" size={16} />
+          {pending ? (
+            // Same 16px footprint as the search icon, so toggling it never
+            // shifts the input or the clear button.
+            <Spinner size="sm" label={pendingLabel} data-testid="toolbox-search-pending" />
+          ) : (
+            <CanvasIcon icon="search" size={16} />
+          )}
         </InputGroupAddon>
         <InputGroupInput
           ref={inputRef}

@@ -430,6 +430,13 @@ interface ListViewProps<T extends ListItem> {
    */
   renderEmptyState?: () => React.ReactElement | null;
   isLoading?: boolean;
+  /**
+   * A newer answer for the current `items` is on its way (a search request is
+   * in flight). Unlike `isLoading`, rows stay enabled and at full opacity so
+   * the previous list remains usable; the listbox is marked `aria-busy` and,
+   * when `items` is empty, skeleton rows stand in until the answer lands.
+   */
+  searchPending?: boolean;
   enableSections?: boolean;
   /**
    * Render skeleton placeholder rows when `items` is empty, independent of
@@ -470,6 +477,7 @@ const ListViewInner = forwardRef(function ListView<T extends ListItem>(
     emptyStateIcon = 'search-x',
     renderEmptyState,
     isLoading = false,
+    searchPending = false,
     enableSections = true,
     loadingSkeleton,
   }: ListViewProps<T>,
@@ -479,8 +487,11 @@ const ListViewInner = forwardRef(function ListView<T extends ListItem>(
 
   // The legacy `isLoading && items.length === 0` empty-state path is preserved
   // by falling through to a `true` spec, which `buildRenderedItems` turns into
-  // 3 default skeleton rows.
-  const activeSkeleton = loadingSkeleton ?? (isLoading && items.length === 0 ? true : undefined);
+  // 3 default skeleton rows. A pending search over an empty list takes the
+  // same path, so a stale "no results" message never shows for a query that
+  // has not been answered yet.
+  const activeSkeleton =
+    loadingSkeleton ?? ((isLoading || searchPending) && items.length === 0 ? true : undefined);
 
   const renderedItems = useMemo(
     () => buildRenderedItems(items, enableSections, activeSkeleton),
@@ -518,8 +529,8 @@ const ListViewInner = forwardRef(function ListView<T extends ListItem>(
       className={LIST_SCROLLBAR_CLASS}
       role="listbox"
       // Signal "list is being updated" to assistive tech while skeleton
-      // sentinels are rendered in place of real items.
-      aria-busy={activeSkeleton ? true : undefined}
+      // sentinels are rendered in place of real items or a search is pending.
+      aria-busy={activeSkeleton || searchPending ? true : undefined}
       listRef={listRef}
       rowProps={rowProps}
       rowComponent={ListViewRow}

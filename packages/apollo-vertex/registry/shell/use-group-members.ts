@@ -17,7 +17,7 @@ export const useGroupMembers = ({
 }: UseGroupMembersOptions): UseGroupMembersResult => {
   const solution = useSolution();
 
-  const { data, isLoading } = useLiveQuery<GroupMember>((q) =>
+  const { data, isLoading } = useLiveQuery((q) =>
     q
       .from({ members: solution?.api.collections.identity.groupMembers })
       .where(({ members }) => eq(members.groupId, groupId)),

@@ -1,6 +1,6 @@
 {
   "name": "@uipath/apollo-vertex",
-  "version": "1.4.0",
+  "version": "2.1.0",
   "description": "UiPath Apollo Vertex design system components",
   "license": "MIT",
   "keywords": [
@@ -16,6 +16,10 @@
     ".": {
       "types": "./dist/entries/index.d.ts",
       "default": "./dist/entries/index.js"
+    },
+    "./proteus": {
+      "types": "./dist/entries/proteus.d.ts",
+      "default": "./dist/entries/proteus.js"
     },
     "./theme.css": "./dist/theme.css",
     "./tailwind.css": "./dist/tailwind.css",
@@ -97,10 +101,12 @@
   "peerDependencies": {
     "@tanstack/ai": "^0.14.0",
     "@tanstack/ai-client": "^0.8.0",
+    "@tanstack/react-db": "^0.1.83",
     "@tanstack/react-query": "^5.90.21",
     "@tanstack/react-router": "^1.132.31",
     "@ts-rest/core": "^3.53.0-rc.1",
     "@uipath/uipath-typescript": "^1.7.1",
+    "@uipath/vs-core": "^4.4.0",
     "eventsource-parser": "^3.0.6",
     "highlight.js": "^11.11.1",
     "i18next": "^25.8.1 || ^26.0.0",
@@ -117,13 +123,7 @@
     "tailwindcss": "^4.0.0"
   },
   "peerDependenciesMeta": {
-    "@tanstack/react-db": {
-      "optional": true
-    },
     "@uipath/proteus-client": {
-      "optional": true
-    },
-    "@uipath/vs-core": {
       "optional": true
     }
   },
@@ -133,8 +133,11 @@
     "@rslib/core": "^0.19.6",
     "@tanstack/ai": "0.14.0",
     "@tanstack/ai-client": "0.8.0",
+    "@tanstack/db": "0.6.5",
     "@tanstack/intent": "0.4.0",
-    "@tanstack/react-query": "^5.104.0",
+    "@tanstack/query-db-collection": "1.0.36",
+    "@tanstack/react-db": "0.1.83",
+    "@tanstack/react-query": "^5.104.1",
     "@tanstack/react-router": "^1.170.40",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.0",
@@ -143,6 +146,7 @@
     "@types/react": "^19.2.6",
     "@types/react-dom": "^19.2.2",
     "@uipath/uipath-typescript": "^1.8.0",
+    "@uipath/vs-core": "^4.5.0",
     "@vitest/coverage-v8": "^4.1.5",
     "dependency-cruiser": "^17.3.6",
     "eslint-plugin-react": "^7.37.5",

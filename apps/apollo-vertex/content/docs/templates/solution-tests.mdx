@@ -263,13 +263,13 @@ optional `disabled`, and renders its own saving / saved states.
 <Callout type="info">
 
 **Requires [`@uipath/vs-core`](https://www.npmjs.com/package/@uipath/vs-core)
-`^2.0.6`.** The container reads the Solution Test collections from the
+`^4.4.0`.** The container reads the Solution Test collections from the
 dedicated, name-keyed `solution.api.collections.solutionTests` namespace, and
-resolves attachment entity ids from `solution.api.entityIds` (added in 2.0.6).
+resolves attachment entity ids from `solution.api.entityIds`.
 Install vs-core per its README — it brings its own
 peers (`@tanstack/db`, `@tanstack/query-db-collection`,
 `@tanstack/react-query`, `@uipath/uipath-typescript`). The component also
-needs `@tanstack/react-db` (for `useLiveQuery`), which you install yourself.
+needs `@tanstack/react-db` (for `useLiveQuery`), a peer of Apollo Vertex.
 
 </Callout>
 

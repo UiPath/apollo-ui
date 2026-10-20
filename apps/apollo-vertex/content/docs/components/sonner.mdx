@@ -1,6 +1,19 @@
 ---
 title: "Sonner"
 description: "An opinionated toast component for React."
+whenToUse:
+  - "the message briefly confirms an action the user just took and asks nothing of them, such as \"Changes saved\"."
+avoidWhen:
+  - when: "the message is a blocking error or a validation error, needs user input, or was raised by the system without a user action."
+    use: alert
+example: |
+  // Render <Toaster /> once in the root layout. toast comes from the sonner package.
+  import { Toaster } from "@uipath/apollo-vertex";
+  import { toast } from "sonner";
+
+  <Toaster />
+
+  toast.success("Changes saved", { description: "Your updates have been applied." });
 ---
 
 import { SonnerExamples } from '../guidelines/notifications/notification-examples';
@@ -19,14 +32,14 @@ Add the `<Toaster />` component once to your root route. Status colors, icons, c
 
 ```tsx
 import { createRootRoute, Outlet } from "@tanstack/react-router"
-import { ThemeProvider, Toaster } from "@uipath/apollo-vertex"
+import { Toaster } from "@uipath/apollo-vertex"
 
 export const Route = createRootRoute({
   component: () => (
-    <ThemeProvider>
+    <>
       <Outlet />
       <Toaster />
-    </ThemeProvider>
+    </>
   ),
 })
 ```
@@ -66,7 +79,7 @@ toast.error("Upload failed", {
 | `position` | `ToasterProps["position"]` | `"top-center"` | Position of the toast stack on screen |
 | `duration` | `number` | `5000` | Auto-dismiss delay in milliseconds |
 | `closeButton` | `boolean` | `true` | Show a close button on each toast |
-| `theme` | `"light" \| "dark" \| "system"` | shell `resolvedTheme` | Ignored. The toaster always uses the shell resolved theme from `ThemeProvider`. |
+| `theme` | `"light" \| "dark" \| "system"` | — | Ignored. The toaster follows the `.dark` class on the document through CSS variables. |
 | `toastOptions` | `ToasterProps["toastOptions"]` | — | Global options applied to all toasts (classNames, style, etc.) |
 
 ## Toast function options

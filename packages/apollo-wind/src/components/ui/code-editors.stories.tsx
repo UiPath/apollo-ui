@@ -1205,7 +1205,7 @@ function EditorVariablesUsagePage() {
           ariaLabel="Prompt"
         />
         <p className="mt-3 text-xs leading-5 text-muted-foreground">
-          Try both: choose{' '}
+          PromptEditor uses the shared ReferenceChip for inserted variables. Try both: choose{' '}
           <span className="font-mono text-foreground">Insert → $vars → firstName</span> above, or
           type <span className="font-mono text-foreground">$</span> in the editor and pick from the
           menu that appears.

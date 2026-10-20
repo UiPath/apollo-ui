@@ -1,6 +1,11 @@
 ---
 title: "Feature Flags"
 description: "A generic feature flag system with a provider pattern, reactive hook, and guard components. Designed for Proteus SDK integration but supports any backend via adapters."
+registry:
+  - feature-flag-provider
+  - feature-flag-guard
+  - use-feature-flag
+  - protected-feature-route
 ---
 
 import { FeatureFlagDemo } from './feature-flag-demo'
@@ -15,7 +20,7 @@ import { FeatureFlagDemo } from './feature-flag-demo'
 
 ```ts
 import { FeatureFlagKind } from "@uipath/proteus-client";
-import type { FlagMapping } from "@uipath/apollo-vertex";
+import type { FlagMapping } from "@uipath/apollo-vertex/proteus";
 
 export enum Flag {
   NewOnboarding = "NewOnboarding",
@@ -37,10 +42,8 @@ export const flagConfig = {
 ### 2. Wrap your app with the provider
 
 ```tsx
-import {
-  FeatureFlagProvider,
-  createProteusProvider,
-} from "@uipath/apollo-vertex";
+import { FeatureFlagProvider } from "@uipath/apollo-vertex";
+import { createProteusProvider } from "@uipath/apollo-vertex/proteus";
 import { flagConfig } from "@/lib/flags";
 
 const provider = createProteusProvider({

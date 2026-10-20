@@ -9,8 +9,6 @@ import {
 } from "lucide-react";
 import { Toaster as Sonner, type ToasterProps } from "sonner";
 
-import { useTheme } from "@/registry/shell/shell-theme-provider";
-
 // Shared icon alignment: top-align icons with the first line of toast text.
 const iconAlign = "[&>[data-icon]]:!items-start [&>[data-icon]>svg]:!mt-0.5";
 
@@ -32,16 +30,18 @@ export const apolloToastClassNames: NonNullable<
   success: `!border-success !bg-[color-mix(in_srgb,var(--success)_25%,var(--card)_75%)] dark:!bg-[color-mix(in_srgb,var(--success)_25%,var(--popover)_75%)] ${statusTextClasses} ${iconAlign}`,
   warning: `!border-warning !bg-[color-mix(in_srgb,var(--warning)_60%,var(--card)_40%)] dark:!bg-[color-mix(in_srgb,var(--warning)_60%,var(--popover)_40%)] ${statusTextClasses} ${iconAlign}`,
   error: `!border-destructive !bg-[color-mix(in_srgb,var(--destructive)_50%,var(--card)_50%)] dark:!bg-[color-mix(in_srgb,var(--destructive)_50%,var(--popover)_50%)] ${statusTextClasses} ${iconAlign}`,
+  description: "!text-popover-foreground",
+  cancelButton: "dark:!bg-white/30",
   closeButton:
-    "!left-auto !right-2 !top-2 !transform-none !border-none !bg-transparent !rounded-sm",
+    "!left-auto !right-2 !top-2 !transform-none !border-none !bg-transparent !rounded-sm !text-popover-foreground",
 };
 
+// Sonner keeps its default light theme. The CSS variables and `dark:` classes above restyle
+// everything its dark theme would change, so the toaster follows the `.dark` class without a
+// theme provider. The `theme` prop is dropped so it cannot disagree with that class.
 const Toaster = ({ theme: _theme, ...props }: ToasterProps) => {
-  const { resolvedTheme } = useTheme();
-
   return (
     <Sonner
-      theme={resolvedTheme}
       className="toaster group"
       position="top-center"
       duration={5000}

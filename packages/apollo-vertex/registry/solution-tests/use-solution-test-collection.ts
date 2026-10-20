@@ -26,18 +26,37 @@ type SolutionTestRow = {
   [ENTITY.runResults]: SolutionTestRunResult;
 };
 
+// vs-core creates these as query collections, which carry `utils.refetch()`.
+type SolutionTestCollection<T extends object> = Collection<
+  T,
+  string,
+  { refetch: () => Promise<void> }
+>;
+
+// vs-core types `solutionTests` from the app's registered entities, which this
+// package cannot see, hence the assertion.
+export function getSolutionTestCollection<K extends keyof SolutionTestRow>(
+  solution: ReturnType<typeof useSolution>,
+  entity: K,
+): SolutionTestCollection<SolutionTestRow[K]> | undefined {
+  const collections: Record<string, unknown> =
+    solution.api.collections.solutionTests;
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+  return collections[entity] as
+    | SolutionTestCollection<SolutionTestRow[K]>
+    | undefined;
+}
+
 export function useSolutionTestCollection<K extends keyof SolutionTestRow>(
   entity: K,
-): Collection<SolutionTestRow[K]> {
+): SolutionTestCollection<SolutionTestRow[K]> {
   const solution = useSolution();
   if (!solution) {
     throw new Error(
       "useSolutionTestCollection must be used within a SolutionProvider.",
     );
   }
-  const selected = solution.api.collections.solutionTests[entity];
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-  const collection = selected as Collection<SolutionTestRow[K]> | undefined;
+  const collection = getSolutionTestCollection(solution, entity);
   if (!collection) {
     throw new Error(`Solution Tests collection "${entity}" is unavailable.`);
   }

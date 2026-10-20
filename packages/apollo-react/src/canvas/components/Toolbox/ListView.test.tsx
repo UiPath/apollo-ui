@@ -654,6 +654,33 @@ describe('ListView', () => {
       const option = screen.getByRole('option');
       expect(option).toHaveClass('loading');
     });
+
+    it('keeps items enabled and marks the listbox busy when searchPending is true', () => {
+      const items: ListItem[] = [{ id: 'item-1', name: 'Item 1', data: {} }];
+
+      render(<ListView {...defaultProps} items={items} searchPending={true} />);
+
+      const option = screen.getByRole('option');
+      expect(option).not.toBeDisabled();
+      expect(option).not.toHaveClass('loading');
+      expect(screen.getByRole('listbox')).toHaveAttribute('aria-busy', 'true');
+    });
+
+    it('does not mark the listbox busy when neither loading nor searchPending', () => {
+      const items: ListItem[] = [{ id: 'item-1', name: 'Item 1', data: {} }];
+
+      render(<ListView {...defaultProps} items={items} />);
+
+      expect(screen.getByRole('listbox')).not.toHaveAttribute('aria-busy');
+    });
+
+    it('renders skeleton rows when searchPending is true and items are empty', () => {
+      render(<ListView {...defaultProps} items={[]} searchPending={true} />);
+
+      expect(screen.getAllByTestId('list-item-skeleton')).toHaveLength(3);
+      expect(screen.queryByText('No items found')).not.toBeInTheDocument();
+      expect(screen.getByRole('listbox')).toHaveAttribute('aria-busy', 'true');
+    });
   });
 
   describe('Styling', () => {

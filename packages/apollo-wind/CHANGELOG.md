@@ -1,3 +1,15 @@
+## [@uipath/apollo-wind-v2.72.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.72.0...@uipath/apollo-wind@2.72.1) (2026-10-19)
+
+### Bug Fixes
+
+* **apollo-core:** make future-dark primary-lighter a subtle tint [MST-16476] ([5c2479d](https://github.com/UiPath/apollo-ui/commit/5c2479d16362f3706a69a8e5d92e0dff3d6bdb8d))
+
+## [@uipath/apollo-wind-v2.72.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.71.0...@uipath/apollo-wind@2.72.0) (2026-10-19)
+
+### Features
+
+* **apollo-wind:** add ReferenceChip for variables, resources and connections ([2cb40db](https://github.com/UiPath/apollo-ui/commit/2cb40dbe8e8d2f133c7ba1dc3daca8cae0a77338))
+
 ## [@uipath/apollo-wind-v2.71.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.70.0...@uipath/apollo-wind@2.71.0) (2026-10-15)
 
 ### Features

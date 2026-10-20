@@ -27,6 +27,7 @@ import {
   PromptEditor,
   RadioGroup,
   RadioGroupItem,
+  ReferenceChip,
   RequiredIndicator,
   Search,
   Select,
@@ -1043,10 +1044,7 @@ function GmailConnectionPickerExample() {
               variant="ghost"
             >
               {selectedConnection ? (
-                <span className="flex min-w-0 items-center gap-2 rounded bg-primary/15 px-2 py-1">
-                  <GmailIcon />
-                  <span className="truncate text-sm">{selectedConnection}</span>
-                </span>
+                <ReferenceChip label={selectedConnection} icon={<GmailIcon />} />
               ) : (
                 <span className="text-sm text-muted-foreground">Select a Gmail connection</span>
               )}
