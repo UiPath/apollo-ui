@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import {
   ApChat,
   type AutopilotChatConfiguration,
+  AutopilotChatEvent,
   AutopilotChatInterceptableEvent,
   type AutopilotChatMessage,
   AutopilotChatMode,
@@ -320,6 +321,29 @@ describe('Wind composer attachment intake', () => {
     expect(chips()).toEqual(['a.txt', 'b.txt']);
   });
 
+  it('leaves out a file already attached when the draft is full, without an error', async () => {
+    setup({
+      allowedAttachments: {
+        multiple: true,
+        types: { 'text/plain': ['.txt'] },
+        maxSize: 1024,
+        maxCount: 2,
+      },
+    });
+    await pick(file('a.txt', 'text/plain'), file('b.txt', 'text/plain'));
+    await waitFor(() => expect(chips()).toEqual(['a.txt', 'b.txt']));
+
+    dropFiles(file('a.txt', 'text/plain'));
+    await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
+    expect(screen.queryByRole('alert')).toBeNull();
+
+    // A duplicate does not take the last free slot from a new file either.
+    act(() => screen.getByRole('button', { name: 'Remove b.txt' }).click());
+    dropFiles(file('a.txt', 'text/plain'), file('c.txt', 'text/plain'));
+    await waitFor(() => expect(chips()).toEqual(['a.txt', 'c.txt']));
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+
   it('reads maxCount 0 as no limit, as Material does', async () => {
     setup({
       allowedAttachments: {
@@ -358,6 +382,91 @@ describe('composer parity', () => {
     const material = await sendFrom('material');
     const wind = await sendFrom('wind');
 
+    expect(wind).toEqual(material);
+  }, 40_000);
+
+  // Each renderer's panel-wide drop target: Wind's overlay, Material's react-dropzone root.
+  const dropTarget = (renderer: AutopilotChatRenderer) =>
+    (renderer === 'wind'
+      ? document.querySelector('[data-slot="wind-chat-dropzone"]')
+      : document.querySelector('input[type="file"][style*="display: none"]')
+          ?.parentElement) as HTMLElement;
+  const transfer = (...files: File[]) => ({
+    types: ['Files'],
+    files,
+    items: files.map((item) => ({
+      kind: 'file',
+      type: item.type,
+      getAsFile: () => item,
+      getAsString: () => undefined,
+    })),
+  });
+
+  async function dropTwice(renderer: AutopilotChatRenderer) {
+    const service = createService({}, renderer);
+    const added: string[] = [];
+    service.on(
+      AutopilotChatEvent.SetAttachments,
+      ({ added: files }: { added: { name: string }[] }) =>
+        added.push(...files.map(({ name }) => name))
+    );
+    const { unmount } = render(<ApChat chatServiceInstance={service} />);
+    await screen.findByRole('button', { name: /Attach file/ }, { timeout: 25_000 });
+    const drop = (...files: File[]) =>
+      fireEvent.drop(dropTarget(renderer), { dataTransfer: transfer(...files) });
+
+    drop(new File(['abc'], 'notes.txt', { type: 'text/plain', lastModified: 1 }));
+    await waitFor(() => expect(added).toEqual(['notes.txt']));
+    // Same name and size: the same file, whatever its date. A new size is a new file.
+    drop(new File(['xyz'], 'notes.txt', { type: 'text/plain', lastModified: 2 }));
+    drop(new File(['abcd'], 'notes.txt', { type: 'text/plain', lastModified: 1 }));
+    await waitFor(() => expect(added).toEqual(['notes.txt', 'notes.txt']));
+    await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
+    const result = { added, alert: screen.queryByRole('alert')?.textContent ?? null };
+    unmount();
+    return result;
+  }
+
+  it('leaves out a file already attached in Wind and Material alike', async () => {
+    const material = await dropTwice('material');
+    const wind = await dropTwice('wind');
+
+    expect(material).toEqual({ added: ['notes.txt', 'notes.txt'], alert: null });
+    expect(wind).toEqual(material);
+  }, 40_000);
+
+  // Wind takes pastes on the panel, Material on its input.
+  const pasteTarget = (renderer: AutopilotChatRenderer) =>
+    (renderer === 'wind'
+      ? document.querySelector('[data-slot="wind-chat-dropzone"]')
+      : document.querySelector('[contenteditable="true"]')) as HTMLElement;
+
+  async function pasteBackToBack(renderer: AutopilotChatRenderer) {
+    const service = createService({}, renderer);
+    const added: string[] = [];
+    service.on(
+      AutopilotChatEvent.SetAttachments,
+      ({ added: files }: { added: { name: string }[] }) =>
+        added.push(...files.map(({ name }) => name))
+    );
+    const { unmount } = render(<ApChat chatServiceInstance={service} />);
+    await screen.findByRole('button', { name: /Attach file/ }, { timeout: 25_000 });
+    const paste = (item: File) =>
+      fireEvent.paste(pasteTarget(renderer), { clipboardData: transfer(item) });
+
+    // Both intakes finish before the chat renders again.
+    paste(new File(['a'], 'first.txt', { type: 'text/plain' }));
+    paste(new File(['b'], 'second.txt', { type: 'text/plain' }));
+    await waitFor(() => expect(added).toHaveLength(2));
+    unmount();
+    return added.sort();
+  }
+
+  it('keeps both of two pastes that land before a re-render, in Wind and Material', async () => {
+    const material = await pasteBackToBack('material');
+    const wind = await pasteBackToBack('wind');
+
+    expect(material).toEqual(['first.txt', 'second.txt']);
     expect(wind).toEqual(material);
   }, 40_000);
 });

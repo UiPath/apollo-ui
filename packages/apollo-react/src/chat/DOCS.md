@@ -3321,6 +3321,8 @@ export interface AutopilotChatAllowedAttachments {
 }
 ```
 
+A file with the same name and size as one already in the draft is left out without an error, in both renderers and from every source (picker, drop, paste), and does not count against `maxCount`. `maxCount: 0` or leaving it out means no limit.
+
 ### AutopilotChatModelInfo
 
 ```typescript
