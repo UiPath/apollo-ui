@@ -165,10 +165,11 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(f
           className={cn('w-auto p-0', popoverProps?.className)}
         >
           {/* The popover unmounts when closed, so it reopens on the selected month. A custom Root,
-              Footer or Chevron keeps the label caption, inside DayPicker's context as it was
-              written for, unless captionLayout asks for the drill-down. */}
+              Footer or Chevron, or a footer holding a component, keeps the label caption, inside
+              DayPicker's context as it was written for, unless captionLayout asks for the
+              drill-down. */}
           <Calendar
-            captionLayout={needsDayPickerContext(calendarProps?.components) ? 'label' : 'drilldown'}
+            captionLayout={needsDayPickerContext(calendarProps) ? 'label' : 'drilldown'}
             initialFocus
             {...calendarProps}
             // The selected month, with the consumer's defaultMonth as the fallback for no value.
@@ -213,7 +214,8 @@ export interface DateRangePickerProps {
    * Passed to both calendars of the pair. Root-level props (`id`, the accessible name,
    * `className`, `style`, `dir`, `lang` and `footer`) apply once, to the pair.
    *
-   * A custom `components.Root`, `components.Footer` or `components.Chevron` turns the pair off:
+   * A custom `components.Root`, `components.Footer` or `components.Chevron`, or a `footer`
+   * holding a component (which may call `useDayPicker`), turns the pair off:
    * the picker then renders the earlier single two-month DayPicker, with one set of chevrons
    * paging both months together, so those components stay inside DayPicker's context as they were
    * written for. It never takes the drill-down caption there, which would render them outside it
@@ -361,10 +363,11 @@ export const DateRangePicker = React.forwardRef<HTMLButtonElement, DateRangePick
             {...popoverProps}
             className={cn('w-auto p-0', popoverProps?.className)}
           >
-            {needsDayPickerContext(calendarProps?.components) ? (
-              // A custom Root, Footer or Chevron keeps the one two-month DayPicker it was written for, as
-              // the pair would render it outside DayPicker's context. The month props keep their
-              // meaning there, the first of the two months.
+            {needsDayPickerContext(calendarProps) ? (
+              // A custom Root, Footer or Chevron, or a footer holding a component, keeps the one
+              // two-month DayPicker it was written for, as the pair would render it outside
+              // DayPicker's context. The month props keep their meaning there, the first of the
+              // two months.
               <Calendar
                 initialFocus
                 mode="range"

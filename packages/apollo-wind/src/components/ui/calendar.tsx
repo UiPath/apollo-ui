@@ -830,12 +830,33 @@ function CalendarDayButton({
  * Whether a picker's calendar props carry a component override the drill-down or the range pair
  * would render outside DayPicker's context, where a consumer's `useDayPicker` call throws:
  * `components.Root` and `components.Footer` (the persistent root and footer of the drill-down and
- * the pair) and `components.Chevron` (the drill-down caption's arrows). Every other override
- * renders inside the day grid's DayPicker. With one of these, the pickers keep the
- * DayPicker-rendered layout the override was written against instead.
+ * the pair), `components.Chevron` (the drill-down caption's arrows), and a `footer` holding a
+ * component, which renders in that footer. Every other override renders inside the day grid's
+ * DayPicker. With one of these, the pickers keep the DayPicker-rendered layout the override was
+ * written against instead.
  */
-function needsDayPickerContext(components?: CalendarProps['components']) {
-  return Boolean(components?.Root || components?.Footer || components?.Chevron);
+function needsDayPickerContext(props?: Pick<CalendarProps, 'components' | 'footer'>) {
+  const components = props?.components;
+  return Boolean(
+    components?.Root ||
+      components?.Footer ||
+      components?.Chevron ||
+      footerMayReadContext(props?.footer)
+  );
+}
+
+/**
+ * Whether `footer` content holds a component, which may call `useDayPicker` as the pickers'
+ * footers could before the drill-down and the pair rendered them outside DayPicker. Text and
+ * host elements (`<p>`, `<strong>`) can't, so a footer made only of them keeps the new layouts.
+ */
+function footerMayReadContext(node: React.ReactNode): boolean {
+  if (Array.isArray(node)) return node.some(footerMayReadContext);
+  if (!React.isValidElement(node)) return false;
+  if (typeof node.type === 'string' || node.type === React.Fragment) {
+    return footerMayReadContext((node.props as { children?: React.ReactNode }).children);
+  }
+  return true;
 }
 
 export { Calendar, CalendarDayButton, needsDayPickerContext, PlainRoot };

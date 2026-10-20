@@ -413,11 +413,10 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
             className={cn('w-auto p-0', popoverProps?.className)}
           >
             {/* The popover unmounts when closed, so it reopens on the selected month. A custom
-                Root, Footer or Chevron keeps the label caption, inside DayPicker's context. */}
+                Root, Footer or Chevron, or a footer holding a component, keeps the label caption,
+                inside DayPicker's context. */}
             <Calendar
-              captionLayout={
-                needsDayPickerContext(calendarProps?.components) ? 'label' : 'drilldown'
-              }
+              captionLayout={needsDayPickerContext(calendarProps) ? 'label' : 'drilldown'}
               initialFocus
               {...zonedCalendarProps}
               // The selected month, with the consumer's defaultMonth as the fallback for no value,

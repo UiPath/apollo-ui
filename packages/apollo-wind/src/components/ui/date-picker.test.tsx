@@ -984,6 +984,66 @@ describe('Root and Footer overrides that read DayPicker context', () => {
   });
 });
 
+// Footer content, rather than a Footer override, that reads DayPicker's context.
+function ContextFooterContent() {
+  const { months } = useDayPicker();
+  return <span data-testid="context-footer-content" data-months={months.length} />;
+}
+
+describe('footer content that reads DayPicker context', () => {
+  it('keeps a DatePicker footer element inside DayPicker', async () => {
+    const user = userEvent.setup();
+    render(
+      <DatePicker
+        value={new Date(2024, 5, 15)}
+        calendarProps={{
+          footer: (
+            <p>
+              <ContextFooterContent />
+            </p>
+          ),
+        }}
+      />
+    );
+
+    await user.click(screen.getByRole('button'));
+    expect(screen.getByTestId('context-footer-content')).toHaveAttribute('data-months', '1');
+    expect(screen.queryByRole('button', { name: /choose month/ })).not.toBeInTheDocument();
+  });
+
+  it('keeps a DateRangePicker footer element inside one two-month DayPicker', async () => {
+    const user = userEvent.setup();
+    render(
+      <DateRangePicker
+        value={{ from: new Date(2024, 2, 10), to: new Date(2024, 2, 15) }}
+        calendarProps={{ footer: <ContextFooterContent /> }}
+      />
+    );
+
+    await user.click(screen.getByRole('button'));
+    expect(screen.getByTestId('context-footer-content')).toHaveAttribute('data-months', '2');
+  });
+
+  it('keeps the drill-down for a footer of text and host elements', async () => {
+    const user = userEvent.setup();
+    render(
+      <DatePicker
+        value={new Date(2024, 5, 15)}
+        calendarProps={{
+          footer: (
+            <p>
+              Pick a <strong>day</strong>
+            </p>
+          ),
+        }}
+      />
+    );
+
+    await user.click(screen.getByRole('button'));
+    expect(screen.getByRole('button', { name: /choose month/ })).toBeInTheDocument();
+  });
+});
+
 describe('DatePicker calendarProps.defaultMonth', () => {
   it('opens on the selected month, with defaultMonth only as the fallback', async () => {
     const user = userEvent.setup();

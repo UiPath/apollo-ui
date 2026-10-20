@@ -823,6 +823,26 @@ describe('DateTimePicker Footer override that reads DayPicker context', () => {
   });
 });
 
+describe('DateTimePicker footer content that reads DayPicker context', () => {
+  function ContextFooterContent() {
+    const { months } = useDayPicker();
+    return <span data-testid="context-footer-content" data-months={months.length} />;
+  }
+
+  it('keeps the footer element inside DayPicker', async () => {
+    const user = userEvent.setup();
+    render(
+      <DateTimePicker
+        value={new Date(2024, 5, 15, 9, 0)}
+        calendarProps={{ footer: <ContextFooterContent /> }}
+      />
+    );
+
+    await openPicker(user);
+    expect(screen.getByTestId('context-footer-content')).toHaveAttribute('data-months', '1');
+  });
+});
+
 describe('DateTimePicker time selects when the parent clears the value', () => {
   it('shows no time once a controlled value is cleared while open', async () => {
     const user = userEvent.setup();
