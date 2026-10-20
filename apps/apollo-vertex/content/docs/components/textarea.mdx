@@ -1,0 +1,45 @@
+---
+title: "Textarea"
+description: "Displays a form textarea or a component that looks like a textarea."
+---
+
+import { Textarea } from '@/registry/textarea/textarea'
+import { Label } from '@/registry/label/label'
+import { Button } from '@/registry/button/button'
+
+<Preview className="space-y-4">
+  <Textarea placeholder="Type your message here." />
+  
+  <Textarea placeholder="Disabled textarea" disabled />
+</Preview>
+
+## With Label
+
+<Preview>
+  <div className="grid w-full gap-1.5">
+    <Label htmlFor="message">Your message</Label>
+    <Textarea placeholder="Type your message here." id="message" />
+    <p className="text-sm text-muted-foreground">
+      Your message will be copied to the support team.
+    </p>
+  </div>
+</Preview>
+
+## With Button
+
+<Preview>
+  <div className="grid w-full gap-2">
+    <Textarea placeholder="Type your message here." />
+    <Button>Send message</Button>
+  </div>
+</Preview>
+
+## Usage
+
+```tsx
+import { Textarea } from "@uipath/apollo-vertex"
+```
+
+```tsx
+<Textarea placeholder="Type your message here." />
+```

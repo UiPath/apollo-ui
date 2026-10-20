@@ -1,0 +1,129 @@
+"use client";
+
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { jwtDecode } from "jwt-decode";
+import {
+  createContext,
+  type FC,
+  type PropsWithChildren,
+  useContext,
+} from "react";
+import { z } from "zod";
+import { ensureValidToken, getTokenQueryKey, login, logout } from "@/lib/auth";
+
+export interface AuthContextValue {
+  user: UserInfo | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  login: () => Promise<void>;
+  logout: () => void;
+  accessToken: string | null;
+}
+
+export interface UserInfo {
+  name: string;
+  email: string;
+  sub: string;
+}
+
+const JwtPayloadSchema = z.object({
+  email: z.email(),
+  first_name: z.string(),
+  last_name: z.string(),
+  sub: z.string(),
+});
+
+const decodeJWT = (token: string): UserInfo | null => {
+  const { data: payload, success } = JwtPayloadSchema.safeParse(
+    jwtDecode(token),
+  );
+
+  if (!success) {
+    return null;
+  }
+
+  const firstName = payload.first_name;
+  const lastName = payload.last_name;
+  const displayName = `${firstName} ${lastName}`;
+
+  return {
+    name: displayName,
+    email: payload.email,
+    sub: payload.sub,
+  };
+};
+
+export const AuthContext = createContext<AuthContextValue | null>(null);
+
+const noAuthDefaults: AuthContextValue = {
+  user: null,
+  isAuthenticated: false,
+  isLoading: false,
+  // oxlint-disable-next-line no-empty-function
+  login: async () => {},
+  // oxlint-disable-next-line no-empty-function
+  logout: () => {},
+  accessToken: null,
+};
+
+export const useAuth = (): AuthContextValue => {
+  const context = useContext(AuthContext);
+  return context ?? noAuthDefaults;
+};
+
+interface UseAccessTokenProps {
+  clientId: string;
+  baseUrl: string;
+  redirectPath?: string;
+  scope: string;
+}
+
+export const useAccessToken = ({
+  clientId,
+  baseUrl,
+  redirectPath,
+  scope,
+}: UseAccessTokenProps) => {
+  const { data: token, isLoading } = useQuery({
+    queryKey: getTokenQueryKey(clientId, scope),
+    queryFn: () => ensureValidToken(clientId, scope, baseUrl, redirectPath),
+    refetchInterval: 60 * 1000,
+    enabled: typeof window !== "undefined",
+  });
+
+  return { accessToken: token ?? null, isLoading };
+};
+
+interface ShellAuthProviderProps {
+  clientId: string;
+  scope: string;
+  baseUrl: string;
+  redirectPath?: string;
+}
+
+export const ShellAuthProvider: FC<
+  PropsWithChildren<ShellAuthProviderProps>
+> = ({ children, clientId, scope, baseUrl, redirectPath }) => {
+  const queryClient = useQueryClient();
+  const { accessToken, isLoading } = useAccessToken({
+    clientId,
+    baseUrl,
+    redirectPath,
+    scope,
+  });
+  const user = accessToken ? decodeJWT(accessToken) : null;
+  const isAuthenticated = accessToken != null;
+
+  const contextValue: AuthContextValue = {
+    user,
+    isAuthenticated,
+    isLoading,
+    login: () => login(clientId, scope, baseUrl, redirectPath),
+    logout: () => logout(queryClient, clientId),
+    accessToken,
+  };
+
+  return (
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
+  );
+};

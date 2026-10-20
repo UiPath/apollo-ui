@@ -1,0 +1,34 @@
+---
+title: "Spinner"
+description: "A loading spinner component to indicate loading state."
+---
+
+import { Spinner } from '@/registry/spinner/spinner'
+import { Button } from '@/registry/button/button'
+
+<Preview className="flex items-center gap-8">
+  <Spinner size="sm" />
+  <Spinner />
+  <Spinner size="lg" />
+</Preview>
+
+## In Button
+
+<Preview>
+  <Button disabled>
+    <Spinner className="mr-2" />
+    Loading...
+  </Button>
+</Preview>
+
+## Usage
+
+```tsx
+import { Spinner } from "@uipath/apollo-vertex"
+```
+
+```tsx
+<Spinner />
+<Spinner size="sm" />
+<Spinner size="lg" />
+```

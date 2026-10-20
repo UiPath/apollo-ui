@@ -3,19 +3,23 @@ import { useLingui } from '@lingui/react';
 import { styled } from '@mui/material/styles';
 import { type NodeViewProps, NodeViewWrapper } from '@tiptap/react';
 import token, { Typography } from '@uipath/apollo-core';
+import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
+import { CHAT_RESOURCE_CHIP_MAX_WIDTH } from '@uipath/apollo-react/chat/service';
+import { getReferenceChipColors } from '@uipath/apollo-wind/components/ui/reference-chip-colors';
 import React from 'react';
-import { useChatState } from '../../../providers/chat-state-provider';
-import { CHAT_RESOURCE_CHIP_MAX_WIDTH } from '../../../service/';
 import { fontByVariant } from '../../../utils/font-by-variant';
 import { AutopilotChatActionButton } from '../../common/action-button';
 import { AutopilotChatTooltip } from '../../common/tooltip';
+
+// Shared with apollo-wind's ReferenceChip so every reference chip uses the same token pair.
+const chipColors = getReferenceChipColors().valid;
 
 const ChipContent = styled('span')<{ readonly?: boolean }>(({ readonly }) => ({
   display: 'inline-flex',
   alignItems: 'center',
   padding: `0 ${token.Padding.PadS}`,
-  backgroundColor: 'var(--color-info-background)',
-  color: 'var(--color-info-text)',
+  backgroundColor: chipColors.background,
+  color: chipColors.text,
   borderRadius: `calc(${token.Border.BorderRadiusL} * 2)`,
   verticalAlign: 'middle',
   ...(!readonly && {
@@ -27,6 +31,7 @@ const ChipContent = styled('span')<{ readonly?: boolean }>(({ readonly }) => ({
 
 const ChipIcon = styled('span')(() => ({
   fontFamily: '"Material Icons Outlined"',
+  color: chipColors.icon,
   fontSize: token.Icon.IconXs,
   flexShrink: 0,
   userSelect: 'none',
@@ -49,7 +54,7 @@ const ChipDeleteContainer = styled('span')<{ visible: boolean; compactMode: bool
     transform: 'translateY(-50%)',
     display: 'flex',
     alignItems: 'center',
-    backgroundColor: 'var(--color-info-background)',
+    backgroundColor: chipColors.background,
     borderRadius: `calc(${token.Border.BorderRadiusL} * 2)`,
     transition: 'opacity 0.15s ease-in-out',
 

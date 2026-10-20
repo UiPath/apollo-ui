@@ -9,6 +9,7 @@ on:
         branches: [main]
         paths:
             - "apps/apollo-vertex/**"
+            - "packages/apollo-vertex/**"
 
 # Deny-all default; the enable-auto-merge job grants only what it needs.
 permissions: {}
@@ -29,12 +30,23 @@ jobs:
               env:
                   GH_TOKEN: ${{ github.token }}
                   GH_REPO: ${{ github.repository }}
-                  PR_URL: ${{ github.event.pull_request.html_url }}
+                  PR_NUMBER: ${{ github.event.pull_request.number }}
+                  EXPECTED_FILES: ${{ github.event.pull_request.changed_files }}
               run: |
-                  FILES_OUTSIDE=$(gh pr diff "$PR_URL" --name-only | grep -v '^apps/apollo-vertex/' || true)
-                  if [ -n "$FILES_OUTSIDE" ]; then
+                  # The pulls/files API paginates past the 300-file cap of `gh pr diff` but stops at 3000
+                  # files, so compare against the PR total. Fetch on its own line so an API failure fails
+                  # the step. Renames also list their old path, so moving a file out of another directory
+                  # counts.
+                  FILES_TSV=$(gh api --paginate "repos/${GH_REPO}/pulls/${PR_NUMBER}/files" --jq '.[] | [.filename, (.previous_filename // "")] | @tsv')
+                  LISTED=$(printf '%s\n' "$FILES_TSV" | grep -c . || true)
+                  CHANGED_FILES=$(printf '%s\n' "$FILES_TSV" | tr '\t' '\n' | grep . || true)
+                  FILES_OUTSIDE=$(printf '%s\n' "$CHANGED_FILES" | grep -vE '^(apps|packages)/apollo-vertex/' || true)
+                  if [ "$LISTED" -ne "$EXPECTED_FILES" ] || [ -z "$CHANGED_FILES" ]; then
                     echo "vertex_only=false" >> "$GITHUB_OUTPUT"
-                    echo "Skipping auto-merge — PR touches files outside apps/apollo-vertex/:"
+                    echo "Skipping auto-merge — listed $LISTED of $EXPECTED_FILES changed files"
+                  elif [ -n "$FILES_OUTSIDE" ]; then
+                    echo "vertex_only=false" >> "$GITHUB_OUTPUT"
+                    echo "Skipping auto-merge — PR touches files outside apps/apollo-vertex/ and packages/apollo-vertex/:"
                     echo "$FILES_OUTSIDE"
                   else
                     echo "vertex_only=true" >> "$GITHUB_OUTPUT"

@@ -1,0 +1,63 @@
+---
+title: "Toggle Group"
+description: "A set of two-state buttons that can be toggled on or off."
+---
+
+import { ToggleGroup, ToggleGroupItem } from '@/registry/toggle-group/toggle-group'
+import { Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight } from 'lucide-react'
+
+<Preview className="space-y-4">
+  <ToggleGroup type="multiple">
+    <ToggleGroupItem value="bold" aria-label="Toggle bold">
+      <Bold className="h-4 w-4" />
+    </ToggleGroupItem>
+    <ToggleGroupItem value="italic" aria-label="Toggle italic">
+      <Italic className="h-4 w-4" />
+    </ToggleGroupItem>
+    <ToggleGroupItem value="underline" aria-label="Toggle underline">
+      <Underline className="h-4 w-4" />
+    </ToggleGroupItem>
+  </ToggleGroup>
+
+  <ToggleGroup type="single" defaultValue="center">
+    <ToggleGroupItem value="left" aria-label="Left aligned">
+      <AlignLeft className="h-4 w-4" />
+    </ToggleGroupItem>
+    <ToggleGroupItem value="center" aria-label="Center aligned">
+      <AlignCenter className="h-4 w-4" />
+    </ToggleGroupItem>
+    <ToggleGroupItem value="right" aria-label="Right aligned">
+      <AlignRight className="h-4 w-4" />
+    </ToggleGroupItem>
+  </ToggleGroup>
+</Preview>
+
+## Outline Variant
+
+<Preview>
+  <ToggleGroup type="multiple" variant="outline">
+    <ToggleGroupItem value="bold" aria-label="Toggle bold">
+      <Bold className="h-4 w-4" />
+    </ToggleGroupItem>
+    <ToggleGroupItem value="italic" aria-label="Toggle italic">
+      <Italic className="h-4 w-4" />
+    </ToggleGroupItem>
+    <ToggleGroupItem value="underline" aria-label="Toggle underline">
+      <Underline className="h-4 w-4" />
+    </ToggleGroupItem>
+  </ToggleGroup>
+</Preview>
+
+## Usage
+
+```tsx
+import { ToggleGroup, ToggleGroupItem } from "@uipath/apollo-vertex"
+```
+
+```tsx
+<ToggleGroup type="single">
+  <ToggleGroupItem value="a">A</ToggleGroupItem>
+  <ToggleGroupItem value="b">B</ToggleGroupItem>
+  <ToggleGroupItem value="c">C</ToggleGroupItem>
+</ToggleGroup>
+```

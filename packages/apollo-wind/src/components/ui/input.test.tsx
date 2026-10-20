@@ -101,4 +101,28 @@ describe('Input', () => {
     expect(input).toHaveClass('h-6', 'text-xs', 'rounded', 'bg-surface-overlay');
     expect(input).not.toHaveClass('border-input');
   });
+
+  describe('Future focus ring', () => {
+    it.each([
+      ['default', 'default'],
+      ['ghost', 'xs'],
+    ] as const)('applies the primary ring for variant=%s size=%s', (variant, size) => {
+      render(<Input variant={variant} size={size} />);
+      expect(screen.getByRole('textbox')).toHaveClass('future:focus-visible:ring-primary');
+    });
+
+    it('keeps the error ring above the primary ring when invalid', () => {
+      render(<Input aria-invalid />);
+      expect(screen.getByRole('textbox')).toHaveClass(
+        'future:aria-invalid:focus-visible:ring-error'
+      );
+    });
+
+    it('lets consumers override the focus color', () => {
+      render(<Input className="future:focus-visible:ring-foreground" />);
+      const input = screen.getByRole('textbox');
+      expect(input).toHaveClass('future:focus-visible:ring-foreground');
+      expect(input).not.toHaveClass('future:focus-visible:ring-primary');
+    });
+  });
 });

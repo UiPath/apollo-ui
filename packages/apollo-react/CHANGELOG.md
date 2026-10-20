@@ -1,3 +1,96 @@
+## [@uipath/apollo-react-v7.3.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.3.1...@uipath/apollo-react@7.3.2) (2026-10-19)
+
+### Bug Fixes
+
+* **apollo-react:** share reference chip colors in chat and flow examples ([369594f](https://github.com/UiPath/apollo-ui/commit/369594ff2a86f9b60102c5117d61c86d6cdb0cfd))
+
+## [@uipath/apollo-react-v7.3.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.3.0...@uipath/apollo-react@7.3.1) (2026-10-19)
+
+### Bug Fixes
+
+* **apollo-react:** keep Toolbox rows interactive while a search is pending ([4c83456](https://github.com/UiPath/apollo-ui/commit/4c83456d5e6753065ba5ac70e448fd74844c7843))
+
+## [@uipath/apollo-react-v7.3.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.2.2...@uipath/apollo-react@7.3.0) (2026-10-19)
+
+### Features
+
+* **apollo-react:** classifier question picker and custom questions editor [AL-644] ([a00e0fc](https://github.com/UiPath/apollo-ui/commit/a00e0fc9c3f65ae874ee2831b4e2edc1ea1df676))
+* **apollo-react:** compose the classifier editors into the guardrail builder [AL-644] ([267495b](https://github.com/UiPath/apollo-ui/commit/267495bfc513881a016f7cc222c38251b9c2c25b))
+* **apollo-react:** curated copy for the classifier guardrail [AL-644] ([1daa452](https://github.com/UiPath/apollo-ui/commit/1daa452923d1d7793610866f7b4aa6d1b6e6e236)), closes [UiPath/Agents#6449](https://github.com/UiPath/Agents/issues/6449)
+* **apollo-react:** load the classifier question catalog [AL-644] ([d327daf](https://github.com/UiPath/apollo-ui/commit/d327dafde66fc3c5582a2b152cba556eea16f718))
+
+### Bug Fixes
+
+* **apollo-react:** collapse a guardrail parameter field that renders nothing [AL-644] ([6bfee4f](https://github.com/UiPath/apollo-ui/commit/6bfee4f43725d0361239d30c0ba99f2f39b24da0))
+* **apollo-react:** describe an invalid custom question by its error [AL-644] ([9f4858c](https://github.com/UiPath/apollo-ui/commit/9f4858c2a8636faa667a48671f9e4afc750b732b))
+* **apollo-react:** keep the classifier editors inside narrow panels [AL-644] ([adfa2f0](https://github.com/UiPath/apollo-ui/commit/adfa2f0d7e2cef9e954e5be7de5de35ded767b1b))
+* **apollo-react:** leave a host-rendered threshold map's missing keys unset [AL-644] ([7582b33](https://github.com/UiPath/apollo-ui/commit/7582b333c6934153092a28a2fe2d97f1e224cfba))
+* **apollo-react:** show and clear the classifier threshold map's errors [AL-644] ([e6c5643](https://github.com/UiPath/apollo-ui/commit/e6c56432da1c5b731c6d43d511239c5eed245359))
+* **apollo-react:** show the severity a score question's threshold actually flags [AL-644] ([099ca27](https://github.com/UiPath/apollo-ui/commit/099ca27463729867dd8003af21860c4f39b8290c))
+
+## [@uipath/apollo-react-v7.2.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.2.1...@uipath/apollo-react@7.2.2) (2026-10-16)
+
+### Bug Fixes
+
+* **apollo-react:** bump katex to 0.18.11 to fix CVE-2026-103923 [PLT-97228] ([a677237](https://github.com/UiPath/apollo-ui/commit/a6772373296033a1caa7526e8e998ac7027503bb))
+* **apollo-react:** pin katex 0.18.10 and drop GitHub registry tarball urls [PLT-97228] ([4f47d6c](https://github.com/UiPath/apollo-ui/commit/4f47d6c5a6e0752da779427c9a7266e0243995e5))
+
+## [@uipath/apollo-react-v7.2.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.2.0...@uipath/apollo-react@7.2.1) (2026-10-15)
+
+### Bug Fixes
+
+* **apollo-wind:** QuickFormField expression mode for selects, and a disabled prop ([d5825fa](https://github.com/UiPath/apollo-ui/commit/d5825fa2a41dd7b02fc6c144aebd8964a7abdcf3))
+
+## [@uipath/apollo-react-v7.1.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.1.0...@uipath/apollo-react@7.1.1) (2026-10-14)
+
+### Bug Fixes
+
+* **storybook:** address guidance review feedback ([25424fa](https://github.com/UiPath/apollo-ui/commit/25424fab63495fa899248b8af9ebb95410581c8e))
+
+## [@uipath/apollo-react-v7.1.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.0.0...@uipath/apollo-react@7.1.0) (2026-10-14)
+
+### Features
+
+* **apollo-react:** keep the policy's order for the built-in parameters the copy describes ([8ba309f](https://github.com/UiPath/apollo-ui/commit/8ba309fc4396e704dc8cb559b4f41d45344cb4e2))
+* **apollo-react:** show built-in centralized guardrail parameters such as Applies to ([e0fa46a](https://github.com/UiPath/apollo-ui/commit/e0fa46a0f427b278ccbd9eb34d0c48cd0b1c477f))
+
+## [@uipath/apollo-react-v6.80.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.79.0...@uipath/apollo-react@6.80.0) (2026-10-12)
+
+### Features
+
+* **apollo-react:** add Variables panel and align all Node Property panels ([963810c](https://github.com/UiPath/apollo-ui/commit/963810c50f371b40dad608ed8bac7fe35eff2965))
+
+## [@uipath/apollo-react-v6.79.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.78.1...@uipath/apollo-react@6.79.0) (2026-10-12)
+
+### Features
+
+* **apollo-react:** mark preview PII entities in the guardrail builder [AL-625] ([b45cb10](https://github.com/UiPath/apollo-ui/commit/b45cb10a64f2568337dd3030261359b3d9dc39a4)), closes [UiPath/Agents#6566](https://github.com/UiPath/Agents/issues/6566)
+
+## [@uipath/apollo-react-v6.78.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.78.0...@uipath/apollo-react@6.78.1) (2026-10-08)
+
+### Bug Fixes
+
+* **apollo-react:** read apollo-wind Json tree parts at render, not import ([bc747b4](https://github.com/UiPath/apollo-ui/commit/bc747b4ee642e97b9a78459da849c82d35210f57))
+
+## [@uipath/apollo-react-v6.78.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.77.4...@uipath/apollo-react@6.78.0) (2026-10-08)
+
+### Features
+
+* **apollo-react:** add ChatRoot, renderer registry and renderer config ([c390bb6](https://github.com/UiPath/apollo-ui/commit/c390bb667fb50b82ee8fecbb6394bc293522ec75))
+* **apollo-react:** resolve chat message renderers per chat renderer ([0218702](https://github.com/UiPath/apollo-ui/commit/02187027598dbca34c97f38001423cae43729d26))
+* **apollo-react:** run ApChat on ChatRoot with a Material renderer ([edbc927](https://github.com/UiPath/apollo-ui/commit/edbc927d55de8b99f8ce2b1d30e1c26e005584fb))
+* **apollo-react:** wire the @uipath/apollo-react/chat subpath ([f57fc6c](https://github.com/UiPath/apollo-ui/commit/f57fc6c72ab5ff90f5e9f5ad0bf891e4a78868f1))
+
+### Bug Fixes
+
+* **apollo-react:** give each chat service its own internal event bus ([2dea53e](https://github.com/UiPath/apollo-ui/commit/2dea53e06ada29825b490ecfaf3e13100f0e7c07))
+
+## [@uipath/apollo-react-v6.77.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.77.3...@uipath/apollo-react@6.77.4) (2026-10-08)
+
+### Bug Fixes
+
+* **apollo-react:** drop embedding-only models in isTextGenerationModel by capability ([7e76227](https://github.com/UiPath/apollo-ui/commit/7e762273b4af25dc6c66e1a9dcf9ac06114e6942))
+
 ## [@uipath/apollo-react-v6.77.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@6.77.2...@uipath/apollo-react@6.77.3) (2026-10-08)
 
 ### Bug Fixes

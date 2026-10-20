@@ -1,11 +1,10 @@
 import token from '@uipath/apollo-core';
+import { useError } from '@uipath/apollo-react/chat/headless/providers/error-provider';
+import { ApAlertBar } from '@uipath/apollo-react/material/components/ap-alert-bar';
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-
 import { StatusTypes } from '../../../../../types/statusTypes';
-import { ApAlertBar } from '../../../ap-alert-bar';
-import { useError } from '../../providers/error-provider';
 import { Li, Ol, Ul } from '../message/markdown/lists';
 import { Link } from '../message/markdown/text';
 

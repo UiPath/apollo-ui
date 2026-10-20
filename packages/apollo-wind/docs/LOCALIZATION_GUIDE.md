@@ -42,16 +42,16 @@ Components expose **props for all user-facing strings**, allowing you to provide
 
 #### Components with Localizable Props
 
-| Component         | Props                                                              | Default Values                                                           |
-| ----------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------ |
-| `Combobox`        | `placeholder`, `searchPlaceholder`, `emptyText`                    | "Select an option...", "Search...", "No results found."                  |
-| `MultiSelect`     | `placeholder`, `emptyMessage`, `searchPlaceholder`, `clearAllText` | "Select items...", "No items found.", "Search...", "Clear All ({count})" |
-| `DataTable`       | `searchPlaceholder`, `columnToggleText`                            | "Search...", "Columns"                                                   |
-| `Search`          | `placeholder`                                                      | "Search..."                                                              |
-| `EmptyState`      | `title`, `description`, `action.label`, `secondaryAction.label`    | N/A (required/optional props)                                            |
-| `Pagination`      | Children text ("Previous", "Next")                                 | Rendered via children                                                    |
-| `DatePicker`      | `placeholder`, `calendarProps.locale`                              | "Pick a date", English                                                   |
-| `DateRangePicker` | `placeholder`, `calendarProps.locale`                              | "Pick a date range", English                                             |
+| Component         | Props                                                                                                                         | Default Values                                                                                           |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `Combobox`        | `placeholder`, `searchPlaceholder`, `emptyText`                                                                               | "Select an option...", "Search...", "No results found."                                                  |
+| `MultiSelect`     | `placeholder`, `emptyMessage`, `searchPlaceholder`, `clearAllText`, `strings` (`createLabel`, `overflowLabel`, `removeLabel`) | "Select items...", "No items found.", "Search...", "Clear All ({count})", `DEFAULT_MULTI_SELECT_STRINGS` |
+| `DataTable`       | `searchPlaceholder`, `columnToggleText`                                                                                       | "Search...", "Columns"                                                                                   |
+| `Search`          | `placeholder`                                                                                                                 | "Search..."                                                                                              |
+| `EmptyState`      | `title`, `description`, `action.label`, `secondaryAction.label`                                                               | N/A (required/optional props)                                                                            |
+| `Pagination`      | Children text ("Previous", "Next")                                                                                            | Rendered via children                                                                                    |
+| `DatePicker`      | `placeholder`, `calendarProps.locale`                                                                                         | "Pick a date", English                                                                                   |
+| `DateRangePicker` | `placeholder`, `calendarProps.locale`                                                                                         | "Pick a date range", English                                                                             |
 
 ---
 

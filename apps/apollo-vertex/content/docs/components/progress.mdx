@@ -1,0 +1,22 @@
+---
+title: "Progress"
+description: "Displays an indicator showing the completion progress of a task."
+---
+
+import { Progress } from '@/registry/progress/progress'
+
+<Preview className="space-y-4">
+  <Progress value={33} aria-label="Upload progress" className="w-[60%]" />
+  <Progress value={66} aria-label="Sync progress" className="w-[60%]" />
+  <Progress value={100} aria-label="Download progress" className="w-[60%]" />
+</Preview>
+
+## Usage
+
+```tsx
+import { Progress } from "@uipath/apollo-vertex"
+```
+
+```tsx
+<Progress value={33} aria-label="Upload progress" />
+```

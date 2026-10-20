@@ -90,7 +90,7 @@ export interface NodePropertyPanelProps {
   /**
    * Horizontal inset (any CSS length) applied via `--mf-content-inset`. Aligns the
    * form fields, identity row, and empty state to a consistent left/right edge.
-   * Default `1.5rem`.
+   * Default `1rem` (16px), the inset flow-workbench's properties panel uses.
    */
   contentInset?: string;
   /**

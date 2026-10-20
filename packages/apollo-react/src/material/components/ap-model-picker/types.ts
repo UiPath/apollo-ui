@@ -134,6 +134,7 @@ export interface DiscoveryModel {
    * realtime models never show, same policy as `isBlockedByPolicy`.
    */
   modelType?: ModelType;
+  capabilities?: ('Chat' | 'Embeddings' | string)[];
   deprecationDetails?: DeprecationDetails | null;
   byomDetails?: ByomDetails | null;
   modelDetails?: ModelDetails;

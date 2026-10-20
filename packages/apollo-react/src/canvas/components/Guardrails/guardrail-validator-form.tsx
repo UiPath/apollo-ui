@@ -110,12 +110,21 @@ export const GuardrailValidatorForm = forwardRef<HTMLDivElement, GuardrailValida
       [onChange, onClearError]
     );
 
+    // An override can write several parameters at once (the classifier's picker writes its map
+    // with its list), so every defined parameter the replacement changes counts as edited.
     const replaceParams = useCallback(
       (paramId: string, next: GuardrailValidatorParameter[]) => {
+        const serialized = (list: GuardrailValidatorParameter[], id: string) =>
+          JSON.stringify(list.find((p) => p.id === id)?.value);
         onClearError?.(paramId);
+        for (const id of defsById.keys()) {
+          if (id !== paramId && serialized(parametersRef.current, id) !== serialized(next, id)) {
+            onClearError?.(id);
+          }
+        }
         onChange(next);
       },
-      [onChange, onClearError]
+      [defsById, onChange, onClearError]
     );
 
     // Which definitions the override claims.
@@ -238,8 +247,15 @@ export const GuardrailValidatorForm = forwardRef<HTMLDivElement, GuardrailValida
 
     const formSchema = useMemo(() => ({ ...schema, mode: schemaMode }), [schema, schemaMode]);
 
+    // A field that renders nothing (an override returning `null`, a threshold map with no keys
+    // selected) still owns a grid row, and the row gap around it doubled the space between its
+    // neighbours. Collapsing the empty cell removes the row.
     return (
-      <div ref={ref} data-slot="guardrail-validator-form" className={cn('space-y-4', className)}>
+      <div
+        ref={ref}
+        data-slot="guardrail-validator-form"
+        className={cn('space-y-4 [&_[data-field-name]:empty]:hidden', className)}
+      >
         <GuardrailRenderParameterProvider value={bridgeContext}>
           <GuardrailParameterFootersProvider value={parameterFooters}>
             <MetadataForm schema={formSchema} plugins={plugins} container="div" />

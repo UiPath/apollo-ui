@@ -153,6 +153,26 @@ describe('buildGuardrailFormSchema', () => {
     expect(many).toMatchObject({ type: 'multiselect', placeholder: LABELS.enumListPlaceholder });
   });
 
+  it('suffixes the preview options of a multiselect enum-list', () => {
+    const field = fieldFor({
+      id: 'entities',
+      type: 'enum-list',
+      label: 'Entities',
+      required: true,
+      defaultValue: [],
+      options: Array.from({ length: MAX_INLINE_ENUM_OPTIONS + 1 }, (_, i) => `o${i}`),
+      previewOptions: ['o1'],
+    });
+
+    expect(field).toMatchObject({
+      type: 'multiselect',
+      options: expect.arrayContaining([
+        { value: 'o0', label: 'o0' },
+        { value: 'o1', label: 'o1 (Preview)' },
+      ]),
+    });
+  });
+
   it('declares a valueType for host-overridden fields, matching the parameter type', () => {
     const overridden = (type: GuardrailParameterDefinition['type']) =>
       buildGuardrailFormSchema(
@@ -232,9 +252,9 @@ describe('buildGuardrailFormSchema', () => {
     const defs: GuardrailParameterDefinition[] = [
       { id: 'threshold', type: 'number', label: 'Threshold', required: false, defaultValue: 0.5 },
       {
-        id: 'appliesTo',
+        id: 'detectionScope',
         type: 'enum',
-        label: 'Applies to',
+        label: 'Detection scope',
         required: false,
         defaultValue: 'Text',
         options: ['Text', 'Files', 'Both'],
@@ -246,39 +266,39 @@ describe('buildGuardrailFormSchema', () => {
 
     it('puts a display-only row directly after the parameter it names', () => {
       const schema = buildGuardrailFormSchema(defs, LABELS, {
-        footerIds: new Set(['appliesTo']),
+        footerIds: new Set(['detectionScope']),
       });
       const fields = schema.sections?.[0]?.fields ?? [];
 
       expect(fields.map((f) => f.name)).toEqual([
         'threshold',
-        'appliesTo',
-        guardrailParameterFooterFieldName('appliesTo'),
+        'detectionScope',
+        guardrailParameterFooterFieldName('detectionScope'),
         'strict',
       ]);
       expect(fields[2]).toEqual({
         type: 'custom',
-        name: guardrailParameterFooterFieldName('appliesTo'),
+        name: guardrailParameterFooterFieldName('detectionScope'),
         label: '',
         component: GUARDRAIL_PARAMETER_FOOTER_COMPONENT,
-        componentProps: { parameterId: 'appliesTo' },
+        componentProps: { parameterId: 'detectionScope' },
       });
       // The parameter itself keeps its own editor.
-      expect(fields[1]).toMatchObject({ name: 'appliesTo', type: 'select' });
+      expect(fields[1]).toMatchObject({ name: 'detectionScope', type: 'select' });
     });
 
     it('adds nothing without footerIds, or for an id with no definition', () => {
-      expect(names()).toEqual(['threshold', 'appliesTo', 'strict']);
+      expect(names()).toEqual(['threshold', 'detectionScope', 'strict']);
       expect(names({ footerIds: new Set(['missing']) })).toEqual([
         'threshold',
-        'appliesTo',
+        'detectionScope',
         'strict',
       ]);
     });
 
     it('names footer rows so they cannot be mistaken for a parameter', () => {
-      expect(guardrailParameterFooterFieldName('appliesTo')).not.toBe('appliesTo');
-      expect(guardrailParameterFooterFieldName('appliesTo')).not.toMatch(/[.[\]]/);
+      expect(guardrailParameterFooterFieldName('detectionScope')).not.toBe('detectionScope');
+      expect(guardrailParameterFooterFieldName('detectionScope')).not.toMatch(/[.[\]]/);
     });
   });
 });

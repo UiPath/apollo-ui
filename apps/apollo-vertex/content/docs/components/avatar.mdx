@@ -1,0 +1,49 @@
+---
+title: "Avatar"
+description: "An image element with a fallback for representing the user."
+---
+
+import { Avatar, AvatarFallback, AvatarImage } from '@/registry/avatar/avatar'
+
+<Preview className="flex gap-4 items-center">
+  <Avatar>
+    <AvatarImage src="https://github.com/0xr3ngar.png" alt="@0xr3ngar" />
+    <AvatarFallback>CN</AvatarFallback>
+  </Avatar>
+  
+  <Avatar className="rounded-lg">
+    <AvatarImage src="https://github.com/ruudandriessen.png" alt="@ruudandriessen" />
+    <AvatarFallback>CD</AvatarFallback>
+  </Avatar>
+  
+  <Avatar>
+    <AvatarFallback>CD</AvatarFallback>
+  </Avatar>
+  
+  <div className="flex -space-x-2">
+    <Avatar className="border-2 border-background">
+      <AvatarImage src="https://github.com/0xr3ngar.png" alt="@0xr3ngar" />
+      <AvatarFallback>CN</AvatarFallback>
+    </Avatar>
+    <Avatar className="border-2 border-background">
+      <AvatarImage src="https://github.com/ruudandriessen.png" alt="@ruudandriessen" />
+      <AvatarFallback>VC</AvatarFallback>
+    </Avatar>
+    <Avatar className="border-2 border-background">
+      <AvatarFallback>+3</AvatarFallback>
+    </Avatar>
+  </div>
+</Preview>
+
+## Usage
+
+```tsx
+import { Avatar, AvatarFallback, AvatarImage } from "@uipath/apollo-vertex"
+```
+
+```tsx
+<Avatar>
+  <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+  <AvatarFallback>CN</AvatarFallback>
+</Avatar> 
+```

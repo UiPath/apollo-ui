@@ -1,0 +1,53 @@
+---
+title: "Input Group"
+description: "Groups input elements with addons and buttons."
+---
+
+import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from '@/registry/input-group/input-group'
+import { Search, Mail } from 'lucide-react'
+
+<Preview className="space-y-4 max-w-sm">
+  <InputGroup>
+    <InputGroupAddon>
+      <Search className="h-4 w-4" />
+    </InputGroupAddon>
+    <InputGroupInput placeholder="Search..." aria-label="Search" />
+  </InputGroup>
+
+  <InputGroup>
+    <InputGroupAddon>
+      <InputGroupText>https://</InputGroupText>
+    </InputGroupAddon>
+    <InputGroupInput placeholder="example.com" aria-label="Website" />
+  </InputGroup>
+
+  <InputGroup>
+    <InputGroupAddon>
+      <Mail className="h-4 w-4" />
+    </InputGroupAddon>
+    <InputGroupInput placeholder="Email" aria-label="Email" />
+    <InputGroupAddon align="inline-end">
+      <InputGroupText>@gmail.com</InputGroupText>
+    </InputGroupAddon>
+  </InputGroup>
+</Preview>
+
+## Usage
+
+```tsx
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  InputGroupText,
+} from "@uipath/apollo-vertex"
+```
+
+```tsx
+<InputGroup>
+  <InputGroupAddon>
+    <SearchIcon />
+  </InputGroupAddon>
+  <InputGroupInput placeholder="Search..." aria-label="Search" />
+</InputGroup>
+```

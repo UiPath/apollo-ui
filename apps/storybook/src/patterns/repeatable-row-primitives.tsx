@@ -33,7 +33,12 @@ import {
   type ValueMode,
   ValueModeIndicator,
 } from '@/components/ui/field-addons';
-import { FormField, FormFieldError, FormFieldHeader } from '@/components/ui/form-field';
+import {
+  FormField,
+  FormFieldError,
+  FormFieldHeader,
+  FormFieldLabel,
+} from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { MultiSelect } from '@/components/ui/multi-select';
@@ -553,12 +558,12 @@ function ConditionColumnHeaders({
   return (
     <div className="flex items-center gap-2">
       <div className={cn('grid min-w-0 flex-1 gap-2', COLUMNS_INLINE)}>
-        <FormFieldHeader variant="muted" label="Field" labelId={ids.field} />
-        <FormFieldHeader variant="muted" label="Operator" labelId={ids.operator} />
-        <FormFieldHeader variant="muted" label="Value" labelId={ids.value} />
+        <FormFieldLabel id={ids.field}>Field</FormFieldLabel>
+        <FormFieldLabel id={ids.operator}>Operator</FormFieldLabel>
+        <FormFieldLabel id={ids.value}>Value</FormFieldLabel>
       </div>
       {/* Keeps the labels over their columns: the delete button's width. */}
-      <span aria-hidden="true" className="size-8 shrink-0" />
+      <span aria-hidden="true" className="h-4 w-8 shrink-0" />
     </div>
   );
 }
@@ -831,16 +836,16 @@ export function ConditionRow({
         <div className="flex items-start gap-2">
           <div className="grid min-w-0 flex-1 grid-cols-[minmax(0,3fr)_minmax(0,2fr)] gap-2">
             <FormField>
-              <FormFieldHeader variant="muted" label="Field" labelId={labelIds.field} />
+              <FormFieldLabel id={labelIds.field}>Field</FormFieldLabel>
               {fieldControl}
             </FormField>
             <FormField>
-              <FormFieldHeader variant="muted" label="Operator" labelId={labelIds.operator} />
+              <FormFieldLabel id={labelIds.operator}>Operator</FormFieldLabel>
               {operatorControl}
             </FormField>
             {valueControl && (
               <FormField className="col-span-2">
-                <FormFieldHeader variant="muted" label="Value" labelId={labelIds.value} />
+                <FormFieldLabel id={labelIds.value}>Value</FormFieldLabel>
                 {valueControl}
               </FormField>
             )}
@@ -848,7 +853,7 @@ export function ConditionRow({
           {/* A label-height spacer, then a control-height box, so the icon centres on the first
               line of controls rather than on the labels. */}
           <FormField>
-            <span aria-hidden="true" className="min-h-6" />
+            <span aria-hidden="true" className="h-4" />
             <div className="flex h-9 items-center future:h-10">{deleteControl}</div>
           </FormField>
         </div>
@@ -1087,59 +1092,61 @@ function GroupBody({
         </div>
       )}
 
-      {columns && <ConditionColumnHeaders ids={columns} />}
-      <ConditionColumnsContext.Provider value={columns}>
-        <div ref={focus.listRef} className="flex flex-col gap-3">
-          {node.children.length === 0 ? (
-            <EmptyRows>{nested ? 'No conditions in this group.' : emptyText}</EmptyRows>
-          ) : (
-            node.children.map((child, position) => {
-              if (child.kind === 'group') {
-                nestedGroups += 1;
+      <FormField>
+        {columns && <ConditionColumnHeaders ids={columns} />}
+        <ConditionColumnsContext.Provider value={columns}>
+          <div ref={focus.listRef} className="flex flex-col gap-3">
+            {node.children.length === 0 ? (
+              <EmptyRows>{nested ? 'No conditions in this group.' : emptyText}</EmptyRows>
+            ) : (
+              node.children.map((child, position) => {
+                if (child.kind === 'group') {
+                  nestedGroups += 1;
+                  return (
+                    <GroupBody
+                      key={child.id}
+                      node={child}
+                      root={root}
+                      onRootChange={onRootChange}
+                      depth={depth + 1}
+                      maxDepth={maxDepth}
+                      matchMode={matchMode}
+                      layout={layout}
+                      forceErrors={forceErrors}
+                      emptyText={emptyText}
+                      variables={variables}
+                      label={label}
+                      numbers={numbers}
+                      groupIndex={nestedGroups}
+                      onDeleteGroup={() => deleteChild(child.id, position)}
+                    />
+                  );
+                }
                 return (
-                  <GroupBody
+                  <ConditionRow
                     key={child.id}
-                    node={child}
-                    root={root}
-                    onRootChange={onRootChange}
-                    depth={depth + 1}
-                    maxDepth={maxDepth}
-                    matchMode={matchMode}
+                    index={numbers.get(child.id) ?? position + 1}
+                    condition={child}
                     layout={layout}
-                    forceErrors={forceErrors}
-                    emptyText={emptyText}
+                    forceError={forceErrors}
                     variables={variables}
-                    label={label}
-                    numbers={numbers}
-                    groupIndex={nestedGroups}
-                    onDeleteGroup={() => deleteChild(child.id, position)}
+                    onChange={(patch) =>
+                      onRootChange(
+                        updateNode(
+                          root,
+                          child.id,
+                          (current) => ({ ...current, ...patch }) as Condition
+                        )
+                      )
+                    }
+                    onDelete={() => deleteChild(child.id, position)}
                   />
                 );
-              }
-              return (
-                <ConditionRow
-                  key={child.id}
-                  index={numbers.get(child.id) ?? position + 1}
-                  condition={child}
-                  layout={layout}
-                  forceError={forceErrors}
-                  variables={variables}
-                  onChange={(patch) =>
-                    onRootChange(
-                      updateNode(
-                        root,
-                        child.id,
-                        (current) => ({ ...current, ...patch }) as Condition
-                      )
-                    )
-                  }
-                  onDelete={() => deleteChild(child.id, position)}
-                />
-              );
-            })
-          )}
-        </div>
-      </ConditionColumnsContext.Provider>
+              })
+            )}
+          </div>
+        </ConditionColumnsContext.Provider>
+      </FormField>
 
       <div className="flex flex-wrap items-center gap-4">
         <AddRowButton ref={focus.addRef} onClick={() => addNode(condition())}>
@@ -1335,56 +1342,58 @@ export function KeyValueList({
           </span>
         }
       />
-      {pairs.length > 0 && (
-        // Visible column labels: the persistent labels for every row's Name and Value.
-        <div className="flex items-center gap-2">
-          {reorderable && <span aria-hidden="true" className="size-8 shrink-0" />}
-          <div className="grid min-w-0 flex-1 grid-cols-2 gap-2">
-            <FormFieldHeader variant="muted" label="Name" labelId={`${baseId}-name`} />
-            <FormFieldHeader variant="muted" label="Value" labelId={`${baseId}-value`} />
-          </div>
-          <span aria-hidden="true" className="size-8 shrink-0" />
-        </div>
-      )}
-      <div ref={focus.listRef} className="flex flex-col gap-2">
-        {pairs.map((pair, position) => (
-          <div key={pair.id} data-row="" className="flex items-center gap-2">
-            <span id={`${baseId}-${pair.id}`} className="sr-only">
-              {label} {position + 1}
-            </span>
-            {reorderable && (
-              <RowDragHandle
-                label={`Reorder ${itemName} ${position + 1}`}
-                onMoveUp={position > 0 ? () => move(position, position - 1) : undefined}
-                onMoveDown={
-                  position < pairs.length - 1 ? () => move(position, position + 1) : undefined
-                }
-              />
-            )}
+      <FormField>
+        {pairs.length > 0 && (
+          // Visible column labels: the persistent labels for every row's Name and Value.
+          <div className="flex items-center gap-2">
+            {reorderable && <span aria-hidden="true" className="h-4 w-8 shrink-0" />}
             <div className="grid min-w-0 flex-1 grid-cols-2 gap-2">
-              <Input
-                data-row-first=""
-                aria-labelledby={`${baseId}-${pair.id} ${baseId}-name`}
-                defaultValue={pair.key}
-                placeholder="Content-Type"
-              />
-              <Input
-                aria-labelledby={`${baseId}-${pair.id} ${baseId}-value`}
-                defaultValue={pair.value}
-                placeholder="application/json"
+              <FormFieldLabel id={`${baseId}-name`}>Name</FormFieldLabel>
+              <FormFieldLabel id={`${baseId}-value`}>Value</FormFieldLabel>
+            </div>
+            <span aria-hidden="true" className="h-4 w-8 shrink-0" />
+          </div>
+        )}
+        <div ref={focus.listRef} className="flex flex-col gap-2">
+          {pairs.map((pair, position) => (
+            <div key={pair.id} data-row="" className="flex items-center gap-2">
+              <span id={`${baseId}-${pair.id}`} className="sr-only">
+                {label} {position + 1}
+              </span>
+              {reorderable && (
+                <RowDragHandle
+                  label={`Reorder ${itemName} ${position + 1}`}
+                  onMoveUp={position > 0 ? () => move(position, position - 1) : undefined}
+                  onMoveDown={
+                    position < pairs.length - 1 ? () => move(position, position + 1) : undefined
+                  }
+                />
+              )}
+              <div className="grid min-w-0 flex-1 grid-cols-2 gap-2">
+                <Input
+                  data-row-first=""
+                  aria-labelledby={`${baseId}-${pair.id} ${baseId}-name`}
+                  defaultValue={pair.key}
+                  placeholder="Content-Type"
+                />
+                <Input
+                  aria-labelledby={`${baseId}-${pair.id} ${baseId}-value`}
+                  defaultValue={pair.value}
+                  placeholder="application/json"
+                />
+              </div>
+              <RowDeleteButton
+                label={`Remove ${itemName} ${position + 1}`}
+                onClick={() => {
+                  focus.afterDelete(position);
+                  setPairs((current) => current.filter((row) => row.id !== pair.id));
+                }}
               />
             </div>
-            <RowDeleteButton
-              label={`Remove ${itemName} ${position + 1}`}
-              onClick={() => {
-                focus.afterDelete(position);
-                setPairs((current) => current.filter((row) => row.id !== pair.id));
-              }}
-            />
-          </div>
-        ))}
-        {pairs.length === 0 && <EmptyRows>No {itemName}s.</EmptyRows>}
-      </div>
+          ))}
+          {pairs.length === 0 && <EmptyRows>No {itemName}s.</EmptyRows>}
+        </div>
+      </FormField>
       <div>
         <AddRowButton
           ref={focus.addRef}

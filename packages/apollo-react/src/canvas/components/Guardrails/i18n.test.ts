@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 import { findCatalogDrift, findCatalogOrphans } from './__fixtures__/catalog-coverage';
-import type { GuardrailFileSupportLabels } from './i18n';
+import type { CentralizedGuardrailsLabels, GuardrailFileSupportLabels } from './i18n';
 import {
   CENTRALIZED_GUARDRAILS_EN_LABELS,
   CENTRALIZED_GUARDRAILS_EN_MESSAGES,
@@ -11,6 +11,8 @@ import {
   GUARDRAIL_ACTION_EN_LABELS,
   GUARDRAIL_ACTION_LABEL_KEYS,
   GUARDRAIL_BUILDER_EN_LABELS,
+  GUARDRAIL_CLASSIFIER_EN_LABELS,
+  GUARDRAIL_CLASSIFIER_EN_MESSAGES,
   GUARDRAIL_FILE_SUPPORT_EN_LABELS,
   GUARDRAIL_FILE_SUPPORT_EN_MESSAGES,
   GUARDRAIL_FILTER_FIELD_SELECTOR_EN_LABELS,
@@ -28,6 +30,7 @@ import {
   GUARDRAIL_SCOPE_SELECTOR_LABEL_KEYS,
   type GuardrailBuilderLabels,
   type GuardrailPaletteLabels,
+  type GuardrailValidatorFormLabels,
   resolveCentralizedGuardrailsLabels,
   resolveCustomGuardrailBuilderLabels,
   resolveGuardrailActionLabels,
@@ -175,6 +178,16 @@ describe('resolveGuardrailRulesLabels', () => {
     expect(GUARDRAIL_RULES_EN_MESSAGES['guardrails.rules.delete-rule']).toBe(
       'Delete rule {position}'
     );
+  });
+});
+
+describe('GUARDRAIL_CLASSIFIER_EN_LABELS', () => {
+  it('keeps the `{{category}}` token the picker formats', () => {
+    expect(
+      formatGuardrailFormMessage(GUARDRAIL_CLASSIFIER_EN_LABELS.selectAllInCategory, {
+        category: 'PII',
+      })
+    ).toBe('Select all in PII');
   });
 });
 
@@ -421,6 +434,20 @@ describe('the other label sets still layer the same way', () => {
     expect([resolved.byo, resolved.provider]).toEqual(['BYO', 'Provider']);
   });
 
+  it('resolves the preview keys for a complete form label object written before them', () => {
+    const {
+      previewOption: _chip,
+      previewOptionLabel: _suffix,
+      ...formBefore
+    } = GUARDRAIL_FORM_EN_LABELS;
+    const formLabels: GuardrailValidatorFormLabels = formBefore;
+    const resolved = resolveGuardrailFormLabels(undefined, formLabels);
+    expect([resolved.previewOption, resolved.previewOptionLabel]).toEqual([
+      'Preview',
+      '{{label}} (Preview)',
+    ]);
+  });
+
   it('merges validator form labels', () => {
     const labels = resolveGuardrailFormLabels({ addItem: 'Hinzufügen' }, { addItem: 'Add row' });
 
@@ -468,6 +495,25 @@ describe('the shared canvas catalog', () => {
     });
   });
 
+  it('names a centralized detection scope the way the per-agent builder’s definition does', () => {
+    // The builder's copy arrives on the backend definition; the centralized details need it
+    // when the definition does not carry the parameter, so the two must read the same.
+    expect([
+      CENTRALIZED_GUARDRAILS_EN_LABELS.detectionScopeFallback,
+      CENTRALIZED_GUARDRAILS_EN_LABELS.detectionScopeText,
+      CENTRALIZED_GUARDRAILS_EN_LABELS.detectionScopeFiles,
+      CENTRALIZED_GUARDRAILS_EN_LABELS.detectionScopeBoth,
+    ]).toEqual(['Detection scope', 'Text only', 'Files only', 'Text and files']);
+  });
+
+  it('still accepts a centralized labels table without the detection scope fallback', () => {
+    type Legacy = Omit<
+      CentralizedGuardrailsLabels,
+      'detectionScopeFallback' | 'detectionScopeText' | 'detectionScopeFiles' | 'detectionScopeBoth'
+    >;
+    expectTypeOf<Legacy>().toExtend<CentralizedGuardrailsLabels>();
+  });
+
   it('carries no centralized message the source no longer declares', () => {
     expect(
       findCatalogOrphans(CENTRALIZED_GUARDRAILS_EN_MESSAGES, 'guardrails.centralized.')
@@ -480,6 +526,19 @@ describe('the shared canvas catalog', () => {
 
   it('carries no rules message the source no longer declares', () => {
     expect(findCatalogOrphans(GUARDRAIL_RULES_EN_MESSAGES, 'guardrails.rules.')).toEqual([]);
+  });
+
+  it('carries every classifier message with the same English', () => {
+    expect(findCatalogDrift(GUARDRAIL_CLASSIFIER_EN_MESSAGES)).toEqual({
+      missing: [],
+      drifted: [],
+    });
+  });
+
+  it('carries no classifier message the source no longer declares', () => {
+    expect(findCatalogOrphans(GUARDRAIL_CLASSIFIER_EN_MESSAGES, 'guardrails.classifier.')).toEqual(
+      []
+    );
   });
 
   it('carries every custom builder message with the same English', () => {

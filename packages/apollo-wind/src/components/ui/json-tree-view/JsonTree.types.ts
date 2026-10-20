@@ -149,6 +149,11 @@ export interface NodeDecoration {
   label?: string;
   /** Small muted text after the key label (e.g. an identifier). */
   sublabel?: string;
+  /**
+   * Shows the sublabel only while the row is hovered or holds focus. It sits
+   * in the row's flexible space, so revealing it never moves the trailing cluster.
+   */
+  sublabelOnHover?: boolean;
   /** Replaces the type badge's icon and/or color. */
   badge?: NodeDecorationBadge;
   /** Small pill rendered next to the key (e.g. "mocked"). */
@@ -157,6 +162,17 @@ export interface NodeDecoration {
    * Hides the built-in keys/items count on a container row.
    */
   hideCount?: boolean;
+  /**
+   * Hides the value cell on a scalar row, for a row that names something
+   * (e.g. a node with no output yet) rather than holding a value.
+   */
+  hideValue?: boolean;
+  /**
+   * Content in the row's trailing cluster, between the `start` and `end`
+   * actions (e.g. a count). The cluster never shrinks, so it stays in place
+   * while the key and sublabel truncate.
+   */
+  meta?: ReactNode;
 }
 
 /** Context passed to a custom value cell renderer. */
@@ -201,6 +217,16 @@ export interface NodeAction {
   disabled?: boolean;
   /** Color tone; `error` tints a destructive action. Defaults to neutral. */
   tone?: NodeDecorationTone;
+  /**
+   * Keeps the action visible at rest instead of revealing it on row hover.
+   * For a row's primary action. Ignored once actions collapse into the menu.
+   */
+  persistent?: boolean;
+  /**
+   * Where the action sits in the row's trailing cluster: `start` renders it
+   * before the decoration `meta`, `end` (the default) after it.
+   */
+  placement?: 'start' | 'end';
 }
 
 /** Context passed to `nodeActions`, mirroring the value-cell edit context. */

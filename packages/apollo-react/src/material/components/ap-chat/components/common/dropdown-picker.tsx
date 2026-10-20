@@ -3,12 +3,12 @@ import { useLingui } from '@lingui/react';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { Menu, MenuItem, styled } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
-import { ApIcon } from '@uipath/apollo-react/material/components';
+import { useScheduledCallback } from '@uipath/apollo-react/chat/headless/hooks/use-scheduled-callback';
+import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
+import { AutopilotChatInternalEvent } from '@uipath/apollo-react/chat/service';
+import { ApIcon } from '@uipath/apollo-react/material/components/ap-icon';
+import { ApTypography } from '@uipath/apollo-react/material/components/ap-typography';
 import React from 'react';
-import { ApTypography } from '../../../ap-typography';
-import { useScheduledCallback } from '../../hooks/use-scheduled-callback';
-import { useChatState } from '../../providers/chat-state-provider';
-import { AutopilotChatInternalEvent } from '../../service';
 import { AutopilotChatActionButton } from './action-button';
 import { AutopilotChatTooltip } from './tooltip';
 

@@ -95,7 +95,7 @@ Must be one of:
 - `apollo-ui-icons` - SVG icon set
 - `apollo-react` - React components
 - `apollo-wind` - Tailwind/shadcn components
-- `apollo-vertex` - Documentation site and component registry
+- `apollo-vertex` - Vertex component registry (`packages/apollo-vertex`) and its documentation site
 - `ap-chat` - Chat component
 - `storybook` - Storybook app
 
@@ -418,6 +418,7 @@ apollo-ui/
 │   ├── apollo-core/       # Design tokens
 │   ├── apollo-ui-icons/   # SVG icon set
 │   ├── apollo-react/      # React components
+│   ├── apollo-vertex/     # Vertex shadcn registry components
 │   └── apollo-wind/       # Tailwind components
 ├── web-packages/          # Web components
 │   └── ap-chat/           # Chat component

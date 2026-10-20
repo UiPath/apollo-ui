@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import * as React from 'react';
+import { PrototypingStory } from './PrototypingPage';
 
 const meta = {
   title: 'Introduction',
@@ -163,11 +164,19 @@ function IntroductionPage() {
           </SectionDescription>
           <div className="grid gap-4 sm:grid-cols-3">
             <PackageCard
+              name="Apollo Core"
+              packageName="@uipath/apollo-core"
+              description="Framework-agnostic design tokens: colors, typography, spacing, icons, and CSS custom properties. The foundation everything else is built on."
+              tags={['Tokens', 'CSS vars', 'Any framework']}
+              storyPath="/story/apollo-core-getting-started--default"
+              accent="bg-emerald-500"
+            />
+            <PackageCard
               name="Apollo Wind"
               packageName="@uipath/apollo-wind"
               description="Tailwind CSS components built on shadcn/ui and Radix primitives. The recommended starting point for new React applications."
               tags={['Tailwind CSS', 'shadcn/ui', 'New apps']}
-              storyPath="/story/apollo-wind-introduction-getting-started--default"
+              storyPath="/story/apollo-wind-getting-started--default"
               accent="bg-violet-500"
             />
             <PackageCard
@@ -175,16 +184,8 @@ function IntroductionPage() {
               packageName="@uipath/apollo-react"
               description="Canvas components for workflow and node-based editors built on React Flow, plus a Material UI theme for existing apps."
               tags={['React Flow', 'Canvas', 'Material UI']}
-              storyPath="/story/apollo-react-canvas-introduction-getting-started--default"
+              storyPath="/story/apollo-react-getting-started--default"
               accent="bg-blue-500"
-            />
-            <PackageCard
-              name="Apollo Core"
-              packageName="@uipath/apollo-core"
-              description="Framework-agnostic design tokens: colors, typography, spacing, icons, and CSS custom properties. The foundation everything else is built on."
-              tags={['Tokens', 'CSS vars', 'Any framework']}
-              storyPath="/story/apollo-core-introduction-getting-started--default"
-              accent="bg-emerald-500"
             />
           </div>
         </div>
@@ -233,3 +234,5 @@ function IntroductionPage() {
 export const Overview: Story = {
   render: () => <IntroductionPage />,
 };
+
+export const Prototyping = { ...PrototypingStory };

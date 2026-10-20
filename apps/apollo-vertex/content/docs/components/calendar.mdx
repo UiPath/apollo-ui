@@ -1,0 +1,45 @@
+---
+title: "Calendar"
+description: "A date field component that allows users to enter and edit dates."
+---
+
+import { Calendar } from '@/registry/calendar/calendar'
+
+<Preview>
+  <Calendar
+    mode="single"
+    className="rounded-md border shadow-sm"
+  />
+</Preview>
+
+## Usage
+
+```tsx
+import { Calendar } from "@uipath/apollo-vertex"
+```
+
+```tsx
+const [date, setDate] = React.useState<Date | undefined>(new Date())
+
+return (
+  <Calendar
+    mode="single"
+    selected={date}
+    onSelect={setDate}
+    className="rounded-md border"
+  />
+)
+```
+
+## Examples
+
+### Date Range
+
+```tsx
+<Calendar
+  mode="range"
+  selected={dateRange}
+  onSelect={setDateRange}
+  numberOfMonths={2}
+/>
+```

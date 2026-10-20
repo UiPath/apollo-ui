@@ -115,7 +115,7 @@ const inputGroupVariants = cva(
         layout: ROW_LAYOUTS,
         invalid: false,
         class:
-          'has-[[data-slot=input-group-control]:focus-visible]:ring-ring has-[[data-slot=input-group-control]_:focus-visible]:ring-ring',
+          'has-[[data-slot=input-group-control]:focus-visible]:ring-ring has-[[data-slot=input-group-control]_:focus-visible]:ring-ring future:has-[[data-slot=input-group-control]:focus-visible]:ring-primary future:has-[[data-slot=input-group-control]_:focus-visible]:ring-primary',
       },
       {
         layout: ROW_LAYOUTS,
@@ -140,8 +140,14 @@ const inputGroupVariants = cva(
       {
         variant: FILLED,
         layout: ROW_LAYOUTS,
+        // Not while a badge inside the control is hovered: the badge takes the hover fill itself,
+        // and would vanish against a lit box. Future first restates the resting fill for any hover,
+        // since the unprefixed `bg-accent` rule still matches there and out-ranks the variant's own
+        // `future:bg-surface-overlay`; the more specific no-badge rule then lights the box. Both of
+        // its conditions sit on the group (`:has(…):not(:has(…))`), since CSS drops a rule that
+        // nests `:has()` inside another.
         class:
-          'has-[button[data-slot=input-group-control]:not(:disabled):hover]:bg-accent future:has-[button[data-slot=input-group-control]:not(:disabled):hover]:bg-surface-hover',
+          'has-[button[data-slot=input-group-control]:not(:disabled):hover]:bg-accent future:has-[button[data-slot=input-group-control]:not(:disabled):hover]:bg-surface-overlay future:has-[button[data-slot=input-group-control]:not(:disabled):hover]:not-has-[[data-slot=input-group-control]_[data-slot=badge]:hover]:bg-surface-hover',
       },
     ],
     defaultVariants: {
@@ -316,20 +322,30 @@ export interface InputGroupRowProps extends React.HTMLAttributes<HTMLDivElement>
  * control instead would inset its caret out of line with other fields.
  */
 const InputGroupRow = React.forwardRef<HTMLDivElement, InputGroupRowProps>(
-  ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      data-slot="input-group-row"
-      className={cn(
-        'flex min-h-9 min-w-0 items-stretch gap-2 px-3 has-[>[data-slot=input-group-addon][data-align=inline-end]]:pr-2 future:min-h-10',
-        // The block box does not ring, since its body holds fields that ring themselves, so the row
-        // rings for its own control. Inset, and on the box's corners, since the box clips to them.
-        'rounded-[inherit] has-[[data-slot=input-group-control]:focus-visible]:ring-2 has-[[data-slot=input-group-control]:focus-visible]:ring-inset has-[[data-slot=input-group-control]:focus-visible]:ring-ring has-[[data-slot=input-group-control]_:focus-visible]:ring-2 has-[[data-slot=input-group-control]_:focus-visible]:ring-inset has-[[data-slot=input-group-control]_:focus-visible]:ring-ring has-[[data-slot][aria-invalid=true]]:has-[[data-slot=input-group-control]:focus-visible]:ring-error has-[[data-slot][aria-invalid=true]]:has-[[data-slot=input-group-control]_:focus-visible]:ring-error',
-        className
-      )}
-      {...props}
-    />
-  )
+  ({ className, ...props }, ref) => {
+    const { invalid, error } = useInputGroup();
+    // The group's `invalid` covers controls that cannot carry `aria-invalid` (a code editor), so
+    // the row reads it as the row layouts' box does, rather than relying on the descendant check.
+    const flagged = Boolean(invalid || error);
+    return (
+      <div
+        ref={ref}
+        data-slot="input-group-row"
+        className={cn(
+          'flex min-h-9 min-w-0 items-stretch gap-2 px-3 has-[>[data-slot=input-group-addon][data-align=inline-end]]:pr-2 future:min-h-10',
+          // The block box does not ring, since its body holds fields that ring themselves, so the
+          // row rings for its own control. Inset, and on the box's corners, since the box clips to
+          // them. An invalid group rings in `error` rather than primary.
+          'rounded-[inherit] has-[[data-slot=input-group-control]:focus-visible]:ring-2 has-[[data-slot=input-group-control]:focus-visible]:ring-inset has-[[data-slot=input-group-control]_:focus-visible]:ring-2 has-[[data-slot=input-group-control]_:focus-visible]:ring-inset has-[[data-slot][aria-invalid=true]]:has-[[data-slot=input-group-control]:focus-visible]:ring-error has-[[data-slot][aria-invalid=true]]:has-[[data-slot=input-group-control]_:focus-visible]:ring-error',
+          flagged
+            ? 'has-[[data-slot=input-group-control]:focus-visible]:ring-error has-[[data-slot=input-group-control]_:focus-visible]:ring-error'
+            : 'has-[[data-slot=input-group-control]:focus-visible]:ring-ring has-[[data-slot=input-group-control]_:focus-visible]:ring-ring future:has-[[data-slot=input-group-control]:focus-visible]:ring-primary future:has-[[data-slot=input-group-control]_:focus-visible]:ring-primary',
+          className
+        )}
+        {...props}
+      />
+    );
+  }
 );
 InputGroupRow.displayName = 'InputGroupRow';
 
@@ -339,7 +355,8 @@ export interface InputGroupBodyProps extends React.HTMLAttributes<HTMLDivElement
  * Content below a `layout="block"` group's first row, behind a divider. Controls here are standard
  * fields with their own box, message and popovers; one that needs addons takes its own InputGroup.
  * The divider goes when there is nothing to divide: an empty body, or a closed Radix collapsible,
- * which leaves its content in place and `hidden`.
+ * which leaves its content in place and `hidden`. Future dark's default edge colour is the box's
+ * own fill, so the divider steps up to `border` there.
  */
 const InputGroupBody = React.forwardRef<HTMLDivElement, InputGroupBodyProps>(
   ({ className, ...props }, ref) => {
@@ -349,7 +366,10 @@ const InputGroupBody = React.forwardRef<HTMLDivElement, InputGroupBodyProps>(
         <div
           ref={ref}
           data-slot="input-group-body"
-          className={cn('border-t empty:border-t-0 has-[>[hidden]]:border-t-0', className)}
+          className={cn(
+            'border-t empty:border-t-0 has-[>[hidden]]:border-t-0 future:dark:border-border',
+            className
+          )}
           {...props}
         />
       </InputGroupContext.Provider>

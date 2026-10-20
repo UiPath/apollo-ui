@@ -1,0 +1,81 @@
+---
+title: "Getting started"
+---
+
+**Apollo Vertex** is the design system for UiPath Vertical Solutions - customizable, industry-specific automation solutions built on the UiPath platform.
+
+## Overview
+
+The `@uipath/vs-core` package provides everything you need to build data-driven UiPath solutions:
+
+- **UiPath SDK Integration**: Simplified APIs for working with UiPath Data Service entities and process executions
+- **React Context Provider**: `SolutionProvider` for easy SDK initialization and data access
+- **TanStack Query Collections**: Ready-to-use data collections with built-in caching and reactivity
+- **TypeScript Types**: Full type safety for entities, processes, and configurations
+
+## Set up with your agent
+
+Paste this prompt into your coding agent, such as Claude Code, Cursor or Copilot, from your project root:
+
+```text
+Install @uipath/apollo-vertex with this project's package manager, then run:
+npx @tanstack/intent@latest load @uipath/apollo-vertex#setup
+Follow the skill it prints.
+```
+
+The `setup` skill installs the peer dependencies, imports the stylesheet, sets up [agent skills](#set-up-agent-skills) and tells your agent to follow them when it changes UI. To do the same steps yourself, follow the rest of this page.
+
+To start a new vertical solution, fork the [Vertical Solution Template](https://github.com/UiPath/vertical-solutions-template). It comes with `@uipath/vs-core` installed and configured.
+
+## Install Apollo Vertex
+
+Apollo Vertex needs React 19.2+ and Tailwind CSS 4. Install the package:
+
+<PackageInstall packages="@uipath/apollo-vertex" />
+
+If you use Proteus feature flags, also install `@uipath/proteus-client`.
+
+Import the stylesheet once from your app's CSS. It includes Tailwind and the Vertex theme:
+
+```css
+@import "@uipath/apollo-vertex/tailwind.css";
+@source "./"; /* your own sources */
+```
+
+Then import components from the package:
+
+```tsx
+import { Button, DataTable } from "@uipath/apollo-vertex";
+```
+
+## Set up agent skills
+
+Apollo Vertex ships [agent skills](https://agentskills.io) that tell coding agents such as Claude Code, Cursor and Copilot how to build UI with Apollo Vertex. For example, one skill tells the agent to use Vertex components instead of writing its own. [TanStack Intent](https://tanstack.com/intent) finds these skills in your `node_modules` and points your agent at them.
+
+Apollo Vertex ships these skills:
+
+- `setup` sets up a project to use Apollo Vertex. The [agent prompt](#set-up-with-your-agent) loads it.
+- `use-vertex-components` tells the agent to build UI from Vertex components.
+
+To set them up yourself, add TanStack Intent to your project and run its installer once from your project root:
+
+<PackageInstall packages="-D @tanstack/intent" />
+
+```bash
+npx intent install
+```
+
+Run it in an interactive terminal. It asks which packages' skills your agent may load, saves your choice in `package.json`, and adds instructions to your agent config file (for example `AGENTS.md` or `CLAUDE.md`). Commit both files so everyone on the project gets the same setup.
+
+The skills are versioned with Apollo Vertex, so updating it updates them too. You don't need to run `install` again.
+
+To see the skills that are available, or to read one yourself:
+
+```bash
+npx intent list
+npx intent load @uipath/apollo-vertex#use-vertex-components
+```
+
+## Next Steps
+
+See the [Data Querying](/data-querying/loading-data) section to learn how to load and mutate data using the `useSolution` hook.

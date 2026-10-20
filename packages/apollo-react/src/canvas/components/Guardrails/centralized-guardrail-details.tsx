@@ -68,11 +68,20 @@ export function CentralizedGuardrailDetails<
 
   const parameterRows = resolveCentralizedGuardrailParameters(guardrail, {
     definition,
+    copy,
     labels: {
       enabled: labels.parameterEnabled,
       disabled: labels.parameterDisabled,
       entities: labels.entitiesFallback,
       thresholds: labels.thresholdsFallback,
+      detectionScope: {
+        label: labels.detectionScopeFallback,
+        options: {
+          Text: labels.detectionScopeText,
+          Files: labels.detectionScopeFiles,
+          Both: labels.detectionScopeBoth,
+        },
+      },
     },
   });
 

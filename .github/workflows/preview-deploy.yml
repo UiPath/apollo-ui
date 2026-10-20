@@ -3,9 +3,6 @@ name: Coded App Preview Deployments
 on:
   pull_request:
     types: [opened, synchronize, reopened, closed]
-    branches:
-      - main
-      - 'support/**'
 
 # Deny-all default; jobs grant the minimum they need.
 permissions: {}
@@ -20,35 +17,13 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  initialize-comment:
-    name: Initialize Apollo Coded App Preview Comment
+  deploy:
+    name: Deploy ${{ matrix.label }}
     if: github.event.action != 'closed' && github.event.pull_request.head.repo.fork == false
     runs-on: uipath-ubuntu-latest
     permissions:
-      pull-requests: write
-
-    steps:
-      # Comment scripts live in the repo, not inline (see .github/scripts/).
-      - name: Checkout scripts
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
-        with:
-          sparse-checkout: .github/scripts
-          persist-credentials: false
-
-      - name: Initialize PR comment
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd  # v8
-        with:
-          script: |
-            const { initComment } = await import(`${process.env.GITHUB_WORKSPACE}/.github/scripts/preview-deploy/preview-comment.mjs`);
-            await initComment({ github, context });
-
-  deploy:
-    name: Deploy ${{ matrix.label }}
-    needs: initialize-comment
-    if: ${{ !cancelled() && github.event.action != 'closed' && needs.initialize-comment.result == 'success' && github.event.pull_request.head.repo.fork == false }}
-    runs-on: uipath-ubuntu-latest
-    permissions:
       contents: read
+      deployments: write
       packages: read
     env:
       # uipath-ubuntu-* runners have less RAM than ubuntu-latest, so Node
@@ -56,8 +31,7 @@ jobs:
       NODE_OPTIONS: --max-old-space-size=6144
     strategy:
       # One app per runner, in parallel. Keep going if one app fails so the
-      # others still publish; each leg reports status via an artifact and the
-      # job fails at the end if any leg failed.
+      # others still publish; each leg reports its status on its deployment.
       fail-fast: false
       matrix:
         include:
@@ -75,6 +49,16 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+
+      - name: Start GitHub deployment
+        id: deployment
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd  # v8
+        env:
+          ENVIRONMENT: preview/${{ matrix.label }}
+        with:
+          script: |
+            const { startDeployment } = await import(`${process.env.GITHUB_WORKSPACE}/.github/scripts/preview-deploy/deployments.mjs`);
+            return await startDeployment({ github, context });
 
       - name: Install Node dependencies
         uses: ./.github/actions/install-node-deps
@@ -186,68 +170,37 @@ jobs:
           path: .turbo
           key: ${{ runner.os }}-turbo-${{ matrix.label }}-${{ github.ref_name }}-${{ github.sha }}
 
-      - name: Save deploy result
-        if: always()
+      - name: Finish GitHub deployment
+        if: always() && steps.deployment.outputs.result != ''
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd  # v8
         env:
-          APP_LABEL: ${{ matrix.label }}
+          ENVIRONMENT: preview/${{ matrix.label }}
+          DEPLOYMENT_ID: ${{ steps.deployment.outputs.result }}
+          DEPLOY_URL: ${{ steps.deploy.outputs.url }}
+          DEPLOY_OUTCOME: ${{ steps.deploy.outcome }}
+        with:
+          script: |
+            const { finishDeployment } = await import(`${process.env.GITHUB_WORKSPACE}/.github/scripts/preview-deploy/deployments.mjs`);
+            await finishDeployment({ github, context });
+
+      # The visual-diff job reads the apollo-design leg's outcome and URL.
+      - name: Save apollo-design deploy result
+        if: always() && matrix.label == 'apollo-design'
+        env:
           DEPLOY_URL: ${{ steps.deploy.outputs.url }}
           DEPLOY_OUTCOME: ${{ steps.deploy.outcome }}
         run: |
           mkdir -p "$RUNNER_TEMP/deploy-result"
-
-          if [ "$DEPLOY_OUTCOME" = "success" ]; then
-            outcome="success"
-            error=""
-          elif [ "$DEPLOY_OUTCOME" = "failure" ]; then
-            outcome="failure"
-            error="uip-go deploy failed for $APP_LABEL"
-          else
-            outcome="skipped"
-            error=""
-          fi
-
           printf '%s' "${DEPLOY_URL:-}" > "$RUNNER_TEMP/deploy-result/url"
-          printf '%s' "$outcome"        > "$RUNNER_TEMP/deploy-result/outcome"
-          printf '%s' "$error"          > "$RUNNER_TEMP/deploy-result/error"
+          printf '%s' "$DEPLOY_OUTCOME" > "$RUNNER_TEMP/deploy-result/outcome"
 
-      - name: Upload deploy result
-        if: always()
+      - name: Upload apollo-design deploy result
+        if: always() && matrix.label == 'apollo-design'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
-          name: deploy-result-${{ matrix.label }}
+          name: deploy-result-apollo-design
           path: ${{ runner.temp }}/deploy-result/
           retention-days: 1
-
-  update-comment:
-    name: Update Apollo Coded App Preview Comment
-    needs: [initialize-comment, deploy]
-    if: ${{ always() && github.event.action != 'closed' && github.event.pull_request.head.repo.fork == false && needs.initialize-comment.result != 'skipped' }}
-    runs-on: uipath-ubuntu-latest
-    permissions:
-      pull-requests: write
-
-    steps:
-      # Comment scripts live in the repo, not inline (see .github/scripts/).
-      - name: Checkout scripts
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
-        with:
-          sparse-checkout: .github/scripts
-          persist-credentials: false
-
-      - name: Download deploy results
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
-        with:
-          pattern: deploy-result-*
-          path: ${{ runner.temp }}/results
-
-      - name: Update PR comment
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd  # v8
-        env:
-          RESULTS_DIR: ${{ runner.temp }}/results
-        with:
-          script: |
-            const { updateComment } = await import(`${process.env.GITHUB_WORKSPACE}/.github/scripts/preview-deploy/preview-comment.mjs`);
-            await updateComment({ github, context });
 
   visual-diff:
     name: Storybook Visual Diff
@@ -470,9 +423,37 @@ jobs:
     runs-on: uipath-ubuntu-latest
     permissions:
       contents: read
+      deployments: write
       packages: read
 
     steps:
+      # Inline rather than in .github/scripts: the checkout below is the PR
+      # head, which may predate the scripts this would import.
+      - name: Deactivate GitHub deployments
+        continue-on-error: true
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd  # v8
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const labels = ['apollo-landing', 'apollo-docs', 'apollo-design', 'apollo-vertex'];
+            for (const label of labels) {
+              const deployments = await github.paginate(github.rest.repos.listDeployments, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                environment: `preview/${label}`,
+                task: `deploy:preview-pr-${pr.number}`,
+                per_page: 100,
+              });
+              for (const deployment of deployments) {
+                await github.rest.repos.createDeploymentStatus({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  deployment_id: deployment.id,
+                  state: 'inactive',
+                });
+              }
+            }
+
       - name: Checkout code
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
         with:

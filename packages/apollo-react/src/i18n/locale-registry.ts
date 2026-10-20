@@ -3,6 +3,7 @@
  * All locales are statically imported at build time for better performance
  */
 
+import type { Messages } from '@lingui/core';
 // Pre-import all locales for canvas component
 import { messages as canvasDe } from '../canvas/locales/de';
 import { messages as canvasEn } from '../canvas/locales/en';
@@ -18,21 +19,21 @@ import { messages as canvasRu } from '../canvas/locales/ru';
 import { messages as canvasTr } from '../canvas/locales/tr';
 import { messages as canvasZhCN } from '../canvas/locales/zh-CN';
 import { messages as canvasZhTW } from '../canvas/locales/zh-TW';
-// Pre-import all locales for ap-chat component
-import { messages as apChatDe } from '../material/components/ap-chat/locales/de';
-import { messages as apChatEn } from '../material/components/ap-chat/locales/en';
-import { messages as apChatEs } from '../material/components/ap-chat/locales/es';
-import { messages as apChatEsMX } from '../material/components/ap-chat/locales/es-MX';
-import { messages as apChatFr } from '../material/components/ap-chat/locales/fr';
-import { messages as apChatJa } from '../material/components/ap-chat/locales/ja';
-import { messages as apChatKo } from '../material/components/ap-chat/locales/ko';
-import { messages as apChatPt } from '../material/components/ap-chat/locales/pt';
-import { messages as apChatPtBR } from '../material/components/ap-chat/locales/pt-BR';
-import { messages as apChatRo } from '../material/components/ap-chat/locales/ro';
-import { messages as apChatRu } from '../material/components/ap-chat/locales/ru';
-import { messages as apChatTr } from '../material/components/ap-chat/locales/tr';
-import { messages as apChatZhCN } from '../material/components/ap-chat/locales/zh-CN';
-import { messages as apChatZhTW } from '../material/components/ap-chat/locales/zh-TW';
+// Pre-import all locales for chat component
+import { messages as apChatDe } from '../chat/locales/de';
+import { messages as apChatEn } from '../chat/locales/en';
+import { messages as apChatEs } from '../chat/locales/es';
+import { messages as apChatEsMX } from '../chat/locales/es-MX';
+import { messages as apChatFr } from '../chat/locales/fr';
+import { messages as apChatJa } from '../chat/locales/ja';
+import { messages as apChatKo } from '../chat/locales/ko';
+import { messages as apChatPt } from '../chat/locales/pt';
+import { messages as apChatPtBR } from '../chat/locales/pt-BR';
+import { messages as apChatRo } from '../chat/locales/ro';
+import { messages as apChatRu } from '../chat/locales/ru';
+import { messages as apChatTr } from '../chat/locales/tr';
+import { messages as apChatZhCN } from '../chat/locales/zh-CN';
+import { messages as apChatZhTW } from '../chat/locales/zh-TW';
 // Pre-import all locales for ap-tool-call component
 import { messages as apToolCallDe } from '../material/components/ap-tool-call/locales/de';
 import { messages as apToolCallEn } from '../material/components/ap-tool-call/locales/en';
@@ -48,29 +49,32 @@ import { messages as apToolCallRu } from '../material/components/ap-tool-call/lo
 import { messages as apToolCallTr } from '../material/components/ap-tool-call/locales/tr';
 import { messages as apToolCallZhCN } from '../material/components/ap-tool-call/locales/zh-CN';
 import { messages as apToolCallZhTW } from '../material/components/ap-tool-call/locales/zh-TW';
-import type { Messages } from '@lingui/core';
 import type { SupportedLocale } from './ApI18nProvider';
+
+const chatLocales: Record<SupportedLocale, Messages> = {
+  en: apChatEn,
+  es: apChatEs,
+  pt: apChatPt,
+  de: apChatDe,
+  fr: apChatFr,
+  ja: apChatJa,
+  ko: apChatKo,
+  ru: apChatRu,
+  tr: apChatTr,
+  'zh-CN': apChatZhCN,
+  'zh-TW': apChatZhTW,
+  'pt-BR': apChatPtBR,
+  'es-MX': apChatEsMX,
+  ro: apChatRo,
+};
 
 /**
  * Registry mapping component paths to their pre-imported locale messages
  */
 const localeRegistry: Record<string, Record<SupportedLocale, Messages>> = {
-  'material/components/ap-chat': {
-    en: apChatEn,
-    es: apChatEs,
-    pt: apChatPt,
-    de: apChatDe,
-    fr: apChatFr,
-    ja: apChatJa,
-    ko: apChatKo,
-    ru: apChatRu,
-    tr: apChatTr,
-    'zh-CN': apChatZhCN,
-    'zh-TW': apChatZhTW,
-    'pt-BR': apChatPtBR,
-    'es-MX': apChatEsMX,
-    ro: apChatRo,
-  },
+  chat: chatLocales,
+  // Key used before chat moved out of material/; kept for consumers that pass it to ApI18nProvider.
+  'material/components/ap-chat': chatLocales,
   'material/components/ap-tool-call': {
     en: apToolCallEn,
     es: apToolCallEs,

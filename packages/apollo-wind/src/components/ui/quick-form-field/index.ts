@@ -1,6 +1,7 @@
 export { QuickFormField } from './quick-form-field';
 export type {
   QuickFieldType,
+  QuickFormFieldControlProps,
   QuickFormFieldMode,
   QuickFormFieldMoreActions,
   QuickFormFieldOption,

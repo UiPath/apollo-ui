@@ -1,6 +1,5 @@
+import { useAttachments } from '@uipath/apollo-react/chat/headless/providers/attachments-provider';
 import React from 'react';
-
-import { useAttachments } from '../../providers/attachements-provider';
 import { Attachments } from '../common/attachments';
 
 function AutopilotChatInputAttachmentsComponent() {

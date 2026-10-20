@@ -1,0 +1,43 @@
+---
+title: "Context Menu"
+description: "Displays a menu to the user triggered by a right-click or long-press."
+---
+
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger, ContextMenuSeparator, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuCheckboxItem } from '@/registry/context-menu/context-menu'
+
+<Preview>
+  <ContextMenu>
+    <ContextMenuTrigger className="flex h-[150px] w-[300px] items-center justify-center rounded-md border border-dashed text-sm">
+      Right click here
+    </ContextMenuTrigger>
+    <ContextMenuContent className="w-52">
+      <ContextMenuItem>Back</ContextMenuItem>
+      <ContextMenuItem>Forward</ContextMenuItem>
+      <ContextMenuItem>Reload</ContextMenuItem>
+      <ContextMenuSeparator />
+      <ContextMenuSub>
+        <ContextMenuSubTrigger>More Tools</ContextMenuSubTrigger>
+        <ContextMenuSubContent className="w-48">
+          <ContextMenuItem>Save Page As...</ContextMenuItem>
+          <ContextMenuItem>Create Shortcut...</ContextMenuItem>
+          <ContextMenuSeparator />
+          <ContextMenuItem>Developer Tools</ContextMenuItem>
+        </ContextMenuSubContent>
+      </ContextMenuSub>
+      <ContextMenuSeparator />
+      <ContextMenuCheckboxItem checked>Show Bookmarks</ContextMenuCheckboxItem>
+      <ContextMenuCheckboxItem>Show Full URLs</ContextMenuCheckboxItem>
+    </ContextMenuContent>
+  </ContextMenu>
+</Preview>
+
+## Usage
+
+```tsx
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@uipath/apollo-vertex"
+```

@@ -35,6 +35,8 @@ import { GuardrailNameFields } from './components/guardrail-name-fields';
 import { GuardrailScopeSelector } from './components/guardrail-scope-selector';
 import { GuardrailStatusBanner } from './components/guardrail-status-banner';
 import { MixedScopesBanner } from './components/mixed-scopes-banner';
+import { nonBlankPolicyName, PolicyNameText } from './components/policy-name-text';
+import { isPolicyDisabledGuardrailDefinition } from './definitions-enrich';
 import { GuardrailFormLayout } from './guardrail-form-layout';
 import { GuardrailValidatorForm } from './guardrail-validator-form';
 import {
@@ -47,10 +49,11 @@ import { type GuardrailErrorMerges, useGuardrailFormErrors } from './use-guardra
 import { useSwallowEnter } from './use-swallow-enter';
 import {
   dropEmptyOptionalParameters,
-  GUARDRAIL_APPLIES_TO_PARAMETER_ID,
-  getGuardrailAppliesTo,
+  GUARDRAIL_DETECTION_SCOPE_PARAMETER_ID,
+  getGuardrailDetectionScope,
   getOutOfRangeParameterIds,
   getRequiredEmptyParameterIds,
+  type SyncMapEnumParametersOptions,
   syncMapEnumParameters,
 } from './utils';
 
@@ -113,6 +116,12 @@ export interface GuardrailBuilderProps {
    * Flow's legacy builder does. Only a definition with a connector has one.
    */
   providerField?: boolean;
+  /**
+   * Name of the AI Trust Layer policy, for the banner on a definition that policy disabled
+   * (`disabledReason: 'Policy'`). The host already has it for `CentralizedGuardrailsSection`.
+   * Blank or absent, the banner says "your organization's AI Trust Layer policy" instead.
+   */
+  policyName?: string;
   /** Where the enable-for-evaluations switch renders. Default 'form'. */
   evalsTogglePlacement?: 'form' | 'footer';
   /**
@@ -146,6 +155,7 @@ export interface GuardrailBuilderProps {
    * Forwarded to the internal `GuardrailValidatorForm`: the parameter ids `renderParameter`
    * claims. Declaring them avoids the deprecated probe, which calls your renderer once per
    * definition on every render — see `GuardrailValidatorFormProps.overrideParameterIds`.
+   * A declared `map-enum` is saved without filled-in keys (`SyncMapEnumParametersOptions`).
    */
   overrideParameterIds?: GuardrailValidatorFormProps['overrideParameterIds'];
   /**
@@ -187,6 +197,7 @@ export function GuardrailBuilder({
   title,
   byoDisplay = false,
   providerField = false,
+  policyName,
   evalsTogglePlacement = 'form',
   allowedActionTypes,
   renderRecipientSearch,
@@ -247,6 +258,13 @@ export function GuardrailBuilder({
     [updateField]
   );
 
+  // Keyed by content, so a host's inline array does not recompute the result every render.
+  const overrideIdsKey = (overrideParameterIds ?? []).join('\u0000');
+  const syncOptions = useMemo<SyncMapEnumParametersOptions>(
+    () => ({ leaveUnsetIds: overrideIdsKey === '' ? [] : overrideIdsKey.split('\u0000') }),
+    [overrideIdsKey]
+  );
+
   const guardrailResult = useMemo<GuardrailBuilderValue>(() => {
     // Reconcile map-enum values with their source enum-list selection, then drop empty /
     // whitespace-only text-list entries — otherwise reopening the guardrail surfaces phantom
@@ -260,18 +278,21 @@ export function GuardrailBuilder({
     const textListIds = new Set(
       definition.parameters.filter((p) => p.type === 'text-list').map((p) => p.id)
     );
-    const trimmed = syncMapEnumParameters(formData.validatorParameters, definition.parameters).map(
-      (param) =>
-        param.$parameterType === 'text-list' &&
-        textListIds.has(param.id) &&
-        Array.isArray(param.value)
-          ? {
-              ...param,
-              value: param.value.filter(
-                (entry) => typeof entry === 'string' && entry.trim().length > 0
-              ),
-            }
-          : param
+    const trimmed = syncMapEnumParameters(
+      formData.validatorParameters,
+      definition.parameters,
+      syncOptions
+    ).map((param) =>
+      param.$parameterType === 'text-list' &&
+      textListIds.has(param.id) &&
+      Array.isArray(param.value)
+        ? {
+            ...param,
+            value: param.value.filter(
+              (entry) => typeof entry === 'string' && entry.trim().length > 0
+            ),
+          }
+        : param
     );
     const validatorParameters = dropEmptyOptionalParameters(trimmed, definition.parameters);
     const isByo = definition.byoValidatorName !== undefined;
@@ -287,7 +308,7 @@ export function GuardrailBuilder({
       validatorParameters,
       ...(isByo ? { byoValidatorName: definition.byoValidatorName } : {}),
     };
-  }, [formData, definition]);
+  }, [formData, definition, syncOptions]);
 
   const internalErrors = useMemo<GuardrailBuilderErrors>(() => {
     const e: GuardrailBuilderErrors = {};
@@ -314,7 +335,8 @@ export function GuardrailBuilder({
     // over a value that was never going to be written.
     const reconciledParameters = syncMapEnumParameters(
       formData.validatorParameters,
-      definition.parameters
+      definition.parameters,
+      syncOptions
     );
 
     const parameterErrors: Record<string, string> = {};
@@ -338,7 +360,7 @@ export function GuardrailBuilder({
       }[field];
     }
     return e;
-  }, [formData, showScopeSelector, definition.parameters, existingNames, labels]);
+  }, [formData, showScopeSelector, definition.parameters, existingNames, labels, syncOptions]);
 
   // Host parameter errors minus the ones the user has already edited past.
   const liveHostParameterErrors = useMemo<Record<string, string>>(() => {
@@ -395,8 +417,22 @@ export function GuardrailBuilder({
     name: titleName,
   });
 
+  // The policy banner is a warning, not an error: the run goes ahead and skips the guardrail,
+  // and only an administrator can change that.
+  const namedPolicy = nonBlankPolicyName(policyName);
   const statusBanner = isByoConfigurationDisabled ? (
     <GuardrailStatusBanner tone="error" message={labels.byoDisabledMessage} />
+  ) : isPolicyDisabledGuardrailDefinition(definition) ? (
+    <GuardrailStatusBanner
+      tone="warning"
+      message={
+        namedPolicy === undefined ? (
+          labels.policyDisabledMessage
+        ) : (
+          <PolicyNameText template={labels.policyDisabledNamedMessage} policyName={namedPolicy} />
+        )
+      }
+    />
   ) : definition.status === 'Unauthorised' ? (
     <GuardrailStatusBanner tone="warning" message={labels.unauthorizedMessage} />
   ) : definition.status === 'FeatureDisabled' ? (
@@ -424,11 +460,14 @@ export function GuardrailBuilder({
   const fileSupportIndicator = (
     <GuardrailFileSupportIndicator fileSupport={definition.fileSupport} />
   );
-  const appliesTo = getGuardrailAppliesTo(definition.parameters, formData.validatorParameters);
-  // Supported, it describes the Applies to choice, so it sits under that field while the field
+  const detectionScope = getGuardrailDetectionScope(
+    definition.parameters,
+    formData.validatorParameters
+  );
+  // Supported, it describes the Detection scope choice, so it sits under that field while the field
   // reads files. Otherwise it stays above the parameters, which may be none at all.
-  const fileSupportUnderAppliesTo =
-    definition.fileSupport?.supported === true && appliesTo !== undefined;
+  const fileSupportUnderDetectionScope =
+    definition.fileSupport?.supported === true && detectionScope !== undefined;
 
   const formBody = (
     <div ref={rootRef} data-slot="guardrail-builder" className={cn('space-y-4 py-4', className)}>
@@ -465,7 +504,7 @@ export function GuardrailBuilder({
         labels={labels}
       />
 
-      {!fileSupportUnderAppliesTo && fileSupportIndicator}
+      {!fileSupportUnderDetectionScope && fileSupportIndicator}
 
       {/* Validator parameters */}
       {definition.parameters.length > 0 && (
@@ -488,8 +527,8 @@ export function GuardrailBuilder({
             renderParameter={renderParameter}
             overrideParameterIds={overrideParameterIds}
             parameterFooters={
-              fileSupportUnderAppliesTo && appliesTo !== 'Text'
-                ? { [GUARDRAIL_APPLIES_TO_PARAMETER_ID]: fileSupportIndicator }
+              fileSupportUnderDetectionScope && detectionScope !== 'Text'
+                ? { [GUARDRAIL_DETECTION_SCOPE_PARAMETER_ID]: fileSupportIndicator }
                 : undefined
             }
           />

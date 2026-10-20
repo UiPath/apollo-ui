@@ -1,4 +1,4 @@
-import { fireEvent, render as rtlRender, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render as rtlRender, screen, waitFor, within } from '@testing-library/react';
 import { TooltipProvider } from '@uipath/apollo-wind';
 import { axe } from 'jest-axe';
 import type { ReactElement, ReactNode } from 'react';
@@ -477,6 +477,43 @@ describe('GuardrailValidatorForm', () => {
       // "Email" and "Phone" appear both as enum-list chips and as map-enum threshold labels
       expect(screen.getAllByText('Email')).toHaveLength(2);
       expect(screen.getAllByText('Phone')).toHaveLength(2);
+    });
+
+    it('suffixes preview keys in the chips and marks their threshold row with a Preview chip', () => {
+      const defs: GuardrailParameterDefinition[] = [
+        {
+          id: 'entities',
+          type: 'enum-list',
+          label: 'Entities',
+          required: true,
+          defaultValue: ['Email', 'Age'],
+          options: ['Email', 'Age'],
+          previewOptions: ['Age'],
+        },
+        {
+          id: 'thresholds',
+          type: 'map-enum',
+          label: 'Thresholds',
+          required: true,
+          defaultValue: {},
+          keySource: 'entities',
+        },
+      ];
+
+      render(
+        <GuardrailValidatorForm parameterDefinitions={defs} parameters={[]} onChange={() => {}} />
+      );
+
+      expect(screen.getByRole('button', { name: 'Age (Preview)' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Email' })).toBeInTheDocument();
+      // In the threshold row the chip follows the entity name, inside the label column.
+      const ageRow = screen.getByRole('spinbutton', { name: 'Thresholds: Age' }).parentElement;
+      expect(within(ageRow as HTMLElement).getByText('Age').parentElement).toHaveTextContent(
+        'AgePreview'
+      );
+      expect(
+        screen.getByRole('spinbutton', { name: 'Thresholds: Email' }).parentElement
+      ).not.toHaveTextContent('Preview');
     });
 
     it('renders friendly labels for threshold rows via the source parameter optionLabels', () => {
@@ -1316,9 +1353,9 @@ describe('GuardrailValidatorForm', () => {
   describe('parameterFooters', () => {
     const defs: GuardrailParameterDefinition[] = [
       {
-        id: 'appliesTo',
+        id: 'detectionScope',
         type: 'enum',
-        label: 'Applies to',
+        label: 'Detection scope',
         required: false,
         defaultValue: 'Text',
         options: ['Text', 'Files', 'Both'],
@@ -1334,13 +1371,13 @@ describe('GuardrailValidatorForm', () => {
           parameterDefinitions={defs}
           parameters={[]}
           onChange={() => {}}
-          parameterFooters={{ appliesTo: <p>About files</p> }}
+          parameterFooters={{ detectionScope: <p>About files</p> }}
         />
       );
 
       const footer = footerSlot(container);
       expect(footer).toHaveTextContent('About files');
-      const select = screen.getByRole('combobox', { name: 'Applies to' });
+      const select = screen.getByRole('combobox', { name: 'Detection scope' });
       const threshold = screen.getByRole('spinbutton');
       expect(select.compareDocumentPosition(footer as Node)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
       expect(footer?.compareDocumentPosition(threshold)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
@@ -1356,7 +1393,7 @@ describe('GuardrailValidatorForm', () => {
           parameterDefinitions={defs}
           parameters={[]}
           onChange={() => {}}
-          parameterFooters={{ appliesTo: node }}
+          parameterFooters={{ detectionScope: node }}
         />
       );
 
@@ -1382,15 +1419,19 @@ describe('GuardrailValidatorForm', () => {
       const { container, rerender } = render(<GuardrailValidatorForm {...props} />);
       expect(footerSlot(container)).toBeNull();
 
-      rerender(<GuardrailValidatorForm {...props} parameterFooters={{ appliesTo: 'First' }} />);
+      rerender(
+        <GuardrailValidatorForm {...props} parameterFooters={{ detectionScope: 'First' }} />
+      );
       expect(footerSlot(container)).toHaveTextContent('First');
 
-      rerender(<GuardrailValidatorForm {...props} parameterFooters={{ appliesTo: 'Second' }} />);
+      rerender(
+        <GuardrailValidatorForm {...props} parameterFooters={{ detectionScope: 'Second' }} />
+      );
       expect(footerSlot(container)).toHaveTextContent('Second');
 
-      rerender(<GuardrailValidatorForm {...props} parameterFooters={{ appliesTo: null }} />);
+      rerender(<GuardrailValidatorForm {...props} parameterFooters={{ detectionScope: null }} />);
       expect(footerSlot(container)).toBeNull();
-      expect(screen.getByRole('combobox', { name: 'Applies to' })).toBeInTheDocument();
+      expect(screen.getByRole('combobox', { name: 'Detection scope' })).toBeInTheDocument();
     });
 
     it('never emits the footer row as a parameter', async () => {
@@ -1400,15 +1441,15 @@ describe('GuardrailValidatorForm', () => {
           parameterDefinitions={defs}
           parameters={[]}
           onChange={onChange}
-          parameterFooters={{ appliesTo: <p>About files</p> }}
+          parameterFooters={{ detectionScope: <p>About files</p> }}
         />
       );
 
-      fireEvent.click(screen.getByRole('combobox', { name: 'Applies to' }));
+      fireEvent.click(screen.getByRole('combobox', { name: 'Detection scope' }));
       fireEvent.click(await screen.findByRole('option', { name: 'Files' }));
 
       expect(onChange).toHaveBeenLastCalledWith([
-        { $parameterType: 'enum', id: 'appliesTo', value: 'Files' },
+        { $parameterType: 'enum', id: 'detectionScope', value: 'Files' },
       ]);
     });
   });

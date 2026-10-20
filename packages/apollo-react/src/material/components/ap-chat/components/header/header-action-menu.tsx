@@ -3,12 +3,12 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { styled } from '@mui/material/styles';
 import token, { FontVariantToken } from '@uipath/apollo-core';
-import { ApIcon } from '@uipath/apollo-react/material/components';
+import { useScheduledCallback } from '@uipath/apollo-react/chat/headless/hooks/use-scheduled-callback';
+import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
+import type { AutopilotChatCustomHeaderAction } from '@uipath/apollo-react/chat/service';
+import { ApIcon } from '@uipath/apollo-react/material/components/ap-icon';
+import { ApTypography } from '@uipath/apollo-react/material/components/ap-typography';
 import React from 'react';
-import { ApTypography } from '../../../ap-typography';
-import { useScheduledCallback } from '../../hooks/use-scheduled-callback';
-import { useChatState } from '../../providers/chat-state-provider';
-import type { AutopilotChatCustomHeaderAction } from '../../service';
 import { AutopilotChatTooltip } from '../common/tooltip';
 
 const StyledMenuItem = styled(MenuItem)(() => ({

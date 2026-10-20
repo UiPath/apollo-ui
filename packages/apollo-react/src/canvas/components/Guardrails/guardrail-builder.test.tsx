@@ -4,6 +4,7 @@ import { axe } from 'jest-axe';
 import type { ReactElement } from 'react';
 import { describe, expect, expectTypeOf, it, vi } from 'vitest';
 import {
+  CLASSIFIER_WIRE,
   HARMFUL_CONTENT_WIRE,
   PII_DETECTION_WIRE,
   SENTIMENT_WIRE,
@@ -199,6 +200,138 @@ describe('GuardrailBuilder', () => {
         />
       );
       expect(screen.getByText(/guardrail feature is disabled/i)).toBeInTheDocument();
+    });
+  });
+
+  describe('disabled by the AI Trust Layer policy', () => {
+    const POLICY_COPY = /disabled by your organization's AI Trust Layer policy/;
+
+    function renderBuilder(
+      definition: GuardrailDefinition,
+      props?: Partial<GuardrailBuilderProps>
+    ) {
+      return render(
+        <GuardrailBuilder
+          open
+          inline
+          hideHeader
+          definition={definition}
+          scope="Agent"
+          guardrail={makeGuardrail()}
+          onSave={vi.fn()}
+          onCancel={vi.fn()}
+          {...props}
+        />
+      );
+    }
+
+    it('warns that runs skip the guardrail, and keeps Save disabled', () => {
+      renderBuilder(makeDef({ status: 'Disabled', disabledReason: 'Policy' }));
+
+      // A warning (`role="status"`), like Unauthorised and FeatureDisabled: the run goes ahead.
+      expect(screen.getByRole('status')).toHaveTextContent(POLICY_COPY);
+      expect(screen.getByRole('status')).toHaveTextContent('is skipped when the agent runs');
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /^save$/i })).toBeDisabled();
+    });
+
+    it('takes the host override', () => {
+      renderBuilder(makeDef({ status: 'Disabled', disabledReason: 'Policy' }), {
+        labels: { policyDisabledMessage: 'Off by policy' },
+      });
+
+      expect(screen.getByRole('status')).toHaveTextContent('Off by policy');
+    });
+
+    describe('with the policy name', () => {
+      const policyDisabled = () => makeDef({ status: 'Disabled', disabledReason: 'Policy' });
+
+      it('names the policy, emphasized', () => {
+        renderBuilder(policyDisabled(), { policyName: 'Enterprise AI Trust Layer policy' });
+
+        const banner = screen.getByRole('status');
+        expect(banner).toHaveTextContent(
+          'Disabled by AI Trust Layer policy: Enterprise AI Trust Layer policy. This guardrail is skipped when the agent runs.'
+        );
+        expect(banner.querySelector('em')).toHaveTextContent('Enterprise AI Trust Layer policy');
+      });
+
+      it.each([
+        ['blank', '  '],
+        ['empty', ''],
+      ])('falls back to the generic wording when it is %s', (_, policyName) => {
+        renderBuilder(policyDisabled(), { policyName });
+
+        expect(screen.getByRole('status')).toHaveTextContent(POLICY_COPY);
+        expect(screen.getByRole('status').querySelector('em')).toBeNull();
+      });
+
+      it('takes the host override of the named template', () => {
+        renderBuilder(policyDisabled(), {
+          policyName: 'Enterprise',
+          labels: { policyDisabledNamedMessage: 'Off by {{policyName}}.' },
+        });
+
+        expect(screen.getByRole('status')).toHaveTextContent('Off by Enterprise.');
+      });
+
+      it('does not name the policy on any other banner', () => {
+        renderBuilder(makeDef({ status: 'Unauthorised' }), { policyName: 'Enterprise' });
+
+        expect(screen.queryByText(/Enterprise/)).not.toBeInTheDocument();
+      });
+    });
+
+    it.each([
+      ['an unknown reason', 'Retired'],
+      ['no reason', undefined],
+    ])('shows no banner for a disabled built-in validator with %s, as before', (_, reason) => {
+      renderBuilder(makeDef({ status: 'Disabled', disabledReason: reason }));
+
+      expect(screen.queryByText(POLICY_COPY)).not.toBeInTheDocument();
+      expect(document.querySelector('[data-slot="guardrail-status-banner"]')).toBeNull();
+    });
+
+    it('reads the reason only on a Disabled definition', () => {
+      renderBuilder(makeDef({ status: 'FeatureDisabled', disabledReason: 'Policy' }));
+
+      expect(screen.queryByText(POLICY_COPY)).not.toBeInTheDocument();
+      expect(screen.getByText(/guardrail feature is disabled/i)).toBeInTheDocument();
+    });
+
+    it('keeps a BYO configuration on its own error even with the policy reason', () => {
+      renderBuilder(
+        makeDef({
+          validator: 'vendor_validator',
+          byoValidatorName: 'my-pii',
+          status: 'Disabled',
+          disabledReason: 'Policy',
+        }),
+        { guardrail: makeGuardrail({ validatorType: 'byo', byoValidatorName: 'my-pii' }) }
+      );
+
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        "This guardrail's configuration has been disabled"
+      );
+      expect(screen.queryByText(POLICY_COPY)).not.toBeInTheDocument();
+    });
+
+    it('renders straight from the definitions layer', () => {
+      const [definition] = enrichGuardrailDefinitions([
+        { ...PII_DETECTION_WIRE, status: 'Disabled', disabledReason: 'Policy' },
+      ]);
+      if (definition === undefined) throw new Error('the fixture did not enrich');
+      renderBuilder(definition);
+
+      expect(screen.getByRole('status')).toHaveTextContent(POLICY_COPY);
+    });
+
+    it('has no axe violations', async () => {
+      const { container } = renderBuilder(
+        makeDef({ status: 'Disabled', disabledReason: 'Policy' })
+      );
+
+      expect(await axe(container)).toHaveNoViolations();
     });
   });
 
@@ -1634,6 +1767,63 @@ describe('renderParameter passthrough', () => {
   });
 });
 
+// The classifier stores a threshold only for a question the user tuned, and a question with no
+// entry runs at the backend's 0.5. Filling the gap the way a rendered map's rows are filled
+// (default, then `min`) would save 0 and flag every payload.
+describe('a threshold map the host renders', () => {
+  const HOST_IDS = ['selectedQuestions', 'questionThresholds', 'questions', 'modelVendor', 'model'];
+
+  function saveClassifier(overrideParameterIds?: readonly string[]) {
+    const [definition] = enrichGuardrailDefinitions([CLASSIFIER_WIRE]);
+    if (!definition) throw new Error('expected one enriched definition');
+    const onSave = vi.fn();
+    render(
+      <GuardrailBuilder
+        open
+        inline
+        hideHeader
+        definition={definition}
+        scope="Llm"
+        guardrail={makeGuardrail({
+          selector: { scopes: ['Llm'] },
+          validatorType: 'classifier',
+          validatorParameters: [
+            {
+              $parameterType: 'enum-list',
+              id: 'selectedQuestions',
+              value: ['harmful_hate', 'secrets_passwords'],
+            },
+            // `pii_health_information` is no longer selected.
+            {
+              $parameterType: 'map-enum',
+              id: 'questionThresholds',
+              value: { harmful_hate: 0.75, pii_health_information: 0.3 },
+            },
+            { $parameterType: 'enum', id: 'model', value: 'jev-1.13.0' },
+            { $parameterType: 'text', id: 'modelVendor', value: 'typesafe' },
+          ],
+        })}
+        renderParameter={(ctx) => (HOST_IDS.includes(ctx.definition.id) ? null : undefined)}
+        overrideParameterIds={overrideParameterIds}
+        onSave={onSave}
+        onCancel={vi.fn()}
+      />
+    );
+    fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
+    const saved = onSave.mock.calls[0]?.[0] as GuardrailBuilderValue | undefined;
+    return saved?.validatorParameters.find((p) => p.id === 'questionThresholds')?.value;
+  }
+
+  it('leaves a key the host never stored unset, and still drops a deselected one', () => {
+    expect(saveClassifier(HOST_IDS)).toEqual({ harmful_hate: 0.75 });
+  });
+
+  it('fills the map as before when the host does not declare it', () => {
+    // Without the declared ids only the form knows which parameters the host claims.
+    expect(saveClassifier()).toEqual({ harmful_hate: 0.75, secrets_passwords: 0 });
+  });
+});
+
 describe('saveDisabled passthrough', () => {
   it('disables Save while the host gate is on, on top of internal validation', () => {
     const { rerender } = render(
@@ -1749,10 +1939,10 @@ describe('saveDisabled passthrough', () => {
 });
 
 describe('file support indicator', () => {
-  const appliesTo = (defaultValue: string): GuardrailParameterDefinition => ({
-    id: 'appliesTo',
+  const detectionScope = (defaultValue: string): GuardrailParameterDefinition => ({
+    id: 'detectionScope',
     type: 'enum',
-    label: 'Applies to',
+    label: 'Detection scope',
     required: false,
     defaultValue,
     options: ['Text', 'Files', 'Both'],
@@ -1776,10 +1966,10 @@ describe('file support indicator', () => {
       defaultValue: '',
       options: ['gpt-4o'],
     },
-    appliesTo('Both'),
+    detectionScope('Both'),
   ];
   // The five GA validators default to Text; the judge to Both.
-  const gaParameters: GuardrailParameterDefinition[] = [threshold, appliesTo('Text')];
+  const gaParameters: GuardrailParameterDefinition[] = [threshold, detectionScope('Text')];
   const SUPPORTED: GuardrailFileSupport = {
     supported: true,
     formats: ['Text', 'Pdf', 'Image'],
@@ -1807,13 +1997,15 @@ describe('file support indicator', () => {
     );
   }
 
-  const storedAppliesTo = (value: string) =>
-    makeGuardrail({ validatorParameters: [{ $parameterType: 'enum', id: 'appliesTo', value }] });
+  const storedDetectionScope = (value: string) =>
+    makeGuardrail({
+      validatorParameters: [{ $parameterType: 'enum', id: 'detectionScope', value }],
+    });
 
   const slot = (container: HTMLElement, name: string) =>
     container.querySelector(`[data-slot="${name}"]`);
 
-  function expectUnderAppliesTo(container: HTMLElement) {
+  function expectUnderDetectionScope(container: HTMLElement) {
     const footer = slot(container, 'guardrail-parameter-footer');
     expect(footer).not.toBeNull();
     expect(footer).toHaveTextContent(READS);
@@ -1823,7 +2015,9 @@ describe('file support indicator', () => {
       slot(container, 'guardrail-file-support-warning') as HTMLElement
     );
     expect(
-      screen.getByRole('combobox', { name: /Applies to/ }).compareDocumentPosition(footer as Node)
+      screen
+        .getByRole('combobox', { name: /Detection scope/ })
+        .compareDocumentPosition(footer as Node)
     ).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     // Nowhere else, in particular not above the parameters.
     expect(container.querySelectorAll('[data-slot="guardrail-file-support"]')).toHaveLength(1);
@@ -1846,48 +2040,50 @@ describe('file support indicator', () => {
     expect(slot(container, 'guardrail-parameter-footer')).toBeNull();
   }
 
-  async function pickAppliesTo(option: string) {
-    fireEvent.click(screen.getByRole('combobox', { name: /Applies to/ }));
+  async function pickDetectionScope(option: string) {
+    fireEvent.click(screen.getByRole('combobox', { name: /Detection scope/ }));
     fireEvent.click(await screen.findByRole('option', { name: option }));
   }
 
-  it('says nothing about files while a GA validator applies to its default, Text', () => {
+  it('says nothing about files while a GA validator keeps its default, Text only', () => {
     const { container } = renderFileBuilder({ parameters: gaParameters, fileSupport: SUPPORTED });
 
-    expect(screen.getByRole('combobox', { name: /Applies to/ })).toHaveTextContent('Text only');
+    expect(screen.getByRole('combobox', { name: /Detection scope/ })).toHaveTextContent(
+      'Text only'
+    );
     expectNothingAboutFiles(container);
   });
 
-  it('describes files under Applies to for the judge, which defaults to Both', () => {
+  it('describes files under Detection scope for the judge, which defaults to Both', () => {
     const { container } = renderFileBuilder({
       validator: 'llm_as_judge',
       parameters: judgeParameters,
       fileSupport: SUPPORTED,
     });
 
-    expect(screen.getByRole('combobox', { name: /Applies to/ })).toHaveTextContent(
+    expect(screen.getByRole('combobox', { name: /Detection scope/ })).toHaveTextContent(
       'Text and files'
     );
-    expectUnderAppliesTo(container);
+    expectUnderDetectionScope(container);
   });
 
   it('shows the lines as soon as Files is picked, and hides them again on Text', async () => {
     const { container } = renderFileBuilder({ parameters: gaParameters, fileSupport: SUPPORTED });
     expectNothingAboutFiles(container);
 
-    await pickAppliesTo('Files only');
-    expectUnderAppliesTo(container);
+    await pickDetectionScope('Files only');
+    expectUnderDetectionScope(container);
 
-    await pickAppliesTo('Text only');
+    await pickDetectionScope('Text only');
     expectNothingAboutFiles(container);
   });
 
   it('shows the lines when Both is picked', async () => {
     const { container } = renderFileBuilder({ parameters: gaParameters, fileSupport: SUPPORTED });
 
-    await pickAppliesTo('Text and files');
+    await pickDetectionScope('Text and files');
 
-    expectUnderAppliesTo(container);
+    expectUnderDetectionScope(container);
   });
 
   it.each([
@@ -1898,10 +2094,10 @@ describe('file support indicator', () => {
   ])('shows the lines for a stored %j over a Text default', (value) => {
     const { container } = renderFileBuilder(
       { parameters: gaParameters, fileSupport: SUPPORTED },
-      { guardrail: storedAppliesTo(value) }
+      { guardrail: storedDetectionScope(value) }
     );
 
-    expectUnderAppliesTo(container);
+    expectUnderDetectionScope(container);
   });
 
   it.each([
@@ -1911,18 +2107,18 @@ describe('file support indicator', () => {
   ])('hides the lines for a stored %j over a Both default', (value) => {
     const { container } = renderFileBuilder(
       { validator: 'llm_as_judge', parameters: judgeParameters, fileSupport: SUPPORTED },
-      { guardrail: storedAppliesTo(value) }
+      { guardrail: storedDetectionScope(value) }
     );
 
     expectNothingAboutFiles(container);
   });
 
-  it('falls back to the default for a guardrail saved without appliesTo', () => {
+  it('falls back to the default for a guardrail saved without detectionScope', () => {
     const judge = renderFileBuilder(
       { validator: 'llm_as_judge', parameters: judgeParameters, fileSupport: SUPPORTED },
       { guardrail: makeGuardrail() }
     );
-    expectUnderAppliesTo(judge.container);
+    expectUnderDetectionScope(judge.container);
     judge.unmount();
 
     const ga = renderFileBuilder(
@@ -1953,7 +2149,7 @@ describe('file support indicator', () => {
     );
   });
 
-  it('keeps an unsupported line above the parameters even beside an appliesTo set to Text', () => {
+  it('keeps an unsupported line above the parameters even with detectionScope set to Text', () => {
     const { container } = renderFileBuilder({
       parameters: gaParameters,
       fileSupport: { supported: false, formats: [], unavailableReason: 'NotEnabled' },
@@ -1962,7 +2158,7 @@ describe('file support indicator', () => {
     expectAboveParameters(container, 'Text prompts only');
   });
 
-  it('keeps supported lines above the parameters, ungated, without an appliesTo parameter', () => {
+  it('keeps supported lines above the parameters, ungated, without a detectionScope', () => {
     const { container } = renderFileBuilder({ parameters: [threshold], fileSupport: SUPPORTED });
 
     expectAboveParameters(container, READS);
@@ -1997,20 +2193,20 @@ describe('file support indicator', () => {
     const onSave = vi.fn();
     renderFileBuilder({ parameters: gaParameters, fileSupport: SUPPORTED }, { onSave });
 
-    await pickAppliesTo('Files only');
+    await pickDetectionScope('Files only');
     fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
 
     expect(onSave).toHaveBeenCalledTimes(1);
     const saved = onSave.mock.calls[0]?.[0] as GuardrailBuilderValue;
-    expect(saved.validatorParameters.map((p) => p.id)).toEqual(['threshold', 'appliesTo']);
+    expect(saved.validatorParameters.map((p) => p.id)).toEqual(['threshold', 'detectionScope']);
     expect(saved.validatorParameters).toContainEqual({
       $parameterType: 'enum',
-      id: 'appliesTo',
+      id: 'detectionScope',
       value: 'Files',
     });
   });
 
-  it('keeps the lines under Applies to when a host overrides another parameter', () => {
+  it('keeps the lines under Detection scope when a host overrides another parameter', () => {
     const { container } = renderFileBuilder(
       { validator: 'llm_as_judge', parameters: judgeParameters, fileSupport: SUPPORTED },
       {
@@ -2021,10 +2217,10 @@ describe('file support indicator', () => {
     );
 
     expect(screen.getByTestId('host-picker')).toBeInTheDocument();
-    expectUnderAppliesTo(container);
+    expectUnderDetectionScope(container);
   });
 
-  it('renders the appliesTo dropdown from the definition, with the backend’s labels', () => {
+  it('renders the detectionScope dropdown from the definition, with the backend’s labels', () => {
     // The generic enum renderer is expected to need no change for this parameter; this is
     // the assertion that keeps that true.
     renderFileBuilder({
@@ -2032,12 +2228,12 @@ describe('file support indicator', () => {
       fileSupport: { supported: true, formats: ['Text'] },
     });
 
-    expect(screen.getByRole('combobox', { name: /Applies to/ })).toHaveTextContent(
+    expect(screen.getByRole('combobox', { name: /Detection scope/ })).toHaveTextContent(
       'Text and files'
     );
   });
 
-  it('leaves the host model picker untouched when appliesTo sits beside it', () => {
+  it('leaves the host model picker untouched when detectionScope sits beside it', () => {
     // The picker keys off `id === 'model'`; a second enum parameter in the same list must
     // not reach it, and must not stop the picker from claiming its own.
     const claimed: string[] = [];
@@ -2057,24 +2253,24 @@ describe('file support indicator', () => {
     expect(new Set(claimed)).toEqual(new Set(['model']));
     // The picker replaced the model enum, and only that one.
     expect(screen.queryByRole('combobox', { name: /Judge model/ })).not.toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: /Applies to/ })).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: /Detection scope/ })).toBeInTheDocument();
   });
 
-  it('has no accessibility violations with the lines under Applies to', async () => {
+  it('has no accessibility violations with the lines under Detection scope', async () => {
     const { container } = renderFileBuilder({
       validator: 'llm_as_judge',
       parameters: judgeParameters,
       fileSupport: SUPPORTED,
     });
 
-    expectUnderAppliesTo(container);
+    expectUnderDetectionScope(container);
     expect(await axe(container)).toHaveNoViolations();
   });
 });
 
 describe('file support indicator on a parameterless definition', () => {
   it('still says what the validator reads when it has no parameters left', () => {
-    // A validator whose only parameter was `appliesTo` arrives with none once file support is
+    // A validator whose only parameter was `detectionScope` arrives with none once file support is
     // withheld, and that is precisely the card that must say "Text prompts only".
     render(
       <GuardrailBuilder

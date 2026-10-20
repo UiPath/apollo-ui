@@ -1,8 +1,6 @@
-import nextra from "nextra";
+import { createMDX } from "fumadocs-mdx/next";
 
-const withNextra = nextra({
-  defaultShowCopyCode: true,
-});
+const withMDX = createMDX();
 
 // Coded App preview builds (uip-go) produce a static export served from a
 // sub-path of the Coded App host. There is no server there, so rewrites and
@@ -31,7 +29,7 @@ if (codedApp) {
   }
 }
 
-export default withNextra({
+export default withMDX({
   ...(codedApp
     ? {
         output: "export",
@@ -50,6 +48,16 @@ export default withNextra({
         },
       }
     : {
+        redirects() {
+          return [
+            {
+              // The components overview moved to the folder index.
+              source: "/components/overview",
+              destination: "/components",
+              permanent: true,
+            },
+          ];
+        },
         rewrites() {
           return [
             {
@@ -101,9 +109,4 @@ export default withNextra({
         },
       }),
   reactCompiler: true,
-  turbopack: {
-    resolveAlias: {
-      "next-mdx-import-source-file": "./mdx-components.tsx",
-    },
-  },
 });

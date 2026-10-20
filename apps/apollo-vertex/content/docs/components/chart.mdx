@@ -1,0 +1,42 @@
+---
+title: "Chart"
+description: "Beautiful charts using Recharts with consistent theming and styling."
+---
+
+## Usage
+
+```tsx
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@uipath/apollo-vertex"
+import { Bar, BarChart } from "recharts"
+```
+
+```tsx
+const chartConfig = {
+  desktop: {
+    label: "Desktop",
+    color: "hsl(var(--chart-1))",
+  },
+}
+
+<ChartContainer config={chartConfig}>
+  <BarChart data={data}>
+    <Bar dataKey="desktop" fill="var(--color-desktop)" />
+    <ChartTooltip content={<ChartTooltipContent />} />
+  </BarChart>
+</ChartContainer>
+```
+
+## Chart Types
+
+The chart component supports multiple chart types from Recharts:
+
+- **Bar Charts** - Vertical and horizontal bar charts
+- **Line Charts** - Single and multiple line charts
+- **Area Charts** - Filled area charts with gradients
+- **Pie Charts** - Standard and donut pie charts
+- **Radar Charts** - Spider/radar charts
+- **Radial Charts** - Radial bar charts

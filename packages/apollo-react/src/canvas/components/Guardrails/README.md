@@ -18,7 +18,8 @@ read-only governance guardrails a policy enforces), plus the leaves the sections
 `GuardrailStatusChip`, `GuardrailStatusBanner`, `GuardrailFileSupportIndicator` and
 `MixedScopesBanner`.
 `GuardrailScopeSelector`, the builder's scope and tool targeting field, is exported on its own
-too.
+too. The classifier guardrail adds `useClassifierQuestions`, two editors and
+`useClassifierGuardrailParameters`.
 
 ## Hover and focus, family-wide
 
@@ -110,6 +111,10 @@ cache rather than adopting a second one, and it is why the hook stays a `useStat
 - **`hiddenValidators` hides nothing by default** and never hides a BYO definition. Which
   validators a product exposes is an entitlement decision, so it stays with the caller: Flow
   passes `['prompt_injection']`, Agents passes nothing.
+- **`disabledReason` is an open string.** A `Disabled` built-in validator carries
+  `disabledReason: 'Policy'` when the AI Trust Layer policy switched it off, and runs skip it
+  rather than fail. The parser keeps any string, so a reason added later still parses, and
+  the builder and the list act on `'Policy'` alone. A disabled BYO configuration carries none.
 - **BYO folder placement stays host-side.** Resolving it needs each product's connections API
   (Agents pages `fetchResources`, Flow calls `getConnectionById`), so the hook does not reach
   for it. Stamp the result on afterwards:
@@ -136,8 +141,9 @@ moved is the six validators both products had already transcribed by hand, where
 copies in sync is what produced `finNationalId` in one product and `fiNationalId` in the
 other. The components are unchanged: they still resolve nothing and render what they are
 handed, so a host that would rather keep its own table simply does not call
-`enrichGuardrailDefinitions`. A validator only one product ships (sentiment, Agents only so
-far) takes that product's wording verbatim, so its own screens and these read the same.
+`enrichGuardrailDefinitions`. A validator only one product ships (sentiment and the
+classifier, Agents only so far) takes that product's wording verbatim, so its own screens and
+these read the same.
 
 Message ids use the raw wire values, never a transcribed slug:
 
@@ -145,7 +151,12 @@ Message ids use the raw wire values, never a transcribed slug:
 guardrails.definitions.<validator>.display-name | .description | .usage-note
 guardrails.definitions.<validator>.param.<paramId>.label | .tooltip
 guardrails.definitions.<validator>.option.<paramId>.<RawWireValue>
+guardrails.definitions.<validator>.category.<RawGroupId>
 ```
+
+The last form is `categoryLabels`: headings for the groups a validator's own catalog arrives in,
+which no parameter carries, so enrichment leaves them alone. Only the classifier has one, for
+the categories its question catalog is grouped in (see [Classifier guardrail](#classifier-guardrail)).
 
 Transcribing is exactly how the two products ended up keying the same Finland entity as
 `finNationalId` and `fiNationalId`; `USSocialSecurityNumber` is the value we persist, so it is
@@ -241,7 +252,7 @@ import { GuardrailList } from '@uipath/apollo-react/canvas/guardrails';
   | `hideHeader` | `false` | Agents owns the section title and its add affordance. |
   | `footer` | none | Agents' add affordance sits *below* the rows and swaps itself for an entitlement line, which the header-only `addSlot` cannot express. |
   | `emptyState` | the default line | Agents renders nothing when empty: pass `null`. An explicit `null` is honoured, so the check is for an absent prop, not a falsy value. |
-  | `rowActivatesEdit` | `false` | Agents opens the editor by clicking the row body. The body becomes a `role="button"`, whose children ARIA treats as presentational, so the status and administration chips, the BYO notices and the description are named in its `aria-describedby`, in that reading order. The chips are state that changes what activating the row does. The lifecycle `Preview` chip, the provider line, the action badge and the scopes stay presentational: a host that needs those announced should render them outside the activatable body. |
+  | `rowActivatesEdit` | `false` | Agents opens the editor by clicking the row body. The body becomes a `role="button"`, whose children ARIA treats as presentational, so the status and administration chips, the BYO and policy notices and the description are named in its `aria-describedby`, in that reading order. The chips are state that changes what activating the row does. The lifecycle `Preview` chip, the provider line, the action badge and the scopes stay presentational: a host that needs those announced should render them outside the activatable body. |
   | `renderItemActions` | inline buttons | Agents' actions are an overflow menu. The slot receives `defaultActions`, so it can add to them instead of replacing them. |
   | `renderRowTooltip` | none | Agents hovers a combined description, provider and scopes tooltip over the row body. A tooltipped body that is not activatable gets `tabIndex={0}`, so the content opens on focus as well as hover. On an activatable row the body's own `aria-describedby` wins over the open tooltip's, because Radix `Slot` lets the child's non-handler props override the slot's; that is the intended precedence, since the tooltip only repeats row metadata the row already announces. |
   | `formatScopes` / `formatAction` | raw values | Scope and action wording is product copy; return `null` to hide either line. |
@@ -272,6 +283,12 @@ import { GuardrailList } from '@uipath/apollo-react/canvas/guardrails';
   several `tailwind.consumer.css` theme blocks and wind's `FormFieldError` settled on
   `text-error`. The BYO notices keep `role="alert"` rather than the family banner's
   `role="status"`: Flow announces them on mount today and the shared row keeps that parity.
+- **The policy notice is a warning.** A built-in validator row whose definition is `Disabled`
+  with `disabledReason: 'Policy'` shows `policyDisabledNotice` in `text-warning`, with no
+  live-region role: the run goes ahead without the guardrail, and nothing on the row changes that.
+  With `policyName` it names the policy instead (`policyDisabledNamedNotice`, the name in `<em>`
+  as in the centralized caption). The hosts already load that name for
+  `CentralizedGuardrailsSection`; a blank one falls back to the generic notice.
 
 ### Chips and notices
 
@@ -600,7 +617,12 @@ orchestration. The `Details in a dialog` and `Details in a panel overlay` storie
   (SSN)", not `USSocialSecurityNumber`) and each validator names its own configuration
   ("Severity thresholds" for harmful content, "Detection thresholds" for PII). With no
   definition matched it falls back to generic labels and raw values, which is what both
-  products render today.
+  products render today. When the definition doesn't declare one of a built-in's own
+  parameters, the row takes the validator's curated copy ("Rule prompt", "Languages"). The
+  detection scope, which Agents adds to every centralized PII, prompt-attack, harmful-content
+  and judge guardrail even when the file-support flags hide it from the definitions, falls
+  back to the details' own "Detection scope" / "Files only" labels, so the dialog reads as the
+  per-agent builder does.
 - **A read-only value is text, not a disabled input.** The family's parameter editors are the
   MetadataForm stack and have no read-only mode, and these values arrive as untyped wire data
   rather than `GuardrailValidatorParameter`s. A disabled input, which is how Flow renders this
@@ -641,6 +663,10 @@ Contract highlights:
 
 - **Owns form state.** Initialized from `definition`/`guardrail`/`defaultName` at mount —
   remount with a new `key` to reset (all known hosts already remount per session).
+- **Saves a host-rendered threshold map as the host left it.** Every `map-enum` is pruned to
+  its `keySource` selection; one the builder renders also gets its missing keys filled, so it
+  matches `MapEnumField`'s rows. A map in `overrideParameterIds` is not filled: the classifier
+  leaves untuned questions unset, and filling them with `min` would save 0.
 - **Owns validation and gates its own Save.** Messages localize through lingui
   (overridable per string via `labels`); a host that validates externally (e.g. zod) passes
   `errors` — host messages display immediately, win per field, and gate Save. The pure
@@ -657,6 +683,12 @@ Contract highlights:
   title, as both do; `providerField` adds a read-only Provider field above the name holding
   `definition.byoConnectorName`, as Flow's does. A host composing its own `title` (Agents)
   places its own BYO chip there.
+- **One status banner, from the definition.** A disabled BYO configuration is an error
+  (`byoDisabledMessage`). A built-in validator the AI Trust Layer policy switched off
+  (`status: 'Disabled'`, `disabledReason: 'Policy'`) is a warning (`policyDisabledMessage`),
+  since the run skips it and goes ahead; `Unauthorised` and `FeatureDisabled` are warnings too.
+  Pass `policyName` and that banner names the policy (`policyDisabledNamedMessage`), as
+  `GuardrailList` does. Save stays disabled for every status but `Available`.
 - Requires an ancestor `TooltipProvider`.
 
 `GuardrailFormLayout` is exported standalone for hosts composing their own screen: three
@@ -665,6 +697,46 @@ modes (inline+hideHeader / inline with back-button header / modal Dialog), `seco
 that had it when it opened, looking through open shadow roots (Agents' host is one). Radix
 returns focus only to a `DialogTrigger`, which no host uses, so without this focus was lost in
 light DOM too.
+
+## Classifier guardrail
+
+The `classifier` validator (Agents#6449) asks predefined questions, picked across categories,
+and the author's own. Its definition uses ordinary `$parameterType`s, which the generic form
+renders as a raw list of question names, so the family ships its editors. The wire, unchanged:
+
+| parameter | holds |
+| --- | --- |
+| `selectedQuestions` (`enum-list`) | predefined question names |
+| `questionThresholds` (`map-enum`) | 0..1 per tuned question; absent runs at the backend's 0.5. A score question stores `level / (levels - 1)` |
+| `questions` (`text-list`) | the author's own yes/no questions |
+| `questionCriteriaTrue.{i}` / `questionCriteriaFalse.{i}` / `questionThreshold.{i}` | sidecars of `questions[i]`, rewritten on every edit |
+| `model` (`enum`, no options) + `modelVendor` (`text`, required) | the host's model picker writes both |
+
+`useClassifierQuestions` loads `GET /api/execution/guardrails/classifier-questions` with the
+same context, host shapes and request behaviour as `useGuardrailDefinitions`; the question text
+stays the backend's, and only the category headings are curated copy (`categoryLabels`).
+`ClassifierQuestionPicker` and `ClassifierCustomQuestionsEditor` are the two editors, and
+`readClassifierCustomQuestions` / `writeClassifierCustomQuestions` / `hasClassifierQuestions`
+the pure helpers. `useClassifierGuardrailParameters` is the seam both hosts compose:
+
+```tsx
+const { categories } = useClassifierQuestions(ctx, { enabled: isClassifier });
+const classifier = useClassifierGuardrailParameters({ definition, categories });
+
+<GuardrailBuilder
+  renderParameter={(c) => classifier.renderParameter(c) ?? renderModelPicker(c)}
+  overrideParameterIds={[...classifier.overrideParameterIds, 'model']}
+  onSave={(value) => classifier.validateParameters(value.validatorParameters) && persist(value)}
+/>;
+```
+
+It renders the picker for `selectedQuestions` (writing both lists at once), the editor for
+`questions`, and a message under `modelVendor` when a model was saved without one; `model` falls
+through to the host. `validateParameters` is the rule the builder cannot know: at least one
+question across both lists. Declare the ids as above, which also keeps an untuned threshold unset
+(see GuardrailBuilder). The editors mount through `renderParameter`, the registered
+`guardrail-render-parameter` component, not a renderer beside `MetadataForm`; they are not built
+into the builder because the catalog and the model picker are the host's.
 
 ## CustomGuardrailBuilder
 
@@ -817,20 +889,20 @@ sends neither gets exactly the line above. Both are ignored when `supported` is 
 
 ### In GuardrailBuilder
 
-Where it renders depends on `fileSupport` and on the definition's `appliesTo` parameter:
+Where it renders depends on `fileSupport` and on the definition's `detectionScope` parameter:
 
-| `fileSupport` | `appliesTo` parameter | renders |
+| `fileSupport` | `detectionScope` parameter | renders |
 | --- | --- | --- |
 | absent | any | nothing |
-| `supported: true` | present | under the Applies to field, only while it selects Files or Both |
+| `supported: true` | present | under the Detection scope field, only while it selects Files or Both |
 | `supported: true` | absent | above the parameters, always |
 | `supported: false` | any | above the parameters, always |
 
-What Applies to selects is `getGuardrailAppliesTo(definitions, parameters)`, which reads it the
-way the backend does: the stored value, trimmed and case-insensitive, when non-empty, otherwise
-the definition's `defaultValue` (Text for the five GA validators, Both for `llm_as_judge`). Any
-other value, Flow's legacy `Prompts` included, is Text. The builder recomputes it on every edit,
-so the lines follow the select as it changes.
+What Detection scope selects is `getGuardrailDetectionScope(definitions, parameters)`, which reads
+it the way the backend does: the stored value, trimmed and case-insensitive, when non-empty,
+otherwise the definition's `defaultValue` (Text for the five GA validators, Both for
+`llm_as_judge`). Any other value, Flow's legacy `Prompts` included, is Text. The builder
+recomputes it on every edit, so the lines follow the select as it changes.
 
 ## GuardrailActionSection
 
@@ -1127,6 +1199,11 @@ state and exposes a plugin seam, so the translation lives in one named place,
   canvas catalog. Domain copy for a validator this package has not learned (a BYO manifest, a
   newly shipped backend parameter) still belongs to whoever ships it, and reaches the form the
   same way.
+- **Preview options.** An enum-list's `previewOptions` (raw values, from the wire) read
+  "(Preview)" after their label in the multiselect list and the chip editor
+  (`previewOptionLabel`), and carry a `Preview` chip on their row in a map-enum keyed by that
+  enum-list (`previewOption`). Agents uses it for the PII entities behind
+  `EnablePreviewPiiEntities`.
 - **No product types cross the boundary.** `GuardrailValidatorParameter` structurally mirrors
   the wire shape both products persist, so host unions assign cleanly in both directions.
 - **Per-parameter override.** `renderParameter(ctx)` replaces the editor for any parameter
@@ -1135,7 +1212,7 @@ state and exposes a plugin seam, so the translation lives in one named place,
   parameters (e.g. a model picker storing connection metadata).
 - **Per-parameter footer.** `parameterFooters` maps a parameter id to a node rendered directly
   below that parameter's editor, overridden or not (`GuardrailBuilder` puts file support under
-  `appliesTo` this way). A nullish or `false` entry renders nothing and takes no space, so a
+  `detectionScope` this way). A nullish or `false` entry renders nothing and takes no space, so a
   footer can come and go with a value; ids with no definition are ignored.
 
 ### Save-time companions

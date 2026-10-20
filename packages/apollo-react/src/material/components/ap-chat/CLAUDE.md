@@ -27,37 +27,17 @@ ChatService (service layer for state & event management)
 
 ## File Structure
 
+The service, providers, hooks, renderer-agnostic utils, markdown parsers and locales live in
+`src/chat` (see `src/chat/README.md`). This folder holds the Material renderer.
+
 ```
 ap-chat/
-├── ap-chat.tsx                 # Main React component (entry point)
+├── ap-chat.tsx                 # ApChat: registers the Material renderer, renders ChatRoot
+├── MaterialChatRenderer.tsx    # The Material renderer (layouts, dropzone, MUI theme map)
 ├── index.ts                    # Public exports
 ├── DOCS.md                     # Complete API documentation
 ├── CLAUDE.md                   # This file - development guide
 ├── readme.md                   # Component overview
-│
-├── service/                    # Chat service layer
-│   ├── ChatService.ts          # Main chat service API
-│   ├── ChatInternalService.ts  # Internal state management
-│   ├── EventBus.ts             # Event pub/sub system
-│   ├── LocalHistory.ts         # IndexedDB history storage
-│   ├── StorageService.ts       # Browser storage wrapper
-│   ├── ContentPartBuilder.ts   # Citation builder utilities
-│   ├── ChatModel.ts            # Type definitions
-│   ├── ChatConstants.ts        # Constants
-│   └── index.ts                # Service exports
-│
-├── providers/                  # React Context providers for state
-│   ├── chat-service.provider.tsx       # ChatService access
-│   ├── chat-state-provider.tsx         # Chat mode, config state
-│   ├── chat-width-provider.tsx         # Resizable width state
-│   ├── chat-scroll-provider.tsx        # Auto-scroll behavior
-│   ├── attachements-provider.tsx       # File attachments state
-│   ├── loading-provider.tsx            # Loading indicators
-│   ├── error-provider.tsx              # Error messages
-│   ├── streaming-provider.tsx          # Streaming response state
-│   ├── picker-provider.tsx             # Model/agent mode picker state
-│   ├── locale-provider.tsx             # Internationalization
-│   └── theme-provider.tsx              # Theme configuration
 │
 ├── components/                 # UI components
 │   ├── layout/                 # Layout containers
@@ -103,34 +83,16 @@ ap-chat/
 │       ├── chat-audio-input.ts
 │       └── chat-audio-output.ts
 │
-├── hooks/                      # React hooks
-│   └── use-is-streaming-message.tsx
+├── utils/                      # Material-only helpers
+│   ├── file-to-icon.ts
+│   └── font-by-variant.ts
 │
-├── utils/                      # Utility functions
-│   ├── dynamic-padding.ts
-│   └── file-reader.ts
-│
-├── assets/                     # Static assets
-│   ├── autopilot-logo.svg
-│   ├── default-file.svg
-│   ├── word-file.svg
-│   ├── ppt-file.svg
-│   └── legacy-ap-icon/         # Legacy icon set
-│
-└── locales/                    # Internationalization
-    ├── en.json
-    ├── de.json
-    ├── es.json
-    ├── es-MX.json
-    ├── fr.json
-    ├── ja.json
-    ├── ko.json
-    ├── pt.json
-    ├── pt-BR.json
-    ├── ru.json
-    ├── tr.json
-    ├── zh-CN.json
-    └── zh-TW.json
+└── assets/                     # Static assets
+    ├── autopilot-logo.svg
+    ├── default-file.svg
+    ├── word-file.svg
+    ├── ppt-file.svg
+    └── legacy-ap-icon/         # Legacy icon set
 ```
 
 ## Usage
@@ -219,7 +181,7 @@ const MyComponent = styled('div')(({ theme }) => ({
 
 ### Adding a New Feature
 
-1. **Update service layer** in `service/` directory if needed
+1. **Update service layer** in `src/chat/service/` if needed
 2. **Create/modify React components** in `components/` directory
 3. **Update providers** if you need new state management
 4. **Test locally** using the Storybook chat story (see below)
@@ -277,7 +239,7 @@ The component uses React Context providers for state management. Each provider m
 
 ```typescript
 // Example: Using a provider in a component
-import { useChatState } from '../../providers/chat-state-provider';
+import { useChatState } from '../../../../../chat/headless/providers/chat-state-provider';
 
 const MyComponent = () => {
   const { chatMode, disabledFeatures } = useChatState();
@@ -312,15 +274,15 @@ const MyComponent = () => {
 
 ### Adding a New Message Renderer
 
-Built-in renderers are defined in the `APOLLO_MESSAGE_RENDERERS` array at `components/message/chat-message-content.tsx`.
+Material's built-in renderers are defined in the `MATERIAL_MESSAGE_RENDERERS` array at `components/message/chat-message-content.tsx`, and resolved by `resolveMessageRenderer` in `src/chat/headless/message-renderers.ts` (injected renderers win, unknown widgets fall back to markdown).
 
 To add a custom renderer:
 
-1. Create your renderer component
-2. Register it using `chatService.injectMessageRenderer('your-renderer-name', YourComponent)`
+1. Create a React component taking `{ message }`, or a `render(container, message)` function
+2. Register it using `chatService.injectMessageRenderer({ name: 'your-renderer-name', component: YourComponent })` (or `render`)
 3. Use by setting `widget: 'your-renderer-name'` on messages
 
-Or add a built-in renderer by adding to the `APOLLO_MESSAGE_RENDERERS` array.
+Or add a built-in renderer by adding to the `MATERIAL_MESSAGE_RENDERERS` array.
 
 ### Adding a New Action Button
 
@@ -363,7 +325,7 @@ The chat interface has several picker/menu components:
 
 ### Adding Internationalization
 
-1. Add translations to all locale files in `locales/` directory
+1. Add translations to all locale files in `src/chat/locales/`
 2. Use the `useLocale()` hook to access translations in components
 3. Test with multiple locales in the React playground
 
@@ -423,9 +385,9 @@ The chat interface has several picker/menu components:
 ## Key References
 
 - **API Documentation**: See `DOCS.md` for complete chat service API
-- **Chat Service**: `service/ChatService.ts` - Main API
+- **Chat Service**: `src/chat/service/ChatService.ts` - Main API
 - **Apollo Core Tokens**: `@uipath/apollo-core` package
-- **Type Definitions**: `service/ChatModel.ts`
+- **Type Definitions**: `src/chat/service/ChatModel.ts`
 
 ## Important Notes
 

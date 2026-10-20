@@ -66,6 +66,19 @@ export type {
   CentralizedGuardrailParameterDefinition,
   CentralizedGuardrailParameterRow,
 } from './centralized-types';
+export type { ClassifierCustomQuestionsEditorProps } from './classifier-custom-questions-editor';
+export { ClassifierCustomQuestionsEditor } from './classifier-custom-questions-editor';
+export type { ClassifierQuestionPickerProps } from './classifier-question-picker';
+export { ClassifierQuestionPicker } from './classifier-question-picker';
+export type { ClassifierCustomQuestion, ClassifierParameterLike } from './classifier-utils';
+export {
+  CLASSIFIER_DEFAULT_THRESHOLD,
+  CLASSIFIER_PARAMETER_IDS,
+  CLASSIFIER_VALIDATOR,
+  hasClassifierQuestions,
+  readClassifierCustomQuestions,
+  writeClassifierCustomQuestions,
+} from './classifier-utils';
 export type { EscalateActionFieldsProps } from './components/escalate-action-fields';
 export { EscalateActionFields } from './components/escalate-action-fields';
 export type { GuardrailActionSectionProps } from './components/guardrail-action-section';
@@ -123,6 +136,7 @@ export type {
 } from './definitions-parse';
 export { parseGuardrailDefinitions } from './definitions-parse';
 export type {
+  ClassifierQuestionGroupWire,
   GuardrailDefinitionWire,
   GuardrailParameterDefinitionWire,
   GuardrailParameterWireBase,
@@ -159,6 +173,7 @@ export type {
   GuardrailActionLabelKey,
   GuardrailActionLabels,
   GuardrailBuilderLabels,
+  GuardrailClassifierLabels,
   GuardrailFileSupportLabelOverrides,
   GuardrailFileSupportLabels,
   GuardrailFilterFieldSelectorLabelKey,
@@ -181,6 +196,8 @@ export {
   GUARDRAIL_ACTION_EN_LABELS,
   GUARDRAIL_ACTION_LABEL_KEYS,
   GUARDRAIL_BUILDER_EN_LABELS,
+  GUARDRAIL_CLASSIFIER_EN_LABELS,
+  GUARDRAIL_CLASSIFIER_EN_MESSAGES,
   GUARDRAIL_FILE_SUPPORT_EN_LABELS,
   GUARDRAIL_FILTER_FIELD_SELECTOR_EN_LABELS,
   GUARDRAIL_FILTER_FIELD_SELECTOR_LABEL_KEYS,
@@ -199,6 +216,7 @@ export {
   resolveCustomGuardrailBuilderLabels,
   resolveGuardrailActionLabels,
   resolveGuardrailBuilderLabels,
+  resolveGuardrailClassifierLabels,
   resolveGuardrailFileSupportLabels,
   resolveGuardrailFilterFieldSelectorLabels,
   resolveGuardrailFormLabels,
@@ -211,6 +229,7 @@ export {
   useCustomGuardrailBuilderLabels,
   useGuardrailActionLabels,
   useGuardrailBuilderLabels,
+  useGuardrailClassifierLabels,
   useGuardrailFileSupportLabels,
   useGuardrailFilterFieldSelectorLabels,
   useGuardrailFormLabels,
@@ -266,13 +285,25 @@ export {
   guardrailOperatorTakesValue,
 } from './rules-utils';
 export type {
-  GuardrailAppliesTo,
+  GuardrailDetectionScope,
   GuardrailParameterDefinition,
   GuardrailParameterRenderContext,
   GuardrailParameterType,
   GuardrailValidatorFormProps,
   GuardrailValidatorParameter,
 } from './types';
+export type {
+  ClassifierGuardrailParameters,
+  UseClassifierGuardrailParametersOptions,
+} from './use-classifier-guardrail-parameters';
+export { useClassifierGuardrailParameters } from './use-classifier-guardrail-parameters';
+export type {
+  ClassifierQuestion,
+  ClassifierQuestionCategory,
+  UseClassifierQuestionsOptions,
+  UseClassifierQuestionsResult,
+} from './use-classifier-questions';
+export { CLASSIFIER_QUESTIONS_PATH, useClassifierQuestions } from './use-classifier-questions';
 export type {
   GuardrailDefinitionsRequestContext,
   UseGuardrailDefinitionsOptions,
@@ -282,10 +313,11 @@ export {
   GUARDRAIL_DEFINITIONS_PATH,
   useGuardrailDefinitions,
 } from './use-guardrail-definitions';
+export type { SyncMapEnumParametersOptions } from './utils';
 export {
   dropEmptyOptionalParameters,
-  GUARDRAIL_APPLIES_TO_PARAMETER_ID,
-  getGuardrailAppliesTo,
+  GUARDRAIL_DETECTION_SCOPE_PARAMETER_ID,
+  getGuardrailDetectionScope,
   getOutOfRangeParameterIds,
   getRequiredEmptyParameterIds,
   seedGuardrailParameters,

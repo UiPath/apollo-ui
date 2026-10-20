@@ -1,0 +1,100 @@
+---
+title: "Sonner"
+description: "An opinionated toast component for React."
+---
+
+import { SonnerExamples } from '../guidelines/notifications/notification-examples';
+
+<Callout type="info">
+  For guidance on when to use Sonner vs. Alert, placement rules, and content guidelines, see the [In-product notification](/guidelines/notifications/in-product) guidelines.
+</Callout>
+
+<Preview>
+  <SonnerExamples />
+</Preview>
+
+## Setup
+
+Add the `<Toaster />` component once to your root route. Status colors, icons, close button, and positioning are included by default:
+
+```tsx
+import { createRootRoute, Outlet } from "@tanstack/react-router"
+import { Toaster } from "@uipath/apollo-vertex"
+
+export const Route = createRootRoute({
+  component: () => (
+    <>
+      <Outlet />
+      <Toaster />
+    </>
+  ),
+})
+```
+
+## Usage
+
+Call `toast` from `sonner`. Install it if your project doesn't have it yet:
+
+<PackageInstall packages="sonner" />
+
+```tsx
+import { toast } from "sonner"
+```
+
+```tsx
+toast.info("Background sync complete", {
+  description: "All data is up to date.",
+})
+
+toast.success("Changes saved", {
+  description: "Your updates have been applied.",
+})
+
+toast.warning("Storage almost full", {
+  description: "Consider removing unused files.",
+})
+
+toast.error("Upload failed", {
+  description: "Please check your connection and retry.",
+})
+```
+
+## Toaster props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `position` | `ToasterProps["position"]` | `"top-center"` | Position of the toast stack on screen |
+| `duration` | `number` | `5000` | Auto-dismiss delay in milliseconds |
+| `closeButton` | `boolean` | `true` | Show a close button on each toast |
+| `theme` | `"light" \| "dark" \| "system"` | — | Ignored. The toaster follows the `.dark` class on the document through CSS variables. |
+| `toastOptions` | `ToasterProps["toastOptions"]` | — | Global options applied to all toasts (classNames, style, etc.) |
+
+## Toast function options
+
+```tsx
+toast.info("Title", {
+  description: "Supporting message.",
+  action: {
+    label: "Undo",
+    onClick: () => {},
+  },
+})
+```
+
+| Option | Type | Description |
+|---|---|---|
+| `description` | `string` | Secondary text below the title |
+| `action` | `{ label: string; onClick: () => void }` | Action button rendered inside the toast |
+| `onDismiss` | `(toast) => void` | Callback when the toast is dismissed |
+| `onAutoClose` | `(toast) => void` | Callback when the toast auto-closes |
+
+## Custom toast styles
+
+If you need to apply the Apollo status styles to your own `Toaster` instance, import `apolloToastClassNames`:
+
+```tsx
+import { Toaster } from "sonner"
+import { apolloToastClassNames } from "@uipath/apollo-vertex"
+
+<Toaster toastOptions={{ classNames: apolloToastClassNames }} />
+```

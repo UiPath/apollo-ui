@@ -1,11 +1,13 @@
-import type { MDXComponents } from "nextra/mdx-components";
-import { useMDXComponents as getThemeComponents } from "nextra-theme-docs";
+import defaultMdxComponents from "fumadocs-ui/mdx";
+import type { MDXComponents } from "mdx/types";
+import { PackageInstall } from "./app/_components/package-install";
+import { Preview } from "./app/_components/preview";
 
-const themeComponents = getThemeComponents();
-
-export function useMDXComponents(components: MDXComponents) {
+export function getMDXComponents(components?: MDXComponents) {
   return {
-    ...themeComponents,
+    ...defaultMdxComponents,
+    PackageInstall,
+    Preview,
     ...components,
-  };
+  } satisfies MDXComponents;
 }

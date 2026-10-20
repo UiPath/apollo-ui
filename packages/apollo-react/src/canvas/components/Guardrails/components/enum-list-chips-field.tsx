@@ -1,6 +1,7 @@
 import type { CustomFieldComponentProps } from '@uipath/apollo-wind';
 import { FormField, FormFieldError } from '@uipath/apollo-wind';
 import { useId } from 'react';
+import { guardrailOptionLabel } from '../form-schema-builder';
 import type { GuardrailValidatorFormLabels } from '../i18n';
 import type { GuardrailParameterDefinition } from '../types';
 import { FieldShell } from './field-shell';
@@ -16,13 +17,12 @@ import { ParameterLabel } from './parameter-label';
 export function EnumListChipsField(props: CustomFieldComponentProps) {
   const { value, onChange, error, disabled } = props;
   const paramDef = props.paramDef as GuardrailParameterDefinition;
-  const labels = props.labels as GuardrailValidatorFormLabels;
+  const labels = props.labels as Required<GuardrailValidatorFormLabels>;
 
   const uid = useId();
   const selected = Array.isArray(value) ? (value as string[]) : [];
 
-  /** Friendly label for an option value, falling back to the raw value when unmapped. */
-  const labelFor = (option: string) => paramDef.optionLabels?.[option] ?? option;
+  const labelFor = (option: string) => guardrailOptionLabel(paramDef, option, labels);
 
   const handleToggle = (option: string, pressed: boolean) => {
     onChange(pressed ? [...selected, option] : selected.filter((s) => s !== option));

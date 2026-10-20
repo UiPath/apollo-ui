@@ -1,0 +1,49 @@
+---
+title: "Sidebar"
+description: "A composable, themeable and customizable sidebar component."
+---
+
+## Usage
+
+```tsx
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarHeader,
+  SidebarProvider,
+} from "@uipath/apollo-vertex"
+```
+
+```tsx
+<SidebarProvider>
+  <Sidebar>
+    <SidebarHeader />
+    <SidebarContent>
+      <SidebarGroup />
+      <SidebarGroup />
+    </SidebarContent>
+    <SidebarFooter />
+  </Sidebar>
+</SidebarProvider>
+```
+
+## Features
+
+- **Collapsible** - Can collapse to icons only
+- **Composable** - Build your own sidebar structure
+- **Themeable** - Supports dark mode and custom themes
+- **Responsive** - Works well on mobile and desktop
+- **Keyboard accessible** - Full keyboard navigation support
+
+## Components
+
+- `SidebarProvider` - Provides context for sidebar state
+- `Sidebar` - The main sidebar container
+- `SidebarHeader` - Header section of the sidebar
+- `SidebarContent` - Main content area
+- `SidebarFooter` - Footer section
+- `SidebarGroup` - Groups related items
+- `SidebarMenu` - Navigation menu
+- `SidebarMenuItem` - Individual menu items

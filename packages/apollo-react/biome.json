@@ -106,6 +106,54 @@
           }
         }
       }
+    },
+    {
+      "includes": ["src/material/components/ap-chat/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "@uipath/apollo-react/material": "Import the component module (e.g. @uipath/apollo-react/material/components/ap-icon); the barrel re-exports ApChat and creates an import cycle",
+                  "@uipath/apollo-react/material/components": "Import the component module (e.g. @uipath/apollo-react/material/components/ap-icon); the barrel re-exports ApChat and creates an import cycle",
+                  "@uipath/apollo-react/chat": "Import the module (e.g. @uipath/apollo-react/chat/service); the barrel registers renderers and loads Material lazily"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/chat/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@mui/**", "@emotion/**"],
+                    "message": "src/chat must stay MUI-free; use apollo-wind components and Tailwind classes"
+                  },
+                  {
+                    "group": [
+                      "**/material",
+                      "**/material/**",
+                      "@uipath/apollo-react/material*",
+                      "!@mui/**"
+                    ],
+                    "message": "src/chat must not depend on the Material renderer; see src/chat/README.md"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
     }
   ]
 }

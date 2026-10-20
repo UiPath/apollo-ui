@@ -66,8 +66,7 @@
           "pnpm registry:build",
           "pnpm exec next build"
         ],
-        "copyOutput": "out",
-        "pagefind": true
+        "copyOutput": "out"
       },
       "outputDir": "apps/apollo-vertex/out",
       "pathNameEnv": "APOLLO_CODED_APP_PATH",

@@ -27,12 +27,13 @@ try {
   // react-scan optional; preview works without it
 }
 
-// Apollo core + canvas CSS
+// Apollo core + canvas + chat CSS
 import '@uipath/apollo-react/core/tokens/css/variables.css';
 import '@uipath/apollo-react/core/tokens/css/theme-variables.css';
 import '@uipath/apollo-react/canvas/styles/variables.css';
 import '@uipath/apollo-react/canvas/styles/tailwind.canvas.css';
 import '@uipath/apollo-react/canvas/xyflow/style.css';
+import '@uipath/apollo-react/chat/styles/tailwind.chat.css';
 
 // Wind: fonts via the same subpath consumers use, plus source Tailwind CSS
 // (processed by PostCSS/Tailwind at dev time)
@@ -125,19 +126,27 @@ const preview: Preview = {
       storySort: {
         order: [
           'Introduction',
-          'Apollo Wind',
+          ['Overview', 'Prototyping', '*'],
+          'Apollo Core',
           [
-            'Introduction',
+            'Getting Started',
             'Theme',
             [
               'Colors',
-              'Logos',
-              'Icons',
-              'Spacing',
               'Typography',
-              'Future',
-              ['Theme', 'Colors', 'Icons', '*'],
+              'Spacing',
+              'Borders',
+              'Shadows',
+              'Icons',
+              'Screens',
+              'CSS Variables',
+              '*',
             ],
+            '*',
+          ],
+          'Apollo Wind',
+          [
+            'Getting Started',
             'Components',
             [
               'All Components',
@@ -204,14 +213,28 @@ const preview: Preview = {
             ],
             'Experiments',
             'Patterns',
-            ['Layout Patterns', 'Code Editors', '*'],
+            [
+              'Layout Patterns',
+              'Code Editors',
+              'Theme (Moving to Core)',
+              [
+                'Colors',
+                'Logos',
+                'Icons',
+                'Spacing',
+                'Typography',
+                'Future',
+                ['Theme', 'Colors', 'Icons', '*'],
+              ],
+              '*',
+            ],
             '*',
           ],
           'Apollo React',
           [
+            'Getting Started',
             'Canvas',
             [
-              'Introduction',
               'Theme',
               'Components',
               [
@@ -255,23 +278,6 @@ const preview: Preview = {
             ],
             'Material (Maintenance Only)',
             ['Introduction', 'Components', ['All Components', '*'], '*'],
-            '*',
-          ],
-          'Apollo Core',
-          [
-            'Introduction',
-            'Theme',
-            [
-              'Colors',
-              'Typography',
-              'Spacing',
-              'Borders',
-              'Shadows',
-              'Icons',
-              'Screens',
-              'CSS Variables',
-              '*',
-            ],
             '*',
           ],
         ],

@@ -1,0 +1,31 @@
+"use client";
+
+import { useLiveQuery } from "@tanstack/react-db";
+import { useSolution } from "@uipath/vs-core";
+
+export interface UseGroupIdOptions<Role extends string> {
+  role: Role;
+  roleGroupMap: Record<Role, string>;
+}
+
+export interface UseGroupIdResult {
+  groupId: string | null;
+  externalGroupName: string | null;
+  isLoading: boolean;
+}
+
+export const useGroupId = <Role extends string>({
+  role,
+  roleGroupMap,
+}: UseGroupIdOptions<Role>): UseGroupIdResult => {
+  const solution = useSolution();
+  const groupName = roleGroupMap[role];
+
+  const { data, isLoading } = useLiveQuery((q) =>
+    q.from({ groups: solution?.api.collections.identity.groups }),
+  );
+
+  const group = data?.find((g) => g.name === groupName);
+  const externalGroupName = !isLoading && group == null ? groupName : null;
+  return { groupId: group?.id ?? null, externalGroupName, isLoading };
+};

@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - "apps/apollo-vertex/**"
+      - "packages/apollo-vertex/**"
+      - "knip.jsonc"
       - ".github/workflows/apollo-vertex-lint.yml"
 
 concurrency:
@@ -29,7 +31,13 @@ jobs:
         uses: ./.github/actions/install-node-deps
 
       - name: Lint
-        run: pnpm --filter apollo-vertex lint
+        run: pnpm --filter apollo-vertex --filter @uipath/apollo-vertex lint
+
+      - name: Knip
+        run: pnpm knip
 
       - name: Format check
-        run: pnpm --filter apollo-vertex format:check
+        run: pnpm --filter apollo-vertex --filter @uipath/apollo-vertex format:check
+
+      - name: Validate agent skills
+        run: pnpm --filter @uipath/apollo-vertex lint:skills

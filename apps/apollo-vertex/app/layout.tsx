@@ -1,15 +1,8 @@
-import { Inter } from "next/font/google";
-import Image from "next/image";
-import { Head } from "nextra/components";
-import { getPageMap } from "nextra/page-map";
-import { Footer, Layout, Navbar } from "nextra-theme-docs";
-import "nextra-theme-docs/style.css";
-import type { ReactNode } from "react";
-import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
-import { SidebarHoverPrefetch } from "./_components/sidebar-hover-prefetch";
-import { ThemeSwitcher } from "./_components/theme-switcher";
-import { ThemeWrapper } from "./_components/theme-wrapper";
+import { Inter } from "next/font/google";
+import type { ReactNode } from "react";
+import { Provider } from "./_components/provider";
+import "./globals.css";
 
 const fontSans = Inter({
   subsets: ["latin"],
@@ -49,66 +42,22 @@ export const metadata = {
   },
 };
 
-// Coded App preview builds serve the app from a sub-path; Next.js basePath
-// does not rewrite plain image sources, so the logo path is prefixed here.
-const codedAppPath = process.env.NEXT_PUBLIC_APOLLO_CODED_APP_PATH;
+// Vercel Analytics only exists on the Vercel deployment, not in the static
+// Coded App build.
+const codedApp = process.env.NEXT_PUBLIC_APOLLO_CODED_APP === "1";
 
-const navbar = (
-  <Navbar
-    logo={
-      <>
-        <Image
-          src={`${codedAppPath ? `/${codedAppPath}` : ""}/vertex-logo.svg`}
-          alt="Apollo Vertex"
-          width={32}
-          height={32}
-          className="dark:invert"
-        />
-        <b>Apollo Vertex</b>
-      </>
-    }
-    // ... Your additional navbar options
-  >
-    <ThemeSwitcher />
-  </Navbar>
-);
-const footer = (
-  <Footer>MIT {new Date().getFullYear()} - UiPath Apollo Vertex</Footer>
-);
-
-export default async function RootLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="en"
       dir="ltr"
       className={fontSans.variable}
-      // Suggested by `next-themes` package https://github.com/pacocoursey/next-themes#with-app
+      // Required by next-themes, which the Fumadocs root provider uses.
       suppressHydrationWarning
     >
-      <Head>
-        {/* Your additional tags should be passed as `children` of `<Head>` element */}
-      </Head>
-      <body>
-        <Analytics />
-        <SidebarHoverPrefetch />
-        <ThemeWrapper>
-          <Layout
-            sidebar={{
-              autoCollapse: false,
-              defaultMenuCollapseLevel: 1,
-            }}
-            navbar={navbar}
-            pageMap={await getPageMap()}
-            docsRepositoryBase="https://github.com/UiPath/apollo-ui/tree/main/apps/apollo-vertex"
-            footer={footer}
-          >
-            {children}
-          </Layout>
-        </ThemeWrapper>
+      <body className="flex min-h-screen flex-col">
+        {!codedApp && <Analytics />}
+        <Provider>{children}</Provider>
       </body>
     </html>
   );

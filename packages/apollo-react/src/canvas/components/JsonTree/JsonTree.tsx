@@ -1,16 +1,21 @@
 import {
+  type JsonContainerEditorProps,
+  type JsonLeafValueEditorProps,
+  type JsonMultilineLeafEditorProps,
+  type JsonTreeToolbarProps,
+  type JsonTreeViewProps,
+  type JsonTreeViewProviderProps,
+  type JsonTreeViewStrings,
+  type JsonTypeBadgeProps,
   JsonContainerEditor as WindJsonContainerEditor,
   JsonLeafValueEditor as WindJsonLeafValueEditor,
   JsonMultilineLeafEditor as WindJsonMultilineLeafEditor,
   JsonTreeToolbar as WindJsonTreeToolbar,
   JsonTreeView as WindJsonTreeView,
-  type JsonTreeViewProps,
   JsonTreeViewProvider as WindJsonTreeViewProvider,
-  type JsonTreeViewProviderProps,
-  type JsonTreeViewStrings,
   JsonTypeBadge as WindJsonTypeBadge,
 } from '@uipath/apollo-wind';
-import { type ComponentType, createContext, useContext, useMemo } from 'react';
+import { createContext, type ReactNode, useContext, useMemo } from 'react';
 import { useSafeLingui } from '../../../i18n';
 
 /**
@@ -189,43 +194,72 @@ export function JsonTreeViewProvider({
   );
 }
 
-function withCanvasStrings<P extends object>(Component: ComponentType<P>, name: string) {
-  const Wrapped = (props: P) => {
-    // Inside a canvas provider the translations (and any overrides on top of
-    // them) are already in place; supplying them again would overwrite those
-    // overrides.
-    const insideCanvasProvider = useContext(InsideCanvasProviderContext);
-    if (insideCanvasProvider) return <Component {...props} />;
-    return (
-      <JsonTreeViewProvider>
-        <Component {...props} />
-      </JsonTreeViewProvider>
-    );
-  };
-  Wrapped.displayName = name;
-  return Wrapped;
+/**
+ * Supplies the canvas translations unless a canvas provider above already did;
+ * supplying them again would overwrite that provider's overrides.
+ */
+function CanvasStrings({ children }: { children: ReactNode }) {
+  const insideCanvasProvider = useContext(InsideCanvasProviderContext);
+  if (insideCanvasProvider) return <>{children}</>;
+  return <JsonTreeViewProvider>{children}</JsonTreeViewProvider>;
 }
+
+// Plain components rather than wrappers built at module scope: building them
+// would read the apollo-wind exports on import, so a consumer test that mocks
+// apollo-wind without them could not import anything from the canvas.
 
 /**
  * apollo-wind's `JsonTreeView` with canvas translations. A `strings` prop still
  * overrides individual strings.
  */
-export const JsonTreeView = withCanvasStrings(WindJsonTreeView, 'JsonTreeView');
-export const JsonTreeToolbar = withCanvasStrings(WindJsonTreeToolbar, 'JsonTreeToolbar');
-export const JsonContainerEditor = withCanvasStrings(
-  WindJsonContainerEditor,
-  'JsonContainerEditor'
-);
-export const JsonLeafValueEditor = withCanvasStrings(
-  WindJsonLeafValueEditor,
-  'JsonLeafValueEditor'
-);
-export const JsonMultilineLeafEditor = withCanvasStrings(
-  WindJsonMultilineLeafEditor,
-  'JsonMultilineLeafEditor'
-);
+export function JsonTreeView(props: JsonTreeViewProps) {
+  return (
+    <CanvasStrings>
+      <WindJsonTreeView {...props} />
+    </CanvasStrings>
+  );
+}
+
+export function JsonTreeToolbar(props: JsonTreeToolbarProps) {
+  return (
+    <CanvasStrings>
+      <WindJsonTreeToolbar {...props} />
+    </CanvasStrings>
+  );
+}
+
+export function JsonContainerEditor(props: JsonContainerEditorProps) {
+  return (
+    <CanvasStrings>
+      <WindJsonContainerEditor {...props} />
+    </CanvasStrings>
+  );
+}
+
+export function JsonLeafValueEditor(props: JsonLeafValueEditorProps) {
+  return (
+    <CanvasStrings>
+      <WindJsonLeafValueEditor {...props} />
+    </CanvasStrings>
+  );
+}
+
+export function JsonMultilineLeafEditor(props: JsonMultilineLeafEditorProps) {
+  return (
+    <CanvasStrings>
+      <WindJsonMultilineLeafEditor {...props} />
+    </CanvasStrings>
+  );
+}
+
 /** Canvas tooltip layer only; the badge has no strings of its own. */
-export const JsonTypeBadge = withCanvasStrings(WindJsonTypeBadge, 'JsonTypeBadge');
+export function JsonTypeBadge(props: JsonTypeBadgeProps) {
+  return (
+    <CanvasStrings>
+      <WindJsonTypeBadge {...props} />
+    </CanvasStrings>
+  );
+}
 
 /** @deprecated Use `JsonTreeViewProps`. */
 export type JsonTreeProps = JsonTreeViewProps;

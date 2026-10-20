@@ -1,4 +1,4 @@
-import type { ColorToken } from "@/lib/foundation-tokens";
+import type { ColorToken } from "../../../lib/foundation-tokens";
 
 type ColorSwatchProps = ColorToken;
 

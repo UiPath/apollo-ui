@@ -22,6 +22,17 @@ export interface GuardrailValidatorFormLabels {
   enumPlaceholder: string;
   /** Placeholder of the multi-select (enum-list) popover trigger. */
   enumListPlaceholder: string;
+  /**
+   * Chip on a threshold row whose key the source definition lists in `previewOptions`.
+   * Optional so a complete label object written before it existed still compiles; it always
+   * resolves.
+   */
+  previewOption?: string;
+  /**
+   * Label template of an option the definition lists in `previewOptions`, in the option list
+   * and the chip editor: `{{label}}` is the option's own label. Optional like `previewOption`.
+   */
+  previewOptionLabel?: string;
   /** Label of the text-list "Add" button. */
   addItem: string;
   /** Aria-label template of a text-list row's remove button: `{{label}}`, `{{position}}`. */
@@ -38,10 +49,12 @@ export interface GuardrailValidatorFormLabels {
   maxError: string;
 }
 
-export const GUARDRAIL_FORM_EN_LABELS: GuardrailValidatorFormLabels = {
+export const GUARDRAIL_FORM_EN_LABELS: Required<GuardrailValidatorFormLabels> = {
   moreInformation: 'More information',
   enumPlaceholder: 'Select...',
   enumListPlaceholder: 'Select options...',
+  previewOption: 'Preview',
+  previewOptionLabel: '{{label}} (Preview)',
   addItem: 'Add',
   removeItem: 'Remove {{label}} {{position}}',
   requiredError: 'Value is required',
@@ -73,6 +86,17 @@ export interface GuardrailBuilderLabels {
   save: string;
   // Status banners
   byoDisabledMessage: string;
+  /**
+   * A built-in validator the AI Trust Layer policy switched off (`disabledReason: 'Policy'`).
+   * Optional so a complete label object written before it existed still compiles; it always
+   * resolves.
+   */
+  policyDisabledMessage?: string;
+  /**
+   * The same banner when the host passes `policyName`: `{{policyName}}` is the policy's name,
+   * emphasized. Optional like `policyDisabledMessage`.
+   */
+  policyDisabledNamedMessage?: string;
   unauthorizedMessage: string;
   featureDisabledMessage: string;
   // Scope selector
@@ -144,6 +168,10 @@ export const GUARDRAIL_BUILDER_EN_LABELS: Required<GuardrailBuilderLabels> = {
   save: 'Save',
   byoDisabledMessage:
     "This guardrail's configuration has been disabled and can no longer be used. Contact your administrator to re-enable the configuration or replace this guardrail before running the agent.",
+  policyDisabledMessage:
+    "This guardrail is disabled by your organization's AI Trust Layer policy and is skipped when the agent runs.",
+  policyDisabledNamedMessage:
+    'Disabled by AI Trust Layer policy: {{policyName}}. This guardrail is skipped when the agent runs.',
   unauthorizedMessage:
     'You are not entitled to use guardrails. You can access the configuration settings, but modifications cannot be saved.',
   featureDisabledMessage:
@@ -300,8 +328,12 @@ export function formatGuardrailFormMessage(
 export function resolveGuardrailFormLabels(
   catalog?: Partial<GuardrailValidatorFormLabels>,
   overrides?: Partial<GuardrailValidatorFormLabels>
-): GuardrailValidatorFormLabels {
-  return mergeLabels(GUARDRAIL_FORM_EN_LABELS, catalog, overrides);
+): Required<GuardrailValidatorFormLabels> {
+  return mergeLabels<Required<GuardrailValidatorFormLabels>>(
+    GUARDRAIL_FORM_EN_LABELS,
+    catalog,
+    overrides
+  );
 }
 
 // Reifies each ICU placeholder back into the `{{token}}` template convention: the
@@ -321,12 +353,13 @@ const TEMPLATE_TOKENS = {
   count: '{{count}}',
   docsLink: '{{docsLink}}',
   formats: '{{formats}}',
+  category: '{{category}}',
 };
 
 /** Localized chrome strings of the validator form; per-string `overrides` always win. */
 export function useGuardrailFormLabels(
   overrides?: Partial<GuardrailValidatorFormLabels>
-): GuardrailValidatorFormLabels {
+): Required<GuardrailValidatorFormLabels> {
   const { _ } = useSafeLingui();
   return useMemo(
     () =>
@@ -340,6 +373,12 @@ export function useGuardrailFormLabels(
           enumListPlaceholder: _({
             id: 'guardrails.form.enum-list-placeholder',
             message: 'Select options...',
+          }),
+          previewOption: _({ id: 'guardrails.form.preview-option', message: 'Preview' }),
+          previewOptionLabel: _({
+            id: 'guardrails.form.preview-option-label',
+            message: '{label} (Preview)',
+            values: TEMPLATE_TOKENS,
           }),
           addItem: _({ id: 'guardrails.form.add-item', message: 'Add' }),
           removeItem: _({
@@ -574,6 +613,17 @@ export function useGuardrailBuilderLabels(
             message:
               "This guardrail's configuration has been disabled and can no longer be used. Contact your administrator to re-enable the configuration or replace this guardrail before running the agent.",
           }),
+          policyDisabledMessage: _({
+            id: 'guardrails.builder.policy-disabled-message',
+            message:
+              "This guardrail is disabled by your organization's AI Trust Layer policy and is skipped when the agent runs.",
+          }),
+          policyDisabledNamedMessage: _({
+            id: 'guardrails.builder.policy-disabled-named-message',
+            message:
+              'Disabled by AI Trust Layer policy: {policyName}. This guardrail is skipped when the agent runs.',
+            values: TEMPLATE_TOKENS,
+          }),
           unauthorizedMessage: _({
             id: 'guardrails.builder.unauthorized-message',
             message:
@@ -768,6 +818,16 @@ export interface GuardrailListLabels {
   byoDisabledNotice: string;
   /** Row notice: the BYO configuration this guardrail points at is gone. */
   byoUnavailableNotice: string;
+  /**
+   * Row notice: the AI Trust Layer policy switched this built-in validator off. Optional so a
+   * complete label object written before it existed still compiles; it always resolves.
+   */
+  policyDisabledNotice?: string;
+  /**
+   * The same notice when the host passes `policyName`: `{{policyName}}` is the policy's name,
+   * emphasized. Optional like `policyDisabledNotice`.
+   */
+  policyDisabledNamedNotice?: string;
   /** Status chip: the validator's feature flag is off tenant-wide. */
   statusFeatureDisabled: string;
   /** Status chip: the tenant is not entitled to the validator. */
@@ -790,7 +850,7 @@ type ListTranslate = (descriptor: {
 // One builder holds every `_({ id, message })` call, so the English defaults, the flat record
 // the catalog test diffs and the runtime lingui path cannot drift, and `lingui extract` still
 // sees static calls. Same shape as `definitions-copy.ts`.
-function buildGuardrailListLabels(_: ListTranslate): GuardrailListLabels {
+function buildGuardrailListLabels(_: ListTranslate): Required<GuardrailListLabels> {
   return {
     title: _({ id: 'guardrails.list.title', message: 'Guardrails' }),
     add: _({ id: 'guardrails.list.add', message: 'Add' }),
@@ -826,6 +886,17 @@ function buildGuardrailListLabels(_: ListTranslate): GuardrailListLabels {
       message:
         "This guardrail's configuration is no longer available. Replace it before running the agent.",
     }),
+    policyDisabledNotice: _({
+      id: 'guardrails.list.policy-disabled-notice',
+      message:
+        "This guardrail is disabled by your organization's AI Trust Layer policy and is skipped when the agent runs.",
+    }),
+    policyDisabledNamedNotice: _({
+      id: 'guardrails.list.policy-disabled-named-notice',
+      message:
+        'Disabled by AI Trust Layer policy: {policyName}. This guardrail is skipped when the agent runs.',
+      values: TEMPLATE_TOKENS,
+    }),
     statusFeatureDisabled: _({
       id: 'guardrails.list.status-feature-disabled',
       message: 'Feature disabled',
@@ -851,7 +922,7 @@ const englishListTranslate: ListTranslate = ({ message, values }) =>
     : message;
 
 /** The English chrome strings, resolved without a lingui provider. */
-export const GUARDRAIL_LIST_EN_LABELS: GuardrailListLabels =
+export const GUARDRAIL_LIST_EN_LABELS: Required<GuardrailListLabels> =
   buildGuardrailListLabels(englishListTranslate);
 
 /**
@@ -873,14 +944,14 @@ export const GUARDRAIL_LIST_EN_MESSAGES: Readonly<Record<string, string>> = Obje
 export function resolveGuardrailListLabels(
   catalog?: Partial<GuardrailListLabels>,
   overrides?: Partial<GuardrailListLabels>
-): GuardrailListLabels {
-  return mergeLabels(GUARDRAIL_LIST_EN_LABELS, catalog, overrides);
+): Required<GuardrailListLabels> {
+  return mergeLabels<Required<GuardrailListLabels>>(GUARDRAIL_LIST_EN_LABELS, catalog, overrides);
 }
 
 /** Localized chrome strings of the list section; per-string `overrides` always win. */
 export function useGuardrailListLabels(
   overrides?: Partial<GuardrailListLabels>
-): GuardrailListLabels {
+): Required<GuardrailListLabels> {
   const { _ } = useSafeLingui();
   return useMemo(
     () => resolveGuardrailListLabels(buildGuardrailListLabels(_), overrides),
@@ -1459,6 +1530,11 @@ export interface CentralizedGuardrailsLabels {
   entitiesFallback: string;
   /** Fallback label for the threshold map when no definition names it. */
   thresholdsFallback: string;
+  /** Fallback label and options for a built-in's detection scope when no definition names it. */
+  detectionScopeFallback?: string;
+  detectionScopeText?: string;
+  detectionScopeFiles?: string;
+  detectionScopeBoth?: string;
 }
 
 /** The subset of `useSafeLingui`'s translator the centralized labels need. */
@@ -1472,7 +1548,9 @@ type CentralizedTranslate = (descriptor: {
 // the catalog test diffs and the runtime lingui path cannot drift. Same shape as
 // `definitions-copy.ts`.
 // Labels the builder or the list already declare reuse their ids, so the two cannot drift.
-function buildCentralizedGuardrailsLabels(_: CentralizedTranslate): CentralizedGuardrailsLabels {
+function buildCentralizedGuardrailsLabels(
+  _: CentralizedTranslate
+): Required<CentralizedGuardrailsLabels> {
   return {
     title: _({ id: 'guardrails.centralized.title', message: 'Centralized guardrails' }),
     info: _({
@@ -1554,6 +1632,22 @@ function buildCentralizedGuardrailsLabels(_: CentralizedTranslate): CentralizedG
       id: 'guardrails.centralized.thresholds-fallback',
       message: 'Detection thresholds',
     }),
+    detectionScopeFallback: _({
+      id: 'guardrails.centralized.detection-scope-fallback',
+      message: 'Detection scope',
+    }),
+    detectionScopeText: _({
+      id: 'guardrails.centralized.detection-scope-text',
+      message: 'Text only',
+    }),
+    detectionScopeFiles: _({
+      id: 'guardrails.centralized.detection-scope-files',
+      message: 'Files only',
+    }),
+    detectionScopeBoth: _({
+      id: 'guardrails.centralized.detection-scope-both',
+      message: 'Text and files',
+    }),
   };
 }
 
@@ -1565,7 +1659,7 @@ const englishCentralizedTranslate: CentralizedTranslate = ({ message, values }) 
     : message;
 
 /** The English chrome strings, resolved without a lingui provider. */
-export const CENTRALIZED_GUARDRAILS_EN_LABELS: CentralizedGuardrailsLabels =
+export const CENTRALIZED_GUARDRAILS_EN_LABELS: Required<CentralizedGuardrailsLabels> =
   buildCentralizedGuardrailsLabels(englishCentralizedTranslate);
 
 /**
@@ -1587,14 +1681,18 @@ export const CENTRALIZED_GUARDRAILS_EN_MESSAGES: Readonly<Record<string, string>
 export function resolveCentralizedGuardrailsLabels(
   catalog?: Partial<CentralizedGuardrailsLabels>,
   overrides?: Partial<CentralizedGuardrailsLabels>
-): CentralizedGuardrailsLabels {
-  return mergeLabels(CENTRALIZED_GUARDRAILS_EN_LABELS, catalog, overrides);
+): Required<CentralizedGuardrailsLabels> {
+  return mergeLabels<Required<CentralizedGuardrailsLabels>>(
+    CENTRALIZED_GUARDRAILS_EN_LABELS,
+    catalog,
+    overrides
+  );
 }
 
 /** Localized chrome strings of the centralized section; per-string `overrides` always win. */
 export function useCentralizedGuardrailsLabels(
   overrides?: Partial<CentralizedGuardrailsLabels>
-): CentralizedGuardrailsLabels {
+): Required<CentralizedGuardrailsLabels> {
   const { _ } = useSafeLingui();
   return useMemo(
     () => resolveCentralizedGuardrailsLabels(buildCentralizedGuardrailsLabels(_), overrides),
@@ -1819,5 +1917,209 @@ export function useCustomGuardrailBuilderLabels(
         overrides
       ),
     [_, builder, overrides]
+  );
+}
+
+/**
+ * Chrome of the classifier editors and of `useClassifierGuardrailParameters`, in Agents' English
+ * (UiPath/Agents#6449). The parameters' own labels come from the definition.
+ */
+export interface GuardrailClassifierLabels {
+  moreInformation: string;
+  /** `{{count}}` questions selected. */
+  pickerSummary: string;
+  searchPlaceholder: string;
+  searchLabel: string;
+  noMatches: string;
+  /** `{{category}}`. */
+  selectAllInCategory: string;
+  /** `{{name}}`, the question's id; also `severityCutoff` and `questionStrictness`. */
+  questionDetails: string;
+  criteriaYes: string;
+  criteriaNo: string;
+  levelsIntro: string;
+  severityCutoffLabel: string;
+  severityCutoff: string;
+  severityLow: string;
+  severityModerate: string;
+  severityHigh: string;
+  severityCritical: string;
+  strictnessLabel: string;
+  questionStrictness: string;
+  thresholdStrict: string;
+  thresholdBalanced: string;
+  thresholdLenient: string;
+  addQuestion: string;
+  questionPlaceholder: string;
+  /** A custom question's card title: `{{position}}`. */
+  customQuestionTitle: string;
+  /** `{{label}}` (the parameter's) and `{{position}}`; also the two below. */
+  customQuestion: string;
+  removeCustomQuestion: string;
+  customQuestionStrictness: string;
+  criteriaTrueLabel: string;
+  criteriaTruePlaceholder: string;
+  criteriaFalseLabel: string;
+  criteriaFalsePlaceholder: string;
+  /** On the picker when Save finds no question. */
+  questionsRequired: string;
+  /** Under the model when it was saved without a vendor. */
+  modelVendorMissing: string;
+}
+
+type ClassifierTranslate = (descriptor: {
+  id: string;
+  message: string;
+  values?: Record<string, string>;
+}) => string;
+
+function buildGuardrailClassifierLabels(_: ClassifierTranslate): GuardrailClassifierLabels {
+  return {
+    moreInformation: _({ id: 'guardrails.form.more-information', message: 'More information' }),
+    pickerSummary: _({
+      id: 'guardrails.classifier.picker-summary',
+      message: '{count} selected — pick any across categories, or add your own below.',
+      values: TEMPLATE_TOKENS,
+    }),
+    searchPlaceholder: _({
+      id: 'guardrails.classifier.search-placeholder',
+      message: 'Search questions',
+    }),
+    searchLabel: _({
+      id: 'guardrails.classifier.search-label',
+      message: 'Search classifier questions',
+    }),
+    noMatches: _({
+      id: 'guardrails.classifier.no-matches',
+      message: 'No predefined questions match your search.',
+    }),
+    selectAllInCategory: _({
+      id: 'guardrails.classifier.select-all-in-category',
+      message: 'Select all in {category}',
+      values: TEMPLATE_TOKENS,
+    }),
+    questionDetails: _({
+      id: 'guardrails.classifier.question-details',
+      message: 'Question details for {name}',
+      values: TEMPLATE_TOKENS,
+    }),
+    criteriaYes: _({ id: 'guardrails.classifier.criteria-yes', message: 'Counts as yes (flag):' }),
+    criteriaNo: _({ id: 'guardrails.classifier.criteria-no', message: 'Counts as no:' }),
+    levelsIntro: _({
+      id: 'guardrails.classifier.levels-intro',
+      message:
+        'Severity levels, lowest to highest; flags when the graded severity reaches the threshold:',
+    }),
+    severityCutoffLabel: _({
+      id: 'guardrails.classifier.severity-cutoff-label',
+      message: 'Flag when severity reaches',
+    }),
+    severityCutoff: _({
+      id: 'guardrails.classifier.severity-cutoff',
+      message: 'Severity cutoff for {name}',
+      values: TEMPLATE_TOKENS,
+    }),
+    severityLow: _({ id: 'guardrails.classifier.severity-low', message: 'Low' }),
+    severityModerate: _({ id: 'guardrails.classifier.severity-moderate', message: 'Moderate' }),
+    severityHigh: _({ id: 'guardrails.classifier.severity-high', message: 'High' }),
+    severityCritical: _({ id: 'guardrails.classifier.severity-critical', message: 'Critical' }),
+    strictnessLabel: _({ id: 'guardrails.classifier.strictness-label', message: 'Strictness' }),
+    questionStrictness: _({
+      id: 'guardrails.classifier.question-strictness',
+      message: 'Flag threshold for {name}',
+      values: TEMPLATE_TOKENS,
+    }),
+    thresholdStrict: _({ id: 'guardrails.classifier.threshold-strict', message: 'Strict' }),
+    thresholdBalanced: _({ id: 'guardrails.classifier.threshold-balanced', message: 'Balanced' }),
+    thresholdLenient: _({ id: 'guardrails.classifier.threshold-lenient', message: 'Lenient' }),
+    addQuestion: _({ id: 'guardrails.classifier.add-question', message: 'Add' }),
+    questionPlaceholder: _({
+      id: 'guardrails.classifier.question-placeholder',
+      message: 'A yes/no question about the payload, where yes means it gets flagged.',
+    }),
+    customQuestionTitle: _({
+      id: 'guardrails.classifier.custom-question-title',
+      message: 'Question {position}',
+      values: TEMPLATE_TOKENS,
+    }),
+    customQuestion: _({
+      id: 'guardrails.classifier.custom-question',
+      message: '{label} {position}',
+      values: TEMPLATE_TOKENS,
+    }),
+    removeCustomQuestion: _({
+      id: 'guardrails.classifier.remove-custom-question',
+      message: 'Remove {label} {position}',
+      values: TEMPLATE_TOKENS,
+    }),
+    customQuestionStrictness: _({
+      id: 'guardrails.classifier.custom-question-strictness',
+      message: 'Flag threshold for {label} {position}',
+      values: TEMPLATE_TOKENS,
+    }),
+    criteriaTrueLabel: _({
+      id: 'guardrails.classifier.criteria-true-label',
+      message: 'Counts as yes (flags) — optional',
+    }),
+    criteriaTruePlaceholder: _({
+      id: 'guardrails.classifier.criteria-true-placeholder',
+      message: "What makes the answer yes, e.g. 'The content commits to a refund.'",
+    }),
+    criteriaFalseLabel: _({
+      id: 'guardrails.classifier.criteria-false-label',
+      message: 'Counts as no — optional',
+    }),
+    criteriaFalsePlaceholder: _({
+      id: 'guardrails.classifier.criteria-false-placeholder',
+      message: "What makes the answer no, e.g. 'Only the refund policy is explained.'",
+    }),
+    questionsRequired: _({
+      id: 'guardrails.classifier.questions-required',
+      message: 'Pick at least one question or add your own.',
+    }),
+    modelVendorMissing: _({
+      id: 'guardrails.classifier.model-vendor-missing',
+      message: 'This model has no vendor. Pick the model again.',
+    }),
+  };
+}
+
+const englishClassifierTranslate: ClassifierTranslate = ({ message, values }) =>
+  values
+    ? message.replace(/\{(\w+)\}/g, (match, token: string) => values[token] ?? match)
+    : message;
+
+/** The English chrome strings, resolved without a lingui provider. */
+export const GUARDRAIL_CLASSIFIER_EN_LABELS: GuardrailClassifierLabels =
+  buildGuardrailClassifierLabels(englishClassifierTranslate);
+
+/** Message id to ICU source, as `locales/en.json` stores them. */
+export const GUARDRAIL_CLASSIFIER_EN_MESSAGES: Readonly<Record<string, string>> = Object.freeze(
+  (() => {
+    const messages: Record<string, string> = {};
+    buildGuardrailClassifierLabels((descriptor) => {
+      messages[descriptor.id] = descriptor.message;
+      return descriptor.message;
+    });
+    return messages;
+  })()
+);
+
+/** Merge English defaults, a loaded catalog, and per-string overrides (undefined skipped). */
+export function resolveGuardrailClassifierLabels(
+  catalog?: Partial<GuardrailClassifierLabels>,
+  overrides?: Partial<GuardrailClassifierLabels>
+): GuardrailClassifierLabels {
+  return mergeLabels(GUARDRAIL_CLASSIFIER_EN_LABELS, catalog, overrides);
+}
+
+/** Localized chrome strings of the classifier editors; per-string `overrides` always win. */
+export function useGuardrailClassifierLabels(
+  overrides?: Partial<GuardrailClassifierLabels>
+): GuardrailClassifierLabels {
+  const { _ } = useSafeLingui();
+  return useMemo(
+    () => resolveGuardrailClassifierLabels(buildGuardrailClassifierLabels(_), overrides),
+    [_, overrides]
   );
 }

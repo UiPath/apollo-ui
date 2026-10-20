@@ -357,6 +357,182 @@ describe('Toolbox', () => {
       expect(screen.getByText('Custom Result')).toBeInTheDocument();
     });
 
+    describe('pending async onSearch', () => {
+      type Deferred = { promise: Promise<ListItem[]>; resolve: (items: ListItem[]) => void };
+      const deferred = (): Deferred => {
+        let resolve!: (items: ListItem[]) => void;
+        const promise = new Promise<ListItem[]>((r) => {
+          resolve = r;
+        });
+        return { promise, resolve };
+      };
+
+      const expectRowsInteractive = () => {
+        const options = screen.getAllByRole('option');
+        expect(options.length).toBeGreaterThan(0);
+        for (const option of options) {
+          expect(option).not.toBeDisabled();
+          expect(option).not.toHaveClass('loading');
+        }
+      };
+
+      it('keeps rows enabled and marks the listbox busy while a search is pending', async () => {
+        const pending = deferred();
+        const onSearch = vi.fn(() => pending.promise);
+
+        render(<Toolbox {...defaultProps} onSearch={onSearch} />);
+
+        await user.type(screen.getByPlaceholderText('Search'), 'a');
+
+        expect(onSearch).toHaveBeenCalledTimes(1);
+        // The browse tree stays on screen, fully interactive.
+        expect(screen.getByText('Item 1')).toBeInTheDocument();
+        expectRowsInteractive();
+        expect(screen.getByRole('listbox')).toHaveAttribute('aria-busy', 'true');
+        expect(screen.getByRole('status', { name: 'Searching' })).toBeInTheDocument();
+
+        await act(async () => {
+          pending.resolve([{ id: 'result', name: 'Result', data: {} }]);
+          await pending.promise;
+        });
+
+        expect(screen.getByText('Result')).toBeInTheDocument();
+        expect(screen.getByRole('listbox')).not.toHaveAttribute('aria-busy');
+        expect(screen.queryByRole('status', { name: 'Searching' })).not.toBeInTheDocument();
+        expectRowsInteractive();
+      });
+
+      it('never toggles disabled on rows across keystrokes', async () => {
+        const onSearch = vi.fn(
+          (query: string) =>
+            new Promise<ListItem[]>((resolve) =>
+              setTimeout(() => resolve([{ id: query, name: `Result ${query}`, data: {} }]), 50)
+            )
+        );
+
+        render(<Toolbox {...defaultProps} onSearch={onSearch} />);
+        const input = screen.getByPlaceholderText('Search');
+
+        await user.type(input, 'a');
+        expectRowsInteractive();
+        await screen.findByText('Result a');
+        expectRowsInteractive();
+
+        await user.type(input, 'b');
+        // Previous results remain clickable while the new answer is pending.
+        expect(screen.getByText('Result a')).toBeInTheDocument();
+        expectRowsInteractive();
+        await screen.findByText('Result ab');
+        expectRowsInteractive();
+      });
+
+      it('selects the clicked item while a search is pending', async () => {
+        const onItemSelect = vi.fn();
+        const onSearch = vi.fn(() => deferred().promise);
+
+        render(<Toolbox {...defaultProps} onItemSelect={onItemSelect} onSearch={onSearch} />);
+
+        await user.type(screen.getByPlaceholderText('Search'), 'a');
+        await user.click(screen.getByText('Item 1'));
+
+        expect(onItemSelect).toHaveBeenCalledWith(expect.objectContaining({ id: 'item-1' }));
+      });
+
+      it('ignores a stale answer that resolves after a newer request', async () => {
+        const requests = new Map<string, Deferred>();
+        const onSearch = vi.fn((query: string) => {
+          const d = deferred();
+          requests.set(query, d);
+          return d.promise;
+        });
+
+        render(<Toolbox {...defaultProps} onSearch={onSearch} />);
+
+        await user.type(screen.getByPlaceholderText('Search'), 'ab');
+
+        expect(onSearch).toHaveBeenCalledTimes(2);
+        const first = requests.get('a')!;
+        const second = requests.get('ab')!;
+
+        await act(async () => {
+          first.resolve([{ id: 'stale', name: 'Stale result', data: {} }]);
+          await first.promise;
+        });
+
+        // The stale answer is dropped: browse tree still shown, still busy, still enabled.
+        expect(screen.queryByText('Stale result')).not.toBeInTheDocument();
+        expect(screen.getByText('Item 1')).toBeInTheDocument();
+        expect(screen.getByRole('listbox')).toHaveAttribute('aria-busy', 'true');
+        expectRowsInteractive();
+
+        await act(async () => {
+          second.resolve([{ id: 'fresh', name: 'Fresh result', data: {} }]);
+          await second.promise;
+        });
+
+        expect(screen.getByText('Fresh result')).toBeInTheDocument();
+        expect(screen.queryByText('Stale result')).not.toBeInTheDocument();
+        expect(screen.getByRole('listbox')).not.toHaveAttribute('aria-busy');
+      });
+
+      it('shows skeleton rows instead of a stale empty state when the previous search had no results', async () => {
+        const requests = new Map<string, Deferred>();
+        const onSearch = vi.fn((query: string) => {
+          const d = deferred();
+          requests.set(query, d);
+          return d.promise;
+        });
+
+        render(<Toolbox {...defaultProps} onSearch={onSearch} />);
+        const input = screen.getByPlaceholderText('Search');
+
+        await user.type(input, 'x');
+        await act(async () => {
+          requests.get('x')!.resolve([]);
+          await requests.get('x')!.promise;
+        });
+        expect(screen.getByText('No matching nodes found')).toBeInTheDocument();
+
+        await user.type(input, 'y');
+        expect(screen.queryByText('No matching nodes found')).not.toBeInTheDocument();
+        expect(screen.getAllByTestId('list-item-skeleton')).toHaveLength(3);
+        expect(screen.getByRole('listbox')).toHaveAttribute('aria-busy', 'true');
+      });
+
+      it('still disables rows while a lazy category resolves its children', async () => {
+        let resolveChildren!: (items: ListItem[]) => void;
+        const items: ListItem[] = [
+          { id: 'leaf', name: 'Leaf', data: {} },
+          {
+            id: 'lazy',
+            name: 'Lazy category',
+            data: {},
+            children: () =>
+              new Promise<ListItem[]>((r) => {
+                resolveChildren = r;
+              }),
+          },
+        ];
+
+        render(<Toolbox {...defaultProps} initialItems={items} />);
+
+        await user.click(screen.getByText('Lazy category'));
+
+        for (const option of screen.getAllByRole('option')) {
+          expect(option).toBeDisabled();
+        }
+
+        await act(async () => {
+          resolveChildren([{ id: 'lazy-child', name: 'Lazy child', data: {} }]);
+        });
+
+        expect(screen.getByText('Lazy child')).toBeInTheDocument();
+        for (const option of screen.getAllByRole('option')) {
+          expect(option).not.toBeDisabled();
+        }
+      });
+    });
+
     it('should clear search when Escape is pressed during search', async () => {
       render(<Toolbox {...defaultProps} />);
 

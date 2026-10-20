@@ -33,6 +33,7 @@ import {
   type QuickFormFieldMode,
   RadioGroup,
   RadioGroupItem,
+  ReferenceChip,
   RequiredIndicator,
   ResizableHandle,
   ResizablePanel,
@@ -84,6 +85,7 @@ import {
   Redo2,
   SlidersHorizontal,
   Sparkles,
+  SquareFunction,
   StickyNote,
   Trash2,
   Underline,
@@ -1326,10 +1328,7 @@ function SendEmailForm({ spacious = false }: { spacious?: boolean }) {
             </button>
           </div>
           <div className="flex min-h-9 items-center rounded-lg border border-border-subtle bg-surface-overlay px-2.5 text-xs">
-            <Mail className="mr-1.5 size-4 text-brand" />
-            <span className="truncate rounded bg-brand-subtle px-1.5 py-0.5">
-              anurag.krishna@uipath.com
-            </span>
+            <ReferenceChip label="anurag.krishna@uipath.com" icon={<Mail />} />
           </div>
         </div>
         <BooleanField label="Save as draft" />
@@ -1363,9 +1362,10 @@ function SendEmailForm({ spacious = false }: { spacious?: boolean }) {
               ))}
             </div>
             <div className="min-h-16 p-2.5">
-              <span className="rounded-md bg-brand-subtle px-2 py-1 font-mono text-xs text-foreground-accent">
-                ƒx $vars.recordUpdated1.output.Description
-              </span>
+              <ReferenceChip
+                label="$vars.recordUpdated1.output.Description"
+                icon={<SquareFunction />}
+              />
             </div>
           </div>
         </div>

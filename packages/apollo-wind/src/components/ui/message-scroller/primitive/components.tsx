@@ -1,0 +1,461 @@
+import * as React from 'react';
+import type {
+  MessageScrollerButtonProps,
+  MessageScrollerContentProps,
+  MessageScrollerContextValue,
+  MessageScrollerItemProps,
+  MessageScrollerProps,
+  MessageScrollerProviderProps,
+  MessageScrollerRegisterMessage,
+  MessageScrollerViewportProps,
+} from './types';
+import { USER_SCROLL_KEYS } from './types';
+import { useMessageScrollerController } from './use-message-scroller-controller';
+import { composeRefs, mergeProps, useRender } from './use-render';
+import { useLatest } from './utils';
+
+const MessageScrollerContext = React.createContext<MessageScrollerContextValue | null>(null);
+const MessageScrollerItemContext = React.createContext<MessageScrollerRegisterMessage | null>(null);
+
+function useMessageScrollerContext() {
+  const context = React.useContext(MessageScrollerContext);
+
+  if (!context) {
+    throw new Error('useMessageScroller must be used within a MessageScroller.');
+  }
+
+  return context;
+}
+
+function useMessageScrollerItemContext() {
+  const context = React.useContext(MessageScrollerItemContext);
+
+  if (!context) {
+    throw new Error('MessageScrollerItem must be used within a MessageScroller.');
+  }
+
+  return context;
+}
+
+function useMessageScroller() {
+  const { scrollToEnd, scrollToMessage, scrollToStart } = useMessageScrollerContext();
+
+  return React.useMemo(
+    () => ({
+      scrollToEnd,
+      scrollToMessage,
+      scrollToStart,
+    }),
+    [scrollToEnd, scrollToMessage, scrollToStart]
+  );
+}
+
+function useMessageScrollerScrollable() {
+  const { stateStore } = useMessageScrollerContext();
+
+  return React.useSyncExternalStore(
+    stateStore.subscribe,
+    stateStore.getSnapshot,
+    stateStore.getSnapshot
+  );
+}
+
+function useMessageScrollerVisibility() {
+  const { observeVisibility, unobserveVisibility, visibilityStore } = useMessageScrollerContext();
+  const subscribe = React.useCallback(
+    (listener: () => void) =>
+      visibilityStore.subscribe(listener, observeVisibility, unobserveVisibility),
+    [observeVisibility, unobserveVisibility, visibilityStore]
+  );
+
+  return React.useSyncExternalStore(
+    subscribe,
+    visibilityStore.getSnapshot,
+    visibilityStore.getSnapshot
+  );
+}
+
+function MessageScrollerProvider({
+  autoScroll = false,
+  children,
+  defaultScrollPosition = 'end',
+  scrollEdgeThreshold,
+  scrollPreviousItemPeek,
+  scrollMargin,
+}: MessageScrollerProviderProps) {
+  const { context, registerMessage } = useMessageScrollerController({
+    autoScroll,
+    defaultScrollPosition,
+    scrollEdgeThreshold,
+    scrollPreviousItemPeek,
+    scrollMargin,
+  });
+
+  return (
+    <MessageScrollerContext.Provider value={context}>
+      <MessageScrollerItemContext.Provider value={registerMessage}>
+        {children}
+      </MessageScrollerItemContext.Provider>
+    </MessageScrollerContext.Provider>
+  );
+}
+
+function usePendingDefaultScroll() {
+  const { pendingDefaultScrollStore } = useMessageScrollerContext();
+
+  return React.useSyncExternalStore(
+    pendingDefaultScrollStore.subscribe,
+    pendingDefaultScrollStore.getSnapshot,
+    pendingDefaultScrollStore.getSnapshot
+  );
+}
+
+const MessageScroller = React.forwardRef<HTMLDivElement, MessageScrollerProps>(
+  function MessageScroller({ children, ...props }, ref) {
+    const { setRootElement } = useMessageScrollerContext();
+    const pendingDefaultScroll = usePendingDefaultScroll();
+
+    const setRootRef = React.useCallback(
+      (element: HTMLDivElement | null) => {
+        setRootElement(element);
+        composeRefs(ref)?.(element);
+      },
+      [ref, setRootElement]
+    );
+
+    return (
+      <div
+        ref={setRootRef}
+        {...props}
+        {...(pendingDefaultScroll ? { 'data-pending-scroll': '' } : null)}
+      >
+        {children}
+      </div>
+    );
+  }
+);
+
+const MessageScrollerViewport = React.forwardRef<HTMLDivElement, MessageScrollerViewportProps>(
+  function MessageScrollerViewport(
+    {
+      'aria-label': ariaLabel,
+      children,
+      onKeyDown,
+      onScroll,
+      onTouchMove,
+      onWheel,
+      preserveScrollOnPrepend = true,
+      role,
+      tabIndex,
+      ...props
+    },
+    ref
+  ) {
+    const {
+      handleResize,
+      preserveScrollOnPrependRef,
+      setViewportElement,
+      syncAfterScroll,
+      userScrollIntent,
+      viewportRef,
+    } = useMessageScrollerContext();
+    const pendingDefaultScroll = usePendingDefaultScroll();
+
+    preserveScrollOnPrependRef.current = preserveScrollOnPrepend;
+
+    const setViewportRef = React.useCallback(
+      (element: HTMLDivElement | null) => {
+        setViewportElement(element);
+        composeRefs(ref)?.(element);
+      },
+      [ref, setViewportElement]
+    );
+
+    function handleScroll(event: React.UIEvent<HTMLDivElement>) {
+      syncAfterScroll();
+      onScroll?.(event);
+    }
+
+    function handleWheel(event: React.WheelEvent<HTMLDivElement>) {
+      userScrollIntent();
+      onWheel?.(event);
+    }
+
+    function handleTouchMove(event: React.TouchEvent<HTMLDivElement>) {
+      userScrollIntent();
+      onTouchMove?.(event);
+    }
+
+    function handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+      if (USER_SCROLL_KEYS.has(event.key)) {
+        userScrollIntent();
+      }
+
+      onKeyDown?.(event);
+    }
+
+    React.useEffect(() => {
+      const viewport = viewportRef.current;
+
+      if (!viewport || typeof ResizeObserver === 'undefined') {
+        return;
+      }
+
+      // Coalesce into rAF: handleResize mutates the spacer inside the observed
+      // content, and resizing an observed element during delivery fires
+      // "ResizeObserver loop completed with undelivered notifications".
+      let frame = 0;
+
+      const observer = new ResizeObserver(() => {
+        window.cancelAnimationFrame(frame);
+        frame = window.requestAnimationFrame(handleResize);
+      });
+
+      observer.observe(viewport);
+
+      return () => {
+        window.cancelAnimationFrame(frame);
+        observer.disconnect();
+      };
+    }, [handleResize, viewportRef]);
+
+    return (
+      // biome-ignore lint/a11y/noStaticElementInteractions: role="region" is applied at runtime, which the rule cannot see
+      // biome-ignore lint/a11y/useAriaPropsSupportedByRole: aria-label labels the runtime region role
+      <div
+        ref={setViewportRef}
+        role={role ?? 'region'}
+        aria-label={ariaLabel ?? 'Messages'}
+        tabIndex={tabIndex ?? 0}
+        onKeyDown={handleKeyDown}
+        onScroll={handleScroll}
+        onTouchMove={handleTouchMove}
+        onWheel={handleWheel}
+        {...props}
+        {...(pendingDefaultScroll ? { 'data-pending-scroll': '' } : null)}
+      >
+        {children}
+      </div>
+    );
+  }
+);
+
+const MessageScrollerContent = React.forwardRef<HTMLDivElement, MessageScrollerContentProps>(
+  function MessageScrollerContent(
+    { 'aria-relevant': ariaRelevant, children, role, spacerClassName, ...props },
+    ref
+  ) {
+    const { handleContentChange, handleResize, setContentElement, setSpacerElement } =
+      useMessageScrollerContext();
+    const contentRef = React.useRef<HTMLDivElement | null>(null);
+
+    const setContentRef = React.useCallback(
+      (element: HTMLDivElement | null) => {
+        contentRef.current = element;
+        setContentElement(element);
+        composeRefs(ref)?.(element);
+      },
+      [ref, setContentElement]
+    );
+
+    React.useLayoutEffect(() => {
+      const content = contentRef.current;
+
+      if (!content) {
+        return;
+      }
+
+      handleContentChange();
+
+      if (typeof MutationObserver === 'undefined') {
+        return;
+      }
+
+      const observer = new MutationObserver(() => {
+        handleContentChange();
+      });
+
+      observer.observe(content, { childList: true });
+
+      return () => observer.disconnect();
+    }, [handleContentChange]);
+
+    React.useEffect(() => {
+      const content = contentRef.current;
+
+      if (!content || typeof ResizeObserver === 'undefined') {
+        return;
+      }
+
+      // Coalesce into rAF: handleResize mutates the spacer inside this observed
+      // element, and resizing an observed element during delivery fires
+      // "ResizeObserver loop completed with undelivered notifications".
+      let frame = 0;
+
+      const observer = new ResizeObserver(() => {
+        window.cancelAnimationFrame(frame);
+        frame = window.requestAnimationFrame(handleResize);
+      });
+
+      observer.observe(content);
+
+      return () => {
+        window.cancelAnimationFrame(frame);
+        observer.disconnect();
+      };
+    }, [handleResize]);
+
+    return (
+      <div
+        ref={setContentRef}
+        role={role ?? 'log'}
+        aria-relevant={ariaRelevant ?? 'additions'}
+        {...props}
+      >
+        {children}
+        <div
+          ref={setSpacerElement}
+          aria-hidden="true"
+          data-message-scroller-spacer=""
+          hidden
+          className={spacerClassName}
+        />
+      </div>
+    );
+  }
+);
+
+const MessageScrollerItem = React.forwardRef<HTMLDivElement, MessageScrollerItemProps>(
+  function MessageScrollerItem({ messageId, scrollAnchor = false, ...props }, ref) {
+    const registerMessage = useMessageScrollerItemContext();
+    const elementRef = React.useRef<HTMLDivElement | null>(null);
+
+    const setItemRef = React.useCallback(
+      (element: HTMLDivElement | null) => {
+        const previousElement = elementRef.current;
+
+        elementRef.current = element;
+
+        if (messageId) {
+          registerMessage(messageId, element, previousElement);
+        }
+
+        composeRefs(ref)?.(element);
+      },
+      [messageId, ref, registerMessage]
+    );
+
+    return (
+      <div
+        ref={setItemRef}
+        data-message-id={messageId}
+        data-scroll-anchor={scrollAnchor ? 'true' : 'false'}
+        {...props}
+      />
+    );
+  }
+);
+
+const MessageScrollerButton = React.forwardRef<HTMLButtonElement, MessageScrollerButtonProps>(
+  function MessageScrollerButton(
+    {
+      behavior = 'smooth',
+      children,
+      direction = 'end',
+      onClick,
+      render,
+      tabIndex,
+      type = 'button',
+      ...props
+    },
+    ref
+  ) {
+    const { scrollToEnd, scrollToStart, stateStore } = useMessageScrollerContext();
+    const onClickRef = useLatest(onClick);
+    const subscribe = React.useCallback(
+      (listener: () => void) => stateStore.subscribe(listener),
+      [stateStore]
+    );
+    const getSnapshot = React.useCallback(() => {
+      const state = stateStore.getSnapshot();
+
+      return direction === 'start' ? state.start : state.end;
+    }, [direction, stateStore]);
+    const isActive = React.useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+    const elementRef = React.useRef<HTMLButtonElement | null>(null);
+    const setButtonRef = React.useCallback(
+      (element: HTMLButtonElement | null) => {
+        elementRef.current = element;
+        composeRefs(ref)?.(element);
+      },
+      [ref]
+    );
+
+    React.useLayoutEffect(() => {
+      elementRef.current?.toggleAttribute('inert', !isActive);
+    }, [isActive]);
+
+    const handleClick = React.useCallback(
+      (event: React.MouseEvent<HTMLButtonElement>) => {
+        if (!isActive) {
+          return;
+        }
+
+        onClickRef.current?.(event);
+
+        if (!event.defaultPrevented) {
+          event.currentTarget.blur();
+
+          if (direction === 'start') {
+            scrollToStart({ behavior });
+          } else {
+            scrollToEnd({ behavior });
+          }
+        }
+      },
+      [behavior, direction, isActive, onClickRef, scrollToEnd, scrollToStart]
+    );
+
+    return useRender({
+      defaultTagName: 'button',
+      props: mergeProps<'button'>(
+        {
+          ref: setButtonRef,
+          type,
+          tabIndex: isActive ? tabIndex : -1,
+          children: children ?? <span>Scroll to {direction}</span>,
+          onClick: handleClick,
+        },
+        props
+      ),
+      render,
+      state: {
+        active: isActive,
+        direction,
+      },
+      stateAttributesMapping: {
+        active: (value) => ({
+          'data-active': value ? 'true' : 'false',
+        }),
+      },
+    });
+  }
+);
+
+MessageScroller.displayName = 'MessageScroller';
+MessageScrollerViewport.displayName = 'MessageScrollerViewport';
+MessageScrollerContent.displayName = 'MessageScrollerContent';
+MessageScrollerItem.displayName = 'MessageScrollerItem';
+MessageScrollerButton.displayName = 'MessageScrollerButton';
+
+export {
+  MessageScroller,
+  MessageScrollerButton,
+  MessageScrollerContent,
+  MessageScrollerItem,
+  MessageScrollerProvider,
+  MessageScrollerViewport,
+  useMessageScroller,
+  useMessageScrollerScrollable,
+  useMessageScrollerVisibility,
+};

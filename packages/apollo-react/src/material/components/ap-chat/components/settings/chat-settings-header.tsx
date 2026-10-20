@@ -2,11 +2,10 @@ import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { styled } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
+import { useChatService } from '@uipath/apollo-react/chat/headless/providers/chat-service.provider';
+import { AutopilotChatPreHookAction } from '@uipath/apollo-react/chat/service';
+import { ApTypography } from '@uipath/apollo-react/material/components/ap-typography';
 import React from 'react';
-
-import { ApTypography } from '../../../ap-typography';
-import { useChatService } from '../../providers/chat-service.provider';
-import { AutopilotChatPreHookAction } from '../../service';
 import { AutopilotChatActionButton } from '../common/action-button';
 import { VisuallyHidden } from '../common/shared-controls';
 

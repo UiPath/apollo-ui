@@ -1,9 +1,11 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
+import * as React from 'react';
 import { describe, expect, it } from 'vitest';
 
 import { HoverCard, HoverCardContent, HoverCardTrigger } from './hover-card';
+import { PortalContainerProvider } from './portal-container';
 
 const TestHoverCard = ({ contentClassName }: { contentClassName?: string }) => (
   <HoverCard>
@@ -126,6 +128,60 @@ describe('HoverCard', () => {
 
       await user.hover(screen.getByText('Trigger'));
       expect(screen.queryByText('Content')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('portal container', () => {
+    const OpenCard = ({ container }: { container?: HTMLElement }) => (
+      <HoverCard open>
+        <HoverCardTrigger>Trigger</HoverCardTrigger>
+        <HoverCardContent container={container}>Content</HoverCardContent>
+      </HoverCard>
+    );
+
+    it('portals out of the trigger tree to document.body by default', async () => {
+      render(
+        <p data-testid="prose">
+          <OpenCard />
+        </p>
+      );
+
+      await waitFor(() => {
+        const content = screen.getByText('Content');
+        expect(document.body.contains(content)).toBe(true);
+        expect(screen.getByTestId('prose').contains(content)).toBe(false);
+      });
+    });
+
+    it('portals into the PortalContainerProvider boundary', async () => {
+      render(
+        <div data-testid="host">
+          <PortalContainerProvider>
+            <OpenCard />
+          </PortalContainerProvider>
+        </div>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('host').contains(screen.getByText('Content'))).toBe(true);
+      });
+    });
+
+    it('routes its portal through an explicit container prop', async () => {
+      const Harness = () => {
+        const [target, setTarget] = React.useState<HTMLElement | null>(null);
+        return (
+          <>
+            <div data-testid="custom" ref={setTarget} />
+            {target && <OpenCard container={target} />}
+          </>
+        );
+      };
+      render(<Harness />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('custom').contains(screen.getByText('Content'))).toBe(true);
+      });
     });
   });
 });

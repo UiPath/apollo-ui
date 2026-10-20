@@ -73,8 +73,8 @@ export const isByoModel = (m: DiscoveryModel) =>
 
 /**
  * Ready-made `filter` predicate for products that only offer text-generation
- * models: drops embeddings (by API flavor — `OpenAiEmbeddings`,
- * `GeminiEmbeddings`) and realtime (by `modelType`).
+ * models: drops embeddings (by `capabilities`, or by API flavor —
+ * `OpenAiEmbeddings`, `GeminiEmbeddings`) and realtime (by `modelType`).
  *
  * The picker does NOT apply this itself: which modalities to offer is a
  * per-product decision — an indexing or context-grounding surface picks
@@ -83,6 +83,7 @@ export const isByoModel = (m: DiscoveryModel) =>
  */
 export function isTextGenerationModel(m: DiscoveryModel): boolean {
   if (m.modelType === 'Realtime') return false;
+  if (m.capabilities?.includes('Embeddings') && !m.capabilities.includes('Chat')) return false;
   return !(m.apiFlavor ?? '').includes('Embeddings');
 }
 

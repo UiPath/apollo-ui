@@ -5,15 +5,24 @@ import {
   FormFieldError,
   FormFieldLabel,
   Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   TooltipProvider,
 } from '@uipath/apollo-wind';
 import { useMemo, useState } from 'react';
 import { ApI18nProvider } from '../../../i18n';
+import { CLASSIFIER_QUESTIONS_WIRE } from './__fixtures__/classifier-questions.fixtures';
+import { CLASSIFIER_WIRE } from './__fixtures__/definitions-wire.fixtures';
 import type { GuardrailBuilderValue, GuardrailDefinition } from './builder-types';
 import { enrichGuardrailDefinitions } from './definitions-enrich';
 import type { GuardrailDefinitionWire } from './definitions-wire';
 import { GuardrailBuilder } from './guardrail-builder';
-import type { GuardrailParameterDefinition } from './types';
+import type { GuardrailParameterDefinition, GuardrailParameterRenderContext } from './types';
+import { useClassifierGuardrailParameters } from './use-classifier-guardrail-parameters';
+import { useClassifierQuestions } from './use-classifier-questions';
 
 const meta = {
   title: 'Components/UiPath/Guardrail Builder',
@@ -205,6 +214,20 @@ export const StatusByoDisabled: Story = {
       byoValidatorName: 'vendor-pii',
       status: 'Disabled',
     },
+  },
+};
+
+/**
+ * A built-in validator the AI Trust Layer policy switched off (`disabledReason: 'Policy'`). Runs
+ * skip it, so the banner is a warning, and Save stays disabled like every other non-available
+ * status. With `policyName` the banner names the policy; without it, it says "your organization's
+ * AI Trust Layer policy".
+ */
+export const StatusPolicyDisabled: Story = {
+  args: {
+    ...EditInline.args,
+    definition: { ...piiDefinition, status: 'Disabled', disabledReason: 'Policy' },
+    policyName: 'Enterprise AI Trust Layer policy',
   },
 };
 
@@ -402,10 +425,10 @@ export const HostErrorsOverride: Story = {
   },
 };
 
-const appliesToParameter = (defaultValue: string): GuardrailParameterDefinition => ({
-  id: 'appliesTo',
+const detectionScopeParameter = (defaultValue: string): GuardrailParameterDefinition => ({
+  id: 'detectionScope',
   type: 'enum',
-  label: 'Applies to',
+  label: 'Detection scope',
   required: false,
   defaultValue,
   options: ['Text', 'Files', 'Both'],
@@ -414,7 +437,7 @@ const appliesToParameter = (defaultValue: string): GuardrailParameterDefinition 
 
 const piiWithFiles: GuardrailDefinition = {
   ...piiDefinition,
-  parameters: [...piiDefinition.parameters, appliesToParameter('Text')],
+  parameters: [...piiDefinition.parameters, detectionScopeParameter('Text')],
   fileSupport: {
     supported: true,
     formats: ['Text'],
@@ -423,7 +446,7 @@ const piiWithFiles: GuardrailDefinition = {
 };
 
 /**
- * File support sits under Applies to while it selects Files or Both. Pick Text only and both
+ * File support sits under Detection scope while it selects Files or Both. Pick Text only and both
  * lines go.
  */
 export const FileSupportFilesSelected: Story = {
@@ -435,7 +458,7 @@ export const FileSupportFilesSelected: Story = {
       ...existingGuardrail,
       validatorParameters: [
         ...existingGuardrail.validatorParameters,
-        { $parameterType: 'enum', id: 'appliesTo', value: 'Files' },
+        { $parameterType: 'enum', id: 'detectionScope', value: 'Files' },
       ],
     },
   },
@@ -465,7 +488,7 @@ export const FileSupportJudgeBoth: Story = {
           defaultValue: 'gpt-4o',
           options: ['gpt-4o'],
         },
-        appliesToParameter('Both'),
+        detectionScopeParameter('Both'),
       ],
       fileSupport: {
         supported: true,
@@ -477,7 +500,7 @@ export const FileSupportJudgeBoth: Story = {
   },
 };
 
-/** Without file support there is no Applies to field, and the line stays above the parameters. */
+/** Without file support there is no Detection scope field; the line stays above the parameters. */
 export const FileSupportUnavailable: Story = {
   args: {
     ...AddInline.args,
@@ -565,4 +588,88 @@ export const Sentiment: Story = {
     scope: 'Llm',
     defaultName: 'Sentiment 1',
   },
+};
+
+const classifierDefinition = enrichOne(CLASSIFIER_WIRE);
+
+/** Stands in for a host's model discovery: writes the model and its vendor together. */
+function StandInModelPicker({ ctx }: { ctx: GuardrailParameterRenderContext }) {
+  const vendors: Record<string, string> = { 'jev-1.13.0': 'typesafe', 'gpt-6-luna': 'openai' };
+  return (
+    <FormField>
+      <FormFieldLabel required>{ctx.definition.label}</FormFieldLabel>
+      <Select
+        value={typeof ctx.value === 'string' ? ctx.value : ''}
+        onValueChange={(model) =>
+          ctx.onParametersChange([
+            ...ctx.parameters.filter((p) => p.id !== 'model' && p.id !== 'modelVendor'),
+            { $parameterType: 'enum', id: 'model', value: model },
+            { $parameterType: 'text', id: 'modelVendor', value: vendors[model] ?? '' },
+          ])
+        }
+      >
+        <SelectTrigger aria-label={ctx.definition.label}>
+          <SelectValue placeholder="Select a model" />
+        </SelectTrigger>
+        <SelectContent>
+          {Object.keys(vendors).map((model) => (
+            <SelectItem key={model} value={model}>
+              {model}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <FormFieldError>{ctx.error}</FormFieldError>
+    </FormField>
+  );
+}
+
+function ClassifierHost() {
+  const { categories } = useClassifierQuestions(null, { questions: CLASSIFIER_QUESTIONS_WIRE });
+  const classifier = useClassifierGuardrailParameters({
+    definition: classifierDefinition,
+    categories,
+  });
+  const [saved, setSaved] = useState<GuardrailBuilderValue>();
+  return (
+    <div className="flex h-full flex-col">
+      <div className="min-h-0 flex-1">
+        <GuardrailBuilder
+          open
+          inline
+          hideHeader
+          definition={classifierDefinition}
+          scope="Llm"
+          defaultName="Classifier 1"
+          renderParameter={(ctx) =>
+            classifier.renderParameter(ctx) ??
+            (ctx.definition.id === 'model' ? <StandInModelPicker ctx={ctx} /> : undefined)
+          }
+          overrideParameterIds={[...classifier.overrideParameterIds, 'model']}
+          onSave={(value) => {
+            if (classifier.validateParameters(value.validatorParameters)) setSaved(value);
+          }}
+          onCancel={() => setSaved(undefined)}
+        />
+      </div>
+      {saved && (
+        <pre className="max-h-40 overflow-auto border-t bg-muted p-2 text-xs">
+          {JSON.stringify(saved.validatorParameters, null, 2)}
+        </pre>
+      )}
+    </div>
+  );
+}
+
+/**
+ * The classifier as hosts compose it: the catalog hook, the classifier seam, then the host's own
+ * model picker. A successful save prints the parameters below.
+ */
+export const Classifier: Story = {
+  args: {
+    ...AddInline.args,
+    definition: classifierDefinition,
+    scope: 'Llm',
+  },
+  render: () => <ClassifierHost />,
 };

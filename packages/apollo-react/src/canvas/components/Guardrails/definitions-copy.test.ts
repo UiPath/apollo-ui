@@ -1,8 +1,10 @@
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { findCatalogDrift, findCatalogOrphans } from './__fixtures__/catalog-coverage';
+import { CLASSIFIER_QUESTIONS_WIRE } from './__fixtures__/classifier-questions.fixtures';
 import {
   PII_ENTITY_OPTIONS,
+  PREVIEW_PII_ENTITY_OPTIONS,
   SENTIMENT_LANGUAGE_OPTIONS,
   SENTIMENT_OPTIONS,
 } from './__fixtures__/definitions-wire.fixtures';
@@ -13,9 +15,12 @@ import {
   useGuardrailDefinitionCopy,
 } from './definitions-copy';
 
+const ALL_PII_ENTITY_OPTIONS = [...PII_ENTITY_OPTIONS, ...PREVIEW_PII_ENTITY_OPTIONS];
+
 // Option segments allow `-`: they are raw wire values, and language codes such as `pt-BR` carry one.
+// Category segments are the raw group ids the classifier question catalog sends.
 const ID_PATTERN =
-  /^guardrails\.definitions\.[a-z0-9_]+\.(display-name|description|usage-note|param\.[A-Za-z0-9]+\.(label|tooltip)|option\.[A-Za-z0-9]+\.[A-Za-z0-9-]+)$/;
+  /^guardrails\.definitions\.[a-z0-9_]+\.(display-name|description|usage-note|param\.[A-Za-z0-9]+\.(label|tooltip)|option\.[A-Za-z0-9]+\.[A-Za-z0-9-]+|category\.[a-z0-9_]+)$/;
 
 describe('GUARDRAIL_COPY_EN', () => {
   it('covers every curated validator', () => {
@@ -25,7 +30,7 @@ describe('GUARDRAIL_COPY_EN', () => {
   it('labels every PII entity the backend can return', () => {
     const labels = GUARDRAIL_COPY_EN.pii_detection?.optionLabels?.entities ?? {};
 
-    expect(Object.keys(labels).sort()).toEqual([...PII_ENTITY_OPTIONS].sort());
+    expect(Object.keys(labels).sort()).toEqual([...ALL_PII_ENTITY_OPTIONS].sort());
   });
 
   it('labels every sentiment and language the backend can return', () => {
@@ -36,6 +41,12 @@ describe('GUARDRAIL_COPY_EN', () => {
     );
     expect(Object.keys(optionLabels.language ?? {}).sort()).toEqual(
       [...SENTIMENT_LANGUAGE_OPTIONS].sort()
+    );
+  });
+
+  it('heads every category the classifier question catalog groups by', () => {
+    expect(Object.keys(GUARDRAIL_COPY_EN.classifier?.categoryLabels ?? {}).sort()).toEqual(
+      CLASSIFIER_QUESTIONS_WIRE.map((group) => group.id).sort()
     );
   });
 
@@ -57,7 +68,7 @@ describe('message ids', () => {
   it('use the raw wire value for option segments, never a transcribed slug', () => {
     // Transcribing is how the two products ended up with `finNationalId` and `fiNationalId`
     // for the same entity; the raw value cannot drift because it is the value we persist.
-    for (const option of PII_ENTITY_OPTIONS) {
+    for (const option of ALL_PII_ENTITY_OPTIONS) {
       expect(GUARDRAIL_COPY_EN_MESSAGES).toHaveProperty(
         `guardrails.definitions.pii_detection.option.entities.${option}`
       );
@@ -74,6 +85,7 @@ describe('message ids', () => {
       for (const options of Object.values(copy.optionLabels ?? {})) {
         stringCount += Object.keys(options).length;
       }
+      stringCount += Object.keys(copy.categoryLabels ?? {}).length;
     }
 
     // A duplicated id would silently collapse two strings into one entry.

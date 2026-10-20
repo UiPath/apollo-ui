@@ -1,31 +1,45 @@
 @import 'tailwindcss';
-@source "../registry";
-@source "../templates";
+@source "../../../packages/apollo-vertex/registry";
 
-/* Optional: import Nextra theme styles */
-@import 'nextra-theme-docs/style.css';
+/* Fumadocs UI with its default neutral theme */
+@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/preset.css';
 @import "tw-animate-css";
 
 /* Design tokens — generated from registry.json > apollo-vertex-theme */
 @import "./theme.generated.css";
 
-@custom-variant dark (&:is(.dark *)); /* or nextra-theme-blog/style.css */
+@custom-variant dark (&:is(.dark *));
 
-:root {
-  /* Override Nextra's background to match our theme */
-  --x-color-nextra-bg: var(--background);
+/*
+ * Fumadocs draws the nested-folder guide line behind the sidebar items, so a
+ * selected or hovered nested item's background paints over it. Clip those
+ * backgrounds to start at the line; the active indicator then sits on it.
+ */
+:is(#nd-sidebar, #nd-sidebar-mobile) [data-state] > .pt-0\.5 > a,
+:is(#nd-sidebar, #nd-sidebar-mobile)
+  [data-state]
+  > .pt-0\.5
+  > [data-state]
+  > :is(a, button) {
+  clip-path: inset(0 0 0 calc(var(--spacing) * 2.5) round var(--radius-lg));
 }
 
-.dark {
-  /* Override Nextra's background to match our theme */
-  --x-color-nextra-bg: var(--background);
-}
-
+/* Vertex border and focus colors for demos. The docs chrome keeps the
+   Fumadocs defaults, and the page background comes from Fumadocs. */
 @layer base {
-  * {
+  *:not(
+      :where(
+          #nd-sidebar,
+          #nd-sidebar *,
+          #nd-sidebar-mobile,
+          #nd-sidebar-mobile *,
+          #nd-subnav,
+          #nd-subnav *,
+          #nd-toc,
+          #nd-toc *
+        )
+    ) {
     @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
   }
 }

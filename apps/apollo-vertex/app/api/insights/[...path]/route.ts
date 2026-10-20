@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { proxyToUiPath } from "@/lib/api-proxy";
+import { proxyToUiPath } from "../../../../lib/api-proxy";
 
 const INSIGHTS_SEGMENT = "insightsrtm_";
 

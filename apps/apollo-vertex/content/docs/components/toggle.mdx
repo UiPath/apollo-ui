@@ -1,0 +1,50 @@
+---
+title: "Toggle"
+description: "A two-state button that can be either on or off."
+---
+
+import { Toggle } from '@/registry/toggle/toggle'
+import { Bold, Italic, Underline } from 'lucide-react'
+
+<Preview className="flex gap-2">
+  <Toggle aria-label="Toggle bold">
+    <Bold className="h-4 w-4" />
+  </Toggle>
+  <Toggle aria-label="Toggle italic">
+    <Italic className="h-4 w-4" />
+  </Toggle>
+  <Toggle aria-label="Toggle underline">
+    <Underline className="h-4 w-4" />
+  </Toggle>
+</Preview>
+
+## Variants
+
+<Preview className="flex gap-2">
+  <Toggle variant="default" aria-label="Toggle">Default</Toggle>
+  <Toggle variant="outline" aria-label="Toggle outline">Outline</Toggle>
+</Preview>
+
+## Sizes
+
+<Preview className="flex gap-2 items-center">
+  <Toggle size="sm" aria-label="Toggle small">
+    <Bold className="h-4 w-4" />
+  </Toggle>
+  <Toggle size="default" aria-label="Toggle default">
+    <Bold className="h-4 w-4" />
+  </Toggle>
+  <Toggle size="lg" aria-label="Toggle large">
+    <Bold className="h-4 w-4" />
+  </Toggle>
+</Preview>
+
+## Usage
+
+```tsx
+import { Toggle } from "@uipath/apollo-vertex"
+```
+
+```tsx
+<Toggle>Toggle</Toggle>
+```

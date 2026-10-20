@@ -1,3 +1,74 @@
+## [@uipath/apollo-wind-v2.72.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.72.0...@uipath/apollo-wind@2.72.1) (2026-10-19)
+
+### Bug Fixes
+
+* **apollo-core:** make future-dark primary-lighter a subtle tint [MST-16476] ([5c2479d](https://github.com/UiPath/apollo-ui/commit/5c2479d16362f3706a69a8e5d92e0dff3d6bdb8d))
+
+## [@uipath/apollo-wind-v2.72.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.71.0...@uipath/apollo-wind@2.72.0) (2026-10-19)
+
+### Features
+
+* **apollo-wind:** add ReferenceChip for variables, resources and connections ([2cb40db](https://github.com/UiPath/apollo-ui/commit/2cb40dbe8e8d2f133c7ba1dc3daca8cae0a77338))
+
+## [@uipath/apollo-wind-v2.71.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.70.0...@uipath/apollo-wind@2.71.0) (2026-10-15)
+
+### Features
+
+* **apollo-wind:** add ChatHero and PromptSuggestions chat primitives ([5582d41](https://github.com/UiPath/apollo-ui/commit/5582d4103a221e8bf9b955240354fd3e40eabbdb))
+
+### Bug Fixes
+
+* **apollo-wind:** QuickFormField expression mode for selects, and a disabled prop ([d5825fa](https://github.com/UiPath/apollo-ui/commit/d5825fa2a41dd7b02fc6c144aebd8964a7abdcf3))
+* **apollo-wind:** read ISO date strings in date fields instead of crashing ([3b0ddee](https://github.com/UiPath/apollo-ui/commit/3b0ddee080a6d7c6ef2def9334c9b9e710a7fb7c))
+
+## [@uipath/apollo-wind-v2.70.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.69.0...@uipath/apollo-wind@2.70.0) (2026-10-13)
+
+### Features
+
+* **apollo-wind:** add ChatComposer and DropzoneOverlay chat primitives ([a6321dd](https://github.com/UiPath/apollo-ui/commit/a6321dd2d974abce50b7883ffdc2142ffcb0aade))
+* **apollo-wind:** add MessageActions, Citation and Sources chat primitives ([674547f](https://github.com/UiPath/apollo-ui/commit/674547fab6457e813ff976c5416a0c513dc83db8))
+
+### Bug Fixes
+
+* **apollo-wind:** portal HoverCardContent through the portal container ([e29415d](https://github.com/UiPath/apollo-ui/commit/e29415dab392ae7ee63ec571439ca07dba2d5899))
+
+## [@uipath/apollo-wind-v2.68.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.67.1...@uipath/apollo-wind@2.68.0) (2026-10-12)
+
+### Features
+
+* **apollo-react:** add Variables panel and align all Node Property panels ([963810c](https://github.com/UiPath/apollo-ui/commit/963810c50f371b40dad608ed8bac7fe35eff2965))
+
+## [@uipath/apollo-wind-v2.67.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.67.0...@uipath/apollo-wind@2.67.1) (2026-10-09)
+
+### Bug Fixes
+
+* **apollo-wind:** leave Enter and Space on nested tree buttons to the buttons ([2c12681](https://github.com/UiPath/apollo-ui/commit/2c12681b61273db82ffefa6f54bbb3604a12db4a))
+* **apollo-wind:** tree view checkbox labels, keyboard and empty context menu ([7bd2622](https://github.com/UiPath/apollo-ui/commit/7bd2622dc1ab428c53fec7771fcadc5aac6051d8))
+
+## [@uipath/apollo-wind-v2.67.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.66.1...@uipath/apollo-wind@2.67.0) (2026-10-08)
+
+### Features
+
+* **apollo-wind:** add chat primitives (Message, Bubble, Attachment, Marker, MessageScroller) ([aeeb8ad](https://github.com/UiPath/apollo-ui/commit/aeeb8adc0ed7df2b011c982973dbceeae2bc9cea))
+
+## [@uipath/apollo-wind-v2.66.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.66.0...@uipath/apollo-wind@2.66.1) (2026-10-08)
+
+### Bug Fixes
+
+* **apollo-wind:** give Future fields a shared primary focus ring ([9f91353](https://github.com/UiPath/apollo-ui/commit/9f9135317c33928a2bbfe5c0f507f5adaf51c9f9)), closes [#0092b8](https://github.com/UiPath/apollo-ui/issues/0092b8) [#00b8db](https://github.com/UiPath/apollo-ui/issues/00b8db)
+
+## [@uipath/apollo-wind-v2.66.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.65.2...@uipath/apollo-wind@2.66.0) (2026-10-08)
+
+### Features
+
+* **apollo-wind:** collapsed badges, option details and create row in MultiSelect ([48a3251](https://github.com/UiPath/apollo-ui/commit/48a32519efc8a706ff068dc8ff50b09db44ad2d3))
+
+## [@uipath/apollo-wind-v2.65.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.65.1...@uipath/apollo-wind@2.65.2) (2026-10-08)
+
+### Bug Fixes
+
+* **apollo-wind:** drop embedding-only models in isTextGenerationModel by capability ([f210d03](https://github.com/UiPath/apollo-ui/commit/f210d039ce4cb04ca9cc7a6cf0c86ffe0fb5ab66))
+
 ## [@uipath/apollo-wind-v2.65.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.65.0...@uipath/apollo-wind@2.65.1) (2026-10-07)
 
 ### Bug Fixes

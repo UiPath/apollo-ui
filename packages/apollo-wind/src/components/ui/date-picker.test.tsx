@@ -361,3 +361,15 @@ describe('DateRangePicker in an input group', () => {
     expect(screen.getByText('Jan 05, 2026 - Jan 09, 2026')).toBeInTheDocument();
   });
 });
+
+// Untyped callers can still hand over something other than a Date.
+describe('DatePicker non-Date values', () => {
+  it.each([
+    ['a string', '2026-09-23T07:00:00.000Z'],
+    ['a number', 1758610800123],
+    ['an Invalid Date', new Date(Number.NaN)],
+  ])('shows the placeholder for %s instead of throwing', (_label, value) => {
+    render(<DatePicker value={value as unknown as Date} />);
+    expect(screen.getByText('Pick a date')).toBeInTheDocument();
+  });
+});

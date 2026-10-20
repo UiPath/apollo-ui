@@ -14,35 +14,76 @@ permissions:
 jobs:
   detect-changes:
     name: Detect changes
+    # Runs the PR's own select-components.mjs, so fork code must not reach the self-hosted runner.
+    if: github.event.pull_request.head.repo.fork == false
     runs-on: uipath-ubuntu-latest
     permissions:
       contents: read
       pull-requests: read
     outputs:
-      has_vertex_changes: ${{ steps.check.outputs.has_vertex_changes }}
+      matrix: ${{ steps.select.outputs.matrix }}
     steps:
-      - name: Check for vertex changes
-        id: check
+      - name: Checkout code
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            .github/scripts/test-registry/
+            packages/apollo-vertex/registry.json
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
+        with:
+          node-version: "22"
+
+      - name: List changed files
+        id: files
         env:
           GH_TOKEN: ${{ github.token }}
-          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          EXPECTED_FILES: ${{ github.event.pull_request.changed_files }}
         run: |
-          VERTEX_FILES=$(gh pr diff "$PR_URL" --name-only | grep -E '^(apps/apollo-vertex/|\.github/scripts/test-registry/|\.github/workflows/apollo-vertex-registry-check\.yml)' || true)
-          if [ -n "$VERTEX_FILES" ]; then
-            echo "has_vertex_changes=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "has_vertex_changes=false" >> "$GITHUB_OUTPUT"
+          # The pulls/files API paginates past the 300-file cap of `gh pr diff` but stops at 3000
+          # files, so compare against the PR total. Fetch on its own line so an API failure fails
+          # the step. Renames also list their old path, so moving a file out of another directory
+          # counts.
+          FILES_TSV=$(gh api --paginate "repos/${GH_REPO}/pulls/${PR_NUMBER}/files" --jq '.[] | [.filename, (.previous_filename // "")] | @tsv')
+          LISTED=$(printf '%s\n' "$FILES_TSV" | grep -c . || true)
+          printf '%s\n' "$FILES_TSV" | tr '\t' '\n' | grep . > "$RUNNER_TEMP/changed-files.txt" || true
+          # A truncated list can hide relevant files, so test everything rather than skip.
+          if [ "$LISTED" -ne "$EXPECTED_FILES" ]; then
+            echo "select_all=true" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Fetch base registry.json
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          gh api -H "Accept: application/vnd.github.raw" \
+            "repos/${GH_REPO}/contents/packages/apollo-vertex/registry.json?ref=${BASE_SHA}" \
+            > "$RUNNER_TEMP/base-registry.json"
+
+      - name: Select components to test
+        id: select
+        env:
+          CHANGED_FILES_PATH: ${{ runner.temp }}/changed-files.txt
+          BASE_REGISTRY_PATH: ${{ runner.temp }}/base-registry.json
+          SELECT_ALL: ${{ steps.files.outputs.select_all }}
+        run: |
+          MATRIX=$(node .github/scripts/test-registry/select-components.mjs)
+          echo "matrix=${MATRIX}" >> "$GITHUB_OUTPUT"
 
   prepare:
     name: Prepare
     needs: detect-changes
-    if: needs.detect-changes.outputs.has_vertex_changes == 'true' && github.event.pull_request.head.repo.fork == false
+    if: needs.detect-changes.outputs.matrix != '[]' && github.event.pull_request.head.repo.fork == false
     runs-on: uipath-ubuntu-latest
     permissions:
       contents: read
-    outputs:
-      matrix: ${{ steps.matrix.outputs.result }}
     steps:
       - name: Checkout code
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
@@ -58,12 +99,6 @@ jobs:
       - name: Check registry CSS variables
         run: node --experimental-strip-types .github/scripts/test-registry/check-css-vars.ts
 
-      - name: Generate matrix batches
-        id: matrix
-        run: |
-          MATRIX=$(node .github/scripts/test-registry/generate-matrix-batches.mjs)
-          echo "result=${MATRIX}" >> "${GITHUB_OUTPUT}"
-
       - name: Create base shadcn app
         run: |
           cp .github/scripts/test-registry/pnpm-workspace-registry-test.yaml "$RUNNER_TEMP/pnpm-workspace.yaml"
@@ -78,7 +113,7 @@ jobs:
           $GITHUB_WORKSPACE/node_modules/.bin/tsx $GITHUB_WORKSPACE/.github/scripts/test-registry/configure-registry.ts
 
       - name: Copy locales into base app
-        run: cp -r apps/apollo-vertex/locales ${{ runner.temp }}/minimal-app/locales
+        run: cp -r packages/apollo-vertex/locales ${{ runner.temp }}/minimal-app/locales
 
       - name: Remove node_modules from base app
         run: rm -rf ${{ runner.temp }}/minimal-app/node_modules
@@ -100,7 +135,7 @@ jobs:
   test-components:
     name: Test batch ${{ matrix.batch_index }}
     needs: [detect-changes, prepare]
-    if: needs.detect-changes.outputs.has_vertex_changes == 'true' && github.event.pull_request.head.repo.fork == false
+    if: needs.detect-changes.outputs.matrix != '[]' && github.event.pull_request.head.repo.fork == false
     runs-on: uipath-ubuntu-latest
     # Simulates a downstream consumer installing apollo-vertex shadcn components
     # into a fresh project. Some components pull in @uipath/proteus-client, which
@@ -111,7 +146,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJson(needs.prepare.outputs.matrix) }}
+        include: ${{ fromJson(needs.detect-changes.outputs.matrix) }}
     steps:
       - name: Checkout code
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
@@ -119,7 +154,7 @@ jobs:
           persist-credentials: false
           sparse-checkout: |
             .github/scripts/test-registry
-            apps/apollo-vertex/types/optional-deps.d.ts
+            packages/apollo-vertex/types/optional-deps.d.ts
             package.json
             pnpm-lock.yaml
 
@@ -149,7 +184,7 @@ jobs:
         run: pnpm dlx serve@14.2.6 ${{ runner.temp }}/serve-dir -p 3000 &
 
       - name: Stage optional-deps shim
-        run: cp apps/apollo-vertex/types/optional-deps.d.ts .github/scripts/test-registry/optional-deps.d.ts
+        run: cp packages/apollo-vertex/types/optional-deps.d.ts .github/scripts/test-registry/optional-deps.d.ts
 
       - name: Test registry components
         env:
@@ -167,13 +202,19 @@ jobs:
       contents: read
     steps:
       - name: Check results
+        env:
+          MATRIX: ${{ needs.detect-changes.outputs.matrix }}
         run: |
-          if [ "${{ needs.detect-changes.outputs.has_vertex_changes }}" != "true" ]; then
-            echo "No relevant changes detected — skipping registry check"
-            exit 0
-          fi
           if [ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]; then
             echo "Fork PR — registry check skipped (secrets not available)"
+            exit 0
+          fi
+          if [ "${{ needs.detect-changes.result }}" != "success" ]; then
+            echo "Selecting components to test failed"
+            exit 1
+          fi
+          if [ "$MATRIX" == "[]" ]; then
+            echo "No registry components affected — skipping registry check"
             exit 0
           fi
           if [ "${{ needs.test-components.result }}" != "success" ]; then

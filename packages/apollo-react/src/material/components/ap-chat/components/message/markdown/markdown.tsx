@@ -5,22 +5,24 @@ import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
+import { useIsStreamingMessage } from '@uipath/apollo-react/chat/headless/hooks/use-is-streaming-message';
+import {
+  citationPlugin,
+  contentPartsToMarkdown,
+} from '@uipath/apollo-react/chat/headless/markdown/citation-parser';
+import { resourceTokenPlugin } from '@uipath/apollo-react/chat/headless/markdown/resource-token-parser';
+import { useChatService } from '@uipath/apollo-react/chat/headless/providers/chat-service.provider';
+import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
+import { useStreaming } from '@uipath/apollo-react/chat/headless/providers/streaming-provider';
+import { AutopilotChatEvent, type AutopilotChatMessage } from '@uipath/apollo-react/chat/service';
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
-
-import { useIsStreamingMessage } from '../../../hooks/use-is-streaming-message';
-import { useChatService } from '../../../providers/chat-service.provider';
-import { useChatState } from '../../../providers/chat-state-provider';
-import { useStreaming } from '../../../providers/streaming-provider';
-import { AutopilotChatEvent, type AutopilotChatMessage } from '../../../service';
 import { Citation } from './citation';
 import { Code } from './code';
 import { Li, Ol, Ul } from './lists';
-import { citationPlugin, contentPartsToMarkdown } from './parsers/citation-parser';
-import { resourceTokenPlugin } from './parsers/resource-token-parser';
 import { ResourceChip } from './resource-chip';
 import { Cell, HeaderCell, Row, Table, TableHeader } from './table';
 import {

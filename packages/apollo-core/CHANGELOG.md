@@ -1,3 +1,9 @@
+## [@uipath/apollo-core-v5.15.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.15.1...@uipath/apollo-core@5.15.2) (2026-10-19)
+
+### Bug Fixes
+
+* **apollo-core:** make future-dark primary-lighter a subtle tint [MST-16476] ([5c2479d](https://github.com/UiPath/apollo-ui/commit/5c2479d16362f3706a69a8e5d92e0dff3d6bdb8d))
+
 ## [@uipath/apollo-core-v5.15.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-core@5.15.0...@uipath/apollo-core@5.15.1) (2026-09-23)
 
 ### Bug Fixes

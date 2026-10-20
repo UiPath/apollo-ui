@@ -1,0 +1,34 @@
+---
+title: "Switch"
+description: "A control that allows the user to toggle between on and off."
+---
+
+import { Switch } from '@/registry/switch/switch'
+import { Label } from '@/registry/label/label'
+
+<Preview className="space-y-4">
+  <div className="flex items-center space-x-2">
+    <Switch id="airplane-mode" />
+    <Label htmlFor="airplane-mode">Airplane Mode</Label>
+  </div>
+
+  <div className="flex items-center space-x-2">
+    <Switch id="notifications" defaultChecked />
+    <Label htmlFor="notifications">Enable notifications</Label>
+  </div>
+
+  <div className="flex items-center space-x-2">
+    <Switch id="disabled" disabled />
+    <Label htmlFor="disabled" className="opacity-50">Disabled</Label>
+  </div>
+</Preview>
+
+## Usage
+
+```tsx
+import { Switch } from "@uipath/apollo-vertex"
+```
+
+```tsx
+<Switch />
+```

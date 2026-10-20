@@ -1,11 +1,13 @@
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
-import React from 'react';
-
-import { ApToolCall } from '../../../ap-tool-call';
-import { useChatService } from '../../providers/chat-service.provider';
-import { useChatState } from '../../providers/chat-state-provider';
-import { useLocale } from '../../providers/locale-provider';
+import {
+  type ChatBuiltInMessageRenderer,
+  resolveMessageRenderer,
+} from '@uipath/apollo-react/chat/headless/message-renderers';
+import { useChatService } from '@uipath/apollo-react/chat/headless/providers/chat-service.provider';
+import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
+import { useLocale } from '@uipath/apollo-react/chat/headless/providers/locale-provider';
+import { calculateDynamicPadding } from '@uipath/apollo-react/chat/headless/utils/dynamic-padding';
 import {
   AGENTS_TOOL_CALL_RENDERER,
   APOLLO_CHAT_TREE_RENDERER,
@@ -19,8 +21,9 @@ import {
   CHAT_WIDTH_SIDE_BY_SIDE_MIN,
   DEFAULT_MESSAGE_RENDERER,
   StorageService,
-} from '../../service';
-import { calculateDynamicPadding } from '../../utils/dynamic-padding';
+} from '@uipath/apollo-react/chat/service';
+import { ApToolCall } from '@uipath/apollo-react/material/components/ap-tool-call';
+import React from 'react';
 import { Attachments } from '../common/attachments';
 import { AutopilotChatMessageActions } from './actions/chat-actions';
 import { AutopilotChatMarkdownRenderer } from './markdown/markdown';
@@ -58,7 +61,7 @@ const ChatTreeMessageRenderer = ({ message }: { message: AutopilotChatMessage })
 // Must stay at module scope: `component` is used as an element type, and React reconciles those
 // by reference, so rebuilding this list per render remounts the subtree and wipes ApToolCall's
 // expanded state.
-const APOLLO_MESSAGE_RENDERERS = [
+const MATERIAL_MESSAGE_RENDERERS: readonly ChatBuiltInMessageRenderer[] = [
   {
     name: DEFAULT_MESSAGE_RENDERER,
     component: AutopilotChatMarkdownRenderer,
@@ -158,31 +161,28 @@ const WidgetContainer = React.memo(
     containerRef: HTMLDivElement | null;
   }) => {
     const chatService = useChatService();
-    const unsubscribeRef = React.useRef<() => void>(() => {});
+    const widgetRef = React.useRef<HTMLDivElement>(null);
 
-    React.useEffect(() => {
+    // An effect, not an inline ref callback: React re-runs a new callback on every re-render, which
+    // would call `render` again without the previous cleanup.
+    React.useLayoutEffect(() => {
+      if (!widgetRef.current) {
+        return;
+      }
+
+      const cleanup = chatService.renderMessage(widgetRef.current, message);
+
       return () => {
-        unsubscribeRef?.current?.();
+        cleanup?.();
       };
-    }, []);
+    }, [chatService, message]);
 
     return (
       <MessageBox isAssistant={message.role === AutopilotChatRole.Assistant} isCustomWidget>
         {message.attachments && message.attachments.length > 0 && (
           <Attachments attachments={message.attachments} removeSpacing disableOverflow />
         )}
-        <div
-          className="chat-widget-container"
-          ref={(el) => {
-            if (el) {
-              const unsubscribe = chatService.renderMessage(el, message);
-
-              if (unsubscribe) {
-                unsubscribeRef.current = unsubscribe;
-              }
-            }
-          }}
-        />
+        <div className="chat-widget-container" ref={widgetRef} />
         {isLastInGroup && (
           <>
             {message.role === AutopilotChatRole.Assistant && (
@@ -213,10 +213,10 @@ function AutopilotChatMessageContentComponent({
     return null;
   }
 
-  if (!chatService.getMessageRenderer(message.widget)) {
-    const ApolloMessageRenderer = APOLLO_MESSAGE_RENDERERS.find(
-      (renderer) => renderer.name === message.widget
-    )?.component;
+  const renderer = resolveMessageRenderer(chatService, message, MATERIAL_MESSAGE_RENDERERS);
+
+  if (renderer?.kind !== 'dom') {
+    const MessageComponent = renderer?.component;
 
     return (
       <MessageBox
@@ -227,11 +227,7 @@ function AutopilotChatMessageContentComponent({
         {message.attachments && message.attachments.length > 0 && (
           <Attachments attachments={message.attachments} removeSpacing disableOverflow />
         )}
-        {ApolloMessageRenderer ? (
-          <ApolloMessageRenderer message={message} />
-        ) : (
-          <AutopilotChatMarkdownRenderer message={message} />
-        )}
+        {MessageComponent && <MessageComponent message={message} />}
         {isLastInGroup && (
           <>
             {message.role === AutopilotChatRole.Assistant && (

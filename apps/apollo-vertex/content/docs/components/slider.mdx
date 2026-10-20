@@ -1,0 +1,31 @@
+---
+title: "Slider"
+description: "An input where the user selects a value from within a given range."
+---
+
+import { Slider } from '@/registry/slider/slider'
+import { Label } from '@/registry/label/label'
+
+<Preview className="space-y-6">
+  <Slider defaultValue={[50]} max={100} step={1} className="w-[60%]" />
+  
+  <Slider defaultValue={[25, 75]} max={100} step={1} className="w-[60%]" />
+  
+  <div className="space-y-2 w-[60%]">
+    <div className="flex justify-between text-sm">
+      <Label>Volume</Label>
+      <span className="text-muted-foreground">50%</span>
+    </div>
+    <Slider defaultValue={[50]} max={100} step={1} />
+  </div>
+</Preview>
+
+## Usage
+
+```tsx
+import { Slider } from "@uipath/apollo-vertex"
+```
+
+```tsx
+<Slider defaultValue={[50]} max={100} step={1} />
+```

@@ -1,9 +1,8 @@
 import { styled } from '@mui/material';
 import token, { FontVariantToken } from '@uipath/apollo-core';
+import { useChatState } from '@uipath/apollo-react/chat/headless/providers/chat-state-provider';
+import { ApTypography } from '@uipath/apollo-react/material/components/ap-typography';
 import React from 'react';
-
-import { ApTypography } from '../../../ap-typography';
-import { useChatState } from '../../providers/chat-state-provider';
 import type { ChatHistoryGroup } from './chat-history';
 import { AutopilotChatHistoryItem } from './chat-history-item';
 

@@ -2,14 +2,17 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { CLASSIFIER_QUESTIONS_WIRE } from './__fixtures__/classifier-questions.fixtures';
 import {
   ALL_BUILT_IN_WIRE,
+  CLASSIFIER_WIRE,
   LLM_AS_JUDGE_WIRE,
+  PII_DETECTION_PREVIEW_WIRE,
   PII_DETECTION_WIRE,
   PROMPT_INJECTION_WIRE,
   RAW_PAYLOAD_WITH_NOISE,
 } from './__fixtures__/definitions-wire.fixtures';
-import { parseGuardrailDefinitions } from './definitions-parse';
+import { parseClassifierQuestions, parseGuardrailDefinitions } from './definitions-parse';
 
 describe('parseGuardrailDefinitions', () => {
   it('returns every definition of a well-formed payload, in order', () => {
@@ -23,6 +26,7 @@ describe('parseGuardrailDefinitions', () => {
       'intellectual_property',
       'llm_as_judge',
       'sentiment',
+      'classifier',
     ]);
     expect(result.invalid).toEqual([]);
     expect(result.inputError).toBeUndefined();
@@ -32,6 +36,43 @@ describe('parseGuardrailDefinitions', () => {
     const result = parseGuardrailDefinitions([PII_DETECTION_WIRE]);
 
     expect(result.definitions[0]).toEqual(PII_DETECTION_WIRE);
+  });
+
+  it('keeps the classifier whole: a model enum with no options, a map with an empty default', () => {
+    expect(parseGuardrailDefinitions([CLASSIFIER_WIRE]).definitions).toEqual([CLASSIFIER_WIRE]);
+  });
+
+  it('keeps the preview options of an enum-list', () => {
+    const result = parseGuardrailDefinitions([PII_DETECTION_PREVIEW_WIRE]);
+
+    expect(result.definitions[0]).toEqual(PII_DETECTION_PREVIEW_WIRE);
+  });
+
+  describe('disabledReason', () => {
+    it('keeps the reason a Disabled definition carries', () => {
+      const wire = { ...PII_DETECTION_WIRE, status: 'Disabled', disabledReason: 'Policy' };
+
+      const result = parseGuardrailDefinitions([wire]);
+
+      expect(result.definitions[0]).toEqual(wire);
+      expect(result.invalid).toEqual([]);
+    });
+
+    it('keeps a reason this version does not know rather than dropping the definition', () => {
+      // A closed enum would drop the whole guardrail the day the backend adds a reason.
+      const wire = { ...PII_DETECTION_WIRE, status: 'Disabled', disabledReason: 'SomethingNew' };
+
+      const result = parseGuardrailDefinitions([wire]);
+
+      expect(result.definitions[0]?.disabledReason).toBe('SomethingNew');
+      expect(result.invalid).toEqual([]);
+    });
+
+    it('leaves it absent when the backend omits it', () => {
+      const result = parseGuardrailDefinitions([PII_DETECTION_WIRE]);
+
+      expect(result.definitions[0]).not.toHaveProperty('disabledReason');
+    });
   });
 
   describe('never throws', () => {
@@ -268,6 +309,45 @@ describe('parseGuardrailDefinitions', () => {
   });
 });
 
+describe('parseClassifierQuestions', () => {
+  const yesNo = { name: 'secrets_passwords', question: 'Password?', type: 'noul' as const };
+
+  it('keeps a well-formed catalog, including the nulls of a side a question lacks', () => {
+    const withNulls = [{ id: 'pii', questions: [{ ...yesNo, levels: null, criteriaTrue: null }] }];
+
+    expect(parseClassifierQuestions(CLASSIFIER_QUESTIONS_WIRE).groups).toEqual(
+      CLASSIFIER_QUESTIONS_WIRE
+    );
+    expect(parseClassifierQuestions(withNulls)).toEqual({ groups: withNulls, invalid: [] });
+  });
+
+  it('drops a malformed question but keeps its siblings, and a group with no id whole', () => {
+    const result = parseClassifierQuestions([
+      { id: 'secrets', questions: [{ ...yesNo, name: ' ' }, yesNo, { ...yesNo, type: 'ranking' }] },
+      { id: '', questions: [yesNo] },
+    ]);
+
+    expect(result.groups).toEqual([{ id: 'secrets', questions: [yesNo] }]);
+    expect(result.invalid.map(({ index, question }) => [index, question])).toEqual([
+      [0, 0],
+      [0, 2],
+      [1, undefined],
+    ]);
+  });
+
+  it('reports a payload that is not an array, and never throws', () => {
+    const hostile = {
+      id: 'pii',
+      get questions(): unknown {
+        throw new Error('boom');
+      },
+    };
+
+    expect(parseClassifierQuestions({ groups: [] }).inputError).toMatch(/received object/);
+    expect(parseClassifierQuestions([hostile]).invalid).toHaveLength(1);
+  });
+});
+
 describe('zod boundary', () => {
   const folder = dirname(fileURLToPath(import.meta.url));
 
@@ -298,6 +378,7 @@ describe('zod boundary', () => {
       allowedScopes: ['Llm'],
       parameters: [],
       status: 'Available',
+      disabledReason: 'Policy',
       displayName: 'X',
       description: 'D',
       byoConnectorName: 'C',

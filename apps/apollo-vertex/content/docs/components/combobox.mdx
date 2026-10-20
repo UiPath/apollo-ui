@@ -1,0 +1,117 @@
+---
+title: "Combobox"
+description: "An autocomplete input with a filterable list, supporting single and multi-select with badges."
+---
+
+import { ComboboxSingleSelectTemplate, ComboboxMultiSelectTemplate, ComboboxInvalidTemplate } from '../../../templates/ComboboxTemplate'
+
+### Single Select
+
+<Preview>
+  <ComboboxSingleSelectTemplate />
+</Preview>
+
+### Multi Select
+
+<Preview>
+  <ComboboxMultiSelectTemplate />
+</Preview>
+
+### Invalid
+
+<Preview>
+  <ComboboxInvalidTemplate />
+</Preview>
+
+## Usage
+
+```tsx
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxGroup,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxTrigger,
+  ComboboxBadgeList,
+  ComboboxBadge,
+} from "@uipath/apollo-vertex"
+```
+
+### Single Select
+
+```tsx
+const [value, setValue] = useState<string[]>([])
+const selectedLabel = products.find((f) => f.value === value[0])?.label
+
+<Combobox value={value} onValueChange={setValue}>
+  <ComboboxTrigger placeholder="Select a product...">
+    {selectedLabel}
+  </ComboboxTrigger>
+  <ComboboxContent>
+    <ComboboxInput placeholder="Search products..." />
+    <ComboboxList>
+      <ComboboxEmpty>No results found.</ComboboxEmpty>
+      <ComboboxGroup>
+        <ComboboxItem value="studio">Studio</ComboboxItem>
+        <ComboboxItem value="orchestrator">Orchestrator</ComboboxItem>
+        <ComboboxItem value="robot">Robot</ComboboxItem>
+      </ComboboxGroup>
+    </ComboboxList>
+  </ComboboxContent>
+</Combobox>
+```
+
+### Multi Select
+
+```tsx
+const [values, setValues] = useState<string[]>([])
+
+<Combobox multiple value={values} onValueChange={setValues}>
+  <ComboboxTrigger className="h-auto min-h-9" placeholder="Select products...">
+    {values.length > 0 && (
+      <ComboboxBadgeList>
+        {values.map((v) => (
+          <ComboboxBadge key={v} value={v}>
+            {getLabelByValue(v)}
+          </ComboboxBadge>
+        ))}
+      </ComboboxBadgeList>
+    )}
+  </ComboboxTrigger>
+  <ComboboxContent>
+    <ComboboxInput placeholder="Search products..." />
+    <ComboboxList>
+      <ComboboxEmpty>No results found.</ComboboxEmpty>
+      <ComboboxGroup>
+        <ComboboxItem value="studio">Studio</ComboboxItem>
+        <ComboboxItem value="orchestrator">Orchestrator</ComboboxItem>
+        <ComboboxItem value="robot">Robot</ComboboxItem>
+      </ComboboxGroup>
+    </ComboboxList>
+  </ComboboxContent>
+</Combobox>
+```
+
+### Invalid
+
+```tsx
+<Combobox value={value} onValueChange={setValue}>
+  <ComboboxTrigger placeholder="Select a product..." aria-invalid="true">
+    {selectedLabel}
+  </ComboboxTrigger>
+  <ComboboxContent>
+    <ComboboxInput placeholder="Search products..." />
+    <ComboboxList>
+      <ComboboxEmpty>No results found.</ComboboxEmpty>
+      <ComboboxGroup>
+        <ComboboxItem value="studio">Studio</ComboboxItem>
+        <ComboboxItem value="orchestrator">Orchestrator</ComboboxItem>
+        <ComboboxItem value="robot">Robot</ComboboxItem>
+      </ComboboxGroup>
+    </ComboboxList>
+  </ComboboxContent>
+</Combobox>
+```

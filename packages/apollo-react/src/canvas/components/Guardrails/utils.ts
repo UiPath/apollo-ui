@@ -1,5 +1,5 @@
 import type {
-  GuardrailAppliesTo,
+  GuardrailDetectionScope,
   GuardrailParameterDefinition,
   GuardrailValidatorParameter,
 } from './types';
@@ -106,11 +106,14 @@ export function normalizeGuardrailParameters(
  *
  * Mirrors the map-enum editor's key resolution exactly so the persisted map matches the
  * rendered rows. Call at save time.
+ *
  */
 export function syncMapEnumParameters(
   parameters: GuardrailValidatorParameter[],
-  definitions: GuardrailParameterDefinition[]
+  definitions: GuardrailParameterDefinition[],
+  options?: SyncMapEnumParametersOptions
 ): GuardrailValidatorParameter[] {
+  const leaveUnset = new Set(options?.leaveUnsetIds);
   const selectionBySourceId = new Map<string, string[]>();
   for (const param of parameters) {
     // Defend against non-array wire values: the type says `string[]`, but persisted data
@@ -146,13 +149,22 @@ export function syncMapEnumParameters(
       // non-numeric entries, so it reached onSave unchallenged. Only a finite number counts as
       // a value worth preserving; anything else falls back like a missing key.
       const persisted = currentMap[key];
-      synced[key] =
-        typeof persisted === 'number' && Number.isFinite(persisted)
-          ? persisted
-          : (defaults[key] ?? fallback);
+      if (typeof persisted === 'number' && Number.isFinite(persisted)) {
+        synced[key] = persisted;
+      } else if (!leaveUnset.has(param.id)) {
+        synced[key] = defaults[key] ?? fallback;
+      }
     }
     return { ...param, value: synced };
   });
+}
+
+export interface SyncMapEnumParametersOptions {
+  /**
+   * Maps pruned to the selection but not filled: ones the host renders, where a missing key means
+   * something (an untuned classifier question runs at the backend's default, not at `min`).
+   */
+  leaveUnsetIds?: readonly string[];
 }
 
 /**
@@ -268,19 +280,19 @@ export function getRequiredEmptyParameterIds(
   return emptyIds;
 }
 
-export const GUARDRAIL_APPLIES_TO_PARAMETER_ID = 'appliesTo';
+export const GUARDRAIL_DETECTION_SCOPE_PARAMETER_ID = 'detectionScope';
 
 /**
- * What a validator's `appliesTo` parameter selects, or `undefined` when its definitions have
+ * What a validator's `detectionScope` parameter selects, or `undefined` when its definitions have
  * none. Reads it the way the backend does (`GuardrailAttachmentPrompt.GetScope`): the stored
  * value, trimmed and case-insensitive, when non-empty, otherwise the definition's default; any
  * value but Files or Both, Flow's legacy "Prompts" included, is Text.
  */
-export function getGuardrailAppliesTo(
+export function getGuardrailDetectionScope(
   definitions: readonly GuardrailParameterDefinition[],
   parameters: readonly GuardrailValidatorParameter[]
-): GuardrailAppliesTo | undefined {
-  const definition = definitions.find((d) => d.id === GUARDRAIL_APPLIES_TO_PARAMETER_ID);
+): GuardrailDetectionScope | undefined {
+  const definition = definitions.find((d) => d.id === GUARDRAIL_DETECTION_SCOPE_PARAMETER_ID);
   if (!definition) return undefined;
   const asText = (value: unknown) => (typeof value === 'string' ? value.trim() : '');
   const stored = asText(parameters.find((p) => p.id === definition.id)?.value);

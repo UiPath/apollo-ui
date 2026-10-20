@@ -34,6 +34,8 @@ export type GuardrailParameterDefinitionWire =
       defaultValue: string[];
       options: string[];
       optionLabels?: Record<string, string>;
+      /** The subset of `options` the editors mark with a Preview chip. Agents only, so far. */
+      previewOptions?: string[];
     })
   | (GuardrailParameterWireBase & {
       type: 'map-enum';
@@ -74,6 +76,8 @@ export interface GuardrailDefinitionWire {
   allowedScopes: GuardrailScope[];
   parameters: GuardrailParameterDefinitionWire[];
   status: GuardrailDefinitionStatus;
+  /** Why a `Disabled` definition is disabled. See `GuardrailDefinition.disabledReason`. */
+  disabledReason?: string;
   displayName?: string;
   description?: string;
   byoConnectorName?: string;
@@ -89,4 +93,21 @@ export interface GuardrailDefinitionWire {
    */
   folderPath?: string;
   folderKey?: string;
+}
+
+/**
+ * One category of `GET /api/execution/guardrails/classifier-questions`: the classifier's
+ * predefined questions as the validator runs them. A `noul` question is yes/no; a `score`
+ * question grades `levels`, lowest first.
+ */
+export interface ClassifierQuestionGroupWire {
+  id: string;
+  questions: Array<{
+    name: string;
+    question: string;
+    type: 'noul' | 'score';
+    criteriaTrue?: string | null;
+    criteriaFalse?: string | null;
+    levels?: string[] | null;
+  }>;
 }

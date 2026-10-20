@@ -107,6 +107,16 @@
           }
         }
       }
+    },
+    {
+      "includes": ["**/message-scroller/primitive/**/*.{ts,tsx}"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "useExhaustiveDependencies": "off"
+          }
+        }
+      }
     }
   ],
   "assist": {

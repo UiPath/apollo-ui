@@ -165,6 +165,27 @@ describe('InputGroup', () => {
     );
   });
 
+  it('forwards the primary Future focus ring from the inner control, with the error ring on top', () => {
+    render(
+      <InputGroup data-testid="group">
+        <InputGroupInput aria-label="Search" />
+      </InputGroup>
+    );
+    const group = screen.getByTestId('group');
+    expect(group).toHaveClass(
+      'future:has-[[data-slot=input-group-control]:focus-visible]:ring-primary',
+      'future:has-[[data-slot=input-group-control]_:focus-visible]:ring-primary',
+      'has-[[data-slot][aria-invalid=true]]:has-[[data-slot=input-group-control]:focus-visible]:ring-error'
+    );
+  });
+
+  it('keeps an invalid group on the error ring rather than primary', () => {
+    render(<InputGroup data-testid="group" invalid />);
+    expect(screen.getByTestId('group')).not.toHaveClass(
+      'future:has-[[data-slot=input-group-control]:focus-visible]:ring-primary'
+    );
+  });
+
   it('supports a textarea control', () => {
     render(
       <InputGroup>
@@ -315,20 +336,49 @@ describe('InputGroup', () => {
         'rounded-[inherit]',
         'has-[[data-slot=input-group-control]:focus-visible]:ring-2',
         'has-[[data-slot=input-group-control]:focus-visible]:ring-inset',
-        'has-[[data-slot=input-group-control]:focus-visible]:ring-ring'
+        'has-[[data-slot=input-group-control]:focus-visible]:ring-ring',
+        'future:has-[[data-slot=input-group-control]:focus-visible]:ring-primary',
+        'future:has-[[data-slot=input-group-control]_:focus-visible]:ring-primary'
+      );
+    });
+
+    it.each([
+      ['invalid', { invalid: true }],
+      ['error', { error: 'Required' }],
+    ])('rings an %s block group’s row in error rather than primary', (_, flag) => {
+      render(
+        <InputGroup layout="block" {...flag}>
+          <InputGroupRow data-testid="row">
+            <InputGroupTrigger>Filters</InputGroupTrigger>
+          </InputGroupRow>
+        </InputGroup>
+      );
+      const row = screen.getByTestId('row');
+      expect(row).toHaveClass(
+        'has-[[data-slot=input-group-control]:focus-visible]:ring-error',
+        'has-[[data-slot=input-group-control]_:focus-visible]:ring-error'
+      );
+      expect(row).not.toHaveClass(
+        'has-[[data-slot=input-group-control]:focus-visible]:ring-ring',
+        'future:has-[[data-slot=input-group-control]:focus-visible]:ring-primary',
+        'future:has-[[data-slot=input-group-control]_:focus-visible]:ring-primary'
       );
     });
   });
 
   describe('hover', () => {
     const HOVER = 'has-[button[data-slot=input-group-control]:not(:disabled):hover]:bg-accent';
+    // Future restates the resting fill for any hover first, since the unprefixed rule above still
+    // matches there and would otherwise show through while a badge is hovered.
+    const FUTURE_REST =
+      'future:has-[button[data-slot=input-group-control]:not(:disabled):hover]:bg-surface-overlay';
     const FUTURE_HOVER =
-      'future:has-[button[data-slot=input-group-control]:not(:disabled):hover]:bg-surface-hover';
+      'future:has-[button[data-slot=input-group-control]:not(:disabled):hover]:not-has-[[data-slot=input-group-control]_[data-slot=badge]:hover]:bg-surface-hover';
 
     it('lights the box while an enabled trigger is hovered, keyed on the trigger alone', () => {
       render(<InputGroup data-testid="group" />);
       // Addons sit beside the trigger, so hovering one matches nothing here.
-      expect(screen.getByTestId('group')).toHaveClass(HOVER, FUTURE_HOVER);
+      expect(screen.getByTestId('group')).toHaveClass(HOVER, FUTURE_REST, FUTURE_HOVER);
     });
 
     it.each([
@@ -338,6 +388,7 @@ describe('InputGroup', () => {
     ])('leaves %s alone', (_, props) => {
       render(<InputGroup data-testid="group" {...props} />);
       expect(screen.getByTestId('group')).not.toHaveClass(HOVER);
+      expect(screen.getByTestId('group')).not.toHaveClass(FUTURE_REST);
     });
   });
 

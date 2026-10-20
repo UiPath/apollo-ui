@@ -11,6 +11,7 @@ import {
 } from './centralized-guardrail-utils';
 import type { CentralizedGuardrail, CentralizedGuardrailDefinition } from './centralized-types';
 import { CentralizedGuardrailRow } from './components/centralized-guardrail-row';
+import { PolicyNameText } from './components/policy-name-text';
 import { useGuardrailDefinitionCopy } from './definitions-copy';
 import type { CentralizedGuardrailsLabels } from './i18n';
 import { useCentralizedGuardrailsLabels } from './i18n';
@@ -40,15 +41,10 @@ export interface CentralizedGuardrailsSectionProps<
   className?: string;
 }
 
-/** Splits the caption around its `{{policyName}}` token so the name can be emphasized. */
 function PolicyCaption({ template, policyName }: { template: string; policyName: string }) {
-  const [before, after] = template.split('{{policyName}}');
   return (
     <p className="pl-6 text-xs text-muted-foreground" data-slot="centralized-guardrails-policy">
-      {before}
-      <em>{policyName}</em>
-      {/* A translation that dropped the token still renders the name, after the text. */}
-      {after}
+      <PolicyNameText template={template} policyName={policyName} />
     </p>
   );
 }

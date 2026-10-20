@@ -8,16 +8,13 @@ import { Placeholder, UndoRedo } from '@tiptap/extensions';
 import { Fragment, Node, Slice } from '@tiptap/pm/model';
 import { EditorContent, ReactNodeViewRenderer, useEditor } from '@tiptap/react';
 import { exitSuggestion } from '@tiptap/suggestion';
+import type { CursorCoordinates } from '@uipath/apollo-react/chat/headless/hooks/use-resource-picker-state';
+import type { AutopilotChatResourceItem } from '@uipath/apollo-react/chat/service';
 import React, { forwardRef, useCallback } from 'react';
-import type { AutopilotChatResourceItem } from './../../../service';
 import { ResourceChipNodeView } from './resource-chip-node-view';
 import { textToDocument } from './tiptap.utils';
 import { EditorContainer } from './tiptap-editor.styles';
-import {
-  type CursorCoordinates,
-  createResourceSuggestion,
-  ResourceMentionPluginKey,
-} from './tiptap-resource-suggestion';
+import { createResourceSuggestion, ResourceMentionPluginKey } from './tiptap-resource-suggestion';
 
 /**
  * Extended Mention extension with custom resource attributes.

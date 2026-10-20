@@ -117,6 +117,10 @@ jobs:
               parent_folder=$(dirname "$pkg_dir")
               if echo "$CHANGED_FILES" | grep -q "^${parent_folder}/${pkg_folder}/"; then
                 name=$(jq -r '.name' "$pkg_dir/package.json")
+                if [ "$(jq -r '.private // false' "$pkg_dir/package.json")" = "true" ]; then
+                  echo "Skipping private package: $name"
+                  continue
+                fi
                 if ! [[ "$name" =~ ^@uipath/[a-z0-9-]+$ ]]; then
                   echo "::warning::Skipping invalid package name: $name"
                   continue
