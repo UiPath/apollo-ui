@@ -1978,7 +1978,7 @@ function buildGuardrailClassifierLabels(_: ClassifierTranslate): GuardrailClassi
     moreInformation: _({ id: 'guardrails.form.more-information', message: 'More information' }),
     pickerSummary: _({
       id: 'guardrails.classifier.picker-summary',
-      message: '{count} selected — pick any across categories, or add your own below.',
+      message: '{count} selected — pick any across categories, or add your own below',
       values: TEMPLATE_TOKENS,
     }),
     searchPlaceholder: _({

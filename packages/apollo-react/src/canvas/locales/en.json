@@ -535,7 +535,7 @@
   "guardrails.definitions.classifier.category.secrets_and_credentials": "Secrets & credentials",
   "guardrails.definitions.classifier.category.compliance_commitments": "Compliance & commitments",
   "guardrails.definitions.classifier.category.scope_and_conduct": "Scope & conduct",
-  "guardrails.classifier.picker-summary": "{count} selected — pick any across categories, or add your own below.",
+  "guardrails.classifier.picker-summary": "{count} selected — pick any across categories, or add your own below",
   "guardrails.classifier.search-placeholder": "Search questions",
   "guardrails.classifier.search-label": "Search classifier questions",
   "guardrails.classifier.no-matches": "No predefined questions match your search.",
