@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { describe, expect, it, vi } from 'vitest';
@@ -292,6 +292,27 @@ describe('Calendar', () => {
       expect(screen.getByRole('button', { name: 'July 2024' })).toHaveFocus();
       await user.keyboard('{ArrowUp}');
       expect(screen.getByRole('button', { name: 'April 2024' })).toHaveFocus();
+    });
+
+    it('moves between month cells with the arrow keys inside a shadow root', async () => {
+      // A picker portalled into a shadow root (popoverProps.container): there the document's
+      // activeElement is the shadow host, not the focused cell.
+      const host = document.body.appendChild(document.createElement('div'));
+      const shadowRoot = host.attachShadow({ mode: 'open' });
+      const mount = shadowRoot.appendChild(document.createElement('div'));
+      try {
+        const user = userEvent.setup();
+        render(<Calendar captionLayout="drilldown" defaultMonth={june2024} />, {
+          container: mount,
+        });
+        const inShadow = within(mount as HTMLElement);
+
+        await user.click(inShadow.getByRole('button', { name: /June, choose month/ }));
+        await user.keyboard('{ArrowRight}');
+        expect(shadowRoot.activeElement).toBe(inShadow.getByRole('button', { name: 'July 2024' }));
+      } finally {
+        host.remove();
+      }
     });
 
     it('lays the caption and grids out right to left with dir="rtl"', async () => {

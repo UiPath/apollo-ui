@@ -489,7 +489,11 @@ function DrillDownCalendar({
     );
     // The arrows belong to the grid, so at its edges they stop rather than scroll the page.
     event.preventDefault();
-    const index = cells.indexOf(document.activeElement as HTMLButtonElement);
+    // The focused cell is the key's target. `document.activeElement` would be the shadow host
+    // when the picker is portalled into a shadow root, and the arrows would go nowhere.
+    const index = cells.indexOf(
+      (event.target as Element).closest<HTMLButtonElement>('button') as HTMLButtonElement
+    );
     const next = cells[index + offset];
     if (index !== -1 && next) next.focus();
   };
