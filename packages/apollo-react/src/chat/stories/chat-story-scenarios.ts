@@ -320,7 +320,7 @@ export const CHAT_STORY_SCENARIOS = {
   markdown: {
     label: 'Markdown corpus',
     description:
-      'Appends a reply covering headings, lists, task lists, tables with line breaks, quotes, math, images (shown as links) and footnotes, then streams a shorter reply so partial markdown is seen mid-stream.',
+      'Appends a reply covering headings, lists, task lists, tables with line breaks, quotes, math, images (shown as links) and footnotes, then streams a shorter reply so partial markdown is seen mid-stream, including a math fence and a display block that show as code until they close.',
     run: (context) => {
       context.sendScriptedRequest({ content: 'Show me every markdown feature.' });
       context.schedule(
@@ -333,7 +333,7 @@ export const CHAT_STORY_SCENARIOS = {
   code: {
     label: 'Code and HTML preview',
     description:
-      'Appends a long TypeScript block, blocks in other languages with inline code, then streams an HTML block. HTML preview is off by default (disabledFeatures.htmlPreview); turn off the disableHtmlPreview control, or use the HTML preview story, to get the preview action. It stays disabled while the block streams.',
+      'Appends a long TypeScript block, blocks in other languages with inline code, then streams an HTML block. HTML preview is off by default (disabledFeatures.htmlPreview); turn off the disableHtmlPreview control, or use the HTML preview story, to get a Preview toggle that renders a complete HTML block in place; the Wind chat shows the source until it is clicked, Material previews by itself. The toggle stays disabled while the block streams.',
     run: (context) => {
       context.sendScriptedRequest({ content: 'Show me some code.' });
       context.schedule(

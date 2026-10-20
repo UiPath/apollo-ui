@@ -1,5 +1,6 @@
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
+import { DisclosureTree, type DisclosureTreeItem } from '@uipath/apollo-wind';
 import React from 'react';
 
 import {
@@ -10,7 +11,6 @@ import {
 } from '../../headless/tree/chat-tree';
 import type { AutopilotChatMessage } from '../../service';
 import { ServiceIcon } from '../common/service-icon';
-import { DisclosureTree, type DisclosureTreeItem } from './disclosure-tree';
 
 function toDisclosureItems(
   items: readonly ChatTreeItem[],
@@ -18,12 +18,15 @@ function toDisclosureItems(
 ): DisclosureTreeItem[] {
   return items.map((item) => ({
     id: item.id,
-    label: item.title,
+    label: item.titleColor ? (
+      <span style={{ color: item.titleColor }}>{item.title}</span>
+    ) : (
+      item.title
+    ),
     icon: item.icon ? <ServiceIcon icon={item.icon} /> : undefined,
     description: item.description,
     trailing: item.additionalInfo,
-    labelStyle: item.titleColor ? { color: item.titleColor } : undefined,
-    defaultOpen: expanded.has(item.id),
+    defaultExpanded: expanded.has(item.id),
     children: item.children?.length ? toDisclosureItems(item.children, expanded) : undefined,
   }));
 }
@@ -60,8 +63,14 @@ function TreeMessageRendererComponent({ message }: { message: AutopilotChatMessa
 
   return (
     // The tool call's type and colour, so its rows read like a trace inside a tool call.
-    <div data-slot="wind-chat-tree" className="min-w-0 text-sm text-muted-foreground">
-      <DisclosureTree items={items} />
+    <div
+      data-slot="wind-chat-tree"
+      className="min-w-0 text-sm text-muted-foreground in-data-[density=compact]:text-xs"
+    >
+      <DisclosureTree
+        items={items}
+        aria-label={_(msg({ id: 'autopilot-chat.tree.label', message: `Details` }))}
+      />
     </div>
   );
 }

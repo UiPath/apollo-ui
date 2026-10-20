@@ -1,5 +1,7 @@
 import {
   CodeBlock,
+  DisclosureTree,
+  type DisclosureTreeItem,
   ToolCall,
   ToolCallContent,
   ToolCallError,
@@ -27,11 +29,6 @@ import {
 } from '../../headless/tool-call/tool-call-model';
 import { isOpenableUrl } from '../../headless/utils/openable-url';
 import type { AutopilotChatMessage } from '../../service';
-import {
-  DisclosureTree,
-  type DisclosureTreeItem,
-  type DisclosureTreeOpenState,
-} from './disclosure-tree';
 import { useToolCallStrings } from './tool-call-strings';
 
 // Material shows no icon when nothing says how the call went, but its line reads "Ran", so the
@@ -67,13 +64,24 @@ function toTraceItems(nodes: readonly ToolCallSpanNode[]): DisclosureTreeItem[] 
 /** The top trace rows, built only while the Traces section is open. */
 function TraceList({
   span,
-  openState,
+  label,
+  expanded,
+  onExpandedChange,
 }: {
   span: ToolCallSpanNode;
-  openState: DisclosureTreeOpenState;
+  label: string;
+  expanded: readonly string[];
+  onExpandedChange: (id: string, expanded: boolean) => void;
 }) {
   const items = React.useMemo(() => toTraceItems(getVisibleTraceChildren(span)), [span]);
-  return <DisclosureTree items={items} openState={openState} />;
+  return (
+    <DisclosureTree
+      items={items}
+      aria-label={label}
+      expanded={expanded}
+      onExpandedChange={onExpandedChange}
+    />
+  );
 }
 
 type Section = 'input' | 'traces' | 'escalation' | 'errors' | 'output';
@@ -100,19 +108,14 @@ function ToolCallMessageRendererComponent({ message }: { message: AutopilotChatM
   const taskUrls = React.useMemo(() => getTaskUrls(span), [span]);
   const [open, setOpen] = React.useState(false);
   const [sections, setSections] = React.useState(INITIAL_SECTIONS);
-  const [openTraceRows, setOpenTraceRows] = React.useState<ReadonlySet<string>>(() => new Set());
-  const traceOpenState = React.useMemo<DisclosureTreeOpenState>(
-    () => ({
-      isOpen: (id) => openTraceRows.has(id),
-      setOpen: (id, next) =>
-        setOpenTraceRows((previous) => {
-          const updated = new Set(previous);
-          if (next) updated.add(id);
-          else updated.delete(id);
-          return updated;
-        }),
-    }),
-    [openTraceRows]
+  // Held here so open rows survive the Traces section closing.
+  const [openTraceRows, setOpenTraceRows] = React.useState<readonly string[]>([]);
+  const onTraceRowChange = React.useCallback(
+    (id: string, next: boolean) =>
+      setOpenTraceRows((previous) =>
+        next ? [...previous, id] : previous.filter((openId) => openId !== id)
+      ),
+    []
   );
   const sectionProps = (section: Section) => ({
     open: sections[section],
@@ -164,7 +167,12 @@ function ToolCallMessageRendererComponent({ message }: { message: AutopilotChatM
               title={strings.traces}
               {...sectionProps('traces')}
             >
-              <TraceList span={span} openState={traceOpenState} />
+              <TraceList
+                span={span}
+                label={strings.traces}
+                expanded={openTraceRows}
+                onExpandedChange={onTraceRowChange}
+              />
             </ToolCallSection>
           )}
           {taskUrls.length > 0 && (

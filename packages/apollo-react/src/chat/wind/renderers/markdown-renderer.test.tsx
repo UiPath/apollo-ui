@@ -118,26 +118,134 @@ describe('Wind markdown renderer', () => {
     expect(body.querySelector('[data-slot="markdown-cursor"]')).toBeNull();
   });
 
+  it('shows open math blocks as code while streaming, and math once they close', () => {
+    const service = createService();
+    render(<ApChat chatServiceInstance={service} />);
+    const body = () => messageElement('m1').querySelector('[data-slot="markdown"]') as HTMLElement;
+    const stream = (content: string, done = false) =>
+      act(() => service.sendResponse(reply({ id: 'm1', content, stream: true, done })));
+
+    stream('```math\na^2 + b^2');
+    expect(body().querySelector('[data-slot="code-block"]')).toHaveTextContent('a^2 + b^2');
+    expect(body().querySelector('math')).toBeNull();
+
+    stream(' = c^2\n```\n\n$$\n\\frac{1}{2}');
+    expect(body().querySelectorAll('math')).toHaveLength(1);
+    expect(body().querySelector('[data-slot="code-block"]')).toHaveTextContent('\\frac{1}{2}');
+
+    stream('\n$$\n', true);
+    expect(body().querySelectorAll('math')).toHaveLength(2);
+    expect(body().querySelector('[data-slot="code-block"]')).toBeNull();
+  });
+
   it('offers an HTML preview only when htmlPreview is enabled, sandboxed, and not mid-stream', async () => {
     const service = createService();
     render(<ApChat chatServiceInstance={service} />);
     const html = '```html\n<h1>Hi</h1>\n```';
+    const frameIn = (id: string) => messageElement(id).querySelector('iframe');
+    const button = (id: string, name: string) =>
+      within(messageElement(id)).queryByRole('button', { name });
 
     act(() => service.sendResponse(reply({ id: 'h1', content: html })));
     // The service disables htmlPreview by default.
-    expect(within(messageElement('h1')).queryByRole('button', { name: 'Preview' })).toBeNull();
-    expect(
-      within(messageElement('h1')).getByRole('button', { name: 'Expand' })
-    ).toBeInTheDocument();
+    expect(button('h1', 'Preview')).toBeNull();
+    expect(button('h1', 'Expand')).toBeInTheDocument();
 
+    // A streaming block shows its source and cannot be previewed until it is complete.
     act(() => service.setDisabledFeatures({ htmlPreview: false }));
     act(() => service.sendResponse(reply({ id: 'h2', content: html, stream: true })));
-    expect(within(messageElement('h2')).getByRole('button', { name: 'Preview' })).toBeDisabled();
+    expect(button('h2', 'Preview')).toBeDisabled();
+    act(() => service.sendResponse(reply({ id: 'h2', content: '', stream: true, done: true })));
+    expect(button('h2', 'Preview')).toBeEnabled();
 
-    await userEvent.click(within(messageElement('h1')).getByRole('button', { name: 'Preview' }));
-    const frame = (await screen.findByRole('dialog')).querySelector('iframe') as HTMLIFrameElement;
+    // The toggle swaps the source for the preview in place, and back.
+    await userEvent.click(button('h1', 'Preview') as HTMLElement);
+    const frame = frameIn('h1') as HTMLIFrameElement;
     expect(frame).toHaveAttribute('sandbox', 'allow-scripts');
     expect(frame.getAttribute('srcdoc')).toMatch(/<h1>Hi<\/h1>$/);
+    expect(screen.queryByRole('dialog')).toBeNull();
+    await userEvent.click(button('h1', 'Code') as HTMLElement);
+    expect(frameIn('h1')).toBeNull();
+    expect(messageElement('h1').querySelector('[data-slot="code-block"]')).toHaveTextContent(
+      '<h1>Hi</h1>'
+    );
+  });
+
+  it('runs no preview frame until the reader asks for one', async () => {
+    const service = createService();
+    service.setDisabledFeatures({ htmlPreview: false });
+    render(<ApChat chatServiceInstance={service} />);
+    const html = '```html\n<script>fetch("https://a.test")</script>\n```';
+
+    act(() => service.sendResponse(reply({ id: 'p1', content: html })));
+    act(() => service.sendResponse(reply({ id: 'p2', content: html, stream: true })));
+    act(() => service.sendResponse(reply({ id: 'p2', content: '', stream: true, done: true })));
+
+    // Neither a complete block nor one that finished streaming renders the frame by itself.
+    expect(document.querySelector('iframe')).toBeNull();
+    await userEvent.click(within(messageElement('p1')).getByRole('button', { name: 'Preview' }));
+    expect(document.querySelectorAll('iframe')).toHaveLength(1);
+    expect(messageElement('p2').querySelector('iframe')).toBeNull();
+  });
+
+  it('asks again before previewing new code in the same block', async () => {
+    const service = createService();
+    service.setDisabledFeatures({ htmlPreview: false });
+    render(<ApChat chatServiceInstance={service} />);
+    const frame = () => messageElement('n1').querySelector('iframe');
+    const preview = () =>
+      userEvent.click(within(messageElement('n1')).getByRole('button', { name: 'Preview' }));
+    const send = (content: string, extra: Partial<AutopilotChatMessage> = {}) =>
+      act(() => service.sendResponse(reply({ id: 'n1', content, ...extra })));
+
+    send('```html\n<h1>A</h1>\n```');
+    await preview();
+    expect(frame()?.getAttribute('srcdoc')).toMatch(/<h1>A<\/h1>$/);
+
+    // Replaced content.
+    send('```html\n<h1>B</h1>\n```');
+    expect(frame()).toBeNull();
+    await preview();
+    expect(frame()?.getAttribute('srcdoc')).toMatch(/<h1>B<\/h1>$/);
+
+    // Streamed again with new code, then complete.
+    send('```html\n<h1>B');
+    send('</h1><p>C</p>\n```', { stream: true });
+    send('', { stream: true, done: true });
+    expect(frame()).toBeNull();
+    await preview();
+    expect(frame()).not.toBeNull();
+
+    // The flag turned off and on again.
+    act(() => service.setDisabledFeatures({ htmlPreview: true }));
+    act(() => service.setDisabledFeatures({ htmlPreview: false }));
+    expect(frame()).toBeNull();
+  });
+
+  it('expands the shown view into a dialog closed by its translated close button', async () => {
+    const service = createService();
+    service.setDisabledFeatures({ htmlPreview: false });
+    render(<ApChat chatServiceInstance={service} />);
+    act(() => service.sendResponse(reply({ id: 'e1', content: '```html\n<h1>Hi</h1>\n```' })));
+
+    const expand = within(messageElement('e1')).getByRole('button', { name: 'Expand' });
+    await userEvent.click(expand);
+    const codeDialog = await screen.findByRole('dialog', { name: 'html' });
+    expect(codeDialog.querySelector('iframe')).toBeNull();
+    expect(codeDialog.querySelector('[data-slot="code-block"]')).toHaveTextContent('<h1>Hi</h1>');
+    await userEvent.click(within(codeDialog).getByRole('button', { name: 'Close' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(expand).toHaveFocus();
+
+    await userEvent.click(within(messageElement('e1')).getByRole('button', { name: 'Preview' }));
+    await userEvent.click(expand);
+    const dialog = await screen.findByRole('dialog', { name: 'HTML preview' });
+    expect(dialog.querySelector('iframe')).toHaveAttribute('sandbox', 'allow-scripts');
+    // One live frame: the inline preview gives way while the dialog shows it.
+    expect(document.querySelectorAll('iframe')).toHaveLength(1);
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(messageElement('e1').querySelector('iframe')).not.toBeNull();
   });
 
   it('highlights the cited text while a citation is hovered', async () => {
@@ -239,16 +347,18 @@ describe('Wind markdown renderer', () => {
     act(() => service.sendResponse(reply({ id: 'h3', content: '```html\n<h1>Hi</h1>\n```' })));
 
     await userEvent.click(within(messageElement('h3')).getByRole('button', { name: 'Preview' }));
-    const dialog = await screen.findByRole('dialog');
-    const frame = dialog.querySelector('iframe') as HTMLIFrameElement;
+    const frame = messageElement('h3').querySelector('iframe') as HTMLIFrameElement;
     expect(frame.getAttribute('srcdoc')).toMatch(
       /^<meta name="referrer" content="no-referrer"><meta http-equiv="Content-Security-Policy" content="default-src 'none';[^"]*"><h1>Hi<\/h1>$/
     );
 
     act(() => service.setDisabledFeatures({ htmlPreview: true }));
 
-    expect(dialog.querySelector('iframe')).toBeNull();
-    expect(dialog.querySelector('[data-slot="code-block"]')).toHaveTextContent('<h1>Hi</h1>');
+    expect(messageElement('h3').querySelector('iframe')).toBeNull();
+    expect(messageElement('h3').querySelector('[data-slot="code-block"]')).toHaveTextContent(
+      '<h1>Hi</h1>'
+    );
+    expect(within(messageElement('h3')).queryByRole('button', { name: 'Code' })).toBeNull();
   });
 
   it('lists the sources under the reply and opens one through the pre-hook', async () => {

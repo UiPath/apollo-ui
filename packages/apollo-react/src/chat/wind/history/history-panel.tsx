@@ -1,18 +1,16 @@
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
-import { cn, Search, Skeleton, Spinner } from '@uipath/apollo-wind';
+import { cn, EmptyState, Search, Skeleton, Spinner } from '@uipath/apollo-wind';
 import React from 'react';
 
 import type { ChatHistoryState } from '../../headless/hooks/use-chat-history';
 import { useChatState } from '../../headless/providers/chat-state-provider';
 import { HistoryItem } from './history-item';
 
-function EmptyMessage({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="flex flex-1 items-center justify-center px-4 py-8 text-center text-sm text-foreground">
-      {children}
-    </p>
-  );
+// Compact in both densities: the panel is a popover, where the default heading would add a stray
+// entry to the page outline.
+function EmptyMessage({ title }: { title: string }) {
+  return <EmptyState size="compact" title={title} className="flex-1" />;
 }
 
 /**
@@ -43,6 +41,13 @@ export function HistoryPanel({
   const searchLabel = _(
     msg({ id: 'autopilot-chat.history.search-placeholder', message: `Search chats` })
   );
+  const searchStrings = React.useMemo(
+    () => ({
+      clear: _(msg({ id: 'autopilot-chat.history.search-clear', message: `Clear search` })),
+    }),
+    [_]
+  );
+  const searchInput = React.useRef<HTMLInputElement>(null);
 
   const renderList = () => {
     if (showSearchSkeleton) {
@@ -56,9 +61,9 @@ export function HistoryPanel({
     }
     if (noSearchResults) {
       return (
-        <EmptyMessage>
-          {_(msg({ id: 'autopilot-chat.history.no-results', message: `No results found` }))}
-        </EmptyMessage>
+        <EmptyMessage
+          title={_(msg({ id: 'autopilot-chat.history.no-results', message: `No results found` }))}
+        />
       );
     }
     return (
@@ -97,9 +102,12 @@ export function HistoryPanel({
         <>
           <div className="shrink-0 px-2">
             <Search
+              ref={searchInput}
               value={searchQuery}
               onChange={setSearchQuery}
-              showClearButton={false}
+              // The clear button goes away with the query; keep focus in the field.
+              onClear={() => searchInput.current?.focus()}
+              strings={searchStrings}
               placeholder={searchLabel}
               aria-label={searchLabel}
               disabled={!historyOpen}
@@ -114,9 +122,9 @@ export function HistoryPanel({
           </div>
         </>
       ) : (
-        <EmptyMessage>
-          {_(msg({ id: 'autopilot-chat.history.empty', message: `No chat history` }))}
-        </EmptyMessage>
+        <EmptyMessage
+          title={_(msg({ id: 'autopilot-chat.history.empty', message: `No chat history` }))}
+        />
       )}
     </div>
   );

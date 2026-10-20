@@ -65,8 +65,17 @@ describe('Wind tree renderer', () => {
     expect(tree).toHaveTextContent('Grandchild');
     expect(tree).not.toHaveTextContent('Hidden');
 
-    await userEvent.click(within(tree).getByRole('button', { name: /Closed child/ }));
+    expect(within(tree).getByRole('tree', { name: 'Details' })).toBeInTheDocument();
+    const closed = within(tree).getByRole('treeitem', { name: 'Closed child' });
+    expect(closed).toHaveAttribute('aria-expanded', 'false');
+    expect(within(tree).getByRole('treeitem', { name: 'Open child' })).toHaveAttribute(
+      'aria-expanded',
+      'true'
+    );
+
+    await userEvent.click(closed.querySelector('[data-slot="disclosure-tree-row"]') as HTMLElement);
     expect(tree).toHaveTextContent('Hidden');
+    expect(closed).toHaveAttribute('aria-expanded', 'true');
   });
 
   it('never shows a placeholder description', () => {
@@ -88,9 +97,13 @@ describe('Wind tree renderer', () => {
       })
     );
 
-    // The tooltips themselves are checked in Storybook: as with the More menu, the built
-    // apollo-wind Radix triggers do not get their props under this package's tests.
-    expect(messageElement('tree2')).toHaveTextContent('DescribedQuiet');
+    // The tooltips themselves are checked in Storybook; the description is also the row's
+    // accessible description.
+    const tree = within(messageElement('tree2'));
+    expect(tree.getByRole('treeitem', { name: 'Described' })).toHaveAccessibleDescription(
+      'Merges the results'
+    );
+    expect(tree.getByRole('treeitem', { name: 'Quiet' })).not.toHaveAttribute('aria-describedby');
     expect(messageElement('tree2')).not.toHaveTextContent('No description');
   });
 });

@@ -487,6 +487,16 @@ export const STREAMED_MARKDOWN = `### Streamed summary
 { "queue": "Invoices", "retry": true }
 \`\`\`
 
+A math fence and a display block, shown as source until they close:
+
+\`\`\`math
+a^2 + b^2 = c^2
+\`\`\`
+
+$$
+\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}
+$$
+
 Done.`;
 
 /** Several languages, inline code and a plain block, for code block chrome. */
