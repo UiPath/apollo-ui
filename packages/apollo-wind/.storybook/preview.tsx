@@ -99,7 +99,7 @@ const preview: Preview = {
             ],
           ],
           'Chat',
-          ['Patterns', ['Wind vs Material', 'Embedded', 'Fullscreen'], 'Components', '*'],
+          ['Components', '*'],
           'Templates',
           ['Admin', 'Delegate', 'Flow', 'Maestro', 'Studio', 'Future'],
           'Forms',
