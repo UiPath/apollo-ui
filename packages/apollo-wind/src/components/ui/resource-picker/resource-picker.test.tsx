@@ -1321,6 +1321,53 @@ describe('ResourcePickerContent', () => {
     expect(search).toHaveFocus();
   });
 
+  it('moves focus to a remaining action when a refresh removes the focused one', async () => {
+    const user = userEvent.setup();
+    const actionsFor = (broken: boolean) => (item: { label: string }) => [
+      ...(broken
+        ? [{ id: 'fix', label: `Fix ${item.label}`, text: 'Fix', onSelect: vi.fn() }]
+        : []),
+      { id: 'edit', label: `Edit ${item.label}`, text: 'Edit', onSelect: vi.fn() },
+    ];
+    const props = { groups: GROUPS, onSelect: vi.fn() };
+    const { rerender } = render(
+      <ResourcePickerContent {...props} itemActions={actionsFor(true)} />
+    );
+
+    await user.click(screen.getByRole('combobox'));
+    await user.keyboard('{Shift>}{Enter}{/Shift}');
+    const menu = await screen.findByRole('menu');
+    expect(within(menu).getByRole('menuitem', { name: /^Fix/ })).toHaveFocus();
+
+    // The connection was repaired: Fix goes, Edit stays.
+    rerender(<ResourcePickerContent {...props} itemActions={actionsFor(false)} />);
+    expect(screen.getByRole('menu')).toBe(menu);
+    expect(within(menu).getByRole('menuitem', { name: /^Edit/ })).toHaveFocus();
+  });
+
+  it('keeps focus on the focused action when a refresh removes another', async () => {
+    const user = userEvent.setup();
+    const actionsFor = (broken: boolean) => (item: { label: string }) => [
+      ...(broken
+        ? [{ id: 'fix', label: `Fix ${item.label}`, text: 'Fix', onSelect: vi.fn() }]
+        : []),
+      { id: 'edit', label: `Edit ${item.label}`, text: 'Edit', onSelect: vi.fn() },
+    ];
+    const props = { groups: GROUPS, onSelect: vi.fn() };
+    const { rerender } = render(
+      <ResourcePickerContent {...props} itemActions={actionsFor(true)} />
+    );
+
+    await user.click(screen.getByRole('combobox'));
+    await user.keyboard('{Shift>}{Enter}{/Shift}{ArrowDown}');
+    const menu = await screen.findByRole('menu');
+    const edit = within(menu).getByRole('menuitem', { name: /^Edit/ });
+    expect(edit).toHaveFocus();
+
+    rerender(<ResourcePickerContent {...props} itemActions={actionsFor(false)} />);
+    expect(edit).toHaveFocus();
+  });
+
   it("runs the row's current action when its actions change under an open menu", async () => {
     const user = userEvent.setup();
     const first = vi.fn();

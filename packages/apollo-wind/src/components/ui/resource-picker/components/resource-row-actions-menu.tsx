@@ -1,4 +1,4 @@
-import { type KeyboardEvent, useMemo, useRef } from 'react';
+import { type KeyboardEvent, useLayoutEffect, useMemo, useRef } from 'react';
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
 import { cn } from '@/lib';
 import type { ResourceItemAction } from '../types';
@@ -48,6 +48,23 @@ export function ResourceRowActionsMenu({
    */
   const escaped = useRef(false);
 
+  /**
+   * A refresh can take away the focused action and keep the others, as a
+   * repaired connection loses Fix but keeps Edit. The button unmounts with
+   * focus in it, so focus moves to the first action left. Focus on an action
+   * that is still there, or anywhere else, is left alone.
+   */
+  const contentRef = useRef<HTMLDivElement>(null);
+  const actionIds = actions.map((action) => action.id).join('\n');
+  // biome-ignore lint/correctness/useExhaustiveDependencies: runs when the set of actions changes, which `actionIds` marks.
+  useLayoutEffect(() => {
+    const content = contentRef.current;
+    if (!content) return;
+    const active = (content.getRootNode() as Document | ShadowRoot).activeElement;
+    if (active && active !== content.ownerDocument.body) return;
+    itemsRef.current.find((item) => item !== null)?.focus();
+  }, [actionIds]);
+
   const focusItem = (index: number) => {
     const items = itemsRef.current.filter((item): item is HTMLButtonElement => item !== null);
     if (items.length === 0) return;
@@ -91,6 +108,7 @@ export function ResourceRowActionsMenu({
     >
       <PopoverAnchor virtualRef={virtualRef} />
       <PopoverContent
+        ref={contentRef}
         // The content is the menu itself, so it is not also a dialog.
         role="menu"
         aria-label={label}
