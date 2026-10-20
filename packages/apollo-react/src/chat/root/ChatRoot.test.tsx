@@ -1,6 +1,8 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
+import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
+import { useAttachments } from '../headless/providers/attachments-provider';
 import { useChatService } from '../headless/providers/chat-service.provider';
 import { useChatState } from '../headless/providers/chat-state-provider';
 import { useTheme } from '../headless/providers/theme-provider';
@@ -200,6 +202,124 @@ describe('ChatRoot', () => {
 
       expect(embeddedContainer.querySelector('[data-testid="renderer"]')).not.toBeNull();
       expect(container.querySelector('[data-testid="renderer"]')).toBeNull();
+      embeddedContainer.remove();
+    });
+
+    it('keeps the providers mounted when the renderer moves in or out of the container', () => {
+      const mounts = vi.fn();
+      // The draft lives only in a provider, so it would be lost if the stack remounted.
+      let addAttachments: ReturnType<typeof useAttachments>['addAttachments'] = () => {};
+      const MountCounter = () => {
+        React.useEffect(() => mounts(), []);
+        const attachments = useAttachments();
+        addAttachments = attachments.addAttachments;
+        return <div data-testid="renderer">{attachments.attachments.length}</div>;
+      };
+      registerChatRenderer('material', MountCounter);
+      const embeddedContainer = document.createElement('div');
+      document.body.appendChild(embeddedContainer);
+      const service = createEmbeddedService(embeddedContainer);
+      render(<ChatRoot chatServiceInstance={service} defaultRenderer="material" />);
+      // The container is read after mount, so the first render is in place, as before.
+      mounts.mockClear();
+      act(() =>
+        addAttachments([
+          { name: 'draft.txt', type: 'text/plain', size: 1, lastModified: 1 } as never,
+        ])
+      );
+      const where = () =>
+        embeddedContainer.contains(screen.getByTestId('renderer')) ? 'container' : 'in place';
+
+      expect([where(), screen.getByTestId('renderer').textContent]).toEqual(['container', '1']);
+      act(() => service.setChatMode(AutopilotChatMode.FullScreen));
+      expect([where(), screen.getByTestId('renderer').textContent]).toEqual(['in place', '1']);
+      act(() => service.setChatMode(AutopilotChatMode.Embedded));
+      expect([where(), screen.getByTestId('renderer').textContent]).toEqual(['container', '1']);
+      // The renderer itself still remounts when it moves, as before.
+      expect(mounts).toHaveBeenCalledTimes(2);
+      embeddedContainer.remove();
+    });
+
+    it('leaves the renderer in the container while the embedded chat is closed', () => {
+      const mounts = vi.fn();
+      const MountCounter = () => {
+        React.useEffect(() => mounts(), []);
+        return <div data-testid="renderer" />;
+      };
+      registerChatRenderer('material', MountCounter);
+      const embeddedContainer = document.createElement('div');
+      document.body.appendChild(embeddedContainer);
+      const service = createEmbeddedService(embeddedContainer);
+      render(<ChatRoot chatServiceInstance={service} defaultRenderer="material" />);
+      mounts.mockClear();
+
+      act(() => service.setChatMode(AutopilotChatMode.Closed));
+      expect(embeddedContainer.querySelector('[data-testid="renderer"]')).not.toBeNull();
+      act(() => service.setChatMode(AutopilotChatMode.Embedded));
+      expect(embeddedContainer.querySelector('[data-testid="renderer"]')).not.toBeNull();
+      expect(mounts).not.toHaveBeenCalled();
+
+      // Opened in another mode, it leaves the container.
+      act(() => service.setChatMode(AutopilotChatMode.Closed));
+      act(() => service.setChatMode(AutopilotChatMode.FullScreen));
+      expect(embeddedContainer.querySelector('[data-testid="renderer"]')).toBeNull();
+      embeddedContainer.remove();
+    });
+
+    it('leaves the container for another service, or once the closed service stops naming it', () => {
+      registerChatRenderer('material', ProbeRenderer);
+      const embeddedContainer = document.createElement('div');
+      document.body.appendChild(embeddedContainer);
+      const inContainer = () => !!embeddedContainer.querySelector('[data-testid="renderer"]');
+      const first = createEmbeddedService(embeddedContainer);
+      const view = render(<ChatRoot chatServiceInstance={first} defaultRenderer="material" />);
+      act(() => first.setChatMode(AutopilotChatMode.Closed));
+      expect(inContainer()).toBe(true);
+
+      // Another closed service is not portalled into the first one's container.
+      const second = AutopilotChatService.Instantiate({
+        instanceName: `chat-root-test-${++instanceCounter}`,
+        config: { mode: AutopilotChatMode.Closed },
+      });
+      view.rerender(<ChatRoot chatServiceInstance={second} defaultRenderer="material" />);
+      expect(inContainer()).toBe(false);
+
+      view.rerender(<ChatRoot chatServiceInstance={first} defaultRenderer="material" />);
+      act(() => first.setChatMode(AutopilotChatMode.Embedded));
+      act(() => first.setChatMode(AutopilotChatMode.Closed));
+      expect(inContainer()).toBe(true);
+      act(() => first.patchConfig({ embeddedContainer: undefined }));
+      expect(inContainer()).toBe(false);
+      embeddedContainer.remove();
+    });
+
+    it('keeps the providers mounted across modes under StrictMode too', () => {
+      let addAttachments: ReturnType<typeof useAttachments>['addAttachments'] = () => {};
+      const DraftCount = () => {
+        const attachments = useAttachments();
+        addAttachments = attachments.addAttachments;
+        return <div data-testid="renderer">{attachments.attachments.length}</div>;
+      };
+      registerChatRenderer('material', DraftCount);
+      const embeddedContainer = document.createElement('div');
+      document.body.appendChild(embeddedContainer);
+      const service = createEmbeddedService(embeddedContainer);
+      render(
+        <React.StrictMode>
+          <ChatRoot chatServiceInstance={service} defaultRenderer="material" />
+        </React.StrictMode>
+      );
+      act(() =>
+        addAttachments([
+          { name: 'draft.txt', type: 'text/plain', size: 1, lastModified: 1 } as never,
+        ])
+      );
+
+      act(() => service.setChatMode(AutopilotChatMode.FullScreen));
+      act(() => service.setChatMode(AutopilotChatMode.Closed));
+      act(() => service.setChatMode(AutopilotChatMode.Embedded));
+
+      expect(embeddedContainer.querySelector('[data-testid="renderer"]')).toHaveTextContent('1');
       embeddedContainer.remove();
     });
 

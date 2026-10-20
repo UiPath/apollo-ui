@@ -45,6 +45,9 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
 
   const [overflowContainer, setOverflowContainer] = React.useState<HTMLDivElement | null>(null);
   const [autoScroll, setAutoScroll] = React.useState(true);
+  // Following as the service last set it (toggle, new turn, new chat, opened conversation),
+  // leaving out the reader scrolling away, which belongs to one scroll container.
+  const serviceAutoScrollRef = React.useRef(true);
   const [isOverflow, setIsOverflow] = React.useState(false);
   const [isContainerWide, setIsContainerWide] = React.useState(false);
 
@@ -257,17 +260,20 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
     const unsubscribeRequestIntercept = chatService.intercept(
       AutopilotChatInterceptableEvent.Request,
       () => {
+        serviceAutoScrollRef.current = true;
         setAutoScroll(true);
         useInstantScrollRef.current = false;
       }
     );
 
     const unsubscribeNewChat = chatService.on(AutopilotChatEvent.NewChat, () => {
+      serviceAutoScrollRef.current = true;
       setAutoScroll(true);
       useInstantScrollRef.current = false;
     });
 
     const unsubscribeOpenConversation = chatService.on(AutopilotChatEvent.OpenConversation, () => {
+      serviceAutoScrollRef.current = true;
       setAutoScroll(true);
     });
 
@@ -282,6 +288,7 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
     const unsubscribeToggleAutoScroll = chatService.__internalService__.on(
       AutopilotChatInternalEvent.ToggleAutoScroll,
       (autoScrollValue: boolean) => {
+        serviceAutoScrollRef.current = autoScrollValue;
         setAutoScroll(autoScrollValue);
       }
     );
@@ -311,6 +318,18 @@ export const AutopilotChatScrollProvider: React.FC<AutopilotChatScrollProviderPr
       unsubscribeShouldShowLoadingMoreMessages();
     };
   }, [chatService]);
+
+  // This provider outlives the renderer, which remounts on a mode change: a new scroll container
+  // starts from the bottom, as a fresh one would, keeping the service's auto-scroll setting but
+  // not the reader having scrolled away in the old one.
+  React.useEffect(() => {
+    if (!overflowContainer) {
+      return;
+    }
+    previousHeightRef.current = 0;
+    useInstantScrollRef.current = true;
+    setAutoScroll(serviceAutoScrollRef.current);
+  }, [overflowContainer]);
 
   React.useEffect(() => {
     const content = contentRef.current;

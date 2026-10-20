@@ -60,4 +60,53 @@ describe('AutopilotChatScrollProvider', () => {
     act(() => service.openConversation('c1'));
     expect(autoScrollValue).toBe(true);
   });
+
+  it('starts a new scroll container following, unless the service turned following off', () => {
+    const service = AutopilotChatService.Instantiate({
+      instanceName: `scroll-provider-${++instanceCounter}`,
+      config: { mode: AutopilotChatMode.Embedded },
+    });
+    // Stands in for a renderer's scroll area, remounted with a new element on a mode change.
+    function ScrollArea() {
+      const { setOverflowContainer, contentRef } = useChatScroll();
+      return (
+        <div
+          ref={(node) => {
+            if (node) {
+              Object.defineProperty(node, 'scrollHeight', { value: 500, configurable: true });
+              Object.defineProperty(node, 'clientHeight', { value: 100, configurable: true });
+            }
+            setOverflowContainer(node as HTMLDivElement);
+          }}
+          data-testid="scroll-area"
+        >
+          <div ref={contentRef} />
+        </div>
+      );
+    }
+    const tree = (key: string) => (
+      <AutopilotChatServiceProvider chatServiceInstance={service}>
+        <AutopilotStreamingProvider>
+          <AutopilotChatScrollProvider>
+            <Probe />
+            <ScrollArea key={key} />
+          </AutopilotChatScrollProvider>
+        </AutopilotStreamingProvider>
+      </AutopilotChatServiceProvider>
+    );
+    const view = render(tree('a'));
+
+    // The reader scrolls up in the first container.
+    act(() => {
+      view.getByTestId('scroll-area').dispatchEvent(new WheelEvent('wheel', { deltaY: -10 }));
+    });
+    expect(autoScrollValue).toBe(false);
+    view.rerender(tree('b'));
+    expect(autoScrollValue).toBe(true);
+
+    // The host's setting holds across the new container.
+    act(() => service.toggleAutoScroll(false));
+    view.rerender(tree('c'));
+    expect(autoScrollValue).toBe(false);
+  });
 });

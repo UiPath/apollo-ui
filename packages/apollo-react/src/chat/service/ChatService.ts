@@ -43,6 +43,11 @@ import { ContentPartBuilder } from './ContentPartBuilder';
 import { EventBus } from './EventBus';
 import { LocalHistoryService } from './LocalHistory';
 import { StorageService } from './StorageService';
+import {
+  type ChatSuggestionsSnapshot,
+  countUserTurns,
+  NO_SUGGESTIONS_SNAPSHOT,
+} from './suggestions-state';
 
 export class AutopilotChatService {
   private static _instances: Record<string, AutopilotChatService> = {};
@@ -91,6 +96,8 @@ export class AutopilotChatService {
   private _historyOpen: boolean = false;
   private _settingsOpen: boolean = false;
   private _activeConversationId: string | null = null;
+  // Kept so a chat mounted after `setSuggestions` still shows them.
+  private _suggestions: ChatSuggestionsSnapshot = NO_SUGGESTIONS_SNAPSHOT;
   // Whether a paginated host has more history, from the `done` of its last page.
   private _hasMoreHistory = true;
   private _defaultLoadingMessages: string[] | null = null;
@@ -161,6 +168,7 @@ export class AutopilotChatService {
     this.prependOlderMessages = this.prependOlderMessages.bind(this);
     this.appendOlderHistoryItems = this.appendOlderHistoryItems.bind(this);
     this.setSuggestions = this.setSuggestions.bind(this);
+    this.getSuggestions = this.getSuggestions.bind(this);
     this.sendInputStreamEvent = this.sendInputStreamEvent.bind(this);
     this.sendOutputStreamEvent = this.sendOutputStreamEvent.bind(this);
     this.setShowLoading = this.setShowLoading.bind(this);
@@ -514,16 +522,33 @@ export class AutopilotChatService {
   }
 
   /**
-   * Sets the suggestions in the chat service
+   * Sets the suggestions in the chat service. They belong to the current user turn and stay until
+   * a request is sent, a new chat starts, another conversation opens or they are set again.
    *
    * @param suggestions - The suggestions to set
    * @param sendOnClick - Whether to send the suggestion on click
    */
   setSuggestions(suggestions: AutopilotChatSuggestion[], sendOnClick?: boolean) {
-    this._internalService.publish(AutopilotChatInternalEvent.SetSuggestions, {
-      suggestions,
+    this._publishSuggestions({
+      // A copy, so the host changing its array later does not change what is shown.
+      suggestions: Object.freeze([...suggestions]),
       sendOnClick,
+      userTurns: countUserTurns(this._conversation),
     });
+  }
+
+  /**
+   * Gets the suggestions set with `setSuggestions`, or an empty list once they were cleared
+   *
+   * @returns The current suggestions
+   */
+  getSuggestions(): AutopilotChatSuggestion[] {
+    return [...this._suggestions.suggestions];
+  }
+
+  private _publishSuggestions(snapshot: ChatSuggestionsSnapshot) {
+    this._suggestions = Object.freeze(snapshot);
+    this._internalService.publish(AutopilotChatInternalEvent.SetSuggestions, this._suggestions);
   }
 
   /**
@@ -565,6 +590,13 @@ export class AutopilotChatService {
     this._internalService.publish(AutopilotChatInternalEvent.PrependOlderMessages);
 
     this.setConversation([...messages, ...this._conversation]);
+
+    // Older user turns come before the one the suggestions belong to; move their anchor with it.
+    const olderUserTurns = countUserTurns(messages);
+    const current = this._suggestions;
+    if (current.suggestions.length > 0 && olderUserTurns > 0) {
+      this._publishSuggestions({ ...current, userTurns: current.userTurns + olderUserTurns });
+    }
   }
 
   /**
@@ -790,6 +822,7 @@ export class AutopilotChatService {
     this._conversation = [];
     // A new chat is no conversation from the history, so the history marks none as open.
     this._activeConversationId = null;
+    this.setSuggestions([]);
     this._eventBus.publish(AutopilotChatEvent.NewChat);
     this._internalService.publish(AutopilotChatInternalEvent.ShouldShowLoadingMoreMessages, true);
     this._internalService.publish(AutopilotChatInternalEvent.SetIsLoadingMoreMessages, false);
@@ -971,7 +1004,12 @@ export class AutopilotChatService {
    * @param conversationId - The conversation ID to open
    */
   openConversation(conversationId: string | null, showLoadingState = true) {
+    const opensAnother = conversationId !== this._activeConversationId;
     this._activeConversationId = conversationId;
+    // They belong to the conversation that was open; opening it again keeps them.
+    if (opensAnother) {
+      this.setSuggestions([]);
+    }
     this._eventBus.publish(AutopilotChatEvent.OpenConversation, conversationId);
     this._internalService.publish(AutopilotChatInternalEvent.ShowLoadingState, showLoadingState);
     this._internalService.publish(AutopilotChatInternalEvent.ShouldShowLoadingMoreMessages, true);
@@ -1231,6 +1269,16 @@ export class AutopilotChatService {
    */
   get __hasMoreHistory__() {
     return this._hasMoreHistory;
+  }
+
+  /**
+   * The suggestions with their `sendOnClick` and the user turn they belong to, for a chat mounted
+   * after `setSuggestions`. Frozen.
+   * Should not be consumed by the public API
+   * @internal
+   */
+  get __suggestions__() {
+    return this._suggestions;
   }
 
   /**

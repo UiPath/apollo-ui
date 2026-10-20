@@ -155,7 +155,7 @@ The complete chat service API documentation is available in the [@uipath/apollo-
 - `initialize(config)` - Initialize the chat service
 - `open()` - Open the chat interface
 - `close()` - Close the chat interface
-- `setChatMode(mode)` - Set chat window mode ('side-by-side', 'full-screen', 'embedded')
+- `setChatMode(mode)` - Set chat window mode ('side-by-side', 'full-screen', 'embedded'). In embedded mode the element moves itself into `embeddedContainer`, and back out when the mode changes or the chat closes. Each move recreates the chat: the conversation and suggestions (kept by the service) carry over, a draft attachment does not.
 - `setLocale(locale)` - Change locale dynamically
 - `setTheme(theme)` - Change theme dynamically
 

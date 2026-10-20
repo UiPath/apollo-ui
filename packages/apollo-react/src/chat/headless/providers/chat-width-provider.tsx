@@ -28,11 +28,12 @@ export function AutopilotChatWidthProvider({ children }: AutopilotChatWidthProvi
   const storage = StorageService.Instance;
   const chatService = useChatService();
   const { chatMode } = useChatState();
-  const [width, setWidth] = React.useState(() => {
-    const savedWidth = storage.get(CHAT_WIDTH_KEY);
+  const savedWidth = React.useCallback(() => {
+    const saved = storage.get(CHAT_WIDTH_KEY);
 
-    return savedWidth ? parseInt(savedWidth, 10) : CHAT_WIDTH_SIDE_BY_SIDE_MIN;
-  });
+    return saved ? parseInt(saved, 10) : CHAT_WIDTH_SIDE_BY_SIDE_MIN;
+  }, [storage]);
+  const [width, setWidth] = React.useState(savedWidth);
   const [shouldAnimate, setShouldAnimate] = React.useState(false);
 
   React.useEffect(() => {
@@ -42,8 +43,12 @@ export function AutopilotChatWidthProvider({ children }: AutopilotChatWidthProvi
       if (config.embeddedContainer) {
         setWidth(config.embeddedContainer.clientWidth);
       }
+    } else if (chatMode !== AutopilotChatMode.Closed) {
+      // This provider outlives mode changes, so the embedded container's width is not carried
+      // into a mode that sizes itself from the saved width.
+      setWidth(savedWidth());
     }
-  }, [chatService, chatMode]);
+  }, [chatService, chatMode, savedWidth]);
 
   const value = React.useMemo(
     () => ({
