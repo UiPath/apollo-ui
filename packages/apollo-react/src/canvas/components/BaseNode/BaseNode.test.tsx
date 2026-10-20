@@ -12,6 +12,7 @@ const DEFAULT_MANIFEST = {
 // Hoisted mocks — available inside vi.mock factories
 const {
   mockUpdateNode,
+  mockUpdateNodeInternals,
   mockGetNode,
   mockNodeState,
   mockHandleConfigs,
@@ -26,6 +27,7 @@ const {
   mockReadOnlyNodeIds,
 } = vi.hoisted(() => ({
   mockUpdateNode: vi.fn(),
+  mockUpdateNodeInternals: vi.fn(),
   mockGetNode: vi.fn(),
   // Simulates React Flow's stored node: updateNode writes height here, getNode reads it.
   mockNodeState: { current: { height: undefined as number | undefined } },
@@ -62,7 +64,7 @@ mockUpdateNode.mockImplementation((_id: string, patch: { height?: number }) => {
 vi.mock('@uipath/apollo-react/canvas/xyflow/react', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@uipath/apollo-react/canvas/xyflow/react')>()),
   useStore: () => mockIsConnecting.current,
-  useUpdateNodeInternals: () => vi.fn(),
+  useUpdateNodeInternals: () => mockUpdateNodeInternals,
   useReactFlow: () => ({
     updateNodeData: vi.fn(),
     updateNode: mockUpdateNode,
@@ -283,6 +285,23 @@ describe('BaseNode', () => {
       mockHandleConfigs.current = makeHandles(Position.Left, 2);
       render(<BaseNode {...defaultProps} />);
       expect(mockUpdateNode).not.toHaveBeenCalled();
+    });
+
+    it('re-measures handles on a handle-set change, not on a data-only edit', () => {
+      mockUpdateNodeInternals.mockClear();
+      mockHandleConfigs.current = makeHandles(Position.Left, 2);
+      const { rerender } = render(<BaseNode {...defaultProps} />);
+      expect(mockUpdateNodeInternals).toHaveBeenCalledTimes(1);
+
+      // Rename keystroke: handleConfigurations is re-derived (new array, same layout).
+      mockUpdateNodeInternals.mockClear();
+      mockHandleConfigs.current = makeHandles(Position.Left, 2);
+      rerender(<BaseNode {...defaultProps} data={{ display: { label: 'Renamed' } }} />);
+      expect(mockUpdateNodeInternals).not.toHaveBeenCalled();
+
+      mockHandleConfigs.current = makeHandles(Position.Left, 3);
+      rerender(<BaseNode {...defaultProps} data={{}} />);
+      expect(mockUpdateNodeInternals).toHaveBeenCalledTimes(1);
     });
 
     it('deflates the floor and settles when a handle is removed (MST-11677)', () => {

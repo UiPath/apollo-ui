@@ -137,7 +137,22 @@ vi.mock('../Toolbar', () => ({
   },
 }));
 
+const { mockShowCenteredPreview, mockShowUnconnectedPreview } = vi.hoisted(() => ({
+  mockShowCenteredPreview: vi.fn(),
+  mockShowUnconnectedPreview: vi.fn(),
+}));
+
+vi.mock('./ContainerNodePreview', () => ({
+  showCenteredContainerPreview: mockShowCenteredPreview,
+  showUnconnectedContainerPreview: mockShowUnconnectedPreview,
+}));
+
+import { runtimeContainerManifests } from '../../storybook-utils/sequential/runtimeContainerManifests';
 import { LoopNode } from '../LoopNode/LoopNode';
+import {
+  SequencedContainersProvider,
+  type SequencedContainersValue,
+} from '../SequentialCanvas/SequencedContainersContext';
 import { ContainerCanvasNode } from './ContainerCanvasNode';
 import { ContainerNode } from './ContainerNode';
 
@@ -481,6 +496,52 @@ describe('ContainerCanvasNode preset selection', () => {
     expect(screen.getByRole('button', { name: 'Add a step to run on error' })).toBeTruthy();
   });
 
+  describe('runtime container', () => {
+    const runtimeManifest = runtimeContainerManifests[0] as unknown as Record<string, unknown>;
+
+    beforeEach(() => {
+      mockManifest.current = runtimeManifest;
+      mockButtonHandles.mockClear();
+      mockShowCenteredPreview.mockClear();
+      mockShowUnconnectedPreview.mockClear();
+    });
+
+    it('renders through the generic container with no badge and outer handles only', () => {
+      render(<ContainerCanvasNode {...defaultProps} />);
+
+      expect(getRoot().getAttribute('data-container-kind')).toBe('runtime');
+      expect(screen.queryByText('Sequential')).toBeNull();
+      expect(getHeader().children).toHaveLength(1);
+      const handleIds = mockButtonHandles.mock.calls.flatMap(
+        ([props]: [{ handles: { id: string }[] }]) => props.handles.map((handle) => handle.id)
+      );
+      expect(handleIds.sort()).toEqual(['input', 'output']);
+    });
+
+    it('opens an unconnected first-step preview, since there is no inner handle to wire', () => {
+      render(<ContainerCanvasNode {...defaultProps} />);
+
+      fireEvent.click(screen.getByRole('button', { name: 'Add node to container' }));
+      expect(mockShowUnconnectedPreview).toHaveBeenCalledWith(
+        expect.objectContaining({ containerId: 'container-1' })
+      );
+      expect(mockShowCenteredPreview).not.toHaveBeenCalled();
+    });
+
+    it('shows the body view switch inside a sequenced-containers canvas', () => {
+      render(
+        <SequencedContainersProvider
+          value={{ isSequenced: () => false, canSequence: () => true, setSequenced: vi.fn() }}
+        >
+          <ContainerCanvasNode {...defaultProps} />
+        </SequencedContainersProvider>
+      );
+
+      expect(screen.getByTestId('container-body-view-switch')).toBeTruthy();
+      expect(screen.queryByText('Sequential')).toBeNull();
+    });
+  });
+
   it('keeps the loop preset when display.container sets kind: loop', () => {
     mockManifest.current = {
       display: {
@@ -618,5 +679,68 @@ describe('ContainerNode inline label editing', () => {
 
     fireEvent.doubleClick(titleEl());
     expect(screen.getByRole('textbox', { name: 'Edit container name' })).toBeTruthy();
+  });
+});
+
+describe('ContainerNode body view (sequenced containers)', () => {
+  function renderSequenced(
+    overrides: Partial<SequencedContainersValue>,
+    props: ContainerProps = {}
+  ) {
+    const value: SequencedContainersValue = {
+      isSequenced: () => false,
+      canSequence: () => true,
+      setSequenced: vi.fn(),
+      ...overrides,
+    };
+    render(
+      <SequencedContainersProvider value={value}>
+        <ContainerNode {...defaultProps} {...props} />
+      </SequencedContainersProvider>
+    );
+    return value;
+  }
+
+  it('renders no switch outside a sequenced-containers canvas', () => {
+    renderContainer();
+    expect(screen.queryByTestId('container-body-view-switch')).toBeNull();
+  });
+
+  it('renders the switch in the header end slot, ahead of host headerEnd content', () => {
+    renderSequenced({}, { headerEnd: <span>Host end</span> });
+
+    const trailing = screen.getByTestId('container-body-view-switch').parentElement!;
+    expect(trailing.contains(screen.getByText('Host end'))).toBe(true);
+    expect(trailing.firstElementChild).toBe(screen.getByTestId('container-body-view-switch'));
+  });
+
+  it('hides the switch when the canvas cannot sequence this body', () => {
+    renderSequenced({ canSequence: () => false }, { headerEnd: <span>Host end</span> });
+
+    expect(screen.queryByTestId('container-body-view-switch')).toBeNull();
+    expect(screen.getByText('Host end')).toBeTruthy();
+  });
+
+  it('forwards the chosen view to setSequenced', () => {
+    const value = renderSequenced({});
+
+    fireEvent.click(screen.getByRole('radio', { name: 'Sequence' }));
+    expect(value.setSequenced).toHaveBeenCalledWith('container-1', true);
+  });
+
+  it('keeps resize controls in flow presentation', () => {
+    renderSequenced({}, { selected: true });
+    expect(screen.queryAllByTestId(/^node-resize-control-/).length).toBeGreaterThan(0);
+  });
+
+  it('drops resize controls and the empty state while sequenced', () => {
+    renderSequenced(
+      { isSequenced: (id) => id === 'container-1' },
+      { selected: true, onAddFirstChild: vi.fn() }
+    );
+
+    expect(screen.queryAllByTestId(/^node-resize-control-/)).toHaveLength(0);
+    expect(screen.queryByRole('button', { name: 'Add node to container' })).toBeNull();
+    expect(screen.getByRole('radio', { name: 'Sequence' })).toHaveAttribute('data-state', 'on');
   });
 });

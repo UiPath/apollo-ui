@@ -6,7 +6,7 @@ import { FLOATING_CANVAS_PANEL_OFFSET, PREVIEW_NODE_ID } from '../../constants';
 import { useOptionalNodeTypeRegistry } from '../../core';
 import { useCanvasNodeLayout } from '../../hooks/useCanvasNodeLayout';
 import { usePreviewNode } from '../../hooks/usePreviewNode';
-import { isPreviewEdge } from '../../utils/createPreviewNode';
+import { isPreviewEdge, isUnconnectedPreviewNode } from '../../utils/createPreviewNode';
 import type { BaseNodeData } from '../BaseNode';
 import { FloatingCanvasPanel } from '../FloatingCanvasPanel';
 import type { ListItem } from '../Toolbox';
@@ -117,7 +117,7 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
       if (
         !currentPreviewNode ||
         !previewNodeConnectionInfo ||
-        previewNodeConnectionInfo.length === 0
+        (previewNodeConnectionInfo.length === 0 && !isUnconnectedPreviewNode(currentPreviewNode))
       ) {
         return;
       }
@@ -257,7 +257,13 @@ export const AddNodeManager: React.FC<AddNodeManagerProps> = ({
     ]
   );
 
-  if (!previewNode || !previewNodeConnectionInfo || previewNodeConnectionInfo.length === 0) {
+  // An unconnected preview (first step of a self-contained container) has no connection
+  // info by design; every other preview needs at least one.
+  if (
+    !previewNode ||
+    !previewNodeConnectionInfo ||
+    (previewNodeConnectionInfo.length === 0 && !isUnconnectedPreviewNode(previewNode))
+  ) {
     return null;
   }
 

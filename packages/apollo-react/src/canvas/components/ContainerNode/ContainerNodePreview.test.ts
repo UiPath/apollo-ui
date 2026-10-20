@@ -2,13 +2,24 @@ import type { Node, ReactFlowInstance } from '@uipath/apollo-react/canvas/xyflow
 import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { mockShowPreviewGraph } = vi.hoisted(() => ({ mockShowPreviewGraph: vi.fn() }));
+const { mockShowPreviewGraph, mockCreatePreviewGraph, mockApplyPreviewGraph } = vi.hoisted(() => ({
+  mockShowPreviewGraph: vi.fn(),
+  mockCreatePreviewGraph: vi.fn(),
+  mockApplyPreviewGraph: vi.fn(),
+}));
 
 vi.mock('../../utils/createPreviewGraph', () => ({
   showPreviewGraph: mockShowPreviewGraph,
+  createPreviewGraph: mockCreatePreviewGraph,
+  applyPreviewGraphToReactFlow: mockApplyPreviewGraph,
 }));
 
-import { showCenteredContainerPreview } from './ContainerNodePreview';
+import { PREVIEW_NODE_ID } from '../../constants';
+import { isUnconnectedPreviewNode } from '../../utils/createPreviewNode';
+import {
+  showCenteredContainerPreview,
+  showUnconnectedContainerPreview,
+} from './ContainerNodePreview';
 
 const container: Node = {
   id: 'container',
@@ -25,6 +36,41 @@ const reactFlowInstance = {
 
 beforeEach(() => {
   mockShowPreviewGraph.mockClear();
+  mockCreatePreviewGraph.mockReset();
+  mockApplyPreviewGraph.mockClear();
+});
+
+describe('showUnconnectedContainerPreview', () => {
+  it('applies a parented first-child preview with no edges, flagged as unconnected', () => {
+    const previewNode: Node = {
+      id: PREVIEW_NODE_ID,
+      position: { x: 0, y: 0 },
+      parentId: 'container',
+      extent: 'parent',
+      data: {},
+    };
+    mockCreatePreviewGraph.mockReturnValue({ node: previewNode, edges: [{ id: 'primary' }] });
+
+    showUnconnectedContainerPreview({ containerId: 'container', reactFlowInstance });
+
+    const options = mockCreatePreviewGraph.mock.calls[0]?.[0];
+    expect(options.containerId).toBe('container');
+    expect(options.positionMode).toBe('center');
+    expect(options.target).toBeUndefined();
+    expect(options.data.placement).toMatchObject({ containerId: 'container', mode: 'first-child' });
+    expect(isUnconnectedPreviewNode({ data: options.data })).toBe(true);
+    expect(mockApplyPreviewGraph).toHaveBeenCalledWith(
+      { node: previewNode, edges: [] },
+      reactFlowInstance
+    );
+  });
+
+  it('does nothing when the container is missing', () => {
+    showUnconnectedContainerPreview({ containerId: 'missing', reactFlowInstance });
+
+    expect(mockCreatePreviewGraph).not.toHaveBeenCalled();
+    expect(mockApplyPreviewGraph).not.toHaveBeenCalled();
+  });
 });
 
 describe('showCenteredContainerPreview', () => {

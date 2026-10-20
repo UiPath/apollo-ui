@@ -31,6 +31,7 @@ export * from './NodePropertiesPanel';
 export * from './NodePropertyPanel';
 export * from './NodeVariablesPanel';
 export * from './ProbeCard';
+export * from './SequentialCanvas';
 export * from './StageNode';
 export * from './StickyNoteNode';
 export * from './shared';

@@ -337,6 +337,35 @@ export function isContainerNodeManifest(
   return manifest?.display.shape === 'container';
 }
 
+/** `display.container.kind` of a runtime container: a self-contained, inline-expanded subflow. */
+export const RUNTIME_CONTAINER_KIND = 'runtime';
+
+/**
+ * A container whose body is self-contained: it declares no inner-boundary handles, so nothing
+ * wires the frame to its first or last step. Its sequence presentation opens with its own
+ * start row, and adding a first step in flow presentation creates an unconnected child.
+ */
+export function isSelfContainedContainerManifest(
+  manifest: Pick<NodeManifest, 'display' | 'handleConfiguration'> | undefined
+): boolean {
+  return (
+    isContainerNodeManifest(manifest) &&
+    !manifest?.handleConfiguration.some((group) => group.boundary === 'inner')
+  );
+}
+
+/**
+ * Returns whether a manifest describes an artifact-only resource (tool, context, memory):
+ * at least one handle, every one of them `handleType: 'artifact'`. Such nodes attach to a
+ * step rather than taking part in control flow.
+ */
+export function isArtifactOnlyManifest(
+  manifest: Pick<NodeManifest, 'handleConfiguration'> | undefined
+): boolean {
+  const handles = manifest?.handleConfiguration.flatMap((group) => group.handles) ?? [];
+  return handles.length > 0 && handles.every((handle) => handle.handleType === 'artifact');
+}
+
 function getAncestorContainerIds(containerId: string, nodesById: Map<string, Node>): string[] {
   const ancestors: string[] = [];
   let parentId = nodesById.get(containerId)?.parentId;

@@ -59,6 +59,8 @@ export type UseEdgeGeometryArgs = {
    * produce a path string with no vertices to intersect.
    */
   enableLineJumps?: boolean;
+  /** Corner radius for `waypoint` routing; `createRoundedPath` clamps it to half the shorter adjacent segment. */
+  borderRadius?: number;
 };
 
 export type EdgeGeometry = {
@@ -104,6 +106,7 @@ export function useEdgeGeometry(args: UseEdgeGeometryArgs): EdgeGeometry {
     enableSegments = true,
     hideArrowHead = false,
     enableLineJumps = false,
+    borderRadius = EDGE_CONSTANTS.BORDER_RADIUS,
   } = args;
 
   const arrowOffset = ARROW_OFFSETS[targetPosition];
@@ -148,8 +151,8 @@ export function useEdgeGeometry(args: UseEdgeGeometryArgs): EdgeGeometry {
   const jumps = useEdgeLineJumps(edgeId, pathPoints, isWaypoint && enableLineJumps);
 
   const waypointPath = useMemo(
-    () => createRoundedPath(pathPoints, EDGE_CONSTANTS.BORDER_RADIUS, jumps),
-    [pathPoints, jumps]
+    () => createRoundedPath(pathPoints, borderRadius, jumps),
+    [pathPoints, borderRadius, jumps]
   );
 
   const handle = useEdgePath({

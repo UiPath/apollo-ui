@@ -30,8 +30,10 @@ import { getStatusBorder } from '../BaseNode/BaseNodeContainer';
 import { MissingManifestNode } from '../BaseNode/BaseNodeMissingManifest';
 import type { InlineLabelValues } from '../BaseNode/useInlineLabelEditing';
 import type { HandleActionEvent } from '../ButtonHandle';
+import { useOptionalSequencedContainers } from '../SequentialCanvas/SequencedContainersContext';
 import { NodeToolbar } from '../Toolbar';
 import { lockToolbarConfig } from '../Toolbar/NodeToolbar/NodeToolbar.utils';
+import { ContainerBodyViewSwitch } from './ContainerBodyViewSwitch';
 import { resolveContainerNodeConfig } from './ContainerNode.config';
 import {
   ACCENT_BORDER_CLASSES,
@@ -104,6 +106,11 @@ function ContainerNodeComponent(props: ContainerNodeProps) {
   const isConnecting = useStore(selectIsConnecting);
   const hasEmptyState = !!onAddFirstChild || !!renderEmptyState;
   const hasChildNodes = useHasChildNodes(id, isDesignMode && hasEmptyState);
+  // Body presentation owned by the canvas: a sequenced body is laid out by the canvas,
+  // so the frame is not resizable and the canvas renders its own add-step placeholder.
+  const sequencedContainers = useOptionalSequencedContainers();
+  const isSequenced = sequencedContainers?.isSequenced(id) ?? false;
+  const showBodyViewSwitch = sequencedContainers?.canSequence(id) ?? false;
 
   const executionState = useNodeExecutionState(id);
   const validationState = useElementValidationStatus(id);
@@ -187,7 +194,7 @@ function ContainerNodeComponent(props: ContainerNodeProps) {
   const isDropTarget = resolvedData.isDropTarget === true;
   const containerWidth = width || DEFAULT_CONTAINER_WIDTH;
   const containerHeight = height || DEFAULT_CONTAINER_HEIGHT;
-  const resizeControlsMounted = isDesignMode && !dragging;
+  const resizeControlsMounted = isDesignMode && !dragging && !isSequenced;
   const resizeControlsVisible = resizeControlsMounted && (selected || isResizing);
   const resizeMinimumsEnabled = resizeControlsMounted && (selected || isHovered || isResizing);
   const resizeMinimums = useContainerResizeMinimums(
@@ -280,7 +287,15 @@ function ContainerNodeComponent(props: ContainerNodeProps) {
   // Resize stays enabled when locked: size, like position, is layout rather
   // than content. Only the structural controls are gated.
   const showHandleAddButtons = canEditNode && !multipleNodesSelected && !isConnecting && !dragging;
-  const showEmptyState = canEditNode && !hasChildNodes && hasEmptyState;
+  const showEmptyState = canEditNode && !hasChildNodes && hasEmptyState && !isSequenced;
+  const headerEnd = showBodyViewSwitch ? (
+    <>
+      <ContainerBodyViewSwitch containerId={id} />
+      {config.headerEnd}
+    </>
+  ) : (
+    config.headerEnd
+  );
 
   const interactionState = resolveInteractionState(dragging, selected, isHovered);
   const activeStatus = suggestionType ?? validationState?.validationStatus ?? executionStatus;
@@ -352,7 +367,7 @@ function ContainerNodeComponent(props: ContainerNodeProps) {
           iconClassName={ACCENT_ICON_CLASSES[config.accent]}
           subtitle={config.subtitle}
           badges={config.headerBadges}
-          end={config.headerEnd}
+          end={headerEnd}
           renderHeader={renderHeader}
           loading={isLoading}
           editable={config.labelEditable && canEditNode && !isLoading}

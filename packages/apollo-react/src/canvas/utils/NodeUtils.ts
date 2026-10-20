@@ -19,21 +19,75 @@ export const selectIsConnecting = (state: ReactFlowState) => !!state.connection.
  * Calculates the absolute position of a node, taking into account its parent nodes.
  *
  * @param node The node for which to calculate the absolute position.
- * @param nodes Array of all existing nodes.
- * @returns { x: number, y: number } The absolute position of the node.
+ * @param nodes All nodes, as an array or an id-keyed map. A `parentId` cycle or a missing
+ *   parent ends the walk instead of looping.
  */
-export const getAbsolutePosition = (node: Node, nodes: Node[]): { x: number; y: number } => {
+export const getAbsolutePosition = (
+  node: Node,
+  nodes: Node[] | ReadonlyMap<string, Node>
+): { x: number; y: number } => {
+  const lookup = (id: string): Node | undefined =>
+    Array.isArray(nodes) ? nodes.find((n) => n.id === id) : nodes.get(id);
   let x = node.position.x;
   let y = node.position.y;
-  let currentNode: Node | undefined = node;
-  while (currentNode?.parentId) {
-    const parentNode = nodes.find((n) => n.id === currentNode?.parentId);
-    x += parentNode?.position.x ?? 0;
-    y += parentNode?.position.y ?? 0;
-    currentNode = parentNode;
+  let parentId = node.parentId;
+  const visited = new Set<string>([node.id]);
+  while (parentId && !visited.has(parentId)) {
+    visited.add(parentId);
+    const parent = lookup(parentId);
+    if (!parent) break;
+    x += parent.position.x;
+    y += parent.position.y;
+    parentId = parent.parentId;
   }
   return { x, y };
 };
+
+/**
+ * Reorders nodes so every parent precedes its children. React Flow requires this:
+ * `adoptUserNodes` fills its lookup in array order and only warns on a child whose
+ * parent it has not seen, silently leaving it unparented with a wrong absolute position.
+ * Stable sort by depth; an already-ordered array is returned by identity. A missing
+ * parent or `parentId` cycle is treated as a root rather than dropped.
+ */
+export function orderNodesParentsFirst<T extends Node>(nodes: T[]): T[] {
+  const nodeById = new Map(nodes.map((node) => [node.id, node]));
+  const depthById = new Map<string, number>();
+
+  const depthOf = (node: T): number => {
+    const cached = depthById.get(node.id);
+    if (cached !== undefined) return cached;
+    let depth = 0;
+    const seen = new Set<string>([node.id]);
+    let current: Node | undefined = node;
+    while (current?.parentId) {
+      const parent = nodeById.get(current.parentId);
+      if (!parent || seen.has(parent.id)) break;
+      seen.add(parent.id);
+      depth += 1;
+      current = parent;
+    }
+    depthById.set(node.id, depth);
+    return depth;
+  };
+
+  // React Flow's own condition: every existing parent seen before its child.
+  const seen = new Set<string>();
+  let isOrdered = true;
+  for (const node of nodes) {
+    if (node.parentId && nodeById.has(node.parentId) && !seen.has(node.parentId)) {
+      isOrdered = false;
+      break;
+    }
+    seen.add(node.id);
+  }
+  if (isOrdered) return nodes;
+
+  return nodes
+    .map((node, index) => ({ node, index, depth: depthOf(node) }))
+    .sort((left, right) => left.depth - right.depth || left.index - right.index)
+    .map((entry) => entry.node);
+}
 
 /**
  * Direction-aware non-overlapping position calculation.

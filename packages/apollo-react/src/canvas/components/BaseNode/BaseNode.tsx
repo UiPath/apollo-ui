@@ -2,7 +2,6 @@ import type { Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   Position,
   useReactFlow,
-  useStore,
   useUpdateNodeInternals,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -23,44 +22,21 @@ import {
   NODE_INNER_RADIUS_RATIO,
   NODE_INNER_SHAPE_RATIO,
 } from '../../constants';
-import { useNodeTypeRegistry } from '../../core';
-import {
-  useElementValidationStatus,
-  useNodeExecutionState,
-  useToolbarActionStoreContext,
-} from '../../hooks';
 import { isWideNodeShape, type NodeShape } from '../../schema';
-import type { HandleGroupManifest } from '../../schema/node-definition';
-import { resolveAdornments } from '../../utils/adornment-resolver';
-import { CanvasIcon, getIcon } from '../../utils/icon-registry';
-import { resolveDisplay, resolveHandles } from '../../utils/manifest-resolver';
-import { selectIsConnecting } from '../../utils/NodeUtils';
+import { CanvasIcon } from '../../utils/icon-registry';
 import { areNodePropsEqualIgnoringPosition } from '../../utils/nodePropsEqual';
-import { resolveToolbar } from '../../utils/toolbar-resolver';
-import { useBaseCanvasMode } from '../BaseCanvas/BaseCanvasModeProvider';
-import { useCanvasTheme } from '../BaseCanvas/CanvasThemeContext';
 import { useConnectedHandles } from '../BaseCanvas/ConnectedHandlesContext';
-import { useIsNodeReadOnly } from '../BaseCanvas/ReadOnlyNodesContext';
-import { useSelectionState } from '../BaseCanvas/SelectionStateContext';
 import type { HandleActionEvent } from '../ButtonHandle/ButtonHandle';
 import { SmartHandle, SmartHandleProvider } from '../ButtonHandle/SmartHandle';
 import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
-import { InitialsBadge } from '../shared/InitialsBadge';
-import type { NodeToolbarConfig } from '../Toolbar';
 import { NodeToolbar } from '../Toolbar';
-import { lockToolbarConfig } from '../Toolbar/NodeToolbar/NodeToolbar.utils';
-import type {
-  BaseNodeData,
-  FooterVariant,
-  NodeAdornments,
-  NodeStatusContext,
-} from './BaseNode.types';
+import type { BaseNodeData, FooterVariant } from './BaseNode.types';
 import { BaseBadgeSlot } from './BaseNodeBadgeSlot';
-import { useBaseNodeOverrideConfig } from './BaseNodeConfigContext';
-import { BaseContainer } from './BaseNodeContainer';
+import { BaseContainer, resolveInteractionState } from './BaseNodeContainer';
 import { BaseInnerShape } from './BaseNodeInnerShape';
 import { MissingManifestNode } from './BaseNodeMissingManifest';
 import { NodeLabel } from './NodeLabel';
+import { useBaseNodePresentation } from './useBaseNodePresentation';
 
 /** Stable predicate used to hard-disable add buttons on read-only nodes. */
 const NEVER_SHOW_ADD_BUTTON = () => false;
@@ -91,10 +67,26 @@ const getIntrinsicHeight = (
   return NODE_HEIGHT_DEFAULT;
 };
 
-const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
-  const { type, data, selected, id, dragging, width, parentId } = props;
+export type BaseNodeProps = NodeProps<Node<BaseNodeData>>;
 
-  // Read runtime configuration from context (provided by parent node components)
+const BaseNodeComponent = (props: BaseNodeProps) => {
+  const { type, data, selected, id, dragging, width, parentId } = props;
+  const presentation = useBaseNodePresentation({ type, data, selected, id, dragging });
+  const {
+    adornments,
+    canEdit,
+    display,
+    executionStatus,
+    handleConfigurations,
+    icon: Icon,
+    isNodeReadOnly,
+    manifest,
+    multipleNodesSelected,
+    onLabelChange: handleLabelChange,
+    suggestionType,
+    toolbarConfig,
+    validationState,
+  } = presentation;
   const {
     onHandleAction: onHandleActionProp,
     onHandleMouseEnter: onHandleMouseEnterProp,
@@ -102,12 +94,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     onActionNeeded,
     shouldShowAddButtonFn: shouldShowAddButtonFnProp,
     shouldShowButtonHandleNotchesFn: shouldShowButtonHandleNotchesFnProp,
-    toolbarConfig: toolbarConfigProp,
-    handleConfigurations: handleConfigurationsProp,
-    adornments: adornmentsProp,
-    suggestionType: suggestionTypeOverride,
     disabled,
-    executionStatusOverride,
     labelTooltip,
     labelBackgroundColor,
     labelPlaceholder,
@@ -115,14 +102,10 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     footerVariant,
     footerComponent,
     subLabelComponent,
-    iconComponent,
-  } = useBaseNodeOverrideConfig();
-  // A `null` override suppresses styling; otherwise the override wins over `data.suggestionType`.
-  const suggestionType =
-    suggestionTypeOverride === null ? undefined : (suggestionTypeOverride ?? data.suggestionType);
+  } = presentation.overrideConfig;
 
   const updateNodeInternals = useUpdateNodeInternals();
-  const { updateNodeData, updateNode, getNode } = useReactFlow();
+  const { updateNode, getNode } = useReactFlow();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -130,48 +113,10 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   // Height is driven by computedHeight (below), a pure function of handle count/footer.
   // It never reads the measured height, so writing it back can't loop.
 
-  // Get execution status from external source
-  const executionState = useNodeExecutionState(id);
-  const validationState = useElementValidationStatus(id);
-  const nodeTypeRegistry = useNodeTypeRegistry();
-  const { mode } = useBaseCanvasMode();
-  const isNodeReadOnly = useIsNodeReadOnly(id);
-  // Per-node read-only composes with canvas mode: a node is editable only in
-  // design mode AND when not individually locked via readOnlyNodeIds.
-  const canEdit = mode === 'design' && !isNodeReadOnly;
-
   // Use context for connected handles - O(1) lookup instead of O(edges) per node
   const connectedHandleIds = useConnectedHandles(id);
 
-  const isConnecting = useStore(selectIsConnecting);
-  const { multipleNodesSelected } = useSelectionState();
-
-  const { isDarkMode } = useCanvasTheme();
-
-  // Get manifest and resolve with instance data
-  const manifest = useMemo(() => nodeTypeRegistry.getManifest(type), [type, nodeTypeRegistry]);
-
-  const statusContext: NodeStatusContext = useMemo(
-    () => ({
-      nodeId: id,
-      executionState: executionStatusOverride ?? executionState,
-      validationState,
-      isConnecting,
-      isSelected: selected,
-      isDragging: dragging,
-      mode,
-    }),
-    [
-      id,
-      executionStatusOverride,
-      executionState,
-      validationState,
-      isConnecting,
-      selected,
-      dragging,
-      mode,
-    ]
-  );
+  const { isConnecting } = presentation;
 
   // Callbacks: Use props only (no longer in data)
   const onHandleActionCallback = onHandleActionProp;
@@ -181,106 +126,9 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const shouldShowAddButtonFn = isNodeReadOnly ? NEVER_SHOW_ADD_BUTTON : shouldShowAddButtonFnProp;
   const shouldShowButtonHandleNotchesFn = shouldShowButtonHandleNotchesFnProp;
 
-  // Use executionStatusOverride if provided, otherwise use hook value
-  const executionStatus =
-    executionStatusOverride ??
-    (typeof executionState === 'string' ? executionState : executionState?.status);
-
-  const display = useMemo(
-    () => resolveDisplay(manifest?.display, { ...data, nodeId: id }),
-    [manifest, data, id]
-  );
-
   // Drillable (manifest) or collapsed (instance data) nodes render a decorative
   // stacked layer to signal they stand in for more than themselves.
   const isStacked = Boolean(manifest?.drillable || data?.isCollapsed);
-
-  // Icon resolution: component prop > icon string > initials badge fallback.
-  const Icon = useMemo(() => {
-    if (iconComponent !== undefined) {
-      return iconComponent;
-    }
-    if (display.icon) {
-      const IconComponent = getIcon(display.icon);
-      return IconComponent ? <IconComponent /> : null;
-    }
-    return <InitialsBadge name={display.label} size="var(--icon-size)" />;
-  }, [iconComponent, display.icon, display.label]);
-
-  // Resolve handles: context override > data override > manifest default
-  const handleConfigurations = useMemo((): HandleGroupManifest[] => {
-    // Priority 1: Context override (runtime configuration from parent wrapper components)
-    if (handleConfigurationsProp && Array.isArray(handleConfigurationsProp)) {
-      return handleConfigurationsProp;
-    }
-
-    // Priority 2: Per-instance override via node data
-    const dataHandleConfigs = (data as Record<string, unknown>)?.handleConfigurations as
-      | HandleGroupManifest[]
-      | undefined;
-    if (dataHandleConfigs && Array.isArray(dataHandleConfigs)) {
-      return dataHandleConfigs;
-    }
-
-    // Priority 3: Manifest default
-    if (!manifest) return [];
-    // Pass nodeId and collapsed for collapse state lookup
-    const resolved = resolveHandles(manifest.handleConfiguration, { ...data, nodeId: id });
-
-    // Convert resolved handles to HandleGroupManifest format for ButtonHandle
-    return resolved.map((group) => ({
-      position: group.position,
-      handles: group.handles.map((h) => ({
-        id: h.id,
-        type: h.type,
-        handleType: h.handleType,
-        label: h.label,
-        visible: h.visible,
-        showButton: h.showButton,
-        labelVisibility: h.labelVisibility,
-        constraints: h.constraints,
-      })),
-      visible: group.visible,
-    }));
-  }, [handleConfigurationsProp, manifest, data, id]);
-
-  // This node's own canvas store, so side-by-side canvases keep separate toolbars.
-  const toolbarActionStore = useToolbarActionStoreContext();
-
-  // Toolbar config resolution with priority: props > manifest
-  const toolbarConfig = useMemo(() => {
-    // Priority 1: Prop override (runtime callbacks)
-    // - undefined: use manifest default
-    // - null: explicitly no toolbar
-    // - object: use provided config
-    if (toolbarConfigProp !== undefined) {
-      return toolbarConfigProp === null ? undefined : toolbarConfigProp;
-    }
-
-    // Priority 2: Manifest default
-    return manifest
-      ? resolveToolbar(manifest, statusContext, undefined, toolbarActionStore)
-      : undefined;
-  }, [toolbarConfigProp, manifest, statusContext, toolbarActionStore]);
-
-  // A locked node keeps its toolbar and disables it rather than hiding it. See
-  // `lockToolbarConfig` for why.
-  const effectiveToolbarConfig = useMemo(
-    (): NodeToolbarConfig | undefined =>
-      toolbarConfig && isNodeReadOnly ? lockToolbarConfig(toolbarConfig) : toolbarConfig,
-    [toolbarConfig, isNodeReadOnly]
-  );
-
-  // Adornments resolution: use default resolver, then override with props if provided
-  const adornments: NodeAdornments = useMemo(() => {
-    const adornmentsFromProps = adornmentsProp ?? {};
-    const adornmentsFromResolver = resolveAdornments(statusContext);
-
-    return {
-      ...adornmentsFromResolver,
-      ...adornmentsFromProps,
-    };
-  }, [adornmentsProp, statusContext]);
 
   // Computed node height: max of the handle-count floor and the intrinsic default/footer
   // height. Pure (never reads the measured `height`); written to node.height below as
@@ -308,25 +156,38 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     return Math.max(getIntrinsicHeight(!!footerComponent, footerVariant), handleFloor);
   }, [handleConfigurations, footerComponent, footerVariant]);
 
+  // Handle layout identity: `handleConfigurations` is re-resolved from `data` on every edit,
+  // so keying the effect on the array would re-measure the card per rename keystroke.
+  const handleLayoutKey = useMemo(
+    () =>
+      handleConfigurations
+        .map(
+          (config) =>
+            `${config.position}:${config.visible !== false}:${config.handles
+              .map((handle) => `${handle.id}/${handle.visible !== false}`)
+              .join(',')}`
+        )
+        .join('|'),
+    [handleConfigurations]
+  );
+
   // Write computedHeight to node.height and recalculate handle positions. Compare
   // against node.height (not the measured `height` prop) so a lagging measurement
   // can't retrigger the write.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: handleConfigurations triggers handle recalculation.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: keyed on the handle layout string, not the array identity.
   useEffect(() => {
     if (getNode(id)?.height !== computedHeight) {
       updateNode(id, { height: computedHeight });
     }
     updateNodeInternals(id);
-  }, [handleConfigurations, computedHeight, id, getNode, updateNode, updateNodeInternals]);
+  }, [handleLayoutKey, computedHeight, id, getNode, updateNode, updateNodeInternals]);
 
   const displayLabel = display.label;
   const displayShape = display.shape ?? 'square';
   const displayBackground = display.background;
   const displayColor = display.color;
   const displayShadow = display.shadow ?? true;
-  const displayIconBackground = isDarkMode
-    ? (display.iconBackgroundDark ?? display.iconBackground)
-    : display.iconBackground;
+  const displayIconBackground = presentation.iconBackground;
 
   // Display customization from props (not data)
   const displayLabelTooltip = labelTooltip;
@@ -400,14 +261,13 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     } as React.CSSProperties;
   }, [containerWidth, containerHeight, displayShape, hasFooter]);
 
-  const interactionState = useMemo(() => {
-    if (disabled) return 'disabled';
-    if (dragging) return 'drag';
-    if (selected) return 'selected';
-    if (isFocused) return 'focus';
-    if (isHovered) return 'hover';
-    return 'default';
-  }, [disabled, dragging, selected, isHovered, isFocused]);
+  const interactionState = resolveInteractionState({
+    disabled,
+    dragging,
+    selected,
+    focused: isFocused,
+    hovered: isHovered,
+  });
 
   const shouldShowHandles = useMemo(
     () => (isConnecting || selected || isHovered) && !dragging,
@@ -437,24 +297,6 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const handleMouseLeave = useCallback(() => setIsHovered(false), []);
   const handleFocus = useCallback(() => setIsFocused(true), []);
   const handleBlur = useCallback(() => setIsFocused(false), []);
-
-  const handleLabelChange = useCallback(
-    (values: { label: string; subLabel: string }) => {
-      const newDisplay = { ...data.display };
-      // Ensure all label fields are updated or removed appropriately.
-      for (const labelKey of Object.keys(values) as (keyof typeof values)[]) {
-        if (values[labelKey]) {
-          newDisplay[labelKey] = values[labelKey];
-        } else {
-          delete newDisplay[labelKey];
-        }
-      }
-      updateNodeData(id, {
-        display: newDisplay,
-      });
-    },
-    [id, data.display, updateNodeData]
-  );
 
   // Calculate if notches should be shown (when node is hovered or selected)
   // Use custom function if provided, otherwise use default logic
@@ -501,7 +343,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
       }
     }
     return { hasButton, hasLabel };
-  }, [toolbarPosition, handleConfigurations]);
+  }, [toolbarPosition, handleConfigurations, useSmartHandles]);
 
   // Offset the toolbar to clear whichever handle affordance is actually rendered
   // at its side — not merely configured. A shown add button stacks button + label
@@ -633,7 +475,6 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
 
   if (!manifest) {
     return (
-      // biome-ignore lint/a11y/noStaticElementInteractions: canvas node interaction
       <div
         ref={containerRef}
         className="relative"
@@ -654,7 +495,6 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   }
 
   const nodeContent = (
-    // biome-ignore lint/a11y/noStaticElementInteractions: canvas node interaction
     <div
       ref={containerRef}
       className="relative"
@@ -727,10 +567,10 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
           <div className="basis-full pt-0.5 min-w-0 overflow-hidden">{displayFooter}</div>
         )}
       </BaseContainer>
-      {effectiveToolbarConfig && (
+      {toolbarConfig && (
         <NodeToolbar
           nodeId={id}
-          config={effectiveToolbarConfig}
+          config={toolbarConfig}
           expanded={selected || isHovered}
           hidden={dragging || multipleNodesSelected}
           offsetToolbar={offsetToolbar}

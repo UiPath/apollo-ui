@@ -1,6 +1,7 @@
 export const PREVIEW_NODE_ID = 'preview-node-id';
 export const PREVIEW_EDGE_ID = 'preview-edge-id';
 export const DEFAULT_SOURCE_HANDLE_ID = 'output';
+export const DEFAULT_TARGET_HANDLE_ID = 'input';
 export const DEFAULT_NODE_SIZE = 96; // px
 
 export const GRID_SPACING = 16;
@@ -65,3 +66,30 @@ export const NODE_TEXT_BOTTOM_OFFSET_WITH_HANDLES = -40;
 export const NODE_BADGE_SIZE = 20;
 export const NODE_BADGE_INSET_SQUARE = 6;
 export const NODE_BADGE_INSET_CIRCLE = 12;
+
+/**
+ * Sequential canvas geometry (px). All values except the bar height sit on the 16px
+ * grid so bars never kink against snapped edges; bars are not draggable, so the height
+ * need not.
+ */
+export const SEQ_BAR_WIDTH = 896;
+export const SEQ_BAR_HEIGHT = 56;
+/** Leaves room for branch headers and insert affordances between adjacent bars. */
+export const SEQ_ROW_GAP = 64;
+/** `x = depth * SEQ_INDENT_PX`. */
+export const SEQ_INDENT_PX = 64;
+/** Connector elbow radius; `createRoundedPath` clamps it to half the shorter segment. */
+export const SEQ_EDGE_CORNER_RADIUS = 24;
+/**
+ * Offset of a bar's connector handles from its own left edge. Anchoring every bar at
+ * the same offset yields depth-aligned spines for free. Must stay below SEQ_INDENT_PX
+ * so adjacent depths' spines never cross.
+ */
+export const SEQ_HANDLE_LEFT_OFFSET = 28;
+
+/** Synthetic node types for the injected start bar and terminal placeholder; real steps keep their manifest type. */
+export const SEQ_START_NODE_TYPE = 'sequential-start';
+export const SEQ_PLACEHOLDER_NODE_TYPE = 'sequential-placeholder';
+
+/** Default start/trigger node type when the host supplies no `isStartNode`. */
+export const DEFAULT_TRIGGER_NODE_TYPE = 'uipath.first-run';
