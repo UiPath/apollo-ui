@@ -1,6 +1,6 @@
 /**
- * Generates the vertex-component-catalog agent skill from the component and
- * pattern docs pages.
+ * Generates the vertex-component-catalog agent skill from the component,
+ * pattern and surface docs pages.
  *
  *   node --experimental-strip-types scripts/generate-component-skill.ts [--check]
  *
@@ -32,6 +32,7 @@ const maxLines = 480;
 const sections = [
   { dir: "components", title: undefined },
   { dir: "patterns", title: "Patterns" },
+  { dir: "surfaces", title: "Surfaces" },
 ];
 const separatorRe = /^---(?:\[[^\]]+])?(?<name>.+)---$/;
 
@@ -156,11 +157,12 @@ function render(groups: Group[], exportsByDir: Map<string, string[]>) {
     "---",
     `name: ${skillName}`,
     "description: >",
-    "  Catalog of every documented @uipath/apollo-vertex component and pattern,",
-    "  grouped by need (actions, inputs, forms, overlays, menus, layout, data",
-    "  display, feedback, charts), with the names to import, when to use each one",
-    "  and which component to use instead. Load when choosing which Vertex",
-    "  component to build a screen, form, dialog, table or state from.",
+    "  Catalog of every documented @uipath/apollo-vertex component, pattern and",
+    "  surface, grouped by need (actions, inputs, forms, overlays, menus,",
+    "  layout, data display, feedback, charts), with the names to import, when",
+    "  to use each one and which component to use instead. Load when choosing",
+    "  which Vertex component to build a screen, form, dialog, table or state",
+    "  from.",
     "metadata:",
     "  type: core",
     "  library: '@uipath/apollo-vertex'",

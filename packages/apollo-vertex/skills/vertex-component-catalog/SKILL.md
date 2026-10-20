@@ -1,11 +1,12 @@
 ---
 name: vertex-component-catalog
 description: >
-  Catalog of every documented @uipath/apollo-vertex component and pattern,
-  grouped by need (actions, inputs, forms, overlays, menus, layout, data
-  display, feedback, charts), with the names to import, when to use each one
-  and which component to use instead. Load when choosing which Vertex
-  component to build a screen, form, dialog, table or state from.
+  Catalog of every documented @uipath/apollo-vertex component, pattern and
+  surface, grouped by need (actions, inputs, forms, overlays, menus,
+  layout, data display, feedback, charts), with the names to import, when
+  to use each one and which component to use instead. Load when choosing
+  which Vertex component to build a screen, form, dialog, table or state
+  from.
 metadata:
   type: core
   library: '@uipath/apollo-vertex'
@@ -14,6 +15,8 @@ sources:
   - 'UiPath/apollo-ui:apps/apollo-vertex/content/docs/components/meta.json'
   - 'UiPath/apollo-ui:apps/apollo-vertex/content/docs/patterns/*.mdx'
   - 'UiPath/apollo-ui:apps/apollo-vertex/content/docs/patterns/meta.json'
+  - 'UiPath/apollo-ui:apps/apollo-vertex/content/docs/surfaces/*.mdx'
+  - 'UiPath/apollo-ui:apps/apollo-vertex/content/docs/surfaces/meta.json'
   - 'UiPath/apollo-ui:packages/apollo-vertex/entries/index.ts'
 ---
 
@@ -202,12 +205,15 @@ Import every name below from `@uipath/apollo-vertex`. Follow the
 
 ## Utilities
 
-- **Feature Flags**: A generic feature flag system with a provider pattern, reactive hook, and guard components. Designed for Proteus SDK integration but supports any backend via adapters. Exports: `createProteusProvider`, `FeatureFlagContext`, `FeatureFlagGuard`, `FeatureFlagProvider`, `ProtectedFeatureRoute`, `useFeatureFlag`, `useFeatureFlagProvider`.
+- **Feature Flags**: A generic feature flag system with a provider pattern, reactive hook, and guard components. Designed for Proteus SDK integration but supports any backend via adapters. Exports: `FeatureFlagContext`, `FeatureFlagGuard`, `FeatureFlagProvider`, `ProtectedFeatureRoute`, `useFeatureFlag`, `useFeatureFlagProvider`.
 
 ## Patterns
 
-- **AI Chat**: Exports: `AiChat`, `AiChatEmptyState`, `AutopilotGradientIcon`, `CHOICES_TOOL_PROMPT`, `createAgentHubConnection`, `createConversationalAgentConnection`, `createDataFabricBarTool`, `createDataFabricDistributionTool`, `createDataFabricKpiTool`, `createDataFabricLineTool`, `createDataFabricMultiLineTool`, `createDataFabricTableTool`, `dataFabricBarClient`, `dataFabricDistributionClient`, `dataFabricKpiClient`, `dataFabricLineClient`, `dataFabricMultiLineClient`, `dataFabricTableClient`, `generateEntityFieldsDocs`, `NoDataMessage`, `presentChoicesClient`, `renderChoices`.
+- **AI Chat**: Exports: `AiChat`, `AiChatEmptyState`, `AiChatLoading`, `AiChatMarkdown`, `AiChatThinking`, `AutopilotGradientIcon`, `CHOICES_TOOL_PROMPT`, `createAgentHubConnection`, `createConversationalAgentConnection`, `createDataFabricBarTool`, `createDataFabricDistributionTool`, `createDataFabricKpiTool`, `createDataFabricLineTool`, `createDataFabricMultiLineTool`, `createDataFabricTableTool`, `dataFabricBarClient`, `dataFabricDistributionClient`, `dataFabricKpiClient`, `dataFabricLineClient`, `dataFabricMultiLineClient`, `dataFabricTableClient`, `generateEntityFieldsDocs`, `NoDataMessage`, `presentChoicesClient`, `renderChoices`.
 - **Feedback Vote Widget**: Exports: `FeedbackVoteWidget`.
 - **Metric Card**: Displays a labeled metric with a value, optional trend direction, and percentage change badge. Includes a skeleton loading state for consistent UX during data fetches. Exports: `MetricCard`, `MetricCardSkeleton`.
-- **Page Header**: A compound page header with back navigation, title, metadata fields, and collapsible action buttons that automatically overflow into a dropdown when space is tight. Exports: `PageHeader`, `PageHeaderActions`, `PageHeaderActionsOverflow`, `PageHeaderBackButton`, `PageHeaderCollapsibleActions`, `PageHeaderContent`, `PageHeaderDescription`, `PageHeaderField`, `PageHeaderFieldLabel`, `PageHeaderFieldValue`, `PageHeaderNav`, `PageHeaderTitle`, `PageHeaderTitleGroup`, `pageHeaderTitleVariants`, `pageHeaderVariants`.
 - **Shell**: A component with a collapsible sidebar, theme and language toggles, and optional OAuth2 authentication. Exports: `ApolloShell`, `AuthContext`, `GroupMembershipGuard`, `LocaleProvider`, `MembershipDenied`, `Role`, `ShellAuthProvider`, `ShellLayout`, `ShellLogin`, `ShellSidebar`, `ShellUserProvider`, `STALE_TIME_MS`, `ThemeProvider`, `useAccessToken`, `useAuth`, `useGroupId`, `useGroupMembers`, `useIsGroupMember`, `useTheme`, `useUser`, `VerifyingMembership`.
+
+## Surfaces
+
+- **Page Header**: A compound page header with back navigation, title, metadata fields, and collapsible action buttons that automatically overflow into a dropdown when space is tight. Exports: `PageHeader`, `PageHeaderActions`, `PageHeaderActionsOverflow`, `PageHeaderBackButton`, `PageHeaderCollapsibleActions`, `PageHeaderContent`, `PageHeaderDescription`, `PageHeaderField`, `PageHeaderFieldLabel`, `PageHeaderFieldValue`, `PageHeaderNav`, `PageHeaderTitle`, `PageHeaderTitleGroup`, `pageHeaderTitleVariants`, `pageHeaderVariants`.
