@@ -996,6 +996,31 @@ describe('ResourcePicker', () => {
     expect(screen.queryByRole('option', { name: 'Aavi' })).not.toBeInTheDocument();
   });
 
+  it('wraps Tab from the last footer action back to the search, keeping the picker open', async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    render(
+      <ResourcePicker
+        groups={GROUPS}
+        onSelect={vi.fn()}
+        onOpenChange={onOpenChange}
+        placeholder="Select entity..."
+        footerTrailing={<button type="button">Open entities</button>}
+      />
+    );
+
+    await user.click(screen.getByRole('button', { name: /Select entity/ }));
+    const search = await screen.findByRole('combobox');
+    screen.getByRole('button', { name: 'Open entities' }).focus();
+    await user.tab();
+
+    // The popover's focus scope hears the Tab and loops it, as it would from
+    // any other control inside.
+    expect(search).toHaveFocus();
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(onOpenChange).not.toHaveBeenCalledWith(false);
+  });
+
   it('puts focus in the search when it opens', async () => {
     const user = userEvent.setup();
     render(<ResourcePicker groups={GROUPS} onSelect={vi.fn()} placeholder="Select entity..." />);
