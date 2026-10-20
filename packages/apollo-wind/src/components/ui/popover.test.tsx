@@ -1,7 +1,7 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { Popover, PopoverContent, PopoverTrigger } from './popover';
 
 describe('Popover', () => {
@@ -214,6 +214,89 @@ describe('Popover', () => {
     await waitFor(() => {
       expect(screen.queryByText('Popover content goes here')).not.toBeInTheDocument();
     });
+  });
+
+  describe('inside a shadow root', () => {
+    // A host such as Agents renders wind into a shadow root, and the popup portals there too.
+    const renderInShadowRoot = () => {
+      const host = document.createElement('div');
+      document.body.appendChild(host);
+      const mount = document.createElement('div');
+      host.attachShadow({ mode: 'open' }).appendChild(mount);
+      render(
+        <div>
+          <div data-testid="outside">Outside</div>
+          <Popover>
+            <PopoverTrigger>Open Popover</PopoverTrigger>
+            <PopoverContent container={mount}>Popover content goes here</PopoverContent>
+          </Popover>
+        </div>,
+        { container: mount }
+      );
+      return { host, view: within(mount) };
+    };
+
+    it('closes when its trigger is clicked again', async () => {
+      const user = userEvent.setup();
+      const { host, view } = renderInShadowRoot();
+
+      const trigger = view.getByRole('button', { name: 'Open Popover' });
+      await user.click(trigger);
+      await waitFor(() => {
+        expect(view.getByText('Popover content goes here')).toBeInTheDocument();
+      });
+
+      await user.click(trigger);
+      await waitFor(() => {
+        expect(view.queryByText('Popover content goes here')).not.toBeInTheDocument();
+      });
+      expect(trigger).toHaveAttribute('aria-expanded', 'false');
+      host.remove();
+    });
+
+    it('still closes on a click elsewhere in the shadow root', async () => {
+      const user = userEvent.setup();
+      const { host, view } = renderInShadowRoot();
+
+      await user.click(view.getByRole('button', { name: 'Open Popover' }));
+      await waitFor(() => {
+        expect(view.getByText('Popover content goes here')).toBeInTheDocument();
+      });
+
+      await user.click(view.getByTestId('outside'));
+      await waitFor(() => {
+        expect(view.queryByText('Popover content goes here')).not.toBeInTheDocument();
+      });
+      host.remove();
+    });
+  });
+
+  it("leaves Radix's own trigger handling alone outside a shadow root", async () => {
+    // Radix recognizes the trigger there by itself, and closing from it leaves focus where the
+    // press put it. Taking that press over would also make Radix move focus to the trigger.
+    const user = userEvent.setup();
+    render(<PopoverExample />);
+
+    const trigger = screen.getByRole('button', { name: 'Open Popover' });
+    await user.click(trigger);
+    await waitFor(() => {
+      expect(screen.getByText('Popover content goes here')).toBeInTheDocument();
+    });
+    // Radix attaches its outside-press listener a tick after the popup mounts.
+    await act(() => new Promise((resolve) => setTimeout(resolve, 0)));
+    const focus = vi.spyOn(trigger, 'focus');
+
+    // Plain events rather than userEvent, which focuses the trigger itself on press.
+    fireEvent.pointerDown(trigger);
+    fireEvent.mouseDown(trigger);
+    fireEvent.pointerUp(trigger);
+    fireEvent.mouseUp(trigger);
+    fireEvent.click(trigger);
+
+    await waitFor(() => {
+      expect(screen.queryByText('Popover content goes here')).not.toBeInTheDocument();
+    });
+    expect(focus).not.toHaveBeenCalled();
   });
 
   it('supports asChild on trigger', async () => {
