@@ -76,7 +76,16 @@ describe('Wind chat history', () => {
     expect(names()).toEqual(['Vendor list']);
 
     await userEvent.type(within(dialog).getByRole('searchbox'), 'x');
-    expect(within(dialog).getByText('No results found.')).toBeInTheDocument();
+    expect(
+      within(dialog).getByText('No results found.').closest('[data-slot="empty-state"]')
+    ).toHaveAttribute('data-size', 'compact');
+    expect(within(dialog).queryByRole('heading')).toBeNull();
+
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Clear search' }));
+    expect(names()).toEqual(['Invoice batch', 'Vendor list', 'Old payroll']);
+    expect(within(dialog).getByRole('searchbox')).toHaveValue('');
+    expect(within(dialog).getByRole('searchbox')).toHaveFocus();
+    expect(within(dialog).queryByRole('button', { name: 'Clear search' })).toBeNull();
   });
 
   it('shows the empty state without a search when there is no history', async () => {
@@ -85,7 +94,8 @@ describe('Wind chat history', () => {
 
     await userEvent.click(historyButton());
 
-    expect(await screen.findByText('There are no conversations yet.')).toBeInTheDocument();
+    const empty = await screen.findByText('There are no conversations yet.');
+    expect(empty.closest('[data-slot="empty-state"]')).toHaveAttribute('data-size', 'compact');
     expect(screen.queryByRole('searchbox')).toBeNull();
   });
 

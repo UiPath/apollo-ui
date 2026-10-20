@@ -303,6 +303,54 @@ describe('Wind composer attachment intake', () => {
     await waitFor(() => expect(chips()).toEqual(['notes.txt']));
   });
 
+  it('leaves a paste without files alone', async () => {
+    setup();
+
+    expect(
+      fireEvent.paste(panel(), {
+        clipboardData: { types: ['text/plain'], files: [], items: [], getData: () => 'hi' },
+      })
+    ).toBe(true);
+    await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('takes the files of a mixed paste that pass, names the rest, and keeps the text out', async () => {
+    setup({
+      allowedAttachments: { multiple: true, types: { 'text/plain': ['.txt'] }, maxSize: 1024 },
+    });
+
+    expect(
+      pasteFiles(
+        'some text',
+        file('notes.txt', 'text/plain'),
+        file('tool.exe', 'application/x-msdownload')
+      )
+    ).toBe(false);
+
+    await waitFor(() => expect(chips()).toEqual(['notes.txt']));
+    expect(screen.getByRole('alert')).toHaveTextContent('tool.exe');
+  });
+
+  it('keeps a refused paste with no text out of the field', async () => {
+    setup({
+      allowedAttachments: { multiple: true, types: { 'text/plain': ['.txt'] }, maxSize: 1024 },
+    });
+
+    expect(
+      fireEvent.paste(panel(), {
+        clipboardData: {
+          types: ['Files'],
+          files: [file('shot.png', 'image/png')],
+          items: [],
+          getData: () => '',
+        },
+      })
+    ).toBe(false);
+    expect(await screen.findByRole('alert')).toHaveTextContent('shot.png');
+    expect(chips()).toEqual([]);
+  });
+
   it('counts files from every source against maxCount', async () => {
     setup({
       allowedAttachments: {
@@ -401,6 +449,43 @@ describe('composer parity', () => {
       getAsString: () => undefined,
     })),
   });
+
+  async function overlayLines(renderer: AutopilotChatRenderer) {
+    const service = createService(
+      {
+        allowedAttachments: {
+          multiple: true,
+          types: { 'text/plain': ['.txt'], 'application/pdf': ['.pdf'] },
+          maxSize: 2 * 1024 * 1024,
+          maxCount: 4,
+        },
+      },
+      renderer
+    );
+    const { unmount } = render(<ApChat chatServiceInstance={service} />);
+    await screen.findByRole('button', { name: /Attach file/ }, { timeout: 25_000 });
+    fireEvent.dragEnter(dropTarget(renderer), {
+      dataTransfer: transfer(file('a.txt', 'text/plain')),
+    });
+    const hint = await screen.findByText('Drop your files here to add them to your prompt');
+    const lines = [...(hint.parentElement as HTMLElement).children].map((line) => line.textContent);
+    unmount();
+    return lines.filter((line) => line !== '');
+  }
+
+  it('lists the same limits on the drop overlay in Wind and Material', async () => {
+    const material = await overlayLines('material');
+    const wind = await overlayLines('wind');
+
+    expect(material).toEqual([
+      'Drop your files here to add them to your prompt',
+      'Maximum files allowed: 4',
+      'Maximum file size: 2MB',
+      'Allowed file types: .txt, .pdf',
+    ]);
+    // Wind's overlay orders the lines types, size, count.
+    expect([...wind].sort()).toEqual([...material].sort());
+  }, 40_000);
 
   async function dropTwice(renderer: AutopilotChatRenderer) {
     const service = createService({}, renderer);

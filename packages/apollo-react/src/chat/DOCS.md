@@ -137,13 +137,12 @@ Wind matches Material's behaviour and the service contract. These are the intend
 
 - `SideBySide` mode (Wind shows a placeholder) and the expand/collapse header action.
 - The model picker, agent mode selector, `@` resource picker and audio input. Resource tokens in messages do render.
-- Fenced `math` code blocks.
 
 **Layout and surfaces**
 
 - History is a popover under the header's history button in both modes, sized as Material's but kept inside the panel. It is not modal, so a host dialog opened from a rename or delete pre-hook stays usable; Material's is modal.
 - Settings slide in from the right as Material's do, styled as the history popover. In Embedded they cover the area below the header rather than the whole panel, so the header stays usable; the conversation under them is inert. They also close on Escape anywhere in the chat, through the `ToggleSettings` pre-hook.
-- Modal dialogs (code block expand, HTML preview) cover the page at z-index 1300, in `portalContainer` or `document.body`.
+- The code block expand dialog covers the page at z-index 1300, in `portalContainer` or `document.body`.
 - In compact mode turns are 32px apart (Material: 21px), since Wind's message actions sit in flow under the message.
 
 **Messages**
@@ -151,6 +150,8 @@ Wind matches Material's behaviour and the service contract. These are the intend
 - Feedback can be switched after it is given (not cleared); each change publishes `Feedback` with the new value. The buttons report `aria-pressed`.
 - Copy writes the group's text twice (the action bar's own write and the shared Copy handler), with identical content.
 - Sources list all of a group's citations once expanded; Material shows two and a "Show more" button.
+- The drop overlay lists the limits as allowed types, size, then count; Material lists count, size, then types.
+- An HTML block shows its source until the reader clicks Preview; Material renders the preview by itself once the block is complete. The preview frame runs the snippet's scripts, so model output does not execute without a user action.
 - The HTML preview document gets a CSP (`default-src 'none'`, inline styles and scripts, data and https images and fonts) as well as `no-referrer`; Material's gets `no-referrer` only.
 - The cited-range highlight is not applied while a message streams.
 - Suggestions set with `setSuggestions` belong to the user turn they were set in and are left behind by the next user message; Material keeps showing them while the conversation is non-empty.
@@ -165,6 +166,7 @@ Wind matches Material's behaviour and the service contract. These are the intend
 **History**
 
 - Each item is a native button with sibling rename and delete buttons; the open conversation has `aria-current`.
+- The search field has a clear button; Material's has none.
 
 ### Icons
 

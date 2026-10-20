@@ -34,7 +34,7 @@ import {
   AutopilotChatInternalEvent,
   type AutopilotChatPrompt,
 } from '../../service';
-import { AttachmentTypeIcon, titleTruncatedChip } from '../messages/message-attachments';
+import { AttachmentTypeIcon } from '../messages/message-attachments';
 import { useMarkdownStrings } from '../renderers/markdown-renderer';
 import { useComposerStrings } from './composer-strings';
 
@@ -133,7 +133,6 @@ export function WindChatComposer() {
       status={isResponseInFlight ? 'streaming' : 'idle'}
       onStop={canStopResponse ? stop : undefined}
       submitDisabled={skeletonLoader}
-      density={spacing.compactMode ? 'compact' : 'comfortable'}
       attachments={items}
       onRemoveAttachment={(item) => {
         const index = items.findIndex(({ id }) => id === item.id);
@@ -155,12 +154,7 @@ export function WindChatComposer() {
         </ChatComposerError>
       )}
       <ChatComposerInputGroup>
-        <ChatComposerAttachments
-          // The message chips' size and 8px gap; the primitive renders the chips, so through its
-          // slots.
-          className="gap-2 [&_[data-slot=attachment-media]]:w-5! [&_[data-slot=attachment-media]]:rounded-sm [&_[data-slot=attachment-media]]:bg-transparent [&_[data-slot=attachment]]:min-w-0 [&_[data-slot=attachment]]:max-w-[calc(50%-4px)] [&_[data-slot=attachment]]:gap-1.5 [&_[data-slot=attachment]]:rounded-lg [&_[data-slot=attachment]]:p-1! [&_[data-slot=attachment-action]]:size-5"
-          onPointerOver={titleTruncatedChip}
-        />
+        <ChatComposerAttachments className="gap-2 [&_[data-slot=attachment-action]]:size-5 [&_[data-slot=attachment-media]]:rounded-sm [&_[data-slot=attachment-media]]:bg-transparent [&_[data-slot=attachment]]:min-w-0 [&_[data-slot=attachment]]:max-w-[calc(50%-4px)] [&_[data-slot=attachment]]:gap-1.5 [&_[data-slot=attachment]]:rounded-lg [&_[data-slot=attachment][data-size=sm]]:p-1 [&_[data-slot=attachment][data-size=sm]_[data-slot=attachment-media]]:w-5" />
         <ChatComposerTextarea
           ref={textarea}
           minRows={spacing.promptBox.minRows}

@@ -1,6 +1,11 @@
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
-import { Markdown, type MarkdownCodeBlock, type MarkdownProps } from '@uipath/apollo-wind';
+import {
+  type CodeBlockProps,
+  Markdown,
+  type MarkdownCodeBlock,
+  type MarkdownProps,
+} from '@uipath/apollo-wind';
 import React from 'react';
 
 import { useIsStreamingMessage } from '../../headless/hooks/use-is-streaming-message';
@@ -9,8 +14,8 @@ import { citationPlugin } from '../../headless/markdown/citation-parser';
 import { resourceTokenPlugin } from '../../headless/markdown/resource-token-parser';
 import { useChatState } from '../../headless/providers/chat-state-provider';
 import type { AutopilotChatMessage } from '../../service';
+import { ChatCodeBlock } from './chat-code-block';
 import { CitationHighlightsContext, useCitationHighlights } from './citation-highlights';
-import { CodeBlockActions } from './code-block-actions';
 import { MarkdownCitation } from './markdown-citation';
 import { MarkdownResourceChip } from './markdown-resource-chip';
 
@@ -55,9 +60,15 @@ function MarkdownMessageRendererComponent({ message }: { message: AutopilotChatM
   const htmlPreview = !disabledFeatures.htmlPreview;
   const highlights = useCitationHighlights(content, streaming);
 
-  const renderCodeActions = React.useCallback(
-    (block: MarkdownCodeBlock) => (
-      <CodeBlockActions block={block} htmlPreview={htmlPreview} streaming={streaming} />
+  // An element per block, so each keeps its own code or preview view across chunks.
+  const renderCodeBlock = React.useCallback(
+    (block: MarkdownCodeBlock, props: CodeBlockProps) => (
+      <ChatCodeBlock
+        block={block}
+        codeBlockProps={props}
+        htmlPreview={htmlPreview}
+        streaming={streaming}
+      />
     ),
     [htmlPreview, streaming]
   );
@@ -69,7 +80,7 @@ function MarkdownMessageRendererComponent({ message }: { message: AutopilotChatM
         codeWrap
         remarkPlugins={REMARK_PLUGINS}
         components={COMPONENTS}
-        renderCodeActions={renderCodeActions}
+        renderCodeBlock={renderCodeBlock}
         strings={strings}
       >
         {content}

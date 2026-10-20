@@ -127,7 +127,7 @@ describe('Wind tool call renderer', () => {
     expect(input).toHaveTextContent('Bucharest');
   });
 
-  it('lists the trace for FullTrace only, without model calls', async () => {
+  it('lists the trace for FullTrace only, without model calls, and keeps its open rows', async () => {
     const service = setup();
     act(() =>
       service.sendResponse(
@@ -148,10 +148,19 @@ describe('Wind tool call renderer', () => {
 
     const full = messageElement('ft');
     await userEvent.click(within(full).getByRole('button', { name: /Web Search/ }));
-    await userEvent.click(within(full).getByRole('button', { name: 'Traces' }));
-    const agent = within(full).getByRole('button', { name: /Agent run/ });
+    const traces = within(full).getByRole('button', { name: 'Traces' });
+    await userEvent.click(traces);
+    const agent = within(within(full).getByRole('tree', { name: 'Traces' })).getByRole('treeitem', {
+      name: /Agent run/,
+    });
     expect(full).not.toHaveTextContent('Model call');
-    await userEvent.click(agent);
+    await userEvent.click(agent.querySelector('[data-slot="disclosure-tree-row"]') as HTMLElement);
+    expect(full).toHaveTextContent('Inner tool');
+
+    // Closing the section unmounts the tree; its open rows come back with it.
+    await userEvent.click(traces);
+    expect(full).not.toHaveTextContent('Inner tool');
+    await userEvent.click(traces);
     expect(full).toHaveTextContent('Inner tool');
 
     const io = messageElement('io');
