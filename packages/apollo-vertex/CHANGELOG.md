@@ -1,3 +1,9 @@
+## [@uipath/apollo-vertex-v2.1.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-vertex@2.0.0...@uipath/apollo-vertex@2.1.0) (2026-10-20)
+
+### Features
+
+* **apollo-vertex:** generate a component catalog agent skill from the docs ([99cecac](https://github.com/UiPath/apollo-ui/commit/99cecac00c6dfcbe9a08095550abacbbb2eb1e7d))
+
 ## [@uipath/apollo-vertex-v1.4.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-vertex@1.3.0...@uipath/apollo-vertex@1.4.0) (2026-10-19)
 
 ### Features
