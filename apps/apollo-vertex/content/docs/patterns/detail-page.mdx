@@ -1,0 +1,110 @@
+---
+title: "Detail page"
+description: "A page for one record: a header, the record in the middle, and up to two sidebars."
+whenToUse:
+  - "a page shows one record, with a header, the record's content, and optional sidebars for a queue, document, or activity."
+avoidWhen:
+  - when: "the page lists many records."
+example: |
+  import { DetailPage, PageHeader, useDetailPage } from "@uipath/apollo-vertex";
+
+  const state = useDetailPage({
+    panels: "both",
+    start: { placement: "beside-header", defaultOpen: true },
+    end: { placement: "below-header", defaultOpen: true },
+  });
+
+  <DetailPage
+    state={state}
+    header={<PageHeader bordered>{/* title and actions */}</PageHeader>}
+    startSidebar={<aside aria-label="Queue">{/* queue */}</aside>}
+    content={<article>{/* the record */}</article>}
+    endSidebar={<aside aria-label="Activity">{/* activity */}</aside>}
+  />
+---
+
+import { DetailPagePreview } from '../../../templates/detail-page/DetailPagePreview';
+import { PreviewFullScreen } from '../../../app/_components/preview-full-screen';
+
+A page for one record. `DetailPage` lays out the header, the content, and up
+to two sidebars. Pass those regions as props. `useDetailPage` holds which
+sidebars exist, where they sit, and whether they start open.
+
+It is the partner to the [list page](/templates/list-page) and renders inside
+an [`ApolloShell`](/patterns/shell).
+
+<PreviewFullScreen title="Detail page preview">
+  <DetailPagePreview />
+</PreviewFullScreen>
+
+The preview uses both sidebars. On a narrow preview the main-width rule
+closes the start sidebar so the content keeps its width. Expand the preview
+to see both, or use the header buttons to open and close them.
+
+## Slots
+
+| Slot | Prop | `data-slot` | Required |
+| --- | --- | --- | --- |
+| Header | `header` | `detail-page-header` | Yes |
+| Start sidebar | `startSidebar` | `detail-page-start-panel` | No |
+| Content | `content` | `detail-page-main` | Yes |
+| End sidebar | `endSidebar` | `detail-page-end-panel` | No |
+
+## Configuration
+
+`useDetailPage` takes the only settings. There are no defaults, so every
+page states them.
+
+| Setting | Values |
+| --- | --- |
+| `panels` | `none`, `start`, `end`, `both` |
+| `start.placement`, `end.placement` | `below-header`, `beside-header` |
+| `start.defaultOpen`, `end.defaultOpen` | `true`, `false` |
+
+- **Below header.** The header spans the page. The sidebar sits under it.
+- **Beside header.** The sidebar runs the full height of the page, and the
+  header moves over.
+- **defaultOpen** is where a sidebar starts. After that, call
+  `state.setPanelOpen(side, open)`.
+
+Use below-header for content about this record (the source document,
+activity, line items). Use beside-header for content that stays put when
+the user opens the next record (a queue, secondary navigation).
+
+## Width
+
+| Region | Default | Minimum | Resizable |
+| --- | --- | --- | --- |
+| Header | Spans the page | Same floor as the content | No |
+| Start sidebar | 320px | 320px | No |
+| End sidebar | 360px | 280px, and never wider than the content | Yes |
+| Content | Fills the rest | 480px | No |
+
+Drag the divider on the end sidebar, or focus it and use the arrow keys.
+Double-click resets it to 360px. Dragging to the maximum stores "max", which
+keeps a 50/50 split as the window changes size.
+
+When the open sidebars would push the content below 480px, sidebars close,
+oldest first, until the content fits. The sidebar the user opened last stays
+open. Sidebars the rule closed reopen when there is room. Sidebars the user
+closed stay closed.
+
+```tsx
+import { DetailPage, PageHeader, useDetailPage } from "@uipath/apollo-vertex";
+
+const state = useDetailPage({
+  panels: "both",
+  start: { placement: "beside-header", defaultOpen: true },
+  end: { placement: "below-header", defaultOpen: true },
+});
+
+return (
+  <DetailPage
+    state={state}
+    header={<PageHeader bordered>{/* title, back, actions */}</PageHeader>}
+    startSidebar={<aside aria-label="Queue">{/* queue */}</aside>}
+    content={<article>{/* the record */}</article>}
+    endSidebar={<aside aria-label="Activity">{/* activity */}</aside>}
+  />
+);
+```

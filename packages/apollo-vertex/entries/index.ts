@@ -29,6 +29,8 @@ export * from "@/registry/combobox/combobox";
 export * from "@/registry/command/command";
 export * from "@/registry/context-menu/context-menu";
 export * from "@/registry/date-picker/date-picker";
+export * from "@/registry/detail-page/detail-page";
+export * from "@/registry/detail-page/use-detail-page";
 export * from "@/registry/dialog/dialog";
 export * from "@/registry/drawer/drawer";
 export * from "@/registry/dropdown-menu/dropdown-menu";

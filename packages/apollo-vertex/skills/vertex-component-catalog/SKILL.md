@@ -212,6 +212,28 @@ Import every name below from `@uipath/apollo-vertex`. Follow the
 - **AI Chat**: Exports: `AiChat`, `AiChatEmptyState`, `AiChatLoading`, `AiChatMarkdown`, `AiChatThinking`, `AutopilotGradientIcon`, `CHOICES_TOOL_PROMPT`, `createAgentHubConnection`, `createConversationalAgentConnection`, `createDataFabricBarTool`, `createDataFabricDistributionTool`, `createDataFabricKpiTool`, `createDataFabricLineTool`, `createDataFabricMultiLineTool`, `createDataFabricTableTool`, `dataFabricBarClient`, `dataFabricDistributionClient`, `dataFabricKpiClient`, `dataFabricLineClient`, `dataFabricMultiLineClient`, `dataFabricTableClient`, `generateEntityFieldsDocs`, `NoDataMessage`, `presentChoicesClient`, `renderChoices`.
 - **Feedback Vote Widget**: Exports: `FeedbackVoteWidget`.
 - **Metric Card**: Displays a labeled metric with a value, optional trend direction, and percentage change badge. Includes a skeleton loading state for consistent UX during data fetches. Exports: `MetricCard`, `MetricCardSkeleton`.
+- **Detail page**: A page for one record: a header, the record in the middle, and up to two sidebars. Exports: `DetailPage`, `useDetailPage`.
+  - Use when a page shows one record, with a header, the record's content, and optional sidebars for a queue, document, or activity.
+  - Avoid when the page lists many records.
+
+    ```tsx
+    import { DetailPage, PageHeader, useDetailPage } from "@uipath/apollo-vertex";
+
+    const state = useDetailPage({
+      panels: "both",
+      start: { placement: "beside-header", defaultOpen: true },
+      end: { placement: "below-header", defaultOpen: true },
+    });
+
+    <DetailPage
+      state={state}
+      header={<PageHeader bordered>{/* title and actions */}</PageHeader>}
+      startSidebar={<aside aria-label="Queue">{/* queue */}</aside>}
+      content={<article>{/* the record */}</article>}
+      endSidebar={<aside aria-label="Activity">{/* activity */}</aside>}
+    />
+    ```
+
 - **Shell**: A component with a collapsible sidebar, theme and language toggles, and optional OAuth2 authentication. Exports: `ApolloShell`, `AuthContext`, `GroupMembershipGuard`, `LocaleProvider`, `MembershipDenied`, `Role`, `ShellAuthProvider`, `ShellLayout`, `ShellLogin`, `ShellSidebar`, `ShellUserProvider`, `STALE_TIME_MS`, `ThemeProvider`, `useAccessToken`, `useAuth`, `useGroupId`, `useGroupMembers`, `useIsGroupMember`, `useTheme`, `useUser`, `VerifyingMembership`.
 
 ## Surfaces

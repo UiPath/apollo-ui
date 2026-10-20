@@ -1961,6 +1961,32 @@
       ]
     },
     {
+      "name": "detail-page",
+      "type": "registry:ui",
+      "title": "Detail Page",
+      "description": "A page frame with a header, optional start and end sidebars, and a content region.",
+      "dependencies": ["react-i18next"],
+      "files": [
+        {
+          "path": "registry/detail-page/detail-page.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/detail-page/detail-page-resize-handle.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/detail-page/detail-page-rules.ts",
+          "type": "registry:ui"
+        },
+        {
+          "path": "registry/detail-page/use-detail-page.ts",
+          "type": "registry:ui"
+        },
+        { "path": "lib/vertex-translation.ts", "type": "registry:lib" }
+      ]
+    },
+    {
       "name": "dialog",
       "type": "registry:ui",
       "title": "Dialog",

@@ -52,6 +52,7 @@
       "@/components/ui/command": ["./registry/command/command"],
       "@/components/ui/context-menu": ["./registry/context-menu/context-menu"],
       "@/components/ui/data-table": ["./registry/data-table/index"],
+      "@/components/ui/detail-page": ["./registry/detail-page/detail-page"],
       "@/components/ui/dialog": ["./registry/dialog/dialog"],
       "@/components/ui/drawer": ["./registry/drawer/drawer"],
       "@/components/ui/dropdown-menu": [
