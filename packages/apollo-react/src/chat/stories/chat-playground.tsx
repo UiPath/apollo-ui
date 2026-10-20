@@ -19,6 +19,7 @@ import {
   type AutopilotChatRenameConversationPayload,
   type AutopilotChatRenderer,
   AutopilotChatService,
+  CHAT_CONTAINER_ANIMATION_DURATION,
 } from '../service';
 import { confirmWithHostDialog } from './chat-story-confirm';
 import {
@@ -249,6 +250,7 @@ function createSlotService(
 
   if (seedFrom) {
     service.setConversation(seedFrom.getConversation().map((message) => ({ ...message })));
+    service.setSuggestions(seedFrom.getSuggestions(), seedFrom.__suggestions__.sendOnClick);
   }
 
   return service;
@@ -303,6 +305,16 @@ function ChatSlot({
   const [closed, setClosed] = React.useState(
     () => service.getConfig().mode === AutopilotChatMode.Closed
   );
+  // The host panel stays up while the chat's exit animation plays inside it.
+  const [hostHidden, setHostHidden] = React.useState(closed);
+  React.useEffect(() => {
+    if (!closed) {
+      setHostHidden(false);
+      return;
+    }
+    const timer = setTimeout(() => setHostHidden(true), CHAT_CONTAINER_ANIMATION_DURATION);
+    return () => clearTimeout(timer);
+  }, [closed]);
   const argsRef = React.useRef(args);
   argsRef.current = args;
   const labelRef = React.useRef(label);
@@ -539,7 +551,7 @@ function ChatSlot({
       <div
         ref={adoptHost}
         style={fullScreen ? undefined : embeddedPanelStyle(slot)}
-        className={fullScreen || closed ? 'hidden' : undefined}
+        className={fullScreen || hostHidden ? 'hidden' : undefined}
       />
       {closed && (
         // Host-side reopen, as an application's launcher would; reopens in the selected mode.

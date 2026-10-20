@@ -5,8 +5,9 @@ import {
   type AutopilotChatMessage,
   type AutopilotChatSuggestion,
 } from '../../service';
+import { countUserTurns } from '../../service/suggestions-state';
 import { useChatService } from '../providers/chat-service.provider';
-import { countUserTurns, useChatState } from '../providers/chat-state-provider';
+import { useChatState } from '../providers/chat-state-provider';
 
 /**
  * Picking a suggestion, as both renderers do: with `sendOnClick` its prompt is sent through the

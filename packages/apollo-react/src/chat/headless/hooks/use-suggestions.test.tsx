@@ -113,7 +113,49 @@ describe('conversation suggestions', () => {
     expect(conversation?.sendOnClick).toBe(false);
   });
 
-  it('are cleared by the service on a request, and by the provider on a new chat', () => {
+  it('show ones set before the chat mounted, anchored to their turn', async () => {
+    const service = AutopilotChatService.Instantiate({
+      instanceName: `suggestions-${++instanceCounter}`,
+    });
+    await act(async () => service.sendRequest({ content: 'q1' }));
+    service.sendResponse(reply('r1'));
+    service.setSuggestions([suggestion], true);
+    shown = service.getConversation();
+
+    render(
+      <AutopilotChatServiceProvider chatServiceInstance={service}>
+        <AutopilotChatStateProvider>
+          <Probe />
+        </AutopilotChatStateProvider>
+      </AutopilotChatServiceProvider>
+    );
+
+    expect(conversation).toMatchObject({
+      suggestions: [suggestion],
+      sendOnClick: true,
+      attached: true,
+    });
+  });
+
+  it('stay attached when older messages are prepended', () => {
+    const { service, rerender } = setup();
+    act(() =>
+      service.setConversation([{ ...reply('u1'), role: 'user' } as never, reply('r1') as never])
+    );
+    act(() => service.setSuggestions([suggestion]));
+    act(() =>
+      service.prependOlderMessages([
+        { ...reply('u0'), role: 'user' } as never,
+        reply('r0') as never,
+      ])
+    );
+    shown = service.getConversation();
+    rerender();
+
+    expect(conversation?.attached).toBe(true);
+  });
+
+  it('are cleared by the service on a request, on a new chat and when another conversation opens', () => {
     const { service } = setup();
     act(() => service.setSuggestions([suggestion]));
     act(() => service.sendRequest({ content: 'next' }));
@@ -122,6 +164,10 @@ describe('conversation suggestions', () => {
     act(() => service.setSuggestions([suggestion]));
     act(() => service.newChat());
     act(() => service.setConversation([reply('restored') as never]));
+    expect(conversation?.suggestions).toEqual([]);
+
+    act(() => service.setSuggestions([suggestion]));
+    act(() => service.openConversation('c2'));
     expect(conversation?.suggestions).toEqual([]);
   });
 });

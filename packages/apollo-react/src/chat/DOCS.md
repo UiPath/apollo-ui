@@ -251,6 +251,7 @@ See [Usage Examples](#usage-examples) for complete setup details.
 | `setShowLoading(showLoading: boolean)`                                          | Shows or hides the loading indicator in the chat service (see [Loading and Waiting States](#loading-and-waiting-states)). When used, this method overrides the default automatic loading behavior from apollo (except for request), giving you manual control over when the loading state is displayed.                                       |
 | `setWaiting(waiting: boolean)`                                                  | Sets the waiting state for the input prompt box (see [Loading and Waiting States](#loading-and-waiting-states)). When set to true, users can still type in the input field but cannot send messages. This overrides the default automatic waiting behavior (except for request), giving you manual control over when users can send messages. |
 | `setSuggestions(suggestions: AutopilotChatSuggestion[], sendOnClick?: boolean)` | Sets suggestions that appear in the chat interface. When `sendOnClick` is true, clicking a suggestion sends it immediately (defaults to the first run experience setting); otherwise it sets the prompt (see [AutopilotChatSuggestion](#autopilotchatsuggestion))                                                                             |
+| `getSuggestions()`                                                              | Returns a copy of the suggestions set with `setSuggestions`, or an empty list once they were cleared (see [Dynamic Suggestions](#dynamic-suggestions))                                                                                                                                                                                       |
 | `getMessagesInGroup(groupId: string)`                                           | Returns all messages that belong to the specified group ID                                                                                                                                                                                                                                                                                    |
 | `setAttachmentsLoading(attachments: AutopilotChatFileInfo[])`                   | Sets the loading state for attachments. Use this to show loading indicators while attachments are being processed asynchronously (see [Asynchronous Attachment Processing](#asynchronous-attachment-processing))                                                                                                                              |
 
@@ -1473,6 +1474,8 @@ function EmbeddedChat() {
 }
 ```
 
+Only the rendered chat goes into `embeddedContainer`; its state stays with `ApChat`. Switching between Embedded and another mode, or closing and reopening the chat, keeps the draft and its attachments, the error, and the suggestions. While closed from Embedded the chat stays in the container, so keep the container element in the document until the chat reopens. If the host removes it while the chat is closed, the chat is detached with it: reopening in another mode still works, and reopening in Embedded needs the container back in the document (or a new one set as `embeddedContainer`). The `<ap-chat>` web component works differently: it moves the whole element into `embeddedContainer` and back out (when the mode changes or the chat closes), which recreates the chat, so only what the service keeps, such as the conversation and the suggestions, carries over.
+
 #### Dynamically Changing Locale and Theme
 
 You can change the locale and theme at runtime using service methods:
@@ -2349,9 +2352,15 @@ chatService.setFirstRunExperience({
 ## Dynamic Suggestions
 
 The chat service allows you to set suggestions dynamically that appear in the chat interface.
-Suggestions are automatically cleared once a request is sent in the chat.
-The service does not store suggestions: a chat mounted after `setSuggestions` does not show them, so set them again once it is rendered.
-Apart from sending a request, only starting a new chat (`newChat`) clears them; replacing the conversation with `setConversation` does not.
+Set suggestions in response to a message or an event, typically from your `Request` handler or once a reply has finished. They stay until one of these happens:
+
+- a request is sent (the user types a message, picks a suggestion that sends on click, or you call `sendRequest`): the service clears them;
+- `newChat()` starts a new chat, or `openConversation()` opens another conversation (opening the one already open keeps them);
+- you call `setSuggestions([])`.
+
+Nothing else clears them. Opening or closing settings or history keeps them, and so do changing theme, locale or mode, closing and reopening the chat, `setReadOnly`, loading states, `setPrompt` and attachment changes, errors, `patchConfig`, `setConversation`, older messages loaded with `prependOlderMessages`, and switching renderers. `setConversation` keeps them whatever conversation it sets, so call `setSuggestions([])` when you replace the conversation with an unrelated one. The service keeps them, so a chat mounted after `setSuggestions`, or remounted by the host, shows them; `getSuggestions()` returns them.
+
+Where they show: the Wind renderer shows them under the latest reply while it belongs to the user turn they were set in. Further replies to that turn, streamed or not, keep them; the next user message leaves them behind. The Material renderer shows them after the conversation while it has messages. Neither shows them in an empty chat; use the first-run suggestions for that.
 
 ### Setting Suggestions
 

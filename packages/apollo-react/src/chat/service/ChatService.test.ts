@@ -5,6 +5,7 @@ import {
   AutopilotChatInterceptableEvent,
   AutopilotChatInternalEvent,
   AutopilotChatMode,
+  AutopilotChatRole,
 } from './ChatModel';
 import { AutopilotChatService } from './ChatService';
 
@@ -169,6 +170,121 @@ describe('AutopilotChatService', () => {
 
       expect(hasMore).toHaveBeenCalledWith(false);
       expect(loading).toHaveBeenCalledWith(false);
+    });
+  });
+
+  describe('suggestions', () => {
+    const suggestion = { label: 'Overdue', prompt: 'Which are overdue?' };
+    const message = (id: string, role: AutopilotChatRole) =>
+      ({ id, role, content: id, created_at: '', widget: 'apollo-markdown-renderer' }) as never;
+
+    it('stores the suggestions with sendOnClick and the user turn, and emits them', () => {
+      const service = createService();
+      const published = vi.fn();
+      service.__internalService__.on(AutopilotChatInternalEvent.SetSuggestions, published);
+      service.setConversation([
+        message('u1', AutopilotChatRole.User),
+        message('a1', AutopilotChatRole.Assistant),
+      ]);
+
+      service.setSuggestions([suggestion], true);
+
+      expect(service.getSuggestions()).toEqual([suggestion]);
+      expect(service.__suggestions__).toEqual({
+        suggestions: [suggestion],
+        sendOnClick: true,
+        userTurns: 1,
+      });
+      expect(published).toHaveBeenLastCalledWith(service.__suggestions__);
+    });
+
+    it('hands out and keeps copies, so neither side changes the other', () => {
+      const service = createService();
+      const mine = [suggestion];
+      service.setSuggestions(mine);
+
+      mine.push({ label: 'Later', prompt: 'later' });
+      service.getSuggestions().push({ label: 'Mutated', prompt: 'mutated' });
+
+      expect(service.getSuggestions()).toEqual([suggestion]);
+      // What the chat reads is frozen.
+      expect(Object.isFrozen(service.__suggestions__)).toBe(true);
+      expect(Object.isFrozen(service.__suggestions__.suggestions)).toBe(true);
+    });
+
+    it('clears them when the host sets an empty list', () => {
+      const service = createService();
+      service.setSuggestions([suggestion], true);
+
+      service.setSuggestions([]);
+
+      expect(service.getSuggestions()).toEqual([]);
+      expect(service.__suggestions__.sendOnClick).toBeUndefined();
+    });
+
+    it('clears them before the request, so ones set while it is handled belong to the new turn', async () => {
+      const service = createService();
+      service.setSuggestions([suggestion]);
+      service.on(AutopilotChatEvent.Request, () => {
+        expect(service.getSuggestions()).toEqual([]);
+        service.setSuggestions([suggestion]);
+      });
+
+      service.sendRequest({ content: 'q1' });
+      await vi.waitFor(() => expect(service.getSuggestions()).toEqual([suggestion]));
+
+      expect(service.__suggestions__.userTurns).toBe(1);
+    });
+
+    it('clears them on a new chat and when another conversation opens', () => {
+      const service = createService();
+      service.setSuggestions([suggestion]);
+      service.newChat();
+      expect(service.getSuggestions()).toEqual([]);
+
+      service.setSuggestions([suggestion]);
+      service.openConversation('c2');
+      expect(service.getSuggestions()).toEqual([]);
+
+      // Opening the open one again is not another conversation.
+      service.setSuggestions([suggestion]);
+      service.openConversation('c2');
+      expect(service.getSuggestions()).toEqual([suggestion]);
+    });
+
+    it('keeps them when the conversation is set again', () => {
+      const service = createService();
+      service.setSuggestions([suggestion]);
+
+      service.setConversation([message('u1', AutopilotChatRole.User)]);
+
+      expect(service.getSuggestions()).toEqual([suggestion]);
+    });
+
+    it('moves their user turn past older user turns that are prepended', () => {
+      const service = createService();
+      service.setConversation([
+        message('u2', AutopilotChatRole.User),
+        message('a2', AutopilotChatRole.Assistant),
+      ]);
+      service.setSuggestions([suggestion]);
+      const published = vi.fn();
+      service.__internalService__.on(AutopilotChatInternalEvent.SetSuggestions, published);
+
+      service.prependOlderMessages([
+        message('u0', AutopilotChatRole.User),
+        message('a0', AutopilotChatRole.Assistant),
+        message('u1', AutopilotChatRole.User),
+      ]);
+      expect(service.__suggestions__.userTurns).toBe(3);
+      expect(published).toHaveBeenCalledTimes(1);
+
+      // Nothing to move: no user turns among them, or no suggestions.
+      service.prependOlderMessages([message('s0', AutopilotChatRole.Assistant)]);
+      service.setSuggestions([]);
+      service.prependOlderMessages([message('u-1', AutopilotChatRole.User)]);
+      expect(published).toHaveBeenCalledTimes(2);
+      expect(service.__suggestions__.suggestions).toEqual([]);
     });
   });
 });
