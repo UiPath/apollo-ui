@@ -5,7 +5,9 @@ import { source } from "../../lib/source";
 
 function findComponentPage(slug: string) {
   return (
-    source.getPage(["components", slug]) ?? source.getPage(["patterns", slug])
+    source.getPage(["components", slug]) ??
+    source.getPage(["patterns", slug]) ??
+    source.getPage(["surfaces", slug])
   );
 }
 

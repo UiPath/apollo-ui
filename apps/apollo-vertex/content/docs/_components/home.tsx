@@ -32,6 +32,7 @@ const layers: {
     name: "Surfaces",
     description:
       "Surfaces are the areas of a page, like the main area and side panels. They resize and collapse the same way in every solution.",
+    link: { href: "/surfaces/page-header", label: "Browse surfaces" },
   },
   {
     id: "templates",

@@ -56,6 +56,12 @@ export default withMDX({
               destination: "/components",
               permanent: true,
             },
+            {
+              // Page Header moved from Patterns into Surfaces.
+              source: "/patterns/page-header",
+              destination: "/surfaces/page-header",
+              permanent: true,
+            },
           ];
         },
         rewrites() {

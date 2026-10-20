@@ -1,11 +1,4 @@
 {
   "title": "Patterns",
-  "pages": [
-    "ai-chat",
-    "feedback-vote-widget",
-    "metric-card",
-    "page-header",
-    "shell",
-    "..."
-  ]
+  "pages": ["ai-chat", "feedback-vote-widget", "metric-card", "shell", "..."]
 }
