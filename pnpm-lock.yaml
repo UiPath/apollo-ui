@@ -345,6 +345,21 @@ importers:
       '@biomejs/biome':
         specifier: ^2.3.6
         version: 2.4.4
+      '@codemirror/lang-javascript':
+        specifier: ^6.2.5
+        version: 6.2.5
+      '@codemirror/language':
+        specifier: ^6.12.3
+        version: 6.12.3
+      '@codemirror/state':
+        specifier: ^6.6.0
+        version: 6.6.0
+      '@codemirror/view':
+        specifier: ^6.43.0
+        version: 6.43.0
+      '@lezer/highlight':
+        specifier: ^1.2.3
+        version: 1.2.3
       '@lingui/babel-plugin-lingui-macro':
         specifier: ^5.6.1
         version: 5.6.1(babel-plugin-macros@3.1.0)(typescript@5.9.3)
