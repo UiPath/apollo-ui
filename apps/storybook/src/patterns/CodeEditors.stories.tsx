@@ -7,11 +7,7 @@ import type { EditorProps } from '@monaco-editor/react';
 import type { Meta } from '@storybook/react-vite';
 import { Code2, Mail, Maximize2, Play } from 'lucide-react';
 import { type ComponentProps, type ReactNode, useEffect, useRef, useState } from 'react';
-import { NodePropertyPanel } from '../../../../apollo-react/src/canvas/components/NodePropertyPanel/NodePropertyPanel';
-import { FullWorkbenchComposition } from '../../../../apollo-react/src/canvas/stories/templates/Flow.stories';
-import { withCanvasProviders } from '../../../../apollo-react/src/canvas/storybook-utils';
-import type { ApolloCodeMirrorTheme } from '../../editor-themes';
-import { Button } from './button';
+import { Button } from '@/components/ui/button';
 import {
   editorThemeConfigs,
   LiveMonacoEditor,
@@ -19,25 +15,34 @@ import {
   monacoSample,
   type ThemeConfig,
   useEditorThemeConfig,
-} from './code-editors.shared';
-import { Modal, ModalContent } from './dialog';
-import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from './input-group';
-import { Label } from './label';
+} from '@/components/ui/code-editors.shared';
+import { Modal, ModalContent } from '@/components/ui/dialog';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from '@/components/ui/input-group';
+import { Label } from '@/components/ui/label';
 import {
   PromptEditor,
   type PromptEditorAutoCompleteOption,
   type PromptEditorRef,
   type PromptEditorToken,
-} from './prompt-editor';
-import { QuickFormField, type QuickFormFieldMode } from './quick-form-field';
-import { VariablePicker, type VariablePickerItem } from './variable-picker';
+} from '@/components/ui/prompt-editor';
+import { QuickFormField, type QuickFormFieldMode } from '@/components/ui/quick-form-field';
+import { VariablePicker, type VariablePickerItem } from '@/components/ui/variable-picker';
+import type { ApolloCodeMirrorTheme } from '@/editor-themes';
+import { NodePropertyPanel } from '../../../../packages/apollo-react/src/canvas/components/NodePropertyPanel/NodePropertyPanel';
+import { FullWorkbenchComposition } from '../../../../packages/apollo-react/src/canvas/stories/templates/Flow.stories';
+import { withCanvasProviders } from '../../../../packages/apollo-react/src/canvas/storybook-utils';
 
 // ============================================================================
 // Meta
 // ============================================================================
 
 const meta = {
-  title: 'Patterns/Code Editors',
+  title: 'Apollo Wind/Patterns/Code Editors',
   tags: ['!autodocs'],
   parameters: { layout: 'padded' },
   decorators: [withCanvasProviders({ fullscreen: false })],
