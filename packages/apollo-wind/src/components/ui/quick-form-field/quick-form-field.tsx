@@ -2,6 +2,7 @@ import { RefreshCw, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { DateTimePicker } from '@/components/ui/datetime-picker';
+import { EditableText } from '@/components/ui/editable-text';
 import { FileUpload } from '@/components/ui/file-upload';
 import {
   InputGroup,
@@ -9,6 +10,7 @@ import {
   InputGroupInput,
   InputGroupTextarea,
 } from '@/components/ui/input-group';
+import { RequiredIndicator } from '@/components/ui/label';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { PromptValueControl } from '@/components/ui/prompt-value-control';
@@ -25,7 +27,7 @@ import { cn } from '@/lib';
 import { toDateValue } from '@/lib/date-value';
 import { FieldMenu, type FieldMenuItem } from '../field-addons/field-menu';
 import { ValueModeSwitchDialog } from '../field-addons/value-mode-switch-dialog';
-import { FieldHeader } from './components/field-header';
+import { FieldHeader, GROW_WHILE_EDITING } from './components/field-header';
 import { LockToggleButton } from './components/lock-toggle-button';
 import type {
   QuickFormFieldControlProps,
@@ -62,6 +64,7 @@ const DEFAULT_VALUE_MODES: readonly QuickFormFieldMode[] = ['literal', 'expressi
  * - `locked` is configuration the author sets, so the value stays editable;
  *   `disabled` is what stops the author editing the field.
  * - `fieldTypes` chooses which types the picker offers.
+ * - `onLabelChange` makes a string `label` editable in place.
  * - Insert variable renders `variables` as supplied and splices at the caret;
  *   `onInsertVariable` takes over what inserting means.
  * - Enter commits through `onValueBlur`, Escape restores the value as of focus.
@@ -96,6 +99,11 @@ export function QuickFormField({
   required,
   onRequiredChange,
   label,
+  onLabelChange,
+  isEditingLabel,
+  onIsEditingLabelChange,
+  labelAddon,
+  tooltip,
   strings: stringOverrides,
   placeholder,
   error,
@@ -132,6 +140,9 @@ export function QuickFormField({
   }, []);
   const [datePopoverOpen, setDatePopoverOpen] = useState(false);
   const [selectOpen, setSelectOpen] = useState(false);
+  // The label as typed, until it is committed or reverted. Null while it matches `label`, so a
+  // label the consumer changes meanwhile still shows.
+  const [labelDraft, setLabelDraft] = useState<string | null>(null);
   const [pendingSwitch, setPendingSwitch] = useState<
     QuickFormFieldModeSwitchConfirm & { to: QuickFormFieldMode }
   >();
@@ -492,6 +503,27 @@ export function QuickFormField({
     />
   );
 
+  const editableLabel =
+    typeof label === 'string' && onLabelChange ? (
+      <span className={cn('flex min-w-0 items-center', GROW_WHILE_EDITING)}>
+        <EditableText
+          size="label"
+          value={labelDraft ?? label}
+          placeholder={strings.labelPlaceholder}
+          aria-label={strings.labelAriaLabel}
+          editing={isEditingLabel}
+          onEditingChange={onIsEditingLabelChange}
+          disabled={disabled}
+          onChange={(next) => setLabelDraft(next === label ? null : next)}
+          onSubmit={(next) => {
+            setLabelDraft(null);
+            onLabelChange(next);
+          }}
+        />
+        {required && <RequiredIndicator />}
+      </span>
+    ) : undefined;
+
   return (
     <div
       className={cn(
@@ -500,7 +532,9 @@ export function QuickFormField({
       )}
     >
       <FieldHeader
-        label={label}
+        label={editableLabel ?? label}
+        labelAddon={labelAddon}
+        tooltip={tooltip}
         fieldId={fieldId}
         fieldLabel={fieldLabel}
         required={required}

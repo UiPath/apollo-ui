@@ -365,7 +365,7 @@ PromptSuggestions, RadioGroup,
 Resizable, ScrollArea, Search, Separator, Sidebar, Skeleton, Slider, Sonner, Spinner,
 StatsCard, Stepper, Switch, Toggle, ToggleGroup, Tooltip, InfoTooltip,
 FormField (with FormFieldLabel, FormFieldHeader, FormFieldDescription, FormFieldError),
-BooleanRadioGroup (True / False / unset), VariablePicker, PromptEditor,
+BooleanRadioGroup (True / False / unset), VariablePicker, PromptEditor, EditableText,
 VariableValueControl, PromptValueControl, QuickFormField (only inside a Quick Form builder, where
 end users configure their own fields)
 
