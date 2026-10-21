@@ -48,7 +48,7 @@ import { useButtonHandles } from '../ButtonHandle/useButtonHandles';
 import { InitialsBadge } from '../shared/InitialsBadge';
 import type { NodeToolbarConfig } from '../Toolbar';
 import { NodeToolbar } from '../Toolbar';
-import { lockToolbarConfig } from '../Toolbar/NodeToolbar/NodeToolbar.utils';
+import { hideToolbarActions, lockToolbarConfig } from '../Toolbar/NodeToolbar/NodeToolbar.utils';
 import type {
   BaseNodeData,
   FooterVariant,
@@ -103,6 +103,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
     shouldShowAddButtonFn: shouldShowAddButtonFnProp,
     shouldShowButtonHandleNotchesFn: shouldShowButtonHandleNotchesFnProp,
     toolbarConfig: toolbarConfigProp,
+    hiddenToolbarActionIds,
     handleConfigurations: handleConfigurationsProp,
     adornments: adornmentsProp,
     suggestionType: suggestionTypeOverride,
@@ -248,7 +249,7 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const toolbarActionStore = useToolbarActionStoreContext();
 
   // Toolbar config resolution with priority: props > manifest
-  const toolbarConfig = useMemo(() => {
+  const resolvedToolbarConfig = useMemo(() => {
     // Priority 1: Prop override (runtime callbacks)
     // - undefined: use manifest default
     // - null: explicitly no toolbar
@@ -262,6 +263,11 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
       ? resolveToolbar(manifest, statusContext, undefined, toolbarActionStore)
       : undefined;
   }, [toolbarConfigProp, manifest, statusContext, toolbarActionStore]);
+
+  const toolbarConfig = useMemo(
+    () => hideToolbarActions(resolvedToolbarConfig, hiddenToolbarActionIds),
+    [resolvedToolbarConfig, hiddenToolbarActionIds]
+  );
 
   // A locked node keeps its toolbar and disables it rather than hiding it. See
   // `lockToolbarConfig` for why.

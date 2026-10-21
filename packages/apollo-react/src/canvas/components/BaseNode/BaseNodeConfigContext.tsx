@@ -34,6 +34,13 @@ export interface BaseNodeOverrideConfig {
 
   // UI Configuration (Non-Serializable)
   toolbarConfig?: NodeToolbarConfig | null;
+  /**
+   * Ids of toolbar actions to drop from this node's toolbar (bar and overflow menu), for
+   * per-node rules a manifest action `condition` cannot express. Applies to both the
+   * manifest-resolved toolbar and a `toolbarConfig` override. Keep the array reference
+   * stable across renders.
+   */
+  hiddenToolbarActionIds?: readonly string[];
   handleConfigurations?: HandleGroupManifest[];
   adornments?: NodeAdornments;
 
