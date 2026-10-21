@@ -33,6 +33,8 @@ export interface ModelPickerLabels {
   substitutedTagTooltip: (target: string) => string;
   outOfRegionTag: (geography: string) => string;
   outOfRegionTagTooltip: (homeRegion: string) => string;
+  /** The field's count of the chips it has no room for, e.g. "+2". */
+  hiddenTagCount: (count: number) => string;
 
   /* Cost badge pool */
   costBasic: string;
@@ -122,6 +124,7 @@ export const DEFAULT_MODEL_PICKER_LABELS: ModelPickerLabels = {
     `This model is retired. Your traffic is currently being routed to ${target}. Update your configuration to make this explicit.`,
   outOfRegionTag: (geography) => `Out of region (${geography})`,
   outOfRegionTagTooltip: (homeRegion) => `Routes traffic outside ${homeRegion}`,
+  hiddenTagCount: (count) => `+${count}`,
 
   costBasic: 'Basic',
   costStandard: 'Standard',
