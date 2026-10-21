@@ -1,7 +1,9 @@
+import type { ReactNode } from 'react';
 import {
   CopyExample,
   DoDont,
   GuideTable,
+  LivePreview,
   PatternLink,
   RuleList,
   Section,
@@ -12,6 +14,8 @@ import {
 // Human-facing versions of the apollo-writing skill's content patterns
 // (packages/apollo-wind/skills/apollo-writing). The skill files are written
 // for AI agents and stay as they are; keep the rules here in step with them.
+// AI and agents, Loading and progress, Onboarding, and Success confirmation
+// exist only here and have no skill file yet.
 
 interface CommonCase {
   name: string;
@@ -1092,10 +1096,289 @@ export const PATTERNS: Record<string, ContentPattern> = {
     },
     related: ['Date, Time, and Duration', 'Form Field'],
   },
+
+  aiAndAgents: {
+    name: 'AI and Agents',
+    title: 'AI and agents',
+    summary:
+      'Copy for AI features and agents should be honest about what the AI did, clear about what it is doing now, and careful before it acts for someone.',
+    appliesTo: [
+      'Autopilot and chat responses',
+      'Labels for AI-generated content',
+      'Thinking and progress states',
+      'Prompt suggestions',
+      'Confirmations before an agent acts',
+      'AI errors and disclaimers',
+    ],
+    rules: [
+      'Use sentence case.',
+      'Label AI-generated content so people know where it came from.',
+      'Remind people to review AI output before they rely on it, especially for important decisions.',
+      'Describe what the AI is doing in plain, present-tense words: "Searching your documents."',
+      'Ask before an agent takes an action with real consequences, and name the action and its scope.',
+      'Keep responses direct. Avoid claims of feelings, opinions, or certainty the system does not have.',
+      'Avoid hype such as "magic," "smart," or "intelligent." Say what the feature does.',
+      'Show sources when the AI uses them, and name each source in the link text.',
+      'Use platform terms: Build agents, Run automations, and call each performance a Job.',
+    ],
+    cases: [
+      {
+        name: 'Generated content label',
+        guidance: ['Use a short, consistent label next to the content.'],
+        doItems: ['AI-generated'],
+        dontItems: ['Created by our smart assistant', 'Magic summary'],
+      },
+      {
+        name: 'Thinking and progress',
+        guidance: [
+          'Say what is happening, not just that something is happening.',
+          'An ellipsis is fine for ongoing actions.',
+        ],
+        doItems: ['Searching your documents...', 'Reading 12 invoices...'],
+        dontItems: ['Thinking really hard...', 'Doing some magic...'],
+      },
+      {
+        name: 'Prompt suggestions',
+        guidance: [
+          'Start with a verb, keep each one short, and tie it to the current context.',
+          'Make sure no two suggestions start with the same word.',
+        ],
+        doItems: ['Summarize overdue invoices', 'Draft a reminder email'],
+        dontItems: ['Ask me anything!', 'Try something cool'],
+      },
+      {
+        name: 'Confirming an action',
+        guidance: [
+          'Name what the agent will do and how many items it affects.',
+          'Use a specific primary CTA, and Cancel as the secondary.',
+        ],
+        doItems: ['Send email to 12 vendors?'],
+        dontItems: ['Are you sure?', 'Proceed?'],
+      },
+      {
+        name: 'AI errors',
+        guidance: [
+          'Say what failed and what to try next, like any other error.',
+          'Skip apologies written as if the AI had feelings.',
+        ],
+        doItems: ["We couldn't generate a summary. Try again or shorten your request."],
+        dontItems: ["Sorry, I'm having trouble thinking right now."],
+      },
+      {
+        name: 'Disclaimers',
+        guidance: [
+          'Keep them to one short sentence, placed where people read the output.',
+          "Don't repeat the disclaimer on every message.",
+        ],
+        doItems: ['AI can make mistakes. Review the results before you act on them.'],
+      },
+    ],
+    example: {
+      caption: 'Autopilot answer with sources',
+      fields: [
+        ['Thinking state', 'Searching your documents'],
+        ['Label', 'AI-generated'],
+        ['Response', 'Invoices from 3 vendors are overdue. The largest is $12,400 from Contoso.'],
+        ['Disclaimer', 'AI can make mistakes. Review the results before you act on them.'],
+        ['Suggestions', 'Summarize overdue invoices, Draft a reminder email'],
+      ],
+    },
+    related: ['Loading and Progress', 'Error Message', 'Destructive Modal'],
+  },
+
+  loadingAndProgress: {
+    name: 'Loading and Progress',
+    title: 'Loading and progress',
+    summary:
+      'Loading copy tells people what is happening and how long to expect. The longer the wait, the more they need to know.',
+    appliesTo: [
+      'Spinners and page loaders',
+      'Progress bars',
+      'Long-running operations and background jobs',
+      'Skeleton screens',
+    ],
+    rules: [
+      'Use sentence case.',
+      'Say what is loading or happening: "Loading automations," not "Loading" or "Please wait."',
+      'Use an ellipsis only for actions that are still in progress, and leave it off finished states.',
+      'Use numerals for counts and percentages: "Uploading 3 of 5 files," "60%."',
+      'For waits longer than a few seconds, show progress and say whether people can leave the page.',
+      'Don\'t promise timing you can\'t keep, such as "Almost done."',
+      'Give spinners and skeletons an accessible label even when no text shows.',
+    ],
+    cases: [
+      {
+        name: 'Short wait',
+        guidance: ['A spinner with a short label is enough.'],
+        doItems: ['Loading automations', 'Saving changes...'],
+        dontItems: ['Please wait', 'Hang tight!'],
+      },
+      {
+        name: 'Measurable progress',
+        guidance: [
+          'Show a progress bar with a count or percentage.',
+          'Name the item being processed when it helps.',
+        ],
+        doItems: ['Uploading 3 of 5 files'],
+      },
+      {
+        name: 'Long-running operation',
+        guidance: [
+          'Tell people they can leave and how they will hear back.',
+          'Link to where they can check status later.',
+        ],
+        doItems: ["You can leave this page. We'll notify you when the upload is done."],
+      },
+      {
+        name: 'Skeleton screens',
+        guidance: [
+          'No visible text is needed, but give the region an accessible label such as "Loading jobs."',
+        ],
+      },
+      {
+        name: 'Loading failed',
+        guidance: ['Switch to an error message with a recovery action.'],
+        doItems: ["We couldn't load your automations. Try again."],
+      },
+    ],
+    example: {
+      caption: 'File upload',
+      fields: [
+        ['Spinner label', 'Loading automations'],
+        ['Progress label', 'Uploading 3 of 5 files'],
+        ['Progress value', '60%'],
+        ['Helper text', "You can leave this page. We'll notify you when the upload is done."],
+      ],
+    },
+    related: ['Error Message', 'Success Confirmation', 'AI and Agents'],
+  },
+
+  onboarding: {
+    name: 'Onboarding',
+    title: 'Onboarding',
+    summary:
+      'Onboarding copy helps people get value quickly. Focus on the next useful step, keep each step short, and always let people skip.',
+    appliesTo: [
+      'Welcome messages',
+      'Guided tours and coach marks',
+      'Setup checklists',
+      'New feature announcements',
+    ],
+    rules: [
+      'Use sentence case.',
+      'Lead with what people can do, not with what the feature is called.',
+      'Cover one idea per step, in 1–2 short sentences.',
+      'Show where people are in a sequence: "Step 2 of 3."',
+      'In tours, Next, Back, and Done are clear enough. Always offer a way out, such as "Skip tour."',
+      'A greeting can have one exclamation point. Nothing else should.',
+      'Avoid calling tasks "simple," "easy," or "quick."',
+      'For new features, say what changed and why it helps. Skip the hype.',
+    ],
+    cases: [
+      {
+        name: 'Welcome message',
+        guidance: ['Greet people, then point to the first useful action.'],
+        doItems: ['Hi, Daniel! Build your first automation to get started.'],
+        dontItems: ['Welcome to the amazing world of automation!!'],
+      },
+      {
+        name: 'Guided tour step',
+        guidance: [
+          'Title the step with the task, using a verb.',
+          'Keep the body to one or two sentences.',
+        ],
+        doItems: ['Add a trigger', 'Set when your automation starts.'],
+      },
+      {
+        name: 'Setup checklist',
+        guidance: [
+          'Start each item with a verb.',
+          'Mark completed items clearly, and let people come back later.',
+        ],
+        doItems: ['Connect an app', 'Add a trigger', 'Run a test job'],
+      },
+      {
+        name: 'New feature announcement',
+        guidance: [
+          'Say what is new and what people can now do.',
+          'Link to the feature itself, not just to documentation.',
+        ],
+        doItems: ['You can now schedule jobs from the automation page.'],
+        dontItems: ['Introducing our revolutionary new scheduler!'],
+      },
+    ],
+    example: {
+      caption: 'Guided tour, second step',
+      fields: [
+        ['Title', 'Build your first automation'],
+        ['Body', 'Connect an app, add a trigger, and run a test job.'],
+        ['Step indicator', 'Step 2 of 3'],
+        ['Buttons', 'Skip tour, Back, Next'],
+      ],
+    },
+    related: ['Empty State', 'Button and CTA'],
+  },
+
+  successConfirmation: {
+    name: 'Success Confirmation',
+    title: 'Success confirmations',
+    summary:
+      'A success message confirms that something worked. Keep it short, name what happened, and offer a next step only when it helps.',
+    appliesTo: [
+      'Success toasts',
+      'Inline confirmations',
+      'Success pages at the end of a flow',
+      'Undo prompts',
+    ],
+    rules: [
+      'Use sentence case.',
+      'Name the object and the outcome, usually in past tense: "Automation published."',
+      'Skip exclamation points and celebration words such as "Awesome" or "Woohoo."',
+      'Add a CTA only when there is a likely next step, such as viewing the result.',
+      'Offer Undo for actions that can be reversed, and keep the toast visible long enough to use it.',
+      "Don't confirm actions whose result is already visible on screen.",
+      'For the end of a longer flow, use a short title, one sentence on what happens next, and a clear CTA.',
+    ],
+    cases: [
+      {
+        name: 'Success toast',
+        guidance: ['Object + outcome, with no period.'],
+        doItems: ['Automation published', 'Project created', '3 users added'],
+        dontItems: ['Success!', 'Awesome, your automation was published!'],
+      },
+      {
+        name: 'Undo',
+        guidance: ['Pair the confirmation with an Undo action.'],
+        doItems: ['2 files deleted. Undo'],
+      },
+      {
+        name: 'Success page',
+        guidance: [
+          'Title with the outcome, then say what happens next.',
+          'Offer the most likely next action as the primary CTA.',
+        ],
+        doItems: ['Your automation is live', 'It will run every weekday at 9:00 AM UTC.'],
+      },
+    ],
+    example: {
+      caption: 'Publishing an automation',
+      fields: [
+        ['Toast', 'Automation published'],
+        ['Link CTA', 'View automation'],
+      ],
+    },
+    related: ['Notification', 'Loading and Progress'],
+  },
 };
 
-/** Full page for one content pattern. */
-export function PatternPage({ pattern }: { pattern: ContentPattern }) {
+/** Full page for one content pattern, with an optional live rendering of its example. */
+export function PatternPage({
+  pattern,
+  preview,
+}: {
+  pattern: ContentPattern;
+  preview?: ReactNode;
+}) {
   return (
     <WritingPage title={pattern.title} intro={pattern.summary}>
       <Section title="Use it for">
@@ -1103,6 +1386,7 @@ export function PatternPage({ pattern }: { pattern: ContentPattern }) {
       </Section>
 
       <Section title="Example">
+        {preview && <LivePreview>{preview}</LivePreview>}
         <CopyExample caption={pattern.example.caption} fields={pattern.example.fields} />
       </Section>
 

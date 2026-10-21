@@ -28,12 +28,25 @@ const GUIDELINE_TOPICS: [string, string][] = [
   ],
   ['Components', 'Quick copy guidance for each Apollo component'],
   ['Date and Time', 'Date, time, and duration formats, and relative or absolute time'],
+  ['Accessibility', 'Accessible names, alt text, form errors, and status announcements'],
+  ['Localization', 'Text expansion, whole sentences, placeholders, plurals, and translator notes'],
   ['Terminology', 'Platform verbs and concepts, such as Build, Create, Run, and Job'],
   ['Review Checklist', 'What to check before shipping UI copy'],
 ];
 
 const PATTERN_GROUPS: [string, string[]][] = [
-  ['Content and messaging', ['errorMessage', 'notification', 'emptyState']],
+  [
+    'Content and messaging',
+    [
+      'errorMessage',
+      'notification',
+      'successConfirmation',
+      'emptyState',
+      'loadingAndProgress',
+      'onboarding',
+      'aiAndAgents',
+    ],
+  ],
   ['Actions and controls', ['buttonAndCta', 'link', 'toggleAndSelection', 'destructiveModal']],
   ['Forms and inputs', ['formField', 'searchAndFilter']],
   ['Layout and navigation', ['tabsAndNavigation', 'drawer', 'accordionAndDisclosure']],
@@ -85,7 +98,26 @@ function OverviewPage() {
               <PatternLink key="1" story="Error Message" />,
               <PatternLink key="1b" story="Notification" />,
             ],
-            ['Success or warning copy', <PatternLink key="2" story="Notification" />, 'None'],
+            [
+              'Success or warning copy',
+              <PatternLink key="2" story="Notification" />,
+              <PatternLink key="2b" story="Success Confirmation" />,
+            ],
+            [
+              'Copy for an AI feature or agent',
+              <PatternLink key="8" story="AI and Agents" />,
+              <PatternLink key="8b" story="Loading and Progress" />,
+            ],
+            [
+              'Icon button labels or alt text',
+              <GuidelineLink key="9" story="Accessibility" />,
+              <PatternLink key="9b" story="Tooltip" />,
+            ],
+            [
+              'Strings with counts or variables',
+              <GuidelineLink key="10" story="Localization" />,
+              <PatternLink key="10b" story="Date, Time, and Duration" />,
+            ],
             [
               'Search field copy',
               <PatternLink key="3" story="Search and Filter" />,
@@ -116,9 +148,10 @@ function OverviewPage() {
       </Section>
 
       <Note>
-        These pages are written for people. The same guidance is packaged as the apollo-writing
-        skill in <code>packages/apollo-wind/skills/apollo-writing</code>, for AI tools that write or
-        review UI copy.
+        These pages are written for people. Most of the guidance is also packaged as the
+        apollo-writing skill in <code>packages/apollo-wind/skills/apollo-writing</code>, for AI
+        tools that write or review UI copy. Accessibility, Localization, and the AI and agents,
+        loading, onboarding, and success patterns are only in Storybook for now.
       </Note>
     </WritingPage>
   );

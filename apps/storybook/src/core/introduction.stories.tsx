@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Braces } from 'lucide-react';
+import { Braces, PenLine } from 'lucide-react';
 import * as React from 'react';
 
 const meta = {
@@ -209,6 +209,12 @@ function OverviewTab() {
                   />
                 </svg>
               ),
+            },
+            {
+              title: 'Writing',
+              description:
+                'UX writing guidelines and content patterns for labels, buttons, messages, and microcopy. Find them under Writing in the sidebar.',
+              example: <PenLine className="h-6 w-6 text-foreground" aria-hidden="true" />,
             },
             {
               title: 'Fonts',
