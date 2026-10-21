@@ -699,7 +699,9 @@ export function NodeVariablesPanel({
       const row = rowFor(section, node);
       // Array preview rows stand for an item shape, never a variable or an asset.
       if (node.isArrayItemTemplate) return ctx.defaultActions;
-      if (isTopLevelAsset(row)) return assetActions(row, ctx);
+      // Assets are host-managed: a custom isVariableRow never reaches them, nested fields included.
+      if (section === 'assets')
+        return isTopLevelAsset(row) ? assetActions(row, ctx) : ctx.defaultActions;
       return isVariableRow(row) ? variableActions(row, ctx) : ctx.defaultActions;
     };
 

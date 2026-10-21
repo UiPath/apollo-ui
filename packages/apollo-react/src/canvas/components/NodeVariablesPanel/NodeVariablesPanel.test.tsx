@@ -1154,6 +1154,30 @@ describe('NodeVariablesPanel', () => {
     expect(screen.queryByRole('button', { name: 'Delete username' })).toBeNull();
   });
 
+  it('keeps asset rows out of isVariableRow, so a permissive predicate cannot reach them', async () => {
+    const user = userEvent.setup();
+    const onDeleteVariable = vi.fn();
+    const onDeleteAsset = vi.fn();
+    renderPanel({
+      defaultExpandedSections: ['assets'],
+      assets: ASSETS,
+      isVariableRow: () => true,
+      onEditVariable: vi.fn(),
+      onDeleteVariable,
+      onDeleteAsset,
+    });
+
+    // Top-level assets get the host's actions, never the variable ones.
+    await user.click(screen.getByRole('button', { name: 'Delete invoiceApiKey' }));
+    expect(onDeleteAsset).toHaveBeenCalledWith(variableRow('invoiceApiKey', 'assets'));
+    expect(onDeleteVariable).not.toHaveBeenCalled();
+    expect(screen.queryByRole('button', { name: 'Edit invoiceApiKey' })).toBeNull();
+    // Nested asset fields get no edit or delete at all.
+    await user.click(screen.getByRole('button', { name: 'Expand erpCredential' }));
+    expect(screen.queryByRole('button', { name: 'Delete username' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Edit username' })).toBeNull();
+  });
+
   it('has no accessibility violations with every section open', async () => {
     const { container } = renderPanel({
       defaultExpandedSections: ['inputs', 'outputs', 'variables', 'assets', 'nodes'],
