@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Trash2 } from 'lucide-react';
+import { GripVertical, Trash2 } from 'lucide-react';
 import { useId, useState } from 'react';
 import { Button } from '../button';
 import { Label, RequiredIndicator } from '../label';
@@ -481,6 +481,52 @@ export const ValueModes: Story = {
       description: {
         story:
           'A field can be a literal, an expression, a bound variable or an agent prompt. `valueModes` lists the modes the menu offers. Variable mode is a picker over `variables`, and prompt mode a growing textarea in the agent-tinted box. `confirmModeChange` asks before a switch that would lose the value. Here leaving prompt mode clears the prompt, so that switch asks first when the prompt has text. `renderModeControl` still replaces the control for any mode.',
+      },
+    },
+  },
+};
+
+function EditableLabelDemo() {
+  const [label, setLabel] = useState('Invoice number');
+  const [required, setRequired] = useState(true);
+  const [value, setValue] = useState('');
+
+  return (
+    <div className="w-80">
+      <QuickFormField
+        label={label}
+        // This form keeps every field named, so an empty label is not applied and the old one shows again.
+        onLabelChange={(next) => next && setLabel(next)}
+        labelAddon={
+          <button
+            type="button"
+            aria-label="Drag to reorder field"
+            className="inline-flex shrink-0 cursor-grab items-center rounded-md p-0.5 text-foreground-subtle hover:bg-surface-overlay hover:text-foreground"
+          >
+            <GripVertical size={12} />
+          </button>
+        }
+        required={required}
+        onRequiredChange={setRequired}
+        tooltip="The supplier's own reference, as printed on the invoice."
+        value={value}
+        onValueChange={setValue}
+        locked={false}
+        onLockedChange={() => {}}
+        onModeChange={() => {}}
+      />
+    </div>
+  );
+}
+
+export const EditableLabel: Story = {
+  name: 'Editable label',
+  render: () => <EditableLabelDemo />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'With `onLabelChange`, a string `label` is edited in place: click it, then Enter or blur commits and Escape reverts. An empty label is passed through like any other, and the consumer decides: this one ignores it, so the old label shows again. The Required switch in the header is what toggles the asterisk beside it. `tooltip` adds an info icon after the label and asterisk, as FormFieldHeader does, and works with any label. `labelAddon` renders before the label, here a drag handle.',
       },
     },
   },

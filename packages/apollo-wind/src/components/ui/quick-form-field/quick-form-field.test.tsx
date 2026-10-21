@@ -756,6 +756,195 @@ describe('QuickFormField', () => {
     expect(results).toHaveNoViolations();
   });
 
+  describe('info tooltip', () => {
+    const follows = (a: Element, b: Element) =>
+      !!(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+
+    it('places it after the computed label and its asterisk', async () => {
+      const user = userEvent.setup();
+      render(
+        <QuickFormField required onRequiredChange={vi.fn()} tooltip="Shown to the approver" />
+      );
+      const label = screen.getByText('String value', { selector: 'label' });
+      const info = screen.getByRole('button', { name: 'More information' });
+      expect(label).toHaveTextContent('*');
+      expect(follows(label, info)).toBe(true);
+      await user.hover(info);
+      expect(await screen.findByRole('tooltip')).toHaveTextContent('Shown to the approver');
+    });
+
+    it('places it after the editable label and its asterisk', () => {
+      const { container } = render(
+        <QuickFormField label="Invoice" onLabelChange={vi.fn()} required tooltip="Help" />
+      );
+      const asterisk = container.querySelector('[data-slot="editable-text"] + span');
+      const info = screen.getByRole('button', { name: 'More information' });
+      expect(asterisk).toHaveTextContent('*');
+      expect(follows(asterisk as Element, info)).toBe(true);
+    });
+
+    it('places it after a custom label standing alone', async () => {
+      const user = userEvent.setup();
+      render(
+        <QuickFormField label={<span>Custom</span>} showFieldActions={false} tooltip="Help" />
+      );
+      const info = screen.getByRole('button', { name: 'More information' });
+      expect(follows(screen.getByText('Custom'), info)).toBe(true);
+      await user.hover(info);
+      expect(await screen.findByRole('tooltip')).toHaveTextContent('Help');
+    });
+
+    it('renders no trigger for a blank tooltip', () => {
+      render(<QuickFormField label="Invoice" onLabelChange={vi.fn()} tooltip="  " />);
+      expect(screen.queryByRole('button', { name: 'More information' })).not.toBeInTheDocument();
+    });
+
+    it('names the trigger from strings', () => {
+      render(<QuickFormField tooltip="Help" strings={{ tooltipAriaLabel: 'Mehr erfahren' }} />);
+      expect(screen.getByRole('button', { name: 'Mehr erfahren' })).toBeInTheDocument();
+    });
+  });
+
+  describe('editable label', () => {
+    it('edits a string label in place and commits the trimmed text', async () => {
+      const user = userEvent.setup();
+      const handleLabelChange = vi.fn();
+      render(<QuickFormField label="Invoice" onLabelChange={handleLabelChange} />);
+
+      await user.click(screen.getByRole('button', { name: 'Field label: Invoice' }));
+      const input = screen.getByRole('textbox', { name: 'Field label' });
+      expect(input).toHaveFocus();
+      await user.keyboard('  Invoice total  {Enter}');
+
+      expect(handleLabelChange).toHaveBeenCalledExactlyOnceWith('Invoice total');
+      expect(screen.queryByRole('textbox', { name: 'Field label' })).not.toBeInTheDocument();
+    });
+
+    it('reverts on Escape without committing', async () => {
+      const user = userEvent.setup();
+      const handleLabelChange = vi.fn();
+      render(<QuickFormField label="Invoice" onLabelChange={handleLabelChange} />);
+
+      await user.click(screen.getByRole('button', { name: 'Field label: Invoice' }));
+      await user.keyboard('Total{Escape}');
+
+      expect(handleLabelChange).not.toHaveBeenCalled();
+      expect(screen.getByRole('button', { name: 'Field label: Invoice' })).toBeInTheDocument();
+    });
+
+    it('commits a cleared label too, and shows the old one again when it is not applied', async () => {
+      const user = userEvent.setup();
+      const handleLabelChange = vi.fn();
+      render(<QuickFormField label="Invoice" onLabelChange={handleLabelChange} />);
+
+      await user.click(screen.getByRole('button', { name: 'Field label: Invoice' }));
+      await user.keyboard('{Backspace}{Enter}');
+
+      expect(handleLabelChange).toHaveBeenCalledExactlyOnceWith('');
+      // The consumer left `label` as it was, which is how it rejects a value.
+      expect(screen.getByRole('button', { name: 'Field label: Invoice' })).toBeInTheDocument();
+    });
+
+    it('shows a label the consumer changes after an edit was reverted', async () => {
+      const user = userEvent.setup();
+      const { rerender } = render(<QuickFormField label="Invoice" onLabelChange={vi.fn()} />);
+
+      await user.click(screen.getByRole('button', { name: 'Field label: Invoice' }));
+      await user.keyboard('Total{Escape}');
+      rerender(<QuickFormField label="Receipt" onLabelChange={vi.fn()} />);
+
+      expect(screen.getByRole('button', { name: 'Field label: Receipt' })).toBeInTheDocument();
+    });
+
+    it('marks a required field with the asterisk beside the editable label', () => {
+      const { container, rerender } = render(
+        <QuickFormField label="Invoice" onLabelChange={vi.fn()} required />
+      );
+      expect(container.querySelector('[data-slot="editable-text"] + span')).toHaveTextContent('*');
+
+      rerender(<QuickFormField label="Invoice" onLabelChange={vi.fn()} required={false} />);
+      expect(container.querySelector('[data-slot="editable-text"] + span')).toBeNull();
+    });
+
+    it("follows the consumer's isEditingLabel state", async () => {
+      const user = userEvent.setup();
+      const handleEditingChange = vi.fn();
+      const { rerender } = render(
+        <QuickFormField
+          label=""
+          onLabelChange={vi.fn()}
+          isEditingLabel
+          onIsEditingLabelChange={handleEditingChange}
+        />
+      );
+      expect(screen.getByRole('textbox', { name: 'Field label' })).toHaveFocus();
+      await user.keyboard('{Escape}');
+      expect(handleEditingChange).toHaveBeenLastCalledWith(false);
+
+      rerender(
+        <QuickFormField
+          label="Invoice"
+          onLabelChange={vi.fn()}
+          isEditingLabel={false}
+          onIsEditingLabelChange={handleEditingChange}
+        />
+      );
+      await user.click(screen.getByRole('button', { name: 'Field label: Invoice' }));
+      expect(handleEditingChange).toHaveBeenLastCalledWith(true);
+    });
+
+    it('keeps the label as-is while disabled', async () => {
+      const user = userEvent.setup();
+      render(<QuickFormField label="Invoice" onLabelChange={vi.fn()} disabled />);
+      const trigger = screen.getByRole('button', { name: 'Field label: Invoice' });
+      expect(trigger).toHaveAttribute('aria-disabled', 'true');
+      await user.click(trigger);
+      expect(screen.queryByRole('textbox', { name: 'Field label' })).not.toBeInTheDocument();
+    });
+
+    it('names and fills an empty label from strings', () => {
+      render(
+        <QuickFormField
+          label=""
+          onLabelChange={vi.fn()}
+          strings={{ labelAriaLabel: 'Feldname', labelPlaceholder: 'Unbenanntes Feld' }}
+        />
+      );
+      expect(
+        screen.getByRole('button', { name: 'Feldname: Unbenanntes Feld' })
+      ).toBeInTheDocument();
+    });
+
+    it('leaves a string label static without onLabelChange', () => {
+      render(<QuickFormField label="Invoice" />);
+      expect(screen.queryByRole('button', { name: /Field label/ })).not.toBeInTheDocument();
+      expect(screen.getByText('Invoice')).toBeInTheDocument();
+    });
+
+    it.each([
+      ['with header controls', { onRequiredChange: vi.fn() }],
+      ['alone', { showFieldActions: false }],
+    ] as const)('renders labelAddon before the label %s', (_, props) => {
+      render(
+        <QuickFormField
+          label="Invoice"
+          onLabelChange={vi.fn()}
+          labelAddon={<button type="button">Drag to reorder</button>}
+          {...props}
+        />
+      );
+      const handle = screen.getByRole('button', { name: 'Drag to reorder' });
+      const label = screen.getByRole('button', { name: 'Field label: Invoice' });
+      expect(handle.compareDocumentPosition(label) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
+    it('renders labelAddon beside the computed label too', () => {
+      render(<QuickFormField labelAddon={<span>handle</span>} onRequiredChange={vi.fn()} />);
+      expect(screen.getByText('handle')).toBeInTheDocument();
+      expect(screen.getByText('String value', { selector: 'label' })).toBeInTheDocument();
+    });
+  });
+
   describe('value modes', () => {
     const FOUR_MODES = ['literal', 'expression', 'variable', 'prompt'] as const;
     const VARIABLES = [

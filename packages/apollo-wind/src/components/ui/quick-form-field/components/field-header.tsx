@@ -8,6 +8,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { FormFieldHeader } from '@/components/ui/form-field';
+import { InfoTooltip } from '@/components/ui/info-tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -19,8 +20,17 @@ import type { QuickFieldType, QuickFormFieldOption, QuickFormFieldStrings } from
 import { FIELD_TYPE_META, FIELD_TYPE_ORDER } from '../types';
 import type { VariablePickerSource } from '../utils';
 
+/**
+ * While the editable label is open, each box around it grows to the header's actions, so the
+ * editor fills that space instead of an `<input>`'s default width. Read mode keeps them sized to
+ * the label, so the asterisk and info icon stay beside the text.
+ */
+export const GROW_WHILE_EDITING = 'has-[[data-slot=editable-text-input]]:flex-1';
+
 export function FieldHeader({
   label,
+  labelAddon,
+  tooltip,
   fieldId,
   fieldLabel,
   required,
@@ -40,6 +50,8 @@ export function FieldHeader({
   headerActions,
 }: {
   label?: ReactNode;
+  labelAddon?: ReactNode;
+  tooltip?: ReactNode;
   fieldId: string;
   fieldLabel: string;
   required?: boolean;
@@ -69,17 +81,61 @@ export function FieldHeader({
 
   const hasActions =
     !!onFieldTypeChange || !!onRequiredChange || showFieldActions || headerActions != null;
+  // A blank string is no tooltip, as in FormFieldLabel: an info trigger onto nothing is worse.
+  const hasTooltip =
+    tooltip != null && tooltip !== false && !(typeof tooltip === 'string' && !tooltip.trim());
+  // FormFieldHeader places the tooltip after its own label; beside any other, it is placed here.
+  const ownLabel =
+    label != null && hasTooltip ? (
+      <span
+        className={cn(
+          'flex min-w-0 items-center',
+          GROW_WHILE_EDITING,
+          // The reference it shows follows the label, so it waits until the edit is done.
+          '[&:has([data-slot=editable-text-input])>[data-slot=info-tooltip]]:hidden'
+        )}
+      >
+        {label}
+        <InfoTooltip content={tooltip} aria-label={strings.tooltipAriaLabel} />
+      </span>
+    ) : (
+      label
+    );
+  const leading =
+    labelAddon != null ? (
+      <>
+        {labelAddon}
+        {ownLabel}
+      </>
+    ) : (
+      ownLabel
+    );
   // A consumer's own label is not wrapped in FormFieldHeader's <label>: it may hold controls of
   // its own. With nothing beside it, the header would render nothing, so it stands alone.
-  if (label != null && !hasActions) return <>{label}</>;
+  if (label != null && !hasActions) {
+    const alone =
+      labelAddon != null ? (
+        <div className={cn('flex min-w-0 items-center gap-2', GROW_WHILE_EDITING)}>{leading}</div>
+      ) : (
+        ownLabel
+      );
+    return hasTooltip ? <TooltipProvider delayDuration={300}>{alone}</TooltipProvider> : alone;
+  }
 
   return (
     <TooltipProvider delayDuration={300}>
       <FormFieldHeader
+        // FormFieldHeader's label area is its first child and its actions the second. While the
+        // label is edited, the actions step aside so a narrow header still has room to type
+        // (important, since the actions row sets its display inline). The header's own `min-h-6`
+        // holds the row's height meanwhile.
+        className="[&:has([data-slot=editable-text-input])>:first-child]:flex-1 [&:has([data-slot=editable-text-input])>:nth-child(2)]:!hidden"
         label={label == null ? fieldLabel : undefined}
         htmlFor={fieldId}
         required={required}
-        leading={label}
+        tooltip={label == null ? tooltip : undefined}
+        tooltipAriaLabel={strings.tooltipAriaLabel}
+        leading={leading}
         actions={
           hasActions ? (
             <>
