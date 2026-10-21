@@ -55,6 +55,11 @@ interface FieldMenuBaseProps<Id extends string> {
   triggerLabel?: string;
   /** Overrides for any subset of the English strings. */
   strings?: Partial<ValueModeStrings>;
+  /**
+   * Called as the menu closes, before it returns focus to its trigger. Call `preventDefault` to keep
+   * focus elsewhere, such as on the field's control after a mode is chosen.
+   */
+  onCloseAutoFocus?: (event: Event) => void;
 }
 
 /**
@@ -142,6 +147,7 @@ export function FieldMenu<Id extends string = ValueMode>({
   literalDescription,
   triggerLabel: triggerLabelOverride,
   strings,
+  onCloseAutoFocus,
 }: FieldMenuProps<Id>) {
   const text = { ...DEFAULT_VALUE_MODE_STRINGS, ...strings };
   const checkedMode = checked ?? mode;
@@ -183,7 +189,7 @@ export function FieldMenu<Id extends string = ValueMode>({
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end" className="w-56">
+      <DropdownMenuContent align="end" className="w-56" onCloseAutoFocus={onCloseAutoFocus}>
         {!modesDisabled &&
           resolvedModes.map((item) => (
             <ValueModeMenuItem

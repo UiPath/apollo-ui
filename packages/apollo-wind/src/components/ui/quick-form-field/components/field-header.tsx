@@ -1,6 +1,5 @@
 import { Asterisk, ChevronDown } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -12,13 +11,13 @@ import { FormFieldHeader } from '@/components/ui/form-field';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import type { VariablePickerItem } from '@/components/ui/variable-picker';
 import { cn } from '@/lib';
 import { AiAssistAction } from '../../field-actions/ai-assist-action';
 import { COLLAPSED_HIDDEN, COLLAPSED_ONLY, FIELD_ACTION_CLASS } from '../../field-actions/collapse';
 import { InsertVariableAction } from '../../field-actions/insert-variable-action';
 import type { QuickFieldType, QuickFormFieldOption, QuickFormFieldStrings } from '../types';
 import { FIELD_TYPE_META, FIELD_TYPE_ORDER } from '../types';
+import type { VariablePickerSource } from '../utils';
 
 export function FieldHeader({
   label,
@@ -55,33 +54,14 @@ export function FieldHeader({
   isExpression: boolean;
   showFieldActions: boolean;
   onValueChange?: (value: string) => void;
-  variables: QuickFormFieldOption[];
+  variables: VariablePickerSource;
   onGenerateWithAi?: (prompt: string) => void;
-  /** See QuickFormFieldProps.onInsertVariable. */
+  /** See QuickFormFieldProps.onInsertVariable. Omitted, the Insert action does not render. */
   onInsertVariable?: (variable: QuickFormFieldOption) => void;
   /** See QuickFormFieldStrings. */
   strings: QuickFormFieldStrings;
   headerActions?: ReactNode;
 }) {
-  // Built together so the entry handed to `onInsertVariable` is the one the
-  // consumer supplied, not a reconstruction. Memoized because the picker items
-  // were being rebuilt — recursively, with a fresh object per variable and per
-  // child — on every render of every row, while the picker was closed.
-  const [pickerItems, optionsBySelectionId] = useMemo(() => {
-    // Ids come from tree position: neither labels nor values are required to be unique.
-    const byId = new Map<string, QuickFormFieldOption>();
-    const toItem = (v: QuickFormFieldOption, id: string): VariablePickerItem => {
-      byId.set(id, v);
-      return {
-        id,
-        label: v.label,
-        ...(v.value ? { value: v.value } : {}),
-        ...(v.type ? { type: v.type } : {}),
-        ...(v.children ? { children: v.children.map((c, i) => toItem(c, `${id}/${i}`)) } : {}),
-      };
-    };
-    return [variables.map((v, i) => toItem(v, String(i))), byId] as const;
-  }, [variables]);
   const typeMeta = FIELD_TYPE_META[fieldType];
   const typeLabel = strings.typeLabels[fieldType] ?? typeMeta.label;
   const collapsedTextClass = cn(COLLAPSED_HIDDEN, compact && '!hidden');
@@ -228,27 +208,22 @@ export function FieldHeader({
                         }}
                       />
                     )}
-                    <InsertVariableAction
-                      // Rendered as supplied, so what the tree shows is what it inserts.
-                      variables={pickerItems}
-                      compact={compact}
-                      disabled={!onValueChange}
-                      strings={{
-                        label: strings.insertLabel,
-                        ariaLabel: strings.insertAriaLabel,
-                        searchPlaceholder: strings.insertSearchPlaceholder,
-                        empty: strings.insertEmpty,
-                      }}
-                      // The parent owns the caret, so the header only reports the choice. Hand back
-                      // the consumer's own entry: rebuilding it from the picker item would drop `type`.
-                      onInsert={
-                        onInsertVariable &&
-                        ((value, item) =>
-                          onInsertVariable(
-                            optionsBySelectionId.get(item.id) ?? { label: item.label, value }
-                          ))
-                      }
-                    />
+                    {onInsertVariable && (
+                      <InsertVariableAction
+                        // Rendered as supplied, so what the tree shows is what it inserts.
+                        variables={variables.items}
+                        compact={compact}
+                        disabled={!onValueChange}
+                        strings={{
+                          label: strings.insertLabel,
+                          ariaLabel: strings.insertAriaLabel,
+                          searchPlaceholder: strings.insertSearchPlaceholder,
+                          empty: strings.insertEmpty,
+                        }}
+                        // The parent owns the caret, so the header only reports the choice.
+                        onInsert={(_, item) => onInsertVariable(variables.resolve(item))}
+                      />
+                    )}
                   </>
                 )}
               </div>

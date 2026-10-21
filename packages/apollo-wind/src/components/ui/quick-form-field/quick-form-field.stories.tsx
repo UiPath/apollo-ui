@@ -1,16 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Braces, Code2, MessageSquareText, Trash2, Type } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { useId, useState } from 'react';
 import { Button } from '../button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '../dropdown-menu';
-import { InputGroupButton, InputGroupInput } from '../input-group';
 import { Label, RequiredIndicator } from '../label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../select';
 import { QuickFormField } from './quick-form-field';
 import type { QuickFieldType, QuickFormFieldMode, QuickFormFieldStrings } from './types';
 
@@ -32,9 +24,10 @@ the form-field anatomy (\`FormField\`, \`FormFieldLabel\`, \`InputGroup\`). See
 - Left lock icon toggles Editable / Read-only for the person filling in the
   form. The author can still edit a read-only value; \`disabled\` is what
   disables the controls.
-- Right value-mode icon switches between Fixed value and Expression,
-  updating the value styling. \`renderModeControl\` supplies the control for any mode, and a
-  consumer's \`trailingAddon\` can offer all four. See **Variable and prompt modes**.
+- Right value-mode icon switches between the modes \`valueModes\` lists: Fixed value and
+  Expression by default, plus Variable (a picker over \`variables\`) and Prompt (an agent
+  textarea). \`confirmModeChange\` asks before a lossy switch, and \`renderModeControl\`
+  replaces the control for any mode. See **Variable and prompt modes**.
 - Field type dropdown swaps the control itself: String, Text area, Integer,
   Decimal number, Date, Date and time, Boolean, Single select, Multi select,
   Array, and File each render their own matching input. \`fieldTypes\` chooses which
@@ -439,44 +432,10 @@ export const Disabled: Story = {
   },
 };
 
-const MODE_ITEMS: { mode: QuickFormFieldMode; label: string; icon: typeof Type }[] = [
-  { mode: 'literal', label: 'Fixed value', icon: Type },
-  { mode: 'expression', label: 'Expression', icon: Code2 },
-  { mode: 'variable', label: 'Variable', icon: Braces },
-  { mode: 'prompt', label: 'Prompt', icon: MessageSquareText },
-];
-
 const WORKFLOW_VARIABLES = [
-  { label: 'Customer name', value: 'vars.customerName' },
-  { label: 'Invoice number', value: 'vars.invoiceNumber' },
+  { label: 'Customer name', value: 'vars.customerName', type: 'string' },
+  { label: 'Invoice number', value: 'vars.invoiceNumber', type: 'string' },
 ];
-
-function FourModeMenu({
-  mode,
-  onModeChange,
-}: {
-  mode: QuickFormFieldMode;
-  onModeChange: (mode: QuickFormFieldMode) => void;
-}) {
-  const active = MODE_ITEMS.find((item) => item.mode === mode) ?? MODE_ITEMS[0];
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <InputGroupButton icon size="3xs" aria-label="Choose value mode">
-          <active.icon />
-        </InputGroupButton>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        {MODE_ITEMS.map((item) => (
-          <DropdownMenuItem key={item.mode} onClick={() => onModeChange(item.mode)}>
-            <item.icon />
-            {item.label}
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
 
 function ValueModesDemo() {
   const fieldId = useId();
@@ -488,6 +447,11 @@ function ValueModesDemo() {
     prompt: '',
   });
   const setValue = (value: string) => setValues((current) => ({ ...current, [mode]: value }));
+  // Each mode keeps its own value, except that leaving prompt mode drops the prompt.
+  const changeMode = (next: QuickFormFieldMode) => {
+    if (mode === 'prompt') setValues((current) => ({ ...current, prompt: '' }));
+    setMode(next);
+  };
 
   return (
     <div className="w-80">
@@ -500,39 +464,10 @@ function ValueModesDemo() {
         showLock={false}
         showFieldActions={false}
         mode={mode}
-        onModeChange={setMode}
-        trailingAddon={<FourModeMenu mode={mode} onModeChange={setMode} />}
-        renderModeControl={(activeMode, control) => {
-          if (activeMode === 'variable') {
-            return (
-              <Select value={control.value} onValueChange={control.onValueChange}>
-                <SelectTrigger id={control.id} className="min-w-0 flex-1">
-                  <SelectValue placeholder="Select a variable" />
-                </SelectTrigger>
-                <SelectContent>
-                  {WORKFLOW_VARIABLES.map((variable) => (
-                    <SelectItem key={variable.value} value={variable.value}>
-                      {variable.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            );
-          }
-          if (activeMode === 'prompt') {
-            return (
-              <InputGroupInput
-                id={control.id}
-                value={control.value}
-                onChange={(event) => control.onValueChange?.(event.target.value)}
-                onBlur={control.onBlur}
-                readOnly={control.readOnly}
-                placeholder="Describe the value for the agent to fill in"
-              />
-            );
-          }
-          return null;
-        }}
+        onModeChange={changeMode}
+        valueModes={['literal', 'expression', 'variable', 'prompt']}
+        confirmModeChange={(from) => from === 'prompt' && values.prompt !== ''}
+        variables={WORKFLOW_VARIABLES}
       />
     </div>
   );
@@ -545,7 +480,7 @@ export const ValueModes: Story = {
     docs: {
       description: {
         story:
-          'A field can be a literal, an expression, a bound variable or an agent prompt. `renderModeControl` supplies the control for any mode and returns nothing to keep the built-in one, so literal and expression still render the defaults here. `trailingAddon` carries the four-mode switch, and it renders for every type, including selects.',
+          'A field can be a literal, an expression, a bound variable or an agent prompt. `valueModes` lists the modes the menu offers. Variable mode is a picker over `variables`, and prompt mode a growing textarea in the agent-tinted box. `confirmModeChange` asks before a switch that would lose the value. Here leaving prompt mode clears the prompt, so that switch asks first when the prompt has text. `renderModeControl` still replaces the control for any mode.',
       },
     },
   },

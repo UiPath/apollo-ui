@@ -1,8 +1,10 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
+import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { QuickFormField } from './quick-form-field';
+import type { QuickFormFieldMode } from './types';
 
 describe('QuickFormField', () => {
   it('keeps the value editable when locked', () => {
@@ -726,14 +728,19 @@ describe('QuickFormField', () => {
     );
   });
 
-  it('grows the multi-select box to hold wrapped chips, and only in literal mode', () => {
-    const { container, rerender } = render(
-      <QuickFormField locked fieldType="multi-select" onValueChange={vi.fn()} />
+  it('keeps the multi-select on one row, counting chips that do not fit', () => {
+    const { container } = render(
+      <QuickFormField
+        locked
+        fieldType="multi-select"
+        value={JSON.stringify(['option-1', 'option-2', 'option-3'])}
+        onValueChange={vi.fn()}
+        strings={{ multiSelect: { overflowLabel: (count) => `${count} weitere` } }}
+      />
     );
-    expect(container.querySelector('[role="group"]')).toHaveAttribute('data-layout', 'grow');
-
-    rerender(<QuickFormField fieldType="multi-select" mode="expression" onValueChange={vi.fn()} />);
     expect(container.querySelector('[role="group"]')).toHaveAttribute('data-layout', 'row');
+    // The count is measured, so every count it could show (1 to 2 of 3 chips) is mounted.
+    expect(screen.getAllByText(/weitere/)).toHaveLength(2);
   });
 
   it('has no accessibility violations', async () => {
@@ -747,6 +754,294 @@ describe('QuickFormField', () => {
     );
     const results = await axe(container);
     expect(results).toHaveNoViolations();
+  });
+
+  describe('value modes', () => {
+    const FOUR_MODES = ['literal', 'expression', 'variable', 'prompt'] as const;
+    const VARIABLES = [
+      { label: 'Customer name', value: 'vars.customerName', type: 'string' },
+      { label: 'Invoice total', value: 'vars.invoiceTotal', type: 'number' },
+    ];
+
+    it('offers the listed modes, in order', async () => {
+      const user = userEvent.setup();
+      render(<QuickFormField valueModes={['variable', 'literal']} onModeChange={vi.fn()} />);
+      await user.click(screen.getByRole('button', { name: 'Choose value mode' }));
+      const items = screen.getAllByRole('menuitemradio');
+      expect(items.map((item) => item.textContent)).toEqual([
+        expect.stringContaining('Variable'),
+        expect.stringContaining('Fixed value'),
+      ]);
+    });
+
+    it('offers no switch with a single mode, only the actions', async () => {
+      const user = userEvent.setup();
+      render(
+        <QuickFormField
+          valueModes={['literal']}
+          onModeChange={vi.fn()}
+          more={{ onClear: vi.fn() }}
+        />
+      );
+      expect(screen.queryByRole('button', { name: 'Choose value mode' })).not.toBeInTheDocument();
+      await user.click(screen.getByRole('button', { name: 'More value actions' }));
+      expect(screen.queryByRole('menuitemradio')).not.toBeInTheDocument();
+    });
+
+    it('marks Clear value as destructive', async () => {
+      const user = userEvent.setup();
+      render(<QuickFormField onModeChange={vi.fn()} more={{ onClear: vi.fn() }} />);
+      await user.click(screen.getByRole('button', { name: 'Choose value mode' }));
+      expect(screen.getByRole('menuitem', { name: 'Clear value' })).toHaveClass('text-error');
+    });
+
+    it('renders a variable picker in variable mode, and drops the header Insert', async () => {
+      const user = userEvent.setup();
+      const handleValueChange = vi.fn();
+      render(
+        <QuickFormField mode="variable" onValueChange={handleValueChange} variables={VARIABLES} />
+      );
+      expect(screen.queryByRole('button', { name: 'Insert variable' })).not.toBeInTheDocument();
+      await user.click(screen.getByText('Select a variable'));
+      await user.click(await screen.findByText('Invoice total'));
+      expect(handleValueChange).toHaveBeenCalledWith('vars.invoiceTotal');
+    });
+
+    it('shows the bound reference in variable mode', () => {
+      render(<QuickFormField mode="variable" value="vars.customerName" onValueChange={vi.fn()} />);
+      expect(screen.getByText('vars.customerName')).toBeInTheDocument();
+    });
+
+    it("hands a variable-mode pick to onInsertVariable as the consumer's own entry", async () => {
+      const user = userEvent.setup();
+      const handleInsert = vi.fn();
+      const handleValueChange = vi.fn();
+      render(
+        <QuickFormField
+          mode="variable"
+          value="vars.customerName"
+          onValueChange={handleValueChange}
+          onInsertVariable={handleInsert}
+          variables={VARIABLES}
+        />
+      );
+      await user.click(screen.getByText('vars.customerName'));
+      await user.click(await screen.findByText('Invoice total'));
+      expect(handleInsert).toHaveBeenCalledWith(VARIABLES[1], {
+        value: 'vars.customerName',
+        caret: null,
+      });
+      expect(handleValueChange).not.toHaveBeenCalled();
+    });
+
+    it('disables the variable picker while disabled', () => {
+      render(
+        <QuickFormField disabled mode="variable" onValueChange={vi.fn()} variables={VARIABLES} />
+      );
+      expect(screen.getByText('Select a variable').closest('button')).toBeDisabled();
+    });
+
+    it('keeps a consumer variable control, and the header Insert beside it', () => {
+      render(
+        <QuickFormField
+          mode="variable"
+          onValueChange={vi.fn()}
+          variables={VARIABLES}
+          renderModeControl={(mode) => (mode === 'variable' ? <span>typed binding</span> : null)}
+        />
+      );
+      expect(screen.getByText('typed binding')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Insert variable' })).toBeInTheDocument();
+    });
+
+    it('renders the prompt in an agent box that grows with it', () => {
+      const handleValueChange = vi.fn();
+      const { container } = render(
+        <QuickFormField mode="prompt" value="" onValueChange={handleValueChange} />
+      );
+      const prompt = screen.getByPlaceholderText('Describe the value');
+      expect(prompt.tagName).toBe('TEXTAREA');
+      const group = container.querySelector('[role="group"]');
+      expect(group).toHaveAttribute('data-layout', 'grow');
+      expect(group).toHaveClass('border-gradient-agent-start/60');
+      fireEvent.change(prompt, { target: { value: 'The customer on the invoice' } });
+      expect(handleValueChange).toHaveBeenCalledWith('The customer on the invoice');
+    });
+
+    it.each([
+      ['variable', 'Select a variable'],
+      ['prompt', 'Describe the value'],
+    ] as const)('focuses the %s control when switched to it', async (mode, text) => {
+      const { rerender } = render(<QuickFormField mode="literal" onValueChange={vi.fn()} />);
+      rerender(<QuickFormField mode={mode} onValueChange={vi.fn()} />);
+      const control = () =>
+        mode === 'prompt'
+          ? screen.getByPlaceholderText(text)
+          : screen.getByText(text).closest('button');
+      await waitFor(() => expect(control()).toHaveFocus());
+    });
+
+    // The menu and dialog return focus to where they opened from once they finish closing, which
+    // in a browser lands after the frame the control takes focus in. jsdom closes them at once, so
+    // these watch the trigger instead of the timing.
+    describe('focus as the menu or dialog closes', () => {
+      it('keeps focus off the menu trigger after a switch', async () => {
+        const user = userEvent.setup();
+        render(<QuickFormField valueModes={FOUR_MODES} onModeChange={vi.fn()} />);
+        const trigger = screen.getByRole('button', { name: 'Choose value mode' });
+        await user.click(trigger);
+        const focus = vi.spyOn(trigger, 'focus');
+        await user.click(screen.getByRole('menuitemradio', { name: /Prompt/ }));
+        expect(focus).not.toHaveBeenCalled();
+      });
+
+      it('returns focus to the menu trigger when the active mode is picked again', async () => {
+        const user = userEvent.setup();
+        render(<QuickFormField valueModes={FOUR_MODES} onModeChange={vi.fn()} />);
+        const trigger = screen.getByRole('button', { name: 'Choose value mode' });
+        await user.click(trigger);
+        const focus = vi.spyOn(trigger, 'focus');
+        await user.click(screen.getByRole('menuitemradio', { name: /Fixed value/ }));
+        expect(focus).toHaveBeenCalled();
+      });
+
+      it('leaves focus on the new control after a confirmed switch', async () => {
+        const user = userEvent.setup();
+        function Switching() {
+          const [mode, setMode] = useState<QuickFormFieldMode>('literal');
+          return (
+            <QuickFormField
+              value="Hello"
+              mode={mode}
+              valueModes={FOUR_MODES}
+              onModeChange={setMode}
+              onValueChange={vi.fn()}
+              confirmModeChange={() => true}
+            />
+          );
+        }
+        render(<Switching />);
+        await user.click(screen.getByRole('button', { name: 'Choose value mode' }));
+        await user.click(screen.getByRole('menuitemradio', { name: /Prompt/ }));
+        const confirm = screen.getByRole('button', { name: 'Switch' });
+        // Every element focused from here on, other than the button clicked.
+        const focused: HTMLElement[] = [];
+        const nativeFocus = HTMLElement.prototype.focus;
+        const focus = vi.spyOn(HTMLElement.prototype, 'focus').mockImplementation(function (
+          this: HTMLElement,
+          options?: FocusOptions
+        ) {
+          if (this !== confirm) focused.push(this);
+          nativeFocus.call(this, options);
+        });
+        await user.click(confirm);
+        await waitFor(() =>
+          expect(screen.getByPlaceholderText('Describe the value')).toHaveFocus()
+        );
+        expect(focused.every((el) => el.tagName === 'TEXTAREA')).toBe(true);
+        focus.mockRestore();
+      });
+    });
+
+    it('does not take focus on mount', async () => {
+      render(<QuickFormField mode="variable" onValueChange={vi.fn()} />);
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      expect(document.body).toHaveFocus();
+    });
+
+    describe('confirmModeChange', () => {
+      const openMenuAndPick = async (user: ReturnType<typeof userEvent.setup>, name: RegExp) => {
+        await user.click(screen.getByRole('button', { name: 'Choose value mode' }));
+        await user.click(screen.getByRole('menuitemradio', { name }));
+      };
+
+      it('switches straight away when it returns false', async () => {
+        const user = userEvent.setup();
+        const handleModeChange = vi.fn();
+        render(
+          <QuickFormField
+            valueModes={FOUR_MODES}
+            onModeChange={handleModeChange}
+            confirmModeChange={() => false}
+          />
+        );
+        await openMenuAndPick(user, /Prompt/);
+        expect(handleModeChange).toHaveBeenCalledWith('prompt');
+        expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+      });
+
+      it('asks first, and switches only once confirmed', async () => {
+        const user = userEvent.setup();
+        const handleModeChange = vi.fn();
+        const confirm = vi.fn(() => true);
+        render(
+          <QuickFormField
+            value="Hello"
+            valueModes={FOUR_MODES}
+            onModeChange={handleModeChange}
+            confirmModeChange={confirm}
+          />
+        );
+        await openMenuAndPick(user, /Prompt/);
+        expect(confirm).toHaveBeenCalledWith('literal', 'prompt');
+        expect(screen.getByRole('alertdialog', { name: 'Switch value mode?' })).toBeInTheDocument();
+        expect(handleModeChange).not.toHaveBeenCalled();
+
+        await user.click(screen.getByRole('button', { name: 'Switch' }));
+        expect(handleModeChange).toHaveBeenCalledOnce();
+        expect(handleModeChange).toHaveBeenCalledWith('prompt');
+      });
+
+      it('keeps the mode when cancelled', async () => {
+        const user = userEvent.setup();
+        const handleModeChange = vi.fn();
+        render(
+          <QuickFormField
+            valueModes={FOUR_MODES}
+            onModeChange={handleModeChange}
+            confirmModeChange={() => true}
+          />
+        );
+        await openMenuAndPick(user, /Prompt/);
+        await user.click(screen.getByRole('button', { name: 'Cancel' }));
+        expect(handleModeChange).not.toHaveBeenCalled();
+        expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+      });
+
+      it('words the dialog from what it returns, then from strings', async () => {
+        const user = userEvent.setup();
+        render(
+          <QuickFormField
+            valueModes={FOUR_MODES}
+            onModeChange={vi.fn()}
+            confirmModeChange={() => ({ title: 'Drop the prompt?', confirmLabel: 'Drop' })}
+            strings={{
+              valueModes: { lossyDescription: 'Der Wert geht verloren.', cancel: 'Abbrechen' },
+            }}
+          />
+        );
+        await openMenuAndPick(user, /Prompt/);
+        const dialog = screen.getByRole('alertdialog', { name: 'Drop the prompt?' });
+        expect(dialog).toHaveTextContent('Der Wert geht verloren.');
+        expect(screen.getByRole('button', { name: 'Drop' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Abbrechen' })).toBeInTheDocument();
+      });
+
+      it('does not ask when the active mode is picked again', async () => {
+        const user = userEvent.setup();
+        const confirm = vi.fn(() => true);
+        render(
+          <QuickFormField
+            valueModes={FOUR_MODES}
+            onModeChange={vi.fn()}
+            confirmModeChange={confirm}
+          />
+        );
+        await openMenuAndPick(user, /Fixed value/);
+        expect(confirm).not.toHaveBeenCalled();
+        expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+      });
+    });
   });
 
   describe('strings', () => {
@@ -789,6 +1084,50 @@ describe('QuickFormField', () => {
       await user.click(screen.getByRole('button', { name: 'Choose value mode' }));
       expect(screen.getByText('Fester Wert')).toBeInTheDocument();
       expect(screen.getByText('Use a literal string value')).toBeInTheDocument();
+    });
+
+    it('reads the variable and prompt modes from strings.valueModes', async () => {
+      const user = userEvent.setup();
+      const { rerender } = render(
+        <QuickFormField
+          valueModes={['literal', 'variable', 'prompt']}
+          onModeChange={vi.fn()}
+          strings={{ valueModes: { variableTitle: 'Variable binden', promptTitle: 'Anweisung' } }}
+        />
+      );
+      await user.click(screen.getByRole('button', { name: 'Choose value mode' }));
+      expect(screen.getByRole('menuitemradio', { name: /Variable binden/ })).toBeInTheDocument();
+      expect(screen.getByRole('menuitemradio', { name: /Anweisung/ })).toBeInTheDocument();
+      await user.keyboard('{Escape}');
+
+      rerender(
+        <QuickFormField
+          mode="variable"
+          onValueChange={vi.fn()}
+          strings={{ valueModes: { variablePlaceholder: 'Variable wählen' } }}
+        />
+      );
+      expect(screen.getByText('Variable wählen')).toBeInTheDocument();
+    });
+
+    it("reads the multi-select's search, empty and Clear all text from strings", async () => {
+      const user = userEvent.setup();
+      render(
+        <QuickFormField
+          fieldType="multi-select"
+          value={JSON.stringify(['option-1'])}
+          onValueChange={vi.fn()}
+          strings={{
+            multiSelectSearchPlaceholder: 'Suchen...',
+            multiSelectEmpty: 'Nichts gefunden.',
+            multiSelectClearAll: (count) => `Alle ${count} entfernen`,
+          }}
+        />
+      );
+      await user.click(screen.getByRole('combobox'));
+      expect(screen.getByText('Alle 1 entfernen')).toBeInTheDocument();
+      await user.type(screen.getByPlaceholderText('Suchen...'), 'zzz');
+      expect(screen.getByText('Nichts gefunden.')).toBeInTheDocument();
     });
 
     it("reads the variable picker's search and empty text from strings", async () => {

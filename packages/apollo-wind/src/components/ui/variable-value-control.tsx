@@ -31,7 +31,11 @@ interface VariableValueControlBaseProps {
   name?: string;
   /** The bound reference, such as `$vars.orderId`. */
   value?: string;
-  onChange: (reference: string) => void;
+  /**
+   * Also gets the picked entry, as supplied in `variables`, for a consumer that reads more than the
+   * reference, such as its type. A host picker reports only the reference, so its pick has none.
+   */
+  onChange: (reference: string, item?: VariablePickerItem) => void;
   /** Called when the trigger loses focus, as a form library marks a field touched. */
   onBlur?: () => void;
   /** Also gets the trigger, as a form library's field ref does to focus an invalid field. */
@@ -127,16 +131,18 @@ const VariableValueControl = React.forwardRef<HTMLButtonElement, VariableValueCo
     );
     const close = React.useCallback(() => setOpen(false), []);
     const commit = React.useCallback(
-      (next: string) => {
-        if (next) onChange(next);
+      (next: string, item?: VariablePickerItem) => {
+        if (next) onChange(next, item);
         setOpen(false);
       },
       [onChange]
     );
     const select = React.useCallback(
-      (item: VariablePickerItem) => commit(item.value ?? ''),
+      (item: VariablePickerItem) => commit(item.value ?? '', item),
       [commit]
     );
+    // One argument, so nothing a host passes beyond the value can stand in for an entry.
+    const hostSelect = React.useCallback((next: string) => commit(next), [commit]);
 
     return (
       <Popover open={open} onOpenChange={changeOpen}>
@@ -163,7 +169,7 @@ const VariableValueControl = React.forwardRef<HTMLButtonElement, VariableValueCo
             <VariablePickerSlot
               render={renderPicker}
               value={reference || undefined}
-              onSelect={commit}
+              onSelect={hostSelect}
               close={close}
             />
           ) : (
