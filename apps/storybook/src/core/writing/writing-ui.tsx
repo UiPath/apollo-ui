@@ -255,10 +255,13 @@ function storyHref(title: string, story: string) {
 export function PageLink({
   title,
   story,
+  className = 'sb-writing-link',
   children,
 }: {
   title: string;
   story: string;
+  /** Defaults to the inline text link style used inside Writing pages. */
+  className?: string;
   children: ReactNode;
 }) {
   const onClick = (event: MouseEvent<HTMLAnchorElement>) => {
@@ -269,7 +272,7 @@ export function PageLink({
     linkTo(title, story)();
   };
   return (
-    <a href={storyHref(title, story)} target="_top" className="sb-writing-link" onClick={onClick}>
+    <a href={storyHref(title, story)} target="_top" className={className} onClick={onClick}>
       {children}
     </a>
   );
