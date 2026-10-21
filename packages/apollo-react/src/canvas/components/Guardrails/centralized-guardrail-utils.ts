@@ -18,7 +18,6 @@ export type CentralizedGuardrailIdentity = Pick<
   'validator' | 'name' | 'isByo'
 >;
 
-/** What the guardrails are filtered for: one kind of agent (the default), or GenAI Activities. */
 export type CentralizedGuardrailTarget =
   | { target?: 'agent'; isConversational?: boolean }
   | { target: 'genai'; isConversational?: never };

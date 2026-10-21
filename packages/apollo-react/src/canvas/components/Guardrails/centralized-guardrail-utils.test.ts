@@ -78,7 +78,6 @@ describe('getApplicableCentralizedGuardrails', () => {
   });
 
   describe('with GenAI Activities in the policy', () => {
-    // `a` has no `appliesToGenAiActivities`, as in a policy response that predates it.
     const policy = [
       guardrail({ validator: 'a' }),
       guardrail({
