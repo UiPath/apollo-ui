@@ -266,8 +266,10 @@ interface EditingVariable {
  * with its id on hover, an output count, a "Focus on node" action, and an add
  * action. Variable rows (`isVariableRow`, by default top-level Outputs and
  * Variables) can be edited, in the built-in dialog or the host's own
- * (`onRequestEditVariable`), and deleted. Asset rows can be edited
- * (`onRequestEditAsset`) and deleted (`onDeleteAsset`) by the host. Filters come from the host.
+ * (`onRequestEditVariable`), and deleted. Asset rows share those two callbacks
+ * (the row's `section` tells them apart) but never open the built-in dialog,
+ * so a host can keep the dialog for variables and edit assets in its own.
+ * Filters come from the host.
  *
  * The component is the body of a panel tab: compose it inside
  * `NodePropertyPanel`, which owns the chrome.
@@ -325,8 +327,6 @@ export function NodeVariablesPanel({
   onEditVariable,
   onRequestEditVariable,
   onDeleteVariable,
-  onRequestEditAsset,
-  onDeleteAsset,
   onCopy,
   leading,
   rowWrapper,
@@ -336,27 +336,38 @@ export function NodeVariablesPanel({
 }: NodeVariablesPanelProps) {
   const { _ } = useSafeLingui();
 
+  // One entry per section whose paths can be prefixed, so a new variable type is one more line.
+  const basePaths = useMemo(
+    () =>
+      new Map<NodeVariablesSection, string | undefined>([
+        ['outputs', outputsBasePath],
+        ['variables', variablesBasePath],
+        ['assets', assetsBasePath],
+      ]),
+    [outputsBasePath, variablesBasePath, assetsBasePath]
+  );
+
   const trees = useMemo<Record<NodeVariablesSection, JsonTreeNode[]>>(
     () => ({
       inputs: buildSourceTree(inputs),
       outputs: buildJsonTree({
         schema: outputs?.schema,
         value: outputs?.value,
-        basePath: outputsBasePath,
+        basePath: basePaths.get('outputs'),
       }),
       variables: buildJsonTree({
         schema: variables?.schema,
         value: variables?.value,
-        basePath: variablesBasePath,
+        basePath: basePaths.get('variables'),
       }),
       assets: buildJsonTree({
         schema: assets?.schema,
         value: assets?.value,
-        basePath: assetsBasePath,
+        basePath: basePaths.get('assets'),
       }),
       nodes: buildSourceTree(nodes),
     }),
-    [inputs, outputs, outputsBasePath, variables, variablesBasePath, assets, assetsBasePath, nodes]
+    [inputs, outputs, variables, assets, nodes, basePaths]
   );
   // One lookup per section: an upstream input also appears in Nodes, and each
   // list's own metadata (label, icon, output count) must win in its section.
@@ -626,11 +637,14 @@ export function NodeVariablesPanel({
     });
   };
 
-  // Variable rows add edit and delete to the tree's own actions.
+  // Variable and asset rows add edit and delete to the tree's own actions.
   const variableActions = (row: NodeVariablesRow, ctx: { defaultActions: NodeAction[] }) => {
     const { node } = row;
     const actions: NodeAction[] = [...ctx.defaultActions];
-    if (onRequestEditVariable || onEditVariable) {
+    // The built-in dialog edits a variable's type and default, which assets don't have:
+    // when onEditVariable is set it takes variable rows, and onRequestEditVariable the rest.
+    const builtIn = Boolean(onEditVariable) && row.section !== 'assets';
+    if (builtIn || onRequestEditVariable) {
       actions.push({
         id: 'edit-variable',
         icon: <Pencil />,
@@ -639,7 +653,7 @@ export function NodeVariablesPanel({
           message: 'Edit {name}',
           values: { name: node.key },
         }),
-        onSelect: () => (onRequestEditVariable ? onRequestEditVariable(row) : openEditDialog(row)),
+        onSelect: () => (builtIn ? openEditDialog(row) : onRequestEditVariable?.(row)),
       });
     }
     if (onDeleteVariable) {
@@ -658,38 +672,6 @@ export function NodeVariablesPanel({
     return actions;
   };
 
-  // Asset rows add the host's edit (rename or reconnect) and delete to the tree's own actions.
-  const assetActions = (row: NodeVariablesRow, ctx: { defaultActions: NodeAction[] }) => {
-    const { node } = row;
-    const actions: NodeAction[] = [...ctx.defaultActions];
-    if (onRequestEditAsset) {
-      actions.push({
-        id: 'edit-asset',
-        icon: <Pencil />,
-        label: _({
-          id: 'canvas.node_variables_panel.edit_asset',
-          message: 'Edit {name}',
-          values: { name: node.key },
-        }),
-        onSelect: () => onRequestEditAsset(row),
-      });
-    }
-    if (onDeleteAsset) {
-      actions.push({
-        id: 'delete-asset',
-        icon: <Trash2 />,
-        label: _({
-          id: 'canvas.node_variables_panel.delete_asset',
-          message: 'Delete {name}',
-          values: { name: node.key },
-        }),
-        tone: 'error',
-        onSelect: () => onDeleteAsset(row),
-      });
-    }
-    return actions;
-  };
-
   const actionsFor =
     (section: NodeVariablesSection): NodeActionsResolver =>
     (node, ctx) => {
@@ -701,7 +683,7 @@ export function NodeVariablesPanel({
       if (node.isArrayItemTemplate) return ctx.defaultActions;
       // Assets are host-managed: a custom isVariableRow never reaches them, nested fields included.
       if (section === 'assets')
-        return isTopLevelAsset(row) ? assetActions(row, ctx) : ctx.defaultActions;
+        return isTopLevelAsset(row) ? variableActions(row, ctx) : ctx.defaultActions;
       return isVariableRow(row) ? variableActions(row, ctx) : ctx.defaultActions;
     };
 
@@ -709,14 +691,7 @@ export function NodeVariablesPanel({
   const renamedReference =
     ({ section, node }: NodeVariablesRow) =>
     (id: string) => {
-      const basePath =
-        section === 'outputs'
-          ? (outputsBasePath ?? '')
-          : section === 'variables'
-            ? (variablesBasePath ?? '')
-            : section === 'assets'
-              ? (assetsBasePath ?? '')
-              : '';
+      const basePath = basePaths.get(section) ?? '';
       const parentSegments = node.segments.slice(0, -1);
       const path = [...parentSegments, id].reduce<string>(appendPathSegment, basePath);
       return referenceFor(section)(path, [...parentSegments, id]);

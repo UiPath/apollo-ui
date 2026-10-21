@@ -999,20 +999,34 @@ describe('NodeVariablesPanel', () => {
     );
   });
 
-  it('calls onRequestEditVariable instead of opening the built-in dialog', async () => {
+  it('calls onRequestEditVariable when there is no built-in dialog', async () => {
     const user = userEvent.setup();
     const onRequestEditVariable = vi.fn();
-    const onEditVariable = vi.fn();
-    renderPanel({
-      defaultExpandedSections: ['variables'],
-      onRequestEditVariable,
-      onEditVariable,
-    });
+    renderPanel({ defaultExpandedSections: ['variables'], onRequestEditVariable });
 
     await user.click(screen.getByRole('button', { name: 'Edit flowTest' }));
 
     expect(onRequestEditVariable).toHaveBeenCalledWith(variableRow('flowTest'));
     expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('keeps the built-in dialog for variables while the host edits assets', async () => {
+    const user = userEvent.setup();
+    const onRequestEditVariable = vi.fn();
+    renderPanel({
+      defaultExpandedSections: ['variables', 'assets'],
+      assets: ASSETS,
+      onEditVariable: vi.fn(),
+      onRequestEditVariable,
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Edit flowTest' }));
+    expect(await screen.findByRole('dialog', { name: 'Edit variable' })).toBeInTheDocument();
+    expect(onRequestEditVariable).not.toHaveBeenCalled();
+    await user.keyboard('{Escape}');
+
+    await user.click(screen.getByRole('button', { name: 'Edit invoiceApiKey' }));
+    expect(onRequestEditVariable).toHaveBeenCalledWith(variableRow('invoiceApiKey', 'assets'));
   });
 
   it('hides the row + for a source that is not addable', () => {
@@ -1130,52 +1144,65 @@ describe('NodeVariablesPanel', () => {
     expect(onAdd).toHaveBeenCalledWith('assets');
   });
 
-  it('gives asset rows host edit and delete actions, but not the variable dialog', async () => {
+  it('gives asset rows the shared edit and delete callbacks, with the row to tell them apart', async () => {
     const user = userEvent.setup();
-    const onRequestEditAsset = vi.fn();
-    const onDeleteAsset = vi.fn();
+    const onRequestEditVariable = vi.fn();
+    const onDeleteVariable = vi.fn();
     renderPanel({
       defaultExpandedSections: ['assets'],
       assets: ASSETS,
       onEditVariable: vi.fn(),
-      onDeleteVariable: vi.fn(),
-      onRequestEditAsset,
-      onDeleteAsset,
+      onRequestEditVariable,
+      onDeleteVariable,
     });
 
     await user.click(screen.getByRole('button', { name: 'Edit invoiceApiKey' }));
     await user.click(screen.getByRole('button', { name: 'Delete invoiceApiKey' }));
 
-    expect(onRequestEditAsset).toHaveBeenCalledWith(variableRow('invoiceApiKey', 'assets'));
-    expect(onDeleteAsset).toHaveBeenCalledWith(variableRow('invoiceApiKey', 'assets'));
+    expect(onRequestEditVariable).toHaveBeenCalledWith(variableRow('invoiceApiKey', 'assets'));
+    expect(onDeleteVariable).toHaveBeenCalledWith(variableRow('invoiceApiKey', 'assets'));
     expect(screen.queryByRole('dialog')).toBeNull();
     // Nested fields aren't assets, so they have no delete action.
     await user.click(screen.getByRole('button', { name: 'Expand erpCredential' }));
     expect(screen.queryByRole('button', { name: 'Delete username' })).toBeNull();
   });
 
-  it('keeps asset rows out of isVariableRow, so a permissive predicate cannot reach them', async () => {
+  it('never opens the built-in dialog for assets, and a permissive isVariableRow cannot reach them', async () => {
     const user = userEvent.setup();
-    const onDeleteVariable = vi.fn();
-    const onDeleteAsset = vi.fn();
     renderPanel({
       defaultExpandedSections: ['assets'],
       assets: ASSETS,
       isVariableRow: () => true,
+      // No onRequestEditVariable: the built-in dialog edits variables, not assets.
       onEditVariable: vi.fn(),
-      onDeleteVariable,
-      onDeleteAsset,
+      onDeleteVariable: vi.fn(),
     });
 
-    // Top-level assets get the host's actions, never the variable ones.
-    await user.click(screen.getByRole('button', { name: 'Delete invoiceApiKey' }));
-    expect(onDeleteAsset).toHaveBeenCalledWith(variableRow('invoiceApiKey', 'assets'));
-    expect(onDeleteVariable).not.toHaveBeenCalled();
     expect(screen.queryByRole('button', { name: 'Edit invoiceApiKey' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Delete invoiceApiKey' })).toBeInTheDocument();
     // Nested asset fields get no edit or delete at all.
     await user.click(screen.getByRole('button', { name: 'Expand erpCredential' }));
     expect(screen.queryByRole('button', { name: 'Delete username' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Edit username' })).toBeNull();
+  });
+
+  it('prefixes a renamed asset reference with assetsBasePath', async () => {
+    const user = userEvent.setup();
+    renderPanel({
+      defaultExpandedSections: ['assets'],
+      assets: ASSETS,
+      assetsBasePath: 'orchestrator',
+    });
+
+    expect(
+      screen.getByRole('button', { name: 'Copy path for $assets.orchestrator.invoiceApiKey' })
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Expand erpCredential' }));
+    expect(
+      screen.getByRole('button', {
+        name: 'Copy path for $assets.orchestrator.erpCredential.username',
+      })
+    ).toBeInTheDocument();
   });
 
   it('has no accessibility violations with every section open', async () => {
@@ -1186,8 +1213,7 @@ describe('NodeVariablesPanel', () => {
       onFocusNode: vi.fn(),
       onEditVariable: vi.fn(),
       onDeleteVariable: vi.fn(),
-      onRequestEditAsset: vi.fn(),
-      onDeleteAsset: vi.fn(),
+      onRequestEditVariable: vi.fn(),
     });
 
     expect(await axe(container)).toHaveNoViolations();
