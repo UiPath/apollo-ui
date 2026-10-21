@@ -1,3 +1,13 @@
+## [@uipath/apollo-react-v7.7.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.6.1...@uipath/apollo-react@7.7.0) (2026-10-21)
+
+### Features
+
+* **apollo-react:** adopt the new apollo-wind chat primitives in the Wind chat ([ee0d2e9](https://github.com/UiPath/apollo-ui/commit/ee0d2e9dad3309003d937c90ce42197ad6be16b1))
+
+### Bug Fixes
+
+* **apollo-react:** keep the Wind chat still when history opens and anchor turns at the top ([7da24d4](https://github.com/UiPath/apollo-ui/commit/7da24d4c43b42dd54c24fc6917656e4dab0b161a))
+
 ## [@uipath/apollo-react-v7.5.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.4.0...@uipath/apollo-react@7.5.0) (2026-10-21)
 
 ### Features
