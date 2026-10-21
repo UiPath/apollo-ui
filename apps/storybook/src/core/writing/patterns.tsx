@@ -984,7 +984,8 @@ export const PATTERNS: Record<string, ContentPattern> = {
           'Format: H:MM AM/PM time zone (4:12 PM UTC).',
           'No leading zero on the hour; always a leading zero on minutes.',
           'Put a space before AM or PM, with no periods.',
-          'Always include the time zone.',
+          'Include the time zone in tooltips, logs, audit trails, and scheduled times, where people need the exact moment.',
+          "You can leave it out where the time is clearly in the viewer's own time zone and exact timing doesn't matter.",
           'Noon and midnight can be "Noon" and "Midnight," or "12 PM" and "12 AM."',
         ],
       },
@@ -1425,7 +1426,7 @@ export function PatternPage({
           )}
         </WritingTab>
 
-        <WritingTab label="Examples">
+        <WritingTab label="Common cases">
           <Section title="Common cases">
             {pattern.cases.map((c) => (
               <SubSection key={c.name} title={c.name}>

@@ -1,13 +1,14 @@
 import { linkTo } from '@storybook/addon-links';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@uipath/apollo-wind';
 import { Check, X } from 'lucide-react';
 import {
   Children,
   isValidElement,
+  type MouseEvent,
   type ReactElement,
   type ReactNode,
-  useId,
-  useState,
 } from 'react';
+import { toId } from 'storybook/internal/csf';
 
 export const WRITING_FOLDER = 'Apollo Core/Writing';
 export const GUIDELINES_TITLE = `${WRITING_FOLDER}/Guidelines`;
@@ -15,7 +16,12 @@ export const PATTERNS_TITLE = `${WRITING_FOLDER}/Content Patterns`;
 
 const writingCss = `
 .sb-writing { color: var(--color-foreground); font-size: 15px; line-height: 1.7; }
-.sb-writing h2 { font-size: 20px; font-weight: 600; margin: 40px 0 16px; padding-bottom: 10px; border-bottom: 1px solid var(--color-border); color: var(--color-foreground-emp); }
+.sb-writing h2 { font-size: 18px; font-weight: 600; line-height: 1.4; margin: 0 0 16px; color: var(--color-foreground-emp); }
+.sb-writing section { display: flow-root; }
+.sb-writing section + section { margin-top: 48px; }
+.sb-writing h2 + div > h3:first-child { margin-top: 0; }
+.sb-writing section > :last-child,
+.sb-writing section > div:last-child > :last-child { margin-bottom: 0; }
 .sb-writing h3 { font-size: 16px; font-weight: 600; margin: 28px 0 8px; color: var(--color-foreground-emp); }
 .sb-writing p { margin: 0 0 12px; }
 .sb-writing ul, .sb-writing ol { margin: 0 0 16px; padding-left: 24px; }
@@ -24,8 +30,6 @@ const writingCss = `
 .sb-writing li { margin: 4px 0; }
 .sb-writing strong { color: var(--color-foreground-emp); }
 .sb-writing code { font-size: 13px; padding: 2px 6px; border-radius: 4px; background: var(--color-background-secondary); color: var(--color-foreground-emp); }
-.sb-writing-body > section:first-child > h2:first-child,
-.sb-writing-panel > section:first-child > h2:first-child { margin-top: 0; }
 .sb-writing-link { color: var(--color-primary); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; background: none; border: 0; padding: 0; font: inherit; }
 .sb-writing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin: 0 0 16px; }
 .sb-writing-card { border: 1px solid var(--color-border); border-radius: 8px; padding: 16px; background: var(--color-background); }
@@ -42,8 +46,8 @@ const writingCss = `
 .sb-writing-specimen dl { display: grid; grid-template-columns: minmax(120px, max-content) 1fr; gap: 8px 24px; margin: 0; padding: 16px; }
 .sb-writing-specimen dt { font-size: 13px; color: var(--color-foreground-de-emp); }
 .sb-writing-specimen dd { margin: 0; color: var(--color-foreground-emp); }
-.sb-writing-table { width: 100%; border-collapse: collapse; margin: 0 0 20px; font-size: 14px; }
-.sb-writing-table-wrap { overflow-x: auto; }
+.sb-writing-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.sb-writing-table-wrap { overflow-x: auto; margin: 0 0 16px; }
 .sb-writing-table th, .sb-writing-table td { padding: 8px 12px; border: 1px solid var(--color-border); text-align: left; vertical-align: top; }
 .sb-writing-table th { background: var(--color-background-secondary); color: var(--color-foreground-emp); }
 .sb-writing-live { display: flex; justify-content: center; padding: 32px 24px; margin: 0 0 12px; border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-background-secondary); }
@@ -83,47 +87,35 @@ export function WritingTab(_props: { label: string; children: ReactNode }) {
   return null;
 }
 
-/** Getting Started style tab bar. Children are {@link WritingTab} elements. */
+/**
+ * Getting Started style tab bar. Children are {@link WritingTab} elements. Built on Apollo Wind
+ * Tabs, so arrow keys, Home, and End move between tabs and only the active tab is a Tab stop.
+ */
 export function WritingTabs({ children }: { children: ReactNode }) {
   const tabs = Children.toArray(children).filter(isValidElement) as ReactElement<{
     label: string;
     children: ReactNode;
   }>[];
-  const [active, setActive] = useState(0);
-  const id = useId();
-  const current = tabs[active] ?? tabs[0];
 
   return (
-    <div>
-      <div role="tablist" className="flex flex-wrap gap-1 border-b border-border">
-        {tabs.map((tab, i) => (
-          <button
-            type="button"
-            role="tab"
+    <Tabs defaultValue={tabs[0]?.props.label}>
+      <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1 rounded-none border-b border-border bg-transparent p-0">
+        {tabs.map((tab) => (
+          <TabsTrigger
             key={tab.props.label}
-            id={`${id}-tab-${i}`}
-            aria-selected={i === active}
-            aria-controls={`${id}-panel`}
-            className={
-              i === active
-                ? 'cursor-pointer border-b-2 border-primary px-4 pb-3 text-sm font-medium text-foreground'
-                : 'cursor-pointer px-4 pb-3 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground'
-            }
-            onClick={() => setActive(i)}
+            value={tab.props.label}
+            className="-mb-px rounded-none border-b-2 border-transparent bg-transparent px-4 pt-0 pb-3 text-muted-foreground hover:text-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
           >
             {tab.props.label}
-          </button>
+          </TabsTrigger>
         ))}
-      </div>
-      <div
-        role="tabpanel"
-        id={`${id}-panel`}
-        aria-labelledby={`${id}-tab-${active}`}
-        className="sb-writing-panel pt-6"
-      >
-        {current?.props.children}
-      </div>
-    </div>
+      </TabsList>
+      {tabs.map((tab) => (
+        <TabsContent key={tab.props.label} value={tab.props.label} className="mt-0 pt-6">
+          {tab.props.children}
+        </TabsContent>
+      ))}
+    </Tabs>
   );
 }
 
@@ -197,7 +189,7 @@ export function DoDont({
 /** A finished piece of UI copy, shown field by field (title, body, CTA, and so on). */
 export function CopyExample({ caption, fields }: { caption: string; fields: [string, string][] }) {
   return (
-    <figure className="sb-writing-specimen" style={{ margin: '0 0 16px' }}>
+    <figure className="sb-writing-specimen">
       <figcaption className="sb-writing-specimen-caption">{caption}</figcaption>
       <dl>
         {fields.map(([label, value]) => (
@@ -245,7 +237,21 @@ export function Note({ children }: { children: ReactNode }) {
   return <p className="sb-writing-note">{children}</p>;
 }
 
-/** Opens another Writing page. `title` is a sidebar path, `story` the page name in it. */
+/** Manager URL for a story, so links work under any base path (such as a PR preview). */
+function storyHref(title: string, story: string) {
+  let base = '';
+  try {
+    base = window.parent.location.pathname;
+  } catch {
+    // Cross-origin parent: fall back to a relative URL.
+  }
+  return `${base}?path=/story/${toId(title, story)}`;
+}
+
+/**
+ * Link to another Writing page. A real anchor, so it shows up in link lists and opens in a new
+ * tab on modified clicks; a plain click navigates inside Storybook without a reload.
+ */
 export function PageLink({
   title,
   story,
@@ -255,10 +261,17 @@ export function PageLink({
   story: string;
   children: ReactNode;
 }) {
+  const onClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+      return;
+    }
+    event.preventDefault();
+    linkTo(title, story)();
+  };
   return (
-    <button type="button" className="sb-writing-link" onClick={linkTo(title, story)}>
+    <a href={storyHref(title, story)} target="_top" className="sb-writing-link" onClick={onClick}>
       {children}
-    </button>
+    </a>
   );
 }
 

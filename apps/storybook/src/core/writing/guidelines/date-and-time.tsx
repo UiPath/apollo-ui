@@ -47,7 +47,9 @@ export function DateAndTimePage() {
                   'No leading zero on the hour; always a leading zero on minutes.',
                   'Seconds are optional, with a leading zero.',
                   'AM and PM in capitals, after a space.',
-                  'Time zone is optional, written as UTC+ or UTC- followed by hours and minutes.',
+                  'Write the time zone as UTC, or as UTC+ or UTC- followed by hours and minutes (UTC+05:30).',
+                  'Include the time zone in tooltips, logs, audit trails, and scheduled times, where people need the exact moment.',
+                  "You can leave it out where the time is clearly in the viewer's own time zone and exact timing doesn't matter.",
                 ]}
               />
             </SubSection>
