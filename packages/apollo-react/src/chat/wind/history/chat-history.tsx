@@ -10,7 +10,8 @@ import { PanelPopover } from '../common/panel-popover';
 import { HistoryPanel } from './history-panel';
 
 /**
- * The history: a modal popover under the header's history button, as Material's, in both modes.
+ * The history: a popover under the header's history button, over the conversation, in both
+ * modes. Unlike Material's it is not modal, so a host dialog opened from a pre-hook stays usable.
  * The list state lives here, mounted while the popover is closed, so it keeps whether the host
  * has more items between openings.
  */

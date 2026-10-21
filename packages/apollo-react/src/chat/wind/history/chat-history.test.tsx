@@ -244,20 +244,28 @@ describe('Wind chat history', () => {
     }
   });
 
-  it('is a popover in FullScreen too, with the column making room for it', async () => {
+  it('is a popover over the conversation in FullScreen too, which does not move', async () => {
     const { service } = setup({ mode: AutopilotChatMode.FullScreen });
+    const main = document.querySelector('main') as HTMLElement;
+    // Every sibling of the column: catches one added for the popover, or an always-mounted one
+    // changing width.
+    const columnRow = () =>
+      [...(main.parentElement?.children ?? [])].map(
+        (child) => `${child.tagName}.${child.className}`
+      );
+    const closed = columnRow();
 
     await userEvent.click(historyButton());
 
     const dialog = await screen.findByRole('dialog', { name: 'Chat history' });
     await waitFor(() => expect(within(dialog).getByRole('searchbox')).toHaveFocus());
-    expect(document.querySelector('main + [aria-hidden]')).not.toBeNull();
+    expect(columnRow()).toEqual(closed);
 
     await userEvent.keyboard('{Escape}');
     await waitFor(() => expect(panel()).toBeNull());
     expect(service.historyOpen).toBe(false);
     expect(historyButton()).toHaveFocus();
-    expect(document.querySelector('main + [aria-hidden]')).toBeNull();
+    expect(columnRow()).toEqual(closed);
   });
 
   it('clears the search on close, resetting a paginated host to the full list', async () => {

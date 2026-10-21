@@ -30,6 +30,14 @@ import { SuggestionList } from '../first-run/suggestion-list';
 import { ChatMessage } from './chat-message';
 import { ThinkingRow } from './thinking-row';
 
+// How far under the list's 12px top padding a sent turn lands, instead of under the scroller's
+// default 64px glimpse of the previous reply: 24px from the top, as the list's sides are. In
+// compact the gap above a turn is too short for that: the previous reply's 20px action bar, shown
+// while it is the latest reply (the thinking phase), would be cut through, so the turn lands at
+// the padding.
+const ANCHOR_PEEK = 12;
+const COMPACT_ANCHOR_PEEK = 0;
+
 function InitialLoading() {
   return (
     <div
@@ -270,6 +278,7 @@ export function MessageList({
   // Held by the chat root, as for Material, so it survives a layout change remounting the list.
   const { autoScroll } = useChatScroll();
   const { skeletonLoader } = useLoading();
+  const { spacing } = useChatState();
   // Here rather than in the transcript so it keeps listening while the skeleton shows.
   const transcript = useChatMessages();
 
@@ -281,7 +290,11 @@ export function MessageList({
       {skeletonLoader ? (
         <InitialLoading />
       ) : (
-        <MessageScrollerProvider autoScroll={autoScroll} defaultScrollPosition="end">
+        <MessageScrollerProvider
+          autoScroll={autoScroll}
+          defaultScrollPosition="end"
+          scrollPreviousItemPeek={spacing.compactMode ? COMPACT_ANCHOR_PEEK : ANCHOR_PEEK}
+        >
           <MessageScroller className="flex-1">
             <Transcript contentClassName={contentClassName} transcript={transcript} />
           </MessageScroller>
