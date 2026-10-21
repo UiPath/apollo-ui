@@ -42,6 +42,11 @@ const VARIANT_MAP: Record<string, string> = {
   'cost-premium': 'mini',
 };
 
+// Inline override first, so a single tag can opt out without disturbing others of its kind.
+export function tagVariantToken(tag: ModelTag, variants?: Record<string, string>): string {
+  return tag.variant ?? variants?.[tag.kind] ?? VARIANT_MAP[tag.kind] ?? 'mini';
+}
+
 /**
  * Mini-chip token → wind `Badge` variant. Unknown tokens (a product
  * inventing a kind without registering a variant) fall through to the
@@ -102,11 +107,7 @@ export const ModelTagChip: React.FC<ModelTagChipProps> = ({
   icons,
   disableTooltip,
 }) => {
-  // Resolution order: inline override on the tag → host-supplied
-  // variants map → built-in map → neutral fallback. Inline first so a
-  // single tag can opt out of the default without disturbing other
-  // tags of the same kind.
-  const variantToken = tag.variant ?? variants?.[tag.kind] ?? VARIANT_MAP[tag.kind] ?? 'mini';
+  const variantToken = tagVariantToken(tag, variants);
 
   // Same precedence for icons: host map > built-in map. Host can pass
   // `null` to suppress an icon on a built-in kind (e.g. for a compact

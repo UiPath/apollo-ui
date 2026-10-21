@@ -852,6 +852,70 @@ export const RecommendedFromDiscovery: Story = {
 };
 
 // ---------------------------------------------------------------------------
+// Narrow fields: the picker in a side panel, where a canvas properties panel
+// typically hosts it. The selected model carries three chips; the name keeps
+// its width, and the chips with no room collapse into a count, warnings first.
+// ---------------------------------------------------------------------------
+
+const NARROW_FIELD_MODELS: DiscoveryModel[] = DISCOVERY_WITH_RECOMMENDED.map((m) =>
+  m.modelId === 'anthropic.claude-sonnet-4-6-20260301-v1:0'
+    ? { ...m, isPreview: false, routingDetails: { ...m.routingDetails, geography: 'US' } }
+    : m
+);
+
+const NarrowFieldPicker = ({
+  width,
+  ...args
+}: React.ComponentProps<typeof ModelPicker> & { width: number }) => {
+  const [value, setValue] = useState<string | null>(
+    args.value ?? 'anthropic.claude-sonnet-4-6-20260301-v1:0'
+  );
+  return (
+    <div style={{ width }}>
+      <ModelPicker
+        {...args}
+        label={`Model (${width}px)`}
+        value={value}
+        onChange={(m) => {
+          setValue(m.modelId);
+          args.onChange?.(m);
+        }}
+      />
+    </div>
+  );
+};
+
+export const NarrowFields: Story = {
+  name: 'Narrow fields: chips collapse, the name stays',
+  render: (args) => (
+    <div className="flex min-h-screen flex-col gap-6 bg-background p-8">
+      {[560, 360, 300, 240].map((width) => (
+        <NarrowFieldPicker key={width} {...args} width={width} />
+      ))}
+    </div>
+  ),
+  args: {
+    models: NARROW_FIELD_MODELS,
+    required: true,
+    groupBy: 'subscription',
+    homeRegion: 'EU',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The selected model is Recommended, routed out of region and in the ' +
+          'Standard cost tier. The name is the value, so it keeps its width ' +
+          'and the chips share what is left; the ones with no room collapse ' +
+          'into a `+N` count. Warning chips lead, so the one a narrow field ' +
+          'keeps is the out-of-region warning. Every chip is still announced ' +
+          'to screen readers, whatever fits.',
+      },
+    },
+  },
+};
+
+// ---------------------------------------------------------------------------
 // Kitchen Sink: every picker capability turned on at once. Useful as the
 // "if a designer wants to see EVERYTHING" reference + as a smoke test for
 // the built-in folder switcher, default `canManageByo` footer CTA,

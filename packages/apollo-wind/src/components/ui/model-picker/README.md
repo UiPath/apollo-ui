@@ -340,6 +340,7 @@ the row. Everything else about which models appear is yours, via `filter`.
 The picker implements the WAI-ARIA listbox pattern with keyboard input:
 
 - **Trigger** is `role="combobox"`, like wind's Select and Combobox triggers, so the selected model is announced as the field's value. It carries `aria-haspopup="listbox"`, `aria-controls` pointing at the popup, `aria-expanded`, `aria-invalid`, `aria-required`, and `aria-describedby` linking to the error message.
+- **Trigger chips** never squeeze the model name: in a narrow field the ones with no room collapse into a `+N` count (`hiddenTagCount`), warnings kept first. The count is `aria-hidden`; the collapsed chips are still announced.
 - **Search input** is `aria-autocomplete="list"`, `aria-controls={listboxId}`, with `aria-activedescendant` updating to the highlighted option as the user navigates with `↑`/`↓` — DOM focus stays on the search.
 - **Listbox** has an `aria-label` ("Models" by default, localized).
 - **Each option** has a stable id (`{listboxId}-opt-{modelId}`), `role="option"`, and `aria-selected`.
@@ -466,6 +467,7 @@ Stories live in `ModelPicker.stories.tsx` under **Components/UiPath/Model Picker
 - **Viewer — read-only BYO** — default, no admin affordances
 - **Folder-scoped Custom Models** — built-in folder switcher
 - **Recommended from Discovery + cost badges (agents example)** — DTO `isRecommended` + cost chips
+- **Narrow fields** — side-panel widths; trigger chips collapse into `+N`, the name stays
 - **Routing substitution** — gateway routes traffic; trigger surfaces the redirection
 - **Unknown model — graceful fallback** — stored `value` not in catalog
 - **Kitchen sink** — every capability turned on at once

@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type React from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ModelPicker } from './ModelPicker';
@@ -538,6 +538,130 @@ describe('<ModelPicker> chip alignment', () => {
     const chip = within(trigger).getByText('Preview');
     const wrapper = chip.closest('[data-slot="model-picker-tag"]')?.parentElement;
     expect(wrapper).toHaveClass('flex', 'items-center');
+  });
+});
+
+/*
+ * Added in the wind port (no apollo-react counterpart).
+ *
+ * In a narrow side panel the chips used to keep their width and the model name
+ * took the squeeze, down to "C…" with three chips beside it — the field no longer
+ * said which model was selected. The name now keeps its width and the chips that
+ * have no room collapse into a count, warnings kept first.
+ */
+describe('<ModelPicker> trigger chips in a narrow field', () => {
+  const crowded: DiscoveryModel[] = [
+    {
+      modelId: 'claude-sonnet-4-6',
+      modelName: 'claude-sonnet-4-6',
+      displayName: 'Claude Sonnet 4.6',
+      vendor: 'AnthropicClaude',
+      modelSubscriptionType: 'UiPathOwned',
+      isRecommended: true,
+      routingDetails: { geography: 'US' },
+      modelDetails: { costDetails: { flatCosts: { inputTokenCost: 300, outputTokenCost: 1500 } } },
+    },
+  ];
+  const chipWidths: Record<string, number> = {
+    'Out of region (US)': 110,
+    Recommended: 90,
+    Standard: 60,
+  };
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  // The chip row measures `rowWidth`; each parked-or-shown chip and the count measure their own.
+  const mockLayout = (rowWidth: number) =>
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLElement
+    ) {
+      let width = 0;
+      if (this.dataset.slot === 'model-picker-trigger-tags') width = rowWidth;
+      else if (this.hasAttribute('data-overflow')) width = 24;
+      else width = chipWidths[this.textContent ?? ''] ?? 0;
+      return new DOMRect(0, 0, width, 0);
+    });
+
+  const renderCrowded = () => {
+    renderPicker(<ModelPicker homeRegion="EU" models={crowded} value="claude-sonnet-4-6" />);
+    return screen.getByRole('combobox', { expanded: false });
+  };
+  const chipSlot = (trigger: HTMLElement, label: string) =>
+    within(trigger).getByText(label).closest('[data-slot="model-picker-tag"]')?.parentElement;
+  const count = (trigger: HTMLElement) =>
+    trigger.querySelector('[data-overflow]') as HTMLElement | null;
+
+  it('shows every chip and no count when they all fit', () => {
+    mockLayout(400);
+    const trigger = renderCrowded();
+
+    for (const label of Object.keys(chipWidths)) {
+      expect(chipSlot(trigger, label)).not.toHaveClass('opacity-0');
+    }
+    expect(count(trigger)).toHaveClass('opacity-0');
+  });
+
+  it('keeps the warning and counts the chips with no room', () => {
+    // 110 + 90 + 60 and two gaps overflow 200px. Beside the 24px count there is room for one.
+    mockLayout(200);
+    const trigger = renderCrowded();
+
+    expect(chipSlot(trigger, 'Out of region (US)')).not.toHaveClass('opacity-0');
+    expect(chipSlot(trigger, 'Recommended')).toHaveClass('opacity-0');
+    expect(chipSlot(trigger, 'Standard')).toHaveClass('opacity-0');
+    expect(count(trigger)).not.toHaveClass('opacity-0');
+    expect(
+      within(trigger).getByText('+2').closest('[data-slot="model-picker-tag"]')?.parentElement
+    ).not.toHaveClass('invisible');
+  });
+
+  it('collapses every chip when the name leaves no room, rather than clipping one', () => {
+    mockLayout(20);
+    const trigger = renderCrowded();
+
+    for (const label of Object.keys(chipWidths)) {
+      expect(chipSlot(trigger, label)).toHaveClass('opacity-0');
+    }
+    expect(within(trigger).getByText('+3')).toBeInTheDocument();
+  });
+
+  it('lets only the chips give way, never the name', () => {
+    const trigger = renderCrowded();
+
+    expect(trigger.querySelector('[data-slot="model-picker-trigger-tags"]')).toHaveClass(
+      'min-w-0',
+      'flex-1',
+      'overflow-hidden'
+    );
+    expect(within(trigger).getByText('Claude Sonnet 4.6')).toHaveClass('truncate');
+  });
+
+  it('puts warnings ahead of the other chips', () => {
+    const trigger = renderCrowded();
+
+    const labels = Array.from(
+      trigger.querySelectorAll(
+        '[data-slot="model-picker-trigger-tags"] > :not([data-overflow]) [data-slot="model-picker-tag"]'
+      ),
+      (chip) => chip.textContent
+    );
+    expect(labels).toEqual(['Out of region (US)', 'Recommended', 'Standard']);
+  });
+
+  it('still announces the chips it has no room for, and not the count', () => {
+    mockLayout(200);
+    const trigger = renderCrowded();
+
+    // Transparent, not `invisible` or aria-hidden: either would drop it from the accessibility tree.
+    for (const label of ['Recommended', 'Standard']) {
+      const slot = chipSlot(trigger, label);
+      expect(slot).toHaveClass('opacity-0');
+      expect(slot).not.toHaveClass('invisible');
+      expect(slot).not.toHaveAttribute('aria-hidden');
+    }
+    expect(count(trigger)).toHaveAttribute('aria-hidden', 'true');
   });
 });
 
