@@ -1791,7 +1791,7 @@ const VARIABLES_PANEL_OUTPUTS = {
 };
 
 // Filters come from the host. This one keeps only the node selected on the canvas;
-// rows outside Inputs and Nodes have no node, so Outputs and Variables empty out.
+// rows outside Inputs and Nodes have no node, so Outputs, Variables, and Assets empty out.
 const SELECTED_NODE_ID = 'messageReceivedInSlack1';
 const VARIABLES_PANEL_FILTERS: NodeVariablesFilter[] = [
   {
@@ -1817,6 +1817,23 @@ const VARIABLES_PANEL_VARIABLES = {
   } as JsonObject,
 };
 
+// Orchestrator assets the flow declares, referenced as `$assets.<name>` like
+// flow-workbench. A credential asset is an object with a username and a password.
+const VARIABLES_PANEL_ASSETS = {
+  schema: object({
+    invoiceApiKey: { type: 'string', description: 'Key for the invoice service' },
+    maxRetries: NUMBER,
+    approvalsEnabled: { type: 'boolean' },
+    erpCredential: object({ username: STRING, password: STRING }),
+  }),
+  value: {
+    invoiceApiKey: 'sk-live-example',
+    maxRetries: 3,
+    approvalsEnabled: true,
+    erpCredential: { username: 'svc-invoices', password: '********' },
+  } as JsonObject,
+};
+
 /** A variable's schema as the Edit variable dialog saved it. */
 const variableSchema = ({ type, description, defaultValue }: NodeVariableDetails): JsonSchema => ({
   type,
@@ -1826,6 +1843,7 @@ const variableSchema = ({ type, description, defaultValue }: NodeVariableDetails
 
 function VariablesStory() {
   const [variables, setVariables] = useState(VARIABLES_PANEL_VARIABLES);
+  const [assets, setAssets] = useState(VARIABLES_PANEL_ASSETS);
   const properties = variables.schema.properties ?? {};
 
   const addVariable = () => {
@@ -1839,6 +1857,27 @@ function VariablesStory() {
     }));
     toast.success(`Added ${name}`);
   };
+  const addAsset = () => {
+    // First unused name, so adding after a delete never overwrites an asset.
+    const taken = assets.schema.properties ?? {};
+    let suffix = Object.keys(taken).length + 1;
+    while (`asset${suffix}` in taken) suffix += 1;
+    const name = `asset${suffix}`;
+    setAssets((current) => ({
+      schema: object({ ...current.schema.properties, [name]: STRING }),
+      value: { ...current.value, [name]: '' },
+    }));
+    toast.success(`Added ${name}`);
+  };
+  const deleteAsset = ({ node }: NodeVariablesRow) =>
+    setAssets((current) => ({
+      schema: object(
+        Object.fromEntries(
+          Object.entries(current.schema.properties ?? {}).filter(([key]) => key !== node.key)
+        )
+      ),
+      value: Object.fromEntries(Object.entries(current.value).filter(([key]) => key !== node.key)),
+    }));
   // Saving keeps the variable's place; a changed id renames it. The story edits
   // flow variables; Outputs rows are variable rows too, so they get a toast.
   const editVariable = ({ section, node }: NodeVariablesRow, next: NodeVariableDetails) => {
@@ -1938,16 +1977,19 @@ function VariablesStory() {
                 inputs={VARIABLES_PANEL_INPUTS}
                 outputs={VARIABLES_PANEL_OUTPUTS}
                 variables={variables}
+                assets={assets}
                 nodes={VARIABLES_PANEL_NODES}
                 filters={VARIABLES_PANEL_FILTERS}
                 onFocusNode={(nodeId) => toast(`Focused ${nodeId}`)}
-                onAdd={(section, nodeId) =>
-                  section === 'variables'
-                    ? addVariable()
-                    : toast(nodeId ? `Add from ${nodeId}` : `Add to ${section}`)
-                }
+                onAdd={(section, nodeId) => {
+                  if (section === 'variables') addVariable();
+                  else if (section === 'assets') addAsset();
+                  else toast(nodeId ? `Add from ${nodeId}` : `Add to ${section}`);
+                }}
                 onEditVariable={editVariable}
                 onDeleteVariable={deleteVariable}
+                onRequestEditAsset={({ node }) => toast(`Edit asset ${node.key}`)}
+                onDeleteAsset={deleteAsset}
                 onCopy={({ text }) => toast.success(`Copied ${text}`)}
                 leading={tabList}
               />
