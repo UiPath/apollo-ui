@@ -12,10 +12,13 @@ import type {
 } from '../JsonTree';
 
 /** The panel's top-level groups, in display order. */
-export type NodeVariablesSection = 'inputs' | 'outputs' | 'variables' | 'nodes';
+export type NodeVariablesSection = 'inputs' | 'outputs' | 'variables' | 'assets' | 'nodes';
 
 /** Sections whose + sits on the section header. Inputs and Nodes add per node row. */
-export type NodeVariablesAddableSection = Extract<NodeVariablesSection, 'outputs' | 'variables'>;
+export type NodeVariablesAddableSection = Extract<
+  NodeVariablesSection,
+  'outputs' | 'variables' | 'assets'
+>;
 
 /** A tree row, as filters and the variable callbacks receive it. */
 export interface NodeVariablesRow {
@@ -66,6 +69,16 @@ export interface NodeVariablesVariables {
   value?: JsonObject;
 }
 
+/**
+ * The flow's declared assets: an object keyed by asset name, each entry the
+ * asset's value shape (a credential asset is an object with a username and a
+ * password).
+ */
+export interface NodeVariablesAssets {
+  schema?: JsonSchema;
+  value?: JsonObject;
+}
+
 /** A node whose output can be referenced (an upstream input or any node in the flow). */
 export interface NodeVariablesSource extends NodeVariablesData {
   /** Node id. Prefixes every reference in its output, e.g. `httpWebhook1.output.body`. */
@@ -93,26 +106,35 @@ export interface NodeVariablesPanelProps {
    * value is an object (not an array) and the schema should describe one.
    */
   variables?: NodeVariablesVariables;
+  /**
+   * The flow's declared assets, between Variables and Nodes. Top-level keys are
+   * the asset names, so the value is an object and the schema should describe one.
+   */
+  assets?: NodeVariablesAssets;
   /** Every node in the flow, for referencing beyond the direct inputs. */
   nodes?: NodeVariablesSource[];
   /** Path prefix for the Outputs section. Default: none, so an output reads `$vars.result`. */
   outputsBasePath?: string;
   /** Path prefix for the Variables section. Default: none, so a variable reads `$vars.flowTest`. */
   variablesBasePath?: string;
+  /** Path prefix for the Assets section. Default: none, so an asset reads `$assets.apiKey`. */
+  assetsBasePath?: string;
   /**
    * Root of every reference the panel shows and copies, in every section:
    * `$vars.httpWebhook1.output.body`, `$vars.flowTest`, `$vars.result` (an output),
-   * matching flow-workbench. Default: `$vars`.
+   * matching flow-workbench. Default: `$vars`. Assets use `assetsReferencePrefix`.
    * Pass an empty string for bare tree paths.
    */
   referencePrefix?: string;
+  /** Root of every asset reference, matching flow-workbench: `$assets.apiKey`. Default: `$assets`. */
+  assetsReferencePrefix?: string;
   /**
    * Transforms a reference before it is shown and copied. It receives the
    * prefixed reference (see `referencePrefix`) and the raw `segments`, for ids
    * that the path bracket-quotes (e.g. `["node-1"]`).
    */
   pathForCopy?: PathForCopy;
-  /** Sections open on first render. Default: only Nodes. */
+  /** Sections open on first render. Default: only Nodes, so Inputs, Outputs, Variables, and Assets start collapsed. */
   defaultExpandedSections?: NodeVariablesSection[];
   /** Filters offered in the toolbar's filter menu. Omit to hide the filter control. */
   filters?: NodeVariablesFilter[];
@@ -125,7 +147,7 @@ export interface NodeVariablesPanelProps {
   /** Called from a node row's "Focus on node" action, shown on every node row. Omit to hide it. */
   onFocusNode?: (nodeId: string) => void;
   /**
-   * Called from an add (+) button. Outputs and Variables have one on the
+   * Called from an add (+) button. Outputs, Variables, and Assets have one on the
    * section header; Inputs and Nodes have one on each node row, which passes
    * the node's id. Omit to hide them all.
    */
@@ -149,6 +171,13 @@ export interface NodeVariablesPanelProps {
   onRequestEditVariable?: (row: NodeVariablesRow) => void;
   /** Called from a variable row's delete action. Omit to hide it. */
   onDeleteVariable?: (row: NodeVariablesRow) => void;
+  /**
+   * Called from an asset row's edit action, so the host can open its own asset
+   * dialog (rename, or reconnect a missing asset). Omit to hide the action.
+   */
+  onRequestEditAsset?: (row: NodeVariablesRow) => void;
+  /** Called from an asset row's delete action. Omit to hide it. */
+  onDeleteAsset?: (row: NodeVariablesRow) => void;
   /** Called after a reference (a key's path) or a value is copied to the clipboard. */
   onCopy?: (event: CopyEvent) => void;
   /**
@@ -160,7 +189,7 @@ export interface NodeVariablesPanelProps {
   rowWrapper?: JsonTreeRowWrapper;
   /** Custom type-badge icons for every section's tree (e.g. File or Secret icons). */
   deriveTypeIcon?: DeriveTypeIcon;
-  /** Extra content after the Nodes section, in the same scroller (e.g. an Assets section). */
+  /** Extra content after the Nodes section, in the same scroller. */
   children?: ReactNode;
   className?: string;
 }

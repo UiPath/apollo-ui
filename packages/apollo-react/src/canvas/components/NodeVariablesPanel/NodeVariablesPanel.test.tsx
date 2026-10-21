@@ -72,11 +72,18 @@ async function openSearch(user: ReturnType<typeof userEvent.setup>, text: string
   await user.type(screen.getByRole('textbox', { name: 'Search variables' }), text);
 }
 
+const ASSETS = {
+  value: {
+    invoiceApiKey: 'sk-live-example',
+    erpCredential: { username: 'svc-invoices', password: '********' },
+  },
+};
+
 describe('NodeVariablesPanel', () => {
   it('renders every section, with only Nodes open by default', () => {
     renderPanel();
 
-    for (const name of ['Inputs', 'Outputs', 'Variables']) {
+    for (const name of ['Inputs', 'Outputs', 'Variables', 'Assets']) {
       expect(sectionToggle(name)).toHaveAttribute('aria-expanded', 'false');
     }
     expect(sectionToggle('Nodes')).toHaveAttribute('aria-expanded', 'true');
@@ -1066,13 +1073,97 @@ describe('NodeVariablesPanel', () => {
     expect(within(dialog).getByRole('button', { name: 'Save' })).toBeDisabled();
   });
 
+  it('places Assets between Variables and Nodes, collapsed by default', () => {
+    renderPanel({ assets: ASSETS });
+
+    const names = screen.getAllByRole('region').map((region) => region.getAttribute('aria-label'));
+    expect(names).toEqual(['Inputs', 'Outputs', 'Variables', 'Assets', 'Nodes']);
+    expect(sectionToggle('Assets')).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.getByRole('img', { name: '2 assets' })).toBeInTheDocument();
+    expect(screen.queryByText('invoiceApiKey')).not.toBeInTheDocument();
+  });
+
+  it('shows the declared assets once Assets is opened', async () => {
+    const user = userEvent.setup();
+    renderPanel({ assets: ASSETS });
+
+    await user.click(sectionToggle('Assets'));
+
+    expect(within(section('Assets')).getByText('invoiceApiKey')).toBeInTheDocument();
+    expect(within(section('Assets')).getByText('erpCredential')).toBeInTheDocument();
+  });
+
+  it('references assets under $assets, not $vars', async () => {
+    const user = userEvent.setup();
+    renderPanel({ defaultExpandedSections: ['assets'], assets: ASSETS });
+
+    await user.click(screen.getByRole('button', { name: 'Copy path for $assets.invoiceApiKey' }));
+
+    await waitFor(async () =>
+      expect(await navigator.clipboard.readText()).toBe('$assets.invoiceApiKey')
+    );
+    await user.click(screen.getByRole('button', { name: 'Expand erpCredential' }));
+    expect(
+      screen.getByRole('button', { name: 'Copy path for $assets.erpCredential.username' })
+    ).toBeInTheDocument();
+  });
+
+  it('honors assetsReferencePrefix', () => {
+    renderPanel({
+      defaultExpandedSections: ['assets'],
+      assets: ASSETS,
+      assetsReferencePrefix: '$orchestrator',
+    });
+
+    expect(
+      screen.getByRole('button', { name: 'Copy path for $orchestrator.invoiceApiKey' })
+    ).toBeInTheDocument();
+  });
+
+  it('adds an asset from the Assets header', async () => {
+    const user = userEvent.setup();
+    const onAdd = vi.fn();
+    renderPanel({ assets: ASSETS, onAdd });
+
+    await user.click(screen.getByRole('button', { name: 'Add asset' }));
+
+    expect(onAdd).toHaveBeenCalledWith('assets');
+  });
+
+  it('gives asset rows host edit and delete actions, but not the variable dialog', async () => {
+    const user = userEvent.setup();
+    const onRequestEditAsset = vi.fn();
+    const onDeleteAsset = vi.fn();
+    renderPanel({
+      defaultExpandedSections: ['assets'],
+      assets: ASSETS,
+      onEditVariable: vi.fn(),
+      onDeleteVariable: vi.fn(),
+      onRequestEditAsset,
+      onDeleteAsset,
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Edit invoiceApiKey' }));
+    await user.click(screen.getByRole('button', { name: 'Delete invoiceApiKey' }));
+
+    expect(onRequestEditAsset).toHaveBeenCalledWith(variableRow('invoiceApiKey', 'assets'));
+    expect(onDeleteAsset).toHaveBeenCalledWith(variableRow('invoiceApiKey', 'assets'));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    // Nested fields aren't assets, so they have no delete action.
+    await user.click(screen.getByRole('button', { name: 'Expand erpCredential' }));
+    expect(screen.queryByRole('button', { name: 'Delete username' })).toBeNull();
+  });
+
   it('has no accessibility violations with every section open', async () => {
     const { container } = renderPanel({
-      defaultExpandedSections: ['inputs', 'outputs', 'variables', 'nodes'],
+      defaultExpandedSections: ['inputs', 'outputs', 'variables', 'assets', 'nodes'],
+      assets: ASSETS,
       onAdd: vi.fn(),
       onFocusNode: vi.fn(),
       onEditVariable: vi.fn(),
       onDeleteVariable: vi.fn(),
+      onRequestEditAsset: vi.fn(),
+      onDeleteAsset: vi.fn(),
     });
 
     expect(await axe(container)).toHaveNoViolations();

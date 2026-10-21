@@ -9,7 +9,6 @@ import {
   ArrowDown,
   ArrowUp,
   ChevronDown,
-  type LucideIcon,
   MousePointerClick,
   Pencil,
   Plus,
@@ -17,8 +16,9 @@ import {
   Trash2,
   Variable,
 } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { type ComponentType, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSafeLingui } from '../../../i18n';
+import { Asset } from '../../../icons';
 import { CanvasTooltip } from '../CanvasTooltip';
 import {
   appendPathSegment,
@@ -52,7 +52,13 @@ import type {
   NodeVariableType,
 } from './NodeVariablesPanel.types';
 
-const SECTIONS: readonly NodeVariablesSection[] = ['inputs', 'outputs', 'variables', 'nodes'];
+const SECTIONS: readonly NodeVariablesSection[] = [
+  'inputs',
+  'outputs',
+  'variables',
+  'assets',
+  'nodes',
+];
 
 /** Sections whose rows are nodes (an id, a label, an icon, and outputs). */
 type SourceSection = Extract<NodeVariablesSection, 'inputs' | 'nodes'>;
@@ -60,10 +66,14 @@ const isSourceSection = (section: NodeVariablesSection): section is SourceSectio
   section === 'inputs' || section === 'nodes';
 
 // One icon set at one size, each section in its own color.
-const SECTION_ICONS: Record<NodeVariablesSection, { Icon: LucideIcon; className: string }> = {
+const SECTION_ICONS: Record<
+  NodeVariablesSection,
+  { Icon: ComponentType<{ size?: number | string }>; className: string }
+> = {
   inputs: { Icon: ArrowDown, className: 'text-info' },
   outputs: { Icon: ArrowUp, className: 'text-success' },
   variables: { Icon: Variable, className: 'text-chart-purple' },
+  assets: { Icon: Asset, className: 'text-chart-yellow/60' },
   nodes: { Icon: SquareStack, className: 'text-chart-pink' },
 };
 
@@ -210,6 +220,10 @@ function rowFor(section: NodeVariablesSection, node: JsonTreeNode): NodeVariable
     : { section, node };
 }
 
+/** Top-level named keys in Assets: one row per declared asset. */
+const isTopLevelAsset = ({ section, node }: NodeVariablesRow) =>
+  section === 'assets' && node.segments.length === 1 && typeof node.segments[0] === 'string';
+
 /** Default `isVariableRow`: top-level named keys in Outputs and Variables. */
 const isTopLevelVariable = ({ section, node }: NodeVariablesRow) =>
   (section === 'outputs' || section === 'variables') &&
@@ -242,16 +256,18 @@ interface EditingVariable {
 /**
  * NodeVariablesPanel lists everything a node can reference while it is being
  * configured: the outputs of its upstream inputs, the flow's outputs and
- * shared variables, and every node in the flow.
+ * shared variables, its declared assets, and every node in the flow.
  *
  * Each section is a `JsonTreeView` and the toolbar is `JsonTreeToolbar`, so
  * rows, search, copying, and reference paths behave as in `NodeIOView`. Data
  * follows the same contract (`schema` and/or `value`). Every reference starts
- * at `$vars.` (see `referencePrefix`). Node rows show the node's name and icon,
+ * at `$vars.` (see `referencePrefix`), except assets, which start at `$assets.`
+ * (see `assetsReferencePrefix`). Node rows show the node's name and icon,
  * with its id on hover, an output count, a "Focus on node" action, and an add
  * action. Variable rows (`isVariableRow`, by default top-level Outputs and
  * Variables) can be edited, in the built-in dialog or the host's own
- * (`onRequestEditVariable`), and deleted. Filters come from the host.
+ * (`onRequestEditVariable`), and deleted. Asset rows can be edited
+ * (`onRequestEditAsset`) and deleted (`onDeleteAsset`) by the host. Filters come from the host.
  *
  * The component is the body of a panel tab: compose it inside
  * `NodePropertyPanel`, which owns the chrome.
@@ -290,10 +306,13 @@ export function NodeVariablesPanel({
   inputs = [],
   outputs,
   variables,
+  assets,
   nodes = [],
   outputsBasePath,
   variablesBasePath,
+  assetsBasePath,
   referencePrefix = '$vars',
+  assetsReferencePrefix = '$assets',
   pathForCopy,
   defaultExpandedSections = ['nodes'],
   filters,
@@ -306,6 +325,8 @@ export function NodeVariablesPanel({
   onEditVariable,
   onRequestEditVariable,
   onDeleteVariable,
+  onRequestEditAsset,
+  onDeleteAsset,
   onCopy,
   leading,
   rowWrapper,
@@ -328,9 +349,14 @@ export function NodeVariablesPanel({
         value: variables?.value,
         basePath: variablesBasePath,
       }),
+      assets: buildJsonTree({
+        schema: assets?.schema,
+        value: assets?.value,
+        basePath: assetsBasePath,
+      }),
       nodes: buildSourceTree(nodes),
     }),
-    [inputs, outputs, outputsBasePath, variables, variablesBasePath, nodes]
+    [inputs, outputs, outputsBasePath, variables, variablesBasePath, assets, assetsBasePath, nodes]
   );
   // One lookup per section: an upstream input also appears in Nodes, and each
   // list's own metadata (label, icon, output count) must win in its section.
@@ -350,7 +376,7 @@ export function NodeVariablesPanel({
   // object variable, collapsed by default too. Kept per section: each section is
   // its own tree, and the same path can appear in two (a node in Inputs and Nodes).
   const [openPaths, setOpenPaths] = useState<Record<NodeVariablesSection, Record<string, boolean>>>(
-    { inputs: {}, outputs: {}, variables: {}, nodes: {} }
+    { inputs: {}, outputs: {}, variables: {}, assets: {}, nodes: {} }
   );
   // The tree's shape: every container path, true when collapsed. Own entries for
   // every path, read with own-key checks, so a key named after an
@@ -391,17 +417,18 @@ export function NodeVariablesPanel({
   };
   const [editing, setEditing] = useState<EditingVariable | null>(null);
 
-  // Every reference starts at the prefix: `$vars.httpWebhook1.output.body`, `$vars.flowTest`.
-  // A bracket-quoted first segment (`["node-1"]`) attaches without a dot.
-  const referenceFor = useCallback<PathForCopy>(
-    (path: string, segments: PathSegment[]) => {
-      const prefixed =
-        referencePrefix && path
-          ? `${referencePrefix}${path.startsWith('[') ? '' : '.'}${path}`
-          : path || referencePrefix;
-      return pathForCopy ? pathForCopy(prefixed, segments) : prefixed;
-    },
-    [referencePrefix, pathForCopy]
+  // Every reference starts at its section's prefix: `$vars.httpWebhook1.output.body`,
+  // `$vars.flowTest`, `$assets.apiKey`. A bracket-quoted first segment (`["node-1"]`)
+  // attaches without a dot.
+  const referenceFor = useCallback(
+    (section: NodeVariablesSection): PathForCopy =>
+      (path: string, segments: PathSegment[]) => {
+        const prefix = section === 'assets' ? assetsReferencePrefix : referencePrefix;
+        const prefixed =
+          prefix && path ? `${prefix}${path.startsWith('[') ? '' : '.'}${path}` : path || prefix;
+        return pathForCopy ? pathForCopy(prefixed, segments) : prefixed;
+      },
+    [referencePrefix, assetsReferencePrefix, pathForCopy]
   );
 
   const search = query.trim();
@@ -490,6 +517,7 @@ export function NodeVariablesPanel({
     inputs: inputs.length,
     outputs: countEntries(trees.outputs),
     variables: countEntries(trees.variables),
+    assets: countEntries(trees.assets),
     nodes: nodes.length,
   };
 
@@ -630,6 +658,38 @@ export function NodeVariablesPanel({
     return actions;
   };
 
+  // Asset rows add the host's edit (rename or reconnect) and delete to the tree's own actions.
+  const assetActions = (row: NodeVariablesRow, ctx: { defaultActions: NodeAction[] }) => {
+    const { node } = row;
+    const actions: NodeAction[] = [...ctx.defaultActions];
+    if (onRequestEditAsset) {
+      actions.push({
+        id: 'edit-asset',
+        icon: <Pencil />,
+        label: _({
+          id: 'canvas.node_variables_panel.edit_asset',
+          message: 'Edit {name}',
+          values: { name: node.key },
+        }),
+        onSelect: () => onRequestEditAsset(row),
+      });
+    }
+    if (onDeleteAsset) {
+      actions.push({
+        id: 'delete-asset',
+        icon: <Trash2 />,
+        label: _({
+          id: 'canvas.node_variables_panel.delete_asset',
+          message: 'Delete {name}',
+          values: { name: node.key },
+        }),
+        tone: 'error',
+        onSelect: () => onDeleteAsset(row),
+      });
+    }
+    return actions;
+  };
+
   const actionsFor =
     (section: NodeVariablesSection): NodeActionsResolver =>
     (node, ctx) => {
@@ -637,10 +697,10 @@ export function NodeVariablesPanel({
         return sourceActions(section)(node, ctx);
       }
       const row = rowFor(section, node);
-      // Array preview rows stand for an item shape, never a variable.
-      return !node.isArrayItemTemplate && isVariableRow(row)
-        ? variableActions(row, ctx)
-        : ctx.defaultActions;
+      // Array preview rows stand for an item shape, never a variable or an asset.
+      if (node.isArrayItemTemplate) return ctx.defaultActions;
+      if (isTopLevelAsset(row)) return assetActions(row, ctx);
+      return isVariableRow(row) ? variableActions(row, ctx) : ctx.defaultActions;
     };
 
   /** Where a renamed variable would be referenced, shown in the dialog. */
@@ -652,16 +712,19 @@ export function NodeVariablesPanel({
           ? (outputsBasePath ?? '')
           : section === 'variables'
             ? (variablesBasePath ?? '')
-            : '';
+            : section === 'assets'
+              ? (assetsBasePath ?? '')
+              : '';
       const parentSegments = node.segments.slice(0, -1);
       const path = [...parentSegments, id].reduce<string>(appendPathSegment, basePath);
-      return referenceFor(path, [...parentSegments, id]);
+      return referenceFor(section)(path, [...parentSegments, id]);
     };
 
   const sectionName: Record<NodeVariablesSection, string> = {
     inputs: _({ id: 'canvas.node_variables_panel.section_inputs', message: 'Inputs' }),
     outputs: _({ id: 'canvas.node_variables_panel.section_outputs', message: 'Outputs' }),
     variables: _({ id: 'canvas.node_variables_panel.section_variables', message: 'Variables' }),
+    assets: _({ id: 'canvas.node_variables_panel.section_assets', message: 'Assets' }),
     nodes: _({ id: 'canvas.node_variables_panel.section_nodes', message: 'Nodes' }),
   };
   const sectionCountLabel = (section: NodeVariablesSection, count: number) =>
@@ -681,6 +744,11 @@ export function NodeVariablesPanel({
         message: '{count, plural, one {# variable} other {# variables}}',
         values: { count },
       }),
+      assets: _({
+        id: 'canvas.node_variables_panel.count_assets',
+        message: '{count, plural, one {# asset} other {# assets}}',
+        values: { count },
+      }),
       nodes: _({
         id: 'canvas.node_variables_panel.count_nodes',
         message: '{count, plural, one {# node} other {# nodes}}',
@@ -691,6 +759,7 @@ export function NodeVariablesPanel({
     ({
       outputs: _({ id: 'canvas.node_variables_panel.add_outputs', message: 'Add outputs' }),
       variables: _({ id: 'canvas.node_variables_panel.add_variables', message: 'Add variables' }),
+      assets: _({ id: 'canvas.node_variables_panel.add_assets', message: 'Add asset' }),
     })[section];
 
   const renderTree = (section: NodeVariablesSection) => (
@@ -709,7 +778,7 @@ export function NodeVariablesPanel({
       nodeActions={actionsFor(section)}
       // Room for copy plus edit and delete on variable rows.
       maxInlineActions={4}
-      pathForCopy={referenceFor}
+      pathForCopy={referenceFor(section)}
       onCopy={onCopy}
       virtualized={virtualize[section]}
       scrollElement={virtualize[section] ? scroller : undefined}
@@ -724,7 +793,10 @@ export function NodeVariablesPanel({
     const count = totalCount[section];
     const { Icon, className: iconClassName } = SECTION_ICONS[section];
     // Inputs and Nodes add per node row instead (see sourceActions).
-    const addable = (section === 'outputs' || section === 'variables') && onAdd ? section : null;
+    const addable =
+      (section === 'outputs' || section === 'variables' || section === 'assets') && onAdd
+        ? section
+        : null;
 
     return (
       <Collapsible
