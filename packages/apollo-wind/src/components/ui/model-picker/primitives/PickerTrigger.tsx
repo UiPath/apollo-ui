@@ -2,18 +2,11 @@
 
 import { ChevronDown } from 'lucide-react';
 import * as React from 'react';
-import { useVisibleCount } from '@/components/ui/use-visible-count';
 import { cn } from '@/lib';
 import { DEFAULT_MODEL_PICKER_LABELS } from '../labels';
-import { ModelTagChip, tagVariantToken } from '../ModelTagChip';
-import type { DiscoveryModel, ModelTag } from '../types';
+import type { DiscoveryModel } from '../types';
 import { type DeriveModelTagsContext, deriveModelTags } from '../utils';
-
-// Must match the chip row's `gap-1.5`.
-const CHIP_GAP = 6;
-
-const SEVERITY_RANK: Record<string, number> = { 'error-mini': 0, 'warning-mini': 1 };
-const OTHER_RANK = 2;
+import { ModelTagStrip } from './ModelTagStrip';
 
 export interface PickerTriggerProps
   extends Omit<
@@ -116,25 +109,12 @@ export const PickerTrigger = React.forwardRef<HTMLButtonElement, PickerTriggerPr
   ) {
     const labels = tagContext?.labels ?? DEFAULT_MODEL_PICKER_LABELS;
     const effectiveCtx: DeriveModelTagsContext = tagContext ?? { labels };
-    // Warnings first, so the chip a narrow field keeps is the one that needs attention.
-    const rank = (t: ModelTag) => SEVERITY_RANK[tagVariantToken(t, tagVariants)] ?? OTHER_RANK;
     const inlineTags = selected
-      ? deriveModelTags(selected, effectiveCtx)
-          .filter((t) => !hideTagKinds?.includes(t.kind))
-          .sort((a, b) => rank(a) - rank(b))
+      ? deriveModelTags(selected, effectiveCtx).filter((t) => !hideTagKinds?.includes(t.kind))
       : [];
     // Display names come from the Discovery DTO only — same resolution
     // as the rows, so trigger and popup always agree.
     const primary = selected ? (selected.displayName ?? selected.modelName) : null;
-
-    // No chip has to stay: the name already says what is selected.
-    const { containerRef, itemRefs, overflowRef, visibleCount } = useVisibleCount(
-      inlineTags.length > 0,
-      inlineTags.map((t) => `${t.kind}-${t.label}`),
-      CHIP_GAP,
-      0
-    );
-    const hiddenCount = inlineTags.length - visibleCount;
 
     // Radix injects `onClick`, `aria-haspopup="dialog"` and friends through
     // `asChild`. Spread those first so our listbox semantics win, but keep
@@ -186,59 +166,12 @@ export const PickerTrigger = React.forwardRef<HTMLButtonElement, PickerTriggerPr
           {selected ? (
             <>
               <span className="max-w-full truncate text-foreground">{primary}</span>
-              {inlineTags.length > 0 && (
-                // Zero-basis `flex-1`: the chips only get the width the name leaves.
-                <span
-                  className="relative flex min-w-0 flex-1 flex-nowrap items-center gap-1.5 overflow-hidden"
-                  data-slot="model-picker-trigger-tags"
-                  ref={containerRef as React.Ref<HTMLSpanElement>}
-                >
-                  {inlineTags.map((t, i) => (
-                    // `flex items-center` for the same reason as the option rows:
-                    // a block wrapper baseline-aligns the inline-flex chip inside
-                    // an inherited line box and lifts it off the title's centre.
-                    // A parked chip stays mounted to be measured, and `opacity-0`
-                    // rather than `invisible` keeps it announced.
-                    <span
-                      className={cn(
-                        'flex shrink-0 items-center',
-                        i >= visibleCount && 'pointer-events-none absolute opacity-0'
-                      )}
-                      key={`${t.kind}-${t.label}`}
-                      ref={(el) => {
-                        itemRefs.current[i] = el;
-                      }}
-                    >
-                      <ModelTagChip disableTooltip tag={t} variants={tagVariants} />
-                    </span>
-                  ))}
-                  {/* Every count stacked in one cell, so its width cannot change with the count. */}
-                  <span
-                    aria-hidden
-                    className={cn('grid shrink-0', hiddenCount === 0 && 'absolute opacity-0')}
-                    data-overflow=""
-                    ref={overflowRef as React.Ref<HTMLSpanElement>}
-                  >
-                    {inlineTags.map((t, i) => (
-                      <span
-                        className={cn(
-                          'col-start-1 row-start-1 flex items-center',
-                          i + 1 !== hiddenCount && 'invisible'
-                        )}
-                        key={`${t.kind}-${t.label}`}
-                      >
-                        <ModelTagChip
-                          tag={{
-                            kind: 'overflow',
-                            label: labels.hiddenTagCount(i + 1),
-                            variant: 'mini',
-                          }}
-                        />
-                      </span>
-                    ))}
-                  </span>
-                </span>
-              )}
+              <ModelTagStrip
+                disableTooltip
+                labels={labels}
+                tagVariants={tagVariants}
+                tags={inlineTags}
+              />
             </>
           ) : pendingValue ? (
             <span className="max-w-full truncate text-foreground">{pendingValue}</span>

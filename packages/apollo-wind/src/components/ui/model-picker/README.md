@@ -340,7 +340,7 @@ the row. Everything else about which models appear is yours, via `filter`.
 The picker implements the WAI-ARIA listbox pattern with keyboard input:
 
 - **Trigger** is `role="combobox"`, like wind's Select and Combobox triggers, so the selected model is announced as the field's value. It carries `aria-haspopup="listbox"`, `aria-controls` pointing at the popup, `aria-expanded`, `aria-invalid`, `aria-required`, and `aria-describedby` linking to the error message.
-- **Trigger chips** never squeeze the model name: in a narrow field the ones with no room collapse into a `+N` count (`hiddenTagCount`), warnings kept first. The count is `aria-hidden`; the collapsed chips are still announced.
+- **Chips** never squeeze the model name, in the field or in a row: the ones with no room collapse into a `+N` count (`hiddenTagCount`), warnings kept first. In the list, hovering the count names the chips it stands for (`hiddenTagCountTooltip`). The count is `aria-hidden`; the collapsed chips are still announced.
 - **Search input** is `aria-autocomplete="list"`, `aria-controls={listboxId}`, with `aria-activedescendant` updating to the highlighted option as the user navigates with `↑`/`↓` — DOM focus stays on the search.
 - **Listbox** has an `aria-label` ("Models" by default, localized).
 - **Each option** has a stable id (`{listboxId}-opt-{modelId}`), `role="option"`, and `aria-selected`.
@@ -370,7 +370,7 @@ Keyboard:
 
 Every surface is styled with wind's semantic Tailwind tokens — `bg-popover`, `bg-surface-raised`, `bg-surface-hover`, `bg-surface-selected`, `text-foreground`, `text-foreground-muted`, `text-foreground-subtle`, `border-border`, `text-error`, `ring-ring`, `text-brand` — so the picker follows the host's theme class (`light` / `dark` / `.future-*`) with no props or variable overrides. Field errors use the `error` token, never `destructive`: the two resolve to different colours in several themes.
 
-Internals are addressable through stable `data-slot` attributes rather than class names: `model-picker`, `model-picker-trigger`, `model-picker-popup`, `model-picker-toolbar`, `model-picker-listbox`, `model-picker-row`, `model-picker-group-header`, `model-picker-group-by`, `model-picker-tag` (which also carries `data-tag-kind`), `model-picker-folder-switcher`, `model-picker-use-custom-model`.
+Internals are addressable through stable `data-slot` attributes rather than class names: `model-picker`, `model-picker-trigger`, `model-picker-popup`, `model-picker-toolbar`, `model-picker-listbox`, `model-picker-row`, `model-picker-group-header`, `model-picker-group-by`, `model-picker-tag` (which also carries `data-tag-kind`), `model-picker-tags` (the chips beside a name), `model-picker-folder-switcher`, `model-picker-use-custom-model`.
 
 Overlays (the popup, the folder menu, tooltips, the delete confirm) portal to `document.body` by default. Shadow-DOM and webview hosts should mount a `PortalContainerProvider` around their tree — that redirects every overlay at once — or pass `popupContainer` for this picker alone.
 
@@ -467,7 +467,7 @@ Stories live in `ModelPicker.stories.tsx` under **Components/UiPath/Model Picker
 - **Viewer — read-only BYO** — default, no admin affordances
 - **Folder-scoped Custom Models** — built-in folder switcher
 - **Recommended from Discovery + cost badges (agents example)** — DTO `isRecommended` + cost chips
-- **Narrow fields** — side-panel widths; trigger chips collapse into `+N`, the name stays
+- **Narrow fields** — side-panel widths; chips collapse into `+N` in the field and the list, the name stays
 - **Routing substitution** — gateway routes traffic; trigger surfaces the redirection
 - **Unknown model — graceful fallback** — stored `value` not in catalog
 - **Kitchen sink** — every capability turned on at once

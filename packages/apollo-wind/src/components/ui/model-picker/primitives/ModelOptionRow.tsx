@@ -5,9 +5,9 @@ import * as React from 'react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib';
 import { DEFAULT_MODEL_PICKER_LABELS, type ModelPickerLabels } from '../labels';
-import { ModelTagChip } from '../ModelTagChip';
 import type { DiscoveryModel } from '../types';
 import { type DeriveModelTagsContext, deriveModelTags, isByoModel } from '../utils';
+import { ModelTagStrip } from './ModelTagStrip';
 
 export interface ModelOptionRowProps {
   model: DiscoveryModel;
@@ -160,8 +160,7 @@ const ModelOptionRowInner: React.FC<ModelOptionRowProps> = ({
       tabIndex={-1}
     >
       <div className="min-w-0 flex-1">
-        {/* Chips sit next to the name, never wrapping to a second line:
-            the title truncates first, then long chips ellipsize. */}
+        {/* One line: the name keeps its width; chips with no room collapse into a count. */}
         <div className="flex min-w-0 flex-nowrap items-center gap-1.5">
           <span
             className={cn(
@@ -171,22 +170,7 @@ const ModelOptionRowInner: React.FC<ModelOptionRowProps> = ({
           >
             {primary}
           </span>
-          {inlineTags.map((t) => (
-            // `flex items-center` is load-bearing, not cosmetic: the chip is an
-            // inline-flex Badge, so a block wrapper would generate a line box of
-            // the inherited line-height (~21px) around a 16px chip and
-            // baseline-align it, parking every chip ~3px above the title.
-            //
-            // `min-w-0 shrink overflow-hidden` lets a long chip (notably the
-            // "Routes to …" substitution chip) ellipsize rather than overflow
-            // into the context column.
-            <span
-              className="flex min-w-0 shrink items-center overflow-hidden [&_[data-slot=model-picker-tag]]:max-w-full [&_[data-slot=model-picker-tag]]:truncate"
-              key={`${t.kind}-${t.label}`}
-            >
-              <ModelTagChip tag={t} variants={tagVariants} />
-            </span>
-          ))}
+          <ModelTagStrip labels={labels} tagVariants={tagVariants} tags={inlineTags} />
         </div>
         {techId && (
           // Friendly-mode secondary line: the canonical technical id in
