@@ -22,6 +22,11 @@ export interface ValueModeSwitchDialogProps {
   confirmLabel?: string;
   /** Overrides for any subset of the English strings. */
   strings?: Partial<ValueModeStrings>;
+  /**
+   * Called as the dialog closes, before it returns focus to where it opened from. Call
+   * `preventDefault` to keep focus elsewhere, such as on the control of the mode just switched to.
+   */
+  onCloseAutoFocus?: (event: Event) => void;
 }
 
 /** Confirms a mode switch that would lose the field's current value. */
@@ -33,11 +38,12 @@ export function ValueModeSwitchDialog({
   description,
   confirmLabel,
   strings,
+  onCloseAutoFocus,
 }: ValueModeSwitchDialogProps) {
   const text = { ...DEFAULT_VALUE_MODE_STRINGS, ...strings };
   return (
     <AlertDialog open={open} onOpenChange={(next) => !next && onCancel()}>
-      <AlertDialogContent>
+      <AlertDialogContent onCloseAutoFocus={onCloseAutoFocus}>
         <AlertDialogHeader>
           <AlertDialogTitle>{title ?? text.lossyTitle}</AlertDialogTitle>
           <AlertDialogDescription>{description ?? text.lossyDescription}</AlertDialogDescription>

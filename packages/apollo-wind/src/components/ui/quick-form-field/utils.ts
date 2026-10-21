@@ -1,3 +1,4 @@
+import type { VariablePickerItem } from '@/components/ui/variable-picker';
 import { toDateValue } from '@/lib/date-value';
 import type { QuickFormFieldOption } from './types';
 
@@ -30,4 +31,30 @@ export function formatDateValue(value: string): string {
   return date
     ? date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
     : value;
+}
+
+export interface VariablePickerSource {
+  items: VariablePickerItem[];
+  /** The consumer's own entry for a picked item: rebuilding it from the item would drop `type`. */
+  resolve: (item: VariablePickerItem) => QuickFormFieldOption;
+}
+
+/** Maps `variables` onto picker items, keeping a way back to each consumer entry. */
+export function toVariablePickerSource(variables: QuickFormFieldOption[]): VariablePickerSource {
+  // Ids come from tree position: neither labels nor values are required to be unique.
+  const byId = new Map<string, QuickFormFieldOption>();
+  const toItem = (v: QuickFormFieldOption, id: string): VariablePickerItem => {
+    byId.set(id, v);
+    return {
+      id,
+      label: v.label,
+      ...(v.value ? { value: v.value } : {}),
+      ...(v.type ? { type: v.type } : {}),
+      ...(v.children ? { children: v.children.map((c, i) => toItem(c, `${id}/${i}`)) } : {}),
+    };
+  };
+  return {
+    items: variables.map((v, i) => toItem(v, String(i))),
+    resolve: (item) => byId.get(item.id) ?? { label: item.label, value: item.value ?? '' },
+  };
 }

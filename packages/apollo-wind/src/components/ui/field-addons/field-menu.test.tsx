@@ -19,6 +19,18 @@ describe('FieldMenu', () => {
     expect(screen.getByRole('button', { name: 'Expression' })).toBeInTheDocument();
   });
 
+  it('lets a field keep focus off the trigger as the menu closes', async () => {
+    const user = userEvent.setup();
+    const onCloseAutoFocus = vi.fn((event: Event) => event.preventDefault());
+    render(<FieldMenu mode="literal" onSelect={vi.fn()} onCloseAutoFocus={onCloseAutoFocus} />);
+    const trigger = screen.getByRole('button', { name: 'Fixed value' });
+    await user.click(trigger);
+    const focus = vi.spyOn(trigger, 'focus');
+    await user.click(screen.getByRole('menuitemradio', { name: /Expression/ }));
+    expect(onCloseAutoFocus).toHaveBeenCalledOnce();
+    expect(focus).not.toHaveBeenCalled();
+  });
+
   it('names the trigger with triggerLabel while it offers modes', () => {
     const { rerender } = render(
       <FieldMenu mode="expression" onSelect={vi.fn()} triggerLabel="Choose value mode" />

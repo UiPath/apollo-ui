@@ -48,7 +48,10 @@ describe('VariableValueControl', () => {
     await user.click(screen.getByRole('button', { name: 'Ref' }));
     expect(source).toHaveBeenCalledTimes(1);
     await user.click(await screen.findByText('Order id'));
-    expect(onChange).toHaveBeenCalledWith('$vars.orderId');
+    expect(onChange).toHaveBeenCalledWith(
+      '$vars.orderId',
+      expect.objectContaining({ label: 'Order id', value: '$vars.orderId' })
+    );
     expect(screen.queryByPlaceholderText('Search variables...')).toBeNull();
   });
 
@@ -127,7 +130,8 @@ describe('VariableValueControl', () => {
       expect(await screen.findByText('Bound: $vars.old')).toBeInTheDocument();
       expect(screen.queryByPlaceholderText('Search variables...')).toBeNull();
       await user.click(screen.getByRole('button', { name: 'Host order id' }));
-      expect(onChange).toHaveBeenCalledWith('$host.orderId');
+      // A host pick is the reference alone: there is no entry to hand on.
+      expect(onChange).toHaveBeenCalledWith('$host.orderId', undefined);
       expect(screen.queryByText('Bound: $vars.old')).toBeNull();
       expect(trigger).toHaveFocus();
     });

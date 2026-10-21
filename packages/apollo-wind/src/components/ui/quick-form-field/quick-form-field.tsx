@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/input-group';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { PromptValueControl } from '@/components/ui/prompt-value-control';
 import {
   Select,
   SelectContent,
@@ -19,14 +20,29 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { VariableValueControl } from '@/components/ui/variable-value-control';
 import { cn } from '@/lib';
 import { toDateValue } from '@/lib/date-value';
 import { FieldMenu, type FieldMenuItem } from '../field-addons/field-menu';
+import { ValueModeSwitchDialog } from '../field-addons/value-mode-switch-dialog';
 import { FieldHeader } from './components/field-header';
 import { LockToggleButton } from './components/lock-toggle-button';
-import type { QuickFormFieldControlProps, QuickFormFieldProps } from './types';
+import type {
+  QuickFormFieldControlProps,
+  QuickFormFieldMode,
+  QuickFormFieldModeSwitchConfirm,
+  QuickFormFieldProps,
+} from './types';
 import { DEFAULT_QUICK_FORM_FIELD_STRINGS, FIELD_TYPE_META } from './types';
-import { DEFAULT_SELECT_OPTIONS, formatDateValue, parseListValue, toDateOnlyString } from './utils';
+import {
+  DEFAULT_SELECT_OPTIONS,
+  formatDateValue,
+  parseListValue,
+  toDateOnlyString,
+  toVariablePickerSource,
+} from './utils';
+
+const DEFAULT_VALUE_MODES: readonly QuickFormFieldMode[] = ['literal', 'expression'];
 
 /**
  * A Quick Form is assembled by end users, like a form builder. QuickFormField is
@@ -39,8 +55,10 @@ import { DEFAULT_SELECT_OPTIONS, formatDateValue, parseListValue, toDateOnlyStri
  * form-field anatomy (`FormField`, `FormFieldLabel`, `InputGroup`, …) or
  * describe them to `MetadataForm`.
  *
- * - Literal and expression have built-in controls; `renderModeControl`
- *   supplies the control for any mode, and `variable` / `prompt` need it.
+ * - Every mode has a built-in control: `variable` is a picker over
+ *   `variables`, `prompt` an agent textarea. `valueModes` chooses which the
+ *   menu offers, and `renderModeControl` replaces the control for any mode.
+ * - `confirmModeChange` asks before a switch the consumer knows is lossy.
  * - `locked` is configuration the author sets, so the value stays editable;
  *   `disabled` is what stops the author editing the field.
  * - `fieldTypes` chooses which types the picker offers.
@@ -68,6 +86,8 @@ export function QuickFormField({
   more,
   mode = 'literal',
   onModeChange,
+  valueModes = DEFAULT_VALUE_MODES,
+  confirmModeChange,
   renderExpressionEditor,
   renderModeControl,
   fieldType = 'string',
@@ -105,8 +125,19 @@ export function QuickFormField({
   // Null until the author places a caret: a never-focused input reports
   // selectionStart 0, which would prepend an inserted variable.
   const caretRef = useRef<{ start: number; end: number } | null>(null);
+  // The variable trigger or prompt textarea, for focus on a mode switch.
+  const modeControlRef = useRef<HTMLElement | null>(null);
+  const setModeControl = useCallback((el: HTMLElement | null) => {
+    modeControlRef.current = el;
+  }, []);
   const [datePopoverOpen, setDatePopoverOpen] = useState(false);
   const [selectOpen, setSelectOpen] = useState(false);
+  const [pendingSwitch, setPendingSwitch] = useState<
+    QuickFormFieldModeSwitchConfirm & { to: QuickFormFieldMode }
+  >();
+  // Shared by the Insert menu and the variable-mode picker. Memoized because it
+  // rebuilds the tree recursively, which every row did on every render.
+  const variablePicker = useMemo(() => toVariablePickerSource(variables), [variables]);
   const fieldId = id ?? generatedId;
   const validationId = errorId ?? `${fieldId}-error`;
   const typeMeta = FIELD_TYPE_META[fieldType];
@@ -121,29 +152,61 @@ export function QuickFormField({
   const valuePlaceholder = placeholder ?? fieldLabel;
   const menuActions: FieldMenuItem[] = [
     ...(more?.onClear
-      ? [{ id: 'clear', label: strings.clearValue, icon: Trash2, onSelect: more.onClear }]
+      ? [
+          {
+            id: 'clear',
+            label: strings.clearValue,
+            icon: Trash2,
+            destructive: true,
+            onSelect: more.onClear,
+          },
+        ]
       : []),
     ...(more?.onRefresh
       ? [{ id: 'refresh', label: strings.forceRefresh, icon: RefreshCw, onSelect: more.onRefresh }]
       : []),
   ];
-  // Modes and actions share one menu. A field with no mode handler offers only its actions; with
+  const valueModeStrings = {
+    ...strings.valueModes,
+    literalTitle: strings.literalLabels[fieldType] ?? typeMeta.fixedLabel,
+    expressionTitle: strings.expressionLabel,
+    expressionDescription: strings.expressionDescription,
+    fieldActions: strings.moreActionsAriaLabel,
+  };
+  // Set when a switch goes through, so the menu or dialog closing behind it leaves focus on the
+  // new control rather than returning it to where it opened from.
+  const focusControlOnClose = useRef(false);
+  const keepControlFocus = (event: Event) => {
+    if (!focusControlOnClose.current) return;
+    focusControlOnClose.current = false;
+    event.preventDefault();
+    (valueInputRef.current ?? modeControlRef.current)?.focus();
+  };
+  const selectMode = (next: QuickFormFieldMode) => {
+    if (!onModeChange) return;
+    const confirm = next !== mode && confirmModeChange?.(mode, next);
+    if (confirm) {
+      setPendingSwitch({ ...(confirm === true ? {} : confirm), to: next });
+      return;
+    }
+    focusControlOnClose.current = next !== mode;
+    onModeChange(next);
+  };
+  // Modes and actions share one menu. A field that cannot switch offers only its actions; with
   // neither, it keeps a disabled mode trigger so the field still shows how its value is expressed.
+  const switchable = !!onModeChange && valueModes.length > 1;
   const builtInMenu = (
     <FieldMenu
       mode={mode}
-      onSelect={(next) => onModeChange?.(next)}
-      modesDisabled={!onModeChange && menuActions.length > 0}
-      disabled={disabled || (!onModeChange && menuActions.length === 0)}
+      modes={[...valueModes]}
+      onSelect={selectMode}
+      modesDisabled={!switchable && menuActions.length > 0}
+      disabled={disabled || (!switchable && menuActions.length === 0)}
       actions={menuActions}
       triggerLabel={strings.valueModeAriaLabel}
       literalDescription={strings.literalDescriptions[fieldType] ?? typeMeta.fixedDescription}
-      strings={{
-        literalTitle: strings.literalLabels[fieldType] ?? typeMeta.fixedLabel,
-        expressionTitle: strings.expressionLabel,
-        expressionDescription: strings.expressionDescription,
-        fieldActions: strings.moreActionsAriaLabel,
-      }}
+      strings={valueModeStrings}
+      onCloseAutoFocus={keepControlFocus}
     />
   );
 
@@ -164,6 +227,8 @@ export function QuickFormField({
 
   // Resolved before the tree so returning nothing falls back to the built-in control.
   const modeControl = renderModeControl?.(mode, controlProps) ?? null;
+  const builtInVariable = modeControl === null && mode === 'variable';
+  const builtInPrompt = modeControl === null && mode === 'prompt';
 
   // Switching mode is a prelude to writing the value, so focus the control.
   // Skipped on mount so rendering a form cannot steal focus.
@@ -171,7 +236,12 @@ export function QuickFormField({
   useEffect(() => {
     if (modeOnMount.current === mode) return;
     modeOnMount.current = mode;
-    valueInputRef.current?.focus();
+    // A frame later: a popover trigger, as the variable picker is, remounts once
+    // its anchor registers, which would drop focus given now.
+    const frame = requestAnimationFrame(() =>
+      (valueInputRef.current ?? modeControlRef.current)?.focus()
+    );
+    return () => cancelAnimationFrame(frame);
   }, [mode]);
 
   // Enter blurs, so a consumer commits in `onValueBlur` as it already does.
@@ -358,6 +428,12 @@ export function QuickFormField({
         selected={parseListValue(value)}
         onChange={(selected) => editableOnValueChange?.(JSON.stringify(selected))}
         placeholder={strings.selectOptions}
+        searchPlaceholder={strings.multiSelectSearchPlaceholder}
+        emptyMessage={strings.multiSelectEmpty}
+        clearAllText={strings.multiSelectClearAll}
+        strings={strings.multiSelect}
+        // One line, as every other row is; chips past the width count as "+N more".
+        overflow="collapse"
         disabled={!editableOnValueChange}
         onBlur={onValueBlur}
       />
@@ -380,6 +456,42 @@ export function QuickFormField({
       />
     );
 
+  // A pick replaces the binding. `onInsertVariable` takes it when supplied, so
+  // the consumer gets its own entry, type and all.
+  const canPickVariable = !disabled && (!!onInsertVariable || !!onValueChange);
+  const variableControl = (
+    <VariableValueControl
+      id={fieldId}
+      value={value}
+      onChange={(reference, item) =>
+        onInsertVariable && item
+          ? onInsertVariable(variablePicker.resolve(item), { value, caret: null })
+          : onValueChange?.(reference)
+      }
+      onBlur={onValueBlur}
+      inputRef={setModeControl}
+      variables={variablePicker.items}
+      disabled={!canPickVariable}
+      placeholder={placeholder}
+      strings={strings.valueModes}
+      aria-describedby={controlProps['aria-describedby']}
+    />
+  );
+
+  const promptControl = (
+    <PromptValueControl
+      id={fieldId}
+      value={value}
+      onChange={(next) => editableOnValueChange?.(next)}
+      onBlur={onValueBlur}
+      inputRef={setModeControl}
+      disabled={!editableOnValueChange}
+      placeholder={placeholder}
+      strings={strings.valueModes}
+      aria-describedby={controlProps['aria-describedby']}
+    />
+  );
+
   return (
     <div
       className={cn(
@@ -401,12 +513,16 @@ export function QuickFormField({
         isExpression={mode === 'expression'}
         showFieldActions={showFieldActions}
         onValueChange={editableOnValueChange}
-        variables={variables}
+        variables={variablePicker}
         onGenerateWithAi={onGenerateWithAi}
-        onInsertVariable={(variable) =>
-          onInsertVariable
-            ? onInsertVariable(variable, { value, caret: caretRef.current })
-            : insertVariableAtCaret(variable.value)
+        // The variable picker is the value control there, so the header has nothing to insert into.
+        onInsertVariable={
+          builtInVariable
+            ? undefined
+            : (variable) =>
+                onInsertVariable
+                  ? onInsertVariable(variable, { value, caret: caretRef.current })
+                  : insertVariableAtCaret(variable.value)
         }
         headerActions={headerActions}
         strings={strings}
@@ -416,11 +532,12 @@ export function QuickFormField({
         error={error}
         errorId={validationId}
         disabled={disabled}
-        // The dropzone and a text area are taller than a row and selected chips
-        // wrap past one, so the box grows to hold them.
+        // The agent tint marks the value as a prompt. The prompt, the dropzone and a text area
+        // are taller than a row, so the box grows to hold them.
+        variant={builtInPrompt ? 'agent' : undefined}
         layout={
-          mode === 'literal' &&
-          (fieldType === 'file' || fieldType === 'multi-select' || fieldType === 'textarea')
+          builtInPrompt ||
+          (mode === 'literal' && (fieldType === 'file' || fieldType === 'textarea'))
             ? 'grow'
             : 'row'
         }
@@ -447,6 +564,10 @@ export function QuickFormField({
             ) : (
               <InputGroupInput {...textInputProps} className="font-mono" />
             )
+          ) : builtInVariable ? (
+            variableControl
+          ) : builtInPrompt ? (
+            promptControl
           ) : (
             literalControl
           ))}
@@ -459,6 +580,24 @@ export function QuickFormField({
       </InputGroup>
 
       {belowValue}
+
+      <ValueModeSwitchDialog
+        open={!!pendingSwitch}
+        title={pendingSwitch?.title}
+        description={pendingSwitch?.description}
+        confirmLabel={pendingSwitch?.confirmLabel}
+        strings={strings.valueModes}
+        onCancel={() => setPendingSwitch(undefined)}
+        onConfirm={() => {
+          // The field may have been disabled while the dialog was open.
+          if (pendingSwitch && !disabled) {
+            focusControlOnClose.current = true;
+            onModeChange?.(pendingSwitch.to);
+          }
+          setPendingSwitch(undefined);
+        }}
+        onCloseAutoFocus={keepControlFocus}
+      />
     </div>
   );
 }

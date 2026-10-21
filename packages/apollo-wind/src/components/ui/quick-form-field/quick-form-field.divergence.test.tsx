@@ -467,10 +467,17 @@ describe('QuickFormField — divergences from apollo-wind', () => {
       expect(screen.getByPlaceholderText('String value')).toBeInTheDocument();
     });
 
-    // An unhandled mode must degrade to the literal editor, not an empty row.
+    // Every mode has a built-in control, so an unhandled one is never an empty row.
     it('falls back to the built-in control when the consumer renders nothing', () => {
-      render(<QuickFormField locked={false} mode="variable" onValueChange={vi.fn()} />);
-      expect(screen.getByPlaceholderText('String value')).toBeInTheDocument();
+      render(
+        <QuickFormField
+          locked={false}
+          mode="variable"
+          onValueChange={vi.fn()}
+          renderModeControl={() => null}
+        />
+      );
+      expect(screen.getByText('Select a variable')).toBeInTheDocument();
     });
   });
 });
