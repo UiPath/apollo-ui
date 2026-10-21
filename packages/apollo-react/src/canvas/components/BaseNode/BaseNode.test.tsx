@@ -25,6 +25,7 @@ const {
   mockNodeToolbar,
   mockNodeLabel,
   mockReadOnlyNodeIds,
+  mockResolvedToolbar,
 } = vi.hoisted(() => ({
   mockUpdateNode: vi.fn(),
   mockUpdateNodeData: vi.fn(),
@@ -49,6 +50,7 @@ const {
   // biome-ignore lint/suspicious/noExplicitAny: captures the label props for assertions
   mockNodeLabel: vi.fn() as any,
   mockReadOnlyNodeIds: { current: new Set<string>() as ReadonlySet<string> },
+  mockResolvedToolbar: { current: undefined as Record<string, unknown> | undefined },
 }));
 
 // getNode reflects whatever updateNode last wrote, so the height-sync effect converges
@@ -121,7 +123,9 @@ vi.mock('./BaseNodeConfigContext', () => ({
   }),
 }));
 vi.mock('../../utils/adornment-resolver', () => ({ resolveAdornments: () => ({}) }));
-vi.mock('../../utils/toolbar-resolver', () => ({ resolveToolbar: () => undefined }));
+vi.mock('../../utils/toolbar-resolver', () => ({
+  resolveToolbar: () => mockResolvedToolbar.current,
+}));
 vi.mock('@uipath/apollo-wind', () => ({
   Skeleton: (props: Record<string, unknown>) => <div {...props} />,
   cn: (...args: unknown[]) =>
@@ -195,6 +199,7 @@ describe('BaseNode', () => {
     mockNodeToolbar.mockClear();
     mockNodeLabel.mockClear();
     mockReadOnlyNodeIds.current = new Set();
+    mockResolvedToolbar.current = undefined;
     mockHandleConfigs.current = undefined;
     mockManifest.current = { ...DEFAULT_MANIFEST };
     mockOverrideConfig.current = {};
@@ -771,6 +776,46 @@ describe('BaseNode', () => {
       expect(mockUpdateNodeData).toHaveBeenCalledWith('test-node', {
         display: { label: 'B', subLabel: 'Details', icon: 'mail', color: 'red' },
       });
+    });
+  });
+
+  describe('Hidden toolbar actions', () => {
+    const MANIFEST_TOOLBAR = {
+      actions: [
+        { id: 'set-default', icon: 'star', label: 'Set as default', onAction: vi.fn() },
+        { id: 'delete', icon: 'trash', label: 'Delete', onAction: vi.fn() },
+      ],
+      overflowActions: [
+        { id: 'duplicate', icon: 'copy', label: 'Duplicate', onAction: vi.fn() },
+        { id: 'set-default', icon: 'star', label: 'Set as default', onAction: vi.fn() },
+      ],
+    };
+
+    const toolbarConfig = () => mockNodeToolbar.mock.calls.at(-1)?.[0]?.config;
+    const ids = (actions: { id: string }[] | undefined) => actions?.map((action) => action.id);
+
+    beforeEach(() => {
+      mockResolvedToolbar.current = MANIFEST_TOOLBAR;
+    });
+
+    it('drops the listed actions from the bar and the overflow menu', () => {
+      mockOverrideConfig.current = { hiddenToolbarActionIds: ['set-default'] };
+      render(<BaseNode {...defaultProps} selected />);
+      expect(ids(toolbarConfig().actions)).toEqual(['delete']);
+      expect(ids(toolbarConfig().overflowActions)).toEqual(['duplicate']);
+    });
+
+    it('passes the resolved toolbar through unchanged when nothing is hidden', () => {
+      render(<BaseNode {...defaultProps} selected />);
+      expect(toolbarConfig()).toBe(MANIFEST_TOOLBAR);
+    });
+
+    it('renders no toolbar when every action is hidden', () => {
+      mockOverrideConfig.current = {
+        hiddenToolbarActionIds: ['set-default', 'delete', 'duplicate'],
+      };
+      render(<BaseNode {...defaultProps} selected />);
+      expect(mockNodeToolbar).not.toHaveBeenCalled();
     });
   });
 });
