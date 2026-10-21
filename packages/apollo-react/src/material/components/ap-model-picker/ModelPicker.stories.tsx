@@ -857,6 +857,80 @@ export const RecommendedFromDiscovery: Story = {
 };
 
 // ---------------------------------------------------------------------------
+// Narrow fields: the picker in a side panel. The selected model carries three
+// chips; the name keeps its width, and the chips with no room collapse into a
+// count, warnings first, in the field and in every row of the open list.
+// ---------------------------------------------------------------------------
+
+const NARROW_FIELD_MODELS: DiscoveryModel[] = DISCOVERY_WITH_RECOMMENDED.map((m) =>
+  m.modelId === 'anthropic.claude-sonnet-4-6-20260301-v1:0'
+    ? { ...m, isPreview: false, routingDetails: { ...m.routingDetails, geography: 'US' } }
+    : m
+);
+
+const NarrowFieldPicker = ({
+  width,
+  ...args
+}: React.ComponentProps<typeof ModelPicker> & { width: number }) => {
+  const [value, setValue] = useState<string | null>(
+    args.value ?? 'anthropic.claude-sonnet-4-6-20260301-v1:0'
+  );
+  return (
+    <div style={{ width }}>
+      <ModelPicker
+        {...args}
+        label={`Model (${width}px)`}
+        value={value}
+        onChange={(m) => {
+          setValue(m.modelId);
+          args.onChange?.(m);
+        }}
+      />
+    </div>
+  );
+};
+
+export const NarrowFields: Story = {
+  name: 'Narrow fields: chips collapse, the name stays',
+  render: (args) => (
+    <div
+      style={{
+        minHeight: '100vh',
+        padding: 32,
+        boxSizing: 'border-box',
+        background: '#f4f5f7',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 24,
+      }}
+    >
+      {[560, 360, 300, 240].map((width) => (
+        <NarrowFieldPicker key={width} {...args} width={width} />
+      ))}
+    </div>
+  ),
+  args: {
+    models: NARROW_FIELD_MODELS,
+    required: true,
+    groupBy: 'vendor',
+    homeRegion: 'EU',
+    badgesFor: agentsCostBadges,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The selected model is Recommended, routed out of region and in the ' +
+          'Standard cost tier. The name keeps its width and the chips share ' +
+          'what is left; the ones with no room collapse into a `+N` count, in ' +
+          'the field and in every row of the open list, where hovering the ' +
+          'count names the chips it stands for. Warning chips lead.',
+      },
+    },
+  },
+};
+
+// ---------------------------------------------------------------------------
 // Kitchen Sink: every picker capability turned on at once. Useful as the
 // "if a designer wants to see EVERYTHING" reference + as a smoke test for
 // the built-in folder switcher, default `canManageByo` footer CTA,

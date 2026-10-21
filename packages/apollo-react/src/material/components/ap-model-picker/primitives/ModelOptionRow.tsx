@@ -9,9 +9,9 @@ import { Colors, FontFamily } from '@uipath/apollo-core';
 import React from 'react';
 import type { PickerTranslator } from '../i18n';
 
-import { ModelTagChip } from '../ModelTagChip';
 import type { DiscoveryModel } from '../types';
 import { type DeriveModelTagsContext, deriveModelTags } from '../utils';
+import { ModelTagStrip } from './ModelTagStrip';
 
 export interface ModelOptionRowProps {
   model: DiscoveryModel;
@@ -193,9 +193,7 @@ const ModelOptionRowInner: React.FC<ModelOptionRowProps> = ({
             display: 'flex',
             alignItems: 'center',
             gap: 0.75,
-            // Don't wrap chips onto a second line — when the model name is
-            // long we'd rather truncate the name and keep the row single-line.
-            // Chips are right-pinned via `flex-shrink: 0` on the chip itself.
+            // One line: the name keeps its width; chips with no room collapse into a count.
             flexWrap: 'nowrap',
             minWidth: 0,
           }}
@@ -219,28 +217,7 @@ const ModelOptionRowInner: React.FC<ModelOptionRowProps> = ({
           >
             {primary}
           </Typography>
-          {inlineTags.map((t) => (
-            <Box
-              key={`${t.kind}-${t.label}`}
-              sx={{
-                // Long chips (notably the "Routes to …" substitution chip) may
-                // exceed the available width. Let the chip shrink and ellipsize
-                // its label rather than overflow into the context column, which
-                // otherwise overlaps the model name in narrow hosts.
-                flexShrink: 1,
-                minWidth: 0,
-                overflow: 'hidden',
-                '& .MuiChip-root': { maxWidth: '100%' },
-                '& .MuiChip-label': {
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                },
-              }}
-            >
-              <ModelTagChip tag={t} variants={tagVariants} />
-            </Box>
-          ))}
+          <ModelTagStrip tags={inlineTags} tagVariants={tagVariants} />
         </Box>
         {techId && (
           // Friendly-mode secondary line: the canonical technical id in
