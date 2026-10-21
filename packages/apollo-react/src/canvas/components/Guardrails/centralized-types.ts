@@ -24,6 +24,8 @@ export interface CentralizedGuardrail {
   executionStage: string;
   appliesToAutonomousAgents: boolean;
   appliesToConversationalAgents: boolean;
+  /** GenAI Activities (LLM Gateway's `uipath-ai-rdk`). Absent from older policy responses. */
+  appliesToGenAiActivities?: boolean;
   scopes: GuardrailScope[];
   action: CentralizedGuardrailActionType;
   /** Built-in validators only: the detected entities, and their per-entity thresholds. */

@@ -76,6 +76,49 @@ describe('getApplicableCentralizedGuardrails', () => {
       }).map((g) => g.validator)
     ).toEqual(['b']);
   });
+
+  describe('with GenAI Activities in the policy', () => {
+    // `a` has no `appliesToGenAiActivities`, as in a policy response that predates it.
+    const policy = [
+      guardrail({ validator: 'a' }),
+      guardrail({
+        validator: 'b',
+        appliesToAutonomousAgents: false,
+        appliesToConversationalAgents: true,
+        appliesToGenAiActivities: false,
+      }),
+      guardrail({
+        validator: 'c',
+        appliesToAutonomousAgents: false,
+        appliesToGenAiActivities: true,
+      }),
+      guardrail({
+        validator: 'd',
+        appliesToConversationalAgents: true,
+        appliesToGenAiActivities: true,
+      }),
+    ];
+    const applicable = (options: Parameters<typeof getApplicableCentralizedGuardrails>[1]) =>
+      getApplicableCentralizedGuardrails(policy, options).map((g) => g.validator);
+
+    it('keeps an agent list on the agent flags alone', () => {
+      expect(applicable({})).toEqual(['a', 'd']);
+      expect(applicable({ isConversational: true })).toEqual(['b', 'd']);
+    });
+
+    it('treats an explicit agent target as the default', () => {
+      expect(applicable({ target: 'agent' })).toEqual(['a', 'd']);
+      expect(applicable({ target: 'agent', isConversational: true })).toEqual(['b', 'd']);
+    });
+
+    it('keeps only the ones flagged for GenAI Activities', () => {
+      expect(applicable({ target: 'genai' })).toEqual(['c', 'd']);
+    });
+
+    it('drops a guardrail without the GenAI flag from the GenAI list', () => {
+      expect(getApplicableCentralizedGuardrails([guardrail()], { target: 'genai' })).toEqual([]);
+    });
+  });
 });
 
 describe('getCentralizedGuardrailItemId', () => {

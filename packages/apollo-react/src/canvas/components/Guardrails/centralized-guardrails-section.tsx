@@ -49,7 +49,7 @@ function PolicyCaption({ template, policyName }: { template: string; policyName:
   );
 }
 
-/** The read-only guardrails an AI Trust Layer policy enforces on an agent. */
+/** The read-only guardrails an AI Trust Layer policy enforces on an agent or a GenAI activity. */
 export function CentralizedGuardrailsSection<
   TDefinition extends CentralizedGuardrailDefinition = CentralizedGuardrailDefinition,
 >({
