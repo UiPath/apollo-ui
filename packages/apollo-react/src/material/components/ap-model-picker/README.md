@@ -338,6 +338,7 @@ Pass `models` to take over: the built-in fetch turns off and the picker renders 
 The picker implements the WAI-ARIA listbox pattern with keyboard input:
 
 - **Trigger** is `aria-haspopup="listbox"`, with `aria-controls` pointing at the popup, `aria-expanded`, `aria-invalid`, `aria-required`, and `aria-describedby` linking to the error message.
+- **Chips** never squeeze the model name, in the field or in a row: the ones with no room collapse into a `+N` count, warnings kept first, and hovering the count names the chips it stands for. The count is `aria-hidden`; the collapsed chips are still announced.
 - **Search input** is `aria-autocomplete="list"`, `aria-controls={listboxId}`, with `aria-activedescendant` updating to the highlighted option as the user navigates with `↑`/`↓` — DOM focus stays on the search.
 - **Listbox** has an `aria-label` ("Models" by default, localized).
 - **Each option** has a stable id (`{listboxId}-opt-{modelId}`), `role="option"`, and `aria-selected`.

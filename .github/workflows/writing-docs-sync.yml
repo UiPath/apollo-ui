@@ -1,0 +1,45 @@
+name: Writing Docs Sync
+
+# The Storybook Writing pages (apps/storybook/src/core/writing) restate the
+# apollo-writing skill for people. When a PR edits the skill, remind the author
+# to check those pages too. Warning only: the job never fails.
+
+on:
+  pull_request:
+    branches:
+      - main
+      - 'support/**'
+    paths:
+      - 'packages/apollo-wind/skills/apollo-writing/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check-sync:
+    name: Check Storybook Writing pages
+    runs-on: uipath-ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Warn when the skill changed without the Storybook pages
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          changed="$(git diff --name-only "$BASE_SHA...$HEAD_SHA")"
+          if ! grep -q '^apps/storybook/src/core/writing/' <<< "$changed"; then
+            echo "::warning title=Storybook Writing pages not updated::This PR changes the apollo-writing skill but not apps/storybook/src/core/writing. Check whether the Storybook Writing pages need the same change."
+          else
+            echo "Storybook Writing pages were updated alongside the skill."
+          fi

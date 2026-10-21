@@ -77,15 +77,26 @@ const ChatI18n = React.memo(({ children }: { children: React.ReactNode }) => {
   );
 });
 
+// Where the renderer goes: `embeddedContainer` while Embedded, and still while closed from there,
+// so closing and reopening an embedded chat does not move the renderer out and back. A closed
+// chat leaves the container once the service no longer names it, or for another service.
 const useEmbeddedContainer = (chatService: AutopilotChatService) => {
   const [container, setContainer] = React.useState<HTMLElement | null>(null);
 
   React.useEffect(() => {
+    let sameService = false;
     const update = () => {
       const config = chatService.getConfig();
-      setContainer(
-        config.mode === AutopilotChatMode.Embedded ? (config.embeddedContainer ?? null) : null
-      );
+      const keepWhileClosed = sameService;
+      sameService = true;
+      setContainer((previous) => {
+        if (config.mode === AutopilotChatMode.Embedded) return config.embeddedContainer ?? null;
+        return config.mode === AutopilotChatMode.Closed &&
+          keepWhileClosed &&
+          previous === config.embeddedContainer
+          ? previous
+          : null;
+      });
     };
 
     update();
@@ -162,7 +173,20 @@ export function ChatRoot({
     }
   }, [configured, Renderer, configuredRenderer, defaultRenderer]);
 
-  const content = (
+  const rendered = Renderer && (
+    <React.Suspense fallback={null}>
+      <Renderer {...rendererProps} />
+    </React.Suspense>
+  );
+  // Only the renderer moves into the embedded container. The providers stay where they are, so
+  // their state (suggestions, the draft, errors) survives mode changes; context reaches the
+  // renderer through the portal.
+  const placed =
+    embeddedContainer && !disableEmbeddedPortal
+      ? createPortal(rendered, embeddedContainer)
+      : rendered;
+
+  return (
     <AutopilotChatServiceProvider chatServiceInstance={chatServiceInstance}>
       <ThemeProvider initialTheme={theme}>
         <LocaleProvider>
@@ -175,13 +199,7 @@ export function ChatRoot({
                       <AutopilotAttachmentsProvider>
                         <AutopilotPickerProvider>
                           <AutopilotResourceDataProvider>
-                            <AutopilotChatWidthProvider>
-                              {Renderer && (
-                                <React.Suspense fallback={null}>
-                                  <Renderer {...rendererProps} />
-                                </React.Suspense>
-                              )}
-                            </AutopilotChatWidthProvider>
+                            <AutopilotChatWidthProvider>{placed}</AutopilotChatWidthProvider>
                           </AutopilotResourceDataProvider>
                         </AutopilotPickerProvider>
                       </AutopilotAttachmentsProvider>
@@ -195,10 +213,4 @@ export function ChatRoot({
       </ThemeProvider>
     </AutopilotChatServiceProvider>
   );
-
-  if (embeddedContainer && !disableEmbeddedPortal) {
-    return createPortal(content, embeddedContainer);
-  }
-
-  return content;
 }

@@ -13,6 +13,7 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
+import { useComponentLabel } from "./context";
 import { SolutionTestStatus } from "./types";
 import type { SolutionTest, SolutionTestJob } from "./types";
 import { ProcessResultsViewerDialog } from "./process-results-viewer-dialog";
@@ -39,6 +40,7 @@ export const ExpandedAgentsView = ({
   onCloseViewer,
 }: ExpandedAgentsViewProps) => {
   const { t } = useVertexTranslation();
+  const componentLabel = useComponentLabel();
 
   if (isLoading) {
     return (
@@ -77,7 +79,7 @@ export const ExpandedAgentsView = ({
   if (baselines.length === 0) {
     return (
       <div className="p-6 text-center text-sm text-muted-foreground">
-        {t("no_agents_configured")}
+        {t("no_components_configured")}
       </div>
     );
   }
@@ -88,7 +90,7 @@ export const ExpandedAgentsView = ({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="px-3 py-2">{t("agent_name")}</TableHead>
+              <TableHead className="px-3 py-2">{t("component_name")}</TableHead>
               <TableHead className="px-3 py-2">{t("version")}</TableHead>
               <TableHead className="px-3 py-2">{t("actions")}</TableHead>
             </TableRow>
@@ -98,14 +100,19 @@ export const ExpandedAgentsView = ({
               const hasNoOutput = noOutputJobIds.has(job.Id);
               return (
                 <TableRow key={job.Id}>
-                  <TableCell className="px-3 py-2">{job.ProcessName}</TableCell>
+                  <TableCell className="px-3 py-2">
+                    {componentLabel({
+                      agentId: job.AgentId,
+                      processName: job.ProcessName,
+                    })}
+                  </TableCell>
                   <TableCell className="px-3 py-2 text-muted-foreground">
                     {job.ProcessVersion ?? "-"}
                   </TableCell>
                   <TableCell className="px-3 py-2">
                     {hasNoOutput ? (
                       <span className="text-sm text-muted-foreground">
-                        {t("agent_has_no_expected_output")}
+                        {t("component_has_no_expected_output")}
                       </span>
                     ) : (
                       <Button
@@ -132,7 +139,12 @@ export const ExpandedAgentsView = ({
         <ProcessResultsViewerDialog
           open
           onClose={onCloseViewer}
-          title={t("expected_output_for", { name: viewing.job.ProcessName })}
+          title={t("expected_output_for", {
+            name: componentLabel({
+              agentId: viewing.job.AgentId,
+              processName: viewing.job.ProcessName,
+            }),
+          })}
           data={viewing.data}
           loading={viewing.loading}
           renderData={(data) => (

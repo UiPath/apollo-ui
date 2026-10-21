@@ -46,5 +46,6 @@
   "modelPicker.deleteConfirm.title": "Ștergeți modelul personalizat",
   "modelPicker.deleteConfirm.message": "Aceasta șterge definitiv configurația „{name}” pentru toată lumea din acest tenant. Această acțiune nu poate fi anulată.",
   "modelPicker.deleteConfirm.cancel": "Anulați",
-  "modelPicker.deleteConfirm.confirm": "Ștergeți"
+  "modelPicker.deleteConfirm.confirm": "Ștergeți",
+  "modelPicker.tag.hiddenCount.label": "+{count}"
 }

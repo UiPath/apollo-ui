@@ -1,22 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Icon, iconNames } from '@uipath/apollo-react/core';
 import * as ApolloIcons from '@uipath/apollo-react/icons';
+import { Button, FormField, FormFieldLabel, Search } from '@uipath/apollo-wind';
 import type React from 'react';
 import { useMemo, useState } from 'react';
 // Raw source of the generated icon index: each export line names the SVG's
 // category folder, which is the only place that grouping is recorded.
 import apolloIconsIndex from '../../../../packages/apollo-ui-icons/src/index.ts?raw';
-import { GuidanceLink } from './icon-guidance';
-import {
-  PageContainer,
-  PageDescription,
-  PageTitle,
-  PRIMARY_GRADIENT,
-  SectionDescription,
-  SectionHeader,
-  SHADOW_SM,
-  useCopyToClipboard,
-} from './shared';
+import { GuidanceLink, ICON_CARD } from './icon-guidance';
+import { useCopyToClipboard } from './shared';
+import { Section, WritingPage, WritingTab, WritingTabs } from './writing/writing-ui';
 
 const meta = {
   title: 'Icons/Icons Apollo',
@@ -167,270 +160,134 @@ function IconsPage() {
   };
 
   return (
-    <PageContainer>
-      <PageTitle>Icons Apollo</PageTitle>
-      <PageDescription>
-        The custom UiPath icon set, with {iconNames.length} icons grouped by what they represent,
-        plus sizing tokens.
-      </PageDescription>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 56 }}>
+    <WritingPage
+      title="Icons Apollo"
+      intro={`The custom UiPath icon set, with ${iconNames.length} icons grouped by what they represent, plus sizing tokens.`}
+    >
+      <div className="mb-6">
         <GuidanceLink />
-
-        {/* Icon Browser */}
-        <section>
-          <SectionHeader>Icon Library ({visibleCount} icons)</SectionHeader>
-          <SectionDescription>
-            Each category is a folder in apollo-ui-icons. Pick a category or search by name, then
-            click an icon to copy its SVG.
-          </SectionDescription>
-
-          <input
-            type="text"
-            placeholder="Search icons... (e.g., 'arrow', 'alert', 'user')"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onFocus={(e) => {
-              e.currentTarget.style.borderColor = 'var(--color-primary)';
-            }}
-            onBlur={(e) => {
-              e.currentTarget.style.borderColor = 'var(--color-border)';
-            }}
-            style={{
-              width: '100%',
-              padding: '16px 20px',
-              fontSize: 16,
-              border: '2px solid var(--color-border)',
-              borderRadius: 12,
-              background: 'var(--color-background)',
-              color: 'var(--color-foreground-emp)',
-              marginBottom: 16,
-              outline: 'none',
-              transition: 'all 0.2s ease',
-            }}
-          />
-
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 32 }}>
-            {[null, ...CATEGORY_ORDER].map((key) => {
-              const active = category === key;
-              return (
-                <button
-                  type="button"
-                  key={key ?? 'all'}
-                  aria-pressed={active}
-                  onClick={() => setCategory(key)}
-                  style={{
-                    font: 'inherit',
-                    fontSize: 13,
-                    padding: '6px 12px',
-                    borderRadius: 999,
-                    cursor: 'pointer',
-                    border: `1px solid ${active ? 'var(--color-primary)' : 'var(--color-border)'}`,
-                    background: active ? 'var(--color-primary)' : 'var(--color-background)',
-                    color: active ? 'var(--color-foreground-inverse)' : 'var(--color-foreground)',
-                  }}
-                >
-                  {key ? categoryLabel(key) : 'All'}
-                </button>
-              );
-            })}
-          </div>
-
-          {groups.map((group) => (
-            <div key={group.key} style={{ marginBottom: 40 }}>
-              <h3
-                style={{
-                  fontSize: 16,
-                  fontWeight: 600,
-                  marginBottom: 4,
-                  color: 'var(--color-foreground-emp)',
-                }}
-              >
-                {categoryLabel(group.key)}{' '}
-                <span style={{ fontWeight: 400, color: 'var(--color-foreground-de-emp)' }}>
-                  ({group.icons.length})
-                </span>
-              </h3>
-              {CATEGORY_INFO[group.key] && (
-                <p
-                  style={{
-                    fontSize: 13,
-                    marginBottom: 12,
-                    color: 'var(--color-foreground-de-emp)',
-                  }}
-                >
-                  {CATEGORY_INFO[group.key].description}
-                </p>
-              )}
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(96px, 1fr))',
-                  gap: 8,
-                }}
-              >
-                {group.icons.map((iconName) => {
-                  const IconComponent = (
-                    ApolloIcons as Record<
-                      string,
-                      React.ComponentType<{
-                        size?: string | number;
-                        color?: string;
-                      }>
-                    >
-                  )[iconName];
-                  if (!IconComponent) return null;
-
-                  return (
-                    <button
-                      type="button"
-                      key={iconName}
-                      className="sb-core-icon-card"
-                      onClick={(e) => handleCopySvg(e, iconName)}
-                      title={`Click to copy SVG: ${iconName}`}
-                      style={{
-                        background: 'var(--color-background)',
-                        border: '2px solid var(--color-border)',
-                        borderRadius: 8,
-                        padding: 12,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 8,
-                        cursor: 'pointer',
-                        minHeight: 110,
-                        color: 'var(--color-foreground)',
-                        font: 'inherit',
-                      }}
-                    >
-                      <IconComponent size={48} color="var(--color-foreground)" />
-                      <div
-                        style={{
-                          fontSize: 10,
-                          color:
-                            copied === iconName
-                              ? 'var(--color-primary)'
-                              : 'var(--color-foreground-de-emp)',
-                          textAlign: 'center',
-                          wordBreak: 'break-word',
-                          lineHeight: 1.2,
-                          maxWidth: '100%',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
-                          fontWeight: copied === iconName ? 'bold' : 'normal',
-                        }}
-                      >
-                        {copied === iconName ? 'Copied!' : iconName}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-
-          {visibleCount === 0 && (
-            <div
-              style={{
-                textAlign: 'center',
-                padding: 48,
-                color: 'var(--color-foreground-de-emp)',
-                fontSize: 16,
-              }}
-            >
-              No icons found matching &quot;{searchTerm}&quot;
-            </div>
-          )}
-        </section>
-
-        {/* Icon Sizing Tokens */}
-        <section>
-          <SectionHeader>Icon Sizing Tokens</SectionHeader>
-          <SectionDescription>
-            Standard icon sizes for consistent spacing ({sizeTokens.length} tokens)
-          </SectionDescription>
-
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-              gap: 24,
-            }}
+      </div>
+      <WritingTabs>
+        <WritingTab label="Icons">
+          <Section
+            title={`Icon library (${visibleCount})`}
+            intro="Each category is a folder in apollo-ui-icons. Pick a category or search by name, then select an icon to copy its SVG."
           >
-            {sizeTokens.map((token) => (
-              <div
-                key={token.name}
-                style={{
-                  background: 'var(--color-background)',
-                  border: '2px solid var(--color-border)',
-                  borderRadius: 12,
-                  padding: 32,
-                  boxShadow: SHADOW_SM,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                }}
-              >
-                <div style={{ marginBottom: 24, textAlign: 'center' }}>
-                  <div
-                    style={{
-                      fontSize: 16,
-                      fontWeight: 'bold',
-                      color: 'var(--color-primary)',
-                      marginBottom: 8,
-                    }}
+            <FormField className="mb-4">
+              <FormFieldLabel htmlFor="apollo-icons-search">Search icons</FormFieldLabel>
+              <Search
+                id="apollo-icons-search"
+                value={searchTerm}
+                onChange={setSearchTerm}
+                placeholder="Search by icon name, such as arrow or user"
+              />
+            </FormField>
+
+            <div className="mb-8 flex flex-wrap gap-2">
+              {[null, ...CATEGORY_ORDER].map((key) => {
+                const active = category === key;
+                return (
+                  <Button
+                    key={key ?? 'all'}
+                    size="sm"
+                    variant={active ? 'default' : 'outline'}
+                    aria-pressed={active}
+                    onClick={() => setCategory(key)}
                   >
-                    {token.name}
-                  </div>
-                  <code style={{ fontSize: 14, color: 'var(--color-foreground-de-emp)' }}>
-                    {token.value}
-                  </code>
-                </div>
+                    {key ? categoryLabel(key) : 'All'}
+                  </Button>
+                );
+              })}
+            </div>
 
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: '100%',
-                    minHeight: 100,
-                    marginBottom: 16,
-                  }}
-                >
-                  <div
-                    style={{
-                      width: token.value,
-                      height: token.value,
-                      background: PRIMARY_GRADIENT,
-                      borderRadius: '50%',
-                      border: '2px solid var(--color-border)',
-                      boxShadow: SHADOW_SM,
-                    }}
-                  />
-                </div>
+            {groups.map((group) => (
+              <div key={group.key} className="mb-10">
+                <h3>
+                  {categoryLabel(group.key)}{' '}
+                  <span className="font-normal text-muted-foreground">({group.icons.length})</span>
+                </h3>
+                {CATEGORY_INFO[group.key] && (
+                  <p className="text-sm text-muted-foreground">
+                    {CATEGORY_INFO[group.key].description}
+                  </p>
+                )}
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(96px,1fr))] gap-2">
+                  {group.icons.map((iconName) => {
+                    const IconComponent = (
+                      ApolloIcons as Record<
+                        string,
+                        React.ComponentType<{
+                          size?: string | number;
+                          color?: string;
+                        }>
+                      >
+                    )[iconName];
+                    if (!IconComponent) return null;
 
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    gap: 16,
-                    fontSize: 12,
-                    color: 'var(--color-foreground)',
-                  }}
-                >
-                  <div>W: {token.value}</div>
-                  <div>H: {token.value}</div>
+                    return (
+                      <button
+                        type="button"
+                        key={iconName}
+                        className={ICON_CARD}
+                        onClick={(e) => handleCopySvg(e, iconName)}
+                        title={`Select to copy the SVG: ${iconName}`}
+                      >
+                        <IconComponent size={40} color="currentColor" />
+                        <span
+                          className={
+                            copied === iconName
+                              ? 'line-clamp-2 break-words text-center text-[10px] leading-tight font-semibold text-primary'
+                              : 'line-clamp-2 break-words text-center text-[10px] leading-tight text-muted-foreground'
+                          }
+                        >
+                          {copied === iconName ? 'Copied' : iconName}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             ))}
-          </div>
-        </section>
-      </div>
-    </PageContainer>
+
+            {visibleCount === 0 && (
+              <p className="py-12 text-center text-muted-foreground">
+                No icons match &quot;{searchTerm}&quot;. Try a different name.
+              </p>
+            )}
+          </Section>
+        </WritingTab>
+
+        <WritingTab label="Sizing tokens">
+          <Section
+            title={`Icon sizing tokens (${sizeTokens.length})`}
+            intro="Standard icon sizes for consistent spacing."
+          >
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {sizeTokens.map((token) => (
+                <div
+                  key={token.name}
+                  className="flex flex-col items-center gap-4 rounded-xl border border-border bg-card p-5"
+                >
+                  <div className="text-center">
+                    <p className="text-sm font-semibold text-foreground">{token.name}</p>
+                    <code>{token.value}</code>
+                  </div>
+                  <div className="flex min-h-24 w-full items-center justify-center">
+                    <div
+                      className="rounded-full bg-primary/40"
+                      style={{ width: token.value, height: token.value }}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    W: {token.value} · H: {token.value}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </Section>
+        </WritingTab>
+      </WritingTabs>
+    </WritingPage>
   );
 }
 

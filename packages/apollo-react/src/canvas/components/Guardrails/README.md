@@ -537,7 +537,7 @@ default, so nothing is missing on screen.
 ## CentralizedGuardrailsSection
 
 The read-only list of guardrails an organization's AI Trust Layer governance policy enforces
-on an agent, and `CentralizedGuardrailDetails`, the content behind a row.
+on an agent or a GenAI activity, and `CentralizedGuardrailDetails`, the content behind a row.
 
 ```tsx
 import {
@@ -569,9 +569,11 @@ Contract highlights:
   their own (`useGovernance`, `GuardrailDefinitionsContext`, `useAiTrustLayerGovernancePolicy`);
   passing them in is what lets one component serve both.
 - **The host filters, the component renders.** `getApplicableCentralizedGuardrails` is the
-  predicate for the agent kind being edited, exported so no host rewrites it. An empty
-  `guardrails` renders nothing; `emptyState` overrides that, and an explicit `null` is
-  honoured.
+  predicate, exported so no host rewrites it. `{ isConversational }` keeps the guardrails for
+  the agent kind being edited; `{ target: 'genai' }` keeps the ones for GenAI Activities
+  (LLM Gateway's `uipath-ai-rdk`, which Flow's LLM Call node runs under), and drops any whose
+  policy response predates `appliesToGenAiActivities`. An empty `guardrails` renders nothing;
+  `emptyState` overrides that, and an explicit `null` is honoured.
 - **`definitions` is optional, and `undefined` means "not loaded yet".** That is what keeps a
   row from claiming a configuration was deleted while the catalog is still in flight. An
   empty array means it loaded and the configuration really is gone.

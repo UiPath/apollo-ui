@@ -14,17 +14,22 @@ import {
   PageHeaderTitleGroup,
 } from "@/components/ui/page-header";
 import { Spinner } from "@/components/ui/spinner";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { renderValueOrEmptyState } from "@/lib/renderValueOrEmptyState";
 import {
   defaultRunResultStatusLabels,
   defaultRunStatusLabels,
-  EMPTY_VALUE,
 } from "./constants";
 import {
   type ExpandedRowData,
   ResultExpandedContent,
 } from "./result-expanded-content";
 import { ConfigVersionValue } from "./config-version";
+import { useComponentLabel } from "./context";
 import { RunDetailsAgentList } from "./run-details-agent-list";
 import {
   resultBadgeClassMap,
@@ -36,8 +41,7 @@ import {
   type SolutionTestRun,
   type SolutionTestRunResult,
 } from "./types";
-import { versionDelta } from "./utils";
-import { VersionDeltaGlyph } from "./version-delta-glyph";
+import { VersionDetails } from "./run-details-version-details";
 
 export type BaselineJobMap = Map<
   string,
@@ -55,6 +59,8 @@ export interface RunDetailsViewProps {
   adoptingResultId: string | null;
   updatingResultId: string | null;
   removingBaselineId: string | null;
+  /** True while a run of this test is in flight; baselines can't change then. */
+  isBaselineLocked: boolean;
   onBack: () => void;
   onSelect: (resultId: string) => void;
   onAdopt: (resultId: string) => void;
@@ -73,6 +79,7 @@ export const RunDetailsView = ({
   adoptingResultId,
   updatingResultId,
   removingBaselineId,
+  isBaselineLocked,
   onBack,
   onSelect,
   onAdopt,
@@ -104,12 +111,17 @@ export const RunDetailsView = ({
                 })}
               </span>
             </HeaderMetric>
-            <HeaderMetric label={t("agents_passed")}>
+            <HeaderMetric label={t("components_passed")}>
               <span className="text-lg font-semibold text-foreground">
                 {`${run.JobsPassed ?? 0}/${run.JobsTotal ?? 0}`}
               </span>
             </HeaderMetric>
-            <HeaderMetric label={t("config_version")}>
+            <HeaderMetric label={t("baseline_config_version")}>
+              <span className="text-lg font-semibold text-foreground">
+                {run.BaselineConfigVersion ?? "-"}
+              </span>
+            </HeaderMetric>
+            <HeaderMetric label={t("run_config_version")}>
               <span className="text-lg font-semibold text-foreground">
                 <ConfigVersionValue run={run} />
               </span>
@@ -147,6 +159,7 @@ export const RunDetailsView = ({
               adoptPending={adoptingResultId === selectedResult.Id}
               updatePending={updatingResultId === selectedResult.Id}
               removePendingId={removingBaselineId}
+              isBaselineLocked={isBaselineLocked}
               onAdopt={onAdopt}
               onUpdateBaseline={onUpdateBaseline}
               onRemoveBaseline={onRemoveBaseline}
@@ -163,8 +176,8 @@ export const RunDetailsView = ({
 };
 
 // ---------------------------------------------------------------------------
-// Detail pane: selected-agent header (versions, score, baseline actions) plus
-// the shared evaluator content.
+// Detail pane: selected-component header (status, score, version details,
+// baseline actions) plus the shared evaluator content.
 // ---------------------------------------------------------------------------
 
 interface RunDetailsPaneProps {
@@ -174,6 +187,7 @@ interface RunDetailsPaneProps {
   adoptPending: boolean;
   updatePending: boolean;
   removePendingId: string | null;
+  isBaselineLocked: boolean;
   onAdopt: (resultId: string) => void;
   onUpdateBaseline: (resultId: string) => void;
   onRemoveBaseline: (baselineId: string) => void;
@@ -186,21 +200,18 @@ const RunDetailsPane = ({
   adoptPending,
   updatePending,
   removePendingId,
+  isBaselineLocked,
   onAdopt,
   onUpdateBaseline,
   onRemoveBaseline,
 }: RunDetailsPaneProps) => {
   const { t } = useVertexTranslation();
+  const componentLabel = useComponentLabel();
   const status = result.Status;
-  const showBaselineVersion = status !== RunResultStatus.NoBaseline;
-  const showActualVersion = status !== RunResultStatus.Missing;
   const showScore =
     status === RunResultStatus.Passed || status === RunResultStatus.Failed;
-
-  const { direction: versionDirection } = versionDelta(
-    result.BaselineProcessVersion,
-    result.ProcessVersion,
-  );
+  const lockReasonKey = baselineLockReasonKey(isBaselineLocked, status);
+  const lockReason = lockReasonKey ? t(lockReasonKey) : null;
 
   const baselineInfo = baselineJobMap.get(result.ProcessName);
   const inBaseline = !!baselineInfo;
@@ -209,52 +220,35 @@ const RunDetailsPane = ({
 
   return (
     <div className="flex flex-col">
-      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-border px-4 py-3">
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <h3 className="text-base font-semibold text-foreground">
-              {result.ProcessName}
-            </h3>
-            <Badge
-              variant="secondary"
-              status={runResultStatusBadgeMap[status] ?? "info"}
-              className={resultBadgeClassMap[status]}
-            >
-              {defaultRunResultStatusLabels[status] ?? "Unknown"}
-            </Badge>
-            <BaselineStateLabel
-              isBaselineSource={isBaselineSource}
-              inBaseline={inBaseline}
-              hadBaseline={status !== RunResultStatus.NoBaseline}
-            />
-          </div>
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-xs text-muted-foreground">
-            <span>
-              {`${t("baseline_agent_version")}: `}
-              {showBaselineVersion
-                ? (result.BaselineProcessVersion ?? "-")
-                : EMPTY_VALUE}
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border px-4 py-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <h3 className="text-base font-semibold text-foreground">
+            {componentLabel({
+              agentId: result.AgentId,
+              processName: result.ProcessName,
+            })}
+          </h3>
+          <VersionDetails result={result} />
+          <Badge
+            variant="secondary"
+            status={runResultStatusBadgeMap[status] ?? "info"}
+            className={resultBadgeClassMap[status]}
+          >
+            {defaultRunResultStatusLabels[status] ?? "Unknown"}
+          </Badge>
+          {showScore && (
+            <span className="text-sm font-medium text-muted-foreground">
+              {renderValueOrEmptyState(result.Score, {
+                type: "number",
+                options: { style: "percent", maximumFractionDigits: 0 },
+              })}
             </span>
-            <span className="inline-flex items-center gap-1">
-              {`${t("tested_agent_version")}: `}
-              {showActualVersion ? (result.ProcessVersion ?? "-") : EMPTY_VALUE}
-              {showActualVersion && (
-                <VersionDeltaGlyph
-                  direction={versionDirection}
-                  baseline={result.BaselineProcessVersion}
-                />
-              )}
-            </span>
-            <span>
-              {`${t("score")}: `}
-              {showScore
-                ? renderValueOrEmptyState(result.Score, {
-                    type: "number",
-                    options: { style: "percent", maximumFractionDigits: 0 },
-                  })
-                : EMPTY_VALUE}
-            </span>
-          </div>
+          )}
+          <BaselineStateLabel
+            isBaselineSource={isBaselineSource}
+            inBaseline={inBaseline}
+            hadBaseline={status !== RunResultStatus.NoBaseline}
+          />
         </div>
 
         <div className="flex items-center gap-2">
@@ -263,6 +257,7 @@ const RunDetailsPane = ({
             status !== RunResultStatus.Missing && (
               <ActionButton
                 loading={updatePending}
+                lockReason={lockReason}
                 icon={<ArrowLeftRight className="size-3" />}
                 label={t("update_baseline")}
                 onClick={() => onUpdateBaseline(result.Id)}
@@ -271,6 +266,7 @@ const RunDetailsPane = ({
           {!inBaseline && (
             <ActionButton
               loading={adoptPending}
+              lockReason={lockReason}
               icon={<Plus className="size-3" />}
               label={t("add_to_expected_result")}
               onClick={() => onAdopt(result.Id)}
@@ -279,6 +275,7 @@ const RunDetailsPane = ({
           {inBaseline && baselineId && (
             <ActionButton
               loading={removePendingId === baselineId}
+              lockReason={lockReason}
               icon={<Trash2 className="size-3 text-destructive" />}
               label={t("remove_from_expected_result")}
               onClick={() => onRemoveBaseline(baselineId)}
@@ -292,18 +289,50 @@ const RunDetailsPane = ({
   );
 };
 
+function baselineLockReasonKey(isBaselineLocked: boolean, status: number) {
+  if (isBaselineLocked) {
+    return "runs_in_progress";
+  }
+  if (status === RunResultStatus.Aborted) {
+    return "result_aborted_baseline_locked";
+  }
+  return null;
+}
+
 interface ActionButtonProps {
   loading: boolean;
+  /** When set, disables the action and shows this reason as a tooltip. */
+  lockReason: string | null;
   icon: ReactNode;
   label: string;
   onClick: () => void;
 }
 
-const ActionButton = ({ loading, icon, label, onClick }: ActionButtonProps) => (
-  <Button variant="outline" size="sm" disabled={loading} onClick={onClick}>
-    {loading ? <Spinner className="size-3" /> : icon}
-    {label}
-  </Button>
+const ActionButton = ({
+  loading,
+  lockReason,
+  icon,
+  label,
+  onClick,
+}: ActionButtonProps) => (
+  <Tooltip>
+    <TooltipTrigger asChild>
+      {/* A disabled button can't take focus, so the wrapper does while
+          locked, letting keyboard users reach the reason. */}
+      <span className="inline-flex" tabIndex={lockReason == null ? -1 : 0}>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={loading || lockReason != null}
+          onClick={onClick}
+        >
+          {loading ? <Spinner className="size-3" /> : icon}
+          {label}
+        </Button>
+      </span>
+    </TooltipTrigger>
+    {lockReason != null && <TooltipContent>{lockReason}</TooltipContent>}
+  </Tooltip>
 );
 
 interface BaselineStateLabelProps {

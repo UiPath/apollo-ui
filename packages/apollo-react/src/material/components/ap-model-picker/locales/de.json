@@ -46,5 +46,6 @@
   "modelPicker.deleteConfirm.title": "Benutzerdefiniertes Modell löschen",
   "modelPicker.deleteConfirm.message": "Dadurch wird die Konfiguration „{name}“ für Everyone in diesem Mandanten endgültig gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.",
   "modelPicker.deleteConfirm.cancel": "Abbrechen",
-  "modelPicker.deleteConfirm.confirm": "Löschen"
+  "modelPicker.deleteConfirm.confirm": "Löschen",
+  "modelPicker.tag.hiddenCount.label": "+{count}"
 }

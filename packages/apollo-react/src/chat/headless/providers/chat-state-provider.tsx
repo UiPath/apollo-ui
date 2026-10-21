@@ -11,7 +11,6 @@ import {
   type AutopilotChatMessage,
   AutopilotChatMode,
   type AutopilotChatOverrideLabels,
-  AutopilotChatRole,
   type AutopilotChatSuggestion,
   CHAT_COMPACT_MODE_INPUT_MAX_ROWS,
   CHAT_COMPACT_MODE_INPUT_MIN_ROWS,
@@ -23,6 +22,7 @@ import {
   CHAT_MESSAGE_SPACING,
   CHAT_SUGGESTION_SPACING,
 } from '../../service';
+import type { ChatSuggestionsSnapshot } from '../../service/suggestions-state';
 import { useChatService } from './chat-service.provider';
 
 // Converts all properties of the type to required since we have defaults for all properties
@@ -69,10 +69,14 @@ export interface ChatSuggestionsState {
   userTurns?: number;
 }
 
-export const countUserTurns = (messages: readonly AutopilotChatMessage[]) =>
-  messages.reduce((count, message) => count + (message.role === AutopilotChatRole.User ? 1 : 0), 0);
-
 const NO_SUGGESTIONS: ChatSuggestionsState = { items: [] };
+
+const toSuggestionsState = ({
+  suggestions,
+  sendOnClick,
+  userTurns,
+}: ChatSuggestionsSnapshot): ChatSuggestionsState =>
+  suggestions.length === 0 ? NO_SUGGESTIONS : { items: [...suggestions], sendOnClick, userTurns };
 
 const AutopilotChatStateContext = React.createContext<AutopilotChatStateContextType | null>(null);
 
@@ -202,7 +206,15 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
   const [readOnly, setReadOnly] = React.useState(chatService?.getReadOnly() ?? false);
   const [spacing, setSpacing] = React.useState(calculateSpacing(chatService?.getConfig()?.spacing));
   const [theming, setTheming] = React.useState(chatService?.getConfig()?.theming);
-  const [suggestions, setSuggestions] = React.useState<ChatSuggestionsState>(NO_SUGGESTIONS);
+  // The service keeps them, so a chat mounted after `setSuggestions` shows them. The service's
+  // snapshot is held as is: re-reading an unchanged one does not render again.
+  const [suggestionsSnapshot, setSuggestionsSnapshot] = React.useState(
+    () => chatService.__suggestions__
+  );
+  const suggestions = React.useMemo(
+    () => toSuggestionsState(suggestionsSnapshot),
+    [suggestionsSnapshot]
+  );
 
   React.useEffect(() => {
     if (!chatService) {
@@ -278,20 +290,10 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
 
     const unsubscribeSuggestions = chatInternalService.on(
       AutopilotChatInternalEvent.SetSuggestions,
-      ({
-        suggestions: items,
-        sendOnClick,
-      }: {
-        suggestions: AutopilotChatSuggestion[];
-        sendOnClick?: boolean;
-      }) => {
-        setSuggestions(
-          items.length === 0
-            ? NO_SUGGESTIONS
-            : { items, sendOnClick, userTurns: countUserTurns(chatService.getConversation()) }
-        );
-      }
+      setSuggestionsSnapshot
     );
+    // Set between the first render and this subscription.
+    setSuggestionsSnapshot(chatService.__suggestions__);
 
     const unsubscribes = [
       chatService.intercept(AutopilotChatInterceptableEvent.Request, () => {
@@ -301,11 +303,7 @@ export const AutopilotChatStateProvider: React.FC<AutopilotChatStateProviderProp
       chatService.on(AutopilotChatEvent.SetConversation, (conversation: AutopilotChatMessage[]) =>
         setHasMessages(conversation.length > 0)
       ),
-      chatService.on(AutopilotChatEvent.NewChat, () => {
-        setHasMessages(false);
-        // A new chat starts without the last one's suggestions, in both renderers.
-        setSuggestions(NO_SUGGESTIONS);
-      }),
+      chatService.on(AutopilotChatEvent.NewChat, () => setHasMessages(false)),
     ];
 
     return () => {

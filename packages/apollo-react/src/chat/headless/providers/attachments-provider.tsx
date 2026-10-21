@@ -16,6 +16,8 @@ import { useError } from './error-provider';
 
 interface AutopilotAttachmentsContextType {
   attachments: AutopilotChatFileInfo[];
+  /** The draft including changes not rendered yet, for intakes that finish back to back. */
+  getAttachments: () => AutopilotChatFileInfo[];
   attachmentsLoading: AutopilotChatFileInfo[];
   addAttachments: (files: AutopilotChatFileInfo[]) => void;
   removeAttachment: (name: string, index: number) => void;
@@ -24,6 +26,7 @@ interface AutopilotAttachmentsContextType {
 
 export const AutopilotAttachmentsContext = React.createContext<AutopilotAttachmentsContextType>({
   attachments: [],
+  getAttachments: () => [],
   attachmentsLoading: [],
   addAttachments: () => {},
   removeAttachment: () => {},
@@ -43,7 +46,16 @@ export function AutopilotAttachmentsProvider({ children }: { children: React.Rea
   );
   const [attachmentsLoading, setAttachmentsLoading] = React.useState<AutopilotChatFileInfo[]>([]);
 
+  // What the events last reported; the diff below publishes what changed since.
   const attachmentsRef = React.useRef<AutopilotChatFileInfo[]>(attachments);
+  // The draft as of the last change, ahead of the render: two adds before a re-render would
+  // otherwise both start from the rendered list, and the second would drop the first's files.
+  const latestRef = React.useRef<AutopilotChatFileInfo[]>(attachments);
+  const update = React.useCallback((next: AutopilotChatFileInfo[]) => {
+    latestRef.current = next;
+    setAttachments(next);
+  }, []);
+  const getAttachments = React.useCallback(() => latestRef.current, []);
 
   React.useEffect(() => {
     const currentAttachmentsWithoutContent = attachmentsRef.current.map(
@@ -78,13 +90,12 @@ export function AutopilotAttachmentsProvider({ children }: { children: React.Rea
 
   const addAttachments = React.useCallback(
     (newFiles: AutopilotChatFileInfo[]) => {
+      const current = latestRef.current;
       const filesToAdd = [
-        ...attachmentsRef.current,
+        ...current,
         ...newFiles.filter(
           (file) =>
-            !attachmentsRef.current.some(
-              (existing) => existing.name === file.name && existing.size === file.size
-            )
+            !current.some((existing) => existing.name === file.name && existing.size === file.size)
         ),
       ];
       const totalCount = filesToAdd.length;
@@ -115,18 +126,18 @@ export function AutopilotAttachmentsProvider({ children }: { children: React.Rea
         return;
       }
 
-      setAttachments(filesToAdd);
+      update(filesToAdd);
     },
-    [allowedAttachments.maxCount, allowedAttachments.multiple, setError, _]
+    [allowedAttachments.maxCount, allowedAttachments.multiple, setError, _, update]
   );
 
-  const removeAttachment = React.useCallback((name: string, index: number) => {
-    setAttachments((current) => current.filter((file, i) => i !== index || file.name !== name));
-  }, []);
+  const removeAttachment = React.useCallback(
+    (name: string, index: number) =>
+      update(latestRef.current.filter((file, i) => i !== index || file.name !== name)),
+    [update]
+  );
 
-  const clearAttachments = React.useCallback(() => {
-    setAttachments([]);
-  }, []);
+  const clearAttachments = React.useCallback(() => update([]), [update]);
 
   React.useEffect(() => {
     if (!chatService) {
@@ -159,6 +170,7 @@ export function AutopilotAttachmentsProvider({ children }: { children: React.Rea
     <AutopilotAttachmentsContext.Provider
       value={{
         attachments,
+        getAttachments,
         attachmentsLoading,
         addAttachments,
         removeAttachment,

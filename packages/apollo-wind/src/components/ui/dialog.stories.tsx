@@ -1,5 +1,19 @@
 import type { Meta } from '@storybook/react-vite';
-import { Copy, ExternalLink, Maximize2, Play, Plus, Trash2, X } from 'lucide-react';
+import {
+  ArrowRight,
+  Copy,
+  ExternalLink,
+  Maximize2,
+  MonitorDown,
+  Play,
+  Plus,
+  Rocket,
+  SlidersHorizontal,
+  Sparkles,
+  Trash2,
+  Workflow,
+  X,
+} from 'lucide-react';
 import * as React from 'react';
 import { cn } from '@/lib/index';
 import { Badge } from './badge';
@@ -16,6 +30,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from './dialog';
+import { WhatsNewVisual } from './dialog-whats-new.shared';
 import { Input } from './input';
 import { Label } from './label';
 import { RadioGroup, RadioGroupItem } from './radio-group';
@@ -162,6 +177,130 @@ function ComplexDialogStory() {
 export const ComplexDialog = {
   name: 'Complex',
   render: () => <ComplexDialogStory />,
+};
+
+// ============================================================================
+// What's New Dialog
+// ============================================================================
+
+const WHATS_NEW_POINTS = [
+  {
+    Icon: Workflow,
+    lead: 'Orchestrate end-to-end processes',
+    text: 'with durable execution for long-running work.',
+  },
+  {
+    Icon: SlidersHorizontal,
+    lead: 'Stay in control:',
+    text: 'Manage the state of any live instance, with history, audit and SLA tracking.',
+  },
+  {
+    Icon: Sparkles,
+    lead: 'Build it with your coding agent:',
+    text: 'Describe the outcome and let your agent build it for you.',
+  },
+];
+
+function WhatsNewDialogStory() {
+  const viewMode = React.useContext(ViewModeContext);
+  const [dontShowAgain, setDontShowAgain] = React.useState(false);
+  return (
+    <Dialog defaultOpen={viewMode === 'story'}>
+      <DialogTrigger asChild>
+        <Button variant="outline">What's new</Button>
+      </DialogTrigger>
+      <DialogContent
+        className="flex max-h-[calc(100dvh-2rem)] w-[920px] max-w-[min(920px,94vw)] flex-col gap-0 overflow-hidden p-0 sm:max-w-[min(920px,94vw)]"
+        // A stray click on the page behind does not retire an announcement the user
+        // has not read. Escape and the close button still dismiss it, so keyboard
+        // users are never trapped.
+        onInteractOutside={(event) => event.preventDefault()}
+      >
+        {/* Hero glow at the modal root so it washes down behind the content too. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-32 left-1/2 h-[480px] w-[720px] -translate-x-1/2 rounded-full bg-brand/15 blur-3xl"
+        />
+        {/* Scrolls on a short viewport while the footer stays pinned. The visual drops out
+            below the md breakpoint, leaving the copy in one column. */}
+        <div className="relative overflow-x-hidden overflow-y-auto pb-1">
+          <div className="grid gap-8 px-8 pt-10 md:grid-cols-[1.1fr_1fr]">
+            <div className="relative flex flex-col justify-center py-2">
+              <DialogHeader className="gap-3">
+                <DialogTitle className="text-balance text-3xl leading-[1.1] font-bold tracking-[-0.02em] md:text-4xl">
+                  What's new in your workspace
+                </DialogTitle>
+                <DialogDescription className="text-balance text-base leading-6 text-foreground-muted">
+                  Build using cases, flows, or BPMN.
+                </DialogDescription>
+              </DialogHeader>
+              {/* One row per point: an icon, the lead words in bold, the rest as the line. */}
+              <ul className="mt-5 space-y-3.5">
+                {WHATS_NEW_POINTS.map(({ Icon, lead, text }) => (
+                  <li key={lead} className="flex items-start gap-3">
+                    <span className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-lg bg-surface-overlay text-foreground">
+                      <Icon size={14} strokeWidth={1.75} aria-hidden />
+                    </span>
+                    <p className="min-w-0 text-sm leading-5 text-foreground-muted">
+                      <span className="font-semibold text-foreground">{lead}</span> {text}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+              <a
+                href="https://uipath.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-5 flex w-fit items-center gap-1 text-xs font-medium text-brand transition hover:text-brand-hover hover:underline"
+              >
+                Read the guide
+                <ArrowRight size={12} aria-hidden />
+              </a>
+            </div>
+            <div className="hidden md:block">
+              <WhatsNewVisual />
+            </div>
+          </div>
+          <div className="mx-8 mt-5 rounded-lg border border-border-subtle bg-surface-overlay/40 px-3 py-2">
+            <p className="flex items-center justify-center gap-2 text-xs leading-4 text-foreground-muted">
+              <MonitorDown size={14} aria-hidden className="shrink-0 text-foreground-subtle" />
+              <span className="min-w-0">
+                Available as an extension for VS Code. Coming soon to the desktop app.
+              </span>
+            </p>
+          </div>
+        </div>
+        <div className="mt-6 flex shrink-0 items-center justify-between gap-4 border-t border-border-subtle px-8 py-5">
+          <Label className="flex cursor-pointer items-center gap-2 text-xs font-normal text-foreground-muted">
+            <Checkbox
+              checked={dontShowAgain}
+              onCheckedChange={(value) => setDontShowAgain(value === true)}
+            />
+            Don't show this again
+          </Label>
+          <DialogClose asChild>
+            <Button className="shrink-0 gap-1.5">
+              <Rocket size={14} aria-hidden />
+              Get started
+            </Button>
+          </DialogClose>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+export const WhatsNewDialog = {
+  name: "What's New",
+  render: () => <WhatsNewDialogStory />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A one-time announcement layout: copy on the left with icon-led points, one tall visual on the right, a callout beneath, and a footer with a dismiss preference and the primary action. It sizes to its content, scrolls the body on short viewports with the footer pinned, and drops the visual on narrow ones. Clicking outside does not dismiss it. The close button, Escape and the primary action do.',
+      },
+    },
+  },
 };
 
 // ============================================================================

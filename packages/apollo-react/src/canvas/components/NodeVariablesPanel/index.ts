@@ -2,6 +2,7 @@ export { NodeVariablesPanel } from './NodeVariablesPanel';
 export type {
   NodeVariableDetails,
   NodeVariablesAddableSection,
+  NodeVariablesAssets,
   NodeVariablesData,
   NodeVariablesFilter,
   NodeVariablesPanelProps,

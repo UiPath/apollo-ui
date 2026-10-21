@@ -64,7 +64,9 @@ export type RunConfirmTarget =
 /**
  * The apollo-vertex DataTable is controlled — the caller owns table state.
  * This bundles the minimum state each table needs (in-memory, no persistence)
- * so the view stays self-contained with no extra hook dependency.
+ * so the view stays self-contained with no extra hook dependency. Row
+ * selection is left out: passing it makes DataTable render a selection count,
+ * so only a table with selectable rows adds it.
  */
 function useControlledTable(initialSorting: SortingState = []) {
   const [sorting, onSortingChange] = useState<SortingState>(initialSorting);
@@ -80,7 +82,6 @@ function useControlledTable(initialSorting: SortingState = []) {
     pageSize: 10,
   });
   const [expanded, onExpandedChange] = useState<ExpandedState>({});
-  const [rowSelection, onRowSelectionChange] = useState<RowSelectionState>({});
   return {
     sorting,
     onSortingChange,
@@ -96,8 +97,6 @@ function useControlledTable(initialSorting: SortingState = []) {
     onPaginationChange,
     expanded,
     onExpandedChange,
-    rowSelection,
-    onRowSelectionChange,
   };
 }
 
@@ -168,14 +167,15 @@ export const SolutionTestsView = ({
     onTabChange?.(tab);
   };
   const casesTable = useControlledTable();
+  const [rowSelection, onRowSelectionChange] = useState<RowSelectionState>({});
   // Runs default to newest-first by run date; the user can re-sort.
   const runsTable = useControlledTable([{ id: "StartedAt", desc: true }]);
   // `getRowId` is the test `Id`, so selection keys are test ids directly.
   // Prune ids whose test no longer exists (e.g. deleted while selected) so the
   // Run-selected count and payload never reference a stale test.
   const existingTestIds = new Set(tests.map((test) => test.Id));
-  const selectedTestIds = Object.keys(casesTable.rowSelection).filter(
-    (id) => casesTable.rowSelection[id] && existingTestIds.has(id),
+  const selectedTestIds = Object.keys(rowSelection).filter(
+    (id) => rowSelection[id] && existingTestIds.has(id),
   );
 
   const testCasesColumns: DataTableColumnDef<SolutionTest>[] = [
@@ -359,7 +359,9 @@ export const SolutionTestsView = ({
                 <span className="inline-flex items-center">
                   <Switch
                     aria-label={
-                      test.IsActive === false ? t("disabled") : t("enabled")
+                      test.IsActive === false
+                        ? t("disabled_label")
+                        : t("enabled_label")
                     }
                     checked={test.IsActive !== false}
                     disabled={isDisabling}
@@ -368,7 +370,9 @@ export const SolutionTestsView = ({
                 </span>
               </TooltipTrigger>
               <TooltipContent>
-                {test.IsActive === false ? t("disabled") : t("enabled")}
+                {test.IsActive === false
+                  ? t("disabled_label")
+                  : t("enabled_label")}
               </TooltipContent>
             </Tooltip>
             <Button
@@ -551,26 +555,38 @@ export const SolutionTestsView = ({
           )}
         </PageHeaderNav>
         <PageHeaderActions>
-          <Button
-            variant="outline"
-            disabled={
-              selectedTestIds.length === 0 ||
-              runningSelected ||
-              runningAll ||
-              loading ||
-              hasActiveRuns
-            }
-            onClick={() =>
-              setRunConfirm({ mode: "selected", testIds: selectedTestIds })
-            }
-          >
-            {runningSelected ? (
-              <Spinner className="size-4" />
-            ) : (
-              <Play className="size-4" />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="inline-flex">
+                <Button
+                  variant="outline"
+                  disabled={
+                    selectedTestIds.length === 0 ||
+                    runningSelected ||
+                    runningAll ||
+                    loading ||
+                    hasActiveRuns
+                  }
+                  onClick={() =>
+                    setRunConfirm({
+                      mode: "selected",
+                      testIds: selectedTestIds,
+                    })
+                  }
+                >
+                  {runningSelected ? (
+                    <Spinner className="size-4" />
+                  ) : (
+                    <Play className="size-4" />
+                  )}
+                  {t("run_selected", { count: selectedTestIds.length })}
+                </Button>
+              </span>
+            </TooltipTrigger>
+            {hasActiveRuns && (
+              <TooltipContent>{t("runs_in_progress")}</TooltipContent>
             )}
-            {t("run_selected", { count: selectedTestIds.length })}
-          </Button>
+          </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
               <span className="inline-flex">
@@ -628,6 +644,8 @@ export const SolutionTestsView = ({
             <TabsContent value="cases">
               <DataTable
                 {...casesTable}
+                rowSelection={rowSelection}
+                onRowSelectionChange={onRowSelectionChange}
                 columns={testCasesColumns}
                 data={tests}
                 isLoading={loading}

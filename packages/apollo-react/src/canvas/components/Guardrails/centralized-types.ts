@@ -24,6 +24,7 @@ export interface CentralizedGuardrail {
   executionStage: string;
   appliesToAutonomousAgents: boolean;
   appliesToConversationalAgents: boolean;
+  appliesToGenAiActivities?: boolean;
   scopes: GuardrailScope[];
   action: CentralizedGuardrailActionType;
   /** Built-in validators only: the detected entities, and their per-entity thresholds. */

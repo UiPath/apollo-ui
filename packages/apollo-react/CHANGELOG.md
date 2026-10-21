@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.5.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.4.0...@uipath/apollo-react@7.5.0) (2026-10-21)
+
+### Features
+
+* **apollo-react:** filter centralized guardrails for genai activities [AL-656] ([83479ab](https://github.com/UiPath/apollo-ui/commit/83479abf0c51a18196688e925a1f32d26d3e038b))
+
 ## [@uipath/apollo-react-v7.4.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.3.2...@uipath/apollo-react@7.4.0) (2026-10-20)
 
 ### Features

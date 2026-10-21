@@ -4,6 +4,18 @@ export function isRunDone(status: number): boolean {
   return status !== RunStatus.Pending && status !== RunStatus.Running;
 }
 
+export function resolveComponentLabel(
+  source: { agentId?: string; processName: string },
+  labels: Record<string, string>,
+): string {
+  // Own keys only: a process named e.g. "constructor" must not hit Object.prototype.
+  const lookup = (key: string | undefined) =>
+    key != null && Object.hasOwn(labels, key) ? labels[key] : null;
+  return (
+    lookup(source.agentId) ?? lookup(source.processName) ?? source.processName
+  );
+}
+
 /** Compare dot-separated versions by numeric segment: 1 if a>b, -1 if a<b, else
  *  0. Segments that aren't strictly numeric (e.g. "1-beta") are skipped, so
  *  annotated/pre-release versions compare equal and show no glyph. */
