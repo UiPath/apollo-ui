@@ -42,14 +42,15 @@ import {
   schemaDisplayType,
 } from '../JsonTree';
 import { NodeVariableEditDialog } from './NodeVariableEditDialog';
-import type {
-  NodeVariableDetails,
-  NodeVariablesAddableSection,
-  NodeVariablesPanelProps,
-  NodeVariablesRow,
-  NodeVariablesSection,
-  NodeVariablesSource,
-  NodeVariableType,
+import {
+  isAddableSection,
+  type NodeVariableDetails,
+  type NodeVariablesAddableSection,
+  type NodeVariablesPanelProps,
+  type NodeVariablesRow,
+  type NodeVariablesSection,
+  type NodeVariablesSource,
+  type NodeVariableType,
 } from './NodeVariablesPanel.types';
 
 const SECTIONS: readonly NodeVariablesSection[] = [
@@ -770,10 +771,7 @@ export function NodeVariablesPanel({
     const count = totalCount[section];
     const { Icon, className: iconClassName } = SECTION_ICONS[section];
     // Inputs and Nodes add per node row instead (see sourceActions).
-    const addable =
-      (section === 'outputs' || section === 'variables' || section === 'assets') && onAdd
-        ? section
-        : null;
+    const addable = isAddableSection(section) && onAdd ? section : null;
 
     return (
       <Collapsible
