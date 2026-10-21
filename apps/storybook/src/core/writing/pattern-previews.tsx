@@ -5,9 +5,29 @@ import {
   AccordionTrigger,
   Alert,
   AlertDescription,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
   AlertTitle,
+  Avatar,
+  AvatarFallback,
   Badge,
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+  Bubble,
+  BubbleContent,
   Button,
+  buttonVariants,
   Card,
   CardContent,
   CardDescription,
@@ -15,87 +35,120 @@ import {
   CardHeader,
   CardTitle,
   EmptyState,
+  FormField,
+  FormFieldDescription,
+  FormFieldError,
+  FormFieldLabel,
   Input,
-  Label,
+  InputGroup,
+  Message,
+  MessageAvatar,
+  MessageContent,
+  MessageFooter,
+  MessageHeader,
   Progress,
   PromptSuggestions,
   Search,
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
   Spinner,
   Stepper,
   Switch,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
   ThinkingIndicator,
+  Toaster,
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
+  toast,
 } from '@uipath/apollo-wind';
-import { CircleAlert, CircleCheck, Copy, Info, Sparkles, TriangleAlert } from 'lucide-react';
+import { CircleAlert, Copy, Info, Sparkles, TriangleAlert } from 'lucide-react';
 import type { ReactNode } from 'react';
 
-// Live Apollo Wind renderings of each pattern's example copy. Dialogs and
-// drawers render inline as cards so the copy sits in the page flow.
+// Live Apollo Wind renderings of each pattern's example copy. Overlays (toasts,
+// dialogs, sheets) open from the button that triggers them in a real product.
 
 const noop = () => {};
 
-/** Stand-in for an overlay (dialog, drawer) rendered in the page flow. */
-function InlineSurface({
-  title,
-  description,
-  children,
-  footer,
-}: {
-  title: string;
-  description?: string;
-  children?: ReactNode;
-  footer: ReactNode;
-}) {
-  return (
-    <Card className="w-full max-w-md">
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        {description && <CardDescription>{description}</CardDescription>}
-      </CardHeader>
-      {children && <CardContent>{children}</CardContent>}
-      <CardFooter className="justify-end gap-2">{footer}</CardFooter>
-    </Card>
-  );
+/** Caption under an overlay trigger, so readers know the button opens the example. */
+function TriggerHint({ children }: { children: ReactNode }) {
+  return <p className="text-xs text-muted-foreground">{children}</p>;
 }
 
 export const PATTERN_PREVIEWS: Record<string, ReactNode> = {
   errorMessage: (
-    <div className="flex w-full max-w-md flex-col gap-4">
-      <Alert variant="destructive">
-        <CircleAlert />
-        <AlertTitle>Upload failed</AlertTitle>
-        <AlertDescription>
-          We couldn't upload your file. Check your connection and try again.
-        </AlertDescription>
-      </Alert>
-      <Button className="self-start">Try again</Button>
-    </div>
+    <Alert variant="destructive" className="max-w-md">
+      <CircleAlert />
+      <AlertDescription className="flex flex-col items-start gap-3">
+        We couldn't upload your file. Check your connection and try again.
+        <Button size="sm" variant="outline">
+          Try again
+        </Button>
+      </AlertDescription>
+    </Alert>
   ),
 
   notification: (
-    <div className="flex w-full max-w-md flex-col gap-3">
+    <div className="flex w-full max-w-md flex-col gap-4">
       <Alert variant="destructive">
         <CircleAlert />
         <AlertTitle>Sync failed</AlertTitle>
-        <AlertDescription>
+        <AlertDescription className="flex flex-col items-start gap-3">
           We couldn't sync your changes. Check your connection and try again.
+          <Button size="sm" variant="outline">
+            Try again
+          </Button>
         </AlertDescription>
       </Alert>
       <Alert variant="warning">
         <TriangleAlert />
         <AlertDescription>Storage is almost full</AlertDescription>
       </Alert>
-      <Alert variant="success">
-        <CircleCheck />
-        <AlertDescription>Project created</AlertDescription>
-      </Alert>
+      <div className="flex flex-col items-start gap-2">
+        <Button onClick={() => toast.success('Project created')}>Create project</Button>
+        <TriggerHint>Select the button to see the success toast.</TriggerHint>
+      </div>
+      <Toaster />
+    </div>
+  ),
+
+  successConfirmation: (
+    <div className="flex flex-col items-start gap-3">
+      <div className="flex flex-wrap gap-3">
+        <Button
+          onClick={() =>
+            toast.success('Automation published', {
+              action: { label: 'View automation', onClick: noop },
+            })
+          }
+        >
+          Publish automation
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => toast('2 files deleted', { action: { label: 'Undo', onClick: noop } })}
+        >
+          Delete files
+        </Button>
+      </div>
+      <TriggerHint>Select a button to see its confirmation toast.</TriggerHint>
+      <Toaster />
     </div>
   ),
 
@@ -105,6 +158,81 @@ export const PATTERN_PREVIEWS: Record<string, ReactNode> = {
       description="Build an automation to start running workflows in this workspace."
       action={{ label: 'Build automation', onClick: noop }}
     />
+  ),
+
+  loadingAndProgress: (
+    <div className="flex w-full max-w-md flex-col gap-6">
+      <Spinner label="Loading automations" showLabel />
+      <FormField>
+        <div className="flex justify-between">
+          <FormFieldLabel htmlFor="writing-upload-progress">Uploading 3 of 5 files</FormFieldLabel>
+          <span className="text-sm text-muted-foreground">60%</span>
+        </div>
+        <Progress id="writing-upload-progress" value={60} aria-label="Uploading files" />
+        <FormFieldDescription>
+          You can leave this page. We'll notify you when the upload is done.
+        </FormFieldDescription>
+      </FormField>
+    </div>
+  ),
+
+  onboarding: (
+    <Card className="w-full max-w-md">
+      <CardHeader>
+        <CardTitle>Build your first automation</CardTitle>
+        <CardDescription>Connect an app, add a trigger, and run a test job.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <p className="mb-3 text-xs text-muted-foreground">Step 2 of 3</p>
+        <Stepper
+          currentStep={1}
+          steps={[
+            { title: 'Connect an app' },
+            { title: 'Add a trigger' },
+            { title: 'Run a test job' },
+          ]}
+        />
+      </CardContent>
+      <CardFooter className="justify-end gap-2">
+        <Button variant="ghost">Skip tour</Button>
+        <Button variant="outline">Back</Button>
+        <Button>Next</Button>
+      </CardFooter>
+    </Card>
+  ),
+
+  aiAndAgents: (
+    <div className="flex w-full max-w-lg flex-col gap-4">
+      <ThinkingIndicator label="Searching your documents" />
+      <Message align="start">
+        <MessageAvatar>
+          <Avatar>
+            <AvatarFallback>AI</AvatarFallback>
+          </Avatar>
+        </MessageAvatar>
+        <MessageContent>
+          <MessageHeader>
+            Autopilot
+            <Badge variant="secondary" className="ml-2 gap-1">
+              <Sparkles className="size-3" /> AI-generated
+            </Badge>
+          </MessageHeader>
+          <Bubble variant="muted">
+            <BubbleContent>
+              Invoices from 3 vendors are overdue. The largest is $12,400 from Contoso.
+            </BubbleContent>
+          </Bubble>
+          <MessageFooter>
+            AI can make mistakes. Review the results before you act on them.
+          </MessageFooter>
+        </MessageContent>
+      </Message>
+      <PromptSuggestions
+        orientation="horizontal"
+        density="compact"
+        suggestions={[{ label: 'Summarize overdue invoices' }, { label: 'Draft a reminder email' }]}
+      />
+    </div>
   ),
 
   buttonAndCta: (
@@ -120,52 +248,74 @@ export const PATTERN_PREVIEWS: Record<string, ReactNode> = {
       <Info />
       <AlertDescription>
         Files older than 90 days are deleted automatically.{' '}
-        <a href="#retention" className="text-primary underline underline-offset-2">
-          Review retention policy
-        </a>
+        <Button variant="link" asChild className="h-auto p-0">
+          <a href="#retention">Review retention policy</a>
+        </Button>
       </AlertDescription>
     </Alert>
   ),
 
   toggleAndSelection: (
-    <div className="flex max-w-md items-start gap-3">
-      <Switch id="writing-email-notifications" defaultChecked />
-      <div className="flex flex-col gap-1">
-        <Label htmlFor="writing-email-notifications">Email notifications</Label>
-        <p className="text-sm text-muted-foreground">
-          Send notifications when a job starts or fails.
-        </p>
+    <FormField className="max-w-md">
+      <div className="flex items-center gap-3">
+        <Switch id="writing-email-notifications" defaultChecked />
+        <FormFieldLabel htmlFor="writing-email-notifications">Email notifications</FormFieldLabel>
       </div>
-    </div>
+      <FormFieldDescription>Send notifications when a job starts or fails.</FormFieldDescription>
+    </FormField>
   ),
 
   destructiveModal: (
-    <InlineSurface
-      title="Delete this automation?"
-      description="This will permanently delete the automation and all associated logs. You can't undo this action."
-      footer={
-        <>
-          <Button variant="outline">Cancel</Button>
+    <div className="flex flex-col items-start gap-2">
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
           <Button variant="destructive">Delete automation</Button>
-        </>
-      }
-    />
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this automation?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the automation and all associated logs. You can't undo
+              this action.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction className={buttonVariants({ variant: 'destructive' })}>
+              Delete automation
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <TriggerHint>Select the button to open the confirmation dialog.</TriggerHint>
+    </div>
   ),
 
   formField: (
-    <div className="flex w-full max-w-sm flex-col gap-2">
-      <Label htmlFor="writing-workspace-name">Workspace name</Label>
-      <Input id="writing-workspace-name" error="Enter a workspace name" />
-      <p className="text-sm text-muted-foreground">Use a name your team will recognize.</p>
-    </div>
+    <FormField className="w-full max-w-sm">
+      <FormFieldLabel htmlFor="writing-workspace-name" required>
+        Workspace name
+      </FormFieldLabel>
+      <InputGroup>
+        <Input
+          id="writing-workspace-name"
+          aria-invalid
+          aria-describedby="writing-workspace-name-help writing-workspace-name-error"
+        />
+      </InputGroup>
+      <FormFieldDescription id="writing-workspace-name-help">
+        Use a name your team will recognize.
+      </FormFieldDescription>
+      <FormFieldError id="writing-workspace-name-error">Enter a workspace name</FormFieldError>
+    </FormField>
   ),
 
   searchAndFilter: (
     <div className="flex w-full max-w-md flex-col gap-4">
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="writing-search">Search</Label>
+      <FormField>
+        <FormFieldLabel htmlFor="writing-search">Search</FormFieldLabel>
         <Search id="writing-search" placeholder="Search automations and folders" />
-      </div>
+      </FormField>
       <EmptyState
         size="compact"
         title="No results"
@@ -177,6 +327,17 @@ export const PATTERN_PREVIEWS: Record<string, ReactNode> = {
 
   tabsAndNavigation: (
     <div className="flex w-full max-w-md flex-col gap-3">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="#projects">Projects</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Project settings</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
       <h3 className="text-lg font-semibold text-foreground">Project settings</h3>
       <Tabs defaultValue="overview">
         <TabsList>
@@ -192,18 +353,35 @@ export const PATTERN_PREVIEWS: Record<string, ReactNode> = {
   ),
 
   drawer: (
-    <InlineSurface
-      title="Edit project settings"
-      footer={
-        <>
-          <Button variant="outline">Cancel</Button>
-          <Button>Save</Button>
-        </>
-      }
-    >
-      <p className="mb-1 text-sm font-medium text-foreground">Access and permissions</p>
-      <p className="text-sm text-muted-foreground">Changes apply to all members of this project.</p>
-    </InlineSurface>
+    <div className="flex flex-col items-start gap-2">
+      <Sheet>
+        <SheetTrigger asChild>
+          <Button variant="outline">Edit settings</Button>
+        </SheetTrigger>
+        <SheetContent side="right">
+          <SheetHeader>
+            <SheetTitle>Edit project settings</SheetTitle>
+            <SheetDescription>Changes apply to all members of this project.</SheetDescription>
+          </SheetHeader>
+          <div className="flex flex-col gap-4 py-6">
+            <p className="text-sm font-medium text-foreground">Access and permissions</p>
+            <FormField>
+              <FormFieldLabel htmlFor="writing-drawer-owner">Project owner</FormFieldLabel>
+              <InputGroup>
+                <Input id="writing-drawer-owner" defaultValue="Daniel" />
+              </InputGroup>
+            </FormField>
+          </div>
+          <SheetFooter>
+            <SheetClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </SheetClose>
+            <Button>Save</Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
+      <TriggerHint>Select the button to open the drawer.</TriggerHint>
+    </div>
   ),
 
   accordionAndDisclosure: (
@@ -216,34 +394,34 @@ export const PATTERN_PREVIEWS: Record<string, ReactNode> = {
   ),
 
   tableAndStatus: (
-    <table className="w-full max-w-lg text-left text-sm">
-      <thead className="text-muted-foreground">
-        <tr>
-          <th className="py-2 font-medium">Name</th>
-          <th className="py-2 font-medium">Status</th>
-          <th className="py-2 font-medium">Last updated</th>
-          <th className="py-2 font-medium">Duration</th>
-        </tr>
-      </thead>
-      <tbody className="text-foreground">
-        <tr className="border-t border-border">
-          <td className="py-2">Invoice intake</td>
-          <td className="py-2">
+    <Table className="max-w-lg">
+      <TableHeader>
+        <TableRow>
+          <TableHead>Name</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead>Last updated</TableHead>
+          <TableHead>Duration</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        <TableRow>
+          <TableCell>Invoice intake</TableCell>
+          <TableCell>
             <Badge variant="info">In progress</Badge>
-          </td>
-          <td className="py-2">Updated 5 minutes ago</td>
-          <td className="py-2">2h 15m 30s</td>
-        </tr>
-        <tr className="border-t border-border">
-          <td className="py-2">Vendor sync</td>
-          <td className="py-2">
+          </TableCell>
+          <TableCell>Updated 5 minutes ago</TableCell>
+          <TableCell>2h 15m 30s</TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell>Vendor sync</TableCell>
+          <TableCell>
             <Badge variant="success">Completed</Badge>
-          </td>
-          <td className="py-2">May 30, 2025</td>
-          <td className="py-2">2.25 hrs</td>
-        </tr>
-      </tbody>
-    </table>
+          </TableCell>
+          <TableCell>May 30, 2025</TableCell>
+          <TableCell>2.25 hrs</TableCell>
+        </TableRow>
+      </TableBody>
+    </Table>
   ),
 
   dateTimeAndDuration: (
@@ -273,88 +451,5 @@ export const PATTERN_PREVIEWS: Record<string, ReactNode> = {
         <TooltipContent side="right">Copy</TooltipContent>
       </Tooltip>
     </TooltipProvider>
-  ),
-
-  aiAndAgents: (
-    <div className="flex w-full max-w-md flex-col gap-4">
-      <ThinkingIndicator label="Searching your documents" />
-      <div className="rounded-xl border border-border-subtle bg-surface p-3 text-sm text-foreground">
-        <Badge variant="secondary" className="mb-2 gap-1">
-          <Sparkles className="size-3" /> AI-generated
-        </Badge>
-        <p>Invoices from 3 vendors are overdue. The largest is $12,400 from Contoso.</p>
-        <p className="mt-2 text-xs text-muted-foreground">
-          AI can make mistakes. Review the results before you act on them.
-        </p>
-      </div>
-      <PromptSuggestions
-        orientation="horizontal"
-        density="compact"
-        suggestions={[{ label: 'Summarize overdue invoices' }, { label: 'Draft a reminder email' }]}
-      />
-    </div>
-  ),
-
-  loadingAndProgress: (
-    <div className="flex w-full max-w-md flex-col gap-4">
-      <Spinner label="Loading automations" showLabel />
-      <div className="flex flex-col gap-2">
-        <div className="flex justify-between text-sm">
-          <span className="text-foreground">Uploading 3 of 5 files</span>
-          <span className="text-muted-foreground">60%</span>
-        </div>
-        <Progress value={60} aria-label="Uploading files" />
-        <p className="text-xs text-muted-foreground">
-          You can leave this page. We'll notify you when the upload is done.
-        </p>
-      </div>
-    </div>
-  ),
-
-  onboarding: (
-    <InlineSurface
-      title="Build your first automation"
-      description="Connect an app, add a trigger, and run a test job."
-      footer={
-        <>
-          <Button variant="ghost">Skip tour</Button>
-          <Button variant="outline">Back</Button>
-          <Button>Next</Button>
-        </>
-      }
-    >
-      <p className="mb-3 text-xs text-muted-foreground">Step 2 of 3</p>
-      <Stepper
-        currentStep={1}
-        steps={[
-          { title: 'Connect an app' },
-          { title: 'Add a trigger' },
-          { title: 'Run a test job' },
-        ]}
-      />
-    </InlineSurface>
-  ),
-
-  successConfirmation: (
-    <div className="flex w-full max-w-md flex-col gap-3">
-      <Alert variant="success">
-        <CircleCheck />
-        <AlertDescription className="flex items-center justify-between gap-3">
-          Automation published
-          <Button variant="link" size="sm" className="h-auto p-0">
-            View automation
-          </Button>
-        </AlertDescription>
-      </Alert>
-      <Alert>
-        <Info />
-        <AlertDescription className="flex items-center justify-between gap-3">
-          2 files deleted
-          <Button variant="link" size="sm" className="h-auto p-0">
-            Undo
-          </Button>
-        </AlertDescription>
-      </Alert>
-    </div>
   ),
 };
