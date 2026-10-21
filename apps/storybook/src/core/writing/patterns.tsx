@@ -9,6 +9,8 @@ import {
   Section,
   SubSection,
   WritingPage,
+  WritingTab,
+  WritingTabs,
 } from './writing-ui';
 
 // Human-facing versions of the apollo-writing skill's content patterns
@@ -109,9 +111,8 @@ export const PATTERNS: Record<string, ContentPattern> = {
       ],
     },
     example: {
-      caption: 'Upload error in a modal',
+      caption: 'Upload error banner',
       fields: [
-        ['Title', 'Upload failed'],
         ['Body', "We couldn't upload your file. Check your connection and try again."],
         ['CTA', 'Try again'],
       ],
@@ -1174,7 +1175,7 @@ export const PATTERNS: Record<string, ContentPattern> = {
       },
     ],
     example: {
-      caption: 'Autopilot answer with sources',
+      caption: 'Autopilot answer',
       fields: [
         ['Thinking state', 'Searching your documents'],
         ['Label', 'AI-generated'],
@@ -1381,52 +1382,62 @@ export function PatternPage({
 }) {
   return (
     <WritingPage title={pattern.title} intro={pattern.summary}>
-      <Section title="Use it for">
-        <RuleList rules={pattern.appliesTo} />
-      </Section>
+      <WritingTabs>
+        <WritingTab label="Overview">
+          <Section title="Example">
+            {preview && <LivePreview>{preview}</LivePreview>}
+            <CopyExample caption={pattern.example.caption} fields={pattern.example.fields} />
+          </Section>
 
-      <Section title="Example">
-        {preview && <LivePreview>{preview}</LivePreview>}
-        <CopyExample caption={pattern.example.caption} fields={pattern.example.fields} />
-      </Section>
+          <Section title="Use it for">
+            <RuleList rules={pattern.appliesTo} />
+          </Section>
 
-      {pattern.fieldsByVariant && (
-        <Section title="What to include">
-          <GuideTable columns={['Component', 'Fields']} rows={pattern.fieldsByVariant} />
-        </Section>
-      )}
+          {pattern.fieldsByVariant && (
+            <Section title="What to include">
+              <GuideTable columns={['Component', 'Fields']} rows={pattern.fieldsByVariant} />
+            </Section>
+          )}
 
-      <Section title="Rules">
-        <RuleList rules={pattern.rules} />
-        {pattern.ruleGroups?.map((group) => (
-          <SubSection key={group.title} title={group.title}>
-            <RuleList rules={group.rules} />
-          </SubSection>
-        ))}
-      </Section>
+          {pattern.related && (
+            <Section title="Related patterns">
+              <RuleList
+                rules={pattern.related.map((story) => <PatternLink key={story} story={story} />)}
+              />
+            </Section>
+          )}
+        </WritingTab>
 
-      {pattern.doDont && (
-        <Section title="Do and don't">
-          <DoDont doItems={pattern.doDont.doItems} dontItems={pattern.doDont.dontItems} />
-        </Section>
-      )}
+        <WritingTab label="Rules">
+          <Section title="Rules">
+            <RuleList rules={pattern.rules} />
+            {pattern.ruleGroups?.map((group) => (
+              <SubSection key={group.title} title={group.title}>
+                <RuleList rules={group.rules} />
+              </SubSection>
+            ))}
+          </Section>
 
-      <Section title="Common cases">
-        {pattern.cases.map((c) => (
-          <SubSection key={c.name} title={c.name}>
-            <RuleList rules={c.guidance} />
-            {(c.doItems || c.dontItems) && <DoDont doItems={c.doItems} dontItems={c.dontItems} />}
-          </SubSection>
-        ))}
-      </Section>
+          {pattern.doDont && (
+            <Section title="Do and don't">
+              <DoDont doItems={pattern.doDont.doItems} dontItems={pattern.doDont.dontItems} />
+            </Section>
+          )}
+        </WritingTab>
 
-      {pattern.related && (
-        <Section title="Related patterns">
-          <RuleList
-            rules={pattern.related.map((story) => <PatternLink key={story} story={story} />)}
-          />
-        </Section>
-      )}
+        <WritingTab label="Examples">
+          <Section title="Common cases">
+            {pattern.cases.map((c) => (
+              <SubSection key={c.name} title={c.name}>
+                <RuleList rules={c.guidance} />
+                {(c.doItems || c.dontItems) && (
+                  <DoDont doItems={c.doItems} dontItems={c.dontItems} />
+                )}
+              </SubSection>
+            ))}
+          </Section>
+        </WritingTab>
+      </WritingTabs>
     </WritingPage>
   );
 }
