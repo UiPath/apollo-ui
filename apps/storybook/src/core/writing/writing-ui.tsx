@@ -237,15 +237,14 @@ export function Note({ children }: { children: ReactNode }) {
   return <p className="sb-writing-note">{children}</p>;
 }
 
-/** Manager URL for a story, so links work under any base path (such as a PR preview). */
+/**
+ * Manager URL for a story, so links work under any base path (such as a PR preview). The canvas
+ * (iframe.html) is served from the manager's directory, so this holds whether the canvas is
+ * embedded in the manager or opened in its own tab.
+ */
 function storyHref(title: string, story: string) {
-  let base = '';
-  try {
-    base = window.parent.location.pathname;
-  } catch {
-    // Cross-origin parent: fall back to a relative URL.
-  }
-  return `${base}?path=/story/${toId(title, story)}`;
+  const directory = window.location.pathname.replace(/[^/]*$/, '');
+  return `${directory}?path=/story/${toId(title, story)}`;
 }
 
 /**
