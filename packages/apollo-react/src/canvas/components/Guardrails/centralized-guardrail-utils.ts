@@ -18,13 +18,23 @@ export type CentralizedGuardrailIdentity = Pick<
   'validator' | 'name' | 'isByo'
 >;
 
-/** The guardrails a policy applies to one kind of agent. */
+/** What the guardrails are filtered for: one kind of agent (the default), or GenAI Activities. */
+export type CentralizedGuardrailTarget =
+  | { target?: 'agent'; isConversational?: boolean }
+  | { target: 'genai'; isConversational?: never };
+
+/** The guardrails a policy applies to the given target. */
 export function getApplicableCentralizedGuardrails<T extends CentralizedGuardrail>(
   guardrails: readonly T[],
-  { isConversational }: { isConversational?: boolean }
+  options: CentralizedGuardrailTarget
 ): T[] {
+  if (options.target === 'genai') {
+    return guardrails.filter((guardrail) => guardrail.appliesToGenAiActivities === true);
+  }
   return guardrails.filter((guardrail) =>
-    isConversational ? guardrail.appliesToConversationalAgents : guardrail.appliesToAutonomousAgents
+    options.isConversational
+      ? guardrail.appliesToConversationalAgents
+      : guardrail.appliesToAutonomousAgents
   );
 }
 
