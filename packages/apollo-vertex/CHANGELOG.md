@@ -1,3 +1,17 @@
+## [@uipath/apollo-vertex-v2.2.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-vertex@2.1.0...@uipath/apollo-vertex@2.2.0) (2026-10-21)
+
+### Features
+
+* **apollo-vertex:** back-port FINS solution-test changes ([aa0ad62](https://github.com/UiPath/apollo-ui/commit/aa0ad62382d23545a28952307ef3336128bf7e5f))
+
+### Bug Fixes
+
+* **apollo-vertex:** keep solution-test exports compatible and lock reasons reachable ([66a0d48](https://github.com/UiPath/apollo-ui/commit/66a0d483497ff5e3176eb10b21d702c8a1b1c4f5))
+
+### Reverts
+
+* **apollo-vertex:** drop the solution-test compatibility shims ([ec11b75](https://github.com/UiPath/apollo-ui/commit/ec11b7534451960374118c64782aa8e64c93d5df))
+
 ## [@uipath/apollo-vertex-v2.1.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-vertex@2.0.0...@uipath/apollo-vertex@2.1.0) (2026-10-20)
 
 ### Features
