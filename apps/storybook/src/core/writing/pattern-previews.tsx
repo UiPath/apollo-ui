@@ -341,6 +341,7 @@ export const PATTERN_PREVIEWS: Record<string, ReactNode> = {
       <InputGroup>
         <Input
           id="writing-workspace-name"
+          required
           aria-invalid
           aria-describedby="writing-workspace-name-help writing-workspace-name-error"
         />
