@@ -6,9 +6,9 @@ import { Colors } from '@uipath/apollo-core';
 import type React from 'react';
 import { useSafeLingui } from '../../../../i18n';
 
-import { ModelTagChip } from '../ModelTagChip';
 import type { DiscoveryModel } from '../types';
 import { type DeriveModelTagsContext, deriveModelTags } from '../utils';
+import { ModelTagStrip } from './ModelTagStrip';
 
 export interface PickerTriggerProps {
   id: string;
@@ -170,11 +170,7 @@ export const PickerTrigger: React.FC<PickerTriggerProps> = ({
               >
                 {primary}
               </Typography>
-              {inlineTags.map((t) => (
-                <Box key={`${t.kind}-${t.label}`} sx={{ flexShrink: 0 }}>
-                  <ModelTagChip tag={t} variants={tagVariants} />
-                </Box>
-              ))}
+              <ModelTagStrip tags={inlineTags} tagVariants={tagVariants} />
             </>
           ) : unknownValue ? (
             <Typography

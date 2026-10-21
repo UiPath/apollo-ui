@@ -46,5 +46,6 @@
   "modelPicker.deleteConfirm.title": "カスタム モデルを削除",
   "modelPicker.deleteConfirm.message": "これにより、このテナント内のすべてのユーザーの「{name}」の設定が完全に削除されます。この操作は元に戻せません。",
   "modelPicker.deleteConfirm.cancel": "キャンセル",
-  "modelPicker.deleteConfirm.confirm": "削除"
+  "modelPicker.deleteConfirm.confirm": "削除",
+  "modelPicker.tag.hiddenCount.label": "+{count}"
 }

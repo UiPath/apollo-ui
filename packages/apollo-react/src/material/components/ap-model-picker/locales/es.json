@@ -46,5 +46,6 @@
   "modelPicker.deleteConfirm.title": "Eliminar modelo personalizado",
   "modelPicker.deleteConfirm.message": "Esto elimina de forma permanente el archivo \"{name}\" para todos en este tenant. Esta acción no se puede deshacer.",
   "modelPicker.deleteConfirm.cancel": "Cancelar",
-  "modelPicker.deleteConfirm.confirm": "Eliminar"
+  "modelPicker.deleteConfirm.confirm": "Eliminar",
+  "modelPicker.tag.hiddenCount.label": "+{count}"
 }
