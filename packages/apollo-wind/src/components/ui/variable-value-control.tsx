@@ -16,7 +16,8 @@ export interface VariableValueControlProps {
   name?: string;
   /** The bound reference, such as `$vars.orderId`. */
   value?: string;
-  onChange: (reference: string) => void;
+  /** Also gets the picked entry, as supplied in `variables`, for a consumer that reads its type. */
+  onChange: (reference: string, item: VariablePickerItem) => void;
   /** Called when the trigger loses focus, as a form library marks a field touched. */
   onBlur?: () => void;
   /** Also gets the trigger, as a form library's field ref does to focus an invalid field. */
@@ -82,7 +83,7 @@ const VariableValueControl = React.forwardRef<HTMLButtonElement, VariableValueCo
     );
     const select = React.useCallback(
       (item: VariablePickerItem) => {
-        if (item.value) onChange(item.value);
+        if (item.value) onChange(item.value, item);
         setOpen(false);
       },
       [onChange]

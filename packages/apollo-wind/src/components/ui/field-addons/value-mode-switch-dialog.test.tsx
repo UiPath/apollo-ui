@@ -17,6 +17,29 @@ describe('ValueModeSwitchDialog', () => {
     expect(onConfirm).toHaveBeenCalled();
   });
 
+  it('can keep focus off where it opened from as it closes', async () => {
+    const user = userEvent.setup();
+    const onCloseAutoFocus = vi.fn((event: Event) => event.preventDefault());
+    const { rerender } = render(
+      <ValueModeSwitchDialog
+        open
+        onConfirm={vi.fn()}
+        onCancel={vi.fn()}
+        onCloseAutoFocus={onCloseAutoFocus}
+      />
+    );
+    rerender(
+      <ValueModeSwitchDialog
+        open={false}
+        onConfirm={vi.fn()}
+        onCancel={vi.fn()}
+        onCloseAutoFocus={onCloseAutoFocus}
+      />
+    );
+    await user.keyboard('{Tab}');
+    expect(onCloseAutoFocus).toHaveBeenCalledOnce();
+  });
+
   it("prefers the codec's own wording, then the given strings", () => {
     render(
       <ValueModeSwitchDialog
