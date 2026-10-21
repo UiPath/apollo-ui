@@ -31,6 +31,7 @@ export * from './drawer';
 export * from './dropdown-menu';
 export * from './dropzone-overlay';
 export * from './editable-cell';
+export * from './editable-text';
 export * from './empty-state';
 export * from './field-actions';
 export * from './field-addons';
