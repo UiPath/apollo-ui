@@ -165,19 +165,15 @@ export interface NodeVariablesPanelProps {
    */
   onEditVariable?: (row: NodeVariablesRow, next: NodeVariableDetails) => void;
   /**
-   * Called from the edit action instead of opening the built-in dialog, so the
-   * host can open its own. Takes precedence over `onEditVariable`.
+   * Called from the edit action so the host can open its own editor. Asset rows,
+   * which never use the built-in dialog, always come here. Variable rows come
+   * here only when `onEditVariable` is omitted, so pass both to keep the built-in
+   * dialog for variables and edit assets in the host. Check `row.section` to
+   * tell a variable from an asset.
    */
   onRequestEditVariable?: (row: NodeVariablesRow) => void;
-  /** Called from a variable row's delete action. Omit to hide it. */
+  /** Called from a variable or asset row's delete action (see `row.section`). Omit to hide it. */
   onDeleteVariable?: (row: NodeVariablesRow) => void;
-  /**
-   * Called from an asset row's edit action, so the host can open its own asset
-   * dialog (rename, or reconnect a missing asset). Omit to hide the action.
-   */
-  onRequestEditAsset?: (row: NodeVariablesRow) => void;
-  /** Called from an asset row's delete action. Omit to hide it. */
-  onDeleteAsset?: (row: NodeVariablesRow) => void;
   /** Called after a reference (a key's path) or a value is copied to the clipboard. */
   onCopy?: (event: CopyEvent) => void;
   /**

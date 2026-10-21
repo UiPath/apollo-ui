@@ -1905,7 +1905,15 @@ function VariablesStory() {
       ),
     }));
   };
-  const deleteVariable = ({ section, node }: NodeVariablesRow) => {
+  // One delete callback serves variables and assets; the row's section says which. The
+  // story edits variables in the built-in dialog, and onRequestEditVariable gets only
+  // assets, which the host edits in its own UI.
+  const deleteVariable = (row: NodeVariablesRow) => {
+    const { section, node } = row;
+    if (section === 'assets') {
+      deleteAsset(row);
+      return;
+    }
     if (section !== 'variables') {
       toast(`Deleted ${section} ${node.key}`);
       return;
@@ -1987,9 +1995,8 @@ function VariablesStory() {
                   else toast(nodeId ? `Add from ${nodeId}` : `Add to ${section}`);
                 }}
                 onEditVariable={editVariable}
+                onRequestEditVariable={({ node }) => toast(`Edit asset ${node.key}`)}
                 onDeleteVariable={deleteVariable}
-                onRequestEditAsset={({ node }) => toast(`Edit asset ${node.key}`)}
-                onDeleteAsset={deleteAsset}
                 onCopy={({ text }) => toast.success(`Copied ${text}`)}
                 leading={tabList}
               />
