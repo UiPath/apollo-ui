@@ -31,7 +31,7 @@ const writingCss = `
 .sb-writing strong { color: var(--color-foreground-emp); }
 .sb-writing code { font-size: 13px; padding: 2px 6px; border-radius: 4px; background: var(--color-background-secondary); color: var(--color-foreground-emp); }
 .sb-writing-link { color: var(--color-primary); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; background: none; border: 0; padding: 0; font: inherit; }
-.sb-writing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin: 0 0 16px; }
+.sb-writing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 16px; margin: 0 0 16px; }
 .sb-writing-card { border: 1px solid var(--color-border); border-radius: 8px; padding: 16px; background: var(--color-background); }
 .sb-writing-card ul { margin: 0; padding-left: 0; list-style: none; }
 .sb-writing-card li { margin: 0; padding: 6px 0; border-top: 1px solid var(--color-border); }
