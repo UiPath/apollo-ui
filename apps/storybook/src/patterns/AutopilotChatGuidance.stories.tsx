@@ -167,7 +167,7 @@ const CONTRACTS: Contract[] = [
     primitive: 'MessageScroller',
     feature: 'Transcript, autoScroll, older messages',
     contract:
-      'MessageScrollerProvider with autoScroll and defaultScrollPosition="end". Each group is a MessageScrollerItem; user turns set scrollAnchor so a new turn scrolls to its start. The start edge from useMessageScrollerScrollable drives loading older messages.',
+      'MessageScrollerProvider with autoScroll, defaultScrollPosition="end" and scrollPreviousItemPeek of 12 (0 in compact). Each group is a MessageScrollerItem; user turns set scrollAnchor so a new turn scrolls to its start and sits 24px from the top (12px in compact, where the gap above it is too short to clear the previous reply\'s actions), instead of under the default 64px glimpse of the previous reply, and is held there while the reply streams. The start edge from useMessageScrollerScrollable drives loading older messages.',
   },
   {
     primitive: 'Markdown, CodeBlock',

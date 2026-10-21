@@ -1,7 +1,6 @@
 import React from 'react';
 
 import type { ChatLayout } from '../../headless/layout/chat-layout';
-import { useChatState } from '../../headless/providers/chat-state-provider';
 import { CHAT_DRAWER_WIDTH_FULL_SCREEN, CHAT_WIDTH_FULL_SCREEN_MAX_WIDTH } from '../../service';
 import { FirstRun, useFirstRunShown } from '../first-run/first-run';
 import { WindChatHeader } from '../header/chat-header';
@@ -16,13 +15,13 @@ const sizes = {
 } as React.CSSProperties;
 
 /**
- * Full-width header above a centered conversation column. The history opens as a popover and the
- * settings slide in on the right; the column makes room for either, as Material's does.
+ * Full-width header above a centered conversation column. The history opens as a popover over the
+ * conversation, which stays put; the settings slide in on the right and the column makes room for
+ * them. Both as Material's do.
  */
 export function FullScreenLayout({ layout }: { layout: ChatLayout }) {
   const firstRunShown = useFirstRunShown();
   const settingsClose = useSettingsClose();
-  const { historyOpen } = useChatState();
   const [content, setContent] = React.useState<HTMLDivElement | null>(null);
 
   return (
@@ -55,10 +54,6 @@ export function FullScreenLayout({ layout }: { layout: ChatLayout }) {
             </FirstRun>
           )}
         </main>
-        {/* The history popover's place beside the column, kept clear of the transcript. */}
-        {layout.historyAvailable && historyOpen && (
-          <div aria-hidden className="w-[calc(var(--chat-drawer-width)+2rem)] shrink-0" />
-        )}
         {layout.settingsAvailable && <ChatSettings layout={layout} onClose={settingsClose.close} />}
         {layout.historyAvailable && <ChatHistory boundary={content} mode={layout.mode} />}
       </div>

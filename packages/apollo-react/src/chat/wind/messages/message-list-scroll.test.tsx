@@ -126,10 +126,15 @@ async function settle() {
 
 let instanceCounter = 0;
 
-function setup({ paginatedMessages = false } = {}) {
+function setup({ paginatedMessages = false, compactMode = false } = {}) {
   const service = AutopilotChatService.Instantiate({
     instanceName: `wind-scroll-model-${++instanceCounter}`,
-    config: { mode: AutopilotChatMode.FullScreen, renderer: 'wind', paginatedMessages },
+    config: {
+      mode: AutopilotChatMode.FullScreen,
+      renderer: 'wind',
+      paginatedMessages,
+      spacing: { compactMode },
+    },
   });
   // Six one-message groups (no groupId): a transcript taller than the viewport.
   service.setConversation(
@@ -163,7 +168,7 @@ describe('Wind message list scrolling', () => {
     expect(viewport().scrollTop).toBe(maxTop());
   });
 
-  it('holds a new turn near the top, then never jumps back to an earlier one', async () => {
+  it('holds a new turn with a 12px peek, then never jumps back to an earlier one', async () => {
     const { service, viewport, reply } = setup();
     await settle();
 
@@ -172,8 +177,10 @@ describe('Wind message list scrolling', () => {
     });
     await settle();
     const anchored = viewport().scrollTop;
-    // Six rows before the new turn, minus the primitive's 64px peek of the previous row.
-    expect(anchored).toBe(6 * ROW - 64);
+    // Six rows before the new turn, minus Wind's 12px peek (the primitive's default is 64). The
+    // model has no CSS, so the list's 12px top padding is 0 here: this proves the peek reaches
+    // the scroller, not the 24px landing, which is measured in the playground.
+    expect(anchored).toBe(6 * ROW - 12);
 
     // The reply arrives while the loading row goes away: the scroller must not mistake that for
     // a new, earlier turn (it used to scroll to the first user message).
@@ -181,6 +188,47 @@ describe('Wind message list scrolling', () => {
     await settle();
 
     expect(viewport().scrollTop).toBeGreaterThanOrEqual(anchored);
+  });
+
+  it("lands a new turn at the list padding in compact, clear of the previous reply's actions", async () => {
+    const { service, viewport } = setup({ compactMode: true });
+    await settle();
+
+    await act(async () => {
+      service.sendRequest({ content: 'new question' });
+    });
+    await settle();
+
+    // No peek in compact (the model has no CSS padding, see above).
+    expect(viewport().scrollTop).toBe(6 * ROW);
+  });
+
+  it('holds the anchor through a short streamed reply, which the tail spacer makes reachable', async () => {
+    const { service, viewport, reply } = setup();
+    await settle();
+    await act(async () => {
+      service.sendRequest({ content: 'short question' });
+    });
+    await settle();
+    const anchored = viewport().scrollTop;
+    // The 12px peek; the model has no CSS padding (see above).
+    expect(anchored).toBe(6 * ROW - 12);
+
+    for (const content of ['A', ' short', ' reply.']) {
+      act(() => reply({ id: 'r3', content, stream: true }));
+      await settle();
+      expect(viewport().scrollTop).toBe(anchored);
+    }
+    act(() => reply({ id: 'r3', content: '', stream: true, done: true }));
+    await settle();
+
+    expect(viewport().scrollTop).toBe(anchored);
+    // The rows after the anchor are shorter than the viewport; the spacer covers the rest.
+    const spacer = viewport().querySelector('[data-message-scroller-spacer]') as HTMLElement;
+    const afterAnchor =
+      viewport().scrollHeight - anchored - Number.parseFloat(spacer.style.height || '0');
+    expect(afterAnchor).toBeLessThan(VIEWPORT);
+    expect(viewport().scrollHeight - anchored).toBeGreaterThanOrEqual(VIEWPORT);
   });
 
   it('stays put after the reader scrolls away, and the jump button re-arms following', async () => {
