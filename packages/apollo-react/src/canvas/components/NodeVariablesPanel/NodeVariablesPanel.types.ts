@@ -20,6 +20,21 @@ export type NodeVariablesAddableSection = Extract<
   'outputs' | 'variables' | 'assets'
 >;
 
+const ADDABLE_SECTIONS: Record<NodeVariablesAddableSection, true> = {
+  outputs: true,
+  variables: true,
+  assets: true,
+};
+
+/**
+ * Whether a section has its + on the header. Exhaustive over `NodeVariablesAddableSection`,
+ * so adding a section there fails to compile until it is listed here. Own-key check, so a
+ * value like `constructor` is never mistaken for a section.
+ */
+export function isAddableSection(value: string): value is NodeVariablesAddableSection {
+  return Object.hasOwn(ADDABLE_SECTIONS, value);
+}
+
 /** A tree row, as filters and the variable callbacks receive it. */
 export interface NodeVariablesRow {
   section: NodeVariablesSection;
