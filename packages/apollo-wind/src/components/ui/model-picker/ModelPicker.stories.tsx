@@ -907,9 +907,11 @@ export const NarrowFields: Story = {
           'The selected model is Recommended, routed out of region and in the ' +
           'Standard cost tier. The name is the value, so it keeps its width ' +
           'and the chips share what is left; the ones with no room collapse ' +
-          'into a `+N` count. Warning chips lead, so the one a narrow field ' +
-          'keeps is the out-of-region warning. Every chip is still announced ' +
-          'to screen readers, whatever fits.',
+          'into a `+N` count — in the field and in every row of the open ' +
+          'list, where hovering the count names the chips it stands for. ' +
+          'Warning chips lead, so the one a narrow field keeps is the ' +
+          'out-of-region warning. Every chip is still announced to screen ' +
+          'readers, whatever fits.',
       },
     },
   },

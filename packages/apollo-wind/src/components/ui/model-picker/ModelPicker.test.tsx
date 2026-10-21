@@ -546,10 +546,11 @@ describe('<ModelPicker> chip alignment', () => {
  *
  * In a narrow side panel the chips used to keep their width and the model name
  * took the squeeze, down to "C…" with three chips beside it — the field no longer
- * said which model was selected. The name now keeps its width and the chips that
- * have no room collapse into a count, warnings kept first.
+ * said which model was selected, and the open list cut the same chips mid-word.
+ * The name now keeps its width and the chips that have no room collapse into a
+ * count, warnings kept first, in the field and in every row.
  */
-describe('<ModelPicker> trigger chips in a narrow field', () => {
+describe('<ModelPicker> chips in a narrow field', () => {
   const crowded: DiscoveryModel[] = [
     {
       modelId: 'claude-sonnet-4-6',
@@ -572,13 +573,13 @@ describe('<ModelPicker> trigger chips in a narrow field', () => {
     vi.restoreAllMocks();
   });
 
-  // The chip row measures `rowWidth`; each parked-or-shown chip and the count measure their own.
-  const mockLayout = (rowWidth: number) =>
+  // Every strip measures `stripWidth`; each parked-or-shown chip and the count measure their own.
+  const mockLayout = (stripWidth: number) =>
     vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
       this: HTMLElement
     ) {
       let width = 0;
-      if (this.dataset.slot === 'model-picker-trigger-tags') width = rowWidth;
+      if (this.dataset.slot === 'model-picker-tags') width = stripWidth;
       else if (this.hasAttribute('data-overflow')) width = 24;
       else width = chipWidths[this.textContent ?? ''] ?? 0;
       return new DOMRect(0, 0, width, 0);
@@ -588,10 +589,19 @@ describe('<ModelPicker> trigger chips in a narrow field', () => {
     renderPicker(<ModelPicker homeRegion="EU" models={crowded} value="claude-sonnet-4-6" />);
     return screen.getByRole('combobox', { expanded: false });
   };
-  const chipSlot = (trigger: HTMLElement, label: string) =>
-    within(trigger).getByText(label).closest('[data-slot="model-picker-tag"]')?.parentElement;
-  const count = (trigger: HTMLElement) =>
-    trigger.querySelector('[data-overflow]') as HTMLElement | null;
+  const openRow = async () => {
+    const user = userEvent.setup();
+    renderPicker(<ModelPicker groupBy="vendor" homeRegion="EU" models={crowded} />);
+    await user.click(screen.getByRole('combobox', { expanded: false }));
+    return { user, row: screen.getByRole('option', { name: /Claude Sonnet 4\.6/ }) };
+  };
+  // The chip's own wrapper in the strip, whether or not the chip carries a tooltip.
+  const chipSlot = (scope: HTMLElement, label: string) =>
+    within(scope)
+      .getByText(label)
+      .closest('[data-slot="model-picker-tags"] > span:first-child > span');
+  const count = (scope: HTMLElement) =>
+    scope.querySelector('[data-overflow]') as HTMLElement | null;
 
   it('shows every chip and no count when they all fit', () => {
     mockLayout(400);
@@ -627,14 +637,17 @@ describe('<ModelPicker> trigger chips in a narrow field', () => {
     expect(within(trigger).getByText('+3')).toBeInTheDocument();
   });
 
-  it('lets only the chips give way, never the name', () => {
+  it('lets only the chips give way, never the name, and never the count', () => {
     const trigger = renderCrowded();
 
-    expect(trigger.querySelector('[data-slot="model-picker-trigger-tags"]')).toHaveClass(
-      'min-w-0',
-      'flex-1',
-      'overflow-hidden'
-    );
+    const strip = trigger.querySelector('[data-slot="model-picker-tags"]');
+    // Zero basis takes only what the name leaves; without `min-w-0` the count keeps its width.
+    expect(strip).toHaveClass('flex-1', 'basis-0');
+    expect(strip).not.toHaveClass('min-w-0');
+    // The chip column sets no minimum, so chips never widen the strip, and the count follows
+    // the last chip rather than drifting to the far edge.
+    expect(strip).toHaveClass('grid-cols-[minmax(0,max-content)_auto]', 'justify-start');
+    expect(strip?.firstElementChild).toHaveClass('min-w-0', 'overflow-hidden');
     expect(within(trigger).getByText('Claude Sonnet 4.6')).toHaveClass('truncate');
   });
 
@@ -643,11 +656,41 @@ describe('<ModelPicker> trigger chips in a narrow field', () => {
 
     const labels = Array.from(
       trigger.querySelectorAll(
-        '[data-slot="model-picker-trigger-tags"] > :not([data-overflow]) [data-slot="model-picker-tag"]'
+        '[data-slot="model-picker-tags"] > span:first-child [data-slot="model-picker-tag"]'
       ),
       (chip) => chip.textContent
     );
     expect(labels).toEqual(['Out of region (US)', 'Recommended', 'Standard']);
+  });
+
+  it('collapses the chips of a row in the open list the same way', async () => {
+    mockLayout(200);
+    const { row } = await openRow();
+
+    expect(chipSlot(row, 'Out of region (US)')).not.toHaveClass('opacity-0');
+    expect(chipSlot(row, 'Recommended')).toHaveClass('opacity-0');
+    expect(chipSlot(row, 'Standard')).toHaveClass('opacity-0');
+    expect(count(row)).not.toHaveClass('opacity-0');
+    expect(within(row).getByText('+2')).toBeInTheDocument();
+  });
+
+  it('names the collapsed chips in the row count’s tooltip', async () => {
+    mockLayout(200);
+    const { user, row } = await openRow();
+
+    await user.hover(
+      within(row).getByText('+2').closest('[data-slot="model-picker-tag"]')!.parentElement!
+    );
+    expect(await screen.findAllByText('Recommended, Standard')).not.toHaveLength(0);
+  });
+
+  it('gives the field’s count no tooltip, which a trigger cannot host', async () => {
+    mockLayout(200);
+    const user = userEvent.setup();
+    const trigger = renderCrowded();
+
+    await user.hover(within(trigger).getByText('+2'));
+    expect(screen.queryByText('Recommended, Standard')).toBeNull();
   });
 
   it('still announces the chips it has no room for, and not the count', () => {

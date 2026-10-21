@@ -33,8 +33,10 @@ export interface ModelPickerLabels {
   substitutedTagTooltip: (target: string) => string;
   outOfRegionTag: (geography: string) => string;
   outOfRegionTagTooltip: (homeRegion: string) => string;
-  /** The field's count of the chips it has no room for, e.g. "+2". */
+  /** The count of the chips a name has no room beside, e.g. "+2". */
   hiddenTagCount: (count: number) => string;
+  /** The count's tooltip in the list, naming the chips it stands for. */
+  hiddenTagCountTooltip: (hidden: readonly string[]) => string;
 
   /* Cost badge pool */
   costBasic: string;
@@ -125,6 +127,7 @@ export const DEFAULT_MODEL_PICKER_LABELS: ModelPickerLabels = {
   outOfRegionTag: (geography) => `Out of region (${geography})`,
   outOfRegionTagTooltip: (homeRegion) => `Routes traffic outside ${homeRegion}`,
   hiddenTagCount: (count) => `+${count}`,
+  hiddenTagCountTooltip: (hidden) => hidden.join(', '),
 
   costBasic: 'Basic',
   costStandard: 'Standard',
