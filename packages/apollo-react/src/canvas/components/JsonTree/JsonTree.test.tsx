@@ -1,3 +1,5 @@
+import { setupI18n } from '@lingui/core';
+import { I18nProvider } from '@lingui/react';
 import { render, screen } from '@testing-library/react';
 import { buildJsonTree } from '@uipath/apollo-wind';
 import { describe, expect, it } from 'vitest';
@@ -93,14 +95,28 @@ describe('JsonTreeView (canvas)', () => {
     });
 
     it('falls back to the English message in a locale without a translation yet', () => {
+      // A hand-built Japanese catalog without the reference message, so the test does not depend
+      // on what the translation sync has shipped.
+      const testI18n = setupI18n({
+        locale: 'ja',
+        messages: {
+          ja: {
+            'canvas.json_value_panel.unset_value': '未設定',
+            'canvas.json_value_panel.required_marker': '必須',
+          },
+        },
+      });
       render(
-        <ApI18nProvider component="canvas" locale="ja">
+        <I18nProvider i18n={testI18n}>
           <JsonTreeView nodes={referenceNodes} decorateNode={decorateNode} />
-        </ApI18nProvider>
+          <JsonTreeView nodes={nodes} />
+        </I18nProvider>
       );
       expect(
         screen.getByRole('img', { name: 'String · reference, output.email' })
       ).toBeInTheDocument();
+      // The locale is still Japanese where the catalog has a message.
+      expect(screen.getByText('未設定')).toBeInTheDocument();
     });
 
     it('lets a strings prop override the reference title', () => {
