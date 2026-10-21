@@ -52,8 +52,13 @@ export function ReviewChecklistPage() {
             ],
             [
               'Localization',
-              'No idioms or compound nouns, consistent terms, short sentences, clear pronouns, no cultural references.',
-              <GuidelineLink key="lo" story="Principles" />,
+              'No idioms or compound nouns, consistent terms, short sentences, clear pronouns, no cultural references. Whole sentences with named placeholders, real plural forms, and room for longer text.',
+              <GuidelineLink key="lo" story="Localization" />,
+            ],
+            [
+              'Accessibility',
+              'Icon buttons have labels, images have alt text, errors say how to fix them, and nothing relies on color or position alone.',
+              <GuidelineLink key="a" story="Accessibility" />,
             ],
             [
               'Terminology',

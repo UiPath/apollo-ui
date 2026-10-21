@@ -40,6 +40,10 @@ const writingCss = `
 .sb-writing-table-wrap { overflow-x: auto; }
 .sb-writing-table th, .sb-writing-table td { padding: 8px 12px; border: 1px solid var(--color-border); text-align: left; vertical-align: top; }
 .sb-writing-table th { background: var(--color-background-secondary); color: var(--color-foreground-emp); }
+.sb-writing-live { display: flex; justify-content: center; padding: 32px 24px; margin: 0 0 12px; border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-background-secondary); }
+.sb-writing-live p, .sb-writing-live h3 { margin: 0; }
+.sb-writing-live ul, .sb-writing-live ol { margin: 0; padding: 0; list-style: none; }
+.sb-writing-live li { margin: 0; }
 .sb-writing-note { padding: 12px 16px; border-left: 3px solid var(--color-info-icon); background: var(--color-info-background); border-radius: 4px; margin: 0 0 16px; }
 `;
 
@@ -172,6 +176,11 @@ export function GuideTable({ columns, rows }: { columns: string[]; rows: ReactNo
       </table>
     </div>
   );
+}
+
+/** Frame for a live Apollo Wind rendering of a pattern's example copy. */
+export function LivePreview({ children }: { children: ReactNode }) {
+  return <div className="sb-writing-live">{children}</div>;
 }
 
 export function Note({ children }: { children: ReactNode }) {

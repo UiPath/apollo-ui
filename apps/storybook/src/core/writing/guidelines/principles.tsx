@@ -1,4 +1,12 @@
-import { DoDont, GuideTable, RuleList, Section, SubSection, WritingPage } from '../writing-ui';
+import {
+  DoDont,
+  GuidelineLink,
+  GuideTable,
+  RuleList,
+  Section,
+  SubSection,
+  WritingPage,
+} from '../writing-ui';
 
 export function PrinciplesPage() {
   return (
@@ -89,6 +97,9 @@ export function PrinciplesPage() {
           doItems={['Start immediately', 'Select the button', 'Configure', 'Complete the form']}
           dontItems={['Hit the ground running', 'Click it', 'Set up', 'Fill out the form']}
         />
+        <p>
+          For plurals, placeholders, and other details, see <GuidelineLink story="Localization" />.
+        </p>
       </Section>
 
       <Section
