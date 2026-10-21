@@ -1,13 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { icons } from 'lucide-react';
 import { Glyph, IconLibraryGuide } from './icon-guidance';
-import {
-  PageContainer,
-  PageDescription,
-  PageTitle,
-  SectionDescription,
-  SectionHeader,
-} from './shared';
+import { GuideTable, Section, WritingPage, WritingTab, WritingTabs } from './writing/writing-ui';
 
 const meta = {
   title: 'Icons/Guidance',
@@ -86,24 +80,6 @@ const MEANINGS: Meaning[] = [
   { meaning: 'Agent', use: ['Bot'], avoid: [] },
 ];
 
-const tableCell = {
-  padding: '12px 16px',
-  borderBottom: '1px solid var(--color-border)',
-  verticalAlign: 'top',
-  fontSize: 14,
-  color: 'var(--color-foreground)',
-} as const;
-
-const headCell = {
-  ...tableCell,
-  fontSize: 12,
-  fontWeight: 600,
-  textTransform: 'uppercase',
-  letterSpacing: 0.4,
-  color: 'var(--color-foreground-de-emp)',
-  textAlign: 'left',
-} as const;
-
 function IconChip({ name, tone }: { name: string; tone: 'use' | 'avoid' }) {
   return (
     <span
@@ -121,79 +97,50 @@ function IconChip({ name, tone }: { name: string; tone: 'use' | 'avoid' }) {
       }}
     >
       <Glyph name={name} size={16} />
-      <code style={{ fontSize: 12 }}>{name}</code>
+      <code style={{ fontSize: 12, padding: 0, background: 'none' }}>{name}</code>
     </span>
   );
 }
 
 function IconsGuidancePage() {
   return (
-    <PageContainer>
-      <PageTitle>Icons Guidance</PageTitle>
-      <PageDescription>
-        Apollo uses two icon libraries. Start here to pick the right library, then use one icon per
-        meaning so the same action looks the same in every product.
-      </PageDescription>
+    <WritingPage
+      title="Icon guidance"
+      intro="Apollo uses two icon libraries. Start here to pick the right library, then use one icon per meaning so the same action looks the same in every product."
+    >
+      <WritingTabs>
+        <WritingTab label="Which library?">
+          <Section title="Which library?">
+            <IconLibraryGuide />
+          </Section>
+        </WritingTab>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 56 }}>
-        <section>
-          <SectionHeader>Which library?</SectionHeader>
-          <IconLibraryGuide />
-        </section>
-
-        <section>
-          <SectionHeader>Icon meanings</SectionHeader>
-          <SectionDescription>
-            Use one icon per meaning across every product. Icons crossed out are in use today for
-            the same meaning and should move to the recommended icon.
-          </SectionDescription>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr>
-                  <th style={headCell}>Meaning</th>
-                  <th style={headCell}>Use</th>
-                  <th style={headCell}>Instead of</th>
-                </tr>
-              </thead>
-              <tbody>
-                {MEANINGS.map((m) => (
-                  <tr key={m.meaning}>
-                    <td style={{ ...tableCell, fontWeight: 500, minWidth: 180 }}>
-                      {m.meaning}
-                      {m.note && (
-                        <div
-                          style={{
-                            fontWeight: 400,
-                            fontSize: 12,
-                            marginTop: 4,
-                            color: 'var(--color-foreground-de-emp)',
-                          }}
-                        >
-                          {m.note}
-                        </div>
-                      )}
-                    </td>
-                    <td style={tableCell}>
-                      {m.use.map((n) => (
-                        <IconChip key={n} name={n} tone="use" />
-                      ))}
-                    </td>
-                    <td style={tableCell}>
-                      {m.avoid.length === 0 ? (
-                        <span style={{ color: 'var(--color-foreground-de-emp)' }}>None</span>
-                      ) : (
-                        m.avoid.map((n) => <IconChip key={n} name={n} tone="avoid" />)
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </div>
-    </PageContainer>
+        <WritingTab label="Icon meanings">
+          <Section
+            title="Icon meanings"
+            intro="Use one icon per meaning across every product. Icons crossed out are in use today for the same meaning and should move to the recommended icon."
+          >
+            <GuideTable
+              columns={['Meaning', 'Use', 'Instead of']}
+              rows={MEANINGS.map((m) => [
+                <div key="meaning" className="min-w-40">
+                  <span className="font-medium">{m.meaning}</span>
+                  {m.note && <p className="mt-1 mb-0 text-xs text-muted-foreground">{m.note}</p>}
+                </div>,
+                m.use.map((n) => <IconChip key={n} name={n} tone="use" />),
+                m.avoid.length === 0 ? (
+                  <span key="none" className="text-muted-foreground">
+                    None
+                  </span>
+                ) : (
+                  m.avoid.map((n) => <IconChip key={n} name={n} tone="avoid" />)
+                ),
+              ])}
+            />
+          </Section>
+        </WritingTab>
+      </WritingTabs>
+    </WritingPage>
   );
 }
 

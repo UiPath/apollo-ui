@@ -1,8 +1,11 @@
-import { linkTo } from '@storybook/addon-links';
 import { icons, type LucideIcon } from 'lucide-react';
-import { SHADOW_SM } from './shared';
+import { PageLink } from './writing/writing-ui';
 
 const ICONS_FOLDER = 'Apollo Core/Icons';
+
+/** Selectable icon tile used by the Icons Apollo and Icons Lucide galleries. */
+export const ICON_CARD =
+  'flex min-h-24 cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-border bg-card p-3 text-foreground transition-colors hover:border-primary hover:bg-muted hover:text-primary active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
 /** Renders a lucide icon by its canonical name. */
 export function Glyph({ name, size = 20 }: { name: string; size?: number }) {
@@ -36,84 +39,39 @@ const LIBRARIES: Record<IconLibrary, { title: string; summary: string; useFor: s
   },
 };
 
-/** Opens a page in the Icons folder; each page's story is named after its title. */
-function openIconsPage(title: string) {
-  return linkTo(`${ICONS_FOLDER}/${title}`, title);
-}
-
 /** Side-by-side "which library?" cards for the Guidance page, each linking to its library. */
 export function IconLibraryGuide() {
   return (
     <div>
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-          gap: 16,
-        }}
-      >
+      <div className="grid gap-4 sm:grid-cols-2">
         {(Object.keys(LIBRARIES) as IconLibrary[]).map((key) => {
           const lib = LIBRARIES[key];
           return (
             <div
               key={key}
-              style={{
-                background: 'var(--color-background)',
-                border: '2px solid var(--color-border)',
-                borderRadius: 12,
-                padding: 24,
-                boxShadow: SHADOW_SM,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 12,
-              }}
+              className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5"
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span
-                  style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-foreground-emp)' }}
-                >
-                  {lib.title}
-                </span>
+              <div>
+                <p className="text-sm font-semibold text-foreground">{lib.title}</p>
+                <p className="mt-0.5 text-xs leading-5 text-muted-foreground">{lib.summary}</p>
               </div>
-              <span style={{ fontSize: 14, color: 'var(--color-foreground-de-emp)' }}>
-                {lib.summary}
-              </span>
-              <ul
-                style={{
-                  margin: 0,
-                  paddingLeft: 18,
-                  fontSize: 14,
-                  lineHeight: 1.7,
-                  color: 'var(--color-foreground)',
-                }}
-              >
+              <ul className="list-disc space-y-1 pl-5 text-sm leading-6 text-foreground">
                 {lib.useFor.map((item) => (
                   <li key={item}>{item}</li>
                 ))}
               </ul>
-              <button
-                type="button"
-                onClick={openIconsPage(lib.title)}
-                style={{
-                  marginTop: 'auto',
-                  alignSelf: 'flex-start',
-                  background: 'none',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: 8,
-                  padding: '6px 12px',
-                  font: 'inherit',
-                  fontSize: 13,
-                  color: 'var(--color-foreground-emp)',
-                  cursor: 'pointer',
-                }}
+              <PageLink
+                title={`${ICONS_FOLDER}/${lib.title}`}
+                story={lib.title}
+                className="mt-auto inline-flex items-center justify-center rounded-lg border border-border bg-background px-4 py-2 text-xs font-medium text-foreground no-underline transition-colors hover:bg-muted"
               >
-                Go to {lib.title} →
-              </button>
+                View {lib.title} →
+              </PageLink>
             </div>
           );
         })}
       </div>
-      <p style={{ fontSize: 14, color: 'var(--color-foreground-de-emp)', marginTop: 16 }}>
+      <p className="mt-4 text-sm text-muted-foreground">
         Rule of thumb: if the icon names a UiPath concept, use Apollo. If it names a generic UI
         action or state, use Lucide. Never mix two icons for the same meaning on one screen.
       </p>
@@ -124,23 +82,15 @@ export function IconLibraryGuide() {
 /** One-line pointer from a library page back to the Guidance page. */
 export function GuidanceLink() {
   return (
-    <p style={{ margin: 0, fontSize: 14, color: 'var(--color-foreground-de-emp)' }}>
+    <p className="m-0 text-sm text-muted-foreground">
       Not sure which library to use, or which icon means what?{' '}
-      <button
-        type="button"
-        onClick={openIconsPage('Guidance')}
-        style={{
-          font: 'inherit',
-          background: 'none',
-          border: 'none',
-          padding: 0,
-          color: 'var(--color-primary)',
-          textDecoration: 'underline',
-          cursor: 'pointer',
-        }}
+      <PageLink
+        title={`${ICONS_FOLDER}/Guidance`}
+        story="Guidance"
+        className="text-primary underline underline-offset-2"
       >
         Read the icon guidance
-      </button>
+      </PageLink>
     </p>
   );
 }
