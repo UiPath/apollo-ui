@@ -79,12 +79,48 @@ import {
   toast,
 } from '@uipath/apollo-wind';
 import { CircleAlert, Copy, Info, Sparkles, TriangleAlert } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 
 // Live Apollo Wind renderings of each pattern's example copy. Overlays (toasts,
 // dialogs, sheets) open from the button that triggers them in a real product.
 
 const noop = () => {};
+
+/** Show/Hide pair: the trigger label follows the expanded state. */
+function AdvancedSettingsAccordion() {
+  const [value, setValue] = useState('');
+  const open = value === 'advanced';
+  return (
+    <Accordion
+      type="single"
+      collapsible
+      value={value}
+      onValueChange={setValue}
+      className="w-full max-w-md"
+    >
+      <AccordionItem value="advanced">
+        <AccordionTrigger>
+          {open ? 'Hide advanced settings' : 'Show advanced settings'}
+        </AccordionTrigger>
+        <AccordionContent>Review configuration options for this automation.</AccordionContent>
+      </AccordionItem>
+    </Accordion>
+  );
+}
+
+/** A table value whose full detail is in a tooltip, reachable by hover and keyboard focus. */
+function HintedValue({ value, hint }: { value: string; hint: string }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button type="button" className="underline decoration-dotted underline-offset-4">
+          {value}
+        </button>
+      </TooltipTrigger>
+      <TooltipContent>{hint}</TooltipContent>
+    </Tooltip>
+  );
+}
 
 /** Caption under an overlay trigger, so readers know the button opens the example. */
 function TriggerHint({ children }: { children: ReactNode }) {
@@ -258,10 +294,16 @@ export const PATTERN_PREVIEWS: Record<string, ReactNode> = {
   toggleAndSelection: (
     <FormField className="max-w-md">
       <div className="flex items-center gap-3">
-        <Switch id="writing-email-notifications" defaultChecked />
+        <Switch
+          id="writing-email-notifications"
+          aria-describedby="writing-email-notifications-help"
+          defaultChecked
+        />
         <FormFieldLabel htmlFor="writing-email-notifications">Email notifications</FormFieldLabel>
       </div>
-      <FormFieldDescription>Send notifications when a job starts or fails.</FormFieldDescription>
+      <FormFieldDescription id="writing-email-notifications-help">
+        Send notifications when a job starts or fails.
+      </FormFieldDescription>
     </FormField>
   ),
 
@@ -384,44 +426,43 @@ export const PATTERN_PREVIEWS: Record<string, ReactNode> = {
     </div>
   ),
 
-  accordionAndDisclosure: (
-    <Accordion type="single" collapsible className="w-full max-w-md">
-      <AccordionItem value="advanced">
-        <AccordionTrigger>Show advanced settings</AccordionTrigger>
-        <AccordionContent>Review configuration options for this automation.</AccordionContent>
-      </AccordionItem>
-    </Accordion>
-  ),
+  accordionAndDisclosure: <AdvancedSettingsAccordion />,
 
   tableAndStatus: (
-    <Table className="max-w-lg">
-      <TableHeader>
-        <TableRow>
-          <TableHead>Name</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Last updated</TableHead>
-          <TableHead>Duration</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        <TableRow>
-          <TableCell>Invoice intake</TableCell>
-          <TableCell>
-            <Badge variant="info">In progress</Badge>
-          </TableCell>
-          <TableCell>Updated 5 minutes ago</TableCell>
-          <TableCell>2h 15m 30s</TableCell>
-        </TableRow>
-        <TableRow>
-          <TableCell>Vendor sync</TableCell>
-          <TableCell>
-            <Badge variant="success">Completed</Badge>
-          </TableCell>
-          <TableCell>May 30, 2025</TableCell>
-          <TableCell>2.25 hrs</TableCell>
-        </TableRow>
-      </TableBody>
-    </Table>
+    <TooltipProvider>
+      <Table className="whitespace-nowrap">
+        <TableHeader>
+          <TableRow>
+            <TableHead>Name</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Last updated</TableHead>
+            <TableHead>Duration</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow>
+            <TableCell>Invoice intake</TableCell>
+            <TableCell>
+              <Badge variant="info">In progress</Badge>
+            </TableCell>
+            <TableCell>
+              <HintedValue value="Updated 5 minutes ago" hint="December 12, 2025 at 4:12 PM UTC" />
+            </TableCell>
+            <TableCell>2h 15m 30s</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Vendor sync</TableCell>
+            <TableCell>
+              <Badge variant="success">Completed</Badge>
+            </TableCell>
+            <TableCell>May 30, 2025</TableCell>
+            <TableCell>
+              <HintedValue value="2.25 hrs" hint="2h 15m 00s" />
+            </TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
+    </TooltipProvider>
   ),
 
   dateTimeAndDuration: (
