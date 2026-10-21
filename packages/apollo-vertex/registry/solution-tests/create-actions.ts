@@ -4,7 +4,8 @@
  * Builds the Solution Tests write actions: `run` hits the `run_solution_tests`
  * trigger; delete/adopt/baseline/force-stop go through the `automation-functions`
  * RPC trigger. Each POSTs `{triggerBaseUrl}/{slug}` with the bearer token in the
- * header and echoed in the body for backend RBAC.
+ * header only: the body becomes the job's input arguments, which anyone with
+ * Jobs.View in the folder can read. The backend gets the caller from the job.
  */
 
 import type { SolutionTestsActions } from "./actions";
@@ -28,7 +29,7 @@ export function createSolutionTestActions(
 
   async function invokeTrigger(
     slug: string,
-    buildBody: (token: string) => Record<string, unknown>,
+    body: Record<string, unknown>,
   ): Promise<void> {
     const token = await getToken();
     if (!token) throw new Error("No access token available.");
@@ -42,7 +43,7 @@ export function createSolutionTestActions(
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify(buildBody(token)),
+        body: JSON.stringify(body),
       });
     } catch (error) {
       // The request never reached the server (offline/DNS/CORS).
@@ -66,23 +67,20 @@ export function createSolutionTestActions(
     if (failure) throw new SolutionTestActionError(failure);
   }
 
-  // automation-functions RPC router; the token goes in the body's `_auth` envelope.
   function callFn(path: string, body: Record<string, unknown>): Promise<void> {
-    return invokeTrigger(AUTOMATION_FUNCTIONS_SLUG, (token) => ({
+    return invokeTrigger(AUTOMATION_FUNCTIONS_SLUG, {
       method: "POST",
       path,
-      body: { ...body, _auth: { userToken: token } },
-    }));
+      body,
+    });
   }
 
   return {
     runTests(testIds?: string[]): Promise<void> {
-      // Agent maps trigger input by field name, so the token is a top-level
-      // `auth` field here (not `_auth`).
-      return invokeTrigger(RUN_TESTS_SLUG, (token) => ({
-        ...(testIds ? { solution_test_ids: testIds } : {}),
-        auth: { userToken: token },
-      }));
+      return invokeTrigger(
+        RUN_TESTS_SLUG,
+        testIds ? { solution_test_ids: testIds } : {},
+      );
     },
     createTest(subjectId: string): Promise<void> {
       return callFn(AUTOMATION_FUNCTION_PATH.createTest, {
