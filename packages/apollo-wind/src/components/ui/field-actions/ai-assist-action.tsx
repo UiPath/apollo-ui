@@ -1,5 +1,5 @@
 import { Loader2, Sparkles } from 'lucide-react';
-import { type ReactNode, useId, useState } from 'react';
+import { type ReactNode, useCallback, useId, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -28,9 +28,17 @@ export const DEFAULT_AI_ASSIST_ACTION_STRINGS: AiAssistActionStrings = {
   error: 'Could not generate a value. Try again.',
 };
 
+/** What a host-rendered AI-assist panel gets in place of the built-in prompt form. */
+export interface AiAssistContentProps {
+  /** Closes the popover, returning focus to the trigger. */
+  close(): void;
+  disabled: boolean;
+}
+
 export interface AiAssistActionProps {
   /**
-   * Called with the entered prompt. Omitted, Generate is disabled. A returned promise keeps the
+   * Called with the entered prompt. Omitted, Generate is disabled; not called while
+   * `renderContent` is set. A returned promise keeps the
    * prompt open and busy until it settles: it closes once the promise resolves and stays open,
    * prompt intact and the error shown, if it rejects.
    */
@@ -38,6 +46,11 @@ export interface AiAssistActionProps {
   disabled?: boolean;
   /** A line under the prompt describing what will be generated, such as the value's type. */
   hint?: ReactNode;
+  /**
+   * The host's own panel, rendered in the popover in place of the built-in prompt form, whose
+   * `hint` and prompt strings it then does not use. Called only while the popover is open.
+   */
+  renderContent?: (props: AiAssistContentProps) => ReactNode;
   /** Overrides for any subset of the English strings. */
   strings?: Partial<AiAssistActionStrings>;
 }
@@ -45,7 +58,13 @@ export interface AiAssistActionProps {
 /**
  * The AI-assist header action: a prompt in a popover. Requires an ancestor `TooltipProvider`.
  */
-export function AiAssistAction({ onGenerate, hint, disabled, strings }: AiAssistActionProps) {
+export function AiAssistAction({
+  onGenerate,
+  hint,
+  renderContent,
+  disabled,
+  strings,
+}: AiAssistActionProps) {
   const promptId = useId();
   const errorId = useId();
   const [prompt, setPrompt] = useState('');
@@ -58,6 +77,7 @@ export function AiAssistAction({ onGenerate, hint, disabled, strings }: AiAssist
     setFailed(false);
     setOpen(next);
   };
+  const close = useCallback(() => setOpen(false), []);
 
   const generate = async () => {
     setFailed(false);
@@ -93,39 +113,53 @@ export function AiAssistAction({ onGenerate, hint, disabled, strings }: AiAssist
         <TooltipContent>{text.tooltip}</TooltipContent>
       </Tooltip>
       <PopoverContent align="end" className="space-y-3">
-        <div className="space-y-1.5">
-          <Label htmlFor={promptId} className="text-xs font-medium text-foreground-muted">
-            {text.prompt}
-          </Label>
-          <Textarea
-            id={promptId}
-            rows={3}
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            placeholder={text.promptPlaceholder}
-            aria-describedby={failed ? errorId : undefined}
-            className="resize-none text-sm"
-          />
-        </div>
-        {hint && <span className="block text-[11px] text-foreground-subtle">{hint}</span>}
-        {failed && (
-          <p id={errorId} role="alert" className="text-xs text-error">
-            {text.error}
-          </p>
+        {renderContent ? (
+          <AiAssistSlot render={renderContent} close={close} disabled={!!disabled} />
+        ) : (
+          <>
+            <div className="space-y-1.5">
+              <Label htmlFor={promptId} className="text-xs font-medium text-foreground-muted">
+                {text.prompt}
+              </Label>
+              <Textarea
+                id={promptId}
+                rows={3}
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder={text.promptPlaceholder}
+                aria-describedby={failed ? errorId : undefined}
+                className="resize-none text-sm"
+              />
+            </div>
+            {hint && <span className="block text-[11px] text-foreground-subtle">{hint}</span>}
+            {failed && (
+              <p id={errorId} role="alert" className="text-xs text-error">
+                {text.error}
+              </p>
+            )}
+            <Button
+              size="sm"
+              className="w-full"
+              disabled={!onGenerate || pending}
+              aria-busy={pending || undefined}
+              onClick={() => generate()}
+            >
+              {pending && <Loader2 className="animate-spin" aria-hidden="true" />}
+              {pending ? text.generating : text.generate}
+            </Button>
+          </>
         )}
-        <Button
-          size="sm"
-          className="w-full"
-          disabled={!onGenerate || pending}
-          aria-busy={pending || undefined}
-          onClick={() => generate()}
-        >
-          {pending && <Loader2 className="animate-spin" aria-hidden="true" />}
-          {pending ? text.generating : text.generate}
-        </Button>
       </PopoverContent>
     </Popover>
   );
+}
+
+/** Renders the host's panel as an element, so it is called only once the popover mounts it. */
+function AiAssistSlot({
+  render,
+  ...props
+}: AiAssistContentProps & { render: (props: AiAssistContentProps) => ReactNode }) {
+  return render(props);
 }
 
 function isThenable(value: unknown): value is PromiseLike<unknown> {

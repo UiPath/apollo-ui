@@ -1,11 +1,12 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Hash } from 'lucide-react';
-import { forwardRef, useImperativeHandle } from 'react';
+import { forwardRef, type ReactNode, useImperativeHandle } from 'react';
 import { renderToString } from 'react-dom/server';
 import type { FieldValues, UseFormReturn } from 'react-hook-form';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
+  type AiAssistFieldContentProps,
   createAiAssistAction,
   createInsertVariableAction,
   type FieldActionContext,
@@ -1767,5 +1768,76 @@ describe('host variable picker', () => {
         field: expect.objectContaining({ name: 'v' }),
       });
     });
+  });
+});
+
+describe('host AI assist content', () => {
+  const aiField: FieldMetadata = {
+    name: 'a',
+    type: 'text',
+    label: 'A',
+    valueModes: MODES,
+    headerActions: ['ai-assist'],
+  };
+  const contentPlugin = (
+    renderContent: (props: AiAssistFieldContentProps) => ReactNode
+  ): FormPlugin => ({
+    name: 'host',
+    fieldActions: { header: { 'ai-assist': createAiAssistAction({ renderContent }) } },
+  });
+
+  it('writes what the host content applies, in the mode it gives, and closes', async () => {
+    const { user, values } = setup(
+      [aiField],
+      [
+        contentPlugin(({ apply, ctx }) => (
+          <button
+            type="button"
+            onClick={() => apply({ mode: 'expression', value: `${ctx.field.name}.id` })}
+          >
+            Use suggestion
+          </button>
+        )),
+      ]
+    );
+    await settle();
+    const trigger = screen.getByRole('button', { name: 'AI assist' });
+    await user.click(trigger);
+    expect(screen.queryByLabelText('Describe what you want')).toBeNull();
+    await user.click(await screen.findByRole('button', { name: 'Use suggestion' }));
+    expect(values().a).toStrictEqual({ $mode: 'expression', value: 'a.id' });
+    expect(screen.queryByRole('button', { name: 'Use suggestion' })).toBeNull();
+    expect(trigger).toHaveFocus();
+  });
+
+  it('writes nothing once the field has been disabled', async () => {
+    let apply: ((result: { value: unknown }) => void) | undefined;
+    let form: UseFormReturn<FieldValues> | undefined;
+    const plugins: FormPlugin[] = [
+      contentPlugin((props) => {
+        apply = props.apply;
+        return <p>Host panel</p>;
+      }),
+      {
+        name: 'probe',
+        onFormInit: (ctx) => {
+          form = ctx.form;
+        },
+      },
+    ];
+    const schema: FormSchema = {
+      id: 'f',
+      title: 'F',
+      initialData: { a: 'kept' },
+      sections: [{ id: 's', fields: [aiField] }],
+    };
+    const user = userEvent.setup();
+    const { rerender } = render(<MetadataForm schema={schema} plugins={plugins} />);
+    await settle();
+    await user.click(screen.getByRole('button', { name: 'AI assist' }));
+    await screen.findByText('Host panel');
+    rerender(<MetadataForm schema={schema} plugins={plugins} disabled />);
+    act(() => apply?.({ value: 'late' }));
+    expect(form?.getValues().a).toBe('kept');
   });
 });

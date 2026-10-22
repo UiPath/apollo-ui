@@ -316,6 +316,7 @@ Put the control inside `InputGroup`. Apollo's controls detect the group and beco
 - `FieldMenu` is the trailing menu: the field's modes, then its actions (`actions`), or an overflow menu alone (`modesDisabled`). Built-in modes are listed by id (`modes={['literal', 'expression', 'variable', 'prompt']}`; default `['literal', 'expression']`); `builtInValueModes(strings)` returns their options. `ValueModeIndicator` shows `=` in expression mode; inside MetadataForm a mode definition's `indicator` marks any other mode.
 - `InsertVariableAction` renders `variables` (`VariablePickerItem[]`) as supplied, with no root of its own; pass a function to resolve them when the picker opens. Its strings include the picker's search placeholder and empty state. `AiAssistAction`'s `onGenerate(prompt)` may return a promise (any thenable): the prompt stays busy until it settles and shows `strings.error` on rejection. `disabled` disables the trigger.
 - Host picker: `VariablePicker`, `InsertVariableAction` and `VariableValueControl` take `renderPicker: RenderVariablePicker` (`({ value?, onSelect(value, item?), close }) => ReactNode`; `onSelect` commits and closes; `variables` is then optional), keeping wind's trigger, popover, focus return and strings. `VariableValueControl` also takes `describeReference(reference) => { label, icon? }` for its chip. The slot is called only while the popover is open.
+- Host AI panel: `AiAssistAction` takes `renderContent({ close, disabled })` in place of its prompt form, called only while the popover is open.
 - Localization: every addon and action takes a `strings` prop merged over its `DEFAULT_*_STRINGS`. There is no provider.
 
 #### Tabs
@@ -427,6 +428,8 @@ strings for every built-in through `FormPlugin.strings` (`valueModes`, `boolean`
 A host with its own picker passes it as `renderPicker` to `createInsertVariableAction` and to
 `createVariableModeControl` (registered as `FormPlugin.valueModes.definitions.variable.control`, with
 `describeReference` for chip labels).
+`createAiAssistAction({ renderContent })` renders a host AI panel whose `apply({ mode?, value })`
+writes like `generate`'s result.
 Keep plugin objects stable (module constants or memoized), pass `variables` as a function when the
 list is long or changes, and keep codecs pure. The default codec stores every value as `{ $mode, value }` (no `value`
 once cleared) and reads a raw value as literal, so code that reads form values must expect the

@@ -5,7 +5,7 @@ import { Input } from '../input';
 import { InputGroup } from '../input-group';
 import { TooltipProvider } from '../tooltip';
 import type { RenderVariablePicker, VariablePickerItem } from '../variable-picker';
-import { AiAssistAction } from './ai-assist-action';
+import { AiAssistAction, type AiAssistContentProps } from './ai-assist-action';
 import { InsertVariableAction } from './insert-variable-action';
 
 const meta = {
@@ -22,9 +22,10 @@ Actions for a field's header row, passed to \`FormFieldHeader\`'s \`actions\`.
   to insert or nowhere to insert it, and collapses to its icon below a 260px \`@container\`.
 - **AiAssistAction** opens a prompt and reports it. It needs an ancestor \`TooltipProvider\`.
 
-Insert variable can render the host's own picker instead, through \`renderPicker\`. The action
-keeps its trigger, popover, collapse, focus return and strings, and calls the slot only while the
-popover is open. The picker's \`onSelect\` commits and closes; \`close\` closes without a pick.
+Either can render the host's own panel instead: \`renderPicker\` for Insert variable and
+\`renderContent\` for AI assist. The action keeps its trigger, popover, collapse, focus return and
+strings, and calls the slot only while the popover is open. A picker's \`onSelect\` commits and
+closes; both slots get \`close\`.
 `,
       },
     },
@@ -170,7 +171,7 @@ export const InHeader: Story = {
   },
 };
 
-// Stand-in for a host's own picker, such as a virtualized one with live badges.
+// Stand-ins for a host's own panels, such as a virtualized picker with live badges.
 const HOST_ROWS = [
   { value: '$vars.orderId', label: 'Order id', live: true },
   { value: '$assets.apiKey', label: 'API key', live: false },
@@ -197,7 +198,28 @@ const hostPicker: RenderVariablePicker = ({ value, onSelect, close }) => (
   </div>
 );
 
-/** Insert variable rendering the host's own picker inside its popover. */
+function HostSuggestions({ close, onPick }: AiAssistContentProps & { onPick(text: string): void }) {
+  return (
+    <div className="grid gap-2 text-xs">
+      <span className="text-foreground-muted">Suggestions from the host</span>
+      {['Order received', 'Order shipped'].map((text) => (
+        <button
+          key={text}
+          type="button"
+          className="rounded border border-border px-2 py-1 text-left hover:bg-surface-overlay"
+          onClick={() => {
+            onPick(text);
+            close();
+          }}
+        >
+          {text}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** Both actions rendering the host's own panel inside their popover. */
 export const HostPanels: Story = {
   render: () => {
     const [value, setValue] = useState('Order ');
@@ -207,10 +229,15 @@ export const HostPanels: Story = {
           label="Subject"
           htmlFor="host-panels-subject"
           actions={
-            <InsertVariableAction
-              renderPicker={hostPicker}
-              onInsert={(variable) => setValue((v) => (v ? `${v} ${variable}` : variable))}
-            />
+            <>
+              <AiAssistAction
+                renderContent={(props) => <HostSuggestions {...props} onPick={setValue} />}
+              />
+              <InsertVariableAction
+                renderPicker={hostPicker}
+                onInsert={(variable) => setValue((v) => (v ? `${v} ${variable}` : variable))}
+              />
+            </>
           }
         />
         <InputGroup>

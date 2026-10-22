@@ -27,7 +27,8 @@ first before it replaces a value other than a number or boolean. Their strings c
 
 A host can render its own panels in these popovers.
 \`createInsertVariableAction({ renderPicker })\` replaces the picker and wins over \`variables\`; a
-pick is written as a picked variable would be.
+pick is written as a picked variable would be. \`createAiAssistAction({ renderContent })\` replaces
+the prompt form; its \`apply\` writes a result the way a generator's does and closes the popover.
 `,
       },
     },
@@ -181,11 +182,33 @@ const hostPlugin: FormPlugin = {
         formatReference: (reference, { mode }) =>
           mode === 'literal' ? `{{ ${reference} }}` : reference,
       }),
+      'ai-assist': createAiAssistAction({
+        // Stand-in for a host's own panel, such as one with retry and telemetry.
+        renderContent: ({ apply, ctx }) => (
+          <div className="grid gap-2 text-xs">
+            <span className="text-foreground-muted">Suggestions for {ctx.field.label}</span>
+            <button
+              type="button"
+              className="rounded border border-border px-2 py-1 text-left hover:bg-surface-overlay"
+              onClick={() => apply({ value: 'Thanks for your order.' })}
+            >
+              Thanks for your order.
+            </button>
+            <button
+              type="button"
+              className="rounded border border-border px-2 py-1 text-left font-mono hover:bg-surface-overlay"
+              onClick={() => apply({ mode: 'expression', value: "'Order ' + $vars.orderId" })}
+            >
+              As an expression
+            </button>
+          </div>
+        ),
+      }),
     },
   },
 };
 
-/** Insert variable rendering the host's own picker, through its factory. */
+/** Insert variable and AI assist rendering the host's own panels, through their factories. */
 export const HostPanels: Story = {
   render: () => <Demo schema={schema} plugins={[hostPlugin]} />,
 };

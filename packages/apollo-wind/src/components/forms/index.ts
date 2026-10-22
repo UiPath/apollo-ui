@@ -14,6 +14,7 @@ export {
 } from './data-fetcher';
 export {
   type AiAssistActionOptions,
+  type AiAssistFieldContentProps,
   type ClearActionOptions,
   createAiAssistAction,
   createClearAction,
@@ -21,6 +22,7 @@ export {
   type FieldActionContext,
   type FieldActionGenerate,
   type FieldActionRegistry,
+  type FieldActionResult,
   type FieldActionsPluginConfig,
   type FieldHeaderAction,
   type FieldMenuAction,
