@@ -33,3 +33,30 @@ const disableActions = (actions: ToolbarAction[]): ToolbarAction[] =>
     if (isSeparator(action) || action.allowWhenLocked) return action;
     return { ...action, disabled: true };
   });
+
+/**
+ * Returns the config without the actions whose ids are listed, from both the bar
+ * and the overflow menu, or `undefined` when no action is left to show. Returns
+ * the same config when nothing is listed, so memoized consumers stay stable.
+ */
+export function hideToolbarActions(
+  config: NodeToolbarConfig | undefined,
+  hiddenIds: readonly string[] | undefined
+): NodeToolbarConfig | undefined {
+  if (!config || !hiddenIds?.length) return config;
+
+  const hidden = new Set(hiddenIds);
+  const keep = (action: ToolbarAction) => !hidden.has(action.id);
+  const actions = config.actions.filter(keep);
+  const overflowActions = config.overflowActions?.filter(keep);
+
+  const hasAction = (items: ToolbarAction[] | undefined) =>
+    !!items?.some((item) => !isSeparator(item));
+  if (!hasAction(actions) && !hasAction(overflowActions)) return undefined;
+
+  return {
+    ...config,
+    actions,
+    overflowActions: overflowActions?.length ? overflowActions : undefined,
+  };
+}
