@@ -1,9 +1,19 @@
-import { cn } from '@/lib';
-import { RequiredIndicator } from '@/components/ui/label';
 import { ChevronDown, CircleCheck, Copy, Pencil, WrapText } from 'lucide-react';
-import { createContext, type MouseEvent, type ReactNode, useContext } from 'react';
-import { useJsonTreeViewStrings } from './strings';
-import { formatLeafValue, isArrayItemTemplateRoot, isPathCollapsed } from './buildJsonTree';
+import {
+  type ComponentProps,
+  createContext,
+  type MouseEvent,
+  type ReactNode,
+  useContext,
+} from 'react';
+import { RequiredIndicator } from '@/components/ui/label';
+import { cn } from '@/lib';
+import {
+  type FlatJsonTreeRow,
+  formatLeafValue,
+  isArrayItemTemplateRoot,
+  isPathCollapsed,
+} from './buildJsonTree';
 import { DecorationChip } from './DecorationChip';
 import { JsonContainerEditor } from './JsonContainerEditor';
 import { JsonMultilineLeafEditor } from './JsonMultilineLeafEditor';
@@ -24,6 +34,8 @@ import { JsonTypeBadge } from './JsonTypeBadge';
 import { NodeKey } from './NodeKey';
 import { RowActions } from './RowActions';
 import { ScalarValueCell, valueColorClass } from './ScalarValueCell';
+import { useJsonTreeViewStrings } from './strings';
+import { isParentRow, type TreeGridCell } from './treeGrid';
 
 // min-h keeps the row height constant between view and edit: the row actions
 // occupy layout (at opacity-0) in the view state but are unmounted while
@@ -38,6 +50,18 @@ export const ROW_MIN_HEIGHT_PX = 28;
 // and the row actions, `min-w-8` keeps a sliver of it legible when squeezed.
 const VALUE_CELL_CLASS = 'flex min-w-8 flex-1 items-center';
 
+// The field-name cell. Capped so a pathologically long key truncates rather
+// than pushing the value out of the row.
+const NAME_CELL_CLASS = 'flex min-w-0 max-w-1/2 items-center gap-2';
+
+// Inset so the ring stays inside the tree's clipped scroll box.
+const FOCUS_RING_CLASS =
+  'outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring';
+
+// `group/row` reveals the row actions and hover-only sublabels while focus is
+// anywhere in the row, the row element itself included.
+const ROW_ELEMENT_CLASS = `group/row ${FOCUS_RING_CLASS}`;
+
 // Rows have no right padding of their own: the trailing icon buttons carry
 // enough internal padding to keep their glyphs off the edge.
 function rowIndent(depth: number, extra = 0) {
@@ -49,9 +73,45 @@ function rowIndent(depth: number, extra = 0) {
 const KEY_ALIGN_OFFSET = 44;
 
 /**
+ * A cell of the tree grid. A div rather than `<td>`: the row is a flex line,
+ * rendered in a virtualized list, not a table. Focusable so a cell holding only
+ * text can still take arrow-key focus.
+ */
+function GridCell({
+  cell,
+  editing = false,
+  className,
+  ...props
+}: {
+  cell: TreeGridCell;
+  /** Holds an open editor, which keeps its own arrow keys. */
+  editing?: boolean;
+} & ComponentProps<'div'>) {
+  return (
+    // biome-ignore lint/a11y/useSemanticElements: A table layout can't host the flex rows and virtualization.
+    <div
+      role="gridcell"
+      data-cell={cell}
+      tabIndex={-1}
+      data-json-tree-editor={editing ? '' : undefined}
+      className={cn(FOCUS_RING_CLASS, className)}
+      {...props}
+    />
+  );
+}
+
+/** The last copy, for the inline confirmation and the tree's announcement. */
+export interface JsonTreeCopyState {
+  path: string;
+  kind: CopyEvent['kind'];
+  /** Re-keys the announcement, so copying twice in a row is heard twice. */
+  id: number;
+}
+
+/**
  * Shared, node-invariant context every row needs: the tree config, the mutable
  * edit/copy state, and the handlers that mutate it. Held once by `JsonTreeView` so
- * each `JsonTreeRow` only takes its own `node`/`depth`.
+ * each `JsonTreeRow` only takes its own `row` and `index`.
  */
 export interface JsonTreeRowContextValue {
   collapsed: Record<string, boolean>;
@@ -72,7 +132,10 @@ export interface JsonTreeRowContextValue {
   editingPath: string | null;
   jsonEditingPath: string | null;
   wrappedPaths: Record<string, boolean>;
-  copied: { path: string; kind: CopyEvent['kind'] } | null;
+  copied: JsonTreeCopyState | null;
+  /** The row holding the tree's single Tab stop. */
+  activePath: string | null;
+  /** Opening and closing an editor through these also moves focus into and back out of it. */
   setEditingPath: (path: string | null) => void;
   setJsonEditingPath: (path: string | null) => void;
   copyPath: (node: JsonTreeNode) => void;
@@ -99,7 +162,8 @@ function useJsonTreeRowContext(): JsonTreeRowContextValue {
  * plus the expanded wrapped-scalar and edit-as-JSON surfaces below it. All
  * shared state and handlers come from `JsonTreeRowContext`.
  */
-export function JsonTreeRow({ node, depth }: { node: JsonTreeNode; depth: number }) {
+export function JsonTreeRow({ row, index }: { row: FlatJsonTreeRow; index: number }) {
+  const { node, depth } = row;
   const strings = useJsonTreeViewStrings();
   const {
     collapsed,
@@ -119,6 +183,7 @@ export function JsonTreeRow({ node, depth }: { node: JsonTreeNode; depth: number
     jsonEditingPath,
     wrappedPaths,
     copied,
+    activePath,
     setEditingPath,
     setJsonEditingPath,
     copyPath,
@@ -126,6 +191,7 @@ export function JsonTreeRow({ node, depth }: { node: JsonTreeNode; depth: number
     toggleWrapped,
     commitEdit,
   } = useJsonTreeRowContext();
+  const isTabStop = activePath === node.path;
 
   // Assembles the built-in trailing actions for a row (wrap / edit-as-JSON /
   // copy-value), in display order. A consumer's `nodeActions` composes with,
@@ -240,83 +306,108 @@ export function JsonTreeRow({ node, depth }: { node: JsonTreeNode; depth: number
     onToggleCollapsed?.(node.path);
   };
 
+  const collapsedHere = isContainer && isPathCollapsed(collapsed, node.path);
+  const editingInline = editingPath === node.path && !wrapped;
+  const showsValue =
+    !isContainer &&
+    !wrapped &&
+    !decoration?.hideValue &&
+    (customCell != null || !((readOnly && node.value === undefined) || isTemplate));
+  const editingDetail =
+    (wrapped && editingPath === node.path && canEdit) ||
+    (isContainer && jsonEditingPath === node.path);
+
   return (
-    <div>
+    // The row element itself is the grid row (not the consumer's `RowWrapper`),
+    // so a wrapper's own role or tabindex can't take the row's place.
+    // biome-ignore lint/a11y/useSemanticElements: A table layout can't host the flex rows and virtualization.
+    <div
+      role="row"
+      data-path={node.path}
+      tabIndex={isTabStop ? 0 : -1}
+      aria-level={depth + 1}
+      aria-posinset={row.posInSet}
+      aria-setsize={row.setSize}
+      aria-rowindex={index + 1}
+      // Only a row with child rows to show or hide is a parent row; `{}` and `[]` are end rows.
+      aria-expanded={isParentRow(row) ? !collapsedHere : undefined}
+      className={ROW_ELEMENT_CLASS}
+    >
       <RowWrapper
         node={node}
         className={cn(ROW_CLASS, rowClickable && 'cursor-pointer')}
         style={rowIndent(depth)}
         onClick={rowClickable ? handleRowClick : undefined}
       >
-        {isContainer ? (
-          <button
-            type="button"
-            onClick={() => onToggleCollapsed?.(node.path)}
-            // Without a handler the tree's expansion is fixed (e.g. a host holding
-            // search matches open), so the chevron shows state but isn't a control.
-            disabled={!onToggleCollapsed}
-            aria-label={
-              isPathCollapsed(collapsed, node.path)
-                ? strings.expandKey(node.key)
-                : strings.collapseKey(node.key)
-            }
-            aria-expanded={!isPathCollapsed(collapsed, node.path)}
-            className="grid size-2.5 shrink-0 cursor-pointer place-items-center text-foreground-subtle transition hover:text-foreground disabled:cursor-default disabled:hover:text-foreground-subtle"
-          >
-            <ChevronDown
-              size={10}
+        <GridCell cell="name" className={NAME_CELL_CLASS}>
+          {isContainer ? (
+            <button
+              type="button"
+              // A mouse affordance only: the row is the keyboard's expand/collapse control.
+              tabIndex={-1}
+              data-json-tree-skip=""
+              onClick={() => onToggleCollapsed?.(node.path)}
+              // Without a handler the tree's expansion is fixed (e.g. a host holding
+              // search matches open), so the chevron shows state but isn't a control.
+              disabled={!onToggleCollapsed}
+              aria-label={
+                collapsedHere ? strings.expandKey(node.key) : strings.collapseKey(node.key)
+              }
+              className="grid size-2.5 shrink-0 cursor-pointer place-items-center text-foreground-subtle transition hover:text-foreground disabled:cursor-default disabled:hover:text-foreground-subtle"
+            >
+              <ChevronDown
+                size={10}
+                className={cn('transition-transform duration-100', collapsedHere && '-rotate-90')}
+              />
+            </button>
+          ) : (
+            <div className="size-2.5 shrink-0" />
+          )}
+          <JsonTypeBadge
+            type={node.type}
+            icon={decoration?.badge?.icon ?? deriveTypeIcon?.(node)}
+            className={decoration?.badge?.className}
+            reference={decoration?.badge?.reference}
+          />
+          <NodeKey
+            node={node}
+            label={isTemplateItem ? templateItemLabel : decoration?.label}
+            displayPath={pathForCopy?.(node.path, node.segments) ?? node.path}
+            onCopyPath={copyPath}
+            className={isTemplateItem ? 'font-normal italic text-foreground-subtle' : undefined}
+          />
+          {/* Clicking the key copies its path but dismisses the tooltip, so
+              confirm the copy with an inline check (like copy-value). Hidden
+              from assistive tech, which hears the tree's announcement instead. */}
+          {copied?.path === node.path && copied.kind === 'path' && (
+            <CircleCheck size={11} className="shrink-0 text-brand" aria-hidden />
+          )}
+          {decoration?.sublabel && (
+            <span
               className={cn(
-                'transition-transform duration-100',
-                isPathCollapsed(collapsed, node.path) && '-rotate-90'
+                'min-w-0 truncate font-mono text-[10px] text-foreground-subtle leading-4',
+                decoration.sublabelOnHover &&
+                  'hidden group-hover:block group-focus-within/row:block'
               )}
+            >
+              {decoration.sublabel}
+            </span>
+          )}
+          {/* Explicit color: the row establishes none, so an inherited indicator
+              would fall back to black. `ml-0` because the row already gaps. */}
+          {node.required && (
+            <RequiredIndicator
+              className="ml-0 shrink-0 text-[10px] text-foreground"
+              srLabel={strings.requiredMarker}
             />
-          </button>
-        ) : (
-          <div className="size-2.5 shrink-0" />
-        )}
-        <JsonTypeBadge
-          type={node.type}
-          icon={decoration?.badge?.icon ?? deriveTypeIcon?.(node)}
-          className={decoration?.badge?.className}
-          reference={decoration?.badge?.reference}
-        />
-        <NodeKey
-          node={node}
-          label={isTemplateItem ? templateItemLabel : decoration?.label}
-          displayPath={pathForCopy?.(node.path, node.segments) ?? node.path}
-          onCopyPath={copyPath}
-          className={isTemplateItem ? 'font-normal italic text-foreground-subtle' : undefined}
-        />
-        {/* Clicking the key copies its path but dismisses the tooltip,
-            so confirm the copy with an inline check (like copy-value). */}
-        {copied?.path === node.path && copied.kind === 'path' && (
-          <CircleCheck
-            size={11}
-            className="shrink-0 text-brand"
-            role="img"
-            aria-label={strings.pathCopied}
-          />
-        )}
-        {decoration?.sublabel && (
-          <span
-            className={cn(
-              'min-w-0 truncate font-mono text-[10px] text-foreground-subtle leading-4',
-              decoration.sublabelOnHover && 'hidden group-hover:block group-focus-within:block'
-            )}
-          >
-            {decoration.sublabel}
-          </span>
-        )}
-        {/* Explicit color: the row establishes none, so an inherited indicator
-            would fall back to black. `ml-0` because the row already gaps. */}
-        {node.required && (
-          <RequiredIndicator
-            className="ml-0 shrink-0 text-[10px] text-foreground"
-            srLabel={strings.requiredMarker}
-          />
-        )}
+          )}
+        </GridCell>
         {isContainer ? (
-          <>
+          <GridCell
+            cell="value"
+            // A custom cell fills the row; without one the count stays beside the key.
+            className={cn('flex min-w-0 items-center gap-2', customCell != null && 'flex-1')}
+          >
             {!decoration?.hideCount && (
               <span className="shrink-0 whitespace-nowrap font-mono italic text-[10px] text-foreground-subtle">
                 {node.type === 'array'
@@ -326,54 +417,62 @@ export function JsonTreeRow({ node, depth }: { node: JsonTreeNode; depth: number
             )}
             {customCell != null && <span className={VALUE_CELL_CLASS}>{customCell}</span>}
             <DecorationChip decoration={decoration} />
+          </GridCell>
+        ) : (
+          <GridCell
+            cell="value"
+            editing={editingInline}
+            // The built-in value shrinks before the key does; a custom cell keeps its own floor.
+            className={cn(
+              'flex flex-1 items-center gap-2',
+              showsValue ? 'min-w-8' : 'min-w-0',
+              showsValue && customCell == null && 'shrink-3'
+            )}
+          >
+            {showsValue &&
+              (customCell != null ? (
+                customCell
+              ) : (
+                <>
+                  <span className="shrink-0 font-mono text-xs text-foreground-subtle">=</span>
+                  <ScalarValueCell
+                    node={node}
+                    readOnly={readOnly}
+                    editing={editingPath === node.path}
+                    onStartEdit={(n) => setEditingPath(n.path)}
+                    onStopEdit={() => setEditingPath(null)}
+                    onEdit={canEdit ? commitEdit : undefined}
+                  />
+                </>
+              ))}
+            {/* The cell fills the row, so `ml-auto` keeps the chip beside the actions. */}
+            {editingPath !== node.path && decoration?.chip && (
+              <span className="ml-auto flex min-w-0 items-center">
+                <DecorationChip decoration={decoration} />
+              </span>
+            )}
+          </GridCell>
+        )}
+        <GridCell cell="actions" className="ml-auto flex shrink-0 items-center gap-2">
+          {(isContainer || editingPath !== node.path) && (
             <RowActions
               node={node}
               actions={actions}
               maxInline={maxInlineActions}
               meta={decoration?.meta}
             />
-          </>
-        ) : (
-          <>
-            {!wrapped &&
-              !decoration?.hideValue &&
-              (customCell != null ? (
-                <span className={VALUE_CELL_CLASS}>{customCell}</span>
-              ) : (
-                !((readOnly && node.value === undefined) || isTemplate) && (
-                  <>
-                    <span className="shrink-0 font-mono text-xs text-foreground-subtle">=</span>
-                    <span className={cn(VALUE_CELL_CLASS, 'shrink-3')}>
-                      <ScalarValueCell
-                        node={node}
-                        readOnly={readOnly}
-                        editing={editingPath === node.path}
-                        onStartEdit={(n) => setEditingPath(n.path)}
-                        onStopEdit={() => setEditingPath(null)}
-                        onEdit={canEdit ? commitEdit : undefined}
-                      />
-                    </span>
-                  </>
-                )
-              ))}
-            {editingPath !== node.path && (
-              <>
-                <DecorationChip decoration={decoration} />
-                <RowActions
-                  node={node}
-                  actions={actions}
-                  maxInline={maxInlineActions}
-                  meta={decoration?.meta}
-                />
-              </>
-            )}
-          </>
-        )}
+          )}
+        </GridCell>
       </RowWrapper>
 
       {/* Wrapped scalar: full value below the field name, wrapping. */}
       {wrapped && (
-        <div className="pb-1.5 pr-3.5" style={rowIndent(depth, KEY_ALIGN_OFFSET)}>
+        <GridCell
+          cell="detail"
+          editing={editingDetail}
+          className="pb-1.5 pr-3.5"
+          style={rowIndent(depth, KEY_ALIGN_OFFSET)}
+        >
           {editingPath === node.path && canEdit ? (
             <JsonMultilineLeafEditor
               node={node}
@@ -401,11 +500,16 @@ export function JsonTreeRow({ node, depth }: { node: JsonTreeNode; depth: number
               {formatLeafValue(node.type, node.value, { preserveStringWhitespace: true })}
             </button>
           )}
-        </div>
+        </GridCell>
       )}
 
       {isContainer && jsonEditingPath === node.path && (
-        <div className="py-1.5 pr-3.5" style={rowIndent(depth, KEY_ALIGN_OFFSET)}>
+        <GridCell
+          cell="detail"
+          editing
+          className="py-1.5 pr-3.5"
+          style={rowIndent(depth, KEY_ALIGN_OFFSET)}
+        >
           <JsonContainerEditor
             node={node}
             onCommit={(value) => {
@@ -415,7 +519,7 @@ export function JsonTreeRow({ node, depth }: { node: JsonTreeNode; depth: number
             onCancel={() => setJsonEditingPath(null)}
             renderCodeEditor={renderCodeEditor}
           />
-        </div>
+        </GridCell>
       )}
     </div>
   );

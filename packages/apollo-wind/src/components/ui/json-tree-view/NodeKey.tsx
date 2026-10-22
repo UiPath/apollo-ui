@@ -1,7 +1,7 @@
 import { cn } from '@/lib';
-import { useJsonTreeViewStrings } from './strings';
-import { JsonTreeTooltip } from './JsonTreeTooltip';
 import type { JsonTreeNode } from './JsonTree.types';
+import { JsonTreeTooltip } from './JsonTreeTooltip';
+import { useJsonTreeViewStrings } from './strings';
 
 export interface NodeKeyProps {
   node: JsonTreeNode;
@@ -30,10 +30,10 @@ export function NodeKey({ node, label, displayPath, onCopyPath, className }: Nod
   // narrower panels than a key that refused to shrink at all. The floor is
   // deliberately below the shortest keys in practice: `min-width` is also a
   // size floor, so a larger one would pad every short key at every width.
-  // `max-w-[45%]` still caps a pathologically long key.
+  // The row's name cell caps a pathologically long key.
   // Display labels render in the UI font to set them apart from raw keys.
   const keyClass = cn(
-    'min-w-4 max-w-[45%] truncate text-xs text-foreground',
+    'min-w-4 truncate text-xs text-foreground',
     label != null ? 'font-medium' : 'font-mono',
     node.value === undefined && 'text-foreground-muted',
     className

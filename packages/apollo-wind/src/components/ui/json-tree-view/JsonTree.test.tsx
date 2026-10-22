@@ -1,5 +1,6 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { buildJsonTree } from './buildJsonTree';
 import { JsonTreeView } from './JsonTree';
@@ -359,10 +360,10 @@ describe('JsonTreeView row decorations and actions', () => {
 
     expect(screen.getByRole('button', { name: 'Focus' })).toHaveClass('opacity-100');
     expect(screen.getByRole('button', { name: 'Add' })).not.toHaveClass('opacity-100');
-    // Also revealed while the row holds keyboard focus.
+    // Also revealed while the row, or anything in it, holds focus.
     expect(screen.getByRole('button', { name: 'Add' })).toHaveClass(
       'group-hover:opacity-100',
-      'group-focus-within:opacity-100'
+      'group-focus-within/row:opacity-100'
     );
   });
 
@@ -425,7 +426,7 @@ describe('JsonTreeView row decorations and actions', () => {
     expect(screen.getByText('node-id')).toHaveClass(
       'hidden',
       'group-hover:block',
-      'group-focus-within:block'
+      'group-focus-within/row:block'
     );
   });
 
@@ -441,5 +442,523 @@ describe('JsonTreeView row decorations and actions', () => {
 
     await user.hover(screen.getByRole('button', { name: 'Copy path for node1' }));
     expect(await screen.findByRole('tooltip')).toHaveTextContent('Message received');
+  });
+});
+
+describe('JsonTreeView keyboard (treegrid)', () => {
+  const treeValue = { config: { region: 'us-east', retries: 3 }, mode: 'fast', tags: ['a'] };
+  const treeNodes = buildJsonTree({ value: treeValue });
+
+  /** Holds collapse state like a host would, so the arrow keys can expand and collapse. */
+  function Harness(props: Partial<Parameters<typeof JsonTreeView>[0]>) {
+    const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+    return (
+      <JsonTreeView
+        nodes={treeNodes}
+        collapsed={collapsed}
+        onToggleCollapsed={(path) => setCollapsed((prev) => ({ ...prev, [path]: !prev[path] }))}
+        {...props}
+      />
+    );
+  }
+
+  const row = (path: string) =>
+    screen.getAllByRole('row').find((element) => element.dataset.path === path) as HTMLElement;
+
+  it('exposes the rows as a named tree grid with their level, position, and state', () => {
+    render(<Harness readOnly />);
+
+    const grid = screen.getByRole('treegrid', { name: 'JSON fields' });
+    expect(grid).toHaveAttribute('aria-readonly', 'true');
+    expect(grid).toHaveAttribute('aria-rowcount', '6');
+    expect(row('config')).toHaveAttribute('aria-expanded', 'true');
+    expect(row('config')).toHaveAttribute('aria-level', '1');
+    expect(row('config.retries')).toHaveAttribute('aria-level', '2');
+    expect(row('config.retries')).toHaveAttribute('aria-posinset', '2');
+    expect(row('config.retries')).toHaveAttribute('aria-setsize', '2');
+    expect(row('config.retries')).toHaveAttribute('aria-rowindex', '3');
+    expect(row('mode')).not.toHaveAttribute('aria-expanded');
+  });
+
+  it('takes a host label over the default name', () => {
+    render(<Harness aria-label="Output" />);
+    expect(screen.getByRole('treegrid', { name: 'Output' })).toBeInTheDocument();
+  });
+
+  it('is a single Tab stop that starts on the first row', async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+
+    await user.tab();
+    expect(row('config')).toHaveFocus();
+    // Every other row, and every control in it, is out of the Tab order.
+    expect(row('mode')).toHaveAttribute('tabindex', '-1');
+    expect(screen.getByRole('button', { name: 'Copy path for mode' })).toHaveAttribute(
+      'tabindex',
+      '-1'
+    );
+  });
+
+  it('walks the rows with Up, Down, Home, and End', async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+
+    await user.tab();
+    await user.keyboard('{ArrowDown}');
+    expect(row('config.region')).toHaveFocus();
+    expect(row('config.region')).toHaveAttribute('tabindex', '0');
+    expect(row('config')).toHaveAttribute('tabindex', '-1');
+
+    await user.keyboard('{End}');
+    expect(row('tags[0]')).toHaveFocus();
+    await user.keyboard('{ArrowUp}');
+    expect(row('tags')).toHaveFocus();
+    await user.keyboard('{Home}');
+    expect(row('config')).toHaveFocus();
+  });
+
+  it('collapses and expands with Left and Right, and climbs to the parent', async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+
+    await user.tab();
+    await user.keyboard('{ArrowDown}{ArrowLeft}');
+    expect(row('config')).toHaveFocus();
+
+    await user.keyboard('{ArrowLeft}');
+    expect(row('config')).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByText('region')).not.toBeInTheDocument();
+
+    await user.keyboard('{ArrowRight}');
+    expect(row('config')).toHaveAttribute('aria-expanded', 'true');
+    expect(row('config')).toHaveFocus();
+
+    await user.keyboard('{Enter}');
+    expect(row('config')).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('moves across a row with Left and Right, and keeps the cell on Up and Down', async () => {
+    const user = userEvent.setup();
+    render(<Harness onEdit={() => {}} />);
+
+    await user.tab();
+    await user.keyboard('{ArrowDown}{ArrowRight}');
+    expect(screen.getByRole('button', { name: 'Copy path for config.region' })).toHaveFocus();
+
+    await user.keyboard('{ArrowRight}');
+    const regionValue = screen.getByRole('button', { name: 'Edit value of region' });
+    expect(regionValue).toHaveFocus();
+
+    await user.keyboard('{ArrowDown}');
+    expect(screen.getByRole('button', { name: 'Edit value of retries' })).toHaveFocus();
+
+    await user.keyboard('{ArrowUp}{Home}');
+    expect(screen.getByRole('button', { name: 'Copy path for config.region' })).toHaveFocus();
+    await user.keyboard('{ArrowLeft}');
+    expect(row('config.region')).toHaveFocus();
+  });
+
+  it('lets Tab walk the focused row and then leave the tree', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <Harness readOnly />
+        <button type="button">after</button>
+      </>
+    );
+
+    await user.tab();
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Copy path for config' })).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Copy value of config' })).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'after' })).toHaveFocus();
+  });
+
+  it('returns focus to the value after a keyboard commit or cancel', async () => {
+    const onEdit = vi.fn();
+    const user = userEvent.setup();
+    render(<Harness onEdit={onEdit} />);
+
+    await user.tab();
+    await user.keyboard('{ArrowDown}{ArrowRight}{ArrowRight}{Enter}');
+    expect(screen.getByDisplayValue('us-east')).toHaveFocus();
+
+    // Arrow keys move the caret while editing, not the row.
+    await user.keyboard('{ArrowDown}{ArrowLeft}');
+    expect(screen.getByDisplayValue('us-east')).toHaveFocus();
+
+    await user.keyboard('{Escape}');
+    expect(screen.getByRole('button', { name: 'Edit value of region' })).toHaveFocus();
+
+    await user.keyboard('{Enter}');
+    await user.clear(screen.getByDisplayValue('us-east'));
+    await user.keyboard('eu-west{Enter}');
+    expect(onEdit).toHaveBeenCalledWith(
+      expect.objectContaining({ path: 'config.region' }),
+      'eu-west'
+    );
+    expect(screen.getByRole('button', { name: 'Edit value of region' })).toHaveFocus();
+  });
+
+  it('returns focus to the control that opened the JSON editor', async () => {
+    const user = userEvent.setup();
+    render(<Harness onEdit={() => {}} />);
+
+    await user.tab();
+    await user.keyboard('{End}{ArrowUp}{ArrowRight}{End}{ArrowLeft}');
+    const editJson = screen.getByRole('button', { name: 'Edit tags as JSON' });
+    expect(editJson).toHaveFocus();
+
+    await user.keyboard('{Enter}');
+    expect(screen.getByRole('textbox', { name: 'Edit JSON of tags' })).toHaveFocus();
+    await user.keyboard('{Escape}');
+    expect(editJson).toHaveFocus();
+  });
+
+  it('moves rows with Down on a menu trigger instead of opening its menu', async () => {
+    const enumNodes = buildJsonTree({
+      value: { level: 'info', next: 'x' },
+      schema: {
+        type: 'object',
+        properties: { level: { type: 'string', enum: ['info', 'warn'] }, next: { type: 'string' } },
+      },
+    });
+    const user = userEvent.setup();
+    render(<JsonTreeView nodes={enumNodes} onEdit={() => {}} />);
+
+    await user.tab();
+    await user.keyboard('{ArrowRight}{ArrowRight}');
+    expect(screen.getByRole('button', { name: 'Edit value of level' })).toHaveFocus();
+    await user.keyboard('{ArrowDown}');
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Edit value of next' })).toHaveFocus();
+  });
+
+  it('hands focus to the nearest visible ancestor when its row is collapsed away', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<JsonTreeView nodes={treeNodes} onToggleCollapsed={() => {}} />);
+
+    await user.tab();
+    await user.keyboard('{ArrowDown}');
+    expect(row('config.region')).toHaveFocus();
+
+    rerender(
+      <JsonTreeView nodes={treeNodes} collapsed={{ config: true }} onToggleCollapsed={() => {}} />
+    );
+    expect(row('config')).toHaveFocus();
+    expect(row('config')).toHaveAttribute('tabindex', '0');
+  });
+
+  it('mounts and focuses a row outside the virtual window', async () => {
+    const user = userEvent.setup();
+    render(<JsonTreeView nodes={nodes} readOnly virtualized />);
+
+    await user.tab();
+    await user.keyboard('{End}');
+    // The window still sits at the top; the focused row is pinned at its own offset.
+    expect(screen.getByText('field0')).toBeInTheDocument();
+    expect(row(`field${FIELD_COUNT - 1}`)).toHaveFocus();
+    expect(row(`field${FIELD_COUNT - 1}`)).toHaveAttribute('aria-rowindex', String(FIELD_COUNT));
+  });
+});
+
+describe('JsonTreeView tab order', () => {
+  const rowIn = (scope: HTMLElement, path: string) =>
+    within(scope)
+      .getAllByRole('row')
+      .find((element) => element.dataset.path === path) as HTMLElement;
+
+  it('keeps an open editor out of the Tab order once another row takes the stop', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <JsonTreeView
+          nodes={buildJsonTree({ value: { a: 'x', config: { x: 1 }, b: 'y' } })}
+          onEdit={() => {}}
+        />
+        <button type="button">after</button>
+      </>
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Edit config as JSON' }));
+    const editor = screen.getByRole('textbox', { name: 'Edit JSON of config' });
+    expect(editor).toHaveFocus();
+
+    await user.click(rowIn(document.body, 'a'));
+    expect(editor).toHaveAttribute('tabindex', '-1');
+    const visited: Element[] = [];
+    const after = screen.getByRole('button', { name: 'after' });
+    for (let step = 0; step < 15 && document.activeElement !== after; step += 1) {
+      await user.tab();
+      if (document.activeElement) visited.push(document.activeElement);
+    }
+    expect(after).toHaveFocus();
+    expect(visited).not.toContain(editor);
+  });
+
+  it('takes a control a custom cell adds later out of the Tab order', async () => {
+    let reveal: () => void = () => {};
+    function LateButton() {
+      const [shown, setShown] = useState(false);
+      reveal = () => setShown(true);
+      return shown ? <button type="button">late</button> : <span>loading</span>;
+    }
+    const user = userEvent.setup();
+    render(
+      <JsonTreeView
+        nodes={buildJsonTree({ value: { a: 'x', b: 'y' } })}
+        readOnly
+        renderValue={(node) => (node.path === 'b' ? <LateButton /> : undefined)}
+      />
+    );
+
+    await user.tab();
+    act(() => reveal());
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'late' })).toHaveAttribute('tabindex', '-1')
+    );
+  });
+
+  it("restores a consumer control's own tabindex when its row takes the stop", async () => {
+    const user = userEvent.setup();
+    render(
+      <JsonTreeView
+        nodes={buildJsonTree({ value: { a: 'x', b: 'y' } })}
+        readOnly
+        renderValue={(node) =>
+          node.path === 'b' ? (
+            // biome-ignore lint/a11y/noNoninteractiveTabindex: Stands in for a consumer's focusable cell.
+            <span tabIndex={0}>custom</span>
+          ) : undefined
+        }
+      />
+    );
+    const custom = screen.getByText('custom');
+    expect(custom).toHaveAttribute('tabindex', '-1');
+
+    await user.tab();
+    await user.keyboard('{ArrowDown}');
+    expect(custom).toHaveAttribute('tabindex', '0');
+    await user.keyboard('{ArrowUp}');
+    expect(custom).toHaveAttribute('tabindex', '-1');
+  });
+
+  it('returns to the last focused row when Tab comes back into the tree', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <button type="button">before</button>
+        <JsonTreeView nodes={nodes} readOnly />
+      </>
+    );
+
+    await user.tab();
+    await user.tab();
+    await user.keyboard('{ArrowDown}{ArrowDown}');
+    expect(rowIn(document.body, 'field2')).toHaveFocus();
+    await user.tab({ shift: true });
+    expect(screen.getByRole('button', { name: 'before' })).toHaveFocus();
+    await user.tab();
+    expect(rowIn(document.body, 'field2')).toHaveFocus();
+  });
+
+  it('keeps the Tab stop row mounted and tabbable after it scrolls out of the window', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<JsonTreeView nodes={nodes} readOnly virtualized />);
+
+    await user.tab();
+    await user.keyboard('{ArrowDown}');
+    windowStart = 20;
+    rerender(<JsonTreeView nodes={nodes} readOnly virtualized />);
+
+    expect(screen.queryByText('field2')).not.toBeInTheDocument();
+    expect(rowIn(document.body, 'field1')).toHaveAttribute('tabindex', '0');
+  });
+
+  // Nested trees aren't supported, but the outer tree must not take the inner one's keys or rows.
+  describe('a tree nested in a cell', () => {
+    const innerNodes = buildJsonTree({ value: { b: 'inner b', z: 'inner z' } });
+    function Nested() {
+      return (
+        <JsonTreeView
+          aria-label="Outer"
+          nodes={buildJsonTree({ value: { a: 'x', b: 'y', c: 'w' } })}
+          readOnly
+          renderValue={(node) =>
+            node.path === 'a' ? (
+              <JsonTreeView aria-label="Inner" nodes={innerNodes} readOnly />
+            ) : undefined
+          }
+        />
+      );
+    }
+    const outer = () => screen.getByRole('treegrid', { name: 'Outer' });
+    const inner = () => screen.getByRole('treegrid', { name: 'Inner' });
+    const outerRow = (path: string) =>
+      within(outer())
+        .getAllByRole('row')
+        .find(
+          (row) => row.dataset.path === path && row.closest('[role="treegrid"]') === outer()
+        ) as HTMLElement;
+
+    it('keeps its own arrow keys when its paths overlap the outer tree', async () => {
+      const user = userEvent.setup();
+      render(<Nested />);
+
+      rowIn(inner(), 'b').focus();
+      await user.keyboard('{ArrowDown}');
+      expect(rowIn(inner(), 'z')).toHaveFocus();
+
+      outerRow('a').focus();
+      await user.keyboard('{ArrowDown}');
+      expect(outerRow('b')).toHaveFocus();
+    });
+  });
+});
+
+describe('JsonTreeView keyboard edge cases', () => {
+  const row = (path: string) =>
+    screen.getAllByRole('row').find((element) => element.dataset.path === path) as HTMLElement;
+
+  it('treats empty objects and arrays as end rows', async () => {
+    const onToggleCollapsed = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <JsonTreeView
+        nodes={buildJsonTree({ value: { obj: {}, arr: [], list: ['x'] } })}
+        onToggleCollapsed={onToggleCollapsed}
+      />
+    );
+
+    expect(row('obj')).not.toHaveAttribute('aria-expanded');
+    expect(row('arr')).not.toHaveAttribute('aria-expanded');
+    expect(row('list')).toHaveAttribute('aria-expanded', 'true');
+
+    await user.tab();
+    await user.keyboard('{ArrowRight}');
+    expect(screen.getByRole('button', { name: 'Copy path for obj' })).toHaveFocus();
+    await user.keyboard('{ArrowLeft}{Enter}');
+    expect(onToggleCollapsed).not.toHaveBeenCalled();
+  });
+
+  it('pages ten rows and keeps the cell on Ctrl+Home and Ctrl+End', async () => {
+    const user = userEvent.setup();
+    render(<JsonTreeView nodes={nodes} readOnly />);
+
+    await user.tab();
+    await user.keyboard('{PageDown}');
+    expect(row('field10')).toHaveFocus();
+    await user.keyboard('{PageUp}');
+    expect(row('field0')).toHaveFocus();
+
+    await user.keyboard('{ArrowDown}{ArrowRight}{Control>}{End}{/Control}');
+    expect(
+      screen.getByRole('button', { name: `Copy path for field${FIELD_COUNT - 1}` })
+    ).toHaveFocus();
+    await user.keyboard('{Control>}{Home}{/Control}');
+    expect(screen.getByRole('button', { name: 'Copy path for field0' })).toHaveFocus();
+  });
+
+  it('moves instead of toggling when the host fixes expansion', async () => {
+    const user = userEvent.setup();
+    render(
+      <JsonTreeView nodes={buildJsonTree({ value: { config: { region: 'us' } } })} readOnly />
+    );
+
+    await user.tab();
+    await user.keyboard('{Enter}');
+    expect(row('config')).toHaveAttribute('aria-expanded', 'true');
+    await user.keyboard('{ArrowRight}');
+    expect(screen.getByRole('button', { name: 'Copy path for config' })).toHaveFocus();
+    await user.keyboard('{ArrowLeft}{ArrowDown}{ArrowLeft}');
+    expect(row('config')).toHaveFocus();
+  });
+
+  it('prefers aria-labelledby over aria-label', () => {
+    render(
+      <>
+        <h2 id="payload-heading">Payload</h2>
+        <JsonTreeView
+          nodes={nodes}
+          readOnly
+          aria-label="Ignored"
+          aria-labelledby="payload-heading"
+        />
+      </>
+    );
+    expect(screen.getByRole('treegrid', { name: 'Payload' })).not.toHaveAttribute('aria-label');
+  });
+
+  it('recovers focus when an edit removes its own row', async () => {
+    // A host that drops a field once it is cleared.
+    function Host() {
+      const [value, setValue] = useState<Record<string, string>>({ a: 'x', b: 'y' });
+      return (
+        <JsonTreeView
+          nodes={buildJsonTree({ value })}
+          onEdit={(node, next) =>
+            setValue((prev) =>
+              next === ''
+                ? Object.fromEntries(Object.entries(prev).filter(([key]) => key !== node.key))
+                : { ...prev, [node.key]: String(next) }
+            )
+          }
+        />
+      );
+    }
+    const user = userEvent.setup();
+    render(<Host />);
+
+    await user.tab();
+    await user.keyboard('{ArrowRight}{ArrowRight}{Enter}');
+    await user.clear(screen.getByDisplayValue('x'));
+    await user.keyboard('{Enter}');
+
+    expect(screen.queryByText('a')).not.toBeInTheDocument();
+    expect(row('b')).toHaveFocus();
+  });
+
+  it('returns focus to a wrapped value after Ctrl+Enter applies it', async () => {
+    const onEdit = vi.fn();
+    const user = userEvent.setup();
+    render(<JsonTreeView nodes={buildJsonTree({ value: { note: 'hello' } })} onEdit={onEdit} />);
+
+    await user.click(screen.getByRole('button', { name: 'Wrap value of note' }));
+    await user.click(screen.getByRole('button', { name: 'Edit value of note' }));
+    await user.clear(screen.getByRole('textbox', { name: 'Edit value of note' }));
+    await user.keyboard('hello there{Control>}{Enter}{/Control}');
+
+    expect(onEdit).toHaveBeenCalledWith(expect.objectContaining({ path: 'note' }), 'hello there');
+    expect(screen.getByRole('button', { name: 'Edit value of note' })).toHaveFocus();
+  });
+});
+
+describe('JsonTreeView copy announcements', () => {
+  it('announces copies politely and keeps the inline check out of the accessibility tree', async () => {
+    const user = userEvent.setup();
+    render(<JsonTreeView nodes={buildJsonTree({ value: { name: 'Ada' } })} readOnly />);
+
+    const status = screen.getByRole('status');
+    expect(status).toBeEmptyDOMElement();
+
+    await user.click(screen.getByRole('button', { name: 'Copy path for name' }));
+    await waitFor(() => expect(status).toHaveTextContent('Path copied'));
+    expect(screen.queryByRole('img', { name: 'Path copied' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Copy value of name' }));
+    await waitFor(() => expect(status).toHaveTextContent('Value copied'));
+  });
+
+  it('re-announces a repeated copy', async () => {
+    const user = userEvent.setup();
+    render(<JsonTreeView nodes={buildJsonTree({ value: { name: 'Ada' } })} readOnly />);
+    const copyPath = screen.getByRole('button', { name: 'Copy path for name' });
+
+    await user.click(copyPath);
+    const first = await screen.findByText('Path copied');
+    await user.click(copyPath);
+    await waitFor(() => expect(screen.getByText('Path copied')).not.toBe(first));
   });
 });

@@ -9,6 +9,12 @@ import { cn } from '@/lib';
  */
 export interface JsonTreeViewStrings {
   // Tree
+  /**
+   * Accessible name of the tree grid when the host passes no `aria-label` or
+   * `aria-labelledby`. Optional so catalogs written before it was added still
+   * type-check; falls back to the English default.
+   */
+  treeLabel?: string;
   /** Label for the synthesized array-item preview row. */
   arrayItem: string;
   emptySearch: string;
@@ -26,7 +32,13 @@ export interface JsonTreeViewStrings {
    * back to the English default.
    */
   referenceType?: (typeLabel: string) => string;
+  /** Announced to screen readers after a path is copied. */
   pathCopied: string;
+  /**
+   * Announced to screen readers after a value is copied. Optional so catalogs
+   * written before it was added still type-check; falls back to the English default.
+   */
+  valueCopied?: string;
   copyPathHint: string;
   copyPathFor: (path: string) => string;
   // Row actions
@@ -66,6 +78,7 @@ export interface JsonTreeViewStrings {
 export type ResolvedJsonTreeViewStrings = Required<JsonTreeViewStrings>;
 
 export const DEFAULT_JSON_TREE_VIEW_STRINGS: ResolvedJsonTreeViewStrings = {
+  treeLabel: 'JSON fields',
   arrayItem: 'item',
   emptySearch: 'No fields match your search.',
   emptyDefault: 'No fields to display.',
@@ -76,6 +89,7 @@ export const DEFAULT_JSON_TREE_VIEW_STRINGS: ResolvedJsonTreeViewStrings = {
   requiredMarker: 'required',
   referenceType: (typeLabel) => `${typeLabel} · reference`,
   pathCopied: 'Path copied',
+  valueCopied: 'Value copied',
   copyPathHint: 'Click to copy this path',
   copyPathFor: (path) => `Copy path for ${path}`,
   wrapValue: 'Wrap value',

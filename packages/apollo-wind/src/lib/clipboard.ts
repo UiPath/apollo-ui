@@ -18,6 +18,9 @@ export async function copyTextToClipboard(text: string): Promise<boolean> {
   textarea.setAttribute('readonly', '');
   textarea.style.position = 'fixed';
   textarea.style.opacity = '0';
+  // Selecting the textarea moves focus into it, and removing it would drop focus
+  // to the body, losing a keyboard user's place. Hand focus back afterwards.
+  const previousFocus = document.activeElement;
   document.body.appendChild(textarea);
   const selection = document.getSelection();
   const previousRange = selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
@@ -29,6 +32,7 @@ export async function copyTextToClipboard(text: string): Promise<boolean> {
     copied = false;
   }
   textarea.remove();
+  if (previousFocus instanceof HTMLElement) previousFocus.focus({ preventScroll: true });
   if (previousRange && selection) {
     selection.removeAllRanges();
     selection.addRange(previousRange);
