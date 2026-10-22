@@ -117,6 +117,52 @@ describe('GuardrailActionSection', () => {
     expect(onActionChange).toHaveBeenCalledWith({ $actionType: 'log', severityLevel: 'Warning' });
   });
 
+  describe('hideLogSeverity', () => {
+    it('shows the severity select by default', () => {
+      render(<GuardrailActionSection action={logAction} onActionChange={vi.fn()} />);
+
+      expect(screen.getByRole('combobox', { name: /severity level/i })).toBeInTheDocument();
+    });
+
+    it('hides the severity select for log actions', () => {
+      render(
+        <GuardrailActionSection action={logAction} onActionChange={vi.fn()} hideLogSeverity />
+      );
+
+      expect(screen.getByRole('combobox', { name: /action type/i })).toHaveTextContent('Log');
+      expect(screen.queryByRole('combobox', { name: /severity level/i })).not.toBeInTheDocument();
+      expect(screen.queryByText('Severity level')).not.toBeInTheDocument();
+    });
+
+    it('still emits a severity level when switching to log', async () => {
+      const onActionChange = vi.fn();
+      render(
+        <GuardrailActionSection
+          action={{ $actionType: 'block', reason: 'no PII' }}
+          onActionChange={onActionChange}
+          hideLogSeverity
+        />
+      );
+
+      fireEvent.click(screen.getByRole('combobox', { name: /action type/i }));
+      fireEvent.click(await screen.findByRole('option', { name: 'Log' }));
+
+      expect(onActionChange).toHaveBeenCalledWith({ $actionType: 'log', severityLevel: 'Info' });
+    });
+
+    it('leaves the other action types alone', () => {
+      render(
+        <GuardrailActionSection
+          action={{ $actionType: 'block', reason: '' }}
+          onActionChange={vi.fn()}
+          hideLogSeverity
+        />
+      );
+
+      expect(screen.getByLabelText(/blocking reason/i)).toBeInTheDocument();
+    });
+  });
+
   it('renders the blocking reason input with its error for block actions', () => {
     const onActionChange = vi.fn();
     render(

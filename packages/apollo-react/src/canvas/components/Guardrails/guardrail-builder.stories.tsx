@@ -381,6 +381,20 @@ export const FooterEvalsToggle: Story = {
   args: { ...AddInline.args, evalsTogglePlacement: 'footer' },
 };
 
+/**
+ * A host whose log action has no severity: hideLogSeverity drops the severity select, here with
+ * log relabelled Fail and block as the only other action.
+ */
+export const LogWithoutSeverity: Story = {
+  args: {
+    ...AddInline.args,
+    scope: 'Llm',
+    allowedActionTypes: ['log', 'block'],
+    hideLogSeverity: true,
+    labels: { actionLogLabel: 'Fail' },
+  },
+};
+
 /** Chrome strings resolved from the canvas lingui catalog (Japanese). */
 export const Localized: Story = {
   args: { ...AddInline.args },

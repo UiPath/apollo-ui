@@ -39,6 +39,11 @@ export interface GuardrailActionSectionProps {
    * action outside the list never blanks the select.
    */
   allowedActionTypes?: readonly GuardrailActionType[];
+  /**
+   * Hide the severity level select for a log action, for a host whose log action has no
+   * severity. The action's `severityLevel` is left as it is, for the host to set.
+   */
+  hideLogSeverity?: boolean;
   /** Content rendered as the second grid column when $actionType === 'filter' */
   filterContent?: ReactNode;
   /** Validation messages; each renders as soon as it is present. */
@@ -72,6 +77,7 @@ export function GuardrailActionSection({
   onActionChange,
   showFilter = false,
   allowedActionTypes,
+  hideLogSeverity = false,
   filterContent,
   errors,
   recipientTypeDisabled,
@@ -150,7 +156,7 @@ export function GuardrailActionSection({
       <div className="grid grid-cols-1 @sm:grid-cols-2 gap-3 items-start">
         {actionTypeSelect}
 
-        {action.$actionType === 'log' && (
+        {action.$actionType === 'log' && !hideLogSeverity && (
           <FormField>
             <Label htmlFor={`${uid}-severity-level`}>
               {labels.severityLabel}
