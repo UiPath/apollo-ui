@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import type { Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { describe, expect, it, vi } from 'vitest';
@@ -12,6 +12,7 @@ const DEFAULT_MANIFEST = {
 // Hoisted mocks — available inside vi.mock factories
 const {
   mockUpdateNode,
+  mockUpdateNodeData,
   mockGetNode,
   mockNodeState,
   mockHandleConfigs,
@@ -26,6 +27,7 @@ const {
   mockReadOnlyNodeIds,
 } = vi.hoisted(() => ({
   mockUpdateNode: vi.fn(),
+  mockUpdateNodeData: vi.fn(),
   mockGetNode: vi.fn(),
   // Simulates React Flow's stored node: updateNode writes height here, getNode reads it.
   mockNodeState: { current: { height: undefined as number | undefined } },
@@ -64,7 +66,7 @@ vi.mock('@uipath/apollo-react/canvas/xyflow/react', async (importOriginal) => ({
   useStore: () => mockIsConnecting.current,
   useUpdateNodeInternals: () => vi.fn(),
   useReactFlow: () => ({
-    updateNodeData: vi.fn(),
+    updateNodeData: mockUpdateNodeData,
     updateNode: mockUpdateNode,
     getNode: mockGetNode,
   }),
@@ -186,6 +188,7 @@ const makeHandles = (position: Position, count: number): HandleGroupManifest[] =
 describe('BaseNode', () => {
   afterEach(() => {
     mockUpdateNode.mockClear();
+    mockUpdateNodeData.mockClear();
     mockGetNode.mockClear();
     mockNodeState.current = { height: undefined };
     mockUseButtonHandles.mockClear();
@@ -734,6 +737,40 @@ describe('BaseNode', () => {
       renderNode({ selected: true });
       const opts = mockUseButtonHandles.mock.calls.at(-1)?.[0] as { showAddButton?: boolean };
       expect(opts.showAddButton).toBe(false);
+    });
+  });
+
+  // NodeLabel is module-mocked above, so the inline edit is driven through the
+  // onChange it receives, as useInlineLabelEditing would call it on commit.
+  describe('Inline label editing', () => {
+    const commitLabel = (values: { label: string; subLabel: string }) =>
+      act(() => mockNodeLabel.mock.calls.at(-1)?.[0]?.onChange(values));
+
+    it('stores an empty label when the name is cleared', () => {
+      render(
+        <BaseNode {...defaultProps} id="script1" data={{ display: { label: 'Fetch orders' } }} />
+      );
+      commitLabel({ label: '', subLabel: '' });
+      expect(mockUpdateNodeData).toHaveBeenCalledWith('script1', { display: { label: '' } });
+    });
+
+    it('drops an empty subLabel', () => {
+      render(<BaseNode {...defaultProps} data={{ display: { label: 'A', subLabel: 'B' } }} />);
+      commitLabel({ label: 'A', subLabel: '' });
+      expect(mockUpdateNodeData).toHaveBeenCalledWith('test-node', { display: { label: 'A' } });
+    });
+
+    it('keeps the other display fields', () => {
+      render(
+        <BaseNode
+          {...defaultProps}
+          data={{ display: { label: 'A', icon: 'mail', color: 'red' } }}
+        />
+      );
+      commitLabel({ label: 'B', subLabel: 'Details' });
+      expect(mockUpdateNodeData).toHaveBeenCalledWith('test-node', {
+        display: { label: 'B', subLabel: 'Details', icon: 'mail', color: 'red' },
+      });
     });
   });
 });

@@ -122,6 +122,13 @@ describe('resolveDisplay', () => {
     );
     expect(result.label).toBe('Notify Ops');
   });
+
+  it('keeps an empty instance.label instead of falling back to the manifest', () => {
+    // A cleared name is stored as label: '', meaning "unnamed". Only an unset
+    // label falls back to the manifest.
+    const result = resolveDisplay({ label: 'Script', icon: 'code' }, { display: { label: '' } });
+    expect(result.label).toBe('');
+  });
 });
 
 // ============================================================================
