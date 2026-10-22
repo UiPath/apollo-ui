@@ -317,6 +317,7 @@ Put the control inside `InputGroup`. Apollo's controls detect the group and beco
 - `InsertVariableAction` renders `variables` (`VariablePickerItem[]`) as supplied, with no root of its own; pass a function to resolve them when the picker opens. Its strings include the picker's search placeholder and empty state. `AiAssistAction`'s `onGenerate(prompt)` may return a promise (any thenable): the prompt stays busy until it settles and shows `strings.error` on rejection. `disabled` disables the trigger.
 - Host picker: `VariablePicker`, `InsertVariableAction` and `VariableValueControl` take `renderPicker: RenderVariablePicker` (`({ value?, onSelect(value, item?), close }) => ReactNode`; `onSelect` commits and closes; `variables` is then optional), keeping wind's trigger, popover, focus return and strings. `VariableValueControl` also takes `describeReference(reference) => { label, icon? }` for its chip. The slot is called only while the popover is open.
 - Host AI panel: `AiAssistAction` takes `renderContent({ close, disabled })` in place of its prompt form, called only while the popover is open.
+- `FormFieldError severity="warning"` is a warning (`text-warning`): point the control's `aria-describedby` at it, not `aria-errormessage`, and leave the control valid.
 - Localization: every addon and action takes a `strings` prop merged over its `DEFAULT_*_STRINGS`. There is no provider.
 
 #### Tabs

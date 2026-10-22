@@ -109,21 +109,35 @@ const FormFieldDescription = React.forwardRef<HTMLParagraphElement, FormFieldDes
 );
 FormFieldDescription.displayName = 'FormFieldDescription';
 
-export type FormFieldErrorProps = React.ComponentPropsWithoutRef<'p'>;
+export interface FormFieldErrorProps extends React.ComponentPropsWithoutRef<'p'> {
+  /**
+   * `warning` is for a value that is accepted but likely wrong, such as a reference that no longer
+   * resolves. Point the control's `aria-describedby` at a warning, not `aria-errormessage`, and
+   * leave it valid. Defaults to `error`.
+   */
+  severity?: 'error' | 'warning';
+}
 
 /**
  * Validation message rendered below a field control. Uses the `error` token
- * rather than `destructive`, which some themes resolve to a different color.
+ * rather than `destructive`, which some themes resolve to a different color,
+ * and the `warning` token for a warning.
  */
 const FormFieldError = React.forwardRef<HTMLParagraphElement, FormFieldErrorProps>(
-  ({ children, className, ...props }, ref) => {
+  ({ children, className, severity = 'error', ...props }, ref) => {
     if (!children) return null;
     return (
       <p
         ref={ref}
         aria-live="polite"
         aria-atomic="true"
-        className={cn('text-xs leading-4 text-error mt-1.5', className)}
+        data-severity={severity === 'warning' ? severity : undefined}
+        className={cn(
+          'text-xs leading-4',
+          severity === 'warning' ? 'text-warning' : 'text-error',
+          'mt-1.5',
+          className
+        )}
         {...props}
         // Always the canonical marker, even if a caller's own `data-slot` slips in through
         // `...props` -- FormField's gap-cancelling rule above depends on this exact value

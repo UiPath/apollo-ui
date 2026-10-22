@@ -134,7 +134,7 @@ Same props as Row.
 | `FormFieldHeader` | Label row with extras     | `label`, `htmlFor`, `labelId`, `required`, `tooltip`, `leading`, `badge`, `actions`, `variant`: default\|muted                                                                           |
 | `InputGroup`      | Box for control + addons  | `layout`: row\|grow\|block\|fill, `variant`: default\|ghost\|outline\|none\|agent, `error`, `errorId`. Children: `InputGroupAddon` (`align`: inline-start\|inline-end), `InputGroupRow`, `InputGroupBody` |
 | `FormFieldDescription` | Helper text               | Children. Goes below the control                                                                                                                                                         |
-| `FormFieldError`  | Validation message        | `id`. Uses the `text-error` token; renders nothing when empty                                                                                                                            |
+| `FormFieldError`  | Validation message        | `id`, `severity`: error\|warning. Uses the `text-error` token, or `text-warning` for a warning; renders nothing when empty                                                               |
 | `BooleanRadioGroup` | True / False / not set    | `value`: boolean\|null, `onValueChange`, `strings`                                                                                                                                       |
 | `FieldMenu`       | Mode and actions menu     | `mode`, `onSelect`, `modes`, `actions`, `modesDisabled`, `strings`                                                                                                                       |
 | `ValueModeIndicator` | `=` before an expression  | `mode`, `strings`                                                                                                                                                                        |
@@ -602,6 +602,9 @@ const columns: ColumnDef<Item>[] = [
 
 Field validation messages use `FormFieldError`, which applies `text-error`. Some themes resolve
 `destructive` and `error` to different colors, so never color a field error with `text-destructive`.
+For a value that is accepted but likely wrong, use `<FormFieldError severity="warning">`
+(`text-warning`), point the control's `aria-describedby` at it rather than `aria-errormessage`, and
+leave the control valid.
 
 ---
 
