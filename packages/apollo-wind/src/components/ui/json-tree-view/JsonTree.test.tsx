@@ -359,6 +359,11 @@ describe('JsonTreeView row decorations and actions', () => {
 
     expect(screen.getByRole('button', { name: 'Focus' })).toHaveClass('opacity-100');
     expect(screen.getByRole('button', { name: 'Add' })).not.toHaveClass('opacity-100');
+    // Also revealed while the row holds keyboard focus.
+    expect(screen.getByRole('button', { name: 'Add' })).toHaveClass(
+      'group-hover:opacity-100',
+      'group-focus-within:opacity-100'
+    );
   });
 
   it('orders the trailing cluster as start actions, meta, then end actions', () => {
