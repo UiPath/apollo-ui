@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.8.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.8.1...@uipath/apollo-react@7.8.2) (2026-10-22)
+
+### Bug Fixes
+
+* **apollo-react:** stop NodeIOView schema and JSON panels being tab stops ([eda9887](https://github.com/UiPath/apollo-ui/commit/eda988747858ef37275615ba34475356f8fbda02))
+
 ## [@uipath/apollo-react-v7.8.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.8.0...@uipath/apollo-react@7.8.1) (2026-10-22)
 
 ### Bug Fixes

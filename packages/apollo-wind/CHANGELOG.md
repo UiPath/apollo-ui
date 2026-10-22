@@ -1,3 +1,10 @@
+## [@uipath/apollo-wind-v2.75.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.75.0...@uipath/apollo-wind@2.75.1) (2026-10-22)
+
+### Bug Fixes
+
+* **apollo-wind:** show JsonTreeView row actions while the row has focus ([10bfd48](https://github.com/UiPath/apollo-ui/commit/10bfd4801aa9ca4d248ccbd7f78c10193f95f23a))
+* **apollo-wind:** stop panel tab content from being a tab stop ([f6d7877](https://github.com/UiPath/apollo-ui/commit/f6d78779ac6bdaca12966c8a17b3bbda85b00007))
+
 ## [@uipath/apollo-wind-v2.72.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.72.1...@uipath/apollo-wind@2.72.2) (2026-10-20)
 
 ### Bug Fixes
