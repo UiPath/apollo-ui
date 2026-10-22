@@ -284,13 +284,13 @@ describe('CanvasDiffView', () => {
     const summary = screen.getByRole('list', { name: 'Change summary' });
     const items = within(summary).getAllByRole('listitem');
     expect(items.map((item) => item.textContent)).toEqual([
-      '1 node added',
-      '1 node removed',
-      '1 node changed',
-      '1 connection removed',
+      'Nodes added: 1',
+      'Nodes removed: 1',
+      'Nodes changed: 1',
+      'Connections removed: 1',
     ]);
-    expect(screen.getByRole('status')).toHaveTextContent('1 node added');
-    expect(screen.getByRole('status')).toHaveTextContent('1 connection removed');
+    expect(screen.getByRole('status')).toHaveTextContent('Nodes added: 1');
+    expect(screen.getByRole('status')).toHaveTextContent('Connections removed: 1');
   });
 
   it('reports an empty diff as no changes', () => {
@@ -337,11 +337,11 @@ describe('CanvasDiffView', () => {
       within(screen.getByRole('list', { name }))
         .getAllByRole('listitem')
         .map((item) => item.textContent);
-    expect(items('Applied this turn')).toEqual(['1 node changed']);
+    expect(items('Applied this turn')).toEqual(['Nodes changed: 1']);
     expect(items('Pending approval')).toEqual([
-      '1 node added',
-      '1 node removed',
-      '1 connection removed',
+      'Nodes added: 1',
+      'Nodes removed: 1',
+      'Connections removed: 1',
     ]);
     expect(screen.queryByRole('list', { name: 'Change summary' })).not.toBeInTheDocument();
   });
