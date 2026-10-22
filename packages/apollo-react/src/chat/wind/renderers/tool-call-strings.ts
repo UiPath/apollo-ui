@@ -1,4 +1,4 @@
-import { msg, plural } from '@lingui/core/macro';
+import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import type { JsonTreeViewStrings, ToolCallStrings } from '@uipath/apollo-wind';
 import React from 'react';
@@ -46,14 +46,14 @@ export function useToolCallStrings(): WindToolCallStrings {
           _(
             msg({
               id: 'autopilot-chat.tool-call.json.item-count',
-              message: plural(count, { one: '# item', other: '# items' }),
+              message: `Items: ${count}`,
             })
           ),
         keyCount: (count) =>
           _(
             msg({
               id: 'autopilot-chat.tool-call.json.key-count',
-              message: plural(count, { one: '# key', other: '# keys' }),
+              message: `Keys: ${count}`,
             })
           ),
         pathCopied: _(
