@@ -4,6 +4,7 @@ import type { FieldValues, UseFormReturn } from 'react-hook-form';
 import {
   AiAssistAction,
   type AiAssistActionStrings,
+  type AiAssistContentProps,
 } from '@/components/ui/field-actions/ai-assist-action';
 import {
   InsertVariableAction,
@@ -120,7 +121,7 @@ export type FieldActionGenerate = (
   request: { prompt: string },
   ctx: FieldActionContext
   // biome-ignore lint/suspicious/noConfusingVoidType: an `async` generator that writes nothing returns `Promise<void>`
-) => Promise<{ mode?: ValueModeId; value: unknown } | undefined | void>;
+) => Promise<FieldActionResult | undefined | void>;
 
 export interface FieldActionsPluginConfig {
   /** Header actions by id, in the order fields list them. */
@@ -245,8 +246,24 @@ export function createInsertVariableAction({
   };
 }
 
-export interface AiAssistActionOptions {
-  generate: FieldActionGenerate;
+/** A generated or host-produced value: in `mode`, or else the mode the field is in when written. */
+export interface FieldActionResult {
+  mode?: ValueModeId;
+  value: unknown;
+}
+
+/** What a host-rendered AI-assist panel gets inside a form. */
+export interface AiAssistFieldContentProps extends AiAssistContentProps {
+  /**
+   * Writes `result` and closes the popover. Nothing is written if the field was disabled
+   * meanwhile.
+   */
+  apply(result: FieldActionResult): void;
+  /** The field the panel generates for, read when accessed. */
+  ctx: FieldActionContext;
+}
+
+interface AiAssistActionBaseOptions {
   /** Guidance under the prompt, such as the value type expected. */
   hint?: React.ReactNode | ((ctx: FieldActionContext) => React.ReactNode);
   /** The prompt's placeholder, such as an example request for this field. */
@@ -256,9 +273,36 @@ export interface AiAssistActionOptions {
   id?: string;
 }
 
+export type AiAssistActionOptions = AiAssistActionBaseOptions &
+  (
+    | { generate: FieldActionGenerate; renderContent?: undefined }
+    | {
+        generate?: undefined;
+        /**
+         * The host's own panel, in place of the built-in prompt form, whose `hint` and
+         * `placeholder` it then does not use. Called only while the popover is open.
+         */
+        renderContent: (props: AiAssistFieldContentProps) => React.ReactNode;
+      }
+  );
+
+/** Writes a result unless the field was disabled while it was being produced. */
+function writeResult(
+  ctx: FieldActionContext,
+  // biome-ignore lint/suspicious/noConfusingVoidType: what an `async` generator that writes nothing resolves with
+  result: FieldActionResult | undefined | void
+) {
+  if (!result || ctx.disabled) return;
+  // `ctx.mode` is read now, not when the request went out.
+  const mode = result.mode ?? ctx.mode?.mode;
+  if (ctx.setModeValue && mode) ctx.setModeValue(mode, result.value);
+  else ctx.setValue(result.value);
+}
+
 /** AI assist: a prompt behind the label whose generated value is written to the field. */
 export function createAiAssistAction({
   generate,
+  renderContent,
   hint,
   placeholder,
   strings,
@@ -267,18 +311,29 @@ export function createAiAssistAction({
   return {
     id,
     render: (ctx) => {
+      if (renderContent) {
+        return (
+          <AiAssistAction
+            renderContent={({ close, disabled }) =>
+              renderContent({
+                close,
+                disabled,
+                apply: (result) => {
+                  writeResult(ctx, result);
+                  close();
+                },
+                ctx,
+              })
+            }
+            disabled={ctx.disabled}
+            strings={{ ...ctx.strings.aiAssist, ...strings }}
+          />
+        );
+      }
       const promptPlaceholder = typeof placeholder === 'function' ? placeholder(ctx) : placeholder;
       return (
         <AiAssistAction
-          onGenerate={async (prompt) => {
-            const result = await generate({ prompt }, ctx);
-            // The field may have been disabled while the request was out.
-            if (!result || ctx.disabled) return;
-            // `ctx.mode` is read now, not when the request went out.
-            const mode = result.mode ?? ctx.mode?.mode;
-            if (ctx.setModeValue && mode) ctx.setModeValue(mode, result.value);
-            else ctx.setValue(result.value);
-          }}
+          onGenerate={async (prompt) => writeResult(ctx, await generate({ prompt }, ctx))}
           hint={typeof hint === 'function' ? hint(ctx) : hint}
           disabled={ctx.disabled}
           strings={{

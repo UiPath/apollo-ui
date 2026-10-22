@@ -918,6 +918,7 @@ Validation: a fixed value is checked by its field type's `validation`; any other
 | --------------------------------------------- | ---------------------------------------------------------------------------------------------- |
 | `createInsertVariableAction({ variables?, renderPicker?, formatReference?, strings?, id? })` | Inserts a variable. An `insertable` control takes it at the caret; otherwise the field switches to `expression`, then `variable`, asking before it replaces a value. Hidden in Variable mode. `renderPicker` renders the host's own picker and wins over `variables`. |
 | `createAiAssistAction({ generate, hint?, placeholder?, strings?, id? })` | Asks for a prompt and writes `generate`'s result in the field's mode, or the `mode` it returns. Skips the write if the field became disabled; closing the prompt does not cancel the request. |
+| `createAiAssistAction({ renderContent, strings?, id? })` | Renders the host's panel in the popover instead of the prompt form. It gets `{ close, disabled, apply, ctx }`; `apply({ mode?, value })` writes as `generate`'s result does, with the same disabled guard, and closes. |
 | `createClearAction({ strings?, id? })`         | Clears the value, keeping the mode. Registered as `clear` by default.                         |
 
 Register an action under the same id to replace a built-in.

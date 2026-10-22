@@ -2,6 +2,7 @@ export {
   AiAssistAction,
   type AiAssistActionProps,
   type AiAssistActionStrings,
+  type AiAssistContentProps,
   DEFAULT_AI_ASSIST_ACTION_STRINGS,
 } from './ai-assist-action';
 export {

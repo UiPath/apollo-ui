@@ -97,4 +97,42 @@ describe('AiAssistAction', () => {
       expect(screen.getByRole('button', { name: 'Generating' })).toBeDisabled();
     });
   });
+
+  describe('with host content', () => {
+    it('renders it in place of the prompt form, only once opened', async () => {
+      const user = userEvent.setup();
+      const renderContent = vi.fn(() => <p>Host panel</p>);
+      render(
+        <TooltipProvider>
+          <AiAssistAction renderContent={renderContent} hint="Unused hint" />
+        </TooltipProvider>
+      );
+      expect(renderContent).not.toHaveBeenCalled();
+      await user.click(screen.getByRole('button', { name: 'AI assist' }));
+      expect(await screen.findByText('Host panel')).toBeInTheDocument();
+      expect(screen.queryByLabelText('Describe what you want')).toBeNull();
+      expect(screen.queryByText('Unused hint')).toBeNull();
+      expect(renderContent).toHaveBeenCalledWith(expect.objectContaining({ disabled: false }));
+    });
+
+    it('closes from the host content and returns focus to the trigger', async () => {
+      const user = userEvent.setup();
+      render(
+        <TooltipProvider>
+          <AiAssistAction
+            renderContent={({ close }) => (
+              <button type="button" onClick={close}>
+                Done
+              </button>
+            )}
+          />
+        </TooltipProvider>
+      );
+      const trigger = screen.getByRole('button', { name: 'AI assist' });
+      await user.click(trigger);
+      await user.click(await screen.findByRole('button', { name: 'Done' }));
+      expect(screen.queryByRole('button', { name: 'Done' })).toBeNull();
+      expect(trigger).toHaveFocus();
+    });
+  });
 });

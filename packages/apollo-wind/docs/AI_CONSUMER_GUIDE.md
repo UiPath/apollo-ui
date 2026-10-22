@@ -139,7 +139,7 @@ Same props as Row.
 | `FieldMenu`       | Mode and actions menu     | `mode`, `onSelect`, `modes`, `actions`, `modesDisabled`, `strings`                                                                                                                       |
 | `ValueModeIndicator` | `=` before an expression  | `mode`, `strings`                                                                                                                                                                        |
 | `InsertVariableAction` | Header variable picker    | `variables`, `onInsert`, `compact`, `strings`. `renderPicker` renders the host's own picker instead, and `variables` is then optional                                                     |
-| `AiAssistAction`  | Header AI prompt          | `onGenerate`, `hint`, `strings`                                                                                                                                                          |
+| `AiAssistAction`  | Header AI prompt          | `onGenerate`, `hint`, `strings`. `renderContent({ close, disabled })` renders the host's own panel instead of the prompt form                                                            |
 | `VariableValueControl` | Variable-bound control    | `value`, `onChange`, `variables`, `strings`. `renderPicker` renders the host's own picker; `describeReference(reference)` gives the chip a `{ label, icon? }`                            |
 | `PromptValueControl` | Prompt for an agent       | `value`, `onChange`, `strings`. Render in `InputGroup` with `variant="agent"` `layout="grow"`                                                                                            |
 | `QuickFormField`  | Quick Form builder field  | Only where end users configure fields in a HITL Quick Form. `fieldTypes`, `renderModeControl`, `variables`, `strings`                                                                    |
@@ -963,6 +963,9 @@ Field actions:
   over `variables`, and its pick takes the same path) and to `createVariableModeControl`, registered
   as `FormPlugin.valueModes.definitions.variable.control`. That control also takes
   `describeReference(reference, { field })` for the chip's label and icon.
+- `createAiAssistAction({ renderContent })` renders the host's own panel instead of the prompt
+  form. Its `apply({ mode?, value })` writes like a generator's result (nothing if the field was
+  disabled meanwhile) and closes the popover.
 - `badge` adds text after the label, such as the value's type.
 
 Any of `valueModes`, `headerActions`, `menuActions` or `badge` renders the field through

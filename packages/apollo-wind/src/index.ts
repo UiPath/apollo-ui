@@ -15,10 +15,12 @@ export {
 } from './components/forms/data-fetcher';
 export type {
   AiAssistActionOptions,
+  AiAssistFieldContentProps,
   ClearActionOptions,
   FieldActionContext,
   FieldActionGenerate,
   FieldActionRegistry,
+  FieldActionResult,
   FieldActionsPluginConfig,
   FieldHeaderAction,
   FieldMenuAction,
@@ -416,6 +418,7 @@ export { EmptyState } from './components/ui/empty-state';
 export type {
   AiAssistActionProps,
   AiAssistActionStrings,
+  AiAssistContentProps,
   InsertVariableActionProps,
   InsertVariableActionStrings,
 } from './components/ui/field-actions';
