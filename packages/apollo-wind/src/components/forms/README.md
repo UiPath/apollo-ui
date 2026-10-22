@@ -715,7 +715,7 @@ message.
 | Control     | `FieldControl`, `VariableValueControl`, `PromptValueControl`, or a registered control | `type`, the active mode, `valueModes.controls` |
 | Menu        | `FieldMenu` in a trailing `InputGroupAddon`                                | `valueModes.modes`, then `menuActions`                |
 | Description | `FormFieldDescription`                                                     | `description`                                         |
-| Message     | `FormFieldError`, or the `error` prop of a control with a message slot     | `validation`                                          |
+| Message     | `FormFieldError` (`severity="warning"` for a warning), or the `error` prop of a control with a message slot | `validation`                                          |
 
 For a field outside any form, and inside a custom control, compose the same parts (see
 [Custom Components](#-custom-components) for a registered control):
@@ -779,7 +779,10 @@ writes. Rules for any field, in a form or not:
 
 - Compose a custom field or control from whichever of these parts apply. Never hand-roll label,
   description or message markup, or wrap fields in a local shell.
-- Field messages use `FormFieldError` (the `error` token), never `text-destructive`.
+- Field messages use `FormFieldError` (the `error` token), never `text-destructive`. A warning, for
+  a value that is accepted but likely wrong, is `<FormFieldError severity="warning">` (the
+  `warning` token): point the control's `aria-describedby` at it, not `aria-errormessage`, and
+  leave the control valid.
 - Actions go in the header, never inside the box.
 - Localise with each component's `strings` prop, or `FormPlugin.strings` in a form. There is no
   provider.

@@ -31,7 +31,8 @@ in a metadata-driven form as in a hand-built panel.
 - **FormFieldHeader** is the label row for a field whose header carries more than a label: a
   leading glyph, a type badge and actions such as Insert variable. It sits outside the control's
   box, so the actions never stretch it.
-- **FormFieldDescription** and **FormFieldError** go below the control.
+- **FormFieldDescription** and **FormFieldError** go below the control. \`severity="warning"\`
+  turns the message into a warning, for a value that is accepted but likely wrong.
 `,
       },
     },
@@ -193,5 +194,27 @@ export const Header: Story = {
         <FormFieldHeader label="Retry delay" htmlFor="header-muted" variant="muted" />
       </HeaderExample>
     </div>
+  ),
+};
+
+/**
+ * A warning below the control, for a value that is accepted but likely wrong. The control stays
+ * valid and points at the warning with `aria-describedby`.
+ */
+export const Warning: Story = {
+  render: () => (
+    <FormField className="w-96">
+      <FormFieldLabel htmlFor="warning-order-id">Order id</FormFieldLabel>
+      <InputGroup>
+        <Input
+          id="warning-order-id"
+          defaultValue="$vars.legacyOrderId"
+          aria-describedby="warning-order-id-message"
+        />
+      </InputGroup>
+      <FormFieldError id="warning-order-id-message" severity="warning">
+        This variable is not set by any earlier step.
+      </FormFieldError>
+    </FormField>
   ),
 };

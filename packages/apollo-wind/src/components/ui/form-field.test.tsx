@@ -142,6 +142,22 @@ describe('FormFieldError', () => {
     expect(error).toHaveClass('mt-1.5');
     expect(error).toHaveAttribute('data-slot', 'form-field-error');
   });
+
+  it('uses the warning token for a warning, keeping the slot and polite announcement', () => {
+    render(<FormFieldError severity="warning">Variable no longer exists.</FormFieldError>);
+    const warning = screen.getByText('Variable no longer exists.');
+    expect(warning).toHaveClass('text-warning', 'mt-1.5');
+    expect(warning).not.toHaveClass('text-error');
+    expect(warning).toHaveAttribute('data-severity', 'warning');
+    expect(warning).toHaveAttribute('data-slot', 'form-field-error');
+    expect(warning).toHaveAttribute('aria-live', 'polite');
+    expect(warning).not.toHaveAttribute('role');
+  });
+
+  it('marks no severity on an error', () => {
+    render(<FormFieldError>Required.</FormFieldError>);
+    expect(screen.getByText('Required.')).not.toHaveAttribute('data-severity');
+  });
 });
 
 describe('FormFieldHeader', () => {
