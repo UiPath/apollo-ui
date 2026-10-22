@@ -439,15 +439,15 @@ const BaseNodeComponent = (props: NodeProps<Node<BaseNodeData>>) => {
   const handleBlur = useCallback(() => setIsFocused(false), []);
 
   const handleLabelChange = useCallback(
-    (values: { label: string; subLabel: string }) => {
-      const newDisplay = { ...data.display };
-      // Ensure all label fields are updated or removed appropriately.
-      for (const labelKey of Object.keys(values) as (keyof typeof values)[]) {
-        if (values[labelKey]) {
-          newDisplay[labelKey] = values[labelKey];
-        } else {
-          delete newDisplay[labelKey];
-        }
+    ({ label, subLabel }: { label: string; subLabel: string }) => {
+      // A cleared label is stored as '' so the node stays unnamed; an unset
+      // label would fall back to the manifest label. An empty subLabel is
+      // dropped so a label-only edit doesn't add `subLabel: ''` to the node.
+      const newDisplay = { ...data.display, label };
+      if (subLabel) {
+        newDisplay.subLabel = subLabel;
+      } else {
+        delete newDisplay.subLabel;
       }
       updateNodeData(id, {
         display: newDisplay,
