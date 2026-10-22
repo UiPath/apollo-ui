@@ -1,6 +1,7 @@
 import { Asterisk, ChevronDown } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useMemo } from 'react';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,11 +15,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import type { VariablePickerItem } from '@/components/ui/variable-picker';
 import { cn } from '@/lib';
 import { AiAssistAction } from '../../field-actions/ai-assist-action';
-import {
-  COLLAPSED_HIDDEN,
-  COLLAPSED_ICON_PADDING,
-  COLLAPSED_ONLY,
-} from '../../field-actions/collapse';
+import { COLLAPSED_HIDDEN, COLLAPSED_ONLY, FIELD_ACTION_CLASS } from '../../field-actions/collapse';
 import { InsertVariableAction } from '../../field-actions/insert-variable-action';
 import type { QuickFieldType, QuickFormFieldOption, QuickFormFieldStrings } from '../types';
 import { FIELD_TYPE_META, FIELD_TYPE_ORDER } from '../types';
@@ -88,8 +85,7 @@ export function FieldHeader({
   const typeMeta = FIELD_TYPE_META[fieldType];
   const typeLabel = strings.typeLabels[fieldType] ?? typeMeta.label;
   const collapsedTextClass = cn(COLLAPSED_HIDDEN, compact && '!hidden');
-  const collapsedPaddingClass = cn(COLLAPSED_ICON_PADDING, compact && '!px-1.5');
-  const compactOnlyClass = cn(COLLAPSED_ONLY, compact && '!block');
+  const compactOnlyClass = cn(COLLAPSED_ONLY, compact && '!flex');
 
   const hasActions =
     !!onFieldTypeChange || !!onRequiredChange || showFieldActions || headerActions != null;
@@ -113,19 +109,18 @@ export function FieldHeader({
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <DropdownMenuTrigger asChild>
-                          <button
+                          <Button
                             type="button"
+                            variant="ghost"
+                            size="3xs"
                             aria-label={strings.fieldTypeAriaLabel}
                             disabled={disabled}
-                            className={cn(
-                              'flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground disabled:pointer-events-none disabled:opacity-50',
-                              collapsedPaddingClass
-                            )}
+                            className={cn('gap-1', FIELD_ACTION_CLASS)}
                           >
-                            <typeMeta.icon size={12} />
+                            <typeMeta.icon />
                             <span className={collapsedTextClass}>{typeLabel}</span>
-                            <ChevronDown size={9} className={collapsedTextClass} />
-                          </button>
+                            <ChevronDown className={cn('!size-2.5', collapsedTextClass)} />
+                          </Button>
                         </DropdownMenuTrigger>
                       </TooltipTrigger>
                       <TooltipContent>{strings.fieldTypeTooltip}</TooltipContent>
@@ -177,16 +172,19 @@ export function FieldHeader({
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <PopoverTrigger asChild>
-                              <button
+                              <Button
                                 type="button"
+                                variant="ghost"
+                                size="3xs"
+                                icon
                                 aria-label={
                                   required ? strings.requiredAriaLabel : strings.optionalAriaLabel
                                 }
                                 disabled={disabled}
-                                className="grid size-7 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+                                className={FIELD_ACTION_CLASS}
                               >
-                                <Asterisk size={12} />
-                              </button>
+                                <Asterisk />
+                              </Button>
                             </PopoverTrigger>
                           </TooltipTrigger>
                           <TooltipContent>{strings.requiredTooltip}</TooltipContent>
