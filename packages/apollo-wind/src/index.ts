@@ -22,6 +22,7 @@ export type {
   FieldActionsPluginConfig,
   FieldHeaderAction,
   FieldMenuAction,
+  FormVariablePicker,
   InsertVariableActionOptions,
   ValueModeVariable,
 } from './components/forms/field-actions';
@@ -119,6 +120,8 @@ export {
   literalValues,
   VALUE_MODE_OPAQUE,
 } from './components/forms/value-modes';
+export type { VariableModeControlOptions } from './components/forms/variable-mode-control';
+export { createVariableModeControl } from './components/forms/variable-mode-control';
 // -----------------------------------------------------------------------------
 // Utility Components
 // -----------------------------------------------------------------------------
@@ -1049,15 +1052,20 @@ export type {
 } from './components/ui/tree-view';
 export { default as FileTreeView, TreeView } from './components/ui/tree-view';
 export type {
+  RenderVariablePicker,
   VariablePickerContentProps,
   VariablePickerItem,
   VariablePickerProps,
+  VariablePickerSlotProps,
 } from './components/ui/variable-picker';
 export {
   VariablePicker,
   VariablePickerContent,
 } from './components/ui/variable-picker';
-export type { VariableValueControlProps } from './components/ui/variable-value-control';
+export type {
+  VariableReferenceDescription,
+  VariableValueControlProps,
+} from './components/ui/variable-value-control';
 export { VariableValueControl } from './components/ui/variable-value-control';
 // -----------------------------------------------------------------------------
 // Utilities

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import type { VariablePickerItem } from '../variable-picker';
+import type { RenderVariablePicker, VariablePickerItem } from '../variable-picker';
 import { InsertVariableAction } from './insert-variable-action';
 
 describe('InsertVariableAction', () => {
@@ -74,5 +74,76 @@ describe('InsertVariableAction', () => {
     await user.click(screen.getByRole('button', { name: 'Insert variable' }));
     expect(await screen.findByPlaceholderText('Rechercher')).toBeInTheDocument();
     expect(screen.getByText('Aucune variable')).toBeInTheDocument();
+  });
+
+  describe('with a host picker', () => {
+    const hostPicker: RenderVariablePicker = ({ onSelect, close }) => (
+      <div>
+        <button type="button" onClick={() => onSelect('$host.orderId')}>
+          Host order id
+        </button>
+        <button
+          type="button"
+          onClick={() => onSelect('$host.item', { id: 'item', label: 'Item', metadata: 7 })}
+        >
+          Host item
+        </button>
+        <button type="button" onClick={close}>
+          Host cancel
+        </button>
+      </div>
+    );
+
+    it('is enabled without variables, and renders the host picker only once opened', async () => {
+      const user = userEvent.setup();
+      const render$ = vi.fn(hostPicker);
+      render(<InsertVariableAction renderPicker={render$} onInsert={vi.fn()} />);
+      expect(render$).not.toHaveBeenCalled();
+      await user.click(screen.getByRole('button', { name: 'Insert variable' }));
+      expect(await screen.findByRole('button', { name: 'Host order id' })).toBeInTheDocument();
+      expect(screen.queryByPlaceholderText('Search variables...')).toBeNull();
+      expect(render$.mock.calls[0]?.[0].value).toBeUndefined();
+    });
+
+    it('reports a pick, closes and returns focus to the trigger', async () => {
+      const user = userEvent.setup();
+      const onInsert = vi.fn();
+      render(<InsertVariableAction renderPicker={hostPicker} onInsert={onInsert} />);
+      const trigger = screen.getByRole('button', { name: 'Insert variable' });
+
+      await user.click(trigger);
+      await user.click(await screen.findByRole('button', { name: 'Host order id' }));
+      expect(onInsert).toHaveBeenCalledWith('$host.orderId', {
+        id: '$host.orderId',
+        label: '$host.orderId',
+        value: '$host.orderId',
+      });
+      expect(screen.queryByRole('button', { name: 'Host order id' })).toBeNull();
+      expect(trigger).toHaveFocus();
+
+      await user.click(trigger);
+      await user.click(await screen.findByRole('button', { name: 'Host item' }));
+      expect(onInsert).toHaveBeenLastCalledWith(
+        '$host.item',
+        expect.objectContaining({ id: 'item', metadata: 7 })
+      );
+    });
+
+    it('closes without reporting anything', async () => {
+      const user = userEvent.setup();
+      const onInsert = vi.fn();
+      render(<InsertVariableAction renderPicker={hostPicker} onInsert={onInsert} />);
+      const trigger = screen.getByRole('button', { name: 'Insert variable' });
+      await user.click(trigger);
+      await user.click(await screen.findByRole('button', { name: 'Host cancel' }));
+      expect(screen.queryByRole('button', { name: 'Host cancel' })).toBeNull();
+      expect(onInsert).not.toHaveBeenCalled();
+      expect(trigger).toHaveFocus();
+    });
+
+    it('is disabled with nowhere to insert', () => {
+      render(<InsertVariableAction renderPicker={hostPicker} />);
+      expect(screen.getByRole('button', { name: 'Insert variable' })).toBeDisabled();
+    });
   });
 });

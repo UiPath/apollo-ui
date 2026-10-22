@@ -10,6 +10,7 @@ import {
   createInsertVariableAction,
   type FieldActionContext,
   type FieldActionGenerate,
+  type FormVariablePicker,
 } from './field-actions';
 import type {
   CustomFieldComponentProps,
@@ -19,6 +20,10 @@ import type {
 } from './form-schema';
 import { MetadataForm } from './metadata-form';
 import { envelopeCodec, type ValueModeCodec, type ValueModeControlProps } from './value-modes';
+import {
+  createVariableModeControl,
+  type VariableModeControlOptions,
+} from './variable-mode-control';
 
 const MODES = { modes: ['literal', 'expression'] };
 
@@ -1629,5 +1634,138 @@ describe('built-in variable and prompt controls', () => {
     await user.click(forB);
     expect(await screen.findByText('Mine')).toBeInTheDocument();
     expect(screen.queryByText('Order id')).toBeNull();
+  });
+});
+
+describe('host variable picker', () => {
+  const variables = [{ id: 'order', label: 'Order id', value: '$vars.orderId' }];
+  // A host picker with one row; it records the field and bound value it was handed.
+  const hostPicker = vi.fn<FormVariablePicker>(({ onSelect }) => (
+    <button type="button" onClick={() => onSelect('$host.orderId')}>
+      Host order id
+    </button>
+  ));
+  const variablesPlugin: FormPlugin = { name: 'variables', variables };
+  afterEach(() => hostPicker.mockClear());
+
+  describe('Insert variable', () => {
+    it('inserts a host pick at the caret, and closes back to the trigger', async () => {
+      const { user, values } = setup(
+        [{ name: 'msg', type: 'text', label: 'Message', headerActions: ['insert-variable'] }],
+        [variablesPlugin, insertPlugin({ renderPicker: hostPicker })],
+        { msg: 'Hi !' }
+      );
+      await settle();
+      expect(hostPicker).not.toHaveBeenCalled();
+      (screen.getByLabelText('Message') as HTMLInputElement).setSelectionRange(3, 3);
+      const trigger = screen.getByRole('button', { name: 'Insert variable' });
+
+      await user.click(trigger);
+      expect(hostPicker).toHaveBeenCalledWith(
+        expect.objectContaining({ field: expect.objectContaining({ name: 'msg' }) })
+      );
+      // The picker wins over the form's variables.
+      expect(screen.queryByText('Order id')).toBeNull();
+      await user.click(await screen.findByRole('button', { name: 'Host order id' }));
+      expect(values().msg).toBe('Hi $host.orderId!');
+      expect(screen.queryByRole('button', { name: 'Host order id' })).toBeNull();
+    });
+
+    it('asks before replacing a chosen option with a host pick', async () => {
+      const { user, values } = setup(
+        [
+          {
+            name: 's',
+            type: 'select',
+            label: 'S',
+            options: [{ label: 'One', value: '1' }],
+            valueModes: MODES,
+            headerActions: ['insert-variable'],
+          },
+        ],
+        [insertPlugin({ renderPicker: hostPicker })],
+        { s: { $mode: 'literal', value: '1' } }
+      );
+      await settle();
+      await user.click(screen.getByRole('button', { name: 'Insert variable' }));
+      await user.click(await screen.findByRole('button', { name: 'Host order id' }));
+      const dialog = await screen.findByRole('alertdialog');
+      expect(values().s).toStrictEqual({ $mode: 'literal', value: '1' });
+      await user.click(within(dialog).getByRole('button', { name: 'Replace' }));
+      expect(values().s).toStrictEqual({ $mode: 'expression', value: '$host.orderId' });
+    });
+
+    it("wins over the action's own variables", async () => {
+      const { user } = setup(
+        [{ name: 'msg', type: 'text', label: 'Message', headerActions: ['insert-variable'] }],
+        [insertPlugin({ variables, renderPicker: hostPicker })]
+      );
+      await settle();
+      await user.click(screen.getByRole('button', { name: 'Insert variable' }));
+      expect(await screen.findByRole('button', { name: 'Host order id' })).toBeInTheDocument();
+      expect(screen.queryByText('Order id')).toBeNull();
+    });
+  });
+
+  describe('variable mode', () => {
+    const field: FieldMetadata = {
+      name: 'v',
+      type: 'text',
+      label: 'V',
+      valueModes: { modes: ['literal', 'variable'] },
+    };
+    const controlPlugin = (options: VariableModeControlOptions): FormPlugin => ({
+      name: 'variable-control',
+      valueModes: { definitions: { variable: { control: createVariableModeControl(options) } } },
+    });
+
+    it('binds a host pick, handing the picker the bound reference', async () => {
+      const { user, values } = setup(
+        [field],
+        [variablesPlugin, controlPlugin({ renderPicker: hostPicker })],
+        { v: { $mode: 'variable', value: '$vars.old' } }
+      );
+      await settle();
+      const trigger = screen.getByRole('button', { name: 'V' });
+      expect(trigger.closest('[data-slot="input-group"]')).toHaveAttribute(
+        'data-value-mode-control',
+        'definition'
+      );
+      await user.click(trigger);
+      expect(hostPicker).toHaveBeenCalledWith(
+        expect.objectContaining({
+          value: '$vars.old',
+          field: expect.objectContaining({ name: 'v' }),
+        })
+      );
+      await user.click(await screen.findByRole('button', { name: 'Host order id' }));
+      expect(values().v).toStrictEqual({ $mode: 'variable', value: '$host.orderId' });
+      expect(screen.queryByRole('button', { name: 'Host order id' })).toBeNull();
+      expect(trigger).toHaveFocus();
+    });
+
+    it("shows the host's description of the bound reference, picking from the form's variables", async () => {
+      const describeReference = vi.fn<NonNullable<VariableModeControlOptions['describeReference']>>(
+        (reference) => (reference === '$vars.orderId' ? { label: 'Order id' } : undefined)
+      );
+      const { user, values } = setup(
+        [field],
+        [variablesPlugin, controlPlugin({ describeReference })],
+        { v: { $mode: 'variable', value: '$vars.old' } }
+      );
+      await settle();
+      const trigger = screen.getByRole('button', { name: 'V' });
+      expect(trigger).toHaveTextContent('$vars.old');
+      await user.click(trigger);
+      await user.click(await screen.findByText('Order id'));
+      expect(values().v).toStrictEqual({ $mode: 'variable', value: '$vars.orderId' });
+
+      const chip = trigger.querySelector('[data-slot="reference-chip"]');
+      expect(chip).toHaveTextContent('Order id');
+      expect(chip).not.toHaveTextContent('$vars.orderId');
+      expect(describeReference).toHaveBeenCalledWith('$vars.orderId', {
+        field: expect.objectContaining({ name: 'v' }),
+      });
+    });
   });
 });

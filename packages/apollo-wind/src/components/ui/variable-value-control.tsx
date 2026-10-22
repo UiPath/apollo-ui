@@ -8,10 +8,25 @@ import {
 import { InputGroupPopoverTrigger } from '@/components/ui/input-group';
 import { Popover, PopoverContent } from '@/components/ui/popover';
 import { ReferenceChip } from '@/components/ui/reference-chip';
-import { VariablePickerContent, type VariablePickerItem } from '@/components/ui/variable-picker';
+import {
+  type RenderVariablePicker,
+  VariablePickerContent,
+  type VariablePickerItem,
+} from '@/components/ui/variable-picker';
+import { VariablePickerSlot } from '@/components/ui/variable-picker/variable-picker';
 import { composeRefs } from '@/lib';
 
-export interface VariableValueControlProps {
+// Shared, so an omitted `variables` keeps the callbacks that read it stable.
+const NO_VARIABLES: VariablePickerItem[] = [];
+
+/** How a bound reference is shown: the host's display name and type icon for it. */
+export interface VariableReferenceDescription {
+  label: React.ReactNode;
+  /** Defaults to the generic variable icon. */
+  icon?: React.ReactNode;
+}
+
+interface VariableValueControlBaseProps {
   id?: string;
   name?: string;
   /** The bound reference, such as `$vars.orderId`. */
@@ -22,10 +37,10 @@ export interface VariableValueControlProps {
   /** Also gets the trigger, as a form library's field ref does to focus an invalid field. */
   inputRef?: React.Ref<HTMLButtonElement>;
   /**
-   * The variables to pick from, rendered as supplied. A function is called each time the picker
-   * opens, never during render.
+   * Describes the bound reference for its chip and the trigger's text. Returning nothing shows the
+   * reference as it is stored.
    */
-  variables: VariablePickerItem[] | (() => VariablePickerItem[]);
+  describeReference?: (reference: string) => VariableReferenceDescription | undefined;
   disabled?: boolean;
   /** Shown while no variable is bound. Defaults to `strings.variablePlaceholder`. */
   placeholder?: string;
@@ -38,6 +53,27 @@ export interface VariableValueControlProps {
   /** The value-mode wiring; its `aria-describedby` joins the control's own. */
   controlProps?: { 'aria-describedby'?: string };
 }
+
+export type VariableValueControlProps = VariableValueControlBaseProps &
+  (
+    | {
+        /**
+         * The variables to pick from, rendered as supplied. A function is called each time the
+         * picker opens, never during render.
+         */
+        variables: VariablePickerItem[] | (() => VariablePickerItem[]);
+        renderPicker?: undefined;
+      }
+    | {
+        /** Ignored while `renderPicker` is set. */
+        variables?: VariablePickerItem[] | (() => VariablePickerItem[]);
+        /**
+         * The host's own picker, rendered in the panel in place of the built-in one and handed the
+         * bound reference as `value`.
+         */
+        renderPicker: RenderVariablePicker;
+      }
+  );
 
 /**
  * A value bound to a variable, for an `InputGroup`: the whole control is a picker whose trigger
@@ -53,7 +89,9 @@ const VariableValueControl = React.forwardRef<HTMLButtonElement, VariableValueCo
       onChange,
       onBlur,
       inputRef,
-      variables,
+      variables = NO_VARIABLES,
+      renderPicker,
+      describeReference,
       disabled,
       placeholder,
       strings,
@@ -73,19 +111,31 @@ const VariableValueControl = React.forwardRef<HTMLButtonElement, VariableValueCo
     const reference = typeof value === 'string' ? value : '';
     const setRef = React.useMemo(() => composeRefs(ref, inputRef), [ref, inputRef]);
 
+    const described = React.useMemo(
+      () => (reference && describeReference ? describeReference(reference) : undefined),
+      [reference, describeReference]
+    );
+
     const changeOpen = React.useCallback(
       (next: boolean) => {
-        if (next) setItems(typeof variables === 'function' ? variables() : variables);
+        if (next && !renderPicker) {
+          setItems(typeof variables === 'function' ? variables() : variables);
+        }
         setOpen(next);
       },
-      [variables]
+      [renderPicker, variables]
     );
-    const select = React.useCallback(
-      (item: VariablePickerItem) => {
-        if (item.value) onChange(item.value);
+    const close = React.useCallback(() => setOpen(false), []);
+    const commit = React.useCallback(
+      (next: string) => {
+        if (next) onChange(next);
         setOpen(false);
       },
       [onChange]
+    );
+    const select = React.useCallback(
+      (item: VariablePickerItem) => commit(item.value ?? ''),
+      [commit]
     );
 
     return (
@@ -101,15 +151,29 @@ const VariableValueControl = React.forwardRef<HTMLButtonElement, VariableValueCo
           aria-labelledby={ariaLabelledBy}
           aria-describedby={joinIds(ariaDescribedBy, controlProps?.['aria-describedby'])}
         >
-          {reference && <ReferenceChip label={reference} icon={<Variable />} />}
+          {reference && (
+            <ReferenceChip
+              label={described?.label ?? reference}
+              icon={described?.icon ?? <Variable />}
+            />
+          )}
         </InputGroupPopoverTrigger>
         <PopoverContent align="start" className="w-(--radix-popover-trigger-width) p-0">
-          <VariablePickerContent
-            items={items}
-            onSelect={select}
-            placeholder={text.variableSearchPlaceholder}
-            emptyText={text.variableEmpty}
-          />
+          {renderPicker ? (
+            <VariablePickerSlot
+              render={renderPicker}
+              value={reference || undefined}
+              onSelect={commit}
+              close={close}
+            />
+          ) : (
+            <VariablePickerContent
+              items={items}
+              onSelect={select}
+              placeholder={text.variableSearchPlaceholder}
+              emptyText={text.variableEmpty}
+            />
+          )}
         </PopoverContent>
       </Popover>
     );

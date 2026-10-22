@@ -916,7 +916,7 @@ Validation: a fixed value is checked by its field type's `validation`; any other
 
 | Factory                                       | Action                                                                                         |
 | --------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `createInsertVariableAction({ variables?, formatReference?, strings?, id? })` | Inserts a variable. An `insertable` control takes it at the caret; otherwise the field switches to `expression`, then `variable`, asking before it replaces a value. Hidden in Variable mode. |
+| `createInsertVariableAction({ variables?, renderPicker?, formatReference?, strings?, id? })` | Inserts a variable. An `insertable` control takes it at the caret; otherwise the field switches to `expression`, then `variable`, asking before it replaces a value. Hidden in Variable mode. `renderPicker` renders the host's own picker and wins over `variables`. |
 | `createAiAssistAction({ generate, hint?, placeholder?, strings?, id? })` | Asks for a prompt and writes `generate`'s result in the field's mode, or the `mode` it returns. Skips the write if the field became disabled; closing the prompt does not cancel the request. |
 | `createClearAction({ strings?, id? })`         | Clears the value, keeping the mode. Registered as `clear` by default.                         |
 
@@ -926,6 +926,15 @@ Register an action under the same id to replace a built-in.
 
 - `FormPlugin.variables` feeds both Insert variable and the `variable` mode: a list, or a function
   called each time a picker opens (never during render). The last plugin that gives them wins.
+- A host with its own picker passes it as `renderPicker` to `createInsertVariableAction` and to
+  `createVariableModeControl`, whose registration goes in
+  `FormPlugin.valueModes.definitions.variable.control`. The picker, a `FormVariablePicker`, is
+  called only while a picker is open, with `{ field, value, onSelect, close }`: `value` is the
+  bound reference in the `variable` mode, and `onSelect(reference, item?)` commits it and closes,
+  so Insert still writes at the caret or asks before replacing. Wind keeps the trigger, popover,
+  focus return and strings.
+- `createVariableModeControl({ describeReference })` gives the `variable` mode's chip the host's
+  `{ label, icon? }` for a bound reference; returning nothing shows the reference as stored.
 - `FormPlugin.strings` overrides any built-in string by group (`valueModes`, `boolean`,
   `insertVariable`, `aiAssist`, `clear`, `validation`); later plugins win per string. The English
   defaults are `DEFAULT_METADATA_FORM_STRINGS`.
@@ -935,6 +944,7 @@ Register an action under the same id to replace a built-in.
 - Keep plugin objects stable: a module constant, or memoized. A new plugin object rebuilds the
   registries and re-renders every field; a new array of the same plugins is fine.
 - Pass `variables` as a function when the list is long or changes.
+- Call `createVariableModeControl` once, at module scope: each call makes a new control component.
 - Keep codecs pure: no live values captured in a codec.
 
 ## 📊 Data Sources

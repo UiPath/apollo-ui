@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Regex } from 'lucide-react';
-import { useMemo, useState } from 'react';
-import { createInsertVariableAction } from './field-actions';
+import { Hash, KeyRound, Regex } from 'lucide-react';
+import { type ReactNode, useMemo, useState } from 'react';
+import { createInsertVariableAction, type FormVariablePicker } from './field-actions';
 import type { FormPlugin, FormSchema } from './form-schema';
 import { MetadataForm } from './metadata-form';
 import {
@@ -10,6 +10,7 @@ import {
   type ValueModeCodec,
   type ValueModeControlProps,
 } from './value-modes';
+import { createVariableModeControl } from './variable-mode-control';
 
 const meta = {
   title: 'Forms/Value modes',
@@ -26,7 +27,10 @@ field's fixed value only. Switching a non-empty value asks first; an empty one n
 codec's \`convert\` may seed it. Hosts add codecs, modes and controls through
 \`FormPlugin.valueModes\` (a definition for a built-in mode changes only what it gives, such as its
 control) and strings through \`FormPlugin.strings\`. The form's variables, from
-\`FormPlugin.variables\`, feed the Variable mode's picker and Insert variable.
+\`FormPlugin.variables\`, feed the Variable mode's picker and Insert variable. A host with its own
+picker passes it to \`createInsertVariableAction({ renderPicker })\` and to
+\`createVariableModeControl({ renderPicker, describeReference })\`, registered as the Variable mode's
+control; \`describeReference\` shows the host's name and type icon for a bound reference.
 `,
       },
     },
@@ -199,6 +203,84 @@ const allModesSchema: FormSchema = {
 /** The four built-in modes on one field, with the form's variables feeding the picker and Insert. */
 export const AllBuiltInModes: Story = {
   render: () => <Demo schema={allModesSchema} plugins={[variablesPlugin]} />,
+};
+
+// A host's catalogue: what it knows about each reference it can bind.
+const CATALOGUE: Record<string, { label: string; icon: ReactNode }> = {
+  '$vars.orderId': { label: 'Order id', icon: <Hash /> },
+  '$assets.apiKey': { label: 'API key', icon: <KeyRound /> },
+};
+
+// Called only while a picker is open, with the field it picks for.
+const hostPicker: FormVariablePicker = ({ field, value, onSelect }) => (
+  <div className="grid gap-1 p-2 text-xs">
+    <span className="px-1 text-foreground-muted">Host picker for {field.label}</span>
+    {Object.entries(CATALOGUE).map(([reference, { label, icon }]) => (
+      <button
+        key={reference}
+        type="button"
+        aria-current={reference === value || undefined}
+        onClick={() => onSelect(reference)}
+        className="flex items-center gap-2 rounded px-2 py-1 text-left hover:bg-surface-overlay aria-[current]:font-semibold [&_svg]:size-3.5"
+      >
+        {icon}
+        {label}
+      </button>
+    ))}
+  </div>
+);
+
+const hostPickerPlugin: FormPlugin = {
+  name: 'host-picker',
+  valueModes: {
+    definitions: {
+      variable: {
+        control: createVariableModeControl({
+          renderPicker: hostPicker,
+          describeReference: (reference) => CATALOGUE[reference],
+        }),
+      },
+    },
+  },
+  fieldActions: {
+    header: { 'insert-variable': createInsertVariableAction({ renderPicker: hostPicker }) },
+  },
+};
+
+const hostPickerSchema: FormSchema = {
+  id: 'host-picker',
+  title: 'Host picker',
+  initialData: {
+    orderId: { $mode: 'variable', value: '$vars.orderId' },
+    subject: 'Order ',
+  },
+  sections: [
+    {
+      id: 'main',
+      fields: [
+        {
+          name: 'orderId',
+          type: 'text',
+          label: 'Order id',
+          description: "The chip shows the host's name and type icon for the reference.",
+          valueModes: { modes: ['literal', 'expression', 'variable'] },
+        },
+        {
+          name: 'subject',
+          type: 'text',
+          label: 'Subject',
+          description: 'Insert variable opens the same host picker.',
+          valueModes: { modes: ['literal', 'expression', 'variable'] },
+          headerActions: ['insert-variable'],
+        },
+      ],
+    },
+  ],
+};
+
+/** The host's own picker in the Variable mode's panel and in Insert variable. */
+export const HostVariablePicker: Story = {
+  render: () => <Demo schema={hostPickerSchema} plugins={[hostPickerPlugin]} />,
 };
 
 function PatternControl({ id, value, onChange, disabled, controlProps }: ValueModeControlProps) {

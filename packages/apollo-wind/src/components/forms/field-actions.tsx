@@ -9,7 +9,11 @@ import {
   InsertVariableAction,
   type InsertVariableActionStrings,
 } from '@/components/ui/field-actions/insert-variable-action';
-import type { VariablePickerItem } from '@/components/ui/variable-picker';
+import type {
+  RenderVariablePicker,
+  VariablePickerItem,
+  VariablePickerSlotProps,
+} from '@/components/ui/variable-picker';
 import type { FieldMetadata, FormPlugin, FormVariables, ValueModeId } from './form-schema';
 import type { ClearActionStrings, MetadataFormStrings } from './form-strings';
 import type { DecodedValue, ValueModeControlHandle } from './value-modes';
@@ -76,6 +80,29 @@ export interface FieldMenuAction {
 /** A variable Insert variable offers, rendered as supplied. */
 export type ValueModeVariable = VariablePickerItem;
 
+/**
+ * A host's own variable picker for a form field, rendered in place of the built-in tree. Called
+ * only while the picker is open, with the field it picks for.
+ */
+export type FormVariablePicker = (
+  props: VariablePickerSlotProps & { field: FieldMetadata }
+) => React.ReactNode;
+
+/** Binds `picker` to each field once, so the action's props stay stable across renders. */
+export function bindVariablePicker(
+  picker: FormVariablePicker
+): (field: FieldMetadata) => RenderVariablePicker {
+  const bound = new WeakMap<FieldMetadata, RenderVariablePicker>();
+  return (field) => {
+    let render = bound.get(field);
+    if (!render) {
+      render = (props) => picker({ ...props, field });
+      bound.set(field, render);
+    }
+    return render;
+  };
+}
+
 /** `source` for `field`: a function is called now, so only call this when a picker opens. */
 export function resolveVariables(
   source: FormVariables | undefined,
@@ -115,6 +142,11 @@ export interface FieldActionRegistry {
 export interface InsertVariableActionOptions {
   /** Defaults to the form's `FormPlugin.variables`. */
   variables?: FormVariables;
+  /**
+   * The host's own picker, rendered in place of a picker over `variables`, which it wins over. Its
+   * pick is written like a picked variable: at the caret, or as the value once confirmed.
+   */
+  renderPicker?: FormVariablePicker;
   /**
    * How a picked reference is written at the caret, such as `{{ ref }}` inside fixed-value text.
    * A field that switches to `expression` or `variable` to take the reference gets it as picked.
@@ -171,10 +203,12 @@ function insertTarget(
 /** Insert variable: a variable picker behind the label that writes the picked reference. */
 export function createInsertVariableAction({
   variables,
+  renderPicker,
   formatReference,
   strings,
   id = 'insert-variable',
 }: InsertVariableActionOptions): FieldHeaderAction {
+  const pickerFor = renderPicker && bindVariablePicker(renderPicker);
   return {
     id,
     render: (ctx) => {
@@ -182,6 +216,19 @@ export function createInsertVariableAction({
       if (ctx.mode?.mode === 'variable') return null;
       const text = { ...ctx.strings.insertVariable, ...strings };
       const insert = insertTarget(ctx, formatReference, text);
+      // Resolved at pick time: the mode or control may have changed since render.
+      const onInsert =
+        insert && ((reference: string) => insertTarget(ctx, formatReference, text)?.(reference));
+      if (pickerFor) {
+        return (
+          <InsertVariableAction
+            renderPicker={pickerFor(ctx.field)}
+            onInsert={onInsert}
+            disabled={ctx.disabled}
+            strings={text}
+          />
+        );
+      }
       return (
         <InsertVariableAction
           variables={
@@ -189,10 +236,7 @@ export function createInsertVariableAction({
               ? variables
               : () => (variables ? resolveVariables(variables, ctx.field) : ctx.variables())
           }
-          // Resolved at pick time: the mode or control may have changed since render.
-          onInsert={
-            insert && ((reference) => insertTarget(ctx, formatReference, text)?.(reference))
-          }
+          onInsert={onInsert}
           disabled={ctx.disabled}
           strings={text}
         />

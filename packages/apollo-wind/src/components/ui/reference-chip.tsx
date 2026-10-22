@@ -4,7 +4,7 @@ import { getReferenceChipColors } from './reference-chip-colors';
 
 export interface ReferenceChipProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'> {
   /** Display name of the referenced variable, resource or connection. */
-  label: string;
+  label: ReactNode;
   /** Decorative icon. Branded icons may preserve their original colors. */
   icon?: ReactNode;
   onRemove?: () => void;
@@ -76,7 +76,7 @@ export const ReferenceChip = forwardRef<HTMLSpanElement, ReferenceChipProps>(
           <button
             type="button"
             disabled={disabled}
-            aria-label={removeLabel ?? `Remove ${label}`}
+            aria-label={removeLabel ?? (typeof label === 'string' ? `Remove ${label}` : 'Remove')}
             className="inline-flex shrink-0 items-center justify-center p-px border-0 bg-transparent cursor-pointer rounded-[2px] w-4 h-4 text-inherit focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-current disabled:cursor-default"
             onMouseDown={(event) => {
               event.preventDefault();
