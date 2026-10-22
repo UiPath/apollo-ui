@@ -107,7 +107,7 @@ describe('TaskContent - runs chip', () => {
     const chip = screen.getByText('3');
     expect(chip.closest('[data-testid="canvas-tooltip"]')).toHaveAttribute(
       'data-tooltip-content',
-      'Ran 3 times'
+      'Runs: 3'
     );
   });
 
@@ -122,14 +122,14 @@ describe('TaskContent - runs chip', () => {
     );
   });
 
-  it('interpolates the total-run count into the plural tooltip form', () => {
+  it('interpolates the total-run count into the runs tooltip', () => {
     renderTaskContent({
       taskExecution: { status: 'Failed', duration: '1m', retryCount: 3 },
     });
     const chip = screen.getByText('4');
     expect(chip.closest('[data-testid="canvas-tooltip"]')).toHaveAttribute(
       'data-tooltip-content',
-      'Ran 4 times'
+      'Runs: 4'
     );
   });
 
@@ -140,7 +140,7 @@ describe('TaskContent - runs chip', () => {
     const chip = screen.getByText('2');
     expect(chip.closest('[data-testid="canvas-tooltip"]')).toHaveAttribute(
       'data-tooltip-content',
-      'Ran 2 times'
+      'Runs: 2'
     );
   });
 

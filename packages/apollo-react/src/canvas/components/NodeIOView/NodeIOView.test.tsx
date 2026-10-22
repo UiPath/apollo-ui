@@ -62,7 +62,7 @@ describe('NodeIOView', () => {
       name: 'Copy path for responseBody',
     });
     // The count fills the cell right after the key's, not pushed to the far edge.
-    expect(key.closest('[role="gridcell"]')?.nextElementSibling?.textContent).toBe('1 key');
+    expect(key.closest('[role="gridcell"]')?.nextElementSibling?.textContent).toBe('Keys: 1');
   });
 
   it('hides a container count when decoration.hideCount is set', () => {
@@ -73,8 +73,8 @@ describe('NodeIOView', () => {
       />
     );
     // big's count is suppressed; the undecorated small container keeps its own.
-    expect(screen.queryByText('3 keys')).not.toBeInTheDocument();
-    expect(screen.getByText('1 key')).toBeInTheDocument();
+    expect(screen.queryByText('Keys: 3')).not.toBeInTheDocument();
+    expect(screen.getByText('Keys: 1')).toBeInTheDocument();
   });
 
   it('renders the title bar when a title is given', () => {
@@ -90,7 +90,7 @@ describe('NodeIOView', () => {
     const row = screen
       .getByRole('button', { name: 'Copy path for responseBody' })
       .closest('[role="row"]') as HTMLElement;
-    await userEvent.click(within(row).getByText('1 key'));
+    await userEvent.click(within(row).getByText('Keys: 1'));
     expect(screen.queryByText('currency')).not.toBeInTheDocument();
   });
 
@@ -792,8 +792,8 @@ describe('NodeIOView', () => {
     expect(screen.getByText('item')).toBeInTheDocument();
     expect(screen.getByText('name')).toBeInTheDocument();
     expect(screen.getByText('count')).toBeInTheDocument();
-    // The preview is not a real element, so the array still reads "0 items".
-    expect(screen.getByText('0 items')).toBeInTheDocument();
+    // The preview is not a real element, so the array still reads "Items: 0".
+    expect(screen.getByText('Items: 0')).toBeInTheDocument();
   });
 
   it('leaves the preview item read-only in an editable tree', () => {
@@ -829,7 +829,7 @@ describe('NodeIOView', () => {
       />
     );
     expect(screen.getByText('item')).toBeInTheDocument();
-    expect(screen.getByText('0 items')).toBeInTheDocument();
+    expect(screen.getByText('Items: 0')).toBeInTheDocument();
   });
 
   it('previews the item shape even when the tree is read-only', () => {
@@ -858,7 +858,7 @@ describe('NodeIOView', () => {
       />
     );
     expect(screen.queryByText('item')).not.toBeInTheDocument();
-    expect(screen.getByText('2 items')).toBeInTheDocument();
+    expect(screen.getByText('Items: 2')).toBeInTheDocument();
   });
 
   it('collapses row actions beyond the inline cap into an overflow menu', async () => {
