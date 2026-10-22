@@ -171,6 +171,8 @@ export const Attachment = React.memo(
 
       return [IconComp, fileType];
     }, [attachment]);
+    // Named `name` to match the catalog's placeholder.
+    const name = attachment.name;
 
     return (
       <StyledAttachment
@@ -201,12 +203,12 @@ export const Attachment = React.memo(
               iconSize={token.Icon.IconS}
               iconName="close"
               tooltip={_(
-                msg({ id: 'autopilot-chat.common.attachments.remove-file', message: `Remove file` })
+                msg({ id: 'autopilot-chat.common.attachments.remove-file', message: `Remove` })
               )}
               ariaLabel={_(
                 msg({
                   id: 'autopilot-chat.common.attachments.remove-file-name',
-                  message: `Remove ${attachment.name}`,
+                  message: `Remove ${name}`,
                 })
               )}
               onClick={() => {

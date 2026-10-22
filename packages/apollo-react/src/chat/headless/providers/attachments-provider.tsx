@@ -101,11 +101,13 @@ export function AutopilotAttachmentsProvider({ children }: { children: React.Rea
       const totalCount = filesToAdd.length;
 
       if (allowedAttachments.maxCount && totalCount > allowedAttachments.maxCount) {
+        // Named `maxCount` to match the catalog's placeholder.
+        const maxCount = allowedAttachments.maxCount;
         setError(
           _(
             msg({
               id: 'autopilot-chat.error.too-many-files',
-              message: `Maximum ${allowedAttachments.maxCount} files allowed`,
+              message: `Too many files. ${maxCount} files are allowed per message`,
             })
           )
         );
@@ -118,7 +120,7 @@ export function AutopilotAttachmentsProvider({ children }: { children: React.Rea
           _(
             msg({
               id: 'autopilot-chat.error.multiple-files',
-              message: `Only one file is allowed`,
+              message: `Only one file can be attached per message`,
             })
           )
         );

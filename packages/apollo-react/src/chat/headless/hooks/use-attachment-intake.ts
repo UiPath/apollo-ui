@@ -124,7 +124,7 @@ export function useAttachmentIntake() {
           _(
             msg({
               id: 'autopilot-chat.error.multiple-files',
-              message: `Only one file can be attached at a time`,
+              message: `Only one file can be attached per message`,
             })
           )
         );
@@ -137,7 +137,7 @@ export function useAttachmentIntake() {
           _(
             msg({
               id: 'autopilot-chat.error.too-many-files',
-              message: `Maximum ${maxCount} files allowed`,
+              message: `Too many files. ${maxCount} files are allowed per message`,
             })
           )
         );
