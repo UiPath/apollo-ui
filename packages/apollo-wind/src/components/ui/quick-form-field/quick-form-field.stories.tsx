@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Braces, Code2, MessageSquareText, Trash2, Type } from 'lucide-react';
 import { useId, useState } from 'react';
+import { Button } from '../button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -74,16 +75,19 @@ type Story = StoryObj<typeof meta>;
 
 function DeleteFieldButton({ onDelete }: { onDelete?: () => void }) {
   return (
-    <button
+    <Button
       type="button"
+      variant="ghost"
+      size="3xs"
+      icon
       onClick={onDelete}
       disabled={!onDelete}
       aria-label="Delete field"
       title="Delete field"
-      className="grid size-7 shrink-0 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+      className="shrink-0 text-muted-foreground hover:bg-accent hover:text-foreground [&_svg]:size-3"
     >
-      <Trash2 size={14} />
-    </button>
+      <Trash2 />
+    </Button>
   );
 }
 

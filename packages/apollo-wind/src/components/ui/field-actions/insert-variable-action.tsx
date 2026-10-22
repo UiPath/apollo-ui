@@ -1,12 +1,13 @@
 import { Braces, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
+import { Button } from '@/components/ui/button';
 import {
   type RenderVariablePicker,
   VariablePicker,
   type VariablePickerItem,
 } from '@/components/ui/variable-picker';
 import { cn } from '@/lib';
-import { COLLAPSED_HIDDEN, COLLAPSED_ICON_PADDING } from './collapse';
+import { COLLAPSED_HIDDEN, FIELD_ACTION_CLASS } from './collapse';
 
 // Shared, so an omitted `variables` is the same list on every render.
 const NO_VARIABLES: VariablePickerItem[] = [];
@@ -100,21 +101,19 @@ export function InsertVariableAction({
         if (variable.value) onInsert?.(variable.value, variable);
       }}
     >
-      <button
+      <Button
         type="button"
+        variant="ghost"
+        size="3xs"
         aria-label={text.ariaLabel}
         title={text.ariaLabel}
         disabled={inert}
-        className={cn(
-          'flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground disabled:pointer-events-none disabled:opacity-50',
-          COLLAPSED_ICON_PADDING,
-          compact && '!px-1.5'
-        )}
+        className={cn('gap-1', FIELD_ACTION_CLASS)}
       >
-        <Braces size={12} />
+        <Braces />
         <span className={collapsedTextClass}>{text.label}</span>
-        <ChevronDown size={9} className={collapsedTextClass} />
-      </button>
+        <ChevronDown className={cn('!size-2.5', collapsedTextClass)} />
+      </Button>
     </VariablePicker>
   );
 }
