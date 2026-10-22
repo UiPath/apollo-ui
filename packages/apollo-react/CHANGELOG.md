@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.8.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.8.0...@uipath/apollo-react@7.8.1) (2026-10-22)
+
+### Bug Fixes
+
+* **apollo-react:** keep a cleared node name empty instead of the manifest label [MST-17199] ([b797341](https://github.com/UiPath/apollo-ui/commit/b79734134e0b12299ddd4ad60b1e39e8306df21b))
+
 ## [@uipath/apollo-react-v7.7.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.6.1...@uipath/apollo-react@7.7.0) (2026-10-21)
 
 ### Features
