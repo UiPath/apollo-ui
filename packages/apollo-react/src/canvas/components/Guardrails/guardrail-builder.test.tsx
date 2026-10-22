@@ -1648,6 +1648,75 @@ describe('GuardrailBuilder', () => {
       expect(screen.getByRole('combobox', { name: /action type/i })).toHaveTextContent('Log');
     });
 
+    it('shows the log severity select by default', () => {
+      render(
+        <GuardrailBuilder
+          open
+          inline
+          hideHeader
+          definition={makeDef()}
+          scope="Llm"
+          defaultName="PII 1"
+          onSave={vi.fn()}
+          onCancel={vi.fn()}
+        />
+      );
+
+      expect(screen.getByRole('combobox', { name: /severity level/i })).toBeInTheDocument();
+    });
+
+    it('hides the log severity select with hideLogSeverity and saves the default severity', () => {
+      const onSave = vi.fn();
+      render(
+        <GuardrailBuilder
+          open
+          inline
+          hideHeader
+          definition={makeDef()}
+          scope="Llm"
+          defaultName="PII 1"
+          hideLogSeverity
+          onSave={onSave}
+          onCancel={vi.fn()}
+        />
+      );
+
+      expect(screen.getByRole('combobox', { name: /action type/i })).toHaveTextContent('Log');
+      expect(screen.queryByRole('combobox', { name: /severity level/i })).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+      expect(onSave).toHaveBeenCalledWith(
+        expect.objectContaining({ action: { $actionType: 'log', severityLevel: 'Info' } })
+      );
+    });
+
+    it('saves an edited guardrail with its stored severity under hideLogSeverity', () => {
+      const onSave = vi.fn();
+      render(
+        <GuardrailBuilder
+          open
+          inline
+          hideHeader
+          definition={makeDef()}
+          scope="Llm"
+          guardrail={makeGuardrail({
+            selector: { scopes: ['Llm'] },
+            action: { $actionType: 'log', severityLevel: 'Error' },
+          })}
+          hideLogSeverity
+          onSave={onSave}
+          onCancel={vi.fn()}
+        />
+      );
+
+      expect(screen.queryByRole('combobox', { name: /severity level/i })).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+      expect(onSave).toHaveBeenCalledWith(
+        expect.objectContaining({ action: { $actionType: 'log', severityLevel: 'Error' } })
+      );
+    });
+
     it('saves a recipient type it does not model unchanged', () => {
       const onSave = vi.fn();
       // Agents' ArgumentEmail, passed in with a cast as the host does.

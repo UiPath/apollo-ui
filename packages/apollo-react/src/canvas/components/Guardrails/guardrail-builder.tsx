@@ -130,6 +130,12 @@ export interface GuardrailBuilderProps {
    * builder has no field picker to edit it (`CustomGuardrailBuilder` does).
    */
   allowedActionTypes?: ReadonlyArray<Exclude<GuardrailAction['$actionType'], 'filter'>>;
+  /**
+   * Hide the severity level select for a log action, for a host whose log action has no
+   * severity. A new guardrail still saves the default `'Info'` and an edited one its stored
+   * `severityLevel`; the host overwrites it on save if it needs another.
+   */
+  hideLogSeverity?: boolean;
   renderRecipientSearch?: (ctx: GuardrailRecipientSearchContext) => ReactNode;
   /**
    * Replace the editor for static/asset recipients (types 3/4/5/6). Return `undefined` to
@@ -200,6 +206,7 @@ export function GuardrailBuilder({
   policyName,
   evalsTogglePlacement = 'form',
   allowedActionTypes,
+  hideLogSeverity,
   renderRecipientSearch,
   renderStaticRecipient,
   renderAppPicker,
@@ -556,6 +563,7 @@ export function GuardrailBuilder({
           action={formData.action}
           onActionChange={(action) => updateField('action', action)}
           allowedActionTypes={allowedActionTypes}
+          hideLogSeverity={hideLogSeverity}
           errors={{
             blockReason: displayErrors.blockReason,
             filterFields: displayErrors.filterFields,

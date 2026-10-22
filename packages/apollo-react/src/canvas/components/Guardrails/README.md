@@ -954,6 +954,11 @@ const [action, setAction] = useState<GuardrailAction>({
   action outside the list never blanks the select. Both builders forward it, and start a new
   guardrail on the first allowed type when log is not among them. `GuardrailBuilder`'s takes no
   `filter`, which it has no field picker for.
+- **`hideLogSeverity` drops the severity select** for a host whose log action has no severity
+  (Flow's Guardrail node, where log is relabelled Fail). The type select keeps its column, so
+  it does not move when the user switches to block. `severityLevel` is left as it is: a new
+  guardrail saves `'Info'`, an edited one its stored value, and the host overwrites it on save
+  if it needs another. `GuardrailBuilder` forwards it.
 - **Asset recipients round-trip.** Types 4 and 6 display as their static siblings (3 and 5) in
   the type select, so a value written by a host asset editor never blanks the selection.
 - **Recipient types outside 1-6 pass through.** Agents' argument (7, 8) and

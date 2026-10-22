@@ -183,6 +183,14 @@ export const AllowedActionTypes: Story = {
   render: () => <ActionSectionHost initial={logAction} allowedActionTypes={['log', 'block']} />,
 };
 
+/** hideLogSeverity drops the severity select; the action keeps its severityLevel. */
+export const LogWithoutSeverity: Story = {
+  args: { action: logAction, onActionChange: () => {} },
+  render: () => (
+    <ActionSectionHost initial={logAction} allowedActionTypes={['log', 'block']} hideLogSeverity />
+  ),
+};
+
 /** Filter appears only with showFilter, and its field picker is host content. */
 export const FilterWithHostFieldPicker: Story = {
   args: { action: { $actionType: 'filter', fields: [] }, onActionChange: () => {} },
