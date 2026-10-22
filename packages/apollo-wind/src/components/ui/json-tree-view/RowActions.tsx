@@ -13,7 +13,7 @@ import { JsonTreeTooltip } from './JsonTreeTooltip';
 import type { JsonTreeNode, NodeAction, NodeDecorationTone } from './JsonTree.types';
 
 const ACTION_BUTTON_CLASS =
-  'shrink-0 rounded text-foreground-subtle opacity-0 hover:text-foreground hover:bg-surface-raised group-hover:opacity-100 focus-visible:opacity-100';
+  'shrink-0 rounded text-foreground-subtle opacity-0 hover:text-foreground hover:bg-surface-raised group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100';
 
 const ACTION_TONE_CLASS: Record<NodeDecorationTone, string> = {
   neutral: '',
