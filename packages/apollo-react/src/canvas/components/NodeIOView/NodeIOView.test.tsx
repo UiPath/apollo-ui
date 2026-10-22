@@ -387,6 +387,8 @@ describe('NodeIOView', () => {
     render(<NodeIOView schema={SCHEMA} value={{ statusCode: 200 }} />);
     await userEvent.click(screen.getByRole('tab', { name: 'JSON' }));
     expect(screen.getByText(/"statusCode": 200/)).toBeInTheDocument();
+    // Radix's tabindex="0" is dropped, so the browser decides whether the panel is a stop.
+    expect(screen.getByRole('tabpanel')).not.toHaveAttribute('tabindex');
   });
 
   it('hides the filter control unless filters are provided', () => {
