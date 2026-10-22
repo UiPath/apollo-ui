@@ -3,6 +3,7 @@ import { ChevronDown, ChevronRight, CircleCheck, CircleX, Clock, Loader2 } from 
 import * as React from 'react';
 import { cn } from '@/lib';
 import { disclosureRowClassName } from '@/lib/disclosure-row';
+import { useIsomorphicLayoutEffect } from '@/lib/use-isomorphic-layout-effect';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './collapsible';
 import {
   buildJsonTree,
@@ -68,9 +69,6 @@ function mergeStrings(overrides: Partial<ToolCallStrings> | undefined): ToolCall
   }
   return merged;
 }
-
-const useIsomorphicLayoutEffect =
-  typeof window === 'undefined' ? React.useEffect : React.useLayoutEffect;
 
 const TOGGLE_CLASSES = `${disclosureRowClassName} hover:text-foreground`;
 

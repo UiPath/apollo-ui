@@ -40,6 +40,26 @@ A tree for exploring and editing JSON data, such as variables, node inputs and o
 - **Customization**: \`decorateNode\`, \`renderValue\`, \`nodeActions\`, and \`rowWrapper\` change how rows look and behave.
 - **Reference variables**: \`decorateNode\` can mark a field as a reference. Its type badge gets a corner arrow and a tooltip naming the source.
 - **Localization**: Every string comes from the \`strings\` prop, with English defaults in \`DEFAULT_JSON_TREE_VIEW_STRINGS\`.
+
+## Accessibility
+
+The tree follows the WAI-ARIA treegrid pattern. It is one Tab stop: Tab enters on the last focused row, walks that row's controls, then leaves the tree. Name it with \`aria-label\` or \`aria-labelledby\` when the page shows more than one.
+
+| Key | On a row | On a control |
+| --- | --- | --- |
+| Down / Up | Next or previous row | Same cell in the next or previous row |
+| Right | Expand a collapsed row, else move to its first control | Next control in the row |
+| Left | Collapse an expanded row, else move to its parent | Previous control, then back to the row |
+| Home / End | First or last row | First or last control in the row |
+| Ctrl+Home / Ctrl+End | First or last row | Same cell in the first or last row |
+| Page Down / Page Up | Ten rows down or up | Ten rows down or up, same cell |
+| Enter | Expand or collapse, when the host handles \`onToggleCollapsed\` | The control's action: copy, edit, or toggle |
+
+Empty objects and arrays have no child rows, so Right and Left treat them like any other field.
+
+While a value is being edited, the arrow keys stay in the editor. An inline value applies with Enter. A wrapped value or a JSON editor applies with Ctrl+Enter (Cmd+Enter on macOS). Escape cancels any of them. Focus then returns to the value, or to the action that opened the JSON editor. Copies are announced to screen readers through a polite status message.
+
+A custom \`rowWrapper\` renders inside the row, so it must not add a role or a tabindex of its own. Drag libraries add both by default (dnd-kit's \`attributes\`), so leave those off the wrapper.
         `,
       },
     },

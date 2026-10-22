@@ -208,12 +208,12 @@ describe('ToolCall', () => {
     expect(screen.queryByText('lang')).not.toBeInTheDocument();
 
     const expandFilters = screen.getByRole('button', { name: 'Expand filters' });
-    expect(expandFilters).toHaveAttribute('aria-expanded', 'false');
+    // The row carries the expanded state; the chevron is only its mouse affordance.
+    const filtersRow = expandFilters.closest('[role="row"]');
+    expect(filtersRow).toHaveAttribute('aria-expanded', 'false');
     await user.click(expandFilters);
-    expect(screen.getByRole('button', { name: 'Collapse filters' })).toHaveAttribute(
-      'aria-expanded',
-      'true'
-    );
+    expect(screen.getByRole('button', { name: 'Collapse filters' })).toBeInTheDocument();
+    expect(filtersRow).toHaveAttribute('aria-expanded', 'true');
     expect(screen.getByText('lang')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Expand tags' })).toBeInTheDocument();
 

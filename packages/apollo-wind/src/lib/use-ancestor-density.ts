@@ -1,9 +1,7 @@
 import * as React from 'react';
+import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 
 // Internal: shared by chat primitives, outside the package's exported paths.
-
-const useIsomorphicLayoutEffect =
-  typeof window === 'undefined' ? React.useEffect : React.useLayoutEffect;
 
 /**
  * `compact` while any ancestor has `data-density="compact"`, as the `in-data-[density=compact]:`
