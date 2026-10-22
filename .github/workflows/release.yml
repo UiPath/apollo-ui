@@ -21,7 +21,7 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     name: Release and Publish
     runs-on: uipath-ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     outputs:
       changed: ${{ steps.bump.outputs.changed }}
       changed_packages: ${{ steps.bump.outputs.changed_packages }}
