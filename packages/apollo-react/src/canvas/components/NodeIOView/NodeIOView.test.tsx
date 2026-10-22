@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen, userEvent } from '../../utils/testing';
+import { fireEvent, render, screen, userEvent, within } from '../../utils/testing';
 import type { JsonSchema, JsonTreeChange, JsonValue } from '../JsonTree';
 import { NodeIOView } from './NodeIOView';
 
@@ -61,8 +61,8 @@ describe('NodeIOView', () => {
     const key = screen.getByRole('button', {
       name: 'Copy path for responseBody',
     });
-    // The count is the immediate sibling of the key, not pushed to the far edge.
-    expect(key.nextElementSibling?.textContent).toBe('1 key');
+    // The count fills the cell right after the key's, not pushed to the far edge.
+    expect(key.closest('[role="gridcell"]')?.nextElementSibling?.textContent).toBe('1 key');
   });
 
   it('hides a container count when decoration.hideCount is set', () => {
@@ -87,10 +87,10 @@ describe('NodeIOView', () => {
     render(<NodeIOView schema={SCHEMA} value={VALUE} />);
     expect(screen.getByText('currency')).toBeInTheDocument();
     // The key count is a plain span, not a control, so a click there toggles.
-    const count = screen.getByRole('button', {
-      name: 'Copy path for responseBody',
-    }).nextElementSibling as HTMLElement;
-    await userEvent.click(count);
+    const row = screen
+      .getByRole('button', { name: 'Copy path for responseBody' })
+      .closest('[role="row"]') as HTMLElement;
+    await userEvent.click(within(row).getByText('1 key'));
     expect(screen.queryByText('currency')).not.toBeInTheDocument();
   });
 
@@ -115,12 +115,11 @@ describe('NodeIOView', () => {
     });
   });
 
-  it('confirms a path copy with an inline indicator', async () => {
+  it('announces a path copy', async () => {
     render(<NodeIOView schema={SCHEMA} value={VALUE} />);
     await userEvent.click(screen.getByRole('button', { name: 'Copy path for statusCode' }));
-    // A tooltip would be dismissed by the click itself, so the confirmation
-    // rides on an inline indicator next to the key instead.
-    expect(await screen.findByRole('img', { name: 'Path copied' })).toBeInTheDocument();
+    // The inline check is visual only; screen readers hear the tree's status message.
+    expect(await screen.findByRole('status')).toHaveTextContent('Path copied');
   });
 
   it('copies the value from the row action', async () => {

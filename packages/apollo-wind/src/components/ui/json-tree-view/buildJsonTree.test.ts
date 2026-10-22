@@ -368,6 +368,28 @@ describe('deeply nested trees', () => {
       '1:e[1]',
     ]);
   });
+
+  it('numbers each row among the siblings left visible', () => {
+    const tree = buildJsonTree({ value: { a: { x: 1, y: 2, z: 3 }, b: 'no', c: { y: 4 } } });
+    const position = (rows: ReturnType<typeof flattenJsonTree>) =>
+      rows.map(({ node, posInSet, setSize }) => `${node.path}:${posInSet}/${setSize}`);
+
+    expect(position(flattenJsonTree(tree))).toEqual([
+      'a:1/3',
+      'a.x:1/3',
+      'a.y:2/3',
+      'a.z:3/3',
+      'b:2/3',
+      'c:3/3',
+      'c.y:1/1',
+    ]);
+    expect(position(flattenJsonTree(tree, { query: 'y' }))).toEqual([
+      'a:1/2',
+      'a.y:1/1',
+      'c:2/2',
+      'c.y:1/1',
+    ]);
+  });
 });
 
 describe('value path helpers', () => {

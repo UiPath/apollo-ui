@@ -282,9 +282,14 @@ export interface JsonTreeChange {
 }
 
 /**
- * Props passed to a custom row container. The wrapper IS the row element:
+ * Props passed to a custom row container. The wrapper is the row's visual line:
  * render a single container applying `className`/`style` and `children`
  * verbatim, plus whatever behavior you attach (e.g. dnd-kit drag listeners).
+ *
+ * It renders inside the tree grid's `row` element, which owns the row's role
+ * and keyboard focus, so don't give the wrapper a role or tabindex. dnd-kit's
+ * `attributes` add both (`role="button"`, `tabIndex={0}`); spread only its
+ * `listeners`.
  */
 export interface JsonTreeRowWrapperProps {
   node: JsonTreeNode;

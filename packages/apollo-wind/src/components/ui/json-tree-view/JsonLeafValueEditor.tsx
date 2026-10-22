@@ -1,8 +1,8 @@
-import { cn } from '@/lib';
 import { useEffect, useRef, useState } from 'react';
-import { useJsonTreeViewStrings } from './strings';
+import { cn } from '@/lib';
 import type { JsonTreeNode, JsonValue } from './JsonTree.types';
 import { isNumericEdit, parseLeafValue, resolveLeafEditType } from './leafEditTypes';
+import { useJsonTreeViewStrings } from './strings';
 
 export interface JsonLeafValueEditorProps {
   node: JsonTreeNode;
@@ -61,7 +61,12 @@ export function JsonLeafValueEditor({
         else commit();
       }}
       onKeyDown={(e) => {
-        if (e.key === 'Enter') commit();
+        if (e.key === 'Enter') {
+          // Consumed, so it can't go on to submit a host form or, once focus is
+          // back on the value button, click it and reopen the editor.
+          e.preventDefault();
+          commit();
+        }
         if (e.key === 'Escape') {
           // Contain Escape here so it cancels the edit without also bubbling
           // to a host that closes on Escape (e.g. a dialog or the panel).

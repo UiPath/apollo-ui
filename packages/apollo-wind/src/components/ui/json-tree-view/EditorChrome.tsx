@@ -1,6 +1,6 @@
+import { useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib';
-import { useEffect, useRef } from 'react';
 import { useJsonTreeViewStrings } from './strings';
 
 /** Apply/Cancel row shared by the multiline editors. */
@@ -75,7 +75,11 @@ export function EditorTextarea({
           e.stopPropagation();
           onCancel();
         }
-        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) onApply();
+        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+          // Consumed, so it can't click the control focus returns to.
+          e.preventDefault();
+          onApply();
+        }
       }}
       rows={rows}
       spellCheck={false}
