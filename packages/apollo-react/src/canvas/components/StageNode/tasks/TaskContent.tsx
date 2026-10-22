@@ -108,7 +108,7 @@ export const TaskContent = memo(
         ? _({ id: 'stage-node.task-badge.running-again', message: 'Running again' })
         : _({
             id: 'stage-node.task-badge.ran-n-times',
-            message: '{count, plural, one {Ran # time} other {Ran # times}}',
+            message: 'Runs: {count}',
             values: { count: totalRuns },
           });
     const hasRework = !!taskExecution?.retryDuration;

@@ -49,7 +49,7 @@ interface SummaryItem {
   label: string;
 }
 
-/** The non-zero counts of a summary as localized labels, e.g. "2 nodes added". */
+/** The non-zero counts of a summary as localized labels, e.g. "Nodes added: 2". */
 function useSummaryItems(summary: DiffSummary): SummaryItem[] {
   const { _ } = useSafeLingui();
   return useMemo(() => {
@@ -59,7 +59,7 @@ function useSummaryItems(summary: DiffSummary): SummaryItem[] {
         kind: 'added',
         label: _({
           id: 'canvas.diff_view.added_nodes',
-          message: '{count, plural, one {# node added} other {# nodes added}}',
+          message: 'Nodes added: {count}',
           values: { count: summary.addedNodes },
         }),
       },
@@ -68,7 +68,7 @@ function useSummaryItems(summary: DiffSummary): SummaryItem[] {
         kind: 'removed',
         label: _({
           id: 'canvas.diff_view.removed_nodes',
-          message: '{count, plural, one {# node removed} other {# nodes removed}}',
+          message: 'Nodes removed: {count}',
           values: { count: summary.removedNodes },
         }),
       },
@@ -77,7 +77,7 @@ function useSummaryItems(summary: DiffSummary): SummaryItem[] {
         kind: 'changed',
         label: _({
           id: 'canvas.diff_view.changed_nodes',
-          message: '{count, plural, one {# node changed} other {# nodes changed}}',
+          message: 'Nodes changed: {count}',
           values: { count: summary.changedNodes },
         }),
       },
@@ -86,7 +86,7 @@ function useSummaryItems(summary: DiffSummary): SummaryItem[] {
         kind: 'added',
         label: _({
           id: 'canvas.diff_view.added_edges',
-          message: '{count, plural, one {# connection added} other {# connections added}}',
+          message: 'Connections added: {count}',
           values: { count: summary.addedEdges },
         }),
       },
@@ -95,7 +95,7 @@ function useSummaryItems(summary: DiffSummary): SummaryItem[] {
         kind: 'removed',
         label: _({
           id: 'canvas.diff_view.removed_edges',
-          message: '{count, plural, one {# connection removed} other {# connections removed}}',
+          message: 'Connections removed: {count}',
           values: { count: summary.removedEdges },
         }),
       },
@@ -104,7 +104,7 @@ function useSummaryItems(summary: DiffSummary): SummaryItem[] {
         kind: 'changed',
         label: _({
           id: 'canvas.diff_view.changed_edges',
-          message: '{count, plural, one {# connection changed} other {# connections changed}}',
+          message: 'Connections changed: {count}',
           values: { count: summary.changedEdges },
         }),
       },

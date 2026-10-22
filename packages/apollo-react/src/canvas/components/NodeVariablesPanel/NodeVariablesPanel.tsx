@@ -479,7 +479,7 @@ export function NodeVariablesPanel({
         const count = source.outputCount ?? countEntries(node.children);
         const countLabel = _({
           id: 'canvas.node_variables_panel.node_output_count',
-          message: '{count, plural, one {# output} other {# outputs}}',
+          message: 'Outputs: {count}',
           values: { count },
         });
         return {
@@ -709,27 +709,27 @@ export function NodeVariablesPanel({
     ({
       inputs: _({
         id: 'canvas.node_variables_panel.count_inputs',
-        message: '{count, plural, one {# input} other {# inputs}}',
+        message: 'Inputs: {count}',
         values: { count },
       }),
       outputs: _({
         id: 'canvas.node_variables_panel.count_outputs',
-        message: '{count, plural, one {# output} other {# outputs}}',
+        message: 'Outputs: {count}',
         values: { count },
       }),
       variables: _({
         id: 'canvas.node_variables_panel.count_variables',
-        message: '{count, plural, one {# variable} other {# variables}}',
+        message: 'Variables: {count}',
         values: { count },
       }),
       assets: _({
         id: 'canvas.node_variables_panel.count_assets',
-        message: '{count, plural, one {# asset} other {# assets}}',
+        message: 'Assets: {count}',
         values: { count },
       }),
       nodes: _({
         id: 'canvas.node_variables_panel.count_nodes',
-        message: '{count, plural, one {# node} other {# nodes}}',
+        message: 'Nodes: {count}',
         values: { count },
       }),
     })[section];

@@ -101,10 +101,10 @@ describe('NodeVariablesPanel', () => {
   it('counts each section and describes counts for assistive technology', () => {
     renderPanel();
 
-    expect(screen.getByRole('img', { name: '3 inputs' })).toBeInTheDocument();
-    expect(screen.getByRole('img', { name: '0 outputs' })).toBeInTheDocument();
-    expect(screen.getByRole('img', { name: '3 variables' })).toBeInTheDocument();
-    expect(screen.getByRole('img', { name: '1 node' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Inputs: 3' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Outputs: 0' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Variables: 3' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Nodes: 1' })).toBeInTheDocument();
   });
 
   it('shows each node by name and icon, with its id as the copied reference', async () => {
@@ -139,9 +139,9 @@ describe('NodeVariablesPanel', () => {
     renderPanel({ defaultExpandedSections: ['inputs', 'nodes'] });
 
     // The schema's top-level fields, or the consumer's outputCount.
-    expect(screen.getAllByRole('img', { name: '1 output' })).toHaveLength(3);
+    expect(screen.getAllByRole('img', { name: 'Outputs: 1' })).toHaveLength(3);
     // Manual trigger has none, like the empty Outputs section.
-    expect(screen.getAllByRole('img', { name: '0 outputs' })).toHaveLength(2);
+    expect(screen.getAllByRole('img', { name: 'Outputs: 0' })).toHaveLength(2);
 
     await user.click(screen.getByRole('button', { name: 'Expand messageReceivedInSlack1' }));
     await user.click(screen.getByRole('button', { name: 'Expand output' }));
@@ -154,7 +154,7 @@ describe('NodeVariablesPanel', () => {
     renderPanel({ onFocusNode, onAdd: vi.fn() });
 
     const focus = screen.getByRole('button', { name: 'Focus on Autonomous agent' });
-    const count = within(section('Nodes')).getByRole('img', { name: '1 output' });
+    const count = within(section('Nodes')).getByRole('img', { name: 'Outputs: 1' });
     const add = screen.getByRole('button', { name: 'Add from Autonomous agent' });
     // Count and + share the section header's right-edge columns.
     expect(focus.compareDocumentPosition(count) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
@@ -261,9 +261,9 @@ describe('NodeVariablesPanel', () => {
     );
 
     expect(within(section('Inputs')).getByText('Webhook (upstream)')).toBeInTheDocument();
-    expect(within(section('Inputs')).getByRole('img', { name: '2 outputs' })).toBeInTheDocument();
+    expect(within(section('Inputs')).getByRole('img', { name: 'Outputs: 2' })).toBeInTheDocument();
     expect(within(section('Nodes')).getByText('Webhook')).toBeInTheDocument();
-    expect(within(section('Nodes')).getByRole('img', { name: '1 output' })).toBeInTheDocument();
+    expect(within(section('Nodes')).getByRole('img', { name: 'Outputs: 1' })).toBeInTheDocument();
   });
 
   it('keeps expansion separate when the same node is in Inputs and Nodes', async () => {
@@ -307,7 +307,7 @@ describe('NodeVariablesPanel', () => {
       />
     );
 
-    expect(screen.getByRole('img', { name: '0 outputs' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Outputs: 0' })).toBeInTheDocument();
     expect(within(section('Outputs')).getByText('item')).toBeInTheDocument();
   });
 
@@ -358,8 +358,8 @@ describe('NodeVariablesPanel', () => {
     );
 
     // The Outputs section and the List input node both have no real entries.
-    expect(screen.getAllByRole('img', { name: '0 outputs' })).toHaveLength(2);
-    expect(screen.getByRole('img', { name: '0 variables' })).toBeInTheDocument();
+    expect(screen.getAllByRole('img', { name: 'Outputs: 0' })).toHaveLength(2);
+    expect(screen.getByRole('img', { name: 'Variables: 0' })).toBeInTheDocument();
   });
 
   it('edits a variable in a dialog, reading its details from the schema', async () => {
@@ -1093,7 +1093,7 @@ describe('NodeVariablesPanel', () => {
     const names = screen.getAllByRole('region').map((region) => region.getAttribute('aria-label'));
     expect(names).toEqual(['Inputs', 'Outputs', 'Variables', 'Assets', 'Nodes']);
     expect(sectionToggle('Assets')).toHaveAttribute('aria-expanded', 'false');
-    expect(screen.getByRole('img', { name: '2 assets' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Assets: 2' })).toBeInTheDocument();
     expect(screen.queryByText('invoiceApiKey')).not.toBeInTheDocument();
   });
 
