@@ -258,7 +258,13 @@ export function NodeIOView({
           className="shrink-0"
         />
 
-        <TabsContent value="schema" className="mt-0 flex min-h-0 flex-1 flex-col">
+        {/* No tabIndex, so the browser makes a panel a tab stop only when it scrolls with nothing
+            focusable inside. Radix's default 0 would stop on every panel. */}
+        <TabsContent
+          value="schema"
+          tabIndex={undefined}
+          className="mt-0 flex min-h-0 flex-1 flex-col"
+        >
           <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-surface-overlay bg-surface-overlay/40">
             <JsonTreeView
               nodes={nodes}
@@ -287,7 +293,11 @@ export function NodeIOView({
           </div>
         </TabsContent>
 
-        <TabsContent value="json" className="mt-0 flex min-h-0 flex-1 flex-col">
+        <TabsContent
+          value="json"
+          tabIndex={undefined}
+          className="mt-0 flex min-h-0 flex-1 flex-col"
+        >
           <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-surface-overlay bg-surface-overlay/40">
             {jsonView ?? (
               <pre className="h-full overflow-auto p-3 font-mono text-xs leading-4.5 text-foreground">
