@@ -61,6 +61,20 @@ describe('PanelTabs', () => {
     );
   });
 
+  it('leaves the content tab stop to the browser', async () => {
+    const user = userEvent.setup();
+    render(<Panel />);
+
+    // Radix sets tabindex="0"; without it, only a scroller with nothing focusable is a stop.
+    expect(screen.getByRole('tabpanel')).not.toHaveAttribute('tabindex');
+    await user.click(screen.getByRole('tab', { name: 'Parameters' }));
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Notes' })).toHaveFocus();
+    // Tab from the last tab-row control skips the panel.
+    await user.tab();
+    expect(document.body).toHaveFocus();
+  });
+
   it('offers the strip alone for rows that hold other controls', () => {
     render(
       <PanelTabs defaultValue="a">

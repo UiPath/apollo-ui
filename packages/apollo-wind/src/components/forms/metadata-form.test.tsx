@@ -755,6 +755,14 @@ describe('MetadataForm', () => {
       expect(screen.queryByRole('tab', { name: 'Should Not Render' })).not.toBeInTheDocument();
     });
 
+    it('makes the panel a tab stop only when the form is disabled', () => {
+      const { rerender } = render(<MetadataForm schema={tabbedSchema} stepVariant="tabs" />);
+      expect(screen.getByRole('tabpanel')).not.toHaveAttribute('tabindex');
+
+      rerender(<MetadataForm schema={tabbedSchema} stepVariant="tabs" disabled />);
+      expect(screen.getByRole('tabpanel')).toHaveAttribute('tabindex', '0');
+    });
+
     it('keeps a value entered in one tab after switching tabs (single shared form instance)', async () => {
       const user = userEvent.setup();
       render(<MetadataForm schema={tabbedSchema} stepVariant="tabs" />);

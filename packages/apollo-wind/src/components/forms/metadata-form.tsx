@@ -816,6 +816,9 @@ function TabbedStepForm({
               key={step.id}
               value={step.id}
               padded={!selfPadded}
+              // Disabled fields leave nothing to focus, and Safari never makes a scroller a tab
+              // stop on its own, so keep one for keyboard scrolling.
+              tabIndex={disabled ? 0 : undefined}
               innerClassName={showEmptyState ? 'text-sm text-muted-foreground' : 'space-y-2'}
             >
               {showEmptyState ? (

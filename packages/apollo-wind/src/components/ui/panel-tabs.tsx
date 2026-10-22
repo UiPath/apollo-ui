@@ -119,7 +119,11 @@ interface PanelTabsContentProps extends React.ComponentPropsWithoutRef<typeof Ta
   innerClassName?: string;
 }
 
-/** The active tab's content. It is the scroll container, so the tab row stays pinned. */
+/**
+ * The active tab's content. It is the scroll container, so the tab row stays pinned.
+ * It has no tabIndex, so the browser makes it a tab stop only when it scrolls with
+ * nothing focusable inside. Radix's default 0 would stop on every panel.
+ */
 const PanelTabsContent = React.forwardRef<
   React.ElementRef<typeof TabsContent>,
   PanelTabsContentProps
@@ -128,6 +132,7 @@ const PanelTabsContent = React.forwardRef<
     ref={ref}
     data-slot="panel-tabs-content"
     className={cn('mt-0 min-h-0 flex-1 overflow-auto', className)}
+    tabIndex={undefined}
     {...props}
   >
     {padded ? (
