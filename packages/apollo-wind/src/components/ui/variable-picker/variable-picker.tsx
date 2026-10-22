@@ -72,6 +72,36 @@ export interface VariablePickerProps extends VariablePickerContentProps {
   onOpenChange?: (open: boolean) => void;
   triggerLabel?: string;
   triggerAriaLabel?: string;
+  /**
+   * The host's own picker, rendered in the popover in place of the search and tree, whose `items`
+   * it then does not use. A pick reaches `onSelect` as its entry, or one made from the value, with
+   * the picked value as its `value`.
+   */
+  renderPicker?: RenderVariablePicker;
+}
+
+/** What a host-rendered picker gets in place of the built-in search and tree. */
+export interface VariablePickerSlotProps {
+  /** The reference already bound, when the pick replaces one. */
+  value?: string;
+  /** Commits `value` and closes the popover. */
+  onSelect(value: string, item?: VariablePickerItem): void;
+  /** Closes the popover without committing anything. */
+  close(): void;
+}
+
+/**
+ * Renders a host's own picker inside a wind-owned popover. Called only while the popover is open:
+ * the trigger, anchoring, focus return and strings stay with wind.
+ */
+export type RenderVariablePicker = (props: VariablePickerSlotProps) => ReactNode;
+
+/** Renders a slot as an element, so it is called only once its popover mounts the content. */
+export function VariablePickerSlot({
+  render,
+  ...props
+}: VariablePickerSlotProps & { render: RenderVariablePicker }) {
+  return render(props);
 }
 
 function itemMatches(item: VariablePickerItem, normalizedQuery: string): boolean {
@@ -246,6 +276,7 @@ export function VariablePicker({
   triggerAriaLabel = 'Insert variable',
   className,
   onSelect,
+  renderPicker,
   ...contentProps
 }: VariablePickerProps) {
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
@@ -280,7 +311,17 @@ export function VariablePicker({
         align={align}
         className={cn('w-[280px] max-w-[calc(100vw-1rem)] overflow-hidden p-0', className)}
       >
-        <VariablePickerContent {...contentProps} onSelect={selectItem} />
+        {renderPicker ? (
+          <VariablePickerSlot
+            render={renderPicker}
+            onSelect={(value, item) =>
+              selectItem({ ...(item ?? { id: value, label: value }), value })
+            }
+            close={() => setOpen(false)}
+          />
+        ) : (
+          <VariablePickerContent {...contentProps} onSelect={selectItem} />
+        )}
       </PopoverContent>
     </Popover>
   );

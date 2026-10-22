@@ -4,7 +4,7 @@ import { FormField, FormFieldHeader } from '../form-field';
 import { Input } from '../input';
 import { InputGroup } from '../input-group';
 import { TooltipProvider } from '../tooltip';
-import type { VariablePickerItem } from '../variable-picker';
+import type { RenderVariablePicker, VariablePickerItem } from '../variable-picker';
 import { AiAssistAction } from './ai-assist-action';
 import { InsertVariableAction } from './insert-variable-action';
 
@@ -21,6 +21,10 @@ Actions for a field's header row, passed to \`FormFieldHeader\`'s \`actions\`.
 - **InsertVariableAction** opens a variable picker and reports the pick. It is disabled with nothing
   to insert or nowhere to insert it, and collapses to its icon below a 260px \`@container\`.
 - **AiAssistAction** opens a prompt and reports it. It needs an ancestor \`TooltipProvider\`.
+
+Insert variable can render the host's own picker instead, through \`renderPicker\`. The action
+keeps its trigger, popover, collapse, focus return and strings, and calls the slot only while the
+popover is open. The picker's \`onSelect\` commits and closes; \`close\` closes without a pick.
 `,
       },
     },
@@ -160,6 +164,61 @@ export const InHeader: Story = {
         />
         <InputGroup>
           <Input id="actions-subject" value={value} onChange={(e) => setValue(e.target.value)} />
+        </InputGroup>
+      </FormField>
+    );
+  },
+};
+
+// Stand-in for a host's own picker, such as a virtualized one with live badges.
+const HOST_ROWS = [
+  { value: '$vars.orderId', label: 'Order id', live: true },
+  { value: '$assets.apiKey', label: 'API key', live: false },
+];
+
+const hostPicker: RenderVariablePicker = ({ value, onSelect, close }) => (
+  <div className="grid gap-1 p-2 text-xs">
+    <span className="px-1 text-foreground-muted">Host picker</span>
+    {HOST_ROWS.map((row) => (
+      <button
+        key={row.value}
+        type="button"
+        aria-current={row.value === value || undefined}
+        onClick={() => onSelect(row.value)}
+        className="flex items-center justify-between rounded px-2 py-1 text-left hover:bg-surface-overlay aria-[current]:font-semibold"
+      >
+        {row.label}
+        {row.live && <span className="text-[10px] text-success">Live</span>}
+      </button>
+    ))}
+    <button type="button" onClick={close} className="px-1 text-left text-foreground-muted">
+      Cancel
+    </button>
+  </div>
+);
+
+/** Insert variable rendering the host's own picker inside its popover. */
+export const HostPanels: Story = {
+  render: () => {
+    const [value, setValue] = useState('Order ');
+    return (
+      <FormField className="w-96">
+        <FormFieldHeader
+          label="Subject"
+          htmlFor="host-panels-subject"
+          actions={
+            <InsertVariableAction
+              renderPicker={hostPicker}
+              onInsert={(variable) => setValue((v) => (v ? `${v} ${variable}` : variable))}
+            />
+          }
+        />
+        <InputGroup>
+          <Input
+            id="host-panels-subject"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+          />
         </InputGroup>
       </FormField>
     );

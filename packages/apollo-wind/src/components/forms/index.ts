@@ -24,6 +24,7 @@ export {
   type FieldActionsPluginConfig,
   type FieldHeaderAction,
   type FieldMenuAction,
+  type FormVariablePicker,
   type InsertVariableActionOptions,
   resolveVariables,
   type ValueModeVariable,
@@ -112,3 +113,7 @@ export {
   type ValueModeRegistry,
   type ValueModesPluginConfig,
 } from './value-modes';
+export {
+  createVariableModeControl,
+  type VariableModeControlOptions,
+} from './variable-mode-control';

@@ -1,8 +1,15 @@
 import { Braces, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
-import { VariablePicker, type VariablePickerItem } from '@/components/ui/variable-picker';
+import {
+  type RenderVariablePicker,
+  VariablePicker,
+  type VariablePickerItem,
+} from '@/components/ui/variable-picker';
 import { cn } from '@/lib';
 import { COLLAPSED_HIDDEN, COLLAPSED_ICON_PADDING } from './collapse';
+
+// Shared, so an omitted `variables` is the same list on every render.
+const NO_VARIABLES: VariablePickerItem[] = [];
 
 export interface InsertVariableActionStrings {
   /** Visible text, hidden when the action collapses to its icon. */
@@ -29,16 +36,11 @@ export const DEFAULT_INSERT_VARIABLE_ACTION_STRINGS: InsertVariableActionStrings
   replaceConfirm: 'Replace',
 };
 
-export interface InsertVariableActionProps {
-  /**
-   * The variables to offer, rendered as supplied: the picker adds no root and no types. A function
-   * is called each time the picker opens, never during render, so a host can hand over a live
-   * source without re-rendering the field whenever it changes.
-   */
-  variables: VariablePickerItem[] | (() => VariablePickerItem[]);
+interface InsertVariableActionBaseProps {
   /**
    * Called with the picked variable's value, and the picked entry itself so a host can recover
-   * whatever it attached to it. Omitted, the action is disabled.
+   * whatever it attached to it. A host picker that picks without an entry gets one made from the
+   * value. Omitted, the action is disabled.
    */
   onInsert?: (value: string, item: VariablePickerItem) => void;
   disabled?: boolean;
@@ -48,9 +50,29 @@ export interface InsertVariableActionProps {
   strings?: Partial<InsertVariableActionStrings>;
 }
 
+export type InsertVariableActionProps = InsertVariableActionBaseProps &
+  (
+    | {
+        /**
+         * The variables to offer, rendered as supplied: the picker adds no root and no types. A
+         * function is called each time the picker opens, never during render, so a host can hand
+         * over a live source without re-rendering the field whenever it changes.
+         */
+        variables: VariablePickerItem[] | (() => VariablePickerItem[]);
+        renderPicker?: undefined;
+      }
+    | {
+        /** Ignored while `renderPicker` is set. */
+        variables?: VariablePickerItem[] | (() => VariablePickerItem[]);
+        /** The host's own picker, rendered in the popover in place of the built-in one. */
+        renderPicker: RenderVariablePicker;
+      }
+  );
+
 /** The Insert-variable header action: opens a variable picker and reports the pick. */
 export function InsertVariableAction({
-  variables,
+  variables = NO_VARIABLES,
+  renderPicker,
   onInsert,
   disabled,
   compact,
@@ -58,8 +80,9 @@ export function InsertVariableAction({
 }: InsertVariableActionProps) {
   const text = { ...DEFAULT_INSERT_VARIABLE_ACTION_STRINGS, ...strings };
   const lazy = typeof variables === 'function';
-  // A function's result is unknown until the picker opens, so only a supplied empty list disables.
-  const inert = disabled || !onInsert || (!lazy && variables.length === 0);
+  // A function's result, or a host picker's, is unknown until the picker opens, so only a supplied
+  // empty list disables.
+  const inert = disabled || !onInsert || (!renderPicker && !lazy && variables.length === 0);
   const [openedItems, setOpenedItems] = useState<VariablePickerItem[]>([]);
   const collapsedTextClass = cn(COLLAPSED_HIDDEN, compact && '!hidden');
 
@@ -69,8 +92,9 @@ export function InsertVariableAction({
       items={lazy ? openedItems : variables}
       placeholder={text.searchPlaceholder}
       emptyText={text.empty}
+      renderPicker={renderPicker}
       onOpenChange={(open) => {
-        if (open && lazy) setOpenedItems(variables());
+        if (open && lazy && !renderPicker) setOpenedItems(variables());
       }}
       onSelect={(variable) => {
         if (variable.value) onInsert?.(variable.value, variable);

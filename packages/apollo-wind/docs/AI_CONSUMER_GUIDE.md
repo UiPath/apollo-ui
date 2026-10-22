@@ -138,9 +138,9 @@ Same props as Row.
 | `BooleanRadioGroup` | True / False / not set    | `value`: boolean\|null, `onValueChange`, `strings`                                                                                                                                       |
 | `FieldMenu`       | Mode and actions menu     | `mode`, `onSelect`, `modes`, `actions`, `modesDisabled`, `strings`                                                                                                                       |
 | `ValueModeIndicator` | `=` before an expression  | `mode`, `strings`                                                                                                                                                                        |
-| `InsertVariableAction` | Header variable picker    | `variables`, `onInsert`, `compact`, `strings`                                                                                                                                            |
+| `InsertVariableAction` | Header variable picker    | `variables`, `onInsert`, `compact`, `strings`. `renderPicker` renders the host's own picker instead, and `variables` is then optional                                                     |
 | `AiAssistAction`  | Header AI prompt          | `onGenerate`, `hint`, `strings`                                                                                                                                                          |
-| `VariableValueControl` | Variable-bound control    | `value`, `onChange`, `variables`, `strings`                                                                                                                                              |
+| `VariableValueControl` | Variable-bound control    | `value`, `onChange`, `variables`, `strings`. `renderPicker` renders the host's own picker; `describeReference(reference)` gives the chip a `{ label, icon? }`                            |
 | `PromptValueControl` | Prompt for an agent       | `value`, `onChange`, `strings`. Render in `InputGroup` with `variant="agent"` `layout="grow"`                                                                                            |
 | `QuickFormField`  | Quick Form builder field  | Only where end users configure fields in a HITL Quick Form. `fieldTypes`, `renderModeControl`, `variables`, `strings`                                                                    |
 | `Label`           | Bare label primitive      | `htmlFor`. For a field use `FormFieldLabel`                                                                                                                                              |
@@ -926,7 +926,7 @@ an expression, a variable or a prompt, switched from a trailing menu.
 | ------------ | ----------- | ----------------------------------------------------------- |
 | `literal`    | Fixed value | The field type's own control                                |
 | `expression` | Expression  | A plain input behind an `=` indicator                       |
-| `variable`   | Variable    | `VariableValueControl`, picking from `FormPlugin.variables` |
+| `variable`   | Variable    | `VariableValueControl`, picking from `FormPlugin.variables`, or the host's control from `createVariableModeControl` |
 | `prompt`     | Prompt      | `PromptValueControl` in an agent-tinted `InputGroup`        |
 
 | Key            | Description                                                                                  |
@@ -959,6 +959,10 @@ Field actions:
   against `FormPlugin.fieldActions`; unregistered ids are skipped.
 - Insert variable writes at the caret of a text control, otherwise it switches the field to
   `expression` or `variable` mode, asking before it replaces a value.
+- A host with its own picker passes it as `renderPicker` to `createInsertVariableAction` (it wins
+  over `variables`, and its pick takes the same path) and to `createVariableModeControl`, registered
+  as `FormPlugin.valueModes.definitions.variable.control`. That control also takes
+  `describeReference(reference, { field })` for the chip's label and icon.
 - `badge` adds text after the label, such as the value's type.
 
 Any of `valueModes`, `headerActions`, `menuActions` or `badge` renders the field through

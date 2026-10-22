@@ -4,6 +4,7 @@ import {
   createAiAssistAction,
   createClearAction,
   createInsertVariableAction,
+  type FormVariablePicker,
 } from './field-actions';
 import type { FormPlugin, FormSchema } from './form-schema';
 import { MetadataForm } from './metadata-form';
@@ -23,6 +24,10 @@ per-field placeholder) and \`createClearAction\`, which is registered by default
 the caret of a control that takes text; otherwise it switches the field to an expression, asking
 first before it replaces a value other than a number or boolean. Their strings come from
 \`FormPlugin.strings\`, and a factory's own \`strings\` win.
+
+A host can render its own panels in these popovers.
+\`createInsertVariableAction({ renderPicker })\` replaces the picker and wins over \`variables\`; a
+pick is written as a picked variable would be.
 `,
       },
     },
@@ -145,4 +150,42 @@ const plugin: FormPlugin = {
 /** Header actions, a Clear row, both on one field with modes, and AI assist with a mock generator. */
 export const Actions: Story = {
   render: () => <Demo schema={schema} plugins={[plugin]} />,
+};
+
+// Stand-in for a host's own picker, such as a virtualized tree with an Assets tab.
+const hostPicker: FormVariablePicker = ({ onSelect, close }) => (
+  <div className="grid gap-1 p-2 text-xs">
+    <span className="px-1 text-foreground-muted">Host picker</span>
+    {['$vars.orderId', '$assets.apiKey'].map((reference) => (
+      <button
+        key={reference}
+        type="button"
+        onClick={() => onSelect(reference)}
+        className="rounded px-2 py-1 text-left font-mono hover:bg-surface-overlay"
+      >
+        {reference}
+      </button>
+    ))}
+    <button type="button" onClick={close} className="px-1 text-left text-foreground-muted">
+      Cancel
+    </button>
+  </div>
+);
+
+const hostPlugin: FormPlugin = {
+  name: 'host',
+  fieldActions: {
+    header: {
+      'insert-variable': createInsertVariableAction({
+        renderPicker: hostPicker,
+        formatReference: (reference, { mode }) =>
+          mode === 'literal' ? `{{ ${reference} }}` : reference,
+      }),
+    },
+  },
+};
+
+/** Insert variable rendering the host's own picker, through its factory. */
+export const HostPanels: Story = {
+  render: () => <Demo schema={schema} plugins={[hostPlugin]} />,
 };

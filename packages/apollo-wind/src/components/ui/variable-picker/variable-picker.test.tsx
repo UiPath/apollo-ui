@@ -154,4 +154,41 @@ describe('VariablePicker', () => {
     expect(screen.getByRole('option', { name: 'Run ID' })).toBeInTheDocument();
     expect(screen.queryByRole('option', { name: 'Customer name' })).not.toBeInTheDocument();
   });
+
+  it("renders a host's picker in place of the tree, and closes on its pick", async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+    render(
+      <VariablePicker
+        items={items}
+        onSelect={onSelect}
+        renderPicker={({ onSelect: pick, close }) => (
+          <>
+            <button type="button" onClick={() => pick('$host.orderId')}>
+              Host order id
+            </button>
+            <button type="button" onClick={close}>
+              Host cancel
+            </button>
+          </>
+        )}
+      />
+    );
+    const trigger = screen.getByRole('button', { name: 'Insert variable' });
+    await user.click(trigger);
+    expect(screen.queryByRole('option', { name: 'Customer name' })).not.toBeInTheDocument();
+    await user.click(await screen.findByRole('button', { name: 'Host order id' }));
+    expect(onSelect).toHaveBeenCalledWith({
+      id: '$host.orderId',
+      label: '$host.orderId',
+      value: '$host.orderId',
+    });
+    expect(screen.queryByRole('button', { name: 'Host order id' })).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
+
+    await user.click(trigger);
+    await user.click(await screen.findByRole('button', { name: 'Host cancel' }));
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('button', { name: 'Host cancel' })).not.toBeInTheDocument();
+  });
 });
