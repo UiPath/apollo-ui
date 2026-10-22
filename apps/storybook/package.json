@@ -9,7 +9,8 @@
     "storybook:build": "storybook build",
     "clean": "rm -rf storybook-static",
     "format": "biome format --write .",
-    "format:check": "biome format ."
+    "format:check": "biome format .",
+    "sync:flow-nodes": "tsx scripts/sync-flow-node-manifests.mts"
   },
   "dependencies": {
     "@mui/material": "^5.18.0",

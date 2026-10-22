@@ -1,0 +1,6005 @@
+{
+  "source": {
+    "repository": "UiPath/flow-workbench",
+    "commit": "a87e54ff8",
+    "generatedAt": "2026-10-22"
+  },
+  "categories": [
+    {
+      "id": "agent",
+      "name": "Agent",
+      "parentId": null,
+      "sortOrder": 10,
+      "icon": "agent"
+    },
+    {
+      "id": "agent.in-solution",
+      "name": "In this solution",
+      "parentId": "agent",
+      "sortOrder": 11,
+      "icon": "folder"
+    },
+    {
+      "id": "agent.published",
+      "name": "Published",
+      "parentId": "agent",
+      "sortOrder": 12,
+      "icon": "cloud-upload"
+    },
+    {
+      "id": "context-grounding-indexes",
+      "name": "Context Grounding Indexes",
+      "parentId": "agent",
+      "sortOrder": 13,
+      "icon": "context"
+    },
+    {
+      "id": "external-agent",
+      "name": "Third-party agent",
+      "parentId": "agent",
+      "sortOrder": 15,
+      "icon": "globe"
+    },
+    {
+      "id": "connector",
+      "name": "Connector",
+      "parentId": null,
+      "sortOrder": 20,
+      "icon": "unplug"
+    },
+    {
+      "id": "data",
+      "name": "Data",
+      "parentId": null,
+      "sortOrder": 30,
+      "icon": "database"
+    },
+    {
+      "id": "document-processing",
+      "name": "Document",
+      "parentId": null,
+      "sortOrder": 40,
+      "icon": "file-text"
+    },
+    {
+      "id": "document-extraction",
+      "name": "Extract",
+      "parentId": "document-processing",
+      "sortOrder": 45,
+      "icon": "file-text"
+    },
+    {
+      "id": "document-extraction.in-solution",
+      "name": "In this solution",
+      "parentId": "document-extraction",
+      "sortOrder": 46,
+      "icon": "folder"
+    },
+    {
+      "id": "document-extraction.published",
+      "name": "Published",
+      "parentId": "document-extraction",
+      "sortOrder": 47,
+      "icon": "cloud-upload"
+    },
+    {
+      "id": "human-task",
+      "name": "Human",
+      "parentId": null,
+      "sortOrder": 50,
+      "icon": "human-task"
+    },
+    {
+      "id": "human-task.in-solution",
+      "name": "In this solution",
+      "parentId": "human-task",
+      "sortOrder": 51,
+      "icon": "folder"
+    },
+    {
+      "id": "human-task.published",
+      "name": "Published",
+      "parentId": "human-task",
+      "sortOrder": 52,
+      "icon": "cloud-upload"
+    },
+    {
+      "id": "human-task.decision",
+      "name": "Decision",
+      "parentId": "human-task",
+      "sortOrder": 55,
+      "icon": "users"
+    },
+    {
+      "id": "control-flow",
+      "name": "Control",
+      "parentId": null,
+      "sortOrder": 60,
+      "icon": "trending-up-down"
+    },
+    {
+      "id": "data-operations",
+      "name": "Tool",
+      "parentId": null,
+      "sortOrder": 70,
+      "icon": "briefcase-business"
+    },
+    {
+      "id": "conversational-tools",
+      "name": "Conversational tools",
+      "parentId": "data-operations",
+      "sortOrder": 75,
+      "icon": "messages-square"
+    },
+    {
+      "id": "queue-tools",
+      "name": "Queue tools",
+      "parentId": "data-operations",
+      "sortOrder": 76,
+      "icon": "text-align-justify"
+    },
+    {
+      "id": "voice-tools",
+      "name": "Voice tools",
+      "parentId": "data-operations",
+      "sortOrder": 77,
+      "icon": "phone"
+    },
+    {
+      "id": "trigger",
+      "name": "Trigger",
+      "parentId": null,
+      "sortOrder": 80,
+      "icon": "zap"
+    },
+    {
+      "id": "connector-trigger",
+      "name": "Connector trigger",
+      "parentId": "trigger",
+      "sortOrder": 85,
+      "icon": "unplug"
+    },
+    {
+      "id": "wait-for-event",
+      "name": "Wait for event",
+      "parentId": null,
+      "sortOrder": 90,
+      "icon": "clock"
+    },
+    {
+      "id": "connector-event",
+      "name": "Connector event",
+      "parentId": "wait-for-event",
+      "sortOrder": 95,
+      "icon": "unplug"
+    },
+    {
+      "id": "flow",
+      "name": "Maestro Flow",
+      "parentId": null,
+      "sortOrder": 100,
+      "icon": "flow-project"
+    },
+    {
+      "id": "flow.in-solution",
+      "name": "In this solution",
+      "parentId": "flow",
+      "sortOrder": 101,
+      "icon": "folder"
+    },
+    {
+      "id": "flow.published",
+      "name": "Published",
+      "parentId": "flow",
+      "sortOrder": 102,
+      "icon": "cloud-upload"
+    },
+    {
+      "id": "agentic-process",
+      "name": "Maestro BPMN",
+      "parentId": null,
+      "sortOrder": 110,
+      "icon": "agentic-process"
+    },
+    {
+      "id": "agentic-process.in-solution",
+      "name": "In this solution",
+      "parentId": "agentic-process",
+      "sortOrder": 111,
+      "icon": "folder"
+    },
+    {
+      "id": "agentic-process.published",
+      "name": "Published",
+      "parentId": "agentic-process",
+      "sortOrder": 112,
+      "icon": "cloud-upload"
+    },
+    {
+      "id": "case-management",
+      "name": "Maestro Case",
+      "parentId": null,
+      "sortOrder": 120,
+      "icon": "case-management"
+    },
+    {
+      "id": "case-management.in-solution",
+      "name": "In this solution",
+      "parentId": "case-management",
+      "sortOrder": 121,
+      "icon": "folder"
+    },
+    {
+      "id": "case-management.published",
+      "name": "Published",
+      "parentId": "case-management",
+      "sortOrder": 122,
+      "icon": "cloud-upload"
+    },
+    {
+      "id": "rpa-workflow",
+      "name": "RPA Workflow",
+      "parentId": null,
+      "sortOrder": 130,
+      "icon": "rpa"
+    },
+    {
+      "id": "rpa-workflow.in-solution",
+      "name": "In this solution",
+      "parentId": "rpa-workflow",
+      "sortOrder": 131,
+      "icon": "folder"
+    },
+    {
+      "id": "rpa-workflow.published",
+      "name": "Published",
+      "parentId": "rpa-workflow",
+      "sortOrder": 132,
+      "icon": "cloud-upload"
+    },
+    {
+      "id": "api-workflow",
+      "name": "API Workflow",
+      "parentId": null,
+      "sortOrder": 140,
+      "icon": "api"
+    },
+    {
+      "id": "api-workflow.in-solution",
+      "name": "In this solution",
+      "parentId": "api-workflow",
+      "sortOrder": 141,
+      "icon": "folder"
+    },
+    {
+      "id": "api-workflow.published",
+      "name": "Published",
+      "parentId": "api-workflow",
+      "sortOrder": 142,
+      "icon": "cloud-upload"
+    },
+    {
+      "id": "function",
+      "name": "Function",
+      "parentId": null,
+      "sortOrder": 150,
+      "icon": "function"
+    },
+    {
+      "id": "function.in-solution",
+      "name": "In this solution",
+      "parentId": "function",
+      "sortOrder": 151,
+      "icon": "folder"
+    },
+    {
+      "id": "function.published",
+      "name": "Published",
+      "parentId": "function",
+      "sortOrder": 152,
+      "icon": "cloud-upload"
+    },
+    {
+      "id": "patterns",
+      "name": "Patterns",
+      "parentId": null,
+      "sortOrder": 160,
+      "icon": "layers"
+    },
+    {
+      "id": "conversational",
+      "name": "Conversational",
+      "parentId": null,
+      "sortOrder": 170,
+      "icon": "messages-square"
+    }
+  ],
+  "nodes": [
+    {
+      "nodeType": "core.logic.mock",
+      "version": "1.0",
+      "category": "control-flow",
+      "label": "Mock",
+      "icon": "square-dashed",
+      "description": "Placeholder node for prototyping",
+      "audience": "public",
+      "inputDefaults": {},
+      "form": null
+    },
+    {
+      "nodeType": "core.logic.decision",
+      "version": "1.4",
+      "category": "control-flow",
+      "label": "Decision",
+      "icon": "trending-up-down",
+      "description": "Branch on a true or false condition",
+      "audience": "public",
+      "inputDefaults": {
+        "trueLabel": "True",
+        "falseLabel": "False"
+      },
+      "form": {
+        "id": "decision-properties",
+        "title": "Decision configuration",
+        "sections": [
+          {
+            "id": "condition",
+            "title": "Condition",
+            "fields": [
+              {
+                "name": "inputs.expression",
+                "type": "custom",
+                "component": "code-editor",
+                "componentProps": {
+                  "singleLine": true,
+                  "mode": "expression",
+                  "toggleable": false,
+                  "language": "javascript",
+                  "returnType": "boolean",
+                  "validationMode": "expression",
+                  "showVariableButton": true,
+                  "placeholder": "$vars.httpRequest1.output.statusCode >= 200 && $vars.httpRequest1.output.statusCode < 300"
+                },
+                "label": "Condition",
+                "description": "The condition must be a JavaScript expression that evaluates to true or false."
+              },
+              {
+                "name": "inputs.trueLabel",
+                "type": "text",
+                "label": "True branch label",
+                "description": "This label appears on the true branch."
+              },
+              {
+                "name": "inputs.falseLabel",
+                "type": "text",
+                "label": "False branch label",
+                "description": "This label appears on the false branch."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "core.logic.loop",
+      "version": "2.4",
+      "category": "control-flow",
+      "label": "Loop",
+      "icon": "repeat",
+      "description": "Iterate over a collection of items",
+      "audience": "public",
+      "inputDefaults": {
+        "collection": [],
+        "parallel": false,
+        "completionCondition": "",
+        "breakEnabled": false
+      },
+      "form": {
+        "id": "loop-properties",
+        "title": "Loop configuration",
+        "sections": [
+          {
+            "id": "iteration",
+            "title": "Iteration",
+            "fields": [
+              {
+                "name": "inputs.collection",
+                "type": "custom",
+                "component": "code-editor",
+                "label": "Collection",
+                "description": "The loop runs once for each item in this array or collection.",
+                "componentProps": {
+                  "singleLine": true,
+                  "mode": "expression",
+                  "toggleable": false,
+                  "placeholder": "$vars.scriptTask1.output",
+                  "showVariableButton": true,
+                  "language": "javascript",
+                  "expectedType": "array",
+                  "validationMode": "expression"
+                }
+              },
+              {
+                "name": "inputs.parallel",
+                "type": "switch",
+                "label": "Parallel",
+                "description": "The loop runs iterations at the same time."
+              },
+              {
+                "name": "inputs.completionCondition",
+                "type": "custom",
+                "component": "code-editor",
+                "label": "Break on condition",
+                "description": "The loop exits early when this condition becomes true after an iteration completes.",
+                "componentProps": {
+                  "singleLine": true,
+                  "mode": "expression",
+                  "toggleable": false,
+                  "placeholder": "$vars.processedCount >= 5",
+                  "showVariableButton": true,
+                  "alwaysIncludeSelf": true,
+                  "returnType": "boolean",
+                  "validationMode": "expression",
+                  "language": "javascript"
+                }
+              },
+              {
+                "name": "inputs.breakEnabled",
+                "type": "switch",
+                "label": "Show break handle",
+                "description": "Nodes inside the loop can exit through a break handle."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "core.logic.dowhile",
+      "version": "1.0",
+      "category": "control-flow",
+      "label": "Do while",
+      "icon": "repeat",
+      "description": "Repeat a sequence of actions while a condition is true",
+      "audience": "public",
+      "inputDefaults": {
+        "condition": "",
+        "breakEnabled": false
+      },
+      "form": {
+        "id": "dowhile-properties",
+        "title": "Do while configuration",
+        "sections": [
+          {
+            "id": "iteration",
+            "title": "Iteration",
+            "fields": [
+              {
+                "name": "inputs.condition",
+                "type": "custom",
+                "component": "code-editor",
+                "label": "Condition",
+                "description": "The loop repeats while this condition is true. The condition is checked after each iteration.",
+                "componentProps": {
+                  "singleLine": true,
+                  "mode": "expression",
+                  "toggleable": false,
+                  "placeholder": "$vars.response.hasNextPage === true",
+                  "showVariableButton": true,
+                  "returnType": "boolean",
+                  "validationMode": "expression",
+                  "language": "javascript"
+                }
+              },
+              {
+                "name": "inputs.limit",
+                "type": "number",
+                "label": "Maximum iterations",
+                "description": "The loop stops after this many iterations, even if the condition is still true. A blank field defaults to 10,000."
+              },
+              {
+                "name": "inputs.breakEnabled",
+                "type": "switch",
+                "label": "Show break handle",
+                "description": "Nodes inside the loop can exit through a break handle."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "core.logic.merge",
+      "version": "1.0",
+      "category": "control-flow",
+      "label": "Merge",
+      "icon": "merge",
+      "description": "Join parallel branches into one path",
+      "audience": "public",
+      "inputDefaults": {},
+      "form": null
+    },
+    {
+      "nodeType": "core.logic.switch",
+      "version": "1.3",
+      "category": "control-flow",
+      "label": "Switch",
+      "icon": "between-horizontal-start",
+      "description": "Route to one of many branches by condition",
+      "audience": "public",
+      "inputDefaults": {
+        "cases": [
+          {
+            "id": "default-1",
+            "label": "Case 1",
+            "expression": ""
+          },
+          {
+            "id": "default-2",
+            "label": "Case 2",
+            "expression": ""
+          }
+        ],
+        "defaultBranch": {
+          "enabled": true,
+          "label": "Default"
+        }
+      },
+      "form": {
+        "id": "switch-properties",
+        "title": "Switch configuration",
+        "sections": [
+          {
+            "id": "cases",
+            "title": "Cases",
+            "description": "Each case is evaluated in order. The first condition that returns true is taken.",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.cases",
+                "type": "custom",
+                "label": "Switch cases",
+                "component": "case-list-editor",
+                "componentProps": {
+                  "defaultBranchRow": true,
+                  "minCases": 1,
+                  "maxCases": 10,
+                  "expressionPlaceholder": "$vars.httpRequest1.output.statusCode >= 200 && $vars.httpRequest1.output.statusCode < 300",
+                  "expressionValidationFields": [
+                    {
+                      "subPath": "expression",
+                      "validationMode": "expression",
+                      "expectedType": "boolean"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "core.logic.agentic-switch",
+      "version": "1.0",
+      "category": "control-flow",
+      "label": "Agentic Switch",
+      "icon": "shapes",
+      "description": "Route to one of many branches by a fast model decision",
+      "audience": "public",
+      "inputDefaults": {
+        "state": "",
+        "instructions": "",
+        "confidenceThreshold": 80,
+        "criteria": [
+          {
+            "id": "default-1",
+            "label": "",
+            "expression": ""
+          },
+          {
+            "id": "default-2",
+            "label": "",
+            "expression": ""
+          }
+        ],
+        "defaultBranch": {
+          "enabled": true,
+          "label": "Low confidence"
+        },
+        "apiKey": ""
+      },
+      "form": {
+        "id": "agentic-switch-properties",
+        "title": "Agentic Switch configuration",
+        "metadata": {
+          "propertyPanel": {
+            "sectionTabs": {
+              "advanced": "advanced"
+            }
+          }
+        },
+        "sections": [
+          {
+            "id": "decision",
+            "collapsible": false,
+            "fields": [
+              {
+                "name": "inputs.state",
+                "type": "custom",
+                "component": "prompt-editor",
+                "componentProps": {
+                  "multiline": true,
+                  "minRows": 4,
+                  "maxRows": 20,
+                  "placeholder": "Freely add text or variables, e.g. the ticket body from the trigger"
+                },
+                "label": "State",
+                "description": "The content the model decides on."
+              },
+              {
+                "name": "inputs.instructions",
+                "type": "custom",
+                "component": "prompt-editor",
+                "componentProps": {
+                  "multiline": true,
+                  "minRows": 4,
+                  "maxRows": 20,
+                  "placeholder": "Route to the correct team for support"
+                },
+                "label": "Instructions",
+                "description": "The question the model answers about the state."
+              },
+              {
+                "name": "inputs.confidenceThreshold",
+                "type": "number",
+                "label": "Confidence threshold",
+                "description": "Responses under this confidence (0-100) are routed to the \"Low confidence\" branch."
+              }
+            ]
+          },
+          {
+            "id": "criteria",
+            "title": "Choices",
+            "description": "One output branch per choice. The model picks the choice whose description best matches the state.",
+            "collapsible": false,
+            "fields": [
+              {
+                "name": "inputs.criteria",
+                "type": "custom",
+                "label": "Choices",
+                "component": "case-list-editor",
+                "componentProps": {
+                  "descriptionMode": true,
+                  "minCases": 1,
+                  "maxCases": 10,
+                  "labelPlaceholder": "Choice",
+                  "expressionPlaceholder": "Description, e.g. \"Exchanges, wrong or damaged items\""
+                }
+              }
+            ]
+          },
+          {
+            "id": "advanced",
+            "title": "Advanced",
+            "collapsible": true,
+            "defaultExpanded": false,
+            "fields": [
+              {
+                "name": "inputs.apiKey",
+                "type": "text",
+                "label": "API key",
+                "description": "Typesafe API key. Reference an Orchestrator asset with $assets so the key is not stored in the flow."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "core.logic.delay",
+      "version": "1.0",
+      "category": "wait-for-event",
+      "label": "Delay",
+      "icon": "timer",
+      "description": "Pause execution for a duration or until a date",
+      "audience": "public",
+      "inputDefaults": {
+        "timerType": "timeDuration",
+        "timerPreset": "PT15M"
+      },
+      "form": {
+        "id": "delay-properties",
+        "title": "Delay",
+        "sections": [
+          {
+            "id": "timer",
+            "title": "Timer",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.timerType",
+                "type": "select",
+                "label": "Type",
+                "options": [
+                  {
+                    "label": "Duration",
+                    "value": "timeDuration"
+                  },
+                  {
+                    "label": "Date",
+                    "value": "timeDate"
+                  }
+                ]
+              },
+              {
+                "name": "inputs.timerPreset",
+                "type": "select",
+                "label": "Duration",
+                "options": [
+                  {
+                    "label": "5 seconds",
+                    "value": "PT5S"
+                  },
+                  {
+                    "label": "15 seconds",
+                    "value": "PT15S"
+                  },
+                  {
+                    "label": "30 seconds",
+                    "value": "PT30S"
+                  },
+                  {
+                    "label": "1 minute",
+                    "value": "PT1M"
+                  },
+                  {
+                    "label": "5 minutes",
+                    "value": "PT5M"
+                  },
+                  {
+                    "label": "15 minutes",
+                    "value": "PT15M"
+                  },
+                  {
+                    "label": "30 minutes",
+                    "value": "PT30M"
+                  },
+                  {
+                    "label": "1 hour",
+                    "value": "PT1H"
+                  },
+                  {
+                    "label": "6 hours",
+                    "value": "PT6H"
+                  },
+                  {
+                    "label": "12 hours",
+                    "value": "PT12H"
+                  },
+                  {
+                    "label": "1 day",
+                    "value": "P1D"
+                  },
+                  {
+                    "label": "1 week",
+                    "value": "P1W"
+                  },
+                  {
+                    "label": "Custom",
+                    "value": "custom"
+                  }
+                ],
+                "rules": [
+                  {
+                    "id": "duration-presets",
+                    "conditions": [
+                      {
+                        "when": "inputs.timerType",
+                        "is": "timeDuration"
+                      }
+                    ],
+                    "effects": {
+                      "visible": true
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "inputs.timerValue",
+                "type": "custom",
+                "component": "iso-expression-field",
+                "label": "Custom duration",
+                "placeholder": "PT15M",
+                "description": "ISO 8601 duration - use the AI button to generate from natural language",
+                "componentProps": {
+                  "expressionType": "duration",
+                  "supportsExpressions": true
+                },
+                "rules": [
+                  {
+                    "id": "custom-duration",
+                    "conditions": [
+                      {
+                        "when": "inputs.timerType",
+                        "is": "timeDuration"
+                      },
+                      {
+                        "when": "inputs.timerPreset",
+                        "is": "custom"
+                      }
+                    ],
+                    "effects": {
+                      "visible": true
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "inputs.timerDate",
+                "type": "datetime",
+                "label": "Value",
+                "description": "The date and time when the process should continue",
+                "rules": [
+                  {
+                    "id": "date-format",
+                    "conditions": [
+                      {
+                        "when": "inputs.timerType",
+                        "is": "timeDate"
+                      }
+                    ],
+                    "effects": {
+                      "visible": true
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "uipath.conversational.wait-for-message",
+      "version": "1.1",
+      "category": "conversational-tools",
+      "label": "Wait for message",
+      "icon": "messageSquareMore",
+      "description": "Wait until a message arrives in the conversation. Outputs the latest conversation context, intended for input into a conversational agent.",
+      "audience": "public",
+      "inputDefaults": {
+        "conversationId": "",
+        "from": "User",
+        "exchangeLimit": 20
+      },
+      "form": {
+        "id": "wait-for-conversation-message-properties",
+        "title": "Wait for Message",
+        "sections": [
+          {
+            "id": "configuration",
+            "title": "Configuration",
+            "collapsible": false,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.conversationId",
+                "type": "text",
+                "label": "Conversation ID",
+                "description": "The ID of the conversation to wait on.",
+                "placeholder": "$vars.conversationTrigger1.output.conversationId",
+                "validation": {
+                  "required": true,
+                  "messages": {
+                    "required": "Conversation ID is required"
+                  }
+                }
+              },
+              {
+                "name": "inputs.from",
+                "type": "select",
+                "label": "From",
+                "description": "Role of the message sender to wait for.",
+                "options": [
+                  {
+                    "label": "User",
+                    "value": "User"
+                  }
+                ],
+                "rules": [
+                  {
+                    "id": "from-disabled",
+                    "conditions": [],
+                    "effects": {
+                      "disabled": true
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "inputs.exchangeLimit",
+                "type": "slider",
+                "label": "Exchange limit",
+                "description": "Maximum number of past exchanges to include in the returned conversation context.",
+                "min": 1,
+                "max": 40,
+                "step": 1,
+                "defaultValue": 20
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "uipath.conversational.send-message",
+      "version": "1.1",
+      "category": "conversational-tools",
+      "label": "Send message",
+      "icon": "messageSquarePlus",
+      "description": "Write a message to a conversation.",
+      "audience": "public",
+      "inputDefaults": {
+        "conversationId": "",
+        "exchangeId": "",
+        "role": "assistant",
+        "content": "",
+        "mimeType": "text/markdown"
+      },
+      "form": {
+        "id": "send-conversation-message-properties",
+        "title": "Send message",
+        "sections": [
+          {
+            "id": "configuration",
+            "title": "Configuration",
+            "collapsible": false,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.conversationId",
+                "type": "text",
+                "label": "Conversation ID",
+                "placeholder": "$vars.conversationTrigger1.output.conversationId",
+                "validation": {
+                  "required": true,
+                  "messages": {
+                    "required": "Conversation ID is required"
+                  }
+                }
+              },
+              {
+                "name": "inputs.exchangeId",
+                "type": "text",
+                "label": "Exchange ID",
+                "description": "The message will be added to this existing exchange.",
+                "placeholder": "$vars.waitForMessage1.output.conversationContext.latestExchangeId",
+                "validation": {
+                  "required": true,
+                  "messages": {
+                    "required": "Exchange ID is required"
+                  }
+                }
+              },
+              {
+                "name": "inputs.content",
+                "type": "text",
+                "label": "Content",
+                "description": "The content to write.",
+                "validation": {
+                  "required": true,
+                  "messages": {
+                    "required": "Content is required"
+                  }
+                }
+              },
+              {
+                "name": "inputs.mimeType",
+                "type": "text",
+                "label": "Mimetype",
+                "rules": [
+                  {
+                    "id": "mime-type-disabled",
+                    "conditions": [],
+                    "effects": {
+                      "disabled": true
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "uipath.conversational.get-conversation-context",
+      "version": "1.0",
+      "category": "conversational-tools",
+      "label": "Get conversation context",
+      "icon": "messageSquareText",
+      "description": "Get the latest conversation context, intended for input into a conversational agent",
+      "audience": "public",
+      "inputDefaults": {
+        "conversationId": "",
+        "exchangeLimit": 20
+      },
+      "form": {
+        "id": "get-conversation-context-properties",
+        "title": "Get conversation context",
+        "sections": [
+          {
+            "id": "configuration",
+            "title": "Configuration",
+            "collapsible": false,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.conversationId",
+                "type": "text",
+                "label": "Conversation ID",
+                "placeholder": "$vars.conversationTrigger1.output.conversationId",
+                "validation": {
+                  "required": true,
+                  "messages": {
+                    "required": "Conversation ID is required"
+                  }
+                }
+              },
+              {
+                "name": "inputs.exchangeLimit",
+                "type": "slider",
+                "label": "Exchange limit",
+                "description": "Maximum number of past exchanges to include in the returned conversation context.",
+                "min": 1,
+                "max": 40,
+                "step": 1,
+                "defaultValue": 20
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "uipath.conversational.voice.create-outgoing-call",
+      "version": "1.1",
+      "category": "voice-tools",
+      "label": "Create outgoing call",
+      "icon": "phoneOutgoing",
+      "description": "Dial an outbound phone call and wait until the media stream is open.",
+      "audience": "public",
+      "inputDefaults": {
+        "from": "",
+        "to": ""
+      },
+      "form": {
+        "id": "create-outgoing-call-properties",
+        "title": "Create outgoing call",
+        "sections": [
+          {
+            "id": "configuration",
+            "title": "Configuration",
+            "collapsible": false,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.from",
+                "type": "custom",
+                "component": "sip-trunk-picker",
+                "label": "From",
+                "description": "Outbound number to dial from. Connect numbers in Instance Management → Phone numbers.",
+                "validation": {
+                  "required": true,
+                  "messages": {
+                    "required": "From number is required"
+                  }
+                }
+              },
+              {
+                "name": "inputs.to",
+                "type": "custom",
+                "component": "code-editor",
+                "componentProps": {
+                  "singleLine": true,
+                  "showVariableButton": true,
+                  "showAiButton": false,
+                  "lineNumbers": false,
+                  "expectedType": "text",
+                  "defaultToLiteralMode": true
+                },
+                "label": "To",
+                "description": "Destination phone number in E.164 format (e.g. +12025551234).",
+                "validation": {
+                  "required": true,
+                  "messages": {
+                    "required": "Destination phone number is required"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "uipath.conversational.voice.end-call",
+      "version": "1.0",
+      "category": "voice-tools",
+      "label": "End call",
+      "icon": "phoneOff",
+      "description": "End an active call.",
+      "audience": "public",
+      "inputDefaults": {
+        "callContext": ""
+      },
+      "form": {
+        "id": "end-call-properties",
+        "title": "End call",
+        "sections": [
+          {
+            "id": "configuration",
+            "title": "Configuration",
+            "collapsible": false,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.callContext",
+                "type": "text",
+                "label": "Call context",
+                "description": "Bind to the callContext from an Incoming Call trigger or a Create Outgoing Call node.",
+                "placeholder": "$vars.createOutgoingCall1.output.callContext",
+                "validation": {
+                  "required": true,
+                  "messages": {
+                    "required": "Call context is required"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "core.subflow",
+      "version": "1.0",
+      "category": "flow",
+      "label": "Subflow",
+      "icon": "layers",
+      "description": "Group steps into a reusable subflow",
+      "audience": "public",
+      "inputDefaults": {},
+      "form": null
+    },
+    {
+      "nodeType": "core.control.end",
+      "version": "1.0",
+      "category": "control-flow",
+      "label": "End",
+      "icon": "circle-check",
+      "description": "Mark the end of a process path",
+      "audience": "public",
+      "inputDefaults": {},
+      "form": null
+    },
+    {
+      "nodeType": "core.control.response",
+      "version": "1.0",
+      "category": "control-flow",
+      "label": "Response",
+      "icon": "circle-check",
+      "description": "Return the output arguments and stop the run",
+      "audience": "public",
+      "inputDefaults": {
+        "markJobAsFailed": false
+      },
+      "form": {
+        "id": "response-properties",
+        "title": "Response",
+        "sections": [
+          {
+            "id": "outcome",
+            "title": "Outcome",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.markJobAsFailed",
+                "type": "checkbox",
+                "label": "Mark job as failed",
+                "description": "Report the run as failed instead of successful."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "core.logic.terminate",
+      "version": "1.0",
+      "category": "control-flow",
+      "label": "Terminate",
+      "icon": "circle-x",
+      "description": "Stop the entire process immediately",
+      "audience": "public",
+      "inputDefaults": {},
+      "form": null
+    },
+    {
+      "nodeType": "core.control.error-handler",
+      "version": "1.0",
+      "category": "control-flow",
+      "label": "Error handler",
+      "icon": "triangle-alert",
+      "description": "Handle any error the flow does not handle elsewhere",
+      "audience": "public",
+      "inputDefaults": {},
+      "form": null
+    },
+    {
+      "nodeType": "core.action.http",
+      "version": "1.3",
+      "category": "data-operations",
+      "label": "HTTP Request",
+      "icon": "app-window",
+      "description": "Make API calls with branching and retry",
+      "audience": "public",
+      "inputDefaults": {
+        "mode": "manual",
+        "method": "GET",
+        "url": "",
+        "authenticationType": "manual",
+        "application": "",
+        "connection": "",
+        "headers": {},
+        "queryParams": {},
+        "body": {},
+        "contentType": "application/json",
+        "timeout": "PT15M",
+        "retryCount": 0,
+        "branches": []
+      },
+      "form": {
+        "id": "http-properties-v2",
+        "title": "HTTP Request",
+        "sections": [
+          {
+            "id": "implementation",
+            "title": "Implementation",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs._httpToolbar",
+                "type": "custom",
+                "component": "http-curl-buttons",
+                "label": ""
+              },
+              {
+                "name": "inputs.mode",
+                "type": "select",
+                "label": "Mode",
+                "options": [
+                  {
+                    "label": "Manual",
+                    "value": "manual"
+                  },
+                  {
+                    "label": "API definition",
+                    "value": "apiDefinition"
+                  }
+                ]
+              },
+              {
+                "name": "inputs._swaggerSection",
+                "type": "custom",
+                "component": "http-swagger-section",
+                "label": "",
+                "rules": [
+                  {
+                    "id": "show-swagger",
+                    "conditions": [
+                      {
+                        "when": "inputs.mode",
+                        "is": "apiDefinition"
+                      }
+                    ],
+                    "effects": {
+                      "visible": true
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "inputs.method",
+                "type": "select",
+                "label": "HTTP method",
+                "options": [
+                  {
+                    "label": "GET",
+                    "value": "GET"
+                  },
+                  {
+                    "label": "POST",
+                    "value": "POST"
+                  },
+                  {
+                    "label": "PUT",
+                    "value": "PUT"
+                  },
+                  {
+                    "label": "PATCH",
+                    "value": "PATCH"
+                  },
+                  {
+                    "label": "DELETE",
+                    "value": "DELETE"
+                  }
+                ]
+              },
+              {
+                "name": "inputs.url",
+                "type": "custom",
+                "component": "http-url-field",
+                "label": "URL",
+                "componentProps": {
+                  "expressionValidationFields": [
+                    {
+                      "expectedType": "string"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "headers",
+            "title": "Headers",
+            "collapsible": true,
+            "defaultExpanded": false,
+            "fields": [
+              {
+                "name": "inputs.headers",
+                "type": "custom",
+                "component": "key-value-editor",
+                "label": "HTTP headers",
+                "componentProps": {
+                  "keyLabel": "Header name",
+                  "valueLabel": "Header value",
+                  "keyOptions": [
+                    "Accept",
+                    "Accept-Encoding",
+                    "Accept-Language",
+                    "Authorization",
+                    "Cache-Control",
+                    "Connection",
+                    "Content-Encoding",
+                    "Content-Length",
+                    "Content-Type",
+                    "Cookie",
+                    "Host",
+                    "If-Modified-Since",
+                    "If-None-Match",
+                    "Origin",
+                    "Referer",
+                    "User-Agent",
+                    "X-Requested-With",
+                    "X-Forwarded-For",
+                    "X-Api-Key"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "parameters",
+            "title": "Query parameters",
+            "collapsible": true,
+            "defaultExpanded": false,
+            "fields": [
+              {
+                "name": "inputs.queryParams",
+                "type": "custom",
+                "component": "key-value-editor",
+                "label": "Query parameters",
+                "componentProps": {
+                  "keyLabel": "Parameter name",
+                  "valueLabel": "Parameter value"
+                }
+              }
+            ]
+          },
+          {
+            "id": "body",
+            "title": "Body",
+            "collapsible": true,
+            "defaultExpanded": false,
+            "fields": [
+              {
+                "name": "inputs.contentType",
+                "type": "select",
+                "label": "Content type",
+                "options": [
+                  {
+                    "label": "application/json",
+                    "value": "application/json"
+                  },
+                  {
+                    "label": "application/xml",
+                    "value": "application/xml"
+                  },
+                  {
+                    "label": "text/plain",
+                    "value": "text/plain"
+                  },
+                  {
+                    "label": "application/x-www-form-urlencoded",
+                    "value": "application/x-www-form-urlencoded"
+                  }
+                ]
+              },
+              {
+                "name": "inputs.body",
+                "type": "custom",
+                "component": "code-editor",
+                "label": "Body",
+                "componentProps": {
+                  "language": "javascript",
+                  "mode": "expression",
+                  "expectedType": "any",
+                  "minHeight": 150,
+                  "placeholder": "{\n  \"key\": \"value\"\n}"
+                }
+              }
+            ]
+          },
+          {
+            "id": "branches",
+            "title": "Branches",
+            "collapsible": true,
+            "defaultExpanded": false,
+            "fields": [
+              {
+                "name": "inputs.branches",
+                "type": "custom",
+                "component": "http-branch-editor",
+                "label": "Response branches",
+                "description": "Define conditional branches based on response status or properties",
+                "componentProps": {
+                  "expressionValidationFields": [
+                    {
+                      "subPath": "conditionExpression",
+                      "validationMode": "expression",
+                      "expectedType": "boolean"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "advanced",
+            "title": "Advanced",
+            "collapsible": true,
+            "defaultExpanded": false,
+            "fields": [
+              {
+                "name": "inputs.timeout",
+                "type": "text",
+                "label": "Timeout",
+                "description": "ISO 8601 duration format (e.g., PT15M for 15 minutes, PT1H for 1 hour)"
+              },
+              {
+                "name": "inputs.retryCount",
+                "type": "number",
+                "label": "Retry count",
+                "description": "Number of times to retry on failure"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "core.action.http.v2",
+      "version": "2.6",
+      "category": "connector",
+      "label": "HTTP Request",
+      "icon": "app-window",
+      "description": "HTTP request with managed authentication",
+      "audience": "public",
+      "inputDefaults": {
+        "branches": [],
+        "defaultBranch": {
+          "enabled": true,
+          "label": ""
+        },
+        "timeout": "PT15M",
+        "retryCount": 0
+      },
+      "form": {
+        "id": "http-v2-properties",
+        "title": "HTTP Request",
+        "metadata": {
+          "propertyPanel": {
+            "tabs": [
+              {
+                "id": "branching",
+                "title": "Branching"
+              }
+            ],
+            "sectionTabs": {
+              "branches": "branching",
+              "advanced": "advanced"
+            }
+          }
+        },
+        "sections": [
+          {
+            "id": "http-config",
+            "title": "Configuration",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.dapHttpToolbar",
+                "type": "custom",
+                "component": "dap-http-toolbar",
+                "label": ""
+              },
+              {
+                "label": "",
+                "name": "inputs.detail",
+                "type": "custom",
+                "component": "dap-config",
+                "componentProps": {
+                  "connectorDetail": {
+                    "isAppActivity": false,
+                    "packageId": 196648,
+                    "svgIconUrl": "icons/0dad78c9d04c245b126d8edb4c451aa8a0d395d34731cf5702441f6284c70ccc.svg",
+                    "displayName": "HTTP Request",
+                    "assemblyQualifiedName": "UiPath.IntegrationService.Activities.Runtime.Activities.ConnectorActivity, UiPath.IntegrationService.Activities.Runtime, Version=1.22.0.0, Culture=neutral, PublicKeyToken=null",
+                    "description": "Use HTTP requests to interact with APIs via the selected connector and connection configuration.",
+                    "category": "",
+                    "activityColor": "#E56D5C",
+                    "configuration": "{\"connectorKey\":\"uipath-uipath-http\",\"objectName\":\"http-request\",\"httpMethod\":\"POST\",\"activityType\":\"Curated\",\"version\":\"1.0.0\"}",
+                    "uiPathActivityTypeId": "5c4cc855-b42a-37e6-b910-de8588998fce",
+                    "isExperimental": false,
+                    "helpUrlTemplate": "https://docs.uipath.com/{0}/activities/other/latest/integration-service/uipath-uipath-http-HTTP-Request",
+                    "isEnabled": true,
+                    "targetPlatform": "CrossPlatform",
+                    "isAdvanced": false,
+                    "isRestricted": false,
+                    "tags": [""]
+                  },
+                  "fixedValueEditors": {
+                    "body": "json"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "branches",
+            "title": "Branches",
+            "collapsible": true,
+            "defaultExpanded": false,
+            "fields": [
+              {
+                "name": "inputs.branches",
+                "type": "custom",
+                "component": "http-branch-editor",
+                "label": "Response branches",
+                "description": "Define conditional branches based on response status or properties",
+                "componentProps": {
+                  "expressionValidationFields": [
+                    {
+                      "subPath": "conditionExpression",
+                      "validationMode": "expression",
+                      "expectedType": "boolean"
+                    }
+                  ],
+                  "defaultBranchRow": true
+                }
+              }
+            ]
+          },
+          {
+            "id": "advanced",
+            "title": "Advanced",
+            "collapsible": true,
+            "defaultExpanded": false,
+            "fields": [
+              {
+                "name": "inputs.timeout",
+                "type": "text",
+                "label": "Timeout",
+                "description": "ISO 8601 duration format (for example, PT15M for 15 minutes, PT1H for 1 hour)"
+              },
+              {
+                "name": "inputs.retryCount",
+                "type": "number",
+                "label": "Retry count",
+                "description": "Number of times to retry on failure"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "core.action.script",
+      "version": "1.1",
+      "category": "data-operations",
+      "label": "Script",
+      "icon": "code",
+      "description": "Run custom JavaScript code",
+      "audience": "public",
+      "inputDefaults": {
+        "script": ""
+      },
+      "form": {
+        "id": "script-properties",
+        "title": "Script configuration",
+        "sections": [
+          {
+            "id": "script",
+            "title": "Script",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.script",
+                "type": "custom",
+                "component": "script-editor",
+                "componentProps": {
+                  "language": "javascript",
+                  "returnType": "any",
+                  "validationMode": "script",
+                  "minHeight": 200,
+                  "fillPanel": true,
+                  "placeholder": " // Return any value\nreturn {\n  message: \"Web request response\",\n  data: $vars.httpRequest1.output\n};"
+                },
+                "label": "Code",
+                "description": "JavaScript expression that returns a result"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "uipath.pattern.batch-transform",
+      "version": "1.0",
+      "category": "data",
+      "label": "Batch transform",
+      "icon": "grid-2x2-plus",
+      "description": "Add AI-generated columns to a CSV",
+      "audience": "public",
+      "inputDefaults": {
+        "attachment": "",
+        "prompt": "",
+        "enableWebSearchGrounding": false,
+        "outputColumns": [
+          {
+            "name": "OutputColumn1",
+            "description": "Describe what this new column should contain"
+          }
+        ]
+      },
+      "form": {
+        "id": "batch-transform-properties",
+        "title": "Batch transform configuration",
+        "sections": [
+          {
+            "id": "source",
+            "title": "Data source",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.attachment",
+                "type": "file",
+                "label": "Attachment",
+                "description": "The output is generated from this CSV file.",
+                "validation": {
+                  "required": true,
+                  "messages": {
+                    "required": "Attachment is required"
+                  }
+                }
+              },
+              {
+                "name": "inputs.prompt",
+                "type": "custom",
+                "component": "prompt-editor",
+                "label": "Prompt",
+                "description": "The prompt defines how each row in the CSV file is processed.",
+                "componentProps": {
+                  "multiline": true,
+                  "minRows": 4,
+                  "maxRows": 20,
+                  "placeholder": "Extract the company name and renewal date from each item"
+                },
+                "validation": {
+                  "required": true,
+                  "messages": {
+                    "required": "Prompt is required"
+                  }
+                }
+              },
+              {
+                "name": "inputs.enableWebSearchGrounding",
+                "type": "checkbox",
+                "label": "Enable web search grounding",
+                "description": "Web search can ground or enrich transformation results."
+              }
+            ]
+          },
+          {
+            "id": "outputColumns",
+            "title": "Output columns",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.outputColumns",
+                "type": "custom",
+                "component": "output-columns-editor",
+                "label": "",
+                "description": "These columns are added to the output data.",
+                "componentProps": {
+                  "maxColumns": 10,
+                  "namePlaceholder": "Column name",
+                  "descriptionPlaceholder": "Company name or Renewal date",
+                  "addButtonPlacement": "footer"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "core.action.transform",
+      "version": "1.1",
+      "category": "data",
+      "label": "Transform",
+      "icon": "a-large-small",
+      "description": "Reshape and convert data with operations",
+      "audience": "public",
+      "inputDefaults": {
+        "collection": "",
+        "operations": []
+      },
+      "form": {
+        "id": "transform-data-form",
+        "title": "Transform",
+        "sections": [
+          {
+            "defaultExpanded": true,
+            "id": "transform-section",
+            "title": "Operations",
+            "fields": [
+              {
+                "name": "inputs",
+                "type": "custom",
+                "component": "data-transformer-editor",
+                "componentProps": {},
+                "label": "Transform Operations"
+              }
+            ],
+            "collapsible": true
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "core.action.transform.filter",
+      "version": "1.1",
+      "category": "data",
+      "label": "Filter",
+      "icon": "list-filter",
+      "description": "Filter data by conditions",
+      "audience": "public",
+      "inputDefaults": {
+        "collection": "",
+        "operations": []
+      },
+      "form": {
+        "id": "data-transform-filter-form",
+        "title": "Filter",
+        "sections": [
+          {
+            "defaultExpanded": true,
+            "id": "filter-section",
+            "title": "Filter configuration",
+            "fields": [
+              {
+                "name": "inputs",
+                "type": "custom",
+                "component": "filter-operation-editor",
+                "componentProps": {},
+                "label": "Filter configuration"
+              }
+            ],
+            "collapsible": true
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "core.action.transform.map",
+      "version": "1.1",
+      "category": "data",
+      "label": "Map",
+      "icon": "arrow-right",
+      "description": "Rename and transform fields",
+      "audience": "public",
+      "inputDefaults": {
+        "collection": "",
+        "operations": []
+      },
+      "form": {
+        "id": "data-transform-map-form",
+        "title": "Map",
+        "sections": [
+          {
+            "defaultExpanded": true,
+            "id": "map-section",
+            "title": "Map configuration",
+            "fields": [
+              {
+                "name": "inputs",
+                "type": "custom",
+                "component": "map-operation-editor",
+                "componentProps": {},
+                "label": "Map configuration"
+              }
+            ],
+            "collapsible": true
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "core.action.transform.group-by",
+      "version": "1.1",
+      "category": "data",
+      "label": "Group by",
+      "icon": "group",
+      "description": "Group data by a field with aggregations",
+      "audience": "public",
+      "inputDefaults": {
+        "collection": "",
+        "operations": []
+      },
+      "form": {
+        "id": "data-transform-group-by-form",
+        "title": "Group by",
+        "sections": [
+          {
+            "defaultExpanded": true,
+            "id": "group-by-section",
+            "title": "Group by configuration",
+            "fields": [
+              {
+                "name": "inputs",
+                "type": "custom",
+                "component": "group-by-operation-editor",
+                "componentProps": {},
+                "label": "Group by configuration"
+              }
+            ],
+            "collapsible": true
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "uipath.pattern.deep-rag",
+      "version": "1.1",
+      "category": "document-processing",
+      "label": "Summarize document",
+      "icon": "sigma",
+      "description": "Create a complex summary of a document",
+      "audience": "public",
+      "inputDefaults": {
+        "attachment": "",
+        "prompt": "",
+        "returnCitations": false
+      },
+      "form": {
+        "id": "deep-rag-properties",
+        "title": "Summarize Configuration",
+        "sections": [
+          {
+            "id": "source",
+            "title": "Data source",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.attachment",
+                "type": "file",
+                "label": "Attachment",
+                "description": "The summary is generated from this file or document.",
+                "validation": {
+                  "required": true,
+                  "messages": {
+                    "required": "Attachment is required"
+                  }
+                }
+              },
+              {
+                "name": "inputs.prompt",
+                "type": "custom",
+                "component": "prompt-editor",
+                "label": "Prompt",
+                "description": "The prompt defines what the summary should focus on.",
+                "componentProps": {
+                  "multiline": true,
+                  "minRows": 4,
+                  "maxRows": 20,
+                  "placeholder": "Summarize the key findings and risks"
+                },
+                "validation": {
+                  "required": true,
+                  "messages": {
+                    "required": "Prompt is required"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "citations",
+            "title": "Citations",
+            "collapsible": true,
+            "defaultExpanded": false,
+            "fields": [
+              {
+                "name": "inputs.returnCitations",
+                "type": "checkbox",
+                "label": "Include citations",
+                "description": "Citations link generated summaries to source material."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "core.action.file.read",
+      "version": "1.0",
+      "category": "data",
+      "label": "Read file",
+      "icon": "file-text",
+      "description": "Read a file's text content so scripts and expressions can work with it",
+      "audience": "public",
+      "inputDefaults": {
+        "file": "",
+        "connectionId": ""
+      },
+      "form": {
+        "id": "read-file-properties",
+        "title": "Read file",
+        "sections": [
+          {
+            "id": "file",
+            "title": "File",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.file",
+                "type": "file",
+                "label": "File",
+                "description": "The output is the text content of this file.",
+                "validation": {
+                  "required": true,
+                  "messages": {
+                    "required": "Select a file"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "connection",
+            "title": "Connection",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.connectionId",
+                "type": "custom",
+                "component": "orchestrator-connection-picker",
+                "label": "Orchestrator connection",
+                "description": "The file is read from job attachments through this connection.",
+                "componentProps": {
+                  "connectorKey": "uipath-uipath-orchestrator",
+                  "bindingConnectorKey": "uipath-uipath-http"
+                },
+                "validation": {
+                  "required": true,
+                  "messages": {
+                    "required": "Select an Orchestrator connection"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "core.action.file.create",
+      "version": "1.0",
+      "category": "data",
+      "label": "Create file",
+      "icon": "file-plus",
+      "description": "Turn text into a file that later steps can attach, upload or analyze",
+      "audience": "public",
+      "inputDefaults": {
+        "fileName": "",
+        "content": "",
+        "mimeType": "text/plain",
+        "connectionId": ""
+      },
+      "form": {
+        "id": "create-file-properties",
+        "title": "Create file",
+        "sections": [
+          {
+            "id": "file",
+            "title": "File",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.fileName",
+                "type": "custom",
+                "component": "code-editor",
+                "label": "File name",
+                "description": "Include the extension, for example report.md.",
+                "componentProps": {
+                  "singleLine": true,
+                  "showVariableButton": true,
+                  "showAiButton": false,
+                  "lineNumbers": false,
+                  "expectedType": "string",
+                  "placeholder": "report.md",
+                  "defaultToLiteralMode": true
+                },
+                "validation": {
+                  "required": true,
+                  "messages": {
+                    "required": "File name is required"
+                  }
+                }
+              },
+              {
+                "name": "inputs.mimeType",
+                "type": "select",
+                "label": "File type",
+                "description": "Sets the content type stored with the file.",
+                "options": [
+                  {
+                    "value": "text/plain",
+                    "label": "Plain text (.txt)"
+                  },
+                  {
+                    "value": "text/markdown",
+                    "label": "Markdown (.md)"
+                  },
+                  {
+                    "value": "text/csv",
+                    "label": "CSV (.csv)"
+                  },
+                  {
+                    "value": "application/json",
+                    "label": "JSON (.json)"
+                  },
+                  {
+                    "value": "text/html",
+                    "label": "HTML (.html)"
+                  }
+                ],
+                "validation": {
+                  "required": true,
+                  "messages": {
+                    "required": "File type is required"
+                  }
+                }
+              },
+              {
+                "name": "inputs.content",
+                "type": "custom",
+                "component": "prompt-editor",
+                "label": "Content",
+                "description": "The text written to the file.",
+                "componentProps": {
+                  "multiline": true,
+                  "minRows": 4,
+                  "maxRows": 20,
+                  "placeholder": "Type the file text, or insert a variable from an earlier step"
+                },
+                "validation": {
+                  "required": true,
+                  "messages": {
+                    "required": "Content is required"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "connection",
+            "title": "Connection",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.connectionId",
+                "type": "custom",
+                "component": "orchestrator-connection-picker",
+                "label": "Orchestrator connection",
+                "description": "The file is stored as a job attachment through this connection.",
+                "componentProps": {
+                  "connectorKey": "uipath-uipath-orchestrator",
+                  "bindingConnectorKey": "uipath-uipath-http"
+                },
+                "validation": {
+                  "required": true,
+                  "messages": {
+                    "required": "Connection is required"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "core.datafabric.read",
+      "version": "1.4",
+      "category": "data",
+      "label": "Query entity records",
+      "icon": "layers-arrow-up-right",
+      "description": "Query one or more entity records from Data Fabric",
+      "audience": "public",
+      "inputDefaults": {
+        "entityConfig": {
+          "resultMode": "single"
+        }
+      },
+      "form": {
+        "id": "read-entity-properties",
+        "title": "Query entity records configuration",
+        "sections": [
+          {
+            "id": "entity-config",
+            "title": "Entity configuration",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.entityConfig",
+                "type": "custom",
+                "component": "entity-config",
+                "label": ""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "core.datafabric.update",
+      "version": "1.3",
+      "category": "data",
+      "label": "Update entity record",
+      "icon": "layers-arrow-up-right",
+      "description": "Update an entity record in Data Fabric",
+      "audience": "public",
+      "inputDefaults": {
+        "entityConfig": {}
+      },
+      "form": {
+        "id": "update-entity-properties",
+        "title": "Update entity record configuration",
+        "sections": [
+          {
+            "id": "entity-config",
+            "title": "Entity configuration",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.entityConfig",
+                "type": "custom",
+                "component": "update-entity-config",
+                "label": ""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "core.datafabric.delete",
+      "version": "1.3",
+      "category": "data",
+      "label": "Delete entity record",
+      "icon": "layers-arrow-up-right",
+      "description": "Delete an entity record in Data Fabric",
+      "audience": "public",
+      "inputDefaults": {
+        "entityConfig": {}
+      },
+      "form": {
+        "id": "delete-entity-properties",
+        "title": "Delete entity record configuration",
+        "sections": [
+          {
+            "id": "entity-config",
+            "title": "Entity configuration",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.entityConfig",
+                "type": "custom",
+                "component": "delete-entity-config",
+                "label": ""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "core.datafabric.create",
+      "version": "1.3",
+      "category": "data",
+      "label": "Create entity record",
+      "icon": "layers-arrow-up-right",
+      "description": "Create an entity record in Data Fabric",
+      "audience": "public",
+      "inputDefaults": {
+        "entityConfig": {}
+      },
+      "form": {
+        "id": "create-entity-properties",
+        "title": "Create entity record configuration",
+        "sections": [
+          {
+            "id": "entity-config",
+            "title": "Entity configuration",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.entityConfig",
+                "type": "custom",
+                "component": "create-entity-config",
+                "label": ""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "uipath.document.classify",
+      "version": "1.0",
+      "category": "document-processing",
+      "label": "Classify document",
+      "icon": "tag",
+      "description": "Classify a document into a document type",
+      "audience": "public",
+      "inputDefaults": {
+        "modelConfig": {
+          "model_version": "gemini_2_5_flash"
+        },
+        "fileRef": "",
+        "pageRange": "",
+        "splitPages": false,
+        "classificationSchema": {
+          "generalInstructions": "",
+          "classes": []
+        }
+      },
+      "form": {
+        "id": "classify-document-properties",
+        "title": "Classify configuration",
+        "sections": [
+          {
+            "id": "file-input",
+            "title": "File input",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.fileRef",
+                "type": "file",
+                "label": "File",
+                "description": "File to classify",
+                "validation": {
+                  "required": true,
+                  "messages": {
+                    "required": "Add a file"
+                  }
+                }
+              },
+              {
+                "name": "inputs.pageRange",
+                "type": "text",
+                "label": "Page range",
+                "placeholder": "1-5",
+                "description": "Only pages in this range are processed."
+              },
+              {
+                "name": "inputs.splitPages",
+                "type": "switch",
+                "label": "Split pages",
+                "description": "Split document packets into individual documents."
+              }
+            ]
+          },
+          {
+            "id": "model-config",
+            "title": "Model config",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.modelConfig",
+                "type": "custom",
+                "component": "classify-model-config",
+                "label": ""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "core.action.queue.create",
+      "version": "1.2",
+      "category": "queue-tools",
+      "label": "Create queue item",
+      "icon": "list-plus",
+      "description": "Add an item to an Orchestrator queue",
+      "audience": "public",
+      "inputDefaults": {
+        "queue": null,
+        "itemData": {},
+        "priority": "Normal",
+        "reference": "",
+        "deferDate": "",
+        "dueDate": ""
+      },
+      "form": {
+        "id": "create-queue-item-properties",
+        "title": "Create queue item",
+        "metadata": {
+          "propertyPanel": {
+            "sectionTabs": {
+              "advanced": "advanced"
+            }
+          }
+        },
+        "sections": [
+          {
+            "id": "queue-selection",
+            "title": "Queue",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.queue",
+                "type": "custom",
+                "component": "queue-picker",
+                "label": "Queue",
+                "description": "Select the Orchestrator queue to add items to",
+                "validation": {
+                  "required": true,
+                  "messages": {
+                    "required": "A queue must be selected"
+                  }
+                }
+              },
+              {
+                "name": "inputs.itemData",
+                "type": "custom",
+                "component": "code-editor",
+                "label": "Item data",
+                "description": "A JSON object with primitive values (string, number, boolean), e.g. { \"orderId\": 123, \"customer\": \"Acme\" }",
+                "componentProps": {
+                  "singleLine": true,
+                  "mode": "expression",
+                  "showVariableButton": true,
+                  "showAiButton": false,
+                  "placeholder": "{ \"key\": \"value\", ... }",
+                  "expectedType": "object",
+                  "validationMode": "expression"
+                },
+                "rules": [
+                  {
+                    "id": "show-when-queue-selected",
+                    "conditions": [
+                      {
+                        "when": "inputs.queue",
+                        "isNot": null
+                      }
+                    ],
+                    "effects": {
+                      "visible": true
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "advanced",
+            "title": "Advanced",
+            "collapsible": true,
+            "defaultExpanded": false,
+            "fields": [
+              {
+                "name": "inputs.priority",
+                "type": "select",
+                "label": "Priority",
+                "description": "Processing priority for the queue item",
+                "options": [
+                  {
+                    "label": "Low",
+                    "value": "Low"
+                  },
+                  {
+                    "label": "Normal",
+                    "value": "Normal"
+                  },
+                  {
+                    "label": "High",
+                    "value": "High"
+                  }
+                ]
+              },
+              {
+                "name": "inputs.reference",
+                "type": "text",
+                "label": "Reference",
+                "description": "Optional reference string for the queue item"
+              },
+              {
+                "name": "inputs.deferDate",
+                "type": "text",
+                "label": "Defer Date",
+                "description": "Earliest date/time the item can be processed (ISO 8601)"
+              },
+              {
+                "name": "inputs.dueDate",
+                "type": "text",
+                "label": "Due Date",
+                "description": "Latest date/time the item should be processed (ISO 8601)"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "core.action.queue.create-and-wait",
+      "version": "1.2",
+      "category": "queue-tools",
+      "label": "Create and wait for queue item",
+      "icon": "list-plus",
+      "description": "Add a queue item and wait for it to complete",
+      "audience": "public",
+      "inputDefaults": {
+        "queue": null,
+        "itemData": {},
+        "priority": "Normal",
+        "reference": "",
+        "deferDate": "",
+        "dueDate": ""
+      },
+      "form": {
+        "id": "create-and-wait-queue-item-properties",
+        "title": "Create and wait for queue item",
+        "metadata": {
+          "propertyPanel": {
+            "sectionTabs": {
+              "advanced": "advanced"
+            }
+          }
+        },
+        "sections": [
+          {
+            "id": "queue-selection",
+            "title": "Queue",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.queue",
+                "type": "custom",
+                "component": "queue-picker",
+                "label": "Queue",
+                "description": "Select the Orchestrator queue to add items to",
+                "validation": {
+                  "required": true,
+                  "messages": {
+                    "required": "A queue must be selected"
+                  }
+                }
+              },
+              {
+                "name": "inputs.itemData",
+                "type": "custom",
+                "component": "code-editor",
+                "label": "Item data",
+                "description": "A JSON object with primitive values (string, number, boolean), e.g. { \"orderId\": 123, \"customer\": \"Acme\" }",
+                "componentProps": {
+                  "singleLine": true,
+                  "mode": "expression",
+                  "showVariableButton": true,
+                  "showAiButton": false,
+                  "placeholder": "{ \"key\": \"value\", ... }",
+                  "expectedType": "object",
+                  "validationMode": "expression"
+                },
+                "rules": [
+                  {
+                    "id": "show-when-queue-selected",
+                    "conditions": [
+                      {
+                        "when": "inputs.queue",
+                        "isNot": null
+                      }
+                    ],
+                    "effects": {
+                      "visible": true
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "advanced",
+            "title": "Advanced",
+            "collapsible": true,
+            "defaultExpanded": false,
+            "fields": [
+              {
+                "name": "inputs.priority",
+                "type": "select",
+                "label": "Priority",
+                "description": "Processing priority for the queue item",
+                "options": [
+                  {
+                    "label": "Low",
+                    "value": "Low"
+                  },
+                  {
+                    "label": "Normal",
+                    "value": "Normal"
+                  },
+                  {
+                    "label": "High",
+                    "value": "High"
+                  }
+                ]
+              },
+              {
+                "name": "inputs.reference",
+                "type": "text",
+                "label": "Reference",
+                "description": "Optional reference string for the queue item"
+              },
+              {
+                "name": "inputs.deferDate",
+                "type": "text",
+                "label": "Defer Date",
+                "description": "Earliest date/time the item can be processed (ISO 8601)"
+              },
+              {
+                "name": "inputs.dueDate",
+                "type": "text",
+                "label": "Due Date",
+                "description": "Latest date/time the item should be processed (ISO 8601)"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "core.action.queue.set-transaction-status",
+      "version": "1.0",
+      "category": "queue-tools",
+      "label": "Set transaction status",
+      "icon": "list-check",
+      "description": "Set the final state of a queue transaction to Successful or Failed",
+      "audience": "public",
+      "inputDefaults": {
+        "transactionItem": null,
+        "status": "Successful",
+        "errorType": "",
+        "errorReason": "",
+        "errorDetails": ""
+      },
+      "form": {
+        "id": "set-transaction-status-properties",
+        "title": "Set transaction status",
+        "sections": [
+          {
+            "id": "transaction",
+            "title": "Transaction",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.transactionItem",
+                "type": "custom",
+                "component": "code-editor",
+                "label": "Transaction item",
+                "description": "The queue transaction item to act on — typically the output of a queue trigger",
+                "componentProps": {
+                  "singleLine": true,
+                  "mode": "expression",
+                  "showVariableButton": true,
+                  "showAiButton": false,
+                  "placeholder": "$vars.queueTrigger1.output",
+                  "expectedType": "object"
+                },
+                "validation": {
+                  "required": true,
+                  "messages": {
+                    "required": "A transaction item must be provided"
+                  }
+                }
+              },
+              {
+                "name": "inputs.status",
+                "type": "select",
+                "label": "Status",
+                "description": "Final state to set on the transaction",
+                "validation": {
+                  "required": true,
+                  "messages": {
+                    "required": "A status must be selected"
+                  }
+                },
+                "options": [
+                  {
+                    "label": "Successful",
+                    "value": "Successful"
+                  },
+                  {
+                    "label": "Failed",
+                    "value": "Failed"
+                  }
+                ]
+              },
+              {
+                "name": "inputs.errorType",
+                "type": "select",
+                "label": "Error type",
+                "description": "Classification of the failure",
+                "options": [
+                  {
+                    "label": "Business exception",
+                    "value": "BusinessException"
+                  },
+                  {
+                    "label": "Application exception",
+                    "value": "ApplicationException"
+                  }
+                ],
+                "rules": [
+                  {
+                    "id": "show-when-failed",
+                    "conditions": [
+                      {
+                        "when": "inputs.status",
+                        "is": "Failed"
+                      }
+                    ],
+                    "effects": {
+                      "visible": true
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "inputs.errorReason",
+                "type": "text",
+                "label": "Error reason",
+                "description": "Short reason for the failure",
+                "rules": [
+                  {
+                    "id": "show-when-failed",
+                    "conditions": [
+                      {
+                        "when": "inputs.status",
+                        "is": "Failed"
+                      }
+                    ],
+                    "effects": {
+                      "visible": true
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "inputs.errorDetails",
+                "type": "text",
+                "label": "Error details",
+                "description": "Additional details about the failure",
+                "rules": [
+                  {
+                    "id": "show-when-failed",
+                    "conditions": [
+                      {
+                        "when": "inputs.status",
+                        "is": "Failed"
+                      }
+                    ],
+                    "effects": {
+                      "visible": true
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "core.action.queue.set-transaction-progress",
+      "version": "1.0",
+      "category": "queue-tools",
+      "label": "Set transaction progress",
+      "icon": "list-todo",
+      "description": "Update the progress of an in-progress queue transaction",
+      "audience": "public",
+      "inputDefaults": {
+        "transactionItem": null,
+        "progress": ""
+      },
+      "form": {
+        "id": "set-transaction-progress-properties",
+        "title": "Set transaction progress",
+        "sections": [
+          {
+            "id": "transaction",
+            "title": "Transaction",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.transactionItem",
+                "type": "custom",
+                "component": "code-editor",
+                "label": "Transaction item",
+                "description": "The queue transaction item to act on — typically the output of a queue trigger",
+                "componentProps": {
+                  "singleLine": true,
+                  "mode": "expression",
+                  "showVariableButton": true,
+                  "showAiButton": false,
+                  "placeholder": "$vars.queueTrigger1.output",
+                  "expectedType": "object"
+                },
+                "validation": {
+                  "required": true,
+                  "messages": {
+                    "required": "A transaction item must be provided"
+                  }
+                }
+              },
+              {
+                "name": "inputs.progress",
+                "type": "text",
+                "label": "Progress",
+                "description": "Custom progress status shown for the transaction in Orchestrator",
+                "validation": {
+                  "required": true,
+                  "messages": {
+                    "required": "A progress value is required"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "core.action.queue.postpone-transaction-item",
+      "version": "1.0",
+      "category": "queue-tools",
+      "label": "Postpone transaction item",
+      "icon": "calendar-clock",
+      "description": "Set a postpone date and optional deadline for an in-progress queue transaction",
+      "audience": "public",
+      "inputDefaults": {
+        "transactionItem": null,
+        "postponeDate": "",
+        "dueDate": ""
+      },
+      "form": {
+        "id": "postpone-transaction-item-properties",
+        "title": "Postpone transaction item",
+        "sections": [
+          {
+            "id": "transaction",
+            "title": "Transaction",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.transactionItem",
+                "type": "custom",
+                "component": "code-editor",
+                "label": "Transaction item",
+                "description": "The queue transaction item to act on — typically the output of a queue trigger",
+                "componentProps": {
+                  "singleLine": true,
+                  "mode": "expression",
+                  "showVariableButton": true,
+                  "showAiButton": false,
+                  "placeholder": "$vars.queueTrigger1.output",
+                  "expectedType": "object"
+                },
+                "validation": {
+                  "required": true,
+                  "messages": {
+                    "required": "A transaction item must be provided"
+                  }
+                }
+              },
+              {
+                "name": "inputs.postponeDate",
+                "type": "text",
+                "label": "Postpone date",
+                "description": "Earliest date/time the item can be processed (ISO 8601)",
+                "validation": {
+                  "required": true,
+                  "messages": {
+                    "required": "A postpone date is required"
+                  }
+                }
+              },
+              {
+                "name": "inputs.dueDate",
+                "type": "text",
+                "label": "Due date",
+                "description": "Latest date/time the item should be processed (ISO 8601)"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "core.action.queue.delete-items",
+      "version": "1.0",
+      "category": "queue-tools",
+      "label": "Delete queue items",
+      "icon": "list-x",
+      "description": "Delete items with New status from an Orchestrator queue",
+      "audience": "public",
+      "inputDefaults": {
+        "items": null
+      },
+      "form": {
+        "id": "delete-queue-items-properties",
+        "title": "Delete queue items",
+        "sections": [
+          {
+            "id": "items",
+            "title": "Items",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.items",
+                "type": "custom",
+                "component": "code-editor",
+                "label": "Queue items",
+                "description": "An array of queue items to delete — each needs Id and RowVersion, e.g. the items returned by a queue trigger",
+                "componentProps": {
+                  "singleLine": true,
+                  "mode": "expression",
+                  "showVariableButton": true,
+                  "showAiButton": false,
+                  "placeholder": "[{ \"Id\": 123, \"RowVersion\": \"...\" }]",
+                  "expectedType": "array"
+                },
+                "validation": {
+                  "required": true,
+                  "messages": {
+                    "required": "At least one queue item is required"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "core.action.queue.bulk-add",
+      "version": "1.0",
+      "category": "queue-tools",
+      "label": "Bulk add queue items",
+      "icon": "layers-plus",
+      "description": "Add multiple items to an Orchestrator queue in a single call",
+      "audience": "public",
+      "inputDefaults": {
+        "queue": null,
+        "queueItems": null,
+        "commitStrategy": "AllOrNothing"
+      },
+      "form": {
+        "id": "bulk-add-queue-items-properties",
+        "title": "Bulk add queue items",
+        "sections": [
+          {
+            "id": "queue-selection",
+            "title": "Queue",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.queue",
+                "type": "custom",
+                "component": "queue-picker",
+                "label": "Queue",
+                "description": "Select the Orchestrator queue to add items to",
+                "validation": {
+                  "required": true,
+                  "messages": {
+                    "required": "A queue must be selected"
+                  }
+                }
+              },
+              {
+                "name": "inputs.queueItems",
+                "type": "custom",
+                "component": "queue-items-editor",
+                "label": "Queue items",
+                "description": "Each item nests its data under SpecificContent, plus optional Priority, Reference, DeferDate and DueDate. Priority defaults to Normal.",
+                "componentProps": {
+                  "language": "javascript",
+                  "mode": "expression",
+                  "showVariableButton": true,
+                  "showAiButton": false,
+                  "minHeight": 150,
+                  "placeholder": "[\n  { \"SpecificContent\": { \"key\": \"value\" }, \"Priority\": \"Normal\" }\n]",
+                  "expectedType": "array"
+                },
+                "validation": {
+                  "required": true,
+                  "messages": {
+                    "required": "Add at least one queue item"
+                  }
+                },
+                "rules": [
+                  {
+                    "id": "show-when-queue-selected",
+                    "conditions": [
+                      {
+                        "when": "inputs.queue",
+                        "isNot": null
+                      }
+                    ],
+                    "effects": {
+                      "visible": true
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "advanced",
+            "title": "Advanced",
+            "collapsible": true,
+            "defaultExpanded": false,
+            "fields": [
+              {
+                "name": "inputs.commitStrategy",
+                "type": "select",
+                "label": "Commit strategy",
+                "description": "How Orchestrator handles a batch where some items fail",
+                "options": [
+                  {
+                    "label": "All or nothing",
+                    "value": "AllOrNothing"
+                  },
+                  {
+                    "label": "Stop on first failure",
+                    "value": "StopOnFirstFailure"
+                  },
+                  {
+                    "label": "Process all independently",
+                    "value": "ProcessAllIndependently"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "core.action.queue.get-items",
+      "version": "1.0",
+      "category": "queue-tools",
+      "label": "Get queue items",
+      "icon": "list-filter",
+      "description": "List the items in an Orchestrator queue that match a set of filters",
+      "audience": "public",
+      "inputDefaults": {
+        "queue": null,
+        "statuses": [],
+        "reference": "",
+        "filterStrategy": "Equals",
+        "priority": "Any",
+        "createdFrom": "",
+        "createdTo": ""
+      },
+      "form": {
+        "id": "get-queue-items-properties",
+        "title": "Get queue items",
+        "sections": [
+          {
+            "id": "queue-selection",
+            "title": "Queue",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.queue",
+                "type": "custom",
+                "component": "queue-picker",
+                "label": "Queue",
+                "description": "Select the Orchestrator queue to read items from",
+                "validation": {
+                  "required": true,
+                  "messages": {
+                    "required": "A queue must be selected"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "filters",
+            "title": "Filters",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.statuses",
+                "type": "multiselect",
+                "label": "Status",
+                "description": "Leave empty to include items in any status.",
+                "placeholder": "Any status",
+                "options": [
+                  {
+                    "label": "New",
+                    "value": "New"
+                  },
+                  {
+                    "label": "In progress",
+                    "value": "InProgress"
+                  },
+                  {
+                    "label": "Failed",
+                    "value": "Failed"
+                  },
+                  {
+                    "label": "Successful",
+                    "value": "Successful"
+                  },
+                  {
+                    "label": "Abandoned",
+                    "value": "Abandoned"
+                  },
+                  {
+                    "label": "Retried",
+                    "value": "Retried"
+                  },
+                  {
+                    "label": "Deleted",
+                    "value": "Deleted"
+                  }
+                ],
+                "rules": [
+                  {
+                    "id": "show-when-queue-selected",
+                    "conditions": [
+                      {
+                        "when": "inputs.queue",
+                        "isNot": null
+                      }
+                    ],
+                    "effects": {
+                      "visible": true
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "inputs.reference",
+                "type": "custom",
+                "component": "code-editor",
+                "label": "Reference",
+                "description": "Only include items with this reference. Leave empty to skip.",
+                "componentProps": {
+                  "singleLine": true,
+                  "showVariableButton": true,
+                  "showAiButton": false,
+                  "lineNumbers": false,
+                  "expectedType": "string",
+                  "defaultToLiteralMode": true
+                },
+                "rules": [
+                  {
+                    "id": "show-when-queue-selected",
+                    "conditions": [
+                      {
+                        "when": "inputs.queue",
+                        "isNot": null
+                      }
+                    ],
+                    "effects": {
+                      "visible": true
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "inputs.filterStrategy",
+                "type": "select",
+                "label": "Reference match",
+                "description": "How the reference is compared.",
+                "options": [
+                  {
+                    "label": "Exact match",
+                    "value": "Equals"
+                  },
+                  {
+                    "label": "Starts with",
+                    "value": "StartsWith"
+                  }
+                ],
+                "rules": [
+                  {
+                    "id": "show-when-reference-set",
+                    "conditions": [
+                      {
+                        "when": "inputs.queue",
+                        "isNot": null
+                      },
+                      {
+                        "when": "inputs.reference",
+                        "custom": "inputs.reference.expression || (inputs.reference && !inputs.reference.type)"
+                      }
+                    ],
+                    "effects": {
+                      "visible": true
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "inputs.priority",
+                "type": "select",
+                "label": "Priority",
+                "description": "Only include items with this priority.",
+                "options": [
+                  {
+                    "label": "Any",
+                    "value": "Any"
+                  },
+                  {
+                    "label": "High",
+                    "value": "High"
+                  },
+                  {
+                    "label": "Normal",
+                    "value": "Normal"
+                  },
+                  {
+                    "label": "Low",
+                    "value": "Low"
+                  }
+                ],
+                "rules": [
+                  {
+                    "id": "show-when-queue-selected",
+                    "conditions": [
+                      {
+                        "when": "inputs.queue",
+                        "isNot": null
+                      }
+                    ],
+                    "effects": {
+                      "visible": true
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "inputs.createdFrom",
+                "type": "custom",
+                "component": "code-editor",
+                "label": "Created from",
+                "description": "Only include items created at or after this date and time (ISO 8601, UTC unless an offset is given).",
+                "componentProps": {
+                  "singleLine": true,
+                  "showVariableButton": true,
+                  "showAiButton": false,
+                  "lineNumbers": false,
+                  "expectedType": "string",
+                  "placeholder": "2026-01-31T00:00:00Z",
+                  "defaultToLiteralMode": true
+                },
+                "rules": [
+                  {
+                    "id": "show-when-queue-selected",
+                    "conditions": [
+                      {
+                        "when": "inputs.queue",
+                        "isNot": null
+                      }
+                    ],
+                    "effects": {
+                      "visible": true
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "inputs.createdTo",
+                "type": "custom",
+                "component": "code-editor",
+                "label": "Created to",
+                "description": "Only include items created at or before this date and time (ISO 8601, UTC unless an offset is given).",
+                "componentProps": {
+                  "singleLine": true,
+                  "showVariableButton": true,
+                  "showAiButton": false,
+                  "lineNumbers": false,
+                  "expectedType": "string",
+                  "placeholder": "2026-01-31T23:59:59Z",
+                  "defaultToLiteralMode": true
+                },
+                "rules": [
+                  {
+                    "id": "show-when-queue-selected",
+                    "conditions": [
+                      {
+                        "when": "inputs.queue",
+                        "isNot": null
+                      }
+                    ],
+                    "effects": {
+                      "visible": true
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "uipath.human-in-the-loop.quick-form",
+      "version": "1.9",
+      "category": "human-task",
+      "label": "Quick Form",
+      "icon": "users",
+      "description": "Fast inline approvals with inline debug",
+      "audience": "public",
+      "inputDefaults": {
+        "schema": {
+          "fields": [
+            {
+              "id": "comments",
+              "type": "string",
+              "label": "Comments",
+              "direction": "output"
+            }
+          ],
+          "outcomes": [
+            {
+              "id": "submit",
+              "name": "Submit",
+              "type": "string",
+              "isPrimary": true,
+              "action": "Continue"
+            }
+          ]
+        },
+        "enableDecisionSchema": false,
+        "recipient": {
+          "channels": ["Email", "ActionCenter"],
+          "connections": {},
+          "assignee": {
+            "type": "user"
+          }
+        }
+      },
+      "form": {
+        "id": "hitl-quick-form-properties",
+        "title": "Quick Form Task Configuration",
+        "sections": [
+          {
+            "id": "assignment",
+            "title": "Assignment criteria",
+            "collapsible": false,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.recipient",
+                "type": "custom",
+                "component": "hitl-assignee-selector",
+                "label": "",
+                "description": ""
+              }
+            ]
+          },
+          {
+            "id": "schema",
+            "title": "Schema",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.schema",
+                "type": "custom",
+                "component": "hitl-schema-editor",
+                "label": "Task Schema",
+                "description": "Define the input and output parameters for this task"
+              }
+            ]
+          },
+          {
+            "id": "decision-schema",
+            "title": "Decision schema",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.enableDecisionSchema",
+                "type": "switch",
+                "label": "Enable decision schema",
+                "description": "Adds resolution, reason, and rationale fields to the task schema, following the Decision Object Model."
+              }
+            ]
+          },
+          {
+            "id": "delivery",
+            "title": "Delivery channels",
+            "collapsible": false,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.recipient",
+                "type": "custom",
+                "component": "hitl-channel-selector",
+                "label": "Delivery Channels",
+                "description": "Select where the task should be sent"
+              }
+            ]
+          },
+          {
+            "id": "additional-properties",
+            "title": "Additional properties",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.title",
+                "type": "text",
+                "label": "Task title"
+              },
+              {
+                "name": "inputs.priority",
+                "type": "select",
+                "label": "Priority",
+                "options": [
+                  {
+                    "label": "Low",
+                    "value": "Low"
+                  },
+                  {
+                    "label": "Medium",
+                    "value": "Medium"
+                  },
+                  {
+                    "label": "High",
+                    "value": "High"
+                  }
+                ]
+              },
+              {
+                "name": "inputs.labels",
+                "type": "text",
+                "label": "Labels",
+                "placeholder": "Comma-separated (e.g. finance,approval)"
+              },
+              {
+                "name": "inputs.memorySpace",
+                "type": "custom",
+                "component": "hitl-memory-space-picker",
+                "label": "Memory space",
+                "description": "Attach a memory space so this task's inputs and outputs are written to it"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "uipath.human-in-the-loop.coded-action-app",
+      "version": "1.6",
+      "category": "human-task",
+      "label": "Action App",
+      "icon": "users",
+      "description": "A customized coded action app service",
+      "audience": "public",
+      "inputDefaults": {
+        "enableDecisionSchema": false,
+        "recipient": {
+          "channels": ["ActionCenter"],
+          "assignee": {
+            "type": "user"
+          }
+        }
+      },
+      "form": {
+        "id": "hitl-coded-action-app-properties",
+        "title": "Coded Action App Task Configuration",
+        "sections": [
+          {
+            "id": "assignment",
+            "title": "Assignment criteria",
+            "collapsible": false,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.recipient",
+                "type": "custom",
+                "component": "hitl-assignee-selector",
+                "label": "",
+                "description": ""
+              }
+            ]
+          },
+          {
+            "id": "delivery",
+            "title": "Delivery channels",
+            "collapsible": false,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.recipient",
+                "type": "custom",
+                "component": "hitl-channel-selector",
+                "label": "Delivery Channels",
+                "description": "Select where the task should be sent",
+                "componentProps": {
+                  "lockedToActionCenter": true
+                }
+              }
+            ]
+          },
+          {
+            "id": "app",
+            "title": "Coded Action App",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.app",
+                "type": "custom",
+                "component": "hitl-app-picker",
+                "label": "Action App",
+                "description": "Select the coded action app for this task"
+              },
+              {
+                "name": "inputs.appInputBindings",
+                "type": "custom",
+                "component": "hitl-app-inputs",
+                "label": "Inputs",
+                "description": "Map app inputs to expressions/variables"
+              }
+            ]
+          },
+          {
+            "id": "decision-schema",
+            "title": "Decision schema",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.enableDecisionSchema",
+                "type": "switch",
+                "label": "Enable decision schema",
+                "description": "The selected action app must embed the decisions-and-reasons widget."
+              }
+            ]
+          },
+          {
+            "id": "additional-properties",
+            "title": "Additional properties",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.title",
+                "type": "text",
+                "label": "Task title"
+              },
+              {
+                "name": "inputs.priority",
+                "type": "select",
+                "label": "Priority",
+                "options": [
+                  {
+                    "label": "Low",
+                    "value": "Low"
+                  },
+                  {
+                    "label": "Medium",
+                    "value": "Medium"
+                  },
+                  {
+                    "label": "High",
+                    "value": "High"
+                  }
+                ]
+              },
+              {
+                "name": "inputs.labels",
+                "type": "text",
+                "label": "Labels",
+                "placeholder": "Comma-separated (e.g. finance,approval)"
+              },
+              {
+                "name": "inputs.memorySpace",
+                "type": "custom",
+                "component": "hitl-memory-space-picker",
+                "label": "Memory space",
+                "description": "Attach a memory space so this task's inputs and outputs are written to it"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "uipath.human-in-the-loop.document-validation",
+      "version": "1.7",
+      "category": "human-task",
+      "label": "Validate extraction",
+      "icon": "users",
+      "description": "Have someone review and correct extracted document fields in UiPath's built-in Validation Station.",
+      "audience": "public",
+      "inputDefaults": {
+        "recipient": {
+          "channels": ["ActionCenter"],
+          "assignee": {
+            "type": "user"
+          }
+        }
+      },
+      "form": {
+        "id": "hitl-document-validation-properties",
+        "title": "Document Validation Task Configuration",
+        "sections": [
+          {
+            "id": "assignment",
+            "title": "Assignment criteria",
+            "collapsible": false,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.recipient",
+                "type": "custom",
+                "component": "hitl-assignee-selector",
+                "label": "",
+                "description": ""
+              }
+            ]
+          },
+          {
+            "id": "delivery",
+            "title": "Delivery channels",
+            "collapsible": false,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.recipient",
+                "type": "custom",
+                "component": "hitl-channel-selector",
+                "label": "Delivery Channels",
+                "description": "Select where the task should be sent"
+              }
+            ]
+          },
+          {
+            "id": "extraction-output",
+            "title": "",
+            "collapsible": false,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.processedDocument",
+                "type": "text",
+                "label": "Extraction output",
+                "description": "Use the complete output of the Extract node (e.g. $vars.<nodename>.output).",
+                "placeholder": "Write an expression",
+                "validation": {
+                  "required": true,
+                  "messages": {
+                    "required": "Extraction output is required"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "additional-properties",
+            "title": "Additional properties",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.title",
+                "type": "text",
+                "label": "Task title"
+              },
+              {
+                "name": "inputs.priority",
+                "type": "select",
+                "label": "Priority",
+                "options": [
+                  {
+                    "label": "Low",
+                    "value": "Low"
+                  },
+                  {
+                    "label": "Medium",
+                    "value": "Medium"
+                  },
+                  {
+                    "label": "High",
+                    "value": "High"
+                  }
+                ]
+              },
+              {
+                "name": "inputs.labels",
+                "type": "text",
+                "label": "Labels",
+                "placeholder": "Comma-separated (e.g. finance,approval)"
+              },
+              {
+                "name": "inputs.memorySpace",
+                "type": "custom",
+                "component": "hitl-memory-space-picker",
+                "label": "Memory space",
+                "description": "Attach a memory space so this task's inputs and outputs are written to it"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "uipath.human-in-the-loop.document-classification",
+      "version": "1.1",
+      "category": "human-task",
+      "label": "Validate classification",
+      "icon": "users",
+      "description": "Have someone review and correct classified document fields in UiPath's built-in Classification Station.",
+      "audience": "public",
+      "inputDefaults": {
+        "recipient": {
+          "channels": ["ActionCenter"],
+          "assignee": {
+            "type": "user"
+          }
+        }
+      },
+      "form": {
+        "id": "hitl-document-classification-properties",
+        "title": "Document Classification Task Configuration",
+        "sections": [
+          {
+            "id": "assignment",
+            "title": "Assignment criteria",
+            "collapsible": false,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.recipient",
+                "type": "custom",
+                "component": "hitl-assignee-selector",
+                "label": "",
+                "description": ""
+              }
+            ]
+          },
+          {
+            "id": "delivery",
+            "title": "Delivery channels",
+            "collapsible": false,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.recipient",
+                "type": "custom",
+                "component": "hitl-channel-selector",
+                "label": "Delivery Channels",
+                "description": "Select where the task should be sent"
+              }
+            ]
+          },
+          {
+            "id": "classification-output",
+            "title": "",
+            "collapsible": false,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.processedDocument",
+                "type": "text",
+                "label": "Classification output",
+                "description": "Use the complete output of the Classify node (e.g. $vars.<nodename>.output).",
+                "placeholder": "Write an expression",
+                "validation": {
+                  "required": true,
+                  "messages": {
+                    "required": "Classification output is required"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "uipath.decision",
+      "version": "1.0",
+      "category": "human-task.decision",
+      "label": "Record decision",
+      "icon": "users",
+      "description": "Record an agent decision automatically, with no human review",
+      "audience": "public",
+      "inputDefaults": {
+        "schema": {
+          "fields": [
+            {
+              "id": "resolution",
+              "type": "string",
+              "label": "Resolution",
+              "direction": "inOut",
+              "required": true,
+              "controlType": "radioGroup",
+              "options": [
+                {
+                  "id": "approve",
+                  "value": "approve",
+                  "label": "Approve"
+                },
+                {
+                  "id": "deny",
+                  "value": "deny",
+                  "label": "Deny"
+                }
+              ],
+              "colSpan": 12
+            },
+            {
+              "id": "reason1Title",
+              "type": "string",
+              "label": "Reason 1 title",
+              "direction": "inOut",
+              "controlType": "text",
+              "colSpan": 3
+            },
+            {
+              "id": "reason1Description",
+              "type": "string",
+              "label": "Reason 1 description",
+              "direction": "inOut",
+              "controlType": "textarea",
+              "colSpan": 3
+            },
+            {
+              "id": "reason1Relevance",
+              "type": "string",
+              "label": "Reason 1 relevance",
+              "direction": "inOut",
+              "controlType": "dropdown",
+              "options": [
+                {
+                  "id": "high",
+                  "value": "high",
+                  "label": "High"
+                },
+                {
+                  "id": "medium",
+                  "value": "medium",
+                  "label": "Medium"
+                },
+                {
+                  "id": "low",
+                  "value": "low",
+                  "label": "Low"
+                },
+                {
+                  "id": "not-relevant",
+                  "value": "not-relevant",
+                  "label": "Not relevant"
+                }
+              ],
+              "colSpan": 3
+            },
+            {
+              "id": "reason1Decision",
+              "type": "string",
+              "label": "Reason 1 decision",
+              "direction": "inOut",
+              "controlType": "dropdown",
+              "options": [
+                {
+                  "id": "approve",
+                  "value": "approve",
+                  "label": "Approve"
+                },
+                {
+                  "id": "deny",
+                  "value": "deny",
+                  "label": "Deny"
+                }
+              ],
+              "colSpan": 3
+            },
+            {
+              "id": "reason2Title",
+              "type": "string",
+              "label": "Reason 2 title",
+              "direction": "inOut",
+              "controlType": "text",
+              "colSpan": 3
+            },
+            {
+              "id": "reason2Description",
+              "type": "string",
+              "label": "Reason 2 description",
+              "direction": "inOut",
+              "controlType": "textarea",
+              "colSpan": 3
+            },
+            {
+              "id": "reason2Relevance",
+              "type": "string",
+              "label": "Reason 2 relevance",
+              "direction": "inOut",
+              "controlType": "dropdown",
+              "options": [
+                {
+                  "id": "high",
+                  "value": "high",
+                  "label": "High"
+                },
+                {
+                  "id": "medium",
+                  "value": "medium",
+                  "label": "Medium"
+                },
+                {
+                  "id": "low",
+                  "value": "low",
+                  "label": "Low"
+                },
+                {
+                  "id": "not-relevant",
+                  "value": "not-relevant",
+                  "label": "Not relevant"
+                }
+              ],
+              "colSpan": 3
+            },
+            {
+              "id": "reason2Decision",
+              "type": "string",
+              "label": "Reason 2 decision",
+              "direction": "inOut",
+              "controlType": "dropdown",
+              "options": [
+                {
+                  "id": "approve",
+                  "value": "approve",
+                  "label": "Approve"
+                },
+                {
+                  "id": "deny",
+                  "value": "deny",
+                  "label": "Deny"
+                }
+              ],
+              "colSpan": 3
+            },
+            {
+              "id": "reason3Title",
+              "type": "string",
+              "label": "Reason 3 title",
+              "direction": "inOut",
+              "controlType": "text",
+              "colSpan": 3
+            },
+            {
+              "id": "reason3Description",
+              "type": "string",
+              "label": "Reason 3 description",
+              "direction": "inOut",
+              "controlType": "textarea",
+              "colSpan": 3
+            },
+            {
+              "id": "reason3Relevance",
+              "type": "string",
+              "label": "Reason 3 relevance",
+              "direction": "inOut",
+              "controlType": "dropdown",
+              "options": [
+                {
+                  "id": "high",
+                  "value": "high",
+                  "label": "High"
+                },
+                {
+                  "id": "medium",
+                  "value": "medium",
+                  "label": "Medium"
+                },
+                {
+                  "id": "low",
+                  "value": "low",
+                  "label": "Low"
+                },
+                {
+                  "id": "not-relevant",
+                  "value": "not-relevant",
+                  "label": "Not relevant"
+                }
+              ],
+              "colSpan": 3
+            },
+            {
+              "id": "reason3Decision",
+              "type": "string",
+              "label": "Reason 3 decision",
+              "direction": "inOut",
+              "controlType": "dropdown",
+              "options": [
+                {
+                  "id": "approve",
+                  "value": "approve",
+                  "label": "Approve"
+                },
+                {
+                  "id": "deny",
+                  "value": "deny",
+                  "label": "Deny"
+                }
+              ],
+              "colSpan": 3
+            },
+            {
+              "id": "rationale",
+              "type": "string",
+              "label": "Rationale",
+              "direction": "inOut",
+              "required": true,
+              "controlType": "textarea",
+              "colSpan": 12
+            }
+          ],
+          "outcomes": [
+            {
+              "id": "submit",
+              "name": "Submit",
+              "type": "string",
+              "isPrimary": true,
+              "action": "Continue"
+            }
+          ]
+        },
+        "recipient": {
+          "channels": [],
+          "connections": {},
+          "assignee": {
+            "type": "auto"
+          }
+        }
+      },
+      "form": {
+        "id": "decision-properties",
+        "title": "Record decision configuration",
+        "sections": [
+          {
+            "id": "decision",
+            "title": "Decision",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.resolutionBinding",
+                "type": "custom",
+                "component": "value-source-field",
+                "label": "Resolution",
+                "componentProps": {
+                  "allowedModes": ["variable"],
+                  "defaultMode": "variable",
+                  "expectedType": "string",
+                  "staticEditor": "select",
+                  "staticOptions": [
+                    {
+                      "label": "Approve",
+                      "value": "approve"
+                    },
+                    {
+                      "label": "Deny",
+                      "value": "deny"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "inputs.reason1TitleBinding",
+                "type": "custom",
+                "component": "value-source-field",
+                "label": "Reason 1 title",
+                "componentProps": {
+                  "allowedModes": ["variable"],
+                  "defaultMode": "variable",
+                  "expectedType": "string",
+                  "staticEditor": "text"
+                }
+              },
+              {
+                "name": "inputs.reason1DescriptionBinding",
+                "type": "custom",
+                "component": "value-source-field",
+                "label": "Reason 1 description",
+                "componentProps": {
+                  "allowedModes": ["variable"],
+                  "defaultMode": "variable",
+                  "expectedType": "string",
+                  "staticEditor": "textarea"
+                }
+              },
+              {
+                "name": "inputs.reason1RelevanceBinding",
+                "type": "custom",
+                "component": "value-source-field",
+                "label": "Reason 1 relevance",
+                "componentProps": {
+                  "allowedModes": ["variable"],
+                  "defaultMode": "variable",
+                  "expectedType": "string",
+                  "staticEditor": "select",
+                  "staticOptions": [
+                    {
+                      "label": "High",
+                      "value": "high"
+                    },
+                    {
+                      "label": "Medium",
+                      "value": "medium"
+                    },
+                    {
+                      "label": "Low",
+                      "value": "low"
+                    },
+                    {
+                      "label": "Not relevant",
+                      "value": "not-relevant"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "inputs.reason1DecisionBinding",
+                "type": "custom",
+                "component": "value-source-field",
+                "label": "Reason 1 decision",
+                "componentProps": {
+                  "allowedModes": ["variable"],
+                  "defaultMode": "variable",
+                  "expectedType": "string",
+                  "staticEditor": "select",
+                  "staticOptions": [
+                    {
+                      "label": "Approve",
+                      "value": "approve"
+                    },
+                    {
+                      "label": "Deny",
+                      "value": "deny"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "inputs.reason2TitleBinding",
+                "type": "custom",
+                "component": "value-source-field",
+                "label": "Reason 2 title",
+                "componentProps": {
+                  "allowedModes": ["variable"],
+                  "defaultMode": "variable",
+                  "expectedType": "string",
+                  "staticEditor": "text"
+                }
+              },
+              {
+                "name": "inputs.reason2DescriptionBinding",
+                "type": "custom",
+                "component": "value-source-field",
+                "label": "Reason 2 description",
+                "componentProps": {
+                  "allowedModes": ["variable"],
+                  "defaultMode": "variable",
+                  "expectedType": "string",
+                  "staticEditor": "textarea"
+                }
+              },
+              {
+                "name": "inputs.reason2RelevanceBinding",
+                "type": "custom",
+                "component": "value-source-field",
+                "label": "Reason 2 relevance",
+                "componentProps": {
+                  "allowedModes": ["variable"],
+                  "defaultMode": "variable",
+                  "expectedType": "string",
+                  "staticEditor": "select",
+                  "staticOptions": [
+                    {
+                      "label": "High",
+                      "value": "high"
+                    },
+                    {
+                      "label": "Medium",
+                      "value": "medium"
+                    },
+                    {
+                      "label": "Low",
+                      "value": "low"
+                    },
+                    {
+                      "label": "Not relevant",
+                      "value": "not-relevant"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "inputs.reason2DecisionBinding",
+                "type": "custom",
+                "component": "value-source-field",
+                "label": "Reason 2 decision",
+                "componentProps": {
+                  "allowedModes": ["variable"],
+                  "defaultMode": "variable",
+                  "expectedType": "string",
+                  "staticEditor": "select",
+                  "staticOptions": [
+                    {
+                      "label": "Approve",
+                      "value": "approve"
+                    },
+                    {
+                      "label": "Deny",
+                      "value": "deny"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "inputs.reason3TitleBinding",
+                "type": "custom",
+                "component": "value-source-field",
+                "label": "Reason 3 title",
+                "componentProps": {
+                  "allowedModes": ["variable"],
+                  "defaultMode": "variable",
+                  "expectedType": "string",
+                  "staticEditor": "text"
+                }
+              },
+              {
+                "name": "inputs.reason3DescriptionBinding",
+                "type": "custom",
+                "component": "value-source-field",
+                "label": "Reason 3 description",
+                "componentProps": {
+                  "allowedModes": ["variable"],
+                  "defaultMode": "variable",
+                  "expectedType": "string",
+                  "staticEditor": "textarea"
+                }
+              },
+              {
+                "name": "inputs.reason3RelevanceBinding",
+                "type": "custom",
+                "component": "value-source-field",
+                "label": "Reason 3 relevance",
+                "componentProps": {
+                  "allowedModes": ["variable"],
+                  "defaultMode": "variable",
+                  "expectedType": "string",
+                  "staticEditor": "select",
+                  "staticOptions": [
+                    {
+                      "label": "High",
+                      "value": "high"
+                    },
+                    {
+                      "label": "Medium",
+                      "value": "medium"
+                    },
+                    {
+                      "label": "Low",
+                      "value": "low"
+                    },
+                    {
+                      "label": "Not relevant",
+                      "value": "not-relevant"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "inputs.reason3DecisionBinding",
+                "type": "custom",
+                "component": "value-source-field",
+                "label": "Reason 3 decision",
+                "componentProps": {
+                  "allowedModes": ["variable"],
+                  "defaultMode": "variable",
+                  "expectedType": "string",
+                  "staticEditor": "select",
+                  "staticOptions": [
+                    {
+                      "label": "Approve",
+                      "value": "approve"
+                    },
+                    {
+                      "label": "Deny",
+                      "value": "deny"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "inputs.rationaleBinding",
+                "type": "custom",
+                "component": "value-source-field",
+                "label": "Rationale",
+                "componentProps": {
+                  "allowedModes": ["variable"],
+                  "defaultMode": "variable",
+                  "expectedType": "string",
+                  "staticEditor": "textarea"
+                }
+              }
+            ]
+          },
+          {
+            "id": "additional-properties",
+            "title": "Additional properties",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.title",
+                "type": "text",
+                "label": "Task title"
+              },
+              {
+                "name": "inputs.priority",
+                "type": "select",
+                "label": "Priority",
+                "options": [
+                  {
+                    "label": "Low",
+                    "value": "Low"
+                  },
+                  {
+                    "label": "Medium",
+                    "value": "Medium"
+                  },
+                  {
+                    "label": "High",
+                    "value": "High"
+                  }
+                ]
+              },
+              {
+                "name": "inputs.labels",
+                "type": "text",
+                "label": "Labels",
+                "placeholder": "Comma-separated (e.g. finance,approval)"
+              },
+              {
+                "name": "inputs.memorySpace",
+                "type": "custom",
+                "component": "hitl-memory-space-picker",
+                "label": "Memory space",
+                "description": "Attach a memory space so this task's inputs and outputs are written to it"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "core.trigger.manual",
+      "version": "1.0",
+      "category": "trigger",
+      "label": "Manual trigger",
+      "icon": "play",
+      "description": "Start the process manually",
+      "audience": "public",
+      "inputDefaults": {},
+      "form": null
+    },
+    {
+      "nodeType": "core.trigger.form",
+      "version": "1.0",
+      "category": "trigger",
+      "label": "Form trigger",
+      "icon": "clipboardList",
+      "description": "Start the process by submitting a form",
+      "audience": "public",
+      "inputDefaults": {
+        "schema": {
+          "fields": [],
+          "outcomes": []
+        }
+      },
+      "form": {
+        "id": "form-trigger-properties",
+        "title": "Form trigger configuration",
+        "sections": [
+          {
+            "id": "schema",
+            "title": "Form",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.schema",
+                "type": "custom",
+                "component": "form-trigger-schema-editor",
+                "label": "Form schema",
+                "description": "These fields define the form that starts the process."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "core.trigger.conversation",
+      "version": "1.3",
+      "category": "trigger",
+      "label": "Conversation trigger",
+      "icon": "messagesSquare",
+      "description": "Start this process when a new conversation is created",
+      "audience": "public",
+      "inputDefaults": {
+        "appearance": {
+          "personalWorkspaceConnectionsOnly": true
+        }
+      },
+      "form": {
+        "id": "conversation-trigger-properties",
+        "title": "Conversation trigger",
+        "sections": [
+          {
+            "id": "appearance",
+            "title": "Appearance",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.appearance.welcomeTitle",
+                "type": "text",
+                "label": "Welcome title"
+              },
+              {
+                "name": "inputs.appearance.welcomeDescription",
+                "type": "text",
+                "label": "Welcome description"
+              },
+              {
+                "name": "inputs.appearance.startingPrompts",
+                "type": "custom",
+                "component": "starting-prompts-editor",
+                "label": "Starting prompts"
+              },
+              {
+                "name": "inputs.appearance.personalWorkspaceConnectionsOnly",
+                "type": "switch",
+                "label": "Display personal workspace connections only",
+                "description": "Displays only personal workspace connections in the chat's connection settings menu"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "core.trigger.voice",
+      "version": "1.1",
+      "category": "trigger",
+      "label": "Incoming call",
+      "icon": "phoneIncoming",
+      "description": "Start this process when a phone call arrives on a bound number",
+      "audience": "public",
+      "inputDefaults": {},
+      "form": null
+    },
+    {
+      "nodeType": "core.trigger.scheduled",
+      "version": "1.2",
+      "category": "trigger",
+      "label": "Scheduled trigger",
+      "icon": "calendar-clock",
+      "description": "Start the process on a schedule or interval",
+      "audience": "public",
+      "inputDefaults": {
+        "timerType": "timeCycle",
+        "timerValue": "R/PT1H"
+      },
+      "form": {
+        "id": "scheduled-trigger-properties",
+        "title": "Scheduled trigger",
+        "sections": [
+          {
+            "id": "schedule",
+            "title": "Schedule",
+            "collapsible": false,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.timerValue",
+                "type": "custom",
+                "component": "iso-expression-field",
+                "label": "",
+                "placeholder": "R/PT1H",
+                "componentProps": {
+                  "expressionType": "repeating-interval"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "core.trigger.queue",
+      "version": "1.0",
+      "category": "trigger",
+      "label": "Queue trigger",
+      "icon": "list-plus",
+      "description": "Start this process when a new item is added to an Orchestrator queue",
+      "audience": "public",
+      "inputDefaults": {
+        "queue": null
+      },
+      "form": {
+        "id": "queue-trigger-properties",
+        "title": "Queue trigger",
+        "sections": [
+          {
+            "id": "queue-selection",
+            "title": "Queue",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.queue",
+                "type": "custom",
+                "component": "queue-picker",
+                "label": "Queue",
+                "description": "Select the Orchestrator queue to watch for new items",
+                "validation": {
+                  "required": true,
+                  "messages": {
+                    "required": "A queue must be selected"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "uipath.agent.autonomous",
+      "version": "1.4",
+      "category": "agent",
+      "label": "Autonomous agent",
+      "icon": "autonomous-agent",
+      "description": "AI agent that completes tasks autonomously",
+      "audience": "inline-agent",
+      "inputDefaults": {
+        "systemPrompt": "You are an agentic assistant.",
+        "userPrompt": "What is the current date?",
+        "mode": "standard",
+        "agentInputVariables": [],
+        "agentOutputVariables": [
+          {
+            "id": "content",
+            "type": "string"
+          }
+        ]
+      },
+      "form": {
+        "id": "settings-form",
+        "title": "Agent settings",
+        "metadata": {
+          "propertyPanel": {
+            "sectionTabs": {
+              "section-advanced": "advanced"
+            }
+          }
+        },
+        "mode": "onChange",
+        "reValidateMode": "onChange",
+        "sections": [
+          {
+            "id": "section-1",
+            "title": "Agent settings",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.mode",
+                "type": "custom",
+                "component": "agent-harness-picker",
+                "label": ""
+              },
+              {
+                "name": "inputs.model",
+                "type": "custom",
+                "component": "agent-model-picker",
+                "label": "Model",
+                "componentProps": {
+                  "placeholder": "gpt-4o-2024-11-20"
+                }
+              },
+              {
+                "name": "inputs.systemPrompt",
+                "type": "custom",
+                "component": "prompt-editor",
+                "label": "System prompt",
+                "componentProps": {
+                  "multiline": true,
+                  "minRows": 4,
+                  "maxRows": 20,
+                  "placeholder": "Enter the system prompt"
+                }
+              },
+              {
+                "name": "inputs.userPrompt",
+                "type": "custom",
+                "component": "prompt-editor",
+                "label": "User prompt",
+                "componentProps": {
+                  "multiline": true,
+                  "minRows": 3,
+                  "maxRows": 15,
+                  "placeholder": "Enter the user prompt"
+                }
+              }
+            ]
+          },
+          {
+            "id": "section-advanced",
+            "title": "Advanced settings",
+            "collapsible": true,
+            "defaultExpanded": false,
+            "fields": [
+              {
+                "name": "inputs.temperature",
+                "type": "slider",
+                "label": "Temperature",
+                "defaultValue": 0,
+                "min": 0,
+                "max": 1,
+                "step": 0.01
+              },
+              {
+                "name": "inputs.maxTokenPerResponse",
+                "type": "slider",
+                "label": "Maximum tokens per response",
+                "defaultValue": 16384,
+                "min": 0,
+                "step": 1,
+                "maxRef": {
+                  "fromField": "inputs.modelMaxTokens",
+                  "fallback": 16384
+                }
+              },
+              {
+                "name": "inputs.maxIterations",
+                "type": "slider",
+                "label": "Maximum iterations",
+                "defaultValue": 25,
+                "min": 1,
+                "max": 100,
+                "step": 1
+              }
+            ]
+          },
+          {
+            "id": "guardrails",
+            "collapsible": false,
+            "fields": [
+              {
+                "name": "inputs.guardrails",
+                "type": "custom",
+                "component": "guardrails-editor",
+                "label": "",
+                "componentProps": {
+                  "toolName": "Agent",
+                  "scope": "Agent"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "uipath.agent.conversational",
+      "version": "1.11",
+      "category": "agent",
+      "label": "Conversational agent",
+      "icon": "conversational-agent",
+      "description": "AI agent for interactive conversations",
+      "audience": "inline-agent",
+      "inputDefaults": {},
+      "form": {
+        "id": "settings-form",
+        "title": "Agent settings",
+        "metadata": {
+          "propertyPanel": {
+            "sectionTabs": {
+              "section-advanced": "advanced"
+            }
+          }
+        },
+        "mode": "onChange",
+        "reValidateMode": "onChange",
+        "sections": [
+          {
+            "id": "section-1",
+            "title": "Agent settings",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.mode",
+                "type": "custom",
+                "component": "agent-harness-picker",
+                "label": "",
+                "componentProps": {
+                  "isConversational": true
+                }
+              },
+              {
+                "name": "inputs.model",
+                "type": "custom",
+                "component": "agent-model-picker",
+                "label": "Model",
+                "componentProps": {
+                  "placeholder": "anthropic.claude-sonnet-5"
+                }
+              },
+              {
+                "name": "inputs.systemPrompt",
+                "type": "custom",
+                "component": "prompt-editor",
+                "label": "System prompt",
+                "componentProps": {
+                  "multiline": true,
+                  "minRows": 4,
+                  "maxRows": 20,
+                  "placeholder": "Enter the system prompt"
+                }
+              }
+            ]
+          },
+          {
+            "id": "section-advanced",
+            "title": "Advanced settings",
+            "collapsible": true,
+            "defaultExpanded": false,
+            "fields": [
+              {
+                "name": "inputs.temperature",
+                "type": "slider",
+                "label": "Temperature",
+                "defaultValue": 0,
+                "min": 0,
+                "max": 1,
+                "step": 0.01
+              },
+              {
+                "name": "inputs.maxTokenPerResponse",
+                "type": "slider",
+                "label": "Maximum tokens per response",
+                "defaultValue": 8192,
+                "min": 0,
+                "step": 1,
+                "maxRef": {
+                  "fromField": "inputs.modelMaxTokens",
+                  "fallback": 16384
+                }
+              }
+            ]
+          },
+          {
+            "id": "conversational-agent-settings",
+            "title": "Conversational agent settings",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.conversationalAgentSettings",
+                "type": "custom",
+                "component": "conversational-agent-settings-editor",
+                "label": ""
+              }
+            ]
+          },
+          {
+            "id": "guardrails",
+            "collapsible": false,
+            "fields": [
+              {
+                "name": "inputs.guardrails",
+                "type": "custom",
+                "component": "guardrails-editor",
+                "label": "",
+                "componentProps": {
+                  "toolName": "Agent",
+                  "scope": "Agent"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "uipath.agent.voice",
+      "version": "1.6",
+      "category": "agent",
+      "label": "Voice agent",
+      "icon": "phone",
+      "description": "AI agent for real-time voice conversations over calls",
+      "audience": "inline-agent",
+      "inputDefaults": {},
+      "form": {
+        "id": "settings-form",
+        "title": "Agent settings",
+        "metadata": {
+          "propertyPanel": {
+            "sectionTabs": {
+              "section-advanced": "advanced"
+            }
+          }
+        },
+        "mode": "onChange",
+        "reValidateMode": "onChange",
+        "sections": [
+          {
+            "id": "section-1",
+            "title": "Agent settings",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.voice.model",
+                "type": "custom",
+                "component": "conversational-agent-voice-model-picker",
+                "label": "Model"
+              },
+              {
+                "name": "inputs.voice.persona",
+                "type": "custom",
+                "component": "conversational-agent-voice-persona-picker",
+                "label": "Persona"
+              },
+              {
+                "name": "inputs.systemPrompt",
+                "type": "custom",
+                "component": "prompt-editor",
+                "label": "System prompt",
+                "componentProps": {
+                  "multiline": true,
+                  "minRows": 4,
+                  "maxRows": 20,
+                  "placeholder": "Enter the system prompt"
+                }
+              }
+            ]
+          },
+          {
+            "id": "section-advanced",
+            "title": "Advanced settings",
+            "collapsible": true,
+            "defaultExpanded": false,
+            "fields": [
+              {
+                "name": "inputs.voice.temperature",
+                "type": "slider",
+                "label": "Temperature",
+                "defaultValue": 1,
+                "min": 0.5,
+                "max": 1,
+                "step": 0.01,
+                "rules": [
+                  {
+                    "id": "hide-for-openai",
+                    "conditions": [
+                      {
+                        "when": "inputs.voice.model",
+                        "matches": "^(gpt|undefined$)"
+                      }
+                    ],
+                    "effects": {
+                      "visible": false
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "inputs.voice.maxTokens",
+                "type": "slider",
+                "label": "Maximum tokens per response",
+                "defaultValue": 32000,
+                "min": 0,
+                "maxRef": {
+                  "fromField": "inputs.voice.modelMaxTokens",
+                  "fallback": 32000
+                },
+                "step": 1
+              },
+              {
+                "name": "inputs.voice.turnDetection",
+                "type": "custom",
+                "component": "conversational-agent-voice-turn-detection",
+                "label": "Turn detection",
+                "description": "The agent replies when it detects the caller has stopped speaking."
+              },
+              {
+                "name": "inputs.voice.agentSpeaksFirst",
+                "type": "switch",
+                "label": "Agent speaks first",
+                "description": "The agent opens the conversation instead of waiting for the caller to speak.",
+                "defaultValue": true
+              }
+            ]
+          },
+          {
+            "id": "call-settings",
+            "title": "Call settings",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.callContext",
+                "type": "custom",
+                "component": "code-editor",
+                "label": "Call context",
+                "description": "Bind to the callContext from an Incoming Call trigger or a Create Outgoing Call node.",
+                "componentProps": {
+                  "singleLine": true,
+                  "expectedType": "object",
+                  "showVariableButton": true,
+                  "placeholder": "$vars.createOutgoingCall1.output.callContext"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "uipath.agent.resource.escalation.quick-form",
+      "version": "1.3",
+      "category": "agent",
+      "label": "Quick form escalation",
+      "icon": "user-round",
+      "description": "Escalate to a human for review or action",
+      "audience": "inline-agent",
+      "inputDefaults": {
+        "name": "Escalation",
+        "description": "",
+        "type": "quick-form",
+        "agentMemory": false,
+        "memorySimilarity": 0.8,
+        "memorySearchMode": "hybrid",
+        "memoryFieldSettings": [],
+        "schema": {
+          "fields": [],
+          "outcomes": []
+        },
+        "recipients": [],
+        "outcomeMapping": null,
+        "_additionalProps": {
+          "taskTitle": "",
+          "priority": "medium",
+          "labels": []
+        },
+        "_notifications": false
+      },
+      "form": {
+        "id": "escalation-form",
+        "title": "Escalation",
+        "sections": [
+          {
+            "id": "escalation-section",
+            "title": "Escalation",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.name",
+                "type": "text",
+                "label": "Escalation name",
+                "validation": {
+                  "required": true
+                }
+              },
+              {
+                "name": "inputs.description",
+                "type": "custom",
+                "component": "escalation-description",
+                "label": "Description",
+                "placeholder": "Describe the purpose of the escalation"
+              },
+              {
+                "name": "inputs.agentMemory",
+                "type": "switch",
+                "label": "Agent memory",
+                "description": "The agent first checks for a memorized response before escalating. New responses are memorized for future runs.",
+                "defaultValue": false
+              },
+              {
+                "name": "inputs.memorySimilarity",
+                "type": "slider",
+                "label": "Semantic similarity",
+                "description": "How closely a new input must resemble a past one. Escalation memory always retrieves only the top-ranked memory.",
+                "min": 0,
+                "max": 1,
+                "step": 0.01,
+                "defaultValue": 0.8,
+                "rules": [
+                  {
+                    "id": "show-when-agent-memory-on",
+                    "conditions": [
+                      {
+                        "when": "inputs.agentMemory",
+                        "is": true
+                      }
+                    ],
+                    "effects": {
+                      "visible": true
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "inputs.memorySearchMode",
+                "type": "select",
+                "label": "Search mode",
+                "options": [
+                  {
+                    "value": "hybrid",
+                    "label": "Hybrid"
+                  },
+                  {
+                    "value": "semantic",
+                    "label": "Semantic"
+                  }
+                ],
+                "defaultValue": "hybrid",
+                "rules": [
+                  {
+                    "id": "show-when-agent-memory-on",
+                    "conditions": [
+                      {
+                        "when": "inputs.agentMemory",
+                        "is": true
+                      }
+                    ],
+                    "effects": {
+                      "visible": true
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "inputs.memoryFieldSettings",
+                "type": "custom",
+                "component": "escalation-memory-arguments",
+                "label": "",
+                "rules": [
+                  {
+                    "id": "show-when-agent-memory-on",
+                    "conditions": [
+                      {
+                        "when": "inputs.agentMemory",
+                        "is": true
+                      }
+                    ],
+                    "effects": {
+                      "visible": true
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "inputs.schema",
+                "type": "custom",
+                "component": "escalation-schema-editor",
+                "label": ""
+              },
+              {
+                "name": "inputs._additionalProps",
+                "type": "custom",
+                "component": "escalation-additional-properties",
+                "label": ""
+              },
+              {
+                "name": "inputs.recipients",
+                "type": "custom",
+                "component": "escalation-recipients",
+                "label": ""
+              },
+              {
+                "name": "inputs._notifications",
+                "type": "custom",
+                "component": "escalation-notifications",
+                "label": ""
+              },
+              {
+                "name": "inputs.outcomeMapping",
+                "type": "custom",
+                "component": "escalation-outcome-mapping",
+                "label": ""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "uipath.agent.resource.escalation.coded-action-app",
+      "version": "1.3",
+      "category": "agent",
+      "label": "Action app escalation",
+      "icon": "user-round",
+      "description": "Escalate to a human for review or action",
+      "audience": "inline-agent",
+      "inputDefaults": {
+        "name": "Escalation",
+        "description": "",
+        "type": "app-task",
+        "agentMemory": false,
+        "memorySimilarity": 0.8,
+        "memorySearchMode": "hybrid",
+        "memoryFieldSettings": [],
+        "app": null,
+        "recipients": [],
+        "outcomeMapping": null,
+        "_additionalProps": {
+          "taskTitle": "",
+          "priority": "medium",
+          "labels": []
+        },
+        "_notifications": false,
+        "_appInputs": null
+      },
+      "form": {
+        "id": "escalation-form",
+        "title": "Escalation",
+        "sections": [
+          {
+            "id": "escalation-section",
+            "title": "Escalation",
+            "collapsible": true,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.name",
+                "type": "text",
+                "label": "Escalation name",
+                "validation": {
+                  "required": true
+                }
+              },
+              {
+                "name": "inputs.description",
+                "type": "custom",
+                "component": "escalation-description",
+                "label": "Description",
+                "placeholder": "Describe the purpose of the escalation"
+              },
+              {
+                "name": "inputs.agentMemory",
+                "type": "switch",
+                "label": "Agent memory",
+                "description": "The agent first checks for a memorized response before escalating. New responses are memorized for future runs.",
+                "defaultValue": false
+              },
+              {
+                "name": "inputs.memorySimilarity",
+                "type": "slider",
+                "label": "Semantic similarity",
+                "description": "How closely a new input must resemble a past one. Escalation memory always retrieves only the top-ranked memory.",
+                "min": 0,
+                "max": 1,
+                "step": 0.01,
+                "defaultValue": 0.8,
+                "rules": [
+                  {
+                    "id": "show-when-agent-memory-on",
+                    "conditions": [
+                      {
+                        "when": "inputs.agentMemory",
+                        "is": true
+                      }
+                    ],
+                    "effects": {
+                      "visible": true
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "inputs.memorySearchMode",
+                "type": "select",
+                "label": "Search mode",
+                "options": [
+                  {
+                    "value": "hybrid",
+                    "label": "Hybrid"
+                  },
+                  {
+                    "value": "semantic",
+                    "label": "Semantic"
+                  }
+                ],
+                "defaultValue": "hybrid",
+                "rules": [
+                  {
+                    "id": "show-when-agent-memory-on",
+                    "conditions": [
+                      {
+                        "when": "inputs.agentMemory",
+                        "is": true
+                      }
+                    ],
+                    "effects": {
+                      "visible": true
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "inputs.memoryFieldSettings",
+                "type": "custom",
+                "component": "escalation-memory-arguments",
+                "label": "",
+                "rules": [
+                  {
+                    "id": "show-when-agent-memory-on",
+                    "conditions": [
+                      {
+                        "when": "inputs.agentMemory",
+                        "is": true
+                      }
+                    ],
+                    "effects": {
+                      "visible": true
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "inputs.app",
+                "type": "custom",
+                "component": "escalation-app",
+                "label": "Action App",
+                "validation": {
+                  "required": true
+                }
+              },
+              {
+                "name": "inputs._additionalProps",
+                "type": "custom",
+                "component": "escalation-additional-properties",
+                "label": ""
+              },
+              {
+                "name": "inputs.recipients",
+                "type": "custom",
+                "component": "escalation-recipients",
+                "label": ""
+              },
+              {
+                "name": "inputs._notifications",
+                "type": "custom",
+                "component": "escalation-notifications",
+                "label": ""
+              },
+              {
+                "name": "inputs._appInputs",
+                "type": "custom",
+                "component": "escalation-inputs",
+                "label": ""
+              },
+              {
+                "name": "inputs.outcomeMapping",
+                "type": "custom",
+                "component": "escalation-outcome-mapping",
+                "label": ""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "uipath.agent.resource.tool.builtin.analyzefiles",
+      "version": "1.3",
+      "category": "agent.tool.builtin",
+      "label": "Analyze Files",
+      "icon": "paperclip",
+      "description": "Extract and analyze content from files",
+      "audience": "inline-agent",
+      "inputDefaults": {
+        "itemsDescription": {
+          "mode": "prompt",
+          "textValue": "",
+          "promptValue": "Array of files, documents, images, or other attachments to process",
+          "argumentPath": ""
+        },
+        "analysisTaskDescription": {
+          "mode": "prompt",
+          "textValue": "",
+          "promptValue": "The task, question, or instruction for processing the files (e.g., 'summarize this document', 'extract key points', 'what is in this image')",
+          "argumentPath": ""
+        },
+        "exampleCalls": []
+      },
+      "form": {
+        "id": "analyzefiles-tool-form",
+        "title": "Analyze Files",
+        "mode": "onChange",
+        "reValidateMode": "onChange",
+        "sections": [
+          {
+            "id": "analyzefiles-settings",
+            "title": "Settings",
+            "collapsible": false,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.description",
+                "type": "custom",
+                "component": "description-textarea",
+                "label": "Description",
+                "placeholder": "Analyze one or more files with an LLM to extract, synthesize, or answer queries about their content."
+              },
+              {
+                "name": "inputs.itemsDescription",
+                "type": "custom",
+                "component": "value-source-field",
+                "label": "Attachments",
+                "componentProps": {
+                  "allowedModes": ["prompt", "variable", "text-builder"],
+                  "defaultMode": "prompt",
+                  "defaultPromptValue": "Array of files, documents, images, or other attachments to process",
+                  "expectedType": "file",
+                  "allowFileArray": true,
+                  "staticEditor": "array-list",
+                  "placeholder": "File or attachment reference",
+                  "addButtonLabel": "Add attachment",
+                  "itemLabelPlaceholder": "Attachment name"
+                }
+              },
+              {
+                "name": "inputs.analysisTaskDescription",
+                "type": "custom",
+                "component": "value-source-field",
+                "label": "Analysis Task",
+                "componentProps": {
+                  "allowedModes": ["prompt", "variable"],
+                  "defaultMode": "prompt",
+                  "defaultPromptValue": "The task, question, or instruction for processing the files (e.g., 'summarize this document', 'extract key points', 'what is in this image')",
+                  "expectedType": "string",
+                  "coerceLegacyStringTo": "promptValue"
+                }
+              }
+            ]
+          },
+          {
+            "id": "simulation-settings",
+            "title": "Simulation settings",
+            "description": "Add example calls for testing",
+            "collapsible": true,
+            "defaultExpanded": false,
+            "fields": [
+              {
+                "name": "inputs.exampleCalls",
+                "type": "custom",
+                "component": "example-calls-editor",
+                "label": "",
+                "componentProps": {
+                  "addButtonLabel": "Add example call",
+                  "toolName": "Analyze Files"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "uipath.agent.resource.tool.builtin.batchtransform",
+      "version": "1.2",
+      "category": "agent.tool.builtin",
+      "label": "Batch transform",
+      "icon": "table",
+      "description": "Process and transform CSV files",
+      "audience": "inline-agent",
+      "inputDefaults": {
+        "description": "Process and transform CSV files.",
+        "source": "",
+        "query": {
+          "mode": "prompt",
+          "textValue": "",
+          "promptValue": "",
+          "argumentPath": ""
+        },
+        "outputColumns": [],
+        "webSearchGrounding": {
+          "value": "enabled"
+        }
+      },
+      "form": {
+        "id": "batchtransform-tool-form",
+        "title": "Batch transform",
+        "mode": "onChange",
+        "reValidateMode": "onChange",
+        "sections": [
+          {
+            "id": "batchtransform-settings",
+            "title": "Batch transform settings",
+            "collapsible": false,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.source",
+                "type": "file",
+                "label": "Source (file)",
+                "placeholder": "CSV file to transform"
+              },
+              {
+                "name": "inputs.query",
+                "type": "custom",
+                "component": "context-query-editor",
+                "label": "Batch transform task",
+                "componentProps": {
+                  "placeholder": "Describe the task for each row: what to analyze, what to extract, and how to populate the output columns"
+                }
+              },
+              {
+                "name": "inputs.outputColumns",
+                "type": "custom",
+                "component": "output-columns-editor",
+                "label": "Output columns",
+                "componentProps": {
+                  "maxColumns": 10,
+                  "namePlaceholder": "Column name",
+                  "descriptionPlaceholder": "Company name or Renewal date"
+                }
+              },
+              {
+                "name": "inputs.webSearchGrounding.value",
+                "type": "select",
+                "label": "Web search grounding",
+                "options": [
+                  {
+                    "label": "Enabled",
+                    "value": "enabled"
+                  },
+                  {
+                    "label": "Disabled",
+                    "value": "disabled"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "uipath.agent.resource.tool.builtin.createfile",
+      "version": "1.0",
+      "category": "agent.tool.builtin",
+      "label": "Create File",
+      "icon": "file-plus",
+      "description": "Create a file the agent can pass to another tool or return as output",
+      "audience": "inline-agent",
+      "inputDefaults": {
+        "fileNameDescription": {
+          "mode": "prompt",
+          "textValue": "",
+          "promptValue": "Name of the file to create, including its extension (e.g., 'summary.md' or 'accounts.csv'). The extension sets the file type, so it must match the content.",
+          "argumentPath": ""
+        },
+        "contentDescription": {
+          "mode": "prompt",
+          "textValue": "",
+          "promptValue": "Text content of the file.",
+          "argumentPath": ""
+        },
+        "filePathDescription": {
+          "mode": "prompt",
+          "textValue": "",
+          "promptValue": "Not available for this agent. Leave this empty and put the file's text in content.",
+          "argumentPath": ""
+        },
+        "exampleCalls": []
+      },
+      "form": {
+        "id": "createfile-tool-form",
+        "title": "Create File",
+        "mode": "onChange",
+        "reValidateMode": "onChange",
+        "sections": [
+          {
+            "id": "createfile-settings",
+            "title": "Settings",
+            "collapsible": false,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.description",
+                "type": "custom",
+                "component": "description-textarea",
+                "label": "Description",
+                "placeholder": "Create a file to pass to another tool or return as output."
+              },
+              {
+                "name": "inputs.fileNameDescription",
+                "type": "custom",
+                "component": "value-source-field",
+                "label": "File name",
+                "componentProps": {
+                  "allowedModes": ["prompt", "variable"],
+                  "defaultMode": "prompt",
+                  "defaultPromptValue": "Name of the file to create, including its extension (e.g., 'summary.md' or 'accounts.csv'). The extension sets the file type, so it must match the content.",
+                  "expectedType": "string"
+                }
+              },
+              {
+                "name": "inputs.contentDescription",
+                "type": "custom",
+                "component": "value-source-field",
+                "label": "Content",
+                "componentProps": {
+                  "allowedModes": ["prompt", "variable"],
+                  "defaultMode": "prompt",
+                  "defaultPromptValue": "Text content of the file.",
+                  "expectedType": "string"
+                }
+              },
+              {
+                "name": "inputs.filePathDescription",
+                "type": "custom",
+                "component": "create-file-path-field",
+                "label": "File path",
+                "componentProps": {
+                  "allowedModes": ["prompt"],
+                  "defaultMode": "prompt",
+                  "expectedType": "string"
+                }
+              }
+            ]
+          },
+          {
+            "id": "simulation-settings",
+            "title": "Simulation settings",
+            "description": "Add example calls for testing",
+            "collapsible": true,
+            "defaultExpanded": false,
+            "fields": [
+              {
+                "name": "inputs.exampleCalls",
+                "type": "custom",
+                "component": "example-calls-editor",
+                "label": "",
+                "componentProps": {
+                  "addButtonLabel": "Add example call",
+                  "toolName": "Create File"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "uipath.agent.resource.tool.builtin.httprequest",
+      "version": "1.2",
+      "category": "agent.tool.builtin",
+      "label": "HTTP Request",
+      "icon": "app-window",
+      "description": "Send requests to public web APIs and return the status code, headers, and body",
+      "audience": "inline-agent",
+      "inputDefaults": {
+        "url": {
+          "mode": "prompt",
+          "textValue": "",
+          "promptValue": "The absolute URL to send the request to.",
+          "argumentPath": ""
+        },
+        "method": {
+          "mode": "prompt",
+          "textValue": "",
+          "promptValue": "HTTP method to use, one of: GET, POST, PUT, PATCH, DELETE.",
+          "argumentPath": ""
+        },
+        "headers": {
+          "mode": "prompt",
+          "textValue": "",
+          "promptValue": "Request headers as a list of name/value pairs.",
+          "argumentPath": ""
+        },
+        "params": {
+          "mode": "prompt",
+          "textValue": "",
+          "promptValue": "Query-string parameters as a list of name/value pairs.",
+          "argumentPath": ""
+        },
+        "body": {
+          "mode": "prompt",
+          "textValue": "",
+          "promptValue": "Request body sent as-is. Provide JSON as a string and set a Content-Type header if the endpoint expects JSON.",
+          "argumentPath": ""
+        },
+        "timeout": {
+          "mode": "prompt",
+          "textValue": "",
+          "promptValue": "Request timeout in seconds.",
+          "argumentPath": ""
+        }
+      },
+      "form": {
+        "id": "httprequest-tool-form",
+        "title": "HTTP Request",
+        "mode": "onChange",
+        "reValidateMode": "onChange",
+        "sections": [
+          {
+            "id": "tool-details",
+            "title": "Tool details",
+            "collapsible": false,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.description",
+                "type": "custom",
+                "component": "description-textarea",
+                "label": "Description",
+                "placeholder": "Make an outbound HTTP request to a URL and return the status code, response headers, and response body. Use this to call public web APIs."
+              },
+              {
+                "name": "inputs.dapHttpToolbar",
+                "type": "custom",
+                "component": "dap-http-toolbar",
+                "label": ""
+              },
+              {
+                "label": "",
+                "name": "inputs.detail",
+                "type": "custom",
+                "component": "dap-config",
+                "componentProps": {
+                  "connectorDetail": {
+                    "isAppActivity": false,
+                    "packageId": 196648,
+                    "svgIconUrl": "icons/0dad78c9d04c245b126d8edb4c451aa8a0d395d34731cf5702441f6284c70ccc.svg",
+                    "displayName": "HTTP Request",
+                    "assemblyQualifiedName": "UiPath.IntegrationService.Activities.Runtime.Activities.ConnectorActivity, UiPath.IntegrationService.Activities.Runtime, Version=1.22.0.0, Culture=neutral, PublicKeyToken=null",
+                    "description": "Use HTTP requests to interact with APIs via the selected connector and connection configuration.",
+                    "category": "",
+                    "activityColor": "#E56D5C",
+                    "configuration": "{\"connectorKey\":\"uipath-uipath-http\",\"objectName\":\"http-request\",\"httpMethod\":\"POST\",\"activityType\":\"Curated\",\"version\":\"1.0.0\"}",
+                    "uiPathActivityTypeId": "5c4cc855-b42a-37e6-b910-de8588998fce",
+                    "isExperimental": false,
+                    "helpUrlTemplate": "https://docs.uipath.com/{0}/activities/other/latest/integration-service/uipath-uipath-http-HTTP-Request",
+                    "isEnabled": true,
+                    "targetPlatform": "CrossPlatform",
+                    "isAdvanced": false,
+                    "isRestricted": false,
+                    "tags": [""]
+                  },
+                  "allowPromptMode": true,
+                  "allowExpressionEditor": false,
+                  "allowVariableInterpolation": false,
+                  "supportsFileFields": false,
+                  "fixedValueEditors": {
+                    "body": "json"
+                  }
+                }
+              },
+              {
+                "name": "inputs.timeout",
+                "type": "custom",
+                "component": "value-source-field",
+                "label": "Timeout",
+                "description": "The request times out after this number of seconds.",
+                "componentProps": {
+                  "allowedModes": ["prompt", "variable", "text-builder"],
+                  "defaultMode": "prompt",
+                  "defaultPromptValue": "Request timeout in seconds.",
+                  "expectedType": "number",
+                  "staticEditor": "number",
+                  "placeholder": "30"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "uipath.agent.resource.tool.builtin.jevclassifier",
+      "version": "1.0",
+      "category": "agent.tool.builtin",
+      "label": "Jev Classifier",
+      "icon": "tags",
+      "description": "Classify text, objects or lists with calibrated probabilities",
+      "audience": "inline-agent",
+      "inputDefaults": {
+        "model": "",
+        "classifier": {
+          "state": {
+            "type": "string",
+            "source": "prompt",
+            "description": "",
+            "argumentPath": "",
+            "text": "",
+            "json": "",
+            "properties": [
+              {
+                "name": "",
+                "type": "string",
+                "description": "",
+                "required": true,
+                "value": {
+                  "mode": "prompt",
+                  "textValue": "",
+                  "promptValue": "",
+                  "argumentPath": ""
+                }
+              }
+            ],
+            "itemsType": "string",
+            "itemProperties": [
+              {
+                "name": "",
+                "type": "string",
+                "description": "",
+                "required": true,
+                "value": {
+                  "mode": "prompt",
+                  "textValue": "",
+                  "promptValue": "",
+                  "argumentPath": ""
+                }
+              }
+            ]
+          },
+          "questions": {
+            "source": "static",
+            "description": "",
+            "argumentPath": "",
+            "items": [
+              {
+                "name": "sentiment",
+                "type": "choice",
+                "instructions": "The overall sentiment expressed in the text",
+                "options": [
+                  {
+                    "name": "positive",
+                    "description": "Satisfied, happy or appreciative"
+                  },
+                  {
+                    "name": "neutral",
+                    "description": ""
+                  },
+                  {
+                    "name": "negative",
+                    "description": "Unhappy, frustrated or complaining"
+                  }
+                ],
+                "levels": ["", ""],
+                "criteria": {
+                  "true": "",
+                  "false": ""
+                }
+              }
+            ],
+            "builder": []
+          }
+        },
+        "exampleCalls": []
+      },
+      "form": {
+        "id": "jevclassifier-tool-form",
+        "title": "Jev Classifier",
+        "mode": "onChange",
+        "reValidateMode": "onChange",
+        "sections": [
+          {
+            "id": "jevclassifier-settings",
+            "title": "Settings",
+            "collapsible": false,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.description",
+                "type": "custom",
+                "component": "description-textarea",
+                "label": "Description",
+                "placeholder": "Classifies a text, an object or a list with Jev by answering questions (choice, score or noul) with typed answers and probabilities."
+              },
+              {
+                "name": "inputs.model",
+                "type": "custom",
+                "component": "jev-model-picker",
+                "label": "Model"
+              },
+              {
+                "name": "inputs.classifier",
+                "type": "custom",
+                "component": "jev-classifier-editor",
+                "label": ""
+              }
+            ]
+          },
+          {
+            "id": "simulation-settings",
+            "title": "Simulation settings",
+            "description": "Add example calls for testing",
+            "collapsible": true,
+            "defaultExpanded": false,
+            "fields": [
+              {
+                "name": "inputs.exampleCalls",
+                "type": "custom",
+                "component": "example-calls-editor",
+                "label": "",
+                "componentProps": {
+                  "addButtonLabel": "Add example call",
+                  "toolName": "Jev Classifier"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "uipath.agent.resource.tool.builtin.summarize",
+      "version": "1.3",
+      "category": "agent.tool.builtin",
+      "label": "Summarize document",
+      "icon": "sigma",
+      "description": "Synthesize across documents with citations",
+      "audience": "inline-agent",
+      "inputDefaults": {
+        "description": "Get comprehensive synthesis across up to 1,000 pages with citations.",
+        "source": "",
+        "query": {
+          "mode": "prompt",
+          "textValue": "",
+          "promptValue": "",
+          "argumentPath": ""
+        },
+        "fileExtension": {
+          "value": "pdf"
+        },
+        "citationMode": {
+          "value": "inline"
+        }
+      },
+      "form": {
+        "id": "summarize-tool-form",
+        "title": "Summarize",
+        "mode": "onChange",
+        "reValidateMode": "onChange",
+        "sections": [
+          {
+            "id": "summarize-settings",
+            "title": "Summarize Settings",
+            "collapsible": false,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.source",
+                "type": "file",
+                "label": "Source (file)",
+                "placeholder": "File or document to summarize"
+              },
+              {
+                "name": "inputs.query",
+                "type": "custom",
+                "component": "context-query-editor",
+                "label": "Summarize Task",
+                "componentProps": {
+                  "placeholder": "Describe the task: what to research across documents, what to synthesize, and how to cite sources"
+                }
+              },
+              {
+                "name": "inputs.fileExtension.value",
+                "type": "select",
+                "label": "File extension",
+                "options": [
+                  {
+                    "label": "pdf",
+                    "value": "pdf"
+                  },
+                  {
+                    "label": "txt",
+                    "value": "txt"
+                  }
+                ]
+              },
+              {
+                "name": "inputs.citationMode.value",
+                "type": "select",
+                "label": "Citation mode",
+                "options": [
+                  {
+                    "label": "Enabled",
+                    "value": "inline"
+                  },
+                  {
+                    "label": "Disabled",
+                    "value": "skip"
+                  }
+                ],
+                "rules": [
+                  {
+                    "id": "show-citations-for-pdf",
+                    "conditions": [
+                      {
+                        "when": "inputs.fileExtension.value",
+                        "is": "pdf"
+                      }
+                    ],
+                    "effects": {
+                      "visible": true
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeType": "uipath.agent.resource.tool.clientside",
+      "version": "1.1",
+      "category": "agent.tool.client-side",
+      "label": "Client-side tool",
+      "icon": "wrench",
+      "description": "Custom tool executed on the client side",
+      "audience": "inline-agent",
+      "inputDefaults": {
+        "name": "Client-side tool",
+        "description": "",
+        "inputSchema": {
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": {
+          "type": "object",
+          "properties": {}
+        },
+        "isEnabled": true,
+        "referenceKey": null,
+        "settings": {},
+        "properties": {},
+        "argumentProperties": {}
+      },
+      "form": {
+        "id": "client-side-tool-form",
+        "title": "Client-side tool",
+        "mode": "onChange",
+        "reValidateMode": "onChange",
+        "sections": [
+          {
+            "id": "client-side-tool-settings",
+            "title": "Client-side tool settings",
+            "collapsible": false,
+            "defaultExpanded": true,
+            "fields": [
+              {
+                "name": "inputs.inputSchema",
+                "type": "custom",
+                "component": "json-schema-editor",
+                "label": "Input schema",
+                "validation": {
+                  "required": true
+                }
+              },
+              {
+                "name": "inputs.outputSchema",
+                "type": "custom",
+                "component": "json-schema-editor",
+                "label": "Output schema",
+                "validation": {
+                  "required": true
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
