@@ -5,6 +5,7 @@ import type { GuardrailScope } from './builder-types';
 import {
   findCentralizedByoDefinition,
   formatCentralizedScope,
+  getCentralizedGuardrailDetection,
   getCentralizedGuardrailDisplay,
   getCentralizedGuardrailItemId,
   isCentralizedGuardrailConfigMissing,
@@ -23,7 +24,10 @@ export interface CentralizedGuardrailsSectionProps<
   guardrails: CentralizedGuardrail[];
   /** Name of the AI Trust Layer policy enforcing them; shown in the caption. */
   policyName: string;
-  /** For provider names and configuration status. `undefined` while the catalog loads. */
+  /**
+   * For provider names, configuration status and whether a row shows its detection scope: pass
+   * them after file-support stripping. `undefined` while the catalog loads.
+   */
   definitions?: TDefinition[];
   /** The host opens the details (a dialog, a panel overlay). */
   onSelect?: (guardrail: CentralizedGuardrail) => void;
@@ -131,6 +135,7 @@ export function CentralizedGuardrailsSection<
               scopeNames={guardrail.scopes.map(
                 (scope) => formatScope?.(scope) ?? formatCentralizedScope(scope, labels)
               )}
+              detection={getCentralizedGuardrailDetection(guardrail, definitions)}
               labels={labels}
               onSelect={onSelect === undefined ? undefined : () => onSelect(guardrail)}
             />

@@ -26,6 +26,18 @@ const BYO_DEFINITION: CentralizedGuardrailDefinition = {
   description: 'Acme runs its own detector.',
 };
 
+const withDetectionScope = (validator: string): CentralizedGuardrailDefinition => ({
+  validator,
+  parameters: [{ id: 'detectionScope', type: 'enum' }],
+});
+
+const detectionScope = (value: string): Partial<CentralizedGuardrail> => ({
+  parameters: [{ id: 'detectionScope', parameterType: 'enum', value }],
+});
+
+const summaries = (container: HTMLElement) =>
+  Array.from(container.querySelectorAll('[data-slot="centralized-guardrail-summary"]'));
+
 describe('CentralizedGuardrailsSection', () => {
   it('renders nothing at all when the policy enforces none, as both products do', () => {
     const { container } = render(
@@ -89,16 +101,19 @@ describe('CentralizedGuardrailsSection', () => {
     );
   });
 
-  it('localizes the scopes and the execution stage without a formatScope prop', () => {
-    render(<CentralizedGuardrailsSection guardrails={[guardrail()]} policyName="Acme policy" />);
+  it('localizes the scope and the execution stage without a formatScope prop', () => {
+    const { container } = render(
+      <CentralizedGuardrailsSection guardrails={[guardrail()]} policyName="Acme policy" />
+    );
 
-    expect(
-      screen.getByText('Scopes: Agent, LLM calls · Execution stage: Pre-execution')
-    ).toBeInTheDocument();
+    const [summary] = summaries(container);
+    expect(summary).toHaveTextContent('Scope: Agent, LLM calls | Execution stage: Pre-execution');
+    // The separator is decoration; the parts are named by their own labels.
+    expect(summary?.querySelector('[aria-hidden="true"]')).toHaveTextContent('|');
   });
 
   it('lets a host replace the scope names', () => {
-    render(
+    const { container } = render(
       <CentralizedGuardrailsSection
         guardrails={[guardrail()]}
         policyName="Acme policy"
@@ -106,9 +121,65 @@ describe('CentralizedGuardrailsSection', () => {
       />
     );
 
-    expect(
-      screen.getByText('Scopes: AGENT, LLM · Execution stage: Pre-execution')
-    ).toBeInTheDocument();
+    expect(summaries(container)[0]).toHaveTextContent(
+      'Scope: AGENT, LLM | Execution stage: Pre-execution'
+    );
+  });
+
+  it('says what a built-in reads while its definition offers the detection scope', () => {
+    const { container } = render(
+      <CentralizedGuardrailsSection
+        guardrails={[
+          guardrail({ scopes: ['Llm'], ...detectionScope('Files') }),
+          guardrail({ validator: 'llm_as_judge', scopes: ['Llm'], ...detectionScope('Both') }),
+          guardrail({ validator: 'harmful_content', scopes: ['Llm'] }),
+        ]}
+        definitions={[
+          withDetectionScope('pii_detection'),
+          withDetectionScope('llm_as_judge'),
+          withDetectionScope('harmful_content'),
+        ]}
+        policyName="Acme policy"
+      />
+    );
+
+    expect(summaries(container).map((summary) => summary.textContent)).toEqual([
+      'Scope: LLM calls | Detection: Files | Execution stage: Pre-execution',
+      'Scope: LLM calls | Detection: Text, Files | Execution stage: Pre-execution',
+      // Saved without a scope: the gateway reads it as text.
+      'Scope: LLM calls | Detection: Text | Execution stage: Pre-execution',
+    ]);
+  });
+
+  it('leaves the detection scope out where the definitions do not offer it', () => {
+    // Stripped by the host where file support is off, still loading, a BYO row, and a
+    // validator with no such parameter.
+    const files = detectionScope('Files');
+    const { container, rerender } = render(
+      <CentralizedGuardrailsSection
+        guardrails={[guardrail(files)]}
+        definitions={[{ validator: 'pii_detection', parameters: [] }]}
+        policyName="Acme policy"
+      />
+    );
+    expect(summaries(container)[0]).not.toHaveTextContent('Detection');
+
+    rerender(
+      <CentralizedGuardrailsSection guardrails={[guardrail(files)]} policyName="Acme policy" />
+    );
+    expect(summaries(container)[0]).not.toHaveTextContent('Detection');
+
+    rerender(
+      <CentralizedGuardrailsSection
+        guardrails={[byoGuardrail(files), guardrail({ validator: 'sentiment', ...files })]}
+        definitions={[
+          { ...BYO_DEFINITION, parameters: [{ id: 'detectionScope', type: 'enum' }] },
+          withDetectionScope('pii_detection'),
+        ]}
+        policyName="Acme policy"
+      />
+    );
+    for (const summary of summaries(container)) expect(summary).not.toHaveTextContent('Detection');
   });
 
   it('says nothing about a missing configuration while the catalog is still loading', () => {
@@ -245,9 +316,10 @@ describe('CentralizedGuardrailsSection', () => {
       </ApI18nProvider>
     );
 
-    // The row's metadata line, through the builder ids this block reuses. The section's own
-    // ids render English until `chore(l10n): sync from Localization` reaches them.
-    expect(screen.getByText(/スコープ/)).toBeInTheDocument();
+    // The row's summary line: the reused builder scope names and the section's translated stage.
+    // Newer ids render English until `chore(l10n): sync from Localization` reaches them.
+    expect(screen.getByText(/エージェント, LLM の呼び出し/)).toBeInTheDocument();
+    expect(screen.getByText(/実行ステージ: 実行前/)).toBeInTheDocument();
   });
 
   it('has no axe violations', async () => {
