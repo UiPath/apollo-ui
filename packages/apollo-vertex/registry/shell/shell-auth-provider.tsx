@@ -112,7 +112,7 @@ export const ShellAuthProvider: FC<
     scope,
   });
   const user = accessToken ? decodeJWT(accessToken) : null;
-  const isAuthenticated = accessToken != null;
+  const isAuthenticated = Boolean(accessToken);
 
   const contextValue: AuthContextValue = {
     user,
