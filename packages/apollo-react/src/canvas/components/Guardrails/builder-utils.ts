@@ -22,8 +22,19 @@ export function isModelledGuardrailRecipientType(type: number): boolean {
   return MODELLED_RECIPIENT_TYPES.has(type);
 }
 
+/**
+ * A new guardrail's id: an RFC 4122 v4 UUID, because hosts such as Agents parse a tool guardrail
+ * policy id as a GUID (AL-672). `crypto.randomUUID` exists only in secure contexts, so elsewhere
+ * the UUID is built from `crypto.getRandomValues`.
+ */
 export function generateGuardrailId(): string {
-  return `guardrail-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+  if (typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  // Version (4) and variant (10xx) bits.
+  bytes[6] = (bytes[6]! & 0x0f) | 0x40;
+  bytes[8] = (bytes[8]! & 0x3f) | 0x80;
+  const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+  return hex.replace(/^(.{8})(.{4})(.{4})(.{4})/, '$1-$2-$3-$4-');
 }
 
 /** Default action payload for a freshly selected action type. */

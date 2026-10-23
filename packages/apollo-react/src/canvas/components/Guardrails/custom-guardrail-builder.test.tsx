@@ -25,6 +25,8 @@ const FILTER_FIELDS: GuardrailFieldGroup = {
   output: [{ path: 'snippet', source: 'output', title: 'Snippet' }],
 };
 
+const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+
 const word = (overrides: Partial<GuardrailWordRule> = {}): GuardrailWordRule => ({
   ...createGuardrailRule('word'),
   ...overrides,
@@ -72,7 +74,7 @@ describe('CustomGuardrailBuilder', () => {
       expect(onSave).toHaveBeenCalledTimes(1);
       const saved = savedBy(onSave);
       expect(saved).toEqual({
-        id: expect.stringMatching(/^guardrail-/),
+        id: expect.stringMatching(UUID_V4),
         $guardrailType: 'custom',
         name: 'Guardrail 2',
         description: undefined,
@@ -681,7 +683,7 @@ describe('CustomGuardrailBuilder', () => {
   });
 
   describe('save as new', () => {
-    it('calls onSaveAsNew with the current value when valid', () => {
+    it('calls onSaveAsNew with the current value under a fresh id when valid', () => {
       const onSaveAsNew = vi.fn();
       render(
         <CustomGuardrailBuilder
@@ -697,6 +699,7 @@ describe('CustomGuardrailBuilder', () => {
 
       fireEvent.click(screen.getByRole('button', { name: /save as new/i }));
       expect(savedBy(onSaveAsNew).name).toBe('Block secrets');
+      expect(savedBy(onSaveAsNew).id).toMatch(UUID_V4);
     });
 
     it('blocks onSaveAsNew and surfaces errors when invalid', () => {
