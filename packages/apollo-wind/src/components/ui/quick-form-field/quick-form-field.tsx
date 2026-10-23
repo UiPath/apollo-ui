@@ -364,13 +364,7 @@ export function QuickFormField({
     ) : fieldType === 'textarea' ? (
       // One fixed line at design time; wrapped so the group keeps its row height.
       <div className="flex min-w-0 flex-1 items-center">
-        <InputGroupTextarea
-          {...textInputProps}
-          rows={1}
-          minRows={1}
-          maxRows={1}
-          className="py-0 future:py-0"
-        />
+        <InputGroupTextarea {...textInputProps} rows={1} className="py-0 future:py-0" />
       </div>
     ) : (
       <InputGroupInput

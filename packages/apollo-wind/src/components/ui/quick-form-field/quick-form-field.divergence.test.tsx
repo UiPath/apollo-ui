@@ -251,12 +251,7 @@ describe('QuickFormField — divergences from apollo-wind', () => {
       expect(group?.querySelector(':scope > textarea')).toBeNull();
     });
 
-    // jsdom has no layout, so a row measures as Textarea's 20px fallback.
-    it('stays one line tall, even with several lines of content', () => {
-      // Three lines (60px) of content.
-      const scrollHeight = vi
-        .spyOn(HTMLElement.prototype, 'scrollHeight', 'get')
-        .mockReturnValue(60);
+    it('never grows, and keeps the line breaks it holds', () => {
       render(
         <QuickFormField
           locked={false}
@@ -266,10 +261,9 @@ describe('QuickFormField — divergences from apollo-wind', () => {
         />
       );
       const textarea = screen.getByPlaceholderText('Text area value') as HTMLTextAreaElement;
-      expect(textarea.style.minHeight).toBe('20px');
-      expect(textarea.style.height).toBe('20px');
+      // No auto-sizing: an auto-sized textarea writes an inline height as it grows.
+      expect(textarea.style.height).toBe('');
       expect(textarea).toHaveValue('first\nsecond\nthird');
-      scrollHeight.mockRestore();
     });
 
     it('keeps an expression on the one-line input', () => {
