@@ -2,8 +2,9 @@ import { Column } from '@uipath/apollo-react/canvas/layouts';
 import { CanvasIcon, cx, partition } from '@uipath/apollo-react/canvas/utils';
 import { badgeVariants, cn, Skeleton } from '@uipath/apollo-wind';
 import { motion } from 'motion/react';
-import { forwardRef, memo, useCallback, useImperativeHandle, useMemo } from 'react';
+import { forwardRef, memo, useCallback, useId, useImperativeHandle, useMemo } from 'react';
 import { List, type ListImperativeAPI, type RowComponentProps } from 'react-window';
+import { useSafeLingui } from '../../../i18n';
 import { useCanvasTheme } from '../BaseCanvas/CanvasThemeContext';
 import { CanvasTooltip } from '../CanvasTooltip';
 import { InitialsBadge } from '../shared/InitialsBadge';
@@ -58,9 +59,10 @@ export type ListItem<T = any> = {
    */
   description?: string;
   /**
-   * Extra text shown only in the row's hover tooltip, never inline. Use for
-   * content that would make the row too tall to show inline (e.g. a full
-   * explanation) while a shorter {@link ListItem.description} stays on the row.
+   * Extra text shown only in the row's tooltip, never inline, and exposed as the
+   * row's accessible description. Use for content that would make the row too
+   * tall to show inline (e.g. a full explanation) while a shorter
+   * {@link ListItem.description} stays on the row.
    */
   detail?: string;
   /**
@@ -237,6 +239,7 @@ const LIST_SCROLLBAR_CLASS =
 export interface ListViewRowProps<T extends ListItem> {
   renderedItems: RenderItem<T>[];
   activeIndex: number;
+  keyboardNav: boolean;
   isLoading?: boolean;
   isDarkMode?: boolean;
   onItemClick: (item: T, index: number) => void;
@@ -250,12 +253,15 @@ const ListViewRow = memo(
     ariaAttributes,
     renderedItems,
     activeIndex,
+    keyboardNav,
     isLoading,
     isDarkMode,
     onItemClick,
     onItemHover,
   }: RowComponentProps<ListViewRowProps<T>>) => {
     const renderItem = renderedItems[index]!;
+    const { _ } = useSafeLingui();
+    const descriptionId = useId();
 
     // `style` from react-window already carries the row height (rowHeight), so
     // we only layer on the padding that insets content from the focus ring.
@@ -319,6 +325,13 @@ const ListViewRow = memo(
 
     const isActive = index === activeIndex;
 
+    const description = [
+      item.detail,
+      item.children ? _({ id: 'toolbox.item.submenu', message: 'Has submenu' }) : undefined,
+    ]
+      .filter(Boolean)
+      .join('. ');
+
     const button = (
       <motion.button
         {...ariaAttributes}
@@ -327,6 +340,7 @@ const ListViewRow = memo(
         id={`toolbox-item-${item.id}`}
         role="option"
         aria-selected={isActive}
+        aria-describedby={descriptionId}
         style={buttonStyle}
         onClick={handleButtonClick}
         onHoverStart={handleButtonHover}
@@ -382,6 +396,9 @@ const ListViewRow = memo(
         {!!item.children && (
           <CanvasIcon icon="chevron-right" size={16} color="var(--canvas-foreground-de-emp)" />
         )}
+        <span id={descriptionId} hidden>
+          {description}
+        </span>
       </motion.button>
     );
 
@@ -399,6 +416,8 @@ const ListViewRow = memo(
         }
         placement="right"
         delay
+        isOpen={(isActive && keyboardNav) || undefined}
+        hide={(keyboardNav && !isActive) || undefined}
         contentClassName="max-w-64"
         disableSkipDelay
       >
@@ -437,6 +456,7 @@ interface ListViewProps<T extends ListItem> {
    * when `items` is empty, skeleton rows stand in until the answer lands.
    */
   searchPending?: boolean;
+  keyboardNav: boolean;
   enableSections?: boolean;
   /**
    * Render skeleton placeholder rows when `items` is empty, independent of
@@ -478,6 +498,7 @@ const ListViewInner = forwardRef(function ListView<T extends ListItem>(
     renderEmptyState,
     isLoading = false,
     searchPending = false,
+    keyboardNav,
     enableSections = true,
     loadingSkeleton,
   }: ListViewProps<T>,
@@ -501,8 +522,16 @@ const ListViewInner = forwardRef(function ListView<T extends ListItem>(
   useImperativeHandle(ref, () => ({ renderedItems }), [renderedItems]);
 
   const rowProps = useMemo(
-    () => ({ renderedItems, activeIndex, isLoading, isDarkMode, onItemClick, onItemHover }),
-    [renderedItems, activeIndex, isLoading, isDarkMode, onItemClick, onItemHover]
+    () => ({
+      renderedItems,
+      activeIndex,
+      keyboardNav,
+      isLoading,
+      isDarkMode,
+      onItemClick,
+      onItemHover,
+    }),
+    [renderedItems, activeIndex, keyboardNav, isLoading, isDarkMode, onItemClick, onItemHover]
   );
 
   const getRowHeight = useCallback(
