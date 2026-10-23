@@ -246,6 +246,14 @@ describe('QuickFormField — divergences from apollo-wind', () => {
       expect(container.querySelector('[role="group"]')).toHaveAttribute('data-layout', 'grow');
     });
 
+    // Same height as every other field type until the content needs more.
+    // jsdom has no layout, so a row measures as Textarea's 20px fallback.
+    it('starts one line tall, like the other field types', () => {
+      render(<QuickFormField locked={false} fieldType="textarea" onValueChange={vi.fn()} />);
+      const textarea = screen.getByPlaceholderText('Text area value') as HTMLTextAreaElement;
+      expect(textarea.style.minHeight).toBe('20px');
+    });
+
     it('keeps an expression on the one-line input', () => {
       const { container } = render(
         <QuickFormField
