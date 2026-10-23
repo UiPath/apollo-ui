@@ -225,6 +225,7 @@ export function Toolbox<T>({
   }>();
 
   const [activeIndex, setActiveIndex] = useState(SEARCH_BAR_INDEX);
+  const [keyboardNav, setKeyboardNav] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const transitionTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -262,6 +263,19 @@ export function Toolbox<T>({
     () => (isSearching && !isSearchingInitialItems ? searchedItems : items),
     [isSearching, isSearchingInitialItems, searchedItems, items]
   );
+
+  const categoryAnnouncement =
+    currentParentItem &&
+    !isSearching &&
+    !awaitingChildren &&
+    !loading &&
+    !currentParentItem.childrenLoading
+      ? _({
+          id: 'toolbox.category.announcement',
+          message: '{name}, {count, plural, one {# item} other {# items}}',
+          values: { name: currentParentItem.name, count: displayedItems.length },
+        })
+      : '';
 
   const startTransition = useCallback((direction: AnimationDirection) => {
     if (transitionTimeoutRef.current) {
@@ -539,6 +553,7 @@ export function Toolbox<T>({
   const handleNavigationKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (isTransitioning) return;
+      setKeyboardNav(true);
 
       const renderedItems = listViewRef.current?.renderedItems ?? [];
 
@@ -716,6 +731,7 @@ export function Toolbox<T>({
       ref={containerRef}
       data-testid="toolbox-container"
       style={{ maxHeight: '100%', overflow: 'hidden' }}
+      onPointerMove={() => setKeyboardNav(false)}
     >
       <Column
         px={TOOLBOX_PADDING_X}
@@ -731,6 +747,9 @@ export function Toolbox<T>({
           onBack={handleBackTransition}
           showBackButton={navigationStack.canGoBack}
         />
+        <output aria-live="polite" className="sr-only">
+          {categoryAnnouncement}
+        </output>
 
         <SearchBox
           value={search}
@@ -758,6 +777,7 @@ export function Toolbox<T>({
               ref={listViewRef}
               isLoading={awaitingChildren || loading}
               searchPending={searchLoading}
+              keyboardNav={keyboardNav}
               items={displayedItems}
               activeIndex={activeIndex}
               listRef={listRef}
