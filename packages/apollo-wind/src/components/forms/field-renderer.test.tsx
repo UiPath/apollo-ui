@@ -169,11 +169,8 @@ describe('FormFieldRenderer', () => {
       expect(textarea.tagName).toBe('TEXTAREA');
     });
 
-    afterEach(() => vi.restoreAllMocks());
-
-    // jsdom has no layout: a row is 20px and the content height is mocked.
-    const renderTextarea = (extra: Partial<FieldMetadata>, contentHeight: number) => {
-      vi.spyOn(HTMLElement.prototype, 'scrollHeight', 'get').mockReturnValue(contentHeight);
+    // jsdom has no layout, so a row measures as Textarea's 20px fallback.
+    const renderTextarea = (extra: Partial<FieldMetadata> = {}) => {
       const field = {
         name: 'notes',
         type: 'textarea',
@@ -188,33 +185,20 @@ describe('FormFieldRenderer', () => {
       return screen.getByPlaceholderText('Notes') as HTMLTextAreaElement;
     };
 
-    it('starts one row tall and grows with its content', () => {
-      const textarea = renderTextarea({}, 120); // six rows of content
+    it('starts one row tall', () => {
+      const textarea = renderTextarea();
       expect(textarea).toHaveAttribute('rows', '1');
       expect(textarea.style.minHeight).toBe('20px');
-      expect(textarea.style.height).toBe('120px');
     });
 
     it('can be dragged taller with the resize handle', () => {
-      expect(renderTextarea({}, 0)).toHaveClass('resize-y');
+      expect(renderTextarea()).toHaveClass('resize-y');
     });
 
-    it('stops growing at eight rows, then scrolls', () => {
-      const textarea = renderTextarea({}, 400); // twenty rows of content
-      expect(textarea.style.height).toBe('160px');
-      expect(textarea.style.overflowY).toBe('auto');
-    });
-
-    it('honours a custom maxRows', () => {
-      const textarea = renderTextarea({ minRows: 2, maxRows: 3 } as Partial<FieldMetadata>, 400);
-      expect(textarea.style.minHeight).toBe('40px');
-      expect(textarea.style.height).toBe('60px');
-    });
-
-    it('never caps below a taller starting height', () => {
-      const textarea = renderTextarea({ rows: 10 } as Partial<FieldMetadata>, 0);
+    it('still honours a taller starting height', () => {
+      const textarea = renderTextarea({ rows: 10 } as Partial<FieldMetadata>);
+      expect(textarea).toHaveAttribute('rows', '10');
       expect(textarea.style.minHeight).toBe('200px');
-      expect(textarea.style.height).toBe('200px');
     });
   });
 

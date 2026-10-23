@@ -37,17 +37,12 @@ import { LiteralValueContext } from './literal-value-context';
 import { StringListControl } from './string-list-field';
 
 const DEFAULT_TEXTAREA_ROWS = 1;
-const DEFAULT_TEXTAREA_MAX_ROWS = 8;
 
-/** Starts at minRows/rows (default 1) and grows with content up to maxRows (default 8). */
+/** Starts at minRows/rows (default 1); `minRows` gives it the drag-to-resize handle. */
 function textareaSizing(field: TextareaFieldMetadata) {
   const minRows = field.minRows ?? field.rows ?? DEFAULT_TEXTAREA_ROWS;
   // `rows` too: a native textarea's intrinsic height is two rows.
-  return {
-    rows: minRows,
-    minRows,
-    maxRows: Math.max(field.maxRows ?? DEFAULT_TEXTAREA_MAX_ROWS, minRows),
-  };
+  return { rows: minRows, minRows };
 }
 
 /** The react-hook-form `Controller` binding a control reads and writes. */
