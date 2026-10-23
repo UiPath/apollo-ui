@@ -26,24 +26,9 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { toDateValue } from '@/lib/date-value';
 import { joinIds } from './aria-ids';
-import type {
-  FieldMetadata,
-  FieldOption,
-  FieldType,
-  SliderFieldMetadata,
-  TextareaFieldMetadata,
-} from './form-schema';
+import type { FieldMetadata, FieldOption, FieldType, SliderFieldMetadata } from './form-schema';
 import { LiteralValueContext } from './literal-value-context';
 import { StringListControl } from './string-list-field';
-
-const DEFAULT_TEXTAREA_ROWS = 1;
-
-/** Starts at minRows/rows (default 1); `minRows` gives it the drag-to-resize handle. */
-function textareaSizing(field: TextareaFieldMetadata) {
-  const minRows = field.minRows ?? field.rows ?? DEFAULT_TEXTAREA_ROWS;
-  // `rows` too: a native textarea's intrinsic height is two rows.
-  return { rows: minRows, minRows };
-}
 
 /** The react-hook-form `Controller` binding a control reads and writes. */
 export interface FieldControlFormField {
@@ -237,7 +222,9 @@ export function FieldControl({
         />
       );
 
-    case 'textarea':
+    case 'textarea': {
+      // `minRows` adds the drag-to-resize handle; `rows` because a textarea is two rows by default.
+      const rows = field.minRows ?? field.rows ?? 1;
       return (
         <Textarea
           id={field.name}
@@ -252,9 +239,11 @@ export function FieldControl({
           aria-invalid={invalid || undefined}
           aria-describedby={describedById}
           aria-errormessage={errorId}
-          {...textareaSizing(field)}
+          rows={rows}
+          minRows={rows}
         />
       );
+    }
 
     case 'select':
       return (
