@@ -1,0 +1,4085 @@
+{
+  "source": { "commit": "a87e54ff8", "date": "2026-10-20" },
+  "full": {
+    "p": {
+      "trigger": [16, 32],
+      "fetch": [208, 32],
+      "validate": [400, 32],
+      "decision": [592, 32],
+      "approve": [784, 16],
+      "normalize": [784, 208],
+      "update": [976, 16],
+      "notify": [1168, 16],
+      "end": [1360, 16]
+    },
+    "w": {
+      "e-decision-normalize": [[736, 96], [736, 256]],
+      "e-normalize-update": [[928, 256], [928, 64]]
+    }
+  },
+  "subsets": {
+    "trigger,fetch": { "p": { "trigger": [16, 16], "fetch": [208, 16] }, "w": {} },
+    "trigger,validate": { "p": { "trigger": [16, 16], "validate": [128, 16] }, "w": {} },
+    "fetch,validate": { "p": { "fetch": [16, 16], "validate": [208, 16] }, "w": {} },
+    "trigger,fetch,validate": {
+      "p": { "trigger": [16, 16], "fetch": [208, 16], "validate": [400, 16] },
+      "w": {}
+    },
+    "trigger,decision": { "p": { "trigger": [16, 16], "decision": [128, 16] }, "w": {} },
+    "fetch,decision": { "p": { "fetch": [16, 16], "decision": [128, 16] }, "w": {} },
+    "trigger,fetch,decision": {
+      "p": { "trigger": [16, 128], "fetch": [208, 128], "decision": [16, 16] },
+      "w": {}
+    },
+    "validate,decision": { "p": { "validate": [16, 16], "decision": [208, 16] }, "w": {} },
+    "trigger,validate,decision": {
+      "p": { "trigger": [16, 16], "validate": [16, 128], "decision": [208, 128] },
+      "w": {}
+    },
+    "fetch,validate,decision": {
+      "p": { "fetch": [16, 16], "validate": [208, 16], "decision": [400, 16] },
+      "w": {}
+    },
+    "trigger,fetch,validate,decision": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "validate": [400, 16],
+        "decision": [592, 16]
+      },
+      "w": {}
+    },
+    "trigger,approve": { "p": { "trigger": [16, 16], "approve": [128, 16] }, "w": {} },
+    "fetch,approve": { "p": { "fetch": [16, 16], "approve": [128, 16] }, "w": {} },
+    "trigger,fetch,approve": {
+      "p": { "trigger": [16, 128], "fetch": [208, 128], "approve": [16, 16] },
+      "w": {}
+    },
+    "validate,approve": { "p": { "validate": [16, 16], "approve": [128, 16] }, "w": {} },
+    "trigger,validate,approve": {
+      "p": { "trigger": [16, 16], "validate": [128, 16], "approve": [16, 128] },
+      "w": {}
+    },
+    "fetch,validate,approve": {
+      "p": { "fetch": [16, 128], "validate": [208, 128], "approve": [16, 16] },
+      "w": {}
+    },
+    "trigger,fetch,validate,approve": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "validate": [400, 128],
+        "approve": [16, 16]
+      },
+      "w": {}
+    },
+    "decision,approve": { "p": { "decision": [16, 32], "approve": [208, 16] }, "w": {} },
+    "trigger,decision,approve": {
+      "p": { "trigger": [16, 16], "decision": [16, 144], "approve": [208, 128] },
+      "w": {}
+    },
+    "fetch,decision,approve": {
+      "p": { "fetch": [16, 16], "decision": [16, 144], "approve": [208, 128] },
+      "w": {}
+    },
+    "trigger,fetch,decision,approve": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "decision": [16, 144],
+        "approve": [208, 128]
+      },
+      "w": {}
+    },
+    "validate,decision,approve": {
+      "p": { "validate": [16, 32], "decision": [208, 32], "approve": [400, 16] },
+      "w": {}
+    },
+    "trigger,validate,decision,approve": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [16, 144],
+        "decision": [208, 144],
+        "approve": [400, 128]
+      },
+      "w": {}
+    },
+    "fetch,validate,decision,approve": {
+      "p": {
+        "fetch": [16, 32],
+        "validate": [208, 32],
+        "decision": [400, 32],
+        "approve": [592, 16]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,decision,approve": {
+      "p": {
+        "trigger": [16, 32],
+        "fetch": [208, 32],
+        "validate": [400, 32],
+        "decision": [592, 32],
+        "approve": [784, 16]
+      },
+      "w": {}
+    },
+    "trigger,normalize": { "p": { "trigger": [16, 16], "normalize": [128, 16] }, "w": {} },
+    "fetch,normalize": { "p": { "fetch": [16, 16], "normalize": [128, 16] }, "w": {} },
+    "trigger,fetch,normalize": {
+      "p": { "trigger": [16, 128], "fetch": [208, 128], "normalize": [16, 16] },
+      "w": {}
+    },
+    "validate,normalize": { "p": { "validate": [16, 16], "normalize": [128, 16] }, "w": {} },
+    "trigger,validate,normalize": {
+      "p": { "trigger": [16, 16], "validate": [128, 16], "normalize": [16, 128] },
+      "w": {}
+    },
+    "fetch,validate,normalize": {
+      "p": { "fetch": [16, 128], "validate": [208, 128], "normalize": [16, 16] },
+      "w": {}
+    },
+    "trigger,fetch,validate,normalize": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "validate": [400, 128],
+        "normalize": [16, 16]
+      },
+      "w": {}
+    },
+    "decision,normalize": { "p": { "decision": [16, 16], "normalize": [208, 32] }, "w": {} },
+    "trigger,decision,normalize": {
+      "p": { "trigger": [16, 16], "decision": [16, 128], "normalize": [208, 144] },
+      "w": {}
+    },
+    "fetch,decision,normalize": {
+      "p": { "fetch": [16, 16], "decision": [16, 128], "normalize": [208, 144] },
+      "w": {}
+    },
+    "trigger,fetch,decision,normalize": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "decision": [16, 128],
+        "normalize": [208, 144]
+      },
+      "w": {}
+    },
+    "validate,decision,normalize": {
+      "p": { "validate": [16, 16], "decision": [208, 16], "normalize": [400, 32] },
+      "w": {}
+    },
+    "trigger,validate,decision,normalize": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [16, 128],
+        "decision": [208, 128],
+        "normalize": [400, 144]
+      },
+      "w": {}
+    },
+    "fetch,validate,decision,normalize": {
+      "p": {
+        "fetch": [16, 16],
+        "validate": [208, 16],
+        "decision": [400, 16],
+        "normalize": [592, 32]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,decision,normalize": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "validate": [400, 16],
+        "decision": [592, 16],
+        "normalize": [784, 32]
+      },
+      "w": {}
+    },
+    "approve,normalize": { "p": { "approve": [16, 16], "normalize": [128, 16] }, "w": {} },
+    "trigger,approve,normalize": {
+      "p": { "trigger": [16, 16], "approve": [128, 16], "normalize": [16, 128] },
+      "w": {}
+    },
+    "fetch,approve,normalize": {
+      "p": { "fetch": [16, 16], "approve": [128, 16], "normalize": [16, 128] },
+      "w": {}
+    },
+    "trigger,fetch,approve,normalize": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "approve": [16, 16],
+        "normalize": [128, 16]
+      },
+      "w": {}
+    },
+    "validate,approve,normalize": {
+      "p": { "validate": [16, 16], "approve": [128, 16], "normalize": [16, 128] },
+      "w": {}
+    },
+    "trigger,validate,approve,normalize": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [128, 16],
+        "approve": [16, 128],
+        "normalize": [128, 128]
+      },
+      "w": {}
+    },
+    "fetch,validate,approve,normalize": {
+      "p": {
+        "fetch": [16, 128],
+        "validate": [208, 128],
+        "approve": [16, 16],
+        "normalize": [128, 16]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,approve,normalize": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "validate": [400, 128],
+        "approve": [16, 16],
+        "normalize": [128, 16]
+      },
+      "w": {}
+    },
+    "decision,approve,normalize": {
+      "p": { "decision": [16, 32], "approve": [208, 16], "normalize": [208, 208] },
+      "w": { "e-decision-normalize": [[160, 96], [160, 256]] }
+    },
+    "trigger,decision,approve,normalize": {
+      "p": {
+        "trigger": [16, 16],
+        "decision": [128, 32],
+        "approve": [320, 16],
+        "normalize": [320, 208]
+      },
+      "w": { "e-decision-normalize": [[272, 96], [272, 256]] }
+    },
+    "fetch,decision,approve,normalize": {
+      "p": {
+        "fetch": [16, 16],
+        "decision": [128, 32],
+        "approve": [320, 16],
+        "normalize": [320, 208]
+      },
+      "w": { "e-decision-normalize": [[272, 96], [272, 256]] }
+    },
+    "trigger,fetch,decision,approve,normalize": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "normalize": [208, 320]
+      },
+      "w": { "e-decision-normalize": [[160, 208], [160, 368]] }
+    },
+    "validate,decision,approve,normalize": {
+      "p": {
+        "validate": [16, 32],
+        "decision": [208, 32],
+        "approve": [400, 16],
+        "normalize": [400, 208]
+      },
+      "w": { "e-decision-normalize": [[352, 96], [352, 256]] }
+    },
+    "trigger,validate,decision,approve,normalize": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [128, 32],
+        "decision": [320, 32],
+        "approve": [512, 16],
+        "normalize": [512, 208]
+      },
+      "w": { "e-decision-normalize": [[464, 96], [464, 256]] }
+    },
+    "fetch,validate,decision,approve,normalize": {
+      "p": {
+        "fetch": [16, 32],
+        "validate": [208, 32],
+        "decision": [400, 32],
+        "approve": [592, 16],
+        "normalize": [592, 208]
+      },
+      "w": { "e-decision-normalize": [[544, 96], [544, 256]] }
+    },
+    "trigger,fetch,validate,decision,approve,normalize": {
+      "p": {
+        "trigger": [16, 32],
+        "fetch": [208, 32],
+        "validate": [400, 32],
+        "decision": [592, 32],
+        "approve": [784, 16],
+        "normalize": [784, 208]
+      },
+      "w": { "e-decision-normalize": [[736, 96], [736, 256]] }
+    },
+    "trigger,update": { "p": { "trigger": [16, 16], "update": [128, 16] }, "w": {} },
+    "fetch,update": { "p": { "fetch": [16, 16], "update": [128, 16] }, "w": {} },
+    "trigger,fetch,update": {
+      "p": { "trigger": [16, 128], "fetch": [208, 128], "update": [16, 16] },
+      "w": {}
+    },
+    "validate,update": { "p": { "validate": [16, 16], "update": [128, 16] }, "w": {} },
+    "trigger,validate,update": {
+      "p": { "trigger": [16, 16], "validate": [128, 16], "update": [16, 128] },
+      "w": {}
+    },
+    "fetch,validate,update": {
+      "p": { "fetch": [16, 128], "validate": [208, 128], "update": [16, 16] },
+      "w": {}
+    },
+    "trigger,fetch,validate,update": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "validate": [400, 128],
+        "update": [16, 16]
+      },
+      "w": {}
+    },
+    "decision,update": { "p": { "decision": [16, 16], "update": [128, 16] }, "w": {} },
+    "trigger,decision,update": {
+      "p": { "trigger": [16, 16], "decision": [128, 16], "update": [16, 128] },
+      "w": {}
+    },
+    "fetch,decision,update": {
+      "p": { "fetch": [16, 16], "decision": [128, 16], "update": [16, 128] },
+      "w": {}
+    },
+    "trigger,fetch,decision,update": {
+      "p": { "trigger": [16, 128], "fetch": [208, 128], "decision": [16, 16], "update": [128, 16] },
+      "w": {}
+    },
+    "validate,decision,update": {
+      "p": { "validate": [16, 128], "decision": [208, 128], "update": [16, 16] },
+      "w": {}
+    },
+    "trigger,validate,decision,update": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [16, 128],
+        "decision": [208, 128],
+        "update": [128, 16]
+      },
+      "w": {}
+    },
+    "fetch,validate,decision,update": {
+      "p": {
+        "fetch": [16, 128],
+        "validate": [208, 128],
+        "decision": [400, 128],
+        "update": [16, 16]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,decision,update": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "validate": [400, 128],
+        "decision": [592, 128],
+        "update": [16, 16]
+      },
+      "w": {}
+    },
+    "approve,update": { "p": { "approve": [16, 16], "update": [208, 16] }, "w": {} },
+    "trigger,approve,update": {
+      "p": { "trigger": [16, 16], "approve": [16, 128], "update": [208, 128] },
+      "w": {}
+    },
+    "fetch,approve,update": {
+      "p": { "fetch": [16, 16], "approve": [16, 128], "update": [208, 128] },
+      "w": {}
+    },
+    "trigger,fetch,approve,update": {
+      "p": { "trigger": [16, 16], "fetch": [208, 16], "approve": [16, 128], "update": [208, 128] },
+      "w": {}
+    },
+    "validate,approve,update": {
+      "p": { "validate": [16, 16], "approve": [16, 128], "update": [208, 128] },
+      "w": {}
+    },
+    "trigger,validate,approve,update": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [128, 16],
+        "approve": [16, 128],
+        "update": [208, 128]
+      },
+      "w": {}
+    },
+    "fetch,validate,approve,update": {
+      "p": { "fetch": [16, 16], "validate": [208, 16], "approve": [16, 128], "update": [208, 128] },
+      "w": {}
+    },
+    "trigger,fetch,validate,approve,update": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "validate": [400, 128],
+        "approve": [16, 16],
+        "update": [208, 16]
+      },
+      "w": {}
+    },
+    "decision,approve,update": {
+      "p": { "decision": [16, 32], "approve": [208, 16], "update": [400, 16] },
+      "w": {}
+    },
+    "trigger,decision,approve,update": {
+      "p": {
+        "trigger": [16, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "update": [400, 128]
+      },
+      "w": {}
+    },
+    "fetch,decision,approve,update": {
+      "p": {
+        "fetch": [16, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "update": [400, 128]
+      },
+      "w": {}
+    },
+    "trigger,fetch,decision,approve,update": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "update": [400, 128]
+      },
+      "w": {}
+    },
+    "validate,decision,approve,update": {
+      "p": {
+        "validate": [16, 32],
+        "decision": [208, 32],
+        "approve": [400, 16],
+        "update": [592, 16]
+      },
+      "w": {}
+    },
+    "trigger,validate,decision,approve,update": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [16, 144],
+        "decision": [208, 144],
+        "approve": [400, 128],
+        "update": [592, 128]
+      },
+      "w": {}
+    },
+    "fetch,validate,decision,approve,update": {
+      "p": {
+        "fetch": [16, 32],
+        "validate": [208, 32],
+        "decision": [400, 32],
+        "approve": [592, 16],
+        "update": [784, 16]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,decision,approve,update": {
+      "p": {
+        "trigger": [16, 32],
+        "fetch": [208, 32],
+        "validate": [400, 32],
+        "decision": [592, 32],
+        "approve": [784, 16],
+        "update": [976, 16]
+      },
+      "w": {}
+    },
+    "normalize,update": { "p": { "normalize": [16, 16], "update": [208, 16] }, "w": {} },
+    "trigger,normalize,update": {
+      "p": { "trigger": [16, 16], "normalize": [16, 128], "update": [208, 128] },
+      "w": {}
+    },
+    "fetch,normalize,update": {
+      "p": { "fetch": [16, 16], "normalize": [16, 128], "update": [208, 128] },
+      "w": {}
+    },
+    "trigger,fetch,normalize,update": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "normalize": [16, 128],
+        "update": [208, 128]
+      },
+      "w": {}
+    },
+    "validate,normalize,update": {
+      "p": { "validate": [16, 16], "normalize": [16, 128], "update": [208, 128] },
+      "w": {}
+    },
+    "trigger,validate,normalize,update": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [128, 16],
+        "normalize": [16, 128],
+        "update": [208, 128]
+      },
+      "w": {}
+    },
+    "fetch,validate,normalize,update": {
+      "p": {
+        "fetch": [16, 16],
+        "validate": [208, 16],
+        "normalize": [16, 128],
+        "update": [208, 128]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,normalize,update": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "validate": [400, 128],
+        "normalize": [16, 16],
+        "update": [208, 16]
+      },
+      "w": {}
+    },
+    "decision,normalize,update": {
+      "p": { "decision": [16, 16], "normalize": [208, 32], "update": [400, 32] },
+      "w": {}
+    },
+    "trigger,decision,normalize,update": {
+      "p": {
+        "trigger": [16, 16],
+        "decision": [16, 128],
+        "normalize": [208, 144],
+        "update": [400, 144]
+      },
+      "w": {}
+    },
+    "fetch,decision,normalize,update": {
+      "p": {
+        "fetch": [16, 16],
+        "decision": [16, 128],
+        "normalize": [208, 144],
+        "update": [400, 144]
+      },
+      "w": {}
+    },
+    "trigger,fetch,decision,normalize,update": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "decision": [16, 128],
+        "normalize": [208, 144],
+        "update": [400, 144]
+      },
+      "w": {}
+    },
+    "validate,decision,normalize,update": {
+      "p": {
+        "validate": [16, 16],
+        "decision": [208, 16],
+        "normalize": [400, 32],
+        "update": [592, 32]
+      },
+      "w": {}
+    },
+    "trigger,validate,decision,normalize,update": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [16, 128],
+        "decision": [208, 128],
+        "normalize": [400, 144],
+        "update": [592, 144]
+      },
+      "w": {}
+    },
+    "fetch,validate,decision,normalize,update": {
+      "p": {
+        "fetch": [16, 16],
+        "validate": [208, 16],
+        "decision": [400, 16],
+        "normalize": [592, 32],
+        "update": [784, 32]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,decision,normalize,update": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "validate": [400, 16],
+        "decision": [592, 16],
+        "normalize": [784, 32],
+        "update": [976, 32]
+      },
+      "w": {}
+    },
+    "approve,normalize,update": {
+      "p": { "approve": [16, 16], "normalize": [16, 208], "update": [208, 16] },
+      "w": { "e-normalize-update": [[160, 256], [160, 64]] }
+    },
+    "trigger,approve,normalize,update": {
+      "p": {
+        "trigger": [16, 16],
+        "approve": [128, 16],
+        "normalize": [128, 208],
+        "update": [320, 16]
+      },
+      "w": { "e-normalize-update": [[272, 256], [272, 64]] }
+    },
+    "fetch,approve,normalize,update": {
+      "p": {
+        "fetch": [16, 16],
+        "approve": [128, 16],
+        "normalize": [128, 208],
+        "update": [320, 16]
+      },
+      "w": { "e-normalize-update": [[272, 256], [272, 64]] }
+    },
+    "trigger,fetch,approve,normalize,update": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "approve": [16, 128],
+        "normalize": [16, 320],
+        "update": [208, 128]
+      },
+      "w": { "e-normalize-update": [[160, 368], [160, 176]] }
+    },
+    "validate,approve,normalize,update": {
+      "p": {
+        "validate": [16, 16],
+        "approve": [128, 16],
+        "normalize": [128, 208],
+        "update": [320, 16]
+      },
+      "w": { "e-normalize-update": [[272, 256], [272, 64]] }
+    },
+    "trigger,validate,approve,normalize,update": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [128, 16],
+        "approve": [16, 128],
+        "normalize": [16, 320],
+        "update": [208, 128]
+      },
+      "w": { "e-normalize-update": [[160, 368], [160, 176]] }
+    },
+    "fetch,validate,approve,normalize,update": {
+      "p": {
+        "fetch": [16, 16],
+        "validate": [208, 16],
+        "approve": [16, 128],
+        "normalize": [16, 320],
+        "update": [208, 128]
+      },
+      "w": { "e-normalize-update": [[160, 368], [160, 176]] }
+    },
+    "trigger,fetch,validate,approve,normalize,update": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "validate": [400, 16],
+        "approve": [16, 128],
+        "normalize": [16, 320],
+        "update": [208, 128]
+      },
+      "w": { "e-normalize-update": [[160, 368], [160, 176]] }
+    },
+    "decision,approve,normalize,update": {
+      "p": {
+        "decision": [16, 32],
+        "approve": [208, 16],
+        "normalize": [208, 208],
+        "update": [400, 16]
+      },
+      "w": {
+        "e-decision-normalize": [[160, 96], [160, 256]],
+        "e-normalize-update": [[352, 256], [352, 64]]
+      }
+    },
+    "trigger,decision,approve,normalize,update": {
+      "p": {
+        "trigger": [16, 16],
+        "decision": [128, 32],
+        "approve": [320, 16],
+        "normalize": [320, 208],
+        "update": [512, 16]
+      },
+      "w": {
+        "e-decision-normalize": [[272, 96], [272, 256]],
+        "e-normalize-update": [[464, 256], [464, 64]]
+      }
+    },
+    "fetch,decision,approve,normalize,update": {
+      "p": {
+        "fetch": [16, 16],
+        "decision": [128, 32],
+        "approve": [320, 16],
+        "normalize": [320, 208],
+        "update": [512, 16]
+      },
+      "w": {
+        "e-decision-normalize": [[272, 96], [272, 256]],
+        "e-normalize-update": [[464, 256], [464, 64]]
+      }
+    },
+    "trigger,fetch,decision,approve,normalize,update": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "normalize": [208, 320],
+        "update": [400, 128]
+      },
+      "w": {
+        "e-decision-normalize": [[160, 208], [160, 368]],
+        "e-normalize-update": [[352, 368], [352, 176]]
+      }
+    },
+    "validate,decision,approve,normalize,update": {
+      "p": {
+        "validate": [16, 32],
+        "decision": [208, 32],
+        "approve": [400, 16],
+        "normalize": [400, 208],
+        "update": [592, 16]
+      },
+      "w": {
+        "e-decision-normalize": [[352, 96], [352, 256]],
+        "e-normalize-update": [[544, 256], [544, 64]]
+      }
+    },
+    "trigger,validate,decision,approve,normalize,update": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [16, 144],
+        "decision": [208, 144],
+        "approve": [400, 128],
+        "normalize": [400, 320],
+        "update": [592, 128]
+      },
+      "w": {
+        "e-decision-normalize": [[352, 208], [352, 368]],
+        "e-normalize-update": [[544, 368], [544, 176]]
+      }
+    },
+    "fetch,validate,decision,approve,normalize,update": {
+      "p": {
+        "fetch": [16, 32],
+        "validate": [208, 32],
+        "decision": [400, 32],
+        "approve": [592, 16],
+        "normalize": [592, 208],
+        "update": [784, 16]
+      },
+      "w": {
+        "e-decision-normalize": [[544, 96], [544, 256]],
+        "e-normalize-update": [[736, 256], [736, 64]]
+      }
+    },
+    "trigger,fetch,validate,decision,approve,normalize,update": {
+      "p": {
+        "trigger": [16, 32],
+        "fetch": [208, 32],
+        "validate": [400, 32],
+        "decision": [592, 32],
+        "approve": [784, 16],
+        "normalize": [784, 208],
+        "update": [976, 16]
+      },
+      "w": {
+        "e-decision-normalize": [[736, 96], [736, 256]],
+        "e-normalize-update": [[928, 256], [928, 64]]
+      }
+    },
+    "trigger,notify": { "p": { "trigger": [16, 16], "notify": [128, 16] }, "w": {} },
+    "fetch,notify": { "p": { "fetch": [16, 16], "notify": [128, 16] }, "w": {} },
+    "trigger,fetch,notify": {
+      "p": { "trigger": [16, 128], "fetch": [208, 128], "notify": [16, 16] },
+      "w": {}
+    },
+    "validate,notify": { "p": { "validate": [16, 16], "notify": [128, 16] }, "w": {} },
+    "trigger,validate,notify": {
+      "p": { "trigger": [16, 16], "validate": [128, 16], "notify": [16, 128] },
+      "w": {}
+    },
+    "fetch,validate,notify": {
+      "p": { "fetch": [16, 128], "validate": [208, 128], "notify": [16, 16] },
+      "w": {}
+    },
+    "trigger,fetch,validate,notify": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "validate": [400, 128],
+        "notify": [16, 16]
+      },
+      "w": {}
+    },
+    "decision,notify": { "p": { "decision": [16, 16], "notify": [128, 16] }, "w": {} },
+    "trigger,decision,notify": {
+      "p": { "trigger": [16, 16], "decision": [128, 16], "notify": [16, 128] },
+      "w": {}
+    },
+    "fetch,decision,notify": {
+      "p": { "fetch": [16, 16], "decision": [128, 16], "notify": [16, 128] },
+      "w": {}
+    },
+    "trigger,fetch,decision,notify": {
+      "p": { "trigger": [16, 128], "fetch": [208, 128], "decision": [16, 16], "notify": [128, 16] },
+      "w": {}
+    },
+    "validate,decision,notify": {
+      "p": { "validate": [16, 128], "decision": [208, 128], "notify": [16, 16] },
+      "w": {}
+    },
+    "trigger,validate,decision,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [16, 128],
+        "decision": [208, 128],
+        "notify": [128, 16]
+      },
+      "w": {}
+    },
+    "fetch,validate,decision,notify": {
+      "p": {
+        "fetch": [16, 128],
+        "validate": [208, 128],
+        "decision": [400, 128],
+        "notify": [16, 16]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,decision,notify": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "validate": [400, 128],
+        "decision": [592, 128],
+        "notify": [16, 16]
+      },
+      "w": {}
+    },
+    "approve,notify": { "p": { "approve": [16, 16], "notify": [128, 16] }, "w": {} },
+    "trigger,approve,notify": {
+      "p": { "trigger": [16, 16], "approve": [128, 16], "notify": [16, 128] },
+      "w": {}
+    },
+    "fetch,approve,notify": {
+      "p": { "fetch": [16, 16], "approve": [128, 16], "notify": [16, 128] },
+      "w": {}
+    },
+    "trigger,fetch,approve,notify": {
+      "p": { "trigger": [16, 128], "fetch": [208, 128], "approve": [16, 16], "notify": [128, 16] },
+      "w": {}
+    },
+    "validate,approve,notify": {
+      "p": { "validate": [16, 16], "approve": [128, 16], "notify": [16, 128] },
+      "w": {}
+    },
+    "trigger,validate,approve,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [128, 16],
+        "approve": [16, 128],
+        "notify": [128, 128]
+      },
+      "w": {}
+    },
+    "fetch,validate,approve,notify": {
+      "p": { "fetch": [16, 128], "validate": [208, 128], "approve": [16, 16], "notify": [128, 16] },
+      "w": {}
+    },
+    "trigger,fetch,validate,approve,notify": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "validate": [400, 128],
+        "approve": [16, 16],
+        "notify": [128, 16]
+      },
+      "w": {}
+    },
+    "decision,approve,notify": {
+      "p": { "decision": [16, 144], "approve": [208, 128], "notify": [16, 16] },
+      "w": {}
+    },
+    "trigger,decision,approve,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "notify": [128, 16]
+      },
+      "w": {}
+    },
+    "fetch,decision,approve,notify": {
+      "p": { "fetch": [16, 16], "decision": [16, 144], "approve": [208, 128], "notify": [128, 16] },
+      "w": {}
+    },
+    "trigger,fetch,decision,approve,notify": {
+      "p": {
+        "trigger": [128, 16],
+        "fetch": [320, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "notify": [16, 16]
+      },
+      "w": {}
+    },
+    "validate,decision,approve,notify": {
+      "p": {
+        "validate": [16, 144],
+        "decision": [208, 144],
+        "approve": [400, 128],
+        "notify": [16, 16]
+      },
+      "w": {}
+    },
+    "trigger,validate,decision,approve,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [16, 144],
+        "decision": [208, 144],
+        "approve": [400, 128],
+        "notify": [128, 16]
+      },
+      "w": {}
+    },
+    "fetch,validate,decision,approve,notify": {
+      "p": {
+        "fetch": [16, 144],
+        "validate": [208, 144],
+        "decision": [400, 144],
+        "approve": [592, 128],
+        "notify": [16, 16]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,decision,approve,notify": {
+      "p": {
+        "trigger": [16, 144],
+        "fetch": [208, 144],
+        "validate": [400, 144],
+        "decision": [592, 144],
+        "approve": [784, 128],
+        "notify": [16, 16]
+      },
+      "w": {}
+    },
+    "normalize,notify": { "p": { "normalize": [16, 16], "notify": [128, 16] }, "w": {} },
+    "trigger,normalize,notify": {
+      "p": { "trigger": [16, 16], "normalize": [128, 16], "notify": [16, 128] },
+      "w": {}
+    },
+    "fetch,normalize,notify": {
+      "p": { "fetch": [16, 16], "normalize": [128, 16], "notify": [16, 128] },
+      "w": {}
+    },
+    "trigger,fetch,normalize,notify": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "normalize": [16, 16],
+        "notify": [128, 16]
+      },
+      "w": {}
+    },
+    "validate,normalize,notify": {
+      "p": { "validate": [16, 16], "normalize": [128, 16], "notify": [16, 128] },
+      "w": {}
+    },
+    "trigger,validate,normalize,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [128, 16],
+        "normalize": [16, 128],
+        "notify": [128, 128]
+      },
+      "w": {}
+    },
+    "fetch,validate,normalize,notify": {
+      "p": {
+        "fetch": [16, 128],
+        "validate": [208, 128],
+        "normalize": [16, 16],
+        "notify": [128, 16]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,normalize,notify": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "validate": [400, 128],
+        "normalize": [16, 16],
+        "notify": [128, 16]
+      },
+      "w": {}
+    },
+    "decision,normalize,notify": {
+      "p": { "decision": [16, 128], "normalize": [208, 144], "notify": [16, 16] },
+      "w": {}
+    },
+    "trigger,decision,normalize,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "decision": [16, 128],
+        "normalize": [208, 144],
+        "notify": [128, 16]
+      },
+      "w": {}
+    },
+    "fetch,decision,normalize,notify": {
+      "p": {
+        "fetch": [16, 16],
+        "decision": [16, 128],
+        "normalize": [208, 144],
+        "notify": [128, 16]
+      },
+      "w": {}
+    },
+    "trigger,fetch,decision,normalize,notify": {
+      "p": {
+        "trigger": [128, 16],
+        "fetch": [320, 16],
+        "decision": [16, 128],
+        "normalize": [208, 144],
+        "notify": [16, 16]
+      },
+      "w": {}
+    },
+    "validate,decision,normalize,notify": {
+      "p": {
+        "validate": [16, 128],
+        "decision": [208, 128],
+        "normalize": [400, 144],
+        "notify": [16, 16]
+      },
+      "w": {}
+    },
+    "trigger,validate,decision,normalize,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [16, 128],
+        "decision": [208, 128],
+        "normalize": [400, 144],
+        "notify": [128, 16]
+      },
+      "w": {}
+    },
+    "fetch,validate,decision,normalize,notify": {
+      "p": {
+        "fetch": [16, 128],
+        "validate": [208, 128],
+        "decision": [400, 128],
+        "normalize": [592, 144],
+        "notify": [16, 16]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,decision,normalize,notify": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "validate": [400, 128],
+        "decision": [592, 128],
+        "normalize": [784, 144],
+        "notify": [16, 16]
+      },
+      "w": {}
+    },
+    "approve,normalize,notify": {
+      "p": { "approve": [16, 16], "normalize": [128, 16], "notify": [16, 128] },
+      "w": {}
+    },
+    "trigger,approve,normalize,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "approve": [128, 16],
+        "normalize": [16, 128],
+        "notify": [128, 128]
+      },
+      "w": {}
+    },
+    "fetch,approve,normalize,notify": {
+      "p": {
+        "fetch": [16, 16],
+        "approve": [128, 16],
+        "normalize": [16, 128],
+        "notify": [128, 128]
+      },
+      "w": {}
+    },
+    "trigger,fetch,approve,normalize,notify": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "approve": [16, 16],
+        "normalize": [128, 16],
+        "notify": [256, 16]
+      },
+      "w": {}
+    },
+    "validate,approve,normalize,notify": {
+      "p": {
+        "validate": [16, 16],
+        "approve": [128, 16],
+        "normalize": [16, 128],
+        "notify": [128, 128]
+      },
+      "w": {}
+    },
+    "trigger,validate,approve,normalize,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [128, 16],
+        "approve": [256, 16],
+        "normalize": [16, 128],
+        "notify": [128, 128]
+      },
+      "w": {}
+    },
+    "fetch,validate,approve,normalize,notify": {
+      "p": {
+        "fetch": [16, 128],
+        "validate": [208, 128],
+        "approve": [16, 16],
+        "normalize": [128, 16],
+        "notify": [256, 16]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,approve,normalize,notify": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "validate": [400, 128],
+        "approve": [16, 16],
+        "normalize": [128, 16],
+        "notify": [256, 16]
+      },
+      "w": {}
+    },
+    "decision,approve,normalize,notify": {
+      "p": {
+        "decision": [128, 32],
+        "approve": [320, 16],
+        "normalize": [320, 208],
+        "notify": [16, 16]
+      },
+      "w": { "e-decision-normalize": [[272, 96], [272, 256]] }
+    },
+    "trigger,decision,approve,normalize,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "normalize": [208, 320],
+        "notify": [128, 16]
+      },
+      "w": { "e-decision-normalize": [[160, 208], [160, 368]] }
+    },
+    "fetch,decision,approve,normalize,notify": {
+      "p": {
+        "fetch": [16, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "normalize": [208, 320],
+        "notify": [128, 16]
+      },
+      "w": { "e-decision-normalize": [[160, 208], [160, 368]] }
+    },
+    "trigger,fetch,decision,approve,normalize,notify": {
+      "p": {
+        "trigger": [128, 16],
+        "fetch": [320, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "normalize": [208, 320],
+        "notify": [16, 16]
+      },
+      "w": { "e-decision-normalize": [[160, 208], [160, 368]] }
+    },
+    "validate,decision,approve,normalize,notify": {
+      "p": {
+        "validate": [128, 32],
+        "decision": [320, 32],
+        "approve": [512, 16],
+        "normalize": [512, 208],
+        "notify": [16, 16]
+      },
+      "w": { "e-decision-normalize": [[464, 96], [464, 256]] }
+    },
+    "trigger,validate,decision,approve,normalize,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [16, 144],
+        "decision": [208, 144],
+        "approve": [400, 128],
+        "normalize": [400, 320],
+        "notify": [128, 16]
+      },
+      "w": { "e-decision-normalize": [[352, 208], [352, 368]] }
+    },
+    "fetch,validate,decision,approve,normalize,notify": {
+      "p": {
+        "fetch": [16, 144],
+        "validate": [208, 144],
+        "decision": [400, 144],
+        "approve": [592, 128],
+        "normalize": [592, 320],
+        "notify": [16, 16]
+      },
+      "w": { "e-decision-normalize": [[544, 208], [544, 368]] }
+    },
+    "trigger,fetch,validate,decision,approve,normalize,notify": {
+      "p": {
+        "trigger": [16, 144],
+        "fetch": [208, 144],
+        "validate": [400, 144],
+        "decision": [592, 144],
+        "approve": [784, 128],
+        "normalize": [784, 320],
+        "notify": [16, 16]
+      },
+      "w": { "e-decision-normalize": [[736, 208], [736, 368]] }
+    },
+    "update,notify": { "p": { "update": [16, 16], "notify": [208, 16] }, "w": {} },
+    "trigger,update,notify": {
+      "p": { "trigger": [16, 16], "update": [16, 128], "notify": [208, 128] },
+      "w": {}
+    },
+    "fetch,update,notify": {
+      "p": { "fetch": [16, 16], "update": [16, 128], "notify": [208, 128] },
+      "w": {}
+    },
+    "trigger,fetch,update,notify": {
+      "p": { "trigger": [16, 16], "fetch": [208, 16], "update": [16, 128], "notify": [208, 128] },
+      "w": {}
+    },
+    "validate,update,notify": {
+      "p": { "validate": [16, 16], "update": [16, 128], "notify": [208, 128] },
+      "w": {}
+    },
+    "trigger,validate,update,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [128, 16],
+        "update": [16, 128],
+        "notify": [208, 128]
+      },
+      "w": {}
+    },
+    "fetch,validate,update,notify": {
+      "p": { "fetch": [16, 16], "validate": [208, 16], "update": [16, 128], "notify": [208, 128] },
+      "w": {}
+    },
+    "trigger,fetch,validate,update,notify": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "validate": [400, 128],
+        "update": [16, 16],
+        "notify": [208, 16]
+      },
+      "w": {}
+    },
+    "decision,update,notify": {
+      "p": { "decision": [16, 16], "update": [16, 128], "notify": [208, 128] },
+      "w": {}
+    },
+    "trigger,decision,update,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "decision": [128, 16],
+        "update": [16, 128],
+        "notify": [208, 128]
+      },
+      "w": {}
+    },
+    "fetch,decision,update,notify": {
+      "p": { "fetch": [16, 16], "decision": [128, 16], "update": [16, 128], "notify": [208, 128] },
+      "w": {}
+    },
+    "trigger,fetch,decision,update,notify": {
+      "p": {
+        "trigger": [128, 16],
+        "fetch": [320, 16],
+        "decision": [16, 16],
+        "update": [16, 128],
+        "notify": [208, 128]
+      },
+      "w": {}
+    },
+    "validate,decision,update,notify": {
+      "p": {
+        "validate": [16, 16],
+        "decision": [208, 16],
+        "update": [16, 128],
+        "notify": [208, 128]
+      },
+      "w": {}
+    },
+    "trigger,validate,decision,update,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [128, 16],
+        "decision": [320, 16],
+        "update": [16, 128],
+        "notify": [208, 128]
+      },
+      "w": {}
+    },
+    "fetch,validate,decision,update,notify": {
+      "p": {
+        "fetch": [16, 128],
+        "validate": [208, 128],
+        "decision": [400, 128],
+        "update": [16, 16],
+        "notify": [208, 16]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,decision,update,notify": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "validate": [400, 128],
+        "decision": [592, 128],
+        "update": [16, 16],
+        "notify": [208, 16]
+      },
+      "w": {}
+    },
+    "approve,update,notify": {
+      "p": { "approve": [16, 16], "update": [208, 16], "notify": [400, 16] },
+      "w": {}
+    },
+    "trigger,approve,update,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "approve": [16, 128],
+        "update": [208, 128],
+        "notify": [400, 128]
+      },
+      "w": {}
+    },
+    "fetch,approve,update,notify": {
+      "p": { "fetch": [16, 16], "approve": [16, 128], "update": [208, 128], "notify": [400, 128] },
+      "w": {}
+    },
+    "trigger,fetch,approve,update,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "approve": [16, 128],
+        "update": [208, 128],
+        "notify": [400, 128]
+      },
+      "w": {}
+    },
+    "validate,approve,update,notify": {
+      "p": {
+        "validate": [16, 16],
+        "approve": [16, 128],
+        "update": [208, 128],
+        "notify": [400, 128]
+      },
+      "w": {}
+    },
+    "trigger,validate,approve,update,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [128, 16],
+        "approve": [16, 128],
+        "update": [208, 128],
+        "notify": [400, 128]
+      },
+      "w": {}
+    },
+    "fetch,validate,approve,update,notify": {
+      "p": {
+        "fetch": [16, 16],
+        "validate": [208, 16],
+        "approve": [16, 128],
+        "update": [208, 128],
+        "notify": [400, 128]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,approve,update,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "validate": [400, 16],
+        "approve": [16, 128],
+        "update": [208, 128],
+        "notify": [400, 128]
+      },
+      "w": {}
+    },
+    "decision,approve,update,notify": {
+      "p": { "decision": [16, 32], "approve": [208, 16], "update": [400, 16], "notify": [592, 16] },
+      "w": {}
+    },
+    "trigger,decision,approve,update,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "update": [400, 128],
+        "notify": [592, 128]
+      },
+      "w": {}
+    },
+    "fetch,decision,approve,update,notify": {
+      "p": {
+        "fetch": [16, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "update": [400, 128],
+        "notify": [592, 128]
+      },
+      "w": {}
+    },
+    "trigger,fetch,decision,approve,update,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "update": [400, 128],
+        "notify": [592, 128]
+      },
+      "w": {}
+    },
+    "validate,decision,approve,update,notify": {
+      "p": {
+        "validate": [16, 32],
+        "decision": [208, 32],
+        "approve": [400, 16],
+        "update": [592, 16],
+        "notify": [784, 16]
+      },
+      "w": {}
+    },
+    "trigger,validate,decision,approve,update,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [16, 144],
+        "decision": [208, 144],
+        "approve": [400, 128],
+        "update": [592, 128],
+        "notify": [784, 128]
+      },
+      "w": {}
+    },
+    "fetch,validate,decision,approve,update,notify": {
+      "p": {
+        "fetch": [16, 32],
+        "validate": [208, 32],
+        "decision": [400, 32],
+        "approve": [592, 16],
+        "update": [784, 16],
+        "notify": [976, 16]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,decision,approve,update,notify": {
+      "p": {
+        "trigger": [16, 32],
+        "fetch": [208, 32],
+        "validate": [400, 32],
+        "decision": [592, 32],
+        "approve": [784, 16],
+        "update": [976, 16],
+        "notify": [1168, 16]
+      },
+      "w": {}
+    },
+    "normalize,update,notify": {
+      "p": { "normalize": [16, 16], "update": [208, 16], "notify": [400, 16] },
+      "w": {}
+    },
+    "trigger,normalize,update,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "normalize": [16, 128],
+        "update": [208, 128],
+        "notify": [400, 128]
+      },
+      "w": {}
+    },
+    "fetch,normalize,update,notify": {
+      "p": {
+        "fetch": [16, 16],
+        "normalize": [16, 128],
+        "update": [208, 128],
+        "notify": [400, 128]
+      },
+      "w": {}
+    },
+    "trigger,fetch,normalize,update,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "normalize": [16, 128],
+        "update": [208, 128],
+        "notify": [400, 128]
+      },
+      "w": {}
+    },
+    "validate,normalize,update,notify": {
+      "p": {
+        "validate": [16, 16],
+        "normalize": [16, 128],
+        "update": [208, 128],
+        "notify": [400, 128]
+      },
+      "w": {}
+    },
+    "trigger,validate,normalize,update,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [128, 16],
+        "normalize": [16, 128],
+        "update": [208, 128],
+        "notify": [400, 128]
+      },
+      "w": {}
+    },
+    "fetch,validate,normalize,update,notify": {
+      "p": {
+        "fetch": [16, 16],
+        "validate": [208, 16],
+        "normalize": [16, 128],
+        "update": [208, 128],
+        "notify": [400, 128]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,normalize,update,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "validate": [400, 16],
+        "normalize": [16, 128],
+        "update": [208, 128],
+        "notify": [400, 128]
+      },
+      "w": {}
+    },
+    "decision,normalize,update,notify": {
+      "p": {
+        "decision": [16, 16],
+        "normalize": [208, 32],
+        "update": [400, 32],
+        "notify": [592, 32]
+      },
+      "w": {}
+    },
+    "trigger,decision,normalize,update,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "decision": [16, 128],
+        "normalize": [208, 144],
+        "update": [400, 144],
+        "notify": [592, 144]
+      },
+      "w": {}
+    },
+    "fetch,decision,normalize,update,notify": {
+      "p": {
+        "fetch": [16, 16],
+        "decision": [16, 128],
+        "normalize": [208, 144],
+        "update": [400, 144],
+        "notify": [592, 144]
+      },
+      "w": {}
+    },
+    "trigger,fetch,decision,normalize,update,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "decision": [16, 128],
+        "normalize": [208, 144],
+        "update": [400, 144],
+        "notify": [592, 144]
+      },
+      "w": {}
+    },
+    "validate,decision,normalize,update,notify": {
+      "p": {
+        "validate": [16, 16],
+        "decision": [208, 16],
+        "normalize": [400, 32],
+        "update": [592, 32],
+        "notify": [784, 32]
+      },
+      "w": {}
+    },
+    "trigger,validate,decision,normalize,update,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [16, 128],
+        "decision": [208, 128],
+        "normalize": [400, 144],
+        "update": [592, 144],
+        "notify": [784, 144]
+      },
+      "w": {}
+    },
+    "fetch,validate,decision,normalize,update,notify": {
+      "p": {
+        "fetch": [16, 16],
+        "validate": [208, 16],
+        "decision": [400, 16],
+        "normalize": [592, 32],
+        "update": [784, 32],
+        "notify": [976, 32]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,decision,normalize,update,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "validate": [400, 16],
+        "decision": [592, 16],
+        "normalize": [784, 32],
+        "update": [976, 32],
+        "notify": [1168, 32]
+      },
+      "w": {}
+    },
+    "approve,normalize,update,notify": {
+      "p": {
+        "approve": [16, 16],
+        "normalize": [16, 208],
+        "update": [208, 16],
+        "notify": [400, 16]
+      },
+      "w": { "e-normalize-update": [[160, 256], [160, 64]] }
+    },
+    "trigger,approve,normalize,update,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "approve": [128, 16],
+        "normalize": [128, 208],
+        "update": [320, 16],
+        "notify": [512, 16]
+      },
+      "w": { "e-normalize-update": [[272, 256], [272, 64]] }
+    },
+    "fetch,approve,normalize,update,notify": {
+      "p": {
+        "fetch": [16, 16],
+        "approve": [128, 16],
+        "normalize": [128, 208],
+        "update": [320, 16],
+        "notify": [512, 16]
+      },
+      "w": { "e-normalize-update": [[272, 256], [272, 64]] }
+    },
+    "trigger,fetch,approve,normalize,update,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "approve": [16, 128],
+        "normalize": [16, 320],
+        "update": [208, 128],
+        "notify": [400, 128]
+      },
+      "w": { "e-normalize-update": [[160, 368], [160, 176]] }
+    },
+    "validate,approve,normalize,update,notify": {
+      "p": {
+        "validate": [16, 16],
+        "approve": [128, 16],
+        "normalize": [128, 208],
+        "update": [320, 16],
+        "notify": [512, 16]
+      },
+      "w": { "e-normalize-update": [[272, 256], [272, 64]] }
+    },
+    "trigger,validate,approve,normalize,update,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [128, 16],
+        "approve": [16, 128],
+        "normalize": [16, 320],
+        "update": [208, 128],
+        "notify": [400, 128]
+      },
+      "w": { "e-normalize-update": [[160, 368], [160, 176]] }
+    },
+    "fetch,validate,approve,normalize,update,notify": {
+      "p": {
+        "fetch": [16, 16],
+        "validate": [208, 16],
+        "approve": [16, 128],
+        "normalize": [16, 320],
+        "update": [208, 128],
+        "notify": [400, 128]
+      },
+      "w": { "e-normalize-update": [[160, 368], [160, 176]] }
+    },
+    "trigger,fetch,validate,approve,normalize,update,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "validate": [400, 16],
+        "approve": [16, 128],
+        "normalize": [16, 320],
+        "update": [208, 128],
+        "notify": [400, 128]
+      },
+      "w": { "e-normalize-update": [[160, 368], [160, 176]] }
+    },
+    "decision,approve,normalize,update,notify": {
+      "p": {
+        "decision": [16, 32],
+        "approve": [208, 16],
+        "normalize": [208, 208],
+        "update": [400, 16],
+        "notify": [592, 16]
+      },
+      "w": {
+        "e-decision-normalize": [[160, 96], [160, 256]],
+        "e-normalize-update": [[352, 256], [352, 64]]
+      }
+    },
+    "trigger,decision,approve,normalize,update,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "normalize": [208, 320],
+        "update": [400, 128],
+        "notify": [592, 128]
+      },
+      "w": {
+        "e-decision-normalize": [[160, 208], [160, 368]],
+        "e-normalize-update": [[352, 368], [352, 176]]
+      }
+    },
+    "fetch,decision,approve,normalize,update,notify": {
+      "p": {
+        "fetch": [16, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "normalize": [208, 320],
+        "update": [400, 128],
+        "notify": [592, 128]
+      },
+      "w": {
+        "e-decision-normalize": [[160, 208], [160, 368]],
+        "e-normalize-update": [[352, 368], [352, 176]]
+      }
+    },
+    "trigger,fetch,decision,approve,normalize,update,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "normalize": [208, 320],
+        "update": [400, 128],
+        "notify": [592, 128]
+      },
+      "w": {
+        "e-decision-normalize": [[160, 208], [160, 368]],
+        "e-normalize-update": [[352, 368], [352, 176]]
+      }
+    },
+    "validate,decision,approve,normalize,update,notify": {
+      "p": {
+        "validate": [16, 32],
+        "decision": [208, 32],
+        "approve": [400, 16],
+        "normalize": [400, 208],
+        "update": [592, 16],
+        "notify": [784, 16]
+      },
+      "w": {
+        "e-decision-normalize": [[352, 96], [352, 256]],
+        "e-normalize-update": [[544, 256], [544, 64]]
+      }
+    },
+    "trigger,validate,decision,approve,normalize,update,notify": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [16, 144],
+        "decision": [208, 144],
+        "approve": [400, 128],
+        "normalize": [400, 320],
+        "update": [592, 128],
+        "notify": [784, 128]
+      },
+      "w": {
+        "e-decision-normalize": [[352, 208], [352, 368]],
+        "e-normalize-update": [[544, 368], [544, 176]]
+      }
+    },
+    "fetch,validate,decision,approve,normalize,update,notify": {
+      "p": {
+        "fetch": [16, 32],
+        "validate": [208, 32],
+        "decision": [400, 32],
+        "approve": [592, 16],
+        "normalize": [592, 208],
+        "update": [784, 16],
+        "notify": [976, 16]
+      },
+      "w": {
+        "e-decision-normalize": [[544, 96], [544, 256]],
+        "e-normalize-update": [[736, 256], [736, 64]]
+      }
+    },
+    "trigger,fetch,validate,decision,approve,normalize,update,notify": {
+      "p": {
+        "trigger": [16, 32],
+        "fetch": [208, 32],
+        "validate": [400, 32],
+        "decision": [592, 32],
+        "approve": [784, 16],
+        "normalize": [784, 208],
+        "update": [976, 16],
+        "notify": [1168, 16]
+      },
+      "w": {
+        "e-decision-normalize": [[736, 96], [736, 256]],
+        "e-normalize-update": [[928, 256], [928, 64]]
+      }
+    },
+    "trigger,end": { "p": { "trigger": [16, 16], "end": [128, 16] }, "w": {} },
+    "fetch,end": { "p": { "fetch": [16, 16], "end": [128, 16] }, "w": {} },
+    "trigger,fetch,end": {
+      "p": { "trigger": [16, 128], "fetch": [208, 128], "end": [16, 16] },
+      "w": {}
+    },
+    "validate,end": { "p": { "validate": [16, 16], "end": [128, 16] }, "w": {} },
+    "trigger,validate,end": {
+      "p": { "trigger": [16, 16], "validate": [128, 16], "end": [16, 128] },
+      "w": {}
+    },
+    "fetch,validate,end": {
+      "p": { "fetch": [16, 128], "validate": [208, 128], "end": [16, 16] },
+      "w": {}
+    },
+    "trigger,fetch,validate,end": {
+      "p": { "trigger": [16, 128], "fetch": [208, 128], "validate": [400, 128], "end": [16, 16] },
+      "w": {}
+    },
+    "decision,end": { "p": { "decision": [16, 16], "end": [128, 16] }, "w": {} },
+    "trigger,decision,end": {
+      "p": { "trigger": [16, 16], "decision": [128, 16], "end": [16, 128] },
+      "w": {}
+    },
+    "fetch,decision,end": {
+      "p": { "fetch": [16, 16], "decision": [128, 16], "end": [16, 128] },
+      "w": {}
+    },
+    "trigger,fetch,decision,end": {
+      "p": { "trigger": [16, 128], "fetch": [208, 128], "decision": [16, 16], "end": [128, 16] },
+      "w": {}
+    },
+    "validate,decision,end": {
+      "p": { "validate": [16, 128], "decision": [208, 128], "end": [16, 16] },
+      "w": {}
+    },
+    "trigger,validate,decision,end": {
+      "p": { "trigger": [16, 16], "validate": [16, 128], "decision": [208, 128], "end": [128, 16] },
+      "w": {}
+    },
+    "fetch,validate,decision,end": {
+      "p": { "fetch": [16, 128], "validate": [208, 128], "decision": [400, 128], "end": [16, 16] },
+      "w": {}
+    },
+    "trigger,fetch,validate,decision,end": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "validate": [400, 128],
+        "decision": [592, 128],
+        "end": [16, 16]
+      },
+      "w": {}
+    },
+    "approve,end": { "p": { "approve": [16, 16], "end": [128, 16] }, "w": {} },
+    "trigger,approve,end": {
+      "p": { "trigger": [16, 16], "approve": [128, 16], "end": [16, 128] },
+      "w": {}
+    },
+    "fetch,approve,end": {
+      "p": { "fetch": [16, 16], "approve": [128, 16], "end": [16, 128] },
+      "w": {}
+    },
+    "trigger,fetch,approve,end": {
+      "p": { "trigger": [16, 128], "fetch": [208, 128], "approve": [16, 16], "end": [128, 16] },
+      "w": {}
+    },
+    "validate,approve,end": {
+      "p": { "validate": [16, 16], "approve": [128, 16], "end": [16, 128] },
+      "w": {}
+    },
+    "trigger,validate,approve,end": {
+      "p": { "trigger": [16, 16], "validate": [128, 16], "approve": [16, 128], "end": [128, 128] },
+      "w": {}
+    },
+    "fetch,validate,approve,end": {
+      "p": { "fetch": [16, 128], "validate": [208, 128], "approve": [16, 16], "end": [128, 16] },
+      "w": {}
+    },
+    "trigger,fetch,validate,approve,end": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "validate": [400, 128],
+        "approve": [16, 16],
+        "end": [128, 16]
+      },
+      "w": {}
+    },
+    "decision,approve,end": {
+      "p": { "decision": [16, 144], "approve": [208, 128], "end": [16, 16] },
+      "w": {}
+    },
+    "trigger,decision,approve,end": {
+      "p": { "trigger": [16, 16], "decision": [16, 144], "approve": [208, 128], "end": [128, 16] },
+      "w": {}
+    },
+    "fetch,decision,approve,end": {
+      "p": { "fetch": [16, 16], "decision": [16, 144], "approve": [208, 128], "end": [128, 16] },
+      "w": {}
+    },
+    "trigger,fetch,decision,approve,end": {
+      "p": {
+        "trigger": [128, 16],
+        "fetch": [320, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "end": [16, 16]
+      },
+      "w": {}
+    },
+    "validate,decision,approve,end": {
+      "p": {
+        "validate": [16, 144],
+        "decision": [208, 144],
+        "approve": [400, 128],
+        "end": [16, 16]
+      },
+      "w": {}
+    },
+    "trigger,validate,decision,approve,end": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [16, 144],
+        "decision": [208, 144],
+        "approve": [400, 128],
+        "end": [128, 16]
+      },
+      "w": {}
+    },
+    "fetch,validate,decision,approve,end": {
+      "p": {
+        "fetch": [16, 144],
+        "validate": [208, 144],
+        "decision": [400, 144],
+        "approve": [592, 128],
+        "end": [16, 16]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,decision,approve,end": {
+      "p": {
+        "trigger": [16, 144],
+        "fetch": [208, 144],
+        "validate": [400, 144],
+        "decision": [592, 144],
+        "approve": [784, 128],
+        "end": [16, 16]
+      },
+      "w": {}
+    },
+    "normalize,end": { "p": { "normalize": [16, 16], "end": [128, 16] }, "w": {} },
+    "trigger,normalize,end": {
+      "p": { "trigger": [16, 16], "normalize": [128, 16], "end": [16, 128] },
+      "w": {}
+    },
+    "fetch,normalize,end": {
+      "p": { "fetch": [16, 16], "normalize": [128, 16], "end": [16, 128] },
+      "w": {}
+    },
+    "trigger,fetch,normalize,end": {
+      "p": { "trigger": [16, 128], "fetch": [208, 128], "normalize": [16, 16], "end": [128, 16] },
+      "w": {}
+    },
+    "validate,normalize,end": {
+      "p": { "validate": [16, 16], "normalize": [128, 16], "end": [16, 128] },
+      "w": {}
+    },
+    "trigger,validate,normalize,end": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [128, 16],
+        "normalize": [16, 128],
+        "end": [128, 128]
+      },
+      "w": {}
+    },
+    "fetch,validate,normalize,end": {
+      "p": { "fetch": [16, 128], "validate": [208, 128], "normalize": [16, 16], "end": [128, 16] },
+      "w": {}
+    },
+    "trigger,fetch,validate,normalize,end": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "validate": [400, 128],
+        "normalize": [16, 16],
+        "end": [128, 16]
+      },
+      "w": {}
+    },
+    "decision,normalize,end": {
+      "p": { "decision": [16, 128], "normalize": [208, 144], "end": [16, 16] },
+      "w": {}
+    },
+    "trigger,decision,normalize,end": {
+      "p": {
+        "trigger": [16, 16],
+        "decision": [16, 128],
+        "normalize": [208, 144],
+        "end": [128, 16]
+      },
+      "w": {}
+    },
+    "fetch,decision,normalize,end": {
+      "p": { "fetch": [16, 16], "decision": [16, 128], "normalize": [208, 144], "end": [128, 16] },
+      "w": {}
+    },
+    "trigger,fetch,decision,normalize,end": {
+      "p": {
+        "trigger": [128, 16],
+        "fetch": [320, 16],
+        "decision": [16, 128],
+        "normalize": [208, 144],
+        "end": [16, 16]
+      },
+      "w": {}
+    },
+    "validate,decision,normalize,end": {
+      "p": {
+        "validate": [16, 128],
+        "decision": [208, 128],
+        "normalize": [400, 144],
+        "end": [16, 16]
+      },
+      "w": {}
+    },
+    "trigger,validate,decision,normalize,end": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [16, 128],
+        "decision": [208, 128],
+        "normalize": [400, 144],
+        "end": [128, 16]
+      },
+      "w": {}
+    },
+    "fetch,validate,decision,normalize,end": {
+      "p": {
+        "fetch": [16, 128],
+        "validate": [208, 128],
+        "decision": [400, 128],
+        "normalize": [592, 144],
+        "end": [16, 16]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,decision,normalize,end": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "validate": [400, 128],
+        "decision": [592, 128],
+        "normalize": [784, 144],
+        "end": [16, 16]
+      },
+      "w": {}
+    },
+    "approve,normalize,end": {
+      "p": { "approve": [16, 16], "normalize": [128, 16], "end": [16, 128] },
+      "w": {}
+    },
+    "trigger,approve,normalize,end": {
+      "p": { "trigger": [16, 16], "approve": [128, 16], "normalize": [16, 128], "end": [128, 128] },
+      "w": {}
+    },
+    "fetch,approve,normalize,end": {
+      "p": { "fetch": [16, 16], "approve": [128, 16], "normalize": [16, 128], "end": [128, 128] },
+      "w": {}
+    },
+    "trigger,fetch,approve,normalize,end": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "approve": [16, 16],
+        "normalize": [128, 16],
+        "end": [256, 16]
+      },
+      "w": {}
+    },
+    "validate,approve,normalize,end": {
+      "p": {
+        "validate": [16, 16],
+        "approve": [128, 16],
+        "normalize": [16, 128],
+        "end": [128, 128]
+      },
+      "w": {}
+    },
+    "trigger,validate,approve,normalize,end": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [128, 16],
+        "approve": [256, 16],
+        "normalize": [16, 128],
+        "end": [128, 128]
+      },
+      "w": {}
+    },
+    "fetch,validate,approve,normalize,end": {
+      "p": {
+        "fetch": [16, 128],
+        "validate": [208, 128],
+        "approve": [16, 16],
+        "normalize": [128, 16],
+        "end": [256, 16]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,approve,normalize,end": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "validate": [400, 128],
+        "approve": [16, 16],
+        "normalize": [128, 16],
+        "end": [256, 16]
+      },
+      "w": {}
+    },
+    "decision,approve,normalize,end": {
+      "p": {
+        "decision": [128, 32],
+        "approve": [320, 16],
+        "normalize": [320, 208],
+        "end": [16, 16]
+      },
+      "w": { "e-decision-normalize": [[272, 96], [272, 256]] }
+    },
+    "trigger,decision,approve,normalize,end": {
+      "p": {
+        "trigger": [16, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "normalize": [208, 320],
+        "end": [128, 16]
+      },
+      "w": { "e-decision-normalize": [[160, 208], [160, 368]] }
+    },
+    "fetch,decision,approve,normalize,end": {
+      "p": {
+        "fetch": [16, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "normalize": [208, 320],
+        "end": [128, 16]
+      },
+      "w": { "e-decision-normalize": [[160, 208], [160, 368]] }
+    },
+    "trigger,fetch,decision,approve,normalize,end": {
+      "p": {
+        "trigger": [128, 16],
+        "fetch": [320, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "normalize": [208, 320],
+        "end": [16, 16]
+      },
+      "w": { "e-decision-normalize": [[160, 208], [160, 368]] }
+    },
+    "validate,decision,approve,normalize,end": {
+      "p": {
+        "validate": [128, 32],
+        "decision": [320, 32],
+        "approve": [512, 16],
+        "normalize": [512, 208],
+        "end": [16, 16]
+      },
+      "w": { "e-decision-normalize": [[464, 96], [464, 256]] }
+    },
+    "trigger,validate,decision,approve,normalize,end": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [16, 144],
+        "decision": [208, 144],
+        "approve": [400, 128],
+        "normalize": [400, 320],
+        "end": [128, 16]
+      },
+      "w": { "e-decision-normalize": [[352, 208], [352, 368]] }
+    },
+    "fetch,validate,decision,approve,normalize,end": {
+      "p": {
+        "fetch": [16, 144],
+        "validate": [208, 144],
+        "decision": [400, 144],
+        "approve": [592, 128],
+        "normalize": [592, 320],
+        "end": [16, 16]
+      },
+      "w": { "e-decision-normalize": [[544, 208], [544, 368]] }
+    },
+    "trigger,fetch,validate,decision,approve,normalize,end": {
+      "p": {
+        "trigger": [16, 144],
+        "fetch": [208, 144],
+        "validate": [400, 144],
+        "decision": [592, 144],
+        "approve": [784, 128],
+        "normalize": [784, 320],
+        "end": [16, 16]
+      },
+      "w": { "e-decision-normalize": [[736, 208], [736, 368]] }
+    },
+    "update,end": { "p": { "update": [16, 16], "end": [128, 16] }, "w": {} },
+    "trigger,update,end": {
+      "p": { "trigger": [16, 16], "update": [128, 16], "end": [16, 128] },
+      "w": {}
+    },
+    "fetch,update,end": {
+      "p": { "fetch": [16, 16], "update": [128, 16], "end": [16, 128] },
+      "w": {}
+    },
+    "trigger,fetch,update,end": {
+      "p": { "trigger": [16, 128], "fetch": [208, 128], "update": [16, 16], "end": [128, 16] },
+      "w": {}
+    },
+    "validate,update,end": {
+      "p": { "validate": [16, 16], "update": [128, 16], "end": [16, 128] },
+      "w": {}
+    },
+    "trigger,validate,update,end": {
+      "p": { "trigger": [16, 16], "validate": [128, 16], "update": [16, 128], "end": [128, 128] },
+      "w": {}
+    },
+    "fetch,validate,update,end": {
+      "p": { "fetch": [16, 128], "validate": [208, 128], "update": [16, 16], "end": [128, 16] },
+      "w": {}
+    },
+    "trigger,fetch,validate,update,end": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "validate": [400, 128],
+        "update": [16, 16],
+        "end": [128, 16]
+      },
+      "w": {}
+    },
+    "decision,update,end": {
+      "p": { "decision": [16, 16], "update": [128, 16], "end": [16, 128] },
+      "w": {}
+    },
+    "trigger,decision,update,end": {
+      "p": { "trigger": [16, 16], "decision": [128, 16], "update": [16, 128], "end": [128, 128] },
+      "w": {}
+    },
+    "fetch,decision,update,end": {
+      "p": { "fetch": [16, 16], "decision": [128, 16], "update": [16, 128], "end": [128, 128] },
+      "w": {}
+    },
+    "trigger,fetch,decision,update,end": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "decision": [16, 16],
+        "update": [128, 16],
+        "end": [256, 16]
+      },
+      "w": {}
+    },
+    "validate,decision,update,end": {
+      "p": { "validate": [16, 128], "decision": [208, 128], "update": [16, 16], "end": [128, 16] },
+      "w": {}
+    },
+    "trigger,validate,decision,update,end": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [16, 128],
+        "decision": [208, 128],
+        "update": [128, 16],
+        "end": [256, 16]
+      },
+      "w": {}
+    },
+    "fetch,validate,decision,update,end": {
+      "p": {
+        "fetch": [16, 128],
+        "validate": [208, 128],
+        "decision": [400, 128],
+        "update": [16, 16],
+        "end": [128, 16]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,decision,update,end": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "validate": [400, 128],
+        "decision": [592, 128],
+        "update": [16, 16],
+        "end": [128, 16]
+      },
+      "w": {}
+    },
+    "approve,update,end": {
+      "p": { "approve": [16, 128], "update": [208, 128], "end": [16, 16] },
+      "w": {}
+    },
+    "trigger,approve,update,end": {
+      "p": { "trigger": [16, 16], "approve": [16, 128], "update": [208, 128], "end": [128, 16] },
+      "w": {}
+    },
+    "fetch,approve,update,end": {
+      "p": { "fetch": [16, 16], "approve": [16, 128], "update": [208, 128], "end": [128, 16] },
+      "w": {}
+    },
+    "trigger,fetch,approve,update,end": {
+      "p": {
+        "trigger": [128, 16],
+        "fetch": [320, 16],
+        "approve": [16, 128],
+        "update": [208, 128],
+        "end": [16, 16]
+      },
+      "w": {}
+    },
+    "validate,approve,update,end": {
+      "p": { "validate": [16, 16], "approve": [16, 128], "update": [208, 128], "end": [128, 16] },
+      "w": {}
+    },
+    "trigger,validate,approve,update,end": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [128, 16],
+        "approve": [16, 128],
+        "update": [208, 128],
+        "end": [256, 16]
+      },
+      "w": {}
+    },
+    "fetch,validate,approve,update,end": {
+      "p": {
+        "fetch": [128, 16],
+        "validate": [320, 16],
+        "approve": [16, 128],
+        "update": [208, 128],
+        "end": [16, 16]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,approve,update,end": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "validate": [400, 128],
+        "approve": [128, 16],
+        "update": [320, 16],
+        "end": [16, 16]
+      },
+      "w": {}
+    },
+    "decision,approve,update,end": {
+      "p": { "decision": [16, 144], "approve": [208, 128], "update": [400, 128], "end": [16, 16] },
+      "w": {}
+    },
+    "trigger,decision,approve,update,end": {
+      "p": {
+        "trigger": [16, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "update": [400, 128],
+        "end": [128, 16]
+      },
+      "w": {}
+    },
+    "fetch,decision,approve,update,end": {
+      "p": {
+        "fetch": [16, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "update": [400, 128],
+        "end": [128, 16]
+      },
+      "w": {}
+    },
+    "trigger,fetch,decision,approve,update,end": {
+      "p": {
+        "trigger": [128, 16],
+        "fetch": [320, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "update": [400, 128],
+        "end": [16, 16]
+      },
+      "w": {}
+    },
+    "validate,decision,approve,update,end": {
+      "p": {
+        "validate": [16, 144],
+        "decision": [208, 144],
+        "approve": [400, 128],
+        "update": [592, 128],
+        "end": [16, 16]
+      },
+      "w": {}
+    },
+    "trigger,validate,decision,approve,update,end": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [16, 144],
+        "decision": [208, 144],
+        "approve": [400, 128],
+        "update": [592, 128],
+        "end": [128, 16]
+      },
+      "w": {}
+    },
+    "fetch,validate,decision,approve,update,end": {
+      "p": {
+        "fetch": [16, 144],
+        "validate": [208, 144],
+        "decision": [400, 144],
+        "approve": [592, 128],
+        "update": [784, 128],
+        "end": [16, 16]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,decision,approve,update,end": {
+      "p": {
+        "trigger": [16, 144],
+        "fetch": [208, 144],
+        "validate": [400, 144],
+        "decision": [592, 144],
+        "approve": [784, 128],
+        "update": [976, 128],
+        "end": [16, 16]
+      },
+      "w": {}
+    },
+    "normalize,update,end": {
+      "p": { "normalize": [16, 128], "update": [208, 128], "end": [16, 16] },
+      "w": {}
+    },
+    "trigger,normalize,update,end": {
+      "p": { "trigger": [16, 16], "normalize": [16, 128], "update": [208, 128], "end": [128, 16] },
+      "w": {}
+    },
+    "fetch,normalize,update,end": {
+      "p": { "fetch": [16, 16], "normalize": [16, 128], "update": [208, 128], "end": [128, 16] },
+      "w": {}
+    },
+    "trigger,fetch,normalize,update,end": {
+      "p": {
+        "trigger": [128, 16],
+        "fetch": [320, 16],
+        "normalize": [16, 128],
+        "update": [208, 128],
+        "end": [16, 16]
+      },
+      "w": {}
+    },
+    "validate,normalize,update,end": {
+      "p": { "validate": [16, 16], "normalize": [16, 128], "update": [208, 128], "end": [128, 16] },
+      "w": {}
+    },
+    "trigger,validate,normalize,update,end": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [128, 16],
+        "normalize": [16, 128],
+        "update": [208, 128],
+        "end": [256, 16]
+      },
+      "w": {}
+    },
+    "fetch,validate,normalize,update,end": {
+      "p": {
+        "fetch": [128, 16],
+        "validate": [320, 16],
+        "normalize": [16, 128],
+        "update": [208, 128],
+        "end": [16, 16]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,normalize,update,end": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "validate": [400, 128],
+        "normalize": [128, 16],
+        "update": [320, 16],
+        "end": [16, 16]
+      },
+      "w": {}
+    },
+    "decision,normalize,update,end": {
+      "p": {
+        "decision": [16, 128],
+        "normalize": [208, 144],
+        "update": [400, 144],
+        "end": [16, 16]
+      },
+      "w": {}
+    },
+    "trigger,decision,normalize,update,end": {
+      "p": {
+        "trigger": [16, 16],
+        "decision": [16, 128],
+        "normalize": [208, 144],
+        "update": [400, 144],
+        "end": [128, 16]
+      },
+      "w": {}
+    },
+    "fetch,decision,normalize,update,end": {
+      "p": {
+        "fetch": [16, 16],
+        "decision": [16, 128],
+        "normalize": [208, 144],
+        "update": [400, 144],
+        "end": [128, 16]
+      },
+      "w": {}
+    },
+    "trigger,fetch,decision,normalize,update,end": {
+      "p": {
+        "trigger": [128, 16],
+        "fetch": [320, 16],
+        "decision": [16, 128],
+        "normalize": [208, 144],
+        "update": [400, 144],
+        "end": [16, 16]
+      },
+      "w": {}
+    },
+    "validate,decision,normalize,update,end": {
+      "p": {
+        "validate": [16, 128],
+        "decision": [208, 128],
+        "normalize": [400, 144],
+        "update": [592, 144],
+        "end": [16, 16]
+      },
+      "w": {}
+    },
+    "trigger,validate,decision,normalize,update,end": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [16, 128],
+        "decision": [208, 128],
+        "normalize": [400, 144],
+        "update": [592, 144],
+        "end": [128, 16]
+      },
+      "w": {}
+    },
+    "fetch,validate,decision,normalize,update,end": {
+      "p": {
+        "fetch": [16, 128],
+        "validate": [208, 128],
+        "decision": [400, 128],
+        "normalize": [592, 144],
+        "update": [784, 144],
+        "end": [16, 16]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,decision,normalize,update,end": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "validate": [400, 128],
+        "decision": [592, 128],
+        "normalize": [784, 144],
+        "update": [976, 144],
+        "end": [16, 16]
+      },
+      "w": {}
+    },
+    "approve,normalize,update,end": {
+      "p": { "approve": [128, 16], "normalize": [128, 208], "update": [320, 16], "end": [16, 16] },
+      "w": { "e-normalize-update": [[272, 256], [272, 64]] }
+    },
+    "trigger,approve,normalize,update,end": {
+      "p": {
+        "trigger": [16, 16],
+        "approve": [16, 128],
+        "normalize": [16, 320],
+        "update": [208, 128],
+        "end": [128, 16]
+      },
+      "w": { "e-normalize-update": [[160, 368], [160, 176]] }
+    },
+    "fetch,approve,normalize,update,end": {
+      "p": {
+        "fetch": [16, 16],
+        "approve": [16, 128],
+        "normalize": [16, 320],
+        "update": [208, 128],
+        "end": [128, 16]
+      },
+      "w": { "e-normalize-update": [[160, 368], [160, 176]] }
+    },
+    "trigger,fetch,approve,normalize,update,end": {
+      "p": {
+        "trigger": [128, 16],
+        "fetch": [320, 16],
+        "approve": [16, 128],
+        "normalize": [16, 320],
+        "update": [208, 128],
+        "end": [16, 16]
+      },
+      "w": { "e-normalize-update": [[160, 368], [160, 176]] }
+    },
+    "validate,approve,normalize,update,end": {
+      "p": {
+        "validate": [16, 16],
+        "approve": [16, 128],
+        "normalize": [16, 320],
+        "update": [208, 128],
+        "end": [128, 16]
+      },
+      "w": { "e-normalize-update": [[160, 368], [160, 176]] }
+    },
+    "trigger,validate,approve,normalize,update,end": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [128, 16],
+        "approve": [16, 128],
+        "normalize": [16, 320],
+        "update": [208, 128],
+        "end": [256, 16]
+      },
+      "w": { "e-normalize-update": [[160, 368], [160, 176]] }
+    },
+    "fetch,validate,approve,normalize,update,end": {
+      "p": {
+        "fetch": [128, 16],
+        "validate": [320, 16],
+        "approve": [16, 128],
+        "normalize": [16, 320],
+        "update": [208, 128],
+        "end": [16, 16]
+      },
+      "w": { "e-normalize-update": [[160, 368], [160, 176]] }
+    },
+    "trigger,fetch,validate,approve,normalize,update,end": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "validate": [400, 128],
+        "approve": [16, 256],
+        "normalize": [16, 448],
+        "update": [208, 256],
+        "end": [16, 16]
+      },
+      "w": { "e-normalize-update": [[160, 496], [160, 304]] }
+    },
+    "decision,approve,normalize,update,end": {
+      "p": {
+        "decision": [128, 32],
+        "approve": [320, 16],
+        "normalize": [320, 208],
+        "update": [512, 16],
+        "end": [16, 16]
+      },
+      "w": {
+        "e-decision-normalize": [[272, 96], [272, 256]],
+        "e-normalize-update": [[464, 256], [464, 64]]
+      }
+    },
+    "trigger,decision,approve,normalize,update,end": {
+      "p": {
+        "trigger": [16, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "normalize": [208, 320],
+        "update": [400, 128],
+        "end": [128, 16]
+      },
+      "w": {
+        "e-decision-normalize": [[160, 208], [160, 368]],
+        "e-normalize-update": [[352, 368], [352, 176]]
+      }
+    },
+    "fetch,decision,approve,normalize,update,end": {
+      "p": {
+        "fetch": [16, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "normalize": [208, 320],
+        "update": [400, 128],
+        "end": [128, 16]
+      },
+      "w": {
+        "e-decision-normalize": [[160, 208], [160, 368]],
+        "e-normalize-update": [[352, 368], [352, 176]]
+      }
+    },
+    "trigger,fetch,decision,approve,normalize,update,end": {
+      "p": {
+        "trigger": [128, 16],
+        "fetch": [320, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "normalize": [208, 320],
+        "update": [400, 128],
+        "end": [16, 16]
+      },
+      "w": {
+        "e-decision-normalize": [[160, 208], [160, 368]],
+        "e-normalize-update": [[352, 368], [352, 176]]
+      }
+    },
+    "validate,decision,approve,normalize,update,end": {
+      "p": {
+        "validate": [16, 144],
+        "decision": [208, 144],
+        "approve": [400, 128],
+        "normalize": [400, 320],
+        "update": [592, 128],
+        "end": [16, 16]
+      },
+      "w": {
+        "e-decision-normalize": [[352, 208], [352, 368]],
+        "e-normalize-update": [[544, 368], [544, 176]]
+      }
+    },
+    "trigger,validate,decision,approve,normalize,update,end": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [16, 144],
+        "decision": [208, 144],
+        "approve": [400, 128],
+        "normalize": [400, 320],
+        "update": [592, 128],
+        "end": [128, 16]
+      },
+      "w": {
+        "e-decision-normalize": [[352, 208], [352, 368]],
+        "e-normalize-update": [[544, 368], [544, 176]]
+      }
+    },
+    "fetch,validate,decision,approve,normalize,update,end": {
+      "p": {
+        "fetch": [16, 144],
+        "validate": [208, 144],
+        "decision": [400, 144],
+        "approve": [592, 128],
+        "normalize": [592, 320],
+        "update": [784, 128],
+        "end": [16, 16]
+      },
+      "w": {
+        "e-decision-normalize": [[544, 208], [544, 368]],
+        "e-normalize-update": [[736, 368], [736, 176]]
+      }
+    },
+    "trigger,fetch,validate,decision,approve,normalize,update,end": {
+      "p": {
+        "trigger": [16, 144],
+        "fetch": [208, 144],
+        "validate": [400, 144],
+        "decision": [592, 144],
+        "approve": [784, 128],
+        "normalize": [784, 320],
+        "update": [976, 128],
+        "end": [16, 16]
+      },
+      "w": {
+        "e-decision-normalize": [[736, 208], [736, 368]],
+        "e-normalize-update": [[928, 368], [928, 176]]
+      }
+    },
+    "notify,end": { "p": { "notify": [16, 16], "end": [208, 16] }, "w": {} },
+    "trigger,notify,end": {
+      "p": { "trigger": [16, 16], "notify": [16, 128], "end": [208, 128] },
+      "w": {}
+    },
+    "fetch,notify,end": {
+      "p": { "fetch": [16, 16], "notify": [16, 128], "end": [208, 128] },
+      "w": {}
+    },
+    "trigger,fetch,notify,end": {
+      "p": { "trigger": [16, 16], "fetch": [208, 16], "notify": [16, 128], "end": [208, 128] },
+      "w": {}
+    },
+    "validate,notify,end": {
+      "p": { "validate": [16, 16], "notify": [16, 128], "end": [208, 128] },
+      "w": {}
+    },
+    "trigger,validate,notify,end": {
+      "p": { "trigger": [16, 16], "validate": [128, 16], "notify": [16, 128], "end": [208, 128] },
+      "w": {}
+    },
+    "fetch,validate,notify,end": {
+      "p": { "fetch": [16, 16], "validate": [208, 16], "notify": [16, 128], "end": [208, 128] },
+      "w": {}
+    },
+    "trigger,fetch,validate,notify,end": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "validate": [400, 128],
+        "notify": [16, 16],
+        "end": [208, 16]
+      },
+      "w": {}
+    },
+    "decision,notify,end": {
+      "p": { "decision": [16, 16], "notify": [16, 128], "end": [208, 128] },
+      "w": {}
+    },
+    "trigger,decision,notify,end": {
+      "p": { "trigger": [16, 16], "decision": [128, 16], "notify": [16, 128], "end": [208, 128] },
+      "w": {}
+    },
+    "fetch,decision,notify,end": {
+      "p": { "fetch": [16, 16], "decision": [128, 16], "notify": [16, 128], "end": [208, 128] },
+      "w": {}
+    },
+    "trigger,fetch,decision,notify,end": {
+      "p": {
+        "trigger": [128, 16],
+        "fetch": [320, 16],
+        "decision": [16, 16],
+        "notify": [16, 128],
+        "end": [208, 128]
+      },
+      "w": {}
+    },
+    "validate,decision,notify,end": {
+      "p": { "validate": [16, 16], "decision": [208, 16], "notify": [16, 128], "end": [208, 128] },
+      "w": {}
+    },
+    "trigger,validate,decision,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [128, 16],
+        "decision": [320, 16],
+        "notify": [16, 128],
+        "end": [208, 128]
+      },
+      "w": {}
+    },
+    "fetch,validate,decision,notify,end": {
+      "p": {
+        "fetch": [16, 128],
+        "validate": [208, 128],
+        "decision": [400, 128],
+        "notify": [16, 16],
+        "end": [208, 16]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,decision,notify,end": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "validate": [400, 128],
+        "decision": [592, 128],
+        "notify": [16, 16],
+        "end": [208, 16]
+      },
+      "w": {}
+    },
+    "approve,notify,end": {
+      "p": { "approve": [16, 16], "notify": [16, 128], "end": [208, 128] },
+      "w": {}
+    },
+    "trigger,approve,notify,end": {
+      "p": { "trigger": [16, 16], "approve": [128, 16], "notify": [16, 128], "end": [208, 128] },
+      "w": {}
+    },
+    "fetch,approve,notify,end": {
+      "p": { "fetch": [16, 16], "approve": [128, 16], "notify": [16, 128], "end": [208, 128] },
+      "w": {}
+    },
+    "trigger,fetch,approve,notify,end": {
+      "p": {
+        "trigger": [128, 16],
+        "fetch": [320, 16],
+        "approve": [16, 16],
+        "notify": [16, 128],
+        "end": [208, 128]
+      },
+      "w": {}
+    },
+    "validate,approve,notify,end": {
+      "p": { "validate": [16, 16], "approve": [128, 16], "notify": [16, 128], "end": [208, 128] },
+      "w": {}
+    },
+    "trigger,validate,approve,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [128, 16],
+        "approve": [256, 16],
+        "notify": [16, 128],
+        "end": [208, 128]
+      },
+      "w": {}
+    },
+    "fetch,validate,approve,notify,end": {
+      "p": {
+        "fetch": [128, 16],
+        "validate": [320, 16],
+        "approve": [16, 16],
+        "notify": [16, 128],
+        "end": [208, 128]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,approve,notify,end": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "validate": [400, 128],
+        "approve": [16, 16],
+        "notify": [128, 16],
+        "end": [320, 16]
+      },
+      "w": {}
+    },
+    "decision,approve,notify,end": {
+      "p": { "decision": [16, 144], "approve": [208, 128], "notify": [16, 16], "end": [208, 16] },
+      "w": {}
+    },
+    "trigger,decision,approve,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "notify": [128, 16],
+        "end": [320, 16]
+      },
+      "w": {}
+    },
+    "fetch,decision,approve,notify,end": {
+      "p": {
+        "fetch": [16, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "notify": [128, 16],
+        "end": [320, 16]
+      },
+      "w": {}
+    },
+    "trigger,fetch,decision,approve,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "decision": [16, 272],
+        "approve": [208, 256],
+        "notify": [16, 128],
+        "end": [208, 128]
+      },
+      "w": {}
+    },
+    "validate,decision,approve,notify,end": {
+      "p": {
+        "validate": [16, 144],
+        "decision": [208, 144],
+        "approve": [400, 128],
+        "notify": [16, 16],
+        "end": [208, 16]
+      },
+      "w": {}
+    },
+    "trigger,validate,decision,approve,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [16, 144],
+        "decision": [208, 144],
+        "approve": [400, 128],
+        "notify": [128, 16],
+        "end": [320, 16]
+      },
+      "w": {}
+    },
+    "fetch,validate,decision,approve,notify,end": {
+      "p": {
+        "fetch": [16, 144],
+        "validate": [208, 144],
+        "decision": [400, 144],
+        "approve": [592, 128],
+        "notify": [16, 16],
+        "end": [208, 16]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,decision,approve,notify,end": {
+      "p": {
+        "trigger": [16, 144],
+        "fetch": [208, 144],
+        "validate": [400, 144],
+        "decision": [592, 144],
+        "approve": [784, 128],
+        "notify": [16, 16],
+        "end": [208, 16]
+      },
+      "w": {}
+    },
+    "normalize,notify,end": {
+      "p": { "normalize": [16, 16], "notify": [16, 128], "end": [208, 128] },
+      "w": {}
+    },
+    "trigger,normalize,notify,end": {
+      "p": { "trigger": [16, 16], "normalize": [128, 16], "notify": [16, 128], "end": [208, 128] },
+      "w": {}
+    },
+    "fetch,normalize,notify,end": {
+      "p": { "fetch": [16, 16], "normalize": [128, 16], "notify": [16, 128], "end": [208, 128] },
+      "w": {}
+    },
+    "trigger,fetch,normalize,notify,end": {
+      "p": {
+        "trigger": [128, 16],
+        "fetch": [320, 16],
+        "normalize": [16, 16],
+        "notify": [16, 128],
+        "end": [208, 128]
+      },
+      "w": {}
+    },
+    "validate,normalize,notify,end": {
+      "p": { "validate": [16, 16], "normalize": [128, 16], "notify": [16, 128], "end": [208, 128] },
+      "w": {}
+    },
+    "trigger,validate,normalize,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [128, 16],
+        "normalize": [256, 16],
+        "notify": [16, 128],
+        "end": [208, 128]
+      },
+      "w": {}
+    },
+    "fetch,validate,normalize,notify,end": {
+      "p": {
+        "fetch": [128, 16],
+        "validate": [320, 16],
+        "normalize": [16, 16],
+        "notify": [16, 128],
+        "end": [208, 128]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,normalize,notify,end": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "validate": [400, 128],
+        "normalize": [16, 16],
+        "notify": [128, 16],
+        "end": [320, 16]
+      },
+      "w": {}
+    },
+    "decision,normalize,notify,end": {
+      "p": { "decision": [16, 128], "normalize": [208, 144], "notify": [16, 16], "end": [208, 16] },
+      "w": {}
+    },
+    "trigger,decision,normalize,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "decision": [16, 128],
+        "normalize": [208, 144],
+        "notify": [128, 16],
+        "end": [320, 16]
+      },
+      "w": {}
+    },
+    "fetch,decision,normalize,notify,end": {
+      "p": {
+        "fetch": [16, 16],
+        "decision": [16, 128],
+        "normalize": [208, 144],
+        "notify": [128, 16],
+        "end": [320, 16]
+      },
+      "w": {}
+    },
+    "trigger,fetch,decision,normalize,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "decision": [16, 256],
+        "normalize": [208, 272],
+        "notify": [16, 128],
+        "end": [208, 128]
+      },
+      "w": {}
+    },
+    "validate,decision,normalize,notify,end": {
+      "p": {
+        "validate": [16, 128],
+        "decision": [208, 128],
+        "normalize": [400, 144],
+        "notify": [16, 16],
+        "end": [208, 16]
+      },
+      "w": {}
+    },
+    "trigger,validate,decision,normalize,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [16, 128],
+        "decision": [208, 128],
+        "normalize": [400, 144],
+        "notify": [128, 16],
+        "end": [320, 16]
+      },
+      "w": {}
+    },
+    "fetch,validate,decision,normalize,notify,end": {
+      "p": {
+        "fetch": [16, 128],
+        "validate": [208, 128],
+        "decision": [400, 128],
+        "normalize": [592, 144],
+        "notify": [16, 16],
+        "end": [208, 16]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,decision,normalize,notify,end": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "validate": [400, 128],
+        "decision": [592, 128],
+        "normalize": [784, 144],
+        "notify": [16, 16],
+        "end": [208, 16]
+      },
+      "w": {}
+    },
+    "approve,normalize,notify,end": {
+      "p": { "approve": [16, 16], "normalize": [128, 16], "notify": [16, 128], "end": [208, 128] },
+      "w": {}
+    },
+    "trigger,approve,normalize,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "approve": [128, 16],
+        "normalize": [256, 16],
+        "notify": [16, 128],
+        "end": [208, 128]
+      },
+      "w": {}
+    },
+    "fetch,approve,normalize,notify,end": {
+      "p": {
+        "fetch": [16, 16],
+        "approve": [128, 16],
+        "normalize": [256, 16],
+        "notify": [16, 128],
+        "end": [208, 128]
+      },
+      "w": {}
+    },
+    "trigger,fetch,approve,normalize,notify,end": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "approve": [16, 16],
+        "normalize": [128, 16],
+        "notify": [16, 256],
+        "end": [208, 256]
+      },
+      "w": {}
+    },
+    "validate,approve,normalize,notify,end": {
+      "p": {
+        "validate": [16, 16],
+        "approve": [128, 16],
+        "normalize": [256, 16],
+        "notify": [16, 128],
+        "end": [208, 128]
+      },
+      "w": {}
+    },
+    "trigger,validate,approve,normalize,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [128, 16],
+        "approve": [256, 16],
+        "normalize": [16, 128],
+        "notify": [128, 128],
+        "end": [320, 128]
+      },
+      "w": {}
+    },
+    "fetch,validate,approve,normalize,notify,end": {
+      "p": {
+        "fetch": [16, 128],
+        "validate": [208, 128],
+        "approve": [16, 16],
+        "normalize": [128, 16],
+        "notify": [16, 256],
+        "end": [208, 256]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,approve,normalize,notify,end": {
+      "p": {
+        "trigger": [16, 256],
+        "fetch": [208, 256],
+        "validate": [400, 256],
+        "approve": [16, 16],
+        "normalize": [128, 16],
+        "notify": [16, 128],
+        "end": [208, 128]
+      },
+      "w": {}
+    },
+    "decision,approve,normalize,notify,end": {
+      "p": {
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "normalize": [208, 320],
+        "notify": [16, 16],
+        "end": [208, 16]
+      },
+      "w": { "e-decision-normalize": [[160, 208], [160, 368]] }
+    },
+    "trigger,decision,approve,normalize,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "normalize": [208, 320],
+        "notify": [128, 16],
+        "end": [320, 16]
+      },
+      "w": { "e-decision-normalize": [[160, 208], [160, 368]] }
+    },
+    "fetch,decision,approve,normalize,notify,end": {
+      "p": {
+        "fetch": [16, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "normalize": [208, 320],
+        "notify": [128, 16],
+        "end": [320, 16]
+      },
+      "w": { "e-decision-normalize": [[160, 208], [160, 368]] }
+    },
+    "trigger,fetch,decision,approve,normalize,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "decision": [16, 272],
+        "approve": [208, 256],
+        "normalize": [208, 448],
+        "notify": [16, 128],
+        "end": [208, 128]
+      },
+      "w": { "e-decision-normalize": [[160, 336], [160, 496]] }
+    },
+    "validate,decision,approve,normalize,notify,end": {
+      "p": {
+        "validate": [16, 144],
+        "decision": [208, 144],
+        "approve": [400, 128],
+        "normalize": [400, 320],
+        "notify": [16, 16],
+        "end": [208, 16]
+      },
+      "w": { "e-decision-normalize": [[352, 208], [352, 368]] }
+    },
+    "trigger,validate,decision,approve,normalize,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [16, 144],
+        "decision": [208, 144],
+        "approve": [400, 128],
+        "normalize": [400, 320],
+        "notify": [128, 16],
+        "end": [320, 16]
+      },
+      "w": { "e-decision-normalize": [[352, 208], [352, 368]] }
+    },
+    "fetch,validate,decision,approve,normalize,notify,end": {
+      "p": {
+        "fetch": [16, 144],
+        "validate": [208, 144],
+        "decision": [400, 144],
+        "approve": [592, 128],
+        "normalize": [592, 320],
+        "notify": [16, 16],
+        "end": [208, 16]
+      },
+      "w": { "e-decision-normalize": [[544, 208], [544, 368]] }
+    },
+    "trigger,fetch,validate,decision,approve,normalize,notify,end": {
+      "p": {
+        "trigger": [16, 144],
+        "fetch": [208, 144],
+        "validate": [400, 144],
+        "decision": [592, 144],
+        "approve": [784, 128],
+        "normalize": [784, 320],
+        "notify": [16, 16],
+        "end": [208, 16]
+      },
+      "w": { "e-decision-normalize": [[736, 208], [736, 368]] }
+    },
+    "update,notify,end": {
+      "p": { "update": [16, 16], "notify": [208, 16], "end": [400, 16] },
+      "w": {}
+    },
+    "trigger,update,notify,end": {
+      "p": { "trigger": [16, 16], "update": [16, 128], "notify": [208, 128], "end": [400, 128] },
+      "w": {}
+    },
+    "fetch,update,notify,end": {
+      "p": { "fetch": [16, 16], "update": [16, 128], "notify": [208, 128], "end": [400, 128] },
+      "w": {}
+    },
+    "trigger,fetch,update,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "update": [16, 128],
+        "notify": [208, 128],
+        "end": [400, 128]
+      },
+      "w": {}
+    },
+    "validate,update,notify,end": {
+      "p": { "validate": [16, 16], "update": [16, 128], "notify": [208, 128], "end": [400, 128] },
+      "w": {}
+    },
+    "trigger,validate,update,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [128, 16],
+        "update": [16, 128],
+        "notify": [208, 128],
+        "end": [400, 128]
+      },
+      "w": {}
+    },
+    "fetch,validate,update,notify,end": {
+      "p": {
+        "fetch": [16, 16],
+        "validate": [208, 16],
+        "update": [16, 128],
+        "notify": [208, 128],
+        "end": [400, 128]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,update,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "validate": [400, 16],
+        "update": [16, 128],
+        "notify": [208, 128],
+        "end": [400, 128]
+      },
+      "w": {}
+    },
+    "decision,update,notify,end": {
+      "p": { "decision": [16, 16], "update": [16, 128], "notify": [208, 128], "end": [400, 128] },
+      "w": {}
+    },
+    "trigger,decision,update,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "decision": [128, 16],
+        "update": [16, 128],
+        "notify": [208, 128],
+        "end": [400, 128]
+      },
+      "w": {}
+    },
+    "fetch,decision,update,notify,end": {
+      "p": {
+        "fetch": [16, 16],
+        "decision": [128, 16],
+        "update": [16, 128],
+        "notify": [208, 128],
+        "end": [400, 128]
+      },
+      "w": {}
+    },
+    "trigger,fetch,decision,update,notify,end": {
+      "p": {
+        "trigger": [128, 16],
+        "fetch": [320, 16],
+        "decision": [16, 16],
+        "update": [16, 128],
+        "notify": [208, 128],
+        "end": [400, 128]
+      },
+      "w": {}
+    },
+    "validate,decision,update,notify,end": {
+      "p": {
+        "validate": [16, 16],
+        "decision": [208, 16],
+        "update": [16, 128],
+        "notify": [208, 128],
+        "end": [400, 128]
+      },
+      "w": {}
+    },
+    "trigger,validate,decision,update,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [128, 16],
+        "decision": [320, 16],
+        "update": [16, 128],
+        "notify": [208, 128],
+        "end": [400, 128]
+      },
+      "w": {}
+    },
+    "fetch,validate,decision,update,notify,end": {
+      "p": {
+        "fetch": [16, 16],
+        "validate": [208, 16],
+        "decision": [400, 16],
+        "update": [16, 128],
+        "notify": [208, 128],
+        "end": [400, 128]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,decision,update,notify,end": {
+      "p": {
+        "trigger": [16, 128],
+        "fetch": [208, 128],
+        "validate": [400, 128],
+        "decision": [592, 128],
+        "update": [16, 16],
+        "notify": [208, 16],
+        "end": [400, 16]
+      },
+      "w": {}
+    },
+    "approve,update,notify,end": {
+      "p": { "approve": [16, 16], "update": [208, 16], "notify": [400, 16], "end": [592, 16] },
+      "w": {}
+    },
+    "trigger,approve,update,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "approve": [16, 128],
+        "update": [208, 128],
+        "notify": [400, 128],
+        "end": [592, 128]
+      },
+      "w": {}
+    },
+    "fetch,approve,update,notify,end": {
+      "p": {
+        "fetch": [16, 16],
+        "approve": [16, 128],
+        "update": [208, 128],
+        "notify": [400, 128],
+        "end": [592, 128]
+      },
+      "w": {}
+    },
+    "trigger,fetch,approve,update,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "approve": [16, 128],
+        "update": [208, 128],
+        "notify": [400, 128],
+        "end": [592, 128]
+      },
+      "w": {}
+    },
+    "validate,approve,update,notify,end": {
+      "p": {
+        "validate": [16, 16],
+        "approve": [16, 128],
+        "update": [208, 128],
+        "notify": [400, 128],
+        "end": [592, 128]
+      },
+      "w": {}
+    },
+    "trigger,validate,approve,update,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [128, 16],
+        "approve": [16, 128],
+        "update": [208, 128],
+        "notify": [400, 128],
+        "end": [592, 128]
+      },
+      "w": {}
+    },
+    "fetch,validate,approve,update,notify,end": {
+      "p": {
+        "fetch": [16, 16],
+        "validate": [208, 16],
+        "approve": [16, 128],
+        "update": [208, 128],
+        "notify": [400, 128],
+        "end": [592, 128]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,approve,update,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "validate": [400, 16],
+        "approve": [16, 128],
+        "update": [208, 128],
+        "notify": [400, 128],
+        "end": [592, 128]
+      },
+      "w": {}
+    },
+    "decision,approve,update,notify,end": {
+      "p": {
+        "decision": [16, 32],
+        "approve": [208, 16],
+        "update": [400, 16],
+        "notify": [592, 16],
+        "end": [784, 16]
+      },
+      "w": {}
+    },
+    "trigger,decision,approve,update,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "update": [400, 128],
+        "notify": [592, 128],
+        "end": [784, 128]
+      },
+      "w": {}
+    },
+    "fetch,decision,approve,update,notify,end": {
+      "p": {
+        "fetch": [16, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "update": [400, 128],
+        "notify": [592, 128],
+        "end": [784, 128]
+      },
+      "w": {}
+    },
+    "trigger,fetch,decision,approve,update,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "update": [400, 128],
+        "notify": [592, 128],
+        "end": [784, 128]
+      },
+      "w": {}
+    },
+    "validate,decision,approve,update,notify,end": {
+      "p": {
+        "validate": [16, 32],
+        "decision": [208, 32],
+        "approve": [400, 16],
+        "update": [592, 16],
+        "notify": [784, 16],
+        "end": [976, 16]
+      },
+      "w": {}
+    },
+    "trigger,validate,decision,approve,update,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [16, 144],
+        "decision": [208, 144],
+        "approve": [400, 128],
+        "update": [592, 128],
+        "notify": [784, 128],
+        "end": [976, 128]
+      },
+      "w": {}
+    },
+    "fetch,validate,decision,approve,update,notify,end": {
+      "p": {
+        "fetch": [16, 32],
+        "validate": [208, 32],
+        "decision": [400, 32],
+        "approve": [592, 16],
+        "update": [784, 16],
+        "notify": [976, 16],
+        "end": [1168, 16]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,decision,approve,update,notify,end": {
+      "p": {
+        "trigger": [16, 32],
+        "fetch": [208, 32],
+        "validate": [400, 32],
+        "decision": [592, 32],
+        "approve": [784, 16],
+        "update": [976, 16],
+        "notify": [1168, 16],
+        "end": [1360, 16]
+      },
+      "w": {}
+    },
+    "normalize,update,notify,end": {
+      "p": { "normalize": [16, 16], "update": [208, 16], "notify": [400, 16], "end": [592, 16] },
+      "w": {}
+    },
+    "trigger,normalize,update,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "normalize": [16, 128],
+        "update": [208, 128],
+        "notify": [400, 128],
+        "end": [592, 128]
+      },
+      "w": {}
+    },
+    "fetch,normalize,update,notify,end": {
+      "p": {
+        "fetch": [16, 16],
+        "normalize": [16, 128],
+        "update": [208, 128],
+        "notify": [400, 128],
+        "end": [592, 128]
+      },
+      "w": {}
+    },
+    "trigger,fetch,normalize,update,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "normalize": [16, 128],
+        "update": [208, 128],
+        "notify": [400, 128],
+        "end": [592, 128]
+      },
+      "w": {}
+    },
+    "validate,normalize,update,notify,end": {
+      "p": {
+        "validate": [16, 16],
+        "normalize": [16, 128],
+        "update": [208, 128],
+        "notify": [400, 128],
+        "end": [592, 128]
+      },
+      "w": {}
+    },
+    "trigger,validate,normalize,update,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [128, 16],
+        "normalize": [16, 128],
+        "update": [208, 128],
+        "notify": [400, 128],
+        "end": [592, 128]
+      },
+      "w": {}
+    },
+    "fetch,validate,normalize,update,notify,end": {
+      "p": {
+        "fetch": [16, 16],
+        "validate": [208, 16],
+        "normalize": [16, 128],
+        "update": [208, 128],
+        "notify": [400, 128],
+        "end": [592, 128]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,normalize,update,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "validate": [400, 16],
+        "normalize": [16, 128],
+        "update": [208, 128],
+        "notify": [400, 128],
+        "end": [592, 128]
+      },
+      "w": {}
+    },
+    "decision,normalize,update,notify,end": {
+      "p": {
+        "decision": [16, 16],
+        "normalize": [208, 32],
+        "update": [400, 32],
+        "notify": [592, 32],
+        "end": [784, 32]
+      },
+      "w": {}
+    },
+    "trigger,decision,normalize,update,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "decision": [16, 128],
+        "normalize": [208, 144],
+        "update": [400, 144],
+        "notify": [592, 144],
+        "end": [784, 144]
+      },
+      "w": {}
+    },
+    "fetch,decision,normalize,update,notify,end": {
+      "p": {
+        "fetch": [16, 16],
+        "decision": [16, 128],
+        "normalize": [208, 144],
+        "update": [400, 144],
+        "notify": [592, 144],
+        "end": [784, 144]
+      },
+      "w": {}
+    },
+    "trigger,fetch,decision,normalize,update,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "decision": [16, 128],
+        "normalize": [208, 144],
+        "update": [400, 144],
+        "notify": [592, 144],
+        "end": [784, 144]
+      },
+      "w": {}
+    },
+    "validate,decision,normalize,update,notify,end": {
+      "p": {
+        "validate": [16, 16],
+        "decision": [208, 16],
+        "normalize": [400, 32],
+        "update": [592, 32],
+        "notify": [784, 32],
+        "end": [976, 32]
+      },
+      "w": {}
+    },
+    "trigger,validate,decision,normalize,update,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [16, 128],
+        "decision": [208, 128],
+        "normalize": [400, 144],
+        "update": [592, 144],
+        "notify": [784, 144],
+        "end": [976, 144]
+      },
+      "w": {}
+    },
+    "fetch,validate,decision,normalize,update,notify,end": {
+      "p": {
+        "fetch": [16, 16],
+        "validate": [208, 16],
+        "decision": [400, 16],
+        "normalize": [592, 32],
+        "update": [784, 32],
+        "notify": [976, 32],
+        "end": [1168, 32]
+      },
+      "w": {}
+    },
+    "trigger,fetch,validate,decision,normalize,update,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "validate": [400, 16],
+        "decision": [592, 16],
+        "normalize": [784, 32],
+        "update": [976, 32],
+        "notify": [1168, 32],
+        "end": [1360, 32]
+      },
+      "w": {}
+    },
+    "approve,normalize,update,notify,end": {
+      "p": {
+        "approve": [16, 16],
+        "normalize": [16, 208],
+        "update": [208, 16],
+        "notify": [400, 16],
+        "end": [592, 16]
+      },
+      "w": { "e-normalize-update": [[160, 256], [160, 64]] }
+    },
+    "trigger,approve,normalize,update,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "approve": [16, 128],
+        "normalize": [16, 320],
+        "update": [208, 128],
+        "notify": [400, 128],
+        "end": [592, 128]
+      },
+      "w": { "e-normalize-update": [[160, 368], [160, 176]] }
+    },
+    "fetch,approve,normalize,update,notify,end": {
+      "p": {
+        "fetch": [16, 16],
+        "approve": [16, 128],
+        "normalize": [16, 320],
+        "update": [208, 128],
+        "notify": [400, 128],
+        "end": [592, 128]
+      },
+      "w": { "e-normalize-update": [[160, 368], [160, 176]] }
+    },
+    "trigger,fetch,approve,normalize,update,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "approve": [16, 128],
+        "normalize": [16, 320],
+        "update": [208, 128],
+        "notify": [400, 128],
+        "end": [592, 128]
+      },
+      "w": { "e-normalize-update": [[160, 368], [160, 176]] }
+    },
+    "validate,approve,normalize,update,notify,end": {
+      "p": {
+        "validate": [16, 16],
+        "approve": [16, 128],
+        "normalize": [16, 320],
+        "update": [208, 128],
+        "notify": [400, 128],
+        "end": [592, 128]
+      },
+      "w": { "e-normalize-update": [[160, 368], [160, 176]] }
+    },
+    "trigger,validate,approve,normalize,update,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [128, 16],
+        "approve": [16, 128],
+        "normalize": [16, 320],
+        "update": [208, 128],
+        "notify": [400, 128],
+        "end": [592, 128]
+      },
+      "w": { "e-normalize-update": [[160, 368], [160, 176]] }
+    },
+    "fetch,validate,approve,normalize,update,notify,end": {
+      "p": {
+        "fetch": [16, 16],
+        "validate": [208, 16],
+        "approve": [16, 128],
+        "normalize": [16, 320],
+        "update": [208, 128],
+        "notify": [400, 128],
+        "end": [592, 128]
+      },
+      "w": { "e-normalize-update": [[160, 368], [160, 176]] }
+    },
+    "trigger,fetch,validate,approve,normalize,update,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "validate": [400, 16],
+        "approve": [16, 128],
+        "normalize": [16, 320],
+        "update": [208, 128],
+        "notify": [400, 128],
+        "end": [592, 128]
+      },
+      "w": { "e-normalize-update": [[160, 368], [160, 176]] }
+    },
+    "decision,approve,normalize,update,notify,end": {
+      "p": {
+        "decision": [16, 32],
+        "approve": [208, 16],
+        "normalize": [208, 208],
+        "update": [400, 16],
+        "notify": [592, 16],
+        "end": [784, 16]
+      },
+      "w": {
+        "e-decision-normalize": [[160, 96], [160, 256]],
+        "e-normalize-update": [[352, 256], [352, 64]]
+      }
+    },
+    "trigger,decision,approve,normalize,update,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "normalize": [208, 320],
+        "update": [400, 128],
+        "notify": [592, 128],
+        "end": [784, 128]
+      },
+      "w": {
+        "e-decision-normalize": [[160, 208], [160, 368]],
+        "e-normalize-update": [[352, 368], [352, 176]]
+      }
+    },
+    "fetch,decision,approve,normalize,update,notify,end": {
+      "p": {
+        "fetch": [16, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "normalize": [208, 320],
+        "update": [400, 128],
+        "notify": [592, 128],
+        "end": [784, 128]
+      },
+      "w": {
+        "e-decision-normalize": [[160, 208], [160, 368]],
+        "e-normalize-update": [[352, 368], [352, 176]]
+      }
+    },
+    "trigger,fetch,decision,approve,normalize,update,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "fetch": [208, 16],
+        "decision": [16, 144],
+        "approve": [208, 128],
+        "normalize": [208, 320],
+        "update": [400, 128],
+        "notify": [592, 128],
+        "end": [784, 128]
+      },
+      "w": {
+        "e-decision-normalize": [[160, 208], [160, 368]],
+        "e-normalize-update": [[352, 368], [352, 176]]
+      }
+    },
+    "validate,decision,approve,normalize,update,notify,end": {
+      "p": {
+        "validate": [16, 32],
+        "decision": [208, 32],
+        "approve": [400, 16],
+        "normalize": [400, 208],
+        "update": [592, 16],
+        "notify": [784, 16],
+        "end": [976, 16]
+      },
+      "w": {
+        "e-decision-normalize": [[352, 96], [352, 256]],
+        "e-normalize-update": [[544, 256], [544, 64]]
+      }
+    },
+    "trigger,validate,decision,approve,normalize,update,notify,end": {
+      "p": {
+        "trigger": [16, 16],
+        "validate": [16, 144],
+        "decision": [208, 144],
+        "approve": [400, 128],
+        "normalize": [400, 320],
+        "update": [592, 128],
+        "notify": [784, 128],
+        "end": [976, 128]
+      },
+      "w": {
+        "e-decision-normalize": [[352, 208], [352, 368]],
+        "e-normalize-update": [[544, 368], [544, 176]]
+      }
+    },
+    "fetch,validate,decision,approve,normalize,update,notify,end": {
+      "p": {
+        "fetch": [16, 32],
+        "validate": [208, 32],
+        "decision": [400, 32],
+        "approve": [592, 16],
+        "normalize": [592, 208],
+        "update": [784, 16],
+        "notify": [976, 16],
+        "end": [1168, 16]
+      },
+      "w": {
+        "e-decision-normalize": [[544, 96], [544, 256]],
+        "e-normalize-update": [[736, 256], [736, 64]]
+      }
+    }
+  },
+  "variants": {
+    "compact": {
+      "p": {
+        "trigger": [16, 32],
+        "fetch": [176, 32],
+        "validate": [336, 32],
+        "decision": [496, 32],
+        "approve": [656, 16],
+        "normalize": [656, 160],
+        "update": [816, 16],
+        "notify": [976, 16],
+        "end": [1136, 16]
+      },
+      "w": {
+        "e-decision-normalize": [[624, 96], [624, 208]],
+        "e-normalize-update": [[784, 208], [784, 64]]
+      }
+    },
+    "vertical": {
+      "p": {
+        "trigger": [32, 16],
+        "fetch": [32, 208],
+        "validate": [32, 400],
+        "decision": [32, 592],
+        "approve": [16, 784],
+        "normalize": [208, 784],
+        "update": [16, 976],
+        "notify": [16, 1168],
+        "end": [16, 1360]
+      },
+      "w": {
+        "e-decision-normalize": [[96, 736], [256, 736]],
+        "e-normalize-update": [[256, 928], [64, 928]]
+      }
+    }
+  }
+}
