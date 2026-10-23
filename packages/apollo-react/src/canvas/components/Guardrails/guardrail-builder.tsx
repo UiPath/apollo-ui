@@ -24,6 +24,7 @@ import {
 import {
   createDefaultGuardrailAction,
   type GuardrailBuilderFormData,
+  generateGuardrailId,
   getGuardrailActionErrorFields,
   getGuardrailSelectorErrorFields,
   initGuardrailBuilderFormData,
@@ -88,7 +89,8 @@ export interface GuardrailBuilderProps {
   onSave: (guardrail: GuardrailBuilderValue) => void;
   onCancel: () => void;
   /**
-   * Presence renders the "Save as new" secondary action (same validation gate as Save).
+   * Presence renders the "Save as new" secondary action (same validation gate as Save). The
+   * copy gets a fresh id, so it never shares one with the original.
    *
    * The copy carries the **original guardrail's selector verbatim**, including scopes the
    * current screen does not show: opened from a Tool, the scope selector is hidden, so a
@@ -404,8 +406,8 @@ export function GuardrailBuilder({
     onSave(guardrailResult);
   }, [guardrailResult, onSave, isValid, isDefinitionAvailable, revealErrors]);
 
-  // Hands the host `guardrailResult` unchanged — selector included. See `onSaveAsNew` for why
-  // the copy is not re-scoped here even when the scope selector is hidden.
+  // Hands the host `guardrailResult` under a fresh id, selector unchanged. See `onSaveAsNew` for
+  // why the copy is not re-scoped here even when the scope selector is hidden.
   const handleSaveAsNew = useCallback(() => {
     if (!onSaveAsNew) return;
     if (!isDefinitionAvailable) return;
@@ -413,7 +415,7 @@ export function GuardrailBuilder({
       revealErrors();
       return;
     }
-    onSaveAsNew(guardrailResult);
+    onSaveAsNew({ ...guardrailResult, id: generateGuardrailId() });
   }, [guardrailResult, onSaveAsNew, isValid, isDefinitionAvailable, revealErrors]);
 
   const isByoConfigurationDisabled =

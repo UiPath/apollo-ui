@@ -26,6 +26,8 @@ function render(ui: ReactElement) {
   return rtlRender(<TooltipProvider>{ui}</TooltipProvider>);
 }
 
+const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+
 function makeDef(overrides?: Partial<GuardrailDefinition>): GuardrailDefinition {
   return {
     validator: 'pii_detection',
@@ -1439,10 +1441,10 @@ describe('GuardrailBuilder', () => {
       expect(saved.description).toBe('Why it exists');
       expect(saved.enabledForEvals).toBe(false);
       expect(saved.selector.scopes).toEqual(['Agent', 'Llm']);
-      expect(saved.id).toMatch(/^guardrail-/);
+      expect(saved.id).toMatch(UUID_V4);
     });
 
-    it('calls onSaveAsNew with the current value when valid', () => {
+    it('calls onSaveAsNew with the current value under a fresh id when valid', () => {
       const onSaveAsNew = vi.fn();
       render(
         <GuardrailBuilder
@@ -1461,6 +1463,7 @@ describe('GuardrailBuilder', () => {
       fireEvent.click(screen.getByRole('button', { name: /save as new/i }));
       expect(onSaveAsNew).toHaveBeenCalledTimes(1);
       expect((onSaveAsNew.mock.calls[0][0] as GuardrailBuilderValue).name).toBe('My PII guardrail');
+      expect((onSaveAsNew.mock.calls[0][0] as GuardrailBuilderValue).id).toMatch(UUID_V4);
     });
 
     it('blocks onSaveAsNew and surfaces errors when invalid', () => {

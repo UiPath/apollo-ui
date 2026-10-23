@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   type GuardrailAction,
   type GuardrailDefinition,
@@ -24,9 +24,31 @@ function makeDef(overrides?: Partial<GuardrailDefinition>): GuardrailDefinition 
   };
 }
 
+const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+
 describe('generateGuardrailId', () => {
-  it('produces the guardrail-<timestamp>-<random> format', () => {
-    expect(generateGuardrailId()).toMatch(/^guardrail-[a-z0-9]+-[a-z0-9]{5}$/);
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('produces a v4 UUID', () => {
+    expect(generateGuardrailId()).toMatch(UUID_V4);
+  });
+
+  it('mints a fresh id each time', () => {
+    expect(generateGuardrailId()).not.toBe(generateGuardrailId());
+  });
+
+  it('builds a v4 UUID from getRandomValues without crypto.randomUUID (insecure contexts)', () => {
+    // Single-digit bytes need padding; 0xff at 6 and 8 exercises both version and variant masks.
+    const getRandomValues = vi.fn((bytes: Uint8Array) => {
+      bytes.set([0, 1, 2, 3, 4, 5, 0xff, 7, 0xff, 9, 10, 11, 12, 13, 14, 15]);
+      return bytes;
+    });
+    vi.stubGlobal('crypto', { getRandomValues });
+
+    expect(generateGuardrailId()).toBe('00010203-0405-4f07-bf09-0a0b0c0d0e0f');
+    expect(getRandomValues).toHaveBeenCalledTimes(1);
   });
 });
 

@@ -6,7 +6,7 @@ import type {
   GuardrailRecipientSearchContext,
   GuardrailStaticRecipientContext,
 } from './builder-types';
-import { createDefaultGuardrailAction } from './builder-utils';
+import { createDefaultGuardrailAction, generateGuardrailId } from './builder-utils';
 import {
   GuardrailActionSection,
   type GuardrailActionSectionProps,
@@ -86,7 +86,8 @@ export interface CustomGuardrailBuilderProps {
   onSave: (guardrail: CustomGuardrailBuilderValue) => void;
   onCancel: () => void;
   /**
-   * Presence renders the "Save as new" secondary action (same validation gate as Save).
+   * Presence renders the "Save as new" secondary action (same validation gate as Save). The
+   * copy gets a fresh id, so it never shares one with the original.
    *
    * The copy carries the **original guardrail's selector verbatim**, including scopes this
    * screen does not show: there is no scope selector here, so a guardrail that also targets
@@ -313,14 +314,14 @@ export function CustomGuardrailBuilder({
     onSave(guardrailResult);
   }, [guardrailResult, onSave, isValid, revealErrors]);
 
-  // Hands the host `guardrailResult` unchanged — selector included. See `onSaveAsNew`.
+  // Hands the host `guardrailResult` under a fresh id, selector unchanged. See `onSaveAsNew`.
   const handleSaveAsNew = useCallback(() => {
     if (!onSaveAsNew) return;
     if (!isValid) {
       revealErrors();
       return;
     }
-    onSaveAsNew(guardrailResult);
+    onSaveAsNew({ ...guardrailResult, id: generateGuardrailId() });
   }, [guardrailResult, onSaveAsNew, isValid, revealErrors]);
 
   const evalsToggle = (

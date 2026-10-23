@@ -7,6 +7,8 @@ import {
 } from './custom-builder-utils';
 import { createGuardrailRule } from './rules-utils';
 
+const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+
 const existing: CustomGuardrailBuilderValue = {
   id: 'c1',
   $guardrailType: 'custom',
@@ -21,7 +23,7 @@ const existing: CustomGuardrailBuilderValue = {
 describe('createDefaultCustomGuardrail', () => {
   it('starts the way both products start: always enforced, log/Info, evaluations on', () => {
     expect(createDefaultCustomGuardrail('Search web')).toEqual({
-      id: expect.stringMatching(/^guardrail-/),
+      id: expect.stringMatching(UUID_V4),
       $guardrailType: 'custom',
       name: '',
       selector: { scopes: ['Tool'], matchNames: ['Search web'] },
