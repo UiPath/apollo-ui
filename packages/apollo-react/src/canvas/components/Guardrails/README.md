@@ -909,11 +909,12 @@ Where it renders depends on `fileSupport` and on the definition's `detectionScop
 | `supported: true` | absent | above the parameters, always |
 | `supported: false` | any | above the parameters, always |
 
-What Detection scope selects is `getGuardrailDetectionScope(definitions, parameters)`, which reads
-it the way the backend does: the stored value, trimmed and case-insensitive, when non-empty,
-otherwise the definition's `defaultValue` (Text for the five GA validators, Both for
-`llm_as_judge`). Any other value, Flow's legacy `Prompts` included, is Text. The builder
-recomputes it on every edit, so the lines follow the select as it changes.
+What Detection scope selects is `getGuardrailDetectionScope(definitions, parameters)`: the
+stored value, trimmed and case-insensitive, when non-empty, otherwise the definition's
+`defaultValue`, which is Text for every validator. Any other value, Flow's legacy `Prompts`
+included, is Text. The backend reads a stored value the same way, and an absent one as Text
+whatever the definition says (UiPath/Agents#6740). The builder recomputes it on every edit, so
+the lines follow the select as it changes.
 
 ## GuardrailActionSection
 

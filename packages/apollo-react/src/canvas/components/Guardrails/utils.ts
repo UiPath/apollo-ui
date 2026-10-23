@@ -284,9 +284,9 @@ export const GUARDRAIL_DETECTION_SCOPE_PARAMETER_ID = 'detectionScope';
 
 /**
  * What a validator's `detectionScope` parameter selects, or `undefined` when its definitions have
- * none. Reads it the way the backend does (`GuardrailAttachmentPrompt.GetScope`): the stored
- * value, trimmed and case-insensitive, when non-empty, otherwise the definition's default; any
- * value but Files or Both, Flow's legacy "Prompts" included, is Text.
+ * none: the stored value, trimmed and case-insensitive, when non-empty, otherwise the definition's
+ * default (Text for every validator); any value but Files or Both, Flow's legacy "Prompts"
+ * included, is Text. The backend reads an absent value as Text whatever the default.
  */
 export function getGuardrailDetectionScope(
   definitions: readonly GuardrailParameterDefinition[],
