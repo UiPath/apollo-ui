@@ -242,8 +242,15 @@ describe('QuickFormField — divergences from apollo-wind', () => {
       const { container } = render(
         <QuickFormField locked={false} fieldType="textarea" onValueChange={vi.fn()} />
       );
-      expect(screen.getByPlaceholderText('Text area value').tagName).toBe('TEXTAREA');
-      expect(container.querySelector('[role="group"]')).toHaveAttribute('data-layout', 'row');
+      const textarea = screen.getByPlaceholderText('Text area value');
+      expect(textarea.tagName).toBe('TEXTAREA');
+      // A native textarea is two rows tall by default.
+      expect(textarea).toHaveAttribute('rows', '1');
+      const group = container.querySelector('[role="group"]');
+      expect(group).toHaveAttribute('data-layout', 'row');
+      // Not the group's direct child, so the group keeps its row height and
+      // centring instead of switching to auto height (`has-[>textarea]`).
+      expect(group?.querySelector(':scope > textarea')).toBeNull();
     });
 
     // Fixed at one line at design time: the floor and the ceiling are both one

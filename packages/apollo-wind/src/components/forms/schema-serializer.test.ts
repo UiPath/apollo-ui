@@ -327,6 +327,34 @@ describe('serializeSchema', () => {
       expect(fields[2].accept).toBe('image/*');
       expect(fields[2].maxSize).toBe(5000000);
     });
+
+    it("keeps a textarea's minRows and maxRows", () => {
+      const schema: FormSchema = {
+        id: 'form',
+        title: 'Form',
+        sections: [
+          {
+            id: 's1',
+            fields: [
+              {
+                name: 'notes',
+                type: 'textarea',
+                label: 'Notes',
+                minRows: 2,
+                maxRows: 3,
+              } as FieldMetadata,
+            ],
+          },
+        ],
+      };
+
+      const [field] = (
+        serializeSchema(schema).sections as Array<{ fields: Array<Record<string, unknown>> }>
+      )[0].fields;
+
+      expect(field.minRows).toBe(2);
+      expect(field.maxRows).toBe(3);
+    });
   });
 
   describe('section serialization', () => {
