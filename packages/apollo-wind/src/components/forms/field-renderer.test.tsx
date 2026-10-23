@@ -195,6 +195,10 @@ describe('FormFieldRenderer', () => {
       expect(textarea.style.height).toBe('120px');
     });
 
+    it('can be dragged taller with the resize handle', () => {
+      expect(renderTextarea({}, 0)).toHaveClass('resize-y');
+    });
+
     it('stops growing at eight rows, then scrolls', () => {
       const textarea = renderTextarea({}, 400); // twenty rows of content
       expect(textarea.style.height).toBe('160px');
