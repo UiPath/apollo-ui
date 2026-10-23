@@ -119,13 +119,13 @@ const ResourceChipBaseInner: React.FC<ResourceChipBaseProps> = ({
             iconName="close"
             tooltip={_(
               msg({
-                id: 'autopilot-chat.common.attachments.remove-file',
+                id: 'autopilot-chat.input.resource-chip.remove',
                 message: 'Remove',
               })
             )}
             ariaLabel={_(
               msg({
-                id: 'autopilot-chat.common.attachments.remove-file-name',
+                id: 'autopilot-chat.input.resource-chip.remove-name',
                 message: `Remove ${label}`,
               })
             )}
