@@ -674,6 +674,8 @@ Contract highlights:
 
 - **Owns form state.** Initialized from `definition`/`guardrail`/`defaultName` at mount —
   remount with a new `key` to reset (all known hosts already remount per session).
+- **A new guardrail's id is a v4 UUID, and so is the copy `onSaveAsNew` hands over; an edited
+  one keeps its id verbatim.** Agents parses a tool guardrail policy id as a GUID.
 - **Saves a host-rendered threshold map as the host left it.** Every `map-enum` is pruned to
   its `keySource` selection; one the builder renders also gets its missing keys filled, so it
   matches `MapEnumField`'s rows. A map in `overrideParameterIds` is not filled: the classifier
