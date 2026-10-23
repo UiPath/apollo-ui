@@ -41,6 +41,7 @@ export {
 export type { CentralizedGuardrailDetailsProps } from './centralized-guardrail-details';
 export { CentralizedGuardrailDetails } from './centralized-guardrail-details';
 export type {
+  CentralizedDetectionDefinition,
   CentralizedGuardrailIdentity,
   CentralizedGuardrailTarget,
   CentralizedParameterFallbackLabels,
@@ -52,6 +53,7 @@ export {
   formatCentralizedExecutionStage,
   formatCentralizedScope,
   getApplicableCentralizedGuardrails,
+  getCentralizedGuardrailDetection,
   getCentralizedGuardrailDisplay,
   getCentralizedGuardrailItemId,
   isCentralizedGuardrailConfigMissing,

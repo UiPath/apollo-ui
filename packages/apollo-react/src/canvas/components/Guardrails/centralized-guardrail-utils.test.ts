@@ -6,6 +6,7 @@ import {
   formatCentralizedExecutionStage,
   formatCentralizedScope,
   getApplicableCentralizedGuardrails,
+  getCentralizedGuardrailDetection,
   getCentralizedGuardrailDisplay,
   getCentralizedGuardrailItemId,
   isCentralizedGuardrailConfigMissing,
@@ -202,6 +203,60 @@ describe('findCentralizedBuiltInDefinition', () => {
     expect(
       findCentralizedBuiltInDefinition({ validator: 'pii_detection', isByo: true }, definitions)
     ).toBeUndefined();
+  });
+});
+
+describe('getCentralizedGuardrailDetection', () => {
+  const offered = [{ validator: 'pii_detection', parameters: [{ id: 'detectionScope' }] }];
+  const scoped = (value: unknown) =>
+    guardrail({ parameters: [{ id: 'detectionScope', parameterType: 'enum', value }] });
+
+  it.each([
+    ['Files', 'Files'],
+    ['Both', 'Both'],
+    ['Text', 'Text'],
+    [' files ', 'Files'],
+    ['BOTH', 'Both'],
+    ['Prompts', 'Text'],
+    ['', 'Text'],
+    [42, 'Text'],
+  ])('reads a stored %j as %s, the way the gateway reads the policy', (value, expected) => {
+    expect(getCentralizedGuardrailDetection(scoped(value), offered)).toBe(expected);
+  });
+
+  it('reads a built-in saved without a detection scope as Text', () => {
+    expect(getCentralizedGuardrailDetection(guardrail(), offered)).toBe('Text');
+    expect(getCentralizedGuardrailDetection(guardrail({ parameters: null }), offered)).toBe('Text');
+  });
+
+  it('has nothing to say while the definitions load or once file support stripped the parameter', () => {
+    expect(getCentralizedGuardrailDetection(scoped('Files'), undefined)).toBeUndefined();
+    expect(
+      getCentralizedGuardrailDetection(scoped('Files'), [{ validator: 'pii_detection' }])
+    ).toBeUndefined();
+    expect(
+      getCentralizedGuardrailDetection(scoped('Files'), [
+        { validator: 'pii_detection', parameters: [{ id: 'entities' }] },
+      ])
+    ).toBeUndefined();
+  });
+
+  it('matches only the built-in definition of the same validator', () => {
+    expect(
+      getCentralizedGuardrailDetection(scoped('Files'), [
+        { validator: 'harmful_content', parameters: [{ id: 'detectionScope' }] },
+        {
+          validator: 'pii_detection',
+          byoValidatorName: 'Acme PII',
+          parameters: [{ id: 'detectionScope' }],
+        },
+      ])
+    ).toBeUndefined();
+  });
+
+  it('never reports one for a BYO guardrail', () => {
+    const byo = { ...scoped('Files'), isByo: true, name: 'Acme PII' };
+    expect(getCentralizedGuardrailDetection(byo, offered)).toBeUndefined();
   });
 });
 

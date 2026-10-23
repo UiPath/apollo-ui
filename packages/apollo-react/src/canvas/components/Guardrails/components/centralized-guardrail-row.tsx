@@ -4,6 +4,7 @@ import { formatCentralizedExecutionStage } from '../centralized-guardrail-utils'
 import type { CentralizedGuardrail, CentralizedGuardrailDefinition } from '../centralized-types';
 import type { CentralizedGuardrailsLabels } from '../i18n';
 import { formatGuardrailFormMessage } from '../i18n';
+import type { GuardrailDetectionScope } from '../types';
 import { CentralizedGuardrailOriginChip } from './centralized-guardrail-origin-chip';
 import { GuardrailStatusChip } from './guardrail-status-chip';
 
@@ -15,8 +16,35 @@ export interface CentralizedGuardrailRowProps {
   isConfigMissing: boolean;
   /** Localized scope names, already resolved and ordered. */
   scopeNames: string[];
-  labels: CentralizedGuardrailsLabels;
+  /** What the guardrail reads; `undefined` hides that part of the summary line. */
+  detection?: GuardrailDetectionScope;
+  labels: Required<CentralizedGuardrailsLabels>;
   onSelect?: () => void;
+}
+
+function SummarySeparator() {
+  return (
+    <>
+      {' '}
+      <span aria-hidden="true" className="mx-0.5 opacity-50">
+        |
+      </span>{' '}
+    </>
+  );
+}
+
+function formatDetection(
+  detection: GuardrailDetectionScope,
+  labels: Required<CentralizedGuardrailsLabels>
+): string {
+  switch (detection) {
+    case 'Files':
+      return labels.detectionFiles;
+    case 'Both':
+      return `${labels.detectionText}, ${labels.detectionFiles}`;
+    default:
+      return labels.detectionText;
+  }
 }
 
 /**
@@ -30,6 +58,7 @@ export function CentralizedGuardrailRow({
   definition,
   isConfigMissing,
   scopeNames,
+  detection,
   labels,
   onSelect,
 }: CentralizedGuardrailRowProps) {
@@ -87,8 +116,19 @@ export function CentralizedGuardrailRow({
             {labels.provider}: {providerName}
           </span>
         )}
-        <span className="mt-1 block truncate text-xs text-muted-foreground">
-          {labels.scopes}: {scopeNames.join(', ')} · {labels.executionStage}:{' '}
+        <span
+          className="mt-1 block truncate text-xs text-muted-foreground"
+          data-slot="centralized-guardrail-summary"
+        >
+          {labels.scope}: {scopeNames.join(', ')}
+          {detection !== undefined && (
+            <>
+              <SummarySeparator />
+              {labels.detection}: {formatDetection(detection, labels)}
+            </>
+          )}
+          <SummarySeparator />
+          {labels.executionStage}:{' '}
           {formatCentralizedExecutionStage(guardrail.executionStage, labels)}
         </span>
       </span>

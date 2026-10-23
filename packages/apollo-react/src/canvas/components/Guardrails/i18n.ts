@@ -1535,6 +1535,11 @@ export interface CentralizedGuardrailsLabels {
   detectionScopeText?: string;
   detectionScopeFiles?: string;
   detectionScopeBoth?: string;
+  /** The row's summary line, worded as on the hosts' own guardrail rows; Both reads "Text, Files". */
+  scope?: string;
+  detection?: string;
+  detectionText?: string;
+  detectionFiles?: string;
 }
 
 /** The subset of `useSafeLingui`'s translator the centralized labels need. */
@@ -1648,6 +1653,10 @@ function buildCentralizedGuardrailsLabels(
       id: 'guardrails.centralized.detection-scope-both',
       message: 'Text and files',
     }),
+    scope: _({ id: 'guardrails.centralized.scope', message: 'Scope' }),
+    detection: _({ id: 'guardrails.centralized.detection', message: 'Detection' }),
+    detectionText: _({ id: 'guardrails.centralized.detection-text', message: 'Text' }),
+    detectionFiles: _({ id: 'guardrails.centralized.detection-files', message: 'Files' }),
   };
 }
 

@@ -59,16 +59,49 @@ export function findCentralizedByoDefinition<T extends CentralizedGuardrailDefin
   );
 }
 
-/** A built-in's definition, used only to label its configuration rows. */
-export function findCentralizedBuiltInDefinition<T extends CentralizedGuardrailDefinition>(
-  guardrail: CentralizedGuardrailIdentity,
-  definitions: readonly T[] | undefined
-): T | undefined {
+/** A built-in's definition, to label its configuration rows and gate its detection scope. */
+export function findCentralizedBuiltInDefinition<
+  T extends Pick<CentralizedGuardrailDefinition, 'validator' | 'byoValidatorName'>,
+>(guardrail: CentralizedGuardrailIdentity, definitions: readonly T[] | undefined): T | undefined {
   if (guardrail.isByo) return undefined;
   return definitions?.find(
     (definition) =>
       definition.validator === guardrail.validator && definition.byoValidatorName === undefined
   );
+}
+
+/** The definition fields `getCentralizedGuardrailDetection` reads, so any host's shape fits. */
+export type CentralizedDetectionDefinition = Pick<
+  CentralizedGuardrailDefinition,
+  'validator' | 'byoValidatorName'
+> & { parameters?: readonly { id: string }[] };
+
+/**
+ * What a built-in reads, for its row. Agents stamps the policy's detection scope on every
+ * centralized built-in, so it shows only while the built-in's definition still offers the
+ * parameter: hosts strip it where file support is off, and then no file is read. Absent, blank
+ * or unknown is Text, as the gateway reads the policy.
+ */
+export function getCentralizedGuardrailDetection(
+  guardrail: CentralizedGuardrailIdentity & Pick<CentralizedGuardrail, 'parameters'>,
+  definitions: readonly CentralizedDetectionDefinition[] | undefined
+): GuardrailDetectionScope | undefined {
+  const definition = findCentralizedBuiltInDefinition(guardrail, definitions);
+  const offered = definition?.parameters?.some(
+    (parameter) => parameter.id === GUARDRAIL_DETECTION_SCOPE_PARAMETER_ID
+  );
+  if (!offered) return undefined;
+  const value = guardrail.parameters?.find(
+    (parameter) => parameter.id === GUARDRAIL_DETECTION_SCOPE_PARAMETER_ID
+  )?.value;
+  switch (typeof value === 'string' ? value.trim().toLowerCase() : '') {
+    case 'files':
+      return 'Files';
+    case 'both':
+      return 'Both';
+    default:
+      return 'Text';
+  }
 }
 
 /** Whether a BYO configuration is gone. `undefined` definitions (still loading) report `false`. */

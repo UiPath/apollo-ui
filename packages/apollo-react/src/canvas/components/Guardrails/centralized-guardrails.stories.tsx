@@ -281,6 +281,51 @@ export const StillLoading: Story = {
   },
 };
 
+const detectionScopeParameter = { id: 'detectionScope', type: 'enum', label: 'Detection scope' };
+
+/** The catalog as a host passes it where file support is on. */
+const definitionsWithFileSupport: CentralizedGuardrailDefinition[] = [
+  ...definitions.map((definition) =>
+    definition.byoValidatorName === undefined &&
+    (definition.validator === 'pii_detection' || definition.validator === 'harmful_content')
+      ? { ...definition, parameters: [...(definition.parameters ?? []), detectionScopeParameter] }
+      : definition
+  ),
+  { validator: 'llm_as_judge', parameters: [detectionScopeParameter] },
+];
+
+export const DetectionScope: Story = {
+  name: 'What each guardrail reads',
+  args: {
+    guardrails: [piiFilesGuardrail, judgeGuardrail, harmfulContentGuardrail, byoGuardrail],
+    definitions: definitionsWithFileSupport,
+    policyName: 'Acme production policy',
+    docsHref: DOCS_HREF,
+    onSelect: noop,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Where file support is on, the definitions a host passes still offer the detection scope, so each built-in row says what it reads: the policy value, or Text when the policy stored none. A BYO row never shows one.',
+      },
+    },
+  },
+};
+
+export const DetectionScopeWithoutFileSupport: Story = {
+  name: 'What each guardrail reads, file support off',
+  args: { ...DetectionScope.args, definitions },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Where file support is off, the host strips the detection scope from its definitions and no guardrail reads files, so the rows leave it out even though the policy still carries a value.',
+      },
+    },
+  },
+};
+
 export const InsideHostChrome: Story = {
   name: 'Inside a host section',
   args: {

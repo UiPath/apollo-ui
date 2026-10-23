@@ -581,6 +581,15 @@ Contract highlights:
   `formatScope` / `formatAction` to override. Every one of those strings already existed in
   the canvas catalog, so defaulting removes a prop an adapter can forget for a visible
   regression (`Llm` instead of "LLM calls").
+- **The row's summary line reads as the hosts' own guardrail rows do**:
+  `Scope: LLM calls | Detection: Files | Execution stage: Pre-execution`, with the bars
+  `aria-hidden`. Detection is what the guardrail reads (`getCentralizedGuardrailDetection`):
+  the policy's `detectionScope`, or Text when it stored none, as the gateway reads it; `Both`
+  reads "Text, Files". It shows only on a built-in whose definition still offers the
+  parameter. Hosts strip it from their definitions where file support is off, and Agents then
+  reads no file for any guardrail, so the row leaves Detection out rather than claim it. A BYO
+  row, a validator without the parameter, and a row whose definitions are still loading show
+  none.
 - **A broken BYO configuration gets a chip and a sentence.** The chip is `GuardrailList`'s
   own (`Unavailable` / `Disabled`, same ids) and makes the row findable in a long policy; the
   sentence under it, which both products already show, says what to do about it.

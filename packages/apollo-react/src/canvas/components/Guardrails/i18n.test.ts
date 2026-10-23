@@ -506,10 +506,17 @@ describe('the shared canvas catalog', () => {
     ]).toEqual(['Detection scope', 'Text only', 'Files only', 'Text and files']);
   });
 
-  it('still accepts a centralized labels table without the detection scope fallback', () => {
+  it('still accepts a centralized labels table without the detection scope labels', () => {
     type Legacy = Omit<
       CentralizedGuardrailsLabels,
-      'detectionScopeFallback' | 'detectionScopeText' | 'detectionScopeFiles' | 'detectionScopeBoth'
+      | 'detectionScopeFallback'
+      | 'detectionScopeText'
+      | 'detectionScopeFiles'
+      | 'detectionScopeBoth'
+      | 'scope'
+      | 'detection'
+      | 'detectionText'
+      | 'detectionFiles'
     >;
     expectTypeOf<Legacy>().toExtend<CentralizedGuardrailsLabels>();
   });

@@ -78,6 +78,11 @@ const HOST_COPY: Partial<Record<keyof CentralizedGuardrailsLabels, HostCopy>> = 
   detectionScopeText: { agents: 'Text only' },
   detectionScopeFiles: { agents: 'Files only' },
   detectionScopeBoth: { agents: 'Text and files' },
+  // Both products' own guardrail rows (Agents#6782, Flow#5421), whose wording the row adopts.
+  scope: { agents: 'Scope', flow: 'Scope' },
+  detection: { agents: 'Detection', flow: 'Detection' },
+  detectionText: { agents: 'Text', flow: 'Text' },
+  detectionFiles: { agents: 'Files', flow: 'Files' },
 };
 
 interface CopyDivergence {
