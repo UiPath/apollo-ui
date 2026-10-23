@@ -1,8 +1,16 @@
 import { useVirtualizer, type VirtualItem } from '@tanstack/react-virtual';
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import {
+  type ComponentPropsWithRef,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { cn } from '@/lib';
 import { copyTextToClipboard } from '@/lib/clipboard';
-import { flattenJsonTree } from './buildJsonTree';
+import { flattenJsonTree, isPathCollapsed } from './buildJsonTree';
 import type {
   CopyEvent,
   DeriveTypeIcon,
@@ -23,6 +31,7 @@ import {
 } from './JsonTreeRow';
 import { JsonTreeTooltipProvider } from './JsonTreeTooltip';
 import { JsonTreeViewProvider, type JsonTreeViewStrings, useJsonTreeViewStrings } from './strings';
+import { useTreeGrid } from './treeGrid';
 
 /** `useLayoutEffect` in the browser, `useEffect` on the server (avoids React's SSR warning). */
 const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
@@ -78,7 +87,8 @@ export interface JsonTreeViewProps {
    * for values with thousands of fields. Rows are measured, so wrapped values
    * and inline editors keep their height. The tree scrolls inside its own box,
    * capped at the viewport height, unless `scrollElement` names the scroller.
-   * Off by default.
+   * Also keeps arrow-key navigation quick in large trees, since each focus move
+   * re-renders the mounted rows. Off by default.
    */
   virtualized?: boolean;
   /**
@@ -97,10 +107,15 @@ export interface JsonTreeViewProps {
   strings?: Partial<JsonTreeViewStrings>;
   /** Extra classes for every tooltip panel (e.g. a z-index above a host's overlays). */
   tooltipContentClassName?: string;
+  /** Accessible name of the tree grid. Defaults to the `treeLabel` string. */
+  'aria-label'?: string;
+  /** Id of a visible heading naming the tree grid; takes precedence over `aria-label`. */
+  'aria-labelledby'?: string;
   className?: string;
 }
 
 type FlatRows = ReturnType<typeof flattenJsonTree>;
+type GridProps = ComponentPropsWithRef<'div'>;
 
 const VIRTUAL_OVERSCAN = 10;
 
@@ -122,11 +137,14 @@ function scrollMarginOf(element: HTMLElement, scrollElement: HTMLElement): numbe
  */
 function VirtualRows({
   rows,
+  indexByPath,
   container,
   scrollElement,
   pinnedPaths,
+  gridProps,
 }: {
   rows: FlatRows;
+  indexByPath: Map<string, number>;
   /**
    * The tree's own scroll box, held as state rather than read from a ref: the
    * virtualizer resolves its scroll element in a layout effect, and a parent's
@@ -138,6 +156,8 @@ function VirtualRows({
   scrollElement?: HTMLElement | null;
   /** Rows that must stay mounted wherever the window is (see `pinnedItems`). */
   pinnedPaths: readonly string[];
+  /** Makes the sized row box the tree grid itself. */
+  gridProps: GridProps;
 }) {
   const [scrollMargin, setScrollMargin] = useState(0);
   const getItemKey = useCallback((index: number) => rows[index]?.node.path ?? index, [rows]);
@@ -167,15 +187,6 @@ function VirtualRows({
     if (next !== scrollMargin) setScrollMargin(next);
   });
 
-  const isPinning = pinnedPaths.length > 0;
-  // Built only while a row is pinned, so a scroll frame never scans every row to place it.
-  const indexByPath = useMemo(() => {
-    if (!isPinning) return undefined;
-    const byPath = new Map<string, number>();
-    for (const [index, row] of rows.entries()) byPath.set(row.node.path, index);
-    return byPath;
-  }, [isPinning, rows]);
-
   const items = virtualizer.getVirtualItems();
   // The window is one ascending, contiguous range, so "is this row already rendered" is a bounds
   // check rather than a lookup table rebuilt on every scroll frame. Empty window: nothing is in it.
@@ -184,16 +195,15 @@ function VirtualRows({
 
   // An open editor holds its draft in local state and commits on blur, but React dispatches no
   // focusout for a focused node that is removed, so unmounting the row being edited would throw
-  // away what was typed. Keep those rows mounted even when the window has moved past them.
+  // away what was typed. The row holding the Tab stop stays too, or scrolling it away would
+  // leave the tree with nothing to Tab into. Keep those rows mounted wherever the window is.
   const pinnedItems: VirtualItem[] = [];
-  if (indexByPath) {
-    for (const path of pinnedPaths) {
-      const index = indexByPath.get(path);
-      if (index === undefined || (index >= firstWindowed && index <= lastWindowed)) continue;
-      // Measured offsets for every index, so a row outside the window still lands where it belongs.
-      const measurement = virtualizer.measurementsCache[index];
-      if (measurement) pinnedItems.push(measurement);
-    }
+  for (const path of pinnedPaths) {
+    const index = indexByPath.get(path);
+    if (index === undefined || (index >= firstWindowed && index <= lastWindowed)) continue;
+    // Measured offsets for every index, so a row outside the window still lands where it belongs.
+    const measurement = virtualizer.measurementsCache[index];
+    if (measurement) pinnedItems.push(measurement);
   }
 
   // A pinned row lies outside the window, so it slots in before or after it and no sort is
@@ -209,7 +219,7 @@ function VirtualRows({
         ];
 
   return (
-    <div className="relative" style={{ height: virtualizer.getTotalSize() }}>
+    <div {...gridProps} className="relative" style={{ height: virtualizer.getTotalSize() }}>
       {rendered.map((item) => {
         const row = rows[item.index];
         if (!row) return null;
@@ -221,7 +231,7 @@ function VirtualRows({
             className="absolute top-0 left-0 w-full"
             style={{ transform: `translateY(${item.start - virtualizer.options.scrollMargin}px)` }}
           >
-            <JsonTreeRow node={row.node} depth={row.depth} />
+            <JsonTreeRow row={row} index={item.index} />
           </div>
         );
       })}
@@ -277,6 +287,8 @@ function JsonTreeViewContent({
   virtualized = false,
   scrollElement,
   emptyMessage,
+  'aria-label': ariaLabel,
+  'aria-labelledby': ariaLabelledBy,
   className,
 }: Omit<JsonTreeViewProps, 'strings' | 'tooltipContentClassName'>) {
   const strings = useJsonTreeViewStrings();
@@ -287,17 +299,13 @@ function JsonTreeViewContent({
   const [editingPath, setEditingPath] = useState<string | null>(null);
   const [jsonEditingPath, setJsonEditingPath] = useState<string | null>(null);
   const [wrappedPaths, setWrappedPaths] = useState<Record<string, boolean>>({});
-  // Unmounting a row mid-edit loses the draft, so a virtualized tree keeps these mounted.
-  const pinnedPaths = useMemo(
-    () => [
-      ...new Set([editingPath, jsonEditingPath].filter((path): path is string => path !== null)),
-    ],
-    [editingPath, jsonEditingPath]
-  );
   const [copied, setCopied] = useState<{
     path: string;
     kind: CopyEvent['kind'];
+    /** Re-keys the announcement, so copying twice in a row is heard twice. */
+    id: number;
   } | null>(null);
+  const copyCountRef = useRef(0);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(
@@ -312,7 +320,8 @@ function JsonTreeViewContent({
       // Both fallback paths failed: nothing reached the clipboard, so neither
       // the inline confirmation nor the consumer callback should fire.
       if (!ok) return;
-      setCopied({ path: node.path, kind });
+      copyCountRef.current += 1;
+      setCopied({ path: node.path, kind, id: copyCountRef.current });
       if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
       copyTimerRef.current = setTimeout(() => setCopied(null), 1500);
       onCopy?.({ kind, path: node.path, text });
@@ -346,6 +355,37 @@ function JsonTreeViewContent({
       }),
     [nodes, collapsed, query, filterPredicate, decorateNode]
   );
+  const indexByPath = useMemo(
+    () => new Map(rows.map((row, index) => [row.node.path, index])),
+    [rows]
+  );
+
+  const { tabStopPath, activePath, gridHandlers, restoreFocus, trackOpener } = useTreeGrid({
+    rows,
+    indexByPath,
+    isCollapsed: (path) => isPathCollapsed(collapsed, path),
+    toggle: onToggleCollapsed,
+  });
+
+  // Unmounting a row mid-edit loses the draft, and unmounting the active row loses the
+  // tree's Tab stop, so a virtualized tree keeps these mounted.
+  const pinnedPaths = useMemo(
+    () => [
+      ...new Set(
+        [editingPath, jsonEditingPath, activePath].filter((path): path is string => path !== null)
+      ),
+    ],
+    [editingPath, jsonEditingPath, activePath]
+  );
+
+  const gridProps: GridProps = {
+    ...gridHandlers,
+    role: 'treegrid',
+    'aria-label': ariaLabelledBy ? undefined : (ariaLabel ?? strings.treeLabel),
+    'aria-labelledby': ariaLabelledBy,
+    'aria-readonly': !canEdit || undefined,
+    'aria-rowcount': rows.length,
+  };
   // Label for the synthesized array-item preview row (shown instead of an
   // index, since it is not a real element).
   const templateItemLabel = strings.arrayItem;
@@ -355,7 +395,7 @@ function JsonTreeViewContent({
     : (emptyMessage ?? strings.emptyDefault);
 
   // Every row shares this state and these handlers; holding it once here keeps
-  // each JsonTreeRow to just its own node/depth.
+  // each JsonTreeRow to just its own row and index.
   const rowContext: JsonTreeRowContextValue = {
     collapsed,
     onToggleCollapsed,
@@ -374,8 +414,10 @@ function JsonTreeViewContent({
     jsonEditingPath,
     wrappedPaths,
     copied,
-    setEditingPath,
-    setJsonEditingPath,
+    tabStopPath,
+    restoreFocus,
+    setEditingPath: trackOpener(setEditingPath),
+    setJsonEditingPath: trackOpener(setJsonEditingPath),
     copyPath,
     copyValue,
     toggleWrapped,
@@ -402,16 +444,32 @@ function JsonTreeViewContent({
             className
           )}
         >
-          {virtualized ? (
-            <VirtualRows
-              rows={rows}
-              container={container}
-              scrollElement={scrollElement}
-              pinnedPaths={pinnedPaths}
-            />
-          ) : (
-            rows.map(({ node, depth }) => <JsonTreeRow key={node.path} node={node} depth={depth} />)
-          )}
+          {/* Always mounted: a live region inserted along with its text is often not read. */}
+          {/* biome-ignore lint/a11y/useSemanticElements: Screen readers announce <output> less reliably than role="status". */}
+          <span role="status" className="sr-only">
+            {copied && (
+              <span key={copied.id}>
+                {copied.kind === 'path' ? strings.pathCopied : strings.valueCopied}
+              </span>
+            )}
+          </span>
+          {rows.length > 0 &&
+            (virtualized ? (
+              <VirtualRows
+                rows={rows}
+                indexByPath={indexByPath}
+                container={container}
+                scrollElement={scrollElement}
+                pinnedPaths={pinnedPaths}
+                gridProps={gridProps}
+              />
+            ) : (
+              <div {...gridProps}>
+                {rows.map((row, index) => (
+                  <JsonTreeRow key={row.node.path} row={row} index={index} />
+                ))}
+              </div>
+            ))}
           {rows.length === 0 && (
             <span className="p-4 text-center text-xs text-foreground-subtle">
               {resolvedEmptyMessage}

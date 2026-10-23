@@ -291,6 +291,10 @@ export function isArrayItemTemplateRoot(node: JsonTreeNode): boolean {
 export interface FlatJsonTreeRow {
   node: JsonTreeNode;
   depth: number;
+  /** 1-based position among the visible siblings (`aria-posinset`). */
+  posInSet: number;
+  /** Number of visible siblings, this row included (`aria-setsize`). */
+  setSize: number;
 }
 
 /** Consumer display texts for a node, so search can match them alongside the raw key. */
@@ -407,7 +411,7 @@ export function flattenJsonTree(
     if (query && !selfQueryMatch && !queryMatches?.below.has(node)) continue;
     const selfPredicateMatch = !!filterPredicate && !!predicateMatches?.self.has(node);
     if (filterPredicate && !selfPredicateMatch && !predicateMatches?.below.has(node)) continue;
-    rows.push({ node, depth: nodeDepth });
+    rows.push({ node, depth: nodeDepth, posInSet: 0, setSize: 0 });
     if (node.children && !isPathCollapsed(collapsed, node.path)) {
       // A node that matches the query or filter itself shows its whole
       // subtree; descendant-driven matches keep filtering the children.
@@ -419,7 +423,31 @@ export function flattenJsonTree(
       );
     }
   }
+  numberSiblingSets(rows, depth);
   return rows;
+}
+
+/**
+ * Fills in each row's position and set size. Counted over the visible rows, not
+ * the node's children, so a filtered list reads as the siblings it shows.
+ */
+function numberSiblingSets(rows: FlatJsonTreeRow[], baseDepth: number) {
+  // Row indexes of the set still open at each depth. A row closes every deeper
+  // set, since its own children (if any) start a new one.
+  const openSets: number[][] = [];
+  const close = (set: number[]) => {
+    for (const [position, index] of set.entries()) {
+      rows[index]!.posInSet = position + 1;
+      rows[index]!.setSize = set.length;
+    }
+  };
+  for (const [index, row] of rows.entries()) {
+    const level = row.depth - baseDepth;
+    while (openSets.length > level + 1) close(openSets.pop()!);
+    if (openSets.length === level) openSets.push([]);
+    openSets[level]!.push(index);
+  }
+  for (const set of openSets) close(set);
 }
 
 export interface ContainerPath {

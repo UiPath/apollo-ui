@@ -1,19 +1,21 @@
+import { MoreHorizontal } from 'lucide-react';
+import { type ReactNode, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal } from 'lucide-react';
-import { type ReactNode, useState } from 'react';
-import { useJsonTreeViewStrings } from './strings';
-import { JsonTreeTooltip } from './JsonTreeTooltip';
+import { cn } from '@/lib';
 import type { JsonTreeNode, NodeAction, NodeDecorationTone } from './JsonTree.types';
+import { JsonTreeTooltip } from './JsonTreeTooltip';
+import { useJsonTreeViewStrings } from './strings';
 
+// Revealed on hover and while focus is anywhere in the row, the row element
+// itself included, so a keyboard user sees the actions Tab and the arrows reach.
 const ACTION_BUTTON_CLASS =
-  'shrink-0 rounded text-foreground-subtle opacity-0 hover:text-foreground hover:bg-surface-raised group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100';
+  'shrink-0 rounded text-foreground-subtle opacity-0 hover:text-foreground hover:bg-surface-raised group-hover:opacity-100 group-focus-within/row:opacity-100';
 
 const ACTION_TONE_CLASS: Record<NodeDecorationTone, string> = {
   neutral: '',
@@ -72,11 +74,10 @@ export function RowActions({ node, actions, maxInline, meta }: RowActionsProps) 
 
   return (
     // Own wrapper with a tight gap: the buttons group together instead of
-    // each picking up the row's wider item gap. ml-auto pins the group to the
-    // right edge without a spacer div (which would cost two extra row gaps).
-    // `start` actions, the meta, then `end` actions form one cluster that never
-    // shrinks, so a truncating key or sublabel can't move it.
-    <span className="ml-auto flex shrink-0 items-center gap-0.5">
+    // each picking up the row's wider item gap. The row's actions cell pins it
+    // to the right edge. `start` actions, the meta, then `end` actions form one
+    // cluster that never shrinks, so a truncating key or sublabel can't move it.
+    <span className="flex shrink-0 items-center gap-0.5">
       {inline.filter((action) => action.placement === 'start').map(renderInline)}
       {/* mx-1.5 plus the 2px gap matches the row's 8px item gap around the meta. */}
       {meta != null && <span className="mx-1.5 flex shrink-0 items-center">{meta}</span>}
