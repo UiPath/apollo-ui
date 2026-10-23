@@ -46,7 +46,10 @@ describe('VariableValueControl', () => {
     await user.click(screen.getByRole('button', { name: 'Ref' }));
     expect(source).toHaveBeenCalledTimes(1);
     await user.click(await screen.findByText('Order id'));
-    expect(onChange).toHaveBeenCalledWith('$vars.orderId');
+    expect(onChange).toHaveBeenCalledWith(
+      '$vars.orderId',
+      expect.objectContaining({ label: 'Order id', value: '$vars.orderId' })
+    );
     expect(screen.queryByPlaceholderText('Search variables...')).toBeNull();
   });
 

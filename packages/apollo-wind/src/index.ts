@@ -861,6 +861,7 @@ export type {
   QuickFieldType,
   QuickFormFieldControlProps,
   QuickFormFieldMode,
+  QuickFormFieldModeSwitchConfirm,
   QuickFormFieldMoreActions,
   QuickFormFieldOption,
   QuickFormFieldProps,

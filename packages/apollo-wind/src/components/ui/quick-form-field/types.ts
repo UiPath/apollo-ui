@@ -14,7 +14,8 @@ import {
   ToggleLeft,
 } from 'lucide-react';
 import type { AriaAttributes, ReactNode } from 'react';
-import type { ValueMode } from '../field-addons/value-mode-strings';
+import type { ValueMode, ValueModeStrings } from '../field-addons/value-mode-strings';
+import type { MultiSelectStrings } from '../multi-select';
 
 // Wind's value-mode vocabulary: a literal, a JS expression, a bound workflow
 // variable, or a prompt an agent fills in.
@@ -188,9 +189,21 @@ export interface QuickFormFieldStrings {
   valueModeAriaLabel: string;
   expressionLabel: string;
   expressionDescription: string;
+  /**
+   * The variable and prompt modes' menu items, controls and placeholders, and the lossy-switch
+   * dialog. The literal and expression items keep `literalLabels`, `literalDescriptions`,
+   * `expressionLabel` and `expressionDescription`.
+   */
+  valueModes: Partial<ValueModeStrings>;
   pickDate: string;
   selectOption: string;
   selectOptions: string;
+  /** The multi-select's search box, its empty state and its Clear all row, given the selected count. */
+  multiSelectSearchPlaceholder: string;
+  multiSelectEmpty: string;
+  multiSelectClearAll: (count: number) => string;
+  /** The multi-select's create row, "+N more" count and remove names. */
+  multiSelect: Partial<MultiSelectStrings>;
   moreActionsAriaLabel: string;
   clearValue: string;
   forceRefresh: string;
@@ -235,9 +248,14 @@ export const DEFAULT_QUICK_FORM_FIELD_STRINGS: QuickFormFieldStrings = {
   valueModeAriaLabel: 'Choose value mode',
   expressionLabel: 'Expression',
   expressionDescription: 'Use a JS expression',
+  valueModes: {},
   pickDate: 'Pick a date',
   selectOption: 'Select an option',
   selectOptions: 'Select options...',
+  multiSelectSearchPlaceholder: 'Search...',
+  multiSelectEmpty: 'No items found.',
+  multiSelectClearAll: (count) => `Clear all (${count})`,
+  multiSelect: {},
   moreActionsAriaLabel: 'More value actions',
   clearValue: 'Clear value',
   forceRefresh: 'Force refresh',
@@ -268,6 +286,13 @@ export interface QuickFormFieldOption {
   children?: QuickFormFieldOption[];
   /** Type badge shown against the entry. */
   type?: string;
+}
+
+/** Words the dialog confirming a lossy mode switch; each falls back to `strings.valueModes`. */
+export interface QuickFormFieldModeSwitchConfirm {
+  title?: string;
+  description?: string;
+  confirmLabel?: string;
 }
 
 export interface QuickFormFieldMoreActions {
@@ -331,17 +356,31 @@ export interface QuickFormFieldProps {
    */
   leadingAddon?: ReactNode;
   /**
-   * Replaces the trailing fixed/expression menu with a consumer-provided
-   * action. Pass `null` to suppress the built-in
-   * menu; omitting the prop preserves it.
+   * Replaces the trailing value-mode menu with a consumer-provided action.
+   * Pass `null` to suppress the built-in menu; omitting the prop preserves it.
    */
   trailingAddon?: ReactNode;
   /** Adds a field-level overflow menu beside the value control. */
   more?: QuickFormFieldMoreActions;
   /** How the value is expressed. Defaults to 'literal'. */
   mode?: QuickFormFieldMode;
-  /** Called when the user switches modes. */
+  /** Called when the user switches modes, after any confirmation `confirmModeChange` asks for. */
   onModeChange?: (mode: QuickFormFieldMode) => void;
+  /**
+   * The modes the built-in menu offers, in display order. Defaults to literal
+   * and expression. With fewer than two the menu offers no switch.
+   */
+  valueModes?: readonly QuickFormFieldMode[];
+  /**
+   * Asks before a switch that would lose the current value. Only the consumer
+   * knows how its value maps between modes, so it decides: return `true` to
+   * confirm with the default dialog text, an object to word it, or `false` to
+   * switch straight away. Omit to never confirm.
+   */
+  confirmModeChange?: (
+    from: QuickFormFieldMode,
+    to: QuickFormFieldMode
+  ) => boolean | QuickFormFieldModeSwitchConfirm;
   /**
    * Optional expression editor used in place of the built-in monospace input.
    * Consumers can use this to supply a syntax-aware editor such as Monaco.
@@ -352,13 +391,12 @@ export interface QuickFormFieldProps {
    */
   renderExpressionEditor?: (props: QuickFormFieldControlProps) => ReactNode;
   /**
-   * Renders the value control for a given mode, replacing the built-in one.
-   * `variable` and `prompt` have no built-in editor, and a surface that authors
-   * its own choices can replace the `literal` control too.
+   * Renders the value control for a given mode, replacing the built-in one,
+   * such as a surface that authors its own choices in `literal` mode.
    *
-   * Returning nothing (or omitting this) falls back to the built-in control
-   * for the field's type, so an unhandled mode degrades to the literal editor
-   * rather than rendering an empty row.
+   * Returning nothing (or omitting this) keeps the built-in control for the
+   * mode: a picker over `variables` for `variable`, an agent prompt textarea
+   * for `prompt`, and the field type's own control otherwise.
    */
   renderModeControl?: (mode: QuickFormFieldMode, props: QuickFormFieldControlProps) => ReactNode;
   /**
@@ -369,6 +407,9 @@ export interface QuickFormFieldProps {
    * A value that is one reference must be replaced rather than appended, and a
    * variable may carry its type onto the field, so the consumer decides. Omit
    * to splice at the caret, or append when no caret has been placed.
+   *
+   * Also called when a variable is picked in `variable` mode, where the value
+   * is that one reference and the pick replaces it.
    */
   onInsertVariable?: (
     variable: QuickFormFieldOption,
@@ -426,8 +467,9 @@ export interface QuickFormFieldProps {
    */
   onGenerateWithAi?: (prompt: string) => void;
   /**
-   * Variables offered by the "Insert variable" popover; clicking one appends its value to the
-   * current value. The button is disabled when this is empty (the default).
+   * Variables offered by the "Insert variable" popover, and by the picker in
+   * `variable` mode. Inserting one appends its value to the current value. The
+   * Insert button is disabled when this is empty (the default).
    */
   variables?: QuickFormFieldOption[];
   id?: string;
