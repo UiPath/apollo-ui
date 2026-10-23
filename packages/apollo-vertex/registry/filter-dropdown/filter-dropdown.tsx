@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronDownIcon, SearchIcon, XIcon } from "lucide-react";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,7 +13,15 @@ import { Separator } from "@/components/ui/separator";
 import type { DataTableColumn, RowData } from "@/lib/table-features";
 import { cn } from "@/lib/utils";
 import { useVertexTranslation } from "@/lib/vertex-translation";
-import { FilterDropdownOptionRow } from "./filter-dropdown-option";
+import {
+  FilterDropdownOptionRow,
+  moveOptionFocus,
+} from "./filter-dropdown-option";
+import {
+  filterTriggerLabel,
+  readSelectedValues,
+  writeSelectedValues,
+} from "./filter-dropdown-selection";
 import {
   FILTER_DROPDOWN_LIST_SLOT,
   FilterDropdownError,
@@ -63,6 +71,10 @@ interface FilterDropdownProps<
   align?: "start" | "center" | "end";
   /** PopoverContent width class */
   popoverWidth?: string;
+  /** Additional class for the trigger button, e.g. `w-full` to fill a narrow column */
+  triggerClassName?: string;
+  /** Called when the popover opens or closes */
+  onOpenChange?: (open: boolean) => void;
 
   /** Options are being fetched: skeleton rows when empty, spinner row below loaded options otherwise */
   isLoading?: boolean;
@@ -105,11 +117,13 @@ function FilterDropdown<TData extends RowData = RowData, TValue = unknown>({
   onChange: onChangeProp,
   enableSearch = "auto",
   searchThreshold = 8,
-  searchPlaceholder = "Search...",
+  searchPlaceholder,
   noOptionsMessage,
-  noResultsMessage = "No results found",
+  noResultsMessage,
   align = "start",
   popoverWidth = "w-[220px]",
+  triggerClassName,
+  onOpenChange,
   isLoading = false,
   hasMore = false,
   onLoadMore,
@@ -127,6 +141,7 @@ function FilterDropdown<TData extends RowData = RowData, TValue = unknown>({
   "use no memo";
   const { t } = useVertexTranslation();
   const [open, setOpen] = useState(false);
+  const listboxRef = useRef<HTMLDivElement>(null);
   const { searchQuery, updateSearch, resetSearch } = useFilterDropdownSearch({
     onSearchChange,
     debounceMs: searchDebounceMs,
@@ -148,6 +163,7 @@ function FilterDropdown<TData extends RowData = RowData, TValue = unknown>({
   const handleOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen);
     if (!nextOpen) resetSearch();
+    onOpenChange?.(nextOpen);
   };
 
   // --- Labels of options picked here, kept for when paging/search drops them from `options` ---
@@ -162,49 +178,15 @@ function FilterDropdown<TData extends RowData = RowData, TValue = unknown>({
     pickedLabels[optionValue] ??
     optionValue;
 
-  // --- Read selected values ---
-  const getSelectedValues = (): string[] => {
-    if (column) {
-      const filterValue = column.getFilterValue();
-      if (multiSelect) {
-        return Array.isArray(filterValue)
-          ? filterValue.filter((v): v is string => typeof v === "string")
-          : [];
-      }
-      if (Array.isArray(filterValue) && typeof filterValue[0] === "string") {
-        return [filterValue[0]];
-      }
-      if (typeof filterValue === "string") return [filterValue];
-      if (typeof filterValue === "number") return [String(filterValue)];
-      return [];
-    }
-    if (valueProp != null) {
-      if (multiSelect) {
-        return Array.isArray(valueProp) ? valueProp : [];
-      }
-      return [String(valueProp)];
-    }
-    return [];
+  const selectionSource = {
+    column,
+    value: valueProp,
+    onChange: onChangeProp,
+    multiSelect,
   };
-
-  const selectedValues = getSelectedValues();
-
-  // --- Write selected values ---
-  const setSelectedValues = (next: string[]) => {
-    if (column) {
-      if (multiSelect) {
-        column.setFilterValue(next.length > 0 ? next : []);
-      } else {
-        column.setFilterValue(next.length > 0 ? [next[0]] : []);
-      }
-    } else if (onChangeProp) {
-      if (multiSelect) {
-        (onChangeProp as (v: string[]) => void)(next);
-      } else {
-        (onChangeProp as (v: string) => void)(next[0] ?? "");
-      }
-    }
-  };
+  const selectedValues = readSelectedValues(selectionSource);
+  const setSelectedValues = (next: string[]) =>
+    writeSelectedValues(selectionSource, next);
 
   // --- Handlers ---
   const handleMultiToggle = (option: FilterDropdownOption) => {
@@ -234,19 +216,13 @@ function FilterDropdown<TData extends RowData = RowData, TValue = unknown>({
         )
       : options;
 
-  // --- Trigger label ---
-  const getTriggerLabel = () => {
-    if (multiSelect) {
-      if (selectedValues.length === 0) return `${title}: All`;
-      if (selectedValues.length === 1) {
-        return `${title}: ${getOptionLabel(selectedValues[0])}`;
-      }
-      return `${title}: ${selectedValues.length} selected`;
-    }
-    // Single-select: show the selected option's label
-    if (selectedValues.length > 0) return getOptionLabel(selectedValues[0]);
-    return title;
-  };
+  const triggerLabel = filterTriggerLabel({
+    title,
+    selectedValues,
+    multiSelect,
+    getOptionLabel,
+    t,
+  });
 
   // --- Async states ---
   const errorContent =
@@ -258,7 +234,8 @@ function FilterDropdown<TData extends RowData = RowData, TValue = unknown>({
 
   const noResults = (
     <div className="px-2 py-3 text-center text-sm text-muted-foreground">
-      {noResultsMessage}
+      {noResultsMessage ??
+        t("no_results_found", { defaultValue: "No results found" })}
     </div>
   );
 
@@ -299,36 +276,45 @@ function FilterDropdown<TData extends RowData = RowData, TValue = unknown>({
 
     return (
       <>
-        {/* "All" option — multi-select only, hidden during search */}
-        {multiSelect && !searchQuery && (
-          <>
-            <FilterDropdownOptionRow
-              selected={selectedValues.length === 0}
-              multiSelect
-              onSelect={handleClearAll}
-            >
-              {"All"}
-            </FilterDropdownOptionRow>
-            <Separator className="my-1" />
-          </>
-        )}
+        <div
+          ref={listboxRef}
+          role="listbox"
+          aria-label={title}
+          aria-multiselectable={multiSelect}
+          onKeyDown={(e) => moveOptionFocus(e, e.currentTarget)}
+        >
+          {/* "All" option — multi-select only, hidden during search */}
+          {multiSelect && !searchQuery && (
+            <>
+              <FilterDropdownOptionRow
+                selected={selectedValues.length === 0}
+                multiSelect
+                onSelect={handleClearAll}
+              >
+                {t("all", { defaultValue: "All" })}
+              </FilterDropdownOptionRow>
+              <Separator className="my-1" />
+            </>
+          )}
 
-        {/* Option rows */}
-        {filteredOptions.map((option) => (
-          <FilterDropdownOptionRow
-            key={option.value}
-            selected={selectedValues.includes(option.value)}
-            multiSelect={multiSelect}
-            icon={option.icon}
-            onSelect={() =>
-              multiSelect
-                ? handleMultiToggle(option)
-                : handleSingleSelect(option)
-            }
-          >
-            {option.label}
-          </FilterDropdownOptionRow>
-        ))}
+          {/* Option rows */}
+          {filteredOptions.map((option) => (
+            <FilterDropdownOptionRow
+              key={option.value}
+              value={option.value}
+              selected={selectedValues.includes(option.value)}
+              multiSelect={multiSelect}
+              icon={option.icon}
+              onSelect={() =>
+                multiSelect
+                  ? handleMultiToggle(option)
+                  : handleSingleSelect(option)
+              }
+            >
+              {option.label}
+            </FilterDropdownOptionRow>
+          ))}
+        </div>
 
         {/* No local search results */}
         {searchQuery && filteredOptions.length === 0 && noResults}
@@ -345,10 +331,13 @@ function FilterDropdown<TData extends RowData = RowData, TValue = unknown>({
           <Button
             variant="ghost"
             size="sm"
-            className="h-9 justify-between gap-2 font-normal"
+            className={cn(
+              "h-9 justify-between gap-2 font-normal",
+              triggerClassName,
+            )}
           >
-            <span className="shrink-0 text-sm font-medium">
-              {getTriggerLabel()}
+            <span className="min-w-0 truncate text-sm font-medium">
+              {triggerLabel}
             </span>
             <ChevronDownIcon className="h-4 w-4 shrink-0 opacity-50" />
           </Button>
@@ -363,14 +352,25 @@ function FilterDropdown<TData extends RowData = RowData, TValue = unknown>({
               <div className="relative">
                 <SearchIcon className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  placeholder={searchPlaceholder}
+                  placeholder={
+                    searchPlaceholder ??
+                    t("search", { defaultValue: "Search..." })
+                  }
                   value={searchQuery}
                   onChange={(e) => updateSearch(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "ArrowDown") {
+                      moveOptionFocus(e, listboxRef.current);
+                    }
+                  }}
                   className="h-8 pl-7 pr-7 text-sm"
                 />
                 {searchQuery && (
                   <button
                     type="button"
+                    aria-label={t("clear_search", {
+                      defaultValue: "Clear search",
+                    })}
                     onClick={resetSearch}
                     className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >

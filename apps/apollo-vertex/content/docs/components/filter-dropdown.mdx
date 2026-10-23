@@ -18,6 +18,8 @@ import { FilterDropdownTemplate } from '../../../templates/FilterDropdownTemplat
 - **Icons per option** for visual context
 - **Configurable popover** alignment and width
 - **Async options** with infinite scroll paging, server-side search, and loading and error states
+- **Keyboard navigation** between options with the arrow keys, Home and End, and from the search input with the down arrow
+- **Translated** trigger label, "All" row, search placeholder and empty-search message
 
 ## Usage
 
@@ -221,6 +223,10 @@ function ReviewerFilter() {
 
 The trigger label remembers the labels of options picked in the dropdown, so it stays correct after paging or search removes them from `options`. For values set from outside the dropdown (an initial value, URL state, or a table column filter) that may not be loaded, pass `selectedOptions` so the trigger can show their labels instead of the raw values.
 
+### Selecting options in tests
+
+The options sit in a `listbox` named after `title`. Each row has `role="option"` and carries its `value` as `data-value`, so a test can pick an option by value when two options share a label.
+
 ## Props
 
 | Prop | Type | Default | Description |
@@ -233,11 +239,13 @@ The trigger label remembers the labels of options picked in the dropdown, so it 
 | `onChange` | `(value: string[] \| string) => void` | | Change handler for standalone usage |
 | `enableSearch` | `boolean \| "auto"` | `"auto"` | Show search input. `"auto"` shows it when options >= `searchThreshold` |
 | `searchThreshold` | `number` | `8` | Number of options that triggers auto-search |
-| `searchPlaceholder` | `string` | `"Search..."` | Placeholder text for search input |
+| `searchPlaceholder` | `string` | `t("search")` | Placeholder text for search input |
 | `noOptionsMessage` | `ReactNode` | | Shown when `options` is empty |
-| `noResultsMessage` | `ReactNode` | `"No results found"` | Shown when search yields no matches |
+| `noResultsMessage` | `ReactNode` | `t("no_results_found")` | Shown when search yields no matches |
 | `align` | `"start" \| "center" \| "end"` | `"start"` | Popover alignment relative to trigger |
 | `popoverWidth` | `string` | `"w-[220px]"` | Tailwind width class for the popover |
+| `triggerClassName` | `string` | | Additional class for the trigger button, e.g. `w-full` to fill a narrow column. The label truncates when it does not fit |
+| `onOpenChange` | `(open: boolean) => void` | | Called when the popover opens or closes |
 | `className` | `string` | | Additional class for the root wrapper |
 | `isLoading` | `boolean` | `false` | Options are being fetched. Shows skeleton rows when empty, a spinner below loaded options otherwise |
 | `hasMore` | `boolean` | `false` | More options can be fetched. Enables infinite scroll with `onLoadMore` |

@@ -1,9 +1,9 @@
-import { resolve } from "node:path";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   resolve: {
-    alias: { "@": resolve(__dirname, ".") },
+    // tsconfig maps `@/*` to the package root and `@/components/ui/*` to `registry/*`
+    tsconfigPaths: true,
   },
   test: {
     environment: "jsdom",
