@@ -223,7 +223,7 @@ export function FieldControl({
       );
 
     case 'textarea': {
-      // `minRows` adds the drag-to-resize handle; `rows` because a textarea is two rows by default.
+      // Fits its content up to 8 rows, then scrolls; drag the corner to make it bigger.
       const rows = field.minRows ?? field.rows ?? 1;
       return (
         <Textarea
@@ -241,6 +241,7 @@ export function FieldControl({
           aria-errormessage={errorId}
           rows={rows}
           minRows={rows}
+          maxRows={Math.max(rows, 8)}
         />
       );
     }
