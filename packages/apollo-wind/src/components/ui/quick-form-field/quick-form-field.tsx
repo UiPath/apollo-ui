@@ -362,9 +362,9 @@ export function QuickFormField({
         onBlur={onValueBlur}
       />
     ) : fieldType === 'textarea' ? (
-      // Starts one line tall, like every other field type, then grows with its
-      // content up to the ceiling and scrolls past it.
-      <InputGroupTextarea {...textInputProps} minRows={1} maxRows={8} />
+      // One line tall at design time, like every other field type; longer content
+      // scrolls inside it. A textarea rather than an input, so line breaks survive.
+      <InputGroupTextarea {...textInputProps} minRows={1} maxRows={1} />
     ) : (
       <InputGroupInput
         {...textInputProps}
@@ -411,11 +411,10 @@ export function QuickFormField({
         error={error}
         errorId={validationId}
         disabled={disabled}
-        // The dropzone and a text area are taller than a row and selected chips
-        // wrap past one, so the box grows to hold them.
+        // The dropzone is taller than a row and selected chips wrap past one, so
+        // the box grows to hold them.
         layout={
-          mode === 'literal' &&
-          (fieldType === 'file' || fieldType === 'multi-select' || fieldType === 'textarea')
+          mode === 'literal' && (fieldType === 'file' || fieldType === 'multi-select')
             ? 'grow'
             : 'row'
         }
