@@ -238,12 +238,32 @@ describe('QuickFormField — divergences from apollo-wind', () => {
 
   // The text area is the component's own control, so consumers don't supply one.
   describe('text area', () => {
-    it('renders a fixed value as a growing text area', () => {
+    it('renders a fixed value as a one-line text area that does not grow', () => {
       const { container } = render(
         <QuickFormField locked={false} fieldType="textarea" onValueChange={vi.fn()} />
       );
-      expect(screen.getByPlaceholderText('Text area value').tagName).toBe('TEXTAREA');
-      expect(container.querySelector('[role="group"]')).toHaveAttribute('data-layout', 'grow');
+      const textarea = screen.getByPlaceholderText('Text area value');
+      expect(textarea.tagName).toBe('TEXTAREA');
+      expect(textarea).toHaveAttribute('rows', '1');
+      const group = container.querySelector('[role="group"]');
+      expect(group).toHaveAttribute('data-layout', 'row');
+      // Not a direct child, so `has-[>textarea]` can't make the group auto height.
+      expect(group?.querySelector(':scope > textarea')).toBeNull();
+    });
+
+    it('never grows, and keeps the line breaks it holds', () => {
+      render(
+        <QuickFormField
+          locked={false}
+          fieldType="textarea"
+          value={'first\nsecond\nthird'}
+          onValueChange={vi.fn()}
+        />
+      );
+      const textarea = screen.getByPlaceholderText('Text area value') as HTMLTextAreaElement;
+      // No auto-sizing: an auto-sized textarea writes an inline height as it grows.
+      expect(textarea.style.height).toBe('');
+      expect(textarea).toHaveValue('first\nsecond\nthird');
     });
 
     it('keeps an expression on the one-line input', () => {

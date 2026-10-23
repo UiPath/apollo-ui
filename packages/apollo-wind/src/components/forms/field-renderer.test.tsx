@@ -168,6 +168,51 @@ describe('FormFieldRenderer', () => {
       const textarea = screen.getByPlaceholderText('Tell us about yourself');
       expect(textarea.tagName).toBe('TEXTAREA');
     });
+
+    afterEach(() => vi.restoreAllMocks());
+
+    // jsdom has no layout: a row is 20px, and the content height is mocked.
+    const renderTextarea = (extra: Partial<FieldMetadata> = {}, contentHeight = 0) => {
+      vi.spyOn(HTMLElement.prototype, 'scrollHeight', 'get').mockReturnValue(contentHeight);
+      const field = {
+        name: 'notes',
+        type: 'textarea',
+        placeholder: 'Notes',
+        ...extra,
+      } as FieldMetadata;
+      render(
+        <FormWrapper>
+          <FormFieldRenderer field={field} context={createMockContext()} customComponents={{}} />
+        </FormWrapper>
+      );
+      return screen.getByPlaceholderText('Notes') as HTMLTextAreaElement;
+    };
+
+    it('starts one row tall', () => {
+      const textarea = renderTextarea();
+      expect(textarea).toHaveAttribute('rows', '1');
+      expect(textarea.style.minHeight).toBe('20px');
+    });
+
+    it('fits the content it is given', () => {
+      expect(renderTextarea({}, 60).style.height).toBe('60px'); // three rows
+    });
+
+    it('stops fitting at 8 rows, then scrolls', () => {
+      const textarea = renderTextarea({}, 400); // twenty rows
+      expect(textarea.style.height).toBe('160px');
+      expect(textarea.style.overflowY).toBe('auto');
+    });
+
+    it('can be dragged taller with the resize handle', () => {
+      expect(renderTextarea()).toHaveClass('resize-y');
+    });
+
+    it('still honours a taller starting height', () => {
+      const textarea = renderTextarea({ rows: 10 } as Partial<FieldMetadata>);
+      expect(textarea).toHaveAttribute('rows', '10');
+      expect(textarea.style.minHeight).toBe('200px');
+    });
   });
 
   describe('select field', () => {
