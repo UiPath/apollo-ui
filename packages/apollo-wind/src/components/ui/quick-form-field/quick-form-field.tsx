@@ -362,9 +362,20 @@ export function QuickFormField({
         onBlur={onValueBlur}
       />
     ) : fieldType === 'textarea' ? (
-      // One line tall at design time, like every other field type; longer content
-      // scrolls inside it. A textarea rather than an input, so line breaks survive.
-      <InputGroupTextarea {...textInputProps} minRows={1} maxRows={1} />
+      // One line at design time, like every other field type; longer content scrolls
+      // inside it. A textarea rather than an input, so a saved value keeps its line
+      // breaks. Wrapped so the group keeps its row height and centring: a textarea
+      // that is the group's direct child switches it to auto height, top-aligned.
+      // `rows={1}` because a native textarea's intrinsic height is two rows.
+      <div className="flex min-w-0 flex-1 items-center">
+        <InputGroupTextarea
+          {...textInputProps}
+          rows={1}
+          minRows={1}
+          maxRows={1}
+          className="py-0 future:py-0"
+        />
+      </div>
     ) : (
       <InputGroupInput
         {...textInputProps}

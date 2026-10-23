@@ -245,6 +245,7 @@ function serializeField(field: FieldMetadata): JsonObject {
   if ('showPreview' in field && field.showPreview) result.showPreview = field.showPreview;
   if ('use12Hour' in field && field.use12Hour) result.use12Hour = field.use12Hour;
   if ('minRows' in field && field.minRows !== undefined) result.minRows = field.minRows;
+  if ('maxRows' in field && field.maxRows !== undefined) result.maxRows = field.maxRows;
   if ('maxLength' in field && field.maxLength !== undefined) result.maxLength = field.maxLength;
   if ('maxItems' in field && field.maxItems !== undefined) result.maxItems = field.maxItems;
   if ('emptyMessage' in field && field.emptyMessage) result.emptyMessage = field.emptyMessage;
