@@ -82,12 +82,6 @@ describe('InsertVariableAction', () => {
         <button type="button" onClick={() => onSelect('$host.orderId')}>
           Host order id
         </button>
-        <button
-          type="button"
-          onClick={() => onSelect('$host.item', { id: 'item', label: 'Item', metadata: 7 })}
-        >
-          Host item
-        </button>
         <button type="button" onClick={close}>
           Host cancel
         </button>
@@ -120,13 +114,6 @@ describe('InsertVariableAction', () => {
       });
       expect(screen.queryByRole('button', { name: 'Host order id' })).toBeNull();
       expect(trigger).toHaveFocus();
-
-      await user.click(trigger);
-      await user.click(await screen.findByRole('button', { name: 'Host item' }));
-      expect(onInsert).toHaveBeenLastCalledWith(
-        '$host.item',
-        expect.objectContaining({ id: 'item', metadata: 7 })
-      );
     });
 
     it('closes without reporting anything', async () => {

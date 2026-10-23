@@ -934,7 +934,7 @@ Register an action under the same id to replace a built-in.
   `createVariableModeControl`, whose registration goes in
   `FormPlugin.valueModes.definitions.variable.control`. The picker, a `FormVariablePicker`, is
   called only while a picker is open, with `{ field, value, onSelect, close }`: `value` is the
-  bound reference in the `variable` mode, and `onSelect(reference, item?)` commits it and closes,
+  bound reference in the `variable` mode, and `onSelect(reference)` commits it and closes,
   so Insert still writes at the caret or asks before replacing. Wind keeps the trigger, popover,
   focus return and strings.
 - `createVariableModeControl({ describeReference })` gives the `variable` mode's chip the host's
