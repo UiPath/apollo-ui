@@ -1,7 +1,20 @@
+import type { PropsWithChildren } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { act, render, screen, type UserEvent, userEvent } from '../../utils/testing';
+import { act, fireEvent, render, screen, type UserEvent, userEvent } from '../../utils/testing';
 import type { ListItem } from './ListView';
 import { Toolbox } from './Toolbox';
+
+vi.mock('@uipath/apollo-wind/components/ui/tooltip', () => ({
+  Tooltip: ({ children, open }: PropsWithChildren<{ open?: boolean }>) => (
+    <div data-testid="tooltip" data-open={String(!!open)}>
+      {children}
+    </div>
+  ),
+  TooltipContent: () => null,
+  TooltipPortal: ({ children }: PropsWithChildren) => <>{children}</>,
+  TooltipProvider: ({ children }: PropsWithChildren) => <>{children}</>,
+  TooltipTrigger: ({ children }: PropsWithChildren) => <>{children}</>,
+}));
 
 describe('Toolbox', () => {
   const mockItems: ListItem[] = [
@@ -648,6 +661,17 @@ describe('Toolbox', () => {
 
     const getActiveItem = () => document.querySelector('[aria-selected="true"]');
 
+    it('opens the active row tooltip on keyboard navigation until the pointer moves', async () => {
+      render(<Toolbox {...defaultProps} />);
+
+      await user.keyboard('{ArrowDown}');
+      const [first] = screen.getAllByTestId('tooltip');
+      expect(first).toHaveAttribute('data-open', 'true');
+
+      fireEvent.pointerMove(screen.getByTestId('toolbox-container'));
+      expect(first).toHaveAttribute('data-open', 'false');
+    });
+
     it('should move focus from search to first item on ArrowDown', async () => {
       render(<Toolbox {...defaultProps} />);
 
@@ -842,6 +866,7 @@ describe('Toolbox', () => {
       await user.keyboard('{ArrowRight}');
       expect(screen.getByText('Child 1')).toBeInTheDocument();
       expect(screen.queryByText('Item 1')).not.toBeInTheDocument();
+      expect(screen.getByRole('status')).toHaveTextContent('Item 2, 1 item');
     });
 
     it('should not navigate with ArrowRight on leaf item', async () => {
@@ -1782,6 +1807,7 @@ describe('Toolbox', () => {
 
       expect(screen.getAllByTestId('list-item-skeleton')).toHaveLength(3);
       expect(screen.queryByText('No nodes found')).not.toBeInTheDocument();
+      expect(screen.getByRole('status')).toBeEmptyDOMElement();
     });
 
     it('renders preemptive section headers when childrenLoading provides sections', async () => {

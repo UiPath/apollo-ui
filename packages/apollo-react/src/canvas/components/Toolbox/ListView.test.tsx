@@ -57,6 +57,7 @@ describe('ListView', () => {
   const defaultProps = {
     items: [] as ListItem[],
     onItemClick: mockOnItemClick,
+    keyboardNav: false,
   };
 
   describe('Empty states', () => {
@@ -297,7 +298,7 @@ describe('ListView', () => {
       render(<ListView {...defaultProps} items={items} />);
 
       expect(screen.getByText('Test Item')).toBeInTheDocument();
-      expect(screen.queryByText('Hover-only explanation')).not.toBeInTheDocument();
+      expect(screen.getByText('Hover-only explanation')).not.toBeVisible();
     });
 
     it('should render a badge tag when the item has one', () => {
@@ -464,6 +465,18 @@ describe('ListView', () => {
       expect(screen.getByText('Item 2')).toBeInTheDocument();
       expect(screen.getByText('Item 3')).toBeInTheDocument();
     });
+  });
+
+  it('describes a row by its detail and submenu', () => {
+    const items: ListItem[] = [
+      { id: 'agent', name: 'Agent', data: {}, detail: 'Autonomous agents', children: [] },
+    ];
+
+    render(<ListView {...defaultProps} items={items} />);
+
+    expect(screen.getByRole('option', { name: 'Agent' })).toHaveAccessibleDescription(
+      'Autonomous agents. Has submenu'
+    );
   });
 
   describe('Row styling (contentColor / trailingIcon)', () => {

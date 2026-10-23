@@ -83,6 +83,8 @@
   "add-node-panel.search-nodes": "Search nodes",
   "toolbox.search": "Search",
   "toolbox.search.clear": "Clear search",
+  "toolbox.item.submenu": "Has submenu",
+  "toolbox.category.announcement": "{name}, {count, plural, one {# item} other {# items}}",
   "toolbox.search.pending": "Searching",
   "loop-node.add-node": "Add node to loop",
   "loop-node.mode.parallel": "Parallel",
