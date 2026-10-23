@@ -18,6 +18,7 @@ export default defineConfig({
         "./lib/**/*.ts",
         "!./**/*.d.ts",
         "!./**/*.test.{ts,tsx}",
+        "!./**/*.mock.ts",
       ],
     },
     tsconfigPath: "./tsconfig.build.json",
