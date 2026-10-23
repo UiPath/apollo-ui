@@ -26,9 +26,30 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { toDateValue } from '@/lib/date-value';
 import { joinIds } from './aria-ids';
-import type { FieldMetadata, FieldOption, FieldType, SliderFieldMetadata } from './form-schema';
+import type {
+  FieldMetadata,
+  FieldOption,
+  FieldType,
+  SliderFieldMetadata,
+  TextareaFieldMetadata,
+} from './form-schema';
 import { LiteralValueContext } from './literal-value-context';
 import { StringListControl } from './string-list-field';
+
+/** A form textarea's starting height, in rows, when the field sets none. */
+const DEFAULT_TEXTAREA_ROWS = 4;
+/** How far a form textarea grows with its content before it scrolls. */
+const DEFAULT_TEXTAREA_MAX_ROWS = 8;
+
+/**
+ * A form textarea starts at its `minRows` (else `rows`, else 4) and grows with
+ * its content up to `maxRows` (default 8), then scrolls. The ceiling never sits
+ * below the floor, so a field asking for 10 rows still starts at 10.
+ */
+function textareaSizing(field: TextareaFieldMetadata): { minRows: number; maxRows: number } {
+  const minRows = field.minRows ?? field.rows ?? DEFAULT_TEXTAREA_ROWS;
+  return { minRows, maxRows: Math.max(field.maxRows ?? DEFAULT_TEXTAREA_MAX_ROWS, minRows) };
+}
 
 /** The react-hook-form `Controller` binding a control reads and writes. */
 export interface FieldControlFormField {
@@ -237,7 +258,7 @@ export function FieldControl({
           aria-invalid={invalid || undefined}
           aria-describedby={describedById}
           aria-errormessage={errorId}
-          {...(field.minRows != null ? { minRows: field.minRows } : { rows: field.rows || 4 })}
+          {...textareaSizing(field)}
         />
       );
 
