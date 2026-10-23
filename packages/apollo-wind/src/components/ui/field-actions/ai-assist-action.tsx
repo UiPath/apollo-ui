@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { FIELD_ACTION_CLASS } from './collapse';
 
 export interface AiAssistActionStrings {
   trigger: string;
@@ -80,14 +81,17 @@ export function AiAssistAction({ onGenerate, hint, disabled, strings }: AiAssist
       <Tooltip>
         <TooltipTrigger asChild>
           <PopoverTrigger asChild>
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="3xs"
+              icon
               aria-label={text.trigger}
               disabled={disabled}
-              className="grid size-7 place-items-center rounded-lg text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+              className={FIELD_ACTION_CLASS}
             >
-              <Sparkles size={12} />
-            </button>
+              <Sparkles />
+            </Button>
           </PopoverTrigger>
         </TooltipTrigger>
         <TooltipContent>{text.tooltip}</TooltipContent>
