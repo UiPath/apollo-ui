@@ -121,6 +121,50 @@ function App() {
 }
 ```
 
+## Bringing your own authentication
+
+Apps that already authenticate another way, such as with a session cookie set by their platform, can provide `AuthContext` themselves instead of mounting `ShellAuthProvider`. The shell gate reads `isLoading` and `isAuthenticated`, the user profile reads `user`, and sign-out calls `logout`. Leave `accessToken` as `null` when the app has no bearer token to share.
+
+Pass `unauthenticatedElement` to replace the sign-in screen. For example, render an element that redirects to the platform login:
+
+```tsx
+import { useEffect } from 'react';
+import { ApolloShell, AuthContext, type AuthContextValue } from '@uipath/apollo-vertex';
+
+function RedirectToLogin() {
+  useEffect(() => {
+    window.location.assign(`/login?returnTo=${encodeURIComponent(window.location.href)}`);
+  }, []);
+  return null;
+}
+
+function App() {
+  const session = useSession(); // the app's own session hook
+
+  const auth: AuthContextValue = {
+    user: session.user,
+    isAuthenticated: session.user != null,
+    isLoading: session.isLoading,
+    login: async () => session.login(),
+    logout: session.logout,
+    accessToken: null,
+  };
+
+  return (
+    <AuthContext.Provider value={auth}>
+      <ApolloShell
+        companyName="Your Company"
+        productName="Your Product"
+        navItems={navItems}
+        unauthenticatedElement={<RedirectToLogin />}
+      >
+        <YourApp />
+      </ApolloShell>
+    </AuthContext.Provider>
+  );
+}
+```
+
 ## Gating access by group membership
 
 Use `GroupMembershipGuard` to restrict the application to members of one or more

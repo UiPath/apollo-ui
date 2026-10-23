@@ -11,6 +11,10 @@ import {
 import { z } from "zod";
 import { ensureValidToken, getTokenQueryKey, login, logout } from "@/lib/auth";
 
+// Apps that authenticate outside the shell (a session cookie, their own IdP)
+// can provide this context themselves instead of mounting ShellAuthProvider.
+// The shell gate reads isAuthenticated; accessToken stays null when the app
+// has no bearer token to share.
 export interface AuthContextValue {
   user: UserInfo | null;
   isAuthenticated: boolean;
