@@ -74,8 +74,7 @@ export interface VariablePickerProps extends VariablePickerContentProps {
   triggerAriaLabel?: string;
   /**
    * The host's own picker, rendered in the popover in place of the search and tree, whose `items`
-   * it then does not use. A pick reaches `onSelect` as its entry, or one made from the value, with
-   * the picked value as its `value`.
+   * it then does not use. A pick reaches `onSelect` as an entry made from the picked value.
    */
   renderPicker?: RenderVariablePicker;
 }
@@ -85,7 +84,7 @@ export interface VariablePickerSlotProps {
   /** The reference already bound, when the pick replaces one. */
   value?: string;
   /** Commits `value` and closes the popover. */
-  onSelect(value: string, item?: VariablePickerItem): void;
+  onSelect(value: string): void;
   /** Closes the popover without committing anything. */
   close(): void;
 }
@@ -314,9 +313,7 @@ export function VariablePicker({
         {renderPicker ? (
           <VariablePickerSlot
             render={renderPicker}
-            onSelect={(value, item) =>
-              selectItem({ ...(item ?? { id: value, label: value }), value })
-            }
+            onSelect={(value) => selectItem({ id: value, label: value, value })}
             close={() => setOpen(false)}
           />
         ) : (

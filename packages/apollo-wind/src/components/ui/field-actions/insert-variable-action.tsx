@@ -39,8 +39,8 @@ export const DEFAULT_INSERT_VARIABLE_ACTION_STRINGS: InsertVariableActionStrings
 interface InsertVariableActionBaseProps {
   /**
    * Called with the picked variable's value, and the picked entry itself so a host can recover
-   * whatever it attached to it. A host picker that picks without an entry gets one made from the
-   * value. Omitted, the action is disabled.
+   * whatever it attached to it. A host picker's pick gets an entry made from the value. Omitted,
+   * the action is disabled.
    */
   onInsert?: (value: string, item: VariablePickerItem) => void;
   disabled?: boolean;
