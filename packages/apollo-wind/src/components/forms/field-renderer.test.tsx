@@ -171,8 +171,7 @@ describe('FormFieldRenderer', () => {
 
     afterEach(() => vi.restoreAllMocks());
 
-    // jsdom has no layout: a row measures as Textarea's 20px fallback, and the
-    // content height is mocked so growth is measurable.
+    // jsdom has no layout: a row is 20px and the content height is mocked.
     const renderTextarea = (extra: Partial<FieldMetadata>, contentHeight: number) => {
       vi.spyOn(HTMLElement.prototype, 'scrollHeight', 'get').mockReturnValue(contentHeight);
       const field = {
@@ -189,9 +188,10 @@ describe('FormFieldRenderer', () => {
       return screen.getByPlaceholderText('Notes') as HTMLTextAreaElement;
     };
 
-    it('starts four rows tall and grows with its content', () => {
+    it('starts one row tall and grows with its content', () => {
       const textarea = renderTextarea({}, 120); // six rows of content
-      expect(textarea.style.minHeight).toBe('80px');
+      expect(textarea).toHaveAttribute('rows', '1');
+      expect(textarea.style.minHeight).toBe('20px');
       expect(textarea.style.height).toBe('120px');
     });
 
