@@ -408,6 +408,8 @@ export {
   createEditableColumn,
   EditableCell,
 } from './components/ui/editable-cell';
+export type { EditableTextProps, EditableTextSize } from './components/ui/editable-text';
+export { EditableText } from './components/ui/editable-text';
 export type { EmptyStateProps } from './components/ui/empty-state';
 export { EmptyState } from './components/ui/empty-state';
 export type {

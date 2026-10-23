@@ -179,6 +179,11 @@ export interface QuickFormFieldStrings {
   falseLabel: string;
   requiredTooltip: string;
   requiredAriaLabel: string;
+  /** Names the editable label (see `onLabelChange`), and shows while it is empty. */
+  labelAriaLabel: string;
+  labelPlaceholder: string;
+  /** Names the info-tooltip trigger beside the label. */
+  tooltipAriaLabel: string;
   optionalAriaLabel: string;
   insertLabel: string;
   insertAriaLabel: string;
@@ -240,6 +245,9 @@ export const DEFAULT_QUICK_FORM_FIELD_STRINGS: QuickFormFieldStrings = {
   falseLabel: 'False',
   requiredTooltip: 'Required',
   requiredAriaLabel: 'Required field',
+  labelAriaLabel: 'Field label',
+  labelPlaceholder: 'Untitled field',
+  tooltipAriaLabel: 'More information',
   optionalAriaLabel: 'Optional field',
   insertLabel: 'Insert',
   insertAriaLabel: 'Insert variable',
@@ -430,12 +438,41 @@ export interface QuickFormFieldProps {
   fieldTypes?: readonly QuickFieldType[];
   /** Called when the user switches the field type. */
   onFieldTypeChange?: (fieldType: QuickFieldType) => void;
-  /** Shows a required-field asterisk next to the default label. Ignored when `label` is provided. */
+  /**
+   * Shows a required-field asterisk next to the default label, or the editable
+   * one (see `onLabelChange`). Ignored for any other `label`.
+   */
   required?: boolean;
   /** Called when the user toggles required/optional. Renders the Required switch when provided. */
   onRequiredChange?: (required: boolean) => void;
   /** Overrides the default mode-based label (e.g. a field name instead of "String value"). */
   label?: ReactNode;
+  /**
+   * Makes a string `label` editable in place: click to edit, Enter or blur
+   * commits, Escape reverts. Called on commit with the trimmed label, empty
+   * included, and only when it changed. To reject one, such as an empty label,
+   * leave `label` as it was: the field shows it again.
+   */
+  onLabelChange?: (label: string) => void;
+  /**
+   * Whether the editable label's editor is open, for a consumer that holds
+   * that state, such as one that opens it for a field just added. Pair with
+   * `onIsEditingLabelChange`. Omit to let the component hold it.
+   */
+  isEditingLabel?: boolean;
+  /**
+   * Called when the editable label asks to open (a click) or close (commit,
+   * Escape, or going disabled). It reports only whether the editor is open; the
+   * committed text arrives through `onLabelChange`, just after the close.
+   */
+  onIsEditingLabelChange?: (editing: boolean) => void;
+  /** Rendered before the label, such as a drag handle. */
+  labelAddon?: ReactNode;
+  /**
+   * Help shown from an info icon after the label and its required asterisk,
+   * as FormFieldHeader places it. Applies to every kind of `label`.
+   */
+  tooltip?: ReactNode;
   /**
    * Overrides the placeholder on the value control. The computed default names
    * only the type; the accessible label still falls back to it.
