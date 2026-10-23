@@ -145,7 +145,7 @@ The Data Table requires external state for sorting, filtering, pagination, colum
 
 ### useDataTable
 
-A generic hook for managing Data Table state with any data source. It handles persisting sorting, column visibility, and column order to `localStorage`.
+A generic hook for managing Data Table state with any data source. It persists sorting, column visibility, column order, and page size to `localStorage`. Pass a control when a screen keeps that piece of state itself (for example in the URL). Without `sortingControl`, sorting stays on `usePersistedSorting`.
 
 #### Usage
 
@@ -177,6 +177,22 @@ export default function PaymentsPage({ data }: { data: Payment[] }) {
 | `isLoading` | `boolean` | Optional loading state (default: `false`) |
 | `defaultColumnOrder` | `string[]` | Initial column order (defaults to column definition order) |
 | `defaultVisibleColumns` | `string[]` | Initially visible columns (defaults to all) |
+| `sortingControl` | `{ sorting, onSortingChange }` | Optional external sorting. Omit to use `usePersistedSorting`. |
+| `globalFilterControl` | `{ globalFilter, onGlobalFilterChange }` | Optional external search string. |
+| `paginationControl` | `{ pageIndex, onPageIndexChange, onPageIndexOutOfRange? }` | Optional external page index. Page size stays in `localStorage`. `onPageIndexOutOfRange` receives the last valid page when the requested page is past the end. |
+| `onColumnVisibilityToggle` | `(columnId, visible, visibleCount) => void` | Optional. Passed through to `DataTable` when the column menu shows or hides a column. |
+
+`DataTable` also accepts these optional props. Omit them for a client-side table.
+
+| Prop | Description |
+| --- | --- |
+| `manualPagination`, `manualSorting`, `manualFiltering`, `rowCount` | Render `data` as the current page and size the pager from `rowCount`. |
+| `onPageIndexOutOfRange` | Called with the last valid page index. While `isLoading` is true, the requested page is left alone. |
+| `getRowHref`, `isRowClickable` | Middle-click opens `getRowHref` in a new tab. `isRowClickable` returning false disables the click and the link. |
+| `searchPlaceholder` | Placeholder and accessible name of the search input. |
+| `onColumnVisibilityToggle` | Column menu reports the column, its next visibility, and how many hideable columns stay visible. The menu can search columns and shows an empty state. |
+
+Set `meta: { numeric: true }` on an amount column to right-align it with tabular digits. The pager shows `Showing start–end of total` beside the page controls.
 
 ### useEntityDataTable
 

@@ -29,6 +29,8 @@ declare module "@tanstack/react-table" {
     displayName?: string;
     getFilterValue?: (value: unknown, row: DataTableRow<TData>) => string;
     overflowVisible?: boolean;
+    /** Right-align with tabular digits so amounts line up. */
+    numeric?: boolean;
   }
 }
 
@@ -41,9 +43,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { DataTableDataRow } from "./data-table-data-row";
 import { DataTableExpandAllToggle } from "./data-table-expand-toggle";
 import { DataTablePagination } from "./data-table-pagination";
-import { DATA_TABLE_ROW_HEIGHT } from "./data-table-row";
 import {
   DataTableScrollShadow,
   useScrollShadow,
@@ -60,6 +62,8 @@ interface DataTableProps<TData extends RowData, TValue = unknown> {
   className?: string;
   isLoading?: boolean;
   onRowClick?: (row: TData) => void;
+  isRowClickable?: (row: TData) => boolean;
+  getRowHref?: (row: TData) => string | undefined;
   sorting: SortingState;
   onSortingChange: OnChangeFn<SortingState>;
   columnFilters: ColumnFiltersState;
@@ -74,6 +78,13 @@ interface DataTableProps<TData extends RowData, TValue = unknown> {
   onGlobalFilterChange: OnChangeFn<string>;
   pagination?: PaginationState;
   onPaginationChange?: OnChangeFn<PaginationState>;
+  onPageIndexOutOfRange?: (pageIndex: number) => void;
+  // Server-driven mode: the parent already sorted, filtered, and paged the
+  // rows, so the table renders `data` as-is and sizes the pager from `rowCount`.
+  manualPagination?: boolean;
+  manualSorting?: boolean;
+  manualFiltering?: boolean;
+  rowCount?: number;
   getRowId?: (
     originalRow: TData,
     index: number,
@@ -81,9 +92,15 @@ interface DataTableProps<TData extends RowData, TValue = unknown> {
   ) => string;
   globalFilterFn?: DataTableFilterFn<TData>;
   enableSearch?: boolean;
+  searchPlaceholder?: string;
   enableViewOptions?: boolean;
   enableColumnResizing?: boolean;
   toolbarContent?: (table: DataTableInstance<TData>) => React.ReactNode;
+  onColumnVisibilityToggle?: (
+    columnId: string,
+    visible: boolean,
+    visibleCount: number,
+  ) => void;
   noResultsMessage?: React.ReactNode;
   stickyHeader?: boolean;
   expanded?: ExpandedState;
@@ -100,6 +117,8 @@ function DataTable<TData extends RowData, TValue = unknown>({
   className,
   isLoading = false,
   onRowClick,
+  isRowClickable,
+  getRowHref,
   sorting,
   onSortingChange,
   columnFilters,
@@ -114,12 +133,19 @@ function DataTable<TData extends RowData, TValue = unknown>({
   onGlobalFilterChange,
   pagination,
   onPaginationChange,
+  onPageIndexOutOfRange,
+  manualPagination,
+  manualSorting,
+  manualFiltering,
+  rowCount,
   getRowId,
   globalFilterFn,
   enableSearch = true,
+  searchPlaceholder,
   enableViewOptions = true,
   enableColumnResizing = false,
   toolbarContent,
+  onColumnVisibilityToggle,
   noResultsMessage,
   stickyHeader = false,
   expanded,
@@ -159,8 +185,11 @@ function DataTable<TData extends RowData, TValue = unknown>({
     },
     ...(isPaginationEnabled && { onPaginationChange }),
     // The paginated row model is always registered. Skip slicing when the
-    // caller did not opt into pagination.
-    ...(!isPaginationEnabled && { manualPagination: true }),
+    // caller did not opt into pagination, or when the parent pages the rows.
+    manualPagination: manualPagination ?? !isPaginationEnabled,
+    ...(manualSorting != null && { manualSorting }),
+    ...(manualFiltering != null && { manualFiltering }),
+    ...(rowCount != null && { rowCount }),
     ...(onExpandedChange ? { onExpandedChange } : {}),
     ...(getRowId ? { getRowId } : {}),
     ...(globalFilterFn ? { globalFilterFn } : {}),
@@ -181,6 +210,36 @@ function DataTable<TData extends RowData, TValue = unknown>({
       ...(expanded ? { expanded } : {}),
     },
   });
+
+  const lastPageIndex = Math.max(0, table.getPageCount() - 1);
+  const requestedPageIndex = React.useRef<number | null>(null);
+  React.useEffect(() => {
+    if (isLoading) return;
+
+    if (!pagination || pagination.pageIndex <= lastPageIndex) {
+      requestedPageIndex.current = null;
+      return;
+    }
+    if (requestedPageIndex.current === lastPageIndex) return;
+
+    requestedPageIndex.current = lastPageIndex;
+
+    if (onPageIndexOutOfRange) {
+      onPageIndexOutOfRange(lastPageIndex);
+      return;
+    }
+
+    onPaginationChange?.((previous) => ({
+      ...previous,
+      pageIndex: lastPageIndex,
+    }));
+  }, [
+    isLoading,
+    lastPageIndex,
+    onPageIndexOutOfRange,
+    onPaginationChange,
+    pagination,
+  ]);
 
   const columnSizeVars = () => {
     if (!enableColumnResizing) return {};
@@ -204,8 +263,10 @@ function DataTable<TData extends RowData, TValue = unknown>({
       <DataTableToolbar
         table={table}
         enableSearch={enableSearch}
+        searchPlaceholder={searchPlaceholder}
         enableViewOptions={enableViewOptions}
         customContent={toolbarContent?.(table)}
+        onColumnVisibilityToggle={onColumnVisibilityToggle}
       />
 
       <div
@@ -237,6 +298,8 @@ function DataTable<TData extends RowData, TValue = unknown>({
                     key={header.id}
                     className={cn(
                       enableColumnResizing && "relative group pr-2",
+                      header.column.columnDef.meta?.numeric &&
+                        "text-right [&_[data-slot=data-table-column-header]]:w-full [&_[data-slot=data-table-column-header]]:justify-end",
                     )}
                     style={{
                       ...(header.column.columnDef.maxSize
@@ -289,67 +352,16 @@ function DataTable<TData extends RowData, TValue = unknown>({
               />
             ) : rows.length > 0 ? (
               rows.map((row) => (
-                <React.Fragment key={row.id}>
-                  <TableRow
-                    data-state={row.getIsSelected() && "selected"}
-                    className={cn(
-                      `border-b last:border-b-0 ${DATA_TABLE_ROW_HEIGHT}`,
-                      onRowClick && "cursor-pointer hover:bg-muted/50",
-                      getRowClassName?.(row.original),
-                    )}
-                    {...(onRowClick && {
-                      onClick: () => onRowClick(row.original),
-                    })}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell
-                        key={cell.id}
-                        style={{
-                          ...(cell.column.columnDef.maxSize
-                            ? { maxWidth: cell.column.columnDef.maxSize }
-                            : {}),
-                          ...(enableColumnResizing
-                            ? {
-                                width: `calc(var(--col-${cell.column.id}-size) * 1px)`,
-                              }
-                            : {}),
-                        }}
-                      >
-                        <div
-                          className={cn(
-                            "text-ellipsis whitespace-nowrap text-sm font-normal leading-5 text-foreground",
-                            !cell.column.columnDef.meta?.overflowVisible &&
-                              "overflow-hidden",
-                          )}
-                          onMouseEnter={(e) => {
-                            const el = e.currentTarget;
-                            if (el.scrollWidth > el.clientWidth + 1) {
-                              el.title = el.textContent || "";
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.title = "";
-                          }}
-                        >
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext(),
-                          )}
-                        </div>
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                  {renderExpandedRow && row.getIsExpanded() && (
-                    <TableRow
-                      data-state="expanded"
-                      className="hover:bg-transparent"
-                    >
-                      <TableCell colSpan={row.getVisibleCells().length}>
-                        {renderExpandedRow(row)}
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </React.Fragment>
+                <DataTableDataRow
+                  key={row.id}
+                  row={row}
+                  onRowClick={onRowClick}
+                  isRowClickable={isRowClickable}
+                  getRowHref={getRowHref}
+                  getRowClassName={getRowClassName}
+                  enableColumnResizing={enableColumnResizing}
+                  renderExpandedRow={renderExpandedRow}
+                />
               ))
             ) : (
               <TableRow>
