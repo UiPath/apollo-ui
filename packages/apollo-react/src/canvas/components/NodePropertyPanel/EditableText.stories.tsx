@@ -9,7 +9,9 @@ const meta: Meta<typeof EditableText> = {
     docs: {
       description: {
         component: `
-**EditableText** is the click-to-edit text used by the node identity row. It reads as plain
+**EditableText** is the click-to-edit text used by the node identity row: apollo-wind's
+EditableText, with React Flow's \`nodrag\` and \`nowheel\` classes so dragging or scrolling over
+it leaves the canvas alone. It reads as plain
 text, turns into a field on click, submits on Enter or blur, and reverts on Escape. It is a
 controlled field: \`onChange\` fires per keystroke and \`value\` has to follow it, which is what
 lets the owner validate what is being typed and answer through \`error\`. Omit either callback and
