@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { VERTEX_NAMESPACE } from "@/lib/vertex-translation";
 import {
+  activeNavItemPath,
   mostSpecificActivePath,
   navItemIsCurrent,
   navItemState,
@@ -103,6 +104,37 @@ describe("mostSpecificActivePath", () => {
     expect(mostSpecificActivePath("/rules/exceptions", ["/rules"])).toBe(
       "/rules",
     );
+  });
+});
+
+describe("activeNavItemPath", () => {
+  const sidebar = [
+    { path: "/acme" },
+    { path: "/acme/projects", childPaths: ["/acme/projects/archive"] },
+    { path: "/work", childPaths: ["/invoices"] },
+  ];
+
+  it("keeps a landing page off while a section under it is open", () => {
+    expect(activeNavItemPath("/acme/projects", sidebar)).toBe("/acme/projects");
+    expect(activeNavItemPath("/acme/projects/42", sidebar)).toBe(
+      "/acme/projects",
+    );
+  });
+
+  it("selects the landing page on its own route", () => {
+    expect(activeNavItemPath("/acme", sidebar)).toBe("/acme");
+    expect(activeNavItemPath("/acme/unlisted", sidebar)).toBe("/acme");
+  });
+
+  it("gives a child page to its group", () => {
+    expect(activeNavItemPath("/acme/projects/archive", sidebar)).toBe(
+      "/acme/projects",
+    );
+    expect(activeNavItemPath("/invoices/abc", sidebar)).toBe("/work");
+  });
+
+  it("returns null when no item matches", () => {
+    expect(activeNavItemPath("/elsewhere", sidebar)).toBeNull();
   });
 });
 

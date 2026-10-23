@@ -35,7 +35,11 @@ import {
 import { Company } from "./shell-company";
 import { MinimalCompany } from "./shell-minimal-company";
 import { MinimalNavItem } from "./shell-minimal-nav-item";
-import { mostSpecificActivePath, navItemState } from "./shell-nav-active";
+import {
+  activeNavItemPath,
+  mostSpecificActivePath,
+  navItemState,
+} from "./shell-nav-active";
 import { navCatalogFromHook, readNavLabel } from "./shell-nav-label";
 import { Text } from "./shell-text";
 import type { ShellNavLabel } from "./shell-translation-key";
@@ -174,6 +178,14 @@ function SidebarNav({
     });
   };
 
+  const activePath = activeNavItemPath(
+    pathname,
+    navItems.map((item) => ({
+      path: item.path,
+      childPaths: item.subItems?.map((sub) => sub.path),
+    })),
+  );
+
   const getTooltipText = (label: ShellNavLabel): string => {
     if (typeof label === "string") return readNavLabel(catalog, label);
     return t(label.i18nKey, label.values);
@@ -204,11 +216,15 @@ function SidebarNav({
                 const Icon = item.icon;
                 const isExpanded = expandedItems.has(item.path);
                 const childPaths = item.subItems?.map((sub) => sub.path) ?? [];
-                const row = navItemState(pathname, {
+                const isActiveItem = item.path === activePath;
+                const itemState = navItemState(pathname, {
                   path: item.path,
                   to: item.to,
                   childPaths,
                 });
+                const row = isActiveItem
+                  ? itemState
+                  : { ...itemState, prefixActive: false, current: false };
 
                 if (item.subItems && item.subItems.length > 0) {
                   return (
