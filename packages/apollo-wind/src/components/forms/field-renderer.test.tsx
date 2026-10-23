@@ -168,6 +168,50 @@ describe('FormFieldRenderer', () => {
       const textarea = screen.getByPlaceholderText('Tell us about yourself');
       expect(textarea.tagName).toBe('TEXTAREA');
     });
+
+    afterEach(() => vi.restoreAllMocks());
+
+    // jsdom has no layout: a row measures as Textarea's 20px fallback, and the
+    // content height is mocked so growth is measurable.
+    const renderTextarea = (extra: Partial<FieldMetadata>, contentHeight: number) => {
+      vi.spyOn(HTMLElement.prototype, 'scrollHeight', 'get').mockReturnValue(contentHeight);
+      const field = {
+        name: 'notes',
+        type: 'textarea',
+        placeholder: 'Notes',
+        ...extra,
+      } as FieldMetadata;
+      render(
+        <FormWrapper>
+          <FormFieldRenderer field={field} context={createMockContext()} customComponents={{}} />
+        </FormWrapper>
+      );
+      return screen.getByPlaceholderText('Notes') as HTMLTextAreaElement;
+    };
+
+    it('starts four rows tall and grows with its content', () => {
+      const textarea = renderTextarea({}, 120); // six rows of content
+      expect(textarea.style.minHeight).toBe('80px');
+      expect(textarea.style.height).toBe('120px');
+    });
+
+    it('stops growing at eight rows, then scrolls', () => {
+      const textarea = renderTextarea({}, 400); // twenty rows of content
+      expect(textarea.style.height).toBe('160px');
+      expect(textarea.style.overflowY).toBe('auto');
+    });
+
+    it('honours a custom maxRows', () => {
+      const textarea = renderTextarea({ minRows: 2, maxRows: 3 } as Partial<FieldMetadata>, 400);
+      expect(textarea.style.minHeight).toBe('40px');
+      expect(textarea.style.height).toBe('60px');
+    });
+
+    it('never caps below a taller starting height', () => {
+      const textarea = renderTextarea({ rows: 10 } as Partial<FieldMetadata>, 0);
+      expect(textarea.style.minHeight).toBe('200px');
+      expect(textarea.style.height).toBe('200px');
+    });
   });
 
   describe('select field', () => {
