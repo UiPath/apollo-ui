@@ -54,13 +54,13 @@ export function useCanvasJsonTreeViewStrings(): JsonTreeViewStrings {
       itemCount: (count) =>
         _({
           id: 'canvas.json_value_panel.item_count',
-          message: '{count, plural, one {# item} other {# items}}',
+          message: 'Items: {count}',
           values: { count },
         }),
       keyCount: (count) =>
         _({
           id: 'canvas.json_value_panel.key_count',
-          message: '{count, plural, one {# key} other {# keys}}',
+          message: 'Keys: {count}',
           values: { count },
         }),
       requiredMarker: _({ id: 'canvas.json_value_panel.required_marker', message: 'required' }),
