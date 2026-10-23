@@ -95,7 +95,7 @@ function GuardDemo() {
         <p className="text-sm font-medium text-green-700 dark:text-green-300">
           New Onboarding Experience
         </p>
-        <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+        <p className="text-xs text-green-700 dark:text-green-400 mt-1">
           This content is only visible when the &quot;NewOnboarding&quot; flag
           is enabled.
         </p>
