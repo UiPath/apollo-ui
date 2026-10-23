@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { describe, expect, it } from 'vitest';
 import { Input } from './input';
+import { InputGroup, InputGroupAddon, InputGroupInput } from './input-group';
 import { Label } from './label';
 
 describe('Input', () => {
@@ -100,6 +101,81 @@ describe('Input', () => {
     const input = screen.getByRole('textbox');
     expect(input).toHaveClass('h-6', 'text-xs', 'rounded', 'bg-surface-overlay');
     expect(input).not.toHaveClass('border-input');
+  });
+
+  describe('Read-only', () => {
+    it('swaps the border for a muted fill', () => {
+      render(<Input readOnly value="Generated" />);
+      const input = screen.getByRole('textbox');
+      expect(input).toHaveAttribute('readonly');
+      expect(input).toHaveClass('bg-muted', 'border-transparent');
+      expect(input).not.toHaveClass('bg-transparent', 'border-input');
+    });
+
+    it('sits a step below the page in Future themes', () => {
+      render(<Input readOnly value="Generated" />);
+      const input = screen.getByRole('textbox');
+      expect(input).toHaveClass('future:bg-surface-raised');
+      expect(input).not.toHaveClass('future:bg-surface-overlay');
+    });
+
+    it('keeps the error border and ring when invalid', () => {
+      render(<Input readOnly value="Generated" error="Name is taken." />);
+      expect(screen.getByRole('textbox')).toHaveClass(
+        'aria-invalid:border-error',
+        'future:aria-invalid:ring-error/40'
+      );
+    });
+
+    it('keeps the standard focus ring', () => {
+      render(<Input readOnly value="Generated" />);
+      expect(screen.getByRole('textbox')).toHaveClass('focus-visible:ring-2');
+    });
+
+    it('steps the ghost surface down to surface-raised', () => {
+      render(<Input variant="ghost" readOnly value="Generated" />);
+      const input = screen.getByRole('textbox');
+      // `bg-muted` would not do: Light maps --muted to --surface-overlay, the ghost's editable fill.
+      expect(input).toHaveClass('bg-surface-raised', 'future:bg-surface-raised');
+      expect(input).not.toHaveClass('bg-surface-overlay', 'bg-muted');
+    });
+
+    it('leaves editable inputs unchanged', () => {
+      render(<Input />);
+      expect(screen.getByRole('textbox')).not.toHaveClass('bg-muted');
+    });
+
+    it('keeps the disabled look when also disabled', () => {
+      render(<Input readOnly disabled value="Generated" />);
+      expect(screen.getByRole('textbox')).not.toHaveClass('bg-muted');
+    });
+
+    it('keeps the disabled look when a disabled group disables it', () => {
+      render(
+        <InputGroup disabled>
+          <InputGroupAddon>
+            <Input readOnly value="Generated" />
+          </InputGroupAddon>
+        </InputGroup>
+      );
+      const input = screen.getByRole('textbox');
+      expect(input).toBeDisabled();
+      expect(input).not.toHaveClass('bg-muted');
+    });
+
+    it('leaves the box to the group inside an InputGroup', () => {
+      render(
+        <InputGroup>
+          <InputGroupInput readOnly value="Generated" />
+        </InputGroup>
+      );
+      expect(screen.getByRole('textbox')).not.toHaveClass('bg-muted');
+    });
+
+    it('has no accessibility violations', async () => {
+      const { container } = render(<Input aria-label="Run ID" readOnly value="Generated" />);
+      expect(await axe(container)).toHaveNoViolations();
+    });
   });
 
   describe('Future focus ring', () => {
