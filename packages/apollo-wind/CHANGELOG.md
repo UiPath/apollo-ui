@@ -1,3 +1,15 @@
+## [@uipath/apollo-wind-v2.76.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.75.1...@uipath/apollo-wind@2.76.0) (2026-10-23)
+
+### Features
+
+* **apollo-wind:** host-rendered content for AI assist ([f5e2426](https://github.com/UiPath/apollo-ui/commit/f5e24267d12819c3343a628d1476931fc85d3e15))
+* **apollo-wind:** host-rendered variable picker for Insert variable and Variable mode ([cb005d3](https://github.com/UiPath/apollo-ui/commit/cb005d33e55db8cf56244e6d8c1b203fabb8997a))
+* **apollo-wind:** warning severity for FormFieldError ([e8df3b0](https://github.com/UiPath/apollo-ui/commit/e8df3b00b964d295551d5c5c26b3b744c8608456))
+
+### Bug Fixes
+
+* **apollo-wind:** pass only the picked value to a host picker's onSelect ([e76462f](https://github.com/UiPath/apollo-ui/commit/e76462fdc06a8e6bb97de4dec7e2d14ac555cc75))
+
 ## [@uipath/apollo-wind-v2.75.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.75.0...@uipath/apollo-wind@2.75.1) (2026-10-22)
 
 ### Bug Fixes
