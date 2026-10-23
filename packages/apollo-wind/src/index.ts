@@ -304,6 +304,16 @@ export {
   CommandSeparator,
   CommandShortcut,
 } from './components/ui/command';
+export type {
+  Connection,
+  ConnectionPickerProps,
+  ConnectionPickerStrings,
+  ConnectionStatus,
+} from './components/ui/connection-picker';
+export {
+  ConnectionPicker,
+  DEFAULT_CONNECTION_PICKER_STRINGS,
+} from './components/ui/connection-picker';
 export {
   ContextMenu,
   ContextMenuCheckboxItem,
@@ -881,6 +891,19 @@ export {
   ResizablePanel,
   ResizablePanelGroup,
 } from './components/ui/resizable';
+export type {
+  ResourceGroup,
+  ResourceItem,
+  ResourceItemAction,
+  ResourcePickerContentProps,
+  ResourcePickerProps,
+} from './components/ui/resource-picker';
+export {
+  keepResourceSearchOnEscape,
+  ResourcePicker,
+  ResourcePickerContent,
+  resourcePickerTriggerClassName,
+} from './components/ui/resource-picker';
 export { ScrollArea, ScrollBar } from './components/ui/scroll-area';
 export type {
   SearchProps,
