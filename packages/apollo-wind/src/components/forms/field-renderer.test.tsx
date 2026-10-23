@@ -169,8 +169,11 @@ describe('FormFieldRenderer', () => {
       expect(textarea.tagName).toBe('TEXTAREA');
     });
 
-    // jsdom has no layout, so a row measures as Textarea's 20px fallback.
-    const renderTextarea = (extra: Partial<FieldMetadata> = {}) => {
+    afterEach(() => vi.restoreAllMocks());
+
+    // jsdom has no layout: a row is 20px, and the content height is mocked.
+    const renderTextarea = (extra: Partial<FieldMetadata> = {}, contentHeight = 0) => {
+      vi.spyOn(HTMLElement.prototype, 'scrollHeight', 'get').mockReturnValue(contentHeight);
       const field = {
         name: 'notes',
         type: 'textarea',
@@ -189,6 +192,16 @@ describe('FormFieldRenderer', () => {
       const textarea = renderTextarea();
       expect(textarea).toHaveAttribute('rows', '1');
       expect(textarea.style.minHeight).toBe('20px');
+    });
+
+    it('fits the content it is given', () => {
+      expect(renderTextarea({}, 60).style.height).toBe('60px'); // three rows
+    });
+
+    it('stops fitting at 8 rows, then scrolls', () => {
+      const textarea = renderTextarea({}, 400); // twenty rows
+      expect(textarea.style.height).toBe('160px');
+      expect(textarea.style.overflowY).toBe('auto');
     });
 
     it('can be dragged taller with the resize handle', () => {
