@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.9.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.8.2...@uipath/apollo-react@7.9.0) (2026-10-23)
+
+### Features
+
+* **apollo-react:** show what a centralized guardrail reads on its row ([ddda24c](https://github.com/UiPath/apollo-ui/commit/ddda24c2dd827d795e35dca2ceeef098b7f2b071))
+
 ## [@uipath/apollo-react-v7.8.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.8.1...@uipath/apollo-react@7.8.2) (2026-10-22)
 
 ### Bug Fixes
