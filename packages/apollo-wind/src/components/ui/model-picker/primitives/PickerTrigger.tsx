@@ -4,9 +4,9 @@ import { ChevronDown } from 'lucide-react';
 import * as React from 'react';
 import { cn } from '@/lib';
 import { DEFAULT_MODEL_PICKER_LABELS } from '../labels';
-import { ModelTagChip } from '../ModelTagChip';
 import type { DiscoveryModel } from '../types';
 import { type DeriveModelTagsContext, deriveModelTags } from '../utils';
+import { ModelTagStrip } from './ModelTagStrip';
 
 export interface PickerTriggerProps
   extends Omit<
@@ -166,14 +166,12 @@ export const PickerTrigger = React.forwardRef<HTMLButtonElement, PickerTriggerPr
           {selected ? (
             <>
               <span className="max-w-full truncate text-foreground">{primary}</span>
-              {inlineTags.map((t) => (
-                // `flex items-center` for the same reason as the option rows:
-                // a block wrapper baseline-aligns the inline-flex chip inside
-                // an inherited line box and lifts it off the title's centre.
-                <span className="flex shrink-0 items-center" key={`${t.kind}-${t.label}`}>
-                  <ModelTagChip disableTooltip tag={t} variants={tagVariants} />
-                </span>
-              ))}
+              <ModelTagStrip
+                disableTooltip
+                labels={labels}
+                tagVariants={tagVariants}
+                tags={inlineTags}
+              />
             </>
           ) : pendingValue ? (
             <span className="max-w-full truncate text-foreground">{pendingValue}</span>
