@@ -19,9 +19,9 @@ const meta = {
   argTypes: {
     variant: {
       control: 'select',
-      options: ['default', 'ghost'],
+      options: ['default', 'ghost', 'none'],
       description:
-        'Visual style. Ghost removes the border and sets a surface background, suited for compact panel inputs.',
+        'Visual style. Ghost removes the border and sets a surface background, suited for compact panel inputs. None paints no box in any theme, for a field whose className draws its own.',
     },
     size: {
       control: 'select',
@@ -117,6 +117,22 @@ export const Ghost: Story = {
   args: {
     variant: 'ghost',
     placeholder: 'Search...',
+  },
+};
+
+export const None: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'None paints no box, so className draws one that holds in every theme. Under Future, a default Input switches to its own 40px borderless box, while this one keeps 34px with a border.',
+      },
+    },
+  },
+  args: {
+    variant: 'none',
+    placeholder: 'Boxed by className',
+    className: 'h-[34px] rounded border border-input bg-background px-2 text-sm',
   },
 };
 
