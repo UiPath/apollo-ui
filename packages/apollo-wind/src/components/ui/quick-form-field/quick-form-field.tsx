@@ -362,8 +362,9 @@ export function QuickFormField({
         onBlur={onValueBlur}
       />
     ) : fieldType === 'textarea' ? (
-      // Grows with its content up to the ceiling, then scrolls.
-      <InputGroupTextarea {...textInputProps} minRows={3} maxRows={8} />
+      // Starts one line tall, like every other field type, then grows with its
+      // content up to the ceiling and scrolls past it.
+      <InputGroupTextarea {...textInputProps} minRows={1} maxRows={8} />
     ) : (
       <InputGroupInput
         {...textInputProps}
