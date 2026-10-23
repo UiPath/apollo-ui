@@ -244,20 +244,16 @@ describe('QuickFormField — divergences from apollo-wind', () => {
       );
       const textarea = screen.getByPlaceholderText('Text area value');
       expect(textarea.tagName).toBe('TEXTAREA');
-      // A native textarea is two rows tall by default.
       expect(textarea).toHaveAttribute('rows', '1');
       const group = container.querySelector('[role="group"]');
       expect(group).toHaveAttribute('data-layout', 'row');
-      // Not the group's direct child, so the group keeps its row height and
-      // centring instead of switching to auto height (`has-[>textarea]`).
+      // Not a direct child, so `has-[>textarea]` can't make the group auto height.
       expect(group?.querySelector(':scope > textarea')).toBeNull();
     });
 
-    // Fixed at one line at design time: the floor and the ceiling are both one
-    // row, so content scrolls instead of growing the box. jsdom has no layout,
-    // so a row measures as Textarea's 20px fallback.
+    // jsdom has no layout, so a row measures as Textarea's 20px fallback.
     it('stays one line tall, even with several lines of content', () => {
-      // jsdom reports no content height; make three lines (60px) of content measurable.
+      // Three lines (60px) of content.
       const scrollHeight = vi
         .spyOn(HTMLElement.prototype, 'scrollHeight', 'get')
         .mockReturnValue(60);

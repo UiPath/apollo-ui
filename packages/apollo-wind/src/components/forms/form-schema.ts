@@ -278,7 +278,7 @@ export interface TextareaFieldMetadata extends BaseFieldMetadata {
   rows?: number;
   /** Autosize floor in rows; takes precedence over `rows` when set. */
   minRows?: number;
-  /** How many rows the textarea grows to with its content before it scrolls (default 8). */
+  /** Rows the textarea grows to before it scrolls (default 8). */
   maxRows?: number;
   /** DOM maxLength character cap. */
   maxLength?: number;
