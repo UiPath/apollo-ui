@@ -142,21 +142,36 @@ export const setEditorTokens = (editor: LexicalEditor, tokens: PromptEditorToken
   editor.update(() => $setEditorTokensInternal(tokens), { discrete: true });
 };
 
-/** Serialize tokens to clipboard-friendly string (using {{ }} for variables) */
-export const tokensToClipboardString = (tokens: PromptEditorToken[]): string => {
-  let result = '';
-  for (const token of tokens) {
-    if (token.type === 'text') {
-      result += token.value;
-    } else {
-      // All non-text tokens use {{ }} syntax for clipboard
-      result += `{{ ${token.value} }}`;
-    }
-  }
-  return result;
+/**
+ * Escape a text run for the clipboard. A backslash run directly before `{{` is doubled, then a literal
+ * `{{` gets one more backslash; a run ending the text before a chip is doubled. The parser reads the
+ * run's parity, so any text round-trips.
+ */
+const escapeClipboardText = (text: string, beforeToken: boolean): string => {
+  const escaped = text.replace(/(\\*){{/g, (_match, run: string) => `${run}${run}\\{{`);
+  return beforeToken ? escaped.replace(/\\+$/, (run) => run + run) : escaped;
 };
 
-/** Parse a clipboard string back into tokens */
+/** Serialize tokens to clipboard-friendly string (using {{ }} for variables; a literal `{{` in text is escaped as `\{{`) */
+export const tokensToClipboardString = (tokens: PromptEditorToken[]): string => {
+  let result = '';
+  let pendingText = '';
+  for (const token of tokens) {
+    if (token.type === 'text') {
+      pendingText += token.value;
+    } else {
+      // All non-text tokens use {{ }} syntax for clipboard
+      result += `${escapeClipboardText(pendingText, true)}{{ ${token.value} }}`;
+      pendingText = '';
+    }
+  }
+  return result + escapeClipboardText(pendingText, false);
+};
+
+/**
+ * Parse a clipboard string back into tokens. Before `{{`, an odd backslash run escapes it (a literal
+ * `{{`) and an even run is literal backslashes before a chip; either way the run is halved.
+ */
 export const clipboardStringToTokens = (str: string): PromptEditorToken[] => {
   const tokens: PromptEditorToken[] = [];
   let currentText = '';
@@ -172,6 +187,14 @@ export const clipboardStringToTokens = (str: string): PromptEditorToken[] => {
   while (i < str.length) {
     // Check for {{ }} token
     if (str[i] === '{' && i + 1 < str.length && str[i + 1] === '{') {
+      const run = currentText.length - currentText.replace(/\\+$/, '').length;
+      const keptBackslashes = '\\'.repeat(Math.floor(run / 2));
+      currentText = currentText.slice(0, currentText.length - run) + keptBackslashes;
+      if (run % 2 === 1) {
+        currentText += '{{';
+        i += 2;
+        continue;
+      }
       flushText();
       i += 2;
       let inner = '';
