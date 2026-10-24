@@ -46,6 +46,5 @@
   "modelPicker.deleteConfirm.title": "Özel modeli sil",
   "modelPicker.deleteConfirm.message": "Bu işlem, \"{name}\" Bu kiracıdaki herkes için yapılandırma. Bu eylem geri alınamaz.",
   "modelPicker.deleteConfirm.cancel": "İptal",
-  "modelPicker.deleteConfirm.confirm": "Sil",
-  "modelPicker.tag.hiddenCount.label": "+{count}"
+  "modelPicker.deleteConfirm.confirm": "Sil"
 }
