@@ -46,6 +46,5 @@
   "modelPicker.deleteConfirm.title": "删除自定义模型",
   "modelPicker.deleteConfirm.message": "这将永久删除索引“{name}”。此租户中每个人的自定义配置。此操作无法撤销。",
   "modelPicker.deleteConfirm.cancel": "取消",
-  "modelPicker.deleteConfirm.confirm": "删除",
-  "modelPicker.tag.hiddenCount.label": "+{count}"
+  "modelPicker.deleteConfirm.confirm": "删除"
 }
