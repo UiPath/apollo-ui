@@ -259,7 +259,7 @@ export const FileUpload = React.forwardRef<HTMLFieldSetElement, FileUploadProps>
           tabIndex={disabled ? -1 : 0}
           className={cn(
             // Base styles (all themes)
-            'relative flex w-full flex-col items-center justify-center h-32 border-2 border-dashed rounded-lg px-4 py-6 cursor-pointer transition-colors',
+            'relative flex w-full flex-col items-center justify-center min-h-32 border-2 border-dashed rounded-lg px-4 py-6 cursor-pointer transition-colors',
             'text-foreground-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
             // Error state (same stroke as Input; Future keeps its 1px outer ring)
             'aria-invalid:border-error aria-invalid:focus-visible:ring-error future:aria-invalid:border-error future:aria-invalid:ring-1 future:aria-invalid:ring-error/40',
@@ -283,7 +283,7 @@ export const FileUpload = React.forwardRef<HTMLFieldSetElement, FileUploadProps>
             }
           }}
         >
-          <Upload className="mb-2 h-8 w-8 text-muted-foreground future:text-foreground-muted" />
+          <Upload className="mb-2 h-8 w-8 shrink-0 text-muted-foreground future:text-foreground-muted" />
           <p className="text-center text-sm text-muted-foreground future:text-foreground-muted">
             <span className="font-semibold">Click to upload</span> or drag and drop
           </p>
