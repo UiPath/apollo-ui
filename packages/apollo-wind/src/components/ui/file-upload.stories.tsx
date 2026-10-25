@@ -117,6 +117,26 @@ export const WithMaxSize = {
   },
 };
 
+export const WithFileTypeAndSizeHints = {
+  render: () => {
+    const [, setFiles] = useState<File[]>([]);
+
+    return (
+      <div className="w-[400px]">
+        <FileUpload onFilesChange={setFiles} accept=".json,.csv" maxSize={5 * 1024 * 1024} />
+      </div>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'With both an `accept` hint and a `maxSize` hint, the dropzone grows to fit its content. The upload icon keeps its full size.',
+      },
+    },
+  },
+};
+
 export const WithExternalErrors = {
   args: {},
   render: () => {
