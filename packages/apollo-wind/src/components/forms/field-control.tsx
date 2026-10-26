@@ -222,9 +222,7 @@ export function FieldControl({
         />
       );
 
-    case 'textarea': {
-      // Fits its content up to 8 rows, then scrolls; drag the corner to make it bigger.
-      const rows = field.minRows ?? field.rows ?? 1;
+    case 'textarea':
       return (
         <Textarea
           id={field.name}
@@ -239,12 +237,9 @@ export function FieldControl({
           aria-invalid={invalid || undefined}
           aria-describedby={describedById}
           aria-errormessage={errorId}
-          rows={rows}
-          minRows={rows}
-          maxRows={Math.max(rows, 8)}
+          {...(field.minRows != null ? { minRows: field.minRows } : { rows: field.rows || 4 })}
         />
       );
-    }
 
     case 'select':
       return (
