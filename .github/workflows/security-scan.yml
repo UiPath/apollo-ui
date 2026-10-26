@@ -33,7 +33,7 @@ jobs:
           persist-credentials: false
 
       - name: Run Zizmor Security Scan
-        uses: zizmorcore/zizmor-action@85b2b9fb8e3325e7a23d7d0a9d7ba5ae0f999e3e # v0.7.1
+        uses: zizmorcore/zizmor-action@53290badfa369cb0bf7ad16342cb62c2fa47ac7b # v0.8.0
         with:
           advanced-security: true
           min-confidence: medium
@@ -59,7 +59,7 @@ jobs:
 
       - name: Run actionlint
         # Catches a different class of issues than zizmor (syntax, expression typos, shellcheck on run: blocks).
-        uses: reviewdog/action-actionlint@3cbf14efd750961dba35fccbf00f9e14028cb1f5 # v1.80.2
+        uses: reviewdog/action-actionlint@48e36f54d8da326b83ab061aee2cc5e01b5ca46f # v1.80.6
         with:
           reporter: github-pr-check
           fail_on_error: true
