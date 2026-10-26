@@ -362,10 +362,14 @@ export function QuickFormField({
         onBlur={onValueBlur}
       />
     ) : fieldType === 'textarea' ? (
-      // One fixed line at design time; wrapped so the group keeps its row height.
-      <div className="flex min-w-0 flex-1 items-center">
-        <InputGroupTextarea {...textInputProps} rows={1} className="py-0 future:py-0" />
-      </div>
+      // Starts one line tall like a text field, then grows with its content up to 8 rows.
+      <InputGroupTextarea
+        {...textInputProps}
+        rows={1}
+        minRows={1}
+        maxRows={8}
+        className="py-[3px] future:py-0.5"
+      />
     ) : (
       <InputGroupInput
         {...textInputProps}
@@ -412,9 +416,11 @@ export function QuickFormField({
         error={error}
         errorId={validationId}
         disabled={disabled}
-        // The dropzone and wrapping chips need more than one row.
+        // The dropzone and a text area are taller than a row and selected chips
+        // wrap past one, so the box grows to hold them.
         layout={
-          mode === 'literal' && (fieldType === 'file' || fieldType === 'multi-select')
+          mode === 'literal' &&
+          (fieldType === 'file' || fieldType === 'multi-select' || fieldType === 'textarea')
             ? 'grow'
             : 'row'
         }
