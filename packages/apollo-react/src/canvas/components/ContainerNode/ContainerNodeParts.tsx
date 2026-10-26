@@ -196,7 +196,10 @@ function HandleGroup({
   connectedHandleIds,
   onHandleAction,
 }: HandleGroupProps) {
-  const groupVisible = shouldShowHandles && (group.visible ?? true);
+  // alwaysVisible groups (e.g. a case stage's labeled lifecycle handles) render
+  // regardless of the hover / selection state.
+  const groupVisible =
+    (shouldShowHandles || group.alwaysVisible === true) && (group.visible ?? true);
   const position = group.position as Position;
   const enhancedHandles = useMemo(
     () =>
@@ -237,6 +240,7 @@ function HandleGroup({
       nodeWidth={nodeWidth}
       nodeHeight={nodeHeight}
       portalActions={group.boundary === 'outer'}
+      slotCount={group.slotCount}
     />
   );
 }

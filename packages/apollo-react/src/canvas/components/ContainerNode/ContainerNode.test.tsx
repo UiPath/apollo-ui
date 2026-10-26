@@ -138,6 +138,7 @@ vi.mock('../Toolbar', () => ({
 }));
 
 import { LoopNode } from '../LoopNode/LoopNode';
+import { StageHeaderChipType } from '../StageNode/StageNode.types';
 import { ContainerCanvasNode } from './ContainerCanvasNode';
 import { ContainerNode } from './ContainerNode';
 
@@ -618,5 +619,152 @@ describe('ContainerNode inline label editing', () => {
 
     fireEvent.doubleClick(titleEl());
     expect(screen.getByRole('textbox', { name: 'Edit container name' })).toBeTruthy();
+  });
+});
+
+describe('ContainerNode header chips', () => {
+  it('renders no chip row by default', () => {
+    renderContainer();
+
+    expect(screen.queryByTestId('container-header-chips')).toBeNull();
+  });
+
+  it('renders rule chips from the headerChips prop', () => {
+    renderContainer({
+      headerChips: [
+        { type: StageHeaderChipType.Entry, count: 2 },
+        { type: StageHeaderChipType.Completion, count: 1 },
+        { type: StageHeaderChipType.Exit, count: 3 },
+      ],
+    });
+
+    expect(screen.getByTestId('container-header-chips')).toBeTruthy();
+    expect(screen.getByTestId('container-header-chip-entry').textContent).toContain('2');
+    expect(screen.getByTestId('container-header-chip-completion').textContent).toContain('1');
+    expect(screen.getByTestId('container-header-chip-exit').textContent).toContain('3');
+  });
+
+  it('renders chips from node data when no prop is set, and lets the prop win', () => {
+    const { unmount } = render(
+      <ContainerNode
+        {...defaultProps}
+        data={{ headerChips: [{ type: StageHeaderChipType.ReturnToOrigin, count: 1 }] }}
+      />
+    );
+    expect(screen.getByTestId('container-header-chip-returnToOrigin')).toBeTruthy();
+    unmount();
+
+    renderContainer({
+      data: { headerChips: [{ type: StageHeaderChipType.Exit, count: 9 }] },
+      headerChips: [{ type: StageHeaderChipType.Entry, count: 1 }],
+    });
+    expect(screen.getByTestId('container-header-chip-entry')).toBeTruthy();
+    expect(screen.queryByTestId('container-header-chip-exit')).toBeNull();
+  });
+
+  it('renders localized status pills for Optional and EndsCase chips', () => {
+    renderContainer({
+      headerChips: [{ type: StageHeaderChipType.Optional }, { type: StageHeaderChipType.EndsCase }],
+    });
+
+    expect(screen.getByTestId('container-header-chip-optional').textContent).toContain('Optional');
+    expect(screen.getByTestId('container-header-chip-endsCase').textContent).toContain('Ends case');
+  });
+
+  it('invokes chip onClick', () => {
+    const onChipClick = vi.fn();
+    renderContainer({
+      headerChips: [{ type: StageHeaderChipType.Entry, count: 2, onClick: onChipClick }],
+    });
+
+    fireEvent.click(screen.getByTestId('container-header-chip-entry'));
+
+    expect(onChipClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('stacks the chip row under an intact title row', () => {
+    renderContainer({
+      headerChips: [{ type: StageHeaderChipType.Entry, count: 1 }],
+      headerBadges: <span>Badge</span>,
+    });
+
+    const header = getHeader();
+    expect(header.className).toContain('flex-col');
+    expect(header.children).toHaveLength(2);
+    expect(header.lastElementChild?.getAttribute('data-testid')).toBe('container-header-chips');
+    expect(screen.getByText('Badge')).toBeTruthy();
+  });
+
+  it('passes the chip row to renderHeader', () => {
+    const renderHeader = vi.fn(({ title, chips }) => (
+      <div data-testid="custom-header">
+        {title}
+        {chips}
+      </div>
+    ));
+    renderContainer({ renderHeader, headerChips: [{ type: StageHeaderChipType.Entry, count: 4 }] });
+
+    expect(screen.getByTestId('custom-header').textContent).toContain('4');
+  });
+});
+
+describe('ContainerNode text wrapping', () => {
+  it('truncates the title and subtitle by default', () => {
+    renderContainer({ subtitle: 'Sub' });
+
+    expect(screen.getByTestId('container-node-title').className).toContain('truncate');
+    expect(screen.getByTestId('container-node-subtitle').className).toContain('truncate');
+  });
+
+  it('clamps them at two lines when the manifest sets wrapText', () => {
+    setContainerDisplay({ wrapText: true, subtitle: 'From manifest' });
+    renderContainer();
+
+    expect(screen.getByTestId('container-node-title').className).toContain('line-clamp-2');
+    expect(screen.getByTestId('container-node-subtitle').className).toContain('line-clamp-2');
+  });
+
+  it('lets the prop turn wrapping off over the manifest', () => {
+    setContainerDisplay({ wrapText: true });
+    renderContainer({ wrapText: false });
+
+    expect(screen.getByTestId('container-node-title').className).toContain('truncate');
+  });
+});
+
+describe('ContainerNode handle groups', () => {
+  const innerGroup = (extra: Record<string, unknown>) => ({
+    position: 'right',
+    boundary: 'inner',
+    ...extra,
+    handles: [{ id: 'onComplete', label: 'Complete', type: 'target', handleType: 'input' }],
+  });
+  const lastGroupProps = () => mockButtonHandles.mock.calls.at(-1)?.[0];
+
+  function renderWithGroup(extra: Record<string, unknown>) {
+    mockManifest.current = {
+      display: { label: 'Stage', icon: 'repeat', shape: 'container' },
+      handleConfiguration: [innerGroup(extra)],
+    };
+    mockButtonHandles.mockClear();
+    renderContainer();
+  }
+
+  it('shows alwaysVisible groups without hover or selection', () => {
+    renderWithGroup({ alwaysVisible: true });
+
+    expect(lastGroupProps().handles[0].showHandle).toBe(true);
+  });
+
+  it('keeps other groups hover-gated', () => {
+    renderWithGroup({});
+
+    expect(lastGroupProps().handles[0].showHandle).toBe(false);
+  });
+
+  it('forwards slotCount to the handle layout', () => {
+    renderWithGroup({ slotCount: 2 });
+
+    expect(lastGroupProps().slotCount).toBe(2);
   });
 });

@@ -22,6 +22,7 @@ export interface ResolvedContainerNodeConfig {
   accent: ContainerAccent;
   radius: ContainerRadius;
   labelEditable: boolean;
+  wrapText: boolean;
 }
 
 type ContainerConfigInput = Pick<
@@ -34,6 +35,7 @@ type ContainerConfigInput = Pick<
   | 'bodyFrame'
   | 'appearance'
   | 'labelEditable'
+  | 'wrapText'
   | 'defaults'
 >;
 
@@ -78,5 +80,6 @@ export function resolveContainerNodeConfig(
     accent: props.appearance?.accent ?? manifest.accent ?? defaults.appearance?.accent ?? 'default',
     radius: props.appearance?.radius ?? manifest.radius ?? defaults.appearance?.radius ?? 'default',
     labelEditable: props.labelEditable ?? manifest.labelEditable ?? defaults.labelEditable ?? false,
+    wrapText: props.wrapText ?? manifest.wrapText ?? defaults.wrapText ?? false,
   };
 }
