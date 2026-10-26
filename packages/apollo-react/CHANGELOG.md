@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.9.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.9.0...@uipath/apollo-react@7.9.1) (2026-10-26)
+
+### Bug Fixes
+
+* **apollo-react:** announce Toolbox row details and submenus [MST-14409] [MST-14937] ([89464fc](https://github.com/UiPath/apollo-ui/commit/89464fc5c9e8a272d534a805101473124842080c))
+
 ## [@uipath/apollo-react-v7.9.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.8.2...@uipath/apollo-react@7.9.0) (2026-10-23)
 
 ### Features
