@@ -4,6 +4,7 @@ import type { SuggestionType } from '../../types';
 import type { ElementStatusValues } from '../../types/execution';
 import type { BaseNodeData } from '../BaseNode';
 import type { NodeAdornments } from '../BaseNode/BaseNode.types';
+import type { StageHeaderChip } from '../StageNode/StageNode.types';
 import type { NodeToolbarConfig } from '../Toolbar';
 
 export type ContainerNodeData = BaseNodeData;
@@ -34,6 +35,8 @@ export interface ContainerHeaderParts {
   subtitle?: ReactNode;
   badges?: ReactNode;
   end?: ReactNode;
+  /** The chip row rendered under the title when the container has header chips. */
+  chips?: ReactNode;
 }
 
 export interface ContainerEmptyStateContext {
@@ -58,6 +61,7 @@ export interface ContainerNodeDefaults {
   bodyFrame?: ContainerBodyFrame;
   appearance?: ContainerNodeAppearance;
   labelEditable?: boolean;
+  wrapText?: boolean;
 }
 
 export interface ContainerNodeConfig {
@@ -86,6 +90,18 @@ export interface ContainerNodeConfig {
    * Off by default.
    */
   labelEditable?: boolean;
+  /**
+   * Rule chips rendered in a wrapping row under the title (entry / exit /
+   * completion counts, Optional / Ends case pills), using the StageNode chip
+   * model. Can also be supplied per node via `data.headerChips`; this prop wins
+   * when both are set.
+   */
+  headerChips?: StageHeaderChip[];
+  /**
+   * Lets the title and subtitle wrap onto a second line (clamped at two)
+   * instead of truncating to one. Off by default.
+   */
+  wrapText?: boolean;
 
   /** Tooltip and accessible name of the add-first-step button. */
   emptyStateLabel?: string;

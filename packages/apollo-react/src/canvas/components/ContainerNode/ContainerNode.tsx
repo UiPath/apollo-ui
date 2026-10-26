@@ -30,8 +30,10 @@ import { getStatusBorder } from '../BaseNode/BaseNodeContainer';
 import { MissingManifestNode } from '../BaseNode/BaseNodeMissingManifest';
 import type { InlineLabelValues } from '../BaseNode/useInlineLabelEditing';
 import type { HandleActionEvent } from '../ButtonHandle';
+import type { StageHeaderChip } from '../StageNode/StageNode.types';
 import { NodeToolbar } from '../Toolbar';
 import { lockToolbarConfig } from '../Toolbar/NodeToolbar/NodeToolbar.utils';
+import { ContainerHeaderChips } from './ContainerHeaderChips';
 import { resolveContainerNodeConfig } from './ContainerNode.config';
 import {
   ACCENT_BORDER_CLASSES,
@@ -83,6 +85,7 @@ function ContainerNodeComponent(props: ContainerNodeProps) {
     renderEmptyState,
     className,
     defaults,
+    headerChips: headerChipsProp,
   } = props;
   const { updateNodeData } = useReactFlow();
   const nodeTypeRegistry = useOptionalNodeTypeRegistry();
@@ -144,6 +147,12 @@ function ContainerNodeComponent(props: ContainerNodeProps) {
     typeof instanceDisplay?.subLabel === 'string' ? instanceDisplay.subLabel : undefined;
   const config = resolveContainerNodeConfig(props, manifest?.display?.container, instanceSubLabel);
   const isLoop = config.kind === LOOP_KIND;
+  // Rule chips: the prop wins over per-node data (e.g. a case stage's rule summary).
+  const headerChips =
+    headerChipsProp ??
+    (Array.isArray(resolvedData.headerChips)
+      ? (resolvedData.headerChips as StageHeaderChip[])
+      : undefined);
   const displayTitle =
     display.label ?? defaults?.title ?? _({ id: 'container-node.title', message: 'Container' });
   // `resolveDisplay` returns '' for a missing icon, so fall back on falsy, not nullish.
@@ -353,6 +362,12 @@ function ContainerNodeComponent(props: ContainerNodeProps) {
           subtitle={config.subtitle}
           badges={config.headerBadges}
           end={config.headerEnd}
+          chips={
+            headerChips && headerChips.length > 0 ? (
+              <ContainerHeaderChips chips={headerChips} />
+            ) : undefined
+          }
+          wrapText={config.wrapText}
           renderHeader={renderHeader}
           loading={isLoading}
           editable={config.labelEditable && canEditNode && !isLoading}

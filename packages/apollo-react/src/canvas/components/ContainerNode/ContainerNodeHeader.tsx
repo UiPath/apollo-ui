@@ -23,6 +23,8 @@ export function Header({
   subtitle,
   badges,
   end,
+  chips,
+  wrapText,
   renderHeader,
   loading,
   radiusClassName,
@@ -44,6 +46,10 @@ export function Header({
   subtitle?: ReactNode;
   badges?: ReactNode;
   end?: ReactNode;
+  /** Chip row rendered under the title row. */
+  chips?: ReactNode;
+  /** Wrap the title and subtitle onto two lines instead of truncating. */
+  wrapText: boolean;
   renderHeader?: (parts: ContainerHeaderParts) => ReactNode;
   loading: boolean;
   radiusClassName: string;
@@ -86,6 +92,10 @@ export function Header({
       }),
   });
 
+  // Titles truncate to one line by default; `wrapText` lets them (and the
+  // subtitle) run onto a second line before clamping.
+  const textOverflowClass = wrapText ? 'line-clamp-2 break-words' : 'truncate';
+
   const titleContent = loading ? (
     <div className="h-5 w-28 animate-pulse rounded bg-(--canvas-background-overlay)" />
   ) : isEditing ? (
@@ -105,7 +115,7 @@ export function Header({
     />
   ) : (
     <span
-      className="truncate text-[15px] font-semibold leading-5 tracking-normal"
+      className={cn(textOverflowClass, 'text-[15px] font-semibold leading-5 tracking-normal')}
       onDoubleClick={editable ? handleDoubleClick(labelInputRef) : undefined}
       data-testid="container-node-title"
     >
@@ -144,7 +154,7 @@ export function Header({
       />
     ) : subtitle && !loading ? (
       <span
-        className="truncate text-xs leading-4 text-foreground-muted"
+        className={cn(textOverflowClass, 'text-xs leading-4 text-foreground-muted')}
         onDoubleClick={
           editable && subtitleEditable ? handleDoubleClick(subLabelInputRef) : undefined
         }
@@ -154,11 +164,36 @@ export function Header({
       </span>
     ) : null;
   const hasTrailing = badges != null || end != null;
+  const chipsContent = chips && !loading ? chips : undefined;
+
+  const mainRow = (
+    <>
+      <div className={cn('flex min-w-0 items-center gap-2.5', isEditing && 'flex-1')}>
+        {iconContent}
+        {subtitleContent ? (
+          <div className={cn('flex min-w-0 flex-col', isEditing && 'flex-1 gap-0.5')}>
+            {titleContent}
+            {subtitleContent}
+          </div>
+        ) : (
+          titleContent
+        )}
+      </div>
+      {hasTrailing ? (
+        <div className="flex shrink-0 items-center gap-2">
+          {end}
+          {badges}
+        </div>
+      ) : null}
+    </>
+  );
 
   return (
     <div
       className={cn(
-        'relative z-10 flex shrink-0 cursor-grab items-center justify-between gap-2.5',
+        'relative z-10 flex shrink-0 cursor-grab',
+        // With a chip row the header stacks: title row on top, chips beneath.
+        chipsContent && !renderHeader ? 'flex-col gap-1.5' : 'items-center justify-between gap-2.5',
         radiusClassName,
         '-mb-2.5 bg-surface-overlay px-3.5 pb-2.5 pt-2.5 text-foreground',
         'active:cursor-grabbing'
@@ -174,27 +209,15 @@ export function Header({
           subtitle: subtitleContent ?? undefined,
           badges: badges ?? undefined,
           end,
+          chips: chipsContent,
         })
-      ) : (
+      ) : chipsContent ? (
         <>
-          <div className={cn('flex min-w-0 items-center gap-2.5', isEditing && 'flex-1')}>
-            {iconContent}
-            {subtitleContent ? (
-              <div className={cn('flex min-w-0 flex-col', isEditing && 'flex-1 gap-0.5')}>
-                {titleContent}
-                {subtitleContent}
-              </div>
-            ) : (
-              titleContent
-            )}
-          </div>
-          {hasTrailing ? (
-            <div className="flex shrink-0 items-center gap-2">
-              {end}
-              {badges}
-            </div>
-          ) : null}
+          <div className="flex items-center justify-between gap-2.5">{mainRow}</div>
+          {chipsContent}
         </>
+      ) : (
+        mainRow
       )}
     </div>
   );

@@ -50,6 +50,13 @@ export const nodeContainerDisplayManifestSchema = z.object({
 
   /** Lets users rename the title and subtitle inline, like BaseNode. Defaults to `false`. */
   labelEditable: z.boolean().optional(),
+
+  /**
+   * Lets the title and subtitle wrap onto a second line (clamped at two) instead
+   * of truncating to one, for containers whose header carries more text such as
+   * a case stage with a description. Defaults to `false`.
+   */
+  wrapText: z.boolean().optional(),
 });
 
 /**
