@@ -18,7 +18,11 @@ jobs:
     enable-auto-merge:
         # Never auto-merge a fork PR. Fork PRs require human review regardless of file scope —
         # the path-based check below cannot establish trust in the author's commits.
-        if: github.event.pull_request.head.repo.fork == false
+        # PRs from apollo-vertex-review-feedback.yml always need a human review: their
+        # instruction changes are learned from comment text.
+        if: >-
+            github.event.pull_request.head.repo.fork == false &&
+            !startsWith(github.event.pull_request.head.ref, 'chore/vertex-review-feedback-')
         permissions:
             contents: read
             pull-requests: write
