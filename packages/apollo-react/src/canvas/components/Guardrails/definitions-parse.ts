@@ -125,6 +125,7 @@ const definitionSchema = z.object({
   // An open string, not an enum: a reason this version does not know must not drop the
   // definition. Readers compare against the values they handle and ignore the rest.
   disabledReason: z.string().optional(),
+  isPreview: z.boolean().optional(),
   displayName: emptyToUndefined,
   description: emptyToUndefined,
   byoConnectorName: emptyToUndefined,

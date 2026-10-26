@@ -79,6 +79,21 @@ describe('enrichGuardrailDefinitions', () => {
     });
   });
 
+  describe('isPreview', () => {
+    it.each([
+      true,
+      false,
+    ])('survives parse and enrich as %s, for the palette and the list', (isPreview) => {
+      const { definitions } = parseGuardrailDefinitions([{ ...PII_DETECTION_WIRE, isPreview }]);
+
+      expect(enrichGuardrailDefinitions(definitions)[0]?.isPreview).toBe(isPreview);
+    });
+
+    it('omits it instead of setting it undefined', () => {
+      expect(enrichOne(PII_DETECTION_WIRE)).not.toHaveProperty('isPreview');
+    });
+  });
+
   describe('copy precedence', () => {
     it('prefers curated over wire at definition level for a UiPath validator', () => {
       const definition = enrichOne({

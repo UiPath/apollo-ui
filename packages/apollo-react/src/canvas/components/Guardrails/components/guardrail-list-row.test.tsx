@@ -129,6 +129,23 @@ describe('GuardrailListRow', () => {
       expect(screen.queryByText('Preview')).not.toBeInTheDocument();
     });
 
+    it('drops the preview badge only when the definition says it is out of preview', () => {
+      const withPreview = (isPreview: boolean) =>
+        DEFINITIONS.map((definition) => ({ ...definition, isPreview }));
+
+      const outOfPreview = renderRow(PII_GUARDRAIL, { previewChip: true }, withPreview(false));
+      expect(screen.queryByText('Preview')).not.toBeInTheDocument();
+      outOfPreview.unmount();
+
+      const inPreview = renderRow(BYO_GUARDRAIL, { previewChip: true }, withPreview(true));
+      expect(screen.getByText('Preview')).toBeInTheDocument();
+      inPreview.unmount();
+
+      // No definition resolved yet, as while the catalog loads: the row keeps today's badge.
+      renderRow(PII_GUARDRAIL, { previewChip: true }, []);
+      expect(screen.getByText('Preview')).toBeInTheDocument();
+    });
+
     it('renders the BYO badge only for BYO rows, and only when asked', () => {
       const { unmount } = renderRow(BYO_GUARDRAIL, { byoChip: true });
       // Green, which is the colour both products give this chip today.

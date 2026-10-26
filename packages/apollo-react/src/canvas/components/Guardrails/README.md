@@ -245,7 +245,7 @@ import { GuardrailList } from '@uipath/apollo-react/canvas/guardrails';
   | prop | default | why |
   | --- | --- | --- |
   | `statusChips` | `false` | Neither product chips definition status or administration today. The two BYO notices are *not* gated: both products already show those, and a guardrail that cannot run is not an opt-in detail. |
-  | `previewChip` | `false` | Product lifecycle, not a package concern. Both hosts pass it today and drop it at GA without a release here. |
+  | `previewChip` | `false` | Product lifecycle, not a package concern. Both hosts pass it today. Which rows it marks is the backend's call: a definition with `isPreview: false` (from the `PreviewGuardrailTypes` flag) drops it, so a validator reaches GA without a release here or in either host. Absent reads as preview, as every built-in validator was before the backend sent it. |
   | `byoChip` | `false` | Whether a bring-your-own row is badged as such. Agents shows it, Flow does not, so it cannot be inferred from `state.isByo`. Rendered before `previewChip`, since a BYO row is also a built-in validator: provenance first, then lifecycle. |
   | `reorderDisabled` | `disabled` | Agents stops reordering in a read-only list and Flow does not, so one flag could not express both. Flow passes `false`. |
   | `unstyled` | `false` | Agents renders inside its own section accordion, where the card border and padding are extra chrome. |
@@ -394,8 +394,8 @@ const { definitions, loading, error } = useGuardrailDefinitions({ baseUrl, tenan
   cmdk navigation skips `aria-disabled` items by construction, and why it is not a `Select`:
   palette entries are one-shot actions, not a selection.
 - **`previewChip` defaults to `false`**, the same call as the list: product lifecycle is not a
-  package concern. Both hosts hardcode the chip today and both pass the prop, then drop it at
-  GA without a release here.
+  package concern. Both hosts pass the prop, and an entry whose definition has
+  `isPreview: false` goes without the chip, so the backend flag decides GA per validator.
 - **`byoDisplay` presents a BYO entry the way both products' legacy palettes do**: named by
   its configuration (`byoValidatorName`) and sorted by it, a "BYO" chip in place of the
   connector-name chip, and an italic "Provider: {connector}" caption. Off by default, which

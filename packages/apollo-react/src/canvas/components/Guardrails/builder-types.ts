@@ -124,6 +124,12 @@ export interface GuardrailDefinition {
    * configuration. Open-ended, so a reason added later still parses; unknown values show nothing.
    */
   disabledReason?: string;
+  /**
+   * Whether the products mark this definition with the lifecycle `Preview` chip, as the
+   * backend's `PreviewGuardrailTypes` flag decides. Absent reads as preview, which is what
+   * every built-in validator showed before the backend sent it; only `false` drops the chip.
+   */
+  isPreview?: boolean;
   /** Pre-resolved informational note rendered above the form. */
   usageNote?: React.ReactNode;
   /** What this validator reads out of attached files. Absent means the host said nothing. */

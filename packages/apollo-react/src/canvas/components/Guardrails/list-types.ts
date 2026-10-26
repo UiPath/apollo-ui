@@ -33,6 +33,8 @@ export interface GuardrailListDefinition {
   status: GuardrailDefinitionStatus;
   /** See `GuardrailDefinition.disabledReason`; `'Policy'` puts a notice on the row. */
   disabledReason?: string;
+  /** See `GuardrailDefinition.isPreview`; only `false` drops the `previewChip` chip. */
+  isPreview?: boolean;
   byoValidatorName?: string;
   /** Rendered as the row's provider line. */
   byoConnectorName?: string;
