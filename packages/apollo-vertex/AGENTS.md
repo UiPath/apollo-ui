@@ -15,6 +15,9 @@ It uses:
 - **Radix UI** primitives for accessible components
 - **shadcn/ui** patterns with `class-variance-authority`
 
+For UX principles, personas and design constraints from the Vertical Solutions design team, see
+`DESIGN-CONTEXT.md` at the repository root.
+
 ## Build/Lint/Test Commands
 
 ### In this package
