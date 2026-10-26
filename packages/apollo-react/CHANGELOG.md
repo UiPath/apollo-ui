@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.9.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.9.1...@uipath/apollo-react@7.9.2) (2026-10-26)
+
+### Bug Fixes
+
+* **apollo-react:** mint new guardrail ids as uuids [AL-672] ([6c3d860](https://github.com/UiPath/apollo-ui/commit/6c3d8604e67e380d5b968757dba63282d8addb47))
+
 ## [@uipath/apollo-react-v7.9.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.9.0...@uipath/apollo-react@7.9.1) (2026-10-26)
 
 ### Bug Fixes
