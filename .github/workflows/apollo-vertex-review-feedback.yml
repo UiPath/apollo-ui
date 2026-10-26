@@ -85,7 +85,9 @@ jobs:
         if: steps.agent-key.outputs.available == 'true'
         run: |
           curl https://cursor.com/install -fsS | bash
-          echo "$HOME/.cursor/bin" >> "$GITHUB_PATH"
+          # The installer links `agent` into ~/.local/bin (the docs still say ~/.cursor/bin).
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          "$HOME/.local/bin/agent" --version
 
       - name: Update agent instructions
         if: steps.agent-key.outputs.available == 'true'
@@ -112,7 +114,7 @@ jobs:
           RATIONALE_FILE=$RUNNER_TEMP/rationale.md"
           model_args=()
           if [ -n "$MODEL" ]; then model_args=(--model "$MODEL"); fi
-          agent -p --force --output-format text "${model_args[@]}" "$prompt"
+          agent -p --force --trust --output-format text "${model_args[@]}" "$prompt"
 
           rm -rf .cursor
 
