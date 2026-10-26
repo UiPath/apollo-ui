@@ -1,6 +1,10 @@
-import { useReactFlow, useStore } from '@uipath/apollo-react/canvas/xyflow/react';
+import {
+  type ReactFlowState,
+  useReactFlow,
+  useStore,
+} from '@uipath/apollo-react/canvas/xyflow/react';
 import { cn } from '@uipath/apollo-wind';
-import { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSafeLingui } from '../../../i18n';
 import { useOptionalNodeTypeRegistry } from '../../core';
 import {
@@ -45,7 +49,13 @@ import {
   LOOP_KIND,
   RADIUS_CLASSES,
 } from './ContainerNode.constants';
-import { resolveContainerHandleGroups } from './ContainerNode.helpers';
+import {
+  applyHandleOffsets,
+  collectOccupiedWallOffsets,
+  type HandleOffsets,
+  resolveContainerHandleGroups,
+  resolveHandleWallDrag,
+} from './ContainerNode.helpers';
 import {
   resolveContainerHandleConfigurations,
   resolveInteractionState,
@@ -63,6 +73,8 @@ import {
   ResizeControls,
   ResizeCornerIndicators,
 } from './ContainerNodeParts';
+
+const selectZoom = (state: ReactFlowState) => state.transform?.[2] ?? 1;
 
 function ContainerNodeComponent(props: ContainerNodeProps) {
   const {
@@ -107,6 +119,14 @@ function ContainerNodeComponent(props: ContainerNodeProps) {
   const isConnecting = useStore(selectIsConnecting);
   const hasEmptyState = !!onAddFirstChild || !!renderEmptyState;
   const hasChildNodes = useHasChildNodes(id, isDesignMode && hasEmptyState);
+  const zoom = useStore(selectZoom);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const pillDragCleanupRef = useRef<(() => void) | null>(null);
+  const zoomRef = useRef(zoom);
+  zoomRef.current = zoom;
+
+  // Drop any in-flight pill drag listeners if the node unmounts mid-drag.
+  useEffect(() => () => pillDragCleanupRef.current?.(), []);
 
   const executionState = useNodeExecutionState(id);
   const validationState = useElementValidationStatus(id);
@@ -240,16 +260,91 @@ function ContainerNodeComponent(props: ContainerNodeProps) {
   const hasTopLeftAdornment = !!adornments.topLeft;
   const hasTopRightAdornment = !!adornments.topRight;
 
+  const handleOffsets = resolvedData.handleOffsets as HandleOffsets | undefined;
   const resolvedHandleGroups = useMemo(() => {
     const handleConfigurations = resolveContainerHandleConfigurations(
       manifest?.handleConfiguration,
       resolvedData
     );
-    return resolveHandles(handleConfigurations, { ...resolvedData, nodeId: id });
-  }, [manifest?.handleConfiguration, id, resolvedData]);
+    const resolved = resolveHandles(handleConfigurations, { ...resolvedData, nodeId: id });
+    return applyHandleOffsets(resolved, handleOffsets);
+  }, [manifest?.handleConfiguration, id, resolvedData, handleOffsets]);
   const containerHandleGroups = useMemo(
     () => resolveContainerHandleGroups(resolvedHandleGroups),
     [resolvedHandleGroups]
+  );
+
+  /**
+   * Drag session for a movable handle pill (`draggableWalls` in the manifest).
+   * Projects the pointer onto the nearest allowed wall (grid-snapped,
+   * corner-safe, clear of the measured header and of sibling pills) and writes
+   * the wall + offset into data.handleOffsets for the handle and its mirror, so
+   * an inner/outer pair moves together. Edges follow automatically: the
+   * resolved groups change re-triggers updateNodeInternals.
+   */
+  const startHandlePillDrag = useCallback(
+    (handleId: string, allowedWalls: HandleOffsets[string]['position'][], mirrorId?: string) =>
+      (event: React.PointerEvent) => {
+        if (!canEditNode) return;
+        event.preventDefault();
+        event.stopPropagation();
+        pillDragCleanupRef.current?.();
+
+        const container = containerRef.current;
+        if (!container) return;
+
+        // Sibling pill positions are fixed for the whole session; only the
+        // dragged pill (and its outer mirror) moves.
+        const occupiedOffsets = collectOccupiedWallOffsets(containerHandleGroups, {
+          nodeWidth: containerWidth,
+          nodeHeight: containerHeight,
+          excludeHandleIds: mirrorId ? [handleId, mirrorId] : [handleId],
+        });
+        const headerElement = container.querySelector('[data-container-header]');
+
+        const onPointerMove = (moveEvent: PointerEvent) => {
+          const rect = container.getBoundingClientRect();
+          const scale = zoomRef.current || 1;
+          const headerRect = headerElement?.getBoundingClientRect();
+          const next = resolveHandleWallDrag({
+            localX: (moveEvent.clientX - rect.left) / scale,
+            localY: (moveEvent.clientY - rect.top) / scale,
+            nodeWidth: rect.width / scale,
+            nodeHeight: rect.height / scale,
+            allowedWalls,
+            contentTopPx: headerRect ? (headerRect.bottom - rect.top) / scale : undefined,
+            occupiedOffsets,
+          });
+          if (!next) return;
+          updateNodeData(id, (node) => {
+            const previous = (node.data?.handleOffsets ?? {}) as HandleOffsets;
+            const current = previous[handleId];
+            if (current && current.position === next.position && current.offset === next.offset) {
+              return {};
+            }
+            return {
+              handleOffsets: {
+                ...previous,
+                [handleId]: next,
+                ...(mirrorId ? { [mirrorId]: next } : {}),
+              },
+            };
+          });
+        };
+
+        const onPointerUp = () => {
+          pillDragCleanupRef.current?.();
+        };
+
+        window.addEventListener('pointermove', onPointerMove);
+        window.addEventListener('pointerup', onPointerUp);
+        pillDragCleanupRef.current = () => {
+          window.removeEventListener('pointermove', onPointerMove);
+          window.removeEventListener('pointerup', onPointerUp);
+          pillDragCleanupRef.current = null;
+        };
+      },
+    [canEditNode, containerHandleGroups, containerHeight, containerWidth, id, updateNodeData]
   );
 
   useContainerNodeInternalsRefresh(id, containerHandleGroups, containerWidth, containerHeight);
@@ -317,6 +412,7 @@ function ContainerNodeComponent(props: ContainerNodeProps) {
   return (
     // biome-ignore lint/a11y/useSemanticElements: a canvas node is not a form group; <fieldset> would add form semantics and default styles
     <div
+      ref={containerRef}
       role="group"
       aria-label={displayTitle}
       data-container
@@ -451,6 +547,7 @@ function ContainerNodeComponent(props: ContainerNodeProps) {
         nodeHeight={containerHeight}
         connectedHandleIds={connectedHandleIds}
         onHandleAction={handleHandleAction}
+        startHandlePillDrag={canEditNode ? startHandlePillDrag : undefined}
       />
     </div>
   );

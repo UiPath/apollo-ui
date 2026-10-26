@@ -12,7 +12,7 @@ import {
   RESIZE_CONTROL_STYLE,
   RESIZE_CONTROLS,
 } from './ContainerNode.constants';
-import type { ContainerHandleGroup } from './ContainerNode.helpers';
+import type { ContainerHandleGroup, HandleOffsets } from './ContainerNode.helpers';
 import type { ContainerBodyFrame, ContainerEmptyStateContext } from './ContainerNode.types';
 
 export function EmptyStateRender({
@@ -156,6 +156,12 @@ type SharedHandleGroupProps = {
   nodeHeight: number;
   connectedHandleIds: ReadonlySet<string>;
   onHandleAction: (event: HandleActionEvent) => void;
+  /** Starts a pill drag for handles with `draggableWalls`; absent when the node can't be edited. */
+  startHandlePillDrag?: (
+    handleId: string,
+    allowedWalls: HandleOffsets[string]['position'][],
+    mirrorId?: string
+  ) => (event: React.PointerEvent) => void;
 };
 
 type HandleGroupsProps = SharedHandleGroupProps & {
@@ -195,6 +201,7 @@ function HandleGroup({
   nodeHeight,
   connectedHandleIds,
   onHandleAction,
+  startHandlePillDrag,
 }: HandleGroupProps) {
   // alwaysVisible groups (e.g. a case stage's labeled lifecycle handles) render
   // regardless of the hover / selection state.
@@ -205,6 +212,11 @@ function HandleGroup({
     () =>
       group.handles.map((handle) => {
         const showHandle = connectedHandleIds.has(handle.id) || groupVisible;
+        const draggableWalls = handle.draggableWalls;
+        const onLabelPointerDown =
+          startHandlePillDrag && draggableWalls && draggableWalls.length > 0
+            ? startHandlePillDrag(handle.id, draggableWalls, handle.dragMirrors)
+            : undefined;
 
         if (group.boundary === 'inner') {
           return {
@@ -212,6 +224,7 @@ function HandleGroup({
             showHandle,
             showButton: false,
             onAction: undefined,
+            onLabelPointerDown,
           };
         }
 
@@ -220,9 +233,17 @@ function HandleGroup({
           showHandle,
           showButton: handle.showButton,
           onAction: handle.onAction ?? onHandleAction,
+          onLabelPointerDown,
         };
       }),
-    [group.boundary, group.handles, connectedHandleIds, groupVisible, onHandleAction]
+    [
+      group.boundary,
+      group.handles,
+      connectedHandleIds,
+      groupVisible,
+      onHandleAction,
+      startHandlePillDrag,
+    ]
   );
 
   return (

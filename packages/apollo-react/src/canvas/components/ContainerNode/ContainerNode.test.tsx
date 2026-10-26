@@ -768,3 +768,57 @@ describe('ContainerNode handle groups', () => {
     expect(lastGroupProps().slotCount).toBe(2);
   });
 });
+
+describe('ContainerNode draggable handle pills', () => {
+  const lastGroupProps = () => mockButtonHandles.mock.calls.at(-1)?.[0];
+
+  function renderWithHandle(handle: Record<string, unknown>, data?: Record<string, unknown>) {
+    mockManifest.current = {
+      display: { label: 'Stage', icon: 'repeat', shape: 'container' },
+      handleConfiguration: [
+        {
+          position: 'right',
+          boundary: 'inner',
+          alwaysVisible: true,
+          handles: [
+            { id: 'onComplete', label: 'Complete', type: 'target', handleType: 'input', ...handle },
+          ],
+        },
+      ],
+    };
+    mockButtonHandles.mockClear();
+    renderContainer(data ? { data } : {});
+  }
+
+  it('turns pills of draggable handles into drag grips', () => {
+    renderWithHandle({ draggableWalls: ['right', 'bottom'], dragMirrors: 'complete' });
+
+    expect(typeof lastGroupProps().handles[0].onLabelPointerDown).toBe('function');
+  });
+
+  it('keeps pills of fixed handles non-interactive', () => {
+    renderWithHandle({});
+
+    expect(lastGroupProps().handles[0].onLabelPointerDown).toBeUndefined();
+  });
+
+  it('does not offer the grip when the node is locked', () => {
+    mockReadOnlyNodeIds.current = new Set(['container-1']);
+    renderWithHandle({ draggableWalls: ['right'] });
+
+    expect(lastGroupProps().handles[0].onLabelPointerDown).toBeUndefined();
+  });
+
+  it('renders a dragged handle on its stored wall and offset', () => {
+    renderWithHandle(
+      { draggableWalls: ['right', 'bottom'] },
+      { handleOffsets: { onComplete: { position: 'bottom', offset: 160 } } }
+    );
+
+    const props = lastGroupProps();
+    expect(props.position).toBe('bottom');
+    expect(props.handles[0].offsetPx).toBe(160);
+    // Synthetic single-handle groups drop the slot layout.
+    expect(props.slotCount).toBeUndefined();
+  });
+});

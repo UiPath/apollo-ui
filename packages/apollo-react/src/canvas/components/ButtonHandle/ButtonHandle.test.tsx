@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { describe, expect, it, vi } from 'vitest';
@@ -629,5 +629,60 @@ describe('ButtonHandles', () => {
       unsubscribeEnter();
       unsubscribeLeave();
     });
+  });
+});
+
+describe('inward label pills as drag grips', () => {
+  const inward = (handle: ButtonHandleConfig) =>
+    render(
+      <ButtonHandles
+        handles={[handle]}
+        nodeId="test-node"
+        position={Position.Right}
+        connectionPosition={Position.Left}
+        visible={true}
+        nodeWidth={640}
+        nodeHeight={480}
+      />
+    );
+
+  it('marks the pill as a grip and fires onLabelPointerDown', () => {
+    const onLabelPointerDown = vi.fn();
+    inward({
+      id: 'onComplete',
+      type: 'target',
+      handleType: 'input',
+      label: 'Complete',
+      onLabelPointerDown,
+    });
+
+    const pill = screen.getByText('Complete').parentElement as HTMLElement;
+    expect(pill.className).toContain('cursor-grab');
+    expect(pill.className).toContain('nodrag');
+    fireEvent.pointerDown(pill);
+    expect(onLabelPointerDown).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps fixed pills non-interactive', () => {
+    inward({ id: 'onComplete', type: 'target', handleType: 'input', label: 'Complete' });
+
+    const pill = screen.getByText('Complete').parentElement as HTMLElement;
+    expect(pill.className).toContain('pointer-events-none');
+    expect(pill.className).not.toContain('cursor-grab');
+  });
+
+  it('positions a handle at an explicit offsetPx instead of its slot', () => {
+    render(
+      <ButtonHandles
+        handles={[{ id: 'onComplete', type: 'target', handleType: 'input', offsetPx: 120 }]}
+        nodeId="test-node"
+        position={Position.Right}
+        nodeWidth={640}
+        nodeHeight={480}
+      />
+    );
+
+    // 120 / 480 = 25%, rather than the single-slot center at 50%.
+    expect(screen.getByTestId('handle')).toHaveStyle({ top: '25%' });
   });
 });
