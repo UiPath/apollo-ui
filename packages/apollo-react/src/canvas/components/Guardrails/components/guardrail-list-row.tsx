@@ -221,7 +221,7 @@ const GuardrailListRow = React.forwardRef<HTMLDivElement, GuardrailListRowProps>
             // because a BYO row is also a built-in validator: provenance first, then lifecycle.
             <GuardrailStatusChip tone="success">{labels.byo}</GuardrailStatusChip>
           )}
-          {previewChip && isBuiltInValidator && (
+          {previewChip && isBuiltInValidator && state.definition?.isPreview !== false && (
             // Blue, the colour both products already give this chip.
             <GuardrailStatusChip tone="info">{labels.preview}</GuardrailStatusChip>
           )}

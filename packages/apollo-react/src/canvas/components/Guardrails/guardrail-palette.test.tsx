@@ -286,6 +286,27 @@ describe('GuardrailPalette', () => {
         'Preview'
       );
     });
+
+    it('skips a definition the backend says is out of preview, and keeps one that says nothing', () => {
+      renderPalette({
+        ootbDefinitions: [
+          { ...PII_DEFINITION, isPreview: false },
+          { ...BYO_FOLDER_DEFINITION, isPreview: true },
+          BYO_CONNECTOR_ONLY_DEFINITION,
+        ],
+        previewChip: true,
+      });
+
+      expect(screen.getByRole('button', { name: /PII detection/ })).not.toHaveTextContent(
+        'Preview'
+      );
+      expect(screen.getByRole('button', { name: /Noma prompt shield/ })).toHaveTextContent(
+        'Preview'
+      );
+      expect(screen.getByRole('button', { name: /Acme policy check/ })).toHaveTextContent(
+        'Preview'
+      );
+    });
   });
 
   describe('empty, loading and failed', () => {

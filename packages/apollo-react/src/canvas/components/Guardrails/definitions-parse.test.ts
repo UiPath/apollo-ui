@@ -75,6 +75,20 @@ describe('parseGuardrailDefinitions', () => {
     });
   });
 
+  describe('isPreview', () => {
+    it.each([true, false])('keeps %s', (isPreview) => {
+      const wire = { ...PII_DETECTION_WIRE, isPreview };
+
+      expect(parseGuardrailDefinitions([wire]).definitions[0]).toEqual(wire);
+    });
+
+    it('leaves it absent when the backend omits it', () => {
+      expect(parseGuardrailDefinitions([PII_DETECTION_WIRE]).definitions[0]).not.toHaveProperty(
+        'isPreview'
+      );
+    });
+  });
+
   describe('never throws', () => {
     // The payload crosses a trust boundary (a backend, or Flow's postMessage bridge), and a
     // properties panel must not disappear because it arrived malformed.

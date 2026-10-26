@@ -78,6 +78,8 @@ export interface GuardrailDefinitionWire {
   status: GuardrailDefinitionStatus;
   /** Why a `Disabled` definition is disabled. See `GuardrailDefinition.disabledReason`. */
   disabledReason?: string;
+  /** Whether the lifecycle `Preview` chip applies. See `GuardrailDefinition.isPreview`. */
+  isPreview?: boolean;
   displayName?: string;
   description?: string;
   byoConnectorName?: string;

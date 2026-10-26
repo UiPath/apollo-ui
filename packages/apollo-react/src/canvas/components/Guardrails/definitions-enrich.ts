@@ -235,6 +235,7 @@ function enrichOne(
   };
 
   if (wire.disabledReason !== undefined) enriched.disabledReason = wire.disabledReason;
+  if (wire.isPreview !== undefined) enriched.isPreview = wire.isPreview;
   if (curated?.usageNote !== undefined) enriched.usageNote = curated.usageNote;
   if (wire.byoValidatorName !== undefined) enriched.byoValidatorName = wire.byoValidatorName;
   if (wire.byoConnectorName !== undefined) enriched.byoConnectorName = wire.byoConnectorName;

@@ -55,7 +55,9 @@ function definitionChips(
         : definition.byoConnectorName !== undefined && (
             <GuardrailStatusChip tone="success">{definition.byoConnectorName}</GuardrailStatusChip>
           )}
-      {previewChip && <GuardrailStatusChip tone="info">{labels.preview}</GuardrailStatusChip>}
+      {previewChip && definition.isPreview !== false && (
+        <GuardrailStatusChip tone="info">{labels.preview}</GuardrailStatusChip>
+      )}
       {definition.status === 'Unauthorised' && (
         <GuardrailStatusChip tone="warning">{labels.statusUnauthorized}</GuardrailStatusChip>
       )}

@@ -10,6 +10,8 @@ export interface GuardrailPaletteDefinition {
   displayName: string;
   description?: string;
   status: GuardrailDefinitionStatus;
+  /** See `GuardrailDefinition.isPreview`; only `false` drops the `previewChip` chip. */
+  isPreview?: boolean;
   /** Present for bring-your-own definitions; decides grouping and the connector chip. */
   byoValidatorName?: string;
   byoConnectorName?: string;
