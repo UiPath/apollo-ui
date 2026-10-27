@@ -21,7 +21,11 @@ function renderPalette(props: Partial<GuardrailPaletteProps> = {}) {
   return render(<GuardrailPalette {...merged} />);
 }
 
-const entries = () => screen.getAllByRole('button').map((item) => item.textContent);
+// The palette's own entries: not the group headings, which are buttons too, nor the clear button.
+const entries = () =>
+  Array.from(document.querySelectorAll('[data-slot="guardrail-palette-item"]')).map(
+    (item) => item.textContent
+  );
 
 describe('GuardrailPalette', () => {
   it('offers every definition it is given, in payload order', () => {
@@ -174,11 +178,12 @@ describe('GuardrailPalette', () => {
     it('rovers the arrow keys across groups and keeps one tab stop', () => {
       renderPalette({ ootbDefinitions: MIXED_DEFINITIONS, onCreateCustom: vi.fn() });
 
-      // create-custom, then two bring-your-own groups of one, then the two UiPath entries.
+      // create-custom, then each heading before its entries: two bring-your-own groups of one,
+      // then the UiPath group of two.
       const items = screen.getAllByRole('button');
-      expect(items).toHaveLength(5);
+      expect(items).toHaveLength(8);
       const first = screen.getByRole('button', { name: /Custom guardrail/ });
-      const second = screen.getByRole('button', { name: /Acme policy check/ });
+      const second = screen.getByRole('button', { name: /^Acme Guard/ });
       const last = screen.getByRole('button', { name: /Prompt attacks/ });
       const tabStops = () => items.filter((item) => item.tabIndex === 0);
 
@@ -429,7 +434,7 @@ describe('GuardrailPalette', () => {
       expect(screen.queryByRole('button', { name: 'Clear search' })).not.toBeInTheDocument();
     });
 
-    it('hands ArrowDown to the first entry, and ArrowUp on it back to the field', () => {
+    it('hands ArrowDown to the first guardrail, past its heading, and ArrowUp back', () => {
       renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
       const field = screen.getByRole('searchbox', { name: 'Search guardrails' });
       search('detect');
@@ -439,7 +444,11 @@ describe('GuardrailPalette', () => {
       const first = screen.getByRole('button', { name: /Noma prompt shield/ });
       expect(first).toHaveFocus();
 
+      // Back up through the heading it skipped, then out to the field.
       fireEvent.keyDown(first, { key: 'ArrowUp' });
+      const heading = screen.getByRole('button', { name: /^Shared\/Security/ });
+      expect(heading).toHaveFocus();
+      fireEvent.keyDown(heading, { key: 'ArrowUp' });
       expect(field).toHaveFocus();
     });
 
@@ -459,7 +468,7 @@ describe('GuardrailPalette', () => {
       expect(screen.getByRole('button', { name: /Acme policy check/ })).toHaveFocus();
     });
 
-    it('moves the tab stop back to the first entry when the list narrows', () => {
+    it('moves the tab stop back to the top when the list narrows', () => {
       renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
       const first = screen.getByRole('button', { name: /Acme policy check/ });
       const last = screen.getByRole('button', { name: /Prompt attacks/ });
@@ -469,7 +478,7 @@ describe('GuardrailPalette', () => {
 
       search('detect');
 
-      expect(screen.getByRole('button', { name: /Noma prompt shield/ }).tabIndex).toBe(0);
+      expect(screen.getByRole('button', { name: /^Shared\/Security/ }).tabIndex).toBe(0);
       expect(screen.getByRole('button', { name: /Prompt attacks/ }).tabIndex).toBe(-1);
     });
 
@@ -484,15 +493,27 @@ describe('GuardrailPalette', () => {
   });
 
   describe('the source filter', () => {
-    const sourceFilterGroup = () => screen.queryByRole('group', { name: 'Guardrail source' });
+    const sourceFilter = () => screen.queryByRole('combobox', { name: 'Guardrail source' });
+    const openSourceFilter = async () => {
+      fireEvent.click(screen.getByRole('combobox', { name: 'Guardrail source' }));
+      await screen.findAllByRole('option');
+    };
+    const pickSource = async (name: string) => {
+      await openSourceFilter();
+      fireEvent.click(screen.getByRole('option', { name }));
+    };
+    const optionNames = async () => {
+      await openSourceFilter();
+      return screen.getAllByRole('option').map((option) => option.textContent);
+    };
 
     it('is on by default, and a host can leave it out', () => {
       const { unmount } = renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
-      expect(sourceFilterGroup()).toBeInTheDocument();
+      expect(sourceFilter()).toBeInTheDocument();
       unmount();
 
       renderPalette({ ootbDefinitions: MIXED_DEFINITIONS, sourceFilter: false });
-      expect(sourceFilterGroup()).not.toBeInTheDocument();
+      expect(sourceFilter()).not.toBeInTheDocument();
     });
 
     it('renders no controls at all when the host leaves both out', () => {
@@ -505,33 +526,31 @@ describe('GuardrailPalette', () => {
     });
 
     it('appears only while the catalog holds both UiPath and BYO entries', () => {
-      const { unmount } = renderPalette({
-        ootbDefinitions: UIPATH_DEFINITIONS,
-      });
-      expect(sourceFilterGroup()).not.toBeInTheDocument();
+      const { unmount } = renderPalette({ ootbDefinitions: UIPATH_DEFINITIONS });
+      expect(sourceFilter()).not.toBeInTheDocument();
       unmount();
 
-      const byoOnly = renderPalette({
-        ootbDefinitions: [BYO_FOLDER_DEFINITION],
-      });
-      expect(sourceFilterGroup()).not.toBeInTheDocument();
+      const byoOnly = renderPalette({ ootbDefinitions: [BYO_FOLDER_DEFINITION] });
+      expect(sourceFilter()).not.toBeInTheDocument();
       byoOnly.unmount();
 
       renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
-      expect(sourceFilterGroup()).toBeInTheDocument();
+      expect(sourceFilter()).toBeInTheDocument();
     });
 
-    it('shows one side at a time, starting with all of it', () => {
+    it('shows one side at a time, starting with all of it', async () => {
       renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
-      expect(screen.getByRole('radio', { name: 'All 4' })).toHaveAttribute('aria-checked', 'true');
+      // The bare label: the counts live in the menu, so the trigger keeps its width.
+      expect(sourceFilter()).toHaveTextContent(/^All$/);
 
-      fireEvent.click(screen.getByRole('radio', { name: 'BYO 2' }));
+      await pickSource('BYO 2');
+      expect(sourceFilter()).toHaveTextContent(/^BYO$/);
       expect(entries()).toEqual([
         'Acme policy checkAcme Guard',
         'Noma prompt shieldNoma SecurityVendor-managed prompt injection detection.',
       ]);
 
-      fireEvent.click(screen.getByRole('radio', { name: 'UiPath 2' }));
+      await pickSource('UiPath 2');
       expect(entries()).toEqual([
         'PII detectionDetects personally identifiable information in agent traffic.',
         'Prompt attacksDetects attempts to override the agent instructions.',
@@ -540,63 +559,115 @@ describe('GuardrailPalette', () => {
       expect(screen.getByRole('group', { name: 'UiPath guardrails' })).toBeInTheDocument();
     });
 
-    it('keeps an option chosen when it is clicked again', () => {
-      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
-      const byo = screen.getByRole('radio', { name: 'BYO 2' });
-
-      fireEvent.click(byo);
-      fireEvent.click(byo);
-
-      expect(byo).toHaveAttribute('aria-checked', 'true');
-      expect(entries()).toHaveLength(2);
-    });
-
-    it('counts what the search left on each side', () => {
+    it('counts what the search left on each side', async () => {
       renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
 
       fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'detect' } });
 
-      expect(screen.getByRole('radio', { name: 'All 3' })).toBeInTheDocument();
-      expect(screen.getByRole('radio', { name: 'UiPath 2' })).toBeInTheDocument();
-      expect(screen.getByRole('radio', { name: 'BYO 1' })).toBeInTheDocument();
+      expect(await optionNames()).toEqual(['All 3', 'UiPath 2', 'BYO 1']);
     });
 
-    it('says so when the side it shows has no match', () => {
+    it('says so when the side it shows has no match', async () => {
       renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
 
-      fireEvent.click(screen.getByRole('radio', { name: 'BYO 2' }));
+      await pickSource('BYO 2');
       fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'pii' } });
 
       expect(screen.getByText('No matching guardrails')).toBeInTheDocument();
-      expect(screen.getByRole('radio', { name: 'UiPath 1' })).toBeInTheDocument();
+      expect(await optionNames()).toContain('UiPath 1');
     });
 
-    it('shows every entry again once the catalog loses a side', () => {
-      const { rerender } = renderPalette({
-        ootbDefinitions: MIXED_DEFINITIONS,
-      });
-      fireEvent.click(screen.getByRole('radio', { name: 'BYO 2' }));
+    it('shows every entry again once the catalog loses a side', async () => {
+      const { rerender } = renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
+      await pickSource('BYO 2');
 
-      rerender(
-        <GuardrailPalette
-          ootbDefinitions={UIPATH_DEFINITIONS}
-          onSelectOotb={vi.fn()}
-          sourceFilter
-        />
-      );
+      rerender(<GuardrailPalette ootbDefinitions={UIPATH_DEFINITIONS} onSelectOotb={vi.fn()} />);
 
-      expect(sourceFilterGroup()).not.toBeInTheDocument();
+      expect(sourceFilter()).not.toBeInTheDocument();
       expect(entries()).toHaveLength(UIPATH_DEFINITIONS.length);
     });
 
-    it('hands ArrowDown from an option to the first entry', () => {
+    it('keeps ArrowDown for its own menu rather than leave for the entries', async () => {
       renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
-      const all = screen.getByRole('radio', { name: 'All 4' });
+      const trigger = screen.getByRole('combobox', { name: 'Guardrail source' });
 
-      all.focus();
-      fireEvent.keyDown(all, { key: 'ArrowDown' });
+      trigger.focus();
+      fireEvent.keyDown(trigger, { key: 'ArrowDown' });
 
-      expect(screen.getByRole('button', { name: /Acme policy check/ })).toHaveFocus();
+      expect(await screen.findByRole('listbox')).toBeInTheDocument();
+      // The open menu hides the rest from the accessibility tree, hence `hidden`.
+      expect(
+        screen.getByRole('button', { name: /Acme policy check/, hidden: true })
+      ).not.toHaveFocus();
+    });
+  });
+
+  describe('collapsible groups', () => {
+    const heading = (name: RegExp) => screen.getByRole('button', { name });
+
+    it('folds a group from its heading, which keeps the group name and a count', () => {
+      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
+      const shared = heading(/^Shared\/Security/);
+      expect(shared).toHaveAttribute('aria-expanded', 'true');
+      expect(shared).toHaveAccessibleName('Shared/Security 1');
+
+      fireEvent.click(shared);
+
+      expect(shared).toHaveAttribute('aria-expanded', 'false');
+      expect(screen.queryByRole('button', { name: /Noma prompt shield/ })).not.toBeInTheDocument();
+      // Still named by the heading's text alone, so hosts finding a group by name still do.
+      expect(screen.getByRole('group', { name: 'Shared/Security' })).toContainElement(shared);
+      expect(shared).toHaveAccessibleName('Shared/Security 1');
+
+      fireEvent.click(shared);
+      expect(screen.getByRole('button', { name: /Noma prompt shield/ })).toBeInTheDocument();
+    });
+
+    it('folds the UiPath group too, and leaves an unheaded catalog without headings', () => {
+      const { unmount } = renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
+      fireEvent.click(heading(/^UiPath guardrails/));
+      expect(entries()).toEqual([
+        'Acme policy checkAcme Guard',
+        'Noma prompt shieldNoma SecurityVendor-managed prompt injection detection.',
+      ]);
+      unmount();
+
+      renderPalette({ ootbDefinitions: UIPATH_DEFINITIONS });
+      expect(
+        document.querySelector('[data-slot="guardrail-palette-group-toggle"]')
+      ).not.toBeInTheDocument();
+    });
+
+    it("drops a folded group's entries from the arrow-key order", () => {
+      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
+      const shared = heading(/^Shared\/Security/);
+      fireEvent.click(shared);
+
+      shared.focus();
+      fireEvent.keyDown(shared, { key: 'ArrowDown' });
+
+      expect(heading(/^UiPath guardrails/)).toHaveFocus();
+    });
+
+    it('unfolds every group when a search starts, so no match stays hidden', () => {
+      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
+      fireEvent.click(heading(/^Shared\/Security/));
+      expect(screen.queryByRole('button', { name: /Noma prompt shield/ })).not.toBeInTheDocument();
+
+      fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'noma' } });
+
+      expect(screen.getByRole('button', { name: /Noma prompt shield/ })).toBeInTheDocument();
+      expect(heading(/^Shared\/Security/)).toHaveAttribute('aria-expanded', 'true');
+    });
+
+    it('lets a user fold a group while searching', () => {
+      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
+      fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'detect' } });
+
+      fireEvent.click(heading(/^UiPath guardrails/));
+      fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'detects' } });
+
+      expect(heading(/^UiPath guardrails/)).toHaveAttribute('aria-expanded', 'false');
     });
   });
 

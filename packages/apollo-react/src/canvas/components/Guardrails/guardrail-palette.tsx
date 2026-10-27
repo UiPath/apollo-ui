@@ -4,10 +4,13 @@ import {
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-  ToggleGroup,
-  ToggleGroupItem,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@uipath/apollo-wind';
-import { FolderOpen, Loader2, Plus, Search, X } from 'lucide-react';
+import { ChevronDown, Folder, FolderOpen, Loader2, Plus, Search, X } from 'lucide-react';
 import { type FocusEvent, type KeyboardEvent, useId, useMemo, useRef, useState } from 'react';
 import { GuardrailPaletteItem } from './components/guardrail-palette-item';
 import { GuardrailStatusBanner } from './components/guardrail-status-banner';
@@ -53,9 +56,10 @@ export interface GuardrailPaletteProps<
    */
   searchable?: boolean;
   /**
-   * An All / UiPath / BYO filter above the entries, each option counting what the search left.
-   * Rendered only while the catalog holds both kinds, since there is nothing to split otherwise.
-   * On by default; `false` leaves it out.
+   * An All / UiPath / BYO dropdown beside the search field, each option counting what the
+   * search left. Rendered only while the catalog holds both kinds, since there is nothing to
+   * split otherwise. Its menu portals, so a shadow-root host wraps the palette in wind's
+   * `PortalContainerProvider`. On by default; `false` leaves it out.
    */
   sourceFilter?: boolean;
   labels?: Partial<GuardrailPaletteLabels>;
@@ -63,6 +67,10 @@ export interface GuardrailPaletteProps<
 }
 
 const SOURCES: readonly GuardrailPaletteSource[] = ['all', 'uipath', 'byo'];
+
+const ENTRY_SELECTOR = '[data-slot="guardrail-palette-item"]';
+// Everything in the roving order, in document order: group headings and entries.
+const ROVING_SELECTOR = `${ENTRY_SELECTOR}, [data-slot="guardrail-palette-group-toggle"]`;
 
 /** Chips after an entry's name. Both tones are the colours the two products already ship. */
 function definitionChips(
@@ -118,11 +126,11 @@ export function GuardrailPalette<T extends GuardrailPaletteDefinition>({
   const labels = useGuardrailPaletteLabels(labelOverrides);
   const headerIdPrefix = useId();
   const rootRef = useRef<HTMLDivElement>(null);
-  const controlsRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const [activeEntry, setActiveEntry] = useState(0);
   const [query, setQuery] = useState('');
   const [source, setSource] = useState<GuardrailPaletteSource>('all');
+  const [collapsedGroups, setCollapsedGroups] = useState<ReadonlySet<string>>(() => new Set());
 
   const getName = byoDisplay ? paletteEntryName : undefined;
 
@@ -172,39 +180,45 @@ export function GuardrailPalette<T extends GuardrailPaletteDefinition>({
   // Roving focus, so Tab enters and leaves the palette instead of walking a user through the
   // create-custom entry, six validators and every BYO group. `aria-disabled` entries keep
   // their place on purpose, which is also why this is not wind's `Command`: cmdk's item query
-  // skips them. The flat index runs create-custom first, then each group in order.
-  const groupOffsets = useMemo(() => {
+  // skips them. The flat index runs create-custom first, then each group's heading (when it
+  // has one) and, unless the group is folded, its entries.
+  const roving = useMemo(() => {
     let offset = onCreateCustom ? 1 : 0;
-    return visibleGroups.map((group) => {
-      const start = offset;
-      offset += group.definitions.length;
-      return start;
+    const groupLayout = visibleGroups.map((group) => {
+      const headed = group.header !== null;
+      const collapsed = headed && collapsedGroups.has(group.key);
+      const headerIndex = headed ? offset : -1;
+      if (headed) offset += 1;
+      const firstEntry = offset;
+      if (!collapsed) offset += group.definitions.length;
+      return { headerIndex, firstEntry, collapsed };
     });
-  }, [visibleGroups, onCreateCustom]);
-
-  const entryCount =
-    (onCreateCustom ? 1 : 0) +
-    visibleGroups.reduce((total, group) => total + group.definitions.length, 0);
+    return { groupLayout, count: offset };
+  }, [visibleGroups, onCreateCustom, collapsedGroups]);
   // A shrunken catalog can leave the remembered entry past the end, which would leave the
   // palette with no tab stop at all.
-  const rovingEntry = activeEntry < entryCount ? activeEntry : 0;
+  const rovingEntry = activeEntry < roving.count ? activeEntry : 0;
 
-  // A narrowed list renumbers its entries, so the tab stop goes back to the first one.
+  // A narrowed list renumbers its entries, so the tab stop goes back to the first one. Starting
+  // a search unfolds every group, so a match is never hidden in a folded one.
   const updateQuery = (next: string) => {
+    if (query.trim() === '' && next.trim() !== '') setCollapsedGroups(new Set());
     setQuery(next);
     setActiveEntry(0);
   };
+  const toggleGroup = (key: string) =>
+    setCollapsedGroups((current) => {
+      const next = new Set(current);
+      if (!next.delete(key)) next.add(key);
+      return next;
+    });
   const updateSource = (next: GuardrailPaletteSource) => {
     setSource(next);
     setActiveEntry(0);
   };
 
   const entryElements = () =>
-    Array.from(
-      rootRef.current?.querySelectorAll<HTMLButtonElement>(
-        '[data-slot="guardrail-palette-item"]'
-      ) ?? []
-    );
+    Array.from(rootRef.current?.querySelectorAll<HTMLButtonElement>(ROVING_SELECTOR) ?? []);
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const entries = entryElements();
@@ -214,20 +228,21 @@ export function GuardrailPalette<T extends GuardrailPaletteDefinition>({
     const current = entries.indexOf(focused as HTMLButtonElement);
 
     if (current === -1) {
-      // ArrowDown hands over from the search field or the source filter to the first entry.
-      // The filter is horizontal, so it leaves ArrowDown alone for this. An IME composing a
-      // query (Japanese, Chinese) uses ArrowDown for its candidates, so it keeps it.
+      // ArrowDown hands over from the search field to the first guardrail, past any heading,
+      // the way a search hands over to its first result. An IME composing a query (Japanese,
+      // Chinese) uses ArrowDown for its candidates, so it keeps it. The source filter keeps it
+      // too, to open its menu.
       if (
         event.key === 'ArrowDown' &&
-        !event.defaultPrevented &&
         !event.nativeEvent.isComposing &&
         event.keyCode !== 229 &&
-        entries.length > 0 &&
-        controlsRef.current?.contains(focused as Node)
+        focused === searchRef.current
       ) {
+        const target = entries.find((entry) => entry.matches(ENTRY_SELECTOR)) ?? entries[0];
+        if (!target) return;
         event.preventDefault();
-        setActiveEntry(0);
-        entries[0]?.focus();
+        setActiveEntry(entries.indexOf(target));
+        target.focus();
       }
       return;
     }
@@ -293,12 +308,11 @@ export function GuardrailPalette<T extends GuardrailPaletteDefinition>({
         <>
           {showControls && (
             <div
-              ref={controlsRef}
               data-slot="guardrail-palette-controls"
-              className="flex shrink-0 flex-col gap-2"
+              className="flex shrink-0 items-center gap-2"
             >
               {searchable && (
-                <InputGroup className="h-8 future:h-9">
+                <InputGroup className="h-8 min-w-0 flex-1 future:h-9">
                   <InputGroupAddon align="inline-start">
                     <Search className="size-4" aria-hidden="true" />
                   </InputGroupAddon>
@@ -331,27 +345,30 @@ export function GuardrailPalette<T extends GuardrailPaletteDefinition>({
                 </InputGroup>
               )}
               {showSourceFilter && (
-                <ToggleGroup
-                  type="single"
-                  size="xs"
-                  orientation="horizontal"
-                  aria-label={labels.sourceFilter}
+                <Select
                   value={activeSource}
-                  // A single group may be deselected; the filter always shows one side.
-                  onValueChange={(value) => {
-                    if (value) updateSource(value as GuardrailPaletteSource);
-                  }}
+                  onValueChange={(value) => updateSource(value as GuardrailPaletteSource)}
                 >
-                  {SOURCES.map((option) => (
-                    <ToggleGroupItem key={option} value={option}>
-                      {/* The space keeps the accessible name "BYO 2" rather than "BYO2". */}
-                      {sourceLabels[option]}{' '}
-                      <span className="tabular-nums text-muted-foreground">
-                        {sourceCounts[option]}
-                      </span>
-                    </ToggleGroupItem>
-                  ))}
-                </ToggleGroup>
+                  {/* The search field's height, so the two read as one row. */}
+                  <SelectTrigger
+                    aria-label={labels.sourceFilter}
+                    className="h-8 w-auto shrink-0 gap-2 future:h-9"
+                  >
+                    {/* The bare label, so the trigger keeps its width while the counts change. */}
+                    <SelectValue>{sourceLabels[activeSource]}</SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SOURCES.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {/* The space keeps the accessible name "BYO 2" rather than "BYO2". */}
+                        {sourceLabels[option]}{' '}
+                        <span className="tabular-nums text-muted-foreground">
+                          {sourceCounts[option]}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               )}
             </div>
           )}
@@ -382,7 +399,9 @@ export function GuardrailPalette<T extends GuardrailPaletteDefinition>({
             )}
             {visibleGroups.map((group, groupIndex) => {
               const headerId = `${headerIdPrefix}-${groupIndex}`;
-              const groupOffset = groupOffsets[groupIndex] ?? 0;
+              const layout = roving.groupLayout[groupIndex];
+              const collapsed = layout?.collapsed ?? false;
+              const FolderIcon = collapsed ? Folder : FolderOpen;
               return (
                 // biome-ignore lint/a11y/useSemanticElements: as above; the name is what tells a screen reader which folder an entry came from, since the heading is only adjacent text and two folders can hold the same validator
                 <div
@@ -393,31 +412,57 @@ export function GuardrailPalette<T extends GuardrailPaletteDefinition>({
                   className="flex flex-col gap-1"
                 >
                   {group.header !== null && (
-                    <div
-                      id={headerId}
-                      className="flex items-center gap-1.5 px-2 py-1 text-xs font-semibold text-muted-foreground"
+                    // Folds the group on click. The count says what a folded group holds.
+                    <button
+                      type="button"
+                      data-slot="guardrail-palette-group-toggle"
+                      aria-expanded={!collapsed}
+                      tabIndex={rovingEntry === layout?.headerIndex ? 0 : -1}
+                      onClick={() => toggleGroup(group.key)}
+                      className={cn(
+                        'flex w-full cursor-pointer items-center gap-1.5 rounded-md px-2 py-1 text-left text-xs font-semibold text-muted-foreground ring-offset-background transition-colors',
+                        'hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
+                      )}
                     >
-                      {group.isByo && <FolderOpen className="size-3.5" aria-hidden="true" />}
-                      <span className="truncate">{group.header}</span>
-                    </div>
+                      {group.isByo && (
+                        <FolderIcon className="size-3.5 shrink-0" aria-hidden="true" />
+                      )}
+                      {/* The group's name is this text alone, without the count. */}
+                      <span id={headerId} className="truncate">
+                        {group.header}
+                      </span>{' '}
+                      <span className="ml-auto font-normal tabular-nums">
+                        {group.definitions.length}
+                      </span>
+                      <ChevronDown
+                        className={cn(
+                          'size-3.5 shrink-0 transition-transform',
+                          collapsed && '-rotate-90'
+                        )}
+                        aria-hidden="true"
+                      />
+                    </button>
                   )}
-                  {group.definitions.map((definition, definitionIndex) => (
-                    <GuardrailPaletteItem
-                      key={getGuardrailPaletteItemId(definition)}
-                      name={byoDisplay ? paletteEntryName(definition) : definition.displayName}
-                      description={definition.description}
-                      chips={definitionChips(definition, labels, previewChip, byoDisplay)}
-                      caption={
-                        byoDisplay && definition.byoConnectorName !== undefined
-                          ? `${labels.provider}: ${definition.byoConnectorName}`
-                          : undefined
-                      }
-                      // The only non-`Available` status a correctly filtered palette receives.
-                      disabled={definition.status === 'Unauthorised'}
-                      tabIndex={rovingEntry === groupOffset + definitionIndex ? 0 : -1}
-                      onSelect={() => onSelectOotb(definition)}
-                    />
-                  ))}
+                  {!collapsed &&
+                    group.definitions.map((definition, definitionIndex) => (
+                      <GuardrailPaletteItem
+                        key={getGuardrailPaletteItemId(definition)}
+                        name={byoDisplay ? paletteEntryName(definition) : definition.displayName}
+                        description={definition.description}
+                        chips={definitionChips(definition, labels, previewChip, byoDisplay)}
+                        caption={
+                          byoDisplay && definition.byoConnectorName !== undefined
+                            ? `${labels.provider}: ${definition.byoConnectorName}`
+                            : undefined
+                        }
+                        // The only non-`Available` status a correctly filtered palette receives.
+                        disabled={definition.status === 'Unauthorised'}
+                        tabIndex={
+                          rovingEntry === (layout?.firstEntry ?? 0) + definitionIndex ? 0 : -1
+                        }
+                        onSelect={() => onSelectOotb(definition)}
+                      />
+                    ))}
                 </div>
               );
             })}

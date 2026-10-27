@@ -178,9 +178,10 @@ export const ByoDisplay: Story = {
 
 /**
  * The search field matches each entry's name, description, connector and folder. The All,
- * UiPath and BYO filter shows only while the catalog holds both kinds, with each option counting
- * what the search left. Both are on by default. Given a bounded height, as here, the entries
- * scroll under them.
+ * UiPath and BYO dropdown beside it shows only while the catalog holds both kinds, with each
+ * option counting what the search left. Both are on by default. Each group heading folds its
+ * group, and starting a search unfolds them all. Given a bounded height, as here, the entries
+ * scroll under the controls.
  */
 export const SearchAndSourceFilter: Story = {
   args: {

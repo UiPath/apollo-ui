@@ -402,12 +402,16 @@ const { definitions, loading, error } = useGuardrailDefinitions({ baseUrl, tenan
   keeps the display name and the connector chip. Group headings are unchanged either way.
 - **`searchable` and `sourceFilter` are on by default**, unlike the product-lifecycle chips:
   finding an entry is the picker's own job, and both hosts want them. Pass `false` to leave
-  either out. `searchable` renders a search field above the entries. An entry matches when every word of
-  the query appears in what it shows: its rendered name (the configuration name under
-  `byoDisplay`), description, connector and folder. Case and accents are ignored.
-  `sourceFilter` renders an All / UiPath / BYO filter, labelled "UiPath" rather than "OOTB" to
-  match the group heading. It shows only while the catalog holds both kinds, because otherwise
-  there is nothing to split. Each option counts what the search left on its side. Filtering
+  either out. `searchable` renders a search field above the entries. An entry matches when
+  every word of the query appears in what it shows: its rendered name (the configuration name
+  under `byoDisplay`), description, connector and folder. Case and accents are ignored.
+  `sourceFilter` renders an All / UiPath / BYO dropdown (wind `Select`) beside the search field,
+  labelled "UiPath" rather than "OOTB" to match the group heading. It shows only while the
+  catalog holds both kinds, because otherwise there is nothing to split. Each option in its
+  menu counts what the search left on its side; the trigger shows the bare label, so its width
+  holds while the user types. Its menu portals, so a host rendering the palette in a shadow
+  root wraps it in wind's `PortalContainerProvider` pointed inside that root, as Agents does
+  for the centralized section. Filtering
   runs after grouping (`filterGuardrailPaletteGroups`, exported and pure), so groups keep their
   order and headings while a user types, and a group left empty drops out. The create-custom
   entry is an action rather than a match, so it stays in place, and "No matching guardrails"
@@ -418,11 +422,17 @@ const { definitions, loading, error } = useGuardrailDefinitions({ baseUrl, tenan
   only happens when the host bounds the palette's height: pass `className="flex-1"` inside a
   flex column, or a `max-h-*`, and drop the host's own `overflow`. A host that keeps its own
   scroll wrapper gets today's behaviour, where everything scrolls together.
-- **ArrowDown leaves the search field or the source filter for the first entry, and ArrowUp on
-  the first entry goes back to the search field.** The source filter is a horizontal wind
-  `ToggleGroup`, so Left and Right move between its options and Up and Down stay with the
-  palette. An IME composing a query keeps ArrowDown for its candidates (`isComposing`, or
-  keyCode 229). Narrowing the list moves the tab stop back to its first entry.
+- **Every group heading folds its group.** The heading is a button with `aria-expanded`, a
+  count of what the group holds and a chevron; the group keeps its name (the heading's text
+  alone, without the count), so a host finding a group by name still does. A folded group's
+  entries leave the roving order. Starting a search unfolds every group, so no match stays
+  hidden; a user can still fold one mid-search. Groups start unfolded, and an unheaded group
+  (a catalog with no BYO) has nothing to fold.
+- **ArrowDown leaves the search field for the first guardrail**, past any heading, the way a
+  search hands over to its first result, and ArrowUp from the top of the list goes back to the
+  field. Headings and entries share one roving order. The source filter keeps ArrowDown to open
+  its menu, and an IME composing a query keeps it for its candidates (`isComposing`, or
+  keyCode 229). Narrowing the list moves the tab stop back to the top.
 - **`isLoading` renders a polite loading line and `error` a `GuardrailStatusBanner`.** The
   loading line is an `<output>`, for its implicit `role="status"`: a polite live region, and the
   one native element that carries it without bringing styling of its own. Any definitions that
