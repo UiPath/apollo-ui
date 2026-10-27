@@ -400,6 +400,26 @@ const { definitions, loading, error } = useGuardrailDefinitions({ baseUrl, tenan
   its configuration (`byoValidatorName`) and sorted by it, a "BYO" chip in place of the
   connector-name chip, and an italic "Provider: {connector}" caption. Off by default, which
   keeps the display name and the connector chip. Group headings are unchanged either way.
+- **`searchable` and `sourceFilter` are opt-in, so a version bump changes neither host.**
+  `searchable` renders a search field above the entries. An entry matches when every word of
+  the query appears in what it shows: its rendered name (the configuration name under
+  `byoDisplay`), description, connector and folder. Case and accents are ignored.
+  `sourceFilter` renders an All / UiPath / BYO filter, labelled "UiPath" rather than "OOTB" to
+  match the group heading. It shows only while the catalog holds both kinds, because otherwise
+  there is nothing to split. Each option counts what the search left on its side. Filtering
+  runs after grouping (`filterGuardrailPaletteGroups`, exported and pure), so groups keep their
+  order and headings while a user types, and a group left empty drops out. The create-custom
+  entry is an action rather than a match, so it stays in place, and "No matching guardrails"
+  shows beside it when nothing else is left. Neither control renders while loading or for an
+  empty catalog.
+- **The entries scroll in their own region**, so the controls stay in place above them. That
+  only happens when the host bounds the palette's height: pass `className="flex-1"` inside a
+  flex column, or a `max-h-*`, and drop the host's own `overflow`. A host that keeps its own
+  scroll wrapper gets today's behaviour, where everything scrolls together.
+- **ArrowDown leaves the search field or the source filter for the first entry, and ArrowUp on
+  the first entry goes back to the search field.** The source filter is a horizontal wind
+  `ToggleGroup`, so Left and Right move between its options and Up and Down stay with the
+  palette. Narrowing the list moves the tab stop back to its first entry.
 - **`isLoading` renders a polite loading line and `error` a `GuardrailStatusBanner`.** The
   loading line is an `<output>`, for its implicit `role="status"`: a polite live region, and the
   one native element that carries it without bringing styling of its own. Any definitions that
@@ -435,7 +455,9 @@ names arrive resolved on the definitions, from the canonical copy table or the w
 All nine strings are harvested from the two products' own catalogs (eight from Flow's
 `addGuardrailPalette_*` i18next keys, `list-aria-label` from Agents' `guardrails.palette.*`
 lingui id), so the English is the wording both products already ship rather than something
-this package invented.
+this package invented. The six search and source-filter strings (`search`, `clear-search`,
+`no-matches`, `source-filter`, `source-all`, `source-uipath`) are new, because neither
+product had a search here. The BYO option reuses `guardrails.list.byo`.
 
 **English only**, like the canonical copy above: the other thirteen catalogs get these ids
 from `chore(l10n): sync from Localization`, and until it runs `useSafeLingui` renders the

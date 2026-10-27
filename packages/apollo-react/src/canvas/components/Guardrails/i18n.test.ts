@@ -434,6 +434,35 @@ describe('the other label sets still layer the same way', () => {
     expect([resolved.byo, resolved.provider]).toEqual(['BYO', 'Provider']);
   });
 
+  it('resolves the palette search and source keys for a label object written before them', () => {
+    const {
+      search: _search,
+      clearSearch: _clearSearch,
+      noMatches: _noMatches,
+      sourceFilter: _sourceFilter,
+      sourceAll: _sourceAll,
+      sourceUipath: _sourceUipath,
+      ...paletteBefore
+    } = GUARDRAIL_PALETTE_EN_LABELS;
+    const paletteLabels: GuardrailPaletteLabels = paletteBefore;
+    const resolved = resolveGuardrailPaletteLabels(undefined, paletteLabels);
+    expect([
+      resolved.search,
+      resolved.clearSearch,
+      resolved.noMatches,
+      resolved.sourceFilter,
+      resolved.sourceAll,
+      resolved.sourceUipath,
+    ]).toEqual([
+      'Search guardrails',
+      'Clear search',
+      'No matching guardrails',
+      'Guardrail source',
+      'All',
+      'UiPath',
+    ]);
+  });
+
   it('resolves the preview keys for a complete form label object written before them', () => {
     const {
       previewOption: _chip,
