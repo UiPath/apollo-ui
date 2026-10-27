@@ -1,5 +1,9 @@
 import { isByoGuardrailDefinition } from './definitions-enrich';
-import type { GuardrailPaletteDefinition, GuardrailPaletteGroup } from './palette-types';
+import type {
+  GuardrailPaletteDefinition,
+  GuardrailPaletteGroup,
+  GuardrailPaletteSource,
+} from './palette-types';
 
 /**
  * A palette entry's identity. A bring-your-own validator name is unique per *connection*, so
@@ -67,4 +71,47 @@ export function groupGuardrailsForPalette<T extends GuardrailPaletteDefinition>(
   }
 
   return groups;
+}
+
+// Case and accents fold away, so "pii" finds "PII detection" and "detection" finds "Détection".
+function foldForSearch(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase();
+}
+
+/**
+ * Narrow grouped entries to a search query and a source, keeping the groups' order and
+ * headings so nothing moves while a user types, and dropping a group left empty. A definition
+ * matches when every word of the query appears in what the palette shows for it: the name it
+ * renders with (`getName`), its description, its connector and its folder. `source` keeps the
+ * BYO groups or the UiPath one; with no BYO definitions the single unheaded group counts as
+ * UiPath.
+ */
+export function filterGuardrailPaletteGroups<T extends GuardrailPaletteDefinition>(
+  groups: ReadonlyArray<GuardrailPaletteGroup<T>>,
+  { query = '', source = 'all' }: { query?: string; source?: GuardrailPaletteSource },
+  getName: (definition: T) => string = (definition) => definition.displayName
+): Array<GuardrailPaletteGroup<T>> {
+  const words = foldForSearch(query).split(/\s+/).filter(Boolean);
+  const matches = (definition: T) => {
+    const text = foldForSearch(
+      [
+        getName(definition),
+        definition.description,
+        definition.byoConnectorName,
+        definition.folderPath,
+      ]
+        .filter(Boolean)
+        .join(' ')
+    );
+    return words.every((word) => text.includes(word));
+  };
+
+  return groups.flatMap((group) => {
+    if (source !== 'all' && group.isByo !== (source === 'byo')) return [];
+    const definitions = words.length === 0 ? group.definitions : group.definitions.filter(matches);
+    return definitions.length === 0 ? [] : [{ ...group, definitions }];
+  });
 }

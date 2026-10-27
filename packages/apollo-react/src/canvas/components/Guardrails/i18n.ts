@@ -989,6 +989,21 @@ export interface GuardrailPaletteLabels {
   byo?: string;
   /** Prefix of a BYO entry's connector caption, rendered as `{provider}: {connector}`. */
   provider?: string;
+  /**
+   * Placeholder and accessible name of the search field (rendered only with `searchable`). The
+   * search and source-filter keys are optional for the same reason as `byo`.
+   */
+  search?: string;
+  /** Accessible name of the button that clears the search. */
+  clearSearch?: string;
+  /** Line shown instead of the entries when the search or the source filter leaves none. */
+  noMatches?: string;
+  /** Accessible name of the source filter (rendered only with `sourceFilter`). */
+  sourceFilter?: string;
+  /** Source filter option showing every entry; the BYO option reuses `byo`. */
+  sourceAll?: string;
+  /** Source filter option showing only the UiPath validators. */
+  sourceUipath?: string;
 }
 
 /** The subset of `useSafeLingui`'s translator the palette labels need. */
@@ -1022,6 +1037,12 @@ function buildGuardrailPaletteLabels(_: PaletteTranslate): Required<GuardrailPal
     }),
     byo: _({ id: 'guardrails.list.byo', message: 'BYO' }),
     provider: _({ id: 'guardrails.list.provider', message: 'Provider' }),
+    search: _({ id: 'guardrails.palette.search', message: 'Search guardrails' }),
+    clearSearch: _({ id: 'guardrails.palette.clear-search', message: 'Clear search' }),
+    noMatches: _({ id: 'guardrails.palette.no-matches', message: 'No matching guardrails' }),
+    sourceFilter: _({ id: 'guardrails.palette.source-filter', message: 'Guardrail source' }),
+    sourceAll: _({ id: 'guardrails.palette.source-all', message: 'All' }),
+    sourceUipath: _({ id: 'guardrails.palette.source-uipath', message: 'UiPath' }),
   };
 }
 

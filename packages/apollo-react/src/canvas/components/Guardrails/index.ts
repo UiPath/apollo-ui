@@ -161,6 +161,7 @@ export {
 export type { GuardrailPaletteProps } from './guardrail-palette';
 export { GuardrailPalette } from './guardrail-palette';
 export {
+  filterGuardrailPaletteGroups,
   getGuardrailPaletteItemId,
   groupGuardrailsForPalette,
 } from './guardrail-palette-utils';
@@ -253,7 +254,11 @@ export type {
   GuardrailReorderMove,
   GuardrailRowTooltipRenderer,
 } from './list-types';
-export type { GuardrailPaletteDefinition, GuardrailPaletteGroup } from './palette-types';
+export type {
+  GuardrailPaletteDefinition,
+  GuardrailPaletteGroup,
+  GuardrailPaletteSource,
+} from './palette-types';
 export type {
   GuardrailAlwaysRule,
   GuardrailBooleanOperator,

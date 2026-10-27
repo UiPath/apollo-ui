@@ -8,8 +8,12 @@ import {
   PROMPT_ATTACKS_DEFINITION,
   UIPATH_DEFINITIONS,
 } from './__fixtures__/guardrail-palette.fixtures';
-import { getGuardrailPaletteItemId, groupGuardrailsForPalette } from './guardrail-palette-utils';
-import type { GuardrailPaletteDefinition } from './palette-types';
+import {
+  filterGuardrailPaletteGroups,
+  getGuardrailPaletteItemId,
+  groupGuardrailsForPalette,
+} from './guardrail-palette-utils';
+import type { GuardrailPaletteDefinition, GuardrailPaletteGroup } from './palette-types';
 
 describe('getGuardrailPaletteItemId', () => {
   it('identifies a UiPath validator by its validator id', () => {
@@ -126,5 +130,97 @@ describe('groupGuardrailsForPalette', () => {
     groupGuardrailsForPalette(input, 'UiPath guardrails');
 
     expect(input).toEqual([PROMPT_ATTACKS_DEFINITION, PII_DEFINITION]);
+  });
+});
+
+describe('filterGuardrailPaletteGroups', () => {
+  const groups = groupGuardrailsForPalette(MIXED_DEFINITIONS, 'UiPath guardrails');
+  const shown = (result: Array<GuardrailPaletteGroup<GuardrailPaletteDefinition>>) =>
+    result.map((group) => [
+      group.key,
+      group.definitions.map((definition) => definition.displayName),
+    ]);
+
+  it('returns every group unchanged with no query and every source', () => {
+    expect(filterGuardrailPaletteGroups(groups, {})).toEqual(groups);
+    expect(filterGuardrailPaletteGroups(groups, { query: '   ' })).toEqual(groups);
+  });
+
+  it('matches the name regardless of case and accents', () => {
+    const accented = { ...PII_DEFINITION, displayName: 'Détection PII' };
+    const result = filterGuardrailPaletteGroups(
+      groupGuardrailsForPalette([accented, PROMPT_ATTACKS_DEFINITION], 'UiPath guardrails'),
+      { query: 'DETECTION' }
+    );
+
+    expect(result[0]?.definitions).toEqual([accented]);
+  });
+
+  it('matches the description, the connector and the folder', () => {
+    expect(shown(filterGuardrailPaletteGroups(groups, { query: 'instructions' }))).toEqual([
+      ['__uipath__', ['Prompt attacks']],
+    ]);
+    expect(shown(filterGuardrailPaletteGroups(groups, { query: 'acme guard' }))).toEqual([
+      ['Acme Guard', ['Acme policy check']],
+    ]);
+    expect(shown(filterGuardrailPaletteGroups(groups, { query: 'shared' }))).toEqual([
+      ['Shared/Security', ['Noma prompt shield']],
+    ]);
+  });
+
+  it('needs every word, found in any field and in any order', () => {
+    expect(shown(filterGuardrailPaletteGroups(groups, { query: 'traffic pii' }))).toEqual([
+      ['__uipath__', ['PII detection']],
+    ]);
+    expect(filterGuardrailPaletteGroups(groups, { query: 'pii shield' })).toEqual([]);
+  });
+
+  it('matches the name a caller renders when it passes one', () => {
+    const byConfiguration = (definition: GuardrailPaletteDefinition) =>
+      definition.byoValidatorName ?? definition.displayName;
+
+    expect(filterGuardrailPaletteGroups(groups, { query: 'noma_prompt' })).toEqual([]);
+    expect(
+      shown(filterGuardrailPaletteGroups(groups, { query: 'noma_prompt' }, byConfiguration))
+    ).toEqual([['Shared/Security', ['Noma prompt shield']]]);
+  });
+
+  it('keeps the groups in order with their headings, and drops one left empty', () => {
+    const result = filterGuardrailPaletteGroups(groups, { query: 'detect' });
+
+    expect(shown(result)).toEqual([
+      ['Shared/Security', ['Noma prompt shield']],
+      ['__uipath__', ['PII detection', 'Prompt attacks']],
+    ]);
+    expect(result.map((group) => group.header)).toEqual(['Shared/Security', 'UiPath guardrails']);
+  });
+
+  it('keeps one side of the catalog by source', () => {
+    expect(
+      filterGuardrailPaletteGroups(groups, { source: 'byo' }).map((group) => group.key)
+    ).toEqual(['Acme Guard', 'Shared/Security']);
+    expect(
+      filterGuardrailPaletteGroups(groups, { source: 'uipath' }).map((group) => group.key)
+    ).toEqual(['__uipath__']);
+  });
+
+  it('counts the single unheaded group of a UiPath-only catalog as UiPath', () => {
+    const uipathOnly = groupGuardrailsForPalette(UIPATH_DEFINITIONS, 'UiPath guardrails');
+
+    expect(filterGuardrailPaletteGroups(uipathOnly, { source: 'uipath' })).toEqual(uipathOnly);
+    expect(filterGuardrailPaletteGroups(uipathOnly, { source: 'byo' })).toEqual([]);
+  });
+
+  it('applies the query and the source together', () => {
+    expect(shown(filterGuardrailPaletteGroups(groups, { query: 'detect', source: 'byo' }))).toEqual(
+      [['Shared/Security', ['Noma prompt shield']]]
+    );
+  });
+
+  it('never mutates the groups it is given', () => {
+    const before = JSON.parse(JSON.stringify(groups));
+    filterGuardrailPaletteGroups(groups, { query: 'pii', source: 'uipath' });
+
+    expect(groups).toEqual(before);
   });
 });

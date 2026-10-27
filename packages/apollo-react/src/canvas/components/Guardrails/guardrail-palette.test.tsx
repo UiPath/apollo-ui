@@ -344,6 +344,217 @@ describe('GuardrailPalette', () => {
     });
   });
 
+  describe('search', () => {
+    // The palette's own entries, without the clear-search button that joins them mid-search.
+    const shownEntries = () =>
+      Array.from(document.querySelectorAll('[data-slot="guardrail-palette-item"]')).map(
+        (item) => item.textContent
+      );
+    const search = (value: string) =>
+      fireEvent.change(screen.getByRole('searchbox', { name: 'Search guardrails' }), {
+        target: { value },
+      });
+
+    it('is off by default', () => {
+      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
+
+      expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
+    });
+
+    it('narrows the entries and keeps the group they came from', () => {
+      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS, searchable: true });
+
+      search('security');
+
+      expect(shownEntries()).toEqual([
+        'Noma prompt shieldNoma SecurityVendor-managed prompt injection detection.',
+      ]);
+      expect(screen.getByRole('group', { name: 'Shared/Security' })).toBeInTheDocument();
+      expect(screen.queryByRole('group', { name: 'UiPath guardrails' })).not.toBeInTheDocument();
+    });
+
+    it('matches the configuration name a BYO entry shows under byoDisplay', () => {
+      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS, searchable: true, byoDisplay: true });
+
+      search('acme_policy');
+
+      expect(shownEntries()).toEqual(['acme_policyBYOProvider: Acme Guard']);
+    });
+
+    it('keeps the create-custom entry and says when nothing matches', () => {
+      renderPalette({
+        ootbDefinitions: MIXED_DEFINITIONS,
+        searchable: true,
+        onCreateCustom: vi.fn(),
+      });
+
+      search('no such guardrail');
+
+      expect(screen.getByText('No matching guardrails')).toBeInTheDocument();
+      expect(screen.queryByText('No guardrails available')).not.toBeInTheDocument();
+      expect(shownEntries()).toEqual(['Custom guardrailCreate a guardrail with custom rules']);
+    });
+
+    it('clears from its button and gives focus back to the field', () => {
+      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS, searchable: true });
+      search('pii');
+      expect(shownEntries()).toHaveLength(1);
+
+      fireEvent.click(screen.getByRole('button', { name: 'Clear search' }));
+
+      const field = screen.getByRole('searchbox', { name: 'Search guardrails' });
+      expect(field).toHaveValue('');
+      expect(field).toHaveFocus();
+      expect(shownEntries()).toHaveLength(MIXED_DEFINITIONS.length);
+      expect(screen.queryByRole('button', { name: 'Clear search' })).not.toBeInTheDocument();
+    });
+
+    it('hands ArrowDown to the first entry, and ArrowUp on it back to the field', () => {
+      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS, searchable: true });
+      const field = screen.getByRole('searchbox', { name: 'Search guardrails' });
+      search('detect');
+
+      field.focus();
+      fireEvent.keyDown(field, { key: 'ArrowDown' });
+      const first = screen.getByRole('button', { name: /Noma prompt shield/ });
+      expect(first).toHaveFocus();
+
+      fireEvent.keyDown(first, { key: 'ArrowUp' });
+      expect(field).toHaveFocus();
+    });
+
+    it('moves the tab stop back to the first entry when the list narrows', () => {
+      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS, searchable: true });
+      const first = screen.getByRole('button', { name: /Acme policy check/ });
+      const last = screen.getByRole('button', { name: /Prompt attacks/ });
+      first.focus();
+      fireEvent.keyDown(first, { key: 'End' });
+      expect(last.tabIndex).toBe(0);
+
+      search('detect');
+
+      expect(screen.getByRole('button', { name: /Noma prompt shield/ }).tabIndex).toBe(0);
+      expect(screen.getByRole('button', { name: /Prompt attacks/ }).tabIndex).toBe(-1);
+    });
+
+    it('renders no controls while loading or with no catalog to search', () => {
+      const { unmount } = renderPalette({ searchable: true, sourceFilter: true, isLoading: true });
+      expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
+      unmount();
+
+      renderPalette({ ootbDefinitions: [], searchable: true, onCreateCustom: vi.fn() });
+      expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('the source filter', () => {
+    const sourceFilterGroup = () => screen.queryByRole('group', { name: 'Guardrail source' });
+
+    it('is off by default', () => {
+      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
+
+      expect(sourceFilterGroup()).not.toBeInTheDocument();
+    });
+
+    it('appears only while the catalog holds both UiPath and BYO entries', () => {
+      const { unmount } = renderPalette({
+        ootbDefinitions: UIPATH_DEFINITIONS,
+        sourceFilter: true,
+      });
+      expect(sourceFilterGroup()).not.toBeInTheDocument();
+      unmount();
+
+      const byoOnly = renderPalette({
+        ootbDefinitions: [BYO_FOLDER_DEFINITION],
+        sourceFilter: true,
+      });
+      expect(sourceFilterGroup()).not.toBeInTheDocument();
+      byoOnly.unmount();
+
+      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS, sourceFilter: true });
+      expect(sourceFilterGroup()).toBeInTheDocument();
+    });
+
+    it('shows one side at a time, starting with all of it', () => {
+      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS, sourceFilter: true });
+      expect(screen.getByRole('radio', { name: 'All 4' })).toHaveAttribute('aria-checked', 'true');
+
+      fireEvent.click(screen.getByRole('radio', { name: 'BYO 2' }));
+      expect(entries()).toEqual([
+        'Acme policy checkAcme Guard',
+        'Noma prompt shieldNoma SecurityVendor-managed prompt injection detection.',
+      ]);
+
+      fireEvent.click(screen.getByRole('radio', { name: 'UiPath 2' }));
+      expect(entries()).toEqual([
+        'PII detectionDetects personally identifiable information in agent traffic.',
+        'Prompt attacksDetects attempts to override the agent instructions.',
+      ]);
+      // The heading stays, so the entries read the same as under All.
+      expect(screen.getByRole('group', { name: 'UiPath guardrails' })).toBeInTheDocument();
+    });
+
+    it('keeps an option chosen when it is clicked again', () => {
+      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS, sourceFilter: true });
+      const byo = screen.getByRole('radio', { name: 'BYO 2' });
+
+      fireEvent.click(byo);
+      fireEvent.click(byo);
+
+      expect(byo).toHaveAttribute('aria-checked', 'true');
+      expect(entries()).toHaveLength(2);
+    });
+
+    it('counts what the search left on each side', () => {
+      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS, sourceFilter: true, searchable: true });
+
+      fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'detect' } });
+
+      expect(screen.getByRole('radio', { name: 'All 3' })).toBeInTheDocument();
+      expect(screen.getByRole('radio', { name: 'UiPath 2' })).toBeInTheDocument();
+      expect(screen.getByRole('radio', { name: 'BYO 1' })).toBeInTheDocument();
+    });
+
+    it('says so when the side it shows has no match', () => {
+      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS, sourceFilter: true, searchable: true });
+
+      fireEvent.click(screen.getByRole('radio', { name: 'BYO 2' }));
+      fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'pii' } });
+
+      expect(screen.getByText('No matching guardrails')).toBeInTheDocument();
+      expect(screen.getByRole('radio', { name: 'UiPath 1' })).toBeInTheDocument();
+    });
+
+    it('shows every entry again once the catalog loses a side', () => {
+      const { rerender } = renderPalette({
+        ootbDefinitions: MIXED_DEFINITIONS,
+        sourceFilter: true,
+      });
+      fireEvent.click(screen.getByRole('radio', { name: 'BYO 2' }));
+
+      rerender(
+        <GuardrailPalette
+          ootbDefinitions={UIPATH_DEFINITIONS}
+          onSelectOotb={vi.fn()}
+          sourceFilter
+        />
+      );
+
+      expect(sourceFilterGroup()).not.toBeInTheDocument();
+      expect(entries()).toHaveLength(UIPATH_DEFINITIONS.length);
+    });
+
+    it('hands ArrowDown from an option to the first entry', () => {
+      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS, sourceFilter: true });
+      const all = screen.getByRole('radio', { name: 'All 4' });
+
+      all.focus();
+      fireEvent.keyDown(all, { key: 'ArrowDown' });
+
+      expect(screen.getByRole('button', { name: /Acme policy check/ })).toHaveFocus();
+    });
+  });
+
   it('takes per-string label overrides over the catalog', () => {
     renderPalette({ ootbDefinitions: [], labels: { empty: 'Nothing here' } });
 
@@ -356,6 +567,18 @@ describe('GuardrailPalette', () => {
       onCreateCustom: vi.fn(),
       previewChip: true,
     });
+
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it('has no accessibility violations with the search and the source filter', async () => {
+    const { container } = renderPalette({
+      ootbDefinitions: MIXED_DEFINITIONS,
+      onCreateCustom: vi.fn(),
+      searchable: true,
+      sourceFilter: true,
+    });
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'detect' } });
 
     expect(await axe(container)).toHaveNoViolations();
   });

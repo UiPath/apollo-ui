@@ -90,6 +90,51 @@ const byoDefinitions: GuardrailPaletteDefinition[] = [
   },
 ];
 
+/** A tenant with several bring-your-own configurations across folders, where search pays off. */
+const manyByoDefinitions: GuardrailPaletteDefinition[] = [
+  ...byoDefinitions,
+  {
+    validator: 'byo',
+    displayName: 'Noma jailbreak detection',
+    description: 'Vendor-managed jailbreak attempt detection.',
+    status: 'Available',
+    byoValidatorName: 'noma_jailbreak',
+    byoConnectorName: 'Noma Security',
+    byoGuardrailConnectionId: 'connection-1',
+    folderPath: 'Shared/Security',
+  },
+  {
+    validator: 'byo',
+    displayName: 'Noma secrets scanner',
+    description: 'Flags API keys and credentials in agent traffic.',
+    status: 'Available',
+    byoValidatorName: 'noma_secrets',
+    byoConnectorName: 'Noma Security',
+    byoGuardrailConnectionId: 'connection-1',
+    folderPath: 'Shared/Security',
+  },
+  {
+    validator: 'byo',
+    displayName: 'Acme topic restriction',
+    description: 'Keeps the agent to approved finance topics.',
+    status: 'Available',
+    byoValidatorName: 'acme_finance_topics',
+    byoConnectorName: 'Acme Guard',
+    byoGuardrailConnectionId: 'connection-3',
+    folderPath: 'Finance/Compliance',
+  },
+  {
+    validator: 'byo',
+    displayName: 'Acme toxicity filter',
+    description: 'Scores agent output for toxic language.',
+    status: 'Available',
+    byoValidatorName: 'acme_toxicity',
+    byoConnectorName: 'Acme Guard',
+    byoGuardrailConnectionId: 'connection-3',
+    folderPath: 'Finance/Compliance',
+  },
+];
+
 const noop = () => {};
 
 /** UiPath validators only: one unheaded group, in the order the catalog returned them. */
@@ -129,6 +174,28 @@ export const ByoDisplay: Story = {
     byoDisplay: true,
     onSelectOotb: noop,
   },
+};
+
+/**
+ * searchable adds a search field that matches each entry's name, description, connector and
+ * folder. sourceFilter adds an All, UiPath and BYO filter, shown only while the catalog holds
+ * both kinds, with each option counting what the search left. Given a bounded height, as here,
+ * the entries scroll under the controls.
+ */
+export const SearchAndSourceFilter: Story = {
+  args: {
+    ootbDefinitions: [...manyByoDefinitions, ...uipathDefinitions],
+    searchable: true,
+    sourceFilter: true,
+    byoDisplay: true,
+    previewChip: true,
+    onSelectOotb: noop,
+  },
+  render: (args) => (
+    <div className="flex h-[420px] w-[360px] flex-col rounded-md border p-1.5">
+      <GuardrailPalette {...args} className="flex-1" />
+    </div>
+  ),
 };
 
 /**

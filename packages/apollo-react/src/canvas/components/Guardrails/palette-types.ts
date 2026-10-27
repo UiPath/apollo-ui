@@ -20,6 +20,9 @@ export interface GuardrailPaletteDefinition {
   folderPath?: string;
 }
 
+/** Which side of the catalog the palette shows: every entry, the UiPath validators or the BYO ones. */
+export type GuardrailPaletteSource = 'all' | 'uipath' | 'byo';
+
 /** One rendered section of the palette: a BYO folder or connector, or the UiPath validators. */
 export interface GuardrailPaletteGroup<T extends GuardrailPaletteDefinition> {
   /** Synthetic (`__all__`, `__uipath__`, `__byo__`) where there is no name. */
