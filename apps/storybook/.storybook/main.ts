@@ -30,6 +30,11 @@ try {
 const config: StorybookConfig = {
   stories: [
     {
+      directory: '../../../packages/apollo-react/src/grid',
+      files: '**/*.stories.@(tsx|ts|jsx|js|mdx)',
+      titlePrefix: 'Apollo React/Grid',
+    },
+    {
       directory: '../src/introduction',
       files: '**/*.stories.@(tsx|ts|jsx|js|mdx)',
     },

@@ -68,6 +68,11 @@
       "import": "./dist/canvas/index.js",
       "require": "./dist/canvas/index.cjs"
     },
+    "./grid": {
+      "types": "./dist/grid/index.d.ts",
+      "import": "./dist/grid/index.js",
+      "require": "./dist/grid/index.cjs"
+    },
     "./i18n": {
       "types": "./dist/i18n/index.d.ts",
       "import": "./dist/i18n/index.js",
@@ -266,7 +271,9 @@
     "unist-util-visit": "^5.0.0",
     "use-sync-external-store": "^1.2.0",
     "zod": "^4.6.6",
-    "zustand": "^5.0.9"
+    "zustand": "^5.0.9",
+    "@tanstack/react-table": "9.0.0",
+    "@tanstack/virtual-core": "^3.17.4"
   },
   "devDependencies": {
     "@lingui/cli": "^5.6.1",
