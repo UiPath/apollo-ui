@@ -147,7 +147,10 @@ describe('GuardrailPalette', () => {
       renderPalette({ ootbDefinitions: MIXED_DEFINITIONS, byoDisplay: true });
 
       expect(screen.getByRole('button', { name: /^PII detection/ })).toBeInTheDocument();
-      expect(screen.getAllByText('BYO')).toHaveLength(2);
+      // Scoped to the chips: the source filter's BYO option says "BYO" too.
+      expect(
+        screen.getAllByText('BYO', { selector: '[data-slot="guardrail-status-chip"] > span' })
+      ).toHaveLength(2);
     });
   });
 
@@ -355,14 +358,17 @@ describe('GuardrailPalette', () => {
         target: { value },
       });
 
-    it('is off by default', () => {
-      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
+    it('is on by default, and a host can leave it out', () => {
+      const { unmount } = renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
+      expect(screen.getByRole('searchbox', { name: 'Search guardrails' })).toBeInTheDocument();
+      unmount();
 
+      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS, searchable: false });
       expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
     });
 
     it('narrows the entries and keeps the group they came from', () => {
-      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS, searchable: true });
+      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
 
       search('security');
 
@@ -374,7 +380,7 @@ describe('GuardrailPalette', () => {
     });
 
     it('matches the configuration name a BYO entry shows under byoDisplay', () => {
-      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS, searchable: true, byoDisplay: true });
+      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS, byoDisplay: true });
 
       search('acme_policy');
 
@@ -384,7 +390,6 @@ describe('GuardrailPalette', () => {
     it('keeps the create-custom entry and says when nothing matches', () => {
       renderPalette({
         ootbDefinitions: MIXED_DEFINITIONS,
-        searchable: true,
         onCreateCustom: vi.fn(),
       });
 
@@ -395,8 +400,23 @@ describe('GuardrailPalette', () => {
       expect(shownEntries()).toEqual(['Custom guardrailCreate a guardrail with custom rules']);
     });
 
+    it('announces no match through a status region mounted before it', () => {
+      // A live region announces a change of its content, not its own arrival, so it is there
+      // and empty while entries match.
+      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
+      const status = screen.getByRole('status');
+      expect(status).toBeEmptyDOMElement();
+
+      search('no such guardrail');
+      expect(screen.getByRole('status')).toBe(status);
+      expect(status).toHaveTextContent('No matching guardrails');
+
+      search('pii');
+      expect(status).toBeEmptyDOMElement();
+    });
+
     it('clears from its button and gives focus back to the field', () => {
-      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS, searchable: true });
+      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
       search('pii');
       expect(shownEntries()).toHaveLength(1);
 
@@ -410,7 +430,7 @@ describe('GuardrailPalette', () => {
     });
 
     it('hands ArrowDown to the first entry, and ArrowUp on it back to the field', () => {
-      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS, searchable: true });
+      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
       const field = screen.getByRole('searchbox', { name: 'Search guardrails' });
       search('detect');
 
@@ -423,8 +443,24 @@ describe('GuardrailPalette', () => {
       expect(field).toHaveFocus();
     });
 
+    it('leaves ArrowDown to an IME composing the query', () => {
+      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
+      const field = screen.getByRole('searchbox', { name: 'Search guardrails' });
+
+      field.focus();
+      // Japanese or Chinese input steps through its candidates with ArrowDown.
+      fireEvent.keyDown(field, { key: 'ArrowDown', isComposing: true });
+      expect(field).toHaveFocus();
+      // Some browsers report a composing key only as keyCode 229.
+      fireEvent.keyDown(field, { key: 'ArrowDown', keyCode: 229 });
+      expect(field).toHaveFocus();
+
+      fireEvent.keyDown(field, { key: 'ArrowDown' });
+      expect(screen.getByRole('button', { name: /Acme policy check/ })).toHaveFocus();
+    });
+
     it('moves the tab stop back to the first entry when the list narrows', () => {
-      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS, searchable: true });
+      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
       const first = screen.getByRole('button', { name: /Acme policy check/ });
       const last = screen.getByRole('button', { name: /Prompt attacks/ });
       first.focus();
@@ -438,11 +474,11 @@ describe('GuardrailPalette', () => {
     });
 
     it('renders no controls while loading or with no catalog to search', () => {
-      const { unmount } = renderPalette({ searchable: true, sourceFilter: true, isLoading: true });
+      const { unmount } = renderPalette({ isLoading: true });
       expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
       unmount();
 
-      renderPalette({ ootbDefinitions: [], searchable: true, onCreateCustom: vi.fn() });
+      renderPalette({ ootbDefinitions: [], onCreateCustom: vi.fn() });
       expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
     });
   });
@@ -450,33 +486,43 @@ describe('GuardrailPalette', () => {
   describe('the source filter', () => {
     const sourceFilterGroup = () => screen.queryByRole('group', { name: 'Guardrail source' });
 
-    it('is off by default', () => {
-      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
+    it('is on by default, and a host can leave it out', () => {
+      const { unmount } = renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
+      expect(sourceFilterGroup()).toBeInTheDocument();
+      unmount();
 
+      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS, sourceFilter: false });
       expect(sourceFilterGroup()).not.toBeInTheDocument();
+    });
+
+    it('renders no controls at all when the host leaves both out', () => {
+      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS, searchable: false, sourceFilter: false });
+
+      expect(
+        document.querySelector('[data-slot="guardrail-palette-controls"]')
+      ).not.toBeInTheDocument();
+      expect(screen.queryByRole('status')).not.toBeInTheDocument();
     });
 
     it('appears only while the catalog holds both UiPath and BYO entries', () => {
       const { unmount } = renderPalette({
         ootbDefinitions: UIPATH_DEFINITIONS,
-        sourceFilter: true,
       });
       expect(sourceFilterGroup()).not.toBeInTheDocument();
       unmount();
 
       const byoOnly = renderPalette({
         ootbDefinitions: [BYO_FOLDER_DEFINITION],
-        sourceFilter: true,
       });
       expect(sourceFilterGroup()).not.toBeInTheDocument();
       byoOnly.unmount();
 
-      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS, sourceFilter: true });
+      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
       expect(sourceFilterGroup()).toBeInTheDocument();
     });
 
     it('shows one side at a time, starting with all of it', () => {
-      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS, sourceFilter: true });
+      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
       expect(screen.getByRole('radio', { name: 'All 4' })).toHaveAttribute('aria-checked', 'true');
 
       fireEvent.click(screen.getByRole('radio', { name: 'BYO 2' }));
@@ -495,7 +541,7 @@ describe('GuardrailPalette', () => {
     });
 
     it('keeps an option chosen when it is clicked again', () => {
-      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS, sourceFilter: true });
+      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
       const byo = screen.getByRole('radio', { name: 'BYO 2' });
 
       fireEvent.click(byo);
@@ -506,7 +552,7 @@ describe('GuardrailPalette', () => {
     });
 
     it('counts what the search left on each side', () => {
-      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS, sourceFilter: true, searchable: true });
+      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
 
       fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'detect' } });
 
@@ -516,7 +562,7 @@ describe('GuardrailPalette', () => {
     });
 
     it('says so when the side it shows has no match', () => {
-      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS, sourceFilter: true, searchable: true });
+      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
 
       fireEvent.click(screen.getByRole('radio', { name: 'BYO 2' }));
       fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'pii' } });
@@ -528,7 +574,6 @@ describe('GuardrailPalette', () => {
     it('shows every entry again once the catalog loses a side', () => {
       const { rerender } = renderPalette({
         ootbDefinitions: MIXED_DEFINITIONS,
-        sourceFilter: true,
       });
       fireEvent.click(screen.getByRole('radio', { name: 'BYO 2' }));
 
@@ -545,7 +590,7 @@ describe('GuardrailPalette', () => {
     });
 
     it('hands ArrowDown from an option to the first entry', () => {
-      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS, sourceFilter: true });
+      renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
       const all = screen.getByRole('radio', { name: 'All 4' });
 
       all.focus();
@@ -575,8 +620,6 @@ describe('GuardrailPalette', () => {
     const { container } = renderPalette({
       ootbDefinitions: MIXED_DEFINITIONS,
       onCreateCustom: vi.fn(),
-      searchable: true,
-      sourceFilter: true,
     });
     fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'detect' } });
 
