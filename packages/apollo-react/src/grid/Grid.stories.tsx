@@ -27,9 +27,15 @@ const rows = [
 
 const CELL = 'border border-border-de-emp px-2 py-1 text-sm';
 
+const labels = {
+  resizeColumn: (columnName: string) => `Resize column ${columnName}`,
+  resetColumnWidth: 'Double-click to reset the column width',
+};
+
 const DemoGrid = ({ resizable = true }: { resizable?: boolean }) => (
   <div style={{ height: 320 }}>
     <Grid
+      labels={labels}
       columns={columns}
       rowCount={rows.length}
       leadingColumnWidth={40}
