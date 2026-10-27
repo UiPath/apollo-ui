@@ -430,8 +430,10 @@ const { definitions, loading, error } = useGuardrailDefinitions({ baseUrl, tenan
   (a catalog with no BYO) has nothing to fold.
 - **ArrowDown leaves the search field for the first guardrail**, past any heading, the way a
   search hands over to its first result, and ArrowUp from the top of the list goes back to the
-  field. Headings and entries share one roving order. The source filter keeps ArrowDown to open
-  its menu, and an IME composing a query keeps it for its candidates (`isComposing`, or
+  field. Headings and entries share one roving order. Radix hands focus back to the source
+  trigger when its menu closes, and in a browser that focus counts as focus-visible, so after a
+  pointer pick the trigger's ring is held back (`data-pointer-focus`) until the next key press or
+  until focus leaves. The source filter keeps ArrowDown to open its menu, and an IME composing a query keeps it for its candidates (`isComposing`, or
   keyCode 229). Narrowing the list moves the tab stop back to the top.
 - **`isLoading` renders a polite loading line and `error` a `GuardrailStatusBanner`.** The
   loading line is an `<output>`, for its implicit `role="status"`: a polite live region, and the

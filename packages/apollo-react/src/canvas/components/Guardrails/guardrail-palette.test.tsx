@@ -600,6 +600,50 @@ describe('GuardrailPalette', () => {
         screen.getByRole('button', { name: /Acme policy check/, hidden: true })
       ).not.toHaveFocus();
     });
+
+    // jsdom computes no focus ring, so these pin the flag the ring is held back by: Radix hands
+    // focus back to the trigger on close, and in a browser that focus counts as focus-visible.
+    describe('the focus ring after a pointer', () => {
+      it('is held back after a pointer pick, until the next key press', async () => {
+        renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
+        const trigger = screen.getByRole('combobox', { name: 'Guardrail source' });
+        expect(trigger).toHaveClass('data-[pointer-focus]:focus-visible:ring-0');
+
+        fireEvent.pointerDown(trigger);
+        await pickSource('BYO 2');
+        expect(trigger).toHaveAttribute('data-pointer-focus');
+
+        fireEvent.keyDown(trigger, { key: 'Shift' });
+        expect(trigger).not.toHaveAttribute('data-pointer-focus');
+      });
+
+      it('comes back for a key pressed in the menu', async () => {
+        renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
+        const trigger = screen.getByRole('combobox', { name: 'Guardrail source' });
+
+        fireEvent.pointerDown(trigger);
+        fireEvent.click(trigger);
+        fireEvent.keyDown(await screen.findByRole('listbox'), { key: 'Escape' });
+
+        expect(trigger).not.toHaveAttribute('data-pointer-focus');
+      });
+
+      it('comes back once focus leaves the closed trigger, but not when the menu opens', async () => {
+        renderPalette({ ootbDefinitions: MIXED_DEFINITIONS });
+        const trigger = screen.getByRole('combobox', { name: 'Guardrail source' });
+
+        fireEvent.pointerDown(trigger);
+        fireEvent.click(trigger);
+        await screen.findByRole('listbox');
+        // Opening the menu moves focus into it.
+        fireEvent.blur(trigger);
+        expect(trigger).toHaveAttribute('data-pointer-focus');
+
+        fireEvent.click(screen.getByRole('option', { name: 'BYO 2' }));
+        fireEvent.blur(trigger);
+        expect(trigger).not.toHaveAttribute('data-pointer-focus');
+      });
+    });
   });
 
   describe('collapsible groups', () => {
