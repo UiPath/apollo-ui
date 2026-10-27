@@ -131,6 +131,11 @@ export function GuardrailPalette<T extends GuardrailPaletteDefinition>({
   const [query, setQuery] = useState('');
   const [source, setSource] = useState<GuardrailPaletteSource>('all');
   const [collapsedGroups, setCollapsedGroups] = useState<ReadonlySet<string>>(() => new Set());
+  // Radix hands focus back to the source trigger when its menu closes, and that focus counts as
+  // `:focus-visible` (its pointerdown is prevented, so no mouse focus is recorded). After a
+  // pointer pick, the ring is held back until the next key press, or until focus leaves.
+  const [sourcePointerFocus, setSourcePointerFocus] = useState(false);
+  const sourceOpenRef = useRef(false);
 
   const getName = byoDisplay ? paletteEntryName : undefined;
 
@@ -348,16 +353,27 @@ export function GuardrailPalette<T extends GuardrailPaletteDefinition>({
                 <Select
                   value={activeSource}
                   onValueChange={(value) => updateSource(value as GuardrailPaletteSource)}
+                  onOpenChange={(open) => {
+                    sourceOpenRef.current = open;
+                  }}
                 >
                   {/* The search field's height, so the two read as one row. */}
                   <SelectTrigger
                     aria-label={labels.sourceFilter}
-                    className="h-8 w-auto shrink-0 gap-2 future:h-9"
+                    data-pointer-focus={sourcePointerFocus || undefined}
+                    onPointerDown={() => setSourcePointerFocus(true)}
+                    onKeyDown={() => setSourcePointerFocus(false)}
+                    // Not while the menu is open: opening it moves focus into the menu.
+                    onBlur={() => {
+                      if (!sourceOpenRef.current) setSourcePointerFocus(false);
+                    }}
+                    className="h-8 w-auto shrink-0 gap-2 future:h-9 data-[pointer-focus]:focus:ring-0 data-[pointer-focus]:focus-visible:ring-0"
                   >
                     {/* The bare label, so the trigger keeps its width while the counts change. */}
                     <SelectValue>{sourceLabels[activeSource]}</SelectValue>
                   </SelectTrigger>
-                  <SelectContent>
+                  {/* A key pressed in the menu (Escape, or picking with Enter) is keyboard use. */}
+                  <SelectContent onKeyDown={() => setSourcePointerFocus(false)}>
                     {SOURCES.map((option) => (
                       <SelectItem key={option} value={option}>
                         {/* The space keeps the accessible name "BYO 2" rather than "BYO2". */}
