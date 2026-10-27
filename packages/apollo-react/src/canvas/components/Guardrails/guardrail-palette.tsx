@@ -49,12 +49,13 @@ export interface GuardrailPaletteProps<
   byoDisplay?: boolean;
   /**
    * A search field above the entries, matching what each entry shows: its name, description,
-   * connector and folder.
+   * connector and folder. On by default; `false` leaves it out.
    */
   searchable?: boolean;
   /**
    * An All / UiPath / BYO filter above the entries, each option counting what the search left.
    * Rendered only while the catalog holds both kinds, since there is nothing to split otherwise.
+   * On by default; `false` leaves it out.
    */
   sourceFilter?: boolean;
   labels?: Partial<GuardrailPaletteLabels>;
@@ -109,8 +110,8 @@ export function GuardrailPalette<T extends GuardrailPaletteDefinition>({
   error = null,
   previewChip = false,
   byoDisplay = false,
-  searchable = false,
-  sourceFilter = false,
+  searchable = true,
+  sourceFilter = true,
   labels: labelOverrides,
   className,
 }: GuardrailPaletteProps<T>) {
@@ -214,10 +215,13 @@ export function GuardrailPalette<T extends GuardrailPaletteDefinition>({
 
     if (current === -1) {
       // ArrowDown hands over from the search field or the source filter to the first entry.
-      // The filter is horizontal, so it leaves ArrowDown alone for this.
+      // The filter is horizontal, so it leaves ArrowDown alone for this. An IME composing a
+      // query (Japanese, Chinese) uses ArrowDown for its candidates, so it keeps it.
       if (
         event.key === 'ArrowDown' &&
         !event.defaultPrevented &&
+        !event.nativeEvent.isComposing &&
+        event.keyCode !== 229 &&
         entries.length > 0 &&
         controlsRef.current?.contains(focused as Node)
       ) {
@@ -368,8 +372,13 @@ export function GuardrailPalette<T extends GuardrailPaletteDefinition>({
               />
             )}
             {isEmpty && <p className="px-2 py-1 text-sm text-muted-foreground">{labels.empty}</p>}
-            {hasNoMatches && (
-              <p className="px-2 py-1 text-sm text-muted-foreground">{labels.noMatches}</p>
+            {/* Mounted with the controls and filled on no match, so a screen reader announces
+                it while focus stays in the search field. `<output>` is a polite status, and
+                `empty:sr-only` keeps the empty region out of the layout. */}
+            {showControls && (
+              <output className="px-2 py-1 text-sm text-muted-foreground empty:sr-only">
+                {hasNoMatches ? labels.noMatches : null}
+              </output>
             )}
             {visibleGroups.map((group, groupIndex) => {
               const headerId = `${headerIdPrefix}-${groupIndex}`;

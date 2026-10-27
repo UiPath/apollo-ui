@@ -177,16 +177,14 @@ export const ByoDisplay: Story = {
 };
 
 /**
- * searchable adds a search field that matches each entry's name, description, connector and
- * folder. sourceFilter adds an All, UiPath and BYO filter, shown only while the catalog holds
- * both kinds, with each option counting what the search left. Given a bounded height, as here,
- * the entries scroll under the controls.
+ * The search field matches each entry's name, description, connector and folder. The All,
+ * UiPath and BYO filter shows only while the catalog holds both kinds, with each option counting
+ * what the search left. Both are on by default. Given a bounded height, as here, the entries
+ * scroll under them.
  */
 export const SearchAndSourceFilter: Story = {
   args: {
     ootbDefinitions: [...manyByoDefinitions, ...uipathDefinitions],
-    searchable: true,
-    sourceFilter: true,
     byoDisplay: true,
     previewChip: true,
     onSelectOotb: noop,
@@ -255,8 +253,10 @@ export const InADialog: Story = {
               <DialogHeader>
                 <DialogTitle>Add guardrail</DialogTitle>
               </DialogHeader>
+              {/* A max height on the palette itself, so its entries scroll under the search. */}
               <GuardrailPalette
                 {...args}
+                className="max-h-[60vh]"
                 previewChip
                 onCreateCustom={() => {
                   setChosen('a custom guardrail');
@@ -299,8 +299,9 @@ export const InAHostSidebar: Story = {
           Create custom
         </Button>
       </div>
-      <div className="flex-1 overflow-auto p-1.5">
-        <GuardrailPalette {...args} />
+      {/* No overflow of its own: the palette fills the column and scrolls its entries. */}
+      <div className="flex min-h-0 flex-1 flex-col p-1.5">
+        <GuardrailPalette {...args} className="flex-1" />
       </div>
     </div>
   ),

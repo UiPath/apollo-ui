@@ -400,8 +400,9 @@ const { definitions, loading, error } = useGuardrailDefinitions({ baseUrl, tenan
   its configuration (`byoValidatorName`) and sorted by it, a "BYO" chip in place of the
   connector-name chip, and an italic "Provider: {connector}" caption. Off by default, which
   keeps the display name and the connector chip. Group headings are unchanged either way.
-- **`searchable` and `sourceFilter` are opt-in, so a version bump changes neither host.**
-  `searchable` renders a search field above the entries. An entry matches when every word of
+- **`searchable` and `sourceFilter` are on by default**, unlike the product-lifecycle chips:
+  finding an entry is the picker's own job, and both hosts want them. Pass `false` to leave
+  either out. `searchable` renders a search field above the entries. An entry matches when every word of
   the query appears in what it shows: its rendered name (the configuration name under
   `byoDisplay`), description, connector and folder. Case and accents are ignored.
   `sourceFilter` renders an All / UiPath / BYO filter, labelled "UiPath" rather than "OOTB" to
@@ -410,8 +411,9 @@ const { definitions, loading, error } = useGuardrailDefinitions({ baseUrl, tenan
   runs after grouping (`filterGuardrailPaletteGroups`, exported and pure), so groups keep their
   order and headings while a user types, and a group left empty drops out. The create-custom
   entry is an action rather than a match, so it stays in place, and "No matching guardrails"
-  shows beside it when nothing else is left. Neither control renders while loading or for an
-  empty catalog.
+  shows beside it when nothing else is left. That line sits in an `<output>` mounted with the
+  controls and empty until then, because a live region announces a change of its content, not
+  its arrival. Neither control renders while loading or for an empty catalog.
 - **The entries scroll in their own region**, so the controls stay in place above them. That
   only happens when the host bounds the palette's height: pass `className="flex-1"` inside a
   flex column, or a `max-h-*`, and drop the host's own `overflow`. A host that keeps its own
@@ -419,7 +421,8 @@ const { definitions, loading, error } = useGuardrailDefinitions({ baseUrl, tenan
 - **ArrowDown leaves the search field or the source filter for the first entry, and ArrowUp on
   the first entry goes back to the search field.** The source filter is a horizontal wind
   `ToggleGroup`, so Left and Right move between its options and Up and Down stay with the
-  palette. Narrowing the list moves the tab stop back to its first entry.
+  palette. An IME composing a query keeps ArrowDown for its candidates (`isComposing`, or
+  keyCode 229). Narrowing the list moves the tab stop back to its first entry.
 - **`isLoading` renders a polite loading line and `error` a `GuardrailStatusBanner`.** The
   loading line is an `<output>`, for its implicit `role="status"`: a polite live region, and the
   one native element that carries it without bringing styling of its own. Any definitions that
