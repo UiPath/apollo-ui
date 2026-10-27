@@ -385,9 +385,9 @@ export const Grid = forwardRef<GridHandle, GridProps>(
         return null;
       }
       return (
+        // biome-ignore lint/a11y/useSemanticElements: ARIA window-splitter — a focusable, value-carrying resize separator <hr> cannot express
         <span
           className={RESIZE_HANDLE_CLASS}
-          // biome-ignore lint/a11y/useSemanticElements: ARIA window-splitter — a focusable, value-carrying resize separator <hr> cannot express
           role="separator"
           aria-orientation="vertical"
           aria-valuenow={Math.round(width)}

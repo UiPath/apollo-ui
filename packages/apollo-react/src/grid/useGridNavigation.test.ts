@@ -1,11 +1,21 @@
 import { vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
-import { cellSelectionFeature, coreFeatures, createCoreRowModel, tableFeatures, useTable } from '@tanstack/react-table';
+import {
+  cellSelectionFeature,
+  coreFeatures,
+  createCoreRowModel,
+  tableFeatures,
+  useTable,
+} from '@tanstack/react-table';
 import { type EditGesture, type GridPosition, useGridNavigation } from './useGridNavigation';
 
 /** Any table will do: the instance is only the store the selection rectangle lives in — the
  * ids the hook translates against are handed in below, so these tests stay pure translation. */
-const FEATURES = tableFeatures({ ...coreFeatures, cellSelectionFeature, coreRowModel: createCoreRowModel() });
+const FEATURES = tableFeatures({
+  ...coreFeatures,
+  cellSelectionFeature,
+  coreRowModel: createCoreRowModel(),
+});
 
 const useBareTable = () =>
   useTable({
