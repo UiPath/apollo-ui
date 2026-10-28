@@ -1,12 +1,12 @@
 {
-  "sticky-note.formatting.bold": "",
-  "sticky-note.formatting.italic": "",
-  "sticky-note.formatting.strikethrough": "",
-  "sticky-note.formatting.bullet-list": "",
-  "sticky-note.formatting.numbered-list": "",
-  "sticky-note.formatting.toolbar": "",
-  "guardrails.form.required-error": "Значение обязательно",
-  "guardrails.form.min-error": "Должно быть не менее {min}",
+  "guardrails.builder.parameter-out-of-range-error": "Значение вне допустимого диапазона",
   "guardrails.form.max-error": "Должно быть не более {max}",
-  "guardrails.builder.parameter-out-of-range-error": "Значение вне допустимого диапазона"
+  "guardrails.form.min-error": "Должно быть не менее {min}",
+  "guardrails.form.required-error": "Значение обязательно",
+  "sticky-note.formatting.bold": "",
+  "sticky-note.formatting.bullet-list": "",
+  "sticky-note.formatting.italic": "",
+  "sticky-note.formatting.numbered-list": "",
+  "sticky-note.formatting.strikethrough": "",
+  "sticky-note.formatting.toolbar": ""
 }
