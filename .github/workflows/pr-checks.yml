@@ -42,6 +42,7 @@ jobs:
           - Lint Deps
           - Check Dependency Consistency
           - Typecheck
+          - i18n Catalogs
           - Test Coverage
           - Build
 
@@ -92,6 +93,31 @@ jobs:
       - name: Run Typecheck
         if: matrix.check == 'Typecheck'
         run: pnpm typecheck --affected
+
+      # The committed apollo-react catalogs must match what `lingui extract`
+      # generates from source, or new strings never reach translators.
+      - name: Verify i18n catalogs are up to date
+        if: matrix.check == 'i18n Catalogs'
+        run: |
+          pnpm --filter @uipath/apollo-react i18n:extract
+          if [ -n "$(git status --porcelain -- 'packages/apollo-react/src/**/locales/*.json')" ]; then
+            echo "::error::apollo-react i18n catalogs are out of date. Run 'pnpm --filter @uipath/apollo-react i18n:extract' and commit the locales/*.json changes."
+            git status --short -- 'packages/apollo-react/src/**/locales/*.json'
+            git --no-pager diff -- 'packages/apollo-react/src/**/locales/*.json'
+            exit 1
+          fi
+
+      # `lingui compile` only warns on invalid ICU messages and drops them from
+      # the bundle; `--strict` would also fail on every untranslated string.
+      - name: Verify i18n catalogs compile
+        if: matrix.check == 'i18n Catalogs'
+        run: |
+          set -o pipefail
+          pnpm --filter @uipath/apollo-react i18n:compile 2>&1 | tee "$RUNNER_TEMP/i18n-compile.log"
+          if grep -q "Compilation error" "$RUNNER_TEMP/i18n-compile.log"; then
+            echo "::error::apollo-react i18n catalogs contain invalid ICU messages. See 'Compilation error' entries above."
+            exit 1
+          fi
 
       - name: Run Test Coverage
         if: matrix.check == 'Test Coverage'
