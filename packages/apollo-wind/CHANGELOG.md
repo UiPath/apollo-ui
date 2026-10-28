@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.79.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.78.0...@uipath/apollo-wind@2.79.0) (2026-10-28)
+
+### Features
+
+* **apollo-wind:** add a none variant to Input [MST-16240] ([2b547e5](https://github.com/UiPath/apollo-ui/commit/2b547e54728d893900ae2a452e0725aca14a7f0d))
+
 ## [@uipath/apollo-wind-v2.78.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.77.0...@uipath/apollo-wind@2.78.0) (2026-10-27)
 
 ### Features
