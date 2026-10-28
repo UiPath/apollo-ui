@@ -30,7 +30,8 @@ import { Popover, PopoverContent } from './popover';
 import { Select, SelectContent, SelectTrigger, SelectValue } from './select';
 import { Textarea } from './textarea';
 
-const TRIM = 'has-[>[data-slot=input-group-addon][data-align=inline-end]]:pr-2';
+const TRIM_START = 'has-[>[data-slot=input-group-addon][data-align=inline-start]_button]:pl-2';
+const TRIM_END = 'has-[>[data-slot=input-group-addon][data-align=inline-end]_button]:pr-2';
 
 /** Reports the anchor it was handed through the DOM, since the ref is empty during render. */
 function AnchorProbe() {
@@ -274,8 +275,8 @@ describe('InputGroup', () => {
     it('drops the paint but keeps the row geometry when unboxed', () => {
       render(<InputGroup data-testid="group" variant="none" />);
       const group = screen.getByTestId('group');
-      expect(group).toHaveClass('h-9', 'px-0', 'pr-3', 'border-0', 'bg-transparent', 'shadow-none');
-      expect(group).not.toHaveClass('px-3');
+      expect(group).toHaveClass('h-9', 'px-0', 'border-0', 'bg-transparent', 'shadow-none');
+      expect(group).not.toHaveClass('px-3', 'pr-3');
     });
 
     it('draws a plain border with no fill as outline', () => {
@@ -449,18 +450,23 @@ describe('InputGroup', () => {
     });
   });
 
-  it('trims the right padding by the slack a trailing addon brings, in both themes', () => {
+  it('trims each side by the slack an addon button brings', () => {
     render(<InputGroup data-testid="group" />);
-    expect(screen.getByTestId('group')).toHaveClass(TRIM, `future:${TRIM}`);
+    expect(screen.getByTestId('group')).toHaveClass(TRIM_START, TRIM_END);
   });
 
-  it('keeps the trim on a fill box, which states its padding by side rather than shorthand', () => {
+  it('trims an unboxed box too, so its addon buttons line up with a boxed field’s', () => {
+    render(<InputGroup data-testid="group" variant="none" />);
+    expect(screen.getByTestId('group')).toHaveClass('px-0', TRIM_START, TRIM_END);
+  });
+
+  it('keeps the trims on a fill box, which states its padding by side rather than shorthand', () => {
     // A `p-0`/`px-0` shorthand would survive `cn` beside the trim and settle the right edge on
     // stylesheet order.
     render(<InputGroup data-testid="group" layout="fill" />);
     const group = screen.getByTestId('group');
     expect(group.className.split(/\s+/).filter((c) => /^(future:)?p-\d/.test(c))).toEqual([]);
-    expect(group).toHaveClass('pr-0', 'future:pr-0', TRIM, `future:${TRIM}`);
+    expect(group).toHaveClass('pl-0', 'future:pl-0', 'pr-0', 'future:pr-0', TRIM_START, TRIM_END);
   });
 
   describe('addon click', () => {
@@ -748,7 +754,7 @@ describe('InputGroup', () => {
       expect(screen.getByText('conditions').parentElement).toHaveClass('border-t');
     });
 
-    it('pads the row, whose trailing addon the box’s direct-child trim cannot reach', () => {
+    it('pads the row, whose addons the box’s direct-child trims cannot reach', () => {
       const { container } = render(
         <InputGroup data-testid="group" layout="block">
           <InputGroupRow>
@@ -762,7 +768,7 @@ describe('InputGroup', () => {
       const group = screen.getByTestId('group');
       expect(group.querySelector(':scope > [data-slot="input-group-addon"]')).toBeNull();
       const row = container.querySelector('[data-slot="input-group-row"]');
-      expect(row).toHaveClass('px-3', TRIM, 'min-h-9', 'future:min-h-10');
+      expect(row).toHaveClass('px-3', TRIM_START, TRIM_END, 'min-h-9', 'future:min-h-10');
     });
 
     it('drops the divider when a collapsible body is closed', () => {
