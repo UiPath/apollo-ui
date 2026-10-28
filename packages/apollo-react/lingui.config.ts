@@ -18,7 +18,11 @@ const config: LinguiConfig = {
     'es-MX',
     'ro',
   ],
-  // sourceLocale: 'en', // Use keys, we can add this back if we want to fallback to english
+  // Production builds strip `message` from msg() descriptors, so an untranslated
+  // key must be compiled to English here or it renders as its raw id.
+  sourceLocale: 'en',
+  fallbackLocales: { default: 'en' },
+  orderBy: 'messageId',
   catalogs: [
     {
       path: 'src/chat/locales/{locale}',
