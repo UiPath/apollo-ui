@@ -1,3 +1,15 @@
+## [@uipath/apollo-react-v7.11.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.10.0...@uipath/apollo-react@7.11.0) (2026-10-27)
+
+### Features
+
+* **apollo-react:** palette search and source filter on by default [AL-655] ([021e349](https://github.com/UiPath/apollo-ui/commit/021e349aa647fb0cfb7e271f8292e0827ad38e1b))
+* **apollo-react:** search and source filter in the guardrail palette [AL-655] ([b4a49a4](https://github.com/UiPath/apollo-ui/commit/b4a49a48eac79c1a5e61a402b91d5be13f798637))
+* **apollo-react:** source dropdown and collapsible groups in the guardrail palette [AL-655] ([268d136](https://github.com/UiPath/apollo-ui/commit/268d136ad51e2080edb0ab7d3a21bce6a7cf3b0b))
+
+### Bug Fixes
+
+* **apollo-react:** hold back the source filter's focus ring after a pointer pick [AL-655] ([6c16cd8](https://github.com/UiPath/apollo-ui/commit/6c16cd8e1629d37a56b7800f90b08e716dc642ca))
+
 ## [@uipath/apollo-react-v7.10.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.9.2...@uipath/apollo-react@7.10.0) (2026-10-26)
 
 ### Features
