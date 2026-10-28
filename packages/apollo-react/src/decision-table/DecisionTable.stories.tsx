@@ -515,6 +515,11 @@ const EndToEndGrid = () => {
             <div className={HEADER_LABEL_ROW_CLASS}>
               <span className="min-w-0 truncate">{column.name}</span>
             </div>
+            {column.id !== ANNOTATION_COLUMN_ID && (
+              <div className="mt-0.5 truncate font-mono text-[11px] font-normal text-foreground-de-emp">
+                {`$vars.${column.id}`}
+              </div>
+            )}
             {resizeHandle}
           </th>
         )}
