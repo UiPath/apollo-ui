@@ -1,0 +1,18 @@
+/**
+ * Grid-specific Tailwind CSS
+ *
+ * Pre-compiles only the Tailwind utility classes used by the grid and its
+ * apollo-wind dependencies.
+ *
+ * Consumers include this entry in their Tailwind build so the grid's styling
+ * is available at runtime. The globs cover both the monorepo's .ts/.tsx source
+ * and the published dist's .js/.cjs output, so the same file works from either.
+ */
+
+@import "@uipath/apollo-wind/tailwind.css";
+
+/* Scan the grid's source (or its compiled dist, next to this file's published copy) */
+@source "../**/*.{ts,tsx,js,cjs}";
+
+/* Scan apollo-wind compiled components for CVA class strings */
+@source "../../../node_modules/@uipath/apollo-wind/dist/**/*.js";

@@ -141,6 +141,7 @@
       "require": "./dist/chat/index.cjs"
     },
     "./chat/styles/*.css": "./dist/chat/styles/*.css",
+    "./grid/styles/*.css": "./dist/grid/styles/*.css",
     "./chat/service": {
       "types": "./dist/chat/service/index.d.ts",
       "import": "./dist/chat/service/index.js",

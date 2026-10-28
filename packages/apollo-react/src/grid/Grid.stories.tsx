@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { Button, cn } from '@uipath/apollo-wind';
-import { Plus } from 'lucide-react';
+import { GripVertical, Plus } from 'lucide-react';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { EMPTY_VALUE_DASH, ROW_NUMBER_WIDTH } from './constants';
 import { Grid } from './Grid';
@@ -9,11 +9,17 @@ import {
   BAND_ADD_COLUMN_CLASS,
   BAND_LABEL_ROW_CLASS,
   BODY_CELL_CLASS,
+  COLUMN_DRAG_HANDLE_CLASS,
+  GRID_LINE_H_CLASS,
   GROUP_TONE_CLASS,
   HEADER_CELL_CLASS,
+  HEADER_LABEL_ROW_CLASS,
+  INSERT_ROW_CLASS,
   OUTPUT_CELL_TINT_CLASS,
+  ROW_DRAG_HANDLE_CLASS,
+  ROW_NUMBER_CELL_CLASS,
 } from './gridStyles';
-import type { GridColumn, GridColumnGroup } from './gridTypes';
+import type { GridColumn, GridColumnGroup, GridHandle } from './gridTypes';
 
 type Kind = 'input' | 'output';
 
@@ -40,10 +46,18 @@ const labels = {
   resetColumnWidth: 'Double-click to reset the column width',
 };
 
+const moveItem = <T,>(items: T[], from: number, to: number): T[] => {
+  const next = [...items];
+  const [moved] = next.splice(from, 1);
+  next.splice(to, 0, moved as T);
+  return next;
+};
+
 /**
- * A consumer in miniature: everything visual and interactive comes from the package — the header
- * and cell styles, the group bands with their "+" add buttons, the right-click column menu, the
- * resize handles. The consumer supplies only the data and what the actions mean.
+ * A consumer in miniature, composed the way the decision table composes it: the header and cell
+ * styles, the group bands with their "+" add buttons, the right-click column menu, resize handles,
+ * the hover-revealed row/column drag grips and the insert-row affordance all come from the package.
+ * The consumer supplies only the data and what each action means.
  */
 const DemoGrid = ({ resizable = true }: { resizable?: boolean }) => {
   const [specs, setSpecs] = useState(INITIAL_COLUMNS);
@@ -51,7 +65,10 @@ const DemoGrid = ({ resizable = true }: { resizable?: boolean }) => {
   const [menu, setMenu] = useState<{ anchor: { x: number; y: number }; columnId: string } | null>(
     null
   );
+  const gridRef = useRef<GridHandle>(null);
   const nextId = useRef(1);
+
+  const inputCount = specs.filter((spec) => spec.kind === 'input').length;
 
   const insertColumn = useCallback((kind: Kind, atIndex?: number) => {
     setSpecs((current) => {
@@ -137,6 +154,7 @@ const DemoGrid = ({ resizable = true }: { resizable?: boolean }) => {
   return (
     <div style={{ height: 360 }}>
       <Grid
+        ref={gridRef}
         labels={labels}
         columns={columns}
         rowCount={rows.length}
@@ -145,25 +163,85 @@ const DemoGrid = ({ resizable = true }: { resizable?: boolean }) => {
         initialColumnWidths={{}}
         columnsResizable={resizable}
         tableAriaLabel="Demo decision grid"
-        renderHeaderCell={(column, { resizeHandle, pinnedLeftPx }) => (
-          <th
-            key={column.id}
-            scope="col"
-            className={cn(HEADER_CELL_CLASS, pinnedLeftPx !== undefined && 'z-3')}
-            style={pinnedLeftPx !== undefined ? { left: pinnedLeftPx } : undefined}
-            onContextMenu={(event) => {
-              event.preventDefault();
-              setMenu({ anchor: { x: event.clientX, y: event.clientY }, columnId: column.id });
-            }}
-          >
-            {column.name}
-            {resizeHandle}
-          </th>
-        )}
+        columnGroupSizes={[inputCount, specs.length - inputCount]}
+        onRowMove={(from, to) => {
+          if (to !== from) {
+            setRows((current) => moveItem(current, from, to));
+          }
+        }}
+        onColumnMove={(groupIndex, from, to) => {
+          if (to !== from) {
+            const base = groupIndex === 0 ? 0 : inputCount;
+            setSpecs((current) => moveItem(current, base + from, base + to));
+          }
+        }}
+        renderHeaderCell={(column, { resizeHandle, pinnedLeftPx }) => {
+          const index = specs.findIndex((spec) => spec.id === column.id);
+          const spec = specs[index];
+          const groupIndex = spec?.kind === 'input' ? 0 : 1;
+          const indexInGroup = groupIndex === 0 ? index : index - inputCount;
+          return (
+            <th
+              key={column.id}
+              scope="col"
+              className={cn(HEADER_CELL_CLASS, 'group/header', pinnedLeftPx !== undefined && 'z-3')}
+              style={pinnedLeftPx !== undefined ? { left: pinnedLeftPx } : undefined}
+              onContextMenu={(event) => {
+                event.preventDefault();
+                setMenu({ anchor: { x: event.clientX, y: event.clientY }, columnId: column.id });
+              }}
+            >
+              <div className={HEADER_LABEL_ROW_CLASS}>
+                <span className="min-w-0 truncate">{column.name}</span>
+                <span
+                  className={COLUMN_DRAG_HANDLE_CLASS}
+                  title="Drag to reorder within the band"
+                  onPointerDown={(event) => {
+                    // A drag, never also a header click — the grip sits inside the header.
+                    event.stopPropagation();
+                    gridRef.current?.startColumnDrag(groupIndex, indexInGroup, event);
+                  }}
+                >
+                  <GripVertical aria-hidden className="size-3" />
+                </span>
+              </div>
+              {resizeHandle}
+            </th>
+          );
+        }}
         renderRow={(rowIndex, visibleColumns) => (
-          <tr key={rowIndex}>
-            <td className={cn(BODY_CELL_CLASS, 'px-2 py-1 text-center text-foreground-de-emp')}>
+          <tr key={rowIndex} style={{ height: 'var(--grid-row-height)' }}>
+            <td className={ROW_NUMBER_CELL_CLASS}>
+              <Button
+                variant="ghost"
+                size="4xs"
+                icon
+                className={INSERT_ROW_CLASS}
+                title="Insert row here"
+                aria-label={`Insert row above row ${rowIndex + 1}`}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setRows((current) => [
+                    ...current.slice(0, rowIndex),
+                    {},
+                    ...current.slice(rowIndex),
+                  ]);
+                }}
+              >
+                <Plus aria-hidden />
+              </Button>
               {rowIndex + 1}
+              <span
+                className={ROW_DRAG_HANDLE_CLASS}
+                title="Drag to reorder rows"
+                onPointerDown={(event) => {
+                  // A drag, never also a row selection — the handle sits inside the gutter.
+                  event.stopPropagation();
+                  gridRef.current?.startRowDrag(rowIndex, event);
+                }}
+              >
+                <GripVertical aria-hidden className="size-3" />
+              </span>
             </td>
             {visibleColumns.map((visible) =>
               visible.type === 'column' ? (
@@ -181,6 +259,20 @@ const DemoGrid = ({ resizable = true }: { resizable?: boolean }) => {
             )}
           </tr>
         )}
+        renderFooterRow={(colSpan) => (
+          <tr key="add-row">
+            <td
+              className={cn('cursor-pointer p-0 hover:bg-surface-hover', GRID_LINE_H_CLASS)}
+              colSpan={colSpan}
+              onClick={() => setRows((current) => [...current, {}])}
+            >
+              <span className="inline-flex items-center gap-1 px-2 py-1.5 text-xs text-primary">
+                <Plus aria-hidden className="size-3.5" />
+                Add row
+              </span>
+            </td>
+          </tr>
+        )}
       />
       <GridContextMenu
         label="Column menu"
@@ -189,7 +281,9 @@ const DemoGrid = ({ resizable = true }: { resizable?: boolean }) => {
         onClose={() => setMenu(null)}
       />
       <p className="mt-2 text-sm text-foreground-de-emp">
-        Right-click a column header for insert/delete; the + in each band appends a column.
+        Right-click a column header for insert/delete. Hover a header or the row-number gutter for
+        the drag grips; the + on each band appends a column, the + on a row's top edge inserts a
+        row.
       </p>
     </div>
   );
