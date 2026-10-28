@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.11.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.11.1...@uipath/apollo-react@7.11.2) (2026-10-28)
+
+### Bug Fixes
+
+* **apollo-react:** align chat message defaults with the catalog so lingui extract runs ([8ada834](https://github.com/UiPath/apollo-ui/commit/8ada834864f9b56a01aa5bd7fcde163b4c392652))
+
 ## [@uipath/apollo-react-v7.11.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.11.0...@uipath/apollo-react@7.11.1) (2026-10-28)
 
 ### Bug Fixes

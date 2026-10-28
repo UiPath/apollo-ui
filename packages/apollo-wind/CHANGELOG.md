@@ -1,3 +1,14 @@
+## [@uipath/apollo-wind-v2.80.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.79.2...@uipath/apollo-wind@2.80.0) (2026-10-28)
+
+### Features
+
+* **apollo-wind:** built-in variable and prompt modes in QuickFormField [MST-16146] ([019a566](https://github.com/UiPath/apollo-ui/commit/019a5660fb7640c6f1bf9b332f5b5bc566ec35b6))
+* **apollo-wind:** EditableText, and an editable label in QuickFormField [MST-16146] ([73fdab9](https://github.com/UiPath/apollo-ui/commit/73fdab9ab8828eaf9bdf245ab25b0c86f0992b09))
+
+### Bug Fixes
+
+* **apollo-wind:** pad an InputGroup's addon buttons the same on both sides [MST-16146] ([73ebac7](https://github.com/UiPath/apollo-ui/commit/73ebac714e74a06cf193a1607010d55535fb6284))
+
 ## [@uipath/apollo-wind-v2.79.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.79.1...@uipath/apollo-wind@2.79.2) (2026-10-28)
 
 ### Bug Fixes
