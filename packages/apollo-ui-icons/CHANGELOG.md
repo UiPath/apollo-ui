@@ -1,3 +1,9 @@
+## [@uipath/apollo-ui-icons-v1.2.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-ui-icons@1.2.0...@uipath/apollo-ui-icons@1.2.1) (2026-10-28)
+
+### Bug Fixes
+
+* **apollo-ui-icons:** correct the README's script names and icon count ([e0ed1c8](https://github.com/UiPath/apollo-ui/commit/e0ed1c88de85dd9255943789407eeca0913c287a))
+
 ## [@uipath/apollo-ui-icons-v1.2.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-ui-icons@1.1.0...@uipath/apollo-ui-icons@1.2.0) (2026-10-05)
 
 ### Features
