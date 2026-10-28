@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.76.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.76.0...@uipath/apollo-wind@2.76.1) (2026-10-26)
+
+### Bug Fixes
+
+* **apollo-wind:** keep the FileUpload icon at full size when the dropzone's hints need more room ([6fe35ff](https://github.com/UiPath/apollo-ui/commit/6fe35ffe2540bf3afe50fb95632d51b547c754cf))
+
 ## [@uipath/apollo-wind-v2.76.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.75.1...@uipath/apollo-wind@2.76.0) (2026-10-23)
 
 ### Features
