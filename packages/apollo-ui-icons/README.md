@@ -105,7 +105,7 @@ All icons are exported from the official Apollo Icons Figma file:
 
 ### Icon Structure
 
-The icon library contains **1,317 icons** organized into categories in the source:
+The icon library contains **1,300+ icons** organized into categories in the source:
 
 **Source Structure** (`src/svg/`):
 - `action/` - Action icons (add, delete, edit, etc.)
@@ -124,7 +124,7 @@ The icon library contains **1,317 icons** organized into categories in the sourc
 - `ui-bpmn-canvas/` - BPMN diagram elements
 
 **Distribution Structure** (`dist/static/svg/`):
-- All 1,317 icons are flattened into a single directory with unique names
+- All icons are flattened into a single directory with unique names
 - Icons more than one folder deep are prefixed with their immediate parent folder (e.g., `navigation/chevron/down.svg` → `chevron-down.svg`)
 - Icons only one folder deep keep their original name (e.g., `action/close.svg` → `close.svg`)
 - Accessible via `@uipath/apollo-ui-icons/svg/{icon-name}.svg`
@@ -156,7 +156,7 @@ This structure was auto-resolved from the Figma export to ensure:
 - URL-safe paths
 - Valid JavaScript identifiers when converted to components
 - Consistent, readable naming throughout
-- No duplicate names (1,317 unique names for 1,317 icons)
+- No duplicate names (every icon has a unique name)
 - Organized structure with logical parent-child relationships
 
 ### Export Process
@@ -191,17 +191,16 @@ Once the Figma restructure is complete, the current temporary naming and normali
 ### Build
 
 ```bash
-pnpm build              # Build all tokens and icons
-pnpm build:tokens       # Build design tokens only
-pnpm build:icons        # Generate icon exports and types
+pnpm build              # Process icons, generate exports and types, then bundle
+pnpm build:icons        # Generate icon exports and types only
 ```
 
 ### Icon Management
 
 ```bash
 # 🎯 RECOMMENDED: Complete icon processing workflow
-pnpm process-icons            # Process icons: scan → generate short names → rename files
-pnpm process-icons:dry-run    # Preview all changes without making them
+pnpm process:icons            # Process icons: scan → generate short names → rename files
+pnpm process:icons:dry-run    # Preview all changes without making them
 ```
 
 **Complete workflow after Figma export**:
@@ -209,10 +208,10 @@ pnpm process-icons:dry-run    # Preview all changes without making them
 cd packages/apollo-ui-icons
 
 # 1. Preview changes (recommended first step)
-pnpm process-icons:dry-run
+pnpm process:icons:dry-run
 
 # 2. Process icons (scan, generate names, rename files)
-pnpm process-icons
+pnpm process:icons
 
 # 3. Build icon TypeScript exports
 pnpm build:icons
