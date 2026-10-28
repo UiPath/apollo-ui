@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { CanvasIcon } from '@uipath/apollo-react/canvas';
 import type {
   Connection,
   Edge,
@@ -12,7 +13,6 @@ import {
   applyNodeChanges,
   ReactFlowProvider,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import { CanvasIcon } from '@uipath/apollo-react/canvas';
 import { useCallback, useState } from 'react';
 import { BaseCanvas } from '../BaseCanvas';
 import { TriggerNode } from './TriggerNode';

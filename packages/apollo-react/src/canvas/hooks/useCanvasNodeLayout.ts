@@ -2,7 +2,6 @@ import type { Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useCallback, useMemo } from 'react';
 import { useOptionalNodeTypeRegistry } from '../core';
 import type { NodeManifest } from '../schema/node-definition';
-import { getExpandedSize } from '../utils/node-size';
 import {
   type ContainerFitGeometry,
   getContainerFitGeometry as getDefaultContainerFitGeometry,
@@ -10,6 +9,7 @@ import {
   isContainerNodeManifest,
   type NodeDimensions,
 } from '../utils/container';
+import { getExpandedSize } from '../utils/node-size';
 
 export type NodeManifestResolver = (node: Node) => NodeManifest | undefined;
 

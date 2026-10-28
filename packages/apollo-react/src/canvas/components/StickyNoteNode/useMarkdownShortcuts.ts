@@ -1,4 +1,4 @@
-import { useCallback, type RefObject } from 'react';
+import { type RefObject, useCallback } from 'react';
 import { toggleBold, toggleItalic, toggleStrikethrough } from './markdown-formatting';
 import type { TextSelection } from './StickyNoteNode.types';
 

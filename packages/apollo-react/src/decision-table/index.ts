@@ -1,11 +1,11 @@
-// The virtualized editing grid underneath UiPath's decision-table experiences: banded sticky
+// The decision table's virtualized editing surface: banded sticky
 // headers, column resize and group-bounded reorder, row drag, windowed rendering, rectangular
 // clipboard. Deliberately domain-free — labels, menus and clipboard mappings are the consumer's
 // (`GridLabels`; "the grid ships no English").
 
 export type { SizedColumn } from './columnSizing';
 export { BODY_ROW_HEIGHT_PX, EMPTY_VALUE_DASH, ROW_NUMBER_WIDTH } from './constants';
-export { Grid, type HeaderCellContext } from './Grid';
+export { DecisionTable, type HeaderCellContext } from './DecisionTable';
 export {
   GridCell,
   type GridCellEditorContext,

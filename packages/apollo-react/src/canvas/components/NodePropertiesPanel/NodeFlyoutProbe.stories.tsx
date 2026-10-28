@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { Node } from '@uipath/apollo-react/canvas/xyflow/react';
-import { cn } from '@uipath/apollo-wind';
 import { Panel, useReactFlow, useStore } from '@uipath/apollo-react/canvas/xyflow/react';
+import { cn } from '@uipath/apollo-wind';
 import { ScanEye } from 'lucide-react';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import {
@@ -14,8 +14,8 @@ import { DefaultCanvasTranslations } from '../../types';
 import { BaseCanvas } from '../BaseCanvas';
 import type { BaseNodeData } from '../BaseNode';
 import { CanvasPositionControls } from '../CanvasPositionControls';
-import { ProbeCard } from '../ProbeCard';
 import type { WatchResult } from '../ProbeCard';
+import { ProbeCard } from '../ProbeCard';
 
 // ============================================================================
 // Meta

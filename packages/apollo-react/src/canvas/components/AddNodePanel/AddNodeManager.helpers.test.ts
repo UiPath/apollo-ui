@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { PREVIEW_NODE_ID } from '../../constants';
 import type { NodeLayout } from '../../hooks/useCanvasNodeLayout';
 import type { NodeShape } from '../../schema/node-definition';
-import { getExpandedSize } from '../../utils/node-size';
 import { getContainerFitGeometry, getNodeDimensions } from '../../utils/container';
+import { getExpandedSize } from '../../utils/node-size';
 import { placeAddedNode } from './AddNodeManager.helpers';
 
 function buildLayout(manifestsByType: Record<string, { shape?: NodeShape }>): NodeLayout {

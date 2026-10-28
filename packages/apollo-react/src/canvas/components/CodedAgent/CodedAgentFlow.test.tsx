@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ReactElement } from 'react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '../../utils/testing';
 import { BaseCanvasModeProvider } from '../BaseCanvas/BaseCanvasModeProvider';
 import { CodedAgentFlow } from './CodedAgentFlow';
