@@ -176,15 +176,16 @@ const DemoGrid = ({ resizable = true }: { resizable?: boolean }) => {
         columnsResizable={resizable}
         tableAriaLabel="Demo decision grid"
         dataTestId="demo-grid"
-        columnGroupSizes={[inputCount, specs.length - inputCount]}
+        columnGroupSizes={[1, inputCount, specs.length - inputCount]}
         onRowMove={(from, to) => {
           if (to !== from) {
             setRows((current) => moveItem(current, from, to));
           }
         }}
         onColumnMove={(groupIndex, from, to) => {
-          if (to !== from) {
-            const base = groupIndex === 0 ? 0 : inputCount;
+          // Group 0 is the lone annotation column — nothing to reorder there.
+          if (groupIndex !== 0 && to !== from) {
+            const base = groupIndex === 1 ? 0 : inputCount;
             setSpecs((current) => moveItem(current, base + from, base + to));
           }
         }}
@@ -201,8 +202,8 @@ const DemoGrid = ({ resizable = true }: { resizable?: boolean }) => {
           }
           const index = specs.findIndex((spec) => spec.id === column.id);
           const spec = specs[index];
-          const groupIndex = spec?.kind === 'input' ? 0 : 1;
-          const indexInGroup = groupIndex === 0 ? index : index - inputCount;
+          const groupIndex = spec?.kind === 'input' ? 1 : 2;
+          const indexInGroup = groupIndex === 1 ? index : index - inputCount;
           return (
             <th
               key={column.id}
@@ -270,8 +271,23 @@ const DemoGrid = ({ resizable = true }: { resizable?: boolean }) => {
               </span>
             </td>
             {visibleColumns.map((visible) => {
-              if (visible.type !== 'column') {
-                return null;
+              if (visible.type === 'spacer') {
+                return (
+                  <td
+                    key={`spacer-${visible.coveredIds[0]}`}
+                    aria-hidden="true"
+                    style={{ padding: 0, border: 'none', width: visible.widthPx }}
+                  />
+                );
+              }
+              if (visible.type === 'separator') {
+                return (
+                  <td
+                    key={`separator-${visible.beforeColumnId}`}
+                    aria-hidden="true"
+                    style={{ padding: 0, width: visible.widthPx }}
+                  />
+                );
               }
               if (visible.column.id === ANNOTATION_COLUMN_ID) {
                 const name = rows[rowIndex]?.[ANNOTATION_COLUMN_ID];

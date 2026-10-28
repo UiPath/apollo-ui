@@ -35,6 +35,9 @@ export const parseTsv = (text: string): string[][] => {
   let row: string[] = [];
   let cell = '';
   let quoted = false;
+  // A closed quote marks the cell as real even when its decoded value is empty ('""' alone),
+  // so the tail flush below cannot drop it.
+  let cellOpened = false;
   let index = 0;
   while (index < normalized.length) {
     const char = normalized[index];
@@ -55,12 +58,14 @@ export const parseTsv = (text: string): string[][] => {
     }
     if (char === '"' && cell === '') {
       quoted = true;
+      cellOpened = true;
       index += 1;
       continue;
     }
     if (char === '\t') {
       row.push(cell);
       cell = '';
+      cellOpened = false;
       index += 1;
       continue;
     }
@@ -69,6 +74,7 @@ export const parseTsv = (text: string): string[][] => {
       rows.push(row);
       row = [];
       cell = '';
+      cellOpened = false;
       index += 1;
       continue;
     }
@@ -76,7 +82,7 @@ export const parseTsv = (text: string): string[][] => {
     index += 1;
   }
   // The tail: content since the last newline, unless the text ended exactly on one.
-  if (cell !== '' || row.length > 0) {
+  if (cell !== '' || row.length > 0 || cellOpened) {
     row.push(cell);
     rows.push(row);
   }

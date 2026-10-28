@@ -145,6 +145,11 @@ export const GridCell: React.FC<GridCellProps> = ({
   });
 
   const handleEditorKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    // Enter/Escape during an IME composition confirm or dismiss the composition, not the edit —
+    // committing here would save a half-composed draft (the navigation hook guards the same way).
+    if (event.nativeEvent.isComposing) {
+      return;
+    }
     if (event.key === 'Enter' || event.key === 'Tab') {
       event.preventDefault();
       settledByKeyRef.current = true;
@@ -234,6 +239,8 @@ export const GridCell: React.FC<GridCellProps> = ({
       {isEditing && !renderEditor && (
         <input
           className={CELL_EDITOR_CLASS}
+          // The td's label does not name a nested input — the editor needs its own.
+          aria-label={ariaLabel}
           data-testid={`${dataTestId}-editor`}
           // biome-ignore lint/a11y/noAutofocus: opening a spreadsheet cell is an explicit edit gesture and the caret belongs in that cell
           autoFocus
