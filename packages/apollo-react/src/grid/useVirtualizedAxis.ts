@@ -234,8 +234,8 @@ export const useVirtualizedAxis = (
     },
     // A plain scroll listener with `isScrolling` pinned false. The default observer arms a 150ms
     // debounce per scroll event whose delayed notify is a state update outside any act()/event
-    // scope — a flake class under a test setup that fails on console.error — and costs one extra
-    // notify per scroll burst. Nothing here consumes `isScrolling`.
+    // scope — a flake class under test setups that gate on stray console output (PO.Frontend's
+    // jest gate does) — and costs one extra notify per scroll burst. Nothing here consumes `isScrolling`.
     observeElementOffset: (instance, callback) => {
       const element = instance.scrollElement;
       if (!element) {
@@ -249,8 +249,8 @@ export const useVirtualizedAxis = (
     },
     // The fallback rect until a real measurement arrives, then ResizeObserver only — never a
     // synchronous read at subscribe time, which would let an unrelated layout mock masquerade as
-    // the viewport. Under jest the observer is a no-op stub (src/setupTest.ts) over a 0-sized
-    // layout, so the fallback persists for the whole test — exactly as the bespoke hook behaved.
+    // the viewport. Under a test DOM with no real layout the observer never reports a usable
+    // rect, so the fallback persists for the whole test — exactly as the bespoke hook behaved.
     observeElementRect: (instance, callback) => {
       const element = instance.scrollElement;
       if (!element) {

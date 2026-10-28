@@ -164,7 +164,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "pnpm run build:icons && pnpm run i18n:compile && rslib build && pnpm run build:css:canvas && pnpm run build:css:chat",
+    "build": "pnpm run build:icons && pnpm run i18n:compile && rslib build && pnpm run build:css:canvas && pnpm run build:css:chat && pnpm run build:css:grid",
     "build:css:canvas": "tailwindcss -i ./src/canvas/styles/tailwind.canvas.css -o ./dist/canvas/styles/tailwind.canvas.css --minify",
     "build:css:chat": "tailwindcss -i ./src/chat/styles/tailwind.chat.css -o ./dist/chat/styles/tailwind.chat.css --minify",
     "build:analyze": "ANALYZE=true pnpm run build",
@@ -181,7 +181,9 @@
     "clean": "rm -rf dist",
     "i18n:extract": "lingui extract",
     "i18n:extract:watch": "lingui extract --watch",
-    "i18n:compile": "lingui compile"
+    "i18n:compile": "lingui compile",
+    "build:css:grid": "tailwindcss -i ./src/grid/styles/tailwind.grid.css -o ./dist/grid/styles/tailwind.grid.css --minify",
+    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json"
   },
   "keywords": [
     "design-system",
@@ -273,7 +275,6 @@
     "use-sync-external-store": "^1.2.0",
     "zod": "^4.6.6",
     "zustand": "^5.0.9",
-    "@tanstack/react-table": "9.0.0",
     "@tanstack/virtual-core": "^3.17.4"
   },
   "devDependencies": {
@@ -291,6 +292,7 @@
     "@storybook/react-vite": "^10.6.2",
     "@svgr/webpack": "^8.1.0",
     "@tailwindcss/cli": "^4.1.17",
+    "@tanstack/react-table": "9.0.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",

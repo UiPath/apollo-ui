@@ -1,5 +1,5 @@
-import { vi } from 'vitest';
 import type React from 'react';
+import { vi } from 'vitest';
 import { emptyAreaPressHandler, isBlankContainerPress } from './gridEvents';
 
 const pointerEvent = (

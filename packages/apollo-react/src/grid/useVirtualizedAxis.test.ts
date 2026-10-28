@@ -6,7 +6,7 @@ type Segments = ReturnType<typeof windowSegments>;
 const offsetsFor = (widths: number[]): number[] =>
   widths.reduce<number[]>(
     (offsets, width) => {
-      offsets.push(offsets[offsets.length - 1] + width);
+      offsets.push(offsets[offsets.length - 1]! + width);
       return offsets;
     },
     [0]

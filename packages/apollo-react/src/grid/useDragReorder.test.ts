@@ -11,14 +11,14 @@ const moveToSlot = <T>(items: T[], from: number, boundary: number): T[] => {
   const out: T[] = [];
   items.forEach((item, index) => {
     if (index === boundary) {
-      out.push(items[from]);
+      out.push(items[from]!);
     }
     if (index !== from) {
       out.push(item);
     }
   });
   if (boundary === items.length) {
-    out.push(items[from]);
+    out.push(items[from]!);
   }
   return out;
 };
@@ -27,7 +27,7 @@ const moveToSlot = <T>(items: T[], from: number, boundary: number): T[] => {
 const moveItem = <T>(items: T[], from: number, to: number): T[] => {
   const next = [...items];
   const [moved] = next.splice(from, 1);
-  next.splice(to, 0, moved);
+  next.splice(to, 0, moved!);
   return next;
 };
 

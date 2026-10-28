@@ -44,7 +44,7 @@ const isDivider = (entry: GridMenuEntry): entry is { divider: true } => entry.di
 const DESTRUCTIVE_ITEM_CLASS = 'text-destructive focus:bg-destructive/10 focus:text-destructive';
 
 /** The menu's list body, plus the focus hand-off `focusesOwnSurface` asks for. */
-const useGridMenuItems = (entries: GridMenuEntry[], open: boolean) => {
+const useGridMenuItems = (entries: GridMenuEntry[], open: boolean, dataTestId: string) => {
   const deferredRef = useRef<(() => void) | null>(null);
   // Outlives `deferredRef`: the close hand-off fires after the action has already run.
   const keepFocusRef = useRef(false);
@@ -86,7 +86,7 @@ const useGridMenuItems = (entries: GridMenuEntry[], open: boolean) => {
             {entry.disabled && entry.disabledReason && (
               <span
                 className="text-[11px] leading-4 text-foreground-de-emp"
-                data-testid="dmn-decision-table-menu-disabled-reason"
+                data-testid={`${dataTestId}-menu-disabled-reason`}
               >
                 {entry.disabledReason}
               </span>
@@ -125,6 +125,8 @@ interface GridContextMenuState {
 
 interface GridContextMenuProps {
   label: string;
+  /** Prefix for the menu's data-testids. Defaults to the id the DMN decision table established. */
+  dataTestId?: string;
   /** Open state is the grid's — one menu at a time, keyed by whatever target it resolved. */
   state: GridContextMenuState | null;
   entries: () => GridMenuEntry[];
@@ -141,11 +143,12 @@ interface GridContextMenuProps {
  */
 export const GridContextMenu: React.FC<GridContextMenuProps> = ({
   label,
+  dataTestId = 'dmn-decision-table',
   state,
   entries,
   onClose,
 }) => {
-  const { items, onCloseAutoFocus } = useGridMenuItems(state ? entries() : [], !!state);
+  const { items, onCloseAutoFocus } = useGridMenuItems(state ? entries() : [], !!state, dataTestId);
   if (!state) {
     return null;
   }
@@ -161,7 +164,7 @@ export const GridContextMenu: React.FC<GridContextMenuProps> = ({
         <span
           aria-hidden
           className="pointer-events-none fixed size-0"
-          data-testid="dmn-decision-table-context-menu-anchor"
+          data-testid={`${dataTestId}-context-menu-anchor`}
           style={{ left: state.anchor.x, top: state.anchor.y }}
         />
       </DropdownMenuTrigger>
@@ -170,7 +173,7 @@ export const GridContextMenu: React.FC<GridContextMenuProps> = ({
         side="bottom"
         aria-label={label}
         className="min-w-52"
-        data-testid="dmn-decision-table-context-menu"
+        data-testid={`${dataTestId}-context-menu`}
         onCloseAutoFocus={onCloseAutoFocus}
         onClick={(event) => event.stopPropagation()}
         // Portalled in the DOM, still a React child of the grid — whose handler reads Delete and
