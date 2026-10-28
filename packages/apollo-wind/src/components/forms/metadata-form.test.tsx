@@ -163,6 +163,36 @@ describe('MetadataForm', () => {
       const results = await axe(container);
       expect(results).toHaveNoViolations();
     });
+
+    it.each([
+      'card',
+      'plain',
+    ] as const)('marks a static section title as a heading, as a collapsible one already is (%s)', (sectionVariant) => {
+      const schemaWithTitles: FormSchema = {
+        id: 'form',
+        title: 'Form',
+        sections: [
+          {
+            id: 's1',
+            title: 'Personal Info',
+            fields: [{ name: 'name', type: 'text', label: 'Name', defaultValue: '' }],
+          },
+          {
+            id: 's2',
+            title: 'More Details',
+            collapsible: true,
+            fields: [{ name: 'notes', type: 'text', label: 'Notes', defaultValue: '' }],
+          },
+        ],
+      };
+
+      render(<MetadataForm schema={schemaWithTitles} sectionVariant={sectionVariant} />);
+      expect(screen.getByRole('heading', { level: 3, name: 'Personal Info' })).toHaveAttribute(
+        'data-slot',
+        'form-section-header'
+      );
+      expect(screen.getByRole('heading', { level: 3, name: 'More Details' })).toBeInTheDocument();
+    });
   });
 
   describe('form submission', () => {

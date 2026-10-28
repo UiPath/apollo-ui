@@ -951,7 +951,8 @@ body.canvas, .canvas {
   margin: 0;
 }
 
-.mat-typography [data-slot="accordion-header"] {
+.mat-typography [data-slot="accordion-header"],
+.mat-typography [data-slot="form-section-header"] {
   font: inherit;
   letter-spacing: inherit;
   margin: 0;
