@@ -1,3 +1,18 @@
+## [@uipath/apollo-wind-v2.77.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.76.1...@uipath/apollo-wind@2.77.0) (2026-10-27)
+
+### Features
+
+* **apollo-wind:** fit a form textarea to its content, up to 8 rows ([ef2fb98](https://github.com/UiPath/apollo-ui/commit/ef2fb98e2cab37cb7d16ef58035f7478f30dd061))
+* **apollo-wind:** let a form textarea grow with its content ([b3b66b2](https://github.com/UiPath/apollo-ui/commit/b3b66b24adc93baed3960f61b4719cb431803275))
+
+### Bug Fixes
+
+* **apollo-wind:** keep a QuickFormField Text area at one line at design time ([62f1e56](https://github.com/UiPath/apollo-ui/commit/62f1e567e2bd40be7eb8126270eb97cf7a4722fb))
+* **apollo-wind:** keep the one-line Text area at the exact row height ([bf78c0a](https://github.com/UiPath/apollo-ui/commit/bf78c0ad6a94d0f6a813827cb7a902b424d5a94d))
+* **apollo-wind:** start a form textarea at one row; one-line comments ([1319ad6](https://github.com/UiPath/apollo-ui/commit/1319ad6af0e860d721fbfdd21b77db3239ecf73a))
+* **apollo-wind:** start a QuickFormField Text area one line tall ([538585b](https://github.com/UiPath/apollo-ui/commit/538585bf302ceaf7021d4bfb2745ddee5bd0a2af))
+* **apollo-wind:** start the design-time text area one line tall and grow with content ([27f8787](https://github.com/UiPath/apollo-ui/commit/27f87875c72327b95f1bd981e5575f06a48d28eb))
+
 ## [@uipath/apollo-wind-v2.76.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.76.0...@uipath/apollo-wind@2.76.1) (2026-10-26)
 
 ### Bug Fixes
