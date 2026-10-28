@@ -167,7 +167,7 @@ Import every name below from `@uipath/apollo-vertex`. Follow the
 ## Feedback
 
 - **Alert**: Displays a callout for user attention. Exports: `Alert`, `AlertDescription`, `AlertTitle`, `alertVariants`.
-  - Use when feedback must stay visible in context, such as validation errors, warnings or a blocking error.
+  - Use when feedback must stay visible in context, such as validation errors, warnings, a blocking error, or a persistent success state.
   - Use when the user must act on the message, or the system raised it without a user action. With no related UI to anchor it to, show it as a persistent full-width banner below the main header.
   - Avoid when the message only confirms that an action the user just took succeeded. Use **Sonner** instead.
 - **Sonner**: An opinionated toast component for React. Exports: `apolloToastClassNames`, `Toaster`.

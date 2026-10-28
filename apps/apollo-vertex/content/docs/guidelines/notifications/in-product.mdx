@@ -257,13 +257,18 @@ Notification statuses align with the [Badge](/components/badge) status system fo
 | Status | Usage | Token | Color | Sonner | Alert |
 |---|---|---|---|---|---|
 | `info` | General updates, FYIs | `--info` | `oklch(0.60 0.125 210)` | `toast.info()` | Use `status="default"` |
-| `success` | Confirmation of completed tasks | `--success` | `oklch(0.57 0.105 152)` | `toast.success()` | Not available — Sonner only |
+| `success` | Confirmation of completed tasks | `--success` | `oklch(0.57 0.105 152)` | `toast.success()` | `status="success"` |
 | `warning` | Potential issues or unintended consequences | `--warning` | `oklch(0.80 0.1401 80.82)` | `toast.warning()` | `status="warning"` |
 | `error` | Failures, blockers, critical issues | `--destructive` | `oklch(0.62 0.150 18)` | `toast.error()` | `status="error"` |
 
 <Callout type="info">
 
-The Alert component supports `status="default"`, `status="warning"`, and `status="error"`. Use Sonner for success confirmations.
+The Alert component supports `status="default"`, `status="success"`, `status="warning"`, and `status="error"`.
+
+**Alert success:** persistent in-page status tied to the current view (policy pass, validation clear). Does not auto-dismiss.
+
+**Sonner success:** ephemeral confirmation that an action completed (saved, submitted, copied). Unchanged.
+
 For persistent system guidance or background alerts, use `default` or `warning` in Alert.
 
 </Callout>

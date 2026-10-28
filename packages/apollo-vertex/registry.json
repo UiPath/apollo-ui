@@ -1497,16 +1497,19 @@
       "cssVars": {
         "theme": {
           "color-badge": "var(--badge)",
+          "color-success": "var(--success)",
           "color-warning": "var(--warning)",
           "color-warning-foreground": "var(--warning-foreground)"
         },
         "light": {
           "badge": "oklch(0.5995 0.0199 253.42)",
+          "success": "oklch(0.57 0.105 152)",
           "warning": "oklch(0.80 0.1401 80.82)",
           "warning-foreground": "oklch(0.1660 0.0283 203.3400)"
         },
         "dark": {
           "badge": "oklch(0.7196 0.0135 255.53)",
+          "success": "oklch(0.70 0.120 152)",
           "warning": "oklch(0.6889 0.1401 80.82)",
           "warning-foreground": "oklch(0.1660 0.0283 203.3400)"
         }
