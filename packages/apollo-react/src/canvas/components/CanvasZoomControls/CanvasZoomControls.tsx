@@ -1,8 +1,8 @@
-import { useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
-import { BrushCleaning, Scan, ZoomIn, ZoomOut } from 'lucide-react';
 import { forwardRef, memo, useCallback } from 'react';
-import { useSafeLingui } from '../../../i18n';
+import { BrushCleaning, Scan, ZoomIn, ZoomOut } from 'lucide-react';
+import { useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { ToolbarButton } from '../ToolbarButton';
+import { useSafeLingui } from '../../../i18n';
 
 export interface CanvasZoomControlsLabels {
   zoomIn?: string;

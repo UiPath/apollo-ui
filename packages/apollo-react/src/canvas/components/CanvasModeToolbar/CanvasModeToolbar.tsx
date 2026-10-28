@@ -1,6 +1,6 @@
-import { cn, Row } from '@uipath/apollo-wind';
-import type { ReactNode } from 'react';
 import { memo } from 'react';
+import type { ReactNode } from 'react';
+import { Row, cn } from '@uipath/apollo-wind';
 
 // ---------------------------------------------------------------------------
 // Constants

@@ -15,7 +15,6 @@
  *
  * See `ProbeCardProps` for the full callback contract.
  */
-
-export type { IterationControl, ProbeCardProps, WatchResult } from './ProbeCard';
 export { ProbeCard } from './ProbeCard';
+export type { ProbeCardProps, WatchResult, IterationControl } from './ProbeCard';
 export type { ResizeEdges } from './ProbeResizeHandles';

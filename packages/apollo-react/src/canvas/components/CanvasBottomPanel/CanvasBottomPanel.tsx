@@ -1,18 +1,18 @@
-import { cn } from '@uipath/apollo-wind';
 import {
-  createContext,
   Fragment,
+  createContext,
   memo,
-  type KeyboardEvent as ReactKeyboardEvent,
-  type ReactNode,
   useCallback,
   useContext,
   useId,
   useMemo,
   useRef,
   useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type ReactNode,
 } from 'react';
 import { createPortal } from 'react-dom';
+import { cn } from '@uipath/apollo-wind';
 import type { CanvasBottomPanelProps } from './CanvasBottomPanel.types';
 
 export const CANVAS_BOTTOM_PANEL_COLLAPSED_HEIGHT = 48;

@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { ApAccordion } from './ApAccordion';
+import userEvent from '@testing-library/user-event';
 
 describe('ApAccordion', () => {
   describe('Basic Rendering', () => {
