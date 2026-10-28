@@ -2,7 +2,7 @@
 title: "Alert"
 description: "Displays a callout for user attention."
 whenToUse:
-  - "feedback must stay visible in context, such as validation errors, warnings or a blocking error."
+  - "feedback must stay visible in context, such as validation errors, warnings, a blocking error, or a persistent success state."
   - "the user must act on the message, or the system raised it without a user action. With no related UI to anchor it to, show it as a persistent full-width banner below the main header."
 avoidWhen:
   - when: "the message only confirms that an action the user just took succeeded."
@@ -61,6 +61,19 @@ import { Alert, AlertDescription, AlertTitle } from "@uipath/apollo-vertex"
 </Alert>
 ```
 
+### Success (tinted)
+
+Persistent in-page status for the current view. Does not auto-dismiss.
+
+```tsx
+<Alert status="success" visual="tinted">
+  <ShieldCheck aria-hidden />
+  <AlertDescription>
+    All policy checks passed — within your $30,000 approval limit.
+  </AlertDescription>
+</Alert>
+```
+
 ### Dismissible
 
 ```tsx
@@ -77,7 +90,7 @@ import { Alert, AlertDescription, AlertTitle } from "@uipath/apollo-vertex"
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
-| `status` | `"default" \| "warning" \| "error"` | — | Sets the semantic status color |
+| `status` | `"default" \| "success" \| "warning" \| "error"` | — | Sets the semantic status color |
 | `visual` | `"outline" \| "tinted"` | — | Sets the visual treatment |
 | `variant` | `"default" \| "destructive"` | `"default"` | Legacy shadcn variant (use `status` + `visual` instead) |
 | `dismissible` | `boolean` | `false` | Renders a close button and manages internal visibility |

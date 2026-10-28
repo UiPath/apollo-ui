@@ -4,6 +4,7 @@ import {
   CircleCheckIcon,
   InfoIcon,
   OctagonXIcon,
+  ShieldCheckIcon,
   TriangleAlertIcon,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -84,6 +85,13 @@ export function AlertExamples() {
         </AlertDescription>
       </Alert>
 
+      <Alert status="success" visual="tinted">
+        <ShieldCheckIcon aria-hidden className="h-4 w-4" />
+        <AlertDescription>
+          All policy checks passed — within your $30,000 approval limit.
+        </AlertDescription>
+      </Alert>
+
       <Alert status="warning" visual="tinted">
         <TriangleAlertIcon className="h-4 w-4" />
         <AlertTitle>API rate limit approaching</AlertTitle>
@@ -116,6 +124,14 @@ export function AlertOutlineExamples() {
         <AlertDescription>
           A new version of the platform is ready. Review the changelog for
           details.
+        </AlertDescription>
+      </Alert>
+
+      <Alert status="success" visual="outline" dismissible>
+        <ShieldCheckIcon aria-hidden className="h-4 w-4" />
+        <AlertTitle>All policy checks passed</AlertTitle>
+        <AlertDescription>
+          This purchase is within your $30,000 approval limit.
         </AlertDescription>
       </Alert>
 
