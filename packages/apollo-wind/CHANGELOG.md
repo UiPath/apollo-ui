@@ -1,3 +1,10 @@
+## [@uipath/apollo-wind-v2.79.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.79.1...@uipath/apollo-wind@2.79.2) (2026-10-28)
+
+### Bug Fixes
+
+* **apollo-wind:** build the field header actions on the 3xs Button [MST-16146] ([c25d931](https://github.com/UiPath/apollo-ui/commit/c25d9313f685b9a9822efecd184f223951267618))
+* **apollo-wind:** mark static form section titles as headings [MST-14507] ([0efd81e](https://github.com/UiPath/apollo-ui/commit/0efd81e27d78794eebbb22872bc749867a77b00f))
+
 ## [@uipath/apollo-wind-v2.79.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.79.0...@uipath/apollo-wind@2.79.1) (2026-10-28)
 
 ### Bug Fixes
