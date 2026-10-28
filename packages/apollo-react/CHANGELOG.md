@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.10.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.9.2...@uipath/apollo-react@7.10.0) (2026-10-26)
+
+### Features
+
+* **apollo-react:** mark guardrail preview chips from the definition's isPreview ([430e59d](https://github.com/UiPath/apollo-ui/commit/430e59d906194bb05229bbd877b1bfc488a1f41a)), closes [UiPath/Agents#6800](https://github.com/UiPath/Agents/issues/6800)
+
 ## [@uipath/apollo-react-v7.9.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.9.1...@uipath/apollo-react@7.9.2) (2026-10-26)
 
 ### Bug Fixes
