@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.11.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.11.0...@uipath/apollo-react@7.11.1) (2026-10-28)
+
+### Bug Fixes
+
+* **apollo-wind:** make the JSON tree an APG treegrid and announce copies [MST-14405] [MST-14488] ([9d224d4](https://github.com/UiPath/apollo-ui/commit/9d224d4dd9de9c7c8de2038907ad72c16ec03028))
+
 ## [@uipath/apollo-react-v7.11.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.10.0...@uipath/apollo-react@7.11.0) (2026-10-27)
 
 ### Features

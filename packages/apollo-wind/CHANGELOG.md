@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.79.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.79.0...@uipath/apollo-wind@2.79.1) (2026-10-28)
+
+### Bug Fixes
+
+* **apollo-wind:** make the JSON tree an APG treegrid and announce copies [MST-14405] [MST-14488] ([9d224d4](https://github.com/UiPath/apollo-ui/commit/9d224d4dd9de9c7c8de2038907ad72c16ec03028))
+
 ## [@uipath/apollo-wind-v2.79.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.78.0...@uipath/apollo-wind@2.79.0) (2026-10-28)
 
 ### Features
