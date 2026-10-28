@@ -4,6 +4,7 @@ import { GripVertical, Plus } from 'lucide-react';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { EMPTY_VALUE_DASH, ROW_NUMBER_WIDTH } from './constants';
 import { DecisionTable } from './DecisionTable';
+import { GridCell } from './GridCell';
 import { GridContextMenu, type GridMenuEntry } from './GridMenu';
 import {
   BAND_ADD_COLUMN_CLASS,
@@ -20,6 +21,7 @@ import {
   ROW_NUMBER_CELL_CLASS,
 } from './gridStyles';
 import type { GridColumn, GridColumnGroup, GridHandle } from './gridTypes';
+import { type GridSelectionSource, normalizedRect, useGridNavigation } from './useGridNavigation';
 
 type Kind = 'input' | 'output';
 
@@ -357,4 +359,242 @@ export const Default: Story = {
 
 export const FixedColumns: Story = {
   render: () => <DemoGrid resizable={false} />,
+};
+
+type SelectionTable = GridSelectionSource['table'];
+type SelectionState = NonNullable<SelectionTable['state']['cellSelection']>;
+
+/**
+ * The hook's selection source is structural — in the product it is a tanstack v9 table with the
+ * cell-selection feature; ten lines of useState satisfy the same contract, which is the point.
+ */
+const useSelectionStore = (): SelectionTable => {
+  const [cellSelection, setCellSelection] = useState<SelectionState>([]);
+  return useMemo(
+    () => ({
+      state: { cellSelection },
+      setCellSelection: (updater) =>
+        setCellSelection((previous) =>
+          typeof updater === 'function' ? updater(previous) : updater
+        ),
+    }),
+    [cellSelection]
+  );
+};
+
+const E2E_COLUMNS: { id: string; name: string; kind: 'annotation' | Kind }[] = [
+  { id: 'annotation', name: 'Rule name', kind: 'annotation' },
+  { id: 'age', name: 'age', kind: 'input' },
+  { id: 'income', name: 'income', kind: 'input' },
+  { id: 'risk', name: 'risk', kind: 'output' },
+];
+
+interface E2eRow {
+  id: string;
+  cells: Record<string, string>;
+}
+
+const E2E_ROWS: E2eRow[] = [
+  {
+    id: 'r1',
+    cells: { annotation: 'Young applicant', age: '< 25', income: '<= 40000', risk: '"high"' },
+  },
+  { id: 'r2', cells: { age: '[25..60]', income: '> 40000', risk: '"standard"' } },
+  { id: 'r3', cells: { age: '> 60', income: '-', risk: '"review"' } },
+];
+
+/**
+ * The full editing stack, composed exactly the way the DMN editor composes it: a tanstack v9
+ * cell-selection table as the selection store, useGridNavigation for the keyboard/selection
+ * model, GridCell for every cell (click to select, double-click or type to edit, Enter/Tab
+ * commit and move, Escape cancels), the grid-owned clipboard (Ctrl/Cmd+C/X/V over TSV, Delete
+ * clears) and a validation mark. The consumer owns only the model the writes land in.
+ */
+const EndToEndGrid = () => {
+  const [rows, setRows] = useState(E2E_ROWS);
+  const gridRef = useRef<GridHandle>(null);
+  const table = useSelectionStore();
+  const rowIds = useMemo(() => rows.map((row) => row.id), [rows]);
+  const colIds = useMemo(() => E2E_COLUMNS.map((column) => column.id), []);
+  const nav = useGridNavigation({ table, rowIds, colIds });
+
+  const groups = useMemo(() => {
+    const groupFor = (kind: 'annotation' | Kind): GridColumnGroup => ({
+      id: `${kind}s`,
+      label: kind === 'annotation' ? 'Annotation' : kind === 'input' ? 'Inputs' : 'Outputs',
+      toneClassName:
+        GROUP_TONE_CLASS[
+          kind === 'annotation' ? 'annotation' : kind === 'input' ? 'inputs' : 'outputs'
+        ],
+    });
+    return {
+      annotation: groupFor('annotation'),
+      input: groupFor('input'),
+      output: groupFor('output'),
+    };
+  }, []);
+
+  const columns: GridColumn[] = useMemo(
+    () =>
+      E2E_COLUMNS.map((column) => ({
+        id: column.id,
+        name: column.name,
+        defaultWidth: column.id === 'annotation' ? 180 : 160,
+        group: groups[column.kind],
+      })),
+    [groups]
+  );
+
+  const writeCell = (row: number, col: number, text: string) => {
+    setRows((current) =>
+      current.map((entry, index) =>
+        index === row ? { ...entry, cells: { ...entry.cells, [colIds[col]!]: text } } : entry
+      )
+    );
+  };
+
+  const rect = nav.range ? normalizedRect(nav.range) : null;
+
+  return (
+    <div style={{ height: 380 }}>
+      <DecisionTable
+        ref={gridRef}
+        labels={labels}
+        columns={columns}
+        rowCount={rows.length}
+        leadingColumnWidth={ROW_NUMBER_WIDTH}
+        pinnedColumnCount={0}
+        initialColumnWidths={{}}
+        columnsResizable
+        tableAriaLabel="End-to-end decision grid"
+        dataTestId="e2e-grid"
+        retainedRowIndex={nav.editing ? nav.focus?.row : null}
+        clipboard={{
+          range: nav.range,
+          editing: nav.editing,
+          textAt: (row, col) => rows[row]?.cells[colIds[col]!] ?? '',
+          onWrite: (writes, appendRows) => {
+            setRows((current) => {
+              const grown = [
+                ...current,
+                ...Array.from(
+                  { length: appendRows },
+                  (_, index): E2eRow => ({
+                    id: `r${current.length + index + 1}-${Math.trunc(performance.now())}`,
+                    cells: {},
+                  })
+                ),
+              ];
+              return grown.map((entry, index) => {
+                const own = writes.filter((write) => write.row === index);
+                if (own.length === 0) {
+                  return entry;
+                }
+                const cells: Record<string, string> = { ...entry.cells };
+                for (const write of own) {
+                  cells[colIds[write.col]!] = write.text;
+                }
+                return { ...entry, cells };
+              });
+            });
+          },
+        }}
+        containerProps={{
+          onKeyDown: (event) => {
+            if ((event.key === 'Delete' || event.key === 'Backspace') && !nav.editing) {
+              if (gridRef.current?.clipboard.clear()) {
+                event.preventDefault();
+                return;
+              }
+            }
+            nav.onKeyDown(event);
+          },
+        }}
+        renderHeaderCell={(column, { resizeHandle }) => (
+          <th key={column.id} scope="col" className={HEADER_CELL_CLASS}>
+            <div className={HEADER_LABEL_ROW_CLASS}>
+              <span className="min-w-0 truncate">{column.name}</span>
+            </div>
+            {resizeHandle}
+          </th>
+        )}
+        renderRow={(rowIndex, visibleColumns) => (
+          <tr key={rows[rowIndex]?.id ?? rowIndex} style={{ height: 'var(--grid-row-height)' }}>
+            <td className={ROW_NUMBER_CELL_CLASS}>{rowIndex + 1}</td>
+            {visibleColumns.map((visible) => {
+              if (visible.type !== 'column') {
+                return visible.type === 'spacer' ? (
+                  <td
+                    key={`spacer-${visible.coveredIds[0]}`}
+                    aria-hidden="true"
+                    style={{ padding: 0, border: 'none', width: visible.widthPx }}
+                  />
+                ) : (
+                  <td
+                    key={`separator-${visible.beforeColumnId}`}
+                    aria-hidden="true"
+                    style={{ padding: 0, width: visible.widthPx }}
+                  />
+                );
+              }
+              const col = visible.flexIndex;
+              const isFocus = nav.focus?.row === rowIndex && nav.focus?.col === col;
+              const inRange =
+                !!rect &&
+                rowIndex >= rect.top &&
+                rowIndex <= rect.bottom &&
+                col >= rect.left &&
+                col <= rect.right;
+              const columnId = visible.column.id;
+              const value = rows[rowIndex]?.cells[columnId] ?? '';
+              return (
+                <GridCell
+                  key={columnId}
+                  value={value}
+                  placeholder={columnId === 'annotation' ? 'Name this rule…' : undefined}
+                  mono={columnId !== 'annotation'}
+                  row={rowIndex}
+                  col={col}
+                  selected={isFocus}
+                  inRange={inRange && !isFocus}
+                  editing={nav.editing && isFocus}
+                  openedByTyping={nav.openedByTyping}
+                  focusable
+                  tabStop={isFocus || (rowIndex === 0 && col === 0 && !nav.focus)}
+                  className={cn(visible.column.group?.id === 'outputs' && OUTPUT_CELL_TINT_CLASS)}
+                  mark={
+                    rows[rowIndex]?.id === 'r3' && columnId === 'income'
+                      ? { tone: 'error', title: 'Demo diagnostic: "-" never matches', glyph: true }
+                      : undefined
+                  }
+                  dataTestId={`e2e-cell-${rowIndex}-${col}`}
+                  ariaLabel={`${visible.column.name}, rule ${rowIndex + 1}`}
+                  onSelect={(extend) =>
+                    extend
+                      ? nav.extendTo({ row: rowIndex, col })
+                      : nav.select({ row: rowIndex, col })
+                  }
+                  onStartEdit={() => nav.startEditAt({ row: rowIndex, col })}
+                  onCommit={(text, move) => {
+                    writeCell(rowIndex, col, text);
+                    nav.commitEdit(move);
+                  }}
+                  onCancel={nav.cancelEdit}
+                />
+              );
+            })}
+          </tr>
+        )}
+      />
+      <p className="mt-2 text-sm text-foreground-de-emp">
+        Click to select, double-click or just type to edit; Enter/Tab commit and move, Escape
+        cancels; Shift+arrows extend the range; Ctrl/Cmd+C/X/V round-trip TSV; Delete clears the
+        selection. The marked cell carries a demo diagnostic.
+      </p>
+    </div>
+  );
+};
+
+export const EndToEnd: Story = {
+  render: () => <EndToEndGrid />,
 };
