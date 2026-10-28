@@ -1,5 +1,3 @@
-import { vi } from 'vitest';
-import { act, renderHook } from '@testing-library/react';
 import {
   cellSelectionFeature,
   coreFeatures,
@@ -7,6 +5,8 @@ import {
   tableFeatures,
   useTable,
 } from '@tanstack/react-table';
+import { act, renderHook } from '@testing-library/react';
+import { vi } from 'vitest';
 import { type EditGesture, type GridPosition, useGridNavigation } from './useGridNavigation';
 
 /** Any table will do: the instance is only the store the selection rectangle lives in — the

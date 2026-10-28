@@ -1,6 +1,6 @@
-import { vi } from 'vitest';
-import type React from 'react';
 import { fireEvent, renderHook } from '@testing-library/react';
+import type React from 'react';
+import { vi } from 'vitest';
 import { useDragSelection } from './useDragSelection';
 
 const cell = (row: number, col: number) => {

@@ -36,10 +36,12 @@ const INITIAL_COLUMNS: ColumnSpec[] = [
 ];
 
 const INITIAL_ROWS: Record<string, string>[] = [
-  { age: '< 25', income: '<= 40000', risk: '"high"' },
+  { annotation: 'Young applicant', age: '< 25', income: '<= 40000', risk: '"high"' },
   { age: '[25..60]', income: '> 40000', risk: '"standard"' },
   { age: '> 60', income: '-', risk: '"review"' },
 ];
+
+const ANNOTATION_COLUMN_ID = 'annotation';
 
 const labels = {
   resizeColumn: (columnName: string) => `Resize column ${columnName}`,
@@ -115,17 +117,27 @@ const DemoGrid = ({ resizable = true }: { resizable?: boolean }) => {
         </span>
       ),
     });
-    return { input: groupFor('input'), output: groupFor('output') };
+    return {
+      annotation: {
+        id: 'annotations',
+        label: 'Annotation',
+        toneClassName: GROUP_TONE_CLASS.annotation,
+      } satisfies GridColumnGroup,
+      input: groupFor('input'),
+      output: groupFor('output'),
+    };
   }, [insertColumn]);
 
   const columns: GridColumn[] = useMemo(
-    () =>
-      specs.map((spec) => ({
+    () => [
+      { id: ANNOTATION_COLUMN_ID, name: 'Rule name', defaultWidth: 180, group: groups.annotation },
+      ...specs.map((spec) => ({
         id: spec.id,
         name: spec.name,
         defaultWidth: 160,
         group: groups[spec.kind],
       })),
+    ],
     [specs, groups]
   );
 
@@ -163,6 +175,7 @@ const DemoGrid = ({ resizable = true }: { resizable?: boolean }) => {
         initialColumnWidths={{}}
         columnsResizable={resizable}
         tableAriaLabel="Demo decision grid"
+        dataTestId="demo-grid"
         columnGroupSizes={[inputCount, specs.length - inputCount]}
         onRowMove={(from, to) => {
           if (to !== from) {
@@ -176,6 +189,16 @@ const DemoGrid = ({ resizable = true }: { resizable?: boolean }) => {
           }
         }}
         renderHeaderCell={(column, { resizeHandle, pinnedLeftPx }) => {
+          if (column.id === ANNOTATION_COLUMN_ID) {
+            return (
+              <th key={column.id} scope="col" className={HEADER_CELL_CLASS}>
+                <div className={HEADER_LABEL_ROW_CLASS}>
+                  <span className="min-w-0 truncate">{column.name}</span>
+                </div>
+                {resizeHandle}
+              </th>
+            );
+          }
           const index = specs.findIndex((spec) => spec.id === column.id);
           const spec = specs[index];
           const groupIndex = spec?.kind === 'input' ? 0 : 1;
@@ -204,6 +227,9 @@ const DemoGrid = ({ resizable = true }: { resizable?: boolean }) => {
                 >
                   <GripVertical aria-hidden className="size-3" />
                 </span>
+              </div>
+              <div className="mt-0.5 truncate font-mono text-[11px] font-normal text-foreground-de-emp">
+                {`$vars.${column.id}`}
               </div>
               {resizeHandle}
             </th>
@@ -243,8 +269,19 @@ const DemoGrid = ({ resizable = true }: { resizable?: boolean }) => {
                 <GripVertical aria-hidden className="size-3" />
               </span>
             </td>
-            {visibleColumns.map((visible) =>
-              visible.type === 'column' ? (
+            {visibleColumns.map((visible) => {
+              if (visible.type !== 'column') {
+                return null;
+              }
+              if (visible.column.id === ANNOTATION_COLUMN_ID) {
+                const name = rows[rowIndex]?.[ANNOTATION_COLUMN_ID];
+                return (
+                  <td key={visible.column.id} className={cn(BODY_CELL_CLASS, 'px-2 py-1')}>
+                    {name ?? <span className="text-foreground-de-emp italic">Name this rule…</span>}
+                  </td>
+                );
+              }
+              return (
                 <td
                   key={visible.column.id}
                   className={cn(
@@ -255,8 +292,8 @@ const DemoGrid = ({ resizable = true }: { resizable?: boolean }) => {
                 >
                   {rows[rowIndex]?.[visible.column.id] ?? EMPTY_VALUE_DASH}
                 </td>
-              ) : null
-            )}
+              );
+            })}
           </tr>
         )}
         renderFooterRow={(colSpan) => (
