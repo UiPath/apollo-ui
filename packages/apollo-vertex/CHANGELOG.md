@@ -1,3 +1,9 @@
+## [@uipath/apollo-vertex-v2.2.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-vertex@2.2.0...@uipath/apollo-vertex@2.2.1) (2026-10-27)
+
+### Bug Fixes
+
+* **apollo-vertex:** keep the user token out of solution-test trigger bodies ([36f3ceb](https://github.com/UiPath/apollo-ui/commit/36f3cebee74ebb5a9ba2cfe73511ff9566473742)), closes [UiPath/fins-vertical-solution#1502](https://github.com/UiPath/fins-vertical-solution/issues/1502)
+
 ## [@uipath/apollo-vertex-v2.2.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-vertex@2.1.0...@uipath/apollo-vertex@2.2.0) (2026-10-21)
 
 ### Features
