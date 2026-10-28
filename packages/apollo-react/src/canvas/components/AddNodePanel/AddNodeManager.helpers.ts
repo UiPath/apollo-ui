@@ -5,6 +5,7 @@ import type { NodeLayout } from '../../hooks/useCanvasNodeLayout';
 import type { PreviewNodeConnectionInfo } from '../../hooks/usePreviewNode';
 import type { NodeManifest } from '../../schema';
 import { resolveCollisions } from '../../utils';
+import { getExpandedSize } from '../../utils/node-size';
 import {
   CONTAINER_SEQUENCE_GAP_PX,
   collectLinearDownstreamSiblings,
@@ -16,7 +17,6 @@ import {
   placeContainerNode,
 } from '../../utils/container';
 import { snapUpToGrid } from '../../utils/NodeUtils';
-import { getExpandedSize } from '../../utils/node-size';
 
 /**
  * Gap (px) used when shifting nodes around an Add Node insertion at the

@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useMemo, useState } from 'react';
 import { Button, Input } from '@uipath/apollo-wind';
 import { Search } from 'lucide-react';
-import { useMemo, useState } from 'react';
-import type { IRawSpan } from '../../types/TraceModels';
 import { TimelinePlayer } from './AgentCanvas/components/TimelinePlayer';
 import { ExecutionStatusIcon } from './ExecutionStatusIcon/ExecutionStatusIcon';
 import { TaskIcon } from './TaskIcon/TaskIcon';
+import type { IRawSpan } from '../../types/TraceModels';
 
 const meta = {
   title: 'Components/All Components',

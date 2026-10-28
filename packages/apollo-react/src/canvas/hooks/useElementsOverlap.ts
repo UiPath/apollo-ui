@@ -1,4 +1,4 @@
-import { type RefObject, useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 
 export function useElementsOverlap(
   obstacleRefs: ReadonlyArray<RefObject<HTMLElement | null>>,

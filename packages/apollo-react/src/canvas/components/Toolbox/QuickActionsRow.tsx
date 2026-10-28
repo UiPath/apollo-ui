@@ -1,5 +1,5 @@
 import { Button, Separator } from '@uipath/apollo-wind';
-import { type MouseEvent, memo, type ReactNode } from 'react';
+import { memo, type MouseEvent, type ReactNode } from 'react';
 import { TOOLBOX_PADDING_X } from '../../constants';
 import { CanvasTooltip } from '../CanvasTooltip';
 

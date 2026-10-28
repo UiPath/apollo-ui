@@ -1,8 +1,8 @@
 import { CircularProgress } from '@mui/material';
 import Button, { type ButtonProps } from '@mui/material/Button';
-import { type SxProps, styled } from '@mui/material/styles';
-import token from '@uipath/apollo-core';
+import { styled, type SxProps } from '@mui/material/styles';
 import React from 'react';
+import token from '@uipath/apollo-core';
 
 import type { ApButtonProps, ButtonVariants } from './ApButton.types';
 
