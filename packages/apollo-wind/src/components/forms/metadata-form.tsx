@@ -959,9 +959,11 @@ const FormSection = React.memo(function FormSection({
   // plain variant's divider and left-packed semibold header.
   return (
     <div className={isPlain ? dividerClassName : wrapperClassName}>
-      {/* Match AccordionPrimitive.Header + Trigger structure */}
-      <div className="flex">
-        <div
+      {/* Match AccordionPrimitive.Header (an h3) + Trigger structure, so the title is a
+          heading whether or not the section collapses */}
+      <h3 data-slot="form-section-header" className="flex">
+        {/* A span, not a div: a heading may hold only phrasing content. Its flex class keeps the layout. */}
+        <span
           className={
             isPlain
               ? `flex flex-1 items-center justify-start gap-2 pb-4 text-sm font-semibold ${plainTopClassName}`
@@ -969,8 +971,8 @@ const FormSection = React.memo(function FormSection({
           }
         >
           {section.title}
-        </div>
-      </div>
+        </span>
+      </h3>
       {/* Match AccordionContent: outer has text-sm, inner has pb-4 pt-0 */}
       <div className="text-sm">
         <div className="pb-4 pt-0">{innerContent}</div>

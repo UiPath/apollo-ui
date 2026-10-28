@@ -245,6 +245,7 @@ describe('host Material shield', () => {
     'drawer-title',
     'dialog-takeover-title',
     'accordion-header',
+    'form-section-header',
     'alert-title',
   ];
   const rootList = roots.map((r) => String.raw`\[data-slot="${r}"\]`).join(String.raw`,\s*`);
