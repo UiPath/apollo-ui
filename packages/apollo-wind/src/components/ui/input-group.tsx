@@ -50,6 +50,13 @@ const ROW_LAYOUTS = ['row', 'grow', 'fill'] satisfies InputGroupLayout[];
 const FILLED = ['default', 'ghost', 'agent'] satisfies InputGroupProps['variant'][];
 const BOXED = ['default', 'ghost', 'outline', 'agent'] satisfies InputGroupProps['variant'][];
 
+// An addon button brings its own slack to its edge, so its side pads less, putting the button in
+// the same place on every field, boxed or not. Direct children only, so a `block` body's own fields cannot
+// trim the box around them. The `:has()` out-ranks the variants' padding, `future:` included, so it
+// is stated once.
+const ADDON_BUTTON_TRIMS =
+  'has-[>[data-slot=input-group-addon][data-align=inline-start]_button]:pl-2 has-[>[data-slot=input-group-addon][data-align=inline-end]_button]:pr-2';
+
 const inputGroupVariants = cva(
   [
     'group/input-group relative flex w-full items-center gap-2 transition-colors has-[>textarea]:h-auto has-[>textarea]:items-start',
@@ -58,13 +65,13 @@ const inputGroupVariants = cva(
   ],
   {
     variants: {
-      // Mirrors Input's own size scale, since Input's box chrome moves up to this wrapper. A trailing
-      // icon button brings its own slack to the right edge, so the default size trims the box's
-      // padding to line its glyph up with the text on the left. Direct children only: a `block` box
-      // holds whole fields in its body, and pads its own row instead.
+      // Mirrors Input's own size scale, since Input's box chrome moves up to this wrapper. A `block`
+      // box pads its own row instead, which takes the same trims.
       size: {
-        default:
-          'h-9 rounded-md px-3 py-1 future:h-10 future:rounded-xl future:py-2 has-[>[data-slot=input-group-addon][data-align=inline-end]]:pr-2 future:has-[>[data-slot=input-group-addon][data-align=inline-end]]:pr-2',
+        default: [
+          'h-9 rounded-md px-3 py-1 future:h-10 future:rounded-xl future:py-2',
+          ADDON_BUTTON_TRIMS,
+        ],
         xs: 'h-6 gap-1 rounded px-2',
       },
       // Every override is restated under `future:`, because the default size states its own sizing
@@ -101,8 +108,8 @@ const inputGroupVariants = cva(
       disabled: { true: 'cursor-not-allowed opacity-50', false: '' },
     },
     compoundVariants: [
-      // Unboxed: the left inset only exists to clear a border. `block` pads its own row.
-      { variant: 'none', layout: ROW_LAYOUTS, class: 'px-0 pr-3' },
+      // Unboxed: the inset only exists to clear a border. `block` pads its own row.
+      { variant: 'none', layout: ROW_LAYOUTS, class: 'px-0' },
       // Focus ring, in every variant, since a grouped control drops its own. It follows the control,
       // or an element inside it (a code editor's content), so a focused addon button, which rings
       // itself, leaves the box alone. An invalid group rings in `error` rather than primary.
@@ -318,7 +325,7 @@ export interface InputGroupRowProps extends React.HTMLAttributes<HTMLDivElement>
 
 /**
  * The first row of a `layout="block"` group, holding the control and its addons. The box has no
- * padding in that layout, so the row carries the box's usual padding and trailing trim. Padding the
+ * padding in that layout, so the row carries the box's usual padding and addon trims. Padding the
  * control instead would inset its caret out of line with other fields.
  */
 const InputGroupRow = React.forwardRef<HTMLDivElement, InputGroupRowProps>(
@@ -332,7 +339,8 @@ const InputGroupRow = React.forwardRef<HTMLDivElement, InputGroupRowProps>(
         ref={ref}
         data-slot="input-group-row"
         className={cn(
-          'flex min-h-9 min-w-0 items-stretch gap-2 px-3 has-[>[data-slot=input-group-addon][data-align=inline-end]]:pr-2 future:min-h-10',
+          'flex min-h-9 min-w-0 items-stretch gap-2 px-3 future:min-h-10',
+          ADDON_BUTTON_TRIMS,
           // The block box does not ring, since its body holds fields that ring themselves, so the
           // row rings for its own control. Inset, and on the box's corners, since the box clips to
           // them. An invalid group rings in `error` rather than primary.
