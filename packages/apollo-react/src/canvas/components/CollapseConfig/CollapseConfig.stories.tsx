@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { CanvasIcon } from '@uipath/apollo-react/canvas';
 import type { Edge, Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
   Panel,
@@ -6,7 +7,6 @@ import {
   ReactFlowProvider,
   useReactFlow,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import { CanvasIcon } from '@uipath/apollo-react/canvas';
 import { useCallback, useMemo } from 'react';
 import { NodeRegistryProvider } from '../../core/NodeRegistryProvider';
 import type { HandleGroupManifest, NodeManifest } from '../../schema/node-definition';

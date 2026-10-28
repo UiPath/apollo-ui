@@ -36,7 +36,7 @@ export interface HeaderCellContext {
   pinnedLeftPx?: number;
 }
 
-interface GridProps {
+interface DecisionTableProps {
   /**
    * Must be referentially stable across unrelated renders (memoize it): the mounted-columns
    * window keys on this array's identity, and that window feeds every row's memo.
@@ -196,7 +196,7 @@ const groupColumnRuns = (
  * Widths, virtualization and drags are owned here; all model knowledge stays with the consumer,
  * which reaches the grid's live geometry through the imperative `GridHandle`.
  */
-export const Grid = forwardRef<GridHandle, GridProps>(
+export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
   (
     {
       columns,
@@ -767,4 +767,4 @@ export const Grid = forwardRef<GridHandle, GridProps>(
   }
 );
 
-Grid.displayName = 'Grid';
+DecisionTable.displayName = 'DecisionTable';

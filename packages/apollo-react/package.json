@@ -68,10 +68,10 @@
       "import": "./dist/canvas/index.js",
       "require": "./dist/canvas/index.cjs"
     },
-    "./grid": {
-      "types": "./dist/grid/index.d.ts",
-      "import": "./dist/grid/index.js",
-      "require": "./dist/grid/index.cjs"
+    "./decision-table": {
+      "types": "./dist/decision-table/index.d.ts",
+      "import": "./dist/decision-table/index.js",
+      "require": "./dist/decision-table/index.cjs"
     },
     "./i18n": {
       "types": "./dist/i18n/index.d.ts",
@@ -141,7 +141,7 @@
       "require": "./dist/chat/index.cjs"
     },
     "./chat/styles/*.css": "./dist/chat/styles/*.css",
-    "./grid/styles/*.css": "./dist/grid/styles/*.css",
+    "./decision-table/styles/*.css": "./dist/decision-table/styles/*.css",
     "./chat/service": {
       "types": "./dist/chat/service/index.d.ts",
       "import": "./dist/chat/service/index.js",
@@ -164,7 +164,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "pnpm run build:icons && pnpm run i18n:compile && rslib build && pnpm run build:css:canvas && pnpm run build:css:chat && pnpm run build:css:grid",
+    "build": "pnpm run build:icons && pnpm run i18n:compile && rslib build && pnpm run build:css:canvas && pnpm run build:css:chat && pnpm run build:css:decision-table",
     "build:css:canvas": "tailwindcss -i ./src/canvas/styles/tailwind.canvas.css -o ./dist/canvas/styles/tailwind.canvas.css --minify",
     "build:css:chat": "tailwindcss -i ./src/chat/styles/tailwind.chat.css -o ./dist/chat/styles/tailwind.chat.css --minify",
     "build:analyze": "ANALYZE=true pnpm run build",
@@ -182,8 +182,8 @@
     "i18n:extract": "lingui extract",
     "i18n:extract:watch": "lingui extract --watch",
     "i18n:compile": "lingui compile",
-    "build:css:grid": "tailwindcss -i ./src/grid/styles/tailwind.grid.css -o ./dist/grid/styles/tailwind.grid.css --minify",
-    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json"
+    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
+    "build:css:decision-table": "tailwindcss -i ./src/decision-table/styles/tailwind.decision-table.css -o ./dist/decision-table/styles/tailwind.decision-table.css --minify"
   },
   "keywords": [
     "design-system",

@@ -61,8 +61,8 @@
       "@uipath/apollo-react/canvas": [
         "./src/canvas/index.ts"
       ],
-      "@uipath/apollo-react/grid": [
-        "./src/grid/index.ts"
+      "@uipath/apollo-react/decision-table": [
+        "./src/decision-table/index.ts"
       ]
     }
   },

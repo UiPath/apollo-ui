@@ -3,7 +3,7 @@ import { Button, cn } from '@uipath/apollo-wind';
 import { GripVertical, Plus } from 'lucide-react';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { EMPTY_VALUE_DASH, ROW_NUMBER_WIDTH } from './constants';
-import { Grid } from './Grid';
+import { DecisionTable } from './DecisionTable';
 import { GridContextMenu, type GridMenuEntry } from './GridMenu';
 import {
   BAND_ADD_COLUMN_CLASS,
@@ -165,7 +165,7 @@ const DemoGrid = ({ resizable = true }: { resizable?: boolean }) => {
 
   return (
     <div style={{ height: 360 }}>
-      <Grid
+      <DecisionTable
         ref={gridRef}
         labels={labels}
         columns={columns}
@@ -326,14 +326,14 @@ const DemoGrid = ({ resizable = true }: { resizable?: boolean }) => {
   );
 };
 
-const meta: Meta<typeof Grid> = {
-  title: 'Grid',
-  component: Grid,
+const meta: Meta<typeof DecisionTable> = {
+  title: 'Decision Table',
+  component: DecisionTable,
   parameters: { layout: 'padded' },
 };
 export default meta;
 
-type Story = StoryObj<typeof Grid>;
+type Story = StoryObj<typeof DecisionTable>;
 
 export const Default: Story = {
   render: () => <DemoGrid />,

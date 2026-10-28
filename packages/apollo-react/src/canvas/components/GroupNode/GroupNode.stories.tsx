@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Panel } from '@uipath/apollo-react/canvas/xyflow/react';
-import { CanvasTooltip } from '../CanvasTooltip';
 import { useMemo } from 'react';
 import { StoryInfoPanel, useCanvasStory, withCanvasProviders } from '../../storybook-utils';
 import { DefaultCanvasTranslations } from '../../types';
@@ -9,6 +8,7 @@ import { BaseCanvas } from '../BaseCanvas';
 import { BaseNode } from '../BaseNode';
 import type { BaseNodeData } from '../BaseNode/BaseNode.types';
 import { CanvasPositionControls } from '../CanvasPositionControls';
+import { CanvasTooltip } from '../CanvasTooltip';
 import { ExecutionStatusIcon } from '../ExecutionStatusIcon';
 import { GroupNode } from './GroupNode';
 import type { GroupNodeData } from './GroupNode.types';

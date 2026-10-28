@@ -1,7 +1,7 @@
 /**
- * Grid-specific Tailwind CSS
+ * Decision-table-specific Tailwind CSS
  *
- * Pre-compiles only the Tailwind utility classes used by the grid and its
+ * Pre-compiles only the Tailwind utility classes used by the decision table and its
  * apollo-wind dependencies.
  *
  * Consumers include this entry in their Tailwind build so the grid's styling

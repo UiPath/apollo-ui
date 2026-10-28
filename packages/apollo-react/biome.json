@@ -156,7 +156,7 @@
       }
     },
     {
-      "includes": ["src/grid/**"],
+      "includes": ["src/decision-table/**"],
       "linter": {
         "rules": {
           "style": {
@@ -166,7 +166,7 @@
                 "patterns": [
                   {
                     "group": ["@mui/**", "@emotion/**"],
-                    "message": "src/grid must stay MUI-free; use apollo-wind components and Tailwind classes"
+                    "message": "src/decision-table must stay MUI-free; use apollo-wind components and Tailwind classes"
                   },
                   {
                     "group": [

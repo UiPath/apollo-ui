@@ -7,8 +7,8 @@
     ]
   },
   "include": [
-    "src/grid/**/*.ts",
-    "src/grid/**/*.tsx"
+    "src/decision-table/**/*.ts",
+    "src/decision-table/**/*.tsx"
   ],
   "exclude": [
     "node_modules",

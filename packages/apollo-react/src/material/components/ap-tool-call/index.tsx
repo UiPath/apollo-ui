@@ -26,7 +26,6 @@ export const ApToolCall = React.forwardRef<HTMLDivElement, ApToolCallWithI18nPro
 
 ApToolCall.displayName = 'ApToolCall';
 
-export { ConversationalDisplayModeTypes } from './ApToolCall.types';
 export type {
   ApToolCallProps,
   ConversationalDisplayMode,
@@ -36,5 +35,6 @@ export type {
   ToolCallSectionType,
   TSpan,
 } from './ApToolCall.types';
+export { ConversationalDisplayModeTypes } from './ApToolCall.types';
 export { NestedValue } from './components/NestedValue';
 export { ToolCallSection } from './components/ToolCallSection';
