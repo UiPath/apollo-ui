@@ -174,7 +174,21 @@ export const useGridClipboard = (
   };
 
   const menuCut = async () => {
-    if (await menuCopy()) {
+    // The clipboard write awaits; a selection moved meanwhile must not be the one cleared —
+    // that would delete cells that were never copied. The clear runs only on the cut's own range.
+    const cutRange = source()?.range;
+    if (!(await menuCopy())) {
+      return;
+    }
+    const live = source();
+    if (
+      cutRange &&
+      live?.range &&
+      live.range.anchor.row === cutRange.anchor.row &&
+      live.range.anchor.col === cutRange.anchor.col &&
+      live.range.focus.row === cutRange.focus.row &&
+      live.range.focus.col === cutRange.focus.col
+    ) {
       clearSelection();
     }
   };

@@ -35,6 +35,12 @@ describe('clipboard codec', () => {
     expect(parseTsv('a\n\nb')).toEqual([['a'], [''], ['b']]);
   });
 
+  it('keeps a final quoted empty field instead of dropping it', () => {
+    expect(parseTsv('""')).toEqual([['']]);
+    expect(parseTsv('a\n""')).toEqual([['a'], ['']]);
+    expect(parseTsv('a\t""')).toEqual([['a', '']]);
+  });
+
   it('keeps empty cells at row edges', () => {
     expect(parseTsv('\ta\t')).toEqual([['', 'a', '']]);
   });

@@ -230,7 +230,12 @@ export function useColumnWidths({
       // column deleted while an async seed was in flight must not come back as a ghost override
       // the columns-change effect has no later chance to reconcile away.
       const present = new Set(columnsRef.current.map((column) => column.id));
-      const stored = Object.fromEntries(Object.entries(raw).filter(([key]) => present.has(key)));
+      // A transient empty column set (a model still hydrating) must not discard the whole seed —
+      // the columns-change effect prunes any genuinely stale keys once the columns arrive.
+      const stored =
+        columnsRef.current.length === 0
+          ? raw
+          : Object.fromEntries(Object.entries(raw).filter(([key]) => present.has(key)));
       // An empty map schedules nothing: the clean layout above already IS the seeded layout, and
       // the common no-saved-widths reload should not pay (or, in tests, leak) an extra update.
       overridesRef.current = stored;

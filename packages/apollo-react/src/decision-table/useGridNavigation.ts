@@ -1,7 +1,22 @@
-import type { CellSelectionState, Updater } from '@tanstack/react-table';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import type { CellCommitMove } from './gridTypes';
+
+/**
+ * Structural mirrors of @tanstack/table-core v9's cell-selection shapes, declared locally so the
+ * published declarations are self-contained — a consumer's real v9 state assigns to these in both
+ * directions, and a consumer without react-table installed still type-checks this module.
+ */
+interface CellSelectionRange {
+  anchorColumnId: string;
+  anchorRowId: string;
+  focusColumnId: string;
+  focusRowId: string;
+  /** How this range changes the selection produced by the ranges before it. Defaults to `include`. */
+  operation?: 'include' | 'exclude';
+}
+type CellSelectionState = Array<CellSelectionRange>;
+type Updater<T> = T | ((old: T) => T);
 
 export interface GridPosition {
   row: number;
@@ -456,6 +471,11 @@ export const useGridNavigation = (
   const onKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
       if (editing) {
+        return;
+      }
+      // A key someone else already claimed (the resize handle's arrows and Enter bubble through
+      // the grid) must not also move the selection or open an editor.
+      if (event.defaultPrevented) {
         return;
       }
       // Ahead of the no-focus guard: the host may still hold a selection this grid does not.
