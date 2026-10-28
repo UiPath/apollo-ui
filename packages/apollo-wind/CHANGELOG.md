@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.78.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.77.0...@uipath/apollo-wind@2.78.0) (2026-10-27)
+
+### Features
+
+* **apollo-wind:** make Search composable under asChild ([1a45e63](https://github.com/UiPath/apollo-ui/commit/1a45e63636de51371ce391563ad45601525ee7a6))
+
 ## [@uipath/apollo-wind-v2.77.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.76.1...@uipath/apollo-wind@2.77.0) (2026-10-27)
 
 ### Features
