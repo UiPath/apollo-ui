@@ -1,5 +1,11 @@
 import { Database, Globe, UserCheck } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
+import {
+  type ConditionGroup,
+  ConditionsEditor,
+  createCondition,
+  createConditionGroup,
+} from '@/components/ui/conditions-editor';
 import { InsertVariableAction } from '@/components/ui/field-actions';
 import { FormField, FormFieldHeader, FormFieldLabel } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
@@ -14,12 +20,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import type { VariablePickerItem } from '@/components/ui/variable-picker';
 import { NodePropertyPanel } from '../../../../packages/apollo-react/src/canvas/components/NodePropertyPanel';
 import {
-  ConditionEditor,
-  type ConditionGroup,
-  condition,
-  group,
+  CONDITION_FIELDS,
   KeyValueList,
   newId,
   RepeatableCard,
@@ -46,6 +50,20 @@ const VARIABLES: VariableOption[] = [
   { label: 'accountId', value: '$vars.accountId' },
   { label: 'approverEmail', value: '$vars.approverEmail' },
   { label: 'statusCode', value: '$self.output.statusCode' },
+];
+
+const VARIABLE_ITEMS: VariablePickerItem[] = [
+  {
+    id: 'vars',
+    label: '$vars',
+    type: 'object',
+    children: VARIABLES.map((variable) => ({
+      id: variable.value,
+      label: variable.label,
+      value: variable.value,
+      type: 'string',
+    })),
+  },
 ];
 
 function PanelTabs({ children }: { children: ReactNode }) {
@@ -94,18 +112,18 @@ function SectionLabel({ children, meta }: { children: ReactNode; meta?: ReactNod
 
 export function EntityFilterPanel({ onClose }: { onClose: () => void }) {
   const [filter, setFilter] = useState<ConditionGroup>(() =>
-    group('any', [
-      condition({
+    createConditionGroup('any', [
+      createCondition({
         field: 'accountId',
         operator: 'equals',
         value: '$vars.accountId',
-        mode: 'expression',
+        valueMode: 'expression',
       }),
       // Visited and left incomplete, to show the row and group messages.
-      condition({ touched: true }),
-      group('all', [
-        condition({ field: 'createdBy', operator: 'equals', value: 'admin' }),
-        condition({ field: 'status', operator: 'isOneOf', values: ['active', 'onHold'] }),
+      createCondition({ id: 'filter-incomplete' }),
+      createConditionGroup('all', [
+        createCondition({ field: 'createdBy', operator: 'equals', value: 'admin' }),
+        createCondition({ field: 'status', operator: 'isOneOf', values: ['active', 'onHold'] }),
       ]),
     ])
   );
@@ -160,14 +178,16 @@ export function EntityFilterPanel({ onClose }: { onClose: () => void }) {
 
         <FormField>
           <SectionLabel>Filter</SectionLabel>
-          <ConditionEditor
+          <ConditionsEditor
             label="Filter"
             container="collapsible"
+            fields={CONDITION_FIELDS}
             value={filter}
             onChange={setFilter}
-            variables={VARIABLES}
+            variables={VARIABLE_ITEMS}
+            defaultTouched={['filter-incomplete']}
             showSummary
-            emptyText="No conditions. Every record is returned."
+            strings={{ empty: 'No conditions. Every record is returned.' }}
           />
         </FormField>
       </PanelTabs>
@@ -365,13 +385,7 @@ interface Rule {
   conditions: ConditionGroup;
 }
 
-export function RuleList({
-  initialRules,
-  layout = 'stacked',
-}: {
-  initialRules: Omit<Rule, 'id'>[];
-  layout?: 'inline' | 'stacked';
-}) {
+export function RuleList({ initialRules }: { initialRules: Omit<Rule, 'id'>[] }) {
   const [rules, setRules] = useState<Rule[]>(() =>
     initialRules.map((rule) => ({ ...rule, id: newId('rule') }))
   );
@@ -416,15 +430,15 @@ export function RuleList({
               </div>
             </div>
             <div className="border-l-2 border-border pl-3">
-              <ConditionEditor
+              <ConditionsEditor
                 label={`Rule ${position + 1} conditions`}
+                fields={CONDITION_FIELDS}
+                variables={VARIABLE_ITEMS}
                 container="plain"
-                layout={layout}
                 maxDepth={0}
-                matchMode={rule.conditions.children.length > 1}
                 value={rule.conditions}
                 onChange={(conditions) => updateRule(rule.id, { conditions })}
-                emptyText="No conditions. This rule always applies."
+                strings={{ empty: 'No conditions. This rule always applies.' }}
               />
             </div>
           </RowGroup>
@@ -438,7 +452,11 @@ export function RuleList({
             focus.afterAdd();
             setRules((current) => [
               ...current,
-              { id: newId('rule'), outcome: 'show', conditions: group('all', [condition()]) },
+              {
+                id: newId('rule'),
+                outcome: 'show',
+                conditions: createConditionGroup('all', [createCondition()]),
+              },
             ]);
           }}
         >
@@ -475,11 +493,11 @@ export function FormRulesPanel({ onClose }: { onClose: () => void }) {
             initialRules={[
               {
                 outcome: 'show',
-                conditions: group('all', [
-                  condition({ field: 'amount', operator: 'greaterThan', value: '10000' }),
+                conditions: createConditionGroup('all', [
+                  createCondition({ field: 'amount', operator: 'greaterThan', value: '10000' }),
                 ]),
               },
-              { outcome: 'require', conditions: group('all') },
+              { outcome: 'require', conditions: createConditionGroup('all') },
             ]}
           />
         </FormField>

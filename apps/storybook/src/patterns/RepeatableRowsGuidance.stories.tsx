@@ -2,6 +2,13 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { X } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import {
+  type ConditionGroup,
+  ConditionsEditor,
+  type ConditionsEditorProps,
+  createCondition,
+  createConditionGroup,
+} from '@/components/ui/conditions-editor';
 import { FormField, FormFieldHeader, FormFieldLabel } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { AddRowButton, EmptyRows, RowDeleteButton, useRowFocus } from '@/components/ui/row-groups';
@@ -21,11 +28,8 @@ import {
   SectionTitle,
 } from './guidance-primitives';
 import {
-  ConditionEditor,
-  type ConditionEditorProps,
-  type ConditionGroup,
-  condition,
-  group,
+  CONDITION_FIELDS,
+  CONDITION_VARIABLES,
   KeyValueList,
   newId,
   RepeatableCard,
@@ -49,29 +53,36 @@ type Story = StoryObj<typeof meta>;
 
 // ── Layout examples ─────────────────────────────────────────────────────────
 
-/** Local state around ConditionEditor, so each example on the page is independent. */
+/** Local state around ConditionsEditor, so each example on the page is independent. */
 function Conditions({
   initial,
   ...props
-}: Omit<ConditionEditorProps, 'value' | 'onChange'> & {
+}: Omit<ConditionsEditorProps, 'value' | 'onChange' | 'fields'> & {
   initial: () => ConditionGroup;
 }) {
   const [value, setValue] = useState(initial);
-  return <ConditionEditor value={value} onChange={setValue} {...props} />;
+  return (
+    <ConditionsEditor
+      fields={CONDITION_FIELDS}
+      variables={CONDITION_VARIABLES}
+      value={value}
+      onChange={setValue}
+      {...props}
+    />
+  );
 }
 
-function ConditionListExample({ layout = 'inline' }: { layout?: 'inline' | 'stacked' }) {
+function ConditionListExample() {
   return (
     <Conditions
       label="Conditions"
-      layout={layout}
       maxDepth={0}
-      matchMode={false}
-      emptyText="No conditions. The rule runs on its events alone."
+      showMatchMode={false}
+      strings={{ empty: 'No conditions. The rule runs on its events alone.' }}
       initial={() =>
-        group('all', [
-          condition({ field: 'accountId', operator: 'equals', value: '1' }),
-          condition(),
+        createConditionGroup('all', [
+          createCondition({ field: 'accountId', operator: 'equals', value: '1' }),
+          createCondition(),
         ])
       }
     />
@@ -84,9 +95,12 @@ function ConditionGroupExample({ showSummary = true }: { showSummary?: boolean }
       label="Conditions"
       showSummary={showSummary}
       initial={() =>
-        group('any', [
-          condition({ field: 'accountId', operator: 'equals', value: '1' }),
-          group('all', [condition({ field: 'createdBy', operator: 'equals', value: 'admin' })]),
+        createConditionGroup('any', [
+          createCondition({ field: 'accountId', operator: 'equals', value: '1' }),
+          createConditionGroup('all', [
+            createCondition({ field: 'createdBy', operator: 'equals', value: 'admin' }),
+            createCondition({ field: 'amount', operator: 'greaterThan', value: '1000' }),
+          ]),
         ])
       }
     />
@@ -99,8 +113,8 @@ function RuleExample() {
       initialRules={[
         {
           outcome: 'show',
-          conditions: group('all', [
-            condition({ field: 'amount', operator: 'greaterThan', value: '1000' }),
+          conditions: createConditionGroup('all', [
+            createCondition({ field: 'amount', operator: 'greaterThan', value: '1000' }),
           ]),
         },
       ]}
@@ -275,26 +289,25 @@ function ValueTypesExample() {
   return (
     <Conditions
       label="Value types"
-      layout="inline"
       maxDepth={0}
-      matchMode={false}
+      showMatchMode={false}
       showSummary
       initial={() =>
-        group('all', [
-          condition({ field: 'createdBy', operator: 'contains', value: 'admin' }),
-          condition({
+        createConditionGroup('all', [
+          createCondition({ field: 'createdBy', operator: 'contains', value: 'admin' }),
+          createCondition({
             field: 'amount',
             operator: 'greaterThan',
             value: '$vars.invoiceTotal',
-            mode: 'expression',
+            valueMode: 'expression',
           }),
-          condition({
+          createCondition({
             field: 'createTime',
-            operator: 'after',
-            value: new Date(2026, 0, 1).toISOString(),
+            operator: 'greaterThan',
+            value: '2026-01-01',
           }),
-          condition({ field: 'status', operator: 'isOneOf', values: ['active', 'onHold'] }),
-          condition({ field: 'createdBy', operator: 'isEmpty' }),
+          createCondition({ field: 'status', operator: 'isOneOf', values: ['active', 'onHold'] }),
+          createCondition({ field: 'createdBy', operator: 'isEmpty' }),
         ])
       }
     />
@@ -465,8 +478,10 @@ function RepeatableRowsGuidancePage({ globalTheme }: { globalTheme: string }) {
         <SectionTitle>Combining conditions</SectionTitle>
         <SectionDescription>
           Each group has one switch that decides how its conditions combine. All (AND) means every
-          condition must be true. Any (OR) means at least one must be true. To mix the two, nest a
-          group inside another group.
+          condition must be true. Any (OR) means at least one must be true. The top group's switch
+          appears once it holds two or more items, since one item has nothing to combine with. A
+          list that always matches all can leave it out. To mix the two, nest a group inside another
+          group: a nested group always shows its switch.
         </SectionDescription>
         <div className="grid gap-5 md:grid-cols-2">
           <ExampleCard
@@ -603,7 +618,7 @@ function RepeatableRowsGuidancePage({ globalTheme }: { globalTheme: string }) {
             kind="do"
             note="Muted trash in a fixed column. It reads as available without pulling focus."
           >
-            <ConditionListExample layout="stacked" />
+            <ConditionListExample />
           </ExampleCard>
           <ExampleCard
             kind="dont"
@@ -618,10 +633,12 @@ function RepeatableRowsGuidancePage({ globalTheme }: { globalTheme: string }) {
             <Conditions
               label="Narrow panel example"
               container="plain"
-              layout="stacked"
               maxDepth={0}
-              matchMode={false}
-              initial={() => group('all', [condition({ field: 'createTime', operator: 'on' })])}
+              initial={() =>
+                createConditionGroup('all', [
+                  createCondition({ field: 'createTime', operator: 'equals' }),
+                ])
+              }
             />
           </ExampleCard>
           <ExampleCard
@@ -751,13 +768,13 @@ function RepeatableRowsGuidancePage({ globalTheme }: { globalTheme: string }) {
         </GuidanceList>
         <div className="mt-6">
           <Conditions
+            defaultTouched={['validation-visited']}
             label="Validation example"
-            layout="inline"
             maxDepth={0}
             initial={() =>
-              group('all', [
-                condition({ field: 'accountId', operator: 'equals', value: '1' }),
-                condition({ touched: true }),
+              createConditionGroup('all', [
+                createCondition({ field: 'accountId', operator: 'equals', value: '1' }),
+                createCondition({ id: 'validation-visited' }),
               ])
             }
           />
@@ -864,13 +881,13 @@ function RepeatableRowsGuidancePage({ globalTheme }: { globalTheme: string }) {
           <GuidanceItem>
             Shipped in apollo-wind: <InlineCode>RowDeleteButton</InlineCode>,{' '}
             <InlineCode>AddRowButton</InlineCode>, <InlineCode>EmptyRows</InlineCode>,{' '}
-            <InlineCode>GroupModeToggle</InlineCode>, and the <InlineCode>useRowFocus</InlineCode>{' '}
-            hook. Every example on this page already uses them.
+            <InlineCode>GroupModeToggle</InlineCode>, <InlineCode>CollapsibleRowGroup</InlineCode>,
+            the <InlineCode>useRowFocus</InlineCode> hook, and{' '}
+            <InlineCode>ConditionsEditor</InlineCode> with its type-aware rows. Every example on
+            this page already uses them.
           </GuidanceItem>
           <GuidanceItem>
-            Still candidates: <InlineCode>RowDragHandle</InlineCode>, a key-value list, and{' '}
-            <InlineCode>ConditionEditor</InlineCode> with its type-aware{' '}
-            <InlineCode>ConditionRow</InlineCode>.
+            Still candidates: <InlineCode>RowDragHandle</InlineCode> and a key-value list.
           </GuidanceItem>
           <GuidanceItem>
             Build each one in apollo-wind from the Field Anatomy parts, with tests and its own

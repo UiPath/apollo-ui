@@ -1,4 +1,5 @@
 export { AddRowButton, type AddRowButtonProps } from './add-row-button';
+export { CollapsibleRowGroup, type CollapsibleRowGroupProps } from './collapsible-row-group';
 export { EmptyRows, type EmptyRowsProps } from './empty-rows';
 export {
   DEFAULT_GROUP_MODE_TOGGLE_STRINGS,

@@ -309,6 +309,30 @@ export {
   CommandSeparator,
   CommandShortcut,
 } from './components/ui/command';
+export type {
+  Condition,
+  ConditionField,
+  ConditionFieldOption,
+  ConditionFieldType,
+  ConditionGroup,
+  ConditionNode,
+  ConditionOperator,
+  ConditionOperators,
+  ConditionsEditorProps,
+  ConditionsEditorStrings,
+  ConditionValueMode,
+  ConditionValueRenderProps,
+  ConditionVocabulary,
+  RenderConditionValue,
+} from './components/ui/conditions-editor';
+export {
+  ConditionsEditor,
+  createCondition,
+  createConditionGroup,
+  DEFAULT_CONDITION_OPERATORS,
+  DEFAULT_CONDITIONS_EDITOR_STRINGS,
+  isConditionComplete,
+} from './components/ui/conditions-editor';
 export {
   ContextMenu,
   ContextMenuCheckboxItem,
@@ -901,6 +925,7 @@ export {
 } from './components/ui/resizable';
 export type {
   AddRowButtonProps,
+  CollapsibleRowGroupProps,
   EmptyRowsProps,
   GroupModeOption,
   GroupModeToggleProps,
@@ -910,6 +935,7 @@ export type {
 } from './components/ui/row-groups';
 export {
   AddRowButton,
+  CollapsibleRowGroup,
   DEFAULT_GROUP_MODE_TOGGLE_STRINGS,
   EmptyRows,
   GroupModeToggle,
