@@ -360,15 +360,6 @@ export type { DatePickerProps, DateRangePickerProps } from './components/ui/date
 export { DatePicker, DateRangePicker } from './components/ui/date-picker';
 export type { DateTimePickerProps } from './components/ui/datetime-picker';
 export { DateTimePicker } from './components/ui/datetime-picker';
-export type { DatePickerStrings, LocaleProviderProps } from './components/ui/locale-provider';
-export {
-  DEFAULT_DATE_PICKER_STRINGS,
-  LocaleProvider,
-  useDateLocale,
-  useDatePickerStrings,
-} from './components/ui/locale-provider';
-export type { DateLocale } from './lib/date-locale';
-export { loadDateLocale } from './lib/date-locale';
 // -----------------------------------------------------------------------------
 // Feedback & Overlay Components
 // -----------------------------------------------------------------------------
@@ -650,6 +641,13 @@ export {
   LoadingDots,
   loadingDotsVariants,
 } from './components/ui/loading-dots';
+export type { DatePickerStrings, LocaleProviderProps } from './components/ui/locale-provider';
+export {
+  DEFAULT_DATE_PICKER_STRINGS,
+  LocaleProvider,
+  useDateLocale,
+  useDatePickerStrings,
+} from './components/ui/locale-provider';
 export type {
   LockableFieldType,
   LockableValueFieldMode,
@@ -943,6 +941,25 @@ export {
   RowDeleteButton,
   useRowFocus,
 } from './components/ui/row-groups';
+export type {
+  ConditionsRule,
+  ExpressionRule,
+  RenderRuleExpressionEditor,
+  Rule,
+  RuleExpressionEditorProps,
+  RuleMode,
+  RuleOutcome,
+  RulesDialect,
+  RulesEditorProps,
+  RulesEditorStrings,
+  RuleVocabulary,
+} from './components/ui/rules-editor';
+export {
+  createRule,
+  DEFAULT_RULES_EDITOR_STRINGS,
+  isRuleComplete,
+  RulesEditor,
+} from './components/ui/rules-editor';
 export { ScrollArea, ScrollBar } from './components/ui/scroll-area';
 export type {
   SearchProps,
@@ -1126,6 +1143,8 @@ export type {
   VariableValueControlProps,
 } from './components/ui/variable-value-control';
 export { VariableValueControl } from './components/ui/variable-value-control';
+export type { DateLocale } from './lib/date-locale';
+export { loadDateLocale } from './lib/date-locale';
 // -----------------------------------------------------------------------------
 // Utilities
 // -----------------------------------------------------------------------------

@@ -15,6 +15,14 @@ export interface ConditionVocabulary {
   valueModes: readonly ConditionValueMode[];
 }
 
+const MODES_WITH_VARIABLES: readonly ConditionValueMode[] = ['literal', 'expression', 'variable'];
+const MODES: readonly ConditionValueMode[] = ['literal', 'expression'];
+
+/** The editor's modes when none are given: Variable only when there is something to pick. */
+export function defaultValueModes(variables: unknown) {
+  return variables ? MODES_WITH_VARIABLES : MODES;
+}
+
 export interface ResolvedCondition {
   field?: ConditionField;
   operators: readonly ConditionOperator[];
