@@ -7,7 +7,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!**/dist"],
+    "includes": ["**", "!**/dist", "!**/src/components/icons/*.tsx"],
     "ignoreUnknown": true
   },
   "formatter": {

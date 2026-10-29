@@ -74,7 +74,8 @@
     "format:check": "biome format .",
     "storybook": "storybook dev -p 6006",
     "storybook:build": "storybook build",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "sync:icons": "tsx scripts/icons-sync.ts"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
@@ -176,6 +177,7 @@
     "@types/react": "^19.2.6",
     "@types/react-dom": "^19.2.2",
     "@types/react-syntax-highlighter": "^15.5.13",
+    "@uipath/apollo-ui-icons-react": "workspace:*",
     "@vitest/coverage-v8": "^4.1.5",
     "@vitest/ui": "^4.1.5",
     "ajv": "^8.18.0",

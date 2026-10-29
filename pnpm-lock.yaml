@@ -1432,6 +1432,9 @@ importers:
       '@types/react-syntax-highlighter':
         specifier: ^15.5.13
         version: 15.5.13
+      '@uipath/apollo-ui-icons-react':
+        specifier: workspace:*
+        version: link:../apollo-ui-icons-react
       '@vitest/coverage-v8':
         specifier: ^4.1.5
         version: 4.1.5(vitest@4.1.12)
