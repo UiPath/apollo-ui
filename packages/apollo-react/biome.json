@@ -7,7 +7,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!**/node_modules", "!**/dist", "!**/src/icons/**"]
+    "includes": ["**", "!**/node_modules", "!**/dist", "!**/src/icons"]
   },
   "formatter": {
     "enabled": true,
@@ -175,7 +175,7 @@
                       "@uipath/apollo-react/material*",
                       "!@mui/**"
                     ],
-                    "message": "src/chat must not depend on the Material renderer; see src/chat/README.md"
+                    "message": "src/decision-table must not depend on the Material renderer"
                   }
                 ]
               }
