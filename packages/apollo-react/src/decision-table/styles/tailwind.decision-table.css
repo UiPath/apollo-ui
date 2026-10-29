@@ -1,18 +1,19 @@
 /**
  * Decision-table-specific Tailwind CSS
  *
- * Pre-compiles only the Tailwind utility classes used by the decision table and its
- * apollo-wind dependencies.
- *
- * Consumers include this entry in their Tailwind build so the grid's styling
- * is available at runtime. The globs cover both the monorepo's .ts/.tsx source
- * and the published dist's .js/.cjs output, so the same file works from either.
+ * Pre-compiles only the Tailwind utility classes the decision table and its apollo-wind
+ * dependencies use. The build emits the compiled result to
+ * `dist/decision-table/styles/tailwind.decision-table.css`, and that is what consumers import —
+ * this source entry is an input to our build, never to theirs. The globs cover the monorepo's
+ * .ts/.tsx source and the published .js/.cjs output alike, so the same file compiles from either.
  */
 
 @import "@uipath/apollo-wind/tailwind.css";
 
-/* Scan the grid's source (or its compiled dist, next to this file's published copy) */
+/* Scan the component's source (or its compiled dist, next to this file's published copy) */
 @source "../**/*.{ts,tsx,js,cjs}";
+@source not "../**/*.stories.{ts,tsx}";
+@source not "../**/*.test.{ts,tsx}";
 
 /* Scan apollo-wind compiled components for CVA class strings */
 @source "../../../node_modules/@uipath/apollo-wind/dist/**/*.js";
