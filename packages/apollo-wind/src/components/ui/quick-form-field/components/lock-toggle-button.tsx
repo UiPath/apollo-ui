@@ -1,4 +1,5 @@
 import { LockKeyhole, LockKeyholeOpen } from 'lucide-react';
+import { FIELD_ADDON_BUTTON_CLASS } from '@/components/ui/field-addons/field-addon-button';
 import { InputGroupButton } from '@/components/ui/input-group';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { QuickFormFieldStrings } from '../types';
@@ -26,8 +27,8 @@ export function LockToggleButton({
       <Tooltip>
         <TooltipTrigger asChild>
           <InputGroupButton
-            icon
             size="3xs"
+            className={FIELD_ADDON_BUTTON_CLASS}
             disabled={!interactive}
             onClick={() => onLockedChange?.(!locked)}
             aria-label={
