@@ -107,19 +107,20 @@ export interface GridHandle {
 }
 
 /** A cell's position in the grid's own column space; what column 0 means is the consumer's business. */
-interface GridCellPosition {
+/** A cell's position in the grid's own coordinates; what a column means is the consumer's business. */
+export interface GridPosition {
   row: number;
   col: number;
 }
 
-/** A rectangular selection, as its two defining corners. */
-export interface GridSelectionRange {
-  anchor: GridCellPosition;
-  focus: GridCellPosition;
+/** A rectangular selection: where it started and where it currently reaches. */
+export interface GridRange {
+  anchor: GridPosition;
+  focus: GridPosition;
 }
 
 /** One cell of a batched clipboard write, in grid coordinates — the consumer maps it to its model. */
-export interface GridCellWrite extends GridCellPosition {
+export interface GridCellWrite extends GridPosition {
   text: string;
 }
 
@@ -137,7 +138,7 @@ export interface GridPasteOutcome {
  */
 export interface GridClipboardProps {
   /** The live selection. Nothing copies, pastes or clears while this is null. */
-  range: GridSelectionRange | null;
+  range: GridRange | null;
   /** An open cell editor owns its own clipboard semantics, so the grid stands down. */
   editing: boolean;
   readOnly?: boolean;
@@ -166,8 +167,9 @@ export interface GridClipboardActions {
   cut: () => void;
   /** `grow` appends rows for a block taller than the grid, up to `maxAppendRows`. */
   paste: (options?: { grow?: boolean }) => void;
-  /** Clears the selection's writable cells — also the Delete/Backspace path. */
-  clear: () => void;
+  /** Clears the selection's writable cells — also the Delete/Backspace path. Returns whether
+   * anything was clearable, so a consumer's Delete handler knows to claim the key. */
+  clear: () => boolean;
 }
 
 /** The grid's own strings — the consumer passes localized values; the grid ships no English. */

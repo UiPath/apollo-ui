@@ -96,7 +96,7 @@ export const columnBoundaryForX = (
  * windowed: most drop targets are unmounted spacers, which geometry doesn't care about, and an
  * rAF autoscroll loop brings far targets toward the pointer. Deliberately not dnd-kit: a
  * context-subscribed draggable per row would re-render every mounted row on every drag frame,
- * which is the exact cost the SelectionCost contract exists to forbid.
+ * the per-row render cost this grid's memoization exists to avoid.
  */
 export const useDragReorder = (options: DragReorderOptions) => {
   const { containerRef, headerHeight, columnLeading, columnOffsets, rowHeightPx, rowCount } =

@@ -199,14 +199,6 @@ export const HEADER_CELL_CLASS = cn(
 );
 
 /**
- * The height of whatever the decision table's formula bar is showing — the plain input for
- * annotations, the FEEL editor for input/output cells, and the Suspense fallback between them. One
- * value for all three: they share the bar's single slot and the selection swaps between them, so
- * any difference resizes the bar as the user moves around the grid.
- */
-export const FORMULA_BAR_FIELD_HEIGHT_CLASS = 'h-[34px]';
-
-/**
  * A band's caption and its "+", on one line whatever the band's width. Sticky, so while any of the
  * band is in view its caption is too, held just past the pinned columns (the grid publishes where
  * they end as `--grid-pinned-left`) at the band cell's own inset. The band cell is its containing

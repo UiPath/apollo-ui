@@ -1,10 +1,10 @@
-import type { GridCellWrite, GridClipboardProps, GridSelectionRange } from './gridTypes';
+import type { GridCellWrite, GridClipboardProps, GridRange } from './gridTypes';
 
 /** Copy / paste / clear planning in grid coordinates; the consumer maps the writes to its own model. */
 
 /** The range as an inclusive rectangle, whatever direction it was dragged in. */
 const rectOf = (
-  range: GridSelectionRange
+  range: GridRange
 ): { top: number; bottom: number; left: number; right: number } => ({
   top: Math.min(range.anchor.row, range.focus.row),
   bottom: Math.max(range.anchor.row, range.focus.row),
@@ -30,12 +30,14 @@ interface GridPastePlan {
 }
 
 /** The selected block as a matrix, reading every column whether writable or not. */
-export const copyRangeMatrix = (source: CellSource, range: GridSelectionRange): string[][] => {
+export const copyRangeMatrix = (source: CellSource, range: GridRange): string[][] => {
   const rect = rectOf(range);
   const matrix: string[][] = [];
-  for (let row = rect.top; row <= rect.bottom; row++) {
+  // Clamped like `planRangeClear`: a range outliving the rows it was made on must not read
+  // past the model and copy phantom cells.
+  for (let row = rect.top; row <= Math.min(rect.bottom, source.rowCount - 1); row++) {
     const cells: string[] = [];
-    for (let col = rect.left; col <= rect.right; col++) {
+    for (let col = rect.left; col <= Math.min(rect.right, source.columnCount - 1); col++) {
       cells.push(source.textAt(row, col));
     }
     matrix.push(cells);
@@ -59,7 +61,7 @@ const expandSingleCell = (matrix: string[][], rect: ReturnType<typeof rectOf>): 
 /** Where a pasted matrix lands: anchored top-left, clamped (or grown), skipping unwritable positions. */
 export const planRangePaste = (
   source: CellSource,
-  range: GridSelectionRange,
+  range: GridRange,
   matrix: string[][],
   options: { grow?: boolean } = {}
 ): GridPastePlan => {
@@ -116,7 +118,7 @@ export const planRangePaste = (
 };
 
 /** Clears the range to each column's blank, skipping exactly what a paste would skip. */
-export const planRangeClear = (source: CellSource, range: GridSelectionRange): GridCellWrite[] => {
+export const planRangeClear = (source: CellSource, range: GridRange): GridCellWrite[] => {
   const rect = rectOf(range);
   const writes: GridCellWrite[] = [];
   for (let row = rect.top; row <= Math.min(rect.bottom, source.rowCount - 1); row++) {

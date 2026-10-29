@@ -36,7 +36,7 @@ export interface HeaderCellContext {
   pinnedLeftPx?: number;
 }
 
-interface DecisionTableProps {
+export interface DecisionTableProps {
   /**
    * Must be referentially stable across unrelated renders (memoize it): the mounted-columns
    * window keys on this array's identity, and that window feeds every row's memo.
