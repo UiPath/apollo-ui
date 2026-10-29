@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { createRef } from 'react';
@@ -6,12 +6,11 @@ import { describe, expect, it, vi } from 'vitest';
 import { DateTimePicker } from './datetime-picker';
 import { InputGroup } from './input-group';
 
-function getTimeInput(): HTMLInputElement {
-  const input = document.querySelector<HTMLInputElement>('input[type="time"]');
-  if (!input) {
-    throw new Error('Time input not found');
-  }
-  return input;
+function getTimeSegments() {
+  return {
+    hours: screen.getByRole('spinbutton', { name: 'Hours' }),
+    minutes: screen.getByRole('spinbutton', { name: 'Minutes' }),
+  };
 }
 
 describe('DateTimePicker', () => {
@@ -106,7 +105,8 @@ describe('DateTimePicker', () => {
       });
 
       await user.click(screen.getByRole('button', { name: /15/ }));
-      fireEvent.change(getTimeInput(), { target: { value: '13:45' } });
+      await user.type(getTimeSegments().hours, '13');
+      await user.type(getTimeSegments().minutes, '45');
 
       const lastCall = handleChange.mock.calls.at(-1)?.[0] as Date;
       expect(lastCall.getDate()).toBe(15);
@@ -233,7 +233,8 @@ describe('DateTimePicker controlled value', () => {
     expect(screen.getByText(/January 2nd, 2025 at 16:20/)).toBeInTheDocument();
 
     await user.click(screen.getByRole('button'));
-    expect(getTimeInput()).toHaveValue('16:20');
+    expect(getTimeSegments().hours).toHaveValue('16');
+    expect(getTimeSegments().minutes).toHaveValue('20');
   });
 
   it('clears when the parent clears the value', () => {
@@ -242,11 +243,13 @@ describe('DateTimePicker controlled value', () => {
     expect(screen.getByText('Pick a date and time')).toBeInTheDocument();
   });
 
-  it('gives the time input 24-hour text when use12Hour is set', async () => {
+  it('shows a 12-hour clock with the period when use12Hour is set', async () => {
     const user = userEvent.setup();
     render(<DateTimePicker value={new Date(2024, 5, 15, 14, 30)} use12Hour />);
     await user.click(screen.getByRole('button'));
-    expect(getTimeInput()).toHaveValue('14:30');
+    expect(getTimeSegments().hours).toHaveValue('02');
+    expect(getTimeSegments().minutes).toHaveValue('30');
+    expect(screen.getByRole('radio', { name: 'PM' })).toBeChecked();
   });
 
   it('reports opening and closing, including through Done', async () => {

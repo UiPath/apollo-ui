@@ -26,10 +26,11 @@ export function toDateOnlyString(date: Date): string {
 }
 
 /** Formats a date field's value for display, falling back to the raw value if it isn't a valid date. */
-export function formatDateValue(value: string): string {
+/** Unset, `localeCode` falls back to the browser's language. */
+export function formatDateValue(value: string, localeCode?: string): string {
   const date = toDateValue(value);
   return date
-    ? date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
+    ? date.toLocaleDateString(localeCode, { year: 'numeric', month: 'long', day: 'numeric' })
     : value;
 }
 

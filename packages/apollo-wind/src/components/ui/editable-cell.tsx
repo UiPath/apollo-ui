@@ -7,6 +7,7 @@ import { Input } from './input';
 import { Checkbox } from './checkbox';
 import { Button } from './button';
 import { Calendar } from './calendar';
+import { useDateLocale } from './locale-provider';
 import { Popover, PopoverContent, PopoverTrigger } from './popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
 
@@ -246,6 +247,7 @@ function DatePickerCell({
   placeholder: string;
 }) {
   const [open, setOpen] = React.useState(true);
+  const locale = useDateLocale();
 
   return (
     <Popover
@@ -264,7 +266,7 @@ function DatePickerCell({
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
-          <span className="truncate">{value ? format(value, 'PP') : placeholder}</span>
+          <span className="truncate">{value ? format(value, 'PP', { locale }) : placeholder}</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">

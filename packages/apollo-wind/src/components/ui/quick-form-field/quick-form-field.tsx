@@ -11,6 +11,7 @@ import {
   InputGroupTextarea,
 } from '@/components/ui/input-group';
 import { RequiredIndicator } from '@/components/ui/label';
+import { useDateLocale } from '@/components/ui/locale-provider';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { PromptValueControl } from '@/components/ui/prompt-value-control';
@@ -125,6 +126,7 @@ export function QuickFormField({
     () => ({ ...DEFAULT_QUICK_FORM_FIELD_STRINGS, ...stringOverrides }),
     [stringOverrides]
   );
+  const dateLocale = useDateLocale();
   const generatedId = useId().replace(/:/g, '');
   // The component owns its input, so caret-aware insert and Enter/Escape live
   // here instead of behind an exposed ref.
@@ -370,7 +372,7 @@ export function QuickFormField({
             className="flex h-full flex-1 items-center text-left text-sm text-foreground outline-none disabled:cursor-not-allowed disabled:opacity-50"
           >
             {value ? (
-              formatDateValue(value)
+              formatDateValue(value, dateLocale?.code)
             ) : (
               <span className="text-muted-foreground">{strings.pickDate}</span>
             )}

@@ -10,8 +10,10 @@ import {
   apolloMaterialUiThemeLight,
   apolloMaterialUiThemeLightHC,
 } from '@uipath/apollo-react/material/theme';
+import { LocaleProvider } from '@uipath/apollo-wind/components/ui/locale-provider';
 // biome-ignore lint/correctness/noUnusedImports: needed
 import React, { useEffect } from 'react';
+import { SAMPLE_DATE_PICKER_STRINGS } from '../../../packages/apollo-wind/.storybook/sample-date-picker-strings';
 import { ApolloDocsContainer } from './DocsContainer';
 import { GlobalStyles } from './GlobalStyles';
 import { ALL_THEMES, clampThemeForMaterial, DEFAULT_THEME, type ThemeMode } from './themes';
@@ -332,9 +334,10 @@ const preview: Preview = {
       },
     },
     // Locale toolbar — sets <html lang>, which `ApI18nProvider` picks up as its
-    // fallback locale (see packages/apollo-react/src/i18n/ApI18nProvider.tsx).
+    // fallback locale (see packages/apollo-react/src/i18n/ApI18nProvider.tsx),
+    // and the Wind `LocaleProvider` around every story (date and time pickers).
     locale: {
-      description: 'Locale for ApI18nProvider (sets <html lang>)',
+      description: 'Locale for ApI18nProvider (sets <html lang>) and Wind LocaleProvider',
       toolbar: {
         title: 'Locale',
         icon: 'globe',
@@ -387,6 +390,14 @@ const preview: Preview = {
 
       const isFullscreen = context.parameters?.layout === 'fullscreen';
 
+      // Wind's date and time pickers read LocaleProvider, not <html lang>. Their text comes
+      // from sample translations, as an app passes its own.
+      const story = (
+        <LocaleProvider locale={locale} datePickerStrings={SAMPLE_DATE_PICKER_STRINGS[locale]}>
+          <Story />
+        </LocaleProvider>
+      );
+
       // Stories with `parameters.material` get MUI ThemeProvider + CssBaseline +
       // GlobalStyles (Material Overrides stories).
       if (useMaterial) {
@@ -412,7 +423,7 @@ const preview: Preview = {
                 boxSizing: 'border-box',
               }}
             >
-              <Story />
+              {story}
             </div>
           </ThemeProvider>
         );
@@ -420,7 +431,7 @@ const preview: Preview = {
 
       return (
         <div key={locale} className={isFullscreen ? 'h-screen' : 'p-1'}>
-          <Story />
+          {story}
         </div>
       );
     },

@@ -8,7 +8,7 @@ This guide explains how localization works in the UiPath Wind Design System and 
 
 - ✅ **MultiSelect**: Added `clearAllText` prop (string or function)
 - ✅ **DataTable**: Added `columnToggleText` prop
-- ✅ **DatePicker**: Added `calendarProps` for locale support
+- ✅ **Date and time pickers**: `LocaleProvider` sets the language once; `datePickerStrings` translates their text
 
 No more hardcoded user-facing text - every string is customizable!
 
@@ -50,8 +50,9 @@ Components expose **props for all user-facing strings**, allowing you to provide
 | `Search`          | `placeholder`                                                                                                                 | "Search..."                                                                                              |
 | `EmptyState`      | `title`, `description`, `action.label`, `secondaryAction.label`                                                               | N/A (required/optional props)                                                                            |
 | `Pagination`      | Children text ("Previous", "Next")                                                                                            | Rendered via children                                                                                    |
-| `DatePicker`      | `placeholder`, `calendarProps.locale`                                                                                         | "Pick a date", English                                                                                   |
-| `DateRangePicker` | `placeholder`, `calendarProps.locale`                                                                                         | "Pick a date range", English                                                                             |
+| `DatePicker`      | `placeholder`, `locale`, `strings` (or `LocaleProvider`)                                                                      | "Pick a date", English                                                                                   |
+| `DateRangePicker` | `placeholder`, `locale`, `strings` (or `LocaleProvider`)                                                                      | "Pick a date range", English                                                                             |
+| `DateTimePicker`  | `placeholder`, `locale`, `strings`, `use12Hour` (or `LocaleProvider`)                                                         | "Pick a date and time", English, `DEFAULT_DATE_PICKER_STRINGS`                                           |
 
 ---
 
@@ -518,34 +519,52 @@ const columns = [
 
 ---
 
-### DatePicker
+### DatePicker, DateRangePicker and DateTimePicker
 
-Uses `react-day-picker` internally, which supports localization via the `locale` prop.
+Set the language once at the app root with `LocaleProvider`. Every picker below it (and `Calendar`) follows it; a picker's own `locale` and `strings` props win over the provider.
+
+Two things are localized, from two sources:
+
+- **Dates and the calendar** follow `locale`: date and time formats, month and weekday names, the first day of the week, the 12- or 24-hour clock, AM/PM wording and order, and the calendar's own accessible labels. This is locale data from `date-fns` and `react-day-picker`; nothing to translate.
+- **The pickers' own text** comes from `datePickerStrings` (`DatePickerStrings`): placeholders, "Time", "Hours", "Minutes", "AM/PM", "Clear", "Done" and the triggers' accessible names. Like every apollo-wind string, it is English unless you pass translations.
 
 **Example:**
 
 ```tsx
-import { fr } from "date-fns/locale";
-import { DatePicker } from "@/components/ui";
+import { LocaleProvider, type DatePickerStrings } from "@uipath/apollo-wind";
 
-<DatePicker
-  value={date}
-  onValueChange={setDate}
-  // Pass locale to underlying Calendar component
-  calendarProps={{ locale: fr }}
-/>;
+function App({ platformLanguage }: { platformLanguage: string }) {
+  const { t } = useTranslation();
+  const datePickerStrings: Partial<DatePickerStrings> = {
+    pickDate: t("datePicker.pickDate"),
+    selectedDate: (date) => t("datePicker.selectedDate", { date }),
+    time: t("datePicker.time"),
+    clear: t("datePicker.clear"),
+    done: t("datePicker.done"),
+    // …
+  };
+
+  return (
+    <LocaleProvider
+      locale={platformLanguage}
+      datePickerStrings={datePickerStrings}
+    >
+      <Routes />
+    </LocaleProvider>
+  );
+}
 ```
 
-**Note**: Currently DatePicker doesn't expose all Calendar props. You may need to modify the component to pass through `locale`.
-
-**Workaround**: Use Calendar directly:
+`locale` takes the platform language tag (`"de"`, `"pt-BR"`, `"zh-TW"`; unknown regions fall back to their base language, unknown languages to English) or a locale object from `react-day-picker/locale`. A tag loads only that language's data, so dates show in English for a moment on first use; to avoid it, load first:
 
 ```tsx
-import { Calendar } from "@/components/ui";
-import { fr } from "date-fns/locale";
+import { loadDateLocale } from "@uipath/apollo-wind";
 
-<Calendar mode="single" selected={date} onSelect={setDate} locale={fr} />;
+const dateLocale = await loadDateLocale(platformLanguage);
+// <LocaleProvider locale={dateLocale ?? platformLanguage}>
 ```
+
+`DateTimePicker` shows a 24-hour clock without a locale, the locale's own clock with one, and whatever `use12Hour` says when set.
 
 ---
 
@@ -1058,5 +1077,5 @@ Examples of potential improvements:
 
 - MultiSelect "Clear all" button text
 - DataTable "Columns" dropdown text
-- DatePicker format strings
+- DatePicker strings (`DatePickerStrings`) and `LocaleProvider` locale
 - Pagination ellipsis text

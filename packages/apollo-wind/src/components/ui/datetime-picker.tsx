@@ -1,15 +1,20 @@
-import { format, isValid } from 'date-fns';
+import { isValid } from 'date-fns';
 import { CalendarIcon, Clock } from 'lucide-react';
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import { Input } from '@/components/ui/input';
 import { InputGroupPopoverTrigger } from '@/components/ui/input-group';
-import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib';
+import { type DateLocale, formatDateTime, resolveUse12Hour } from '@/lib/date-locale';
 import { FormFieldError } from './form-field';
 import { useControlValidation, useInputGroup } from './input-group-context';
+import { type DatePickerStrings, useDateLocale, useDatePickerStrings } from './locale-provider';
+import { TimeField, type TimeValue } from './time-field';
+
+function timeOf(date: Date | undefined): TimeValue | undefined {
+  return date ? { hours: date.getHours(), minutes: date.getMinutes() } : undefined;
+}
 
 export interface DateTimePickerProps {
   /** Applied to the trigger button, so a `<label htmlFor>` pointing at it associates correctly. */
@@ -21,7 +26,18 @@ export interface DateTimePickerProps {
   disabled?: boolean;
   placeholder?: string;
   className?: string;
+  /**
+   * Shows a 12-hour clock with AM/PM. Unset, the clock follows the locale when one is set
+   * (here or on a `LocaleProvider`), else 24-hour.
+   */
   use12Hour?: boolean;
+  /**
+   * Language tag or locale for this picker, over the nearest `LocaleProvider`'s.
+   * @see LocaleProvider
+   */
+  locale?: string | DateLocale;
+  /** Translations for this picker, over the nearest `LocaleProvider`'s. */
+  strings?: Partial<DatePickerStrings>;
   /**
    * Field-specific feedback rendered immediately below the trigger.
    * Keep the message focused on what went wrong and how to resolve it.
@@ -43,9 +59,11 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
       onValueChange,
       onOpenChange,
       disabled,
-      placeholder = 'Pick a date and time',
+      placeholder: placeholderProp,
       className,
-      use12Hour = false,
+      use12Hour: use12HourProp,
+      locale: localeProp,
+      strings: stringsProp,
       id,
       error,
       errorId,
@@ -62,13 +80,17 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
       onOpenChange?.(next);
     };
     const generatedId = React.useId();
-    const validationId =
-      errorId ?? `${id ?? `datetime-picker-${generatedId.replace(/:/g, '')}`}-error`;
+    const baseId = id ?? `datetime-picker-${generatedId.replace(/:/g, '')}`;
+    const validationId = errorId ?? `${baseId}-error`;
+    const timeLabelId = `${baseId}-time-label`;
+    const locale = useDateLocale(localeProp);
+    const strings = useDatePickerStrings(stringsProp);
+    const placeholder = placeholderProp ?? strings.pickDateTime;
     // Trusts the `Date` type only as far as not throwing: anything else is no value.
     const date = value instanceof Date && isValid(value) ? value : undefined;
     const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(date);
-    // A native time input only accepts 24-hour text; use12Hour affects the display alone.
-    const [timeValue, setTimeValue] = React.useState<string>(date ? format(date, 'HH:mm') : '');
+    // Kept apart from the date so a time entered before any date applies once one is picked.
+    const [time, setTime] = React.useState<TimeValue | undefined>(() => timeOf(date));
 
     // Re-seed when the parent changes the value, compared by time so a fresh Date with the
     // same instant (or our own change echoed back) is not a change.
@@ -77,7 +99,7 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
     if (!Object.is(valueTime, seededTime)) {
       setSeededTime(valueTime);
       setSelectedDate(date);
-      setTimeValue(date ? format(date, 'HH:mm') : '');
+      setTime(timeOf(date));
     }
 
     const handleDateSelect = (date: Date | undefined) => {
@@ -89,33 +111,31 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
         date.setMinutes(selectedDate.getMinutes());
         date.setSeconds(selectedDate.getSeconds());
         date.setMilliseconds(selectedDate.getMilliseconds());
+      } else if (time) {
+        date.setHours(time.hours, time.minutes);
       }
 
       setSelectedDate(date);
       onValueChange?.(date);
     };
 
-    const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const time = e.target.value;
-      setTimeValue(time);
+    const handleTimeChange = (next: TimeValue) => {
+      setTime(next);
 
       if (!selectedDate) return;
 
-      const [hours, minutes] = time.split(':').map(Number);
       const newDate = new Date(selectedDate);
-      newDate.setHours(hours);
-      newDate.setMinutes(minutes);
+      newDate.setHours(next.hours);
+      newDate.setMinutes(next.minutes);
 
       setSelectedDate(newDate);
       onValueChange?.(newDate);
     };
 
     const formatDisplayValue = () => {
-      // Placeholder is rendered by the caller; this only narrows for format().
+      // Placeholder is rendered by the caller; this only narrows for formatDateTime().
       if (!selectedDate) return null;
-      const datePart = format(selectedDate, 'PPP');
-      const timePart = format(selectedDate, use12Hour ? 'hh:mm a' : 'HH:mm');
-      return `${datePart} at ${timePart}`;
+      return formatDateTime(selectedDate, locale, use12HourProp);
     };
 
     // Inside an InputGroup the trigger is the group's control: the group draws the box, and the
@@ -176,17 +196,20 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
                 selected={selectedDate}
                 onSelect={handleDateSelect}
                 initialFocus
+                locale={locale}
               />
               <div className="border-t pt-3 space-y-2">
-                <Label className="text-sm font-medium flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
-                  Time
-                </Label>
-                <Input
-                  type="time"
-                  value={timeValue}
-                  onChange={handleTimeChange}
-                  className="w-full"
+                <div id={timeLabelId} className="text-sm font-medium flex items-center gap-2">
+                  <Clock className="h-4 w-4" aria-hidden="true" />
+                  {strings.time}
+                </div>
+                <TimeField
+                  aria-labelledby={timeLabelId}
+                  value={time}
+                  onValueChange={handleTimeChange}
+                  use12Hour={resolveUse12Hour(use12HourProp, locale)}
+                  locale={locale}
+                  strings={strings}
                 />
               </div>
               <div className="flex gap-2">
@@ -195,15 +218,15 @@ export const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePicker
                   className="w-full"
                   onClick={() => {
                     setSelectedDate(undefined);
-                    setTimeValue('');
+                    setTime(undefined);
                     onValueChange?.(undefined);
                     setOpen(false);
                   }}
                 >
-                  Clear
+                  {strings.clear}
                 </Button>
                 <Button className="w-full" onClick={() => setOpen(false)} disabled={!selectedDate}>
-                  Done
+                  {strings.done}
                 </Button>
               </div>
             </div>

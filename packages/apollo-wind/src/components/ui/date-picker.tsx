@@ -1,6 +1,6 @@
 'use client';
 
-import { format, isValid } from 'date-fns';
+import { isValid } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import * as React from 'react';
 import type { DateRange } from 'react-day-picker';
@@ -9,8 +9,10 @@ import { Calendar } from '@/components/ui/calendar';
 import { InputGroupPopoverTrigger } from '@/components/ui/input-group';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib';
+import { type DateLocale, formatLongDate, formatMediumDate } from '@/lib/date-locale';
 import { FormFieldError } from './form-field';
 import { useControlValidation, useInputGroup } from './input-group-context';
+import { type DatePickerStrings, useDateLocale, useDatePickerStrings } from './locale-provider';
 
 export interface DatePickerProps {
   /** Applied to the trigger button, so a `<label htmlFor>` pointing at it associates correctly. */
@@ -32,6 +34,13 @@ export interface DatePickerProps {
   'aria-invalid'?: React.AriaAttributes['aria-invalid'];
   'aria-describedby'?: string;
   'aria-errormessage'?: string;
+  /**
+   * Language tag or locale for this picker, over the nearest `LocaleProvider`'s.
+   * @see LocaleProvider
+   */
+  locale?: string | DateLocale;
+  /** Translations for this picker, over the nearest `LocaleProvider`'s. */
+  strings?: Partial<DatePickerStrings>;
   calendarProps?: Omit<
     React.ComponentProps<typeof Calendar>,
     'mode' | 'selected' | 'onSelect' | 'initialFocus'
@@ -44,8 +53,10 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(f
     value,
     onValueChange,
     disabled,
-    placeholder = 'Pick a date',
+    placeholder: placeholderProp,
     className,
+    locale: localeProp,
+    strings: stringsProp,
     calendarProps,
     error,
     errorId,
@@ -60,6 +71,10 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(f
   const validationId = errorId ?? `${id ?? `date-picker-${generatedId.replace(/:/g, '')}`}-error`;
   // Trusts the `Date` type only as far as not throwing: anything else is no value.
   const date = value instanceof Date && isValid(value) ? value : undefined;
+  const locale = useDateLocale(localeProp);
+  const strings = useDatePickerStrings(stringsProp);
+  const placeholder = placeholderProp ?? strings.pickDate;
+  const displayValue = date ? formatLongDate(date, locale) : undefined;
 
   // Inside an InputGroup the trigger is the group's control: the group draws the box, and the
   // panel anchors to it.
@@ -79,8 +94,8 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(f
     'aria-label':
       id || ariaLabelledBy
         ? undefined
-        : date
-          ? `Selected date: ${format(date, 'PPP')}`
+        : displayValue
+          ? strings.selectedDate(displayValue)
           : placeholder,
     'aria-labelledby': ariaLabelledBy,
     ...validation.aria,
@@ -97,7 +112,7 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(f
             className={className}
             placeholder={placeholder}
           >
-            {date && <span className="truncate">{format(date, 'PPP')}</span>}
+            {displayValue && <span className="truncate">{displayValue}</span>}
           </InputGroupPopoverTrigger>
         ) : (
           <PopoverTrigger asChild>
@@ -112,11 +127,7 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(f
               )}
             >
               <CalendarIcon />
-              {date ? (
-                format(date, 'PPP')
-              ) : (
-                <span className="text-foreground-muted">{placeholder}</span>
-              )}
+              {displayValue ?? <span className="text-foreground-muted">{placeholder}</span>}
             </Button>
           </PopoverTrigger>
         )}
@@ -126,6 +137,7 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(f
             selected={date}
             onSelect={onValueChange}
             initialFocus
+            locale={locale}
             {...calendarProps}
           />
         </PopoverContent>
@@ -156,6 +168,13 @@ export interface DateRangePickerProps {
   'aria-invalid'?: React.AriaAttributes['aria-invalid'];
   'aria-describedby'?: string;
   'aria-errormessage'?: string;
+  /**
+   * Language tag or locale for this picker, over the nearest `LocaleProvider`'s.
+   * @see LocaleProvider
+   */
+  locale?: string | DateLocale;
+  /** Translations for this picker, over the nearest `LocaleProvider`'s. */
+  strings?: Partial<DatePickerStrings>;
   calendarProps?: Omit<
     React.ComponentProps<typeof Calendar>,
     | 'mode'
@@ -175,8 +194,10 @@ export const DateRangePicker = React.forwardRef<HTMLButtonElement, DateRangePick
       value,
       onValueChange,
       disabled,
-      placeholder = 'Pick a date range',
+      placeholder: placeholderProp,
       className,
+      locale: localeProp,
+      strings: stringsProp,
       calendarProps,
       error,
       errorId,
@@ -190,10 +211,15 @@ export const DateRangePicker = React.forwardRef<HTMLButtonElement, DateRangePick
     const generatedId = React.useId();
     const validationId =
       errorId ?? `${id ?? `date-range-picker-${generatedId.replace(/:/g, '')}`}-error`;
-    const computedLabel = value?.from
-      ? value.to
-        ? `Selected range: ${format(value.from, 'LLL dd, y')} to ${format(value.to, 'LLL dd, y')}`
-        : `Selected date: ${format(value.from, 'LLL dd, y')}`
+    const locale = useDateLocale(localeProp);
+    const strings = useDatePickerStrings(stringsProp);
+    const placeholder = placeholderProp ?? strings.pickDateRange;
+    const from = value?.from ? formatMediumDate(value.from, locale) : undefined;
+    const to = value?.to ? formatMediumDate(value.to, locale) : undefined;
+    const computedLabel = from
+      ? to
+        ? strings.selectedRange(from, to)
+        : strings.selectedDate(from)
       : placeholder;
 
     // Inside an InputGroup the trigger is the group's control: the group draws the box, and the
@@ -225,10 +251,10 @@ export const DateRangePicker = React.forwardRef<HTMLButtonElement, DateRangePick
               className={className}
               placeholder={placeholder}
             >
-              {value?.from && (
+              {from && (
                 <span className="truncate">
-                  {format(value.from, 'LLL dd, y')}
-                  {value.to && ` - ${format(value.to, 'LLL dd, y')}`}
+                  {from}
+                  {to && ` - ${to}`}
                 </span>
               )}
             </InputGroupPopoverTrigger>
@@ -245,13 +271,13 @@ export const DateRangePicker = React.forwardRef<HTMLButtonElement, DateRangePick
                 )}
               >
                 <CalendarIcon />
-                {value?.from ? (
-                  value.to ? (
+                {from ? (
+                  to ? (
                     <>
-                      {format(value.from, 'LLL dd, y')} - {format(value.to, 'LLL dd, y')}
+                      {from} - {to}
                     </>
                   ) : (
-                    format(value.from, 'LLL dd, y')
+                    from
                   )
                 ) : (
                   <span className="text-foreground-muted">{placeholder}</span>
@@ -268,6 +294,7 @@ export const DateRangePicker = React.forwardRef<HTMLButtonElement, DateRangePick
               onSelect={onValueChange}
               numberOfMonths={2}
               required={false}
+              locale={locale}
               {...calendarProps}
             />
           </PopoverContent>
