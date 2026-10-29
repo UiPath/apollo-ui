@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { FormField, FormFieldHeader, FormFieldLabel } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { AddRowButton, EmptyRows, RowDeleteButton, useRowFocus } from '@/components/ui/row-groups';
 import { Textarea } from '@/components/ui/textarea';
 import { FullWorkbenchComposition } from '../../../../packages/apollo-react/src/canvas/stories/templates/Flow.stories';
 import { withCanvasProviders } from '../../../../packages/apollo-react/src/canvas/storybook-utils';
@@ -20,20 +21,16 @@ import {
   SectionTitle,
 } from './guidance-primitives';
 import {
-  AddRowButton,
   ConditionEditor,
   type ConditionEditorProps,
   type ConditionGroup,
   condition,
-  EmptyRows,
   group,
   KeyValueList,
   newId,
   RepeatableCard,
-  RowDeleteButton,
   RowDragHandle,
   uniqueName,
-  useRowFocus,
 } from './repeatable-row-primitives';
 import {
   EntityFilterPanel,
@@ -865,10 +862,14 @@ function RepeatableRowsGuidancePage({ globalTheme }: { globalTheme: string }) {
         </SectionDescription>
         <GuidanceList>
           <GuidanceItem>
-            Candidates for apollo-wind: <InlineCode>RowDeleteButton</InlineCode>,{' '}
-            <InlineCode>AddRowButton</InlineCode>, <InlineCode>RowDragHandle</InlineCode>,{' '}
-            <InlineCode>MatchModeToggle</InlineCode>, the <InlineCode>useRowFocus</InlineCode> hook,
-            a key-value list, and <InlineCode>ConditionEditor</InlineCode> with its type-aware{' '}
+            Shipped in apollo-wind: <InlineCode>RowDeleteButton</InlineCode>,{' '}
+            <InlineCode>AddRowButton</InlineCode>, <InlineCode>EmptyRows</InlineCode>,{' '}
+            <InlineCode>GroupModeToggle</InlineCode>, and the <InlineCode>useRowFocus</InlineCode>{' '}
+            hook. Every example on this page already uses them.
+          </GuidanceItem>
+          <GuidanceItem>
+            Still candidates: <InlineCode>RowDragHandle</InlineCode>, a key-value list, and{' '}
+            <InlineCode>ConditionEditor</InlineCode> with its type-aware{' '}
             <InlineCode>ConditionRow</InlineCode>.
           </GuidanceItem>
           <GuidanceItem>

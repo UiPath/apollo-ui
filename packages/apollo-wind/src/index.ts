@@ -899,6 +899,24 @@ export {
   ResizablePanel,
   ResizablePanelGroup,
 } from './components/ui/resizable';
+export type {
+  AddRowButtonProps,
+  EmptyRowsProps,
+  GroupModeOption,
+  GroupModeToggleProps,
+  GroupModeToggleStrings,
+  MatchMode,
+  RowDeleteButtonProps,
+} from './components/ui/row-groups';
+export {
+  AddRowButton,
+  DEFAULT_GROUP_MODE_TOGGLE_STRINGS,
+  EmptyRows,
+  GroupModeToggle,
+  MATCH_MODES,
+  RowDeleteButton,
+  useRowFocus,
+} from './components/ui/row-groups';
 export { ScrollArea, ScrollBar } from './components/ui/scroll-area';
 export type {
   SearchProps,
