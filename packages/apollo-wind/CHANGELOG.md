@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.81.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.80.1...@uipath/apollo-wind@2.81.0) (2026-10-29)
+
+### Features
+
+* **apollo-wind:** follow the platform language in the date and time pickers [PLT-111755] ([d335e98](https://github.com/UiPath/apollo-ui/commit/d335e98302e4f23065869453023182b05f7bcf61))
+
 ## [@uipath/apollo-wind-v2.80.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.80.0...@uipath/apollo-wind@2.80.1) (2026-10-29)
 
 ### Bug Fixes
