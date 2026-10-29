@@ -1503,6 +1503,16 @@ describe('StageTitleInput - input attributes', () => {
   });
 });
 
+describe('StageTitleInput - colour', () => {
+  it('uses the canvas foreground instead of inheriting the host colour', () => {
+    renderStageNode();
+
+    expect(screen.getByTestId('stage-title-input-stage-1')).toHaveClass(
+      'text-[var(--canvas-foreground)]'
+    );
+  });
+});
+
 describe('StageNode - getTaskContextMenuItems', () => {
   beforeEach(() => {
     vi.clearAllMocks();
