@@ -28,6 +28,7 @@ module.exports = {
         // Package scopes
         'apollo-core',
         'apollo-ui-icons',
+        'apollo-ui-icons-react',
         'apollo-react',
         'apollo-wind',
         'ap-chat',

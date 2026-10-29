@@ -1,0 +1,67 @@
+{
+  "name": "@uipath/apollo-ui-icons-react",
+  "version": "0.0.0",
+  "description": "UiPath Apollo icon set as React components",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./*": {
+      "import": {
+        "types": "./dist/*.d.ts",
+        "default": "./dist/*.js"
+      },
+      "require": {
+        "types": "./dist/*.d.cts",
+        "default": "./dist/*.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UiPath/apollo-ui.git",
+    "directory": "packages/apollo-ui-icons-react"
+  },
+  "license": "MIT",
+  "sideEffects": false,
+  "scripts": {
+    "build": "pnpm run build:icons && rslib build",
+    "build:icons": "tsx scripts/build-react-icons.ts",
+    "generate:icons": "tsx scripts/generate-react-icons.ts",
+    "dev": "rslib build --watch",
+    "lint": "biome lint scripts",
+    "lint:fix": "biome lint --write scripts",
+    "format": "biome format --write scripts",
+    "format:check": "biome format scripts",
+    "clean": "rm -rf dist"
+  },
+  "peerDependencies": {
+    "react": ">=18.3.0"
+  },
+  "devDependencies": {
+    "@rsbuild/plugin-react": "^1.4.1",
+    "@rslib/core": "^0.19.6",
+    "@types/react": "^19.2.6",
+    "@uipath/apollo-ui-icons": "workspace:*",
+    "react": "19.2.3",
+    "typescript": "^5.9.3"
+  }
+}

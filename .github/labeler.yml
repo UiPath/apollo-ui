@@ -6,6 +6,10 @@
   - changed-files:
       - any-glob-to-any-file: "packages/apollo-ui-icons/**"
 
+"pkg:apollo-ui-icons-react":
+  - changed-files:
+      - any-glob-to-any-file: "packages/apollo-ui-icons-react/**"
+
 "pkg:apollo-react":
   - changed-files:
       - any-glob-to-any-file: "packages/apollo-react/**"

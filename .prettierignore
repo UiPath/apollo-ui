@@ -27,3 +27,4 @@ playwright-report
 
 # Generated files
 packages/apollo-react/src/icons
+packages/apollo-ui-icons-react/src
