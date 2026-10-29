@@ -30,8 +30,8 @@ describe('EdgeLabel', () => {
     const coloredLabel = renderLabel({ borderColor: 'var(--canvas-success-icon)' }).label;
 
     expect(EDGE_LABEL_DEFAULT_BORDER_COLOR).toBe('var(--canvas-border,var(--color-border))');
-    // happy-dom drops nested var() fallback values from CSSStyleDeclaration.
-    expect(defaultLabel.style.borderColor).toBe('');
+    // happy-dom 21 keeps nested var() fallbacks and serializes a space after the comma.
+    expect(defaultLabel.style.borderColor).toBe('var(--canvas-border, var(--color-border))');
     expect(coloredLabel.style.borderColor).toBe('var(--canvas-success-icon)');
   });
 
