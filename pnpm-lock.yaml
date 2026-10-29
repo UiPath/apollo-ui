@@ -849,6 +849,27 @@ importers:
         specifier: ^4.1.12
         version: 4.1.12(@opentelemetry/api@1.9.1)(@types/node@24.10.1)(@vitest/coverage-v8@4.1.5)(@vitest/ui@4.1.5)(happy-dom@21.0.4)(jsdom@27.3.0)(vite@8.1.6(@types/node@24.10.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.43.1)(tsx@4.22.4)(yaml@2.9.1))
 
+  packages/apollo-ui-icons-react:
+    devDependencies:
+      '@rsbuild/plugin-react':
+        specifier: ^1.4.1
+        version: 1.4.2(@rsbuild/core@1.7.3)
+      '@rslib/core':
+        specifier: ^0.19.6
+        version: 0.19.6(typescript@5.9.3)
+      '@types/react':
+        specifier: ^19.2.6
+        version: 19.2.8
+      '@uipath/apollo-ui-icons':
+        specifier: workspace:*
+        version: link:../apollo-ui-icons
+      react:
+        specifier: 19.2.3
+        version: 19.2.3
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   packages/apollo-vertex:
     dependencies:
       '@dnd-kit/core':

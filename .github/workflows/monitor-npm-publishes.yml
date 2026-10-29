@@ -30,6 +30,7 @@ jobs:
           PACKAGES=(
             "@uipath/apollo-core"
             "@uipath/apollo-ui-icons"
+            "@uipath/apollo-ui-icons-react"
             "@uipath/apollo-react"
             "@uipath/apollo-wind"
             "@uipath/apollo-vertex"
