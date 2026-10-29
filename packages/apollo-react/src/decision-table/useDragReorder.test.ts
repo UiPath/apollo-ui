@@ -23,7 +23,7 @@ const moveToSlot = <T>(items: T[], from: number, boundary: number): T[] => {
   return out;
 };
 
-/** `moveItem` in decisionTableReducer, the sole consumer of `dropIndex`'s result. */
+/** The array move a consumer performs with `dropIndex`'s result. */
 const moveItem = <T>(items: T[], from: number, to: number): T[] => {
   const next = [...items];
   const [moved] = next.splice(from, 1);

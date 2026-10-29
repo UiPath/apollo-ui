@@ -50,7 +50,7 @@ describe('clipboard codec', () => {
     expect(fromClipboardHtml(toClipboardHtml(payload))).toEqual(payload);
   });
 
-  // Guards the encoding, not a feature: adding a clause payload (MST-13501) should be an edit to
+  // Guards the encoding, not a feature: adding a typed payload later should be an edit to
   // ClipboardPayload and to the shape check, never to the codec. `columns` is a stand-in — it is
   // untyped and unvalidated today, so nothing may read it off a payload yet.
   it('round-trips undeclared keys, so a future clause payload needs no codec change', () => {

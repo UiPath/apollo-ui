@@ -264,10 +264,13 @@ export function useColumnWidths({
         loadedRef.current = true;
         applyVisibility();
       },
-      () => {
+      (error) => {
         if (!active) {
           return;
         }
+        // Surfaced, not swallowed: width persistence silently going dead for the rest of the
+        // session is the kind of thing only a log explains.
+        console.warn('Decision table: reading the persisted column widths failed.', error);
         // The persisted widths are unknowable, not absent. Reveal the table with the defaults —
         // hidden-forever is worse than un-remembered widths — but stop persisting: a "full" map
         // built from this blind session would overwrite every width the failed read was hiding.

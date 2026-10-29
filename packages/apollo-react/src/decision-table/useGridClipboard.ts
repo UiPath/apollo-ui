@@ -11,8 +11,10 @@ import { copyRangeMatrix, planRangeClear, planRangePaste } from './gridClipboard
 import { isFromTextField } from './gridEvents';
 import type { GridClipboardActions, GridClipboardProps } from './gridTypes';
 
-/** Grid-internal: {@link Grid} owns this, driven by its `clipboard` prop. Consumers never call it. */
-
+/**
+ * Grid-internal: {@link DecisionTable} owns this, driven by its `clipboard` prop — consumers
+ * reach the operations through the imperative handle, never this hook.
+ */
 interface GridClipboard {
   containerProps: Pick<React.HTMLAttributes<HTMLElement>, 'onCopy' | 'onCut' | 'onPaste'>;
   /** Delete/Backspace clears the range. Returns whether the key was consumed. */
@@ -174,6 +176,11 @@ export const useGridClipboard = (
   };
 
   const menuCut = async () => {
+    // Read-only refuses outright: the clear would no-op, leaving a copy wearing the cut's name
+    // (the onCut DOM path already refuses, so the menu must agree with the keyboard).
+    if (source()?.readOnly) {
+      return;
+    }
     // The clipboard write awaits; a selection moved meanwhile must not be the one cleared —
     // that would delete cells that were never copied. The clear runs only on the cut's own range.
     const cutRange = source()?.range;

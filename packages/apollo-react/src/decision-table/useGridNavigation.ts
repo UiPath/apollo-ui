@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
-import type { CellCommitMove } from './gridTypes';
+import type { CellCommitMove, GridPosition, GridRange } from './gridTypes';
+
+export type { GridPosition, GridRange };
 
 /**
  * Structural mirrors of @tanstack/table-core v9's cell-selection shapes, declared locally so the
@@ -18,21 +20,9 @@ interface CellSelectionRange {
 type CellSelectionState = Array<CellSelectionRange>;
 type Updater<T> = T | ((old: T) => T);
 
-export interface GridPosition {
-  row: number;
-  /** 0 = annotation column, then inputs, then outputs. */
-  col: number;
-}
-
-/** A rectangular selection: where it started and where it currently reaches. */
-export interface GridRange {
-  anchor: GridPosition;
-  focus: GridPosition;
-}
-
 /**
  * The selection of a grid whose navigation a component does not own, handed over so the decision
- * table designer can read, restore and drop the tests grid's selection alongside its own.
+ * host can read, restore and drop a second grid's selection alongside its own.
  */
 export interface GridSelectionHandle {
   read: () => GridRange | null;
@@ -85,9 +75,9 @@ export interface GridNavigation {
   /** Moves the focus while the anchor holds — Shift+click and drag-selection. */
   extendTo: (position: GridPosition) => void;
   selectAll: () => void;
-  /** The whole rule: anchor at the annotation, focus on the last output. */
+  /** The whole row: anchor on the last column, focus on the first. */
   selectRow: (row: number) => void;
-  /** The whole clause, every rule. */
+  /** The whole column, every row. */
   selectColumn: (col: number) => void;
   /** Selects the position and opens its inline editor in one step (the double-click path). */
   startEditAt: (position: GridPosition) => void;
@@ -152,16 +142,15 @@ const ARROW_DELTAS: Record<string, GridPosition | undefined> = {
  * `cellSelectionFeature`.
  *
  * table-core owns the rectangle as `{anchorRowId, anchorColumnId, focusRowId, focusColumnId}`;
- * this hook is the seam that keeps the grid's own `{row, col}` vocabulary. Every consumer
- * (clipboard, history, formula bar, addressing) still speaks integer positions, because those
- * indices are what the DMN model arrays are addressed by and what serializes to the file.
+ * this hook is the seam that keeps the grid's own `{row, col}` vocabulary: every consumer
+ * (clipboard, history, the host's own addressing) speaks integer positions.
  *
- * Ids change the deletion semantics for the better: a rule id is unique and never reused, so a
- * position cannot be resurrected by the grid regrowing. Where the index-based predecessor clamped
- * a vanished row onto its neighbour, a vanished id now clears the selection — the user is not
- * silently re-pointed at a rule they never picked.
+ * Ids change the deletion semantics for the better: a row id is unique and never reused, so a
+ * position cannot be resurrected by the grid regrowing. Where an index-based selection clamped a
+ * vanished row onto its neighbour, a vanished id clears the selection instead — the user is not
+ * silently re-pointed at a row they never picked.
  *
- * `editing` stays React state: table-core has no concept of an inline editor, and the
+ * `editing` stays React state: a selection store has no concept of an inline editor, and the
  * commit-and-move semantics below are ours.
  */
 interface GridNavigationOptions {
@@ -273,7 +262,7 @@ export const useGridNavigation = (
   const focusRow = active ? rowIndexById.get(active.focusRowId) : undefined;
   const focusCol = active ? colIndexById.get(active.focusColumnId) : undefined;
   // Both ends must still resolve: half a rectangle is not a selection, and a stale anchor would
-  // make Shift+Arrow extend from a rule that is no longer in the table.
+  // make Shift+Arrow extend from a row that is no longer in the table.
   const range = useMemo<GridRange | null>(
     () =>
       anchorRow === undefined ||
@@ -338,7 +327,7 @@ export const useGridNavigation = (
   /**
    * Applied on the next commit rather than immediately. Undo runs before React re-renders, so the
    * id arrays still describe the pre-undo table at call time — translating a restored position
-   * against them would resolve a rule that is about to move, or none at all. The index-based
+   * against them would resolve a row that is about to move, or none at all. The index-based
    * predecessor stored the raw position and leaned on read-time clamping for the same reason;
    * with ids there is nothing to store until the ids exist, so the write waits instead.
    */

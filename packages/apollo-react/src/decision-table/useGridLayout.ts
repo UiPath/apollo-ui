@@ -40,11 +40,15 @@ interface GridLayoutOptions {
 /**
  * Flex indices whose column opens a group that asked for a separator before it. Index 0 is
  * excluded: a band at the very start has no boundary to mark, and its width would sit outside the
- * leading-edge measurement.
+ * leading-edge measurement. So is anything strictly inside the pinned region: only the windowed
+ * loops emit separators, so counting a pinned one would widen the table past the `<col>`s it
+ * renders. `pinnedCount` itself is the first windowed index, which does render.
+ *
+ * Exported for the layout test — the width total and the rendered columns read this one set.
  */
-const separatorFlexIndexes = (columns: GridColumn[]): Set<number> => {
+export const separatorFlexIndexes = (columns: GridColumn[], pinnedCount = 0): Set<number> => {
   const indexes = new Set<number>();
-  for (let index = 1; index < columns.length; index++) {
+  for (let index = Math.max(1, pinnedCount); index < columns.length; index++) {
     const group = columns[index]!.group;
     if (group?.separatorBefore && group.id !== columns[index - 1]!.group?.id) {
       indexes.add(index);
@@ -94,10 +98,10 @@ const resolveOmittedBorders = (
 export type GridLayout = ReturnType<typeof useGridLayout>;
 
 /**
- * INTERNAL to the grid — consumers get `Grid` and its imperative handle instead.
+ * INTERNAL to the grid — consumers get `DecisionTable` and its imperative handle instead.
  *
  * The grid's engine: column widths (auto-fit, drag/keyboard resize) and both virtualization
- * windows, exposed as one layout object `Grid` renders from and reads for geometry
+ * windows, exposed as one layout object `DecisionTable` renders from and reads for geometry
  * (drag-reorder targets, overlays, scroll-into-view).
  *
  * The first `pinnedColumnCount` columns stay mounted at every horizontal position; the remaining
@@ -123,7 +127,11 @@ export const useGridLayout = ({
     .map((column) => `${column.group?.id ?? ''}:${column.group?.separatorBefore ? '1' : ''}`)
     .join(',');
   // biome-ignore lint/correctness/useExhaustiveDependencies: separatorsKey is the separator layout by value
-  const separatorBefore = useMemo(() => separatorFlexIndexes(columns), [separatorsKey]);
+  const pinnedCount = Math.min(pinnedColumnCount, columns.length);
+  const separatorBefore = useMemo(
+    () => separatorFlexIndexes(columns, pinnedCount),
+    [separatorsKey, pinnedCount]
+  );
   const omittedBorders = useMemo(
     () => resolveOmittedBorders(columns, framedByHost),
     [columns, framedByHost]
@@ -148,7 +156,6 @@ export const useGridLayout = ({
     onWidthsChange: onColumnWidthsChange,
   });
 
-  const pinnedCount = Math.min(pinnedColumnCount, columns.length);
   const windowedCount = columns.length - pinnedCount;
 
   // The sticky header both occupies flow space above the rows and covers the top of the viewport,

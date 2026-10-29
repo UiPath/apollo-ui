@@ -90,8 +90,8 @@ export const parseTsv = (text: string): string[][] => {
 };
 
 /**
- * A copied block. Only cell text is *typed* today: MST-13501 puts pasting column *definitions*
- * (typeRef, allowed values) out of scope, so the marked html flavor exists to carry the block's
+ * A copied block. Only cell text is *typed* today — pasting column *definitions* is out of
+ * scope — so the marked html flavor exists to carry the block's
  * shape into Excel/Sheets and to identify our own content on the way back — the typed-clause
  * payload lands with the code that would consume it, not before.
  *

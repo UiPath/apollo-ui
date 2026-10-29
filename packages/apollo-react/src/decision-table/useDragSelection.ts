@@ -1,23 +1,27 @@
 import type React from 'react';
 import { useEffect, useRef } from 'react';
 import { isBlankContainerPress } from './gridEvents';
-
-interface CellPosition {
-  row: number;
-  col: number;
-}
+import type { GridPosition } from './gridTypes';
 
 interface DragSelectionOptions {
   editing: boolean;
   /** Whether this grid holds a selection a Shift-press can extend. */
   hasSelection: boolean;
   /** The cell an event landed on, or null for anything that is not a cell. */
-  cellAt: (element: Element) => CellPosition | null;
-  select: (position: CellPosition) => void;
-  extendTo: (position: CellPosition) => void;
+  cellAt: (element: Element) => GridPosition | null;
+  select: (position: GridPosition) => void;
+  extendTo: (position: GridPosition) => void;
   onEmptyAreaPress: () => void;
   /** After a press picked a cell; `extended` when Shift grew the range rather than replacing it. */
-  onCellPress?: (position: CellPosition, extended: boolean) => void;
+  onCellPress?: (position: GridPosition, extended: boolean) => void;
+}
+
+/** The container handlers a drag selection needs; spread onto the grid's `containerProps`. */
+export interface DragSelectionHandlers {
+  /** Reads the pressed container, so it needs the element type the grid attaches to. */
+  onPointerDown: (event: React.PointerEvent<HTMLElement>) => void;
+  /** Only reads the crossed cell, so any pointer target will do. */
+  onPointerOver: (event: React.PointerEvent) => void;
 }
 
 /** Spreadsheet drag selection for a grid container: press a cell to anchor, cross others to extend. */
@@ -29,7 +33,7 @@ export const useDragSelection = ({
   extendTo,
   onEmptyAreaPress,
   onCellPress,
-}: DragSelectionOptions) => {
+}: DragSelectionOptions): DragSelectionHandlers => {
   const draggingRef = useRef(false);
   useEffect(() => {
     const endDrag = () => {

@@ -1,5 +1,5 @@
 import { copyRangeMatrix, planRangeClear, planRangePaste } from './gridClipboard';
-import type { GridSelectionRange } from './gridTypes';
+import type { GridRange } from './gridTypes';
 
 /** A 3×4 grid reading "r{row}c{col}". Column 2 accepts no write; column 3 blanks to "-". */
 const fakeModel = (overrides: Partial<Parameters<typeof planRangePaste>[0]> = {}) => ({
@@ -11,7 +11,7 @@ const fakeModel = (overrides: Partial<Parameters<typeof planRangePaste>[0]> = {}
   ...overrides,
 });
 
-const range = (top: number, left: number, bottom: number, right: number): GridSelectionRange => ({
+const range = (top: number, left: number, bottom: number, right: number): GridRange => ({
   anchor: { row: top, col: left },
   focus: { row: bottom, col: right },
 });

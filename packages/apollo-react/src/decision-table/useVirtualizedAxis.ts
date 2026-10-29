@@ -234,8 +234,8 @@ export const useVirtualizedAxis = (
     },
     // A plain scroll listener with `isScrolling` pinned false. The default observer arms a 150ms
     // debounce per scroll event whose delayed notify is a state update outside any act()/event
-    // scope — a flake class under test setups that gate on stray console output (PO.Frontend's
-    // jest gate does) — and costs one extra notify per scroll burst. Nothing here consumes `isScrolling`.
+    // scope — a flake class under any test setup that gates on stray console output — and costs
+    // one extra notify per scroll burst. Nothing here consumes `isScrolling`.
     observeElementOffset: (instance, callback) => {
       const element = instance.scrollElement;
       if (!element) {

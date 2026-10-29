@@ -57,7 +57,8 @@ const useGridMenuItems = (entries: GridMenuEntry[], open: boolean, dataTestId: s
           <DropdownMenuSeparator key={`divider-${index}`} />
         ) : (
           <DropdownMenuItem
-            key={entry.label}
+            // Position, not label: two entries may legitimately share a caption.
+            key={`item-${index}`}
             disabled={entry.disabled}
             className={cn(
               'flex-col items-start gap-0.5',
@@ -123,10 +124,10 @@ interface GridContextMenuState {
   anchor: { x: number; y: number };
 }
 
-interface GridContextMenuProps {
+export interface GridContextMenuProps {
   label: string;
-  /** Prefix for the menu's data-testids. Defaults to the id the DMN decision table established. */
-  dataTestId?: string;
+  /** Prefix for the menu's data-testids; the derived ids keep it. */
+  dataTestId: string;
   /** Open state is the grid's — one menu at a time, keyed by whatever target it resolved. */
   state: GridContextMenuState | null;
   entries: () => GridMenuEntry[];
@@ -135,15 +136,15 @@ interface GridContextMenuProps {
 
 /**
  * Controlled, pointer-anchored menu for right-click / Shift+F10. The grid owns the open state
- * and target resolution (one delegated handler, no per-cell menu components — the row memoization
- * contract in DecisionTableSelectionCost depends on that); this only renders.
+ * and target resolution (one delegated handler, not a menu component per cell, so a mounted row
+ * never re-renders for it); this only renders.
  *
  * A zero-size element at the pointer point stands in for a trigger, because the menu positions
  * against an element and the grid has only coordinates.
  */
 export const GridContextMenu: React.FC<GridContextMenuProps> = ({
   label,
-  dataTestId = 'dmn-decision-table',
+  dataTestId,
   state,
   entries,
   onClose,

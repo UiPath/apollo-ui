@@ -331,6 +331,7 @@ const DemoGrid = ({ resizable = true }: { resizable?: boolean }) => {
       />
       <GridContextMenu
         label="Column menu"
+        dataTestId="demo-grid"
         state={menu}
         entries={menuEntries}
         onClose={() => setMenu(null)}
