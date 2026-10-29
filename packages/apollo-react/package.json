@@ -309,7 +309,7 @@
     "dockview-react": "5.2.0",
     "esbuild": "^0.28.1",
     "glob": "^13.0.0",
-    "happy-dom": "^20.0.0",
+    "happy-dom": "^21.0.4",
     "jest-axe": "^10.0.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",

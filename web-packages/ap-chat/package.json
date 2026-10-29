@@ -69,7 +69,7 @@
     "@types/react-dom": "^19.2.2",
     "@vitest/coverage-v8": "^4.1.5",
     "@vitest/ui": "^4.1.5",
-    "happy-dom": "^20.0.0",
+    "happy-dom": "^21.0.4",
     "source-map-explorer": "^2.5.3",
     "typescript": "^5.9.3",
     "vitest": "^4.1.11",
