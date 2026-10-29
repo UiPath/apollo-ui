@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.11.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.11.2...@uipath/apollo-react@7.11.3) (2026-10-29)
+
+### Bug Fixes
+
+* **apollo-react:** fall back to English for untranslated strings and repair canvas plurals ([e62a170](https://github.com/UiPath/apollo-ui/commit/e62a1708643779788422c214190e4df0e92b9fe5))
+
 ## [@uipath/apollo-react-v7.11.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.11.1...@uipath/apollo-react@7.11.2) (2026-10-28)
 
 ### Bug Fixes
