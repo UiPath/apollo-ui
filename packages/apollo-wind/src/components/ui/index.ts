@@ -68,6 +68,7 @@ export * from './radio-group';
 export { ReferenceChip, type ReferenceChipProps } from './reference-chip';
 export { getReferenceChipColors } from './reference-chip-colors';
 export * from './resizable';
+export * from './resource-picker';
 export * from './scroll-area';
 export * from './search';
 export * from './select';
