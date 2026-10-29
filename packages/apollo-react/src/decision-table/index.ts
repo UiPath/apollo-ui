@@ -5,14 +5,19 @@
 
 export type { SizedColumn } from './columnSizing';
 export { BODY_ROW_HEIGHT_PX, EMPTY_VALUE_DASH, ROW_NUMBER_WIDTH } from './constants';
-export { DecisionTable, type HeaderCellContext } from './DecisionTable';
+export { DecisionTable, type DecisionTableProps, type HeaderCellContext } from './DecisionTable';
 export {
   GridCell,
   type GridCellEditorContext,
   type GridCellProps,
   renderRestingCellContent,
 } from './GridCell';
-export { GridContextMenu, type GridMenuEntry, type GridMenuItem } from './GridMenu';
+export {
+  GridContextMenu,
+  type GridContextMenuProps,
+  type GridMenuEntry,
+  type GridMenuItem,
+} from './GridMenu';
 export {
   commitMoveFor,
   emptyAreaPressHandler,
@@ -50,7 +55,7 @@ export {
 export * from './gridTypes';
 export { MarkGlyph } from './MarkGlyph';
 export { EMPTY_MARKS, type Mark, type MarkTone, type RowMark, type TableMarks } from './marks';
-export { useDragSelection } from './useDragSelection';
+export { type DragSelectionHandlers, useDragSelection } from './useDragSelection';
 export {
   type EditGesture,
   type GridNavigation,
