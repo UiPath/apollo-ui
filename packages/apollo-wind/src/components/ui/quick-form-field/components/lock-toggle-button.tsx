@@ -1,4 +1,5 @@
-import { LockKeyhole, LockKeyholeOpen } from 'lucide-react';
+import { Lock } from '@/components/icons/Lock';
+import { Unlock } from '@/components/icons/Unlock';
 import { FIELD_ADDON_BUTTON_CLASS } from '@/components/ui/field-addons/field-addon-button';
 import { InputGroupButton } from '@/components/ui/input-group';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -41,7 +42,7 @@ export function LockToggleButton({
                   : strings.unlockedLabel
             }
           >
-            {locked ? <LockKeyhole size={16} /> : <LockKeyholeOpen size={16} />}
+            {locked ? <Lock /> : <Unlock />}
           </InputGroupButton>
         </TooltipTrigger>
         <TooltipContent>{locked ? strings.lockedLabel : strings.unlockedLabel}</TooltipContent>
