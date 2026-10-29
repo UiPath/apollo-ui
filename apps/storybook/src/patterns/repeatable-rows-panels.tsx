@@ -5,6 +5,7 @@ import { FormField, FormFieldHeader, FormFieldLabel } from '@/components/ui/form
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { AddRowButton, EmptyRows, RowDeleteButton, useRowFocus } from '@/components/ui/row-groups';
 import {
   Select,
   SelectContent,
@@ -15,20 +16,16 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { NodePropertyPanel } from '../../../../packages/apollo-react/src/canvas/components/NodePropertyPanel';
 import {
-  AddRowButton,
   ConditionEditor,
   type ConditionGroup,
   condition,
-  EmptyRows,
   group,
   KeyValueList,
   newId,
   RepeatableCard,
-  RowDeleteButton,
   RowDragHandle,
   RowGroup,
   uniqueName,
-  useRowFocus,
   type VariableOption,
 } from './repeatable-row-primitives';
 

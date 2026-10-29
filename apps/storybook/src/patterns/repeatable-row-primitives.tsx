@@ -1,12 +1,4 @@
-import {
-  ArrowDown,
-  ArrowUp,
-  ChevronDown,
-  GripVertical,
-  MoreVertical,
-  Plus,
-  Trash2,
-} from 'lucide-react';
+import { ArrowDown, ArrowUp, ChevronDown, GripVertical, MoreVertical, Trash2 } from 'lucide-react';
 import * as React from 'react';
 import {
   AlertDialog,
@@ -43,13 +35,20 @@ import { Input } from '@/components/ui/input';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { MultiSelect } from '@/components/ui/multi-select';
 import {
+  AddRowButton,
+  EmptyRows,
+  GroupModeToggle,
+  MATCH_MODES,
+  RowDeleteButton,
+  useRowFocus,
+} from '@/components/ui/row-groups';
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import type { VariablePickerItem } from '@/components/ui/variable-picker';
 import { VariableValueControl } from '@/components/ui/variable-value-control';
 import { cn } from '@/lib';
@@ -63,7 +62,8 @@ import { cn } from '@/lib';
  * from any package: don't import them into product code or other stories. Each is a
  * candidate shared component (see the page's "Moving to shared components" section). When
  * apollo-wind ships the real one, replace the prototype here with it so the page documents
- * what is actually delivered rather than drifting from it.
+ * what is actually delivered rather than drifting from it. The row actions, empty state, group
+ * mode switch, and focus hook already come from apollo-wind's `row-groups`.
  */
 
 export type VariableOption = { label: string; value: string };
@@ -74,49 +74,6 @@ export const DEFAULT_VARIABLES: VariableOption[] = [
   { label: 'invoiceTotal', value: '$vars.invoiceTotal' },
 ];
 
-// ── Focus ───────────────────────────────────────────────────────────────────
-
-/**
- * Moves focus after a list changes. After an add, focus lands on the new item's
- * `[data-row-first]` control. After a delete, it lands on the delete action of the item
- * now at the same position, or on the add action when the list is empty. Items are the
- * `[data-row]` direct children of `listRef`.
- */
-export function useRowFocus() {
-  const listRef = React.useRef<HTMLDivElement>(null);
-  const addRef = React.useRef<HTMLButtonElement>(null);
-  const pending = React.useRef<{ kind: 'add' } | { kind: 'delete'; position: number } | null>(null);
-
-  React.useEffect(() => {
-    const next = pending.current;
-    const list = listRef.current;
-    if (!next || !list) return;
-    pending.current = null;
-    const rows = Array.from(list.querySelectorAll<HTMLElement>(':scope > [data-row]'));
-    if (next.kind === 'add') {
-      const row = rows.at(-1);
-      (
-        row?.querySelector<HTMLElement>('[data-row-first]') ??
-        row?.querySelector<HTMLElement>('button, input, textarea')
-      )?.focus();
-      return;
-    }
-    const target = rows[Math.min(next.position, rows.length - 1)];
-    (target?.querySelector<HTMLElement>('[data-row-delete]') ?? addRef.current)?.focus();
-  });
-
-  return {
-    listRef,
-    addRef,
-    afterAdd: () => {
-      pending.current = { kind: 'add' };
-    },
-    afterDelete: (position: number) => {
-      pending.current = { kind: 'delete', position };
-    },
-  };
-}
-
 /** Blur that leaves the row, ignoring focus moving into a picker the row opened. */
 function leftRow(event: React.FocusEvent<HTMLElement>) {
   const next = event.relatedTarget as HTMLElement | null;
@@ -125,47 +82,7 @@ function leftRow(event: React.FocusEvent<HTMLElement>) {
   return true;
 }
 
-// ── Row actions ─────────────────────────────────────────────────────────────
-
-/**
- * Row delete action. Mirrors the Quick form field delete in NodePropertyPanel: muted at
- * rest, neutral on hover, never red. Red is reserved for destructive menu items and
- * confirmation dialogs. Always visible by default; `revealOnHover` is for dense lists
- * only and needs a `group` ancestor.
- */
-export function RowDeleteButton({
-  label,
-  onClick,
-  revealOnHover = false,
-  className,
-}: {
-  /** Accessible name that says which row goes, e.g. "Remove condition 2". */
-  label: string;
-  onClick?: () => void;
-  revealOnHover?: boolean;
-  className?: string;
-}) {
-  return (
-    <Button
-      type="button"
-      variant="ghost"
-      size="xs"
-      icon
-      aria-label={label}
-      title={label}
-      onClick={onClick}
-      data-row-delete=""
-      className={cn(
-        'shrink-0 text-muted-foreground hover:text-foreground',
-        revealOnHover &&
-          'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100',
-        className
-      )}
-    >
-      <Trash2 />
-    </Button>
-  );
-}
+// ── Row actions ──────────────────────────────────────────────────────────────
 
 /**
  * Leading reorder handle. Only for lists where order changes the result. Activating it
@@ -204,55 +121,6 @@ export function RowDragHandle({
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}
-
-/** "+ Add …" text action. Sits bottom-left, directly under the last row. */
-export const AddRowButton = React.forwardRef<
-  HTMLButtonElement,
-  { children: React.ReactNode; onClick?: () => void; disabled?: boolean }
->(function AddRowButton({ children, onClick, disabled }, ref) {
-  return (
-    <Button ref={ref} type="button" variant="text" size="2xs" onClick={onClick} disabled={disabled}>
-      <Plus />
-      {children}
-    </Button>
-  );
-});
-
-/** Group-level "All (AND) / Any (OR)" switch. One per group, above its rows. */
-export function MatchModeToggle({
-  value,
-  onChange,
-  label = 'Match mode',
-}: {
-  value: 'all' | 'any';
-  onChange?: (value: 'all' | 'any') => void;
-  label?: string;
-}) {
-  return (
-    <ToggleGroup
-      type="single"
-      variant="outline"
-      size="xs"
-      aria-label={label}
-      value={value}
-      onValueChange={(next) => {
-        if (next === 'all' || next === 'any') onChange?.(next);
-      }}
-    >
-      <ToggleGroupItem value="all" className="h-7 rounded-lg rounded-r-none px-2.5">
-        All (AND)
-      </ToggleGroupItem>
-      <ToggleGroupItem value="any" className="-ml-px h-7 rounded-lg rounded-l-none px-2.5">
-        Any (OR)
-      </ToggleGroupItem>
-    </ToggleGroup>
-  );
-}
-
-/** Centred empty-state line shown when the last item has been removed. */
-export function EmptyRows({ children }: { children: React.ReactNode }) {
-  return <p className="py-2 text-center text-xs italic text-muted-foreground">{children}</p>;
 }
 
 // ── Condition model ─────────────────────────────────────────────────────────
@@ -1052,10 +920,11 @@ function GroupBody({
     >
       {(nested || matchMode) && (
         <div className="flex items-center gap-2">
-          <MatchModeToggle
+          <GroupModeToggle
+            modes={MATCH_MODES}
             value={node.mode}
-            label={`${groupLabel} match mode`}
-            onChange={(mode) =>
+            strings={{ label: `${groupLabel} match mode` }}
+            onValueChange={(mode) =>
               onRootChange(
                 updateNode(root, node.id, (current) => ({ ...(current as ConditionGroup), mode }))
               )
