@@ -1083,6 +1083,10 @@ export type {
 } from './components/ui/variable-value-control';
 export { VariableValueControl } from './components/ui/variable-value-control';
 // -----------------------------------------------------------------------------
+// Foundation
+// -----------------------------------------------------------------------------
+export type { Theme } from './foundation/Future/types';
+// -----------------------------------------------------------------------------
 // Utilities
 // -----------------------------------------------------------------------------
 export { cn } from './lib/utils';
