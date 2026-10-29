@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.80.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.80.0...@uipath/apollo-wind@2.80.1) (2026-10-29)
+
+### Bug Fixes
+
+* **apollo-wind:** match the QuickFormField addon buttons ([48118a2](https://github.com/UiPath/apollo-ui/commit/48118a2e6306eafdfd51835849052d5374abd7c6))
+
 ## [@uipath/apollo-wind-v2.80.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.79.2...@uipath/apollo-wind@2.80.0) (2026-10-28)
 
 ### Features
