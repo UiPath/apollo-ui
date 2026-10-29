@@ -7,7 +7,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!**/node_modules", "!**/dist", "!**/src/icons"]
+    "includes": ["**", "!**/node_modules", "!**/dist"]
   },
   "formatter": {
     "enabled": true,

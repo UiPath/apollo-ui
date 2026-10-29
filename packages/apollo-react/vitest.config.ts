@@ -38,7 +38,6 @@ export default defineConfig({
         'src/**/*.spec.{ts,tsx}',
         'src/**/index.ts',
         'src/test/**',
-        'src/icons/**',
       ],
     },
   },

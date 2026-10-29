@@ -237,8 +237,8 @@ This approach allows you to integrate Apollo design tokens into existing Materia
 
 ## Icons
 
-Access to 1300+ Apollo icons as React components, generated from
-[`@uipath/apollo-ui-icons`](../apollo-ui-icons):
+Access to 1300+ Apollo icons as React components, re-exported from
+[`@uipath/apollo-ui-icons-react`](../apollo-ui-icons-react):
 
 ```typescript
 import {
@@ -364,12 +364,12 @@ apollo-react/
 │   │   ├── stores/          # Zustand state stores
 │   │   ├── xyflow/          # XYFlow re-exports
 │   │   └── styles/          # Canvas styles
-│   ├── icons/               # Icon React components
+│   ├── icons/               # Re-exports @uipath/apollo-ui-icons-react
 │   ├── core/                # Re-exported apollo-core
 │   ├── i18n/               # Internationalization
 │   └── types/              # TypeScript types
 ├── scripts/
-│   └── icons-build.ts      # Icon generation
+│   └── icons-reexport.ts   # Per-icon subpath re-exports
 └── dist/                   # Built output
     ├── material/           # Material UI exports
     ├── canvas/            # Canvas exports
