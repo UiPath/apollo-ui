@@ -21,6 +21,8 @@ the Repeatable Rows guidance page for where each one goes.
 - **RowDeleteButton** removes one item. Name it for its row, such as "Remove condition 2".
 - **AddRowButton** adds an item. Name the item, such as "Add condition".
 - **EmptyRows** replaces the items once the last one is removed, and says what happens with none.
+- **CollapsibleRowGroup** is a bordered group whose header collapses its items. The header counts
+  them, and can show a reading of them while collapsed. Its message stays visible either way.
 - **GroupModeToggle** switches a group's mode, from two or three short options. \`MATCH_MODES\`
   gives a condition group's All (AND) / Any (OR).
 - **useRowFocus** moves focus after an add or a delete. Put \`listRef\` on the element whose direct
