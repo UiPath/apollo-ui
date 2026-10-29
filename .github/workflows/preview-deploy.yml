@@ -159,8 +159,16 @@ jobs:
           fi
 
           if [ "$command_exit" -ne 0 ]; then
-            echo "::error::uip-go ${APP_LABEL} failed."
-            exit "$command_exit"
+            # A cancelled earlier run, or uip-go's own upload-then-register step,
+            # can leave this exact package version in Orchestrator. The preview
+            # is already published, so republishing the same version is success.
+            if grep -q "already exists" "$output_file"; then
+              echo "Package version ${version} is already published."
+              command_exit=0
+            else
+              echo "::error::uip-go ${APP_LABEL} failed."
+              exit "$command_exit"
+            fi
           fi
 
       - name: Save Turborepo cache
