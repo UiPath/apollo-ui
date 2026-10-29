@@ -1,3 +1,10 @@
+## [@uipath/apollo-react-v7.11.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.11.3...@uipath/apollo-react@7.11.4) (2026-10-29)
+
+### Bug Fixes
+
+* **apollo-react:** replace ICU plurals in canvas counts with count-neutral labels ([e94746b](https://github.com/UiPath/apollo-ui/commit/e94746b947d0189d1645de46d6c63b115e6b3376))
+* **apollo-react:** replace ICU plurals in Wind chat JSON counts with count-neutral labels ([c00c799](https://github.com/UiPath/apollo-ui/commit/c00c799aef77c77496cd12a487887a9cf1512b3f))
+
 ## [@uipath/apollo-react-v7.11.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.11.2...@uipath/apollo-react@7.11.3) (2026-10-29)
 
 ### Bug Fixes
