@@ -580,6 +580,9 @@ importers:
       '@uipath/apollo-ui-icons':
         specifier: workspace:*
         version: link:../apollo-ui-icons
+      '@uipath/apollo-ui-icons-react':
+        specifier: workspace:*
+        version: link:../apollo-ui-icons-react
       '@uipath/apollo-wind':
         specifier: workspace:*
         version: link:../apollo-wind

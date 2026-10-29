@@ -63,7 +63,6 @@ export default defineConfig({
         // so there is nothing to gain from publishing them.
         '!./src/**/__fixtures__/**',
         '!./src/test/**',
-        '!./src/icons/.cache',
         '!./src/**/*.md',
         '!./src/**/locales/*.json',
         '!./src/**/.DS_Store',
