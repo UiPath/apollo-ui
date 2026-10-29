@@ -336,6 +336,15 @@ export type { DatePickerProps, DateRangePickerProps } from './components/ui/date
 export { DatePicker, DateRangePicker } from './components/ui/date-picker';
 export type { DateTimePickerProps } from './components/ui/datetime-picker';
 export { DateTimePicker } from './components/ui/datetime-picker';
+export type { DatePickerStrings, LocaleProviderProps } from './components/ui/locale-provider';
+export {
+  DEFAULT_DATE_PICKER_STRINGS,
+  LocaleProvider,
+  useDateLocale,
+  useDatePickerStrings,
+} from './components/ui/locale-provider';
+export type { DateLocale } from './lib/date-locale';
+export { loadDateLocale } from './lib/date-locale';
 // -----------------------------------------------------------------------------
 // Feedback & Overlay Components
 // -----------------------------------------------------------------------------

@@ -358,7 +358,7 @@ describe('DateRangePicker in an input group', () => {
         />
       </InputGroup>
     );
-    expect(screen.getByText('Jan 05, 2026 - Jan 09, 2026')).toBeInTheDocument();
+    expect(screen.getByText('Jan 5, 2026 - Jan 9, 2026')).toBeInTheDocument();
   });
 });
 

@@ -8,6 +8,12 @@ const meta = {
   component: DateTimePicker,
   parameters: {
     layout: 'centered',
+    docs: {
+      description: {
+        component:
+          "Switch the Locale toolbar to see the pickers in another language. Storybook passes the language and sample translations of the pickers' text to `LocaleProvider`, as an app does at its root with its own translations.",
+      },
+    },
   },
   tags: ['autodocs'],
 } satisfies Meta<typeof DateTimePicker>;

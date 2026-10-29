@@ -47,6 +47,7 @@ export * from './label';
 export * from './layout';
 export * from './live-region';
 export * from './loading-dots';
+export * from './locale-provider';
 export * from './lockable-value-field';
 export * from './markdown';
 export * from './marker';

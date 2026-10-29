@@ -2,8 +2,28 @@ import type { Preview } from '@storybook/react-vite';
 import React, { useEffect } from 'react';
 import '@uipath/apollo-core/fonts/font.css';
 import '../src/styles/tailwind.css';
+import { LocaleProvider } from '../src/components/ui/locale-provider';
+import { SAMPLE_DATE_PICKER_STRINGS } from './sample-date-picker-strings';
 
 const isDev = import.meta.env.MODE !== 'production';
+
+// The platform languages, as the root Storybook's locale toolbar lists them.
+const LOCALES = [
+  { value: 'en', title: 'English' },
+  { value: 'es', title: 'Español' },
+  { value: 'pt', title: 'Português' },
+  { value: 'de', title: 'Deutsch' },
+  { value: 'fr', title: 'Français' },
+  { value: 'ja', title: '日本語' },
+  { value: 'ko', title: '한국어' },
+  { value: 'ru', title: 'Русский' },
+  { value: 'tr', title: 'Türkçe' },
+  { value: 'zh-CN', title: '中文 (简体)' },
+  { value: 'zh-TW', title: '中文 (繁體)' },
+  { value: 'pt-BR', title: 'Português (Brasil)' },
+  { value: 'es-MX', title: 'Español (México)' },
+  { value: 'ro', title: 'Română' },
+];
 
 // The react-scan devtools hook is installed via previewBody in main.ts
 // (must happen before React initializes). Here we configure the overlay/canvas
@@ -53,6 +73,7 @@ const preview: Preview = {
   initialGlobals: {
     theme: 'future-dark',
     reactScan: 'off',
+    locale: 'en',
   },
   parameters: {
     backgrounds: { disable: true },
@@ -135,6 +156,16 @@ const preview: Preview = {
         dynamicTitle: true,
       },
     },
+    // The date and time pickers follow it through LocaleProvider.
+    locale: {
+      description: 'Locale for LocaleProvider',
+      toolbar: {
+        title: 'Locale',
+        icon: 'globe',
+        items: LOCALES,
+        dynamicTitle: true,
+      },
+    },
     ...(isDev && {
       reactScan: {
         description: 'Toggle React Scan rendering highlights',
@@ -154,6 +185,7 @@ const preview: Preview = {
     (Story, context) => {
       const reactScanEnabled = context.globals.reactScan === 'on';
       const theme: string = context.globals.theme ?? 'future-dark';
+      const locale: string = context.globals.locale ?? 'en';
 
       // Apollo-core themes use body.light / body.dark class selectors (from
       // @uipath/apollo-core/tokens/css/theme-variables.css). Future and Demo
@@ -201,9 +233,11 @@ const preview: Preview = {
       const isFullscreen = context.parameters?.layout === 'fullscreen';
 
       return (
-        <div className={isFullscreen ? 'h-screen' : 'p-1'}>
-          <Story />
-        </div>
+        <LocaleProvider locale={locale} datePickerStrings={SAMPLE_DATE_PICKER_STRINGS[locale]}>
+          <div className={isFullscreen ? 'h-screen' : 'p-1'}>
+            <Story />
+          </div>
+        </LocaleProvider>
       );
     },
   ],

@@ -841,14 +841,19 @@ describe('InputGroup', () => {
       const user = userEvent.setup();
       render(
         <InputGroup error="Pick a time">
-          <DateTimePicker />
+          <Popover>
+            <InputGroupPopoverTrigger>Open</InputGroupPopoverTrigger>
+            <PopoverContent>
+              <Input aria-label="In popover" />
+            </PopoverContent>
+          </Popover>
         </InputGroup>
       );
 
       await user.click(screen.getByRole('button'));
-      const time = document.querySelector('input[type="time"]');
-      expect(time).toHaveAttribute('data-slot', 'input');
-      expect(time).not.toHaveAttribute('aria-invalid');
+      const input = screen.getByRole('textbox', { name: 'In popover' });
+      expect(input).toHaveAttribute('data-slot', 'input');
+      expect(input).not.toHaveAttribute('aria-invalid');
     });
 
     it('holds standard fields in a grouped Select’s and dropdown menu’s panels too', () => {
