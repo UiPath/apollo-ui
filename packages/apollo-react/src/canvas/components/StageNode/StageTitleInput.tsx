@@ -63,7 +63,13 @@ export const StageTitleInput = ({
 
   return (
     <div
-      className={cn('py-0.5 text-sm', !isEditing && 'font-bold', className)}
+      className={cn(
+        // Set the colour here rather than inherit it: a host's body colour can differ from the
+        // canvas foreground the stage's task rows use (VS Code webviews set their own).
+        'py-0.5 text-sm text-[var(--canvas-foreground)]',
+        !isEditing && 'font-bold',
+        className
+      )}
       data-testid={`stage-title-input-${stageId}`}
     >
       <CanvasTooltip content={label} placement="top" hide={isEditing} delay>
