@@ -1,5 +1,4 @@
 import { type LucideIcon, MoreHorizontal, Type } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,12 +6,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { InputGroupButton } from '@/components/ui/input-group';
 import { cn } from '@/lib';
 import {
   builtInValueModes,
   isBuiltInValueMode,
   type ValueModeOption,
 } from './built-in-value-modes';
+import { FIELD_ADDON_BUTTON_CLASS } from './field-addon-button';
 import {
   DEFAULT_VALUE_MODE_STRINGS,
   type ValueMode,
@@ -176,17 +177,14 @@ export function FieldMenu<Id extends string = ValueMode>({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          type="button"
-          variant="ghost"
+        <InputGroupButton
           size="3xs"
           disabled={disabled}
           aria-label={triggerLabel}
-          // The square icon button an `InputGroupAddon` expects.
-          className="size-6 shrink-0 rounded-md p-0 text-muted-foreground hover:bg-accent hover:text-foreground [&_svg]:size-3.5"
+          className={FIELD_ADDON_BUTTON_CLASS}
         >
           <TriggerIcon />
-        </Button>
+        </InputGroupButton>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-56" onCloseAutoFocus={onCloseAutoFocus}>

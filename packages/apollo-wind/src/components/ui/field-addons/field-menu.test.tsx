@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Sparkles, Type, Variable } from 'lucide-react';
 import { describe, expect, it, vi } from 'vitest';
+import { InputGroup, InputGroupAddon } from '@/components/ui/input-group';
 import { FieldMenu } from './field-menu';
 
 const open = async (name = 'Fixed value') => {
@@ -126,6 +127,17 @@ describe('FieldMenu', () => {
       expect(trigger).not.toHaveClass('border-l');
       expect(trigger).not.toHaveClass('self-stretch');
     });
+  });
+
+  it('disables the trigger with its InputGroup', () => {
+    render(
+      <InputGroup disabled>
+        <InputGroupAddon align="inline-end">
+          <FieldMenu mode="literal" onSelect={vi.fn()} />
+        </InputGroupAddon>
+      </InputGroup>
+    );
+    expect(screen.getByRole('button', { name: 'Fixed value' })).toBeDisabled();
   });
 
   describe('custom modes (data-driven)', () => {
