@@ -53,7 +53,7 @@ import {
   removeNode,
   updateNode,
 } from './model';
-import { describeGroup, hasShownProblems } from './status';
+import { defaultValueModes, describeGroup, hasShownProblems } from './status';
 import { type ConditionsEditorStrings, DEFAULT_CONDITIONS_EDITOR_STRINGS } from './strings';
 import {
   type ConditionField,
@@ -110,9 +110,6 @@ export interface ConditionsEditorProps {
   /** Overrides for the options control of an operator that takes several. */
   multiSelectStrings?: Partial<MultiSelectStrings>;
 }
-
-const MODES_WITH_VARIABLES: readonly ConditionValueMode[] = ['literal', 'expression', 'variable'];
-const MODES: readonly ConditionValueMode[] = ['literal', 'expression'];
 
 /**
  * Edits a tree of conditions: flat lists, nested groups, collapsible filters, and a rule's
@@ -180,7 +177,7 @@ export function ConditionsEditor({
     () => ({ ...DEFAULT_CONDITIONS_EDITOR_STRINGS, ...strings }),
     [strings]
   );
-  const modes = valueModes ?? (variables ? MODES_WITH_VARIABLES : MODES);
+  const modes = valueModes ?? defaultValueModes(variables);
   const editor = React.useMemo<ConditionsEditorContextValue>(
     () => ({
       fields,

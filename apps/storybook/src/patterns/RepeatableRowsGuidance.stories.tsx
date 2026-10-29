@@ -12,6 +12,7 @@ import {
 import { FormField, FormFieldHeader, FormFieldLabel } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { AddRowButton, EmptyRows, RowDeleteButton, useRowFocus } from '@/components/ui/row-groups';
+import { createRule } from '@/components/ui/rules-editor';
 import { Textarea } from '@/components/ui/textarea';
 import { FullWorkbenchComposition } from '../../../../packages/apollo-react/src/canvas/stories/templates/Flow.stories';
 import { withCanvasProviders } from '../../../../packages/apollo-react/src/canvas/storybook-utils';
@@ -38,9 +39,9 @@ import {
 } from './repeatable-row-primitives';
 import {
   EntityFilterPanel,
+  FieldRules,
   FormRulesPanel,
   HttpRequestPanel,
-  RuleList,
 } from './repeatable-rows-panels';
 
 const meta = {
@@ -109,14 +110,15 @@ function ConditionGroupExample({ showSummary = true }: { showSummary?: boolean }
 
 function RuleExample() {
   return (
-    <RuleList
-      initialRules={[
-        {
+    <FieldRules
+      label="Rules"
+      initial={() => [
+        createRule({
           outcome: 'show',
           conditions: createConditionGroup('all', [
             createCondition({ field: 'amount', operator: 'greaterThan', value: '1000' }),
           ]),
-        },
+        }),
       ]}
     />
   );
@@ -883,8 +885,9 @@ function RepeatableRowsGuidancePage({ globalTheme }: { globalTheme: string }) {
             <InlineCode>AddRowButton</InlineCode>, <InlineCode>EmptyRows</InlineCode>,{' '}
             <InlineCode>GroupModeToggle</InlineCode>, <InlineCode>CollapsibleRowGroup</InlineCode>,
             the <InlineCode>useRowFocus</InlineCode> hook, and{' '}
-            <InlineCode>ConditionsEditor</InlineCode> with its type-aware rows. Every example on
-            this page already uses them.
+            <InlineCode>ConditionsEditor</InlineCode> with its type-aware rows, and{' '}
+            <InlineCode>RulesEditor</InlineCode>, whose rules switch between conditions and a
+            written expression. Every example on this page already uses them.
           </GuidanceItem>
           <GuidanceItem>
             Still candidates: <InlineCode>RowDragHandle</InlineCode> and a key-value list.

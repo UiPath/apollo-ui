@@ -7,16 +7,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  FormField,
-  FormFieldError,
-  FormFieldHeader,
-  FormFieldLabel,
-} from '@/components/ui/form-field';
+import { FormField, FormFieldHeader, FormFieldLabel } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { AddRowButton, EmptyRows, RowDeleteButton, useRowFocus } from '@/components/ui/row-groups';
 import type { VariablePickerItem } from '@/components/ui/variable-picker';
-import { cn } from '@/lib';
 
 /**
  * Building blocks for the Repeatable Rows guidance page. Every layout on that page is
@@ -133,43 +127,6 @@ export function uniqueName(prefix: string, taken: string[]) {
 }
 
 // ── Containers ──────────────────────────────────────────────────────────────
-
-/** Bordered container for a group of items: a header slot, the items, and a footer slot. */
-export function RowGroup({
-  header,
-  footer,
-  nested = false,
-  error,
-  children,
-  rowProps,
-}: {
-  header?: React.ReactNode;
-  footer?: React.ReactNode;
-  nested?: boolean;
-  /** Group-level summary, rendered below the container. */
-  error?: string;
-  children: React.ReactNode;
-  /** Marks the container as an item of a parent list, e.g. one rule in a list of rules. */
-  rowProps?: boolean;
-}) {
-  return (
-    <div data-row={rowProps ? '' : undefined} className="flex flex-col">
-      <div
-        className={cn(
-          'flex flex-col gap-3',
-          // Nested groups indent with a rule instead of a second box, so rows keep their width.
-          nested ? 'border-l-2 border-border pl-3' : 'rounded-lg border border-border bg-card p-3',
-          error && 'border-error'
-        )}
-      >
-        {header}
-        {children}
-        {footer && <div className="flex flex-wrap items-center gap-4">{footer}</div>}
-      </div>
-      {error && <FormFieldError>{error}</FormFieldError>}
-    </div>
-  );
-}
 
 /** Repeatable card: a title (text or an editable name) with delete in the header. */
 export function RepeatableCard({
