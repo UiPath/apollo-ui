@@ -1,7 +1,7 @@
 "use client";
 
 import type { LucideIcon } from "lucide-react";
-import type { FC, PropsWithChildren } from "react";
+import type { FC, PropsWithChildren, ReactNode } from "react";
 import { useContext } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AuthContext, useAuth } from "./shell-auth-provider";
@@ -48,6 +48,12 @@ export interface ApolloShellProps extends PropsWithChildren {
   companyLogo?: CompanyLogo;
   navItems: ShellNavItem[];
   loginDescription?: string;
+  /**
+   * Rendered instead of the shell while an auth provider reports the user as
+   * signed out. Defaults to the "Sign in with UiPath" screen. Apps whose
+   * provider signs in by redirecting can render an element that does that.
+   */
+  unauthenticatedElement?: ReactNode;
   configureI18n?: () => Promise<void>;
 }
 
@@ -59,16 +65,21 @@ const ApolloShellContent: FC<ApolloShellProps> = ({
   variant,
   navItems,
   loginDescription,
+  unauthenticatedElement,
 }) => {
   const authContext = useContext(AuthContext);
-  const { accessToken, isLoading } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
 
   if (authContext && isLoading) {
     return <ShellLoadingSkeleton />;
   }
 
-  if (authContext && !accessToken) {
-    return <ShellLogin title={productName} description={loginDescription} />;
+  if (authContext && !isAuthenticated) {
+    return (
+      unauthenticatedElement ?? (
+        <ShellLogin title={productName} description={loginDescription} />
+      )
+    );
   }
 
   return (
@@ -94,6 +105,7 @@ export const ApolloShell: FC<ApolloShellProps> = ({
   variant,
   navItems,
   loginDescription,
+  unauthenticatedElement,
   configureI18n,
 }) => {
   return (
@@ -108,6 +120,7 @@ export const ApolloShell: FC<ApolloShellProps> = ({
         variant={variant}
         navItems={navItems}
         loginDescription={loginDescription}
+        unauthenticatedElement={unauthenticatedElement}
       >
         {children}
       </ApolloShellContent>

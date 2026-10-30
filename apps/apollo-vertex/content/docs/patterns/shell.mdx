@@ -69,6 +69,8 @@ const projects = {
 
 Labels are translation keys. A key in the app's default catalog is used first, including keys that are not in Apollo Vertex. Vertex keys such as `dashboard` still resolve when the app catalog does not define them.
 
+When one item's path is a prefix of another's, only the most specific match is highlighted. A landing page such as `/acme` stays inactive while `/acme/projects` is open.
+
 ### App translations
 
 Pass `configureI18n` to `ApolloShell` or `LocaleProvider` when the app initializes i18next itself. The shell then runs that function instead of replacing the app catalog with the Vertex one.
@@ -117,6 +119,50 @@ function App() {
         </ApolloShell>
       </ShellAuthProvider>
     </QueryClientProvider>
+  );
+}
+```
+
+## Bringing your own authentication
+
+Apps that already authenticate another way, such as with a session cookie set by their platform, can provide `AuthContext` themselves instead of mounting `ShellAuthProvider`. The shell gate reads `isLoading` and `isAuthenticated`, the user profile reads `user`, and sign-out calls `logout`. Leave `accessToken` as `null` when the app has no bearer token to share.
+
+Pass `unauthenticatedElement` to replace the sign-in screen. For example, render an element that redirects to the platform login:
+
+```tsx
+import { useEffect } from 'react';
+import { ApolloShell, AuthContext, type AuthContextValue } from '@uipath/apollo-vertex';
+
+function RedirectToLogin() {
+  useEffect(() => {
+    window.location.assign(`/login?returnTo=${encodeURIComponent(window.location.href)}`);
+  }, []);
+  return null;
+}
+
+function App() {
+  const session = useSession(); // the app's own session hook
+
+  const auth: AuthContextValue = {
+    user: session.user,
+    isAuthenticated: session.user != null,
+    isLoading: session.isLoading,
+    login: async () => session.login(),
+    logout: session.logout,
+    accessToken: null,
+  };
+
+  return (
+    <AuthContext.Provider value={auth}>
+      <ApolloShell
+        companyName="Your Company"
+        productName="Your Product"
+        navItems={navItems}
+        unauthenticatedElement={<RedirectToLogin />}
+      >
+        <YourApp />
+      </ApolloShell>
+    </AuthContext.Provider>
   );
 }
 ```

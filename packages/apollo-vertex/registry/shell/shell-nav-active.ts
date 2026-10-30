@@ -44,3 +44,24 @@ export function navItemState(
     current: navItemIsCurrent(pathname, item.path, childPaths),
   };
 }
+
+// The sidebar keeps one item active: the one that owns the most specific match
+// among item and child paths. A landing page such as `/<workspace>` prefixes
+// every section under it and would otherwise stay active on all of them.
+export function activeNavItemPath(
+  pathname: string,
+  items: readonly { path: string; childPaths?: readonly string[] }[],
+): string | null {
+  let owner: string | null = null;
+  let matchLength = -1;
+  for (const item of items) {
+    for (const path of [item.path, ...(item.childPaths ?? [])]) {
+      if (!navPathIsActive(pathname, path)) continue;
+      if (path.length > matchLength) {
+        owner = item.path;
+        matchLength = path.length;
+      }
+    }
+  }
+  return owner;
+}
