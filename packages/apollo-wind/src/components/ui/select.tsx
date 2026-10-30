@@ -48,7 +48,7 @@ export interface SelectTriggerProps
 // An overflowing value ends in an ellipsis and keeps its start in view, left-aligned since a button
 // centres its text, and the caret keeps its size.
 const selectTriggerVariants = cva(
-  'flex w-full cursor-pointer items-center justify-between bg-transparent text-base transition-colors data-[placeholder]:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm whitespace-nowrap *:data-[slot=select-value]:truncate *:data-[slot=select-value]:text-left [&_svg]:pointer-events-none [&_svg]:shrink-0 future:font-normal',
+  'flex w-full cursor-pointer items-center justify-between bg-transparent text-sm transition-colors data-[placeholder]:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 whitespace-nowrap *:data-[slot=select-value]:truncate *:data-[slot=select-value]:text-left [&_svg]:pointer-events-none [&_svg]:shrink-0 future:font-normal',
   {
     variants: {
       // Inside an InputGroup the group draws the box, so the trigger drops its own (height, border,

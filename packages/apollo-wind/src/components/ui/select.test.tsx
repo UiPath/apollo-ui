@@ -438,6 +438,14 @@ describe('SelectTrigger overflow', () => {
         renderTrigger(grouped);
         expect(screen.getByRole('combobox')).toHaveClass('gap-2');
       });
+
+      it('keeps the same text size as the options at every width', () => {
+        renderTrigger(grouped);
+        const trigger = screen.getByRole('combobox');
+        expect(trigger).toHaveClass('text-sm');
+        expect(trigger).not.toHaveClass('text-base');
+        expect(trigger).not.toHaveClass('md:text-sm');
+      });
     });
   }
 });
