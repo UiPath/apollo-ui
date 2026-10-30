@@ -1,3 +1,6 @@
+import { resolve } from 'node:path';
+
+import tailwindcss from '@tailwindcss/postcss';
 import postcss from 'postcss';
 import { describe, expect, it } from 'vitest';
 
@@ -124,5 +127,69 @@ describe('scopePreflight', () => {
 
   it('requires at least one root', () => {
     expect(() => scopePreflight({ roots: [] })).toThrow(/roots/);
+  });
+
+  it('throws when Preflight starts but its last rule is missing, instead of scoping the rest of the layer', () => {
+    const truncated = PREFLIGHT.replace(
+      '[hidden]:where(:not([hidden="until-found"])) { display: none !important; }',
+      ''
+    );
+    expect(() => run(truncated)).toThrow(/last rule/);
+  });
+});
+
+/**
+ * Against real Tailwind output, built as production so the optimiser has re-parsed it (single-colon
+ * pseudo-elements, no source positions). The fixture above is what we think Preflight looks like;
+ * this is what it does look like, and it is the test that fails when a Tailwind bump moves either
+ * end of the run.
+ */
+describe('scopePreflight on Tailwind output', { timeout: 60_000 }, () => {
+  const build = async () => {
+    const from = resolve(__dirname, 'preflight-probe.css');
+    const base = __dirname;
+    const input =
+      '@import "tailwindcss"; @layer base { * { border-color: red; } body { color: red; } }';
+    const { root } = await postcss([
+      tailwindcss({ base, optimize: { minify: true } }),
+      scopePreflight({ roots: ROOTS }),
+    ]).process(input, { from });
+    return root;
+  };
+
+  it('confines every Preflight rule and the bare `*` reset to one @scope block, and leaves `body` alone', async () => {
+    const root = await build();
+    const blocks: postcss.AtRule[] = [];
+    const unscoped: string[] = [];
+    let scopedRules = 0;
+    root.walkAtRules('layer', (layer) => {
+      if (layer.params !== 'base') return;
+      layer.walkAtRules('scope', (block) => {
+        blocks.push(block);
+        block.walkRules(() => scopedRules++);
+      });
+      layer.walkRules((rule) => {
+        let inScope = false;
+        for (let p = rule.parent; p && p.type !== 'root'; p = p.parent) {
+          if (p.type === 'atrule' && (p as postcss.AtRule).name === 'scope') inScope = true;
+        }
+        if (!inScope) unscoped.push(rule.selector);
+      });
+    });
+    expect(blocks.map((b) => b.params)).toEqual(['(my-canvas, [data-my-portal])']);
+    expect(scopedRules).toBeGreaterThan(40);
+    // Only the document-root rule (moved onto the outermost root) and the consumer's own `body`.
+    expect(unscoped).toEqual([
+      ':where(my-canvas, [data-my-portal]):where(:not(my-canvas *, [data-my-portal] *))',
+      'body',
+    ]);
+    const css = root.toString();
+    expect(css).toMatch(
+      /\[hidden\]:where\(:not\(\[hidden=until-found\]\)\):where\(:scope\),\s*\[hidden\]/
+    );
+    expect(css).toMatch(/\*:where\(:scope\),\s*\*\s*\{\s*border-color:\s*red/);
+    // The minifier would turn `:before:where(:scope)` into `:where()`; the scope must come first.
+    expect(css).not.toMatch(/:(before|after):where\(/);
+    expect(css).not.toContain(':where()');
   });
 });
