@@ -107,6 +107,14 @@ export interface PromptEditorProps {
    */
   mapVarDropToToken?: (insertPath: string) => PromptEditorAutoCompleteOption;
   /**
+   * Turn pasted plain text into tokens, for hosts whose string format differs from the default
+   * (any non-empty `{{ … }}` becomes a chip; `\{{` stays a literal `{{`). Lexical-JSON pastes from
+   * another prompt editor bypass it.
+   */
+  parseClipboardText?: (text: string) => PromptEditorToken[];
+  /** Plain text written on copy/cut; pair with `parseClipboardText` so a copy → paste round-trips. */
+  serializeClipboardTokens?: (tokens: PromptEditorToken[]) => string;
+  /**
    * Token values chips are validated against. Defaults to `autoCompleteOptions`. Pass a wider set
    * when values can be valid without being offered by autocomplete (e.g. runtime-only paths) —
    * merging them into `autoCompleteOptions` instead would pollute the `$`-trigger menu.
@@ -187,6 +195,8 @@ const EditorInner = forwardRef(
       errorId,
       ariaDescribedBy,
       mapVarDropToToken,
+      parseClipboardText,
+      serializeClipboardTokens,
       validationOptions,
       renderAutocompleteMenu,
       toolbarActionsRef,
@@ -505,7 +515,10 @@ const EditorInner = forwardRef(
         </div>
         <HistoryPlugin />
         <NodeSelectionFixPlugin />
-        <CopyPastePlugin />
+        <CopyPastePlugin
+          parseClipboardText={parseClipboardText}
+          serializeClipboardTokens={serializeClipboardTokens}
+        />
         <EditorRefPlugin onRef={handleEditorRef} />
         <ValueSyncPlugin
           value={value}
@@ -574,6 +587,8 @@ export const PromptEditor = ({
   'aria-describedby': nativeAriaDescribedBy,
   ariaDescribedBy: legacyAriaDescribedBy,
   mapVarDropToToken,
+  parseClipboardText,
+  serializeClipboardTokens,
   validationOptions,
   renderAutocompleteMenu,
   renderTokenPill,
@@ -770,6 +785,8 @@ export const PromptEditor = ({
                   fillHeight={fillHeight}
                   borderless={borderless}
                   mapVarDropToToken={mapVarDropToToken}
+                  parseClipboardText={parseClipboardText}
+                  serializeClipboardTokens={serializeClipboardTokens}
                   validationOptions={validationOptions}
                   renderAutocompleteMenu={renderAutocompleteMenu}
                   showToolbar={showToolbar}
