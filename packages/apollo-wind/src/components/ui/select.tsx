@@ -45,8 +45,10 @@ export interface SelectTriggerProps
   errorId?: string;
 }
 
+// An overflowing value ends in an ellipsis and keeps its start in view, left-aligned since a button
+// centres its text, and the caret keeps its size.
 const selectTriggerVariants = cva(
-  'flex w-full cursor-pointer items-center justify-between bg-transparent text-base transition-colors data-[placeholder]:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm [&>span]:line-clamp-1 future:font-normal',
+  'flex w-full cursor-pointer items-center justify-between bg-transparent text-sm transition-colors data-[placeholder]:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 whitespace-nowrap *:data-[slot=select-value]:truncate *:data-[slot=select-value]:text-left [&_svg]:pointer-events-none [&_svg]:shrink-0 future:font-normal',
   {
     variants: {
       // Inside an InputGroup the group draws the box, so the trigger drops its own (height, border,
@@ -58,7 +60,7 @@ const selectTriggerVariants = cva(
       // trigger then shows the same full error ring as keyboard focus.
       grouped: {
         false:
-          'h-9 rounded-md border border-input px-3 py-1 focus:outline-none focus:ring-2 focus:ring-ring focus-visible:ring-2 focus-visible:ring-ring future:h-10 future:rounded-xl future:border-0 future:bg-surface-overlay future:hover:bg-surface-hover future:px-4 future:gap-4 aria-invalid:border-error aria-invalid:focus-visible:ring-error future:aria-invalid:ring-1 future:aria-invalid:ring-error/40 future:focus:ring-primary future:focus-visible:ring-primary future:aria-invalid:focus:ring-error future:aria-invalid:focus-visible:ring-error',
+          'h-9 gap-2 rounded-md border border-input px-3 py-1 focus:outline-none focus:ring-2 focus:ring-ring focus-visible:ring-2 focus-visible:ring-ring future:h-10 future:rounded-xl future:border-0 future:bg-surface-overlay future:hover:bg-surface-hover future:px-4 future:gap-4 aria-invalid:border-error aria-invalid:focus-visible:ring-error future:aria-invalid:ring-1 future:aria-invalid:ring-error/40 future:focus:ring-primary future:focus-visible:ring-primary future:aria-invalid:focus:ring-error future:aria-invalid:focus-visible:ring-error',
         true: 'h-full min-h-5 min-w-0 flex-1 gap-2 p-0',
       },
     },

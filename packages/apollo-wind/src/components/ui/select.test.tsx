@@ -387,6 +387,69 @@ describe('SelectTrigger inline validation', () => {
     expect(document.getElementById('connection-error')).toBeNull();
   });
 });
+
+describe('SelectTrigger overflow', () => {
+  const renderTrigger = (grouped: boolean, defaultValue?: string) => {
+    const select = (
+      <Select defaultValue={defaultValue}>
+        <SelectTrigger aria-label="Operator">
+          <SelectValue placeholder="Pick an operator" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="gte">Greater than or equal to</SelectItem>
+        </SelectContent>
+      </Select>
+    );
+    return render(grouped ? <InputGroup>{select}</InputGroup> : select);
+  };
+
+  for (const grouped of [false, true]) {
+    describe(grouped ? 'in an input group' : 'standalone', () => {
+      it('keeps the caret at full size', () => {
+        renderTrigger(grouped);
+        const trigger = screen.getByRole('combobox');
+        expect(trigger).toHaveClass('[&_svg]:shrink-0', '[&_svg]:pointer-events-none');
+        expect(trigger.lastElementChild?.tagName.toLowerCase()).toBe('svg');
+      });
+
+      // The classes target the trigger's direct value child, so the value must stay one.
+      it('truncates the value on one line, left-aligned', () => {
+        renderTrigger(grouped, 'gte');
+        const trigger = screen.getByRole('combobox');
+        expect(trigger).toHaveClass(
+          'whitespace-nowrap',
+          '*:data-[slot=select-value]:truncate',
+          '*:data-[slot=select-value]:text-left'
+        );
+        expect(trigger).not.toHaveClass('[&>span]:line-clamp-1');
+        const value = trigger.querySelector(':scope > [data-slot="select-value"]');
+        expect(value).toHaveTextContent('Greater than or equal to');
+      });
+
+      it('renders the placeholder in the same value slot', () => {
+        renderTrigger(grouped);
+        const value = screen
+          .getByRole('combobox')
+          .querySelector(':scope > [data-slot="select-value"]');
+        expect(value).toHaveTextContent('Pick an operator');
+      });
+
+      it('spaces the value from the caret', () => {
+        renderTrigger(grouped);
+        expect(screen.getByRole('combobox')).toHaveClass('gap-2');
+      });
+
+      it('keeps the same text size as the options at every width', () => {
+        renderTrigger(grouped);
+        const trigger = screen.getByRole('combobox');
+        expect(trigger).toHaveClass('text-sm');
+        expect(trigger).not.toHaveClass('text-base');
+        expect(trigger).not.toHaveClass('md:text-sm');
+      });
+    });
+  }
+});
+
 describe('SelectTrigger remount safety', () => {
   it('keeps the same trigger node and focus when an error appears', () => {
     const { rerender } = render(
