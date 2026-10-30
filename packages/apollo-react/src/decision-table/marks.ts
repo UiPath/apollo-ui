@@ -3,18 +3,18 @@
 export type MarkTone = 'success' | 'error' | 'warning';
 
 export interface Mark {
-  /** Absent leaves the cell painted by its row, which is how a fired rule's cells carry hover text. */
+  /** Absent leaves the cell painted by its row, so a marked row's cells can still carry hover text. */
   tone?: MarkTone;
   title?: string;
-  /** Whether the condition this cell holds was met. Only a condition has one. */
+  /** Whether this cell's own condition held, where a consumer distinguishes one. */
   matched?: boolean;
-  /** Set by validation: shows the tone's status icon, the cue a diagnostic carries beyond colour. */
+  /** Shows the tone's status icon — the cue a diagnostic carries beyond colour. */
   glyph?: true;
 }
 
 export interface RowMark {
   tone?: MarkTone;
-  /** The row has no step in the trace that produced these marks. */
+  /** The row took no part in whatever produced these marks. */
   dim?: true;
   /** Gutter hover and aria text. */
   title?: string;
@@ -25,7 +25,7 @@ export interface RowMark {
 }
 
 export interface TableMarks {
-  /** By rule id. */
+  /** By row id. */
   rows: ReadonlyMap<string, RowMark>;
   /** By input or output id. */
   columns: ReadonlyMap<string, Mark>;

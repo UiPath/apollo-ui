@@ -15,6 +15,7 @@ export {
 export {
   GridContextMenu,
   type GridContextMenuProps,
+  type GridContextMenuState,
   type GridMenuEntry,
   type GridMenuItem,
 } from './GridMenu';
@@ -57,12 +58,18 @@ export { MarkGlyph } from './MarkGlyph';
 export { EMPTY_MARKS, type Mark, type MarkTone, type RowMark, type TableMarks } from './marks';
 export { type DragSelectionHandlers, useDragSelection } from './useDragSelection';
 export {
+  type AxisSelection,
+  type CellSelectionRange,
+  type CellSelectionState,
   type EditGesture,
   type GridNavigation,
+  type GridNavigationOptions,
   type GridPosition,
   type GridRange,
   type GridSelectionHandle,
   type GridSelectionSource,
   normalizedRect,
+  type SelectionGesture,
+  type Updater,
   useGridNavigation,
 } from './useGridNavigation';

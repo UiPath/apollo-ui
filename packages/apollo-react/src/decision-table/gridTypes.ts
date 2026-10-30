@@ -106,7 +106,6 @@ export interface GridHandle {
   clipboard: GridClipboardActions;
 }
 
-/** A cell's position in the grid's own column space; what column 0 means is the consumer's business. */
 /** A cell's position in the grid's own coordinates; what a column means is the consumer's business. */
 export interface GridPosition {
   row: number;
@@ -134,7 +133,7 @@ export interface GridPasteOutcome {
 
 /**
  * Spreadsheet clipboard over a rectangular selection: Ctrl+C / X / V plus the menu equivalents.
- * Pass it to {@link GridProps.clipboard}; omit it and the grid has no clipboard at all.
+ * Pass it to {@link DecisionTableProps.clipboard}; omit it and the grid has no clipboard at all.
  */
 export interface GridClipboardProps {
   /** The live selection. Nothing copies, pastes or clears while this is null. */

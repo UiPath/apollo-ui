@@ -1,6 +1,6 @@
 // Layout, sizing and timing constants for the grid.
 
-/** What an empty value cell and a never-run result show, the same in both tables. */
+/** What an empty value cell shows; consumers reuse it for a never-run result. */
 export const EMPTY_VALUE_DASH = '—';
 /** Fixed gutter: the row-number (`#`) column. Never flexes, never resizes. */
 export const ROW_NUMBER_WIDTH = 48;

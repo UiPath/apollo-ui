@@ -121,7 +121,7 @@ export const SEPARATOR_HEADER_CELL_CLASS = cn(
   GRID_LINE_V_CLASS
 );
 
-/** Body rows beside the outputs, in both tables. */
+/** Body cells in an output column. */
 export const SEPARATOR_BODY_TINTED_CELL_CLASS = cn(
   GRID_LINE_V_CLASS,
   GRID_LINE_H_CLASS,
@@ -151,7 +151,7 @@ export const OMIT_BORDER_CLASS = {
 
 /**
  * The left edge of a column frozen to the right of the grid
- * (the add-column "+", the tests panel's result column).
+ * (an add-column "+", a trailing result column).
  */
 export const FROZEN_LEFT_EDGE_CLASS =
   'shadow-[-1px_0_0_0_color-mix(in_srgb,var(--color-border-de-emp)_60%,transparent)]';
@@ -289,7 +289,7 @@ export const LOCKABLE_ROW_ACTION_BUTTON_CLASS =
 /** The destructive row action. */
 export const DELETE_ROW_BUTTON_CLASS = `${ROW_ACTION_BUTTON_CLASS} hover:text-error-text future:hover:text-error-text`;
 
-/** The decision table's delete, revealed on its own; the tests panel reveals its actions as a group. */
+/** A row action revealed on its own, rather than with the row's other actions as a group. */
 export const DELETE_ROW_CLASS = `${DELETE_ROW_BUTTON_CLASS} opacity-0 transition-opacity duration-150 group-hover/row:opacity-100! focus-visible:opacity-100!`;
 
 /**
