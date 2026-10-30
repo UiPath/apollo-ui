@@ -12,7 +12,12 @@ import { useCallback, useLayoutEffect, useRef, useState } from 'react';
  * sliced row could only ever shrink. Render the chip always too, with `overflowRef` attached and its
  * widest text, so its width is known before anything overflows.
  */
-export function useVisibleCount(enabled: boolean, keys: readonly string[], gap: number) {
+export function useVisibleCount(
+  enabled: boolean,
+  keys: readonly string[],
+  gap: number,
+  minVisible = 1
+) {
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLElement | null)[]>([]);
   const overflowRef = useRef<HTMLElement>(null);
@@ -42,12 +47,11 @@ export function useVisibleCount(enabled: boolean, keys: readonly string[], gap: 
         used += width + gap;
         fits += 1;
       }
-      // At least one, even in a row too narrow for it: a lone "+4 more" says nothing about what is
-      // selected.
-      next = Math.max(1, fits);
+      // Default 1: when the items are the value, a lone "+4 more" says nothing about what is selected.
+      next = Math.max(minVisible, fits);
     }
     setVisibleCount((prev) => (prev === next ? prev : next));
-  }, [itemCount, gap]);
+  }, [itemCount, gap, minVisible]);
 
   // Joined, so a reorder of the same items re-measures too.
   const key = keys.join('\u0000');
