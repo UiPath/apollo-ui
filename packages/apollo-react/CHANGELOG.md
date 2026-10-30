@@ -1,3 +1,13 @@
+## [@uipath/apollo-react-v7.13.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.12.1...@uipath/apollo-react@7.13.0) (2026-10-30)
+
+### Features
+
+* **apollo-react:** let BaseNode override config hide toolbar actions per node ([22f6486](https://github.com/UiPath/apollo-ui/commit/22f64864ed43c0b987df916892f79799c691eabb))
+
+### Bug Fixes
+
+* **apollo-react:** drop separators that hidden toolbar actions leave stranded ([347c77b](https://github.com/UiPath/apollo-ui/commit/347c77bf9441251967aad749c5778ff3b02fb9d9))
+
 ## [@uipath/apollo-react-v7.12.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.12.0...@uipath/apollo-react@7.12.1) (2026-10-30)
 
 ### Bug Fixes

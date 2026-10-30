@@ -1,3 +1,14 @@
+## [@uipath/apollo-wind-v2.84.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.83.0...@uipath/apollo-wind@2.84.0) (2026-10-30)
+
+### Features
+
+* **apollo-wind:** add a PostCSS plugin that confines Preflight with [@scope](https://github.com/scope) [MST-17369] ([defecfd](https://github.com/UiPath/apollo-ui/commit/defecfdff4fca4d523ea6af64e458826da91363d))
+
+### Bug Fixes
+
+* **apollo-wind:** fail loud on a missing Preflight end, test against real Tailwind [MST-17369] ([8edc13f](https://github.com/UiPath/apollo-ui/commit/8edc13f00eb2577ce21f2b260e30549033f2e145))
+* **apollo-wind:** only ship the WebKit scrollbar rules where scrollbar-color is missing [MST-17369] ([8c898c3](https://github.com/UiPath/apollo-ui/commit/8c898c3ce442740c9f3f8f23e91eec2fb03d371b))
+
 ## [@uipath/apollo-wind-v2.82.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.81.0...@uipath/apollo-wind@2.82.0) (2026-10-30)
 
 ### Features
