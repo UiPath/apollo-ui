@@ -897,32 +897,42 @@ body.canvas, .canvas {
  * Dark themes: future-dark + dark-hc are applied to <html>;
  * dark + dark-hc are applied to <body>. Both cases are covered by the
  * class selectors below since * matches all descendants.
+ *
+ * The standard properties inherit, so they cost nothing per element. The
+ * WebKit pseudo-element rules do not: `.dark *::-webkit-scrollbar` makes
+ * Chrome walk every element's ancestors for the theme class on every style
+ * recalc (about 7 ms per copy of this block in Studio Web, MST-17369).
+ * Browsers that implement `scrollbar-color` ignore `::-webkit-scrollbar`
+ * once it is set (Chrome 121+, Safari 26.2+), so the WebKit rules only
+ * exist where the standard properties are missing.
  * ============================================================================ */
 
 .future-dark,
 .dark,
 .dark-hc {
-  /* Firefox — inherits down the tree */
+  /* Firefox, Chrome 121+, Safari 26.2+ — inherits down the tree */
   scrollbar-width: thin;
   scrollbar-color: var(--color-border) transparent;
 
-  /* WebKit — pseudo-elements don't inherit, must target descendants */
-  & *::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
+  /* Older WebKit — pseudo-elements don't inherit, must target descendants */
+  @supports not (scrollbar-color: auto) {
+    & *::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
 
-  & *::-webkit-scrollbar-track {
-    background: transparent;
-  }
+    & *::-webkit-scrollbar-track {
+      background: transparent;
+    }
 
-  & *::-webkit-scrollbar-thumb {
-    background-color: var(--color-border);
-    border-radius: 9999px;
-  }
+    & *::-webkit-scrollbar-thumb {
+      background-color: var(--color-border);
+      border-radius: 9999px;
+    }
 
-  & *::-webkit-scrollbar-thumb:hover {
-    background-color: var(--color-border-hover);
+    & *::-webkit-scrollbar-thumb:hover {
+      background-color: var(--color-border-hover);
+    }
   }
 }
 
