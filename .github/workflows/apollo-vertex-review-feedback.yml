@@ -1,0 +1,195 @@
+name: Apollo Vertex Review Feedback
+
+# Daily self-improvement loop for the Apollo Vertex agent instructions:
+# collect the comments people left on apollo-vertex PRs merged the previous UTC
+# day, let an agent fold durable rules into the Vertex AGENTS.md files, and
+# open a PR for human review. Only the agent step is non-deterministic, and it
+# runs without GitHub credentials: collecting, checking the changed files and
+# publishing are plain workflow steps.
+
+on:
+  schedule:
+    - cron: '0 5 * * *' # Daily at 05:00 UTC, for PRs merged the previous UTC day
+  workflow_dispatch:
+    inputs:
+      since:
+        description: Start of the merge window, inclusive (ISO 8601). Defaults to the start of the previous UTC day.
+        required: false
+        type: string
+      until:
+        description: End of the merge window, exclusive (ISO 8601). Defaults to the start of the current UTC day.
+        required: false
+        type: string
+
+# Deny-all default; the job grants only what it needs.
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  learn:
+    name: Fold review feedback into agent instructions
+    runs-on: uipath-ubuntu-latest
+    timeout-minutes: 30
+    # Read-only: the PR is pushed and opened with the GitHub App token below.
+    permissions:
+      contents: read
+      issues: read # PR conversation comments and the search API
+      pull-requests: read # review comments and reviews
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
+        with:
+          node-version: '22'
+
+      - name: Collect review comments
+        id: collect
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SINCE: ${{ inputs.since }}
+          UNTIL: ${{ inputs.until }}
+        run: |
+          args=(--output "$RUNNER_TEMP/feedback.json" --summary-output "$RUNNER_TEMP/summary.md")
+          if [ -n "$SINCE" ]; then args+=(--since "$SINCE"); fi
+          if [ -n "$UNTIL" ]; then args+=(--until "$UNTIL"); fi
+          node .github/scripts/vertex-review-feedback/collect-comments.mjs "${args[@]}"
+
+          cat "$RUNNER_TEMP/summary.md" >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "comments=$(jq '.summary.commentsIncluded' "$RUNNER_TEMP/feedback.json")"
+            echo "window=$(jq -r '.windowLabel' "$RUNNER_TEMP/feedback.json")"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Check for the Cursor API key
+        id: agent-key
+        if: steps.collect.outputs.comments != '0'
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+        run: |
+          if [ -z "$CURSOR_API_KEY" ]; then
+            echo "::warning title=CURSOR_API_KEY not set::Comments were collected, but no agent ran. Add a CURSOR_API_KEY repository secret to enable this workflow."
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install Cursor CLI
+        if: steps.agent-key.outputs.available == 'true'
+        run: |
+          curl https://cursor.com/install -fsS | bash
+          # The installer links `agent` into ~/.local/bin (the docs still say ~/.cursor/bin).
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          "$HOME/.local/bin/agent" --version
+
+      - name: Update agent instructions
+        if: steps.agent-key.outputs.available == 'true'
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+          MODEL: ${{ vars.VERTEX_REVIEW_FEEDBACK_MODEL }}
+        run: |
+          # The CLI reads project permissions from .cursor/cli.json. The repo has
+          # no .cursor directory, so the file is created here and removed below.
+          test ! -e .cursor
+          mkdir .cursor
+          cat > .cursor/cli.json <<'EOF'
+          {
+            "permissions": {
+              "allow": [],
+              "deny": ["Shell(git)", "Shell(gh)", "Shell(curl)", "Shell(wget)", "Shell(rm)", "WebFetch(*)", "Mcp(*:*)"]
+            }
+          }
+          EOF
+
+          prompt="$(cat .github/scripts/vertex-review-feedback/prompt.md)
+
+          FEEDBACK_FILE=$RUNNER_TEMP/feedback.json
+          RATIONALE_FILE=$RUNNER_TEMP/rationale.md"
+          model_args=()
+          if [ -n "$MODEL" ]; then model_args=(--model "$MODEL"); fi
+          agent -p --force --trust --output-format text "${model_args[@]}" "$prompt"
+
+          rm -rf .cursor
+
+      - name: Check changed files
+        id: changes
+        if: steps.agent-key.outputs.available == 'true'
+        run: |
+          changed=$( { git diff --name-only; git ls-files --others --exclude-standard; } | sort -u)
+          if [ -z "$changed" ]; then
+            echo "No instruction changes."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          unexpected=$(grep -vxF -e packages/apollo-vertex/AGENTS.md -e apps/apollo-vertex/AGENTS.md <<< "$changed" || true)
+          if [ -n "$unexpected" ]; then
+            echo "::error title=Unexpected changes::The agent may only edit the Vertex AGENTS.md files, but changed:"
+            echo "$unexpected"
+            exit 1
+          fi
+          git diff
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Generate GitHub App token
+        if: steps.changes.outputs.changed == 'true'
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510  # v3.3.0
+        id: app-token
+        with:
+          client-id: ${{ vars.RELEASER_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASER_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-contents: write
+          permission-pull-requests: write
+
+      - name: Open PR with the instruction changes
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          WINDOW: ${{ steps.collect.outputs.window }}
+        run: |
+          # apollo-vertex-auto-merge.yml skips this branch prefix, so a person
+          # always reviews instructions learned from comment text.
+          BRANCH="chore/vertex-review-feedback-${WINDOW}"
+          TITLE="docs(apollo-vertex): learn from review feedback on PRs merged ${WINDOW}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add packages/apollo-vertex/AGENTS.md apps/apollo-vertex/AGENTS.md
+          git commit -m "$TITLE"
+          # Inject App token into the origin URL just for the push, then strip
+          # it. Runner is ephemeral and isolated; the token lives in .git/config
+          # only for this step.
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push origin "$BRANCH"
+          git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
+
+          {
+            echo "## Summary"
+            echo
+            echo "Instructions learned from review comments on merged Apollo Vertex PRs. Check each rule against the linked comments before merging."
+            echo
+            echo "## Changes"
+            echo
+            if [ -s "$RUNNER_TEMP/rationale.md" ]; then cat "$RUNNER_TEMP/rationale.md"; else echo "_The agent wrote no rationale._"; fi
+            echo
+            echo "## Sources"
+            echo
+            cat "$RUNNER_TEMP/summary.md"
+            echo
+            echo "_Automated by the [Apollo Vertex Review Feedback](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}) workflow._"
+          } > "$RUNNER_TEMP/pr-body.md"
+
+          gh pr create \
+            --title "$TITLE" \
+            --body-file "$RUNNER_TEMP/pr-body.md" \
+            --base main \
+            --head "$BRANCH"
