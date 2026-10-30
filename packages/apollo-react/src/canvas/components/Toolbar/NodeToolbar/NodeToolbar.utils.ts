@@ -46,17 +46,28 @@ export function hideToolbarActions(
   if (!config || !hiddenIds?.length) return config;
 
   const hidden = new Set(hiddenIds);
-  const keep = (action: ToolbarAction) => !hidden.has(action.id);
-  const actions = config.actions.filter(keep);
-  const overflowActions = config.overflowActions?.filter(keep);
-
-  const hasAction = (items: ToolbarAction[] | undefined) =>
-    !!items?.some((item) => !isSeparator(item));
-  if (!hasAction(actions) && !hasAction(overflowActions)) return undefined;
+  const actions = withoutHidden(config.actions, hidden);
+  const overflowActions = config.overflowActions && withoutHidden(config.overflowActions, hidden);
+  if (!actions.length && !overflowActions?.length) return undefined;
 
   return {
     ...config,
     actions,
     overflowActions: overflowActions?.length ? overflowActions : undefined,
   };
+}
+
+// Also drops separators left at either end or next to another separator, so a list
+// of separators alone comes out empty.
+function withoutHidden(items: ToolbarAction[], hidden: ReadonlySet<string>): ToolbarAction[] {
+  const kept: ToolbarAction[] = [];
+  const atGroupStart = () => {
+    const last = kept.at(-1);
+    return !last || isSeparator(last);
+  };
+  for (const item of items) {
+    if (isSeparator(item) ? !atGroupStart() : !hidden.has(item.id)) kept.push(item);
+  }
+  if (kept.length && atGroupStart()) kept.pop();
+  return kept;
 }

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { ToolbarAction, ToolbarActionItem } from '../shared';
 import type { NodeToolbarConfig } from './NodeToolbar.types';
-import { lockToolbarConfig } from './NodeToolbar.utils';
+import { hideToolbarActions, lockToolbarConfig } from './NodeToolbar.utils';
 
 const action = (id: string, extra: Partial<ToolbarActionItem> = {}): ToolbarActionItem => ({
   id,
@@ -69,5 +69,34 @@ describe('lockToolbarConfig', () => {
     lockToolbarConfig(config);
 
     expect(original.disabled).toBeUndefined();
+  });
+});
+
+describe('hideToolbarActions', () => {
+  const SEPARATOR = { id: 'separator' } as const;
+  const ids = (actions: ToolbarAction[] | undefined) => actions?.map((item) => item.id);
+
+  it('drops separators left at an end or doubled up by a removal', () => {
+    const config: NodeToolbarConfig = {
+      actions: [action('edit'), SEPARATOR, action('star'), SEPARATOR, action('delete')],
+      overflowActions: [action('star'), SEPARATOR, action('copy')],
+    };
+
+    const result = hideToolbarActions(config, ['star']);
+
+    expect(ids(result?.actions)).toEqual(['edit', 'separator', 'delete']);
+    expect(ids(result?.overflowActions)).toEqual(['copy']);
+  });
+
+  it('omits an overflow menu that only separators would be left in', () => {
+    const config: NodeToolbarConfig = {
+      actions: [action('edit')],
+      overflowActions: [action('copy'), SEPARATOR, action('cut')],
+    };
+
+    const result = hideToolbarActions(config, ['copy', 'cut']);
+
+    expect(ids(result?.actions)).toEqual(['edit']);
+    expect(result?.overflowActions).toBeUndefined();
   });
 });
