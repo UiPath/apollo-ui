@@ -121,6 +121,9 @@ export const useGridClipboard = (
     const live = source();
     if (
       !live ||
+      // Claimed only when there is somewhere to put it; otherwise the consumer's own paste
+      // handler must still see the event rather than find it already prevented.
+      !live.range ||
       live.editing ||
       live.readOnly ||
       isFromTextField(event.target) ||

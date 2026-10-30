@@ -205,7 +205,7 @@ export const useDragReorder = (options: DragReorderOptions) => {
       // would commit using this drag's state.
       cancelRef.current?.();
       // `preventDefault` below stops the pointer gesture smearing a text selection, but it also
-      // suppresses the focus change — so a field holding an uncommitted draft (the formula bar
+      // suppresses the focus change — so a field holding an uncommitted draft (a field that
       // commits on blur) would never blur, and the move would then change the content under the
       // coordinates that draft was written against, stranding it. Blur first, while the model
       // still matches: the commit lands on the row the user actually typed into.
@@ -260,17 +260,22 @@ export const useDragReorder = (options: DragReorderOptions) => {
       cancelRef.current = cleanup;
       const onPointerUp = () => {
         const state = dragRef.current;
-        if (state) {
-          const to = dropIndex(state.from, state.boundary);
-          if (to !== state.from) {
-            if (state.axis === 'row') {
-              latestRef.current.onDropRow(state.from, to);
-            } else {
-              latestRef.current.onDropColumn(state.groupIndex, state.from, to);
+        try {
+          if (state) {
+            const to = dropIndex(state.from, state.boundary);
+            if (to !== state.from) {
+              if (state.axis === 'row') {
+                latestRef.current.onDropRow(state.from, to);
+              } else {
+                latestRef.current.onDropColumn(state.groupIndex, state.from, to);
+              }
             }
           }
+        } finally {
+          // A drop handler that throws would otherwise leave the drag armed with its document
+          // listeners attached, and the next unrelated click would commit a move.
+          cleanup();
         }
-        cleanup();
       };
       const onKeyDown = (key: KeyboardEvent) => {
         if (key.key === 'Escape') {

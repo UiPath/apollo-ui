@@ -120,7 +120,7 @@ const useGridMenuItems = (entries: GridMenuEntry[], open: boolean, dataTestId: s
   return { items, onCloseAutoFocus };
 };
 
-interface GridContextMenuState {
+export interface GridContextMenuState {
   anchor: { x: number; y: number };
 }
 

@@ -126,8 +126,8 @@ export const useGridLayout = ({
   const separatorsKey = columns
     .map((column) => `${column.group?.id ?? ''}:${column.group?.separatorBefore ? '1' : ''}`)
     .join(',');
-  // biome-ignore lint/correctness/useExhaustiveDependencies: separatorsKey is the separator layout by value
   const pinnedCount = Math.min(pinnedColumnCount, columns.length);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: separatorsKey is the separator layout by value
   const separatorBefore = useMemo(
     () => separatorFlexIndexes(columns, pinnedCount),
     [separatorsKey, pinnedCount]

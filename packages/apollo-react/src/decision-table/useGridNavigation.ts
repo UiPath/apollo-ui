@@ -9,7 +9,7 @@ export type { GridPosition, GridRange };
  * published declarations are self-contained — a consumer's real v9 state assigns to these in both
  * directions, and a consumer without react-table installed still type-checks this module.
  */
-interface CellSelectionRange {
+export interface CellSelectionRange {
   anchorColumnId: string;
   anchorRowId: string;
   focusColumnId: string;
@@ -17,8 +17,8 @@ interface CellSelectionRange {
   /** How this range changes the selection produced by the ranges before it. Defaults to `include`. */
   operation?: 'include' | 'exclude';
 }
-type CellSelectionState = Array<CellSelectionRange>;
-type Updater<T> = T | ((old: T) => T);
+export type CellSelectionState = Array<CellSelectionRange>;
+export type Updater<T> = T | ((old: T) => T);
 
 /**
  * The selection of a grid whose navigation a component does not own, handed over so the decision
@@ -33,10 +33,10 @@ export interface GridSelectionHandle {
 }
 
 /** The axis a header/gutter gesture picked, or null when a cell was picked. */
-type AxisSelection = 'row' | 'column' | null;
+export type AxisSelection = 'row' | 'column' | null;
 
 /** What a replacing gesture picked, so a listener can tell which of its own selections it supersedes. */
-type SelectionGesture = 'cell' | 'row' | 'column';
+export type SelectionGesture = 'cell' | 'row' | 'column';
 
 /** The range as an inclusive rectangle, whatever direction it was dragged in. */
 export const normalizedRect = (
@@ -153,7 +153,7 @@ const ARROW_DELTAS: Record<string, GridPosition | undefined> = {
  * `editing` stays React state: a selection store has no concept of an inline editor, and the
  * commit-and-move semantics below are ours.
  */
-interface GridNavigationOptions {
+export interface GridNavigationOptions {
   /**
    * A gesture started a NEW selection — never fired when one is extended. `gesture` names what
    * was picked, so a listener can keep the selection it is about to set rather than depending on
@@ -256,7 +256,7 @@ export const useGridNavigation = (
   // Resolved to plain coordinates first, then memoised on those four numbers. `range` and
   // `focus` are read by every row's memo through the callbacks below, so a fresh object per
   // render would change each callback's identity and repaint the whole mounted window on any
-  // render at all — which is what the selection-cost contract measures.
+  // render at all — the per-row render cost this grid's memoization exists to avoid.
   const anchorRow = active ? rowIndexById.get(active.anchorRowId) : undefined;
   const anchorCol = active ? colIndexById.get(active.anchorColumnId) : undefined;
   const focusRow = active ? rowIndexById.get(active.focusRowId) : undefined;
@@ -297,7 +297,7 @@ export const useGridNavigation = (
     [focusRowId, focusColumnId]
   );
 
-  // Drop a selection whose rules or columns were deleted. Read-time resolution already reports
+  // Drop a selection whose rows or columns were deleted. Read-time resolution already reports
   // null, but leaving the dead ids in table-core would let a later `extendTo` rebuild a rectangle
   // from an anchor the user can no longer see.
   useEffect(() => {

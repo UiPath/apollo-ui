@@ -305,10 +305,10 @@ export function useColumnWidths({
 
   // Reconcile to the current columns whenever they change: drop overrides and persisted widths for
   // columns that no longer exist, so deleting a column reclaims its stored width and repeated
-  // add/delete cycles cannot grow a file's map without bound. Single chokepoint — every delete path
+  // add/delete cycles cannot grow the host's map without bound. Single chokepoint — every delete path
   // (menu, panel, reducer) ends in a columns change, so none has to remember.
   useEffect(() => {
-    // A transient empty column set (a model still hydrating) must not durably wipe the file's
+    // A transient empty column set (a model still hydrating) must not durably wipe the host's
     // stored widths.
     if (stableColumns.length === 0) {
       return;
