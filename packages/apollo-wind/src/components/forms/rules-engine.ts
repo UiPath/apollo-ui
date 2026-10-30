@@ -276,6 +276,23 @@ export class RulesEngine {
   }
 
   /**
+   * The fields a condition reads: its `when`, and every field its `custom` expression names. A
+   * form re-checks the condition when any of them changes.
+   */
+  static conditionFields(condition: FieldCondition): string[] {
+    const fields = new Set<string>();
+    if (condition.when) fields.add(condition.when);
+    if (condition.custom) {
+      try {
+        collectFields(jsep(condition.custom), fields);
+      } catch {
+        // An expression that does not parse reads no fields; evaluating it fails anyway.
+      }
+    }
+    return Array.from(fields);
+  }
+
+  /**
    * Build a dependency graph for optimized field watching
    */
   static buildDependencyGraph(rules: FieldRule[]): Map<string, Set<string>> {
@@ -283,14 +300,50 @@ export class RulesEngine {
 
     for (const rule of rules) {
       for (const condition of rule.conditions) {
-        if (!graph.has(condition.when)) {
-          graph.set(condition.when, new Set());
+        for (const field of RulesEngine.conditionFields(condition)) {
+          if (!graph.has(field)) {
+            graph.set(field, new Set());
+          }
+          graph.get(field)!.add(rule.id);
         }
-        graph.get(condition.when)!.add(rule.id);
       }
     }
 
     return graph;
+  }
+}
+
+/** `a.b.c` as the path `get` reads, or `undefined` for any other member access. */
+function memberPath(node: jsep.Expression): string | undefined {
+  if (node.type === 'Identifier') return (node as jsep.Identifier).name;
+  const member = node as jsep.MemberExpression;
+  if (member.type !== 'MemberExpression' || member.computed) return undefined;
+  const object = memberPath(member.object);
+  return object === undefined
+    ? undefined
+    : `${object}.${(member.property as jsep.Identifier).name}`;
+}
+
+function collectFields(node: jsep.Expression, fields: Set<string>) {
+  const path = memberPath(node);
+  if (path !== undefined) {
+    fields.add(path);
+    return;
+  }
+  if (node.type === 'MemberExpression') {
+    const member = node as jsep.MemberExpression;
+    collectFields(member.object, fields);
+    // `a.b` names no field `b`; only a computed key is an expression of its own.
+    if (member.computed) collectFields(member.property, fields);
+    return;
+  }
+  for (const value of Object.values(node)) {
+    const children = Array.isArray(value) ? value : [value];
+    for (const child of children) {
+      if (child && typeof child === 'object' && 'type' in child) {
+        collectFields(child as jsep.Expression, fields);
+      }
+    }
   }
 }
 

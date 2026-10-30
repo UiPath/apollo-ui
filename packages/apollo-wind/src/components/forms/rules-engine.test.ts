@@ -382,6 +382,27 @@ describe('RulesEngine', () => {
     });
   });
 
+  describe('conditionFields', () => {
+    it('lists the when and every field a custom expression names', () => {
+      expect(
+        RulesEngine.conditionFields({
+          when: 'amount',
+          custom: 'amount > (limit * 2) && user.role === "admin" && tags[index] == null',
+        })
+      ).toEqual(['amount', 'limit', 'user.role', 'tags', 'index']);
+    });
+
+    it('lists no property name or unparsable expression as a field', () => {
+      expect(RulesEngine.conditionFields({ when: '', custom: 'name.length > 2' })).toEqual([
+        'name.length',
+      ]);
+      expect(RulesEngine.conditionFields({ when: '', custom: '(name).length > 2' })).toEqual([
+        'name.length',
+      ]);
+      expect(RulesEngine.conditionFields({ when: 'x', custom: 'amount >' })).toEqual(['x']);
+    });
+  });
+
   describe('buildDependencyGraph', () => {
     it('builds graph from rules with conditions', () => {
       const rules: FieldRule[] = [

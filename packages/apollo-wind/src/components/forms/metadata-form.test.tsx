@@ -729,6 +729,53 @@ describe('MetadataForm', () => {
         expect(screen.queryByRole('tab', { name: 'Advanced' })).not.toBeInTheDocument();
       });
     });
+    it('re-runs a field rule when a field its expression reads changes', async () => {
+      const user = userEvent.setup();
+      const field = (name: string) => ({
+        name,
+        type: 'number' as const,
+        label: name,
+        placeholder: name,
+        defaultValue: 0,
+      });
+      const schema: FormSchema = {
+        id: 'reactive-expressions',
+        title: 'Reactive Expressions',
+        sections: [
+          {
+            id: 's',
+            fields: [
+              field('amount'),
+              field('limit'),
+              {
+                name: 'note',
+                type: 'text',
+                label: 'Note',
+                rules: [
+                  {
+                    id: 'over-limit',
+                    // Neither field is the condition's `when`: only the expression names them.
+                    conditions: [{ when: '', custom: 'amount > (limit * 2)' }],
+                    effects: { visible: true },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+
+      render(<MetadataForm schema={schema} />);
+      expect(screen.queryByLabelText('Note')).not.toBeInTheDocument();
+
+      await user.clear(screen.getByPlaceholderText('amount'));
+      await user.type(screen.getByPlaceholderText('amount'), '10');
+      await waitFor(() => expect(screen.getByLabelText('Note')).toBeInTheDocument());
+
+      await user.clear(screen.getByPlaceholderText('limit'));
+      await user.type(screen.getByPlaceholderText('limit'), '6');
+      await waitFor(() => expect(screen.queryByLabelText('Note')).not.toBeInTheDocument());
+    });
   });
 
   describe('tabbed multi-step form (stepVariant="tabs")', () => {
