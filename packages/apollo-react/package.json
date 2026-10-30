@@ -228,6 +228,7 @@
     "@mui/x-date-pickers": "^6.20.2",
     "@mui/x-tree-view": "^8.21.0",
     "@tanstack/react-virtual": "^3.14.3",
+    "@tanstack/virtual-core": "3.17.1",
     "@tiptap/core": "^3.19.0",
     "@tiptap/extension-document": "^3.19.0",
     "@tiptap/extension-hard-break": "^3.19.0",
@@ -274,8 +275,7 @@
     "unist-util-visit": "^5.0.0",
     "use-sync-external-store": "^1.2.0",
     "zod": "^4.6.6",
-    "zustand": "^5.0.9",
-    "@tanstack/virtual-core": "3.17.1"
+    "zustand": "^5.0.9"
   },
   "devDependencies": {
     "@lingui/cli": "^5.6.1",
