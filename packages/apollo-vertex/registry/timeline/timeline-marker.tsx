@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 export type TimelineMarkerVariant =
   | "user"
   | "completed-user"
+  | "completed-user-progress"
   | "completed-ai"
   | "ai-upcoming"
   | "ai-suspended"
@@ -90,6 +91,7 @@ export function TimelineMarker({
         </MarkerCircle>
       );
 
+    case "completed-user-progress":
     case "ai-progress":
       return (
         <MarkerCircle
@@ -104,9 +106,15 @@ export function TimelineMarker({
                 "conic-gradient(from 0deg, var(--ai-gradient-end) 0deg, var(--ai-gradient-start) 72deg, var(--insight-700) 150deg, transparent 220deg, var(--ai-gradient-end) 360deg)",
             }}
           />
-          <div className="relative grid size-full place-items-center rounded-full bg-background">
-            <AiMark size={markSize} variant="gradient" />
-          </div>
+          {variant === "completed-user-progress" ? (
+            <div className="relative grid size-full place-items-center rounded-full bg-background text-success">
+              <UserCheck className={compact ? "size-3" : "size-4"} />
+            </div>
+          ) : (
+            <div className="relative grid size-full place-items-center rounded-full bg-background">
+              <AiMark size={markSize} variant="gradient" />
+            </div>
+          )}
         </MarkerCircle>
       );
 

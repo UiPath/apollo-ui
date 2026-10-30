@@ -10,11 +10,12 @@ The marker takes a plain `variant`, so a solution maps its own states onto the s
 
 ## Markers
 
-Nine variants cover human and agent steps: people, completed steps, queued and suspended work, a spinning in-progress ring, and failed, cancelled, and done outcomes. Each comes in a full and a compact size.
+Ten variants cover human and agent steps: people, completed steps, a completed person step whose follow-up is still running, queued and suspended work, a spinning in-progress ring, and failed, cancelled, and done outcomes. Each comes in a full and a compact size.
 
 <Preview className="flex flex-wrap items-center gap-4">
   <TimelineMarker variant="user" initials="PV" />
   <TimelineMarker variant="completed-user" />
+  <TimelineMarker variant="completed-user-progress" />
   <TimelineMarker variant="completed-ai" />
   <TimelineMarker variant="ai-upcoming" />
   <TimelineMarker variant="ai-suspended" />
@@ -29,6 +30,7 @@ The same variants, `compact`:
 <Preview className="flex flex-wrap items-center gap-4">
   <TimelineMarker variant="user" initials="PV" compact />
   <TimelineMarker variant="completed-user" compact />
+  <TimelineMarker variant="completed-user-progress" compact />
   <TimelineMarker variant="completed-ai" compact />
   <TimelineMarker variant="ai-upcoming" compact />
   <TimelineMarker variant="ai-suspended" compact />
@@ -134,7 +136,7 @@ Keep the domain mapping on your side: convert your own state into a `TimelineMar
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `variant` | `TimelineMarkerVariant` | — | Required. One of `user`, `completed-user`, `completed-ai`, `ai-upcoming`, `ai-suspended`, `ai-progress`, `ai-failed`, `ai-cancelled`, `ai-complete`. |
+| `variant` | `TimelineMarkerVariant` | — | Required. One of `user`, `completed-user`, `completed-user-progress`, `completed-ai`, `ai-upcoming`, `ai-suspended`, `ai-progress`, `ai-failed`, `ai-cancelled`, `ai-complete`. |
 | `initials` | `string` | — | Shown inside the `user` marker, falling back to `"?"` when omitted. The compact size shows only the first character. Ignored by other variants. |
 | `compact` | `boolean` | `false` | Render the smaller size for dense trails. |
 
