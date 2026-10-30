@@ -6,6 +6,25 @@ const cols = (...defaults: number[]): SizedColumn[] =>
   defaults.map((defaultWidth, index) => ({ id: `c${index}`, defaultWidth }));
 
 describe('resolveColumnWidths', () => {
+  /**
+   * A column id is the consumer's string. One that names an Object prototype member used to read
+   * back as that function, and `Math.max` against it yields NaN — a corrupted width for every
+   * column and a broken virtualization offset.
+   */
+  it('treats a column id that names a prototype member as having no override', () => {
+    const widths = resolveColumnWidths({
+      containerWidth: 1000,
+      columns: [
+        { id: 'constructor', defaultWidth: 200 },
+        { id: 'toString', defaultWidth: 300 },
+      ],
+      overrides: {},
+      reservedPx: 0,
+    });
+    expect(widths.every(Number.isFinite)).toBe(true);
+    expect(widths.reduce((sum, width) => sum + width, 0)).toBe(1000);
+  });
+
   it('returns one width per flexible column, excluding the gutters', () => {
     const widths = resolveColumnWidths({
       containerWidth: 0,

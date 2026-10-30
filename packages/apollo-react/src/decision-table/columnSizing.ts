@@ -18,6 +18,14 @@ export interface SizedColumn {
  * container, otherwise every column keeps its default and the grid scrolls. The reserved gutters are
  * excluded from the split so the `#` gutter never grows the way `width: 100%` would.
  */
+/**
+ * An own-property width read. A column id is the consumer's string: one that happens to name an
+ * Object prototype member (`constructor`, `toString`) would otherwise resolve to that function,
+ * and `Math.max` against it yields NaN — a corrupted width and virtualization offset.
+ */
+export const widthFor = (map: Record<string, number>, id: string): number | undefined =>
+  Object.hasOwn(map, id) ? map[id] : undefined;
+
 export function resolveColumnWidths({
   containerWidth,
   columns,
@@ -30,7 +38,7 @@ export function resolveColumnWidths({
   reservedPx: number;
 }): number[] {
   const base = columns.map((column) =>
-    Math.max(MIN_COLUMN_WIDTH, overrides[column.id] ?? column.defaultWidth)
+    Math.max(MIN_COLUMN_WIDTH, widthFor(overrides, column.id) ?? column.defaultWidth)
   );
   const total = reservedPx + base.reduce((sum, width) => sum + width, 0);
   if (total >= containerWidth) {
@@ -38,7 +46,7 @@ export function resolveColumnWidths({
   }
 
   const growIndices = columns.reduce<number[]>((acc, column, index) => {
-    if (overrides[column.id] === undefined) {
+    if (widthFor(overrides, column.id) === undefined) {
       acc.push(index);
     }
     return acc;
@@ -97,15 +105,17 @@ export function resizeColumnWidths(
   next[key] = width;
 
   const rightColumns = columns.slice(index + 1);
-  const rightFlexible = rightColumns.filter((column) => overrides[column.id] === undefined);
+  const rightFlexible = rightColumns.filter(
+    (column) => widthFor(overrides, column.id) === undefined
+  );
   if (rightFlexible.length === 0) {
     return next;
   }
 
-  const widthOf = (column: SizedColumn) => next[column.id] ?? column.defaultWidth;
+  const widthOf = (column: SizedColumn) => widthFor(next, column.id) ?? column.defaultWidth;
   const heldBefore = columns.slice(0, index).reduce((sum, column) => sum + widthOf(column), 0);
   const heldRightPinned = rightColumns
-    .filter((column) => overrides[column.id] !== undefined)
+    .filter((column) => widthFor(overrides, column.id) !== undefined)
     .reduce((sum, column) => sum + widthOf(column), 0);
   const available = containerWidth - reservedPx - heldBefore - width - heldRightPinned;
 
