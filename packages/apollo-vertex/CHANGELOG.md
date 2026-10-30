@@ -1,3 +1,9 @@
+## [@uipath/apollo-vertex-v2.3.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-vertex@2.2.1...@uipath/apollo-vertex@2.3.0) (2026-10-30)
+
+### Features
+
+* **apollo-vertex:** add success status to Alert ([fcae339](https://github.com/UiPath/apollo-ui/commit/fcae33935ceee778a487d0614ddf75d9eab82d33))
+
 ## [@uipath/apollo-vertex-v2.2.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-vertex@2.2.0...@uipath/apollo-vertex@2.2.1) (2026-10-27)
 
 ### Bug Fixes
