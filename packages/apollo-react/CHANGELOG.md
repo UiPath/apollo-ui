@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.12.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.12.0...@uipath/apollo-react@7.12.1) (2026-10-30)
+
+### Bug Fixes
+
+* **apollo-react:** give the stage title the canvas foreground colour ([f793b83](https://github.com/UiPath/apollo-ui/commit/f793b83e320981e53090157bdb1a4b533cddcfdc))
+
 ## [@uipath/apollo-react-v7.12.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.11.4...@uipath/apollo-react@7.12.0) (2026-10-30)
 
 ### Features
