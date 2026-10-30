@@ -91,6 +91,15 @@ describe('RulesEngine', () => {
       expect(RulesEngine.evaluateCondition(condition, { email: 'test@other.com' })).toBe(false);
     });
 
+    it('matches nothing with a pattern that does not compile, rather than throwing', () => {
+      expect(() =>
+        RulesEngine.evaluateCondition({ when: 'name', matches: '[' }, { name: '[' })
+      ).not.toThrow();
+      expect(RulesEngine.evaluateCondition({ when: 'name', matches: '[' }, { name: '[' })).toBe(
+        false
+      );
+    });
+
     it("evaluates 'custom' expression condition", () => {
       const condition: FieldCondition = { when: '', custom: 'age > 18' };
       expect(RulesEngine.evaluateCondition(condition, { age: 21 })).toBe(true);

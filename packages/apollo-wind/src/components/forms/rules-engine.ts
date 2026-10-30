@@ -58,10 +58,16 @@ export class RulesEngine {
       return !condition.notIn.includes(fieldValue);
     }
 
-    // Regex pattern matching. A value in another mode matches no pattern.
+    // Regex pattern matching. A value in another mode, or a pattern that does not compile,
+    // matches nothing: rules run while rendering, so throwing would take the form down.
     if (condition.matches !== undefined) {
       if (isValueModeOpaque(fieldValue)) return false;
-      const regex = new RegExp(condition.matches);
+      let regex: RegExp;
+      try {
+        regex = new RegExp(condition.matches);
+      } catch {
+        return false;
+      }
       return regex.test(String(fieldValue));
     }
 
