@@ -212,6 +212,25 @@ describe('tabs theme tokens', () => {
   });
 });
 
+describe('theme-aware scrollbars', () => {
+  const block = /\.future-dark,\s*\.dark,\s*\.dark-hc \{([\s\S]*?)\n\}/.exec(css)?.[1] ?? '';
+
+  it('sets the standard, inherited properties on the theme classes', () => {
+    expect(block).toContain('scrollbar-width: thin;');
+    expect(block).toContain('scrollbar-color: var(--color-border) transparent;');
+  });
+
+  it('keeps the WebKit descendant rules out of browsers that implement scrollbar-color', () => {
+    // `.dark *::-webkit-scrollbar` costs an ancestor walk per element on every recalc (MST-17369),
+    // and Chrome 121+ ignores it anyway once scrollbar-color is set.
+    const webkit = block.indexOf('::-webkit-scrollbar');
+    const guard = block.indexOf('@supports not (scrollbar-color: auto)');
+    expect(guard).toBeGreaterThan(-1);
+    expect(webkit).toBeGreaterThan(guard);
+    expect(css.match(/& \*::-webkit-scrollbar/g)).toHaveLength(4);
+  });
+});
+
 describe('host Material shield', () => {
   const stripComments = (s: string) => s.replace(/\/\*[\s\S]*?\*\//g, '');
   const marker = css.indexOf('/* Host Material shield');
