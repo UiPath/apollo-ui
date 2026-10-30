@@ -51,6 +51,11 @@
       "import": "./dist/postcss.config.export.js",
       "require": "./dist/postcss.config.export.cjs"
     },
+    "./postcss-scope-preflight": {
+      "types": "./postcss-scope-preflight.d.ts",
+      "import": "./postcss-scope-preflight.js",
+      "default": "./postcss-scope-preflight.js"
+    },
     "./editor-themes": {
       "import": "./dist/editor-themes/index.js",
       "require": "./dist/editor-themes/index.cjs",
@@ -59,7 +64,9 @@
   },
   "files": [
     "dist",
-    "postcss.config.export.js"
+    "postcss.config.export.js",
+    "postcss-scope-preflight.js",
+    "postcss-scope-preflight.d.ts"
   ],
   "scripts": {
     "dev": "rslib build --watch",
