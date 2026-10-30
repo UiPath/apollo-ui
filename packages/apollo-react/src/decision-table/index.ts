@@ -56,7 +56,7 @@ export {
 export * from './gridTypes';
 export { MarkGlyph } from './MarkGlyph';
 export { EMPTY_MARKS, type Mark, type MarkTone, type RowMark, type TableMarks } from './marks';
-export { type DragSelectionHandlers, useDragSelection } from './useDragSelection';
+export { useDragSelection } from './useDragSelection';
 export {
   type AxisSelection,
   type CellSelectionRange,
