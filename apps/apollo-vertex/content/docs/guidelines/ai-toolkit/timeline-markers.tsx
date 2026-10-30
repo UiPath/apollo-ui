@@ -7,6 +7,10 @@ import {
 const VARIANTS: { variant: TimelineMarkerVariant; label: string }[] = [
   { variant: "user", label: "User acted" },
   { variant: "completed-user", label: "User completed" },
+  {
+    variant: "completed-user-progress",
+    label: "User completed, next step running",
+  },
   { variant: "completed-ai", label: "Agent completed" },
   { variant: "ai-upcoming", label: "Queued" },
   { variant: "ai-suspended", label: "Suspended" },
