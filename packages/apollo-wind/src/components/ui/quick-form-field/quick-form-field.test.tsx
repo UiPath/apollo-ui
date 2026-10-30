@@ -2,7 +2,9 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { useState } from 'react';
+import { de } from 'react-day-picker/locale/de';
 import { describe, expect, it, vi } from 'vitest';
+import { LocaleProvider } from '../locale-provider';
 import { QuickFormField } from './quick-form-field';
 import type { QuickFormFieldMode } from './types';
 
@@ -540,12 +542,9 @@ describe('QuickFormField', () => {
     process.env.TZ = 'America/Los_Angeles';
     try {
       render(<QuickFormField fieldType="date" value="2024-01-15" />);
-      const expected = new Date(2024, 0, 15).toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      });
-      expect(screen.getByRole('button', { name: 'Date value' })).toHaveTextContent(expected);
+      expect(screen.getByRole('button', { name: 'Date value' })).toHaveTextContent(
+        'January 15, 2024'
+      );
     } finally {
       if (originalTz === undefined) {
         delete process.env.TZ;
@@ -553,6 +552,26 @@ describe('QuickFormField', () => {
         process.env.TZ = originalTz;
       }
     }
+  });
+
+  it("formats a date in English, not the browser's language, when no language is set", () => {
+    const toLocaleDateString = vi.spyOn(Date.prototype, 'toLocaleDateString');
+    try {
+      render(<QuickFormField fieldType="date" value="2024-01-15" />);
+      expect(toLocaleDateString).toHaveBeenCalledWith('en-US', expect.any(Object));
+      expect(toLocaleDateString).not.toHaveBeenCalledWith(undefined, expect.anything());
+    } finally {
+      toLocaleDateString.mockRestore();
+    }
+  });
+
+  it("formats a date in the nearest LocaleProvider's language", () => {
+    render(
+      <LocaleProvider locale={de}>
+        <QuickFormField fieldType="date" value="2024-01-15" />
+      </LocaleProvider>
+    );
+    expect(screen.getByRole('button', { name: 'Date value' })).toHaveTextContent('15. Januar 2024');
   });
 
   it('associates the default label with the field via a generated id when none is provided', () => {

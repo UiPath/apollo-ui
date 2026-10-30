@@ -25,12 +25,19 @@ export function toDateOnlyString(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-/** Formats a date field's value for display, falling back to the raw value if it isn't a valid date. */
-/** Unset, `localeCode` falls back to the browser's language. */
+/**
+ * Formats a date field's value for display, falling back to the raw value if it isn't a valid date.
+ * Unset, `localeCode` falls back to English, as the date pickers do: never the browser's
+ * language, which can differ from the platform's.
+ */
 export function formatDateValue(value: string, localeCode?: string): string {
   const date = toDateValue(value);
   return date
-    ? date.toLocaleDateString(localeCode, { year: 'numeric', month: 'long', day: 'numeric' })
+    ? date.toLocaleDateString(localeCode ?? 'en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
     : value;
 }
 
