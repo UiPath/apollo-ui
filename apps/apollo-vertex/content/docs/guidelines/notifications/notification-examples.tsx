@@ -217,7 +217,7 @@ export function CollapsibleAlertExample() {
           <Button
             variant="link"
             onClick={() => setExpanded(!expanded)}
-            className="mt-1.5 h-auto p-0 text-xs font-medium text-[oklch(0.60_0.125_210)] no-underline hover:underline"
+            className="mt-1.5 h-auto p-0 text-xs font-medium text-info no-underline hover:underline"
           >
             {expanded ? "Show less" : "Show all"}
           </Button>
