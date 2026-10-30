@@ -1,7 +1,12 @@
 import type React from 'react';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
-import { resizeColumnWidths, resolveColumnWidths, type SizedColumn } from './columnSizing';
+import {
+  resizeColumnWidths,
+  resolveColumnWidths,
+  type SizedColumn,
+  widthFor,
+} from './columnSizing';
 import { COLUMN_RESIZE_KEYBOARD_STEP, MIN_COLUMN_WIDTH } from './constants';
 
 const isThenable = (
@@ -109,7 +114,7 @@ export function useColumnWidths({
     [applyVisibility]
   );
 
-  const widths = stableColumns.map((column) => sizes[column.id] ?? column.defaultWidth);
+  const widths = stableColumns.map((column) => widthFor(sizes, column.id) ?? column.defaultWidth);
   const totalWidth = reservedPx + widths.reduce((sum, width) => sum + width, 0);
 
   // Refs so the stable callbacks below always read current values without being re-created.
@@ -394,7 +399,8 @@ export function useColumnWidths({
         const defaults = new Map(
           columnsRef.current.map((column) => [column.id, column.defaultWidth])
         );
-        const widthOf = (id: string) => layout[id] ?? defaults.get(id) ?? MIN_COLUMN_WIDTH;
+        const widthOf = (id: string) =>
+          widthFor(layout, id) ?? defaults.get(id) ?? MIN_COLUMN_WIDTH;
         let total = reservedPxRef.current;
         for (const column of columnsRef.current) {
           const width = widthOf(column.id);
@@ -445,7 +451,12 @@ export function useColumnWidths({
           controller.abort();
           if (latest !== startWidth) {
             applyResize(key, latest);
+            return;
           }
+          // Back where it started, so there is nothing to commit — but the drag wrote redistributed
+          // widths for the other columns, and recomputing at the start width does not necessarily
+          // reproduce the layout React state still holds. Put the DOM back, as a cancel does.
+          applyToDom(sizesRef.current);
         },
         { signal }
       );
