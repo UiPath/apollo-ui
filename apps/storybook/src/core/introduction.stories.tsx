@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Braces, PenLine } from 'lucide-react';
 import * as React from 'react';
+import uipathFaviconUrl from '../../../../packages/apollo-ui-icons/src/svg/third-party/uipath-favicon.svg?url';
 
 const meta = {
   title: 'Getting Started',
@@ -504,6 +505,12 @@ function TokensTab() {
           description="The lucide UI icons our products use, with one icon per meaning."
           storyPath="/story/apollo-core-icons-icons-lucide--icons-lucide"
           example={<Braces className="h-6 w-6 text-foreground" aria-hidden="true" />}
+        />
+        <TokenCard
+          title="Logos"
+          description="UiPath brand and product logos, with imports and SVG downloads."
+          storyPath="/story/apollo-core-icons-logos--logos"
+          example={<img src={uipathFaviconUrl} alt="" className="h-6 w-6" />}
         />
         <TokenCard
           title="Shadows"
