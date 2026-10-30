@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.82.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.81.0...@uipath/apollo-wind@2.82.0) (2026-10-30)
+
+### Features
+
+* **apollo-wind:** export Theme type ([d4977c7](https://github.com/UiPath/apollo-ui/commit/d4977c7fa0d922e0b0350c0a69cf55fdb8e121eb))
+
 ## [@uipath/apollo-wind-v2.81.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.80.1...@uipath/apollo-wind@2.81.0) (2026-10-29)
 
 ### Features
