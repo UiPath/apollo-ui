@@ -14,7 +14,22 @@
  * itself. `:where()` keeps Preflight at zero specificity, as upstream.
  *
  * Runs after Tailwind. Preflight is found by shape, not source file: Tailwind's production optimise
- * pass re-parses its output, so every rule reports the entry file as its source.
+ * pass re-parses its output, so every rule reports the entry file as its source. The run starts at
+ * the `::backdrop` box-sizing rule and ends at `[hidden]:where(:not([hidden=until-found]))`; if a
+ * Tailwind update moves the end, the plugin throws rather than scope the rest of the base layer. If
+ * the start moves, nothing is scoped: the test against real Tailwind output in `src/styles` is what
+ * catches that, so keep it when bumping Tailwind.
+ *
+ * Two cascade details for consumers:
+ *
+ * - Scoping proximity ranks below specificity but above source order. A scoped Preflight
+ *   declaration therefore beats an unscoped one of equal specificity in the same layer, whatever
+ *   the order, which the old wrapper did not. Override Preflight from an unlayered rule or with
+ *   higher specificity, not from a later rule in `@layer base`.
+ * - Safari 26.0 to 26.3 do not apply `@scope` rules to elements with a UA shadow root (`input`,
+ *   `textarea`; WebKit 305369, fixed in 26.4). Form controls render with UA styles there. Those
+ *   versions are outside UiPath's support matrix (Safari: latest version only), and `@supports`
+ *   cannot detect the bug, so there is no workaround.
  *
  * Usage, in a consumer's postcss config:
  *
@@ -164,6 +179,14 @@ const scopePreflight = (options) => {
             // A bare `*` in the base layer (apollo-wind's `border-color`) is the same kind of page-wide reset.
             toScope.push(node);
           }
+        }
+        if (inPreflight) {
+          // Scoping on to the end of the layer would also wrap the consumer's own base rules
+          // (`body { … }` matches nothing inside a root), with no build error. Fail instead.
+          throw layer.error(
+            'scope-preflight: found the start of Preflight but not its last rule, `[hidden]:where(:not([hidden=until-found]))`. Tailwind may have changed Preflight; update isPreflightEnd.',
+            { plugin: 'scope-preflight' }
+          );
         }
 
         // One `@scope` block per run of consecutive nodes. Chrome resolves scope activations per
