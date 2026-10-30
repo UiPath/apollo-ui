@@ -73,6 +73,8 @@ The conditions take the same \`fields\`, \`operators\`, \`valueModes\`, \`variab
 \`renderValue\` as \`ConditionsEditor\`, and stay flat unless \`maxDepth\` allows groups. Use
 \`isRuleComplete\` to tell which rules run as written. Follow the Repeatable Rows guidance page
 for layout.
+
+For forms that run on RulesEngine, Forms/Field rules connects the editor to stored \`FieldRule\`s.
 `,
       },
     },

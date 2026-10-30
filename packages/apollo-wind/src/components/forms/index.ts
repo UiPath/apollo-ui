@@ -40,6 +40,12 @@ export {
   type FieldControlProps,
 } from './field-control';
 export { FormFieldRenderer } from './field-renderer';
+export {
+  type FieldRuleOutcome,
+  type FieldRulesOptions,
+  fromFieldRules,
+  toFieldRules,
+} from './field-rules';
 export { FormDesigner } from './form-designer';
 // Plugins
 export {
@@ -95,7 +101,15 @@ export {
   type ModeAwareFieldProps,
 } from './mode-aware-field';
 export { ExpressionBuilder, RuleBuilder, RulesEngine } from './rules-engine';
+export {
+  type FieldRuleField,
+  type FieldValueType,
+  RULES_ENGINE_OPERATORS,
+  rulesEngineDialect,
+  rulesEngineVocabulary,
+} from './rules-engine-dialect';
 export { formatTemplate, StringListField, type StringListFieldProps } from './string-list-field';
+export { useFieldRules } from './use-field-rules';
 export {
   type CodecContext,
   type ConvertResult,

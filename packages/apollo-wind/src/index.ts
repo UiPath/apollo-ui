@@ -42,6 +42,8 @@ export type {
 } from './components/forms/field-control';
 export { FIELD_CONTROL_GEOMETRY, FieldControl } from './components/forms/field-control';
 export { FormFieldRenderer } from './components/forms/field-renderer';
+export type { FieldRuleOutcome, FieldRulesOptions } from './components/forms/field-rules';
+export { fromFieldRules, toFieldRules } from './components/forms/field-rules';
 export { FormDesigner } from './components/forms/form-designer';
 export {
   analyticsPlugin,
@@ -99,8 +101,15 @@ export {
   RuleBuilder,
   RulesEngine,
 } from './components/forms/rules-engine';
+export type { FieldRuleField, FieldValueType } from './components/forms/rules-engine-dialect';
+export {
+  RULES_ENGINE_OPERATORS,
+  rulesEngineDialect,
+  rulesEngineVocabulary,
+} from './components/forms/rules-engine-dialect';
 export type { StringListFieldProps } from './components/forms/string-list-field';
 export { formatTemplate, StringListField } from './components/forms/string-list-field';
+export { useFieldRules } from './components/forms/use-field-rules';
 export type {
   CodecContext,
   ConvertResult,
