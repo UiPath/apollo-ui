@@ -1,3 +1,24 @@
+## [@uipath/apollo-react-v7.12.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.11.4...@uipath/apollo-react@7.12.0) (2026-10-30)
+
+### Features
+
+* **apollo-react:** ship the grid's tailwind entry and demo its full affordances [MST-17298] ([accc7ef](https://github.com/UiPath/apollo-ui/commit/accc7efe7b458ff9b041bb9f21a9e92396bb80ec))
+* **apollo-react:** the virtualized editing grid at ./grid [MST-17298] ([c5ab10b](https://github.com/UiPath/apollo-ui/commit/c5ab10bb1a3a5c03a8d6fcf1769ab56cbff9852d))
+* **apollo-react:** widen the grid barrel to its consumers' real surface [MST-17298] ([0890495](https://github.com/UiPath/apollo-ui/commit/0890495182bbf164ad910cc3d579456109730420))
+
+### Bug Fixes
+
+* **apollo-react:** address the Copilot review on the decision table [MST-17298] ([bf16631](https://github.com/UiPath/apollo-ui/commit/bf166318193e74b9cabeb6f402f928914ae94577))
+* **apollo-react:** address the review on the decision table [MST-17298] ([63b0e83](https://github.com/UiPath/apollo-ui/commit/63b0e8363a9328fa63b9005b5ed6127f4e5be9c7))
+* **apollo-react:** address the second review pass on the decision table [MST-17298] ([fcf5d88](https://github.com/UiPath/apollo-ui/commit/fcf5d88003561c2ef10928857b75a7207c1cb0cf))
+* **apollo-react:** close the review gaps around the grid's packaging and gates [MST-17298] ([86b74ce](https://github.com/UiPath/apollo-ui/commit/86b74ce89c614e275657d5709929725d67303c21))
+* **apollo-react:** export the decision table's prop types from the barrel [MST-17298] ([35be379](https://github.com/UiPath/apollo-ui/commit/35be379fb684e1c5226c8d77bd442db8ba8cbd65))
+* **apollo-react:** pass the required grid labels in the grid stories [MST-17298] ([ca83f2a](https://github.com/UiPath/apollo-ui/commit/ca83f2afc4ba636afc277d7e98ece2b9e981afef))
+* **apollo-react:** prototype-safe width reads and a resize that returns home [MST-17298] ([b56397d](https://github.com/UiPath/apollo-ui/commit/b56397debfa8a7cd0a49db478cb970b8ca810a0e))
+* **apollo-react:** scope the styling entry and keep the tsconfig diff minimal [MST-17298] ([c501464](https://github.com/UiPath/apollo-ui/commit/c50146439bbe91f0a9032ae842b5545f8aceb381))
+* **apollo-react:** suppress the window-splitter diagnostic on its element [MST-17298] ([4076813](https://github.com/UiPath/apollo-ui/commit/4076813b677f4503f8f650d23d36dbdfc059ee66))
+* **repo:** pin @hono/node-server to the version actually vetted [MST-17298] ([2e220d5](https://github.com/UiPath/apollo-ui/commit/2e220d53e9a0d1df01f2f95b4d2a7a51eb3ec499))
+
 ## [@uipath/apollo-react-v7.11.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.11.3...@uipath/apollo-react@7.11.4) (2026-10-29)
 
 ### Bug Fixes
