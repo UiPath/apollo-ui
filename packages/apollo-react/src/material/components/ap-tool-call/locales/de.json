@@ -1,9 +1,9 @@
 {
-  "tool-call.errors": "Fehler",
-  "tool-call.escalation": "Eskalation",
-  "tool-call.input": "Eingabe",
-  "tool-call.output": "Ausgabe",
-  "tool-call.ran": "{toolName} ausgeführt ({duration} Sek.)",
   "tool-call.running": "{toolName} wird ausgeführt…",
-  "tool-call.traces": "Ablaufverfolgungen"
+  "tool-call.ran": "{toolName} ausgeführt ({duration} Sek.)",
+  "tool-call.input": "Eingabe",
+  "tool-call.traces": "Ablaufverfolgungen",
+  "tool-call.escalation": "Eskalation",
+  "tool-call.errors": "Fehler",
+  "tool-call.output": "Ausgabe"
 }
