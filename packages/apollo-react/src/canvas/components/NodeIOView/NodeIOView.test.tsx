@@ -404,6 +404,86 @@ describe('NodeIOView', () => {
     expect(screen.getByText('errorMessage')).toBeInTheDocument();
   });
 
+  it('mounts filtered by activeFilterId and reports the user clearing it', async () => {
+    const onFilterChange = vi.fn();
+    render(
+      <NodeIOView
+        schema={SCHEMA}
+        value={VALUE}
+        filters={UNSET_FILTERS}
+        activeFilterId="unset"
+        onFilterChange={onFilterChange}
+      />
+    );
+    expect(screen.queryByText('statusCode')).not.toBeInTheDocument();
+    expect(screen.getByText('errorMessage')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Filter: Unset fields' }));
+    expect(screen.getByRole('menuitemradio', { name: /Unset fields/ })).toBeChecked();
+    await userEvent.click(screen.getByRole('menuitemradio', { name: 'All' }));
+    expect(onFilterChange).toHaveBeenCalledWith(null);
+  });
+
+  it("keeps the host's filter until it changes activeFilterId", async () => {
+    const onFilterChange = vi.fn();
+    const { rerender } = render(
+      <NodeIOView
+        schema={SCHEMA}
+        value={VALUE}
+        filters={UNSET_FILTERS}
+        activeFilterId={null}
+        onFilterChange={onFilterChange}
+      />
+    );
+    await userEvent.click(screen.getByRole('button', { name: /Filter/ }));
+    await userEvent.click(screen.getByRole('menuitemradio', { name: /Unset fields/ }));
+    expect(onFilterChange).toHaveBeenCalledWith('unset');
+    // The host didn't take the change, so the tree stays unfiltered.
+    expect(screen.getByText('statusCode')).toBeInTheDocument();
+
+    rerender(
+      <NodeIOView
+        schema={SCHEMA}
+        value={VALUE}
+        filters={UNSET_FILTERS}
+        activeFilterId="unset"
+        onFilterChange={onFilterChange}
+      />
+    );
+    expect(screen.queryByText('statusCode')).not.toBeInTheDocument();
+  });
+
+  it('treats an unknown activeFilterId as no filter', async () => {
+    render(
+      <NodeIOView
+        schema={SCHEMA}
+        value={VALUE}
+        filters={UNSET_FILTERS}
+        activeFilterId="missing"
+        onFilterChange={() => {}}
+      />
+    );
+    expect(screen.getByText('statusCode')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Filter' }));
+    expect(screen.getByRole('menuitemradio', { name: 'All' })).toBeChecked();
+  });
+
+  it('reports filter changes while tracking the filter itself', async () => {
+    const onFilterChange = vi.fn();
+    render(
+      <NodeIOView
+        schema={SCHEMA}
+        value={VALUE}
+        filters={UNSET_FILTERS}
+        onFilterChange={onFilterChange}
+      />
+    );
+    await userEvent.click(screen.getByRole('button', { name: /Filter/ }));
+    await userEvent.click(screen.getByRole('menuitemradio', { name: /Unset fields/ }));
+    expect(onFilterChange).toHaveBeenCalledWith('unset');
+    expect(screen.queryByText('statusCode')).not.toBeInTheDocument();
+  });
+
   it('searches keys and values', async () => {
     render(<NodeIOView schema={SCHEMA} value={VALUE} />);
     await userEvent.click(screen.getByRole('button', { name: 'Search fields and values' }));

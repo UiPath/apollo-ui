@@ -83,6 +83,16 @@ export interface NodeIOViewProps {
   rowWrapper?: JsonTreeRowWrapper;
   /** Toolbar filter options. Omit to hide the filter control. */
   filters?: JsonTreeFilterOption[];
+  /**
+   * Id of the active filter, or null for none. Setting it makes the filter
+   * controlled, so pair it with `onFilterChange`; leave it undefined for the
+   * view to track the filter itself, starting at none. An id that matches no
+   * option in `filters` acts as no filter, and applies once a matching option
+   * arrives.
+   */
+  activeFilterId?: string | null;
+  /** Called with the filter id (null for none) when the user picks a filter. */
+  onFilterChange?: (id: string | null) => void;
   /** Per-node visual annotations (labels, chips, badge overrides). None by default. */
   decorateNode?: (node: JsonTreeNode) => NodeDecoration | undefined;
   /** Custom type-badge icons per node. Return undefined to keep the default type icon. */

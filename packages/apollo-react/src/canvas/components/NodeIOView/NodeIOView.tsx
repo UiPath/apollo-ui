@@ -83,6 +83,8 @@ export function NodeIOView({
   beforeContent,
   rowWrapper,
   filters,
+  activeFilterId: controlledFilterId,
+  onFilterChange,
   decorateNode,
   deriveTypeIcon,
   renderValue,
@@ -104,8 +106,13 @@ export function NodeIOView({
   const containerPaths = useMemo(() => collectContainerPaths(nodes), [nodes]);
 
   const [query, setQuery] = useState('');
-  const [activeFilterId, setActiveFilterId] = useState<string | null>(null);
-  const activeFilter = filters?.find((f) => f.id === activeFilterId);
+  const [uncontrolledFilterId, setUncontrolledFilterId] = useState<string | null>(null);
+  const filterId = controlledFilterId === undefined ? uncontrolledFilterId : controlledFilterId;
+  const activeFilter = filters?.find((f) => f.id === filterId);
+  const handleFilterChange = (id: string | null) => {
+    if (controlledFilterId === undefined) setUncontrolledFilterId(id);
+    onFilterChange?.(id);
+  };
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(
       containerPaths.filter((c) => c.depth >= defaultCollapsedDepth).map((c) => [c.path, true])
@@ -247,8 +254,9 @@ export function NodeIOView({
           onQueryChange={setQuery}
           searchPlaceholder={searchPlaceholder}
           filters={filters}
-          activeFilterId={activeFilterId}
-          onFilterChange={setActiveFilterId}
+          // The resolved option's id, so an unknown id shows "All" as checked.
+          activeFilterId={activeFilter?.id ?? null}
+          onFilterChange={handleFilterChange}
           allCollapsed={allCollapsed}
           onToggleAll={containerPaths.length > 0 ? toggleAll : undefined}
           leading={tabSwitcher}
