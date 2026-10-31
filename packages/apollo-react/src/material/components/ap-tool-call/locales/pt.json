@@ -1,9 +1,9 @@
 {
-  "tool-call.errors": "Erros",
-  "tool-call.escalation": "Escalamento",
-  "tool-call.input": "Entrada",
-  "tool-call.output": "Saída",
-  "tool-call.ran": "Executou-se {toolName} ({duration} s)",
   "tool-call.running": "A executar {toolName}…",
-  "tool-call.traces": "Rastreios"
+  "tool-call.ran": "Executou-se {toolName} ({duration} s)",
+  "tool-call.input": "Entrada",
+  "tool-call.traces": "Rastreios",
+  "tool-call.escalation": "Escalamento",
+  "tool-call.errors": "Erros",
+  "tool-call.output": "Saída"
 }
