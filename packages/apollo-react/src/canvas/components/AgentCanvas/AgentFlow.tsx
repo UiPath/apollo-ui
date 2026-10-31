@@ -1,12 +1,17 @@
 import { Column } from '@uipath/apollo-react/canvas/layouts';
-import { type OnNodeDrag, Panel, useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
+import {
+  type OnMove,
+  type OnNodeDrag,
+  Panel,
+  useReactFlow,
+} from '@uipath/apollo-react/canvas/xyflow/react';
 import type { NodeProps } from '@uipath/apollo-react/canvas/xyflow/system';
 import { Separator } from '@uipath/apollo-wind';
 import { Play, Redo2, Square, StickyNote as StickyNoteIcon, Undo2 } from 'lucide-react';
 import type React from 'react';
 import type { PropsWithChildren } from 'react';
 import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
-import { BaseCanvas } from '../../components/BaseCanvas';
+import { BASE_CANVAS_DEFAULTS, BaseCanvas } from '../../components/BaseCanvas';
 import { NodeRegistryProvider } from '../../core/NodeRegistryProvider';
 import {
   type AgentFlowCustomEdge,
@@ -224,6 +229,9 @@ const createResourceNodeWrapper = (opts: {
   };
 };
 
+// Round to 2 decimal places to avoid floating-point precision issues during pan
+const roundZoom = (zoom: number) => Math.round(zoom * 100) / 100;
+
 const AgentFlowInner = memo(
   ({
     children,
@@ -314,8 +322,13 @@ const AgentFlowInner = memo(
       [stickyNoteNodeTranslations]
     );
 
-    const { fitView: reactFlowFitView, screenToFlowPosition: reactFlowScreenToFlowPosition } =
-      useReactFlow();
+    const {
+      fitView: reactFlowFitView,
+      getZoom: reactFlowGetZoom,
+      screenToFlowPosition: reactFlowScreenToFlowPosition,
+      zoomIn: reactFlowZoomIn,
+      zoomOut: reactFlowZoomOut,
+    } = useReactFlow();
     const timelinePlayerRef = useRef<HTMLDivElement>(null);
     const suggestionGroupPanelRef = useRef<HTMLDivElement>(null);
     const toolbarContainerRef = useRef<HTMLDivElement>(null);
@@ -599,20 +612,55 @@ const AgentFlowInner = memo(
       return undefined; // Let BaseCanvas use its default
     }, [zoomLevel]);
 
-    // Handle viewport changes to capture zoom level changes
-    const handleViewportChange = useCallback(
-      (_event: unknown, viewport: { x: number; y: number; zoom: number }) => {
-        // Round to 2 decimal places to avoid floating-point precision issues during pan
-        const newZoomLevel = Math.round(viewport.zoom * 100) / 100;
-        const currentZoomLevel = zoomLevel ? Math.round(zoomLevel * 100) / 100 : undefined;
+    // Report a zoom level to the consumer only when it differs from the zoomLevel prop
+    const reportZoomLevel = useCallback(
+      (zoom: number) => {
+        const newZoomLevel = roundZoom(zoom);
+        const currentZoomLevel = zoomLevel ? roundZoom(zoomLevel) : undefined;
 
-        // Only call onSetZoom when zoom actually changes
         if (onZoomLevelChange && newZoomLevel !== currentZoomLevel) {
           onZoomLevelChange(newZoomLevel);
         }
       },
       [onZoomLevelChange, zoomLevel]
     );
+
+    // Last zoom the viewport reported through onMove, including programmatic moves.
+    const lastViewportZoomRef = useRef(
+      roundZoom(zoomLevel ?? BASE_CANVAS_DEFAULTS.defaultViewport.zoom)
+    );
+
+    // xyflow passes a null event for programmatic moves (the initial fitView, setCenter,
+    // zoomIn/zoomOut calls). Report zoom only when direct user input (wheel, pinch) changes
+    // it, so that loading a flow and then panning does not change the persisted zoom level.
+    // The zoom control buttons report their result after the transition ends (see below).
+    const handleViewportChange: OnMove = useCallback(
+      (event, viewport) => {
+        const zoom = roundZoom(viewport.zoom);
+        const zoomChanged = zoom !== lastViewportZoomRef.current;
+        lastViewportZoomRef.current = zoom;
+
+        if (event && zoomChanged) {
+          reportZoomLevel(zoom);
+        }
+      },
+      [reportZoomLevel]
+    );
+
+    const handleZoomInClick = useCallback(async () => {
+      await reactFlowZoomIn();
+      reportZoomLevel(reactFlowGetZoom());
+    }, [reactFlowZoomIn, reactFlowGetZoom, reportZoomLevel]);
+
+    const handleZoomOutClick = useCallback(async () => {
+      await reactFlowZoomOut();
+      reportZoomLevel(reactFlowGetZoom());
+    }, [reactFlowZoomOut, reactFlowGetZoom, reportZoomLevel]);
+
+    const handleFitViewClick = useCallback(async () => {
+      await reactFlowFitView(adjustedFitViewOptions);
+      reportZoomLevel(reactFlowGetZoom());
+    }, [reactFlowFitView, adjustedFitViewOptions, reactFlowGetZoom, reportZoomLevel]);
 
     // Bottom-center mode toolbar. When the toolbar is the control shown in this region
     // (see showModeToolbar below), it keeps all its items rather than collapsing — they are
@@ -682,7 +730,9 @@ const AgentFlowInner = memo(
             <Panel position="bottom-right">
               <CanvasZoomControls
                 orientation="vertical"
-                onFitView={() => reactFlowFitView(adjustedFitViewOptions)}
+                onZoomIn={handleZoomInClick}
+                onZoomOut={handleZoomOutClick}
+                onFitView={handleFitViewClick}
                 onOrganize={mode === 'design' ? onOrganize : undefined}
                 labels={{
                   zoomIn: translations.zoomIn,

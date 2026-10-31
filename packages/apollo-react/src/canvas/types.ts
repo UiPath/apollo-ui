@@ -346,6 +346,11 @@ export type AgentFlowProps = {
    * If not provided, defaults to undefined
    */
   zoomLevel?: number;
+  /**
+   * Called when the user changes the zoom level: wheel, pinch, or the zoom control buttons.
+   * A pan does not call it. Programmatic viewport changes, such as the initial fitView,
+   * also do not call it.
+   */
   onZoomLevelChange?: (zoomLevel: number) => void;
 
   // sticky notes
