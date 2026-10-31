@@ -110,8 +110,19 @@ export interface NodeDecorationChip {
   label?: string;
   /** Icon rendered before the label (or alone when there is no label). */
   icon?: ReactNode;
-  /** Tooltip shown on hover. */
-  tooltip?: string;
+  /**
+   * Tooltip shown on hover. Rich content (lists, `<code>`, line breaks) is
+   * fine, but keep it non-interactive: the chip takes no focus and a tooltip
+   * must not hold controls, so put actions in `nodeActions` instead. On an
+   * icon-only chip a string tooltip also becomes its accessible name.
+   */
+  tooltip?: ReactNode;
+  /**
+   * Accessible name for an icon-only chip, winning over a string `tooltip`.
+   * Required when the tooltip isn't a string, or the icon goes unnamed.
+   * Ignored on a chip with a `label`, which already names it.
+   */
+  ariaLabel?: string;
   tone?: NodeDecorationTone;
 }
 

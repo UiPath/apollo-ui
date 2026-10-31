@@ -1,4 +1,5 @@
 import type { Meta, StoryFn } from '@storybook/react-vite';
+import { TriangleAlert } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import {
   buildJsonTree,
@@ -232,6 +233,67 @@ export const ReferenceVariables: StoryFn = () => {
           collapsed={collapsed}
           onToggleCollapsed={toggle}
           decorateNode={decorateReference}
+          readOnly
+        />
+      </div>
+    </div>
+  );
+};
+
+/** Upstream data with gaps: `options` arrived empty, so its fields have no rows. */
+const partialEmailValue: JsonObject = { ...sendEmailValue, to: null, options: {} };
+
+/** Paths the step reads that have no value yet, keyed by the row that stands in for them. */
+const MISSING_PATHS: Record<string, string[]> = {
+  options: ['options.priority', 'options.trackOpens'],
+  to: ['to'],
+};
+
+function decorateMissing(node: JsonTreeNode): NodeDecoration | undefined {
+  const missing = MISSING_PATHS[node.path];
+  if (!missing) return undefined;
+  return {
+    chip: {
+      icon: <TriangleAlert size={12} />,
+      tone: 'warning',
+      ariaLabel: `Missing ${missing.length === 1 ? 'value' : 'values'}: ${missing.join(', ')}`,
+      tooltip: (
+        <div className="flex flex-col gap-1">
+          <span>{missing.length === 1 ? 'Missing value:' : 'Missing values:'}</span>
+          <ul className="flex flex-col gap-0.5">
+            {missing.map((path) => (
+              <li key={path}>
+                <code className="font-mono">{path}</code>
+              </li>
+            ))}
+          </ul>
+          <span className="opacity-80">Configure mock data to run this step.</span>
+        </div>
+      ),
+    },
+  };
+}
+
+/**
+ * A chip's `tooltip` can hold rich content, such as a list of paths in code
+ * style. An icon-only chip with a non-string tooltip takes its accessible name
+ * from `ariaLabel`. Keep tooltip content non-interactive, and put actions in
+ * `nodeActions`.
+ */
+export const RichChipTooltip: StoryFn = () => {
+  const nodes = useMemo(() => buildJsonTree({ value: partialEmailValue }), []);
+  const { collapsed, toggle } = useCollapsed();
+  return (
+    <div className={frame}>
+      <span className={caption}>
+        Send email inputs. Hover a warning icon to see the missing paths it stands for.
+      </span>
+      <div className="w-full max-w-md rounded-lg border border-border">
+        <JsonTreeView
+          nodes={nodes}
+          collapsed={collapsed}
+          onToggleCollapsed={toggle}
+          decorateNode={decorateMissing}
           readOnly
         />
       </div>

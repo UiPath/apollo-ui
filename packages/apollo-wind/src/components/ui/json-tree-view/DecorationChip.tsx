@@ -20,6 +20,8 @@ export function DecorationChip({ decoration }: { decoration?: NodeDecoration }) 
   const chip = decoration?.chip;
   if (!chip || (chip.label == null && chip.icon == null)) return null;
   const tone = chip.tone ?? 'neutral';
+  const hasTooltip = chip.tooltip != null && chip.tooltip !== false && chip.tooltip !== '';
+  const iconName = chip.ariaLabel ?? (typeof chip.tooltip === 'string' ? chip.tooltip : undefined);
 
   // A label gets the pill treatment; a bare icon renders unboxed.
   const content = chip.label ? (
@@ -37,16 +39,17 @@ export function DecorationChip({ decoration }: { decoration?: NodeDecoration }) 
     <span
       className={cn('flex shrink-0 items-center', CHIP_TONE_TEXT_CLASS[tone])}
       // Only an element with an explicit role supports aria-label, so pair
-      // them: a bare icon with a tooltip becomes a labelled `img`.
-      {...(chip.tooltip ? { role: 'img' as const, 'aria-label': chip.tooltip } : {})}
+      // them: a named bare icon becomes a labelled `img`.
+      {...(iconName ? { role: 'img' as const, 'aria-label': iconName } : {})}
     >
       {chip.icon}
     </span>
   );
 
-  if (!chip.tooltip) return content;
+  if (!hasTooltip) return content;
   return (
-    <JsonTreeTooltip placement="top" content={<span className="text-xs">{chip.tooltip}</span>}>
+    // A div, since rich content (lists and other blocks) can't sit in a span.
+    <JsonTreeTooltip placement="top" content={<div className="text-xs">{chip.tooltip}</div>}>
       {content}
     </JsonTreeTooltip>
   );
