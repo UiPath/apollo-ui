@@ -1519,6 +1519,20 @@ export const Output: Story = {
   parameters: { layout: 'fullscreen' },
 };
 
+export const InputPreFiltered: Story = {
+  name: 'Input / Pre-filtered',
+  render: () => <InputPreFilteredStory />,
+  parameters: {
+    layout: 'fullscreen',
+    docs: {
+      description: {
+        story:
+          'The host owns the active filter through `activeFilterId` and `onFilterChange`. The panel opens on "Referenced in this node", and the reveal button sets that filter again after the user clears it, without remounting the tree.',
+      },
+    },
+  },
+};
+
 // ============================================================================
 // Input / Output
 // ============================================================================
@@ -1586,6 +1600,42 @@ function InputOutputStory() {
         />
       )}
       <Toaster />
+    </div>
+  );
+}
+
+/** The Input panel with a host-controlled filter, as when Run reveals a node's missing inputs. */
+function InputPreFilteredStory() {
+  const [inputValue, setInputValue] = useState<JsonContainer | undefined>(INPUT_VALUE);
+  const [filterId, setFilterId] = useState<string | null>('referenced');
+
+  return (
+    <div className="flex flex-col items-center gap-4 p-8">
+      <Button variant="outline" size="sm" onClick={() => setFilterId('referenced')}>
+        Reveal referenced inputs
+      </Button>
+      <PanelFrame>
+        <NodePropertyPanel panelTitle="Input" onClose={() => {}} className="h-[640px]">
+          <div className="flex h-full flex-col">
+            <NodeIOView
+              className="min-h-0 flex-1"
+              inset
+              schema={INPUT_SCHEMA}
+              value={inputValue}
+              onValueChange={setInputValue}
+              searchPlaceholder="Search inputs..."
+              filters={INPUT_FILTERS}
+              activeFilterId={filterId}
+              onFilterChange={setFilterId}
+              decorateNode={decorateNodeHeader}
+              deriveTypeIcon={deriveFileTypeIcon}
+              renderValue={renderFileValueCell}
+              renderCodeEditor={renderJsonCodeEditor}
+              pathForCopy={(path) => `$vars.${path}`}
+            />
+          </div>
+        </NodePropertyPanel>
+      </PanelFrame>
     </div>
   );
 }
