@@ -443,6 +443,94 @@ describe('JsonTreeView row decorations and actions', () => {
     await user.hover(screen.getByRole('button', { name: 'Copy path for node1' }));
     expect(await screen.findByRole('tooltip')).toHaveTextContent('Message received');
   });
+
+  it('names an icon-only chip by its string tooltip', async () => {
+    const user = userEvent.setup();
+    render(
+      <JsonTreeView
+        nodes={nodes}
+        readOnly
+        decorateNode={(node) =>
+          node.path === 'node1'
+            ? { chip: { icon: <svg />, tooltip: 'Node output is mocked' } }
+            : undefined
+        }
+      />
+    );
+
+    const chip = screen.getByRole('img', { name: 'Node output is mocked' });
+    await user.hover(chip);
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('Node output is mocked');
+  });
+
+  it('renders a rich chip tooltip as given and names the chip by ariaLabel', async () => {
+    const user = userEvent.setup();
+    render(
+      <JsonTreeView
+        nodes={nodes}
+        readOnly
+        decorateNode={(node) =>
+          node.path === 'node1'
+            ? {
+                chip: {
+                  icon: <svg />,
+                  ariaLabel: 'Two values are missing',
+                  tooltip: (
+                    <ul>
+                      <li>
+                        <code>node1.output.id</code>
+                      </li>
+                      <li>
+                        <code>node1.output.email</code>
+                      </li>
+                    </ul>
+                  ),
+                },
+              }
+            : undefined
+        }
+      />
+    );
+
+    await user.hover(screen.getByRole('img', { name: 'Two values are missing' }));
+    const tooltip = await screen.findByRole('tooltip');
+    expect(within(tooltip).getAllByRole('listitem')).toHaveLength(2);
+    expect(within(tooltip).getByText('node1.output.email').tagName).toBe('CODE');
+  });
+
+  it('leaves an icon-only chip unnamed when a rich tooltip has no ariaLabel', () => {
+    render(
+      <JsonTreeView
+        nodes={nodes}
+        readOnly
+        decorateNode={(node) =>
+          node.path === 'node1'
+            ? { chip: { icon: <svg data-testid="chip-icon" />, tooltip: <b>Missing</b> } }
+            : undefined
+        }
+      />
+    );
+
+    expect(screen.getByTestId('chip-icon')).toBeInTheDocument();
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+  });
+
+  it('keeps a labelled chip named by its label, not ariaLabel', () => {
+    render(
+      <JsonTreeView
+        nodes={nodes}
+        readOnly
+        decorateNode={(node) =>
+          node.path === 'node1'
+            ? { chip: { label: 'mocked', ariaLabel: 'ignored', tooltip: 'Mocked output' } }
+            : undefined
+        }
+      />
+    );
+
+    expect(screen.getByText('mocked')).toBeInTheDocument();
+    expect(screen.queryByLabelText('ignored')).not.toBeInTheDocument();
+  });
 });
 
 describe('JsonTreeView keyboard (treegrid)', () => {
