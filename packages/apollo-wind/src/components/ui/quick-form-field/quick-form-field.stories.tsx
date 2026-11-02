@@ -37,7 +37,7 @@ the form-field anatomy (\`FormField\`, \`FormFieldLabel\`, \`InputGroup\`). See
 - The header's actions are composed in \`headerActions\`, in the order the surface wants:
   \`QuickFormFieldTypePicker\`, \`QuickFormFieldAiAssist\`, \`QuickFormFieldInsertVariable\`,
   and the consumer's own. Each reads its field, so none needs wiring to it. See
-  **Header actions**.
+  **Header actions**. A field's rules go in a \`RulesAction\`: see **Forms/Field rules**.
 - The type picker swaps the control itself: String, Text area, Integer,
   Decimal number, Date, Date and time, Boolean, Single select, Multi select,
   Array, and File each render their own matching input. Its \`types\` chooses which

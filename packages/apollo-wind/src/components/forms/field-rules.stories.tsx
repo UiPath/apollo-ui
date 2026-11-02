@@ -1,5 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { useState } from 'react';
+import { useId, useState } from 'react';
+import { RulesAction } from '@/components/ui/field-actions';
+import { Label } from '@/components/ui/label';
+import {
+  type QuickFieldType,
+  QuickFormField,
+  QuickFormFieldInsertVariable,
+  QuickFormFieldTypePicker,
+} from '@/components/ui/quick-form-field';
 import { RulesEditor } from '@/components/ui/rules-editor';
 import type { FieldRuleOutcome, FieldRulesOptions } from './field-rules';
 import type { FieldRule } from './form-schema';
@@ -34,6 +42,13 @@ is flagged on its rule. It is still stored as typed, and never applies.
 
 Field ids should be identifier paths, such as \`amount\` or \`user.role\`, as expressions name
 fields by them.
+
+In a QuickFormField, a field's rules go in its header: render a \`RulesAction\` in
+\`headerActions\` and pass it \`useFieldRules\`'s value and onChange. With \`requiredOutcome\`, a
+rule of that outcome with no conditions shows as a Required switch above the others, and Make
+conditional gives it one. A host that keeps the field's \`required\` flag apart from its rules
+passes the same \`requiredOutcome\` in \`useFieldRules\`'s options, and gets the flag back beside
+the rules in one call. See **In a field's header**.
 `,
       },
     },
@@ -64,6 +79,8 @@ const OUTCOMES: FieldRuleOutcome[] = [
   { value: 'require', label: 'Require', effects: { required: true } },
 ];
 const OPTIONS: FieldRulesOptions = { outcomes: OUTCOMES, fields: FIELDS };
+// Stores the Required switch as the field's own flag, as hitl does.
+const FLAG_OPTIONS: FieldRulesOptions = { ...OPTIONS, requiredOutcome: 'require' };
 const STORED_RULES: FieldRule[] = [
   {
     id: 'large',
@@ -123,4 +140,59 @@ function StoredRulesEditor() {
  */
 export const StoredRules: Story = {
   render: () => <StoredRulesEditor />,
+};
+
+function HeaderActionField() {
+  const fieldId = useId();
+  const [value, setValue] = useState('');
+  const [fieldType, setFieldType] = useState<QuickFieldType>('string');
+  const [stored, setStored] = useState<{ rules: FieldRule[]; required: boolean }>({
+    rules: [],
+    required: false,
+  });
+  const rules = useFieldRules(stored, setStored, FLAG_OPTIONS);
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="w-80">
+        <QuickFormField
+          id={fieldId}
+          label={<Label htmlFor={fieldId}>Approver note</Label>}
+          value={value}
+          onValueChange={setValue}
+          locked={false}
+          fieldType={fieldType}
+          required={stored.required}
+          variables={[{ label: 'Customer', value: 'vars.customer' }]}
+          headerActions={
+            <>
+              <QuickFormFieldTypePicker onValueChange={setFieldType} />
+              <QuickFormFieldInsertVariable />
+              <RulesAction
+                requiredOutcome="require"
+                outcomes={OUTCOMES}
+                fields={FIELDS}
+                operators={rulesEngineVocabulary.operators}
+                valueModes={rulesEngineVocabulary.valueModes}
+                dialect={rulesEngineDialect}
+                value={rules.value}
+                onChange={rules.onChange}
+              />
+            </>
+          }
+        />
+      </div>
+      <pre className="max-w-2xl overflow-auto rounded-md bg-muted p-3 text-xs">
+        {JSON.stringify(stored, null, 2)}
+      </pre>
+    </div>
+  );
+}
+
+/**
+ * The documented way to edit a QuickFormField's rules: a `RulesAction` among its header actions.
+ * The Required switch is stored as the field's own flag, beside its rules, shown below.
+ */
+export const InFieldHeader: Story = {
+  name: "In a field's header",
+  render: () => <HeaderActionField />,
 };

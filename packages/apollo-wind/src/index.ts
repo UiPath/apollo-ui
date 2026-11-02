@@ -465,12 +465,16 @@ export type {
   AiAssistContentProps,
   InsertVariableActionProps,
   InsertVariableActionStrings,
+  RulesActionProps,
+  RulesActionStrings,
 } from './components/ui/field-actions';
 export {
   AiAssistAction,
   DEFAULT_AI_ASSIST_ACTION_STRINGS,
   DEFAULT_INSERT_VARIABLE_ACTION_STRINGS,
+  DEFAULT_RULES_ACTION_STRINGS,
   InsertVariableAction,
+  RulesAction,
 } from './components/ui/field-actions';
 export type {
   BuiltInValueModesOptions,
