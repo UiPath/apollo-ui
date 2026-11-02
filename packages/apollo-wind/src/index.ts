@@ -537,6 +537,7 @@ export {
 } from './components/ui/input-group';
 export type {
   BuildJsonTreeOptions,
+  CanCopyPath,
   ContainerPath,
   CopyEvent,
   DeriveTypeIcon,

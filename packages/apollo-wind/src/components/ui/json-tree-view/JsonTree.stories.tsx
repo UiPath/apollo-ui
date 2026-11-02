@@ -35,7 +35,7 @@ A tree for exploring and editing JSON data, such as variables, node inputs and o
 
 - **Schema aware**: Build nodes with \`buildJsonTree({ schema, value })\`. Fields the schema declares but the value leaves out render as "unset".
 - **Inline editing**: Click a value to edit it. Booleans toggle, enums open a dropdown, containers edit as JSON. Pass \`readOnly\` to turn editing off.
-- **Copy**: Click a field name to copy its path. The row actions copy the value.
+- **Copy**: Click a field name to copy its path. The row actions copy the value. \`pathForCopy\` rewrites the copied path, and \`canCopyPath\` turns copying off per field.
 - **Search and filter**: Pass \`query\` and \`filterPredicate\`, or pair the tree with \`JsonTreeToolbar\`.
 - **Virtualization**: Pass \`virtualized\` for large values. Only the rows in view mount.
 - **Customization**: \`decorateNode\`, \`renderValue\`, \`nodeActions\`, and \`rowWrapper\` change how rows look and behave.
@@ -60,7 +60,7 @@ Empty objects and arrays have no child rows, so Right and Left treat them like a
 
 While a value is being edited, the arrow keys stay in the editor. An inline value applies with Enter. A wrapped value or a JSON editor applies with Ctrl+Enter (Cmd+Enter on macOS). Escape cancels any of them. Focus then returns to the value, or to the action that opened the JSON editor. Copies are announced to screen readers through a polite status message.
 
-A custom \`rowWrapper\` renders inside the row, so it must not add a role or a tabindex of its own. Drag libraries add both by default (dnd-kit's \`attributes\`), so leave those off the wrapper.
+A custom \`rowWrapper\` renders inside the row, so it must not add a role or a tabindex of its own. Drag libraries add both by default (dnd-kit's \`attributes\`), so leave those off the wrapper. The wrapper receives \`displayPath\`, the path as copied, which the row also carries as \`data-reference\`.
         `,
       },
     },

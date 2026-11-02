@@ -18,6 +18,7 @@ import { DecorationChip } from './DecorationChip';
 import { JsonContainerEditor } from './JsonContainerEditor';
 import { JsonMultilineLeafEditor } from './JsonMultilineLeafEditor';
 import type {
+  CanCopyPath,
   CopyEvent,
   DeriveTypeIcon,
   JsonTreeNode,
@@ -125,6 +126,7 @@ export interface JsonTreeRowContextValue {
   maxInlineActions: number;
   renderCodeEditor?: RenderCodeEditor;
   pathForCopy?: PathForCopy;
+  canCopyPath?: CanCopyPath;
   /** Editability is row-invariant (props only), so it is resolved once. */
   canEdit: boolean;
   RowWrapper: JsonTreeRowWrapper;
@@ -177,6 +179,7 @@ export function JsonTreeRow({ row, index }: { row: FlatJsonTreeRow; index: numbe
     maxInlineActions,
     renderCodeEditor,
     pathForCopy,
+    canCopyPath,
     canEdit,
     RowWrapper,
     templateItemLabel,
@@ -253,6 +256,7 @@ export function JsonTreeRow({ row, index }: { row: FlatJsonTreeRow; index: numbe
   // A schema-only array has no items yet; "0 items" would read as an empty value.
   const showsCount = !(node.type === 'array' && node.value === undefined);
   const decoration = decorateNode?.(node);
+  const displayPath = pathForCopy?.(node.path, node.segments) ?? node.path;
   const customCell: ReactNode = renderValue?.(node, {
     readOnly,
     commit: (value) => commitEdit(node, value),
@@ -328,6 +332,7 @@ export function JsonTreeRow({ row, index }: { row: FlatJsonTreeRow; index: numbe
     <div
       role="row"
       data-path={node.path}
+      data-reference={displayPath}
       tabIndex={isTabStop ? 0 : -1}
       aria-level={depth + 1}
       aria-posinset={row.posInSet}
@@ -339,6 +344,7 @@ export function JsonTreeRow({ row, index }: { row: FlatJsonTreeRow; index: numbe
     >
       <RowWrapper
         node={node}
+        displayPath={displayPath}
         className={cn(ROW_CLASS, rowClickable && 'cursor-pointer')}
         style={rowIndent(depth)}
         onClick={rowClickable ? handleRowClick : undefined}
@@ -376,8 +382,8 @@ export function JsonTreeRow({ row, index }: { row: FlatJsonTreeRow; index: numbe
           <NodeKey
             node={node}
             label={isTemplateItem ? templateItemLabel : decoration?.label}
-            displayPath={pathForCopy?.(node.path, node.segments) ?? node.path}
-            onCopyPath={copyPath}
+            displayPath={displayPath}
+            onCopyPath={canCopyPath?.(node) === false ? undefined : copyPath}
             className={isTemplateItem ? 'font-normal italic text-foreground-subtle' : undefined}
           />
           {/* Clicking the key copies its path but dismisses the tooltip, so

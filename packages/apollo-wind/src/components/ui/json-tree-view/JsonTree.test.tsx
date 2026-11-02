@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { buildJsonTree } from './buildJsonTree';
 import { JsonTreeView } from './JsonTree';
-import type { PathSegment } from './JsonTree.types';
+import type { JsonTreeRowWrapperProps, PathSegment } from './JsonTree.types';
 import { ROW_MIN_HEIGHT_PX } from './JsonTreeRow';
 
 interface VirtualizerOptions {
@@ -471,6 +471,40 @@ describe('JsonTreeView row decorations and actions', () => {
       .getAllByRole('row')
       .find((row) => row.dataset.path === 'planned') as HTMLElement;
     expect(within(plannedRow).queryByText(/items?$/)).toBeNull();
+  });
+
+  it('hands the row wrapper and the row element the path as copied', () => {
+    const wrapped: string[] = [];
+    const Wrapper = ({ node, displayPath, className, children }: JsonTreeRowWrapperProps) => {
+      wrapped.push(`${node.path} -> ${displayPath}`);
+      return <div className={className}>{children}</div>;
+    };
+    render(
+      <JsonTreeView
+        nodes={nodes}
+        readOnly
+        rowWrapper={Wrapper}
+        pathForCopy={(path) => `$vars.${path}`}
+      />
+    );
+
+    expect(wrapped).toContain('node1.output -> $vars.node1.output');
+    const row = screen.getAllByRole('row').find((element) => element.dataset.path === 'node1');
+    expect(row).toHaveAttribute('data-reference', '$vars.node1');
+  });
+
+  it('shows the name as plain text where canCopyPath returns false, keeping its tooltip', async () => {
+    const user = userEvent.setup();
+    render(
+      <JsonTreeView nodes={nodes} readOnly canCopyPath={(node) => node.path !== 'node1.output'} />
+    );
+
+    expect(screen.getByRole('button', { name: 'Copy path for node1' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Copy path for node1.output' })).toBeNull();
+    await user.hover(screen.getByText('output'));
+    const tooltip = await screen.findByRole('tooltip');
+    expect(tooltip).toHaveTextContent('node1.output');
+    expect(tooltip).not.toHaveTextContent('Click to copy this path');
   });
 
   it('names a display label in full in the key tooltip', async () => {
