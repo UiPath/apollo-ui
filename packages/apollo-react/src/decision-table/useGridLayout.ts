@@ -33,8 +33,6 @@ interface GridLayoutOptions {
   retainedRowIndex?: number | null;
   /** Window-space column index retained (kept mounted) in the horizontal window, or null. */
   retainedColumnIndex?: number | null;
-  /** The host draws the table's outer boundary, so the cells against it give up their own edges. */
-  framedByHost?: boolean;
 }
 
 /**
@@ -59,30 +57,19 @@ export const separatorFlexIndexes = (columns: GridColumn[], pinnedCount = 0): Se
 
 const NO_OMITTED_BORDERS: readonly CellEdge[] = [];
 
-const RIGHT_OMITTED: readonly CellEdge[] = ['right'];
-
-/** The host draws the boundary, so the table's own last column would double its right-hand line. */
-const withHostFrame = (edges: readonly CellEdge[], isLast: boolean): readonly CellEdge[] =>
-  isLast && !edges.includes('right') ? [...edges, 'right'] : edges;
-
 /**
- * What each column actually leaves off: its band's declaration minus the edges that close the band,
- * plus the host's own edge where it frames the table.
+ * What each column actually leaves off: its band's declaration minus the edges that close the band.
  *
  * A band's first column keeps its left border and its last keeps its right, so the band is enclosed
  * — and so every row draws that boundary on the same pixel. Letting the neighbour draw it instead
  * (the separator's own left border, say) puts the body's line one pixel right of the header's,
  * because `border-separate` paints each border inside its own cell.
  */
-const resolveOmittedBorders = (
-  columns: GridColumn[],
-  framedByHost: boolean
-): (readonly CellEdge[])[] =>
+const resolveOmittedBorders = (columns: GridColumn[]): (readonly CellEdge[])[] =>
   columns.map((column, index) => {
-    const isLast = index === columns.length - 1;
     const declared = column.group?.omitCellBorders;
     if (!declared || declared.length === 0) {
-      return framedByHost && isLast ? RIGHT_OMITTED : NO_OMITTED_BORDERS;
+      return NO_OMITTED_BORDERS;
     }
     const inSameBand = (other: GridColumn | undefined) =>
       other?.group?.id !== undefined && other.group.id === column.group?.id;
@@ -92,7 +79,7 @@ const resolveOmittedBorders = (
       (edge) => !(edge === 'left' && opensBand) && !(edge === 'right' && closesBand)
     );
     // Keep the declared array's identity when nothing was dropped — it feeds every row's memo.
-    return withHostFrame(kept.length === declared.length ? declared : kept, framedByHost && isLast);
+    return kept.length === declared.length ? declared : kept;
   });
 
 export type GridLayout = ReturnType<typeof useGridLayout>;
@@ -120,7 +107,6 @@ export const useGridLayout = ({
   containerRef,
   retainedRowIndex = null,
   retainedColumnIndex = null,
-  framedByHost = false,
 }: GridLayoutOptions) => {
   // Keyed by value. Every column's group id is in the key, not just the ones asking for a band
   const separatorsKey = columns
@@ -132,10 +118,7 @@ export const useGridLayout = ({
     () => separatorFlexIndexes(columns, pinnedCount),
     [separatorsKey, pinnedCount]
   );
-  const omittedBorders = useMemo(
-    () => resolveOmittedBorders(columns, framedByHost),
-    [columns, framedByHost]
-  );
+  const omittedBorders = useMemo(() => resolveOmittedBorders(columns), [columns]);
 
   const {
     widths,

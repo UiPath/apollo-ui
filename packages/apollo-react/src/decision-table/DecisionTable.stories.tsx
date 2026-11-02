@@ -1,23 +1,35 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Button, cn } from '@uipath/apollo-wind';
-import { GripVertical, Plus } from 'lucide-react';
+import {
+  Button,
+  cn,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@uipath/apollo-wind';
+import { ChevronDown, GripVertical, Plus } from 'lucide-react';
+import type React from 'react';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { EMPTY_VALUE_DASH, ROW_NUMBER_WIDTH } from './constants';
 import { DecisionTable } from './DecisionTable';
 import { GridCell } from './GridCell';
 import { GridContextMenu, type GridMenuEntry } from './GridMenu';
 import {
-  BAND_ADD_COLUMN_CLASS,
   BAND_LABEL_ROW_CLASS,
   BODY_CELL_CLASS,
+  BREADCRUMB_POINT_STYLE,
   COLUMN_DRAG_HANDLE_CLASS,
-  GRID_LINE_H_CLASS,
+  FOOTER_ACTION_CLASS,
   GROUP_TONE_CLASS,
   HEADER_CELL_CLASS,
   HEADER_LABEL_ROW_CLASS,
   INSERT_ROW_CLASS,
   OUTPUT_CELL_TINT_CLASS,
   ROW_DRAG_HANDLE_CLASS,
+  ROW_HOVER_CLASS,
   ROW_NUMBER_CELL_CLASS,
 } from './gridStyles';
 import type { GridColumn, GridColumnGroup, GridHandle } from './gridTypes';
@@ -97,15 +109,21 @@ const DemoGrid = ({ resizable = true }: { resizable?: boolean }) => {
       id: `${kind}s`,
       label: kind === 'input' ? 'Inputs' : 'Outputs',
       toneClassName: GROUP_TONE_CLASS[kind === 'input' ? 'inputs' : 'outputs'],
+      // `run` holds only on the cell with the band's real first or last column, so the point that
+      // joins the bands is drawn once, wherever the window starts.
+      cellProps: (_first, _firstFlexIndex, run) => ({
+        ...(run.endsGroup && { className: 'border-r-0' }),
+        ...(kind === 'output' && run.startsGroup && { style: BREADCRUMB_POINT_STYLE }),
+      }),
       renderLabel: ({ isFirstRunOfGroup, label }) => (
         <span className={BAND_LABEL_ROW_CLASS}>
-          {label}
+          <span className="min-w-0 truncate">{label}</span>
           {isFirstRunOfGroup && (
             <Button
               variant="ghost"
               size="4xs"
               icon
-              className={BAND_ADD_COLUMN_CLASS}
+              className="shrink-0"
               title={`Add ${kind} column`}
               aria-label={`Add ${kind} column`}
               onClick={(event) => {
@@ -178,6 +196,7 @@ const DemoGrid = ({ resizable = true }: { resizable?: boolean }) => {
         columnsResizable={resizable}
         tableAriaLabel="Demo decision grid"
         dataTestId="demo-grid"
+        topLeftCorner="#"
         columnGroupSizes={[1, inputCount, specs.length - inputCount]}
         onRowMove={(from, to) => {
           if (to !== from) {
@@ -239,7 +258,7 @@ const DemoGrid = ({ resizable = true }: { resizable?: boolean }) => {
           );
         }}
         renderRow={(rowIndex, visibleColumns) => (
-          <tr key={rowIndex} style={{ height: 'var(--grid-row-height)' }}>
+          <tr key={rowIndex} className="group/row" style={{ height: 'var(--grid-row-height)' }}>
             <td className={ROW_NUMBER_CELL_CLASS}>
               <Button
                 variant="ghost"
@@ -294,7 +313,10 @@ const DemoGrid = ({ resizable = true }: { resizable?: boolean }) => {
               if (visible.column.id === ANNOTATION_COLUMN_ID) {
                 const name = rows[rowIndex]?.[ANNOTATION_COLUMN_ID];
                 return (
-                  <td key={visible.column.id} className={cn(BODY_CELL_CLASS, 'px-2 py-1')}>
+                  <td
+                    key={visible.column.id}
+                    className={cn(BODY_CELL_CLASS, ROW_HOVER_CLASS, 'px-2 py-1')}
+                  >
                     {name ?? <span className="text-foreground-de-emp italic">Name this rule…</span>}
                   </td>
                 );
@@ -304,6 +326,7 @@ const DemoGrid = ({ resizable = true }: { resizable?: boolean }) => {
                   key={visible.column.id}
                   className={cn(
                     BODY_CELL_CLASS,
+                    ROW_HOVER_CLASS,
                     visible.column.group?.id === 'outputs' && OUTPUT_CELL_TINT_CLASS,
                     'px-2 py-1'
                   )}
@@ -317,14 +340,14 @@ const DemoGrid = ({ resizable = true }: { resizable?: boolean }) => {
         renderFooterRow={(colSpan) => (
           <tr key="add-row">
             <td
-              className={cn('cursor-pointer p-0 hover:bg-surface-hover', GRID_LINE_H_CLASS)}
+              className="cursor-pointer p-0 hover:bg-surface-hover"
               colSpan={colSpan}
               onClick={() => setRows((current) => [...current, {}])}
             >
-              <span className="inline-flex items-center gap-1 px-2 py-1.5 text-xs text-primary">
-                <Plus aria-hidden className="size-3.5" />
+              <Button variant="text" size="xs" className={FOOTER_ACTION_CLASS}>
+                <Plus aria-hidden />
                 Add row
-              </span>
+              </Button>
             </td>
           </tr>
         )}
@@ -411,7 +434,13 @@ const E2E_ROWS: E2eRow[] = [
  * commit and move, Escape cancels), the grid-owned clipboard (Ctrl/Cmd+C/X/V over TSV, Delete
  * clears) and a validation mark. The consumer owns only the model the writes land in.
  */
-const EndToEndGrid = () => {
+const EndToEndGrid = ({
+  topLeftCorner = '#',
+  caption,
+}: {
+  topLeftCorner?: React.ReactNode;
+  caption?: string;
+}) => {
   const [rows, setRows] = useState(E2E_ROWS);
   const gridRef = useRef<GridHandle>(null);
   const table = useSelectionStore();
@@ -427,6 +456,12 @@ const EndToEndGrid = () => {
         GROUP_TONE_CLASS[
           kind === 'annotation' ? 'annotation' : kind === 'input' ? 'inputs' : 'outputs'
         ],
+      ...(kind !== 'annotation' && {
+        cellProps: (_first, _firstFlexIndex, run) => ({
+          ...(run.endsGroup && { className: 'border-r-0' }),
+          ...(kind === 'output' && run.startsGroup && { style: BREADCRUMB_POINT_STYLE }),
+        }),
+      }),
     });
     return {
       annotation: groupFor('annotation'),
@@ -469,6 +504,7 @@ const EndToEndGrid = () => {
         columnsResizable
         tableAriaLabel="End-to-end decision grid"
         dataTestId="e2e-grid"
+        topLeftCorner={topLeftCorner}
         retainedRowIndex={nav.editing ? nav.focus?.row : null}
         clipboard={{
           range: nav.range,
@@ -525,7 +561,11 @@ const EndToEndGrid = () => {
           </th>
         )}
         renderRow={(rowIndex, visibleColumns) => (
-          <tr key={rows[rowIndex]?.id ?? rowIndex} style={{ height: 'var(--grid-row-height)' }}>
+          <tr
+            key={rows[rowIndex]?.id ?? rowIndex}
+            className="group/row"
+            style={{ height: 'var(--grid-row-height)' }}
+          >
             <td className={ROW_NUMBER_CELL_CLASS}>{rowIndex + 1}</td>
             {visibleColumns.map((visible) => {
               if (visible.type !== 'column') {
@@ -596,6 +636,7 @@ const EndToEndGrid = () => {
         Click to select, double-click or just type to edit; Enter/Tab commit and move, Escape
         cancels; Shift+arrows extend the range; Ctrl/Cmd+C/X/V round-trip TSV; Delete clears the
         selection. The marked cell carries a demo diagnostic.
+        {caption && ` ${caption}`}
       </p>
     </div>
   );
@@ -603,4 +644,90 @@ const EndToEndGrid = () => {
 
 export const EndToEnd: Story = {
   render: () => <EndToEndGrid />,
+};
+
+const HIT_POLICY_GROUPS = [
+  {
+    label: 'Single result',
+    policies: [
+      { code: 'U', label: 'Unique' },
+      { code: 'F', label: 'First' },
+      { code: 'P', label: 'Priority' },
+      { code: 'A', label: 'Any' },
+    ],
+  },
+  {
+    label: 'Multiple results',
+    policies: [
+      { code: 'C', label: 'Collect' },
+      { code: 'R', label: 'Rule order' },
+      { code: 'O', label: 'Output order' },
+    ],
+  },
+];
+
+/**
+ * A basic hit policy picker for the top-left corner: the policy's code as the trigger, and a menu
+ * of the policies. The table renders the corner cell; this is only what goes inside it.
+ */
+const HitPolicyPicker = () => {
+  const [code, setCode] = useState('U');
+  const label = HIT_POLICY_GROUPS.flatMap((group) => group.policies).find(
+    (policy) => policy.code === code
+  )?.label;
+  return (
+    // Non-modal, like the table's context menu: a modal menu hides the rest of the page from
+    // assistive tech and locks the page's scrolling.
+    <DropdownMenu modal={false}>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="3xs"
+          className="w-11 gap-0.5 px-1 [&_svg]:size-3.5"
+          title={`Hit policy: ${label}`}
+          aria-label={`Hit policy: ${label}`}
+          // Kept off the grid: a press here is not a cell drag-selection, and a key is not the
+          // cell selection's Delete or arrow navigation.
+          onPointerDown={(event) => event.stopPropagation()}
+          onClick={(event) => event.stopPropagation()}
+          onKeyDown={(event) => event.stopPropagation()}
+        >
+          <span className="font-mono text-sm font-semibold text-foreground">{code}</span>
+          <ChevronDown aria-hidden className="text-foreground-de-emp" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="start"
+        className="w-56"
+        onClick={(event) => event.stopPropagation()}
+        // Portalled in the DOM but still a React child of the grid, whose key handler would
+        // otherwise read these keys as the cell selection's.
+        onKeyDown={(event) => event.stopPropagation()}
+      >
+        <DropdownMenuRadioGroup value={code} onValueChange={setCode}>
+          {HIT_POLICY_GROUPS.map((group, index) => (
+            <div key={group.label}>
+              {index > 0 && <DropdownMenuSeparator />}
+              <DropdownMenuLabel>{group.label}</DropdownMenuLabel>
+              {group.policies.map((policy) => (
+                <DropdownMenuRadioItem key={policy.code} value={policy.code}>
+                  <span className="w-4 font-mono font-semibold">{policy.code}</span>
+                  {policy.label}
+                </DropdownMenuRadioItem>
+              ))}
+            </div>
+          ))}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+
+export const TopLeftCorner: Story = {
+  render: () => (
+    <EndToEndGrid
+      topLeftCorner={<HitPolicyPicker />}
+      caption="The top-left corner holds a hit policy picker passed as topLeftCorner: the table draws the cell, the consumer only its content."
+    />
+  ),
 };

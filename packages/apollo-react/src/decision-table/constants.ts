@@ -3,7 +3,7 @@
 /** What an empty value cell shows; consumers reuse it for a never-run result. */
 export const EMPTY_VALUE_DASH = '—';
 /** Fixed gutter: the row-number (`#`) column. Never flexes, never resizes. */
-export const ROW_NUMBER_WIDTH = 48;
+export const ROW_NUMBER_WIDTH = 52;
 /** No column can be dragged narrower than this; there is no maximum. */
 export const MIN_COLUMN_WIDTH = 80;
 /**

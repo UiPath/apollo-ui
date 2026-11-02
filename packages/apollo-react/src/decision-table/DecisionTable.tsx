@@ -8,18 +8,18 @@ import {
   GROUP_CELL_CLASS,
   GROUP_GUTTER_CLASS,
   HEADER_CELL_CLASS,
-  HOST_FRAMED_CONTAINER_CLASS,
-  OMIT_BORDER_CLASS,
   RESIZE_HANDLE_CLASS,
   SEPARATOR_GROUP_CELL_CLASS,
   SEPARATOR_HEADER_CELL_CLASS,
   TABLE_EDGE_CLASS,
   TABLE_HUG_EDGE_CLASS,
+  TOP_LEFT_CORNER_CELL_CLASS,
 } from './gridStyles';
 import type {
   GridClipboardProps,
   GridColumn,
   GridColumnGroup,
+  GridGroupRun,
   GridHandle,
   GridLabels,
   VisibleGridColumn,
@@ -62,8 +62,6 @@ export interface DecisionTableProps {
   onColumnWidthsChange?: (widths: Record<string, number>) => void;
   /** Shows the resize handles and enables keyboard/drag resizing. */
   columnsResizable?: boolean;
-  /** The host draws the table's outer boundary. The cells that sit against it give up their own edges. */
-  framedByHost?: boolean;
   /**
    * Sizes of the contiguous column-reorder groups, counted over the WINDOWED (non-pinned) columns
    * from the first one — e.g. `[inputCount, outputCount]`. A drag never crosses a group; columns
@@ -89,6 +87,11 @@ export interface DecisionTableProps {
   renderRow: (rowIndex: number, visibleColumns: VisibleGridColumn[]) => React.ReactNode;
   /** The trailing add-row `<tr>`, when the grid offers one; receives the full-row colSpan. */
   renderFooterRow?: (colSpan: number) => React.ReactNode;
+  /**
+   * Replaces the leading gutter's header (the `#` cell, and the empty group-row cell above it) with
+   * one top-left corner cell spanning every header row, holding this content.
+   */
+  topLeftCorner?: React.ReactNode;
   /** The trailing fixed column's header `<th>` (rendered only when the layout reserves its width). */
   trailingHeaderCell?: React.ReactNode;
   /** The trailing fixed column's group-row cell; defaults to a pinned empty gutter. */
@@ -116,7 +119,7 @@ export interface DecisionTableProps {
 }
 
 type ColumnRun =
-  | {
+  | (GridGroupRun & {
       type: 'group';
       group: GridColumnGroup;
       first: GridColumn;
@@ -124,13 +127,14 @@ type ColumnRun =
       count: number;
       pinnedLeftPx?: number;
       isFirstRunOfGroup: boolean;
-    }
+    })
   | { type: 'gutter'; count: number; firstFlexIndex: number; pinnedLeftPx?: number }
   | { type: 'spacer'; widthPx: number; firstCoveredId: string }
   | { type: 'separator'; widthPx: number; beforeColumnId: string };
 
 /** Contiguous same-group runs of the mounted columns, for the group header's colSpans. */
 const groupColumnRuns = (
+  columns: GridColumn[],
   visibleColumns: VisibleGridColumn[],
   pinnedLeftPxOf: (flexIndex: number) => number | undefined
 ): ColumnRun[] => {
@@ -182,11 +186,31 @@ const groupColumnRuns = (
         count: 1,
         pinnedLeftPx,
         isFirstRunOfGroup: !openedGroups.has(column.group.id),
+        startsGroup: false,
+        endsGroup: false,
       });
       openedGroups.add(column.group.id);
     }
   }
+  markGroupEdges(columns, runs);
   return runs;
+};
+
+/** Each group's own first and last column, so a run can tell whether it really holds either. */
+const markGroupEdges = (columns: GridColumn[], runs: ColumnRun[]) => {
+  const groupBounds = new Map<string, { first: number; last: number }>();
+  columns.forEach((column, flexIndex) => {
+    if (!column.group) return;
+    const bounds = groupBounds.get(column.group.id);
+    if (bounds) bounds.last = flexIndex;
+    else groupBounds.set(column.group.id, { first: flexIndex, last: flexIndex });
+  });
+  for (const run of runs) {
+    if (run.type !== 'group') continue;
+    const bounds = groupBounds.get(run.group.id);
+    run.startsGroup = run.firstFlexIndex === bounds?.first;
+    run.endsGroup = run.firstFlexIndex + run.count - 1 === bounds?.last;
+  }
 };
 
 /**
@@ -208,7 +232,6 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
       initialColumnWidths = {},
       onColumnWidthsChange,
       columnsResizable = false,
-      framedByHost = false,
       columnGroupSizes,
       onRowMove,
       onColumnMove,
@@ -217,6 +240,7 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
       renderHeaderCell,
       renderRow,
       renderFooterRow,
+      topLeftCorner,
       trailingHeaderCell,
       trailingGroupCell,
       tableAriaLabel,
@@ -303,7 +327,6 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
       containerRef,
       retainedRowIndex: retainedRowIndex ?? dragRetainedRow,
       retainedColumnIndex: retainedColumnIndex ?? dragRetainedColumn,
-      framedByHost,
     });
     layoutRef.current = layout;
 
@@ -316,9 +339,17 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
     // grid's header cells must stick at top-0 and its rows number from 2.
     const hasGroupRow =
       columns.some((column) => column.group !== undefined) || trailingGroupCell !== undefined;
-    // The group row is the table's top edge, so every cell in it gives that edge up when the host frames.
-    const hostTopEdge = framedByHost && OMIT_BORDER_CLASS.top;
     const headerRowCount = hasGroupRow ? 2 : 1;
+    const topLeftCornerCell = topLeftCorner !== undefined && (
+      <th
+        rowSpan={headerRowCount}
+        className={TOP_LEFT_CORNER_CELL_CLASS}
+        scope="col"
+        data-testid={`${dataTestId}-top-left-corner`}
+      >
+        {topLeftCorner}
+      </th>
+    );
 
     // The grid owns its clipboard; the consumer only describes how its cells read and write.
     const gridClipboard = useGridClipboard(clipboard, { rowCount, columnCount: columns.length });
@@ -358,6 +389,24 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
         containerRef.current?.focus();
       }
     });
+
+    // `data-scrolled` shows the header's scroll shadow.
+    useEffect(() => {
+      const container = containerRef.current;
+      if (!container) {
+        return;
+      }
+      // Written only on a change.
+      const markScrolled = () => {
+        const scrolled = container.scrollTop > 0 ? 'true' : 'false';
+        if (container.dataset.scrolled !== scrolled) {
+          container.dataset.scrolled = scrolled;
+        }
+      };
+      markScrolled();
+      container.addEventListener('scroll', markScrolled, { passive: true });
+      return () => container.removeEventListener('scroll', markScrolled);
+    }, []);
 
     /** The sticky left offset of a pinned column: the gutter plus the pinned columns before it. */
     const pinnedLeftPxOf = (flexIndex: number): number | undefined => {
@@ -444,7 +493,7 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
         // The containing block for the drag-reorder drop indicator (content-space coordinates).
         // `select-none`: dragging across cells is a range gesture, so it must not also drag a
         // native text selection through the values. Editors re-enable it on their own cell.
-        className={framedByHost ? HOST_FRAMED_CONTAINER_CLASS : GRID_FRAME_CLASS}
+        className={GRID_FRAME_CLASS}
         ref={layout.attachContainer}
         // biome-ignore lint/a11y/noNoninteractiveTabindex: the grid surface takes focus for the consumer's spreadsheet navigation
         tabIndex={0}
@@ -470,6 +519,7 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
           }
         }}
         data-testid={dataTestId}
+        data-grid
         onCopy={composeClipboard(gridClipboard.containerProps.onCopy, consumerCopy)}
         onCut={composeClipboard(gridClipboard.containerProps.onCut, consumerCut)}
         onPaste={composeClipboard(gridClipboard.containerProps.onPaste, consumerPaste)}
@@ -482,7 +532,8 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
         <table
           className={cn(
             'table-fixed border-separate border-spacing-0 text-xs text-foreground',
-            !framedByHost && [TABLE_EDGE_CLASS, TABLE_HUG_EDGE_CLASS]
+            TABLE_EDGE_CLASS,
+            TABLE_HUG_EDGE_CLASS
           )}
           ref={layout.setTableElement}
           // Published here rather than on the scroll container: the container spreads the
@@ -540,26 +591,21 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
             {hasTrailing && <col style={{ width: trailingColumnWidth }} />}
           </colgroup>
           <thead ref={layout.theadRef}>
-            {/* The top edge goes on each cell, where `cn` drops the conflicting `border-t` outright — a
-                `> *` rule would only tie it on specificity and lose on source order. The right edge can
-                stay on the row, because `> *:last-child` outranks the cell's own `border-r`. */}
             {hasGroupRow && (
-              <tr aria-rowindex={1} className={cn(framedByHost && '[&>*:last-child]:border-r-0')}>
-                {hasLeading && (
-                  <td
-                    aria-hidden="true"
-                    className={cn(GROUP_GUTTER_CLASS, 'left-0 z-3', hostTopEdge)}
-                  />
-                )}
+              <tr aria-rowindex={1}>
+                {hasLeading &&
+                  (topLeftCornerCell || (
+                    <td aria-hidden="true" className={cn(GROUP_GUTTER_CLASS, 'left-0 z-3')} />
+                  ))}
                 {/* Group cells span runs of same-group mounted columns; a spacer splits a group into
                   two cells of the same tone. */}
-                {groupColumnRuns(visibleColumns, pinnedLeftPxOf).map((run) => {
+                {groupColumnRuns(columns, visibleColumns, pinnedLeftPxOf).map((run) => {
                   if (run.type === 'spacer') {
                     return (
                       <td
                         key={`group-spacer-${run.firstCoveredId}`}
                         aria-hidden="true"
-                        className={cn(GROUP_GUTTER_CLASS, hostTopEdge)}
+                        className={GROUP_GUTTER_CLASS}
                         style={{ width: run.widthPx }}
                       />
                     );
@@ -570,7 +616,7 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
                         key={`group-separator-${run.beforeColumnId}`}
                         aria-hidden="true"
                         data-separator="group"
-                        className={cn(SEPARATOR_GROUP_CELL_CLASS, hostTopEdge)}
+                        className={SEPARATOR_GROUP_CELL_CLASS}
                         style={{ width: run.widthPx }}
                       />
                     );
@@ -580,11 +626,7 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
                       <td
                         key={`group-gutter-${run.firstFlexIndex}`}
                         aria-hidden="true"
-                        className={cn(
-                          GROUP_GUTTER_CLASS,
-                          run.pinnedLeftPx !== undefined && 'z-3',
-                          hostTopEdge
-                        )}
+                        className={cn(GROUP_GUTTER_CLASS, run.pinnedLeftPx !== undefined && 'z-3')}
                         style={
                           run.pinnedLeftPx !== undefined ? { left: run.pinnedLeftPx } : undefined
                         }
@@ -596,7 +638,15 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
                   // group whose look varies per run (the band separator belongs on the run that
                   // actually starts the band, not on a continuation split off by a spacer) has no
                   // other seam — `toneClassName` is one value shared by every run of the group.
-                  const groupCellProps = run.group.cellProps?.(run.first, run.firstFlexIndex);
+                  const position: GridGroupRun = {
+                    startsGroup: run.startsGroup,
+                    endsGroup: run.endsGroup,
+                  };
+                  const groupCellProps = run.group.cellProps?.(
+                    run.first,
+                    run.firstFlexIndex,
+                    position
+                  );
                   return (
                     <th
                       key={`group-${run.group.id}-${run.firstFlexIndex}`}
@@ -605,11 +655,12 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
                         GROUP_CELL_CLASS,
                         run.group.toneClassName,
                         groupCellProps?.className,
-                        run.pinnedLeftPx !== undefined && 'z-3',
-                        hostTopEdge
+                        run.pinnedLeftPx !== undefined && 'z-3'
                       )}
                       style={
-                        run.pinnedLeftPx !== undefined ? { left: run.pinnedLeftPx } : undefined
+                        run.pinnedLeftPx !== undefined
+                          ? { ...groupCellProps?.style, left: run.pinnedLeftPx }
+                          : groupCellProps?.style
                       }
                       scope="colgroup"
                       colSpan={run.count}
@@ -631,18 +682,18 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
                   ))}
               </tr>
             )}
-            <tr
-              aria-rowindex={headerRowCount}
-              className={cn(framedByHost && '[&>*:last-child]:border-r-0')}
-            >
-              {hasLeading && (
-                <th
-                  className={cn(HEADER_CELL_CLASS, 'left-0 z-3 text-center align-middle')}
-                  scope="col"
-                >
-                  {labels.rowNumberHeader ?? '#'}
-                </th>
-              )}
+            <tr aria-rowindex={headerRowCount}>
+              {hasLeading &&
+                (topLeftCornerCell ? (
+                  !hasGroupRow && topLeftCornerCell
+                ) : (
+                  <th
+                    className={cn(HEADER_CELL_CLASS, 'left-0 z-3 text-center align-middle')}
+                    scope="col"
+                  >
+                    {labels.rowNumberHeader ?? '#'}
+                  </th>
+                ))}
               {visibleColumns.map((visible) => {
                 if (visible.type === 'separator') {
                   return (
@@ -747,14 +798,12 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
       </div>
     );
 
-    if (framedByHost) {
-      return scrollContainer;
-    }
     // The card stops at the last row, so the pane below it is the grid's blank area too.
     const consumerPointerDown = restContainerProps.onPointerDown;
     return (
       <div
         className={GRID_PANE_CLASS}
+        data-grid
         onPointerDown={(event) => {
           if (event.target === event.currentTarget) {
             consumerPointerDown?.(event);

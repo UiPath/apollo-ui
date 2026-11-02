@@ -45,8 +45,19 @@ export interface GridColumnGroup {
    */
   cellProps?: (
     firstColumn: GridColumn,
-    firstFlexIndex: number
+    firstFlexIndex: number,
+    run: GridGroupRun
   ) => React.ThHTMLAttributes<HTMLTableCellElement> & Record<`data-${string}`, string | undefined>;
+}
+
+/**
+ * Where a rendered band cell sits within its whole group. Unlike `isFirstRunOfGroup` (the first
+ * *mounted* run), these hold only for the cell that really holds the group's first or last column,
+ * so an edge drawn from them never appears where the group merely scrolls out of view.
+ */
+export interface GridGroupRun {
+  startsGroup: boolean;
+  endsGroup: boolean;
 }
 
 /** One flexible (auto-fit, resizable) column of the grid. */

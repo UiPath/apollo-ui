@@ -44,9 +44,10 @@ const isOnScrollbar = (element: Element, event: React.PointerEvent): boolean => 
 export const isBlankContainerPress = (event: React.PointerEvent<HTMLElement>): boolean =>
   event.target === event.currentTarget && !isOnScrollbar(event.currentTarget, event);
 
-// Controls, composite controls (an input group) and embedded content (a tab panel) own their presses.
+// Controls, composite controls (an input group) and embedded content (a tab panel, a grid) own their presses.
+// `[data-owns-presses]` marks the rest: a label, or a shadow-root editor whose presses arrive at its host.
 const OWNED_PRESS_SELECTOR =
-  "button, a, input, textarea, select, label, [contenteditable='true'], " +
+  "button, a, input, textarea, select, label, [contenteditable='true'], [data-grid], [data-owns-presses], " +
   "[role='button'], [role='link'], [role='menuitem'], [role='combobox'], [role='checkbox'], [role='switch'], [role='tab'], [role='option'], [role='slider'], " +
   "[role='group'], [role='tabpanel']";
 
