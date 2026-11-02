@@ -132,6 +132,8 @@ export interface GridContextMenuProps {
   state: GridContextMenuState | null;
   entries: () => GridMenuEntry[];
   onClose: () => void;
+  /** Classes for the menu panel. It portals out of the grid, so it does not inherit the grid's styling (fonts, for one). */
+  className?: string;
 }
 
 /**
@@ -148,6 +150,7 @@ export const GridContextMenu: React.FC<GridContextMenuProps> = ({
   state,
   entries,
   onClose,
+  className,
 }) => {
   const { items, onCloseAutoFocus } = useGridMenuItems(state ? entries() : [], !!state, dataTestId);
   if (!state) {
@@ -173,7 +176,7 @@ export const GridContextMenu: React.FC<GridContextMenuProps> = ({
         align="start"
         side="bottom"
         aria-label={label}
-        className="min-w-52"
+        className={cn('min-w-52', className)}
         data-testid={`${dataTestId}-context-menu`}
         onCloseAutoFocus={onCloseAutoFocus}
         onClick={(event) => event.stopPropagation()}

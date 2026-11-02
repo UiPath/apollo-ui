@@ -9,7 +9,9 @@ import {
   CELL_MARK_CLASS,
   CELL_SURFACE_CLASS,
   IN_RANGE_CLASS,
+  MONO_CELL_TEXT_CLASS,
   OMIT_BORDER_CLASS,
+  ROW_HOVER_CLASS,
 } from './gridStyles';
 import type { CellCommitMove, CellEdge } from './gridTypes';
 import { MarkGlyph } from './MarkGlyph';
@@ -173,7 +175,7 @@ export const GridCell: React.FC<GridCellProps> = ({
       className={cn(
         BODY_CELL_CLASS,
         omitBorders?.map((edge) => OMIT_BORDER_CLASS[edge]),
-        mono && 'font-mono',
+        mono && MONO_CELL_TEXT_CLASS,
         'font-normal',
         selected && 'shadow-[inset_0_0_0_2px_var(--color-primary)]',
         // Re-enables text selection for whatever the editor renders, the grid surface having
@@ -181,6 +183,8 @@ export const GridCell: React.FC<GridCellProps> = ({
         isEditing && 'select-text',
         inRange && IN_RANGE_CLASS,
         pinnedLeft !== undefined && 'sticky z-1 bg-background',
+        // An open editor is the user's focus; washing it as the pointer passes would only distract.
+        !isEditing && ROW_HOVER_CLASS,
         className,
         CELL_MARK_CLASS
       )}

@@ -1,4 +1,5 @@
 import { cn } from '@uipath/apollo-wind';
+import type { CSSProperties } from 'react';
 import type { CellEdge } from './gridTypes';
 
 /**
@@ -14,13 +15,10 @@ import type { CellEdge } from './gridTypes';
  * the table draws its right edge itself (`TABLE_HUG_EDGE_CLASS`).
  */
 export const GRID_FRAME_CLASS =
-  'relative m-3 min-h-0 flex-initial overflow-auto rounded-lg border border-border-de-emp/60 bg-background outline-none select-none';
+  'group/grid relative m-3 min-h-0 flex-initial overflow-auto rounded-lg border border-border-de-emp/60 bg-background outline-none select-none';
 
 /** Fills the pane around the card, so a press below a short table is still a press on the grid's blank area. */
 export const GRID_PANE_CLASS = 'flex min-h-0 flex-1 flex-col';
-
-/** The scroll container when the host draws the frame: no card of its own, filling the host's pane. */
-export const HOST_FRAMED_CONTAINER_CLASS = 'relative flex-1 overflow-auto outline-none select-none';
 
 /** Drops the edges the frame already draws, whichever row and column end the table. */
 export const TABLE_EDGE_CLASS =
@@ -39,9 +37,22 @@ export const TABLE_HUG_EDGE_CLASS =
  * border, columns at 50%. Edges are set separately so a cell can keep one and drop the other.
  */
 const GRID_LINE_V_CLASS = 'border-r border-r-border-de-emp/50';
-export const GRID_LINE_H_CLASS = 'border-b border-b-border-de-emp/60';
-/** Under the header: the de-emphasised border at full strength, the one line a step above the rest. */
-const HEADER_LINE_CLASS = 'border-b border-b-border-de-emp';
+const GRID_LINE_H_CLASS = 'border-b border-b-border-de-emp/60';
+/**
+ * Under the header: the de-emphasised border at full strength, the one line a step above the rest, with
+ * a shadow once rows scroll under it (`data-scrolled`). Black, as Apollo's elevations are: a shadow mixed
+ * from the foreground reads as a light halo on a dark theme.
+ */
+const HEADER_LINE_CLASS = cn(
+  'border-b border-b-border-de-emp',
+  'after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-1.5 after:opacity-0 after:transition-opacity after:duration-150',
+  'after:bg-[linear-gradient(to_bottom,rgb(0_0_0/8%),transparent)]',
+  'group-data-[scrolled=true]/grid:after:opacity-100'
+);
+
+/** The hovered row's wash, an inset shadow that composes with a cell's own `shadow`. */
+export const ROW_HOVER_CLASS =
+  'group-hover/row:inset-shadow-[0_0_0_100vmax_color-mix(in_srgb,var(--color-foreground)_4%,transparent)]';
 
 /** Sticky header chrome, shared by the group row and the label row. */
 const STICKY_HEADER_CLASS = 'sticky z-2 bg-background';
@@ -73,6 +84,21 @@ export const GROUP_GUTTER_CLASS = cn(
   GRID_LINE_H_CLASS
 );
 
+/** The input band's fill for the inline breadcrumb point; change it with `GROUP_TONE_CLASS.inputs`. */
+const INPUT_BAND_FILL = 'color-mix(in srgb, var(--color-primary) 8%, var(--color-background))';
+
+const breadcrumbEdge = (direction: string) =>
+  `linear-gradient(${direction}, ${INPUT_BAND_FILL} calc(50% - 0.5px), var(--color-border-de-emp) 50%, transparent calc(50% + 0.5px))`;
+
+/** The point joining the input band to the output band: the input fill as two triangles, each with a hairline on its slanted edge. */
+export const BREADCRUMB_POINT_STYLE: CSSProperties = {
+  backgroundImage: `${breadcrumbEdge('to top right')}, ${breadcrumbEdge('to bottom right')}`,
+  backgroundSize: '10px 50%',
+  backgroundPosition: '0 0, 0 100%',
+  backgroundRepeat: 'no-repeat',
+  paddingLeft: 18,
+};
+
 /**
  * The output band's teal, set as `--grid-output-hue` on the element that uses it; every output
  * colour (caption, fill, body tint) is mixed from it, as the input side is from primary. Apollo has
@@ -94,6 +120,11 @@ export const GROUP_TONE_CLASS = {
     'text-[var(--grid-output-hue)] bg-[color-mix(in_srgb,var(--grid-output-hue)_8%,var(--color-background))]'
   ),
 } as const;
+
+export const OUTPUT_BAND_DOT_CLASS = cn(OUTPUT_HUE_CLASS, 'bg-[var(--grid-output-hue)]');
+
+/** The full-strength line closing the inputs band, on its last column's header and every row. */
+export const BAND_BOUNDARY_CLASS = 'border-r-border-de-emp';
 
 /**
  * The inert band between two column groups. Neutral down its whole height, so it reads as chrome
@@ -121,8 +152,9 @@ export const SEPARATOR_HEADER_CELL_CLASS = cn(
   GRID_LINE_V_CLASS
 );
 
-/** Body cells in an output column. */
-export const SEPARATOR_BODY_TINTED_CELL_CLASS = cn(
+/** A separator column's body cells. */
+export const SEPARATOR_BODY_CELL_CLASS = cn(
+  ROW_HOVER_CLASS,
   GRID_LINE_V_CLASS,
   GRID_LINE_H_CLASS,
   'bg-[color-mix(in_srgb,var(--color-foreground-de-emp)_5%,var(--color-background))]'
@@ -151,9 +183,9 @@ export const OMIT_BORDER_CLASS = {
 
 /**
  * The left edge of a column frozen to the right of the grid
- * (an add-column "+", a trailing result column).
+ * (a trailing gutter, a trailing result column).
  */
-export const FROZEN_LEFT_EDGE_CLASS =
+const FROZEN_LEFT_EDGE_CLASS =
   'shadow-[-1px_0_0_0_color-mix(in_srgb,var(--color-border-de-emp)_60%,transparent)]';
 
 /** Body tint carried by every output cell, so the outputs read as one band down the table. */
@@ -164,6 +196,13 @@ export const OUTPUT_CELL_TINT_CLASS = cn(
 
 /** A body cell's lines; consumers add their own fill and padding. */
 export const BODY_CELL_CLASS = cn(GRID_LINE_V_CLASS, GRID_LINE_H_CLASS, 'p-0');
+
+export const FROZEN_RIGHT_CELL_CLASS = cn(
+  BODY_CELL_CLASS,
+  'bg-background',
+  FROZEN_LEFT_EDGE_CLASS,
+  ROW_HOVER_CLASS
+);
 
 /**
  * A marked cell's wash, from its own `data-tone` or its row's. The `:not([data-tone])` guard makes
@@ -198,23 +237,36 @@ export const HEADER_CELL_CLASS = cn(
   'px-2 py-2 text-left align-top text-foreground-de-emp'
 );
 
-/**
- * A band's caption and its "+", on one line whatever the band's width. Sticky, so while any of the
- * band is in view its caption is too, held just past the pinned columns (the grid publishes where
- * they end as `--grid-pinned-left`) at the band cell's own inset. The band cell is its containing
- * block, so as the band scrolls out its right edge pushes the caption with it and the next band's
- * caption takes the place.
- */
-export const BAND_LABEL_ROW_CLASS =
-  'sticky left-[calc(var(--grid-pinned-left,0px)+0.5rem)] flex w-fit items-center gap-1 whitespace-nowrap';
+/** The top-left corner over the row numbers, one cell spanning every header row. */
+export const TOP_LEFT_CORNER_CELL_CLASS = cn(
+  STICKY_HEADER_CLASS,
+  'top-0 left-0 z-3',
+  GRID_LINE_V_CLASS,
+  HEADER_LINE_CLASS,
+  'p-0 text-center align-middle'
+);
+
+export const FROZEN_RIGHT_HEADER_CELL_CLASS = cn(
+  HEADER_CELL_CLASS,
+  'right-0 z-3',
+  FROZEN_LEFT_EDGE_CLASS
+);
+
+export const FROZEN_RIGHT_GROUP_CELL_CLASS = cn(
+  GROUP_GUTTER_CLASS,
+  'right-0 z-3',
+  FROZEN_LEFT_EDGE_CLASS
+);
 
 /**
- * The add-column button beside a band's label (on a ghost `Button`, sized down to the label). Inherits the
- * band's own text colour so it reads as part of the label rather than as chrome dropped on top of the tint.
+ * A band's caption and its "+", on one line and no wider than the band: a narrow band truncates the
+ * caption so the "+" stays in it. Sticky, so while any of the band is in view its caption is too, held
+ * just past the pinned columns (the grid publishes where they end as `--grid-pinned-left`) at the band
+ * cell's own inset. The band cell is its containing block, so as the band scrolls out its right edge
+ * pushes the caption with it and the next band's caption takes the place.
  */
-export const BAND_ADD_COLUMN_CLASS =
-  'size-3.5 shrink-0 rounded-sm text-current opacity-60 transition-opacity duration-150 hover:bg-transparent hover:text-current ' +
-  'hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-1 focus-visible:ring-offset-0 future:text-current future:hover:text-current';
+export const BAND_LABEL_ROW_CLASS =
+  'sticky left-[calc(var(--grid-pinned-left,0px)+0.5rem)] flex w-fit max-w-full items-center gap-2 whitespace-nowrap';
 
 /** The label row inside a header cell: the name, and the drag grip that reveals on hover. */
 export const HEADER_LABEL_ROW_CLASS = 'flex items-center justify-between gap-1 text-xs font-medium';
@@ -239,8 +291,15 @@ export const ROW_NUMBER_CELL_CLASS = cn(
   'group/gutter sticky left-0 z-1 bg-background px-1 text-center align-middle whitespace-nowrap text-foreground-de-emp',
   GRID_LINE_V_CLASS,
   GRID_LINE_H_CLASS,
+  ROW_HOVER_CLASS,
   'hover:z-4 focus-within:z-4'
 );
+
+/**
+ * 14px: Inconsolata's short lowercase reads at the height of the 12px Inter beside it. The line height stays the
+ * cell surface's 17px, which the built-in editor inherits from the cell along with the font.
+ */
+export const MONO_CELL_TEXT_CLASS = 'font-mono text-sm leading-[17px]';
 
 /**
  * Every reveal below marks its `opacity-100`: a sibling micro-frontend publishes `opacity-0`
@@ -290,7 +349,7 @@ export const LOCKABLE_ROW_ACTION_BUTTON_CLASS =
 export const DELETE_ROW_BUTTON_CLASS = `${ROW_ACTION_BUTTON_CLASS} hover:text-error-text future:hover:text-error-text`;
 
 /** A row action revealed on its own, rather than with the row's other actions as a group. */
-export const DELETE_ROW_CLASS = `${DELETE_ROW_BUTTON_CLASS} opacity-0 transition-opacity duration-150 group-hover/row:opacity-100! focus-visible:opacity-100!`;
+export const DELETE_ROW_CLASS = `${DELETE_ROW_BUTTON_CLASS} size-[22px] rounded opacity-0 group-hover/row:opacity-100! focus-visible:opacity-100!`;
 
 /**
  * The cell surface: one row height minus its bottom border, border-box so a row can never grow.
@@ -309,14 +368,13 @@ export const IN_RANGE_CLASS =
 /** The transient note's visible form, for the cases a sighted user must not miss. */
 export const LIVE_NOTE_CLASS =
   'sticky bottom-2 left-2 z-5 w-fit max-w-[calc(100%-16px)] rounded border border-border-de-emp bg-background-secondary ' +
-  'px-2.5 py-1.5 text-xs text-foreground shadow-md';
+  'px-2.5 py-1.5 text-xs text-foreground shadow-[0_2px_8px_rgb(0_0_0/12%)]';
 
 /**
- * The footer row's add action, on a `link` `Button`. The `<td>` spans the whole table, so the button alone is stuck to
- * the container's left edge — otherwise it scrolled off with the columns on a wide table.
+ * The footer row's add action, on a `text` `Button`. The `<td>` spans the whole table, so the button alone is stuck to
+ * the container's left edge — otherwise it would scroll off with the columns on a wide table.
  */
-export const FOOTER_ACTION_CLASS =
-  'sticky left-0 block w-fit h-auto px-2 py-1.5 font-normal future:text-primary future:hover:text-primary';
+export const FOOTER_ACTION_CLASS = 'sticky left-0 w-fit';
 
 /**
  * The built-in plain cell editor. A raw `<input>` on purpose: it is the cell's own surface, and Apollo's `Input` is a

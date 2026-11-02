@@ -33,6 +33,44 @@ describe('useColumnWidths', () => {
     await waitFor(() => expect(result.current.widths).toEqual(directional));
   });
 
+  // Filling the container stretches the columns past the window; a live drag that takes width back
+  // from them has to shrink the spacer standing in for the unmounted ones, or the colgroup shears.
+  it('keeps the spacer for unmounted columns in step with a live drag that redistributes them', () => {
+    const containerRef = { current: { clientWidth: 800 } as unknown as HTMLElement };
+    const columns: SizedColumn[] = ['c0', 'c1', 'c2', 'c3'].map((id) => ({
+      id,
+      defaultWidth: 100,
+    }));
+    const { result } = renderHook(() =>
+      useColumnWidths({ columns, reservedPx: 0, containerRef, initialWidths: {} })
+    );
+    expect(result.current.widths).toEqual([200, 200, 200, 200]);
+
+    const table = document.createElement('table');
+    const handle = document.createElement('span');
+    table.append(handle);
+    handle.setPointerCapture = vi.fn();
+    const spacer = document.createElement('col');
+    act(() => {
+      result.current.setTableElement(table);
+      result.current.setSpacerElement('hidden', ['c2', 'c3'], spacer);
+      result.current.onResizeStart('c0', {
+        clientX: 100,
+        pointerId: 1,
+        currentTarget: handle,
+        preventDefault: () => {},
+        stopPropagation: () => {},
+      } as unknown as React.PointerEvent);
+    });
+    act(() => {
+      handle.dispatchEvent(new MouseEvent('pointermove', { clientX: 200, buttons: 1 }));
+    });
+
+    // c0 took 100px; the three columns to its right share the 500px left, so c2 and c3 give some back.
+    expect(Number.parseFloat(spacer.style.width)).toBeLessThan(400);
+    expect(Number.parseFloat(table.style.width)).toBe(800);
+  });
+
   it('reports the full override map on a resize, so the host can persist it by replacement', () => {
     const containerRef = { current: { clientWidth: 800 } as unknown as HTMLElement };
     const onWidthsChange = vi.fn();
