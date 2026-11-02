@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.14.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.13.0...@uipath/apollo-react@7.14.0) (2026-11-02)
+
+### Features
+
+* **apollo-react:** let the guardrail builder hide its action and evals toggle [AL-681] ([4cb05f5](https://github.com/UiPath/apollo-ui/commit/4cb05f50ed6329e2c3b1819a3bc4ec5e3a09fb6d))
+
 ## [@uipath/apollo-react-v7.13.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.12.1...@uipath/apollo-react@7.13.0) (2026-10-30)
 
 ### Features
