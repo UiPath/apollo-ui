@@ -55,20 +55,20 @@ graph RL
 
 ```
 apollo-ui/
-├── packages/              # Core + framework packages
-│   ├── apollo-core/       # 🎨 Design tokens, fonts
-│   ├── apollo-ui-icons/   # 🖼️ SVG icon set
+├── packages/                  # Core + framework packages
+│   ├── apollo-core/           # 🎨 Design tokens, fonts
+│   ├── apollo-ui-icons/       # 🖼️ SVG icon set
 │   ├── apollo-ui-icons-react/ # 🧩 React icon components
-│   ├── apollo-react/      # ⚛️ Canvas components, chat, icons, MUI theme
-│   ├── apollo-vertex/     # 🌟 Vertex shadcn registry components (private)
-│   └── apollo-wind/       # 🎐 Tailwind + shadcn/ui
+│   ├── apollo-react/          # ⚛️ Canvas components, chat, icons, MUI theme
+│   ├── apollo-vertex/         # 🌟 Vertex shadcn registry components (private)
+│   └── apollo-wind/           # 🎐 Tailwind + shadcn/ui
 │
-├── web-packages/          # Cross-framework web components
-│   └── ap-chat/           # 💬 Chat web component
+├── web-packages/              # Cross-framework web components
+│   └── ap-chat/               # 💬 Chat web component
 │
-└── apps/                  # Demo & development applications
-    ├── apollo-vertex/     # 🌟 Vertex documentation site and registry
-    └── storybook/         # 📚 Component documentation
+└── apps/                      # Demo & development applications
+    ├── apollo-vertex/         # 🌟 Vertex documentation site and registry
+    └── storybook/             # 📚 Component documentation
 ```
 
 ## 📥 Installation

@@ -415,18 +415,18 @@ When CI runs `pnpm release` on a maintenance branch, semantic-release executes f
 
 ```
 apollo-ui/
-├── packages/              # Framework packages
-│   ├── apollo-core/       # Design tokens
-│   ├── apollo-ui-icons/   # SVG icon set
+├── packages/                  # Framework packages
+│   ├── apollo-core/           # Design tokens
+│   ├── apollo-ui-icons/       # SVG icon set
 │   ├── apollo-ui-icons-react/ # React icon components
-│   ├── apollo-react/      # React components
-│   ├── apollo-vertex/     # Vertex shadcn registry components
-│   └── apollo-wind/       # Tailwind components
-├── web-packages/          # Web components
-│   └── ap-chat/           # Chat component
-└── apps/                  # Development apps
-    ├── apollo-vertex/     # Documentation site
-    └── storybook/         # Storybook
+│   ├── apollo-react/          # React components
+│   ├── apollo-vertex/         # Vertex shadcn registry components
+│   └── apollo-wind/           # Tailwind components
+├── web-packages/              # Web components
+│   └── ap-chat/               # Chat component
+└── apps/                      # Development apps
+    ├── apollo-vertex/         # Documentation site
+    └── storybook/             # Storybook
 ```
 
 ## Code of Conduct
