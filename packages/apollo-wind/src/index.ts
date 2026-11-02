@@ -589,6 +589,7 @@ export {
   flattenJsonTree,
   formatLeafValue,
   getValueAtPath,
+  hasVisibleRows,
   inferValueType,
   isArrayItemTemplateRoot,
   isJsonObject,

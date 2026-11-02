@@ -6,6 +6,7 @@ import {
   flattenJsonTree,
   formatLeafValue,
   getValueAtPath,
+  hasVisibleRows,
   isArrayItemTemplateRoot,
   removeValueAtPath,
   setValueAtPath,
@@ -296,6 +297,47 @@ describe('flattenJsonTree', () => {
     const keys = rows.map((r) => r.node.key);
     expect(keys).toEqual(expect.arrayContaining(['responseBody', 'id', 'amount', 'currency']));
     expect(keys).not.toContain('statusCode');
+  });
+});
+
+describe('hasVisibleRows', () => {
+  const tree = buildJsonTree({
+    schema: SCHEMA,
+    value: {
+      statusCode: 200,
+      responseBody: { id: 'inv-001', amount: 1500, currency: 'USD' },
+      debugInfo: { attempt: 1 },
+    },
+  });
+  const displayTexts = (node: JsonTreeNode) =>
+    node.key === 'debugInfo' ? { label: 'Diagnostics', sublabel: 'retry details' } : undefined;
+  const isKey = (key: string) => (node: JsonTreeNode) => node.key === key;
+
+  // Must agree with flattenJsonTree, which renders what this predicts.
+  it.each([
+    ['no narrowing', {}],
+    ['a blank query', { query: '   ' }],
+    ['a key match', { query: 'CURRENCY' }],
+    ['a value match', { query: 'inv-001' }],
+    ['a decoration label', { query: 'diagnostics', displayTexts }],
+    ['a decoration sublabel', { query: 'retry', displayTexts }],
+    ['a label without display texts', { query: 'diagnostics' }],
+    ['no query match', { query: 'nowhere' }],
+    ['a filter', { filterPredicate: isKey('attempt') }],
+    ['no filter match', { filterPredicate: () => false }],
+    ['query and filter on one node', { query: 'amount', filterPredicate: isKey('amount') }],
+    // Different descendants of one top-level node still keep it.
+    ['query and filter on siblings', { query: 'currency', filterPredicate: isKey('amount') }],
+    [
+      'query and filter in different subtrees',
+      { query: 'currency', filterPredicate: isKey('attempt') },
+    ],
+  ])('matches flattenJsonTree for %s', (_, options) => {
+    expect(hasVisibleRows(tree, options)).toBe(flattenJsonTree(tree, options).length > 0);
+  });
+
+  it('has no rows for an empty tree', () => {
+    expect(hasVisibleRows([])).toBe(false);
   });
 });
 
