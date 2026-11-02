@@ -1158,6 +1158,21 @@ describe('NodeVariablesPanel', () => {
     expect(regions.at(-1)).toBe('Assets');
   });
 
+  it("keeps a node's icon under a host badge, and names badges by deriveTypeLabel", () => {
+    renderPanel({
+      expandedSections: ['inputs', 'variables'],
+      decorateNode: ({ node }) =>
+        node.segments.length === 1 ? { badge: { reference: {} } } : undefined,
+      deriveTypeLabel: (node) => (node.key === 'flowTest' ? 'Flag' : undefined),
+    });
+
+    // The host's badge merges over the built-in one, so the node icon stays.
+    expect(within(section('Inputs')).getByTestId('manual-icon')).toBeInTheDocument();
+    expect(
+      within(section('Variables')).getByRole('img', { name: 'Flag · reference' })
+    ).toBeInTheDocument();
+  });
+
   it('unlocks the ID when the existing one is not a valid identifier', async () => {
     const user = userEvent.setup();
     render(

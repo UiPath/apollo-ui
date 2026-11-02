@@ -432,6 +432,7 @@ function NodeVariablesPanelRender(
     leading,
     rowWrapper,
     deriveTypeIcon,
+    deriveTypeLabel,
     strings: stringOverrides,
     treeStrings,
     children,
@@ -983,6 +984,7 @@ function NodeVariablesPanelRender(
       readOnly
       decorateNode={decorators[section]}
       deriveTypeIcon={deriveTypeIcon}
+      deriveTypeLabel={deriveTypeLabel}
       rowWrapper={sectionRowWrappers?.[section]}
       nodeActions={actionsFor(section)}
       // Room for copy plus edit and delete on variable rows.

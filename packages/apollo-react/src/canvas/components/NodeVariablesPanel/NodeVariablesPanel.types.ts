@@ -2,6 +2,7 @@ import type { ComponentType, ReactNode } from 'react';
 import type {
   CopyEvent,
   DeriveTypeIcon,
+  DeriveTypeLabel,
   JsonObject,
   JsonSchema,
   JsonTreeNode,
@@ -310,6 +311,8 @@ export interface NodeVariablesPanelProps {
   rowWrapper?: NodeVariablesRowWrapper;
   /** Custom type-badge icons for every section's tree (e.g. File or Secret icons). */
   deriveTypeIcon?: DeriveTypeIcon;
+  /** Custom type names for every section's badge tooltips (e.g. File or Secret). */
+  deriveTypeLabel?: DeriveTypeLabel;
   /**
    * Overrides for the panel's copy, e.g. from a host's own i18n. Omitted keys
    * use the canvas catalog. Keep it stable (memoized).
