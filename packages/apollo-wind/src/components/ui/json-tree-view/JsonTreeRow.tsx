@@ -50,9 +50,10 @@ export const ROW_MIN_HEIGHT_PX = 28;
 // and the row actions, `min-w-8` keeps a sliver of it legible when squeezed.
 const VALUE_CELL_CLASS = 'flex min-w-8 flex-1 items-center';
 
-// The field-name cell. Capped so a pathologically long key truncates rather
-// than pushing the value out of the row.
-const NAME_CELL_CLASS = 'flex min-w-0 max-w-1/2 items-center gap-2';
+// The field-name cell. Beside a value, `max-w-1/2` is added so a long key
+// truncates rather than pushing the value out; otherwise it is content-sized
+// and shrinks only when the row is full.
+const NAME_CELL_CLASS = 'flex min-w-0 items-center gap-2';
 
 // Inset so the ring stays inside the tree's clipped scroll box.
 const FOCUS_RING_CLASS =
@@ -249,6 +250,8 @@ export function JsonTreeRow({ row, index }: { row: FlatJsonTreeRow; index: numbe
   // The synthesized preview item is not a real element, so it stays
   // out of the array's item count (an empty array still reads "0").
   const childCount = node.children?.filter((c) => !isArrayItemTemplateRoot(c)).length ?? 0;
+  // A schema-only array has no items yet; "0 items" would read as an empty value.
+  const showsCount = !(node.type === 'array' && node.value === undefined);
   const decoration = decorateNode?.(node);
   const customCell: ReactNode = renderValue?.(node, {
     readOnly,
@@ -313,6 +316,7 @@ export function JsonTreeRow({ row, index }: { row: FlatJsonTreeRow; index: numbe
     !wrapped &&
     !decoration?.hideValue &&
     (customCell != null || !((readOnly && node.value === undefined) || isTemplate));
+  const besideValue = isContainer ? customCell != null : showsValue;
   const editingDetail =
     (wrapped && editingPath === node.path && canEdit) ||
     (isContainer && jsonEditingPath === node.path);
@@ -339,7 +343,7 @@ export function JsonTreeRow({ row, index }: { row: FlatJsonTreeRow; index: numbe
         style={rowIndent(depth)}
         onClick={rowClickable ? handleRowClick : undefined}
       >
-        <GridCell cell="name" className={NAME_CELL_CLASS}>
+        <GridCell cell="name" className={cn(NAME_CELL_CLASS, besideValue && 'max-w-1/2')}>
           {isContainer ? (
             <button
               type="button"
@@ -405,10 +409,14 @@ export function JsonTreeRow({ row, index }: { row: FlatJsonTreeRow; index: numbe
         {isContainer ? (
           <GridCell
             cell="value"
-            // A custom cell fills the row; without one the count stays beside the key.
-            className={cn('flex min-w-0 items-center gap-2', customCell != null && 'flex-1')}
+            // A custom cell fills the row; without one the count stays beside the key,
+            // and the key truncates before the count does. A chip may still truncate.
+            className={cn(
+              'flex min-w-0 items-center gap-2',
+              customCell != null ? 'flex-1' : !decoration?.chip && 'shrink-0'
+            )}
           >
-            {!decoration?.hideCount && (
+            {showsCount && !decoration?.hideCount && (
               <span className="shrink-0 whitespace-nowrap font-mono italic text-[10px] text-foreground-subtle">
                 {node.type === 'array'
                   ? strings.itemCount(childCount)

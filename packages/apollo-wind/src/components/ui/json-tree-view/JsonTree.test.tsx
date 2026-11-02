@@ -430,6 +430,49 @@ describe('JsonTreeView row decorations and actions', () => {
     );
   });
 
+  it('caps the name cell only beside a value', () => {
+    render(
+      <JsonTreeView
+        nodes={buildJsonTree({
+          value: { status: 'done', config: { region: 'us-east' } },
+          schema: { type: 'object', properties: { pending: { type: 'string' } } },
+        })}
+        readOnly
+      />
+    );
+
+    const nameCell = (key: string) =>
+      screen.getByRole('button', { name: `Copy path for ${key}` }).closest('[data-cell="name"]');
+    expect(nameCell('status')).toHaveClass('max-w-1/2');
+    // A container shows only its count, and an unset read-only scalar shows nothing.
+    expect(nameCell('config')).not.toHaveClass('max-w-1/2');
+    expect(nameCell('pending')).not.toHaveClass('max-w-1/2');
+  });
+
+  it('hides the item count of an array with no value', () => {
+    render(
+      <JsonTreeView
+        nodes={buildJsonTree({
+          schema: {
+            type: 'object',
+            properties: {
+              planned: { type: 'array', items: { type: 'string' } },
+              empty: { type: 'array', items: { type: 'string' } },
+            },
+          },
+          value: { empty: [] },
+        })}
+        readOnly
+      />
+    );
+
+    expect(screen.getAllByText('0 items')).toHaveLength(1);
+    const plannedRow = screen
+      .getAllByRole('row')
+      .find((row) => row.dataset.path === 'planned') as HTMLElement;
+    expect(within(plannedRow).queryByText(/items?$/)).toBeNull();
+  });
+
   it('names a display label in full in the key tooltip', async () => {
     const user = userEvent.setup();
     render(

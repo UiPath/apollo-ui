@@ -24,7 +24,8 @@ export function NodeKey({ node, label, displayPath, onCopyPath, className }: Nod
   // The tooltip/aria surface the exact string that gets copied so it matches
   // consumer path transforms (e.g. a `$vars.` prefix), not the raw tree path.
   const copyPathText = displayPath ?? node.path;
-  // The value gives way first (it shrinks harder), then the key truncates. Only
+  // Beside a value, the value gives way first (it shrinks harder), then the key
+  // truncates; a container's count never shrinks, so there the key goes first. Only
   // once both are at their floors does the row overflow and push the trailing
   // actions out of the tree's clipped viewport, so the actions survive far
   // narrower panels than a key that refused to shrink at all. The floor is
