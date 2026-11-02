@@ -1,13 +1,15 @@
-import type { ReactNode } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 import type {
   CopyEvent,
   DeriveTypeIcon,
-  JsonContainer,
   JsonObject,
   JsonSchema,
   JsonTreeNode,
-  JsonTreeRowWrapper,
+  JsonTreeRowWrapperProps,
+  JsonTreeViewStrings,
   JsonValue,
+  NodeAction,
+  NodeDecoration,
   PathForCopy,
 } from '../JsonTree';
 
@@ -35,12 +37,14 @@ export function isAddableSection(value: string): value is NodeVariablesAddableSe
   return Object.hasOwn(ADDABLE_SECTIONS, value);
 }
 
-/** A tree row, as filters and the variable callbacks receive it. */
+/** A tree row, as filters and the row callbacks receive it. */
 export interface NodeVariablesRow {
   section: NodeVariablesSection;
   /** The node the row belongs to, for rows in Inputs and Nodes. */
   nodeId?: string;
   node: JsonTreeNode;
+  /** The row's reference as the panel copies it (`$vars.flowTest`), after `pathForCopy`. */
+  displayPath: string;
 }
 
 /** A filter offered in the toolbar's filter menu. */
@@ -49,9 +53,13 @@ export interface NodeVariablesFilter {
   label: string;
   /**
    * Keeps a row when it, or anything below it, matches. A row that matches
-   * shows its whole subtree. A section disappears when none of its rows match.
+   * shows its whole subtree. While the filter is on, sections with matches open
+   * and the rest are hidden; they can still be collapsed, and clearing the filter
+   * restores the earlier expansion. Omit it for a filter that keeps every row
+   * (e.g. the host swaps the data instead), which leaves expansion and empty
+   * sections alone.
    */
-  predicate: (row: NodeVariablesRow) => boolean;
+  predicate?: (row: NodeVariablesRow) => boolean;
   /** Shown when the filter leaves nothing. */
   emptyMessage?: string;
 }
@@ -70,26 +78,11 @@ export interface NodeVariableDetails {
 }
 
 /**
- * A schema/value pair, the same contract as `NodeIOView`: the schema gives the
- * structure, the value gives current data. Either one alone works.
+ * A schema/value pair keyed by name: the schema gives the structure, the value
+ * gives current data, and either one alone works. Every section's data has this
+ * shape, from a flow's variables to a node's output (`{ output, error }`).
  */
 export interface NodeVariablesData {
-  schema?: JsonSchema;
-  value?: JsonContainer;
-}
-
-/** The flow's variables: an object keyed by variable name. */
-export interface NodeVariablesVariables {
-  schema?: JsonSchema;
-  value?: JsonObject;
-}
-
-/**
- * The flow's declared assets: an object keyed by asset name, each entry the
- * asset's value shape (a credential asset is an object with a username and a
- * password).
- */
-export interface NodeVariablesAssets {
   schema?: JsonSchema;
   value?: JsonObject;
 }
@@ -111,21 +104,101 @@ export interface NodeVariablesSource extends NodeVariablesData {
   addable?: boolean;
 }
 
+/** The state of a section header's add (+) button. */
+export interface NodeVariablesAddState {
+  /** Shows the + but ignores clicks, e.g. while a prerequisite is missing. */
+  disabled?: boolean;
+  /** Shown on hover and focus, e.g. why the + is disabled. */
+  tooltip?: string;
+}
+
+/** Props passed to a custom row container: the tree's own, plus where the row sits. */
+export interface NodeVariablesRowWrapperProps extends JsonTreeRowWrapperProps {
+  section: NodeVariablesSection;
+  /** The node the row belongs to, for rows in Inputs and Nodes. */
+  nodeId?: string;
+}
+
+/**
+ * Custom row container (e.g. to make rows drag sources). `displayPath` is the
+ * row's reference as the panel copies it (`$vars.flowTest`, `$assets.apiKey`).
+ * Must be a stable component reference, like `JsonTreeRowWrapper`.
+ */
+export type NodeVariablesRowWrapper = ComponentType<NodeVariablesRowWrapperProps>;
+
+/** Context passed to `nodeActions`. */
+export interface NodeVariablesActionContext {
+  /**
+   * The actions the panel would show for this row (copy value, edit and delete,
+   * or a node's focus and +), in display order. Spread them to keep the built-ins.
+   */
+  defaultActions: NodeAction[];
+}
+
+/** The panel's user-facing copy. Defaults come from the canvas catalog (Lingui). */
+export interface NodeVariablesPanelStrings {
+  sectionInputs: string;
+  sectionOutputs: string;
+  sectionVariables: string;
+  sectionAssets: string;
+  sectionNodes: string;
+  /** A section's count, for assistive technology and its tooltip. */
+  inputsCount: (count: number) => string;
+  outputsCount: (count: number) => string;
+  variablesCount: (count: number) => string;
+  assetsCount: (count: number) => string;
+  nodesCount: (count: number) => string;
+  /** Header + labels. */
+  addOutputs: string;
+  addVariables: string;
+  addAssets: string;
+  /** A node row's output count. */
+  nodeOutputCount: (count: number) => string;
+  /** A node row's + tooltip, and its accessible name. */
+  addToNode: string;
+  addFromNode: (label: string) => string;
+  /** A node row's focus tooltip, and its accessible name. */
+  focusNode: string;
+  focusNodeLabel: (label: string) => string;
+  editVariable: (name: string) => string;
+  deleteVariable: (name: string) => string;
+  searchPlaceholder: string;
+  noMatches: string;
+  /** Shown when a filter leaves nothing and has no `emptyMessage`. */
+  filterEmpty: string;
+}
+
+/** Imperative controls, through the panel's `ref`. */
+export interface NodeVariablesPanelHandle {
+  /**
+   * Brings a row into view: opens its section and its parent rows, scrolls to it,
+   * and briefly highlights it. Takes the reference as the panel copies it
+   * (`$vars.flowTest`, `$assets.apiKey`). Clears a search or filter that hides
+   * the row. When the host controls `expandedSections` or `activeFilterId`, the
+   * changes go through `onExpandedSectionsChange` and `onActiveFilterChange`.
+   * Apply them synchronously in those callbacks: the reveal scrolls and
+   * highlights in the render they trigger, so a change applied later (e.g.
+   * after an async store update) opens the row without either. Returns false
+   * when no row has that reference. In a section large enough to window its
+   * rows, the row is opened but may not be scrolled to. A node in both Inputs
+   * and Nodes has the same reference there; the first section in display order wins.
+   */
+  revealPath: (reference: string) => boolean;
+}
+
+/**
+ * Each section shows only when its data prop is passed. Pass an empty value
+ * (`[]` or `{}`) to show an empty section, e.g. so its + stays reachable.
+ */
 export interface NodeVariablesPanelProps {
   /** Upstream nodes whose outputs this node can read. */
   inputs?: NodeVariablesSource[];
   /** The flow's declared outputs. */
   outputs?: NodeVariablesData;
-  /**
-   * The flow's shared variables. Top-level keys are the variable names, so the
-   * value is an object (not an array) and the schema should describe one.
-   */
-  variables?: NodeVariablesVariables;
-  /**
-   * The flow's declared assets, between Variables and Nodes. Top-level keys are
-   * the asset names, so the value is an object and the schema should describe one.
-   */
-  assets?: NodeVariablesAssets;
+  /** The flow's shared variables. Top-level keys are the variable names. */
+  variables?: NodeVariablesData;
+  /** The flow's declared assets, between Variables and Nodes. Top-level keys are the asset names. */
+  assets?: NodeVariablesData;
   /** Every node in the flow, for referencing beyond the direct inputs. */
   nodes?: NodeVariablesSource[];
   /** Path prefix for the Outputs section. Default: none, so an output reads `$vars.result`. */
@@ -146,17 +219,28 @@ export interface NodeVariablesPanelProps {
   /**
    * Transforms a reference before it is shown and copied. It receives the
    * prefixed reference (see `referencePrefix`) and the raw `segments`, for ids
-   * that the path bracket-quotes (e.g. `["node-1"]`).
+   * that the path bracket-quotes (e.g. `["node-1"]`). Keep it stable (memoized):
+   * the rows are recomputed when it changes.
    */
   pathForCopy?: PathForCopy;
-  /** Sections open on first render. Default: only Nodes, so Inputs, Outputs, Variables, and Assets start collapsed. */
-  defaultExpandedSections?: NodeVariablesSection[];
-  /** Filters offered in the toolbar's filter menu. Omit to hide the filter control. */
+  /**
+   * Open sections (controlled). Omit to let the panel keep them, starting with
+   * only Nodes open. A search or narrowing filter opens its matches on top of
+   * these without changing them.
+   */
+  expandedSections?: NodeVariablesSection[];
+  /**
+   * Called when the base expansion changes, by the user or by `revealPath`. Toggles
+   * made while a search or filter narrows the panel stay in the panel and are not reported.
+   */
+  onExpandedSectionsChange?: (sections: NodeVariablesSection[]) => void;
+  /**
+   * Filters offered in the toolbar's filter menu. Omit to hide the filter control.
+   * Keep it stable (memoized): the rows are recomputed when the active filter changes.
+   */
   filters?: NodeVariablesFilter[];
-  /** Id of the active filter, or null for none (controlled). */
+  /** Id of the active filter, or null for none (controlled). Omit to let the panel keep it, starting with none. */
   activeFilterId?: string | null;
-  /** Id of the filter active on first render (uncontrolled). Default: none. */
-  defaultActiveFilterId?: string | null;
   /** Called when a filter is picked or cleared from the menu. */
   onActiveFilterChange?: (id: string | null) => void;
   /** Called from a node row's "Focus on node" action, shown on every node row. Omit to hide it. */
@@ -167,11 +251,23 @@ export interface NodeVariablesPanelProps {
    * the node's id. Omit to hide them all.
    */
   onAdd?: (section: NodeVariablesSection, nodeId?: string) => void;
+  /** Disables a section header's + or gives it a tooltip, e.g. why it can't be used yet. */
+  addState?: Partial<Record<NodeVariablesAddableSection, NodeVariablesAddState>>;
   /**
    * Rows that get the edit and delete actions. Array preview rows are never
-   * variables. Default: top-level keys in Outputs and Variables.
+   * variables. Default: top-level keys in Outputs and Variables. Not consulted
+   * for Assets; top-level asset rows always qualify.
    */
   isVariableRow?: (row: NodeVariablesRow) => boolean;
+  /** Veto for a variable or asset row that would otherwise offer edit. Default: allow. */
+  canEdit?: (row: NodeVariablesRow) => boolean;
+  /** Veto for a variable or asset row that would otherwise offer delete. Default: allow. */
+  canDelete?: (row: NodeVariablesRow) => boolean;
+  /**
+   * Whether a row's reference and value can be copied. When false, the name
+   * shows as plain text and the copy-value action is left out. Default: every row.
+   */
+  canCopy?: (row: NodeVariablesRow) => boolean;
   /**
    * Called when the built-in Edit variable dialog is saved, with the row and
    * its new details (a changed `id` is a rename). The dialog reads the type,
@@ -192,14 +288,35 @@ export interface NodeVariablesPanelProps {
   /** Called after a reference (a key's path) or a value is copied to the clipboard. */
   onCopy?: (event: CopyEvent) => void;
   /**
+   * Annotates any row (a chip, a sublabel, a badge icon), merged over the
+   * panel's own decoration of node rows: the host's defined fields win (an
+   * undefined one keeps the panel's), and `badge` merges field by field. Keep it stable (memoized): the rows are recomputed when it changes.
+   */
+  decorateNode?: (row: NodeVariablesRow) => NodeDecoration | undefined;
+  /**
+   * Customizes any row's actions. Return a list (typically `ctx.defaultActions`
+   * plus your own), `[]` for none, or undefined to keep the defaults.
+   */
+  nodeActions?: (
+    row: NodeVariablesRow,
+    ctx: NodeVariablesActionContext
+  ) => NodeAction[] | undefined;
+  /**
    * Content at the start of the toolbar row, before the search, filter, and
    * expand controls (e.g. the property panel's tabs, so they share one row).
    */
   leading?: ReactNode;
   /** Custom row container for every section's tree (e.g. to make rows drag sources). */
-  rowWrapper?: JsonTreeRowWrapper;
+  rowWrapper?: NodeVariablesRowWrapper;
   /** Custom type-badge icons for every section's tree (e.g. File or Secret icons). */
   deriveTypeIcon?: DeriveTypeIcon;
+  /**
+   * Overrides for the panel's copy, e.g. from a host's own i18n. Omitted keys
+   * use the canvas catalog. Keep it stable (memoized).
+   */
+  strings?: Partial<NodeVariablesPanelStrings>;
+  /** Overrides for the trees' and toolbar's copy (see `JsonTreeViewStrings`). */
+  treeStrings?: Partial<JsonTreeViewStrings>;
   /** Extra content after the Nodes section, in the same scroller. */
   children?: ReactNode;
   className?: string;

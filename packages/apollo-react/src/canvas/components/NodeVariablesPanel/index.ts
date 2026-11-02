@@ -1,14 +1,18 @@
 export { NodeVariablesPanel } from './NodeVariablesPanel';
 export type {
   NodeVariableDetails,
+  NodeVariablesActionContext,
   NodeVariablesAddableSection,
-  NodeVariablesAssets,
+  NodeVariablesAddState,
   NodeVariablesData,
   NodeVariablesFilter,
+  NodeVariablesPanelHandle,
   NodeVariablesPanelProps,
+  NodeVariablesPanelStrings,
   NodeVariablesRow,
+  NodeVariablesRowWrapper,
+  NodeVariablesRowWrapperProps,
   NodeVariablesSection,
   NodeVariablesSource,
-  NodeVariablesVariables,
   NodeVariableType,
 } from './NodeVariablesPanel.types';

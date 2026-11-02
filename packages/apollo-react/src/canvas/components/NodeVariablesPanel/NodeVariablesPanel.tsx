@@ -16,8 +16,17 @@ import {
   Trash2,
   Variable,
 } from 'lucide-react';
-import { type ComponentType, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useSafeLingui } from '../../../i18n';
+import {
+  type ComponentType,
+  type ForwardedRef,
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { Asset } from '../../../icons';
 import { CanvasTooltip } from '../CanvasTooltip';
 import {
@@ -31,6 +40,7 @@ import {
   type JsonSchema,
   type JsonTreeFilterOption,
   type JsonTreeNode,
+  type JsonTreeRowWrapper,
   JsonTreeToolbar,
   JsonTreeView,
   type JsonValue,
@@ -42,10 +52,12 @@ import {
   schemaDisplayType,
 } from '../JsonTree';
 import { NodeVariableEditDialog } from './NodeVariableEditDialog';
+import { useNodeVariablesPanelStrings } from './NodeVariablesPanel.strings';
 import {
   isAddableSection,
   type NodeVariableDetails,
   type NodeVariablesAddableSection,
+  type NodeVariablesPanelHandle,
   type NodeVariablesPanelProps,
   type NodeVariablesRow,
   type NodeVariablesSection,
@@ -81,12 +93,80 @@ const SECTION_ICONS: Record<
 const COUNT_CLASS = 'ml-auto shrink-0 font-mono text-[10px] text-foreground-muted';
 const EMPTY_MESSAGE_CLASS = 'px-3 py-6 text-center text-xs text-foreground-muted';
 
+/** Open on first render when the host doesn't control `expandedSections`. */
+const DEFAULT_EXPANDED_SECTIONS: NodeVariablesSection[] = ['nodes'];
+
+/** How long a revealed row stays highlighted. */
+const REVEAL_HIGHLIGHT_MS = 1500;
+
+type PerSection<T> = Record<NodeVariablesSection, T>;
+
+const NO_PATHS: PerSection<Record<string, boolean>> = {
+  inputs: {},
+  outputs: {},
+  variables: {},
+  assets: {},
+  nodes: {},
+};
+
+/** What the user closed while a search or filter narrows the panel. */
+interface NarrowedOverlay {
+  closedSections: NodeVariablesSection[];
+  /** Rows collapsed during a search, which otherwise holds every match open. */
+  collapsedPaths: PerSection<Record<string, boolean>>;
+}
+
+const NO_OVERLAY: NarrowedOverlay = { closedSections: [], collapsedPaths: NO_PATHS };
+
+/** Keeps the display order whatever order sections were opened in. */
+const inSectionOrder = (sections: Iterable<NodeVariablesSection>) => {
+  const set = new Set(sections);
+  return SECTIONS.filter((section) => set.has(section));
+};
+
+/** The object's fields that are set, so an `undefined` override keeps what it spreads over. */
+const definedFields = <T extends object>(value: T | undefined): Partial<T> =>
+  Object.fromEntries(
+    Object.entries(value ?? {}).filter(([, field]) => field !== undefined)
+  ) as Partial<T>;
+
+/** The host's defined fields win; `badge` merges field by field. */
+function mergeDecoration(
+  builtIn: NodeDecoration | undefined,
+  host: NodeDecoration | undefined
+): NodeDecoration | undefined {
+  if (!builtIn || !host) return host ?? builtIn;
+  const badge =
+    builtIn.badge || host.badge ? { ...builtIn.badge, ...definedFields(host.badge) } : undefined;
+  return { ...builtIn, ...definedFields(host), badge };
+}
+
+/** The node whose reference matches, with its parent containers' paths. Stack walk, like objectPaths. */
+function findByReference(
+  nodes: JsonTreeNode[],
+  matches: (node: JsonTreeNode) => boolean
+): { node: JsonTreeNode; ancestors: string[] } | undefined {
+  const stack = nodes.map((node) => ({ node, ancestors: [] as string[] }));
+  while (stack.length > 0) {
+    const { node, ancestors } = stack.pop()!;
+    if (matches(node)) return { node, ancestors };
+    for (const child of node.children ?? []) {
+      stack.push({ node: child, ancestors: [...ancestors, node.path] });
+    }
+  }
+  return undefined;
+}
+
 /**
  * Real entries among sibling nodes. The tree adds a preview item to schema-only
  * or empty arrays; it isn't a real element, so it isn't counted.
  */
 const countEntries = (nodes: JsonTreeNode[] | undefined) =>
   nodes?.filter((node) => !isArrayItemTemplateRoot(node)).length ?? 0;
+
+/** A node row's output count: the host's, else its output's top-level fields. */
+const outputCountOf = (source: NodeVariablesSource | undefined, node: JsonTreeNode) =>
+  source?.outputCount ?? countEntries(node.children);
 
 /** Above this many nodes a section windows its rows against the panel scroller. */
 const VIRTUALIZE_THRESHOLD = 500;
@@ -214,11 +294,21 @@ function variableTypeOf(
     : 'string';
 }
 
-/** The row a tree node is, as filters and the variable callbacks see it. */
-function rowFor(section: NodeVariablesSection, node: JsonTreeNode): NodeVariablesRow {
-  return isSourceSection(section)
-    ? { section, nodeId: String(node.segments[0]), node }
-    : { section, node };
+/** The node a row in Inputs or Nodes belongs to. */
+const nodeIdOf = (section: NodeVariablesSection, node: JsonTreeNode) =>
+  isSourceSection(section) ? String(node.segments[0]) : undefined;
+
+/** The row a tree node is, as filters and the row callbacks see it. */
+function rowFor(
+  section: NodeVariablesSection,
+  node: JsonTreeNode,
+  toReference: PathForCopy
+): NodeVariablesRow {
+  const displayPath = toReference(node.path, node.segments);
+  const nodeId = nodeIdOf(section, node);
+  return nodeId === undefined
+    ? { section, node, displayPath }
+    : { section, nodeId, node, displayPath };
 }
 
 /** Top-level named keys in Assets: one row per declared asset. */
@@ -257,7 +347,8 @@ interface EditingVariable {
 /**
  * NodeVariablesPanel lists everything a node can reference while it is being
  * configured: the outputs of its upstream inputs, the flow's outputs and
- * shared variables, its declared assets, and every node in the flow.
+ * shared variables, its declared assets, and every node in the flow. Each
+ * section shows only when its data is passed.
  *
  * Each section is a `JsonTreeView` and the toolbar is `JsonTreeToolbar`, so
  * rows, search, copying, and reference paths behave as in `NodeIOView`. Data
@@ -270,7 +361,9 @@ interface EditingVariable {
  * (`onRequestEditVariable`), and deleted. Asset rows share those two callbacks
  * (the row's `section` tells them apart) but never open the built-in dialog,
  * so a host can keep the dialog for variables and edit assets in its own.
- * Filters come from the host.
+ * `decorateNode` and `nodeActions` extend any row; filters come from the host.
+ * Open sections and the active filter are each controlled by one prop, or kept
+ * by the panel when it is omitted. `ref.revealPath` brings a row into view.
  *
  * The component is the body of a panel tab: compose it inside
  * `NodePropertyPanel`, which owns the chrome.
@@ -305,37 +398,52 @@ interface EditingVariable {
  * </NodePropertyPanel>
  * ```
  */
-export function NodeVariablesPanel({
-  inputs = [],
-  outputs,
-  variables,
-  assets,
-  nodes = [],
-  outputsBasePath,
-  variablesBasePath,
-  assetsBasePath,
-  referencePrefix = '$vars',
-  assetsReferencePrefix = '$assets',
-  pathForCopy,
-  defaultExpandedSections = ['nodes'],
-  filters,
-  activeFilterId: activeFilterIdProp,
-  defaultActiveFilterId = null,
-  onActiveFilterChange,
-  onFocusNode,
-  onAdd,
-  isVariableRow = isTopLevelVariable,
-  onEditVariable,
-  onRequestEditVariable,
-  onDeleteVariable,
-  onCopy,
-  leading,
-  rowWrapper,
-  deriveTypeIcon,
-  children,
-  className,
-}: NodeVariablesPanelProps) {
-  const { _ } = useSafeLingui();
+function NodeVariablesPanelRender(
+  {
+    inputs,
+    outputs,
+    variables,
+    assets,
+    nodes,
+    outputsBasePath,
+    variablesBasePath,
+    assetsBasePath,
+    referencePrefix = '$vars',
+    assetsReferencePrefix = '$assets',
+    pathForCopy,
+    expandedSections: expandedSectionsProp,
+    onExpandedSectionsChange,
+    filters,
+    activeFilterId: activeFilterIdProp,
+    onActiveFilterChange,
+    onFocusNode,
+    onAdd,
+    addState,
+    isVariableRow = isTopLevelVariable,
+    canEdit,
+    canDelete,
+    canCopy,
+    onEditVariable,
+    onRequestEditVariable,
+    onDeleteVariable,
+    onCopy,
+    decorateNode,
+    nodeActions,
+    leading,
+    rowWrapper,
+    deriveTypeIcon,
+    strings: stringOverrides,
+    treeStrings,
+    children,
+    className,
+  }: NodeVariablesPanelProps,
+  ref: ForwardedRef<NodeVariablesPanelHandle>
+) {
+  const strings = useNodeVariablesPanelStrings(stringOverrides);
+
+  // A section shows only when the host passes its data.
+  const sectionData = { inputs, outputs, variables, assets, nodes };
+  const present = SECTIONS.filter((section) => sectionData[section] !== undefined);
 
   // One entry per section whose paths can be prefixed, so a new variable type is one more line.
   const basePaths = useMemo(
@@ -348,25 +456,13 @@ export function NodeVariablesPanel({
     [outputsBasePath, variablesBasePath, assetsBasePath]
   );
 
-  const trees = useMemo<Record<NodeVariablesSection, JsonTreeNode[]>>(
+  const trees = useMemo<PerSection<JsonTreeNode[]>>(
     () => ({
-      inputs: buildSourceTree(inputs),
-      outputs: buildJsonTree({
-        schema: outputs?.schema,
-        value: outputs?.value,
-        basePath: basePaths.get('outputs'),
-      }),
-      variables: buildJsonTree({
-        schema: variables?.schema,
-        value: variables?.value,
-        basePath: basePaths.get('variables'),
-      }),
-      assets: buildJsonTree({
-        schema: assets?.schema,
-        value: assets?.value,
-        basePath: basePaths.get('assets'),
-      }),
-      nodes: buildSourceTree(nodes),
+      inputs: buildSourceTree(inputs ?? []),
+      outputs: buildJsonTree({ ...outputs, basePath: basePaths.get('outputs') }),
+      variables: buildJsonTree({ ...variables, basePath: basePaths.get('variables') }),
+      assets: buildJsonTree({ ...assets, basePath: basePaths.get('assets') }),
+      nodes: buildSourceTree(nodes ?? []),
     }),
     [inputs, outputs, variables, assets, nodes, basePaths]
   );
@@ -374,22 +470,24 @@ export function NodeVariablesPanel({
   // list's own metadata (label, icon, output count) must win in its section.
   const sourcesById = useMemo<Record<SourceSection, Map<string, NodeVariablesSource>>>(
     () => ({
-      inputs: new Map(inputs.map((source) => [source.id, source])),
-      nodes: new Map(nodes.map((source) => [source.id, source])),
+      inputs: new Map((inputs ?? []).map((source) => [source.id, source])),
+      nodes: new Map((nodes ?? []).map((source) => [source.id, source])),
     }),
     [inputs, nodes]
   );
 
-  const [openSections, setOpenSections] = useState(
-    () => new Set<NodeVariablesSection>(defaultExpandedSections)
-  );
+  const [uncontrolledSections, setUncontrolledSections] = useState(DEFAULT_EXPANDED_SECTIONS);
+  const baseSections = expandedSectionsProp ?? uncontrolledSections;
+  const setBaseSections = (next: NodeVariablesSection[]) => {
+    if (expandedSectionsProp === undefined) setUncontrolledSections(next);
+    onExpandedSectionsChange?.(next);
+  };
+
   // Containers start collapsed. Tracking the opened paths (rather than the
   // collapsed ones) keeps containers that appear later, such as a renamed
   // object variable, collapsed by default too. Kept per section: each section is
   // its own tree, and the same path can appear in two (a node in Inputs and Nodes).
-  const [openPaths, setOpenPaths] = useState<Record<NodeVariablesSection, Record<string, boolean>>>(
-    { inputs: {}, outputs: {}, variables: {}, assets: {}, nodes: {} }
-  );
+  const [openPaths, setOpenPaths] = useState<PerSection<Record<string, boolean>>>(NO_PATHS);
   // The tree's shape: every container path, true when collapsed. Own entries for
   // every path, read with own-key checks, so a key named after an
   // Object.prototype member (`constructor`) expands like any other.
@@ -406,7 +504,7 @@ export function NodeVariablesPanel({
             ])
           ),
         ])
-      ) as Record<NodeVariablesSection, Record<string, boolean>>,
+      ) as PerSection<Record<string, boolean>>,
     [trees, openPaths]
   );
   // Large sections (big run outputs) mount only the rows in view, windowed
@@ -415,12 +513,12 @@ export function NodeVariablesPanel({
     () =>
       Object.fromEntries(
         SECTIONS.map((section) => [section, exceedsVirtualizeThreshold(trees[section])])
-      ) as Record<NodeVariablesSection, boolean>,
+      ) as PerSection<boolean>,
     [trees]
   );
   const [scroller, setScroller] = useState<HTMLDivElement | null>(null);
   const [query, setQuery] = useState('');
-  const [uncontrolledFilterId, setUncontrolledFilterId] = useState(defaultActiveFilterId);
+  const [uncontrolledFilterId, setUncontrolledFilterId] = useState<string | null>(null);
   const activeFilterId =
     activeFilterIdProp !== undefined ? activeFilterIdProp : uncontrolledFilterId;
   const changeFilter = (id: string | null) => {
@@ -445,7 +543,9 @@ export function NodeVariablesPanel({
 
   const search = query.trim();
   const activeFilter = filters?.find((filter) => filter.id === activeFilterId);
-  const narrowing = !!search || !!activeFilter;
+  const filterPredicate = activeFilter?.predicate;
+  // Search and a filter with a predicate hide sections without matches and open the rest.
+  const narrowing = !!search || !!filterPredicate;
 
   // The toolbar only lists the options; matching runs per section below.
   const toolbarFilters = useMemo<JsonTreeFilterOption[] | undefined>(
@@ -455,15 +555,15 @@ export function NodeVariablesPanel({
   // The active filter as each section's tree predicate, with the row it sees.
   const filterPredicates = useMemo(
     () =>
-      activeFilter
+      filterPredicate
         ? (Object.fromEntries(
             SECTIONS.map((section) => [
               section,
-              (node: JsonTreeNode) => activeFilter.predicate(rowFor(section, node)),
+              (node: JsonTreeNode) => filterPredicate(rowFor(section, node, referenceFor(section))),
             ])
-          ) as Record<NodeVariablesSection, (node: JsonTreeNode) => boolean>)
+          ) as PerSection<(node: JsonTreeNode) => boolean>)
         : undefined,
-    [activeFilter]
+    [filterPredicate, referenceFor]
   );
 
   // Node rows: the node's name and icon over its id, which stays the raw key so
@@ -476,12 +576,8 @@ export function NodeVariablesPanel({
         if (node.segments.length !== 1) return undefined;
         const source = sourcesById[section].get(String(node.segments[0]));
         if (!source) return undefined;
-        const count = source.outputCount ?? countEntries(node.children);
-        const countLabel = _({
-          id: 'canvas.node_variables_panel.node_output_count',
-          message: 'Outputs: {count}',
-          values: { count },
-        });
+        const count = outputCountOf(source, node);
+        const countLabel = strings.nodeOutputCount(count);
         return {
           label: source.label,
           // The id shows on hover; the name's tooltip has both in full.
@@ -504,7 +600,26 @@ export function NodeVariablesPanel({
         };
       };
     return { inputs: decorate('inputs'), nodes: decorate('nodes') };
-  }, [sourcesById, _]);
+  }, [sourcesById, strings]);
+  // Every section's decoration: the built-in one for node rows, with the host's merged over it.
+  const decorators = useMemo(
+    () =>
+      Object.fromEntries(
+        SECTIONS.map((section) => {
+          const builtIn = isSourceSection(section) ? decorateSource[section] : undefined;
+          if (!decorateNode) return [section, builtIn];
+          return [
+            section,
+            (node: JsonTreeNode) =>
+              mergeDecoration(
+                builtIn?.(node),
+                decorateNode(rowFor(section, node, referenceFor(section)))
+              ),
+          ];
+        })
+      ) as PerSection<((node: JsonTreeNode) => NodeDecoration | undefined) | undefined>,
+    [decorateSource, decorateNode, referenceFor]
+  );
 
   // Rows each section shows while narrowed; a section with none is hidden.
   // Memoized, so a keystroke flattens each tree once here, not on every render.
@@ -518,30 +633,72 @@ export function NodeVariablesPanel({
                 collapsed: {},
                 query: search,
                 filterPredicate: filterPredicates?.[section],
-                displayTexts: isSourceSection(section) ? decorateSource[section] : undefined,
+                displayTexts: decorators[section],
               }).length
             : 1,
         ])
-      ) as Record<NodeVariablesSection, number>,
-    [narrowing, trees, search, filterPredicates, decorateSource]
+      ) as PerSection<number>,
+    [narrowing, trees, search, filterPredicates, decorators]
   );
-  const totalCount: Record<NodeVariablesSection, number> = {
-    inputs: inputs.length,
+  // Inputs count the triggers' outputs, the fields an author references; Nodes count nodes.
+  const totalCount: PerSection<number> = {
+    inputs: trees.inputs.reduce(
+      (sum, node) => sum + outputCountOf(sourcesById.inputs.get(String(node.segments[0])), node),
+      0
+    ),
     outputs: countEntries(trees.outputs),
     variables: countEntries(trees.variables),
     assets: countEntries(trees.assets),
-    nodes: nodes.length,
+    nodes: nodes?.length ?? 0,
   };
 
-  const sectionOpen = (section: NodeVariablesSection) => narrowing || openSections.has(section);
-  const setSectionOpen = (section: NodeVariablesSection, open: boolean) =>
-    setOpenSections((current) => {
-      const next = new Set(current);
-      if (open) next.add(section);
-      else next.delete(section);
-      return next;
+  // While narrowed, the sections with matches open over the host's expansion,
+  // which is left as it was, and a search also opens every matching row. Each
+  // new search or filter starts over: only what was closed since then stays closed.
+  const narrowKey = narrowing ? JSON.stringify([search, filterPredicate && activeFilterId]) : null;
+  const [narrowed, setNarrowed] = useState<(NarrowedOverlay & { key: string }) | null>(null);
+  // Dropped as soon as the narrowing changes, so returning to an earlier query starts over too.
+  if (narrowed && narrowed.key !== narrowKey) setNarrowed(null);
+  const overlay = narrowKey && narrowed?.key === narrowKey ? narrowed : NO_OVERLAY;
+  // Functional, so two changes in one handler (sections, then rows) both land.
+  const updateOverlay = (change: (current: NarrowedOverlay) => Partial<NarrowedOverlay>) => {
+    if (!narrowKey) return;
+    setNarrowed((previous) => {
+      const current = previous?.key === narrowKey ? previous : { key: narrowKey, ...NO_OVERLAY };
+      return { ...current, ...change(current) };
     });
-  const toggleCollapsed = (section: NodeVariablesSection) => (path: string) =>
+  };
+  const openSections = narrowKey
+    ? present.filter(
+        (section) => visibleCount[section] > 0 && !overlay.closedSections.includes(section)
+      )
+    : baseSections;
+  const setOpenSections = (next: NodeVariablesSection[]) => {
+    if (!narrowKey) return setBaseSections(inSectionOrder(next));
+    updateOverlay(() => ({
+      closedSections: present.filter((section) => !next.includes(section)),
+    }));
+  };
+  const setSectionOpen = (section: NodeVariablesSection, open: boolean) =>
+    setOpenSections(
+      open ? [...openSections, section] : openSections.filter((item) => item !== section)
+    );
+
+  const collapsedIn = (section: NodeVariablesSection) =>
+    search ? overlay.collapsedPaths[section] : collapsed[section];
+  const toggleCollapsed = (section: NodeVariablesSection) => (path: string) => {
+    if (search) {
+      updateOverlay(({ collapsedPaths }) => ({
+        collapsedPaths: {
+          ...collapsedPaths,
+          [section]: {
+            ...collapsedPaths[section],
+            [path]: !isPathCollapsed(collapsedPaths[section], path),
+          },
+        },
+      }));
+      return;
+    }
     setOpenPaths((current) => ({
       ...current,
       [section]: {
@@ -549,80 +706,81 @@ export function NodeVariablesPanel({
         [path]: isPathCollapsed(collapsed[section], path),
       },
     }));
+  };
 
   // "Expand all" opens every section with content and every object. Empty
-  // sections and arrays (which can be long) stay as they are.
-  const expandableSections = SECTIONS.filter((section) => totalCount[section] > 0);
+  // sections and arrays (which can be long) stay as they are. A node row counts
+  // as content even with no outputs, since its + adds them.
+  const expandableSections = present.filter((section) => {
+    if (narrowing) return visibleCount[section] > 0;
+    return isSourceSection(section) ? trees[section].length > 0 : totalCount[section] > 0;
+  });
   const expandablePaths = useMemo(
     () =>
       Object.fromEntries(
         SECTIONS.map((section) => [section, objectPaths(trees[section])])
-      ) as Record<NodeVariablesSection, string[]>,
+      ) as PerSection<string[]>,
     [trees]
   );
   const allExpanded =
     expandableSections.length > 0 &&
-    expandableSections.every((section) => openSections.has(section)) &&
-    SECTIONS.every((section) =>
-      expandablePaths[section].every((path) => !isPathCollapsed(collapsed[section], path))
+    expandableSections.every((section) => openSections.includes(section)) &&
+    present.every((section) =>
+      expandablePaths[section].every((path) => !isPathCollapsed(collapsedIn(section), path))
     );
   const toggleAll = () => {
     const open = !allExpanded;
-    setOpenSections(open ? new Set(expandableSections) : new Set());
+    setOpenSections(open ? expandableSections : []);
+    const pathsFor = (section: NodeVariablesSection, collapse: boolean) =>
+      Object.fromEntries(expandablePaths[section].map((path) => [path, collapse]));
+    if (search) {
+      updateOverlay(({ collapsedPaths }) => ({
+        collapsedPaths: Object.fromEntries(
+          SECTIONS.map((section) => [
+            section,
+            { ...collapsedPaths[section], ...pathsFor(section, !open) },
+          ])
+        ) as PerSection<Record<string, boolean>>,
+      }));
+      return;
+    }
     setOpenPaths(
       (current) =>
         Object.fromEntries(
-          SECTIONS.map((section) => [
-            section,
-            {
-              ...current[section],
-              ...Object.fromEntries(expandablePaths[section].map((path) => [path, open])),
-            },
-          ])
-        ) as Record<NodeVariablesSection, Record<string, boolean>>
+          SECTIONS.map((section) => [section, { ...current[section], ...pathsFor(section, open) }])
+        ) as PerSection<Record<string, boolean>>
     );
   };
 
-  const sourceActions =
-    (section: SourceSection): NodeActionsResolver =>
-    (node, ctx) => {
-      if (node.segments.length !== 1) return ctx.defaultActions;
-      const source = sourcesById[section].get(String(node.segments[0]));
-      const label = source?.label ?? node.key;
-      const actions: NodeAction[] = [];
-      if (onAdd && source?.addable !== false) {
-        actions.push({
-          id: 'add-to-node',
-          icon: <Plus />,
-          label: _({
-            id: 'canvas.node_variables_panel.add_to_node_label',
-            message: 'Add from {label}',
-            values: { label },
-          }),
-          tooltip: _({ id: 'canvas.node_variables_panel.add_to_node', message: 'Add' }),
-          // Always shown, after the count, like the section header's +.
-          persistent: true,
-          onSelect: () => onAdd(section, node.key),
-        });
-      }
-      if (onFocusNode) {
-        actions.unshift({
-          id: 'focus-node',
-          icon: <MousePointerClick />,
-          label: _({
-            id: 'canvas.node_variables_panel.focus_node_label',
-            message: 'Focus on {label}',
-            values: { label },
-          }),
-          tooltip: _({ id: 'canvas.node_variables_panel.focus_node', message: 'Focus on node' }),
-          // Always shown, before the count.
-          persistent: true,
-          placement: 'start',
-          onSelect: () => onFocusNode(node.key),
-        });
-      }
-      return actions;
-    };
+  const sourceActions = (section: SourceSection, node: JsonTreeNode): NodeAction[] => {
+    const source = sourcesById[section].get(String(node.segments[0]));
+    const label = source?.label ?? node.key;
+    const actions: NodeAction[] = [];
+    if (onAdd && source?.addable !== false) {
+      actions.push({
+        id: 'add-to-node',
+        icon: <Plus />,
+        label: strings.addFromNode(label),
+        tooltip: strings.addToNode,
+        // Always shown, after the count, like the section header's +.
+        persistent: true,
+        onSelect: () => onAdd(section, node.key),
+      });
+    }
+    if (onFocusNode) {
+      actions.unshift({
+        id: 'focus-node',
+        icon: <MousePointerClick />,
+        label: strings.focusNodeLabel(label),
+        tooltip: strings.focusNode,
+        // Always shown, before the count.
+        persistent: true,
+        placement: 'start',
+        onSelect: () => onFocusNode(node.key),
+      });
+    }
+    return actions;
+  };
 
   const openEditDialog = (row: NodeVariablesRow) => {
     const { schema, value } = row.node;
@@ -639,33 +797,25 @@ export function NodeVariablesPanel({
   };
 
   // Variable and asset rows add edit and delete to the tree's own actions.
-  const variableActions = (row: NodeVariablesRow, ctx: { defaultActions: NodeAction[] }) => {
+  const variableActions = (row: NodeVariablesRow, defaultActions: NodeAction[]) => {
     const { node } = row;
-    const actions: NodeAction[] = [...ctx.defaultActions];
+    const actions: NodeAction[] = [...defaultActions];
     // The built-in dialog edits a variable's type and default, which assets don't have:
     // when onEditVariable is set it takes variable rows, and onRequestEditVariable the rest.
     const builtIn = Boolean(onEditVariable) && row.section !== 'assets';
-    if (builtIn || onRequestEditVariable) {
+    if ((builtIn || onRequestEditVariable) && canEdit?.(row) !== false) {
       actions.push({
         id: 'edit-variable',
         icon: <Pencil />,
-        label: _({
-          id: 'canvas.node_variables_panel.edit_variable',
-          message: 'Edit {name}',
-          values: { name: node.key },
-        }),
+        label: strings.editVariable(node.key),
         onSelect: () => (builtIn ? openEditDialog(row) : onRequestEditVariable?.(row)),
       });
     }
-    if (onDeleteVariable) {
+    if (onDeleteVariable && canDelete?.(row) !== false) {
       actions.push({
         id: 'delete-variable',
         icon: <Trash2 />,
-        label: _({
-          id: 'canvas.node_variables_panel.delete_variable',
-          message: 'Delete {name}',
-          values: { name: node.key },
-        }),
+        label: strings.deleteVariable(node.key),
         tone: 'error',
         onSelect: () => onDeleteVariable(row),
       });
@@ -673,20 +823,46 @@ export function NodeVariablesPanel({
     return actions;
   };
 
+  const builtInActions = (row: NodeVariablesRow, defaultActions: NodeAction[]) => {
+    const { section, node } = row;
+    if (isSourceSection(section) && node.segments.length === 1) {
+      return sourceActions(section, node);
+    }
+    // Array preview rows stand for an item shape, never a variable or an asset.
+    if (node.isArrayItemTemplate) return defaultActions;
+    // Assets are host-managed: a custom isVariableRow never reaches them, nested fields included.
+    if (section === 'assets') {
+      return isTopLevelAsset(row) ? variableActions(row, defaultActions) : defaultActions;
+    }
+    return isVariableRow(row) ? variableActions(row, defaultActions) : defaultActions;
+  };
+
   const actionsFor =
     (section: NodeVariablesSection): NodeActionsResolver =>
     (node, ctx) => {
-      if (isSourceSection(section) && node.segments.length === 1) {
-        return sourceActions(section)(node, ctx);
-      }
-      const row = rowFor(section, node);
-      // Array preview rows stand for an item shape, never a variable or an asset.
-      if (node.isArrayItemTemplate) return ctx.defaultActions;
-      // Assets are host-managed: a custom isVariableRow never reaches them, nested fields included.
-      if (section === 'assets')
-        return isTopLevelAsset(row) ? variableActions(row, ctx) : ctx.defaultActions;
-      return isVariableRow(row) ? variableActions(row, ctx) : ctx.defaultActions;
+      const row = rowFor(section, node, referenceFor(section));
+      const defaultActions =
+        canCopy?.(row) === false
+          ? ctx.defaultActions.filter((action) => action.id !== 'copy-value')
+          : ctx.defaultActions;
+      const actions = builtInActions(row, defaultActions);
+      return nodeActions?.(row, { defaultActions: actions }) ?? actions;
     };
+
+  // Each section's wrapper hands the host's the row's section and node.
+  // Memoized on the host's wrapper alone: a new component type would remount every row.
+  const sectionRowWrappers = useMemo(() => {
+    if (!rowWrapper) return undefined;
+    const HostRow = rowWrapper;
+    return Object.fromEntries(
+      SECTIONS.map((section) => {
+        const SectionRow: JsonTreeRowWrapper = (props) => (
+          <HostRow {...props} section={section} nodeId={nodeIdOf(section, props.node)} />
+        );
+        return [section, SectionRow];
+      })
+    ) as PerSection<JsonTreeRowWrapper>;
+  }, [rowWrapper]);
 
   /** Where a renamed variable would be referenced, shown in the dialog. */
   const renamedReference =
@@ -698,75 +874,162 @@ export function NodeVariablesPanel({
       return referenceFor(section)(path, [...parentSegments, id]);
     };
 
-  const sectionName: Record<NodeVariablesSection, string> = {
-    inputs: _({ id: 'canvas.node_variables_panel.section_inputs', message: 'Inputs' }),
-    outputs: _({ id: 'canvas.node_variables_panel.section_outputs', message: 'Outputs' }),
-    variables: _({ id: 'canvas.node_variables_panel.section_variables', message: 'Variables' }),
-    assets: _({ id: 'canvas.node_variables_panel.section_assets', message: 'Assets' }),
-    nodes: _({ id: 'canvas.node_variables_panel.section_nodes', message: 'Nodes' }),
+  const sectionName: PerSection<string> = {
+    inputs: strings.sectionInputs,
+    outputs: strings.sectionOutputs,
+    variables: strings.sectionVariables,
+    assets: strings.sectionAssets,
+    nodes: strings.sectionNodes,
   };
   const sectionCountLabel = (section: NodeVariablesSection, count: number) =>
     ({
-      inputs: _({
-        id: 'canvas.node_variables_panel.count_inputs',
-        message: 'Inputs: {count}',
-        values: { count },
-      }),
-      outputs: _({
-        id: 'canvas.node_variables_panel.count_outputs',
-        message: 'Outputs: {count}',
-        values: { count },
-      }),
-      variables: _({
-        id: 'canvas.node_variables_panel.count_variables',
-        message: 'Variables: {count}',
-        values: { count },
-      }),
-      assets: _({
-        id: 'canvas.node_variables_panel.count_assets',
-        message: 'Assets: {count}',
-        values: { count },
-      }),
-      nodes: _({
-        id: 'canvas.node_variables_panel.count_nodes',
-        message: 'Nodes: {count}',
-        values: { count },
-      }),
-    })[section];
-  const addLabel = (section: NodeVariablesAddableSection) =>
-    ({
-      outputs: _({ id: 'canvas.node_variables_panel.add_outputs', message: 'Add outputs' }),
-      variables: _({ id: 'canvas.node_variables_panel.add_variables', message: 'Add variables' }),
-      assets: _({ id: 'canvas.node_variables_panel.add_assets', message: 'Add asset' }),
-    })[section];
+      inputs: strings.inputsCount,
+      outputs: strings.outputsCount,
+      variables: strings.variablesCount,
+      assets: strings.assetsCount,
+      nodes: strings.nodesCount,
+    })[section](count);
+  const addLabel: Record<NodeVariablesAddableSection, string> = {
+    outputs: strings.addOutputs,
+    variables: strings.addVariables,
+    assets: strings.addAssets,
+  };
+
+  const { ref: scrollRef, contentRef, edges, onScroll } = useScrollEdges();
+
+  // A reveal waits for the render that opens its section and rows, then scrolls
+  // to the row and highlights it. A windowed section may not have mounted it.
+  // A new object per call, so revealing the same row twice runs again.
+  const [pendingReveal, setPendingReveal] = useState<{
+    section: NodeVariablesSection;
+    path: string;
+  } | null>(null);
+  useEffect(() => {
+    if (!pendingReveal) return;
+    const sectionElement = contentRef.current?.querySelector<HTMLElement>(
+      `[data-section="${pendingReveal.section}"]`
+    );
+    const row = Array.from(
+      sectionElement?.querySelectorAll<HTMLElement>('[role="row"]') ?? []
+    ).find((element) => element.dataset.path === pendingReveal.path);
+    (row ?? sectionElement)?.scrollIntoView?.({ block: 'nearest' });
+    if (!row) return;
+    row.setAttribute('data-revealed', '');
+    const timer = setTimeout(() => row.removeAttribute('data-revealed'), REVEAL_HIGHLIGHT_MS);
+    return () => {
+      clearTimeout(timer);
+      row.removeAttribute('data-revealed');
+    };
+  }, [pendingReveal, contentRef]);
+
+  const revealPath = (reference: string) => {
+    for (const section of present) {
+      const toReference = referenceFor(section);
+      const found = findByReference(
+        trees[section],
+        (node) => toReference(node.path, node.segments) === reference
+      );
+      if (!found) continue;
+      const { node, ancestors } = found;
+      const shows = (rowQuery: string, filterPredicate?: (node: JsonTreeNode) => boolean) =>
+        flattenJsonTree(trees[section], {
+          collapsed: {},
+          query: rowQuery,
+          filterPredicate,
+          displayTexts: decorators[section],
+        }).some((row) => row.node.path === node.path);
+      const clearsFilter = !!filterPredicate && !shows('', filterPredicates?.[section]);
+      const clearsSearch = !!search && !shows(search);
+      if (clearsFilter) changeFilter(null);
+      if (clearsSearch) setQuery('');
+      // Opened in the host's expansion, and in the narrowing if it stays on (clearing
+      // either starts it over, with every match open).
+      if (!baseSections.includes(section)) {
+        setBaseSections(inSectionOrder([...baseSections, section]));
+      }
+      setOpenPaths((current) => ({
+        ...current,
+        [section]: {
+          ...current[section],
+          ...Object.fromEntries(ancestors.map((path) => [path, true])),
+        },
+      }));
+      if (!clearsFilter && !clearsSearch) {
+        updateOverlay(({ closedSections, collapsedPaths }) => ({
+          closedSections: closedSections.filter((item) => item !== section),
+          collapsedPaths: {
+            ...collapsedPaths,
+            [section]: {
+              ...collapsedPaths[section],
+              ...Object.fromEntries(ancestors.map((path) => [path, false])),
+            },
+          },
+        }));
+      }
+      setPendingReveal({ section, path: node.path });
+      return true;
+    }
+    return false;
+  };
+  useImperativeHandle(ref, () => ({ revealPath }));
 
   const renderTree = (section: NodeVariablesSection) => (
     <JsonTreeView
       nodes={trees[section]}
-      // While searching, every match is shown open.
-      collapsed={search ? {} : collapsed[section]}
-      // Search holds every match open, so the chevrons would change nothing visible.
-      onToggleCollapsed={search ? undefined : toggleCollapsed(section)}
+      collapsed={collapsedIn(section)}
+      onToggleCollapsed={toggleCollapsed(section)}
       query={search}
       filterPredicate={filterPredicates?.[section]}
       readOnly
-      decorateNode={isSourceSection(section) ? decorateSource[section] : undefined}
+      decorateNode={decorators[section]}
       deriveTypeIcon={deriveTypeIcon}
-      rowWrapper={rowWrapper}
+      rowWrapper={sectionRowWrappers?.[section]}
       nodeActions={actionsFor(section)}
       // Room for copy plus edit and delete on variable rows.
       maxInlineActions={4}
       pathForCopy={referenceFor(section)}
+      canCopyPath={
+        canCopy ? (node) => canCopy(rowFor(section, node, referenceFor(section))) : undefined
+      }
       onCopy={onCopy}
       virtualized={virtualize[section]}
       scrollElement={virtualize[section] ? scroller : undefined}
+      strings={treeStrings}
       className="h-auto py-1"
     />
   );
 
+  const renderAddButton = (section: NodeVariablesAddableSection) => {
+    const { disabled = false, tooltip } = addState?.[section] ?? {};
+    const button = (
+      // The same button as the tree's row actions, so header and row + match.
+      // aria-disabled rather than disabled, so the button keeps focus and its tooltip.
+      <Button
+        variant="ghost"
+        size="4xs"
+        icon
+        aria-label={addLabel[section]}
+        aria-disabled={disabled || undefined}
+        onClick={() => {
+          if (!disabled) onAdd?.(section);
+        }}
+        className="shrink-0 rounded text-foreground-subtle hover:bg-surface-raised hover:text-foreground aria-disabled:cursor-not-allowed aria-disabled:opacity-50 aria-disabled:hover:bg-transparent aria-disabled:hover:text-foreground-subtle [&_svg]:size-2.75"
+      >
+        <Plus />
+      </Button>
+    );
+    return tooltip ? (
+      <CanvasTooltip content={tooltip} placement="top">
+        {button}
+      </CanvasTooltip>
+    ) : (
+      button
+    );
+  };
+
   const renderSection = (section: NodeVariablesSection) => {
     if (narrowing && visibleCount[section] === 0) return null;
-    const open = sectionOpen(section);
+    const open = openSections.includes(section);
     const name = sectionName[section];
     const count = totalCount[section];
     const { Icon, className: iconClassName } = SECTION_ICONS[section];
@@ -778,11 +1041,11 @@ export function NodeVariablesPanel({
         key={section}
         open={open}
         onOpenChange={(next) => setSectionOpen(section, next)}
-        disabled={narrowing}
         asChild
       >
         <section
           aria-label={name}
+          data-section={section}
           className="mb-2 overflow-hidden rounded-lg border border-surface-overlay bg-surface-overlay/40"
         >
           {/* 8px left puts the chevron in line with the row chevrons below; 4px right
@@ -795,7 +1058,7 @@ export function NodeVariablesPanel({
               open && trees[section].length > 0 && 'border-b border-surface-overlay/80'
             )}
           >
-            <CollapsibleTrigger className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 text-left disabled:cursor-default">
+            <CollapsibleTrigger className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 text-left">
               <ChevronDown
                 size={10}
                 className={cn(
@@ -823,19 +1086,7 @@ export function NodeVariablesPanel({
                 ({count})
               </span>
             </CanvasTooltip>
-            {addable && (
-              // The same button as the tree's row actions, so header and row + match.
-              <Button
-                variant="ghost"
-                size="4xs"
-                icon
-                aria-label={addLabel(addable)}
-                onClick={() => onAdd?.(addable)}
-                className="shrink-0 rounded text-foreground-subtle hover:bg-surface-raised hover:text-foreground [&_svg]:size-2.75"
-              >
-                <Plus />
-              </Button>
-            )}
+            {addable && renderAddButton(addable)}
             {/* Inputs and Nodes add per row; keep the slot so every card's count lines up. */}
             {onAdd && !addable && <span aria-hidden="true" className="size-5 shrink-0" />}
           </div>
@@ -849,7 +1100,6 @@ export function NodeVariablesPanel({
     );
   };
 
-  const { ref: scrollRef, contentRef, edges, onScroll } = useScrollEdges();
   // A callback ref, so virtualized sections get the scroller once it mounts.
   const setScrollRef = useCallback(
     (element: HTMLDivElement | null) => {
@@ -858,26 +1108,21 @@ export function NodeVariablesPanel({
     },
     [scrollRef]
   );
-  const nothingVisible = narrowing && SECTIONS.every((section) => visibleCount[section] === 0);
+  const nothingVisible = narrowing && present.every((section) => visibleCount[section] === 0);
 
   return (
     <div className={cn('flex min-h-0 flex-1 flex-col', className)}>
       <JsonTreeToolbar
         query={query}
         onQueryChange={setQuery}
-        searchPlaceholder={_({
-          id: 'canvas.node_variables_panel.search_placeholder',
-          message: 'Search variables',
-        })}
+        searchPlaceholder={strings.searchPlaceholder}
         filters={toolbarFilters}
         activeFilterId={activeFilter ? activeFilterId : null}
         onFilterChange={changeFilter}
         allCollapsed={!allExpanded}
-        // Search holds every match open, so expand/collapse all would have no
-        // visible effect; hide it until the search is cleared. A filter only opens
-        // sections, so expand/collapse all still applies to their containers.
-        onToggleAll={search ? undefined : toggleAll}
+        onToggleAll={toggleAll}
         leading={leading}
+        strings={treeStrings}
         className="shrink-0 pt-4 pb-2 [padding-inline:var(--mf-content-inset,1rem)]"
       />
       <div className="min-h-0 flex-1 overflow-hidden text-foreground">
@@ -905,20 +1150,15 @@ export function NodeVariablesPanel({
             onScroll={onScroll}
             className="h-full min-h-0 overflow-y-auto rounded-lg pb-1"
           >
-            <div ref={contentRef}>
-              {SECTIONS.map(renderSection)}
+            {/* A revealed row fades in a highlight (set by revealPath). */}
+            <div
+              ref={contentRef}
+              className="[&_[role=row]]:transition-colors [&_[role=row][data-revealed]]:bg-brand/15"
+            >
+              {present.map(renderSection)}
               {nothingVisible && (
                 <p className={EMPTY_MESSAGE_CLASS}>
-                  {search
-                    ? _({
-                        id: 'canvas.node_variables_panel.no_matches',
-                        message: 'No variables match your search.',
-                      })
-                    : (activeFilter?.emptyMessage ??
-                      _({
-                        id: 'canvas.node_variables_panel.filter_empty',
-                        message: 'No variables match this filter.',
-                      }))}
+                  {search ? strings.noMatches : (activeFilter?.emptyMessage ?? strings.filterEmpty)}
                 </p>
               )}
               {children}
@@ -943,3 +1183,6 @@ export function NodeVariablesPanel({
     </div>
   );
 }
+
+export const NodeVariablesPanel = forwardRef(NodeVariablesPanelRender);
+NodeVariablesPanel.displayName = 'NodeVariablesPanel';
