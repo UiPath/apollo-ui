@@ -727,7 +727,11 @@ Contract highlights:
   the escalation grid (e.g. a marketplace link — product URLs never ship in this package).
   Without slots the form falls back to a plain input / an "unavailable" note.
 - **Layout knobs for both hosts**: `inline`/`hideHeader`/`dialogMaxWidth`, `title` accepts a
-  ReactNode (chips, links), `evalsTogglePlacement: 'form' | 'footer'`.
+  ReactNode (chips, links), `evalsTogglePlacement: 'form' | 'footer' | 'none'`.
+- **Validator-only mode.** `hideAction` drops the action section and its validation, and
+  `evalsTogglePlacement="none"` drops the evaluations toggle, for a host that configures only the
+  name and parameters (pass `scope="Llm"` to hide the scope selector too). The saved value keeps
+  its full shape: the default or stored action and `enabledForEvals` come back unchanged.
 - **Bring-your-own display is opt-in**, because the two products' legacy builders differ.
   `byoDisplay` names a BYO definition by its configuration (`byoValidatorName`) in the computed
   title, as both do; `providerField` adds a read-only Provider field above the name holding

@@ -124,8 +124,19 @@ export interface GuardrailBuilderProps {
    * Blank or absent, the banner says "your organization's AI Trust Layer policy" instead.
    */
   policyName?: string;
-  /** Where the enable-for-evaluations switch renders. Default 'form'. */
-  evalsTogglePlacement?: 'form' | 'footer';
+  /**
+   * Where the enable-for-evaluations switch renders. Default 'form'. With 'none' it renders
+   * nowhere, and the saved value keeps `enabledForEvals` as it was seeded.
+   */
+  evalsTogglePlacement?: 'form' | 'footer' | 'none';
+  /**
+   * Hide the action section, for a host that only needs the validator and its parameters. The
+   * action then no longer gates Save; the saved value still carries it, the default
+   * `{ $actionType: 'log', severityLevel: 'Info' }` for a new guardrail (or the first of
+   * `allowedActionTypes`) and the stored one for an edited guardrail. Host `errors` on action
+   * fields still gate Save.
+   */
+  hideAction?: boolean;
   /**
    * The action types to offer (e.g. log and block only, for a host with no escalation). A new
    * guardrail starts on the first of them when log is not among them. Filter is not one: this
@@ -207,6 +218,7 @@ export function GuardrailBuilder({
   providerField = false,
   policyName,
   evalsTogglePlacement = 'form',
+  hideAction = false,
   allowedActionTypes,
   hideLogSeverity,
   renderRecipientSearch,
@@ -360,7 +372,9 @@ export function GuardrailBuilder({
       e.parameters = parameterErrors;
     }
 
-    for (const field of getGuardrailActionErrorFields(formData.action)) {
+    // A hidden action cannot be fixed, so it must not block Save.
+    const actionErrorFields = hideAction ? [] : getGuardrailActionErrorFields(formData.action);
+    for (const field of actionErrorFields) {
       e[field] = {
         blockReason: labels.blockReasonRequiredError,
         filterFields: labels.filterFieldsRequiredError,
@@ -369,7 +383,15 @@ export function GuardrailBuilder({
       }[field];
     }
     return e;
-  }, [formData, showScopeSelector, definition.parameters, existingNames, labels, syncOptions]);
+  }, [
+    formData,
+    showScopeSelector,
+    hideAction,
+    definition.parameters,
+    existingNames,
+    labels,
+    syncOptions,
+  ]);
 
   // Host parameter errors minus the ones the user has already edited past.
   const liveHostParameterErrors = useMemo<Record<string, string>>(() => {
@@ -557,29 +579,32 @@ export function GuardrailBuilder({
         />
       )}
 
-      <Separator />
-
       {/* Action section */}
-      <div className="space-y-3">
-        <GuardrailActionSection
-          action={formData.action}
-          onActionChange={(action) => updateField('action', action)}
-          allowedActionTypes={allowedActionTypes}
-          hideLogSeverity={hideLogSeverity}
-          errors={{
-            blockReason: displayErrors.blockReason,
-            filterFields: displayErrors.filterFields,
-            recipient: displayErrors.recipient,
-            actionApp: displayErrors.actionApp,
-          }}
-          labels={labels}
-          renderRecipientSearch={renderRecipientSearch}
-          renderStaticRecipient={renderStaticRecipient}
-          renderAppPicker={renderAppPicker}
-          escalateHelp={escalateHelp}
-          recipientTypeDisabled={recipientTypeDisabled}
-        />
-      </div>
+      {!hideAction && (
+        <>
+          <Separator />
+          <div className="space-y-3">
+            <GuardrailActionSection
+              action={formData.action}
+              onActionChange={(action) => updateField('action', action)}
+              allowedActionTypes={allowedActionTypes}
+              hideLogSeverity={hideLogSeverity}
+              errors={{
+                blockReason: displayErrors.blockReason,
+                filterFields: displayErrors.filterFields,
+                recipient: displayErrors.recipient,
+                actionApp: displayErrors.actionApp,
+              }}
+              labels={labels}
+              renderRecipientSearch={renderRecipientSearch}
+              renderStaticRecipient={renderStaticRecipient}
+              renderAppPicker={renderAppPicker}
+              escalateHelp={escalateHelp}
+              recipientTypeDisabled={recipientTypeDisabled}
+            />
+          </div>
+        </>
+      )}
 
       {/* Enable for evaluations */}
       {evalsTogglePlacement === 'form' && evalsToggle}
