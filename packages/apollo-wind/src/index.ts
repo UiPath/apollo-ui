@@ -916,13 +916,17 @@ export type { PromptValueControlProps } from './components/ui/prompt-value-contr
 export { PromptValueControl } from './components/ui/prompt-value-control';
 export type {
   QuickFieldType,
+  QuickFormFieldAiAssistProps,
   QuickFormFieldControlProps,
+  QuickFormFieldHeaderState,
+  QuickFormFieldInsertVariableProps,
   QuickFormFieldMode,
   QuickFormFieldModeSwitchConfirm,
   QuickFormFieldMoreActions,
   QuickFormFieldOption,
   QuickFormFieldProps,
   QuickFormFieldStrings,
+  QuickFormFieldTypePickerProps,
   VariableInsertContext,
 } from './components/ui/quick-form-field';
 export {
@@ -930,6 +934,10 @@ export {
   FIELD_TYPE_META,
   FIELD_TYPE_ORDER,
   QuickFormField,
+  QuickFormFieldAiAssist,
+  QuickFormFieldInsertVariable,
+  QuickFormFieldTypePicker,
+  useQuickFormFieldHeader,
 } from './components/ui/quick-form-field';
 export { RadioGroup, RadioGroupItem } from './components/ui/radio-group';
 export { ReferenceChip, type ReferenceChipProps } from './components/ui/reference-chip';

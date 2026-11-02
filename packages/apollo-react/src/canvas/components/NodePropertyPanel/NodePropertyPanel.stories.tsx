@@ -60,6 +60,8 @@ import {
   PopoverContent,
   PopoverTrigger,
   QuickFormField,
+  QuickFormFieldInsertVariable,
+  QuickFormFieldTypePicker,
   RadioGroup,
   RadioGroupItem,
   RequiredIndicator,
@@ -1414,6 +1416,7 @@ function InlineCaseRow({
       onModeChange={setMode}
       fieldType="string"
       variables={QUICK_FORM_FIELD_VARIABLES}
+      headerActions={<QuickFormFieldInsertVariable />}
     />
   );
 }
@@ -2127,7 +2130,6 @@ function QuickFormFieldCaseRow({
   caseTitle,
   onTitleChange,
   required,
-  onRequiredChange,
   onDelete,
   value,
   onValueChange,
@@ -2147,7 +2149,6 @@ function QuickFormFieldCaseRow({
   caseTitle: string;
   onTitleChange: (title: string) => void;
   required: boolean;
-  onRequiredChange: (required: boolean) => void;
   onDelete: () => void;
   value: string;
   onValueChange: (value: string) => void;
@@ -2235,19 +2236,23 @@ function QuickFormFieldCaseRow({
             </div>
           }
           headerActions={
-            <button
-              type="button"
-              onClick={onDelete}
-              aria-label="Delete field"
-              title="Delete field"
-              className={cn(
-                'grid size-6 shrink-0 place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground',
-                controlsVisibility === 'hover' &&
-                  'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100'
-              )}
-            >
-              <Trash2 size={12} />
-            </button>
+            <>
+              <QuickFormFieldTypePicker onValueChange={onFieldTypeChange} />
+              <QuickFormFieldInsertVariable />
+              <button
+                type="button"
+                onClick={onDelete}
+                aria-label="Delete field"
+                title="Delete field"
+                className={cn(
+                  'grid size-6 shrink-0 place-items-center rounded text-foreground-subtle transition hover:bg-surface-overlay hover:text-foreground',
+                  controlsVisibility === 'hover' &&
+                    'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100'
+                )}
+              >
+                <Trash2 size={12} />
+              </button>
+            </>
           }
           value={value}
           onValueChange={onValueChange}
@@ -2277,9 +2282,7 @@ function QuickFormFieldCaseRow({
             </div>
           )}
           fieldType={fieldType}
-          onFieldTypeChange={onFieldTypeChange}
           required={required}
-          onRequiredChange={onRequiredChange}
           variables={QUICK_FORM_FIELD_VARIABLES}
           compact={compact}
         />
@@ -2757,7 +2760,6 @@ export function QuickFormPanel({
                                 caseTitle={c.title}
                                 onTitleChange={(title) => updateCase(c.id, { title })}
                                 required={c.required}
-                                onRequiredChange={(required) => updateCase(c.id, { required })}
                                 onDelete={() => deleteCase(c.id)}
                                 value={c.value}
                                 onValueChange={(value) => updateCase(c.id, { value })}
@@ -3321,7 +3323,6 @@ function PanelUIInventoryStory() {
   const [compositionLocked, setCompositionLocked] = useState(true);
   const [compositionMode, setCompositionMode] = useState<QuickFormFieldMode>('literal');
   const [compositionFieldType, setCompositionFieldType] = useState<QuickFieldType>('string');
-  const [compositionRequired, setCompositionRequired] = useState(true);
   const [compositionEditor, setCompositionEditor] = useState('ui');
   const [compositionFields, setCompositionFields] = useState([
     { id: 1, label: 'Invoice number' },
@@ -3513,7 +3514,6 @@ function PanelUIInventoryStory() {
                     locked={false}
                     fieldType="string"
                     required
-                    showFieldActions={false}
                   />
                   <QuickFormField
                     id="ui-inventory-quick-form-field-expression"
@@ -3524,7 +3524,6 @@ function PanelUIInventoryStory() {
                     mode="expression"
                     fieldType="string"
                     leadingAddon="="
-                    showFieldActions={false}
                   />
                 </div>
 
@@ -4399,20 +4398,20 @@ function PanelUIInventoryStory() {
                     <QuickFormField
                       id={compositionFieldId}
                       label={
-                        <FormFieldLabel
-                          htmlFor={compositionFieldId}
-                          required={compositionRequired}
-                          className="leading-4"
-                        >
+                        <FormFieldLabel htmlFor={compositionFieldId} required className="leading-4">
                           Invoice value
                         </FormFieldLabel>
                       }
                       headerActions={
-                        <CanvasTooltip content="Remove field">
-                          <Button variant="ghost" size="4xs" icon aria-label="Remove field">
-                            <Trash2 size={14} />
-                          </Button>
-                        </CanvasTooltip>
+                        <>
+                          <QuickFormFieldTypePicker onValueChange={updateCompositionFieldType} />
+                          <QuickFormFieldInsertVariable />
+                          <CanvasTooltip content="Remove field">
+                            <Button variant="ghost" size="4xs" icon aria-label="Remove field">
+                              <Trash2 size={14} />
+                            </Button>
+                          </CanvasTooltip>
+                        </>
                       }
                       value={compositionValue}
                       onValueChange={setCompositionValue}
@@ -4421,9 +4420,7 @@ function PanelUIInventoryStory() {
                       mode={compositionMode}
                       onModeChange={setCompositionMode}
                       fieldType={compositionFieldType}
-                      onFieldTypeChange={updateCompositionFieldType}
-                      required={compositionRequired}
-                      onRequiredChange={setCompositionRequired}
+                      required
                       variables={QUICK_FORM_FIELD_VARIABLES}
                     />
                   </section>

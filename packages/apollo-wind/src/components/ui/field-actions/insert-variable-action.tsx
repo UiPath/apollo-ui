@@ -1,6 +1,7 @@
 import { Braces, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { useQuickFormFieldHeader } from '@/components/ui/quick-form-field/components/header-context';
 import {
   type RenderVariablePicker,
   VariablePicker,
@@ -45,7 +46,10 @@ interface InsertVariableActionBaseProps {
    */
   onInsert?: (value: string, item: VariablePickerItem) => void;
   disabled?: boolean;
-  /** Icon only. Below a 260px `@container` the action also collapses to its icon by itself. */
+  /**
+   * Icon only, or with its text even in a `compact` QuickFormField. In a field's header it defaults
+   * to the field's `compact`. Below a 260px `@container` it collapses to its icon either way.
+   */
   compact?: boolean;
   /** Overrides for any subset of the English strings. */
   strings?: Partial<InsertVariableActionStrings>;
@@ -85,7 +89,9 @@ export function InsertVariableAction({
   // empty list disables.
   const inert = disabled || !onInsert || (!renderPicker && !lazy && variables.length === 0);
   const [openedItems, setOpenedItems] = useState<VariablePickerItem[]>([]);
-  const collapsedTextClass = cn(COLLAPSED_HIDDEN, compact && '!hidden');
+  // In a field's header, the field's `compact` unless the action says otherwise.
+  const header = useQuickFormFieldHeader();
+  const collapsedTextClass = cn(COLLAPSED_HIDDEN, (compact ?? header?.compact) && '!hidden');
 
   return (
     <VariablePicker

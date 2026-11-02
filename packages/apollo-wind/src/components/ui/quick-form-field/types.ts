@@ -177,13 +177,16 @@ export interface QuickFormFieldStrings {
   trueLabel: string;
   /** @deprecated No longer rendered: a locked boolean keeps its Switch. Removed in the next major release. */
   falseLabel: string;
+  /** @deprecated Only the deprecated Required switch uses it. Removed in the next major release. */
   requiredTooltip: string;
+  /** @deprecated Only the deprecated Required switch uses it. Removed in the next major release. */
   requiredAriaLabel: string;
   /** Names the editable label (see `onLabelChange`), and shows while it is empty. */
   labelAriaLabel: string;
   labelPlaceholder: string;
   /** Names the info-tooltip trigger beside the label. */
   tooltipAriaLabel: string;
+  /** @deprecated Only the deprecated Required switch uses it. Removed in the next major release. */
   optionalAriaLabel: string;
   insertLabel: string;
   insertAriaLabel: string;
@@ -431,19 +434,31 @@ export interface QuickFormFieldProps {
   /** The field's data type. Defaults to 'string'. Determines which control renders the value. */
   fieldType?: QuickFieldType;
   /**
-   * Which types the picker offers, in display order. Defaults to
-   * `FIELD_TYPE_ORDER`, every type the component can render; a surface with a
-   * narrower vocabulary of its own offers fewer.
+   * Which types the built-in picker offers, in display order. Defaults to
+   * `FIELD_TYPE_ORDER`, every type the component can render.
+   *
+   * @deprecated Pass `types` to a `QuickFormFieldTypePicker` in `headerActions`.
+   * Removed in the next major release.
    */
   fieldTypes?: readonly QuickFieldType[];
-  /** Called when the user switches the field type. */
+  /**
+   * Called when the user switches the field type. Renders the built-in type picker.
+   *
+   * @deprecated Render a `QuickFormFieldTypePicker` in `headerActions`. Removed in
+   * the next major release.
+   */
   onFieldTypeChange?: (fieldType: QuickFieldType) => void;
   /**
    * Shows a required-field asterisk next to the default label, or the editable
    * one (see `onLabelChange`). Ignored for any other `label`.
    */
   required?: boolean;
-  /** Called when the user toggles required/optional. Renders the Required switch when provided. */
+  /**
+   * Called when the user toggles required/optional. Renders the Required switch when provided.
+   *
+   * @deprecated Whether a field is required belongs with its rules, in a header action of
+   * its own; `required` still shows the asterisk. Removed in the next major release.
+   */
   onRequiredChange?: (required: boolean) => void;
   /** Overrides the default mode-based label (e.g. a field name instead of "String value"). */
   label?: ReactNode;
@@ -488,19 +503,35 @@ export interface QuickFormFieldProps {
   belowValue?: ReactNode;
   /** Accessible name for the file-upload dropzone. Defaults to a string `label`, then the computed field label. */
   fileUploadAriaLabel?: string;
-  /** Extra content rendered after the built-in AI assist / Insert variable buttons (e.g. a delete button). */
+  /**
+   * The header's actions, in display order: `QuickFormFieldTypePicker`,
+   * `QuickFormFieldAiAssist`, `QuickFormFieldInsertVariable`, and the consumer's
+   * own, such as a delete button. Each of the three replaces its built-in
+   * counterpart; `useQuickFormFieldHeader` lets a custom action match them.
+   */
   headerActions?: ReactNode;
-  /** Forces the header row into its narrow-container icon-only layout, regardless of actual width. For demos/comparisons. */
+  /**
+   * Forces the header row into its narrow-container icon-only layout, regardless of actual width.
+   * It is the default for each header action, and an action's own `compact` wins: one can keep its
+   * text in a compact field, or show only its icon in a field that is not.
+   */
   compact?: boolean;
-  /** Whether the AI-assist and Insert-variable actions render at all. Set to false for read-only reviewer contexts where field configuration isn't editable. Defaults to true. */
+  /**
+   * Renders the built-in Insert-variable action, and AI assist with
+   * `onGenerateWithAi`. Defaults to false.
+   *
+   * @deprecated Compose `QuickFormFieldInsertVariable` and
+   * `QuickFormFieldAiAssist` in `headerActions`. Removed in the next major release.
+   */
   showFieldActions?: boolean;
   /** Options for 'single-select' / 'multi-select' field types. Defaults to a small set of demo options. */
   options?: QuickFormFieldOption[];
   /**
-   * Called with the entered prompt when the user clicks Generate.
+   * Called with the entered prompt when the user clicks Generate. Renders the
+   * built-in AI-assist button while `showFieldActions` is set.
    *
-   * Its presence also decides whether the AI-assist button renders: without a
-   * handler the button would have nothing to do.
+   * @deprecated Render a `QuickFormFieldAiAssist` in `headerActions`. Removed in
+   * the next major release.
    */
   onGenerateWithAi?: (prompt: string) => void;
   /**

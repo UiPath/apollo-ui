@@ -1086,7 +1086,6 @@ function InputEditorUsagePage() {
           mode={quickFieldMode}
           onModeChange={setQuickFieldMode}
           fieldType="string"
-          showFieldActions={false}
           renderExpressionEditor={(editorProps) => (
             <InlineExpressionEditor
               {...editorProps}
