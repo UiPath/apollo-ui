@@ -15,6 +15,7 @@ import type {
   CanCopyPath,
   CopyEvent,
   DeriveTypeIcon,
+  DeriveTypeLabel,
   JsonTreeNode,
   JsonTreeRowWrapper,
   JsonValue,
@@ -62,6 +63,8 @@ export interface JsonTreeViewProps {
   decorateNode?: (node: JsonTreeNode) => NodeDecoration | undefined;
   /** Custom type-badge icons per node. Return undefined to keep the default type icon. */
   deriveTypeIcon?: DeriveTypeIcon;
+  /** Custom type names for badge tooltips. Return undefined to keep the JSON type name. */
+  deriveTypeLabel?: DeriveTypeLabel;
   /** Custom value cell renderer; return undefined to keep the default cell. */
   renderValue?: RenderValueCell;
   /**
@@ -282,6 +285,7 @@ function JsonTreeViewContent({
   rowWrapper,
   decorateNode,
   deriveTypeIcon,
+  deriveTypeLabel,
   renderValue,
   nodeActions,
   maxInlineActions = 3,
@@ -401,6 +405,7 @@ function JsonTreeViewContent({
     readOnly,
     decorateNode,
     deriveTypeIcon,
+    deriveTypeLabel,
     renderValue,
     nodeActions,
     maxInlineActions,

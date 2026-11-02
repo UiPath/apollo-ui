@@ -588,8 +588,7 @@ describe('JsonTreeView row decorations and actions', () => {
       />
     );
 
-    expect(screen.getByTestId('chip-icon')).toBeInTheDocument();
-    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+    expect(screen.getByTestId('chip-icon').closest('[role="img"]')).toBeNull();
   });
 
   it('keeps a labelled chip named by its label, not ariaLabel', () => {

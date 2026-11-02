@@ -21,6 +21,7 @@ import type {
   CanCopyPath,
   CopyEvent,
   DeriveTypeIcon,
+  DeriveTypeLabel,
   JsonTreeNode,
   JsonTreeRowWrapper,
   JsonValue,
@@ -121,6 +122,7 @@ export interface JsonTreeRowContextValue {
   readOnly: boolean;
   decorateNode?: (node: JsonTreeNode) => NodeDecoration | undefined;
   deriveTypeIcon?: DeriveTypeIcon;
+  deriveTypeLabel?: DeriveTypeLabel;
   renderValue?: RenderValueCell;
   nodeActions?: NodeActionsResolver;
   maxInlineActions: number;
@@ -174,6 +176,7 @@ export function JsonTreeRow({ row, index }: { row: FlatJsonTreeRow; index: numbe
     readOnly,
     decorateNode,
     deriveTypeIcon,
+    deriveTypeLabel,
     renderValue,
     nodeActions,
     maxInlineActions,
@@ -378,6 +381,8 @@ export function JsonTreeRow({ row, index }: { row: FlatJsonTreeRow; index: numbe
             icon={decoration?.badge?.icon ?? deriveTypeIcon?.(node)}
             className={decoration?.badge?.className}
             reference={decoration?.badge?.reference}
+            typeLabel={deriveTypeLabel?.(node)}
+            tooltip={decoration?.badge?.tooltip}
           />
           <NodeKey
             node={node}
