@@ -1,6 +1,6 @@
 {
   "name": "@uipath/apollo-ui-icons-react",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "UiPath Apollo icon set as React components",
   "type": "module",
   "main": "./dist/index.cjs",
