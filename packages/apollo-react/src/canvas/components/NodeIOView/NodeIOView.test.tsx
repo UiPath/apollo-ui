@@ -872,8 +872,8 @@ describe('NodeIOView', () => {
     expect(screen.getByText('item')).toBeInTheDocument();
     expect(screen.getByText('name')).toBeInTheDocument();
     expect(screen.getByText('count')).toBeInTheDocument();
-    // The preview is not a real element, so the array still reads "Items: 0".
-    expect(screen.getByText('Items: 0')).toBeInTheDocument();
+    // With no value there are no items yet, so the array shows no count.
+    expect(screen.queryByText(/^Items:/)).toBeNull();
   });
 
   it('leaves the preview item read-only in an editable tree', () => {
