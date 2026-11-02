@@ -28,7 +28,7 @@ describe('JsonTypeBadge reference', () => {
 
   it('renders no reference marker by default', () => {
     render(<JsonTypeBadge type="string" />);
-    expect(screen.queryByRole('img')).toBeNull();
+    expect(screen.queryByRole('img', { name: /reference/ })).toBeNull();
   });
 
   it('marks only the rows decorateNode flags as references', () => {
@@ -48,6 +48,11 @@ describe('JsonTypeBadge reference', () => {
     ).toEqual(['String · reference, output.email']);
   });
 
+  it('names a reference badge by its string tooltip', () => {
+    render(<JsonTypeBadge type="string" tooltip="Customer email" reference={{ source: 'x' }} />);
+    expect(screen.getByRole('img', { name: 'Customer email' })).toHaveAttribute('tabindex', '0');
+  });
+
   it('opens the tooltip from keyboard focus', async () => {
     render(<JsonTypeBadge type="string" reference={{ source: 'output.email' }} />);
     await userEvent.tab();
@@ -63,5 +68,58 @@ describe('JsonTypeBadge reference', () => {
       </JsonTreeViewProvider>
     );
     expect(screen.getByRole('img', { name: 'String · reference' })).toBeTruthy();
+  });
+});
+
+describe('JsonTypeBadge type label', () => {
+  it.each([
+    [{}, 'Object'],
+    [{ typeLabel: 'File' }, 'File'],
+    [{ typeLabel: 'File', tooltip: 'Invoice PDF' }, 'Invoice PDF'],
+  ])('shows the tooltip, else the type label, else the JSON type on hover', async (props, shown) => {
+    const user = userEvent.setup();
+    const { container } = render(<JsonTypeBadge type="object" {...props} />);
+    await user.hover(container.firstElementChild as Element);
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(shown);
+  });
+
+  it.each([
+    [{}, 'Object'],
+    [{ typeLabel: 'File' }, 'File'],
+    [{ typeLabel: 'File', tooltip: 'Invoice PDF' }, 'Invoice PDF'],
+    [{ typeLabel: 'File', tooltip: <b>Invoice PDF</b> }, 'File'],
+  ])('names the badge for screen readers without making it a tab stop', (props, name) => {
+    render(<JsonTypeBadge type="object" {...props} />);
+    expect(screen.getByRole('img', { name })).not.toHaveAttribute('tabindex');
+  });
+
+  it('names a reference badge by its type label', () => {
+    render(<JsonTypeBadge type="object" typeLabel="File" reference={{}} />);
+    expect(screen.getByRole('img', { name: 'File · reference' })).toBeTruthy();
+  });
+
+  it('takes the label from deriveTypeLabel and the tooltip from the badge decoration in a tree', async () => {
+    const user = userEvent.setup();
+    const nodes = buildJsonTree({ value: { doc: { name: 'a.pdf' }, to: 'ada@example.com' } });
+    render(
+      <JsonTreeView
+        nodes={nodes}
+        collapsed={{}}
+        readOnly
+        deriveTypeLabel={(node) => (node.path === 'doc' ? 'File' : undefined)}
+        decorateNode={(node) => ({
+          badge: { reference: {}, tooltip: node.path === 'to' ? 'Customer email' : undefined },
+        })}
+      />
+    );
+
+    const badges = screen.getAllByRole('img');
+    expect(badges.map((el) => el.getAttribute('aria-label'))).toEqual([
+      'File · reference',
+      'String · reference',
+      'Customer email',
+    ]);
+    await user.hover(badges[2] as Element);
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('Customer email');
   });
 });

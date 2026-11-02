@@ -104,6 +104,12 @@ export type NodeDecorationTone = 'neutral' | 'info' | 'warning' | 'error';
  */
 export type DeriveTypeIcon = (node: JsonTreeNode) => ReactNode;
 
+/**
+ * Derives the type name a node's badge shows on hover (e.g. `'File'` for
+ * `format: 'file'` schemas). Return undefined to keep the JSON type name.
+ */
+export type DeriveTypeLabel = (node: JsonTreeNode) => string | undefined;
+
 /** Chip annotation next to a node's key. Provide a label, an icon, or both. */
 export interface NodeDecorationChip {
   /** Pill text. Omit for a bare icon-only annotation. */
@@ -137,9 +143,14 @@ export interface NodeDecorationBadge {
   className?: string;
   /**
    * Marks the node as a reference to another variable. The badge gets a
-   * corner tab with an arrow, and its tooltip names the reference.
+   * corner tab with an arrow, and its default tooltip names the reference.
    */
   reference?: NodeBadgeReference;
+  /**
+   * Replaces the badge's hover content (wins over `deriveTypeLabel`), on a
+   * reference badge too. Keep it non-interactive, like chip tooltips.
+   */
+  tooltip?: ReactNode;
 }
 
 /** A reference marker on a row's type badge. */
@@ -165,7 +176,7 @@ export interface NodeDecoration {
    * in the row's flexible space, so revealing it never moves the trailing cluster.
    */
   sublabelOnHover?: boolean;
-  /** Replaces the type badge's icon and/or color. */
+  /** Customizes the type badge: its icon, color, reference marker, or tooltip. */
   badge?: NodeDecorationBadge;
   /** Small pill rendered next to the key (e.g. "mocked"). */
   chip?: NodeDecorationChip;

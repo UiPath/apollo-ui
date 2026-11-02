@@ -541,6 +541,7 @@ export type {
   ContainerPath,
   CopyEvent,
   DeriveTypeIcon,
+  DeriveTypeLabel,
   FlatJsonTreeRow,
   FlattenOptions,
   JsonCodeEditorRenderProps,
