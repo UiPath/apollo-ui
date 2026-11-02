@@ -36,13 +36,15 @@ Icon names and the `IconName` union are available without pulling in any SVG:
 import { type IconName, iconNames } from '@uipath/apollo-ui-icons/types';
 ```
 
-**For React icon components**, use `@uipath/apollo-react`:
+**For React icon components**, use
+[`@uipath/apollo-ui-icons-react`](../apollo-ui-icons-react), which is generated
+from these SVGs. `@uipath/apollo-react/icons` re-exports it.
 
-```typescript
-import { Close, AddComment } from '@uipath/apollo-react/icons';
+```tsx
+import { Close, AddComment } from '@uipath/apollo-ui-icons-react';
 
 <Close />
-<AddComment />
+<AddComment size={16} />
 ```
 
 ## Package Exports
@@ -170,7 +172,8 @@ This structure was auto-resolved from the Figma export to ensure:
    - Creates short, intuitive names
    - Renames SVG files to short names
    - Regenerates path mappings with new names
-4. Run `pnpm build:icons` - Creates TypeScript components
+4. Run `pnpm build:icons` - Generates the icon exports and types
+5. Regenerate the React components in `@uipath/apollo-ui-icons-react` and refresh apollo-wind's copies (see [Contributing](#adding-or-updating-icons-temporary-workflow))
 
 **Simplified**: Use `pnpm process:icons:dry-run` to preview changes before running `pnpm process:icons`
 
@@ -241,10 +244,19 @@ pnpm build
    # Build icon TypeScript exports
    pnpm build:icons
    ```
-4. Verify the changes:
+4. Regenerate the React components, then refresh the copies apollo-wind
+   bundles (its `icons.test.ts` fails if they drift from the generated ones):
+   ```bash
+   pnpm --filter @uipath/apollo-ui-icons-react generate:icons
+   pnpm --filter @uipath/apollo-wind sync:icons
+   ```
+5. Verify the changes:
    - Check that SVG files have been renamed to short names
    - Review the generated `src/index.ts` exports
-5. Commit changes with updated icon exports
+   - Review the generated components in `../apollo-ui-icons-react/src`
+   - Review any refreshed copies in `../apollo-wind/src/components/icons`
+6. Commit the updated icon exports, the regenerated React components and any
+   refreshed apollo-wind copies
 
 ### ⚠️ Remember
 

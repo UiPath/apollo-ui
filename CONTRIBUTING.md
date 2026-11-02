@@ -93,6 +93,7 @@ Must be one of:
 
 - `apollo-core` - Design tokens, fonts
 - `apollo-ui-icons` - SVG icon set
+- `apollo-ui-icons-react` - React icon components
 - `apollo-react` - React components
 - `apollo-wind` - Tailwind/shadcn components
 - `apollo-vertex` - Vertex component registry (`packages/apollo-vertex`) and its documentation site
@@ -417,6 +418,7 @@ apollo-ui/
 ├── packages/              # Framework packages
 │   ├── apollo-core/       # Design tokens
 │   ├── apollo-ui-icons/   # SVG icon set
+│   ├── apollo-ui-icons-react/ # React icon components
 │   ├── apollo-react/      # React components
 │   ├── apollo-vertex/     # Vertex shadcn registry components
 │   └── apollo-wind/       # Tailwind components

@@ -83,6 +83,8 @@ import closeSvg from '@uipath/apollo-ui-icons/svg/close.svg';
 import { type IconName, iconNames } from '@uipath/apollo-ui-icons/types';
 ```
 
+For React components, use [`@uipath/apollo-ui-icons-react`](../apollo-ui-icons-react).
+
 `@uipath/apollo-core/icons` and `@uipath/apollo-core/icons/svg/*` still resolve,
 re-exporting the package above, but they are **deprecated and will be removed in
 the next major**. Migrate to the specifiers shown here.
@@ -94,6 +96,7 @@ Apollo Core is framework-agnostic. For framework-specific components:
 - **React**: `@uipath/apollo-react`
 - **Tailwind**: `@uipath/apollo-wind`
 - **Icons**: `@uipath/apollo-ui-icons`
+- **React icons**: `@uipath/apollo-ui-icons-react`
 
 ## Directory Structure
 

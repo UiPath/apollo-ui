@@ -22,7 +22,7 @@ Explore components in interactive environments:
 ## Features
 
 - **Design Tokens** — comprehensive color system, typography, spacing
-- **Icons** — 1300+ SVG icons in `apollo-ui-icons`
+- **Icons** — 1300+ SVG icons in `apollo-ui-icons`, and React components in `apollo-ui-icons-react`
 - **React Components** — Built on Material UI with Apollo theming
 - **Tailwind CSS** — Modern utility-first styling with shadcn/ui
 - **Web Components** — Cross-framework components for maximum flexibility
@@ -45,12 +45,18 @@ apollo-core  (Design Tokens, Fonts)
 
 apollo-ui-icons  (SVG Icon Set)
      ↑
+     ├── apollo-ui-icons-react  (React Icon Components, generated)
+     │        ↑
+     │        ├── apollo-react  (re-exports as apollo-react/icons)
+     │        └── apollo-wind   (bundles the icons it uses)
+     │
      ├── apollo-react
      └── apollo-core  (re-export only, deprecated)
 ```
 
 - **apollo-core** is the foundation — all other packages depend on it
 - **apollo-ui-icons** holds the icon set; `apollo-core/icons` still re-exports it but is deprecated
+- **apollo-ui-icons-react** turns that set into React components; `apollo-react/icons` re-exports them
 - **apollo-react** and **apollo-wind** each build on core independently
 - **ap-chat** is built on top of apollo-react
 
@@ -63,6 +69,7 @@ apollo-ui/
 ├── packages/                  # Core + framework packages
 │   ├── apollo-core/           # Design tokens, fonts
 │   ├── apollo-ui-icons/       # SVG icon set
+│   ├── apollo-ui-icons-react/ # React icon components
 │   ├── apollo-react/          # Canvas components, chat, icons, MUI theme
 │   └── apollo-wind/           # Tailwind + shadcn/ui components
 │
@@ -86,6 +93,10 @@ Design tokens and fonts. The framework-agnostic foundation for the entire design
 ### `@uipath/apollo-ui-icons`
 
 1300+ SVG icons, importable as modules or raw assets. `@uipath/apollo-core/icons` still re-exports these for backwards compatibility but is deprecated and will be removed in the next major.
+
+### `@uipath/apollo-ui-icons-react`
+
+The same icon set as React components, generated from `@uipath/apollo-ui-icons`. Single-color icons paint with `currentColor`; logos and most activity icons keep their own colors. `@uipath/apollo-react/icons` re-exports this package.
 
 ### `@uipath/apollo-react`
 

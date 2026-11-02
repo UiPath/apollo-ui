@@ -12,7 +12,7 @@ Apollo v.4 is UiPath's open-source design system for building consistent user ex
 
 Apollo is split into focused packages. Pick the one that matches what you're building.
 
-<LinkedTabs items={['apollo-core', 'apollo-ui-icons', 'apollo-wind', 'apollo-react']}>
+<LinkedTabs items={['apollo-core', 'apollo-ui-icons', 'apollo-ui-icons-react', 'apollo-wind', 'apollo-react']}>
 <div>
 
 ### `@uipath/apollo-core`
@@ -42,7 +42,7 @@ The Apollo icon set — 1300+ SVG icons, importable as modules or as raw assets.
 
 `@uipath/apollo-core/icons` still re-exports this package, but that path is deprecated and will be removed in the next major.
 
-**Best for:** Any project that needs Apollo icons without a full component library. React users get ready-made components from `@uipath/apollo-react` instead.
+**Best for:** Any project that needs Apollo icons as raw SVG, without React. React users get ready-made components from `@uipath/apollo-ui-icons-react` instead.
 
 **Install**
 
@@ -56,6 +56,32 @@ npm install @uipath/apollo-ui-icons
 import { Close, AddComment } from '@uipath/apollo-ui-icons';
 import closeSvg from '@uipath/apollo-ui-icons/svg/close.svg';
 import { type IconName, iconNames } from '@uipath/apollo-ui-icons/types';
+```
+
+</div>
+<div>
+
+### `@uipath/apollo-ui-icons-react`
+
+The Apollo icon set as React components, generated from `@uipath/apollo-ui-icons`. Each icon is a `forwardRef` `<svg>` with a `size` prop for width and height, defaulting to the source SVG's size (24 for most icons). Single-color icons paint with `currentColor` and take the parent's text color; logos and most activity icons keep their own colors. `@uipath/apollo-react/icons` re-exports this package.
+
+**Best for:** React projects that need Apollo icons. Requires React 18.3 or later.
+
+**Install**
+
+```bash
+npm install @uipath/apollo-ui-icons-react
+```
+
+**Use**
+
+```tsx
+import { AddComment, Close } from '@uipath/apollo-ui-icons-react';
+import Lock from '@uipath/apollo-ui-icons-react/Lock';
+
+<Close />
+<AddComment size={16} className="text-muted-foreground" />
+<Lock />
 ```
 
 </div>
