@@ -34,6 +34,7 @@ import {
   buildJsonTree,
   collectContainerPaths,
   flattenJsonTree,
+  hasVisibleRows,
   isArrayItemTemplateRoot,
   isPathCollapsed,
   type JsonObject,
@@ -59,6 +60,7 @@ import {
   type NodeVariablesAddableSection,
   type NodeVariablesPanelHandle,
   type NodeVariablesPanelProps,
+  type NodeVariablesPanelStrings,
   type NodeVariablesRow,
   type NodeVariablesSection,
   type NodeVariablesSource,
@@ -100,6 +102,10 @@ const DEFAULT_EXPANDED_SECTIONS: NodeVariablesSection[] = ['nodes'];
 const REVEAL_HIGHLIGHT_MS = 1500;
 
 type PerSection<T> = Record<NodeVariablesSection, T>;
+
+/** One value per section, built by `fn`. */
+const mapSections = <T,>(fn: (section: NodeVariablesSection) => T): PerSection<T> =>
+  Object.fromEntries(SECTIONS.map((section) => [section, fn(section)])) as PerSection<T>;
 
 const NO_PATHS: PerSection<Record<string, boolean>> = {
   inputs: {},
@@ -275,6 +281,29 @@ function useScrollEdges() {
   return { ref, contentRef, edges, onScroll: update };
 }
 
+/**
+ * What the panel derives from one section's tree. Called once per section, so a
+ * section keeps these (and its view keeps its flattened rows) while another changes.
+ */
+function useSectionShape(tree: JsonTreeNode[], openPaths: Record<string, boolean>) {
+  const containerPaths = useMemo(() => collectContainerPaths(tree), [tree]);
+  // Every container path, true when collapsed. Own entries for every path, read
+  // with own-key checks, so a key named after an Object.prototype member
+  // (`constructor`) expands like any other.
+  const collapsed = useMemo(
+    () =>
+      Object.fromEntries(
+        containerPaths.map(({ path }) => [path, !isPathCollapsed(openPaths, path)])
+      ),
+    [containerPaths, openPaths]
+  );
+  // Large sections (big run outputs) mount only the rows in view, windowed
+  // against the panel's scroller; small ones render normally.
+  const virtualize = useMemo(() => exceedsVirtualizeThreshold(tree), [tree]);
+  const expandablePaths = useMemo(() => objectPaths(tree), [tree]);
+  return { collapsed, virtualize, expandablePaths };
+}
+
 /** A variable's type, from its schema or else its value. Anything unknown edits as a string. */
 function variableTypeOf(
   schema: JsonSchema | undefined,
@@ -309,6 +338,66 @@ function rowFor(
   return nodeId === undefined
     ? { section, node, displayPath }
     : { section, nodeId, node, displayPath };
+}
+
+type RowDecorator = (node: JsonTreeNode) => NodeDecoration | undefined;
+
+const sourcesByIdOf = (sources: NodeVariablesSource[] | undefined) =>
+  new Map((sources ?? []).map((source) => [source.id, source]));
+
+/**
+ * Node rows: the node's name and icon over its id, which stays the raw key so
+ * paths, copying, and search still use it.
+ */
+function sourceDecorator(
+  sourcesById: Map<string, NodeVariablesSource>,
+  strings: NodeVariablesPanelStrings
+): RowDecorator {
+  return (node) => {
+    if (node.segments.length !== 1) return undefined;
+    const source = sourcesById.get(String(node.segments[0]));
+    if (!source) return undefined;
+    const count = outputCountOf(source, node);
+    const countLabel = strings.nodeOutputCount(count);
+    return {
+      label: source.label,
+      // The id shows on hover; the name's tooltip has both in full.
+      sublabel: source.id,
+      sublabelOnHover: true,
+      badge: { icon: source.icon },
+      hideCount: true,
+      // A node with no output yet is a null scalar; the row names the node,
+      // so it shows no "= null".
+      hideValue: true,
+      // In the row's trailing cluster, between Focus and +, so it lines up
+      // with the section header's count.
+      meta: (
+        <CanvasTooltip content={countLabel} placement="top" delay>
+          <span role="img" aria-label={countLabel} className={COUNT_CLASS}>
+            ({count})
+          </span>
+        </CanvasTooltip>
+      ),
+    };
+  };
+}
+
+/**
+ * A section's decoration: its built-in one, with the host's merged over it.
+ * Stable per section, since the tree memoizes its rows on it.
+ */
+function useSectionDecorator(
+  section: NodeVariablesSection,
+  builtIn: RowDecorator | undefined,
+  decorateNode: ((row: NodeVariablesRow) => NodeDecoration | undefined) | undefined,
+  referenceFor: (section: NodeVariablesSection) => PathForCopy
+): RowDecorator | undefined {
+  return useMemo(() => {
+    if (!decorateNode) return builtIn;
+    const toReference = referenceFor(section);
+    return (node) =>
+      mergeDecoration(builtIn?.(node), decorateNode(rowFor(section, node, toReference)));
+  }, [section, builtIn, decorateNode, referenceFor]);
 }
 
 /** Top-level named keys in Assets: one row per declared asset. */
@@ -457,25 +546,40 @@ function NodeVariablesPanelRender(
     [outputsBasePath, variablesBasePath, assetsBasePath]
   );
 
+  // One memo per section, so new data in one (Nodes can hold large run outputs)
+  // leaves the other trees, and everything derived from them, as they were.
+  const inputsTree = useMemo(() => buildSourceTree(inputs ?? []), [inputs]);
+  const outputsTree = useMemo(
+    () => buildJsonTree({ ...outputs, basePath: outputsBasePath }),
+    [outputs, outputsBasePath]
+  );
+  const variablesTree = useMemo(
+    () => buildJsonTree({ ...variables, basePath: variablesBasePath }),
+    [variables, variablesBasePath]
+  );
+  const assetsTree = useMemo(
+    () => buildJsonTree({ ...assets, basePath: assetsBasePath }),
+    [assets, assetsBasePath]
+  );
+  const nodesTree = useMemo(() => buildSourceTree(nodes ?? []), [nodes]);
   const trees = useMemo<PerSection<JsonTreeNode[]>>(
     () => ({
-      inputs: buildSourceTree(inputs ?? []),
-      outputs: buildJsonTree({ ...outputs, basePath: basePaths.get('outputs') }),
-      variables: buildJsonTree({ ...variables, basePath: basePaths.get('variables') }),
-      assets: buildJsonTree({ ...assets, basePath: basePaths.get('assets') }),
-      nodes: buildSourceTree(nodes ?? []),
+      inputs: inputsTree,
+      outputs: outputsTree,
+      variables: variablesTree,
+      assets: assetsTree,
+      nodes: nodesTree,
     }),
-    [inputs, outputs, variables, assets, nodes, basePaths]
+    [inputsTree, outputsTree, variablesTree, assetsTree, nodesTree]
   );
   // One lookup per section: an upstream input also appears in Nodes, and each
   // list's own metadata (label, icon, output count) must win in its section.
-  const sourcesById = useMemo<Record<SourceSection, Map<string, NodeVariablesSource>>>(
-    () => ({
-      inputs: new Map((inputs ?? []).map((source) => [source.id, source])),
-      nodes: new Map((nodes ?? []).map((source) => [source.id, source])),
-    }),
-    [inputs, nodes]
-  );
+  const inputsById = useMemo(() => sourcesByIdOf(inputs), [inputs]);
+  const nodesById = useMemo(() => sourcesByIdOf(nodes), [nodes]);
+  const sourcesById: Record<SourceSection, Map<string, NodeVariablesSource>> = {
+    inputs: inputsById,
+    nodes: nodesById,
+  };
 
   const [uncontrolledSections, setUncontrolledSections] = useState(DEFAULT_EXPANDED_SECTIONS);
   const baseSections = expandedSectionsProp ?? uncontrolledSections;
@@ -489,34 +593,14 @@ function NodeVariablesPanelRender(
   // object variable, collapsed by default too. Kept per section: each section is
   // its own tree, and the same path can appear in two (a node in Inputs and Nodes).
   const [openPaths, setOpenPaths] = useState<PerSection<Record<string, boolean>>>(NO_PATHS);
-  // The tree's shape: every container path, true when collapsed. Own entries for
-  // every path, read with own-key checks, so a key named after an
-  // Object.prototype member (`constructor`) expands like any other.
-  const collapsed = useMemo(
-    () =>
-      Object.fromEntries(
-        SECTIONS.map((section) => [
-          section,
-          Object.fromEntries(
-            collectContainerPaths(trees[section]).map(({ path }) => [
-              path,
-              // Open paths use the same own-key read as collapsed ones.
-              !isPathCollapsed(openPaths[section], path),
-            ])
-          ),
-        ])
-      ) as PerSection<Record<string, boolean>>,
-    [trees, openPaths]
-  );
-  // Large sections (big run outputs) mount only the rows in view, windowed
-  // against the panel's scroller; small ones render normally.
-  const virtualize = useMemo(
-    () =>
-      Object.fromEntries(
-        SECTIONS.map((section) => [section, exceedsVirtualizeThreshold(trees[section])])
-      ) as PerSection<boolean>,
-    [trees]
-  );
+  // Toggling a row replaces only its section's open paths, so only that section's shape changes.
+  const shapes = {
+    inputs: useSectionShape(inputsTree, openPaths.inputs),
+    outputs: useSectionShape(outputsTree, openPaths.outputs),
+    variables: useSectionShape(variablesTree, openPaths.variables),
+    assets: useSectionShape(assetsTree, openPaths.assets),
+    nodes: useSectionShape(nodesTree, openPaths.nodes),
+  };
   const [scroller, setScroller] = useState<HTMLDivElement | null>(null);
   const [query, setQuery] = useState('');
   const [uncontrolledFilterId, setUncontrolledFilterId] = useState<string | null>(null);
@@ -557,88 +641,61 @@ function NodeVariablesPanelRender(
   const filterPredicates = useMemo(
     () =>
       filterPredicate
-        ? (Object.fromEntries(
-            SECTIONS.map((section) => [
-              section,
-              (node: JsonTreeNode) => filterPredicate(rowFor(section, node, referenceFor(section))),
-            ])
-          ) as PerSection<(node: JsonTreeNode) => boolean>)
+        ? mapSections((section) => {
+            const toReference = referenceFor(section);
+            return (node: JsonTreeNode) => filterPredicate(rowFor(section, node, toReference));
+          })
         : undefined,
     [filterPredicate, referenceFor]
   );
 
-  // Node rows: the node's name and icon over its id, which stays the raw key so
-  // paths, copying, and search still use it.
-  // Stable per section, since the tree memoizes its rows on it.
-  const decorateSource = useMemo(() => {
-    const decorate =
-      (section: SourceSection) =>
-      (node: JsonTreeNode): NodeDecoration | undefined => {
-        if (node.segments.length !== 1) return undefined;
-        const source = sourcesById[section].get(String(node.segments[0]));
-        if (!source) return undefined;
-        const count = outputCountOf(source, node);
-        const countLabel = strings.nodeOutputCount(count);
-        return {
-          label: source.label,
-          // The id shows on hover; the name's tooltip has both in full.
-          sublabel: source.id,
-          sublabelOnHover: true,
-          badge: { icon: source.icon },
-          hideCount: true,
-          // A node with no output yet is a null scalar; the row names the node,
-          // so it shows no "= null".
-          hideValue: true,
-          // In the row's trailing cluster, between Focus and +, so it lines up
-          // with the section header's count.
-          meta: (
-            <CanvasTooltip content={countLabel} placement="top" delay>
-              <span role="img" aria-label={countLabel} className={COUNT_CLASS}>
-                ({count})
-              </span>
-            </CanvasTooltip>
-          ),
-        };
-      };
-    return { inputs: decorate('inputs'), nodes: decorate('nodes') };
-  }, [sourcesById, strings]);
-  // Every section's decoration: the built-in one for node rows, with the host's merged over it.
-  const decorators = useMemo(
-    () =>
-      Object.fromEntries(
-        SECTIONS.map((section) => {
-          const builtIn = isSourceSection(section) ? decorateSource[section] : undefined;
-          if (!decorateNode) return [section, builtIn];
-          return [
-            section,
-            (node: JsonTreeNode) =>
-              mergeDecoration(
-                builtIn?.(node),
-                decorateNode(rowFor(section, node, referenceFor(section)))
-              ),
-          ];
-        })
-      ) as PerSection<((node: JsonTreeNode) => NodeDecoration | undefined) | undefined>,
-    [decorateSource, decorateNode, referenceFor]
+  const decorateInputs = useMemo(() => sourceDecorator(inputsById, strings), [inputsById, strings]);
+  const decorateNodes = useMemo(() => sourceDecorator(nodesById, strings), [nodesById, strings]);
+  const decorateInputsRow = useSectionDecorator(
+    'inputs',
+    decorateInputs,
+    decorateNode,
+    referenceFor
+  );
+  const decorateOutputsRow = useSectionDecorator('outputs', undefined, decorateNode, referenceFor);
+  const decorateVariablesRow = useSectionDecorator(
+    'variables',
+    undefined,
+    decorateNode,
+    referenceFor
+  );
+  const decorateAssetsRow = useSectionDecorator('assets', undefined, decorateNode, referenceFor);
+  const decorateNodesRow = useSectionDecorator('nodes', decorateNodes, decorateNode, referenceFor);
+  const decorators = useMemo<PerSection<RowDecorator | undefined>>(
+    () => ({
+      inputs: decorateInputsRow,
+      outputs: decorateOutputsRow,
+      variables: decorateVariablesRow,
+      assets: decorateAssetsRow,
+      nodes: decorateNodesRow,
+    }),
+    [
+      decorateInputsRow,
+      decorateOutputsRow,
+      decorateVariablesRow,
+      decorateAssetsRow,
+      decorateNodesRow,
+    ]
   );
 
-  // Rows each section shows while narrowed; a section with none is hidden.
-  // Memoized, so a keystroke flattens each tree once here, not on every render.
-  const visibleCount = useMemo(
+  // Whether each section shows rows while narrowed; a section without is hidden.
+  // Only asks for one match, since the section's own view flattens its rows anyway.
+  const hasMatches = useMemo(
     () =>
-      Object.fromEntries(
-        SECTIONS.map((section) => [
-          section,
-          narrowing
-            ? flattenJsonTree(trees[section], {
-                collapsed: {},
-                query: search,
-                filterPredicate: filterPredicates?.[section],
-                displayTexts: decorators[section],
-              }).length
-            : 1,
-        ])
-      ) as PerSection<number>,
+      mapSections(
+        (section) =>
+          !narrowing ||
+          hasVisibleRows(trees[section], {
+            query: search,
+            filterPredicate: filterPredicates?.[section],
+            displayTexts: decorators[section],
+          })
+      ),
     [narrowing, trees, search, filterPredicates, decorators]
   );
   // Inputs count the triggers' outputs, the fields an author references; Nodes count nodes.
@@ -670,9 +727,7 @@ function NodeVariablesPanelRender(
     });
   };
   const openSections = narrowKey
-    ? present.filter(
-        (section) => visibleCount[section] > 0 && !overlay.closedSections.includes(section)
-      )
+    ? present.filter((section) => hasMatches[section] && !overlay.closedSections.includes(section))
     : baseSections;
   const setOpenSections = (next: NodeVariablesSection[]) => {
     if (!narrowKey) return setBaseSections(inSectionOrder(next));
@@ -686,7 +741,7 @@ function NodeVariablesPanelRender(
     );
 
   const collapsedIn = (section: NodeVariablesSection) =>
-    search ? overlay.collapsedPaths[section] : collapsed[section];
+    search ? overlay.collapsedPaths[section] : shapes[section].collapsed;
   const toggleCollapsed = (section: NodeVariablesSection) => (path: string) => {
     if (search) {
       updateOverlay(({ collapsedPaths }) => ({
@@ -704,7 +759,7 @@ function NodeVariablesPanelRender(
       ...current,
       [section]: {
         ...current[section],
-        [path]: isPathCollapsed(collapsed[section], path),
+        [path]: isPathCollapsed(shapes[section].collapsed, path),
       },
     }));
   };
@@ -713,43 +768,31 @@ function NodeVariablesPanelRender(
   // sections and arrays (which can be long) stay as they are. A node row counts
   // as content even with no outputs, since its + adds them.
   const expandableSections = present.filter((section) => {
-    if (narrowing) return visibleCount[section] > 0;
+    if (narrowing) return hasMatches[section];
     return isSourceSection(section) ? trees[section].length > 0 : totalCount[section] > 0;
   });
-  const expandablePaths = useMemo(
-    () =>
-      Object.fromEntries(
-        SECTIONS.map((section) => [section, objectPaths(trees[section])])
-      ) as PerSection<string[]>,
-    [trees]
-  );
   const allExpanded =
     expandableSections.length > 0 &&
     expandableSections.every((section) => openSections.includes(section)) &&
     present.every((section) =>
-      expandablePaths[section].every((path) => !isPathCollapsed(collapsedIn(section), path))
+      shapes[section].expandablePaths.every((path) => !isPathCollapsed(collapsedIn(section), path))
     );
   const toggleAll = () => {
     const open = !allExpanded;
     setOpenSections(open ? expandableSections : []);
     const pathsFor = (section: NodeVariablesSection, collapse: boolean) =>
-      Object.fromEntries(expandablePaths[section].map((path) => [path, collapse]));
+      Object.fromEntries(shapes[section].expandablePaths.map((path) => [path, collapse]));
     if (search) {
       updateOverlay(({ collapsedPaths }) => ({
-        collapsedPaths: Object.fromEntries(
-          SECTIONS.map((section) => [
-            section,
-            { ...collapsedPaths[section], ...pathsFor(section, !open) },
-          ])
-        ) as PerSection<Record<string, boolean>>,
+        collapsedPaths: mapSections((section) => ({
+          ...collapsedPaths[section],
+          ...pathsFor(section, !open),
+        })),
       }));
       return;
     }
-    setOpenPaths(
-      (current) =>
-        Object.fromEntries(
-          SECTIONS.map((section) => [section, { ...current[section], ...pathsFor(section, open) }])
-        ) as PerSection<Record<string, boolean>>
+    setOpenPaths((current) =>
+      mapSections((section) => ({ ...current[section], ...pathsFor(section, open) }))
     );
   };
 
@@ -855,14 +898,12 @@ function NodeVariablesPanelRender(
   const sectionRowWrappers = useMemo(() => {
     if (!rowWrapper) return undefined;
     const HostRow = rowWrapper;
-    return Object.fromEntries(
-      SECTIONS.map((section) => {
-        const SectionRow: JsonTreeRowWrapper = (props) => (
-          <HostRow {...props} section={section} nodeId={nodeIdOf(section, props.node)} />
-        );
-        return [section, SectionRow];
-      })
-    ) as PerSection<JsonTreeRowWrapper>;
+    return mapSections((section): JsonTreeRowWrapper => {
+      const SectionRow: JsonTreeRowWrapper = (props) => (
+        <HostRow {...props} section={section} nodeId={nodeIdOf(section, props.node)} />
+      );
+      return SectionRow;
+    });
   }, [rowWrapper]);
 
   /** Where a renamed variable would be referenced, shown in the dialog. */
@@ -994,8 +1035,8 @@ function NodeVariablesPanelRender(
         canCopy ? (node) => canCopy(rowFor(section, node, referenceFor(section))) : undefined
       }
       onCopy={onCopy}
-      virtualized={virtualize[section]}
-      scrollElement={virtualize[section] ? scroller : undefined}
+      virtualized={shapes[section].virtualize}
+      scrollElement={shapes[section].virtualize ? scroller : undefined}
       strings={treeStrings}
       className="h-auto py-1"
     />
@@ -1030,7 +1071,7 @@ function NodeVariablesPanelRender(
   };
 
   const renderSection = (section: NodeVariablesSection) => {
-    if (narrowing && visibleCount[section] === 0) return null;
+    if (!hasMatches[section]) return null;
     const open = openSections.includes(section);
     const name = sectionName[section];
     const count = totalCount[section];
@@ -1110,7 +1151,7 @@ function NodeVariablesPanelRender(
     },
     [scrollRef]
   );
-  const nothingVisible = narrowing && present.every((section) => visibleCount[section] === 0);
+  const nothingVisible = narrowing && !present.some((section) => hasMatches[section]);
 
   return (
     <div className={cn('flex min-h-0 flex-1 flex-col', className)}>
