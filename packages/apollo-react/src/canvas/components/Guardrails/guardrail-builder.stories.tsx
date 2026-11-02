@@ -395,6 +395,20 @@ export const LogWithoutSeverity: Story = {
   },
 };
 
+/**
+ * Name and parameters only, for a host that runs the validator itself: hideAction drops the
+ * action section, evalsTogglePlacement none drops the evaluations toggle, and the Llm scope
+ * hides the scope selector. Save still hands back the full value with the default action.
+ */
+export const ValidatorOnly: Story = {
+  args: {
+    ...AddInline.args,
+    scope: 'Llm',
+    hideAction: true,
+    evalsTogglePlacement: 'none',
+  },
+};
+
 /** Chrome strings resolved from the canvas lingui catalog (Japanese). */
 export const Localized: Story = {
   args: { ...AddInline.args },

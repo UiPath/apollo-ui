@@ -1381,6 +1381,47 @@ describe('GuardrailBuilder', () => {
       expect(footer).not.toBeNull();
     });
 
+    it('renders the evals toggle in the form by default', () => {
+      render(
+        <GuardrailBuilder
+          open
+          inline
+          hideHeader
+          definition={makeDef()}
+          scope="Agent"
+          onSave={vi.fn()}
+          onCancel={vi.fn()}
+        />
+      );
+
+      const toggle = screen.getByRole('switch', { name: /enable guardrail for evaluations/i });
+      expect(toggle.closest('[data-slot="guardrail-builder"]')).not.toBeNull();
+    });
+
+    it('renders no evals toggle with evalsTogglePlacement none, and saves the flag unchanged', () => {
+      const onSave = vi.fn();
+      render(
+        <GuardrailBuilder
+          open
+          inline
+          hideHeader
+          definition={makeDef()}
+          scope="Tool"
+          guardrail={makeGuardrail({ enabledForEvals: false })}
+          evalsTogglePlacement="none"
+          onSave={onSave}
+          onCancel={vi.fn()}
+        />
+      );
+
+      expect(
+        screen.queryByRole('switch', { name: /enable guardrail for evaluations/i })
+      ).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+      expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ enabledForEvals: false }));
+    });
+
     it('renders a custom title node when provided', () => {
       render(
         <GuardrailBuilder
@@ -1718,6 +1759,105 @@ describe('GuardrailBuilder', () => {
       expect(onSave).toHaveBeenCalledWith(
         expect.objectContaining({ action: { $actionType: 'log', severityLevel: 'Error' } })
       );
+    });
+
+    it('renders the action section by default', () => {
+      const { container } = render(
+        <GuardrailBuilder
+          open
+          inline
+          hideHeader
+          definition={makeDef()}
+          scope="Llm"
+          defaultName="PII 1"
+          onSave={vi.fn()}
+          onCancel={vi.fn()}
+        />
+      );
+
+      expect(container.querySelector('[data-slot="guardrail-action-section"]')).not.toBeNull();
+      expect(screen.getByRole('combobox', { name: /action type/i })).toBeInTheDocument();
+    });
+
+    it('hides the action section with hideAction and saves the default action', () => {
+      const onSave = vi.fn();
+      const onSaveAsNew = vi.fn();
+      const { container } = render(
+        <GuardrailBuilder
+          open
+          inline
+          hideHeader
+          definition={makeDef()}
+          scope="Llm"
+          defaultName="PII 1"
+          hideAction
+          onSave={onSave}
+          onSaveAsNew={onSaveAsNew}
+          onCancel={vi.fn()}
+        />
+      );
+
+      expect(container.querySelector('[data-slot="guardrail-action-section"]')).toBeNull();
+      expect(screen.queryByRole('combobox', { name: /action type/i })).not.toBeInTheDocument();
+      // The separator only divides the action from the fields above it.
+      expect(container.querySelector('[data-slot="separator"]')).toBeNull();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+      expect(onSave).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'PII 1',
+          action: { $actionType: 'log', severityLevel: 'Info' },
+          enabledForEvals: true,
+        })
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: /save as new/i }));
+      expect(onSaveAsNew).toHaveBeenCalledWith(
+        expect.objectContaining({ action: { $actionType: 'log', severityLevel: 'Info' } })
+      );
+    });
+
+    it('does not let a hidden, invalid action block Save', () => {
+      const onSave = vi.fn();
+      const action = { $actionType: 'block', reason: ' ' } as const;
+      render(
+        <GuardrailBuilder
+          open
+          inline
+          hideHeader
+          definition={makeDef()}
+          scope="Llm"
+          guardrail={makeGuardrail({ selector: { scopes: ['Llm'] }, action })}
+          hideAction
+          onSave={onSave}
+          onCancel={vi.fn()}
+        />
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+      expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ action }));
+    });
+
+    it('still blocks Save on an invalid action it shows', () => {
+      const onSave = vi.fn();
+      render(
+        <GuardrailBuilder
+          open
+          inline
+          hideHeader
+          definition={makeDef()}
+          scope="Llm"
+          guardrail={makeGuardrail({
+            selector: { scopes: ['Llm'] },
+            action: { $actionType: 'block', reason: ' ' },
+          })}
+          onSave={onSave}
+          onCancel={vi.fn()}
+        />
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+      expect(onSave).not.toHaveBeenCalled();
     });
 
     it('saves a recipient type it does not model unchanged', () => {
