@@ -14,9 +14,10 @@ export interface NodeKeyProps {
 }
 
 /**
- * The field name. Hovering underlines it and (after a short delay) shows a
- * popover titled with the node's full tree path, plus the schema description
- * and a copy hint; clicking copies the path.
+ * The field name. Hovering (after a short delay) shows a popover titled with
+ * the node's full tree path, plus the schema description. With `onCopyPath`
+ * the name is also underlined on hover, the popover adds a copy hint, and
+ * clicking copies the path.
  */
 export function NodeKey({ node, label, displayPath, onCopyPath, className }: NodeKeyProps) {
   const strings = useJsonTreeViewStrings();
@@ -39,28 +40,33 @@ export function NodeKey({ node, label, displayPath, onCopyPath, className }: Nod
     node.value === undefined && 'text-foreground-muted',
     className
   );
-  if (!onCopyPath) return <span className={keyClass}>{text}</span>;
+  const details = (
+    <div className="flex max-w-60 flex-col gap-1">
+      {/* A display label can truncate in the row; the tooltip names it in full. */}
+      {label != null && label !== node.key && (
+        <span className="text-xs font-semibold leading-4">{label}</span>
+      )}
+      <span className="break-all font-mono text-xs font-semibold leading-4">{copyPathText}</span>
+      {node.schema?.description && (
+        <span className="text-xs leading-4">{node.schema.description}</span>
+      )}
+      {onCopyPath && (
+        <span className="text-[11px] leading-4 opacity-70">{strings.copyPathHint}</span>
+      )}
+    </div>
+  );
+
+  // Without copy, the name still shows its full path and description on hover.
+  if (!onCopyPath) {
+    return (
+      <JsonTreeTooltip placement="top" delay content={details}>
+        <span className={keyClass}>{text}</span>
+      </JsonTreeTooltip>
+    );
+  }
 
   return (
-    <JsonTreeTooltip
-      placement="top"
-      delay
-      content={
-        <div className="flex max-w-60 flex-col gap-1">
-          {/* A display label can truncate in the row; the tooltip names it in full. */}
-          {label != null && label !== node.key && (
-            <span className="text-xs font-semibold leading-4">{label}</span>
-          )}
-          <span className="break-all font-mono text-xs font-semibold leading-4">
-            {copyPathText}
-          </span>
-          {node.schema?.description && (
-            <span className="text-xs leading-4">{node.schema.description}</span>
-          )}
-          <span className="text-[11px] leading-4 opacity-70">{strings.copyPathHint}</span>
-        </div>
-      }
-    >
+    <JsonTreeTooltip placement="top" delay content={details}>
       <button
         type="button"
         onClick={() => onCopyPath(node)}

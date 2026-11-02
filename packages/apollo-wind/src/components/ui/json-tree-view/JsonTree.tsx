@@ -12,6 +12,7 @@ import { copyTextToClipboard } from '@/lib/clipboard';
 import { useIsomorphicLayoutEffect } from '@/lib/use-isomorphic-layout-effect';
 import { flattenJsonTree } from './buildJsonTree';
 import type {
+  CanCopyPath,
   CopyEvent,
   DeriveTypeIcon,
   JsonTreeNode,
@@ -78,6 +79,11 @@ export interface JsonTreeViewProps {
   renderCodeEditor?: RenderCodeEditor;
   /** Builds the text copied when a field name is clicked. Defaults to the path itself. */
   pathForCopy?: PathForCopy;
+  /**
+   * Whether clicking a node's field name copies its path. Return false to show
+   * the name as plain text (e.g. a reference that no longer resolves). Default: every node.
+   */
+  canCopyPath?: CanCopyPath;
   /** Called after something is copied to the clipboard. */
   onCopy?: (event: CopyEvent) => void;
   /**
@@ -281,6 +287,7 @@ function JsonTreeViewContent({
   maxInlineActions = 3,
   renderCodeEditor,
   pathForCopy,
+  canCopyPath,
   onCopy,
   virtualized = false,
   scrollElement,
@@ -399,6 +406,7 @@ function JsonTreeViewContent({
     maxInlineActions,
     renderCodeEditor,
     pathForCopy,
+    canCopyPath,
     canEdit,
     RowWrapper,
     templateItemLabel,

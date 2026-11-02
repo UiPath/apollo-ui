@@ -282,6 +282,9 @@ export interface CopyEvent {
  */
 export type PathForCopy = (path: string, segments: PathSegment[]) => string;
 
+/** Whether clicking a node's field name copies its path. */
+export type CanCopyPath = (node: JsonTreeNode) => boolean;
+
 /** Details about a single value edit. */
 export interface JsonTreeChange {
   path: string;
@@ -304,6 +307,11 @@ export interface JsonTreeChange {
  */
 export interface JsonTreeRowWrapperProps {
   node: JsonTreeNode;
+  /**
+   * The node's path as the tree shows and copies it, after `pathForCopy`
+   * (e.g. `$vars.httpRequest1.output.body`). Also on the row as `data-reference`.
+   */
+  displayPath: string;
   className?: string;
   style?: CSSProperties;
   /**
