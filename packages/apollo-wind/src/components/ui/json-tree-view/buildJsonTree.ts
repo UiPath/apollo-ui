@@ -427,6 +427,36 @@ export function flattenJsonTree(
   return rows;
 }
 
+/** Whether `test` passes for `node` or anything below it. Stops at the first pass. */
+function someInSubtree(node: JsonTreeNode, test: (node: JsonTreeNode) => boolean): boolean {
+  const stack = [node];
+  while (stack.length > 0) {
+    const current = stack.pop()!;
+    if (test(current)) return true;
+    if (current.children) for (const child of current.children) stack.push(child);
+  }
+  return false;
+}
+
+/**
+ * Whether `flattenJsonTree` with nothing collapsed would show any row, without
+ * building them. A top-level node shows when its subtree holds a query match
+ * and a filter match (not necessarily the same node), so that is all it checks.
+ */
+export function hasVisibleRows(
+  nodes: JsonTreeNode[],
+  options: Omit<FlattenOptions, 'collapsed'> = {}
+): boolean {
+  const { filterPredicate, displayTexts } = options;
+  const query = options.query?.trim().toLowerCase() ?? '';
+  return nodes.some(
+    (node) =>
+      (!query ||
+        someInSubtree(node, (candidate) => nodeSelfMatchesQuery(candidate, query, displayTexts))) &&
+      (!filterPredicate || someInSubtree(node, filterPredicate))
+  );
+}
+
 /**
  * Fills in each row's position and set size. Counted over the visible rows, not
  * the node's children, so a filtered list reads as the siblings it shows.
