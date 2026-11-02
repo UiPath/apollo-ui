@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import type {
   CopyEvent,
   DeriveTypeIcon,
+  DeriveTypeLabel,
   JsonContainer,
   JsonSchema,
   JsonTreeChange,
@@ -97,6 +98,8 @@ export interface NodeIOViewProps {
   decorateNode?: (node: JsonTreeNode) => NodeDecoration | undefined;
   /** Custom type-badge icons per node. Return undefined to keep the default type icon. */
   deriveTypeIcon?: DeriveTypeIcon;
+  /** Custom type names for badge tooltips (e.g. File). Return undefined to keep the JSON type name. */
+  deriveTypeLabel?: DeriveTypeLabel;
   /** Custom value cell renderer (e.g. a file picker for `format: 'file'` nodes). */
   renderValue?: RenderValueCell;
   /**

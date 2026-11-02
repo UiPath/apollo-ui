@@ -138,6 +138,7 @@ import { CanvasIcon } from '../../utils/icon-registry';
 import { CanvasTooltip } from '../CanvasTooltip';
 import type {
   DeriveTypeIcon,
+  DeriveTypeLabel,
   JsonCodeEditorRenderProps,
   JsonContainer,
   JsonObject,
@@ -1572,6 +1573,7 @@ function InputOutputStory() {
           filters={INPUT_FILTERS}
           decorateNode={decorateNodeHeader}
           deriveTypeIcon={deriveFileTypeIcon}
+          deriveTypeLabel={deriveFileTypeLabel}
           renderValue={renderFileValueCell}
           renderCodeEditor={renderJsonCodeEditor}
           pathForCopy={(path) => `$vars.${path}`}
@@ -1595,6 +1597,7 @@ function InputOutputStory() {
           searchPlaceholder="Search output..."
           decorateNode={decorateNodeHeader}
           deriveTypeIcon={deriveFileTypeIcon}
+          deriveTypeLabel={deriveFileTypeLabel}
           renderValue={renderFileValueCell}
           renderCodeEditor={renderJsonCodeEditor}
           pathForCopy={(path) => `$vars.${path}`}
@@ -1630,6 +1633,7 @@ function InputPreFilteredStory() {
               onFilterChange={setFilterId}
               decorateNode={decorateNodeHeader}
               deriveTypeIcon={deriveFileTypeIcon}
+              deriveTypeLabel={deriveFileTypeLabel}
               renderValue={renderFileValueCell}
               renderCodeEditor={renderJsonCodeEditor}
               pathForCopy={(path) => `$vars.${path}`}
@@ -4760,6 +4764,9 @@ const renderJsonCodeEditor = (props: JsonCodeEditorRenderProps) => <MonacoCodeEd
 const deriveFileTypeIcon: DeriveTypeIcon = (node) =>
   node.schema?.format === 'file' ? <File /> : undefined;
 
+const deriveFileTypeLabel: DeriveTypeLabel = (node) =>
+  node.schema?.format === 'file' ? 'File' : undefined;
+
 const MOCK_FILES = [
   { FullName: 'statement-scan.png', MimeType: 'image/png' },
   { FullName: 'amendment.pdf', MimeType: 'application/pdf' },
@@ -5290,6 +5297,7 @@ function InputPanel({
             filters={INPUT_FILTERS}
             decorateNode={decorateNodeHeader}
             deriveTypeIcon={deriveFileTypeIcon}
+            deriveTypeLabel={deriveFileTypeLabel}
             renderValue={renderFileValueCell}
             nodeActions={nodeActions}
             renderCodeEditor={renderJsonCodeEditor}
@@ -5367,6 +5375,7 @@ function OutputPanel({
             searchPlaceholder="Search output..."
             decorateNode={decorateNodeHeader}
             deriveTypeIcon={deriveFileTypeIcon}
+            deriveTypeLabel={deriveFileTypeLabel}
             renderValue={renderFileValueCell}
             nodeActions={nodeActions}
             renderCodeEditor={renderJsonCodeEditor}

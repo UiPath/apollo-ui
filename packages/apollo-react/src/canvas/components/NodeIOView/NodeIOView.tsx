@@ -87,6 +87,7 @@ export function NodeIOView({
   onFilterChange,
   decorateNode,
   deriveTypeIcon,
+  deriveTypeLabel,
   renderValue,
   nodeActions,
   maxInlineActions,
@@ -285,6 +286,7 @@ export function NodeIOView({
               rowWrapper={rowWrapper}
               decorateNode={decorateNode}
               deriveTypeIcon={deriveTypeIcon}
+              deriveTypeLabel={deriveTypeLabel}
               renderValue={renderValue}
               nodeActions={nodeActions}
               maxInlineActions={maxInlineActions}
