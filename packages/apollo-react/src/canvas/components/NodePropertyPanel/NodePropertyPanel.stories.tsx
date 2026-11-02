@@ -156,6 +156,7 @@ import {
   type NodeVariableDetails,
   type NodeVariablesFilter,
   NodeVariablesPanel,
+  type NodeVariablesPanelHandle,
   type NodeVariablesRow,
   type NodeVariablesSource,
 } from '../NodeVariablesPanel';
@@ -1507,7 +1508,7 @@ export const Variables: Story = {
     docs: {
       description: {
         story:
-          'A single-panel flow-workbench example for browsing node inputs, outputs, and flow variables. The hierarchy stays visible while variable rows remain directly editable.',
+          'A single-panel flow-workbench example for browsing node inputs, outputs, and flow variables. The hierarchy stays visible while variable rows remain directly editable. The `maxRetries` asset is missing from its solution: `decorateNode` flags it, `canCopy` and `canEdit` turn its copy and edit off, and `nodeActions` adds Reconnect. The button above the panel calls `revealPath` through the panel ref.',
       },
     },
   },
@@ -1884,6 +1885,23 @@ const VARIABLES_PANEL_ASSETS = {
   } as JsonObject,
 };
 
+// An asset the flow declares that its solution no longer has: flagged, with copy and
+// edit off and a host action to reconnect it.
+const MISSING_ASSET = 'maxRetries';
+const isMissingAsset = ({ section, node }: NodeVariablesRow) =>
+  section === 'assets' && node.segments.length === 1 && node.key === MISSING_ASSET;
+const decorateVariablesRow = (row: NodeVariablesRow): NodeDecoration | undefined =>
+  isMissingAsset(row)
+    ? {
+        chip: {
+          icon: <TriangleAlert size={11} />,
+          tooltip: 'Not in this solution',
+          tone: 'warning',
+        },
+      }
+    : undefined;
+const hasReference = (row: NodeVariablesRow) => !isMissingAsset(row);
+
 /** A variable's schema as the Edit variable dialog saved it. */
 const variableSchema = ({ type, description, defaultValue }: NodeVariableDetails): JsonSchema => ({
   type,
@@ -1894,6 +1912,7 @@ const variableSchema = ({ type, description, defaultValue }: NodeVariableDetails
 function VariablesStory() {
   const [variables, setVariables] = useState(VARIABLES_PANEL_VARIABLES);
   const [assets, setAssets] = useState(VARIABLES_PANEL_ASSETS);
+  const panelRef = useRef<NodeVariablesPanelHandle>(null);
   const properties = variables.schema.properties ?? {};
 
   const addVariable = () => {
@@ -2003,6 +2022,15 @@ function VariablesStory() {
 
   return (
     <div className="flex flex-col gap-4 overflow-x-auto p-8">
+      <div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => panelRef.current?.revealPath('$vars.flowConfig.region')}
+        >
+          Reveal $vars.flowConfig.region
+        </Button>
+      </div>
       <PanelFrame>
         <NodePropertyPanel panelTitle="Properties" onClose={() => {}} className="h-[760px]">
           <PanelTabs
@@ -2032,6 +2060,7 @@ function VariablesStory() {
               className="flex-col overflow-hidden data-[state=active]:flex"
             >
               <NodeVariablesPanel
+                ref={panelRef}
                 inputs={VARIABLES_PANEL_INPUTS}
                 outputs={VARIABLES_PANEL_OUTPUTS}
                 variables={variables}
@@ -2048,6 +2077,22 @@ function VariablesStory() {
                 onRequestEditVariable={({ node }) => toast(`Edit asset ${node.key}`)}
                 onDeleteVariable={deleteVariable}
                 onCopy={({ text }) => toast.success(`Copied ${text}`)}
+                decorateNode={decorateVariablesRow}
+                canCopy={hasReference}
+                canEdit={hasReference}
+                nodeActions={(row, { defaultActions }) =>
+                  isMissingAsset(row)
+                    ? [
+                        ...defaultActions,
+                        {
+                          id: 'reconnect-asset',
+                          icon: <RefreshCw />,
+                          label: `Reconnect ${row.node.key}`,
+                          onSelect: () => toast(`Reconnect ${row.node.key}`),
+                        },
+                      ]
+                    : undefined
+                }
                 leading={tabList}
               />
             </PanelTabsContent>

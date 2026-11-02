@@ -1,12 +1,15 @@
 import { axe } from 'jest-axe';
+import { createRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen, userEvent, waitFor, within } from '../../utils/testing';
+import { act, fireEvent, render, screen, userEvent, waitFor, within } from '../../utils/testing';
 import type { JsonObject } from '../JsonTree';
 import { NodeVariablesPanel } from './NodeVariablesPanel';
 import type {
   NodeVariablesFilter,
+  NodeVariablesPanelHandle,
   NodeVariablesPanelProps,
   NodeVariablesRow,
+  NodeVariablesRowWrapper,
   NodeVariablesSource,
 } from './NodeVariablesPanel.types';
 
@@ -49,7 +52,14 @@ const VARIABLES = {
 
 function renderPanel(props: Partial<NodeVariablesPanelProps> = {}) {
   return render(
-    <NodeVariablesPanel inputs={INPUTS} variables={VARIABLES} nodes={NODES} {...props} />
+    <NodeVariablesPanel
+      inputs={INPUTS}
+      outputs={{}}
+      variables={VARIABLES}
+      assets={{}}
+      nodes={NODES}
+      {...props}
+    />
   );
 }
 
@@ -91,17 +101,63 @@ describe('NodeVariablesPanel', () => {
     expect(screen.queryByText('HTTP webhook')).not.toBeInTheDocument();
   });
 
-  it('honors defaultExpandedSections', () => {
-    renderPanel({ defaultExpandedSections: ['inputs'] });
+  it('follows controlled expandedSections and reports toggles', async () => {
+    const user = userEvent.setup();
+    const onExpandedSectionsChange = vi.fn();
+    const { rerender } = renderPanel({ expandedSections: ['inputs'], onExpandedSectionsChange });
 
     expect(sectionToggle('Inputs')).toHaveAttribute('aria-expanded', 'true');
     expect(sectionToggle('Nodes')).toHaveAttribute('aria-expanded', 'false');
+
+    await user.click(sectionToggle('Nodes'));
+    // Reported in display order; nothing changes until the host passes it back.
+    expect(onExpandedSectionsChange).toHaveBeenCalledWith(['inputs', 'nodes']);
+    expect(sectionToggle('Nodes')).toHaveAttribute('aria-expanded', 'false');
+
+    rerender(
+      <NodeVariablesPanel inputs={INPUTS} nodes={NODES} expandedSections={['inputs', 'nodes']} />
+    );
+    expect(sectionToggle('Nodes')).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('shows only the sections whose data is passed', () => {
+    render(<NodeVariablesPanel variables={VARIABLES} assets={{}} />);
+
+    const regions = screen
+      .getAllByRole('region')
+      .map((region) => region.getAttribute('aria-label'));
+    expect(regions).toEqual(['Variables', 'Assets']);
+  });
+
+  it("sums the inputs' output counts in the Inputs header", () => {
+    render(
+      <NodeVariablesPanel
+        inputs={[
+          { id: 'manualTrigger1', label: 'Manual trigger', outputCount: 2 },
+          { id: 'httpWebhook1', label: 'HTTP webhook', outputCount: 3 },
+        ]}
+      />
+    );
+
+    expect(screen.getByRole('img', { name: 'Inputs: 5' })).toBeInTheDocument();
+  });
+
+  it('opens Inputs on Expand all when its triggers have no outputs yet', async () => {
+    const user = userEvent.setup();
+    render(
+      <NodeVariablesPanel inputs={[{ id: 'manualTrigger1', label: 'Manual trigger' }]} nodes={[]} />
+    );
+
+    expect(screen.getByRole('img', { name: 'Inputs: 0' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Expand all' }));
+    expect(sectionToggle('Inputs')).toHaveAttribute('aria-expanded', 'true');
   });
 
   it('counts each section and describes counts for assistive technology', () => {
     renderPanel();
 
-    expect(screen.getByRole('img', { name: 'Inputs: 3' })).toBeInTheDocument();
+    // Inputs count their triggers' outputs: one each for Slack and the webhook.
+    expect(screen.getByRole('img', { name: 'Inputs: 2' })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: 'Outputs: 0' })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: 'Variables: 3' })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: 'Nodes: 1' })).toBeInTheDocument();
@@ -110,7 +166,7 @@ describe('NodeVariablesPanel', () => {
   it('shows each node by name and icon, with its id as the copied reference', async () => {
     const user = userEvent.setup();
     const onCopy = vi.fn();
-    renderPanel({ defaultExpandedSections: ['inputs'], onCopy });
+    renderPanel({ expandedSections: ['inputs'], onCopy });
 
     expect(within(section('Inputs')).getByTestId('manual-icon')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Copy path for $vars.manualTrigger1' }));
@@ -123,7 +179,7 @@ describe('NodeVariablesPanel', () => {
   });
 
   it('shows the node id beside its name only while the row is hovered', () => {
-    renderPanel({ defaultExpandedSections: ['inputs'] });
+    renderPanel({ expandedSections: ['inputs'] });
 
     // A node with no output yet names the node; it has no "= null" value.
     expect(within(section('Inputs')).queryByText('null')).toBeNull();
@@ -136,7 +192,7 @@ describe('NodeVariablesPanel', () => {
 
   it('builds node outputs from the schema and counts them on the node row', async () => {
     const user = userEvent.setup();
-    renderPanel({ defaultExpandedSections: ['inputs', 'nodes'] });
+    renderPanel({ expandedSections: ['inputs', 'nodes'] });
 
     // The schema's top-level fields, or the consumer's outputCount.
     expect(screen.getAllByRole('img', { name: 'Outputs: 1' })).toHaveLength(3);
@@ -173,7 +229,7 @@ describe('NodeVariablesPanel', () => {
   it('adds to Outputs and Variables from the header, and to Inputs and Nodes per node', async () => {
     const user = userEvent.setup();
     const onAdd = vi.fn();
-    renderPanel({ onAdd, defaultExpandedSections: ['inputs', 'nodes'] });
+    renderPanel({ onAdd, expandedSections: ['inputs', 'nodes'] });
 
     await user.click(screen.getByRole('button', { name: 'Add outputs' }));
     await user.click(screen.getByRole('button', { name: 'Add variables' }));
@@ -200,7 +256,7 @@ describe('NodeVariablesPanel', () => {
   it('copies variable and node output references by clicking the key', async () => {
     const user = userEvent.setup();
     const onCopy = vi.fn();
-    renderPanel({ defaultExpandedSections: ['variables', 'inputs'], onCopy });
+    renderPanel({ expandedSections: ['variables', 'inputs'], onCopy });
 
     await user.click(screen.getByRole('button', { name: 'Copy path for $vars.flowTest' }));
     // userEvent.setup() installs a clipboard stub, so read the copy back from it.
@@ -221,7 +277,7 @@ describe('NodeVariablesPanel', () => {
     const user = userEvent.setup();
     render(
       <NodeVariablesPanel
-        defaultExpandedSections={['inputs']}
+        expandedSections={['inputs']}
         inputs={[
           {
             id: 'node-1',
@@ -243,7 +299,7 @@ describe('NodeVariablesPanel', () => {
   it('keeps nodes whose id is a reserved property name', () => {
     render(
       <NodeVariablesPanel
-        defaultExpandedSections={['nodes']}
+        expandedSections={['nodes']}
         nodes={[{ id: '__proto__', label: 'Proto node', outputCount: 1 }]}
       />
     );
@@ -254,7 +310,7 @@ describe('NodeVariablesPanel', () => {
   it('uses each section metadata when a node is in Inputs and Nodes', () => {
     render(
       <NodeVariablesPanel
-        defaultExpandedSections={['inputs', 'nodes']}
+        expandedSections={['inputs', 'nodes']}
         inputs={[{ id: 'webhook1', label: 'Webhook (upstream)', outputCount: 2 }]}
         nodes={[{ id: 'webhook1', label: 'Webhook', outputCount: 1 }]}
       />
@@ -271,7 +327,7 @@ describe('NodeVariablesPanel', () => {
     const webhook = { id: 'webhook1', label: 'Webhook', value: { body: 'hi' } };
     render(
       <NodeVariablesPanel
-        defaultExpandedSections={['inputs', 'nodes']}
+        expandedSections={['inputs', 'nodes']}
         inputs={[webhook]}
         nodes={[webhook]}
       />
@@ -289,7 +345,7 @@ describe('NodeVariablesPanel', () => {
   it('keeps the declared type of a schema-only scalar node', () => {
     render(
       <NodeVariablesPanel
-        defaultExpandedSections={['nodes']}
+        expandedSections={['nodes']}
         nodes={[{ id: 'summary1', label: 'Summary', schema: { type: 'string' } }]}
       />
     );
@@ -302,7 +358,7 @@ describe('NodeVariablesPanel', () => {
   it('shows the item shape of a schema-only array, counting no real entries', () => {
     render(
       <NodeVariablesPanel
-        defaultExpandedSections={['outputs']}
+        expandedSections={['outputs']}
         outputs={{ schema: { type: 'array', items: { type: 'string' } } }}
       />
     );
@@ -313,7 +369,7 @@ describe('NodeVariablesPanel', () => {
 
   it('applies pathForCopy to the prefixed reference', async () => {
     const user = userEvent.setup();
-    renderPanel({ defaultExpandedSections: ['variables'], pathForCopy: (path) => `{{${path}}}` });
+    renderPanel({ expandedSections: ['variables'], pathForCopy: (path) => `{{${path}}}` });
 
     await user.click(screen.getByRole('button', { name: 'Copy path for {{$vars.flowTest}}' }));
 
@@ -325,7 +381,7 @@ describe('NodeVariablesPanel', () => {
   it('references flow outputs directly under the prefix', async () => {
     const user = userEvent.setup();
     renderPanel({
-      defaultExpandedSections: ['outputs'],
+      expandedSections: ['outputs'],
       outputs: { value: { approvalStatus: 'approved' } },
     });
 
@@ -338,7 +394,7 @@ describe('NodeVariablesPanel', () => {
 
   it('copies bare tree paths with an empty referencePrefix', async () => {
     const user = userEvent.setup();
-    renderPanel({ defaultExpandedSections: ['variables'], referencePrefix: '' });
+    renderPanel({ expandedSections: ['variables'], referencePrefix: '' });
 
     await user.click(screen.getByRole('button', { name: 'Copy path for flowTest' }));
 
@@ -353,7 +409,7 @@ describe('NodeVariablesPanel', () => {
         ]}
         outputs={{ schema: { type: 'array', items: { type: 'string' } } }}
         variables={{ value: {} }}
-        defaultExpandedSections={['inputs']}
+        expandedSections={['inputs']}
       />
     );
 
@@ -376,7 +432,7 @@ describe('NodeVariablesPanel', () => {
           },
           value: { approved: true },
         }}
-        defaultExpandedSections={['variables']}
+        expandedSections={['variables']}
         onEditVariable={onEditVariable}
       />
     );
@@ -406,7 +462,7 @@ describe('NodeVariablesPanel', () => {
   it('renames a variable once its ID is unlocked, and rejects a taken or invalid name', async () => {
     const user = userEvent.setup();
     const onEditVariable = vi.fn();
-    renderPanel({ defaultExpandedSections: ['variables'], onEditVariable });
+    renderPanel({ expandedSections: ['variables'], onEditVariable });
 
     await user.click(screen.getByRole('button', { name: 'Edit flowTest' }));
     const dialog = await screen.findByRole('dialog', { name: 'Edit variable' });
@@ -442,7 +498,7 @@ describe('NodeVariablesPanel', () => {
     render(
       <NodeVariablesPanel
         variables={{ schema: { type: 'object', properties: { approved: { type: 'boolean' } } } }}
-        defaultExpandedSections={['variables']}
+        expandedSections={['variables']}
         onEditVariable={onEditVariable}
       />
     );
@@ -464,7 +520,7 @@ describe('NodeVariablesPanel', () => {
     render(
       <NodeVariablesPanel
         variables={{ schema: { type: 'object', properties: { approved: { type: 'boolean' } } } }}
-        defaultExpandedSections={['variables']}
+        expandedSections={['variables']}
         onEditVariable={onEditVariable}
       />
     );
@@ -502,7 +558,7 @@ describe('NodeVariablesPanel', () => {
           schema: { type: 'object', properties: { note: { type: 'string', default: null } } },
           value: { note: 'runtime text' },
         }}
-        defaultExpandedSections={['variables']}
+        expandedSections={['variables']}
         onEditVariable={onEditVariable}
       />
     );
@@ -525,7 +581,7 @@ describe('NodeVariablesPanel', () => {
         variables={{
           schema: { type: 'object', properties: { note: { type: 'string', default: null } } },
         }}
-        defaultExpandedSections={['variables']}
+        expandedSections={['variables']}
         onEditVariable={onEditVariable}
       />
     );
@@ -555,7 +611,7 @@ describe('NodeVariablesPanel', () => {
           },
           value: { flowTest: 'a' },
         }}
-        defaultExpandedSections={['variables']}
+        expandedSections={['variables']}
         onEditVariable={vi.fn()}
       />
     );
@@ -574,7 +630,7 @@ describe('NodeVariablesPanel', () => {
   it('validates a JSON default value against the data type', async () => {
     const user = userEvent.setup();
     const onEditVariable = vi.fn();
-    renderPanel({ defaultExpandedSections: ['variables'], onEditVariable });
+    renderPanel({ expandedSections: ['variables'], onEditVariable });
 
     await user.click(screen.getByRole('button', { name: 'Edit flowConfig' }));
     const dialog = await screen.findByRole('dialog', { name: 'Edit variable' });
@@ -604,7 +660,7 @@ describe('NodeVariablesPanel', () => {
       <div onKeyDown={onKeyDown}>
         <NodeVariablesPanel
           variables={{ value: { flowTest: 'a' } }}
-          defaultExpandedSections={['variables']}
+          expandedSections={['variables']}
           onEditVariable={onEditVariable}
         />
       </div>
@@ -624,7 +680,7 @@ describe('NodeVariablesPanel', () => {
   it('deletes a top-level variable through its row action', async () => {
     const user = userEvent.setup();
     const onDeleteVariable = vi.fn();
-    renderPanel({ defaultExpandedSections: ['variables'], onDeleteVariable });
+    renderPanel({ expandedSections: ['variables'], onDeleteVariable });
 
     await user.click(screen.getByRole('button', { name: 'Delete flowConfig' }));
 
@@ -639,7 +695,7 @@ describe('NodeVariablesPanel', () => {
       <NodeVariablesPanel
         // Untyped consumers can still pass an array; its items aren't named variables.
         variables={{ value: ['a'] as unknown as JsonObject }}
-        defaultExpandedSections={['variables']}
+        expandedSections={['variables']}
         onEditVariable={vi.fn()}
         onDeleteVariable={vi.fn()}
       />
@@ -735,7 +791,7 @@ describe('NodeVariablesPanel', () => {
           },
           value: {},
         }}
-        defaultExpandedSections={['variables']}
+        expandedSections={['variables']}
         onEditVariable={onEditVariable}
       />
     );
@@ -766,7 +822,7 @@ describe('NodeVariablesPanel', () => {
     );
     renderPanel({
       filters: [{ id: 'upstream', label: 'Upstream', predicate }],
-      defaultActiveFilterId: 'upstream',
+      activeFilterId: 'upstream',
     });
 
     expect(await screen.findByRole('region', { name: 'Variables' })).toBeInTheDocument();
@@ -814,7 +870,7 @@ describe('NodeVariablesPanel', () => {
   it("shows the filter's empty message when it leaves nothing", () => {
     renderPanel({
       filters: [{ ...nodeFilter('missing'), emptyMessage: 'Nothing upstream.' }],
-      defaultActiveFilterId: 'selected-node',
+      activeFilterId: 'selected-node',
     });
 
     expect(screen.getByText('Nothing upstream.')).toBeInTheDocument();
@@ -838,9 +894,9 @@ describe('NodeVariablesPanel', () => {
     expect(sectionToggle('Inputs')).toHaveAttribute('aria-expanded', 'false');
   });
 
-  it('leaves objects inside a root array alone with expand all', async () => {
+  it('leaves objects inside an array alone with expand all', async () => {
     const user = userEvent.setup();
-    render(<NodeVariablesPanel outputs={{ value: [{ region: 'us-east' }] }} />);
+    render(<NodeVariablesPanel outputs={{ value: { rows: [{ region: 'us-east' }] } }} />);
 
     await user.click(screen.getByRole('button', { name: 'Expand all' }));
 
@@ -855,14 +911,14 @@ describe('NodeVariablesPanel', () => {
   });
 
   it('keeps containers that appear later collapsed by default', () => {
-    const { rerender } = renderPanel({ defaultExpandedSections: ['variables'] });
+    const { rerender } = renderPanel({ expandedSections: ['variables'] });
 
     // Renaming the object variable introduces a new container path.
     rerender(
       <NodeVariablesPanel
         inputs={INPUTS}
         nodes={NODES}
-        defaultExpandedSections={['variables']}
+        expandedSections={['variables']}
         variables={{ value: { flowTest: 'x', settings: { region: 'us-east' } } }}
       />
     );
@@ -871,17 +927,56 @@ describe('NodeVariablesPanel', () => {
     expect(screen.queryByText('region')).not.toBeInTheDocument();
   });
 
-  it('pauses the section toggles while a search holds them open', async () => {
+  it('opens matches while searching, lets them collapse, and restores the expansion after', async () => {
     const user = userEvent.setup();
-    renderPanel();
+    const onExpandedSectionsChange = vi.fn();
+    renderPanel({ onExpandedSectionsChange });
 
     await openSearch(user, 'region');
+    expect(sectionToggle('Variables')).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText('region')).toBeInTheDocument();
 
-    expect(sectionToggle('Variables')).toBeDisabled();
-    // Matches are held open, so their row chevrons aren't controls either.
-    expect(screen.getByRole('button', { name: 'Collapse flowConfig' })).toBeDisabled();
-    // Expand/collapse all would have no visible effect, so it's hidden.
-    expect(screen.queryByRole('button', { name: /^(Expand|Collapse) all$/ })).toBeNull();
+    // Matches can be collapsed, rows and sections alike.
+    await user.click(screen.getByRole('button', { name: 'Collapse flowConfig' }));
+    expect(screen.queryByText('region')).not.toBeInTheDocument();
+    await user.click(sectionToggle('Variables'));
+    expect(sectionToggle('Variables')).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.getByRole('button', { name: 'Expand all' })).toBeInTheDocument();
+
+    // A new query opens its matches again.
+    const searchBox = screen.getByRole('textbox', { name: 'Search variables' });
+    await user.type(searchBox, 'X');
+    await user.type(searchBox, '{Backspace}');
+    expect(sectionToggle('Variables')).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText('region')).toBeInTheDocument();
+
+    // Clearing the search brings back the expansion from before it, untouched.
+    await user.clear(searchBox);
+    expect(sectionToggle('Variables')).toHaveAttribute('aria-expanded', 'false');
+    expect(sectionToggle('Nodes')).toHaveAttribute('aria-expanded', 'true');
+    expect(onExpandedSectionsChange).not.toHaveBeenCalled();
+  });
+
+  it('lets a filter without a predicate leave rows, expansion, and empty sections alone', async () => {
+    const user = userEvent.setup();
+    renderPanel({
+      filters: [{ id: 'scope', label: 'Scope' }],
+      activeFilterId: 'scope',
+    });
+
+    expect(sectionToggle('Inputs')).toHaveAttribute('aria-expanded', 'false');
+    expect(section('Outputs')).toBeInTheDocument();
+    await user.click(sectionToggle('Nodes'));
+    expect(sectionToggle('Nodes')).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('opens the sections a narrowing filter keeps, and lets them collapse', async () => {
+    const user = userEvent.setup();
+    renderPanel({ filters: [nodeFilter('httpWebhook1')], activeFilterId: 'selected-node' });
+
+    expect(sectionToggle('Inputs')).toHaveAttribute('aria-expanded', 'true');
+    await user.click(sectionToggle('Inputs'));
+    expect(sectionToggle('Inputs')).toHaveAttribute('aria-expanded', 'false');
   });
 
   it('draws a top and bottom edge only while content is scrolled past them', () => {
@@ -942,16 +1037,14 @@ describe('NodeVariablesPanel', () => {
     const many = Object.fromEntries(
       Array.from({ length: 600 }, (_, index) => [`field${index}`, index])
     );
-    render(
-      <NodeVariablesPanel defaultExpandedSections={['variables']} variables={{ value: many }} />
-    );
+    render(<NodeVariablesPanel expandedSections={['variables']} variables={{ value: many }} />);
 
     const rows = within(section('Variables')).queryAllByRole('button', { name: /^Copy path for/ });
     expect(rows.length).toBeLessThan(600);
   });
 
   it('renders small sections in full', () => {
-    renderPanel({ defaultExpandedSections: ['variables'] });
+    renderPanel({ expandedSections: ['variables'] });
 
     expect(
       within(section('Variables')).getAllByRole('button', { name: /^Copy path for/ })
@@ -962,7 +1055,7 @@ describe('NodeVariablesPanel', () => {
     const user = userEvent.setup();
     const onDeleteVariable = vi.fn();
     renderPanel({
-      defaultExpandedSections: ['outputs'],
+      expandedSections: ['outputs'],
       outputs: { value: { result: 'ok' } },
       onEditVariable: vi.fn(),
       onDeleteVariable,
@@ -981,7 +1074,7 @@ describe('NodeVariablesPanel', () => {
         inputs={[
           { id: 'trigger1', label: 'Manual trigger', value: { output: { invoiceId: 'INV-1' } } },
         ]}
-        defaultExpandedSections={['inputs']}
+        expandedSections={['inputs']}
         // A trigger input backed by a flow variable lives at <trigger>.output.<var>.
         isVariableRow={({ section: rowSection, node }) =>
           rowSection === 'inputs' && node.segments.length === 3
@@ -1002,7 +1095,7 @@ describe('NodeVariablesPanel', () => {
   it('calls onRequestEditVariable when there is no built-in dialog', async () => {
     const user = userEvent.setup();
     const onRequestEditVariable = vi.fn();
-    renderPanel({ defaultExpandedSections: ['variables'], onRequestEditVariable });
+    renderPanel({ expandedSections: ['variables'], onRequestEditVariable });
 
     await user.click(screen.getByRole('button', { name: 'Edit flowTest' }));
 
@@ -1014,7 +1107,7 @@ describe('NodeVariablesPanel', () => {
     const user = userEvent.setup();
     const onRequestEditVariable = vi.fn();
     renderPanel({
-      defaultExpandedSections: ['variables', 'assets'],
+      expandedSections: ['variables', 'assets'],
       assets: ASSETS,
       onEditVariable: vi.fn(),
       onRequestEditVariable,
@@ -1031,7 +1124,7 @@ describe('NodeVariablesPanel', () => {
 
   it('hides the row + for a source that is not addable', () => {
     renderPanel({
-      defaultExpandedSections: ['inputs'],
+      expandedSections: ['inputs'],
       inputs: [
         { id: 'connectorTrigger1', label: 'Connector trigger', addable: false },
         { id: 'manualTrigger1', label: 'Manual trigger' },
@@ -1045,7 +1138,7 @@ describe('NodeVariablesPanel', () => {
 
   it('passes rowWrapper and deriveTypeIcon to every section, and renders children after Nodes', () => {
     renderPanel({
-      defaultExpandedSections: ['variables', 'nodes'],
+      expandedSections: ['variables', 'nodes'],
       rowWrapper: ({ node, className, style, onClick, children }) => (
         <div data-testid={`row-${node.key}`} className={className} style={style} onClick={onClick}>
           {children}
@@ -1070,7 +1163,7 @@ describe('NodeVariablesPanel', () => {
     render(
       <NodeVariablesPanel
         variables={{ value: { 'bad-name': 'a' } }}
-        defaultExpandedSections={['variables']}
+        expandedSections={['variables']}
         onEditVariable={vi.fn()}
       />
     );
@@ -1109,7 +1202,7 @@ describe('NodeVariablesPanel', () => {
 
   it('references assets under $assets, not $vars', async () => {
     const user = userEvent.setup();
-    renderPanel({ defaultExpandedSections: ['assets'], assets: ASSETS });
+    renderPanel({ expandedSections: ['assets'], assets: ASSETS });
 
     await user.click(screen.getByRole('button', { name: 'Copy path for $assets.invoiceApiKey' }));
 
@@ -1124,7 +1217,7 @@ describe('NodeVariablesPanel', () => {
 
   it('honors assetsReferencePrefix', () => {
     renderPanel({
-      defaultExpandedSections: ['assets'],
+      expandedSections: ['assets'],
       assets: ASSETS,
       assetsReferencePrefix: '$orchestrator',
     });
@@ -1149,7 +1242,7 @@ describe('NodeVariablesPanel', () => {
     const onRequestEditVariable = vi.fn();
     const onDeleteVariable = vi.fn();
     renderPanel({
-      defaultExpandedSections: ['assets'],
+      expandedSections: ['assets'],
       assets: ASSETS,
       onEditVariable: vi.fn(),
       onRequestEditVariable,
@@ -1170,7 +1263,7 @@ describe('NodeVariablesPanel', () => {
   it('never opens the built-in dialog for assets, and a permissive isVariableRow cannot reach them', async () => {
     const user = userEvent.setup();
     renderPanel({
-      defaultExpandedSections: ['assets'],
+      expandedSections: ['assets'],
       assets: ASSETS,
       isVariableRow: () => true,
       // No onRequestEditVariable: the built-in dialog edits variables, not assets.
@@ -1189,7 +1282,7 @@ describe('NodeVariablesPanel', () => {
   it('prefixes a renamed asset reference with assetsBasePath', async () => {
     const user = userEvent.setup();
     renderPanel({
-      defaultExpandedSections: ['assets'],
+      expandedSections: ['assets'],
       assets: ASSETS,
       assetsBasePath: 'orchestrator',
     });
@@ -1207,7 +1300,7 @@ describe('NodeVariablesPanel', () => {
 
   it('has no accessibility violations with every section open', async () => {
     const { container } = renderPanel({
-      defaultExpandedSections: ['inputs', 'outputs', 'variables', 'assets', 'nodes'],
+      expandedSections: ['inputs', 'outputs', 'variables', 'assets', 'nodes'],
       assets: ASSETS,
       onAdd: vi.fn(),
       onFocusNode: vi.fn(),
@@ -1217,5 +1310,231 @@ describe('NodeVariablesPanel', () => {
     });
 
     expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it("hands the row wrapper each row's section, node, and reference", () => {
+    const seen: string[] = [];
+    const Wrapper: NodeVariablesRowWrapper = ({
+      section: rowSection,
+      nodeId,
+      displayPath,
+      className,
+      style,
+      onClick,
+      children,
+    }) => {
+      seen.push(`${rowSection} ${nodeId ?? '-'} ${displayPath}`);
+      return (
+        <div className={className} style={style} onClick={onClick}>
+          {children}
+        </div>
+      );
+    };
+    renderPanel({
+      expandedSections: ['variables', 'assets', 'nodes'],
+      assets: ASSETS,
+      rowWrapper: Wrapper,
+    });
+
+    expect(seen).toContain('variables - $vars.flowTest');
+    expect(seen).toContain('assets - $assets.invoiceApiKey');
+    expect(seen).toContain('nodes autonomousAgent1 $vars.autonomousAgent1');
+  });
+
+  it('merges decorateNode over the built-in decoration, in every section', () => {
+    renderPanel({
+      expandedSections: ['assets', 'nodes'],
+      assets: ASSETS,
+      decorateNode: ({ section: rowSection, node }) => {
+        if (rowSection === 'assets' && node.key === 'invoiceApiKey') {
+          return { chip: { label: 'Missing', tone: 'warning' } };
+        }
+        return rowSection === 'nodes' ? { sublabel: 'Agent' } : undefined;
+      },
+    });
+
+    expect(screen.getByText('Missing')).toBeInTheDocument();
+    // The host's sublabel wins over the node id; the built-in label stays.
+    expect(screen.getByText('Autonomous agent')).toBeInTheDocument();
+    expect(screen.getByText('Agent')).toBeInTheDocument();
+    expect(screen.queryByText('autonomousAgent1')).toBeNull();
+  });
+
+  it('keeps the built-in decoration for a field decorateNode leaves undefined', () => {
+    renderPanel({
+      expandedSections: ['nodes'],
+      decorateNode: ({ section: rowSection }) =>
+        rowSection === 'nodes' ? { label: undefined, sublabel: 'Agent' } : undefined,
+    });
+
+    expect(screen.getByText('Autonomous agent')).toBeInTheDocument();
+    expect(screen.getByText('Agent')).toBeInTheDocument();
+  });
+
+  it("hands the row callbacks each row's reference", () => {
+    const seen = new Set<string>();
+    renderPanel({
+      expandedSections: ['variables', 'assets', 'nodes'],
+      assets: ASSETS,
+      decorateNode: ({ node, displayPath }) => {
+        if (node.segments.length === 1) seen.add(displayPath);
+        return undefined;
+      },
+    });
+
+    expect(seen).toContain('$vars.flowTest');
+    expect(seen).toContain('$assets.invoiceApiKey');
+    expect(seen).toContain('$vars.autonomousAgent1');
+  });
+
+  it('lets nodeActions add to the built-in actions of any row', async () => {
+    const user = userEvent.setup();
+    const openAsset = vi.fn();
+    renderPanel({
+      expandedSections: ['assets'],
+      assets: ASSETS,
+      onDeleteVariable: vi.fn(),
+      nodeActions: ({ section: rowSection, node }, { defaultActions }) =>
+        rowSection === 'assets' && node.segments.length === 1
+          ? [
+              ...defaultActions,
+              {
+                id: 'open-asset',
+                icon: <svg />,
+                label: `Open ${node.key}`,
+                onSelect: () => openAsset(node.key),
+              },
+            ]
+          : undefined,
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Open invoiceApiKey' }));
+    expect(openAsset).toHaveBeenCalledWith('invoiceApiKey');
+    expect(screen.getByRole('button', { name: 'Delete invoiceApiKey' })).toBeInTheDocument();
+  });
+
+  it('leaves out edit, delete, and copy where the host says a row has none', () => {
+    renderPanel({
+      expandedSections: ['variables'],
+      onRequestEditVariable: vi.fn(),
+      onDeleteVariable: vi.fn(),
+      canEdit: ({ node }) => node.key !== 'flowTest',
+      canDelete: ({ node }) => node.key !== 'flowConfig',
+      canCopy: ({ node }) => node.key !== 'flowTest',
+    });
+
+    expect(screen.queryByRole('button', { name: 'Edit flowTest' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Delete flowTest' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Edit flowConfig' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Delete flowConfig' })).toBeNull();
+    // Without copy, the name is plain text and the value has no copy action.
+    expect(screen.queryByRole('button', { name: 'Copy path for $vars.flowTest' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Copy value of flowTest' })).toBeNull();
+    expect(screen.getByText('flowTest')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Copy path for $vars.flowConfig' })
+    ).toBeInTheDocument();
+  });
+
+  it('keeps a disabled header + focusable, and ignores clicks on it', async () => {
+    const user = userEvent.setup();
+    const onAdd = vi.fn();
+    renderPanel({
+      assets: ASSETS,
+      onAdd,
+      addState: {
+        assets: { disabled: true, tooltip: 'Add the process to a solution to select assets' },
+      },
+    });
+
+    const add = screen.getByRole('button', { name: 'Add asset' });
+    expect(add).toHaveAttribute('aria-disabled', 'true');
+    // Still focusable, so keyboard users reach the reason in its tooltip.
+    act(() => add.focus());
+    expect(add).toHaveFocus();
+    await user.click(add);
+    expect(onAdd).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Add variables' })).not.toHaveAttribute(
+      'aria-disabled'
+    );
+  });
+
+  it('reveals a row by reference, opening its section and parents and highlighting it', () => {
+    const ref = createRef<NodeVariablesPanelHandle>();
+    render(<NodeVariablesPanel ref={ref} inputs={INPUTS} variables={VARIABLES} nodes={NODES} />);
+    const reference = '$vars.messageReceivedInSlack1.output.event.event_ts';
+    expect(screen.queryByText('event_ts')).toBeNull();
+
+    let revealed = false;
+    act(() => {
+      revealed = ref.current?.revealPath(reference) ?? false;
+    });
+
+    expect(revealed).toBe(true);
+    expect(sectionToggle('Inputs')).toHaveAttribute('aria-expanded', 'true');
+    const row = screen
+      .getAllByRole('row')
+      .find((element) => element.dataset.reference === reference);
+    expect(row).toHaveAttribute('data-revealed');
+    expect(ref.current?.revealPath('$vars.missing')).toBe(false);
+  });
+
+  it('clears a search that hides the revealed row, and reports the section it opens', async () => {
+    const user = userEvent.setup();
+    const ref = createRef<NodeVariablesPanelHandle>();
+    const onExpandedSectionsChange = vi.fn();
+    render(
+      <NodeVariablesPanel
+        ref={ref}
+        variables={VARIABLES}
+        nodes={NODES}
+        expandedSections={['nodes']}
+        onExpandedSectionsChange={onExpandedSectionsChange}
+      />
+    );
+    await openSearch(user, 'autonomous');
+
+    act(() => {
+      ref.current?.revealPath('$vars.flowTest');
+    });
+
+    expect(screen.queryByDisplayValue('autonomous')).toBeNull();
+    expect(onExpandedSectionsChange).toHaveBeenCalledWith(['variables', 'nodes']);
+  });
+
+  it('reopens a section closed during a search when revealing a row that matches it', async () => {
+    const user = userEvent.setup();
+    const ref = createRef<NodeVariablesPanelHandle>();
+    render(<NodeVariablesPanel ref={ref} variables={VARIABLES} nodes={NODES} />);
+    await openSearch(user, 'region');
+    await user.click(screen.getByRole('button', { name: 'Collapse flowConfig' }));
+    await user.click(sectionToggle('Variables'));
+
+    act(() => {
+      ref.current?.revealPath('$vars.flowConfig.region');
+    });
+
+    // The search stays, and the section and its row open again within it.
+    expect(screen.getByDisplayValue('region')).toBeInTheDocument();
+    expect(sectionToggle('Variables')).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText('region')).toBeInTheDocument();
+  });
+
+  it('keeps the default copy for an undefined override', () => {
+    renderPanel({ strings: { sectionVariables: undefined, variablesCount: undefined } });
+
+    expect(section('Variables')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Variables: 3' })).toBeInTheDocument();
+  });
+
+  it("takes overrides for the panel's copy and its trees'", () => {
+    renderPanel({
+      strings: { sectionVariables: 'Globals', variablesCount: (count) => `${count} globals` },
+      treeStrings: { expandAll: 'Open everything' },
+    });
+
+    expect(section('Globals')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: '3 globals' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Open everything' })).toBeInTheDocument();
   });
 });

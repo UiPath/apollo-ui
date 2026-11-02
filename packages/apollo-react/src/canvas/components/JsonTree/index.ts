@@ -2,6 +2,7 @@
 // translations (./JsonTree); everything else passes through unchanged.
 export type {
   BuildJsonTreeOptions,
+  CanCopyPath,
   ContainerPath,
   CopyEvent,
   DeriveTypeIcon,
