@@ -18,9 +18,13 @@ React 18.3 or later is a peer dependency.
 
 ## Usage
 
-Each icon is a `forwardRef` `<svg>` that paints with `currentColor`, so it
-takes the text colour of its parent. `size` sets both width and height and
-defaults to 24.
+Each icon is a `forwardRef` `<svg>`. `size` sets both width and height and
+defaults to the source SVG's size: 24 for most icons, larger for some
+activity icons and logos.
+
+Single-color icons paint with `currentColor`, so they take the text colour of
+their parent. Third-party logos and most activity icons keep the fills and
+gradients from their SVG, and text colour doesn't change them.
 
 ```tsx
 import { AddComment, Close } from '@uipath/apollo-ui-icons-react';

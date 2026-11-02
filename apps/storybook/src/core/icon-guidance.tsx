@@ -19,7 +19,8 @@ type IconLibrary = 'apollo' | 'lucide';
 const LIBRARIES: Record<IconLibrary, { title: string; summary: string; useFor: string[] }> = {
   apollo: {
     title: 'Icons Apollo',
-    summary: 'Custom UiPath SVGs from @uipath/apollo-ui-icons.',
+    summary:
+      'Custom UiPath SVGs from @uipath/apollo-ui-icons, as React components from @uipath/apollo-ui-icons-react.',
     useFor: [
       'UiPath products and logos',
       'Studio activities, BPMN, and agent canvas nodes',

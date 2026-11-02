@@ -153,7 +153,8 @@ function OverviewTab() {
         Apollo Core is the framework-agnostic foundation of the Apollo design system. It provides
         design tokens, fonts, and CSS custom properties consumed by both{' '}
         <InlineCode>apollo-wind</InlineCode> and <InlineCode>apollo-react</InlineCode>. Icons live
-        in <InlineCode>apollo-ui-icons</InlineCode>.
+        in <InlineCode>apollo-ui-icons</InlineCode>, with React components in{' '}
+        <InlineCode>apollo-ui-icons-react</InlineCode>.
       </SectionDescription>
 
       <InfoCallout>
@@ -192,7 +193,7 @@ function OverviewTab() {
             {
               title: 'Icons',
               description:
-                '1300+ SVG icons, importable as React components or raw SVG. These now ship in apollo-ui-icons; apollo-core/icons still re-exports them but is deprecated.',
+                '1300+ icons. Raw SVGs ship in apollo-ui-icons and React components in apollo-ui-icons-react. apollo-core/icons still re-exports the SVGs but is deprecated.',
               example: (
                 <svg
                   viewBox="0 0 24 24"

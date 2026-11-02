@@ -38,6 +38,9 @@ graph RL
     React -->|requires| Wind
     Chat["@uipath/ap-chat<br/>Chat Web Component"] -->|requires| React
     React -->|requires| Icons["@uipath/apollo-ui-icons<br/>SVG Icon Set"]
+    React -->|re-exports| IconsReact["@uipath/apollo-ui-icons-react<br/>React Icon Components"]
+    IconsReact -->|generated from| Icons
+    Wind -.->|bundles the icons it uses| IconsReact
     Core -->|re-exports<br/>deprecated| Icons
 
     style Core fill:#374151,stroke:#ef4444,stroke-width:3px,color:#fff
@@ -45,6 +48,7 @@ graph RL
     style Wind fill:#164e63,stroke:#06b6d4,stroke-width:3px,color:#fff
     style Chat fill:#064e3b,stroke:#10b981,stroke-width:3px,color:#fff
     style Icons fill:#4c1d95,stroke:#a78bfa,stroke-width:3px,color:#fff
+    style IconsReact fill:#4c1d95,stroke:#a78bfa,stroke-width:3px,color:#fff
 ```
 
 ## 📁 Repository Structure
@@ -54,6 +58,7 @@ apollo-ui/
 ├── packages/              # Core + framework packages
 │   ├── apollo-core/       # 🎨 Design tokens, fonts
 │   ├── apollo-ui-icons/   # 🖼️ SVG icon set
+│   ├── apollo-ui-icons-react/ # 🧩 React icon components
 │   ├── apollo-react/      # ⚛️ Canvas components, chat, icons, MUI theme
 │   ├── apollo-vertex/     # 🌟 Vertex shadcn registry components (private)
 │   └── apollo-wind/       # 🎐 Tailwind + shadcn/ui
@@ -113,9 +118,11 @@ Preview versions are published when the `dev-packages` label is added to a PR. R
 |---------|---------|-----------|
 | **[@uipath/apollo-core](./packages/apollo-core)** | [![npm](https://img.shields.io/npm/v/@uipath/apollo-core)](https://www.npmjs.com/package/@uipath/apollo-core) | [![downloads](https://img.shields.io/npm/dm/@uipath/apollo-core)](https://www.npmjs.com/package/@uipath/apollo-core) |
 | **[@uipath/apollo-ui-icons](./packages/apollo-ui-icons)** | [![npm](https://img.shields.io/npm/v/@uipath/apollo-ui-icons)](https://www.npmjs.com/package/@uipath/apollo-ui-icons) | [![downloads](https://img.shields.io/npm/dm/@uipath/apollo-ui-icons)](https://www.npmjs.com/package/@uipath/apollo-ui-icons) |
+| **[@uipath/apollo-ui-icons-react](./packages/apollo-ui-icons-react)** | [![npm](https://img.shields.io/npm/v/@uipath/apollo-ui-icons-react)](https://www.npmjs.com/package/@uipath/apollo-ui-icons-react) | [![downloads](https://img.shields.io/npm/dm/@uipath/apollo-ui-icons-react)](https://www.npmjs.com/package/@uipath/apollo-ui-icons-react) |
 
 - **apollo-core**: design tokens and fonts. Framework-agnostic foundation for the design system.
 - **apollo-ui-icons**: 1300+ SVG icons. `@uipath/apollo-core/icons` still re-exports these but is deprecated.
+- **apollo-ui-icons-react**: the same icons as React components. `@uipath/apollo-react/icons` re-exports them.
 
 ---
 
@@ -157,6 +164,7 @@ Explore our components in interactive Storybook environments. The sites are host
 
 - **[@uipath/apollo-core](./packages/apollo-core/README.md)** - Design tokens, fonts
 - **[@uipath/apollo-ui-icons](./packages/apollo-ui-icons/README.md)** - SVG icon set
+- **[@uipath/apollo-ui-icons-react](./packages/apollo-ui-icons-react/README.md)** - React icon components
 - **[@uipath/apollo-react](./packages/apollo-react/README.md)** - React components and canvas
 - **[@uipath/apollo-wind](./packages/apollo-wind/README.md)** - Tailwind components
 - **[@uipath/ap-chat](./web-packages/ap-chat/README.md)** - Chat web component

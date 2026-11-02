@@ -9,7 +9,7 @@ React component library with Material UI theming for the Apollo Design System.
 **✅ Actively Supported - Use for:**
 - **Canvas/workflow components** - Hierarchical canvas, agent workflows, XYFlow integration (unique to this package)
 - **ApChat** - AI chat interface component
-- **Icons** - React icon components
+- **Icons** - React icon components, re-exported from @uipath/apollo-ui-icons-react
 - **Core tokens** - Re-exported from @uipath/apollo-core
 
 **⚠️ Maintenance Mode - Avoid for New Development:**
@@ -258,7 +258,8 @@ function MyComponent() {
 }
 ```
 
-Icons are auto-generated from `@uipath/apollo-core` with React wrappers. Icon names use PascalCase.
+The components are generated from the SVGs in `@uipath/apollo-ui-icons`. Icon names use PascalCase.
+Projects that only need icons can install `@uipath/apollo-ui-icons-react` directly.
 
 ## Internationalization (i18n)
 
