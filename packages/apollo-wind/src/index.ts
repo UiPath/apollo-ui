@@ -902,6 +902,18 @@ export {
   ResizablePanel,
   ResizablePanelGroup,
 } from './components/ui/resizable';
+export type {
+  ResourceGroup,
+  ResourceItem,
+  ResourceItemAction,
+  ResourcePickerContentProps,
+  ResourcePickerProps,
+} from './components/ui/resource-picker';
+export {
+  keepResourceSearchOnEscape,
+  ResourcePicker,
+  ResourcePickerContent,
+} from './components/ui/resource-picker';
 export { ScrollArea, ScrollBar } from './components/ui/scroll-area';
 export type {
   SearchProps,
