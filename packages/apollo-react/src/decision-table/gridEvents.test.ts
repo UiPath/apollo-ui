@@ -74,6 +74,28 @@ describe('emptyAreaPressHandler', () => {
     expect(onEmptyAreaPress).not.toHaveBeenCalled();
   });
 
+  it('ignores a press inside an embedded grid', () => {
+    const onEmptyAreaPress = vi.fn();
+    const bar = chrome('<div data-grid><div><span id="cell"></span></div></div>');
+
+    emptyAreaPressHandler(onEmptyAreaPress)(
+      pointerEvent(bar.querySelector('#cell') as Element, bar)
+    );
+
+    expect(onEmptyAreaPress).not.toHaveBeenCalled();
+  });
+
+  it('ignores a press on an element marked as owning its presses', () => {
+    const onEmptyAreaPress = vi.fn();
+    const bar = chrome('<span data-owns-presses><span id="label-text"></span></span>');
+
+    emptyAreaPressHandler(onEmptyAreaPress)(
+      pointerEvent(bar.querySelector('#label-text') as Element, bar)
+    );
+
+    expect(onEmptyAreaPress).not.toHaveBeenCalled();
+  });
+
   it("ignores a press on the chrome's scrollbar", () => {
     const onEmptyAreaPress = vi.fn();
     const bar = sized(chrome());

@@ -39,8 +39,8 @@ export const TABLE_HUG_EDGE_CLASS =
 const GRID_LINE_V_CLASS = 'border-r border-r-border-de-emp/50';
 const GRID_LINE_H_CLASS = 'border-b border-b-border-de-emp/60';
 /**
- * Under the header: the de-emphasised border at full strength, the one line a step above the rest, with
- * a shadow once rows scroll under it (`data-scrolled`). Black, as Apollo's elevations are: a shadow mixed
+ * Under the header: the de-emphasised border at full strength, as the band boundary is, with a shadow
+ * once rows scroll under it (`data-scrolled`). Black, as Apollo's elevations are: a shadow mixed
  * from the foreground reads as a light halo on a dark theme.
  */
 const HEADER_LINE_CLASS = cn(
@@ -84,7 +84,7 @@ export const GROUP_GUTTER_CLASS = cn(
   GRID_LINE_H_CLASS
 );
 
-/** The input band's fill for the inline breadcrumb point; change it with `GROUP_TONE_CLASS.inputs`. */
+/** The input band's fill for the breadcrumb point. Keep in sync with `GROUP_TONE_CLASS.inputs`, which Tailwind needs as a literal. */
 const INPUT_BAND_FILL = 'color-mix(in srgb, var(--color-primary) 8%, var(--color-background))';
 
 const breadcrumbEdge = (direction: string) =>
@@ -123,7 +123,10 @@ export const GROUP_TONE_CLASS = {
 
 export const OUTPUT_BAND_DOT_CLASS = cn(OUTPUT_HUE_CLASS, 'bg-[var(--grid-output-hue)]');
 
-/** The full-strength line closing the inputs band, on its last column's header and every row. */
+/**
+ * The full-strength line closing the inputs band, on its last column's header and every row. Sets only
+ * the colour, so the cell must already draw `border-r`.
+ */
 export const BAND_BOUNDARY_CLASS = 'border-r-border-de-emp';
 
 /**
