@@ -1,3 +1,10 @@
+## [@uipath/apollo-wind-v2.85.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.85.0...@uipath/apollo-wind@2.85.1) (2026-11-03)
+
+### Bug Fixes
+
+* **apollo-wind:** collapse row chips the same way in the open list ([b9c0d0a](https://github.com/UiPath/apollo-ui/commit/b9c0d0a6d199f2be902797c67bb46ea64d4012a1))
+* **apollo-wind:** keep the model name readable in a crowded picker trigger ([db64c99](https://github.com/UiPath/apollo-ui/commit/db64c997f483b354ce74821d0362d2627f1e2eb5))
+
 ## [@uipath/apollo-wind-v2.84.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.83.0...@uipath/apollo-wind@2.84.0) (2026-10-30)
 
 ### Features
