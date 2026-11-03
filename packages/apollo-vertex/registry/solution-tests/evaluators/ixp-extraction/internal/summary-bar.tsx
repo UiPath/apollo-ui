@@ -3,7 +3,8 @@
 import { useVertexTranslation } from "@/lib/vertex-translation";
 import { Badge } from "@/components/ui/badge";
 
-/** Top-level verdict tally across all compared documents. */
+/** Document additions and removals, then field-verdict tallies across
+ * compared documents. */
 export const SummaryBar = ({
   different,
   semanticallySame,

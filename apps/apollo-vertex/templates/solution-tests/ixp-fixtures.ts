@@ -119,8 +119,8 @@ export const IXP_OUTPUT_FIXTURE = {
 };
 
 // The new-run taxonomy version is bumped (v2 -> v3) so the provenance
-// version-delta glyph shows in the demo, and the new run extracts one document
-// the baseline lacks.
+// version-delta glyph shows in the demo, and the demo shows a new-document
+// failure.
 export const IXP_EVALUATOR_FIXTURE = {
   documents: [
     {
@@ -285,7 +285,7 @@ export const IXP_EVALUATOR_FIXTURE = {
           expected: [],
           actual: ["Flood Certificate"],
           verdict: "different",
-          verdict_reason: "",
+          verdict_reason: "value appeared",
         },
       ],
     },

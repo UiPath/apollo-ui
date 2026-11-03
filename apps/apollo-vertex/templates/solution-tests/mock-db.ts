@@ -275,7 +275,7 @@ export function createMockDb(): MockDb {
           EvaluatorResults: isIxp
             ? {
                 "uipath-ixp-document-extraction": {
-                  score: 0.82,
+                  score: 0.0,
                   details: IXP_EVALUATOR_FIXTURE,
                 },
               }
