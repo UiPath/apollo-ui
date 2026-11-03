@@ -37,6 +37,10 @@ export interface ConditionsEditorStrings {
   cancel: string;
   errorFieldAndValue: string;
   errorField: string;
+  /** For a row on a field `fields` does not list, by the key it stores. */
+  errorUnknownField: (field: string) => string;
+  /** The field select's text for such a field. */
+  unknownField: (field: string) => string;
   errorOperator: string;
   errorNumber: string;
   errorDate: string;
@@ -91,6 +95,8 @@ export const DEFAULT_CONDITIONS_EDITOR_STRINGS: ConditionsEditorStrings = {
   cancel: 'Cancel',
   errorFieldAndValue: 'Select a field and enter a value.',
   errorField: 'Select a field.',
+  errorUnknownField: (field) => `The form does not contain ${field}. Select another field.`,
+  unknownField: (field) => `${field} (not in form)`,
   errorOperator: 'Select an operator.',
   errorNumber: 'Enter a number.',
   errorDate: 'Enter a valid date.',

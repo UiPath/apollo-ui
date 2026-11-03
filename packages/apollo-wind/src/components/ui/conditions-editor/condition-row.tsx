@@ -358,6 +358,12 @@ export const ConditionRow = React.memo(function ConditionRow({
         <SelectValue placeholder={strings.fieldPlaceholder} />
       </SelectTrigger>
       <SelectContent>
+        {/* A field the form no longer has still shows what the row compares, so it can be fixed. */}
+        {c.field && !resolved.field && (
+          <SelectItem value={c.field} disabled>
+            {strings.unknownField(c.field)}
+          </SelectItem>
+        )}
         {editor.fields.map((option) => (
           <SelectItem key={option.value} value={option.value}>
             {option.label}

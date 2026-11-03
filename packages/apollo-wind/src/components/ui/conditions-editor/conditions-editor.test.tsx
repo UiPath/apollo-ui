@@ -629,6 +629,22 @@ describe('ConditionsEditor model', () => {
     expect(lastCondition(onValue)).toMatchObject({ field: 'stage', value: 'vars.desiredStatus' });
   });
 
+  it('shows a row on a field the form no longer has by its key, flagged', () => {
+    render(
+      <Harness
+        forceErrors
+        initial={createConditionGroup('all', [
+          createCondition({ field: 'region', operator: 'equals', value: 'EU' }),
+        ])}
+      />
+    );
+    const field = screen.getByRole('combobox', { name: 'Condition 1 Field' });
+    expect(field).toHaveTextContent('region (not in form)');
+    expect(field).toHaveAccessibleErrorMessage(
+      'The form does not contain region. Select another field.'
+    );
+  });
+
   it('flags a pattern that does not compile, and counts it incomplete', () => {
     const condition = createCondition({ field: 'name', operator: 'matches', value: '[' });
     render(<Harness forceErrors initial={createConditionGroup('all', [condition])} />);

@@ -153,6 +153,7 @@ export function conditionError(
   const resolved = resolveCondition(c, vocabulary);
   const problem = resolved.hasValue ? valueProblem(c, resolved) : undefined;
   if (!resolved.field) {
+    if (c.field) return strings.errorUnknownField(c.field);
     return problem === 'missing' || problem === 'options'
       ? strings.errorFieldAndValue
       : strings.errorField;
