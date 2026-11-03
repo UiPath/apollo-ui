@@ -628,10 +628,11 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
                       />
                     );
                   }
-                  // `cellProps` is read once and its className merged rather than spread over: a
-                  // group whose look varies per run (the band separator belongs on the run that
-                  // actually starts the band, not on a continuation split off by a spacer) has no
-                  // other seam — `toneClassName` is one value shared by every run of the group.
+                  // `cellProps` is read once and its className and style merged rather than spread
+                  // over (a pinned run's `left` wins over the consumer's): a group whose look varies
+                  // per run (the band separator belongs on the run that actually starts the band,
+                  // not on a continuation split off by a spacer) has no other seam — `toneClassName`
+                  // is one value shared by every run of the group.
                   const groupRun: GridGroupRun = {
                     first: run.first,
                     firstFlexIndex: run.firstFlexIndex,

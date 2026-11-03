@@ -20,7 +20,8 @@ export interface GridColumnGroup {
   toneClassName?: string;
   /**
    * Renders the band cell's content. Called per rendered run — a spacer or a pinning boundary can
-   * split a band across cells — with `isFirstRunOfGroup` marking the one that opens it.
+   * split a band across cells. Use `isFirstRunOfGroup` to show the caption once, and `startsGroup` /
+   * `endsGroup` to draw the band's edges.
    */
   renderLabel?: (run: GridGroupRun & { label: string }) => React.ReactNode;
   /**
@@ -35,8 +36,8 @@ export interface GridColumnGroup {
   separatorBefore?: boolean;
   /**
    * Extra attributes for the group `<th>` (testids, menu-delegation data attributes). Called per
-   * rendered run, since a window spacer can split a group into two cells — `firstFlexIndex` keeps
-   * each rendered cell's attributes (e.g. testids) unique.
+   * rendered run, since a window spacer or a pinning boundary can split a group into several cells —
+   * `firstFlexIndex` keeps each rendered cell's attributes (e.g. testids) unique.
    */
   cellProps?: (
     run: GridGroupRun
@@ -51,10 +52,11 @@ export interface GridGroupRun {
   /** The first *mounted* run of the group, which may start past the group's own first column. */
   isFirstRunOfGroup: boolean;
   /**
-   * Whether the run really holds the group's first or last column, so an edge drawn from them
-   * never appears where the group merely scrolls out of view.
+   * Whether the run holds the group's own first column. Unlike `isFirstRunOfGroup`, it is false where
+   * the group's start has scrolled out of view, so an edge drawn from it is never drawn mid-group.
    */
   startsGroup: boolean;
+  /** Whether the run holds the group's own last column; false where the group's end is out of view. */
   endsGroup: boolean;
 }
 

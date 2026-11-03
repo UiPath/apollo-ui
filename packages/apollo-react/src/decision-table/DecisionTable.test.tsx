@@ -1,4 +1,5 @@
-import { groupColumnRuns } from './DecisionTable';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { DecisionTable, type DecisionTableProps, groupColumnRuns } from './DecisionTable';
 import type { GridColumn, GridColumnGroup, VisibleGridColumn } from './gridTypes';
 
 const inputs: GridColumnGroup = { id: 'inputs', label: 'Inputs' };
@@ -113,5 +114,76 @@ describe('groupColumnRuns', () => {
         endsGroup: true,
       },
     ]);
+  });
+});
+
+const renderTable = (props: Partial<DecisionTableProps> = {}) =>
+  render(
+    <DecisionTable
+      columns={columns}
+      rowCount={2}
+      leadingColumnWidth={52}
+      renderHeaderCell={(column) => <th key={column.id}>{column.name}</th>}
+      renderRow={(rowIndex) => <tr key={rowIndex} />}
+      dataTestId="table"
+      labels={{ resizeColumn: (name) => `Resize ${name}`, resetColumnWidth: 'Reset width' }}
+      {...props}
+    />
+  );
+
+const corners = () => screen.queryAllByTestId('table-top-left-corner');
+
+describe('DecisionTable', () => {
+  it('draws one "#" corner spanning both header rows of a grouped table', () => {
+    renderTable();
+    expect(corners()).toHaveLength(1);
+    expect(corners()[0]).toHaveTextContent('#');
+    expect(corners()[0]).toHaveAttribute('rowspan', '2');
+  });
+
+  it('draws one corner spanning the single header row of a flat table', () => {
+    renderTable({ columns: columns.map(({ group: _group, ...column }) => column) });
+    expect(corners()).toHaveLength(1);
+    expect(corners()[0]).toHaveAttribute('rowspan', '1');
+  });
+
+  it('puts the consumer content in the corner', () => {
+    renderTable({ topLeftCorner: <button type="button">Hit policy</button> });
+    expect(corners()[0]).toContainElement(screen.getByRole('button', { name: 'Hit policy' }));
+    expect(corners()[0]).not.toHaveTextContent('#');
+  });
+
+  it('draws no corner without a leading column', () => {
+    renderTable({ leadingColumnWidth: 0 });
+    expect(corners()).toHaveLength(0);
+  });
+
+  it('marks the container scrolled only while rows sit under the header', () => {
+    renderTable();
+    const container = screen.getByTestId('table');
+    expect(container).toHaveAttribute('data-scrolled', 'false');
+
+    container.scrollTop = 40;
+    fireEvent.scroll(container);
+    expect(container).toHaveAttribute('data-scrolled', 'true');
+
+    container.scrollTop = 0;
+    fireEvent.scroll(container);
+    expect(container).toHaveAttribute('data-scrolled', 'false');
+  });
+
+  it("merges a band cell's style, with the pinned offset winning over the consumer's left", () => {
+    const pinnedInputs: GridColumnGroup = {
+      ...inputs,
+      cellProps: () => ({ 'data-testid': 'band-inputs', style: { left: 999, color: 'red' } }),
+    };
+    renderTable({
+      pinnedColumnCount: 1,
+      columns: columns.map((column) =>
+        column.group === inputs ? { ...column, group: pinnedInputs } : column
+      ),
+    });
+    const [pinnedRun] = screen.getAllByTestId('band-inputs');
+    expect(pinnedRun).toHaveStyle({ left: '52px', color: 'red' });
   });
 });
