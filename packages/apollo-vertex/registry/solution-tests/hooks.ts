@@ -1,7 +1,7 @@
 /**
  * Collection-backed data layer for the Solution Tests view — one module per
  * query entity, each owning its live read plus the writes that act on it:
- *  - `use-solution-tests`           — tests list + run / toggle-active / delete
+ *  - `use-solution-tests`           — tests list + run / toggle-active / rename / delete
  *  - `use-solution-test-batch-runs` — batch-run list
  *  - `use-solution-test-runs`       — run list
  *  - `use-baseline-jobs`            — baseline jobs + remove-baseline / expected-output
@@ -11,7 +11,7 @@
  * Reads are live (one `useSolution()` + `useLiveQuery` per collection); the
  * view re-renders as the collections change. Writes run through the provider's
  * injected trigger actions (run / delete / force-stop / baseline), except
- * toggle-active (a direct collection update) and attachment reads (the
+ * toggle-active and rename (direct collection updates) and attachment reads (the
  * uipath-typescript SDK).
  */
 
@@ -20,6 +20,7 @@ export {
   useRunTests,
   useCreateTest,
   useToggleTestActive,
+  useRenameTest,
   useDeleteTest,
 } from "./use-solution-tests";
 export type { UseSolutionTestsResult } from "./use-solution-tests";

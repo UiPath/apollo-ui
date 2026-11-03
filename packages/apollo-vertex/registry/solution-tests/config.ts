@@ -21,6 +21,7 @@ export interface SolutionTestEventMap {
   };
   "VS.SolutionTest.Created": { subjectId: string };
   "VS.SolutionTest.ActiveToggled": { testId: string; isActive: boolean };
+  "VS.SolutionTest.Renamed": { testId: string };
   "VS.SolutionTest.Deleted": { testId: string };
   "VS.SolutionTest.BatchForceStopped": { batchId: string };
   "VS.SolutionTest.RunForceStopped": { runId: string };

@@ -12,6 +12,7 @@ import type {
 } from "@tanstack/react-table";
 import {
   ChevronRightIcon,
+  Pencil,
   Play,
   PlayCircle,
   Square,
@@ -45,6 +46,7 @@ import { defaultRunStatusLabels, defaultTestStatusLabels } from "./constants";
 import { useSolutionTestsConfig } from "./context";
 import { DeleteConfirmDialog } from "./delete-confirm-dialog";
 import { KpiBar } from "./kpi-bar";
+import { RenameTestDialog } from "./rename-test-dialog";
 import { RunConfirmDialog } from "./run-confirm-dialog";
 import { runStatusBadgeMap, testStatusBadgeMap } from "./status-maps";
 import type { SolutionTestsTab } from "./tabs";
@@ -114,12 +116,16 @@ export interface SolutionTestsViewProps {
   forceStoppingBatchId: string | null;
   deleteConfirmId: string | null;
   setDeleteConfirmId: (id: string | null) => void;
+  isRenaming: boolean;
+  renameTestId: string | null;
+  setRenameTestId: (id: string | null) => void;
   runConfirm: RunConfirmTarget | null;
   setRunConfirm: (target: RunConfirmTarget | null) => void;
   /** Confirms the pending run (the run-confirmation dialog's primary action). */
   onConfirmRun: () => void;
   onToggleActive: (testId: string, newValue: boolean) => void;
   onDeleteTest: (testId: string) => void;
+  onRenameTest: (testId: string, name: string) => void;
   onForceStopBatch: (batchId: string) => void;
   /** Renders the expanded content for a test case row (baseline agents). */
   renderExpandedTest: (test: SolutionTest) => ReactNode;
@@ -145,11 +151,15 @@ export const SolutionTestsView = ({
   forceStoppingBatchId,
   deleteConfirmId,
   setDeleteConfirmId,
+  isRenaming,
+  renameTestId,
+  setRenameTestId,
   runConfirm,
   setRunConfirm,
   onConfirmRun,
   onToggleActive,
   onDeleteTest,
+  onRenameTest,
   onForceStopBatch,
   renderExpandedTest,
   renderExpandedRun,
@@ -177,6 +187,7 @@ export const SolutionTestsView = ({
   const selectedTestIds = Object.keys(rowSelection).filter(
     (id) => rowSelection[id] && existingTestIds.has(id),
   );
+  const testBeingRenamed = tests.find((test) => test.Id === renameTestId);
 
   const testCasesColumns: DataTableColumnDef<SolutionTest>[] = [
     {
@@ -375,6 +386,16 @@ export const SolutionTestsView = ({
                   : t("enabled_label")}
               </TooltipContent>
             </Tooltip>
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-label={t("rename_test")}
+              data-vs-track="solution_test_rename"
+              disabled={isRenaming}
+              onClick={() => setRenameTestId(test.Id)}
+            >
+              <Pencil className="size-3" />
+            </Button>
             <Button
               variant="ghost"
               size="sm"
@@ -677,6 +698,15 @@ export const SolutionTestsView = ({
             if (deleteConfirmId != null) onDeleteTest(deleteConfirmId);
           }}
           onCancel={() => setDeleteConfirmId(null)}
+        />
+      )}
+
+      {testBeingRenamed != null && (
+        <RenameTestDialog
+          currentName={testBeingRenamed.TestName ?? ""}
+          renaming={isRenaming}
+          onConfirm={(name) => onRenameTest(testBeingRenamed.Id, name)}
+          onCancel={() => setRenameTestId(null)}
         />
       )}
 

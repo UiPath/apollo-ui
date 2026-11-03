@@ -29,12 +29,13 @@ touches the hooks or vs-core. From top to bottom the view stacks:
 
 - **`PageHeader`** — title and the "Run all" action.
 - **KPI bar** — cards plus a `recharts` score-trend chart across recent runs.
-- **Tabs** — `Test cases` (list, enable/disable, run, delete) and
+- **Tabs** — `Test cases` (list, enable/disable, rename, run, delete) and
   `Test runs` (batch runs backed by live queries, per-run results, force-stop).
 - **Run details** — a dedicated page for a batch run: a component sidebar plus a
   per-component detail pane with the baseline adopt / update / remove actions (see
   [Run details](#run-details) below).
-- **Dialogs** — the JSON viewer, run confirmation, and delete confirmation.
+- **Dialogs** — the JSON viewer, run confirmation, rename, and delete
+  confirmation.
 
 Source: [`templates/SolutionTestsTemplate.tsx`](https://github.com/UiPath/apollo-ui/blob/main/apps/apollo-vertex/templates/SolutionTestsTemplate.tsx)
 
@@ -120,8 +121,8 @@ So a consumer is responsible for exactly three things:
    `solution.api.entityIds` (vs-core 2.0.6+), so they need no extra wiring.
 2. **Writes** — pass `triggerBaseUrl` + `getToken`. The provider builds the
    whole write surface (run, delete, force-stop, adopt / update / remove
-   baseline) from them. Toggle-active isn't a trigger. It goes through the
-   collection's optimistic update and needs no extra wiring.
+   baseline) from them. Toggle-active and rename aren't triggers. They go
+   through the collection's optimistic update and need no extra wiring.
 3. **Presentation** — pass `config.subjectColumns` (and optionally
    `getSubjectHref` / `subjectNoun`) to flavor the table for your vertical.
 
@@ -229,6 +230,7 @@ wiring type-safe end to end.
 | `VS.SolutionTest.Run`               | `{ mode: "all" \| "test" \| "selected", testCount }` | A test run is started               |
 | `VS.SolutionTest.Created`           | `{ subjectId }`                                      | A test is created from a subject    |
 | `VS.SolutionTest.ActiveToggled`     | `{ testId, isActive }`                               | A test is enabled or disabled       |
+| `VS.SolutionTest.Renamed`           | `{ testId }`                                         | A test is renamed                   |
 | `VS.SolutionTest.Deleted`           | `{ testId }`                                         | A test is deleted                   |
 | `VS.SolutionTest.BatchForceStopped` | `{ batchId }`                                        | A batch run is force-stopped        |
 | `VS.SolutionTest.RunForceStopped`   | `{ runId }`                                          | A single run is force-stopped       |
@@ -307,8 +309,8 @@ Reads are live the moment the collections exist. **Writes** (run, delete,
 force-stop, adopt/update/remove baseline) POST an action slug to your Solution
 Test trigger base URL — pass `triggerBaseUrl` and `getToken` to the provider and
 it builds the whole write surface for you, so you don't reimplement the
-trigger/auth plumbing. (Toggle-active and attachment reads aren't triggers — they
-go through the vs-core collections/sdk.)
+trigger/auth plumbing. (Toggle-active, rename and attachment reads aren't
+triggers — they go through the vs-core collections/sdk.)
 
 ```tsx
 import {

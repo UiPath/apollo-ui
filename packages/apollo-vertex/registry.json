@@ -3122,6 +3122,8 @@
         "@uipath/data-table",
         "@uipath/dialog",
         "@uipath/empty",
+        "@uipath/input",
+        "@uipath/label",
         "@uipath/page-header",
         "@uipath/skeleton",
         "@uipath/sonner",
@@ -3299,6 +3301,11 @@
           "path": "registry/solution-tests/result-expanded-content.tsx",
           "type": "registry:ui",
           "target": "components/ui/solution-tests/result-expanded-content.tsx"
+        },
+        {
+          "path": "registry/solution-tests/rename-test-dialog.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/solution-tests/rename-test-dialog.tsx"
         },
         {
           "path": "registry/solution-tests/run-confirm-dialog.tsx",

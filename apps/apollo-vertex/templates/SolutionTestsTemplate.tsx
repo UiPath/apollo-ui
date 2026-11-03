@@ -59,6 +59,7 @@ function SolutionTestsTemplateContent() {
   // interactive. Writes are still no-ops (read-only demo).
   const [db] = useState(() => createMockDb());
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [renameTestId, setRenameTestId] = useState<string | null>(null);
   const [runConfirm, setRunConfirm] = useState<RunConfirmTarget | null>(null);
   // Expected-output JSON viewer (agents expansion).
   const [viewing, setViewing] = useState<{
@@ -153,11 +154,15 @@ function SolutionTestsTemplateContent() {
       forceStoppingBatchId={null}
       deleteConfirmId={deleteConfirmId}
       setDeleteConfirmId={setDeleteConfirmId}
+      isRenaming={false}
+      renameTestId={renameTestId}
+      setRenameTestId={setRenameTestId}
       runConfirm={runConfirm}
       setRunConfirm={setRunConfirm}
       onConfirmRun={() => setRunConfirm(null)}
       onToggleActive={noop}
       onDeleteTest={() => setDeleteConfirmId(null)}
+      onRenameTest={() => setRenameTestId(null)}
       onForceStopBatch={noop}
       renderExpandedTest={(test: SolutionTest) => {
         const baselines = baselineJobsByTest.get(test.Id) ?? [];

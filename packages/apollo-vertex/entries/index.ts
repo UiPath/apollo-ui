@@ -346,6 +346,7 @@ export {
   useRunTests,
   useCreateTest,
   useToggleTestActive,
+  useRenameTest,
   useDeleteTest,
   useForceStopBatch,
   useForceStopRun,

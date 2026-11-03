@@ -21,6 +21,7 @@ import {
   useSolutionTestRuns,
   useRunTests,
   useToggleTestActive,
+  useRenameTest,
   useDeleteTest,
   useForceStopBatch,
 } from "./hooks";
@@ -46,10 +47,12 @@ export const SolutionTests = () => {
 
   const runTests = useRunTests();
   const toggleActive = useToggleTestActive();
+  const renameTest = useRenameTest();
   const deleteTest = useDeleteTest();
   const forceStopBatch = useForceStopBatch();
 
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [renameTestId, setRenameTestId] = useState<string | null>(null);
   const [runConfirm, setRunConfirm] = useState<RunConfirmTarget | null>(null);
 
   // Per-run pending derives from the in-flight mutation's `mode`, which
@@ -104,6 +107,9 @@ export const SolutionTests = () => {
       forceStoppingBatchId={forceStoppingBatchId}
       deleteConfirmId={deleteConfirmId}
       setDeleteConfirmId={setDeleteConfirmId}
+      isRenaming={renameTest.isPending}
+      renameTestId={renameTestId}
+      setRenameTestId={setRenameTestId}
       runConfirm={runConfirm}
       setRunConfirm={setRunConfirm}
       onConfirmRun={() => {
@@ -164,6 +170,19 @@ export const SolutionTests = () => {
             toast.error(err.message || t("failed_to_delete_test")),
         });
       }}
+      onRenameTest={(testId, name) =>
+        renameTest.mutate(
+          { testId, name },
+          {
+            onSuccess: () => {
+              toast.success(t("test_renamed"));
+              setRenameTestId(null);
+            },
+            onError: (err) =>
+              toast.error(err.message || t("failed_to_rename_test")),
+          },
+        )
+      }
       onForceStopBatch={(batchId) =>
         forceStopBatch.mutate(batchId, {
           onSuccess: () => toast.success(t("force_stop_initiated")),
