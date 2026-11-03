@@ -199,7 +199,7 @@ export const BODY_CELL_CLASS = cn(GRID_LINE_V_CLASS, GRID_LINE_H_CLASS, 'p-0');
 
 export const FROZEN_RIGHT_CELL_CLASS = cn(
   BODY_CELL_CLASS,
-  'bg-background',
+  'sticky right-0 z-1 bg-background',
   FROZEN_LEFT_EDGE_CLASS,
   ROW_HOVER_CLASS
 );
