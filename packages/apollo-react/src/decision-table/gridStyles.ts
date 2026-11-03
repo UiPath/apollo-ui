@@ -50,7 +50,7 @@ const HEADER_LINE_CLASS = cn(
   'group-data-[scrolled=true]/grid:after:opacity-100'
 );
 
-/** The hovered row's wash, an inset shadow that composes with a cell's own `shadow`. */
+/** The hovered row's wash, an inset shadow that composes with a cell's own `shadow`. The row needs `group/row`. */
 export const ROW_HOVER_CLASS =
   'group-hover/row:inset-shadow-[0_0_0_100vmax_color-mix(in_srgb,var(--color-foreground)_4%,transparent)]';
 
@@ -296,8 +296,8 @@ export const ROW_NUMBER_CELL_CLASS = cn(
 );
 
 /**
- * 14px: Inconsolata's short lowercase reads at the height of the 12px Inter beside it. The line height stays the
- * cell surface's 17px, which the built-in editor inherits from the cell along with the font.
+ * 14px, a step above the 12px body text, since mono faces tend to run small. The line height stays
+ * the cell surface's 17px, which the built-in editor inherits from the cell along with the font.
  */
 export const MONO_CELL_TEXT_CLASS = 'font-mono text-sm leading-[17px]';
 
