@@ -1,12 +1,10 @@
 import {
   AlertTriangle,
   Asterisk,
-  Ban,
   ChevronRight,
   Code,
   Database,
   Eye,
-  EyeOff,
   GitBranch,
   GripVertical,
   Layers,
@@ -17,7 +15,7 @@ import {
   Trash2,
   View,
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Accordion,
   AccordionContent,
@@ -27,9 +25,18 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { createConditionGroup } from '@/components/ui/conditions-editor';
 import { Input } from '@/components/ui/input';
 import { Label, RequiredIndicator } from '@/components/ui/label';
 import { Grid } from '@/components/ui/layout/grid';
+import {
+  createRule,
+  findRuleIssues,
+  issueIds,
+  isUnconditionalRule,
+  type Rule,
+  RulesEditor,
+} from '@/components/ui/rules-editor';
 import {
   Select,
   SelectContent,
@@ -42,9 +49,14 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { createAiAssistAction, createInsertVariableAction } from './field-actions';
+import {
+  type FieldRuleOutcome,
+  type FieldRulesOptions,
+  fromFieldRules,
+  renameFieldInRules,
+} from './field-rules';
 import type {
   DataSource,
-  FieldCondition,
   FieldMetadata,
   FieldRule,
   FieldType,
@@ -55,7 +67,13 @@ import type {
   ValueModesConfig,
 } from './form-schema';
 import { MetadataForm } from './metadata-form';
+import {
+  type FieldRuleField,
+  rulesEngineDialect,
+  rulesEngineVocabulary,
+} from './rules-engine-dialect';
 import { schemaToJson } from './schema-serializer';
+import { useFieldRules } from './use-field-rules';
 
 /**
  * Enhanced Form Designer Component
@@ -1026,16 +1044,12 @@ function FieldConfigForm({ field, onUpdate, allFields, existingFieldNames }: Fie
             </div>
           </AccordionTrigger>
           <AccordionContent className="pt-2">
-            <RulesEditor
-              rules={field.rules}
-              onChange={(rules) => onUpdate({ rules })}
+            {/* Keyed, so the editor's own rules never carry over to another field. */}
+            <FieldRulesEditor
+              key={field.id}
+              field={field}
               allFields={allFields}
-              requiredMessage={field.validation?.requiredMessage}
-              onRequiredMessageChange={(message) =>
-                onUpdate({
-                  validation: { ...field.validation, requiredMessage: message },
-                })
-              }
+              onUpdate={onUpdate}
             />
           </AccordionContent>
         </AccordionItem>
@@ -1071,6 +1085,12 @@ export function FormDesigner() {
 
   // Get all fields across all sections for rules editor
   const allFields = sections.flatMap((s) => s.fields);
+  const ruleOptions = useRuleOptions(allFields);
+  // Each field's last name that was not blank, for a rename typed over a cleared name.
+  const lastNames = useRef(new Map<string, string>());
+  useEffect(() => {
+    for (const field of allFields) if (field.name) lastNames.current.set(field.id, field.name);
+  });
 
   const selectedSection = sections.find((s) => s.id === selectedSectionId);
   const selectedField = allFields.find((f) => f.id === selectedFieldId);
@@ -1210,9 +1230,22 @@ export function FormDesigner() {
         }
       }
 
+      // Rules name fields by their name, so a rename follows into every field's rules. Clearing the
+      // name to retype it renames from the last one it had.
+      const previousName =
+        prevAllFields.find((f) => f.id === fieldId)?.name || lastNames.current.get(fieldId);
+      const renamed =
+        finalUpdates.name && previousName && finalUpdates.name !== previousName
+          ? { from: previousName, to: finalUpdates.name }
+          : undefined;
+      const follow = (f: ExtendedFieldConfig) =>
+        renamed && f.rules
+          ? { ...f, rules: renameFieldInRules(f.rules, renamed.from, renamed.to) }
+          : f;
+
       return prevSections.map((s) => ({
         ...s,
-        fields: s.fields.map((f) => (f.id === fieldId ? { ...f, ...finalUpdates } : f)),
+        fields: s.fields.map((f) => follow(f.id === fieldId ? { ...f, ...finalUpdates } : f)),
       }));
     });
   };
@@ -1360,6 +1393,13 @@ export function FormDesigner() {
                             <span className="text-xs font-medium truncate">{field.label}</span>
                             {field.rules?.some((r) => r.effects.required) && (
                               <RequiredIndicator className="ml-0 text-[10px]" />
+                            )}
+                            {rulesNeedAttention(field.rules, ruleOptions) && (
+                              <AlertTriangle
+                                role="img"
+                                aria-label="Rules need attention"
+                                className="h-3 w-3 shrink-0 text-destructive"
+                              />
                             )}
                           </div>
                           <div className="text-[9px] text-muted-foreground">
@@ -1734,373 +1774,155 @@ function DataSourceEditor({ dataSource, onChange }: DataSourceEditorProps) {
 }
 
 // ============================================================================
-// Condition Operator Types
+// Field rules
 // ============================================================================
 
-type ConditionOperator = 'is' | 'isNot' | 'in' | 'notIn' | 'matches';
-
-const CONDITION_OPERATORS: {
-  value: ConditionOperator;
-  label: string;
-  description: string;
-}[] = [
-  { value: 'is', label: 'equals', description: 'Field value equals' },
-  {
-    value: 'isNot',
-    label: 'not equals',
-    description: 'Field value does not equal',
-  },
-  { value: 'in', label: 'is one of', description: 'Field value is one of' },
-  {
-    value: 'notIn',
-    label: 'is not one of',
-    description: 'Field value is not one of',
-  },
-  {
-    value: 'matches',
-    label: 'matches pattern',
-    description: 'Field value matches regex',
-  },
+const DESIGNER_OUTCOMES: FieldRuleOutcome[] = [
+  { value: 'show', label: 'Show', effects: { visible: true } },
+  { value: 'hide', label: 'Hide', effects: { visible: false } },
+  { value: 'require', label: 'Require', effects: { required: true } },
+  { value: 'disable', label: 'Disable', effects: { disabled: true } },
 ];
 
-type RuleEffect = 'show' | 'hide' | 'require' | 'disable';
-
-const RULE_EFFECTS: {
-  value: RuleEffect;
-  label: string;
-  description: string;
-  Icon: React.ComponentType<{ className?: string }>;
-  color: string;
-}[] = [
-  {
-    value: 'show',
-    label: 'Show field',
-    description: 'Show this field when conditions are met',
-    Icon: Eye,
-    color: 'text-success bg-success-background border-success/30',
-  },
-  {
-    value: 'hide',
-    label: 'Hide field',
-    description: 'Hide this field when conditions are met',
-    Icon: EyeOff,
-    color: 'text-warning bg-warning-background border-warning/30',
-  },
-  {
-    value: 'require',
-    label: 'Make required',
-    description: 'Require this field when conditions are met',
-    Icon: Asterisk,
-    color: 'text-error bg-error-background border-error/30',
-  },
-  {
-    value: 'disable',
-    label: 'Disable field',
-    description: 'Disable this field when conditions are met',
-    Icon: Ban,
-    color: 'text-muted-foreground bg-muted border-border',
-  },
+const ALWAYS_REQUIRED_ID = 'always-required';
+const BOOLEAN_OPTIONS = [
+  { value: 'true', label: 'Yes' },
+  { value: 'false', label: 'No' },
 ];
 
-// ============================================================================
-// Rules Editor Component
-// ============================================================================
-
-interface RulesEditorProps {
-  rules?: FieldRule[];
-  onChange: (rules?: FieldRule[]) => void;
-  allFields: ExtendedFieldConfig[];
-  requiredMessage?: string;
-  onRequiredMessageChange: (message: string | undefined) => void;
+/**
+ * A field as rules can compare it. Fields whose values RulesEngine cannot compare as one value,
+ * such as files, several options, or a date with a time, are left out.
+ */
+function ruleFieldFor(field: ExtendedFieldConfig): FieldRuleField | undefined {
+  const base = { value: field.name, label: field.label || field.name };
+  switch (field.type) {
+    case 'number':
+    case 'slider':
+      return { ...base, type: 'number' };
+    case 'date':
+      return { ...base, type: 'date' };
+    case 'select':
+    case 'radio':
+      return {
+        ...base,
+        type: 'enum',
+        options: (field.options ?? []).map((option) => ({
+          value: String(option.value),
+          label: option.label,
+        })),
+      };
+    case 'checkbox':
+    case 'switch':
+    case 'boolean':
+      return { ...base, type: 'enum', valueType: 'boolean', options: BOOLEAN_OPTIONS };
+    case 'datetime':
+    case 'file':
+    case 'multiselect':
+      return undefined;
+    default:
+      return { ...base, type: 'string' };
+  }
 }
 
-function RulesEditor({
-  rules = [],
-  onChange,
-  allFields,
-  requiredMessage,
-  onRequiredMessageChange,
-}: RulesEditorProps) {
-  // State for the new rule builder
-  const [isAddingRule, setIsAddingRule] = useState(false);
-  const [editingRuleIndex, setEditingRuleIndex] = useState<number | null>(null);
+/** The rules' options for a form's fields, by what the rules can see of them. */
+function useRuleOptions(allFields: ExtendedFieldConfig[]): FieldRulesOptions {
+  // A field is named by its name, so one being renamed past a blank name is left out meanwhile.
+  const fields = allFields.flatMap((field) => (field.name && ruleFieldFor(field)) || []);
+  const key = JSON.stringify(fields);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the fields are read through their key
+  return useMemo(() => ({ outcomes: DESIGNER_OUTCOMES, fields }), [key]);
+}
 
-  // New rule state
-  const [selectedEffect, setSelectedEffect] = useState<RuleEffect>('show');
-  const [conditions, setConditions] = useState<
-    { field: string; operator: ConditionOperator; value: string }[]
-  >([{ field: '', operator: 'is', value: '' }]);
-  const [conditionOperator, setConditionOperator] = useState<'AND' | 'OR'>('AND');
+/** Whether the stored rules include one the editor would flag, such as on a removed field. */
+function rulesNeedAttention(rules: FieldRule[] | undefined, options: FieldRulesOptions) {
+  if (!rules?.length) return false;
+  const vocabulary = { ...options, ...rulesEngineVocabulary };
+  return findRuleIssues(fromFieldRules(rules, options), vocabulary, rulesEngineDialect).length > 0;
+}
 
-  // Check if field is always required (has required rule with no conditions)
-  const isAlwaysRequired = rules.some(
-    (r) => r.effects.required === true && r.conditions.length === 0
+const isAlwaysRequired = (rule: Rule) => rule.outcome === 'require' && isUnconditionalRule(rule);
+
+interface FieldRulesEditorProps {
+  field: ExtendedFieldConfig;
+  allFields: ExtendedFieldConfig[];
+  onUpdate: (updates: Partial<ExtendedFieldConfig>) => void;
+}
+
+/**
+ * The field's rules in a RulesEditor, stored as RulesEngine `FieldRule`s through `useFieldRules`.
+ * Always required is its own checkbox, standing for a Require rule with no conditions, which the
+ * schema also writes as `validation.required` with the field's message.
+ */
+function FieldRulesEditor({ field, allFields, onUpdate }: FieldRulesEditorProps) {
+  const options = useRuleOptions(allFields);
+  const requiredMessage = field.validation?.requiredMessage;
+  const editor = useFieldRules(
+    { rules: field.rules },
+    ({ rules }) => {
+      const stillRequired = rules.some(
+        (rule) => rule.effects.required === true && rule.conditions.length === 0
+      );
+      onUpdate({
+        // The hook knows its own emitted array, so an emptied one keeps an unfinished draft open;
+        // the schema leaves empty rules out.
+        rules,
+        // The message is for the field's own requirement, so it goes with it.
+        ...(stillRequired || !requiredMessage
+          ? {}
+          : { validation: { ...field.validation, requiredMessage: undefined } }),
+      });
+    },
+    options
   );
 
-  const resetBuilder = () => {
-    setSelectedEffect('show');
-    setConditions([{ field: '', operator: 'is', value: '' }]);
-    setConditionOperator('AND');
-    setIsAddingRule(false);
-    setEditingRuleIndex(null);
-  };
-
-  const addCondition = () => {
-    setConditions([...conditions, { field: '', operator: 'is', value: '' }]);
-  };
-
-  const updateCondition = (
-    index: number,
-    updates: Partial<{
-      field: string;
-      operator: ConditionOperator;
-      value: string;
-    }>
-  ) => {
-    const newConditions = [...conditions];
-    newConditions[index] = { ...newConditions[index], ...updates };
-    setConditions(newConditions);
-  };
-
-  const removeCondition = (index: number) => {
-    if (conditions.length > 1) {
-      setConditions(conditions.filter((_, i) => i !== index));
-    }
-  };
-
-  const buildCondition = (cond: {
-    field: string;
-    operator: ConditionOperator;
-    value: string;
-  }): FieldCondition => {
-    const condition: FieldCondition = { when: cond.field };
-
-    // Get the target field to determine its type
-    const targetField = allFields.find((f) => f.name === cond.field);
-    const isNumericField = targetField?.type === 'number' || targetField?.type === 'slider';
-    const isBooleanField =
-      targetField?.type === 'checkbox' ||
-      targetField?.type === 'switch' ||
-      targetField?.type === 'boolean';
-
-    // Parse value based on the target field's type
-    const parseValue = (val: string): unknown => {
-      // For boolean fields, parse true/false
-      if (isBooleanField) {
-        if (val.toLowerCase() === 'true') return true;
-        if (val.toLowerCase() === 'false') return false;
-      }
-
-      // For numeric fields, try to parse as number
-      if (isNumericField) {
-        const num = Number(val);
-        if (!isNaN(num)) return num;
-      }
-
-      // For text-based fields, keep as string
-      // But still handle explicit booleans for special cases
-      if (val.toLowerCase() === 'true') return true;
-      if (val.toLowerCase() === 'false') return false;
-
-      return val;
-    };
-
-    switch (cond.operator) {
-      case 'is':
-        condition.is = parseValue(cond.value);
-        break;
-      case 'isNot':
-        condition.isNot = parseValue(cond.value);
-        break;
-      case 'in':
-        condition.in = cond.value.split(',').map((v) => parseValue(v.trim()));
-        break;
-      case 'notIn':
-        condition.notIn = cond.value.split(',').map((v) => parseValue(v.trim()));
-        break;
-      case 'matches':
-        condition.matches = cond.value;
-        break;
-    }
-
-    return condition;
-  };
-
-  const saveRule = () => {
-    // Validate that all conditions have fields selected
-    const validConditions = conditions.filter((c) => c.field);
-    if (validConditions.length === 0) return;
-
-    const newRule: FieldRule = {
-      id: `rule-${Date.now()}`,
-      conditions: validConditions.map(buildCondition),
-      operator: conditionOperator,
-      effects: {},
-    };
-
-    // Set effects based on selected effect type
-    switch (selectedEffect) {
-      case 'show':
-        newRule.effects.visible = true;
-        break;
-      case 'hide':
-        newRule.effects.visible = false;
-        break;
-      case 'require':
-        newRule.effects.required = true;
-        break;
-      case 'disable':
-        newRule.effects.disabled = true;
-        break;
-    }
-
-    if (editingRuleIndex !== null) {
-      // Update existing rule
-      const newRules = [...rules];
-      newRules[editingRuleIndex] = newRule;
-      onChange(newRules);
-    } else {
-      // Add new rule
-      onChange([...rules, newRule]);
-    }
-
-    resetBuilder();
-  };
-
-  const editRule = (index: number) => {
-    const rule = rules[index];
-    if (!rule) return;
-
-    // Determine effect type from rule
-    let effect: RuleEffect = 'show';
-    if (rule.effects.visible === true) effect = 'show';
-    else if (rule.effects.visible === false) effect = 'hide';
-    else if (rule.effects.required === true) effect = 'require';
-    else if (rule.effects.disabled === true) effect = 'disable';
-
-    setSelectedEffect(effect);
-    setConditionOperator(rule.operator || 'AND');
-
-    // Convert conditions back to editable form
-    const editableConditions = rule.conditions.map((cond) => {
-      let operator: ConditionOperator = 'is';
-      let value = '';
-
-      if (cond.is !== undefined) {
-        operator = 'is';
-        value = String(cond.is);
-      } else if (cond.isNot !== undefined) {
-        operator = 'isNot';
-        value = String(cond.isNot);
-      } else if (cond.in !== undefined) {
-        operator = 'in';
-        value = cond.in.map(String).join(', ');
-      } else if (cond.notIn !== undefined) {
-        operator = 'notIn';
-        value = cond.notIn.map(String).join(', ');
-      } else if (cond.matches !== undefined) {
-        operator = 'matches';
-        value = cond.matches;
-      }
-
-      return { field: cond.when, operator, value };
-    });
-
-    setConditions(
-      editableConditions.length > 0
-        ? editableConditions
-        : [{ field: '', operator: 'is', value: '' }]
+  const alwaysRequired = editor.value.find(isAlwaysRequired);
+  const rules = alwaysRequired
+    ? editor.value.filter((rule) => rule !== alwaysRequired)
+    : editor.value;
+  // Every rule sets `required` to true or not at all, so where the checkbox's rule goes is moot.
+  const changeRules = (next: Rule[]) =>
+    editor.onChange(alwaysRequired ? [...next, alwaysRequired] : next);
+  const setAlwaysRequired = (on: boolean) =>
+    editor.onChange(
+      on
+        ? [
+            ...editor.value,
+            createRule({
+              id: ALWAYS_REQUIRED_ID,
+              outcome: 'require',
+              conditions: createConditionGroup(),
+            }),
+          ]
+        : [...rules]
     );
-    setEditingRuleIndex(index);
-    setIsAddingRule(true);
-  };
 
-  const deleteRule = (index: number) => {
-    onChange(rules.filter((_, i) => i !== index));
-  };
-
-  const getFieldLabel = (fieldName: string) => {
-    const field = allFields.find((f) => f.name === fieldName);
-    return field?.label || fieldName;
-  };
-
-  const describeRule = (rule: FieldRule): string => {
-    if (rule.conditions.length === 0) {
-      if (rule.effects.required) return 'Always required';
-      return 'Always applies';
-    }
-
-    const conditionDescriptions = rule.conditions.map((cond) => {
-      const fieldLabel = getFieldLabel(cond.when);
-      if (cond.is !== undefined) return `"${fieldLabel}" = ${JSON.stringify(cond.is)}`;
-      if (cond.isNot !== undefined) return `"${fieldLabel}" ≠ ${JSON.stringify(cond.isNot)}`;
-      if (cond.in !== undefined)
-        return `"${fieldLabel}" in [${cond.in.map((v) => JSON.stringify(v)).join(', ')}]`;
-      if (cond.notIn !== undefined)
-        return `"${fieldLabel}" not in [${cond.notIn.map((v) => JSON.stringify(v)).join(', ')}]`;
-      if (cond.matches !== undefined) return `"${fieldLabel}" matches /${cond.matches}/`;
-      return `"${fieldLabel}"`;
-    });
-
-    const operator = rule.operator === 'OR' ? ' OR ' : ' AND ';
-    return conditionDescriptions.join(operator);
-  };
-
-  const getEffectDescription = (rule: FieldRule): { label: string; color: string } => {
-    if (rule.effects.visible === true)
-      return { label: 'Show', color: 'text-success bg-success-background' };
-    if (rule.effects.visible === false)
-      return { label: 'Hide', color: 'text-warning bg-warning-background' };
-    if (rule.effects.required === true)
-      return { label: 'Required', color: 'text-error bg-error-background' };
-    if (rule.effects.disabled === true)
-      return { label: 'Disabled', color: 'text-muted-foreground bg-muted' };
-    return { label: 'Unknown', color: 'text-muted-foreground bg-muted' };
-  };
-
-  // Get options for a specific field (for in/notIn suggestions)
-  const getFieldOptions = (fieldName: string) => {
-    const field = allFields.find((f) => f.name === fieldName);
-    return field?.options || [];
-  };
+  // Its messages open as each rule mounts, so a field added, renamed or removed remounts it:
+  // a rule that broke shows why at once. One added since is flagged once it is left.
+  const editorKey = options.fields.map((option) => option.value).join('\n');
+  // biome-ignore lint/correctness/useExhaustiveDependencies: read as the editor mounts, by its key
+  const touched = useMemo(() => issueIds(editor.issues), [editorKey]);
 
   return (
     <div className="space-y-4">
-      {/* Always Required Toggle */}
-      <div className="space-y-3 p-3 border rounded-lg bg-muted/30">
+      <div className="space-y-3 rounded-lg border bg-muted/30 p-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Asterisk className="h-5 w-5 text-error" />
             <div>
-              <Label className="cursor-pointer font-medium">Always required</Label>
+              <Label htmlFor={`always-required-${field.id}`} className="cursor-pointer font-medium">
+                Always required
+              </Label>
               <p className="text-xs text-muted-foreground">Field must always have a value</p>
             </div>
           </div>
           <Checkbox
-            aria-label="Always required"
-            checked={isAlwaysRequired}
-            onCheckedChange={(checked) => {
-              if (checked) {
-                const requiredRule: FieldRule = {
-                  id: 'always-required',
-                  conditions: [],
-                  operator: 'AND',
-                  effects: { required: true },
-                };
-                onChange([
-                  ...rules.filter((r) => !(r.effects.required && r.conditions.length === 0)),
-                  requiredRule,
-                ]);
-              } else {
-                onChange(rules.filter((r) => !(r.effects.required && r.conditions.length === 0)));
-                // Clear required message when unchecking
-                onRequiredMessageChange(undefined);
-              }
-            }}
+            id={`always-required-${field.id}`}
+            checked={!!alwaysRequired}
+            onCheckedChange={(checked) => setAlwaysRequired(checked === true)}
           />
         </div>
-        {/* Required Error Message - shown when Always Required is checked */}
-        {isAlwaysRequired && (
+        {alwaysRequired && (
           <div className="space-y-1.5 pl-8">
             <Label htmlFor="required-message" className="text-xs text-muted-foreground">
               Error message
@@ -2109,236 +1931,29 @@ function RulesEditor({
               id="required-message"
               placeholder="This field is required"
               value={requiredMessage || ''}
-              onChange={(e) => onRequiredMessageChange(e.target.value || undefined)}
+              onChange={(e) =>
+                onUpdate({
+                  validation: { ...field.validation, requiredMessage: e.target.value || undefined },
+                })
+              }
               className="h-8 text-sm"
             />
           </div>
         )}
       </div>
 
-      {/* Existing Rules */}
-      {rules.filter((r) => r.conditions.length > 0 || !r.effects.required).length > 0 && (
-        <div className="space-y-2">
-          <Label className="text-xs text-muted-foreground uppercase tracking-wide">
-            Conditional rules
-          </Label>
-          {rules
-            .map((rule, index) => ({ rule, index }))
-            .filter(({ rule }) => rule.conditions.length > 0 || !rule.effects.required)
-            .map(({ rule, index }) => {
-              const effect = getEffectDescription(rule);
-              return (
-                <div
-                  key={index}
-                  className="group border rounded-lg p-3 hover:border-primary/50 transition-colors"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded ${effect.color}`}>
-                          {effect.label}
-                        </span>
-                        {rule.conditions.length > 1 && (
-                          <span className="text-xs text-muted-foreground">({rule.operator})</span>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground truncate">{describeRule(rule)}</p>
-                    </div>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 w-7 p-0"
-                        onClick={() => editRule(index)}
-                        aria-label="Edit rule"
-                      >
-                        <Settings className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="2xs"
-                        icon
-                        className="text-destructive hover:text-destructive"
-                        onClick={() => deleteRule(index)}
-                        aria-label="Delete rule"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-        </div>
-      )}
-
-      {/* Add/Edit Rule Builder */}
-      {isAddingRule ? (
-        <div className="border rounded-lg p-4 space-y-4 bg-muted/20">
-          <div className="flex items-center justify-between">
-            <Label className="font-medium">
-              {editingRuleIndex !== null ? 'Edit rule' : 'New rule'}
-            </Label>
-            <Button variant="ghost" size="sm" onClick={resetBuilder}>
-              Cancel
-            </Button>
-          </div>
-
-          {/* Effect Selection */}
-          <div className="space-y-2">
-            <Label className="text-xs text-muted-foreground">When conditions are met:</Label>
-            <div className="grid grid-cols-2 gap-2">
-              {RULE_EFFECTS.map((effect) => (
-                <button
-                  key={effect.value}
-                  type="button"
-                  className={`flex items-center gap-2 p-2 rounded-lg border text-left text-sm transition-all ${
-                    selectedEffect === effect.value
-                      ? effect.color + ' border-current'
-                      : 'hover:bg-muted'
-                  }`}
-                  onClick={() => setSelectedEffect(effect.value)}
-                >
-                  <effect.Icon className="h-4 w-4" />
-                  <span className="font-medium">{effect.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Conditions */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label className="text-xs text-muted-foreground">Conditions:</Label>
-              {conditions.length > 1 && (
-                <Select
-                  value={conditionOperator}
-                  onValueChange={(v) => setConditionOperator(v as 'AND' | 'OR')}
-                >
-                  <SelectTrigger aria-label="Condition match mode" className="w-24 h-7 text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="AND">Match ALL</SelectItem>
-                    <SelectItem value="OR">Match ANY</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
-
-            {conditions.map((cond, index) => (
-              <div key={index} className="space-y-2">
-                {index > 0 && (
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Separator className="flex-1" />
-                    <span>{conditionOperator}</span>
-                    <Separator className="flex-1" />
-                  </div>
-                )}
-                <div className="flex gap-2 items-start">
-                  <div className="flex-1 space-y-2">
-                    <Select
-                      value={cond.field}
-                      onValueChange={(v) => updateCondition(index, { field: v })}
-                    >
-                      <SelectTrigger aria-label="Condition field" className="h-8 text-sm">
-                        <SelectValue placeholder="Select field..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {allFields.map((field) => (
-                          <SelectItem key={field.id} value={field.name}>
-                            {field.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <div className="flex gap-2">
-                      <Select
-                        value={cond.operator}
-                        onValueChange={(v) =>
-                          updateCondition(index, {
-                            operator: v as ConditionOperator,
-                          })
-                        }
-                      >
-                        <SelectTrigger aria-label="Condition operator" className="w-32 h-8 text-sm">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {CONDITION_OPERATORS.map((op) => (
-                            <SelectItem key={op.value} value={op.value}>
-                              {op.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <div className="flex-1">
-                        {cond.field &&
-                        getFieldOptions(cond.field).length > 0 &&
-                        (cond.operator === 'is' || cond.operator === 'isNot') ? (
-                          <Select
-                            value={cond.value}
-                            onValueChange={(v) => updateCondition(index, { value: v })}
-                          >
-                            <SelectTrigger aria-label="Condition value" className="h-8 text-sm">
-                              <SelectValue placeholder="Select value..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {getFieldOptions(cond.field).map((opt) => (
-                                <SelectItem key={String(opt.value)} value={String(opt.value)}>
-                                  {opt.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        ) : (
-                          <Input
-                            className="h-8 text-sm"
-                            placeholder={
-                              cond.operator === 'in' || cond.operator === 'notIn'
-                                ? 'value1, value2, ...'
-                                : cond.operator === 'matches'
-                                  ? 'regex pattern'
-                                  : 'value'
-                            }
-                            value={cond.value}
-                            onChange={(e) => updateCondition(index, { value: e.target.value })}
-                          />
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  {conditions.length > 1 && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 p-0 text-muted-foreground"
-                      onClick={() => removeCondition(index)}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  )}
-                </div>
-              </div>
-            ))}
-
-            <Button variant="outline" size="sm" className="w-full" onClick={addCondition}>
-              <Plus className="h-3 w-3 mr-2" />
-              Add condition
-            </Button>
-          </div>
-
-          {/* Save Button */}
-          <Button className="w-full" onClick={saveRule} disabled={!conditions.some((c) => c.field)}>
-            {editingRuleIndex !== null ? 'Update rule' : 'Add rule'}
-          </Button>
-        </div>
-      ) : (
-        <Button variant="outline" className="w-full" onClick={() => setIsAddingRule(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add conditional rule
-        </Button>
-      )}
+      <RulesEditor
+        key={editorKey}
+        label="Field rules"
+        value={rules}
+        onChange={changeRules}
+        outcomes={DESIGNER_OUTCOMES}
+        fields={options.fields}
+        operators={rulesEngineVocabulary.operators}
+        valueModes={rulesEngineVocabulary.valueModes}
+        dialect={rulesEngineDialect}
+        defaultTouched={touched}
+      />
     </div>
   );
 }
