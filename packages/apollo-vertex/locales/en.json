@@ -153,6 +153,8 @@
   "ixp_baseline": "Baseline",
   "ixp_count_different": "{{count}} different field(s)",
   "ixp_count_identical": "{{count}} identical field(s)",
+  "ixp_count_new_documents": "{{count}} new document(s)",
+  "ixp_count_removed_documents": "{{count}} removed document(s)",
   "ixp_count_semantically_same": "{{count}} semantically same field(s)",
   "ixp_doc_match": "Match",
   "ixp_doc_missing": "Removed",
