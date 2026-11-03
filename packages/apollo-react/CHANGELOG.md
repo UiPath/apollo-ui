@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.15.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.15.0...@uipath/apollo-react@7.15.1) (2026-11-03)
+
+### Bug Fixes
+
+* **apollo-react:** keep citation markers out of bare-URL autolinks [JAR-10340] ([68b765e](https://github.com/UiPath/apollo-ui/commit/68b765e1ce6d58c322be7626f8fa96500b2519b5))
+
 ## [@uipath/apollo-react-v7.14.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.13.0...@uipath/apollo-react@7.14.0) (2026-11-02)
 
 ### Features
