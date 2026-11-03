@@ -2,7 +2,7 @@
 
 import { useVertexTranslation } from "@/lib/vertex-translation";
 import type { EvaluatorResultProps } from "../registry";
-import type { IxpDetails } from "./schema";
+import { IxpDocStatus, type IxpDetails } from "./schema";
 import { ProvenanceBar } from "./internal/provenance-bar";
 import { SummaryBar } from "./internal/summary-bar";
 import { DocumentRow } from "./internal/document-row";
@@ -23,6 +23,8 @@ export const IxpExtractionResult = ({
     expected_provenance,
     actual_provenance,
   } = evaluatorDetails;
+  const countWithStatus = (status: string) =>
+    documents.filter((doc) => doc.status === status).length;
 
   return (
     <div className="flex flex-col gap-4">
@@ -34,6 +36,8 @@ export const IxpExtractionResult = ({
         different={different_field_count}
         semanticallySame={semantically_same_field_count}
         identical={identical_field_count}
+        newDocuments={countWithStatus(IxpDocStatus.NewInActual)}
+        removedDocuments={countWithStatus(IxpDocStatus.MissingInActual)}
       />
       <div className="flex flex-col gap-2">
         {documents.length === 0 ? (

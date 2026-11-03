@@ -8,14 +8,28 @@ export const SummaryBar = ({
   different,
   semanticallySame,
   identical,
+  newDocuments,
+  removedDocuments,
 }: {
   different: number;
   semanticallySame: number;
   identical: number;
+  newDocuments: number;
+  removedDocuments: number;
 }) => {
   const { t } = useVertexTranslation();
   return (
     <div className="flex flex-wrap items-center gap-2">
+      {newDocuments > 0 && (
+        <Badge status="error" variant="secondary">
+          {t("ixp_count_new_documents", { count: newDocuments })}
+        </Badge>
+      )}
+      {removedDocuments > 0 && (
+        <Badge status="error" variant="secondary">
+          {t("ixp_count_removed_documents", { count: removedDocuments })}
+        </Badge>
+      )}
       <Badge status={different > 0 ? "error" : "success"} variant="secondary">
         {t("ixp_count_different", { count: different })}
       </Badge>

@@ -44,7 +44,7 @@ const DocumentSummary = ({
     return <Badge status="error">{t("ixp_doc_missing")}</Badge>;
   }
   if (doc.status === IxpDocStatus.NewInActual) {
-    return <Badge status="info">{t("ixp_doc_new")}</Badge>;
+    return <Badge status="error">{t("ixp_doc_new")}</Badge>;
   }
 
   const hasDiff = different > 0;
