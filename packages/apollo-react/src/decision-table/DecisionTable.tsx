@@ -3,6 +3,7 @@ import { ArrowRight } from 'lucide-react';
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from 'react';
 import { BODY_ROW_HEIGHT_PX, MIN_COLUMN_WIDTH } from './constants';
 import {
+  FROZEN_RIGHT_GROUP_CELL_CLASS,
   GRID_FRAME_CLASS,
   GRID_PANE_CLASS,
   GROUP_CELL_CLASS,
@@ -129,9 +130,23 @@ type ColumnRun =
   | { type: 'spacer'; widthPx: number; firstCoveredId: string }
   | { type: 'separator'; widthPx: number; beforeColumnId: string };
 
+/** Each group's own first and last flex index. Depends only on the columns, not the window. */
+type GroupBounds = ReadonlyMap<string, { first: number; last: number }>;
+
+export const groupBoundsOf = (columns: GridColumn[]): GroupBounds => {
+  const bounds = new Map<string, { first: number; last: number }>();
+  columns.forEach((column, flexIndex) => {
+    if (!column.group) return;
+    const groupBounds = bounds.get(column.group.id);
+    if (groupBounds) groupBounds.last = flexIndex;
+    else bounds.set(column.group.id, { first: flexIndex, last: flexIndex });
+  });
+  return bounds;
+};
+
 /** Contiguous same-group runs of the mounted columns, for the group header's colSpans. */
 export const groupColumnRuns = (
-  columns: GridColumn[],
+  groupBounds: GroupBounds,
   visibleColumns: VisibleGridColumn[],
   pinnedLeftPxOf: (flexIndex: number) => number | undefined
 ): ColumnRun[] => {
@@ -189,19 +204,12 @@ export const groupColumnRuns = (
       openedGroups.add(column.group.id);
     }
   }
-  markGroupEdges(columns, runs);
+  markGroupEdges(groupBounds, runs);
   return runs;
 };
 
-/** Each group's own first and last column, so a run can tell whether it really holds either. */
-const markGroupEdges = (columns: GridColumn[], runs: ColumnRun[]) => {
-  const groupBounds = new Map<string, { first: number; last: number }>();
-  columns.forEach((column, flexIndex) => {
-    if (!column.group) return;
-    const bounds = groupBounds.get(column.group.id);
-    if (bounds) bounds.last = flexIndex;
-    else groupBounds.set(column.group.id, { first: flexIndex, last: flexIndex });
-  });
+/** Whether each run really holds its group's first or last column. */
+const markGroupEdges = (groupBounds: GroupBounds, runs: ColumnRun[]) => {
   for (const run of runs) {
     if (run.type !== 'group') continue;
     const bounds = groupBounds.get(run.group.id);
@@ -330,6 +338,7 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
     const { visibleColumns, widths, totalWidth } = layout;
     const hasTrailing = trailingColumnWidth > 0;
     const hasLeading = leadingColumnWidth > 0;
+    const groupBounds = React.useMemo(() => groupBoundsOf(columns), [columns]);
     // A grid with no grouped column (and no trailing group cell) gets no group row at all — a
     // flat grid must not pay a blank band-height strip. Consumers with groups keep two header rows, so
     // their header cells stick below the band row and body rows number from aria-rowindex 3; a flat
@@ -593,7 +602,7 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
                 {topLeftCornerCell}
                 {/* Group cells span runs of same-group mounted columns; a spacer splits a group into
                   two cells of the same tone. */}
-                {groupColumnRuns(columns, visibleColumns, pinnedLeftPxOf).map((run) => {
+                {groupColumnRuns(groupBounds, visibleColumns, pinnedLeftPxOf).map((run) => {
                   if (run.type === 'spacer') {
                     return (
                       <td
@@ -667,7 +676,7 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
                 })}
                 {hasTrailing &&
                   (trailingGroupCell ?? (
-                    <td aria-hidden="true" className={cn(GROUP_GUTTER_CLASS, 'right-0 z-3')} />
+                    <td aria-hidden="true" className={FROZEN_RIGHT_GROUP_CELL_CLASS} />
                   ))}
               </tr>
             )}

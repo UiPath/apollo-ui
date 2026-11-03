@@ -1,5 +1,10 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { DecisionTable, type DecisionTableProps, groupColumnRuns } from './DecisionTable';
+import {
+  DecisionTable,
+  type DecisionTableProps,
+  groupBoundsOf,
+  groupColumnRuns,
+} from './DecisionTable';
 import type { GridColumn, GridColumnGroup, VisibleGridColumn } from './gridTypes';
 
 const inputs: GridColumnGroup = { id: 'inputs', label: 'Inputs' };
@@ -29,7 +34,7 @@ const groupRuns = (
   visible: VisibleGridColumn[],
   pinnedLeftPxOf: (flexIndex: number) => number | undefined = () => undefined
 ) =>
-  groupColumnRuns(columns, visible, pinnedLeftPxOf).flatMap((run) =>
+  groupColumnRuns(groupBoundsOf(columns), visible, pinnedLeftPxOf).flatMap((run) =>
     run.type === 'group'
       ? [
           {
