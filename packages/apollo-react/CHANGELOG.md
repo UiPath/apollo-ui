@@ -1,3 +1,13 @@
+## [@uipath/apollo-react-v7.15.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.15.1...@uipath/apollo-react@7.15.2) (2026-11-03)
+
+### Bug Fixes
+
+* **apollo-react:** address decision table review feedback [MST-17298] ([465195d](https://github.com/UiPath/apollo-ui/commit/465195d6cc88086f152b266c136a67f0ceba62c5))
+* **apollo-react:** address the decision table re-review [MST-17298] ([3862600](https://github.com/UiPath/apollo-ui/commit/38626002cc96587921c33f61b3978f41638e91f0))
+* **apollo-react:** cover the decision table contract in tests and tighten its docs [MST-17298] ([89b112b](https://github.com/UiPath/apollo-ui/commit/89b112bbbba70953d1e42eb36864633b3bebc8b7))
+* **apollo-react:** pin the frozen-right body cell on its own [MST-17298] ([29ae8b2](https://github.com/UiPath/apollo-ui/commit/29ae8b2a2222de6025399925d2c307670f9aa967))
+* **apollo-react:** sync the decision table look, corner slot and scroll performance [MST-17298] ([fe639de](https://github.com/UiPath/apollo-ui/commit/fe639de48b09ae1f53fd9f7e5186a8adead2a5f4))
+
 ## [@uipath/apollo-react-v7.15.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.15.0...@uipath/apollo-react@7.15.1) (2026-11-03)
 
 ### Bug Fixes
