@@ -149,12 +149,47 @@ describe('slotNavigation', () => {
       const slot = findMoveUpSlot(projection, WIREFRAME_NODE_IDS.javascript);
       expect(slot).toBeDefined();
       expect(slot?.target?.nodeId).toBe(WIREFRAME_NODE_IDS.http);
-      expect(slot?.source?.nodeId).toBeUndefined();
+      // The first step is wired from the trigger, so the prepend splits that edge.
+      expect(slot?.source?.nodeId).toBe(WIREFRAME_NODE_IDS.trigger);
+      expect(slot?.graphEdgeId).toBe('e-trigger-http');
 
       const changeSet = moveSubtree(projection, WIREFRAME_NODE_IDS.javascript, slot!, fixture);
       const moved = applyGraphChangeSet(fixture, changeSet);
       const movedProjection = projectSequence(moved.nodes, moved.edges);
       const order = movedProjection.rows.filter((r) => r.depth === 0).map((r) => r.nodeId);
+      expect(order.slice(0, 2)).toEqual([WIREFRAME_NODE_IDS.javascript, WIREFRAME_NODE_IDS.http]);
+      // The trigger now fires the new first step, and only that one.
+      const triggerTargets = moved.edges
+        .filter((e) => e.source === WIREFRAME_NODE_IDS.trigger)
+        .map((e) => e.target);
+      expect(triggerTargets).toEqual([WIREFRAME_NODE_IDS.javascript]);
+    });
+
+    it('prepends with a target-only slot when no trigger wires the first step', () => {
+      const fixture = makeWireframeFixture();
+      const edges = fixture.edges.filter((e) => e.id !== 'e-trigger-http');
+      const projection = projectSequence(fixture.nodes, edges);
+      const slot = findMoveUpSlot(projection, WIREFRAME_NODE_IDS.javascript);
+      expect(slot?.target?.nodeId).toBe(WIREFRAME_NODE_IDS.http);
+      expect(slot?.source).toBeUndefined();
+      expect(slot?.graphEdgeId).toBeUndefined();
+    });
+
+    it('re-points the trigger when the first step moves down', () => {
+      const fixture = makeWireframeFixture();
+      const projection = projectSequence(fixture.nodes, fixture.edges);
+      const slot = findMoveDownSlot(projection, WIREFRAME_NODE_IDS.http);
+      expect(slot).toBeDefined();
+
+      const changeSet = moveSubtree(projection, WIREFRAME_NODE_IDS.http, slot!, fixture);
+      const moved = applyGraphChangeSet(fixture, changeSet);
+      const triggerTargets = moved.edges
+        .filter((e) => e.source === WIREFRAME_NODE_IDS.trigger)
+        .map((e) => e.target);
+      expect(triggerTargets).toEqual([WIREFRAME_NODE_IDS.javascript]);
+      const order = projectSequence(moved.nodes, moved.edges)
+        .rows.filter((r) => r.depth === 0)
+        .map((r) => r.nodeId);
       expect(order.slice(0, 2)).toEqual([WIREFRAME_NODE_IDS.javascript, WIREFRAME_NODE_IDS.http]);
     });
   });

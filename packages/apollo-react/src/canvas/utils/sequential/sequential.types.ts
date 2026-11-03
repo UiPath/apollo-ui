@@ -39,6 +39,11 @@ export interface SequenceRow {
   lanePlaceholder?: InsertionSlot;
   /** 'lane' renders as the dashed "Add step" row; 'append' as the quiet plus used between steps. */
   placeholderKind?: 'lane' | 'append';
+  /**
+   * Set on the synthetic start row that opens a self-contained container's body, to that
+   * container's id. Like a placeholder it has no canonical node and is never numbered.
+   */
+  bodyStart?: string;
 }
 
 /** An insertion point between two endpoints. */
@@ -52,6 +57,23 @@ export interface InsertionSlot {
   containerId?: string;
   /** The split edge is an explicit spine continuation, not branch/body content. */
   continuation?: boolean;
+  /**
+   * The first step of an empty self-contained body: added as a child of `containerId` with
+   * no edge, since nothing on the frame connects to it.
+   */
+  unconnected?: true;
+}
+
+/**
+ * An edge from a start/trigger node into a step. Start nodes fold into a start row and have
+ * no row or connector of their own, so the mutations read their wiring from here: an insert
+ * above the step or a move of the step must re-point this edge, or the trigger keeps firing
+ * the old first step.
+ */
+export interface SequenceStartEdge {
+  edgeId: string;
+  source: { nodeId: string; handleId?: string };
+  target: { nodeId: string; handleId?: string };
 }
 
 export type SequenceConnectorKind = 'step' | 'branch-entry' | 'merge-back' | 'goto';
@@ -74,6 +96,8 @@ export interface SequenceProjection {
   connectors: SequenceConnector[];
   /** Includes empty-branch-body slots. */
   slots: InsertionSlot[];
+  /** Start/trigger edges into steps, in edge order. Absent when the graph has none. */
+  startEdges?: SequenceStartEdge[];
 }
 
 /** Options for {@link projectSequence}. */
@@ -88,6 +112,11 @@ export interface ProjectSequenceOptions {
   isStartNode?: (node: Node) => boolean;
   /** Manifest-aware container predicate, needed to preserve empty container bodies. */
   isContainerNode?: (node: Node) => boolean;
+  /**
+   * A container whose body is a self-contained subflow (no inner-boundary handles). Its
+   * body opens with its own start row and is never entered from a handle on the frame.
+   */
+  isSelfContainedContainer?: (node: Node) => boolean;
   resolveBranchLabel?: (nodeId: string, handleId: string) => string;
   /**
    * Declared branch source handles for a parent node (not the continuation source),

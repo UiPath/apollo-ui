@@ -734,3 +734,83 @@ describe('projectSequence duplicate edges', () => {
     expect(rowById(projection, 'a').collapsible).toBe(false);
   });
 });
+
+describe('projectSequence start (trigger) edges', () => {
+  const trigger = (id = 'trigger', parentId?: string): Node => ({
+    id,
+    type: 'uipath.first-run',
+    position: { x: 0, y: -100 },
+    data: {},
+    ...(parentId ? { parentId } : {}),
+  });
+
+  it('records the trigger edge without giving the trigger a row or a connector', () => {
+    const nodes = [trigger(), plain('a', 0), plain('b', 10)];
+    const edges = [wire('trigger', 'a'), wire('a', 'b')];
+    const projection = projectSequence(nodes, edges);
+
+    expect(rowSummary(projection)).toBe('a@0 b@0');
+    expect(connectorSummary(projection)).toBe('step:a->b');
+    expect(projection.startEdges).toEqual([
+      {
+        edgeId: 'trigger-a',
+        source: { nodeId: 'trigger', handleId: 'output' },
+        target: { nodeId: 'a', handleId: 'input' },
+      },
+    ]);
+  });
+
+  it('omits startEdges when no trigger wires a step', () => {
+    const projection = projectSequence([plain('a', 0), plain('b', 10)], [wire('a', 'b')]);
+    expect(projection.startEdges).toBeUndefined();
+  });
+
+  it('walks the body of a container reached only from a trigger instead of orphaning it', () => {
+    const nodes = [trigger(), plain('c', 0), plain('a', 10, 'c'), plain('b', 20, 'c')];
+    const edges = [wire('trigger', 'c'), wire('a', 'b')];
+    const projection = projectSequence(nodes, edges);
+
+    expect(rowSummary(projection)).toBe('c@0 a@1 b@1 __sequential-lane__b::__tail__@1?');
+    expect(projection.connectors.some((c) => c.kind === 'goto')).toBe(false);
+  });
+
+  it('keeps the body under a container that has no edges of its own', () => {
+    // `x -> y` gives the graph sequence content, so the edge-less container is an orphan.
+    const nodes = [plain('x', 0), plain('y', 10), plain('c', 50), plain('a', 60, 'c')];
+    const projection = projectSequence(nodes, [wire('x', 'y')]);
+
+    const container = rowById(projection, 'c');
+    const child = rowById(projection, 'a');
+    expect(container.orphan).toBe(true);
+    expect(child).toMatchObject({ depth: 1, parentRowId: 'c' });
+  });
+
+  it("splits a body trigger's edge at the head of a self-contained body", () => {
+    const nodes = [plain('c', 0), trigger('t', 'c'), plain('a', 10, 'c')];
+    const edges = [wire('t', 'a')];
+    const projection = projectSequence(nodes, edges, {
+      isSelfContainedContainer: (node) => node.id === 'c',
+    });
+
+    const head = projection.slots.find((slot) => slot.id === 'slot:head:c:a');
+    expect(head).toEqual({
+      id: 'slot:head:c:a',
+      source: { nodeId: 't', handleId: 'output' },
+      target: { nodeId: 'a', handleId: 'input' },
+      graphEdgeId: 't-a',
+      containerId: 'c',
+    });
+  });
+
+  it("enters a populated body with no entry edge through the container's declared body handle", () => {
+    // `a -> b -> a` is a cycle with no way in, so the body has no start edge from the frame.
+    const nodes = [plain('c', 0), plain('a', 10, 'c'), plain('b', 20, 'c')];
+    const edges = [wire('a', 'b'), wire('b', 'a')];
+    const projection = projectSequence(nodes, edges, {
+      getBranchHandles: (node) => (node.id === 'c' ? [{ id: 'body', label: 'Body' }] : []),
+    });
+
+    const start = projection.slots.find((slot) => slot.id.startsWith('slot:start:c:'));
+    expect(start?.source).toEqual({ nodeId: 'c', handleId: 'body' });
+  });
+});

@@ -41,6 +41,8 @@ export interface UseContainerSequencesArgs<N extends Node, E extends Edge> {
   resolveBranchLabel: (nodeId: string, handleId: string) => string;
   getBranchHandles: (node: N) => { id: string; label: string }[];
   getDefaultSourceHandleId: (nodeType: string) => string | undefined;
+  /** The continuation handle a step appended after a node hangs from (see `resolveTailInsertionSlot`). */
+  getAppendSourceHandleId?: (node: N) => string | false | undefined;
   collapsedStepIds?: ReadonlySet<string>;
   /** "Add trigger" on a self-contained body's start row; called with the container id. */
   onAddTrigger?: (containerId: string) => void;
@@ -155,6 +157,7 @@ export function useContainerSequences<N extends Node, E extends Edge>(
     resolveBranchLabel,
     getBranchHandles,
     getDefaultSourceHandleId,
+    getAppendSourceHandleId,
     collapsedStepIds,
     onAddTrigger,
     layoutOptions,
@@ -169,6 +172,18 @@ export function useContainerSequences<N extends Node, E extends Edge>(
   onAddTriggerRef.current = onAddTrigger;
   const boundTriggersRef = useRef(new Map<string, () => void>());
   const hasAddTrigger = onAddTrigger !== undefined;
+  // Serves the frame's own start row and those of self-contained bodies nested inside it.
+  const getBodyAddTrigger = useMemo(() => {
+    if (!hasAddTrigger) return undefined;
+    return (id: string) => {
+      let handler = boundTriggersRef.current.get(id);
+      if (!handler) {
+        handler = () => onAddTriggerRef.current?.(id);
+        boundTriggersRef.current.set(id, handler);
+      }
+      return handler;
+    };
+  }, [hasAddTrigger]);
 
   return useMemo<ContainerSequences<N, E>>(() => {
     const bodyLayout: LayoutSequenceOptions = {
@@ -225,6 +240,7 @@ export function useContainerSequences<N extends Node, E extends Edge>(
         isSequenceEdge: isSequenceEdge as (edge: Edge) => boolean,
         isContainerNode: isContainerNode as (node: Node) => boolean,
         isStartNode: selfContained ? (isStartNode as (node: Node) => boolean) : undefined,
+        isSelfContainedContainer: isSelfContained as ((node: Node) => boolean) | undefined,
         resolveBranchLabel,
         getBranchHandles: getBranchHandles as (node: Node) => { id: string; label: string }[],
         collapsedStepIds,
@@ -261,19 +277,12 @@ export function useContainerSequences<N extends Node, E extends Edge>(
         idSuffix: `:${containerId}`,
         includeStart: selfContained,
       };
-      let onAddTriggerForBody: (() => void) | undefined;
-      if (selfContained && hasAddTrigger) {
-        onAddTriggerForBody = boundTriggersRef.current.get(containerId);
-        if (!onAddTriggerForBody) {
-          onAddTriggerForBody = () => onAddTriggerRef.current?.(containerId);
-          boundTriggersRef.current.set(containerId, onAddTriggerForBody);
-        }
-      }
+      const onAddTriggerForBody = selfContained ? getBodyAddTrigger?.(containerId) : undefined;
       const assembled = assembleSequentialNodes(
         result.projection,
         result.layout,
         nodesById,
-        { canAddToLane, onAddTrigger: onAddTriggerForBody },
+        { canAddToLane, onAddTrigger: onAddTriggerForBody, getBodyAddTrigger },
         bodyLayout,
         scope
       ).filter(
@@ -340,10 +349,35 @@ export function useContainerSequences<N extends Node, E extends Edge>(
       for (const row of result.projection.rows) {
         if (row.lanePlaceholder) slotsById.set(row.lanePlaceholder.id, row.lanePlaceholder);
       }
-      const tail = resolveTailInsertionSlot(result.projection, nodes, getDefaultSourceHandleId);
-      if (tail) {
+      // A self-contained body's lone trigger (folded into its start row) is the append source
+      // of an otherwise empty body, as on the canvas; only the body's own triggers count.
+      const tail = resolveTailInsertionSlot(
+        result.projection,
+        nodes,
+        getDefaultSourceHandleId,
+        selfContained
+          ? (node: N) => node.parentId === containerId && isStartNode?.(node) === true
+          : undefined,
+        getAppendSourceHandleId
+      );
+      // With nothing to append after: a self-contained body adds an unconnected first step,
+      // and a railed body hangs its first step off the frame's declared body handle, like
+      // the empty-body lane of the whole-canvas view. A populated body whose last step has
+      // no continuation output offers no tail.
+      const hasSteps = result.projection.rows.some((row) => row.stepNumber !== undefined);
+      const bodyHandleId =
+        !tail && !selfContained && !hasSteps ? getBranchHandles(container)[0]?.id : undefined;
+      const emptyBodySlot: Omit<InsertionSlot, 'id'> | undefined = hasSteps
+        ? undefined
+        : selfContained
+          ? { unconnected: true }
+          : bodyHandleId !== undefined
+            ? { source: { nodeId: containerId, handleId: bodyHandleId } }
+            : undefined;
+      const tailSlot = tail ?? emptyBodySlot;
+      if (tailSlot) {
         slotsById.set(containerTailSlotId(containerId), {
-          ...tail,
+          ...tailSlot,
           id: containerTailSlotId(containerId),
           containerId,
         });
@@ -415,8 +449,9 @@ export function useContainerSequences<N extends Node, E extends Edge>(
     resolveBranchLabel,
     getBranchHandles,
     getDefaultSourceHandleId,
+    getAppendSourceHandleId,
     collapsedStepIds,
-    hasAddTrigger,
+    getBodyAddTrigger,
     layoutOptions,
     insertSlot,
     canAddToLane,

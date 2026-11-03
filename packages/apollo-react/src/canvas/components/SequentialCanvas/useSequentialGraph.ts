@@ -18,6 +18,7 @@ import { sequenceFingerprint } from '../../utils/sequential/fingerprint';
 import {
   edgeDataLabel,
   filterGraphByNodes,
+  prependSlot,
   sourceHandleOf,
 } from '../../utils/sequential/graph-helpers';
 import { layoutSequence, resolveSequenceMetrics } from '../../utils/sequential/layoutSequence';
@@ -52,7 +53,7 @@ import {
 type TranslateFn = ReturnType<typeof useSafeLingui>['_'];
 
 /** The connector draws its own dashes, so the preview style drops the Add Node dash pattern. */
-const { strokeDasharray: _dash, ...SEQ_PREVIEW_EDGE_STYLE } = PREVIEW_EDGE_STYLE ?? {};
+const { strokeDasharray: _dash, ...SEQ_PREVIEW_EDGE_STYLE } = { ...PREVIEW_EDGE_STYLE };
 
 const POSITION_AND_DATA_KEYS: ReadonlySet<string> = new Set(['position', 'data']);
 
@@ -82,8 +83,11 @@ export interface UseSequentialGraphArgs<N extends Node, E extends Edge> {
   /** Only the 'sequential' view derives; 'flow' passes the canonical graph through. */
   view: CanvasView;
   collapsedStepIds?: ReadonlySet<string>;
-  /** Wired onto the synthetic start bar's "Add trigger" button. */
-  onAddTrigger?: () => void;
+  /**
+   * Wired onto the synthetic start bar's "Add trigger" button: called with no argument from
+   * the canvas start row, and with the container id from a self-contained body's start row.
+   */
+  onAddTrigger?: (containerId?: string) => void;
   /** Wired onto the terminal placeholder's click (opens Add Node for the tail slot). */
   onPlaceholderAdd?: () => void;
   /** Registry-driven predicate excluding artifact/resource edges (see projectSequence). */
@@ -94,6 +98,8 @@ export interface UseSequentialGraphArgs<N extends Node, E extends Edge> {
   isStartNode?: (node: N) => boolean;
   /** Registry-driven predicate preserving empty manifest containers. */
   isContainerNode?: (node: N) => boolean;
+  /** Containers whose body opens with its own start row (see projectSequence). */
+  isSelfContainedContainer?: (node: N) => boolean;
   resolveBranchLabel?: (nodeId: string, handleId: string) => string;
   /** Registry-driven branch-lane handles for a parent node (see projectSequence). */
   getBranchHandles?: (node: N) => { id: string; label: string }[];
@@ -129,6 +135,7 @@ type ProjectionArgs<N extends Node, E extends Edge> = Pick<
   | 'isSequenceEdge'
   | 'isStartNode'
   | 'isContainerNode'
+  | 'isSelfContainedContainer'
   | 'resolveBranchLabel'
   | 'getBranchHandles'
 >;
@@ -150,6 +157,9 @@ function projectSequenceForView<N extends Node, E extends Edge>(
     isSequenceEdge: args.isSequenceEdge as ((edge: Edge) => boolean) | undefined,
     isStartNode: args.isStartNode as ((node: Node) => boolean) | undefined,
     isContainerNode: args.isContainerNode as ((node: Node) => boolean) | undefined,
+    isSelfContainedContainer: args.isSelfContainedContainer as
+      | ((node: Node) => boolean)
+      | undefined,
     resolveBranchLabel: args.resolveBranchLabel,
     getBranchHandles: args.getBranchHandles as
       | ((node: Node) => { id: string; label: string }[])
@@ -159,6 +169,8 @@ function projectSequenceForView<N extends Node, E extends Edge>(
 
 interface SyntheticCallbacks {
   onAddTrigger?: () => void;
+  /** The "Add trigger" handler for a self-contained body's start row; must be identity-stable. */
+  getBodyAddTrigger?: (containerId: string) => (() => void) | undefined;
   onPlaceholderAdd?: () => void;
   canAddToLane?: boolean;
 }
@@ -254,14 +266,39 @@ function buildSequentialNodes<N extends Node>(
   // Lowest visible non-orphan row at any depth, so the terminal placeholder sits below the
   // whole stack.
   let maxVisibleY: number | undefined;
+  // Self-contained bodies opened so far; a body start row precedes its body's rows.
+  const selfContainedScopes = new Set<string>();
 
   for (const row of projection.rows) {
+    // A self-contained body's own start row, inside the body like its first step.
+    if (row.bodyStart !== undefined) {
+      selfContainedScopes.add(row.bodyStart);
+      const local = layout.positions.get(row.nodeId) ?? { x: 0, y: 0 };
+      const onAddTrigger = callbacks.getBodyAddTrigger?.(row.bodyStart);
+      clones.push({
+        id: row.nodeId,
+        type: SEQ_START_NODE_TYPE,
+        position: at(local),
+        width: barWidth,
+        height: barHeight,
+        draggable: false,
+        selectable: onAddTrigger !== undefined,
+        hidden: !row.visible,
+        ...parenting,
+        data: { onAddTrigger } satisfies SequentialStartNodeData,
+      });
+      if (row.visible) {
+        maxVisibleY = maxVisibleY === undefined ? local.y : Math.max(maxVisibleY, local.y);
+      }
+      continue;
+    }
     // Empty branch-lane placeholder: a synthetic bar with no canonical node.
     if (row.lanePlaceholder) {
+      const local = layout.positions.get(row.nodeId) ?? { x: 0, y: 0 };
       clones.push({
         id: row.nodeId,
         type: SEQ_PLACEHOLDER_NODE_TYPE,
-        position: at(layout.positions.get(row.nodeId) ?? { x: 0, y: 0 }),
+        position: at(local),
         width: barWidth,
         // An append plus is an overlay in the row gap; an empty lane/body is a full dashed row.
         height: row.placeholderKind === 'append' ? rowGap : barHeight,
@@ -276,6 +313,14 @@ function buildSequentialNodes<N extends Node>(
           variant: row.placeholderKind === 'append' ? 'plus' : 'row',
         } satisfies SequentialPlaceholderNodeData,
       });
+      // An empty self-contained body ends the stack at its placeholder.
+      if (
+        row.visible &&
+        row.parentRowId !== undefined &&
+        selfContainedScopes.has(row.parentRowId)
+      ) {
+        maxVisibleY = maxVisibleY === undefined ? local.y : Math.max(maxVisibleY, local.y);
+      }
       continue;
     }
     const canonical = nodesById.get(row.nodeId);
@@ -480,12 +525,9 @@ export function buildSequentialEdges(
   const previewIsFirst = firstTop?.nodeId === PREVIEW_NODE_ID;
   const headSlot: InsertionSlot | undefined =
     firstTop && !previewIsFirst
-      ? {
-          id: `slot:head:${firstTop.nodeId}`,
-          target: { nodeId: firstTop.nodeId },
-          // A step inserted at the head of a container body parents into that container.
-          ...(scope.parentId ? { containerId: scope.parentId } : {}),
-        }
+      ? // A step inserted at the head of a container body parents into that container. When a
+        // trigger wires the first step, the slot splits that edge (see `prependSlot`).
+        prependSlot(projection, `slot:head:${firstTop.nodeId}`, firstTop.nodeId, scope.parentId)
       : undefined;
   if (scope.includeStart === false) {
     if (lastVisibleTop) edges.push(placeholderEdge(lastVisibleTop, suffix));
@@ -630,6 +672,7 @@ export function useSequentialGraph<N extends Node, E extends Edge>(
     isSequenceNode,
     isStartNode,
     isContainerNode,
+    isSelfContainedContainer,
     resolveBranchLabel,
     getBranchHandles,
     canAddToLane,
@@ -650,6 +693,19 @@ export function useSequentialGraph<N extends Node, E extends Edge>(
     () => (hasAddTrigger ? () => onAddTriggerRef.current?.() : undefined),
     [hasAddTrigger]
   );
+  // One stable handler per self-contained body, so its start row's data keeps identity.
+  const getBodyAddTrigger = useMemo(() => {
+    if (!hasAddTrigger) return undefined;
+    const bound = new Map<string, () => void>();
+    return (containerId: string) => {
+      let handler = bound.get(containerId);
+      if (!handler) {
+        handler = () => onAddTriggerRef.current?.(containerId);
+        bound.set(containerId, handler);
+      }
+      return handler;
+    };
+  }, [hasAddTrigger]);
   const canonicalById = useMemo(() => nodesById ?? indexById(nodes), [nodesById, nodes]);
 
   const collapsed = collapsedStepIds ?? EMPTY_SET;
@@ -686,6 +742,7 @@ export function useSequentialGraph<N extends Node, E extends Edge>(
       predicateFingerprint(nodes, isSequenceNode, 1),
       predicateFingerprint(nodes, isStartNode, 0),
       predicateFingerprint(nodes, isContainerNode, 0),
+      predicateFingerprint(nodes, isSelfContainedContainer, 0),
       lanes,
     ].join('\u0002');
   }, [
@@ -699,6 +756,7 @@ export function useSequentialGraph<N extends Node, E extends Edge>(
     isSequenceNode,
     isStartNode,
     isContainerNode,
+    isSelfContainedContainer,
   ]);
 
   // A data-only edit (rename keystroke) yields the same fingerprint and reuses the projection.
@@ -726,7 +784,7 @@ export function useSequentialGraph<N extends Node, E extends Edge>(
       projection,
       layout,
       canonicalById,
-      { onAddTrigger: stableOnAddTrigger, onPlaceholderAdd, canAddToLane },
+      { onAddTrigger: stableOnAddTrigger, getBodyAddTrigger, onPlaceholderAdd, canAddToLane },
       layoutOptions
     );
     const stamped = stampStepAriaLabels(built, projection, registry, _);
@@ -741,6 +799,7 @@ export function useSequentialGraph<N extends Node, E extends Edge>(
     layout,
     canonicalById,
     stableOnAddTrigger,
+    getBodyAddTrigger,
     onPlaceholderAdd,
     canAddToLane,
     layoutOptions,

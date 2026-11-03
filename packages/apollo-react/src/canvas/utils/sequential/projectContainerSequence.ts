@@ -91,6 +91,7 @@ export function projectContainerSequence(
   let projection = projectSequence(detached, scoped.edges, {
     isSequenceEdge: options.isSequenceEdge,
     isContainerNode: options.isContainerNode,
+    isSelfContainedContainer: options.isSelfContainedContainer,
     resolveBranchLabel: options.resolveBranchLabel,
     getBranchHandles: options.getBranchHandles,
     collapsedStepIds: options.collapsedStepIds,

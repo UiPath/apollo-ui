@@ -406,4 +406,140 @@ describe('useContainerSequences: runtime containers', () => {
     (second.data as { onAddTrigger: () => void }).onAddTrigger();
     expect(next).toHaveBeenCalledWith(rc.container);
   });
+
+  it('gives an empty body an unconnected tail slot, so Add step adds a first child', () => {
+    const { nodes, edges } = makeRuntimeContainerFixture();
+    const outer = nodes.filter((node) => node.parentId === undefined);
+    const outerIds = new Set(outer.map((node) => node.id));
+    const outerEdges = edges.filter(
+      (edge) => outerIds.has(edge.source) && outerIds.has(edge.target)
+    );
+    const { result } = renderHook(() => useContainerSequences(runtimeArgs(outer, outerEdges)));
+
+    expect(result.current.slotsById.get(`slot:tail:${rc.container}`)).toEqual({
+      id: `slot:tail:${rc.container}`,
+      containerId: rc.container,
+      unconnected: true,
+    });
+  });
+
+  it("sources an otherwise empty body's tail at its lone trigger, not at outer triggers", () => {
+    const { nodes, edges } = makeRuntimeContainerFixture();
+    const outer = nodes.filter((node) => node.parentId === undefined);
+    const outerIds = new Set(outer.map((node) => node.id));
+    const outerEdges = edges.filter(
+      (edge) => outerIds.has(edge.source) && outerIds.has(edge.target)
+    );
+    const trigger = (id: string, parentId?: string): Node => ({
+      id,
+      type: 'test.trigger',
+      ...(parentId ? { parentId } : {}),
+      position: { x: 0, y: 0 },
+      data: {},
+    });
+    const { result } = renderHook(() =>
+      useContainerSequences(
+        runtimeArgs(
+          [...outer, trigger('outer-trigger'), trigger('body-trigger', rc.container)],
+          outerEdges,
+          { isStartNode: (node) => node.type === 'test.trigger' }
+        )
+      )
+    );
+
+    expect(result.current.slotsById.get(`slot:tail:${rc.container}`)).toEqual({
+      id: `slot:tail:${rc.container}`,
+      source: { nodeId: 'body-trigger', handleId: 'output' },
+      containerId: rc.container,
+    });
+  });
+
+  it('offers no tail on an empty railed body that declares no body handle', () => {
+    const { nodes, edges } = makeRuntimeContainerFixture();
+    const outer = nodes.filter((node) => node.parentId === undefined);
+    const loop: Node = {
+      id: 'empty-loop',
+      type: 'uipath.control-flow.foreach',
+      position: { x: 0, y: 900 },
+      data: {},
+    };
+    const { result } = renderHook(() =>
+      useContainerSequences(
+        runtimeArgs([...outer, loop], edges, { sequencedContainerIds: new Set([loop.id]) })
+      )
+    );
+
+    expect(result.current.sequencedIds.has(loop.id)).toBe(true);
+    expect(result.current.slotsById.has(`slot:tail:${loop.id}`)).toBe(false);
+  });
+
+  it("hangs an empty railed body's first step off the frame's declared body handle", () => {
+    const { nodes, edges } = makeRuntimeContainerFixture();
+    const outer = nodes.filter((node) => node.parentId === undefined);
+    const loop: Node = {
+      id: 'empty-loop',
+      type: 'uipath.control-flow.foreach',
+      position: { x: 0, y: 900 },
+      data: {},
+    };
+    const { result } = renderHook(() =>
+      useContainerSequences(
+        runtimeArgs([...outer, loop], edges, {
+          sequencedContainerIds: new Set([loop.id]),
+          getBranchHandles: (node) => (node.id === loop.id ? [{ id: 'body', label: 'Body' }] : []),
+        })
+      )
+    );
+
+    // Without this slot the body's "Add step" placeholder is a dead button.
+    expect(result.current.slotsById.get(`slot:tail:${loop.id}`)).toEqual({
+      id: `slot:tail:${loop.id}`,
+      source: { nodeId: loop.id, handleId: 'body' },
+      containerId: loop.id,
+    });
+  });
+
+  it('opens a runtime container nested in a sequenced body with its own start row', () => {
+    const { nodes, edges } = makeRuntimeContainerFixture();
+    const nested: Node[] = [
+      {
+        id: 'inner-rt',
+        type: 'uipath.runtime-container',
+        parentId: rc.container,
+        position: { x: 0, y: 900 },
+        data: {},
+      },
+      {
+        id: 'inner-step',
+        type: 'uipath.data.transform',
+        parentId: 'inner-rt',
+        position: { x: 0, y: 0 },
+        data: {},
+      },
+    ];
+    const toInner: Edge = {
+      id: 'e-send-inner',
+      source: rc.sendMessage,
+      sourceHandle: 'output',
+      target: 'inner-rt',
+      targetHandle: 'input',
+    };
+    const onAddTrigger = vi.fn();
+    const { result } = renderHook(() =>
+      useContainerSequences(
+        runtimeArgs([...nodes, ...nested], [...edges, toInner], { onAddTrigger })
+      )
+    );
+
+    const innerStart = find(result.current.nodes, `${SEQ_START_ROW_ID}:inner-rt`);
+    expect(innerStart?.parentId).toBe(rc.container);
+    expect(result.current.placeholderIds.has(innerStart!.id)).toBe(true);
+    (innerStart?.data as { onAddTrigger: () => void }).onAddTrigger();
+    expect(onAddTrigger).toHaveBeenCalledWith('inner-rt');
+    expect(
+      result.current.edges.some(
+        (edge) => edge.source === innerStart!.id && edge.target === 'inner-step'
+      )
+    ).toBe(true);
+  });
 });
