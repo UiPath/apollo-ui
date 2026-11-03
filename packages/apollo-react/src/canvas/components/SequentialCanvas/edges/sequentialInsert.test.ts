@@ -393,6 +393,20 @@ describe('buildSequentialPreviewOptions', () => {
     expect('target' in options).toBe(false);
   });
 
+  it('anchors an unconnected slot on its container with no target and the unconnected marker', () => {
+    const slot: InsertionSlot = { id: 'slot:lane:api:body', containerId: 'api', unconnected: true };
+    const options = buildSequentialPreviewOptions(makeInstance([]), {
+      ...baseArgs,
+      slot,
+      source: 'api',
+      target: '',
+    });
+    expect(options.source).toEqual({ nodeId: 'api' });
+    expect('target' in options).toBe(false);
+    expect(options.data).toEqual({ unconnected: true });
+    expect(options.previewNodeSize).toEqual({ width: SEQ_BAR_WIDTH, height: SEQ_BAR_HEIGHT });
+  });
+
   it('drives a head insertion from the first canonical target without using the synthetic start row', () => {
     const slot: InsertionSlot = { id: 'slot-head', target: { nodeId: 'first' } };
     const options = buildSequentialPreviewOptions(makeInstance(), {

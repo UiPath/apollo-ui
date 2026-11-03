@@ -4,6 +4,7 @@ import { buildEdgeId } from '../props-helpers';
 import {
   indexNodesByParent,
   isSequentialContinuationEdge,
+  isSyntheticRow,
   rowsById,
   SEQ_CONTINUATION_EDGE_KEY,
 } from './graph-helpers';
@@ -203,11 +204,11 @@ function structuralChildIds(nodes: Node[]): Map<string | undefined, string[]> {
   return byParent;
 }
 
-/** Child ids by `row.parentRowId` (container nesting and branch ownership), placeholders excluded. */
+/** Child ids by `row.parentRowId` (container nesting and branch ownership), synthetic rows excluded. */
 function projectedChildIds(projection: SequenceProjection): Map<string | undefined, string[]> {
   const byParent = new Map<string | undefined, string[]>();
   for (const row of projection.rows) {
-    if (row.parentRowId === undefined || row.lanePlaceholder) continue;
+    if (row.parentRowId === undefined || isSyntheticRow(row)) continue;
     const bucket = byParent.get(row.parentRowId);
     if (bucket) bucket.push(row.nodeId);
     else byParent.set(row.parentRowId, [row.nodeId]);

@@ -26,6 +26,17 @@ export const SEQ_LANE_PLACEHOLDER_PREFIX = '__sequential-lane__';
 /** Deterministic id for a parent node's empty-lane placeholder on a given handle. */
 export const lanePlaceholderId = (parentId: string, handleId: string): string =>
   `${SEQ_LANE_PLACEHOLDER_PREFIX}${parentId}::${handleId}`;
+/**
+ * Id of the start row opening a self-contained container's body. Shares the canvas start
+ * row's prefix, so a container body shown on a flow canvas uses the same id.
+ */
+export const bodyStartRowId = (containerId: string): string =>
+  `__sequential-start__:${containerId}`;
+/** Handle id of the empty-body placeholder of a self-contained container (no real handle). */
+export const SELF_CONTAINED_BODY_LANE = 'body';
+/** Synthetic rows have no canonical node: placeholders and body start rows. */
+export const isSyntheticRow = (row: { lanePlaceholder?: unknown; bodyStart?: string }): boolean =>
+  row.lanePlaceholder !== undefined || row.bodyStart !== undefined;
 /** Deterministic id for the append placeholder after a populated branch tail. */
 export const leafPlaceholderId = (leafId: string): string =>
   `${SEQ_LANE_PLACEHOLDER_PREFIX}${leafId}::__tail__`;

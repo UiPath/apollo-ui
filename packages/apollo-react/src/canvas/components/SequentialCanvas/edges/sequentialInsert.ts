@@ -14,6 +14,7 @@ import {
   SEQ_START_NODE_TYPE,
 } from '../../../constants';
 import type { CreatePreviewGraphOptions } from '../../../utils/createPreviewGraph';
+import { PREVIEW_UNCONNECTED_DATA_KEY } from '../../../utils/createPreviewNode';
 import { buildEdgeId } from '../../../utils/props-helpers';
 import { SEQ_CONTINUATION_EDGE_KEY } from '../../../utils/sequential/graph-helpers';
 import type { InsertionSlot } from '../../../utils/sequential/sequential.types';
@@ -73,6 +74,11 @@ export interface SequentialInsertArgs {
   connectorEdgeId?: string;
 }
 
+/** The first step of an empty self-contained body, added as an unconnected child of `containerId`. */
+export function isUnconnectedSlot(slot: InsertionSlot): boolean {
+  return slot.unconnected === true;
+}
+
 /**
  * Builds the {@link CreatePreviewGraphOptions} for a sequential insertion on the
  * existing Add Node preview pipeline. Canonical manifest handles are kept here;
@@ -83,6 +89,19 @@ export function buildSequentialPreviewOptions(
   args: SequentialInsertArgs
 ): CreatePreviewGraphOptions {
   const { slot, source, target, sourcePosition, position, connectorEdgeId } = args;
+
+  // Anchored on the container, with no edge: the caller applies the node alone.
+  if (isUnconnectedSlot(slot)) {
+    return {
+      reactFlowInstance,
+      source: { nodeId: slot.containerId ?? source },
+      position,
+      positionMode: 'drop',
+      data: { [PREVIEW_UNCONNECTED_DATA_KEY]: true },
+      ignoredNodeTypes: SEQUENTIAL_IGNORED_NODE_TYPES,
+      previewNodeSize: { width: SEQ_BAR_WIDTH, height: SEQ_BAR_HEIGHT },
+    };
+  }
 
   const originalEdge = connectorEdgeId
     ? reactFlowInstance.getEdges().find((edge) => edge.id === connectorEdgeId)
