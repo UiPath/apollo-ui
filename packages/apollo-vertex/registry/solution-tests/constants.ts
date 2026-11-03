@@ -6,6 +6,9 @@ import { RunResultStatus, RunStatus, SolutionTestStatus } from "./types";
 /** Placeholder rendered where a value is absent (missing baseline, no score). */
 export const EMPTY_VALUE = "—";
 
+/** Length limit of the `UiPathSTTests.TestName` column. */
+export const TEST_NAME_MAX_LENGTH = 500;
+
 /** Well-known Solution Test collection names on `solution.api.collections.solutionTests`. */
 export const ENTITY = {
   tests: "UiPathSTTests",

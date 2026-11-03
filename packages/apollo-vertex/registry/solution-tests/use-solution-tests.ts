@@ -2,8 +2,9 @@
 
 /**
  * Solution tests: the live test list plus the writes that act on tests —
- * run, toggle-active, and delete. Reads stream from the `UiPathSTTests`
- * collection; run/delete go through the injected trigger actions.
+ * run, toggle-active, rename, and delete. Reads stream from the
+ * `UiPathSTTests` collection; run/delete go through the injected trigger
+ * actions.
  */
 
 import { useLiveQuery } from "@tanstack/react-db";
@@ -68,10 +69,10 @@ export function useCreateTest(): MutationHook<string> {
 }
 
 /**
- * Toggle a test's active flag. Unlike the other writes this isn't an API
- * trigger — it's a direct field update on the `UiPathSTTests` collection, so it
- * goes through the collection's optimistic `.update()` (synced to the backend
- * by vs-core) rather than the injected `actions`.
+ * Toggle a test's active flag. Like rename, this isn't an API trigger — it's a
+ * direct field update on the `UiPathSTTests` collection, so it goes through the
+ * collection's optimistic `.update()` (synced to the backend by vs-core) rather
+ * than the injected `actions`.
  */
 export function useToggleTestActive(): MutationHook<{
   testId: string;
@@ -99,6 +100,26 @@ export function useToggleTestActive(): MutationHook<{
     },
     onMutate: ({ testId, isActive }) =>
       track?.("VS.SolutionTest.ActiveToggled", { testId, isActive }),
+  });
+}
+
+export function useRenameTest(): MutationHook<{
+  testId: string;
+  name: string;
+}> {
+  const { track } = useSolutionTestsConfig();
+  const testsCollection = useSolutionTestCollection(ENTITY.tests);
+  return useMutation({
+    mutationFn: async ({ testId, name }: { testId: string; name: string }) => {
+      // vs-core writes back the whole cached row, so refresh it first or a
+      // stale Status, UserMessages or version overwrites a newer save.
+      await testsCollection.utils.refetch();
+      const transaction = testsCollection.update(testId, (draft) => {
+        draft.TestName = name;
+      });
+      await transaction.isPersisted.promise;
+    },
+    onMutate: ({ testId }) => track?.("VS.SolutionTest.Renamed", { testId }),
   });
 }
 
