@@ -66,8 +66,9 @@ describe('useColumnWidths', () => {
       handle.dispatchEvent(new MouseEvent('pointermove', { clientX: 200, buttons: 1 }));
     });
 
-    // c0 took 100px; the three columns to its right share the 500px left, so c2 and c3 give some back.
-    expect(Number.parseFloat(spacer.style.width)).toBeLessThan(400);
+    // c0 took 100px; the three columns to its right share the 500px left evenly, so the spacer
+    // standing in for c2 and c3 holds two thirds of it.
+    expect(Number.parseFloat(spacer.style.width)).toBeCloseTo(1000 / 3);
     expect(Number.parseFloat(table.style.width)).toBe(800);
   });
 

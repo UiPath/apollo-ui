@@ -22,12 +22,7 @@ export interface GridColumnGroup {
    * Renders the band cell's content. Called per rendered run — a spacer or a pinning boundary can
    * split a band across cells — with `isFirstRunOfGroup` marking the one that opens it.
    */
-  renderLabel?: (run: {
-    first: GridColumn;
-    firstFlexIndex: number;
-    isFirstRunOfGroup: boolean;
-    label: string;
-  }) => React.ReactNode;
+  renderLabel?: (run: GridGroupRun & { label: string }) => React.ReactNode;
   /**
    * Borders the BODY cells of this band leave off BETWEEN themselves, so its columns read as one
    * field separated by their shared tint rather than by internal lines.
@@ -40,22 +35,25 @@ export interface GridColumnGroup {
   separatorBefore?: boolean;
   /**
    * Extra attributes for the group `<th>` (testids, menu-delegation data attributes). Called per
-   * rendered run with the run's first column and its flex index, since a window spacer can split
-   * a group into two cells — the index keeps each rendered cell's attributes (e.g. testids) unique.
+   * rendered run, since a window spacer can split a group into two cells — `firstFlexIndex` keeps
+   * each rendered cell's attributes (e.g. testids) unique.
    */
   cellProps?: (
-    firstColumn: GridColumn,
-    firstFlexIndex: number,
     run: GridGroupRun
   ) => React.ThHTMLAttributes<HTMLTableCellElement> & Record<`data-${string}`, string | undefined>;
 }
 
-/**
- * Where a rendered band cell sits within its whole group. Unlike `isFirstRunOfGroup` (the first
- * *mounted* run), these hold only for the cell that really holds the group's first or last column,
- * so an edge drawn from them never appears where the group merely scrolls out of view.
- */
+/** One rendered band cell: the run of a group's mounted columns it spans. */
 export interface GridGroupRun {
+  /** The run's first column. */
+  first: GridColumn;
+  firstFlexIndex: number;
+  /** The first *mounted* run of the group, which may start past the group's own first column. */
+  isFirstRunOfGroup: boolean;
+  /**
+   * Whether the run really holds the group's first or last column, so an edge drawn from them
+   * never appears where the group merely scrolls out of view.
+   */
   startsGroup: boolean;
   endsGroup: boolean;
 }
@@ -188,6 +186,4 @@ export interface GridLabels {
   resizeColumn: (columnName: string) => string;
   /** Tooltip on the resize handle (double-click / Enter resets to auto-fit). */
   resetColumnWidth: string;
-  /** The row-number gutter's header content; "#" (locale-neutral) when omitted. */
-  rowNumberHeader?: string;
 }

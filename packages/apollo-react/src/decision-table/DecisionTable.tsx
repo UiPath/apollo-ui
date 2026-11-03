@@ -88,8 +88,8 @@ export interface DecisionTableProps {
   /** The trailing add-row `<tr>`, when the grid offers one; receives the full-row colSpan. */
   renderFooterRow?: (colSpan: number) => React.ReactNode;
   /**
-   * Replaces the leading gutter's header (the `#` cell, and the empty group-row cell above it) with
-   * one top-left corner cell spanning every header row, holding this content.
+   * The leading gutter's header: one top-left corner cell spanning every header row, holding this
+   * content. Defaults to "#". Rendered only with a leading column (`leadingColumnWidth > 0`).
    */
   topLeftCorner?: React.ReactNode;
   /** The trailing fixed column's header `<th>` (rendered only when the layout reserves its width). */
@@ -122,18 +122,15 @@ type ColumnRun =
   | (GridGroupRun & {
       type: 'group';
       group: GridColumnGroup;
-      first: GridColumn;
-      firstFlexIndex: number;
       count: number;
       pinnedLeftPx?: number;
-      isFirstRunOfGroup: boolean;
     })
   | { type: 'gutter'; count: number; firstFlexIndex: number; pinnedLeftPx?: number }
   | { type: 'spacer'; widthPx: number; firstCoveredId: string }
   | { type: 'separator'; widthPx: number; beforeColumnId: string };
 
 /** Contiguous same-group runs of the mounted columns, for the group header's colSpans. */
-const groupColumnRuns = (
+export const groupColumnRuns = (
   columns: GridColumn[],
   visibleColumns: VisibleGridColumn[],
   pinnedLeftPxOf: (flexIndex: number) => number | undefined
@@ -240,7 +237,7 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
       renderHeaderCell,
       renderRow,
       renderFooterRow,
-      topLeftCorner,
+      topLeftCorner = '#',
       trailingHeaderCell,
       trailingGroupCell,
       tableAriaLabel,
@@ -340,7 +337,7 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
     const hasGroupRow =
       columns.some((column) => column.group !== undefined) || trailingGroupCell !== undefined;
     const headerRowCount = hasGroupRow ? 2 : 1;
-    const topLeftCornerCell = topLeftCorner !== undefined && (
+    const topLeftCornerCell = hasLeading && (
       <th
         rowSpan={headerRowCount}
         className={TOP_LEFT_CORNER_CELL_CLASS}
@@ -593,10 +590,7 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
           <thead ref={layout.theadRef}>
             {hasGroupRow && (
               <tr aria-rowindex={1}>
-                {hasLeading &&
-                  (topLeftCornerCell || (
-                    <td aria-hidden="true" className={cn(GROUP_GUTTER_CLASS, 'left-0 z-3')} />
-                  ))}
+                {topLeftCornerCell}
                 {/* Group cells span runs of same-group mounted columns; a spacer splits a group into
                   two cells of the same tone. */}
                 {groupColumnRuns(columns, visibleColumns, pinnedLeftPxOf).map((run) => {
@@ -638,15 +632,14 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
                   // group whose look varies per run (the band separator belongs on the run that
                   // actually starts the band, not on a continuation split off by a spacer) has no
                   // other seam — `toneClassName` is one value shared by every run of the group.
-                  const position: GridGroupRun = {
+                  const groupRun: GridGroupRun = {
+                    first: run.first,
+                    firstFlexIndex: run.firstFlexIndex,
+                    isFirstRunOfGroup: run.isFirstRunOfGroup,
                     startsGroup: run.startsGroup,
                     endsGroup: run.endsGroup,
                   };
-                  const groupCellProps = run.group.cellProps?.(
-                    run.first,
-                    run.firstFlexIndex,
-                    position
-                  );
+                  const groupCellProps = run.group.cellProps?.(groupRun);
                   return (
                     <th
                       key={`group-${run.group.id}-${run.firstFlexIndex}`}
@@ -666,12 +659,7 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
                       colSpan={run.count}
                     >
                       {run.group.renderLabel
-                        ? run.group.renderLabel({
-                            first: run.first,
-                            firstFlexIndex: run.firstFlexIndex,
-                            isFirstRunOfGroup: run.isFirstRunOfGroup,
-                            label: run.group.label,
-                          })
+                        ? run.group.renderLabel({ ...groupRun, label: run.group.label })
                         : run.group.label}
                     </th>
                   );
@@ -683,17 +671,7 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
               </tr>
             )}
             <tr aria-rowindex={headerRowCount}>
-              {hasLeading &&
-                (topLeftCornerCell ? (
-                  !hasGroupRow && topLeftCornerCell
-                ) : (
-                  <th
-                    className={cn(HEADER_CELL_CLASS, 'left-0 z-3 text-center align-middle')}
-                    scope="col"
-                  >
-                    {labels.rowNumberHeader ?? '#'}
-                  </th>
-                ))}
+              {!hasGroupRow && topLeftCornerCell}
               {visibleColumns.map((visible) => {
                 if (visible.type === 'separator') {
                   return (

@@ -111,7 +111,7 @@ const DemoGrid = ({ resizable = true }: { resizable?: boolean }) => {
       toneClassName: GROUP_TONE_CLASS[kind === 'input' ? 'inputs' : 'outputs'],
       // `run` holds only on the cell with the band's real first or last column, so the point that
       // joins the bands is drawn once, wherever the window starts.
-      cellProps: (_first, _firstFlexIndex, run) => ({
+      cellProps: (run) => ({
         ...(run.endsGroup && { className: 'border-r-0' }),
         ...(kind === 'output' && run.startsGroup && { style: BREADCRUMB_POINT_STYLE }),
       }),
@@ -196,7 +196,6 @@ const DemoGrid = ({ resizable = true }: { resizable?: boolean }) => {
         columnsResizable={resizable}
         tableAriaLabel="Demo decision grid"
         dataTestId="demo-grid"
-        topLeftCorner="#"
         columnGroupSizes={[1, inputCount, specs.length - inputCount]}
         onRowMove={(from, to) => {
           if (to !== from) {
@@ -435,7 +434,7 @@ const E2E_ROWS: E2eRow[] = [
  * clears) and a validation mark. The consumer owns only the model the writes land in.
  */
 const EndToEndGrid = ({
-  topLeftCorner = '#',
+  topLeftCorner,
   caption,
 }: {
   topLeftCorner?: React.ReactNode;
@@ -457,7 +456,7 @@ const EndToEndGrid = ({
           kind === 'annotation' ? 'annotation' : kind === 'input' ? 'inputs' : 'outputs'
         ],
       ...(kind !== 'annotation' && {
-        cellProps: (_first, _firstFlexIndex, run) => ({
+        cellProps: (run) => ({
           ...(run.endsGroup && { className: 'border-r-0' }),
           ...(kind === 'output' && run.startsGroup && { style: BREADCRUMB_POINT_STYLE }),
         }),
