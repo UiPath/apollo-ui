@@ -26,7 +26,13 @@ function projectionWithPreviewConnectors(
     ? projection.connectors.filter((_, index) => index !== matchedIndex)
     : [...projection.connectors];
 
-  const sourceId = slot.source?.nodeId ?? matched?.sourceRowId;
+  // A slot source with no row of its own (a trigger folded into a start row) is drawn from
+  // the connector it replaces, so no preview connector dangles off an unrendered node.
+  const slotSourceId = slot.source?.nodeId;
+  const sourceId =
+    slotSourceId !== undefined && rowFor(projection, slotSourceId)
+      ? slotSourceId
+      : matched?.sourceRowId;
   const targetId = slot.target?.nodeId ?? matched?.targetRowId;
 
   if (sourceId) {
@@ -96,6 +102,7 @@ export function projectionWithPreviewRow(
 
   const targetId = slot.target?.nodeId;
   const sourceId = slot.source?.nodeId;
+  const sourceIndex = sourceId ? rows.findIndex((row) => row.nodeId === sourceId) : -1;
 
   let insertIndex: number;
   let depth: number;
@@ -108,9 +115,7 @@ export function projectionWithPreviewRow(
     insertIndex = targetIndex;
     depth = targetRow.depth;
     parentRowId = targetRow.parentRowId;
-  } else if (sourceId) {
-    const sourceIndex = rows.findIndex((row) => row.nodeId === sourceId);
-    if (sourceIndex === -1) return projection;
+  } else if (sourceIndex !== -1) {
     const sourceRow = rows[sourceIndex]!;
     if (slot.containerId === sourceId) {
       depth = sourceRow.depth + 1;
@@ -124,6 +129,13 @@ export function projectionWithPreviewRow(
       while (idx < rows.length && rows[idx]!.depth > sourceRow.depth) idx++;
       insertIndex = idx;
     }
+  } else if (slot.unconnected || (sourceId !== undefined && slot.containerId !== undefined)) {
+    // First step of an empty scoped body, unconnected or appended to a trigger folded into
+    // the body's start row: it opens the body at the top level, ahead of any orphans.
+    const firstOrphan = rows.findIndex((row) => row.orphan);
+    insertIndex = firstOrphan === -1 ? rows.length : firstOrphan;
+    depth = 0;
+    parentRowId = undefined;
   } else {
     return projection;
   }

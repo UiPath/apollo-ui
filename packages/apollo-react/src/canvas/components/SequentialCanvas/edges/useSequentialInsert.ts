@@ -1,11 +1,16 @@
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useCallback, useRef } from 'react';
-import { showPreviewGraph } from '../../../utils/createPreviewGraph';
+import {
+  applyPreviewGraphToReactFlow,
+  createPreviewGraph,
+  showPreviewGraph,
+} from '../../../utils/createPreviewGraph';
 import { useSetSequentialInsertGapSlot } from '../SequentialInsertGapContext';
 import { useOptionalSequentialInsertState } from '../SequentialInsertStateContext';
 import {
   buildSequentialPreviewOptions,
+  isUnconnectedSlot,
   resolvePendingSequentialInsert,
   type SequentialInsertArgs,
   sequentialOnBeforeNodeAdded,
@@ -39,7 +44,15 @@ export function useSequentialInsert(): UseSequentialInsertResult {
       pending.current = resolvePendingSequentialInsert(args.slot);
       // SequentialCanvas owns this state and clears it on cancel/commit.
       setInsertGapSlot(args.slot);
-      showPreviewGraph(buildSequentialPreviewOptions(reactFlowInstance, args));
+      const options = buildSequentialPreviewOptions(reactFlowInstance, args);
+      if (!isUnconnectedSlot(args.slot)) {
+        showPreviewGraph(options);
+        return;
+      }
+      // The pipeline always builds an edge from the anchor; an unconnected insert drops it.
+      const preview = createPreviewGraph(options);
+      if (preview)
+        applyPreviewGraphToReactFlow({ node: preview.node, edges: [] }, reactFlowInstance);
     },
     [reactFlowInstance, setInsertGapSlot, pending]
   );

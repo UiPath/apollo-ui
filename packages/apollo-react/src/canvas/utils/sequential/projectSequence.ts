@@ -1,5 +1,6 @@
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
+  bodyStartRowId,
   buildGraphIndex,
   defaultIsSequenceEdge,
   edgeDataLabel,
@@ -13,6 +14,7 @@ import {
   lanePlaceholderId,
   leafPlaceholderId,
   type Scope,
+  SELF_CONTAINED_BODY_LANE,
   sortByFlow,
   sourceHandleOf,
 } from './graph-helpers';
@@ -177,7 +179,87 @@ export function projectSequence(
     });
   };
 
+  /**
+   * A self-contained body has no handle on the frame to enter from, so it opens with its own
+   * start row (triggers inside it are folded away like top-level ones). The head slot carries
+   * no source. An empty body's slot is sourced at its lone trigger when it has exactly one,
+   * like the canvas tail; otherwise inserting there adds an unconnected first step.
+   */
+  function walkSelfContainedBody(containerNode: Node, depth: number): void {
+    const scope = containerNode.id;
+    const startRowId = bodyStartRowId(scope);
+    rows.push({
+      nodeId: startRowId,
+      depth: depth + 1,
+      parentRowId: scope,
+      collapsible: false,
+      collapsed: false,
+      visible: true,
+      bodyStart: scope,
+    });
+    connectors.push({
+      id: `conn:body-start:${scope}`,
+      kind: 'branch-entry',
+      sourceRowId: scope,
+      targetRowId: startRowId,
+    });
+
+    const children = index.childrenByParent.get(scope) ?? [];
+    if (children.length === 0) {
+      const placeholderNodeId = lanePlaceholderId(scope, SELF_CONTAINED_BODY_LANE);
+      // Triggers were filtered out of the index, so look for them on the raw nodes.
+      const bodyTriggers = nodes.filter((node) => node.parentId === scope && isStartNode(node));
+      const loneTrigger = bodyTriggers.length === 1 ? bodyTriggers[0] : undefined;
+      const slot = addSlot({
+        id: `slot:lane:${scope}:${SELF_CONTAINED_BODY_LANE}`,
+        containerId: scope,
+        ...(loneTrigger ? { source: { nodeId: loneTrigger.id } } : { unconnected: true as const }),
+      });
+      rows.push({
+        nodeId: placeholderNodeId,
+        depth: depth + 1,
+        parentRowId: scope,
+        collapsible: false,
+        collapsed: false,
+        visible: true,
+        lanePlaceholder: slot,
+        placeholderKind: 'lane',
+      });
+      connectors.push({
+        id: `conn:lane:${scope}:${SELF_CONTAINED_BODY_LANE}`,
+        kind: 'step',
+        sourceRowId: startRowId,
+        targetRowId: placeholderNodeId,
+      });
+      return;
+    }
+
+    // Further roots stack under the first, like disconnected top-level components.
+    const entries = entriesForScope(index, scope);
+    const bodyEntries = entries.length > 0 ? entries : [sortByFlow(children)[0]!];
+    bodyEntries.forEach((entry, entryIndex) => {
+      if (entryIndex === 0) {
+        connectors.push({
+          id: `conn:body-start:${scope}:${entry.id}`,
+          kind: 'step',
+          sourceRowId: startRowId,
+          targetRowId: entry.id,
+          slot: addSlot({
+            id: `slot:head:${scope}:${entry.id}`,
+            target: { nodeId: entry.id },
+            containerId: scope,
+          }),
+        });
+      }
+      walkSpine(entry.id, scope, depth + 1, scope, undefined, EMPTY_SCOPE);
+    });
+  }
+
   function walkContainerBody(containerNode: Node, depth: number): void {
+    if (options?.isSelfContainedContainer?.(containerNode)) {
+      walkSelfContainedBody(containerNode, depth);
+      return;
+    }
     const scope = containerNode.id;
     const entries = entriesForScope(index, scope);
 

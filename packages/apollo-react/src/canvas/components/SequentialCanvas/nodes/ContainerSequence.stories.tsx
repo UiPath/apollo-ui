@@ -11,8 +11,8 @@ import {
   applyNodeChanges,
   Panel,
 } from '@uipath/apollo-react/canvas/xyflow/react';
-import { useCallback, useMemo, useState } from 'react';
-import { NodeRegistryProvider } from '../../../core';
+import { useCallback, useState } from 'react';
+import { NodeRegistryProvider, useOptionalNodeTypeRegistry } from '../../../core';
 import {
   createNode,
   defaultWorkflowManifest,
@@ -25,7 +25,10 @@ import {
   sequentialWireframeManifests,
 } from '../../../storybook-utils/sequential';
 import { getContainerSafeArea } from '../../../utils/container';
+import type { CanvasView } from '../../../utils/sequential';
+import { prepareCanvasViewTransition } from '../prepareCanvasViewTransition';
 import { SequentialCanvas } from '../SequentialCanvas';
+import { ViewSwitcher } from '../ViewSwitcher';
 
 const meta: Meta = {
   title: 'Components/Canvas/SequentialCanvas/Sequence In Container',
@@ -178,15 +181,49 @@ function buildGraph(): { nodes: Node[]; edges: Edge[] } {
   return { nodes, edges };
 }
 
+/** The same canvas with the runtime container's body emptied. */
+function buildEmptyGraph(): { nodes: Node[]; edges: Edge[] } {
+  const { nodes, edges } = buildGraph();
+  const outer = nodes.filter((node) => node.parentId === undefined);
+  const outerIds = new Set(outer.map((node) => node.id));
+  return {
+    nodes: outer,
+    edges: edges.filter((edge) => outerIds.has(edge.source) && outerIds.has(edge.target)),
+  };
+}
+
 const noop = () => {};
 
-function RuntimeContainerCanvas() {
-  const initial = useMemo(buildGraph, []);
+interface RuntimeContainerCanvasProps {
+  buildInitialGraph: () => { nodes: Node[]; edges: Edge[] };
+  initialSequencedIds: string[];
+  initialCollapsedIds: string[];
+}
+
+function RuntimeContainerCanvas({
+  buildInitialGraph,
+  initialSequencedIds,
+  initialCollapsedIds,
+}: RuntimeContainerCanvasProps) {
+  const [initial] = useState(buildInitialGraph);
   const [nodes, setNodes] = useState<Node[]>(initial.nodes);
   const [edges, setEdges] = useState<Edge[]>(initial.edges);
-  const [sequencedContainerIds, setSequencedContainerIds] = useState<string[]>([API_ID]);
-  const [collapsedStepIds, setCollapsedStepIds] = useState<string[]>([FOR_EACH_ID]);
+  const [sequencedContainerIds, setSequencedContainerIds] = useState(initialSequencedIds);
+  const [collapsedStepIds, setCollapsedStepIds] = useState(initialCollapsedIds);
   const [designMode, setDesignMode] = useState(true);
+  const [view, setView] = useState<CanvasView>('flow');
+  const registry = useOptionalNodeTypeRegistry();
+
+  const changeView = useCallback(
+    (nextView: CanvasView) => {
+      const transition = prepareCanvasViewTransition(nextView, nodes, edges, {
+        getManifest: (type) => registry?.getManifest(type) ?? undefined,
+      });
+      setNodes(transition.nodes);
+      setView(nextView);
+    },
+    [nodes, edges, registry]
+  );
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     setNodes((current) => applyNodeChanges(changes, current));
@@ -197,7 +234,7 @@ function RuntimeContainerCanvas() {
 
   return (
     <SequentialCanvas
-      view="flow"
+      view={view}
       nodes={nodes}
       edges={edges}
       onNodesChange={onNodesChange}
@@ -212,11 +249,14 @@ function RuntimeContainerCanvas() {
     >
       <StoryInfoPanel
         title="Runtime container"
-        description="A self-contained subflow expanded inline. Switch its body between sequence and flow from the frame header, expand or collapse steps from the numbers, and drag the frame."
+        description="A self-contained subflow expanded inline. Switch its body between sequence and flow from the frame header, expand or collapse steps from the numbers, and drag the frame. Switch the whole canvas to sequential from the top right: the body keeps its own start row."
         position="bottom-left"
         collapsible
         defaultCollapsed
       />
+      <Panel position="top-right">
+        <ViewSwitcher value={view} onChange={changeView} />
+      </Panel>
       <Panel position="bottom-right">
         <label className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-xs shadow-sm">
           <input
@@ -235,7 +275,24 @@ export const RuntimeContainer: Story = {
   name: 'Runtime container',
   render: () => (
     <NodeRegistryProvider manifest={STORY_MANIFEST}>
-      <RuntimeContainerCanvas />
+      <RuntimeContainerCanvas
+        buildInitialGraph={buildGraph}
+        initialSequencedIds={[API_ID]}
+        initialCollapsedIds={[FOR_EACH_ID]}
+      />
+    </NodeRegistryProvider>
+  ),
+};
+
+export const EmptyRuntimeContainer: Story = {
+  name: 'Empty runtime container',
+  render: () => (
+    <NodeRegistryProvider manifest={STORY_MANIFEST}>
+      <RuntimeContainerCanvas
+        buildInitialGraph={buildEmptyGraph}
+        initialSequencedIds={[API_ID]}
+        initialCollapsedIds={[]}
+      />
     </NodeRegistryProvider>
   ),
 };

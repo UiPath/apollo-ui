@@ -20,7 +20,8 @@ export interface SequentialStartNodeData extends Record<string, unknown> {
 
 /**
  * Synthetic first row: play icon, title, and a design-mode "Add trigger" button.
- * Injected view-only; carries only a bottom source handle.
+ * Injected view-only. The bottom source handle leads to the first step; the mid-left target
+ * receives the frame's entry connector when the row opens a self-contained container body.
  */
 function SequentialStartNodeComponent({
   data,
@@ -62,6 +63,13 @@ function SequentialStartNodeComponent({
         </Button>
       )}
 
+      <Handle
+        type="target"
+        position={Position.Left}
+        id={SEQUENTIAL_BAR_HANDLE_IDS.branchTarget}
+        isConnectable={false}
+        style={INVISIBLE_HANDLE_STYLE}
+      />
       <Handle
         type="source"
         position={Position.Bottom}

@@ -4,6 +4,7 @@ import {
   duplicateEdgeKey,
   filterGraphByNodes,
   isLoopBackEdge,
+  isSyntheticRow,
 } from './graph-helpers';
 import { defaultIsSequenceNode, defaultIsStartNode } from './predicates';
 import { projectSequence } from './projectSequence';
@@ -258,7 +259,7 @@ export function analyzeSequentialCompatibility(
     editable,
     issues,
     projectedNodeIds: projection.rows
-      .filter((row) => !row.lanePlaceholder)
+      .filter((row) => !isSyntheticRow(row))
       .map((row) => row.nodeId),
     preservedOnlyNodeIds: preservedOnlyNodeIds.sort(),
     preservedOnlyEdgeIds: edges

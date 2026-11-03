@@ -87,6 +87,18 @@ describe('projectionWithPreviewRow', () => {
     expect(projectionWithPreviewRow(base, { id: 's' })).toBe(base);
   });
 
+  it('opens a scoped body at the top when its slot source is a folded trigger with no row', () => {
+    const base = projection([row('a', 0), { ...row('orphan', 0), orphan: true }]);
+    const next = projectionWithPreviewRow(base, {
+      id: 's',
+      source: { nodeId: 'folded-trigger' },
+      containerId: 'frame',
+    });
+    expect(ids(next)).toEqual(['a', PREVIEW_NODE_ID, 'orphan']);
+    expect(previewRow(next)?.depth).toBe(0);
+    expect(next.connectors.some((c) => c.sourceRowId === 'folded-trigger')).toBe(false);
+  });
+
   it('opens a one-row gap in the layout: downstream rows shift by one pitch', () => {
     const base = projection([row('a', 0), row('b', 0), row('c', 0)]);
     const withPreview = projectionWithPreviewRow(base, { id: 's', target: { nodeId: 'b' } });

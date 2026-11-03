@@ -3,6 +3,7 @@ import type { Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { applyPreviewGraphToReactFlow, showPreviewGraph } from '../../../utils/createPreviewGraph';
 import type { InsertionSlot } from '../../../utils/sequential/sequential.types';
 import { SequentialInsertGapProvider } from '../SequentialInsertGapContext';
 import { SequentialInsertStateProvider } from '../SequentialInsertStateContext';
@@ -12,6 +13,11 @@ import { useSequentialInsert } from './useSequentialInsert';
 vi.mock('../../../utils/createPreviewGraph', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../utils/createPreviewGraph')>()),
   showPreviewGraph: vi.fn(),
+  createPreviewGraph: vi.fn(() => ({
+    node: { id: 'preview-node-id', position: { x: 0, y: 0 }, data: { unconnected: true } },
+    edges: [{ id: 'preview-edge', source: 'api', target: 'preview-node-id' }],
+  })),
+  applyPreviewGraphToReactFlow: vi.fn(),
 }));
 
 describe('useSequentialInsert', () => {
@@ -96,5 +102,26 @@ describe('useSequentialInsert', () => {
     const seed: Node = { id: 'preview-node-id', position: { x: 0, y: 0 }, data: {} };
     expect(canvasA.result.current.onBeforeNodeAdded(seed, []).newNode.parentId).toBe('container-a');
     expect(canvasB.result.current.onBeforeNodeAdded(seed, []).newNode.parentId).toBe('container-b');
+  });
+
+  it('applies an unconnected insert as the preview node alone, then parents it on commit', () => {
+    vi.mocked(showPreviewGraph).mockClear();
+    const hook = renderHook(() => useSequentialInsert(), {
+      wrapper: SequentialInsertStateProvider,
+    });
+    hook.result.current.startInsert({
+      slot: { id: 'slot:lane:api:body', containerId: 'api', unconnected: true },
+      source: 'api',
+      target: '',
+      sourcePosition: Position.Bottom,
+      position: { x: 0, y: 0 },
+    });
+
+    expect(showPreviewGraph).not.toHaveBeenCalled();
+    expect(vi.mocked(applyPreviewGraphToReactFlow).mock.calls[0]?.[0].edges).toEqual([]);
+    const seed: Node = { id: 'preview-node-id', position: { x: 0, y: 0 }, data: {} };
+    const { newNode, newEdges } = hook.result.current.onBeforeNodeAdded(seed, []);
+    expect(newNode.parentId).toBe('api');
+    expect(newEdges).toEqual([]);
   });
 });

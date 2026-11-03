@@ -26,6 +26,7 @@ import { getIcon } from '../../utils/icon-registry';
 import { resolveDisplay, resolveHandles } from '../../utils/manifest-resolver';
 import {
   indexNodesByParent,
+  isSyntheticRow,
   SEQ_LANE_PLACEHOLDER_PREFIX,
 } from '../../utils/sequential/graph-helpers';
 import { resolveSequenceMetrics } from '../../utils/sequential/layoutSequence';
@@ -570,21 +571,13 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
   }, [canEditSequence, reactFlow, startInsert]);
 
   // An empty branch lane's "+ Add step": insert the lane's first node via the carried slot
-  // (source = parent, sourceHandle = the branch handle, containerId set).
+  // (source = parent, sourceHandle = the branch handle, containerId set). An empty
+  // self-contained body's slot has no source, so its first node is added unconnected.
   const canonicalByIdRef = useRef(canonicalById);
   canonicalByIdRef.current = canonicalById;
   const onLaneAdd = useCallback(
     (slot: InsertionSlot) => {
-      if (!canInsert || !slot.source) return;
-      const sourceNode = canonicalByIdRef.current.get(slot.source.nodeId);
-      const resolvedSource = {
-        ...slot.source,
-        handleId:
-          slot.source.handleId ??
-          (sourceNode?.type ? getDefaultSourceHandleId(sourceNode.type) : undefined) ??
-          DEFAULT_SOURCE_HANDLE_ID,
-      };
-      const resolvedSlot: InsertionSlot = { ...slot, source: resolvedSource };
+      if (!canInsert) return;
       const placeholder = reactFlow
         .getNodes()
         .find(
@@ -594,7 +587,30 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
       // A placeholder inside a sequenced container is parented, so its position is relative.
       const placement =
         (placeholder && reactFlow.getInternalNode?.(placeholder.id)?.internals.positionAbsolute) ??
-        placeholder?.position;
+        placeholder?.position ??
+        ({ x: 0, y: 0 } as XYPosition);
+      if (slot.unconnected) {
+        // An empty self-contained body: the first step is added with no edge.
+        if (!slot.containerId) return;
+        startInsert({
+          slot,
+          source: slot.containerId,
+          target: '',
+          sourcePosition: Position.Bottom,
+          position: placement,
+        });
+        return;
+      }
+      if (!slot.source) return;
+      const sourceNode = canonicalByIdRef.current.get(slot.source.nodeId);
+      const resolvedSource = {
+        ...slot.source,
+        handleId:
+          slot.source.handleId ??
+          (sourceNode?.type ? getDefaultSourceHandleId(sourceNode.type) : undefined) ??
+          DEFAULT_SOURCE_HANDLE_ID,
+      };
+      const resolvedSlot: InsertionSlot = { ...slot, source: resolvedSource };
       startInsert({
         slot: resolvedSlot,
         source: resolvedSource.nodeId,
@@ -602,7 +618,7 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
         target: '',
         targetHandleId: undefined,
         sourcePosition: Position.Bottom,
-        position: placement ?? { x: 0, y: 0 },
+        position: placement,
       });
     },
     [canInsert, getDefaultSourceHandleId, reactFlow, startInsert]
@@ -624,6 +640,7 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
     isSequenceNode: isProjectedSequenceNode,
     isStartNode,
     isContainerNode: isProjectedContainerNode,
+    isSelfContainedContainer,
     resolveBranchLabel,
     getBranchHandles,
     canAddToLane: canEditSequence,
@@ -796,7 +813,7 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
   const syntheticNodeIds = useMemo(() => {
     const ids = new Set(SEQ_SYNTHETIC_ROW_IDS);
     for (const row of projection?.rows ?? []) {
-      if (row.lanePlaceholder) ids.add(row.nodeId);
+      if (isSyntheticRow(row)) ids.add(row.nodeId);
     }
     return ids;
   }, [projection]);
