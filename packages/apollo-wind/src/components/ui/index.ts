@@ -21,6 +21,7 @@ export * from './code-block';
 export * from './collapsible';
 export * from './combobox';
 export * from './command';
+export * from './connection-picker';
 export * from './context-menu';
 export * from './data-table';
 export * from './date-picker';
