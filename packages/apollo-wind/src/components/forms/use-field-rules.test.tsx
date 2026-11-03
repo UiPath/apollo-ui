@@ -1,8 +1,10 @@
-import { render, screen } from '@testing-library/react';
+import { render, renderHook, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { RulesAction } from '@/components/ui/field-actions';
 import { RulesEditor } from '@/components/ui/rules-editor';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import type { FieldRuleOutcome, FieldRulesOptions } from './field-rules';
 import type { FieldRule } from './form-schema';
 import {
@@ -336,6 +338,75 @@ describe('useFieldRules', () => {
       expect(screen.getByText('No rules.')).toBeInTheDocument();
       await userEvent.click(screen.getByRole('button', { name: 'Add rule' }));
       expect(onStored).toHaveBeenLastCalledWith({ rules: [], required: true });
+    });
+  });
+
+  it('flags a row whose Expression value names a field the form no longer has', async () => {
+    const user = userEvent.setup();
+    const limit: FieldRuleField = { value: 'limit', label: 'Limit', type: 'number' };
+    const stored: FieldRule[] = [
+      {
+        id: 'cap',
+        conditions: [{ when: 'amount', custom: 'amount > limit' }],
+        operator: 'AND',
+        effects: { visible: true },
+      },
+    ];
+    function ActionHost({ fields }: { fields: FieldRuleField[] }) {
+      const options = { ...OPTIONS, fields };
+      const editor = useFieldRules({ rules: stored }, vi.fn(), options);
+      return (
+        <TooltipProvider>
+          <RulesAction
+            outcomes={OUTCOMES}
+            fields={fields}
+            operators={rulesEngineVocabulary.operators}
+            valueModes={rulesEngineVocabulary.valueModes}
+            dialect={rulesEngineDialect}
+            value={editor.value}
+            onChange={editor.onChange}
+          />
+        </TooltipProvider>
+      );
+    }
+    const { rerender } = render(<ActionHost fields={[...FIELDS, limit]} />);
+    expect(screen.getByRole('button', { name: 'Field rules (1)' })).toBeInTheDocument();
+    rerender(<ActionHost fields={FIELDS} />);
+    await user.click(screen.getByRole('button', { name: 'Field rules (1), 1 needs attention' }));
+    expect(screen.getByText('Uses limit, which the form does not contain.')).toBeInTheDocument();
+  });
+
+  it('lists what needs attention in the rules, such as a removed field', async () => {
+    const stored: FieldRule[] = [
+      { id: 'removed', conditions: [{ when: 'region', is: 'EU' }], operator: 'AND', effects: {} },
+      {
+        id: 'expression',
+        conditions: [{ when: '', custom: 'region === "EU"' }],
+        operator: 'AND',
+        effects: { visible: true },
+      },
+      {
+        id: 'fine',
+        conditions: [{ when: 'amount', is: 1 }],
+        operator: 'AND',
+        effects: { visible: true },
+      },
+    ];
+    const { result, rerender } = renderHook(
+      ({ options }) => useFieldRules({ rules: stored }, vi.fn(), options),
+      { initialProps: { options: OPTIONS } }
+    );
+    expect(result.current.issues).toEqual([
+      { ruleId: 'removed', kind: 'outcome' },
+      { ruleId: 'removed', nodeId: 'removed-condition-0', kind: 'unknownField' },
+      { ruleId: 'expression', kind: 'unknownField' },
+    ]);
+    // Following the fields as they change.
+    rerender({ options: { ...OPTIONS, fields: FIELDS.filter((f) => f.value !== 'amount') } });
+    expect(result.current.issues).toContainEqual({
+      ruleId: 'fine',
+      nodeId: 'fine-condition-0',
+      kind: 'unknownField',
     });
   });
 });

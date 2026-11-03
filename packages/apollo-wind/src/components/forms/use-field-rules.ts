@@ -1,5 +1,5 @@
 import * as React from 'react';
-import type { Rule } from '@/components/ui/rules-editor';
+import { findRuleIssues, type Rule } from '@/components/ui/rules-editor';
 import {
   alwaysApplying,
   type FieldRulesOptions,
@@ -10,6 +10,11 @@ import {
   writeStoredRules,
 } from './field-rules';
 import type { FieldRule } from './form-schema';
+import {
+  RULES_ENGINE_OPERATORS,
+  rulesEngineDialect,
+  rulesEngineVocabulary,
+} from './rules-engine-dialect';
 
 /**
  * Connects a RulesEditor to a field's stored `FieldRule`s. The editor keeps its own rules, so a
@@ -24,6 +29,9 @@ import type { FieldRule } from './form-schema';
  * A rule that applied always goes on being stored that way once it is given a condition, until one
  * of its conditions is finished: a required field stays required while its first condition is
  * filled in.
+ *
+ * `issues` lists what needs attention in the editor's rules, unfinished ones included, as
+ * `findRuleIssues` finds it with `rulesEngineDialect`: such as to flag the field elsewhere.
  *
  * Pass `options` with a stable identity: a new object re-reads nothing, but writes use the latest.
  */
@@ -77,5 +85,20 @@ export function useFieldRules(
     [written]
   );
 
-  return { value: current.rules, onChange: change };
+  const issues = React.useMemo(
+    () =>
+      findRuleIssues(
+        current.rules,
+        {
+          outcomes: options.outcomes,
+          fields: options.fields,
+          operators: options.operators ?? RULES_ENGINE_OPERATORS,
+          valueModes: rulesEngineVocabulary.valueModes,
+        },
+        rulesEngineDialect
+      ),
+    [current.rules, options.outcomes, options.fields, options.operators]
+  );
+
+  return { value: current.rules, onChange: change, issues };
 }

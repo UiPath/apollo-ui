@@ -29,6 +29,8 @@ export interface RulesEditorStrings {
   errorExpression: string;
   /** For an expression the dialect cannot run. */
   errorExpressionInvalid: string;
+  /** For an expression naming fields the form does not contain, by the keys it names. */
+  errorExpressionUnknownFields: (fields: string[]) => string;
   /** Names a preserved rule's mode and its read-only source. */
   modePreserved: string;
   /** Under a preserved rule's source: it cannot be edited here, and still runs. */
@@ -66,6 +68,8 @@ export const DEFAULT_RULES_EDITOR_STRINGS: RulesEditorStrings = {
   expressionPlaceholder: '',
   errorExpression: 'Enter an expression.',
   errorExpressionInvalid: "This expression can't run. Check its syntax and what it uses.",
+  errorExpressionUnknownFields: (fields) =>
+    `Uses ${fields.join(', ')}, which the form does not contain.`,
   modePreserved: 'Stored conditions',
   preservedNote:
     'These conditions are not supported in the current editor but will continue to execute.',

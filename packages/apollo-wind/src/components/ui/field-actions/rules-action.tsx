@@ -7,6 +7,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useQuickFormFieldHeader } from '@/components/ui/quick-form-field/components/header-context';
 import {
   createRule,
+  findRuleIssues,
+  issueIds,
   isUnconditionalRule,
   type Rule,
   RulesEditor,
@@ -19,8 +21,11 @@ import { cn } from '@/lib';
 import { FIELD_ACTION_CLASS } from './collapse';
 
 export interface RulesActionStrings {
-  /** The trigger's accessible name and tooltip, given how many rules are set. */
-  trigger: (count: number) => string;
+  /**
+   * The trigger's accessible name and tooltip, given how many rules are set and how many of them
+   * need attention: unfinished, on a field the form no longer has, or not runnable.
+   */
+  trigger: (count: number, issues: number) => string;
   /** The popover's heading, which also names the rules list. */
   title: string;
   /** The Required switch's label. */
@@ -30,7 +35,12 @@ export interface RulesActionStrings {
 }
 
 export const DEFAULT_RULES_ACTION_STRINGS: RulesActionStrings = {
-  trigger: (count) => (count > 0 ? `Field rules (${count})` : 'Field rules'),
+  trigger: (count, issues) =>
+    count === 0
+      ? 'Field rules'
+      : issues === 0
+        ? `Field rules (${count})`
+        : `Field rules (${count}), ${issues} ${issues === 1 ? 'needs' : 'need'} attention`,
   title: 'Field rules',
   required: 'Required field',
   makeConditional: 'Make conditional',
@@ -53,9 +63,11 @@ export interface RulesActionProps
 
 /**
  * The field-rules header action: a RulesEditor in a popover, with an optional Required switch,
- * behind a trigger that counts the rules. The switch is a rule like the others, shown apart: on,
- * it is a `requiredOutcome` rule with no conditions, and Make conditional gives it one. Inside a QuickFormField's `headerActions` it follows
- * the field's `disabled`. Requires an ancestor `TooltipProvider`.
+ * behind a trigger that counts the rules and turns red while any needs attention, whose messages
+ * then show as the popover opens. The switch is a rule like the others, shown apart: on, it is a
+ * `requiredOutcome` rule with no conditions, and Make conditional gives it one. Inside a
+ * QuickFormField's `headerActions` it follows the field's `disabled`. Requires an ancestor
+ * `TooltipProvider`.
  *
  * Pair it with `useFieldRules` to store the rules as RulesEngine `FieldRule`s.
  */
@@ -66,6 +78,7 @@ export function RulesAction({
   editorStrings,
   value,
   onChange,
+  defaultTouched,
   ...editor
 }: RulesActionProps) {
   const header = useQuickFormFieldHeader();
@@ -78,7 +91,24 @@ export function RulesAction({
   // The rule Make conditional moved into the list, until its condition can take focus.
   const focusRule = useRef<{ position: number; rules: number } | null>(null);
   const count = value.length;
-  const triggerLabel = text.trigger(count);
+  const { outcomes, fields, operators, valueModes, variables, dialect } = editor;
+  const issues = useMemo(
+    () => findRuleIssues(value, { outcomes, fields, operators, valueModes, variables }, dialect),
+    [value, outcomes, fields, operators, valueModes, variables, dialect]
+  );
+  const flagged = new Set(issues.map((issue) => issue.ruleId)).size;
+  // What needed attention as the popover opened shows its messages at once; a rule added since
+  // is flagged once it is left, as anywhere else.
+  const [openedIssues, setOpenedIssues] = useState<string[]>([]);
+  const changeOpen = (next: boolean) => {
+    if (next) setOpenedIssues(issueIds(issues));
+    setOpen(next);
+  };
+  const touched = useMemo(
+    () => [...(defaultTouched ?? []), ...openedIssues],
+    [defaultTouched, openedIssues]
+  );
+  const triggerLabel = text.trigger(count, flagged);
 
   const requiredIndex =
     requiredOutcome === undefined
@@ -134,7 +164,7 @@ export function RulesAction({
   );
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={changeOpen}>
       <Tooltip>
         <TooltipTrigger asChild>
           <PopoverTrigger asChild>
@@ -145,13 +175,23 @@ export function RulesAction({
               icon
               aria-label={triggerLabel}
               disabled={inert}
-              className={cn('relative', FIELD_ACTION_CLASS, (open || count > 0) && 'text-brand')}
+              className={cn(
+                'relative',
+                FIELD_ACTION_CLASS,
+                (open || count > 0) && 'text-brand',
+                flagged > 0 && 'text-destructive'
+              )}
             >
               <Network />
               {count > 0 && (
                 <span
                   aria-hidden
-                  className="absolute -right-1 -top-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-brand/15 px-0.5 text-[9px] font-medium leading-none text-brand"
+                  className={cn(
+                    'absolute -right-1 -top-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full px-0.5 text-[9px] font-medium leading-none',
+                    flagged > 0
+                      ? 'bg-destructive text-destructive-foreground'
+                      : 'bg-brand/15 text-brand'
+                  )}
                 >
                   {count}
                 </span>
@@ -208,6 +248,7 @@ export function RulesAction({
             label={text.title}
             disabled={inert}
             strings={rulesStrings}
+            defaultTouched={touched}
           />
         </div>
       </PopoverContent>

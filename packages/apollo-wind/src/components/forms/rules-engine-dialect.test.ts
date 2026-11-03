@@ -337,3 +337,13 @@ describe('checking what RulesEngine runs', () => {
     expect(check('String(name).includes("a")')).toBe('invalid');
   });
 });
+
+describe('fieldsOf', () => {
+  it('lists the field paths an expression names', () => {
+    expect(rulesEngineDialect.fieldsOf?.('user.role === "a" && amount > limit')).toEqual([
+      'user.role',
+      'amount',
+      'limit',
+    ]);
+  });
+});

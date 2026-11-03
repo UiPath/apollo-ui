@@ -12,6 +12,7 @@ import {
   type ConditionsRule,
   createRule,
   type ExpressionRule,
+  findRuleIssues,
   isRuleComplete,
   isUnconditionalRule,
   type PreservedRule,
@@ -151,6 +152,81 @@ describe('model', () => {
     expect(isUnconditionalRule(conditionsRule('a', []))).toBe(true);
     expect(isUnconditionalRule(conditionsRule('b'))).toBe(false);
     expect(isUnconditionalRule(expressionRule('c', ''))).toBe(false);
+  });
+});
+
+describe('findRuleIssues', () => {
+  const vocabulary = { outcomes: OUTCOMES, fields: FIELDS };
+  const fieldsOf = (expression: string) => expression.match(/[a-z]+/g) ?? [];
+
+  it('finds nothing in finished rules on known fields', () => {
+    const done = conditionsRule('a', [
+      createCondition({ field: 'name', operator: 'equals', value: 'x' }),
+    ]);
+    expect(findRuleIssues([done, conditionsRule('b', [])], vocabulary)).toEqual([]);
+  });
+
+  it('finds unknown outcomes, unfinished rows and blank expressions, and rows on removed fields', () => {
+    const rules: Rule[] = [
+      { ...conditionsRule('a', []), outcome: 'gone' },
+      conditionsRule('b', [createCondition({ id: 'b1', field: 'name' })]),
+      conditionsRule('c', [
+        createCondition({ id: 'c1', field: 'region', operator: 'equals', value: 'EU' }),
+      ]),
+      expressionRule('d', ' '),
+    ];
+    expect(findRuleIssues(rules, vocabulary)).toEqual([
+      { ruleId: 'a', kind: 'outcome' },
+      { ruleId: 'b', nodeId: 'b1', kind: 'incomplete' },
+      { ruleId: 'c', nodeId: 'c1', kind: 'unknownField' },
+      { ruleId: 'd', kind: 'incomplete' },
+    ]);
+  });
+
+  it('checks only the outcome of a preserved rule', () => {
+    const preserved = (outcome: string): PreservedRule => ({
+      id: outcome,
+      outcome,
+      mode: 'preserved',
+      preservedSource: '{}',
+    });
+    expect(findRuleIssues([preserved('show'), preserved('gone')], vocabulary)).toEqual([
+      { ruleId: 'gone', kind: 'outcome' },
+    ]);
+  });
+
+  it('asks the dialect what an expression names and whether it runs', () => {
+    const dialect = {
+      fieldsOf,
+      checkExpression: (rule: ExpressionRule) =>
+        rule.expression.includes('(') ? ('invalid' as const) : undefined,
+    };
+    const rules = [
+      expressionRule('a', 'region'),
+      expressionRule('b', 'f(name)'),
+      expressionRule('c', 'amount'),
+    ];
+    expect(findRuleIssues(rules, vocabulary, dialect)).toEqual([
+      { ruleId: 'a', kind: 'unknownField' },
+      { ruleId: 'b', kind: 'unknownField' },
+      { ruleId: 'b', kind: 'expression' },
+    ]);
+  });
+
+  it("asks the dialect what a row's Expression value names", () => {
+    const row = (id: string, value: string, valueMode: 'literal' | 'expression') =>
+      conditionsRule(id, [
+        createCondition({ id: `${id}1`, field: 'amount', operator: 'equals', value, valueMode }),
+      ]);
+    const rules = [
+      row('a', 'limit', 'expression'),
+      row('b', 'name', 'expression'),
+      row('c', '5', 'literal'),
+    ];
+    expect(findRuleIssues(rules, vocabulary, { fieldsOf })).toEqual([
+      { ruleId: 'a', nodeId: 'a1', kind: 'unknownField' },
+    ]);
+    expect(findRuleIssues(rules, vocabulary)).toEqual([]);
   });
 });
 
@@ -578,6 +654,50 @@ describe('RulesEditor', () => {
       render(<Harness initial={[expressionRule('a', 'x')]} dialect={dialect} />);
       const box = screen.getByRole('textbox', { name: 'Rule 1 Expression' });
       await userEvent.type(box, '(');
+      expect(box).not.toHaveAttribute('aria-invalid');
+      await userEvent.tab();
+      expect(box).toHaveAttribute('aria-invalid', 'true');
+    });
+
+    it('flags an expression naming a field the form does not contain, straight away', () => {
+      render(
+        <Harness
+          initial={[expressionRule('a', 'region === "EU" && amount > 1')]}
+          dialect={{ fieldsOf: (expression) => expression.match(/[a-z]+/g) ?? [] }}
+        />
+      );
+      expect(
+        screen.getByRole('textbox', { name: 'Rule 1 Expression' })
+      ).toHaveAccessibleErrorMessage('Uses region, which the form does not contain.');
+    });
+
+    it('says an expression cannot run before naming the fields it is missing', () => {
+      render(
+        <Harness
+          initial={[expressionRule('a', 'region(')]}
+          dialect={{ checkExpression: () => 'invalid', fieldsOf: () => ['region'] }}
+        />
+      );
+      expect(
+        screen.getByRole('textbox', { name: 'Rule 1 Expression' })
+      ).toHaveAccessibleErrorMessage(
+        "This expression can't run. Check its syntax and what it uses."
+      );
+    });
+
+    it('flags a field removed while open, and holds the flag while the text is edited', async () => {
+      const dialect = { fieldsOf: (expression: string) => expression.match(/[a-z]+/g) ?? [] };
+      const withRegion = [...FIELDS, { value: 'region', label: 'Region', type: 'string' as const }];
+      const initial = [expressionRule('a', 'region === "EU"')];
+      const { rerender } = render(
+        <Harness initial={initial} dialect={dialect} fields={withRegion} />
+      );
+      const box = screen.getByRole('textbox', { name: 'Rule 1 Expression' });
+      expect(box).not.toHaveAttribute('aria-invalid');
+      rerender(<Harness initial={initial} dialect={dialect} fields={FIELDS} />);
+      expect(box).toHaveAccessibleErrorMessage('Uses region, which the form does not contain.');
+      // Retyping the name is not flagged until it is left.
+      await userEvent.type(box, '{Backspace}');
       expect(box).not.toHaveAttribute('aria-invalid');
       await userEvent.tab();
       expect(box).toHaveAttribute('aria-invalid', 'true');

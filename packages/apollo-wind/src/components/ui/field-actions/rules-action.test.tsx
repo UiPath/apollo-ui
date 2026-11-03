@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { type ComponentProps, useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type { ConditionField } from '@/components/ui/conditions-editor';
-import { createConditionGroup } from '@/components/ui/conditions-editor';
+import { createCondition, createConditionGroup } from '@/components/ui/conditions-editor';
 import { QuickFormField } from '@/components/ui/quick-form-field';
 import { createRule, type Rule, type RuleOutcome } from '@/components/ui/rules-editor';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -174,6 +174,56 @@ describe('RulesAction', () => {
     ]);
   });
 
+  it('turns red and says how many rules need attention, showing their messages on open', async () => {
+    const user = userEvent.setup();
+    const removed = createRule({
+      id: 'removed',
+      outcome: 'show',
+      conditions: createConditionGroup('all', [
+        createCondition({ id: 'removed-1', field: 'region', operator: 'equals', value: 'EU' }),
+      ]),
+    });
+    render(<Harness initial={[RULE, removed]} />);
+    const trigger = screen.getByRole('button', { name: 'Field rules (2), 1 needs attention' });
+    expect(trigger).toHaveClass('text-destructive');
+    await user.click(trigger);
+    expect(
+      screen.getByText('The form does not contain region. Select another field.')
+    ).toBeInTheDocument();
+  });
+
+  it('follows the fields: a rule on a removed field needs attention, flagged when next opened', async () => {
+    const user = userEvent.setup();
+    const onName = createRule({
+      id: 'on-name',
+      outcome: 'show',
+      conditions: createConditionGroup('all', [
+        createCondition({ id: 'on-name-1', field: 'name', operator: 'equals', value: 'Ada' }),
+      ]),
+    });
+    const { rerender } = render(<Harness initial={[onName]} />);
+    await user.click(screen.getByRole('button', { name: 'Field rules (1)' }));
+    await user.keyboard('{Escape}');
+    const other: ConditionField[] = [{ value: 'other', label: 'Other', type: 'string' }];
+    rerender(<Harness initial={[onName]} fields={other} />);
+    await user.click(screen.getByRole('button', { name: 'Field rules (1), 1 needs attention' }));
+    expect(
+      screen.getByText('The form does not contain name. Select another field.')
+    ).toBeInTheDocument();
+  });
+
+  it('flags a rule added while open only once it is left', async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+    await user.click(screen.getByRole('button', { name: 'Field rules' }));
+    await user.click(screen.getByRole('button', { name: 'Add rule' }));
+    expect(screen.queryByText('Select a field and enter a value.')).toBeNull();
+    // Still needing attention, so the trigger says so.
+    expect(
+      screen.getByRole('button', { name: 'Field rules (1), 1 needs attention' })
+    ).toBeInTheDocument();
+  });
+
   it('words its trigger, title, switch and Make conditional from strings', async () => {
     const user = userEvent.setup();
     render(
@@ -181,7 +231,7 @@ describe('RulesAction', () => {
         initial={[ALWAYS_REQUIRED]}
         requiredOutcome="require"
         strings={{
-          trigger: (count) => `Regeln: ${count}`,
+          trigger: (count, issues) => `Regeln: ${count}, ${issues}`,
           title: 'Feldregeln',
           required: 'Pflichtfeld',
           makeConditional: 'Bedingt machen',
@@ -189,7 +239,7 @@ describe('RulesAction', () => {
         editorStrings={{ addRule: 'Regel hinzufügen' }}
       />
     );
-    await user.click(screen.getByRole('button', { name: 'Regeln: 1' }));
+    await user.click(screen.getByRole('button', { name: 'Regeln: 1, 0' }));
     expect(screen.getByRole('dialog', { name: 'Feldregeln' })).toBeInTheDocument();
     expect(screen.getByRole('switch', { name: 'Pflichtfeld' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Bedingt machen' })).toBeInTheDocument();

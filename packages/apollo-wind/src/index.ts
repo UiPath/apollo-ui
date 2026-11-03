@@ -979,6 +979,8 @@ export type {
   Rule,
   RuleExpressionEditorProps,
   RuleExpressionProblem,
+  RuleIssue,
+  RuleIssueKind,
   RuleMode,
   RuleOutcome,
   RulesDialect,
@@ -989,6 +991,8 @@ export type {
 export {
   createRule,
   DEFAULT_RULES_EDITOR_STRINGS,
+  findRuleIssues,
+  issueIds,
   isRuleComplete,
   RulesEditor,
 } from './components/ui/rules-editor';

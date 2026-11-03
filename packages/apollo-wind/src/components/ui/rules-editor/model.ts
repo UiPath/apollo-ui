@@ -8,7 +8,7 @@ import {
   DEFAULT_CONDITION_OPERATORS,
   isConditionComplete,
 } from '@/components/ui/conditions-editor';
-import { defaultValueModes } from '@/components/ui/conditions-editor/status';
+import { defaultValueModes, resolveCondition } from '@/components/ui/conditions-editor/status';
 import type { VariablePickerItem } from '@/components/ui/variable-picker';
 
 /** How an author writes when a rule applies: rows of conditions, or one written expression. */
@@ -67,6 +67,11 @@ export interface RulesDialect {
     expression: string,
     vocabulary: ConditionVocabulary
   ) => ConditionGroup | undefined;
+  /**
+   * The field keys an expression names, so the editor can flag the ones `fields` no longer lists,
+   * such as after a field is removed.
+   */
+  fieldsOf?: (expression: string) => string[];
   /** Whether the host can run a rule's expression. Each problem shows on the rule. */
   checkExpression?: (
     rule: ExpressionRule,
@@ -183,4 +188,100 @@ export function isRuleComplete(rule: Rule, vocabulary: RuleVocabulary) {
     },
     false
   );
+}
+
+/** The keys an expression names that are no fields, a field's own sub-paths aside. */
+export function unknownFields(
+  expression: string,
+  fields: ConditionVocabulary['fields'],
+  dialect: RulesDialect | undefined
+): string[] {
+  const names = dialect?.fieldsOf?.(expression) ?? [];
+  return names.filter(
+    (name) => !fields.some((field) => name === field.value || name.startsWith(`${field.value}.`))
+  );
+}
+
+/** The keys a row's Expression value names that are no fields, as `unknownFields` finds them. */
+export function unknownValueFields(
+  c: Condition,
+  vocabulary: ConditionVocabulary,
+  dialect: RulesDialect | undefined
+): string[] {
+  const value = c.value?.trim();
+  if (!value || resolveCondition(c, vocabulary).mode !== 'expression') return [];
+  return unknownFields(value, vocabulary.fields, dialect);
+}
+
+/** What makes a rule need attention. */
+export type RuleIssueKind = 'outcome' | 'incomplete' | 'unknownField' | 'expression';
+
+export interface RuleIssue {
+  ruleId: string;
+  /** The condition or group it is on, for a row's issue. */
+  nodeId?: string;
+  kind: RuleIssueKind;
+}
+
+/**
+ * Everything the editor would flag in the rules, by the same checks: an outcome it does not offer,
+ * a condition on a field `fields` no longer lists, an unfinished condition or blank expression,
+ * an expression or a row's Expression value naming such a field, and one the dialect cannot
+ * run. An unfinished rule counts, as it is not stored until it is finished.
+ */
+export function findRuleIssues(
+  rules: readonly Rule[],
+  vocabulary: RuleVocabulary,
+  dialect?: RulesDialect
+): RuleIssue[] {
+  const resolved: ConditionVocabulary = {
+    fields: vocabulary.fields,
+    operators: vocabulary.operators ?? DEFAULT_CONDITION_OPERATORS,
+    valueModes: vocabulary.valueModes ?? defaultValueModes(vocabulary.variables),
+  };
+  const issues: RuleIssue[] = [];
+  for (const rule of rules) {
+    const ruleId = rule.id;
+    if (!vocabulary.outcomes.some((option) => option.value === rule.outcome)) {
+      issues.push({ ruleId, kind: 'outcome' });
+    }
+    // A preserved rule runs as the host stored it, so only its outcome is the editor's to check.
+    if (rule.mode === 'preserved') continue;
+    if (rule.mode === 'expression') {
+      if (rule.expression.trim() === '') {
+        issues.push({ ruleId, kind: 'incomplete' });
+        continue;
+      }
+      if (unknownFields(rule.expression, resolved.fields, dialect).length > 0) {
+        issues.push({ ruleId, kind: 'unknownField' });
+      }
+      if (dialect?.checkExpression?.(rule, resolved) === 'invalid') {
+        issues.push({ ruleId, kind: 'expression' });
+      }
+      continue;
+    }
+    const visit = (group: ConditionGroup, nested: boolean) => {
+      if (nested && group.children.length === 0) {
+        issues.push({ ruleId, nodeId: group.id, kind: 'incomplete' });
+      }
+      for (const child of group.children) {
+        if (child.kind === 'group') {
+          visit(child, true);
+        } else if (child.field && !resolved.fields.some((field) => field.value === child.field)) {
+          issues.push({ ruleId, nodeId: child.id, kind: 'unknownField' });
+        } else if (!isConditionComplete(child, resolved)) {
+          issues.push({ ruleId, nodeId: child.id, kind: 'incomplete' });
+        } else if (unknownValueFields(child, resolved, dialect).length > 0) {
+          issues.push({ ruleId, nodeId: child.id, kind: 'unknownField' });
+        }
+      }
+    };
+    visit(rule.conditions, false);
+  }
+  return issues;
+}
+
+/** The ids of the rules and nodes with issues, as `defaultTouched` takes them to show at once. */
+export function issueIds(issues: readonly RuleIssue[]): string[] {
+  return issues.flatMap((issue) => [issue.ruleId, ...(issue.nodeId ? [issue.nodeId] : [])]);
 }

@@ -46,6 +46,8 @@ import {
   type Rule,
   type RuleMode,
   type RulesDialect,
+  unknownFields,
+  unknownValueFields,
   withMode,
 } from './model';
 
@@ -145,6 +147,7 @@ export const RuleCard = React.memo(function RuleCard({
     expression: `${baseId}-expression`,
     expressionLabel: `${baseId}-expression-label`,
     outcomeError: `${baseId}-outcome-error`,
+    valueFieldsError: `${baseId}-value-fields-error`,
     expressionError: `${baseId}-expression-error`,
     preserved: `${baseId}-preserved`,
     preservedLabel: `${baseId}-preserved-label`,
@@ -185,9 +188,42 @@ export const RuleCard = React.memo(function RuleCard({
     rule.mode === 'expression' && rule.expression.trim() !== ''
       ? editor.dialect?.checkExpression?.(rule, editor.vocabulary)
       : undefined;
-  // A rule that opens with an expression it cannot run is bad data, flagged straight away; one
-  // being typed is flagged once it is left.
-  const [openedInvalid] = React.useState(() => problem === 'invalid');
+  const missing =
+    rule.mode === 'expression' && rule.expression.trim() !== ''
+      ? unknownFields(rule.expression, editor.vocabulary.fields, editor.dialect)
+      : [];
+  // An expression is checked straight away while its text is as the rule opened with, so one that
+  // opens unrunnable, or loses a field while open, says so; once edited, it is checked when left.
+  const [openedText] = React.useState(() =>
+    rule.mode === 'expression' ? rule.expression : undefined
+  );
+  const unchanged = rule.mode === 'expression' && rule.expression === openedText;
+
+  // Likewise a row's Expression value: flagged while as opened, and otherwise once errors show.
+  const [openedValues] = React.useState(
+    () =>
+      new Map(
+        rule.mode === 'conditions'
+          ? rule.conditions.children.map((child) => [
+              child.id,
+              child.kind === 'condition' ? child.value : undefined,
+            ])
+          : []
+      )
+  );
+  const missingInValues =
+    rule.mode === 'conditions'
+      ? Array.from(
+          new Set(
+            rule.conditions.children.flatMap((child) =>
+              child.kind === 'condition' &&
+              (editor.forceErrors || openedValues.get(child.id) === child.value)
+                ? unknownValueFields(child, editor.vocabulary, editor.dialect)
+                : []
+            )
+          )
+        )
+      : [];
 
   const outcomeKnown = editor.outcomes.some((option) => option.value === rule.outcome);
   // Only bad data names an outcome the editor does not offer, so it is flagged straight away.
@@ -212,26 +248,33 @@ export const RuleCard = React.memo(function RuleCard({
   let body: React.ReactNode;
   if (rule.mode === 'conditions') {
     body = (
-      <ConditionsEditor
-        label={conditionsName}
-        value={rule.conditions}
-        onChange={(conditions) => updateRule({ ...rule, conditions })}
-        fields={editor.vocabulary.fields}
-        operators={editor.vocabulary.operators}
-        valueModes={editor.vocabulary.valueModes}
-        variables={editor.variables}
-        renderValue={editor.renderValue}
-        // Flat: a rule that mixes All and Any is written as an expression.
-        maxDepth={0}
-        showMatchMode={editor.showMatchMode}
-        container="plain"
-        forceErrors={editor.forceErrors}
-        defaultTouched={editor.defaultTouched}
-        disabled={disabled}
-        strings={editor.conditionsStrings}
-        valueModeStrings={editor.valueModeStrings}
-        multiSelectStrings={editor.multiSelectStrings}
-      />
+      <>
+        <ConditionsEditor
+          label={conditionsName}
+          value={rule.conditions}
+          onChange={(conditions) => updateRule({ ...rule, conditions })}
+          fields={editor.vocabulary.fields}
+          operators={editor.vocabulary.operators}
+          valueModes={editor.vocabulary.valueModes}
+          variables={editor.variables}
+          renderValue={editor.renderValue}
+          // Flat: a rule that mixes All and Any is written as an expression.
+          maxDepth={0}
+          showMatchMode={editor.showMatchMode}
+          container="plain"
+          forceErrors={editor.forceErrors}
+          defaultTouched={editor.defaultTouched}
+          disabled={disabled}
+          strings={editor.conditionsStrings}
+          valueModeStrings={editor.valueModeStrings}
+          multiSelectStrings={editor.multiSelectStrings}
+        />
+        {missingInValues.length > 0 && (
+          <FormFieldError id={ids.valueFieldsError}>
+            {text.errorExpressionUnknownFields(missingInValues)}
+          </FormFieldError>
+        )}
+      </>
     );
   } else if (rule.mode === 'preserved') {
     body = (
@@ -258,9 +301,11 @@ export const RuleCard = React.memo(function RuleCard({
     const error =
       shown && rule.expression.trim() === ''
         ? text.errorExpression
-        : problem === 'invalid' && (shown || openedInvalid)
+        : problem === 'invalid' && (shown || unchanged)
           ? text.errorExpressionInvalid
-          : undefined;
+          : missing.length > 0 && (shown || unchanged)
+            ? text.errorExpressionUnknownFields(missing)
+            : undefined;
     const props: RuleExpressionEditorProps = {
       rule,
       id: ids.expression,

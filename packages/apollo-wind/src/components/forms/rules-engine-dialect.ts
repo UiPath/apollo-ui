@@ -17,6 +17,7 @@ import {
   resolveCondition,
 } from '@/components/ui/conditions-editor/status';
 import type { RulesDialect } from '@/components/ui/rules-editor';
+import { RulesEngine } from './rules-engine';
 
 /** What a field's value is at run time, so fixed values are compared as the same type. */
 export type FieldValueType = 'string' | 'number' | 'boolean';
@@ -582,6 +583,7 @@ function parseGroup(
  */
 export const rulesEngineDialect: RulesDialect = {
   toExpression: (conditions, vocabulary) => conditionsExpression(conditions, vocabulary),
+  fieldsOf: (expression) => RulesEngine.conditionFields({ when: '', custom: expression }),
   fromExpression: (expression, vocabulary) => {
     const node = parseExpression(expression);
     return node ? parseGroup(node, vocabulary) : undefined;
