@@ -1,3 +1,13 @@
+## [@uipath/apollo-vertex-v2.5.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-vertex@2.4.0...@uipath/apollo-vertex@2.5.0) (2026-11-03)
+
+### Features
+
+* **apollo-vertex:** flag new and removed IXP documents as failures ([ded2c88](https://github.com/UiPath/apollo-ui/commit/ded2c8806f2937d24e76010cd6575d81eba871b3))
+
+### Bug Fixes
+
+* **apollo-vertex:** match the IXP demo to the evaluator's real output ([ab4a2d6](https://github.com/UiPath/apollo-ui/commit/ab4a2d6e2b7b2b650353136896a0a7f0cb60a82e))
+
 ## [@uipath/apollo-vertex-v2.3.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-vertex@2.2.1...@uipath/apollo-vertex@2.3.0) (2026-10-30)
 
 ### Features
