@@ -14,6 +14,8 @@ export const IxpDocStatus = {
   MissingInActual: "missing_in_actual",
   NewInActual: "new_in_actual",
 } as const;
+export type IxpDocStatusValue =
+  (typeof IxpDocStatus)[keyof typeof IxpDocStatus];
 
 const ProvenanceSchema = z.object({
   // Always resolved (env-default fallback), so never null.

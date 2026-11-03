@@ -2,7 +2,11 @@
 
 import { useVertexTranslation } from "@/lib/vertex-translation";
 import type { EvaluatorResultProps } from "../registry";
-import { IxpDocStatus, type IxpDetails } from "./schema";
+import {
+  IxpDocStatus,
+  type IxpDetails,
+  type IxpDocStatusValue,
+} from "./schema";
 import { ProvenanceBar } from "./internal/provenance-bar";
 import { SummaryBar } from "./internal/summary-bar";
 import { DocumentRow } from "./internal/document-row";
@@ -23,7 +27,7 @@ export const IxpExtractionResult = ({
     expected_provenance,
     actual_provenance,
   } = evaluatorDetails;
-  const countWithStatus = (status: string) =>
+  const countWithStatus = (status: IxpDocStatusValue) =>
     documents.filter((doc) => doc.status === status).length;
 
   return (
