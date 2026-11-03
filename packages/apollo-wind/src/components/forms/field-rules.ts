@@ -21,6 +21,7 @@ import {
   containsCall,
   emptyCheck,
   type FieldRuleField,
+  fieldKeysOf,
   fieldName,
   notEmptyCheck,
   offered,
@@ -29,6 +30,7 @@ import {
   patternCall,
   printLiteral,
   RULES_ENGINE_OPERATORS,
+  renameInExpression,
   rulesEngineVocabulary,
   startsWithCall,
   typedValue,
@@ -475,5 +477,59 @@ export function settleAlways(
     writeGroup(rule.conditions, vocabulary).length === 0
       ? { ...rule, conditions: { ...rule.conditions, children: [] } }
       : rule
+  );
+}
+
+// ── Field references ───────────────────────────────────────────────────────
+
+const namesField = (name: string, key: string) => name === key || name.startsWith(`${key}.`);
+
+/**
+ * The stored rules with field `from` renamed `to` wherever they name it: each condition's `when`
+ * and the expressions in `custom`, paths into the field included. A rule that names neither is
+ * returned as the same object, and an empty `from` or `to` renames nothing.
+ *
+ * A path is renamed with its parent even when the form lists it as a field of its own, as
+ * `user.role` is with `user`. A `to` that is not an identifier path is written into expressions
+ * as hitl's `values["to"]`, which RulesEngine does not run, so the editor flags those rules. An
+ * expression the dialect cannot print again is left as it is.
+ */
+export function renameFieldInRules(
+  rules: readonly FieldRule[],
+  from: string,
+  to: string
+): FieldRule[] {
+  if (from === to || !from || !to) return [...rules];
+  return rules.map((rule) => {
+    let changed = false;
+    const conditions = rule.conditions.map((condition) => {
+      const when = namesField(condition.when, from)
+        ? `${to}${condition.when.slice(from.length)}`
+        : condition.when;
+      const custom =
+        condition.custom === undefined ? undefined : renameInExpression(condition.custom, from, to);
+      if (when === condition.when && custom === condition.custom) return condition;
+      changed = true;
+      return { ...condition, when, ...(custom === undefined ? {} : { custom }) };
+    });
+    return changed ? { ...rule, conditions } : rule;
+  });
+}
+
+/**
+ * The ids of the stored rules that name field `key`, or a path into it, in a condition's `when` or
+ * expression, such as to say which rules removing it would leave flagged.
+ */
+export function rulesReferencing(rules: readonly FieldRule[], key: string): string[] {
+  if (!key) return [];
+  return rules.flatMap((rule, index) =>
+    rule.conditions.some(
+      (condition) =>
+        namesField(condition.when, key) ||
+        (condition.custom !== undefined &&
+          fieldKeysOf(condition.custom).some((name) => namesField(name, key)))
+    )
+      ? [rule.id || `rule-${index}`]
+      : []
   );
 }

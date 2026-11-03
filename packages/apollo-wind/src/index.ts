@@ -50,6 +50,8 @@ export type {
 export {
   fromFieldRules,
   readStoredRules,
+  renameFieldInRules,
+  rulesReferencing,
   toFieldRules,
   writeStoredRules,
 } from './components/forms/field-rules';

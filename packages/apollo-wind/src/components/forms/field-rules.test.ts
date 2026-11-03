@@ -17,6 +17,8 @@ import {
   type FieldRulesOptions,
   fromFieldRules,
   readStoredRules,
+  renameFieldInRules,
+  rulesReferencing,
   settleAlways,
   toFieldRules,
   writeStoredRules,
@@ -667,5 +669,71 @@ describe('rules that applied always', () => {
 
   it('leaves alone a rule that did not apply always', () => {
     expect(settleAlways([blank], OPTIONS, new Set())[0]).toBe(blank);
+  });
+});
+
+describe('renaming and finding field references', () => {
+  const rules: FieldRule[] = [
+    stored([{ when: 'amount', is: 1 }], { id: 'when' }),
+    stored([{ when: '', custom: 'amount > limit && name === "amount"' }], { id: 'expression' }),
+    stored([{ when: '', custom: 'user.role === "a" || values["amount"] === 2' }], { id: 'paths' }),
+    stored([{ when: 'name', is: 'a' }], { id: 'other' }),
+  ];
+
+  it('renames the field in `when` and in expressions, leaving string literals alone', () => {
+    const renamed = renameFieldInRules(rules, 'amount', 'total');
+    expect(renamed[0].conditions).toEqual([{ when: 'total', is: 1 }]);
+    expect(renamed[1].conditions[0].custom).toBe('(total > limit) && (name === "amount")');
+    expect(renamed[2].conditions[0].custom).toBe('(user.role === "a") || (values["total"] === 2)');
+    // A rule that names neither is the same object.
+    expect(renamed[3]).toBe(rules[3]);
+    expect(visible([renamed[1]], { total: 3, limit: 2, name: 'amount' })).toBe(true);
+  });
+
+  it('renames paths into a field, and leaves text that does not parse as it is', () => {
+    const [path] = renameFieldInRules(
+      [stored([{ when: 'user.role', custom: 'user.role === "a"' }])],
+      'user',
+      'member'
+    );
+    expect(path.conditions).toEqual([{ when: 'member.role', custom: 'member.role === "a"' }]);
+    const broken = stored([{ when: '', custom: 'amount ===' }]);
+    expect(renameFieldInRules([broken], 'amount', 'total')[0]).toBe(broken);
+  });
+
+  it('renames a field named like a function only where it is the field', () => {
+    const calls = stored([
+      { when: '', custom: 'String(name).includes(String) && RegExp("a").test(String.trim())' },
+    ]);
+    expect(rulesReferencing([calls], 'String')).toEqual(['r']);
+    const [renamed] = renameFieldInRules([calls], 'String', 'label');
+    expect(renamed.conditions[0].custom).toBe(
+      'String(name).includes(label) && RegExp("a").test(label.trim())'
+    );
+    const [untouched] = renameFieldInRules(
+      [stored([{ when: '', custom: 'String(name).includes("x")' }])],
+      'String',
+      'label'
+    );
+    expect(untouched.conditions[0].custom).toBe('String(name).includes("x")');
+  });
+
+  it('renames nothing to the same name, or from or to no name', () => {
+    for (const [from, to] of [
+      ['amount', 'amount'],
+      ['', 'total'],
+      ['amount', ''],
+    ]) {
+      renameFieldInRules(rules, from, to).forEach((rule, index) => {
+        expect(rule).toBe(rules[index]);
+      });
+    }
+  });
+
+  it('lists the rules that name a field', () => {
+    expect(rulesReferencing(rules, 'amount')).toEqual(['when', 'expression', 'paths']);
+    expect(rulesReferencing(rules, 'user')).toEqual(['paths']);
+    expect(rulesReferencing(rules, 'gone')).toEqual([]);
+    expect(rulesReferencing([...rules, stored([{ when: '', custom: 'true' }])], '')).toEqual([]);
   });
 });

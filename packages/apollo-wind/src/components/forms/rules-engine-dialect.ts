@@ -17,7 +17,6 @@ import {
   resolveCondition,
 } from '@/components/ui/conditions-editor/status';
 import type { RulesDialect } from '@/components/ui/rules-editor';
-import { RulesEngine } from './rules-engine';
 
 /** What a field's value is at run time, so fixed values are compared as the same type. */
 export type FieldValueType = 'string' | 'number' | 'boolean';
@@ -100,6 +99,8 @@ export function printLiteral(value: unknown): string {
 const IDENTIFIER_PATH = /^[A-Za-z_$][\w$]*(\.[A-Za-z_$][\w$]*)*$/;
 // Names jsep reads as literals rather than as a field.
 const LITERAL_NAMES = new Set(['true', 'false', 'null', 'this', 'undefined']);
+// Globals RulesEngine reads as fields, as it has none, and no form names.
+const GLOBAL_NAMES = new Set(['undefined', 'NaN', 'Infinity']);
 
 export function canName(key: string) {
   return IDENTIFIER_PATH.test(key) && !LITERAL_NAMES.has(key.split('.')[0]);
@@ -363,6 +364,139 @@ export function canRun(expression: string, fields: readonly ConditionField[]) {
   return node !== undefined && runs(node, fields);
 }
 
+// ── Renaming fields ────────────────────────────────────────────────────────
+
+/** The identifier path a node is, such as `user.role`. */
+function pathOf(node: jsep.Expression): string | undefined {
+  if (node.type === 'Identifier') return (node as jsep.Identifier).name;
+  const member = node as jsep.MemberExpression;
+  if (member.type !== 'MemberExpression' || member.computed) return undefined;
+  const object = pathOf(member.object);
+  return object === undefined
+    ? undefined
+    : `${object}.${(member.property as jsep.Identifier).name}`;
+}
+
+/** hitl's older `values["key"]`, by its key. */
+function legacyKey(node: jsep.Expression) {
+  const member = node as jsep.MemberExpression;
+  const object = member.object as jsep.Identifier | undefined;
+  return member.type === 'MemberExpression' && member.computed && object?.name === 'values'
+    ? stringLiteral(member.property)
+    : undefined;
+}
+
+/**
+ * The field keys an expression names, as RulesEngine reads them, plus the keys of hitl's older
+ * `values["key"]`. A function it calls, such as `String`, and the globals `undefined`, `NaN` and
+ * `Infinity` name no field. Text that does not parse names none.
+ */
+export function fieldKeysOf(expression: string): string[] {
+  const root = parseExpression(expression);
+  const keys = new Set<string>();
+  const visit = (node: jsep.Expression) => {
+    const call = node as jsep.CallExpression;
+    if (call.type === 'CallExpression') {
+      // `amount.toFixed(2)` names `amount`; `String(amount)` names only its argument.
+      const callee = call.callee;
+      const member = callee as jsep.MemberExpression;
+      if (member.type === 'MemberExpression' && !member.computed) visit(member.object);
+      else if (callee.type !== 'Identifier') visit(callee);
+      for (const argument of call.arguments) visit(argument);
+      return;
+    }
+    const key = pathOf(node) ?? legacyKey(node);
+    if (key !== undefined) {
+      if (!GLOBAL_NAMES.has(key)) keys.add(key);
+      return;
+    }
+    const member = node as jsep.MemberExpression;
+    for (const [name, value] of Object.entries(node)) {
+      // `a.b` names no field `b`; only a computed key is an expression of its own.
+      if (member.type === 'MemberExpression' && name === 'property' && !member.computed) continue;
+      for (const child of Array.isArray(value) ? value : [value]) {
+        if (isNode(child)) visit(child);
+      }
+    }
+  };
+  if (root) visit(root);
+  return Array.from(keys);
+}
+
+/** `key`, or a path into it, as named after `key` is renamed `to`. */
+function renamedKey(key: string, from: string, to: string) {
+  if (key === from) return to;
+  return key.startsWith(`${from}.`) ? `${to}${key.slice(from.length)}` : undefined;
+}
+
+/**
+ * The expression with field `from`, and paths into it, named `to`, including hitl's older
+ * `values["from"]`. Text that names neither, or does not parse, comes back unchanged; renamed text
+ * is printed again, so its spacing and parentheses follow the printer.
+ */
+export function renameInExpression(expression: string, from: string, to: string) {
+  const root = parseExpression(expression);
+  if (!root) return expression;
+  let changed = false;
+  const visit = (node: jsep.Expression): jsep.Expression => {
+    const call = node as jsep.CallExpression;
+    if (call.type === 'CallExpression') {
+      // As `fieldKeysOf` reads calls: `String(name)` names no field `String`, and in
+      // `name.includes(x)` only `name` is one.
+      const callee = call.callee as jsep.MemberExpression;
+      let next: jsep.Expression = call.callee;
+      if (callee.type === 'MemberExpression' && !callee.computed) {
+        next = { ...callee, object: visit(callee.object) };
+      } else if (call.callee.type !== 'Identifier') {
+        next = visit(call.callee);
+      }
+      return { ...call, callee: next, arguments: call.arguments.map(visit) };
+    }
+    const path = pathOf(node);
+    const renamed = path === undefined ? undefined : renamedKey(path, from, to);
+    if (renamed !== undefined) {
+      const replacement = parseExpression(fieldName(renamed));
+      if (replacement) {
+        changed = true;
+        return replacement;
+      }
+    }
+    const member = node as jsep.MemberExpression;
+    const key = legacyKey(node);
+    if (key !== undefined) {
+      const legacy = renamedKey(key, from, to);
+      if (legacy !== undefined) {
+        changed = true;
+        return {
+          ...member,
+          property: { type: 'Literal', value: legacy, raw: JSON.stringify(legacy) },
+        };
+      }
+    }
+    // Only a computed key is an expression of its own: `a.b` names no field `b`.
+    const next: Record<string, unknown> = { ...node };
+    for (const [name, value] of Object.entries(node)) {
+      if (node.type === 'MemberExpression' && name === 'property' && !member.computed) continue;
+      if (Array.isArray(value)) {
+        next[name] = value.map((item) => (isNode(item) ? visit(item) : item));
+      } else if (isNode(value)) {
+        next[name] = visit(value);
+      }
+    }
+    return next as jsep.Expression;
+  };
+  const result = visit(root);
+  if (!changed) return expression;
+  try {
+    return printNode(result);
+  } catch {
+    return expression;
+  }
+}
+
+const isNode = (value: unknown): value is jsep.Expression =>
+  !!value && typeof value === 'object' && 'type' in value;
+
 // ── Reading expressions as conditions ──────────────────────────────────────
 
 /**
@@ -583,7 +717,7 @@ function parseGroup(
  */
 export const rulesEngineDialect: RulesDialect = {
   toExpression: (conditions, vocabulary) => conditionsExpression(conditions, vocabulary),
-  fieldsOf: (expression) => RulesEngine.conditionFields({ when: '', custom: expression }),
+  fieldsOf: fieldKeysOf,
   fromExpression: (expression, vocabulary) => {
     const node = parseExpression(expression);
     return node ? parseGroup(node, vocabulary) : undefined;

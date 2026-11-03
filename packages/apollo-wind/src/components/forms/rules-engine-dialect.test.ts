@@ -345,5 +345,20 @@ describe('fieldsOf', () => {
       'amount',
       'limit',
     ]);
+    expect(rulesEngineDialect.fieldsOf?.('values["my key"] === 1 && f(amount)')).toEqual([
+      'my key',
+      'amount',
+    ]);
+  });
+
+  it('names no function it calls, and no global', () => {
+    expect(
+      rulesEngineDialect.fieldsOf?.(
+        'RegExp("a").test(String(name)) && amount.toFixed(2) === "1" && limit !== undefined'
+      )
+    ).toEqual(['name', 'amount', 'limit']);
+    expect(rulesEngineDialect.fieldsOf?.('amount === NaN || amount < Infinity')).toEqual([
+      'amount',
+    ]);
   });
 });

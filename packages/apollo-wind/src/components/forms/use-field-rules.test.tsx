@@ -341,6 +341,23 @@ describe('useFieldRules', () => {
     });
   });
 
+  it('lists nothing for a preserved rule, which runs as stored though its text would not', () => {
+    const stored: FieldRule[] = [
+      {
+        id: 'pattern',
+        conditions: [
+          { when: 'name', matches: 'a.b' },
+          { when: '', custom: 'amount * 2 > 1' },
+        ],
+        operator: 'AND',
+        effects: { visible: true },
+      },
+    ];
+    const { result } = renderHook(() => useFieldRules({ rules: stored }, vi.fn(), OPTIONS));
+    expect(result.current.value[0]).toMatchObject({ mode: 'preserved' });
+    expect(result.current.issues).toEqual([]);
+  });
+
   it('flags a row whose Expression value names a field the form no longer has', async () => {
     const user = userEvent.setup();
     const limit: FieldRuleField = { value: 'limit', label: 'Limit', type: 'number' };

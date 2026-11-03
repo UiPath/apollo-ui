@@ -45,6 +45,8 @@ export {
   type FieldRulesOptions,
   fromFieldRules,
   readStoredRules,
+  renameFieldInRules,
+  rulesReferencing,
   type StoredFieldRules,
   toFieldRules,
   writeStoredRules,
