@@ -1,6 +1,11 @@
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { DEFAULT_SOURCE_HANDLE_ID, PREVIEW_NODE_ID } from '../../constants';
-import type { SequenceProjection, SequenceRow } from './sequential.types';
+import type {
+  InsertionSlot,
+  SequenceProjection,
+  SequenceRow,
+  SequenceStartEdge,
+} from './sequential.types';
 
 /**
  * Internal graph helpers for the projection, merge analysis and layout passes. Not
@@ -26,6 +31,17 @@ export const SEQ_LANE_PLACEHOLDER_PREFIX = '__sequential-lane__';
 /** Deterministic id for a parent node's empty-lane placeholder on a given handle. */
 export const lanePlaceholderId = (parentId: string, handleId: string): string =>
   `${SEQ_LANE_PLACEHOLDER_PREFIX}${parentId}::${handleId}`;
+/**
+ * Id of the start row opening a self-contained container's body. Shares the canvas start
+ * row's prefix, so a container body shown on a flow canvas uses the same id.
+ */
+export const bodyStartRowId = (containerId: string): string =>
+  `__sequential-start__:${containerId}`;
+/** Handle id of the empty-body placeholder of a self-contained container (no real handle). */
+export const SELF_CONTAINED_BODY_LANE = 'body';
+/** Synthetic rows have no canonical node: placeholders and body start rows. */
+export const isSyntheticRow = (row: { lanePlaceholder?: unknown; bodyStart?: string }): boolean =>
+  row.lanePlaceholder !== undefined || row.bodyStart !== undefined;
 /** Deterministic id for the append placeholder after a populated branch tail. */
 export const leafPlaceholderId = (leafId: string): string =>
   `${SEQ_LANE_PLACEHOLDER_PREFIX}${leafId}::__tail__`;
@@ -194,6 +210,36 @@ export function rowsById(projection: SequenceProjection): ReadonlyMap<string, Se
 /** The row for `nodeId`, via the memoized {@link rowsById} index. */
 export function rowFor(projection: SequenceProjection, nodeId: string): SequenceRow | undefined {
   return rowsById(projection).get(nodeId);
+}
+
+/** The start/trigger edges wired into `nodeId` (see {@link SequenceStartEdge}). */
+export function startEdgesInto(
+  projection: Pick<SequenceProjection, 'startEdges'>,
+  nodeId: string
+): SequenceStartEdge[] {
+  return projection.startEdges?.filter((edge) => edge.target.nodeId === nodeId) ?? [];
+}
+
+/**
+ * Slot placing a step immediately before `targetNodeId`, which has no predecessor row. When a
+ * start/trigger node wires into the target, the slot splits that edge, so the trigger ends
+ * up firing the new first step; otherwise it is a plain target-only prepend.
+ */
+export function prependSlot(
+  projection: Pick<SequenceProjection, 'startEdges'>,
+  id: string,
+  targetNodeId: string,
+  containerId: string | undefined
+): InsertionSlot {
+  const startEdge = startEdgesInto(projection, targetNodeId)[0];
+  if (!startEdge) return { id, target: { nodeId: targetNodeId }, containerId };
+  return {
+    id,
+    source: startEdge.source,
+    target: startEdge.target,
+    graphEdgeId: startEdge.edgeId,
+    containerId,
+  };
 }
 
 /** Id lookup plus parentId buckets (top level under `undefined`), in input order. */

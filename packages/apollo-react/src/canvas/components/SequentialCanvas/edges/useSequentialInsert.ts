@@ -1,13 +1,19 @@
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useReactFlow } from '@uipath/apollo-react/canvas/xyflow/react';
 import { useCallback, useRef } from 'react';
-import { showPreviewGraph } from '../../../utils/createPreviewGraph';
+import {
+  applyPreviewGraphToReactFlow,
+  createPreviewGraph,
+  showPreviewGraph,
+} from '../../../utils/createPreviewGraph';
 import { useSetSequentialInsertGapSlot } from '../SequentialInsertGapContext';
 import { useOptionalSequentialInsertState } from '../SequentialInsertStateContext';
 import {
   buildSequentialPreviewOptions,
+  isUnconnectedSlot,
   resolvePendingSequentialInsert,
   type SequentialInsertArgs,
+  type SequentialOnBeforeNodeAddedOptions,
   sequentialOnBeforeNodeAdded,
 } from './sequentialInsert';
 
@@ -16,9 +22,15 @@ export interface UseSequentialInsertResult {
   startInsert: (args: SequentialInsertArgs) => void;
   /**
    * Bound `AddNodeManager.onBeforeNodeAdded`. Closes over the slot from the latest
-   * `startInsert`, which `onBeforeNodeAdded` itself never receives.
+   * `startInsert`, which `onBeforeNodeAdded` itself never receives. With no pending slot the
+   * add did not come from a sequence insert (an ordinary flow-view add on a canvas that also
+   * shows a sequenced container): it is returned untouched with `sequenceInsert: false`.
    */
-  onBeforeNodeAdded: (newNode: Node, newEdges: Edge[]) => { newNode: Node; newEdges: Edge[] };
+  onBeforeNodeAdded: (
+    newNode: Node,
+    newEdges: Edge[],
+    options?: SequentialOnBeforeNodeAddedOptions
+  ) => { newNode: Node; newEdges: Edge[]; sequenceInsert: boolean };
 }
 
 /**
@@ -39,16 +51,28 @@ export function useSequentialInsert(): UseSequentialInsertResult {
       pending.current = resolvePendingSequentialInsert(args.slot);
       // SequentialCanvas owns this state and clears it on cancel/commit.
       setInsertGapSlot(args.slot);
-      showPreviewGraph(buildSequentialPreviewOptions(reactFlowInstance, args));
+      const options = buildSequentialPreviewOptions(reactFlowInstance, args);
+      if (!isUnconnectedSlot(args.slot)) {
+        showPreviewGraph(options);
+        return;
+      }
+      // The pipeline always builds an edge from the anchor; an unconnected insert drops it.
+      const preview = createPreviewGraph(options);
+      if (preview)
+        applyPreviewGraphToReactFlow({ node: preview.node, edges: [] }, reactFlowInstance);
     },
     [reactFlowInstance, setInsertGapSlot, pending]
   );
 
   const onBeforeNodeAdded = useCallback(
-    (newNode: Node, newEdges: Edge[]) => {
-      const result = sequentialOnBeforeNodeAdded(newNode, newEdges, pending.current);
+    (newNode: Node, newEdges: Edge[], options?: SequentialOnBeforeNodeAddedOptions) => {
+      const slot = pending.current;
+      if (!slot) return { newNode, newEdges, sequenceInsert: false };
       pending.current = undefined;
-      return result;
+      return {
+        ...sequentialOnBeforeNodeAdded(newNode, newEdges, slot, options),
+        sequenceInsert: true,
+      };
     },
     [pending]
   );

@@ -1,5 +1,5 @@
 import { DEFAULT_SOURCE_HANDLE_ID } from '../../constants';
-import { rowsById } from './graph-helpers';
+import { isSyntheticRow, prependSlot, rowsById } from './graph-helpers';
 import { incomingSeams, ownIncomingConnector, ownOutgoingConnector } from './mutations';
 import type {
   InsertionSlot,
@@ -20,12 +20,18 @@ import type {
  * `parentRowId` alone is not a lane: an If's Then and Else children share it, and a
  * lane tail's `merge-back` targets a merge one depth up. Comparing `depth` too pins
  * both rows to one lane, the only relation `moveSubtree`'s single-edge splice can swap.
+ * A synthetic row (a self-contained body's start row) is never a sibling to swap with.
  */
 function isSameLane(rows: ReadonlyMap<string, SequenceRow>, aId: string, bId: string): boolean {
   const a = rows.get(aId);
   const b = rows.get(bId);
   return (
-    a !== undefined && b !== undefined && a.depth === b.depth && a.parentRowId === b.parentRowId
+    a !== undefined &&
+    b !== undefined &&
+    !isSyntheticRow(a) &&
+    !isSyntheticRow(b) &&
+    a.depth === b.depth &&
+    a.parentRowId === b.parentRowId
   );
 }
 
@@ -99,11 +105,12 @@ function findMoveUpAndOutSlot(
 
   // Owner is first in its scope: prepend. Its scope is read off its outgoing slot,
   // since a node's incoming and outgoing edges share the same `containerId`.
-  return {
-    id: `slot:moveUpOut:${ownerId}`,
-    target: { nodeId: ownerId },
-    containerId: ownOutgoingConnector(projection, ownerId)?.slot?.containerId,
-  };
+  return prependSlot(
+    projection,
+    `slot:moveUpOut:${ownerId}`,
+    ownerId,
+    ownOutgoingConnector(projection, ownerId)?.slot?.containerId
+  );
 }
 
 /**
@@ -127,11 +134,7 @@ export function findMoveUpSlot(
   if (intoPrev?.slot) return intoPrev.slot;
 
   // `prevId` has no predecessor: prepend before it.
-  return {
-    id: `slot:moveUp:${nodeId}`,
-    target: { nodeId: prevId },
-    containerId: intoNode.slot.containerId,
-  };
+  return prependSlot(projection, `slot:moveUp:${nodeId}`, prevId, intoNode.slot.containerId);
 }
 
 /**
@@ -207,9 +210,20 @@ export function findIndentSlot(
   const prevRow = rows.get(prevId);
   if (!prevRow?.collapsible) return undefined;
 
-  const firstEntry = projection.connectors.find(
+  let firstEntry = projection.connectors.find(
     (c) => c.kind === 'branch-entry' && c.sourceRowId === prevId
   );
+  // A self-contained body is entered through its start row: its outgoing connector is the
+  // real head of the body, or the empty body's placeholder.
+  const bodyStartRow = firstEntry ? rows.get(firstEntry.targetRowId) : undefined;
+  if (firstEntry && bodyStartRow?.bodyStart === prevId) {
+    const fromStart = projection.connectors.find(
+      (c) => c.sourceRowId === bodyStartRow.nodeId && c.kind === 'step'
+    );
+    const placeholder = fromStart ? rows.get(fromStart.targetRowId) : undefined;
+    if (placeholder?.lanePlaceholder) return placeholder.lanePlaceholder;
+    firstEntry = fromStart;
+  }
   if (!firstEntry?.slot) {
     // Empty body: the branch-entry connector into the lane placeholder carries no
     // slot, so the placeholder's registered empty-body slot is the tail.

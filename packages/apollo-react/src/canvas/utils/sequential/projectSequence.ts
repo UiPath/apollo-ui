@@ -1,5 +1,6 @@
 import type { Edge, Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import {
+  bodyStartRowId,
   buildGraphIndex,
   defaultIsSequenceEdge,
   edgeDataLabel,
@@ -12,7 +13,9 @@ import {
   isContainerNode as isStructuralContainerNode,
   lanePlaceholderId,
   leafPlaceholderId,
+  prependSlot,
   type Scope,
+  SELF_CONTAINED_BODY_LANE,
   sortByFlow,
   sourceHandleOf,
 } from './graph-helpers';
@@ -24,6 +27,7 @@ import type {
   SequenceConnector,
   SequenceProjection,
   SequenceRow,
+  SequenceStartEdge,
 } from './sequential.types';
 
 const CONTAINER_START_LABEL = 'Body';
@@ -45,12 +49,31 @@ export function projectSequence(
   const isSequenceEdge = options?.isSequenceEdge ?? defaultIsSequenceEdge;
   const isStartNode = options?.isStartNode ?? defaultIsStartNode;
   const collapsedSet = options?.collapsedStepIds ?? EMPTY_SCOPE;
+  // One pass decides which nodes are start nodes; the filter and the start-edge scan share it.
+  const startNodeIds = new Set<string>();
+  for (const node of nodes) if (isStartNode(node)) startNodeIds.add(node.id);
   const { nodes: sequenceNodes, edges: sequenceEdges } = filterGraphByNodes(
     nodes,
     edges,
-    (node) => !isStartNode(node)
+    (node) => !startNodeIds.has(node.id)
   );
   const index = buildGraphIndex(sequenceNodes, sequenceEdges, isSequenceEdge);
+
+  // Start nodes are filtered out above, so their edges into steps are recorded separately:
+  // they place no connector, but head inserts and moves must still re-point them.
+  const startEdges: SequenceStartEdge[] = [];
+  if (startNodeIds.size > 0) {
+    for (const edge of edges) {
+      if (!startNodeIds.has(edge.source) || !index.nodesById.has(edge.target)) continue;
+      if (!defaultIsSequenceEdge(edge) || !isSequenceEdge(edge)) continue;
+      startEdges.push({
+        edgeId: edge.id,
+        source: { nodeId: edge.source, handleId: edge.sourceHandle ?? undefined },
+        target: { nodeId: edge.target, handleId: edge.targetHandle ?? undefined },
+      });
+    }
+  }
+  const startEdgeSource: Pick<SequenceProjection, 'startEdges'> = { startEdges };
 
   const rows: SequenceRow[] = [];
   const rowByNodeId = new Map<string, SequenceRow>();
@@ -177,7 +200,85 @@ export function projectSequence(
     });
   };
 
+  /**
+   * A self-contained body has no handle on the frame to enter from, so it opens with its own
+   * start row (triggers inside it are folded away like top-level ones). The head slot carries
+   * no source. An empty body's slot is sourced at its lone trigger when it has exactly one,
+   * like the canvas tail; otherwise inserting there adds an unconnected first step.
+   */
+  function walkSelfContainedBody(containerNode: Node, depth: number): void {
+    const scope = containerNode.id;
+    const startRowId = bodyStartRowId(scope);
+    rows.push({
+      nodeId: startRowId,
+      depth: depth + 1,
+      parentRowId: scope,
+      collapsible: false,
+      collapsed: false,
+      visible: true,
+      bodyStart: scope,
+    });
+    connectors.push({
+      id: `conn:body-start:${scope}`,
+      kind: 'branch-entry',
+      sourceRowId: scope,
+      targetRowId: startRowId,
+    });
+
+    const children = index.childrenByParent.get(scope) ?? [];
+    if (children.length === 0) {
+      const placeholderNodeId = lanePlaceholderId(scope, SELF_CONTAINED_BODY_LANE);
+      // Triggers were filtered out of the index, so look for them on the raw nodes.
+      const bodyTriggers = nodes.filter((node) => node.parentId === scope && isStartNode(node));
+      const loneTrigger = bodyTriggers.length === 1 ? bodyTriggers[0] : undefined;
+      const slot = addSlot({
+        id: `slot:lane:${scope}:${SELF_CONTAINED_BODY_LANE}`,
+        containerId: scope,
+        ...(loneTrigger ? { source: { nodeId: loneTrigger.id } } : { unconnected: true as const }),
+      });
+      rows.push({
+        nodeId: placeholderNodeId,
+        depth: depth + 1,
+        parentRowId: scope,
+        collapsible: false,
+        collapsed: false,
+        visible: true,
+        lanePlaceholder: slot,
+        placeholderKind: 'lane',
+      });
+      connectors.push({
+        id: `conn:lane:${scope}:${SELF_CONTAINED_BODY_LANE}`,
+        kind: 'step',
+        sourceRowId: startRowId,
+        targetRowId: placeholderNodeId,
+      });
+      return;
+    }
+
+    // Further roots stack under the first, like disconnected top-level components.
+    const entries = entriesForScope(index, scope);
+    const bodyEntries = entries.length > 0 ? entries : [sortByFlow(children)[0]!];
+    bodyEntries.forEach((entry, entryIndex) => {
+      if (entryIndex === 0) {
+        connectors.push({
+          id: `conn:body-start:${scope}:${entry.id}`,
+          kind: 'step',
+          sourceRowId: startRowId,
+          targetRowId: entry.id,
+          slot: addSlot(
+            prependSlot(startEdgeSource, `slot:head:${scope}:${entry.id}`, entry.id, scope)
+          ),
+        });
+      }
+      walkSpine(entry.id, scope, depth + 1, scope, undefined, EMPTY_SCOPE);
+    });
+  }
+
   function walkContainerBody(containerNode: Node, depth: number): void {
+    if (options?.isSelfContainedContainer?.(containerNode)) {
+      walkSelfContainedBody(containerNode, depth);
+      return;
+    }
     const scope = containerNode.id;
     const entries = entriesForScope(index, scope);
 
@@ -195,18 +296,22 @@ export function projectSequence(
     // Children but no entry: the body is a cycle with no way in. Walk from the first
     // child in flow order so the closing edge becomes a goto instead of orphaning them.
     const bodyEntries = entries.length > 0 ? entries : [sortByFlow(children)[0]!];
+    // An entry not wired from the frame is entered through the container's declared body
+    // handle, like the empty body above; the literal `start` is only the registry-free guess.
+    const declaredBodyHandleId =
+      options?.getBranchHandles?.(containerNode)?.[0]?.id ?? CONTAINER_START_HANDLE;
 
     for (const entry of bodyEntries) {
       const startEdge = index.seqEdgesBySource.get(scope)?.find((edge) => edge.target === entry.id);
       const label =
-        options?.resolveBranchLabel?.(scope, startEdge?.sourceHandle ?? CONTAINER_START_HANDLE) ??
+        options?.resolveBranchLabel?.(scope, startEdge?.sourceHandle ?? declaredBodyHandleId) ??
         (startEdge ? edgeDataLabel(startEdge) : undefined) ??
         CONTAINER_START_LABEL;
       const slot = startEdge
         ? slotFromEdge(startEdge, scope)
         : addSlot({
             id: `slot:start:${scope}:${entry.id}`,
-            source: { nodeId: scope, handleId: CONTAINER_START_HANDLE },
+            source: { nodeId: scope, handleId: declaredBodyHandleId },
             target: { nodeId: entry.id },
             containerId: scope,
           });
@@ -223,7 +328,7 @@ export function projectSequence(
         scope,
         depth + 1,
         containerNode.id,
-        { sourceNodeId: scope, handleId: startEdge?.sourceHandle ?? CONTAINER_START_HANDLE, label },
+        { sourceNodeId: scope, handleId: startEdge?.sourceHandle ?? declaredBodyHandleId, label },
         EMPTY_SCOPE
       );
     }
@@ -454,6 +559,8 @@ export function projectSequence(
     incidentNodeIds.add(edge.source);
     incidentNodeIds.add(edge.target);
   }
+  // A step wired only from a trigger is connected, not an orphan.
+  for (const edge of startEdges) incidentNodeIds.add(edge.target.nodeId);
   // With no sequence edges at all, each top-level node is its own trivial sequence,
   // not an orphan.
   const hasSequenceContent = incidentNodeIds.size > 0;
@@ -483,6 +590,9 @@ export function projectSequence(
 
   for (const node of orphanNodes) {
     emitRow(node.id, 0, undefined, undefined, true);
+    // A disconnected container still owns its body: walk it, or its children would trail
+    // as unrelated top-level orphans.
+    if (isContainer(node.id)) walkContainerBody(node, 0);
   }
 
   // Never-reached nodes (e.g. children of an unreachable container) trail as orphans.
@@ -508,5 +618,10 @@ export function projectSequence(
     row.visible = parent ? parent.visible && !parent.collapsed : true;
   }
 
-  return { rows, connectors, slots: [...slotsById.values()] };
+  return {
+    rows,
+    connectors,
+    slots: [...slotsById.values()],
+    ...(startEdges.length > 0 ? { startEdges } : {}),
+  };
 }

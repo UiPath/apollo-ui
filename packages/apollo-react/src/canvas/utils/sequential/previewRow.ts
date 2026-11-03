@@ -26,8 +26,20 @@ function projectionWithPreviewConnectors(
     ? projection.connectors.filter((_, index) => index !== matchedIndex)
     : [...projection.connectors];
 
-  const sourceId = slot.source?.nodeId ?? matched?.sourceRowId;
+  // A slot source with no row of its own (a trigger folded into a start row) is drawn from
+  // the connector it replaces, so no preview connector dangles off an unrendered node.
+  const slotSourceId = slot.source?.nodeId;
+  const sourceId =
+    slotSourceId !== undefined && rowFor(projection, slotSourceId)
+      ? slotSourceId
+      : matched?.sourceRowId;
   const targetId = slot.target?.nodeId ?? matched?.targetRowId;
+
+  // A preview at a lane's tail takes over the lane's close into the merge: it is entered by
+  // a plain step from the old tail and it is the one that merges back.
+  const targetRow = targetId ? rowFor(projection, targetId) : undefined;
+  const closesLane =
+    matched?.kind === 'merge-back' && targetRow !== undefined && targetRow.depth < previewRow.depth;
 
   if (sourceId) {
     const sourceRow = rowFor(projection, sourceId);
@@ -40,7 +52,7 @@ function projectionWithPreviewConnectors(
           : 'step';
     connectors.push({
       id: previewConnectorId(slot.id, 'incoming'),
-      kind: matched?.kind ?? inferredKind,
+      kind: closesLane ? inferredKind : (matched?.kind ?? inferredKind),
       sourceRowId: sourceId,
       targetRowId: PREVIEW_NODE_ID,
       label: matched?.label ?? previewRow.branch?.label,
@@ -51,7 +63,7 @@ function projectionWithPreviewConnectors(
   if (targetId && targetId !== replacedLaneNodeId) {
     connectors.push({
       id: previewConnectorId(slot.id, 'outgoing'),
-      kind: 'step',
+      kind: closesLane ? 'merge-back' : 'step',
       sourceRowId: PREVIEW_NODE_ID,
       targetRowId: targetId,
       slot,
@@ -96,21 +108,41 @@ export function projectionWithPreviewRow(
 
   const targetId = slot.target?.nodeId;
   const sourceId = slot.source?.nodeId;
+  const sourceIndex = sourceId ? rows.findIndex((row) => row.nodeId === sourceId) : -1;
 
   let insertIndex: number;
   let depth: number;
   let parentRowId: string | undefined;
 
-  if (targetId) {
-    const targetIndex = rows.findIndex((row) => row.nodeId === targetId);
+  const targetIndex = targetId ? rows.findIndex((row) => row.nodeId === targetId) : -1;
+  // A lane tail closing into a shallower merge: the committed node continues the lane
+  // (`tail -> new -> merge`), so the gap opens after the tail's subtree at the tail's depth,
+  // not beside the merge one level out.
+  const closesLaneIntoMerge =
+    sourceIndex !== -1 && targetIndex !== -1 && rows[sourceIndex]!.depth > rows[targetIndex]!.depth;
+
+  if (closesLaneIntoMerge) {
+    const sourceRow = rows[sourceIndex]!;
+    depth = sourceRow.depth;
+    parentRowId = sourceRow.parentRowId;
+    let idx = sourceIndex + 1;
+    while (idx < rows.length && rows[idx]!.depth > sourceRow.depth) idx++;
+    // An append placeholder trailing the tail stays attached to it.
+    while (
+      idx < rows.length &&
+      rows[idx]!.placeholderKind === 'append' &&
+      rows[idx]!.depth === depth
+    ) {
+      idx++;
+    }
+    insertIndex = idx;
+  } else if (targetId) {
     if (targetIndex === -1) return projection;
     const targetRow = rows[targetIndex]!;
     insertIndex = targetIndex;
     depth = targetRow.depth;
     parentRowId = targetRow.parentRowId;
-  } else if (sourceId) {
-    const sourceIndex = rows.findIndex((row) => row.nodeId === sourceId);
-    if (sourceIndex === -1) return projection;
+  } else if (sourceIndex !== -1) {
     const sourceRow = rows[sourceIndex]!;
     if (slot.containerId === sourceId) {
       depth = sourceRow.depth + 1;
@@ -124,6 +156,13 @@ export function projectionWithPreviewRow(
       while (idx < rows.length && rows[idx]!.depth > sourceRow.depth) idx++;
       insertIndex = idx;
     }
+  } else if (slot.unconnected || (sourceId !== undefined && slot.containerId !== undefined)) {
+    // First step of an empty scoped body, unconnected or appended to a trigger folded into
+    // the body's start row: it opens the body at the top level, ahead of any orphans.
+    const firstOrphan = rows.findIndex((row) => row.orphan);
+    insertIndex = firstOrphan === -1 ? rows.length : firstOrphan;
+    depth = 0;
+    parentRowId = undefined;
   } else {
     return projection;
   }

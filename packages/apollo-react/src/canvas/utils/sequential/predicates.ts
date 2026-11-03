@@ -1,7 +1,11 @@
 import type { Node } from '@uipath/apollo-react/canvas/xyflow/react';
 import { DEFAULT_TRIGGER_NODE_TYPE } from '../../constants';
 import type { NodeManifest } from '../../schema/node-definition';
-import { isArtifactOnlyManifest, isContainerNodeManifest } from '../container';
+import {
+  isArtifactOnlyManifest,
+  isContainerNodeManifest,
+  isSelfContainedContainerManifest,
+} from '../container';
 
 export const STICKY_NOTE_NODE_TYPE = 'stickyNote';
 
@@ -13,6 +17,8 @@ export interface SequencePredicates {
   isStartNode: (node: Node) => boolean;
   /** Structural container whose children form a body lane. */
   isContainerNode: (node: Node) => boolean;
+  /** Container whose body is a self-contained subflow, opened by its own start row. */
+  isSelfContainedContainer?: (node: Node) => boolean;
 }
 
 /** Registry-free default: everything but sticky notes. */
@@ -27,7 +33,8 @@ export const defaultIsStartNode = (node: Pick<Node, 'type'>): boolean =>
  * Builds the manifest-aware predicates from a `getManifest` lookup (normally
  * `registry.getManifest`). Without a lookup, falls back to the registry-free defaults.
  * Artifact-only resources (tools, context, memory) are not sequence nodes; trigger-category
- * manifests are start nodes; `shape: 'container'` manifests are containers.
+ * manifests are start nodes; `shape: 'container'` manifests are containers, self-contained
+ * when they declare no inner-boundary handles.
  */
 export function createSequencePredicates(
   getManifest?: (type: string) => NodeManifest | undefined
@@ -39,5 +46,6 @@ export function createSequencePredicates(
       defaultIsSequenceNode(node) && !isArtifactOnlyManifest(manifestOf(node)),
     isStartNode: (node) => defaultIsStartNode(node) || manifestOf(node)?.category === 'trigger',
     isContainerNode: (node) => isContainerNodeManifest(manifestOf(node)),
+    isSelfContainedContainer: (node) => isSelfContainedContainerManifest(manifestOf(node)),
   };
 }

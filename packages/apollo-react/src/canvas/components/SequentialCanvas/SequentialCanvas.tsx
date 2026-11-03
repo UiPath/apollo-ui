@@ -26,6 +26,7 @@ import { getIcon } from '../../utils/icon-registry';
 import { resolveDisplay, resolveHandles } from '../../utils/manifest-resolver';
 import {
   indexNodesByParent,
+  isSyntheticRow,
   SEQ_LANE_PLACEHOLDER_PREFIX,
 } from '../../utils/sequential/graph-helpers';
 import { resolveSequenceMetrics } from '../../utils/sequential/layoutSequence';
@@ -69,7 +70,10 @@ import { SequentialCollapsedRowsProvider } from './SequentialCollapsedRowsContex
 import { SequentialGutter } from './SequentialGutter';
 import { SequentialInsertGapProvider } from './SequentialInsertGapContext';
 import { SequentialInsertLayer } from './SequentialInsertLayer';
-import { SequentialInsertStateProvider } from './SequentialInsertStateContext';
+import {
+  SequentialInsertStateProvider,
+  useOptionalSequentialInsertState,
+} from './SequentialInsertStateContext';
 import { SequentialLaneAddProvider } from './SequentialLaneAddContext';
 import { SequentialMoveActionsProvider } from './SequentialMoveActionsContext';
 import { useOptionalSequentialView } from './SequentialViewContext';
@@ -184,6 +188,9 @@ export function collectStepAttachments<N extends Node, E extends Edge>(
   return { byStepId, keyByStepId };
 }
 
+/** The canvas's own flow renderers never read the absolute position (see createFlowOrBarNodeType). */
+const BUILT_IN_FLOW_NODE = { ignoresAbsolutePosition: true } as const;
+
 /**
  * Splits a node's visible source handles into the continuation (spine) output and the
  * branch lanes, in manifest order. Continuation precedence: the registry's explicit
@@ -235,6 +242,7 @@ function SequentialCanvasInsertController<N extends Node, E extends Edge>(
   const [activeInsertSlot, setActiveInsertSlot] = useState<InsertionSlot | undefined>(undefined);
   const { previewNode } = usePreviewNode();
   const wasPreviewOpenRef = useRef(false);
+  const insertState = useOptionalSequentialInsertState();
 
   const isPreviewOpen = previewNode !== null;
   useEffect(() => {
@@ -243,8 +251,11 @@ function SequentialCanvasInsertController<N extends Node, E extends Edge>(
     } else if (wasPreviewOpenRef.current) {
       wasPreviewOpenRef.current = false;
       setActiveInsertSlot(undefined);
+      // A commit already consumed the pending slot; a cancel must drop it too, or the next
+      // unrelated add would be parented and wired as if it were that cancelled insert.
+      if (insertState) insertState.pending.current = undefined;
     }
-  }, [isPreviewOpen]);
+  }, [isPreviewOpen, insertState]);
 
   return (
     <SequentialInsertGapProvider value={setActiveInsertSlot}>
@@ -468,6 +479,27 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
     [resolvedHandlesByNodeId, resolveBranchLabel, registry]
   );
 
+  // The handle a step appended after `node` hangs from: its continuation output, never a
+  // lane. `false` when every source handle is a lane; `undefined` without a manifest.
+  const getAppendSourceHandleId = useCallback(
+    (node: N): string | false | undefined => {
+      const groups = resolvedHandlesByNodeId.get(node.id);
+      if (!groups) return undefined;
+      const laneIds = new Set(getBranchHandles(node).map((handle) => handle.id));
+      const continuation = groups
+        .flatMap((group) => group.handles)
+        .find(
+          (handle) =>
+            handle.type === 'source' &&
+            handle.handleType !== 'artifact' &&
+            handle.visible &&
+            !laneIds.has(handle.id)
+        );
+      return continuation?.id ?? false;
+    },
+    [resolvedHandlesByNodeId, getBranchHandles]
+  );
+
   // Collapse is host-owned when the callback is wired, otherwise held here.
   const [internalCollapsedIds, setInternalCollapsedIds] = useState<string[]>([]);
   const collapsedSet = useStableNodeIdSet(collapsedStepIds ?? internalCollapsedIds);
@@ -499,6 +531,7 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
     resolveBranchLabel,
     getBranchHandles,
     getDefaultSourceHandleId,
+    getAppendSourceHandleId,
     collapsedStepIds: collapsedSet,
     onAddTrigger: isDesignMode ? onAddTrigger : undefined,
     layoutOptions,
@@ -570,21 +603,13 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
   }, [canEditSequence, reactFlow, startInsert]);
 
   // An empty branch lane's "+ Add step": insert the lane's first node via the carried slot
-  // (source = parent, sourceHandle = the branch handle, containerId set).
+  // (source = parent, sourceHandle = the branch handle, containerId set). An empty
+  // self-contained body's slot has no source, so its first node is added unconnected.
   const canonicalByIdRef = useRef(canonicalById);
   canonicalByIdRef.current = canonicalById;
   const onLaneAdd = useCallback(
     (slot: InsertionSlot) => {
-      if (!canInsert || !slot.source) return;
-      const sourceNode = canonicalByIdRef.current.get(slot.source.nodeId);
-      const resolvedSource = {
-        ...slot.source,
-        handleId:
-          slot.source.handleId ??
-          (sourceNode?.type ? getDefaultSourceHandleId(sourceNode.type) : undefined) ??
-          DEFAULT_SOURCE_HANDLE_ID,
-      };
-      const resolvedSlot: InsertionSlot = { ...slot, source: resolvedSource };
+      if (!canInsert) return;
       const placeholder = reactFlow
         .getNodes()
         .find(
@@ -594,7 +619,30 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
       // A placeholder inside a sequenced container is parented, so its position is relative.
       const placement =
         (placeholder && reactFlow.getInternalNode?.(placeholder.id)?.internals.positionAbsolute) ??
-        placeholder?.position;
+        placeholder?.position ??
+        ({ x: 0, y: 0 } as XYPosition);
+      if (slot.unconnected) {
+        // An empty self-contained body: the first step is added with no edge.
+        if (!slot.containerId) return;
+        startInsert({
+          slot,
+          source: slot.containerId,
+          target: '',
+          sourcePosition: Position.Bottom,
+          position: placement,
+        });
+        return;
+      }
+      if (!slot.source) return;
+      const sourceNode = canonicalByIdRef.current.get(slot.source.nodeId);
+      const resolvedSource = {
+        ...slot.source,
+        handleId:
+          slot.source.handleId ??
+          (sourceNode?.type ? getDefaultSourceHandleId(sourceNode.type) : undefined) ??
+          DEFAULT_SOURCE_HANDLE_ID,
+      };
+      const resolvedSlot: InsertionSlot = { ...slot, source: resolvedSource };
       startInsert({
         slot: resolvedSlot,
         source: resolvedSource.nodeId,
@@ -602,7 +650,7 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
         target: '',
         targetHandleId: undefined,
         sourcePosition: Position.Bottom,
-        position: placement ?? { x: 0, y: 0 },
+        position: placement,
       });
     },
     [canInsert, getDefaultSourceHandleId, reactFlow, startInsert]
@@ -624,6 +672,7 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
     isSequenceNode: isProjectedSequenceNode,
     isStartNode,
     isContainerNode: isProjectedContainerNode,
+    isSelfContainedContainer,
     resolveBranchLabel,
     getBranchHandles,
     canAddToLane: canEditSequence,
@@ -649,8 +698,15 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
   );
 
   const tailSlot = useMemo<InsertionSlot | undefined>(
-    () => resolveTailInsertionSlot(projection, nodes, getDefaultSourceHandleId, isStartNode),
-    [projection, nodes, getDefaultSourceHandleId, isStartNode]
+    () =>
+      resolveTailInsertionSlot(
+        projection,
+        nodes,
+        getDefaultSourceHandleId,
+        isStartNode,
+        getAppendSourceHandleId
+      ),
+    [projection, nodes, getDefaultSourceHandleId, isStartNode, getAppendSourceHandleId]
   );
   // Render-phase ref write, idempotent (derived from this render's inputs only). An effect
   // would leave the tail placeholder's slot undefined until after first paint.
@@ -767,11 +823,14 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
       }
     } else {
       for (const key of presentTypes) {
-        types[key] = createFlowOrBarNodeType(resolveFlowNodeComponent(registry?.getManifest(key)));
+        types[key] = createFlowOrBarNodeType(
+          resolveFlowNodeComponent(registry?.getManifest(key)),
+          BUILT_IN_FLOW_NODE
+        );
       }
-      types.default ??= createFlowOrBarNodeType(BaseNode);
+      types.default ??= createFlowOrBarNodeType(BaseNode, BUILT_IN_FLOW_NODE);
     }
-    types.preview ??= createFlowOrBarNodeType(AddNodePreview);
+    types.preview ??= createFlowOrBarNodeType(AddNodePreview, BUILT_IN_FLOW_NODE);
     return types;
   }, [flowNodeTypes, presentTypes, registry]);
   const nodeTypes = inSequentialView ? sequentialNodeTypes : resolvedFlowNodeTypes;
@@ -796,7 +855,7 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
   const syntheticNodeIds = useMemo(() => {
     const ids = new Set(SEQ_SYNTHETIC_ROW_IDS);
     for (const row of projection?.rows ?? []) {
-      if (row.lanePlaceholder) ids.add(row.nodeId);
+      if (isSyntheticRow(row)) ids.add(row.nodeId);
     }
     return ids;
   }, [projection]);
@@ -1041,11 +1100,16 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
   );
   const composedOnBeforeNodeAdded = useCallback(
     (newNode: Node, newEdges: Edge[]) => {
-      const sequential = onBeforeNodeAdded(newNode, newEdges);
+      const { sequenceInsert, ...sequential } = onBeforeNodeAdded(newNode, newEdges, {
+        resolveTargetHandleId: (node) =>
+          node.type ? registry?.getDefaultHandle(node.type, 'target')?.id : undefined,
+      });
       const final =
         addNodeManagerProps?.onBeforeNodeAdded?.(sequential.newNode, sequential.newEdges) ??
         sequential;
-      if (inSequentialView) return final;
+      // An ordinary flow add (not from a plus inside a sequenced body) keeps the placement
+      // the Add Node manager gave it.
+      if (inSequentialView || !sequenceInsert) return final;
       // In flow view the insert lands in a sequenced container body. Its ghost position is in
       // the frame's sequence-layout space, which means nothing to the node's real parent (a
       // nested For Each, for example). Place it in flow terms and grow its containers now, so
@@ -1070,6 +1134,7 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
       inSequentialView,
       nodeLayout,
       ignoredNodeTypes,
+      registry,
     ]
   );
   const {

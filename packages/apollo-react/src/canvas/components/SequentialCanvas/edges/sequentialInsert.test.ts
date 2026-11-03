@@ -18,6 +18,7 @@ import {
   type PendingSequentialInsert,
   resolvePendingSequentialInsert,
   SEQ_INSERTED_FLAG,
+  SEQ_SPLIT_EDGE_ID_KEY,
   SEQUENTIAL_IGNORED_NODE_TYPES,
   sequentialOnBeforeNodeAdded,
 } from './sequentialInsert';
@@ -254,6 +255,46 @@ describe('sequentialOnBeforeNodeAdded', () => {
       }
     });
 
+    it('adds the trigger edge when the slot split it but the pipeline only built the target side', () => {
+      vi.spyOn(crypto, 'randomUUID').mockReturnValue(FAKE_UUID);
+      const pending: PendingSequentialInsert = {
+        sourceNodeId: 'trigger',
+        sourceHandleId: 'output',
+        targetNodeId: 'tgtB',
+        targetHandleId: 'input',
+        graphEdgeId: 'e-trigger-tgtB',
+      };
+      // A target-only preview: the pipeline knows nothing of the trigger.
+      const targetSideOnly = seedEdges().filter((edge) => edge.target === 'tgtB');
+      const { newEdges } = sequentialOnBeforeNodeAdded(seedNode(), targetSideOnly, pending, {
+        resolveTargetHandleId: () => 'input',
+      });
+
+      expect(newEdges.map((edge) => [edge.source, edge.target])).toEqual([
+        ['trigger', FAKE_UUID],
+        [FAKE_UUID, 'tgtB'],
+      ]);
+      const fromTrigger = newEdges[0]!;
+      expect(fromTrigger.sourceHandle).toBe('output');
+      expect(fromTrigger.targetHandle).toBe('input');
+      // Both carry the split marker, so the forwarding seam removes the old trigger edge.
+      for (const edge of newEdges) {
+        expect((edge.data as Record<string, unknown>)[SEQ_SPLIT_EDGE_ID_KEY]).toBe(
+          'e-trigger-tgtB'
+        );
+      }
+    });
+
+    it('does not add a second source edge when the pipeline already built one', () => {
+      vi.spyOn(crypto, 'randomUUID').mockReturnValue(FAKE_UUID);
+      const { newEdges } = sequentialOnBeforeNodeAdded(seedNode(), seedEdges(), {
+        sourceNodeId: 'srcA',
+        targetNodeId: 'tgtB',
+        graphEdgeId: 'e-srcA-tgtB',
+      });
+      expect(newEdges).toHaveLength(2);
+    });
+
     it('leaves non-bar handle ids untouched even when a pending value is present', () => {
       vi.spyOn(crypto, 'randomUUID').mockReturnValue(FAKE_UUID);
       const pending: PendingSequentialInsert = {
@@ -342,8 +383,12 @@ describe('buildSequentialPreviewOptions', () => {
     type: 'sequentialConnector',
   } as Edge;
 
-  const makeInstance = (edges: Edge[] = [connectorEdge]) =>
-    ({ getEdges: () => edges }) as unknown as ReactFlowInstance;
+  /** Every node is rendered unless listed in `unrendered` (a trigger folded into the start row). */
+  const makeInstance = (edges: Edge[] = [connectorEdge], unrendered: string[] = []) =>
+    ({
+      getEdges: () => edges,
+      getNode: (id: string) => (unrendered.includes(id) ? undefined : ({ id } as Node)),
+    }) as unknown as ReactFlowInstance;
 
   const baseArgs = {
     source: 'a',
@@ -393,6 +438,20 @@ describe('buildSequentialPreviewOptions', () => {
     expect('target' in options).toBe(false);
   });
 
+  it('anchors an unconnected slot on its container with no target and the unconnected marker', () => {
+    const slot: InsertionSlot = { id: 'slot:lane:api:body', containerId: 'api', unconnected: true };
+    const options = buildSequentialPreviewOptions(makeInstance([]), {
+      ...baseArgs,
+      slot,
+      source: 'api',
+      target: '',
+    });
+    expect(options.source).toEqual({ nodeId: 'api' });
+    expect('target' in options).toBe(false);
+    expect(options.data).toEqual({ unconnected: true });
+    expect(options.previewNodeSize).toEqual({ width: SEQ_BAR_WIDTH, height: SEQ_BAR_HEIGHT });
+  });
+
   it('drives a head insertion from the first canonical target without using the synthetic start row', () => {
     const slot: InsertionSlot = { id: 'slot-head', target: { nodeId: 'first' } };
     const options = buildSequentialPreviewOptions(makeInstance(), {
@@ -405,6 +464,25 @@ describe('buildSequentialPreviewOptions', () => {
     expect(options.source).toEqual({ nodeId: 'first', handleId: DEFAULT_TARGET_HANDLE_ID });
     expect(options.sourceHandleType).toBe('target');
     expect(options.handlePosition).toBe(Position.Top);
+    expect('target' in options).toBe(false);
+  });
+
+  it('drives a head insertion from the target when the slot source is a trigger with no bar', () => {
+    const slot: InsertionSlot = {
+      id: 'slot-head',
+      source: { nodeId: 'trigger', handleId: 'output' },
+      target: { nodeId: 'first', handleId: 'input' },
+      graphEdgeId: 'e-trigger-first',
+    };
+    const options = buildSequentialPreviewOptions(makeInstance([], ['trigger']), {
+      ...baseArgs,
+      source: '__sequential-start__',
+      target: 'first',
+      slot,
+    });
+
+    expect(options.source).toEqual({ nodeId: 'first', handleId: 'input' });
+    expect(options.sourceHandleType).toBe('target');
     expect('target' in options).toBe(false);
   });
 

@@ -14,6 +14,7 @@ import {
   SEQ_START_NODE_TYPE,
 } from '../../../constants';
 import type { CreatePreviewGraphOptions } from '../../../utils/createPreviewGraph';
+import { PREVIEW_UNCONNECTED_DATA_KEY } from '../../../utils/createPreviewNode';
 import { buildEdgeId } from '../../../utils/props-helpers';
 import { SEQ_CONTINUATION_EDGE_KEY } from '../../../utils/sequential/graph-helpers';
 import type { InsertionSlot } from '../../../utils/sequential/sequential.types';
@@ -73,6 +74,11 @@ export interface SequentialInsertArgs {
   connectorEdgeId?: string;
 }
 
+/** The first step of an empty self-contained body, added as an unconnected child of `containerId`. */
+export function isUnconnectedSlot(slot: InsertionSlot): boolean {
+  return slot.unconnected === true;
+}
+
 /**
  * Builds the {@link CreatePreviewGraphOptions} for a sequential insertion on the
  * existing Add Node preview pipeline. Canonical manifest handles are kept here;
@@ -84,14 +90,30 @@ export function buildSequentialPreviewOptions(
 ): CreatePreviewGraphOptions {
   const { slot, source, target, sourcePosition, position, connectorEdgeId } = args;
 
+  // Anchored on the container, with no edge: the caller applies the node alone.
+  if (isUnconnectedSlot(slot)) {
+    return {
+      reactFlowInstance,
+      source: { nodeId: slot.containerId ?? source },
+      position,
+      positionMode: 'drop',
+      data: { [PREVIEW_UNCONNECTED_DATA_KEY]: true },
+      ignoredNodeTypes: SEQUENTIAL_IGNORED_NODE_TYPES,
+      previewNodeSize: { width: SEQ_BAR_WIDTH, height: SEQ_BAR_HEIGHT },
+    };
+  }
+
   const originalEdge = connectorEdgeId
     ? reactFlowInstance.getEdges().find((edge) => edge.id === connectorEdgeId)
     : undefined;
 
-  // A target-only slot (e.g. before the first step) has no canonical source; drive
-  // the preview from its target handle, with sourceHandleType='target'.
+  // A slot before the first step has no rendered source: either no canonical source at all,
+  // or a trigger folded into the start row. Drive the preview from the target handle, with
+  // sourceHandleType='target'; `sequentialOnBeforeNodeAdded` adds the trigger's edge on commit.
   const targetEndpoint = slot.target;
-  const isTargetOnlyInsert = slot.source === undefined && targetEndpoint !== undefined;
+  const sourceIsRendered =
+    slot.source !== undefined && reactFlowInstance.getNode(slot.source.nodeId) !== undefined;
+  const isTargetOnlyInsert = targetEndpoint !== undefined && !sourceIsRendered;
   const previewSourceNodeId = isTargetOnlyInsert
     ? targetEndpoint.nodeId
     : (slot.source?.nodeId ?? source);
@@ -161,6 +183,15 @@ export function resolvePendingSequentialInsert(slot: InsertionSlot): PendingSequ
   };
 }
 
+export interface SequentialOnBeforeNodeAddedOptions {
+  /**
+   * The inserted node's default target handle, for the edge this adapter adds itself when
+   * the slot's source is a trigger folded into the start row. Without it the handle is left
+   * implicit, like `insertAtSlot` does.
+   */
+  resolveTargetHandleId?: (node: Node) => string | undefined;
+}
+
 /** True for the `${type}-${Date.now()}` id AddNodeManager seeds; anything else was chosen by a host. */
 function isPipelineSeedId(node: Node): boolean {
   return node.type !== undefined && new RegExp(`^${escapeRegExp(node.type)}-\\d+$`).test(node.id);
@@ -179,7 +210,8 @@ function escapeRegExp(value: string): string {
 export function sequentialOnBeforeNodeAdded(
   newNode: Node,
   newEdges: Edge[],
-  pending?: PendingSequentialInsert
+  pending?: PendingSequentialInsert,
+  options?: SequentialOnBeforeNodeAddedOptions
 ): { newNode: Node; newEdges: Edge[] } {
   const previousId = newNode.id;
   const seqId = isPipelineSeedId(newNode) ? crypto.randomUUID() : previousId;
@@ -248,6 +280,31 @@ export function sequentialOnBeforeNodeAdded(
       id: buildEdgeId(nextSource, nextSourceHandle, nextTarget, nextTargetHandle),
     };
   });
+
+  // A slot split at a trigger's edge previews from its target only (the trigger has no bar),
+  // so the pipeline built `new -> target` alone. Add `trigger -> new` here, or the trigger
+  // would keep firing the old first step and the new one would never run.
+  const pipelineBuiltSourceSide = newEdges.some(
+    (edge) => edge.source === pending?.sourceNodeId && edge.target === previousId
+  );
+  const targetSideEdge = newEdges.find(
+    (edge) => edge.source === previousId && edge.target === pending?.targetNodeId
+  );
+  if (pending?.sourceNodeId && pending.graphEdgeId && targetSideEdge && !pipelineBuiltSourceSide) {
+    const targetHandle = options?.resolveTargetHandleId?.(finalNode);
+    finalEdges.unshift({
+      id: buildEdgeId(pending.sourceNodeId, pending.sourceHandleId, seqId, targetHandle),
+      source: pending.sourceNodeId,
+      sourceHandle: pending.sourceHandleId,
+      target: seqId,
+      targetHandle,
+      type: targetSideEdge.type,
+      data: {
+        [SEQ_SPLIT_EDGE_ID_KEY]: pending.graphEdgeId,
+        ...(pending.splitEdgeWasContinuation ? { [SEQ_CONTINUATION_EDGE_KEY]: true } : {}),
+      },
+    });
+  }
 
   return { newNode: finalNode, newEdges: finalEdges };
 }

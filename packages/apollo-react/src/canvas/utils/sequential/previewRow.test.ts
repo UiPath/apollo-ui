@@ -87,6 +87,18 @@ describe('projectionWithPreviewRow', () => {
     expect(projectionWithPreviewRow(base, { id: 's' })).toBe(base);
   });
 
+  it('opens a scoped body at the top when its slot source is a folded trigger with no row', () => {
+    const base = projection([row('a', 0), { ...row('orphan', 0), orphan: true }]);
+    const next = projectionWithPreviewRow(base, {
+      id: 's',
+      source: { nodeId: 'folded-trigger' },
+      containerId: 'frame',
+    });
+    expect(ids(next)).toEqual(['a', PREVIEW_NODE_ID, 'orphan']);
+    expect(previewRow(next)?.depth).toBe(0);
+    expect(next.connectors.some((c) => c.sourceRowId === 'folded-trigger')).toBe(false);
+  });
+
   it('opens a one-row gap in the layout: downstream rows shift by one pitch', () => {
     const base = projection([row('a', 0), row('b', 0), row('c', 0)]);
     const withPreview = projectionWithPreviewRow(base, { id: 's', target: { nodeId: 'b' } });
@@ -179,5 +191,40 @@ describe('projectionWithPreviewRow', () => {
       label: 'Then',
     });
     expect(layoutSequence(next).connectorWaypoints.get(incoming!.id)).toHaveLength(2);
+  });
+
+  describe('lane tail closing into a merge', () => {
+    // if -> { then: a, else: b } -> m, with the insert on a's merge-back connector.
+    const slot = {
+      id: 'slot:edge:a-m',
+      source: { nodeId: 'a' },
+      target: { nodeId: 'm' },
+      graphEdgeId: 'a-m',
+    };
+    const base = () =>
+      projection(
+        [row('if', 0), row('a', 1, 'if'), row('b', 1, 'if'), row('m', 0)],
+        [
+          { id: 'conn:merge:a-m', kind: 'merge-back', sourceRowId: 'a', targetRowId: 'm', slot },
+          { id: 'conn:merge:b-m', kind: 'merge-back', sourceRowId: 'b', targetRowId: 'm' },
+        ]
+      );
+
+    it('opens the gap right after the tail, in its lane and at its depth', () => {
+      const next = projectionWithPreviewRow(base(), slot);
+
+      // The committed node is `a -> new -> m`: it continues a's lane, not m's level.
+      expect(ids(next)).toEqual(['if', 'a', PREVIEW_NODE_ID, 'b', 'm']);
+      expect(previewRow(next)).toMatchObject({ depth: 1, parentRowId: 'if' });
+    });
+
+    it('steps into the preview from the tail and merges back from the preview', () => {
+      const next = projectionWithPreviewRow(base(), slot);
+      const kinds = next.connectors
+        .filter((c) => c.sourceRowId === PREVIEW_NODE_ID || c.targetRowId === PREVIEW_NODE_ID)
+        .map((c) => `${c.kind}:${c.sourceRowId}->${c.targetRowId}`);
+
+      expect(kinds).toEqual([`step:a->${PREVIEW_NODE_ID}`, `merge-back:${PREVIEW_NODE_ID}->m`]);
+    });
   });
 });

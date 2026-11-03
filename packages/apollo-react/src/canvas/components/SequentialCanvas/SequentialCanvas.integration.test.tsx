@@ -1118,3 +1118,50 @@ describe('SequentialCanvas runtime containers (flow view)', () => {
     expect(changeIds(forwarded, 'position')).toEqual([]);
   });
 });
+
+describe('SequentialCanvas runtime containers (sequential view)', () => {
+  const rc = RUNTIME_CONTAINER_NODE_IDS;
+  const startId = `${SEQ_START_ROW_ID}:${rc.container}`;
+  const derivedEdges = (): Edge[] => capturedFlowProps.current.edges;
+
+  it('opens the body with its own start row, entered from the frame at mid-left', () => {
+    const { nodes, edges } = makeRuntimeContainerFixture();
+    renderCanvas({ initialNodes: nodes, initialEdges: edges, view: 'sequential' });
+
+    const start = derivedNodes().find((node) => node.id === startId);
+    expect(start?.type).toBe('sequential-start');
+    expect(start?.parentId).toBeUndefined();
+    const entry = derivedEdges().find((edge) => edge.target === startId);
+    expect(entry?.source).toBe(rc.container);
+    expect(entry?.targetHandle).toBe('seq-branch-target');
+    expect(derivedEdges().some((edge) => edge.source === startId && edge.target === rc.http)).toBe(
+      true
+    );
+  });
+
+  it('reports the container id from the body start row Add trigger', () => {
+    const { nodes, edges } = makeRuntimeContainerFixture();
+    const onAddTrigger = vi.fn();
+    renderCanvas({ initialNodes: nodes, initialEdges: edges, view: 'sequential', onAddTrigger });
+
+    act(() => {
+      (
+        derivedNodes().find((node) => node.id === startId)?.data as { onAddTrigger: () => void }
+      ).onAddTrigger();
+    });
+    expect(onAddTrigger).toHaveBeenCalledWith(rc.container);
+  });
+
+  it('keeps the body start row out of the host change stream', () => {
+    const { nodes, edges } = makeRuntimeContainerFixture();
+    renderCanvas({ initialNodes: nodes, initialEdges: edges, view: 'sequential' });
+
+    reportNodeChanges([
+      { type: 'select', id: startId, selected: true },
+      { type: 'dimensions', id: startId, dimensions: { width: 1, height: 1 } },
+    ]);
+    const forwarded = forwardedNodeChanges();
+    expect(changeIds(forwarded, 'select')).toEqual([]);
+    expect(changeIds(forwarded, 'dimensions')).toEqual([]);
+  });
+});

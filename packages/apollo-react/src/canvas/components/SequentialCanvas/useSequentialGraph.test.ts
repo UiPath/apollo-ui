@@ -217,9 +217,12 @@ describe('deriveSequentialGraph', () => {
 
     const startEdge = graph.edges.find((edge) => edge.source === SEQ_START_ROW_ID);
     expect(startEdge?.data?.hideArrowHead).toBe(false);
+    // The head slot splits the trigger's edge, so an insert above step 1 is fired by the trigger.
     expect(startEdge?.data?.slot).toEqual({
       id: `slot:head:${WIREFRAME_NODE_IDS.http}`,
-      target: { nodeId: WIREFRAME_NODE_IDS.http },
+      source: { nodeId: WIREFRAME_NODE_IDS.trigger, handleId: 'output' },
+      target: { nodeId: WIREFRAME_NODE_IDS.http, handleId: 'input' },
+      graphEdgeId: 'e-trigger-http',
     });
   });
 

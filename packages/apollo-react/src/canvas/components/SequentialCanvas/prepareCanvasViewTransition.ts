@@ -75,6 +75,8 @@ export function prepareCanvasViewTransition<N extends Node = Node>(
         isSequenceNode: options.sequential?.isSequenceNode ?? isSequenceNode,
         isStartNode: options.sequential?.isStartNode ?? options.isStartNode ?? derived?.isStartNode,
         isContainerNode: options.sequential?.isContainerNode ?? isContainerNode,
+        isSelfContainedContainer:
+          options.sequential?.isSelfContainedContainer ?? derived?.isSelfContainedContainer,
       }),
     };
   }

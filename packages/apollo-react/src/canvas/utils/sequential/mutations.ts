@@ -4,8 +4,10 @@ import { buildEdgeId } from '../props-helpers';
 import {
   indexNodesByParent,
   isSequentialContinuationEdge,
+  isSyntheticRow,
   rowsById,
   SEQ_CONTINUATION_EDGE_KEY,
+  startEdgesInto,
 } from './graph-helpers';
 import type {
   GraphChangeSet,
@@ -154,6 +156,15 @@ function collectOwnSeam(
 ): { incomers: Incomer[]; outgoers: Outgoer[] } {
   const incomers: Incomer[] = [];
   const outgoers: Outgoer[] = [];
+  // A trigger's edge has no connector (the trigger folds into the start row), but it is part
+  // of the seam: leaving it behind would keep the trigger firing a step that moved away.
+  for (const startEdge of startEdgesInto(projection, nodeId)) {
+    incomers.push({
+      source: startEdge.source.nodeId,
+      sourceHandle: startEdge.source.handleId,
+      edgeId: startEdge.edgeId,
+    });
+  }
   for (const connector of projection.connectors) {
     const edgeId = connector.slot?.graphEdgeId;
     if (!edgeId) continue;
@@ -203,11 +214,11 @@ function structuralChildIds(nodes: Node[]): Map<string | undefined, string[]> {
   return byParent;
 }
 
-/** Child ids by `row.parentRowId` (container nesting and branch ownership), placeholders excluded. */
+/** Child ids by `row.parentRowId` (container nesting and branch ownership), synthetic rows excluded. */
 function projectedChildIds(projection: SequenceProjection): Map<string | undefined, string[]> {
   const byParent = new Map<string | undefined, string[]>();
   for (const row of projection.rows) {
-    if (row.parentRowId === undefined || row.lanePlaceholder) continue;
+    if (row.parentRowId === undefined || isSyntheticRow(row)) continue;
     const bucket = byParent.get(row.parentRowId);
     if (bucket) bucket.push(row.nodeId);
     else byParent.set(row.parentRowId, [row.nodeId]);
