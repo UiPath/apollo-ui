@@ -12,8 +12,8 @@ import {
 } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib';
+import { PickerEmptyState } from '../picker-empty-state';
 import { FolderBreadcrumb } from './components/folder-breadcrumb';
-import { FolderPickerEmptyState } from './components/folder-picker-empty-state';
 import { FolderPickerFooter } from './components/folder-picker-footer';
 import { FolderPickerSearch } from './components/folder-picker-search';
 import { FolderRow } from './components/folder-row';
@@ -25,6 +25,8 @@ const listedDraft = (current: string | null, entries: FolderPickerEntry[], segme
   entries.some((entry) => !entry.disabled && joinPath([...segments, entry.name]) === current)
     ? current
     : null;
+
+const defaultNoMatchText = (query: string) => `No folders match “${query}”.`;
 
 /**
  * Browsing surface for embedding in a consumer-owned popover, dialog or sheet.
@@ -47,7 +49,7 @@ export function FolderPickerContent({
   clearSearchLabel,
   initialSearch = '',
   emptyText = 'No subfolders.',
-  noMatchText,
+  noMatchText = defaultNoMatchText,
   openFolderLabel,
   loadingText = 'Loading…',
   loadErrorText = 'Could not load this folder.',
@@ -444,7 +446,7 @@ export function FolderPickerContent({
             treeitems and groups, and text inside a composite widget may go
             unread. */}
         {visibleEntries.length === 0 && (
-          <FolderPickerEmptyState
+          <PickerEmptyState
             error={levelError}
             loading={isLoadingCurrentLevel}
             query={search.trim()}
