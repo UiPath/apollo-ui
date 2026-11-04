@@ -1,9 +1,8 @@
 "use client";
 
-import { ChevronDownIcon, SearchIcon, XIcon } from "lucide-react";
+import { ChevronDownIcon } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverContent,
@@ -14,6 +13,7 @@ import type { DataTableColumn, RowData } from "@/lib/table-features";
 import { cn } from "@/lib/utils";
 import { useVertexTranslation } from "@/lib/vertex-translation";
 import { FilterDropdownOptionRow } from "./filter-dropdown-option";
+import { FilterDropdownSearchInput } from "./filter-dropdown-search-input";
 import {
   FILTER_DROPDOWN_LIST_SLOT,
   FilterDropdownError,
@@ -357,28 +357,13 @@ function FilterDropdown<TData extends RowData = RowData, TValue = unknown>({
           align={align}
           className={cn(popoverWidth, "overflow-hidden p-0")}
         >
-          {/* Search */}
           {showSearch && (
-            <div className="p-2 pb-1">
-              <div className="relative">
-                <SearchIcon className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder={searchPlaceholder}
-                  value={searchQuery}
-                  onChange={(e) => updateSearch(e.target.value)}
-                  className="h-8 pl-7 pr-7 text-sm"
-                />
-                {searchQuery && (
-                  <button
-                    type="button"
-                    onClick={resetSearch}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  >
-                    <XIcon className="h-3.5 w-3.5" />
-                  </button>
-                )}
-              </div>
-            </div>
+            <FilterDropdownSearchInput
+              value={searchQuery}
+              placeholder={searchPlaceholder}
+              onChange={updateSearch}
+              onClear={resetSearch}
+            />
           )}
 
           {/* Options list */}
