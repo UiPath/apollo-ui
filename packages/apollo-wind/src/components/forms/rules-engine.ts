@@ -1,7 +1,45 @@
+import { format, isValid } from 'date-fns';
 import jsep from 'jsep';
 import { get } from '@/lib';
+import { toDateValue } from '@/lib/date-value';
 import type { FieldCondition, FieldOption, FieldRule, FormContext } from './form-schema';
 import { isValueModeOpaque } from './opaque-value';
+
+const COMPARISON_OPERATORS = new Set(['==', '===', '!=', '!==', '<', '>', '<=', '>=']);
+const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
+
+function isValidDate(value: unknown): value is Date {
+  return value instanceof Date && isValid(value);
+}
+
+/**
+ * Date pickers store a `Date`, while rules compare dates with text such as `"2026-06-15"`.
+ * Against a `yyyy-MM-dd` literal a `Date` reads as its local day, and otherwise as its instant.
+ */
+function normalizeDateValues(left: unknown, right: unknown): [unknown, unknown] {
+  if (!isValidDate(left) && !isValidDate(right)) return [left, right];
+  return [normalizeDateValue(left, right), normalizeDateValue(right, left)];
+}
+
+function normalizeDateValue(value: unknown, other: unknown): unknown {
+  if (isValidDate(value)) {
+    return typeof other === 'string' && DATE_ONLY.test(other)
+      ? format(value, 'yyyy-MM-dd')
+      : value.getTime();
+  }
+  if (typeof value === 'string' && !DATE_ONLY.test(value) && isValidDate(other)) {
+    return toDateValue(value)?.getTime() ?? value;
+  }
+  return value;
+}
+
+function includesValue(list: unknown[], value: unknown): boolean {
+  if (!isValidDate(value)) return list.includes(value);
+  return list.some((item) => {
+    const [a, b] = normalizeDateValues(value, item);
+    return a === b;
+  });
+}
 
 /**
  * Rules Engine - Evaluates conditions and applies effects using jsep
@@ -40,22 +78,24 @@ export class RulesEngine {
 
     // Direct equality check
     if (condition.is !== undefined) {
-      return fieldValue === condition.is;
+      const [value, is] = normalizeDateValues(fieldValue, condition.is);
+      return value === is;
     }
 
     // Negation check
     if (condition.isNot !== undefined) {
-      return fieldValue !== condition.isNot;
+      const [value, isNot] = normalizeDateValues(fieldValue, condition.isNot);
+      return value !== isNot;
     }
 
     // Array inclusion check
     if (condition.in !== undefined) {
-      return condition.in.includes(fieldValue);
+      return includesValue(condition.in, fieldValue);
     }
 
     // Array exclusion check
     if (condition.notIn !== undefined) {
-      return !condition.notIn.includes(fieldValue);
+      return !includesValue(condition.notIn, fieldValue);
     }
 
     // Regex pattern matching. A value in another mode, or a pattern that does not compile,
@@ -171,13 +211,17 @@ export class RulesEngine {
 
       case 'BinaryExpression': {
         const binary = node as jsep.BinaryExpression;
-        const left = RulesEngine.evaluateNode(binary.left, values);
-        const right = RulesEngine.evaluateNode(binary.right, values);
+        let left = RulesEngine.evaluateNode(binary.left, values);
+        let right = RulesEngine.evaluateNode(binary.right, values);
 
         // A value in a mode other than `literal` equals nothing, itself included, and is in no order.
         if (isValueModeOpaque(left) || isValueModeOpaque(right)) {
           if (binary.operator === '!=' || binary.operator === '!==') return true;
           if (['==', '===', '<', '>', '<=', '>='].includes(binary.operator)) return false;
+        }
+
+        if (COMPARISON_OPERATORS.has(binary.operator)) {
+          [left, right] = normalizeDateValues(left, right);
         }
 
         switch (binary.operator) {

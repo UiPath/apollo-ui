@@ -22,6 +22,45 @@ describe('RulesEngine', () => {
     });
   });
 
+  describe('a Date value', () => {
+    const due = new Date(2026, 5, 15, 23, 30);
+    const check = (condition: Omit<FieldCondition, 'when'>, values: Record<string, unknown> = {}) =>
+      RulesEngine.evaluateCondition({ when: 'due', ...condition }, { due, ...values });
+
+    it('matches a date literal by its local day, even late in the day', () => {
+      expect(check({ is: '2026-06-15' })).toBe(true);
+      expect(check({ isNot: '2026-06-15' })).toBe(false);
+      expect(check({ in: ['2026-06-14', '2026-06-15'] })).toBe(true);
+      expect(check({ notIn: ['2026-06-15'] })).toBe(false);
+      expect(check({ is: '2026-06-16' })).toBe(false);
+    });
+
+    it('orders against a date literal by day, on either side', () => {
+      expect(check({ custom: 'due > "2026-06-10" && due < "2026-06-20"' })).toBe(true);
+      expect(check({ custom: '"2026-06-10" < due' })).toBe(true);
+      expect(check({ custom: 'due > "2026-06-15"' })).toBe(false);
+      expect(check({ custom: 'due >= "2026-06-15"' })).toBe(true);
+    });
+
+    it('compares with a date-time literal or another Date by instant', () => {
+      expect(check({ custom: `due === "${due.toISOString()}"` })).toBe(true);
+      expect(check({ custom: 'due > "2026-06-15T23:00"' })).toBe(true);
+      expect(check({ custom: 'due < "2026-06-15T23:00"' })).toBe(false);
+      expect(check({ custom: 'due === other' }, { other: new Date(due) })).toBe(true);
+      expect(check({ custom: 'due < later' }, { later: new Date(2026, 5, 16) })).toBe(true);
+    });
+
+    it('keeps its truthiness and leaves an invalid Date as it is', () => {
+      expect(check({ custom: 'due && flag' }, { flag: true })).toBe(true);
+      expect(
+        RulesEngine.evaluateCondition(
+          { when: 'due', is: '2026-06-15' },
+          { due: new Date(Number.NaN) }
+        )
+      ).toBe(false);
+    });
+  });
+
   describe('evaluateCondition', () => {
     it("evaluates 'is' condition correctly when matching", () => {
       const condition: FieldCondition = { when: 'status', is: 'active' };
