@@ -36,6 +36,7 @@ export * from "@/registry/empty/empty";
 export * from "@/registry/feedback-vote-widget/feedback-vote-widget";
 export * from "@/registry/field/field";
 export * from "@/registry/hover-card/hover-card";
+export * from "@/registry/inbox/inbox";
 export * from "@/registry/input/input";
 export * from "@/registry/input-group/input-group";
 export * from "@/registry/input-otp/input-otp";

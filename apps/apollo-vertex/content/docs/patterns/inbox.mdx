@@ -1,0 +1,261 @@
+---
+title: "Inbox"
+description: "A list pane of messages or conversations grouped by day, with unread and selected states, relative timestamps, and slots for header actions and filters. Pair it with a detail pane for a master-detail layout."
+whenToUse:
+  - "people work through a queue of messages, conversations or requests one at a time, picking one from a list and reading it beside the list."
+avoidWhen:
+  - when: "the records are compared across many columns, sorted or paged."
+    use: data-table
+  - when: "the list is app navigation rather than content."
+    use: sidebar
+example: |
+  import { Inbox, InboxContent, InboxGroup, InboxItem, InboxItemHeader, InboxItemTitle, InboxItemTime, InboxItemSubject, groupByDay } from "@uipath/apollo-vertex";
+
+  <Inbox>
+    <InboxContent>
+      {groupByDay(messages, (m) => m.receivedAt).map(({ group, items }) => (
+        <InboxGroup key={group} group={group}>
+          {items.map((m) => (
+            <InboxItem key={m.id} selected={m.id === selectedId} unread={!m.read} onClick={() => select(m.id)}>
+              <InboxItemHeader>
+                <InboxItemTitle>{m.from}</InboxItemTitle>
+                <InboxItemTime value={m.receivedAt} />
+              </InboxItemHeader>
+              <InboxItemSubject>{m.subject}</InboxItemSubject>
+            </InboxItem>
+          ))}
+        </InboxGroup>
+      ))}
+    </InboxContent>
+  </Inbox>
+---
+
+import { InboxTemplate } from '../../../templates/InboxTemplate';
+
+<div className="not-prose my-8 rounded-lg border overflow-hidden">
+  <InboxTemplate />
+</div>
+
+## Features
+
+- **Day groups**: `groupByDay` splits items into Today, Yesterday, In the past week and Over a week ago, by calendar day. `InboxGroup` shows the translated label in a sticky header.
+- **Relative timestamps**: `InboxItemTime` shows "12 minutes ago" in the app's language, with the exact date and time on hover and in the `dateTime` attribute.
+- **Unread and selected states**: unread items get a dot and a bold title, and screen readers hear "Unread". The selected item gets a primary left border and `aria-current`.
+- **Slots**: put your own actions in `InboxActions` and tabs or a search field in `InboxToolbar`. Replace the unread dot with `indicator`, and add an extra line such as attachments or a warning with `InboxItemFooter`.
+
+## Installation
+
+```bash
+npx shadcn@latest add @uipath/inbox
+```
+
+## Usage
+
+```tsx
+import {
+  Inbox,
+  InboxActions,
+  InboxContent,
+  InboxEmpty,
+  InboxGroup,
+  InboxHeader,
+  InboxItem,
+  InboxItemFooter,
+  InboxItemHeader,
+  InboxItemPreview,
+  InboxItemSubject,
+  InboxItemTime,
+  InboxItemTitle,
+  InboxTitle,
+  InboxToolbar,
+  groupByDay,
+} from "@uipath/apollo-vertex";
+```
+
+### Basic
+
+The inbox fills the height of its parent and scrolls its own content, so give the parent a height.
+
+```tsx
+const groups = groupByDay(messages, (m) => m.receivedAt);
+
+<Inbox>
+  <InboxHeader>
+    <InboxTitle>Inbox</InboxTitle>
+  </InboxHeader>
+  <InboxContent>
+    {groups.length === 0 && <InboxEmpty>No messages.</InboxEmpty>}
+    {groups.map(({ group, items }) => (
+      <InboxGroup key={group} group={group}>
+        {items.map((m) => (
+          <InboxItem
+            key={m.id}
+            selected={m.id === selectedId}
+            unread={!m.read}
+            onClick={() => setSelectedId(m.id)}
+          >
+            <InboxItemHeader>
+              <InboxItemTitle>{m.from}</InboxItemTitle>
+              <InboxItemTime value={m.receivedAt} />
+            </InboxItemHeader>
+            <InboxItemSubject>{m.subject}</InboxItemSubject>
+            <InboxItemPreview>{m.body}</InboxItemPreview>
+          </InboxItem>
+        ))}
+      </InboxGroup>
+    ))}
+  </InboxContent>
+</Inbox>
+```
+
+`InboxItemPreview` and `InboxItemSubject` truncate to one line and collapse line breaks, so you can pass a message body as is.
+
+### Header actions and filters
+
+`InboxActions` is a slot: the inbox lays out whatever you put in it, and your app decides which actions there are and what they do. Give icon-only actions an `aria-label` and a tooltip, because they have no visible text.
+
+The demo above filters to unread messages with a `Toggle`:
+
+```tsx
+const [unreadOnly, setUnreadOnly] = useState(false);
+const visible = unreadOnly ? messages.filter((m) => !m.read) : messages;
+
+<InboxHeader>
+  <InboxTitle>Inbox</InboxTitle>
+  <InboxActions>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Toggle aria-label="Unread only" pressed={unreadOnly} onPressedChange={setUnreadOnly}>
+          <Mail />
+        </Toggle>
+      </TooltipTrigger>
+      <TooltipContent>Unread only</TooltipContent>
+    </Tooltip>
+  </InboxActions>
+</InboxHeader>
+```
+
+For a choice between several options, use a [`FilterDropdown`](/components/filter-dropdown) with an icon button as its `trigger`. Controls that need more room, such as tabs or a search field, go in `InboxToolbar` below the header:
+
+```tsx
+<InboxToolbar>
+  <Tabs value={folder} onValueChange={setFolder}>
+    <TabsList className="w-full">
+      <TabsTrigger value="inbox">Inbox</TabsTrigger>
+      <TabsTrigger value="archived">Archived</TabsTrigger>
+    </TabsList>
+  </Tabs>
+</InboxToolbar>
+```
+
+### Status icon and warning line
+
+`indicator` replaces the unread dot. Mark the icon `aria-hidden` and say what it means elsewhere if it matters to screen reader users.
+
+```tsx
+<InboxItem
+  unread={c.status === "open"}
+  indicator={
+    c.status === "closed" ? (
+      <CircleCheck className="text-muted-foreground" aria-hidden />
+    ) : null
+  }
+>
+  {/* ... */}
+  {c.warning && (
+    <InboxItemFooter>
+      <TriangleAlert className="text-warning" aria-hidden />
+      <span className="truncate">{c.warning}</span>
+    </InboxItemFooter>
+  )}
+</InboxItem>
+```
+
+### Master-detail layout
+
+Put the inbox in a `ResizablePanel` next to the detail pane:
+
+```tsx
+<ResizablePanelGroup orientation="horizontal">
+  <ResizablePanel defaultSize="22rem" minSize="17rem" maxSize="34rem">
+    <Inbox>{/* ... */}</Inbox>
+  </ResizablePanel>
+  <ResizableHandle withHandle />
+  <ResizablePanel>{/* detail */}</ResizablePanel>
+</ResizablePanelGroup>
+```
+
+### Custom groups
+
+To group by something other than the day, pass `label` instead of `group`:
+
+```tsx
+<InboxGroup label="Pinned">{/* ... */}</InboxGroup>
+```
+
+## Relative time helpers
+
+The day grouping and relative time formatting are also exported on their own, for lists that don't use `Inbox`. Both use Luxon.
+
+```tsx
+import { formatRelativeTime, groupByDay } from "@uipath/apollo-vertex";
+
+formatRelativeTime("2026-09-05T10:00:00Z", { locale: i18n.language }); // "2 days ago"
+formatRelativeTime(date, { locale: "de", style: "short" }); // "vor 2 Tagen"
+groupByDay(items, (item) => item.createdAt); // [{ group: "today", items: [...] }, ...]
+```
+
+Pass `locale` from your i18n instance. Without it, Luxon uses the browser's language, which may not match the app. `InboxItemTime` does this for you.
+
+| Function | Description |
+| --- | --- |
+| `formatRelativeTime(value, { locale?, now?, style? })` | "2 hours ago", "in 3 days". Returns `""` for an invalid date |
+| `getDayGroup(value, now?)` | `"today"`, `"yesterday"`, `"week"` or `"older"`, by calendar day in the time zone of `now` |
+| `groupByDay(items, dateOf, now?)` | Groups in that order, without empty groups, keeping the order of items within each group |
+
+`value` can be a Luxon `DateTime`, a `Date`, or an ISO 8601 string.
+
+## API Reference
+
+All parts accept the props of the element they render, including `className`.
+
+| Part | Element | Description |
+| --- | --- | --- |
+| `Inbox` | `div` | Root; a full-height column |
+| `InboxHeader` | `div` | Row with the title and actions |
+| `InboxTitle` | `h2` | Small uppercase title |
+| `InboxActions` | `div` | Icon buttons and filters, aligned to the end |
+| `InboxToolbar` | `div` | Tabs, search or other controls below the header |
+| `InboxContent` | `div` | Scroll container for the groups |
+| `InboxEmpty` | `p` | Empty or loading message |
+| `InboxGroup` | `section` | A group with a sticky header and a list of items |
+| `InboxItem` | `button` in an `li` | A selectable row |
+| `InboxItemHeader` | `span` | Row with the title and time |
+| `InboxItemTitle` | `span` | Sender or name; bold when unread |
+| `InboxItemTime` | `time` | Relative time |
+| `InboxItemSubject` | `span` | One-line subject |
+| `InboxItemPreview` | `span` | One-line muted preview |
+| `InboxItemFooter` | `span` | Extra line, e.g. an icon and a warning |
+
+### InboxGroup
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `group` | `"today" \| "yesterday" \| "week" \| "older"` | — | Day group from `groupByDay`; shows its translated label |
+| `label` | `ReactNode` | — | Header text; overrides the `group` label |
+
+### InboxItem
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `selected` | `boolean` | `false` | Highlights the item and sets `aria-current` |
+| `unread` | `boolean` | `false` | Shows the unread dot and a bold title |
+| `indicator` | `ReactNode` | — | Replaces the unread dot, e.g. with a status icon |
+
+### InboxItemTime
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `DateTime \| Date \| string` | — | The date to show. Renders nothing when it is invalid |
+| `unitStyle` | `"long" \| "short" \| "narrow"` | `"long"` | "2 hours ago", "2 hr. ago" or the narrowest form |
+| `now` | `DateTime` | now | The moment to compare against |

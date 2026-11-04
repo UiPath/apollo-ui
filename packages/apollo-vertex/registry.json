@@ -2092,6 +2092,18 @@
       ]
     },
     {
+      "name": "inbox",
+      "type": "registry:ui",
+      "title": "Inbox",
+      "description": "A list pane of messages or conversations grouped by day, with unread and selected states, relative timestamps, and slots for header actions and filters.",
+      "dependencies": ["luxon", "@types/luxon", "react-i18next"],
+      "files": [
+        { "path": "registry/inbox/inbox.tsx", "type": "registry:ui" },
+        { "path": "lib/relative-time.ts", "type": "registry:lib" },
+        { "path": "lib/vertex-translation.ts", "type": "registry:lib" }
+      ]
+    },
+    {
       "name": "input",
       "type": "registry:ui",
       "title": "Input",
