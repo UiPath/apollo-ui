@@ -179,8 +179,8 @@
     "test:ui": "vitest --ui",
     "test:coverage": "pnpm run i18n:compile && vitest --run --coverage",
     "clean": "rm -rf dist",
-    "i18n:extract": "lingui extract",
-    "i18n:extract:watch": "lingui extract --watch",
+    "i18n:extract": "lingui extract --locale en",
+    "i18n:extract:watch": "lingui extract --locale en --watch",
     "i18n:compile": "lingui compile",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
     "build:css:decision-table": "tailwindcss -i ./src/decision-table/styles/tailwind.decision-table.css -o ./dist/decision-table/styles/tailwind.decision-table.css --minify"

@@ -138,7 +138,7 @@ The pool currently ships the cost tiers: `cost-basic`, `cost-standard`, `cost-pr
    };
    ```
 
-3. **Extract translations** — run `pnpm i18n:extract` from `packages/apollo-react` so the new keys land in every `locales/*` catalog (catalogs compile automatically before `build` and `test`).
+3. **Extract translations** — run `pnpm i18n:extract` from `packages/apollo-react` so the new keys land in `locales/en.json`; the Localization sync adds the translations (catalogs compile automatically before `build` and `test`).
 
 That's the whole surface: because `ModelBadgeKind` is a union, every product's `badgesFor` callback can return `'early-access'` immediately, and TypeScript flags typos at compile time.
 
