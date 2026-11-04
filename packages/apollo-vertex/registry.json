@@ -2066,6 +2066,11 @@
           "target": "components/ui/filter-dropdown/filter-dropdown-option.tsx"
         },
         {
+          "path": "registry/filter-dropdown/filter-dropdown-search-input.tsx",
+          "type": "registry:ui",
+          "target": "components/ui/filter-dropdown/filter-dropdown-search-input.tsx"
+        },
+        {
           "path": "registry/filter-dropdown/use-filter-dropdown-search.ts",
           "type": "registry:ui",
           "target": "components/ui/filter-dropdown/use-filter-dropdown-search.ts"
