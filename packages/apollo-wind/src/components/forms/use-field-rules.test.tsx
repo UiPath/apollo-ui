@@ -202,7 +202,7 @@ describe('useFieldRules', () => {
     );
     expect(onStored).toHaveBeenLastCalledWith([
       expect.objectContaining({
-        conditions: [{ when: '', custom: 'name === "Ada" || amount > 2' }],
+        conditions: [{ when: 'name', custom: 'name === "Ada" || amount > 2' }],
         operator: 'AND',
       }),
     ]);

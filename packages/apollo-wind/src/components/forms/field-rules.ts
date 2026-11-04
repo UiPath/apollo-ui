@@ -360,9 +360,11 @@ function writeRule(rule: Rule, options: FieldRulesOptions): FieldRule | undefine
     // Stored as typed, even if RulesEngine cannot run it, which the editor flags: it never applies.
     const expression = rule.expression.trim();
     if (!expression) return undefined;
+    // Older RulesEngine releases re-check a rule only when its `when` field changes, so name one.
+    const when = fieldKeysOf(expression)[0] ?? '';
     return {
       id: rule.id,
-      conditions: [{ when: '', custom: expression }],
+      conditions: [{ when, custom: expression }],
       operator: 'AND',
       effects,
     };

@@ -239,20 +239,28 @@ describe('writing rules', () => {
     ]);
   });
 
-  it('writes an expression rule as one expression condition', () => {
+  it('writes an expression rule as one expression condition, on the first field it reads', () => {
     const [rule] = toFieldRules(
       [createRule({ id: 'r', outcome: 'hide', expression: ' amount > limit ' })],
       OPTIONS
     );
     expect(rule).toEqual({
       id: 'r',
-      conditions: [{ when: '', custom: 'amount > limit' }],
+      conditions: [{ when: 'amount', custom: 'amount > limit' }],
       operator: 'AND',
       effects: { visible: false },
     });
     expect(RulesEngine.applyRules([rule], { amount: 3, limit: 2 }, {} as FormContext)).toEqual({
       visible: false,
     });
+  });
+
+  it('writes an expression rule that reads no field on no field', () => {
+    const [rule] = toFieldRules(
+      [createRule({ id: 'r', outcome: 'hide', expression: 'true' })],
+      OPTIONS
+    );
+    expect(rule.conditions).toEqual([{ when: '', custom: 'true' }]);
   });
 
   it('writes an empty check as an empty string on a key no expression can name', () => {
