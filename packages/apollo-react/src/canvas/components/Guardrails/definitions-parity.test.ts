@@ -130,7 +130,7 @@ const EXPECTED_DIVERGENCES: CopyDivergence[] = [
   {
     path: 'llm_as_judge.usageNote',
     chosen: 'flow',
-    reason: 'Agent-unit cost caveat; Agents users need it just as much',
+    reason: 'Platform Units or Agent Units cost caveat; Agents users need it just as much',
   },
 ];
 
