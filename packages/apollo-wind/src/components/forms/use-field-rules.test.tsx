@@ -1,4 +1,4 @@
-import { render, renderHook, screen } from '@testing-library/react';
+import { act, render, renderHook, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -356,6 +356,21 @@ describe('useFieldRules', () => {
     const { result } = renderHook(() => useFieldRules({ rules: stored }, vi.fn(), OPTIONS));
     expect(result.current.value[0]).toMatchObject({ mode: 'preserved' });
     expect(result.current.issues).toEqual([]);
+  });
+
+  it('lists a rule that cannot be evaluated as it shows, until it is repaired', () => {
+    const stored: FieldRule[] = [
+      { id: 'text', conditions: [{ when: 'amount', is: '5' }], operator: 'AND', effects: {} },
+    ];
+    const onStored = vi.fn();
+    const { result } = renderHook(() => useFieldRules({ rules: stored }, onStored, OPTIONS));
+    expect(result.current.issues).toContainEqual({ ruleId: 'text', kind: 'repair' });
+    const repaired = result.current.value.map(
+      (rule) => rulesEngineDialect.repair?.(rule)?.rule ?? rule
+    );
+    act(() => result.current.onChange(repaired));
+    expect(onStored.mock.lastCall?.[0].rules[0].conditions).toEqual([{ when: 'amount', is: 5 }]);
+    expect(result.current.issues).not.toContainEqual({ ruleId: 'text', kind: 'repair' });
   });
 
   it('flags a row whose Expression value names a field the form no longer has', async () => {

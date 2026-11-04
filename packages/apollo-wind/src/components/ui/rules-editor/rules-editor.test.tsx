@@ -228,6 +228,12 @@ describe('findRuleIssues', () => {
     ]);
     expect(findRuleIssues(rules, vocabulary)).toEqual([]);
   });
+
+  it('asks the dialect which rules it would repair', () => {
+    const dialect = { repair: (rule: Rule) => (rule.id === 'b' ? { ...rule } : undefined) };
+    const rules = [conditionsRule('a', []), conditionsRule('b', [])];
+    expect(findRuleIssues(rules, vocabulary, dialect)).toEqual([{ ruleId: 'b', kind: 'repair' }]);
+  });
 });
 
 describe('RulesEditor', () => {
@@ -768,6 +774,55 @@ describe('RulesEditor', () => {
     expect(screen.getByRole('combobox', { name: 'Rule 1 Outcome' })).toHaveAccessibleErrorMessage(
       'Select an outcome.'
     );
+  });
+
+  describe('repairing rules the dialect cannot evaluate as they show', () => {
+    type Stale = Rule & { stale?: boolean };
+    const dialect = {
+      repair: (rule: Rule) =>
+        (rule as Stale).stale
+          ? { rule: { ...rule, stale: false }, reason: 'it is stale' }
+          : undefined,
+    };
+    const stale = (id: string): Stale => ({ ...conditionsRule(id, []), stale: true });
+
+    it('flags each such rule at its foot, and repairs it from there', async () => {
+      const onValue = vi.fn();
+      const fine = conditionsRule('c', []);
+      render(
+        <Harness initial={[stale('a'), stale('b'), fine]} dialect={dialect} onValue={onValue} />
+      );
+      for (const name of ['Rule 1', 'Rule 2']) {
+        const card = within(screen.getByRole('group', { name }));
+        expect(card.getByText('This rule cannot be evaluated: it is stale.')).toBeInTheDocument();
+        expect(card.getByRole('button', { name: 'Repair rule' })).toHaveAccessibleDescription(
+          'This rule cannot be evaluated: it is stale.'
+        );
+      }
+      expect(
+        within(screen.getByRole('group', { name: 'Rule 3' })).queryByRole('button', {
+          name: 'Repair rule',
+        })
+      ).not.toBeInTheDocument();
+
+      const second = within(screen.getByRole('group', { name: 'Rule 2' }));
+      await userEvent.click(second.getByRole('button', { name: 'Repair rule' }));
+      const next = lastValue(onValue) as Stale[];
+      expect(next.map((rule) => rule.stale)).toEqual([true, false, undefined]);
+      expect(next[2]).toBe(fine);
+      expect(second.queryByText(/cannot be evaluated/)).not.toBeInTheDocument();
+      // Focus stays in the repaired rule.
+      await waitFor(() =>
+        expect(screen.getByRole('group', { name: 'Rule 2' })).toContainElement(
+          document.activeElement as HTMLElement
+        )
+      );
+    });
+
+    it('shows no action without a dialect that repairs', () => {
+      render(<Harness initial={[stale('a')]} />);
+      expect(screen.queryByText(/cannot be evaluated/)).not.toBeInTheDocument();
+    });
   });
 
   it('flags an outcome the editor does not offer', () => {

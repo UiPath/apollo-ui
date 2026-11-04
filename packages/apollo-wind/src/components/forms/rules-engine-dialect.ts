@@ -16,7 +16,8 @@ import {
   operatorsFor,
   resolveCondition,
 } from '@/components/ui/conditions-editor/status';
-import type { RulesDialect } from '@/components/ui/rules-editor';
+import type { ExpressionRule, Rule, RuleRepair, RulesDialect } from '@/components/ui/rules-editor';
+import { withMode } from '@/components/ui/rules-editor/model';
 
 /** What a field's value is at run time, so fixed values are compared as the same type. */
 export type FieldValueType = 'string' | 'number' | 'boolean';
@@ -749,10 +750,73 @@ function parseGroup(
 }
 
 /**
+ * Why RulesEngine cannot run an expression, by what it uses: calls, or hitl's `values["key"]`.
+ * For a stored rule's repair, so the author sees what is wrong with the text as stored.
+ */
+export function unrunnableReason(expression: string): string {
+  const root = parseExpression(expression);
+  let calls = false;
+  const legacy = new Set<string>();
+  const visit = (node: jsep.Expression) => {
+    if (node.type === 'CallExpression') calls = true;
+    const key = legacyKey(node);
+    if (key !== undefined) legacy.add(`values[${JSON.stringify(key)}]`);
+    for (const value of Object.values(node)) {
+      for (const child of Array.isArray(value) ? value : [value]) {
+        if (isNode(child)) visit(child);
+      }
+    }
+  };
+  if (root) visit(root);
+  const reads = Array.from(legacy).join(', ');
+  if (calls && reads) return `RulesEngine can't call functions or read ${reads}`;
+  if (calls) return "RulesEngine can't call functions";
+  return reads ? `RulesEngine can't read ${reads}` : "RulesEngine can't run its expression";
+}
+
+/** What `markRepairNeeded` keeps on a rule, as a host property so an outcome change keeps it. */
+interface StoredRepair {
+  /** The stored expression the rule opened with; the repair applies while the text is that. */
+  expression: string;
+  /** The rows RulesEngine would evaluate as they show. */
+  conditions: ConditionGroup;
+  reason: string;
+}
+type RepairableRule = ExpressionRule & { storedRepair?: StoredRepair };
+
+/**
+ * The rule, shown as the stored expression RulesEngine cannot evaluate as its rows would show,
+ * marked with those rows and why.
+ */
+export function markRepairNeeded(
+  rule: ExpressionRule,
+  conditions: ConditionGroup,
+  reason: string
+): ExpressionRule {
+  return {
+    ...rule,
+    storedRepair: { expression: rule.expression, conditions, reason },
+  } as RepairableRule;
+}
+
+/** The rule as its rows, if `markRepairNeeded` marked it and its text is still as stored. */
+export function ruleNeedsRepair(rule: Rule): RuleRepair | undefined {
+  if (rule.mode !== 'expression') return undefined;
+  const { storedRepair, ...rest } = rule as RepairableRule;
+  if (!storedRepair || storedRepair.expression !== rule.expression) return undefined;
+  return {
+    rule: withMode(rest, { mode: 'conditions', conditions: storedRepair.conditions }),
+    reason: storedRepair.reason,
+  };
+}
+
+/**
  * Converts between a rule's conditions and RulesEngine's expression language: strict comparisons
  * joined by `&&` or `||`. Text matching, or an expression that mixes `&&` and `||` outside an
  * option list, cannot cross over, so switching such a rule asks first. An expression RulesEngine
- * cannot run is flagged on its rule.
+ * cannot run is flagged on its rule. A stored rule RulesEngine cannot evaluate as its rows would
+ * show, such as one hitl saved with `values["key"]`, opens as its stored expression, flagged with
+ * why, and its repair is those rows.
  */
 export const rulesEngineDialect: RulesDialect = {
   toExpression: (conditions, vocabulary) => conditionsExpression(conditions, vocabulary),
@@ -761,6 +825,8 @@ export const rulesEngineDialect: RulesDialect = {
     const node = parseExpression(expression);
     return node ? parseGroup(node, vocabulary) : undefined;
   },
+  // A rule that needs repair says why on its own.
   checkExpression: (rule, vocabulary) =>
-    canRun(rule.expression, vocabulary.fields) ? undefined : 'invalid',
+    canRun(rule.expression, vocabulary.fields) || ruleNeedsRepair(rule) ? undefined : 'invalid',
+  repair: (rule) => ruleNeedsRepair(rule),
 };

@@ -14,6 +14,7 @@ export {
   type RuleIssueKind,
   type RuleMode,
   type RuleOutcome,
+  type RuleRepair,
   type RulesDialect,
   type RuleVocabulary,
 } from './model';

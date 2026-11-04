@@ -986,6 +986,7 @@ export type {
   RuleIssueKind,
   RuleMode,
   RuleOutcome,
+  RuleRepair,
   RulesDialect,
   RulesEditorProps,
   RulesEditorStrings,

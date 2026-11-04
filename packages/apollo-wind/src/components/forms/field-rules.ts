@@ -9,6 +9,7 @@ import {
 import { isComplete, resolveCondition } from '@/components/ui/conditions-editor/status';
 import {
   createRule,
+  type ExpressionRule,
   isUnconditionalRule,
   type Rule,
   type RuleOutcome,
@@ -23,6 +24,7 @@ import {
   type FieldRuleField,
   fieldKeysOf,
   fieldName,
+  markRepairNeeded,
   notEmptyCheck,
   offered,
   parseCondition,
@@ -34,6 +36,7 @@ import {
   rulesEngineVocabulary,
   startsWithCall,
   typedValue,
+  unrunnableReason,
   valueText,
 } from './rules-engine-dialect';
 
@@ -215,6 +218,41 @@ function storedRuns(stored: FieldCondition, fields: readonly FieldRuleField[]) {
   }
 }
 
+/**
+ * Why RulesEngine cannot evaluate a stored condition as the row read from it shows, so that writing
+ * the row would change what the rule does: hitl's `values["key"]`, which RulesEngine reads as no
+ * value, or a fixed value stored as text on a number or yes/no field. A row on a field the form
+ * does not contain is kept as stored either way, so it needs no repair.
+ */
+function repairReason(stored: FieldCondition, row: Condition, fields: readonly FieldRuleField[]) {
+  const field = fields.find((option) => option.value === row.field);
+  if (!field) return undefined;
+  if (stored.custom !== undefined) {
+    return canRun(stored.custom, fields) ? undefined : unrunnableReason(stored.custom);
+  }
+  const values = [stored.is, stored.isNot, ...(stored.in ?? []), ...(stored.notIn ?? [])];
+  // `''` is an empty check, which a row reads as one.
+  const mistyped = values.find(
+    (value) => value !== undefined && value !== '' && typedValue(field, valueText(value)) !== value
+  );
+  if (mistyped === undefined) return undefined;
+  const expected =
+    typeof typedValue(field, valueText(mistyped)) === 'boolean' ? 'yes or no' : 'a number';
+  return `${field.label} is compared with the text ${JSON.stringify(mistyped)}, not ${expected}`;
+}
+
+/**
+ * A stored rule as one expression: each condition as RulesEngine reads it, joined by its operator.
+ * A placeholder says nothing, or reads as `placeholder` when given, such as the `false` it holds.
+ */
+function storedRuleExpression(stored: FieldRule, placeholder?: string) {
+  const parts = stored.conditions.flatMap(
+    (condition) => storedExpression(condition) ?? (placeholder === undefined ? [] : [placeholder])
+  );
+  const joiner = stored.operator === 'OR' ? ' || ' : ' && ';
+  return parts.length === 1 ? parts[0] : parts.map((part) => `(${part})`).join(joiner);
+}
+
 /** The outcome whose effects the stored ones include, preferring the one that claims the most. */
 function matchOutcome(effects: FieldRuleEffects, outcomes: readonly FieldRuleOutcome[]) {
   let best: FieldRuleOutcome | undefined;
@@ -261,12 +299,37 @@ function readRule(stored: FieldRule, index: number, options: FieldRulesOptions):
         `${id}-conditions`
       ),
     };
+    // A placeholder never holds, so a rule that needs every condition never applied; rows leave it
+    // out. A rule of placeholders alone is not stored once written, which is what it did.
+    const placeholders = stored.conditions.filter((c) => definedKeys(c).length === 0).length;
+    const blocked =
+      stored.operator !== 'OR' && placeholders > 0 && placeholders < stored.conditions.length;
+    const reason = blocked
+      ? 'an empty condition, shown as false, keeps it from ever applying'
+      : stored.conditions
+          .map((condition, position) =>
+            definedKeys(condition).length > 0
+              ? repairReason(condition, rows[position], options.fields)
+              : undefined
+          )
+          .find((found) => found !== undefined);
+    if (reason) {
+      // Shown as stored, so what is wrong shows too; its repair is the rows.
+      const expression = storedRuleExpression(stored, 'false');
+      rule = markRepairNeeded(
+        {
+          ...base,
+          mode: 'expression',
+          expression,
+          saved: { expression, conditions: stored.conditions, operator: stored.operator },
+        } as ExpressionRule,
+        rule.conditions,
+        reason
+      );
+    }
   } else {
     // The whole rule as one expression, so what shows is all that applies.
-    const parts = stored.conditions.flatMap((condition) => storedExpression(condition) ?? []);
-    const joiner = stored.operator === 'OR' ? ' || ' : ' && ';
-    const expression =
-      parts.length === 1 ? parts[0] : parts.map((part) => `(${part})`).join(joiner);
+    const expression = storedRuleExpression(stored);
     const saved = { conditions: stored.conditions, operator: stored.operator };
     const runs = stored.conditions.every((condition) => storedRuns(condition, options.fields));
     // A rule that runs only as stored, such as a pattern beside an expression, would read as an

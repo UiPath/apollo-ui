@@ -147,6 +147,7 @@ export const RuleCard = React.memo(function RuleCard({
     expression: `${baseId}-expression`,
     expressionLabel: `${baseId}-expression-label`,
     outcomeError: `${baseId}-outcome-error`,
+    repair: `${baseId}-repair`,
     valueFieldsError: `${baseId}-value-fields-error`,
     expressionError: `${baseId}-expression-error`,
     preserved: `${baseId}-preserved`,
@@ -199,6 +200,19 @@ export const RuleCard = React.memo(function RuleCard({
   );
   const unchanged = rule.mode === 'expression' && rule.expression === openedText;
 
+  const repair = editor.dialect?.repair?.(rule);
+  // The action goes with the repair, so focus moves into the rule once it has rows.
+  const repaired = React.useRef(false);
+  const repairRule = () => {
+    if (!repair) return;
+    repaired.current = true;
+    updateRule(repair.rule);
+  };
+  React.useEffect(() => {
+    if (!repaired.current || repair) return;
+    repaired.current = false;
+    restoreFocus();
+  });
   // Likewise a row's Expression value: flagged while as opened, and otherwise once errors show.
   const [openedValues] = React.useState(
     () =>
@@ -438,6 +452,23 @@ export const RuleCard = React.memo(function RuleCard({
       >
         {body}
       </div>
+
+      {repair && (
+        <div className="flex flex-wrap items-center gap-x-2">
+          <FormFieldError id={ids.repair}>{text.ruleNeedsRepair(repair.reason)}</FormFieldError>
+          <Button
+            type="button"
+            variant="link"
+            size="xs"
+            className="h-auto px-0"
+            disabled={disabled}
+            aria-describedby={ids.repair}
+            onClick={repairRule}
+          >
+            {text.repairAction}
+          </Button>
+        </div>
+      )}
 
       <AlertDialog
         open={confirm.open}

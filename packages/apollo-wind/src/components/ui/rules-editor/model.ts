@@ -77,6 +77,18 @@ export interface RulesDialect {
     rule: ExpressionRule,
     vocabulary: ConditionVocabulary
   ) => RuleExpressionProblem | undefined;
+  /**
+   * The rule rewritten so the host's runtime can evaluate it as it shows, with why it cannot now,
+   * or `undefined` when it already can. The editor flags each with its reason, and offers to
+   * repair them all at once.
+   */
+  repair?: (rule: Rule) => RuleRepair | undefined;
+}
+
+export interface RuleRepair {
+  rule: Rule;
+  /** Why the rule cannot be evaluated as it shows, to follow "cannot be evaluated: ". */
+  reason: string;
 }
 
 // Random, so a new rule never reuses the id of one saved in an earlier session.
@@ -213,8 +225,8 @@ export function unknownValueFields(
   return unknownFields(value, vocabulary.fields, dialect);
 }
 
-/** What makes a rule need attention. */
-export type RuleIssueKind = 'outcome' | 'incomplete' | 'unknownField' | 'expression';
+/** What makes a rule need attention. `repair` is a rule the dialect cannot evaluate as it shows. */
+export type RuleIssueKind = 'outcome' | 'incomplete' | 'unknownField' | 'expression' | 'repair';
 
 export interface RuleIssue {
   ruleId: string;
@@ -226,8 +238,8 @@ export interface RuleIssue {
 /**
  * Everything the editor would flag in the rules, by the same checks: an outcome it does not offer,
  * a condition on a field `fields` no longer lists, an unfinished condition or blank expression,
- * an expression or a row's Expression value naming such a field, and one the dialect cannot
- * run. An unfinished rule counts, as it is not stored until it is finished.
+ * an expression or a row's Expression value naming such a field, one the dialect cannot run, and
+ * a rule it would repair. An unfinished rule counts, as it is not stored until it is finished.
  */
 export function findRuleIssues(
   rules: readonly Rule[],
@@ -245,6 +257,7 @@ export function findRuleIssues(
     if (!vocabulary.outcomes.some((option) => option.value === rule.outcome)) {
       issues.push({ ruleId, kind: 'outcome' });
     }
+    if (dialect?.repair?.(rule)) issues.push({ ruleId, kind: 'repair' });
     // A preserved rule runs as the host stored it, so only its outcome is the editor's to check.
     if (rule.mode === 'preserved') continue;
     if (rule.mode === 'expression') {

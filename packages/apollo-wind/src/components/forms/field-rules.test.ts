@@ -469,14 +469,19 @@ describe('reading stored rules', () => {
       expect(rows.map((row) => row.operator)).toEqual(['isEmpty', 'isNotEmpty']);
     });
 
-    it('reads a number stored as text, and writes it as a number once edited', () => {
+    const repaired = (rule: Rule) => rulesEngineDialect.repair?.(rule)?.rule as Rule;
+
+    it('opens a number stored as text as stored, until its repair writes it as a number', () => {
       const [read] = fromFieldRules([stored([{ when: 'amount', is: '5' }])], OPTIONS);
-      expect(rowOf(read)).toEqual({ field: 'amount', operator: 'equals', value: '5' });
-      const [written] = toFieldRules([{ ...read, outcome: 'hide' }], OPTIONS);
+      expect(read).toMatchObject({ mode: 'expression', expression: 'amount === "5"' });
+      const [kept] = toFieldRules([{ ...read, outcome: 'hide' }], OPTIONS);
+      expect(kept.conditions).toEqual([{ when: 'amount', is: '5' }]);
+      expect(rowOf(repaired(read))).toEqual({ field: 'amount', operator: 'equals', value: '5' });
+      const [written] = toFieldRules([repaired(read)], OPTIONS);
       expect(written.conditions).toEqual([{ when: 'amount', is: 5 }]);
     });
 
-    it('reads hitl’s expression values and empty checks as rows', () => {
+    it('repairs hitl’s expression values and empty checks into rows', () => {
       const [read] = fromFieldRules(
         [
           stored([
@@ -486,7 +491,12 @@ describe('reading stored rules', () => {
         ],
         OPTIONS
       );
-      const rows = (read as ConditionsRule).conditions.children as Condition[];
+      expect(read).toMatchObject({
+        mode: 'expression',
+        expression:
+          '(values["amount"] === (limit + 1)) && (values["name"] == null || values["name"] === "")',
+      });
+      const rows = (repaired(read) as ConditionsRule).conditions.children as Condition[];
       expect(rows[0]).toMatchObject({
         field: 'amount',
         operator: 'equals',
@@ -495,17 +505,16 @@ describe('reading stored rules', () => {
       });
       expect(rows[1]).toMatchObject({ field: 'name', operator: 'isEmpty' });
       // Rewritten so they run: hitl's `values[...]` never resolved.
-      const [written] = toFieldRules([{ ...read, outcome: 'show', id: 'edited' }], OPTIONS);
+      const [written] = toFieldRules([repaired(read)], OPTIONS);
       expect(visible([written], { amount: 3, limit: 2 })).toBe(true);
     });
 
-    it('reads hitl’s text matching calls as rows, which store them so they run', () => {
-      const [read] = fromFieldRules(
-        [stored([{ when: '', custom: 'String(values["name"]).includes("x")' }])],
-        OPTIONS
-      );
-      expect(rowOf(read)).toEqual({ field: 'name', operator: 'contains', value: 'x' });
-      const [written] = toFieldRules([{ ...read, id: 'edited' }], OPTIONS);
+    it('repairs hitl’s text matching calls into rows, which store them so they run', () => {
+      const custom = 'String(values["name"]).includes("x")';
+      const [read] = fromFieldRules([stored([{ when: '', custom }])], OPTIONS);
+      expect(read).toMatchObject({ mode: 'expression', expression: custom });
+      expect(rowOf(repaired(read))).toEqual({ field: 'name', operator: 'contains', value: 'x' });
+      const [written] = toFieldRules([repaired(read)], OPTIONS);
       expect(written.conditions).toEqual([{ when: 'name', matches: 'x' }]);
       expect(visible([written], { name: 'axe' })).toBe(true);
     });
@@ -640,6 +649,116 @@ describe('reading stored rules', () => {
       };
       expect(toFieldRules([changed], OPTIONS)[0].conditions).toEqual([{ when: 'amount', is: 2 }]);
     });
+  });
+});
+
+describe('repairing rules RulesEngine cannot evaluate as they show', () => {
+  const repair = (rule: Rule) => rulesEngineDialect.repair?.(rule);
+
+  it.each([
+    [
+      'hitl’s expression value',
+      [{ when: 'amount', custom: 'values["amount"] === (limit + 1)' }],
+      'values["amount"] === (limit + 1)',
+      'RulesEngine can\'t read values["amount"]',
+    ],
+    [
+      'hitl’s text matching call',
+      [{ when: '', custom: 'String(values["name"]).includes("x")' }],
+      'String(values["name"]).includes("x")',
+      'RulesEngine can\'t call functions or read values["name"]',
+    ],
+    [
+      'a number stored as text',
+      [{ when: 'amount', is: '5' }],
+      'amount === "5"',
+      'Amount is compared with the text "5", not a number',
+    ],
+    [
+      'a yes/no stored as text',
+      [{ when: 'agree', is: 'true' }],
+      'agree === "true"',
+      'Agree is compared with the text "true", not yes or no',
+    ],
+    [
+      'a yes/no list stored as text',
+      [{ when: 'agree', in: ['true'] }],
+      'agree === "true"',
+      'Agree is compared with the text "true", not yes or no',
+    ],
+    [
+      'a placeholder beside a condition',
+      [{ when: '' }, { when: 'name', is: 'a' }],
+      '(false) && (name === "a")',
+      'an empty condition, shown as false, keeps it from ever applying',
+    ],
+  ] as [
+    string,
+    FieldCondition[],
+    string,
+    string,
+  ][])('shows %s as stored and flags it, and its repair is evaluated as shown', (_, conditions, expression, reason) => {
+    const [read] = fromFieldRules([stored(conditions)], OPTIONS);
+    expect(read).toMatchObject({ mode: 'expression', expression });
+    // The reason says what is wrong, so the expression is not flagged again.
+    expect(
+      rulesEngineDialect.checkExpression?.(read as ExpressionRule, VOCABULARY)
+    ).toBeUndefined();
+    const repaired = repair(read);
+    expect(repaired?.reason).toBe(reason);
+    expect(repaired?.rule.mode).toBe('conditions');
+    const [written] = toFieldRules([repaired?.rule as Rule], OPTIONS);
+    expect(written).not.toBe(stored(conditions));
+    expect(written.conditions).not.toEqual(conditions);
+    // Once repaired, nothing is left to repair.
+    expect(repair(fromFieldRules([written], OPTIONS)[0])).toBeUndefined();
+  });
+
+  it('runs a repaired rule as its rows show', () => {
+    const [read] = fromFieldRules(
+      [stored([{ when: '' }, { when: 'amount', is: '5' }, { when: 'agree', is: 'true' }])],
+      OPTIONS
+    );
+    const [before] = toFieldRules([read], OPTIONS);
+    expect(visible([before], { amount: 5, agree: true })).toBe(false);
+    const [after] = toFieldRules([repair(read)?.rule as Rule], OPTIONS);
+    expect(after.conditions).toEqual([
+      { when: 'amount', is: 5 },
+      { when: 'agree', is: true },
+    ]);
+    expect(visible([after], { amount: 5, agree: true })).toBe(true);
+  });
+
+  it.each([
+    ['a rule RulesEngine runs as it shows', [{ when: 'amount', is: 5 }]],
+    ['an empty check stored as an empty string', [{ when: 'amount', is: '' }]],
+    ['a placeholder in a rule that needs any condition', [{ when: '' }, { when: 'name', is: 'a' }]],
+    ['placeholders alone', [{ when: '' }, { when: 'name' }]],
+    ['a field the form does not contain', [{ when: 'gone', custom: 'values["gone"] === "a"' }]],
+  ] as [string, FieldCondition[]][])('leaves %s alone', (name, conditions) => {
+    const operator = name.includes('any') ? 'OR' : 'AND';
+    const [read] = fromFieldRules([stored(conditions, { operator })], OPTIONS);
+    expect(repair(read)).toBeUndefined();
+  });
+
+  it('keeps the flag through an outcome change, repairing with the new outcome', () => {
+    const [read] = fromFieldRules([stored([{ when: 'amount', is: '5' }])], OPTIONS);
+    const fixed = repair({ ...read, outcome: 'hide' })?.rule as Rule;
+    expect(fixed).toMatchObject({ id: read.id, outcome: 'hide', mode: 'conditions' });
+    const [written] = toFieldRules([fixed], OPTIONS);
+    expect(written).toMatchObject({
+      conditions: [{ when: 'amount', is: 5 }],
+      effects: { visible: false },
+    });
+  });
+
+  it('flags nothing once the expression is edited, which is then stored as typed', () => {
+    const [read] = fromFieldRules([stored([{ when: 'amount', is: '5' }])], OPTIONS);
+    const edited = { ...(read as ExpressionRule), expression: 'amount === 5' };
+    expect(repair(edited)).toBeUndefined();
+    expect(toFieldRules([edited], OPTIONS)[0].conditions).toEqual([
+      { when: 'amount', custom: 'amount === 5' },
+    ]);
   });
 });
 

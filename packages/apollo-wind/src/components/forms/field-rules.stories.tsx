@@ -41,8 +41,15 @@ as calls RulesEngine cannot run, the rule is preserved instead: its stored condi
 read-only and keep running, and its outcome can still change. An expression RulesEngine cannot run
 is flagged on its rule. It is still stored as typed, and never applies.
 
+A stored rule that RulesEngine cannot evaluate as its rows would show opens as its stored
+expression instead, flagged with the reason: one with hitl's \`values["key"]\` or calls, a number
+or yes/no stored as text, or a placeholder row, shown as \`false\`, in a rule that needs every
+condition. It is stored as it was, through an outcome change too, until **Repair rule** at the foot
+of the rule writes it from its rows, or its expression is edited.
+
 Field ids should be identifier paths, such as \`amount\` or \`user.role\`, as expressions name
-fields by them.
+fields by them. On any other key, a comparison only an expression can store, such as Greater than,
+is flagged. A field of type \`other\`, such as a file, a list or an object, offers only the empty checks, which store RulesEngine's \`empty\` key on any key: an empty list, or an object with no keys, is empty.
 
 In a QuickFormField, a field's rules go in its header: render a \`RulesAction\` in
 \`headerActions\` and pass it \`useFieldRules\`'s value and onChange. With \`requiredOutcome\`, a
@@ -135,8 +142,8 @@ function StoredRulesEditor() {
 
 /**
  * The stored rules are shown below as they are written. An older editor wrote the second rule as
- * a call RulesEngine cannot run, which reads as a Contains row and is stored so it runs once
- * edited. The third joins a pattern and an expression in a way rows cannot show, and runs only as
+ * a call RulesEngine cannot run, so it opens as that expression, flagged; Repair rule makes it a
+ * Contains row, stored so it runs. The third joins a pattern and an expression in a way rows cannot show, and runs only as
  * stored, so it is preserved: shown read-only, and stored as it was.
  */
 export const StoredRules: Story = {

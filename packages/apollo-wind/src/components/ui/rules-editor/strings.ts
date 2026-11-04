@@ -37,6 +37,10 @@ export interface RulesEditorStrings {
   preservedNote: string;
   /** Asks before a preserved rule's source is replaced by another mode. */
   switchFromPreservedDescription: string;
+  /** At the bottom of a rule the dialect cannot evaluate as it shows, with the dialect's reason. */
+  ruleNeedsRepair: (reason: string) => string;
+  /** After that message: rewrites the rule so it is evaluated as it shows. */
+  repairAction: string;
   addRule: string;
   /** Says what happens with no rules, e.g. "No rules. The field always shows." Empty shows none. */
   empty: string;
@@ -75,6 +79,8 @@ export const DEFAULT_RULES_EDITOR_STRINGS: RulesEditorStrings = {
     'These conditions are not supported in the current editor but will continue to execute.',
   switchFromPreservedDescription:
     'These stored conditions cannot be edited here, so they will be removed.',
+  ruleNeedsRepair: (reason) => `This rule cannot be evaluated: ${reason}.`,
+  repairAction: 'Repair rule',
   addRule: 'Add rule',
   empty: 'No rules.',
   switchToExpressionTitle: 'Switch to an expression?',
