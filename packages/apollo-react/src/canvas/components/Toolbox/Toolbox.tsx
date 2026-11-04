@@ -272,7 +272,7 @@ export function Toolbox<T>({
     !currentParentItem.childrenLoading
       ? _({
           id: 'toolbox.category.announcement',
-          message: '{name}, {count, plural, one {# item} other {# items}}',
+          message: '{name}, items: {count}',
           values: { name: currentParentItem.name, count: displayedItems.length },
         })
       : '';

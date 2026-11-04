@@ -866,7 +866,7 @@ describe('Toolbox', () => {
       await user.keyboard('{ArrowRight}');
       expect(screen.getByText('Child 1')).toBeInTheDocument();
       expect(screen.queryByText('Item 1')).not.toBeInTheDocument();
-      expect(screen.getByRole('status')).toHaveTextContent('Item 2, 1 item');
+      expect(screen.getByRole('status')).toHaveTextContent('Item 2, items: 1');
     });
 
     it('should not navigate with ArrowRight on leaf item', async () => {
