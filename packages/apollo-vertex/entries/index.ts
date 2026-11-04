@@ -111,6 +111,17 @@ export { cn } from "@/lib/utils";
 export { assertDateOrString } from "@/lib/asserts/assert-date-or-string";
 export { assertString } from "@/lib/asserts/assert-string";
 export { addVertexTranslations } from "@/lib/i18n";
+export {
+  DAY_GROUPS,
+  formatRelativeTime,
+  getDayGroup,
+  groupByDay,
+} from "@/lib/relative-time";
+export type {
+  DateInput,
+  DayGroup,
+  FormatRelativeTimeOptions,
+} from "@/lib/relative-time";
 
 // Charts and adapters
 export * from "@/registry/chart/chart";
