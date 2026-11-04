@@ -725,7 +725,7 @@
   "sticky-note.toolbar.color": "Color",
   "sticky-note.toolbar.delete": "Delete",
   "sticky-note.toolbar.edit": "Edit",
-  "toolbox.category.announcement": "{name}, {count, plural, one {# item} other {# items}}",
+  "toolbox.category.announcement": "{name}, items: {count}",
   "toolbox.item.submenu": "Has submenu",
   "toolbox.search": "Search",
   "toolbox.search.clear": "Clear search",
