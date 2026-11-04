@@ -1,11 +1,17 @@
 import { Position } from '@uipath/apollo-react/canvas/xyflow/react';
 import { describe, expect, it } from 'vitest';
+import { buildPathVertices } from './geometry';
 import type { PathVertex, Point, Segment, Waypoint } from './types';
 import {
   insertWaypoint,
+  isCornerWaypoint,
   materializePathWaypoints,
+  moveCornerWaypoint,
   moveSegmentByDelta,
   moveWaypoint,
+  moveWaypointConstrained,
+  normalizeWaypoints,
+  type PathBuilder,
   type RebalanceEndpoint,
   rebalanceWaypoints,
   removeWaypoint,
@@ -63,6 +69,140 @@ describe('moveWaypoint', () => {
     const result = moveWaypoint([wp('a', 0, 0), wp('b', 100, 100)], 1, { x: 137, y: 7 });
     expect(result[0]).toEqual(wp('a', 0, 0));
     expect(result[1]).toMatchObject({ id: 'b', x: 144, y: 0 });
+  });
+});
+
+// Source exits right, runs down to W0, left to W1, then up and into a target
+// facing left: W0 and W1 are the two bottom corners of a U-shaped route.
+const builder =
+  (source: Point, sourcePosition: Position, target: Point, targetPosition: Position): PathBuilder =>
+  (waypoints) =>
+    buildPathVertices(
+      source.x,
+      source.y,
+      sourcePosition,
+      target.x,
+      target.y,
+      targetPosition,
+      waypoints
+    );
+const uRoute = builder({ x: 288, y: 144 }, Position.Right, { x: 688, y: 336 }, Position.Left);
+const corners = [wp('w0', 496, 704), wp('w1', 144, 704)];
+// Source exits right, target faces up: a lone waypoint between two derived stubs.
+const lShapeTop = builder({ x: 0, y: 0 }, Position.Right, { x: 400, y: 400 }, Position.Top);
+// Source exits right, target faces left: a waypoint level with the source handle.
+const offSource = builder({ x: 0, y: 0 }, Position.Right, { x: 400, y: 400 }, Position.Left);
+const positions = (waypoints: Waypoint[]) => waypoints.map(({ x, y }) => ({ x, y }));
+
+describe('moveWaypointConstrained', () => {
+  it('does not slide a corner along the run its re-derived elbow keeps straight', () => {
+    const result = moveWaypointConstrained(corners, 1, { x: 144, y: 544 }, uRoute);
+    expect(result[1]).toMatchObject({ id: 'w1', x: 144, y: 704 });
+  });
+
+  it('keeps only the axis that changes the route on a diagonal drag', () => {
+    const result = moveWaypointConstrained(corners, 1, { x: 96, y: 544 }, uRoute);
+    expect(result[1]).toMatchObject({ x: 96, y: 704 });
+  });
+
+  it('does not push a corner past the run into a spike that doubles back', () => {
+    const result = moveWaypointConstrained(corners, 1, { x: 144, y: 800 }, uRoute);
+    expect(result[1]).toMatchObject({ x: 144, y: 704 });
+  });
+
+  it('moves freely on both axes when both change the route', () => {
+    // Lone corner between two derived stubs: x moves the riser, y the run.
+    const result = moveWaypointConstrained([wp('c', 208, 208)], 0, { x: 240, y: 240 }, lShapeTop);
+    expect(result[0]).toMatchObject({ id: 'c', x: 240, y: 240 });
+  });
+
+  it('leaves the other waypoints untouched', () => {
+    const result = moveWaypointConstrained(corners, 1, { x: 96, y: 544 }, uRoute);
+    expect(result[0]).toBe(corners[0]);
+  });
+});
+
+describe('isCornerWaypoint', () => {
+  it('is true for a waypoint whose two runs are perpendicular', () => {
+    const path = uRoute(corners);
+    expect(isCornerWaypoint(path, 0)).toBe(true);
+    expect(isCornerWaypoint(path, 1)).toBe(true);
+  });
+
+  it('is false for a waypoint stranded on a straight run', () => {
+    expect(isCornerWaypoint(uRoute([corners[0]!, wp('w1', 144, 544)]), 1)).toBe(false);
+  });
+
+  it('is false for a waypoint that doubles back past the end of its run', () => {
+    expect(isCornerWaypoint(uRoute([corners[0]!, wp('w1', 144, 800)]), 1)).toBe(false);
+  });
+});
+
+describe('moveCornerWaypoint', () => {
+  it('drags the stored corner at the far end of a run along with it', () => {
+    // Bottom-left corner up: the bottom run rises, so W0 follows on y.
+    const result = moveCornerWaypoint(corners, 1, { x: 144, y: 544 }, uRoute(corners));
+    expect(result).toEqual([wp('w0', 496, 544), wp('w1', 144, 544)]);
+    expect(isCornerWaypoint(uRoute(result), 1)).toBe(true);
+  });
+
+  it('follows the cursor on both axes', () => {
+    const result = moveCornerWaypoint(corners, 1, { x: 96, y: 544 }, uRoute(corners));
+    expect(result).toEqual([wp('w0', 496, 544), wp('w1', 96, 544)]);
+  });
+
+  it('lets derived elbows re-derive instead of storing them', () => {
+    const lone = [wp('c', 208, 208)];
+    expect(moveCornerWaypoint(lone, 0, { x: 240, y: 240 }, lShapeTop(lone))).toEqual([
+      wp('c', 240, 240),
+    ]);
+  });
+
+  it('inserts a stub next to a node anchor so the attached run can shift', () => {
+    // The corner's incoming run comes straight off the source handle.
+    const lone = [wp('c', 208, 0)];
+    const result = moveCornerWaypoint(lone, 0, { x: 240, y: 96 }, offSource(lone));
+    expect(positions(result)).toEqual([
+      { x: 32, y: 0 },
+      { x: 32, y: 96 },
+      { x: 240, y: 96 },
+    ]);
+    expect(result[2]!.id).toBe('c');
+    expect(isCornerWaypoint(offSource(result), 2)).toBe(true);
+  });
+
+  it('adds no stub when the anchored run keeps its coordinate', () => {
+    const lone = [wp('c', 208, 0)];
+    expect(moveCornerWaypoint(lone, 0, { x: 240, y: 0 }, offSource(lone))).toEqual([
+      wp('c', 240, 0),
+    ]);
+  });
+});
+
+describe('normalizeWaypoints', () => {
+  const shapeOf = (waypoints: Waypoint[]) => positions(uRoute(waypoints));
+
+  it('moves a waypoint stranded on a run onto the nearer end of it', () => {
+    const stranded = [corners[0]!, wp('w1', 144, 544)];
+    const result = normalizeWaypoints(stranded, uRoute);
+    expect(result).toEqual([wp('w0', 496, 704), wp('w1', 144, 704)]);
+  });
+
+  it('pulls a waypoint that doubles back onto the end of its run', () => {
+    const spiked = [corners[0]!, wp('w1', 144, 800)];
+    expect(normalizeWaypoints(spiked, uRoute)).toEqual(corners);
+  });
+
+  it('removes a waypoint the route does not need', () => {
+    // Midway along the bottom run, between two stored corners.
+    const extra = [corners[0]!, wp('mid', 320, 704), corners[1]!];
+    const result = normalizeWaypoints(extra, uRoute);
+    expect(result).toEqual(corners);
+    expect(shapeOf(result)).toEqual(shapeOf(corners));
+  });
+
+  it('leaves corners alone', () => {
+    expect(normalizeWaypoints(corners, uRoute)).toBe(corners);
   });
 });
 
