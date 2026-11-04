@@ -317,7 +317,7 @@
   "guardrails.definitions.llm_as_judge.param.positiveExamples.tooltip": "Optional payloads that should pass the policy. Used by the judge as calibration anchors.",
   "guardrails.definitions.llm_as_judge.param.threshold.label": "Strictness",
   "guardrails.definitions.llm_as_judge.param.threshold.tooltip": "Strictness on a 0–6 scale. Lower values are stricter — the judge flags anything that hints at a violation. Higher values are more lenient — only clear, unambiguous violations are flagged.",
-  "guardrails.definitions.llm_as_judge.usage-note": "Judge model calls consume Agent units the same way the agent's own LLM calls do. Apply selectively to keep cost predictable, and choose the judge model with cost in mind — rates vary by model.",
+  "guardrails.definitions.llm_as_judge.usage-note": "Judge model calls consume Platform Units or Agent Units the same way the agent's own LLM calls do. Apply selectively to keep cost predictable, and choose the judge model with cost in mind — rates vary by model.",
   "guardrails.definitions.pii_detection.description": "Detect personally identifiable information using Azure Cognitive Services.",
   "guardrails.definitions.pii_detection.display-name": "PII detection",
   "guardrails.definitions.pii_detection.option.entities.ABARoutingNumber": "ABA Routing Number",

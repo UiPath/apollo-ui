@@ -421,7 +421,7 @@ export const FLOW_COPY_EN: GuardrailCopyTable = {
     displayName: 'LLM as Judge',
     description: 'Detect violations of a rule you define, using an LLM as the judge.',
     usageNote:
-      "Judge model calls consume Agent units the same way the agent's own LLM calls do. Apply selectively to keep cost predictable, and choose the judge model with cost in mind — rates vary by model.",
+      "Judge model calls consume Platform Units or Agent Units the same way the agent's own LLM calls do. Apply selectively to keep cost predictable, and choose the judge model with cost in mind — rates vary by model.",
     paramLabels: {
       guardrailText: 'Rule prompt',
       model: 'Judge model',

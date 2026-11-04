@@ -859,7 +859,7 @@ function buildGuardrailCopy(_: CopyTranslate): GuardrailCopyTable {
       usageNote: _({
         id: 'guardrails.definitions.llm_as_judge.usage-note',
         message:
-          "Judge model calls consume Agent units the same way the agent's own LLM calls do. Apply selectively to keep cost predictable, and choose the judge model with cost in mind — rates vary by model.",
+          "Judge model calls consume Platform Units or Agent Units the same way the agent's own LLM calls do. Apply selectively to keep cost predictable, and choose the judge model with cost in mind — rates vary by model.",
       }),
       paramLabels: {
         guardrailText: _({
