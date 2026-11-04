@@ -1,3 +1,5 @@
+import React, { useRef } from 'react';
+import { createRoot } from 'react-dom/client';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 import type { SizedColumn } from './columnSizing';
@@ -202,5 +204,62 @@ describe('useColumnWidths', () => {
       } as unknown as React.KeyboardEvent)
     );
     expect(onWidthsChange).toHaveBeenLastCalledWith({ 'input:a': 136 });
+  });
+
+  it('is never shown at its default widths: it fits to the container before it reveals', async () => {
+    const columns: SizedColumn[] = ['c0', 'c1'].map((id) => ({ id, defaultWidth: 100 }));
+    const Probe = () => {
+      const containerRef = useRef<HTMLDivElement>(null);
+      const { widths, setTableElement } = useColumnWidths({
+        columns,
+        reservedPx: 0,
+        containerRef,
+        initialWidths: {},
+      });
+      return React.createElement(
+        'div',
+        { ref: containerRef },
+        React.createElement(
+          'table',
+          { ref: setTableElement },
+          React.createElement(
+            'colgroup',
+            null,
+            ...widths.map((width, index) =>
+              React.createElement('col', { key: index, style: { width } })
+            )
+          )
+        )
+      );
+    };
+    const clientWidth = vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(800);
+    // Outside act, so the browser's order holds: layout effects before the paint, passive ones after.
+    const environment = globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean };
+    const actEnvironment = environment.IS_REACT_ACT_ENVIRONMENT;
+    environment.IS_REACT_ACT_ENVIRONMENT = false;
+    const host = document.createElement('div');
+    document.body.append(host);
+    const shown: string[][] = [];
+    const observer = new MutationObserver(() => {
+      const table = host.querySelector('table');
+      if (table?.style.visibility === 'visible') {
+        shown.push([...table.querySelectorAll('col')].map((col) => col.style.width));
+      }
+    });
+    observer.observe(host, { subtree: true, attributes: true, childList: true });
+    const root = createRoot(host);
+    try {
+      root.render(React.createElement(Probe));
+      await waitFor(() => expect(shown.length).toBeGreaterThan(0));
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(shown.every((cols) => cols.join() === '400px,400px')).toBe(true);
+    } finally {
+      observer.disconnect();
+      root.unmount();
+      host.remove();
+      environment.IS_REACT_ACT_ENVIRONMENT = actEnvironment;
+      clientWidth.mockRestore();
+    }
   });
 });

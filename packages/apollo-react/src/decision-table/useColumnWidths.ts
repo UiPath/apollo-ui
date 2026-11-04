@@ -291,21 +291,32 @@ export function useColumnWidths({
 
   // Re-fit on mount, container resize, and column add/delete. clientWidth already excludes the vertical
   // scrollbar, so auto-fit never overshoots into it.
-  useEffect(() => {
+  //
+  // A layout effect that fits as well as measures: revealed on a measurement alone, the table painted
+  // once at its default widths before the fit landed on a later render. After the seed's layout
+  // effect above, so the fit takes in the widths it seeded.
+  useLayoutEffect(() => {
     const element = containerRef.current;
     if (!element) {
       return;
     }
     const observer = new ResizeObserver(() => setContainerWidth(element.clientWidth));
     observer.observe(element);
-    setContainerWidth(element.clientWidth);
+    const width = element.clientWidth;
+    containerWidthRef.current = width;
+    setContainerWidth(width);
+    reflow(width, columnsRef.current, overridesRef.current, reservedPxRef.current);
     measuredRef.current = true;
     applyVisibility();
     return () => observer.disconnect();
-  }, [containerRef, applyVisibility]);
+  }, [containerRef, reflow, applyVisibility]);
 
+  // The measured width through the ref, not the render's: on mount this runs before the render the
+  // measurement above scheduled — React 19 orders it so — and the render's width is still 0, which
+  // would undo the fit with the defaults.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: containerWidth is the re-fit trigger; the ref carries its value, kept current by the measurement
   useEffect(() => {
-    reflow(containerWidth, stableColumns, overridesRef.current, reservedPx);
+    reflow(containerWidthRef.current, stableColumns, overridesRef.current, reservedPx);
   }, [containerWidth, stableColumns, reservedPx, reflow]);
 
   // Reconcile to the current columns whenever they change: drop overrides and persisted widths for
