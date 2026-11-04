@@ -2723,6 +2723,12 @@ export const WithRulesTags: Story = {
                 tooltip: 'Return to origin conditions',
                 onClick: () => window.alert('Open return to origin panel'),
               },
+              {
+                type: StageHeaderChipType.Milestone,
+                count: 2,
+                tooltip: '2 milestones',
+                onClick: () => window.alert('Open milestones panel'),
+              },
             ],
           },
           onTaskClick: (taskId: string) => window.alert(`Task clicked: ${taskId}`),
