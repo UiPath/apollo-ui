@@ -1231,6 +1231,34 @@ describe('StageNode - Header Chips', () => {
     expect(onClick).toHaveBeenCalledTimes(1);
   });
 
+  it('renders the milestone chip with the lucide flag icon and its count', () => {
+    renderStageNode({
+      stageDetails: {
+        ...defaultProps.stageDetails,
+        headerChips: [{ type: StageHeaderChipType.Milestone, count: 2 }],
+      },
+    });
+
+    const chip = screen.getByRole('button', { name: StageHeaderChipType.Milestone });
+    expect(chip.querySelector('svg')).toHaveClass('lucide-flag');
+    expect(chip).toHaveTextContent('2');
+  });
+
+  it('calls the milestone chip onClick', async () => {
+    const user = userEvent.setup();
+    const onClick = vi.fn();
+
+    renderStageNode({
+      stageDetails: {
+        ...defaultProps.stageDetails,
+        headerChips: [{ type: StageHeaderChipType.Milestone, tooltip: '1 milestone', onClick }],
+      },
+    });
+
+    await user.click(screen.getByRole('button', { name: '1 milestone' }));
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
   it('should use string tooltip as aria-label', () => {
     renderStageNode({
       stageDetails: {

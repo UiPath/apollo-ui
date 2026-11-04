@@ -1,6 +1,7 @@
 import { Icon, Padding, Spacing } from '@uipath/apollo-core';
 import { Row } from '@uipath/apollo-react/canvas/layouts';
 import { Button } from '@uipath/apollo-wind';
+import { Flag } from 'lucide-react';
 import { memo } from 'react';
 import { useSafeLingui } from '../../../i18n';
 import { ChecklistIcon } from '../../../icons';
@@ -33,6 +34,7 @@ const CHIP_ICONS: Record<StageHeaderChipType, React.ReactElement | null> = {
   [StageHeaderChipType.Exit]: <ExitConditionIcon w={Icon.IconXs} h={Icon.IconXs} />,
   [StageHeaderChipType.Completion]: <ChecklistIcon size={16} />,
   [StageHeaderChipType.ReturnToOrigin]: <ReturnToOriginIcon w={Icon.IconXs} h={Icon.IconXs} />,
+  [StageHeaderChipType.Milestone]: <Flag size={Icon.IconXs} />,
   // Render as status pills (see STATUS_BADGE_CONFIG), never via CHIP_ICONS — listed for exhaustiveness.
   [StageHeaderChipType.Optional]: null,
   [StageHeaderChipType.EndsCase]: null,

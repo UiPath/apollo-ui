@@ -2658,8 +2658,8 @@ export const TasksBySection: Story = {
   },
 };
 
-export const WithRulesTags: Story = {
-  name: 'With Rules & Tags',
+export const WithRulesMilestonesTags: Story = {
+  name: 'With Rules, Milestones & Tags',
   parameters: {
     nodes: [
       {
@@ -2686,6 +2686,12 @@ export const WithRulesTags: Story = {
                 count: 3,
                 tooltip: 'Exit rules',
                 onClick: () => window.alert('Open exit rules panel'),
+              },
+              {
+                type: StageHeaderChipType.Milestone,
+                count: 2,
+                tooltip: 'Milestones',
+                onClick: () => window.alert('Open milestones panel'),
               },
             ],
           },
@@ -2786,6 +2792,12 @@ export const WithRulesTags: Story = {
                 type: StageHeaderChipType.Completion,
                 tooltip: 'Stage completion',
                 onClick: () => window.alert('Open stage completion panel'),
+              },
+              {
+                type: StageHeaderChipType.Milestone,
+                count: 1,
+                tooltip: 'Milestones',
+                onClick: () => window.alert('Open milestones panel'),
               },
             ],
           },
