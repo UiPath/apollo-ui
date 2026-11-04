@@ -141,6 +141,8 @@ function readCondition(
     row = { field, operator: 'isOneOf', values: stored.in.map(valueText) };
   } else if (stored.notIn !== undefined) {
     row = { field, operator: 'isNotOneOf', values: stored.notIn.map(valueText) };
+  } else if (stored.empty !== undefined) {
+    row = { field, operator: stored.empty ? 'isEmpty' : 'isNotEmpty' };
   } else {
     const pattern = stored.matches ?? '';
     const text = literalText(pattern);
@@ -186,6 +188,14 @@ function storedExpression(stored: FieldCondition): string | null {
   if (stored.isNot !== undefined) return `${name} !== ${printLiteral(stored.isNot)}`;
   if (stored.in !== undefined) return list(stored.in, '===', ' || ', 'false');
   if (stored.notIn !== undefined) return list(stored.notIn, '!==', ' && ', 'true');
+  // As near as an expression comes: it reads an object with no keys as set.
+  if (stored.matches === undefined && stored.empty !== undefined) {
+    return (stored.empty ? emptyCheck : notEmptyCheck)(name, {
+      value: stored.when,
+      label: '',
+      type: 'other',
+    });
+  }
   const pattern = stored.matches ?? '';
   const text = literalText(pattern);
   const start = pattern.startsWith('^') ? literalText(pattern.slice(1)) : undefined;
@@ -298,11 +308,15 @@ function writeCondition(c: Condition, vocabulary: ConditionVocabulary): FieldCon
   const when = c.field ?? '';
   const id = resolved.operator?.value;
   const typed = (text: string) => typedValue(resolved.field, text);
-  // A null or blank check, as an unset field holds no value at all.
-  if (id === 'isEmpty')
-    return canName(when) ? { when, custom: emptyCheck(when) } : { when, is: '' };
-  if (id === 'isNotEmpty') {
-    return canName(when) ? { when, custom: notEmptyCheck(when) } : { when, isNot: '' };
+  if (id === 'isEmpty' || id === 'isNotEmpty') {
+    const empty = id === 'isEmpty';
+    // A list, file or object is checked natively: expressions cannot tell an empty object, and
+    // `''` is no list.
+    if (resolved.field?.type === 'other') return { when, empty };
+    // A null or blank check, as an unset field holds no value at all.
+    if (!canName(when)) return empty ? { when, is: '' } : { when, isNot: '' };
+    const check = empty ? emptyCheck : notEmptyCheck;
+    return { when, custom: check(when, resolved.field) };
   }
   if (resolved.mode === 'literal') {
     const value = c.value ?? '';

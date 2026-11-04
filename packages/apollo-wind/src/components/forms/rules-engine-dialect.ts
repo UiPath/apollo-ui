@@ -76,6 +76,7 @@ export const RULES_ENGINE_OPERATORS: ConditionOperators = {
   number: forRulesEngine(DEFAULT_CONDITION_OPERATORS.number),
   date: forRulesEngine(DEFAULT_CONDITION_OPERATORS.date),
   enum: forRulesEngine(DEFAULT_CONDITION_OPERATORS.enum),
+  other: forRulesEngine(DEFAULT_CONDITION_OPERATORS.other),
 };
 
 /**
@@ -190,8 +191,12 @@ const COMPARISON: Record<string, string> = {
   lessThan: '<',
 };
 
-export const emptyCheck = (name: string) => `${name} == null || ${name} === ""`;
-export const notEmptyCheck = (name: string) => `${name} != null && ${name} !== ""`;
+// A value of type `other`, such as a list, is empty by its length, which text has too.
+const byLength = (field: ConditionField | undefined) => field?.type === 'other';
+export const emptyCheck = (name: string, field?: ConditionField) =>
+  byLength(field) ? `${name} == null || ${name}.length === 0` : `${name} == null || ${name} === ""`;
+export const notEmptyCheck = (name: string, field?: ConditionField) =>
+  byLength(field) ? `${name} != null && ${name}.length !== 0` : `${name} != null && ${name} !== ""`;
 
 /** An expression value as RulesEngine reads it, or `undefined` when it does not parse. */
 function valueExpression(text: string) {
@@ -214,8 +219,8 @@ export function conditionExpression(c: Condition, vocabulary: ConditionVocabular
   const name = c.field ?? '';
   if (!canName(name) || !resolved.operator) return undefined;
   const id = resolved.operator.value;
-  if (id === 'isEmpty') return emptyCheck(name);
-  if (id === 'isNotEmpty') return notEmptyCheck(name);
+  if (id === 'isEmpty') return emptyCheck(name, resolved.field);
+  if (id === 'isNotEmpty') return notEmptyCheck(name, resolved.field);
   const symbol = COMPARISON[id];
   if (resolved.mode === 'expression') {
     // Printed from its parse, so its text cannot reach past its own parentheses.
@@ -578,14 +583,30 @@ function isEmptyStringLiteral(node: jsep.Expression) {
   return node.type === 'Literal' && (node as jsep.Literal).value === '';
 }
 
-/** `f == null || f === ""` or its negation, on one field. */
+/** `f === ""`, or `f.length === 0` as a list's check reads, on field `field`. */
+function isBlankTest(
+  node: jsep.BinaryExpression,
+  field: string,
+  fields: readonly ConditionField[]
+) {
+  if (fieldRef(node.left, fields) === field) return isEmptyStringLiteral(node.right);
+  const member = node.left as jsep.MemberExpression;
+  return (
+    member.type === 'MemberExpression' &&
+    !member.computed &&
+    (member.property as jsep.Identifier).name === 'length' &&
+    fieldRef(member.object, fields) === field &&
+    literalValue(node.right)?.value === 0
+  );
+}
+
+/** `f == null || f === ""` or its negation, on one field, or the same by `f.length`. */
 function emptiness(node: jsep.BinaryExpression, fields: readonly ConditionField[]) {
   const left = node.left as jsep.BinaryExpression;
   const right = node.right as jsep.BinaryExpression;
   if (left.type !== 'BinaryExpression' || right.type !== 'BinaryExpression') return undefined;
   const field = fieldRef(left.left, fields);
-  if (!field || fieldRef(right.left, fields) !== field) return undefined;
-  if (!isNullLiteral(left.right) || !isEmptyStringLiteral(right.right)) return undefined;
+  if (!field || !isNullLiteral(left.right) || !isBlankTest(right, field, fields)) return undefined;
   // Loose `== null` only: an unset field is `undefined`, which `=== null` misses.
   if (node.operator === '||' && left.operator === '==' && right.operator === '===') {
     return { field, operator: 'isEmpty' };

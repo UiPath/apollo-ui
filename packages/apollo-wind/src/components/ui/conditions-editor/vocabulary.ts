@@ -1,7 +1,10 @@
 import type { ConditionValueMode } from './model';
 
-/** Picks the operators and the Fixed value control. `enum` needs `options`. */
-export type ConditionFieldType = 'string' | 'number' | 'date' | 'enum';
+/**
+ * Picks the operators and the Fixed value control. `enum` needs `options`. `other` is a value
+ * a condition can only check is there, such as a file or a list.
+ */
+export type ConditionFieldType = 'string' | 'number' | 'date' | 'enum' | 'other';
 
 export interface ConditionFieldOption {
   value: string;
@@ -89,5 +92,9 @@ export const DEFAULT_CONDITION_OPERATORS: ConditionOperators = {
     { value: 'notEquals', label: 'Is not' },
     { value: 'isOneOf', label: 'Is one of', multiple: true },
     { value: 'isNotOneOf', label: 'Is not one of', multiple: true },
+  ],
+  other: [
+    { value: 'isEmpty', label: 'Is empty', hasValue: false },
+    { value: 'isNotEmpty', label: 'Is not empty', hasValue: false },
   ],
 };

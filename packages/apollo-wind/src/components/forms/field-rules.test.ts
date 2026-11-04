@@ -11,6 +11,7 @@ import {
   type ConditionsRule,
   createRule,
   type ExpressionRule,
+  isRuleComplete,
   type PreservedRule,
   type Rule,
 } from '@/components/ui/rules-editor';
@@ -343,6 +344,60 @@ describe('writing rules', () => {
     expect(read.outcome).toBe('show');
     const [written] = toFieldRules([{ ...read, outcome: 'hide' }], OPTIONS);
     expect(written.effects).toEqual({ disabled: true, visible: false });
+  });
+});
+
+describe('dates and other values', () => {
+  it('matches a date row against a picked date with a time by its day', () => {
+    const on = toFieldRules(
+      [showWhen(createCondition({ field: 'due', operator: 'equals', value: '2026-06-15' }))],
+      OPTIONS
+    );
+    expect(visible(on, { due: new Date(2026, 5, 15, 9, 30) })).toBe(true);
+    expect(visible(on, { due: new Date(2026, 5, 16, 0, 0) })).toBe(false);
+    const before = toFieldRules(
+      [showWhen(createCondition({ field: 'due', operator: 'lessThan', value: '2026-06-15' }))],
+      OPTIONS
+    );
+    expect(visible(before, { due: new Date(2026, 5, 14, 23, 0) })).toBe(true);
+    expect(visible(before, { due: new Date(2026, 5, 15, 1, 0) })).toBe(false);
+  });
+
+  const files: FieldRuleField[] = [{ value: 'files', label: 'Files', type: 'other' }];
+  const options = { ...OPTIONS, fields: files };
+
+  it('offers only the empty checks on a field of type other', () => {
+    expect(RULES_ENGINE_OPERATORS.other.map((operator) => operator.value)).toEqual([
+      'isEmpty',
+      'isNotEmpty',
+    ]);
+  });
+
+  const values = [undefined, null, [], ['a.pdf'], {}, { name: 'a.pdf' }];
+  describe.each(['files', 'supporting-files'])('on the key %s', (key) => {
+    const keyed = { ...OPTIONS, fields: [{ ...files[0], value: key }] };
+    it.each([
+      ['isEmpty', true, [true, true, true, false, true, false]],
+      ['isNotEmpty', false, [false, false, false, true, false, true]],
+    ] as const)('stores %s on a field of type other natively, and reads it back', (operator, empty, shown) => {
+      const rules = toFieldRules([showWhen(createCondition({ field: key, operator }))], keyed);
+      expect(rules[0].conditions).toEqual([{ when: key, empty }]);
+      expect(values.map((value) => visible(rules, { [key]: value }))).toEqual(shown);
+      const [read] = fromFieldRules(rules, keyed) as ConditionsRule[];
+      expect(read.mode).toBe('conditions');
+      expect(read.conditions.children).toEqual([expect.objectContaining({ field: key, operator })]);
+      expect(isRuleComplete(read, { ...keyed, ...rulesEngineVocabulary })).toBe(true);
+    });
+  });
+
+  it('reads a length check on a field of type other as an empty check', () => {
+    const [read] = fromFieldRules(
+      [stored([{ when: 'files', custom: 'files == null || files.length === 0' }])],
+      options
+    ) as ConditionsRule[];
+    expect(read.conditions.children).toEqual([
+      expect.objectContaining({ field: 'files', operator: 'isEmpty' }),
+    ]);
   });
 });
 

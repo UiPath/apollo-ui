@@ -56,6 +56,7 @@ import {
   renameFieldInRules,
 } from './field-rules';
 import type {
+  CustomValueType,
   DataSource,
   FieldMetadata,
   FieldRule,
@@ -1791,44 +1792,55 @@ const BOOLEAN_OPTIONS = [
 ];
 
 /**
- * A field as rules can compare it. Fields whose values RulesEngine cannot compare as one value,
- * such as files, several options, or a date with a time, are left out.
+ * A field as rules can compare it. A date with a time compares by its day, as RulesEngine reads a
+ * picked date against a `yyyy-MM-dd` value. Anything else, such as files, several options, a list
+ * or a custom value of no known shape, can only be checked for being empty.
  */
-function ruleFieldFor(field: ExtendedFieldConfig): FieldRuleField | undefined {
+function ruleFieldFor(field: ExtendedFieldConfig): FieldRuleField {
   const base = { value: field.name, label: field.label || field.name };
+  const enumOf = (options: readonly { label: string; value: unknown }[]) =>
+    options.map((option) => ({ value: String(option.value), label: option.label }));
+  const boolean = {
+    ...base,
+    type: 'enum',
+    valueType: 'boolean',
+    options: BOOLEAN_OPTIONS,
+  } as const;
   switch (field.type) {
+    case 'text':
+    case 'email':
+    case 'textarea':
+      return { ...base, type: 'string' };
     case 'number':
     case 'slider':
       return { ...base, type: 'number' };
     case 'date':
+    case 'datetime':
       return { ...base, type: 'date' };
     case 'select':
     case 'radio':
-      return {
-        ...base,
-        type: 'enum',
-        options: (field.options ?? []).map((option) => ({
-          value: String(option.value),
-          label: option.label,
-        })),
-      };
+      return { ...base, type: 'enum', options: enumOf(field.options ?? []) };
     case 'checkbox':
     case 'switch':
     case 'boolean':
-      return { ...base, type: 'enum', valueType: 'boolean', options: BOOLEAN_OPTIONS };
-    case 'datetime':
-    case 'file':
-    case 'multiselect':
-      return undefined;
+      return boolean;
+    case 'custom': {
+      // An imported custom field keeps the shape its schema declared.
+      const { valueType } = field as { valueType?: CustomValueType };
+      if (valueType === 'string') return { ...base, type: 'string' };
+      if (valueType === 'number') return { ...base, type: 'number' };
+      if (valueType === 'boolean') return boolean;
+      return { ...base, type: 'other' };
+    }
     default:
-      return { ...base, type: 'string' };
+      return { ...base, type: 'other' };
   }
 }
 
 /** The rules' options for a form's fields, by what the rules can see of them. */
 function useRuleOptions(allFields: ExtendedFieldConfig[]): FieldRulesOptions {
   // A field is named by its name, so one being renamed past a blank name is left out meanwhile.
-  const fields = allFields.flatMap((field) => (field.name && ruleFieldFor(field)) || []);
+  const fields = allFields.flatMap((field) => (field.name ? ruleFieldFor(field) : []));
   const key = JSON.stringify(fields);
   // biome-ignore lint/correctness/useExhaustiveDependencies: the fields are read through their key
   return useMemo(() => ({ outcomes: DESIGNER_OUTCOMES, fields }), [key]);
