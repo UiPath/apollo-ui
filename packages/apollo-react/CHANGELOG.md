@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.15.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.15.3...@uipath/apollo-react@7.15.4) (2026-11-04)
+
+### Bug Fixes
+
+* **apollo-react:** keep dragged edge waypoints on real corners ([eb5323a](https://github.com/UiPath/apollo-ui/commit/eb5323af764eb032fd6658572aafd2f6fa8f4641))
+
 ## [@uipath/apollo-react-v7.15.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.15.2...@uipath/apollo-react@7.15.3) (2026-11-04)
 
 ### Bug Fixes
