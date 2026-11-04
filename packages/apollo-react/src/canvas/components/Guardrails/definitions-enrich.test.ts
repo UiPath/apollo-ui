@@ -155,7 +155,9 @@ describe('enrichGuardrailDefinitions', () => {
     });
 
     it('attaches the curated usage note', () => {
-      expect(enrichOne(LLM_AS_JUDGE_WIRE).usageNote).toMatch(/consume Platform Units or Agent Units/);
+      expect(enrichOne(LLM_AS_JUDGE_WIRE).usageNote).toMatch(
+        /consume Platform Units or Agent Units/
+      );
       expect(enrichOne(PII_DETECTION_WIRE)).not.toHaveProperty('usageNote');
     });
   });
