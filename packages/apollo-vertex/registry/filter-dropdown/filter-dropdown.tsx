@@ -63,6 +63,8 @@ interface FilterDropdownProps<
   align?: "start" | "center" | "end";
   /** PopoverContent width class */
   popoverWidth?: string;
+  /** Replaces the labelled trigger button; must forward its props and ref to a DOM element */
+  trigger?: ReactNode;
 
   /** Options are being fetched: skeleton rows when empty, spinner row below loaded options otherwise */
   isLoading?: boolean;
@@ -110,6 +112,7 @@ function FilterDropdown<TData extends RowData = RowData, TValue = unknown>({
   noResultsMessage = "No results found",
   align = "start",
   popoverWidth = "w-[220px]",
+  trigger,
   isLoading = false,
   hasMore = false,
   onLoadMore,
@@ -342,16 +345,18 @@ function FilterDropdown<TData extends RowData = RowData, TValue = unknown>({
     <div data-slot="filter-dropdown" className={className}>
       <Popover open={open} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-9 justify-between gap-2 font-normal"
-          >
-            <span className="shrink-0 text-sm font-medium">
-              {getTriggerLabel()}
-            </span>
-            <ChevronDownIcon className="h-4 w-4 shrink-0 opacity-50" />
-          </Button>
+          {trigger ?? (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 justify-between gap-2 font-normal"
+            >
+              <span className="shrink-0 text-sm font-medium">
+                {getTriggerLabel()}
+              </span>
+              <ChevronDownIcon className="h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          )}
         </PopoverTrigger>
         <PopoverContent
           align={align}

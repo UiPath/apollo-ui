@@ -105,6 +105,31 @@ const options = [
 />
 ```
 
+### Custom trigger
+
+Pass `trigger` to replace the labelled button, for example with an icon button in a compact header. The element must forward its props and ref to a DOM element, which `Button` does. Give it an `aria-label`, because the trigger no longer shows the title or the selection.
+
+```tsx
+import { SlidersHorizontal } from "lucide-react";
+import { Button, FilterDropdown } from "@uipath/apollo-vertex";
+
+<FilterDropdown
+  title="Workflows"
+  options={workflowOptions}
+  multiSelect={false}
+  value={workflow}
+  onChange={(v) => {
+    if (typeof v === "string") setWorkflow(v);
+  }}
+  align="end"
+  trigger={
+    <Button variant="ghost" size="icon" aria-label="Workflows">
+      <SlidersHorizontal />
+    </Button>
+  }
+/>
+```
+
 ### With search
 
 Search is enabled automatically when there are 8 or more options. Override with `enableSearch`:
@@ -238,6 +263,7 @@ The trigger label remembers the labels of options picked in the dropdown, so it 
 | `noResultsMessage` | `ReactNode` | `"No results found"` | Shown when search yields no matches |
 | `align` | `"start" \| "center" \| "end"` | `"start"` | Popover alignment relative to trigger |
 | `popoverWidth` | `string` | `"w-[220px]"` | Tailwind width class for the popover |
+| `trigger` | `ReactNode` | | Replaces the labelled trigger button. Must forward its props and ref to a DOM element |
 | `className` | `string` | | Additional class for the root wrapper |
 | `isLoading` | `boolean` | `false` | Options are being fetched. Shows skeleton rows when empty, a spinner below loaded options otherwise |
 | `hasMore` | `boolean` | `false` | More options can be fetched. Enables infinite scroll with `onLoadMore` |
