@@ -94,16 +94,18 @@ jobs:
         if: matrix.check == 'Typecheck'
         run: pnpm typecheck --affected
 
-      # The committed apollo-react catalogs must match what `lingui extract`
-      # generates from source, or new strings never reach translators.
+      # The committed apollo-react English catalogs must match what `lingui extract`
+      # generates from source, or new strings never reach translators. Only en.json
+      # is checked: the Localization sync owns the translated catalogs and writes
+      # them in its own key order, and missing translations fall back to English.
       - name: Verify i18n catalogs are up to date
         if: matrix.check == 'i18n Catalogs'
         run: |
           pnpm --filter @uipath/apollo-react i18n:extract
-          if [ -n "$(git status --porcelain -- 'packages/apollo-react/src/**/locales/*.json')" ]; then
-            echo "::error::apollo-react i18n catalogs are out of date. Run 'pnpm --filter @uipath/apollo-react i18n:extract' and commit the locales/*.json changes."
-            git status --short -- 'packages/apollo-react/src/**/locales/*.json'
-            git --no-pager diff -- 'packages/apollo-react/src/**/locales/*.json'
+          if [ -n "$(git status --porcelain -- 'packages/apollo-react/src/**/locales/en.json')" ]; then
+            echo "::error::apollo-react English i18n catalogs are out of date. Run 'pnpm --filter @uipath/apollo-react i18n:extract' and commit the locales/en.json changes."
+            git status --short -- 'packages/apollo-react/src/**/locales/en.json'
+            git --no-pager diff -- 'packages/apollo-react/src/**/locales/en.json'
             exit 1
           fi
 
