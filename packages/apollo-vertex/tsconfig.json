@@ -66,6 +66,7 @@
       "@/components/ui/form": ["./registry/form/index"],
       "@/components/ui/form-wizard": ["./registry/form-wizard/index"],
       "@/components/ui/hover-card": ["./registry/hover-card/hover-card"],
+      "@/components/ui/inbox": ["./registry/inbox/inbox"],
       "@/components/ui/input": ["./registry/input/input"],
       "@/components/ui/input-group": ["./registry/input-group/input-group"],
       "@/components/ui/input-otp": ["./registry/input-otp/input-otp"],

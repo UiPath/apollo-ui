@@ -211,6 +211,33 @@ Import every name below from `@uipath/apollo-vertex`. Follow the
 
 - **AI Chat**: Exports: `AiChat`, `AiChatEmptyState`, `AiChatLoading`, `AiChatMarkdown`, `AiChatThinking`, `AutopilotGradientIcon`, `CHOICES_TOOL_PROMPT`, `createAgentHubConnection`, `createConversationalAgentConnection`, `createDataFabricBarTool`, `createDataFabricDistributionTool`, `createDataFabricKpiTool`, `createDataFabricLineTool`, `createDataFabricMultiLineTool`, `createDataFabricTableTool`, `dataFabricBarClient`, `dataFabricDistributionClient`, `dataFabricKpiClient`, `dataFabricLineClient`, `dataFabricMultiLineClient`, `dataFabricTableClient`, `generateEntityFieldsDocs`, `NoDataMessage`, `presentChoicesClient`, `renderChoices`.
 - **Feedback Vote Widget**: Exports: `FeedbackVoteWidget`.
+- **Inbox**: A list pane of messages or conversations grouped by day, with unread and selected states, relative timestamps, and slots for header actions and filters. Pair it with a detail pane for a master-detail layout. Exports: `Inbox`, `InboxActions`, `InboxContent`, `InboxEmpty`, `InboxGroup`, `InboxHeader`, `InboxItem`, `InboxItemFooter`, `InboxItemHeader`, `InboxItemPreview`, `InboxItemSubject`, `InboxItemTime`, `InboxItemTitle`, `InboxTitle`, `InboxToolbar`.
+  - Use when people work through a queue of messages, conversations or requests one at a time, picking one from a list and reading it beside the list.
+  - Avoid when the records are compared across many columns, sorted or paged. Use **Data Table** instead.
+  - Avoid when the list is app navigation rather than content. Use **Sidebar** instead.
+
+    ```tsx
+    import { Inbox, InboxContent, InboxGroup, InboxItem, InboxItemHeader, InboxItemTitle, InboxItemTime, InboxItemSubject, groupByDay } from "@uipath/apollo-vertex";
+
+    <Inbox>
+      <InboxContent>
+        {groupByDay(messages, (m) => m.receivedAt).map(({ group, items }) => (
+          <InboxGroup key={group} group={group}>
+            {items.map((m) => (
+              <InboxItem key={m.id} selected={m.id === selectedId} unread={!m.read} onClick={() => select(m.id)}>
+                <InboxItemHeader>
+                  <InboxItemTitle>{m.from}</InboxItemTitle>
+                  <InboxItemTime value={m.receivedAt} />
+                </InboxItemHeader>
+                <InboxItemSubject>{m.subject}</InboxItemSubject>
+              </InboxItem>
+            ))}
+          </InboxGroup>
+        ))}
+      </InboxContent>
+    </Inbox>
+    ```
+
 - **Metric Card**: Displays a labeled metric with a value, optional trend direction, and percentage change badge. Includes a skeleton loading state for consistent UX during data fetches. Exports: `MetricCard`, `MetricCardSkeleton`.
 - **Shell**: A component with a collapsible sidebar, theme and language toggles, and optional OAuth2 authentication. Exports: `ApolloShell`, `AuthContext`, `GroupMembershipGuard`, `LocaleProvider`, `MembershipDenied`, `Role`, `ShellAuthProvider`, `ShellLayout`, `ShellLogin`, `ShellSidebar`, `ShellUserProvider`, `STALE_TIME_MS`, `ThemeProvider`, `useAccessToken`, `useAuth`, `useGroupId`, `useGroupMembers`, `useIsGroupMember`, `useTheme`, `useUser`, `VerifyingMembership`.
 
