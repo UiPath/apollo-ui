@@ -1,5 +1,5 @@
 import type { Position } from '@uipath/apollo-react/canvas/xyflow/react';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useEdgePath } from '../../../../hooks';
 import { ARROW_ANGLE_MAP, ARROW_OFFSETS, EDGE_CONSTANTS } from '../constants';
 import { useEdgeLineJumps } from '../crossings';
@@ -10,6 +10,7 @@ import {
   getPathArcMidpoint,
 } from '../geometry';
 import type { EdgeRouting, PathVertex, Point, Segment, Waypoint } from '../types';
+import type { PathBuilder } from '../waypoints';
 
 const EMPTY_VERTICES: PathVertex[] = [];
 const EMPTY_SEGMENTS: Segment[] = [];
@@ -70,6 +71,11 @@ export type EdgeGeometry = {
   segments: Segment[];
   /** Position recommended for centered labels along the path. */
   labelPoint: Point;
+  /**
+   * Builds the waypoint-routed path for a candidate waypoint list with this
+   * edge's endpoints, so editing previews match what is rendered.
+   */
+  buildPath: PathBuilder;
   /** Arrow geometry (independent of routing strategy). */
   arrow: {
     angle: number;
@@ -110,31 +116,26 @@ export function useEdgeGeometry(args: UseEdgeGeometryArgs): EdgeGeometry {
   const isWaypoint = routing === 'waypoint';
   const isHandle = routing === 'handle';
 
+  // The single path builder: renders `waypoints` below and lets the editor
+  // preview candidate waypoints against exactly the same geometry.
+  const buildPath = useCallback<PathBuilder>(
+    (candidate) =>
+      buildPathVertices(
+        sourceX,
+        sourceY,
+        sourcePosition,
+        targetX,
+        targetY,
+        targetPosition,
+        candidate,
+        autoRouted
+      ),
+    [sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition, autoRouted]
+  );
+
   const pathPoints = useMemo(
-    () =>
-      isWaypoint
-        ? buildPathVertices(
-            sourceX,
-            sourceY,
-            sourcePosition,
-            targetX,
-            targetY,
-            targetPosition,
-            waypoints,
-            autoRouted
-          )
-        : EMPTY_VERTICES,
-    [
-      isWaypoint,
-      sourceX,
-      sourceY,
-      sourcePosition,
-      targetX,
-      targetY,
-      targetPosition,
-      waypoints,
-      autoRouted,
-    ]
+    () => (isWaypoint ? buildPath(waypoints) : EMPTY_VERTICES),
+    [isWaypoint, buildPath, waypoints]
   );
 
   const segments = useMemo(
@@ -177,6 +178,7 @@ export function useEdgeGeometry(args: UseEdgeGeometryArgs): EdgeGeometry {
       edgePath: handle.edgePath,
       pathPoints: EMPTY_VERTICES,
       segments: EMPTY_SEGMENTS,
+      buildPath,
       labelPoint,
       arrow,
     };
@@ -186,6 +188,7 @@ export function useEdgeGeometry(args: UseEdgeGeometryArgs): EdgeGeometry {
     edgePath: waypointPath,
     pathPoints,
     segments,
+    buildPath,
     labelPoint,
     arrow,
   };

@@ -110,6 +110,7 @@ export const CanvasEdge = memo(function CanvasEdge({
 
   const routedWaypoints = data?.routedWaypoints ?? EMPTY_WAYPOINTS;
   const effectiveWaypoints = waypoints.length > 0 ? waypoints : routedWaypoints;
+  const autoRouted = data?.autoRouted ?? waypoints.length === 0;
   const executionEnabled = !!data?.enableExecution;
   const toolbarEnabled = !!data?.enableToolbar && !isReadOnly;
 
@@ -129,7 +130,7 @@ export const CanvasEdge = memo(function CanvasEdge({
     targetY,
     targetPosition,
     waypoints: effectiveWaypoints,
-    autoRouted: data?.autoRouted ?? waypoints.length === 0,
+    autoRouted,
     enableSegments: editingEnabled,
     hideArrowHead,
     enableLineJumps: !!data?.enableLineJumps,
@@ -141,6 +142,7 @@ export const CanvasEdge = memo(function CanvasEdge({
     pathPoints: geometry.pathPoints,
     enabled: editingEnabled,
     onChange: data?.onWaypointsChange,
+    buildPath: geometry.buildPath,
   });
 
   const execution = useExecutionEdge({
