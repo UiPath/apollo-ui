@@ -24,7 +24,7 @@ export type FieldValueType = 'string' | 'number' | 'boolean';
 /**
  * A field the rules can compare. Its `value` is the key the form's values use, and should be an
  * identifier path such as `amount` or `user.role`: a row only an expression can say, such as
- * Greater than, cannot name any other key, so it is left out when stored.
+ * Greater than or one with an expression value, cannot name any other key, so it is flagged.
  */
 export interface FieldRuleField extends ConditionField {
   /** Defaults to `number` for number fields and `string` for the rest. */
@@ -44,20 +44,38 @@ const FIXED_ONLY_OPERATORS = new Set([
   'isNotOneOf',
 ]);
 
-const fixedOnly = (operators: readonly ConditionOperator[]) =>
+// Comparisons a fixed value stores as a key of their own; any other is stored as an expression.
+const NATIVE_COMPARISONS = new Set(['equals', 'notEquals']);
+const COMPARISONS = new Set([...NATIVE_COMPARISONS, 'greaterThan', 'lessThan']);
+
+/** Flags a comparison only an expression can store on a key an expression cannot name. */
+const unnamedFieldError =
+  (operator: string): NonNullable<ConditionOperator['valueError']> =>
+  (_value, { field, mode }) =>
+    !canName(field.value) && (mode !== 'literal' || !NATIVE_COMPARISONS.has(operator))
+      ? "Expressions can't name this field, so this comparison can't run."
+      : undefined;
+
+const forRulesEngine = (operators: readonly ConditionOperator[]) =>
   operators.map((option) =>
-    FIXED_ONLY_OPERATORS.has(option.value) ? { ...option, valueModes: FIXED_ONLY } : option
+    FIXED_ONLY_OPERATORS.has(option.value)
+      ? { ...option, valueModes: FIXED_ONLY }
+      : COMPARISONS.has(option.value)
+        ? { ...option, valueError: unnamedFieldError(option.value) }
+        : option
   );
 
 /**
  * The operators RulesEngine can run, per field type: the default ones, with text matching and
- * option lists taking a fixed value only. Labels are English: map them to translate.
+ * option lists taking a fixed value only. A comparison that only an expression can store is
+ * flagged on a field key no expression can name, such as `due-date`. Labels are English: map them
+ * to translate.
  */
 export const RULES_ENGINE_OPERATORS: ConditionOperators = {
-  string: fixedOnly(DEFAULT_CONDITION_OPERATORS.string),
-  number: fixedOnly(DEFAULT_CONDITION_OPERATORS.number),
-  date: fixedOnly(DEFAULT_CONDITION_OPERATORS.date),
-  enum: fixedOnly(DEFAULT_CONDITION_OPERATORS.enum),
+  string: forRulesEngine(DEFAULT_CONDITION_OPERATORS.string),
+  number: forRulesEngine(DEFAULT_CONDITION_OPERATORS.number),
+  date: forRulesEngine(DEFAULT_CONDITION_OPERATORS.date),
+  enum: forRulesEngine(DEFAULT_CONDITION_OPERATORS.enum),
 };
 
 /**

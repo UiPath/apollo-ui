@@ -108,14 +108,16 @@ function valueProblem(c: Condition, resolved: ResolvedCondition): ValueProblem {
   }
   const value = c.value?.trim();
   if (!value) return 'missing';
-  if (mode !== 'literal') return undefined;
-  if (field?.type === 'number' && !Number.isFinite(Number(value))) return 'number';
-  if (field?.type === 'date' && !parseDateValue(value)) return 'date';
-  if (field?.type === 'enum' && !field.options?.some((option) => option.value === c.value)) {
-    return 'option';
+  if (mode === 'literal') {
+    if (field?.type === 'number' && !Number.isFinite(Number(value))) return 'number';
+    if (field?.type === 'date' && !parseDateValue(value)) return 'date';
+    if (field?.type === 'enum' && !field.options?.some((option) => option.value === c.value)) {
+      return 'option';
+    }
   }
-  if (resolved.operator?.valueError?.(c.value ?? '')) return 'operator';
-  return undefined;
+  return field && resolved.operator?.valueError?.(c.value ?? '', { field, mode })
+    ? 'operator'
+    : undefined;
 }
 
 export function isValueInvalid(c: Condition, resolved: ResolvedCondition) {
@@ -161,7 +163,12 @@ export function conditionError(
   if (!resolved.operator) return strings.errorOperator;
   if (problem === 'number') return strings.errorNumber;
   if (problem === 'date') return strings.errorDate;
-  if (problem === 'operator') return resolved.operator.valueError?.(c.value ?? '');
+  if (problem === 'operator') {
+    return resolved.operator.valueError?.(c.value ?? '', {
+      field: resolved.field,
+      mode: resolved.mode,
+    });
+  }
   return problem === 'options' ? strings.errorOptions : strings.errorValue;
 }
 

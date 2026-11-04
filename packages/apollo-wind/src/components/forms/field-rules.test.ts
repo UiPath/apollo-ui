@@ -3,7 +3,10 @@ import {
   type Condition,
   createCondition,
   createConditionGroup,
+  DEFAULT_CONDITIONS_EDITOR_STRINGS,
+  isConditionComplete,
 } from '@/components/ui/conditions-editor';
+import { conditionError } from '@/components/ui/conditions-editor/status';
 import {
   type ConditionsRule,
   createRule,
@@ -281,6 +284,32 @@ describe('writing rules', () => {
       { when: 'first-name', is: '' },
       { when: 'first-name', isNot: '' },
     ]);
+  });
+
+  it('flags a comparison only an expression can store, on a key no expression can name', () => {
+    const fields = [{ value: 'due-date', label: 'Due', type: 'number' as const }];
+    const vocabulary = { fields, ...rulesEngineVocabulary };
+    const greater = createCondition({ field: 'due-date', operator: 'greaterThan', value: '5' });
+    const fromExpression = createCondition({
+      field: 'due-date',
+      operator: 'equals',
+      valueMode: 'expression',
+      value: 'limit',
+    });
+    for (const row of [greater, fromExpression]) {
+      expect(isConditionComplete(row, vocabulary)).toBe(false);
+      expect(conditionError(row, vocabulary, DEFAULT_CONDITIONS_EDITOR_STRINGS)).toBe(
+        "Expressions can't name this field, so this comparison can't run."
+      );
+    }
+    const fixed = createCondition({ field: 'due-date', operator: 'equals', value: '5' });
+    expect(isConditionComplete(fixed, vocabulary)).toBe(true);
+    expect(toFieldRules([showWhen(fixed)], { ...OPTIONS, fields })[0].conditions).toEqual([
+      { when: 'due-date', is: 5 },
+    ]);
+    // The same rows on a key an expression names are stored.
+    const named = { fields: [{ ...fields[0], value: 'due' }], ...rulesEngineVocabulary };
+    expect(isConditionComplete({ ...greater, field: 'due' }, named)).toBe(true);
   });
 
   it('leaves out incomplete conditions, and a rule with none complete', () => {

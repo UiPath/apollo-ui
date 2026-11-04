@@ -19,5 +19,6 @@ export {
   type ConditionFieldType,
   type ConditionOperator,
   type ConditionOperators,
+  type ConditionValueContext,
   DEFAULT_CONDITION_OPERATORS,
 } from './vocabulary';

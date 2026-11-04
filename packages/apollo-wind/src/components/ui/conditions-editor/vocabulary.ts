@@ -8,6 +8,12 @@ export interface ConditionFieldOption {
   label: string;
 }
 
+/** What a value is compared in, for an operator's `valueError`. */
+export interface ConditionValueContext {
+  field: ConditionField;
+  mode: ConditionValueMode;
+}
+
 /** A field a condition can compare. */
 export interface ConditionField {
   value: string;
@@ -30,10 +36,11 @@ export interface ConditionOperator {
    */
   valueModes?: readonly ConditionValueMode[];
   /**
-   * The message for a Fixed value it cannot use, such as a pattern that does not compile, or
-   * `undefined` for one it can. A row it flags is incomplete. English, as `label` is.
+   * The message for a value it cannot use, such as a pattern that does not compile, or `undefined`
+   * for one it can, given the row's field and value mode too. A row it flags is incomplete.
+   * English, as `label` is.
    */
-  valueError?: (value: string) => string | undefined;
+  valueError?: (value: string, row: ConditionValueContext) => string | undefined;
 }
 
 function patternError(pattern: string) {

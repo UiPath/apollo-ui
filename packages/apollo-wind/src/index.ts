@@ -340,6 +340,7 @@ export type {
   ConditionOperators,
   ConditionsEditorProps,
   ConditionsEditorStrings,
+  ConditionValueContext,
   ConditionValueMode,
   ConditionValueRenderProps,
   ConditionVocabulary,
