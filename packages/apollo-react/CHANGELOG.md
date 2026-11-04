@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.15.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.15.2...@uipath/apollo-react@7.15.3) (2026-11-04)
+
+### Bug Fixes
+
+* **apollo-react:** say LLM as judge consumes Platform Units or Agent Units [AL-684] ([4bcce4b](https://github.com/UiPath/apollo-ui/commit/4bcce4b353fcae540cdb68859814bd933184673b))
+
 ## [@uipath/apollo-react-v7.15.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.15.1...@uipath/apollo-react@7.15.2) (2026-11-03)
 
 ### Bug Fixes
