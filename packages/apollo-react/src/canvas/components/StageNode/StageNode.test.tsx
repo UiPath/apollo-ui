@@ -1204,6 +1204,19 @@ describe('StageNode - Header Chips', () => {
     expect(chip).toHaveTextContent('3');
   });
 
+  it('should render the milestone chip with its icon and count', () => {
+    renderStageNode({
+      stageDetails: {
+        ...defaultProps.stageDetails,
+        headerChips: [{ type: StageHeaderChipType.Milestone, count: 2 }],
+      },
+    });
+
+    const chip = screen.getByRole('button', { name: StageHeaderChipType.Milestone });
+    expect(chip.querySelector('svg')).toBeInTheDocument();
+    expect(chip).toHaveTextContent('2');
+  });
+
   it('should not render count text when count is undefined', () => {
     renderStageNode({
       stageDetails: {

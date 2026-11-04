@@ -44,6 +44,7 @@ export enum StageHeaderChipType {
   Exit = 'exit',
   Completion = 'completion',
   ReturnToOrigin = 'returnToOrigin',
+  Milestone = 'milestone',
   Optional = 'optional',
   EndsCase = 'endsCase',
 }
