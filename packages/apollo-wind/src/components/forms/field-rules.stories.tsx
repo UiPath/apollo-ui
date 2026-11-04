@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { useId, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
+import { Button } from '@/components/ui/button';
 import { RulesAction } from '@/components/ui/field-actions';
 import { Label } from '@/components/ui/label';
 import {
@@ -9,7 +10,7 @@ import {
   QuickFormFieldTypePicker,
 } from '@/components/ui/quick-form-field';
 import { RulesEditor } from '@/components/ui/rules-editor';
-import type { FieldRuleOutcome, FieldRulesOptions } from './field-rules';
+import { type FieldRuleOutcome, type FieldRulesOptions, renameFieldInRules } from './field-rules';
 import type { FieldRule } from './form-schema';
 import {
   type FieldRuleField,
@@ -195,4 +196,111 @@ function HeaderActionField() {
 export const InFieldHeader: Story = {
   name: "In a field's header",
   render: () => <HeaderActionField />,
+};
+
+const CHANGE_FIELDS: FieldRuleField[] = [
+  { value: 'customer', label: 'Customer', type: 'string' },
+  { value: 'amount', label: 'Amount', type: 'number' },
+  {
+    value: 'region',
+    label: 'Region',
+    type: 'enum',
+    options: [
+      { label: 'EU', value: 'EU' },
+      { label: 'US', value: 'US' },
+    ],
+  },
+];
+const CHANGE_RULES: FieldRule[] = [
+  {
+    id: 'eu',
+    conditions: [{ when: 'region', is: 'EU' }],
+    operator: 'AND',
+    effects: { visible: true },
+  },
+  {
+    id: 'large',
+    conditions: [{ when: '', custom: 'amount > 1000 && customer !== "Internal"' }],
+    operator: 'AND',
+    effects: { required: true },
+  },
+];
+
+function FieldChangesEditor() {
+  const fieldId = useId();
+  const [fields, setFields] = useState(CHANGE_FIELDS);
+  const [stored, setStored] = useState(CHANGE_RULES);
+  const options = useMemo<FieldRulesOptions>(() => ({ outcomes: OUTCOMES, fields }), [fields]);
+  const rules = useFieldRules({ rules: stored }, (next) => setStored(next.rules), options);
+  const amount = fields.find((field) => field.value === 'amount' || field.value === 'total');
+  const renamed = amount?.value === 'total';
+  const regionRemoved = !fields.some((field) => field.value === 'region');
+
+  const renameAmount = () => {
+    const [from, to] = renamed ? ['total', 'amount'] : ['amount', 'total'];
+    setFields((current) =>
+      current.map((field) =>
+        field.value === from ? { ...field, value: to, label: renamed ? 'Amount' : 'Total' } : field
+      )
+    );
+    setStored((current) => renameFieldInRules(current, from, to));
+  };
+  const toggleRegion = () =>
+    setFields((current) =>
+      regionRemoved
+        ? [...current, CHANGE_FIELDS[2]]
+        : current.filter((field) => field.value !== 'region')
+    );
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap gap-2">
+        <Button type="button" variant="outline" size="sm" onClick={renameAmount}>
+          {renamed ? 'Rename Total to Amount' : 'Rename Amount to Total'}
+        </Button>
+        <Button type="button" variant="outline" size="sm" onClick={toggleRegion}>
+          {regionRemoved ? 'Add Region back' : 'Remove Region'}
+        </Button>
+      </div>
+      <div className="w-80">
+        <QuickFormField
+          id={fieldId}
+          label={<Label htmlFor={fieldId}>Discount</Label>}
+          value=""
+          locked={false}
+          fieldType="integer"
+          headerActions={
+            <RulesAction
+              outcomes={OUTCOMES}
+              fields={fields}
+              operators={rulesEngineVocabulary.operators}
+              valueModes={rulesEngineVocabulary.valueModes}
+              dialect={rulesEngineDialect}
+              value={rules.value}
+              onChange={rules.onChange}
+            />
+          }
+        />
+      </div>
+      <p className="text-xs text-muted-foreground">
+        {rules.issues.length === 0
+          ? 'No rule needs attention.'
+          : `${rules.issues.length} ${rules.issues.length === 1 ? 'issue' : 'issues'}: ${rules.issues.map((issue) => `${issue.ruleId} (${issue.kind})`).join(', ')}`}
+      </p>
+      <pre className="max-w-2xl overflow-auto rounded-md bg-muted p-3 text-xs">
+        {JSON.stringify(stored, null, 2)}
+      </pre>
+    </div>
+  );
+}
+
+/**
+ * A field's rules as the form around it changes. Renaming Amount renames it in the stored rules,
+ * inside the expression too, with `renameFieldInRules`. Removing Region leaves the rule that
+ * compares it as it was, and the trigger turns red until the author changes it. `useFieldRules`
+ * lists the same issues for the host, shown below the field.
+ */
+export const FieldChanges: Story = {
+  name: 'Field changes',
+  render: () => <FieldChangesEditor />,
 };
