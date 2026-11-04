@@ -22,6 +22,48 @@ describe('RulesEngine', () => {
     });
   });
 
+  describe('an empty check', () => {
+    const empty = (value: unknown) =>
+      RulesEngine.evaluateCondition(
+        { when: 'supporting-files', empty: true },
+        {
+          'supporting-files': value,
+        }
+      );
+    const notEmpty = (value: unknown) =>
+      RulesEngine.evaluateCondition(
+        { when: 'supporting-files', empty: false },
+        {
+          'supporting-files': value,
+        }
+      );
+
+    it.each([
+      ['unset', undefined],
+      ['null', null],
+      ['blank text', ''],
+      ['an empty list', []],
+      ['an object with no keys', {}],
+    ])('holds for %s', (_, value) => {
+      expect(empty(value)).toBe(true);
+      expect(notEmpty(value)).toBe(false);
+    });
+
+    it.each([
+      ['text', 'a'],
+      ['zero', 0],
+      ['false', false],
+      ['a list', ['a']],
+      ['an object with keys', { a: 1 }],
+      ['a date', new Date(2026, 0, 1)],
+      ['a file', new File(['x'], 'x.txt')],
+      ['a value in another mode', VALUE_MODE_OPAQUE],
+    ])('does not hold for %s', (_, value) => {
+      expect(empty(value)).toBe(false);
+      expect(notEmpty(value)).toBe(true);
+    });
+  });
+
   describe('a Date value', () => {
     const due = new Date(2026, 5, 15, 23, 30);
     const check = (condition: Omit<FieldCondition, 'when'>, values: Record<string, unknown> = {}) =>

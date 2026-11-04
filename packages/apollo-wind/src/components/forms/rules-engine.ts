@@ -42,6 +42,18 @@ function includesValue(list: unknown[], value: unknown): boolean {
 }
 
 /**
+ * Whether a value is unset or holds nothing: `''`, an empty list, or a plain object with no keys.
+ * A value in another mode is set; a `Date` or `File` is a value, whatever its keys.
+ */
+function isEmptyValue(value: unknown): boolean {
+  if (value === undefined || value === null || value === '') return true;
+  if (Array.isArray(value)) return value.length === 0;
+  if (typeof value !== 'object' || isValueModeOpaque(value)) return false;
+  const prototype = Object.getPrototypeOf(value);
+  return (prototype === Object.prototype || prototype === null) && Object.keys(value).length === 0;
+}
+
+/**
  * Rules Engine - Evaluates conditions and applies effects using jsep
  * Powers show/hide, enable/disable, validation changes, etc.
  * Uses jsep for safe expression parsing with minimal evaluator
@@ -109,6 +121,10 @@ export class RulesEngine {
         return false;
       }
       return regex.test(String(fieldValue));
+    }
+
+    if (condition.empty !== undefined) {
+      return isEmptyValue(fieldValue) === condition.empty;
     }
 
     return false;
