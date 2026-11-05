@@ -1,3 +1,15 @@
+export {
+  QuickFormFieldAiAssist,
+  type QuickFormFieldAiAssistProps,
+  QuickFormFieldInsertVariable,
+  type QuickFormFieldInsertVariableProps,
+  QuickFormFieldTypePicker,
+  type QuickFormFieldTypePickerProps,
+} from './components/header-actions';
+export {
+  type QuickFormFieldHeaderState,
+  useQuickFormFieldHeader,
+} from './components/header-context';
 export { QuickFormField } from './quick-form-field';
 export type {
   QuickFieldType,

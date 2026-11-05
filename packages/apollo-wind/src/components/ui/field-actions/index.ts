@@ -11,3 +11,9 @@ export {
   type InsertVariableActionProps,
   type InsertVariableActionStrings,
 } from './insert-variable-action';
+export {
+  DEFAULT_RULES_ACTION_STRINGS,
+  RulesAction,
+  type RulesActionProps,
+  type RulesActionStrings,
+} from './rules-action';

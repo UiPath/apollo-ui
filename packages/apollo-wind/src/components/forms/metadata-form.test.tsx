@@ -729,6 +729,53 @@ describe('MetadataForm', () => {
         expect(screen.queryByRole('tab', { name: 'Advanced' })).not.toBeInTheDocument();
       });
     });
+    it('re-runs a field rule when a field its expression reads changes', async () => {
+      const user = userEvent.setup();
+      const field = (name: string) => ({
+        name,
+        type: 'number' as const,
+        label: name,
+        placeholder: name,
+        defaultValue: 0,
+      });
+      const schema: FormSchema = {
+        id: 'reactive-expressions',
+        title: 'Reactive Expressions',
+        sections: [
+          {
+            id: 's',
+            fields: [
+              field('amount'),
+              field('limit'),
+              {
+                name: 'note',
+                type: 'text',
+                label: 'Note',
+                rules: [
+                  {
+                    id: 'over-limit',
+                    // Neither field is the condition's `when`: only the expression names them.
+                    conditions: [{ when: '', custom: 'amount > (limit * 2)' }],
+                    effects: { visible: true },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+
+      render(<MetadataForm schema={schema} />);
+      expect(screen.queryByLabelText('Note')).not.toBeInTheDocument();
+
+      await user.clear(screen.getByPlaceholderText('amount'));
+      await user.type(screen.getByPlaceholderText('amount'), '10');
+      await waitFor(() => expect(screen.getByLabelText('Note')).toBeInTheDocument());
+
+      await user.clear(screen.getByPlaceholderText('limit'));
+      await user.type(screen.getByPlaceholderText('limit'), '6');
+      await waitFor(() => expect(screen.queryByLabelText('Note')).not.toBeInTheDocument());
+    });
   });
 
   describe('tabbed multi-step form (stepVariant="tabs")', () => {
@@ -1354,6 +1401,150 @@ describe('MetadataForm untyped date values', () => {
                       id: 'hide',
                       conditions: [{ when: 'toggle', is: 'hide' }],
                       effects: { visible: false },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        }}
+        onSubmit={handleSubmit}
+      />
+    );
+
+    await user.click(screen.getByRole('button', { name: /submit/i }));
+
+    expect(await screen.findByText('This field is required')).toBeInTheDocument();
+    expect(handleSubmit).not.toHaveBeenCalled();
+  });
+});
+
+describe('MetadataForm rules on date values', () => {
+  // The calendar opens on the current month, so the picked day is in it.
+  const now = new Date();
+  const day = (d: number) => format(new Date(now.getFullYear(), now.getMonth(), d), 'yyyy-MM-dd');
+
+  const ruleSchema = (
+    type: 'date' | 'datetime',
+    condition: Record<string, unknown>
+  ): FormSchema => ({
+    id: 'date-rules',
+    title: 'Date rules',
+    sections: [
+      {
+        id: 's',
+        fields: [
+          { name: 'due', type, label: 'Due' },
+          {
+            name: 'note',
+            type: 'text',
+            label: 'Note',
+            rules: [
+              {
+                id: 'show-note',
+                conditions: [{ when: 'due', ...condition }],
+                effects: { visible: true },
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  });
+
+  const pickFifteenth = async (user: ReturnType<typeof userEvent.setup>) => {
+    await user.click(screen.getByRole('button', { name: /^due/i }));
+    await screen.findByRole('grid');
+    await user.click(
+      screen.getByRole('button', { name: new RegExp(`${format(now, 'MMMM')} 15th`) })
+    );
+  };
+
+  it.each([
+    ['is', { is: day(15) }],
+    ['custom', { custom: `due > "${day(10)}" && due < "${day(20)}"` }],
+  ])('matches a date rule (%s) against the picked date', async (_label, condition) => {
+    const user = userEvent.setup();
+    render(<MetadataForm schema={ruleSchema('date', condition)} />);
+    expect(screen.queryByLabelText('Note')).not.toBeInTheDocument();
+
+    await pickFifteenth(user);
+
+    expect(await screen.findByLabelText('Note')).toBeInTheDocument();
+  });
+
+  it.each([
+    ['is', { is: day(15) }],
+    ['custom', { custom: `due > "${day(10)}"` }],
+  ])('matches a datetime rule (%s) against the picked date', async (_label, condition) => {
+    const user = userEvent.setup();
+    render(<MetadataForm schema={ruleSchema('datetime', condition)} />);
+    expect(screen.queryByLabelText('Note')).not.toBeInTheDocument();
+
+    await pickFifteenth(user);
+
+    expect(await screen.findByLabelText('Note')).toBeInTheDocument();
+  });
+
+  it('passes a custom validation that compares the picked date', async () => {
+    const user = userEvent.setup();
+    const handleSubmit = vi.fn();
+    render(
+      <MetadataForm
+        schema={{
+          id: 'date-custom',
+          title: 'Date custom',
+          sections: [
+            {
+              id: 's',
+              fields: [
+                {
+                  name: 'due',
+                  type: 'date',
+                  label: 'Due',
+                  validation: {
+                    custom: `value > "${day(10)}"`,
+                    messages: { custom: 'Too early' },
+                  },
+                },
+              ],
+            },
+          ],
+        }}
+        onSubmit={handleSubmit}
+      />
+    );
+
+    await pickFifteenth(user);
+    await user.click(screen.getByRole('button', { name: /submit/i }));
+
+    await waitFor(() => expect(handleSubmit).toHaveBeenCalled());
+    expect(screen.queryByText('Too early')).not.toBeInTheDocument();
+  });
+
+  it('applies a date rule when validating on submit', async () => {
+    const user = userEvent.setup();
+    const handleSubmit = vi.fn();
+    render(
+      <MetadataForm
+        schema={{
+          id: 'date-required',
+          title: 'Date required',
+          initialData: { due: new Date(now.getFullYear(), now.getMonth(), 15) },
+          sections: [
+            {
+              id: 's',
+              fields: [
+                { name: 'due', type: 'date', label: 'Due' },
+                {
+                  name: 'reason',
+                  type: 'text',
+                  label: 'Reason',
+                  rules: [
+                    {
+                      id: 'require-reason',
+                      conditions: [{ when: 'due', is: day(15) }],
+                      effects: { required: true },
                     },
                   ],
                 },
