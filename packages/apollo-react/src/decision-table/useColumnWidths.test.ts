@@ -240,20 +240,29 @@ describe('useColumnWidths', () => {
     const host = document.createElement('div');
     document.body.append(host);
     const shown: string[][] = [];
+    const fitted = ['400px', '400px'];
+    // Resolved by the observer itself, not a poll: `waitFor` checks inside `act`, which flushes
+    // React's pending work at once and hides the very frame this looks for.
+    let reachedFit: () => void = () => {};
+    const fit = new Promise<void>((resolve) => {
+      reachedFit = resolve;
+    });
     const observer = new MutationObserver(() => {
       const table = host.querySelector('table');
       if (table?.style.visibility === 'visible') {
-        shown.push([...table.querySelectorAll('col')].map((col) => col.style.width));
+        const cols = [...table.querySelectorAll('col')].map((col) => col.style.width);
+        shown.push(cols);
+        if (cols.join() === fitted.join()) reachedFit();
       }
     });
     observer.observe(host, { subtree: true, attributes: true, childList: true });
     const root = createRoot(host);
     try {
       root.render(React.createElement(Probe));
-      await waitFor(() => expect(shown.length).toBeGreaterThan(0));
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      // The fit lands either way; a frame shown before it is already recorded by then.
+      await fit;
 
-      expect(shown.every((cols) => cols.join() === '400px,400px')).toBe(true);
+      expect(shown).toEqual(shown.map(() => fitted));
     } finally {
       observer.disconnect();
       root.unmount();
