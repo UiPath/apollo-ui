@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.86.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.86.0...@uipath/apollo-wind@2.86.1) (2026-11-05)
+
+### Bug Fixes
+
+* **apollo-wind:** better json tree required placement ([ed34340](https://github.com/UiPath/apollo-ui/commit/ed343406ea7b3747bb5e397726162d0d3570a2d4))
+
 ## [@uipath/apollo-wind-v2.86.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.85.1...@uipath/apollo-wind@2.86.0) (2026-11-05)
 
 ### Features
