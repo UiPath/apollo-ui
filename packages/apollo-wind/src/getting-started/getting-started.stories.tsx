@@ -212,7 +212,8 @@ function QuickStartTab() {
   const [path, setPath] = React.useState<QuickStartPath>('Add to existing project');
 
   return (
-    <div className="space-y-8">
+    // data-search-*: the Storybook search indexes both paths (see apps/storybook/scripts).
+    <div data-search-tabs="" className="space-y-8">
       {/* Path switcher */}
       <div className="rounded-xl border border-border bg-card p-5">
         <p className="mb-1 text-sm font-semibold text-foreground">What are you trying to do?</p>
@@ -224,6 +225,8 @@ function QuickStartTab() {
             <button
               key={p}
               type="button"
+              data-search-tab={p}
+              data-state={path === p ? 'active' : 'inactive'}
               onClick={() => setPath(p)}
               className={cn(
                 'flex-1 cursor-pointer rounded-lg border px-4 py-3 text-left text-sm transition-colors',
@@ -243,125 +246,127 @@ function QuickStartTab() {
         </div>
       </div>
 
-      {path === 'Add to existing project' && (
-        <>
-          <InfoCallout>
-            <p className="mb-1 font-medium text-foreground">Prerequisites</p>
-            <ul className="space-y-1">
-              <li>
-                <span className="font-medium text-foreground">Node 18+</span>: required by the
-                shadcn CLI
-              </li>
-              <li>
-                <span className="font-medium text-foreground">Tailwind CSS v4</span>: uses{' '}
-                <InlineCode>@import "tailwindcss"</InlineCode>, not{' '}
-                <InlineCode>tailwind.config.js</InlineCode>
-              </li>
-              <li>
-                <span className="font-medium text-foreground">React project</span>: Vite, Next.js,
-                or any React setup
-              </li>
-            </ul>
-          </InfoCallout>
+      <div data-search-panel="" className="space-y-8">
+        {path === 'Add to existing project' && (
+          <>
+            <InfoCallout>
+              <p className="mb-1 font-medium text-foreground">Prerequisites</p>
+              <ul className="space-y-1">
+                <li>
+                  <span className="font-medium text-foreground">Node 18+</span>: required by the
+                  shadcn CLI
+                </li>
+                <li>
+                  <span className="font-medium text-foreground">Tailwind CSS v4</span>: uses{' '}
+                  <InlineCode>@import "tailwindcss"</InlineCode>, not{' '}
+                  <InlineCode>tailwind.config.js</InlineCode>
+                </li>
+                <li>
+                  <span className="font-medium text-foreground">React project</span>: Vite, Next.js,
+                  or any React setup
+                </li>
+              </ul>
+            </InfoCallout>
 
-          <div className="space-y-6">
-            <StepItem step={1} title="Install the package">
-              <CodeBlock label="terminal">{'npm install @uipath/apollo-wind'}</CodeBlock>
-            </StepItem>
+            <div className="space-y-6">
+              <StepItem step={1} title="Install the package">
+                <CodeBlock label="terminal">{'npm install @uipath/apollo-wind'}</CodeBlock>
+              </StepItem>
 
-            <StepItem step={2} title="Import the CSS theme">
-              <CodeBlock label="main.tsx or _app.tsx">
-                {`import '@uipath/apollo-wind/tailwind.css';`}
-              </CodeBlock>
-              <p>This loads Apollo design tokens and the Tailwind base styles.</p>
-            </StepItem>
+              <StepItem step={2} title="Import the CSS theme">
+                <CodeBlock label="main.tsx or _app.tsx">
+                  {`import '@uipath/apollo-wind/tailwind.css';`}
+                </CodeBlock>
+                <p>This loads Apollo design tokens and the Tailwind base styles.</p>
+              </StepItem>
 
-            <StepItem step={3} title="Apply the theme class">
-              <CodeBlock label="App.tsx">
-                {`export function App() {
+              <StepItem step={3} title="Apply the theme class">
+                <CodeBlock label="App.tsx">
+                  {`export function App() {
   return (
     <div className="future-dark min-h-screen bg-background text-foreground">
       {/* your app */}
     </div>
   );
 }`}
-              </CodeBlock>
-              <p>
-                Switch to light mode by replacing <InlineCode>future-dark</InlineCode> with{' '}
-                <InlineCode>future-light</InlineCode>. All tokens adapt automatically.
-              </p>
-            </StepItem>
-          </div>
-
-          <Divider />
-
-          <div>
-            <h3 className="mb-3 text-lg font-semibold text-foreground">Import paths</h3>
-            <SectionDescription>
-              Components and utilities are exported from the package root.
-            </SectionDescription>
-            <div className="space-y-3">
-              <CodeBlock label="Components">
-                {`import { Button, Input, Dialog } from '@uipath/apollo-wind';`}
-              </CodeBlock>
-              <CodeBlock label="Utilities">{`import { cn } from '@uipath/apollo-wind';`}</CodeBlock>
-              <CodeBlock label="CSS theme">
-                {`import '@uipath/apollo-wind/tailwind.css';`}
-              </CodeBlock>
+                </CodeBlock>
+                <p>
+                  Switch to light mode by replacing <InlineCode>future-dark</InlineCode> with{' '}
+                  <InlineCode>future-light</InlineCode>. All tokens adapt automatically.
+                </p>
+              </StepItem>
             </div>
-          </div>
-        </>
-      )}
 
-      {path === 'Run locally' && (
-        <>
-          <InfoCallout>
-            <p className="mb-1 font-medium text-foreground">Before you begin</p>
-            <p>
-              This path is for contributors and team members who want to browse or modify Apollo
-              Wind source files and run Storybook on their machine.
-            </p>
-            <ul className="mt-2 list-disc pl-4 space-y-1">
-              <li>
-                <strong>Node.js 22 or later</strong> is required. Check your version with{' '}
-                <InlineCode>node --version</InlineCode>.
-              </li>
-              <li>
-                <strong>pnpm 11.1.3</strong> is the required package manager for this repo.
-              </li>
-            </ul>
-          </InfoCallout>
+            <Divider />
 
-          <div className="space-y-6">
-            <StepItem step={1} title="Clone the repository">
-              <CodeBlock label="terminal">
-                {'git clone https://github.com/UiPath/apollo-ui.git\ncd apollo-ui'}
-              </CodeBlock>
-            </StepItem>
+            <div>
+              <h3 className="mb-3 text-lg font-semibold text-foreground">Import paths</h3>
+              <SectionDescription>
+                Components and utilities are exported from the package root.
+              </SectionDescription>
+              <div className="space-y-3">
+                <CodeBlock label="Components">
+                  {`import { Button, Input, Dialog } from '@uipath/apollo-wind';`}
+                </CodeBlock>
+                <CodeBlock label="Utilities">{`import { cn } from '@uipath/apollo-wind';`}</CodeBlock>
+                <CodeBlock label="CSS theme">
+                  {`import '@uipath/apollo-wind/tailwind.css';`}
+                </CodeBlock>
+              </div>
+            </div>
+          </>
+        )}
 
-            <StepItem step={2} title="Install dependencies">
-              <CodeBlock label="terminal">{'npm install -g pnpm@11.1.3\npnpm install'}</CodeBlock>
+        {path === 'Run locally' && (
+          <>
+            <InfoCallout>
+              <p className="mb-1 font-medium text-foreground">Before you begin</p>
               <p>
-                This project uses <InlineCode>pnpm</InlineCode> workspaces. Install the pinned
-                version globally if you don't have it yet.
+                This path is for contributors and team members who want to browse or modify Apollo
+                Wind source files and run Storybook on their machine.
               </p>
-            </StepItem>
+              <ul className="mt-2 list-disc pl-4 space-y-1">
+                <li>
+                  <strong>Node.js 22 or later</strong> is required. Check your version with{' '}
+                  <InlineCode>node --version</InlineCode>.
+                </li>
+                <li>
+                  <strong>pnpm 11.1.3</strong> is the required package manager for this repo.
+                </li>
+              </ul>
+            </InfoCallout>
 
-            <StepItem step={3} title="Build all packages">
-              <CodeBlock label="terminal">{'pnpm build'}</CodeBlock>
-              <p>Compiles apollo-core, apollo-wind, and apollo-react before Storybook starts.</p>
-            </StepItem>
+            <div className="space-y-6">
+              <StepItem step={1} title="Clone the repository">
+                <CodeBlock label="terminal">
+                  {'git clone https://github.com/UiPath/apollo-ui.git\ncd apollo-ui'}
+                </CodeBlock>
+              </StepItem>
 
-            <StepItem step={4} title="Start Storybook">
-              <CodeBlock label="terminal">{'pnpm storybook:dev'}</CodeBlock>
-              <p>
-                Opens Apollo Wind Storybook at <InlineCode>http://localhost:6007</InlineCode>.
-                Changes to source files hot-reload automatically.
-              </p>
-            </StepItem>
-          </div>
-        </>
-      )}
+              <StepItem step={2} title="Install dependencies">
+                <CodeBlock label="terminal">{'npm install -g pnpm@11.1.3\npnpm install'}</CodeBlock>
+                <p>
+                  This project uses <InlineCode>pnpm</InlineCode> workspaces. Install the pinned
+                  version globally if you don't have it yet.
+                </p>
+              </StepItem>
+
+              <StepItem step={3} title="Build all packages">
+                <CodeBlock label="terminal">{'pnpm build'}</CodeBlock>
+                <p>Compiles apollo-core, apollo-wind, and apollo-react before Storybook starts.</p>
+              </StepItem>
+
+              <StepItem step={4} title="Start Storybook">
+                <CodeBlock label="terminal">{'pnpm storybook:dev'}</CodeBlock>
+                <p>
+                  Opens Apollo Wind Storybook at <InlineCode>http://localhost:6007</InlineCode>.
+                  Changes to source files hot-reload automatically.
+                </p>
+              </StepItem>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }
@@ -519,30 +524,35 @@ function GettingStartedPage({ globalTheme }: { globalTheme: string }) {
           primitives, themed with Apollo design tokens.
         </p>
 
-        {/* Tabs */}
-        <div className="flex gap-1 border-b border-border pb-0 pt-6">
-          {tabs.map((tab) => (
-            <button
-              type="button"
-              key={tab}
-              className={cn(
-                'cursor-pointer px-4 pb-3 text-sm font-medium transition-colors',
-                activeTab === tab
-                  ? 'border-b-2 border-primary text-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-              onClick={() => setActiveTab(tab)}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
+        {/* Tabs. The data-search-* markers let the Storybook search index every
+            panel, not only the open one (see apps/storybook/scripts). */}
+        <div data-search-tabs="" className="space-y-2">
+          <div className="flex gap-1 border-b border-border pb-0 pt-6">
+            {tabs.map((tab) => (
+              <button
+                type="button"
+                data-search-tab={tab}
+                data-state={activeTab === tab ? 'active' : 'inactive'}
+                key={tab}
+                className={cn(
+                  'cursor-pointer px-4 pb-3 text-sm font-medium transition-colors',
+                  activeTab === tab
+                    ? 'border-b-2 border-primary text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+                onClick={() => setActiveTab(tab)}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
 
-        {/* Tab content */}
-        <div className="pt-6">
-          {activeTab === 'Overview' && <OverviewTab />}
-          {activeTab === 'Quick Start' && <QuickStartTab />}
-          {activeTab === 'Components' && <ComponentsTab />}
+          {/* Tab content */}
+          <div data-search-panel="" className="pt-6">
+            {activeTab === 'Overview' && <OverviewTab />}
+            {activeTab === 'Quick Start' && <QuickStartTab />}
+            {activeTab === 'Components' && <ComponentsTab />}
+          </div>
         </div>
       </div>
     </div>

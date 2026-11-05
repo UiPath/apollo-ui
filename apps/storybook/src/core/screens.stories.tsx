@@ -190,5 +190,6 @@ function ScreensPage() {
 }
 
 export const All: Story = {
+  tags: ['search-docs'],
   render: () => <ScreensPage />,
 };

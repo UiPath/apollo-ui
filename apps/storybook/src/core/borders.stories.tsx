@@ -240,5 +240,6 @@ function BordersPage() {
 }
 
 export const All: Story = {
+  tags: ['search-docs'],
   render: () => <BordersPage />,
 };

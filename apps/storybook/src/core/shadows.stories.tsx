@@ -93,5 +93,6 @@ function ShadowsPage() {
 }
 
 export const All: Story = {
+  tags: ['search-docs'],
   render: () => <ShadowsPage />,
 };
