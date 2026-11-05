@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.16.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.16.0...@uipath/apollo-react@7.16.1) (2026-11-05)
+
+### Bug Fixes
+
+* **apollo-react:** fit the decision table's columns before revealing it [MST-17760] ([fe329ad](https://github.com/UiPath/apollo-ui/commit/fe329ad63f551e6574d521e9a01b2759da852c4a))
+
 ## [@uipath/apollo-react-v7.16.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.15.4...@uipath/apollo-react@7.16.0) (2026-11-05)
 
 ### Features
