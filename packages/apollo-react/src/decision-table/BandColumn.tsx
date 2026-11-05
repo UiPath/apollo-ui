@@ -2,7 +2,7 @@ import { cn } from '@uipath/apollo-wind';
 import type React from 'react';
 import type { DiffChange, DiffLabels } from './decisionTextDiff';
 import { MarkBadge, type MarkBadgeProps, markIds } from './MarkBadge';
-import type { Mark } from './marks';
+import type { ColumnMark } from './marks';
 import { isLineMark, type LineMarks, type MarkFields } from './sentenceMarks';
 import {
   BAND_COLUMN_BUTTON_CLASS,
@@ -14,18 +14,20 @@ import {
 } from './sentenceStyles';
 import type { BandColumnView } from './sentenceTypes';
 
-/** The `Mark` fields a band column paints; a field added to `Mark` fails to compile here until the column decides on it. */
-const columnMark = (mark: Mark | undefined) =>
+/** The `ColumnMark` fields a band column paints; a field added to `ColumnMark` fails to compile here until the column decides on it. */
+const columnMark = (mark: ColumnMark | undefined) =>
   ({
     tone: mark?.tone,
     title: mark?.title,
     glyph: mark?.glyph,
     matched: undefined,
-  }) satisfies MarkFields<Mark>;
+    // The grid's review marks; the text view words a diff from its own `DiffRows` instead.
+    columnReview: undefined,
+  }) satisfies MarkFields<ColumnMark>;
 
 export interface BandColumnProps {
   column: BandColumnView;
-  mark: Mark | undefined;
+  mark: ColumnMark | undefined;
   badgeId: string;
   /** The column's change in a diff. */
   change: DiffChange | undefined;

@@ -31,7 +31,10 @@ const valueColumnIds = (parts: readonly SentencePart[]): string[] => [
   ...new Set(parts.filter(isValue).map((part) => part.columnId)),
 ];
 
-export const isLineMark = (mark: Mark | undefined): mark is Mark & LineMark =>
+/** The fields a glyph reads, which a cell's, column's and row's marks all carry. */
+type GlyphMark = Pick<Mark, 'tone' | 'title' | 'glyph'>;
+
+export const isLineMark = <M extends GlyphMark>(mark: M | undefined): mark is M & LineMark =>
   mark?.glyph === true && mark.tone !== undefined && SHOWS_GLYPH[mark.tone];
 
 /** The marked columns that none of `lines` shows as a value token. */
@@ -47,7 +50,7 @@ export const unplacedColumnIds = (
 export const lineMarksOf = (
   parts: readonly SentencePart[],
   cells: RowMark['cells'],
-  own?: Mark,
+  own?: GlyphMark,
   unplaced: readonly string[] = []
 ): LineMarks | null => {
   const candidates = [
