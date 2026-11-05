@@ -391,6 +391,13 @@ export function JsonTreeRow({ row, index }: { row: FlatJsonTreeRow; index: numbe
             onCopyPath={canCopyPath?.(node) === false ? undefined : copyPath}
             className={isTemplateItem ? 'font-normal italic text-foreground-subtle' : undefined}
           />
+          {/* Explicit color: the row establishes none, so an inherited indicator would fall back to black. */}
+          {node.required && (
+            <RequiredIndicator
+              className="-ml-1.5 shrink-0 text-[10px] text-foreground"
+              srLabel={strings.requiredMarker}
+            />
+          )}
           {/* Clicking the key copies its path but dismisses the tooltip, so
               confirm the copy with an inline check (like copy-value). Hidden
               from assistive tech, which hears the tree's announcement instead. */}
@@ -407,14 +414,6 @@ export function JsonTreeRow({ row, index }: { row: FlatJsonTreeRow; index: numbe
             >
               {decoration.sublabel}
             </span>
-          )}
-          {/* Explicit color: the row establishes none, so an inherited indicator
-              would fall back to black. `ml-0` because the row already gaps. */}
-          {node.required && (
-            <RequiredIndicator
-              className="ml-0 shrink-0 text-[10px] text-foreground"
-              srLabel={strings.requiredMarker}
-            />
           )}
         </GridCell>
         {isContainer ? (
