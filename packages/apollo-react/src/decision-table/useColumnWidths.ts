@@ -311,9 +311,9 @@ export function useColumnWidths({
     return () => observer.disconnect();
   }, [containerRef, reflow, applyVisibility]);
 
-  // The measured width through the ref, not the render's: on mount this runs before the render the
-  // measurement above scheduled — React 19 orders it so — and the render's width is still 0, which
-  // would undo the fit with the defaults.
+  // The measured width through the ref, not the render's: on mount this can run before the render
+  // the measurement above scheduled, while the render's width is still 0, which would undo the fit
+  // with the defaults.
   // biome-ignore lint/correctness/useExhaustiveDependencies: containerWidth is the re-fit trigger; the ref carries its value, kept current by the measurement
   useEffect(() => {
     reflow(containerWidthRef.current, stableColumns, overridesRef.current, reservedPx);
