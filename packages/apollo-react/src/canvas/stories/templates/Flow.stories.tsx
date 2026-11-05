@@ -3778,7 +3778,6 @@ function DapValueField({
         { label: 'Invoice number', value: '$vars.invoiceNumber' },
         { label: 'Invoice PDF', value: '$vars.invoicePdf' },
       ]}
-      showFieldActions={false}
       className="gap-1.5"
     />
   );
@@ -3883,7 +3882,6 @@ function DapPanel({ onClose }: { onClose: () => void }) {
                   onClear: () => setConnection(''),
                   onRefresh: () => setConnection('gmail-finance'),
                 }}
-                showFieldActions={false}
                 className="gap-1.5"
               />
               <Alert className="border-brand/30 bg-brand-subtle/30 py-2.5">

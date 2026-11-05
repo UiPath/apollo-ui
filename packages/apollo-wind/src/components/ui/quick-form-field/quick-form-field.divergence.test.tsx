@@ -1,8 +1,11 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import { QuickFormFieldInsertVariable } from './components/header-actions';
 import { QuickFormField } from './quick-form-field';
 import { FIELD_TYPE_META, FIELD_TYPE_ORDER } from './types';
+
+const INSERT = <QuickFormFieldInsertVariable />;
 
 /**
  * Covers the widenings added on top of the original component: the extra types
@@ -201,6 +204,7 @@ describe('QuickFormField — divergences from apollo-wind', () => {
       const onValueChange = vi.fn();
       render(
         <QuickFormField
+          headerActions={INSERT}
           locked={false}
           value="ab"
           onValueChange={onValueChange}
@@ -224,6 +228,7 @@ describe('QuickFormField — divergences from apollo-wind', () => {
       const onValueChange = vi.fn();
       render(
         <QuickFormField
+          headerActions={INSERT}
           locked={false}
           value="hello"
           onValueChange={onValueChange}
@@ -346,6 +351,7 @@ describe('QuickFormField — divergences from apollo-wind', () => {
       const onValueChange = vi.fn();
       render(
         <QuickFormField
+          headerActions={INSERT}
           locked={false}
           fieldType="textarea"
           value={'a\nb'}
@@ -382,6 +388,7 @@ describe('QuickFormField — divergences from apollo-wind', () => {
       const user = userEvent.setup();
       render(
         <QuickFormField
+          headerActions={INSERT}
           locked={false}
           onValueChange={vi.fn()}
           variables={[{ label: 'Item ID', value: 'item.id', type: 'number' }]}
@@ -398,6 +405,7 @@ describe('QuickFormField — divergences from apollo-wind', () => {
       const onValueChange = vi.fn();
       render(
         <QuickFormField
+          headerActions={INSERT}
           locked={false}
           onValueChange={onValueChange}
           variables={[

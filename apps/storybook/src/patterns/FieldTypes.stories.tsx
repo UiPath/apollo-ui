@@ -24,7 +24,9 @@ import {
   FIELD_TYPE_ORDER,
   type QuickFieldType,
   QuickFormField,
+  QuickFormFieldInsertVariable,
   type QuickFormFieldMode,
+  QuickFormFieldTypePicker,
 } from '@/components/ui/quick-form-field';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -885,25 +887,30 @@ function QuickFormFieldExample() {
   const [value, setValue] = useState('Invoices');
   const [mode, setMode] = useState<QuickFormFieldMode>('literal');
   const [locked, setLocked] = useState(false);
-  const [required, setRequired] = useState(true);
   return (
     <div className="w-80">
       <QuickFormField
         fieldType={fieldType}
-        onFieldTypeChange={(next) => {
-          setFieldType(next);
-          // Each type encodes its value differently, so a new type starts empty.
-          setValue('');
-        }}
         value={value}
         onValueChange={setValue}
         mode={mode}
         onModeChange={setMode}
         locked={locked}
         onLockedChange={setLocked}
-        required={required}
-        onRequiredChange={setRequired}
+        required
         variables={QUICK_FORM_VARIABLES}
+        headerActions={
+          <>
+            <QuickFormFieldTypePicker
+              onValueChange={(next) => {
+                setFieldType(next);
+                // Each type encodes its value differently, so a new type starts empty.
+                setValue('');
+              }}
+            />
+            <QuickFormFieldInsertVariable />
+          </>
+        }
         compact
       />
     </div>
@@ -912,16 +919,20 @@ function QuickFormFieldExample() {
 
 const QUICK_FORM_FIELD_CODE = `<QuickFormField
   fieldType={fieldType}
-  onFieldTypeChange={setFieldType}
   value={value}
   onValueChange={setValue}
   mode={mode}
   onModeChange={setMode}
   locked={locked}
   onLockedChange={setLocked}
-  required={required}
-  onRequiredChange={setRequired}
+  required
   variables={variables}
+  headerActions={
+    <>
+      <QuickFormFieldTypePicker onValueChange={setFieldType} />
+      <QuickFormFieldInsertVariable />
+    </>
+  }
   compact
 />`;
 
@@ -1072,13 +1083,13 @@ function FieldTypesPage({ globalTheme }: { globalTheme: string }) {
             <GuidanceList>
               <GuidanceItem>
                 <span className="font-medium text-foreground">Type.</span>{' '}
-                <InlineCode>onFieldTypeChange</InlineCode> puts the type menu in the header, and the
-                control swaps to match the type chosen. <InlineCode>fieldTypes</InlineCode> narrows
-                the menu to the types a surface supports.
+                <InlineCode>QuickFormFieldTypePicker</InlineCode> puts the type menu in the header,
+                and the control swaps to match the type chosen. Its <InlineCode>types</InlineCode>{' '}
+                narrows the menu to the types a surface supports.
               </GuidanceItem>
               <GuidanceItem>
                 <span className="font-medium text-foreground">Required.</span>{' '}
-                <InlineCode>onRequiredChange</InlineCode> adds the Required switch to the header.
+                <InlineCode>required</InlineCode> marks the label with the required asterisk.
               </GuidanceItem>
               <GuidanceItem>
                 <span className="font-medium text-foreground">Lock.</span>{' '}
@@ -1095,10 +1106,11 @@ function FieldTypesPage({ globalTheme }: { globalTheme: string }) {
               </GuidanceItem>
               <GuidanceItem>
                 <span className="font-medium text-foreground">Actions.</span>{' '}
-                <InlineCode>variables</InlineCode> adds Insert variable to the header and{' '}
-                <InlineCode>onGenerateWithAi</InlineCode> adds AI assist;{' '}
-                <InlineCode>showFieldActions</InlineCode> hides both, and{' '}
-                <InlineCode>headerActions</InlineCode> appends your own.
+                <InlineCode>headerActions</InlineCode> holds the header&rsquo;s actions in the order
+                you give them: <InlineCode>QuickFormFieldTypePicker</InlineCode>,{' '}
+                <InlineCode>QuickFormFieldAiAssist</InlineCode>,{' '}
+                <InlineCode>QuickFormFieldInsertVariable</InlineCode> over{' '}
+                <InlineCode>variables</InlineCode>, and your own.
               </GuidanceItem>
               <GuidanceItem>
                 <span className="font-medium text-foreground">Compact.</span>{' '}
