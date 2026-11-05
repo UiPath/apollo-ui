@@ -1,24 +1,19 @@
-import { Asterisk, ChevronDown } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { Asterisk } from 'lucide-react';
+import { type ReactNode, useCallback, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { FormFieldHeader } from '@/components/ui/form-field';
 import { InfoTooltip } from '@/components/ui/info-tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib';
-import { AiAssistAction } from '../../field-actions/ai-assist-action';
 import { COLLAPSED_HIDDEN, COLLAPSED_ONLY, FIELD_ACTION_CLASS } from '../../field-actions/collapse';
-import { InsertVariableAction } from '../../field-actions/insert-variable-action';
 import type { QuickFieldType, QuickFormFieldOption, QuickFormFieldStrings } from '../types';
-import { FIELD_TYPE_META, FIELD_TYPE_ORDER } from '../types';
 import type { VariablePickerSource } from '../utils';
+import { AiAssistControl, InsertVariableControl, TypePickerControl } from './header-actions';
+import { type HeaderActionKind, HeaderContext, type HeaderContextValue } from './header-context';
+
+const NO_CLAIMS: Record<HeaderActionKind, number> = { type: 0, ai: 0, insert: 0 };
 
 /**
  * While the editable label is open, each box around it grows to the header's actions, so the
@@ -35,7 +30,7 @@ export function FieldHeader({
   fieldLabel,
   required,
   fieldType,
-  fieldTypes = FIELD_TYPE_ORDER,
+  fieldTypes,
   onFieldTypeChange,
   onRequiredChange,
   compact,
@@ -74,10 +69,40 @@ export function FieldHeader({
   strings: QuickFormFieldStrings;
   headerActions?: ReactNode;
 }) {
-  const typeMeta = FIELD_TYPE_META[fieldType];
-  const typeLabel = strings.typeLabels[fieldType] ?? typeMeta.label;
   const collapsedTextClass = cn(COLLAPSED_HIDDEN, compact && '!hidden');
   const compactOnlyClass = cn(COLLAPSED_ONLY, compact && '!flex');
+
+  // How many composed actions of each kind are mounted; a built-in steps aside for any of them.
+  const [claims, setClaims] = useState(NO_CLAIMS);
+  const claim = useCallback((kind: HeaderActionKind) => {
+    setClaims((c) => ({ ...c, [kind]: c[kind] + 1 }));
+    return () => setClaims((c) => ({ ...c, [kind]: c[kind] - 1 }));
+  }, []);
+  const claimed = { type: claims.type > 0, ai: claims.ai > 0, insert: claims.insert > 0 };
+  const header = useMemo<HeaderContextValue>(
+    () => ({
+      fieldType,
+      isExpression,
+      disabled,
+      compact: !!compact,
+      strings,
+      variables,
+      insertVariable: onInsertVariable,
+      canInsert: !!onValueChange,
+      claim,
+    }),
+    [
+      fieldType,
+      isExpression,
+      disabled,
+      compact,
+      strings,
+      variables,
+      onInsertVariable,
+      onValueChange,
+      claim,
+    ]
+  );
 
   const hasActions =
     !!onFieldTypeChange || !!onRequiredChange || showFieldActions || headerActions != null;
@@ -123,61 +148,31 @@ export function FieldHeader({
   }
 
   return (
-    <TooltipProvider delayDuration={300}>
-      <FormFieldHeader
-        // FormFieldHeader's label area is its first child and its actions the second. While the
-        // label is edited, the actions step aside so a narrow header still has room to type
-        // (important, since the actions row sets its display inline). The header's own `min-h-6`
-        // holds the row's height meanwhile.
-        className="[&:has([data-slot=editable-text-input])>:first-child]:flex-1 [&:has([data-slot=editable-text-input])>:nth-child(2)]:!hidden"
-        label={label == null ? fieldLabel : undefined}
-        htmlFor={fieldId}
-        required={required}
-        tooltip={label == null ? tooltip : undefined}
-        tooltipAriaLabel={strings.tooltipAriaLabel}
-        leading={leading}
-        actions={
-          hasActions ? (
-            <>
+    <HeaderContext.Provider value={header}>
+      <TooltipProvider delayDuration={300}>
+        <FormFieldHeader
+          // FormFieldHeader's label area is its first child and its actions the second. While the
+          // label is edited, the actions step aside so a narrow header still has room to type
+          // (important, since the actions row sets its display inline). The header's own `min-h-6`
+          // holds the row's height meanwhile.
+          className="[&:has([data-slot=editable-text-input])>:first-child]:flex-1 [&:has([data-slot=editable-text-input])>:nth-child(2)]:!hidden"
+          label={label == null ? fieldLabel : undefined}
+          htmlFor={fieldId}
+          required={required}
+          tooltip={label == null ? tooltip : undefined}
+          tooltipAriaLabel={strings.tooltipAriaLabel}
+          leading={leading}
+          actions={
+            hasActions ? (
+              // One group, so composed actions sit as close together as the built-ins.
               <div className="flex items-center gap-0.5">
-                {onFieldTypeChange && (
-                  <DropdownMenu>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="3xs"
-                            aria-label={strings.fieldTypeAriaLabel}
-                            disabled={disabled}
-                            className={cn('gap-1', FIELD_ACTION_CLASS)}
-                          >
-                            <typeMeta.icon />
-                            <span className={collapsedTextClass}>{typeLabel}</span>
-                            <ChevronDown className={cn('!size-2.5', collapsedTextClass)} />
-                          </Button>
-                        </DropdownMenuTrigger>
-                      </TooltipTrigger>
-                      <TooltipContent>{strings.fieldTypeTooltip}</TooltipContent>
-                    </Tooltip>
-                    <DropdownMenuContent align="end" className="w-44">
-                      {fieldTypes.map((type) => {
-                        const meta = FIELD_TYPE_META[type];
-                        const isActive = type === fieldType;
-                        return (
-                          <DropdownMenuItem key={type} onClick={() => onFieldTypeChange(type)}>
-                            <meta.icon
-                              className={isActive ? 'text-brand' : 'text-foreground-muted'}
-                            />
-                            <span className={cn(isActive && 'font-medium text-brand')}>
-                              {strings.typeLabels[type] ?? meta.label}
-                            </span>
-                          </DropdownMenuItem>
-                        );
-                      })}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                {onFieldTypeChange && !claimed.type && (
+                  <TypePickerControl
+                    header={header}
+                    value={fieldType}
+                    types={fieldTypes}
+                    onValueChange={onFieldTypeChange}
+                  />
                 )}
                 {onRequiredChange && (
                   <>
@@ -248,46 +243,18 @@ export function FieldHeader({
                 )}
                 {showFieldActions && (
                   <>
-                    {onGenerateWithAi && (
-                      <AiAssistAction
-                        onGenerate={onGenerateWithAi}
-                        disabled={disabled}
-                        hint={strings.aiOutputHint(strings.aiOutputLabel(typeLabel, isExpression))}
-                        strings={{
-                          trigger: strings.aiAssistAriaLabel,
-                          tooltip: strings.aiAssistTooltip,
-                          prompt: strings.aiPromptLabel,
-                          promptPlaceholder: strings.aiPromptPlaceholder,
-                          generate: strings.aiGenerate,
-                          generating: strings.aiGenerating,
-                          error: strings.aiError,
-                        }}
-                      />
+                    {onGenerateWithAi && !claimed.ai && (
+                      <AiAssistControl header={header} onGenerate={onGenerateWithAi} />
                     )}
-                    {onInsertVariable && (
-                      <InsertVariableAction
-                        // Rendered as supplied, so what the tree shows is what it inserts.
-                        variables={variables.items}
-                        compact={compact}
-                        disabled={!onValueChange}
-                        strings={{
-                          label: strings.insertLabel,
-                          ariaLabel: strings.insertAriaLabel,
-                          searchPlaceholder: strings.insertSearchPlaceholder,
-                          empty: strings.insertEmpty,
-                        }}
-                        // The parent owns the caret, so the header only reports the choice.
-                        onInsert={(_, item) => onInsertVariable(variables.resolve(item))}
-                      />
-                    )}
+                    {!claimed.insert && <InsertVariableControl header={header} />}
                   </>
                 )}
+                {headerActions}
               </div>
-              {headerActions}
-            </>
-          ) : undefined
-        }
-      />
-    </TooltipProvider>
+            ) : undefined
+          }
+        />
+      </TooltipProvider>
+    </HeaderContext.Provider>
   );
 }

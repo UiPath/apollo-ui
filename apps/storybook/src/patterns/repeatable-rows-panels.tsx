@@ -1,10 +1,18 @@
 import { Database, Globe, UserCheck } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
+import {
+  type ConditionGroup,
+  ConditionsEditor,
+  createCondition,
+  createConditionGroup,
+} from '@/components/ui/conditions-editor';
 import { InsertVariableAction } from '@/components/ui/field-actions';
 import { FormField, FormFieldHeader, FormFieldLabel } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { AddRowButton, EmptyRows, useRowFocus } from '@/components/ui/row-groups';
+import { createRule, type Rule, type RuleOutcome, RulesEditor } from '@/components/ui/rules-editor';
 import {
   Select,
   SelectContent,
@@ -13,22 +21,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import type { VariablePickerItem } from '@/components/ui/variable-picker';
 import { NodePropertyPanel } from '../../../../packages/apollo-react/src/canvas/components/NodePropertyPanel';
 import {
-  AddRowButton,
-  ConditionEditor,
-  type ConditionGroup,
-  condition,
-  EmptyRows,
-  group,
+  CONDITION_FIELDS,
   KeyValueList,
   newId,
   RepeatableCard,
-  RowDeleteButton,
   RowDragHandle,
-  RowGroup,
   uniqueName,
-  useRowFocus,
   type VariableOption,
 } from './repeatable-row-primitives';
 
@@ -49,6 +50,20 @@ const VARIABLES: VariableOption[] = [
   { label: 'accountId', value: '$vars.accountId' },
   { label: 'approverEmail', value: '$vars.approverEmail' },
   { label: 'statusCode', value: '$self.output.statusCode' },
+];
+
+const VARIABLE_ITEMS: VariablePickerItem[] = [
+  {
+    id: 'vars',
+    label: '$vars',
+    type: 'object',
+    children: VARIABLES.map((variable) => ({
+      id: variable.value,
+      label: variable.label,
+      value: variable.value,
+      type: 'string',
+    })),
+  },
 ];
 
 function PanelTabs({ children }: { children: ReactNode }) {
@@ -97,18 +112,18 @@ function SectionLabel({ children, meta }: { children: ReactNode; meta?: ReactNod
 
 export function EntityFilterPanel({ onClose }: { onClose: () => void }) {
   const [filter, setFilter] = useState<ConditionGroup>(() =>
-    group('any', [
-      condition({
+    createConditionGroup('any', [
+      createCondition({
         field: 'accountId',
         operator: 'equals',
         value: '$vars.accountId',
-        mode: 'expression',
+        valueMode: 'expression',
       }),
       // Visited and left incomplete, to show the row and group messages.
-      condition({ touched: true }),
-      group('all', [
-        condition({ field: 'createdBy', operator: 'equals', value: 'admin' }),
-        condition({ field: 'status', operator: 'isOneOf', values: ['active', 'onHold'] }),
+      createCondition({ id: 'filter-incomplete' }),
+      createConditionGroup('all', [
+        createCondition({ field: 'createdBy', operator: 'equals', value: 'admin' }),
+        createCondition({ field: 'status', operator: 'isOneOf', values: ['active', 'onHold'] }),
       ]),
     ])
   );
@@ -163,14 +178,16 @@ export function EntityFilterPanel({ onClose }: { onClose: () => void }) {
 
         <FormField>
           <SectionLabel>Filter</SectionLabel>
-          <ConditionEditor
+          <ConditionsEditor
             label="Filter"
             container="collapsible"
+            fields={CONDITION_FIELDS}
             value={filter}
             onChange={setFilter}
-            variables={VARIABLES}
+            variables={VARIABLE_ITEMS}
+            defaultTouched={['filter-incomplete']}
             showSummary
-            emptyText="No conditions. Every record is returned."
+            strings={{ empty: 'No conditions. Every record is returned.' }}
           />
         </FormField>
       </PanelTabs>
@@ -362,93 +379,27 @@ export function HttpRequestPanel({ onClose }: { onClose: () => void }) {
 
 // ── Form field behavior: rules ──────────────────────────────────────────────
 
-interface Rule {
-  id: string;
-  outcome: string;
-  conditions: ConditionGroup;
-}
+const RULE_OUTCOMES: RuleOutcome[] = [
+  { value: 'show', label: 'Show' },
+  { value: 'hide', label: 'Hide' },
+  { value: 'require', label: 'Require' },
+];
 
-export function RuleList({
-  initialRules,
-  layout = 'stacked',
-}: {
-  initialRules: Omit<Rule, 'id'>[];
-  layout?: 'inline' | 'stacked';
-}) {
-  const [rules, setRules] = useState<Rule[]>(() =>
-    initialRules.map((rule) => ({ ...rule, id: newId('rule') }))
-  );
-  const focus = useRowFocus();
-  const updateRule = (id: string, patch: Partial<Rule>) =>
-    setRules((current) => current.map((rule) => (rule.id === id ? { ...rule, ...patch } : rule)));
+// A constant, so the editor's rules stay memoised while typing.
+const FIELD_RULES_STRINGS = { empty: 'No rules. The field always shows.' };
 
+export function FieldRules({ label, initial }: { label: string; initial: () => Rule[] }) {
+  const [rules, setRules] = useState(initial);
   return (
-    <div className="flex flex-col gap-2">
-      <div ref={focus.listRef} className="flex flex-col gap-2">
-        {rules.map((rule, position) => (
-          <RowGroup key={rule.id} rowProps>
-            {/* Bottom-aligned so "when" and delete sit on the outcome's line, not its label. */}
-            <div className="flex items-end gap-2">
-              <FormField className="w-28 shrink-0">
-                <FormFieldLabel htmlFor={`${rule.id}-outcome`}>Outcome</FormFieldLabel>
-                <Select
-                  value={rule.outcome}
-                  onValueChange={(outcome) => updateRule(rule.id, { outcome })}
-                >
-                  <SelectTrigger id={`${rule.id}-outcome`} data-row-first="">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="show">Show</SelectItem>
-                    <SelectItem value="hide">Hide</SelectItem>
-                    <SelectItem value="require">Require</SelectItem>
-                  </SelectContent>
-                </Select>
-              </FormField>
-              <span className="flex h-9 flex-1 items-center text-xs text-muted-foreground future:h-10">
-                when
-              </span>
-              <div className="flex h-9 items-center future:h-10">
-                <RowDeleteButton
-                  label={`Remove rule ${position + 1}`}
-                  onClick={() => {
-                    focus.afterDelete(position);
-                    setRules((current) => current.filter((item) => item.id !== rule.id));
-                  }}
-                />
-              </div>
-            </div>
-            <div className="border-l-2 border-border pl-3">
-              <ConditionEditor
-                label={`Rule ${position + 1} conditions`}
-                container="plain"
-                layout={layout}
-                maxDepth={0}
-                matchMode={rule.conditions.children.length > 1}
-                value={rule.conditions}
-                onChange={(conditions) => updateRule(rule.id, { conditions })}
-                emptyText="No conditions. This rule always applies."
-              />
-            </div>
-          </RowGroup>
-        ))}
-        {rules.length === 0 && <EmptyRows>No rules. The field always shows.</EmptyRows>}
-      </div>
-      <div>
-        <AddRowButton
-          ref={focus.addRef}
-          onClick={() => {
-            focus.afterAdd();
-            setRules((current) => [
-              ...current,
-              { id: newId('rule'), outcome: 'show', conditions: group('all', [condition()]) },
-            ]);
-          }}
-        >
-          Add rule
-        </AddRowButton>
-      </div>
-    </div>
+    <RulesEditor
+      label={label}
+      outcomes={RULE_OUTCOMES}
+      fields={CONDITION_FIELDS}
+      variables={VARIABLE_ITEMS}
+      value={rules}
+      onChange={setRules}
+      strings={FIELD_RULES_STRINGS}
+    />
   );
 }
 
@@ -474,15 +425,16 @@ export function FormRulesPanel({ onClose }: { onClose: () => void }) {
           <p className="text-xs leading-5 text-muted-foreground">
             All matching rules apply, and their outcomes combine.
           </p>
-          <RuleList
-            initialRules={[
-              {
+          <FieldRules
+            label="Field behavior"
+            initial={() => [
+              createRule({
                 outcome: 'show',
-                conditions: group('all', [
-                  condition({ field: 'amount', operator: 'greaterThan', value: '10000' }),
+                conditions: createConditionGroup('all', [
+                  createCondition({ field: 'amount', operator: 'greaterThan', value: '10000' }),
                 ]),
-              },
-              { outcome: 'require', conditions: group('all') },
+              }),
+              createRule({ outcome: 'require', conditions: createConditionGroup('all') }),
             ]}
           />
         </FormField>

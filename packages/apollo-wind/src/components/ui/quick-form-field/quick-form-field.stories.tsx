@@ -3,6 +3,12 @@ import { GripVertical, Trash2 } from 'lucide-react';
 import { useId, useState } from 'react';
 import { Button } from '../button';
 import { Label, RequiredIndicator } from '../label';
+import {
+  QuickFormFieldAiAssist,
+  QuickFormFieldInsertVariable,
+  QuickFormFieldTypePicker,
+} from './components/header-actions';
+import { useQuickFormFieldHeader } from './components/header-context';
 import { QuickFormField } from './quick-form-field';
 import type { QuickFieldType, QuickFormFieldMode, QuickFormFieldStrings } from './types';
 
@@ -28,10 +34,14 @@ the form-field anatomy (\`FormField\`, \`FormFieldLabel\`, \`InputGroup\`). See
   Expression by default, plus Variable (a picker over \`variables\`) and Prompt (an agent
   textarea). \`confirmModeChange\` asks before a lossy switch, and \`renderModeControl\`
   replaces the control for any mode. See **Variable and prompt modes**.
-- Field type dropdown swaps the control itself: String, Text area, Integer,
+- The header's actions are composed in \`headerActions\`, in the order the surface wants:
+  \`QuickFormFieldTypePicker\`, \`QuickFormFieldAiAssist\`, \`QuickFormFieldInsertVariable\`,
+  and the consumer's own. Each reads its field, so none needs wiring to it. See
+  **Header actions**. A field's rules go in a \`RulesAction\`: see **Forms/Field rules**.
+- The type picker swaps the control itself: String, Text area, Integer,
   Decimal number, Date, Date and time, Boolean, Single select, Multi select,
-  Array, and File each render their own matching input. \`fieldTypes\` chooses which
-  of them the picker offers.
+  Array, and File each render their own matching input. Its \`types\` chooses which
+  of them it offers.
 - Insert variable renders \`variables\` as supplied and splices the choice at
   the caret, or appends when none is placed. \`onInsertVariable\` takes over
   what inserting means.
@@ -39,18 +49,16 @@ the form-field anatomy (\`FormField\`, \`FormFieldLabel\`, \`InputGroup\`). See
   In a text area Shift+Enter adds a new line.
 - Every user-visible string can be overridden through \`strings\`. See
   **Localized strings**.
-- Required switch toggles the shared foreground asterisk on the label. Only shown when
-  \`onRequiredChange\` is provided.
-- Built-in AI-assist popover to describe and generate a value, rendered only
-  when \`onGenerateWithAi\` is provided, and an Insert-variable affordance for
-  binding to upstream data. Both hidden via \`showFieldActions={false}\` for
-  read-only reviewer contexts.
+- \`required\` shows the shared foreground asterisk on the label.
+- AI assist is a popover to describe and generate a value.
+- The header shows only \`headerActions\`. The deprecated \`showFieldActions\` brings back the
+  built-in AI-assist and Insert-variable actions until the next major release.
 - \`label\` accepts any ReactNode, so a consumer can compose its own
   inline-editable title in place of the default text.
 - When provided, header actions are shown at all times.
-- Header row is responsive (container query): the type, required,
-  AI-assist, and insert-variable controls collapse to icon-only once the
-  field gets too narrow for their labels. See **Responsive** below.
+- Header row is responsive (container query): the type picker and Insert
+  variable collapse to icon-only once the field gets too narrow for their
+  labels. See **Responsive** below.
 - Inline validation stays immediately below the active control and explains
   both the issue and the action needed to resolve it. See **Inline validation** below.
 - Built on \`InputGroup\` for the scalar types that support expressions; see
@@ -90,7 +98,6 @@ function DefaultDemo() {
   const [locked, setLocked] = useState(true);
   const [mode, setMode] = useState<QuickFormFieldMode>('literal');
   const [fieldType, setFieldType] = useState<QuickFieldType>('string');
-  const [required, setRequired] = useState(true);
   const [deleted, setDeleted] = useState(false);
 
   const handleFieldTypeChange = (type: QuickFieldType) => {
@@ -107,10 +114,16 @@ function DefaultDemo() {
         label={
           <Label htmlFor={fieldId} className="text-xs font-medium text-foreground-muted">
             Label
-            {required && <RequiredIndicator />}
+            <RequiredIndicator />
           </Label>
         }
-        headerActions={<DeleteFieldButton onDelete={() => setDeleted(true)} />}
+        headerActions={
+          <>
+            <QuickFormFieldTypePicker onValueChange={handleFieldTypeChange} />
+            <QuickFormFieldInsertVariable />
+            <DeleteFieldButton onDelete={() => setDeleted(true)} />
+          </>
+        }
         value={value}
         onValueChange={setValue}
         locked={locked}
@@ -118,9 +131,7 @@ function DefaultDemo() {
         mode={mode}
         onModeChange={setMode}
         fieldType={fieldType}
-        onFieldTypeChange={handleFieldTypeChange}
-        required={required}
-        onRequiredChange={setRequired}
+        required
       />
     </div>
   );
@@ -155,6 +166,104 @@ function MoreActionsDemo() {
   );
 }
 
+const HEADER_VARIABLES = [
+  { label: 'Customer name', value: 'vars.customerName', type: 'string' },
+  { label: 'Invoice total', value: 'vars.invoiceTotal', type: 'number' },
+];
+
+// A custom action reads the field's header state, so it is disabled and compacted with the rest.
+function RemoveFieldAction({ onRemove }: { onRemove: () => void }) {
+  const header = useQuickFormFieldHeader();
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="3xs"
+      icon
+      onClick={onRemove}
+      disabled={header?.disabled}
+      aria-label="Remove field"
+      title="Remove field"
+      className="shrink-0 text-muted-foreground hover:bg-accent hover:text-destructive [&_svg]:size-3"
+    >
+      <Trash2 />
+    </Button>
+  );
+}
+
+function HeaderActionsDemo() {
+  const fieldId = useId();
+  const [value, setValue] = useState('');
+  const [fieldType, setFieldType] = useState<QuickFieldType>('string');
+  const [mode, setMode] = useState<QuickFormFieldMode>('literal');
+  const [locked, setLocked] = useState(false);
+  const [disabled, setDisabled] = useState(false);
+  const [compact, setCompact] = useState(false);
+  const [removed, setRemoved] = useState(0);
+
+  return (
+    <div className="flex w-80 flex-col gap-3">
+      <QuickFormField
+        id={fieldId}
+        label={<Label htmlFor={fieldId}>Reference</Label>}
+        value={value}
+        onValueChange={setValue}
+        locked={locked}
+        onLockedChange={setLocked}
+        mode={mode}
+        onModeChange={setMode}
+        fieldType={fieldType}
+        disabled={disabled}
+        compact={compact}
+        variables={HEADER_VARIABLES}
+        headerActions={
+          <>
+            <QuickFormFieldInsertVariable compact />
+            <QuickFormFieldAiAssist onGenerate={(prompt) => setValue(`"${prompt}"`)} />
+            <QuickFormFieldTypePicker
+              onValueChange={(type) => {
+                setFieldType(type);
+                setValue('');
+              }}
+            />
+            <RemoveFieldAction onRemove={() => setRemoved((n) => n + 1)} />
+          </>
+        }
+      />
+      <label className="flex items-center gap-2 text-xs text-foreground-muted">
+        <input
+          type="checkbox"
+          checked={disabled}
+          onChange={(event) => setDisabled(event.target.checked)}
+        />
+        Disabled
+      </label>
+      <label className="flex items-center gap-2 text-xs text-foreground-muted">
+        <input
+          type="checkbox"
+          checked={compact}
+          onChange={(event) => setCompact(event.target.checked)}
+        />
+        Compact field
+      </label>
+      <span className="text-xs text-foreground-muted">Remove clicked {removed} times</span>
+    </div>
+  );
+}
+
+export const HeaderActions: Story = {
+  name: 'Header actions',
+  render: () => <HeaderActionsDemo />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Compose the header's actions in `headerActions`, in the order the surface wants. `QuickFormFieldTypePicker`, `QuickFormFieldAiAssist` and `QuickFormFieldInsertVariable` read their field, so Insert variable still splices at the caret. Each replaces its deprecated built-in counterpart. A custom action calls `useQuickFormFieldHeader` to match them: here Remove follows the field's `disabled`. The field's `compact` makes its actions icon only, and an action's own `compact` wins: Insert variable is compact here in a field that is not.",
+      },
+    },
+  },
+};
+
 export const MoreActions: Story = {
   name: 'Value field with more actions',
   render: () => <MoreActionsDemo />,
@@ -181,6 +290,7 @@ function ExpressionValueFieldDemo() {
         onValueChange={setValue}
         locked={false}
         mode="expression"
+        headerActions={<QuickFormFieldInsertVariable />}
         variables={[
           {
             label: '$input',
@@ -260,6 +370,7 @@ function ReferenceExamplesDemo() {
         locked={false}
         leadingAddon={<EqualsAddon />}
         mode="expression"
+        headerActions={<QuickFormFieldInsertVariable />}
         variables={[
           {
             label: '$vars',
@@ -391,7 +502,6 @@ export const InlineValidation: Story = {
         value="Invoice processor"
         error="This node name is already in use. Enter a unique name before saving."
         locked
-        showFieldActions={false}
       />
     </div>
   ),
@@ -415,8 +525,12 @@ export const Disabled: Story = {
         onLockedChange={() => {}}
         onValueChange={() => {}}
         onModeChange={() => {}}
-        onFieldTypeChange={() => {}}
-        onRequiredChange={() => {}}
+        headerActions={
+          <>
+            <QuickFormFieldTypePicker onValueChange={() => {}} />
+            <QuickFormFieldInsertVariable />
+          </>
+        }
         variables={[{ label: 'Item ID', value: 'item.id' }]}
         disabled
       />
@@ -426,7 +540,7 @@ export const Disabled: Story = {
     docs: {
       description: {
         story:
-          'Use `disabled` to stop the author editing the field. It disables the value control, the lock, the value-mode menu, and the header controls. A locked field stays editable: the lock only marks the value read-only for the person filling in the form.',
+          'Use `disabled` to stop the author editing the field. It disables the value control, the lock, the value-mode menu, and the composed header actions. A locked field stays editable: the lock only marks the value read-only for the person filling in the form.',
       },
     },
   },
@@ -462,7 +576,6 @@ function ValueModesDemo() {
         onValueChange={setValue}
         locked={false}
         showLock={false}
-        showFieldActions={false}
         mode={mode}
         onModeChange={changeMode}
         valueModes={['literal', 'expression', 'variable', 'prompt']}
@@ -488,7 +601,6 @@ export const ValueModes: Story = {
 
 function EditableLabelDemo() {
   const [label, setLabel] = useState('Invoice number');
-  const [required, setRequired] = useState(true);
   const [value, setValue] = useState('');
 
   return (
@@ -506,8 +618,7 @@ function EditableLabelDemo() {
             <GripVertical size={12} />
           </button>
         }
-        required={required}
-        onRequiredChange={setRequired}
+        required
         tooltip="The supplier's own reference, as printed on the invoice."
         value={value}
         onValueChange={setValue}
@@ -549,7 +660,6 @@ function AddedTypesDemo() {
           value={values[fieldType]}
           onValueChange={(value) => setValues((current) => ({ ...current, [fieldType]: value }))}
           locked={false}
-          showFieldActions={false}
           mode={fieldType === 'array' ? 'expression' : 'literal'}
         />
       ))}
@@ -583,13 +693,16 @@ function OfferedTypesDemo() {
         value={value}
         onValueChange={setValue}
         locked={false}
-        showFieldActions={false}
         fieldType={fieldType}
-        fieldTypes={['string', 'integer', 'double', 'boolean']}
-        onFieldTypeChange={(type) => {
-          setFieldType(type);
-          setValue('');
-        }}
+        headerActions={
+          <QuickFormFieldTypePicker
+            types={['string', 'integer', 'double', 'boolean']}
+            onValueChange={(type) => {
+              setFieldType(type);
+              setValue('');
+            }}
+          />
+        }
       />
     </div>
   );
@@ -602,7 +715,7 @@ export const OfferedTypes: Story = {
     docs: {
       description: {
         story:
-          'The component can render every type in `FIELD_TYPE_ORDER`, but a surface with a narrower vocabulary passes `fieldTypes` to choose which ones the picker offers, in display order.',
+          'The component can render every type in `FIELD_TYPE_ORDER`, but a surface with a narrower vocabulary passes `types` to `QuickFormFieldTypePicker` to choose which ones it offers, in display order.',
       },
     },
   },
@@ -626,9 +739,6 @@ const GERMAN_STRINGS: Partial<QuickFormFieldStrings> = {
   expressionFieldLabel: (typeLabel) => `Ausdruck (${typeLabel})`,
   trueLabel: 'Wahr',
   falseLabel: 'Falsch',
-  requiredTooltip: 'Pflichtfeld',
-  requiredAriaLabel: 'Pflichtfeld',
-  optionalAriaLabel: 'Optionales Feld',
   insertLabel: 'Einfügen',
   insertAriaLabel: 'Variable einfügen',
   valueModeAriaLabel: 'Wertmodus wählen',
@@ -644,7 +754,6 @@ function LocalizedDemo() {
   const fieldId = useId();
   const [value, setValue] = useState('');
   const [locked, setLocked] = useState(false);
-  const [required, setRequired] = useState(true);
   const [fieldType, setFieldType] = useState<QuickFieldType>('string');
   const [mode, setMode] = useState<QuickFormFieldMode>('literal');
 
@@ -656,10 +765,14 @@ function LocalizedDemo() {
         onValueChange={setValue}
         locked={locked}
         onLockedChange={setLocked}
-        required={required}
-        onRequiredChange={setRequired}
+        required
         fieldType={fieldType}
-        onFieldTypeChange={setFieldType}
+        headerActions={
+          <>
+            <QuickFormFieldTypePicker onValueChange={setFieldType} />
+            <QuickFormFieldInsertVariable />
+          </>
+        }
         mode={mode}
         onModeChange={setMode}
         variables={[{ label: 'Kundenname', value: 'vars.customerName' }]}
@@ -690,7 +803,6 @@ function ResponsiveDemo() {
   const [locked, setLocked] = useState(true);
   const [mode, setMode] = useState<QuickFormFieldMode>('literal');
   const [fieldType, setFieldType] = useState<QuickFieldType>('string');
-  const [required, setRequired] = useState(true);
 
   const handleFieldTypeChange = (type: QuickFieldType) => {
     setFieldType(type);
@@ -700,8 +812,15 @@ function ResponsiveDemo() {
   const label = (fieldId: string) => (
     <Label htmlFor={fieldId} className="text-xs font-medium text-foreground-muted">
       Label
-      {required && <RequiredIndicator />}
+      <RequiredIndicator />
     </Label>
+  );
+  const headerActions = (
+    <>
+      <QuickFormFieldTypePicker onValueChange={handleFieldTypeChange} />
+      <QuickFormFieldInsertVariable />
+      <DeleteFieldButton />
+    </>
   );
 
   return (
@@ -714,7 +833,7 @@ function ResponsiveDemo() {
           <QuickFormField
             id={fullWidthId}
             label={label(fullWidthId)}
-            headerActions={<DeleteFieldButton />}
+            headerActions={headerActions}
             value={value}
             onValueChange={setValue}
             locked={locked}
@@ -722,9 +841,7 @@ function ResponsiveDemo() {
             mode={mode}
             onModeChange={setMode}
             fieldType={fieldType}
-            onFieldTypeChange={handleFieldTypeChange}
-            required={required}
-            onRequiredChange={setRequired}
+            required
           />
         </div>
       </div>
@@ -736,7 +853,7 @@ function ResponsiveDemo() {
           <QuickFormField
             id={narrowId}
             label={label(narrowId)}
-            headerActions={<DeleteFieldButton />}
+            headerActions={headerActions}
             value={value}
             onValueChange={setValue}
             locked={locked}
@@ -744,9 +861,7 @@ function ResponsiveDemo() {
             mode={mode}
             onModeChange={setMode}
             fieldType={fieldType}
-            onFieldTypeChange={handleFieldTypeChange}
-            required={required}
-            onRequiredChange={setRequired}
+            required
           />
         </div>
       </div>
@@ -759,7 +874,7 @@ function ResponsiveDemo() {
             compact
             id={compactId}
             label={label(compactId)}
-            headerActions={<DeleteFieldButton />}
+            headerActions={headerActions}
             value={value}
             onValueChange={setValue}
             locked={locked}
@@ -767,9 +882,7 @@ function ResponsiveDemo() {
             mode={mode}
             onModeChange={setMode}
             fieldType={fieldType}
-            onFieldTypeChange={handleFieldTypeChange}
-            required={required}
-            onRequiredChange={setRequired}
+            required
           />
         </div>
       </div>
