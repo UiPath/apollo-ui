@@ -1,0 +1,730 @@
+import jsep from 'jsep';
+import {
+  type Condition,
+  type ConditionField,
+  type ConditionGroup,
+  type ConditionOperator,
+  type ConditionOperators,
+  type ConditionValueMode,
+  type ConditionVocabulary,
+  createCondition,
+  createConditionGroup,
+  DEFAULT_CONDITION_OPERATORS,
+} from '@/components/ui/conditions-editor';
+import {
+  isComplete,
+  operatorsFor,
+  resolveCondition,
+} from '@/components/ui/conditions-editor/status';
+import type {
+  ExpressionRule,
+  PreservedRule,
+  Rule,
+  RuleRepair,
+  RulesDialect,
+} from '@/components/ui/rules-editor';
+import { withMode } from '@/components/ui/rules-editor/model';
+import { DEFAULT_FIELD_RULES_STRINGS, type FieldRulesStrings } from './field-rules-strings';
+
+/** What a field's value is at run time, so fixed values are compared as the same type. */
+export type FieldValueType = 'string' | 'number' | 'boolean';
+
+/**
+ * A field the rules can compare. Its `value` is the key the form's values use, and should be an
+ * identifier path such as `amount` or `user.role`: a row only an expression can say, such as
+ * Greater than or one with an expression value, cannot name any other key, so it is flagged.
+ */
+export interface FieldRuleField extends ConditionField {
+  /** Defaults to `number` for number fields and `string` for the rest. */
+  valueType?: FieldValueType;
+}
+
+// ── Vocabulary ─────────────────────────────────────────────────────────────
+
+// RulesEngine expressions have no function calls, so text and option matching only take a fixed
+// value: there is no way to write "contains" against an expression.
+const FIXED_ONLY: readonly ConditionValueMode[] = ['literal'];
+const FIXED_ONLY_OPERATORS = new Set([
+  'contains',
+  'startsWith',
+  'matches',
+  'isOneOf',
+  'isNotOneOf',
+]);
+
+// Comparisons a fixed value stores as a key of their own; any other is stored as an expression.
+const NATIVE_COMPARISONS = new Set(['equals', 'notEquals']);
+const COMPARISONS = new Set([...NATIVE_COMPARISONS, 'greaterThan', 'lessThan']);
+
+export interface RulesEngineVocabularyOptions {
+  /** The operators to adapt, such as the default ones with translated labels. */
+  operators?: ConditionOperators;
+  strings?: Partial<FieldRulesStrings>;
+}
+
+/**
+ * What a ConditionsEditor or RulesEditor offers for rules RulesEngine runs: the operators, with
+ * text matching and option lists taking a fixed value only, and a comparison only an expression
+ * can store flagged on a field key no expression can name, such as `due-date`. There is no
+ * Variable mode: RulesEngine only sees the form's values. Pass translated operators and strings
+ * to translate it.
+ */
+export function createRulesEngineVocabulary({
+  operators = DEFAULT_CONDITION_OPERATORS,
+  strings,
+}: RulesEngineVocabularyOptions = {}): Pick<ConditionVocabulary, 'operators' | 'valueModes'> {
+  const errorUnnamedField =
+    strings?.errorUnnamedField ?? DEFAULT_FIELD_RULES_STRINGS.errorUnnamedField;
+  const unnamedFieldError =
+    (operator: string): NonNullable<ConditionOperator['valueError']> =>
+    (_value, { field, mode }) =>
+      !canName(field.value) && (mode !== 'literal' || !NATIVE_COMPARISONS.has(operator))
+        ? errorUnnamedField
+        : undefined;
+  const adapt = (options: readonly ConditionOperator[] = []) =>
+    options.map((option) =>
+      FIXED_ONLY_OPERATORS.has(option.value)
+        ? { ...option, valueModes: FIXED_ONLY }
+        : COMPARISONS.has(option.value)
+          ? { ...option, valueError: unnamedFieldError(option.value) }
+          : option
+    );
+  return {
+    operators: {
+      string: adapt(operators.string),
+      number: adapt(operators.number),
+      date: adapt(operators.date),
+      enum: adapt(operators.enum),
+      other: adapt(operators.other),
+    },
+    valueModes: ['literal', 'expression'],
+  };
+}
+
+/** `createRulesEngineVocabulary()`, in English. */
+export const rulesEngineVocabulary = createRulesEngineVocabulary();
+
+/** `rulesEngineVocabulary`'s operators. */
+export const RULES_ENGINE_OPERATORS: ConditionOperators = rulesEngineVocabulary.operators;
+
+// ── Values ─────────────────────────────────────────────────────────────────
+
+export function valueTypeOf(field: ConditionField | undefined): FieldValueType {
+  return (
+    (field as FieldRuleField | undefined)?.valueType ??
+    (field?.type === 'number' ? 'number' : 'string')
+  );
+}
+
+/** A fixed value as the type the field holds at run time. */
+export function typedValue(field: ConditionField | undefined, text: string): unknown {
+  const type = valueTypeOf(field);
+  if (type === 'number') return Number(text);
+  if (type === 'boolean') return text === 'true';
+  return text;
+}
+
+/** A stored fixed value back as the text the editor shows. */
+export function valueText(value: unknown): string {
+  return typeof value === 'string' ? value : JSON.stringify(value);
+}
+
+export function printLiteral(value: unknown): string {
+  return value === undefined ? 'undefined' : JSON.stringify(value);
+}
+
+// A key RulesEngine reads as a path of identifiers, which is what an expression can name.
+const IDENTIFIER_PATH = /^[A-Za-z_$][\w$]*(\.[A-Za-z_$][\w$]*)*$/;
+// Names jsep reads as literals rather than as a field.
+const LITERAL_NAMES = new Set(['true', 'false', 'null', 'this', 'undefined']);
+// Globals RulesEngine reads as fields, as it has none, and no form names.
+const GLOBAL_NAMES = new Set(['undefined', 'NaN', 'Infinity']);
+
+export function canName(key: string) {
+  return IDENTIFIER_PATH.test(key) && !LITERAL_NAMES.has(key.split('.')[0]);
+}
+
+// ── Printing ───────────────────────────────────────────────────────────────
+
+/** Expression text for a node, parenthesising every compound operand so precedence never shifts. */
+export function printNode(node: jsep.Expression): string {
+  const operand = (child: jsep.Expression) =>
+    child.type === 'BinaryExpression' || child.type === 'ConditionalExpression'
+      ? `(${printNode(child)})`
+      : printNode(child);
+  // What a member or call applies to, so `(-a).b` keeps its parentheses.
+  const target = (child: jsep.Expression) =>
+    ['Identifier', 'MemberExpression', 'CallExpression', 'ArrayExpression'].includes(child.type)
+      ? printNode(child)
+      : `(${printNode(child)})`;
+  switch (node.type) {
+    case 'Literal': {
+      const literal = node as jsep.Literal;
+      return literal.raw ?? printLiteral(literal.value);
+    }
+    case 'Identifier':
+      return (node as jsep.Identifier).name;
+    case 'MemberExpression': {
+      const member = node as jsep.MemberExpression;
+      return member.computed
+        ? `${target(member.object)}[${printNode(member.property)}]`
+        : `${target(member.object)}.${printNode(member.property)}`;
+    }
+    case 'BinaryExpression': {
+      const binary = node as jsep.BinaryExpression;
+      return `${operand(binary.left)} ${binary.operator} ${operand(binary.right)}`;
+    }
+    case 'UnaryExpression': {
+      const unary = node as jsep.UnaryExpression;
+      return `${unary.operator}${operand(unary.argument)}`;
+    }
+    case 'ConditionalExpression': {
+      const conditional = node as jsep.ConditionalExpression;
+      return `${operand(conditional.test)} ? ${operand(conditional.consequent)} : ${operand(conditional.alternate)}`;
+    }
+    case 'CallExpression': {
+      const call = node as jsep.CallExpression;
+      return `${target(call.callee)}(${call.arguments.map(printNode).join(', ')})`;
+    }
+    case 'ArrayExpression':
+      return `[${(node as jsep.ArrayExpression).elements.map((element) => (element ? printNode(element) : '')).join(', ')}]`;
+    default:
+      throw new Error(`Cannot print ${node.type}`);
+  }
+}
+
+export function parseExpression(text: string): jsep.Expression | undefined {
+  try {
+    return jsep(text);
+  } catch {
+    return undefined;
+  }
+}
+
+// ── Writing conditions as expressions ──────────────────────────────────────
+
+const COMPARISON: Record<string, string> = {
+  equals: '===',
+  notEquals: '!==',
+  greaterThan: '>',
+  lessThan: '<',
+};
+
+export const emptyCheck = (name: string) => `${name} == null || ${name} === ""`;
+export const notEmptyCheck = (name: string) => `${name} != null && ${name} !== ""`;
+
+/** An expression value as RulesEngine reads it, or `undefined` when it does not parse. */
+function valueExpression(text: string) {
+  const node = parseExpression(text);
+  if (!node) return undefined;
+  try {
+    return printNode(node);
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * A complete condition as an expression, or `undefined` when RulesEngine cannot say it: text
+ * matching, an empty check on a field of type `other`, an expression value that does not parse,
+ * or a field key that is not a path of identifiers.
+ */
+export function conditionExpression(c: Condition, vocabulary: ConditionVocabulary) {
+  const resolved = resolveCondition(c, vocabulary);
+  const name = c.field ?? '';
+  if (!canName(name) || !resolved.operator) return undefined;
+  const id = resolved.operator.value;
+  if (id === 'isEmpty' || id === 'isNotEmpty') {
+    // A list, file or object is empty by RulesEngine's own check, which no expression says: an
+    // object with no keys is empty to it, and no call can count them.
+    if (resolved.field?.type === 'other') return undefined;
+    return id === 'isEmpty' ? emptyCheck(name) : notEmptyCheck(name);
+  }
+  const symbol = COMPARISON[id];
+  if (resolved.mode === 'expression') {
+    // Printed from its parse, so its text cannot reach past its own parentheses.
+    const value = valueExpression(c.value ?? '');
+    return symbol && value !== undefined ? `${name} ${symbol} (${value})` : undefined;
+  }
+  if (resolved.mode !== 'literal') return undefined;
+  if (symbol) return `${name} ${symbol} ${printLiteral(typedValue(resolved.field, c.value ?? ''))}`;
+  if (id === 'isOneOf' || id === 'isNotOneOf') {
+    const values = (c.values ?? []).map((value) => printLiteral(typedValue(resolved.field, value)));
+    const parts = values.map((value) => `${name} ${id === 'isOneOf' ? '===' : '!=='} ${value}`);
+    // Unwrapped: joining it with other conditions wraps it.
+    return parts.join(id === 'isOneOf' ? ' || ' : ' && ');
+  }
+  return undefined;
+}
+
+const isBlankCondition = (c: Condition) => !c.field && !c.value && (c.values?.length ?? 0) === 0;
+
+/** A rule's conditions as one expression, or `undefined` when any of them cannot be one. */
+function conditionsExpression(
+  group: ConditionGroup,
+  vocabulary: ConditionVocabulary
+): string | undefined {
+  // No conditions always applies; blank rows say nothing yet.
+  if (group.children.length === 0) return 'true';
+  const parts: string[] = [];
+  for (const child of group.children) {
+    if (child.kind === 'condition' && isBlankCondition(child)) continue;
+    // A rule's conditions are flat, so a group is not one it can write.
+    const text =
+      child.kind === 'condition' && isComplete(child, vocabulary)
+        ? conditionExpression(child, vocabulary)
+        : undefined;
+    if (text === undefined) return undefined;
+    parts.push(text);
+  }
+  // Joining wraps any part that has an operator of its own, so precedence never shifts.
+  const wrap = (part: string) => (parts.length > 1 && /&&|\|\|/.test(part) ? `(${part})` : part);
+  return parts.map(wrap).join(group.mode === 'all' ? ' && ' : ' || ');
+}
+
+// ── Checking what RulesEngine can run ──────────────────────────────────────
+
+const BINARY_OPERATORS = new Set([
+  '==',
+  '===',
+  '!=',
+  '!==',
+  '<',
+  '>',
+  '<=',
+  '>=',
+  '&&',
+  '||',
+  '+',
+  '-',
+  '*',
+  '/',
+  '%',
+]);
+const UNARY_OPERATORS = new Set(['!', '-', '+']);
+
+/** Whether RulesEngine evaluates the node, rather than throwing on it or misreading it. */
+function runs(node: jsep.Expression, fields: readonly ConditionField[]): boolean {
+  switch (node.type) {
+    case 'Literal':
+      return true;
+    case 'Identifier': {
+      const { name } = node as jsep.Identifier;
+      // RulesEngine has no globals: `NaN` and `Infinity` read as fields, which hold no such value.
+      return name === 'NaN' || name === 'Infinity'
+        ? fields.some((field) => field.value === name || field.value.startsWith(`${name}.`))
+        : true;
+    }
+    case 'MemberExpression': {
+      const member = node as jsep.MemberExpression;
+      return runs(member.object, fields) && (!member.computed || runs(member.property, fields));
+    }
+    case 'BinaryExpression': {
+      const binary = node as jsep.BinaryExpression;
+      return (
+        BINARY_OPERATORS.has(binary.operator) &&
+        runs(binary.left, fields) &&
+        runs(binary.right, fields)
+      );
+    }
+    case 'UnaryExpression': {
+      const unary = node as jsep.UnaryExpression;
+      return UNARY_OPERATORS.has(unary.operator) && runs(unary.argument, fields);
+    }
+    case 'ConditionalExpression': {
+      const conditional = node as jsep.ConditionalExpression;
+      return [conditional.test, conditional.consequent, conditional.alternate].every((part) =>
+        runs(part, fields)
+      );
+    }
+    default:
+      return false;
+  }
+}
+
+/** Whether RulesEngine can run the expression: it parses, and uses only what RulesEngine reads. */
+export function canRun(expression: string, fields: readonly ConditionField[]) {
+  const node = parseExpression(expression);
+  return node !== undefined && runs(node, fields);
+}
+
+// ── Renaming fields ────────────────────────────────────────────────────────
+
+/** The identifier path a node is, such as `user.role`. */
+function pathOf(node: jsep.Expression): string | undefined {
+  if (node.type === 'Identifier') return (node as jsep.Identifier).name;
+  const member = node as jsep.MemberExpression;
+  if (member.type !== 'MemberExpression' || member.computed) return undefined;
+  const object = pathOf(member.object);
+  return object === undefined
+    ? undefined
+    : `${object}.${(member.property as jsep.Identifier).name}`;
+}
+
+/**
+ * The field keys an expression names, as RulesEngine reads them. A function it calls, such as
+ * `String`, and the globals `undefined`, `NaN` and `Infinity` name no field. Text that does not
+ * parse names none.
+ */
+export function fieldKeysOf(expression: string): string[] {
+  const root = parseExpression(expression);
+  const keys = new Set<string>();
+  const visit = (node: jsep.Expression) => {
+    const call = node as jsep.CallExpression;
+    if (call.type === 'CallExpression') {
+      // `amount.toFixed(2)` names `amount`; `String(amount)` names only its argument.
+      const callee = call.callee;
+      const member = callee as jsep.MemberExpression;
+      if (member.type === 'MemberExpression' && !member.computed) visit(member.object);
+      else if (callee.type !== 'Identifier') visit(callee);
+      for (const argument of call.arguments) visit(argument);
+      return;
+    }
+    const key = pathOf(node);
+    if (key !== undefined) {
+      if (!GLOBAL_NAMES.has(key)) keys.add(key);
+      return;
+    }
+    const member = node as jsep.MemberExpression;
+    for (const [name, value] of Object.entries(node)) {
+      // `a.b` names no field `b`; only a computed key is an expression of its own.
+      if (member.type === 'MemberExpression' && name === 'property' && !member.computed) continue;
+      for (const child of Array.isArray(value) ? value : [value]) {
+        if (isNode(child)) visit(child);
+      }
+    }
+  };
+  if (root) visit(root);
+  return Array.from(keys);
+}
+
+/** `key`, or a path into it, as named after `key` is renamed `to`. */
+function renamedKey(key: string, from: string, to: string) {
+  if (key === from) return to;
+  return key.startsWith(`${from}.`) ? `${to}${key.slice(from.length)}` : undefined;
+}
+
+/**
+ * The expression with field `from`, and paths into it, named `to`. Text that names neither, or
+ * does not parse, comes back unchanged, as does any when an expression cannot name `to`; renamed
+ * text is printed again, so its spacing and parentheses follow the printer.
+ */
+export function renameInExpression(expression: string, from: string, to: string) {
+  const root = canName(to) ? parseExpression(expression) : undefined;
+  if (!root) return expression;
+  let changed = false;
+  const visit = (node: jsep.Expression): jsep.Expression => {
+    const call = node as jsep.CallExpression;
+    if (call.type === 'CallExpression') {
+      // As `fieldKeysOf` reads calls: `String(name)` names no field `String`, and in
+      // `name.includes(x)` only `name` is one.
+      const callee = call.callee as jsep.MemberExpression;
+      let next: jsep.Expression = call.callee;
+      if (callee.type === 'MemberExpression' && !callee.computed) {
+        next = { ...callee, object: visit(callee.object) };
+      } else if (call.callee.type !== 'Identifier') {
+        next = visit(call.callee);
+      }
+      return { ...call, callee: next, arguments: call.arguments.map(visit) };
+    }
+    const path = pathOf(node);
+    const renamed = path === undefined ? undefined : renamedKey(path, from, to);
+    if (renamed !== undefined) {
+      const replacement = parseExpression(renamed);
+      if (replacement) {
+        changed = true;
+        return replacement;
+      }
+    }
+    const member = node as jsep.MemberExpression;
+    // Only a computed key is an expression of its own: `a.b` names no field `b`.
+    const next: Record<string, unknown> = { ...node };
+    for (const [name, value] of Object.entries(node)) {
+      if (node.type === 'MemberExpression' && name === 'property' && !member.computed) continue;
+      if (Array.isArray(value)) {
+        next[name] = value.map((item) => (isNode(item) ? visit(item) : item));
+      } else if (isNode(value)) {
+        next[name] = visit(value);
+      }
+    }
+    return next as jsep.Expression;
+  };
+  const result = visit(root);
+  if (!changed) return expression;
+  try {
+    return printNode(result);
+  } catch {
+    return expression;
+  }
+}
+
+const isNode = (value: unknown): value is jsep.Expression =>
+  !!value && typeof value === 'object' && 'type' in value;
+
+// ── Reading expressions as conditions ──────────────────────────────────────
+
+/** The field a node names: an identifier path the vocabulary knows. */
+export function fieldRef(node: jsep.Expression, fields: readonly ConditionField[]) {
+  let key: string | undefined;
+  if (node.type === 'Identifier') key = (node as jsep.Identifier).name;
+  else if (node.type === 'MemberExpression') {
+    try {
+      key = printNode(node);
+    } catch {
+      key = undefined;
+    }
+    if (key && !canName(key)) key = undefined;
+  }
+  return key !== undefined && fields.some((field) => field.value === key) ? key : undefined;
+}
+
+/** A literal node's value, including negative numbers. */
+function literalValue(node: jsep.Expression): { value: unknown } | undefined {
+  if (node.type === 'Literal') return { value: (node as jsep.Literal).value };
+  const unary = node as jsep.UnaryExpression;
+  if (
+    unary.type === 'UnaryExpression' &&
+    unary.operator === '-' &&
+    unary.argument.type === 'Literal'
+  ) {
+    const value = (unary.argument as jsep.Literal).value;
+    return typeof value === 'number' ? { value: -value } : undefined;
+  }
+  return undefined;
+}
+
+// Strict only: a row compares strictly, and `name == 1` matches "01" where `name === "1"` does not.
+const OPERATOR_FOR: Record<string, string> = {
+  '===': 'equals',
+  '!==': 'notEquals',
+  '>': 'greaterThan',
+  '<': 'lessThan',
+};
+
+/** Whether a fixed value is of the type the field holds, as a row writes it back typed. */
+function isFieldTyped(value: unknown, key: string, fields: readonly ConditionField[]) {
+  const field = fields.find((option) => option.value === key);
+  return typeof value === valueTypeOf(field);
+}
+
+function isNullLiteral(node: jsep.Expression) {
+  return node.type === 'Literal' && (node as jsep.Literal).value === null;
+}
+function isEmptyStringLiteral(node: jsep.Expression) {
+  return node.type === 'Literal' && (node as jsep.Literal).value === '';
+}
+
+/**
+ * `f == null || f === ""` or its negation, on one field. Not on a field of type `other`, whose
+ * empty check is RulesEngine's own, which this expression does not match.
+ */
+function emptiness(node: jsep.BinaryExpression, fields: readonly ConditionField[]) {
+  const left = node.left as jsep.BinaryExpression;
+  const right = node.right as jsep.BinaryExpression;
+  if (left.type !== 'BinaryExpression' || right.type !== 'BinaryExpression') return undefined;
+  const field = fieldRef(left.left, fields);
+  if (!field || !isNullLiteral(left.right)) return undefined;
+  if (fields.find((option) => option.value === field)?.type === 'other') return undefined;
+  if (fieldRef(right.left, fields) !== field || !isEmptyStringLiteral(right.right)) {
+    return undefined;
+  }
+  // Loose `== null` only: an unset field is `undefined`, which `=== null` misses.
+  if (node.operator === '||' && left.operator === '==' && right.operator === '===') {
+    return { field, operator: 'isEmpty' };
+  }
+  if (node.operator === '&&' && left.operator === '!=' && right.operator === '!==') {
+    return { field, operator: 'isNotEmpty' };
+  }
+  return undefined;
+}
+
+/** Whether the vocabulary offers this operator and mode for the field. */
+export function offered(c: Condition, vocabulary: ConditionVocabulary) {
+  const field = vocabulary.fields.find((option) => option.value === c.field);
+  const op = operatorsFor(field, vocabulary.operators).find(
+    (option) => option.value === c.operator
+  );
+  if (!op) return false;
+  const mode = c.valueMode ?? 'literal';
+  if (!vocabulary.valueModes.includes(mode)) return false;
+  return !op.valueModes || op.valueModes.includes(mode);
+}
+
+/**
+ * One comparison as a condition row, or `undefined` when it is not one the editor can show: one it
+ * does not offer, or would flag, such as `name === ""`.
+ */
+export function parseCondition(
+  node: jsep.Expression,
+  vocabulary: ConditionVocabulary,
+  id?: string
+): Condition | undefined {
+  let row: Omit<Condition, 'kind' | 'id'> | undefined;
+  const binary = node as jsep.BinaryExpression;
+  if (node.type !== 'BinaryExpression') {
+    return undefined;
+  } else if (binary.operator === '||' || binary.operator === '&&') {
+    row = emptiness(binary, vocabulary.fields);
+  } else {
+    const field = fieldRef(binary.left, vocabulary.fields);
+    const op = OPERATOR_FOR[binary.operator];
+    if (!field || !op) return undefined;
+    const literal = literalValue(binary.right);
+    if (literal && isFieldTyped(literal.value, field, vocabulary.fields)) {
+      row = { field, operator: op, value: valueText(literal.value) };
+    } else if (!literal) {
+      let text: string;
+      try {
+        text = printNode(binary.right);
+      } catch {
+        return undefined;
+      }
+      row = { field, operator: op, valueMode: 'expression', value: text };
+    }
+  }
+  if (!row) return undefined;
+  const condition = createCondition({ ...row, ...(id ? { id } : {}) });
+  return offered(condition, vocabulary) && isComplete(condition, vocabulary)
+    ? condition
+    : undefined;
+}
+
+/** Every part of a chain of one operator, such as `a && b && c`. */
+function chainParts(node: jsep.BinaryExpression, fields: readonly ConditionField[]) {
+  const parts: jsep.Expression[] = [];
+  const collect = (part: jsep.Expression) => {
+    const inner = part as jsep.BinaryExpression;
+    // An empty check is one row, though it is written with `||` or `&&`.
+    if (
+      inner.type === 'BinaryExpression' &&
+      inner.operator === node.operator &&
+      !emptiness(inner, fields)
+    ) {
+      collect(inner.left);
+      collect(inner.right);
+    } else parts.push(part);
+  };
+  collect(node);
+  return parts;
+}
+
+/**
+ * `f === a || f === b` as Is one of, and `f !== a && f !== b` as Is not one of: how option lists
+ * are written, so they read back as one row inside a chain of the other operator.
+ */
+function parseList(node: jsep.Expression, vocabulary: ConditionVocabulary) {
+  const binary = node as jsep.BinaryExpression;
+  if (binary.type !== 'BinaryExpression') return undefined;
+  const list =
+    binary.operator === '||'
+      ? { operator: 'isOneOf', compare: '===' }
+      : binary.operator === '&&'
+        ? { operator: 'isNotOneOf', compare: '!==' }
+        : undefined;
+  if (!list) return undefined;
+  let field: string | undefined;
+  const values: string[] = [];
+  for (const part of chainParts(binary, vocabulary.fields)) {
+    const comparison = part as jsep.BinaryExpression;
+    if (comparison.type !== 'BinaryExpression' || comparison.operator !== list.compare) {
+      return undefined;
+    }
+    const name = fieldRef(comparison.left, vocabulary.fields);
+    const literal = literalValue(comparison.right);
+    if (!name || (field && name !== field) || !literal) return undefined;
+    if (!isFieldTyped(literal.value, name, vocabulary.fields)) return undefined;
+    field = name;
+    values.push(valueText(literal.value));
+  }
+  const condition = createCondition({ field, operator: list.operator, values });
+  return offered(condition, vocabulary) && isComplete(condition, vocabulary)
+    ? condition
+    : undefined;
+}
+
+function parseGroup(
+  node: jsep.Expression,
+  vocabulary: ConditionVocabulary
+): ConditionGroup | undefined {
+  if (node.type === 'Literal' && (node as jsep.Literal).value === true)
+    return createConditionGroup();
+  const single = parseCondition(node, vocabulary) ?? parseList(node, vocabulary);
+  if (single) return createConditionGroup('all', [single]);
+  const binary = node as jsep.BinaryExpression;
+  if (
+    binary.type !== 'BinaryExpression' ||
+    (binary.operator !== '&&' && binary.operator !== '||')
+  ) {
+    return undefined;
+  }
+  // A rule's conditions are flat: one chain of one operator, each part a row.
+  const children: Condition[] = [];
+  for (const part of chainParts(binary, vocabulary.fields)) {
+    const condition = parseCondition(part, vocabulary) ?? parseList(part, vocabulary);
+    if (!condition) return undefined;
+    children.push(condition);
+  }
+  return createConditionGroup(binary.operator === '&&' ? 'all' : 'any', children);
+}
+
+/** What `markRepairNeeded` keeps on a rule, as a host property so an outcome change keeps it. */
+interface StoredRepair {
+  /** The text the rule opened with; the repair applies while the text is that. */
+  source: string;
+  /** The rows RulesEngine would evaluate as they show. */
+  conditions: ConditionGroup;
+  reason: string;
+}
+type RepairableRule = (ExpressionRule | PreservedRule) & { storedRepair?: StoredRepair };
+
+const sourceOf = (rule: Rule) =>
+  rule.mode === 'expression'
+    ? rule.expression
+    : rule.mode === 'preserved'
+      ? rule.preservedSource
+      : undefined;
+
+/**
+ * The rule, shown as stored, which RulesEngine cannot evaluate as its rows would show, marked with
+ * those rows and why. It shows as its expression, or preserved when no expression can name its
+ * fields.
+ */
+export function markRepairNeeded<R extends ExpressionRule | PreservedRule>(
+  rule: R,
+  conditions: ConditionGroup,
+  reason: string
+): R {
+  return { ...rule, storedRepair: { source: sourceOf(rule) ?? '', conditions, reason } };
+}
+
+/** The rule as its rows, if `markRepairNeeded` marked it and its text is still as stored. */
+export function ruleNeedsRepair(rule: Rule): RuleRepair | undefined {
+  if (rule.mode === 'conditions') return undefined;
+  const { storedRepair, ...rest } = rule as RepairableRule;
+  if (!storedRepair || storedRepair.source !== sourceOf(rule)) return undefined;
+  return {
+    rule: withMode(rest, { mode: 'conditions', conditions: storedRepair.conditions }),
+    reason: storedRepair.reason,
+  };
+}
+
+/**
+ * Converts between a rule's conditions and RulesEngine's expression language: strict comparisons
+ * joined by `&&` or `||`. Text matching, or an expression that mixes `&&` and `||` outside an
+ * option list, cannot cross over, so switching such a rule asks first. An expression RulesEngine
+ * cannot run is flagged on its rule. A stored rule RulesEngine cannot evaluate as its rows would
+ * show, such as a number stored as text, opens as stored, flagged with why, and its repair is those
+ * rows.
+ */
+export const rulesEngineDialect: RulesDialect = {
+  toExpression: (conditions, vocabulary) => conditionsExpression(conditions, vocabulary),
+  fieldsOf: fieldKeysOf,
+  fromExpression: (expression, vocabulary) => {
+    const node = parseExpression(expression);
+    return node ? parseGroup(node, vocabulary) : undefined;
+  },
+  // A rule that needs repair says why on its own.
+  checkExpression: (rule, vocabulary) =>
+    canRun(rule.expression, vocabulary.fields) || ruleNeedsRepair(rule) ? undefined : 'invalid',
+  repair: (rule) => ruleNeedsRepair(rule),
+};

@@ -3,8 +3,15 @@ import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import {
+  QuickFormFieldAiAssist,
+  QuickFormFieldInsertVariable,
+  QuickFormFieldTypePicker,
+} from './components/header-actions';
 import { QuickFormField } from './quick-form-field';
 import type { QuickFormFieldMode } from './types';
+
+const INSERT = <QuickFormFieldInsertVariable />;
 
 describe('QuickFormField', () => {
   it('keeps the value editable when locked', () => {
@@ -19,6 +26,7 @@ describe('QuickFormField', () => {
   it('disables every built-in control when disabled', () => {
     render(
       <QuickFormField
+        showFieldActions
         disabled
         value="INV-2024-0587"
         onValueChange={vi.fn()}
@@ -213,21 +221,21 @@ describe('QuickFormField', () => {
     expect(screen.getByRole('button', { name: 'Field type' })).toBeInTheDocument();
   });
 
-  it('hides AI-assist and Insert-variable actions when showFieldActions is false', () => {
-    render(<QuickFormField locked={false} showFieldActions={false} />);
+  it('renders no built-in AI assist or Insert variable by default', () => {
+    render(<QuickFormField locked={false} onGenerateWithAi={vi.fn()} />);
     expect(screen.queryByRole('button', { name: 'AI assist' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Insert variable' })).not.toBeInTheDocument();
   });
 
   // The handler's absence is what hides the AI-assist action.
   it('hides the AI-assist action when there is no handler for it', () => {
-    render(<QuickFormField locked={false} />);
+    render(<QuickFormField showFieldActions locked={false} />);
     expect(screen.queryByRole('button', { name: 'AI assist' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Insert variable' })).toBeInTheDocument();
   });
 
-  it('shows AI-assist and Insert-variable actions when both are wired', () => {
-    render(<QuickFormField locked={false} onGenerateWithAi={vi.fn()} />);
+  it('shows the built-in AI assist and Insert variable with showFieldActions', () => {
+    render(<QuickFormField showFieldActions locked={false} onGenerateWithAi={vi.fn()} />);
     expect(screen.getByRole('button', { name: 'AI assist' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Insert variable' })).toBeInTheDocument();
   });
@@ -581,10 +589,15 @@ describe('QuickFormField', () => {
     expect(screen.queryByText('Option 1')).not.toBeInTheDocument();
   });
 
-  it('calls onGenerateWithAi with the entered prompt when Generate is clicked', async () => {
+  it('calls onGenerate with the entered prompt when Generate is clicked', async () => {
     const user = userEvent.setup();
     const handleGenerate = vi.fn();
-    render(<QuickFormField locked={false} onGenerateWithAi={handleGenerate} />);
+    render(
+      <QuickFormField
+        locked={false}
+        headerActions={<QuickFormFieldAiAssist onGenerate={handleGenerate} />}
+      />
+    );
 
     await user.click(screen.getByRole('button', { name: 'AI assist' }));
     await user.type(screen.getByLabelText('Describe what you want'), 'a random number');
@@ -608,7 +621,13 @@ describe('QuickFormField', () => {
     ['single-select', 'expression', 'Output: Single select expression'],
   ] as const)('describes a %s field in %s mode in the AI-assist output hint', async (fieldType, mode, hint) => {
     const user = userEvent.setup();
-    render(<QuickFormField fieldType={fieldType} mode={mode} onGenerateWithAi={vi.fn()} />);
+    render(
+      <QuickFormField
+        fieldType={fieldType}
+        mode={mode}
+        headerActions={<QuickFormFieldAiAssist onGenerate={vi.fn()} />}
+      />
+    );
     await user.click(screen.getByRole('button', { name: 'AI assist' }));
     expect(screen.getByText(hint)).toBeInTheDocument();
   });
@@ -622,18 +641,25 @@ describe('QuickFormField', () => {
   });
 
   it('disables Insert variable when no variables are provided', () => {
-    render(<QuickFormField locked={false} />);
+    render(<QuickFormField headerActions={INSERT} locked={false} />);
     expect(screen.getByRole('button', { name: 'Insert variable' })).toBeDisabled();
   });
 
   it('disables Insert variable when variables are provided but onValueChange is not', () => {
-    render(<QuickFormField locked={false} variables={[{ label: 'Item ID', value: 'item.id' }]} />);
+    render(
+      <QuickFormField
+        headerActions={INSERT}
+        locked={false}
+        variables={[{ label: 'Item ID', value: 'item.id' }]}
+      />
+    );
     expect(screen.getByRole('button', { name: 'Insert variable' })).toBeDisabled();
   });
 
   it('keeps Insert variable available while the field is locked', () => {
     render(
       <QuickFormField
+        headerActions={INSERT}
         locked
         onValueChange={vi.fn()}
         variables={[{ label: 'Item ID', value: 'item.id' }]}
@@ -647,6 +673,7 @@ describe('QuickFormField', () => {
     const handleValueChange = vi.fn();
     render(
       <QuickFormField
+        headerActions={INSERT}
         locked={false}
         value="hello"
         onValueChange={handleValueChange}
@@ -666,6 +693,7 @@ describe('QuickFormField', () => {
     const second = { label: 'Order id B', value: 'b.id', type: 'string' };
     render(
       <QuickFormField
+        headerActions={INSERT}
         locked={false}
         onValueChange={vi.fn()}
         onInsertVariable={onInsertVariable}
@@ -1033,6 +1061,7 @@ describe('QuickFormField', () => {
     it('keeps a consumer variable control, and the header Insert beside it', () => {
       render(
         <QuickFormField
+          headerActions={INSERT}
           mode="variable"
           onValueChange={vi.fn()}
           variables={VARIABLES}
@@ -1239,7 +1268,12 @@ describe('QuickFormField', () => {
         <QuickFormField
           locked={false}
           onValueChange={vi.fn()}
-          onFieldTypeChange={vi.fn()}
+          headerActions={
+            <>
+              <QuickFormFieldTypePicker onValueChange={vi.fn()} />
+              {INSERT}
+            </>
+          }
           variables={[{ label: 'Item ID', value: 'item.id' }]}
           strings={{ fieldTypeAriaLabel: 'Feldtyp', insertAriaLabel: 'Variable einfügen' }}
         />
@@ -1323,6 +1357,7 @@ describe('QuickFormField', () => {
       const user = userEvent.setup();
       render(
         <QuickFormField
+          headerActions={INSERT}
           locked={false}
           onValueChange={vi.fn()}
           variables={[{ label: 'Item ID', value: 'item.id' }]}
@@ -1348,7 +1383,7 @@ describe('QuickFormField', () => {
           locked={false}
           fieldType="date"
           mode="expression"
-          onGenerateWithAi={onGenerateWithAi}
+          headerActions={<QuickFormFieldAiAssist onGenerate={onGenerateWithAi} />}
           strings={{
             typeLabels: { date: 'Datum' },
             aiOutputLabel: (type, isExpression) => `${type}-${isExpression ? 'Ausdruck' : 'Wert'}`,

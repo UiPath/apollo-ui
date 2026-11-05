@@ -284,33 +284,19 @@ describe('FormDesigner', () => {
   });
 
   describe('conditional rules', () => {
-    async function addShowRule(user: ReturnType<typeof userEvent.setup>) {
-      await user.click(screen.getByRole('button', { name: /add conditional rule/i }));
-
-      // Saving is blocked until a condition field is chosen.
-      const saveButton = screen.getByRole('button', { name: /^add rule$/i });
-      expect(saveButton).toBeDisabled();
-
-      // Pick the condition's source field from the Radix select.
-      await user.click(getComboboxByText('Select field...'));
-      await user.click(await screen.findByRole('option', { name: 'Full Name' }));
-
-      await user.type(screen.getByPlaceholderText('value'), 'yes');
-      await user.click(screen.getByRole('button', { name: /^add rule$/i }));
+    async function addShowRule(user: ReturnType<typeof userEvent.setup>, field = 'Full Name') {
+      await user.click(screen.getByRole('button', { name: 'Add rule' }));
+      await user.click(screen.getByRole('combobox', { name: 'Condition 1 Field' }));
+      await user.click(await screen.findByRole('option', { name: field }));
+      await user.type(screen.getByRole('textbox', { name: 'Condition 1 Value' }), 'yes');
     }
 
-    it('adds a Show rule through the rule builder and serializes it', async () => {
+    it('adds a Show rule in the rules editor and serializes it', async () => {
       const { user } = setup();
       await screen.findByDisplayValue('Full Name');
 
       await addShowRule(user);
 
-      // Rule summary card appears.
-      expect(await screen.findByText('Conditional rules')).toBeInTheDocument();
-      expect(screen.getByText('Show')).toBeInTheDocument();
-      expect(screen.getByText('"Full Name" = "yes"')).toBeInTheDocument();
-
-      // The serializer omits the default 'AND' operator from the JSON output.
       const schema = await readGeneratedSchema(user);
       expect(schema.sections[0].fields[0].rules).toEqual([
         expect.objectContaining({
@@ -320,41 +306,80 @@ describe('FormDesigner', () => {
       ]);
     });
 
-    it('edits an existing rule via the Edit rule button', async () => {
+    it('changes a rule’s outcome', async () => {
       const { user } = setup();
       await screen.findByDisplayValue('Full Name');
       await addShowRule(user);
-      await screen.findByText('Conditional rules');
 
-      await user.click(screen.getByRole('button', { name: 'Edit rule' }));
-
-      expect(screen.getByText('Edit rule')).toBeInTheDocument();
-
-      // Switch the effect from Show to Hide, then save.
-      await user.click(screen.getByRole('button', { name: /hide field/i }));
-      await user.click(screen.getByRole('button', { name: /^update rule$/i }));
-
-      expect(await screen.findByText('Hide')).toBeInTheDocument();
-      expect(screen.queryByText('Show')).not.toBeInTheDocument();
+      await user.click(screen.getByRole('combobox', { name: 'Rule 1 Outcome' }));
+      await user.click(await screen.findByRole('option', { name: 'Hide' }));
 
       const schema = await readGeneratedSchema(user);
       expect(schema.sections[0].fields[0].rules?.[0].effects).toEqual({ visible: false });
     });
 
-    it('deletes a rule via the Delete rule button', async () => {
+    it('removes a rule', async () => {
       const { user } = setup();
       await screen.findByDisplayValue('Full Name');
       await addShowRule(user);
-      await screen.findByText('Conditional rules');
 
-      await user.click(screen.getByRole('button', { name: 'Delete rule' }));
-
-      await waitFor(() => {
-        expect(screen.queryByText('Conditional rules')).not.toBeInTheDocument();
-      });
+      await user.click(screen.getByRole('button', { name: 'Remove rule 1' }));
 
       const schema = await readGeneratedSchema(user);
       expect(schema.sections[0].fields[0].rules).toBeUndefined();
+    });
+
+    it('keeps a rule open while its only value is cleared and retyped', async () => {
+      const { user } = setup();
+      await screen.findByDisplayValue('Full Name');
+      await addShowRule(user);
+
+      const value = screen.getByRole('textbox', { name: 'Condition 1 Value' });
+      await user.clear(value);
+      expect(screen.getByRole('textbox', { name: 'Condition 1 Value' })).toBe(value);
+      await user.type(value, 'no');
+
+      const schema = await readGeneratedSchema(user);
+      expect(schema.sections[0].fields[0].rules).toEqual([
+        expect.objectContaining({ conditions: [{ when: 'fullName', is: 'no' }] }),
+      ]);
+    });
+
+    it('follows a field rename into the rules, through a cleared name', async () => {
+      const { user } = setup();
+      await screen.findByDisplayValue('Full Name');
+      await addShowRule(user);
+
+      const nameInput = screen.getByDisplayValue('fullName');
+      await user.clear(nameInput);
+      await user.type(nameInput, 'employeeName');
+
+      const schema = await readGeneratedSchema(user);
+      expect(schema.sections[0].fields[0].rules?.[0].conditions).toEqual([
+        { when: 'employeeName', is: 'yes' },
+      ]);
+    });
+
+    it('keeps the rules on a removed field, and flags them', async () => {
+      const { user } = setup();
+      await screen.findByDisplayValue('Full Name');
+      await user.click(screen.getByRole('button', { name: /^field$/i }));
+      await user.click(within(getStructurePanel()).getByText('Full Name'));
+      await screen.findByText('Configure "Full Name"');
+      await addShowRule(user, 'Field 2');
+
+      await user.click(screen.getByRole('button', { name: 'Delete field Field 2' }));
+
+      expect(
+        within(getStructurePanel()).getByRole('img', { name: 'Rules need attention' })
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('The form does not contain field_2. Select another field.')
+      ).toBeInTheDocument();
+      const schema = await readGeneratedSchema(user);
+      expect(schema.sections[0].fields[0].rules?.[0].conditions).toEqual([
+        { when: 'field_2', is: 'yes' },
+      ]);
     });
   });
 

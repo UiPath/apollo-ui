@@ -1136,6 +1136,21 @@ new RuleBuilder("discount-eligible")
 }
 ```
 
+### Date Rules
+
+The pickers store a `Date`, and rules compare it with text. Against a `yyyy-MM-dd` literal a
+`Date` compares by its local calendar day, so a `datetime` matches any time on that day. Against a
+date-time literal or another `Date` it compares by instant. The same holds for `validation.custom`.
+
+```typescript
+{ when: 'due', is: '2026-06-15' }
+{ when: '', custom: 'due >= "2026-06-01" && due < "2026-07-01"' }
+{ when: '', custom: 'due < "2026-06-15T09:00"' }
+```
+
+A seeded value stays text until the user picks a date, and text compares as text: a
+`2026-06-15T03:00:00Z` seed does not equal `'2026-06-15'`.
+
 ### All Rule Effects
 
 ```typescript

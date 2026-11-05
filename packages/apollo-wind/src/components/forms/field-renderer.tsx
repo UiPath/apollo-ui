@@ -118,9 +118,7 @@ export function FormFieldRenderer({
     const fields = new Set<string>();
     field.rules.forEach((rule) => {
       rule.conditions?.forEach((condition) => {
-        if ('when' in condition && condition.when) {
-          fields.add(condition.when);
-        }
+        for (const name of RulesEngine.conditionFields(condition)) fields.add(name);
       });
     });
     return Array.from(fields);
