@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.16.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.16.1...@uipath/apollo-react@7.16.2) (2026-11-05)
+
+### Bug Fixes
+
+* **apollo-react:** rewrite the Toolbox category announcement without an ICU plural [PLT-113461] ([5c4e7f9](https://github.com/UiPath/apollo-ui/commit/5c4e7f9fbae702ddd56dc059e3f80f2379a5d52f))
+
 ## [@uipath/apollo-react-v7.16.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.16.0...@uipath/apollo-react@7.16.1) (2026-11-05)
 
 ### Bug Fixes
