@@ -1,3 +1,15 @@
+## [@uipath/apollo-wind-v2.86.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.85.1...@uipath/apollo-wind@2.86.0) (2026-11-05)
+
+### Features
+
+* **apollo-wind:** add hasVisibleRows to check for matches without flattening ([bef757d](https://github.com/UiPath/apollo-ui/commit/bef757d4a375834f4fde2559d9d6f4214886177a))
+* **apollo-wind:** give JsonTree row wrappers the copied path and allow per-row copy opt-out ([5ac910e](https://github.com/UiPath/apollo-ui/commit/5ac910e678cf4d471f2a8010be1c965a06bb761c))
+* **apollo-wind:** let hosts set the JsonTree type badge's tooltip and type name ([0d996ec](https://github.com/UiPath/apollo-ui/commit/0d996ecfeca0cecc55a8ad45c3cb833cf1c11bbf))
+
+### Bug Fixes
+
+* **apollo-wind:** let JsonTree names grow beside a count and drop schema-only array counts ([a6268b4](https://github.com/UiPath/apollo-ui/commit/a6268b46c13e82bb379a0e8ee2cc8c654786c6db))
+
 ## [@uipath/apollo-wind-v2.85.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.85.0...@uipath/apollo-wind@2.85.1) (2026-11-03)
 
 ### Bug Fixes

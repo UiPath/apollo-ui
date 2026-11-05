@@ -1,3 +1,14 @@
+## [@uipath/apollo-react-v7.16.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.15.4...@uipath/apollo-react@7.16.0) (2026-11-05)
+
+### Features
+
+* **apollo-react:** open up NodeVariablesPanel for host-owned sections, rows, expansion and copy ([da634bf](https://github.com/UiPath/apollo-ui/commit/da634bfd3bc27431fc74465d51fb1ac0820314fe))
+* **apollo-react:** pass deriveTypeLabel through NodeIOView and NodeVariablesPanel ([5830cc3](https://github.com/UiPath/apollo-ui/commit/5830cc3e0d05fb20294ed9a037797b8b36406080))
+
+### Performance Improvements
+
+* **apollo-react:** memoize NodeVariablesPanel per section ([425a34c](https://github.com/UiPath/apollo-ui/commit/425a34c65f8e5c24795e05fa011c025c07b41d7b))
+
 ## [@uipath/apollo-react-v7.15.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.15.3...@uipath/apollo-react@7.15.4) (2026-11-04)
 
 ### Bug Fixes
