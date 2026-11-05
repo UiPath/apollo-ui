@@ -1132,7 +1132,8 @@ function ResourcesTab() {
   const [activeSubTab, setActiveSubTab] = React.useState<ResourceSubTab>('Best Practices');
 
   return (
-    <div className="space-y-8">
+    // data-search-*: the Storybook search indexes every resource panel (see apps/storybook/scripts).
+    <div data-search-tabs="" className="space-y-8">
       <div>
         <SectionTitle>Resources</SectionTitle>
 
@@ -1142,6 +1143,8 @@ function ResourcesTab() {
             <button
               type="button"
               key={sub}
+              data-search-tab={sub}
+              data-state={activeSubTab === sub ? 'active' : 'inactive'}
               className={cn(
                 'cursor-pointer rounded-md px-4 py-1.5 text-sm font-medium transition-colors',
                 activeSubTab === sub
@@ -1156,7 +1159,7 @@ function ResourcesTab() {
         </div>
       </div>
 
-      <div>
+      <div data-search-panel="">
         {activeSubTab === 'Best Practices' && <BestPracticesContent />}
         {activeSubTab === 'Use Cases' && <UseCasesContent />}
         {activeSubTab === 'Figma' && <UseFigmaTab />}
@@ -1211,33 +1214,38 @@ function PrototypingPage({
           deliver consistent outcomes.
         </p>
 
-        {/* Tabs */}
-        <div className="flex flex-wrap gap-1 border-b border-border pt-4 pb-0">
-          {tabs.map((tab) => (
-            <button
-              type="button"
-              key={tab}
-              className={cn(
-                'cursor-pointer px-4 pb-3 text-sm font-medium transition-colors',
-                activeTab === tab
-                  ? 'border-b-2 border-primary text-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-              onClick={() => handleTabChange(tab)}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
+        {/* Tabs. The data-search-* markers let the Storybook search index every
+            panel, not only the open one (see apps/storybook/scripts). */}
+        <div data-search-tabs="" className="space-y-2">
+          <div className="flex flex-wrap gap-1 border-b border-border pt-4 pb-0">
+            {tabs.map((tab) => (
+              <button
+                type="button"
+                data-search-tab={tab}
+                data-state={activeTab === tab ? 'active' : 'inactive'}
+                key={tab}
+                className={cn(
+                  'cursor-pointer px-4 pb-3 text-sm font-medium transition-colors',
+                  activeTab === tab
+                    ? 'border-b-2 border-primary text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+                onClick={() => handleTabChange(tab)}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
 
-        {/* Tab content */}
-        <div className="pt-6">
-          {activeTab === 'Overview' && <OverviewTab />}
-          {activeTab === 'Skills' && <SkillsTab />}
-          {activeTab === 'MCP' && <StorybookMcpTab />}
-          {activeTab === 'Playground' && <UsePlaygroundTab />}
-          {activeTab === 'IDEs & Apps' && <ToolsTab />}
-          {activeTab === 'Resources' && <ResourcesTab />}
+          {/* Tab content */}
+          <div data-search-panel="" className="pt-6">
+            {activeTab === 'Overview' && <OverviewTab />}
+            {activeTab === 'Skills' && <SkillsTab />}
+            {activeTab === 'MCP' && <StorybookMcpTab />}
+            {activeTab === 'Playground' && <UsePlaygroundTab />}
+            {activeTab === 'IDEs & Apps' && <ToolsTab />}
+            {activeTab === 'Resources' && <ResourcesTab />}
+          </div>
         </div>
       </div>
     </div>

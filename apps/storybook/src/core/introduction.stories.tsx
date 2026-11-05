@@ -263,7 +263,8 @@ function QuickStartTab() {
   const [path, setPath] = React.useState<QuickStartPath>('Add to existing project');
 
   return (
-    <div className="space-y-8">
+    // data-search-*: the Storybook search indexes both paths (see apps/storybook/scripts).
+    <div data-search-tabs="" className="space-y-8">
       {/* Path switcher */}
       <div className="rounded-xl border border-border bg-card p-5">
         <p className="mb-1 text-sm font-semibold text-foreground">What are you trying to do?</p>
@@ -275,6 +276,8 @@ function QuickStartTab() {
             <button
               key={p}
               type="button"
+              data-search-tab={p}
+              data-state={path === p ? 'active' : 'inactive'}
               onClick={() => setPath(p)}
               className={cn(
                 'flex-1 cursor-pointer rounded-lg border px-4 py-3 text-left text-sm transition-colors',
@@ -294,50 +297,51 @@ function QuickStartTab() {
         </div>
       </div>
 
-      {path === 'Add to existing project' && (
-        <>
-          <div className="space-y-6">
-            <StepItem step={1} title="Install the package">
-              <CodeBlock label="terminal">{'npm install @uipath/apollo-core'}</CodeBlock>
-            </StepItem>
+      <div data-search-panel="" className="space-y-8">
+        {path === 'Add to existing project' && (
+          <>
+            <div className="space-y-6">
+              <StepItem step={1} title="Install the package">
+                <CodeBlock label="terminal">{'npm install @uipath/apollo-core'}</CodeBlock>
+              </StepItem>
 
-            <StepItem step={2} title="Import CSS variables">
-              <CodeBlock label="global CSS or app entry">
-                {`@import "@uipath/apollo-core/tokens/css/variables.css";
+              <StepItem step={2} title="Import CSS variables">
+                <CodeBlock label="global CSS or app entry">
+                  {`@import "@uipath/apollo-core/tokens/css/variables.css";
 @import "@uipath/apollo-core/tokens/css/theme-variables.css";
 @import "@uipath/apollo-core/fonts/font.css";`}
-              </CodeBlock>
-              <p>
-                This loads all Apollo design tokens as CSS custom properties and registers the font
-                faces.
-              </p>
-            </StepItem>
+                </CodeBlock>
+                <p>
+                  This loads all Apollo design tokens as CSS custom properties and registers the
+                  font faces.
+                </p>
+              </StepItem>
 
-            <StepItem step={3} title="Apply a theme class">
-              <CodeBlock label="HTML or root element">
-                {`<!-- Light theme -->
+              <StepItem step={3} title="Apply a theme class">
+                <CodeBlock label="HTML or root element">
+                  {`<!-- Light theme -->
 <body class="light">
 
 <!-- Dark theme -->
 <body class="dark">`}
-              </CodeBlock>
-              <p>
-                The theme class on <InlineCode>{'<body>'}</InlineCode> resolves all semantic token
-                values. Switch class to change the active theme.
-              </p>
-            </StepItem>
-          </div>
+                </CodeBlock>
+                <p>
+                  The theme class on <InlineCode>{'<body>'}</InlineCode> resolves all semantic token
+                  values. Switch class to change the active theme.
+                </p>
+              </StepItem>
+            </div>
 
-          <Divider />
+            <Divider />
 
-          <div>
-            <h3 className="mb-3 text-lg font-semibold text-foreground">
-              Using tokens in JavaScript
-            </h3>
-            <SectionDescription>
-              Import typed token constants directly from the package for use in JS/TS code.
-            </SectionDescription>
-            <CodeBlock label="Token imports">{`import { ColorPrimary500, SpacingMd, FontSizeSm } from '@uipath/apollo-core';
+            <div>
+              <h3 className="mb-3 text-lg font-semibold text-foreground">
+                Using tokens in JavaScript
+              </h3>
+              <SectionDescription>
+                Import typed token constants directly from the package for use in JS/TS code.
+              </SectionDescription>
+              <CodeBlock label="Token imports">{`import { ColorPrimary500, SpacingMd, FontSizeSm } from '@uipath/apollo-core';
 
 // Use in inline styles or style objects
 const style = {
@@ -345,19 +349,19 @@ const style = {
   padding: SpacingMd,
   fontSize: FontSizeSm,
 };`}</CodeBlock>
-          </div>
+            </div>
 
-          <Divider />
+            <Divider />
 
-          <div>
-            <h3 className="mb-3 text-lg font-semibold text-foreground">
-              Using CSS custom properties
-            </h3>
-            <SectionDescription>
-              All tokens are also available as CSS variables, resolved by the active theme class on{' '}
-              <InlineCode>{'<body>'}</InlineCode>.
-            </SectionDescription>
-            <CodeBlock label="CSS usage">{`/* Apply theme class to body */
+            <div>
+              <h3 className="mb-3 text-lg font-semibold text-foreground">
+                Using CSS custom properties
+              </h3>
+              <SectionDescription>
+                All tokens are also available as CSS variables, resolved by the active theme class
+                on <InlineCode>{'<body>'}</InlineCode>.
+              </SectionDescription>
+              <CodeBlock label="CSS usage">{`/* Apply theme class to body */
 body.light { /* light token values */ }
 body.dark  { /* dark token values  */ }
 
@@ -368,59 +372,60 @@ body.dark  { /* dark token values  */ }
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
 }`}</CodeBlock>
-          </div>
-        </>
-      )}
+            </div>
+          </>
+        )}
 
-      {path === 'Run locally' && (
-        <>
-          <InfoCallout>
-            <p className="mb-1 font-medium text-foreground">Before you begin</p>
-            <p>
-              This path is for contributors and team members who want to browse or modify Apollo
-              Core source files and run Storybook on their machine.
-            </p>
-            <ul className="mt-2 list-disc pl-4 space-y-1">
-              <li>
-                <strong>Node.js 22 or later</strong> is required. Check your version with{' '}
-                <InlineCode>node --version</InlineCode>.
-              </li>
-              <li>
-                <strong>pnpm 11.1.3</strong> is the required package manager for this repo.
-              </li>
-            </ul>
-          </InfoCallout>
-
-          <div className="space-y-6">
-            <StepItem step={1} title="Clone the repository">
-              <CodeBlock label="terminal">
-                {'git clone https://github.com/UiPath/apollo-ui.git\ncd apollo-ui'}
-              </CodeBlock>
-            </StepItem>
-
-            <StepItem step={2} title="Install dependencies">
-              <CodeBlock label="terminal">{'npm install -g pnpm@11.1.3\npnpm install'}</CodeBlock>
+        {path === 'Run locally' && (
+          <>
+            <InfoCallout>
+              <p className="mb-1 font-medium text-foreground">Before you begin</p>
               <p>
-                This project uses <InlineCode>pnpm</InlineCode> workspaces. Install the pinned
-                version globally if you don't have it yet.
+                This path is for contributors and team members who want to browse or modify Apollo
+                Core source files and run Storybook on their machine.
               </p>
-            </StepItem>
+              <ul className="mt-2 list-disc pl-4 space-y-1">
+                <li>
+                  <strong>Node.js 22 or later</strong> is required. Check your version with{' '}
+                  <InlineCode>node --version</InlineCode>.
+                </li>
+                <li>
+                  <strong>pnpm 11.1.3</strong> is the required package manager for this repo.
+                </li>
+              </ul>
+            </InfoCallout>
 
-            <StepItem step={3} title="Build all packages">
-              <CodeBlock label="terminal">{'pnpm build'}</CodeBlock>
-              <p>Compiles apollo-core, apollo-wind, and apollo-react before Storybook starts.</p>
-            </StepItem>
+            <div className="space-y-6">
+              <StepItem step={1} title="Clone the repository">
+                <CodeBlock label="terminal">
+                  {'git clone https://github.com/UiPath/apollo-ui.git\ncd apollo-ui'}
+                </CodeBlock>
+              </StepItem>
 
-            <StepItem step={4} title="Start Storybook">
-              <CodeBlock label="terminal">{'pnpm storybook:dev'}</CodeBlock>
-              <p>
-                Opens Apollo Storybook at <InlineCode>http://localhost:6007</InlineCode>. Changes to
-                source files hot-reload automatically.
-              </p>
-            </StepItem>
-          </div>
-        </>
-      )}
+              <StepItem step={2} title="Install dependencies">
+                <CodeBlock label="terminal">{'npm install -g pnpm@11.1.3\npnpm install'}</CodeBlock>
+                <p>
+                  This project uses <InlineCode>pnpm</InlineCode> workspaces. Install the pinned
+                  version globally if you don't have it yet.
+                </p>
+              </StepItem>
+
+              <StepItem step={3} title="Build all packages">
+                <CodeBlock label="terminal">{'pnpm build'}</CodeBlock>
+                <p>Compiles apollo-core, apollo-wind, and apollo-react before Storybook starts.</p>
+              </StepItem>
+
+              <StepItem step={4} title="Start Storybook">
+                <CodeBlock label="terminal">{'pnpm storybook:dev'}</CodeBlock>
+                <p>
+                  Opens Apollo Storybook at <InlineCode>http://localhost:6007</InlineCode>. Changes
+                  to source files hot-reload automatically.
+                </p>
+              </StepItem>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }
@@ -582,30 +587,35 @@ function CoreIntroductionPage() {
           fonts, and CSS custom properties.
         </p>
 
-        {/* Tabs */}
-        <div className="flex gap-1 border-b border-border pb-0 pt-6">
-          {tabs.map((tab) => (
-            <button
-              type="button"
-              key={tab}
-              className={cn(
-                'cursor-pointer px-4 pb-3 text-sm font-medium transition-colors',
-                activeTab === tab
-                  ? 'border-b-2 border-primary text-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-              onClick={() => setActiveTab(tab)}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
+        {/* Tabs. The data-search-* markers let the Storybook search index every
+            panel, not only the open one (see apps/storybook/scripts). */}
+        <div data-search-tabs="" className="space-y-2">
+          <div className="flex gap-1 border-b border-border pb-0 pt-6">
+            {tabs.map((tab) => (
+              <button
+                type="button"
+                data-search-tab={tab}
+                data-state={activeTab === tab ? 'active' : 'inactive'}
+                key={tab}
+                className={cn(
+                  'cursor-pointer px-4 pb-3 text-sm font-medium transition-colors',
+                  activeTab === tab
+                    ? 'border-b-2 border-primary text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+                onClick={() => setActiveTab(tab)}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
 
-        {/* Tab content */}
-        <div className="pt-6">
-          {activeTab === 'Overview' && <OverviewTab />}
-          {activeTab === 'Quick Start' && <QuickStartTab />}
-          {activeTab === 'Tokens' && <TokensTab />}
+          {/* Tab content */}
+          <div data-search-panel="" className="pt-6">
+            {activeTab === 'Overview' && <OverviewTab />}
+            {activeTab === 'Quick Start' && <QuickStartTab />}
+            {activeTab === 'Tokens' && <TokensTab />}
+          </div>
         </div>
       </div>
     </div>
