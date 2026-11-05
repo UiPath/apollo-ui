@@ -7,6 +7,10 @@ export type { SizedColumn } from './columnSizing';
 export { BODY_ROW_HEIGHT_PX, EMPTY_VALUE_DASH, ROW_NUMBER_WIDTH } from './constants';
 export { DecisionTable, type DecisionTableProps, type HeaderCellContext } from './DecisionTable';
 export {
+  DecisionTableSentences,
+  type DecisionTableSentencesProps,
+} from './DecisionTableSentences';
+export {
   GridCell,
   type GridCellEditorContext,
   type GridCellProps,
@@ -60,6 +64,7 @@ export {
 export * from './gridTypes';
 export { MarkGlyph } from './MarkGlyph';
 export { EMPTY_MARKS, type Mark, type MarkTone, type RowMark, type TableMarks } from './marks';
+export * from './sentenceTypes';
 export { useDragSelection } from './useDragSelection';
 export {
   type AxisSelection,

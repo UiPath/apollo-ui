@@ -1,0 +1,212 @@
+import { cn } from '@uipath/apollo-wind';
+import type React from 'react';
+import { memo } from 'react';
+import { showTitleIfClipped } from './clippedTitle';
+import { MarkGlyph } from './MarkGlyph';
+import type { Mark, RowMark } from './marks';
+import { type LineMark, lineMarksOf, worstTone } from './sentenceMarks';
+import { boundedParts, partsText, tokenText } from './sentenceParts';
+import {
+  HEADING_TEXT_CLASS,
+  LINE_BULLET_CLASS,
+  LINE_CLASS,
+  LINE_MARK_CLASS,
+  LINE_TEXT_CLASS,
+  MARK_GLYPH_CLASS,
+  MARKED_CHIP_CLASS,
+  MORE_VALUES_CLASS,
+  OUTPUT_VALUE_CLASS,
+  ROW_CARD_CLASS,
+  ROW_HEADING_CLASS,
+  ROW_NUMBER_CLASS,
+  ROW_SURFACE_CLASS,
+  TOKEN_KIND_CLASS,
+  WORD_CLASS,
+} from './sentenceStyles';
+import type { SentenceLabels, SentencePart, SentenceRow, SentenceToken } from './sentenceTypes';
+
+/** Most value tokens one line renders before the rest collapse into a count. */
+const SENTENCE_LINE_VALUE_LIMIT = 20;
+
+const markId = (id: string, index: number): string => `${id}-${index}`;
+
+/** The ids of a badge's announcements, for the `aria-describedby` of whatever it ends. */
+export const markIds = (id: string, marks: readonly LineMark[]): string[] =>
+  marks.map((_, index) => markId(id, index));
+
+/** A glyph in the worst tone of its marks, and each mark's announcement for `aria-describedby`. */
+export const MarkBadge: React.FC<{
+  id: string;
+  marks: readonly LineMark[];
+  labels: SentenceLabels;
+}> = ({ id, marks, labels }) => {
+  const tone = worstTone(marks);
+  const titles = marks.flatMap((mark) => (mark.title ? [mark.title] : []));
+  return (
+    <span
+      className={LINE_MARK_CLASS}
+      data-tone={tone}
+      data-mark-title={titles.length > 0 ? titles.join('\n') : undefined}
+    >
+      <MarkGlyph tone={tone} className={MARK_GLYPH_CLASS} />
+      {marks.map((mark, index) => (
+        <span key={index} id={markId(id, index)} hidden>
+          {labels.markStatus(mark.tone, mark.title)}
+        </span>
+      ))}
+    </span>
+  );
+};
+
+const TokenChip: React.FC<{
+  token: SentenceToken;
+  mark: Mark | undefined;
+  output: boolean;
+}> = ({ token, mark, output }) => {
+  const isValue = token.kind === 'value';
+  return (
+    <span
+      className={cn(
+        isValue && output ? OUTPUT_VALUE_CLASS : TOKEN_KIND_CLASS[token.kind],
+        isValue && MARKED_CHIP_CLASS
+      )}
+      data-kind={token.kind}
+      data-column-id={token.columnId}
+      data-tone={mark?.tone}
+      data-mark-title={mark?.title}
+      data-mark-matched={mark?.matched}
+    >
+      {tokenText(token)}
+    </span>
+  );
+};
+
+/** The first values of the hidden run, then an ellipsis if any remain. */
+const hiddenTitle = (hidden: readonly SentencePart[]): string => {
+  const { shown, hiddenValues } = boundedParts(hidden, SENTENCE_LINE_VALUE_LIMIT);
+  return hiddenValues > 0 ? `${partsText(shown)}…` : partsText(shown);
+};
+
+/** One clamped line: its first values, then a count of the rest that the clamp never hides. */
+const LineText: React.FC<{
+  id?: string;
+  className?: string;
+  parts: readonly SentencePart[];
+  cells: RowMark['cells'];
+  output?: boolean;
+  labels: SentenceLabels;
+}> = ({ id, className = LINE_TEXT_CLASS, parts, cells, output = false, labels }) => {
+  const { shown, hidden, hiddenValues } = boundedParts(parts, SENTENCE_LINE_VALUE_LIMIT);
+  return (
+    <>
+      <span id={id} className={className} onMouseEnter={showTitleIfClipped}>
+        {shown.map((part, index) =>
+          typeof part === 'string' ? (
+            <span key={index} className={WORD_CLASS}>
+              {part}
+            </span>
+          ) : (
+            <TokenChip
+              key={index}
+              token={part}
+              mark={part.kind === 'value' ? cells?.[part.columnId] : undefined}
+              output={output}
+            />
+          )
+        )}
+      </span>
+      {hiddenValues > 0 && (
+        <span
+          className={MORE_VALUES_CLASS}
+          data-more-values={hiddenValues}
+          title={hiddenTitle(hidden)}
+        >
+          {labels.moreValues(hiddenValues)}
+        </span>
+      )}
+    </>
+  );
+};
+
+export interface SentenceRowCardProps {
+  row: SentenceRow;
+  /** 1-based, as announced and as numbered. */
+  position: number;
+  setSize: number;
+  numbered: boolean;
+  mark: RowMark | undefined;
+  idPrefix: string;
+  dataTestId: string;
+  labels: SentenceLabels;
+}
+
+/** One row as a sentence: its heading, its lead and its condition lines. */
+export const SentenceRowCard = memo<SentenceRowCardProps>(
+  ({ row, position, setSize, numbered, mark, idPrefix, dataTestId, labels }) => {
+    const id = `${idPrefix}-${position}`;
+    const cells = mark?.cells;
+    const badgeFor = (key: string, marks: LineMark[]) =>
+      marks.length > 0 ? { id: `${id}-mark-${key}`, marks, labels } : null;
+    const headingBadge = badgeFor('heading', lineMarksOf(row.heading, cells, mark));
+    const leadBadge = badgeFor('lead', lineMarksOf(row.lead, cells));
+    const lineBadges = row.lines.map((line, index) =>
+      badgeFor(`line-${index}`, lineMarksOf(line.parts, cells))
+    );
+    const describedBy = [headingBadge, leadBadge, ...lineBadges]
+      .flatMap((badge) => (badge ? markIds(badge.id, badge.marks) : []))
+      .join(' ');
+
+    return (
+      <li
+        aria-posinset={position}
+        aria-setsize={setSize}
+        aria-labelledby={[numbered && `${id}-number`, `${id}-heading`, `${id}-lead`]
+          .filter(Boolean)
+          .join(' ')}
+        aria-describedby={describedBy || undefined}
+        className={ROW_CARD_CLASS}
+        data-row-id={row.rowId}
+        data-tone={mark?.tone}
+        data-dim={mark?.dim}
+        data-testid={`${dataTestId}-row-${row.rowId}`}
+      >
+        <div className={ROW_SURFACE_CLASS}>
+          <div className={ROW_HEADING_CLASS} data-mark-title={mark?.title}>
+            {numbered && (
+              <span id={`${id}-number`} className={ROW_NUMBER_CLASS}>
+                {position}
+              </span>
+            )}
+            <LineText
+              id={`${id}-heading`}
+              className={HEADING_TEXT_CLASS}
+              parts={row.heading}
+              cells={cells}
+              output
+              labels={labels}
+            />
+            {headingBadge && <MarkBadge {...headingBadge} />}
+          </div>
+          <div className={LINE_CLASS}>
+            <LineText id={`${id}-lead`} parts={row.lead} cells={cells} labels={labels} />
+            {leadBadge && <MarkBadge {...leadBadge} />}
+          </div>
+          {row.lines.length > 0 && (
+            <ul>
+              {row.lines.map((line, index) => {
+                const lineBadge = lineBadges[index];
+                return (
+                  <li key={index} className={LINE_CLASS} data-column-id={line.columnId}>
+                    <span aria-hidden className={LINE_BULLET_CLASS} />
+                    <LineText parts={line.parts} cells={cells} labels={labels} />
+                    {lineBadge && <MarkBadge {...lineBadge} />}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      </li>
+    );
+  }
+);
