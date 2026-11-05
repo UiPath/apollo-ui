@@ -99,4 +99,43 @@ describe('GridCell', () => {
       expect(screen.getByTestId('cell-editor')).toHaveAttribute('aria-label', 'Amount, row 1');
     });
   });
+
+  describe('a change mark', () => {
+    it('paints the change from its data attribute', () => {
+      renderCell({ mark: { change: 'update' } });
+      expect(screen.getByTestId('cell').getAttribute('data-change')).toBe('update');
+    });
+
+    it('shows what the cell held, struck through, above what it holds', () => {
+      renderCell({ mark: { change: 'update', previous: '30' } });
+      const cell = screen.getByTestId('cell');
+      expect(cell.querySelector('del')?.textContent).toBe('30');
+      expect(cell.textContent).toBe('3042');
+    });
+
+    it('shows an empty previous value as the dash, not as nothing', () => {
+      renderCell({ value: '', mark: { change: 'update', previous: '' } });
+      expect(screen.getByTestId('cell').querySelector('del')?.textContent).toBe('—');
+    });
+
+    it('shows a note under the text, outside the old value', () => {
+      renderCell({ mark: { badge: 'Moved up 3' } });
+      const cell = screen.getByTestId('cell');
+      expect(screen.getByText('Moved up 3')).toBeTruthy();
+      expect(cell.querySelector('del')).toBeNull();
+    });
+
+    it('drops the old value and the note while editing', () => {
+      renderCell({ editing: true, mark: { change: 'update', previous: '30', badge: 'note' } });
+      const cell = screen.getByTestId('cell');
+      expect(cell.querySelector('del')).toBeNull();
+      expect(screen.queryByText('note')).toBeNull();
+    });
+
+    it('stays one line without a change', () => {
+      renderCell();
+      expect(screen.getByTestId('cell').hasAttribute('data-change')).toBe(false);
+      expect(screen.getByTestId('cell').className).not.toContain('align-top');
+    });
+  });
 });
