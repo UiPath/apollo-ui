@@ -487,15 +487,12 @@ export function MetadataForm({
 // Supporting Components
 // ============================================================================
 
-// Field names a set of `conditions` reads. As in FormFieldRenderer, fields used
-// only inside a `custom` expression aren't traced.
+// Field names a set of `conditions` reads, including those inside `custom` expressions.
 function conditionDependencies(conditionGroups: Array<FieldCondition[] | undefined>): string[] {
   const fields = new Set<string>();
   for (const conditions of conditionGroups) {
     for (const condition of conditions || []) {
-      if (condition.when) {
-        fields.add(condition.when);
-      }
+      for (const name of RulesEngine.conditionFields(condition)) fields.add(name);
     }
   }
   return Array.from(fields);

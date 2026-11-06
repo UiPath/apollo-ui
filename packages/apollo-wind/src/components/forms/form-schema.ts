@@ -71,6 +71,11 @@ export interface FieldCondition {
   notIn?: unknown[];
   matches?: string; // Regex pattern
   custom?: string; // Expression string for jsep evaluation
+  /**
+   * `true` holds when the value is unset, `''`, an empty list, or an object with no keys; `false`
+   * when it is none of those. Releases before this key ignore it, and the condition never holds.
+   */
+  empty?: boolean;
 }
 
 /**
