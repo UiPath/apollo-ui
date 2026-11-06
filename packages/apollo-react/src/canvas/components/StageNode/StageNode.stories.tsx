@@ -28,6 +28,7 @@ import { TaskIcon, TaskItemTypeValues } from '../TaskIcon';
 import type { ListItem } from '../Toolbox';
 import { StageConnectionEdge } from './StageConnectionEdge';
 import { StageEdge } from './StageEdge';
+import { StageHeaderChips } from './StageHeaderChips';
 import { StageNode } from './StageNode';
 import { StageNodeWrapper } from './StageNode.stories.utils';
 import { StageHeaderChipType, type StageNodeProps, type StageTaskItem } from './StageNode.types';
@@ -2977,6 +2978,42 @@ export const WithStatusBadges: Story = {
       },
     ],
   },
+};
+
+export const HeaderChipsOnTheirOwn: Story = {
+  name: 'Header Chips on Their Own (Case Header)',
+  parameters: {
+    useCustomRender: true,
+  },
+  render: () => (
+    <div className="flex items-center border-b border-border-de-emp p-4">
+      <span className="text-base font-bold text-foreground">Loan application</span>
+      <StageHeaderChips
+        id="case"
+        className="ml-auto"
+        chips={[
+          {
+            type: StageHeaderChipType.Entry,
+            count: 2,
+            tooltip: '2 case entry rules',
+            onClick: () => window.alert('Open case entry rules'),
+          },
+          {
+            type: StageHeaderChipType.Completion,
+            count: 3,
+            tooltip: '3 case completion rules',
+            onClick: () => window.alert('Open case completion rules'),
+          },
+          {
+            type: StageHeaderChipType.Milestone,
+            count: 1,
+            tooltip: '1 case milestone',
+            onClick: () => window.alert('Open case milestones'),
+          },
+        ]}
+      />
+    </div>
+  ),
 };
 
 export const WithRules: Story = {
