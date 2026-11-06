@@ -1,17 +1,6 @@
-/* ApSkeleton shimmer keyframes.
- *
- * Each skeleton animates its own background (see ApSkeleton.tsx). The previous implementation animated an
- * inherited custom property on `body.has-skeletons`, which made the browser recalculate the styles of the
- * whole document on every frame while any skeleton was rendered.
- *
- * The name and definition intentionally match the `@keyframes ap-skeleton-shimmer` injected by portal-shell's
- * `ap-skeleton`, so pages loading both get the same animation.
- */
-@keyframes ap-skeleton-shimmer {
-  0% {
-    background-position-x: 200%;
-  }
-  100% {
-    background-position-x: -200%;
+/* Keep shimmer local to its skeleton; never animate inherited values on body. */
+@keyframes ap-skeleton-local-shimmer {
+  to {
+    transform: translateX(100%);
   }
 }
