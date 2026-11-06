@@ -1,3 +1,10 @@
+## [@uipath/apollo-react-v7.17.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.16.4...@uipath/apollo-react@7.17.0) (2026-11-06)
+
+### Features
+
+* **apollo-react:** add a milestone chip to the StageNode header [MST-17767] ([5529faa](https://github.com/UiPath/apollo-ui/commit/5529faaf70bcf0ff76c67a4612a034d525fe14fe))
+* **apollo-react:** export the stage header chips as StageHeaderChips [MST-17767] ([efb47ff](https://github.com/UiPath/apollo-ui/commit/efb47ff7c40e48bf905b7042c723c4881d8904f6))
+
 ## [@uipath/apollo-react-v7.16.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.16.3...@uipath/apollo-react@7.16.4) (2026-11-06)
 
 ### Bug Fixes
