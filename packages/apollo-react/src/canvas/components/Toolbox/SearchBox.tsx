@@ -16,9 +16,7 @@ interface SearchBoxProps {
   placeholder?: string;
   clearButtonAriaLabel?: string;
   inputRef?: React.RefObject<HTMLInputElement | null>;
-  clearButtonRef?: React.RefObject<HTMLButtonElement | null>;
   onNavigationKeyDown?: (e: React.KeyboardEvent) => void;
-  navigateToFirstItem?: () => void;
   activeDescendantId?: string;
   /**
    * A search request is in flight. Swaps the leading search icon for a
@@ -36,9 +34,7 @@ export const SearchBox = memo(function SearchBox({
   placeholder = 'Search...',
   clearButtonAriaLabel = 'Clear search',
   inputRef: externalInputRef,
-  clearButtonRef,
   onNavigationKeyDown,
-  navigateToFirstItem,
   activeDescendantId,
   pending = false,
   pendingLabel = 'Searching',
@@ -49,17 +45,6 @@ export const SearchBox = memo(function SearchBox({
   useEffect(() => {
     inputRef.current?.focus();
   }, [inputRef]);
-
-  const handleClearButtonKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Tab') {
-      e.preventDefault();
-      inputRef.current?.focus();
-
-      if (!e.shiftKey) {
-        navigateToFirstItem?.();
-      }
-    }
-  };
 
   return (
     // The form wrapper only swallows Enter, so a Toolbox embedded in a
@@ -98,14 +83,7 @@ export const SearchBox = memo(function SearchBox({
         />
         {value && (
           <InputGroupAddon align="inline-end">
-            <InputGroupButton
-              ref={clearButtonRef}
-              icon
-              size="3xs"
-              aria-label={clearButtonAriaLabel}
-              onClick={clear}
-              onKeyDown={handleClearButtonKeyDown}
-            >
+            <InputGroupButton icon size="3xs" aria-label={clearButtonAriaLabel} onClick={clear}>
               <CanvasIcon icon="x" size={16} />
             </InputGroupButton>
           </InputGroupAddon>

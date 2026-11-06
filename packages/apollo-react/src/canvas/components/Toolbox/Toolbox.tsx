@@ -240,7 +240,6 @@ export function Toolbox<T>({
   const listRef = useListRef(null);
   const listViewRef = useRef<ListViewHandle<ListItem<T>>>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const clearButtonRef = useRef<HTMLButtonElement>(null);
   const lastScrollTopRef = useRef(0);
   const initialCategoryAppliedRef = useRef(false);
 
@@ -618,31 +617,6 @@ export function Toolbox<T>({
           handleBackTransition();
           break;
         }
-        case 'Tab': {
-          // When on the search bar with text, defer behavior handling to SearchBox
-          if (activeIndex === SEARCH_BAR_INDEX && search.length > 0 && !e.shiftKey) {
-            break;
-          }
-
-          e.preventDefault();
-
-          if (activeIndex === SEARCH_BAR_INDEX && e.shiftKey) {
-            break;
-          }
-
-          if (e.shiftKey) {
-            navigateUp();
-
-            // If the clear button is showing, allow shift+tab to focus it from the search bar
-            const nextUp = getNextSelectableIndex(renderedItems, activeIndex, 'up');
-            if (nextUp === SEARCH_BAR_INDEX && search.length > 0) {
-              clearButtonRef.current?.focus();
-            }
-          } else {
-            navigateDown();
-          }
-          break;
-        }
         case 'Home': {
           if (activeIndex === SEARCH_BAR_INDEX) break;
 
@@ -765,9 +739,7 @@ export function Toolbox<T>({
           placeholder={searchPlaceholder}
           clearButtonAriaLabel={clearSearchLabel}
           inputRef={searchInputRef}
-          clearButtonRef={clearButtonRef}
           onNavigationKeyDown={handleNavigationKeyDown}
-          navigateToFirstItem={navigateToFirstItem}
           activeDescendantId={activeDescendantId}
           pending={searchLoading}
           pendingLabel={searchPendingLabel}

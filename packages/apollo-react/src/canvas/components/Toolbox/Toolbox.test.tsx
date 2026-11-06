@@ -935,28 +935,27 @@ describe('Toolbox', () => {
       expect(getActiveItem()).toHaveTextContent('Item 1');
     });
 
-    it('should move focus down with Tab and up with Shift+Tab', async () => {
-      render(<Toolbox {...defaultProps} />);
-
+    it('lets Tab and Shift+Tab follow the page focus order inside a category', async () => {
+      render(
+        <>
+          <Toolbox {...defaultProps} />
+          <button type="button">After toolbox</button>
+        </>
+      );
       const searchInput = screen.getByPlaceholderText('Search');
+
+      await user.click(screen.getByText('Item 2'));
       expect(searchInput).toHaveFocus();
 
-      // Tab from search should highlight first item
-      await user.keyboard('{Tab}');
-      expect(getActiveItem()).toHaveTextContent('Item 1');
-
-      // Tab should move to next item
-      await user.keyboard('{Tab}');
-      expect(getActiveItem()).toHaveTextContent('Item 2');
-
-      // Shift+Tab should move back up
       await user.keyboard('{Shift>}{Tab}{/Shift}');
-      expect(getActiveItem()).toHaveTextContent('Item 1');
+      expect(screen.getByRole('button', { name: 'Back' })).toHaveFocus();
 
-      // Shift+Tab from first item should return to search
-      await user.keyboard('{Shift>}{Tab}{/Shift}');
-      expect(getActiveItem()).not.toBeInTheDocument();
-      expect(searchInput).toHaveFocus();
+      await user.tab();
+      await user.type(searchInput, 'Child');
+      await user.tab();
+      expect(screen.getByRole('button', { name: 'Clear search' })).toHaveFocus();
+      await user.tab();
+      expect(screen.getByRole('button', { name: 'After toolbox' })).toHaveFocus();
     });
 
     it('should navigate back with ArrowLeft from empty search input in nested view', async () => {
