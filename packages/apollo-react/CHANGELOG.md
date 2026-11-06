@@ -1,3 +1,10 @@
+## [@uipath/apollo-react-v7.16.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.16.2...@uipath/apollo-react@7.16.3) (2026-11-06)
+
+### Bug Fixes
+
+* **apollo-react:** animate ApSkeleton shimmer per element instead of on body [PLT-114121] ([a2bf36a](https://github.com/UiPath/apollo-ui/commit/a2bf36ad85f7e484fd0acc46367ef78f04d29244))
+* **apollo-react:** synchronize local transform skeleton shimmer ([70e8ebd](https://github.com/UiPath/apollo-ui/commit/70e8ebd39c892b6248a3556c076cf2424a3018ce))
+
 ## [@uipath/apollo-react-v7.16.2](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.16.1...@uipath/apollo-react@7.16.2) (2026-11-05)
 
 ### Bug Fixes
