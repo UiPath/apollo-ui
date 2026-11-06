@@ -27,7 +27,7 @@ export interface ApI18nProviderProps {
   /**
    * Apollo-react component group whose pre-built lingui catalogs should be
    * activated. Must be a key registered in `locale-registry.ts`
-   * (e.g. `'canvas'`, `'chat'`). Unknown values log
+   * (e.g. `'canvas'`, `'chat'`, `'decision-table'`). Unknown values log
    * an error and activate empty messages.
    */
   component: string;

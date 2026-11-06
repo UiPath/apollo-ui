@@ -33,6 +33,23 @@ export const TABLE_HUG_EDGE_CLASS =
   'shadow-[1px_0_0_0_color-mix(in_srgb,var(--color-border-de-emp)_60%,transparent)]';
 
 /**
+ * The row or column being dragged leaves a blank slot in the gap: its cells keep their lines and
+ * fill, but not their content, until it is dropped.
+ */
+export const DRAG_SOURCE_CLASS = cn(
+  '[&>tbody>tr[data-drag-source]>*]:text-transparent [&>tbody>tr[data-drag-source]>*>*]:invisible',
+  '[&_:is(th,td)[data-drag-source]]:text-transparent [&_:is(th,td)[data-drag-source]>*]:invisible'
+);
+
+/**
+ * The dragged unit's floating copy, under the drop line. Unclipped: an overflow boundary would
+ * unstick its pinned cells. Its body is opaque, as plain body cells are not, so the cells it passes
+ * over don't show through.
+ */
+export const DRAG_PREVIEW_CLASS =
+  'pointer-events-none absolute top-0 left-0 z-4 empty:hidden shadow-[var(--shadow-dp-8,0_6px_20px_rgb(0_0_0/18%))] ring-1 ring-primary/40 [&_tbody]:bg-background';
+
+/**
  * The lines between cells, all barely there so the table breathes: rows at 60% of the de-emphasised
  * border, columns at 50%. Edges are set separately so a cell can keep one and drop the other.
  */
@@ -50,12 +67,31 @@ const HEADER_LINE_CLASS = cn(
   'group-data-[scrolled=true]/grid:after:opacity-100'
 );
 
-/** The hovered row's wash, an inset shadow that composes with a cell's own `shadow`. The row needs `group/row`. */
-export const ROW_HOVER_CLASS =
-  'group-hover/row:inset-shadow-[0_0_0_100vmax_color-mix(in_srgb,var(--color-foreground)_4%,transparent)]';
+/**
+ * The hovered row's wash: one element the table moves over the row (`useRowHover`), above the
+ * body's cells and below the sticky header. `will-change` keeps the move on the compositor.
+ */
+export const ROW_HOVER_OVERLAY_CLASS =
+  'pointer-events-none absolute top-0 left-0 z-1 will-change-transform bg-[color-mix(in_srgb,var(--color-foreground)_4%,transparent)]';
+
+/**
+ * The gutter lifts above the overlay while hovered (for its "+"), so it washes itself then, in the
+ * same tint.
+ */
+const ROW_HOVER_GUTTER_CLASS =
+  'hover:inset-shadow-[0_0_0_100vmax_color-mix(in_srgb,var(--color-foreground)_4%,transparent)]';
 
 /** Sticky header chrome, shared by the group row and the label row. */
-const STICKY_HEADER_CLASS = 'sticky z-2 bg-background';
+const STICKY_HEADER_CLASS = 'sticky z-3 bg-background';
+
+/**
+ * Layers, bottom up: pinned body cells (1); sticky headers (3); a hovered row number, so the "+"
+ * on its top edge paints over the row above and the header, and the drag preview (4); pinned
+ * header cells and the corner, and the hovered first row number, whose "+" straddles the corner
+ * (5); the drop line (6).
+ */
+export const PINNED_HEADER_Z_CLASS = 'z-5';
+export const DROP_INDICATOR_Z_CLASS = 'z-6';
 
 /**
  * The group (caption) row is 33px — 32 inside plus its bottom line, as in the design — and the label
@@ -157,7 +193,6 @@ export const SEPARATOR_HEADER_CELL_CLASS = cn(
 
 /** A separator column's body cells. */
 export const SEPARATOR_BODY_CELL_CLASS = cn(
-  ROW_HOVER_CLASS,
   GRID_LINE_V_CLASS,
   GRID_LINE_H_CLASS,
   'bg-[color-mix(in_srgb,var(--color-foreground-de-emp)_5%,var(--color-background))]'
@@ -203,8 +238,7 @@ export const BODY_CELL_CLASS = cn(GRID_LINE_V_CLASS, GRID_LINE_H_CLASS, 'p-0');
 export const FROZEN_RIGHT_CELL_CLASS = cn(
   BODY_CELL_CLASS,
   'sticky right-0 z-1 bg-background',
-  FROZEN_LEFT_EDGE_CLASS,
-  ROW_HOVER_CLASS
+  FROZEN_LEFT_EDGE_CLASS
 );
 
 /**
@@ -243,21 +277,24 @@ export const HEADER_CELL_CLASS = cn(
 /** The top-left corner over the row numbers, one cell spanning every header row. */
 export const TOP_LEFT_CORNER_CELL_CLASS = cn(
   STICKY_HEADER_CLASS,
-  'top-0 left-0 z-3',
+  'top-0 left-0',
+  PINNED_HEADER_Z_CLASS,
   GRID_LINE_V_CLASS,
   HEADER_LINE_CLASS,
-  'p-0 text-center align-middle'
+  'p-0 text-center align-middle text-foreground-de-emp'
 );
 
 export const FROZEN_RIGHT_HEADER_CELL_CLASS = cn(
   HEADER_CELL_CLASS,
-  'right-0 z-3',
+  'right-0',
+  PINNED_HEADER_Z_CLASS,
   FROZEN_LEFT_EDGE_CLASS
 );
 
 export const FROZEN_RIGHT_GROUP_CELL_CLASS = cn(
   GROUP_GUTTER_CLASS,
-  'right-0 z-3',
+  'right-0',
+  PINNED_HEADER_Z_CLASS,
   FROZEN_LEFT_EDGE_CLASS
 );
 
@@ -271,7 +308,7 @@ export const FROZEN_RIGHT_GROUP_CELL_CLASS = cn(
 export const BAND_LABEL_ROW_CLASS =
   'sticky left-[calc(var(--grid-pinned-left,0px)+0.5rem)] flex w-fit max-w-full items-center gap-2 whitespace-nowrap';
 
-/** The label row inside a header cell: the name, and the drag grip that reveals on hover. */
+/** The label row inside a header cell: the name, and its mark. */
 export const HEADER_LABEL_ROW_CLASS = 'flex items-center justify-between gap-1 text-xs font-medium';
 
 /**
@@ -285,17 +322,23 @@ export const RESIZE_HANDLE_CLASS = [
 ].join(' ');
 
 /**
- * The row-number gutter, pinned to the left edge. Sticky makes it a stacking context, which caps
- * an insert affordance below the sticky header — the first row's "+" straddles the header's
- * bottom edge and would paint half-hidden. The whole cell lifts while the affordance is wanted.
- * `group/gutter` reveals the insert and drag affordances on hovering this cell.
+ * Where an insert "+" also sits on the header's edge: the handle starts below the name line,
+ * leaving it that stretch.
+ */
+export const RESIZE_HANDLE_BELOW_INSERT_CLASS = 'top-6 h-[calc(100%-1.5rem)]';
+
+/**
+ * The row-number gutter, pinned to the left edge. Sticky makes it a stacking context, so it lifts
+ * while hovered, or the "+" on its top edge paints under the row above. The first row's lifts to
+ * the corner's level, which its "+" straddles; the body comes later in the DOM, so it paints over.
  */
 export const ROW_NUMBER_CELL_CLASS = cn(
   'group/gutter sticky left-0 z-1 bg-background px-1 text-center align-middle whitespace-nowrap text-foreground-de-emp',
   GRID_LINE_V_CLASS,
   GRID_LINE_H_CLASS,
-  ROW_HOVER_CLASS,
-  'hover:z-4 focus-within:z-4'
+  ROW_HOVER_GUTTER_CLASS,
+  'hover:z-4 focus-within:z-4',
+  'data-[row=0]:hover:z-5 data-[row=0]:focus-within:z-5'
 );
 
 /**
@@ -310,27 +353,70 @@ export const MONO_CELL_TEXT_CLASS = 'font-mono text-sm leading-[17px]';
  * whatever its selector, so the resting state would win over the hover.
  */
 
-/** Straddles the row's top border so a row can be inserted without going through a menu. */
-export const INSERT_ROW_CLASS =
-  'absolute -top-[9px] left-1/2 z-2 size-[18px] -translate-x-1/2 rounded-full opacity-0 transition-opacity duration-150 ' +
-  'group-hover/gutter:opacity-100! focus-visible:opacity-100!';
+/** A drag indicator's pill; each one adds where it sits and the hover that reveals it. */
+const DRAG_INDICATOR_BASE_CLASS =
+  'absolute cursor-grab rounded-full bg-border opacity-0 hover:bg-primary';
 
 /**
- * Hover-revealed grab affordance, taken out of the flow so the row number stays centred in its
- * gutter whether or not the handle is showing.
+ * An insert's line, shown while its "+" is pointed at or has keyboard focus; each one adds its
+ * geometry. Not on mouse focus: a clicked "+" keeps focus, and its line would stay lit after.
  */
-export const ROW_DRAG_HANDLE_CLASS =
-  'absolute top-1/2 right-0.5 z-1 inline-flex -translate-y-1/2 cursor-grab touch-none items-center ' +
-  'text-foreground-de-emp opacity-0 transition-opacity duration-150 group-hover/gutter:opacity-100!';
+const INSERT_LINE_BASE_CLASS =
+  'pointer-events-none absolute bg-primary opacity-0 group-hover/insert:opacity-100! group-has-[:focus-visible]/insert:opacity-100!';
+
+/** An insert's "+"; each one adds the hover that reveals it, and takes presses only once revealed. */
+const INSERT_BUTTON_BASE_CLASS =
+  'absolute top-1/2 left-1/2 inline-flex size-3.5 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full ' +
+  'border border-border bg-background p-0 text-foreground-de-emp opacity-0 hover:border-primary hover:bg-primary hover:text-background ' +
+  'future:text-foreground-de-emp future:hover:text-background [&_svg]:size-2.5 ' +
+  'focus-visible:opacity-100! pointer-events-none focus-visible:pointer-events-auto!';
 
 /**
- * The column grip, revealed by hovering the header cell. No `focus-visible` reveal: the grip is a
- * `span` with no tab stop, so the variant could never match — the keyboard route to reordering is
- * the context menu's move entries.
+ * The whole header drags; this pill on its top line says so, without a grip that would shift the
+ * name.
  */
-export const COLUMN_DRAG_HANDLE_CLASS =
-  'inline-flex shrink-0 cursor-grab touch-none items-center text-foreground-de-emp opacity-0 ' +
-  'transition-opacity duration-150 group-hover/header:opacity-100!';
+export const COLUMN_DRAG_INDICATOR_CLASS = cn(
+  DRAG_INDICATOR_BASE_CLASS,
+  '-top-[1.5px] left-1/2 z-4 h-[3px] w-4 -translate-x-1/2 transition-[opacity,background-color] duration-150 group-hover/header:opacity-100!'
+);
+
+/**
+ * The "+" straddling a header's left edge, adding a column before it. The zone overhangs the
+ * previous header, so it takes no presses, and the "+" takes them only while its own header is
+ * hovered.
+ */
+export const INSERT_COLUMN_ZONE_CLASS =
+  'group/insert pointer-events-none absolute top-0 -left-1.5 z-4 h-6 w-3';
+export const INSERT_COLUMN_LINE_CLASS = cn(
+  INSERT_LINE_BASE_CLASS,
+  'top-0 left-1/2 h-12 w-0.5 -translate-x-1/2 transition-opacity duration-150'
+);
+export const INSERT_COLUMN_CLASS = cn(
+  INSERT_BUTTON_BASE_CLASS,
+  'transition-opacity duration-150 group-hover/header:opacity-100! group-hover/header:pointer-events-auto!'
+);
+
+/**
+ * The column insert's twin on a row's top edge, adding a row above it, with the same pointer
+ * rules. A row's controls show at once where a header's fade in: rows are swept past, headers
+ * aimed at.
+ */
+export const INSERT_ROW_ZONE_CLASS =
+  'group/insert pointer-events-none absolute -top-1.5 left-0 z-2 h-3 w-full';
+export const INSERT_ROW_LINE_CLASS = cn(
+  INSERT_LINE_BASE_CLASS,
+  'top-1/2 left-0 h-0.5 w-full -translate-y-1/2'
+);
+export const INSERT_ROW_CLASS = cn(
+  INSERT_BUTTON_BASE_CLASS,
+  'group-hover/gutter:opacity-100! group-hover/gutter:pointer-events-auto!'
+);
+
+/** The column drag indicator's twin, on the gutter's left. */
+export const ROW_DRAG_INDICATOR_CLASS = cn(
+  DRAG_INDICATOR_BASE_CLASS,
+  'top-1/2 left-0.5 z-1 h-4 w-[3px] -translate-y-1/2 group-hover/gutter:opacity-100!'
+);
 
 /**
  * A row's own action (run, update expected, delete), on a ghost `size="3xs"` icon `Button`. Apollo's ghost and link
@@ -351,8 +437,12 @@ export const LOCKABLE_ROW_ACTION_BUTTON_CLASS =
 /** The destructive row action. */
 export const DELETE_ROW_BUTTON_CLASS = `${ROW_ACTION_BUTTON_CLASS} hover:text-error-text future:hover:text-error-text`;
 
-/** A row action revealed on its own, rather than with the row's other actions as a group. */
-export const DELETE_ROW_CLASS = `${DELETE_ROW_BUTTON_CLASS} size-[22px] rounded opacity-0 group-hover/row:opacity-100! focus-visible:opacity-100!`;
+/**
+ * A row action revealed on its own, rather than with the row's other actions as a group.
+ * `will-change` keeps the reveal on the compositor: without it, each opacity change of this in-flow
+ * button laid its row out again, once per scroll step for a pointer resting on the table.
+ */
+export const DELETE_ROW_CLASS = `${DELETE_ROW_BUTTON_CLASS} size-[22px] rounded opacity-0 will-change-[opacity] group-hover/row:opacity-100! focus-visible:opacity-100!`;
 
 /**
  * The cell surface: one row height minus its bottom border, border-box so a row can never grow.

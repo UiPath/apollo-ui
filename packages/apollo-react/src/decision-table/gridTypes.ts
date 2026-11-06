@@ -106,13 +106,18 @@ export interface GridHandle {
   scrollRowIntoView: (rowIndex: number) => void;
   /** Scrolls the container so the windowed column is fully visible. */
   scrollColumnIntoView: (windowIndex: number) => void;
-  /** Arms a row drag-reorder from a consumer-rendered grab handle. */
-  startRowDrag: (rowIndex: number, event: React.PointerEvent) => void;
   /**
-   * Arms a column drag-reorder inside one column group (see `columnGroupSizes`). `indexInGroup`
-   * is the column's position within its group. A no-op when the grid declares no groups.
+   * Starts a row drag-reorder from a press the consumer took on the row; returns whether it began,
+   * refusing a row the table does not have. The press surface needs `touch-none`, or the browser
+   * takes a touch drag for a scroll and cancels it.
    */
-  startColumnDrag: (groupIndex: number, indexInGroup: number, event: React.PointerEvent) => void;
+  startRowDrag: (rowIndex: number, event: DragStartEvent) => boolean;
+  /**
+   * Starts a column drag-reorder inside one column group (see `columnGroupSizes`). `indexInGroup`
+   * is the column's position within its group. Refused, returning `false`, when the grid declares no
+   * groups or the group or column is out of range. The press surface needs `touch-none`, as for rows.
+   */
+  startColumnDrag: (groupIndex: number, indexInGroup: number, event: DragStartEvent) => boolean;
   /** The clipboard operations; every one a no-op unless a `clipboard` prop is configured. */
   clipboard: GridClipboardActions;
 }
@@ -182,10 +187,20 @@ export interface GridClipboardActions {
   clear: () => boolean;
 }
 
-/** The grid's own strings — the consumer passes localized values; the grid ships no English. */
+/**
+ * The strings the consumer localizes. The drag and insert titles aren't here: the table owns them
+ * in its `decision-table` catalog.
+ */
 export interface GridLabels {
   /** Aria label of a column's resize handle. */
   resizeColumn: (columnName: string) => string;
   /** Tooltip on the resize handle (double-click / Enter resets to auto-fit). */
   resetColumnWidth: string;
 }
+
+/** What starting a drag reads from the pointer: a press, or a move past the press-drag threshold with where its press began. */
+export type DragStartEvent = Pick<PointerEvent, 'clientX' | 'clientY' | 'preventDefault'> & {
+  press?: { clientX: number; clientY: number };
+  /** The pointer the drag follows; another pointer's moves and releases are ignored. */
+  pointerId?: number;
+};
