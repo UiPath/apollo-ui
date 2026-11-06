@@ -1,3 +1,11 @@
+## [@uipath/apollo-vertex-v2.7.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-vertex@2.6.0...@uipath/apollo-vertex@2.7.0) (2026-11-06)
+
+### Features
+
+* **apollo-vertex:** add Inbox pattern ([642e072](https://github.com/UiPath/apollo-ui/commit/642e072eb0d1ee314fb9ed0e5926e29229e7f3f9))
+* **apollo-vertex:** add relative time and day grouping helpers ([494c9f0](https://github.com/UiPath/apollo-ui/commit/494c9f07e303c9f425d6e0af7504d305cd18438f))
+* **apollo-vertex:** let FilterDropdown take a custom trigger ([29aee36](https://github.com/UiPath/apollo-ui/commit/29aee369bdd6a98e5b17fb505db38828d08485b8))
+
 ## [@uipath/apollo-vertex-v2.6.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-vertex@2.5.0...@uipath/apollo-vertex@2.6.0) (2026-11-06)
 
 ### Features
