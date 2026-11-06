@@ -1,3 +1,9 @@
+## [@uipath/apollo-wind-v2.87.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.86.1...@uipath/apollo-wind@2.87.0) (2026-11-06)
+
+### Features
+
+* **apollo-wind:** optional description on FieldMenu actions [MST-15682] ([250195a](https://github.com/UiPath/apollo-ui/commit/250195a51f12b1654d55f5c368008a64b8c71acf))
+
 ## [@uipath/apollo-wind-v2.86.1](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-wind@2.86.0...@uipath/apollo-wind@2.86.1) (2026-11-05)
 
 ### Bug Fixes

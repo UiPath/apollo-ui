@@ -1,3 +1,9 @@
+## [@uipath/apollo-react-v7.16.4](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.16.3...@uipath/apollo-react@7.16.4) (2026-11-06)
+
+### Bug Fixes
+
+* **apollo-react:** make the Toolbox tooltip description readable ([4df7452](https://github.com/UiPath/apollo-ui/commit/4df745238fb87630bf515cff37285c17f6f73ea4)), closes [#526069](https://github.com/UiPath/apollo-ui/issues/526069) [#374652](https://github.com/UiPath/apollo-ui/issues/374652)
+
 ## [@uipath/apollo-react-v7.16.3](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-react@7.16.2...@uipath/apollo-react@7.16.3) (2026-11-06)
 
 ### Bug Fixes
