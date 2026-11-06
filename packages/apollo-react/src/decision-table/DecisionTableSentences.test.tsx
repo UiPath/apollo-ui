@@ -13,7 +13,9 @@ import {
 import { EMPTY_VALUE_DASH } from './constants';
 import { DecisionTableSentences, type DecisionTableSentencesProps } from './DecisionTableSentences';
 import type { RowMark, TableMarks } from './marks';
+import { MarkBadge } from './SentenceRowCard';
 import { sentenceRowOffsets } from './sentenceRowHeights';
+import type { SentenceLabels } from './sentenceTypes';
 
 const view = (props: Partial<DecisionTableSentencesProps> = {}) => (
   <DecisionTableSentences
@@ -230,6 +232,11 @@ describe('DecisionTableSentences', () => {
       );
     });
 
+    it('takes a badge only with a mark', () => {
+      // @ts-expect-error a glyph stands for at least one mark
+      expect(<MarkBadge id="badge" marks={[]} labels={SENTENCE_LABELS} />).toBeTruthy();
+    });
+
     it('shows no glyph for a mark without one, or for a success tone', () => {
       renderView({
         marks: rowMarks({
@@ -347,6 +354,13 @@ describe('DecisionTableSentences', () => {
     it('offers no add action without onAddRow', () => {
       renderView({ rows: [] });
       expect(within(screen.getByTestId('nl-empty')).queryByRole('button')).toBeNull();
+    });
+
+    it('takes an add action only with its label', () => {
+      const labels: Omit<SentenceLabels, 'addRow'> = SENTENCE_LABELS;
+      expect(view({ rows: [], labels })).toBeTruthy();
+      // @ts-expect-error the add action is named by labels.addRow
+      expect(view({ rows: [], labels, onAddRow: vi.fn() })).toBeTruthy();
     });
   });
 

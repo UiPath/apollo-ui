@@ -3,8 +3,8 @@ import type React from 'react';
 import { memo } from 'react';
 import { showTitleIfClipped } from './clippedTitle';
 import { MarkGlyph } from './MarkGlyph';
-import type { Mark, RowMark } from './marks';
-import { type LineMark, lineMarksOf, worstTone } from './sentenceMarks';
+import type { RowMark } from './marks';
+import { type LineMarks, lineMarksOf, worstTone } from './sentenceMarks';
 import { boundedParts, partsText, tokenText } from './sentenceParts';
 import {
   HEADING_TEXT_CLASS,
@@ -31,14 +31,14 @@ const SENTENCE_LINE_VALUE_LIMIT = 20;
 const markId = (id: string, index: number): string => `${id}-${index}`;
 
 /** The ids of a badge's announcements, for the `aria-describedby` of whatever it ends. */
-export const markIds = (id: string, marks: readonly LineMark[]): string[] =>
+export const markIds = (id: string, marks: LineMarks): string[] =>
   marks.map((_, index) => markId(id, index));
 
 /** A glyph in the worst tone of its marks, and each mark's announcement for `aria-describedby`. */
 export const MarkBadge: React.FC<{
   id: string;
-  marks: readonly LineMark[];
-  labels: SentenceLabels;
+  marks: LineMarks;
+  labels: Pick<SentenceLabels, 'markStatus'>;
 }> = ({ id, marks, labels }) => {
   const tone = worstTone(marks);
   const titles = marks.flatMap((mark) => (mark.title ? [mark.title] : []));
@@ -60,10 +60,11 @@ export const MarkBadge: React.FC<{
 
 const TokenChip: React.FC<{
   token: SentenceToken;
-  mark: Mark | undefined;
+  cells: RowMark['cells'];
   output: boolean;
-}> = ({ token, mark, output }) => {
+}> = ({ token, cells, output }) => {
   const isValue = token.kind === 'value';
+  const mark = isValue ? cells?.[token.columnId] : undefined;
   return (
     <span
       className={cn(
@@ -90,28 +91,26 @@ const hiddenTitle = (hidden: readonly SentencePart[]): string => {
 /** One clamped line: its first values, then a count of the rest that the clamp never hides. */
 const LineText: React.FC<{
   id?: string;
-  className?: string;
+  heading?: boolean;
   parts: readonly SentencePart[];
   cells: RowMark['cells'];
-  output?: boolean;
-  labels: SentenceLabels;
-}> = ({ id, className = LINE_TEXT_CLASS, parts, cells, output = false, labels }) => {
+  labels: Pick<SentenceLabels, 'moreValues'>;
+}> = ({ id, heading = false, parts, cells, labels }) => {
   const { shown, hidden, hiddenValues } = boundedParts(parts, SENTENCE_LINE_VALUE_LIMIT);
   return (
     <>
-      <span id={id} className={className} onMouseEnter={showTitleIfClipped}>
+      <span
+        id={id}
+        className={heading ? HEADING_TEXT_CLASS : LINE_TEXT_CLASS}
+        onMouseEnter={showTitleIfClipped}
+      >
         {shown.map((part, index) =>
           typeof part === 'string' ? (
             <span key={index} className={WORD_CLASS}>
               {part}
             </span>
           ) : (
-            <TokenChip
-              key={index}
-              token={part}
-              mark={part.kind === 'value' ? cells?.[part.columnId] : undefined}
-              output={output}
-            />
+            <TokenChip key={index} token={part} cells={cells} output={heading} />
           )
         )}
       </span>
@@ -137,7 +136,7 @@ export interface SentenceRowCardProps {
   mark: RowMark | undefined;
   idPrefix: string;
   dataTestId: string;
-  labels: SentenceLabels;
+  labels: Pick<SentenceLabels, 'markStatus' | 'moreValues'>;
 }
 
 /** One row as a sentence: its heading, its lead and its condition lines. */
@@ -145,8 +144,8 @@ export const SentenceRowCard = memo<SentenceRowCardProps>(
   ({ row, position, setSize, numbered, mark, idPrefix, dataTestId, labels }) => {
     const id = `${idPrefix}-${position}`;
     const cells = mark?.cells;
-    const badgeFor = (key: string, marks: LineMark[]) =>
-      marks.length > 0 ? { id: `${id}-mark-${key}`, marks, labels } : null;
+    const badgeFor = (key: string, marks: LineMarks | null) =>
+      marks ? { id: `${id}-mark-${key}`, marks, labels } : null;
     const headingBadge = badgeFor('heading', lineMarksOf(row.heading, cells, mark));
     const leadBadge = badgeFor('lead', lineMarksOf(row.lead, cells));
     const lineBadges = row.lines.map((line, index) =>
@@ -179,10 +178,9 @@ export const SentenceRowCard = memo<SentenceRowCardProps>(
             )}
             <LineText
               id={`${id}-heading`}
-              className={HEADING_TEXT_CLASS}
+              heading
               parts={row.heading}
               cells={cells}
-              output
               labels={labels}
             />
             {headingBadge && <MarkBadge {...headingBadge} />}
