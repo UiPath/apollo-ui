@@ -4,7 +4,7 @@ import { useCallback, useEffect, useId, useMemo, useRef } from 'react';
 import { FALLBACK_ROW_VIEWPORT_PX } from './constants';
 import { EMPTY_MARKS, type TableMarks } from './marks';
 import { MarkBadge, markIds, SentenceRowCard } from './SentenceRowCard';
-import { isLineMark } from './sentenceMarks';
+import { isLineMark, type LineMarks } from './sentenceMarks';
 import {
   SENTENCE_LINE_HEIGHT_PX,
   SENTENCE_MIN_ROW_HEIGHT_PX,
@@ -34,11 +34,13 @@ import { useVirtualizedAxis } from './useVirtualizedAxis';
 
 const SENTENCE_ROW_OVERSCAN = 10;
 
-const LIST_GEOMETRY = {
+type SentenceListStyle = React.CSSProperties & Record<`--sentence-${string}`, string | number>;
+
+const LIST_GEOMETRY: SentenceListStyle = {
   '--sentence-line': `${SENTENCE_LINE_HEIGHT_PX}px`,
   '--sentence-row-padding': `${SENTENCE_ROW_PADDING_PX}px`,
   '--sentence-row-gap': `${SENTENCE_ROW_GAP_PX}px`,
-} as React.CSSProperties;
+};
 
 interface HoveredToken {
   chip: Element;
@@ -54,7 +56,7 @@ const valueTokenAt = (target: EventTarget | null): HoveredToken | null => {
   return chip && rowId && columnId ? { chip, cell: { rowId, columnId } } : null;
 };
 
-export interface DecisionTableSentencesProps {
+interface SentencesBaseProps {
   rows: readonly SentenceRow[];
   bands: readonly SentenceBand[];
   header: SentenceHeader;
@@ -62,12 +64,10 @@ export interface DecisionTableSentencesProps {
   numbered?: boolean;
   /** The grid's own marks object: rows by row id, cells and columns by column id. */
   marks?: TableMarks;
-  /** The empty state's add action. */
-  onAddRow?: () => void;
   /** The value chip under the pointer, by the cell it stands for, or null once it is left or gone. */
   onTokenHover?: (cell: SentenceCellId | null) => void;
   /** The view's own strings; mounted rows re-render when it changes, so memoize it. */
-  labels: SentenceLabels;
+  labels: Omit<SentenceLabels, 'addRow'>;
   /** Accessible name of the scroll region. */
   ariaLabel: string;
   /** Merged onto the scroll container; a `data-testid` here overrides `dataTestId`. */
@@ -75,6 +75,16 @@ export interface DecisionTableSentencesProps {
   /** Container testid; derived ids: `-header`, `-bands`, `-empty`, `-row-{rowId}`, `-row-spacer`. */
   dataTestId: string;
 }
+
+export type DecisionTableSentencesProps = SentencesBaseProps &
+  (
+    | {
+        /** The empty state's add action, named by `labels.addRow`. */
+        onAddRow: () => void;
+        labels: SentenceLabels;
+      }
+    | { onAddRow?: undefined }
+  );
 
 /** A decision table read as sentences: one card per row, windowed, painted by the grid's marks. */
 export const DecisionTableSentences: React.FC<DecisionTableSentencesProps> = ({
@@ -133,6 +143,9 @@ export const DecisionTableSentences: React.FC<DecisionTableSentencesProps> = ({
     onPointerOut: consumerPointerOut,
     ...restContainerProps
   } = containerProps ?? {};
+  const listStyle: SentenceListStyle = numbered
+    ? { ...LIST_GEOMETRY, '--sentence-number-digits': String(rows.length).length }
+    : LIST_GEOMETRY;
   let nextRowIndex = 0;
 
   return (
@@ -175,21 +188,21 @@ export const DecisionTableSentences: React.FC<DecisionTableSentencesProps> = ({
               >
                 {band.columns.map((column, columnIndex) => {
                   const mark = marks.columns.get(column.id);
-                  const columnMarks = isLineMark(mark) ? [mark] : [];
+                  const columnMarks: LineMarks | null = isLineMark(mark) ? [mark] : null;
                   const badgeId = `${idPrefix}-band-${bandIndex}-${columnIndex}`;
                   return (
                     <li
                       key={column.id}
                       className={BAND_COLUMN_CLASS}
                       aria-describedby={
-                        columnMarks.length > 0 ? markIds(badgeId, columnMarks).join(' ') : undefined
+                        columnMarks ? markIds(badgeId, columnMarks).join(' ') : undefined
                       }
                       data-column-id={column.id}
                       data-tone={mark?.tone}
                       data-mark-title={mark?.title}
                     >
                       {column.name}
-                      {columnMarks.length > 0 && (
+                      {columnMarks && (
                         <MarkBadge id={badgeId} marks={columnMarks} labels={labels} />
                       )}
                     </li>
@@ -210,18 +223,7 @@ export const DecisionTableSentences: React.FC<DecisionTableSentencesProps> = ({
           )}
         </div>
       ) : (
-        <ul
-          ref={listRef}
-          className={SENTENCES_LIST_CLASS}
-          style={
-            numbered
-              ? ({
-                  ...LIST_GEOMETRY,
-                  '--sentence-number-digits': String(rows.length).length,
-                } as React.CSSProperties)
-              : LIST_GEOMETRY
-          }
-        >
+        <ul ref={listRef} className={SENTENCES_LIST_CLASS} style={listStyle}>
           {segments.flatMap((segment) => {
             if (segment.type === 'spacer') {
               return (
