@@ -1,11 +1,14 @@
 // The decision table's virtualized editing surface: banded sticky
 // headers, column resize and group-bounded reorder, row drag, windowed rendering, rectangular
 // clipboard. Deliberately domain-free — labels, menus and clipboard mappings are the consumer's
-// (`GridLabels`; "the grid ships no English").
+// (`GridLabels`). The drag and insert titles are the table's own, from its `decision-table`
+// catalog (see `ApI18nProvider`).
 
 export type { SizedColumn } from './columnSizing';
 export { BODY_ROW_HEIGHT_PX, EMPTY_VALUE_DASH, ROW_NUMBER_WIDTH } from './constants';
 export { DecisionTable, type DecisionTableProps, type HeaderCellContext } from './DecisionTable';
+export { DragIndicator, type DragIndicatorProps } from './DragIndicator';
+export { EdgeInsertButton, type EdgeInsertButtonProps } from './EdgeInsertButton';
 export {
   GridCell,
   type GridCellEditorContext,
@@ -32,7 +35,6 @@ export {
   BODY_CELL_CLASS,
   BREADCRUMB_POINT_STYLE,
   CELL_SURFACE_CLASS,
-  COLUMN_DRAG_HANDLE_CLASS,
   DELETE_ROW_BUTTON_CLASS,
   DELETE_ROW_CLASS,
   FOOTER_ACTION_CLASS,
@@ -43,16 +45,14 @@ export {
   HEADER_CELL_CLASS,
   HEADER_LABEL_ROW_CLASS,
   IN_RANGE_CLASS,
-  INSERT_ROW_CLASS,
   LIVE_NOTE_CLASS,
   LOCKABLE_ROW_ACTION_BUTTON_CLASS,
   MONO_CELL_TEXT_CLASS,
   OUTPUT_BAND_DOT_CLASS,
   OUTPUT_CELL_TINT_CLASS,
   OUTPUT_HUE_CLASS,
-  ROW_DRAG_HANDLE_CLASS,
+  PINNED_HEADER_Z_CLASS,
   ROW_GUTTER_MARK_CLASS,
-  ROW_HOVER_CLASS,
   ROW_MARK_OVERLAY_CLASS,
   ROW_NUMBER_CELL_CLASS,
   SEPARATOR_BODY_CELL_CLASS,
@@ -60,6 +60,7 @@ export {
 export * from './gridTypes';
 export { MarkGlyph } from './MarkGlyph';
 export { EMPTY_MARKS, type Mark, type MarkTone, type RowMark, type TableMarks } from './marks';
+export { usePressDrag } from './useDragReorder';
 export { useDragSelection } from './useDragSelection';
 export {
   type AxisSelection,

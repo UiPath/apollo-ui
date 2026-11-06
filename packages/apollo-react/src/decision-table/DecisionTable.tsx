@@ -1,15 +1,28 @@
 import { cn } from '@uipath/apollo-wind';
 import { ArrowRight } from 'lucide-react';
-import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from 'react';
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useLayoutEffect,
+  useRef,
+} from 'react';
 import { BODY_ROW_HEIGHT_PX, MIN_COLUMN_WIDTH } from './constants';
 import {
+  DRAG_PREVIEW_CLASS,
+  DRAG_SOURCE_CLASS,
+  DROP_INDICATOR_Z_CLASS,
   FROZEN_RIGHT_GROUP_CELL_CLASS,
   GRID_FRAME_CLASS,
   GRID_PANE_CLASS,
   GROUP_CELL_CLASS,
   GROUP_GUTTER_CLASS,
   HEADER_CELL_CLASS,
+  PINNED_HEADER_Z_CLASS,
+  RESIZE_HANDLE_BELOW_INSERT_CLASS,
   RESIZE_HANDLE_CLASS,
+  ROW_HOVER_OVERLAY_CLASS,
   SEPARATOR_GROUP_CELL_CLASS,
   SEPARATOR_HEADER_CELL_CLASS,
   TABLE_EDGE_CLASS,
@@ -25,15 +38,39 @@ import type {
   GridLabels,
   VisibleGridColumn,
 } from './gridTypes';
-import { useDragReorder } from './useDragReorder';
+import { MarkGlyph } from './MarkGlyph';
+import type { Mark } from './marks';
+import {
+  bandGeometry,
+  buildColumnPreview,
+  buildRowPreview,
+  type DragReorderState,
+  dragShiftPx,
+  dropIndex,
+  gapStartPx,
+  useDragReorder,
+} from './useDragReorder';
 import { useGridClipboard } from './useGridClipboard';
 import { type GridLayout, useGridLayout } from './useGridLayout';
+import { useRowHover } from './useRowHover';
+
+/** The slide of a unit a drag passes, and of the dragged one into its gap. */
+const DRAG_SHIFT_TRANSITION = 'transform 150ms ease';
+
+/** Where a data column sits among the mounted ones, which is its cell's place in every row; -1 when unmounted. */
+const visiblePositionOf = (visibleColumns: VisibleGridColumn[], flexIndex: number) =>
+  visibleColumns.findIndex(
+    (visible) => visible.type === 'column' && visible.flexIndex === flexIndex
+  );
 
 /** What a consumer's header cell receives beyond its column def. */
 export interface HeaderCellContext {
   /** The grid's resize grab strip, or null when columns are not resizable — place it inside the returned `<th>`. */
   resizeHandle: React.ReactNode;
-  /** Set for pinned columns: the sticky left offset their header must carry. */
+  /**
+   * Set for pinned columns: the sticky left offset their header must carry. A pinned header also
+   * takes `PINNED_HEADER_Z_CLASS`, so the scrolling headers pass under it rather than over it.
+   */
   pinnedLeftPx?: number;
 }
 
@@ -63,6 +100,8 @@ export interface DecisionTableProps {
   onColumnWidthsChange?: (widths: Record<string, number>) => void;
   /** Shows the resize handles and enables keyboard/drag resizing. */
   columnsResizable?: boolean;
+  /** The header edges also carry an insert "+" at the top, so the resize handles start below it. */
+  headerEdgeInserts?: boolean;
   /**
    * Sizes of the contiguous column-reorder groups, counted over the WINDOWED (non-pinned) columns
    * from the first one — e.g. `[inputCount, outputCount]`. A drag never crosses a group; columns
@@ -84,6 +123,12 @@ export interface DecisionTableProps {
    * Renders one body `<tr>`, keyed by the consumer (row identity must survive window shifts).
    * `visibleColumns` is the mounted horizontal window — referentially stable while the window
    * holds, so it can participate in a row memo.
+   *
+   * The drag preview, the parting rows and the row hover find rows in the DOM, so each `<tr>`
+   * carries `aria-rowindex` (header rows first, then 1-based rows), and each data row a direct-child
+   * cell with `data-row` (`GridCell` sets it; a row-number cell sets its own). A row without them
+   * still drags, but shows no preview, parting or hover, and its cells stay put while a column drag
+   * parts the header.
    */
   renderRow: (rowIndex: number, visibleColumns: VisibleGridColumn[]) => React.ReactNode;
   /** The trailing add-row `<tr>`, when the grid offers one; receives the full-row colSpan. */
@@ -93,6 +138,14 @@ export interface DecisionTableProps {
    * content. Defaults to "#". Rendered only with a leading column (`leadingColumnWidth > 0`).
    */
   topLeftCorner?: React.ReactNode;
+  /**
+   * A mark on the table as a whole, for issues with no row, cell or column to sit on (a decision
+   * with no rules, an output type its hit policy cannot return). Drawn in the top-left corner under
+   * `topLeftCorner`, its tone's glyph carrying `title` as `data-mark-title` and as its accessible
+   * name, as every mark does. Drawn only for an error or a warning with a `title`, and only with a
+   * leading column.
+   */
+  tableMark?: Mark;
   /** The trailing fixed column's header `<th>` (rendered only when the layout reserves its width). */
   trailingHeaderCell?: React.ReactNode;
   /** The trailing fixed column's group-row cell; defaults to a pinned empty gutter. */
@@ -237,6 +290,7 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
       initialColumnWidths = {},
       onColumnWidthsChange,
       columnsResizable = false,
+      headerEdgeInserts = false,
       columnGroupSizes,
       onRowMove,
       onColumnMove,
@@ -246,6 +300,7 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
       renderRow,
       renderFooterRow,
       topLeftCorner = '#',
+      tableMark,
       trailingHeaderCell,
       trailingGroupCell,
       tableAriaLabel,
@@ -265,6 +320,13 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
     const headerHeight = useCallback(() => layoutRef.current?.headerHeight() ?? 0, []);
     const columnLeading = useCallback(() => layoutRef.current?.columnLeading() ?? 0, []);
     const columnOffsets = useCallback(() => layoutRef.current?.columnOffsets ?? [], []);
+    const columnWidth = useCallback(
+      (dataIndex: number) => {
+        const flexIndex = (layoutRef.current?.pinnedColumnCount ?? 0) + dataIndex;
+        return layoutRef.current?.widths[flexIndex] ?? columns[flexIndex]?.defaultWidth ?? 0;
+      },
+      [columns]
+    );
 
     const onRowMoveRef = useRef(onRowMove);
     onRowMoveRef.current = onRowMove;
@@ -282,34 +344,132 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
       }
       return out;
     }, [sizesKey]);
-    const {
-      dragState,
-      startRowDrag,
-      startColumnDrag: beginColumnDrag,
-    } = useDragReorder({
+    const boundariesRef = useRef(boundaries);
+    boundariesRef.current = boundaries;
+    const previewHostRef = useRef<HTMLDivElement>(null);
+    const dropIndicatorRef = useRef<HTMLDivElement>(null);
+    const dragSourcesRef = useRef<HTMLElement[]>([]);
+    // A column's copy and lines are drawn in content space over the sticky header, so they are cut
+    // at the band row's foot wherever the table is scrolled: the bands stay clear above the dragged
+    // header, and the body rows the copy carries never show through the band row. The other edges
+    // reach past the copy, so its shadow stays.
+    const clipColumnDrag = useCallback((axis: DragReorderState['axis'] | null) => {
+      const container = containerRef.current;
+      const head = container?.querySelector<HTMLTableElement>(':scope > table')?.tHead;
+      const labelRow = head?.rows[head.rows.length - 1];
+      const clipPath =
+        axis === 'column' && container
+          ? `inset(${container.scrollTop + (labelRow?.offsetTop ?? 0)}px -32px -32px)`
+          : '';
+      for (const layer of [previewHostRef.current, dropIndicatorRef.current]) {
+        if (layer) {
+          layer.style.clipPath = clipPath;
+        }
+      }
+    }, []);
+    // What finding a row's or column's cells needs, set further down from this render; read only at drag time.
+    const dragLayoutRef = useRef<{
+      headerRowCount: number;
+      visibleColumns: VisibleGridColumn[];
+      pinnedCount: number;
+      bodyLeading: number;
+      headerLeading: number;
+    } | null>(null);
+    // Every row or cell a drag has moved, with how far.
+    const shiftedRef = useRef(new Map<HTMLElement, number>());
+    // Set by a drop, whose reorder puts every moved unit where it is drawn, until the drag state clears.
+    const settledRef = useRef(false);
+    const snapDragShifts = useCallback(() => {
+      for (const element of shiftedRef.current.keys()) {
+        element.style.transition = '';
+        element.style.transform = '';
+      }
+      shiftedRef.current.clear();
+      settledRef.current = true;
+    }, []);
+    // Copies the dragged unit's mounted cells into the preview and blanks them in the table. Rebuilt
+    // whenever the table renders mid-drag, so rows or columns a scroll mounts join the copy.
+    const fillPreview = useCallback(
+      (state: DragReorderState): boolean => {
+        const host = previewHostRef.current;
+        const shape = dragLayoutRef.current;
+        if (!host || !shape) {
+          return false;
+        }
+        const dataIndex =
+          state.axis === 'column' ? (boundariesRef.current[state.groupIndex] ?? 0) + state.from : 0;
+        const position =
+          state.axis === 'column'
+            ? visiblePositionOf(shape.visibleColumns, shape.pinnedCount + dataIndex)
+            : 0;
+        const preview =
+          state.axis === 'row'
+            ? buildRowPreview(containerRef.current, state.from + shape.headerRowCount + 1)
+            : position < 0
+              ? null
+              : buildColumnPreview(containerRef.current, {
+                  headerCellIndex: position + shape.headerLeading,
+                  bodyCellIndex: position + shape.bodyLeading,
+                  widthPx: columnWidth(dataIndex),
+                });
+        if (!preview) {
+          return false;
+        }
+        host.replaceChildren(preview.table);
+        for (const source of preview.sources) {
+          source.setAttribute('data-drag-source', '');
+        }
+        dragSourcesRef.current = preview.sources;
+        return true;
+      },
+      [columnWidth]
+    );
+    // The copy of the dragged unit, held where the pointer is. DOM writes rather than state: a drag
+    // frame must not re-render the memoized rows.
+    const onDragMove = useCallback(
+      (state: DragReorderState, px: number | null) => {
+        const host = previewHostRef.current;
+        const shape = dragLayoutRef.current;
+        if (!host || !shape) {
+          return;
+        }
+        if (px === null) {
+          host.replaceChildren();
+          host.style.transform = '';
+          clipColumnDrag(null);
+          for (const source of dragSourcesRef.current) {
+            source.removeAttribute('data-drag-source');
+          }
+          dragSourcesRef.current = [];
+          return;
+        }
+        if (!host.firstChild && !fillPreview(state)) {
+          return;
+        }
+        host.style.transform = state.axis === 'row' ? `translateY(${px}px)` : `translateX(${px}px)`;
+        clipColumnDrag(state.axis);
+      },
+      [fillPreview, clipColumnDrag]
+    );
+    const { dragState, startRowDrag, startColumnDrag } = useDragReorder({
       containerRef,
       headerHeight,
       columnLeading,
       columnOffsets,
+      columnWidth,
       rowHeightPx,
       rowCount,
       columnGroupBoundaries: boundaries,
-      onDropRow: (from, to) => onRowMoveRef.current?.(from, to),
-      onDropColumn: (groupIndex, from, to) => onColumnMoveRef.current?.(groupIndex, from, to),
-    });
-
-    // Without at least one group there is nothing to drag within — the handle's startColumnDrag
-    // is a no-op instead of arming a drag whose drop would index a missing group.
-    const boundariesRef = useRef(boundaries);
-    boundariesRef.current = boundaries;
-    const startColumnDrag = useCallback(
-      (groupIndex: number, indexInGroup: number, event: React.PointerEvent) => {
-        if (boundariesRef.current.length >= 2) {
-          beginColumnDrag(groupIndex, indexInGroup, event);
-        }
+      onDropRow: (from, to) => {
+        snapDragShifts();
+        onRowMoveRef.current?.(from, to);
       },
-      [beginColumnDrag]
-    );
+      onDropColumn: (groupIndex, from, to) => {
+        snapDragShifts();
+        onColumnMoveRef.current?.(groupIndex, from, to);
+      },
+      onDragMove,
+    });
 
     // A dragged unit stays mounted through the drag's own scrolling, merged with the consumer's
     // retention (its editing cell). The dragged column's window index is its group's fencepost
@@ -353,9 +513,154 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
         scope="col"
         data-testid={`${dataTestId}-top-left-corner`}
       >
-        {topLeftCorner}
+        {(tableMark?.tone === 'error' || tableMark?.tone === 'warning') && tableMark.title ? (
+          // The content and the mark centred in the corner as one group.
+          <div className="flex flex-col items-center justify-center gap-1">
+            {topLeftCorner}
+            <span
+              role="img"
+              className="inline-flex size-5 items-center justify-center"
+              aria-label={tableMark.title}
+              data-mark-title={tableMark.title}
+              data-tone={tableMark.tone}
+              data-testid={`${dataTestId}-table-mark`}
+            >
+              <MarkGlyph tone={tableMark.tone} className="size-3" />
+            </span>
+          </div>
+        ) : (
+          topLeftCorner
+        )}
       </th>
     );
+    const bodyLeading = hasLeading ? 1 : 0;
+    // Cells before the first data header in the label row. With a band row, the corner spans both
+    // header rows from there, so the label row has no leading cell of its own.
+    const headerLeading = hasLeading && !hasGroupRow ? 1 : 0;
+    dragLayoutRef.current = {
+      headerRowCount,
+      visibleColumns,
+      pinnedCount: layout.pinnedColumnCount,
+      bodyLeading,
+      headerLeading,
+    };
+
+    // Slides the units a drag passes out of its way and the dragged one into the gap, by DOM writes on
+    // the mounted rows and cells, so a drag re-renders no row. Re-run on every render, as a scroll
+    // mounts new ones.
+    useLayoutEffect(() => {
+      const shifted = shiftedRef.current;
+      if (!dragState || settledRef.current) {
+        settledRef.current = dragState !== null;
+        // Escape, or a release back where it started: everything slides home.
+        for (const [element, shift] of shifted) {
+          if (shift !== 0) {
+            element.style.transition = DRAG_SHIFT_TRANSITION;
+            element.style.transform = '';
+          }
+        }
+        shifted.clear();
+        return;
+      }
+      // Before the shifts below, which the copy must not take on. Only once the first move has placed it.
+      if (previewHostRef.current?.firstChild) {
+        fillPreview(dragState);
+      }
+      // The lines mount a render after the drag starts, after its first move was clipped.
+      clipColumnDrag(dragState.axis);
+      const table = containerRef.current?.querySelector(':scope > table');
+      if (!(table instanceof HTMLTableElement)) {
+        return;
+      }
+      const to = dropIndex(dragState.from, dragState.boundary);
+      const placed = new Set<HTMLElement>();
+      const place = (element: HTMLElement, shift: number, axis: 'X' | 'Y') => {
+        placed.add(element);
+        const previous = shifted.get(element);
+        if (previous === shift) {
+          return;
+        }
+        // One mounted mid-drag appears in place; one already showing slides.
+        element.style.transition = previous === undefined ? '' : DRAG_SHIFT_TRANSITION;
+        element.style.transform = shift === 0 ? '' : `translate${axis}(${shift}px)`;
+        shifted.set(element, shift);
+      };
+      const bodyRows = Array.from(table.tBodies[0]?.rows ?? []).filter((row) =>
+        row.hasAttribute('aria-rowindex')
+      );
+      if (dragState.axis === 'row') {
+        const rowSize = () => rowHeightPx;
+        for (const row of bodyRows) {
+          const index = Number(row.getAttribute('aria-rowindex')) - headerRowCount - 1;
+          if (index >= 0 && index < rowCount) {
+            place(row, dragShiftPx(index, dragState.from, to, rowSize), 'Y');
+          }
+        }
+      } else {
+        const start = boundaries[dragState.groupIndex] ?? 0;
+        const end = boundaries[dragState.groupIndex + 1] ?? start;
+        const { sizeAt } = bandGeometry(layout.columnOffsets, columnWidth, start);
+        const headerRow = table.tHead?.rows[table.tHead.rows.length - 1];
+        // The full-width footer holds no column.
+        const cellRows = bodyRows.filter((row) => row.cells.length > 1);
+        for (let index = 0; index < end - start; index++) {
+          const position = visiblePositionOf(
+            visibleColumns,
+            layout.pinnedColumnCount + start + index
+          );
+          if (position < 0) {
+            continue;
+          }
+          const shift = dragShiftPx(index, dragState.from, to, sizeAt);
+          const header = headerRow?.cells[position + headerLeading];
+          if (header) {
+            place(header, shift, 'X');
+          }
+          for (const row of cellRows) {
+            const cell = row.cells[position + bodyLeading];
+            if (cell) {
+              place(cell, shift, 'X');
+            }
+          }
+        }
+      }
+      // Off the drag's path now: a drag on the other axis replaced this one, or the row left the table.
+      for (const element of shifted.keys()) {
+        if (!placed.has(element)) {
+          element.style.transition = '';
+          element.style.transform = '';
+          shifted.delete(element);
+        }
+      }
+    });
+
+    // Moved as the units are, by a transform on the same transition, so the lines keep pace with the gap.
+    const gapFrame = { top: 0, left: 0, transition: DRAG_SHIFT_TRANSITION };
+    const dropGapStyle = (state: NonNullable<typeof dragState>): React.CSSProperties => {
+      const to = dropIndex(state.from, state.boundary);
+      if (state.axis === 'row') {
+        // Rows share one height, so the gap is the drop index's own row.
+        return {
+          ...gapFrame,
+          transform: `translateY(${headerHeight() + to * rowHeightPx - 1}px)`,
+          width: totalWidth,
+          height: rowHeightPx + 2,
+        };
+      }
+      const band = bandGeometry(
+        layout.columnOffsets,
+        columnWidth,
+        boundaries[state.groupIndex] ?? 0
+      );
+      const left =
+        columnLeading() + band.left + gapStartPx(state.from, to, band.offsetOf, band.sizeAt);
+      return {
+        ...gapFrame,
+        transform: `translateX(${left - 1}px)`,
+        width: band.sizeAt(state.from) + 2,
+        height: headerHeight() + rowCount * rowHeightPx,
+      };
+    };
 
     // The grid owns its clipboard; the consumer only describes how its cells read and write.
     const gridClipboard = useGridClipboard(clipboard, { rowCount, columnCount: columns.length });
@@ -414,6 +719,13 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
       return () => container.removeEventListener('scroll', markScrolled);
     }, []);
 
+    const rowHoverRef = useRef<HTMLDivElement | null>(null);
+    const rowTopPx = useCallback(
+      (index: number) => headerHeight() + index * rowHeightPx,
+      [headerHeight, rowHeightPx]
+    );
+    useRowHover(containerRef, rowHoverRef, rowTopPx, dragState === null);
+
     /** The sticky left offset of a pinned column: the gutter plus the pinned columns before it. */
     const pinnedLeftPxOf = (flexIndex: number): number | undefined => {
       if (flexIndex >= layout.pinnedColumnCount) {
@@ -442,7 +754,7 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
       return (
         // biome-ignore lint/a11y/useSemanticElements: ARIA window-splitter — a focusable, value-carrying resize separator <hr> cannot express
         <span
-          className={RESIZE_HANDLE_CLASS}
+          className={cn(RESIZE_HANDLE_CLASS, headerEdgeInserts && RESIZE_HANDLE_BELOW_INSERT_CLASS)}
           role="separator"
           aria-orientation="vertical"
           aria-valuenow={Math.round(width)}
@@ -469,7 +781,7 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
     const pinnedEdgePx =
       leadingColumnWidth +
       widths.slice(0, layout.pinnedColumnCount).reduce((sum, width) => sum + width, 0);
-    const bodyColSpan = (hasLeading ? 1 : 0) + visibleColumns.length + (hasTrailing ? 1 : 0);
+    const bodyColSpan = bodyLeading + visibleColumns.length + (hasTrailing ? 1 : 0);
     const {
       onFocus: consumerFocus,
       onBlur: consumerBlur,
@@ -499,7 +811,8 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
         // The containing block for the drag-reorder drop indicator (content-space coordinates).
         // `select-none`: dragging across cells is a range gesture, so it must not also drag a
         // native text selection through the values. Editors re-enable it on their own cell.
-        className={GRID_FRAME_CLASS}
+        // While a row or column is carried, the grab hand holds over every cell it passes.
+        className={cn(GRID_FRAME_CLASS, dragState && 'cursor-grabbing [&_*]:cursor-grabbing!')}
         ref={layout.attachContainer}
         // biome-ignore lint/a11y/noNoninteractiveTabindex: the grid surface takes focus for the consumer's spreadsheet navigation
         tabIndex={0}
@@ -539,7 +852,8 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
           className={cn(
             'table-fixed border-separate border-spacing-0 text-xs text-foreground',
             TABLE_EDGE_CLASS,
-            TABLE_HUG_EDGE_CLASS
+            TABLE_HUG_EDGE_CLASS,
+            DRAG_SOURCE_CLASS
           )}
           ref={layout.setTableElement}
           // Published here rather than on the scroll container: the container spreads the
@@ -629,7 +943,10 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
                       <td
                         key={`group-gutter-${run.firstFlexIndex}`}
                         aria-hidden="true"
-                        className={cn(GROUP_GUTTER_CLASS, run.pinnedLeftPx !== undefined && 'z-3')}
+                        className={cn(
+                          GROUP_GUTTER_CLASS,
+                          run.pinnedLeftPx !== undefined && PINNED_HEADER_Z_CLASS
+                        )}
                         style={
                           run.pinnedLeftPx !== undefined ? { left: run.pinnedLeftPx } : undefined
                         }
@@ -658,7 +975,7 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
                         GROUP_CELL_CLASS,
                         run.group.toneClassName,
                         groupCellProps?.className,
-                        run.pinnedLeftPx !== undefined && 'z-3'
+                        run.pinnedLeftPx !== undefined && PINNED_HEADER_Z_CLASS
                       )}
                       style={
                         run.pinnedLeftPx !== undefined
@@ -756,30 +1073,31 @@ export const DecisionTable = forwardRef<GridHandle, DecisionTableProps>(
             {renderFooterRow?.(bodyColSpan)}
           </tbody>
         </table>
+        <div
+          ref={rowHoverRef}
+          aria-hidden="true"
+          className={ROW_HOVER_OVERLAY_CLASS}
+          style={{ display: 'none', width: totalWidth, height: rowHeightPx }}
+          data-testid={`${dataTestId}-row-hover`}
+        />
+        {/* Filled and moved by `onDragMove`; React only owns the empty host. */}
+        <div
+          ref={previewHostRef}
+          aria-hidden="true"
+          className={DRAG_PREVIEW_CLASS}
+          data-testid={`${dataTestId}-drag-preview`}
+        />
+        {/* Lines on both edges of the gap the dragged unit will drop into. */}
         {dragState && (
           <div
-            className="pointer-events-none absolute z-4 bg-primary"
+            ref={dropIndicatorRef}
+            className={cn(
+              'pointer-events-none absolute border-primary',
+              dragState.axis === 'row' ? 'border-y-2' : 'border-x-2',
+              DROP_INDICATOR_Z_CLASS
+            )}
             data-testid={`${dataTestId}-drop-indicator`}
-            style={
-              dragState.axis === 'row'
-                ? {
-                    top: headerHeight() + dragState.boundary * rowHeightPx - 1,
-                    left: 0,
-                    width: totalWidth,
-                    height: 2,
-                  }
-                : {
-                    left:
-                      columnLeading() +
-                      (layout.columnOffsets[
-                        (boundaries[dragState.groupIndex] ?? 0) + dragState.boundary
-                      ] ?? 0) -
-                      1,
-                    top: 0,
-                    width: 2,
-                    height: headerHeight() + rowCount * rowHeightPx,
-                  }
-            }
+            style={dropGapStyle(dragState)}
           />
         )}
         {children}

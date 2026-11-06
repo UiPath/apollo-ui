@@ -44,6 +44,10 @@ const config: LinguiConfig = {
       path: 'src/canvas/locales/{locale}',
       include: ['src/canvas'],
     },
+    {
+      path: 'src/decision-table/locales/{locale}',
+      include: ['src/decision-table'],
+    },
   ],
   format: formatter({ style: 'minimal' }),
   compileNamespace: 'ts',

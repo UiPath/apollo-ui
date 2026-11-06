@@ -33,6 +33,16 @@ const renderCell = (props: Partial<GridCellProps> = {}) => {
 };
 
 describe('GridCell', () => {
+  it('marks itself while its editor is open, for the row hover to skip its row', () => {
+    renderCell({ editing: true });
+    expect(screen.getByTestId('cell').getAttribute('data-editing')).toBe('true');
+  });
+
+  it('carries no editing marker at rest', () => {
+    renderCell();
+    expect(screen.getByTestId('cell').hasAttribute('data-editing')).toBe(false);
+  });
+
   describe('Enter on a resting cell', () => {
     it('opens the editor when this cell is the selected one', () => {
       const { onStartEdit } = renderCell();

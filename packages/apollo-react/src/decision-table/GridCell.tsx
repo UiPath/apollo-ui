@@ -11,7 +11,6 @@ import {
   IN_RANGE_CLASS,
   MONO_CELL_TEXT_CLASS,
   OMIT_BORDER_CLASS,
-  ROW_HOVER_CLASS,
 } from './gridStyles';
 import type { CellCommitMove, CellEdge } from './gridTypes';
 import { MarkGlyph } from './MarkGlyph';
@@ -183,8 +182,6 @@ export const GridCell: React.FC<GridCellProps> = ({
         isEditing && 'select-text',
         inRange && IN_RANGE_CLASS,
         pinnedLeft !== undefined && 'sticky z-1 bg-background',
-        // An open editor is the user's focus; washing it as the pointer passes would only distract.
-        !isEditing && ROW_HOVER_CLASS,
         className,
         CELL_MARK_CLASS
       )}
@@ -200,6 +197,8 @@ export const GridCell: React.FC<GridCellProps> = ({
       data-mark-matched={isEditing ? undefined : mark?.matched}
       data-selected={selected ? 'true' : 'false'}
       data-in-range={inRange ? 'true' : 'false'}
+      // Read by the row hover overlay, which skips a row with an open editor.
+      data-editing={isEditing ? 'true' : undefined}
       aria-label={ariaLabel}
       // While this cell is editing, a click *inside* its own input bubbles up here. Re-selecting
       // would flip `editing` back to false and unmount the uncontrolled editor — and since focus
