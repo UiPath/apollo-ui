@@ -1,5 +1,7 @@
 export { StageConnectionEdge } from './StageConnectionEdge';
 export { StageEdge } from './StageEdge';
+export type { StageHeaderChipsProps } from './StageHeaderChips';
+export { StageHeaderChips } from './StageHeaderChips';
 export { StageNode } from './StageNode';
 export type {
   StageHeaderChip,
