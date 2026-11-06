@@ -409,7 +409,7 @@ const ListViewRow = memo(
           <div className="flex flex-col gap-0.5">
             <span className="text-sm">{item.name}</span>
             {!!item.description && (
-              <span className="text-xs text-foreground-inv-de-emp">{item.description}</span>
+              <span className="text-xs text-foreground-muted">{item.description}</span>
             )}
             {!!item.detail && <span className="text-xs">{item.detail}</span>}
           </div>
