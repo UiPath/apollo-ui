@@ -1,6 +1,14 @@
 import { vi } from 'vitest';
 import type { AgentFlowProps } from '../../types';
-import { fireEvent, render, screen } from '../../utils/testing';
+import { fireEvent, render, screen, waitFor } from '../../utils/testing';
+
+// Viewport helpers returned by the mocked useReactFlow, shared so tests can assert on them.
+const reactFlowViewportMocks = vi.hoisted(() => ({
+  fitView: vi.fn(() => Promise.resolve(true)),
+  zoomIn: vi.fn(() => Promise.resolve(true)),
+  zoomOut: vi.fn(() => Promise.resolve(true)),
+  getZoom: vi.fn(() => 1),
+}));
 
 // Mock the BaseCanvas viewport hooks to avoid ReactFlow dependencies in tests.
 // The rest of the module is kept so newly added hooks don't break this mock.
@@ -97,6 +105,7 @@ vi.mock('@uipath/apollo-react/canvas/xyflow/react', () => ({
     onNodeDragStart,
     onNodeDrag,
     onNodeDragStop,
+    onMove,
   }: {
     children?: React.ReactNode;
     nodes?: unknown[];
@@ -109,6 +118,10 @@ vi.mock('@uipath/apollo-react/canvas/xyflow/react', () => ({
     onNodeDragStart?: () => void;
     onNodeDrag?: () => void;
     onNodeDragStop?: () => void;
+    onMove?: (
+      event: MouseEvent | TouchEvent | null,
+      viewport: { x: number; y: number; zoom: number }
+    ) => void;
   }) => {
     // Filter out virtual spacing nodes for accurate test counts
     const realNodes = nodes?.filter((node: any) => !node.data?.isVirtual) ?? [];
@@ -140,6 +153,24 @@ vi.mock('@uipath/apollo-react/canvas/xyflow/react', () => ({
         <button data-testid="node-drag-stop" onClick={onNodeDragStop}>
           Node Drag Stop
         </button>
+        <button
+          data-testid="user-move"
+          onClick={(event) => onMove?.(event.nativeEvent, { x: 0, y: 0, zoom: 1.5 })}
+        >
+          User Move
+        </button>
+        <button
+          data-testid="user-pan"
+          onClick={(event) => onMove?.(event.nativeEvent, { x: 40, y: 20, zoom: 0.75 })}
+        >
+          User Pan
+        </button>
+        <button
+          data-testid="programmatic-move"
+          onClick={() => onMove?.(null, { x: 0, y: 0, zoom: 0.75 })}
+        >
+          Programmatic Move
+        </button>
         {children}
       </div>
     );
@@ -160,8 +191,8 @@ vi.mock('@uipath/apollo-react/canvas/xyflow/react', () => ({
     Dots: 'dots',
   },
   useReactFlow: () => ({
+    ...reactFlowViewportMocks,
     setViewport: vi.fn(),
-    fitView: vi.fn(),
     getNodes: vi.fn(() => []),
   }),
   useStore: () => ({
@@ -329,6 +360,71 @@ describe('AgentFlow', () => {
     // Empty nodes to avoid initial layout
     render(<AgentFlow {...mockProps} />);
     expect(screen.getByTestId('canvas-controls')).toBeInTheDocument();
+  });
+
+  describe('zoom level reporting', () => {
+    it('reports the zoom level for a user-initiated move', () => {
+      const onZoomLevelChange = vi.fn();
+      render(<AgentFlow {...mockProps} zoomLevel={1} onZoomLevelChange={onZoomLevelChange} />);
+
+      fireEvent.click(screen.getByTestId('user-move'));
+
+      expect(onZoomLevelChange).toHaveBeenCalledWith(1.5);
+    });
+
+    it('does not report the zoom level for a programmatic move such as the initial fitView', () => {
+      const onZoomLevelChange = vi.fn();
+      render(<AgentFlow {...mockProps} zoomLevel={1} onZoomLevelChange={onZoomLevelChange} />);
+
+      fireEvent.click(screen.getByTestId('programmatic-move'));
+
+      expect(onZoomLevelChange).not.toHaveBeenCalled();
+    });
+
+    it('does not report the zoom level for a user pan after the initial fitView', () => {
+      const onZoomLevelChange = vi.fn();
+      render(<AgentFlow {...mockProps} zoomLevel={1} onZoomLevelChange={onZoomLevelChange} />);
+
+      fireEvent.click(screen.getByTestId('programmatic-move'));
+      fireEvent.click(screen.getByTestId('user-pan'));
+
+      expect(onZoomLevelChange).not.toHaveBeenCalled();
+    });
+
+    it('reports the zoom level for a user zoom after the initial fitView', () => {
+      const onZoomLevelChange = vi.fn();
+      render(<AgentFlow {...mockProps} zoomLevel={1} onZoomLevelChange={onZoomLevelChange} />);
+
+      fireEvent.click(screen.getByTestId('programmatic-move'));
+      fireEvent.click(screen.getByTestId('user-move'));
+
+      expect(onZoomLevelChange).toHaveBeenCalledTimes(1);
+      expect(onZoomLevelChange).toHaveBeenCalledWith(1.5);
+    });
+
+    it('does not report the zoom level when it equals the zoomLevel prop', () => {
+      const onZoomLevelChange = vi.fn();
+      render(<AgentFlow {...mockProps} zoomLevel={1.5} onZoomLevelChange={onZoomLevelChange} />);
+
+      fireEvent.click(screen.getByTestId('user-move'));
+
+      expect(onZoomLevelChange).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ['zoom-in-button', 'zoomIn', 1.2],
+      ['zoom-out-button', 'zoomOut', 0.83],
+      ['fit-to-view-button', 'fitView', 0.6],
+    ] as const)('reports the zoom level after %s finishes its transition', async (testId, helper, zoom) => {
+      reactFlowViewportMocks.getZoom.mockReturnValue(zoom);
+      const onZoomLevelChange = vi.fn();
+      render(<AgentFlow {...mockProps} zoomLevel={1} onZoomLevelChange={onZoomLevelChange} />);
+
+      fireEvent.click(screen.getByTestId(testId));
+
+      await waitFor(() => expect(onZoomLevelChange).toHaveBeenCalledWith(zoom));
+      expect(reactFlowViewportMocks[helper]).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('bottom-center mode toolbar', () => {
