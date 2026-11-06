@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { RefreshCw, Sparkles, Type, Variable, X } from 'lucide-react';
+import { Link, RefreshCw, Sparkles, Type, Variable, X } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
 import { FormField, FormFieldLabel } from '../form-field';
 import { Input } from '../input';
@@ -52,8 +52,9 @@ function MenuField({ id, label, menu }: { id: string; label: string; menu: React
 }
 
 /**
- * The built-in pair, all four built-in modes, custom and extra modes, field actions under the modes,
- * and actions alone. With the modes disabled, the trigger becomes an overflow menu.
+ * The built-in pair, all four built-in modes, custom and extra modes, field actions under the modes
+ * (with and without descriptions), and actions alone. With the modes disabled, the trigger becomes
+ * an overflow menu.
  */
 export const ModeMenu: Story = {
   render: () => {
@@ -120,6 +121,26 @@ export const ModeMenu: Story = {
               actions={[
                 { id: 'clear', label: 'Clear value', icon: X, onSelect: () => {} },
                 { id: 'refresh', label: 'Force refresh', icon: RefreshCw, onSelect: () => {} },
+              ]}
+            />
+          }
+        />
+        <MenuField
+          id="menu-actions-described"
+          label="Actions with descriptions"
+          menu={
+            <FieldMenu
+              mode={twoMode}
+              onSelect={setTwoMode}
+              actions={[
+                {
+                  id: 'url',
+                  label: 'Enter URL',
+                  description: 'Paste a link to the resource',
+                  icon: Link,
+                  onSelect: () => {},
+                },
+                { id: 'clear', label: 'Clear value', icon: X, onSelect: () => {} },
               ]}
             />
           }
