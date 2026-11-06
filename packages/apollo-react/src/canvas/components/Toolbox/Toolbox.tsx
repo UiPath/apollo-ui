@@ -12,7 +12,13 @@ import {
   TOOLBOX_WIDTH,
 } from '../../constants';
 import { Header, type HeadingLevel } from './Header';
-import { type ListItem, ListView, type ListViewHandle, type RenderItem } from './ListView';
+import {
+  type ListItem,
+  ListView,
+  type ListViewHandle,
+  type RenderItem,
+  TOOLBOX_LISTBOX_ID,
+} from './ListView';
 import { QuickActionsRow, type ToolboxQuickAction } from './QuickActionsRow';
 import { SearchBox } from './SearchBox';
 
@@ -37,6 +43,8 @@ const ENTER_ANIMATION_CLASS: Record<AnimationDirection, string> = {
 // elapses, so a shorter value would cut the slide off mid-flight.
 const TRANSITION_DURATION = 150;
 const SEARCH_BAR_INDEX = -1;
+// Long enough to wait out a typing burst, so only the settled result is announced.
+const SEARCH_ANNOUNCEMENT_DELAY = 500;
 
 /**
  * BFS for item by id.
@@ -204,6 +212,7 @@ export function Toolbox<T>({
   const searchPlaceholder = searchPlaceholderProp ?? _({ id: 'toolbox.search', message: 'Search' });
   const clearSearchLabel = _({ id: 'toolbox.search.clear', message: 'Clear search' });
   const searchPendingLabel = _({ id: 'toolbox.search.pending', message: 'Searching' });
+  const noMatchesLabel = _({ id: 'toolbox.search.noResults', message: 'No matching nodes found' });
   const [items, setItems] = useState<ListItem<T>[]>(initialItems);
   const [search, setSearch] = useState('');
   // True while an `onSearch` promise is in flight. Presentation only: the
@@ -222,6 +231,8 @@ export function Toolbox<T>({
   const [currentParentItem, setCurrentParentItem] = useState<ListItem<T> | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [animationDirection, setAnimationDirection] = useState<AnimationDirection>('forward');
+  const [searchAnnouncement, setSearchAnnouncement] = useState('');
+  const [isListboxPresent, setIsListboxPresent] = useState(true);
 
   const navigationStack = useNavigationStack<{
     items: ListItem<T>[];
@@ -281,6 +292,29 @@ export function Toolbox<T>({
           values: { name: currentParentItem.name, count: displayedItems.length },
         })
       : '';
+
+  const searchResultsText =
+    isSearching && !searchLoading && !isSearchingInitialItems
+      ? searchedItems.length === 0
+        ? noMatchesLabel
+        : _({
+            id: 'toolbox.search.results',
+            message: 'Results: {count}',
+            values: { count: searchedItems.length },
+          })
+      : '';
+
+  // Emptying the region first makes an unchanged result re-announce after the next keystroke.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `search` restarts the debounce on every keystroke.
+  useEffect(() => {
+    setSearchAnnouncement('');
+    if (!searchResultsText) return;
+    const timeout = setTimeout(
+      () => setSearchAnnouncement(searchResultsText),
+      SEARCH_ANNOUNCEMENT_DELAY
+    );
+    return () => clearTimeout(timeout);
+  }, [search, searchResultsText]);
 
   const startTransition = useCallback((direction: AnimationDirection) => {
     if (transitionTimeoutRef.current) {
@@ -729,7 +763,7 @@ export function Toolbox<T>({
           showBackButton={navigationStack.canGoBack}
         />
         <output aria-live="polite" className="sr-only">
-          {categoryAnnouncement}
+          {searchAnnouncement || categoryAnnouncement}
         </output>
 
         <SearchBox
@@ -741,6 +775,7 @@ export function Toolbox<T>({
           inputRef={searchInputRef}
           onNavigationKeyDown={handleNavigationKeyDown}
           activeDescendantId={activeDescendantId}
+          listboxId={isListboxPresent ? TOOLBOX_LISTBOX_ID : undefined}
           pending={searchLoading}
           pendingLabel={searchPendingLabel}
         />
@@ -760,11 +795,12 @@ export function Toolbox<T>({
               items={displayedItems}
               activeIndex={activeIndex}
               listRef={listRef}
-              emptyStateMessage={isSearching ? 'No matching nodes found' : 'No nodes found'}
+              emptyStateMessage={isSearching ? noMatchesLabel : 'No nodes found'}
               renderEmptyState={wrappedRenderEmptyState}
               onItemClick={handleItemSelect}
               onItemHover={onItemHover}
               onScroll={handleListScroll}
+              onListboxPresenceChange={setIsListboxPresent}
               enableSections={!isSearching}
               // Suppress skeletons while searching — the user expects
               // search results, not a "more on the way" hint.

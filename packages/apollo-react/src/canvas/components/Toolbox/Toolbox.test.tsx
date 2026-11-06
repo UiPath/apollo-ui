@@ -303,6 +303,30 @@ describe('Toolbox', () => {
       expect(screen.getByText('No matching nodes found')).toBeInTheDocument();
     });
 
+    it('announces the settled result count and drops aria-controls when nothing matches', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      const timedUser = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      render(<Toolbox {...defaultProps} />);
+      const searchInput = screen.getByPlaceholderText('Search');
+      const status = screen.getByRole('status');
+
+      await timedUser.type(searchInput, 'Item');
+      expect(status).toBeEmptyDOMElement();
+      await act(() => vi.advanceTimersByTimeAsync(500));
+      expect(status).toHaveTextContent('Results: 1');
+      expect(searchInput).toHaveAttribute('aria-controls', 'toolbox-listbox');
+      expect(searchInput).toHaveAttribute('aria-expanded', 'true');
+
+      await timedUser.type(searchInput, 'xyz');
+      expect(status).toBeEmptyDOMElement();
+      await act(() => vi.advanceTimersByTimeAsync(500));
+      expect(status).toHaveTextContent('No matching nodes found');
+      expect(searchInput).not.toHaveAttribute('aria-controls');
+      expect(searchInput).toHaveAttribute('aria-expanded', 'false');
+
+      vi.useRealTimers();
+    });
+
     it('should clear search when input is cleared', async () => {
       render(<Toolbox {...defaultProps} />);
 

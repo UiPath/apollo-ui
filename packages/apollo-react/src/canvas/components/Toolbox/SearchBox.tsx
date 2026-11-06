@@ -18,6 +18,8 @@ interface SearchBoxProps {
   inputRef?: React.RefObject<HTMLInputElement | null>;
   onNavigationKeyDown?: (e: React.KeyboardEvent) => void;
   activeDescendantId?: string;
+  /** Id of the listbox the field controls; omit while no listbox is mounted. */
+  listboxId?: string;
   /**
    * A search request is in flight. Swaps the leading search icon for a
    * same-sized spinner so the busy signal lives in the field, not on the rows.
@@ -36,6 +38,7 @@ export const SearchBox = memo(function SearchBox({
   inputRef: externalInputRef,
   onNavigationKeyDown,
   activeDescendantId,
+  listboxId,
   pending = false,
   pendingLabel = 'Searching',
 }: SearchBoxProps) {
@@ -73,8 +76,8 @@ export const SearchBox = memo(function SearchBox({
           autoComplete="off"
           type="text"
           role="combobox"
-          aria-controls="toolbox-listbox"
-          aria-expanded={true}
+          aria-controls={listboxId}
+          aria-expanded={!!listboxId}
           aria-activedescendant={activeDescendantId}
           placeholder={placeholder}
           value={value}
