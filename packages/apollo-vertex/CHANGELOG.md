@@ -1,3 +1,9 @@
+## [@uipath/apollo-vertex-v2.6.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-vertex@2.5.0...@uipath/apollo-vertex@2.6.0) (2026-11-06)
+
+### Features
+
+* **apollo-vertex:** rename solution tests from the test cases table ([cc23acc](https://github.com/UiPath/apollo-ui/commit/cc23acc4e31603042de434a1908d60954651e129))
+
 ## [@uipath/apollo-vertex-v2.5.0](https://github.com/UiPath/apollo-ui/compare/@uipath/apollo-vertex@2.4.0...@uipath/apollo-vertex@2.5.0) (2026-11-03)
 
 ### Features
