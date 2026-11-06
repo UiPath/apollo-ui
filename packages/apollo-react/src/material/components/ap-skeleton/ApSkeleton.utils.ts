@@ -1,8 +1,8 @@
 /** Duration of one shimmer cycle, in milliseconds. */
 export const SKELETON_SHIMMER_DURATION_MS = 2000;
 
-/** Name of the shimmer `@keyframes` defined in `ApSkeleton.css`. */
-export const SKELETON_SHIMMER_ANIMATION_NAME = 'ap-skeleton-shimmer';
+/** Name of the local transform `@keyframes` defined in `ApSkeleton.css`. */
+export const SKELETON_SHIMMER_ANIMATION_NAME = 'ap-skeleton-local-shimmer';
 
 /**
  * Custom property (set on each skeleton element) holding the animation delay that keeps all skeletons in phase
@@ -26,7 +26,7 @@ export function getSkeletonShimmerSyncDelay(now: number = getCurrentTimelineTime
   const phase =
     ((now % SKELETON_SHIMMER_DURATION_MS) + SKELETON_SHIMMER_DURATION_MS) %
     SKELETON_SHIMMER_DURATION_MS;
-  return `${-Math.round(phase)}ms`;
+  return `${-(Math.round(phase) % SKELETON_SHIMMER_DURATION_MS)}ms`;
 }
 
 /**
@@ -40,8 +40,12 @@ export function getSkeletonShimmerSyncDelay(now: number = getCurrentTimelineTime
  */
 export function syncSkeletonShimmer(element: HTMLElement): void {
   if (typeof element.getAnimations === 'function') {
-    for (const animation of element.getAnimations()) {
-      if ((animation as CSSAnimation).animationName === SKELETON_SHIMMER_ANIMATION_NAME) {
+    for (const animation of element.getAnimations({ subtree: true })) {
+      const effect = animation.effect as KeyframeEffect | null;
+      if (
+        effect?.target === element &&
+        (animation as CSSAnimation).animationName === SKELETON_SHIMMER_ANIMATION_NAME
+      ) {
         animation.startTime = 0;
       }
     }
