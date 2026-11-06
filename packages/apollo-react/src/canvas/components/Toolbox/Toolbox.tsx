@@ -11,7 +11,7 @@ import {
   TOOLBOX_PADDING_Y,
   TOOLBOX_WIDTH,
 } from '../../constants';
-import { Header } from './Header';
+import { Header, type HeadingLevel } from './Header';
 import { type ListItem, ListView, type ListViewHandle, type RenderItem } from './ListView';
 import { QuickActionsRow, type ToolboxQuickAction } from './QuickActionsRow';
 import { SearchBox } from './SearchBox';
@@ -88,6 +88,11 @@ export type ToolboxSearchHandler<T = any> = (
 
 export interface ToolboxProps<T> {
   title: string;
+  /**
+   * Heading level of the title (and of the category name after drilling in).
+   * Defaults to 2; set it to fit the surrounding document outline.
+   */
+  titleHeadingLevel?: HeadingLevel;
   /**
    * The root-level items. A new array reference is treated as a content change:
    * it replaces the current items, rebuilds the navigation stack, and re-runs any
@@ -185,6 +190,7 @@ export function Toolbox<T>({
   onSearch,
   onItemHover,
   title,
+  titleHeadingLevel,
   initialItems,
   loading,
   fullWidth = false,
@@ -744,6 +750,7 @@ export function Toolbox<T>({
         {quickActions && quickActions.length > 0 && <QuickActionsRow actions={quickActions} />}
         <Header
           title={currentParentItem?.name || title}
+          headingLevel={titleHeadingLevel}
           onBack={handleBackTransition}
           showBackButton={navigationStack.canGoBack}
         />

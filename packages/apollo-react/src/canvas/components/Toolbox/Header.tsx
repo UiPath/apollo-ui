@@ -4,8 +4,11 @@ import { Button } from '@uipath/apollo-wind';
 import { memo } from 'react';
 import { CanvasIcon } from '../../utils/icon-registry';
 
+export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
+
 interface HeaderProps {
   title: string;
+  headingLevel?: HeadingLevel;
   showBackButton?: boolean;
   onBack?: () => void;
 }
@@ -17,7 +20,12 @@ const BACK_SLOT_CLASS =
 const BACK_SLOT_VISIBLE_CLASS = 'mr-2 w-8 translate-x-0 opacity-100';
 const BACK_SLOT_HIDDEN_CLASS = 'mr-0 w-0 translate-x-5 opacity-0';
 
-export const Header = memo(function Header({ title, onBack, showBackButton }: HeaderProps) {
+export const Header = memo(function Header({
+  title,
+  headingLevel = 2,
+  onBack,
+  showBackButton,
+}: HeaderProps) {
   const isBackButtonVisible = showBackButton && onBack;
 
   return (
@@ -40,7 +48,10 @@ export const Header = memo(function Header({ title, onBack, showBackButton }: He
           </Button>
         )}
       </div>
-      <span className="text-base font-bold">{title}</span>
+      {/* biome-ignore lint/a11y/useSemanticElements: hosts such as Studio Web restyle native h1-h6 with unlayered CSS that beats Tailwind. */}
+      <span role="heading" aria-level={headingLevel} className="text-base font-bold">
+        {title}
+      </span>
     </Row>
   );
 });
