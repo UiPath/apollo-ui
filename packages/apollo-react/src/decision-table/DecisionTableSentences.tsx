@@ -56,7 +56,7 @@ const valueTokenAt = (target: EventTarget | null): HoveredToken | null => {
   return chip && rowId && columnId ? { chip, cell: { rowId, columnId } } : null;
 };
 
-interface SentencesBaseProps {
+export interface DecisionTableSentencesProps {
   rows: readonly SentenceRow[];
   bands: readonly SentenceBand[];
   header: SentenceHeader;
@@ -64,10 +64,12 @@ interface SentencesBaseProps {
   numbered?: boolean;
   /** The grid's own marks object: rows by row id, cells and columns by column id. */
   marks?: TableMarks;
+  /** The empty state's add action and its label. */
+  addRow?: { label: string; onAdd: () => void };
   /** The value chip under the pointer, by the cell it stands for, or null once it is left or gone. */
   onTokenHover?: (cell: SentenceCellId | null) => void;
   /** The view's own strings; mounted rows re-render when it changes, so memoize it. */
-  labels: Omit<SentenceLabels, 'addRow'>;
+  labels: SentenceLabels;
   /** Accessible name of the scroll region. */
   ariaLabel: string;
   /** Merged onto the scroll container; a `data-testid` here overrides `dataTestId`. */
@@ -76,16 +78,6 @@ interface SentencesBaseProps {
   dataTestId: string;
 }
 
-export type DecisionTableSentencesProps = SentencesBaseProps &
-  (
-    | {
-        /** The empty state's add action, named by `labels.addRow`. */
-        onAddRow: () => void;
-        labels: SentenceLabels;
-      }
-    | { onAddRow?: undefined }
-  );
-
 /** A decision table read as sentences: one card per row, windowed, painted by the grid's marks. */
 export const DecisionTableSentences: React.FC<DecisionTableSentencesProps> = ({
   rows,
@@ -93,7 +85,7 @@ export const DecisionTableSentences: React.FC<DecisionTableSentencesProps> = ({
   header,
   numbered = false,
   marks = EMPTY_MARKS,
-  onAddRow,
+  addRow,
   onTokenHover,
   labels,
   ariaLabel,
@@ -117,8 +109,9 @@ export const DecisionTableSentences: React.FC<DecisionTableSentencesProps> = ({
     }
   }, []);
   useEffect(() => {
-    if (hoveredRef.current && !hoveredRef.current.chip.isConnected) {
-      hoverTo(null);
+    const chip = hoveredRef.current?.chip;
+    if (chip) {
+      hoverTo(chip.isConnected ? valueTokenAt(chip) : null);
     }
   });
   useEffect(() => () => hoverTo(null), [hoverTo]);
@@ -216,9 +209,9 @@ export const DecisionTableSentences: React.FC<DecisionTableSentencesProps> = ({
       {rows.length === 0 ? (
         <div className={EMPTY_STATE_CLASS} data-testid={`${dataTestId}-empty`}>
           <p>{labels.emptyRows}</p>
-          {onAddRow && (
-            <Button variant="outline" size="xs" onClick={onAddRow}>
-              {labels.addRow}
+          {addRow && (
+            <Button variant="outline" size="xs" onClick={addRow.onAdd}>
+              {addRow.label}
             </Button>
           )}
         </div>

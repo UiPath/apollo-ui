@@ -117,6 +117,12 @@ export interface GridHandle {
   clipboard: GridClipboardActions;
 }
 
+/** A cell by its row's and its column's ids. */
+export interface GridCellId {
+  rowId: string;
+  columnId: string;
+}
+
 /** A cell's position in the grid's own coordinates; what a column means is the consumer's business. */
 export interface GridPosition {
   row: number;

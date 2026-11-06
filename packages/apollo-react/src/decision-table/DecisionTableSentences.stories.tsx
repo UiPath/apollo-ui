@@ -91,7 +91,7 @@ export const WithMarks: Story = {
 export const Empty: Story = {
   render: () => (
     <div className="grid grid-cols-2 gap-4">
-      <DemoSentences rows={[]} onAddRow={() => {}} />
+      <DemoSentences rows={[]} addRow={{ label: 'Add rule', onAdd: () => {} }} />
       <DemoSentences rows={[]} ariaLabel="Rules without an add action" />
     </div>
   ),

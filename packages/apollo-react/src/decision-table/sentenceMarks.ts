@@ -1,8 +1,8 @@
-import type { Mark, MarkTone, RowMark } from './marks';
-import type { SentencePart } from './sentenceTypes';
+import type { Mark, RowMark } from './marks';
+import type { SentenceLabels, SentencePart } from './sentenceTypes';
 
 /** The tones a glyph shows. */
-export type GlyphTone = Extract<MarkTone, 'error' | 'warning'>;
+export type GlyphTone = Parameters<SentenceLabels['markStatus']>[0];
 
 /** A mark that ends a line with its glyph. */
 export type LineMark = Pick<Mark, 'title'> & { tone: GlyphTone };

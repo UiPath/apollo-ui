@@ -5,7 +5,7 @@ import { showTitleIfClipped } from './clippedTitle';
 import { MarkGlyph } from './MarkGlyph';
 import type { RowMark } from './marks';
 import { type LineMarks, lineMarksOf, worstTone } from './sentenceMarks';
-import { boundedParts, partsText, tokenText } from './sentenceParts';
+import { boundedParts, partsText, tokenText, trailingParts } from './sentenceParts';
 import {
   HEADING_TEXT_CLASS,
   LINE_BULLET_CLASS,
@@ -82,10 +82,10 @@ const TokenChip: React.FC<{
   );
 };
 
-/** The first values of the hidden run, then an ellipsis if any remain. */
-const hiddenTitle = (hidden: readonly SentencePart[]): string => {
+/** The first values of the hidden run, an ellipsis if any remain, then the line's words after its last value. */
+const hiddenTitle = (hidden: readonly SentencePart[], parts: readonly SentencePart[]): string => {
   const { shown, hiddenValues } = boundedParts(hidden, SENTENCE_LINE_VALUE_LIMIT);
-  return hiddenValues > 0 ? `${partsText(shown)}…` : partsText(shown);
+  return `${partsText(shown)}${hiddenValues > 0 ? '…' : ''}${partsText(trailingParts(parts))}`;
 };
 
 /** One clamped line: its first values, then a count of the rest that the clamp never hides. */
@@ -118,7 +118,7 @@ const LineText: React.FC<{
         <span
           className={MORE_VALUES_CLASS}
           data-more-values={hiddenValues}
-          title={hiddenTitle(hidden)}
+          title={hiddenTitle(hidden, parts)}
         >
           {labels.moreValues(hiddenValues)}
         </span>

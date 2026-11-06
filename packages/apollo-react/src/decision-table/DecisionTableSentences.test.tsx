@@ -1,7 +1,11 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { axe } from 'jest-axe';
-import { vi } from 'vitest';
+import { expectTypeOf, vi } from 'vitest';
 import {
+  CHANNEL,
+  COUNTRY,
+  channel,
+  country,
   longValueListRow,
   MULTI_SENTENCE_BANDS,
   MULTI_SENTENCE_HEADER,
@@ -13,9 +17,7 @@ import {
 import { EMPTY_VALUE_DASH } from './constants';
 import { DecisionTableSentences, type DecisionTableSentencesProps } from './DecisionTableSentences';
 import type { RowMark, TableMarks } from './marks';
-import { MarkBadge } from './SentenceRowCard';
 import { sentenceRowOffsets } from './sentenceRowHeights';
-import type { SentenceLabels } from './sentenceTypes';
 
 const view = (props: Partial<DecisionTableSentencesProps> = {}) => (
   <DecisionTableSentences
@@ -232,11 +234,6 @@ describe('DecisionTableSentences', () => {
       );
     });
 
-    it('takes a badge only with a mark', () => {
-      // @ts-expect-error a glyph stands for at least one mark
-      expect(<MarkBadge id="badge" marks={[]} labels={SENTENCE_LABELS} />).toBeTruthy();
-    });
-
     it('shows no glyph for a mark without one, or for a success tone', () => {
       renderView({
         marks: rowMarks({
@@ -311,6 +308,22 @@ describe('DecisionTableSentences', () => {
       expect(onTokenHover.mock.calls).toEqual([[{ rowId: 'm1', columnId: 'score' }], [null]]);
     });
 
+    it('reports the cell a hovered chip stands for once a re-render rewords it', () => {
+      const onTokenHover = vi.fn();
+      const { rerender } = renderView({ onTokenHover });
+      fireEvent.pointerOver(valueChip('m3', 'score'));
+      const reworded = MULTI_SENTENCE_ROWS.map((row) =>
+        row.rowId === 'm3'
+          ? { ...row, lead: ['when ', CHANNEL, ' is not ', channel('"branch"')] }
+          : row
+      );
+      rerender(view({ onTokenHover, rows: reworded }));
+      expect(onTokenHover.mock.calls).toEqual([
+        [{ rowId: 'm3', columnId: 'score' }],
+        [{ rowId: 'm3', columnId: 'channel' }],
+      ]);
+    });
+
     it('reports null when scrolling unmounts the hovered row', () => {
       const onTokenHover = vi.fn();
       const rows = manySentenceRows(2000);
@@ -332,17 +345,20 @@ describe('DecisionTableSentences', () => {
     it("keeps the host's own pointer handlers", () => {
       const onTokenHover = vi.fn();
       const onPointerOver = vi.fn();
-      renderView({ onTokenHover, containerProps: { onPointerOver } });
+      const onPointerOut = vi.fn();
+      renderView({ onTokenHover, containerProps: { onPointerOver, onPointerOut } });
       fireEvent.pointerOver(valueChip('m3', 'score'));
-      expect(onTokenHover).toHaveBeenCalledWith({ rowId: 'm3', columnId: 'score' });
+      fireEvent.pointerOut(valueChip('m3', 'score'), { relatedTarget: document.body });
+      expect(onTokenHover.mock.calls).toEqual([[{ rowId: 'm3', columnId: 'score' }], [null]]);
       expect(onPointerOver).toHaveBeenCalledTimes(1);
+      expect(onPointerOut).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('empty state', () => {
     it('keeps the header and bands and offers the add action', () => {
       const onAddRow = vi.fn();
-      renderView({ rows: [], onAddRow });
+      renderView({ rows: [], addRow: { label: 'Add rule', onAdd: onAddRow } });
       const empty = screen.getByTestId('nl-empty');
       expect(empty).toHaveTextContent('No rules yet');
       fireEvent.click(within(empty).getByRole('button', { name: 'Add rule' }));
@@ -351,16 +367,21 @@ describe('DecisionTableSentences', () => {
       expect(screen.getByTestId('nl-bands')).toBeInTheDocument();
     });
 
-    it('offers no add action without onAddRow', () => {
+    it('offers no add action without addRow', () => {
       renderView({ rows: [] });
       expect(within(screen.getByTestId('nl-empty')).queryByRole('button')).toBeNull();
     });
 
     it('takes an add action only with its label', () => {
-      const labels: Omit<SentenceLabels, 'addRow'> = SENTENCE_LABELS;
-      expect(view({ rows: [], labels })).toBeTruthy();
-      // @ts-expect-error the add action is named by labels.addRow
-      expect(view({ rows: [], labels, onAddRow: vi.fn() })).toBeTruthy();
+      expectTypeOf<{ onAdd: () => void }>().not.toExtend<
+        NonNullable<DecisionTableSentencesProps['addRow']>
+      >();
+    });
+
+    it('lets a wrapper forward every prop but its testid', () => {
+      expectTypeOf<
+        Omit<DecisionTableSentencesProps, 'dataTestId'> & { dataTestId: string }
+      >().toExtend<DecisionTableSentencesProps>();
     });
   });
 
@@ -372,7 +393,7 @@ describe('DecisionTableSentences', () => {
       expect(mounted.map((row) => row.dataset.rowId)).toEqual(
         Array.from({ length: mounted.length }, (_, index) => `row-${index}`)
       );
-      expect(mounted.length).toBeLessThan(50);
+      expect(mounted).toHaveLength(17);
       expect(mounted[0]).toHaveAttribute('aria-setsize', '20000');
       const spacer = mounted.at(-1)?.nextElementSibling;
       expect(spacer).toBe(screen.getByTestId('nl-row-spacer'));
@@ -415,6 +436,23 @@ describe('DecisionTableSentences', () => {
       const more = countryLine().querySelector<HTMLElement>('[data-more-values]');
       expect(more?.title).toBe(
         `${Array.from({ length: 20 }, (_, index) => `"Country ${index + 21}"`).join(', ')}…`
+      );
+    });
+
+    it('keeps the words after the last value of a clamped line, and titles the count with them', () => {
+      const texts = Array.from({ length: 10_000 }, (_, index) => `"C${index + 1}"`);
+      const values = texts.flatMap((text, index) =>
+        index === 0 ? [country(text)] : [', ', country(text)]
+      );
+      const [first] = MULTI_SENTENCE_ROWS;
+      if (!first) throw new Error('fixture');
+      renderView({
+        rows: [{ ...first, lines: [{ columnId: 'country', parts: [...values, ' ← ', COUNTRY] }] }],
+      });
+      const line = card('m1').querySelector<HTMLElement>('li[data-column-id="country"]');
+      expect(line?.querySelector('[data-kind="input"]')).toHaveTextContent('Country');
+      expect(line?.querySelector('[data-more-values]')?.getAttribute('title')).toBe(
+        `${texts.slice(20, 40).join(', ')}… ← Country`
       );
     });
 

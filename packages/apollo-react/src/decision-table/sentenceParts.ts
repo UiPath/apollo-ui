@@ -11,7 +11,16 @@ export const tokenText = (token: SentenceToken): string =>
 export const partsText = (parts: readonly SentencePart[]): string =>
   parts.map((part) => (typeof part === 'string' ? part : tokenText(part))).join('');
 
-/** The parts through the `limit`-th value token, the parts from the next one on, and how many values those hold. */
+/** The parts after the last value token. */
+export const trailingParts = (parts: readonly SentencePart[]): readonly SentencePart[] => {
+  let end = 0;
+  for (const [index, part] of parts.entries()) {
+    if (isValue(part)) end = index + 1;
+  }
+  return parts.slice(end);
+};
+
+/** The parts through the `limit`-th value token and after the last, the values between, and how many those are. */
 export const boundedParts = (
   parts: readonly SentencePart[],
   limit: number
@@ -22,9 +31,10 @@ export const boundedParts = (
     if (!isValue(part)) continue;
     values += 1;
     if (values > limit) {
-      const hidden = parts.slice(index);
+      const trailing = trailingParts(parts);
+      const hidden = parts.slice(index, parts.length - trailing.length);
       return {
-        shown: parts.slice(0, lastShown + 1),
+        shown: [...parts.slice(0, lastShown + 1), ...trailing],
         hidden,
         hiddenValues: hidden.filter(isValue).length,
       };

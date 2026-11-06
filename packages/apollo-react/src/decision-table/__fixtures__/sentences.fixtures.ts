@@ -35,7 +35,7 @@ const band = (id: string, label: string, names: readonly SentenceToken[]): Sente
   columns: names.map(({ columnId, text }) => ({ id: columnId, name: text })),
 });
 
-/** Values as the utils list them: `{first}, {second}`. */
+/** Values as `{first}, {second}`. */
 const valueList = (value: (text: string) => SentenceToken, texts: readonly string[]) =>
   texts.flatMap((text, index): SentencePart[] =>
     index === 0 ? [value(text)] : [', ', value(text)]
@@ -101,9 +101,9 @@ export const GRID_SENTENCE_HEADER: SentenceHeader = {
 
 const [SCORE, score] = column('score', 'input', 'Credit Score');
 const [DEBT, debt] = column('debt', 'input', 'Debt Ratio');
-const [COUNTRY, country] = column('country', 'input', 'Country');
+export const [COUNTRY, country] = column('country', 'input', 'Country');
 const [START, start] = column('start', 'input', 'Start Date');
-const [CHANNEL, channel] = column('channel', 'input', 'Channel');
+export const [CHANNEL, channel] = column('channel', 'input', 'Channel');
 const [DECISION, decision] = column('decision', 'output', 'Decision');
 const [LIMIT, limit] = column('limit', 'output', 'Credit Limit');
 const [REASON, reason] = column('reason', 'output', 'Reason');
@@ -181,7 +181,6 @@ export const MULTI_SENTENCE_HEADER: SentenceHeader = {
 
 export const SENTENCE_LABELS: SentenceLabels = {
   emptyRows: 'No rules yet',
-  addRow: 'Add rule',
   markStatus: (tone, message) => {
     const status = tone === 'error' ? 'Error' : 'Warning';
     return message ? `${status}: ${message}` : status;
