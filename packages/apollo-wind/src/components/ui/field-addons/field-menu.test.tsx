@@ -98,6 +98,78 @@ describe('FieldMenu', () => {
     expect(await itemOf('Remove')).toHaveClass('text-error');
   });
 
+  describe('action descriptions', () => {
+    const ICON = 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http://www.w3.org/2000/svg%22/%3E';
+
+    it('renders the description under the label, as a mode row does', async () => {
+      render(
+        <FieldMenu
+          mode="literal"
+          onSelect={vi.fn()}
+          actions={[
+            {
+              id: 'url',
+              label: 'Enter URL',
+              description: 'Paste a link to the resource',
+              iconDataUri: ICON,
+              onSelect: vi.fn(),
+            },
+          ]}
+        />
+      );
+      await open();
+      const item = await itemOf('Enter URL');
+      const label = screen.getByText('Enter URL');
+      const description = screen.getByText('Paste a link to the resource');
+
+      expect(item).toHaveClass('flex-col', 'items-start');
+      expect(item).toHaveTextContent('Enter URLPaste a link to the resource');
+      expect(label).toHaveClass('text-xs', 'font-medium');
+      // Same anatomy as the mode rows above it.
+      expect(description.className).toBe(screen.getByText('Enter a value directly').className);
+      expect(label.compareDocumentPosition(description)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+      expect(item.querySelector(`img[src="${ICON}"]`)).not.toBeNull();
+    });
+
+    it('keeps a row without a description on one line', async () => {
+      render(
+        <FieldMenu
+          mode="literal"
+          onSelect={vi.fn()}
+          actions={[{ id: 'clear', label: 'Clear value', icon: Type, onSelect: vi.fn() }]}
+        />
+      );
+      await open();
+      const item = await itemOf('Clear value');
+
+      expect(item).not.toHaveClass('flex-col');
+      expect(item).toHaveTextContent(/^Clear value$/);
+      expect(item.children).toHaveLength(1);
+      expect(item.firstElementChild?.tagName.toLowerCase()).toBe('svg');
+    });
+
+    it('keeps a destructive row’s colour on its label', async () => {
+      render(
+        <FieldMenu
+          mode="literal"
+          onSelect={vi.fn()}
+          actions={[
+            {
+              id: 'remove',
+              label: 'Remove',
+              description: 'Deletes the binding',
+              destructive: true,
+              onSelect: vi.fn(),
+            },
+          ]}
+        />
+      );
+      await open();
+      expect(await itemOf('Remove')).toHaveClass('text-error', 'flex-col');
+      expect(screen.getByText('Remove')).not.toHaveClass('text-foreground');
+    });
+  });
+
   it('marks the mode named by `checked` when it differs from the trigger', async () => {
     render(<FieldMenu mode="literal" checked="expression" onSelect={vi.fn()} />);
     await open();

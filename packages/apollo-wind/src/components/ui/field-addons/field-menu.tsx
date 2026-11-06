@@ -1,4 +1,5 @@
 import { type LucideIcon, MoreHorizontal, Type } from 'lucide-react';
+import type { ReactNode } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +28,8 @@ export interface FieldMenuItem {
   icon?: LucideIcon;
   /** Icon as a data URI, used when `icon` is absent. */
   iconDataUri?: string;
+  /** A line under the label. With it the row takes a mode row's two-line layout. */
+  description?: string;
   disabled?: boolean;
   /** Styles the row as one that removes or discards something. */
   destructive?: boolean;
@@ -87,6 +90,34 @@ type OwnModes<Id extends string> = {
 
 const DEFAULT_MODES: ValueMode[] = ['literal', 'expression'];
 
+/** A menu row with a description under its label: a mode, or an action that has one. */
+const DESCRIBED_ITEM_CLASS = 'flex-col items-start gap-0.5 py-2';
+
+/** The icon-and-label line of a described row, with the description under it. */
+function DescribedItemContent({
+  icon,
+  label,
+  labelClassName,
+  description,
+}: {
+  icon: ReactNode;
+  label: string;
+  labelClassName?: string;
+  description?: string;
+}) {
+  return (
+    <>
+      <div className="flex items-center gap-2">
+        {icon}
+        <span className={cn('text-xs font-medium', labelClassName)}>{label}</span>
+      </div>
+      {description && (
+        <span className="pl-6 text-[11px] leading-4 text-foreground-subtle">{description}</span>
+      )}
+    </>
+  );
+}
+
 /**
  * One selectable mode in a value-mode dropdown: icon and label, with an optional description.
  * Shared with QuickFormField's mode dropdown, and not exported from the package.
@@ -112,20 +143,17 @@ export function ValueModeMenuItem({
       // item does. Radix's own radio item needs a radio group, which QuickFormField lacks.
       role="menuitemradio"
       aria-checked={active}
-      className="flex-col items-start gap-0.5 py-2"
+      className={DESCRIBED_ITEM_CLASS}
       data-active={active || undefined}
       disabled={disabled}
       onClick={onClick}
     >
-      <div className="flex items-center gap-2">
-        <Icon size={13} className={active ? 'text-brand' : 'text-foreground-muted'} />
-        <span className={cn('text-xs font-medium', active ? 'text-brand' : 'text-foreground')}>
-          {label}
-        </span>
-      </div>
-      {description && (
-        <span className="pl-6 text-[11px] leading-4 text-foreground-subtle">{description}</span>
-      )}
+      <DescribedItemContent
+        icon={<Icon size={13} className={active ? 'text-brand' : 'text-foreground-muted'} />}
+        label={label}
+        labelClassName={active ? 'text-brand' : 'text-foreground'}
+        description={description}
+      />
     </DropdownMenuItem>
   );
 }
@@ -203,21 +231,36 @@ export function FieldMenu<Id extends string = ValueMode>({
         {!modesDisabled && !!actions?.length && <DropdownMenuSeparator />}
         {actions?.map((action) => {
           const ActionIcon = action.icon;
+          const icon = ActionIcon ? (
+            <ActionIcon />
+          ) : (
+            action.iconDataUri && (
+              <img src={action.iconDataUri} alt="" className="size-4 shrink-0" />
+            )
+          );
           return (
             <DropdownMenuItem
               key={action.id}
               disabled={action.disabled}
               onClick={action.onSelect}
-              className={cn(action.destructive && 'text-error focus:text-error')}
-            >
-              {ActionIcon ? (
-                <ActionIcon />
-              ) : (
-                action.iconDataUri && (
-                  <img src={action.iconDataUri} alt="" className="size-4 shrink-0" />
-                )
+              className={cn(
+                action.description && DESCRIBED_ITEM_CLASS,
+                action.destructive && 'text-error focus:text-error'
               )}
-              {action.label}
+            >
+              {action.description ? (
+                // The label inherits the row's colour, so a destructive row keeps its tone.
+                <DescribedItemContent
+                  icon={icon}
+                  label={action.label}
+                  description={action.description}
+                />
+              ) : (
+                <>
+                  {icon}
+                  {action.label}
+                </>
+              )}
             </DropdownMenuItem>
           );
         })}
