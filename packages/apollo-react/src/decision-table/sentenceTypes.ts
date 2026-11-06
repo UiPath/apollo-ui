@@ -1,4 +1,4 @@
-import type { GridCellId, GridColumn, GridColumnGroup } from './gridTypes';
+import type { GridColumn, GridColumnGroup } from './gridTypes';
 import type { MarkTone } from './marks';
 
 /** A column name or a cell value inside a sentence; `columnId` is the input's or output's id. */
@@ -40,13 +40,16 @@ export interface SentenceHeader {
 }
 
 /** A cell, addressed as the grid's marks address it. */
-export type SentenceCellId = GridCellId;
+export interface SentenceCellId {
+  rowId: string;
+  columnId: string;
+}
 
 /** The view's own strings; the consumer passes localized values. */
 export interface SentenceLabels {
   emptyRows: string;
   /** One mark as read aloud, e.g. "Warning: Overlaps row 1"; `message` is absent when the mark has none. */
-  markStatus: (tone: Extract<MarkTone, 'error' | 'warning'>, message: string | undefined) => string;
+  markStatus: (tone: Exclude<MarkTone, 'success'>, message: string | undefined) => string;
   /** The count a line shows in place of the values past its limit, e.g. "+9,980 more". */
   moreValues: (count: number) => string;
 }

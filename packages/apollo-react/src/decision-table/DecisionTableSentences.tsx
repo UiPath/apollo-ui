@@ -4,7 +4,7 @@ import { useCallback, useEffect, useId, useMemo, useRef } from 'react';
 import { FALLBACK_ROW_VIEWPORT_PX } from './constants';
 import { EMPTY_MARKS, type TableMarks } from './marks';
 import { MarkBadge, markIds, SentenceRowCard } from './SentenceRowCard';
-import { isLineMark, type LineMarks } from './sentenceMarks';
+import { isLineMark } from './sentenceMarks';
 import {
   SENTENCE_LINE_HEIGHT_PX,
   SENTENCE_MIN_ROW_HEIGHT_PX,
@@ -181,21 +181,21 @@ export const DecisionTableSentences: React.FC<DecisionTableSentencesProps> = ({
               >
                 {band.columns.map((column, columnIndex) => {
                   const mark = marks.columns.get(column.id);
-                  const columnMarks: LineMarks | null = isLineMark(mark) ? [mark] : null;
+                  const columnMarks = isLineMark(mark) ? [mark] : [];
                   const badgeId = `${idPrefix}-band-${bandIndex}-${columnIndex}`;
                   return (
                     <li
                       key={column.id}
                       className={BAND_COLUMN_CLASS}
                       aria-describedby={
-                        columnMarks ? markIds(badgeId, columnMarks).join(' ') : undefined
+                        columnMarks.length > 0 ? markIds(badgeId, columnMarks).join(' ') : undefined
                       }
                       data-column-id={column.id}
                       data-tone={mark?.tone}
                       data-mark-title={mark?.title}
                     >
                       {column.name}
-                      {columnMarks && (
+                      {columnMarks.length > 0 && (
                         <MarkBadge id={badgeId} marks={columnMarks} labels={labels} />
                       )}
                     </li>
