@@ -2,7 +2,15 @@ import { Column } from '@uipath/apollo-react/canvas/layouts';
 import { CanvasIcon, cx, partition } from '@uipath/apollo-react/canvas/utils';
 import { badgeVariants, cn, Skeleton } from '@uipath/apollo-wind';
 import { motion } from 'motion/react';
-import { forwardRef, memo, useCallback, useId, useImperativeHandle, useMemo } from 'react';
+import {
+  forwardRef,
+  memo,
+  useCallback,
+  useEffect,
+  useId,
+  useImperativeHandle,
+  useMemo,
+} from 'react';
 import { List, type ListImperativeAPI, type RowComponentProps } from 'react-window';
 import { useSafeLingui } from '../../../i18n';
 import { useCanvasTheme } from '../BaseCanvas/CanvasThemeContext';
@@ -106,6 +114,8 @@ export type RenderItem<T extends ListItem> =
   | { type: 'divider' };
 
 const DEFAULT_SKELETON_COUNT = 3;
+
+export const TOOLBOX_LISTBOX_ID = 'toolbox-listbox';
 
 // Row heights are resolved per render item so dense single-line rows,
 // two-line rows (with an inline `description`), section headers, and dividers
@@ -465,6 +475,11 @@ interface ListViewProps<T extends ListItem> {
    * rest of the panel (which `isLoading` does via the `.loading` row class).
    */
   loadingSkeleton?: boolean | ChildrenLoadingSpec;
+  /**
+   * Called with whether the listbox is mounted, as it gives way to the empty
+   * state and back, so a controlling combobox can keep `aria-controls` valid.
+   */
+  onListboxPresenceChange?: (present: boolean) => void;
 }
 
 /**
@@ -501,6 +516,7 @@ const ListViewInner = forwardRef(function ListView<T extends ListItem>(
     keyboardNav,
     enableSections = true,
     loadingSkeleton,
+    onListboxPresenceChange,
   }: ListViewProps<T>,
   ref: React.Ref<ListViewHandle<T>>
 ) {
@@ -520,6 +536,11 @@ const ListViewInner = forwardRef(function ListView<T extends ListItem>(
   );
 
   useImperativeHandle(ref, () => ({ renderedItems }), [renderedItems]);
+
+  const hasListbox = renderedItems.length > 0;
+  useEffect(() => {
+    onListboxPresenceChange?.(hasListbox);
+  }, [hasListbox, onListboxPresenceChange]);
 
   const rowProps = useMemo(
     () => ({
@@ -542,7 +563,7 @@ const ListViewInner = forwardRef(function ListView<T extends ListItem>(
   // Show empty state when nothing would render — neither real items nor
   // skeleton placeholders. Loading-driven paths above keep `renderedItems`
   // non-empty (skeleton rows), so renderEmptyState is naturally bypassed.
-  if (renderedItems.length === 0) {
+  if (!hasListbox) {
     if (renderEmptyState) return renderEmptyState();
     return (
       <Column align="center" justify="center" flex={1} gap={10} style={{ minHeight: '250px' }}>
@@ -554,7 +575,7 @@ const ListViewInner = forwardRef(function ListView<T extends ListItem>(
 
   return (
     <List
-      id="toolbox-listbox"
+      id={TOOLBOX_LISTBOX_ID}
       className={LIST_SCROLLBAR_CLASS}
       role="listbox"
       // Signal "list is being updated" to assistive tech while skeleton
