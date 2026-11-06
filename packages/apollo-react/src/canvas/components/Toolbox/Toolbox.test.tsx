@@ -54,6 +54,19 @@ describe('Toolbox', () => {
       expect(screen.getByText('Test Toolbox')).toBeInTheDocument();
     });
 
+    it('exposes the title and the drilled-in category as a heading', async () => {
+      const user = userEvent.setup();
+      const { unmount } = render(<Toolbox {...defaultProps} />);
+
+      expect(screen.getByRole('heading', { level: 2, name: 'Test Toolbox' })).toBeInTheDocument();
+      await user.click(screen.getByText('Item 2'));
+      expect(screen.getByRole('heading', { level: 2, name: 'Item 2' })).toBeInTheDocument();
+      unmount();
+
+      render(<Toolbox {...defaultProps} titleHeadingLevel={3} />);
+      expect(screen.getByRole('heading', { level: 3, name: 'Test Toolbox' })).toBeInTheDocument();
+    });
+
     it('should render search box', () => {
       render(<Toolbox {...defaultProps} />);
 
