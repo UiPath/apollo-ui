@@ -14,7 +14,12 @@ const list = (count: number): SentencePart[] => [
 describe('boundedParts', () => {
   it('keeps every part when the values fit the limit', () => {
     const parts = list(3);
-    expect(boundedParts(parts, 3)).toEqual({ shown: parts, hidden: [], hiddenValues: 0 });
+    expect(boundedParts(parts, 3)).toEqual({
+      shown: parts,
+      hidden: [],
+      after: [],
+      hiddenValues: 0,
+    });
   });
 
   it('ends on the last value it shows and counts the values it hides', () => {

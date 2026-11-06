@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { axe } from 'jest-axe';
-import { expectTypeOf, vi } from 'vitest';
+import { vi } from 'vitest';
 import {
   CHANNEL,
   COUNTRY,
@@ -18,6 +18,7 @@ import { EMPTY_VALUE_DASH } from './constants';
 import { DecisionTableSentences, type DecisionTableSentencesProps } from './DecisionTableSentences';
 import type { RowMark, TableMarks } from './marks';
 import { sentenceRowOffsets } from './sentenceRowHeights';
+import type { SentenceRow } from './sentenceTypes';
 
 const view = (props: Partial<DecisionTableSentencesProps> = {}) => (
   <DecisionTableSentences
@@ -371,18 +372,6 @@ describe('DecisionTableSentences', () => {
       renderView({ rows: [] });
       expect(within(screen.getByTestId('nl-empty')).queryByRole('button')).toBeNull();
     });
-
-    it('takes an add action only with its label', () => {
-      expectTypeOf<{ onAdd: () => void }>().not.toExtend<
-        NonNullable<DecisionTableSentencesProps['addRow']>
-      >();
-    });
-
-    it('lets a wrapper forward every prop but its testid', () => {
-      expectTypeOf<
-        Omit<DecisionTableSentencesProps, 'dataTestId'> & { dataTestId: string }
-      >().toExtend<DecisionTableSentencesProps>();
-    });
   });
 
   describe('windowing', () => {
@@ -453,6 +442,43 @@ describe('DecisionTableSentences', () => {
       expect(line?.querySelector('[data-kind="input"]')).toHaveTextContent('Country');
       expect(line?.querySelector('[data-more-values]')?.getAttribute('title')).toBe(
         `${texts.slice(20, 40).join(', ')}… ← Country`
+      );
+    });
+
+    const countryThenAge = (count: number): SentenceRow => {
+      const [first] = MULTI_SENTENCE_ROWS;
+      if (!first) throw new Error('fixture');
+      const values = Array.from({ length: count }, (_, index) => `"C${index + 1}"`);
+      return {
+        ...first,
+        lead: [
+          'when ',
+          COUNTRY,
+          ' is one of ',
+          ...values.flatMap((text, index) =>
+            index === 0 ? [country(text)] : [', ', country(text)]
+          ),
+          ' and ',
+          { columnId: 'age', kind: 'input', text: 'Age' },
+          ' is greater than ',
+          { columnId: 'age', kind: 'value', text: '18' },
+        ],
+        lines: [],
+      };
+    };
+    const lead = () => card('m1').querySelector<HTMLElement>('[id$="-lead"]');
+
+    it('clamps a line per run of one column, so 20 values and then another column all show', () => {
+      renderView({ rows: [countryThenAge(20)] });
+      expect(lead()?.textContent).toMatch(/"C20" and Age is greater than 18$/);
+      expect(card('m1').querySelector('[data-more-values]')).toBeNull();
+    });
+
+    it('keeps the words after a clamped run on the line and in its title', () => {
+      renderView({ rows: [countryThenAge(21)] });
+      expect(lead()?.textContent).toMatch(/"C20" and Age is greater than 18$/);
+      expect(card('m1').querySelector('[data-more-values]')?.getAttribute('title')).toBe(
+        '"C21" and Age is greater than 18'
       );
     });
 

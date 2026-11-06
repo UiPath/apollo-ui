@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
-import type { CellCommitMove, GridCellId, GridPosition, GridRange } from './gridTypes';
+import type { CellCommitMove, GridPosition, GridRange } from './gridTypes';
 
 export type { GridPosition, GridRange };
 
@@ -54,7 +54,7 @@ export interface GridNavigation {
   /** Cell coordinates if there is a single selection, or null otherwise. */
   singleSelection: GridPosition | null;
   /** The focus cell's ids. */
-  selectedIds: GridCellId | null;
+  selectedIds: { rowId: string; columnId: string } | null;
   /** The full rectangular selection, or null when nothing is selected. */
   range: GridRange | null;
   /** Which axis gesture made the current selection, or null for an ordinary cell selection. */

@@ -3,9 +3,9 @@ import type React from 'react';
 import { memo } from 'react';
 import { showTitleIfClipped } from './clippedTitle';
 import { MarkGlyph } from './MarkGlyph';
-import type { RowMark } from './marks';
-import { type LineMarks, lineMarksOf, worstTone } from './sentenceMarks';
-import { boundedParts, partsText, tokenText, trailingParts } from './sentenceParts';
+import type { Mark, RowMark } from './marks';
+import { type LineMark, lineMarksOf, worstTone } from './sentenceMarks';
+import { boundedParts, partsText, tokenText } from './sentenceParts';
 import {
   HEADING_TEXT_CLASS,
   LINE_BULLET_CLASS,
@@ -31,14 +31,14 @@ const SENTENCE_LINE_VALUE_LIMIT = 20;
 const markId = (id: string, index: number): string => `${id}-${index}`;
 
 /** The ids of a badge's announcements, for the `aria-describedby` of whatever it ends. */
-export const markIds = (id: string, marks: LineMarks): string[] =>
+export const markIds = (id: string, marks: readonly LineMark[]): string[] =>
   marks.map((_, index) => markId(id, index));
 
 /** A glyph in the worst tone of its marks, and each mark's announcement for `aria-describedby`. */
 export const MarkBadge: React.FC<{
   id: string;
-  marks: LineMarks;
-  labels: Pick<SentenceLabels, 'markStatus'>;
+  marks: readonly LineMark[];
+  labels: SentenceLabels;
 }> = ({ id, marks, labels }) => {
   const tone = worstTone(marks);
   const titles = marks.flatMap((mark) => (mark.title ? [mark.title] : []));
@@ -60,11 +60,10 @@ export const MarkBadge: React.FC<{
 
 const TokenChip: React.FC<{
   token: SentenceToken;
-  cells: RowMark['cells'];
+  mark: Mark | undefined;
   output: boolean;
-}> = ({ token, cells, output }) => {
+}> = ({ token, mark, output }) => {
   const isValue = token.kind === 'value';
-  const mark = isValue ? cells?.[token.columnId] : undefined;
   return (
     <span
       className={cn(
@@ -82,10 +81,10 @@ const TokenChip: React.FC<{
   );
 };
 
-/** The first values of the hidden run, an ellipsis if any remain, then the line's words after its last value. */
-const hiddenTitle = (hidden: readonly SentencePart[], parts: readonly SentencePart[]): string => {
+/** The first values of the hidden run, an ellipsis if any remain, then the parts after the run. */
+const hiddenTitle = (hidden: readonly SentencePart[], after: readonly SentencePart[]): string => {
   const { shown, hiddenValues } = boundedParts(hidden, SENTENCE_LINE_VALUE_LIMIT);
-  return `${partsText(shown)}${hiddenValues > 0 ? '…' : ''}${partsText(trailingParts(parts))}`;
+  return `${partsText(shown)}${hiddenValues > 0 ? '…' : ''}${partsText(after)}`;
 };
 
 /** One clamped line: its first values, then a count of the rest that the clamp never hides. */
@@ -94,9 +93,9 @@ const LineText: React.FC<{
   heading?: boolean;
   parts: readonly SentencePart[];
   cells: RowMark['cells'];
-  labels: Pick<SentenceLabels, 'moreValues'>;
+  labels: SentenceLabels;
 }> = ({ id, heading = false, parts, cells, labels }) => {
-  const { shown, hidden, hiddenValues } = boundedParts(parts, SENTENCE_LINE_VALUE_LIMIT);
+  const { shown, hidden, after, hiddenValues } = boundedParts(parts, SENTENCE_LINE_VALUE_LIMIT);
   return (
     <>
       <span
@@ -110,7 +109,12 @@ const LineText: React.FC<{
               {part}
             </span>
           ) : (
-            <TokenChip key={index} token={part} cells={cells} output={heading} />
+            <TokenChip
+              key={index}
+              token={part}
+              mark={part.kind === 'value' ? cells?.[part.columnId] : undefined}
+              output={heading}
+            />
           )
         )}
       </span>
@@ -118,7 +122,7 @@ const LineText: React.FC<{
         <span
           className={MORE_VALUES_CLASS}
           data-more-values={hiddenValues}
-          title={hiddenTitle(hidden, parts)}
+          title={hiddenTitle(hidden, after)}
         >
           {labels.moreValues(hiddenValues)}
         </span>
@@ -136,7 +140,7 @@ export interface SentenceRowCardProps {
   mark: RowMark | undefined;
   idPrefix: string;
   dataTestId: string;
-  labels: Pick<SentenceLabels, 'markStatus' | 'moreValues'>;
+  labels: SentenceLabels;
 }
 
 /** One row as a sentence: its heading, its lead and its condition lines. */
@@ -144,8 +148,8 @@ export const SentenceRowCard = memo<SentenceRowCardProps>(
   ({ row, position, setSize, numbered, mark, idPrefix, dataTestId, labels }) => {
     const id = `${idPrefix}-${position}`;
     const cells = mark?.cells;
-    const badgeFor = (key: string, marks: LineMarks | null) =>
-      marks ? { id: `${id}-mark-${key}`, marks, labels } : null;
+    const badgeFor = (key: string, marks: LineMark[]) =>
+      marks.length > 0 ? { id: `${id}-mark-${key}`, marks, labels } : null;
     const headingBadge = badgeFor('heading', lineMarksOf(row.heading, cells, mark));
     const leadBadge = badgeFor('lead', lineMarksOf(row.lead, cells));
     const lineBadges = row.lines.map((line, index) =>
