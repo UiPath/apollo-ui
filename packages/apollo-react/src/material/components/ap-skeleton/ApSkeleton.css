@@ -1,30 +1,17 @@
-/* ApSkeleton global animations */
-
-/* A shared custom css property to control the horizontal position of the skeleton shimmer background */
-@property --ap-skeleton_background-position-x {
-  syntax: "<percentage>";
-  inherits: true;
-  initial-value: 200%;
-}
-
-/* Animate the shimmer background when skeletons are present */
-body.has-skeletons {
-  animation: 2s anim-skeleton-shimmer linear infinite;
-}
-
-/* For accessibility, disable animations if the user has requested reduced motion */
-@media (prefers-reduced-motion) {
-  body.has-skeletons {
-    animation: none;
-  }
-}
-
-/* Animate the shimmer background from left to right (from outside of the viewport) */
-@keyframes anim-skeleton-shimmer {
+/* ApSkeleton shimmer keyframes.
+ *
+ * Each skeleton animates its own background (see ApSkeleton.tsx). The previous implementation animated an
+ * inherited custom property on `body.has-skeletons`, which made the browser recalculate the styles of the
+ * whole document on every frame while any skeleton was rendered.
+ *
+ * The name and definition intentionally match the `@keyframes ap-skeleton-shimmer` injected by portal-shell's
+ * `ap-skeleton`, so pages loading both get the same animation.
+ */
+@keyframes ap-skeleton-shimmer {
   0% {
-    --ap-skeleton_background-position-x: 200%;
+    background-position-x: 200%;
   }
   100% {
-    --ap-skeleton_background-position-x: -200%;
+    background-position-x: -200%;
   }
 }

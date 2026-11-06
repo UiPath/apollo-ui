@@ -1,9 +1,19 @@
 import { styled } from '@mui/material';
 import token from '@uipath/apollo-core';
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 
 import type { ApSkeletonProps } from './ApSkeleton.types';
+import {
+  SKELETON_SHIMMER_ANIMATION_NAME,
+  SKELETON_SHIMMER_DELAY_CSS_PROPERTY,
+  SKELETON_SHIMMER_DURATION_MS,
+  syncSkeletonShimmer,
+} from './ApSkeleton.utils';
 import './ApSkeleton.css';
+
+// `useLayoutEffect` in the browser (runs before the first paint, i.e. before the animation starts),
+// `useEffect` on the server to avoid React's SSR warning.
+const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
 const StyledSkeleton = styled('div')<{
   variant: 'rectangle' | 'circle' | 'border';
@@ -36,8 +46,12 @@ const StyledSkeleton = styled('div')<{
   // corner of the viewport regardless of the component's size or position
   backgroundAttachment: 'fixed',
 
-  // Set the background's X position based on the shimmer animation value
-  backgroundPositionX: 'var(--ap-skeleton_background-position-x, 0%)',
+  // Animate this element's own background. The animation only affects this element, unlike the previous
+  // implementation which animated an inherited custom property on <body> and forced a style recalculation
+  // of the whole document on every frame. All skeletons are put in phase when they mount
+  // (see `syncSkeletonShimmer`).
+  animation: `${SKELETON_SHIMMER_ANIMATION_NAME} ${SKELETON_SHIMMER_DURATION_MS}ms linear infinite`,
+  animationDelay: `var(${SKELETON_SHIMMER_DELAY_CSS_PROPERTY}, 0ms)`,
 
   // Render a space character so the skeleton size adapts to the parent's font-size
   '&:empty::before': {
@@ -59,12 +73,14 @@ const StyledSkeleton = styled('div')<{
     background: 'none',
     backgroundImage: 'none',
     border: '1px solid var(--color-skeleton)',
+    animation: 'none',
   }),
 
   // Disable shimmer animation for reduced motion
   '@media (prefers-reduced-motion)': {
     backgroundImage: 'none',
     backgroundPosition: '0% 0%',
+    animation: 'none',
   },
 }));
 
@@ -85,19 +101,31 @@ export const ApSkeleton = React.forwardRef<HTMLDivElement, ApSkeletonProps>(
     },
     ref
   ) => {
-    useEffect(() => {
-      // Add body class to enable skeleton animations
-      document.body.classList.add('has-skeletons');
+    const elementRef = useRef<HTMLDivElement | null>(null);
 
-      return () => {
-        // Remove body class when all skeletons are unmounted
-        document.body.classList.remove('has-skeletons');
-      };
+    const setRefs = useCallback(
+      (node: HTMLDivElement | null) => {
+        elementRef.current = node;
+        if (typeof ref === 'function') {
+          ref(node);
+        } else if (ref) {
+          ref.current = node;
+        }
+      },
+      [ref]
+    );
+
+    // Align this skeleton's shimmer with every other skeleton on the page. Done on the element after mount (not via
+    // the `style` prop) so it only runs on the client and never causes an SSR hydration mismatch.
+    useIsomorphicLayoutEffect(() => {
+      if (elementRef.current) {
+        syncSkeletonShimmer(elementRef.current);
+      }
     }, []);
 
     return (
       <StyledSkeleton
-        ref={ref}
+        ref={setRefs}
         variant={variant}
         circleSize={circleSize}
         className={className}
