@@ -257,58 +257,58 @@ describe('DecisionTableSentences', () => {
 
   describe('hover', () => {
     it('reports nothing for a name chip or a band column', () => {
-      const onTokenHover = vi.fn();
-      renderView({ onTokenHover });
+      const onCellHover = vi.fn();
+      renderView({ onCellHover });
       const name = card('m3').querySelector('[data-kind="input"][data-column-id="score"]');
       const column = screen.getByTestId('nl-bands').querySelector('[data-column-id="score"]');
       if (!name || !column) throw new Error('chips');
       fireEvent.pointerOver(name);
       fireEvent.pointerOver(column);
-      expect(onTokenHover).not.toHaveBeenCalled();
+      expect(onCellHover).not.toHaveBeenCalled();
     });
 
     it('reports the cell a hovered chip stands for once a re-render rewords it', () => {
-      const onTokenHover = vi.fn();
-      const { rerender } = renderView({ onTokenHover });
+      const onCellHover = vi.fn();
+      const { rerender } = renderView({ onCellHover });
       fireEvent.pointerOver(valueChip('m3', 'score'));
       const reworded = MULTI_SENTENCE_ROWS.map((row) =>
         row.rowId === 'm3'
           ? { ...row, lead: ['when ', CHANNEL, ' is not ', channel('"branch"')] }
           : row
       );
-      rerender(view({ onTokenHover, rows: reworded }));
-      expect(onTokenHover.mock.calls).toEqual([
+      rerender(view({ onCellHover, rows: reworded }));
+      expect(onCellHover.mock.calls).toEqual([
         [{ rowId: 'm3', columnId: 'score' }],
         [{ rowId: 'm3', columnId: 'channel' }],
       ]);
     });
 
     it('reports null when scrolling unmounts the hovered row', () => {
-      const onTokenHover = vi.fn();
+      const onCellHover = vi.fn();
       const rows = manySentenceRows(2000);
-      renderView({ rows, onTokenHover });
+      renderView({ rows, onCellHover });
       fireEvent.pointerOver(valueChip('row-0', 'decision'));
       act(() => scrollTo(sentenceRowOffsets(rows)[500] ?? 0));
       expect(screen.queryByTestId('nl-row-row-0')).toBeNull();
-      expect(onTokenHover).toHaveBeenLastCalledWith(null);
+      expect(onCellHover).toHaveBeenLastCalledWith(null);
     });
 
     it('reports null when it unmounts under the pointer', () => {
-      const onTokenHover = vi.fn();
-      const { unmount } = renderView({ onTokenHover });
+      const onCellHover = vi.fn();
+      const { unmount } = renderView({ onCellHover });
       fireEvent.pointerOver(valueChip('m1', 'score'));
       unmount();
-      expect(onTokenHover).toHaveBeenLastCalledWith(null);
+      expect(onCellHover).toHaveBeenLastCalledWith(null);
     });
 
     it("reports the value chip under the pointer by its cell and null when it leaves, keeping the host's own pointer handlers", () => {
-      const onTokenHover = vi.fn();
+      const onCellHover = vi.fn();
       const onPointerOver = vi.fn();
       const onPointerOut = vi.fn();
-      renderView({ onTokenHover, containerProps: { onPointerOver, onPointerOut } });
+      renderView({ onCellHover, containerProps: { onPointerOver, onPointerOut } });
       fireEvent.pointerOver(valueChip('m3', 'score'));
       fireEvent.pointerOut(valueChip('m3', 'score'), { relatedTarget: document.body });
-      expect(onTokenHover.mock.calls).toEqual([[{ rowId: 'm3', columnId: 'score' }], [null]]);
+      expect(onCellHover.mock.calls).toEqual([[{ rowId: 'm3', columnId: 'score' }], [null]]);
       expect(onPointerOver).toHaveBeenCalledTimes(1);
       expect(onPointerOut).toHaveBeenCalledTimes(1);
     });

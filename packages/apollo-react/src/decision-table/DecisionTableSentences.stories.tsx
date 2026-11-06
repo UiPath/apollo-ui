@@ -28,7 +28,7 @@ const DemoSentences = (props: Partial<DecisionTableSentencesProps>) => {
         labels={SENTENCE_LABELS}
         ariaLabel="Rules"
         dataTestId="sentences"
-        onTokenHover={setHovered}
+        onCellHover={setHovered}
         {...props}
       />
       <p className="text-xs text-foreground-de-emp">

@@ -66,8 +66,8 @@ export interface DecisionTableSentencesProps {
   marks?: TableMarks;
   /** The empty state's add action and its label. */
   addRow?: { label: string; onAdd: () => void };
-  /** The value chip under the pointer, by the cell it stands for, or null once it is left or gone. */
-  onTokenHover?: (cell: SentenceCellId | null) => void;
+  /** The cell whose value chip is under the pointer, or null once it is left or gone. */
+  onCellHover?: (cell: SentenceCellId | null) => void;
   /** The view's own strings; mounted rows re-render when it changes, so memoize it. */
   labels: SentenceLabels;
   /** Accessible name of the scroll region. */
@@ -86,7 +86,7 @@ export const DecisionTableSentences: React.FC<DecisionTableSentencesProps> = ({
   numbered = false,
   marks = EMPTY_MARKS,
   addRow,
-  onTokenHover,
+  onCellHover,
   labels,
   ariaLabel,
   containerProps,
@@ -95,8 +95,8 @@ export const DecisionTableSentences: React.FC<DecisionTableSentencesProps> = ({
   const idPrefix = useId();
   const listRef = useRef<HTMLUListElement | null>(null);
 
-  const onTokenHoverRef = useRef(onTokenHover);
-  onTokenHoverRef.current = onTokenHover;
+  const onCellHoverRef = useRef(onCellHover);
+  onCellHoverRef.current = onCellHover;
   const hoveredRef = useRef<HoveredToken | null>(null);
   const hoverTo = useCallback((next: HoveredToken | null) => {
     const current = hoveredRef.current;
@@ -105,7 +105,7 @@ export const DecisionTableSentences: React.FC<DecisionTableSentencesProps> = ({
       current?.cell.rowId !== next?.cell.rowId ||
       current?.cell.columnId !== next?.cell.columnId
     ) {
-      onTokenHoverRef.current?.(next?.cell ?? null);
+      onCellHoverRef.current?.(next?.cell ?? null);
     }
   }, []);
   useEffect(() => {
