@@ -1,6 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { Braces, MoreHorizontal } from 'lucide-react';
 import { useState } from 'react';
 import { Modal, ModalContent, ModalDescription, ModalHeader, ModalTitle } from '../dialog';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+  type InputGroupProps,
+  InputGroupTextarea,
+} from '../input-group';
 import { VARIABLE_DRAG_MIME } from './plugins/VariableDropPlugin';
 import { PromptEditor } from './prompt-editor';
 import type { PromptEditorAutoCompleteOption, PromptEditorMode, PromptEditorToken } from './types';
@@ -24,8 +33,8 @@ const meta = {
     editorRef: { control: false },
   },
   decorators: [
-    (Story) => (
-      <div style={{ width: 560 }}>
+    (Story, { parameters }) => (
+      <div style={{ width: parameters.width ?? 560 }}>
         <Story />
       </div>
     ),
@@ -226,6 +235,142 @@ export const Borderless: Story = {
     autoCompleteOptions: AUTOCOMPLETE_OPTIONS,
     ariaLabel: 'Prompt',
   },
+};
+
+interface InputGroupCase {
+  label: string;
+  group?: Pick<InputGroupProps, 'layout' | 'variant' | 'invalid' | 'disabled'>;
+  leading?: boolean;
+  filled?: boolean;
+}
+
+const SINGLE_LINE_CASES: InputGroupCase[] = [
+  { label: 'Empty' },
+  { label: 'Value', filled: true },
+  { label: 'Leading addon', leading: true, filled: true },
+  { label: 'Row layout', group: { layout: 'row' }, filled: true },
+  { label: 'Ghost', group: { variant: 'ghost' }, filled: true },
+  { label: 'Outline', group: { variant: 'outline' }, filled: true },
+  { label: 'Agent', group: { variant: 'agent' }, filled: true },
+  { label: 'Invalid', group: { invalid: true }, filled: true },
+  { label: 'Disabled', group: { disabled: true }, filled: true },
+];
+
+const MULTILINE_CASES: InputGroupCase[] = [
+  { label: 'Empty' },
+  { label: 'Value', filled: true },
+  { label: 'Leading addon', leading: true, filled: true },
+];
+
+const SINGLE_LINE_VALUE: PromptEditorToken[] = [
+  { type: 'text', value: 'Hello ' },
+  { type: 'input', value: 'vars.firstName' },
+];
+
+function LeadingAddon() {
+  return (
+    <InputGroupAddon>
+      <Braces className="text-muted-foreground" />
+    </InputGroupAddon>
+  );
+}
+
+function TrailingAddon() {
+  return (
+    <InputGroupAddon align="inline-end">
+      <InputGroupButton icon size="3xs" aria-label="Field options">
+        <MoreHorizontal />
+      </InputGroupButton>
+    </InputGroupAddon>
+  );
+}
+
+function InputGroupCaseRow({ item, multiline }: { item: InputGroupCase; multiline: boolean }) {
+  const { label, group, leading, filled } = item;
+  const disabled = group?.disabled;
+  const placeholder = multiline ? 'Write your prompt…' : 'Enter a greeting';
+  return (
+    <>
+      <span className="text-xs text-muted-foreground">{label}</span>
+      {/* The reference control: what the editor's box should match. */}
+      <InputGroup {...group} layout={multiline ? 'grow' : group?.layout}>
+        {leading && <LeadingAddon />}
+        {multiline ? (
+          <InputGroupTextarea
+            aria-label={`${label} textarea`}
+            rows={4}
+            placeholder={placeholder}
+            defaultValue={filled ? 'Greet the user and summarize the request.' : undefined}
+            aria-invalid={group?.invalid || undefined}
+            disabled={disabled}
+          />
+        ) : (
+          <InputGroupInput
+            aria-label={`${label} input`}
+            placeholder={placeholder}
+            defaultValue={filled ? 'Hello Ada' : undefined}
+            aria-invalid={group?.invalid || undefined}
+            disabled={disabled}
+          />
+        )}
+        <TrailingAddon />
+      </InputGroup>
+      <InputGroup {...group} layout={multiline ? 'fill' : (group?.layout ?? 'grow')}>
+        {leading && <LeadingAddon />}
+        <PromptEditor
+          borderless
+          multiline={multiline}
+          ariaLabel={`${label} prompt editor`}
+          placeholder={placeholder}
+          initialValue={filled ? (multiline ? SAMPLE_VALUE : SINGLE_LINE_VALUE) : undefined}
+          autoCompleteOptions={AUTOCOMPLETE_OPTIONS}
+          disabled={disabled}
+        />
+        <TrailingAddon />
+      </InputGroup>
+    </>
+  );
+}
+
+function InputGroupCaseSection({
+  title,
+  cases,
+  multiline,
+}: {
+  title: string;
+  cases: InputGroupCase[];
+  multiline: boolean;
+}) {
+  return (
+    <section className="grid grid-cols-[6rem_1fr_1fr] items-center gap-3">
+      <h3 className="col-span-3 text-sm font-semibold">{title}</h3>
+      <span />
+      <span className="text-xs text-muted-foreground">
+        {multiline ? 'InputGroupTextarea' : 'InputGroupInput'}
+      </span>
+      <span className="text-xs text-muted-foreground">PromptEditor (borderless)</span>
+      {cases.map((item) => (
+        <InputGroupCaseRow key={item.label} item={item} multiline={multiline} />
+      ))}
+    </section>
+  );
+}
+
+/**
+ * A borderless editor inside an `InputGroup`, beside the group's own control. The group supplies
+ * the box: a single-line editor in `grow` (or `row`) adds no padding or height of its own, so it
+ * matches the input beside it; a multiline editor in `fill` keeps its own padding, which `fill`
+ * drops from the box.
+ */
+export const InInputGroup: Story = {
+  // Wide enough that each case's value fits on its line.
+  parameters: { width: 760 },
+  render: () => (
+    <div className="grid gap-8">
+      <InputGroupCaseSection title="Single line" cases={SINGLE_LINE_CASES} multiline={false} />
+      <InputGroupCaseSection title="Multiline" cases={MULTILINE_CASES} multiline />
+    </div>
+  ),
 };
 
 /** Controlled editor whose value + preview-mode toggle are owned by the parent. */

@@ -261,6 +261,10 @@ const EditorInner = forwardRef(
       [$setTokens]
     );
 
+    // A borderless single-line editor sits in a parent field box that already pads and sizes the
+    // row, so it adds no padding of its own and is one line tall, lining up like an Input's text.
+    const fitsParentBox = borderless && !multiline;
+
     const contentEditableStyle = useMemo(() => {
       const verticalPadding = 8;
       // Borderless means the parent supplies the field chrome, so inherit its text color instead of
@@ -272,7 +276,7 @@ const EditorInner = forwardRef(
         outline: 'none',
         userSelect: 'text' as const,
         boxSizing: 'border-box' as const,
-        padding: '8px 12px',
+        padding: fitsParentBox ? 0 : '8px 12px',
         fontFamily: "'Noto Sans', sans-serif",
         fontSize: '14px',
         lineHeight: `${LINE_HEIGHT}px`,
@@ -280,10 +284,13 @@ const EditorInner = forwardRef(
       };
 
       if (!multiline) {
+        // Capped as well as sized: Lexical sets `white-space: pre-wrap` on its root, overriding the
+        // `nowrap` below, so long text wraps and the cap clips the extra lines.
+        const height = fitsParentBox ? `${LINE_HEIGHT}px` : '36px';
         return {
           ...base,
-          height: '36px',
-          maxHeight: '36px',
+          height,
+          maxHeight: height,
           overflowX: 'auto' as const,
           overflowY: 'hidden' as const,
           whiteSpace: 'nowrap' as const,
@@ -303,7 +310,7 @@ const EditorInner = forwardRef(
         ...(fillHeight ? { flex: 1 } : { maxHeight: `${maxHeight}px` }),
         overflowY: 'auto' as const,
       };
-    }, [multiline, minRows, maxRows, fillHeight, borderless]);
+    }, [multiline, minRows, maxRows, fillHeight, borderless, fitsParentBox]);
 
     const handleEditorRef = useCallback((editor: LexicalEditor) => {
       editorRef.current = editor;
@@ -481,9 +488,10 @@ const EditorInner = forwardRef(
               data-slot="prompt-editor-placeholder"
               style={{
                 position: 'absolute',
-                top: '8px',
-                left: '12px',
-                right: '12px',
+                // Follows the editable area's padding, so the placeholder sits where the caret does.
+                top: fitsParentBox ? 0 : '8px',
+                left: fitsParentBox ? 0 : '12px',
+                right: fitsParentBox ? 0 : '12px',
                 pointerEvents: 'none',
                 userSelect: 'none',
                 fontFamily: "'Noto Sans', sans-serif",
