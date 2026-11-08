@@ -69,6 +69,46 @@ export interface InsertionSlot {
    * `graphEdgeId`, so the inserted step is not bypassed at run time.
    */
   foldedSource?: { nodeId: string; handleId?: string };
+  /**
+   * Set on every slot of a tree projection ({@link projectTree}): where the host puts a step, in its
+   * own terms. A tree slot has no graph endpoints; the host turns this into its own insert.
+   */
+  ref?: SlotRef;
+}
+
+/**
+ * Where a step goes in a tree of steps: a slot of a parent step, after a sibling of that slot (null
+ * for the slot's start). `slot` is null only for a root that is not a list (the root's own row).
+ */
+export interface SlotRef {
+  parentId: string;
+  slot: string | null;
+  after: string | null;
+}
+
+/** A step of a tree the host shows as a sequence: an activity, with the slots of steps it holds. */
+export interface SequenceStep {
+  id: string;
+  /** A registered manifest `nodeType`: the bar's icon, colours and toolbar come from it. */
+  type: string;
+  label: string;
+  /** One line under the label, such as a summary of the step's main property. */
+  subLabel?: string;
+  /** Ordered slots of steps; none for a leaf. An empty slot draws as an "Add step" lane. */
+  slots?: SequenceStepSlot[];
+  /** Not movable or deletable from the canvas. */
+  locked?: boolean;
+  /** Extra node data for the bar (status, adornments); `label` and `subLabel` win over it. */
+  data?: Record<string, unknown>;
+}
+
+/** One named slot of a step, such as an If's Then or a sequence's own list. */
+export interface SequenceStepSlot {
+  /** The host's name for the slot; it comes back in {@link SlotRef.slot}. */
+  name: string;
+  /** The lane header; omitted for a plain body. */
+  label?: string;
+  steps: SequenceStep[];
 }
 
 export type SequenceConnectorKind = 'step' | 'branch-entry' | 'merge-back' | 'goto';
@@ -96,6 +136,8 @@ export interface SequenceProjection {
    * Carries the trigger edge to split (see {@link InsertionSlot.foldedSource}).
    */
   headSlot?: InsertionSlot;
+  /** A tree projection's add point after its last top-level step; the canvas's terminal placeholder takes it. */
+  tailSlot?: InsertionSlot;
 }
 
 /** Options for {@link projectSequence}. */
