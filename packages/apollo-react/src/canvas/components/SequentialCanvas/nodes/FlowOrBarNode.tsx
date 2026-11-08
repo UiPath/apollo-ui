@@ -1,7 +1,6 @@
 import type { Node, NodeProps } from '@uipath/apollo-react/canvas/xyflow/react';
 import { type ComponentType, createContext, memo, useContext } from 'react';
 import { PREVIEW_NODE_ID } from '../../../constants';
-import { areNodePropsEqualIgnoringPosition } from '../../../utils/nodePropsEqual';
 import { EMPTY_SET } from '../../BaseCanvas/set-utils';
 import type { BaseNodeData } from '../../BaseNode/BaseNode.types';
 import { SequentialInsertPreviewNode } from './SequentialInsertPreviewNode';
@@ -21,6 +20,10 @@ const wrapperByComponent = new WeakMap<FlowNodeComponent, FlowNodeComponent>();
 /**
  * Wraps a flow node component so the same manifest type renders as a card or a bar per node
  * id. Wrappers are cached per component so `nodeTypes` identities stay stable.
+ *
+ * The wrapper wraps any host `flowNodeTypes` component, and some of those read
+ * `positionAbsoluteX/Y` (BlankCanvasNode does), so it compares every prop with React's
+ * default. The bar renderers skip position-only updates through their own memo.
  */
 export function createFlowOrBarNodeType(FlowComponent: FlowNodeComponent): FlowNodeComponent {
   const cached = wrapperByComponent.get(FlowComponent);
@@ -34,7 +37,7 @@ export function createFlowOrBarNodeType(FlowComponent: FlowNodeComponent): FlowN
     ) : (
       <SequentialStepNode {...props} />
     );
-  }, areNodePropsEqualIgnoringPosition);
+  });
 
   wrapperByComponent.set(FlowComponent, FlowOrBarNode);
   return FlowOrBarNode;

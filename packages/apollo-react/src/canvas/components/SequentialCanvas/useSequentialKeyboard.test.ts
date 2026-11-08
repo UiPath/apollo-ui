@@ -368,6 +368,30 @@ describe('useSequentialKeyboard', () => {
     expect(onPrimaryAction).toHaveBeenCalledWith('a');
   });
 
+  it('leaves Enter on a button to the button, so the list collapse toggle still works', () => {
+    const onPrimaryAction = vi.fn();
+    const { result } = renderHook(() =>
+      useSequentialKeyboard({
+        rows: [makeRow({ nodeId: 'a', collapsible: true })],
+        selectedNodeId: 'a',
+        collapsedStepIds: new Set(),
+        onSelectNode: vi.fn(),
+        onPrimaryAction,
+      })
+    );
+    const wrapper = document.createElement('div');
+    const list = document.createElement('ol');
+    list.setAttribute('data-sequential-list', '');
+    const toggle = document.createElement('button');
+    list.appendChild(toggle);
+
+    const event = makeKeyEvent('Enter', toggle, false, false, wrapper);
+    result.current.onKeyDown(event);
+
+    expect(event.preventDefault).not.toHaveBeenCalled();
+    expect(onPrimaryAction).not.toHaveBeenCalled();
+  });
+
   it('is a no-op on Enter when no onPrimaryAction is supplied', () => {
     const { result } = renderHook(() =>
       useSequentialKeyboard({

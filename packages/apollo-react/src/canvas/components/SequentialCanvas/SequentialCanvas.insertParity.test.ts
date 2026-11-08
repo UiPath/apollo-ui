@@ -4,11 +4,16 @@ import { DEFAULT_SOURCE_HANDLE_ID, DEFAULT_TARGET_HANDLE_ID } from '../../consta
 import { NodeTypeRegistry } from '../../core';
 import { defaultWorkflowManifest } from '../../storybook-utils/manifests';
 import { sequentialWireframeManifests } from '../../storybook-utils/sequential/wireframeManifests';
-import { applyGraphChangeSet, makeWireframeFixture } from '../../utils/sequential/fixtures';
+import {
+  applyGraphChangeSet,
+  makeWireframeFixture,
+  WIREFRAME_NODE_IDS,
+} from '../../utils/sequential/fixtures';
 import { SEQ_CONTINUATION_EDGE_KEY } from '../../utils/sequential/graph-helpers';
 import { insertAtSlot } from '../../utils/sequential/mutations';
 import type { InsertionSlot } from '../../utils/sequential/sequential.types';
 import {
+  resolvePendingSequentialInsert,
   SEQ_INSERTED_FLAG,
   SEQ_SPLIT_EDGE_ID_KEY,
   sequentialOnBeforeNodeAdded,
@@ -17,6 +22,7 @@ import {
   forwardSequentialEdgeChanges,
   forwardSequentialNodeChanges,
 } from './sequentialChangeFilters';
+import { SEQ_START_EDGE_ID } from './sequentialGraph.constants';
 import { deriveSequentialGraph } from './useSequentialGraph';
 
 /**
@@ -305,4 +311,64 @@ describe('sequential insert: production pipeline vs the pure insertAtSlot op', (
       });
     });
   }
+});
+
+describe('sequential insert at the head, before the first step', () => {
+  const { nodes, edges } = makeWireframeFixture();
+  const graph = deriveSequentialGraph({
+    nodes,
+    edges,
+    view: 'sequential',
+    isContainerNode: (node) =>
+      registry.getManifest(node.type ?? '')?.display?.shape === 'container',
+    isStartNode: (node) => registry.getManifest(node.type ?? '')?.category === 'trigger',
+  });
+  const startEdge = graph.edges.find((edge) => edge.id === SEQ_START_EDGE_ID);
+  const headSlot = (startEdge?.data as { slot?: InsertionSlot } | undefined)?.slot;
+
+  it('splits the trigger edge instead of leaving the new step bypassed', () => {
+    expect(headSlot?.target?.nodeId).toBe(WIREFRAME_NODE_IDS.http);
+    // The start row folds the trigger away, so the preview stays target-driven.
+    expect(headSlot?.source).toBeUndefined();
+
+    // A target-only preview: the pipeline only builds new -> first step.
+    const previewId = `${INSERTED_TYPE}-${Date.now()}`;
+    const newNode: Node = {
+      id: previewId,
+      type: INSERTED_TYPE,
+      position: { x: 0, y: 0 },
+      data: {},
+    };
+    const pipelineEdges: Edge[] = [
+      {
+        id: `edge_${previewId}-output-${WIREFRAME_NODE_IDS.http}-input`,
+        source: previewId,
+        sourceHandle: 'output',
+        target: WIREFRAME_NODE_IDS.http,
+        targetHandle: 'input',
+        type: 'default',
+      },
+    ];
+    const { newNode: finalNode, newEdges: finalEdges } = sequentialOnBeforeNodeAdded(
+      newNode,
+      pipelineEdges,
+      resolvePendingSequentialInsert(headSlot as InsertionSlot)
+    );
+    const edgeChanges = forwardSequentialEdgeChanges(
+      finalEdges.map((edge) => ({ type: 'add' as const, item: edge })),
+      edges
+    );
+    const after = applyForwardedChanges(nodes, edges, [], edgeChanges);
+    const pairs = after.edges.map((edge) => `${edge.source}->${edge.target}`);
+
+    expect(pairs).toContain(`${WIREFRAME_NODE_IDS.trigger}->${finalNode.id}`);
+    expect(pairs).toContain(`${finalNode.id}->${WIREFRAME_NODE_IDS.http}`);
+    expect(pairs).not.toContain(`${WIREFRAME_NODE_IDS.trigger}->${WIREFRAME_NODE_IDS.http}`);
+    // The split marker never reaches the host.
+    for (const edge of after.edges) {
+      expect(
+        (edge.data as Record<string, unknown> | undefined)?.[SEQ_SPLIT_EDGE_ID_KEY]
+      ).toBeUndefined();
+    }
+  });
 });

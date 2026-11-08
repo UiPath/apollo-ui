@@ -14,6 +14,17 @@ export function findMerge(
   indeg: Map<string, number> = inDegreeInScope(index, scope),
   visiting: Set<string> = new Set()
 ): string | undefined {
+  return findMergeWithLanes(index, branchEdges, scope, indeg, visiting).merge;
+}
+
+/** {@link findMerge}, plus how many lanes converge at the merge. */
+function findMergeWithLanes(
+  index: GraphIndex,
+  branchEdges: Edge[],
+  scope: Scope,
+  indeg: Map<string, number>,
+  visiting: Set<string>
+): { merge: string | undefined; lanes: number } {
   const joinCounts = new Map<string, number>();
 
   for (const edge of branchEdges) {
@@ -29,7 +40,7 @@ export function findMerge(
       mergeCount = count;
     }
   }
-  return merge;
+  return { merge, lanes: merge === undefined ? 0 : mergeCount };
 }
 
 /** First convergence node on a lane's spine, or `undefined` if it dead-ends, leaves scope or loops. */
@@ -42,10 +53,16 @@ function laneJoin(
 ): string | undefined {
   const seen = new Set<string>();
   let current: string | undefined = startId;
+  // In-edges of `current` that a nested branch's own lanes account for. A nested join entered
+  // only by those lanes is that branch's end, not this lane's: the walk continues past it, so
+  // an outer join further down is still found. Any other in-edge makes it a join here too.
+  let nestedLanesIn = 0;
 
   while (current !== undefined) {
+    const inDegree = indeg.get(current) ?? 0;
     // Checked first so a resolved nested merge counts as a convergence point too.
-    if ((indeg.get(current) ?? 0) >= 2) return current;
+    if (nestedLanesIn > 0 ? inDegree > nestedLanesIn : inDegree >= 2) return current;
+    nestedLanesIn = 0;
     if (seen.has(current) || visiting.has(current)) return undefined;
     seen.add(current);
 
@@ -60,9 +77,10 @@ function laneJoin(
     }
 
     visiting.add(current);
-    const nestedMerge = findMerge(index, out, scope, indeg, visiting);
+    const nested = findMergeWithLanes(index, out, scope, indeg, visiting);
     visiting.delete(current);
-    current = nestedMerge;
+    current = nested.merge;
+    nestedLanesIn = nested.lanes;
   }
   return undefined;
 }

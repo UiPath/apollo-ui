@@ -246,6 +246,37 @@ export function makeNestedBranchFixture(): GraphFixture {
   return { nodes, edges };
 }
 
+/**
+ * A nested branch with its own join, distinct from the outer one: If1.Then holds If2, whose
+ * lanes rejoin at J; J and If1.Else's Other then rejoin at M.
+ */
+export function makeDistinctNestedJoinFixture(): GraphFixture {
+  const nodes: Node[] = [
+    node('a', 'uipath.script', 'A', { y: 0 }),
+    node('if1', 'uipath.control-flow.decision', 'If1', { y: 100 }),
+    node('if2', 'uipath.control-flow.decision', 'If2', { y: 200 }),
+    node('b', 'uipath.script', 'B', { y: 300 }),
+    node('c', 'uipath.script', 'C', { y: 400 }),
+    node('j', 'uipath.script', 'J', { y: 500 }),
+    node('other', 'uipath.script', 'Other', { y: 600 }),
+    node('m', 'uipath.script', 'M', { y: 700 }),
+    node('z', 'uipath.script', 'Z', { y: 800 }),
+  ];
+  const edges: Edge[] = [
+    edge('a-if1', 'a', 'output', 'if1', 'input'),
+    edge('if1-if2', 'if1', 'true', 'if2', 'input', 'Then'),
+    edge('if1-other', 'if1', 'false', 'other', 'input', 'Else'),
+    edge('if2-b', 'if2', 'true', 'b', 'input', 'Then'),
+    edge('if2-c', 'if2', 'false', 'c', 'input', 'Else'),
+    edge('b-j', 'b', 'output', 'j', 'input'),
+    edge('c-j', 'c', 'output', 'j', 'input'),
+    edge('j-m', 'j', 'output', 'm', 'input'),
+    edge('other-m', 'other', 'output', 'm', 'input'),
+    edge('m-z', 'm', 'output', 'z', 'input'),
+  ];
+  return { nodes, edges };
+}
+
 /** A cycle closed through a branch edge: A -> B; B.true -> A; B.false -> D. */
 export function makeBranchCycleFixture(): GraphFixture {
   const nodes: Node[] = [

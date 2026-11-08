@@ -6,6 +6,7 @@ import {
   makeCycleFixture,
   makeDeepNestingFixture,
   makeDiamondFixture,
+  makeDistinctNestedJoinFixture,
   makeEmptyBranchFixture,
   makeInterleavedOrphanFixture,
   makeLoopBackFixture,
@@ -460,6 +461,29 @@ describe('projectSequence', () => {
       expect(rowById(collapsed, 'm').visible).toBe(true);
       expect(rowById(collapsed, 'z').visible).toBe(true);
       expect(rowById(collapsed, 'if2').visible).toBe(false);
+    });
+  });
+
+  describe('nested branch with its own join, distinct from the outer join', () => {
+    const { nodes, edges } = makeDistinctNestedJoinFixture();
+    const projection = projectSequence(nodes, edges);
+
+    it('finds the outer join past the inner one and emits it at the owner depth', () => {
+      expect(rowById(projection, 'm').depth).toBe(0);
+      expect(rowById(projection, 'm').parentRowId).toBeUndefined();
+      expect(projection.rows.filter((r) => r.nodeId === 'm')).toHaveLength(1);
+      // The inner join stays inside If1's Then lane.
+      expect(rowById(projection, 'j').depth).toBeGreaterThan(0);
+      expect(connector(projection, 'j', 'm').kind).toBe('merge-back');
+      expect(connector(projection, 'other', 'm').kind).toBe('merge-back');
+      expect(connector(projection, 'm', 'z').kind).toBe('step');
+    });
+
+    it('keeps the shared continuation visible when the outer branch collapses', () => {
+      const collapsed = projectSequence(nodes, edges, { collapsedStepIds: new Set(['if1']) });
+      expect(rowById(collapsed, 'm').visible).toBe(true);
+      expect(rowById(collapsed, 'z').visible).toBe(true);
+      expect(rowById(collapsed, 'j').visible).toBe(false);
     });
   });
 

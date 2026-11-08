@@ -217,9 +217,13 @@ describe('deriveSequentialGraph', () => {
 
     const startEdge = graph.edges.find((edge) => edge.source === SEQ_START_ROW_ID);
     expect(startEdge?.data?.hideArrowHead).toBe(false);
+    // The head slot stays target-only for the preview, and names the folded trigger edge it
+    // splits on commit.
     expect(startEdge?.data?.slot).toEqual({
       id: `slot:head:${WIREFRAME_NODE_IDS.http}`,
       target: { nodeId: WIREFRAME_NODE_IDS.http },
+      foldedSource: { nodeId: WIREFRAME_NODE_IDS.trigger, handleId: 'output' },
+      graphEdgeId: 'e-trigger-http',
     });
   });
 

@@ -51,6 +51,9 @@ describe('useCanvasViewMode', () => {
       ['null', JSON.stringify(null)],
       ['an object', JSON.stringify({ view: 'sequential' })],
       ['unparseable JSON', '{not json'],
+      ['an inherited Object.prototype name (constructor)', JSON.stringify('constructor')],
+      ['an inherited Object.prototype name (toString)', JSON.stringify('toString')],
+      ['an inherited Object.prototype name (__proto__)', JSON.stringify('__proto__')],
     ])('falls back to the initial view for %s', (_label, stored) => {
       localStorage.setItem(prefixedKey, stored);
 

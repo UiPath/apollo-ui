@@ -47,7 +47,10 @@ import type { BaseNodeBarAttachment } from '../BaseNode/BaseNodeBar';
 import { InitialsBadge } from '../shared/InitialsBadge';
 import { SequentialConnectorEdge } from './edges/SequentialConnectorEdge';
 import { getSequentialIgnoredNodeTypes } from './edges/sequentialInsert';
-import { useSequentialInsert } from './edges/useSequentialInsert';
+import {
+  useEndSequentialInsertOnPreviewClose,
+  useSequentialInsert,
+} from './edges/useSequentialInsert';
 import {
   SEQUENTIAL_SYNTHETIC_NODE_TYPES,
   SequentialInsertPreviewNode,
@@ -235,17 +238,8 @@ function SequentialCanvasInsertController<N extends Node, E extends Edge>(
 ) {
   const [activeInsertSlot, setActiveInsertSlot] = useState<InsertionSlot | undefined>(undefined);
   const { previewNode } = usePreviewNode();
-  const wasPreviewOpenRef = useRef(false);
-
-  const isPreviewOpen = previewNode !== null;
-  useEffect(() => {
-    if (isPreviewOpen) {
-      wasPreviewOpenRef.current = true;
-    } else if (wasPreviewOpenRef.current) {
-      wasPreviewOpenRef.current = false;
-      setActiveInsertSlot(undefined);
-    }
-  }, [isPreviewOpen]);
+  const clearActiveInsertSlot = useCallback(() => setActiveInsertSlot(undefined), []);
+  useEndSequentialInsertOnPreviewClose(previewNode !== null, clearActiveInsertSlot);
 
   return (
     <SequentialInsertGapProvider value={setActiveInsertSlot}>

@@ -161,6 +161,8 @@ export interface PendingSequentialInsert {
   containerId?: string;
   /** Whether the split source edge already represented an explicit continuation. */
   splitEdgeWasContinuation?: boolean;
+  /** A head slot's trigger, folded into the start row; see `InsertionSlot.foldedSource`. */
+  foldedSource?: { nodeId: string; handleId?: string };
 }
 
 /**
@@ -177,6 +179,7 @@ export function resolvePendingSequentialInsert(slot: InsertionSlot): PendingSequ
     targetHandleId: slot.target?.handleId,
     containerId: slot.containerId,
     splitEdgeWasContinuation: slot.continuation,
+    foldedSource: slot.foldedSource,
   };
 }
 
@@ -267,6 +270,24 @@ export function sequentialOnBeforeNodeAdded(
       id: buildEdgeId(nextSource, nextSourceHandle, nextTarget, nextTargetHandle),
     };
   });
+
+  // A head insert previews from the old first step only; wire the folded trigger into the new
+  // step so the trigger's edge is split rather than left bypassing it.
+  const folded = pending?.foldedSource;
+  if (
+    folded &&
+    !finalEdges.some((edge) => edge.source === folded.nodeId && edge.target === seqId)
+  ) {
+    finalEdges.push({
+      id: buildEdgeId(folded.nodeId, folded.handleId, seqId, DEFAULT_TARGET_HANDLE_ID),
+      source: folded.nodeId,
+      sourceHandle: folded.handleId,
+      target: seqId,
+      targetHandle: DEFAULT_TARGET_HANDLE_ID,
+      ...(finalEdges[0]?.type ? { type: finalEdges[0].type } : {}),
+      ...(pending?.graphEdgeId ? { data: { [SEQ_SPLIT_EDGE_ID_KEY]: pending.graphEdgeId } } : {}),
+    });
+  }
 
   return { newNode: finalNode, newEdges: finalEdges };
 }

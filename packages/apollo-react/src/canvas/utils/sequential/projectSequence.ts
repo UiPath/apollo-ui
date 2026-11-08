@@ -87,6 +87,24 @@ export function projectSequence(
     return slot;
   };
 
+  // Triggers are folded into a start row, so their edges never reach the index; a head slot
+  // reads them from the raw graph to split the trigger edge on insert.
+  const startNodeIds = new Set(nodes.filter((node) => isStartNode(node)).map((node) => node.id));
+  const foldedTriggerOf = (
+    targetId: string
+  ): Pick<InsertionSlot, 'foldedSource' | 'graphEdgeId'> => {
+    const incoming = edges.filter(
+      (edge) => edge.target === targetId && startNodeIds.has(edge.source) && isSequenceEdge(edge)
+    );
+    // Several triggers into one step cannot be split by a single edge; keep the plain slot.
+    if (incoming.length !== 1) return {};
+    const edge = incoming[0]!;
+    return {
+      foldedSource: { nodeId: edge.source, handleId: edge.sourceHandle ?? undefined },
+      graphEdgeId: edge.id,
+    };
+  };
+
   // Edges the walk placed; leftovers become gotos in the post-pass so none are dropped.
   const representedEdgeIds = new Set<string>();
 
@@ -248,6 +266,7 @@ export function projectSequence(
             id: `slot:head:${scope}:${entry.id}`,
             target: { nodeId: entry.id },
             containerId: scope,
+            ...foldedTriggerOf(entry.id),
           }),
         });
       }
@@ -590,5 +609,14 @@ export function projectSequence(
     row.visible = parent ? parent.visible && !parent.collapsed : true;
   }
 
-  return { rows, connectors, slots: [...slotsById.values()] };
+  const firstTop = rows.find((row) => row.depth === 0 && !row.orphan);
+  const headSlot = firstTop
+    ? {
+        id: `slot:head:${firstTop.nodeId}`,
+        target: { nodeId: firstTop.nodeId },
+        ...foldedTriggerOf(firstTop.nodeId),
+      }
+    : undefined;
+
+  return { rows, connectors, slots: [...slotsById.values()], headSlot };
 }

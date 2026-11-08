@@ -4,9 +4,12 @@ import type { CanvasView } from '../../utils/sequential/sequential.types';
 /** Keyed by `CanvasView` so adding a view to the union fails to compile until listed here. */
 const CANVAS_VIEWS: Record<CanvasView, true> = { flow: true, sequential: true };
 
-/** localStorage is untrusted input: a collision, hand edit, or retired view name must not leak through. */
+/**
+ * localStorage is untrusted input: a collision, hand edit, or retired view name must not leak through.
+ * An own-property check, so inherited names such as `constructor` or `__proto__` are rejected too.
+ */
 export const isCanvasView = (value: unknown): value is CanvasView =>
-  typeof value === 'string' && value in CANVAS_VIEWS;
+  typeof value === 'string' && Object.hasOwn(CANVAS_VIEWS, value);
 
 /**
  * Persists the flow/sequential view choice in localStorage. `storageKey` must be unique per

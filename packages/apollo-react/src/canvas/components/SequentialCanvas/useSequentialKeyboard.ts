@@ -171,6 +171,9 @@ export function useSequentialKeyboard(
           return;
         }
         case 'Enter': {
+          // A button activates itself on Enter (the screen-reader list's collapse toggle, a
+          // gutter chevron); taking the key here would cancel that and open the selected step.
+          if (event.target instanceof HTMLButtonElement) return;
           if (selectedNodeId && onPrimaryAction) {
             event.preventDefault();
             onPrimaryAction(selectedNodeId);

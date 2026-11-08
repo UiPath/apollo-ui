@@ -522,11 +522,18 @@ export function buildSequentialEdges(
   const lastVisibleTop = [...topRows].reverse().find((row) => row.visible);
 
   const previewIsFirst = firstTop?.nodeId === PREVIEW_NODE_ID;
+  // The projection's head slot carries the trigger edge to split; it is only reused while it
+  // still names the first top row.
+  const projectedHead =
+    projection.headSlot?.target?.nodeId === firstTop?.nodeId ? projection.headSlot : undefined;
   const headSlot: InsertionSlot | undefined =
     firstTop && !previewIsFirst
       ? {
           id: `slot:head:${firstTop.nodeId}`,
           target: { nodeId: firstTop.nodeId },
+          ...(projectedHead?.foldedSource
+            ? { foldedSource: projectedHead.foldedSource, graphEdgeId: projectedHead.graphEdgeId }
+            : {}),
           // A step inserted at the head of a container body parents into that container.
           ...(scope.parentId ? { containerId: scope.parentId } : {}),
         }

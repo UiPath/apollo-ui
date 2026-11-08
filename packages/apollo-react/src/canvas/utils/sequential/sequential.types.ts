@@ -62,6 +62,13 @@ export interface InsertionSlot {
    * no edge, since nothing on the frame connects to it.
    */
   unconnected?: true;
+  /**
+   * Set on a head slot (before the first step) when exactly one canonical trigger edge enters
+   * that step. The trigger is folded into the start row, so the slot keeps no `source` and the
+   * preview stays target-driven; the commit wires this source to the new step and splits
+   * `graphEdgeId`, so the inserted step is not bypassed at run time.
+   */
+  foldedSource?: { nodeId: string; handleId?: string };
 }
 
 export type SequenceConnectorKind = 'step' | 'branch-entry' | 'merge-back' | 'goto';
@@ -84,6 +91,11 @@ export interface SequenceProjection {
   connectors: SequenceConnector[];
   /** Includes empty-branch-body slots. */
   slots: InsertionSlot[];
+  /**
+   * The top-level head slot, before the first top-level step; absent when there is no step.
+   * Carries the trigger edge to split (see {@link InsertionSlot.foldedSource}).
+   */
+  headSlot?: InsertionSlot;
 }
 
 /** Options for {@link projectSequence}. */

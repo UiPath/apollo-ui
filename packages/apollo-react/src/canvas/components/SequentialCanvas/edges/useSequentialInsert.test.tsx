@@ -7,7 +7,7 @@ import { applyPreviewGraphToReactFlow, showPreviewGraph } from '../../../utils/c
 import type { InsertionSlot } from '../../../utils/sequential/sequential.types';
 import { SequentialInsertGapProvider } from '../SequentialInsertGapContext';
 import { SequentialInsertStateProvider } from '../SequentialInsertStateContext';
-import { useSequentialInsert } from './useSequentialInsert';
+import { useEndSequentialInsertOnPreviewClose, useSequentialInsert } from './useSequentialInsert';
 
 // The preview pipeline needs a live RF store; only the pending-slot bookkeeping is under test.
 vi.mock('../../../utils/createPreviewGraph', async (importOriginal) => ({
@@ -76,6 +76,43 @@ describe('useSequentialInsert', () => {
 
     expect(newNode.parentId).toBe('for-each');
     expect(newNode.extent).toBe('parent');
+  });
+
+  it('drops a cancelled slot when the preview closes, so the next add is not parented into it', () => {
+    const onClosed = vi.fn();
+    const hooks = renderHook(
+      ({ isPreviewOpen }: { isPreviewOpen: boolean }) => {
+        useEndSequentialInsertOnPreviewClose(isPreviewOpen, onClosed);
+        return useSequentialInsert();
+      },
+      { wrapper: SequentialInsertStateProvider, initialProps: { isPreviewOpen: false } }
+    );
+    hooks.result.current.startInsert({
+      slot: {
+        id: 'slot-body',
+        source: { nodeId: 'a' },
+        target: { nodeId: 'b' },
+        graphEdgeId: 'e-a-b',
+        containerId: 'sequenced-container',
+      },
+      source: 'a',
+      target: 'b',
+      sourcePosition: Position.Bottom,
+      position: { x: 0, y: 0 },
+    });
+    hooks.rerender({ isPreviewOpen: true });
+    // Cancelled: the preview closes without onBeforeNodeAdded running.
+    hooks.rerender({ isPreviewOpen: false });
+
+    // A later add through a plain flow handle reaches the same AddNodeManager adapter.
+    const seed: Node = { id: 'preview-node-id', position: { x: 0, y: 0 }, data: {} };
+    const { newNode, newEdges } = hooks.result.current.onBeforeNodeAdded(seed, [
+      { id: 'e-x-new', source: 'x', target: 'preview-node-id' },
+    ]);
+
+    expect(onClosed).toHaveBeenCalledTimes(1);
+    expect(newNode.parentId).toBeUndefined();
+    expect(newEdges[0]?.data).toBeUndefined();
   });
 
   it('isolates pending inserts between canvas providers', () => {
