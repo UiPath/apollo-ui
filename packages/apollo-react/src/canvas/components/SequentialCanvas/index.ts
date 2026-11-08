@@ -8,6 +8,8 @@ export type {
   PrepareCanvasViewTransitionOptions,
 } from './prepareCanvasViewTransition';
 export { prepareCanvasViewTransition } from './prepareCanvasViewTransition';
+export type { SequenceIntent, SequenceTreeCanvasProps } from './SequenceTreeCanvas';
+export { SequenceTreeCanvas } from './SequenceTreeCanvas';
 export { SequentialCanvas } from './SequentialCanvas';
 export type { SequentialCanvasProps, ViewSwitcherProps } from './SequentialCanvas.types';
 export type {

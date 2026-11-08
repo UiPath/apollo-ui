@@ -116,6 +116,8 @@ export interface UseSequentialGraphArgs<N extends Node, E extends Edge> {
   layoutOptions?: LayoutSequenceOptions;
   /** The caller's id index for `nodes`, when it already has one. */
   nodesById?: ReadonlyMap<string, N>;
+  /** A projection the caller made itself; drawn instead of projecting `nodes`/`edges`. */
+  projection?: SequenceProjection;
 }
 
 export interface SequentialGraph<N extends Node, E extends Edge> {
@@ -224,7 +226,7 @@ export function deriveSequentialGraph<N extends Node, E extends Edge>(
   args: UseSequentialGraphArgs<N, E>
 ): SequentialGraph<N, E> {
   const collapsed = args.collapsedStepIds ?? EMPTY_SET;
-  const projection = projectSequenceForView(args, collapsed);
+  const projection = args.projection ?? projectSequenceForView(args, collapsed);
   const renderedProjection = args.insertSlot
     ? projectionWithPreviewRow(projection, args.insertSlot)
     : projection;
@@ -526,14 +528,13 @@ export function buildSequentialEdges(
   // still names the first top row.
   const projectedHead =
     projection.headSlot?.target?.nodeId === firstTop?.nodeId ? projection.headSlot : undefined;
+  // It carries the folded trigger edge to split, or a tree projection's own SlotRef.
   const headSlot: InsertionSlot | undefined =
     firstTop && !previewIsFirst
       ? {
+          ...(projectedHead ?? {}),
           id: `slot:head:${firstTop.nodeId}`,
           target: { nodeId: firstTop.nodeId },
-          ...(projectedHead?.foldedSource
-            ? { foldedSource: projectedHead.foldedSource, graphEdgeId: projectedHead.graphEdgeId }
-            : {}),
           // A step inserted at the head of a container body parents into that container.
           ...(scope.parentId ? { containerId: scope.parentId } : {}),
         }
@@ -688,6 +689,7 @@ export function useSequentialGraph<N extends Node, E extends Edge>(
     insertSlot,
     layoutOptions,
     nodesById,
+    projection: precomputed,
   } = args;
 
   const { _ } = useSafeLingui();
@@ -724,7 +726,7 @@ export function useSequentialGraph<N extends Node, E extends Edge>(
   // the result of every predicate (keyed on results, not identities, so a re-created
   // predicate on a rename keystroke does not re-project). Skipped entirely in flow view.
   const fingerprint = useMemo(() => {
-    if (!inSequentialView) return '';
+    if (!inSequentialView || precomputed) return '';
     const labels = edges
       .map(
         (edge) =>
@@ -766,14 +768,15 @@ export function useSequentialGraph<N extends Node, E extends Edge>(
     isStartNode,
     isContainerNode,
     isSelfContainedContainer,
+    precomputed,
   ]);
 
   // A data-only edit (rename keystroke) yields the same fingerprint and reuses the projection.
   // biome-ignore lint/correctness/useExhaustiveDependencies: keyed on the structural fingerprint by design.
   const projection = useMemo(() => {
     if (!inSequentialView) return null;
-    return projectSequenceForView(args, collapsed);
-  }, [fingerprint, inSequentialView]);
+    return precomputed ?? projectSequenceForView(args, collapsed);
+  }, [fingerprint, inSequentialView, precomputed]);
 
   // Layout is kept separate from the projection memo so the insert-preview gap can re-run it
   // without re-projecting.

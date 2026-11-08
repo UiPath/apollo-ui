@@ -278,6 +278,10 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
   sequencedContainerIds,
   onSequencedContainerIdsChange,
   children,
+  sequenceProjection,
+  onInsertSlot,
+  onRemoveStep,
+  moveActions,
   activeInsertSlot,
   setActiveInsertSlot,
 }: SequentialCanvasProps<N, E> & {
@@ -285,7 +289,15 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
   setActiveInsertSlot: Dispatch<SetStateAction<InsertionSlot | undefined>>;
 }) {
   const reactFlow = useReactFlow<N, E>();
-  const { startInsert, onBeforeNodeAdded } = useSequentialInsert();
+  const { startInsert: startGraphInsert, onBeforeNodeAdded } = useSequentialInsert();
+  // A host that inserts itself (a tree projection has no graph to splice) gets the slot.
+  const onInsertSlotRef = useRef(onInsertSlot);
+  onInsertSlotRef.current = onInsertSlot;
+  const hostInserts = onInsertSlot !== undefined;
+  const startInsert = useMemo<typeof startGraphInsert>(
+    () => (hostInserts ? (args) => onInsertSlotRef.current?.(args.slot) : startGraphInsert),
+    [hostInserts, startGraphInsert]
+  );
   const seqView = useOptionalSequentialView();
   const registry = useOptionalNodeTypeRegistry();
   const isDesignMode = mode === 'design';
@@ -551,6 +563,10 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
   const onPlaceholderAdd = useCallback(() => {
     if (!canEditSequence) return;
     const slot = tailSlotRef.current;
+    if (slot && onInsertSlotRef.current) {
+      onInsertSlotRef.current(slot);
+      return;
+    }
     if (!slot?.source) return;
     const placeholder = reactFlow.getNode(SEQ_PLACEHOLDER_ROW_ID);
     startInsert({
@@ -572,6 +588,10 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
   const onLaneAdd = useCallback(
     (slot: InsertionSlot) => {
       if (!canInsert) return;
+      if (onInsertSlotRef.current) {
+        onInsertSlotRef.current(slot);
+        return;
+      }
       const placeholder = reactFlow
         .getNodes()
         .find(
@@ -641,6 +661,7 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
     insertSlot: inSequentialView ? activeInsertSlot : undefined,
     layoutOptions,
     nodesById: canonicalById,
+    projection: sequenceProjection,
   });
 
   // Lane placeholders carry only their slot id (so the derivation can reuse their node
@@ -660,7 +681,9 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
   );
 
   const tailSlot = useMemo<InsertionSlot | undefined>(
-    () => resolveTailInsertionSlot(projection, nodes, getDefaultSourceHandleId, isStartNode),
+    () =>
+      projection?.tailSlot ??
+      resolveTailInsertionSlot(projection, nodes, getDefaultSourceHandleId, isStartNode),
     [projection, nodes, getDefaultSourceHandleId, isStartNode]
   );
   // Render-phase ref write, idempotent (derived from this render's inputs only). An effect
@@ -924,6 +947,8 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
     onEdgesChange,
   };
   const hasChangeHandler = onNodesChange !== undefined || onEdgesChange !== undefined;
+  const onRemoveStepRef = useRef(onRemoveStep);
+  onRemoveStepRef.current = onRemoveStep;
   const deleteStep = useCallback(
     (nodeId: string) => {
       const {
@@ -936,8 +961,12 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
         onEdgesChange,
       } = deleteInputsRef.current;
       if (!canEditSequence || !projection) return false;
-      if (!hasChangeHandler) return false;
       if (readOnlySet.has(nodeId)) return false;
+      if (onRemoveStepRef.current) {
+        onRemoveStepRef.current(nodeId);
+        return true;
+      }
+      if (!hasChangeHandler) return false;
       // Only sequence edges are healed across the removed step; artifact edges go with it.
       const changeSet = removeStep(projection, nodeId, {
         nodes,
@@ -963,7 +992,7 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
 
   // Move binding shared by the kebab items and Alt+Arrow. Rebuilt only on a structural
   // change: every bar reads it through context, so a churning value would re-render them all.
-  const moveActionsValue = useSequentialMoveActionsValue<N, E>({
+  const graphMoveActions = useSequentialMoveActionsValue<N, E>({
     projection,
     nodes,
     edges,
@@ -974,6 +1003,7 @@ function SequentialCanvasInner<N extends Node, E extends Edge>({
     onNodesChange,
     onEdgesChange,
   });
+  const moveActionsValue = moveActions ?? graphMoveActions;
 
   // The lock is enforced inside the shared binding; the check here only skips resolving a
   // slot that would be refused.

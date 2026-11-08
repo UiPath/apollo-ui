@@ -10,3 +10,4 @@ export * from './projectContainerSequence';
 export * from './projectSequence';
 export * from './projectTree';
 export * from './sequential.types';
+export * from './treeMoves';

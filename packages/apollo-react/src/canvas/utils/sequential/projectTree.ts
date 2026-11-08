@@ -82,10 +82,14 @@ export function projectTree(root: SequenceStep, options?: ProjectTreeOptions): T
       id: step.id,
       type: step.type,
       position: { x: 0, y: 0 },
+      // The bar reads its label and summary from `display`, as BaseNode's own rename writes them.
       data: {
-        label: step.label,
-        ...(step.subLabel !== undefined ? { subLabel: step.subLabel } : {}),
         ...(step.data ?? {}),
+        display: {
+          ...((step.data?.display as Record<string, unknown> | undefined) ?? {}),
+          label: step.label,
+          ...(step.subLabel !== undefined ? { subLabel: step.subLabel } : {}),
+        },
       },
       ...(step.locked ? { draggable: false, deletable: false } : {}),
     });

@@ -7,9 +7,15 @@ import type {
   OnNodesChange,
 } from '@uipath/apollo-react/canvas/xyflow/react';
 import type { Ref } from 'react';
-import type { CanvasView, LayoutSequenceOptions } from '../../utils/sequential/sequential.types';
+import type {
+  CanvasView,
+  InsertionSlot,
+  LayoutSequenceOptions,
+  SequenceProjection,
+} from '../../utils/sequential/sequential.types';
 import type { AddNodeManagerProps } from '../AddNodePanel/AddNodeManager';
 import type { BaseCanvasProps, BaseCanvasRef } from '../BaseCanvas/BaseCanvas.types';
+import type { SequentialMoveActionsContextValue } from './SequentialMoveActionsContext';
 
 /**
  * Props for the sequential view: a curated subset of BaseCanvasProps plus the standard
@@ -71,6 +77,19 @@ export interface SequentialCanvasProps<N extends Node = Node, E extends Edge = E
   sequencedContainerIds?: string[];
   onSequencedContainerIdsChange?: (ids: string[]) => void;
   canvasRef?: Ref<BaseCanvasRef<N, E>>;
+  /**
+   * A projection the host made itself (such as `projectTree`), drawn instead of projecting
+   * `nodes`/`edges`. `nodes` are then the steps it draws and `edges` are not read. Pair it
+   * with the overrides below: a precomputed projection has no graph to splice an insert,
+   * a move or a delete into.
+   */
+  sequenceProjection?: SequenceProjection;
+  /** Called with the clicked slot instead of opening the Add Node panel ("+", "Add step"). */
+  onInsertSlot?: (slot: InsertionSlot) => void;
+  /** Called to delete a step instead of splicing it out of the graph. */
+  onRemoveStep?: (nodeId: string) => void;
+  /** Move candidates and commit for the step menu and Alt+Arrow, instead of graph moves. */
+  moveActions?: SequentialMoveActionsContextValue;
 }
 
 /** Controlled segmented flow/sequential control. */

@@ -131,7 +131,7 @@ describe('projectTree', () => {
     expect(nodes.map((node) => node.id)).toEqual(['a', 'if', 't', 'try', 'r', 'h', 'b']);
     expect(nodes[0]).toMatchObject({
       type: 'uipath.script',
-      data: { label: 'a', subLabel: 'total = 1' },
+      data: { display: { label: 'a', subLabel: 'total = 1' } },
     });
   });
 

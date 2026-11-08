@@ -98,7 +98,7 @@ export interface SequenceStep {
   slots?: SequenceStepSlot[];
   /** Not movable or deletable from the canvas. */
   locked?: boolean;
-  /** Extra node data for the bar (status, adornments); `label` and `subLabel` win over it. */
+  /** Extra node data for the bar (status, adornments); `label` and `subLabel` win over its `display`. */
   data?: Record<string, unknown>;
 }
 
