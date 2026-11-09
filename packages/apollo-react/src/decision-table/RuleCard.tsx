@@ -33,7 +33,7 @@ import {
   WORD_CLASS,
 } from './sentenceStyles';
 import type {
-  DecisionCardLabels,
+  DecisionTextLabels,
   SentencePart,
   SentenceRule,
   SentenceToken,
@@ -52,7 +52,7 @@ export const markIds = (id: string, marks: readonly LineMark[]): string[] =>
 export const MarkBadge: React.FC<{
   id: string;
   marks: readonly LineMark[];
-  labels: DecisionCardLabels;
+  labels: DecisionTextLabels;
 }> = ({ id, marks, labels }) => {
   const tone = worstTone(marks);
   const titles = marks.flatMap((mark) => (mark.title ? [mark.title] : []));
@@ -134,7 +134,7 @@ const LineText: React.FC<{
   heading?: boolean;
   parts: readonly SentencePart[];
   cells: RowMark['cells'];
-  labels: DecisionCardLabels;
+  labels: DecisionTextLabels;
 }> = ({ id, heading = false, parts, cells, labels }) => {
   const { shown, clamped } = boundedParts(parts, SENTENCE_LINE_VALUE_LIMIT);
   const textClass = cn(heading ? HEADING_TEXT_CLASS : LINE_TEXT_CLASS, LINE_FILL_CLASS);
@@ -197,7 +197,7 @@ export interface RuleCardProps {
   mark: RowMark | undefined;
   idPrefix: string;
   dataTestId: string;
-  labels: DecisionCardLabels;
+  labels: DecisionTextLabels;
 }
 
 /** One rule as a sentence: its heading, its lead and its condition lines. */

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useState } from 'react';
 import {
-  DECISION_CARD_LABELS,
+  DECISION_TEXT_LABELS,
   GRID_SENTENCE_BANDS,
   GRID_SENTENCE_HEADER,
   GRID_SENTENCE_RULES,
@@ -13,21 +13,21 @@ import {
   manyLinesRule,
   manySentenceRules,
 } from './__fixtures__/sentences.fixtures';
-import { DecisionCard, type DecisionCardProps } from './DecisionCard';
+import { DecisionText, type DecisionTextProps } from './DecisionText';
 import type { RowMark, TableMarks } from './marks';
 import type { SentenceCellId } from './sentenceTypes';
 
-const DemoDecisionCard = (props: Partial<DecisionCardProps>) => {
+const DemoDecisionText = (props: Partial<DecisionTextProps>) => {
   const [hovered, setHovered] = useState<SentenceCellId | null>(null);
   return (
     <div className="flex h-[480px] flex-col gap-2">
-      <DecisionCard
+      <DecisionText
         rules={GRID_SENTENCE_RULES}
         bands={GRID_SENTENCE_BANDS}
         header={GRID_SENTENCE_HEADER}
-        labels={DECISION_CARD_LABELS}
+        labels={DECISION_TEXT_LABELS}
         ariaLabel="Rules"
-        dataTestId="decision-card"
+        dataTestId="decision-text"
         onCellHover={setHovered}
         {...props}
       />
@@ -63,22 +63,22 @@ const DEMO_MARKS: TableMarks = {
   columns: new Map([['start', { tone: 'warning', title: 'No type', glyph: true }]]),
 };
 
-const meta: Meta<typeof DecisionCard> = {
-  title: 'Decision Table/Decision Card',
-  component: DecisionCard,
+const meta: Meta<typeof DecisionText> = {
+  title: 'Decision Text',
+  component: DecisionText,
   parameters: { layout: 'padded' },
 };
 export default meta;
 
-type Story = StoryObj<typeof DecisionCard>;
+type Story = StoryObj<typeof DecisionText>;
 
 export const Default: Story = {
-  render: () => <DemoDecisionCard />,
+  render: () => <DemoDecisionText />,
 };
 
 export const WithMarks: Story = {
   render: () => (
-    <DemoDecisionCard
+    <DemoDecisionText
       rules={MULTI_SENTENCE_RULES}
       bands={MULTI_SENTENCE_BANDS}
       header={MULTI_SENTENCE_HEADER}
@@ -91,8 +91,8 @@ export const WithMarks: Story = {
 export const Empty: Story = {
   render: () => (
     <div className="grid grid-cols-2 gap-4">
-      <DemoDecisionCard rules={[]} addRule={{ label: 'Add rule', onAdd: () => {} }} />
-      <DemoDecisionCard rules={[]} ariaLabel="Rules without an add action" />
+      <DemoDecisionText rules={[]} addRule={{ label: 'Add rule', onAdd: () => {} }} />
+      <DemoDecisionText rules={[]} ariaLabel="Rules without an add action" />
     </div>
   ),
 };
@@ -101,7 +101,7 @@ const LONG_LIST = [longValueListRule(10_000)];
 
 export const LongValueList: Story = {
   render: () => (
-    <DemoDecisionCard
+    <DemoDecisionText
       rules={LONG_LIST}
       bands={MULTI_SENTENCE_BANDS}
       header={MULTI_SENTENCE_HEADER}
@@ -113,7 +113,7 @@ const MANY_RULES = manySentenceRules(50_000);
 
 export const ManyRules: Story = {
   render: () => (
-    <DemoDecisionCard
+    <DemoDecisionText
       rules={MANY_RULES}
       bands={MULTI_SENTENCE_BANDS}
       header={MULTI_SENTENCE_HEADER}
@@ -127,6 +127,6 @@ const MANY_LINES = [manyLinesRule(50)];
 
 export const ManyColumns: Story = {
   render: () => (
-    <DemoDecisionCard bands={MANY_COLUMNS} rules={MANY_LINES} header={MULTI_SENTENCE_HEADER} />
+    <DemoDecisionText bands={MANY_COLUMNS} rules={MANY_LINES} header={MULTI_SENTENCE_HEADER} />
   ),
 };

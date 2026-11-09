@@ -1,5 +1,5 @@
 import type {
-  DecisionCardLabels,
+  DecisionTextLabels,
   SentenceBand,
   SentenceHeader,
   SentenceLine,
@@ -179,7 +179,7 @@ export const MULTI_SENTENCE_HEADER: SentenceHeader = {
   hint: 'Returns the matches as a list.',
 };
 
-export const DECISION_CARD_LABELS: DecisionCardLabels = {
+export const DECISION_TEXT_LABELS: DecisionTextLabels = {
   emptyRules: 'No rules yet',
   markStatus: (tone, message) => {
     const status = tone === 'error' ? 'Error' : 'Warning';

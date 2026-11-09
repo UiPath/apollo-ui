@@ -46,7 +46,7 @@ export interface SentenceCellId {
 }
 
 /** The view's own strings; the consumer passes localized values. */
-export interface DecisionCardLabels {
+export interface DecisionTextLabels {
   emptyRules: string;
   /** One mark as read aloud, e.g. "Warning: Overlaps row 1"; `message` is absent when the mark has none. */
   markStatus: (tone: Exclude<MarkTone, 'success'>, message: string | undefined) => string;

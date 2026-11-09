@@ -2,19 +2,19 @@ import { cn } from '@uipath/apollo-wind';
 import { CELL_MARK_CLASS, ROW_MARK_OVERLAY_CLASS } from './gridStyles';
 import type { MarkTone } from './marks';
 
-export const DECISION_CARD_FRAME_CLASS = cn(
+export const DECISION_TEXT_FRAME_CLASS = cn(
   'relative min-h-0 flex-1 overflow-auto bg-background-secondary future:bg-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-hidden',
   '[--sentence-output-hue:var(--color-purple-600)] dark:[--sentence-output-hue:var(--color-purple-300)]'
 );
 
-export const DECISION_CARD_HEADER_CLASS =
+export const DECISION_TEXT_HEADER_CLASS =
   'sticky top-0 z-2 flex flex-wrap items-baseline gap-x-2 border-b border-b-border-de-emp bg-background px-4 py-2 text-xs leading-4 text-foreground-de-emp';
 
 export const HEADER_LABEL_CLASS = 'font-semibold';
 
 const GUTTER_CLASS = 'pe-8 ps-[max(2rem,calc(var(--sentence-number-digits,0)*1ch+1.25rem))]';
 
-export const DECISION_CARD_BANDS_CLASS = cn(
+export const DECISION_TEXT_BANDS_CLASS = cn(
   'grid grid-cols-[minmax(4rem,auto)_minmax(0,1fr)] items-start gap-2 pt-3 pb-6',
   GUTTER_CLASS
 );
@@ -36,7 +36,7 @@ export const EMPTY_STATE_FRAME_CLASS = GUTTER_CLASS;
 
 export const EMPTY_STATE_CLASS = 'rounded-lg border border-dashed border-border bg-background p-8';
 
-export const DECISION_CARD_LIST_CLASS = GUTTER_CLASS;
+export const DECISION_TEXT_LIST_CLASS = GUTTER_CLASS;
 
 export const RULE_CARD_CLASS = 'group/row pb-[var(--sentence-row-gap)]';
 

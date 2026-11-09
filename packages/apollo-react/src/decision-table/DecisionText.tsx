@@ -19,16 +19,16 @@ import {
   BAND_CAPTION_CLASS,
   BAND_COLUMN_CLASS,
   BAND_COLUMNS_CLASS,
-  DECISION_CARD_BANDS_CLASS,
-  DECISION_CARD_FRAME_CLASS,
-  DECISION_CARD_HEADER_CLASS,
-  DECISION_CARD_LIST_CLASS,
+  DECISION_TEXT_BANDS_CLASS,
+  DECISION_TEXT_FRAME_CLASS,
+  DECISION_TEXT_HEADER_CLASS,
+  DECISION_TEXT_LIST_CLASS,
   EMPTY_STATE_CLASS,
   EMPTY_STATE_FRAME_CLASS,
   HEADER_LABEL_CLASS,
 } from './sentenceStyles';
 import type {
-  DecisionCardLabels,
+  DecisionTextLabels,
   SentenceBand,
   SentenceCellId,
   SentenceHeader,
@@ -75,7 +75,7 @@ const columnMark = (mark: Mark | undefined) =>
 const tableMarks = ({ rows, columns }: TableMarks) =>
   ({ rows, columns }) satisfies MarkFields<TableMarks>;
 
-export interface DecisionCardProps {
+export interface DecisionTextProps {
   rules: readonly SentenceRule[];
   bands: readonly SentenceBand[];
   header: SentenceHeader;
@@ -88,7 +88,7 @@ export interface DecisionCardProps {
   /** The cell whose value chip is under the pointer, or null once it is left or gone. */
   onCellHover?: (cell: SentenceCellId | null) => void;
   /** The view's own strings; mounted rules re-render when it changes, so memoize it. */
-  labels: DecisionCardLabels;
+  labels: DecisionTextLabels;
   /** Accessible name of the scroll region. */
   ariaLabel: string;
   /** Merged onto the scroll container; a `data-testid` here overrides `dataTestId`. */
@@ -98,7 +98,7 @@ export interface DecisionCardProps {
 }
 
 /** A decision table read as sentences: one rule card per rule, windowed, painted by the grid's marks. */
-export const DecisionCard: React.FC<DecisionCardProps> = ({
+export const DecisionText: React.FC<DecisionTextProps> = ({
   rules,
   bands,
   header,
@@ -167,7 +167,7 @@ export const DecisionCard: React.FC<DecisionCardProps> = ({
       aria-label={ariaLabel}
       // biome-ignore lint/a11y/noNoninteractiveTabindex: a scrollable region must be reachable by keyboard
       tabIndex={0}
-      className={DECISION_CARD_FRAME_CLASS}
+      className={DECISION_TEXT_FRAME_CLASS}
       data-testid={dataTestId}
       onPointerOver={(event) => {
         hoverTo(valueTokenAt(event.target));
@@ -182,13 +182,13 @@ export const DecisionCard: React.FC<DecisionCardProps> = ({
       }}
       {...restContainerProps}
     >
-      <div className={DECISION_CARD_HEADER_CLASS} data-testid={`${dataTestId}-header`}>
+      <div className={DECISION_TEXT_HEADER_CLASS} data-testid={`${dataTestId}-header`}>
         <span className={HEADER_LABEL_CLASS}>{header.label}</span>
         <span>{header.hint}</span>
       </div>
       {bands.length > 0 && (
         <div
-          className={DECISION_CARD_BANDS_CLASS}
+          className={DECISION_TEXT_BANDS_CLASS}
           style={listStyle}
           data-testid={`${dataTestId}-bands`}
         >
@@ -248,7 +248,7 @@ export const DecisionCard: React.FC<DecisionCardProps> = ({
           </EmptyState>
         </div>
       ) : (
-        <ul ref={listRef} className={DECISION_CARD_LIST_CLASS} style={listStyle}>
+        <ul ref={listRef} className={DECISION_TEXT_LIST_CLASS} style={listStyle}>
           {segments.flatMap((segment) => {
             if (segment.type === 'spacer') {
               return (

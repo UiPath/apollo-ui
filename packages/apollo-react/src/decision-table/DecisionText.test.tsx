@@ -6,7 +6,7 @@ import {
   COUNTRY,
   channel,
   country,
-  DECISION_CARD_LABELS,
+  DECISION_TEXT_LABELS,
   longValueListRule,
   MULTI_SENTENCE_BANDS,
   MULTI_SENTENCE_HEADER,
@@ -15,23 +15,23 @@ import {
   manySentenceRules,
 } from './__fixtures__/sentences.fixtures';
 import { EMPTY_VALUE_DASH } from './constants';
-import { DecisionCard, type DecisionCardProps } from './DecisionCard';
+import { DecisionText, type DecisionTextProps } from './DecisionText';
 import type { RowMark, TableMarks } from './marks';
 import { sentenceRuleOffsets } from './sentenceRuleHeights';
 import type { SentencePart, SentenceRule } from './sentenceTypes';
 
-const view = (props: Partial<DecisionCardProps> = {}) => (
-  <DecisionCard
+const view = (props: Partial<DecisionTextProps> = {}) => (
+  <DecisionText
     rules={MULTI_SENTENCE_RULES}
     bands={MULTI_SENTENCE_BANDS}
     header={MULTI_SENTENCE_HEADER}
-    labels={DECISION_CARD_LABELS}
+    labels={DECISION_TEXT_LABELS}
     ariaLabel="Rules"
     dataTestId="nl"
     {...props}
   />
 );
-const renderView = (props: Partial<DecisionCardProps> = {}) => render(view(props));
+const renderView = (props: Partial<DecisionTextProps> = {}) => render(view(props));
 
 const card = (rowId: string) => screen.getByTestId(`nl-row-${rowId}`);
 const mountedRows = () => [...document.querySelectorAll<HTMLElement>('li[data-row-id]')];
@@ -52,7 +52,7 @@ const scrollTo = (px: number) => {
   fireEvent.scroll(frame);
 };
 
-describe('DecisionCard', () => {
+describe('DecisionText', () => {
   describe('layout', () => {
     it('shows the header label and hint above the rules', () => {
       renderView();
