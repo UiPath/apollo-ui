@@ -89,6 +89,7 @@ export function projectTree(root: SequenceStep, options?: ProjectTreeOptions): T
           ...((step.data?.display as Record<string, unknown> | undefined) ?? {}),
           label: step.label,
           ...(step.subLabel !== undefined ? { subLabel: step.subLabel } : {}),
+          ...(step.icon !== undefined ? { icon: step.icon } : {}),
         },
       },
       ...(step.locked ? { draggable: false, deletable: false } : {}),

@@ -96,6 +96,12 @@ export function useBaseNodePresentation({
   );
   const icon = useMemo(() => {
     if (iconComponent !== undefined) return iconComponent;
+    // A host's own icon as an image (a data URI it rendered, or a URL), not a registered icon name.
+    if (display.icon && isImageIcon(display.icon)) {
+      return (
+        <img src={display.icon} alt="" draggable={false} className="size-full object-contain" />
+      );
+    }
     if (display.icon) {
       const IconComponent = getIcon(display.icon);
       return IconComponent ? <IconComponent /> : null;
@@ -188,4 +194,9 @@ export function useBaseNodePresentation({
     toolbarConfig,
     validationState,
   };
+}
+
+/** True for an icon given as an image (`data:image/...` or an http(s) URL) rather than a registered icon name. */
+export function isImageIcon(icon: string): boolean {
+  return /^(data:image\/|https?:\/\/)/i.test(icon);
 }

@@ -94,6 +94,8 @@ export interface SequenceStep {
   label: string;
   /** One line under the label, such as a summary of the step's main property. */
   subLabel?: string;
+  /** The step's own icon, as an image URL or data URI; the manifest's icon when absent. */
+  icon?: string;
   /** Ordered slots of steps; none for a leaf. An empty slot draws as an "Add step" lane. */
   slots?: SequenceStepSlot[];
   /** Not movable or deletable from the canvas. */

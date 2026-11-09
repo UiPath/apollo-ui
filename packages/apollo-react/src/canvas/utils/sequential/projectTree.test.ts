@@ -133,6 +133,11 @@ describe('projectTree', () => {
       type: 'uipath.script',
       data: { display: { label: 'a', subLabel: 'total = 1' } },
     });
+
+    tree.slots![0]!.steps[0] = { ...leaf('a'), icon: 'data:image/png;base64,AAAA' };
+    expect(projectTree(tree).nodes[0]?.data).toMatchObject({
+      display: { icon: 'data:image/png;base64,AAAA' },
+    });
   });
 
   it('refuses a tree that names one step twice', () => {
