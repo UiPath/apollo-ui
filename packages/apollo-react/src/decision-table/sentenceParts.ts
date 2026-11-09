@@ -11,50 +11,43 @@ export const tokenText = (token: SentenceToken): string =>
 export const partsText = (parts: readonly SentencePart[]): string =>
   parts.map((part) => (typeof part === 'string' ? part : tokenText(part))).join('');
 
-/** The index after the last value of the run of `columnId`'s values that `start` begins. */
-const runEnd = (parts: readonly SentencePart[], start: number, columnId: string): number => {
-  let end = start + 1;
-  for (const [offset, part] of parts.slice(end).entries()) {
-    if (typeof part === 'string') continue;
-    if (part.kind !== 'value' || part.columnId !== columnId) break;
-    end = start + offset + 2;
-  }
-  return end;
-};
-
-/** The first run of one column's values past `limit`, clamped: the parts shown, the values hidden, the parts after them and their count. */
-export const boundedParts = (
-  parts: readonly SentencePart[],
-  limit: number
-): {
-  shown: readonly SentencePart[];
+/** A run of one column's values past the limit: the values it hides, the parts shown after it and how many values it hides. */
+interface ClampedRun {
   hidden: readonly SentencePart[];
   after: readonly SentencePart[];
   hiddenValues: number;
-} => {
+}
+
+/** Every run of one column's values clamped to its first `limit`: the parts shown, and each clamped run. */
+export const boundedParts = (
+  parts: readonly SentencePart[],
+  limit: number
+): { shown: readonly SentencePart[]; clamped: readonly ClampedRun[] } => {
+  const shown: SentencePart[] = [];
+  const runs: { hidden: SentencePart[]; end: number }[] = [];
+  let pending: SentencePart[] = [];
   let column: string | undefined;
-  let run = 0;
-  let lastShown = 0;
-  for (const [index, part] of parts.entries()) {
-    if (typeof part === 'string') continue;
-    if (part.kind !== 'value') {
-      column = undefined;
+  let count = 0;
+  for (const part of parts) {
+    if (typeof part === 'string') {
+      pending.push(part);
       continue;
     }
-    run = part.columnId === column ? run + 1 : 1;
-    column = part.columnId;
-    if (run === limit) lastShown = index;
-    if (run > limit) {
-      const end = runEnd(parts, index, column);
-      const hidden = parts.slice(index, end);
-      const after = parts.slice(end);
-      return {
-        shown: [...parts.slice(0, lastShown + 1), ...after],
-        hidden,
-        after,
-        hiddenValues: hidden.filter(isValue).length,
-      };
-    }
+    const value = part.kind === 'value';
+    count = value && part.columnId === column ? count + 1 : 1;
+    column = value ? part.columnId : undefined;
+    if (!value || count <= limit) shown.push(...pending, part);
+    else if (count === limit + 1) runs.push({ hidden: [part], end: shown.length });
+    else runs.at(-1)?.hidden.push(...pending, part);
+    pending = [];
   }
-  return { shown: parts, hidden: [], after: [], hiddenValues: 0 };
+  shown.push(...pending);
+  return {
+    shown,
+    clamped: runs.map(({ hidden, end }) => ({
+      hidden,
+      after: shown.slice(end),
+      hiddenValues: hidden.filter(isValue).length,
+    })),
+  };
 };

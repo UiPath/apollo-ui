@@ -18,7 +18,7 @@ import { EMPTY_VALUE_DASH } from './constants';
 import { DecisionTableSentences, type DecisionTableSentencesProps } from './DecisionTableSentences';
 import type { RowMark, TableMarks } from './marks';
 import { sentenceRowOffsets } from './sentenceRowHeights';
-import type { SentenceRow } from './sentenceTypes';
+import type { SentencePart, SentenceRow } from './sentenceTypes';
 
 const view = (props: Partial<DecisionTableSentencesProps> = {}) => (
   <DecisionTableSentences
@@ -378,23 +378,6 @@ describe('DecisionTableSentences', () => {
       expect(more?.previousElementSibling?.textContent).toMatch(/"Country 20"$/);
     });
 
-    it('keeps the words after the last value of a clamped line, and titles the count with them', () => {
-      const texts = Array.from({ length: 10_000 }, (_, index) => `"C${index + 1}"`);
-      const values = texts.flatMap((text, index) =>
-        index === 0 ? [country(text)] : [', ', country(text)]
-      );
-      const [first] = MULTI_SENTENCE_ROWS;
-      if (!first) throw new Error('fixture');
-      renderView({
-        rows: [{ ...first, lines: [{ columnId: 'country', parts: [...values, ' ← ', COUNTRY] }] }],
-      });
-      const line = card('m1').querySelector<HTMLElement>('li[data-column-id="country"]');
-      expect(line?.querySelector('[data-kind="input"]')).toHaveTextContent('Country');
-      expect(line?.querySelector('[data-more-values]')?.getAttribute('title')).toBe(
-        `${texts.slice(20, 40).join(', ')}… ← Country`
-      );
-    });
-
     const countryThenAge = (count: number): SentenceRow => {
       const [first] = MULTI_SENTENCE_ROWS;
       if (!first) throw new Error('fixture');
@@ -424,6 +407,46 @@ describe('DecisionTableSentences', () => {
       expect(card('m1').querySelector('[data-more-values]')?.getAttribute('title')).toBe(
         '"C21" and Age is greater than 18'
       );
+    });
+
+    it('clamps every oversized run of a line on its own', () => {
+      const [first] = MULTI_SENTENCE_ROWS;
+      if (!first) throw new Error('fixture');
+      const run = (value: (text: string) => SentencePart, prefix: string) =>
+        Array.from({ length: 10_000 }, (_, index): SentencePart[] =>
+          index === 0
+            ? [value(`"${prefix}${index + 1}"`)]
+            : [', ', value(`"${prefix}${index + 1}"`)]
+        ).flat();
+      renderView({
+        rows: [
+          {
+            ...first,
+            lead: [
+              'when ',
+              COUNTRY,
+              ' is one of ',
+              ...run(country, 'C'),
+              ' and ',
+              CHANNEL,
+              ' is one of ',
+              ...run(channel, 'K'),
+            ],
+            lines: [],
+          },
+        ],
+      });
+      const leadLine = lead()?.parentElement;
+      expect(leadLine?.querySelectorAll('[data-kind="value"]')).toHaveLength(40);
+      expect(lead()?.textContent).toMatch(/"C20" and Channel is one of "K1", .*"K20"$/);
+      const counts = [...(leadLine?.querySelectorAll<HTMLElement>('[data-more-values]') ?? [])];
+      expect(counts.map((count) => count.textContent)).toEqual(['+9,980 more', '+9,980 more']);
+      expect(counts.map((count) => count.title.slice(0, 14))).toEqual([
+        '"C21", "C22", ',
+        '"K21", "K22", ',
+      ]);
+      expect(counts[1]?.title).toMatch(/"K40"…$/);
+      expect(counts[0]?.title).toMatch(/"C40"… and Channel is one of "K1", .*"K20"$/);
     });
 
     it('shows a clamped line in full as its title on hover, as a grid cell does', () => {

@@ -83,8 +83,8 @@ const TokenChip: React.FC<{
 
 /** The first values of the hidden run, an ellipsis if any remain, then the parts after the run. */
 const hiddenTitle = (hidden: readonly SentencePart[], after: readonly SentencePart[]): string => {
-  const { shown, hiddenValues } = boundedParts(hidden, SENTENCE_LINE_VALUE_LIMIT);
-  return `${partsText(shown)}${hiddenValues > 0 ? '…' : ''}${partsText(after)}`;
+  const { shown, clamped } = boundedParts(hidden, SENTENCE_LINE_VALUE_LIMIT);
+  return `${partsText(shown)}${clamped.length > 0 ? '…' : ''}${partsText(after)}`;
 };
 
 /** One clamped line: its first values, then a count of the rest that the clamp never hides. */
@@ -95,7 +95,7 @@ const LineText: React.FC<{
   cells: RowMark['cells'];
   labels: SentenceLabels;
 }> = ({ id, heading = false, parts, cells, labels }) => {
-  const { shown, hidden, after, hiddenValues } = boundedParts(parts, SENTENCE_LINE_VALUE_LIMIT);
+  const { shown, clamped } = boundedParts(parts, SENTENCE_LINE_VALUE_LIMIT);
   return (
     <>
       <span
@@ -118,15 +118,16 @@ const LineText: React.FC<{
           )
         )}
       </span>
-      {hiddenValues > 0 && (
+      {clamped.map(({ hidden, after, hiddenValues }, index) => (
         <span
+          key={index}
           className={MORE_VALUES_CLASS}
           data-more-values={hiddenValues}
           title={hiddenTitle(hidden, after)}
         >
           {labels.moreValues(hiddenValues)}
         </span>
-      )}
+      ))}
     </>
   );
 };
