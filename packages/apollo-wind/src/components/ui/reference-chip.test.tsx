@@ -110,6 +110,11 @@ describe('ReferenceChip', () => {
     expect(screen.getByText('Connection').style.fontFamily).toBe('');
   });
 
+  it('tints the remove button on hover with the chip text color, only when enabled', () => {
+    render(<ReferenceChip label="Connection" onRemove={() => {}} />);
+    expect(screen.getByRole('button')).toHaveClass('enabled:hover:bg-current/10');
+  });
+
   it('never uses primary or accent tokens', () => {
     const colors = Object.values(getReferenceChipColors()).flatMap(Object.values);
     for (const value of colors) {
