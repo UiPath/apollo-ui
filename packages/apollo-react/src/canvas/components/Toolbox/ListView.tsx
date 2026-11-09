@@ -576,10 +576,14 @@ const ListViewInner = forwardRef(function ListView<T extends ListItem>(
   if (!hasListbox) {
     if (renderEmptyState) return renderEmptyState();
     return (
-      <Column align="center" justify="center" flex={1} gap={10} style={{ minHeight: '250px' }}>
-        <CanvasIcon icon={emptyStateIcon} size={48} color="var(--canvas-foreground-de-emp)" />
-        <span className="text-xs text-foreground-muted">{emptyStateMessage}</span>
-      </Column>
+      // Fills whatever height the Toolbox leaves (it can be capped) and scrolls rather than clip;
+      // auto margins centre the message without hiding its top when it overflows.
+      <div data-testid="toolbox-empty-state" className="flex min-h-0 flex-1 overflow-y-auto">
+        <Column align="center" gap={10} style={{ margin: 'auto' }}>
+          <CanvasIcon icon={emptyStateIcon} size={48} color="var(--canvas-foreground-de-emp)" />
+          <span className="text-xs text-foreground-muted">{emptyStateMessage}</span>
+        </Column>
+      </div>
     );
   }
 

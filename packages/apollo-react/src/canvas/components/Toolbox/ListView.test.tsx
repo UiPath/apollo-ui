@@ -67,6 +67,15 @@ describe('ListView', () => {
       expect(screen.getByText('No items found')).toBeInTheDocument();
     });
 
+    // jsdom has no layout, so this pins the styles that let the message fit a capped Toolbox height.
+    it('lets the empty state shrink to a capped height and scroll instead of clipping', () => {
+      render(<ListView {...defaultProps} items={[]} />);
+
+      const emptyState = screen.getByTestId('toolbox-empty-state');
+      expect(emptyState).toHaveClass('min-h-0', 'overflow-y-auto');
+      expect(emptyState.style.minHeight).toBe('');
+    });
+
     it('should show custom empty state message', () => {
       render(<ListView {...defaultProps} items={[]} emptyStateMessage="Custom empty message" />);
 
