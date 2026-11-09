@@ -3,8 +3,9 @@ import { Plus } from 'lucide-react';
 import type React from 'react';
 import { useCallback, useEffect, useId, useMemo, useRef } from 'react';
 import { FALLBACK_ROW_VIEWPORT_PX } from './constants';
+import { MarkBadge, markIds } from './MarkBadge';
 import { EMPTY_MARKS, type Mark, type TableMarks } from './marks';
-import { MarkBadge, markIds, RuleCard } from './RuleCard';
+import { RuleCard } from './RuleCard';
 import { isLineMark, type MarkFields } from './sentenceMarks';
 import {
   SENTENCE_LINE_HEIGHT_PX,
@@ -75,6 +76,11 @@ const columnMark = (mark: Mark | undefined) =>
 const tableMarks = ({ rows, columns }: TableMarks) =>
   ({ rows, columns }) satisfies MarkFields<TableMarks>;
 
+export interface DecisionTextAddRule {
+  label: string;
+  onAdd: () => void;
+}
+
 export interface DecisionTextProps {
   rules: readonly SentenceRule[];
   bands: readonly SentenceBand[];
@@ -84,7 +90,7 @@ export interface DecisionTextProps {
   /** The grid's own marks object: rows by row id, cells and columns by column id. */
   marks?: TableMarks;
   /** The empty state's add action and its label. */
-  addRule?: { label: string; onAdd: () => void };
+  addRule?: DecisionTextAddRule;
   /** The cell whose value chip is under the pointer, or null once it is left or gone. */
   onCellHover?: (cell: SentenceCellId | null) => void;
   /** The view's own strings; mounted rules re-render when it changes, so memoize it. */

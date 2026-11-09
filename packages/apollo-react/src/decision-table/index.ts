@@ -11,6 +11,7 @@ export { DragIndicator, type DragIndicatorProps } from './DragIndicator';
 export { EdgeInsertButton, type EdgeInsertButtonProps } from './EdgeInsertButton';
 export {
   DecisionText,
+  type DecisionTextAddRule,
   type DecisionTextProps,
 } from './DecisionText';
 export {

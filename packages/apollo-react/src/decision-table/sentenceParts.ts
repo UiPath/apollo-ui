@@ -18,13 +18,22 @@ interface ClampedRun {
   hiddenValues: number;
 }
 
+/** The parts a line shows, and each run of values it clamps. */
+interface BoundedParts {
+  shown: readonly SentencePart[];
+  clamped: readonly ClampedRun[];
+}
+
+/** A clamped run while it is collected: its hidden parts and the shown parts before it. */
+interface OpenRun {
+  hidden: SentencePart[];
+  end: number;
+}
+
 /** Every run of one column's values clamped to its first `limit`: the parts shown, and each clamped run. */
-export const boundedParts = (
-  parts: readonly SentencePart[],
-  limit: number
-): { shown: readonly SentencePart[]; clamped: readonly ClampedRun[] } => {
+export const boundedParts = (parts: readonly SentencePart[], limit: number): BoundedParts => {
   const shown: SentencePart[] = [];
-  const runs: { hidden: SentencePart[]; end: number }[] = [];
+  const runs: OpenRun[] = [];
   let pending: SentencePart[] = [];
   let column: string | undefined;
   let count = 0;
